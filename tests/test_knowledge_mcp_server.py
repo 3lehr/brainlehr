@@ -1,0 +1,308 @@
+"""Tests fuer knowledge_mcp_server.py — Lesson-Unmangling + lesson_update.
+
+Deckt den Aufrufer-Fehler ab, der 21 der 218 Lessons verstuemmelt hat: eine
+verrutschte Parametergrenze laesst Feld-Tags (plain `<root_cause>...</root_cause>`
+oder antml-Stil `<parameter name="root_cause">...</parameter>`) im Wert eines
+anderen Feldes landen.
+"""
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SHARED_KNOWLEDGE))
+
+import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
+
+
+# --- Fixtures ---------------------------------------------------------------
+
+@pytest.fixture()
+def temp_db(tmp_path, monkeypatch):
+    """Frische Test-DB mit dem echten Schema, DB_PATH umgebogen."""
+    db_path = tmp_path / "knowledge_test.db"
+    schema = (SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8")
+    import sqlite3
+    conn = sqlite3.connect(str(db_path))
+    conn.executescript(schema)
+    conn.commit()
+    conn.close()
+    monkeypatch.setattr(kms, "DB_PATH", db_path)
+    return db_path
+
+
+def _lesson_row(db_path: Path, lesson_id: str) -> dict:
+    import sqlite3
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+# --- _split_tagged / unmangle_lesson_fields (pure, no DB) -------------------
+
+def test_split_tagged_plain_style():
+    value = "Echte Beschreibung.</description><root_cause>Ursache X</root_cause><prevention>Vorbeugung Y</prevention>"
+    parts = kms._split_tagged(value)
+    assert parts["_head"] == "Echte Beschreibung."
+    assert parts["root_cause"] == "Ursache X"
+    assert parts["prevention"] == "Vorbeugung Y"
+
+
+def test_split_tagged_antml_parameter_style():
+    """Der reale Korruptionsstil: <parameter name="root_cause">...</parameter>."""
+    value = ('Echte Beschreibung.</description>\n'
+             '<parameter name="root_cause">Ursache X</parameter>\n'
+             '<parameter name="prevention">Vorbeugung Y</parameter>')
+    parts = kms._split_tagged(value)
+    assert parts["_head"] == "Echte Beschreibung."
+    assert parts["root_cause"] == "Ursache X"
+    assert parts["prevention"] == "Vorbeugung Y"
+
+
+def test_unmangle_moves_tagged_content_to_correct_fields():
+    fields = {
+        "type": "antipattern",
+        "description": ('Echte Beschreibung.</description>\n'
+                         '<root_cause>Ursache X</root_cause>\n'
+                         '<prevention>Vorbeugung Y</prevention>'),
+        "root_cause": "",
+        "resolution": "",
+        "prevention": "",
+        "severity": "medium",
+        "projects": [],
+        "node_path": "",
+    }
+    fixed = kms.unmangle_lesson_fields(fields)
+    assert fixed["description"] == "Echte Beschreibung."
+    assert fixed["root_cause"] == "Ursache X"
+    assert fixed["prevention"] == "Vorbeugung Y"
+    # keine Tags mehr in irgendeinem Feld
+    for col in ("description", "root_cause", "resolution", "prevention"):
+        assert not kms._FIELD_TAG.search(fixed[col])
+
+
+def test_unmangle_l6e48a9_pattern_tags_in_root_cause_not_description():
+    """Realfall L-6e48a9: description ist sauber, aber root_cause traegt am
+    Stueck auch resolution/prevention/projects/node_path in Tags."""
+    fields = {
+        "type": "insight",
+        "description": "Saubere Beschreibung ohne Tags.",
+        "root_cause": ('Echte Ursache.</root_cause>\n'
+                        '<resolution>Echte Loesung.</resolution>\n'
+                        '<prevention>Echte Vorbeugung.</prevention>\n'
+                        '<projects>["fahrtenbuch"]</projects>\n'
+                        '<node_path>/apps/fahrtenbuch</node_path>\n'
+                        '</invoke>\n'),
+        "resolution": "",
+        "prevention": "",
+        "severity": "medium",
+        "projects": [],
+        "node_path": "",
+    }
+    fixed = kms.unmangle_lesson_fields(fields)
+    assert fixed["description"] == "Saubere Beschreibung ohne Tags."
+    assert fixed["root_cause"] == "Echte Ursache."
+    assert fixed["resolution"] == "Echte Loesung."
+    assert fixed["prevention"] == "Echte Vorbeugung."
+    assert fixed["projects"] == ["fahrtenbuch"]
+    assert fixed["node_path"] == "/apps/fahrtenbuch"
+
+
+def test_unmangle_does_not_overwrite_a_real_existing_value():
+    """Ein bereits befuellter Zielfeld-Wert gewinnt immer gegen den aus Tags
+    extrahierten (Regel aus unmangle_lesson_fields Docstring)."""
+    fields = {
+        "type": "insight",
+        "description": 'Beschreibung.</description><root_cause>Aus Tag extrahiert</root_cause>',
+        "root_cause": "Bereits echt gesetzter Wert",
+        "resolution": "",
+        "prevention": "",
+        "severity": "medium",
+        "projects": [],
+        "node_path": "",
+    }
+    fixed = kms.unmangle_lesson_fields(fields)
+    assert fixed["root_cause"] == "Bereits echt gesetzter Wert"
+
+
+TEXT_FIELDS = ("description", "root_cause", "resolution", "prevention", "severity", "node_path")
+
+
+def _useful_len(fields: dict) -> int:
+    """Summe aller Nutztext-Zeichen ueber die Text-Spalten (projects zaehlt als JSON)."""
+    total = sum(len((fields.get(c) or "")) for c in TEXT_FIELDS)
+    projects = fields.get("projects") or []
+    total += len(json.dumps(projects)) if isinstance(projects, list) else len(str(projects))
+    return total
+
+
+def test_unmangle_never_loses_a_character_even_when_target_is_taken():
+    """Regressionstest fuer den echten Fund L-f27042/Nachtrag: Ist das Zielfeld
+    schon belegt, darf der Anteil aus dem Tag nicht verworfen werden — er muss
+    im Ursprungsfeld erhalten bleiben. Kriterium: Nutztext-Summe nach der
+    Reparatur ist nie kleiner als vorher (abzueglich der entfernten Marker
+    selbst, hier exakt bekannt: 3 Tag-Paare, ohne Trenn-Leerraum dazwischen,
+    damit die Zeichenrechnung eindeutig ist). Bewusst OHNE severity-Feld, weil
+    dort ein separater, gewollter Sonderfall gilt (siehe naechster Test)."""
+    tag_chars = (len("</description>") + len("<root_cause>") + len("</root_cause>")
+                 + len("<resolution>") + len("</resolution>"))
+    fields = {
+        "type": "insight",
+        "description": ('Beschreibung.</description>'
+                         '<root_cause>Aus dem Tag extrahierte Ursache, die erhalten bleiben muss.</root_cause>'
+                         '<resolution>Aus dem Tag extrahierte Loesung, die ebenfalls erhalten bleiben muss.</resolution>'),
+        "root_cause": "Bereits echt gesetzter Wert, der nicht ueberschrieben werden darf",
+        "resolution": "Ebenfalls schon echt gesetzt, darf auch nicht ueberschrieben werden",
+        "prevention": "",
+        "severity": "medium",
+        "projects": [],
+        "node_path": "",
+    }
+    before = _useful_len(fields)
+    fixed = kms.unmangle_lesson_fields(fields)
+    # die real gesetzten Werte gewinnen weiterhin
+    assert fixed["root_cause"] == "Bereits echt gesetzter Wert, der nicht ueberschrieben werden darf"
+    assert fixed["resolution"] == "Ebenfalls schon echt gesetzt, darf auch nicht ueberschrieben werden"
+    after = _useful_len(fixed)
+    assert after >= before - tag_chars, (
+        f"Zeichen verloren: vorher={before}, nachher={after}, erwartete Reduktion hoechstens {tag_chars}"
+    )
+    # die abgewiesenen Anteile aus den Tags muessen irgendwo im description-Feld
+    # (dem Ursprungsfeld) auftauchen, nicht spurlos verschwunden sein
+    assert "erhalten bleiben muss" in fixed["description"]
+    assert "ebenfalls erhalten bleiben muss" in fixed["description"]
+
+
+def test_unmangle_severity_default_is_overridden_by_extracted_value():
+    """Sonderfall severity: der Schema-Default "medium" ist von einem nie
+    gesetzten Wert nicht unterscheidbar. Ein aus dem Tag extrahierter
+    gueltiger Enum-Wert gewinnt deshalb gegen den Default — das ist eine
+    gewollte Korrektur, kein Verlust (die zwei echten Faelle L-a7043b und
+    L-47e586 hatten genau dieses Muster: description enthielt `<severity>high
+    </severity>`, die Spalte selbst stand noch auf dem ungenutzten Default)."""
+    fields = {
+        "type": "insight",
+        "description": 'Beschreibung.</description>\n<severity>high</severity>',
+        "root_cause": "",
+        "resolution": "",
+        "prevention": "",
+        "severity": "medium",
+        "projects": [],
+        "node_path": "",
+    }
+    fixed = kms.unmangle_lesson_fields(fields)
+    assert fixed["severity"] == "high"
+    assert fixed["description"] == "Beschreibung."
+
+
+def test_quoted_marker_in_prose_is_not_treated_as_field_boundary():
+    """Realfall L-f27042: eine Lesson, die den Verstuemmelungs-Bug selbst
+    beschreibt, zitiert Feldmarker mitten im Satz. Diese duerfen NICHT als
+    Feldgrenze gelesen werden — sonst wird der Fliesstext an der Zitatstelle
+    abgeschnitten (genau das ist L-f27042 vorher passiert)."""
+    description = ('Zwei Stile traten auf: der eine (schliessendes </description>-Tag, '
+                    'dann oeffnendes <root_cause>-Tag) und der Tool-Call-Stil mit '
+                    '<parameter name="root_cause">-Attribut, direkt im Satz zitiert. '
+                    'Der Rest dieses Satzes muss vollstaendig erhalten bleiben.')
+    fields = {
+        "type": "insight",
+        "description": description,
+        "root_cause": "",
+        "resolution": "",
+        "prevention": "",
+        "severity": "medium",
+        "projects": [],
+        "node_path": "",
+    }
+    fixed = kms.unmangle_lesson_fields(fields)
+    assert fixed["description"] == description
+    assert fixed["root_cause"] == ""
+
+
+def test_genuine_corruption_at_line_start_still_splits():
+    """Positivprobe zu obigem Test: dieselben Tags, aber an echter Zeilenkante
+    (jeweils allein auf ihrer Zeile) muessen weiterhin zerlegt werden."""
+    fields = {
+        "type": "insight",
+        "description": ('Echter Text.</description>\n'
+                         '<parameter name="root_cause">Echte Ursache aus echter Verstuemmelung.</parameter>'),
+        "root_cause": "",
+        "resolution": "",
+        "prevention": "",
+        "severity": "medium",
+        "projects": [],
+        "node_path": "",
+    }
+    fixed = kms.unmangle_lesson_fields(fields)
+    assert fixed["description"] == "Echter Text."
+    assert fixed["root_cause"] == "Echte Ursache aus echter Verstuemmelung."
+
+
+# --- lesson_record end-to-end (real DB round-trip via temp_db) -------------
+
+def test_lesson_record_unmangles_on_write(temp_db):
+    description = ('Kaputt eingegebene Beschreibung.</description>\n'
+                    '<root_cause>Wahre Ursache.</root_cause>\n'
+                    '<prevention>Wahre Vorbeugung.</prevention>')
+    result = kms.lesson_record("antipattern", description)
+    assert result["status"] == "recorded"
+
+    row = _lesson_row(temp_db, result["id"])
+    assert row["description"] == "Kaputt eingegebene Beschreibung."
+    assert row["root_cause"] == "Wahre Ursache."
+    assert row["prevention"] == "Wahre Vorbeugung."
+    assert not kms._FIELD_TAG.search(row["description"])
+
+
+# --- lesson_update -----------------------------------------------------------
+
+def test_lesson_update_changes_only_given_fields(temp_db):
+    created = kms.lesson_record("insight", "Original-Beschreibung", root_cause="Original-Ursache")
+    lesson_id = created["id"]
+
+    result = kms.lesson_update(lesson_id, prevention="Neue Vorbeugung")
+    assert result["status"] == "updated"
+
+    row = _lesson_row(temp_db, lesson_id)
+    assert row["description"] == "Original-Beschreibung"     # unangetastet
+    assert row["root_cause"] == "Original-Ursache"            # unangetastet
+    assert row["prevention"] == "Neue Vorbeugung"              # geaendert
+
+
+def test_lesson_update_unmangles_given_field(temp_db):
+    created = kms.lesson_record("insight", "Original")
+    lesson_id = created["id"]
+
+    mangled_description = 'Korrigierte Beschreibung.</description><root_cause>Nachtraeglich korrigierte Ursache</root_cause>'
+    result = kms.lesson_update(lesson_id, description=mangled_description)
+    assert result["status"] == "updated"
+
+    row = _lesson_row(temp_db, lesson_id)
+    assert row["description"] == "Korrigierte Beschreibung."
+    assert row["root_cause"] == "Nachtraeglich korrigierte Ursache"
+
+
+def test_lesson_update_delete(temp_db):
+    created = kms.lesson_record("insight", "Wird geloescht")
+    lesson_id = created["id"]
+
+    result = kms.lesson_update(lesson_id, delete=True)
+    assert result == {"id": lesson_id, "status": "deleted"}
+    assert _lesson_row(temp_db, lesson_id) is None
+
+
+def test_lesson_update_unknown_id_returns_error(temp_db):
+    result = kms.lesson_update("L-nonexistent")
+    assert "error" in result
+
+
+def test_lesson_update_no_fields_reports_unchanged(temp_db):
+    created = kms.lesson_record("insight", "Bleibt gleich")
+    result = kms.lesson_update(created["id"])
+    assert result["status"] == "unchanged"

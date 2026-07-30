@@ -13,11 +13,13 @@ Tools:
   - knowledge_add(parent_path, title, summary, content, project_id, tags)
   - knowledge_update(node_id, summary, content)
   - lesson_record(type, description, root_cause, resolution, prevention, severity, projects)
+  - lesson_update(lesson_id, description, root_cause, resolution, prevention, severity, projects, status, delete)
   - lesson_query(type, project, status)
   - knowledge_stats()             → Übersichts-Statistiken
 """
 
 import json
+import re
 import sqlite3
 import sys
 import uuid
@@ -219,11 +221,160 @@ def knowledge_update(node_id: str, summary: str | None = None,
     return {"id": row["id"], "status": "updated"}
 
 
+LESSON_TEXT_FIELDS = ("description", "root_cause", "resolution", "prevention",
+                      "severity", "projects", "node_path", "type")
+_FIELDS_ALT = "|".join(LESSON_TEXT_FIELDS)
+# Zwei Tag-Stile kommen in der Wildnis vor: plain `<root_cause>...</root_cause>`
+# und der antml-Tool-Call-Stil `<parameter name="root_cause">...</parameter>`
+# (Schliesser dort ist generisch `</parameter>`, traegt keinen Feldnamen).
+_FIELD_TAG = re.compile(
+    r'<parameter\s+name="(?P<pname>' + _FIELDS_ALT + r')"\s*>'
+    r"|</parameter>"
+    r"|<(?P<oname>" + _FIELDS_ALT + r")>"
+    r"|</(?P<cname>" + _FIELDS_ALT + r")>"
+)
+# "parameter" bewusst NICHT hier: ein `<parameter name="root_cause">` kann auch
+# ein Zitat im Fliesstext sein (z.B. eine Lesson, die diesen Bug beschreibt).
+# Echte, an einer Feldgrenze stehende parameter-Tags werden bereits von
+# _split_tagged konsumiert und tauchen danach gar nicht mehr auf; ein
+# uebrigbleibender parameter-Tag ist also so gut wie sicher ein Zitat und
+# muss stehen bleiben. invoke/function_calls/antml:* sind dagegen reines
+# Aufruf-Rauschen, das nie sinnvoll zitiert wird.
+_CALL_NOISE = re.compile(r"</?(invoke|function_calls|antml:\w+)[^>]*>")
+
+
+def _is_boundary_tag(value: str, m: re.Match) -> bool:
+    """Nur Tags an einer echten Feldgrenze zaehlen, nicht als Zitat im Fliesstext.
+
+    Eine echte verrutschte Feldgrenze steht immer isoliert: der Aufrufer
+    schliesst einen Parameter und oeffnet sofort den naechsten, nie mitten in
+    einem Satz. Ein oeffnender Tag zaehlt daher nur, wenn direkt davor (nur
+    Leerraum dazwischen) Zeilenanfang/Stringanfang ODER das Ende eines anderen
+    Tags (`>`) steht; ein schliessender Tag nur, wenn direkt danach
+    Zeilenende/Stringende ODER der Anfang eines anderen Tags (`<`) folgt. Das
+    deckt sowohl "jeder Tag auf eigener Zeile" als auch "Tags ohne Trenner
+    aneinandergereiht" ab, verwirft aber einen Tag, der als Beispiel mitten in
+    einem Satz zitiert wird (z.B. eine Lesson, die den Bug selbst beschreibt)
+    — dort steht vor UND nach dem Tag echter Satztext auf derselben Zeile.
+    """
+    is_open = m.group("pname") is not None or m.group("oname") is not None
+    if is_open:
+        j = m.start()
+        while j > 0 and value[j - 1] in " \t":
+            j -= 1
+        return j == 0 or value[j - 1] in "\n>"
+    j = m.end()
+    while j < len(value) and value[j] in " \t":
+        j += 1
+    return j == len(value) or value[j] in "\n<"
+
+
+def _split_tagged(value: str) -> dict:
+    """Zerlegt einen Wert an echten Feld-Tag-Grenzen (siehe _is_boundary_tag).
+
+    Kein Zeichen NUTZTEXT geht verloren: jeder Textanteil, der keiner erkannten
+    Feldgrenze zugeordnet werden kann (z.B. weil das Zielfeld gerade `current`
+    None ist — etwa bei einem verwaisten schliessenden Tag), landet unter
+    "_head" statt verworfen zu werden. Einzige Ausnahme: ein Anteil, der
+    zwischen zwei Tags liegt UND nur aus Leerraum besteht, ist der
+    Formatierungs-Zwischenraum der Tags selbst (kein Inhalt) und wird nicht
+    extra angehaengt — sonst haeuften sich bei mehreren aufeinanderfolgenden
+    Tags leere Zeilen im Ursprungsfeld an.
+    """
+    matches = [m for m in _FIELD_TAG.finditer(value) if _is_boundary_tag(value, m)]
+    out: dict[str, str] = {}
+    current: str | None = None
+    pos = 0
+    head_parts: list[str] = []
+    for m in matches:
+        segment = value[pos:m.start()]
+        if current is None:
+            if segment.strip():
+                head_parts.append(segment)
+        else:
+            out[current] = out.get(current, "") + segment
+        pname, oname, cname = m.group("pname"), m.group("oname"), m.group("cname")
+        is_open = pname is not None or oname is not None
+        name = pname or oname or cname  # cname/name may be None for bare </parameter>
+        current = name if is_open else None
+        pos = m.end()
+    tail = value[pos:]
+    if current is None:
+        if tail.strip():
+            head_parts.append(tail)
+    else:
+        out[current] = out.get(current, "") + tail
+    out["_head"] = "".join(head_parts)
+    return out
+
+
+def unmangle_lesson_fields(fields: dict) -> dict:
+    """Repariert verrutschte Parametergrenzen in Lesson-Aufrufen.
+
+    Schreibt ein Aufrufer einen langen mehrzeiligen Wert, rutscht die Grenze zum
+    naechsten Parameter gelegentlich ins Textfeld — dann steht z.B. der komplette
+    `root_cause` als `<root_cause>…</root_cause>` im `description`-Wert. 21 der
+    218 Lessons waren so verstuemmelt, ausgerechnet die laengsten. Hier werden die
+    Tags erkannt und die Anteile auf die richtigen Spalten verteilt; nur leere
+    Zielfelder werden befuellt, ein echter Wert gewinnt immer. Kein Zeichen geht
+    verloren: Text, dessen Zielfeld schon belegt ist oder der sich keinem Feld
+    zuordnen laesst, bleibt im Ursprungsfeld erhalten statt geloescht zu werden.
+    """
+    out = dict(fields)
+    for name in LESSON_TEXT_FIELDS:
+        val = out.get(name)
+        if not isinstance(val, str) or not _FIELD_TAG.search(val):
+            continue
+        parts = _split_tagged(val)
+        head = parts.pop("_head", "")
+        if not parts:
+            continue  # keine echte Feldgrenze gefunden (z.B. nur ein Zitat im Fliesstext)
+        leftover = []
+        for key, text in parts.items():
+            stripped = text.strip()
+            if not stripped:
+                continue
+            current_val = str(out.get(key) or "").strip()
+            # severity traegt immer den Schema-Default "medium", auch wenn nie explizit
+            # gesetzt — von einem echten Wert nicht unterscheidbar. Ein aus dem Tag
+            # extrahierter gueltiger Enum-Wert gewinnt deshalb hier gegen den Default.
+            beats_default = (key == "severity" and current_val == "medium"
+                             and stripped in ("critical", "high", "medium", "low"))
+            if key != name and (not current_val or beats_default):
+                out[key] = stripped if key == "severity" else text
+            else:
+                leftover.append(text)
+        out[name] = head + ("\n" + "\n".join(leftover) if leftover else "")
+    for name in LESSON_TEXT_FIELDS:
+        if isinstance(out.get(name), str):
+            out[name] = _CALL_NOISE.sub("", out[name]).strip()
+    if isinstance(out.get("projects"), str):
+        try:
+            out["projects"] = json.loads(out["projects"])
+        except (ValueError, TypeError):
+            out["projects"] = [p.strip(' "\'') for p in out["projects"].strip('[]').split(",") if p.strip(' "\'')]
+    return out
+
+
 def lesson_record(type_: str, description: str, root_cause: str = "",
                   resolution: str = "", prevention: str = "",
                   severity: str = "medium", projects: list | None = None,
                   node_path: str = "") -> dict:
     """Record a lesson learned. If a similar lesson exists, increment occurrences."""
+    fixed = unmangle_lesson_fields({
+        "type": type_, "description": description, "root_cause": root_cause,
+        "resolution": resolution, "prevention": prevention, "severity": severity,
+        "projects": projects, "node_path": node_path,
+    })
+    type_, description = fixed["type"], fixed["description"]
+    root_cause, resolution = fixed["root_cause"], fixed["resolution"]
+    prevention, severity = fixed["prevention"], fixed["severity"] or "medium"
+    projects, node_path = fixed["projects"], fixed["node_path"]
+
+    if not description.strip():
+        return {"status": "rejected",
+                "error": "description ist leer — Lesson nicht gespeichert."}
+
     conn = get_db()
 
     # Check for similar existing lesson (same type + similar description)
@@ -269,6 +420,64 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     conn.commit()
     conn.close()
     return {"id": lesson_id, "status": "recorded", "occurrences": 1}
+
+
+def lesson_update(lesson_id: str, description: str | None = None,
+                  root_cause: str | None = None, resolution: str | None = None,
+                  prevention: str | None = None, severity: str | None = None,
+                  projects: list | None = None, status: str | None = None,
+                  delete: bool = False) -> dict:
+    """Correct or delete a recorded lesson. Only fields given are changed; the rest is left untouched."""
+    conn = get_db()
+    row = conn.execute("SELECT id FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
+    if not row:
+        conn.close()
+        return {"error": f"Lesson not found: {lesson_id}"}
+
+    if delete:
+        conn.execute("DELETE FROM lessons_learned WHERE id = ?", (lesson_id,))
+        log_access(conn, None, "lesson_delete", query=lesson_id)
+        conn.commit()
+        conn.close()
+        return {"id": lesson_id, "status": "deleted"}
+
+    raw = {
+        "description": description, "root_cause": root_cause, "resolution": resolution,
+        "prevention": prevention, "severity": severity, "projects": projects,
+    }
+    # Nur uebergebene Felder unmangeln/schreiben — derselbe Aufrufer-Fehler wie bei
+    # lesson_record (Parametergrenze verrutscht ins Textfeld) kann hier genauso passieren.
+    given = {k: v for k, v in raw.items() if v is not None}
+    if given:
+        fixed = unmangle_lesson_fields(given)
+        given.update(fixed)
+
+    updates = []
+    params = []
+    for col in ("description", "root_cause", "resolution", "prevention", "severity"):
+        if col in given:
+            updates.append(f"{col} = ?")
+            params.append(given[col])
+    if "projects" in given:
+        updates.append("projects = ?")
+        params.append(json.dumps(given["projects"] or []))
+    if status is not None:
+        updates.append("status = ?")
+        params.append(status)
+
+    if not updates:
+        conn.close()
+        return {"id": lesson_id, "status": "unchanged", "message": "Keine Felder uebergeben."}
+
+    updates.append("last_seen = ?")
+    params.append(now_iso())
+    params.append(lesson_id)
+
+    conn.execute(f"UPDATE lessons_learned SET {', '.join(updates)} WHERE id = ?", params)
+    log_access(conn, None, "lesson_update", query=lesson_id)
+    conn.commit()
+    conn.close()
+    return {"id": lesson_id, "status": "updated"}
 
 
 def lesson_query(type_: str | None = None, project: str | None = None,
@@ -425,6 +634,29 @@ TOOLS = {
             args["type"], args["description"], args.get("root_cause", ""),
             args.get("resolution", ""), args.get("prevention", ""),
             args.get("severity", "medium"), args.get("projects"), args.get("node_path", "")
+        )
+    },
+    "lesson_update": {
+        "description": "Correct or delete a recorded lesson. Only given fields are changed; unmangles field-tag corruption in the same way lesson_record does. Use delete:true to remove a bad entry.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "lesson_id": {"type": "string", "description": "Lesson ID, e.g. 'L-6e48a9'"},
+                "description": {"type": "string"},
+                "root_cause": {"type": "string"},
+                "resolution": {"type": "string"},
+                "prevention": {"type": "string"},
+                "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
+                "projects": {"type": "array", "items": {"type": "string"}},
+                "status": {"type": "string", "enum": ["active", "resolved", "escalated_to_rule"]},
+                "delete": {"type": "boolean", "description": "Delete the lesson instead of updating it", "default": False}
+            },
+            "required": ["lesson_id"]
+        },
+        "handler": lambda args: lesson_update(
+            args["lesson_id"], args.get("description"), args.get("root_cause"),
+            args.get("resolution"), args.get("prevention"), args.get("severity"),
+            args.get("projects"), args.get("status"), args.get("delete", False)
         )
     },
     "lesson_query": {
