@@ -9,7 +9,7 @@ DB: SQLite + FTS5 Baumstruktur
 Tools:
   - knowledge_browse(path)        → Kinder-Knoten (nur Titel+Summary)
   - knowledge_read(node_id)       → Volltext eines Knotens
-  - knowledge_search(query, scope)→ FTS5 Suche, gibt Summaries zurück
+  - knowledge_search(query, scope)→ Hybrid-Suche (FTS5 + optional lokale Embeddings, RRF-fusioniert), gibt Summaries zurück
   - knowledge_add(parent_path, title, summary, content, project_id, tags)
   - knowledge_update(node_id, summary, content)
   - lesson_record(type, description, root_cause, resolution, prevention, severity, projects, same_as)
@@ -25,6 +25,9 @@ import sys
 import uuid
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
 
 DB_PATH = Path(__file__).parent / "knowledge.db"
 CET = timezone(timedelta(hours=1))
@@ -122,37 +125,97 @@ def knowledge_read(node_id: str) -> dict:
     return result
 
 
+def _embedding_ranking(conn: sqlite3.Connection, kind: str, query_vec: list[float],
+                        allowed_ids: set | None) -> list[str]:
+    """Cosine-Ranking ueber die additive knowledge_embeddings-Tabelle. Fehlt die
+    Tabelle (aeltere DB-Kopie ohne AP "Wissenssuche nach Bedeutung"), liefert
+    leere Liste statt zu werfen -- Aufrufer faellt dann automatisch auf reines
+    FTS5/LIKE-Matching zurueck."""
+    try:
+        rows = conn.execute(
+            "SELECT ref_id, vector FROM knowledge_embeddings WHERE kind = ?", (kind,)
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return []
+    scored = []
+    for r in rows:
+        if allowed_ids is not None and r["ref_id"] not in allowed_ids:
+            continue
+        vec = embeddings.unpack_embedding(r["vector"])
+        scored.append((embeddings.cosine_similarity(query_vec, vec), r["ref_id"]))
+    scored.sort(key=lambda t: t[0], reverse=True)
+    return [ref_id for _, ref_id in scored]
+
+
+def _fuse_with_keyword_floor(keyword_ordered_ids: list, embedding_ordered_ids: list,
+                              max_results: int) -> list:
+    """RRF-Fusion, aber mit garantiertem Stichwort-Sockel: jede der Top-
+    max_results Stichworttreffer-IDs bleibt im Ergebnis, egal wie das
+    Embedding-Ranking ausfaellt (Abnahme-Kriterium "kein Stichworttreffer geht
+    verloren"). Ohne Embedding-Treffer (leere Liste, z.B. Ollama nicht
+    erreichbar oder Tabelle fehlt) reproduziert das exakt die bisherige
+    Stichwort-Reihenfolge, da dict.fromkeys() den Sockel unveraendert vorn
+    haelt und `fused` in diesem Fall ohnehin identisch mit
+    keyword_ordered_ids ist."""
+    weight = embeddings.hybrid_retrieval_weight()
+    fused = embeddings.rrf_fuse(keyword_ordered_ids, embedding_ordered_ids, embedding_weight=weight)
+    floor = keyword_ordered_ids[:max_results]
+    return list(dict.fromkeys(floor + fused))[:max(max_results, len(floor))]
+
+
 def knowledge_search(query: str, scope: str = "all", max_results: int = 10) -> dict:
-    """Full-text search across knowledge nodes. Returns summaries (not full content) for token efficiency."""
+    """Hybrid-Suche ueber Wissensknoten: FTS5-Stichwortmatching plus optionale
+    Bedeutungs-Suche ueber lokale Embeddings (RRF-fusioniert). Ohne Vektoren
+    (Tabelle fehlt oder leer) oder ohne erreichbares Ollama identisch zum
+    reinen FTS5-Verhalten. Returns summaries (not full content) for token
+    efficiency."""
     conn = get_db()
     log_access(conn, None, "search", query=query)
 
     if scope == "all":
-        rows = conn.execute(
-            """SELECT n.id, n.path, n.title, n.summary, n.project_id,
-                      rank
+        fts_rows = conn.execute(
+            """SELECT n.id, n.path, n.title, n.summary, n.project_id
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ?
-               ORDER BY rank
-               LIMIT ?""",
-            (query, max_results)
+               ORDER BY rank""",
+            (query,)
         ).fetchall()
+        allowed_ids = None
     else:
-        rows = conn.execute(
-            """SELECT n.id, n.path, n.title, n.summary, n.project_id,
-                      rank
+        fts_rows = conn.execute(
+            """SELECT n.id, n.path, n.title, n.summary, n.project_id
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.project_id IN ('shared', ?)
-               ORDER BY rank
-               LIMIT ?""",
-            (query, scope, max_results)
+               ORDER BY rank""",
+            (query, scope)
         ).fetchall()
+        allowed_ids = {r["id"] for r in conn.execute(
+            "SELECT id FROM knowledge_nodes WHERE project_id IN ('shared', ?)", (scope,)
+        )}
 
-    results = [{"id": r["id"], "path": r["path"], "title": r["title"],
-                "summary": r["summary"], "project": r["project_id"]}
-               for r in rows]
+    by_id = {r["id"]: r for r in fts_rows}
+    fts_ordered_ids = [r["id"] for r in fts_rows]
+
+    query_vec = embeddings.embed_text(query)
+    embedding_ordered_ids = (
+        _embedding_ranking(conn, "node", query_vec, allowed_ids) if query_vec else []
+    )
+    final_ids = _fuse_with_keyword_floor(fts_ordered_ids, embedding_ordered_ids, max_results)
+
+    missing = [i for i in final_ids if i not in by_id]
+    if missing:
+        placeholders = ",".join("?" for _ in missing)
+        for r in conn.execute(
+            f"SELECT id, path, title, summary, project_id FROM knowledge_nodes WHERE id IN ({placeholders})",
+            missing
+        ):
+            by_id[r["id"]] = r
+
+    results = [{"id": by_id[i]["id"], "path": by_id[i]["path"], "title": by_id[i]["title"],
+                "summary": by_id[i]["summary"], "project": by_id[i]["project_id"]}
+               for i in final_ids if i in by_id]
     conn.close()
     return {"query": query, "scope": scope, "results": results, "count": len(results)}
 
@@ -608,8 +671,13 @@ def lesson_update(lesson_id: str, description: str | None = None,
 
 
 def lesson_query(type_: str | None = None, project: str | None = None,
-                 status: str = "active", max_results: int = 10) -> dict:
-    """Query lessons learned by type, project, or status."""
+                 status: str = "active", max_results: int = 10,
+                 query: str | None = None) -> dict:
+    """Query lessons learned by type, project, or status. Optional `query`:
+    Bedeutungs-/Stichwortsuche in description/root_cause/prevention (LIKE als
+    Stichwort-Basis + optionale Embedding-Fusion, RRF wie knowledge_search).
+    Ohne `query` unveraendertes Altverhalten (reine Filter, sortiert nach
+    occurrences/last_seen)."""
     conn = get_db()
     conditions = []
     params = []
@@ -625,12 +693,47 @@ def lesson_query(type_: str | None = None, project: str | None = None,
         params.append(f'%"{project}"%')
 
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
-    rows = conn.execute(
-        f"SELECT * FROM lessons_learned {where} ORDER BY occurrences DESC, last_seen DESC LIMIT ?",
-        (*params, max_results)
-    ).fetchall()
 
-    results = [dict(r) for r in rows]
+    if not query:
+        rows = conn.execute(
+            f"SELECT * FROM lessons_learned {where} ORDER BY occurrences DESC, last_seen DESC LIMIT ?",
+            (*params, max_results)
+        ).fetchall()
+        results = [dict(r) for r in rows]
+        conn.close()
+        return {"results": results, "count": len(results)}
+
+    all_rows = conn.execute(f"SELECT * FROM lessons_learned {where}", tuple(params)).fetchall()
+    by_id = {r["id"]: r for r in all_rows}
+    # Mindestlaenge 4 + Stopwortfilter wie knowledge_recall_hook.py's STOP-Liste
+    # (hier dupliziert, nicht importiert -- der Hook selbst bleibt unangetastet,
+    # siehe Auftrag). Ohne Filter matchen 3-Buchstaben-Fuellwoerter ("die",
+    # "und", "ist") als Substring in fast jedem Lesson-Text und ertraenken das
+    # eigentliche Signal.
+    _stop = {
+        "und", "oder", "der", "die", "das", "den", "dem", "ein", "eine", "einen", "einem",
+        "ist", "sind", "war", "wird", "werden", "kann", "soll", "muss", "für", "mit", "von",
+        "auf", "aus", "bei", "zum", "zur", "des", "als", "auch", "nicht", "noch", "wie", "was",
+        "wenn", "dann", "aber", "nur", "mir", "mich", "dir", "dich", "ich", "wir", "ihr", "sie",
+        "sich", "durch", "the", "and", "for", "that", "this", "with", "from", "have", "has",
+        "was", "are", "you", "can", "should", "must", "not", "how", "what", "when", "then",
+    }
+    keywords = [w for w in re.findall(r"[A-Za-zÄÖÜäöüß0-9]{4,}", query.lower()) if w not in _stop]
+
+    def kw_hits(row: sqlite3.Row) -> int:
+        text = f"{row['description']} {row['root_cause']} {row['prevention']}".lower()
+        return sum(1 for k in keywords if k in text)
+
+    keyword_ordered_ids = sorted((i for i in by_id if kw_hits(by_id[i]) > 0),
+                                  key=lambda i: kw_hits(by_id[i]), reverse=True)
+
+    query_vec = embeddings.embed_text(query)
+    embedding_ordered_ids = (
+        _embedding_ranking(conn, "lesson", query_vec, set(by_id.keys())) if query_vec else []
+    )
+    final_ids = _fuse_with_keyword_floor(keyword_ordered_ids, embedding_ordered_ids, max_results)
+
+    results = [dict(by_id[i]) for i in final_ids if i in by_id]
     conn.close()
     return {"results": results, "count": len(results)}
 
@@ -696,7 +799,7 @@ TOOLS = {
         "inputSchema": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Search query (FTS5 syntax supported: AND, OR, NOT, phrases)"},
+                "query": {"type": "string", "description": "Search query (FTS5 syntax supported: AND, OR, NOT, phrases). Hybrid: fuses keyword matches with local-embedding meaning search when vectors exist."},
                 "scope": {"type": "string", "description": "Scope: 'all' or project name", "default": "all"},
                 "max_results": {"type": "integer", "description": "Max results (default 10)", "default": 10}
             },
@@ -798,19 +901,20 @@ TOOLS = {
         )
     },
     "lesson_query": {
-        "description": "Query lessons learned. Filter by type, project, or status.",
+        "description": "Query lessons learned. Filter by type, project, or status. Optional 'query' searches description/root_cause/prevention by keyword and meaning (hybrid).",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "type": {"type": "string", "enum": ["error", "insight", "pattern", "antipattern"]},
                 "project": {"type": "string"},
                 "status": {"type": "string", "enum": ["active", "resolved", "escalated_to_rule"], "default": "active"},
-                "max_results": {"type": "integer", "default": 10}
+                "max_results": {"type": "integer", "default": 10},
+                "query": {"type": "string", "description": "Optional: Stichwort-/Bedeutungssuche in description/root_cause/prevention"}
             }
         },
         "handler": lambda args: lesson_query(
             args.get("type"), args.get("project"), args.get("status", "active"),
-            args.get("max_results", 10)
+            args.get("max_results", 10), args.get("query")
         )
     },
     "knowledge_stats": {

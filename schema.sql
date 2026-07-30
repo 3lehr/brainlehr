@@ -73,6 +73,21 @@ CREATE TABLE IF NOT EXISTS access_log (
     timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime'))
 );
 
+-- Embeddings (additiv, AP "Wissenssuche nach Bedeutung", 2026-07-31).
+-- Eigene, separate Tabelle -- keine Aenderung an knowledge_nodes/lessons_learned.
+-- Fehlt diese Tabelle (altere DB-Kopie), faellt jede Suche automatisch auf
+-- reines FTS5/LIKE-Matching zurueck (siehe knowledge_mcp_server.py), kein Fehler.
+-- Erzeugt/gefuellt wird sie ausschliesslich durch den explizit gerufenen Lauf
+-- build_embeddings.py, nie als Nebeneffekt von knowledge_add/lesson_record.
+CREATE TABLE IF NOT EXISTS knowledge_embeddings (
+    kind TEXT NOT NULL,               -- 'node' | 'lesson'
+    ref_id TEXT NOT NULL,             -- knowledge_nodes.id | lessons_learned.id
+    model TEXT NOT NULL,
+    vector BLOB NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (kind, ref_id)
+);
+
 -- Indices für Performance
 CREATE INDEX IF NOT EXISTS idx_nodes_path ON knowledge_nodes(path);
 CREATE INDEX IF NOT EXISTS idx_nodes_parent ON knowledge_nodes(parent_path);
