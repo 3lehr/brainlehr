@@ -8,6 +8,7 @@ anderen Feldes landen.
 from __future__ import annotations
 
 import json
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -306,3 +307,120 @@ def test_lesson_update_no_fields_reports_unchanged(temp_db):
     created = kms.lesson_record("insight", "Bleibt gleich")
     result = kms.lesson_update(created["id"])
     assert result["status"] == "unchanged"
+
+
+# --- lesson_record: same_as-Wiederholungszaehler ----------------------------
+
+def test_lesson_record_without_same_as_creates_new_entry_unchanged(temp_db):
+    """Altverhalten unberuehrt: ohne same_as entsteht ein neuer Eintrag mit occurrences=1."""
+    result = kms.lesson_record("antipattern", "Erstmaliger Fehler XYZ, ganz eigenstaendig.")
+    assert result["status"] == "recorded"
+    assert result["occurrences"] == 1
+    row = _lesson_row(temp_db, result["id"])
+    assert row["occurrences"] == 1
+
+
+def test_lesson_record_with_same_as_increments_vorgaenger_no_second_row(temp_db):
+    first = kms.lesson_record("antipattern", "Reuse-Waechter reserviert Dateien aller Agenten ueber TABU-Liste.")
+    lesson_id = first["id"]
+
+    result = kms.lesson_record(
+        "antipattern",
+        "Erneut aufgetreten: derselbe Reuse-Waechter-Konflikt, diesmal bei fuenf Agenten.",
+        same_as=lesson_id,
+    )
+    assert result["status"] == "incremented"
+    assert result["id"] == lesson_id
+    assert result["occurrences"] == 2
+
+    row = _lesson_row(temp_db, lesson_id)
+    assert row["occurrences"] == 2
+    # kein zweiter Eintrag entstanden
+    conn = sqlite3.connect(str(temp_db))
+    count = conn.execute("SELECT COUNT(*) FROM lessons_learned").fetchone()[0]
+    conn.close()
+    assert count == 1
+    # neuer Text im Vorgaenger auffindbar
+    assert "fuenf Agenten" in row["description"]
+    assert "Reuse-Waechter reserviert Dateien" in row["description"]  # Ursprungstext bleibt
+
+
+def test_lesson_record_same_as_third_occurrence_escalates(temp_db):
+    first = kms.lesson_record("antipattern", "Basisfehler fuer Eskalationstest.")
+    lesson_id = first["id"]
+    kms.lesson_record("antipattern", "Wiederholung Nr. 1 des Eskalationstests.", same_as=lesson_id)
+    result = kms.lesson_record("antipattern", "Wiederholung Nr. 2 des Eskalationstests.", same_as=lesson_id)
+
+    assert result["occurrences"] == 3
+    assert result["escalated"] is True
+    row = _lesson_row(temp_db, lesson_id)
+    assert row["status"] == "escalated_to_rule"
+
+
+def test_lesson_record_same_as_caps_repetition_paragraphs(temp_db):
+    first = kms.lesson_record("antipattern", "Basisfehler fuer Deckelungstest.")
+    lesson_id = first["id"]
+    for i in range(1, 9):  # 8 Wiederholungen, Deckel liegt bei 5
+        kms.lesson_record("antipattern", f"Wiederholungsmarker-{i}", same_as=lesson_id)
+
+    row = _lesson_row(temp_db, lesson_id)
+    assert row["occurrences"] == 9
+    # nur die 5 juengsten Wiederholungen stehen noch drin
+    for i in range(1, 4):
+        assert f"Wiederholungsmarker-{i}" not in row["description"]
+    for i in range(4, 9):
+        assert f"Wiederholungsmarker-{i}" in row["description"]
+    # Ursprungstext bleibt trotz Deckelung erhalten
+    assert "Basisfehler fuer Deckelungstest." in row["description"]
+
+
+def test_lesson_record_same_as_unknown_id_errors_no_silent_new_entry(temp_db):
+    result = kms.lesson_record("antipattern", "Verweist auf nichts.", same_as="L-nichtvorhanden")
+    assert "error" in result
+    conn = sqlite3.connect(str(temp_db))
+    count = conn.execute("SELECT COUNT(*) FROM lessons_learned").fetchone()[0]
+    conn.close()
+    assert count == 0  # kein stiller Fallback-Eintrag
+
+
+def test_lesson_record_similarity_hint_found_without_merging(temp_db):
+    """Zwei bewusst aehnlich formulierte Lessons: der Hinweis erscheint, aber
+    es entstehen weiterhin zwei getrennte Zeilen (kein automatisches Merge)."""
+    a = ("Reuse-Waechter reservierte durch die TABU-Liste des ersten erfolgreichen "
+         "Spawns die Dateien aller uebrigen Agenten; mehrere Spawns wurden abgewiesen.")
+    b = ("Reuse-Waechter reserviert durch TABU-Listen die Dateien aller anderen Agenten, "
+         "mehrere parallele Spawns wurden dadurch abgewiesen.")
+    first = kms.lesson_record("antipattern", a)
+
+    result = kms.lesson_record("antipattern", b)
+    assert result["status"] == "recorded"
+    assert "similar_lesson_hint" in result
+    hint = result["similar_lesson_hint"]
+    assert hint["id"] == first["id"]
+
+    conn = sqlite3.connect(str(temp_db))
+    count = conn.execute("SELECT COUNT(*) FROM lessons_learned").fetchone()[0]
+    conn.close()
+    assert count == 2  # kein Merge
+
+
+def test_gegenprobe_l9f5e60_l_affae1_similarity_score():
+    """Echte Gegenprobe am Bestand, nur lesend: haette das Aehnlichkeitsmass die
+    beiden real doppelt erfassten Lessons L-9f5e60/L-affae1 als Kandidaten erkannt?"""
+    conn = kms.get_db()
+    try:
+        rows = {
+            r["id"]: r["description"]
+            for r in conn.execute(
+                "SELECT id, description FROM lessons_learned WHERE id IN ('L-9f5e60','L-affae1')"
+            )
+        }
+    finally:
+        conn.close()
+    if len(rows) < 2:
+        pytest.skip("L-9f5e60/L-affae1 nicht (mehr) im Bestand")
+    a, b = rows["L-9f5e60"], rows["L-affae1"]
+    ta, tb = kms._tokenize(a), kms._tokenize(b)
+    score = len(ta & tb) / len(ta | tb)
+    print(f"\nGegenprobe L-9f5e60/L-affae1: Jaccard-Score = {score:.3f} (Schwelle = {kms.SIMILARITY_THRESHOLD})")
+    assert score >= kms.SIMILARITY_THRESHOLD

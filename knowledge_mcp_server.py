@@ -12,7 +12,7 @@ Tools:
   - knowledge_search(query, scope)→ FTS5 Suche, gibt Summaries zurück
   - knowledge_add(parent_path, title, summary, content, project_id, tags)
   - knowledge_update(node_id, summary, content)
-  - lesson_record(type, description, root_cause, resolution, prevention, severity, projects)
+  - lesson_record(type, description, root_cause, resolution, prevention, severity, projects, same_as)
   - lesson_update(lesson_id, description, root_cause, resolution, prevention, severity, projects, status, delete)
   - lesson_query(type, project, status)
   - knowledge_stats()             → Übersichts-Statistiken
@@ -356,11 +356,139 @@ def unmangle_lesson_fields(fields: dict) -> dict:
     return out
 
 
+MAX_REPEAT_PARAGRAPHS = 5
+_REPEAT_MARKER_RE = re.compile(r"\n\n--- Wiederholung ([0-9T:+\-]+) ---\n")
+
+
+def _append_repetition(base_description: str, new_text: str, when: str,
+                       cap: int = MAX_REPEAT_PARAGRAPHS) -> str:
+    """Haengt einen datierten Wiederholungs-Absatz an eine bestehende Beschreibung an.
+
+    Gedeckelt auf die `cap` juengsten Wiederholungen — sonst waechst ein Eintrag
+    unbegrenzt und wird unlesbar. Der urspruengliche Beschreibungstext (vor der
+    ersten Wiederholung) bleibt immer erhalten, nur ueberzaehlige Wiederholungen
+    fallen von vorne heraus.
+    """
+    parts = _REPEAT_MARKER_RE.split(base_description)
+    head = parts[0]
+    reps = list(zip(parts[1::2], parts[2::2]))
+    reps.append((when, new_text.strip()))
+    reps = reps[-cap:]
+    out = head
+    for date, text in reps:
+        out += f"\n\n--- Wiederholung {date} ---\n{text}"
+    return out
+
+
+_STOPWORDS_DE = {
+    "der", "die", "das", "und", "oder", "ein", "eine", "einer", "eines", "einem",
+    "einen", "ist", "sind", "war", "waren", "im", "in", "am", "an", "auf", "zu",
+    "von", "mit", "fuer", "für", "den", "dem", "des", "als", "auch", "nicht",
+    "sich", "es", "bei", "aus", "wurde", "wurden", "werden", "sein", "seine",
+    "seiner", "seinem", "je", "jede", "jeder", "jedes", "noch", "nur", "schon",
+    "dann", "aber", "wenn", "hat", "hatte", "haben", "kann", "koennen", "können",
+    "muss", "muessen", "müssen", "wird", "wo", "was", "wie", "so", "um", "ueber",
+    "über", "nach", "vor", "durch",
+}
+_WORD_RE = re.compile(r"[a-zA-ZäöüÄÖÜß]+")
+SIMILARITY_THRESHOLD = 0.18  # kalibriert gegen den Bestand, siehe PLAN/Bericht
+
+
+def _tokenize(text: str) -> set:
+    return {w for w in (m.lower() for m in _WORD_RE.findall(text))
+            if w not in _STOPWORDS_DE and len(w) > 2}
+
+
+def _find_similar_lesson(conn: sqlite3.Connection, type_: str, description: str,
+                         threshold: float = SIMILARITY_THRESHOLD) -> dict | None:
+    """Wortmengen-Jaccard-Vergleich gegen aktive Lessons desselben Typs.
+
+    Reiner Hinweis fuer die Antwort, kein automatisches Verschmelzen (siehe
+    lesson_record Docstring: zwei Lessons faelschlich zusammenzuziehen ist
+    teurer als eine Dublette).
+    """
+    needle = _tokenize(description)
+    if not needle:
+        return None
+    best = None
+    for row in conn.execute(
+        "SELECT id, occurrences, description FROM lessons_learned WHERE type = ? AND status = 'active'",
+        (type_,)
+    ):
+        hay = _tokenize(row["description"])
+        if not hay:
+            continue
+        score = len(needle & hay) / len(needle | hay)
+        if score >= threshold and (best is None or score > best["score"]):
+            best = {
+                "id": row["id"],
+                "occurrences": row["occurrences"],
+                "score": round(score, 2),
+                "description_first_line": row["description"].splitlines()[0][:200],
+            }
+    return best
+
+
+def _bump_lesson(conn: sqlite3.Connection, lesson_id: str, node_path: str,
+                 log_query: str, new_description: str | None = None) -> dict:
+    """Erhoeht occurrences einer bestehenden Lesson um eins, eskaliert ab 3.
+
+    Gemeinsamer Pfad fuer den exakten Dublettentreffer und den expliziten
+    same_as-Bezug — nur die Frage, ob dabei auch die description ersetzt wird
+    (Wiederholungs-Anhang), unterscheidet die beiden Aufrufer.
+    """
+    row = conn.execute("SELECT occurrences FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
+    new_count = row["occurrences"] + 1
+    if new_description is not None:
+        conn.execute(
+            "UPDATE lessons_learned SET occurrences = ?, description = ?, last_seen = ? WHERE id = ?",
+            (new_count, new_description, now_iso(), lesson_id)
+        )
+    else:
+        conn.execute(
+            "UPDATE lessons_learned SET occurrences = ?, last_seen = ? WHERE id = ?",
+            (new_count, now_iso(), lesson_id)
+        )
+    log_access(conn, node_path or None, "lesson", query=log_query)
+    conn.commit()
+
+    escalated = new_count >= 3
+    if escalated:
+        conn.execute(
+            "UPDATE lessons_learned SET status = 'escalated_to_rule' WHERE id = ?",
+            (lesson_id,)
+        )
+        conn.commit()
+
+    return {
+        "id": lesson_id,
+        "status": "incremented",
+        "occurrences": new_count,
+        "escalated": escalated,
+        "message": f"Lesson seen {new_count}x. {'ESCALATED: Should become a rule in .instructions.md!' if escalated else ''}"
+    }
+
+
 def lesson_record(type_: str, description: str, root_cause: str = "",
                   resolution: str = "", prevention: str = "",
                   severity: str = "medium", projects: list | None = None,
-                  node_path: str = "") -> dict:
-    """Record a lesson learned. If a similar lesson exists, increment occurrences."""
+                  node_path: str = "", same_as: str = "") -> dict:
+    """Record a lesson learned.
+
+    same_as gesetzt: erhoeht occurrences der referenzierten Lesson, haengt
+    diese Beschreibung als datierten Wiederholungs-Absatz an (gedeckelt),
+    legt KEINEN neuen Eintrag an. Zeigt same_as ins Leere: Fehler, kein
+    stiller Fallback.
+
+    same_as leer: bisheriges Verhalten (exakte Dublette gleichen Typs +
+    gleicher Beschreibung erhoeht occurrences; sonst neuer Eintrag). Bei
+    neuem Eintrag zusaetzlich ein Aehnlichkeits-Hinweis in der Antwort
+    (similar_lesson_hint), falls eine inhaltlich nahe aktive Lesson
+    gleichen Typs existiert — ohne automatisches Verschmelzen.
+
+    Ab 3 Vorkommen (same_as-Pfad wie bisheriger Exact-Match-Pfad) wird die
+    Lesson auf status='escalated_to_rule' gesetzt.
+    """
     fixed = unmangle_lesson_fields({
         "type": type_, "description": description, "root_cause": root_cause,
         "resolution": resolution, "prevention": prevention, "severity": severity,
@@ -377,37 +505,33 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
 
     conn = get_db()
 
-    # Check for similar existing lesson (same type + similar description)
+    if same_as:
+        target = conn.execute(
+            "SELECT id, occurrences, description FROM lessons_learned WHERE id = ?",
+            (same_as,)
+        ).fetchone()
+        if not target:
+            conn.close()
+            return {"status": "rejected",
+                    "error": f"same_as verweist auf keine bestehende Lesson: {same_as}"}
+        merged_description = _append_repetition(target["description"], description, now_iso())
+        result = _bump_lesson(conn, target["id"], node_path, description,
+                              new_description=merged_description)
+        conn.close()
+        return result
+
+    # Check for exact-duplicate existing lesson (same type + same description)
     existing = conn.execute(
         "SELECT id, occurrences FROM lessons_learned WHERE type = ? AND description = ? AND status = 'active'",
         (type_, description)
     ).fetchone()
 
     if existing:
-        new_count = existing["occurrences"] + 1
-        conn.execute(
-            "UPDATE lessons_learned SET occurrences = ?, last_seen = ? WHERE id = ?",
-            (new_count, now_iso(), existing["id"])
-        )
-        log_access(conn, node_path or None, "lesson", query=description)
-        conn.commit()
-
-        escalated = new_count >= 3
-        if escalated:
-            conn.execute(
-                "UPDATE lessons_learned SET status = 'escalated_to_rule' WHERE id = ?",
-                (existing["id"],)
-            )
-            conn.commit()
-
+        result = _bump_lesson(conn, existing["id"], node_path, description)
         conn.close()
-        return {
-            "id": existing["id"],
-            "status": "incremented",
-            "occurrences": new_count,
-            "escalated": escalated,
-            "message": f"Lesson seen {new_count}x. {'ESCALATED: Should become a rule in .instructions.md!' if escalated else ''}"
-        }
+        return result
+
+    similar = _find_similar_lesson(conn, type_, description)
 
     lesson_id = f"L-{str(uuid.uuid4())[:6]}"
     conn.execute(
@@ -419,7 +543,10 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     log_access(conn, node_path or None, "lesson", query=description)
     conn.commit()
     conn.close()
-    return {"id": lesson_id, "status": "recorded", "occurrences": 1}
+    result = {"id": lesson_id, "status": "recorded", "occurrences": 1}
+    if similar:
+        result["similar_lesson_hint"] = similar
+    return result
 
 
 def lesson_update(lesson_id: str, description: str | None = None,
@@ -615,7 +742,16 @@ TOOLS = {
         )
     },
     "lesson_record": {
-        "description": "Record a lesson learned. Auto-increments if similar lesson exists. Escalates to rule at 3+ occurrences.",
+        "description": (
+            "Record a lesson learned. Pass same_as=<lesson id> when this is a repeat of an "
+            "already-recorded lesson: increments that lesson's occurrences, appends this "
+            "description to it as a dated, capped repetition note, and creates no new row "
+            "(unknown same_as id is an error, never a silent new entry). Escalates to rule "
+            "at 3+ occurrences. Without same_as: increments occurrences only on an exact "
+            "duplicate (same type + byte-identical description); otherwise creates a new "
+            "lesson and, if an active lesson of the same type looks similar, returns it as "
+            "similar_lesson_hint (a hint only — never auto-merged; re-record with same_as to merge)."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -626,14 +762,16 @@ TOOLS = {
                 "prevention": {"type": "string"},
                 "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"], "default": "medium"},
                 "projects": {"type": "array", "items": {"type": "string"}, "description": "Affected projects"},
-                "node_path": {"type": "string", "description": "Related knowledge node path"}
+                "node_path": {"type": "string", "description": "Related knowledge node path"},
+                "same_as": {"type": "string", "description": "ID of an existing lesson this is a repeat of, e.g. 'L-6e48a9'"}
             },
             "required": ["type", "description"]
         },
         "handler": lambda args: lesson_record(
             args["type"], args["description"], args.get("root_cause", ""),
             args.get("resolution", ""), args.get("prevention", ""),
-            args.get("severity", "medium"), args.get("projects"), args.get("node_path", "")
+            args.get("severity", "medium"), args.get("projects"), args.get("node_path", ""),
+            args.get("same_as", "")
         )
     },
     "lesson_update": {
