@@ -490,7 +490,13 @@ def unmangle_lesson_fields(fields: dict) -> dict:
         parts = _split_tagged(val)
         head = parts.pop("_head", "")
         if not parts:
-            continue  # keine echte Feldgrenze gefunden (z.B. nur ein Zitat im Fliesstext)
+            # Kein anderes Feld zu befuellen -- entweder gar keine echte
+            # Feldgrenze (dann ist head == val, No-op) oder eine selbstbezuegliche
+            # Grenze wie eine verwaiste </description> ohne Gegenstueck (dann hat
+            # head die Tag-Zeichen schon abgezogen, siehe efa1f597/1a714374).
+            # Beide Faelle: head zurueckschreiben statt still zu ueberspringen.
+            out[name] = head
+            continue
         leftover = []
         for key, text in parts.items():
             stripped = text.strip()
@@ -534,7 +540,14 @@ def unmangle_knowledge_fields(fields: dict) -> dict:
         parts = _split_tagged(val, _KNOWLEDGE_FIELD_TAG)
         head = parts.pop("_head", "")
         if not parts:
-            continue  # keine echte Feldgrenze gefunden (z.B. nur ein Zitat im Fliesstext)
+            # Kein anderes Feld zu befuellen -- entweder gar keine echte
+            # Feldgrenze (dann ist head == val, No-op) oder eine selbstbezuegliche
+            # Grenze wie eine verwaiste </summary>/</content> ohne Gegenstueck
+            # (dann hat head die Tag-Zeichen schon abgezogen, siehe 1a714374/
+            # 6e22536d/698fc6b9/cbb40e73). Beide Faelle: head zurueckschreiben
+            # statt still zu ueberspringen.
+            out[name] = head
+            continue
         leftover = []
         for key, text in parts.items():
             stripped = text.strip()
@@ -857,10 +870,15 @@ def lesson_query(type_: str | None = None, project: str | None = None,
         "sich", "durch", "the", "and", "for", "that", "this", "with", "from", "have", "has",
         "was", "are", "you", "can", "should", "must", "not", "how", "what", "when", "then",
     }
-    keywords = [w for w in re.findall(r"[A-Za-zÄÖÜäöüß0-9]{4,}", query.lower()) if w not in _stop]
+    _stop = {fold_de(w) for w in _stop}  # "für" -> auch "fuer" filtern, sonst leckt es durch
+    # fold_de() statt .lower(): "Existenzgruender" (ue-Schreibung) muss dieselbe
+    # Lesson finden wie "Existenzgründer" (ü) -- gleiche Luecke wie vorher bei
+    # knowledge_search(), hier nur unbehoben, weil ein eigener Python-Substring-
+    # Pfad statt FTS5 (siehe Auftrag: 374 Lehren standen weiter hinter der Wand).
+    keywords = [w for w in re.findall(r"[A-Za-zÄÖÜäöüß0-9]{4,}", fold_de(query)) if w not in _stop]
 
     def kw_hits(row: sqlite3.Row) -> int:
-        text = f"{row['description']} {row['root_cause']} {row['prevention']}".lower()
+        text = fold_de(f"{row['description']} {row['root_cause']} {row['prevention']}")
         return sum(1 for k in keywords if k in text)
 
     keyword_ordered_ids = sorted((i for i in by_id if kw_hits(by_id[i]) > 0),
