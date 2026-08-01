@@ -16,12 +16,14 @@ Usage:
 
 import argparse
 import json
-import re
 import sqlite3
 import sys
 import uuid
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+import knowledge_mcp_server as kms  # noqa: E402  -- liefert kalibrierte Aehnlichkeitserkennung
 
 DB_PATH = Path(__file__).parent / "knowledge.db"
 CET = timezone(timedelta(hours=1))
@@ -51,14 +53,49 @@ def get_db() -> sqlite3.Connection:
 
 def cmd_record(args):
     conn = get_db()
+
+    # same_as: expliziter Vorgaengerbezug -- erhoeht dessen occurrences, haengt
+    # diesen Text als Wiederholungs-Absatz an, legt KEINEN neuen Eintrag an.
+    # Unbekanntes same_as ist ein Fehler, kein stiller Fallback (wie kms.lesson_record).
+    if args.same_as:
+        target = conn.execute(
+            "SELECT id, occurrences, description FROM lessons_learned WHERE id = ?", (args.same_as,)
+        ).fetchone()
+        if not target:
+            print(f"✗ same_as verweist auf keine bestehende Lesson: {args.same_as}")
+            conn.close()
+            sys.exit(1)
+        merged = kms._append_repetition(target["description"], args.desc, now_iso())
+        result = kms._bump_lesson(conn, target["id"], None, args.desc, new_description=merged)
+        print(f"✓ Lesson [{result['id']}] Occurrences: {target['occurrences']} → {result['occurrences']} (Wiederholung von {args.same_as})")
+        if result["escalated"]:
+            print(f"  ⚡ {result['message']}")
+        conn.close()
+        return
+
+    # Exakte Dublette (gleicher Typ + byte-identische Beschreibung) -- bisheriges
+    # Verhalten fuer diesen Fall bleibt: bump statt neuer Zeile.
+    existing = conn.execute(
+        "SELECT id, occurrences FROM lessons_learned WHERE type = ? AND description = ? AND status = 'active'",
+        (args.type, args.desc)
+    ).fetchone()
+    if existing:
+        result = kms._bump_lesson(conn, existing["id"], None, args.desc)
+        print(f"✓ Lesson [{result['id']}] Occurrences: {existing['occurrences']} → {result['occurrences']} (exakte Dublette)")
+        if result["escalated"]:
+            print(f"  ⚡ {result['message']}")
+        conn.close()
+        return
+
     lesson_id = str(uuid.uuid4())[:12]
     projects_json = json.dumps(args.projects.split(",") if args.projects else ["shared"])
 
-    # Check for similar existing lessons (simple keyword match)
-    similar = find_similar(conn, args.desc)
+    # Aehnlichkeits-Hinweis (Wortmengen-Jaccard, Schwelle kms.SIMILARITY_THRESHOLD,
+    # kalibriert gegen den echten Lessons-Bestand) -- nur Hinweis, kein Auto-Merge.
+    similar = kms._find_similar_lesson(conn, args.type, args.desc)
     if similar:
-        print(f"⚠  Ähnliches Lesson gefunden: [{similar['id']}] {similar['description'][:80]}")
-        print(f"   Occurrences: {similar['occurrences']} → bump statt neu? (lesson_recorder.py bump {similar['id']})")
+        print(f"⚠  Ähnliches Lesson gefunden: [{similar['id']}] {similar['description_first_line'][:80]} (Score {similar['score']})")
+        print(f"   Occurrences: {similar['occurrences']} → Wiederholung? lesson_recorder.py record ... --same-as {similar['id']}")
 
     conn.execute("""
         INSERT INTO lessons_learned (id, type, severity, description, root_cause, resolution, prevention, projects, status, first_seen, last_seen)
@@ -69,24 +106,7 @@ def cmd_record(args):
     print(f"✓ Lesson [{lesson_id}] erfasst: {args.type}/{args.severity}")
     print(f"  Beschreibung: {args.desc[:100]}")
 
-    # Auto-escalation check
-    check_escalation(conn)
     conn.close()
-
-
-def find_similar(conn: sqlite3.Connection, desc: str) -> dict | None:
-    """Sucht nach ähnlichen bestehenden Lessons basierend auf Keywords."""
-    words = set(re.findall(r'\w{4,}', desc.lower()))
-    if not words:
-        return None
-    rows = conn.execute("SELECT * FROM lessons_learned WHERE status = 'active'").fetchall()
-    best, best_score = None, 0
-    for row in rows:
-        row_words = set(re.findall(r'\w{4,}', row["description"].lower()))
-        overlap = len(words & row_words)
-        if overlap > best_score and overlap >= 2:
-            best, best_score = dict(row), overlap
-    return best
 
 
 # ─── bump ────────────────────────────────────────────────────────────────
@@ -98,17 +118,11 @@ def cmd_bump(args):
         print(f"✗ Lesson [{args.lesson_id}] nicht gefunden.")
         sys.exit(1)
 
-    new_count = row["occurrences"] + 1
-    conn.execute("""
-        UPDATE lessons_learned SET occurrences = ?, last_seen = ? WHERE id = ?
-    """, (new_count, now_iso(), args.lesson_id))
-    conn.commit()
+    result = kms._bump_lesson(conn, args.lesson_id, None, "manual bump")
+    print(f"✓ Lesson [{args.lesson_id}] Occurrences: {row['occurrences']} → {result['occurrences']}")
+    if result["escalated"]:
+        print(f"  ⚡ {result['message']}")
 
-    print(f"✓ Lesson [{args.lesson_id}] Occurrences: {row['occurrences']} → {new_count}")
-    if new_count >= RULE_THRESHOLD and not row["auto_rule_generated"]:
-        print(f"  ⚡ Erreicht Threshold ({RULE_THRESHOLD}x) — auto-rule Kandidat!")
-
-    check_escalation(conn)
     conn.close()
 
 
@@ -180,9 +194,11 @@ def cmd_stats(args):
 
 def cmd_auto_rules(args):
     conn = get_db()
+    # status='escalated_to_rule' ist der Vorschlags-Marker, den kms._bump_lesson beim
+    # Erreichen von RULE_THRESHOLD setzt (same_as- und Exact-Dubletten-Pfad in cmd_record/cmd_bump).
     candidates = conn.execute("""
         SELECT * FROM lessons_learned
-        WHERE occurrences >= ? AND auto_rule_generated = 0 AND status = 'active'
+        WHERE occurrences >= ? AND auto_rule_generated = 0 AND status = 'escalated_to_rule'
         ORDER BY occurrences DESC
     """, (RULE_THRESHOLD,)).fetchall()
 
@@ -274,20 +290,6 @@ applyTo: "**"
     return 1
 
 
-# ─── Check Escalation ────────────────────────────────────────────────────
-
-def check_escalation(conn: sqlite3.Connection):
-    """Prüft ob Lessons den Threshold erreichen und informiert."""
-    candidates = conn.execute("""
-        SELECT id, type, description, occurrences FROM lessons_learned
-        WHERE occurrences >= ? AND auto_rule_generated = 0 AND status = 'active'
-    """, (RULE_THRESHOLD,)).fetchall()
-
-    if candidates:
-        print(f"\n⚡ {len(candidates)} Lesson(s) haben ≥{RULE_THRESHOLD} Occurrences → Rule-Kandidaten!")
-        print(f"   Führe 'lesson_recorder.py auto-rules' aus, um Regeln zu generieren.")
-
-
 # ─── CLI ──────────────────────────────────────────────────────────────────
 
 def main():
@@ -303,6 +305,7 @@ def main():
     p_record.add_argument("--prevent", help="Prävention")
     p_record.add_argument("--severity", default="medium", choices=["critical", "high", "medium", "low"])
     p_record.add_argument("--projects", default="shared", help="Projekte (kommagetrennt)")
+    p_record.add_argument("--same-as", dest="same_as", default="", help="ID einer bestehenden Lesson, falls dies eine Wiederholung ist")
 
     # bump
     p_bump = subparsers.add_parser("bump", help="Occurrence-Zähler erhöhen")
