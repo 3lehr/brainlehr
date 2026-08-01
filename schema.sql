@@ -20,29 +20,68 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime'))
 );
 
--- Volltext-Suche über Titel, Summary und Content
+-- Volltext-Suche über Titel, Summary und Content.
+-- tokenize='trigram': Substring- statt Wort-Tokenizer (SQLite >= 3.34,
+-- gemessen vorhanden). Loest das groessere Loch als Umlaute: deutsche
+-- Komposita ("Broschüre" soll "Existenzgründer-Broschüren" finden), die ein
+-- Wort-Tokenizer prinzipiell verpasst. case_sensitive 0, weil ohnehin
+-- gefaltet+kleingeschrieben gespeichert wird (siehe Trigger unten).
 CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
     title, summary, content,
     content='knowledge_nodes',
-    content_rowid='rowid'
+    content_rowid='rowid',
+    tokenize="trigram case_sensitive 0"
 );
 
+-- Deutsche Umlaut-Faltung (ä→ae ö→oe ü→ue ß→ss, dann kleingeschrieben) VOR
+-- dem Indizieren -- Trigram kennt keine Diakritika-Faltung, und FTS5s
+-- eingebautes remove_diacritics deckt nur ü→u ab, nicht die alternative
+-- Schreibung ue→u (siehe Auftrag: "Existenzgruender" fand "Existenzgründer"
+-- sonst weiterhin nicht). Dieselbe Faltung laeuft anfrageseitig in
+-- knowledge_mcp_server.py::fold_de() -- zwei Implementierungen (SQL kann
+-- keine Python-Funktion aufrufen, ohne sie auf jeder schreibenden Verbindung
+-- zu registrieren, und mehrere Skripte oeffnen die DB roh), Gleichheit belegt
+-- tests/test_knowledge_hybrid_search.py::test_fold_de_matches_sql_fold.
 -- Trigger: FTS bei INSERT/UPDATE/DELETE synchron halten
 CREATE TRIGGER IF NOT EXISTS knowledge_ai AFTER INSERT ON knowledge_nodes BEGIN
     INSERT INTO knowledge_fts(rowid, title, summary, content)
-    VALUES (new.rowid, new.title, new.summary, new.content);
+    VALUES (new.rowid,
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.title,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.summary,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.content,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
 CREATE TRIGGER IF NOT EXISTS knowledge_ad AFTER DELETE ON knowledge_nodes BEGIN
     INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content)
-    VALUES ('delete', old.rowid, old.title, old.summary, old.content);
+    VALUES ('delete', old.rowid,
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.title,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.summary,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.content,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
 CREATE TRIGGER IF NOT EXISTS knowledge_au AFTER UPDATE ON knowledge_nodes BEGIN
     INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content)
-    VALUES ('delete', old.rowid, old.title, old.summary, old.content);
+    VALUES ('delete', old.rowid,
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.title,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.summary,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.content,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
     INSERT INTO knowledge_fts(rowid, title, summary, content)
-    VALUES (new.rowid, new.title, new.summary, new.content);
+    VALUES (new.rowid,
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.title,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.summary,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.content,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
 -- Lessons Learned Tabelle

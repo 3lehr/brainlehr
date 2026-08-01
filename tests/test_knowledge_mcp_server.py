@@ -424,3 +424,83 @@ def test_gegenprobe_l9f5e60_l_affae1_similarity_score():
     score = len(ta & tb) / len(ta | tb)
     print(f"\nGegenprobe L-9f5e60/L-affae1: Jaccard-Score = {score:.3f} (Schwelle = {kms.SIMILARITY_THRESHOLD})")
     assert score >= kms.SIMILARITY_THRESHOLD
+
+
+# --- unmangle_knowledge_fields / knowledge_add-Absicherung ------------------
+# Gegenstueck zu unmangle_lesson_fields, fuer knowledge_add statt lesson_record.
+# Realfall (2026-08-01): 18 Knoten hatten content/tags/source als
+# `<content>...</content>`/`<parameter name="tags">...</parameter>`-Block im
+# summary-Wert stehen (siehe migrate_unmangle_knowledge.py).
+
+def test_unmangle_knowledge_moves_content_tags_source_out_of_summary():
+    fields = {
+        "title": "Titel",
+        "summary": ('Echte Zusammenfassung.</summary>\n'
+                     '<tags>["a", "b"]</tags>\n'
+                     '<source>Quelle X</source>\n'
+                     '<content>Voller Text Y</content>'),
+        "content": "",
+        "tags": [],
+        "source": "",
+    }
+    fixed = kms.unmangle_knowledge_fields(fields)
+    assert fixed["summary"] == "Echte Zusammenfassung."
+    assert fixed["content"] == "Voller Text Y"
+    assert fixed["tags"] == ["a", "b"]
+    assert fixed["source"] == "Quelle X"
+    assert not kms._KNOWLEDGE_FIELD_TAG.search(fixed["summary"])
+
+
+def test_unmangle_knowledge_antml_parameter_style():
+    """Realer Korruptionsstil bei efa1f597: <parameter name="content">...</parameter>
+    gefolgt von tags/source, abgeschlossen mit </invoke>-Rauschen."""
+    fields = {
+        "title": "Titel",
+        "summary": ('Echte Zusammenfassung.</summary>\n'
+                     '<parameter name="content">Voller Text</parameter>\n'
+                     '<parameter name="tags">["x"]</parameter>\n'
+                     '<parameter name="source">Quelle</parameter>\n'
+                     '</invoke>\n'),
+        "content": "",
+        "tags": [],
+        "source": "",
+    }
+    fixed = kms.unmangle_knowledge_fields(fields)
+    assert fixed["summary"] == "Echte Zusammenfassung."
+    assert fixed["content"] == "Voller Text"
+    assert fixed["tags"] == ["x"]
+    assert fixed["source"] == "Quelle"
+
+
+def test_unmangle_knowledge_does_not_overwrite_existing_content():
+    """Zielfeld schon belegt -> Text bleibt im Ursprungsfeld erhalten (kein
+    Datenverlust, aber auch kein stilles Ueberschreiben eines echten Werts)."""
+    fields = {
+        "title": "Titel",
+        "summary": ('Kurzfassung.</summary>\n<content>Duplikat</content>'),
+        "content": "Der ECHTE, bereits vorhandene Volltext.",
+        "tags": [],
+        "source": "",
+    }
+    fixed = kms.unmangle_knowledge_fields(fields)
+    assert fixed["content"] == "Der ECHTE, bereits vorhandene Volltext."
+    assert "Duplikat" in fixed["summary"]  # nicht verloren, nur nicht verschoben
+
+
+def test_knowledge_add_unmangles_on_write(temp_db):
+    result = kms.knowledge_add(
+        parent_path="/test",
+        title="Testknoten",
+        summary=('Echte Zusammenfassung.</summary>\n'
+                  '<tags>["a"]</tags>\n<content>Volltext</content>'),
+        content="",
+        tags=[],
+    )
+    assert result["status"] == "created"
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ?", (result["id"],)).fetchone()
+    conn.close()
+    assert row["summary"] == "Echte Zusammenfassung."
+    assert row["content"] == "Volltext"
+    assert json.loads(row["tags"]) == ["a"]

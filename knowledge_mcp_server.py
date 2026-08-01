@@ -163,14 +163,77 @@ def _fuse_with_keyword_floor(keyword_ordered_ids: list, embedding_ordered_ids: l
     return list(dict.fromkeys(floor + fused))[:max(max_results, len(floor))]
 
 
+# Deutsche Umlaut-Faltung: ae/oe/ue/ss-Schreibung UND ä/ö/ü/ß treffen sich.
+# Dieselbe Abbildung wie der SQL-Ausdruck in schema.sql (Trigger
+# knowledge_ai/ad/au) -- SQLite-Trigger koennen keine Python-Funktion
+# aufrufen, ohne sie auf jeder schreibenden Verbindung zu registrieren
+# (migrate_knowledge.py/build_embeddings.py/_add_phase2_nodes.py oeffnen die
+# DB roh, ohne durch dieses Modul zu gehen), darum zwei Implementierungen.
+# Gleichheit ist von
+# tests/test_knowledge_hybrid_search.py::test_fold_de_matches_sql_fold belegt.
+_FOLD_TABLE = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"})
+
+
+def fold_de(text: str) -> str:
+    """'Gründer' und 'Gruender' werden beide zu 'gruender'."""
+    return text.lower().translate(_FOLD_TABLE)
+
+
+_QUERY_WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüß0-9]+")
+
+
+def _fts_phrase(word: str) -> str:
+    """Ein Wort als FTS5-Phrase quoten (Anfuehrungszeichen verdoppelt escaped) --
+    verhindert, dass ein Wort wie 'NOT' oder ein Bindestrich als FTS5-Operator
+    statt als Suchtext interpretiert wird."""
+    return '"' + word.replace('"', '""') + '"'
+
+
+def _or_query(query: str) -> str:
+    """Baut aus einer Anfrage eine FTS5-ODER-Verknuepfung ueber die einzelnen,
+    gefalteten Woerter. Vorher lief MATCH mit mehreren Woertern als implizites
+    UND -- ein einziges Wort, das nirgends vorkommt, killte die ganze Anfrage
+    (gemessen: 4 von 6 Anfragen 0 Treffer trotz vorhandenem Knoten). Bei OR
+    sortiert bm25/rank Dokumente mit mehr uebereinstimmenden Woertern weiter
+    oben ein -- kein zusaetzliches Ranking noetig."""
+    words = [fold_de(w) for w in _QUERY_WORD_RE.findall(query)]
+    return " OR ".join(_fts_phrase(w) for w in words if w)
+
+
+ZERO_HIT_LOG = Path(__file__).parent / "zero_hit_log.jsonl"
+ZERO_HIT_LOG_MAX_BYTES = 200_000  # klein halten, gleiche Kappung wie recall_log.jsonl
+
+
+def _log_zero_hit(query: str) -> None:
+    """Haelt fest, welche Suchanfragen nichts fanden: Zeitpunkt, Anfragetext,
+    Trefferzahl (=0) -- mehr nicht. Grundlage fuer eine spaetere, an echten
+    Ausfaellen gemessene Entscheidung ueber Synonyme, statt das zu vermuten.
+    Nie ein Grund, die Suche scheitern zu lassen -- Fehler werden verschluckt,
+    wie beim analogen Recall-Log (knowledge_recall_hook.py::log_recall)."""
+    try:
+        entry = json.dumps({"ts": now_iso(), "query": query, "hits": 0}, ensure_ascii=False)
+        if ZERO_HIT_LOG.exists() and ZERO_HIT_LOG.stat().st_size > ZERO_HIT_LOG_MAX_BYTES:
+            lines = ZERO_HIT_LOG.read_text(encoding="utf-8").splitlines(keepends=True)
+            ZERO_HIT_LOG.write_text("".join(lines[len(lines) // 2:]), encoding="utf-8")
+        with ZERO_HIT_LOG.open("a", encoding="utf-8") as f:
+            f.write(entry + "\n")
+    except Exception:
+        pass
+
+
 def knowledge_search(query: str, scope: str = "all", max_results: int = 10) -> dict:
-    """Hybrid-Suche ueber Wissensknoten: FTS5-Stichwortmatching plus optionale
-    Bedeutungs-Suche ueber lokale Embeddings (RRF-fusioniert). Ohne Vektoren
-    (Tabelle fehlt oder leer) oder ohne erreichbares Ollama identisch zum
-    reinen FTS5-Verhalten. Returns summaries (not full content) for token
-    efficiency."""
+    """Hybrid-Suche ueber Wissensknoten: FTS5-Stichwortmatching (Woerter ODER-
+    verknuepft, deutsch gefaltet) plus optionale Bedeutungs-Suche ueber lokale
+    Embeddings (RRF-fusioniert). Ohne Vektoren (Tabelle fehlt oder leer) oder
+    ohne erreichbares Ollama identisch zum reinen FTS5-Verhalten. Returns
+    summaries (not full content) for token efficiency."""
     conn = get_db()
     log_access(conn, None, "search", query=query)
+
+    fts_query = _or_query(query)
+    if not fts_query:
+        conn.close()
+        return {"query": query, "scope": scope, "results": [], "count": 0}
 
     if scope == "all":
         fts_rows = conn.execute(
@@ -179,7 +242,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10) -> d
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ?
                ORDER BY rank""",
-            (query,)
+            (fts_query,)
         ).fetchall()
         allowed_ids = None
     else:
@@ -189,7 +252,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10) -> d
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.project_id IN ('shared', ?)
                ORDER BY rank""",
-            (query, scope)
+            (fts_query, scope)
         ).fetchall()
         allowed_ids = {r["id"] for r in conn.execute(
             "SELECT id FROM knowledge_nodes WHERE project_id IN ('shared', ?)", (scope,)
@@ -216,6 +279,8 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10) -> d
     results = [{"id": by_id[i]["id"], "path": by_id[i]["path"], "title": by_id[i]["title"],
                 "summary": by_id[i]["summary"], "project": by_id[i]["project_id"]}
                for i in final_ids if i in by_id]
+    if not results:
+        _log_zero_hit(query)
     conn.close()
     return {"query": query, "scope": scope, "results": results, "count": len(results)}
 
@@ -224,6 +289,12 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                   content: str = "", project_id: str = "shared",
                   tags: list | None = None, source: str = "") -> dict:
     """Add a new knowledge node to the tree."""
+    fixed = unmangle_knowledge_fields({
+        "title": title, "summary": summary, "content": content, "tags": tags, "source": source,
+    })
+    title, summary = fixed["title"], fixed["summary"]
+    content, tags, source = fixed["content"], fixed["tags"], fixed["source"]
+
     conn = get_db()
     parent_path = parent_path.rstrip("/")
 
@@ -262,6 +333,16 @@ def knowledge_update(node_id: str, summary: str | None = None,
         conn.close()
         return {"error": f"Node not found: {node_id}"}
 
+    # Derselbe Aufrufer-Fehler wie bei knowledge_add moeglich (Parametergrenze
+    # verrutscht ins Textfeld) -- nur uebergebene Felder unmangeln.
+    given = {k: v for k, v in {"summary": summary, "content": content, "tags": tags}.items()
+             if v is not None}
+    if given:
+        fixed = unmangle_knowledge_fields(given)
+        summary = fixed.get("summary", summary)
+        content = fixed.get("content", content)
+        tags = fixed.get("tags", tags)
+
     updates = []
     params = []
     if summary is not None:
@@ -284,18 +365,32 @@ def knowledge_update(node_id: str, summary: str | None = None,
     return {"id": row["id"], "status": "updated"}
 
 
+def _build_field_tag_re(fields: tuple) -> re.Pattern:
+    """Baut die Feldgrenzen-Regex fuer eine gegebene Feldnamen-Menge.
+
+    Zwei Tag-Stile kommen in der Wildnis vor: plain `<root_cause>...</root_cause>`
+    und der antml-Tool-Call-Stil `<parameter name="root_cause">...</parameter>`
+    (Schliesser dort ist generisch `</parameter>`, traegt keinen Feldnamen).
+    Gemeinsame Engine fuer lesson_record UND knowledge_add -- beide leiden am
+    selben Aufrufer-Fehler (Parametergrenze rutscht in den vorherigen Textwert),
+    nur mit unterschiedlichen Feldnamen.
+    """
+    alt = "|".join(fields)
+    return re.compile(
+        r'<parameter\s+name="(?P<pname>' + alt + r')"\s*>'
+        r"|</parameter>"
+        r"|<(?P<oname>" + alt + r")>"
+        r"|</(?P<cname>" + alt + r")>"
+    )
+
+
 LESSON_TEXT_FIELDS = ("description", "root_cause", "resolution", "prevention",
                       "severity", "projects", "node_path", "type")
-_FIELDS_ALT = "|".join(LESSON_TEXT_FIELDS)
-# Zwei Tag-Stile kommen in der Wildnis vor: plain `<root_cause>...</root_cause>`
-# und der antml-Tool-Call-Stil `<parameter name="root_cause">...</parameter>`
-# (Schliesser dort ist generisch `</parameter>`, traegt keinen Feldnamen).
-_FIELD_TAG = re.compile(
-    r'<parameter\s+name="(?P<pname>' + _FIELDS_ALT + r')"\s*>'
-    r"|</parameter>"
-    r"|<(?P<oname>" + _FIELDS_ALT + r")>"
-    r"|</(?P<cname>" + _FIELDS_ALT + r")>"
-)
+_FIELD_TAG = _build_field_tag_re(LESSON_TEXT_FIELDS)
+
+KNOWLEDGE_TEXT_FIELDS = ("content", "tags", "source", "summary", "title")
+_KNOWLEDGE_FIELD_TAG = _build_field_tag_re(KNOWLEDGE_TEXT_FIELDS)
+
 # "parameter" bewusst NICHT hier: ein `<parameter name="root_cause">` kann auch
 # ein Zitat im Fliesstext sein (z.B. eine Lesson, die diesen Bug beschreibt).
 # Echte, an einer Feldgrenze stehende parameter-Tags werden bereits von
@@ -332,7 +427,7 @@ def _is_boundary_tag(value: str, m: re.Match) -> bool:
     return j == len(value) or value[j] in "\n<"
 
 
-def _split_tagged(value: str) -> dict:
+def _split_tagged(value: str, field_tag_re: re.Pattern = _FIELD_TAG) -> dict:
     """Zerlegt einen Wert an echten Feld-Tag-Grenzen (siehe _is_boundary_tag).
 
     Kein Zeichen NUTZTEXT geht verloren: jeder Textanteil, der keiner erkannten
@@ -343,8 +438,12 @@ def _split_tagged(value: str) -> dict:
     Formatierungs-Zwischenraum der Tags selbst (kein Inhalt) und wird nicht
     extra angehaengt — sonst haeuften sich bei mehreren aufeinanderfolgenden
     Tags leere Zeilen im Ursprungsfeld an.
+
+    field_tag_re: welche Feldnamen als Grenze zaehlen -- default die Lesson-
+    Felder (_FIELD_TAG), knowledge_add nutzt _KNOWLEDGE_FIELD_TAG (siehe
+    unmangle_knowledge_fields).
     """
-    matches = [m for m in _FIELD_TAG.finditer(value) if _is_boundary_tag(value, m)]
+    matches = [m for m in field_tag_re.finditer(value) if _is_boundary_tag(value, m)]
     out: dict[str, str] = {}
     current: str | None = None
     pos = 0
@@ -416,6 +515,46 @@ def unmangle_lesson_fields(fields: dict) -> dict:
             out["projects"] = json.loads(out["projects"])
         except (ValueError, TypeError):
             out["projects"] = [p.strip(' "\'') for p in out["projects"].strip('[]').split(",") if p.strip(' "\'')]
+    return out
+
+
+def unmangle_knowledge_fields(fields: dict) -> dict:
+    """Repariert verrutschte Parametergrenzen in knowledge_add/knowledge_update-
+    Aufrufen -- derselbe Aufrufer-Fehler wie bei unmangle_lesson_fields, nur mit
+    Knowledge-Feldnamen: der komplette content/tags/source landet dann als
+    `<content>...</content>` etc. im summary-Wert (gemessen an efa1f597,
+    7781dea1, 2a6098d1, c60b1b46, 3a978881, 5d899304). Nur leere Zielfelder
+    werden befuellt, ein echter Wert gewinnt immer; kein Zeichen geht verloren.
+    """
+    out = dict(fields)
+    for name in KNOWLEDGE_TEXT_FIELDS:
+        val = out.get(name)
+        if not isinstance(val, str) or not _KNOWLEDGE_FIELD_TAG.search(val):
+            continue
+        parts = _split_tagged(val, _KNOWLEDGE_FIELD_TAG)
+        head = parts.pop("_head", "")
+        if not parts:
+            continue  # keine echte Feldgrenze gefunden (z.B. nur ein Zitat im Fliesstext)
+        leftover = []
+        for key, text in parts.items():
+            stripped = text.strip()
+            if not stripped:
+                continue
+            current_val = out.get(key)
+            has_value = bool(current_val) if isinstance(current_val, list) else bool(str(current_val or "").strip())
+            if key != name and not has_value:
+                out[key] = stripped if key == "tags" else text
+            else:
+                leftover.append(text)
+        out[name] = head + ("\n" + "\n".join(leftover) if leftover else "")
+    for name in KNOWLEDGE_TEXT_FIELDS:
+        if isinstance(out.get(name), str):
+            out[name] = _CALL_NOISE.sub("", out[name]).strip()
+    if isinstance(out.get("tags"), str):
+        try:
+            out["tags"] = json.loads(out["tags"])
+        except (ValueError, TypeError):
+            out["tags"] = [p.strip(' "\'') for p in out["tags"].strip("[]").split(",") if p.strip(' "\'')]
     return out
 
 
