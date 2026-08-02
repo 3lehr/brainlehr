@@ -12,6 +12,7 @@ Tools:
   - knowledge_search(query, scope)→ Hybrid-Suche (FTS5 + optional lokale Embeddings, RRF-fusioniert), gibt Summaries zurück
   - knowledge_add(parent_path, title, summary, content, project_id, tags)
   - knowledge_update(node_id, summary, content)
+  - knowledge_relation_add|list|update|remove(...) → explizite belegte Kanten
   - lesson_record(type, description, root_cause, resolution, prevention, severity, projects, same_as)
   - lesson_update(lesson_id, description, root_cause, resolution, prevention, severity, projects, status, delete)
   - lesson_query(type, project, status)
@@ -19,6 +20,7 @@ Tools:
 """
 
 import json
+import os
 import re
 import sqlite3
 import sys
@@ -31,6 +33,12 @@ import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
 
 DB_PATH = Path(__file__).parent / "knowledge.db"
 CET = timezone(timedelta(hours=1))
+RELATION_TYPES = {
+    "references", "supersedes", "interprets", "implements", "contradicts",
+    "supports", "derived_from", "cites", "evaluates_with", "constrains",
+    "produces", "requires", "replaces_component", "analogous_to", "feeds_into",
+}
+EVENT_STATUSES = {"started", "completed", "failed"}
 
 
 def now_iso() -> str:
@@ -42,24 +50,80 @@ def get_db() -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
+    ensure_schema(conn)
     return conn
 
 
+def ensure_schema(conn: sqlite3.Connection) -> None:
+    """Idempotent additive migration for old knowledge.db copies."""
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
+    for name, declaration in {
+        "actor": "TEXT", "model": "TEXT", "session": "TEXT",
+        "status": "TEXT DEFAULT 'completed'",
+    }.items():
+        if name not in columns:
+            conn.execute(f"ALTER TABLE access_log ADD COLUMN {name} {declaration}")
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS knowledge_relations (
+            id TEXT PRIMARY KEY,
+            source_path TEXT NOT NULL,
+            target_path TEXT NOT NULL,
+            relation_type TEXT NOT NULL,
+            confidence REAL NOT NULL DEFAULT 0.8 CHECK(confidence BETWEEN 0.0 AND 1.0),
+            weight REAL NOT NULL DEFAULT 1.0 CHECK(weight >= 0.0),
+            evidence TEXT,
+            source TEXT,
+            creator TEXT,
+            model TEXT,
+            session TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE(source_path, target_path, relation_type),
+            FOREIGN KEY(source_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE,
+            FOREIGN KEY(target_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS idx_relations_source ON knowledge_relations(source_path);
+        CREATE INDEX IF NOT EXISTS idx_relations_target ON knowledge_relations(target_path);
+        CREATE INDEX IF NOT EXISTS idx_relations_type ON knowledge_relations(relation_type);
+    """)
+    conn.commit()
+
+
+def _identity(actor: str | None = None, model: str | None = None,
+              session: str | None = None) -> tuple[str | None, str | None, str | None]:
+    return (
+        actor or os.environ.get("BEGOD_KNOWLEDGE_ACTOR"),
+        model or os.environ.get("BEGOD_KNOWLEDGE_MODEL"),
+        session or os.environ.get("BEGOD_KNOWLEDGE_SESSION"),
+    )
+
+
 def log_access(conn: sqlite3.Connection, node_path: str | None, action: str,
-               query: str | None = None, project_id: str | None = None):
-    conn.execute(
-        "INSERT INTO access_log (node_path, action, query, project_id, timestamp) VALUES (?,?,?,?,?)",
-        (node_path, action, query, project_id, now_iso())
+               query: str | None = None, project_id: str | None = None,
+               actor: str | None = None, model: str | None = None,
+               session: str | None = None, status: str = "completed") -> int:
+    if status not in EVENT_STATUSES:
+        raise ValueError(f"Invalid event status: {status}")
+    actor, model, session = _identity(actor, model, session)
+    cursor = conn.execute(
+        """INSERT INTO access_log
+           (node_path, action, query, project_id, actor, model, session, status, timestamp)
+           VALUES (?,?,?,?,?,?,?,?,?)""",
+        (node_path, action, query, project_id, actor, model, session, status, now_iso())
     )
     conn.commit()
+    return int(cursor.lastrowid)
 
 
 # ─── MCP Tool Implementations ────────────────────────────────────────────
 
-def knowledge_browse(path: str = "/", project_filter: str | None = None) -> dict:
+def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
+                     actor: str | None = None, model: str | None = None,
+                     session: str | None = None) -> dict:
     """Browse children of a knowledge tree node. Returns titles and summaries only (token-efficient)."""
     conn = get_db()
-    log_access(conn, path, "browse", project_id=project_filter)
+    log_access(conn, path, "browse", project_id=project_filter,
+               actor=actor, model=model, session=session, status="started")
 
     if path == "/":
         query = "SELECT id, path, title, summary, project_id, level, access_count FROM knowledge_nodes WHERE level = 0 ORDER BY path"
@@ -89,11 +153,14 @@ def knowledge_browse(path: str = "/", project_filter: str | None = None) -> dict
             "children_count": child_count
         })
 
+    log_access(conn, path, "browse", project_id=project_filter,
+               actor=actor, model=model, session=session)
     conn.close()
     return {"path": path, "children": results, "count": len(results)}
 
 
-def knowledge_read(node_id: str) -> dict:
+def knowledge_read(node_id: str, *, actor: str | None = None,
+                   model: str | None = None, session: str | None = None) -> dict:
     """Read full content of a knowledge node. Use browse first to find the right node."""
     conn = get_db()
     row = conn.execute(
@@ -104,8 +171,11 @@ def knowledge_read(node_id: str) -> dict:
         conn.close()
         return {"error": f"Node not found: {node_id}"}
 
+    log_access(conn, row["path"], "read", project_id=row["project_id"],
+               actor=actor, model=model, session=session, status="started")
     conn.execute("UPDATE knowledge_nodes SET access_count = access_count + 1 WHERE id = ?", (row["id"],))
-    log_access(conn, row["path"], "read")
+    log_access(conn, row["path"], "read", project_id=row["project_id"],
+               actor=actor, model=model, session=session)
     conn.commit()
 
     result = {
@@ -221,17 +291,21 @@ def _log_zero_hit(query: str) -> None:
         pass
 
 
-def knowledge_search(query: str, scope: str = "all", max_results: int = 10) -> dict:
+def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
+                     actor: str | None = None, model: str | None = None,
+                     session: str | None = None) -> dict:
     """Hybrid-Suche ueber Wissensknoten: FTS5-Stichwortmatching (Woerter ODER-
     verknuepft, deutsch gefaltet) plus optionale Bedeutungs-Suche ueber lokale
     Embeddings (RRF-fusioniert). Ohne Vektoren (Tabelle fehlt oder leer) oder
     ohne erreichbares Ollama identisch zum reinen FTS5-Verhalten. Returns
     summaries (not full content) for token efficiency."""
     conn = get_db()
-    log_access(conn, None, "search", query=query)
-
+    log_access(conn, None, "search", query=query, project_id=scope,
+               actor=actor, model=model, session=session, status="started")
     fts_query = _or_query(query)
     if not fts_query:
+        log_access(conn, None, "search", query=query, project_id=scope,
+                   actor=actor, model=model, session=session)
         conn.close()
         return {"query": query, "scope": scope, "results": [], "count": 0}
 
@@ -281,13 +355,17 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10) -> d
                for i in final_ids if i in by_id]
     if not results:
         _log_zero_hit(query)
+    log_access(conn, results[0]["path"] if results else None, "search", query=query,
+               project_id=scope, actor=actor, model=model, session=session)
     conn.close()
     return {"query": query, "scope": scope, "results": results, "count": len(results)}
 
 
 def knowledge_add(parent_path: str, title: str, summary: str,
                   content: str = "", project_id: str = "shared",
-                  tags: list | None = None, source: str = "") -> dict:
+                  tags: list | None = None, source: str = "", *,
+                  actor: str | None = None, model: str | None = None,
+                  session: str | None = None) -> dict:
     """Add a new knowledge node to the tree."""
     fixed = unmangle_knowledge_fields({
         "title": title, "summary": summary, "content": content, "tags": tags, "source": source,
@@ -312,20 +390,25 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     level = node_path.count("/") - 1
 
     node_id = str(uuid.uuid4())[:8]
+    log_access(conn, node_path, "add", project_id=project_id,
+               actor=actor, model=model, session=session, status="started")
     conn.execute(
         """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, now_iso(), now_iso())
     )
-    log_access(conn, node_path, "add", project_id=project_id)
+    log_access(conn, node_path, "add", project_id=project_id,
+               actor=actor, model=model, session=session)
     conn.commit()
     conn.close()
     return {"id": node_id, "path": node_path, "status": "created"}
 
 
 def knowledge_update(node_id: str, summary: str | None = None,
-                     content: str | None = None, tags: list | None = None) -> dict:
+                     content: str | None = None, tags: list | None = None, *,
+                     actor: str | None = None, model: str | None = None,
+                     session: str | None = None) -> dict:
     """Update an existing knowledge node."""
     conn = get_db()
     row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
@@ -359,10 +442,172 @@ def knowledge_update(node_id: str, summary: str | None = None,
     params.append(now_iso())
     params.append(row["id"])
 
+    log_access(conn, row["path"], "update", project_id=row["project_id"],
+               actor=actor, model=model, session=session, status="started")
     conn.execute(f"UPDATE knowledge_nodes SET {', '.join(updates)} WHERE id = ?", params)
+    log_access(conn, row["path"], "update", project_id=row["project_id"],
+               actor=actor, model=model, session=session)
     conn.commit()
     conn.close()
     return {"id": row["id"], "status": "updated"}
+
+
+def _relation_node(conn: sqlite3.Connection, value: str,
+                   scope: str | None = None) -> sqlite3.Row:
+    row = conn.execute(
+        "SELECT id,path,project_id,title FROM knowledge_nodes WHERE id=? OR path=?",
+        (value, value),
+    ).fetchone()
+    if not row:
+        raise ValueError(f"Knowledge node not found: {value}")
+    if scope and scope != "all" and row["project_id"] not in ("shared", scope):
+        raise ValueError(f"Node {value} is outside scope shared|{scope}")
+    return row
+
+
+def _relation_values(relation_type: str, confidence: float, weight: float) -> None:
+    if relation_type not in RELATION_TYPES:
+        raise ValueError(f"Invalid relation type: {relation_type}")
+    if not 0.0 <= float(confidence) <= 1.0:
+        raise ValueError("confidence must be between 0 and 1")
+    if float(weight) < 0.0:
+        raise ValueError("weight must be >= 0")
+
+
+def knowledge_relation_add(source_node: str, target_node: str, relation_type: str,
+                           confidence: float = 0.8, weight: float = 1.0,
+                           evidence: str = "", source: str = "",
+                           scope: str = "all", creator: str | None = None,
+                           model: str | None = None, session: str | None = None) -> dict:
+    """Create one explicit evidenced edge; never infers similarity."""
+    _relation_values(relation_type, confidence, weight)
+    conn = get_db()
+    source_row = _relation_node(conn, source_node, scope)
+    target_row = _relation_node(conn, target_node, scope)
+    if source_row["path"] == target_row["path"]:
+        conn.close()
+        raise ValueError("Self-relations are not allowed")
+    creator, model, session = _identity(creator, model, session)
+    relation_id = f"R-{uuid.uuid4().hex[:8]}"
+    timestamp = now_iso()
+    log_access(conn, source_row["path"], "relation_add", query=relation_id,
+               project_id=source_row["project_id"], actor=creator, model=model,
+               session=session, status="started")
+    try:
+        conn.execute(
+            """INSERT INTO knowledge_relations
+               (id,source_path,target_path,relation_type,confidence,weight,evidence,source,
+                creator,model,session,created_at,updated_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (relation_id, source_row["path"], target_row["path"], relation_type,
+             float(confidence), float(weight), evidence, source, creator, model, session,
+             timestamp, timestamp),
+        )
+    except sqlite3.IntegrityError as error:
+        log_access(conn, source_row["path"], "relation_add", query=relation_id,
+                   project_id=source_row["project_id"], actor=creator, model=model,
+                   session=session, status="failed")
+        conn.close()
+        raise ValueError("Relation already exists or violates the knowledge contract") from error
+    log_access(conn, source_row["path"], "relation_add", query=relation_id,
+               project_id=source_row["project_id"], actor=creator, model=model, session=session)
+    conn.close()
+    return {"id": relation_id, "status": "created", "source_path": source_row["path"],
+            "target_path": target_row["path"], "relation_type": relation_type}
+
+
+def knowledge_relation_list(node: str | None = None,
+                            relation_type: str | None = None,
+                            scope: str = "all", *, actor: str | None = None,
+                            model: str | None = None, session: str | None = None) -> dict:
+    """List explicit relations, optionally incident to one node."""
+    if relation_type and relation_type not in RELATION_TYPES:
+        raise ValueError(f"Invalid relation type: {relation_type}")
+    conn = get_db()
+    clauses, params = [], []
+    node_row = _relation_node(conn, node, scope) if node else None
+    if node_row:
+        clauses.append("(r.source_path=? OR r.target_path=?)")
+        params.extend([node_row["path"], node_row["path"]])
+    if relation_type:
+        clauses.append("r.relation_type=?")
+        params.append(relation_type)
+    if scope != "all":
+        clauses.append("s.project_id IN ('shared',?) AND t.project_id IN ('shared',?)")
+        params.extend([scope, scope])
+    where = " WHERE " + " AND ".join(clauses) if clauses else ""
+    log_access(conn, node_row["path"] if node_row else None, "relation_list",
+               project_id=scope, actor=actor, model=model, session=session, status="started")
+    rows = conn.execute(
+        """SELECT r.*,s.title AS source_title,t.title AS target_title
+           FROM knowledge_relations r
+           JOIN knowledge_nodes s ON s.path=r.source_path
+           JOIN knowledge_nodes t ON t.path=r.target_path""" + where + " ORDER BY r.updated_at DESC",
+        params,
+    ).fetchall()
+    log_access(conn, node_row["path"] if node_row else None, "relation_list",
+               project_id=scope, actor=actor, model=model, session=session)
+    conn.close()
+    return {"relations": [dict(row) for row in rows], "count": len(rows)}
+
+
+def knowledge_relation_update(relation_id: str, relation_type: str | None = None,
+                              confidence: float | None = None, weight: float | None = None,
+                              evidence: str | None = None, source: str | None = None,
+                              creator: str | None = None, model: str | None = None,
+                              session: str | None = None) -> dict:
+    conn = get_db()
+    row = conn.execute("SELECT * FROM knowledge_relations WHERE id=?", (relation_id,)).fetchone()
+    if not row:
+        conn.close()
+        return {"error": f"Relation not found: {relation_id}"}
+    next_type = relation_type or row["relation_type"]
+    next_confidence = row["confidence"] if confidence is None else confidence
+    next_weight = row["weight"] if weight is None else weight
+    _relation_values(next_type, next_confidence, next_weight)
+    creator, model, session = _identity(creator, model, session)
+    values = {
+        "relation_type": next_type, "confidence": float(next_confidence),
+        "weight": float(next_weight), "evidence": row["evidence"] if evidence is None else evidence,
+        "source": row["source"] if source is None else source,
+        "creator": creator or row["creator"], "model": model or row["model"],
+        "session": session or row["session"], "updated_at": now_iso(),
+    }
+    log_access(conn, row["source_path"], "relation_update", query=relation_id,
+               actor=creator, model=model, session=session, status="started")
+    try:
+        conn.execute(
+            """UPDATE knowledge_relations SET relation_type=:relation_type,
+               confidence=:confidence,weight=:weight,evidence=:evidence,source=:source,
+               creator=:creator,model=:model,session=:session,updated_at=:updated_at
+               WHERE id=:id""",
+            values | {"id": relation_id},
+        )
+    except sqlite3.IntegrityError as error:
+        log_access(conn, row["source_path"], "relation_update", query=relation_id,
+                   actor=creator, model=model, session=session, status="failed")
+        conn.close()
+        raise ValueError("Updated relation would violate the knowledge contract") from error
+    log_access(conn, row["source_path"], "relation_update", query=relation_id,
+               actor=creator, model=model, session=session)
+    conn.close()
+    return {"id": relation_id, "status": "updated"}
+
+
+def knowledge_relation_remove(relation_id: str, *, actor: str | None = None,
+                              model: str | None = None, session: str | None = None) -> dict:
+    conn = get_db()
+    row = conn.execute("SELECT * FROM knowledge_relations WHERE id=?", (relation_id,)).fetchone()
+    if not row:
+        conn.close()
+        return {"error": f"Relation not found: {relation_id}"}
+    log_access(conn, row["source_path"], "relation_remove", query=relation_id,
+               actor=actor, model=model, session=session, status="started")
+    conn.execute("DELETE FROM knowledge_relations WHERE id=?", (relation_id,))
+    log_access(conn, row["source_path"], "relation_remove", query=relation_id,
+               actor=actor, model=model, session=session)
+    conn.close()
+    return {"id": relation_id, "status": "removed"}
 
 
 def _build_field_tag_re(fields: tuple) -> re.Pattern:
@@ -928,6 +1173,16 @@ def knowledge_stats() -> dict:
 
 # ─── MCP Server Protocol (stdio JSON-RPC 2.0) ───────────────────────────
 
+def _identity_args(args: dict) -> dict:
+    return {key: args.get(key) for key in ("actor", "model", "session")}
+
+
+IDENTITY_PROPERTIES = {
+    "actor": {"type": "string", "description": "Calling agent identity; else BEGOD_KNOWLEDGE_ACTOR or unknown"},
+    "model": {"type": "string", "description": "Calling model; else BEGOD_KNOWLEDGE_MODEL or unknown"},
+    "session": {"type": "string", "description": "Stable session ID; else BEGOD_KNOWLEDGE_SESSION or unknown"},
+}
+
 TOOLS = {
     "knowledge_browse": {
         "description": "Browse children of a knowledge tree node. Returns titles+summaries only (token-efficient). Use '/' for root.",
@@ -935,21 +1190,23 @@ TOOLS = {
             "type": "object",
             "properties": {
                 "path": {"type": "string", "description": "Tree path to browse, e.g. '/' or '/shared/arch'", "default": "/"},
-                "project_filter": {"type": "string", "description": "Filter by project: shared|begod|aka|bebetter"}
+                "project_filter": {"type": "string", "description": "Filter by project: shared|begod|aka|bebetter"},
+                **IDENTITY_PROPERTIES,
             }
         },
-        "handler": lambda args: knowledge_browse(args.get("path", "/"), args.get("project_filter"))
+        "handler": lambda args: knowledge_browse(args.get("path", "/"), args.get("project_filter"), **_identity_args(args))
     },
     "knowledge_read": {
         "description": "Read full content of a knowledge node (by ID or path). Use browse/search first to find the right node.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "node_id": {"type": "string", "description": "Node ID or full path"}
+                "node_id": {"type": "string", "description": "Node ID or full path"},
+                **IDENTITY_PROPERTIES,
             },
             "required": ["node_id"]
         },
-        "handler": lambda args: knowledge_read(args["node_id"])
+        "handler": lambda args: knowledge_read(args["node_id"], **_identity_args(args))
     },
     "knowledge_search": {
         "description": "Full-text search across knowledge. Returns summaries (not full content) for token efficiency.",
@@ -958,11 +1215,12 @@ TOOLS = {
             "properties": {
                 "query": {"type": "string", "description": "Search query (FTS5 syntax supported: AND, OR, NOT, phrases). Hybrid: fuses keyword matches with local-embedding meaning search when vectors exist."},
                 "scope": {"type": "string", "description": "Scope: 'all' or project name", "default": "all"},
-                "max_results": {"type": "integer", "description": "Max results (default 10)", "default": 10}
+                "max_results": {"type": "integer", "description": "Max results (default 10)", "default": 10},
+                **IDENTITY_PROPERTIES,
             },
             "required": ["query"]
         },
-        "handler": lambda args: knowledge_search(args["query"], args.get("scope", "all"), args.get("max_results", 10))
+        "handler": lambda args: knowledge_search(args["query"], args.get("scope", "all"), args.get("max_results", 10), **_identity_args(args))
     },
     "knowledge_add": {
         "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy.",
@@ -975,14 +1233,15 @@ TOOLS = {
                 "content": {"type": "string", "description": "Full content (loaded only on read)"},
                 "project_id": {"type": "string", "description": "shared|begod|aka|bebetter", "default": "shared"},
                 "tags": {"type": "array", "items": {"type": "string"}},
-                "source": {"type": "string", "description": "Origin: file path, konsil ID, or research ID"}
+                "source": {"type": "string", "description": "Origin: file path, konsil ID, or research ID"},
+                **IDENTITY_PROPERTIES,
             },
             "required": ["parent_path", "title", "summary"]
         },
         "handler": lambda args: knowledge_add(
             args["parent_path"], args["title"], args["summary"],
             args.get("content", ""), args.get("project_id", "shared"),
-            args.get("tags"), args.get("source", "")
+            args.get("tags"), args.get("source", ""), **_identity_args(args)
         )
     },
     "knowledge_update": {
@@ -993,13 +1252,83 @@ TOOLS = {
                 "node_id": {"type": "string", "description": "Node ID or path"},
                 "summary": {"type": "string"},
                 "content": {"type": "string"},
-                "tags": {"type": "array", "items": {"type": "string"}}
+                "tags": {"type": "array", "items": {"type": "string"}},
+                **IDENTITY_PROPERTIES,
             },
             "required": ["node_id"]
         },
         "handler": lambda args: knowledge_update(
-            args["node_id"], args.get("summary"), args.get("content"), args.get("tags")
+            args["node_id"], args.get("summary"), args.get("content"), args.get("tags"), **_identity_args(args)
         )
+    },
+    "knowledge_relation_add": {
+        "description": "Create one explicit evidenced knowledge edge between existing node IDs/paths. Never infers links from tags or text; validates endpoints, scope, type, confidence, and duplicate edges.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "source_node": {"type": "string", "description": "Existing source node ID or path"},
+                "target_node": {"type": "string", "description": "Existing target node ID or path"},
+                "relation_type": {"type": "string", "enum": sorted(RELATION_TYPES)},
+                "confidence": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.8},
+                "weight": {"type": "number", "minimum": 0, "default": 1.0},
+                "evidence": {"type": "string", "description": "Why this edge is true; cite the decision/source"},
+                "source": {"type": "string", "description": "Source artifact path/ID"},
+                "scope": {"type": "string", "description": "all or project; scoped calls permit shared + project", "default": "all"},
+                **IDENTITY_PROPERTIES,
+            },
+            "required": ["source_node", "target_node", "relation_type", "evidence"]
+        },
+        "handler": lambda args: knowledge_relation_add(
+            args["source_node"], args["target_node"], args["relation_type"],
+            args.get("confidence", 0.8), args.get("weight", 1.0), args.get("evidence", ""),
+            args.get("source", ""), args.get("scope", "all"),
+            args.get("actor"), args.get("model"), args.get("session")
+        )
+    },
+    "knowledge_relation_list": {
+        "description": "List only explicit knowledge edges, optionally incident to one node and filtered by relation type/scope. This is the canonical link-read path.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "node": {"type": "string", "description": "Optional existing node ID or path"},
+                "relation_type": {"type": "string", "enum": sorted(RELATION_TYPES)},
+                "scope": {"type": "string", "default": "all"},
+                **IDENTITY_PROPERTIES,
+            }
+        },
+        "handler": lambda args: knowledge_relation_list(
+            args.get("node"), args.get("relation_type"), args.get("scope", "all"), **_identity_args(args)
+        )
+    },
+    "knowledge_relation_update": {
+        "description": "Update evidence/provenance/weight/type of one explicit edge by relation ID; endpoints stay stable.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "relation_id": {"type": "string"},
+                "relation_type": {"type": "string", "enum": sorted(RELATION_TYPES)},
+                "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+                "weight": {"type": "number", "minimum": 0},
+                "evidence": {"type": "string"},
+                "source": {"type": "string"},
+                **IDENTITY_PROPERTIES,
+            },
+            "required": ["relation_id"]
+        },
+        "handler": lambda args: knowledge_relation_update(
+            args["relation_id"], args.get("relation_type"), args.get("confidence"),
+            args.get("weight"), args.get("evidence"), args.get("source"),
+            args.get("actor"), args.get("model"), args.get("session")
+        )
+    },
+    "knowledge_relation_remove": {
+        "description": "Remove exactly one explicit edge by relation ID. Nodes are never deleted.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"relation_id": {"type": "string"}, **IDENTITY_PROPERTIES},
+            "required": ["relation_id"]
+        },
+        "handler": lambda args: knowledge_relation_remove(args["relation_id"], **_identity_args(args))
     },
     "lesson_record": {
         "description": (

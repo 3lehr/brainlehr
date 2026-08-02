@@ -18,6 +18,7 @@ SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
+import migrate_relations  # type: ignore  # noqa: E402
 
 
 # --- Fixtures ---------------------------------------------------------------
@@ -43,6 +44,78 @@ def _lesson_row(db_path: Path, lesson_id: str) -> dict:
     row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
     conn.close()
     return dict(row) if row else None
+
+
+def _db_rows(db_path: Path, query: str) -> list[dict]:
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    rows = [dict(row) for row in conn.execute(query)]
+    conn.close()
+    return rows
+
+
+def test_access_identity_env_and_update_logging(temp_db, monkeypatch):
+    monkeypatch.setenv("BEGOD_KNOWLEDGE_ACTOR", "codex")
+    monkeypatch.setenv("BEGOD_KNOWLEDGE_MODEL", "gpt-test")
+    monkeypatch.setenv("BEGOD_KNOWLEDGE_SESSION", "session-42")
+    node = kms.knowledge_add("/", "Identity Node", "initial")
+    kms.knowledge_update(node["id"], summary="changed")
+    rows = _db_rows(temp_db, "SELECT action,actor,model,session,status FROM access_log ORDER BY id")
+    assert [(row["action"], row["status"]) for row in rows] == [
+        ("add", "started"), ("add", "completed"),
+        ("update", "started"), ("update", "completed"),
+    ]
+    assert {(row["actor"], row["model"], row["session"], row["status"]) for row in rows} == {
+        ("codex", "gpt-test", "session-42", "started"),
+        ("codex", "gpt-test", "session-42", "completed"),
+    }
+
+
+def test_relation_contract_round_trip_and_validation(temp_db):
+    source = kms.knowledge_add("/", "Relation Source", "source")
+    target = kms.knowledge_add("/", "Relation Target", "target")
+    created = kms.knowledge_relation_add(
+        source["id"], target["path"], "supports", 0.9, 1.5,
+        "Verified by test", "test", "shared", "codex", "gpt-test", "relation-session",
+    )
+    listed = kms.knowledge_relation_list(source["path"])
+    assert listed["count"] == 1
+    assert listed["relations"][0]["target_path"] == target["path"]
+    assert listed["relations"][0]["creator"] == "codex"
+    assert kms.knowledge_relation_update(created["id"], confidence=0.95, evidence="Updated proof")["status"] == "updated"
+    assert _db_rows(temp_db, "SELECT confidence,evidence FROM knowledge_relations")[0] == {
+        "confidence": 0.95, "evidence": "Updated proof"
+    }
+    with pytest.raises(ValueError, match="Invalid relation type"):
+        kms.knowledge_relation_add(source["path"], target["path"], "looks_similar", evidence="none")
+    with pytest.raises(ValueError, match="not found"):
+        kms.knowledge_relation_add(source["path"], "/missing", "supports", evidence="none")
+    assert kms.knowledge_relation_remove(created["id"])["status"] == "removed"
+    assert _db_rows(temp_db, "SELECT * FROM knowledge_relations") == []
+
+
+def test_legacy_migration_is_idempotent(tmp_path):
+    path = tmp_path / "legacy.db"
+    conn = sqlite3.connect(str(path))
+    conn.executescript("""
+        CREATE TABLE knowledge_nodes(id TEXT PRIMARY KEY,path TEXT UNIQUE,project_id TEXT,title TEXT);
+        CREATE TABLE access_log(id INTEGER PRIMARY KEY,node_path TEXT,action TEXT,query TEXT,project_id TEXT,timestamp TEXT);
+    """)
+    conn.close()
+    migrate_relations.migrate(path, backup=False)
+    migrate_relations.migrate(path, backup=False)
+    conn = sqlite3.connect(str(path))
+    assert {"actor", "model", "session", "status"} <= {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
+    assert conn.execute("SELECT name FROM sqlite_master WHERE name='knowledge_relations'").fetchone()
+    conn.close()
+
+
+def test_tools_expose_client_independent_contract():
+    for name in ("knowledge_relation_add", "knowledge_relation_list", "knowledge_relation_update", "knowledge_relation_remove"):
+        assert name in kms.TOOLS
+    for name in ("knowledge_read", "knowledge_add", "knowledge_update"):
+        properties = kms.TOOLS[name]["inputSchema"]["properties"]
+        assert {"actor", "model", "session"} <= properties.keys()
 
 
 # --- _split_tagged / unmangle_lesson_fields (pure, no DB) -------------------

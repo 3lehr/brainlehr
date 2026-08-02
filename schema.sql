@@ -109,7 +109,32 @@ CREATE TABLE IF NOT EXISTS access_log (
     action TEXT NOT NULL,                     -- browse|read|search|add|lesson
     query TEXT,
     project_id TEXT,
+    actor TEXT,                               -- explizite Identitaet; sonst NULL
+    model TEXT,
+    session TEXT,
+    status TEXT DEFAULT 'completed',          -- started|completed|failed
     timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime'))
+);
+
+-- Explizite, belegte Wissensbeziehungen. Keine Tag-Aehnlichkeit und keine
+-- automatisch vermuteten Kanten: beide Endpunkte muessen echte Node-Pfade sein.
+CREATE TABLE IF NOT EXISTS knowledge_relations (
+    id TEXT PRIMARY KEY,
+    source_path TEXT NOT NULL,
+    target_path TEXT NOT NULL,
+    relation_type TEXT NOT NULL,
+    confidence REAL NOT NULL DEFAULT 0.8 CHECK(confidence BETWEEN 0.0 AND 1.0),
+    weight REAL NOT NULL DEFAULT 1.0 CHECK(weight >= 0.0),
+    evidence TEXT,
+    source TEXT,
+    creator TEXT,
+    model TEXT,
+    session TEXT,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
+    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
+    UNIQUE(source_path, target_path, relation_type),
+    FOREIGN KEY(source_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(target_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Embeddings (additiv, AP "Wissenssuche nach Bedeutung", 2026-07-31).
@@ -135,3 +160,6 @@ CREATE INDEX IF NOT EXISTS idx_nodes_level ON knowledge_nodes(level);
 CREATE INDEX IF NOT EXISTS idx_lessons_type ON lessons_learned(type);
 CREATE INDEX IF NOT EXISTS idx_lessons_status ON lessons_learned(status);
 CREATE INDEX IF NOT EXISTS idx_lessons_project ON lessons_learned(projects);
+CREATE INDEX IF NOT EXISTS idx_relations_source ON knowledge_relations(source_path);
+CREATE INDEX IF NOT EXISTS idx_relations_target ON knowledge_relations(target_path);
+CREATE INDEX IF NOT EXISTS idx_relations_type ON knowledge_relations(relation_type);
