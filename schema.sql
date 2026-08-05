@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
 -- Wort-Tokenizer prinzipiell verpasst. case_sensitive 0, weil ohnehin
 -- gefaltet+kleingeschrieben gespeichert wird (siehe Trigger unten).
 CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
-    title, summary, content,
+    title, summary, content, path, tags, project_id,
     content='knowledge_nodes',
     content_rowid='rowid',
     tokenize="trigram case_sensitive 0"
@@ -44,43 +44,67 @@ CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
 -- tests/test_knowledge_hybrid_search.py::test_fold_de_matches_sql_fold.
 -- Trigger: FTS bei INSERT/UPDATE/DELETE synchron halten
 CREATE TRIGGER IF NOT EXISTS knowledge_ai AFTER INSERT ON knowledge_nodes BEGIN
-    INSERT INTO knowledge_fts(rowid, title, summary, content)
+    INSERT INTO knowledge_fts(rowid, title, summary, content, path, tags, project_id)
     VALUES (new.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.title,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.summary,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.content,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.path,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.tags,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.project_id,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
 CREATE TRIGGER IF NOT EXISTS knowledge_ad AFTER DELETE ON knowledge_nodes BEGIN
-    INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content)
+    INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content, path, tags, project_id)
     VALUES ('delete', old.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.title,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.summary,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.content,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.path,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.tags,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.project_id,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
 CREATE TRIGGER IF NOT EXISTS knowledge_au AFTER UPDATE ON knowledge_nodes BEGIN
-    INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content)
+    INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content, path, tags, project_id)
     VALUES ('delete', old.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.title,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.summary,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.content,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.path,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.tags,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.project_id,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
-    INSERT INTO knowledge_fts(rowid, title, summary, content)
+    INSERT INTO knowledge_fts(rowid, title, summary, content, path, tags, project_id)
     VALUES (new.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.title,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.summary,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.content,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.path,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.tags,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.project_id,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
@@ -143,13 +167,24 @@ CREATE TABLE IF NOT EXISTS knowledge_relations (
 -- reines FTS5/LIKE-Matching zurueck (siehe knowledge_mcp_server.py), kein Fehler.
 -- Erzeugt/gefuellt wird sie ausschliesslich durch den explizit gerufenen Lauf
 -- build_embeddings.py, nie als Nebeneffekt von knowledge_add/lesson_record.
+--
+-- project_id (Nachtrag 2026-08-05, Bereichstrennung): eigene Spalte statt
+-- Nachschlagen bei der Suche -- eine Kandidatenmenge muss VOR der
+-- Aehnlichkeitsrechnung nach Bereich einschraenkbar sein, sonst rechnet die
+-- Suche unnoetig ueber Vektoren, die der Fragende nie sehen darf. Bei Knoten
+-- einwertig (== knowledge_nodes.project_id). Bei Lessons ist projects
+-- mehrwertig -- deshalb PRIMARY KEY um project_id erweitert: eine Lehre mit N
+-- Bereichen bekommt N Zeilen mit demselben Vektor (siehe build_embeddings.py,
+-- resolve_lesson_projects()), keine Kodierung mehrerer Bereiche in einer
+-- Zeile. Das dupliziert Vektoren, berechnet aber keinen neu.
 CREATE TABLE IF NOT EXISTS knowledge_embeddings (
     kind TEXT NOT NULL,               -- 'node' | 'lesson'
     ref_id TEXT NOT NULL,             -- knowledge_nodes.id | lessons_learned.id
+    project_id TEXT NOT NULL DEFAULT 'shared',
     model TEXT NOT NULL,
     vector BLOB NOT NULL,
     updated_at TEXT NOT NULL,
-    PRIMARY KEY (kind, ref_id)
+    PRIMARY KEY (kind, ref_id, project_id)
 );
 
 -- Indices für Performance
