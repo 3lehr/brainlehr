@@ -34,6 +34,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
@@ -88,6 +89,103 @@ def parse_sections(text: str) -> list[tuple[str, str]]:
     if current is not None:
         sections.append((title, current))
     return [(t, "\n".join(ls)) for t, ls in sections]
+
+
+# --- Quellhash (Auftrag 2026-08-06) -------------------------------------
+# Zentrale, einmal implementierte Verfahren -- migrate_quellhash.py
+# (Rueckfuellung) UND knowledge_lint.py (Kategorie 11 "Quelle veraltet")
+# rufen beide diese Funktionen auf, keine zweite Fassung.
+
+SOURCE_RE = re.compile(r"^erzeugt aus (.+) \(Stand (.+)\)$")
+
+
+def parse_source(source: str | None) -> tuple[Path, str] | None:
+    """Zerlegt eine source-Zeile im von diesem Skript erzeugten Format
+    ('erzeugt aus <Datei> (Stand <ISO>)') in Dateipfad und Stand. None, wenn
+    das Muster nicht passt (Knoten aus anderer Herkunft, z.B. Konsil) --
+    solche Knoten sind hier nicht pruefbar UND das ist kein Fehler.
+    ADR-Quellen tragen einen relativen Pfad (siehe load_adr_artefakte:
+    "docs/adr/<datei>.md") -- gegen HUB_ROOT aufgeloest, CLAUDE.md-Quellen
+    sind schon absolut."""
+    if not source:
+        return None
+    m = SOURCE_RE.match(source.strip())
+    if not m:
+        return None
+    raw_path, stand = m.group(1), m.group(2)
+    path = Path(raw_path)
+    if not path.is_absolute():
+        path = HUB_ROOT / path
+    return path, stand
+
+
+def abschnitt_hash(body: str) -> str:
+    """Hash des Abschnitts-/Dateitexts, aus dem ein Knoten erzeugt wurde --
+    NICHT der ganzen Datei. Grund (gemessen 2026-08-06): 14 von 87 Knoten
+    mit Datei-Herkunft teilten sich EINE Bearbeitung der globalen CLAUDE.md
+    und waeren bei dateiweitem Hash alle gleichzeitig als veraltet
+    gemeldet worden, obwohl vermutlich nur ein Abschnitt betroffen war."""
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()
+
+
+def current_section_body(path: Path, title: str) -> str | None:
+    """Sucht im JETZIGEN Dateiinhalt denselben Ausschnitt, aus dem ein
+    Knoten mit gegebenem Titel erzeugt worden waere. Muss wissen, WELCHE
+    Zerlegung der Erzeuger fuer diese Datei benutzt hat -- eine ADR-Datei
+    hat oft eigene '## '-Zwischenueberschriften (Kontext/Entscheidung/...),
+    aber load_adr_artefakte() nimmt trotzdem die GANZE Datei als Artefakt.
+    Ein blosses "hat die Datei irgendwo '## '?" wuerde bei ADRs also die
+    falsche (interne) Ueberschrift suchen und faelschlich 'nicht gefunden'
+    melden -- deshalb Pfadidentitaet statt Heuristik ueber den Inhalt.
+
+    Fuer Dateien ausserhalb der drei von normbestand.py erfassten Quellen
+    (GLOBAL_CLAUDE_MD, HUB_CLAUDE_MD, ADR_DIR) ist die Zerlegung eines
+    fremden Erzeugers hier unbekannt -- bester Versuch per Titel-Match,
+    sonst ganze Datei. Liefert bewusst auch dann etwas, das NICHT passt,
+    wenn der Titel nicht gefunden wird: None, was oben als 'nicht pruefbar'
+    gilt, niemals als 'ok'."""
+    if not path.exists():
+        return None
+    text = path.read_text(encoding="utf-8")
+    try:
+        is_adr = path.parent.samefile(ADR_DIR)
+    except (OSError, FileNotFoundError):
+        is_adr = path.parent == ADR_DIR
+    if is_adr:
+        return text  # ganze Datei ist das Artefakt, wie load_adr_artefakte()
+    sections = parse_sections(text)
+    if not sections:
+        return text  # keine '## '-Abschnitte -> Volltext ist das Artefakt
+    norm_t = _norm_title(title)
+    for t, body in sections:
+        if _norm_title(t) == norm_t:
+            return body
+    return None
+
+
+def quellstatus(source: str | None, title: str, stored_hash: str | None) -> dict:
+    """Vergleicht den gespeicherten quell_hash mit dem JETZT aus der Quelle
+    berechenbaren Hash. Status: 'kein_verweis' (source zeigt nicht auf eine
+    Datei -- z.B. Konsil-Herkunft), 'verschwunden' (Datei existiert nicht
+    mehr), 'nicht_pruefbar' (kein Hash gespeichert ODER Abschnitt in der
+    Datei nicht mehr auffindbar -- beides macht einen Vergleich unmoeglich,
+    nicht nur den ersten Fall), 'geaendert' (Hash weicht ab), 'ok' (Hash
+    stimmt)."""
+    ref = parse_source(source)
+    if ref is None:
+        return {"status": "kein_verweis"}
+    path, stand = ref
+    if not path.exists():
+        return {"status": "verschwunden", "quelle": str(path)}
+    if stored_hash is None:
+        return {"status": "nicht_pruefbar", "quelle": str(path)}
+    body = current_section_body(path, title)
+    if body is None:
+        return {"status": "nicht_pruefbar", "quelle": str(path),
+                "grund": "Abschnitt nicht mehr in der Datei gefunden"}
+    if abschnitt_hash(body) != stored_hash:
+        return {"status": "geaendert", "quelle": str(path)}
+    return {"status": "ok", "quelle": str(path)}
 
 
 # knowledge_lint.py::find_truncated_embeddings warnt ab ~2048 geschaetzten
@@ -210,6 +308,7 @@ class Abgleich:
     gefunden: list[str] = field(default_factory=list)
     fehlend: list[Artefakt] = field(default_factory=list)
     verwaist: list[str] = field(default_factory=list)
+    veraltet: list[str] = field(default_factory=list)  # gefunden, aber Quelle seither geaendert
 
 
 def pruefe_quelle(conn: sqlite3.Connection, quelle: str, parent_path: str,
@@ -222,6 +321,13 @@ def pruefe_quelle(conn: sqlite3.Connection, quelle: str, parent_path: str,
         if hit:
             result.gefunden.append(a.title)
             matched_paths.add(hit["path"])
+            # Abgleich des Quellhashs (Auftrag 2026-08-06) -- derselbe
+            # quellstatus() wie migrate_quellhash.py/knowledge_lint.py.
+            row = conn.execute(
+                "SELECT source, quell_hash FROM knowledge_nodes WHERE path = ?", (hit["path"],)
+            ).fetchone()
+            if row and quellstatus(row["source"], hit["title"], row["quell_hash"])["status"] == "geaendert":
+                result.veraltet.append(hit["path"])
         else:
             result.fehlend.append(a)
     # Verwaiste Knoten: direkte Kinder des Zielpfads ohne Entsprechung im
@@ -262,6 +368,7 @@ def print_pruefe(results: dict[str, Abgleich], as_json: bool) -> None:
                 "gefunden": v.gefunden,
                 "fehlend": [a.title for a in v.fehlend],
                 "verwaist": v.verwaist,
+                "veraltet": v.veraltet,
             }
             for k, v in results.items()
         }
@@ -269,11 +376,14 @@ def print_pruefe(results: dict[str, Abgleich], as_json: bool) -> None:
         return
     for key, v in results.items():
         print(f"\n=== {key}: {v.quelle} -> {v.parent_path} ===")
-        print(f"gefunden: {len(v.gefunden)}  fehlend: {len(v.fehlend)}  verwaist: {len(v.verwaist)}")
+        print(f"gefunden: {len(v.gefunden)}  fehlend: {len(v.fehlend)}  "
+              f"verwaist: {len(v.verwaist)}  veraltet: {len(v.veraltet)}")
         for a in v.fehlend:
             print(f"  fehlt: {a.title}")
         for t in v.verwaist:
             print(f"  verwaist: {t}")
+        for t in v.veraltet:
+            print(f"  veraltet: {t}")
 
 
 # --- Schreiben -------------------------------------------------------------
@@ -353,6 +463,21 @@ def erfasse(db_path: Path, apply: bool, global_md: Path = GLOBAL_CLAUDE_MD,
                     if "error" in res:
                         raise RuntimeError(f"{key}/{a.title!r}: {res['error']}")
                     created[key].append(res["path"])
+                    # quell_hash mitschreiben (Auftrag 2026-08-06) -- kein
+                    # Feld in knowledge_add()'s INSERT (tabu, nicht
+                    # angefasst), darum Nachtrag per direktem UPDATE. Hash
+                    # aus a.body: exakt der Abschnittstext, den
+                    # current_section_body() bei einer spaeteren Pruefung
+                    # aus derselben Datei wieder herausschneiden wuerde.
+                    write_conn = sqlite3.connect(str(db_path))
+                    try:
+                        write_conn.execute(
+                            "UPDATE knowledge_nodes SET quell_hash = ? WHERE path = ?",
+                            (abschnitt_hash(a.body), res["path"]),
+                        )
+                        write_conn.commit()
+                    finally:
+                        write_conn.close()
             finally:
                 kms.DB_PATH = prev_db_path
 

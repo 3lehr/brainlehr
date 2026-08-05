@@ -27,7 +27,17 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- beiden Gueltigkeitsfelder sind nur bei gesetztem norm_rang sinnvoll.
     norm_rang INTEGER,
     gilt_ab TEXT,
-    gilt_bis TEXT                             -- NULL = unbefristet in Kraft
+    gilt_bis TEXT,                            -- NULL = unbefristet in Kraft
+    -- Quellhash (Auftrag 2026-08-06, Betreiber-Idee "Selbstentwertung statt
+    -- Beleg"). Hash des ABSCHNITTS, aus dem der Knoten erzeugt wurde (siehe
+    -- normbestand.py::parse_sections) -- NICHT der ganzen Quelldatei: eine
+    -- Datei mit mehreren '## '-Abschnitten teilt sonst eine Bearbeitung auf
+    -- alle Geschwisterknoten aus, gemessen an den 14 Direktiven-Knoten, die
+    -- alle aus derselben CLAUDE.md-Bearbeitung als "veraltet" gegolten
+    -- haetten, obwohl vermutlich nur ein Abschnitt betroffen war. NULL heisst
+    -- "nicht pruefbar" (Altbestand vor diesem Feld, oder Quelle ohne
+    -- Dateibezug) -- kein Befund, nur Abwesenheit einer Aussage.
+    quell_hash TEXT
 );
 
 -- Volltext-Suche über Titel, Summary und Content.

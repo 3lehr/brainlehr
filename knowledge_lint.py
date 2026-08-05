@@ -31,6 +31,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
 
 import embeddings  # noqa: E402
 import geltungsbereich  # noqa: E402
+import normbestand  # noqa: E402  (quellstatus() -- Auftrag 2026-08-06)
 from knowledge_mcp_server import fold_de, SLUG_MAX_LEN  # noqa: E402
 
 DB_PATH = SHARED_KNOWLEDGE / "knowledge.db"
@@ -400,6 +401,34 @@ def find_missing_source(conn: sqlite3.Connection) -> list[dict]:
     return out
 
 
+# ─── 11. Quelle veraltet ────────────────────────────────────────────────────
+# Auftrag 2026-08-06 (Betreiber-Idee "Selbstentwertung statt Beleg"). Nutzt
+# normbestand.py::quellstatus() -- dasselbe Verfahren wie die Rueckfuellung
+# in migrate_quellhash.py, keine zweite Fassung. Drei getrennte Faelle, weil
+# sie verschiedene Ursachen und Behandlungen haben (siehe Auftrag): ein
+# Hash, der abweicht, ist der harte Befund; "nicht pruefbar" ist Abwesenheit
+# einer Aussage (Altbestand vor diesem Feld, oder Quelle ohne Dateibezug);
+# "verschwunden" ist die Quelldatei selbst, nicht nur ein Abschnitt.
+# 'kein_verweis' (source ohne Dateibezug, z.B. Konsil-Herkunft) wird bewusst
+# NICHT gemeldet -- das ist keine Norm-Quelle und damit kein Fall dieser
+# Kategorie, siehe find_missing_source() fuer "source komplett leer".
+
+def find_stale_source(conn: sqlite3.Connection) -> dict:
+    geaendert, nicht_pruefbar, verschwunden = [], [], []
+    for r in conn.execute(
+        "SELECT path, title, source, quell_hash FROM knowledge_nodes WHERE source IS NOT NULL AND trim(source) != ''"
+    ):
+        status = normbestand.quellstatus(r["source"], r["title"], r["quell_hash"])
+        if status["status"] == "geaendert":
+            geaendert.append({"path": r["path"], "quelle": status["quelle"]})
+        elif status["status"] == "nicht_pruefbar":
+            nicht_pruefbar.append({"path": r["path"], "quelle": status.get("quelle"),
+                                    "grund": status.get("grund", "kein Hash gespeichert")})
+        elif status["status"] == "verschwunden":
+            verschwunden.append({"path": r["path"], "quelle": status["quelle"]})
+    return {"geaendert": geaendert, "nicht_pruefbar": nicht_pruefbar, "verschwunden": verschwunden}
+
+
 # ─── Struktur-Kennzahlen (kein Befund, Zustand des Bestands als Ganzes) ────
 # Getrennt von den sieben Befund-Kategorien oben: keine beanstandet einen
 # einzelnen Eintrag, sondern beschreibt eine Verteilung ueber den Bestand.
@@ -522,6 +551,7 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "escalated_without_rule": find_escalated_without_rule(conn),
             "norm_conflicts": find_norm_conflicts(conn),
             "missing_source": find_missing_source(conn),
+            "stale_source": find_stale_source(conn),
             "structure_metrics": find_structure_metrics(conn),
         }
     finally:
@@ -566,6 +596,13 @@ def print_report(result: dict) -> None:
                              f"Themenscore {i['subject_score']}")
     _print_section("Ohne Herkunft (source leer/fehlend)", result["missing_source"],
                    lambda i: f"{i['path']}: {i['title']}")
+    ss = result["stale_source"]
+    _print_section("Quelle veraltet -- Abschnitt geaendert (Hash weicht ab)",
+                   ss["geaendert"], lambda i: f"{i['path']} <- {i['quelle']}")
+    _print_section("Quelle veraltet -- nicht pruefbar (kein Hash oder Abschnitt nicht gefunden)",
+                   ss["nicht_pruefbar"], lambda i: f"{i['path']} <- {i['quelle']} ({i['grund']})")
+    _print_section("Quelle veraltet -- Quelldatei verschwunden",
+                   ss["verschwunden"], lambda i: f"{i['path']} <- {i['quelle']}")
     print_structure_metrics(result["structure_metrics"])
 
 
@@ -638,6 +675,48 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
              "Nur Leerzeichen als source", 1, "   ", fresh),
             ("n_has_source", "/shared/mit-herkunft", "/shared", "shared", "Mit Herkunft",
              "Echte source gesetzt", 1, "erzeugt aus test (Stand 2026-08-05T23:40:00+02:00)", fresh),
+        ],
+    )
+    # 11. Quelle veraltet: eine echte Quelldatei mit zwei Abschnitten, dazu
+    # fuenf Knoten, die je einen der vier Zustaende UND die Gegenprobe
+    # ("ok", nicht gemeldet) abdecken.
+    quelldatei = tmp_path / "quelltest.md"
+    quelldatei.write_text(
+        "# Testdatei\n\n## Abschnitt OK\n\nDieser Text ist unveraendert.\n\n"
+        "## Abschnitt Aendert\n\nDieser Text wurde seit der Erfassung geaendert.\n",
+        encoding="utf-8",
+    )
+    src = f"erzeugt aus {quelldatei} (Stand 2026-08-05T20:00:00+02:00)"
+    ok_body = next(b for t, b in normbestand.parse_sections(quelldatei.read_text(encoding="utf-8"))
+                    if t == "Abschnitt OK")
+    hash_ok = normbestand.abschnitt_hash(ok_body)
+    hash_stale = normbestand.abschnitt_hash("## Abschnitt Aendert\n\nDieser Text stand hier FRUEHER.\n")
+    # confidence explizit 1.0 (Muster wie bei den Normkonflikt-Fixtures
+    # oben) -- sonst verfaelschen sechs weitere Vorgabewert-Knoten K3.
+    conn.executemany(
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, source, quell_hash, updated_at) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        [
+            # Gegenprobe: Hash stimmt -> darf in keiner der drei Listen auftauchen.
+            ("n_src_ok", "/shared/quelle-ok", "/shared", "shared", "Abschnitt OK", "S", 1, 1.0,
+             src, hash_ok, fresh),
+            # Hash vorhanden, weicht ab -> "geaendert".
+            ("n_src_changed", "/shared/quelle-geaendert", "/shared", "shared", "Abschnitt Aendert", "S", 1, 1.0,
+             src, hash_stale, fresh),
+            # Kein Hash gespeichert (Altbestand) -> "nicht pruefbar".
+            ("n_src_no_hash", "/shared/quelle-ohne-hash", "/shared", "shared", "Abschnitt OK", "S", 1, 1.0,
+             src, None, fresh),
+            # Hash vorhanden, Abschnitt mit diesem Titel existiert nicht mehr -> "nicht pruefbar".
+            ("n_src_no_section", "/shared/quelle-abschnitt-weg", "/shared", "shared", "Abschnitt Verschwunden", "S", 1, 1.0,
+             src, hash_ok, fresh),
+            # Quelldatei existiert nicht -> "verschwunden".
+            ("n_src_gone", "/shared/quelle-datei-weg", "/shared", "shared", "Irrelevant", "S", 1, 1.0,
+             f"erzeugt aus {tmp_path / 'nie-vorhanden.md'} (Stand 2026-08-05T20:00:00+02:00)", hash_ok, fresh),
+            # Herkunft ohne Dateibezug (z.B. Konsil) -> 'kein_verweis', in
+            # keiner der drei Listen -- Norm-lose Herkunft ist kein Fall
+            # dieser Kategorie.
+            ("n_src_konsil", "/shared/quelle-konsil", "/shared", "shared", "Konsilfund", "S", 1, 1.0,
+             "Konsil 2026-08-05, Panel: architekt+reviewer", None, fresh),
         ],
     )
     # Grenzwert beidseitig: Gesamttext-Laenge (path+title+summary+content, wie
@@ -940,6 +1019,40 @@ def selftest() -> None:
         missing_source_paths = {m["path"] for m in result["missing_source"]}
         assert "/shared/ohne-herkunft" in missing_source_paths, missing_source_paths
         assert "/shared/mit-herkunft" not in missing_source_paths, missing_source_paths
+
+        # 11. Quelle veraltet -- die drei Faelle getrennt, plus die
+        # Gegenprobe (Hash stimmt) und 'kein_verweis' (Konsil-Herkunft),
+        # die beide in KEINER der drei Listen auftauchen duerfen. Das ist
+        # der ganze Punkt des Auftrags: ein Abschnitt-Hash meldet nur den
+        # EINEN geaenderten Abschnitt, nicht die ganze Datei.
+        ss = result["stale_source"]
+        geaendert_paths = {i["path"] for i in ss["geaendert"]}
+        nicht_pruefbar_paths = {i["path"] for i in ss["nicht_pruefbar"]}
+        verschwunden_paths = {i["path"] for i in ss["verschwunden"]}
+
+        assert geaendert_paths == {"/shared/quelle-geaendert"}, geaendert_paths
+        assert nicht_pruefbar_paths == {"/shared/quelle-ohne-hash", "/shared/quelle-abschnitt-weg"}, nicht_pruefbar_paths
+        # /shared/mit-herkunft (Kategorie-10-Fixture, source "erzeugt aus
+        # test (Stand ...)") verweist auf eine tatsaechlich nicht
+        # existierende Datei -- gehoert hier zu Recht zu 'verschwunden',
+        # nicht zu einer vierten, unbenannten Kategorie.
+        assert verschwunden_paths == {"/shared/quelle-datei-weg", "/shared/mit-herkunft"}, verschwunden_paths
+
+        alle_stale = geaendert_paths | nicht_pruefbar_paths | verschwunden_paths
+        assert "/shared/quelle-ok" not in alle_stale, "Hash stimmt -- darf nicht gemeldet werden"
+        assert "/shared/quelle-konsil" not in alle_stale, "kein Dateibezug -- kein Fall dieser Kategorie"
+
+        # Grenzwerte auf der reinen Vergleichsfunktion direkt -- src/hash_ok
+        # hier neu berechnet (gleiche Quelldatei, von _selftest_db in
+        # demselben tmp_path angelegt), da sie dort lokale Variablen sind.
+        _quelldatei = tmp_path / "quelltest.md"
+        _src = f"erzeugt aus {_quelldatei} (Stand 2026-08-05T20:00:00+02:00)"
+        _ok_body = next(b for t, b in normbestand.parse_sections(_quelldatei.read_text(encoding="utf-8"))
+                         if t == "Abschnitt OK")
+        _hash_ok = normbestand.abschnitt_hash(_ok_body)
+        assert normbestand.quellstatus(_src, "Abschnitt OK", _hash_ok)["status"] == "ok"
+        assert normbestand.quellstatus(None, "Abschnitt OK", _hash_ok)["status"] == "kein_verweis"
+        assert normbestand.quellstatus("Konsil-Fund", "X", "irgendein-hash")["status"] == "kein_verweis"
 
     # K1 Gegenprobe B: Graph mit bekannter Kantenzahl, unabhaengig von der
     # Hauptfixture -- mittlerer Grad exakt nachgerechnet (4 Knoten, 3
