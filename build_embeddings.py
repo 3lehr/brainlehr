@@ -104,6 +104,26 @@ def _checksum(conn: sqlite3.Connection) -> str:
 
 
 def _backup() -> Path:
+    """Checkpoint vor dem Kopieren, Befund 2026-08-05: die Live-DB laeuft im
+    WAL-Modus, ein reiner shutil.copy2 der Hauptdatei laesst committete, aber
+    noch nicht zurueckgeschriebene Aenderungen im WAL-Journal zurueck --
+    beobachtet an drei .bak-Dateien vom selben Tag, in denen die neu
+    angelegte Spalte norm_rang fehlte, obwohl die Live-DB sie laengst hatte
+    (eine davon entstand sogar NACH der Migration). TRUNCATE checkpointed
+    und leert die WAL-Datei; ist ein anderer Prozess busy und der Checkpoint
+    bleibt unvollstaendig, wird abgebrochen statt eine unvollstaendige Kopie
+    anzulegen (siehe RuntimeError unten)."""
+    conn = sqlite3.connect(str(DB_PATH))
+    try:
+        busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+        if busy:
+            raise RuntimeError(
+                f"WAL-Checkpoint blockiert (busy={busy}, log={log_frames} Frames, "
+                f"{checkpointed} checkpointed) -- ein anderer Prozess schreibt gerade. "
+                "Sicherung abgebrochen statt unvollstaendig angelegt."
+            )
+    finally:
+        conn.close()
     stamp = datetime.now(CET).strftime("%Y%m%dT%H%M%S")
     dest = DB_PATH.parent / f"knowledge.db.bak-{stamp}"
     shutil.copy2(DB_PATH, dest)
