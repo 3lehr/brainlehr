@@ -135,7 +135,7 @@ def test_lesson_resolution_only_change_keeps_vector(temp_db):
 def test_known_wikilink_creates_one_relation(temp_db):
     _insert_node(temp_db, "target", "/shared/ziel", "Zielknoten")
     result = kms.knowledge_add("/shared", "Quellknoten", "Zsf",
-                               content="siehe [[Zielknoten]]")
+                               content="siehe [[Zielknoten]]", source="test")
     assert result["relations_created"] == ["/shared/ziel"]
     rows = _relations_from(temp_db, result["path"])
     assert len(rows) == 1
@@ -144,7 +144,7 @@ def test_known_wikilink_creates_one_relation(temp_db):
 
 def test_unknown_wikilink_creates_no_relation_but_is_reported(temp_db):
     result = kms.knowledge_add("/shared", "Quellknoten", "Zsf",
-                               content="siehe [[gibt-es-nicht]]")
+                               content="siehe [[gibt-es-nicht]]", source="test")
     assert result["relations_created"] == []
     assert "gibt-es-nicht" in result["unresolved_links"]
     assert _relations_from(temp_db, result["path"]) == []
@@ -153,7 +153,7 @@ def test_unknown_wikilink_creates_no_relation_but_is_reported(temp_db):
 def test_update_removing_link_drops_old_edge(temp_db):
     _insert_node(temp_db, "target", "/shared/ziel", "Zielknoten")
     add_result = kms.knowledge_add("/shared", "Quellknoten", "Zsf",
-                                   content="siehe [[Zielknoten]]")
+                                   content="siehe [[Zielknoten]]", source="test")
     assert len(_relations_from(temp_db, add_result["path"])) == 1
 
     kms.knowledge_update(add_result["id"], content="kein Verweis mehr")
@@ -163,7 +163,7 @@ def test_update_removing_link_drops_old_edge(temp_db):
 def test_duplicate_wikilink_creates_only_one_relation(temp_db):
     _insert_node(temp_db, "target", "/shared/ziel", "Zielknoten")
     result = kms.knowledge_add("/shared", "Quellknoten", "Zsf",
-                               content="[[Zielknoten]] und nochmal [[Zielknoten]]")
+                               content="[[Zielknoten]] und nochmal [[Zielknoten]]", source="test")
     assert result["relations_created"] == ["/shared/ziel"]
     assert len(_relations_from(temp_db, result["path"])) == 1
 

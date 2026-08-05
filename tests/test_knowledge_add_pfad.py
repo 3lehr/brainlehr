@@ -66,7 +66,7 @@ def test_unbekannter_elternpfad_wird_abgelehnt(temp_db):
 
 def test_fehler_nennt_naheliegende_echte_pfade(temp_db):
     """Eine Ablehnung ohne Wegweiser erzeugt nur einen zweiten Rateversuch."""
-    res = kms.knowledge_add("/apps/fahrtenbuc", "Tippfehler im Ast", "Zusammenfassung")
+    res = kms.knowledge_add("/apps/fahrtenbuc", "Tippfehler im Ast", "Zusammenfassung", source="test")
     assert "error" in res
     vorschlaege = " ".join(res.get("vorhandene_pfade", []))
     assert "/apps/fahrtenbuch" in vorschlaege, res
@@ -74,14 +74,14 @@ def test_fehler_nennt_naheliegende_echte_pfade(temp_db):
 
 def test_vorhandener_elternpfad_geht_weiterhin_durch(temp_db):
     """Gegenprobe: die Sperre darf das normale Schreiben nicht treffen."""
-    res = kms.knowledge_add("/shared/arch", "MCP Serverwahl", "Warum stdio statt HTTP")
+    res = kms.knowledge_add("/shared/arch", "MCP Serverwahl", "Warum stdio statt HTTP", source="test")
     assert res.get("status") == "created", res
     assert res["path"] == "/shared/arch/mcp-serverwahl"
 
 
 def test_wurzel_darf_ohne_elternknoten_beschrieben_werden(temp_db):
     """'/' hat per Definition keinen Elternknoten -- sonst kaeme nie einer rein."""
-    res = kms.knowledge_add("/", "Neue Wurzel", "Ein Ast auf oberster Ebene")
+    res = kms.knowledge_add("/", "Neue Wurzel", "Ein Ast auf oberster Ebene", source="test")
     assert res.get("status") == "created", res
     assert res["path"] == "/neue-wurzel"
 
@@ -90,7 +90,7 @@ def test_neuer_ast_nur_mit_ausdruecklicher_erlaubnis(temp_db):
     """Ein neuer Ast muss moeglich bleiben -- aber als Entscheidung, nicht als
     Nebenwirkung eines Tippfehlers."""
     res = kms.knowledge_add("/apps/openlehr", "Erster Fund", "Zusammenfassung",
-                            neuer_ast=True)
+                            neuer_ast=True, source="test")
     assert res.get("status") == "created", res
     assert res["path"] == "/apps/openlehr/erster-fund"
 
@@ -103,6 +103,7 @@ def test_slug_kappt_nicht_mitten_im_wort(temp_db):
         "/apps/fahrtenbuch",
         "Café International Konsil Einstellungsebene und Nachlauf",
         "Zusammenfassung",
+        source="test",
     )
     slug = res["path"].rsplit("/", 1)[-1]
     assert not slug.endswith("einstellungseb"), res
@@ -116,6 +117,7 @@ def test_satzzeichen_landen_nicht_im_pfad(temp_db):
         "/shared/arch",
         "ADR — Frontend-Framework (Vue 3), Arbeitsstand",
         "Zusammenfassung",
+        source="test",
     )
     slug = res["path"].rsplit("/", 1)[-1]
     for zeichen in ("—", "(", ")", ",", "."):
@@ -128,11 +130,11 @@ def test_slug_bleibt_bei_einem_ueberlangen_wort_nutzbar(temp_db):
     """Grenzfall: ein einzelnes Wort laenger als das Limit. Es an der
     Wortgrenze zu kappen hiesse, gar nichts uebrig zu lassen."""
     res = kms.knowledge_add("/shared/arch", "Donaudampfschifffahrtsgesellschaftskapitaenspatent",
-                            "Zusammenfassung")
+                            "Zusammenfassung", source="test")
     slug = res["path"].rsplit("/", 1)[-1]
     assert 0 < len(slug) <= kms.SLUG_MAX_LEN, slug
 
 
 def test_umlaute_werden_gefaltet_nicht_verschluckt(temp_db):
-    res = kms.knowledge_add("/shared/arch", "Prüfung äußerer Größen", "Zusammenfassung")
+    res = kms.knowledge_add("/shared/arch", "Prüfung äußerer Größen", "Zusammenfassung", source="test")
     assert res["path"] == "/shared/arch/pruefung-aeusserer-groessen", res

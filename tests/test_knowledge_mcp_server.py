@@ -58,7 +58,7 @@ def test_access_identity_env_and_update_logging(temp_db, monkeypatch):
     monkeypatch.setenv("BEGOD_KNOWLEDGE_ACTOR", "codex")
     monkeypatch.setenv("BEGOD_KNOWLEDGE_MODEL", "gpt-test")
     monkeypatch.setenv("BEGOD_KNOWLEDGE_SESSION", "session-42")
-    node = kms.knowledge_add("/", "Identity Node", "initial")
+    node = kms.knowledge_add("/", "Identity Node", "initial", source="test")
     kms.knowledge_update(node["id"], summary="changed")
     rows = _db_rows(temp_db, "SELECT action,actor,model,session,status FROM access_log ORDER BY id")
     assert [(row["action"], row["status"]) for row in rows] == [
@@ -93,7 +93,7 @@ def test_knowledge_update_detects_lost_update_and_reports_current_state(temp_db,
     ticks = iter(f"2026-01-01T00:00:{i:02d}+01:00" for i in range(30))
     monkeypatch.setattr(kms, "now_iso", lambda: next(ticks))
 
-    node = kms.knowledge_add("/", "Race Node", "v0")
+    node = kms.knowledge_add("/", "Race Node", "v0", source="test")
     race_state = {"armed": True, "node_id": node["id"], "db_path": temp_db}
 
     class RacingConnection(sqlite3.Connection):
@@ -137,8 +137,8 @@ def test_knowledge_update_detects_lost_update_and_reports_current_state(temp_db,
 
 
 def test_relation_contract_round_trip_and_validation(temp_db):
-    source = kms.knowledge_add("/", "Relation Source", "source")
-    target = kms.knowledge_add("/", "Relation Target", "target")
+    source = kms.knowledge_add("/", "Relation Source", "source", source="test")
+    target = kms.knowledge_add("/", "Relation Target", "target", source="test")
     created = kms.knowledge_relation_add(
         source["id"], target["path"], "supports", 0.9, 1.5,
         "Verified by test", "test", "shared", "codex", "gpt-test", "relation-session",
@@ -634,6 +634,7 @@ def test_knowledge_add_unmangles_on_write(temp_db):
         content="",
         tags=[],
         neuer_ast=True,  # /test existiert in dieser Fixture nicht (P1: unbekannte Elternpfade werden sonst abgelehnt)
+        source="test",
     )
     assert result["status"] == "created"
     conn = sqlite3.connect(str(temp_db))

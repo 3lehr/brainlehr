@@ -479,6 +479,12 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     title, summary = fixed["title"], fixed["summary"]
     content, tags, source = fixed["content"], fixed["tags"], fixed["source"]
 
+    if not source.strip():
+        return {
+            "error": "source fehlt: Herkunft des Knotens angeben (aus welcher Datei/welchem Lauf er stammt). "
+                     "Beispiel: 'erzeugt aus /pfad/zur/datei.md (Stand 2026-08-05T23:40:00+02:00)'.",
+        }
+
     conn = get_db()
     parent_path = parent_path.rstrip("/") or "/"
 
@@ -1392,7 +1398,8 @@ TOOLS = {
     "knowledge_add": {
         "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy. "
                         "parent_path must already exist (or be '/'); an unknown parent_path is rejected with "
-                        "suggested nearby paths unless neuer_ast=True explicitly opens a new branch.",
+                        "suggested nearby paths unless neuer_ast=True explicitly opens a new branch. "
+                        "source is required and rejected if empty -- e.g. \"erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)\".",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -1402,7 +1409,7 @@ TOOLS = {
                 "content": {"type": "string", "description": "Full content (loaded only on read)"},
                 "project_id": {"type": "string", "description": "shared|begod|aka|bebetter", "default": "shared"},
                 "tags": {"type": "array", "items": {"type": "string"}},
-                "source": {"type": "string", "description": "Origin: file path, konsil ID, or research ID"},
+                "source": {"type": "string", "description": "Required, non-empty. Origin: file path, konsil ID, or research ID. Example: 'erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)'"},
                 "neuer_ast": {"type": "boolean", "description": "Explicitly allow creating a new top-level branch when parent_path doesn't exist yet", "default": False},
                 **IDENTITY_PROPERTIES,
             },

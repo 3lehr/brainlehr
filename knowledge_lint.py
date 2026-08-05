@@ -384,6 +384,22 @@ def find_norm_conflicts(conn: sqlite3.Connection) -> dict:
     return {"entschieden": entschieden, "echte_konflikte": echte}
 
 
+# ─── 10. Ohne Herkunft ───────────────────────────────────────────────────────
+# knowledge_add() verlangt seit heute eine nicht leere source (Auftrag
+# 2026-08-05) -- diese Kategorie zeigt den Altbestand, der vor der Sperre
+# geschrieben wurde. lessons_learned hat kein vergleichbares Feld (Schema
+# geprueft, siehe .schema lessons_learned), darum nur node-Kind.
+
+def find_missing_source(conn: sqlite3.Connection) -> list[dict]:
+    out = []
+    for r in conn.execute(
+        "SELECT path, title FROM knowledge_nodes "
+        "WHERE source IS NULL OR trim(source) = ''"
+    ):
+        out.append({"path": r["path"], "title": r["title"]})
+    return out
+
+
 # ─── Struktur-Kennzahlen (kein Befund, Zustand des Bestands als Ganzes) ────
 # Getrennt von den sieben Befund-Kategorien oben: keine beanstandet einen
 # einzelnen Eintrag, sondern beschreibt eine Verteilung ueber den Bestand.
@@ -505,6 +521,7 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "truncated_embeddings": find_truncated_embeddings(conn),
             "escalated_without_rule": find_escalated_without_rule(conn),
             "norm_conflicts": find_norm_conflicts(conn),
+            "missing_source": find_missing_source(conn),
             "structure_metrics": find_structure_metrics(conn),
         }
     finally:
@@ -547,6 +564,8 @@ def print_report(result: dict) -> None:
                    nc["echte_konflikte"],
                    lambda i: f"{i['a']} (Rang {i['a_rang']}) vs {i['b']} (Rang {i['b_rang']}), "
                              f"Themenscore {i['subject_score']}")
+    _print_section("Ohne Herkunft (source leer/fehlend)", result["missing_source"],
+                   lambda i: f"{i['path']}: {i['title']}")
     print_structure_metrics(result["structure_metrics"])
 
 
@@ -601,12 +620,25 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
             ("n_trunc_over", "/shared/trunc/over", "/shared", "shared", "T", "S", 1, fresh),
         ],
     )
-    # K3: ein Knoten mit abweichender Konfidenz -- die anderen neun bleiben
+    # K3: ein Knoten mit abweichender Konfidenz -- die anderen bleiben
     # auf dem Schema-Vorgabewert (0.8), der ueber pragma_table_info gelesen wird.
     conn.execute(
         "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, updated_at) "
         "VALUES (?,?,?,?,?,?,?,?,?)",
         ("n_conf_custom", "/shared/geprueft", "/shared", "shared", "Geprueft", "Abweichende Konfidenz", 1, 1.0, fresh),
+    )
+    # 10. Ohne Herkunft: ein Knoten mit nur Leerzeichen als source (zaehlt
+    # als fehlend, wie in knowledge_add()), ein Knoten mit echter source als
+    # Gegenprobe -- der darf in keiner Ausgabe der Kategorie auftauchen.
+    conn.executemany(
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, source, updated_at) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        [
+            ("n_no_source", "/shared/ohne-herkunft", "/shared", "shared", "Ohne Herkunft",
+             "Nur Leerzeichen als source", 1, "   ", fresh),
+            ("n_has_source", "/shared/mit-herkunft", "/shared", "shared", "Mit Herkunft",
+             "Echte source gesetzt", 1, "erzeugt aus test (Stand 2026-08-05T23:40:00+02:00)", fresh),
+        ],
     )
     # Grenzwert beidseitig: Gesamttext-Laenge (path+title+summary+content, wie
     # in find_truncated_embeddings zusammengesetzt) knapp unter/ueber der
@@ -893,13 +925,21 @@ def selftest() -> None:
         assert fil["invalid_json_count"] == 1
         assert "L-proj-bad" in fil["invalid_json_rows"]
 
-        # K3 Konfidenz-Alter: 9 Knoten auf dem Schema-Vorgabewert (0.8),
+        # K3 Konfidenz-Alter: 11 Knoten auf dem Schema-Vorgabewert (0.8) --
+        # die urspruenglichen neun plus die beiden Kategorie-10-Fixtures
+        # (n_no_source, n_has_source), die confidence unangetastet lassen --
         # der abweichende Knoten (1.0) NICHT mitgezaehlt; aeltester der
         # Vorgabewert-Knoten ist n_stale (just_over-Zeitstempel).
         conf = result["structure_metrics"]["confidence_default_age"]
         assert conf["default_value"] == 0.8, conf["default_value"]
-        assert conf["count"] == 9, conf["count"]
+        assert conf["count"] == 11, conf["count"]
         assert conf["oldest_ref"] == "/shared/alt", conf["oldest_ref"]
+
+        # 10. Ohne Herkunft: nur-Leerzeichen zaehlt als fehlend, echte
+        #     source ist die Gegenprobe und darf NICHT auftauchen.
+        missing_source_paths = {m["path"] for m in result["missing_source"]}
+        assert "/shared/ohne-herkunft" in missing_source_paths, missing_source_paths
+        assert "/shared/mit-herkunft" not in missing_source_paths, missing_source_paths
 
     # K1 Gegenprobe B: Graph mit bekannter Kantenzahl, unabhaengig von der
     # Hauptfixture -- mittlerer Grad exakt nachgerechnet (4 Knoten, 3
