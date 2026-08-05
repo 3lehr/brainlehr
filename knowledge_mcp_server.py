@@ -35,6 +35,13 @@ import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
 
 DB_PATH = Path(__file__).parent / "knowledge.db"
 CET = timezone(timedelta(hours=1))
+# Mehrere MCP-Prozesse/Sitzungen schreiben gleichzeitig auf dieselbe WAL-DB.
+# WAL erlaubt genau einen Schreiber; ohne busy_timeout wirft ein zweiter
+# gleichzeitiger Schreibversuch sofort SQLITE_BUSY statt kurz zu warten.
+# 2000ms = derselbe Wert, mit dem knowledge_recall_hook.py seine RO-Verbindung
+# oeffnet (dort als timeout=2.0) -- lang genug fuer einen normalen Schreibvorgang
+# eines anderen Prozesses, kurz genug, dass ein Hook nicht spuerbar haengt.
+BUSY_TIMEOUT_MS = 2000
 RELATION_TYPES = {
     "references", "supersedes", "interprets", "implements", "contradicts",
     "supports", "derived_from", "cites", "evaluates_with", "constrains",
@@ -51,6 +58,7 @@ def get_db() -> sqlite3.Connection:
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_MS}")
     conn.execute("PRAGMA foreign_keys=ON")
     ensure_schema(conn)
     return conn
@@ -553,10 +561,35 @@ def knowledge_update(node_id: str, summary: str | None = None,
     updates.append("updated_at = ?")
     params.append(now_iso())
     params.append(row["id"])
+    # Lost-Update-Schutz: die WHERE-Klausel bindet an den beim SELECT oben
+    # gelesenen updated_at. Hat zwischenzeitlich ein anderer Schreiber
+    # denselben Knoten geaendert, trifft das UPDATE null Zeilen -- das ist
+    # das Signal, nicht ein Fehler der SQL selbst.
+    # ponytail: now_iso() ist sekundengenau -- zwei Schreiber in derselben
+    # Sekunde kollidieren zufaellig auf denselben Wert und der Schutz greift
+    # dann nicht. Aufwertung braeuchte eine Versions-Spalte, das ist eine
+    # Schema-Aenderung und ausserhalb dieses Auftrags.
+    expected_updated_at = row["updated_at"]
+    params.append(expected_updated_at)
 
     log_access(conn, row["path"], "update", project_id=row["project_id"],
                actor=actor, model=model, session=session, status="started")
-    conn.execute(f"UPDATE knowledge_nodes SET {', '.join(updates)} WHERE id = ?", params)
+    cursor = conn.execute(
+        f"UPDATE knowledge_nodes SET {', '.join(updates)} WHERE id = ? AND updated_at = ?",
+        params,
+    )
+    if cursor.rowcount == 0:
+        conn.rollback()
+        current = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ?", (row["id"],)).fetchone()
+        log_access(conn, row["path"], "update", project_id=row["project_id"],
+                   actor=actor, model=model, session=session, status="failed")
+        conn.close()
+        return {
+            "error": "Conflict: node was modified by another writer since it was read",
+            "id": row["id"],
+            "expected_updated_at": expected_updated_at,
+            "current": dict(current) if current else None,
+        }
 
     # P4: ein veralteter Vektor ist schlechter als gar keiner -- die
     # Hybridsuche gewichtet ihn gutgläubig mit, waehrend sie einen fehlenden

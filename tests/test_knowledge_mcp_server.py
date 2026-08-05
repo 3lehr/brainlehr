@@ -71,6 +71,71 @@ def test_access_identity_env_and_update_logging(temp_db, monkeypatch):
     }
 
 
+def test_busy_timeout_pragma_is_set(temp_db):
+    conn = kms.get_db()
+    value = conn.execute("PRAGMA busy_timeout").fetchone()[0]
+    conn.close()
+    assert value == kms.BUSY_TIMEOUT_MS
+
+
+def test_knowledge_update_detects_lost_update_and_reports_current_state(temp_db, monkeypatch):
+    """Zwei Schreiber auf demselben Knoten: der zweite muss scheitern, nicht
+    lautlos den ersten ueberschreiben. Simuliert wird die Rennsituation, indem
+    zwischen dem SELECT und dem UPDATE INNERHALB desselben knowledge_update()-
+    Aufrufs ein zweiter, echter Schreibvorgang ueber eine eigene Verbindung
+    committet -- genau das Fenster, das der optimistische Lock abdecken soll.
+
+    now_iso() wird auf garantiert steigende Sekunden gestellt: der echte
+    now_iso() rastet nur sekundengenau, zwei Schreibvorgaenge im selben Lauf
+    landen sonst zufaellig im selben String und der Lock erkennt den
+    Konflikt nicht zuverlaessig -- ein Hinweis, keine Behauptung ueber die
+    Produktion, dort ist echte Nebenlaeufigkeit selten sub-sekundengenau."""
+    ticks = iter(f"2026-01-01T00:00:{i:02d}+01:00" for i in range(30))
+    monkeypatch.setattr(kms, "now_iso", lambda: next(ticks))
+
+    node = kms.knowledge_add("/", "Race Node", "v0")
+    race_state = {"armed": True, "node_id": node["id"], "db_path": temp_db}
+
+    class RacingConnection(sqlite3.Connection):
+        def execute(self, sql, params=()):
+            # Race erst kurz VOR dem eigenen UPDATE einschieben -- das SELECT
+            # zuvor muss den ORIGINALEN (noch nicht ueberschriebenen)
+            # updated_at-Wert einsammeln, sonst wuerde der Aufrufer schon mit
+            # dem fremden Stand starten statt mit einem veralteten.
+            if race_state["armed"] and sql.startswith("UPDATE knowledge_nodes SET"):
+                race_state["armed"] = False
+                other = sqlite3.connect(str(race_state["db_path"]))
+                other.execute(
+                    "UPDATE knowledge_nodes SET summary = ?, updated_at = ? WHERE id = ?",
+                    ("changed by other session", kms.now_iso(), race_state["node_id"]),
+                )
+                other.commit()
+                other.close()
+            return super().execute(sql, params)
+
+    def racing_get_db():
+        conn = sqlite3.connect(str(kms.DB_PATH), factory=RacingConnection)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute(f"PRAGMA busy_timeout={kms.BUSY_TIMEOUT_MS}")
+        conn.execute("PRAGMA foreign_keys=ON")
+        kms.ensure_schema(conn)
+        return conn
+
+    monkeypatch.setattr(kms, "get_db", racing_get_db)
+
+    result = kms.knowledge_update(node["id"], summary="changed by stale caller")
+    assert "error" in result
+    assert "Conflict" in result["error"]
+    assert result["current"]["summary"] == "changed by other session"
+
+    # Gegenprobe: ein Update ohne Nebenlaeufigkeit (armed ist jetzt aus) geht
+    # weiterhin normal durch -- der Schutz darf den Normalfall nicht brechen.
+    ok = kms.knowledge_update(node["id"], summary="third write, correct base")
+    assert ok["status"] == "updated"
+    assert _db_rows(temp_db, "SELECT id,summary FROM knowledge_nodes")[0]["summary"] == "third write, correct base"
+
+
 def test_relation_contract_round_trip_and_validation(temp_db):
     source = kms.knowledge_add("/", "Relation Source", "source")
     target = kms.knowledge_add("/", "Relation Target", "target")
