@@ -45,6 +45,22 @@ nur zu belohnen:
   topic_neighbors       -- zwei neue Themen mit ueberlappendem Wortschatz
                             (teilen Stichworte), deren Dokumente sich
                             trotzdem nicht gegenseitig beantworten
+
+CORPUS_VERSION 1.2.0 (additiv, waehlbar ueber build_corpus(version=...), siehe
+docs/PLAN_ABRUF_PRUEFSTAND_2026-08-05.md Folgeauftrag "Chat-/Meta-Prompts
+fehlen"): 1.0.0 und 1.1.0 bleiben dabei in JEDEM Detail unveraendert -- 1.2.0
+baut 1.1.0 zuerst unveraendert auf und haengt danach eine achte, einzeln
+abschaltbare Pathologie an:
+  chat_meta_queries -- Anfragen, die sich auf das Gespraech beziehen statt auf
+                        den Bestand (Rueckfragen, Bestaetigungen,
+                        Einordnungsfragen, Fragen nach fremden Werkzeugen).
+                        Konstruierte Wahrheit: KEIN Dokument ist relevant,
+                        richtige Antwort ist Schweigen. Absichtlich NICHT die
+                        acht Faelle aus scripts/knowledge_recall_hook.py::
+                        _CASES (das waere der Selbsttest, der sich selbst
+                        bestaetigt) -- eigene Formulierungen, Stil/Laenge an
+                        shared-knowledge/auftraege.jsonl orientiert (1923
+                        echte Nachrichten).
 """
 from __future__ import annotations
 
@@ -56,7 +72,8 @@ import sys
 
 CORPUS_VERSION = "1.0.0"
 CORPUS_VERSION_1_1 = "1.1.0"
-CORPUS_VERSIONS = (CORPUS_VERSION, CORPUS_VERSION_1_1)
+CORPUS_VERSION_1_2 = "1.2.0"
+CORPUS_VERSIONS = (CORPUS_VERSION, CORPUS_VERSION_1_1, CORPUS_VERSION_1_2)
 
 DEFAULT_SEED = 20260805
 _V11_RNG_XOR = 0x1976  # zweiter, von der 1.0.0-Erzeugung unabhaengiger Zufallsstrom
@@ -78,6 +95,38 @@ DEFAULT_PATHOLOGIES_1_1 = {
     "generic_word_queries": True,
     "topic_neighbors": True,
 }
+
+# Neu in 1.2.0, Plan-Folgeauftrag "Chat-/Meta-Prompts fehlen" -- einzeln
+# abschaltbar, Default an. 1.0.0/1.1.0 kennen diesen Schluessel nicht.
+DEFAULT_PATHOLOGIES_1_2 = {
+    "chat_meta_queries": True,
+}
+
+_CHAT_META_TOPIC = "chat-meta"
+
+# Chat-/Meta-Prompts: eigene Formulierungen (nicht aus _CASES kopiert), Stil
+# und Laenge an shared-knowledge/auftraege.jsonl orientiert -- deutsch,
+# umgangssprachlich, kleingeschrieben, mit Tippfehlern. Vier Unterarten je
+# nach Diagnose: Rueckfrage, Bestaetigung, Einordnungsfrage, Frage nach
+# fremdem Werkzeug. Konstruierte Wahrheit fuer alle: kein Dokument relevant.
+_CHAT_META_QUERIES = [
+    "ist das jetzt so richtig verstanden oder hab ich das durcheinander gebracht",
+    "sollen wir das gleich so uebernehmen oder lieber nochmal gegenlesen",
+    "gehoert das jetzt eher zum vorherigen abschnitt oder ist das was komplett neues",
+    "kennst du dich eigentlich mit notion oder linear aus, koennten wir das dafuer nehmen",
+    "reicht dir das schon als antwort oder brauchst du noch mehr dazu",
+    "machst du das jetzt selber fertig oder soll ich nochmal ran",
+    "war das jetzt schon der ganze vorgang oder kommt da noch was hinterher",
+    "haste sowas wie github copilot schonmal ausprobiert oder ist das bei euch tabu",
+    "passt das so zusammen mit dem was wir vorhin besprochen hatten",
+    "ok klingt gut, machen wir das dann jetzt final so oder wartest du noch auf feedback",
+    "kannst du kurz den zusammenhang zwischen den letzten beiden antworten festhalten",
+    "nutzt ihr eigentlich noch jira nebenbei oder ist das komplett abgeloest worden",
+    "warte kurz, war die letzte aussage jetzt auf den ganzen betrieb bezogen oder nur auf den einen teil",
+    "denkst du das reicht als beleg oder brauchen wir dafuer noch was handfesteres",
+    "gehoert der letzte punkt noch mit rein oder machen wir dafuer lieber einen eigenen abschnitt",
+    "habt ihr sowas wie confluence im einsatz oder laeuft das komplett anders bei euch",
+]
 
 # Zwei neue Themen fuer topic_neighbors: teilen das erste Stichwort woertlich
 # (ueberlappender Wortschatz), der Rest ist themenfremd -- ihre Dokumente
@@ -394,22 +443,37 @@ def _extend_topic_neighbors(corpus: dict, rng2: random.Random, flags: dict) -> N
             })
 
 
+def _extend_chat_meta_queries(corpus: dict) -> None:
+    """Haengt die Chat-/Meta-Prompt-Anfragen an -- keine neuen Knoten/Lessons,
+    nur Anfragen mit topic_id=_CHAT_META_TOPIC und leerer Ground Truth (kein
+    Dokument relevant, richtige Antwort ist Schweigen)."""
+    qi = len(corpus["queries"])
+    for text in _CHAT_META_QUERIES:
+        corpus["queries"].append({
+            "id": f"q12-chatmeta-{qi}", "text": text, "topic_id": _CHAT_META_TOPIC,
+            "relevant_node_paths": [], "relevant_lesson_ids": [],
+        })
+        qi += 1
+
+
 def build_corpus(seed: int = DEFAULT_SEED, pathologies: dict | None = None,
                   version: str = CORPUS_VERSION) -> dict:
     """Oeffentliche Fabrik. version=CORPUS_VERSION (1.0.0, Default) liefert
     byteidentisch denselben Korpus wie vor diesem Auftrag -- siehe Selbsttest.
     version=CORPUS_VERSION_1_1 haengt drei zusaetzliche, "Nachsicht
-    bestrafende" Pathologien an, gesteuert ueber dieselbe pathologies-dict
-    (alte + neue Schluessel gemischt erlaubt)."""
+    bestrafende" Pathologien an. version=CORPUS_VERSION_1_2 baut auf 1.1.0
+    auf und haengt zusaetzlich Chat-/Meta-Prompt-Anfragen an. Alle Ebenen
+    teilen sich dieselbe pathologies-dict (Schluessel aller Ebenen gemischt
+    erlaubt)."""
     if version == CORPUS_VERSION:
         return _build_corpus_1_0_0(seed=seed, pathologies=pathologies)
-    if version != CORPUS_VERSION_1_1:
+    if version not in (CORPUS_VERSION_1_1, CORPUS_VERSION_1_2):
         raise ValueError(f"unbekannte CORPUS_VERSION: {version!r} (bekannt: {CORPUS_VERSIONS})")
 
     old_keys = set(DEFAULT_PATHOLOGIES)
     given = pathologies or {}
     base = _build_corpus_1_0_0(seed=seed, pathologies={k: v for k, v in given.items() if k in old_keys})
-    flags_1_1 = {**DEFAULT_PATHOLOGIES_1_1, **{k: v for k, v in given.items() if k not in old_keys}}
+    flags_1_1 = {**DEFAULT_PATHOLOGIES_1_1, **{k: v for k, v in given.items() if k in DEFAULT_PATHOLOGIES_1_1}}
 
     corpus = {
         "version": CORPUS_VERSION_1_1,
@@ -426,6 +490,16 @@ def build_corpus(seed: int = DEFAULT_SEED, pathologies: dict | None = None,
         _extend_generic_word_queries(corpus)
     if flags_1_1["topic_neighbors"]:
         _extend_topic_neighbors(corpus, rng2, {**base["pathologies"], **flags_1_1})
+
+    if version == CORPUS_VERSION_1_1:
+        corpus["checksum"] = _checksum(corpus)
+        return corpus
+
+    flags_1_2 = {**DEFAULT_PATHOLOGIES_1_2, **{k: v for k, v in given.items() if k in DEFAULT_PATHOLOGIES_1_2}}
+    corpus["version"] = CORPUS_VERSION_1_2
+    corpus["pathologies"] = {**corpus["pathologies"], **flags_1_2}
+    if flags_1_2["chat_meta_queries"]:
+        _extend_chat_meta_queries(corpus)
 
     corpus["checksum"] = _checksum(corpus)
     return corpus
@@ -462,6 +536,9 @@ def pathology_evidence(corpus: dict) -> dict:
         "generic_word_query_count": sum(1 for q in queries if q["topic_id"] == "allerweltswort"),
         "topic_neighbor_pair_count": len({n["topic_id"] for n in nodes
                                            if n["topic_id"] in (_NEIGHBOR_TOPIC_A[0], _NEIGHBOR_TOPIC_B[0])}),
+        # Neu in 1.2.0 -- auf 1.0.0/1.1.0-Korpora immer 0, da dieses Thema
+        # dort nicht existiert.
+        "chat_meta_query_count": sum(1 for q in queries if q["topic_id"] == _CHAT_META_TOPIC),
     }
 
 
@@ -533,6 +610,40 @@ def selftest() -> None:
     print(f"korpus.py selftest ok (version={CORPUS_VERSION_1_1}, checksum={v11_a['checksum'][:12]}..., "
           f"nodes={len(v11_a['nodes'])}, lessons={len(v11_a['lessons'])}, queries={len(v11_a['queries'])})")
 
+    # --- 1.2.0 (additiv, beruehrt keinen der obigen 1.0.0/1.1.0-Werte) -----
+    v12_a = build_corpus(version=CORPUS_VERSION_1_2)
+    v12_b = build_corpus(version=CORPUS_VERSION_1_2)
+    assert v12_a["checksum"] == v12_b["checksum"], "1.2.0: gleicher seed muss gleiche Pruefsumme ergeben"
+    assert v12_a["version"] == CORPUS_VERSION_1_2
+    assert v12_a["checksum"] != v11_a["checksum"], "1.2.0 muss von 1.1.0 abweichen"
+    assert len(v12_a["nodes"]) == len(v11_a["nodes"]), "chat_meta_queries fuegt keine Knoten hinzu"
+    assert len(v12_a["lessons"]) == len(v11_a["lessons"]), "chat_meta_queries fuegt keine Lessons hinzu"
+
+    ev12_all = pathology_evidence(v12_a)
+    assert ev12_all["chat_meta_query_count"] == len(_CHAT_META_QUERIES)
+    assert ev12_all["lockvogel_doc_count"] > 0, "1.1.0-Pathologien bleiben in 1.2.0 aktiv"
+
+    off12 = build_corpus(version=CORPUS_VERSION_1_2, pathologies={"chat_meta_queries": False})
+    ev_off12 = pathology_evidence(off12)
+    assert ev_off12["chat_meta_query_count"] == 0
+    assert ev_off12["lockvogel_doc_count"] > 0, "chat_meta_queries bleibt unabhaengig von den 1.1.0-Pathologien"
+    assert len(off12["queries"]) == len(v11_a["queries"]), \
+        "chat_meta_queries=False muss exakt die 1.1.0-Anfragenmenge ergeben"
+
+    # Chat-/Meta-Anfragen duerfen NICHT die acht _CASES-Faelle nachspielen --
+    # sonst bestaetigt der Pruefstand nur den Selbsttest, der ihn ausloeste.
+    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent.parent.parent / "scripts"))
+    try:
+        import knowledge_recall_hook as _hook  # type: ignore
+        case_texts = {text.strip().lower() for _, text in _hook._CASES}
+        chat_texts = {q["text"].strip().lower() for q in v12_a["queries"] if q["topic_id"] == _CHAT_META_TOPIC}
+        assert not (case_texts & chat_texts), "chat_meta_queries dupliziert _CASES-Formulierungen woertlich"
+    except ImportError:
+        pass  # Hook-Modul optional erreichbar, kein Hartstopp im Selbsttest
+
+    print(f"korpus.py selftest ok (version={CORPUS_VERSION_1_2}, checksum={v12_a['checksum'][:12]}..., "
+          f"nodes={len(v12_a['nodes'])}, lessons={len(v12_a['lessons'])}, queries={len(v12_a['queries'])})")
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
@@ -541,7 +652,7 @@ def main() -> None:
     ap.add_argument("--out", type=str, default=None, help="Korpus als JSON schreiben")
     ap.add_argument("--corpus-version", type=str, default=CORPUS_VERSION, choices=list(CORPUS_VERSIONS))
     ap.add_argument("--pathology-off", action="append", default=[],
-                     choices=list(DEFAULT_PATHOLOGIES) + list(DEFAULT_PATHOLOGIES_1_1))
+                     choices=list(DEFAULT_PATHOLOGIES) + list(DEFAULT_PATHOLOGIES_1_1) + list(DEFAULT_PATHOLOGIES_1_2))
     args = ap.parse_args()
 
     if args.selftest:
