@@ -19,11 +19,13 @@ Tools:
   - knowledge_stats()             → Übersichts-Statistiken
 """
 
+import difflib
 import json
 import os
 import re
 import sqlite3
 import sys
+import unicodedata
 import uuid
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -208,9 +210,16 @@ def _embedding_ranking(conn: sqlite3.Connection, kind: str, query_vec: list[floa
     except sqlite3.OperationalError:
         return []
     scored = []
+    seen_ref_ids = set()  # mehrwertige Lehren: je Bereich eine Zeile, gleicher Vektor --
+    # ohne Dedup zaehlt dieselbe Aehnlichkeit mehrfach in die RRF-Fusion und
+    # haengt eine mehrwertige Lehre allein wegen ihrer Zeilenzahl vor eine
+    # gleich relevante einwertige (siehe test_scope_in_query.py).
     for r in rows:
         if allowed_ids is not None and r["ref_id"] not in allowed_ids:
             continue
+        if r["ref_id"] in seen_ref_ids:
+            continue
+        seen_ref_ids.add(r["ref_id"])
         vec = embeddings.unpack_embedding(r["vector"])
         scored.append((embeddings.cosine_similarity(query_vec, vec), r["ref_id"]))
     scored.sort(key=lambda t: t[0], reverse=True)
@@ -361,12 +370,101 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     return {"query": query, "scope": scope, "results": results, "count": len(results)}
 
 
+SLUG_MAX_LEN = 40
+_SLUG_CHAR_RE = re.compile(r"[^a-z0-9]+")
+
+
+def _slugify(title: str) -> str:
+    """Faltet deutsche Umlaute (fold_de), zerlegt uebrige Akzentzeichen
+    (z.B. 'café' -> 'cafe') per NFKD-Normalisierung, ersetzt alles ausser
+    [a-z0-9] durch '-', zieht Mehrfach-Trennstriche zusammen und kuerzt an
+    der Wortgrenze statt hart bei SLUG_MAX_LEN mitten im Wort (Live-Befund:
+    '...einstellungseb'). Nur ein einzelnes Wort, das schon laenger als
+    SLUG_MAX_LEN ist, wird hart geschnitten -- sonst bliebe nichts uebrig."""
+    decomposed = unicodedata.normalize("NFKD", fold_de(title))
+    without_accents = "".join(c for c in decomposed if not unicodedata.combining(c))
+    raw = _SLUG_CHAR_RE.sub("-", without_accents).strip("-")
+    raw = re.sub(r"-+", "-", raw)
+    if len(raw) <= SLUG_MAX_LEN:
+        return raw
+    words = raw.split("-")
+    if len(words[0]) >= SLUG_MAX_LEN:
+        return words[0][:SLUG_MAX_LEN]
+    out = words[0]
+    for w in words[1:]:
+        if len(out) + 1 + len(w) > SLUG_MAX_LEN:
+            break
+        out += "-" + w
+    return out
+
+
+# ─── P5: [[wikilink]] -> knowledge_relations ────────────────────────────────
+# Billigster Anfang fuer das Karpathy-LLM-Wiki-Muster (eine Quelle beruehrt
+# beim Einpflegen 10-15 Seiten statt eine einzelne anzulegen): die
+# [[wikilink]]-Schreibweise aus den Memory-Dateien wird beim Schreiben zu
+# echten Kanten aufgeloest, keine Aehnlichkeit wird erraten.
+_WIKILINK_RE = re.compile(r"\[\[([^\[\]]+)\]\]")
+
+
+def _extract_wikilinks(content: str) -> list[str]:
+    """Deduplizierte, getrimmte Linkziele in Ursprungsreihenfolge."""
+    targets = (m.strip() for m in _WIKILINK_RE.findall(content or ""))
+    return list(dict.fromkeys(t for t in targets if t))
+
+
+def _resolve_wikilink(conn: sqlite3.Connection, target: str) -> sqlite3.Row | None:
+    """ziel darf Pfad oder Titel sein (Titel case-insensitiv)."""
+    return conn.execute(
+        "SELECT id, path, title FROM knowledge_nodes WHERE path = ? OR LOWER(title) = LOWER(?)",
+        (target, target),
+    ).fetchone()
+
+
+def _sync_wikilinks(conn: sqlite3.Connection, source_path: str, content: str, *,
+                    actor: str | None = None, model: str | None = None,
+                    session: str | None = None) -> dict:
+    """Legt fuer jedes aufloesbare [[ziel]] im content eine knowledge_relations-
+    Zeile an. Unaufgeloeste Verweise werden NICHT geschrieben, sondern als
+    Hinweis zurueckgegeben (ein Verweis ins Leere zeigt auf einen noch zu
+    schreibenden Knoten, ist kein Fehler). Ein Selbstverweis erzeugt keine
+    Kante -- deckt sich mit knowledge_relation_add(), das Selbstkanten
+    ablehnt. Der Aufrufer ist verantwortlich, vorher bestehende Kanten dieses
+    Knotens zu loeschen, falls es ein Update ist (siehe knowledge_update)."""
+    creator, model, session = _identity(actor, model, session)
+    relations_created: list[str] = []
+    unresolved_links: list[str] = []
+    seen_targets: set[str] = set()
+    for target in _extract_wikilinks(content):
+        row = _resolve_wikilink(conn, target)
+        if not row:
+            unresolved_links.append(target)
+            continue
+        if row["path"] == source_path or row["path"] in seen_targets:
+            continue
+        seen_targets.add(row["path"])
+        timestamp = now_iso()
+        conn.execute(
+            """INSERT INTO knowledge_relations
+               (id, source_path, target_path, relation_type, confidence, weight,
+                evidence, source, creator, model, session, created_at, updated_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (f"R-{uuid.uuid4().hex[:8]}", source_path, row["path"], "references",
+             0.8, 1.0, f"[[{target}]] im content", "wikilink",
+             creator, model, session, timestamp, timestamp),
+        )
+        relations_created.append(row["path"])
+    return {"relations_created": relations_created, "unresolved_links": unresolved_links}
+
+
 def knowledge_add(parent_path: str, title: str, summary: str,
                   content: str = "", project_id: str = "shared",
                   tags: list | None = None, source: str = "", *,
+                  neuer_ast: bool = False,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
-    """Add a new knowledge node to the tree."""
+    """Add a new knowledge node to the tree. Rejects an unknown parent_path
+    unless neuer_ast=True (see U1 im Plan 2026-08-05, P1: erfundene Aeste
+    streuten Wissen an Stellen, die nie wieder abgerufen wurden)."""
     fixed = unmangle_knowledge_fields({
         "title": title, "summary": summary, "content": content, "tags": tags, "source": source,
     })
@@ -374,10 +472,23 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     content, tags, source = fixed["content"], fixed["tags"], fixed["source"]
 
     conn = get_db()
-    parent_path = parent_path.rstrip("/")
+    parent_path = parent_path.rstrip("/") or "/"
+
+    if parent_path != "/" and not neuer_ast:
+        parent_row = conn.execute(
+            "SELECT 1 FROM knowledge_nodes WHERE path = ?", (parent_path,)
+        ).fetchone()
+        if not parent_row:
+            all_paths = [r[0] for r in conn.execute("SELECT path FROM knowledge_nodes")]
+            conn.close()
+            return {
+                "error": f"Elternpfad existiert nicht: {parent_path}. "
+                         f"Mit neuer_ast=True bewusst einen neuen Ast anlegen.",
+                "vorhandene_pfade": difflib.get_close_matches(parent_path, all_paths, n=5),
+            }
 
     # Derive path from parent + slugified title
-    slug = title.lower().replace(" ", "-").replace("/", "-")[:40]
+    slug = _slugify(title)
     node_path = f"{parent_path}/{slug}" if parent_path != "/" else f"/{slug}"
 
     # Check for duplicates
@@ -400,9 +511,10 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session)
+    wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     conn.commit()
     conn.close()
-    return {"id": node_id, "path": node_path, "status": "created"}
+    return {"id": node_id, "path": node_path, "status": "created", **wikilinks}
 
 
 def knowledge_update(node_id: str, summary: str | None = None,
@@ -445,11 +557,26 @@ def knowledge_update(node_id: str, summary: str | None = None,
     log_access(conn, row["path"], "update", project_id=row["project_id"],
                actor=actor, model=model, session=session, status="started")
     conn.execute(f"UPDATE knowledge_nodes SET {', '.join(updates)} WHERE id = ?", params)
+
+    # P4: ein veralteter Vektor ist schlechter als gar keiner -- die
+    # Hybridsuche gewichtet ihn gutgläubig mit, waehrend sie einen fehlenden
+    # sauber verkraftet (test_knowledge_hybrid_search.py). Nur bei
+    # Textaenderung loeschen; ein reiner tags-Wechsel laesst ihn stehen.
+    if summary is not None or content is not None:
+        conn.execute("DELETE FROM knowledge_embeddings WHERE kind = 'node' AND ref_id = ?", (row["id"],))
+
+    wikilinks = {"relations_created": [], "unresolved_links": []}
+    if content is not None:
+        # P5: Kanten dieses Knotens komplett neu ziehen, sonst ueberlebt ein
+        # aus dem content entfernter Verweis als Karteileiche.
+        conn.execute("DELETE FROM knowledge_relations WHERE source_path = ?", (row["path"],))
+        wikilinks = _sync_wikilinks(conn, row["path"], content, actor=actor, model=model, session=session)
+
     log_access(conn, row["path"], "update", project_id=row["project_id"],
                actor=actor, model=model, session=session)
     conn.commit()
     conn.close()
-    return {"id": row["id"], "status": "updated"}
+    return {"id": row["id"], "status": "updated", **wikilinks}
 
 
 def _relation_node(conn: sqlite3.Connection, value: str,
@@ -1061,6 +1188,13 @@ def lesson_update(lesson_id: str, description: str | None = None,
     params.append(lesson_id)
 
     conn.execute(f"UPDATE lessons_learned SET {', '.join(updates)} WHERE id = ?", params)
+
+    # P4: der Embedding-Text einer Lesson ist description+root_cause+prevention
+    # (siehe build_embeddings.py) -- resolution/severity/projects/status
+    # fliessen nicht ein und loesen deshalb keine Loeschung aus.
+    if {"description", "root_cause", "prevention"} & given.keys():
+        conn.execute("DELETE FROM knowledge_embeddings WHERE kind = 'lesson' AND ref_id = ?", (lesson_id,))
+
     log_access(conn, None, "lesson_update", query=lesson_id)
     conn.commit()
     conn.close()
@@ -1223,17 +1357,20 @@ TOOLS = {
         "handler": lambda args: knowledge_search(args["query"], args.get("scope", "all"), args.get("max_results", 10), **_identity_args(args))
     },
     "knowledge_add": {
-        "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy.",
+        "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy. "
+                        "parent_path must already exist (or be '/'); an unknown parent_path is rejected with "
+                        "suggested nearby paths unless neuer_ast=True explicitly opens a new branch.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "parent_path": {"type": "string", "description": "Parent node path, e.g. '/shared/arch'"},
+                "parent_path": {"type": "string", "description": "Parent node path, e.g. '/shared/arch' -- must exist"},
                 "title": {"type": "string"},
                 "summary": {"type": "string", "description": "1-2 sentences summary (token-efficient)"},
                 "content": {"type": "string", "description": "Full content (loaded only on read)"},
                 "project_id": {"type": "string", "description": "shared|begod|aka|bebetter", "default": "shared"},
                 "tags": {"type": "array", "items": {"type": "string"}},
                 "source": {"type": "string", "description": "Origin: file path, konsil ID, or research ID"},
+                "neuer_ast": {"type": "boolean", "description": "Explicitly allow creating a new top-level branch when parent_path doesn't exist yet", "default": False},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["parent_path", "title", "summary"]
@@ -1241,7 +1378,8 @@ TOOLS = {
         "handler": lambda args: knowledge_add(
             args["parent_path"], args["title"], args["summary"],
             args.get("content", ""), args.get("project_id", "shared"),
-            args.get("tags"), args.get("source", ""), **_identity_args(args)
+            args.get("tags"), args.get("source", ""), neuer_ast=args.get("neuer_ast", False),
+            **_identity_args(args)
         )
     },
     "knowledge_update": {

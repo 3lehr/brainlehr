@@ -568,6 +568,7 @@ def test_knowledge_add_unmangles_on_write(temp_db):
                   '<tags>["a"]</tags>\n<content>Volltext</content>'),
         content="",
         tags=[],
+        neuer_ast=True,  # /test existiert in dieser Fixture nicht (P1: unbekannte Elternpfade werden sonst abgelehnt)
     )
     assert result["status"] == "created"
     conn = sqlite3.connect(str(temp_db))
