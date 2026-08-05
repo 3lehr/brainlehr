@@ -231,6 +231,28 @@ def find_truncated_embeddings(conn: sqlite3.Connection) -> list[dict]:
     return out
 
 
+# ─── 8. Eskaliert ohne Regel ─────────────────────────────────────────────────
+# status='escalated_to_rule' soll heissen: aus der Lehre wurde eine Regel
+# (ein knowledge_nodes-Knoten). node_path ist die Verknuepfung dahin. Zwei
+# verschiedene Bruecheformen, getrennt ausgewiesen, weil verschiedene
+# Ursachen: nie gesetzt (Eskalation vergessen den Knoten zu verlinken) vs.
+# zeigt auf einen Pfad, den es nicht (mehr) gibt (Knoten umbenannt/geloescht).
+
+def find_escalated_without_rule(conn: sqlite3.Connection) -> dict:
+    paths = {r[0] for r in conn.execute("SELECT path FROM knowledge_nodes")}
+    never_linked = []
+    dangling_ref = []
+    for r in conn.execute(
+        "SELECT id, description, node_path FROM lessons_learned WHERE status = 'escalated_to_rule'"
+    ):
+        np = r["node_path"]
+        if not np:
+            never_linked.append({"id": r["id"], "description": r["description"]})
+        elif np not in paths:
+            dangling_ref.append({"id": r["id"], "description": r["description"], "node_path": np})
+    return {"never_linked": never_linked, "dangling_ref": dangling_ref}
+
+
 # ─── Struktur-Kennzahlen (kein Befund, Zustand des Bestands als Ganzes) ────
 # Getrennt von den sieben Befund-Kategorien oben: keine beanstandet einen
 # einzelnen Eintrag, sondern beschreibt eine Verteilung ueber den Bestand.
@@ -350,6 +372,7 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "near_duplicate_lessons": find_near_duplicate_lessons(conn),
             "path_hygiene": find_path_hygiene(conn),
             "truncated_embeddings": find_truncated_embeddings(conn),
+            "escalated_without_rule": find_escalated_without_rule(conn),
             "structure_metrics": find_structure_metrics(conn),
         }
     finally:
@@ -376,6 +399,13 @@ def print_report(result: dict) -> None:
                    result["truncated_embeddings"],
                    lambda i: f"[{i['kind']}] {i['ref']}: ~{i['estimated_tokens']} Token "
                              f"(+{i['over_by']} ueber Grenze)")
+    esc = result["escalated_without_rule"]
+    _print_section("Eskaliert ohne Regel -- nie verknuepft (node_path leer)",
+                   esc["never_linked"],
+                   lambda i: f"{i['id']}: {i['description'][:80]}")
+    _print_section("Eskaliert ohne Regel -- Verweis ins Leere (node_path ohne Knoten)",
+                   esc["dangling_ref"],
+                   lambda i: f"{i['id']} -> {i['node_path']}: {i['description'][:80]}")
     print_structure_metrics(result["structure_metrics"])
 
 
@@ -471,6 +501,22 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
             ("L-proj-bad", "insight", "Kaputtes JSON im projects-Feld.", "active", "openlehr", fresh, fresh),
         ],
     )
+    # 8. Eskaliert ohne Regel: vier Faelle, zwei davon Gegenproben, die
+    #    NICHT gemeldet werden duerfen.
+    conn.executemany(
+        "INSERT INTO lessons_learned (id, type, description, status, node_path, first_seen, last_seen) "
+        "VALUES (?,?,?,?,?,?,?)",
+        [
+            ("L-esc-never-linked", "error", "Eskaliert, aber nie mit einer Regel verknuepft.",
+             "escalated_to_rule", None, fresh, fresh),
+            ("L-esc-dangling", "error", "Eskaliert, node_path zeigt ins Leere.",
+             "escalated_to_rule", "/nicht/vorhanden/als/knoten", fresh, fresh),
+            ("L-esc-linked", "error", "Eskaliert und korrekt verknuepft -- Gegenprobe.",
+             "escalated_to_rule", "/shared/kind", fresh, fresh),
+            ("L-not-escalated", "error", "Nicht eskaliert, node_path leer -- Gegenprobe.",
+             "active", None, fresh, fresh),
+        ],
+    )
     conn.commit()
     conn.close()
     return db_path
@@ -542,6 +588,19 @@ def selftest() -> None:
         assert _estimated_tokens("a" * round((EMBED_CONTEXT_TOKENS - 1) * CHARS_PER_TOKEN_ESTIMATE)) <= EMBED_CONTEXT_TOKENS
         assert _estimated_tokens("a" * round((EMBED_CONTEXT_TOKENS + 1) * CHARS_PER_TOKEN_ESTIMATE)) > EMBED_CONTEXT_TOKENS
 
+        # 8. Eskaliert ohne Regel: nie-verknuepft und Verweis-ins-Leere je
+        #    genau der eine gesetzte Fall, beide Gegenproben (verknuepft,
+        #    nicht eskaliert) NICHT gemeldet -- in keiner der beiden Listen.
+        esc = result["escalated_without_rule"]
+        never_linked_ids = {i["id"] for i in esc["never_linked"]}
+        dangling_ids = {i["id"] for i in esc["dangling_ref"]}
+        assert never_linked_ids == {"L-esc-never-linked"}, never_linked_ids
+        assert dangling_ids == {"L-esc-dangling"}, dangling_ids
+        dangling_entry = next(i for i in esc["dangling_ref"] if i["id"] == "L-esc-dangling")
+        assert dangling_entry["node_path"] == "/nicht/vorhanden/als/knoten"
+        assert "L-esc-linked" not in never_linked_ids | dangling_ids
+        assert "L-not-escalated" not in never_linked_ids | dangling_ids
+
         # K1 Gegenprobe A: diese Fixture hat keine Querkanten -> Grad 0,
         # fehlende Kanten bis zur Schwelle = Knoten/2.
         perc = result["structure_metrics"]["percolation_distance"]
@@ -552,7 +611,7 @@ def selftest() -> None:
         # K2 Filamente: 3 Lessons ohne Projekt (Default '[]'), je 1 mit
         # 1/2/3 Projekten, 1 kaputte JSON-Zeile -- alle getrennt gezaehlt.
         fil = result["structure_metrics"]["filaments"]
-        assert fil["by_project_count"].get(0) == 3, fil["by_project_count"]
+        assert fil["by_project_count"].get(0) == 7, fil["by_project_count"]
         assert fil["by_project_count"].get(1) == 1, fil["by_project_count"]
         assert fil["by_project_count"].get(2) == 1, fil["by_project_count"]
         assert fil["by_project_count"].get(3) == 1, fil["by_project_count"]
