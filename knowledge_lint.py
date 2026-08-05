@@ -30,6 +30,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE))
 sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
 
 import embeddings  # noqa: E402
+import geltungsbereich  # noqa: E402
 from knowledge_mcp_server import fold_de, SLUG_MAX_LEN  # noqa: E402
 
 DB_PATH = SHARED_KNOWLEDGE / "knowledge.db"
@@ -253,6 +254,136 @@ def find_escalated_without_rule(conn: sqlite3.Connection) -> dict:
     return {"never_linked": never_linked, "dangling_ref": dangling_ref}
 
 
+# ─── 9. Normkonflikt ─────────────────────────────────────────────────────────
+# N4 aus docs/PLAN_NORMSCHICHT_2026-08-05.md. Einzige Kategorie, die die
+# Normschicht selbst prueft statt Bestandshygiene: paarweise ueber alle
+# Knoten mit gesetztem norm_rang (Fakten, norm_rang IS NULL, widersprechen
+# sich nicht im normativen Sinn -- Plan §2). Geltungsbereich kommt aus
+# geltungsbereich.geltungsbereich() (importiert, nicht nachgebaut -- dort
+# steckt die Bedeutung der leeren Menge).
+#
+# "Selber Gegenstand" deterministisch ueber Titel-Wortueberlappung (Jaccard
+# auf fold_de-gefalteten, stoppwortbereinigten Tokens). Schwaeche
+# ausdruecklich: findet NUR woertliche Ueberschneidung im Titel -- zwei
+# Normen ueber dieselbe Sache in ganz verschiedenen Worten (Synonyme,
+# Umschreibungen) werden nicht gefunden. Ein Modell koennte das, ist hier
+# aber ausgeschlossen (kein Modellaufruf). Schwelle 0.25 empirisch gegen
+# den Echtbestand kalibriert (siehe Bericht) -- fasst z.B. "ADR-021: AKAPP
+# Drei-Schichten" und "ADR-022: AKAPP Hybride Architektur" (Score 0.25),
+# laesst thematisch entferntere Paare durch.
+
+SUBJECT_OVERLAP_THRESHOLD = 0.25
+_SUBJECT_STOPWORDS = frozenset({
+    "der", "die", "das", "und", "oder", "fuer", "bei", "ist", "im", "in",
+    "von", "zu", "ein", "eine", "mit", "auf", "nicht", "als", "an", "aus",
+    "dem", "den", "des", "systemweit", "immer", "alle", "jede", "jeder",
+    "wird", "nie", "kein", "keine", "ohne", "sich", "sind", "hat", "seit",
+    "regel",
+})
+_SUBJECT_TOKEN_RE = re.compile(r"[a-z0-9]+")
+
+
+def _subject_tokens(title: str) -> frozenset[str]:
+    folded = fold_de(title)
+    return frozenset(t for t in _SUBJECT_TOKEN_RE.findall(folded)
+                      if len(t) > 2 and t not in _SUBJECT_STOPWORDS)
+
+
+def _subject_overlap(a: frozenset[str], b: frozenset[str]) -> float:
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
+
+
+def _scopes_overlap(a: frozenset[str], b: frozenset[str]) -> bool:
+    """Leere Menge heisst 'gilt ueberall' (geltungsbereich.py) und
+    ueberschneidet sich damit immer -- auch mit einer anderen leeren
+    Menge."""
+    if not a or not b:
+        return True
+    return bool(a & b)
+
+
+def _narrower(a: frozenset[str], b: frozenset[str]) -> bool:
+    """True wenn Bereich a echt enger ist als b (a gewinnt bei lex
+    specialis). Leere Menge heisst 'gilt ueberall' -- semantisch die
+    WEITESTE Reichweite, das Gegenteil reiner Mengeninklusion (dort waere
+    die leere Menge Teilmenge von allem, also 'am engsten'). Deshalb kein
+    blosses a < b."""
+    if a == b:
+        return False
+    if not b:
+        return True  # b gilt ueberall, a ist konkret -> a ist enger
+    if not a:
+        return False  # a gilt ueberall, b ist konkret -> a ist NICHT enger
+    return a < b  # beide konkret: echte Teilmenge normal vergleichen
+
+
+def _parse_gilt_ab(v: str | None) -> datetime | None:
+    if not v:
+        return None
+    try:
+        return datetime.fromisoformat(v)
+    except ValueError:
+        return None
+
+
+def _resolve_norm_conflict(a: dict, b: dict) -> tuple[str | None, str | None]:
+    """a, b: dicts mit 'path', 'norm_rang', 'scope' (frozenset), 'gilt_ab'.
+    Wendet lex superior -> lex specialis -> lex posterior in dieser
+    Reihenfolge an. Liefert (regel, gewinner_path), oder (None, None) wenn
+    keine der drei entscheiden konnte -- der echte Konflikt."""
+    if a["norm_rang"] != b["norm_rang"]:
+        winner = a if a["norm_rang"] < b["norm_rang"] else b
+        return "lex_superior", winner["path"]
+    if _narrower(a["scope"], b["scope"]):
+        return "lex_specialis", a["path"]
+    if _narrower(b["scope"], a["scope"]):
+        return "lex_specialis", b["path"]
+    if a["scope"] == b["scope"]:
+        ga, gb = _parse_gilt_ab(a["gilt_ab"]), _parse_gilt_ab(b["gilt_ab"])
+        if ga is not None and gb is not None and ga != gb:
+            winner = a if ga > gb else b
+            return "lex_posterior", winner["path"]
+    return None, None
+
+
+def find_norm_conflicts(conn: sqlite3.Connection) -> dict:
+    rows = conn.execute(
+        "SELECT id, path, title, project_id, norm_rang, gilt_ab, gilt_bis "
+        "FROM knowledge_nodes WHERE norm_rang IS NOT NULL"
+    ).fetchall()
+    norms = [
+        {
+            "id": r["id"], "path": r["path"], "norm_rang": r["norm_rang"],
+            "gilt_ab": r["gilt_ab"],
+            "scope": geltungsbereich.geltungsbereich(r),
+            "tokens": _subject_tokens(r["title"]),
+        }
+        for r in rows
+    ]
+
+    entschieden, echte = [], []
+    for i in range(len(norms)):
+        for j in range(i + 1, len(norms)):
+            a, b = norms[i], norms[j]
+            if not _scopes_overlap(a["scope"], b["scope"]):
+                continue
+            score = _subject_overlap(a["tokens"], b["tokens"])
+            if score < SUBJECT_OVERLAP_THRESHOLD:
+                continue
+            regel, gewinner = _resolve_norm_conflict(a, b)
+            eintrag = {"a": a["path"], "b": b["path"], "a_rang": a["norm_rang"],
+                       "b_rang": b["norm_rang"], "subject_score": round(score, 3)}
+            if regel is None:
+                echte.append(eintrag)
+            else:
+                eintrag["regel"] = regel
+                eintrag["gewinner"] = gewinner
+                entschieden.append(eintrag)
+    return {"entschieden": entschieden, "echte_konflikte": echte}
+
+
 # ─── Struktur-Kennzahlen (kein Befund, Zustand des Bestands als Ganzes) ────
 # Getrennt von den sieben Befund-Kategorien oben: keine beanstandet einen
 # einzelnen Eintrag, sondern beschreibt eine Verteilung ueber den Bestand.
@@ -373,6 +504,7 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "path_hygiene": find_path_hygiene(conn),
             "truncated_embeddings": find_truncated_embeddings(conn),
             "escalated_without_rule": find_escalated_without_rule(conn),
+            "norm_conflicts": find_norm_conflicts(conn),
             "structure_metrics": find_structure_metrics(conn),
         }
     finally:
@@ -406,6 +538,15 @@ def print_report(result: dict) -> None:
     _print_section("Eskaliert ohne Regel -- Verweis ins Leere (node_path ohne Knoten)",
                    esc["dangling_ref"],
                    lambda i: f"{i['id']} -> {i['node_path']}: {i['description'][:80]}")
+    nc = result["norm_conflicts"]
+    _print_section(f"Normkonflikte -- entschieden (Themenscore >= {SUBJECT_OVERLAP_THRESHOLD})",
+                   nc["entschieden"],
+                   lambda i: f"{i['a']} (Rang {i['a_rang']}) vs {i['b']} (Rang {i['b_rang']}) "
+                             f"-> {i['regel']}, gewinnt: {i['gewinner']}")
+    _print_section("Normkonflikte -- ECHTER KONFLIKT (keine der drei Regeln entscheidet)",
+                   nc["echte_konflikte"],
+                   lambda i: f"{i['a']} (Rang {i['a_rang']}) vs {i['b']} (Rang {i['b_rang']}), "
+                             f"Themenscore {i['subject_score']}")
     print_structure_metrics(result["structure_metrics"])
 
 
@@ -517,6 +658,64 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
              "active", None, fresh, fresh),
         ],
     )
+    # 9. Normkonflikt: sechs Gruppen, je eine pro Regel/Gegenprobe aus der
+    # Abnahme. parent_path immer "/shared" (existierender Knoten) und
+    # confidence explizit 1.0 -- sonst verfaelschen die Zusatzknoten die
+    # Waisen- (Kategorie 1) und Konfidenz-Alter-Zaehlung (K3) der anderen
+    # Kategorien, die auf dieser Fixture exakte Mengen/Zahlen pruefen.
+    t_early = "2026-01-01T00:00:00+00:00"
+    t_late = "2026-02-01T00:00:00+00:00"
+    conn.executemany(
+        "INSERT INTO knowledge_nodes "
+        "(id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, gilt_ab, updated_at) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        [
+            # Gruppe 1 -- verschiedener Rang, gleicher Bereich: lex superior,
+            # kleinere Zahl gewinnt.
+            ("nc_1a", "/shared/normtest/kranwinkel-grenzwert", "/shared", "testproj",
+             "Regel Kranwinkel Grenzwert", "S", 1, 1.0, 1, t_early, fresh),
+            ("nc_1b", "/shared/normtest/kranwinkel-ausnahme", "/shared", "testproj",
+             "Regel Kranwinkel Ausnahme", "S", 1, 1.0, 3, t_early, fresh),
+            # Gruppe 2 -- gleicher Rang, leerer Bereich (ueberall) gegen ein
+            # Projekt: Bereiche ueberschneiden sich, lex specialis, der
+            # konkrete Bereich gewinnt (nicht "disjunkt").
+            ("nc_2a", "/shared/normtest/ladekurve-nachtbetrieb", "/shared", "fahrzeugpark",
+             "Regel Ladekurve Nachtbetrieb", "S", 1, 1.0, 2, t_early, fresh),
+            ("nc_2b", "/shared/normtest/ladekurve-feiertagsbetrieb", "/shared", "",
+             "Regel Ladekurve Feiertagsbetrieb", "S", 1, 1.0, 2, t_early, fresh),
+            # Gruppe 3 -- gleicher Rang, gleicher Bereich, verschiedenes
+            # gilt_ab: lex posterior, juengeres gewinnt.
+            ("nc_3a", "/shared/normtest/standheizung-sommerzeit", "/shared", "fahrzeugpark2",
+             "Regel Standheizung Sommerzeit", "S", 1, 1.0, 2, t_early, fresh),
+            ("nc_3b", "/shared/normtest/standheizung-winterzeit", "/shared", "fahrzeugpark2",
+             "Regel Standheizung Winterzeit", "S", 1, 1.0, 2, t_late, fresh),
+            # Gruppe 4 -- gleicher Rang, gleicher Bereich, gleiches gilt_ab:
+            # der wichtigste Fall, echter Konflikt, keine Regel entscheidet.
+            ("nc_4a", "/shared/normtest/blinkfrequenz-anhaenger", "/shared", "fahrzeugpark3",
+             "Regel Blinkfrequenz Anhaenger", "S", 1, 1.0, 2, t_early, fresh),
+            ("nc_4b", "/shared/normtest/blinkfrequenz-kombi", "/shared", "fahrzeugpark3",
+             "Regel Blinkfrequenz Kombi", "S", 1, 1.0, 2, t_early, fresh),
+            # Gruppe 5 -- disjunkte, konkrete Bereiche: kein Konflikt, taucht
+            # nirgends auf (identischer Titel, damit klar ist: einzig der
+            # Bereich verhindert die Meldung).
+            ("nc_5a", "/shared/normtest/hupsignal-baustelle-insel-a", "/shared", "inselA",
+             "Regel Hupsignal Baustelle", "S", 1, 1.0, 1, t_early, fresh),
+            ("nc_5b", "/shared/normtest/hupsignal-baustelle-insel-b", "/shared", "inselB",
+             "Regel Hupsignal Baustelle", "S", 1, 1.0, 1, t_early, fresh),
+            # Gruppe 6 -- Norm gegen Fakt (norm_rang NULL): kein Konflikt,
+            # der Fakt wird von der SQL-Abfrage schon ausgeschlossen.
+            ("nc_6norm", "/shared/normtest/sichtpruefung-bremslicht-norm", "/shared", "faktcheck",
+             "Regel Sichtpruefung Bremslicht", "S", 1, 1.0, 1, t_early, fresh),
+            ("nc_6fakt", "/shared/normtest/sichtpruefung-bremslicht-fakt", "/shared", "faktcheck",
+             "Regel Sichtpruefung Bremslicht", "S", 1, 1.0, None, t_early, fresh),
+            # Gruppe 7 -- gleicher Rang/Bereich, aber Themenscore unter der
+            # Schwelle: keine Regel wird ueberhaupt aufgerufen, kein Treffer.
+            ("nc_7a", "/shared/normtest/randfall-alpha-eins", "/shared", "randfall",
+             "Alpha Beta Gamma Eins", "S", 1, 1.0, 1, t_early, fresh),
+            ("nc_7b", "/shared/normtest/randfall-zeta-zwei", "/shared", "randfall",
+             "Zeta Omega Zwei", "S", 1, 1.0, 3, t_early, fresh),
+        ],
+    )
     conn.commit()
     conn.close()
     return db_path
@@ -600,6 +799,81 @@ def selftest() -> None:
         assert dangling_entry["node_path"] == "/nicht/vorhanden/als/knoten"
         assert "L-esc-linked" not in never_linked_ids | dangling_ids
         assert "L-not-escalated" not in never_linked_ids | dangling_ids
+
+        # 9. Normkonflikt -- erst die reinen Regel-Bausteine direkt, dann
+        # der volle Pfad ueber find_norm_conflicts() gegen die Fixture.
+        #
+        # _narrower(): die Falle mit der leeren Menge (Plan §3/Auftrag) --
+        # leer heisst "ueberall", das ist semantisch am WEITESTEN, nicht am
+        # engsten. Reine Mengeninklusion (a < b) haette das Vorzeichen
+        # falsch herum.
+        assert _narrower(frozenset({"a"}), frozenset({"a", "b"})) is True
+        assert _narrower(frozenset({"a", "b"}), frozenset({"a"})) is False
+        assert _narrower(frozenset({"a"}), frozenset()) is True
+        assert _narrower(frozenset(), frozenset({"a"})) is False
+        assert _narrower(frozenset({"a"}), frozenset({"a"})) is False
+
+        t_early = "2026-01-01T00:00:00+00:00"
+        t_late = "2026-02-01T00:00:00+00:00"
+        _n1 = {"path": "/n1", "norm_rang": 1, "scope": frozenset({"x"}), "gilt_ab": t_early}
+        _n3 = {"path": "/n3", "norm_rang": 3, "scope": frozenset({"x"}), "gilt_ab": t_early}
+        assert _resolve_norm_conflict(_n1, _n3) == ("lex_superior", "/n1")
+        assert _resolve_norm_conflict(_n3, _n1) == ("lex_superior", "/n1")
+
+        _wide = {"path": "/wide", "norm_rang": 2, "scope": frozenset({"a", "b"}), "gilt_ab": t_early}
+        _narrow = {"path": "/narrow", "norm_rang": 2, "scope": frozenset({"a"}), "gilt_ab": t_early}
+        assert _resolve_norm_conflict(_wide, _narrow) == ("lex_specialis", "/narrow")
+
+        _global = {"path": "/global", "norm_rang": 2, "scope": frozenset(), "gilt_ab": t_early}
+        assert _resolve_norm_conflict(_global, _narrow) == ("lex_specialis", "/narrow")
+
+        _old = {"path": "/old", "norm_rang": 2, "scope": frozenset({"x"}), "gilt_ab": t_early}
+        _new = {"path": "/new", "norm_rang": 2, "scope": frozenset({"x"}), "gilt_ab": t_late}
+        assert _resolve_norm_conflict(_old, _new) == ("lex_posterior", "/new")
+
+        _same_a = {"path": "/same_a", "norm_rang": 2, "scope": frozenset({"x"}), "gilt_ab": t_early}
+        _same_b = {"path": "/same_b", "norm_rang": 2, "scope": frozenset({"x"}), "gilt_ab": t_early}
+        assert _resolve_norm_conflict(_same_a, _same_b) == (None, None)  # der wichtigste Fall
+
+        # Ueberlappend, aber weder Teilmenge noch gleich -> auch das ist
+        # unentscheidbar, keine der drei Regeln greift.
+        _overlap_a = {"path": "/oa", "norm_rang": 2, "scope": frozenset({"a", "b"}), "gilt_ab": t_early}
+        _overlap_b = {"path": "/ob", "norm_rang": 2, "scope": frozenset({"b", "c"}), "gilt_ab": t_early}
+        assert _resolve_norm_conflict(_overlap_a, _overlap_b) == (None, None)
+
+        nc = result["norm_conflicts"]
+        entschieden_by_pair = {frozenset((e["a"], e["b"])): e for e in nc["entschieden"]}
+        echte_by_pair = {frozenset((e["a"], e["b"])) for e in nc["echte_konflikte"]}
+
+        p1 = frozenset(("/shared/normtest/kranwinkel-grenzwert", "/shared/normtest/kranwinkel-ausnahme"))
+        assert p1 in entschieden_by_pair, entschieden_by_pair
+        assert entschieden_by_pair[p1]["regel"] == "lex_superior"
+        assert entschieden_by_pair[p1]["gewinner"] == "/shared/normtest/kranwinkel-grenzwert"
+
+        p2 = frozenset(("/shared/normtest/ladekurve-nachtbetrieb", "/shared/normtest/ladekurve-feiertagsbetrieb"))
+        assert p2 in entschieden_by_pair, entschieden_by_pair
+        assert entschieden_by_pair[p2]["regel"] == "lex_specialis"
+        assert entschieden_by_pair[p2]["gewinner"] == "/shared/normtest/ladekurve-nachtbetrieb"
+
+        p3 = frozenset(("/shared/normtest/standheizung-sommerzeit", "/shared/normtest/standheizung-winterzeit"))
+        assert p3 in entschieden_by_pair, entschieden_by_pair
+        assert entschieden_by_pair[p3]["regel"] == "lex_posterior"
+        assert entschieden_by_pair[p3]["gewinner"] == "/shared/normtest/standheizung-winterzeit"
+
+        p4 = frozenset(("/shared/normtest/blinkfrequenz-anhaenger", "/shared/normtest/blinkfrequenz-kombi"))
+        assert p4 in echte_by_pair, echte_by_pair
+        assert p4 not in entschieden_by_pair
+
+        p5 = frozenset(("/shared/normtest/hupsignal-baustelle-insel-a", "/shared/normtest/hupsignal-baustelle-insel-b"))
+        assert p5 not in entschieden_by_pair and p5 not in echte_by_pair, "disjunkte Bereiche -- kein Konflikt"
+
+        alle_pfade = {e["a"] for e in nc["entschieden"]} | {e["b"] for e in nc["entschieden"]} | \
+                     {a for pair in echte_by_pair for a in pair}
+        assert "/shared/normtest/sichtpruefung-bremslicht-fakt" not in alle_pfade, \
+            "Fakt (norm_rang NULL) darf nie auftauchen"
+        assert "/shared/normtest/randfall-alpha-eins" not in alle_pfade, \
+            "Themenscore unter Schwelle -- keine Regel haette aufgerufen werden duerfen"
+        assert "/shared/normtest/randfall-zeta-zwei" not in alle_pfade
 
         # K1 Gegenprobe A: diese Fixture hat keine Querkanten -> Grad 0,
         # fehlende Kanten bis zur Schwelle = Knoten/2.
