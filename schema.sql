@@ -17,7 +17,17 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     confidence REAL DEFAULT 0.8,
     access_count INTEGER DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
-    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime'))
+    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
+    -- Normschicht (N2, docs/PLAN_NORMSCHICHT_2026-08-05.md). Additiv, alle
+    -- drei NULL-faehig und nach N2 ausnahmslos NULL -- Rang vergeben ist N3.
+    -- norm_rang IS NULL ist die zentrale Unterscheidung des Plans (§2):
+    -- es heisst "das hier ist ein FAKT, keine NORM". Nur Normen (Direktiven,
+    -- ADRs, eskalierte Lehren) bekommen je einen Rang, Wissensknoten nie --
+    -- ein Rang auf einem Fakt waere eine Ordnung, die nichts ordnet. Die
+    -- beiden Gueltigkeitsfelder sind nur bei gesetztem norm_rang sinnvoll.
+    norm_rang INTEGER,
+    gilt_ab TEXT,
+    gilt_bis TEXT                             -- NULL = unbefristet in Kraft
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
