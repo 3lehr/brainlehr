@@ -182,8 +182,8 @@ def _config_specs() -> list[dict]:
 
 
 def run(seed: int = korpus.DEFAULT_SEED, k: int = ml.DEFAULT_K,
-        timestamp: str | None = None) -> dict:
-    corpus = korpus.build_corpus(seed=seed)
+        timestamp: str | None = None, corpus_version: str = korpus.CORPUS_VERSION) -> dict:
+    corpus = korpus.build_corpus(seed=seed, version=corpus_version)
     queries = ml._combined_queries(corpus)
     total_docs = len(corpus["nodes"]) + len(corpus["lessons"])
 
@@ -281,6 +281,8 @@ def main() -> None:
     ap.add_argument("--timestamp", type=str, default=None,
                      help="uebergebener Zeitstempel (ISO 8601), NICHT zur Laufzeit gezogen")
     ap.add_argument("--out", type=str, default=None, help="Ergebnis als JSON schreiben")
+    ap.add_argument("--corpus-version", type=str, default=korpus.CORPUS_VERSION,
+                     choices=list(korpus.CORPUS_VERSIONS))
     args = ap.parse_args()
 
     if args.selftest:
@@ -292,7 +294,7 @@ def main() -> None:
               "kein Zeitstempel zur Laufzeit, sonst nicht reproduzierbar vergleichbar.", file=sys.stderr)
         sys.exit(1)
 
-    result = run(seed=args.seed, k=args.k, timestamp=args.timestamp)
+    result = run(seed=args.seed, k=args.k, timestamp=args.timestamp, corpus_version=args.corpus_version)
     table = format_table(result)
     print(table)
     print(f"\nLaufzeit: {result['runtime_seconds']:.2f}s, Modellaufrufe: {result['model_calls_made']}, "
