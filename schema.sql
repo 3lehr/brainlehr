@@ -157,7 +157,35 @@ CREATE TABLE IF NOT EXISTS access_log (
     model TEXT,
     session TEXT,
     status TEXT DEFAULT 'completed',          -- started|completed|failed
-    timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime'))
+    timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
+    -- Auditkette (Nachtrag 2026-08-06, additiv per migrate_auditkette.py).
+    -- Bestandszeilen (1223 vor der Migration) bleiben in beiden Spalten
+    -- NULL -- ungedeckter Zeitraum, kein Fehler, nachtraeglich verkettet
+    -- waere kein Beweis (siehe Lehre L-636a44 zu schema.sql vs. Live-DB und
+    -- Auftrag 2026-08-06). Kettenanfang ist die erste Zeile nach der
+    -- Migration.
+    --
+    -- zeilen_hash: SHA-256 ueber json.dumps(affected_row, sort_keys=True)
+    -- des von dieser Aktion betroffenen Datensatzes NACH der Aenderung
+    -- (z.B. die geschriebene knowledge_nodes-/lessons_learned-/
+    -- knowledge_relations-Zeile als dict) -- siehe knowledge_mcp_server.py
+    -- ::compute_zeilen_hash(). NULL bei reinen Lesezugriffen (browse/read/
+    -- search) und bei Loeschungen (relation_remove, lesson_update mit
+    -- delete=True) -- beides ein gueltiger Zustand, kein fehlender Wert.
+    --
+    -- ketten_hash: SHA-256 aus ketten_hash der Vorgaengerzeile (oder dem
+    -- Genesis-Wert '0'*64, wenn die Vorgaengerzeile fehlt oder NULL
+    -- traegt) verkettet mit den identitaetsstiftenden Feldern DIESER
+    -- Zeile, in dieser Reihenfolge mit '|' verbunden: node_path, action,
+    -- query, project_id, actor, model, session, status, timestamp,
+    -- zeilen_hash -- siehe knowledge_mcp_server.py::compute_ketten_hash().
+    -- Die eigene id (AUTOINCREMENT) fliesst bewusst NICHT ein: sie steht
+    -- vor dem INSERT noch nicht fest.
+    -- Weist eine nachtraegliche Aenderung EINER Zeile nach, mehr nicht --
+    -- keine Verschluesselung, keine Signatur. Wer Schreibrechte auf die
+    -- DB-Datei hat, kann die Kette neu rechnen.
+    zeilen_hash TEXT,
+    ketten_hash TEXT
 );
 
 -- Explizite, belegte Wissensbeziehungen. Keine Tag-Aehnlichkeit und keine

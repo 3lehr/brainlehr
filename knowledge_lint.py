@@ -32,7 +32,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
 import embeddings  # noqa: E402
 import geltungsbereich  # noqa: E402
 import normbestand  # noqa: E402  (quellstatus() -- Auftrag 2026-08-06)
-from knowledge_mcp_server import fold_de, SLUG_MAX_LEN  # noqa: E402
+from knowledge_mcp_server import fold_de, SLUG_MAX_LEN, compute_ketten_hash  # noqa: E402
 
 DB_PATH = SHARED_KNOWLEDGE / "knowledge.db"
 RECALL_LOG = SHARED_KNOWLEDGE / "recall_log.jsonl"
@@ -429,6 +429,46 @@ def find_stale_source(conn: sqlite3.Connection) -> dict:
     return {"geaendert": geaendert, "nicht_pruefbar": nicht_pruefbar, "verschwunden": verschwunden}
 
 
+# ─── 12. Kette gebrochen ────────────────────────────────────────────────────
+# Auftrag 2026-08-06 (Auditkette ueber access_log). Rein lesend, rechnet
+# compute_ketten_hash() (knowledge_mcp_server.py, gleiche Funktion wie beim
+# Schreiben -- keine zweite Fassung der Formel) fuer jede Zeile mit
+# gesetztem ketten_hash nach und vergleicht mit dem gespeicherten Wert.
+# Zeilen ohne ketten_hash (Altbestand vor migrate_auditkette.py) sind der
+# ungedeckte Zeitraum, kein Bruch -- getrennt ausgewiesen, siehe
+# Spaltenkommentar an access_log in schema.sql.
+
+def find_broken_chain(conn: sqlite3.Connection) -> dict:
+    rows = conn.execute(
+        "SELECT id, node_path, action, query, project_id, actor, model, session, "
+        "status, timestamp, zeilen_hash, ketten_hash FROM access_log ORDER BY id"
+    ).fetchall()
+    ungedeckt = sum(1 for r in rows if r["ketten_hash"] is None)
+    prev_hash = None
+    geprueft = 0
+    erster_bruch = None
+    for r in rows:
+        if r["ketten_hash"] is None:
+            continue
+        geprueft += 1
+        expected = compute_ketten_hash(
+            prev_hash, node_path=r["node_path"], action=r["action"], query=r["query"],
+            project_id=r["project_id"], actor=r["actor"], model=r["model"],
+            session=r["session"], status=r["status"], timestamp=r["timestamp"],
+            zeilen_hash=r["zeilen_hash"],
+        )
+        if expected != r["ketten_hash"]:
+            erster_bruch = {"id": r["id"], "erwartet": expected, "gespeichert": r["ketten_hash"]}
+            break
+        prev_hash = r["ketten_hash"]
+    return {
+        "ungedeckter_zeitraum_zeilen": ungedeckt,
+        "geprueft_zeilen": geprueft,
+        "erster_bruch": erster_bruch,
+        "heil": erster_bruch is None,
+    }
+
+
 # ─── Struktur-Kennzahlen (kein Befund, Zustand des Bestands als Ganzes) ────
 # Getrennt von den sieben Befund-Kategorien oben: keine beanstandet einen
 # einzelnen Eintrag, sondern beschreibt eine Verteilung ueber den Bestand.
@@ -552,6 +592,7 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "norm_conflicts": find_norm_conflicts(conn),
             "missing_source": find_missing_source(conn),
             "stale_source": find_stale_source(conn),
+            "broken_chain": find_broken_chain(conn),
             "structure_metrics": find_structure_metrics(conn),
         }
     finally:
@@ -603,6 +644,15 @@ def print_report(result: dict) -> None:
                    ss["nicht_pruefbar"], lambda i: f"{i['path']} <- {i['quelle']} ({i['grund']})")
     _print_section("Quelle veraltet -- Quelldatei verschwunden",
                    ss["verschwunden"], lambda i: f"{i['path']} <- {i['quelle']}")
+    bc = result["broken_chain"]
+    print(f"\nAuditkette (access_log): {bc['geprueft_zeilen']} Zeilen geprueft, "
+          f"{bc['ungedeckter_zeitraum_zeilen']} ungedeckt (Altbestand ohne ketten_hash)")
+    if bc["erster_bruch"]:
+        b = bc["erster_bruch"]
+        print(f"  BRUCH bei access_log.id={b['id']}: erwartet {b['erwartet'][:16]}..., "
+              f"gespeichert {b['gespeichert'][:16]}...")
+    else:
+        print("  Kette heil.")
     print_structure_metrics(result["structure_metrics"])
 
 

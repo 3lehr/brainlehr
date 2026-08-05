@@ -20,6 +20,7 @@ Tools:
 """
 
 import difflib
+import hashlib
 import json
 import os
 import re
@@ -48,6 +49,11 @@ RELATION_TYPES = {
     "produces", "requires", "replaces_component", "analogous_to", "feeds_into",
 }
 EVENT_STATUSES = {"started", "completed", "failed"}
+# Auditkette ueber access_log (Auftrag 2026-08-06). Gleiche Laenge/Form wie
+# ein SHA-256-Hexdigest, damit ein Genesis-Wert nicht wie ein "kaputter"
+# Hash aussieht. Fachtrennung zu fahrtenbuch_legacy/.../hash_chain.dart::
+# genesisHash bewusst: eigener Store, eigene Konstante.
+GENESIS_KETTEN_HASH = "0" * 64
 
 
 def now_iso() -> str:
@@ -70,6 +76,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     for name, declaration in {
         "actor": "TEXT", "model": "TEXT", "session": "TEXT",
         "status": "TEXT DEFAULT 'completed'",
+        "zeilen_hash": "TEXT", "ketten_hash": "TEXT",
     }.items():
         if name not in columns:
             conn.execute(f"ALTER TABLE access_log ADD COLUMN {name} {declaration}")
@@ -108,18 +115,67 @@ def _identity(actor: str | None = None, model: str | None = None,
     )
 
 
+def compute_zeilen_hash(affected_row: dict | None) -> str | None:
+    """SHA-256 ueber den von einer Aktion betroffenen Datensatz NACH der
+    Aenderung. None (-> NULL in access_log.zeilen_hash) bei reinen
+    Lesezugriffen und bei Loeschungen -- beides ein gueltiger Zustand,
+    siehe Spaltenkommentar an access_log in schema.sql."""
+    if affected_row is None:
+        return None
+    payload = json.dumps(affected_row, sort_keys=True, default=str, ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def compute_ketten_hash(prev_ketten_hash: str | None, *, node_path: str | None,
+                        action: str, query: str | None, project_id: str | None,
+                        actor: str | None, model: str | None, session: str | None,
+                        status: str, timestamp: str, zeilen_hash: str | None) -> str:
+    """Ein Schritt der Auditkette ueber access_log (Auftrag 2026-08-06).
+    Feldreihenfolge ist Teil des Vertrags -- siehe Spaltenkommentar an
+    access_log.ketten_hash in schema.sql; eine Aenderung hier bricht jede
+    bereits geschriebene Kette rueckwirkend. KEINE Verschluesselung, keine
+    Signatur: weist eine nachtraegliche Aenderung nach, verhindert sie
+    nicht -- wer Schreibrechte auf die DB-Datei hat, kann die Kette neu
+    rechnen (bekannte Grenze, siehe Auftrag)."""
+    prev = prev_ketten_hash or GENESIS_KETTEN_HASH
+    fields = (prev, node_path, action, query, project_id, actor, model,
+              session, status, timestamp, zeilen_hash)
+    payload = "|".join("" if f is None else str(f) for f in fields)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def log_access(conn: sqlite3.Connection, node_path: str | None, action: str,
                query: str | None = None, project_id: str | None = None,
                actor: str | None = None, model: str | None = None,
-               session: str | None = None, status: str = "completed") -> int:
+               session: str | None = None, status: str = "completed",
+               affected_row: dict | None = None) -> int:
     if status not in EVENT_STATUSES:
         raise ValueError(f"Invalid event status: {status}")
     actor, model, session = _identity(actor, model, session)
+    timestamp = now_iso()
+    zeilen_hash = compute_zeilen_hash(affected_row)
+    # Letzten ketten_hash auf DERSELBEN Verbindung lesen -- sieht auch die
+    # noch nicht committete Datenaenderung dieser Transaktion (relevant,
+    # weil dieser INSERT+commit gemeinsam mit dem vorangegangenen
+    # Schreibzugriff (z.B. knowledge_nodes) die Transaktionsgrenze bildet,
+    # siehe Aufrufer in knowledge_add/knowledge_update/etc.). Zeilen ohne
+    # ketten_hash (Altbestand vor der Migration) zaehlen als Kettenanfang.
+    prev_row = conn.execute(
+        "SELECT ketten_hash FROM access_log ORDER BY id DESC LIMIT 1"
+    ).fetchone()
+    prev_ketten_hash = prev_row[0] if prev_row else None
+    ketten_hash = compute_ketten_hash(
+        prev_ketten_hash, node_path=node_path, action=action, query=query,
+        project_id=project_id, actor=actor, model=model, session=session,
+        status=status, timestamp=timestamp, zeilen_hash=zeilen_hash,
+    )
     cursor = conn.execute(
         """INSERT INTO access_log
-           (node_path, action, query, project_id, actor, model, session, status, timestamp)
-           VALUES (?,?,?,?,?,?,?,?,?)""",
-        (node_path, action, query, project_id, actor, model, session, status, now_iso())
+           (node_path, action, query, project_id, actor, model, session, status, timestamp,
+            zeilen_hash, ketten_hash)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (node_path, action, query, project_id, actor, model, session, status, timestamp,
+         zeilen_hash, ketten_hash)
     )
     conn.commit()
     return int(cursor.lastrowid)
@@ -517,14 +573,21 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     node_id = str(uuid.uuid4())[:8]
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session, status="started")
+    created_at = now_iso()
     conn.execute(
         """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
-         level, json.dumps(tags or []), source, now_iso(), now_iso())
+         level, json.dumps(tags or []), source, created_at, created_at)
     )
     log_access(conn, node_path, "add", project_id=project_id,
-               actor=actor, model=model, session=session)
+               actor=actor, model=model, session=session,
+               affected_row={
+                   "id": node_id, "path": node_path, "parent_path": parent_path,
+                   "project_id": project_id, "title": title, "summary": summary,
+                   "content": content, "level": level, "tags": tags or [],
+                   "source": source, "created_at": created_at, "updated_at": created_at,
+               })
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     conn.commit()
     conn.close()
@@ -611,8 +674,10 @@ def knowledge_update(node_id: str, summary: str | None = None,
         conn.execute("DELETE FROM knowledge_relations WHERE source_path = ?", (row["path"],))
         wikilinks = _sync_wikilinks(conn, row["path"], content, actor=actor, model=model, session=session)
 
+    updated_row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ?", (row["id"],)).fetchone()
     log_access(conn, row["path"], "update", project_id=row["project_id"],
-               actor=actor, model=model, session=session)
+               actor=actor, model=model, session=session,
+               affected_row=dict(updated_row) if updated_row else None)
     conn.commit()
     conn.close()
     return {"id": row["id"], "status": "updated", **wikilinks}
@@ -676,7 +741,15 @@ def knowledge_relation_add(source_node: str, target_node: str, relation_type: st
         conn.close()
         raise ValueError("Relation already exists or violates the knowledge contract") from error
     log_access(conn, source_row["path"], "relation_add", query=relation_id,
-               project_id=source_row["project_id"], actor=creator, model=model, session=session)
+               project_id=source_row["project_id"], actor=creator, model=model, session=session,
+               affected_row={
+                   "id": relation_id, "source_path": source_row["path"],
+                   "target_path": target_row["path"], "relation_type": relation_type,
+                   "confidence": float(confidence), "weight": float(weight),
+                   "evidence": evidence, "source": source, "creator": creator,
+                   "model": model, "session": session,
+                   "created_at": timestamp, "updated_at": timestamp,
+               })
     conn.close()
     return {"id": relation_id, "status": "created", "source_path": source_row["path"],
             "target_path": target_row["path"], "relation_type": relation_type}
@@ -755,7 +828,9 @@ def knowledge_relation_update(relation_id: str, relation_type: str | None = None
         conn.close()
         raise ValueError("Updated relation would violate the knowledge contract") from error
     log_access(conn, row["source_path"], "relation_update", query=relation_id,
-               actor=creator, model=model, session=session)
+               actor=creator, model=model, session=session,
+               affected_row=values | {"id": relation_id, "source_path": row["source_path"],
+                                       "target_path": row["target_path"]})
     conn.close()
     return {"id": relation_id, "status": "updated"}
 
@@ -1075,7 +1150,9 @@ def _bump_lesson(conn: sqlite3.Connection, lesson_id: str, node_path: str,
             "UPDATE lessons_learned SET occurrences = ?, last_seen = ? WHERE id = ?",
             (new_count, now_iso(), lesson_id)
         )
-    log_access(conn, node_path or None, "lesson", query=log_query)
+    updated_row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
+    log_access(conn, node_path or None, "lesson", query=log_query,
+               affected_row=dict(updated_row) if updated_row else None)
     conn.commit()
 
     escalated = new_count >= 3
@@ -1160,13 +1237,21 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     similar = _find_similar_lesson(conn, type_, description)
 
     lesson_id = f"L-{str(uuid.uuid4())[:6]}"
+    seen_at = now_iso()
     conn.execute(
         """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)""",
         (lesson_id, node_path or None, type_, severity, description, root_cause,
-         resolution, prevention, json.dumps(projects or []), now_iso(), now_iso())
+         resolution, prevention, json.dumps(projects or []), seen_at, seen_at)
     )
-    log_access(conn, node_path or None, "lesson", query=description)
+    log_access(conn, node_path or None, "lesson", query=description,
+               affected_row={
+                   "id": lesson_id, "node_path": node_path or None, "type": type_,
+                   "severity": severity, "description": description,
+                   "root_cause": root_cause, "resolution": resolution,
+                   "prevention": prevention, "occurrences": 1,
+                   "projects": projects or [], "first_seen": seen_at, "last_seen": seen_at,
+               })
     conn.commit()
     conn.close()
     result = {"id": lesson_id, "status": "recorded", "occurrences": 1}
@@ -1234,7 +1319,9 @@ def lesson_update(lesson_id: str, description: str | None = None,
     if {"description", "root_cause", "prevention"} & given.keys():
         conn.execute("DELETE FROM knowledge_embeddings WHERE kind = 'lesson' AND ref_id = ?", (lesson_id,))
 
-    log_access(conn, None, "lesson_update", query=lesson_id)
+    updated_row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
+    log_access(conn, None, "lesson_update", query=lesson_id,
+               affected_row=dict(updated_row) if updated_row else None)
     conn.commit()
     conn.close()
     return {"id": lesson_id, "status": "updated"}
