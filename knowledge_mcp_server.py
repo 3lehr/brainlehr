@@ -253,6 +253,15 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
                actor=actor, model=model, session=session)
     conn.commit()
 
+    # Befund 2026-08-06: ein Astknoten ("Automatisch erzeugter Astknoten",
+    # kein content) liefert ohne diesen Zusatz eine leere Seite -- Zweck und
+    # Regeln stehen in den Kindknoten. Nur eine Ebene, nicht rekursiv (siehe
+    # knowledge_browse fuer den vollen Baum).
+    children = conn.execute(
+        "SELECT title, summary FROM knowledge_nodes WHERE parent_path = ? ORDER BY path",
+        (row["path"],)
+    ).fetchall()
+
     result = {
         "id": row["id"],
         "path": row["path"],
@@ -263,8 +272,12 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
         "tags": json.loads(row["tags"]) if row["tags"] else [],
         "source": row["source"],
         "confidence": row["confidence"],
+        "norm_rang": row["norm_rang"],
+        "gilt_ab": row["gilt_ab"],
+        "gilt_bis": row["gilt_bis"],
         "created_at": row["created_at"],
-        "updated_at": row["updated_at"]
+        "updated_at": row["updated_at"],
+        "children": [{"title": c["title"], "summary": c["summary"]} for c in children],
     }
     conn.close()
     return result
@@ -553,10 +566,30 @@ def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
         )
 
 
+def _validate_geltung(norm_rang: int | None, gilt_ab: str | None, gilt_bis: str | None) -> str | None:
+    """Prueft die drei Normschicht-Felder (schema.sql, N2/N3). Alle drei
+    bleiben optional -- der Normalfall ist ein Fakt ohne Normangaben, NULL
+    in norm_rang heisst weiterhin "kein Norm, sondern Fakt" (Plan §2).
+    Nur bei gesetztem gilt_ab/gilt_bis wird ueberhaupt geparst, sonst No-op.
+    Gibt eine sprechende Fehlermeldung zurueck oder None (gueltig)."""
+    for name, value in (("gilt_ab", gilt_ab), ("gilt_bis", gilt_bis)):
+        if value is None:
+            continue
+        try:
+            datetime.fromisoformat(value)
+        except ValueError:
+            return f"{name} ist kein gueltiges ISO-8601-Datum/Zeitstempel: {value!r}"
+    if gilt_ab is not None and gilt_bis is not None and gilt_bis < gilt_ab:
+        return f"gilt_bis ({gilt_bis!r}) liegt vor gilt_ab ({gilt_ab!r})."
+    return None
+
+
 def knowledge_add(parent_path: str, title: str, summary: str,
                   content: str = "", project_id: str = "shared",
                   tags: list | None = None, source: str = "", *,
                   neuer_ast: bool = False,
+                  norm_rang: int | None = None, gilt_ab: str | None = None,
+                  gilt_bis: str | None = None,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
     """Add a new knowledge node to the tree. Rejects an unknown parent_path
@@ -573,6 +606,10 @@ def knowledge_add(parent_path: str, title: str, summary: str,
             "error": "source fehlt: Herkunft des Knotens angeben (aus welcher Datei/welchem Lauf er stammt). "
                      "Beispiel: 'erzeugt aus /pfad/zur/datei.md (Stand 2026-08-05T23:40:00+02:00)'.",
         }
+
+    geltung_fehler = _validate_geltung(norm_rang, gilt_ab, gilt_bis)
+    if geltung_fehler:
+        return {"error": geltung_fehler}
 
     conn = get_db()
     parent_path = parent_path.rstrip("/") or "/"
@@ -613,10 +650,11 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                actor=actor, model=model, session=session, status="started")
     created_at = now_iso()
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
-         level, json.dumps(tags or []), source, created_at, created_at)
+         level, json.dumps(tags or []), source, created_at, created_at,
+         norm_rang, gilt_ab, gilt_bis)
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,
@@ -625,6 +663,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                    "project_id": project_id, "title": title, "summary": summary,
                    "content": content, "level": level, "tags": tags or [],
                    "source": source, "created_at": created_at, "updated_at": created_at,
+                   "norm_rang": norm_rang, "gilt_ab": gilt_ab, "gilt_bis": gilt_bis,
                })
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     conn.commit()
@@ -634,14 +673,29 @@ def knowledge_add(parent_path: str, title: str, summary: str,
 
 def knowledge_update(node_id: str, summary: str | None = None,
                      content: str | None = None, tags: list | None = None, *,
+                     norm_rang: int | None = None, gilt_ab: str | None = None,
+                     gilt_bis: str | None = None,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
-    """Update an existing knowledge node."""
+    """Update an existing knowledge node. Like summary/content/tags, only
+    given norm_rang/gilt_ab/gilt_bis fields are changed -- a node stays frozen
+    at "no Normschicht values" until one is explicitly passed."""
     conn = get_db()
     row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
     if not row:
         conn.close()
         return {"error": f"Node not found: {node_id}"}
+
+    # Grenzwertpruefung braucht beide Werte im Kontext: wer nur gilt_bis
+    # aendert, wird trotzdem gegen das vorhandene gilt_ab geprueft (und
+    # umgekehrt) -- sonst liesse sich die Reihenfolge durch zwei getrennte
+    # Aufrufe umgehen.
+    effektiv_gilt_ab = gilt_ab if gilt_ab is not None else row["gilt_ab"]
+    effektiv_gilt_bis = gilt_bis if gilt_bis is not None else row["gilt_bis"]
+    geltung_fehler = _validate_geltung(norm_rang, effektiv_gilt_ab, effektiv_gilt_bis)
+    if geltung_fehler:
+        conn.close()
+        return {"error": geltung_fehler}
 
     # Derselbe Aufrufer-Fehler wie bei knowledge_add moeglich (Parametergrenze
     # verrutscht ins Textfeld) -- nur uebergebene Felder unmangeln.
@@ -664,6 +718,15 @@ def knowledge_update(node_id: str, summary: str | None = None,
     if tags is not None:
         updates.append("tags = ?")
         params.append(json.dumps(tags))
+    if norm_rang is not None:
+        updates.append("norm_rang = ?")
+        params.append(norm_rang)
+    if gilt_ab is not None:
+        updates.append("gilt_ab = ?")
+        params.append(gilt_ab)
+    if gilt_bis is not None:
+        updates.append("gilt_bis = ?")
+        params.append(gilt_bis)
 
     updates.append("updated_at = ?")
     params.append(now_iso())
@@ -1495,7 +1558,7 @@ TOOLS = {
         "handler": lambda args: knowledge_browse(args.get("path", "/"), args.get("project_filter"), **_identity_args(args))
     },
     "knowledge_read": {
-        "description": "Read full content of a knowledge node (by ID or path). Use browse/search first to find the right node.",
+        "description": "Read full content of a knowledge node (by ID or path), plus title+summary of its direct children (one level, not recursive) -- a branch node's own content is usually empty, the substance lives in its children. Use browse/search first to find the right node.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -1524,7 +1587,10 @@ TOOLS = {
         "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy. "
                         "parent_path must already exist (or be '/'); an unknown parent_path is rejected with "
                         "suggested nearby paths unless neuer_ast=True explicitly opens a new branch. "
-                        "source is required and rejected if empty -- e.g. \"erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)\".",
+                        "source is required and rejected if empty -- e.g. \"erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)\". "
+                        "norm_rang/gilt_ab/gilt_bis are all optional and only for norms (directives/ADRs/escalated "
+                        "lessons); a plain fact leaves them unset (norm_rang stays NULL). gilt_ab/gilt_bis must be "
+                        "ISO-8601 date or timestamp; gilt_bis before gilt_ab is rejected.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -1536,6 +1602,9 @@ TOOLS = {
                 "tags": {"type": "array", "items": {"type": "string"}},
                 "source": {"type": "string", "description": "Required, non-empty. Origin: file path, konsil ID, or research ID. Example: 'erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)'"},
                 "neuer_ast": {"type": "boolean", "description": "Explicitly allow creating a new top-level branch when parent_path doesn't exist yet", "default": False},
+                "norm_rang": {"type": "integer", "description": "Optional: rank of a norm (1=global directive, 2=hub directive, 3=ADR). Omit for plain facts."},
+                "gilt_ab": {"type": "string", "description": "Optional: ISO-8601 date/timestamp the norm takes effect"},
+                "gilt_bis": {"type": "string", "description": "Optional: ISO-8601 date/timestamp the norm expires; omit for indefinite. Must not be before gilt_ab."},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["parent_path", "title", "summary"]
@@ -1544,11 +1613,13 @@ TOOLS = {
             args["parent_path"], args["title"], args["summary"],
             args.get("content", ""), args.get("project_id", "shared"),
             args.get("tags"), args.get("source", ""), neuer_ast=args.get("neuer_ast", False),
+            norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
             **_identity_args(args)
         )
     },
     "knowledge_update": {
-        "description": "Update an existing knowledge node (summary, content, or tags).",
+        "description": "Update an existing knowledge node (summary, content, tags, and/or the Normschicht fields "
+                        "norm_rang/gilt_ab/gilt_bis -- see knowledge_add for their meaning). Only given fields change.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -1556,12 +1627,17 @@ TOOLS = {
                 "summary": {"type": "string"},
                 "content": {"type": "string"},
                 "tags": {"type": "array", "items": {"type": "string"}},
+                "norm_rang": {"type": "integer", "description": "Optional: set/change the norm rank"},
+                "gilt_ab": {"type": "string", "description": "Optional: ISO-8601 date/timestamp"},
+                "gilt_bis": {"type": "string", "description": "Optional: ISO-8601 date/timestamp; must not be before gilt_ab (existing or given)"},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["node_id"]
         },
         "handler": lambda args: knowledge_update(
-            args["node_id"], args.get("summary"), args.get("content"), args.get("tags"), **_identity_args(args)
+            args["node_id"], args.get("summary"), args.get("content"), args.get("tags"),
+            norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
+            **_identity_args(args)
         )
     },
     "knowledge_relation_add": {

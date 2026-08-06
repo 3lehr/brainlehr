@@ -1,6 +1,6 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 283 · erzeugt: 2026-08-06T09:39:04+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 287 · erzeugt: 2026-08-06T10:18:57+0200
 
 Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NICHT hier -- bei Bedarf gezielt mit `knowledge_read <path>` nachladen.
 
@@ -107,6 +107,7 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 
 - /brainlehr — brainlehr
 - /brainlehr/brainlehr-zweck-umfang-und-was-es-nicht — brainlehr — Zweck, Umfang und was es NICHT ist
+- /brainlehr/openlehr-ist-der-steuerfall-wissen-ohne — openlehr ist der Steuerfall — Wissen ohne Geltungszeitraum ist dort falsch, nicht unvollstaendig
 - /brainlehr/richtig-in-brainlehr-ablegen-regeln-fuer — Richtig in brainlehr ablegen — Regeln fuer jede App-Sitzung
 
 ## /fahrtenbuch
@@ -244,6 +245,7 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 - /openlehr/steuer/ui/offene-frage-2026-07-28:-strangler-fig-o — Offene Frage 2026-07-28: Strangler-Fig oder Bruch beim UI-Neubau — Prämisse trifft womöglich nicht
 - /openlehr/steuer/ui/web-adapter:-eingefrorener-rahmen,-ki-be — Web-Adapter: eingefrorener Rahmen, KI-befüllbare Zonen, geschlossene View-Registry (2026-08-04, Nachtrag 21:01)
 - /openlehr/steuer/vorausschau-2026-07-28:-fachbereich-erwa — Vorausschau 2026-07-28: Fachbereich Erwachsenenfortbildung (B18), openlehr ergänzt AKA statt sie zu überschneiden
+- /openlehr/volltextindex-wird-beim-einlesen — Volltextindex wird beim Einlesen fortgeschrieben — hat fuer Belege und Mails aber keinen Leser
 
 ## /ops
 
@@ -253,7 +255,9 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 - /ops/appstoreconnect/app-store-connect-api-keys:-nur-einer-de — App Store Connect API-Keys: nur einer der drei Team-Keys funktioniert lokal
 - /ops/appstoreconnect/testflight-externe-beta-app-review:-pfli — TestFlight externe Beta-App-Review: Pflichtfelder-Checkliste
 - /ops/buckeberg-anbieter-recherche-2026-07-23: — Buckeberg Anbieter-Recherche 2026-07-23: 5 Hausverwaltungen, Reputation + Identitäts-Fallen
+- /ops/buckeberg-anbieterabend-2026-08-05 — Buckeberg Anbieterabend 2026-08-05: mündliche Aussagen kippen zwei Angebotsbewertungen, ein Widerspruch bleibt offen
 - /ops/buckeberg-dokument-pipeline-2026-07-28:- — Buckeberg Dokument-Pipeline 2026-07-28: Objekt-Anker scharf, paperless-Bewertung, offener MÜKRO-Fall
+- /ops/buckeberg-heizung-sechs-oelanlagen-von — Buckeberg Heizung: sechs Ölanlagen von 1992–2002, kein einziger Kesseltausch belegt
 - /ops/buckeberg-konsil-#2-(2026-07-23):-angebo — Buckeberg Konsil #2 (2026-07-23): Angebots-Reihung vor Rückfragen — Heisig > efbe > SWB > ImmoPoint > Volksbank
 - /ops/buckeberg-konsil-2026-07-22:-governance- — Buckeberg Konsil 2026-07-22: Governance vor Ranking, 11 harte Schranken, Meilensteine M0-M13
 - /ops/buckeberg-rückfragen-schreiben-v2-(2026- — Buckeberg Rückfragen-Schreiben V2 (2026-07-29): 8→5 allgemeine Fragen, beide Fassungen veröffentlicht
