@@ -1,6 +1,6 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 290 · erzeugt: 2026-08-06T11:34:57+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 294 · erzeugt: 2026-08-06T19:41:33+0200
 
 Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NICHT hier -- bei Bedarf gezielt mit `knowledge_read <path>` nachladen.
 
@@ -111,6 +111,7 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 - /brainlehr/inference-control-zweiter-lauf-exakte — Inference Control, zweiter Lauf — exakte Schranke, echte Budgetwerte, ein ungeloester Widerspruch
 - /brainlehr/openlehr-ist-der-steuerfall-wissen-ohne — openlehr ist der Steuerfall — Wissen ohne Geltungszeitraum ist dort falsch, nicht unvollstaendig
 - /brainlehr/richtig-in-brainlehr-ablegen-regeln-fuer — Richtig in brainlehr ablegen — Regeln fuer jede App-Sitzung
+- /brainlehr/zeitstempel-bleiben-im-anwendungscode — Zeitstempel bleiben im Anwendungscode — die Auditkette verbietet den DB-Vorgabewert
 
 ## /fahrtenbuch
 
@@ -247,6 +248,7 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 - /openlehr/steuer/ui/offene-frage-2026-07-28:-strangler-fig-o — Offene Frage 2026-07-28: Strangler-Fig oder Bruch beim UI-Neubau — Prämisse trifft womöglich nicht
 - /openlehr/steuer/ui/web-adapter:-eingefrorener-rahmen,-ki-be — Web-Adapter: eingefrorener Rahmen, KI-befüllbare Zonen, geschlossene View-Registry (2026-08-04, Nachtrag 21:01)
 - /openlehr/steuer/vorausschau-2026-07-28:-fachbereich-erwa — Vorausschau 2026-07-28: Fachbereich Erwachsenenfortbildung (B18), openlehr ergänzt AKA statt sie zu überschneiden
+- /openlehr/testisolation-war-der-eigentliche — Testisolation war der eigentliche Engpass — nicht die einzelnen Fehlschlaege
 - /openlehr/volltextindex-wird-beim-einlesen — Volltextindex wird beim Einlesen fortgeschrieben — hat fuer Belege und Mails aber keinen Leser
 
 ## /ops
@@ -329,9 +331,11 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 
 - /testing — Testing
 - /testing/agent-testing — Agent Testing
+- /testing/modell-belegknoten-2026-08-06 — Modell-Belegknoten-2026-08-06
 - /testing/pre-commit — Pre-Commit
 - /testing/pytest — pytest
 - /testing/pytest/monorepo-setup — Pytest Monorepo Setup
+- /testing/schreiber-belegknoten-2026-08-06 — Schreiber-Belegknoten-2026-08-06
 - /testing/virtueller-bildschirmabzug:-personas-auf — Virtueller Bildschirmabzug: Personas auf ausgelesenem Baum statt auf beschriebenem Bildschirm
 - /testing/walkthrough-methode-(e2e-journey-als-tes — Walkthrough-Methode (E2E-Journey als Test + Subagent)
 
