@@ -451,6 +451,98 @@ def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
     conn.executescript(NODE_CONSTRAINT_TRIGGERS_SQL)
 
 
+# Dieselbe Umlaut-Faltung wie in schema.sql (Trigger lessons_ai/ad/au) und
+# fold_de() -- als SQL-Ausdrucksvorlage, weil der Backfill unten row-weise
+# GENAU das schreiben muss, was die Trigger ab jetzt bei jedem INSERT/UPDATE
+# schreiben (nicht die Rohspalten). `INSERT INTO lessons_fts(lessons_fts)
+# VALUES('rebuild')` waere hier die falsche, naheliegende Abkuerzung: das
+# kopiert die Rohspalten aus lessons_learned und umgeht die Faltung komplett
+# -- exakt der Fehler, den migrate_fts_trigram_fold.py fuer knowledge_fts
+# bereits dokumentiert (siehe dortiger Kopfkommentar).
+_LESSONS_FOLD_SQL = (
+    "LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE({col},"
+    "'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss'))"
+)
+
+
+def _ensure_lessons_fts_backfill(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Lehren, die VOR den lessons_ai/ad/au-Triggern angelegt
+    wurden (Auftrag 2026-08-07, Befund: knowledge_search fand 0 von 2
+    einschlaegigen Lehren, obwohl die Lehren existierten -- 553 von 862
+    Eintraegen sind Lehren, keiner davon durch einen Volltextindex
+    erreichbar). schema.sql legt lessons_fts + die drei Trigger additiv an
+    (_ensure_core_schema oben), aber Trigger feuern nur bei KUENFTIGEN
+    Schreibvorgaengen -- der Bestand braucht einen einmaligen Nachtrag,
+    gleiches Muster wie _ensure_node_constraint_triggers direkt darueber
+    (WAL-Checkpoint + Sicherungskopie VOR jeder Aenderung, Lehre L-218f1e).
+
+    Guard ist die fehlende Zeile selbst (NOT IN), nicht "Tabelle/Trigger
+    vorhanden" -- aus genau dem am 2026-08-06 gefundenen Grund (siehe
+    _ensure_node_constraint_triggers-Kommentar): schema.sql legt die leere
+    lessons_fts-Tabelle sofort an, "existiert" waere also immer wahr und
+    wuerde den Nachtrag fuer den Bestand nie ausloesen.
+
+    ZWEI ROT-Befunde beim Bau dieser Funktion, hier festgehalten damit sie
+    nicht wiederholt werden:
+
+    1. "SELECT rowid FROM lessons_fts" ist als Nachzug-Guard NUTZLOS: bei
+       einer externen Inhaltstabelle (content='lessons_learned') spiegelt
+       COUNT(*)/rowid-Aufzaehlung auf der FTS5-Virtualtabelle OHNE MATCH die
+       Zeilen der INHALTSTABELLE, nicht den tatsaechlichen invertierten
+       Index -- gemessen: direkt nach CREATE VIRTUAL TABLE, VOR jedem
+       INSERT, meldete "SELECT COUNT(*) FROM lessons_fts" bereits dieselbe
+       Zeilenzahl wie lessons_learned, aber MATCH fand nichts. Der Guard
+       muss stattdessen die FTS5-eigene Schatten-Tabelle <name>_docsize
+       pruefen: die traegt NACHWEISLICH genau eine Zeile PRO tatsaechlich
+       indizierter Zeile (nur durch echte INSERTs in die Virtualtabelle
+       befuellt, nicht durch die Existenz der Inhaltstabelle).
+    2. Nachgeordnet, erst nach Fix 1 sichtbar geworden: "INSERT INTO
+       lessons_fts(...) SELECT ... FROM lessons_learned WHERE rowid NOT IN
+       (SELECT rowid FROM lessons_fts)" -- Lesen UND Schreiben derselben
+       Virtualtabelle in EINER Anweisung -- ist laut SQLite nicht
+       spezifiziert, wenn eine Anweisung eine Tabelle gleichzeitig liest und
+       schreibt. Fix: die fehlenden rowids ERST in eine Temp-Tabelle
+       materialisieren (eigene, abgeschlossene Anweisung), dann in einer
+       ZWEITEN Anweisung ueber die Temp-Tabelle joinen -- die schreibende
+       Anweisung liest lessons_fts dann gar nicht mehr."""
+    tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if not {"lessons_learned", "lessons_fts", "lessons_fts_docsize"} <= tables:
+        return  # minimale Testfixture ohne die Tabellen -- nichts nachzuziehen
+    fehlend = conn.execute(
+        "SELECT COUNT(*) FROM lessons_learned l WHERE l.rowid NOT IN (SELECT rowid FROM lessons_fts_docsize)"
+    ).fetchone()[0]
+    if fehlend == 0:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"{fehlend} Lehren fehlen noch im Volltextindex lessons_fts, aber die Sicherung vor "
+            f"dem automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt gerade ein "
+            "anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, nichts geaendert. "
+            "Naechster ensure_schema()-Lauf versucht es erneut."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    conn.execute(
+        "CREATE TEMP TABLE _lessons_fts_backfill_rowids AS "
+        "SELECT rowid FROM lessons_learned WHERE rowid NOT IN (SELECT rowid FROM lessons_fts_docsize)"
+    )
+    fold_desc = _LESSONS_FOLD_SQL.format(col="l.description")
+    fold_root = _LESSONS_FOLD_SQL.format(col="l.root_cause")
+    fold_prev = _LESSONS_FOLD_SQL.format(col="l.prevention")
+    conn.execute(
+        f"INSERT INTO lessons_fts(rowid, description, root_cause, prevention) "
+        f"SELECT l.rowid, {fold_desc}, {fold_root}, {fold_prev} "
+        f"FROM lessons_learned l JOIN _lessons_fts_backfill_rowids m ON m.rowid = l.rowid"
+    )
+    conn.execute("DROP TABLE _lessons_fts_backfill_rowids")
+
+
 def _ensure_core_schema(conn: sqlite3.Connection) -> None:
     """Legt fehlende Kerntabellen an (Auftrag 2026-08-06, Erstanlage-Luecke).
 
@@ -516,6 +608,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_zuruecknahme_columns(conn)
     _ensure_schreiber_columns(conn)
     _ensure_node_constraint_triggers(conn)
+    _ensure_lessons_fts_backfill(conn)
     columns = {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
     for name, declaration in {
         "actor": "TEXT", "model": "TEXT", "session": "TEXT",
@@ -895,17 +988,46 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                      stichtag: str | None = None, nur_geltende: bool = False,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None, cwd: str | None = None) -> dict:
-    """Hybrid-Suche ueber Wissensknoten: FTS5-Stichwortmatching (Woerter ODER-
-    verknuepft, deutsch gefaltet) plus optionale Bedeutungs-Suche ueber lokale
-    Embeddings (RRF-fusioniert). Ohne Vektoren (Tabelle fehlt oder leer) oder
-    ohne erreichbares Ollama identisch zum reinen FTS5-Verhalten. Returns
-    summaries (not full content) for token efficiency.
+    """Hybrid-Suche ueber Wissensknoten UND Lehren (Auftrag 2026-08-07 --
+    vorher nur Knoten; Lehren sind mit 64% des Bestands die groessere
+    Haelfte, hatten aber keinen Volltextindex, siehe lessons_fts in
+    schema.sql und _ensure_lessons_fts_backfill). FTS5-Stichwortmatching
+    (Woerter ODER-verknuepft, deutsch gefaltet) plus optionale
+    Bedeutungs-Suche ueber lokale Embeddings (RRF-fusioniert). Ohne Vektoren
+    (Tabelle fehlt oder leer) oder ohne erreichbares Ollama identisch zum
+    reinen FTS5-Verhalten. Jedes Ergebnis traegt "kind": "node"|"lesson".
+    Returns summaries (not full content) for token efficiency.
+
+    Rangfolge ueber BEIDE Sorten (Auftrag Punkt 3): rohe bm25-Werte aus
+    knowledge_fts (6 Spalten) und lessons_fts (3 Spalten) sind zwischen den
+    Tabellen NICHT vergleichbar (bm25 normiert ueber tabelleneigene
+    Korpusstatistik). Deshalb zweistufig, dieselbe Rang-POSITIONS-Fusion
+    (embeddings.rrf_fuse, ignoriert Rohscores) zweimal angewandt: zuerst
+    Knoten-FTS-Rangliste mit Lehren-FTS-Rangliste zu einer Stichwort-Rangliste
+    verschmolzen, ebenso Knoten- mit Lehren-Embedding-Rangliste, dann laufen
+    beide kombinierten Listen durch die UNVERAENDERTE _fuse_with_keyword_floor
+    (dieselbe Funktion, die vorher Knoten-FTS mit Knoten-Embeddings fusionierte
+    -- kein zweiter Fusionsmechanismus). embedding_weight=1.0 an beiden
+    Stellen ist Gleichgewicht PRO RANGLISTE, nicht pro Treffer -- der
+    Stichwort-Sockel (siehe _fuse_with_keyword_floor) laesst dadurch
+    typischerweise ungefaehr die Haelfte der obersten Plaetze an Lehren
+    fallen, UNABHAENGIG von Relevanz-Feinheiten. Das ist eine Folge der
+    Bauart, keine Feinjustierung zu Lasten von Knoten -- wenn Lehren dadurch
+    Knoten verdraengen, ist das laut Auftrag ein zu meldendes Ergebnis, keine
+    nachtraeglich wegjustierte Unwucht (Konsil-Review 2026-08-07 vor der
+    Umsetzung, s. Lehre-Suche im Chronist-Log).
 
     Normen (norm_rang gesetzt) mit gilt_ab/gilt_bis werden gegen `stichtag`
     (ISO, Vorgabe: jetzt) geprueft: abgelaufene oder noch nicht in Kraft
     getretene rutschen ans Ende (nachrangig, nicht verborgen) und tragen
     "geltung"/"gilt_ab"/"gilt_bis" im Ergebnis. Mit nur_geltende=True werden
-    sie ganz ausgeblendet. Fakten (norm_rang IS NULL) sind davon unberuehrt."""
+    sie ganz ausgeblendet. Fakten (norm_rang IS NULL) sind davon unberuehrt.
+    Lehren kennen keine Geltungsdauer -- sie stehen immer im vorrangigen Teil.
+
+    Lehren-Filter: nur status='active' (gleiche Vorgabe wie lesson_query()'s
+    Default) -- erledigte/eskalierte Lehren tauchen sonst in einer Suche auf,
+    die lesson_query() bewusst verbirgt. lesson_query() selbst bleibt
+    UNVERAENDERT (andere Frage: Typ-/Projektfilter, keine Rangliste)."""
     stichtag = stichtag or now_iso()
     conn = get_db()
     log_access(conn, None, "search", query=query, project_id=scope,
@@ -926,7 +1048,16 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                ORDER BY rank""",
             (fts_query,)
         ).fetchall()
-        allowed_ids = None
+        allowed_node_ids = None
+        fts_lesson_rows = conn.execute(
+            """SELECT l.id, l.description, l.type, l.severity, l.projects
+               FROM lessons_fts f
+               JOIN lessons_learned l ON f.rowid = l.rowid
+               WHERE lessons_fts MATCH ? AND l.status = 'active'
+               ORDER BY rank""",
+            (fts_query,)
+        ).fetchall()
+        allowed_lesson_ids = None
     else:
         fts_rows = conn.execute(
             """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
@@ -936,52 +1067,88 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                ORDER BY rank""",
             (fts_query, scope)
         ).fetchall()
-        allowed_ids = {r["id"] for r in conn.execute(
+        allowed_node_ids = {r["id"] for r in conn.execute(
             "SELECT id FROM knowledge_nodes WHERE project_id IN ('shared', ?)", (scope,)
+        )}
+        fts_lesson_rows = conn.execute(
+            """SELECT l.id, l.description, l.type, l.severity, l.projects
+               FROM lessons_fts f
+               JOIN lessons_learned l ON f.rowid = l.rowid
+               WHERE lessons_fts MATCH ? AND l.status = 'active'
+                 AND (l.projects LIKE '%"shared"%' OR l.projects LIKE ?)
+               ORDER BY rank""",
+            (fts_query, f'%"{scope}"%')
+        ).fetchall()
+        allowed_lesson_ids = {r["id"] for r in conn.execute(
+            "SELECT id FROM lessons_learned WHERE status = 'active' "
+            "AND (projects LIKE '%\"shared\"%' OR projects LIKE ?)", (f'%"{scope}"%',)
         )}
 
     by_id = {r["id"]: r for r in fts_rows}
+    by_id_lessons = {r["id"]: r for r in fts_lesson_rows}
     fts_ordered_ids = [r["id"] for r in fts_rows]
+    fts_lesson_ids = [r["id"] for r in fts_lesson_rows]
+    # Stichwort-Rangfolge ueber beide Sorten: RRF auf Rangposition statt auf
+    # den (zwischen den zwei FTS-Tabellen unvergleichbaren) bm25-Rohwerten --
+    # siehe Docstring oben. Bei fts_lesson_ids == [] (keine Lehren-Treffer)
+    # ist rrf_fuse(A, []) == A, also unveraendert wie vor diesem Auftrag.
+    keyword_ordered_ids = embeddings.rrf_fuse(fts_ordered_ids, fts_lesson_ids, embedding_weight=1.0)
 
     query_vec = embeddings.embed_text(query)
-    embedding_ordered_ids = (
-        _embedding_ranking(conn, "node", query_vec, allowed_ids) if query_vec else []
-    )
-    final_ids = _fuse_with_keyword_floor(fts_ordered_ids, embedding_ordered_ids, max_results)
+    emb_node_ids = _embedding_ranking(conn, "node", query_vec, allowed_node_ids) if query_vec else []
+    emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, allowed_lesson_ids) if query_vec else []
+    embedding_ordered_ids = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
 
-    missing = [i for i in final_ids if i not in by_id]
+    final_ids = _fuse_with_keyword_floor(keyword_ordered_ids, embedding_ordered_ids, max_results)
+
+    missing = [i for i in final_ids if i not in by_id and i not in by_id_lessons]
     if missing:
+        # Beide Tabellen abfragen statt am "L-"-Praefix zu raten: 4 Lehren im
+        # Bestand tragen noch die alte, praefixlose ID-Form (vor der
+        # L-<hex>-Konvention) -- eine Praefix-Heuristik wuerde genau diese
+        # beim Nachladen als Knoten missverstehen und stumm verlieren.
         placeholders = ",".join("?" for _ in missing)
         for r in conn.execute(
             f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0",
             missing
         ):
             by_id[r["id"]] = r
+        for r in conn.execute(
+            f"SELECT id, description, type, severity, projects FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active'",
+            missing
+        ):
+            by_id_lessons[r["id"]] = r
 
     vorrang, nachrangig = [], []
     for i in final_ids:
-        if i not in by_id:
-            continue
-        row = by_id[i]
-        entry = {"id": row["id"], "path": row["path"], "title": row["title"],
-                  "summary": row["summary"], "project": row["project_id"],
-                  # Kennung, NICHT aufgeloest -- siehe schema.sql-Kommentar an
-                  # knowledge_nodes.abgeleitet_von (ADR-027 Nachtrag 4).
-                  "abgeleitet_von": row["abgeleitet_von"]}
-        geltung = _geltung_status(row["norm_rang"], row["gilt_ab"], row["gilt_bis"], stichtag)
-        if geltung in ("abgelaufen", "noch_nicht_in_kraft"):
-            if nur_geltende:
-                continue
-            entry["geltung"] = geltung
-            entry["gilt_ab"] = row["gilt_ab"]
-            entry["gilt_bis"] = row["gilt_bis"]
-            nachrangig.append(entry)
-        else:
-            vorrang.append(entry)
+        if i in by_id:
+            row = by_id[i]
+            entry = {"kind": "node", "id": row["id"], "path": row["path"], "title": row["title"],
+                      "summary": row["summary"], "project": row["project_id"],
+                      # Kennung, NICHT aufgeloest -- siehe schema.sql-Kommentar an
+                      # knowledge_nodes.abgeleitet_von (ADR-027 Nachtrag 4).
+                      "abgeleitet_von": row["abgeleitet_von"]}
+            geltung = _geltung_status(row["norm_rang"], row["gilt_ab"], row["gilt_bis"], stichtag)
+            if geltung in ("abgelaufen", "noch_nicht_in_kraft"):
+                if nur_geltende:
+                    continue
+                entry["geltung"] = geltung
+                entry["gilt_ab"] = row["gilt_ab"]
+                entry["gilt_bis"] = row["gilt_bis"]
+                nachrangig.append(entry)
+            else:
+                vorrang.append(entry)
+        elif i in by_id_lessons:
+            row = by_id_lessons[i]
+            # Keine Geltungsdauer bei Lehren -- immer vorrangig (kein
+            # nachrangig-Zweig, siehe Docstring).
+            vorrang.append({"kind": "lesson", "id": row["id"], "type": row["type"],
+                             "severity": row["severity"], "summary": row["description"],
+                             "project": json.loads(row["projects"]) if row["projects"] else []})
     results = vorrang + nachrangig
     if not results:
         _log_zero_hit(query, cwd=cwd, session=session)
-    log_access(conn, results[0]["path"] if results else None, "search", query=query,
+    log_access(conn, results[0].get("path") if results else None, "search", query=query,
                project_id=scope, actor=actor, model=model, session=session)
     conn.close()
     return {"query": query, "scope": scope, "results": results, "count": len(results)}

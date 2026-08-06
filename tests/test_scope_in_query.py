@@ -84,6 +84,17 @@ def test_node_search_scoped_returns_only_own_project(temp_db, monkeypatch):
     assert "n-shared" in ids  # shared bleibt in jedem Bereich sichtbar
 
 
+def test_knowledge_search_scoped_returns_only_own_project_lessons(temp_db, monkeypatch):
+    """Auftrag 2026-08-07: dieselbe Bereichsfilterung gilt jetzt auch fuer
+    die in knowledge_search() mitgelieferten Lehren (allowed_lesson_ids)."""
+    monkeypatch.setattr(kms.embeddings, "embed_text", lambda *a, **k: None)
+    result = kms.knowledge_search("Abschreibung", scope="projA")
+    lesson_ids = [r["id"] for r in result["results"] if r["kind"] == "lesson"]
+    assert "L-own" in lesson_ids
+    assert "L-foreign" not in lesson_ids
+    assert "L-multi" in lesson_ids  # mehrwertig, projA gehoert dazu
+
+
 def test_node_search_scoped_rank_and_count_unaffected_by_foreign_doc(temp_db, monkeypatch):
     """Kein Sieb: Fremd-Dokument entfernen darf Reihenfolge/Zahl im eigenen
     Bereich nicht aendern, sonst haette es vorher mitgezaehlt."""
@@ -207,10 +218,17 @@ def test_multivalued_lesson_visible_once_without_scope_too(temp_db, monkeypatch)
 # --- Gegenprobe: ohne Bereichsangabe unveraendert ----------------------------
 
 def test_knowledge_search_without_scope_unchanged(temp_db, monkeypatch):
+    """Auftrag 2026-08-07: knowledge_search() liefert seither Knoten UND
+    Lehren gemischt (Feld "kind") -- vorher nur Knoten. Ohne scope (= "all")
+    bleiben beide Sorten ungefiltert, die Knotenmenge selbst ist unveraendert
+    (siehe test_node_search_scoped_returns_only_own_project fuer die
+    Bereichsfilterung)."""
     monkeypatch.setattr(kms.embeddings, "embed_text", lambda *a, **k: None)
     result = kms.knowledge_search("Abschreibung")
-    ids = {r["id"] for r in result["results"]}
-    assert ids == {"n-own", "n-foreign", "n-shared"}
+    node_ids = {r["id"] for r in result["results"] if r["kind"] == "node"}
+    lesson_ids = {r["id"] for r in result["results"] if r["kind"] == "lesson"}
+    assert node_ids == {"n-own", "n-foreign", "n-shared"}
+    assert lesson_ids == {"L-own", "L-foreign", "L-multi"}
 
 
 def test_lesson_query_without_scope_unchanged(temp_db, monkeypatch):

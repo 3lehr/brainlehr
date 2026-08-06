@@ -155,10 +155,22 @@ def _retrieve_hybrid(q: dict, k: int) -> list[str]:
     """knowledge_mcp_server.py::knowledge_search()/lesson_query() -- Hybrid
     Stichwort + optionale Embedding-RRF-Fusion (Gewicht ueber
     embeddings.hybrid_retrieval_weight(), hier fuer Grundmaß/Vergleichslauf
-    per Monkeypatch gesteuert, nicht per ENV)."""
+    per Monkeypatch gesteuert, nicht per ENV).
+
+    Auftrag 2026-08-07: knowledge_search() liefert seither Knoten UND Lehren
+    gemischt (Feld "kind"), vorher nur Knoten mit "path" -- genau die
+    Luecke, die dieser Pruefstand ueberhaupt erst aufgedeckt hat (0 von 2
+    einschlaegigen Lehren gefunden). ns kann jetzt beide Sorten enthalten,
+    ls bleibt der separate lesson_query()-Weg (andere Frage, siehe dortiger
+    Docstring) -- dict.fromkeys() dedupliziert, falls dieselbe Lehre ueber
+    beide Wege auftaucht."""
     ns = kms.knowledge_search(q["text"], max_results=k)["results"]
     ls = kms.lesson_query(query=q["text"], max_results=k)["results"]
-    return [f"node:{r['path']}" for r in ns] + [f"lesson:{r['id']}" for r in ls]
+    hybrid_ids = [
+        f"lesson:{r['id']}" if r.get("kind") == "lesson" else f"node:{r['path']}"
+        for r in ns
+    ] + [f"lesson:{r['id']}" for r in ls]
+    return list(dict.fromkeys(hybrid_ids))
 
 
 # --- Kennzahlen -----------------------------------------------------------

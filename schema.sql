@@ -276,6 +276,66 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     model TEXT
 );
 
+-- Volltext-Suche ueber Lehren (Auftrag 2026-08-07). Gleiche Bauart wie
+-- knowledge_fts oben, nicht anders: externe Inhaltstabelle, trigram-
+-- Tokenizer, dieselbe Umlaut-Faltung vor dem Indizieren, ein Trigger-Trio
+-- (INSERT/DELETE/UPDATE, UPDATE mit den zwei ueblichen Zweigen). Befund
+-- 2026-08-07: description/root_cause/prevention wurden bisher nur per
+-- Python-Substring (lesson_query, knowledge_recall_hook) durchsucht --
+-- Volltabellendurchlauf, keine Rangfolge, keine Umlautfaltung, obwohl
+-- Lehren mit 64% die GROESSERE Haelfte des Bestands sind. Indiziert werden
+-- genau die drei Spalten, die heute schon durchsucht werden (kw_hits() in
+-- knowledge_mcp_server.py::lesson_query) -- nicht mehr, nicht weniger.
+-- lesson_query bleibt UNVERAENDERT (andere Frage: Typ-/Projektfilter), nur
+-- knowledge_search nutzt diese Tabelle zusaetzlich zu knowledge_fts.
+CREATE VIRTUAL TABLE IF NOT EXISTS lessons_fts USING fts5(
+    description, root_cause, prevention,
+    content='lessons_learned',
+    content_rowid='rowid',
+    tokenize="trigram case_sensitive 0"
+);
+
+CREATE TRIGGER IF NOT EXISTS lessons_ai AFTER INSERT ON lessons_learned BEGIN
+    INSERT INTO lessons_fts(rowid, description, root_cause, prevention)
+    VALUES (new.rowid,
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.description,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.root_cause,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.prevention,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
+END;
+
+CREATE TRIGGER IF NOT EXISTS lessons_ad AFTER DELETE ON lessons_learned BEGIN
+    INSERT INTO lessons_fts(lessons_fts, rowid, description, root_cause, prevention)
+    VALUES ('delete', old.rowid,
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.description,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.root_cause,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.prevention,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
+END;
+
+CREATE TRIGGER IF NOT EXISTS lessons_au AFTER UPDATE ON lessons_learned BEGIN
+    INSERT INTO lessons_fts(lessons_fts, rowid, description, root_cause, prevention)
+    VALUES ('delete', old.rowid,
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.description,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.root_cause,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.prevention,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
+    INSERT INTO lessons_fts(rowid, description, root_cause, prevention)
+    VALUES (new.rowid,
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.description,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.root_cause,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.prevention,
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
+END;
+
 -- Session-Log (wer hat wann was abgefragt)
 CREATE TABLE IF NOT EXISTS access_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
