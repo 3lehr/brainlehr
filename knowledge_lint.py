@@ -767,6 +767,43 @@ def find_injection_suspects(conn: sqlite3.Connection) -> list[dict]:
     return einschleusung.find_injection_suspects(conn)
 
 
+# ─── 19. Ablehnungen je Grund ───────────────────────────────────────────────
+# Auftrag 2026-08-06 (Mangel: Ablehnungen wurden dem Aufrufer gemeldet, nie
+# protokolliert -- access_log stand bei rejected=0 trotz taeglicher
+# Ablehnungen). knowledge_mcp_server.py schreibt jede Ablehnung jetzt mit
+# status='rejected' und einer festen Grund-Kategorie im vorhandenen
+# query-Feld (Begruendung dort: query bedeutet bei anderen Actions etwas
+# anderes, stoert aber nicht, weil hier ohnehin auf status='rejected'
+# eingeschraenkt wird). Ohne Vergleichszahl ist die Spalte totes Gewicht --
+# das war am 2026-08-06 bereits zweimal der Punkt -- darum daneben die Zahl
+# der Lehren im selben Zeitraum. Kein Fremdschluessel zwischen access_log
+# und lessons_learned, also keine Aussage "diese Ablehnung wurde zu jener
+# Lehre" -- nur die grobe Groessenordnung.
+
+def find_rejections(conn: sqlite3.Connection) -> dict:
+    rows = conn.execute(
+        "SELECT COALESCE(query, '(kein Grund)') AS grund, COUNT(*) AS anzahl "
+        "FROM access_log WHERE status = 'rejected' GROUP BY grund ORDER BY anzahl DESC"
+    ).fetchall()
+    je_grund = [{"grund": r["grund"], "anzahl": r["anzahl"]} for r in rows]
+    zeitraum = conn.execute(
+        "SELECT MIN(timestamp) AS start, MAX(timestamp) AS ende FROM access_log WHERE status = 'rejected'"
+    ).fetchone()
+    lessons_im_zeitraum = 0
+    if zeitraum["start"]:
+        lessons_im_zeitraum = conn.execute(
+            "SELECT COUNT(*) FROM lessons_learned WHERE first_seen >= ? AND first_seen <= ?",
+            (zeitraum["start"], zeitraum["ende"]),
+        ).fetchone()[0]
+    return {
+        "je_grund": je_grund,
+        "gesamt": sum(i["anzahl"] for i in je_grund),
+        "zeitraum_start": zeitraum["start"],
+        "zeitraum_ende": zeitraum["ende"],
+        "lessons_im_zeitraum": lessons_im_zeitraum,
+    }
+
+
 # ─── Struktur-Kennzahlen (kein Befund, Zustand des Bestands als Ganzes) ────
 # Getrennt von den sieben Befund-Kategorien oben: keine beanstandet einen
 # einzelnen Eintrag, sondern beschreibt eine Verteilung ueber den Bestand.
@@ -898,6 +935,7 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "anker_queue_backlog": find_anker_queue_backlog(now=now),
             "confidence_decay": find_confidence_decay(conn, now),
             "injection_suspects": find_injection_suspects(conn),
+            "rejections": find_rejections(conn),
             "structure_metrics": find_structure_metrics(conn),
         }
     finally:
@@ -984,6 +1022,15 @@ def print_report(result: dict) -> None:
                    result["injection_suspects"],
                    lambda i: f"[{i['sicherheit']}] {i['kind']} {i['ref']}.{i['feld']} "
                              f"({i['muster']}): {i['treffer']!r}")
+    rj = result["rejections"]
+    if rj["gesamt"] == 0:
+        print("\nAblehnungen (access_log.status='rejected'): keine.")
+    else:
+        print(f"\nAblehnungen (access_log.status='rejected'): {rj['gesamt']} im Zeitraum "
+              f"{rj['zeitraum_start']} .. {rj['zeitraum_ende']}, "
+              f"{rj['lessons_im_zeitraum']} Lehren (first_seen) im selben Zeitraum.")
+        for i in rj["je_grund"]:
+            print(f"  {i['grund']}: {i['anzahl']}")
     print_structure_metrics(result["structure_metrics"])
 
 

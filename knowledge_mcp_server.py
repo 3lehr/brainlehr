@@ -58,7 +58,21 @@ RELATION_TYPES = {
     "supports", "derived_from", "cites", "evaluates_with", "constrains",
     "produces", "requires", "replaces_component", "analogous_to", "feeds_into",
 }
-EVENT_STATUSES = {"started", "completed", "failed"}
+# "rejected" (Auftrag 2026-08-06, Mangel: Ablehnungen wurden dem Aufrufer
+# gemeldet, aber nie protokolliert -- completed 1349 / started 212 / rejected
+# 0 trotz mehrerer Ablehnungen taeglich). Jeder frueh scheiternde
+# Eingabe-Check ruft log_access(..., status="rejected", query=<GRUND>) auf,
+# bevor er zurueckkehrt. GRUND ist eine feste, kurze Kategorie (z.B.
+# "source_fehlt", "knoten_nicht_gefunden") -- nicht der volle, variable
+# Fehlertext, sonst gruppiert 'wie oft wegen X abgelehnt' nicht sauber.
+# Wiederverwendung der bestehenden query-Spalte statt neuer Spalte: sie
+# bedeutet bei anderen Actions etwas anderes (Suchtext, Relation-ID), das
+# stoert nicht, weil jede Auswertung ohnehin auf status='rejected'
+# einschraenkt. Optimistic-Concurrency-Konflikte (verlorenes Update) bleiben
+# bewusst status="failed", nicht "rejected": kein ungueltiger Input, sondern
+# ein Wettlauf, der einen Retry verlangt -- andere Kategorie, siehe
+# knowledge_update.
+EVENT_STATUSES = {"started", "completed", "failed", "rejected"}
 # Anlass (Auftrag 2026-08-06): was hat den Eintrag ausgeloest. 'selbst' und
 # 'betreiber' sind SELBSTBERICHTET vom aufrufenden Modell -- nur so gut wie
 # der Schreiber, die DB kann sie nicht nachpruefen. 'hook' und 'skript' sind
@@ -578,6 +592,8 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
         (node_id, node_id)
     ).fetchone()
     if not row:
+        log_access(conn, node_id, "read", actor=actor, model=model, session=session,
+                   status="rejected", query="knoten_nicht_gefunden")
         conn.close()
         return {"error": f"Node not found: {node_id}"}
 
@@ -1137,6 +1153,10 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     Zitat-Pruefung unten ist."""
     anlass_fehler = _validate_anlass(anlass)
     if anlass_fehler:
+        conn = get_db()
+        log_access(conn, None, "add", project_id=project_id, actor=actor, model=model,
+                   session=session, status="rejected", query="anlass_ungueltig")
+        conn.close()
         return {"error": anlass_fehler}
 
     # Schreiber gehoert an den Datensatz, nicht nur ins Protokoll (Auftrag
@@ -1154,12 +1174,18 @@ def knowledge_add(parent_path: str, title: str, summary: str,
 
     geltung_fehler = _validate_geltung(norm_rang, gilt_ab, gilt_bis)
     if geltung_fehler:
+        conn = get_db()
+        log_access(conn, None, "add", project_id=project_id, actor=actor, model=model,
+                   session=session, status="rejected", query="geltung_ungueltig")
+        conn.close()
         return {"error": geltung_fehler}
 
     conn = get_db()
 
     if abgeleitet_von is not None:
         if source.strip():
+            log_access(conn, parent_path, "add", project_id=project_id, actor=actor, model=model,
+                       session=session, status="rejected", query="source_und_abgeleitet_von_exklusiv")
             conn.close()
             return {
                 "error": "source und abgeleitet_von schliessen sich aus: ist abgeleitet_von "
@@ -1168,11 +1194,15 @@ def knowledge_add(parent_path: str, title: str, summary: str,
             }
         erzeugte_source, ableitung_fehler = _erzeuge_source_aus_ableitung(conn, abgeleitet_von)
         if ableitung_fehler:
+            log_access(conn, parent_path, "add", project_id=project_id, actor=actor, model=model,
+                       session=session, status="rejected", query="abgeleitet_von_ungueltig")
             conn.close()
             return {"error": ableitung_fehler}
         source = erzeugte_source
     else:
         if not source.strip():
+            log_access(conn, parent_path, "add", project_id=project_id, actor=actor, model=model,
+                       session=session, status="rejected", query="source_fehlt")
             conn.close()
             return {
                 "error": "source fehlt: Herkunft des Knotens angeben (aus welcher Datei/welchem Lauf er stammt). "
@@ -1181,6 +1211,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
 
         provenienz_fehler = _validate_source_provenance(source, title, summary, content)
         if provenienz_fehler:
+            log_access(conn, parent_path, "add", project_id=project_id, actor=actor, model=model,
+                       session=session, status="rejected", query="source_provenienz_ungueltig")
             conn.close()
             return {"error": provenienz_fehler}
 
@@ -1197,6 +1229,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
         if not parent_row:
             if not neuer_ast:
                 all_paths = [r[0] for r in conn.execute("SELECT path FROM knowledge_nodes")]
+                log_access(conn, node_path, "add", project_id=project_id, actor=actor, model=model,
+                           session=session, status="rejected", query="elternpfad_fehlt")
                 conn.close()
                 return {
                     "error": f"Elternpfad existiert nicht: {parent_path}. "
@@ -1211,6 +1245,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     # Check for duplicates
     existing = conn.execute("SELECT id FROM knowledge_nodes WHERE path = ?", (node_path,)).fetchone()
     if existing:
+        log_access(conn, node_path, "add", project_id=project_id, actor=actor, model=model,
+                   session=session, status="rejected", query="pfad_existiert_bereits")
         conn.close()
         return {"error": f"Node already exists at path: {node_path}", "existing_id": existing["id"]}
 
@@ -1257,6 +1293,8 @@ def knowledge_update(node_id: str, summary: str | None = None,
     conn = get_db()
     row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
     if not row:
+        log_access(conn, node_id, "update", actor=actor, model=model, session=session,
+                   status="rejected", query="knoten_nicht_gefunden")
         conn.close()
         return {"error": f"Node not found: {node_id}"}
 
@@ -1268,6 +1306,9 @@ def knowledge_update(node_id: str, summary: str | None = None,
     effektiv_gilt_bis = gilt_bis if gilt_bis is not None else row["gilt_bis"]
     geltung_fehler = _validate_geltung(norm_rang, effektiv_gilt_ab, effektiv_gilt_bis)
     if geltung_fehler:
+        log_access(conn, row["path"], "update", project_id=row["project_id"],
+                   actor=actor, model=model, session=session,
+                   status="rejected", query="geltung_ungueltig")
         conn.close()
         return {"error": geltung_fehler}
 
@@ -1382,11 +1423,17 @@ def knowledge_zurueckziehen(node_id: str, grund: str, *, actor: str | None = Non
     grund ist Pflicht (leer -> Ablehnung, nichts geaendert): ein Zurueckziehen
     ohne Begruendung waere dieselbe Blackbox wie ein rohes DELETE."""
     if not grund or not grund.strip():
+        conn = get_db()
+        log_access(conn, node_id, "zurueckziehen", actor=actor, model=model, session=session,
+                   status="rejected", query="grund_fehlt")
+        conn.close()
         return {"error": "grund fehlt: Zurueckziehen verlangt eine Begruendung, nichts geaendert."}
 
     conn = get_db()
     row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
     if not row:
+        log_access(conn, node_id, "zurueckziehen", actor=actor, model=model, session=session,
+                   status="rejected", query="knoten_nicht_gefunden")
         conn.close()
         return {"error": f"Node not found: {node_id}"}
 
@@ -1422,6 +1469,8 @@ def knowledge_freigeben(node_id: str, *, actor: str | None = None,
     conn = get_db()
     row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
     if not row:
+        log_access(conn, node_id, "freigeben", actor=actor, model=model, session=session,
+                   status="rejected", query="knoten_nicht_gefunden")
         conn.close()
         return {"error": f"Node not found: {node_id}"}
     if not row["zurueckgezogen"]:
@@ -1560,6 +1609,8 @@ def knowledge_relation_update(relation_id: str, relation_type: str | None = None
     conn = get_db()
     row = conn.execute("SELECT * FROM knowledge_relations WHERE id=?", (relation_id,)).fetchone()
     if not row:
+        log_access(conn, None, "relation_update", query="relation_nicht_gefunden",
+                   actor=creator, model=model, session=session, status="rejected")
         conn.close()
         return {"error": f"Relation not found: {relation_id}"}
     next_type = relation_type or row["relation_type"]
@@ -1602,6 +1653,8 @@ def knowledge_relation_remove(relation_id: str, *, actor: str | None = None,
     conn = get_db()
     row = conn.execute("SELECT * FROM knowledge_relations WHERE id=?", (relation_id,)).fetchone()
     if not row:
+        log_access(conn, None, "relation_remove", query="relation_nicht_gefunden",
+                   actor=actor, model=model, session=session, status="rejected")
         conn.close()
         return {"error": f"Relation not found: {relation_id}"}
     log_access(conn, row["source_path"], "relation_remove", query=relation_id,
@@ -1990,6 +2043,10 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     """
     anlass_fehler = _validate_anlass(anlass)
     if anlass_fehler:
+        conn = get_db()
+        log_access(conn, node_path or None, "lesson", actor=actor, model=model, session=session,
+                   status="rejected", query="anlass_ungueltig")
+        conn.close()
         return {"status": "rejected", "error": anlass_fehler}
 
     actor, model, session = _identity(actor, model, session)
@@ -2005,6 +2062,10 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     projects, node_path = fixed["projects"], fixed["node_path"]
 
     if not description.strip():
+        conn = get_db()
+        log_access(conn, node_path or None, "lesson", actor=actor, model=model, session=session,
+                   status="rejected", query="beschreibung_leer")
+        conn.close()
         return {"status": "rejected",
                 "error": "description ist leer — Lesson nicht gespeichert."}
 
@@ -2016,6 +2077,8 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
             (same_as,)
         ).fetchone()
         if not target:
+            log_access(conn, node_path or None, "lesson", actor=actor, model=model, session=session,
+                       status="rejected", query="same_as_ungueltig")
             conn.close()
             return {"status": "rejected",
                     "error": f"same_as verweist auf keine bestehende Lesson: {same_as}"}
@@ -2076,6 +2139,8 @@ def lesson_update(lesson_id: str, description: str | None = None,
     conn = get_db()
     row = conn.execute("SELECT id FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
     if not row:
+        log_access(conn, None, "lesson_update", query="lesson_nicht_gefunden",
+                   actor=actor, model=model, session=session, status="rejected")
         conn.close()
         return {"error": f"Lesson not found: {lesson_id}"}
 
