@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import json
+import random
 import re
 import sqlite3
 import sys
@@ -156,9 +157,148 @@ def find_vector_gaps(conn: sqlite3.Connection) -> list[dict]:
 
 
 # ─── 5. Near-Dubletten unter den Lessons ────────────────────────────────────
-# ponytail: O(n^2) Paarvergleich -- bei Hunderten aktiven Lessons in
-# Sekunden gerechnet, kein Problem. Ab niedriger vierstelliger Lesson-Zahl
-# waere ein Blocking-Schritt (z.B. nur je Typ vergleichen) noetig.
+# Kandidatenbildung per Blockierung statt Alles-gegen-alles: Alles-gegen-alles
+# ist quadratisch (114 481 Paare bei 479 Lessons, 11,84s Gesamtlauf -- gemessen
+# 2026-08-06) und liefe bei einigen Zehntausend Lessons Tage. Der eigentliche
+# Aehnlichkeitsvergleich (Kosinus/SequenceMatcher, siehe unten) bleibt
+# unveraendert -- teuer ist nicht der Vergleich, sondern dass jeder mit jedem
+# verglichen wird.
+#
+# Verfahren: "rare term blocking" (Christen 2012, Data Matching, Kap. 4).
+# Jede Lesson traegt ihre RARE_TOKENS_PER_LESSON seltensten Woerter
+# (niedrigste Dokumenthaeufigkeit im aktiven Bestand) als Blockschluessel.
+# Zwei Lessons werden nur verglichen, wenn sie mindestens einen Schluessel
+# teilen. Blockierung laeuft auf dem TEXT (Beschreibung), nicht auf den
+# Vektoren -- Text liegt fuer JEDE aktive Lesson vor, Vektoren nur fuer einen
+# Teil (find_vector_gaps). Eine frisch angelegte, noch nicht eingebettete
+# Lesson bekaeme bei Vektor-basierter Blockierung keinen Block und wuerde
+# so aus der Pruefung fallen -- mit Text-Blockierung nicht: fehlt der Vektor
+# fuer eines oder beide Mitglieder eines Kandidatenpaars, greift wie bisher
+# der SequenceMatcher-Zweig unten.
+#
+# Was das Text-Verfahren allein uebersieht: zwei Beschreibungen, die sich
+# inhaltlich aehneln, aber KEIN gemeinsames seltenes Wort verwenden (reine
+# Umschreibung mit anderen Woertern), fallen nicht in denselben Block. Am
+# Echtbestand betraf das genau die Paare, deren Score aus dem Kosinus-Zweig
+# stammt (semantische statt woertliche Naehe) -- daher zusaetzlich Kandidaten
+# per LSH auf den vorhandenen Vektoren (Random-Hyperplane-Hashing / SimHash,
+# Charikar 2002): Vektoren, die auf derselben Seite genuegend zufaelliger
+# Hyperebenen liegen, kommen in denselben Eimer. Beide Verfahren liefern
+# UNABHAENGIG Kandidatenpaare, ihre Vereinigung wird geprueft.
+#
+# Bleibt trotzdem ein Rest-Risiko: ein Paar ohne gemeinsames seltenes Wort
+# UND ohne Vektor (mindestens eine Seite frisch, noch nicht eingebettet)
+# wird von keinem der beiden Blocking-Zweige gefunden. Das ist der Preis der
+# Blockierung. Am Echtbestand (461 aktive Lessons, alle eingebettet) trifft
+# das auf keinen der bekannten Faelle zu (siehe Gegenprobe im Bericht) --
+# eine Garantie fuer kuenftige, noch nicht eingebettete Lessons ist es nicht.
+#
+# ponytail: die Text-Blockierung setzt auf ein wachsendes Vokabular (Heaps'
+# sches Gesetz) -- am Echtbestand gemessen (8519 Woerter / 461 Lessons,
+# gemessen 2026-08-06) haelt das Verhaeltnis Vokabular/Bestand die Bloecke
+# klein und der Lauf skaliert deutlich unterquadratisch (Skalierungsbeleg im
+# Bericht: 500/2000/8000 synthetische Lessons ~linear). Ein Bestand mit
+# extrem WENIG effektivem Vokabular (stark schablonenhafte Beschreibungen,
+# feste Phrasen) liesse die Bloecke mit der Bestandsgroesse mitwachsen und
+# naeherte sich wieder quadratischem Verhalten an -- Ausweg dann: eine
+# harte Obergrenze je Block (ueberzaehlige Mitglieder eines Blocks
+# ignorieren) statt aktuell unbegrenzter Blockgroesse.
+
+RARE_TOKENS_PER_LESSON = 5
+# 5, nicht 1: mit genau einem Schluessel pro Lesson verhindert ein einziges
+# zufaellig haeufiges Wort unter den "seltensten" (v.a. bei kurzen Texten)
+# jeden Treffer. 5 gibt jeder Lesson mehrere Versuche, einen Block zu
+# treffen. Kuerzeste beobachtete Lesson hat 6 Woerter (gemessen 2026-08-06)
+# -- 5 Schluessel bleiben damit auch fuer kurze Texte aussagekraeftig, ohne
+# dass ein Wort mehrfach als Schluessel derselben Lesson zaehlt.
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
+_EMPTY_TOKEN_KEY = "\x00leer\x00"  # Wildcard fuer Lessons ganz ohne Wort-Token
+
+
+def _lesson_tokens(text: str) -> list[str]:
+    return _TOKEN_RE.findall(fold_de(text or ""))
+
+
+def _rare_blocking_keys(token_lists: dict[str, list[str]],
+                         k: int = RARE_TOKENS_PER_LESSON) -> dict[str, set[str]]:
+    """Je Lesson die k Woerter mit der niedrigsten Dokumenthaeufigkeit im
+    uebergebenen Bestand als Blockschluessel. Woerter mit doc_freq == 1
+    (nur in dieser einen Lesson, z.B. eine Fehlercode-Zahl oder ein
+    Funktionsname) werden dabei uebersprungen -- sie sind zwar die
+    "seltensten", koennen aber per Definition nie mit einer ANDEREN Lesson
+    einen Block bilden und wuerden nur die tatsaechlich geteilten seltenen
+    Woerter aus den Top-k verdraengen, sobald eine Beschreibung genug
+    Eigennamen/Codefragmente enthaelt (am Echtbestand beobachtet:
+    'exportRecentEventsAsText' u.ae. schlug so den Kandidaten-Fund fehl,
+    bevor dieser Ausschluss ergaenzt wurde). Bleibt fuer eine Lesson danach
+    kein Schluessel (kein Wort mit doc_freq >= 2 -- leere Beschreibung oder
+    Wortschatz komplett einzigartig), bekommt sie einen Wildcard-Schluessel:
+    sie wird dann gegen jede andere Lesson im selben Wildcard-Block
+    verglichen, statt aus der Pruefung zu fallen."""
+    doc_freq: dict[str, int] = {}
+    for tokens in token_lists.values():
+        for tok in set(tokens):
+            doc_freq[tok] = doc_freq.get(tok, 0) + 1
+    keys: dict[str, set[str]] = {}
+    for lesson_id, tokens in token_lists.items():
+        shared = {t for t in set(tokens) if doc_freq[t] >= 2}
+        if not shared:
+            keys[lesson_id] = {_EMPTY_TOKEN_KEY}
+            continue
+        ranked = sorted(shared, key=lambda t: (doc_freq[t], t))
+        keys[lesson_id] = set(ranked[:k])
+    return keys
+
+
+def _candidate_pairs(keys: dict[str, set]) -> set[frozenset]:
+    buckets: dict = {}
+    for lesson_id, ks in keys.items():
+        for key in ks:
+            buckets.setdefault(key, []).append(lesson_id)
+    pairs: set[frozenset] = set()
+    for members in buckets.values():
+        for i in range(len(members)):
+            for j in range(i + 1, len(members)):
+                pairs.add(frozenset((members[i], members[j])))
+    return pairs
+
+
+LSH_BITS_PER_BAND = 6
+LSH_NUM_BANDS = 8
+LSH_SEED = 20260806  # fest -- Kandidatenbildung bleibt deterministisch, kein Modellaufruf
+# Random-Hyperplane-LSH: Kollisionswahrscheinlichkeit auf EINER Hyperebene
+# fuer zwei Vektoren mit Kosinus-Aehnlichkeit s ist 1 - arccos(s)/pi. Bei der
+# Schwelle s=0.90 (NEAR_DUPLICATE_THRESHOLD) sind das rund 0.856. Ein Band
+# aus LSH_BITS_PER_BAND=6 Hyperebenen muss bei ALLEN 6 uebereinstimmen:
+# 0.856**6 ≈ 0.379 Trefferwahrscheinlichkeit je Band. Mit LSH_NUM_BANDS=8
+# unabhaengigen Baendern (mindestens eines muss treffen) ergibt sich
+# 1 - (1-0.379)**8 ≈ 0.975 -- realistische Trefferquote fuer Paare GENAU auf
+# der Schwelle; Paare mit hoeherem Score liegen darueber. Mehr Baender
+# erhoehen die Trefferquote weiter, aber auch die Zahl der Kandidatenpaare
+# (jedes Band erzeugt eigene Eimer) -- 8 ist der am Echtbestand (Gegenprobe
+# im Bericht) kleinste Wert, der alle bekannten Kosinus-Dubletten wiederfindet.
+
+
+def _lsh_hyperplanes(dim: int, seed: int = LSH_SEED) -> list[list[list[float]]]:
+    rng = random.Random(seed)
+    return [[[rng.gauss(0.0, 1.0) for _ in range(dim)] for _ in range(LSH_BITS_PER_BAND)]
+            for _ in range(LSH_NUM_BANDS)]
+
+
+def _vector_blocking_keys(vectors: dict[str, list[float]]) -> dict[str, set[tuple]]:
+    if not vectors:
+        return {}
+    dim = len(next(iter(vectors.values())))
+    hyperplanes = _lsh_hyperplanes(dim)
+    keys: dict[str, set[tuple]] = {}
+    for lesson_id, vec in vectors.items():
+        sig = set()
+        for band_idx, band in enumerate(hyperplanes):
+            bits = tuple(1 if sum(v * h for v, h in zip(vec, plane)) >= 0 else 0 for plane in band)
+            sig.add((band_idx, bits))
+        keys[lesson_id] = sig
+    return keys
+
 
 def _is_near_duplicate(score: float, threshold: float = NEAR_DUPLICATE_THRESHOLD) -> bool:
     return score >= threshold
@@ -168,22 +308,28 @@ def find_near_duplicate_lessons(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
         "SELECT id, description FROM lessons_learned WHERE status = 'active'"
     ).fetchall()
+    active_ids = {r["id"] for r in rows}
     vectors = {r["ref_id"]: embeddings.unpack_embedding(r["vector"])
-               for r in conn.execute("SELECT ref_id, vector FROM knowledge_embeddings WHERE kind = 'lesson'")}
+               for r in conn.execute("SELECT ref_id, vector FROM knowledge_embeddings WHERE kind = 'lesson'")
+               if r["ref_id"] in active_ids}
     folded = {r["id"]: fold_de(r["description"]) for r in rows}
+    tokens = {r["id"]: _lesson_tokens(r["description"]) for r in rows}
+    text_keys = _rare_blocking_keys(tokens)
+    vector_keys = _vector_blocking_keys(vectors)
+    candidates = _candidate_pairs(text_keys) | _candidate_pairs(vector_keys)
 
     out = []
-    for i in range(len(rows)):
-        for j in range(i + 1, len(rows)):
-            a, b = rows[i], rows[j]
-            if a["id"] in vectors and b["id"] in vectors:
-                score = embeddings.cosine_similarity(vectors[a["id"]], vectors[b["id"]])
-                method = "cosine"
-            else:
-                score = difflib.SequenceMatcher(None, folded[a["id"]], folded[b["id"]]).ratio()
-                method = "sequence_matcher"
-            if _is_near_duplicate(score):
-                out.append({"a": a["id"], "b": b["id"], "score": round(score, 3), "method": method})
+    for pair in candidates:
+        a_id, b_id = sorted(pair)
+        if a_id in vectors and b_id in vectors:
+            score = embeddings.cosine_similarity(vectors[a_id], vectors[b_id])
+            method = "cosine"
+        else:
+            score = difflib.SequenceMatcher(None, folded[a_id], folded[b_id]).ratio()
+            method = "sequence_matcher"
+        if _is_near_duplicate(score):
+            out.append({"a": a_id, "b": b_id, "score": round(score, 3), "method": method})
+    out.sort(key=lambda d: (d["a"], d["b"]))
     return out
 
 
@@ -843,7 +989,22 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
             ("L-dup-a", "error", "Der Reconnect nach BLE-Abbruch vergisst die Geraete-Bindung.", "active", fresh, fresh),
             ("L-dup-b", "error", "Der Reconnect nach BLE-Abbruch vergisst die Geraete-Bindung!", "active", fresh, fresh),
             ("L-distinct", "insight", "Slugs duerfen nicht mitten im Wort gekappt werden.", "active", fresh, fresh),
+            # Vektor fehlt fuer die neue Lesson (frisch angelegt, noch nicht
+            # eingebettet) -- L-novec-old bekommt unten einen Vektor, L-novec-new
+            # nicht. Beide teilen seltene Woerter im Text. Zeigt: die Kandidaten-
+            # bildung haengt NICHT am Vektor, eine frische, noch nicht
+            # eingebettete Lesson faellt nicht aus der Pruefung.
+            ("L-novec-old", "error", "Odometer-Reset ueberschreibt Startkilometerstand ohne Bestaetigungsdialog.", "active", fresh, fresh),
+            ("L-novec-new", "error", "Odometer-Reset ueberschreibt Startkilometerstand ohne Bestaetigungsdialog!", "active", fresh, fresh),
         ],
+    )
+    # Vektor NUR fuer L-novec-old -- L-novec-new bleibt absichtlich ohne
+    # Eintrag in knowledge_embeddings (frisch, noch nicht eingebettet).
+    conn.execute(
+        "INSERT INTO knowledge_embeddings (kind, ref_id, project_id, model, vector, updated_at) "
+        "VALUES (?,?,?,?,?,?)",
+        ("lesson", "L-novec-old", "shared", "test-model",
+         embeddings.pack_embedding([0.1] * 8), fresh),
     )
     # K2: je eine Lesson mit ein-, zwei- und dreifach zugeordneten Projekten,
     # plus eine Zeile mit kaputtem JSON im projects-Feld (kein Array).
@@ -966,10 +1127,16 @@ def selftest() -> None:
         assert "/shared/kind" not in result["never_pulled_nodes"]
         assert "/verwaist/knoten" in result["never_pulled_nodes"]
 
-        # 4. Vektor fehlt: kein einziger Knoten/keine Lesson hat einen
-        #    Embedding-Eintrag in dieser Fixture -> alle gelten als "fehlt".
+        # 4. Vektor fehlt: kein Knoten hat einen Embedding-Eintrag in dieser
+        #    Fixture -> alle Knoten gelten als "fehlt". Bei den Lessons hat
+        #    NUR L-novec-old einen Vektor (Fixture fuer Kategorie 5 unten),
+        #    L-novec-new fehlt er entsprechend -- die Gegenprobe darunter
+        #    ("all fehlt") bleibt gueltig, weil L-novec-old dank passendem
+        #    updated_at gar nicht erst in dieser Liste auftaucht.
         gap_refs = {(g["kind"], g["ref"]) for g in result["vector_gaps"]}
         assert ("node", "/shared/kind") in gap_refs
+        assert ("lesson", "L-novec-new") in gap_refs
+        assert ("lesson", "L-novec-old") not in gap_refs
         assert all(g["vector"] == "fehlt" for g in result["vector_gaps"])
 
         # 5. Near-Dubletten: das Dublettenpaar wird gefunden, das eindeutig
@@ -978,6 +1145,15 @@ def selftest() -> None:
         assert frozenset(("L-dup-a", "L-dup-b")) in dup_pairs, dup_pairs
         assert frozenset(("L-dup-a", "L-distinct")) not in dup_pairs
         assert frozenset(("L-dup-b", "L-distinct")) not in dup_pairs
+        # Abnahme Punkt 4: eine Lesson OHNE Vektor (L-novec-new, frisch
+        # angelegt) wird trotzdem gegen den Bestand geprueft -- die
+        # Kandidatenbildung haengt am Text, nicht am Vektor. Ohne den fix in
+        # _rare_blocking_keys() (doc_freq>=2-Filter) oder ohne diesen Pfad
+        # ueberhaupt waere dieses Paar unsichtbar geblieben.
+        assert frozenset(("L-novec-old", "L-novec-new")) in dup_pairs, dup_pairs
+        novec_hit = next(d for d in result["near_duplicate_lessons"]
+                          if {d["a"], d["b"]} == {"L-novec-old", "L-novec-new"})
+        assert novec_hit["method"] == "sequence_matcher", novec_hit
         # Grenzwerte beidseitig auf der reinen Vergleichsfunktion, nicht ueber
         # zufaellig getroffene Textbeispiele erzwungen.
         assert _is_near_duplicate(NEAR_DUPLICATE_THRESHOLD + 0.001)
@@ -1100,7 +1276,7 @@ def selftest() -> None:
         # K2 Filamente: 3 Lessons ohne Projekt (Default '[]'), je 1 mit
         # 1/2/3 Projekten, 1 kaputte JSON-Zeile -- alle getrennt gezaehlt.
         fil = result["structure_metrics"]["filaments"]
-        assert fil["by_project_count"].get(0) == 7, fil["by_project_count"]
+        assert fil["by_project_count"].get(0) == 9, fil["by_project_count"]
         assert fil["by_project_count"].get(1) == 1, fil["by_project_count"]
         assert fil["by_project_count"].get(2) == 1, fil["by_project_count"]
         assert fil["by_project_count"].get(3) == 1, fil["by_project_count"]
