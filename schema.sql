@@ -277,6 +277,48 @@ CREATE TABLE IF NOT EXISTS access_log (
     ketten_hash TEXT
 );
 
+-- Erklaerte Kettenbrueche (Nachtrag 2026-08-06, additiv per
+-- migrate_kettenerklaerung.py, siehe kettenerklaerung.py).
+--
+-- WARUM: eine befugte Umschreibung von access_log-Feldern, die in den
+-- ketten_hash einfliessen (z.B. die Zeitzonen-Rueckrechnung 2026-08-06,
+-- Commit 684251b6ecb910f2c7ae55451726a1e6702d0d6a), bricht die Kette an
+-- genau der umgeschriebenen Zeile -- das ist keine Fehlfunktion, das ist
+-- die Kette, die tut, wofuer sie gebaut ist. Ein Verfahren, das den Bruch
+-- WEGMACHT (den gespeicherten ketten_hash stumm nachrechnen), waere
+-- wertlos: das koennte jeder Angreifer genauso. Diese Tabelle macht den
+-- Bruch stattdessen ERKLAERBAR, ohne ihn zu verstecken -- der gespeicherte
+-- ketten_hash in access_log bleibt UNVERAENDERT, kettenerklaerung.py::
+-- create_explanation() schreibt nur daneben.
+--
+-- SELBSTSCHUTZ DES ERKLAERUNGSEINTRAGS -- ehrliche Grenze, siehe
+-- Modul-Docstring kettenerklaerung.py: INNERHALB dieser Datenbank ist ein
+-- Erklaerungseintrag NICHT vor nachtraeglicher Erfindung geschuetzt -- wer
+-- Schreibrechte auf die DB-Datei hat, kann eine Zeile hier genauso frei
+-- einfuegen wie einen ketten_hash in access_log neu rechnen (dieselbe
+-- Grenze wie am Kopf von access_log dokumentiert). Schutz entsteht nur,
+-- wenn anker_beleg tatsaechlich AUSSERHALB dieser DB verankert wurde
+-- (ankerverfahren.py: RFC 3161 mit senden=True gegen eine externe TSA,
+-- oder Gegenzeichnung mit einem Schluessel, der nicht in dieser DB liegt)
+-- -- dann verraet ein spaeter geaenderter vorher_hash/nachher_hash/grund
+-- sich selbst, weil er nicht mehr zum extern verankerten Hash passt.
+-- anker_beleg ist NULL, wenn kein Anker gebaut wurde (trocken ist
+-- Voreinstellung in ankerverfahren.py) -- ein Erklaerungseintrag ohne
+-- Anker bleibt dann intern glaubwuerdig, extern nicht.
+CREATE TABLE IF NOT EXISTS chain_explanations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    access_log_id INTEGER NOT NULL,          -- welche access_log.id erklaert wird
+    grund TEXT NOT NULL,                     -- Begruendung, wer/wann/warum, im Klartext
+    commit_hash TEXT,                        -- Commit der befugten Umschreibung, falls vorhanden
+    vorher_hash TEXT NOT NULL,               -- ketten_hash, wie er tatsaechlich in access_log
+                                              -- stand, als der Bruch erklaert wurde ("gespeichert")
+    nachher_hash TEXT NOT NULL,              -- frisch aus den aktuellen Feldern berechneter
+                                              -- ketten_hash ("erwartet") -- siehe compute_ketten_hash()
+    erstellt_am TEXT NOT NULL,
+    erstellt_von TEXT,                       -- actor, sonst NULL
+    anker_beleg TEXT                         -- JSON-Beleg aus ankerverfahren.py, NULL wenn keiner gebaut
+);
+
 -- Explizite, belegte Wissensbeziehungen. Keine Tag-Aehnlichkeit und keine
 -- automatisch vermuteten Kanten: beide Endpunkte muessen echte Node-Pfade sein.
 CREATE TABLE IF NOT EXISTS knowledge_relations (

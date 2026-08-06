@@ -34,6 +34,7 @@ import ankerverfahren  # noqa: E402  (rueckstand() -- Auftrag 2026-08-06)
 import einschleusung  # noqa: E402  (find_injection_suspects() -- Auftrag 2026-08-06)
 import embeddings  # noqa: E402
 import geltungsbereich  # noqa: E402
+import kettenerklaerung  # noqa: E402  (explanations_by_id()/explains() -- Auftrag 2026-08-06)
 import konfidenz  # noqa: E402  (find_confidence_decay() -- Auftrag 2026-08-06, ADR-026 Z3)
 import normbestand  # noqa: E402  (quellstatus() -- Auftrag 2026-08-06)
 from knowledge_mcp_server import fold_de, SLUG_MAX_LEN, compute_ketten_hash  # noqa: E402
@@ -670,16 +671,29 @@ def find_stale_source(conn: sqlite3.Connection) -> dict:
 # Zeilen ohne ketten_hash (Altbestand vor migrate_auditkette.py) sind der
 # ungedeckte Zeitraum, kein Bruch -- getrennt ausgewiesen, siehe
 # Spaltenkommentar an access_log in schema.sql.
+#
+# Nachtrag 2026-08-06 (Verfahren fuer befugte Umschreibung, kettenerklaerung.py):
+# ein Bruch mit passender Zeile in chain_explanations (kettenerklaerung.
+# explains() -- vorher_hash/nachher_hash muessen zum AKTUELLEN Zustand
+# passen, keine blosse Existenz reicht) gilt als ERKLAERT und stoppt die
+# Pruefung nicht -- die Kette wird mit dem tatsaechlich GESPEICHERTEN
+# ketten_hash als prev_hash fortgesetzt (nicht mit dem neu berechneten),
+# damit ein zweiter, unerklaerter Bruch weiter hinten trotzdem auffiele.
+# Ein unerklaerter Bruch stoppt die Pruefung weiterhin wie bisher (erster_bruch,
+# heil=False) -- reine Erweiterung, bestehende Tests (tests/test_auditkette.py,
+# ohne jede Erklaerung) sehen dasselbe Verhalten wie vor diesem Nachtrag.
 
 def find_broken_chain(conn: sqlite3.Connection) -> dict:
     rows = conn.execute(
         "SELECT id, node_path, action, query, project_id, actor, model, session, "
         "status, timestamp, zeilen_hash, ketten_hash FROM access_log ORDER BY id"
     ).fetchall()
+    erklaerungen = kettenerklaerung.explanations_by_id(conn)
     ungedeckt = sum(1 for r in rows if r["ketten_hash"] is None)
     prev_hash = None
     geprueft = 0
     erster_bruch = None
+    erklaerte_brueche: list[dict] = []
     for r in rows:
         if r["ketten_hash"] is None:
             continue
@@ -691,12 +705,23 @@ def find_broken_chain(conn: sqlite3.Connection) -> dict:
             zeilen_hash=r["zeilen_hash"],
         )
         if expected != r["ketten_hash"]:
+            passende = [e for e in erklaerungen.get(r["id"], [])
+                        if kettenerklaerung.explains(e, r["ketten_hash"], expected)]
+            if passende:
+                erklaerte_brueche.append({
+                    "id": r["id"], "erwartet": expected, "gespeichert": r["ketten_hash"],
+                    "grund": passende[0]["grund"], "commit_hash": passende[0]["commit_hash"],
+                    "erstellt_am": passende[0]["erstellt_am"],
+                })
+                prev_hash = r["ketten_hash"]  # tatsaechlicher Wert, nicht der neu berechnete
+                continue
             erster_bruch = {"id": r["id"], "erwartet": expected, "gespeichert": r["ketten_hash"]}
             break
         prev_hash = r["ketten_hash"]
     return {
         "ungedeckter_zeitraum_zeilen": ungedeckt,
         "geprueft_zeilen": geprueft,
+        "erklaerte_brueche": erklaerte_brueche,
         "erster_bruch": erster_bruch,
         "heil": erster_bruch is None,
     }
@@ -931,10 +956,15 @@ def print_report(result: dict) -> None:
     bc = result["broken_chain"]
     print(f"\nAuditkette (access_log): {bc['geprueft_zeilen']} Zeilen geprueft, "
           f"{bc['ungedeckter_zeitraum_zeilen']} ungedeckt (Altbestand ohne ketten_hash)")
+    for e in bc["erklaerte_brueche"]:
+        print(f"  erklaerter Bruch bei access_log.id={e['id']}: {e['grund']}"
+              + (f" (Commit {e['commit_hash']})" if e["commit_hash"] else ""))
     if bc["erster_bruch"]:
         b = bc["erster_bruch"]
         print(f"  BRUCH bei access_log.id={b['id']}: erwartet {b['erwartet'][:16]}..., "
               f"gespeichert {b['gespeichert'][:16]}...")
+    elif bc["erklaerte_brueche"]:
+        print(f"  Kette heil mit {len(bc['erklaerte_brueche'])} erklaerten Bruechen.")
     else:
         print("  Kette heil.")
     aq = result["anker_queue_backlog"]
