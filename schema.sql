@@ -80,7 +80,23 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     zurueckgezogen INTEGER NOT NULL DEFAULT 0,
     zurueckgezogen_grund TEXT,
     zurueckgezogen_am TEXT,
-    zurueckgezogen_von TEXT
+    zurueckgezogen_von TEXT,
+    -- Schreiber am Datensatz (Auftrag 2026-08-06, Mangel: access_log.actor
+    -- nur 9%, .session nur 0,5% gefuellt UND kein Feld fuer den Schreiber auf
+    -- knowledge_nodes selbst -- das Protokoll allein reicht nicht, weil sich
+    -- ein einzelner Schreiber ohne diese Spalten nicht isoliert aus dem
+    -- Bestand herausfiltern laesst, siehe Einsatz im Auftrag: ein Modell mit
+    -- fremdem/veraltetem Kontext, das ueber Zeit Unsinn ablegt). NULL fuer
+    -- Altbestand vor dieser Spalte (kein Rueckfuellwert, das waere erfunden);
+    -- ab jetzt schreibt knowledge_add/knowledge_update den aufgeloesten Wert
+    -- aus _identity() (nie None -- 'unbekannt' ist ein zulaessiger, expliziter
+    -- Wert, siehe UNBEKANNTER_SCHREIBER in knowledge_mcp_server.py). model
+    -- bewusst NICHT hier dupliziert -- steht bereits in access_log, und
+    -- welches Modell schrieb ist fuer die Isolation eines Schreibers weniger
+    -- trennscharf als session (mehrere Modelle koennen in einer Sitzung
+    -- laufen, eine Sitzung ist die adressierbare Einheit zum Zurueckrollen).
+    actor TEXT,
+    session TEXT
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -247,7 +263,9 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     first_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     last_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     auto_rule_generated INTEGER DEFAULT 0,    -- 1 wenn bereits Regel generiert
-    anlass TEXT NOT NULL DEFAULT 'unbekannt'  -- siehe Kommentar an knowledge_nodes.anlass
+    anlass TEXT NOT NULL DEFAULT 'unbekannt', -- siehe Kommentar an knowledge_nodes.anlass
+    actor TEXT,                               -- siehe Kommentar an knowledge_nodes.actor/.session
+    session TEXT
 );
 
 -- Session-Log (wer hat wann was abgefragt)

@@ -37,10 +37,14 @@ def _old_schema_without_anlass() -> str:
         "\n);", schema_sql, count=1, flags=re.DOTALL,
     )
     assert n1 == 1, "Anlass-Block an knowledge_nodes nicht wie erwartet gefunden"
+    # Nicht-gierig bis zur naechsten schliessenden Klammer (statt eines festen
+    # Endes) -- selber Grund wie beim knowledge_nodes-Muster oben: spaeter
+    # additiv angehaengte Spalten (z.B. actor/session, Auftrag 2026-08-06
+    # Schreiber-am-Datensatz) werden automatisch mitentfernt.
     old_schema, n2 = re.subn(
         r",(\s*-- 1 wenn bereits Regel generiert\n)"
-        r"    anlass TEXT NOT NULL DEFAULT 'unbekannt'  -- siehe Kommentar an knowledge_nodes\.anlass\n\);",
-        r"\1);", old_schema, count=1,
+        r"    anlass TEXT NOT NULL DEFAULT 'unbekannt'.*?\n\);",
+        r"\1);", old_schema, count=1, flags=re.DOTALL,
     )
     assert n2 == 1, "Anlass-Spalte an lessons_learned nicht wie erwartet gefunden"
     # Die beiden anlass-Zusicherungs-Trigger (Auftrag 2026-08-06, DB-Trigger

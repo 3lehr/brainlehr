@@ -277,6 +277,50 @@ def _ensure_zuruecknahme_columns(conn: sqlite3.Connection) -> None:
         conn.execute(f"ALTER TABLE knowledge_nodes ADD COLUMN {name} {_ZURUECKNAHME_COLUMNS[name]}")
 
 
+def _ensure_schreiber_columns(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne actor/session auf knowledge_nodes UND
+    lessons_learned (Auftrag 2026-08-06, Mangel: access_log allein reicht
+    nicht, der Schreiber muss auch am Datensatz stehen). Gleiches Muster wie
+    _ensure_zuruecknahme_columns direkt darueber: additiv, NULL-faehig (kein
+    Rueckfuellwert fuer Altbestand -- 'unbekannt' waere hier erfunden, anders
+    als bei anlass, das von Anfang an einen Vorgabewert hatte), WAL-Checkpoint
+    + Sicherungskopie VOR dem ALTER (Lehre L-218f1e). Beide Tabellen in einem
+    Nachzug, weil beide vom selben Mangel betroffen sind und ein einzelner
+    Checkpoint/Backup fuer beide reicht."""
+    tables_present = {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }
+    missing_by_table = {}
+    for table in ("knowledge_nodes", "lessons_learned"):
+        if table not in tables_present:
+            continue
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        missing = {"actor", "session"} - existing
+        if missing:
+            missing_by_table[table] = missing
+    if not missing_by_table:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"Spalten actor/session fehlen an {sorted(missing_by_table)}, aber die Sicherung "
+            f"vor dem automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
+            "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, "
+            "nichts geaendert. Von Hand nachholen: "
+            "'.venv/bin/python shared-knowledge/migrate_schreiber.py --apply'."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    for table, missing in missing_by_table.items():
+        for name in missing:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} TEXT")
+
+
 def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
     """Nachzug fuer Bestands-DBs ohne die sechs Zusicherungs-Trigger an
     knowledge_nodes (Auftrag 2026-08-06). Gleiches Muster wie
@@ -350,6 +394,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_anlass_columns(conn)
     _ensure_abgeleitet_von_column(conn)
     _ensure_zuruecknahme_columns(conn)
+    _ensure_schreiber_columns(conn)
     _ensure_node_constraint_triggers(conn)
     columns = {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
     for name, declaration in {
@@ -385,12 +430,28 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+UNBEKANNTER_SCHREIBER = "unbekannt"
+
+
 def _identity(actor: str | None = None, model: str | None = None,
-              session: str | None = None) -> tuple[str | None, str | None, str | None]:
+              session: str | None = None) -> tuple[str, str, str]:
+    """Aufloesung actor/model/session (Auftrag 2026-08-06, Mangel: 9%/0,5%
+    gefuellt in access_log). Ursache war hier, an der einzigen Stelle, durch
+    die JEDER log_access()-Aufruf laeuft (log_access ruft _identity() intern
+    IMMER auf, auch wenn ein Aufrufer nichts uebergibt): der dritte Schritt
+    der Kette (Parameter -> Umgebungsvariable -> ???) fehlte. Die
+    Tool-Beschreibungen in IDENTITY_PROPERTIES versprachen bereits "else
+    BEGOD_KNOWLEDGE_ACTOR or unknown" -- das 'or unknown' war nie
+    implementiert, `actor or os.environ.get(...)` endete bisher still bei
+    None, wenn beides fehlte (der Regelfall: kein MCP-Aufrufer uebergibt
+    actor/session von sich aus, und die Umgebungsvariablen sind praktisch nie
+    gesetzt). Jetzt: dritter Schritt ist ein expliziter, unmissverstaendlicher
+    Wert -- kein Abweisen (Punkt 4 des Auftrags: ein Schreiber, der sich nicht
+    ausweist, bleibt zulaessig), aber auch kein stilles NULL mehr."""
     return (
-        actor or os.environ.get("BEGOD_KNOWLEDGE_ACTOR"),
-        model or os.environ.get("BEGOD_KNOWLEDGE_MODEL"),
-        session or os.environ.get("BEGOD_KNOWLEDGE_SESSION"),
+        actor or os.environ.get("BEGOD_KNOWLEDGE_ACTOR") or UNBEKANNTER_SCHREIBER,
+        model or os.environ.get("BEGOD_KNOWLEDGE_MODEL") or UNBEKANNTER_SCHREIBER,
+        session or os.environ.get("BEGOD_KNOWLEDGE_SESSION") or UNBEKANNTER_SCHREIBER,
     )
 
 
@@ -1045,6 +1106,13 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     if anlass_fehler:
         return {"error": anlass_fehler}
 
+    # Schreiber gehoert an den Datensatz, nicht nur ins Protokoll (Auftrag
+    # 2026-08-06, Mangel: kein Feld fuer den Schreiber auf knowledge_nodes).
+    # Vor jedem Weiterreichen aufgeloest (nie None, siehe _identity()), damit
+    # die INSERT unten den echten Wert traegt statt ihn nochmal in log_access
+    # zu verstecken.
+    actor, model, session = _identity(actor, model, session)
+
     fixed = unmangle_knowledge_fields({
         "title": title, "summary": summary, "content": content, "tags": tags, "source": source,
     })
@@ -1121,11 +1189,11 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                actor=actor, model=model, session=session, status="started")
     created_at = now_iso()
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von, actor, session)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
-         norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von)
+         norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von, actor, session)
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,
@@ -1136,6 +1204,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                    "source": source, "created_at": created_at, "updated_at": created_at,
                    "norm_rang": norm_rang, "gilt_ab": gilt_ab, "gilt_bis": gilt_bis,
                    "anlass": anlass, "abgeleitet_von": abgeleitet_von,
+                   "actor": actor, "session": session,
                })
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     conn.commit()
@@ -1168,6 +1237,9 @@ def knowledge_update(node_id: str, summary: str | None = None,
     if geltung_fehler:
         conn.close()
         return {"error": geltung_fehler}
+
+    # Schreiber gehoert an den Datensatz (Auftrag 2026-08-06, wie knowledge_add).
+    actor, model, session = _identity(actor, model, session)
 
     # Derselbe Aufrufer-Fehler wie bei knowledge_add moeglich (Parametergrenze
     # verrutscht ins Textfeld) -- nur uebergebene Felder unmangeln.
@@ -1202,6 +1274,10 @@ def knowledge_update(node_id: str, summary: str | None = None,
 
     updates.append("updated_at = ?")
     params.append(now_iso())
+    updates.append("actor = ?")
+    params.append(actor)
+    updates.append("session = ?")
+    params.append(session)
     params.append(row["id"])
     # Lost-Update-Schutz: die WHERE-Klausel bindet an den beim SELECT oben
     # gelesenen updated_at. Hat zwischenzeitlich ein anderer Schreiber
@@ -1782,27 +1858,35 @@ def _find_similar_lesson(conn: sqlite3.Connection, type_: str, description: str,
 
 
 def _bump_lesson(conn: sqlite3.Connection, lesson_id: str, node_path: str,
-                 log_query: str, new_description: str | None = None) -> dict:
+                 log_query: str, new_description: str | None = None, *,
+                 actor: str | None = None, session: str | None = None) -> dict:
     """Erhoeht occurrences einer bestehenden Lesson um eins, eskaliert ab 3.
 
     Gemeinsamer Pfad fuer den exakten Dublettentreffer und den expliziten
     same_as-Bezug — nur die Frage, ob dabei auch die description ersetzt wird
     (Wiederholungs-Anhang), unterscheidet die beiden Aufrufer.
-    """
+
+    actor/session (Auftrag 2026-08-06): bereits aufgeloest von lesson_record
+    (nie None) -- diese Zeile ist eine neue Sichtung/Wiederholung, also ein
+    eigener Schreibvorgang, der den Schreiber traegt. Die Eskalations-UPDATE
+    weiter unten bekommt bewusst KEIN erneutes actor/session (siehe dortiger
+    Kommentar zu last_seen -- gleiche Begruendung: derselbe Vorgang, kein
+    zweiter Schreiber)."""
     row = conn.execute("SELECT occurrences FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
     new_count = row["occurrences"] + 1
     if new_description is not None:
         conn.execute(
-            "UPDATE lessons_learned SET occurrences = ?, description = ?, last_seen = ? WHERE id = ?",
-            (new_count, new_description, now_iso(), lesson_id)
+            "UPDATE lessons_learned SET occurrences = ?, description = ?, last_seen = ?, actor = ?, session = ? WHERE id = ?",
+            (new_count, new_description, now_iso(), actor, session, lesson_id)
         )
     else:
         conn.execute(
-            "UPDATE lessons_learned SET occurrences = ?, last_seen = ? WHERE id = ?",
-            (new_count, now_iso(), lesson_id)
+            "UPDATE lessons_learned SET occurrences = ?, last_seen = ?, actor = ?, session = ? WHERE id = ?",
+            (new_count, now_iso(), actor, session, lesson_id)
         )
     updated_row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
     log_access(conn, node_path or None, "lesson", query=log_query,
+               actor=actor, session=session,
                affected_row=dict(updated_row) if updated_row else None)
     conn.commit()
 
@@ -1836,7 +1920,9 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                   resolution: str = "", prevention: str = "",
                   severity: str = "medium", projects: list | None = None,
                   node_path: str = "", same_as: str = "",
-                  anlass: str = "unbekannt") -> dict:
+                  anlass: str = "unbekannt", *,
+                  actor: str | None = None, model: str | None = None,
+                  session: str | None = None) -> dict:
     """Record a lesson learned.
 
     same_as gesetzt: erhoeht occurrences der referenzierten Lesson, haengt
@@ -1859,10 +1945,18 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     wird abgelehnt (sprechender Fehler, kein stiller Erfolg). Gilt nur fuer
     einen NEUEN Eintrag -- ein Bump (Dublette/same_as) laesst den anlass der
     bestehenden Zeile unveraendert.
+
+    actor/model/session (Auftrag 2026-08-06, Mangel: lesson_record hatte
+    bisher GAR KEINE Identitaets-Parameter -- strukturell unmoeglich, sie zu
+    uebergeben, unabhaengig davon, ob ein Aufrufer es versucht haette). Wie
+    bei knowledge_add: aufgeloest ueber _identity() (nie None), actor/session
+    landen zusaetzlich auf der Zeile selbst (lessons_learned.actor/.session).
     """
     anlass_fehler = _validate_anlass(anlass)
     if anlass_fehler:
         return {"status": "rejected", "error": anlass_fehler}
+
+    actor, model, session = _identity(actor, model, session)
 
     fixed = unmangle_lesson_fields({
         "type": type_, "description": description, "root_cause": root_cause,
@@ -1891,7 +1985,7 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                     "error": f"same_as verweist auf keine bestehende Lesson: {same_as}"}
         merged_description = _append_repetition(target["description"], description, now_iso())
         result = _bump_lesson(conn, target["id"], node_path, description,
-                              new_description=merged_description)
+                              new_description=merged_description, actor=actor, session=session)
         conn.close()
         return result
 
@@ -1902,7 +1996,7 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     ).fetchone()
 
     if existing:
-        result = _bump_lesson(conn, existing["id"], node_path, description)
+        result = _bump_lesson(conn, existing["id"], node_path, description, actor=actor, session=session)
         conn.close()
         return result
 
@@ -1911,19 +2005,20 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     lesson_id = f"L-{str(uuid.uuid4())[:6]}"
     seen_at = now_iso()
     conn.execute(
-        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen, anlass)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)""",
+        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen, anlass, actor, session)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)""",
         (lesson_id, node_path or None, type_, severity, description, root_cause,
-         resolution, prevention, json.dumps(projects or []), seen_at, seen_at, anlass)
+         resolution, prevention, json.dumps(projects or []), seen_at, seen_at, anlass, actor, session)
     )
     log_access(conn, node_path or None, "lesson", query=description,
+               actor=actor, model=model, session=session,
                affected_row={
                    "id": lesson_id, "node_path": node_path or None, "type": type_,
                    "severity": severity, "description": description,
                    "root_cause": root_cause, "resolution": resolution,
                    "prevention": prevention, "occurrences": 1,
                    "projects": projects or [], "first_seen": seen_at, "last_seen": seen_at,
-                   "anlass": anlass,
+                   "anlass": anlass, "actor": actor, "session": session,
                })
     conn.commit()
     conn.close()
@@ -1937,8 +2032,11 @@ def lesson_update(lesson_id: str, description: str | None = None,
                   root_cause: str | None = None, resolution: str | None = None,
                   prevention: str | None = None, severity: str | None = None,
                   projects: list | None = None, status: str | None = None,
-                  delete: bool = False) -> dict:
+                  delete: bool = False, *,
+                  actor: str | None = None, model: str | None = None,
+                  session: str | None = None) -> dict:
     """Correct or delete a recorded lesson. Only fields given are changed; the rest is left untouched."""
+    actor, model, session = _identity(actor, model, session)
     conn = get_db()
     row = conn.execute("SELECT id FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
     if not row:
@@ -1947,7 +2045,7 @@ def lesson_update(lesson_id: str, description: str | None = None,
 
     if delete:
         conn.execute("DELETE FROM lessons_learned WHERE id = ?", (lesson_id,))
-        log_access(conn, None, "lesson_delete", query=lesson_id)
+        log_access(conn, None, "lesson_delete", query=lesson_id, actor=actor, model=model, session=session)
         conn.commit()
         conn.close()
         return {"id": lesson_id, "status": "deleted"}
@@ -1982,6 +2080,10 @@ def lesson_update(lesson_id: str, description: str | None = None,
 
     updates.append("last_seen = ?")
     params.append(now_iso())
+    updates.append("actor = ?")
+    params.append(actor)
+    updates.append("session = ?")
+    params.append(session)
     params.append(lesson_id)
 
     conn.execute(f"UPDATE lessons_learned SET {', '.join(updates)} WHERE id = ?", params)
@@ -1994,6 +2096,7 @@ def lesson_update(lesson_id: str, description: str | None = None,
 
     updated_row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
     log_access(conn, None, "lesson_update", query=lesson_id,
+               actor=actor, model=model, session=session,
                affected_row=dict(updated_row) if updated_row else None)
     conn.commit()
     conn.close()
@@ -2071,6 +2174,29 @@ def lesson_query(type_: str | None = None, project: str | None = None,
     results = [dict(by_id[i]) for i in final_ids if i in by_id]
     conn.close()
     return {"results": results, "count": len(results)}
+
+
+def knowledge_sitzung(session: str) -> dict:
+    """Reine Auswertung (Auftrag 2026-08-06, Punkt 3): alle Knoten und Lessons,
+    die eine bestimmte Sitzung geschrieben hat -- der eigentliche Zweck der
+    actor/session-Spalten, sonst waeren sie totes Gewicht. NUR lesend, kein
+    Zurueckziehen/Loeschen -- das gibt es bereits (knowledge_zurueckziehen/
+    endgueltig_entfernen.py), ob es angewandt wird, entscheidet ein Mensch,
+    nicht dieses Werkzeug."""
+    conn = get_db()
+    nodes = [dict(r) for r in conn.execute(
+        "SELECT id, path, title, summary, actor, session, created_at, updated_at "
+        "FROM knowledge_nodes WHERE session = ? ORDER BY created_at",
+        (session,),
+    )]
+    lessons = [dict(r) for r in conn.execute(
+        "SELECT id, type, description, actor, session, first_seen, last_seen "
+        "FROM lessons_learned WHERE session = ? ORDER BY first_seen",
+        (session,),
+    )]
+    conn.close()
+    return {"session": session, "nodes": nodes, "lessons": lessons,
+            "count": len(nodes) + len(lessons)}
 
 
 def knowledge_stats() -> dict:
@@ -2378,7 +2504,8 @@ TOOLS = {
                 "node_path": {"type": "string", "description": "Related knowledge node path"},
                 "same_as": {"type": "string", "description": "ID of an existing lesson this is a repeat of, e.g. 'L-6e48a9'"},
                 "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
-                           "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."}
+                           "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."},
+                **IDENTITY_PROPERTIES,
             },
             "required": ["type", "description"]
         },
@@ -2386,7 +2513,7 @@ TOOLS = {
             args["type"], args["description"], args.get("root_cause", ""),
             args.get("resolution", ""), args.get("prevention", ""),
             args.get("severity", "medium"), args.get("projects"), args.get("node_path", ""),
-            args.get("same_as", ""), args.get("anlass", "unbekannt")
+            args.get("same_as", ""), args.get("anlass", "unbekannt"), **_identity_args(args)
         )
     },
     "lesson_update": {
@@ -2402,14 +2529,15 @@ TOOLS = {
                 "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
                 "projects": {"type": "array", "items": {"type": "string"}},
                 "status": {"type": "string", "enum": ["active", "resolved", "escalated_to_rule"]},
-                "delete": {"type": "boolean", "description": "Delete the lesson instead of updating it", "default": False}
+                "delete": {"type": "boolean", "description": "Delete the lesson instead of updating it", "default": False},
+                **IDENTITY_PROPERTIES,
             },
             "required": ["lesson_id"]
         },
         "handler": lambda args: lesson_update(
             args["lesson_id"], args.get("description"), args.get("root_cause"),
             args.get("resolution"), args.get("prevention"), args.get("severity"),
-            args.get("projects"), args.get("status"), args.get("delete", False)
+            args.get("projects"), args.get("status"), args.get("delete", False), **_identity_args(args)
         )
     },
     "lesson_query": {
@@ -2428,6 +2556,18 @@ TOOLS = {
             args.get("type"), args.get("project"), args.get("status", "active"),
             args.get("max_results", 10), args.get("query")
         )
+    },
+    "knowledge_sitzung": {
+        "description": "Read-only: list every knowledge node and lesson written by one session (actor/session "
+                        "columns, Auftrag 2026-08-06) -- the evaluation path for isolating one writer's entries, "
+                        "e.g. before a human decides whether to knowledge_zurueckziehen them. Never withdraws or "
+                        "deletes anything itself.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"session": {"type": "string", "description": "Session ID, e.g. BEGOD_KNOWLEDGE_SESSION or 'unbekannt'"}},
+            "required": ["session"]
+        },
+        "handler": lambda args: knowledge_sitzung(args["session"])
     },
     "knowledge_stats": {
         "description": "Overview statistics of the knowledge database (node counts, lesson counts, access patterns, "
