@@ -29,6 +29,7 @@ SHARED_KNOWLEDGE = Path(__file__).parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
 
+import ankerverfahren  # noqa: E402  (rueckstand() -- Auftrag 2026-08-06)
 import embeddings  # noqa: E402
 import geltungsbereich  # noqa: E402
 import normbestand  # noqa: E402  (quellstatus() -- Auftrag 2026-08-06)
@@ -469,6 +470,19 @@ def find_broken_chain(conn: sqlite3.Connection) -> dict:
     }
 
 
+# ─── 13. Anker-Warteschlange laeuft voll ────────────────────────────────────
+# Auftrag 2026-08-06 (Warteschlange fuer ankerverfahren.py, "darf nie
+# blockieren"). Liest NICHTS aus knowledge.db -- die Warteschlange ist eine
+# eigene Datei neben der DB (ankerverfahren.ANKER_QUEUE_PATH, Begruendung
+# dort). Reine Wiederverwendung von ankerverfahren.rueckstand(), keine
+# zweite Fassung der Altersrechnung.
+
+def find_anker_queue_backlog(
+    queue_path: Path | str = ankerverfahren.ANKER_QUEUE_PATH, now: datetime | None = None
+) -> dict:
+    return ankerverfahren.rueckstand(queue_path, now=now)
+
+
 # ─── Struktur-Kennzahlen (kein Befund, Zustand des Bestands als Ganzes) ────
 # Getrennt von den sieben Befund-Kategorien oben: keine beanstandet einen
 # einzelnen Eintrag, sondern beschreibt eine Verteilung ueber den Bestand.
@@ -593,6 +607,7 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "missing_source": find_missing_source(conn),
             "stale_source": find_stale_source(conn),
             "broken_chain": find_broken_chain(conn),
+            "anker_queue_backlog": find_anker_queue_backlog(now=now),
             "structure_metrics": find_structure_metrics(conn),
         }
     finally:
@@ -653,6 +668,12 @@ def print_report(result: dict) -> None:
               f"gespeichert {b['gespeichert'][:16]}...")
     else:
         print("  Kette heil.")
+    aq = result["anker_queue_backlog"]
+    if aq["anzahl"] == 0:
+        print("\nAnker-Warteschlange: leer.")
+    else:
+        print(f"\nAnker-Warteschlange: {aq['anzahl']} offen, aeltester seit "
+              f"{aq['aeltester_seit']} ({aq['alter_tage']} Tage).")
     print_structure_metrics(result["structure_metrics"])
 
 

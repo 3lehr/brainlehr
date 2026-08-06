@@ -66,7 +66,9 @@ import json
 import sys
 import urllib.error
 import urllib.request
+import uuid
 from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -391,6 +393,195 @@ def pruefe_beleg(beleg: dict, wurzel: str, bereich: dict, zeitstempel: str) -> b
     raise ValueError(f"unbekanntes Verfahren im Beleg: {verfahren}")
 
 
+# ─── Warteschlange (Auftrag 2026-08-06: "darf nie blockieren") ─────────
+#
+# Ein Zeitstempeldienst darf nicht darueber entscheiden, ob ein Abschluss
+# durchlaeuft. versuche_anker() faengt darum JEDE Ausnahme aus baue_beleg()
+# ab -- Netz, Zeitueberschreitung, Dienstablehnung, fehlender Schluessel --
+# und legt einen Eintrag in einer eigenen Datei ab, statt hochzureichen.
+#
+# ABLAGEORT: eigene JSON-Datei neben knowledge.db, NICHT eine Tabelle darin.
+# Begruendung: die Warteschlange muss lesbar bleiben, waehrend die DB
+# gerade gesichert/wiederhergestellt wird (Auftrag) -- eine eigene Datei
+# hat dabei keine Sperre/Transaktion mit der DB gemeinsam. Read-modify-write
+# per json.load/json.dump ist fuer die erwartete Groessenordnung (Ausfaelle
+# sind die Ausnahme, nicht die Regel) die einfachste tragende Loesung
+# (Ladder), keine Bibliothek noetig.
+#
+# GEHEIMNISSE NIE IN DIE DATEI: private_key_pem wird vor dem Schreiben
+# herausgefiltert (BSI DEV.2.5 -- keine Credentials in Dateien). Beim
+# Nachholen einer Gegenzeichnung muss der Schluessel darum erneut
+# mitgegeben werden, er wird nie persistiert.
+
+ANKER_QUEUE_PATH = Path(__file__).parent / "anker_warteschlange.json"
+
+# ponytail: feste Zahl statt Backoff-Politik. Genug Abstand fuer
+# voruebergehende Ausfaelle (TSA-Wartung, DNS-Hickup), ohne dass ein
+# dauerhaft falscher Schluessel/URL endlos im Kreis laeuft. Hochziehen ist
+# eine Zahl aendern, kein Umbau -- Erhoehung bei Bedarf hier vornehmen.
+MAX_VERSUCHE = 5
+
+
+def _jetzt_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _kategorisiere_fehler(exc: BaseException) -> tuple[str, str]:
+    """Ordnet eine gescheiterte Anfrage einer von vier Lagen zu (Auftrag
+    Punkt 4: 'haelt fest WARUM'). rfc3161_beleg() verpackt Netz-/Zeit-
+    fehler in ein RuntimeError (`raise ... from e`) -- der Ursprung haengt
+    am __cause__, deshalb wird der zuerst geprueft."""
+    ursprung = exc.__cause__ or exc
+    if isinstance(ursprung, TimeoutError):
+        return "zeitueberschreitung", str(exc)
+    if isinstance(ursprung, urllib.error.HTTPError):
+        return "abgelehnt", str(exc)
+    if isinstance(ursprung, urllib.error.URLError):
+        return "netz", str(exc)
+    if isinstance(exc, ValueError) and "schluessel" in str(exc).lower():
+        return "schluessel_fehlt", str(exc)
+    return "unbekannt", str(exc)
+
+
+def _queue_laden(path: Path | str) -> list[dict]:
+    p = Path(path)
+    if not p.exists():
+        return []
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def _queue_speichern(entries: list[dict], path: Path | str) -> None:
+    Path(path).write_text(json.dumps(entries, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def versuche_anker(
+    verfahren: str,
+    wurzel: str,
+    bereich: dict,
+    zeitstempel: str,
+    *,
+    queue_path: Path | str = ANKER_QUEUE_PATH,
+    **kwargs: Any,
+) -> dict:
+    """Wie `baue_beleg()`, aber Auflage 1 aus dem Auftrag: eine Ausnahme
+    wird NIE hochgereicht. Gelingt der Versuch, kommt der fertige Beleg
+    zurueck (und NICHTS landet in der Warteschlange -- Gegenprobe Abnahme
+    3). Scheitert er, wandert Wurzel+Bereich+Zeitstempel in die
+    Warteschlange und die Rueckgabe zeigt modus='aufgeschoben'."""
+    try:
+        return baue_beleg(verfahren, wurzel, bereich, zeitstempel, **kwargs)
+    except Exception as e:  # bewusst breit -- siehe Modul-Docstring dieses Abschnitts
+        fehlerart, text = _kategorisiere_fehler(e)
+        kwargs_sicher = {k: v for k, v in kwargs.items() if k != "private_key_pem"}
+        jetzt = _jetzt_iso()
+        eintrag = {
+            "id": uuid.uuid4().hex,
+            "verfahren": verfahren,
+            "wurzel": wurzel,
+            "bereich": bereich,
+            "zeitstempel": zeitstempel,
+            "kwargs_sicher": kwargs_sicher,
+            "fehlerart": fehlerart,
+            "fehler_text": text,
+            "versuche": 1,
+            "status": "offen",
+            "erstellt_am": jetzt,
+            "letzter_versuch_am": jetzt,
+            "erledigt_am": None,
+            "beleg": None,
+        }
+        entries = _queue_laden(queue_path)
+        entries.append(eintrag)
+        _queue_speichern(entries, queue_path)
+        return {
+            "verfahren": verfahren,
+            "modus": "aufgeschoben",
+            "wurzel": wurzel,
+            "bereich": bereich,
+            "fehlerart": fehlerart,
+            "warteschlangen_id": eintrag["id"],
+        }
+
+
+def nachholen(
+    *,
+    queue_path: Path | str = ANKER_QUEUE_PATH,
+    ausfuehren: bool = False,
+    private_key_pem: bytes | None = None,
+    now: datetime | None = None,
+) -> dict:
+    """Arbeitet offene Warteschlangeneintraege ab. Trocken per Vorgabe
+    (Grenze: kein Netzaufruf ohne ausdruecklichen Schalter, gilt auch
+    hier) -- ohne `ausfuehren=True` wird nur gezaehlt, was faellig waere,
+    kein baue_beleg()-Aufruf, keine Datei angefasst. Mit `ausfuehren=True`:
+    erfolgreiche Eintraege werden 'erledigt' MIT dem Beleg daneben
+    (Auftrag Punkt 2); scheitert ein Versuch erneut, steigt der Zaehler,
+    ab MAX_VERSUCHE kippt der Eintrag auf 'braucht_aufmerksamkeit' statt
+    endlos weiterzulaufen (Punkt 5). Gegenzeichnungs-Eintraege ohne
+    mitgegebenen `private_key_pem` werden uebersprungen (kein Zaehler-
+    Aufschlag -- es wurde ja gar nicht versucht)."""
+    now = now or datetime.now(timezone.utc)
+    entries = _queue_laden(queue_path)
+    offene = [e for e in entries if e["status"] == "offen"]
+    if not ausfuehren:
+        return {"modus": "trocken", "faellig": len(offene), "erledigt": 0,
+                "weiter_offen": len(offene), "braucht_aufmerksamkeit": 0, "uebersprungen": 0}
+
+    ergebnis = {"modus": "ausgefuehrt", "erledigt": 0, "weiter_offen": 0,
+                "braucht_aufmerksamkeit": 0, "uebersprungen": 0}
+    for eintrag in entries:
+        if eintrag["status"] != "offen":
+            continue
+        kwargs = dict(eintrag["kwargs_sicher"])
+        if eintrag["verfahren"] == "gegenzeichnung" and kwargs.get("signieren"):
+            if private_key_pem is None:
+                ergebnis["uebersprungen"] += 1
+                continue
+            kwargs["private_key_pem"] = private_key_pem
+        try:
+            beleg = baue_beleg(eintrag["verfahren"], eintrag["wurzel"], eintrag["bereich"],
+                                eintrag["zeitstempel"], **kwargs)
+        except Exception as e:
+            fehlerart, text = _kategorisiere_fehler(e)
+            eintrag["versuche"] += 1
+            eintrag["fehlerart"] = fehlerart
+            eintrag["fehler_text"] = text
+            eintrag["letzter_versuch_am"] = now.isoformat()
+            if eintrag["versuche"] >= MAX_VERSUCHE:
+                eintrag["status"] = "braucht_aufmerksamkeit"
+                ergebnis["braucht_aufmerksamkeit"] += 1
+            else:
+                ergebnis["weiter_offen"] += 1
+            continue
+        eintrag["status"] = "erledigt"
+        eintrag["erledigt_am"] = now.isoformat()
+        eintrag["beleg"] = beleg
+        ergebnis["erledigt"] += 1
+    _queue_speichern(entries, queue_path)
+    return ergebnis
+
+
+def rueckstand(queue_path: Path | str = ANKER_QUEUE_PATH, now: datetime | None = None) -> dict:
+    """Zeigt den Rueckstand, ohne etwas zu veraendern (Auftrag Punkt 3:
+    eine Warteschlange, in die niemand sieht, ist schlimmer als keine)."""
+    now = now or datetime.now(timezone.utc)
+    entries = [e for e in _queue_laden(queue_path) if e["status"] != "erledigt"]
+    if not entries:
+        return {"anzahl": 0, "aeltester_seit": None, "alter_tage": 0, "eintraege": []}
+    aeltester = min(entries, key=lambda e: e["erstellt_am"])
+    alter_tage = (now - datetime.fromisoformat(aeltester["erstellt_am"])).days
+    return {
+        "anzahl": len(entries),
+        "aeltester_seit": aeltester["erstellt_am"],
+        "alter_tage": alter_tage,
+        "eintraege": [
+            {"id": e["id"], "verfahren": e["verfahren"], "status": e["status"],
+             "fehlerart": e["fehlerart"], "versuche": e["versuche"]}
+            for e in entries
+        ],
+    }
+
+
 # ─── Selbsttest (kein Netz, keine Schluessel des Betreibers) ────────────
 
 def _selftest() -> None:
@@ -494,6 +685,12 @@ def main(argv: list[str] | None = None) -> int:
     p_gz.add_argument("--signieren", action="store_true")
     p_gz.add_argument("--schluessel", type=Path, help="PEM-Datei mit Ed25519-Privatschluessel (nur mit --signieren)")
 
+    p_nach = sub.add_parser("nachholen", help="Warteschlange abarbeiten (trocken ausser --ausfuehren)")
+    p_nach.add_argument("--ausfuehren", action="store_true", help="tatsaechlich erneut versuchen (sonst nur Vorschau)")
+    p_nach.add_argument("--schluessel", type=Path, help="PEM-Datei fuer faellige Gegenzeichnungs-Eintraege")
+
+    sub.add_parser("rueckstand", help="Rueckstand der Warteschlange anzeigen")
+
     args = parser.parse_args(argv)
 
     if args.selftest:
@@ -519,6 +716,16 @@ def main(argv: list[str] | None = None) -> int:
             args.wurzel, bereich, args.zeitstempel, private_key_pem=pem, signieren=args.signieren
         )
         print(json.dumps(beleg, indent=2))
+        return 0
+
+    if args.cmd == "nachholen":
+        pem = args.schluessel.read_bytes() if args.schluessel else None
+        ergebnis = nachholen(ausfuehren=args.ausfuehren, private_key_pem=pem)
+        print(json.dumps(ergebnis, indent=2))
+        return 0
+
+    if args.cmd == "rueckstand":
+        print(json.dumps(rueckstand(), indent=2))
         return 0
 
     parser.print_help()
