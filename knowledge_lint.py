@@ -32,6 +32,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
 import ankerverfahren  # noqa: E402  (rueckstand() -- Auftrag 2026-08-06)
 import embeddings  # noqa: E402
 import geltungsbereich  # noqa: E402
+import konfidenz  # noqa: E402  (find_confidence_decay() -- Auftrag 2026-08-06, ADR-026 Z3)
 import normbestand  # noqa: E402  (quellstatus() -- Auftrag 2026-08-06)
 from knowledge_mcp_server import fold_de, SLUG_MAX_LEN, compute_ketten_hash  # noqa: E402
 
@@ -483,6 +484,18 @@ def find_anker_queue_backlog(
     return ankerverfahren.rueckstand(queue_path, now=now)
 
 
+# ─── 14. Konfidenzverfall ───────────────────────────────────────────────────
+# Auftrag 2026-08-06, ADR-026 Z3, letztes bauliches Stueck. Fakten
+# (norm_rang IS NULL), deren gerechnete Konfidenz (konfidenz.py::
+# gerechnete_konfidenz -- Ausgangswert x Zeitverfall, Halbwertszeit je
+# Wissensart) unter die Schwelle gefallen ist. Reine Wiederverwendung, keine
+# zweite Fassung der Verfallsformel. Normen tauchen hier nie auf --
+# gerechnete_konfidenz() gibt fuer sie unveraendert den Ausgangswert zurueck.
+
+def find_confidence_decay(conn: sqlite3.Connection, now: datetime | None = None) -> list[dict]:
+    return konfidenz.find_confidence_decay(conn, now=now)
+
+
 # ─── Struktur-Kennzahlen (kein Befund, Zustand des Bestands als Ganzes) ────
 # Getrennt von den sieben Befund-Kategorien oben: keine beanstandet einen
 # einzelnen Eintrag, sondern beschreibt eine Verteilung ueber den Bestand.
@@ -608,6 +621,7 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "stale_source": find_stale_source(conn),
             "broken_chain": find_broken_chain(conn),
             "anker_queue_backlog": find_anker_queue_backlog(now=now),
+            "confidence_decay": find_confidence_decay(conn, now),
             "structure_metrics": find_structure_metrics(conn),
         }
     finally:
@@ -674,6 +688,10 @@ def print_report(result: dict) -> None:
     else:
         print(f"\nAnker-Warteschlange: {aq['anzahl']} offen, aeltester seit "
               f"{aq['aeltester_seit']} ({aq['alter_tage']} Tage).")
+    _print_section(f"Konfidenzverfall (gerechnet < {konfidenz.KONFIDENZ_SCHWELLE})",
+                   result["confidence_decay"],
+                   lambda i: f"{i['path']}: {i['gerechnet']} (Ausgangswert {i['ausgangswert']}, "
+                             f"{i['alter_tage']} Tage)")
     print_structure_metrics(result["structure_metrics"])
 
 
@@ -734,6 +752,21 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
         "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, updated_at) "
         "VALUES (?,?,?,?,?,?,?,?,?)",
         ("n_conf_custom", "/shared/geprueft", "/shared", "shared", "Geprueft", "Abweichende Konfidenz", 1, 1.0, fresh),
+    )
+    # 14. Konfidenzverfall: ein sehr alter Fakt (confidence=1.0, damit K3
+    # nicht mitgezaehlt wird) faellt unter die Schwelle, ein gleich alter
+    # NORM-Knoten (norm_rang gesetzt) ist die Gegenprobe -- der darf trotz
+    # desselben Alters nie auftauchen.
+    uralt = (now - timedelta(days=400)).strftime(fmt)
+    conn.executemany(
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, updated_at) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?)",
+        [
+            ("n_conf_verfallen", "/shared/verfallen", "/shared", "shared", "Verfallen",
+             "Sehr alter Fakt", 1, 1.0, None, uralt),
+            ("n_conf_norm_uralt", "/shared/normtest/uralte-norm", "/shared", "shared", "Uralte Norm",
+             "Norm verfaellt trotz Alter nicht", 1, 1.0, 1, uralt),
+        ],
     )
     # 10. Ohne Herkunft: ein Knoten mit nur Leerzeichen als source (zaehlt
     # als fehlend, wie in knowledge_add()), ein Knoten mit echter source als
@@ -1084,6 +1117,16 @@ def selftest() -> None:
         assert conf["default_value"] == 0.8, conf["default_value"]
         assert conf["count"] == 11, conf["count"]
         assert conf["oldest_ref"] == "/shared/alt", conf["oldest_ref"]
+
+        # 14. Konfidenzverfall: der sehr alte Fakt (400 Tage, Ausgangswert 1.0,
+        # Standard-Halbwertszeit 120 Tage -> 1.0*0.5**(400/120)=0.099) faellt
+        # unter die Schwelle 0.3, die gleich alte Norm (norm_rang=1) NIE --
+        # exakt die Gegenprobe, die den Kern des Auftrags schuetzt.
+        decay_paths = {d["path"] for d in result["confidence_decay"]}
+        assert "/shared/verfallen" in decay_paths, decay_paths
+        assert "/shared/normtest/uralte-norm" not in decay_paths, "Norm darf trotz Alter nie verfallen"
+        verfallen_entry = next(d for d in result["confidence_decay"] if d["path"] == "/shared/verfallen")
+        assert abs(verfallen_entry["gerechnet"] - 0.0992) < 0.001, verfallen_entry
 
         # 10. Ohne Herkunft: nur-Leerzeichen zaehlt als fehlend, echte
         #     source ist die Gegenprobe und darf NICHT auftauchen.
