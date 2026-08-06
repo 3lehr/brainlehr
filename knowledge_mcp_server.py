@@ -6,6 +6,17 @@ Erstellt: 2026-03-25T16:30:00+01:00
 Transport: stdio (JSON-RPC 2.0)
 DB: SQLite + FTS5 Baumstruktur
 
+Portabler Kern (ADR-024): diese Datei + zwei Nachbarn im selben Verzeichnis,
+sonst nur Stdlib -- kein drittes Modul noetig zum Starten/ersten Eintrag:
+  - schema.sql   (Erstanlage aller Kerntabellen, siehe ensure_schema/
+                  _ensure_core_schema; einzige Schemaquelle, nicht im Code
+                  nachgebaut)
+  - embeddings.py (lokale Embeddings + RRF-Fusion; best-effort, ein Ausfall
+                  blockiert die Suche nie, siehe embeddings.py-Docstring)
+Alle anderen .py-Dateien in diesem Verzeichnis (ankerverfahren, auditanker,
+konfidenz, hebb_kanten, ...) sind eigenstaendige Skripte/Cronjobs, die die
+DB von aussen lesen/schreiben -- der MCP-Server importiert sie nicht.
+
 Tools:
   - knowledge_browse(path)        → Kinder-Knoten (nur Titel+Summary)
   - knowledge_read(node_id)       → Volltext eines Knotens
@@ -352,16 +363,6 @@ def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
     Trigger-Erzeugung, sonst wuerde z.B. das access_count-Increment in
     knowledge_read jede betroffene Bestandszeile sperren, bis jemand ihren
     source-Wert von Hand nachtraegt."""
-    existing_triggers = {
-        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")
-    }
-    needed = {
-        "knowledge_nodes_source_check_bi", "knowledge_nodes_source_check_bu",
-        "knowledge_nodes_parent_check_bi", "knowledge_nodes_parent_check_bu",
-        "knowledge_nodes_anlass_check_bi", "knowledge_nodes_anlass_check_bu",
-    }
-    if needed <= existing_triggers:
-        return
     if "knowledge_nodes" not in {
         row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
     }:
@@ -372,6 +373,28 @@ def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
         # migrate_relations.py-Selbsttest) -- die Trigger brauchen alle drei,
         # eine echte Bestands-DB hat source/parent_path seit jeher und
         # anlass spaetestens nach _ensure_anlass_columns() oben
+    existing_triggers = {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")
+    }
+    needed = {
+        "knowledge_nodes_source_check_bi", "knowledge_nodes_source_check_bu",
+        "knowledge_nodes_parent_check_bi", "knowledge_nodes_parent_check_bu",
+        "knowledge_nodes_anlass_check_bi", "knowledge_nodes_anlass_check_bu",
+    }
+    # Nachtrag 2026-08-06 (_ensure_core_schema): schema.sql legt diese sechs
+    # Trigger seit diesem Auftrag selbst per CREATE TRIGGER IF NOT EXISTS an,
+    # deshalb existieren sie auf JEDER DB schon, BEVOR dieser Nachzug hier
+    # laeuft -- "Trigger vorhanden" ist seither kein Beleg mehr dafuer, dass
+    # der Backfill schon einmal lief. Ohne die zweite Bedingung wuerde der
+    # Nachzug hier fuer jede Bestands-DB sofort zurueckkehren und Zeilen mit
+    # leerem source dauerhaft leer lassen, obwohl die (jetzt aktiven)
+    # Trigger genau das ab dem naechsten Schreibzugriff auf diese Zeile
+    # verhindern wuerden.
+    unbackfilled = conn.execute(
+        "SELECT COUNT(*) FROM knowledge_nodes WHERE source IS NULL OR TRIM(source) = ''"
+    ).fetchone()[0]
+    if needed <= existing_triggers and unbackfilled == 0:
+        return
 
     busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
     if busy:
@@ -407,8 +430,66 @@ def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
     conn.executescript(NODE_CONSTRAINT_TRIGGERS_SQL)
 
 
+def _ensure_core_schema(conn: sqlite3.Connection) -> None:
+    """Legt fehlende Kerntabellen an (Auftrag 2026-08-06, Erstanlage-Luecke).
+
+    Befund an fremdem Ort (leere DB): ensure_schema zog bisher nur Spalten
+    nach (ALTER TABLE) und nahm an, dass die Kerntabellen schon existieren --
+    stimmt nur fuer eine bereits gepflegte knowledge.db, nie fuer eine neue.
+    Quelle ist schema.sql neben dieser Datei, nicht ein zweiter im Code
+    nachgebauter Schemastand. Jede Anweisung dort steht unter IF NOT EXISTS,
+    ein Lauf gegen eine vollstaendige DB aendert also nichts. Ausnahme siehe
+    except-Zweig unten: knowledge_relations bleibt dort zusaetzlich
+    dupliziert, als Rueckfallebene fuer eine bereits existierende, aber
+    spaltenmaessig aeltere Kerntabelle (Migrationstest-Fixture), auf der
+    schema.sql's Indizes/Trigger sonst hart abbrechen wuerden.
+    """
+    schema_path = Path(__file__).parent / "schema.sql"
+    if not schema_path.exists():
+        raise RuntimeError(
+            f"schema.sql fehlt unter {schema_path} -- ohne sie kann "
+            "ensure_schema die Kerntabellen (knowledge_nodes, lessons_learned, "
+            "access_log, ...) nicht anlegen. Datei gehoert neben "
+            "knowledge_mcp_server.py ins selbe Verzeichnis."
+        )
+    try:
+        conn.executescript(schema_path.read_text(encoding="utf-8"))
+    except sqlite3.OperationalError:
+        # Kerntabelle existiert schon, aber in einer aelteren Spaltenform
+        # (z.B. Migrationstest-Fixture ohne parent_path) -- schema.sql's
+        # Indizes/Trigger auf fehlenden Spalten schlagen dann fehl. Die
+        # additiven _ensure_*-Funktionen unten holen genau diese Spalten
+        # fuer echte Bestands-DBs nach; hier nur das eigenstaendige,
+        # spaltenunabhaengige knowledge_relations nachziehen (einzige Stelle
+        # mit dieser Ausnahme, siehe Docstring oben).
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS knowledge_relations (
+                id TEXT PRIMARY KEY,
+                source_path TEXT NOT NULL,
+                target_path TEXT NOT NULL,
+                relation_type TEXT NOT NULL,
+                confidence REAL NOT NULL DEFAULT 0.8 CHECK(confidence BETWEEN 0.0 AND 1.0),
+                weight REAL NOT NULL DEFAULT 1.0 CHECK(weight >= 0.0),
+                evidence TEXT,
+                source TEXT,
+                creator TEXT,
+                model TEXT,
+                session TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                UNIQUE(source_path, target_path, relation_type),
+                FOREIGN KEY(source_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE,
+                FOREIGN KEY(target_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_relations_source ON knowledge_relations(source_path);
+            CREATE INDEX IF NOT EXISTS idx_relations_target ON knowledge_relations(target_path);
+            CREATE INDEX IF NOT EXISTS idx_relations_type ON knowledge_relations(relation_type);
+        """)
+
+
 def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old knowledge.db copies."""
+    _ensure_core_schema(conn)
     _ensure_anlass_columns(conn)
     _ensure_abgeleitet_von_column(conn)
     _ensure_zuruecknahme_columns(conn)
@@ -422,29 +503,6 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     }.items():
         if name not in columns:
             conn.execute(f"ALTER TABLE access_log ADD COLUMN {name} {declaration}")
-    conn.executescript("""
-        CREATE TABLE IF NOT EXISTS knowledge_relations (
-            id TEXT PRIMARY KEY,
-            source_path TEXT NOT NULL,
-            target_path TEXT NOT NULL,
-            relation_type TEXT NOT NULL,
-            confidence REAL NOT NULL DEFAULT 0.8 CHECK(confidence BETWEEN 0.0 AND 1.0),
-            weight REAL NOT NULL DEFAULT 1.0 CHECK(weight >= 0.0),
-            evidence TEXT,
-            source TEXT,
-            creator TEXT,
-            model TEXT,
-            session TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL,
-            UNIQUE(source_path, target_path, relation_type),
-            FOREIGN KEY(source_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE,
-            FOREIGN KEY(target_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE
-        );
-        CREATE INDEX IF NOT EXISTS idx_relations_source ON knowledge_relations(source_path);
-        CREATE INDEX IF NOT EXISTS idx_relations_target ON knowledge_relations(target_path);
-        CREATE INDEX IF NOT EXISTS idx_relations_type ON knowledge_relations(relation_type);
-    """)
     conn.commit()
 
 
