@@ -46,7 +46,14 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- haetten, obwohl vermutlich nur ein Abschnitt betroffen war. NULL heisst
     -- "nicht pruefbar" (Altbestand vor diesem Feld, oder Quelle ohne
     -- Dateibezug) -- kein Befund, nur Abwesenheit einer Aussage.
-    quell_hash TEXT
+    quell_hash TEXT,
+    -- Anlass (Auftrag 2026-08-06): was hat den Eintrag ausgeloest. Vier
+    -- Werte + Vorgabe, siehe ALLOWED_ANLASS in knowledge_mcp_server.py fuer
+    -- die volle Erklaerung. Kurzfassung: 'selbst'/'betreiber' sind
+    -- SELBSTBERICHTET vom Schreiber (nur so gut wie er), 'hook'/'skript'
+    -- sind objektiv, weil der Aufrufweg sie kennt. 'unbekannt' ist Vorgabe
+    -- und deckt den gesamten Altbestand vor diesem Feld ab.
+    anlass TEXT NOT NULL DEFAULT 'unbekannt'
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -152,7 +159,8 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     status TEXT DEFAULT 'active',             -- active|resolved|escalated_to_rule
     first_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     last_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-    auto_rule_generated INTEGER DEFAULT 0     -- 1 wenn bereits Regel generiert
+    auto_rule_generated INTEGER DEFAULT 0,    -- 1 wenn bereits Regel generiert
+    anlass TEXT NOT NULL DEFAULT 'unbekannt'  -- siehe Kommentar an knowledge_nodes.anlass
 );
 
 -- Session-Log (wer hat wann was abgefragt)

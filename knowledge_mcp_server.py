@@ -56,6 +56,18 @@ RELATION_TYPES = {
     "produces", "requires", "replaces_component", "analogous_to", "feeds_into",
 }
 EVENT_STATUSES = {"started", "completed", "failed"}
+# Anlass (Auftrag 2026-08-06): was hat den Eintrag ausgeloest. 'selbst' und
+# 'betreiber' sind SELBSTBERICHTET vom aufrufenden Modell -- nur so gut wie
+# der Schreiber, die DB kann sie nicht nachpruefen. 'hook' und 'skript' sind
+# dagegen objektiv, weil der Aufrufweg sie kennt (siehe knowledge_capture_hook.py:
+# der Stop-Hook ruft lesson_record/knowledge_add NICHT selbst auf, er zwingt nur
+# das Modell via decision:block zum /learn-Skill, das dann wie jeder normale
+# Aufruf tool-seitig entscheidet -- 'hook' ist deshalb auch dort nur so
+# verlässlich wie der Skill-Prompt, der es setzt, kein von aussen erzwungener
+# Wert). 'unbekannt' ist Vorgabe und deckt den gesamten Altbestand vor diesem
+# Feld ab. Wer die Verteilung auswertet (knowledge_stats), darf die vier
+# Werte nicht gleich behandeln.
+ALLOWED_ANLASS = {"selbst", "betreiber", "hook", "skript", "unbekannt"}
 # Auditkette ueber access_log (Auftrag 2026-08-06). Gleiche Laenge/Form wie
 # ein SHA-256-Hexdigest, damit ein Genesis-Wert nicht wie ein "kaputter"
 # Hash aussieht. Fachtrennung zu fahrtenbuch_legacy/.../hash_chain.dart::
@@ -584,17 +596,35 @@ def _validate_geltung(norm_rang: int | None, gilt_ab: str | None, gilt_bis: str 
     return None
 
 
+def _validate_anlass(anlass: str) -> str | None:
+    """Sprechende Ablehnung statt stillem Erfolg oder 500 bei unbekanntem
+    anlass (Auftrag 2026-08-06). Gibt eine Fehlermeldung mit der erlaubten
+    Liste zurueck, oder None wenn gueltig."""
+    if anlass not in ALLOWED_ANLASS:
+        return (f"anlass unbekannt: {anlass!r}. Erlaubt: {sorted(ALLOWED_ANLASS)}.")
+    return None
+
+
 def knowledge_add(parent_path: str, title: str, summary: str,
                   content: str = "", project_id: str = "shared",
                   tags: list | None = None, source: str = "", *,
                   neuer_ast: bool = False,
                   norm_rang: int | None = None, gilt_ab: str | None = None,
-                  gilt_bis: str | None = None,
+                  gilt_bis: str | None = None, anlass: str = "unbekannt",
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
     """Add a new knowledge node to the tree. Rejects an unknown parent_path
     unless neuer_ast=True (see U1 im Plan 2026-08-05, P1: erfundene Aeste
-    streuten Wissen an Stellen, die nie wieder abgerufen wurden)."""
+    streuten Wissen an Stellen, die nie wieder abgerufen wurden).
+
+    anlass: was hat den Eintrag ausgeloest -- siehe ALLOWED_ANLASS oben.
+    'selbst'/'betreiber' sind selbstberichtet vom Aufrufer, nicht geprueft;
+    'hook'/'skript' objektiv, weil der Aufrufweg sie kennt. Unbekannter Wert
+    wird abgelehnt (sprechender Fehler, kein stiller Erfolg)."""
+    anlass_fehler = _validate_anlass(anlass)
+    if anlass_fehler:
+        return {"error": anlass_fehler}
+
     fixed = unmangle_knowledge_fields({
         "title": title, "summary": summary, "content": content, "tags": tags, "source": source,
     })
@@ -650,11 +680,11 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                actor=actor, model=model, session=session, status="started")
     created_at = now_iso()
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, anlass)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
-         norm_rang, gilt_ab, gilt_bis)
+         norm_rang, gilt_ab, gilt_bis, anlass)
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,
@@ -664,6 +694,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                    "content": content, "level": level, "tags": tags or [],
                    "source": source, "created_at": created_at, "updated_at": created_at,
                    "norm_rang": norm_rang, "gilt_ab": gilt_ab, "gilt_bis": gilt_bis,
+                   "anlass": anlass,
                })
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     conn.commit()
@@ -1276,7 +1307,8 @@ def _bump_lesson(conn: sqlite3.Connection, lesson_id: str, node_path: str,
 def lesson_record(type_: str, description: str, root_cause: str = "",
                   resolution: str = "", prevention: str = "",
                   severity: str = "medium", projects: list | None = None,
-                  node_path: str = "", same_as: str = "") -> dict:
+                  node_path: str = "", same_as: str = "",
+                  anlass: str = "unbekannt") -> dict:
     """Record a lesson learned.
 
     same_as gesetzt: erhoeht occurrences der referenzierten Lesson, haengt
@@ -1292,7 +1324,18 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
 
     Ab 3 Vorkommen (same_as-Pfad wie bisheriger Exact-Match-Pfad) wird die
     Lesson auf status='escalated_to_rule' gesetzt.
+
+    anlass: was hat den Eintrag ausgeloest -- siehe ALLOWED_ANLASS oben.
+    'selbst'/'betreiber' sind selbstberichtet vom Aufrufer, nicht geprueft;
+    'hook'/'skript' objektiv, weil der Aufrufweg sie kennt. Unbekannter Wert
+    wird abgelehnt (sprechender Fehler, kein stiller Erfolg). Gilt nur fuer
+    einen NEUEN Eintrag -- ein Bump (Dublette/same_as) laesst den anlass der
+    bestehenden Zeile unveraendert.
     """
+    anlass_fehler = _validate_anlass(anlass)
+    if anlass_fehler:
+        return {"status": "rejected", "error": anlass_fehler}
+
     fixed = unmangle_lesson_fields({
         "type": type_, "description": description, "root_cause": root_cause,
         "resolution": resolution, "prevention": prevention, "severity": severity,
@@ -1340,10 +1383,10 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     lesson_id = f"L-{str(uuid.uuid4())[:6]}"
     seen_at = now_iso()
     conn.execute(
-        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)""",
+        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen, anlass)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)""",
         (lesson_id, node_path or None, type_, severity, description, root_cause,
-         resolution, prevention, json.dumps(projects or []), seen_at, seen_at)
+         resolution, prevention, json.dumps(projects or []), seen_at, seen_at, anlass)
     )
     log_access(conn, node_path or None, "lesson", query=description,
                affected_row={
@@ -1352,6 +1395,7 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                    "root_cause": root_cause, "resolution": resolution,
                    "prevention": prevention, "occurrences": 1,
                    "projects": projects or [], "first_seen": seen_at, "last_seen": seen_at,
+                   "anlass": anlass,
                })
     conn.commit()
     conn.close()
@@ -1517,15 +1561,26 @@ def knowledge_stats() -> dict:
     recent_access = conn.execute(
         "SELECT action, COUNT(*) as cnt FROM access_log GROUP BY action"
     ).fetchall()
+    # Anlass-Verteilung (Auftrag 2026-08-06) -- ganzer Zweck des Feldes.
+    # selbst/betreiber selbstberichtet, hook/skript objektiv, siehe
+    # ALLOWED_ANLASS. Getrennt fuer Knoten und Lehren, nicht zusammengefasst.
+    nodes_by_anlass = dict(conn.execute(
+        "SELECT anlass, COUNT(*) FROM knowledge_nodes GROUP BY anlass"
+    ).fetchall())
+    lessons_by_anlass = dict(conn.execute(
+        "SELECT anlass, COUNT(*) FROM lessons_learned GROUP BY anlass"
+    ).fetchall())
     conn.close()
 
     return {
         "nodes_total": total_nodes,
         "nodes_by_project": by_project,
         "nodes_by_level": by_level,
+        "nodes_by_anlass": nodes_by_anlass,
         "lessons_total": total_lessons,
         "lessons_active": active_lessons,
         "lessons_escalated": escalated,
+        "lessons_by_anlass": lessons_by_anlass,
         "access_patterns": dict(recent_access),
         "db_path": str(DB_PATH),
         "timestamp": now_iso()
@@ -1590,7 +1645,15 @@ TOOLS = {
                         "source is required and rejected if empty -- e.g. \"erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)\". "
                         "norm_rang/gilt_ab/gilt_bis are all optional and only for norms (directives/ADRs/escalated "
                         "lessons); a plain fact leaves them unset (norm_rang stays NULL). gilt_ab/gilt_bis must be "
-                        "ISO-8601 date or timestamp; gilt_bis before gilt_ab is rejected.",
+                        "ISO-8601 date or timestamp; gilt_bis before gilt_ab is rejected. "
+                        "anlass records what triggered this entry: 'selbst' (you wrote it unprompted) or "
+                        "'betreiber' (an explicit human instruction, e.g. \"merk dir das\") are SELF-REPORTED -- "
+                        "only as reliable as the caller. 'hook' (the enforcing Stop-hook made you call this) and "
+                        "'skript' (batch/migration/harvest run, no conversation) are objective in principle, but "
+                        "note the Stop-hook itself never calls this tool -- it only forces you to run /learn, "
+                        "which then calls this normally, so 'hook' is still self-reported by that skill, not "
+                        "verified by the server. Default 'unbekannt' if omitted. An unknown value is rejected "
+                        "with the allowed list, nothing is written.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -1605,6 +1668,8 @@ TOOLS = {
                 "norm_rang": {"type": "integer", "description": "Optional: rank of a norm (1=global directive, 2=hub directive, 3=ADR). Omit for plain facts."},
                 "gilt_ab": {"type": "string", "description": "Optional: ISO-8601 date/timestamp the norm takes effect"},
                 "gilt_bis": {"type": "string", "description": "Optional: ISO-8601 date/timestamp the norm expires; omit for indefinite. Must not be before gilt_ab."},
+                "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
+                           "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["parent_path", "title", "summary"]
@@ -1614,6 +1679,7 @@ TOOLS = {
             args.get("content", ""), args.get("project_id", "shared"),
             args.get("tags"), args.get("source", ""), neuer_ast=args.get("neuer_ast", False),
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
+            anlass=args.get("anlass", "unbekannt"),
             **_identity_args(args)
         )
     },
@@ -1718,7 +1784,15 @@ TOOLS = {
             "at 3+ occurrences. Without same_as: increments occurrences only on an exact "
             "duplicate (same type + byte-identical description); otherwise creates a new "
             "lesson and, if an active lesson of the same type looks similar, returns it as "
-            "similar_lesson_hint (a hint only — never auto-merged; re-record with same_as to merge)."
+            "similar_lesson_hint (a hint only — never auto-merged; re-record with same_as to merge). "
+            "anlass records what triggered this entry: 'selbst' (you wrote it unprompted) or "
+            "'betreiber' (an explicit human instruction, e.g. \"merk dir das\") are SELF-REPORTED -- "
+            "only as reliable as the caller. 'hook' and 'skript' are objective in principle, but "
+            "note the enforcing Stop-hook never calls this tool itself -- it only forces you to run "
+            "/learn, which then calls this normally, so 'hook' is still self-reported by that skill, "
+            "not verified by the server. Default 'unbekannt' if omitted; an unknown value is rejected "
+            "with the allowed list, nothing is written (applies even on a duplicate/same_as bump, where "
+            "the existing row's anlass is left untouched anyway)."
         ),
         "inputSchema": {
             "type": "object",
@@ -1731,7 +1805,9 @@ TOOLS = {
                 "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"], "default": "medium"},
                 "projects": {"type": "array", "items": {"type": "string"}, "description": "Affected projects"},
                 "node_path": {"type": "string", "description": "Related knowledge node path"},
-                "same_as": {"type": "string", "description": "ID of an existing lesson this is a repeat of, e.g. 'L-6e48a9'"}
+                "same_as": {"type": "string", "description": "ID of an existing lesson this is a repeat of, e.g. 'L-6e48a9'"},
+                "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
+                           "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."}
             },
             "required": ["type", "description"]
         },
@@ -1739,7 +1815,7 @@ TOOLS = {
             args["type"], args["description"], args.get("root_cause", ""),
             args.get("resolution", ""), args.get("prevention", ""),
             args.get("severity", "medium"), args.get("projects"), args.get("node_path", ""),
-            args.get("same_as", "")
+            args.get("same_as", ""), args.get("anlass", "unbekannt")
         )
     },
     "lesson_update": {
@@ -1783,7 +1859,11 @@ TOOLS = {
         )
     },
     "knowledge_stats": {
-        "description": "Overview statistics of the knowledge database (node counts, lesson counts, access patterns).",
+        "description": "Overview statistics of the knowledge database (node counts, lesson counts, access patterns, "
+                        "anlass distribution). anlass_by fields split nodes_by_anlass/lessons_by_anlass into "
+                        "selbst/betreiber (self-reported, only as reliable as the caller) vs. hook/skript "
+                        "(objective) vs. unbekannt (default / entries older than the field) -- do not treat "
+                        "the four as equally trustworthy when reading this.",
         "inputSchema": {"type": "object", "properties": {}},
         "handler": lambda args: knowledge_stats()
     }

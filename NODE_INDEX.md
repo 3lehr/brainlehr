@@ -1,6 +1,6 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 287 · erzeugt: 2026-08-06T10:18:57+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 288 · erzeugt: 2026-08-06T10:45:45+0200
 
 Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NICHT hier -- bei Bedarf gezielt mit `knowledge_read <path>` nachladen.
 
@@ -257,6 +257,7 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 - /ops/buckeberg-anbieter-recherche-2026-07-23: — Buckeberg Anbieter-Recherche 2026-07-23: 5 Hausverwaltungen, Reputation + Identitäts-Fallen
 - /ops/buckeberg-anbieterabend-2026-08-05 — Buckeberg Anbieterabend 2026-08-05: mündliche Aussagen kippen zwei Angebotsbewertungen, ein Widerspruch bleibt offen
 - /ops/buckeberg-dokument-pipeline-2026-07-28:- — Buckeberg Dokument-Pipeline 2026-07-28: Objekt-Anker scharf, paperless-Bewertung, offener MÜKRO-Fall
+- /ops/buckeberg-efbe-verwaltung-und-bausparte — Buckeberg efbe: Verwaltung und Bausparte haben dieselbe Geschäftsführerin — Vertrag regelt die Vergabe nicht
 - /ops/buckeberg-heizung-sechs-oelanlagen-von — Buckeberg Heizung: sechs Ölanlagen von 1992–2002, kein einziger Kesseltausch belegt
 - /ops/buckeberg-konsil-#2-(2026-07-23):-angebo — Buckeberg Konsil #2 (2026-07-23): Angebots-Reihung vor Rückfragen — Heisig > efbe > SWB > ImmoPoint > Volksbank
 - /ops/buckeberg-konsil-2026-07-22:-governance- — Buckeberg Konsil 2026-07-22: Governance vor Ranking, 11 harte Schranken, Meilensteine M0-M13
