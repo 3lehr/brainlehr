@@ -164,3 +164,62 @@ def test_d_ohne_jede_kennung_wird_nicht_abgewiesen(temp_db):
     conn.close()
     assert row["actor"] == "unbekannt"
     assert row["session"] == "unbekannt"
+
+
+# ─── Nachtrag: model, gleiche Machart wie actor/session ────────────────────
+#
+# a) Pruefung: model war NICHT an knowledge_nodes/lessons_learned (nur an
+# access_log) -- schema.sql trug bis zu diesem Nachtrag einen expliziten
+# Kommentar "model bewusst NICHT hier dupliziert". Jetzt ergaenzt, gleiche
+# Migration erweitert (migrate_schreiber.py, NEW_COLUMNS um 'model').
+
+def test_b_schreibvorgang_mit_model_steht_am_datensatz(temp_db):
+    mit_model = kms.knowledge_add(
+        "/", "Modell-Testknoten-explizit", "Zusammenfassung",
+        source="erzeugt aus Test (Stand 2026-08-06)", model="claude-opus-5",
+    )
+    ohne_model = kms.knowledge_add(
+        "/", "Modell-Testknoten-implizit", "Zusammenfassung",
+        source="erzeugt aus Test (Stand 2026-08-06)",
+    )
+    assert mit_model.get("status") == "created" and ohne_model.get("status") == "created"
+
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    row_mit = conn.execute("SELECT model FROM knowledge_nodes WHERE id = ?", (mit_model["id"],)).fetchone()
+    row_ohne = conn.execute("SELECT model FROM knowledge_nodes WHERE id = ?", (ohne_model["id"],)).fetchone()
+    conn.close()
+
+    print(f"MIT ausdruecklichem model: {row_mit['model']!r}")
+    print(f"OHNE Angabe: {row_ohne['model']!r}")
+    assert row_mit["model"] == "claude-opus-5", row_mit["model"]
+    assert row_ohne["model"] == "unbekannt", row_ohne["model"]
+
+
+def test_c_knowledge_modell_trennt_nach_modell(temp_db):
+    a = kms.knowledge_add(
+        "/", "Modell-A-Knoten", "Zusammenfassung A",
+        source="erzeugt aus Test (Stand 2026-08-06)", model="modell-a",
+    )
+    b = kms.knowledge_add(
+        "/", "Modell-B-Knoten", "Zusammenfassung B",
+        source="erzeugt aus Test (Stand 2026-08-06)", model="modell-b",
+    )
+    assert a.get("status") == "created" and b.get("status") == "created", (a, b)
+
+    ausgabe_a = kms.knowledge_modell("modell-a")
+    ausgabe_b = kms.knowledge_modell("modell-b")
+    print(f"knowledge_modell('modell-a'): {ausgabe_a}")
+    print(f"knowledge_modell('modell-b'): {ausgabe_b}")
+
+    assert [n["id"] for n in ausgabe_a["nodes"]] == [a["id"]], ausgabe_a
+    assert [n["id"] for n in ausgabe_b["nodes"]] == [b["id"]], ausgabe_b
+    assert ausgabe_a["nodes"][0]["model"] == "modell-a"
+    assert ausgabe_b["nodes"][0]["model"] == "modell-b"
+
+
+def test_lesson_record_traegt_model_auch(temp_db):
+    lesson = kms.lesson_record("pattern", "Modell-Testlesson", model="modell-lesson")
+    assert lesson["status"] == "recorded", lesson
+    ausgabe = kms.knowledge_modell("modell-lesson")
+    assert [l["id"] for l in ausgabe["lessons"]] == [lesson["id"]], ausgabe

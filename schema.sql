@@ -90,13 +90,20 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- Altbestand vor dieser Spalte (kein Rueckfuellwert, das waere erfunden);
     -- ab jetzt schreibt knowledge_add/knowledge_update den aufgeloesten Wert
     -- aus _identity() (nie None -- 'unbekannt' ist ein zulaessiger, expliziter
-    -- Wert, siehe UNBEKANNTER_SCHREIBER in knowledge_mcp_server.py). model
-    -- bewusst NICHT hier dupliziert -- steht bereits in access_log, und
-    -- welches Modell schrieb ist fuer die Isolation eines Schreibers weniger
-    -- trennscharf als session (mehrere Modelle koennen in einer Sitzung
-    -- laufen, eine Sitzung ist die adressierbare Einheit zum Zurueckrollen).
+    -- Wert, siehe UNBEKANNTER_SCHREIBER in knowledge_mcp_server.py).
+    --
+    -- NACHTRAG (Auftrag 2026-08-06, zweiter Teil): model kommt DOCH dazu,
+    -- gleiche Machart. Grund fuer den Sinneswandel: der erste Auftrag fragte
+    -- "wer/welche Sitzung schrieb das", dieser fragt "welches MODELL --
+    -- Guete der Eintraege nach Herkunft messbar machen (wie oft wird ein
+    -- Ergebnis dieses Modells spaeter gezogen/korrigiert/zurueckgezogen)".
+    -- Ueber access_log allein ist das nur per Zeit+Pfad-Verknuepfung
+    -- rekonstruierbar, und die ist bei gleichzeitigen Schreibern (mehrere
+    -- Worktrees) nicht eindeutig -- derselbe Grund, der schon actor/session
+    -- an den Datensatz gebracht hat.
     actor TEXT,
-    session TEXT
+    session TEXT,
+    model TEXT
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -264,8 +271,9 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     last_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     auto_rule_generated INTEGER DEFAULT 0,    -- 1 wenn bereits Regel generiert
     anlass TEXT NOT NULL DEFAULT 'unbekannt', -- siehe Kommentar an knowledge_nodes.anlass
-    actor TEXT,                               -- siehe Kommentar an knowledge_nodes.actor/.session
-    session TEXT
+    actor TEXT,                               -- siehe Kommentar an knowledge_nodes.actor/.session/.model
+    session TEXT,
+    model TEXT
 );
 
 -- Session-Log (wer hat wann was abgefragt)
