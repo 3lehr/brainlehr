@@ -326,6 +326,18 @@ def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
         backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
         shutil.copy2(DB_PATH, backup_path)
 
+    # ENTSCHEIDUNG (Auftrag 2026-08-06, Nebenbefund Konfidenzverfall):
+    # updated_at bleibt hier UNVERAENDERT, bewusst. konfidenz.py setzt voraus,
+    # dass updated_at der Bezugszeitpunkt der letzten INHALTLICHEN Aenderung
+    # oder Bestaetigung ist (siehe dortiger Modul-Docstring) -- der Verfall
+    # rechnet das Alter seit genau diesem Zeitpunkt. Dieser Backfill traegt
+    # nur einen technischen Platzhalter in eine leere Herkunftsangabe nach
+    # (Migrationsfolge, nicht Wissenszuwachs); er bestaetigt nicht, dass der
+    # Inhalt noch stimmt. Wuerde updated_at hier mitziehen, wuerde jede
+    # betroffene Alt-Zeile beim naechsten ensure_schema()-Lauf kuenstlich
+    # verjuengt, ohne dass irgendjemand den Inhalt geprueft haette -- die
+    # Konfidenz spraenge auf den Ausgangswert zurueck, obwohl nichts an der
+    # Aussage selbst neu bestaetigt wurde.
     conn.execute(
         "UPDATE knowledge_nodes SET source = ? WHERE source IS NULL OR TRIM(source) = ''",
         (SOURCE_BACKFILL_PLACEHOLDER,),
@@ -506,6 +518,14 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
 
     log_access(conn, row["path"], "read", project_id=row["project_id"],
                actor=actor, model=model, session=session, status="started")
+    # ENTSCHEIDUNG (Auftrag 2026-08-06, Nebenbefund Konfidenzverfall):
+    # updated_at bleibt hier UNVERAENDERT, bewusst. Lesen ist keine
+    # Bestaetigung: haette access_count++ updated_at mitgezogen, wuerde
+    # haeufig ABGERUFENES Wissen automatisch als frisch/geprueft gelten
+    # (konfidenz.py rechnet das Alter seit updated_at), obwohl niemand seinen
+    # Inhalt bestaetigt hat -- ein oft gelesener, aber nie korrigierter
+    # Altfakt wuerde nie verfallen. Bestaetigung ist ein eigener, bewusster
+    # Vorgang (konfidenz.py::bestaetigen), kein Nebeneffekt des Lesens.
     conn.execute("UPDATE knowledge_nodes SET access_count = access_count + 1 WHERE id = ?", (row["id"],))
     log_access(conn, row["path"], "read", project_id=row["project_id"],
                actor=actor, model=model, session=session)
@@ -1788,6 +1808,15 @@ def _bump_lesson(conn: sqlite3.Connection, lesson_id: str, node_path: str,
 
     escalated = new_count >= 3
     if escalated:
+        # ENTSCHEIDUNG (Auftrag 2026-08-06, Nebenbefund Konfidenzverfall):
+        # last_seen bleibt hier UNVERAENDERT, bewusst -- kein fehlendes
+        # Nachziehen. last_seen wurde ein paar Zeilen weiter oben, IM SELBEN
+        # Aufruf, bereits auf now_iso() gesetzt (occurrences-Update). Die
+        # Eskalation ist die Folge GENAU DIESES Vorkommens, keine zweite,
+        # spaetere Sichtung -- ein erneutes Setzen waere redundant, nicht
+        # praeziser. (Gleiches Prinzip wie bei knowledge_nodes.updated_at:
+        # der Zeitstempel gehoert der inhaltlichen Aenderung/Bestaetigung,
+        # nicht jeder Nebenwirkung an der Zeile.)
         conn.execute(
             "UPDATE lessons_learned SET status = 'escalated_to_rule' WHERE id = ?",
             (lesson_id,)
