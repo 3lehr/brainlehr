@@ -109,6 +109,28 @@ def find_stale(conn: sqlite3.Connection, now: datetime, days: int = STALE_DAYS) 
 
 
 # ─── 3. Nie gezogen ─────────────────────────────────────────────────────────
+# Befund 2026-08-06 (Lehre L-73da37): "240 von 290 nie gezogen" wurde tagelang
+# als Bestandsschwaeche zitiert, war aber eine Eigenschaft der MESSUNG --
+# recall_log.jsonl reicht nur wenige Tage zurueck, 114 der 240 Knoten sind
+# aelter als der Fensterbeginn und konnten darin nie erscheinen. Darum jetzt
+# zwei getrennte Zahlen statt einer: "im Fenster nie gezogen" (echter Befund)
+# und "aelter als das Protokoll" (keine Aussage moeglich, kein Befund).
+# Vergleichsbasis ist die ENTSTEHUNG des Eintrags (created_at bei Knoten,
+# first_seen bei Lessons) -- ab diesem Zeitpunkt haette er im Fenster
+# ueberhaupt auftauchen koennen, nicht der letzte updated_at/last_seen.
+#
+# access_count und access_log wurden geprueft und bewusst NICHT einbezogen:
+# access_count zaehlt nur knowledge_read() (MCP-Tool-Aufruf), NIE browse/
+# search und NIE den Recall-Hook (der liest per eigenem SQL direkt, siehe
+# scripts/knowledge_recall_hook.py::query() -- kein knowledge_read()-Aufruf).
+# Es gibt ausserdem kein Pendant fuer Lessons und keinen Zeitstempel je
+# Zaehlung -- ein kumulativer Lebenszeit-Zaehler laesst sich nicht mit einem
+# Fenster schneiden. access_log mischt laut eigener Pruefung (2026-08-06)
+# Anlage- (action='add'/'lesson') und Lesevorgaenge in derselben Tabelle --
+# ein frisch angelegter Knoten haette dort sofort eine Zeile, waere aber nie
+# tatsaechlich abgerufen worden; ungefiltert eingerechnet wuerde die Kategorie
+# genau die Faelle verschlucken, die sie eigentlich finden soll. Beide blieben
+# darum aussen vor, recall_log.jsonl bleibt die einzige Quelle.
 
 def _recall_hits(log_path: Path | str) -> tuple[set, set]:
     """Gleiches Muster wie knowledge_recall_hook.py::report(): jede Zeile
@@ -129,14 +151,76 @@ def _recall_hits(log_path: Path | str) -> tuple[set, set]:
     return node_hits, lesson_hits
 
 
+def _recall_window(log_path: Path | str) -> tuple[str | None, str | None]:
+    """Erste und letzte "ts"-Zeile im Protokoll, roh als ISO-String. (None,
+    None) bei fehlender oder leerer Datei -- kein Fenster, keine Aussage."""
+    first: str | None = None
+    last: str | None = None
+    try:
+        with open(log_path, encoding="utf-8") as f:
+            for line in f:
+                try:
+                    e = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                ts = e.get("ts")
+                if not ts:
+                    continue
+                if first is None:
+                    first = ts
+                last = ts
+    except FileNotFoundError:
+        pass
+    return first, last
+
+
+def _selftest_window_start(now: datetime) -> datetime:
+    """Gemeinsame Formel fuer den Fensterbeginn der Selbsttest-Fixture --
+    von _selftest_db() (Knoten-created_at) UND selftest() (Protokollzeilen)
+    verwendet, damit beide Seiten garantiert denselben Zeitpunkt meinen."""
+    return now - timedelta(days=2)
+
+
+def _split_by_window(never_pulled: set[str], existence: dict[str, str],
+                      window_start_dt: datetime | None) -> tuple[list[str], list[str]]:
+    """never_pulled in "im Fenster nie gezogen" (Entstehung >= Fensterbeginn --
+    Grenzwert zaehlt als im Fenster) und "aelter als Fenster" (keine Aussage
+    moeglich) trennen. Ohne Fenster (window_start_dt None, z.B. leeres
+    Protokoll) faellt alles in die zweite Gruppe -- sonst waere jeder Eintrag
+    faelschlich "im Fenster nie gezogen", obwohl es gar kein Fenster gab."""
+    im_fenster, zu_alt = [], []
+    for ref in sorted(never_pulled):
+        ts = existence.get(ref)
+        dt = datetime.fromisoformat(ts) if ts else None
+        if window_start_dt is not None and dt is not None and dt >= window_start_dt:
+            im_fenster.append(ref)
+        else:
+            zu_alt.append(ref)
+    return im_fenster, zu_alt
+
+
 def find_never_pulled(conn: sqlite3.Connection, log_path: Path | str = RECALL_LOG) -> dict:
     node_hits, lesson_hits = _recall_hits(log_path)
-    all_nodes = {r[0] for r in conn.execute("SELECT path FROM knowledge_nodes")}
-    all_lessons = {r[0] for r in conn.execute(
-        "SELECT id FROM lessons_learned WHERE status != 'resolved'")}
+    window_start, window_end = _recall_window(log_path)
+    window_start_dt = datetime.fromisoformat(window_start) if window_start else None
+
+    node_existence = {r["path"]: r["created_at"] for r in conn.execute(
+        "SELECT path, created_at FROM knowledge_nodes")}
+    lesson_existence = {r["id"]: r["first_seen"] for r in conn.execute(
+        "SELECT id, first_seen FROM lessons_learned WHERE status != 'resolved'")}
+
+    nodes_im_fenster, nodes_zu_alt = _split_by_window(
+        set(node_existence) - node_hits, node_existence, window_start_dt)
+    lessons_im_fenster, lessons_zu_alt = _split_by_window(
+        set(lesson_existence) - lesson_hits, lesson_existence, window_start_dt)
+
     return {
-        "nodes": sorted(all_nodes - node_hits),
-        "lessons": sorted(all_lessons - lesson_hits),
+        "window_start": window_start,
+        "window_end": window_end,
+        "nodes": nodes_im_fenster,
+        "nodes_aelter_als_fenster": nodes_zu_alt,
+        "lessons": lessons_im_fenster,
+        "lessons_aelter_als_fenster": lessons_zu_alt,
     }
 
 
@@ -770,6 +854,10 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "stale": find_stale(conn, now),
             "never_pulled_nodes": never_pulled["nodes"],
             "never_pulled_lessons": never_pulled["lessons"],
+            "never_pulled_window_start": never_pulled["window_start"],
+            "never_pulled_window_end": never_pulled["window_end"],
+            "never_pulled_nodes_aelter_als_fenster": never_pulled["nodes_aelter_als_fenster"],
+            "never_pulled_lessons_aelter_als_fenster": never_pulled["lessons_aelter_als_fenster"],
             "vector_gaps": find_vector_gaps(conn),
             "near_duplicate_lessons": find_near_duplicate_lessons(conn),
             "path_hygiene": find_path_hygiene(conn),
@@ -795,8 +883,15 @@ def print_report(result: dict) -> None:
                    lambda i: f"{i['path']} -> {i['parent_path']}")
     _print_section(f"Karteileichen (> {STALE_DAYS} Tage ohne Aktualisierung)", result["stale"],
                    lambda i: f"[{i['kind']}] {i['ref']} ({i['age_days']} Tage)")
-    _print_section("Nie gezogene Knoten", result["never_pulled_nodes"])
-    _print_section("Nie gezogene Lessons", result["never_pulled_lessons"])
+    fenster = f"{result['never_pulled_window_start']} .. {result['never_pulled_window_end']}" \
+              if result["never_pulled_window_start"] else "kein Protokoll/leer -- keine Aussage moeglich"
+    print(f"\nBeobachtungsfenster (recall_log.jsonl): {fenster}")
+    _print_section("Nie gezogene Knoten (im Fenster, echter Befund)", result["never_pulled_nodes"])
+    _print_section("Nie gezogene Lessons (im Fenster, echter Befund)", result["never_pulled_lessons"])
+    _print_section("Aelter als das Protokoll -- keine Aussage moeglich (Knoten)",
+                   result["never_pulled_nodes_aelter_als_fenster"])
+    _print_section("Aelter als das Protokoll -- keine Aussage moeglich (Lessons)",
+                   result["never_pulled_lessons_aelter_als_fenster"])
     _print_section("Vektor fehlt oder veraltet", result["vector_gaps"],
                    lambda i: f"[{i['kind']}] {i['ref']}: {i['vector']}")
     _print_section(f"Near-Dubletten-Kandidaten (Score >= {NEAR_DUPLICATE_THRESHOLD})",
@@ -930,6 +1025,32 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
         "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, source, updated_at) "
         "VALUES (?,?,?,?,?,?,?,?,?,?)",
         ("n_conf_custom", "/shared/geprueft", "/shared", "shared", "Geprueft", "Abweichende Konfidenz", 1, 1.0, fixture_source, fresh),
+    )
+    # 3. Nie gezogen -- Fenster-Splittung (Auftrag 2026-08-06, Lehre L-73da37).
+    # Drei Knoten, KEINER je gezogen, mit kontrolliertem created_at exakt auf
+    # WINDOW_START_DT (Fensterbeginn, siehe selftest() fuer das passende
+    # Protokoll), eine Sekunde davor und eine Sekunde danach -- Grenzwert
+    # beidseitig. confidence explizit 1.0 wie bei den anderen Zusatzknoten,
+    # sonst verfaelschen sie K3.
+    window_start_dt = _selftest_window_start(now)
+    on_boundary = window_start_dt.strftime(fmt)
+    before_boundary = (window_start_dt - timedelta(seconds=1)).strftime(fmt)
+    after_boundary = (window_start_dt + timedelta(seconds=1)).strftime(fmt)
+    conn.executemany(
+        "INSERT INTO knowledge_nodes "
+        "(id, path, parent_path, project_id, title, summary, level, confidence, source, created_at, updated_at) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        [
+            ("n_np_on_boundary", "/shared/np/on-boundary", "/shared", "shared", "Auf Fensterbeginn",
+             "Nie gezogen, Entstehung genau am Fensterbeginn -- zaehlt als im Fenster", 1, 1.0,
+             fixture_source, on_boundary, fresh),
+            ("n_np_before_boundary", "/shared/np/before-boundary", "/shared", "shared", "Vor Fensterbeginn",
+             "Nie gezogen, aelter als das Protokoll -- keine Aussage moeglich", 1, 1.0,
+             fixture_source, before_boundary, fresh),
+            ("n_np_after_boundary", "/shared/np/after-boundary", "/shared", "shared", "Nach Fensterbeginn",
+             "Nie gezogen, Entstehung knapp im Fenster", 1, 1.0,
+             fixture_source, after_boundary, fresh),
+        ],
     )
     # 14. Konfidenzverfall: ein sehr alter Fakt (confidence=1.0, damit K3
     # nicht mitgezaehlt wird) faellt unter die Schwelle, ein gleich alter
@@ -1163,7 +1284,14 @@ def selftest() -> None:
         tmp_path = Path(td)
         db_path = _selftest_db(tmp_path, now)
         log_path = tmp_path / "recall_log.jsonl"
-        log_path.write_text(json.dumps({"nodes": ["/shared/kind"], "lessons": []}) + "\n", encoding="utf-8")
+        window_start_dt = _selftest_window_start(now)
+        window_end_dt = now
+        log_fmt = "%Y-%m-%dT%H:%M:%S+00:00"
+        log_path.write_text(
+            json.dumps({"ts": window_start_dt.strftime(log_fmt), "nodes": ["/shared/kind"], "lessons": []}) + "\n" +
+            json.dumps({"ts": window_end_dt.strftime(log_fmt), "nodes": [], "lessons": []}) + "\n",
+            encoding="utf-8",
+        )
 
         before_hash = _sha256(db_path)
         result = run(db_path, log_path, now)
@@ -1184,6 +1312,62 @@ def selftest() -> None:
         # 3. Nie gezogen: /shared/kind wurde im Log gezogen, alle anderen nicht.
         assert "/shared/kind" not in result["never_pulled_nodes"]
         assert "/verwaist/knoten" in result["never_pulled_nodes"]
+
+        # 3b. Fenster-Splittung (Auftrag 2026-08-06, Lehre L-73da37).
+        # Fensterangabe im Befund selbst (Auftrag Punkt 1).
+        assert result["never_pulled_window_start"] is not None
+        assert result["never_pulled_window_end"] is not None
+        print(f"selftest: Beobachtungsfenster {result['never_pulled_window_start']} .. "
+              f"{result['never_pulled_window_end']}")
+
+        # Rot-vor-gruen (Abnahme a): der ungesplittete Treffer -- exakt das,
+        # was find_never_pulled() vor dieser Aenderung geliefert haette --
+        # haette /shared/np/before-boundary als Befund gemeldet. roh ausgegeben.
+        _raw_conn = sqlite3.connect(str(db_path))
+        _all_node_paths = {r[0] for r in _raw_conn.execute("SELECT path FROM knowledge_nodes")}
+        _raw_conn.close()
+        _node_hits_raw, _ = _recall_hits(log_path)
+        _vorher_befund = _all_node_paths - _node_hits_raw  # altes Verhalten: keine Fensterpruefung
+        print(f"selftest: VORHER (ungesplittet, altes Verhalten) "
+              f"/shared/np/before-boundary als Befund: "
+              f"{'/shared/np/before-boundary' in _vorher_befund}")
+        assert "/shared/np/before-boundary" in _vorher_befund, \
+            "Rot-Probe: vor der Aenderung war das ein Treffer -- sonst beweist der Test nichts"
+        print(f"selftest: NACHHER (gesplittet) im echten Befund: "
+              f"{'/shared/np/before-boundary' in result['never_pulled_nodes']}, "
+              f"in 'aelter als Fenster': "
+              f"{'/shared/np/before-boundary' in result['never_pulled_nodes_aelter_als_fenster']}")
+
+        # Grenzwerte beidseitig (Abnahme b): auf dem Fensterbeginn zaehlt als
+        # im Fenster, eine Sekunde davor keine Aussage moeglich, eine Sekunde
+        # danach im Fenster.
+        assert "/shared/np/on-boundary" in result["never_pulled_nodes"], result["never_pulled_nodes"]
+        assert "/shared/np/after-boundary" in result["never_pulled_nodes"], result["never_pulled_nodes"]
+        assert "/shared/np/before-boundary" not in result["never_pulled_nodes"], \
+            "aelter als der Fensterbeginn -- darf NICHT als echter Befund erscheinen"
+        assert "/shared/np/before-boundary" in result["never_pulled_nodes_aelter_als_fenster"], \
+            result["never_pulled_nodes_aelter_als_fenster"]
+        assert "/shared/np/on-boundary" not in result["never_pulled_nodes_aelter_als_fenster"]
+        assert "/shared/np/after-boundary" not in result["never_pulled_nodes_aelter_als_fenster"]
+
+        # Leeres Protokoll (Abnahme c): keine Division durch null, kein
+        # falscher "alles nie gezogen"-Befund -- alles faellt mangels
+        # Fenster in die "keine Aussage"-Liste, der echte Befund bleibt leer.
+        empty_log = tmp_path / "empty_recall_log.jsonl"
+        empty_log.write_text("", encoding="utf-8")
+        _empty_conn = get_ro_conn(db_path)
+        try:
+            empty_result = find_never_pulled(_empty_conn, empty_log)
+        finally:
+            _empty_conn.close()
+        assert empty_result["window_start"] is None and empty_result["window_end"] is None
+        assert empty_result["nodes"] == [], "leeres Protokoll darf keinen echten Befund erzeugen"
+        assert empty_result["lessons"] == []
+        assert len(empty_result["nodes_aelter_als_fenster"]) > 0, \
+            "alle Knoten landen mangels Fenster in 'keine Aussage moeglich', nicht verschwiegen"
+        print(f"selftest: leeres Protokoll -> echter Befund 0 Knoten/0 Lessons, "
+              f"{len(empty_result['nodes_aelter_als_fenster'])} Knoten und "
+              f"{len(empty_result['lessons_aelter_als_fenster'])} Lessons in 'keine Aussage moeglich'")
 
         # 4. Vektor fehlt: kein Knoten hat einen Embedding-Eintrag in dieser
         #    Fixture -> alle Knoten gelten als "fehlt". Bei den Lessons hat
