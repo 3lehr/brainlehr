@@ -175,8 +175,16 @@ def ausser_kraft(db_path: Path, pfad: str, ab: str, wegen: str,
 
 
 def in_kraft(db_path: Path, stichtag: str | None = None) -> list[dict]:
-    """Normen, die zum Stichtag (Vorgabe: jetzt) in Kraft waren:
-    gilt_ab <= stichtag AND (gilt_bis IS NULL OR gilt_bis > stichtag)."""
+    """Normen, die zum Stichtag (Vorgabe: jetzt) in Kraft waren.
+
+    KANONISCHE BEDEUTUNG von gilt_bis, hier und nirgends sonst festgelegt --
+    jeder weitere Auswerter (z.B. knowledge_mcp_server.py::_geltung_status)
+    verweist hierher statt die Regel erneut zu formulieren: gilt_bis ist
+    INKLUSIV, der letzte Tag, an dem die Norm noch gilt. Entscheidung
+    2026-08-06 (Auftrag): das Feld traegt in der Praxis Datumsangaben, und
+    "gilt bis 31.12." heisst umgangssprachlich wie juristisch einschliesslich
+    des 31.12. Formel: gilt_ab <= stichtag AND (gilt_bis IS NULL OR gilt_bis
+    >= stichtag)."""
     stichtag = stichtag or now_iso()
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
@@ -185,7 +193,7 @@ def in_kraft(db_path: Path, stichtag: str | None = None) -> list[dict]:
             """SELECT path, title, norm_rang, gilt_ab, gilt_bis FROM knowledge_nodes
                WHERE norm_rang IS NOT NULL
                  AND gilt_ab IS NOT NULL AND gilt_ab <= ?
-                 AND (gilt_bis IS NULL OR gilt_bis > ?)
+                 AND (gilt_bis IS NULL OR gilt_bis >= ?)
                ORDER BY norm_rang, path""",
             (stichtag, stichtag),
         ).fetchall()
@@ -404,13 +412,18 @@ def _selftest() -> int:
         vor_pfade = {r["path"] for r in vor}
         assert "/adr/x" in vor_pfade, "vor dem Ausserkrafttreten muss /adr/x in Kraft sein"
 
+        # --- Grenzwert: gilt_bis ist inklusiv -- am Tag von gilt_bis selbst
+        # gilt die Norm noch (letzter Tag), erst danach nicht mehr.
+        am_stichtag = in_kraft(db_path, "2026-03-01T00:00:00+01:00")
+        assert "/adr/x" in {r["path"] for r in am_stichtag}, "gilt_bis inklusiv: am Stichtag == gilt_bis muss /adr/x noch in Kraft sein"
+
         nach = in_kraft(db_path, "2026-04-01T00:00:00+01:00")
         nach_pfade = {r["path"] for r in nach}
         assert "/adr/x" not in nach_pfade, "nach dem Ausserkrafttreten darf /adr/x nicht mehr in Kraft sein"
         assert "/adr/y" in nach_pfade, "unbefristete Norm /adr/y muss weiter in Kraft sein"
         assert "/fakt/x" not in nach_pfade and "/fakt/x" not in vor_pfade, "Fakt darf nie in in_kraft auftauchen"
 
-    print("SELFTEST OK: 7 Ablehnungen, dry-run, Erfolgsfall (Content+access_log), Idempotenz, in_kraft vor/nach.")
+    print("SELFTEST OK: 7 Ablehnungen, dry-run, Erfolgsfall (Content+access_log), Idempotenz, in_kraft vor/Stichtag/nach (gilt_bis inklusiv).")
     return 0
 
 

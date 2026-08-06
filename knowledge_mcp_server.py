@@ -566,14 +566,39 @@ def _log_zero_hit(query: str) -> None:
         pass
 
 
+def _geltung_status(norm_rang, gilt_ab: str | None, gilt_bis: str | None, stichtag: str) -> str | None:
+    """Geltung einer Norm zum Stichtag, nach dem Vorbild von normkraft.py::in_kraft
+    (gilt_ab <= stichtag AND (gilt_bis IS NULL OR ...)) -- reiner ISO-Stringvergleich,
+    keine datetime-Parsung, wie dort. Kanonische Bedeutung von gilt_bis
+    (inklusiv, letzter Geltungstag) ist dort an EINER Stelle festgehalten,
+    nicht hier wiederholt: normkraft.py::in_kraft.
+    norm_rang IS NULL (Fakt) oder gilt_ab nicht gesetzt (Norm ohne Geltungsangabe)
+    -> None, unveraendert wie vor diesem Auftrag."""
+    if norm_rang is None or gilt_ab is None:
+        return None
+    if stichtag < gilt_ab:
+        return "noch_nicht_in_kraft"
+    if gilt_bis is not None and stichtag > gilt_bis:
+        return "abgelaufen"
+    return "in_kraft"
+
+
 def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
+                     stichtag: str | None = None, nur_geltende: bool = False,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
     """Hybrid-Suche ueber Wissensknoten: FTS5-Stichwortmatching (Woerter ODER-
     verknuepft, deutsch gefaltet) plus optionale Bedeutungs-Suche ueber lokale
     Embeddings (RRF-fusioniert). Ohne Vektoren (Tabelle fehlt oder leer) oder
     ohne erreichbares Ollama identisch zum reinen FTS5-Verhalten. Returns
-    summaries (not full content) for token efficiency."""
+    summaries (not full content) for token efficiency.
+
+    Normen (norm_rang gesetzt) mit gilt_ab/gilt_bis werden gegen `stichtag`
+    (ISO, Vorgabe: jetzt) geprueft: abgelaufene oder noch nicht in Kraft
+    getretene rutschen ans Ende (nachrangig, nicht verborgen) und tragen
+    "geltung"/"gilt_ab"/"gilt_bis" im Ergebnis. Mit nur_geltende=True werden
+    sie ganz ausgeblendet. Fakten (norm_rang IS NULL) sind davon unberuehrt."""
+    stichtag = stichtag or now_iso()
     conn = get_db()
     log_access(conn, None, "search", query=query, project_id=scope,
                actor=actor, model=model, session=session, status="started")
@@ -586,7 +611,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
 
     if scope == "all":
         fts_rows = conn.execute(
-            """SELECT n.id, n.path, n.title, n.summary, n.project_id
+            """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ?
@@ -596,7 +621,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         allowed_ids = None
     else:
         fts_rows = conn.execute(
-            """SELECT n.id, n.path, n.title, n.summary, n.project_id
+            """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.project_id IN ('shared', ?)
@@ -620,14 +645,29 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     if missing:
         placeholders = ",".join("?" for _ in missing)
         for r in conn.execute(
-            f"SELECT id, path, title, summary, project_id FROM knowledge_nodes WHERE id IN ({placeholders})",
+            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis FROM knowledge_nodes WHERE id IN ({placeholders})",
             missing
         ):
             by_id[r["id"]] = r
 
-    results = [{"id": by_id[i]["id"], "path": by_id[i]["path"], "title": by_id[i]["title"],
-                "summary": by_id[i]["summary"], "project": by_id[i]["project_id"]}
-               for i in final_ids if i in by_id]
+    vorrang, nachrangig = [], []
+    for i in final_ids:
+        if i not in by_id:
+            continue
+        row = by_id[i]
+        entry = {"id": row["id"], "path": row["path"], "title": row["title"],
+                  "summary": row["summary"], "project": row["project_id"]}
+        geltung = _geltung_status(row["norm_rang"], row["gilt_ab"], row["gilt_bis"], stichtag)
+        if geltung in ("abgelaufen", "noch_nicht_in_kraft"):
+            if nur_geltende:
+                continue
+            entry["geltung"] = geltung
+            entry["gilt_ab"] = row["gilt_ab"]
+            entry["gilt_bis"] = row["gilt_bis"]
+            nachrangig.append(entry)
+        else:
+            vorrang.append(entry)
+    results = vorrang + nachrangig
     if not results:
         _log_zero_hit(query)
     log_access(conn, results[0]["path"] if results else None, "search", query=query,
@@ -773,6 +813,83 @@ def _validate_anlass(anlass: str) -> str | None:
     return None
 
 
+# \w{3,}: kurze Fuellwoerter (der/die/aus/of/and/...) sind in praktisch jeder
+# Sprache 1-2 Zeichen lang, darum als Rauschgrenze fuer den Wortlauf-
+# Vergleich geeignet, ohne eine Sprache konkret zu benennen.
+_QUELLTOKEN_RE = re.compile(r"\w{3,}", re.UNICODE)
+_MIN_ZITAT_LAUF = 6  # so viele Woerter am Stueck woertlich = Zitat, kein Zufall
+# Ein Pfad/eine URL/ein Hash/ein Datum ist eine ueberpruefbare Fundstelle,
+# unabhaengig davon, wie sie sprachlich eingeleitet wird -- rein an der
+# ZEICHENFORM erkannt (Schraegstrich, Dateiendung, URL-Schema, Hex-Lauf,
+# ISO-Datum), nicht am umgebenden Wortlaut.
+_FUNDSTELLE_RE = re.compile(
+    r"https?://\S+|[^\s]+/[^\s]+|\.[A-Za-z0-9]{2,4}\b|\b[0-9a-fA-F]{7,40}\b|"
+    r"\b\d{4}-\d{2}-\d{2}\b"
+)
+
+
+def _inhaltstokens(*teile: str) -> list:
+    return [t.lower() for t in _QUELLTOKEN_RE.findall(" ".join(t or "" for t in teile))]
+
+
+def _laengster_gemeinsamer_lauf(a: list, b: list) -> int:
+    return difflib.SequenceMatcher(None, a, b, autojunk=False).find_longest_match(
+        0, len(a), 0, len(b)
+    ).size
+
+
+def _validate_source_provenance(source: str, title: str, summary: str, content: str) -> str | None:
+    """Lehnt eine Herkunft ab, die im Kern nur den Knoten selbst zitiert
+    (Lehre L-7aad34, Auftrag 2026-08-06, Befund 1 -- Tautologie: source
+    'erzeugt aus Rohmaterial ... "Man hoert, dass die Sperrandrohung ..."'
+    wiederholte woertlich genau den Inhalt, den sie belegen sollte).
+
+    STRUKTURELL statt Wortliste (sprachunabhaengig, siehe Modul-Docstring von
+    einschleusung.py fuer dieselbe Abwaegung an anderer Stelle): geprueft wird
+    NICHT irgendein Bedeutungs-Ueberlappung (die schlaegt staendig zu Unrecht
+    an -- ein Dateipfad wie 'buckeberg/.../2026-08-05-endrunde-abgleich.md'
+    teilt zwangslaeufig Themenwoerter mit dem Titel, das ist erwuenscht, kein
+    Zitieren-sich-selbst), sondern ein LAUF von mindestens sechs
+    aufeinanderfolgenden Woertern, die woertlich sowohl in source als auch in
+    Titel/Zusammenfassung/Inhalt DESSELBEN Knotens vorkommen. Reiner
+    Zeichenfolgen-Abgleich (difflib, laengster gemeinsamer Block), kein
+    Woerterbuch -- schlaegt in jeder Sprache/Schrift gleich an.
+
+    ZWEITE BEDINGUNG, das eigentliche Herzstueck gegen Falschalarme (Auftrag
+    Punkt 3, Falschalarm teurer als Durchlass): ein langer Wortlauf allein
+    genuegt NICHT. Erst wenn source zusaetzlich KEINE ueberpruefbare
+    Fundstelle traegt (kein Pfad, keine URL, kein Hash, kein Datum -- an der
+    Zeichenform erkannt, s. _FUNDSTELLE_RE), gilt der Lauf als Beleg, dass
+    source nichts ausserhalb des Knotens nennt. Ein Dateipfad, der zufaellig
+    Themenwoerter mit dem Titel teilt, hat trotzdem eine Fundstelle und geht
+    frei durch -- gemessen an den 290 Bestandsknoten der Produktions-DB, vor
+    dieser zweiten Bedingung waren es 22 Falschalarme allein durch geteilte
+    Pfad-/Dateinamen-Woerter.
+
+    Bewusst NICHT erfasst: eine knappe, aber nicht-zitierende Angabe wie
+    'Geruecht aus der Kantine' (kein langer woertlicher Lauf mit dem Inhalt,
+    also greift die erste Bedingung nie) -- ob eine solche Kurzform generell
+    genug Substanz hat, ist ohne Sprachverstaendnis nicht zuverlaessig zu
+    entscheiden und bleibt bewusst durch, statt hart abgelehnt zu werden."""
+    quelle = _inhaltstokens(source)
+    if len(quelle) < _MIN_ZITAT_LAUF:
+        return None  # zu kurz fuer einen verlaesslichen Zitat-Befund
+    beleg = _inhaltstokens(title, summary, content)
+    lauf = _laengster_gemeinsamer_lauf(quelle, beleg)
+    if lauf < _MIN_ZITAT_LAUF:
+        return None
+    if _FUNDSTELLE_RE.search(source):
+        return None  # traegt eine ueberpruefbare Fundstelle -- kein Verdacht
+    return (
+        f"source wirkt selbstbezueglich: {lauf} Woerter am Stueck stehen "
+        "woertlich sowohl in source als auch im eigenen Titel/Zusammenfassung/"
+        "Inhalt dieses Knotens, ohne dass source einen Pfad, eine URL, einen "
+        "Hash oder ein Datum nennt. Herkunft ausserhalb des Knotens benennen "
+        "(Datei, Person, Ort, URL, Sitzungsprotokoll), nicht den Inhalt "
+        "zurueckspiegeln."
+    )
+
+
 def knowledge_add(parent_path: str, title: str, summary: str,
                   content: str = "", project_id: str = "shared",
                   tags: list | None = None, source: str = "", *,
@@ -804,6 +921,10 @@ def knowledge_add(parent_path: str, title: str, summary: str,
             "error": "source fehlt: Herkunft des Knotens angeben (aus welcher Datei/welchem Lauf er stammt). "
                      "Beispiel: 'erzeugt aus /pfad/zur/datei.md (Stand 2026-08-05T23:40:00+02:00)'.",
         }
+
+    provenienz_fehler = _validate_source_provenance(source, title, summary, content)
+    if provenienz_fehler:
+        return {"error": provenienz_fehler}
 
     geltung_fehler = _validate_geltung(norm_rang, gilt_ab, gilt_bis)
     if geltung_fehler:
@@ -1800,11 +1921,13 @@ TOOLS = {
                 "query": {"type": "string", "description": "Search query (FTS5 syntax supported: AND, OR, NOT, phrases). Hybrid: fuses keyword matches with local-embedding meaning search when vectors exist."},
                 "scope": {"type": "string", "description": "Scope: 'all' or project name", "default": "all"},
                 "max_results": {"type": "integer", "description": "Max results (default 10)", "default": 10},
+                "stichtag": {"type": "string", "description": "ISO-8601 date/timestamp to check norm validity (gilt_ab/gilt_bis) against; default now. Expired or not-yet-effective norms rank last and are marked, never hidden (unless nur_geltende=True). Facts (norm_rang unset) are unaffected."},
+                "nur_geltende": {"type": "boolean", "description": "Drop expired/not-yet-effective norms instead of ranking them last. Default False.", "default": False},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["query"]
         },
-        "handler": lambda args: knowledge_search(args["query"], args.get("scope", "all"), args.get("max_results", 10), **_identity_args(args))
+        "handler": lambda args: knowledge_search(args["query"], args.get("scope", "all"), args.get("max_results", 10), stichtag=args.get("stichtag"), nur_geltende=args.get("nur_geltende", False), **_identity_args(args))
     },
     "knowledge_add": {
         "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy. "
