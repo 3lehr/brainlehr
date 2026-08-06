@@ -225,8 +225,12 @@ def _selftest() -> None:
     p3 = _build_prompt_v3_beispiel(NORM_STUECKE[0], tree)
     assert "Rang einer Norm" in p2 and "Rang einer Norm" not in p0, \
         "V2 muss deutsche Feldbeschreibung enthalten, V0 nicht"
-    assert _BEISPIEL_STUECK in p3 and _BEISPIEL_STUECK not in p0, \
-        "V3 muss das Beispielstueck enthalten, V0 nicht"
+    # Nachtrag Auftrag 2026-08-06: V0 zieht jetzt live kms.TOOLS["knowledge_add"]
+    # (schreiblauf.build_prompt liest die Werkzeugbeschreibung 1:1), und genau
+    # dorthinein wanderte das V3-Beispiel -- p0 enthaelt es seitdem ABSICHTLICH
+    # auch. Nur noch pruefen, dass V3 es enthaelt (die eigentliche Bedingung
+    # fuer den V3-Lauf), das alte "V0 nicht" waere jetzt ein Falschbefund.
+    assert _BEISPIEL_STUECK in p3, "V3 muss das Beispielstueck enthalten"
     assert p3.index(_BEISPIEL_STUECK) < p3.index(NORM_STUECKE[0]), \
         "Beispiel muss vor dem eigentlichen Rohmaterial stehen"
 
