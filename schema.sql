@@ -65,7 +65,22 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- ist der Kern des Auftrags. NULL = Normalfall, unveraendert wie bisher.
     -- Aufloesung (Kennung -> echter Knoten) ist eine Berechtigungsfrage und
     -- bewusst NICHT Teil von knowledge_read/knowledge_search -- siehe dort.
-    abgeleitet_von TEXT
+    abgeleitet_von TEXT,
+    -- Zurueckziehen (Auftrag 2026-08-06, Luecke "kein Loeschweg fuer die KI").
+    -- Reversibler Vorgang, den knowledge_zurueckziehen/knowledge_freigeben in
+    -- knowledge_mcp_server.py bedienen -- siehe dort fuer die Abgrenzung zum
+    -- endgueltigen, nur menschlichen Entfernen (endgueltig_entfernen.py, NICHT
+    -- ueber ein MCP-Werkzeug erreichbar). zurueckgezogen=1 heisst: content und
+    -- summary wurden GELEERT (kein Backup, der Inhalt ist damit weg -- nur
+    -- knowledge_freigeben schaltet die Sichtbarkeit zurueck, stellt aber nichts
+    -- wieder her), title und path bleiben stehen, die Zeile bleibt in der
+    -- Tabelle (Auditkette, Z5: nichts aendert sich unbemerkt). knowledge_search
+    -- und der Recall-Hook lassen zurueckgezogen=1 aus; knowledge_read/browse
+    -- liefern die Zeile weiterhin (leer statt verschwunden).
+    zurueckgezogen INTEGER NOT NULL DEFAULT 0,
+    zurueckgezogen_grund TEXT,
+    zurueckgezogen_am TEXT,
+    zurueckgezogen_von TEXT
 );
 
 -- Volltext-Suche über Titel, Summary und Content.

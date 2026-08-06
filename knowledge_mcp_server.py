@@ -12,6 +12,8 @@ Tools:
   - knowledge_search(query, scope)→ Hybrid-Suche (FTS5 + optional lokale Embeddings, RRF-fusioniert), gibt Summaries zurück
   - knowledge_add(parent_path, title, summary, content, project_id, tags)
   - knowledge_update(node_id, summary, content)
+  - knowledge_zurueckziehen(node_id, grund) → leert content/summary, Zeile bleibt, reversibel
+  - knowledge_freigeben(node_id) → macht Zurueckziehen rueckgaengig (Sichtbarkeit, nicht Inhalt)
   - knowledge_relation_add|list|update|remove(...) → explizite belegte Kanten
   - lesson_record(type, description, root_cause, resolution, prevention, severity, projects, same_as)
   - lesson_update(lesson_id, description, root_cause, resolution, prevention, severity, projects, status, delete)
@@ -231,6 +233,50 @@ def _ensure_abgeleitet_von_column(conn: sqlite3.Connection) -> None:
     conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN abgeleitet_von TEXT")
 
 
+_ZURUECKNAHME_COLUMNS = {
+    "zurueckgezogen": "INTEGER NOT NULL DEFAULT 0",
+    "zurueckgezogen_grund": "TEXT",
+    "zurueckgezogen_am": "TEXT",
+    "zurueckgezogen_von": "TEXT",
+}
+
+
+def _ensure_zuruecknahme_columns(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die vier Zuruecknahme-Spalten (Auftrag
+    2026-08-06, Luecke "kein Loeschweg fuer die KI"). Gleiches Muster wie
+    _ensure_abgeleitet_von_column direkt darueber: additiv, WAL-Checkpoint +
+    Sicherungskopie VOR dem ALTER (Lehre L-218f1e). zurueckgezogen bekommt
+    NOT NULL DEFAULT 0 -- SQLite befuellt Bestandszeilen beim ALTER selbst,
+    kein separater Rueckfuell-Schritt (Manueller/CI-Weg fuer Abnahme-Belege:
+    migrate_zuruecknahme.py)."""
+    if "knowledge_nodes" not in {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }:
+        return
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}
+    missing = set(_ZURUECKNAHME_COLUMNS) - existing
+    if not missing:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"Spalten {sorted(missing)} fehlen an knowledge_nodes, aber die Sicherung vor "
+            f"dem automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
+            "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, "
+            "nichts geaendert. Von Hand nachholen: "
+            "'.venv/bin/python shared-knowledge/migrate_zuruecknahme.py --apply'."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    for name in missing:
+        conn.execute(f"ALTER TABLE knowledge_nodes ADD COLUMN {name} {_ZURUECKNAHME_COLUMNS[name]}")
+
+
 def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
     """Nachzug fuer Bestands-DBs ohne die sechs Zusicherungs-Trigger an
     knowledge_nodes (Auftrag 2026-08-06). Gleiches Muster wie
@@ -291,6 +337,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old knowledge.db copies."""
     _ensure_anlass_columns(conn)
     _ensure_abgeleitet_von_column(conn)
+    _ensure_zuruecknahme_columns(conn)
     _ensure_node_constraint_triggers(conn)
     columns = {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
     for name, declaration in {
@@ -649,7 +696,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
-               WHERE knowledge_fts MATCH ?
+               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0
                ORDER BY rank""",
             (fts_query,)
         ).fetchall()
@@ -659,7 +706,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
-               WHERE knowledge_fts MATCH ? AND n.project_id IN ('shared', ?)
+               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?)
                ORDER BY rank""",
             (fts_query, scope)
         ).fetchall()
@@ -680,7 +727,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     if missing:
         placeholders = ",".join("?" for _ in missing)
         for r in conn.execute(
-            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von FROM knowledge_nodes WHERE id IN ({placeholders})",
+            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0",
             missing
         ):
             by_id[r["id"]] = r
@@ -1187,6 +1234,84 @@ def knowledge_update(node_id: str, summary: str | None = None,
     conn.commit()
     conn.close()
     return {"id": row["id"], "status": "updated", **wikilinks}
+
+
+def knowledge_zurueckziehen(node_id: str, grund: str, *, actor: str | None = None,
+                            model: str | None = None, session: str | None = None) -> dict:
+    """Zieht einen Knoten zurueck: content und summary werden GELEERT (kein
+    Backup -- danach ist der Inhalt weg, nur die Sichtbarkeit ist reversibel
+    ueber knowledge_freigeben), title und path bleiben stehen, die Zeile
+    bleibt in der Tabelle mit Grund/Zeitpunkt/Urheber (Z5: nichts aendert
+    sich unbemerkt). knowledge_search und der Recall-Hook lassen den Knoten
+    danach aus. Reversibel, im Unterschied zum endgueltigen Entfernen
+    (endgueltig_entfernen.py, nur von Hand, kein MCP-Werkzeug) -- eine KI darf
+    dieses Werkzeug ohne Rueckfrage aufrufen, genau weil nichts spurlos
+    verschwindet.
+
+    grund ist Pflicht (leer -> Ablehnung, nichts geaendert): ein Zurueckziehen
+    ohne Begruendung waere dieselbe Blackbox wie ein rohes DELETE."""
+    if not grund or not grund.strip():
+        return {"error": "grund fehlt: Zurueckziehen verlangt eine Begruendung, nichts geaendert."}
+
+    conn = get_db()
+    row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
+    if not row:
+        conn.close()
+        return {"error": f"Node not found: {node_id}"}
+
+    actor, model, session = _identity(actor, model, session)
+    timestamp = now_iso()
+    log_access(conn, row["path"], "zurueckziehen", project_id=row["project_id"],
+               actor=actor, model=model, session=session, status="started")
+    conn.execute(
+        """UPDATE knowledge_nodes
+           SET zurueckgezogen = 1, zurueckgezogen_grund = ?, zurueckgezogen_am = ?,
+               zurueckgezogen_von = ?, content = '', summary = '', updated_at = ?
+           WHERE id = ?""",
+        (grund, timestamp, actor, timestamp, row["id"]),
+    )
+    # P4-Muster wie knowledge_update: ein Vektor auf jetzt geleertem Text ist
+    # schlechter als gar keiner.
+    conn.execute("DELETE FROM knowledge_embeddings WHERE kind = 'node' AND ref_id = ?", (row["id"],))
+    updated_row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ?", (row["id"],)).fetchone()
+    log_access(conn, row["path"], "zurueckziehen", project_id=row["project_id"],
+               actor=actor, model=model, session=session,
+               affected_row=dict(updated_row) if updated_row else None)
+    conn.commit()
+    conn.close()
+    return {"id": row["id"], "path": row["path"], "status": "zurueckgezogen", "grund": grund}
+
+
+def knowledge_freigeben(node_id: str, *, actor: str | None = None,
+                        model: str | None = None, session: str | None = None) -> dict:
+    """Macht ein Zurueckziehen rueckgaengig: der Knoten taucht wieder in
+    knowledge_search/Recall auf. Stellt NICHTS wieder her -- content/summary
+    wurden beim Zurueckziehen geleert und bleiben leer, das ist keine
+    Wiederherstellung, nur eine Sichtbarkeits-Umschaltung."""
+    conn = get_db()
+    row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
+    if not row:
+        conn.close()
+        return {"error": f"Node not found: {node_id}"}
+    if not row["zurueckgezogen"]:
+        conn.close()
+        return {"id": row["id"], "status": "unchanged", "message": "Knoten war nicht zurueckgezogen."}
+
+    actor, model, session = _identity(actor, model, session)
+    timestamp = now_iso()
+    log_access(conn, row["path"], "freigeben", project_id=row["project_id"],
+               actor=actor, model=model, session=session, status="started")
+    conn.execute(
+        "UPDATE knowledge_nodes SET zurueckgezogen = 0, updated_at = ? WHERE id = ?",
+        (timestamp, row["id"]),
+    )
+    updated_row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ?", (row["id"],)).fetchone()
+    log_access(conn, row["path"], "freigeben", project_id=row["project_id"],
+               actor=actor, model=model, session=session,
+               affected_row=dict(updated_row) if updated_row else None)
+    conn.commit()
+    conn.close()
+    return {"id": row["id"], "path": row["path"], "status": "freigegeben"}
 
 
 def _relation_node(conn: sqlite3.Connection, value: str,
@@ -2089,6 +2214,39 @@ TOOLS = {
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
             **_identity_args(args)
         )
+    },
+    "knowledge_zurueckziehen": {
+        "description": "Withdraw a node: clears content and summary (no backup -- the text is gone), "
+                        "keeps title and path, keeps the row (with grund/timestamp/actor) so nothing "
+                        "vanishes without a trace. The node then drops out of knowledge_search and the "
+                        "recall hook. Reversible via knowledge_freigeben (which restores visibility only, "
+                        "not the emptied text) -- unlike the permanent, human-only endgueltig_entfernen.py, "
+                        "which this tool cannot reach. grund is required; empty grund is rejected, nothing "
+                        "changed.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "node_id": {"type": "string", "description": "Node ID or path"},
+                "grund": {"type": "string", "description": "Required reason for withdrawal"},
+                **IDENTITY_PROPERTIES,
+            },
+            "required": ["node_id", "grund"]
+        },
+        "handler": lambda args: knowledge_zurueckziehen(args["node_id"], args.get("grund", ""), **_identity_args(args))
+    },
+    "knowledge_freigeben": {
+        "description": "Undo a knowledge_zurueckziehen: the node reappears in knowledge_search/recall. "
+                        "Restores nothing -- content/summary stay empty as they were left by the withdrawal, "
+                        "this only flips visibility back.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "node_id": {"type": "string", "description": "Node ID or path"},
+                **IDENTITY_PROPERTIES,
+            },
+            "required": ["node_id"]
+        },
+        "handler": lambda args: knowledge_freigeben(args["node_id"], **_identity_args(args))
     },
     "knowledge_relation_add": {
         "description": "Create one explicit evidenced knowledge edge between existing node IDs/paths. Never infers links from tags or text; validates endpoints, scope, type, confidence, and duplicate edges.",

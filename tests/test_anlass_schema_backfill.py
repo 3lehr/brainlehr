@@ -26,9 +26,14 @@ def _old_schema_without_anlass() -> str:
     nachgebaut werden muss und garantiert synchron mit dem echten Schema
     bleibt."""
     schema_sql = (SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8")
+    # abgeleitet_von TEXT.*?\n\); statt eines festen Endes: nicht-gierig bis
+    # zur naechsten schliessenden Klammer, damit spaeter additiv angehaengte
+    # Spalten (z.B. zurueckgezogen*, Auftrag 2026-08-06 Zuruecknahme) hier
+    # automatisch mitentfernt werden, ohne dieses Muster jedes Mal
+    # nachzuziehen -- alte DBs vor dem anlass-Feld kannten auch diese nicht.
     old_schema, n1 = re.subn(
         r",\n    -- Anlass \(Auftrag 2026-08-06\).*?anlass TEXT NOT NULL DEFAULT 'unbekannt',\n"
-        r"(    -- abgeleitet_von.*?\n)*    abgeleitet_von TEXT\n\);",
+        r"(    -- abgeleitet_von.*?\n)*    abgeleitet_von TEXT.*?\n\);",
         "\n);", schema_sql, count=1, flags=re.DOTALL,
     )
     assert n1 == 1, "Anlass-Block an knowledge_nodes nicht wie erwartet gefunden"
