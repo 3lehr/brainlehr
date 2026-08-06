@@ -10,7 +10,10 @@ import os
 import sqlite3
 import sys
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
+BERLIN = ZoneInfo("Europe/Berlin")
 SHARED_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.environ.get("BEGOD_KNOWLEDGE_DB", os.path.join(SHARED_DIR, "knowledge.db"))
 RECALL_LOG = os.path.join(SHARED_DIR, "recall_log.jsonl")
@@ -25,7 +28,7 @@ def db_connect():
 
 def stand_laden():
     if not os.path.exists(STAND_PATH):
-        return {"access_log_id": 0, "recall_zeilen": 0, "ts": "1970-01-01T00:00:00+0000"}
+        return {"access_log_id": 0, "recall_zeilen": 0, "ts": "1970-01-01T00:00:00+00:00"}
     with open(STAND_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -85,7 +88,7 @@ def pruefen(con, stand, schwelle):
     neuer_stand = {
         "access_log_id": max(letzte_id, stand["access_log_id"]),
         "recall_zeilen": aktuelle_recall_zeilen,
-        "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "ts": datetime.now(BERLIN).isoformat(timespec="seconds"),
     }
 
     if neue_schreibvorgaenge < schwelle:
@@ -114,7 +117,7 @@ def main():
         stand_schreiben({
             "access_log_id": letzte_id,
             "recall_zeilen": recall_zeilen_zaehlen(),
-            "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "ts": datetime.now(BERLIN).isoformat(timespec="seconds"),
         })
         return 0
 

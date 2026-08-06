@@ -2,11 +2,11 @@
   "meta": {
     "title": "BSI Grundschutz++ Dev-Profile",
     "description": "Komprimiertes Profil der software-entwicklungsrelevanten BSI-Controls",
-    "generated": "2026-04-03T08:08:27.356386",
+    "generated": "2026-07-21T07:26:17.130726",
     "source": "BSI-Bund/Stand-der-Technik-Bibliothek",
     "license": "CC-BY-SA 4.0",
-    "total_catalog_controls": 1855,
-    "dev_relevant_controls": 926
+    "total_catalog_controls": 1865,
+    "dev_relevant_controls": 947
   },
   "controls": [
     {
@@ -20,12 +20,22 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
+      "id": "GC.1.2",
+      "title": "Freigabe des ISMS",
+      "group": "GC.1",
+      "group_path": "GC/GC.1",
+      "group_title": "Grundlagen",
+      "prose": "Governance und Compliance MUSS alle festgelegten Verfahren für das ISMS durch die Institutionsleitung autorisieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
       "id": "GC.2.1",
       "title": "Festlegung des externen Kontextes der Institution",
       "group": "GC.2",
       "group_path": "GC/GC.2",
-      "group_title": "Festlegung des Kontextes der Institution",
-      "prose": "Governance und Compliance MUSS ein Verfahren zur Sammlung, Integration und Priorisierung aller für das Informationssicherheitsmanagement relevanten externen Rahmenbedingungen verankern.",
+      "group_title": "Institutionskontext",
+      "prose": "Governance und Compliance MUSS alle für das Informationssicherheitsmanagement relevanten externen Rahmenbedingungen analysieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
@@ -34,338 +44,271 @@
       "title": "Festlegung des internen Kontextes der Institution",
       "group": "GC.2",
       "group_path": "GC/GC.2",
-      "group_title": "Festlegung des Kontextes der Institution",
-      "prose": "Governance und Compliance MUSS ein Verfahren zur Sammlung, Integration und Priorisierung aller für das Informationssicherheitsmanagement relevanten internen Rahmenbedingungen verankern.",
+      "group_title": "Institutionskontext",
+      "prose": "Governance und Compliance MUSS alle für das Informationssicherheitsmanagement relevanten internen Rahmenbedingungen analysieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "GC.3.1",
-      "title": "Analyse der externen interessierten Parteien",
+      "title": "Verfahren und Regelungen",
       "group": "GC.3",
       "group_path": "GC/GC.3",
-      "group_title": "Analyse der interessierten Parteien",
-      "prose": "Governance und Compliance MUSS ein Verfahren zum Ermitteln aller externen interessierten Parteien und ihrer Bedürfnisse und Erwartungen an das Informationssicherheitsmanagement der Institution veranke",
+      "group_title": "Compliance-Management",
+      "prose": "Governance und Compliance MUSS ein Verfahren zur systematischen Erfassung und Verwaltung von Compliance-Verpflichtungen unter Einbezug der jeweiligen Priorität für das ISMS verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "GC.3.2",
-      "title": "Analyse der internen interessierten Parteien",
+      "id": "GC.3.1.1",
+      "title": "Gesetzliche Verpflichtungen",
       "group": "GC.3",
       "group_path": "GC/GC.3",
-      "group_title": "Analyse der interessierten Parteien",
-      "prose": "Governance und Compliance MUSS ein Verfahren zum Ermitteln aller internen interessierten Parteien und ihrer Bedürfnisse und Erwartungen an das Informationssicherheitsmanagement der Institution veranke",
+      "group_title": "Compliance-Management",
+      "prose": "Governance und Compliance MUSS gesetzliche Verpflichtungen, welche die Verarbeitung von Informationen durch die Institution betreffen, analysieren.",
       "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog"
+      "catalog": "Grundschutz++-catalog",
+      "parent": "GC.3.1"
+    },
+    {
+      "id": "GC.3.1.2",
+      "title": "Anhörung zuständiger Stellen",
+      "group": "GC.3",
+      "group_path": "GC/GC.3",
+      "group_title": "Compliance-Management",
+      "prose": "Governance und Compliance SOLLTE für die Einhaltung gesetzlicher Verpflichtungen in der Informationsverarbeitung zuständige Stellen in der Institution anhören.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog",
+      "parent": "GC.3.1"
+    },
+    {
+      "id": "GC.3.1.3",
+      "title": "Vertragliche Verpflichtungen",
+      "group": "GC.3",
+      "group_path": "GC/GC.3",
+      "group_title": "Compliance-Management",
+      "prose": "Governance und Compliance SOLLTE vertragliche Verpflichtungen, welche die Verarbeitung von Informationen durch die Institution betreffen, analysieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog",
+      "parent": "GC.3.1"
+    },
+    {
+      "id": "GC.3.1.4",
+      "title": "Prävention von Verstößen",
+      "group": "GC.3",
+      "group_path": "GC/GC.3",
+      "group_title": "Compliance-Management",
+      "prose": "Governance und Compliance SOLLTE Verfahren zur Prävention gegen Verstöße verankern.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog",
+      "parent": "GC.3.1"
     },
     {
       "id": "GC.4.1",
-      "title": "Festlegung des Geltungsbereichs",
+      "title": "Analyse der externen interessierten Parteien",
       "group": "GC.4",
       "group_path": "GC/GC.4",
-      "group_title": "Festlegung des Geltungsbereichs",
-      "prose": "Governance und Compliance MUSS den nachvollziehbar abgegrenzten Geltungsbereich nach Freigabe der Institutionsleitung festlegen.",
+      "group_title": "Stakeholder",
+      "prose": "Governance und Compliance MUSS alle externen interessierten Parteien sowie ihre Bedürfnisse und Erwartungen an das Informationssicherheitsmanagement der Institution analysieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "GC.4.2",
+      "title": "Analyse der internen interessierten Parteien",
+      "group": "GC.4",
+      "group_path": "GC/GC.4",
+      "group_title": "Stakeholder",
+      "prose": "Governance und Compliance MUSS alle internen interessierten Parteien sowie ihre Bedürfnisse und Erwartungen an das Informationssicherheitsmanagement der Institution analysieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "GC.5.1",
-      "title": "Vorgehen bei der Infomationssicherheitseinstufung",
+      "title": "Festlegung von Zielen für die Informationssicherheit",
       "group": "GC.5",
       "group_path": "GC/GC.5",
-      "group_title": "Prozess der Informationssicherheitseinstufung",
-      "prose": "Governance und Compliance MUSS ein Verfahren für die Festlegung von Geschäftsprozessen und die Einstufung des Schutzbedarfs dieser Geschäftsprozesse und den hierbei verarbeiteten Informationen veranke",
+      "group_title": "Informationssicherheitsleitlinie",
+      "prose": "Governance und Compliance MUSS konkrete und messbare Ziele für die Informationssicherheit auf Basis der identifizierten Rahmenbedingungen festlegen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "GC.5.1.1",
-      "title": "Festlegung der Geschäftsprozesse",
+      "title": "Festlegung einer Sicherheitsstrategie",
       "group": "GC.5",
       "group_path": "GC/GC.5",
-      "group_title": "Prozess der Informationssicherheitseinstufung",
-      "prose": "Governance und Compliance MUSS die Geschäftsprozesse die für den Geltungsbereich relevant sind festlegen.",
+      "group_title": "Informationssicherheitsleitlinie",
+      "prose": "Governance und Compliance MUSS eine grundlegende Strategie zur Erreichung der Ziele für die Informationssicherheit gemeinsam mit der Institutionsleitung festlegen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
       "parent": "GC.5.1"
     },
     {
       "id": "GC.5.1.2",
-      "title": "Festlegung des Schutzbedarfs",
+      "title": "Verpflichtung der Institutionsleitung",
       "group": "GC.5",
       "group_path": "GC/GC.5",
-      "group_title": "Prozess der Informationssicherheitseinstufung",
-      "prose": "Governance und Compliance MUSS eine Einstufung des Schutzbedarfs der relevanten Geschäftsprozesse und Informationsarten unter Berücksichtigung der Geschäftsziele und in Absprache mit der Institutionsl",
+      "group_title": "Informationssicherheitsleitlinie",
+      "prose": "Governance und Compliance MUSS die Verpflichtung der Institutionsleitung zuweisen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
       "parent": "GC.5.1"
     },
     {
       "id": "GC.5.1.3",
-      "title": "Geschäftsprozesse mit hohem Schutzbedarf",
+      "title": "Erstellung einer Sicherheitsleitlinie",
       "group": "GC.5",
       "group_path": "GC/GC.5",
-      "group_title": "Prozess der Informationssicherheitseinstufung",
-      "prose": "Governance und Compliance MUSS eine dedizierte Risikobetrachtung von Geschäftsprozessen oder Informationsarten mit hohem Schutzbedarf ausführen.",
+      "group_title": "Informationssicherheitsleitlinie",
+      "prose": "Governance und Compliance MUSS eine für die Institution passende Sicherheitsleitlinie festlegen.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog",
+      "parent": "GC.5.1"
+    },
+    {
+      "id": "GC.5.1.4",
+      "title": "Freigabe der Sicherheitsleitlinie",
+      "group": "GC.5",
+      "group_path": "GC/GC.5",
+      "group_title": "Informationssicherheitsleitlinie",
+      "prose": "Governance und Compliance MUSS die festgelegte Sicherheitsleitlinie durch die Institutionsleitung autorisieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
       "parent": "GC.5.1"
     },
     {
       "id": "GC.6.1",
-      "title": "Festlegung von Zielen für die Informationssicherheit",
+      "title": "Festlegung des Geltungsbereichs",
       "group": "GC.6",
       "group_path": "GC/GC.6",
-      "group_title": "Entwicklung einer Sicherheitsleitlinie",
-      "prose": "Governance und Compliance MUSS konkrete und messbare Ziele für die Informationssicherheit auf Basis der identifizierten Rahmenbedingungen festlegen.",
+      "group_title": "Geltungsbereich",
+      "prose": "Governance und Compliance MUSS den nachvollziehbar abgegrenzten Geltungsbereich nach Freigabe der Institutionsleitung festlegen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "GC.6.1.1",
-      "title": "Festlegung einer Sicherheitsstrategie",
-      "group": "GC.6",
-      "group_path": "GC/GC.6",
-      "group_title": "Entwicklung einer Sicherheitsleitlinie",
-      "prose": "Governance und Compliance SOLLTE eine grundlegende Strategie zur Erreichung der Ziele für die Informationssicherheit gemeinsam mit der Institutionsleitung festlegen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.6.1"
-    },
-    {
-      "id": "GC.6.1.2",
-      "title": "Verpflichtung der Institutionsleitung",
-      "group": "GC.6",
-      "group_path": "GC/GC.6",
-      "group_title": "Entwicklung einer Sicherheitsleitlinie",
-      "prose": "Governance und Compliance MUSS die Verpflichtung der Institutionsleitung formal zuweisen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.6.1"
-    },
-    {
-      "id": "GC.6.1.3",
-      "title": "Erstellung einer Sicherheitsleitlinie",
-      "group": "GC.6",
-      "group_path": "GC/GC.6",
-      "group_title": "Entwicklung einer Sicherheitsleitlinie",
-      "prose": "Governance und Compliance MUSS eine für die Institution passende Sicherheitsleitlinie festlegen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.6.1"
-    },
-    {
-      "id": "GC.6.1.4",
-      "title": "Freigabe der Sicherheitsleitlinie",
-      "group": "GC.6",
-      "group_path": "GC/GC.6",
-      "group_title": "Entwicklung einer Sicherheitsleitlinie",
-      "prose": "Governance und Compliance MUSS die festgelegte Sicherheitsleitlinie durch die Institutionsleitung autorisieren.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.6.1"
-    },
-    {
       "id": "GC.7.1",
-      "title": "Verfahren und Regelungen",
+      "title": "Vorgehen bei der Infomationssicherheitseinstufung",
       "group": "GC.7",
       "group_path": "GC/GC.7",
-      "group_title": "Implementierung des Compliance-Managements",
-      "prose": "Governance und Compliance MUSS ein Verfahren zur Sammlung, Integration und Priorisierung aller für das Informationssicherheitsmanagement relevanten Rahmenbedingungen verankern.",
+      "group_title": "Infomationssicherheitseinstufung",
+      "prose": "Governance und Compliance MUSS ein Verfahren für die Festlegung von Geschäftsprozessen und die Einstufung des Schutzbedarfs dieser Geschäftsprozesse oder den hierbei verarbeiteten Informationen verank",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "GC.7.1.1",
-      "title": "Gesetzliche Verpflichtungen",
+      "title": "Festlegung der Geschäftsprozesse",
       "group": "GC.7",
       "group_path": "GC/GC.7",
-      "group_title": "Implementierung des Compliance-Managements",
-      "prose": "Governance und Compliance SOLLTE die Analyse der gesetzlichen Verpflichtungen, welche die Verarbeitung von Informationen durch die Institution betreffen, ausführen.",
+      "group_title": "Infomationssicherheitseinstufung",
+      "prose": "Governance und Compliance MUSS die Geschäftsprozesse oder Informationen die für den Geltungsbereich relevant sind festlegen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
       "parent": "GC.7.1"
     },
     {
       "id": "GC.7.1.2",
-      "title": "Anhörung zuständiger Stellen",
+      "title": "Festlegung des Schutzbedarfs",
       "group": "GC.7",
       "group_path": "GC/GC.7",
-      "group_title": "Implementierung des Compliance-Managements",
-      "prose": "Governance und Compliance SOLLTE für die Einhaltung gesetzlicher Verpflichtungen in der Informationsverarbeitung zuständige Stellen in der Institution anhören.",
+      "group_title": "Infomationssicherheitseinstufung",
+      "prose": "Governance und Compliance MUSS eine Einstufung des Schutzbedarfs der relevanten Geschäftsprozesse oder Informationen unter Berücksichtigung der Geschäftsziele und in Absprache mit der Institutionsleit",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
       "parent": "GC.7.1"
     },
     {
-      "id": "GC.7.1.3",
-      "title": "Vertragliche Verpflichtungen",
+      "id": "GC.7.2",
+      "title": "Geschäftsprozesse mit hohem Schutzbedarf",
       "group": "GC.7",
       "group_path": "GC/GC.7",
-      "group_title": "Implementierung des Compliance-Managements",
-      "prose": "Governance und Compliance SOLLTE die Zusammenstellung vertraglicher Verpflichtungen, welche die Verarbeitung von Informationen durch die Institution betreffen, dokumentieren.",
+      "group_title": "Infomationssicherheitseinstufung",
+      "prose": "Governance und Compliance MUSS eine dedizierte Risikobetrachtung von Geschäftsprozessen oder Informationen mit hohem Schutzbedarf entsprechend der gewählten Methodik für das Informationssicherheitsris",
       "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.7.1"
-    },
-    {
-      "id": "GC.7.1.4",
-      "title": "Prävention von Verstößen",
-      "group": "GC.7",
-      "group_path": "GC/GC.7",
-      "group_title": "Implementierung des Compliance-Managements",
-      "prose": "Governance und Compliance SOLLTE Verfahren zur Prävention gegen Verstöße verankern.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.7.1"
+      "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "GC.8.1",
       "title": "Verfahren zur Ressourcenplanung",
       "group": "GC.8",
       "group_path": "GC/GC.8",
-      "group_title": "Sicherheitsorganisation und Rollen",
+      "group_title": "Ressourcen",
       "prose": "Governance und Compliance MUSS ein Verfahren zur kontinuierlichen, wirtschaftlichen Planung von Ressourcen für das ISMS verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "GC.8.1.1",
-      "title": "Festlegung von Rollen und Zuständigkeiten",
-      "group": "GC.8",
-      "group_path": "GC/GC.8",
-      "group_title": "Sicherheitsorganisation und Rollen",
-      "prose": "Governance und Compliance MUSS die Rollen und Zuständigkeiten im Rahmen des ISMS inklusive ihrer Kompetenzen bzw. Befugnisse zuweisen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.8.1"
-    },
-    {
-      "id": "GC.8.1.2",
-      "title": "Stellvertreterregelungen",
-      "group": "GC.8",
-      "group_path": "GC/GC.8",
-      "group_title": "Sicherheitsorganisation und Rollen",
-      "prose": "Governance und Compliance MUSS Stellvertreterregelungen für alle relevanten Rollen und Zuständigkeiten im ISMS zuweisen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.8.1"
-    },
-    {
-      "id": "GC.8.1.3",
-      "title": "Vermeidung von Interessenkonflikten",
-      "group": "GC.8",
-      "group_path": "GC/GC.8",
-      "group_title": "Sicherheitsorganisation und Rollen",
-      "prose": "Governance und Compliance MUSS Maßnahmen zur Vermeidung von Interessenkonflikten bei der Festlegung von Rollen und Zuständigkeiten des ISMS festlegen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.8.1"
-    },
-    {
-      "id": "GC.8.1.4",
-      "title": "Festlegung einer Sicherheitsorganisation",
-      "group": "GC.8",
-      "group_path": "GC/GC.8",
-      "group_title": "Sicherheitsorganisation und Rollen",
-      "prose": "Governance und Compliance MUSS die Sicherheitsorganisation für das ISMS mit den festgelegten Rollen, Zuständigkeiten sowie Gremien festlegen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.8.1"
-    },
-    {
-      "id": "GC.8.1.5",
-      "title": "Sicherstellung der Qualifikation",
-      "group": "GC.8",
-      "group_path": "GC/GC.8",
-      "group_title": "Sicherheitsorganisation und Rollen",
-      "prose": "Governance und Compliance MUSS für jeden Rollen- und Verantwortungsträger die erforderlichen Anforderungen und Fähigkeiten festlegen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.8.1"
-    },
-    {
-      "id": "GC.8.1.6",
-      "title": "Ressourcen für den Informationssicherheitsbeauftragten",
-      "group": "GC.8",
-      "group_path": "GC/GC.8",
-      "group_title": "Sicherheitsorganisation und Rollen",
-      "prose": "Governance und Compliance MUSS dem Informationssicherheitsbeauftragten {{ insert: param, gc.8.1.6-prm1 }} Ressourcen zuweisen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.8.1"
-    },
-    {
       "id": "GC.9.1",
-      "title": "Festlegung eines Verfahrens zum Kommunikationsmanagement",
+      "title": "Festlegung einer Sicherheitsorganisation",
       "group": "GC.9",
       "group_path": "GC/GC.9",
-      "group_title": "Dokumentation und Kommunikation",
-      "prose": "Governance und Compliance MUSS ein Verfahren zum Kommunikationsmanagement hinsichtlich der internen und externen Kommunikation verankern.",
+      "group_title": "Sicherheitsorganisation",
+      "prose": "Governance und Compliance MUSS die Sicherheitsorganisation für das ISMS unter Einbezug von Rollen, Zuständigkeiten sowie Gremien festlegen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "GC.9.1.1",
-      "title": "Externer Austausch zur Informationssicherheit",
+      "title": "Festlegung von Rollen und Zuständigkeiten",
       "group": "GC.9",
       "group_path": "GC/GC.9",
-      "group_title": "Dokumentation und Kommunikation",
-      "prose": "Governance und Compliance SOLLTE einen externen Austausch zur Informationssicherheit ausführen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.9.1"
-    },
-    {
-      "id": "GC.9.1.2",
-      "title": "Kommunikation im Projektmanagement",
-      "group": "GC.9",
-      "group_path": "GC/GC.9",
-      "group_title": "Dokumentation und Kommunikation",
-      "prose": "Governance und Compliance MUSS bei sicherheitsrelevanten Projekten die Beteiligung {{ insert: param, gc.9.1.2-prm1 }} zu festgelegten Zeitpunkten im Projektverlauf verankern.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "GC.9.1"
-    },
-    {
-      "id": "GC.9.1.3",
-      "title": "Dokumentenlenkung",
-      "group": "GC.9",
-      "group_path": "GC/GC.9",
-      "group_title": "Dokumentation und Kommunikation",
-      "prose": "Governance und Compliance MUSS ein Verfahren zur Lenkung der Dokumente im Rahmen des ISMS über den kompletten Lebenszyklus von Dokumenten verankern.",
+      "group_title": "Sicherheitsorganisation",
+      "prose": "Governance und Compliance MUSS die {{ insert: param, gc.9.1.1-prm1 }} im Rahmen des ISMS inklusive ihrer Kompetenzen bzw. Befugnisse zuweisen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
       "parent": "GC.9.1"
     },
     {
       "id": "GC.10.1",
-      "title": "Festlegung von Vorgehensweisen",
+      "title": "Festlegung eines Verfahrens zum Kommunikationsmanagement",
       "group": "GC.10",
       "group_path": "GC/GC.10",
-      "group_title": "Festlegung und Freigabe der Vorgehensweise",
-      "prose": "Governance und Compliance MUSS die Verfahren des ISMS sowie die Zuständigkeiten festlegen.",
+      "group_title": "Kommunikation",
+      "prose": "Governance und Compliance MUSS ein Verfahren zum Kommunikationsmanagement hinsichtlich der internen und externen Kommunikation verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "GC.10.2",
-      "title": "Freigabe von Vorgehensweisen",
+      "id": "GC.10.1.1",
+      "title": "Externer Austausch zur Informationssicherheit",
       "group": "GC.10",
       "group_path": "GC/GC.10",
-      "group_title": "Festlegung und Freigabe der Vorgehensweise",
-      "prose": "Governance und Compliance MUSS die Verfahren für das ISMS durch die Institutionsleitung autorisieren.",
+      "group_title": "Kommunikation",
+      "prose": "Governance und Compliance SOLLTE einen externen Austausch zur Informationssicherheit verankern.",
       "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog"
+      "catalog": "Grundschutz++-catalog",
+      "parent": "GC.10.1"
+    },
+    {
+      "id": "GC.10.1.2",
+      "title": "Kommunikation im Projektmanagement",
+      "group": "GC.10",
+      "group_path": "GC/GC.10",
+      "group_title": "Kommunikation",
+      "prose": "Governance und Compliance MUSS bei sicherheitsrelevanten Projekten die Beteiligung {{ insert: param, gc.10.1.2-prm1 }} zu festgelegten Zeitpunkten im Projektverlauf verankern.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog",
+      "parent": "GC.10.1"
     },
     {
       "id": "GC.11.1",
-      "title": "Methodik für das Risikomanagement",
+      "title": "Dokumentenlenkung",
       "group": "GC.11",
       "group_path": "GC/GC.11",
-      "group_title": "Initiierung des Risikomanagements",
-      "prose": "Governance und Compliance MUSS eine einheitliche Methodik für das Informationssicherheitsrisikomanagement auf Basis des Kontextes der Institution und der Anforderungen interessierter Parteien sowie de",
+      "group_title": "Dokumentenlenkung",
+      "prose": "Governance und Compliance MUSS ein Verfahren zur Lenkung der Dokumente im Rahmen des ISMS über ihren kompletten Lebenszyklus hinweg verankern.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "GC.12.1",
+      "title": "Methodik für das Risikomanagement",
+      "group": "GC.12",
+      "group_path": "GC/GC.12",
+      "group_title": "Risiko",
+      "prose": "Governance und Compliance MUSS eine einheitliche Methodik für das Informationssicherheitsrisikomanagement unter Berücksichtigungen von Kontext, Geschäftsprozessanalyse und interessierten Parteien vera",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
@@ -548,17 +491,28 @@
     },
     {
       "id": "TEST.3.1.2",
-      "title": "Integritätstest",
+      "title": "Verwendung externer Software",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
       "group_title": "Tests",
-      "prose": "Änderungen und Tests SOLLTE die Integrität von Installationsdateien testen.",
+      "prose": "Änderungen und Tests SOLLTE die Einbindung externer Softwareartefakte und -Schnittstellen aus unzuverlässigen oder unbekannten Quellen untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
       "parent": "TEST.3.1"
     },
     {
       "id": "TEST.3.1.3",
+      "title": "Integritätstest",
+      "group": "TEST.3",
+      "group_path": "TEST/TEST.3",
+      "group_title": "Tests",
+      "prose": "Änderungen und Tests SOLLTE die Integrität von Softwareartefakten testen.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog",
+      "parent": "TEST.3.1"
+    },
+    {
+      "id": "TEST.3.1.4",
       "title": "Testdaten",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -569,7 +523,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.4",
+      "id": "TEST.3.1.5",
       "title": "Testumgebung",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -580,7 +534,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.5",
+      "id": "TEST.3.1.6",
       "title": "Kontinuierliche Tests",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -591,7 +545,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.6",
+      "id": "TEST.3.1.7",
       "title": "Chaos Engineering",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -602,7 +556,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.7",
+      "id": "TEST.3.1.8",
       "title": "Analyse der Zusammensetzung",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -613,7 +567,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.8",
+      "id": "TEST.3.1.9",
       "title": "Fuzzing",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -624,7 +578,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.9",
+      "id": "TEST.3.1.10",
       "title": "Lasttest",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -635,7 +589,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.10",
+      "id": "TEST.3.1.11",
       "title": "Penetrationstest bei Änderungen",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -678,6 +632,17 @@
     },
     {
       "id": "TEST.4.1.2",
+      "title": "Staging",
+      "group": "TEST.4",
+      "group_path": "TEST/TEST.4",
+      "group_title": "Freigabe",
+      "prose": "Änderungen und Tests SOLLTE die freizugebenden Änderungen in einer von der Produktumgebung getrennten Staging-Umgebung, deren Komponenten so weit wie möglich der Produktivumgebung entsprechen, testen.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog",
+      "parent": "TEST.4.1"
+    },
+    {
+      "id": "TEST.4.1.3",
       "title": "Dokumentation der Freigabe",
       "group": "TEST.4",
       "group_path": "TEST/TEST.4",
@@ -1532,6 +1497,67 @@
     },
     {
       "id": "BER.3.1",
+      "title": "Vorgehensweise zur Ausgabe",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE eine Vorgehensweise zur initialen Ausgabe von Authentifizierungsmitteln verankern.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.3.1.1",
+      "title": "Initiale Ausgabe",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE vor der Verteilung von Authentifizierungsmitteln die Identität authentifizieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog",
+      "parent": "BER.3.1"
+    },
+    {
+      "id": "BER.3.2",
+      "title": "Vorgehensweise zur Zurücksetzung",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE eine Vorgehensweise zur Zurücksetzung von Authentifizierungsmitteln verankern.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.3.3",
+      "title": "Vorgehensweise zum Widerruf",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE eine Vorgehensweise zum Widerruf von Authentifizierungsmitteln verankern.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.3.4",
+      "title": "Zugriffsbeschränkung pro IT-System",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung für IT-Systeme SOLLTE den lesenden und schreibenden Zugriff auf Authentifizierungsmittel einschränken.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.3.5",
+      "title": "Zugriffsbeschränkung pro Anwendung",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung für Anwendungen SOLLTE den lesenden und schreibenden Zugriff auf Authentifizierungsmittel einschränken.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.3.6",
       "title": "Zentrales Management",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1541,7 +1567,17 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.2",
+      "id": "BER.3.7",
+      "title": "Autorisierung neuer Zugangskonten",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE die Einrichtung von Zugangskonten durch {{ insert: param, ber.3.7-prm1 }} autorisieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.3.8",
       "title": "Einschränkung des Managements",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1551,7 +1587,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.3",
+      "id": "BER.3.9",
       "title": "Protokollierung von Änderungen",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1561,7 +1597,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.4",
+      "id": "BER.3.10",
       "title": "Identität-Zugangskonto",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1571,7 +1607,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.5",
+      "id": "BER.3.11",
       "title": "Privilegierte Zugangskonten",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1581,7 +1617,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.6",
+      "id": "BER.3.12",
       "title": "Single-Sign-On",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1591,7 +1627,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.7",
+      "id": "BER.3.13",
       "title": "Hinweise bei Anmeldefehlern",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1601,7 +1637,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.8",
+      "id": "BER.3.14",
       "title": "Ereignisgesteuerte Deaktivierung",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1611,47 +1647,57 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.9",
+      "id": "BER.3.15",
       "title": "Anmeldeversuchsgrenze am System",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung für IT-Systeme SOLLTE weitere Anmeldeversuche nach Erreichen von {{ insert: param, ber.3.9-prm1 }} fehlgeschlagenen Versuchen vorübergehend blockieren.",
+      "prose": "Berechtigung für IT-Systeme SOLLTE weitere Anmeldeversuche nach Erreichen von {{ insert: param, ber.3.15-prm1 }} fehlgeschlagenen Versuchen vorübergehend blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.10",
+      "id": "BER.3.16",
       "title": "Anmeldeversuchsgrenze an der Anwendung",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung für Anwendungen SOLLTE weitere Anmeldeversuche nach Erreichen von einem maximalen Schwellwert an fehlgeschlagenen Versuchen vorübergehend blockieren.",
+      "prose": "Berechtigung für Anwendungen SOLLTE weitere Anmeldeversuche nach Erreichen von {{ insert: param, ber.3.16-prm1 }} fehlgeschlagenen Versuchen vorübergehend blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.11",
+      "id": "BER.3.17",
       "title": "Systemsperre bei Inaktivität",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung für IT-Systeme SOLLTE eine Sperre bei Inaktivität nach {{ insert: param, ber.3.11-prm1 }} aktivieren.",
+      "prose": "Berechtigung für IT-Systeme SOLLTE eine Sperre bei Inaktivität nach {{ insert: param, ber.3.17-prm1 }} aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.12",
+      "id": "BER.3.18",
       "title": "Sperre der Anwendung bei Inaktivität",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung für Anwendungen SOLLTE eine Sperre bei Inaktivität nach {{ insert: param, ber.3.12-prm1 }} aktivieren.",
+      "prose": "Berechtigung für Anwendungen SOLLTE eine Sperre bei Inaktivität nach {{ insert: param, ber.3.18-prm1 }} aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.13",
+      "id": "BER.3.19",
+      "title": "Kein Recycling von Zugängen",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE die Wiederverwendung von Zugangskonten für {{ insert: param, ber.3.19-prm1 }} blockieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.3.20",
       "title": "Zugang löschen nach Fristablauf",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1661,7 +1707,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.14",
+      "id": "BER.3.21",
       "title": "Zugang nur durch zwei Personen",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1671,17 +1717,17 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.15",
+      "id": "BER.3.22",
       "title": "Keine Gruppenkonten",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung SOLLTE Gruppenkonten untersagen.",
+      "prose": "Berechtigung SOLLTE Gruppenkonten im Regelbetrieb untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.16",
+      "id": "BER.3.23",
       "title": "Gruppenkonten - MFA",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1691,7 +1737,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.17",
+      "id": "BER.3.24",
       "title": "Gruppenkonten - Wechsel dokumentieren",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1701,7 +1747,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.18",
+      "id": "BER.3.25",
       "title": "Gruppenkonten - Passwortwechsel bei Weggang",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1711,7 +1757,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.19",
+      "id": "BER.3.26",
       "title": "Zwischenspeicherung von Zugangsdaten",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1721,7 +1767,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.20",
+      "id": "BER.3.27",
       "title": "Dienstekonten",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1731,7 +1777,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.21",
+      "id": "BER.3.28",
       "title": "Notfallzugang",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1741,7 +1787,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.3.22",
+      "id": "BER.3.29",
       "title": "Notfallzugang Verzeichnisdienst",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -1751,453 +1797,483 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.4.1",
+      "id": "BER.3.30",
+      "title": "Alternative Authentifizierung am IT-System",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung für IT-Systeme KANN ein ebenso vertrauenswürdiges, alternatives Verfahren zur Authentifizierung verankern.",
+      "sec_level": "erhöht",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.3.31",
+      "title": "Alternative Authentifizierung an der Anwendung",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung für Anwendungen KANN ein ebenso vertrauenswürdiges, alternatives Verfahren zur Authentifizierung verankern.",
+      "sec_level": "erhöht",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.3.32",
       "title": "Identitätsüberprüfung",
-      "group": "BER.4",
-      "group_path": "BER/BER.4",
-      "group_title": "Authentifizierung",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
       "prose": "Berechtigung SOLLTE eine Identitätsüberprüfung vor dem Zurücksetzen von Passworten ausführen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.5.1",
+      "id": "BER.4.1",
       "title": "Prinzip der geringsten Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung SOLLTE die Vergabe von Berechtigungen nach dem Prinzip der geringsten Berechtigungen einschränken.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.5.1.1",
+      "id": "BER.4.1.1",
       "title": "Rollenbasierte Berechtigung",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung SOLLTE Berechtigungen rollenbasiert zuweisen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "BER.5.1"
+      "parent": "BER.4.1"
     },
     {
-      "id": "BER.5.1.2",
+      "id": "BER.4.1.2",
       "title": "JIT‑/JEA‑Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
-      "prose": "Berechtigung KANN die Berechtigung zum Zeitpunkt des Zugriffs für {{ insert: param, ber.5.1.2-prm1 }} aktivieren.",
+      "prose": "Berechtigung KANN die Berechtigung zum Zeitpunkt des Zugriffs für {{ insert: param, ber.4.1.2-prm1 }} aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "BER.5.1"
+      "parent": "BER.4.1"
     },
     {
-      "id": "BER.5.2",
+      "id": "BER.4.2",
+      "title": "Autorisierung von Berechtigungen",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
+      "group_title": "Berechtigungsmanagement",
+      "prose": "Berechtigung SOLLTE die Zuweisung von Berechtigungen durch {{ insert: param, ber.4.2-prm1 }} autorisieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.4.3",
       "title": "Begründung von Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung SOLLTE die Vergabe von Berechtigungen und Änderungen an Berechtigungen mit einer Begründung dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.5.3",
+      "id": "BER.4.4",
       "title": "Überprüfung von Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
-      "prose": "Berechtigung SOLLTE vergebene Berechtigungen {{ insert: param, ber.5.3-prm1 }} auf Erforderlichkeit überprüfen.",
+      "prose": "Berechtigung SOLLTE vergebene Berechtigungen {{ insert: param, ber.4.4-prm1 }} auf Erforderlichkeit überprüfen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.5.3.1",
+      "id": "BER.4.4.1",
       "title": "Überprüfung tatsächlicher Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
-      "prose": "Berechtigung SOLLTE dokumentierte und tatsächlich vergebene Berechtigungen {{ insert: param, ber.5.3.1-prm1 }} auf Übereinstimmung überprüfen.",
+      "prose": "Berechtigung SOLLTE dokumentierte und tatsächlich vergebene Berechtigungen {{ insert: param, ber.4.4.1-prm1 }} auf Übereinstimmung überprüfen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "BER.5.3"
+      "parent": "BER.4.4"
     },
     {
-      "id": "BER.5.4",
-      "title": "Kompromittierte Berechtigungsmittel",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "id": "BER.4.5",
+      "title": "Kompromittierte Authentifizierungsmittel",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
-      "prose": "Berechtigung SOLLTE kompromittierte Berechtigungsmittel deaktivieren.",
+      "prose": "Berechtigung SOLLTE kompromittierte Authentifizierungsmittel deaktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.5.5",
+      "id": "BER.4.6",
       "title": "Systemfunktionen ohne Authentifizierung",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung für IT-Systeme SOLLTE Funktionen, auf die ohne vorherige Authentifizierung zugegriffen werden kann, dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.5.6",
+      "id": "BER.4.7",
       "title": "Anwendungsfunktionen ohne Authentifizierung",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung für Anwendungen SOLLTE Funktionen, auf die ohne vorherige Authentifizierung zugegriffen werden kann, dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.5.7",
+      "id": "BER.4.8",
       "title": "IT-System-Zugangskonto",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung für IT-Systeme KANN diese genau einem Zugangskonto zuweisen.",
       "sec_level": "erhöht",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.5.8",
+      "id": "BER.4.9",
       "title": "Entzug von Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung SOLLTE eine Vorgehensweise zum Entzug von Berechtigungen verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.1",
+      "id": "BER.5.1",
       "title": "Passwortmanager",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung für Nutzende SOLLTE einen Passwortmanager installieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.2",
+      "id": "BER.5.2",
       "title": "Vorkonfigurierte Authentisierungsmittel",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE vorkonfigurierte Authentisierungsmittel deaktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.3",
+      "id": "BER.5.3",
       "title": "Deaktivierung einfacher Biometrie",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE die Authentifizierung nur anhand von Biometrie deaktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.4",
+      "id": "BER.5.4",
       "title": "Mehr-Faktor-Authentisierung am Perimeter",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
-      "prose": "Berechtigung für Anwendungen von Externe Netzanschlüssen SOLLTE Mehr-Faktor-Authentisierung aktivieren.",
+      "prose": "Berechtigung für Anwendungen von Externe Netzanschlüssen SOLLTE Phishing-resistente Mehr-Faktor-Authentisierung aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.5",
+      "id": "BER.5.5",
       "title": "Mehr-Faktor-Authentisierung für weitreichende Berechtigungen",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE Mehr-Faktor-Authentisierung für weitreichende Berechtigungen aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.6",
+      "id": "BER.5.6",
       "title": "Blockieren von Passwort Recycling",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung für Nutzende SOLLTE die Wiederverwendung von Passwörtern blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.7",
+      "id": "BER.5.7",
       "title": "Trivialpasswörter",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung für Nutzende SOLLTE die Verwendung von Trivialpassworten blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.8",
+      "id": "BER.5.8",
       "title": "Kriterien für die Qualität von Passwörtern",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE Kriterien für die Qualität von Passwörtern anhand von Lebensdauer und Angriffsmöglichkeiten verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.9",
+      "id": "BER.5.9",
       "title": "Anlassbezogene Passwortwechsel",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE einen Passwortwechsel ausschließlich anlassbezogen ausführen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.6.10",
+      "id": "BER.5.10",
       "title": "Monitoring von Zugangsdaten",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
+      "group_title": "Passwortgebrauch",
+      "prose": "Berechtigung SOLLTE Zugangsdaten auf Kompromittierung durch {{ insert: param, ber.5.10-prm1 }} überwachen.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "BER.6.1",
+      "title": "Etablierte Algorithmen bei der Schlüsselerzeugung",
       "group": "BER.6",
       "group_path": "BER/BER.6",
-      "group_title": "Passwortgebrauch",
-      "prose": "Berechtigung SOLLTE Zugangsdaten auf Kompromittierung durch {{ insert: param, ber.6.10-prm1 }} überwachen.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog"
-    },
-    {
-      "id": "BER.7.1",
-      "title": "Etablierte Algorithmen bei der Schlüsselerzeugung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE die ausschließliche Verwendung etablierter kryptografischer Algorithmen bei der Schlüsselerzeugung nach {{ insert: param, ber.7.1-prm1 }} verankern.",
+      "prose": "Berechtigung SOLLTE die ausschließliche Verwendung etablierter kryptografischer Algorithmen bei der Schlüsselerzeugung nach {{ insert: param, ber.6.1-prm1 }} verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.2",
+      "id": "BER.6.2",
       "title": "Schlüssellänge",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE die Schlüssellängen nach {{ insert: param, ber.7.2-prm1 }} bei der Schlüsselerzeugung zuweisen.",
+      "prose": "Berechtigung SOLLTE die Schlüssellängen nach {{ insert: param, ber.6.2-prm1 }} bei der Schlüsselerzeugung zuweisen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.3",
+      "id": "BER.6.3",
       "title": "Verzeichnis öffentlicher Schlüssel",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE zu jedem öffentlichen Schlüssel die dazugehörige Identität, das Ablaufdatum, den Nutzungszweck, die Schlüsselart und den Algorithmus bei der Schlüsselbeglaubigung dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.4",
+      "id": "BER.6.4",
       "title": "Erzeugung auf sicheren IT-Systemen",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Verwendung eines IT-Systems, welches mindestens dasselbe Schutzniveau bietet, für das der Schlüssel eingesetzt werden soll, bei der Schlüsselerzeugung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.5",
+      "id": "BER.6.5",
       "title": "Kriterien für die Qualität von Zufallszahlen",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE {{ insert: param, ber.7.5-prm1 }} für die Qualität von Zufallszahlen bei der Schlüsselerzeugung verankern.",
+      "prose": "Berechtigung SOLLTE {{ insert: param, ber.6.5-prm1 }} für die Qualität von Zufallszahlen bei der Schlüsselerzeugung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.6",
+      "id": "BER.6.6",
       "title": "Etablierte Algorithmen beim Transport",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die ausschließliche Verwendung etablierter kryptografischer Algorithmen beim Transport geheimer Schlüssel verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.7",
+      "id": "BER.6.7",
       "title": "Kein Transport privater Schlüssel",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung KANN den Export privater Schlüssel durch {{ insert: param, ber.7.7-prm1 }} autorisieren.",
+      "prose": "Berechtigung KANN den Export privater Schlüssel durch {{ insert: param, ber.6.7-prm1 }} autorisieren.",
       "sec_level": "erhöht",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.8",
+      "id": "BER.6.8",
       "title": "Etablierte Algorithmen bei der Schlüsselnutzung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die ausschließliche Verwendung etablierter Algorithmen bei der Schlüsselnutzung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.9",
+      "id": "BER.6.9",
       "title": "Zweckbindung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE Verstöße gegen die Zweckbindung bei der Schlüsselnutzung untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.10",
+      "id": "BER.6.10",
       "title": "Abgelaufene Schlüssel",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Nutzung des Schlüssels zur Verschlüsselung oder Signierung nach Ablauf der Nutzungszeit untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.11",
+      "id": "BER.6.11",
       "title": "Integrität",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Verifikation der Integrität geheimer Schlüssel vor jeder Nutzung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.12",
+      "id": "BER.6.12",
       "title": "Authentizität",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Verifikation der Authentizität öffentlicher Schlüssel vor jeder Nutzung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.13",
+      "id": "BER.6.13",
       "title": "Gültigkeit",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Verifikation der Gültigkeit des Schlüssels vor jeder Nutzung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.14",
+      "id": "BER.6.14",
       "title": "Schlüssel vor Ablauf prüfen",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE Schlüssel auf das baldige Auslaufen der Nutzungszeit {{ insert: param, ber.7.14-prm1 }} überprüfen.",
+      "prose": "Berechtigung SOLLTE Schlüssel auf das baldige Auslaufen der Nutzungszeit {{ insert: param, ber.6.14-prm1 }} überprüfen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.15",
+      "id": "BER.6.15",
       "title": "Vorgehensweise nach Nutzung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE eine Vorgehensweise zur Außerbetriebnahme geheimer Schlüssel , sobald sie nicht mehr benötigt werden, verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.16",
+      "id": "BER.6.16",
       "title": "Vorgaben für die Schlüsselbeglaubigung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE Vorgaben für die Schlüsselbeglaubigung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "BER.7.16.1",
+      "id": "BER.6.16.1",
       "title": "Zertifizierungsstelle",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE die Beglaubigung von Schlüsseln {{ insert: param, ber.7.16.1-prm1 }} zuweisen.",
+      "prose": "Berechtigung SOLLTE die Beglaubigung von Schlüsseln {{ insert: param, ber.6.16.1-prm1 }} zuweisen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.2",
+      "id": "BER.6.16.2",
       "title": "Beglaubigung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Schlüssel anhand der Vorgaben für die Schlüsselbeglaubigung bei Beantragung einer Beglaubigung testen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.3",
+      "id": "BER.6.16.3",
       "title": "Erneuerung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Schlüssel anhand der Vorgaben für die Schlüsselbeglaubigung bei Erneuerung einer Beglaubigung testen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.4",
+      "id": "BER.6.16.4",
       "title": "Revocation",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Schlüssel anhand der Vorgaben für die Schlüsselbeglaubigung bei Revocation einer Beglaubigung testen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.5",
+      "id": "BER.6.16.5",
       "title": "Beglaubigungsstatus",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Beglaubigungsstatus des Schlüssels im Verzeichnis öffentlicher Schlüssel dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.6",
+      "id": "BER.6.16.6",
       "title": "Revocationstatus",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Revocationstatus des Schlüssels im Verzeichnis öffentlicher Schlüssel dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
       "id": "DET.1.1",
@@ -2458,38 +2534,37 @@
       "parent": "DET.3.1"
     },
     {
-      "id": "DET.3.1.13",
+      "id": "DET.3.2",
       "title": "Integration von Cloud-Diensten",
       "group": "DET.3",
       "group_path": "DET/DET.3",
       "group_title": "Protokollierung",
       "prose": "Detektion für Cloud-Dienste KANN Ereignisse in der Cloud im Audit Log der Institution protokollieren.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog",
-      "parent": "DET.3.1"
-    },
-    {
-      "id": "DET.3.2",
-      "title": "Filterung nicht benötigter Inhalte",
-      "group": "DET.3",
-      "group_path": "DET/DET.3",
-      "group_title": "Protokollierung",
-      "prose": "Detektion KANN die Protokollierung nicht benötigter Inhalte anhand von {{ insert: param, det.3.2-prm1 }} einschränken.",
       "sec_level": "erhöht",
       "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "DET.3.3",
-      "title": "Speicherkapazität",
+      "title": "Filterung nicht benötigter Inhalte",
       "group": "DET.3",
       "group_path": "DET/DET.3",
       "group_title": "Protokollierung",
-      "prose": "Detektion SOLLTE den für die Protokollierung zur Verfügung stehenden Speicherplatz {{ insert: param, det.3.3-prm1 }} überprüfen.",
-      "sec_level": "normal-SdT",
+      "prose": "Detektion KANN die Protokollierung nicht benötigter Inhalte anhand von {{ insert: param, det.3.3-prm1 }} einschränken.",
+      "sec_level": "erhöht",
       "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "DET.3.4",
+      "title": "Speicherkapazität",
+      "group": "DET.3",
+      "group_path": "DET/DET.3",
+      "group_title": "Protokollierung",
+      "prose": "Detektion SOLLTE den für die Protokollierung zur Verfügung stehenden Speicherplatz {{ insert: param, det.3.4-prm1 }} überprüfen.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "DET.3.5",
       "title": "Revisionssicherheit",
       "group": "DET.3",
       "group_path": "DET/DET.3",
@@ -2499,12 +2574,12 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "DET.3.5",
+      "id": "DET.3.6",
       "title": "Unbestreitbarkeit",
       "group": "DET.3",
       "group_path": "DET/DET.3",
       "group_title": "Protokollierung",
-      "prose": "Detektion für Daten KANN Nachweise für den Zusammenhang {{ insert: param, det.3.5-prm1 }} mit {{ insert: param, det.3.5-prm2 }} dokumentieren.",
+      "prose": "Detektion für Daten KANN Nachweise für den Zusammenhang {{ insert: param, det.3.6-prm1 }} mit {{ insert: param, det.3.6-prm2 }} dokumentieren.",
       "sec_level": "erhöht",
       "catalog": "Grundschutz++-catalog"
     },
@@ -2555,7 +2630,7 @@
       "group_path": "DET/DET.4",
       "group_title": "Überwachung von Aktivitäten",
       "prose": "Detektion KANN unerwünschte Datenabflüsse überwachen.",
-      "sec_level": "normal-SdT",
+      "sec_level": "erhöht",
       "catalog": "Grundschutz++-catalog"
     },
     {
@@ -2595,7 +2670,7 @@
       "group": "DET.4",
       "group_path": "DET/DET.4",
       "group_title": "Überwachung von Aktivitäten",
-      "prose": "Detektion für Webserver KANN die rechtzeitige Ausstellung neuer HTTPS-Zertifikate für Server, die im Internet erreichbar sind, überwachen.",
+      "prose": "Detektion für Webserver KANN die rechtzeitige Ausstellung neuer HTTPS-Zertifikate für Hostsysteme, die im Internet erreichbar sind, überwachen.",
       "sec_level": "erhöht",
       "catalog": "Grundschutz++-catalog"
     },
@@ -2678,7 +2753,7 @@
       "group": "DET.4",
       "group_path": "DET/DET.4",
       "group_title": "Überwachung von Aktivitäten",
-      "prose": "Detektion für Netze KANN die Auslastung des Netzes anhand von {{ insert: param, det.4.12.1-prm1 }} überwachen.",
+      "prose": "Detektion für Netze SOLLTE die Auslastung des Netzes anhand von {{ insert: param, det.4.12.1-prm1 }} überwachen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
       "parent": "DET.4.12"
@@ -2925,7 +3000,7 @@
       "group": "DET.5",
       "group_path": "DET/DET.5",
       "group_title": "Management von Schwachstellen",
-      "prose": "Detektion SOLLTE Bezugsquellen für Patches autorisieren.",
+      "prose": "Detektion SOLLTE zuverlässige Bezugsquellen für Patches autorisieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
       "parent": "DET.5.10"
@@ -3228,6 +3303,16 @@
     },
     {
       "id": "KONF.2.6",
+      "title": "Automatische Konfigurationsverwaltung",
+      "group": "KONF.2",
+      "group_path": "KONF/KONF.2",
+      "group_title": "Konfiguration von Systemen",
+      "prose": "Konfiguration für Endgeräte SOLLTE die Verwaltung durch ein Mobile Device Management (MDM) aktivieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "KONF.2.7",
       "title": "Souveräne Werkzeuge",
       "group": "KONF.2",
       "group_path": "KONF/KONF.2",
@@ -3237,7 +3322,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "KONF.2.7",
+      "id": "KONF.2.8",
       "title": "Alternative Administrationszugänge",
       "group": "KONF.2",
       "group_path": "KONF/KONF.2",
@@ -3247,7 +3332,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "KONF.2.8",
+      "id": "KONF.2.9",
       "title": "Abgesicherter und authentisierter Bootprozess",
       "group": "KONF.2",
       "group_path": "KONF/KONF.2",
@@ -3702,7 +3787,7 @@
       "group": "KONF.7",
       "group_path": "KONF/KONF.7",
       "group_title": "Schutz vor Schadcode",
-      "prose": "Konfiguration für IT-Systeme SOLLTE Host-basierte Angriffserkennung aktivieren.",
+      "prose": "Konfiguration für IT-Systeme KANN Host-basierte Angriffserkennung aktivieren.",
       "sec_level": "erhöht",
       "catalog": "Grundschutz++-catalog"
     },
@@ -4024,36 +4109,26 @@
     },
     {
       "id": "KONF.11.3",
-      "title": "Alternative Authentifizierung",
-      "group": "KONF.11",
-      "group_path": "KONF/KONF.11",
-      "group_title": "Vertrauensbeziehungen",
-      "prose": "Konfiguration für Anwendungen KANN ein ebenso vertrauenswürdiges, alternatives Verfahren zur Authentifizierung aktivieren.",
-      "sec_level": "erhöht",
-      "catalog": "Grundschutz++-catalog"
-    },
-    {
-      "id": "KONF.11.4",
       "title": "Veröffentlichung von Domain-Infomationen",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
       "group_title": "Vertrauensbeziehungen",
-      "prose": "Konfiguration für DNS-Server SOLLTE die Veröffentlichung von Domain-Infomationen anhand von {{ insert: param, konf.11.4-prm1 }} einschränken.",
+      "prose": "Konfiguration für DNS-Server SOLLTE die Veröffentlichung von Domain-Infomationen anhand von {{ insert: param, konf.11.3-prm1 }} einschränken.",
+      "sec_level": "normal-SdT",
+      "catalog": "Grundschutz++-catalog"
+    },
+    {
+      "id": "KONF.11.4",
+      "title": "Erraten von Zugriffslinks",
+      "group": "KONF.11",
+      "group_path": "KONF/KONF.11",
+      "group_title": "Vertrauensbeziehungen",
+      "prose": "Konfiguration für Webanwendungen SOLLTE das Durchprobieren von Zugriffslinks durch {{ insert: param, konf.11.4-prm1 }} blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "KONF.11.5",
-      "title": "Erraten von Zugriffslinks",
-      "group": "KONF.11",
-      "group_path": "KONF/KONF.11",
-      "group_title": "Vertrauensbeziehungen",
-      "prose": "Konfiguration für Webanwendungen SOLLTE das Durchprobieren von Zugriffslinks durch {{ insert: param, konf.11.5-prm1 }} blockieren.",
-      "sec_level": "normal-SdT",
-      "catalog": "Grundschutz++-catalog"
-    },
-    {
-      "id": "KONF.11.6",
       "title": "Einschränkung unauthentifizierter Anschlüsse",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -4063,7 +4138,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "KONF.11.7",
+      "id": "KONF.11.6",
       "title": "Übersicht angemeldeter Verbindungen",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -4073,7 +4148,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "KONF.11.8",
+      "id": "KONF.11.7",
       "title": "Einschränkung von Schnittstellen",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -4083,7 +4158,7 @@
       "catalog": "Grundschutz++-catalog"
     },
     {
-      "id": "KONF.11.8.1",
+      "id": "KONF.11.7.1",
       "title": "Einschränkung von Zonentransfers",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -4091,10 +4166,10 @@
       "prose": "Konfiguration für DNS-Server SOLLTE Zonentransfers einschränken.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "KONF.11.8"
+      "parent": "KONF.11.7"
     },
     {
-      "id": "KONF.11.8.2",
+      "id": "KONF.11.7.2",
       "title": "Einschränkung von TK-Verbindungen",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -4102,10 +4177,10 @@
       "prose": "Konfiguration für TK-Anwendungen SOLLTE unerwünschte TK-Verbindungen einschränken.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog",
-      "parent": "KONF.11.8"
+      "parent": "KONF.11.7"
     },
     {
-      "id": "KONF.11.9",
+      "id": "KONF.11.8",
       "title": "Verschlüsselung schützenswerter Daten (at-rest)",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -4839,11 +4914,11 @@
     },
     {
       "id": "DEV.4.2",
-      "title": "Bibliotheksquellen",
+      "title": "Einbindung externer Software",
       "group": "DEV.4",
       "group_path": "DEV/DEV.4",
       "group_title": "Softwareentwicklung - Code",
-      "prose": "Entwicklung für Anwendungen SOLLTE die Einbindung externer Softwarebibliotheken und -Schnittstellen aus unzuverlässigen oder unbekannten Quellen untersagen.",
+      "prose": "Entwicklung für Anwendungen SOLLTE die Einbindung externer Softwareartefakte und -Schnittstellen aus unzuverlässigen oder unbekannten Quellen untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
@@ -4859,21 +4934,21 @@
     },
     {
       "id": "DEV.4.4",
-      "title": "Integrität externer Softwarebibliotheken",
+      "title": "Integrität externer Software",
       "group": "DEV.4",
       "group_path": "DEV/DEV.4",
       "group_title": "Softwareentwicklung - Code",
-      "prose": "Entwicklung für Anwendungen SOLLTE die Integrität externer Softwarebibliotheken vor dem Release testen.",
+      "prose": "Entwicklung für Anwendungen SOLLTE die Integrität externer Softwareartefakte und -Schnittstellen vor dem Release testen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
     {
       "id": "DEV.4.5",
-      "title": "Updates externer Softwarebibliotheken",
+      "title": "Updates externer Software",
       "group": "DEV.4",
       "group_path": "DEV/DEV.4",
       "group_title": "Softwareentwicklung - Code",
-      "prose": "Entwicklung für Anwendungen SOLLTE externe Softwarebibliotheken auf Sicherheitsupdates vor dem Release testen.",
+      "prose": "Entwicklung für Anwendungen SOLLTE externe Softwareartefakte auf Sicherheitsupdates vor dem Release testen.",
       "sec_level": "normal-SdT",
       "catalog": "Grundschutz++-catalog"
     },
@@ -5136,17 +5211,28 @@
     },
     {
       "id": "TEST.3.1.2",
-      "title": "Integritätstest",
+      "title": "Verwendung externer Software",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
       "group_title": "Tests",
-      "prose": "Änderungen und Tests SOLLTE die Integrität von Installationsdateien testen.",
+      "prose": "Änderungen und Tests SOLLTE die Einbindung externer Softwareartefakte und -Schnittstellen aus unzuverlässigen oder unbekannten Quellen untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
       "parent": "TEST.3.1"
     },
     {
       "id": "TEST.3.1.3",
+      "title": "Integritätstest",
+      "group": "TEST.3",
+      "group_path": "TEST/TEST.3",
+      "group_title": "Tests",
+      "prose": "Änderungen und Tests SOLLTE die Integrität von Softwareartefakten testen.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
+      "parent": "TEST.3.1"
+    },
+    {
+      "id": "TEST.3.1.4",
       "title": "Testdaten",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -5157,7 +5243,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.4",
+      "id": "TEST.3.1.5",
       "title": "Testumgebung",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -5168,7 +5254,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.5",
+      "id": "TEST.3.1.6",
       "title": "Kontinuierliche Tests",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -5179,7 +5265,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.6",
+      "id": "TEST.3.1.7",
       "title": "Chaos Engineering",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -5190,7 +5276,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.7",
+      "id": "TEST.3.1.8",
       "title": "Analyse der Zusammensetzung",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -5201,7 +5287,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.8",
+      "id": "TEST.3.1.9",
       "title": "Fuzzing",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -5212,7 +5298,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.9",
+      "id": "TEST.3.1.10",
       "title": "Lasttest",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -5223,7 +5309,7 @@
       "parent": "TEST.3.1"
     },
     {
-      "id": "TEST.3.1.10",
+      "id": "TEST.3.1.11",
       "title": "Penetrationstest bei Änderungen",
       "group": "TEST.3",
       "group_path": "TEST/TEST.3",
@@ -5266,6 +5352,17 @@
     },
     {
       "id": "TEST.4.1.2",
+      "title": "Staging",
+      "group": "TEST.4",
+      "group_path": "TEST/TEST.4",
+      "group_title": "Freigabe",
+      "prose": "Änderungen und Tests SOLLTE die freizugebenden Änderungen in einer von der Produktumgebung getrennten Staging-Umgebung, deren Komponenten so weit wie möglich der Produktivumgebung entsprechen, testen.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
+      "parent": "TEST.4.1"
+    },
+    {
+      "id": "TEST.4.1.3",
       "title": "Dokumentation der Freigabe",
       "group": "TEST.4",
       "group_path": "TEST/TEST.4",
@@ -6120,6 +6217,67 @@
     },
     {
       "id": "BER.3.1",
+      "title": "Vorgehensweise zur Ausgabe",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE eine Vorgehensweise zur initialen Ausgabe von Authentifizierungsmitteln verankern.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.3.1.1",
+      "title": "Initiale Ausgabe",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE vor der Verteilung von Authentifizierungsmitteln die Identität authentifizieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
+      "parent": "BER.3.1"
+    },
+    {
+      "id": "BER.3.2",
+      "title": "Vorgehensweise zur Zurücksetzung",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE eine Vorgehensweise zur Zurücksetzung von Authentifizierungsmitteln verankern.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.3.3",
+      "title": "Vorgehensweise zum Widerruf",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE eine Vorgehensweise zum Widerruf von Authentifizierungsmitteln verankern.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.3.4",
+      "title": "Zugriffsbeschränkung pro IT-System",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung für IT-Systeme SOLLTE den lesenden und schreibenden Zugriff auf Authentifizierungsmittel einschränken.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.3.5",
+      "title": "Zugriffsbeschränkung pro Anwendung",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung für Anwendungen SOLLTE den lesenden und schreibenden Zugriff auf Authentifizierungsmittel einschränken.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.3.6",
       "title": "Zentrales Management",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6129,7 +6287,17 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.2",
+      "id": "BER.3.7",
+      "title": "Autorisierung neuer Zugangskonten",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE die Einrichtung von Zugangskonten durch {{ insert: param, ber.3.7-prm1 }} autorisieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.3.8",
       "title": "Einschränkung des Managements",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6139,7 +6307,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.3",
+      "id": "BER.3.9",
       "title": "Protokollierung von Änderungen",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6149,7 +6317,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.4",
+      "id": "BER.3.10",
       "title": "Identität-Zugangskonto",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6159,7 +6327,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.5",
+      "id": "BER.3.11",
       "title": "Privilegierte Zugangskonten",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6169,7 +6337,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.6",
+      "id": "BER.3.12",
       "title": "Single-Sign-On",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6179,7 +6347,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.7",
+      "id": "BER.3.13",
       "title": "Hinweise bei Anmeldefehlern",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6189,7 +6357,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.8",
+      "id": "BER.3.14",
       "title": "Ereignisgesteuerte Deaktivierung",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6199,47 +6367,57 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.9",
+      "id": "BER.3.15",
       "title": "Anmeldeversuchsgrenze am System",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung für IT-Systeme SOLLTE weitere Anmeldeversuche nach Erreichen von {{ insert: param, ber.3.9-prm1 }} fehlgeschlagenen Versuchen vorübergehend blockieren.",
+      "prose": "Berechtigung für IT-Systeme SOLLTE weitere Anmeldeversuche nach Erreichen von {{ insert: param, ber.3.15-prm1 }} fehlgeschlagenen Versuchen vorübergehend blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.10",
+      "id": "BER.3.16",
       "title": "Anmeldeversuchsgrenze an der Anwendung",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung für Anwendungen SOLLTE weitere Anmeldeversuche nach Erreichen von einem maximalen Schwellwert an fehlgeschlagenen Versuchen vorübergehend blockieren.",
+      "prose": "Berechtigung für Anwendungen SOLLTE weitere Anmeldeversuche nach Erreichen von {{ insert: param, ber.3.16-prm1 }} fehlgeschlagenen Versuchen vorübergehend blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.11",
+      "id": "BER.3.17",
       "title": "Systemsperre bei Inaktivität",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung für IT-Systeme SOLLTE eine Sperre bei Inaktivität nach {{ insert: param, ber.3.11-prm1 }} aktivieren.",
+      "prose": "Berechtigung für IT-Systeme SOLLTE eine Sperre bei Inaktivität nach {{ insert: param, ber.3.17-prm1 }} aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.12",
+      "id": "BER.3.18",
       "title": "Sperre der Anwendung bei Inaktivität",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung für Anwendungen SOLLTE eine Sperre bei Inaktivität nach {{ insert: param, ber.3.12-prm1 }} aktivieren.",
+      "prose": "Berechtigung für Anwendungen SOLLTE eine Sperre bei Inaktivität nach {{ insert: param, ber.3.18-prm1 }} aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.13",
+      "id": "BER.3.19",
+      "title": "Kein Recycling von Zugängen",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung SOLLTE die Wiederverwendung von Zugangskonten für {{ insert: param, ber.3.19-prm1 }} blockieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.3.20",
       "title": "Zugang löschen nach Fristablauf",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6249,7 +6427,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.14",
+      "id": "BER.3.21",
       "title": "Zugang nur durch zwei Personen",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6259,17 +6437,17 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.15",
+      "id": "BER.3.22",
       "title": "Keine Gruppenkonten",
       "group": "BER.3",
       "group_path": "BER/BER.3",
       "group_title": "Zugangskonten",
-      "prose": "Berechtigung SOLLTE Gruppenkonten untersagen.",
+      "prose": "Berechtigung SOLLTE Gruppenkonten im Regelbetrieb untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.16",
+      "id": "BER.3.23",
       "title": "Gruppenkonten - MFA",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6279,7 +6457,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.17",
+      "id": "BER.3.24",
       "title": "Gruppenkonten - Wechsel dokumentieren",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6289,7 +6467,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.18",
+      "id": "BER.3.25",
       "title": "Gruppenkonten - Passwortwechsel bei Weggang",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6299,7 +6477,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.19",
+      "id": "BER.3.26",
       "title": "Zwischenspeicherung von Zugangsdaten",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6309,7 +6487,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.20",
+      "id": "BER.3.27",
       "title": "Dienstekonten",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6319,7 +6497,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.21",
+      "id": "BER.3.28",
       "title": "Notfallzugang",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6329,7 +6507,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.3.22",
+      "id": "BER.3.29",
       "title": "Notfallzugang Verzeichnisdienst",
       "group": "BER.3",
       "group_path": "BER/BER.3",
@@ -6339,453 +6517,483 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.4.1",
+      "id": "BER.3.30",
+      "title": "Alternative Authentifizierung am IT-System",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung für IT-Systeme KANN ein ebenso vertrauenswürdiges, alternatives Verfahren zur Authentifizierung verankern.",
+      "sec_level": "erhöht",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.3.31",
+      "title": "Alternative Authentifizierung an der Anwendung",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
+      "prose": "Berechtigung für Anwendungen KANN ein ebenso vertrauenswürdiges, alternatives Verfahren zur Authentifizierung verankern.",
+      "sec_level": "erhöht",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.3.32",
       "title": "Identitätsüberprüfung",
-      "group": "BER.4",
-      "group_path": "BER/BER.4",
-      "group_title": "Authentifizierung",
+      "group": "BER.3",
+      "group_path": "BER/BER.3",
+      "group_title": "Zugangskonten",
       "prose": "Berechtigung SOLLTE eine Identitätsüberprüfung vor dem Zurücksetzen von Passworten ausführen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.5.1",
+      "id": "BER.4.1",
       "title": "Prinzip der geringsten Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung SOLLTE die Vergabe von Berechtigungen nach dem Prinzip der geringsten Berechtigungen einschränken.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.5.1.1",
+      "id": "BER.4.1.1",
       "title": "Rollenbasierte Berechtigung",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung SOLLTE Berechtigungen rollenbasiert zuweisen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "BER.5.1"
+      "parent": "BER.4.1"
     },
     {
-      "id": "BER.5.1.2",
+      "id": "BER.4.1.2",
       "title": "JIT‑/JEA‑Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
-      "prose": "Berechtigung KANN die Berechtigung zum Zeitpunkt des Zugriffs für {{ insert: param, ber.5.1.2-prm1 }} aktivieren.",
+      "prose": "Berechtigung KANN die Berechtigung zum Zeitpunkt des Zugriffs für {{ insert: param, ber.4.1.2-prm1 }} aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "BER.5.1"
+      "parent": "BER.4.1"
     },
     {
-      "id": "BER.5.2",
+      "id": "BER.4.2",
+      "title": "Autorisierung von Berechtigungen",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
+      "group_title": "Berechtigungsmanagement",
+      "prose": "Berechtigung SOLLTE die Zuweisung von Berechtigungen durch {{ insert: param, ber.4.2-prm1 }} autorisieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.4.3",
       "title": "Begründung von Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung SOLLTE die Vergabe von Berechtigungen und Änderungen an Berechtigungen mit einer Begründung dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.5.3",
+      "id": "BER.4.4",
       "title": "Überprüfung von Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
-      "prose": "Berechtigung SOLLTE vergebene Berechtigungen {{ insert: param, ber.5.3-prm1 }} auf Erforderlichkeit überprüfen.",
+      "prose": "Berechtigung SOLLTE vergebene Berechtigungen {{ insert: param, ber.4.4-prm1 }} auf Erforderlichkeit überprüfen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.5.3.1",
+      "id": "BER.4.4.1",
       "title": "Überprüfung tatsächlicher Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
-      "prose": "Berechtigung SOLLTE dokumentierte und tatsächlich vergebene Berechtigungen {{ insert: param, ber.5.3.1-prm1 }} auf Übereinstimmung überprüfen.",
+      "prose": "Berechtigung SOLLTE dokumentierte und tatsächlich vergebene Berechtigungen {{ insert: param, ber.4.4.1-prm1 }} auf Übereinstimmung überprüfen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "BER.5.3"
+      "parent": "BER.4.4"
     },
     {
-      "id": "BER.5.4",
-      "title": "Kompromittierte Berechtigungsmittel",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "id": "BER.4.5",
+      "title": "Kompromittierte Authentifizierungsmittel",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
-      "prose": "Berechtigung SOLLTE kompromittierte Berechtigungsmittel deaktivieren.",
+      "prose": "Berechtigung SOLLTE kompromittierte Authentifizierungsmittel deaktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.5.5",
+      "id": "BER.4.6",
       "title": "Systemfunktionen ohne Authentifizierung",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung für IT-Systeme SOLLTE Funktionen, auf die ohne vorherige Authentifizierung zugegriffen werden kann, dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.5.6",
+      "id": "BER.4.7",
       "title": "Anwendungsfunktionen ohne Authentifizierung",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung für Anwendungen SOLLTE Funktionen, auf die ohne vorherige Authentifizierung zugegriffen werden kann, dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.5.7",
+      "id": "BER.4.8",
       "title": "IT-System-Zugangskonto",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung für IT-Systeme KANN diese genau einem Zugangskonto zuweisen.",
       "sec_level": "erhöht",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.5.8",
+      "id": "BER.4.9",
       "title": "Entzug von Berechtigungen",
-      "group": "BER.5",
-      "group_path": "BER/BER.5",
+      "group": "BER.4",
+      "group_path": "BER/BER.4",
       "group_title": "Berechtigungsmanagement",
       "prose": "Berechtigung SOLLTE eine Vorgehensweise zum Entzug von Berechtigungen verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.1",
+      "id": "BER.5.1",
       "title": "Passwortmanager",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung für Nutzende SOLLTE einen Passwortmanager installieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.2",
+      "id": "BER.5.2",
       "title": "Vorkonfigurierte Authentisierungsmittel",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE vorkonfigurierte Authentisierungsmittel deaktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.3",
+      "id": "BER.5.3",
       "title": "Deaktivierung einfacher Biometrie",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE die Authentifizierung nur anhand von Biometrie deaktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.4",
+      "id": "BER.5.4",
       "title": "Mehr-Faktor-Authentisierung am Perimeter",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
-      "prose": "Berechtigung für Anwendungen von Externe Netzanschlüssen SOLLTE Mehr-Faktor-Authentisierung aktivieren.",
+      "prose": "Berechtigung für Anwendungen von Externe Netzanschlüssen SOLLTE Phishing-resistente Mehr-Faktor-Authentisierung aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.5",
+      "id": "BER.5.5",
       "title": "Mehr-Faktor-Authentisierung für weitreichende Berechtigungen",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE Mehr-Faktor-Authentisierung für weitreichende Berechtigungen aktivieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.6",
+      "id": "BER.5.6",
       "title": "Blockieren von Passwort Recycling",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung für Nutzende SOLLTE die Wiederverwendung von Passwörtern blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.7",
+      "id": "BER.5.7",
       "title": "Trivialpasswörter",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung für Nutzende SOLLTE die Verwendung von Trivialpassworten blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.8",
+      "id": "BER.5.8",
       "title": "Kriterien für die Qualität von Passwörtern",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE Kriterien für die Qualität von Passwörtern anhand von Lebensdauer und Angriffsmöglichkeiten verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.9",
+      "id": "BER.5.9",
       "title": "Anlassbezogene Passwortwechsel",
-      "group": "BER.6",
-      "group_path": "BER/BER.6",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
       "group_title": "Passwortgebrauch",
       "prose": "Berechtigung SOLLTE einen Passwortwechsel ausschließlich anlassbezogen ausführen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.6.10",
+      "id": "BER.5.10",
       "title": "Monitoring von Zugangsdaten",
+      "group": "BER.5",
+      "group_path": "BER/BER.5",
+      "group_title": "Passwortgebrauch",
+      "prose": "Berechtigung SOLLTE Zugangsdaten auf Kompromittierung durch {{ insert: param, ber.5.10-prm1 }} überwachen.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "BER.6.1",
+      "title": "Etablierte Algorithmen bei der Schlüsselerzeugung",
       "group": "BER.6",
       "group_path": "BER/BER.6",
-      "group_title": "Passwortgebrauch",
-      "prose": "Berechtigung SOLLTE Zugangsdaten auf Kompromittierung durch {{ insert: param, ber.6.10-prm1 }} überwachen.",
-      "sec_level": "normal-SdT",
-      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
-    },
-    {
-      "id": "BER.7.1",
-      "title": "Etablierte Algorithmen bei der Schlüsselerzeugung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE die ausschließliche Verwendung etablierter kryptografischer Algorithmen bei der Schlüsselerzeugung nach {{ insert: param, ber.7.1-prm1 }} verankern.",
+      "prose": "Berechtigung SOLLTE die ausschließliche Verwendung etablierter kryptografischer Algorithmen bei der Schlüsselerzeugung nach {{ insert: param, ber.6.1-prm1 }} verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.2",
+      "id": "BER.6.2",
       "title": "Schlüssellänge",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE die Schlüssellängen nach {{ insert: param, ber.7.2-prm1 }} bei der Schlüsselerzeugung zuweisen.",
+      "prose": "Berechtigung SOLLTE die Schlüssellängen nach {{ insert: param, ber.6.2-prm1 }} bei der Schlüsselerzeugung zuweisen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.3",
+      "id": "BER.6.3",
       "title": "Verzeichnis öffentlicher Schlüssel",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE zu jedem öffentlichen Schlüssel die dazugehörige Identität, das Ablaufdatum, den Nutzungszweck, die Schlüsselart und den Algorithmus bei der Schlüsselbeglaubigung dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.4",
+      "id": "BER.6.4",
       "title": "Erzeugung auf sicheren IT-Systemen",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Verwendung eines IT-Systems, welches mindestens dasselbe Schutzniveau bietet, für das der Schlüssel eingesetzt werden soll, bei der Schlüsselerzeugung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.5",
+      "id": "BER.6.5",
       "title": "Kriterien für die Qualität von Zufallszahlen",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE {{ insert: param, ber.7.5-prm1 }} für die Qualität von Zufallszahlen bei der Schlüsselerzeugung verankern.",
+      "prose": "Berechtigung SOLLTE {{ insert: param, ber.6.5-prm1 }} für die Qualität von Zufallszahlen bei der Schlüsselerzeugung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.6",
+      "id": "BER.6.6",
       "title": "Etablierte Algorithmen beim Transport",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die ausschließliche Verwendung etablierter kryptografischer Algorithmen beim Transport geheimer Schlüssel verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.7",
+      "id": "BER.6.7",
       "title": "Kein Transport privater Schlüssel",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung KANN den Export privater Schlüssel durch {{ insert: param, ber.7.7-prm1 }} autorisieren.",
+      "prose": "Berechtigung KANN den Export privater Schlüssel durch {{ insert: param, ber.6.7-prm1 }} autorisieren.",
       "sec_level": "erhöht",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.8",
+      "id": "BER.6.8",
       "title": "Etablierte Algorithmen bei der Schlüsselnutzung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die ausschließliche Verwendung etablierter Algorithmen bei der Schlüsselnutzung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.9",
+      "id": "BER.6.9",
       "title": "Zweckbindung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE Verstöße gegen die Zweckbindung bei der Schlüsselnutzung untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.10",
+      "id": "BER.6.10",
       "title": "Abgelaufene Schlüssel",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Nutzung des Schlüssels zur Verschlüsselung oder Signierung nach Ablauf der Nutzungszeit untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.11",
+      "id": "BER.6.11",
       "title": "Integrität",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Verifikation der Integrität geheimer Schlüssel vor jeder Nutzung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.12",
+      "id": "BER.6.12",
       "title": "Authentizität",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Verifikation der Authentizität öffentlicher Schlüssel vor jeder Nutzung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.13",
+      "id": "BER.6.13",
       "title": "Gültigkeit",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE die Verifikation der Gültigkeit des Schlüssels vor jeder Nutzung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.14",
+      "id": "BER.6.14",
       "title": "Schlüssel vor Ablauf prüfen",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE Schlüssel auf das baldige Auslaufen der Nutzungszeit {{ insert: param, ber.7.14-prm1 }} überprüfen.",
+      "prose": "Berechtigung SOLLTE Schlüssel auf das baldige Auslaufen der Nutzungszeit {{ insert: param, ber.6.14-prm1 }} überprüfen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.15",
+      "id": "BER.6.15",
       "title": "Vorgehensweise nach Nutzung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE eine Vorgehensweise zur Außerbetriebnahme geheimer Schlüssel , sobald sie nicht mehr benötigt werden, verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.16",
+      "id": "BER.6.16",
       "title": "Vorgaben für die Schlüsselbeglaubigung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE Vorgaben für die Schlüsselbeglaubigung verankern.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "BER.7.16.1",
+      "id": "BER.6.16.1",
       "title": "Zertifizierungsstelle",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
-      "prose": "Berechtigung SOLLTE die Beglaubigung von Schlüsseln {{ insert: param, ber.7.16.1-prm1 }} zuweisen.",
+      "prose": "Berechtigung SOLLTE die Beglaubigung von Schlüsseln {{ insert: param, ber.6.16.1-prm1 }} zuweisen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.2",
+      "id": "BER.6.16.2",
       "title": "Beglaubigung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Schlüssel anhand der Vorgaben für die Schlüsselbeglaubigung bei Beantragung einer Beglaubigung testen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.3",
+      "id": "BER.6.16.3",
       "title": "Erneuerung",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Schlüssel anhand der Vorgaben für die Schlüsselbeglaubigung bei Erneuerung einer Beglaubigung testen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.4",
+      "id": "BER.6.16.4",
       "title": "Revocation",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Schlüssel anhand der Vorgaben für die Schlüsselbeglaubigung bei Revocation einer Beglaubigung testen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.5",
+      "id": "BER.6.16.5",
       "title": "Beglaubigungsstatus",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Beglaubigungsstatus des Schlüssels im Verzeichnis öffentlicher Schlüssel dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
-      "id": "BER.7.16.6",
+      "id": "BER.6.16.6",
       "title": "Revocationstatus",
-      "group": "BER.7",
-      "group_path": "BER/BER.7",
+      "group": "BER.6",
+      "group_path": "BER/BER.6",
       "group_title": "Schlüsselmanagement",
       "prose": "Berechtigung SOLLTE den Revocationstatus des Schlüssels im Verzeichnis öffentlicher Schlüssel dokumentieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "BER.7.16"
+      "parent": "BER.6.16"
     },
     {
       "id": "DET.1.1",
@@ -7046,38 +7254,37 @@
       "parent": "DET.3.1"
     },
     {
-      "id": "DET.3.1.13",
+      "id": "DET.3.2",
       "title": "Integration von Cloud-Diensten",
       "group": "DET.3",
       "group_path": "DET/DET.3",
       "group_title": "Protokollierung",
       "prose": "Detektion für Cloud-Dienste KANN Ereignisse in der Cloud im Audit Log der Institution protokollieren.",
-      "sec_level": "normal-SdT",
-      "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "DET.3.1"
-    },
-    {
-      "id": "DET.3.2",
-      "title": "Filterung nicht benötigter Inhalte",
-      "group": "DET.3",
-      "group_path": "DET/DET.3",
-      "group_title": "Protokollierung",
-      "prose": "Detektion KANN die Protokollierung nicht benötigter Inhalte anhand von {{ insert: param, det.3.2-prm1 }} einschränken.",
       "sec_level": "erhöht",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
       "id": "DET.3.3",
-      "title": "Speicherkapazität",
+      "title": "Filterung nicht benötigter Inhalte",
       "group": "DET.3",
       "group_path": "DET/DET.3",
       "group_title": "Protokollierung",
-      "prose": "Detektion SOLLTE den für die Protokollierung zur Verfügung stehenden Speicherplatz {{ insert: param, det.3.3-prm1 }} überprüfen.",
-      "sec_level": "normal-SdT",
+      "prose": "Detektion KANN die Protokollierung nicht benötigter Inhalte anhand von {{ insert: param, det.3.3-prm1 }} einschränken.",
+      "sec_level": "erhöht",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
       "id": "DET.3.4",
+      "title": "Speicherkapazität",
+      "group": "DET.3",
+      "group_path": "DET/DET.3",
+      "group_title": "Protokollierung",
+      "prose": "Detektion SOLLTE den für die Protokollierung zur Verfügung stehenden Speicherplatz {{ insert: param, det.3.4-prm1 }} überprüfen.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "DET.3.5",
       "title": "Revisionssicherheit",
       "group": "DET.3",
       "group_path": "DET/DET.3",
@@ -7087,12 +7294,12 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "DET.3.5",
+      "id": "DET.3.6",
       "title": "Unbestreitbarkeit",
       "group": "DET.3",
       "group_path": "DET/DET.3",
       "group_title": "Protokollierung",
-      "prose": "Detektion für Daten KANN Nachweise für den Zusammenhang {{ insert: param, det.3.5-prm1 }} mit {{ insert: param, det.3.5-prm2 }} dokumentieren.",
+      "prose": "Detektion für Daten KANN Nachweise für den Zusammenhang {{ insert: param, det.3.6-prm1 }} mit {{ insert: param, det.3.6-prm2 }} dokumentieren.",
       "sec_level": "erhöht",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
@@ -7143,7 +7350,7 @@
       "group_path": "DET/DET.4",
       "group_title": "Überwachung von Aktivitäten",
       "prose": "Detektion KANN unerwünschte Datenabflüsse überwachen.",
-      "sec_level": "normal-SdT",
+      "sec_level": "erhöht",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
@@ -7183,7 +7390,7 @@
       "group": "DET.4",
       "group_path": "DET/DET.4",
       "group_title": "Überwachung von Aktivitäten",
-      "prose": "Detektion für Webserver KANN die rechtzeitige Ausstellung neuer HTTPS-Zertifikate für Server, die im Internet erreichbar sind, überwachen.",
+      "prose": "Detektion für Webserver KANN die rechtzeitige Ausstellung neuer HTTPS-Zertifikate für Hostsysteme, die im Internet erreichbar sind, überwachen.",
       "sec_level": "erhöht",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
@@ -7266,7 +7473,7 @@
       "group": "DET.4",
       "group_path": "DET/DET.4",
       "group_title": "Überwachung von Aktivitäten",
-      "prose": "Detektion für Netze KANN die Auslastung des Netzes anhand von {{ insert: param, det.4.12.1-prm1 }} überwachen.",
+      "prose": "Detektion für Netze SOLLTE die Auslastung des Netzes anhand von {{ insert: param, det.4.12.1-prm1 }} überwachen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
       "parent": "DET.4.12"
@@ -7513,7 +7720,7 @@
       "group": "DET.5",
       "group_path": "DET/DET.5",
       "group_title": "Management von Schwachstellen",
-      "prose": "Detektion SOLLTE Bezugsquellen für Patches autorisieren.",
+      "prose": "Detektion SOLLTE zuverlässige Bezugsquellen für Patches autorisieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
       "parent": "DET.5.10"
@@ -7816,6 +8023,16 @@
     },
     {
       "id": "KONF.2.6",
+      "title": "Automatische Konfigurationsverwaltung",
+      "group": "KONF.2",
+      "group_path": "KONF/KONF.2",
+      "group_title": "Konfiguration von Systemen",
+      "prose": "Konfiguration für Endgeräte SOLLTE die Verwaltung durch ein Mobile Device Management (MDM) aktivieren.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "KONF.2.7",
       "title": "Souveräne Werkzeuge",
       "group": "KONF.2",
       "group_path": "KONF/KONF.2",
@@ -7825,7 +8042,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "KONF.2.7",
+      "id": "KONF.2.8",
       "title": "Alternative Administrationszugänge",
       "group": "KONF.2",
       "group_path": "KONF/KONF.2",
@@ -7835,7 +8052,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "KONF.2.8",
+      "id": "KONF.2.9",
       "title": "Abgesicherter und authentisierter Bootprozess",
       "group": "KONF.2",
       "group_path": "KONF/KONF.2",
@@ -8290,7 +8507,7 @@
       "group": "KONF.7",
       "group_path": "KONF/KONF.7",
       "group_title": "Schutz vor Schadcode",
-      "prose": "Konfiguration für IT-Systeme SOLLTE Host-basierte Angriffserkennung aktivieren.",
+      "prose": "Konfiguration für IT-Systeme KANN Host-basierte Angriffserkennung aktivieren.",
       "sec_level": "erhöht",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
@@ -8612,36 +8829,26 @@
     },
     {
       "id": "KONF.11.3",
-      "title": "Alternative Authentifizierung",
-      "group": "KONF.11",
-      "group_path": "KONF/KONF.11",
-      "group_title": "Vertrauensbeziehungen",
-      "prose": "Konfiguration für Anwendungen KANN ein ebenso vertrauenswürdiges, alternatives Verfahren zur Authentifizierung aktivieren.",
-      "sec_level": "erhöht",
-      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
-    },
-    {
-      "id": "KONF.11.4",
       "title": "Veröffentlichung von Domain-Infomationen",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
       "group_title": "Vertrauensbeziehungen",
-      "prose": "Konfiguration für DNS-Server SOLLTE die Veröffentlichung von Domain-Infomationen anhand von {{ insert: param, konf.11.4-prm1 }} einschränken.",
+      "prose": "Konfiguration für DNS-Server SOLLTE die Veröffentlichung von Domain-Infomationen anhand von {{ insert: param, konf.11.3-prm1 }} einschränken.",
+      "sec_level": "normal-SdT",
+      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
+    },
+    {
+      "id": "KONF.11.4",
+      "title": "Erraten von Zugriffslinks",
+      "group": "KONF.11",
+      "group_path": "KONF/KONF.11",
+      "group_title": "Vertrauensbeziehungen",
+      "prose": "Konfiguration für Webanwendungen SOLLTE das Durchprobieren von Zugriffslinks durch {{ insert: param, konf.11.4-prm1 }} blockieren.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
       "id": "KONF.11.5",
-      "title": "Erraten von Zugriffslinks",
-      "group": "KONF.11",
-      "group_path": "KONF/KONF.11",
-      "group_title": "Vertrauensbeziehungen",
-      "prose": "Konfiguration für Webanwendungen SOLLTE das Durchprobieren von Zugriffslinks durch {{ insert: param, konf.11.5-prm1 }} blockieren.",
-      "sec_level": "normal-SdT",
-      "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
-    },
-    {
-      "id": "KONF.11.6",
       "title": "Einschränkung unauthentifizierter Anschlüsse",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -8651,7 +8858,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "KONF.11.7",
+      "id": "KONF.11.6",
       "title": "Übersicht angemeldeter Verbindungen",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -8661,7 +8868,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "KONF.11.8",
+      "id": "KONF.11.7",
       "title": "Einschränkung von Schnittstellen",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -8671,7 +8878,7 @@
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
-      "id": "KONF.11.8.1",
+      "id": "KONF.11.7.1",
       "title": "Einschränkung von Zonentransfers",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -8679,10 +8886,10 @@
       "prose": "Konfiguration für DNS-Server SOLLTE Zonentransfers einschränken.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "KONF.11.8"
+      "parent": "KONF.11.7"
     },
     {
-      "id": "KONF.11.8.2",
+      "id": "KONF.11.7.2",
       "title": "Einschränkung von TK-Verbindungen",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -8690,10 +8897,10 @@
       "prose": "Konfiguration für TK-Anwendungen SOLLTE unerwünschte TK-Verbindungen einschränken.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog",
-      "parent": "KONF.11.8"
+      "parent": "KONF.11.7"
     },
     {
-      "id": "KONF.11.9",
+      "id": "KONF.11.8",
       "title": "Verschlüsselung schützenswerter Daten (at-rest)",
       "group": "KONF.11",
       "group_path": "KONF/KONF.11",
@@ -9427,11 +9634,11 @@
     },
     {
       "id": "DEV.4.2",
-      "title": "Bibliotheksquellen",
+      "title": "Einbindung externer Software",
       "group": "DEV.4",
       "group_path": "DEV/DEV.4",
       "group_title": "Softwareentwicklung - Code",
-      "prose": "Entwicklung für Anwendungen SOLLTE die Einbindung externer Softwarebibliotheken und -Schnittstellen aus unzuverlässigen oder unbekannten Quellen untersagen.",
+      "prose": "Entwicklung für Anwendungen SOLLTE die Einbindung externer Softwareartefakte und -Schnittstellen aus unzuverlässigen oder unbekannten Quellen untersagen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
@@ -9447,21 +9654,21 @@
     },
     {
       "id": "DEV.4.4",
-      "title": "Integrität externer Softwarebibliotheken",
+      "title": "Integrität externer Software",
       "group": "DEV.4",
       "group_path": "DEV/DEV.4",
       "group_title": "Softwareentwicklung - Code",
-      "prose": "Entwicklung für Anwendungen SOLLTE die Integrität externer Softwarebibliotheken vor dem Release testen.",
+      "prose": "Entwicklung für Anwendungen SOLLTE die Integrität externer Softwareartefakte und -Schnittstellen vor dem Release testen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },
     {
       "id": "DEV.4.5",
-      "title": "Updates externer Softwarebibliotheken",
+      "title": "Updates externer Software",
       "group": "DEV.4",
       "group_path": "DEV/DEV.4",
       "group_title": "Softwareentwicklung - Code",
-      "prose": "Entwicklung für Anwendungen SOLLTE externe Softwarebibliotheken auf Sicherheitsupdates vor dem Release testen.",
+      "prose": "Entwicklung für Anwendungen SOLLTE externe Softwareartefakte auf Sicherheitsupdates vor dem Release testen.",
       "sec_level": "normal-SdT",
       "catalog": "BSI-Stand-der-Technik-Kernel-catalog"
     },

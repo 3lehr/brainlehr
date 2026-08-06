@@ -1,6 +1,15 @@
 -- Knowledge Database Schema (SQLite + FTS5)
 -- Erstellt: 2026-03-25T16:20:00+01:00
 -- Zweck: Baumstruktur-Wissens-DB für Cross-Projekt Agent-Zugriff
+--
+-- Zeitstempel-Vorgabewerte (created_at/updated_at/first_seen/last_seen/timestamp):
+-- UTC mit 'Z', kein lokaler Versatz. SQLite kennt kein %z/zoneinfo, ein fest
+-- eingetragener Versatz ("+01:00") ist bei DST falsch (Befund 2026-08-06:
+-- Winterversatz im Sommer geschrieben). UTC+Z ist immer korrekt und
+-- zwischen zwei Zeilen derselben Spalte string-vergleichbar/sortierbar.
+-- Der Anwendungscode (now_iso() in knowledge_mcp_server.py u.a.) schreibt
+-- ohnehin explizit einen echten Europe/Berlin-Versatz bei jedem INSERT --
+-- dieser Vorgabewert greift nur, wenn eine Spalte mal nicht gesetzt wird.
 
 -- Haupttabelle: Wissensknoten mit Materialized Path
 CREATE TABLE IF NOT EXISTS knowledge_nodes (
@@ -16,8 +25,8 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     source TEXT,                             -- Herkunft: Datei/Konsil/Research
     confidence REAL DEFAULT 0.8,
     access_count INTEGER DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
-    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     -- Normschicht (N2, docs/PLAN_NORMSCHICHT_2026-08-05.md). Additiv, alle
     -- drei NULL-faehig und nach N2 ausnahmslos NULL -- Rang vergeben ist N3.
     -- norm_rang IS NULL ist die zentrale Unterscheidung des Plans (§2):
@@ -141,8 +150,8 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     occurrences INTEGER DEFAULT 1,
     projects TEXT DEFAULT '[]',               -- JSON Array: ["begod","aka"]
     status TEXT DEFAULT 'active',             -- active|resolved|escalated_to_rule
-    first_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
-    last_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
+    first_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    last_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     auto_rule_generated INTEGER DEFAULT 0     -- 1 wenn bereits Regel generiert
 );
 
@@ -157,7 +166,7 @@ CREATE TABLE IF NOT EXISTS access_log (
     model TEXT,
     session TEXT,
     status TEXT DEFAULT 'completed',          -- started|completed|failed
-    timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
+    timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     -- Auditkette (Nachtrag 2026-08-06, additiv per migrate_auditkette.py).
     -- Bestandszeilen (1223 vor der Migration) bleiben in beiden Spalten
     -- NULL -- ungedeckter Zeitraum, kein Fehler, nachtraeglich verkettet
@@ -202,8 +211,8 @@ CREATE TABLE IF NOT EXISTS knowledge_relations (
     creator TEXT,
     model TEXT,
     session TEXT,
-    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
-    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00', 'now', 'localtime')),
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     UNIQUE(source_path, target_path, relation_type),
     FOREIGN KEY(source_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY(target_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE

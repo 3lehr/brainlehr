@@ -19,14 +19,15 @@ import json
 import sqlite3
 import sys
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).parent))
 import knowledge_mcp_server as kms  # noqa: E402  -- liefert kalibrierte Aehnlichkeitserkennung
 
 DB_PATH = Path(__file__).parent / "knowledge.db"
-CET = timezone(timedelta(hours=1))
+BERLIN = ZoneInfo("Europe/Berlin")
 
 RULE_THRESHOLD = 3  # Minimum occurrences to auto-generate a rule
 
@@ -38,7 +39,7 @@ PROJECTS = {
 
 
 def now_iso() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S+01:00")
+    return datetime.now(BERLIN).isoformat(timespec="seconds")
 
 
 def get_db() -> sqlite3.Connection:

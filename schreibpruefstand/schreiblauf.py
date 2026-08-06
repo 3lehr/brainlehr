@@ -55,7 +55,10 @@ CALL_TIMEOUT = 150.0
 # ein Anfrage-Koerper ohne eigenes keep_alive kann ihn je nach Ollama-Fassung
 # ueberschreiben -- deshalb hier ausdruecklich mitgesendet statt sich auf die
 # Umgebungsvariable zu verlassen.
-KEEP_ALIVE = "-1"
+# Muss eine JSON-Zahl sein, kein String -- eine neuere Ollama-Fassung lehnt
+# "-1" als String ab ("time: missing unit in duration \"-1\"", HTTP 400),
+# geprueft per curl am 2026-08-06 gegen den lokalen Server.
+KEEP_ALIVE = -1
 
 # Parameter, die knowledge_add() tatsaechlich entgegennimmt -- Auswahl ist
 # eine Signaturgrenze, kein inhaltliches Nachbessern des Modellwerts.
@@ -149,15 +152,17 @@ def _parse_model_json(raw_text: str) -> dict | None:
 
 
 def run(*, model: str = DEFAULT_MODEL, base_url: str = DEFAULT_OLLAMA_URL,
-        timeout: float = CALL_TIMEOUT, session: str | None = None) -> dict:
+        timeout: float = CALL_TIMEOUT, session: str | None = None,
+        pieces: list[str] | None = None) -> dict:
     session = session or f"schreibpruefstand-{uuid.uuid4().hex[:8]}"
+    raw_pieces = pieces if pieces is not None else demo_db.RAW_MATERIAL
     db_path = demo_db.build_demo_db()
     kms.DB_PATH = db_path  # Muster aus pruefstand/messlauf.py: Modulattribut umbiegen
 
     protocol: list[dict] = []
     started = time.perf_counter()
 
-    for idx, raw_text in enumerate(demo_db.RAW_MATERIAL):
+    for idx, raw_text in enumerate(raw_pieces):
         material_id = f"M-{idx:02d}"
         tree = _current_tree(db_path)
         prompt = build_prompt(raw_text, tree)
@@ -222,7 +227,7 @@ def run(*, model: str = DEFAULT_MODEL, base_url: str = DEFAULT_OLLAMA_URL,
         "session": session,
         "db_path": str(db_path),
         "runtime_seconds": runtime,
-        "n_pieces": len(demo_db.RAW_MATERIAL),
+        "n_pieces": len(raw_pieces),
         "protocol": protocol,
     }
 

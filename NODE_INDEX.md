@@ -1,6 +1,6 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 237 · erzeugt: 2026-08-05T12:22:12+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 283 · erzeugt: 2026-08-06T09:39:04+0200
 
 Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NICHT hier -- bei Bedarf gezielt mit `knowledge_read <path>` nachladen.
 
@@ -79,6 +79,7 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 - /arch/knowledge-mgmt/auto-capture-recall-wissenssystem-(syste — Auto-Capture/Recall-Wissenssystem (systemweit, hook-getrieben)
 - /arch/knowledge-mgmt/entscheid-2026-07-28:-paperless-ngx-ml-f — Entscheid 2026-07-28: paperless-ngx-ML für unsere Knowledge-DB abgelehnt, Ollama vertagt
 - /arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05:-82-pro — Erreichbarkeitsbefund 2026-08-05: 82 Prozent des Wissens wurden nie abgerufen
+- /arch/knowledge-mgmt/konfidenzverfall-gebaut-konfidenz-py-adr — Konfidenzverfall gebaut (konfidenz.py) — ADR-026 Z3 baulich abgeschlossen
 - /arch/knowledge-mgmt/tree-structure — Baumstruktur-Wissens-DB
 - /arch/mcp — MCP Server
 - /arch/mcp/server-design — MCP Server Design Patterns
@@ -101,6 +102,12 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 
 - /begod — Begod2026
 - /begod/neuen-app-worktree-bootstrappen-(prozedu — Neuen App-Worktree bootstrappen (Prozedur)
+
+## /brainlehr
+
+- /brainlehr — brainlehr
+- /brainlehr/brainlehr-zweck-umfang-und-was-es-nicht — brainlehr — Zweck, Umfang und was es NICHT ist
+- /brainlehr/richtig-in-brainlehr-ablegen-regeln-fuer — Richtig in brainlehr ablegen — Regeln fuer jede App-Sitzung
 
 ## /fahrtenbuch
 
@@ -128,6 +135,31 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 ## /methodik
 
 - /methodik — Methodik
+- /methodik/adr-bestand-hub-docs-adr — ADR-Bestand (hub/docs/adr)
+- /methodik/adr-bestand-hub-docs-adr/adr-001-drift-sqlite-als-lokale — ADR-001: Drift (SQLite) als lokale Datenbank
+- /methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007 — ADR-002: JSON-Config Data-Layer (F-007)
+- /methodik/adr-bestand-hub-docs-adr/adr-004-bidirektionale-datenarchitektur — ADR-004: Bidirektionale Datenarchitektur Tagebuch ↔ Rechner
+- /methodik/adr-bestand-hub-docs-adr/adr-005-entscheidungsbaum-statt-flat — ADR-005: Entscheidungsbaum statt Flat-List für NBA-Erfassung
+- /methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi — ADR-006: Token-Kompression fuer Multi-Agent Systeme
+- /methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox-fuer — ADR-007: Trust Zones — Content-Sandbox für externe Inhalte
+- /methodik/adr-bestand-hub-docs-adr/adr-009-farbkonzept-produktfamilie — ADR-009: Farbkonzept Produktfamilie
+- /methodik/adr-bestand-hub-docs-adr/adr-010-study-mode-architecture-state — ADR-010: Study-Mode Architecture — State Machine, Token-Spec, DB-Schema
+- /methodik/adr-bestand-hub-docs-adr/adr-011-offline-knowledge-pipeline — ADR-011: Offline-Knowledge-Pipeline
+- /methodik/adr-bestand-hub-docs-adr/adr-012-akzeptiertes-risiko — ADR-012: Akzeptiertes Risiko — Unverschlüsseltes Web-Storage
+- /methodik/adr-bestand-hub-docs-adr/adr-013-knowledge-graph-als-wissensbasis — ADR-013: Knowledge Graph als Wissensbasis
+- /methodik/adr-bestand-hub-docs-adr/adr-014-on-device-first-speech-to-text — ADR-014: On-Device-First Speech-to-Text
+- /methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge-architecture — ADR-015: Multi-App Knowledge Architecture
+- /methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der — ADR-016: Multi-App-Context in der Stiftshuette
+- /methodik/adr-bestand-hub-docs-adr/adr-016-offline-first-zero-network — ADR 016: Offline-First & Zero-Network Architecture (OpenHood)
+- /methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol — ADR-017: Kommentar-Index-System — Symbol-Index statt Inline-Dokumentation
+- /methodik/adr-bestand-hub-docs-adr/adr-018-medikamentenfunktion-scope — ADR-018: Medikamentenfunktion — Scope-Grenze (Kein Medizinprodukt)
+- /methodik/adr-bestand-hub-docs-adr/adr-019-universum-kreuzreferenz-system — ADR-019: Universum-Kreuzreferenz-System
+- /methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network — ADR-020: Einheitliches Citation-Network-Schema
+- /methodik/adr-bestand-hub-docs-adr/adr-021-akapp-drei-schichten-architektur — ADR-021: AKAPP Drei-Schichten-Architektur
+- /methodik/adr-bestand-hub-docs-adr/adr-022-akapp-hybride-architektur — ADR-022: AKAPP — Hybride Architektur: Offline-Core + Connected Features
+- /methodik/adr-bestand-hub-docs-adr/adr-023-modell-kaskade-v3-opus-5-als — ADR-023 — Modell-Kaskade v3: Opus 5 als Hauptfaden
+- /methodik/adr-bestand-hub-docs-adr/adr-024-wissensschichten-und-portabler — ADR-024 — Wissensschichten und portabler Kern
+- /methodik/adr-bestand-hub-docs-adr/adr-oh-020-mein-datenrecht-eu-data-act — ADR-OH-020: Mein Datenrecht — EU Data Act Auskunfts-Assistent
 - /methodik/arbeitsweise — Arbeitsweise
 - /methodik/arbeitsweise/01-nachsehen-schlaegt-erinnern — 1. Nachsehen schlägt erinnern.
 - /methodik/arbeitsweise/02-eine-stichprobe-ist-keine-diagnose — 2. Eine Stichprobe ist keine Diagnose.
@@ -153,10 +185,27 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 - /methodik/arbeitsweise/h5-git-grenzen — H5. Git-Grenzen.
 - /methodik/arbeitsweise/h6-bau-so — H6. Bau so, dass ein Durchlauf ohne Menschen prüfbar ist.
 - /methodik/direktiven — Direktiven
+- /methodik/direktiven-hub-claude-md — Direktiven (hub-CLAUDE.md)
+- /methodik/direktiven-hub-claude-md/arbeitsweise — Arbeitsweise
+- /methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an — Caveman (Token-Kompression) — Default AN
+- /methodik/direktiven-hub-claude-md/den-betreiber-korrigieren-seit-2026-08 — Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)
+- /methodik/direktiven-hub-claude-md/fluss-karten-metroviz-trigger — Fluss-Karten (Metroviz) — Trigger
+- /methodik/direktiven-hub-claude-md/fokus — Fokus
+- /methodik/direktiven-hub-claude-md/hard-stops-immer-gueltig — Hard Stops (immer gültig)
+- /methodik/direktiven-hub-claude-md/identitaet — Identität
+- /methodik/direktiven-hub-claude-md/konsile-adrs — Konsile & ADRs
+- /methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden — Modell-Kaskade v3: Opus-Hauptfaden + Delegation nach unten (seit 2026-08-05T09:40:00+0200)
+- /methodik/direktiven-hub-claude-md/modellverhalten-opus-5-sonnet-5-seit — Modellverhalten Opus 5 / Sonnet 5 (seit 2026-08-04T05:44:04+0200)
+- /methodik/direktiven-hub-claude-md/monolith-bremse-alle-apps-hook-gestuetzt — Monolith-Bremse (alle Apps, Hook-gestützt)
+- /methodik/direktiven-hub-claude-md/routing-subagents — Routing (Subagents)
+- /methodik/direktiven-hub-claude-md/stand-md-uebergabe-zettel-je-app — STAND.md (Übergabe-Zettel je App)
+- /methodik/direktiven-hub-claude-md/token-workflow-immer-anwenden — Token-Workflow (immer anwenden)
+- /methodik/direktiven-hub-claude-md/wissen-knowledge-mcp — Wissen (Knowledge-MCP)
 - /methodik/direktiven/abwesenheitsmodus-ist-die-voreinstellung-systemweit — Abwesenheitsmodus ist die Voreinstellung (systemweit)
 - /methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf — ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)
 - /methodik/direktiven/auftraege-an-agenten-sind-schnappschuesse-systemweit — Aufträge an Agenten sind Schnappschüsse (systemweit)
 - /methodik/direktiven/bsi-compliance-systemweit-lazy-nur-trigger-kein-katalog-im-kontext — BSI-Compliance (systemweit, lazy) — nur Trigger, kein Katalog im Kontext
+- /methodik/direktiven/caveman-mode-always-on — Caveman mode: always on
 - /methodik/direktiven/committen-ohne-aufforderung-systemweit — Committen ohne Aufforderung (systemweit)
 - /methodik/direktiven/datumsangaben-immer-zuerst-beachten — Datumsangaben (immer zuerst beachten)
 - /methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit — „Es funktioniert" braucht einen Beleg, der vorher rot war (systemweit)

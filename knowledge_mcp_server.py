@@ -28,8 +28,9 @@ import sqlite3
 import sys
 import unicodedata
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).parent))
 import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
@@ -41,7 +42,7 @@ import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
 # Portabilitaet ausserhalb Begod2026) und laesst sich nicht gegen eine
 # Testkopie fahren, ohne die echte DB anzufassen.
 DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "knowledge.db"))
-CET = timezone(timedelta(hours=1))
+BERLIN = ZoneInfo("Europe/Berlin")
 # Mehrere MCP-Prozesse/Sitzungen schreiben gleichzeitig auf dieselbe WAL-DB.
 # WAL erlaubt genau einen Schreiber; ohne busy_timeout wirft ein zweiter
 # gleichzeitiger Schreibversuch sofort SQLITE_BUSY statt kurz zu warten.
@@ -63,7 +64,9 @@ GENESIS_KETTEN_HASH = "0" * 64
 
 
 def now_iso() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S+01:00")
+    # echter Versatz statt fest "+01:00" -- isoformat() liefert bereits
+    # Doppelpunkt-Form ("+02:00"), DST-Wechsel automatisch via zoneinfo.
+    return datetime.now(BERLIN).isoformat(timespec="seconds")
 
 
 def get_db() -> sqlite3.Connection:
@@ -526,6 +529,30 @@ def _sync_wikilinks(conn: sqlite3.Connection, source_path: str, content: str, *,
     return {"relations_created": relations_created, "unresolved_links": unresolved_links}
 
 
+def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
+                      project_id: str) -> None:
+    """Legt jede fehlende Zwischenstufe von der Wurzel bis missing_path an
+    (wie mkdir -p). Idempotent: vorhandene Stufen bleiben unangetastet.
+    Titel = Pfadsegment, source kennzeichnet die automatische Herkunft samt
+    dem Kind, das die Anlage ausgeloest hat."""
+    current = ""
+    for seg in [p for p in missing_path.split("/") if p]:
+        current = f"{current}/{seg}"
+        if conn.execute("SELECT 1 FROM knowledge_nodes WHERE path = ?", (current,)).fetchone():
+            continue
+        parent = current.rsplit("/", 1)[0] or "/"
+        created_at = now_iso()
+        conn.execute(
+            """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (str(uuid.uuid4())[:8], current, parent, project_id, seg,
+             f"Automatisch erzeugter Astknoten fuer {seg}", "",
+             current.count("/") - 1, json.dumps([]),
+             f"neuer_ast=True, automatisch erzeugt durch {triggering_child_path}",
+             created_at, created_at),
+        )
+
+
 def knowledge_add(parent_path: str, title: str, summary: str,
                   content: str = "", project_id: str = "shared",
                   tags: list | None = None, source: str = "", *,
@@ -550,22 +577,27 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     conn = get_db()
     parent_path = parent_path.rstrip("/") or "/"
 
-    if parent_path != "/" and not neuer_ast:
+    # Derive path from parent + slugified title
+    slug = _slugify(title)
+    node_path = f"{parent_path}/{slug}" if parent_path != "/" else f"/{slug}"
+
+    if parent_path != "/":
         parent_row = conn.execute(
             "SELECT 1 FROM knowledge_nodes WHERE path = ?", (parent_path,)
         ).fetchone()
         if not parent_row:
-            all_paths = [r[0] for r in conn.execute("SELECT path FROM knowledge_nodes")]
-            conn.close()
-            return {
-                "error": f"Elternpfad existiert nicht: {parent_path}. "
-                         f"Mit neuer_ast=True bewusst einen neuen Ast anlegen.",
-                "vorhandene_pfade": difflib.get_close_matches(parent_path, all_paths, n=5),
-            }
-
-    # Derive path from parent + slugified title
-    slug = _slugify(title)
-    node_path = f"{parent_path}/{slug}" if parent_path != "/" else f"/{slug}"
+            if not neuer_ast:
+                all_paths = [r[0] for r in conn.execute("SELECT path FROM knowledge_nodes")]
+                conn.close()
+                return {
+                    "error": f"Elternpfad existiert nicht: {parent_path}. "
+                             f"Mit neuer_ast=True bewusst einen neuen Ast anlegen.",
+                    "vorhandene_pfade": difflib.get_close_matches(parent_path, all_paths, n=5),
+                }
+            # neuer_ast=True: fehlende Zwischenstufen mit anlegen (mkdir -p),
+            # statt eine Waise zu hinterlassen -- genau die Klasse, gegen die
+            # die Elternpfad-Pruefung oben gebaut wurde.
+            _ensure_ast_chain(conn, parent_path, node_path, project_id)
 
     # Check for duplicates
     existing = conn.execute("SELECT id FROM knowledge_nodes WHERE path = ?", (node_path,)).fetchone()

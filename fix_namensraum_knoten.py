@@ -21,16 +21,17 @@ import shutil
 import sqlite3
 import sys
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 DB_PATH = Path(__file__).parent / "knowledge.db"
-CET = timezone(timedelta(hours=1))
+BERLIN = ZoneInfo("Europe/Berlin")
 SOURCE = "fix_namensraum_knoten.py 2026-08-05"
 
 
 def now_iso() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S+01:00")
+    return datetime.now(BERLIN).isoformat(timespec="seconds")
 
 
 def _backup() -> Path:
@@ -54,7 +55,7 @@ def _backup() -> Path:
             )
     finally:
         conn.close()
-    stamp = datetime.now(CET).strftime("%Y%m%dT%H%M%S")
+    stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
     dest = DB_PATH.parent / f"knowledge.db.bak-{stamp}"
     shutil.copy2(DB_PATH, dest)
     return dest

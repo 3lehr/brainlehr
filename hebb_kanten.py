@@ -29,15 +29,16 @@ import sqlite3
 import sys
 import tempfile
 from collections import Counter
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).parent))
 import knowledge_mcp_server as kms  # nur ueber diese Funktion schreiben
 
 HERE = Path(__file__).parent
 RECALL_LOG = HERE / "recall_log.jsonl"
-CET = timezone(timedelta(hours=1))
+BERLIN = ZoneInfo("Europe/Berlin")
 
 # Schwelle: 1 gemeinsamer Abruf = geteilte BM25-Suchworte, kein Hinweis.
 # Ab 2 verschiedenen Abrufen ist es ein wiederholtes Muster -> Kante.
@@ -68,7 +69,7 @@ def _backup(db_path: Path) -> Path:
             )
     finally:
         conn.close()
-    stamp = datetime.now(CET).strftime("%Y%m%dT%H%M%S")
+    stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
     dest = db_path.parent / f"knowledge.db.bak-{stamp}"
     shutil.copy2(db_path, dest)
     return dest
@@ -197,7 +198,7 @@ def _selftest() -> int:
 
     conn = sqlite3.connect(str(db_path))
     conn.executescript(Path(HERE / "schema.sql").read_text(encoding="utf-8"))
-    now = datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S+01:00")
+    now = datetime.now(BERLIN).isoformat(timespec="seconds")
     knoten = ["/a", "/b", "/c", "/d"]
     for i, p in enumerate(knoten):
         conn.execute(

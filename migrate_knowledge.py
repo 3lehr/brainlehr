@@ -10,15 +10,16 @@ Usage: python3 migrate_knowledge.py
 import json
 import sqlite3
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 DB_PATH = Path(__file__).parent / "knowledge.db"
-CET = timezone(timedelta(hours=1))
+BERLIN = ZoneInfo("Europe/Berlin")
 
 
 def now_iso() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S+01:00")
+    return datetime.now(BERLIN).isoformat(timespec="seconds")
 
 
 def add_node(conn, path, parent_path, title, summary, content="",
