@@ -144,6 +144,66 @@ CREATE TRIGGER IF NOT EXISTS knowledge_au AFTER UPDATE ON knowledge_nodes BEGIN
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
+-- Zusicherungen an knowledge_nodes DIREKT in der Datenbank (Auftrag
+-- 2026-08-06, Befund: ein roher INSERT am knowledge_mcp_server.py-Werkzeug
+-- vorbei erzeugte 17 Knoten ohne source, mit freiem parent_path -- die
+-- Python-seitigen Pruefungen (source-Leercheck in knowledge_add,
+-- _validate_anlass) schuetzen nur den Weg ueber das Werkzeug, nicht die
+-- Datei selbst, zumal PRAGMA foreign_keys hier aus (0) steht. SQLite kennt
+-- kein nachtraegliches CHECK auf einer bestehenden Tabelle -- BEFORE-Trigger
+-- mit RAISE(ABORT,...) statt Tabellenneubau: knowledge_nodes.path ist
+-- Fremdschluessel-Ziel von knowledge_relations, ein Neubau (neue Tabelle +
+-- Rename) haette diese Referenzen und laufende Fremdverbindungen gefaehrdet
+-- -- der additive Trigger-Weg aendert keine bestehende Zeile und keinen
+-- bestehenden Verweis. Je Regel ein BEFORE-INSERT- und ein BEFORE-UPDATE-
+-- Trigger, weil beide Wege dieselbe Zusicherung umgehen koennen (siehe
+-- Nachzug in knowledge_mcp_server.py::_ensure_node_constraint_triggers()
+-- fuer Bestands-DBs, migrate_source_constraints.py fuer die Rueckfuellung
+-- vorhandener leerer source-Werte).
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_source_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.source IS NULL OR TRIM(NEW.source) = ''
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.source darf nicht leer sein: Herkunft angeben (Datei, Konsil oder Recherche, aus der dieser Knoten stammt)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_source_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.source IS NULL OR TRIM(NEW.source) = ''
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.source darf nicht leer sein: Herkunft angeben (Datei, Konsil oder Recherche, aus der dieser Knoten stammt)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_parent_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.parent_path IS NOT NULL AND NEW.parent_path <> '/'
+    AND NOT EXISTS (SELECT 1 FROM knowledge_nodes WHERE path = NEW.parent_path)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.parent_path zeigt auf keinen vorhandenen Knoten: zuerst den Elternknoten anlegen, dann parent_path erneut setzen');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_parent_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.parent_path IS NOT NULL AND NEW.parent_path <> '/'
+    AND NOT EXISTS (SELECT 1 FROM knowledge_nodes WHERE path = NEW.parent_path)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.parent_path zeigt auf keinen vorhandenen Knoten: zuerst den Elternknoten anlegen, dann parent_path erneut setzen');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_anlass_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.anlass NOT IN ('selbst','betreiber','hook','skript','unbekannt')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.anlass unzulaessig: erlaubt sind selbst, betreiber, hook, skript, unbekannt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_anlass_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.anlass NOT IN ('selbst','betreiber','hook','skript','unbekannt')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.anlass unzulaessig: erlaubt sind selbst, betreiber, hook, skript, unbekannt');
+END;
+
 -- Lessons Learned Tabelle
 CREATE TABLE IF NOT EXISTS lessons_learned (
     id TEXT PRIMARY KEY,

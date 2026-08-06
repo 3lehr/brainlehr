@@ -37,7 +37,7 @@ TEXT_COLS = ("title", "summary", "content", "source")
 
 def backup_db() -> Path:
     ts = datetime.now(timezone(timedelta(hours=1))).strftime("%Y%m%dT%H%M%S")
-    backup_path = DB_PATH.with_name(f"knowledge.db.bak-{ts}")
+    backup_path = DB_PATH.with_name(f"{DB_PATH.name}.bak-{ts}")
     shutil.copy2(DB_PATH, backup_path)
     if not backup_path.exists() or backup_path.stat().st_size == 0:
         raise SystemExit(f"Backup fehlgeschlagen: {backup_path}")
@@ -97,6 +97,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Nur Bericht, keine Schreibaktion")
     args = parser.parse_args()
 
+    print(f"Datenbank: {DB_PATH}")
     if not args.dry_run:
         backup_db()
     else:

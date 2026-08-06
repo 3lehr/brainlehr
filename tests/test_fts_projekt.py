@@ -27,8 +27,8 @@ def _fresh_db(tmp_path) -> sqlite3.Connection:
 
 def _insert_node(conn, node_id, path, project_id="shared", title="x", summary="y", content=""):
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level) "
-        "VALUES (?, ?, ?, ?, ?, ?, 0)",
+        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source) "
+        "VALUES (?, ?, ?, ?, ?, ?, 0, 'test')",
         (node_id, path, project_id, title, summary, content),
     )
 

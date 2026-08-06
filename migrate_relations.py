@@ -35,6 +35,7 @@ def main() -> None:
     parser.add_argument("--db", type=Path, default=kms.DB_PATH)
     parser.add_argument("--no-backup", action="store_true", help="Only for disposable test databases")
     args = parser.parse_args()
+    print(f"Datenbank: {args.db.resolve()}")
     backup = migrate(args.db.resolve(), not args.no_backup)
     print(f"migrated: {args.db.resolve()}")
     print(f"backup: {backup}" if backup else "backup: skipped")

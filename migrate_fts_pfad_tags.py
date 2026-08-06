@@ -38,7 +38,7 @@ FOLD_SQL = (
 
 def backup_db() -> Path:
     ts = datetime.now(timezone(timedelta(hours=1))).strftime("%Y%m%dT%H%M%S")
-    backup_path = DB_PATH.with_name(f"knowledge.db.bak-{ts}")
+    backup_path = DB_PATH.with_name(f"{DB_PATH.name}.bak-{ts}")
     shutil.copy2(DB_PATH, backup_path)
     if not backup_path.exists() or backup_path.stat().st_size == 0:
         raise SystemExit(f"Backup fehlgeschlagen: {backup_path}")
@@ -51,6 +51,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
+    print(f"Datenbank: {DB_PATH}")
     conn = sqlite3.connect(str(DB_PATH))
     node_count = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
     fts_count_before = conn.execute("SELECT COUNT(*) FROM knowledge_fts").fetchone()[0]

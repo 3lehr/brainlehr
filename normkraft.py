@@ -277,8 +277,8 @@ def _insert_node(conn: sqlite3.Connection, node_id: str, path: str, *, norm_rang
     conn.execute(
         """INSERT INTO knowledge_nodes
            (id, path, parent_path, project_id, title, summary, content, level, tags,
-            created_at, updated_at, norm_rang, gilt_ab, gilt_bis)
-           VALUES (?, ?, '/', 'shared', ?, 'summary', ?, 1, '[]', ?, ?, ?, ?, ?)""",
+            created_at, updated_at, norm_rang, gilt_ab, gilt_bis, source)
+           VALUES (?, ?, '/', 'shared', ?, 'summary', ?, 1, '[]', ?, ?, ?, ?, ?, 'selftest')""",
         (node_id, path, node_id, content, gilt_ab or "2026-01-01T00:00:00+01:00",
          gilt_ab or "2026-01-01T00:00:00+01:00", norm_rang, gilt_ab, gilt_bis),
     )

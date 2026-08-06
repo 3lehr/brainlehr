@@ -35,8 +35,8 @@ def temp_db(tmp_path, monkeypatch):
     # /shared muss als echter Knoten existieren, sonst lehnt knowledge_add()
     # seit P1 den Elternpfad ab (unbekannter parent_path).
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, updated_at) "
-        "VALUES ('root', '/shared', NULL, 'shared', 'Shared', 'Wurzel', 0, ?)",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, updated_at, source) "
+        "VALUES ('root', '/shared', NULL, 'shared', 'Shared', 'Wurzel', 0, ?, 'test')",
         (kms.now_iso(),),
     )
     conn.commit()
@@ -48,8 +48,8 @@ def temp_db(tmp_path, monkeypatch):
 def _insert_node(db_path, node_id, path, title, content="", parent_path="/shared"):
     conn = sqlite3.connect(str(db_path))
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, updated_at) "
-        "VALUES (?, ?, ?, 'shared', ?, 'Zusammenfassung', ?, 1, ?)",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, updated_at, source) "
+        "VALUES (?, ?, ?, 'shared', ?, 'Zusammenfassung', ?, 1, ?, 'test')",
         (node_id, path, parent_path, title, content, kms.now_iso()),
     )
     conn.commit()

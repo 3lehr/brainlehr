@@ -85,12 +85,18 @@ def _populate_db_index_ablated(db_path: Path, corpus: dict) -> None:
                     'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
                 '', '', '');
         END;
+        DROP TRIGGER IF EXISTS knowledge_nodes_parent_check_bi;
+        DROP TRIGGER IF EXISTS knowledge_nodes_parent_check_bu;
     """)
+    # orphan_parent-Pathologie + source-Zusicherung: gleiche Begruendung wie
+    # in messlauf._populate_db.
+    # source darf seit dem DB-Trigger (Auftrag 2026-08-06) nicht leer sein --
+    # der synthetische Korpus kennt keine Herkunft, 'korpus' ist der Platzhalter.
     conn.executemany(
         "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, "
-        "summary, content, level, tags) VALUES (?,?,?,?,?,?,?,?,?)",
+        "summary, content, level, tags, source) VALUES (?,?,?,?,?,?,?,?,?,?)",
         [(n["id"], n["path"], n["parent_path"], n["project_id"], n["title"],
-          n["summary"], n["content"], n["level"], json.dumps(n["tags"], ensure_ascii=False))
+          n["summary"], n["content"], n["level"], json.dumps(n["tags"], ensure_ascii=False), "korpus")
          for n in corpus["nodes"]],
     )
     conn.executemany(

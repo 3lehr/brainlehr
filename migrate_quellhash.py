@@ -25,6 +25,7 @@ Usage:
 from __future__ import annotations
 
 import hashlib
+import os
 import shutil
 import sqlite3
 import sys
@@ -35,7 +36,10 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 import normbestand  # noqa: E402  (parse_source, abschnitt_hash, current_section_body)
 
-DB_PATH = HERE / "knowledge.db"
+# BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad -- gleiches Muster wie
+# knowledge_mcp_server.py::DB_PATH, sonst laesst sich dieses Skript nie gegen
+# eine Testkopie fahren, ohne die Produktiv-DB anzufassen.
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
 CET = timezone(timedelta(hours=1))
 
 NEW_COLUMNS = {"quell_hash": "TEXT"}
@@ -58,7 +62,7 @@ def _backup(db_path: Path) -> Path:
     finally:
         conn.close()
     stamp = datetime.now(CET).strftime("%Y%m%dT%H%M%S")
-    dest = db_path.parent / f"knowledge.db.bak-{stamp}"
+    dest = db_path.parent / f"{db_path.name}.bak-{stamp}"
     shutil.copy2(db_path, dest)
     return dest
 
@@ -222,6 +226,7 @@ def main() -> int:
     if "--selftest" in sys.argv:
         return _selftest()
 
+    print(f"Datenbank: {DB_PATH}")
     if not DB_PATH.exists():
         print(f"FEHLER: {DB_PATH} nicht gefunden.")
         return 1

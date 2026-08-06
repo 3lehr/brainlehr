@@ -8,13 +8,17 @@ Usage: python3 migrate_knowledge.py
 """
 
 import json
+import os
 import sqlite3
 import uuid
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-DB_PATH = Path(__file__).parent / "knowledge.db"
+# BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad -- gleiches Muster wie
+# knowledge_mcp_server.py::DB_PATH, sonst laesst sich dieses Skript nie gegen
+# eine Testkopie fahren, ohne die Produktiv-DB anzufassen.
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "knowledge.db"))
 BERLIN = ZoneInfo("Europe/Berlin")
 
 
@@ -260,6 +264,7 @@ REGEL: Opus nur für Architektur-Konsile und komplexe Debugging-Sessions.""",
 
 
 def main():
+    print(f"Datenbank: {DB_PATH}")
     conn = sqlite3.connect(str(DB_PATH))
     conn.execute("PRAGMA journal_mode=WAL")
 

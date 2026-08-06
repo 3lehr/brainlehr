@@ -402,6 +402,10 @@ def _insert_node(conn: sqlite3.Connection, node_id: str, path: str, *, confidenc
                   norm_rang: int | None = None, updated_at: str | None = None,
                   source: str | None = None, content: str = "") -> None:
     updated_at = updated_at or "2026-01-01T00:00:00+01:00"
+    # source darf seit dem DB-Trigger (Auftrag 2026-08-06) nicht leer sein --
+    # Selbsttest-Platzhalter statt None, wenn der Aufrufer keinen echten Wert
+    # mitgibt.
+    source = source or "selftest"
     conn.execute(
         """INSERT INTO knowledge_nodes
            (id, path, parent_path, project_id, title, summary, content, level, tags,

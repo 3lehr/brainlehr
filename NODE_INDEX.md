@@ -1,6 +1,6 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 288 · erzeugt: 2026-08-06T10:45:45+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 290 · erzeugt: 2026-08-06T11:34:57+0200
 
 Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NICHT hier -- bei Bedarf gezielt mit `knowledge_read <path>` nachladen.
 
@@ -107,6 +107,8 @@ Das ist die vollstaendige Landkarte aller Knoten in der Knowledge-DB. Inhalte NI
 
 - /brainlehr — brainlehr
 - /brainlehr/brainlehr-zweck-umfang-und-was-es-nicht — brainlehr — Zweck, Umfang und was es NICHT ist
+- /brainlehr/inference-control-was-andere-faecher — Inference Control — was andere Faecher geloest haben und wo die bewiesene Grenze liegt
+- /brainlehr/inference-control-zweiter-lauf-exakte — Inference Control, zweiter Lauf — exakte Schranke, echte Budgetwerte, ein ungeloester Widerspruch
 - /brainlehr/openlehr-ist-der-steuerfall-wissen-ohne — openlehr ist der Steuerfall — Wissen ohne Geltungszeitraum ist dort falsch, nicht unvollstaendig
 - /brainlehr/richtig-in-brainlehr-ablegen-regeln-fuer — Richtig in brainlehr ablegen — Regeln fuer jede App-Sitzung
 

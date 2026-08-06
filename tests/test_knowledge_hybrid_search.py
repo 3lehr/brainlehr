@@ -41,8 +41,8 @@ def temp_db(tmp_path, monkeypatch):
     conn = sqlite3.connect(str(db_path))
     conn.executescript(schema)
     conn.executemany(
-        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level) "
-        "VALUES (?, ?, 'shared', ?, ?, NULL, 0)",
+        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source) "
+        "VALUES (?, ?, 'shared', ?, ?, NULL, 0, 'test')",
         [
             ("n1", "/steuer/aveuer-regel", "AVEUER Sonderabschreibung",
              "Regel zur Abschreibung von Anlagegütern im ersten Jahr"),

@@ -59,7 +59,7 @@ def already_migrated(conn: sqlite3.Connection) -> bool:
 
 def backup_db() -> Path:
     ts = datetime.now(timezone(timedelta(hours=1))).strftime("%Y%m%dT%H%M%S")
-    backup_path = DB_PATH.with_name(f"knowledge.db.bak-{ts}")
+    backup_path = DB_PATH.with_name(f"{DB_PATH.name}.bak-{ts}")
     shutil.copy2(DB_PATH, backup_path)
     if not backup_path.exists() or backup_path.stat().st_size == 0:
         raise SystemExit(f"Backup fehlgeschlagen: {backup_path}")
@@ -72,6 +72,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
+    print(f"Datenbank: {DB_PATH}")
     conn = sqlite3.connect(str(DB_PATH))
     row_count_before = conn.execute("SELECT COUNT(*) FROM knowledge_embeddings").fetchone()[0]
     pairs_before = conn.execute(

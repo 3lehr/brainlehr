@@ -57,11 +57,24 @@ _SCHEMA_SQL = (SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8")
 def _populate_db(db_path: Path, corpus: dict) -> None:
     conn = sqlite3.connect(str(db_path))
     conn.executescript(_SCHEMA_SQL)
+    # Die orphan_parent-Pathologie (korpus.py, Plan §3) erzeugt ABSICHTLICH
+    # Knoten mit parent_path ohne existierenden Elternknoten -- genau die
+    # messy-Realdaten-Lage, die dieser Pruefstand ueber Retrieval-Guete
+    # misst. Der DB-Trigger (Auftrag 2026-08-06), der das an echten
+    # Schreibpfaden verhindert, wuerde diese synthetische, disposable DB am
+    # Bauen hindern -- hier nur die beiden parent_path-Trigger entfernen,
+    # source/anlass-Zusicherungen bleiben aktiv.
+    conn.executescript("""
+        DROP TRIGGER IF EXISTS knowledge_nodes_parent_check_bi;
+        DROP TRIGGER IF EXISTS knowledge_nodes_parent_check_bu;
+    """)
+    # source darf seit dem DB-Trigger (Auftrag 2026-08-06) nicht leer sein --
+    # der synthetische Korpus kennt keine Herkunft, 'korpus' ist der Platzhalter.
     conn.executemany(
         "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, "
-        "summary, content, level, tags) VALUES (?,?,?,?,?,?,?,?,?)",
+        "summary, content, level, tags, source) VALUES (?,?,?,?,?,?,?,?,?,?)",
         [(n["id"], n["path"], n["parent_path"], n["project_id"], n["title"],
-          n["summary"], n["content"], n["level"], json.dumps(n["tags"], ensure_ascii=False))
+          n["summary"], n["content"], n["level"], json.dumps(n["tags"], ensure_ascii=False), "korpus")
          for n in corpus["nodes"]],
     )
     conn.executemany(

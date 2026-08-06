@@ -24,6 +24,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import sqlite3
 import sys
 import unicodedata
@@ -68,6 +69,62 @@ EVENT_STATUSES = {"started", "completed", "failed"}
 # Feld ab. Wer die Verteilung auswertet (knowledge_stats), darf die vier
 # Werte nicht gleich behandeln.
 ALLOWED_ANLASS = {"selbst", "betreiber", "hook", "skript", "unbekannt"}
+# Rueckfuellwert fuer Bestandszeilen ohne source (Auftrag 2026-08-06, siehe
+# _ensure_node_constraint_triggers/migrate_source_constraints.py). Testdaten,
+# Umschreiben erlaubt -- deshalb Nachtrag statt "Regel gilt nur fuer Neues".
+SOURCE_BACKFILL_PLACEHOLDER = "unbekannt (Altbestand vor Migration 2026-08-06, nachgetragen)"
+# Sechs Trigger, die die drei DB-Zusicherungen an knowledge_nodes tragen
+# (source nicht leer, parent_path zeigt auf vorhandenen Knoten oder '/',
+# anlass aus ALLOWED_ANLASS) -- identischer Text wie in schema.sql, dort
+# fuer frisch angelegte Dateien, hier als Nachzug fuer Bestands-DBs. Zwei
+# Kopien statt gemeinsamer Quelle, gleiches Muster wie jede andere additive
+# Migration in diesem Server (z.B. _ensure_anlass_columns neben dem
+# anlass-Block in schema.sql).
+NODE_CONSTRAINT_TRIGGERS_SQL = """
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_source_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.source IS NULL OR TRIM(NEW.source) = ''
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.source darf nicht leer sein: Herkunft angeben (Datei, Konsil oder Recherche, aus der dieser Knoten stammt)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_source_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.source IS NULL OR TRIM(NEW.source) = ''
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.source darf nicht leer sein: Herkunft angeben (Datei, Konsil oder Recherche, aus der dieser Knoten stammt)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_parent_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.parent_path IS NOT NULL AND NEW.parent_path <> '/'
+    AND NOT EXISTS (SELECT 1 FROM knowledge_nodes WHERE path = NEW.parent_path)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.parent_path zeigt auf keinen vorhandenen Knoten: zuerst den Elternknoten anlegen, dann parent_path erneut setzen');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_parent_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.parent_path IS NOT NULL AND NEW.parent_path <> '/'
+    AND NOT EXISTS (SELECT 1 FROM knowledge_nodes WHERE path = NEW.parent_path)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.parent_path zeigt auf keinen vorhandenen Knoten: zuerst den Elternknoten anlegen, dann parent_path erneut setzen');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_anlass_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.anlass NOT IN ('selbst','betreiber','hook','skript','unbekannt')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.anlass unzulaessig: erlaubt sind selbst, betreiber, hook, skript, unbekannt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_anlass_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.anlass NOT IN ('selbst','betreiber','hook','skript','unbekannt')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.anlass unzulaessig: erlaubt sind selbst, betreiber, hook, skript, unbekannt');
+END;
+"""
 # Auditkette ueber access_log (Auftrag 2026-08-06). Gleiche Laenge/Form wie
 # ein SHA-256-Hexdigest, damit ein Genesis-Wert nicht wie ein "kaputter"
 # Hash aussieht. Fachtrennung zu fahrtenbuch_legacy/.../hash_chain.dart::
@@ -91,8 +148,119 @@ def get_db() -> sqlite3.Connection:
     return conn
 
 
+def _ensure_anlass_columns(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die Spalte anlass (Auftrag 2026-08-06,
+    Befund: schreibpruefstand.db hatte schema.sql, aber keinen Migrationslauf
+    -- knowledge_add/lesson_record brachen mit rohem sqlite3.OperationalError
+    '<table> has no column named anlass' ab). PRAGMA table_info ist reine
+    Metadaten-Abfrage (kein Tabellen-Scan), kostet also im Normalfall (Spalte
+    vorhanden) nur Mikrosekunden pro Verbindung -- gemessen in
+    tests/test_anlass_schema_backfill.py. Tabellen, die es (noch) gar nicht
+    gibt (z.B. eine minimale Legacy-Testfixture ohne lessons_learned), werden
+    uebersprungen statt einen ALTER-Fehlschlag zu produzieren.
+
+    Entscheidung automatisch statt nur melden: gleiches Muster wie der
+    bestehende access_log-Nachzug direkt darunter in dieser Funktion, additiv
+    (ALTER TABLE ADD COLUMN, NOT NULL DEFAULT 'unbekannt' -- SQLite befuellt
+    Bestandszeilen beim ALTER selbst, kein separater Ruckfuell-Schritt, siehe
+    migrate_anlass.py). Anders als der access_log-Nachzug (der ohne Sicherung
+    auf frueher schon additiv gewachsenen Spalten laeuft) wird hier vorher
+    ein WAL-Checkpoint plus Dateisicherung erzwungen (Lehre L-218f1e: ein
+    reiner shutil.copy2 im WAL-Betrieb kann committete, aber noch nicht
+    zurueckgeschriebene Zeilen verlieren). Schlaegt der Checkpoint fehl (ein
+    anderer Prozess schreibt gerade), wird NICHT stumm weiter-ALTERt --
+    sprechender Fehler statt der rohen sqlite3-Ausnahme, mit dem Hinweis auf
+    den manuellen Nachzug via migrate_anlass.py --apply."""
+    existing_tables = {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }
+    missing = {
+        table for table in ("knowledge_nodes", "lessons_learned")
+        if table in existing_tables
+        and "anlass" not in {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+    }
+    if not missing:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"Spalte 'anlass' fehlt in {sorted(missing)}, aber die Sicherung vor dem "
+            f"automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
+            "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, "
+            "nichts geaendert. Von Hand nachholen: "
+            "'.venv/bin/python shared-knowledge/migrate_anlass.py --apply'."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    for table in missing:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN anlass TEXT NOT NULL DEFAULT 'unbekannt'")
+
+
+def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die sechs Zusicherungs-Trigger an
+    knowledge_nodes (Auftrag 2026-08-06). Gleiches Muster wie
+    _ensure_anlass_columns direkt darueber: WAL-Checkpoint + Sicherungskopie
+    VOR jeder Aenderung (Lehre L-218f1e), Abbruch mit sprechendem Fehler
+    statt stillem Weiterlaufen wenn der Checkpoint blockiert ist. Anders als
+    dort aendert dieser Nachzug zusaetzlich Daten (Rueckfuellung leerer
+    source-Werte auf SOURCE_BACKFILL_PLACEHOLDER) -- Testdaten, Umschreiben
+    erlaubt (Betreiber-Direktive), deshalb Nachtrag statt Bestandszeilen
+    dauerhaft von der Regel auszunehmen. Backfill laeuft VOR der
+    Trigger-Erzeugung, sonst wuerde z.B. das access_count-Increment in
+    knowledge_read jede betroffene Bestandszeile sperren, bis jemand ihren
+    source-Wert von Hand nachtraegt."""
+    existing_triggers = {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")
+    }
+    needed = {
+        "knowledge_nodes_source_check_bi", "knowledge_nodes_source_check_bu",
+        "knowledge_nodes_parent_check_bi", "knowledge_nodes_parent_check_bu",
+        "knowledge_nodes_anlass_check_bi", "knowledge_nodes_anlass_check_bu",
+    }
+    if needed <= existing_triggers:
+        return
+    if "knowledge_nodes" not in {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }:
+        return  # minimale Testfixture ohne die Tabelle -- nichts zu sichern
+    node_columns = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}
+    if not {"source", "parent_path", "anlass"} <= node_columns:
+        return  # minimale Legacy-Testfixture ohne diese Spalten (z.B.
+        # migrate_relations.py-Selbsttest) -- die Trigger brauchen alle drei,
+        # eine echte Bestands-DB hat source/parent_path seit jeher und
+        # anlass spaetestens nach _ensure_anlass_columns() oben
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"Zusicherungs-Trigger an knowledge_nodes fehlen, aber die Sicherung vor dem "
+            f"automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
+            "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, "
+            "nichts geaendert. Von Hand nachholen: "
+            "'.venv/bin/python shared-knowledge/migrate_source_constraints.py --apply'."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    conn.execute(
+        "UPDATE knowledge_nodes SET source = ? WHERE source IS NULL OR TRIM(source) = ''",
+        (SOURCE_BACKFILL_PLACEHOLDER,),
+    )
+    conn.executescript(NODE_CONSTRAINT_TRIGGERS_SQL)
+
+
 def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old knowledge.db copies."""
+    _ensure_anlass_columns(conn)
+    _ensure_node_constraint_triggers(conn)
     columns = {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
     for name, declaration in {
         "actor": "TEXT", "model": "TEXT", "session": "TEXT",
