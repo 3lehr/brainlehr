@@ -40,6 +40,12 @@ def temp_db(tmp_path, monkeypatch):
     # vom echten Environment des Bearbeiters profitiert.
     for var in ("BEGOD_KNOWLEDGE_ACTOR", "BEGOD_KNOWLEDGE_MODEL", "BEGOD_KNOWLEDGE_SESSION"):
         monkeypatch.delenv(var, raising=False)
+    # Dritter Fallback-Schritt (Auftrag 2026-08-07) ist an _PROZESS_SITZUNG
+    # gebunden, einmal beim Modulimport aus CLAUDE_CODE_SESSION_ID gelesen --
+    # ein delenv() DANACH wirkt darauf nicht mehr. Fuer die Faelle unten, die
+    # das Ende der Kette pruefen (kein Aufrufer, keine Env), wird dieser
+    # dritte Schritt hier zusaetzlich stillgelegt; test_e prueft ihn gezielt.
+    monkeypatch.setattr(kms, "_PROZESS_SITZUNG", None)
     return db_path
 
 
@@ -164,6 +170,48 @@ def test_d_ohne_jede_kennung_wird_nicht_abgewiesen(temp_db):
     conn.close()
     assert row["actor"] == "unbekannt"
     assert row["session"] == "unbekannt"
+
+
+# ─── e) Server bestimmt Kennung selbst statt sie vom Aufrufer zu erwarten ──
+# (Auftrag 2026-08-07): dritter Schritt der Kette. Bisher endete die Kette
+# bei "unbekannt", sobald weder Aufrufer noch BEGOD_KNOWLEDGE_SESSION einen
+# Wert mitgaben -- der Regelfall, denn dieses Feld muss der Schreiber
+# freiwillig fuellen. Jetzt: _PROZESS_SITZUNG, einmal beim Prozessstart aus
+# CLAUDE_CODE_SESSION_ID gelesen (vom Claude-Code-Host an jeden MCP-Server-
+# Kindprozess vererbt), greift VOR "unbekannt". Aufrufer-Wert bleibt Vorrang
+# (Negativfall).
+
+def test_e_prozess_sitzung_greift_vor_unbekannt(temp_db, monkeypatch):
+    monkeypatch.setattr(kms, "_PROZESS_SITZUNG", "43459d92-fallback-probe")
+
+    node = kms.knowledge_add(
+        "/", "Prozesssitzung-Testknoten", "Zusammenfassung",
+        source="erzeugt aus Test (Stand 2026-08-07)",
+    )
+    assert node.get("status") == "created", node
+
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    row = conn.execute("SELECT session FROM knowledge_nodes WHERE id = ?", (node["id"],)).fetchone()
+    conn.close()
+    print(f"NACHHER: knowledge_nodes.session={row['session']!r}")
+    assert row["session"] == "43459d92-fallback-probe", row["session"]
+
+
+def test_e_aufrufer_wert_hat_vorrang_vor_prozess_sitzung(temp_db, monkeypatch):
+    monkeypatch.setattr(kms, "_PROZESS_SITZUNG", "43459d92-fallback-probe")
+
+    node = kms.knowledge_add(
+        "/", "Prozesssitzung-Negativtest", "Zusammenfassung",
+        source="erzeugt aus Test (Stand 2026-08-07)", session="eigene-kennung",
+    )
+    assert node.get("status") == "created", node
+
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    row = conn.execute("SELECT session FROM knowledge_nodes WHERE id = ?", (node["id"],)).fetchone()
+    conn.close()
+    assert row["session"] == "eigene-kennung", row["session"]
 
 
 # ─── Nachtrag: model, gleiche Machart wie actor/session ────────────────────

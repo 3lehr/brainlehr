@@ -622,6 +622,18 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
 UNBEKANNTER_SCHREIBER = "unbekannt"
 
+# Einmal beim Prozessstart bestimmt (Auftrag 2026-08-07, ADR-028-Rangfolge:
+# "so bauen, dass der Fehler unmoeglich ist" statt im Werkzeug pruefen). Ein
+# vom Claude-Code-Host gestarteter MCP-Server-Prozess erbt CLAUDE_CODE_SESSION_ID
+# von der Elternsitzung -- dieselbe Kennung, die SessionStart als session_id
+# an wiedereinstieg.py reicht (dort per session_id[:8]-Praefix gematcht, was
+# hier funktioniert, weil die volle Kennung mit demselben Praefix beginnt).
+# Vorher haengte JEDER Schreibvorgang ohne von Hand mitgegebene `session`
+# still bei "unbekannt" -- ein Feld, das der Aufrufer freiwillig fuellen
+# muss, ist im Mittel leer (gemessen 2026-08-06/07: nur handgestempelte
+# Aufrufe trugen eine Kennung).
+_PROZESS_SITZUNG = os.environ.get("CLAUDE_CODE_SESSION_ID")
+
 
 def _identity(actor: str | None = None, model: str | None = None,
               session: str | None = None) -> tuple[str, str, str]:
@@ -637,11 +649,15 @@ def _identity(actor: str | None = None, model: str | None = None,
     actor/session von sich aus, und die Umgebungsvariablen sind praktisch nie
     gesetzt). Jetzt: dritter Schritt ist ein expliziter, unmissverstaendlicher
     Wert -- kein Abweisen (Punkt 4 des Auftrags: ein Schreiber, der sich nicht
-    ausweist, bleibt zulaessig), aber auch kein stilles NULL mehr."""
+    ausweist, bleibt zulaessig), aber auch kein stilles NULL mehr.
+
+    session zusaetzlich (Auftrag 2026-08-07): vor UNBEKANNTER_SCHREIBER greift
+    _PROZESS_SITZUNG, vom Server selbst ermittelt statt vom Aufrufer erwartet.
+    Ein von Hand mitgegebener Wert (Parameter oder Env-Var) hat weiter Vorrang."""
     return (
         actor or os.environ.get("BEGOD_KNOWLEDGE_ACTOR") or UNBEKANNTER_SCHREIBER,
         model or os.environ.get("BEGOD_KNOWLEDGE_MODEL") or UNBEKANNTER_SCHREIBER,
-        session or os.environ.get("BEGOD_KNOWLEDGE_SESSION") or UNBEKANNTER_SCHREIBER,
+        session or os.environ.get("BEGOD_KNOWLEDGE_SESSION") or _PROZESS_SITZUNG or UNBEKANNTER_SCHREIBER,
     )
 
 
