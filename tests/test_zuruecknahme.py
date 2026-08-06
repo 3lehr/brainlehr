@@ -152,3 +152,66 @@ def test_access_log_traegt_beide_vorgaenge(temp_db):
     conn.close()
     assert "zurueckziehen" in actions, actions
     assert "freigeben" in actions, actions
+
+
+# ─── e) Dispatch-Ebene: node_id ODER path (Auftrag 2026-08-07) ─────────────
+# Befund: `knowledge_zurueckziehen(path="/probe", grund="...")` ueber den
+# MCP-Dispatch (TOOLS[...]["handler"](args)) ergab {"error": "'node_id'"} --
+# roher KeyError, kein sprechender Fehler. Diese Tests laufen bewusst durch
+# die TOOLS-Handler, nicht durch die Python-Funktion direkt: der Fehler lebte
+# in der Dispatch-Schicht (args["node_id"]), eine Pruefung nur auf
+# kms.knowledge_zurueckziehen() waere blind dafuer gewesen.
+
+def test_e_rot_dispatch_mit_path_kein_roher_keyerror(temp_db):
+    node = _make_node(title="Dispatch-Path-Testknoten")
+    args = {"path": node["path"], "grund": "Testbeleg Dispatch mit path"}
+    res = kms.TOOLS["knowledge_zurueckziehen"]["handler"](args)
+    assert res.get("status") == "zurueckgezogen", res
+    assert res["error"] if "error" in res else True  # nur zur Doku: kein KeyError-Text
+    assert res != {"error": "'node_id'"}, ("roher KeyError kam durch", res)
+
+
+def test_e_dispatch_weder_node_id_noch_path(temp_db):
+    with pytest.raises(ValueError) as exc:
+        kms.TOOLS["knowledge_zurueckziehen"]["handler"]({"grund": "egal"})
+    msg = str(exc.value)
+    assert "node_id" in msg and "path" in msg, msg
+    assert msg != "'node_id'", "roher KeyError statt sprechender Meldung"
+
+
+def test_e_dispatch_node_id_und_path_widersprechen_sich(temp_db):
+    node = _make_node(title="Widerspruch-Testknoten")
+    with pytest.raises(ValueError) as exc:
+        kms.TOOLS["knowledge_zurueckziehen"]["handler"](
+            {"node_id": node["id"], "path": "/anderer/pfad", "grund": "egal"}
+        )
+    assert "widersprechen" in str(exc.value)
+
+
+def test_e_dispatch_node_id_und_path_gleich_ist_erlaubt(temp_db):
+    node = _make_node(title="Gleicher-Wert-Testknoten")
+    args = {"node_id": node["path"], "path": node["path"], "grund": "beide gleich"}
+    res = kms.TOOLS["knowledge_zurueckziehen"]["handler"](args)
+    assert res.get("status") == "zurueckgezogen", res
+
+
+def test_e_dispatch_pfad_nicht_gefunden_nennt_pfad(temp_db):
+    res = kms.TOOLS["knowledge_zurueckziehen"]["handler"](
+        {"path": "/nicht/vorhanden", "grund": "egal"}
+    )
+    assert "error" in res, res
+    assert "/nicht/vorhanden" in res["error"], res
+
+
+def test_e_freigeben_dispatch_mit_path(temp_db):
+    node = _make_node(title="Freigeben-Dispatch-Testknoten")
+    kms.knowledge_zurueckziehen(node["id"], "vorher zurueckziehen")
+    res = kms.TOOLS["knowledge_freigeben"]["handler"]({"path": node["path"]})
+    assert res.get("status") == "freigegeben", res
+
+
+def test_e_freigeben_dispatch_ohne_angabe(temp_db):
+    with pytest.raises(ValueError) as exc:
+        kms.TOOLS["knowledge_freigeben"]["handler"]({})
+    msg = str(exc.value)
+    assert "node_id" in msg and "path" in msg, msg

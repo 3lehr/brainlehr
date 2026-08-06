@@ -2648,6 +2648,34 @@ def _identity_args(args: dict) -> dict:
     return {key: args.get(key) for key in ("actor", "model", "session")}
 
 
+def _resolve_node_ref(args: dict) -> str:
+    """Loest node_id ODER path aus dem Aufrufer-Dict auf (Auftrag 2026-08-07,
+    Befund: `knowledge_zurueckziehen(path="/probe", ...)` reichte den rohen
+    KeyError('node_id') als {"error": "'node_id'"} durch -- nennt nur den
+    Python-Schluesselnamen, keine Handlungsanweisung, siehe handle_request()s
+    genereller `except Exception as e: str(e)`). Genau EINE der beiden
+    Angaben ist Pflicht. Beide gesetzt und WIDERSPRUECHLICH -> Fehler, kein
+    stilles Gewinnen-Lassen einer Seite; beide gesetzt und gleich -> erlaubt
+    (kein Grund zum Abweisen, wenn ein Aufrufer sicherheitshalber beides
+    mitgibt). ValueError statt KeyError, weil handle_request() jede Exception
+    ohnehin nur ueber str(e) an den Aufrufer reicht -- der Text hier muss
+    also bereits die vollstaendige, an einen Aufrufer gerichtete Meldung
+    sein."""
+    node_id = args.get("node_id")
+    path = args.get("path")
+    if node_id and path and node_id != path:
+        raise ValueError(
+            f"node_id ({node_id!r}) und path ({path!r}) widersprechen sich: nur eine der beiden Angaben machen."
+        )
+    if node_id:
+        return node_id
+    if path:
+        return path
+    raise ValueError(
+        "weder node_id noch path angegeben: eine von beiden ist Pflicht -- die Node-ID oder der volle Pfad des Knotens."
+    )
+
+
 IDENTITY_PROPERTIES = {
     "actor": {"type": "string", "description": "Calling agent identity; else BEGOD_KNOWLEDGE_ACTOR or unknown"},
     "model": {"type": "string", "description": "Calling model; else BEGOD_KNOWLEDGE_MODEL or unknown"},
@@ -2783,13 +2811,14 @@ TOOLS = {
         "inputSchema": {
             "type": "object",
             "properties": {
-                "node_id": {"type": "string", "description": "Node ID or path"},
+                "node_id": {"type": "string", "description": "Node ID -- exactly one of node_id/path required"},
+                "path": {"type": "string", "description": "Full node path -- exactly one of node_id/path required"},
                 "grund": {"type": "string", "description": "Required reason for withdrawal"},
                 **IDENTITY_PROPERTIES,
             },
-            "required": ["node_id", "grund"]
+            "required": ["grund"]
         },
-        "handler": lambda args: knowledge_zurueckziehen(args["node_id"], args.get("grund", ""), **_identity_args(args))
+        "handler": lambda args: knowledge_zurueckziehen(_resolve_node_ref(args), args.get("grund", ""), **_identity_args(args))
     },
     "knowledge_freigeben": {
         "description": "Undo a knowledge_zurueckziehen: the node reappears in knowledge_search/recall. "
@@ -2798,12 +2827,12 @@ TOOLS = {
         "inputSchema": {
             "type": "object",
             "properties": {
-                "node_id": {"type": "string", "description": "Node ID or path"},
+                "node_id": {"type": "string", "description": "Node ID -- exactly one of node_id/path required"},
+                "path": {"type": "string", "description": "Full node path -- exactly one of node_id/path required"},
                 **IDENTITY_PROPERTIES,
             },
-            "required": ["node_id"]
         },
-        "handler": lambda args: knowledge_freigeben(args["node_id"], **_identity_args(args))
+        "handler": lambda args: knowledge_freigeben(_resolve_node_ref(args), **_identity_args(args))
     },
     "knowledge_relation_add": {
         "description": "Create one explicit evidenced knowledge edge between existing node IDs/paths. Never infers links from tags or text; validates endpoints, scope, type, confidence, and duplicate edges.",
