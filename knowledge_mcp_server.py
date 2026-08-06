@@ -716,14 +716,43 @@ ZERO_HIT_LOG = Path(__file__).parent / "zero_hit_log.jsonl"
 ZERO_HIT_LOG_MAX_BYTES = 200_000  # klein halten, gleiche Kappung wie recall_log.jsonl
 
 
-def _log_zero_hit(query: str) -> None:
+def _cwd_project(cwd: str | None) -> str | None:
+    """Projekt/Worktree aus cwd -- exakte Kopie von
+    knowledge_recall_hook.py::_cwd_project (Repo-Layout: .../Begod2026/<projekt>/...).
+    Bewusst dupliziert statt importiert: Hook-Skript und MCP-Server sind
+    getrennte Prozesse ohne gemeinsamen sys.path. None, wenn cwd fehlt oder
+    nicht diesem Layout folgt."""
+    if not cwd:
+        return None
+    m = re.search(r"/Begod2026/([^/]+)", cwd)
+    return m.group(1) if m else None
+
+
+def _log_zero_hit(query: str, cwd: str | None = None, session: str | None = None) -> None:
     """Haelt fest, welche Suchanfragen nichts fanden: Zeitpunkt, Anfragetext,
-    Trefferzahl (=0) -- mehr nicht. Grundlage fuer eine spaetere, an echten
+    Trefferzahl (=0), Herkunft. Grundlage fuer eine spaetere, an echten
     Ausfaellen gemessene Entscheidung ueber Synonyme, statt das zu vermuten.
     Nie ein Grund, die Suche scheitern zu lassen -- Fehler werden verschluckt,
-    wie beim analogen Recall-Log (knowledge_recall_hook.py::log_recall)."""
+    wie beim analogen Recall-Log (knowledge_recall_hook.py::log_recall).
+
+    Herkunft (Auftrag 2026-08-06, Nachzug zu Commit 4bcde3574): cwd + daraus
+    abgeleiteter Worktree-Name (gleiche Ableitung wie recall_log.jsonl,
+    _cwd_project oben, kein zweiter Weg) sowie Sitzungskennung, gekuerzt wie
+    dort (session[:8]). Fehlt ein Wert -> null im JSON, nicht weggelassen --
+    Bestandszeilen ohne diese Schluessel bleiben ueber .get() lesbar. Anders
+    als beim Hook gibt es hier kein sinnvolles os.getcwd()-Fallback: der
+    MCP-Server ist ein langlebiger Prozess, sein eigenes cwd sagt nichts
+    ueber den aufrufenden Client aus -- cwd kommt daher ausschliesslich vom
+    Aufrufer (Tool-Parameter)."""
     try:
-        entry = json.dumps({"ts": now_iso(), "query": query, "hits": 0}, ensure_ascii=False)
+        entry = json.dumps({
+            "ts": now_iso(),
+            "query": query,
+            "hits": 0,
+            "cwd": cwd,
+            "worktree": _cwd_project(cwd),
+            "session": (session[:8] if session else None),
+        }, ensure_ascii=False)
         if ZERO_HIT_LOG.exists() and ZERO_HIT_LOG.stat().st_size > ZERO_HIT_LOG_MAX_BYTES:
             lines = ZERO_HIT_LOG.read_text(encoding="utf-8").splitlines(keepends=True)
             ZERO_HIT_LOG.write_text("".join(lines[len(lines) // 2:]), encoding="utf-8")
@@ -753,7 +782,7 @@ def _geltung_status(norm_rang, gilt_ab: str | None, gilt_bis: str | None, sticht
 def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                      stichtag: str | None = None, nur_geltende: bool = False,
                      actor: str | None = None, model: str | None = None,
-                     session: str | None = None) -> dict:
+                     session: str | None = None, cwd: str | None = None) -> dict:
     """Hybrid-Suche ueber Wissensknoten: FTS5-Stichwortmatching (Woerter ODER-
     verknuepft, deutsch gefaltet) plus optionale Bedeutungs-Suche ueber lokale
     Embeddings (RRF-fusioniert). Ohne Vektoren (Tabelle fehlt oder leer) oder
@@ -839,7 +868,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             vorrang.append(entry)
     results = vorrang + nachrangig
     if not results:
-        _log_zero_hit(query)
+        _log_zero_hit(query, cwd=cwd, session=session)
     log_access(conn, results[0]["path"] if results else None, "search", query=query,
                project_id=scope, actor=actor, model=model, session=session)
     conn.close()
@@ -2316,11 +2345,12 @@ TOOLS = {
                 "max_results": {"type": "integer", "description": "Max results (default 10)", "default": 10},
                 "stichtag": {"type": "string", "description": "ISO-8601 date/timestamp to check norm validity (gilt_ab/gilt_bis) against; default now. Expired or not-yet-effective norms rank last and are marked, never hidden (unless nur_geltende=True). Facts (norm_rang unset) are unaffected."},
                 "nur_geltende": {"type": "boolean", "description": "Drop expired/not-yet-effective norms instead of ranking them last. Default False.", "default": False},
+                "cwd": {"type": "string", "description": "Caller's working directory, for zero-hit-log provenance only; else null"},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["query"]
         },
-        "handler": lambda args: knowledge_search(args["query"], args.get("scope", "all"), args.get("max_results", 10), stichtag=args.get("stichtag"), nur_geltende=args.get("nur_geltende", False), **_identity_args(args))
+        "handler": lambda args: knowledge_search(args["query"], args.get("scope", "all"), args.get("max_results", 10), stichtag=args.get("stichtag"), nur_geltende=args.get("nur_geltende", False), cwd=args.get("cwd"), **_identity_args(args))
     },
     "knowledge_add": {
         "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy. "
