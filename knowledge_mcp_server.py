@@ -34,7 +34,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
 
-DB_PATH = Path(__file__).parent / "knowledge.db"
+# BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad (gleiche Bauform wie die drei
+# BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
+# unveraendert. Grund: ein fest an __file__ gebundener DB-Pfad verhindert
+# jeden Betrieb ausserhalb dieses Verzeichnisses (Fremdclient-Test, spaeter
+# Portabilitaet ausserhalb Begod2026) und laesst sich nicht gegen eine
+# Testkopie fahren, ohne die echte DB anzufassen.
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "knowledge.db"))
 CET = timezone(timedelta(hours=1))
 # Mehrere MCP-Prozesse/Sitzungen schreiben gleichzeitig auf dieselbe WAL-DB.
 # WAL erlaubt genau einen Schreiber; ohne busy_timeout wirft ein zweiter
