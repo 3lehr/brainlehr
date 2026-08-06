@@ -1700,8 +1700,19 @@ def handle_request(req: dict) -> dict:
         return None  # No response for notifications
 
     if method == "tools/list":
+        # BEGOD_KNOWLEDGE_PROFIL beschraenkt nur die ANKUENDIGUNG (tools/list),
+        # nicht den Aufruf: tools/call bedient jedes Werkzeug in TOOLS weiter,
+        # egal ob es hier gelistet wurde. Kein Autorisierungsmechanismus.
+        profil = os.environ.get("BEGOD_KNOWLEDGE_PROFIL")
+        names = TOOLS.keys()
+        if profil == "klein":
+            names = ["knowledge_search", "knowledge_read", "knowledge_add"]
+        elif profil:
+            print(f"BEGOD_KNOWLEDGE_PROFIL unbekannt: {profil!r} — zeige alle Werkzeuge", file=sys.stderr)
+
         tool_list = []
-        for name, spec in TOOLS.items():
+        for name in names:
+            spec = TOOLS[name]
             tool_list.append({
                 "name": name,
                 "description": spec["description"],
