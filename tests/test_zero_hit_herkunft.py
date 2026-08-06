@@ -105,4 +105,4 @@ def test_d_cwd_project_gleiche_ableitung_wie_hook():
     assert kms._cwd_project("/Volumes/daten/Begod2026/fahrtenbuch/apps/fahrtenbuch_legacy") == "fahrtenbuch"
     assert kms._cwd_project("/Volumes/daten/Begod2026/hub") == "hub"
     assert kms._cwd_project(None) is None
-    assert kms._cwd_project("/tmp/irgendwas") is None
+    assert kms._cwd_project("/tmp/irgendwas") == "irgendwas"  # keine Git-Wurzel -> Ordnername als bester Schaetzwert

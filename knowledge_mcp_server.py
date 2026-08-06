@@ -6,16 +6,36 @@ Erstellt: 2026-03-25T16:30:00+01:00
 Transport: stdio (JSON-RPC 2.0)
 DB: SQLite + FTS5 Baumstruktur
 
-Portabler Kern (ADR-024): diese Datei + zwei Nachbarn im selben Verzeichnis,
-sonst nur Stdlib -- kein drittes Modul noetig zum Starten/ersten Eintrag:
-  - schema.sql   (Erstanlage aller Kerntabellen, siehe ensure_schema/
-                  _ensure_core_schema; einzige Schemaquelle, nicht im Code
-                  nachgebaut)
+Portabler Kern (ADR-024), zweistufig -- ADR-024 nannte nur "der MCP-Server"
+und meinte drei Dateien; die Liste ging seither einmal verloren, deshalb
+hier zweigeteilt und vollstaendig gehalten. Ermittelt am 2026-08-06 durch
+tatsaechliches Kopieren in ein leeres Verzeichnis + Nachziehen jedes
+ModuleNotFoundError, nicht geraten:
+
+Kern (dieses Modul starten, erster Eintrag, Werkzeuge wie knowledge_add):
+diese Datei + zwei Nachbarn, sonst nur Stdlib:
+  - schema.sql    (Erstanlage aller Kerntabellen, siehe ensure_schema/
+                   _ensure_core_schema; einzige Schemaquelle, nicht im Code
+                   nachgebaut)
   - embeddings.py (lokale Embeddings + RRF-Fusion; best-effort, ein Ausfall
-                  blockiert die Suche nie, siehe embeddings.py-Docstring)
-Alle anderen .py-Dateien in diesem Verzeichnis (ankerverfahren, auditanker,
-konfidenz, hebb_kanten, ...) sind eigenstaendige Skripte/Cronjobs, die die
-DB von aussen lesen/schreiben -- der MCP-Server importiert sie nicht.
+                   blockiert die Suche nie, siehe embeddings.py-Docstring)
+
+Selbstpruefung (zusaetzlich fuer knowledge_lint.py + konfidenz.py, beide
+gegen eine frische DB durchlaufgeprueft): obige drei Kerndateien PLUS
+  - ankerverfahren.py   (externe Verankerung; braucht zusaetzlich das
+                         Pip-Paket 'cryptography', keine weitere Datei)
+  - einschleusung.py    (Erkennung anweisungsartigen Texts)
+  - geltungsbereich.py  (Bereichs-/Projektzuordnung)
+  - kettenerklaerung.py (Erklaerungen zu Bruechen der Auditkette)
+  - konfidenz.py        (Konfidenzverfall; importiert normkraft.py mit)
+  - normkraft.py         (Normrang/-kraft, von konfidenz.py gebraucht)
+  - normbestand.py      (Quellstatus-Pruefung)
+  - knowledge_lint.py    (die Selbstpruefung selbst, importiert alle
+                         obigen; DB_PATH darin fest an
+                         SHARED_KNOWLEDGE/knowledge.db, keine BEGOD_KNOWLEDGE_DB-Uebersteuerung)
+Alle uebrigen .py-Dateien in diesem Verzeichnis (auditanker, hebb_kanten,
+...) sind eigenstaendige Skripte/Cronjobs ausserhalb dieser zwei Stufen --
+der MCP-Server importiert sie nicht, knowledge_lint.py auch nicht.
 
 Tools:
   - knowledge_browse(path)        → Kinder-Knoten (nur Titel+Summary)
@@ -154,8 +174,9 @@ END;
 """
 # Auditkette ueber access_log (Auftrag 2026-08-06). Gleiche Laenge/Form wie
 # ein SHA-256-Hexdigest, damit ein Genesis-Wert nicht wie ein "kaputter"
-# Hash aussieht. Fachtrennung zu fahrtenbuch_legacy/.../hash_chain.dart::
-# genesisHash bewusst: eigener Store, eigene Konstante.
+# Hash aussieht. Fachtrennung zu einer gleichnamigen Konstante in einer
+# anderen App (dortige Hashkette, eigene Implementierung) bewusst: eigener
+# Store, eigene Konstante.
 GENESIS_KETTEN_HASH = "0" * 64
 
 
@@ -792,14 +813,31 @@ ZERO_HIT_LOG_MAX_BYTES = 200_000  # klein halten, gleiche Kappung wie recall_log
 
 def _cwd_project(cwd: str | None) -> str | None:
     """Projekt/Worktree aus cwd -- exakte Kopie von
-    knowledge_recall_hook.py::_cwd_project (Repo-Layout: .../Begod2026/<projekt>/...).
-    Bewusst dupliziert statt importiert: Hook-Skript und MCP-Server sind
-    getrennte Prozesse ohne gemeinsamen sys.path. None, wenn cwd fehlt oder
-    nicht diesem Layout folgt."""
+    knowledge_recall_hook.py::_cwd_project. Bewusst dupliziert statt
+    importiert: Hook-Skript und MCP-Server sind getrennte Prozesse ohne
+    gemeinsamen sys.path.
+
+    Fund 2026-08-06 (Probelauf ausserhalb dieses Verbunds): hier stand vorher
+    ein fest verdrahteter Verbundname im Regex (".../Begod2026/<projekt>/...")
+    -- fuer jeden fremden Nutzer immer None, weil dessen Ordner nie
+    "Begod2026" heisst. Jetzt: BEGOD_KNOWLEDGE_PROJECT uebersteuert explizit
+    (fuer Faelle, in denen weder Git-Wurzel noch Ordnername passen); sonst
+    Name der naechsten Git-Wurzel oberhalb von cwd -- funktioniert bei uns
+    zufaellig identisch, weil hier jedes Projekt (fahrtenbuch, hub, ...)
+    genau auf Verbund-Ebene sein eigenes .git hat, ist aber nicht an
+    "Begod2026" gebunden. Keine Git-Wurzel gefunden (z.B. /tmp/irgendwas) ->
+    letzter Ordnername von cwd statt None, kein Nutzer bleibt mangels
+    passendem Layout ganz ohne Wert."""
     if not cwd:
         return None
-    m = re.search(r"/Begod2026/([^/]+)", cwd)
-    return m.group(1) if m else None
+    override = os.environ.get("BEGOD_KNOWLEDGE_PROJECT")
+    if override:
+        return override
+    p = Path(cwd)
+    for parent in (p, *p.parents):
+        if (parent / ".git").exists():
+            return parent.name
+    return p.name or None
 
 
 def _log_zero_hit(query: str, cwd: str | None = None, session: str | None = None) -> None:
@@ -1120,7 +1158,7 @@ def _validate_source_provenance(source: str, title: str, summary: str, content: 
     STRUKTURELL statt Wortliste (sprachunabhaengig, siehe Modul-Docstring von
     einschleusung.py fuer dieselbe Abwaegung an anderer Stelle): geprueft wird
     NICHT irgendein Bedeutungs-Ueberlappung (die schlaegt staendig zu Unrecht
-    an -- ein Dateipfad wie 'buckeberg/.../2026-08-05-endrunde-abgleich.md'
+    an -- ein Dateipfad wie 'projekt-x/.../2026-08-05-abschlussbericht.md'
     teilt zwangslaeufig Themenwoerter mit dem Titel, das ist erwuenscht, kein
     Zitieren-sich-selbst), sondern ein LAUF von mindestens sechs
     aufeinanderfolgenden Woertern, die woertlich sowohl in source als auch in
