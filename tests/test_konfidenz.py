@@ -1,12 +1,13 @@
-"""Tests fuer konfidenz.py (ADR-026 Z3, letztes bauliches Stueck).
+"""Tests fuer konfidenz.py (ADR-026 Z3 + Nachtrag 2026-08-06: drei Regime).
 
-Rot-vor-gruen: vor dieser Datei gab es konfidenz.py nicht -- jeder Import
-schlug fehl (rot), und die confidence-Spalte hatte seit Bestehen nie einen
-Schreibpfad ausser dem Vorgabewert (grep ueber shared-knowledge/*.py,
-2026-08-06: 0 Treffer ausser INSERT-Defaults). Deckt die Formel an den drei
-geforderten Grenzwerten, die Norm-Gegenprobe, die Wissensart-Klassifikation
-und den vollen bestaetigen()-Rundlauf (Ablehnungen, dry-run, Erfolgsfall,
-find_confidence_decay())."""
+Rot-vor-gruen (Ursprung): vor dieser Datei gab es konfidenz.py nicht -- jeder
+Import schlug fehl. Nachtrag 2026-08-06: der urspruengliche Entwurf rechnete
+Verfall nach Kalendertagen (bestrafte ruhenden Bestand, ein Projekt seit
+Monaten ohne Aenderung verlor Konfidenz, obwohl nichts geschah). Ersetzt
+durch drei Regime -- siehe konfidenz.py-Modul-Docstring. Deckt die
+Commit-Formel an den Grenzwerten, die Norm-Gegenprobe, Regime 3 (kein
+Verfallswert, nur Faelligkeit), den git-Ausfall-Rueckfall, die
+Wissensart-Klassifikation und den vollen bestaetigen()-Rundlauf."""
 from __future__ import annotations
 
 import sqlite3
@@ -21,13 +22,22 @@ from normkraft import Ablehnung  # noqa: E402
 from konfidenz import (  # noqa: E402
     CET,
     HALBWERTSZEIT_TAGE,
+    REGIME_BEOBACHTBAR,
+    REGIME_DEKLARIERT,
+    REGIME_UNBEOBACHTBAR,
     WISSENSART_ARCHITEKTUR,
     WISSENSART_BETRIEB,
     WISSENSART_STANDARD,
     _init_temp_db,
     _insert_node,
+    _mk_git_repo,
+    alter_tage,
+    beobachtbare_datei,
     bestaetigen,
+    bewerten,
+    commits_seit,
     find_confidence_decay,
+    find_pruefung_ueberfaellig,
     gerechnete_konfidenz,
     plan_bestaetigen,
     wissensart,
@@ -40,21 +50,96 @@ def _ts(tage_zurueck: float) -> str:
     return (_NOW - timedelta(days=tage_zurueck)).isoformat()
 
 
-def test_null_alter_ergibt_vollen_ausgangswert():
-    g = gerechnete_konfidenz(0.8, _ts(0), None, "/standard/x", None, _NOW)
-    assert abs(g - 0.8) < 1e-9
+def test_regime1_beobachtbare_datei_und_commits_seit(tmp_path):
+    datei = _mk_git_repo(tmp_path, "quelle.md", [_ts(40), _ts(20), _ts(5)])
+    src = f"erzeugt aus {datei}"
+    assert beobachtbare_datei(src) == datei
+    assert beobachtbare_datei("Gesetzestext ohne Dateibezug") is None
+    assert beobachtbare_datei(None) is None
+    assert commits_seit(datei, _ts(30)) == 2
+    assert commits_seit(datei, _ts(10)) == 1
+    assert commits_seit(datei, _ts(1)) == 0
 
 
-def test_eine_halbwertszeit_ergibt_die_haelfte():
+def test_regime1_gerechnete_konfidenz_nach_commit_formel(tmp_path):
+    datei = _mk_git_repo(tmp_path, "quelle.md", [_ts(40), _ts(20), _ts(5)])
     hwz = HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]
-    g = gerechnete_konfidenz(0.8, _ts(hwz), None, "/standard/x", None, _NOW)
-    assert abs(g - 0.4) < 1e-9  # von Hand: 0.8 * 0.5**1
+    b = bewerten(0.8, _ts(30), None, "/standard/x", f"erzeugt aus {datei}", _NOW)
+    assert b["regime"] == REGIME_BEOBACHTBAR
+    assert b["commits_seit"] == 2
+    assert b["gerechnet"] == round(0.8 * 0.5 ** (2 / hwz), 4)  # von Hand nachgerechnet
 
 
-def test_zwei_halbwertszeiten_ergibt_ein_viertel():
+def test_rot_vor_gruen_ruhende_datei_verfaellt_nicht_mehr_nach_kalendertagen(tmp_path):
+    """ABNAHME b: eine Datei ohne Aenderung seit >120 Tagen. Die alte
+    Kalenderformel waere deutlich gefallen (VORHER), die neue Commit-Formel
+    bleibt unveraendert, weil 0 Commits seit updated_at (NACHHER)."""
+    ruhig = _mk_git_repo(tmp_path, "ruhig.md", [_ts(130)])
+    updated_ruhig = (datetime.fromisoformat(_ts(130)) + timedelta(seconds=1)).isoformat()
     hwz = HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]
-    g = gerechnete_konfidenz(0.8, _ts(2 * hwz), None, "/standard/x", None, _NOW)
-    assert abs(g - 0.2) < 1e-9  # von Hand: 0.8 * 0.5**2
+
+    alter = alter_tage(updated_ruhig, _NOW)
+    assert alter > hwz  # > 120 Tage, Kalender-Alter ist gross
+
+    vorher_kalenderformel = 0.8 * 0.5 ** (alter / hwz)
+    assert vorher_kalenderformel < 0.5  # VORHER: deutlich gefallen
+
+    b = bewerten(0.8, updated_ruhig, None, "/standard/ruhig", f"erzeugt aus {ruhig}", _NOW)
+    assert b["commits_seit"] == 0
+    assert b["gerechnet"] == 0.8  # NACHHER: unveraendert
+
+
+def test_gegenprobe_30_commits_muessen_konfidenz_senken(tmp_path):
+    """ABNAHME c, wichtigster Punkt: ohne diese Gegenprobe hiesse der Umbau
+    nur 'Verfall abgeschaltet'. 30 tatsaechliche Commits MUESSEN wirken."""
+    zeiten = [_ts(62 - 2 * i) for i in range(31)]
+    aktiv = _mk_git_repo(tmp_path, "aktiv.md", zeiten)
+    updated = (datetime.fromisoformat(zeiten[0]) + timedelta(seconds=1)).isoformat()
+    assert commits_seit(aktiv, updated) == 30
+    b = bewerten(0.8, updated, None, "/standard/aktiv", f"erzeugt aus {aktiv}", _NOW)
+    assert b["regime"] == REGIME_BEOBACHTBAR
+    assert b["gerechnet"] < 0.8
+
+
+def test_git_aufruf_ausgefallen_faellt_auf_regime3_nicht_auf_null(tmp_path):
+    """Datei existiert, liegt aber in KEINEM Git-Repo -- git log kann nicht
+    laufen. Das darf NIE still als 0 Commits gelesen werden."""
+    kein_repo = tmp_path / "kein_repo.md"
+    kein_repo.write_text("kein Repo hier\n")
+    assert beobachtbare_datei(f"erzeugt aus {kein_repo}") is None
+    b = bewerten(0.8, _ts(200), None, "/standard/y", f"erzeugt aus {kein_repo}", _NOW)
+    assert b["regime"] == REGIME_UNBEOBACHTBAR
+    assert b["gerechnet"] is None
+
+
+def test_regime3_unbeobachtbar_liefert_keinen_verfallswert_sondern_faelligkeit():
+    """ABNAHME d: ein Knoten ohne beobachtbaren Bezug (Gesetzestext) liefert
+    KEINE Verfallszahl, sondern Faelligkeit plus Kennzeichnung."""
+    b = bewerten(0.85, _ts(200), None, "/recht/urhg-87a", "§87a UrhG, geprueft 2026-01-01", _NOW)
+    assert b["regime"] == REGIME_UNBEOBACHTBAR
+    assert b["gerechnet"] is None, "Regime 3 darf KEINEN Verfallswert liefern -- vorgetaeuschte Genauigkeit"
+    assert set(b["naechste_pruefung"]) == {"faellig_am", "ueberfaellig", "tage_bis_faellig"}
+    assert b["naechste_pruefung"]["ueberfaellig"] is True
+
+
+def test_drei_regime_nicht_verwechselbar():
+    """ABNAHME 3: 'kein Verfall, weil Norm' (Regime 2) vs. 'kein Verfall,
+    weil nichts passiert ist' (Regime 1, 0 Commits) vs. 'nicht messbar'
+    (Regime 3) muessen ueber das Feld 'regime' unterscheidbar bleiben,
+    unabhaengig vom Zahlenwert."""
+    b_norm = bewerten(0.9, _ts(0), 1, "/adr/x", "ADR", _NOW)
+    b_unbeobachtbar = bewerten(0.8, _ts(200), None, "/recht/x", "§87a UrhG", _NOW)
+    assert b_norm["regime"] == REGIME_DEKLARIERT
+    assert b_unbeobachtbar["regime"] == REGIME_UNBEOBACHTBAR
+    assert b_norm["regime"] != b_unbeobachtbar["regime"]
+
+
+def test_gerechnete_konfidenz_wrapper_regime3_gibt_ausgangswert():
+    """gerechnete_konfidenz() ist der duenne Float-Wrapper fuer alte
+    Aufrufer (bestaetigen()) -- Regime 3 faellt hier auf den unveraenderten
+    Ausgangswert zurueck, weil es keinen Verfallswert gibt."""
+    g = gerechnete_konfidenz(0.85, _ts(200), None, "/recht/x", "§87a UrhG", _NOW)
+    assert g == 0.85
 
 
 def test_norm_verfaellt_nie_gegenprobe():
@@ -80,6 +165,7 @@ def _basis_db(tmp_path):
     _init_temp_db(db_path)
     conn = sqlite3.connect(str(db_path))
     try:
+        # "n-alt": Freitext-Source ohne Dateibezug -> Regime 3 (unbeobachtbar).
         _insert_node(conn, "n-alt", "/standard/alt", confidence=0.8,
                      updated_at=_ts(HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]))
         _insert_node(conn, "n-norm", "/adr/x", confidence=0.9, norm_rang=1, source="ADR")
@@ -126,11 +212,14 @@ def test_dry_run_schreibt_nichts(tmp_path):
     assert val != result["nachher_updated_at"]
 
 
-def test_erfolgsfall_setzt_updated_at_content_und_access_log_konfidenz_springt_zurueck(tmp_path):
+def test_erfolgsfall_setzt_updated_at_content_und_access_log(tmp_path):
     db_path = _basis_db(tmp_path)
     result = bestaetigen(db_path, "/standard/alt", "Testgrund fuer Bestaetigung", apply=True, now=_NOW)
-    assert abs(result["vorher_gerechnet"] - 0.4) < 1e-6  # nach 1 Halbwertszeit verfallen
-    assert result["nachher_gerechnet"] == 0.8  # sofort nach Reset wieder voll
+    # "n-alt" ist Regime 3 (kein Dateibezug): kein Verfallswert, also
+    # unveraendert der Ausgangswert -- vor UND nach der Bestaetigung.
+    # bestaetigen() setzt trotzdem den Bezugszeitpunkt zurueck.
+    assert result["vorher_gerechnet"] == 0.8
+    assert result["nachher_gerechnet"] == 0.8
     assert result["backup"] and Path(result["backup"]).exists()
 
     conn = sqlite3.connect(str(db_path))
@@ -162,11 +251,18 @@ def test_ablehnung_ohne_begruendung_schreibt_trotz_apply_nichts(tmp_path):
         pass
 
 
-def test_find_confidence_decay_findet_verfallenes_nie_normen(tmp_path):
+def test_find_confidence_decay_findet_nur_regime1_nie_regime3_nie_normen(tmp_path):
+    """find_confidence_decay() braucht einen Verfallswert -- den hat nur
+    Regime 1. Fixture: Datei mit vielen Commits seit updated_at, weit unter
+    der Schwelle. "n-alt" (Regime 3) und die Norm duerfen nie auftauchen."""
     db_path = _basis_db(tmp_path)
+    zeiten = [_ts(200 - 2 * i) for i in range(50)]
+    verfallen_datei = _mk_git_repo(tmp_path, "verfallen.md", zeiten)
+    updated = (datetime.fromisoformat(zeiten[0]) + timedelta(seconds=1)).isoformat()
+
     conn = sqlite3.connect(str(db_path))
-    _insert_node(conn, "n-verfallen", "/standard/verfallen", confidence=0.8,
-                 updated_at=_ts(5 * HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]))
+    _insert_node(conn, "n-verfallen", "/testing/verfallen", confidence=0.8,
+                 updated_at=updated, source=f"erzeugt aus {verfallen_datei}")
     conn.commit()
     conn.row_factory = sqlite3.Row
     try:
@@ -174,5 +270,22 @@ def test_find_confidence_decay_findet_verfallenes_nie_normen(tmp_path):
     finally:
         conn.close()
     decay_paths = {d["path"] for d in decay}
-    assert "/standard/verfallen" in decay_paths
+    assert "/testing/verfallen" in decay_paths
+    assert decay_paths <= {"/testing/verfallen"}
+    assert "/standard/alt" not in decay_paths, "Regime 3 hat keinen Verfallswert -- kann nie auftauchen"
     assert "/adr/x" not in decay_paths, "Norm darf nie im Konfidenzverfall auftauchen"
+
+
+def test_find_pruefung_ueberfaellig_ist_das_regime3_gegenstueck(tmp_path):
+    db_path = _basis_db(tmp_path)
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    try:
+        ueberfaellig = find_pruefung_ueberfaellig(conn, now=_NOW)
+    finally:
+        conn.close()
+    # "n-alt": updated_at liegt genau eine Halbwertszeit (=Pruefintervall)
+    # zurueck -> genau faellig, nicht sicher schon ueberfaellig; stattdessen
+    # ein deutlich aelteres Regime-3-Fixture pruefen.
+    ueberfaellig_paths = {u["path"] for u in ueberfaellig}
+    assert "/adr/x" not in ueberfaellig_paths, "Norm gehoert nicht ins Regime-3-Gegenstueck"

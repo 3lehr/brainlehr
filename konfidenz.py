@@ -7,16 +7,29 @@ fehlt: die confidence-Spalte hat sich seit Bestehen nie veraendert (183 von
 237 auf dem Schema-Vorgabewert 0.8, siehe knowledge_lint.py::
 find_confidence_default_age, K3). Dieses Skript liefert das fehlende Verb.
 
-Zwei Dinge, die NICHT vermischt werden duerfen (ADR-024, Gespraech
-2026-08-05):
-  - FAKTEN (norm_rang IS NULL) verfallen: ohne Bestaetigung sinkt die
-    gerechnete Konfidenz mit der Zeit, Kalman-artig (Zustand + wachsende
-    Unsicherheit ohne neue Messung).
-  - NORMEN (norm_rang IS NOT NULL) verfallen NICHT. Sie gelten oder gelten
-    nicht (gilt_ab/gilt_bis, normkraft.py) -- eine Direktive wird nicht
-    unsicherer, sie tritt ausser Kraft. gerechnete_konfidenz() gibt fuer
-    Normen daher IMMER den unveraenderten Ausgangswert zurueck, unabhaengig
-    vom Alter.
+Nachtrag 2026-08-06: der urspruengliche Entwurf rechnete den Verfall nach
+KALENDERTAGEN -- ein ruhendes Projekt verlor Konfidenz, obwohl sich nichts
+geaendert hat. Falscher Massstab: bestraft war unveraenderter Bestand statt
+tatsaechlicher Unsicherheit. Ersetzt durch DREI REGIME (Praezedenz in dieser
+Reihenfolge):
+
+  1 REGIME_BEOBACHTBAR -- `source` nennt eine Datei, die existiert UND in
+    einem Git-Repo liegt (git log kann darauf laufen). Verfall nach ANZAHL
+    COMMITS seit updated_at, nicht nach Tagen:
+        gerechnet = ausgangswert * 0.5 ** (commits_seit_updated_at / hwz)
+    Ruht die Datei, ruht der Verfall -- richtig so.
+  2 REGIME_DEKLARIERT -- norm_rang gesetzt. KEIN Verfall, gilt_bis
+    entscheidet (normkraft.py). Unveraendert wie zuvor.
+  3 REGIME_UNBEOBACHTBAR -- kein beobachtbarer Dateibezug (Gesetzestext,
+    fremde Schnittstelle, Marktlage, oder der git-Aufruf faellt aus). KEIN
+    Verfallswert -- eine Kurve waere vorgetaeuschte Genauigkeit. Stattdessen
+    Faelligkeit (naechste_pruefung(), aus updated_at + Halbwertszeit
+    abgeleitet, keine neue Spalte -- reine Ableitung aus Bestehendem).
+
+bewerten() liefert alle drei Regime UNTERSCHEIDBAR (Feld "regime" plus
+"gerechnet" ODER "naechste_pruefung", nie beides zugleich).
+gerechnete_konfidenz() bleibt als duenner Float-Wrapper fuer Aufrufer, die
+nur eine Zahl brauchen (bestaetigen()).
 
 Frage 1 (Auftrag): traegt `confidence` weiterhin den Ausgangswert, oder
 etwas anderes? Antwort: den AUSGANGSWERT, unveraendert. Begruendung: der
@@ -46,9 +59,12 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
+import re
 import sqlite3
+import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -57,6 +73,11 @@ sys.path.insert(0, str(HERE))
 from normkraft import Ablehnung, _backup, now_iso, CET  # noqa: E402
 
 DB_PATH = HERE / "knowledge.db"
+# .../hub/shared-knowledge -> hub -> Begod2026 (Verbund-Wurzel: mehrere
+# eigene Git-Repos nebeneinander, z.B. hub/, fahrtenbuch/, setfunk/ --
+# relative Pfade in `source` sind dagegen aufzuloesen, siehe
+# beobachtbare_datei()).
+BEGOD_ROOT = HERE.parent.parent
 
 # ─── Wissensart: Halbwertszeit je Art, deterministisch aus Bestand ─────────
 #
@@ -100,6 +121,18 @@ HALBWERTSZEIT_TAGE: dict[str, float] = {
 # Fehlalarmrate dahinter.
 KONFIDENZ_SCHWELLE = 0.3
 
+# ─── Regime-Kennzeichnung (Auftrag 2026-08-06) ─────────────────────────────
+REGIME_BEOBACHTBAR = "bezug_beobachtbar"    # Verfall nach Commits
+REGIME_DEKLARIERT = "geltung_deklariert"    # norm_rang, kein Verfall
+REGIME_UNBEOBACHTBAR = "bezug_unbeobachtbar"  # kein Verfallswert, nur Faelligkeit
+
+# Kandidat: ein Pfadstueck mit Dateiendung, absolut (~/... oder /...) oder
+# relativ (a/b/c.ext). Freitext-Quellen ("erzeugt aus <pfad> (Stand ...)",
+# "docs/adr/X.md, Session ...") tragen oft mehrere Kandidaten und Beiwerk --
+# beobachtbare_datei() probiert sie der Reihe nach, nimmt den ersten
+# treffenden.
+_PFAD_KANDIDAT_RE = re.compile(r'[~/][\w./\- ]*?\.\w{1,5}\b|(?:[\w.\-]+/)+[\w.\-]+\.\w{1,5}')
+
 
 def wissensart(path: str, source: str | None) -> str:
     src = (source or "").lower()
@@ -127,21 +160,108 @@ def alter_tage(updated_at: str, now: datetime) -> float:
     return max(0.0, delta)
 
 
+def _kandidaten_pfade(source: str | None) -> list[str]:
+    if not source:
+        return []
+    return [m.group(0).strip().rstrip(",;)") for m in _PFAD_KANDIDAT_RE.finditer(source)]
+
+
+def _git_toplevel(datei: Path) -> str | None:
+    try:
+        r = subprocess.run(
+            ["git", "-C", str(datei.parent), "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, timeout=5,
+        )
+    except OSError:
+        return None
+    return r.stdout.strip() if r.returncode == 0 else None
+
+
+def beobachtbare_datei(source: str | None) -> Path | None:
+    """Erster Kandidat aus `source`, der existiert UND in einem Git-Repo
+    liegt (Voraussetzung dafuer, dass commits_seit() ueberhaupt laufen
+    kann). None -- kein Kandidat traegt, der Bezug ist unbeobachtbar
+    (Regime 3). Relative Kandidaten werden gegen BEGOD_ROOT aufgeloest, ~
+    gegen HOME."""
+    for kandidat in _kandidaten_pfade(source):
+        p = Path(os.path.expanduser(kandidat))
+        if not p.is_absolute():
+            p = BEGOD_ROOT / kandidat
+        if p.exists() and _git_toplevel(p):
+            return p
+    return None
+
+
+def commits_seit(datei: Path, seit_iso: str) -> int | None:
+    """Anzahl Commits, die `datei` seit `seit_iso` veraendert haben. None
+    bei ausgefallenem git-Aufruf (Repo verschwunden, Datei geloescht
+    zwischen beobachtbare_datei() und hier) -- der Aufrufer darf das NIE
+    still als 0 lesen, sondern muss auf Regime 3 zurueckfallen."""
+    try:
+        r = subprocess.run(
+            ["git", "-C", str(datei.parent), "log", "--oneline", f"--since={seit_iso}", "--", datei.name],
+            capture_output=True, text=True, timeout=5,
+        )
+    except OSError:
+        return None
+    if r.returncode != 0:
+        return None
+    return len([z for z in r.stdout.splitlines() if z.strip()])
+
+
+def naechste_pruefung(updated_at: str, path: str, source: str | None, now: datetime) -> dict:
+    """Nur Regime 3: keine Verfallszahl, sondern Faelligkeit. Wiederverwendet
+    dieselben geratenen HALBWERTSZEIT-Werte, hier als Pruefintervall
+    gelesen statt als Verfallskurve -- keine neue Konstante, keine neue
+    Bedeutung, nur eine andere Ableitung aus updated_at."""
+    hwz = HALBWERTSZEIT_TAGE[wissensart(path, source)]
+    faellig = _parse_ts(updated_at) + timedelta(days=hwz)
+    return {
+        "faellig_am": faellig.isoformat(),
+        "ueberfaellig": faellig < now,
+        "tage_bis_faellig": round((faellig - now).total_seconds() / 86400, 1),
+    }
+
+
+def bewerten(confidence: float, updated_at: str | None, norm_rang: int | None,
+             path: str, source: str | None, now: datetime) -> dict:
+    """Kern der ganzen Datei. Macht die drei Regime UNTERSCHEIDBAR --
+    'gerechnet' und 'naechste_pruefung' schliessen sich gegenseitig aus,
+    nie beide None, nie beide gesetzt:
+      Regime 1 (beobachtbar):    gerechnet=float,  naechste_pruefung=None
+      Regime 2 (deklariert):     gerechnet=float (Ausgangswert), naechste_pruefung=None
+      Regime 3 (unbeobachtbar):  gerechnet=None,   naechste_pruefung=dict
+    """
+    if norm_rang is not None:
+        return {"regime": REGIME_DEKLARIERT, "gerechnet": confidence,
+                "commits_seit": None, "naechste_pruefung": None}
+    if not updated_at:
+        return {"regime": REGIME_UNBEOBACHTBAR, "gerechnet": None,
+                "commits_seit": None, "naechste_pruefung": None}
+    datei = beobachtbare_datei(source)
+    if datei is not None:
+        commits = commits_seit(datei, updated_at)
+        if commits is not None:
+            hwz = HALBWERTSZEIT_TAGE[wissensart(path, source)]
+            gerechnet = confidence * (0.5 ** (commits / hwz))
+            return {"regime": REGIME_BEOBACHTBAR, "gerechnet": round(gerechnet, 4),
+                    "commits_seit": commits, "naechste_pruefung": None}
+        # git-Aufruf fehlgeschlagen: Repo/Datei zwischen beobachtbare_datei()
+        # und commits_seit() verschwunden -- NICHT still als 0 Commits lesen.
+        # Faellt durch auf Regime 3.
+    return {"regime": REGIME_UNBEOBACHTBAR, "gerechnet": None, "commits_seit": None,
+            "naechste_pruefung": naechste_pruefung(updated_at, path, source, now)}
+
+
 def gerechnete_konfidenz(confidence: float, updated_at: str | None, norm_rang: int | None,
                           path: str, source: str | None, now: datetime) -> float:
-    """Kern der ganzen Datei. Normen (norm_rang IS NOT NULL) verfallen NIE
-    -- unveraenderter Ausgangswert, unabhaengig von Alter oder updated_at.
-    Fakten verfallen exponentiell mit Halbwertszeit je Wissensart:
-        aktuell = ausgangswert * 0.5 ** (alter_tage / halbwertszeit_tage)
-    Bei alter_tage=0 -> ausgangswert. Bei alter_tage=halbwertszeit ->
-    die Haelfte. Bei 2x Halbwertszeit -> ein Viertel."""
-    if norm_rang is not None:
-        return confidence
-    if not updated_at:
-        return confidence
-    hwz = HALBWERTSZEIT_TAGE[wissensart(path, source)]
-    tage = alter_tage(updated_at, now)
-    return confidence * (0.5 ** (tage / hwz))
+    """Duenner Float-Wrapper um bewerten() fuer Aufrufer, die nur eine Zahl
+    brauchen (bestaetigen(): Anzeige vorher/nachher -- der Reset betrifft
+    ohnehin nur updated_at, unabhaengig vom Regime). Regime 3 hat KEINEN
+    Verfallswert; hier faellt das auf den unveraenderten Ausgangswert
+    zurueck. Wer die drei Regime unterscheiden muss, ruft bewerten()."""
+    r = bewerten(confidence, updated_at, norm_rang, path, source, now)
+    return r["gerechnet"] if r["gerechnet"] is not None else confidence
 
 
 # ─── Bestaetigen ────────────────────────────────────────────────────────────
@@ -237,15 +357,21 @@ def verteilung(db_path: Path, now: datetime | None = None) -> dict:
         conn.close()
     werte = []
     for r in rows:
-        g = gerechnete_konfidenz(r["confidence"], r["updated_at"], r["norm_rang"], r["path"], r["source"], now)
+        b = bewerten(r["confidence"], r["updated_at"], r["norm_rang"], r["path"], r["source"], now)
         werte.append({"path": r["path"], "title": r["title"], "ausgangswert": r["confidence"],
-                      "gerechnet": round(g, 4), "alter_tage": round(alter_tage(r["updated_at"], now), 1)
-                      if r["updated_at"] else None})
-    unter_schwelle = [w for w in werte if w["gerechnet"] < KONFIDENZ_SCHWELLE]
-    aeltester = max((w for w in werte if w["alter_tage"] is not None), key=lambda w: w["alter_tage"], default=None)
+                      "regime": b["regime"], "gerechnet": b["gerechnet"],
+                      "naechste_pruefung": b["naechste_pruefung"],
+                      "alter_tage": round(alter_tage(r["updated_at"], now), 1) if r["updated_at"] else None})
+    je_regime = {REGIME_BEOBACHTBAR: 0, REGIME_UNBEOBACHTBAR: 0}
+    unter_schwelle_je_regime = {REGIME_BEOBACHTBAR: 0}
     buckets = {"1.0-0.8": 0, "0.8-0.6": 0, "0.6-0.4": 0, "0.4-0.2": 0, "0.2-0.0": 0}
     for w in werte:
+        je_regime[w["regime"]] = je_regime.get(w["regime"], 0) + 1
         g = w["gerechnet"]
+        if g is None:
+            continue  # Regime 3: keine Zahl, taucht in Buckets/Schwelle nicht auf
+        if g < KONFIDENZ_SCHWELLE:
+            unter_schwelle_je_regime[w["regime"]] = unter_schwelle_je_regime.get(w["regime"], 0) + 1
         if g >= 0.8:
             buckets["1.0-0.8"] += 1
         elif g >= 0.6:
@@ -256,11 +382,14 @@ def verteilung(db_path: Path, now: datetime | None = None) -> dict:
             buckets["0.4-0.2"] += 1
         else:
             buckets["0.2-0.0"] += 1
+    aeltester = max((w for w in werte if w["alter_tage"] is not None), key=lambda w: w["alter_tage"], default=None)
     return {
         "gesamt": len(werte),
+        "je_regime": je_regime,
         "buckets": buckets,
         "schwelle": KONFIDENZ_SCHWELLE,
-        "unter_schwelle_anzahl": len(unter_schwelle),
+        "unter_schwelle_je_regime": unter_schwelle_je_regime,
+        "unter_schwelle_anzahl": sum(unter_schwelle_je_regime.values()),
         "aeltester": aeltester,
     }
 
@@ -269,9 +398,12 @@ def verteilung(db_path: Path, now: datetime | None = None) -> dict:
 
 def find_confidence_decay(conn: sqlite3.Connection, now: datetime | None = None,
                            schwelle: float = KONFIDENZ_SCHWELLE) -> list[dict]:
-    """Fuer knowledge_lint.py: Fakten (norm_rang IS NULL), deren gerechnete
-    Konfidenz unter die Schwelle gefallen ist. conn darf read-only sein --
-    diese Funktion schreibt nichts."""
+    """Fuer knowledge_lint.py: Fakten (norm_rang IS NULL) mit Regime 1
+    (beobachtbarer Dateibezug), deren gerechnete Konfidenz unter die
+    Schwelle gefallen ist. Regime 3 hat KEINEN Verfallswert -- kann diese
+    Schwelle also nie unter- oder ueberschreiten und taucht hier nie auf
+    (siehe find_pruefung_ueberfaellig() fuer das Regime-3-Gegenstueck).
+    conn darf read-only sein -- diese Funktion schreibt nichts."""
     now = now or datetime.now(CET)
     rows = conn.execute(
         "SELECT path, title, confidence, norm_rang, updated_at, source "
@@ -279,14 +411,34 @@ def find_confidence_decay(conn: sqlite3.Connection, now: datetime | None = None,
     ).fetchall()
     out = []
     for r in rows:
-        g = gerechnete_konfidenz(r["confidence"], r["updated_at"], r["norm_rang"], r["path"], r["source"], now)
-        if g < schwelle:
+        b = bewerten(r["confidence"], r["updated_at"], r["norm_rang"], r["path"], r["source"], now)
+        if b["gerechnet"] is not None and b["gerechnet"] < schwelle:
             out.append({
                 "path": r["path"], "title": r["title"], "ausgangswert": r["confidence"],
-                "gerechnet": round(g, 4),
+                "regime": b["regime"], "gerechnet": b["gerechnet"], "commits_seit": b["commits_seit"],
                 "alter_tage": round(alter_tage(r["updated_at"], now), 1) if r["updated_at"] else None,
             })
     out.sort(key=lambda i: i["gerechnet"])
+    return out
+
+
+def find_pruefung_ueberfaellig(conn: sqlite3.Connection, now: datetime | None = None) -> list[dict]:
+    """Regime-3-Gegenstueck zu find_confidence_decay(): Fakten ohne
+    beobachtbaren Bezug, deren Faelligkeit (naechste_pruefung) verstrichen
+    ist. Nicht in find_confidence_decay() gemischt -- 'ueberfaellig' und
+    'gerechnet < Schwelle' sind verschiedene Aussagen (Auftrag 2026-08-06,
+    Punkt 3: die drei Regime bleiben unterscheidbar, auch im Lint)."""
+    now = now or datetime.now(CET)
+    rows = conn.execute(
+        "SELECT path, title, confidence, norm_rang, updated_at, source "
+        "FROM knowledge_nodes WHERE norm_rang IS NULL"
+    ).fetchall()
+    out = []
+    for r in rows:
+        b = bewerten(r["confidence"], r["updated_at"], r["norm_rang"], r["path"], r["source"], now)
+        if b["regime"] == REGIME_UNBEOBACHTBAR and b["naechste_pruefung"] and b["naechste_pruefung"]["ueberfaellig"]:
+            out.append({"path": r["path"], "title": r["title"], **b["naechste_pruefung"]})
+    out.sort(key=lambda i: i["faellig_am"])
     return out
 
 
@@ -304,19 +456,32 @@ def _print_bestaetigen(result: dict, mode: str) -> None:
 
 
 def _print_aktuell(row: sqlite3.Row, now: datetime) -> None:
-    art = wissensart(row["path"], row["source"])
-    hwz = HALBWERTSZEIT_TAGE[art]
-    g = gerechnete_konfidenz(row["confidence"], row["updated_at"], row["norm_rang"], row["path"], row["source"], now)
+    b = bewerten(row["confidence"], row["updated_at"], row["norm_rang"], row["path"], row["source"], now)
     print(f"Pfad: {row['path']}")
     print(f"norm_rang: {row['norm_rang']!r}")
     print(f"Ausgangswert (confidence-Spalte): {row['confidence']}")
-    if row["norm_rang"] is not None:
+    print(f"Regime: {b['regime']}")
+    if b["regime"] == REGIME_DEKLARIERT:
         print("Norm -- verfaellt nicht, gerechnete Konfidenz == Ausgangswert.")
         return
-    alter = alter_tage(row["updated_at"], now) if row["updated_at"] else None
-    print(f"Wissensart: {art} (Halbwertszeit {hwz} Tage, geraten)")
-    print(f"Alter seit updated_at: {alter} Tage" if alter is not None else "Alter: unbekannt (updated_at leer)")
-    print(f"gerechnete Konfidenz: {round(g, 4)}")
+    if b["regime"] == REGIME_UNBEOBACHTBAR:
+        if b["naechste_pruefung"] is None:
+            print("kein Bezugszeitpunkt (updated_at leer) -- nicht messbar.")
+        else:
+            np = b["naechste_pruefung"]
+            print("kein beobachtbarer Bezug -- nicht messbar, kein Verfallswert.")
+            print(f"Faellig: {np['faellig_am']} ({'UEBERFAELLIG' if np['ueberfaellig'] else 'noch offen'}, "
+                  f"{np['tage_bis_faellig']} Tage)")
+        return
+    # REGIME_BEOBACHTBAR
+    art = wissensart(row["path"], row["source"])
+    hwz = HALBWERTSZEIT_TAGE[art]
+    alter = alter_tage(row["updated_at"], now)
+    print(f"Wissensart: {art} (Halbwertszeit {hwz} Commits, geraten)")
+    print(f"Alter seit updated_at: {alter} Tage (informativ, nicht Bezugsgroesse des Verfalls)")
+    print(f"Commits seit updated_at: {b['commits_seit']}"
+          + (" -- kein Verfall, weil nichts passiert ist" if b["commits_seit"] == 0 else ""))
+    print(f"gerechnete Konfidenz: {b['gerechnet']}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -377,12 +542,17 @@ def main(argv: list[str] | None = None) -> int:
         v = verteilung(DB_PATH)
         print(f"=== konfidenz verteilung (Schwelle {v['schwelle']}) ===")
         print(f"Gesamt (Fakten, norm_rang IS NULL): {v['gesamt']}")
+        print(f"  je Regime: beobachtbar={v['je_regime'].get(REGIME_BEOBACHTBAR, 0)} "
+              f"unbeobachtbar={v['je_regime'].get(REGIME_UNBEOBACHTBAR, 0)}")
+        print("Buckets (nur Regime beobachtbar -- Regime unbeobachtbar hat keine Zahl):")
         for bucket, n in v["buckets"].items():
             print(f"  {bucket}: {n}")
-        print(f"Unter Schwelle: {v['unter_schwelle_anzahl']}")
+        print(f"Unter Schwelle: {v['unter_schwelle_anzahl']} "
+              f"(je Regime: {v['unter_schwelle_je_regime']})")
         if v["aeltester"]:
             a = v["aeltester"]
-            print(f"Aeltester Fakt: {a['path']} ({a['alter_tage']} Tage, gerechnet {a['gerechnet']})")
+            print(f"Aeltester Fakt (Kalenderalter, informativ): {a['path']} ({a['alter_tage']} Tage, "
+                  f"Regime {a['regime']}, gerechnet {a['gerechnet']})")
         return 0
 
     parser.print_help()
@@ -415,54 +585,155 @@ def _insert_node(conn: sqlite3.Connection, node_id: str, path: str, *, confidenc
     )
 
 
+def _mk_git_repo(tmp_path: Path, dateiname: str, commit_iso_zeiten: list[str]) -> Path:
+    """Testfixture: temp Git-Repo mit einer Datei, committed zu genau den
+    gegebenen Zeitpunkten. GIT_AUTHOR/COMMITTER_DATE gesetzt -- ein echtes
+    `git commit` ohne das haette den Wall-Clock-Zeitpunkt des Testlaufs,
+    nicht den fuer die Pruefung gebrauchten festen Zeitpunkt."""
+    repo = tmp_path / f"repo-{dateiname.replace('.', '_')}"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=repo, check=True)
+    datei = repo / dateiname
+    for i, iso in enumerate(commit_iso_zeiten):
+        datei.write_text(f"Inhalt {i}\n")
+        env = {**os.environ, "GIT_AUTHOR_DATE": iso, "GIT_COMMITTER_DATE": iso}
+        subprocess.run(["git", "add", dateiname], cwd=repo, check=True, env=env)
+        subprocess.run(["git", "commit", "-q", "-m", f"c{i}"], cwd=repo, check=True, env=env)
+    return datei
+
+
 def _selftest() -> int:
     import tempfile
 
-    # --- Reine Formel, von Hand nachgerechnet (Abnahme 1) --------------------
     _now = datetime.fromisoformat("2026-04-11T00:00:00+01:00")  # beliebiger fixer Referenzpunkt
 
     def _mk_ts(tage_zurueck: float) -> str:
-        from datetime import timedelta
         return (_now - timedelta(days=tage_zurueck)).isoformat()
 
-    # Null Alter -> voller Ausgangswert.
-    g0 = gerechnete_konfidenz(0.8, _mk_ts(0), None, "/standard/x", None, _now)
-    assert abs(g0 - 0.8) < 1e-9, g0
-
-    # Genau eine Halbwertszeit (WISSENSART_STANDARD=120 Tage) -> exakt die Haelfte.
-    g_half = gerechnete_konfidenz(0.8, _mk_ts(HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]), None, "/standard/x", None, _now)
-    assert abs(g_half - 0.4) < 1e-9, g_half  # 0.8 * 0.5**1 = 0.4, von Hand nachgerechnet
-
-    # Zwei Halbwertszeiten -> ein Viertel.
-    g_quarter = gerechnete_konfidenz(
-        0.8, _mk_ts(2 * HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]), None, "/standard/x", None, _now
-    )
-    assert abs(g_quarter - 0.2) < 1e-9, g_quarter  # 0.8 * 0.5**2 = 0.2, von Hand nachgerechnet
-
-    # --- Gegenprobe, die den Kern schuetzt: Norm verfaellt NIE ---------------
-    g_norm_jung = gerechnete_konfidenz(0.9, _mk_ts(0), 1, "/adr/x", "ADR", _now)
-    g_norm_uralt = gerechnete_konfidenz(0.9, _mk_ts(20000), 1, "/adr/x", "ADR", _now)  # ~55 Jahre
-    assert g_norm_jung == 0.9 and g_norm_uralt == 0.9, (g_norm_jung, g_norm_uralt)
-
-    # --- Wissensart-Klassifikation, deterministisch -----------------------
-    assert wissensart("/arch/mcp", None) == WISSENSART_ARCHITEKTUR
-    assert wissensart("/shared/irgendwas", "Konsil 2026-08-05") == WISSENSART_ARCHITEKTUR
-    assert wissensart("/shared/irgendwas", "docs/adr/ADR-026.md") == WISSENSART_ARCHITEKTUR
-    assert wissensart("/testing/pytest", None) == WISSENSART_BETRIEB
-    assert wissensart("/ops/appstoreconnect", None) == WISSENSART_BETRIEB
-    assert wissensart("/lessons", None) == WISSENSART_STANDARD
-
-    print("SELFTEST Formel OK: alter=0 -> voll, alter=1xHWZ -> Haelfte, alter=2xHWZ -> Viertel, "
-          "Norm unveraendert bei jedem Alter, Wissensart-Klassifikation deterministisch.")
-
-    # --- bestaetigen(): DB-Rundfahrt -----------------------------------------
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
+
+        # --- Regime 1 (beobachtbar): Verfall nach COMMITS, nicht nach Tagen ---
+        # Datei mit drei Commits bei Tag -40, -20, -5 (relativ zu _now).
+        datei = _mk_git_repo(tmp_path, "quelle.md", [
+            _mk_ts(40), _mk_ts(20), _mk_ts(5),
+        ])
+        src = f"erzeugt aus {datei}"
+
+        assert beobachtbare_datei(src) == datei
+        assert beobachtbare_datei("Gesetzestext ohne Dateibezug") is None
+        assert beobachtbare_datei(None) is None
+
+        # updated_at zwischen c1(-40) und c2(-20) -> 2 Commits seither (c2, c3).
+        assert commits_seit(datei, _mk_ts(30)) == 2
+        # updated_at zwischen c2(-20) und c3(-5) -> 1 Commit seither (c3).
+        assert commits_seit(datei, _mk_ts(10)) == 1
+        # updated_at nach c3(-5) -> kein Commit seither.
+        assert commits_seit(datei, _mk_ts(1)) == 0
+
+        b1 = bewerten(0.8, _mk_ts(30), None, "/standard/x", src, _now)
+        assert b1["regime"] == REGIME_BEOBACHTBAR, b1
+        assert b1["commits_seit"] == 2, b1
+        hwz_standard = HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]
+        erwartet = round(0.8 * 0.5 ** (2 / hwz_standard), 4)
+        assert b1["gerechnet"] == erwartet, (b1, erwartet)
+        assert b1["naechste_pruefung"] is None
+
+        print("SELFTEST Regime 1 OK: beobachtbare_datei() findet/verwirft Kandidaten, "
+              f"commits_seit() zaehlt richtig (2/1/0), gerechnet={erwartet} nach Formel.")
+
+        # --- Rot-vor-gruen (Abnahme b): Datei ohne Aenderung seit 120 Tagen ---
+        # EINE Datei, EIN Commit, updated_at kurz danach, jetzt 130 Tage
+        # spaeter -- Kalenderalter gross, aber KEIN neuer Commit.
+        ruhig = _mk_git_repo(tmp_path, "ruhig.md", [_mk_ts(130)])
+        updated_ruhig = (datetime.fromisoformat(_mk_ts(130)) + timedelta(seconds=1)).isoformat()
+        alter_ruhig = alter_tage(updated_ruhig, _now)
+        assert alter_ruhig > HALBWERTSZEIT_TAGE[WISSENSART_STANDARD], alter_ruhig  # > 120 Tage, deutlich "alt"
+
+        # VORHER (alte Formel, Kalendertage -- so rechnete der Code vor diesem
+        # Auftrag): waere deutlich gefallen.
+        vorher_kalenderformel = round(0.8 * 0.5 ** (alter_ruhig / HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]), 4)
+        assert vorher_kalenderformel < 0.5, vorher_kalenderformel  # "vorher deutlich gefallen"
+
+        # NACHHER (dieser Auftrag): 0 Commits seit updated_at -> unveraendert.
+        b_ruhig = bewerten(0.8, updated_ruhig, None, "/standard/ruhig",
+                            f"erzeugt aus {ruhig}", _now)
+        assert b_ruhig["regime"] == REGIME_BEOBACHTBAR
+        assert b_ruhig["commits_seit"] == 0, b_ruhig
+        assert b_ruhig["gerechnet"] == 0.8, b_ruhig  # unveraendert -- "nachher"
+
+        print(f"ABNAHME b) rot-vor-gruen: Kalenderalter {alter_ruhig} Tage (>120). "
+              f"VORHER (Kalenderformel): {vorher_kalenderformel} (deutlich gefallen). "
+              f"NACHHER (Commit-Formel, 0 Commits seither): {b_ruhig['gerechnet']} (unveraendert).")
+
+        # --- Gegenprobe (Abnahme c, wichtigster Punkt): 30 Commits -> MUSS fallen ---
+        # 31 Commits im Abstand von je 2 Tagen, updated_at knapp nach dem
+        # ersten -> 30 Commits seither.
+        aktiv_zeiten = [_mk_ts(62 - 2 * i) for i in range(31)]  # Tag -62 .. -2
+        aktiv = _mk_git_repo(tmp_path, "aktiv.md", aktiv_zeiten)
+        updated_aktiv = (datetime.fromisoformat(aktiv_zeiten[0]) + timedelta(seconds=1)).isoformat()
+        commits_aktiv = commits_seit(aktiv, updated_aktiv)
+        assert commits_aktiv == 30, commits_aktiv
+        b_aktiv = bewerten(0.8, updated_aktiv, None, "/standard/aktiv", f"erzeugt aus {aktiv}", _now)
+        assert b_aktiv["regime"] == REGIME_BEOBACHTBAR
+        assert b_aktiv["gerechnet"] < 0.8, b_aktiv  # MUSS fallen -- sonst waere Verfall nur abgeschaltet
+        print(f"ABNAHME c) GEGENPROBE: 30 Commits seit updated_at -> gerechnet={b_aktiv['gerechnet']} "
+              f"< Ausgangswert 0.8 (Verfall wirkt weiterhin, nur nach Commits statt Kalendertagen).")
+
+        # --- git-Aufruf ausgefallen (Datei existiert, aber KEIN Git-Repo) ---
+        # NICHT still als 0 Commits/Regime 1 lesen -- faellt auf Regime 3.
+        nicht_git = tmp_path / "kein_repo.md"
+        nicht_git.write_text("kein Repo hier\n")
+        assert beobachtbare_datei(f"erzeugt aus {nicht_git}") is None
+        b_ausserhalb = bewerten(0.8, _mk_ts(200), None, "/standard/y", f"erzeugt aus {nicht_git}", _now)
+        assert b_ausserhalb["regime"] == REGIME_UNBEOBACHTBAR, b_ausserhalb
+        assert b_ausserhalb["gerechnet"] is None, b_ausserhalb
+
+        # --- Regime 3 (unbeobachtbar): Gesetzestext ohne Dateibezug ---------
+        b3 = bewerten(0.85, _mk_ts(200), None, "/recht/urhg-87a", "§87a UrhG, geprueft 2026-01-01", _now)
+        assert b3["regime"] == REGIME_UNBEOBACHTBAR, b3
+        assert b3["gerechnet"] is None, "Regime 3 darf KEINEN Verfallswert liefern -- vorgetaeuschte Genauigkeit"
+        assert b3["naechste_pruefung"] is not None
+        assert set(b3["naechste_pruefung"]) == {"faellig_am", "ueberfaellig", "tage_bis_faellig"}
+        assert b3["naechste_pruefung"]["ueberfaellig"] is True  # 200 Tage > 120 Tage Pruefintervall (Standard)
+        print(f"ABNAHME d) Regime 3, woertliche Ausgabe: {b3}")
+
+        # --- Alle drei Regime nicht verwechselbar (Abnahme 3) ----------------
+        b_norm = bewerten(0.9, _mk_ts(0), 1, "/adr/x", "ADR", _now)
+        assert b_norm["regime"] == REGIME_DEKLARIERT and b_norm["gerechnet"] == 0.9
+        assert {b1["regime"], b_ruhig["regime"], b_norm["regime"], b3["regime"]} == {
+            REGIME_BEOBACHTBAR, REGIME_DEKLARIERT, REGIME_UNBEOBACHTBAR,
+        }
+        # "kein Verfall, weil Norm" (Regime 2) vs. "kein Verfall, weil nichts
+        # passiert ist" (Regime 1, 0 Commits) vs. "nicht messbar" (Regime 3) --
+        # gleicher gerechnet-Wert (0.9 vs 0.8 vs None) waere hier gerade NICHT
+        # verwechselbar, weil "regime" jedes Mal unterschiedlich ist:
+        assert b_norm["regime"] != b_ruhig["regime"] != b3["regime"] != b_norm["regime"]
+
+        # --- gerechnete_konfidenz(): Float-Wrapper bleibt fuer alte Aufrufer ---
+        assert gerechnete_konfidenz(0.8, _mk_ts(30), None, "/standard/x", src, _now) == erwartet
+        assert gerechnete_konfidenz(0.9, _mk_ts(0), 1, "/adr/x", "ADR", _now) == 0.9
+        assert gerechnete_konfidenz(0.85, _mk_ts(200), None, "/recht/x", "§87a UrhG", _now) == 0.85  # Regime 3 -> Ausgangswert
+
+        # --- Wissensart-Klassifikation, deterministisch -----------------------
+        assert wissensart("/arch/mcp", None) == WISSENSART_ARCHITEKTUR
+        assert wissensart("/shared/irgendwas", "Konsil 2026-08-05") == WISSENSART_ARCHITEKTUR
+        assert wissensart("/shared/irgendwas", "docs/adr/ADR-026.md") == WISSENSART_ARCHITEKTUR
+        assert wissensart("/testing/pytest", None) == WISSENSART_BETRIEB
+        assert wissensart("/ops/appstoreconnect", None) == WISSENSART_BETRIEB
+        assert wissensart("/lessons", None) == WISSENSART_STANDARD
+
+        print("SELFTEST Regime-Unterscheidung + Wissensart OK.")
+
+        # --- bestaetigen(): DB-Rundfahrt -----------------------------------------
         db_path = tmp_path / "knowledge.db"
         _init_temp_db(db_path)
 
         conn = sqlite3.connect(str(db_path))
         try:
+            # "n-alt" traegt Freitext-Source ohne Dateibezug -> Regime 3.
             _insert_node(conn, "n-alt", "/standard/alt", confidence=0.8,
                          updated_at=_mk_ts(HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]))
             _insert_node(conn, "n-norm", "/adr/x", confidence=0.9, norm_rang=1, source="ADR")
@@ -499,11 +770,13 @@ def _selftest() -> int:
         conn.close()
         assert zwischen != dry["nachher_updated_at"], "dry-run darf nichts schreiben"
 
-        # Erfolgsfall: Konfidenz vor der Bestaetigung ist verfallen (Halbwertszeit
-        # alt -> ~0.4), danach zurueck auf den Ausgangswert 0.8. Bezugszeitpunkt
-        # neu, Grund im Content UND im access_log.
+        # Erfolgsfall: "n-alt" ist Regime 3 (kein Dateibezug) -- kein
+        # Verfallswert, gerechnete_konfidenz() zeigt daher unveraendert den
+        # Ausgangswert, vor UND nach der Bestaetigung. bestaetigen() setzt
+        # trotzdem den Bezugszeitpunkt zurueck (fuer die naechste_pruefung-
+        # Faelligkeit relevant) -- das ist unabhaengig vom Regime.
         ok = bestaetigen(db_path, "/standard/alt", "Testgrund fuer Bestaetigung", apply=True, now=_now)
-        assert abs(ok["vorher_gerechnet"] - 0.4) < 1e-6, ok["vorher_gerechnet"]
+        assert ok["vorher_gerechnet"] == 0.8, ok["vorher_gerechnet"]
         assert ok["nachher_gerechnet"] == 0.8, ok["nachher_gerechnet"]
         assert ok["backup"] and Path(ok["backup"]).exists()
         conn = sqlite3.connect(str(db_path))
@@ -530,24 +803,35 @@ def _selftest() -> int:
         except Ablehnung:
             pass
 
-        # find_confidence_decay(): der frisch bestaetigte Knoten liegt ueber der
-        # Schwelle, ein zusaetzlich sehr alter Knoten darunter, die Norm nie dabei.
+        # find_confidence_decay(): braucht Regime 1 (Dateibezug), Regime 3 kann
+        # NIE darin auftauchen (kein Verfallswert -> keine Zahl unter der
+        # Schwelle). Fixture: Datei mit vielen Commits seit updated_at.
+        verfallen_zeiten = [_mk_ts(200 - 2 * i) for i in range(50)]  # 50 Commits, Tag -200..-102
+        verfallen_datei = _mk_git_repo(tmp_path, "verfallen.md", verfallen_zeiten)
+        updated_verfallen = (datetime.fromisoformat(verfallen_zeiten[0]) + timedelta(seconds=1)).isoformat()
         conn = sqlite3.connect(str(db_path))
-        _insert_node(conn, "n-verfallen", "/standard/verfallen", confidence=0.8,
-                     updated_at=_mk_ts(5 * HALBWERTSZEIT_TAGE[WISSENSART_STANDARD]))
+        _insert_node(conn, "n-verfallen", "/testing/verfallen", confidence=0.8,
+                     updated_at=updated_verfallen, source=f"erzeugt aus {verfallen_datei}")
         conn.commit()
         conn.row_factory = sqlite3.Row
         try:
             decay = find_confidence_decay(conn, now=_now)
+            ueberfaellig = find_pruefung_ueberfaellig(conn, now=_now)
         finally:
             conn.close()
         decay_paths = {d["path"] for d in decay}
-        assert "/standard/verfallen" in decay_paths, decay_paths
-        assert "/standard/alt" not in decay_paths, decay_paths  # frisch bestaetigt bzw. nur Alt-Fixture vor Reset
+        assert "/testing/verfallen" in decay_paths, decay_paths
+        assert decay_paths <= {"/testing/verfallen"}, decay_paths  # weder n-alt (Regime 3) noch die Norm
         assert "/adr/x" not in decay_paths, "Norm darf nie im Konfidenzverfall auftauchen"
+        # find_pruefung_ueberfaellig(): das Gegenstueck fuer Regime 3 -- n-alt
+        # wurde gerade erst bestaetigt (updated_at=jetzt), also NICHT ueberfaellig.
+        ueberfaellig_paths = {u["path"] for u in ueberfaellig}
+        assert "/standard/alt" not in ueberfaellig_paths, ueberfaellig_paths
+        assert "/testing/verfallen" not in ueberfaellig_paths, "Regime 1 gehoert nicht ins Regime-3-Gegenstueck"
 
     print("SELFTEST bestaetigen OK: 4 Ablehnungen, dry-run, Erfolgsfall (Content+access_log+Reset), "
-          "find_confidence_decay() findet Verfallene, nie Normen.")
+          "find_confidence_decay() findet nur Regime-1-Verfallene, find_pruefung_ueberfaellig() "
+          "das Regime-3-Gegenstueck, nie Normen in beiden.")
     return 0
 
 

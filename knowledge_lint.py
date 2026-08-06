@@ -741,12 +741,15 @@ def find_anker_queue_backlog(
 
 
 # ─── 14. Konfidenzverfall ───────────────────────────────────────────────────
-# Auftrag 2026-08-06, ADR-026 Z3, letztes bauliches Stueck. Fakten
-# (norm_rang IS NULL), deren gerechnete Konfidenz (konfidenz.py::
-# gerechnete_konfidenz -- Ausgangswert x Zeitverfall, Halbwertszeit je
-# Wissensart) unter die Schwelle gefallen ist. Reine Wiederverwendung, keine
-# zweite Fassung der Verfallsformel. Normen tauchen hier nie auf --
-# gerechnete_konfidenz() gibt fuer sie unveraendert den Ausgangswert zurueck.
+# Auftrag 2026-08-06, ADR-026 Z3, Nachtrag 2026-08-06 (drei Regime statt
+# Kalendertage). Nur Fakten mit beobachtbarem Dateibezug (konfidenz.py::
+# REGIME_BEOBACHTBAR), deren gerechnete Konfidenz (Ausgangswert x
+# Commit-Verfall, Halbwertszeit je Wissensart) unter die Schwelle gefallen
+# ist. Reine Wiederverwendung, keine zweite Fassung der Verfallsformel.
+# Normen (REGIME_DEKLARIERT) und Fakten ohne beobachtbaren Bezug
+# (REGIME_UNBEOBACHTBAR -- kein Verfallswert, siehe konfidenz.py::
+# find_pruefung_ueberfaellig fuer deren Faelligkeits-Gegenstueck) tauchen
+# hier nie auf.
 
 def find_confidence_decay(conn: sqlite3.Connection, now: datetime | None = None) -> list[dict]:
     return konfidenz.find_confidence_decay(conn, now=now)
