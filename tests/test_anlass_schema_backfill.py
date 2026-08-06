@@ -27,7 +27,8 @@ def _old_schema_without_anlass() -> str:
     bleibt."""
     schema_sql = (SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8")
     old_schema, n1 = re.subn(
-        r",\n    -- Anlass \(Auftrag 2026-08-06\).*?anlass TEXT NOT NULL DEFAULT 'unbekannt'\n\);",
+        r",\n    -- Anlass \(Auftrag 2026-08-06\).*?anlass TEXT NOT NULL DEFAULT 'unbekannt',\n"
+        r"(    -- abgeleitet_von.*?\n)*    abgeleitet_von TEXT\n\);",
         "\n);", schema_sql, count=1, flags=re.DOTALL,
     )
     assert n1 == 1, "Anlass-Block an knowledge_nodes nicht wie erwartet gefunden"

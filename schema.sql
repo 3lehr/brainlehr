@@ -53,7 +53,19 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- SELBSTBERICHTET vom Schreiber (nur so gut wie er), 'hook'/'skript'
     -- sind objektiv, weil der Aufrufweg sie kennt. 'unbekannt' ist Vorgabe
     -- und deckt den gesamten Altbestand vor diesem Feld ab.
-    anlass TEXT NOT NULL DEFAULT 'unbekannt'
+    anlass TEXT NOT NULL DEFAULT 'unbekannt',
+    -- abgeleitet_von (Auftrag 2026-08-06, ADR-027 Nachtrag 4, Lehre L-adfb33).
+    -- Optionale Kennung (id oder path) eines VORHANDENEN Quellknotens. Gesetzt
+    -- heisst: source wurde nicht vom Schreiber formuliert, sondern vom System
+    -- aus der ART des Quellknotens erzeugt (parent_path/norm_rang/tags --
+    -- NIE aus dessen title/summary/content, die tragen den Inhalt, der genau
+    -- nicht durchsickern soll). Grund: Freitext-source kann nur nennen, indem
+    -- er wiedergibt -- eine Person in source zu nennen heisst, sie zu leaken,
+    -- egal wie gut die Zitat-Regel oben ist. "Dem Schreiber die Feder nehmen"
+    -- ist der Kern des Auftrags. NULL = Normalfall, unveraendert wie bisher.
+    -- Aufloesung (Kennung -> echter Knoten) ist eine Berechtigungsfrage und
+    -- bewusst NICHT Teil von knowledge_read/knowledge_search -- siehe dort.
+    abgeleitet_von TEXT
 );
 
 -- Volltext-Suche über Titel, Summary und Content.

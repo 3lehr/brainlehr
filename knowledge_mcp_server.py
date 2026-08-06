@@ -201,6 +201,36 @@ def _ensure_anlass_columns(conn: sqlite3.Connection) -> None:
         conn.execute(f"ALTER TABLE {table} ADD COLUMN anlass TEXT NOT NULL DEFAULT 'unbekannt'")
 
 
+def _ensure_abgeleitet_von_column(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die Spalte abgeleitet_von (Auftrag
+    2026-08-06, ADR-027 Nachtrag 4). Gleiches Muster wie
+    _ensure_anlass_columns direkt darueber: additiv, NULL-faehig, kein
+    Rueckfuell-Schritt noetig (NULL ist der unveraenderte Normalfall), aber
+    trotzdem WAL-Checkpoint + Sicherungskopie VOR dem ALTER (Lehre L-218f1e)."""
+    if "knowledge_nodes" not in {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }:
+        return
+    if "abgeleitet_von" in {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"Spalte 'abgeleitet_von' fehlt, aber die Sicherung vor dem automatischen "
+            f"Nachzug ist blockiert (WAL-Checkpoint busy={busy}, {log_frames} Frames, "
+            f"{checkpointed} checkpointed) -- vermutlich schreibt gerade ein anderer "
+            "Prozess auf dieselbe Datenbank. Nachzug abgebrochen, nichts geaendert. "
+            "Von Hand nachholen: '.venv/bin/python shared-knowledge/migrate_ableitung.py --apply'."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN abgeleitet_von TEXT")
+
+
 def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
     """Nachzug fuer Bestands-DBs ohne die sechs Zusicherungs-Trigger an
     knowledge_nodes (Auftrag 2026-08-06). Gleiches Muster wie
@@ -260,6 +290,7 @@ def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
 def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old knowledge.db copies."""
     _ensure_anlass_columns(conn)
+    _ensure_abgeleitet_von_column(conn)
     _ensure_node_constraint_triggers(conn)
     columns = {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
     for name, declaration in {
@@ -451,6 +482,10 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
         "project": row["project_id"],
         "tags": json.loads(row["tags"]) if row["tags"] else [],
         "source": row["source"],
+        # Kennung, NICHT aufgeloest (ADR-027 Nachtrag 4) -- Aufloesen (Kennung
+        # -> echter Quellknoten) ist eine Berechtigungsfrage und steht hier
+        # nicht an, siehe schema.sql-Kommentar an dieser Spalte.
+        "abgeleitet_von": row["abgeleitet_von"],
         "confidence": row["confidence"],
         "norm_rang": row["norm_rang"],
         "gilt_ab": row["gilt_ab"],
@@ -611,7 +646,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
 
     if scope == "all":
         fts_rows = conn.execute(
-            """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis
+            """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ?
@@ -621,7 +656,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         allowed_ids = None
     else:
         fts_rows = conn.execute(
-            """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis
+            """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.project_id IN ('shared', ?)
@@ -645,7 +680,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     if missing:
         placeholders = ",".join("?" for _ in missing)
         for r in conn.execute(
-            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis FROM knowledge_nodes WHERE id IN ({placeholders})",
+            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von FROM knowledge_nodes WHERE id IN ({placeholders})",
             missing
         ):
             by_id[r["id"]] = r
@@ -656,7 +691,10 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             continue
         row = by_id[i]
         entry = {"id": row["id"], "path": row["path"], "title": row["title"],
-                  "summary": row["summary"], "project": row["project_id"]}
+                  "summary": row["summary"], "project": row["project_id"],
+                  # Kennung, NICHT aufgeloest -- siehe schema.sql-Kommentar an
+                  # knowledge_nodes.abgeleitet_von (ADR-027 Nachtrag 4).
+                  "abgeleitet_von": row["abgeleitet_von"]}
         geltung = _geltung_status(row["norm_rang"], row["gilt_ab"], row["gilt_bis"], stichtag)
         if geltung in ("abgelaufen", "noch_nicht_in_kraft"):
             if nur_geltende:
@@ -890,12 +928,35 @@ def _validate_source_provenance(source: str, title: str, summary: str, content: 
     )
 
 
+def _erzeuge_source_aus_ableitung(conn: sqlite3.Connection, kennung: str) -> tuple[str | None, str | None]:
+    """Baut den Herkunftstext fuer abgeleitet_von aus der ART des
+    Quellknotens -- NIE aus dessen title/summary/content, denn genau die
+    tragen den Inhalt, der nicht durchsickern soll (ADR-027 Nachtrag 4).
+    'Art' = parent_path (Kategorie/Ast), norm_rang (Norm oder Fakt), tags.
+    Gibt (source_text, None) oder (None, fehlertext) zurueck."""
+    row = conn.execute(
+        "SELECT path, parent_path, norm_rang, tags FROM knowledge_nodes WHERE id = ? OR path = ?",
+        (kennung, kennung)
+    ).fetchone()
+    if not row:
+        return None, (f"abgeleitet_von zeigt auf keinen vorhandenen Knoten: {kennung!r}")
+    kategorie = row["parent_path"] or "/"
+    art = "Norm" if row["norm_rang"] is not None else "Fakt"
+    tags = json.loads(row["tags"]) if row["tags"] else []
+    tag_teil = f", Tags {tags}" if tags else ""
+    return (
+        f"abgeleitet von Knoten unter {kategorie} (Art: {art}{tag_teil})",
+        None,
+    )
+
+
 def knowledge_add(parent_path: str, title: str, summary: str,
                   content: str = "", project_id: str = "shared",
                   tags: list | None = None, source: str = "", *,
                   neuer_ast: bool = False,
                   norm_rang: int | None = None, gilt_ab: str | None = None,
                   gilt_bis: str | None = None, anlass: str = "unbekannt",
+                  abgeleitet_von: str | None = None,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
     """Add a new knowledge node to the tree. Rejects an unknown parent_path
@@ -905,7 +966,14 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     anlass: was hat den Eintrag ausgeloest -- siehe ALLOWED_ANLASS oben.
     'selbst'/'betreiber' sind selbstberichtet vom Aufrufer, nicht geprueft;
     'hook'/'skript' objektiv, weil der Aufrufweg sie kennt. Unbekannter Wert
-    wird abgelehnt (sprechender Fehler, kein stiller Erfolg)."""
+    wird abgelehnt (sprechender Fehler, kein stiller Erfolg).
+
+    abgeleitet_von: Kennung (id oder path) eines vorhandenen Quellknotens
+    (ADR-027 Nachtrag 4, Lehre L-adfb33). Gesetzt heisst: source wird VOM
+    SYSTEM aus der Art des Quellknotens erzeugt, der Aufrufer darf source
+    selbst nicht mitliefern -- "dem Schreiber die Feder nehmen", denn ein
+    selbst formulierter Herkunftstext kann leaken, egal wie gut die
+    Zitat-Pruefung unten ist."""
     anlass_fehler = _validate_anlass(anlass)
     if anlass_fehler:
         return {"error": anlass_fehler}
@@ -916,21 +984,38 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     title, summary = fixed["title"], fixed["summary"]
     content, tags, source = fixed["content"], fixed["tags"], fixed["source"]
 
-    if not source.strip():
-        return {
-            "error": "source fehlt: Herkunft des Knotens angeben (aus welcher Datei/welchem Lauf er stammt). "
-                     "Beispiel: 'erzeugt aus /pfad/zur/datei.md (Stand 2026-08-05T23:40:00+02:00)'.",
-        }
-
-    provenienz_fehler = _validate_source_provenance(source, title, summary, content)
-    if provenienz_fehler:
-        return {"error": provenienz_fehler}
-
     geltung_fehler = _validate_geltung(norm_rang, gilt_ab, gilt_bis)
     if geltung_fehler:
         return {"error": geltung_fehler}
 
     conn = get_db()
+
+    if abgeleitet_von is not None:
+        if source.strip():
+            conn.close()
+            return {
+                "error": "source und abgeleitet_von schliessen sich aus: ist abgeleitet_von "
+                         "gesetzt, erzeugt das System den Herkunftstext selbst -- kein eigenes "
+                         "source mitgeben.",
+            }
+        erzeugte_source, ableitung_fehler = _erzeuge_source_aus_ableitung(conn, abgeleitet_von)
+        if ableitung_fehler:
+            conn.close()
+            return {"error": ableitung_fehler}
+        source = erzeugte_source
+    else:
+        if not source.strip():
+            conn.close()
+            return {
+                "error": "source fehlt: Herkunft des Knotens angeben (aus welcher Datei/welchem Lauf er stammt). "
+                         "Beispiel: 'erzeugt aus /pfad/zur/datei.md (Stand 2026-08-05T23:40:00+02:00)'.",
+            }
+
+        provenienz_fehler = _validate_source_provenance(source, title, summary, content)
+        if provenienz_fehler:
+            conn.close()
+            return {"error": provenienz_fehler}
+
     parent_path = parent_path.rstrip("/") or "/"
 
     # Derive path from parent + slugified title
@@ -969,11 +1054,11 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                actor=actor, model=model, session=session, status="started")
     created_at = now_iso()
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, anlass)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
-         norm_rang, gilt_ab, gilt_bis, anlass)
+         norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von)
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,
@@ -983,12 +1068,12 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                    "content": content, "level": level, "tags": tags or [],
                    "source": source, "created_at": created_at, "updated_at": created_at,
                    "norm_rang": norm_rang, "gilt_ab": gilt_ab, "gilt_bis": gilt_bis,
-                   "anlass": anlass,
+                   "anlass": anlass, "abgeleitet_von": abgeleitet_von,
                })
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     conn.commit()
     conn.close()
-    return {"id": node_id, "path": node_path, "status": "created", **wikilinks}
+    return {"id": node_id, "path": node_path, "status": "created", "source": source, **wikilinks}
 
 
 def knowledge_update(node_id: str, summary: str | None = None,
@@ -1954,7 +2039,8 @@ TOOLS = {
                 "content": {"type": "string", "description": "Full content (loaded only on read)"},
                 "project_id": {"type": "string", "description": "shared|begod|aka|bebetter", "default": "shared"},
                 "tags": {"type": "array", "items": {"type": "string"}},
-                "source": {"type": "string", "description": "Required, non-empty. Origin: file path, konsil ID, or research ID. Example: 'erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)'"},
+                "source": {"type": "string", "description": "Required unless abgeleitet_von is set (then it must be omitted -- the system generates it). Origin: file path, konsil ID, or research ID. Example: 'erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)'"},
+                "abgeleitet_von": {"type": "string", "description": "Optional: id or path of an EXISTING source node. If set, source is generated by the system from the source node's kind (parent_path/norm_rang/tags, never its title/summary/content) -- giving your own source is rejected."},
                 "neuer_ast": {"type": "boolean", "description": "Explicitly allow creating a new top-level branch when parent_path doesn't exist yet", "default": False},
                 "norm_rang": {"type": "integer", "description": "Optional: rank of a norm (1=global directive, 2=hub directive, 3=ADR). Omit for plain facts."},
                 "gilt_ab": {"type": "string", "description": "Optional: ISO-8601 date/timestamp the norm takes effect"},
@@ -1970,7 +2056,7 @@ TOOLS = {
             args.get("content", ""), args.get("project_id", "shared"),
             args.get("tags"), args.get("source", ""), neuer_ast=args.get("neuer_ast", False),
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
-            anlass=args.get("anlass", "unbekannt"),
+            anlass=args.get("anlass", "unbekannt"), abgeleitet_von=args.get("abgeleitet_von"),
             **_identity_args(args)
         )
     },
