@@ -79,7 +79,7 @@ L-f54650	C	Plattformverhalten von Kalender-Sync (iOS EventKit vs. Android Calend
 L-7b4857	C	Prozessregel (zitierte Fundstelle vor Umsetzung gegen aktuellen Code verifizieren), kein Code-Zustand.
 L-d3c6a4	A	Fundstelle: apps/fahrtenbuch_legacy/test/core/security/hash_chain_per_vehicle_test.dart (1500ms-Delay-Test vor verifyTripChain-Assertion) deckt genau diese Zeitstempel-Trunkierungs-Regression ab.
 L-ed0379	B	Bedingung: Insert einer neuen Zeile mit einem Feldwert, der noch von einer bestehenden, bald ersetzten Zeile gehalten wird, verletzt einen UNIQUE INDEX auf der Zieltabelle, per Grep auf UNIQUE-INDEX-Definitionen und Insert-Reihenfolge pruefbar; kein spezifischer Test dazu im Repo gefunden.
-L-c46550	C	Meta-Beobachtung ueber Agenten-Orchestrierung (SendMessage statt Neu-Spawn), kein Code-Zustand.
+L-c46550	A	Fundstelle: hub/scripts/agent_reuse_guard_hook.py -- Docstring zitiert L-c46550 woertlich als Anlass, PreToolUse-Guard blockt Neu-Spawn bei Datei-Ueberschneidung in derselben Session.
 L-f019e7	C	Framework-Tatsache ueber Flutters ListTile.trailing-Hoehen-Constraint, unabhaengig von isThreeLine.
 L-07c9d9	C	Tatsache ueber die Struktur des Apple-Developer-Portals fuer ein bestimmtes Entitlement.
 L-9b3012b6	C	Tatsache ueber jsdom-Verhalten (window.innerWidth beeinflusst @media-Aufloesung nicht).
@@ -234,7 +234,7 @@ L-475fa2	B	Bedingung waere baubar: POST/PUT auf /v1/steuer/invoice/drafts muss b
 L-bf8007	A	openlehr/tools/openlehr/route_inventory.py enthaelt einen Selbsttest mit vier Regressionsfaellen (Apostroph, Anfuehrungszeichen, Attributzugriff, Verschachtelung) fuer die Platzhalter-Regex -- im Repo bestaetigt.
 L-19eb20	B	Bedingung waere baubar: alle int()/str()-Konvertierungen aus dem Body-Dict muessen innerhalb desselben try/except ValueError liegen wie der API-Aufruf -- laut Lehre nicht gefixt, nur als xfail dokumentiert, kein generischer Check ueber router.py.
 L-2837f3	A	~/.claude/skills/design-waechter/ui_guard.py, Regeln "selbsterklaerung" und "maskierter-wert" mit Ausnahme-Marker "waechter:" -- Datei und Regeln im Repo bestaetigt.
-L-18bc8d	C	Urteil, wer Empfaenger eines Feldes ist (Owner vs. Dritter), ist fallabhaengig und nicht ohne Kontextwissen deterministisch pruefbar.
+L-18bc8d	A	Fundstelle: /Users/lehrmacbook/.claude/skills/design-waechter/ui_guard.py:72 Regel 'maskierter-wert' + Selbsttest Zeile 318 (assert treffer==[(1,'maskierter-wert')]) -- laufende Pruefung, urspruenglich C etikettiert, vom Koordinator korrigiert.
 L-6af693	C	Gleiches Empfaenger-Urteil wie L-18bc8d, zusaetzlich Einzelfall-Fix an Backend-Feldern ohne repo-weiten Check auf alle *_masked-Backend-Ausgaben.
 L-2fe88c	A	apps/openlehr/tests/test_steuer_backoffice_settings.py mit vier Tests (AGB-Erhalt, Teilgruppe, Loeschen, Vollrumpf) plus Gegenprobe pruefen die Merge-statt-Ersetzen-Logik -- Datei im Repo bestaetigt.
 L-fa4371	B	Bedingung waere baubar: kein `detail=str(exc))` in router.py, wenn die Exception einen konfigurationsabgeleiteten Wert interpoliert -- als generischer Repo-Grep/Lint nicht gefunden, nur ein Einzeltest fuer den konkreten Fall erwaehnt.
@@ -302,7 +302,7 @@ L-d0810d	C	Erkenntnis ueber eine Lücke im bestehenden a11y-Checker (implizite l
 L-f9f654	B	Bedingung: try/catch umschliesst einen unawaited(...)-Aufruf -- grep-bares Syntaxmuster (unawaited innerhalb try ohne await), deterministisch erkennbar.
 L-503687	C	Werkzeug-Kalibrierungserkenntnis (Fan-out/Router-Falschtreffer) beschreibt Grenzen einer Heuristik, kein neues festes Kriterium.
 L-ef3603	C	Fachliche SQL-Analyse zur Periodenisolation erfordert Verstaendnis der Aggregation, kein generisches Muster.
-L-7e43df	C	Prozessregel fuer git add/commit in geteiltem Arbeitsbaum, Bedienungsanweisung.
+L-7e43df	A	Fundstelle: hub/scripts/commit_guard_hook.py -- Docstring beschreibt exakt diesen Vorfall (trip_edit_screen.dart, fahrtenbuch 2026-07-31), PreToolUse-Guard blockt blankes git add/commit ohne Pfadangabe bei >1 aktivem Agent.
 L-633c10	B	Bedingung: Podfile-Kopf enthaelt require auf Pfad unter .symlinks vor dessen Erzeugung in post_install -- grep-bare Reihenfolgepruefung (require-Zeile vor post_install-Block).
 L-1b6476	A	hub/scripts/commit_guard_hook.py + hub/scripts/agent_commit.sh blocken Commits auf Pfaden noch laufender Agenten anhand des Registers, mit Override AGENT_COMMIT_FORCE=1 -- laufender Mechanismus im Repo bestaetigt.
 L-c1cdb9	A	fahrtenbuch/apps/fahrtenbuch_legacy/test/store_compliance_test.dart leitet die Soll-Menge an Permissions jetzt aus lib/-Code ab und haelt sie gegen Podfile-Makros/plist-Schluessel (Kreuzvergleich), im Repo bestaetigt.
@@ -323,7 +323,7 @@ L-c214a0	C	Aussage ueber fremdes Fahrzeug-/BLE-Verhalten und Future-Verdrahtung,
 L-5d9449	C	Architekturentscheidung ueber Wartebedingung (Menge vs. Voraussetzung) ist Werturteil per Definition der Aufgabenstellung selbst (Beispiel fuer NICHT-B in der Vorgabe).
 L-874260	B	Bedingung: Datei importiert `hide showDialog, showModalBottomSheet` und definiert sie neu -- rg "hide \w+" --type dart liefert deterministisch die Fundstellen, ohne Sprachmodell.
 L-06d14c	C	Fachliche Fehldiagnose (Feldsemantik von categorySource) erfordert Domaenverstaendnis, kein generisches Kriterium.
-L-76eca2	B	Bedingung: Testdatei enthaelt null assert/expect-Aufrufe -- Datei mit Test-Suffix und 0 Assertions ist deterministisch zaehlbar, unabhaengig vom Inhalt.
+L-76eca2	A	Fundstelle: hub/scripts/behauptete_pruefung.py -- Docstring zitiert 'Lehre L-76eca2' woertlich, Skript findet Form A (behaupteter Beleg ohne Pruefer) und Form B (Testdatei ohne Zusicherung).
 L-a306bc	C	Ob find.text(exakterString) den Testzweck (Navigation) oder einen Label-Kontrakt pruefen soll, ist Absichtsurteil, nicht ohne Sprachmodell aus dem Code ableitbar.
 L-977488	C	Steuerrechtliche Wirkungsanalyse eines Hoechstbetrags im gegebenen Datenmodell, fachliches Urteil.
 L-83fa36	B	Bedingung: git stash push mit "-m" NACH "--" -- Aufrufsyntax deterministisch per Parsing/Linting der eigenen Skriptaufrufe erkennbar (Reihenfolge -m vor --).
@@ -408,8 +408,8 @@ L-e1e7ee	A	l10n-Parameter in generateSeasonalRecommendations ist als required de
 L-8d7350	C	Ampel-Aggregation um grauen Zustand ergaenzt, kein benannter Regressionstest fuer diese konkrete Stelle
 L-f93d8c	B	isButton-Flag statt nur Tap-Action fuer Rollen-Erkennung pruefen ist als Gegenbeispiel-Fixture (disabled Button) testbar, kein konkreter Test dafuer belegt
 L-a88e34	A	wohlair/test/screen_walker_test.dart enthaelt laut Beschreibung vier Eichtests (Align+Semantics-Fixture) fuer _spokenText/isHidden-Filter
-L-91aa80	B	Praezisierung von unverdrahtet.py (hub/scripts/unverdrahtet.py) auf Eingabe-Kontexte/Passthrough ist im Skript umgesetzt, aber keine Fixture-Testdatei dafuer gefunden
-L-6e7651	B	Laufzeit-Grenze (kein O(Parameter*Dateien)-Neuparsen) waere als Zeit-Limit-Test pruefbar, aber kein solcher Test gefunden
+L-91aa80	A	Fundstelle: hub/scripts/unverdrahtet.py --selbsttest Zeile 499f (assert 'menge' not in f2 / 'hash' not in f2) -- Selbsttest deckt genau die hier beschriebene Praezisierung (Schreib- vs. Lesezugriff) ab.
+L-6e7651	A	Fundstelle: hub/scripts/unverdrahtet.py Zeile ~315 (Index statt O(Parameter*Dateien)-Neuparsen, Kommentar referenziert exakt dieses Perf-Problem) -- Fix im Skript umgesetzt.
 L-0a4129	A	fahrtenbuch/.../test/features/obd/obd_auto_reconnect_hint_no_recursion_test.dart prueft No-Op-Guard gegen StackOverflow
 L-0a1ce1	A	openlehr/apps/openlehr/tests/test_reise_lauf_h1_empfaenger_rueckfrage.py prueft Beantwortung der ask-Rueckfrage vor accept
 L-108c3d	B	ein Laeufer-Check auf schmutzigen Arbeitsbaum ist als Skriptbedingung determinierbar, RES nennt Umsetzung im Laeufer aber ohne belegte Fundstelle in diesem Chunk
