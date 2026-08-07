@@ -1,0 +1,64 @@
+{
+  "messlauf": {
+    "A_beide_aus": {
+      "trefferguete": [
+        0,
+        35
+      ],
+      "falsches_schweigen": [
+        11,
+        35
+      ],
+      "richtiges_schweigen": [
+        5,
+        10
+      ],
+      "falsches_sprechen": [
+        5,
+        10
+      ]
+    },
+    "B_2Kanal_an_Pflicht_aus": {
+      "trefferguete": [
+        2,
+        35
+      ],
+      "falsches_schweigen": [
+        0,
+        35
+      ],
+      "richtiges_schweigen": [
+        0,
+        10
+      ],
+      "falsches_sprechen": [
+        10,
+        10
+      ]
+    },
+    "C_beide_an": {
+      "trefferguete": [
+        0,
+        35
+      ],
+      "falsches_schweigen": [
+        32,
+        35
+      ],
+      "richtiges_schweigen": [
+        10,
+        10
+      ],
+      "falsches_sprechen": [
+        0,
+        10
+      ]
+    }
+  },
+  "eichung": {
+    "case": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+    "zustand": "B_2Kanal_an_Pflicht_aus",
+    "vor": true,
+    "nach": false
+  }
+}
