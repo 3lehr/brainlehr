@@ -25,6 +25,7 @@ Aufruf:
 from __future__ import annotations
 
 import argparse
+import datetime
 import glob
 import json
 import sqlite3
@@ -53,37 +54,157 @@ GEWICHT_GERATEN_KEY = "siegbedingung_gewichte_geraten"
 
 
 # ─── Abschnitt 1: Eskalierte Lehren ─────────────────────────────────────────
+#
+# Beanstandung 2026-08-07: die alte Beforderung schrieb den rohen, bei
+# RULE_CAP=220 Zeichen HART abgeschnittenen Praeventionstext einer Lehre in
+# hub/CLAUDE.md -- eine Lehre (fuer Leser mit Fallkenntnis) ist keine Regel
+# (verstaendlich ohne Vorwissen).
+#
+# Korrektur des Auftraggebers noch waehrend der Umsetzung: der Regeltext wird
+# NICHT beim Klick und NICHT von dieser Oberflaeche erzeugt (kein Modellaufruf
+# hier, kein Warten). Er entsteht FRUEHER, sobald eine Lehre Kandidat wird --
+# durch einen eigenen Erzeuger (Nachtlaeufer o.ae.), der ausserhalb dieser
+# beiden Dateien liegt und hier NICHT gebaut wird. Diese Datei liest nur.
+#
+# ERWARTETES FELD FUER DEN ERZEUGER: Tabelle `eskalation_vorschlag` in
+# derselben knowledge.db, Spalten (lesson_id TEXT PRIMARY KEY, regel_vorschlag
+# TEXT NOT NULL, erzeugt_am TEXT NOT NULL). Ein Upsert pro Lehre, sobald sie
+# nach status='escalated_to_rule' wechselt. Ohne Zeile dort zeigt die
+# Oberflaeche ehrlich "Regeltext wird noch erstellt" und bietet dort keine
+# Befoerderung an -- besser nichts anzeigen als wieder einen Textausschnitt
+# befoerdern.
+#
+# Rueckstufungs-Merkmal (Ebene 2 derselben Beanstandung): "seit wann steht
+# die Regel oben" und "ist sie seither wieder aufgetreten" sind nur ab dem
+# Zeitpunkt feststellbar, an dem eine Beforderung diese Zahl selbst
+# festhaelt -- Zeit allein zaehlt laut Betreiber-Direktive nicht.
+# eskalation_historie(lesson_id, promoted_at, occurrences_at_promotion,
+# demoted_at) haelt das fest. Fuer die zwei bereits VOR dieser Anzeige
+# befoerderten Lehren (L-40d9a5, L-48e414) gibt es keinen Nachtrag -- ehrlich
+# als "unbekannt" ausgewiesen statt rueckwirkend geraten.
+
+def _ensure_eskalation_tabellen(conn) -> None:
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS eskalation_historie "
+        "(lesson_id TEXT PRIMARY KEY, promoted_at TEXT NOT NULL, "
+        "occurrences_at_promotion INTEGER NOT NULL, demoted_at TEXT)"
+    )
+    # Bestandsschutz: Tabelle kann noch aus einer Vorversion ohne demoted_at stammen.
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(eskalation_historie)")}
+    if "demoted_at" not in cols:
+        conn.execute("ALTER TABLE eskalation_historie ADD COLUMN demoted_at TEXT")
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS eskalation_vorschlag "
+        "(lesson_id TEXT PRIMARY KEY, regel_vorschlag TEXT NOT NULL, erzeugt_am TEXT NOT NULL)"
+    )
+
 
 def _eskalation_stand() -> dict:
     conn = eskalation_vorlage.get_db()
-    rows = conn.execute(
-        "SELECT id, occurrences, type, description, prevention FROM lessons_learned "
-        "WHERE status = ? ORDER BY occurrences DESC, id",
+    _ensure_eskalation_tabellen(conn)
+    conn.commit()
+    pool_rows = conn.execute(
+        "SELECT l.id, l.occurrences, l.type, l.description, "
+        "h.promoted_at, h.demoted_at, v.regel_vorschlag "
+        "FROM lessons_learned l "
+        "LEFT JOIN eskalation_historie h ON h.lesson_id = l.id "
+        "LEFT JOIN eskalation_vorschlag v ON v.lesson_id = l.id "
+        "WHERE l.status = ? ORDER BY l.occurrences DESC, l.id",
         (eskalation_vorlage.STATUS_POOL,),
     ).fetchall()
+    promoted_rows = conn.execute(
+        "SELECT l.id, l.occurrences, l.description, h.promoted_at, h.occurrences_at_promotion "
+        "FROM lessons_learned l LEFT JOIN eskalation_historie h ON h.lesson_id = l.id "
+        "WHERE l.status = ? ORDER BY l.id",
+        (eskalation_vorlage.STATUS_PROMOTED,),
+    ).fetchall()
     conn.close()
-    kandidaten = [{
-        "id": r["id"], "occurrences": r["occurrences"], "type": r["type"],
-        "description": r["description"],
-        "als_regel": eskalation_vorlage._cap(r["prevention"] or r["description"]),
-    } for r in rows]
-    erhoehung = sum(len(k["als_regel"]) for k in kandidaten)
+
+    def _kandidat(r):
+        return {
+            "id": r["id"], "occurrences": r["occurrences"], "type": r["type"],
+            "description": r["description"],
+            "regel_vorschlag": r["regel_vorschlag"],  # None = Erzeuger war noch nicht dran
+        }
+
+    # War schon mal oben (demoted_at gesetzt) -> eigene Gruppe, taucht nicht
+    # kommentarlos wieder unter den nie befoerderten Kandidaten auf.
+    kandidaten = [_kandidat(r) for r in pool_rows if r["demoted_at"] is None]
+    zurueckgestuft = [dict(_kandidat(r), war_oben_von=r["promoted_at"], zurueckgestuft_am=r["demoted_at"])
+                       for r in pool_rows if r["demoted_at"] is not None]
+
+    erhoehung = sum(len(k["regel_vorschlag"]) for k in kandidaten if k["regel_vorschlag"])
     aktuell = len(eskalation_vorlage.CLAUDE_MD_PATH.read_text(encoding="utf-8")) if \
         eskalation_vorlage.CLAUDE_MD_PATH.exists() else 0
     prozent = round(100 * erhoehung / aktuell, 1) if aktuell else None
-    return {"kandidaten": kandidaten, "erhoehung_zeichen": erhoehung,
+
+    befoerdert = []
+    for r in promoted_rows:
+        if r["promoted_at"] is None:
+            seit, signal = None, "unbekannt — vor Einfuehrung dieser Anzeige befoerdert, keine Vergleichsgrundlage."
+        else:
+            seit = r["promoted_at"]
+            diff = r["occurrences"] - r["occurrences_at_promotion"]
+            signal = ("seit Befoerderung nicht erneut aufgetreten — Ruecknahme pruefbar" if diff <= 0
+                       else f"seit Befoerderung {diff}× erneut aufgetreten — bleibt oben")
+        befoerdert.append({"id": r["id"], "description": r["description"], "seit": seit, "signal": signal})
+
+    return {"kandidaten": kandidaten, "befoerdert": befoerdert, "zurueckgestuft": zurueckgestuft,
+            "erhoehung_zeichen": erhoehung,
             "claude_md_zeichen": aktuell, "erhoehung_prozent": prozent}
 
 
-def _eskalation_handeln(handlung: str, lesson_id: str) -> dict:
-    ns = SimpleNamespace(lesson_id=lesson_id)
+def _eskalation_befoerdern(lesson_id: str, regel: str) -> dict:
+    regel = (regel or "").strip()
+    if not regel:
+        return {"ok": False, "error": "Regeltext fehlt"}
+    conn = eskalation_vorlage.get_db()
+    _ensure_eskalation_tabellen(conn)
+    row = conn.execute(
+        "SELECT id, occurrences FROM lessons_learned WHERE id = ? AND status = ?",
+        (lesson_id, eskalation_vorlage.STATUS_POOL),
+    ).fetchone()
+    if not row:
+        conn.close()
+        return {"ok": False, "error": "nicht in der Vorlage"}
+    text = eskalation_vorlage._read_claude_md(eskalation_vorlage.CLAUDE_MD_PATH)
+    new_text = eskalation_vorlage._promote_line(text, lesson_id, regel)
+    eskalation_vorlage.CLAUDE_MD_PATH.write_text(new_text, encoding="utf-8")
+    ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    conn.execute("UPDATE lessons_learned SET status = ? WHERE id = ?",
+                 (eskalation_vorlage.STATUS_PROMOTED, lesson_id))
+    conn.execute(
+        "INSERT INTO eskalation_historie (lesson_id, promoted_at, occurrences_at_promotion) "
+        "VALUES (?, ?, ?) ON CONFLICT(lesson_id) DO UPDATE SET "
+        "promoted_at=excluded.promoted_at, occurrences_at_promotion=excluded.occurrences_at_promotion",
+        (lesson_id, ts, row["occurrences"]),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True}
+
+
+def _eskalation_handeln(handlung: str, lesson_id: str, regel: str = "") -> dict:
     if handlung == "befoerdern":
-        ok = eskalation_vorlage.cmd_befoerdern(ns)
-    elif handlung == "zurueckstufen":
+        return _eskalation_befoerdern(lesson_id, regel)
+    if handlung == "zurueckstufen":
+        ns = SimpleNamespace(lesson_id=lesson_id)
         ok = eskalation_vorlage.cmd_zurueckstufen(ns)
-    else:
-        return {"error": "unbekannte Handlung"}
-    return {"ok": bool(ok)}
+        if ok:
+            # Historie bleibt stehen (demoted_at gesetzt) -- sonst verschwindet die
+            # Zurueckstufung spurlos und die Lehre sieht wie ein nie befoerderter
+            # Kandidat aus. Nur legt eine bereits VOR dieser Anzeige (ohne
+            # promoted_at) befoerderte Lehre keine Zeile an -- fuer sie gibt es
+            # nichts zu vervollstaendigen.
+            conn = eskalation_vorlage.get_db()
+            _ensure_eskalation_tabellen(conn)
+            ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            conn.execute("UPDATE eskalation_historie SET demoted_at = ? WHERE lesson_id = ?",
+                         (ts, lesson_id))
+            conn.commit()
+            conn.close()
+        return {"ok": bool(ok)}
+    return {"error": "unbekannte Handlung"}
 
 
 # ─── Abschnitt 2: Normkonflikte (nur lesend) ────────────────────────────────
@@ -259,7 +380,8 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             if self.path == "/api/eskalation":
-                out = _eskalation_handeln(payload.get("handlung", ""), payload.get("id", ""))
+                out = _eskalation_handeln(payload.get("handlung", ""), payload.get("id", ""),
+                                           payload.get("regel", ""))
             elif self.path == "/api/eilmeldung":
                 out = _eilmeldung_quittieren(payload.get("sitzung", ""), payload.get("schluessel", ""))
             elif self.path == "/api/siegbedingung":
@@ -335,6 +457,57 @@ def _selftest() -> int:
             assert "error" in fehler, "Negativfall: ungueltiger aktiv-Wert muss abgelehnt werden"
         finally:
             DB_PATH = Path(__file__).resolve().parent / "knowledge.db"
+
+    # 2b) Eskalation: befoerdern/zurueckstufen gegen Kopien von DB und
+    # CLAUDE.md -- eskalation_vorlage haelt DB_PATH/CLAUDE_MD_PATH als
+    # eigene Modul-Globale, deshalb hier eigens umgehaengt statt ueber
+    # entscheidungen_server.DB_PATH (das eskalation_vorlage nicht sieht).
+    with tempfile.TemporaryDirectory() as tmp:
+        db_copy = Path(tmp) / "knowledge.db"
+        md_copy = Path(tmp) / "CLAUDE.md"
+        shutil.copy2(eskalation_vorlage.DB_PATH, db_copy)
+        md_copy.write_text("# Testkopf\n", encoding="utf-8")
+        real_ev_db, real_ev_md = eskalation_vorlage.DB_PATH, eskalation_vorlage.CLAUDE_MD_PATH
+        eskalation_vorlage.DB_PATH = db_copy
+        eskalation_vorlage.CLAUDE_MD_PATH = md_copy
+        try:
+            conn = sqlite3.connect(str(db_copy))
+            conn.execute(
+                "INSERT INTO lessons_learned (id, type, description, prevention, occurrences, status) "
+                "VALUES ('L-selftest', 'antipattern', 'Testlehre', 'Testregel.', 3, ?)",
+                (eskalation_vorlage.STATUS_POOL,),
+            )
+            conn.commit()
+            conn.close()
+
+            # Negativfall (rot vor gruen): kein Regeltext -> abgelehnt.
+            fehler = _eskalation_befoerdern("L-selftest", "")
+            assert fehler.get("ok") is False, "Negativfall: leerer Regeltext darf nicht befoerdern"
+            assert "[L-selftest]" not in md_copy.read_text(encoding="utf-8")
+
+            vor = _eskalation_stand()
+            assert any(k["id"] == "L-selftest" for k in vor["kandidaten"])
+
+            ok = _eskalation_befoerdern("L-selftest", "Klartext-Regel fuer den Selbsttest.")
+            assert ok.get("ok") is True
+            assert "[L-selftest] Klartext-Regel fuer den Selbsttest." in md_copy.read_text(encoding="utf-8"), \
+                "Befoerderung muss den UNGEKUERZTEN, uebergebenen Regeltext schreiben (nicht die alte _cap()-Kuerzung)"
+
+            nach = _eskalation_stand()
+            assert not any(k["id"] == "L-selftest" for k in nach["kandidaten"]), "befoerderte Lehre muss aus den Kandidaten verschwinden"
+            treffer = [b for b in nach["befoerdert"] if b["id"] == "L-selftest"]
+            assert treffer and treffer[0]["seit"] is not None, "Beforderungszeitpunkt muss festgehalten sein"
+
+            demote = _eskalation_handeln("zurueckstufen", "L-selftest")
+            assert demote.get("ok") is True
+            assert "[L-selftest]" not in md_copy.read_text(encoding="utf-8")
+            danach = _eskalation_stand()
+            assert any(k["id"] == "L-selftest" for k in danach["zurueckgestuft"]), \
+                "zurueckgestufte Lehre gehoert in die eigene Gruppe, nicht kommentarlos zurueck unter die Kandidaten"
+            assert not any(k["id"] == "L-selftest" for k in danach["kandidaten"])
+        finally:
+            eskalation_vorlage.DB_PATH = real_ev_db
+            eskalation_vorlage.CLAUDE_MD_PATH = real_ev_md
 
     # 3) Eilmeldungen: leerer/kaputter Zustand darf nicht crashen (Negativfall).
     assert isinstance(_eilmeldungen_stand(), list)

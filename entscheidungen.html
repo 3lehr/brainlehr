@@ -114,8 +114,21 @@
 
 <section class="karte" id="karte-eskalation">
   <h2>1. Lehren befördern oder zurückstufen <span class="zahl-pille" id="esk-anzahl">–</span></h2>
+  <p>Jede Lehre liegt an genau einem von drei Orten:</p>
+  <ul>
+    <li><strong>Stufe C</strong> — nur auffindbar, wenn jemand ausdrücklich danach sucht.</li>
+    <li><strong>Stufe B</strong> — der normale Abruf: wird automatisch eingespielt, wenn das Thema einer Anfrage dazu passt.</li>
+    <li><strong>Stufe A</strong> — steht immer im Kontext, bei jedem Prompt, in jedem Projekt, egal worum es geht.</li>
+  </ul>
+  <p><strong>Befördern</strong> heißt: von B nach A. Die Regel muss also auch dann dastehen, wenn nichts am Thema der gerade laufenden Anfrage darauf hindeutet — der normale Abruf würde sie sonst nie einspielen. Das ist selten richtig, aber dann wichtig: „Ein einzelner Lauf ist keine Messung" gilt bei jeder Messung, unabhängig vom Thema. <strong>Zurückstufen</strong> ist der Weg zurück, wenn sich das nicht mehr bestätigt.</p>
+  <p>Der Preis ist der Unterschied: Stufe A kostet in der ersten Anfrage einer Sitzung voll und wird danach zwischengespeichert (deutlich billiger) — aber in jedem Projekt, egal worum es geht. Der normale Abruf (Stufe B) kostet dagegen bei jeder einzelnen Anfrage neu und wird nie zwischengespeichert. Befördern ist deshalb eine Entscheidung, keine Aufräumarbeit.</p>
   <p id="esk-preis" class="eintrag"></p>
+  <h3>Kandidaten</h3>
   <div id="esk-liste"><p class="leer">wird geladen …</p></div>
+  <h3>Schon einmal zurückgestuft</h3>
+  <div id="esk-liste-zurueckgestuft"><p class="leer">wird geladen …</p></div>
+  <h3>Aktuell auf Stufe A</h3>
+  <div id="esk-liste-befoerdert"><p class="leer">wird geladen …</p></div>
 </section>
 
 <section class="karte" id="karte-normkonflikte">
@@ -128,6 +141,7 @@
   <h2>3. Trefferbewertung gewichten <span class="marke geraten" id="sieg-marke">geraten</span></h2>
   <p>Wie stark zählen Trefferquote, Schweigequote (kein Treffer, wo auch keiner nötig war), Streuung zwischen Testläufen und Kosten, wenn eine neue Einstellung gegen die bisher beste antritt?</p>
   <form id="form-sieg">
+    <p class="einleitung">Wirkung: ein höherer Wert lässt eine neue Einstellung leichter gewinnen, wenn sie bei genau dieser Größe besser abschneidet als die bisher beste. Folge einer Änderung: wirkt erst beim nächsten Vergleich, nichts wird rückwirkend neu bewertet. Kosten: keine — nur eine Rechenregel für künftige Vergleiche.</p>
     <div id="sieg-felder"></div>
     <button type="submit" class="primaer">Gewichte speichern</button>
     <p class="status-zeile" id="sieg-status" role="status"></p>
@@ -140,14 +154,17 @@
   <form id="form-nacht">
     <fieldset>
       <legend>Zustand</legend>
+      <p class="einleitung">Wirkung: „An" startet den Lauf zur nächsten Gelegenheit von selbst, „Aus" verhindert das, egal was unten eingetragen ist. Folge: sofort wirksam, kein Neustart nötig. Kosten: nur bei „An" — jeder Lauf verbraucht Aufrufe bis zum Budget unten, auch wenn niemand zusieht.</p>
       <div class="radio-zeile">
         <label><input type="radio" name="nacht-aktiv" value="ein"> An</label>
         <label><input type="radio" name="nacht-aktiv" value="aus"> Aus</label>
       </div>
     </fieldset>
     <label for="nacht-antrieb">Antrieb</label>
+    <p class="einleitung">Wirkung: legt fest, welches Modell die Vorschläge erzeugt. Folge: leer oder „keiner" lässt den Lauf durchlaufen, ohne dass etwas dabei herauskommt. Kosten: abhängig vom gewählten Antrieb, hier nicht bezifferbar.</p>
     <input type="text" id="nacht-antrieb" name="antrieb" placeholder="z. B. keiner">
     <label for="nacht-budget">Budget in Aufrufen je Lauf (nicht in Tokens — die sind hier nicht genau messbar)</label>
+    <p class="einleitung">Wirkung: Obergrenze an Aufrufen für einen einzelnen Lauf. Folge: wird sie erreicht, bricht der Lauf ab, auch mitten in der Arbeit. Kosten: steigt mit der Zahl — mehr Aufrufe je Lauf, wenn „An" gewählt ist.</p>
     <input type="number" id="nacht-budget" name="budget" min="0" step="1">
     <div class="aktionen"><button type="submit" class="primaer">Übernehmen</button></div>
     <p class="status-zeile" id="nacht-status" role="status"></p>
@@ -210,45 +227,91 @@ function status(nodeId, text, art) {
 
 // ---- Abschnitt 1: Eskalation --------------------------------------------
 
+function kandidatEintrag(k, zusatz) {
+  // Regeltext kommt fertig aus der Wissensablage (Erzeuger ausserhalb dieser
+  // Seite, kein Modellaufruf hier) -- das Feld ist vorbelegt und aenderbar,
+  // aber Aendern ist nie Pflicht. Fehlt er noch, gibt es keine Befoerderung.
+  const eintrag = el('div', { class: 'eintrag' });
+  eintrag.appendChild(el('h3', { text: `${k.description} (${k.occurrences}× aufgetreten)` }));
+  if (zusatz) eintrag.appendChild(el('p', { text: zusatz }));
+  const aktionen = el('div', { class: 'aktionen' });
+  if (k.regel_vorschlag) {
+    const feldId = `regel-${k.id}`;
+    const label = el('label', { for: feldId, text: 'Regeltext (vorbelegt, bei Bedarf änderbar)' });
+    const textarea = el('textarea', { id: feldId, rows: '2',
+      style: 'width:100%;font:inherit;padding:0.4rem 0.5rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--fg);' });
+    textarea.value = k.regel_vorschlag;
+    eintrag.appendChild(label);
+    eintrag.appendChild(textarea);
+    const btnAuf = el('button', { class: 'primaer', type: 'button',
+      'aria-label': `${k.description} befördern`,
+      onclick: () => eskalationHandeln('befoerdern', k.id, k.description, textarea.value) });
+    btnAuf.textContent = 'Befördern';
+    aktionen.appendChild(btnAuf);
+  } else {
+    eintrag.appendChild(el('p', { class: 'leer', text: 'Regeltext wird noch erstellt — hier ist noch keine Beförderung möglich.' }));
+  }
+  eintrag.appendChild(aktionen);
+  return eintrag;
+}
+
 function renderEskalation(d) {
   document.getElementById('esk-anzahl').textContent = d.kandidaten.length;
   document.getElementById('esk-preis').textContent = d.kandidaten.length
-    ? `Zusammen ${d.erhoehung_zeichen} Zeichen` +
-      (d.erhoehung_prozent !== null ? ` (+${d.erhoehung_prozent} % der aktuellen Länge)` : '') +
-      ` — dieser Text lädt bei jeder Anfrage mit, in jedem Projekt.`
+    ? `Fertige Regeltexte zusammen ${d.erhoehung_zeichen} Zeichen` +
+      (d.erhoehung_prozent !== null ? ` (+${d.erhoehung_prozent} % der aktuellen Länge von Stufe A)` : '') +
+      `. Näherung, keine Tokenzahl.`
     : '';
+
   const liste = document.getElementById('esk-liste');
   liste.innerHTML = '';
   if (!d.kandidaten.length) {
     liste.appendChild(el('p', { class: 'leer', text: 'Nichts wartet gerade auf eine Entscheidung.' }));
-    return;
+  } else {
+    for (const k of d.kandidaten) liste.appendChild(kandidatEintrag(k));
   }
-  for (const k of d.kandidaten) {
-    const eintrag = el('div', { class: 'eintrag' });
-    eintrag.appendChild(el('h3', { text: `${k.description} (${k.occurrences}× aufgetreten)` }));
-    eintrag.appendChild(el('div', { class: 'regelzeile', text: k.als_regel }));
-    const aktionen = el('div', { class: 'aktionen' });
-    const btnAuf = el('button', { class: 'primaer', type: 'button',
-      'aria-label': `${k.description} befördern`,
-      onclick: () => eskalationHandeln('befoerdern', k.id, k.description) });
-    btnAuf.textContent = 'Befördern';
-    const btnAb = el('button', { type: 'button',
-      'aria-label': `${k.description} zurückstufen`,
-      onclick: () => eskalationHandeln('zurueckstufen', k.id, k.description) });
-    btnAb.textContent = 'Zurückstufen';
-    aktionen.appendChild(btnAuf);
-    aktionen.appendChild(btnAb);
-    eintrag.appendChild(aktionen);
-    liste.appendChild(eintrag);
+
+  const zg = document.getElementById('esk-liste-zurueckgestuft');
+  zg.innerHTML = '';
+  if (!d.zurueckgestuft.length) {
+    zg.appendChild(el('p', { class: 'leer', text: 'Keine.' }));
+  } else {
+    for (const k of d.zurueckgestuft) {
+      zg.appendChild(kandidatEintrag(k, `War oben von ${k.war_oben_von || '–'} bis ${k.zurueckgestuft_am || '–'}.`));
+    }
+  }
+
+  const bf = document.getElementById('esk-liste-befoerdert');
+  bf.innerHTML = '';
+  if (!d.befoerdert.length) {
+    bf.appendChild(el('p', { class: 'leer', text: 'Keine.' }));
+  } else {
+    for (const b of d.befoerdert) {
+      const eintrag = el('div', { class: 'eintrag' });
+      eintrag.appendChild(el('h3', { text: b.description }));
+      eintrag.appendChild(el('p', { text: b.seit ? `Oben seit ${b.seit}.` : 'Beförderungsdatum unbekannt.' }));
+      eintrag.appendChild(el('p', { text: b.signal }));
+      const btnAb = el('button', { type: 'button', class: 'aktionen',
+        'aria-label': `${b.description} zurückstufen`,
+        onclick: () => eskalationHandeln('zurueckstufen', b.id, b.description) });
+      btnAb.textContent = 'Zurückstufen';
+      eintrag.appendChild(btnAb);
+      bf.appendChild(eintrag);
+    }
   }
 }
 
-async function eskalationHandeln(handlung, id, beschreibung) {
+async function eskalationHandeln(handlung, id, beschreibung, regel) {
   const verb = handlung === 'befoerdern' ? 'befördern' : 'zurückstufen';
-  if (!confirm(`"${beschreibung}" wirklich ${verb}?`)) return;
+  const frage = handlung === 'befoerdern'
+    ? `"${beschreibung}" mit diesem Regeltext befördern?\n\n${regel}`
+    : `"${beschreibung}" wirklich zurückstufen?`;
+  if (!confirm(frage)) return;
+  const body = { handlung, id };
+  if (regel !== undefined) body.regel = regel;
   const out = await laden('/api/eskalation', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ handlung, id }),
+    body: JSON.stringify(body),
   });
   if (out.error || out.ok === false) {
     alert('Das hat nicht geklappt. Bitte später erneut versuchen.');
