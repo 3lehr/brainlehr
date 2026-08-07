@@ -71,6 +71,24 @@ def test_access_identity_env_and_update_logging(temp_db, monkeypatch):
     }
 
 
+def test_write_stamps_client_serverside(temp_db, monkeypatch):
+    """Auftrag 2026-08-07 Teil 1, Abnahme 1: client kommt aus _KLIENT, nicht
+    vom Aufrufer -- knowledge_add() bekommt hier absichtlich kein client-Arg
+    (es gibt gar keinen Parameter dafuer)."""
+    monkeypatch.setattr(kms, "_KLIENT", "claude-code")
+    node = kms.knowledge_add("/", "Client Node", "initial", source="test")
+    lesson = kms.lesson_record("pattern", "Client Lesson", node_path=node["path"])
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    node_row = dict(conn.execute("SELECT client FROM knowledge_nodes WHERE id = ?", (node["id"],)).fetchone())
+    conn.close()
+    lesson_row = _lesson_row(temp_db, lesson["id"])
+    access_rows = _db_rows(temp_db, "SELECT client FROM access_log")
+    assert node_row["client"] == "claude-code"
+    assert lesson_row["client"] == "claude-code"
+    assert all(row["client"] == "claude-code" for row in access_rows) and access_rows
+
+
 def test_busy_timeout_pragma_is_set(temp_db):
     conn = kms.get_db()
     value = conn.execute("PRAGMA busy_timeout").fetchone()[0]
@@ -170,7 +188,8 @@ def test_legacy_migration_is_idempotent(tmp_path):
     migrate_relations.migrate(path, backup=False)
     migrate_relations.migrate(path, backup=False)
     conn = sqlite3.connect(str(path))
-    assert {"actor", "model", "session", "status"} <= {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
+    assert {"actor", "model", "session", "client", "status"} <= {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
+    assert {"actor", "model", "session", "client"} <= {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}
     assert conn.execute("SELECT name FROM sqlite_master WHERE name='knowledge_relations'").fetchone()
     conn.close()
 

@@ -352,7 +352,7 @@ def _ensure_zuruecknahme_columns(conn: sqlite3.Connection) -> None:
         conn.execute(f"ALTER TABLE knowledge_nodes ADD COLUMN {name} {_ZURUECKNAHME_COLUMNS[name]}")
 
 
-_SCHREIBER_COLUMNS = {"actor", "session", "model"}
+_SCHREIBER_COLUMNS = {"actor", "session", "model", "client"}
 
 
 def _ensure_schreiber_columns(conn: sqlite3.Connection) -> None:
@@ -383,7 +383,7 @@ def _ensure_schreiber_columns(conn: sqlite3.Connection) -> None:
     busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
     if busy:
         raise RuntimeError(
-            f"Spalten actor/session/model fehlen an {sorted(missing_by_table)}, aber die Sicherung "
+            f"Spalten actor/session/model/client fehlen an {sorted(missing_by_table)}, aber die Sicherung "
             f"vor dem automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
             f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
             "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, "
@@ -640,7 +640,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_lessons_fts_backfill(conn)
     columns = {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
     for name, declaration in {
-        "actor": "TEXT", "model": "TEXT", "session": "TEXT",
+        "actor": "TEXT", "model": "TEXT", "session": "TEXT", "client": "TEXT",
         "status": "TEXT DEFAULT 'completed'",
         "zeilen_hash": "TEXT", "ketten_hash": "TEXT",
     }.items():
@@ -678,6 +678,15 @@ UNBEKANNTER_SCHREIBER = "unbekannt"
 # Laenge bleiben unangetastet (keine Migration) -- wirkung.py vergleicht
 # deshalb per Praefix, nicht per Gleichheit.
 _PROZESS_SITZUNG = (os.environ.get("CLAUDE_CODE_SESSION_ID") or "")[:8] or None
+
+# client (Auftrag 2026-08-07): anders als actor/session/model NIE vom
+# Aufrufer erwartet -- der Aufrufer fuellt es erfahrungsgemaess nie (siehe
+# Fuellstand-Befund im Auftrag: actor/model/session zu 83% leer). Einmal aus
+# der Umgebung abgeleitet, wie _PROZESS_SITZUNG direkt darueber. CLAUDECODE
+# bzw. CLAUDE_CODE_SESSION_ID gesetzt -> vom Claude-Code-Host gestarteter
+# Prozess; sonst Skriptzugriff (Cron, Handlauf, migrate_*.py). Kein
+# Anbieter-Erkennungslib noetig, die Umgebungsvariable reicht.
+_KLIENT = "claude-code" if (os.environ.get("CLAUDECODE") or os.environ.get("CLAUDE_CODE_SESSION_ID")) else "skript"
 
 
 def _identity(actor: str | None = None, model: str | None = None,
@@ -762,10 +771,10 @@ def log_access(conn: sqlite3.Connection, node_path: str | None, action: str,
     )
     cursor = conn.execute(
         """INSERT INTO access_log
-           (node_path, action, query, project_id, actor, model, session, status, timestamp,
+           (node_path, action, query, project_id, actor, model, session, client, status, timestamp,
             zeilen_hash, ketten_hash)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
-        (node_path, action, query, project_id, actor, model, session, status, timestamp,
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (node_path, action, query, project_id, actor, model, session, _KLIENT, status, timestamp,
          zeilen_hash, ketten_hash)
     )
     conn.commit()
@@ -1734,11 +1743,11 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                 gilt_ab = created_at
 
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von, actor, session, model)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von, actor, session, model, client)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
-         norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von, actor, session, model)
+         norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von, actor, session, model, _KLIENT)
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,
@@ -1834,6 +1843,8 @@ def knowledge_update(node_id: str, summary: str | None = None,
     params.append(session)
     updates.append("model = ?")
     params.append(model)
+    updates.append("client = ?")
+    params.append(_KLIENT)
     params.append(row["id"])
     # Lost-Update-Schutz: die WHERE-Klausel bindet an den beim SELECT oben
     # gelesenen updated_at. Hat zwischenzeitlich ein anderer Schreiber
@@ -2521,13 +2532,13 @@ def _bump_lesson(conn: sqlite3.Connection, lesson_id: str, node_path: str,
     new_count = row["occurrences"] + 1
     if new_description is not None:
         conn.execute(
-            "UPDATE lessons_learned SET occurrences = ?, description = ?, last_seen = ?, actor = ?, session = ?, model = ? WHERE id = ?",
-            (new_count, new_description, now_iso(), actor, session, model, lesson_id)
+            "UPDATE lessons_learned SET occurrences = ?, description = ?, last_seen = ?, actor = ?, session = ?, model = ?, client = ? WHERE id = ?",
+            (new_count, new_description, now_iso(), actor, session, model, _KLIENT, lesson_id)
         )
     else:
         conn.execute(
-            "UPDATE lessons_learned SET occurrences = ?, last_seen = ?, actor = ?, session = ?, model = ? WHERE id = ?",
-            (new_count, now_iso(), actor, session, model, lesson_id)
+            "UPDATE lessons_learned SET occurrences = ?, last_seen = ?, actor = ?, session = ?, model = ?, client = ? WHERE id = ?",
+            (new_count, now_iso(), actor, session, model, _KLIENT, lesson_id)
         )
     updated_row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
     # ADR-032: last_seen bumpt bei JEDEM Vorkommen (auch ohne Textaenderung),
@@ -2678,10 +2689,10 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     lesson_id = f"L-{str(uuid.uuid4())[:6]}"
     seen_at = now_iso()
     conn.execute(
-        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen, anlass, actor, session, model)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen, anlass, actor, session, model, client)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (lesson_id, node_path or None, type_, severity, description, root_cause,
-         resolution, prevention, json.dumps(projects or []), seen_at, seen_at, anlass, actor, session, model)
+         resolution, prevention, json.dumps(projects or []), seen_at, seen_at, anlass, actor, session, model, _KLIENT)
     )
     log_access(conn, node_path or None, "lesson", query=description,
                actor=actor, model=model, session=session,
@@ -2769,6 +2780,8 @@ def lesson_update(lesson_id: str, description: str | None = None,
     params.append(session)
     updates.append("model = ?")
     params.append(model)
+    updates.append("client = ?")
+    params.append(_KLIENT)
     params.append(lesson_id)
 
     conn.execute(f"UPDATE lessons_learned SET {', '.join(updates)} WHERE id = ?", params)

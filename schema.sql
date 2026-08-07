@@ -103,7 +103,13 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- an den Datensatz gebracht hat.
     actor TEXT,
     session TEXT,
-    model TEXT
+    model TEXT,
+    -- client (Auftrag 2026-08-07): actor/session/model sind alle drei nur
+    -- gefuellt, wenn der Aufrufer sie liefert -- der Klient (Claude Code vs.
+    -- Skriptzugriff) tut das faktisch nie. Anders als die drei: wird
+    -- serverseitig in _identity() aus der Umgebung abgeleitet, nie vom
+    -- Aufrufer erwartet. NULL fuer Altbestand vor dieser Spalte.
+    client TEXT
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -273,7 +279,8 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     anlass TEXT NOT NULL DEFAULT 'unbekannt', -- siehe Kommentar an knowledge_nodes.anlass
     actor TEXT,                               -- siehe Kommentar an knowledge_nodes.actor/.session/.model
     session TEXT,
-    model TEXT
+    model TEXT,
+    client TEXT                               -- siehe Kommentar an knowledge_nodes.client
 );
 
 -- Volltext-Suche ueber Lehren (Auftrag 2026-08-07). Gleiche Bauart wie
@@ -346,6 +353,7 @@ CREATE TABLE IF NOT EXISTS access_log (
     actor TEXT,                               -- explizite Identitaet; sonst NULL
     model TEXT,
     session TEXT,
+    client TEXT,                              -- siehe Kommentar an knowledge_nodes.client
     status TEXT DEFAULT 'completed',          -- started|completed|failed
     timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     -- Auditkette (Nachtrag 2026-08-06, additiv per migrate_auditkette.py).
