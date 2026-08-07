@@ -3124,34 +3124,89 @@ def _recall_sessions(kind: str, ref: str, log_path: Path | None = None) -> int:
     return len(sessions)
 
 
-def _wirkung_counts(kind: str, canonical: str) -> dict:
+def _wirkung_counts(kind: str, canonical: str, events_for_ref: dict | None = None) -> dict:
     """Wirkungs-Zaehlung EINES Eintrags, aus wirkung.py abgeleitet OHNE
     wirkung.py zu aendern (Auftrag 2026-08-07 Schritt 2, Grenze -- nur
     benutzen). wirkung.report() zaehlt global ueber ALLE Refs; hier auf
     GENAU canonical gefiltert, weil trust_score einen einzelnen Eintrag
     bewertet. events-Key ist bereits der geloggte path/id (log_recall
-    schreibt n['path'] bzw. l['id']) -- derselbe Wert wie canonical hier."""
+    schreibt n['path'] bzw. l['id']) -- derselbe Wert wie canonical hier.
+
+    events_for_ref (L-80e002, 2026-08-07): {session: ts} NUR fuer diesen
+    canonical, aus einem vorab gebauten Aggregat (_trust_aggregate()) --
+    spart den kompletten Protokoll-Scan, wenn der Aufrufer schon eine ganze
+    Kandidatenliste vorbereitet hat. None (Vorgabe) heisst weiterhin: eigener
+    voller Scan wie bisher, unveraendertes Verhalten fuer Einzelaufrufe."""
     import wirkung  # noqa: PLC0415 -- verzoegert wie knowledge_lint oben
-    # RECALL_LOG_PATH explizit durchreichen (nicht wirkung.py's eigenen
-    # Default nutzen) -- sonst bleibt dieses Modul bei Tests unisoliert:
-    # _recall_sessions() oben respektiert bereits monkeypatch.setattr(kms,
-    # "RECALL_LOG_PATH", ...), dieselbe Stelle muss auch hier gelten.
-    events = wirkung._recall_events(kind, log_path=RECALL_LOG_PATH)
+    if events_for_ref is None:
+        # RECALL_LOG_PATH explizit durchreichen (nicht wirkung.py's eigenen
+        # Default nutzen) -- sonst bleibt dieses Modul bei Tests unisoliert:
+        # _recall_sessions() oben respektiert bereits monkeypatch.setattr(kms,
+        # "RECALL_LOG_PATH", ...), dieselbe Stelle muss auch hier gelten.
+        all_events = wirkung._recall_events(kind, log_path=RECALL_LOG_PATH)
+        events_for_ref = {s: ts for (s, r), ts in all_events.items() if r == canonical}
     counts = {"genutzt": 0, "ignoriert": 0, "widerlegt": 0}
-    if not events:
+    if not events_for_ref:
         return counts
     conn = get_db()
     try:
-        for (session, r), ts in events.items():
-            if r != canonical:
-                continue
-            counts[wirkung.outcome(kind, r, session, ts, conn)] += 1
+        for session, ts in events_for_ref.items():
+            counts[wirkung.outcome(kind, canonical, session, ts, conn)] += 1
     finally:
         conn.close()
     return counts
 
 
-def knowledge_trust_score(kind: str, ref: str) -> dict:
+def _trust_aggregate(kind: str, log_path: Path | None = None, db_path: Path | None = None) -> dict:
+    """Einmal-Scan fuer eine GANZE Kandidatenliste statt je-Kandidat-Scan
+    (L-80e002, gemessen 2026-08-07: knowledge_trust_score() las das
+    recall_log bisher JE AUFRUF komplett neu ein -- Kosten wuchsen linear
+    mit der Kandidatenzahl statt konstant zu bleiben, blockierte den
+    Schattenlauf im Abruf-Hook, siehe SCHATTEN_ZEIT_BUDGET_S dort).
+
+    Liest recall_log EINMAL, gruppiert nach Ziel (ref) -- Aufrufer (z.B.
+    _apply_trust_score() im Hook) baut dieses Aggregat einmal pro Sortierlauf
+    und reicht es an jeden knowledge_trust_score()-Aufruf durch. Ohne
+    aggregate faellt die Funktion weiter auf den alten Pro-Kandidat-Scan
+    zurueck (Rueckwaertskompatibel, keine Formel geaendert, siehe dort)."""
+    import wirkung  # noqa: PLC0415
+    log_path = log_path if log_path is not None else RECALL_LOG_PATH
+    db_path = db_path if db_path is not None else DB_PATH
+    field = "lessons" if kind == "lesson" else "nodes"
+    sessions_by_ref: dict[str, set] = {}
+    try:
+        with open(log_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                values = entry.get(field)
+                if not isinstance(values, list):
+                    continue
+                sess = entry.get("session") or (entry.get("ts") or "")[:10]
+                for ref in values:
+                    sessions_by_ref.setdefault(ref, set()).add(sess)
+    except OSError:
+        pass
+
+    events_by_ref: dict[str, dict] = {}
+    for (session, ref), ts in wirkung._recall_events(kind, log_path=log_path).items():
+        events_by_ref.setdefault(ref, {})[session] = ts
+
+    genutzt_bestandsweit = wirkung.report(kind, log_path=log_path, db_path=db_path)["genutzt"] > 0
+
+    return {
+        "sessions_by_ref": sessions_by_ref,
+        "events_by_ref": events_by_ref,
+        "genutzt_bestandsweit": genutzt_bestandsweit,
+    }
+
+
+def knowledge_trust_score(kind: str, ref: str, aggregate: dict | None = None) -> dict:
     """VERDIENTER Vertrauenswert, GERECHNET bei jedem Aufruf statt
     gespeichert -- wie der Konfidenzverfall in konfidenz.py (dortiger
     Docstring: ein gespeicherter Wert veraltet still, sobald sich die
@@ -3263,7 +3318,14 @@ def knowledge_trust_score(kind: str, ref: str) -> dict:
     erfunden). Geklemmt auf [0.05, 0.95]: nie ganz 0 (ein Eintrag ohne jede
     Nutzung ist unbewaehrt, nicht widerlegt) und nie ganz 1 (ein verdienter
     Wert bleibt immer nachtraeglich revidierbar, volles Vertrauen waere eine
-    Behauptung, die dieser Mechanismus gerade vermeiden soll)."""
+    Behauptung, die dieser Mechanismus gerade vermeiden soll).
+
+    aggregate (L-80e002, 2026-08-07): von _trust_aggregate() vorgebautes
+    Protokoll-Aggregat, vom Aufrufer EINMAL fuer eine ganze Kandidatenliste
+    erzeugt und hier je Kandidat nur nachgeschlagen -- spart den kompletten
+    Protokoll-Scan pro Aufruf. None (Vorgabe): unveraendertes Verhalten,
+    eigener voller Scan wie vor diesem Auftrag. Die ausgegebene Zahl ist in
+    beiden Faellen identisch, nur der Weg dahin unterscheidet sich."""
     conn = get_db()
     if kind == "node":
         row = conn.execute(
@@ -3292,19 +3354,24 @@ def knowledge_trust_score(kind: str, ref: str) -> dict:
         return {"error": f"kind muss 'node' oder 'lesson' sein, nicht {kind!r}"}
     conn.close()
 
-    recall_sessions = _recall_sessions(kind, canonical)
-    wirkung_n = _wirkung_counts(kind, canonical)
-    # Auftrag 2026-08-07 (Nachtrag, Folge des Session-Formatfehlers oben):
-    # der ignoriert-Abzug darf nur wirken, wenn im GESAMTEN Bestand (nicht
-    # nur bei diesem Eintrag) schon mindestens ein 'genutzt' beobachtet
-    # wurde. Solange 'genutzt' strukturell unerreichbar war (Session-Format
-    # nie deckungsgleich, siehe wirkung.py::outcome()), war 'ignoriert' ein
-    # Signal, das NUR senken konnte -- eine Strafe fuer alle statt einer
-    # Messung. import verzoegert wie bei _wirkung_counts oben; log_path/
-    # db_path explizit durchgereicht, sonst unisoliert bei Tests (dieselbe
-    # Begruendung wie dort).
-    import wirkung  # noqa: PLC0415
-    genutzt_bestandsweit = wirkung.report(kind, log_path=RECALL_LOG_PATH, db_path=DB_PATH)["genutzt"] > 0
+    if aggregate is not None:
+        recall_sessions = len(aggregate["sessions_by_ref"].get(canonical, ()))
+        wirkung_n = _wirkung_counts(kind, canonical, aggregate["events_by_ref"].get(canonical, {}))
+        genutzt_bestandsweit = aggregate["genutzt_bestandsweit"]
+    else:
+        recall_sessions = _recall_sessions(kind, canonical)
+        wirkung_n = _wirkung_counts(kind, canonical)
+        # Auftrag 2026-08-07 (Nachtrag, Folge des Session-Formatfehlers oben):
+        # der ignoriert-Abzug darf nur wirken, wenn im GESAMTEN Bestand (nicht
+        # nur bei diesem Eintrag) schon mindestens ein 'genutzt' beobachtet
+        # wurde. Solange 'genutzt' strukturell unerreichbar war (Session-Format
+        # nie deckungsgleich, siehe wirkung.py::outcome()), war 'ignoriert' ein
+        # Signal, das NUR senken konnte -- eine Strafe fuer alle statt einer
+        # Messung. import verzoegert wie bei _wirkung_counts oben; log_path/
+        # db_path explizit durchgereicht, sonst unisoliert bei Tests (dieselbe
+        # Begruendung wie dort).
+        import wirkung  # noqa: PLC0415
+        genutzt_bestandsweit = wirkung.report(kind, log_path=RECALL_LOG_PATH, db_path=DB_PATH)["genutzt"] > 0
     ignoriert_abzug = 0.10 * math.tanh(wirkung_n["ignoriert"] / 5) if genutzt_bestandsweit else 0.0
     # 0.35 > 0.30 (Signal 1): Wirkung ist das staerkste Signal (Docstring
     # Punkt 5). Rueckwirkungs-Grenze: alle drei Zaehler sind 0 fuer jeden
