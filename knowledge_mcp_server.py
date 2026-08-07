@@ -50,6 +50,7 @@ Tools:
   - knowledge_update(node_id, summary, content)
   - knowledge_zurueckziehen(node_id, grund) → leert content/summary, Zeile bleibt, reversibel
   - knowledge_freigeben(node_id) → macht Zurueckziehen rueckgaengig (Sichtbarkeit, nicht Inhalt)
+  - kettenerklaerung_erklaeren(access_log_id, grund) → erklaert einen Kettenbruch (ADR-034)
   - knowledge_relation_add|list|update|remove(...) → explizite belegte Kanten
   - lesson_record(type, description, root_cause, resolution, prevention, severity, projects, same_as)
   - lesson_update(lesson_id, description, root_cause, resolution, prevention, severity, projects, status, delete)
@@ -1881,6 +1882,33 @@ def knowledge_freigeben(node_id: str, *, actor: str | None = None,
     return {"id": row["id"], "path": row["path"], "status": "freigegeben"}
 
 
+def kettenerklaerung_erklaeren(access_log_id: int, grund: str, *, commit_hash: str | None = None,
+                               anker: str | None = None, actor: str | None = None,
+                               model: str | None = None, session: str | None = None,
+                               **anker_kwargs: object) -> dict:
+    """ADR-034: kettenerklaerung.py war gebaut, aber von keinem Werkzeug
+    erreichbar (nur per Hand importierbar) -- dieses Werkzeug ist der
+    Anschluss. Der Schreibvorgang IST das Erklaeren selbst: ein Kettenbruch
+    entsteht nur durch Umschreiben, nie durch Anhaengen/Lesen, darum kein
+    Sammellauf, sondern ein Aufruf genau dann, wenn jemand eine befugte
+    Umschreibung nachtraeglich erklaert (siehe kettenerklaerung.py-Docstring).
+
+    anker (optional, "rfc3161"/"gegenzeichnung"): reicht an
+    ankerverfahren.versuche_anker() durch."""
+    import kettenerklaerung  # verzoegert -- kettenerklaerung.py importiert seinerseits
+                              # aus diesem Modul, Top-Level waere derselbe Zirkel wie kurator_lauf().
+    conn = get_db()
+    try:
+        actor, model, session = _identity(actor, model, session)
+        ergebnis = kettenerklaerung.create_explanation(
+            conn, access_log_id, grund, commit_hash=commit_hash, actor=actor,
+            anker=anker, **anker_kwargs,
+        )
+    finally:
+        conn.close()
+    return ergebnis
+
+
 def _relation_node(conn: sqlite3.Connection, value: str,
                    scope: str | None = None) -> sqlite3.Row:
     row = conn.execute(
@@ -3416,6 +3444,34 @@ TOOLS = {
             },
         },
         "handler": lambda args: knowledge_freigeben(_resolve_node_ref(args), **_identity_args(args))
+    },
+    "kettenerklaerung_erklaeren": {
+        "description": "Explain a broken audit-chain link (access_log.ketten_hash) caused by a sanctioned "
+                        "rewrite of an already-logged row -- e.g. a migration that corrected a field after "
+                        "the fact. Rejects with an error if access_log_id has no break (gespeichert==erwartet) "
+                        "or does not exist -- an explanation for a healthy row would itself be a fabrication. "
+                        "Never changes the stored ketten_hash; the break stays visible, this only records "
+                        "who/when/why next to it. Optional anker=\"rfc3161\"/\"gegenzeichnung\" builds an "
+                        "external anchor for the explanation via ankerverfahren.py (dry by default, no network "
+                        "without an explicit anker_kwargs override).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "access_log_id": {"type": "integer", "description": "access_log.id of the broken row"},
+                "grund": {"type": "string", "description": "Required reason for the rewrite"},
+                "commit_hash": {"type": "string", "description": "Optional: commit that performed the rewrite"},
+                "anker": {"type": "string", "enum": ["rfc3161", "gegenzeichnung"],
+                          "description": "Optional: build an external anchor for this explanation"},
+                **IDENTITY_PROPERTIES,
+            },
+            "required": ["access_log_id", "grund"]
+        },
+        "handler": lambda args: kettenerklaerung_erklaeren(
+            _require(args, "access_log_id", "die access_log.id der zu erklaerenden Zeile."),
+            _require(args, "grund", "der Grund fuer die Umschreibung."),
+            commit_hash=args.get("commit_hash"), anker=args.get("anker"),
+            **_identity_args(args)
+        )
     },
     "knowledge_relation_add": {
         "description": "Create one explicit evidenced knowledge edge between existing node IDs/paths. Never infers links from tags or text; validates endpoints, scope, type, confidence, and duplicate edges.",
