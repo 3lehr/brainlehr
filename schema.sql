@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     id TEXT PRIMARY KEY,
     path TEXT UNIQUE NOT NULL,               -- Materialized Path: /shared/arch/mcp
     parent_path TEXT,                        -- Parent: /shared/arch
-    project_id TEXT NOT NULL DEFAULT 'shared', -- shared|begod|aka|bebetter
+    project_id TEXT NOT NULL DEFAULT 'shared', -- free-form project slug, not enforced/closed
     title TEXT NOT NULL,
     summary TEXT NOT NULL,                   -- 1-2 Sätze (Token-sparend!)
     content TEXT,                            -- Volltext (nur bei Bedarf laden)
