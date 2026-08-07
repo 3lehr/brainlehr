@@ -33,6 +33,11 @@ gegen eine frische DB durchlaufgeprueft): obige drei Kerndateien PLUS
   - knowledge_lint.py    (die Selbstpruefung selbst, importiert alle
                          obigen; DB_PATH darin fest an
                          SHARED_KNOWLEDGE/knowledge.db, keine BEGOD_KNOWLEDGE_DB-Uebersteuerung)
+kurator_lauf() (Auftrag 2026-08-07) importiert knowledge_lint.py VERZOEGERT
+(erst beim Aufruf, nicht beim Laden dieses Moduls -- knowledge_lint.py
+importiert seinerseits aus diesem Modul, ein Top-Level-Import waere ein
+echter Zirkel) und braucht deshalb zur Laufzeit die komplette
+Selbstpruefungs-Stufe, nicht nur den Kern.
 Alle uebrigen .py-Dateien in diesem Verzeichnis (auditanker, hebb_kanten,
 ...) sind eigenstaendige Skripte/Cronjobs ausserhalb dieser zwei Stufen --
 der MCP-Server importiert sie nicht, knowledge_lint.py auch nicht.
@@ -55,6 +60,7 @@ Tools:
 import difflib
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -2642,6 +2648,419 @@ def knowledge_stats() -> dict:
     }
 
 
+# recall_log.jsonl liegt neben der DB, gleiche Ableitung wie RECALL_LOG in
+# hub/scripts/knowledge_recall_hook.py (dort bewusst dupliziert, nicht
+# importiert -- getrennte Prozesse ohne gemeinsamen sys.path, siehe
+# _cwd_project-Docstring fuer dasselbe Muster). Modulweite Konstante statt
+# Funktionsparameter mit Vorgabewert, aber als eigener Name (nicht inline),
+# damit ein Test sie per monkeypatch auf eine tmp_path-Kopie umbiegen kann.
+RECALL_LOG_PATH = Path(__file__).parent / "recall_log.jsonl"
+
+
+def _recall_sessions(kind: str, ref: str, log_path: Path | None = None) -> int:
+    """Anzahl VERSCHIEDENER Sitzungen, die `ref` (Knotenpfad oder Lehren-ID)
+    in recall_log.jsonl eingespielt bekamen -- nach SITZUNG dedupliziert,
+    nicht nach Zeile. Kern der Selbstverstaerker-Abwehr fuer dieses Signal
+    (siehe knowledge_trust_score-Docstring, Punkt 2): eine Sitzung, die den
+    Hook zehnmal hintereinander mit denselben Schluesselwoertern ausloest
+    (derselbe unpassende Knoten wird jedes Mal erneut eingespielt, Befund
+    2026-08-06), zaehlt hier EINMAL, nicht zehnmal -- sonst waere Haeufigkeit
+    der Anfrage mit Nuetzlichkeit des Treffers verwechselt.
+
+    Gegenprobe (Konsil-Review 2026-08-07) an echten Daten deckte auf, dass
+    der Dedup-Schluessel wirkungslos war: 428 von 579 recall_log-Zeilen
+    tragen kein "session"-Feld (Altbestand vor dessen Einfuehrung), der
+    damalige Fallback entry.get("ts") ist PRO ZEILE eindeutig (Sekunden-
+    genau) -- ein Knoten mit 363 Zeilen ohne "session" wurde zu 276
+    "Sitzungen" statt zu 9 tatsaechlichen Tagen, tanh saettigte prompt aufs
+    Maximum. Genau die Ruckkopplung, die der Auftrag verbietet, aber durch
+    den Dedup-Schluessel selbst, nicht durch die tanh-Kurve. Fix: Zeilen ohne
+    "session" fallen auf den TAG (ts[:10]) zurueck -- ein ehrlicher,
+    grober Sitzungs-Ersatz fuer den Altbestand, kein Pro-Zeile-Unikat mehr.
+    Bounded window (Hook kappt recall_log.jsonl haelftig bei 1MB, siehe
+    RECALL_LOG_MAX_BYTES in knowledge_recall_hook.py): das Signal ist ein
+    gleitendes Fenster, kein Lebenszeit-Gesamtwert -- ein Score kann rein
+    dadurch sinken, dass alte Zeilen aus dem Fenster fallen, nicht weil sich
+    an der Bewaehrung etwas geaendert haette."""
+    log_path = log_path if log_path is not None else RECALL_LOG_PATH
+    field = "lessons" if kind == "lesson" else "nodes"
+    sessions: set = set()
+    try:
+        with open(log_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue  # kaputte Zeile ueberspringen statt abzubrechen
+                values = entry.get(field)
+                if not isinstance(values, list) or ref not in values:
+                    continue  # kaputte Zeile (z.B. String statt Liste) -> kein Teilstring-Fehltreffer
+                sessions.add(entry.get("session") or (entry.get("ts") or "")[:10])
+    except OSError:
+        return 0
+    return len(sessions)
+
+
+def _wirkung_counts(kind: str, canonical: str) -> dict:
+    """Wirkungs-Zaehlung EINES Eintrags, aus wirkung.py abgeleitet OHNE
+    wirkung.py zu aendern (Auftrag 2026-08-07 Schritt 2, Grenze -- nur
+    benutzen). wirkung.report() zaehlt global ueber ALLE Refs; hier auf
+    GENAU canonical gefiltert, weil trust_score einen einzelnen Eintrag
+    bewertet. events-Key ist bereits der geloggte path/id (log_recall
+    schreibt n['path'] bzw. l['id']) -- derselbe Wert wie canonical hier."""
+    import wirkung  # noqa: PLC0415 -- verzoegert wie knowledge_lint oben
+    # RECALL_LOG_PATH explizit durchreichen (nicht wirkung.py's eigenen
+    # Default nutzen) -- sonst bleibt dieses Modul bei Tests unisoliert:
+    # _recall_sessions() oben respektiert bereits monkeypatch.setattr(kms,
+    # "RECALL_LOG_PATH", ...), dieselbe Stelle muss auch hier gelten.
+    events = wirkung._recall_events(kind, log_path=RECALL_LOG_PATH)
+    counts = {"genutzt": 0, "ignoriert": 0, "widerlegt": 0}
+    if not events:
+        return counts
+    conn = get_db()
+    try:
+        for (session, r), ts in events.items():
+            if r != canonical:
+                continue
+            counts[wirkung.outcome(kind, r, session, ts, conn)] += 1
+    finally:
+        conn.close()
+    return counts
+
+
+def knowledge_trust_score(kind: str, ref: str) -> dict:
+    """VERDIENTER Vertrauenswert, GERECHNET bei jedem Aufruf statt
+    gespeichert -- wie der Konfidenzverfall in konfidenz.py (dortiger
+    Docstring: ein gespeicherter Wert veraltet still, sobald sich die
+    zugrundeliegenden Ereignisse aendern und niemand den Wert manuell
+    nachzieht). Kein neues Feld auf knowledge_nodes/lessons_learned, keine
+    Migration -- reiner Lesezugriff auf drei bereits vorhandene Quellen.
+
+    ABGRENZUNG zu norm_rang (Auftrag 2026-08-07, Vergleich mit Hermes Agent/
+    Nous Research store.py, MIT-lizenziert, im Quelltext gelesen): norm_rang
+    wird von einem Menschen/Konsil ERKLAERT ("diese Regel gewinnt bei
+    Widerspruch") -- ohne Erklaerung existiert er nicht (buckeberg musste am
+    2026-08-06 erst eine Rangordnung anlegen, bevor es ablegen konnte).
+    trust_score wird von NIEMANDEM behauptet, er ergibt sich aus Nutzung --
+    "wie gut hat sich dieser Eintrag bewaehrt". Beide Fragen sind
+    unabhaengig: ein hochrangiger Fakt kann selten gebraucht werden (niedriger
+    trust_score, trotzdem die geltende Regel), ein Fakt ohne Rang kann sich
+    haeufig bewaehren. Deshalb ZWEI Werte, kein Ersatz des einen durch den
+    anderen -- norm_rang bleibt unangetastet.
+
+    FUENF EINGANGSGROESSEN, gegeneinander abgewogen (Konsil-Review 2026-08-07
+    korrigierte drei Befunde am urspruenglichen Entwurf, siehe Anmerkungen;
+    Signal 5 -- Wirkung -- kam mit demselben Auftrag als Schritt 2 dazu):
+
+    1. BEWUSSTES LESEN (staerkstes Signal, NUR Knoten) -- access_log, action
+       IN ('read','browse'), status='completed', node_path = ref. Nur fuer
+       Knoten verfuegbar: knowledge_read/knowledge_browse protokollieren so;
+       fuer Lehren gibt es (Stand 2026-08-07) keine entsprechende
+       Einzelabruf-Aktion in access_log. Ehrlich als 0 statt erfunden.
+    2. RECALL-EINSPIELUNG (schwaches Signal, siehe _recall_sessions) --
+       recall_log.jsonl, nach SITZUNG dedupliziert (Fix 2026-08-07: Zeilen
+       ohne "session"-Feld fallen auf den Tag zurueck, nicht auf die
+       sekundengenaue Zeile, siehe dortiger Docstring). Fuer beide Sorten
+       verfuegbar. Schwach, WEIL passiv: der Hook spielt per FTS/BM25-
+       Vorauswahl ein, nicht weil ein Mensch/Modell den Treffer bewusst
+       bestaetigt hat -- Befund 2026-08-06, derselbe unpassende Knoten wurde
+       zehnmal eingespielt, ohne dass das etwas ueber seine Guete aussagt.
+    3. UNABHAENGIGE WIEDERHOLUNG (schwaches Signal, NUR Lehren) --
+       lessons_learned.occurrences - 1. lesson_record() erhoeht occurrences
+       nur, wenn eine SPAETERE, unabhaengige Sitzung dieselbe Lehre per
+       same_as erneut meldet (Dedup-Pfad) -- das bestaetigt, dass die Lehre
+       unabhaengig reproduziert wurde, nicht bloss einmal notiert. -1, weil
+       jede Lehre mit Vorgabewert occurrences=1 startet (kein Signal ohne
+       Wiederholung). Ersatz fuer Signal 1 auf der Lehrenseite, ohne neue
+       Protokollierung (Auftrag: nichts neu erheben). GEGENARGUMENT, das
+       das kleine Gewicht rechtfertigt: eine wiederkehrende Lehre kann auch
+       heissen, dass ihre prevention NICHT gewirkt hat -- der Zaehler
+       bestaetigt die EXISTENZ/Relevanz des Problems, nicht die Wirksamkeit
+       der Abhilfe. status='escalated_to_rule' bewusst NICHT als Bonus
+       gewertet: das ist eine ERKLAERTE Eskalation (norm_rang-Seite), keine
+       verdiente.
+    4. ABLEHNUNGEN (schwaches Gegensignal, NUR Knoten -- Konsil-Review
+       2026-08-07, urspruenglicher Entwurf hier falsch): "Lehren-ID steht im
+       query-Feld rejizierter lesson_update/lesson_delete-Versuche" stimmt
+       nicht -- der einzige Rejection-Pfad in lesson_update() schreibt
+       query="lesson_nicht_gefunden" (den GRUND, wie die Konvention am
+       Dateikopf verlangt), nie die ID; lesson_delete traegt zwar
+       query=lesson_id, aber status='completed'. Der Pfad liefert also
+       GARANTIERT immer 0 -- kein schwaches Signal, sondern ein totes.
+       Schlimmer: die drei rejected-Stellen in lesson_record() (anlass_
+       ungueltig/beschreibung_leer/same_as_ungueltig) schreiben node_path
+       des VERKNUEPFTEN Knotens, nicht der Lehre -- ein missglueckter
+       Lehren-Schreibversuch haette sonst den Wert eines voellig unbeteiligten
+       Knotens gesenkt. Fuer Lehren deshalb ehrlich fest 0, keine Abfrage.
+       Fuer Knoten: node_path = ref, AND action NOT LIKE 'lesson%' (schliesst
+       genau diese Fehlzuschreibung aus, falls node_path zufaellig gesetzt
+       war).
+
+    KEIN SELBSTVERSTAERKER (Auftrag, explizite Auflage): zwei unabhaengige
+    Sperren, nicht nur eine.
+      a) Saettigende Funktion (tanh) statt linearer Zaehlung fuer jedes
+         Signal: der 1. bewusste Lesevorgang zaehlt fast voll, der 50. kaum
+         noch mehr (tanh(50/5) ≈ tanh(5) ≈ 0.9999, tanh(1/5) ≈ 0.197) --
+         ein Eintrag kann sich nicht durch schiere Wiederholung beliebig
+         hochschaukeln, der Grenznutzen sinkt von Anfang an.
+      b) Recall-Signal zaehlt SITZUNGEN, nicht ZEILEN (_recall_sessions) --
+         zehn Einspielungen derselben Sitzung sind ein Datenpunkt, nicht
+         zehn. Ohne diese Dedup wuerde ein haeufig (aber falsch) gezogener
+         Knoten seinen eigenen hohen Wert durch genau die Haeufigkeit
+         erzeugen, die der Auftrag ausdruecklich als Trugschluss benennt.
+      Was BEWUSST NICHT als Signal verwendet wird: reine Erwaehnung in
+      knowledge_search()-Trefferlisten (action='search') -- ein Treffer, der
+      nur ANGEZEIGT wurde, ist noch keine Bestaetigung, dieselbe Falle wie
+      die passive Recall-Einspielung, nur ungefiltert durch die
+      Sitzungs-Dedup obendrein. Nur tatsaechlich VOLLZOGENE Zugriffe
+      (read/browse/recall-Einspielung) und tatsaechlich VOLLZOGENE
+      Ablehnungen zaehlen.
+    5. WIRKUNG (STAERKSTES Signal, beide Sorten) -- wirkung.py, ref-gefiltert
+       (siehe _wirkung_counts). Staerker als Signal 2 (Recall-Einspielung),
+       weil es NICHT an der Einspielung haengt, sondern am AUSGANG danach --
+       genau der Unterschied, den PLAN_SELBSTLERNEN_2026-08-07.md Schritt 2
+       verlangt ("misst nur noch Sichtbarkeit" vs. misst Wirkung). Drei
+       Zustaende je Einspielung, 'widerlegt' hat in wirkung.outcome() bereits
+       Vorrang vor 'genutzt' (fruehere Rueckgabe) -- diese Rangfolge setzt
+       sich hier fort, weil pro Sitzung nur EIN Zustand gezaehlt wird.
+       'unauswertbar' (fehlende Sitzung/Zeitstempel im Recall-Log) wirkt
+       NICHT -- weder hebend noch senkend, siehe RUECKWIRKUNGS-GRENZE unten.
+
+    RUECKWIRKUNGS-GRENZE (Auftrag 2026-08-07 Schritt 2, Auflage 3): Wirkung
+    wird erst AB diesem Auftrag erhoben (wirkung.py-Moduldoc). Ein Eintrag
+    von VOR dem Auftrag hat also grundsaetzlich 0 genutzt/0 ignoriert/0
+    widerlegt -- nicht weil er sich nicht bewaehrt hat, sondern weil es die
+    Messung noch nicht gab. tanh(0/n) = 0 fuer alle drei Terme: ein Eintrag
+    ganz ohne Wirkungsdaten bekommt WEDER Bonus NOCH Abzug, sein Score haengt
+    dann allein an den Signalen 1-4 wie bisher. Das ist keine Zusatzregel,
+    sondern die Konsequenz der Sattelfunktion -- Beleg in trust_score_test.py.
+
+    SKALA: 0.5 = Vorgabewert ohne jedes Signal (identisch zur Vorgabe von
+    knowledge_nodes.confidence -- dieselbe Konvention, keine neue Skala
+    erfunden). Geklemmt auf [0.05, 0.95]: nie ganz 0 (ein Eintrag ohne jede
+    Nutzung ist unbewaehrt, nicht widerlegt) und nie ganz 1 (ein verdienter
+    Wert bleibt immer nachtraeglich revidierbar, volles Vertrauen waere eine
+    Behauptung, die dieser Mechanismus gerade vermeiden soll)."""
+    conn = get_db()
+    if kind == "node":
+        row = conn.execute(
+            "SELECT id, path FROM knowledge_nodes WHERE id = ? OR path = ?", (ref, ref)
+        ).fetchone()
+        canonical = row["path"] if row else ref
+        exists = row is not None
+        deliberate = conn.execute(
+            "SELECT COUNT(*) FROM access_log WHERE node_path = ? AND action IN ('read','browse') "
+            "AND status = 'completed'", (canonical,)
+        ).fetchone()[0]
+        wiederholung = 0  # nur Lehren, siehe Docstring Punkt 3
+        rejected = conn.execute(
+            "SELECT COUNT(*) FROM access_log WHERE node_path = ? AND status = 'rejected' "
+            "AND action NOT LIKE 'lesson%'", (canonical,)
+        ).fetchone()[0]
+    elif kind == "lesson":
+        canonical = ref
+        row = conn.execute("SELECT occurrences FROM lessons_learned WHERE id = ?", (ref,)).fetchone()
+        exists = row is not None
+        deliberate = 0  # siehe Docstring Punkt 1 -- kein Signal fuer Lehren vorhanden
+        wiederholung = max(0, (row["occurrences"] if row else 1) - 1)
+        rejected = 0  # siehe Docstring Punkt 4 -- Rejection-Pfad liefert fuer Lehren nie eine ID, toter Signalweg
+    else:
+        conn.close()
+        return {"error": f"kind muss 'node' oder 'lesson' sein, nicht {kind!r}"}
+    conn.close()
+
+    recall_sessions = _recall_sessions(kind, canonical)
+    wirkung_n = _wirkung_counts(kind, canonical)
+    # 0.35 > 0.30 (Signal 1): Wirkung ist das staerkste Signal (Docstring
+    # Punkt 5). Rueckwirkungs-Grenze: alle drei Zaehler sind 0 fuer jeden
+    # Eintrag ohne Wirkungsdaten -> tanh(0/n)=0 -> Term traegt nichts bei,
+    # weder Bonus noch Abzug (siehe Docstring RUECKWIRKUNGS-GRENZE).
+    score = (
+        0.5
+        + 0.30 * math.tanh(deliberate / 5)
+        + 0.10 * math.tanh(recall_sessions / 10)
+        + 0.15 * math.tanh(wiederholung / 2)
+        - 0.15 * math.tanh(rejected / 3)
+        + 0.35 * math.tanh(wirkung_n["genutzt"] / 3)
+        - 0.10 * math.tanh(wirkung_n["ignoriert"] / 5)
+        - 0.35 * math.tanh(wirkung_n["widerlegt"] / 2)
+    )
+    score = max(0.05, min(0.95, score))
+    return {
+        "kind": kind, "ref": canonical, "exists": exists, "trust_score": round(score, 4),
+        "inputs": {
+            "bewusstes_lesen": deliberate,
+            "recall_sitzungen": recall_sessions,
+            "unabhaengige_wiederholung": wiederholung,
+            "ablehnungen": rejected,
+            "wirkung_genutzt": wirkung_n["genutzt"],
+            "wirkung_ignoriert": wirkung_n["ignoriert"],
+            "wirkung_widerlegt": wirkung_n["widerlegt"],
+        },
+    }
+
+
+# Je-Kategorie-Entscheidung fuer kurator_lauf() (Auftrag 2026-08-07, Vergleich
+# mit Hermes Agent curator.py: "Never auto-deletes -- only archives"). Jede
+# der 16 Befund-Kategorien aus knowledge_lint.run() einzeln bewertet -- fuer
+# 15 lautet die Antwort NEIN, mit Begruendung, nicht nur behauptet:
+#   orphans                braucht Reparatur (Elternknoten setzen), keine Inhaltsloeschung
+#   stale                  Alter allein ist kein Wahrheitsurteil
+#   never_pulled_*         Auftrag selbst: blosses (Nicht-)Abrufen ist ein schwaches Signal
+#   vector_gaps            technische Luecke (Embedding fehlt) -- Werkzeug ist build_embeddings.py
+#   near_duplicate_lessons "Kandidat", keine Gewissheit; welche Seite kanonisch ist, ist eine Wertfrage
+#   path_hygiene           braucht Umbenennung, keine Zurueckziehung
+#   truncated_embeddings   technisch, wie vector_gaps
+#   escalated_without_rule Verknuepfungsfehler/Normebene, kein Inhaltsurteil
+#   norm_conflicts         GENAU die Frage, die norm_rang beantwortet -- Menschendomaene per Definition
+#   missing_source         Metadatenluecke, kein Wahrheitsproblem; Trigger verhindert das seit 2026-08-06 fuer Neues
+#   stale_source            Provenienzfrage (Hash/Datei), kein Urteil ueber den Inhalt selbst
+#   broken_chain            betrifft das Protokoll selbst, kein Knoten/Lehre zum Handeln
+#   anker_queue_backlog     betrifft externe Verankerung, kein Zurueckziehen-Ziel
+#   confidence_decay        Aufforderung zur Neupruefung, kein Fehlurteil -- Erase waere unverhaeltnismaessig
+#   rejections              kein Bestand zum Handeln (der Schreibversuch ist schon gescheitert)
+# EINE Kategorie handelt: injection_suspects, NUR sicherheit='hart' (die
+# staerkste der drei Stufen aus einschleusung.py, siehe dortiges
+# _SEV_ORDER) -- ein objektiv erkennbares Sicherheitsmuster, kein
+# Werturteil ueber Wahrheit/Falschheit des Inhalts. 'stark'/'auffaellig'
+# bleiben nur gemeldet (Fehlalarmrisiko fuer automatisches Handeln zu hoch).
+# Selbst dort NUR fuer kind='node': lessons_learned hat KEIN Zurueckziehen
+# (kein zurueckgezogen*-Spaltensatz wie knowledge_nodes) -- die einzige
+# Loeschoperation fuer Lehren ist lesson_update(delete=True), ein echtes
+# DELETE ohne Umkehrweg. Dritte Auflage des Auftrags ("wo nicht umkehrbar,
+# wird nicht gehandelt, sondern gemeldet") schliesst Lehren deshalb aus,
+# auch bei sicherheit='hart'.
+_KURATOR_KATEGORIEN_OHNE_HANDLUNG = {
+    "orphans": "braucht Reparatur (Elternknoten setzen), keine Inhaltsloeschung",
+    "stale": "Alter allein ist kein Wahrheitsurteil",
+    "never_pulled_nodes": "blosses Nicht-Abrufen ist laut Auftrag ein schwaches Signal",
+    "never_pulled_lessons": "blosses Nicht-Abrufen ist laut Auftrag ein schwaches Signal",
+    "vector_gaps": "technische Luecke -- Werkzeug ist build_embeddings.py, nicht Zurueckziehen",
+    "near_duplicate_lessons": "Kandidat, keine Gewissheit; welche Seite kanonisch ist, ist eine Wertfrage",
+    "path_hygiene": "braucht Umbenennung, keine Zurueckziehung",
+    "truncated_embeddings": "technisch, wie vector_gaps",
+    "escalated_without_rule": "Verknuepfungsfehler/Normebene, kein Inhaltsurteil",
+    "norm_conflicts": "genau die Frage, die norm_rang beantwortet -- Menschendomaene per Definition",
+    "missing_source": "Metadatenluecke, kein Wahrheitsproblem; Trigger verhindert das seit 2026-08-06 fuer Neues",
+    "stale_source": "Provenienzfrage (Hash/Datei), kein Urteil ueber den Inhalt selbst",
+    "broken_chain": "betrifft das Protokoll selbst, kein Knoten/Lehre zum Handeln",
+    "anker_queue_backlog": "betrifft externe Verankerung, kein Zurueckziehen-Ziel",
+    "confidence_decay": "Aufforderung zur Neupruefung, kein Fehlurteil -- Erase waere unverhaeltnismaessig",
+    "rejections": "kein Bestand zum Handeln (der Schreibversuch ist schon gescheitert)",
+}
+
+
+def kurator_lauf(*, scharf: bool = False, actor: str | None = None,
+                 model: str | None = None, session: str | None = None) -> dict:
+    """Hintergrund-Kurator (Auftrag 2026-08-07, Vergleich mit Hermes Agent
+    curator.py: "Never auto-deletes -- only archives"). knowledge_lint.py
+    MELDET nur -- dieser Modus HANDELT zusaetzlich, aber ausschliesslich
+    innerhalb der seit heute vorhandenen Grenze: knowledge_zurueckziehen()
+    (reversibel in der Sichtbarkeit ueber knowledge_freigeben, siehe dortiger
+    Docstring) statt endgueltig_entfernen.py (nur von Hand, kein
+    MCP-Werkzeug). Siehe _KURATOR_KATEGORIEN_OHNE_HANDLUNG oben fuer die
+    Begruendung je NICHT gehandelter Kategorie -- 15 von 16, absichtlich.
+
+    DREI AUFLAGEN (Auftrag, woertlich):
+    1. "Jede Handlung braucht eine Begruendung im Datensatz, wie beim
+       Zurueckziehen. Kein stilles Aufraeumen." -- jede Handlung ruft
+       knowledge_zurueckziehen(node_id, grund=...) auf, grund ist Pflicht
+       (das Werkzeug lehnt sonst ab, siehe dortige Pruefung) und nennt
+       Kategorie + Fundstelle, keine generische Floskel.
+    2. "Vorgabe ist TROCKENLAUF. Handeln nur auf ausdruecklichen Schalter."
+       -- scharf=False ist der Funktions-Vorgabewert. Ohne scharf=True wird
+       NICHTS geschrieben, auch nicht die handelbare Kategorie: jede
+       Handlung landet nur als {"ausgefuehrt": False, ...} im Bericht.
+    3. "Alles ist umkehrbar. Wo nicht, wird nicht gehandelt, sondern
+       gemeldet." -- deshalb NUR knowledge_nodes (kind='node'), NIEMALS
+       Lehren (siehe Kommentar oben: kein Zurueckziehen fuer Lehren, nur ein
+       echtes DELETE) und NUR sicherheit='hart' (die anderen zwei Stufen
+       bleiben, gleiches Prinzip, nur gemeldet -- ein Fehlalarm waere zwar
+       technisch umkehrbar, aber das Risiko eines falschen Sicherheitsurteils
+       ist der Grund, warum ueberhaupt nur eine Kategorie handelt).
+
+    Liest ueber knowledge_lint.run() (verzoegerter Import: knowledge_lint.py
+    importiert seinerseits aus DIESEM Modul -- fold_de, SLUG_MAX_LEN,
+    compute_ketten_hash -- ein Top-Level-Import hier waere ein echter Zirkel;
+    verzoegert bis zum Aufruf ist unschaedlich, weil dieses Modul dann
+    laengst vollstaendig in sys.modules steht)."""
+    import knowledge_lint  # noqa: PLC0415 -- absichtlich verzoegert, siehe Docstring
+
+    bericht = knowledge_lint.run(db_path=DB_PATH, log_path=RECALL_LOG_PATH)
+
+    def _anzahl(wert):
+        # Manche Kategorien sind Listen (orphans, stale, ...), manche
+        # Dicts mit mehreren Unterlisten (escalated_without_rule,
+        # norm_conflicts, stale_source, broken_chain) -- Summe aller
+        # Listenwerte darin statt eines nichtssagenden None.
+        if isinstance(wert, list):
+            return len(wert)
+        if isinstance(wert, dict):
+            return sum(len(v) for v in wert.values() if isinstance(v, list))
+        return None
+
+    kategorien = {
+        name: {"anzahl": _anzahl(bericht.get(name)), "handlung": "keine", "begruendung": begruendung}
+        for name, begruendung in _KURATOR_KATEGORIEN_OHNE_HANDLUNG.items()
+    }
+
+    hart_treffer = [f for f in bericht["injection_suspects"] if f.get("sicherheit") == "hart"]
+    kategorien["injection_suspects"] = {
+        "anzahl": len(bericht["injection_suspects"]),
+        "anzahl_hart": len(hart_treffer),
+        "handlung": "zurueckziehen (nur kind=node, nur sicherheit=hart)",
+        "begruendung": "objektiv erkennbares Sicherheitsmuster (Einschleusungsverdacht), kein "
+                        "Werturteil ueber Wahrheit/Falschheit -- 'stark'/'auffaellig' bleiben nur "
+                        "gemeldet (Fehlalarmrisiko zu hoch), Lehren bleiben ausgeschlossen (kein "
+                        "Zurueckziehen fuer lessons_learned, siehe Auflage 3)",
+    }
+
+    # Nach (kind, ref) gruppiert statt je Fund einzeln zu handeln: derselbe
+    # Text kann mehrere hart-Muster gleichzeitig treffen (z.B. sowohl
+    # <|im_start|> als auch <|im_end|> im selben content-Feld) -- ohne
+    # Gruppierung riefe kurator_lauf knowledge_zurueckziehen() mehrfach fuer
+    # denselben Knoten auf, das Werkzeug selbst hat dagegen keine Sperre
+    # (ueberschreibt grund/Zeitstempel beim zweiten Aufruf still) und der
+    # Bericht wuerde zwei Aktionen fuer eine Zurueckziehung zeigen.
+    gruppen: dict[tuple[str, str], list[dict]] = {}
+    for fund in hart_treffer:
+        gruppen.setdefault((fund["kind"], fund["ref"]), []).append(fund)
+
+    aktionen = []
+    for (kind_, ref_), funde in gruppen.items():
+        muster_liste = sorted({f["muster"] for f in funde})
+        felder = sorted({f["feld"] for f in funde})
+        grund = (f"Kurator: Einschleusungsverdacht (sicherheit=hart, Muster {', '.join(muster_liste)}, "
+                 f"Feld {', '.join(felder)}) -- automatisch zurueckgezogen, siehe knowledge_lint.py "
+                 f"Kategorie 15 / einschleusung.py")
+        eintrag = {"kind": kind_, "ref": ref_, "felder": felder, "muster": muster_liste, "grund": grund}
+        if kind_ != "node":
+            eintrag["ausgefuehrt"] = False
+            eintrag["nicht_ausgefuehrt_weil"] = ("Lehren haben kein Zurueckziehen -- nur ein echtes "
+                                                  "DELETE (lesson_update delete=True), nicht umkehrbar "
+                                                  "(Auflage 3): gemeldet, nicht gehandelt.")
+        elif not scharf:
+            eintrag["ausgefuehrt"] = False
+            eintrag["nicht_ausgefuehrt_weil"] = "Trockenlauf (Vorgabe) -- scharf=True noetig."
+        else:
+            ergebnis = knowledge_zurueckziehen(ref_, grund, actor=actor or "kurator",
+                                               model=model, session=session)
+            eintrag["ausgefuehrt"] = "error" not in ergebnis
+            eintrag["ergebnis"] = ergebnis
+        aktionen.append(eintrag)
+
+    return {
+        "modus": "scharf" if scharf else "trockenlauf",
+        "kategorien": kategorien,
+        "aktionen": aktionen,
+        "aktionen_ausgefuehrt": sum(1 for a in aktionen if a.get("ausgefuehrt")),
+        "timestamp": now_iso(),
+    }
+
+
 # ─── MCP Server Protocol (stdio JSON-RPC 2.0) ───────────────────────────
 
 def _identity_args(args: dict) -> dict:
@@ -3020,6 +3439,45 @@ TOOLS = {
                         "the four as equally trustworthy when reading this.",
         "inputSchema": {"type": "object", "properties": {}},
         "handler": lambda args: knowledge_stats()
+    },
+    "knowledge_trust_score": {
+        "description": "Computed (never stored) earned-trust value in [0.05, 0.95], 0.5 = no signal yet -- "
+                        "distinct from norm_rang (explained by a human/consilium, decides which rule wins) and "
+                        "from confidence (a decay clock since last confirmation). Weighs deliberate reads "
+                        "(strongest, nodes only), recall-log session-deduplicated injections (weak, both kinds), "
+                        "independent re-occurrence (weak, lessons only), and rejected write attempts (weak "
+                        "negative, nodes only -- the equivalent path for lessons never fires, see docstring) "
+                        "through a saturating tanh -- diminishing returns prevent repetition alone from inflating "
+                        "the score. Returns the raw input counts and an 'exists' flag alongside the score so the "
+                        "number is never opaque and a typo isn't indistinguishable from the neutral default.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "kind": {"type": "string", "enum": ["node", "lesson"]},
+                "ref": {"type": "string", "description": "Node id or path, or lesson id"},
+            },
+            "required": ["kind", "ref"]
+        },
+        "handler": lambda args: knowledge_trust_score(args["kind"], args["ref"])
+    },
+    "kurator_lauf": {
+        "description": "Background cleanup agent (Hermes curator.py comparison) that ACTS, not just reports "
+                        "like knowledge_lint.py -- but only within the safe boundary: knowledge_zurueckziehen() "
+                        "(reversible visibility toggle), never endgueltig_entfernen.py (human-only, no MCP tool). "
+                        "Evaluates all knowledge_lint categories; 15 are report-only with a stated reason each "
+                        "(see _KURATOR_KATEGORIEN_OHNE_HANDLUNG), only injection_suspects at sicherheit='hart' "
+                        "acts, and only for kind='node' (lessons have no withdraw mechanism, only a real DELETE, "
+                        "so they are reported, never touched). Default is a dry run (scharf=False): nothing is "
+                        "written, every potential action is returned with ausgefuehrt=false. scharf=True is the "
+                        "explicit switch to actually withdraw matches, each with a stated grund in the audit row.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "scharf": {"type": "boolean", "description": "false (default) = dry run, true = actually withdraw matches"},
+                **IDENTITY_PROPERTIES,
+            }
+        },
+        "handler": lambda args: kurator_lauf(scharf=bool(args.get("scharf")), **_identity_args(args))
     }
 }
 
