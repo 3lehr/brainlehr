@@ -47,11 +47,15 @@ NEAR_DUPLICATE_THRESHOLD = 0.90  # gilt fuer Kosinus- UND SequenceMatcher-Score
 MAX_SHOWN = 15
 _PATH_PUNCT_RE = re.compile(r"[^A-Za-z0-9/\-]")
 
-# nomic-embed-text (embeddings.DEFAULT_EMBED_MODEL) hat ein Kontextfenster
-# von 2048 Token und kappt laengeren Text still -- kein Fehler, keine
-# Warnung. Gemessen 2026-08-05 (Lehre L-312bd7): ab ~2100 Token Vorlauf
-# liefern zwei sich nur am Ende unterscheidende Texte den identischen Vektor.
-EMBED_CONTEXT_TOKENS = 2048
+# Kontextfenster des Embedding-Modells (embeddings.DEFAULT_EMBED_MODEL) --
+# laengerer Text wird still gekappt, kein Fehler, keine Warnung. War 2048
+# fuer nomic-embed-text (gemessen 2026-08-05, Lehre L-312bd7: ab ~2100 Token
+# Vorlauf liefern zwei sich nur am Ende unterscheidende Texte den identischen
+# Vektor). Umstellung auf bge-m3 (Auftrag 2026-08-07, nomic-embed-text trennt
+# auf deutschem Fachtext nicht): bge-m3 hat 8192 Token Kontextfenster (BAAI-
+# Modellkarte) -- NICHT eigens am hiesigen Bestand nachgemessen wie der alte
+# Wert, sondern aus der Modellangabe uebernommen.
+EMBED_CONTEXT_TOKENS = 8192
 # Grobe Schaetzung Zeichen->Token fuer deutschen Text, KEINE echte
 # Tokenisierung -- der Lint ruft absichtlich kein Modell/Ollama auf.
 CHARS_PER_TOKEN_ESTIMATE = 3.5

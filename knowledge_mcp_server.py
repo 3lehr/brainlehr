@@ -646,6 +646,15 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     }.items():
         if name not in columns:
             conn.execute(f"ALTER TABLE access_log ADD COLUMN {name} {declaration}")
+    # dim (Auftrag 2026-08-07, Modellwechsel bge-m3): additive Nachfuehrung fuer
+    # Bestands-DBs, deren knowledge_embeddings noch vor dieser Spalte angelegt
+    # wurde. Nullable, keine Sicherung/Checkpoint noetig (kein Datenverlust
+    # moeglich, reines Anhaengen einer leeren Spalte).
+    existing_tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if "knowledge_embeddings" in existing_tables:
+        emb_columns = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_embeddings)")}
+        if "dim" not in emb_columns:
+            conn.execute("ALTER TABLE knowledge_embeddings ADD COLUMN dim INTEGER")
     conn.commit()
 
 
@@ -875,10 +884,19 @@ def _embedding_ranking(conn: sqlite3.Connection, kind: str, query_vec: list[floa
     """Cosine-Ranking ueber die additive knowledge_embeddings-Tabelle. Fehlt die
     Tabelle (aeltere DB-Kopie ohne AP "Wissenssuche nach Bedeutung"), liefert
     leere Liste statt zu werfen -- Aufrufer faellt dann automatisch auf reines
-    FTS5/LIKE-Matching zurueck."""
+    FTS5/LIKE-Matching zurueck.
+
+    Modell-Sperre (Auftrag 2026-08-07): Vektoren aus zwei Embedding-Modellen
+    liegen in verschiedenen Vektorraeumen -- Kosinus-Aehnlichkeit zwischen
+    ihnen ist Unsinn, ohne dass die Rechnung selbst fehlschlaegt (unterschiedliche
+    Dimension wuerde sogar krachen, gleiche Dimension bei anderem Modell liefert
+    einfach eine falsche Zahl). Deshalb WHERE model = ? -- ein Vektor, dessen
+    Modell nicht dem aktuell konfigurierten (embeddings.DEFAULT_EMBED_MODEL)
+    entspricht, wird nie gelesen. Lieber kein Vektor als ein falscher."""
     try:
         rows = conn.execute(
-            "SELECT ref_id, vector FROM knowledge_embeddings WHERE kind = ?", (kind,)
+            "SELECT ref_id, vector FROM knowledge_embeddings WHERE kind = ? AND model = ?",
+            (kind, embeddings.DEFAULT_EMBED_MODEL),
         ).fetchall()
     except sqlite3.OperationalError:
         return []
@@ -1523,9 +1541,9 @@ def _rebuild_node_embedding(conn: sqlite3.Connection, node_id: str, project_id: 
     if vec is None:
         return
     conn.execute(
-        "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, vector, updated_at) "
-        "VALUES ('node', ?, ?, ?, ?, ?)",
-        (node_id, project_id, embeddings.DEFAULT_EMBED_MODEL, embeddings.pack_embedding(vec), now_iso()),
+        "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
+        "VALUES ('node', ?, ?, ?, ?, ?, ?)",
+        (node_id, project_id, embeddings.DEFAULT_EMBED_MODEL, len(vec), embeddings.pack_embedding(vec), now_iso()),
     )
 
 
@@ -1544,9 +1562,9 @@ def _rebuild_lesson_embedding(conn: sqlite3.Connection, lesson_id: str, node_pat
     ts = now_iso()
     for proj in build_embeddings.resolve_lesson_projects(projects_json):
         conn.execute(
-            "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, vector, updated_at) "
-            "VALUES ('lesson', ?, ?, ?, ?, ?)",
-            (lesson_id, proj, embeddings.DEFAULT_EMBED_MODEL, packed, ts),
+            "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
+            "VALUES ('lesson', ?, ?, ?, ?, ?, ?)",
+            (lesson_id, proj, embeddings.DEFAULT_EMBED_MODEL, len(vec), packed, ts),
         )
 
 

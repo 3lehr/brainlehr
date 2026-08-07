@@ -63,11 +63,14 @@ def _vec(*floats: float) -> bytes:
 
 def _insert_embedding(db_path: Path, kind: str, ref_id: str, vector: tuple[float, ...],
                        project_id: str = "shared"):
+    # model = das aktuell konfigurierte Modell, nicht ein fester String -- die
+    # Modell-Sperre (Auftrag 2026-08-07, knowledge_mcp_server._embedding_ranking)
+    # ignoriert sonst jede hier eingefuegte Zeile.
     conn = sqlite3.connect(str(db_path))
     conn.execute(
-        "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, vector, updated_at) "
-        "VALUES (?, ?, ?, 'test-model', ?, '2026-08-05T00:00:00+01:00')",
-        (kind, ref_id, project_id, _vec(*vector)),
+        "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, '2026-08-05T00:00:00+01:00')",
+        (kind, ref_id, project_id, kms.embeddings.DEFAULT_EMBED_MODEL, len(vector), _vec(*vector)),
     )
     conn.commit()
     conn.close()

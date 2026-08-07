@@ -73,12 +73,17 @@ def _fake_vec(*floats: float) -> bytes:
     return struct.pack(f"<{len(floats)}f", *floats)
 
 
-def _insert_embedding(db_path: Path, kind: str, ref_id: str, vector: tuple[float, ...]):
+def _insert_embedding(db_path: Path, kind: str, ref_id: str, vector: tuple[float, ...],
+                       model: str | None = None):
+    # model default = das aktuell konfigurierte Modell (kms.embeddings.DEFAULT_EMBED_MODEL),
+    # NICHT ein fester String -- die Modell-Sperre (Auftrag 2026-08-07) liest nur Vektoren
+    # mit passendem model, ein hartkodierter Fremdname wuerde jeden Test hier sonst
+    # unbemerkt auf reines FTS5-Verhalten zurueckfallen lassen.
     conn = sqlite3.connect(str(db_path))
     conn.execute(
-        "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, model, vector, updated_at) "
-        "VALUES (?, ?, 'test-model', ?, '2026-07-31T00:00:00+01:00')",
-        (kind, ref_id, _fake_vec(*vector)),
+        "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, model, dim, vector, updated_at) "
+        "VALUES (?, ?, ?, ?, ?, '2026-07-31T00:00:00+01:00')",
+        (kind, ref_id, model or kms.embeddings.DEFAULT_EMBED_MODEL, len(vector), _fake_vec(*vector)),
     )
     conn.commit()
     conn.close()
@@ -145,6 +150,23 @@ def test_knowledge_search_finds_node_via_meaning_not_wording(temp_db, monkeypatc
     assert "n1" in result_ids  # der Stichworttreffer bleibt erhalten (siehe Test 4)
     assert "n2" not in result_ids, "unbeteiligter, orthogonaler Knoten wurde faelschlich promotet"
     assert plain_ids <= set(result_ids)
+
+
+def test_embedding_with_foreign_model_is_never_used(temp_db, monkeypatch):
+    # Auftrag 2026-08-07: Vektoren aus zwei Modellen liegen in verschiedenen
+    # Raeumen -- ein Vektor mit fremdem Modellnamen darf nie in die
+    # Kosinus-Rechnung einfliessen, auch wenn er (wie hier) exakt am
+    # Query-Vektor liegt. n3 traegt absichtlich ein anderes Modell als das
+    # aktuell konfigurierte -- ohne die Sperre waere es der Top-Treffer.
+    _insert_embedding(temp_db, "node", "n1", (1.0, 0.0, 0.0))
+    _insert_embedding(temp_db, "node", "n3", (1.0, 0.0, 0.0), model="alt-modell-vor-umstellung")
+
+    monkeypatch.setattr(kms.embeddings, "embed_text", lambda *a, **k: [1.0, 0.0, 0.0])
+    result = kms.knowledge_search("Abschreibung", max_results=3)
+    result_ids = [r["id"] for r in result["results"]]
+
+    assert "n3" not in result_ids, "Vektor mit fremdem Modellnamen wurde trotz Sperre benutzt"
+    assert "n1" in result_ids  # Stichworttreffer bleibt unberuehrt
 
 
 def test_lesson_query_finds_lesson_via_meaning_not_wording(temp_db, monkeypatch):

@@ -43,11 +43,17 @@ CREATE TABLE IF NOT EXISTS knowledge_embeddings (
     ref_id TEXT NOT NULL,
     project_id TEXT NOT NULL DEFAULT 'shared',
     model TEXT NOT NULL,
+    dim INTEGER,
     vector BLOB NOT NULL,
     updated_at TEXT NOT NULL,
     PRIMARY KEY (kind, ref_id, project_id)
 );
 """
+
+# dim (Auftrag 2026-08-07, Modellwechsel bge-m3): additive Nachfuehrung fuer
+# eine bereits bestehende Tabelle, die vor der Spalte angelegt wurde -- die
+# CREATE TABLE IF NOT EXISTS oben legt sie nur bei einer ganz neuen Tabelle an.
+ENSURE_DIM_COLUMN_SQL = "ALTER TABLE knowledge_embeddings ADD COLUMN dim INTEGER"
 
 
 def resolve_lesson_projects(raw: str | None) -> list[str]:
@@ -145,6 +151,9 @@ def main() -> int:
 
     checksum_before = _checksum(conn)
     conn.execute(CREATE_TABLE_SQL)
+    emb_columns = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_embeddings)")}
+    if "dim" not in emb_columns:
+        conn.execute(ENSURE_DIM_COLUMN_SQL)
     conn.commit()
 
     # Cold-Start des lokalen Modells kann > 5s dauern (gemessen: ~8s) -- fuer
@@ -176,9 +185,9 @@ def main() -> int:
             skipped += 1
             continue
         conn.execute(
-            "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, vector, updated_at) "
-            "VALUES ('node', ?, ?, ?, ?, ?)",
-            (n["id"], n["project_id"], model, embeddings.pack_embedding(vec), now_iso())
+            "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
+            "VALUES ('node', ?, ?, ?, ?, ?, ?)",
+            (n["id"], n["project_id"], model, len(vec), embeddings.pack_embedding(vec), now_iso())
         )
         embedded += 1
         rows_written += 1
@@ -197,9 +206,9 @@ def main() -> int:
         ts = now_iso()
         for proj in resolve_lesson_projects(l["projects"]):
             conn.execute(
-                "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, vector, updated_at) "
-                "VALUES ('lesson', ?, ?, ?, ?, ?)",
-                (l["id"], proj, model, packed, ts)
+                "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
+                "VALUES ('lesson', ?, ?, ?, ?, ?, ?)",
+                (l["id"], proj, model, len(vec), packed, ts)
             )
             rows_written += 1
         embedded += 1

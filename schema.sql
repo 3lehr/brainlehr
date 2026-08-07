@@ -462,6 +462,10 @@ CREATE TABLE IF NOT EXISTS knowledge_embeddings (
     ref_id TEXT NOT NULL,             -- knowledge_nodes.id | lessons_learned.id
     project_id TEXT NOT NULL DEFAULT 'shared',
     model TEXT NOT NULL,
+    dim INTEGER,                      -- Vektorlaenge des erzeugenden Modells (Auftrag
+                                       -- 2026-08-07: macht einen Modellwechsel/gemischten
+                                       -- Bestand erkennbar; die Sperre selbst filtert in
+                                       -- knowledge_mcp_server._embedding_ranking auf model)
     vector BLOB NOT NULL,
     updated_at TEXT NOT NULL,
     PRIMARY KEY (kind, ref_id, project_id)

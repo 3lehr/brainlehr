@@ -29,7 +29,12 @@ import urllib.request
 from typing import Any
 
 DEFAULT_OLLAMA_URL = os.environ.get("KNOWLEDGE_OLLAMA_URL", "http://127.0.0.1:11434")
-DEFAULT_EMBED_MODEL = os.environ.get("KNOWLEDGE_OLLAMA_EMBED_MODEL", "nomic-embed-text")
+# bge-m3 statt nomic-embed-text (Auftrag 2026-08-07, Messung
+# docs/PRUEFKORPORA_UND_SPRACHE_2026-08-07.md): nomic-embed-text trennt auf
+# deutschem Fachtext nicht (passend Median 0,531 vs. fachfremd 0,527,
+# Fachfremd-Minimum ueber Passend-Minimum) -- bge-m3 trennt (Median-Abstand
+# 0,106). KNOWLEDGE_OLLAMA_EMBED_MODEL ueberschreibt weiterhin.
+DEFAULT_EMBED_MODEL = os.environ.get("KNOWLEDGE_OLLAMA_EMBED_MODEL", "bge-m3")
 
 
 def hybrid_retrieval_weight() -> float:
