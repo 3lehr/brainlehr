@@ -122,6 +122,9 @@ EVENT_STATUSES = {"started", "completed", "failed", "rejected"}
 # Feld ab. Wer die Verteilung auswertet (knowledge_stats), darf die vier
 # Werte nicht gleich behandeln.
 ALLOWED_ANLASS = {"selbst", "betreiber", "hook", "skript", "unbekannt"}
+# lesson_record.type nahm bisher JEDEN String klaglos an (nur im JSON-Schema
+# als enum dokumentiert, nie serverseitig geprueft) -- Auftrag 2026-08-07.
+ALLOWED_LESSON_TYPES = {"error", "insight", "pattern", "antipattern"}
 # Rueckfuellwert fuer Bestandszeilen ohne source (Auftrag 2026-08-06, siehe
 # _ensure_node_constraint_triggers/migrate_source_constraints.py). Testdaten,
 # Umschreiben erlaubt -- deshalb Nachtrag statt "Regel gilt nur fuer Neues".
@@ -1313,6 +1316,16 @@ def _validate_anlass(anlass: str) -> str | None:
     return None
 
 
+def _validate_lesson_type(type_: str) -> str | None:
+    """Sprechende Ablehnung statt stillem Anlegen bei unbekanntem lesson type
+    (Auftrag 2026-08-07, Befund: type='voellig_unbekannter_typ' wurde bisher
+    klaglos angenommen). Gibt eine Fehlermeldung mit der erlaubten Liste
+    zurueck, oder None wenn gueltig."""
+    if type_ not in ALLOWED_LESSON_TYPES:
+        return (f"type unbekannt: {type_!r}. Erlaubt: {sorted(ALLOWED_LESSON_TYPES)}.")
+    return None
+
+
 # \w{3,}: kurze Fuellwoerter (der/die/aus/of/and/...) sind in praktisch jeder
 # Sprache 1-2 Zeichen lang, darum als Rauschgrenze fuer den Wortlauf-
 # Vergleich geeignet, ohne eine Sprache konkret zu benennen.
@@ -2346,6 +2359,17 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     prevention, severity = fixed["prevention"], fixed["severity"] or "medium"
     projects, node_path = fixed["projects"], fixed["node_path"]
 
+    # type_ erst NACH unmangle_lesson_fields pruefen: ein per Tag verrutschter
+    # type kann durch die Unmangle-Reparatur noch gueltig werden (Auftrag
+    # 2026-08-07). Vor dem Fix pruefen haette solche Faelle faelschlich abgelehnt.
+    type_fehler = _validate_lesson_type(type_)
+    if type_fehler:
+        conn = get_db()
+        log_access(conn, node_path or None, "lesson", actor=actor, model=model, session=session,
+                   status="rejected", query="type_ungueltig")
+        conn.close()
+        return {"status": "rejected", "error": type_fehler}
+
     if not description.strip():
         conn = get_db()
         log_access(conn, node_path or None, "lesson", actor=actor, model=model, session=session,
@@ -3095,6 +3119,22 @@ def _resolve_node_ref(args: dict) -> str:
     )
 
 
+def _require(args: dict, key: str, hinweis: str):
+    """Pflichtangabe pruefen, sprechender Fehler statt rohem KeyError (Auftrag
+    2026-08-07: `werkzeugabdeckung.py` fand 12 Werkzeuge, deren Handler direkt
+    `args["key"]` liest -- bei fehlender Angabe lief nur `{"error": "'key'"}`
+    durch handle_request()s generisches `except Exception as e: str(e)`,
+    nennt also den Python-Schluesselnamen statt einer Handlungsanweisung.
+    Leerstring zaehlt als fehlend, sonst ist ein bewusst leeres Feld nicht
+    von einem vergessenen zu unterscheiden. ValueError, weil handle_request()
+    jede Exception ohnehin nur ueber str(e) durchreicht -- der Text hier ist
+    also schon die vollstaendige, an den Aufrufer gerichtete Meldung."""
+    val = args.get(key)
+    if val in (None, ""):
+        raise ValueError(f"Pflichtangabe '{key}' fehlt: {hinweis}")
+    return val
+
+
 IDENTITY_PROPERTIES = {
     "actor": {"type": "string", "description": "Calling agent identity; else BEGOD_KNOWLEDGE_ACTOR or unknown"},
     "model": {"type": "string", "description": "Calling model; else BEGOD_KNOWLEDGE_MODEL or unknown"},
@@ -3124,7 +3164,9 @@ TOOLS = {
             },
             "required": ["node_id"]
         },
-        "handler": lambda args: knowledge_read(args["node_id"], **_identity_args(args))
+        "handler": lambda args: knowledge_read(
+            _require(args, "node_id", "die Node-ID oder der volle Pfad des zu lesenden Knotens (siehe knowledge_search/knowledge_browse zum Finden)."),
+            **_identity_args(args))
     },
     "knowledge_search": {
         "description": "Full-text search across knowledge. Returns summaries (not full content) for token efficiency.",
@@ -3141,7 +3183,9 @@ TOOLS = {
             },
             "required": ["query"]
         },
-        "handler": lambda args: knowledge_search(args["query"], args.get("scope", "all"), args.get("max_results", 10), stichtag=args.get("stichtag"), nur_geltende=args.get("nur_geltende", False), cwd=args.get("cwd"), **_identity_args(args))
+        "handler": lambda args: knowledge_search(
+            _require(args, "query", "der Suchbegriff (FTS5-Syntax: Stichwort, Phrase, AND/OR/NOT)."),
+            args.get("scope", "all"), args.get("max_results", 10), stichtag=args.get("stichtag"), nur_geltende=args.get("nur_geltende", False), cwd=args.get("cwd"), **_identity_args(args))
     },
     "knowledge_add": {
         "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy. "
@@ -3188,7 +3232,9 @@ TOOLS = {
             "required": ["parent_path", "title", "summary"]
         },
         "handler": lambda args: knowledge_add(
-            args["parent_path"], args["title"], args["summary"],
+            _require(args, "parent_path", "der Pfad des Elternknotens, z.B. '/shared/arch' (muss existieren oder '/' sein)."),
+            _require(args, "title", "der Titel des neuen Knotens."),
+            _require(args, "summary", "die 1-2-Satz-Zusammenfassung des neuen Knotens."),
             args.get("content", ""), args.get("project_id", "shared"),
             args.get("tags"), args.get("source", ""), neuer_ast=args.get("neuer_ast", False),
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
@@ -3214,7 +3260,8 @@ TOOLS = {
             "required": ["node_id"]
         },
         "handler": lambda args: knowledge_update(
-            args["node_id"], args.get("summary"), args.get("content"), args.get("tags"),
+            _require(args, "node_id", "die Node-ID oder der Pfad des zu aendernden Knotens."),
+            args.get("summary"), args.get("content"), args.get("tags"),
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
             **_identity_args(args)
         )
@@ -3271,7 +3318,9 @@ TOOLS = {
             "required": ["source_node", "target_node", "relation_type", "evidence"]
         },
         "handler": lambda args: knowledge_relation_add(
-            args["source_node"], args["target_node"], args["relation_type"],
+            _require(args, "source_node", "die ID oder der Pfad des Quellknotens."),
+            _require(args, "target_node", "die ID oder der Pfad des Zielknotens."),
+            _require(args, "relation_type", f"der Beziehungstyp, einer aus: {sorted(RELATION_TYPES)}."),
             args.get("confidence", 0.8), args.get("weight", 1.0), args.get("evidence", ""),
             args.get("source", ""), args.get("scope", "all"),
             args.get("actor"), args.get("model"), args.get("session")
@@ -3308,7 +3357,8 @@ TOOLS = {
             "required": ["relation_id"]
         },
         "handler": lambda args: knowledge_relation_update(
-            args["relation_id"], args.get("relation_type"), args.get("confidence"),
+            _require(args, "relation_id", "die ID der zu aendernden Beziehung."),
+            args.get("relation_type"), args.get("confidence"),
             args.get("weight"), args.get("evidence"), args.get("source"),
             args.get("actor"), args.get("model"), args.get("session")
         )
@@ -3320,7 +3370,9 @@ TOOLS = {
             "properties": {"relation_id": {"type": "string"}, **IDENTITY_PROPERTIES},
             "required": ["relation_id"]
         },
-        "handler": lambda args: knowledge_relation_remove(args["relation_id"], **_identity_args(args))
+        "handler": lambda args: knowledge_relation_remove(
+            _require(args, "relation_id", "die ID der zu entfernenden Beziehung."),
+            **_identity_args(args))
     },
     "lesson_record": {
         "description": (
@@ -3360,7 +3412,9 @@ TOOLS = {
             "required": ["type", "description"]
         },
         "handler": lambda args: lesson_record(
-            args["type"], args["description"], args.get("root_cause", ""),
+            _require(args, "type", f"der Lesson-Typ, einer aus: {sorted(ALLOWED_LESSON_TYPES)}."),
+            _require(args, "description", "der Lehrtext selbst."),
+            args.get("root_cause", ""),
             args.get("resolution", ""), args.get("prevention", ""),
             args.get("severity", "medium"), args.get("projects"), args.get("node_path", ""),
             args.get("same_as", ""), args.get("anlass", "unbekannt"), **_identity_args(args)
@@ -3385,7 +3439,8 @@ TOOLS = {
             "required": ["lesson_id"]
         },
         "handler": lambda args: lesson_update(
-            args["lesson_id"], args.get("description"), args.get("root_cause"),
+            _require(args, "lesson_id", "die Lehr-ID, z.B. 'L-6e48a9'."),
+            args.get("description"), args.get("root_cause"),
             args.get("resolution"), args.get("prevention"), args.get("severity"),
             args.get("projects"), args.get("status"), args.get("delete", False), **_identity_args(args)
         )
@@ -3417,7 +3472,8 @@ TOOLS = {
             "properties": {"session": {"type": "string", "description": "Session ID, e.g. BEGOD_KNOWLEDGE_SESSION or 'unbekannt'"}},
             "required": ["session"]
         },
-        "handler": lambda args: knowledge_sitzung(args["session"])
+        "handler": lambda args: knowledge_sitzung(
+            _require(args, "session", "die Sitzungs-ID, z.B. BEGOD_KNOWLEDGE_SESSION oder 'unbekannt'."))
     },
     "knowledge_modell": {
         "description": "Read-only: list every knowledge node and lesson written by one model (actor/session/model "
@@ -3429,7 +3485,8 @@ TOOLS = {
             "properties": {"model": {"type": "string", "description": "Model name, e.g. BEGOD_KNOWLEDGE_MODEL or 'unbekannt'"}},
             "required": ["model"]
         },
-        "handler": lambda args: knowledge_modell(args["model"])
+        "handler": lambda args: knowledge_modell(
+            _require(args, "model", "der Modellname, z.B. BEGOD_KNOWLEDGE_MODEL oder 'unbekannt'."))
     },
     "knowledge_stats": {
         "description": "Overview statistics of the knowledge database (node counts, lesson counts, access patterns, "
@@ -3458,7 +3515,9 @@ TOOLS = {
             },
             "required": ["kind", "ref"]
         },
-        "handler": lambda args: knowledge_trust_score(args["kind"], args["ref"])
+        "handler": lambda args: knowledge_trust_score(
+            _require(args, "kind", "'node' oder 'lesson'."),
+            _require(args, "ref", "die Node-ID/der Pfad (kind='node') bzw. die Lehr-ID (kind='lesson')."))
     },
     "kurator_lauf": {
         "description": "Background cleanup agent (Hermes curator.py comparison) that ACTS, not just reports "
