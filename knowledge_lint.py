@@ -587,20 +587,46 @@ def _resolve_norm_conflict(a: dict, b: dict) -> tuple[str | None, str | None]:
     return None, None
 
 
-def find_norm_conflicts(conn: sqlite3.Connection) -> dict:
+def _normen_in_kraft(conn: sqlite3.Connection, now: datetime | None = None) -> list[dict]:
+    """Normbestand (norm_rang IS NOT NULL), gefiltert auf noch geltende
+    Zeilen -- eine per normkraft.py ausser Kraft gesetzte Norm (gilt_bis in
+    der Vergangenheit) zaehlt hier nicht mehr mit. Ohne diesen Filter waere
+    ein per normkraft.py geloester Konflikt bei jedem weiteren Lauf wieder
+    da -- derselbe Fehler wie eine Eskalation, deren Antwort nirgends
+    ankommt (Lehre L-86e92d).
+
+    gilt_bis kommt real auch als reines Datum vor (normkraft.py erlaubt
+    --ab ohne Uhrzeit, Bestand 2026-08-07: '/ops/buckeberg-anbieterabend-
+    2026-08-05' traegt gilt_bis='2026-08-06') -- datetime.fromisoformat()
+    liefert dafuer ein tz-naives Objekt, ein Vergleich mit dem tz-bewussten
+    `now` waere ein TypeError. Beide Seiten deshalb auf tz-naives UTC
+    normalisiert; ein naives gilt_bis zaehlt als UTC-Mitternacht dieses
+    Tages -- die ISO-Konvention fuer ein reines Datum."""
+    if now is None:
+        now = datetime.now(timezone.utc)
+    now_naive = now.astimezone(timezone.utc).replace(tzinfo=None) if now.tzinfo else now
     rows = conn.execute(
         "SELECT id, path, title, project_id, norm_rang, gilt_ab, gilt_bis "
         "FROM knowledge_nodes WHERE norm_rang IS NOT NULL"
     ).fetchall()
-    norms = [
-        {
+    out = []
+    for r in rows:
+        bis = _parse_gilt_ab(r["gilt_bis"])
+        if bis is not None:
+            bis_naive = bis.astimezone(timezone.utc).replace(tzinfo=None) if bis.tzinfo else bis
+            if bis_naive <= now_naive:
+                continue
+        out.append({
             "id": r["id"], "path": r["path"], "norm_rang": r["norm_rang"],
             "gilt_ab": r["gilt_ab"],
             "scope": geltungsbereich.geltungsbereich(r),
             "tokens": _subject_tokens(r["title"]),
-        }
-        for r in rows
-    ]
+        })
+    return out
+
+
+def find_norm_conflicts(conn: sqlite3.Connection, now: datetime | None = None) -> dict:
+    norms = _normen_in_kraft(conn, now)
 
     entschieden, echte = [], []
     for i in range(len(norms)):
@@ -621,6 +647,35 @@ def find_norm_conflicts(conn: sqlite3.Connection) -> dict:
                 eintrag["gewinner"] = gewinner
                 entschieden.append(eintrag)
     return {"entschieden": entschieden, "echte_konflikte": echte}
+
+
+def find_norm_conflicts_for(conn: sqlite3.Connection, node_id: str,
+                            now: datetime | None = None) -> list[dict]:
+    """Schreibzeit-Variante: prueft nur den gerade geschriebenen Knoten gegen
+    den restlichen (noch geltenden) Normbestand -- O(n) statt O(n^2). Alle
+    anderen Paare wurden schon bei ihrem eigenen Schreibvorgang geprueft
+    (ADR-034: ein Widerspruch entsteht nur durch Schreiben). Liefert nur
+    ECHTE Konflikte (keine Regel entscheidet) -- entschiedene Paare sind kein
+    Vorgang, siehe ADR-034 Beschluss."""
+    norms = {n["id"]: n for n in _normen_in_kraft(conn, now)}
+    a = norms.get(node_id)
+    if a is None:
+        return []
+    treffer = []
+    for other_id, b in norms.items():
+        if other_id == node_id:
+            continue
+        if not _scopes_overlap(a["scope"], b["scope"]):
+            continue
+        score = _subject_overlap(a["tokens"], b["tokens"])
+        if score < SUBJECT_OVERLAP_THRESHOLD:
+            continue
+        regel, _ = _resolve_norm_conflict(a, b)
+        if regel is not None:
+            continue
+        treffer.append({"a": a["path"], "b": b["path"], "a_rang": a["norm_rang"],
+                        "b_rang": b["norm_rang"], "subject_score": round(score, 3)})
+    return treffer
 
 
 # ─── 10. Ohne Herkunft ───────────────────────────────────────────────────────
@@ -932,7 +987,7 @@ def run(db_path: Path | str = DB_PATH, log_path: Path | str = RECALL_LOG,
             "path_hygiene": find_path_hygiene(conn),
             "truncated_embeddings": find_truncated_embeddings(conn),
             "escalated_without_rule": find_escalated_without_rule(conn),
-            "norm_conflicts": find_norm_conflicts(conn),
+            "norm_conflicts": find_norm_conflicts(conn, now),
             "missing_source": find_missing_source(conn),
             "stale_source": find_stale_source(conn),
             "broken_chain": find_broken_chain(conn),
@@ -1240,7 +1295,7 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
     conn.execute(
         "INSERT INTO knowledge_embeddings (kind, ref_id, project_id, model, vector, updated_at) "
         "VALUES (?,?,?,?,?,?)",
-        ("lesson", "L-novec-old", "shared", "test-model",
+        ("lesson", "L-novec-old", "shared", embeddings.DEFAULT_EMBED_MODEL,
          embeddings.pack_embedding([0.1] * 8), fresh),
     )
     # K2: je eine Lesson mit ein-, zwei- und dreifach zugeordneten Projekten,
@@ -1353,6 +1408,22 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
              "Alpha Beta Gamma Eins", "S", 1, 1.0, 1, fixture_source, t_early, fresh),
             ("nc_7b", "/shared/normtest/randfall-zeta-zwei", "/shared", "randfall",
              "Zeta Omega Zwei", "S", 1, 1.0, 3, fixture_source, t_early, fresh),
+        ],
+    )
+    # Gruppe 8 -- wie Gruppe 4 (echter Konflikt), aber eine Seite ist per
+    # gilt_bis bereits ausser Kraft (in der Vergangenheit): darf NICHT mehr
+    # als Konflikt auftauchen (Auftrag 2026-08-07, Vorgang muss durch
+    # normkraft.py tatsaechlich schliessbar sein, sonst Lehre L-86e92d).
+    t_ausser_kraft = "2026-03-01T00:00:00+00:00"
+    conn.executemany(
+        "INSERT INTO knowledge_nodes "
+        "(id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, source, gilt_ab, gilt_bis, updated_at) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [
+            ("nc_8a", "/shared/normtest/reifendruck-winter", "/shared", "fahrzeugpark4",
+             "Regel Reifendruck Winter", "S", 1, 1.0, 2, fixture_source, t_early, None, fresh),
+            ("nc_8b", "/shared/normtest/reifendruck-sommer", "/shared", "fahrzeugpark4",
+             "Regel Reifendruck Sommer", "S", 1, 1.0, 2, fixture_source, t_early, t_ausser_kraft, fresh),
         ],
     )
     conn.commit()
@@ -1583,6 +1654,23 @@ def selftest() -> None:
 
         p5 = frozenset(("/shared/normtest/hupsignal-baustelle-insel-a", "/shared/normtest/hupsignal-baustelle-insel-b"))
         assert p5 not in entschieden_by_pair and p5 not in echte_by_pair, "disjunkte Bereiche -- kein Konflikt"
+
+        p8 = frozenset(("/shared/normtest/reifendruck-winter", "/shared/normtest/reifendruck-sommer"))
+        assert p8 not in entschieden_by_pair and p8 not in echte_by_pair, \
+            "eine Seite ist per gilt_bis ausser Kraft -- darf nicht mehr als Konflikt gemeldet werden"
+
+        # find_norm_conflicts_for(): Schreibzeit-Variante liefert dieselben
+        # ECHTEN Konflikte fuer einen einzelnen Knoten wie der volle Scan --
+        # und liefert nichts mehr fuer die per gilt_bis geschlossene Gruppe 8.
+        scoped_conn = get_ro_conn(db_path)
+        try:
+            for_a = find_norm_conflicts_for(scoped_conn, "nc_4a", now)
+            assert {frozenset((t["a"], t["b"])) for t in for_a} == {p4}, for_a
+            for_8a = find_norm_conflicts_for(scoped_conn, "nc_8a", now)
+            assert for_8a == [], for_8a
+            assert find_norm_conflicts_for(scoped_conn, "does-not-exist", now) == []
+        finally:
+            scoped_conn.close()
 
         alle_pfade = {e["a"] for e in nc["entschieden"]} | {e["b"] for e in nc["entschieden"]} | \
                      {a for pair in echte_by_pair for a in pair}

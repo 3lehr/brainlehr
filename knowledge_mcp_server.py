@@ -25,6 +25,13 @@ diese Datei + vier Nachbarn, sonst nur Stdlib:
                    Selbstpruefung mehr, sondern des Schreibpfads selbst)
   - normrang.py   (ADR-034: norm_rang faellt bei knowledge_add() deterministisch
                    aus source, TOP-LEVEL importiert, gleicher Grund)
+  - knowledge_lint.find_norm_conflicts_for() (ADR-034/Auftrag 2026-08-07:
+                   Widerspruchspruefung, feuert in knowledge_add/
+                   knowledge_update NACH dem Commit, wenn der geschriebene
+                   Knoten eine Norm ist -- VERZOEGERT importiert in
+                   _check_norm_conflicts(), gleicher Zirkelgrund wie
+                   kurator_lauf() unten: knowledge_lint.py importiert
+                   seinerseits aus diesem Modul)
 
 Selbstpruefung (zusaetzlich fuer knowledge_lint.py + konfidenz.py, beide
 gegen eine frische DB durchlaufgeprueft): obige Kerndateien PLUS
@@ -1017,6 +1024,65 @@ def _check_injection_suspects(kind: str, ref: str, felder: dict) -> None:
         pass
 
 
+def _check_norm_conflicts(node_id: str, node_path: str, norm_rang: int | None) -> None:
+    """ADR-034 (Widerspruchspruefung, Auftrag 2026-08-07): ein neuer
+    Normkonflikt kann nur entstehen, wenn eine Norm neu geschrieben oder
+    umdatiert wird -- Bestandspaare wurden bei ihrem eigenen Schreibvorgang
+    schon geprueft (knowledge_lint.find_norm_conflicts_for() ist deshalb
+    O(n) gegen den restlichen Normbestand, nicht O(n^2) wie der volle Scan).
+
+    Ein Fund wird ein VORGANG, keine Meldung (Lehre L-86e92d verlangt
+    Adressat/Antwortort/Folge bei Ausbleiben, sonst ist es keiner):
+      Adressat:   Betreiber, ueber dieselbe lessons_learned-Flaeche wie jede
+                  andere Lehre (lesson_query, Stop-Hook-Review).
+      Antwort:    normkraft.py ausser_kraft <verlierender Pfad> setzt
+                  gilt_bis -- find_norm_conflicts_for() schliesst ausser
+                  Kraft gesetzte Normen aus, der naechste Schreibvorgang
+                  dieses Paars findet dann keinen Konflikt mehr; die Lehre
+                  kann per lesson_update(status='resolved') geschlossen
+                  werden.
+      Ausbleiben: die Lehre bleibt status='active' und waechst bei jedem
+                  weiteren Treffer desselben Paars auf occurrences (exakte
+                  Textdublette in lesson_record) -- kein stiller Verlust,
+                  eskaliert wie jede andere Lehre ab 3 Vorkommen.
+
+    Nebenpruefung: darf den Schreibvorgang nie zum Scheitern bringen (Muster
+    wie _check_injection_suspects). Nur wenn der geschriebene Knoten selbst
+    eine Norm ist (norm_rang gesetzt) -- ein Fakt kann keinen Normkonflikt
+    ausloesen."""
+    if norm_rang is None:
+        return
+    try:
+        import knowledge_lint  # noqa: PLC0415 -- verzoegert (Zirkel, siehe Moduldocstring)
+        conn = knowledge_lint.get_ro_conn(DB_PATH)
+        try:
+            treffer = knowledge_lint.find_norm_conflicts_for(conn, node_id)
+        finally:
+            conn.close()
+        for t in treffer:
+            beschreibung = (
+                f"Normkonflikt ungeloest: {t['a']} (Rang {t['a_rang']}) <-> {t['b']} "
+                f"(Rang {t['b_rang']}) -- weder lex superior noch lex specialis noch "
+                f"lex posterior entscheidet."
+            )
+            lesson_record(
+                type_="antipattern", description=beschreibung,
+                root_cause="Zwei Normen mit gleichem Rang, ueberschneidendem Bereich und "
+                           "gleichem gilt_ab -- keine der drei Regeln "
+                           "(knowledge_lint.py::_resolve_norm_conflict) kann entscheiden.",
+                resolution="",
+                prevention="Betreiber entscheidet per normkraft.py ausser_kraft <verlierender Pfad> "
+                           "--ab <ISO> --wegen <Grund>. Sobald gilt_bis gesetzt ist, faellt die Norm "
+                           "aus der Pruefung; die Lehre danach per lesson_update(status='resolved') "
+                           "schliessen. Ohne Antwort bleibt sie aktiv und waechst mit jedem weiteren "
+                           "Treffer auf occurrences.",
+                severity="high", projects=["hub"], node_path=t["a"],
+                anlass="skript",
+            )
+    except Exception:
+        pass
+
+
 def _cwd_project(cwd: str | None) -> str | None:
     """Projekt/Worktree aus cwd -- exakte Kopie von
     knowledge_recall_hook.py::_cwd_project. Bewusst dupliziert statt
@@ -1767,6 +1833,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     conn.commit()
     conn.close()
     _check_injection_suspects("node", node_path, {"title": title, "summary": summary, "content": content})
+    _check_norm_conflicts(node_id, node_path, norm_rang)
     return {"id": node_id, "path": node_path, "status": "created", "source": source, **wikilinks}
 
 
@@ -1906,6 +1973,7 @@ def knowledge_update(node_id: str, summary: str | None = None,
     # pruefen, nicht den ganzen Knoten -- summary/content bleiben None, wo
     # der Aufrufer sie nicht mitgegeben hat.
     _check_injection_suspects("node", row["path"], {"summary": summary, "content": content})
+    _check_norm_conflicts(row["id"], row["path"], updated_row["norm_rang"])
     return {"id": row["id"], "status": "updated", **wikilinks}
 
 
