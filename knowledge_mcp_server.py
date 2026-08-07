@@ -74,6 +74,9 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).parent))
 import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
+import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-Fanout
+                          # beim Einbetten am Schreibvorgang -- selbe Regel wie im
+                          # expliziten Batch-Lauf, nicht daneben nachgebaut.
 
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad (gleiche Bauform wie die drei
 # BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
@@ -1194,17 +1197,37 @@ def _slugify(title: str) -> str:
     without_accents = "".join(c for c in decomposed if not unicodedata.combining(c))
     raw = _SLUG_CHAR_RE.sub("-", without_accents).strip("-")
     raw = re.sub(r"-+", "-", raw)
-    if len(raw) <= SLUG_MAX_LEN:
+    # ADR-032: ein Slug von GENAU SLUG_MAX_LEN Zeichen ist knowledge_lint.py's
+    # Signal fuer verdaechtige Kappung (find_path_hygiene) -- auch wenn raw
+    # zufaellig genau SLUG_MAX_LEN lang ist, OHNE dass ueberhaupt gekappt
+    # wurde (kein Abschneiden, reiner Zufall der Wortlaengen). Der Vergleich
+    # laeuft deshalb gegen cap = SLUG_MAX_LEN - 1, nicht SLUG_MAX_LEN selbst
+    # -- sonst erzeugt genau dieser Randfall weiterhin den Fund, den die
+    # Kappungslogik darunter vermeiden soll.
+    cap = SLUG_MAX_LEN - 1
+    if len(raw) <= cap:
         return raw
     words = raw.split("-")
-    if len(words[0]) >= SLUG_MAX_LEN:
-        return words[0][:SLUG_MAX_LEN]
+    if len(words[0]) >= cap:
+        return words[0][:cap]
     out = words[0]
     for w in words[1:]:
-        if len(out) + 1 + len(w) > SLUG_MAX_LEN:
+        if len(out) + 1 + len(w) > cap:
             break
         out += "-" + w
     return out
+
+
+def _normalize_path(path: str) -> str:
+    """Saeubert jedes Segment eines Pfades wie _slugify() einen Titel.
+    NUR fuer einen Ast, der gerade neu entsteht (neuer_ast=True in
+    knowledge_add) -- nie fuer einen bereits bestehenden Pfad, der sonst
+    unauffindbar wuerde (andere Knoten/Relationen verweisen darauf).
+    Leeres Segment (z.B. ein Segment aus reinen Satzzeichen) faellt auf das
+    Rohsegment zurueck, statt den Ast stillschweigend zu verkuerzen."""
+    segs = [seg for seg in path.split("/") if seg]
+    cleaned = [_slugify(seg) or seg for seg in segs]
+    return "/" + "/".join(cleaned)
 
 
 # ─── P5: [[wikilink]] -> knowledge_relations ────────────────────────────────
@@ -1425,6 +1448,50 @@ def _erzeuge_source_aus_ableitung(conn: sqlite3.Connection, kennung: str) -> tup
     )
 
 
+def _rebuild_node_embedding(conn: sqlite3.Connection, node_id: str, project_id: str,
+                            path: str, title: str, summary: str, content: str | None) -> None:
+    """Baut den Vektor eines Knotens SOFORT beim Schreiben (ADR-032 Gruppe 1)
+    statt die Luecke bis zum naechsten build_embeddings.py-Lauf offenzulassen.
+    Text-Formel identisch zu dessen Hauptschleife -- sonst zaehlt der Kurator
+    die frische Zeile weiter als veraltet (find_vector_gaps vergleicht nur
+    Zeitstempel, nicht Text, also muss nur die Existenz/Aktualitaet stimmen).
+    Schlaegt embed_text() fehl (Ollama nicht erreichbar, Timeout) wird NICHTS
+    geworfen -- der Schreibvorgang bleibt gueltig, die Luecke bleibt bestehen
+    und zeigt sich weiter im naechsten Kurator-Trockenlauf. Kurzer Default-
+    Timeout (embeddings.embed_text(), 5s), damit ein totes Modell einen
+    Schreibvorgang nicht spuerbar verzoegert."""
+    text = f"{path}\n{title}\n{summary}\n{content or ''}"
+    vec = embeddings.embed_text(text)
+    if vec is None:
+        return
+    conn.execute(
+        "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, vector, updated_at) "
+        "VALUES ('node', ?, ?, ?, ?, ?)",
+        (node_id, project_id, embeddings.DEFAULT_EMBED_MODEL, embeddings.pack_embedding(vec), now_iso()),
+    )
+
+
+def _rebuild_lesson_embedding(conn: sqlite3.Connection, lesson_id: str, node_path: str | None,
+                              projects_json: str | None, description: str,
+                              root_cause: str | None, prevention: str | None) -> None:
+    """Wie _rebuild_node_embedding, fuer lessons_learned -- inkl. Bereichs-
+    Fanout (eine Embedding-Zeile je Bereich, gleicher Vektor) ueber
+    build_embeddings.resolve_lesson_projects(), nicht danebengebaut."""
+    zuordnung = node_path or projects_json or ""
+    text = f"{zuordnung}\n{description}\n{root_cause or ''}\n{prevention or ''}"
+    vec = embeddings.embed_text(text)
+    if vec is None:
+        return
+    packed = embeddings.pack_embedding(vec)
+    ts = now_iso()
+    for proj in build_embeddings.resolve_lesson_projects(projects_json):
+        conn.execute(
+            "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, vector, updated_at) "
+            "VALUES ('lesson', ?, ?, ?, ?, ?)",
+            (lesson_id, proj, embeddings.DEFAULT_EMBED_MODEL, packed, ts),
+        )
+
+
 def knowledge_add(parent_path: str, title: str, summary: str,
                   content: str = "", project_id: str = "shared",
                   tags: list | None = None, source: str = "", *,
@@ -1537,7 +1604,13 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                 }
             # neuer_ast=True: fehlende Zwischenstufen mit anlegen (mkdir -p),
             # statt eine Waise zu hinterlassen -- genau die Klasse, gegen die
-            # die Elternpfad-Pruefung oben gebaut wurde.
+            # die Elternpfad-Pruefung oben gebaut wurde. ADR-032: der Ast
+            # entsteht hier gerade erst, also wird er gleich sauber angelegt
+            # (Pfad-Hygiene an der Schreibzeit) statt roh uebernommen zu
+            # werden -- node_path deshalb NEU aus dem normalisierten
+            # parent_path berechnet.
+            parent_path = _normalize_path(parent_path)
+            node_path = f"{parent_path}/{slug}" if parent_path != "/" else f"/{slug}"
             _ensure_ast_chain(conn, parent_path, node_path, project_id)
 
     # Check for duplicates
@@ -1574,6 +1647,9 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                    "actor": actor, "session": session, "model": model,
                })
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
+    # ADR-032: Vektor sofort mitbauen statt eine vector_gaps-Luecke bis zum
+    # naechsten build_embeddings.py-Lauf offenzulassen.
+    _rebuild_node_embedding(conn, node_id, project_id, node_path, title, summary, content)
     conn.commit()
     conn.close()
     return {"id": node_id, "path": node_path, "status": "created", "source": source, **wikilinks}
@@ -1683,13 +1759,6 @@ def knowledge_update(node_id: str, summary: str | None = None,
             "current": dict(current) if current else None,
         }
 
-    # P4: ein veralteter Vektor ist schlechter als gar keiner -- die
-    # Hybridsuche gewichtet ihn gutgläubig mit, waehrend sie einen fehlenden
-    # sauber verkraftet (test_knowledge_hybrid_search.py). Nur bei
-    # Textaenderung loeschen; ein reiner tags-Wechsel laesst ihn stehen.
-    if summary is not None or content is not None:
-        conn.execute("DELETE FROM knowledge_embeddings WHERE kind = 'node' AND ref_id = ?", (row["id"],))
-
     wikilinks = {"relations_created": [], "unresolved_links": []}
     if content is not None:
         # P5: Kanten dieses Knotens komplett neu ziehen, sonst ueberlebt ein
@@ -1698,6 +1767,19 @@ def knowledge_update(node_id: str, summary: str | None = None,
         wikilinks = _sync_wikilinks(conn, row["path"], content, actor=actor, model=model, session=session)
 
     updated_row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ?", (row["id"],)).fetchone()
+
+    # ADR-032 (loest P4 ab): ein veralteter Vektor ist schlechter als gar
+    # keiner (Hybridsuche gewichtet ihn gutgläubig mit, test_knowledge_hybrid_
+    # search.py) -- frueher wurde er bei Textaenderung nur GELOESCHT, die
+    # Luecke blieb bis zum naechsten build_embeddings.py-Lauf offen. Jetzt
+    # sofort neu gebaut. updated_at bumpt bei JEDEM Update (auch reinem
+    # Tags-Wechsel), also unconditional statt nur bei Text -- sonst waere
+    # jede Aenderung ein neuer vector_gaps-Fund. Schlaegt der Bau fehl (Modell
+    # nicht erreichbar), bleibt die Luecke offen, der Schreibvorgang bleibt
+    # gueltig (siehe _rebuild_node_embedding).
+    _rebuild_node_embedding(conn, row["id"], updated_row["project_id"], updated_row["path"],
+                            updated_row["title"], updated_row["summary"], updated_row["content"])
+
     log_access(conn, row["path"], "update", project_id=row["project_id"],
                actor=actor, model=model, session=session,
                affected_row=dict(updated_row) if updated_row else None)
@@ -2272,6 +2354,12 @@ def _bump_lesson(conn: sqlite3.Connection, lesson_id: str, node_path: str,
             (new_count, now_iso(), actor, session, model, lesson_id)
         )
     updated_row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
+    # ADR-032: last_seen bumpt bei JEDEM Vorkommen (auch ohne Textaenderung),
+    # die alte Zeile waere sonst sofort wieder ein vector_gaps-Fund (Vektor
+    # aelter als last_seen). Sofort neu gebaut statt geloescht/liegen gelassen.
+    _rebuild_lesson_embedding(conn, lesson_id, updated_row["node_path"], updated_row["projects"],
+                              updated_row["description"], updated_row["root_cause"],
+                              updated_row["prevention"])
     log_access(conn, node_path or None, "lesson", query=log_query,
                actor=actor, model=model, session=session,
                affected_row=dict(updated_row) if updated_row else None)
@@ -2428,6 +2516,10 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                    "projects": projects or [], "first_seen": seen_at, "last_seen": seen_at,
                    "anlass": anlass, "actor": actor, "session": session, "model": model,
                })
+    # ADR-032: Vektor sofort mitbauen statt eine vector_gaps-Luecke bis zum
+    # naechsten build_embeddings.py-Lauf offenzulassen.
+    _rebuild_lesson_embedding(conn, lesson_id, node_path or None, json.dumps(projects or []),
+                              description, root_cause, prevention)
     conn.commit()
     conn.close()
     result = {"id": lesson_id, "status": "recorded", "occurrences": 1}
@@ -2500,13 +2592,19 @@ def lesson_update(lesson_id: str, description: str | None = None,
 
     conn.execute(f"UPDATE lessons_learned SET {', '.join(updates)} WHERE id = ?", params)
 
-    # P4: der Embedding-Text einer Lesson ist description+root_cause+prevention
-    # (siehe build_embeddings.py) -- resolution/severity/projects/status
-    # fliessen nicht ein und loesen deshalb keine Loeschung aus.
-    if {"description", "root_cause", "prevention"} & given.keys():
-        conn.execute("DELETE FROM knowledge_embeddings WHERE kind = 'lesson' AND ref_id = ?", (lesson_id,))
-
     updated_row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
+
+    # ADR-032 (loest P4 ab): frueher wurde die knowledge_embeddings-Zeile nur
+    # bei description/root_cause/prevention GELOESCHT (der Embedding-Text
+    # einer Lesson, siehe build_embeddings.py) -- resolution/severity/
+    # projects/status loesten keine Loeschung aus. Aber last_seen bumpt bei
+    # JEDEM Update, also waere selbst ein reiner resolution-Wechsel sofort
+    # wieder ein vector_gaps-Fund (Vektor aelter als last_seen). Deshalb
+    # jetzt unconditional neu gebaut statt geloescht. Schlaegt der Bau fehl,
+    # bleibt die Luecke offen (siehe _rebuild_lesson_embedding).
+    _rebuild_lesson_embedding(conn, lesson_id, updated_row["node_path"], updated_row["projects"],
+                              updated_row["description"], updated_row["root_cause"],
+                              updated_row["prevention"])
     log_access(conn, None, "lesson_update", query=lesson_id,
                actor=actor, model=model, session=session,
                affected_row=dict(updated_row) if updated_row else None)

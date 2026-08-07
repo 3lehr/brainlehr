@@ -138,3 +138,45 @@ def test_slug_bleibt_bei_einem_ueberlangen_wort_nutzbar(temp_db):
 def test_umlaute_werden_gefaltet_nicht_verschluckt(temp_db):
     res = kms.knowledge_add("/shared/arch", "Prüfung äußerer Größen", "Zusammenfassung", source="test")
     assert res["path"] == "/shared/arch/pruefung-aeusserer-groessen", res
+
+
+def test_slug_trifft_nie_genau_die_kappungslaenge(temp_db):
+    """ADR-032: knowledge_lint.find_path_hygiene() meldet ein letztes Segment
+    von GENAU SLUG_MAX_LEN Zeichen als verdaechtige Kappung. Kappt bei
+    SLUG_MAX_LEN selbst, erzeugt jede legitime Kappung genau diesen Fund."""
+    res = kms.knowledge_add("/shared/arch", "Donaudampfschifffahrtsgesellschaftskapitaenspatent",
+                            "Zusammenfassung", source="test")
+    slug = res["path"].rsplit("/", 1)[-1]
+    assert len(slug) < kms.SLUG_MAX_LEN, slug
+
+
+# --- ADR-032: Vektor sofort beim Schreiben ------------------------------------
+
+def test_embedding_wird_beim_schreiben_gebaut(temp_db, monkeypatch):
+    """Vorher: eine Luecke bis zum naechsten build_embeddings.py-Lauf
+    (knowledge_lint.find_vector_gaps zaehlt sie als vector_gaps). Jetzt baut
+    der Schreibvorgang selbst. embed_text() gemockt -- kein echtes Ollama
+    im Testlauf noetig."""
+    monkeypatch.setattr(kms.embeddings, "embed_text", lambda text, **kw: [0.1, 0.2, 0.3])
+    res = kms.knowledge_add("/apps/fahrtenbuch", "Vektor Beim Schreiben", "Zusammenfassung", source="test")
+    conn = sqlite3.connect(str(temp_db))
+    row = conn.execute(
+        "SELECT updated_at FROM knowledge_embeddings WHERE kind = 'node' AND ref_id = ?", (res["id"],)
+    ).fetchone()
+    conn.close()
+    assert row is not None, "kein Vektor nach dem Schreiben -- vector_gaps-Fund waere weiter da"
+
+
+def test_embedding_fehler_blockiert_schreibvorgang_nicht(temp_db, monkeypatch):
+    """Grenzfall (Auftrags-Grenze): Modell nicht erreichbar -> embed_text()
+    gibt None zurueck (siehe embeddings.py) -- der Knoten wird TROTZDEM
+    geschrieben, die Luecke bleibt offen statt den Schreibvorgang zu killen."""
+    monkeypatch.setattr(kms.embeddings, "embed_text", lambda text, **kw: None)
+    res = kms.knowledge_add("/apps/fahrtenbuch", "Modell Nicht Erreichbar", "Zusammenfassung", source="test")
+    assert res.get("status") == "created", res
+    conn = sqlite3.connect(str(temp_db))
+    row = conn.execute(
+        "SELECT 1 FROM knowledge_embeddings WHERE kind = 'node' AND ref_id = ?", (res["id"],)
+    ).fetchone()
+    conn.close()
+    assert row is None, "kein Vektor haette gebaut werden duerfen"
