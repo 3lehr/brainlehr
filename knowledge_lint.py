@@ -567,11 +567,31 @@ def _parse_gilt_ab(v: str | None) -> datetime | None:
         return None
 
 
+def _is_spannung(a: dict, b: dict) -> bool:
+    """Zweite Achse (Auftrag 2026-08-07/08, Knoten dd367fd1): norm_art sagt
+    WAS FUER EINEN Satz eine Norm macht (Sein/Sollen/Duerfen) -- unabhaengig
+    davon, wie bindend sie ist (norm_rang). Lex superior/specialis/posterior
+    setzen voraus, dass beide Normen DENSELBEN Gegenstand auf dieselbe Weise
+    regeln; tragen sie verschiedene Art, entsteht keine Kollision, sondern
+    eine SPANNUNG (beide Fundstellen, keine Aufloesung).
+
+    Ein Eintrag OHNE Art (None) macht daraus KEINE Spannung -- 'Art nicht
+    erfasst' ist keine Aussage 'garantiert verschiedene Art'. Die
+    Konfliktaufloesung behandelt so ein Paar weiterhin wie bisher (vor
+    dieser Aenderung), das ist die Vorgabe fuer den Altbestand."""
+    return (a.get("norm_art") is not None and b.get("norm_art") is not None
+            and a["norm_art"] != b["norm_art"])
+
+
 def _resolve_norm_conflict(a: dict, b: dict) -> tuple[str | None, str | None]:
     """a, b: dicts mit 'path', 'norm_rang', 'scope' (frozenset), 'gilt_ab'.
     Wendet lex superior -> lex specialis -> lex posterior in dieser
     Reihenfolge an. Liefert (regel, gewinner_path), oder (None, None) wenn
-    keine der drei entscheiden konnte -- der echte Konflikt."""
+    keine der drei entscheiden konnte -- der echte Konflikt.
+
+    Greift NUR innerhalb derselben Art -- der Aufrufer muss _is_spannung()
+    VOR diesem Aufruf pruefen und bei True eine Spannung melden statt hier
+    aufzuloesen (siehe find_norm_conflicts/find_norm_conflicts_for)."""
     if a["norm_rang"] != b["norm_rang"]:
         winner = a if a["norm_rang"] < b["norm_rang"] else b
         return "lex_superior", winner["path"]
@@ -606,7 +626,7 @@ def _normen_in_kraft(conn: sqlite3.Connection, now: datetime | None = None) -> l
         now = datetime.now(timezone.utc)
     now_naive = now.astimezone(timezone.utc).replace(tzinfo=None) if now.tzinfo else now
     rows = conn.execute(
-        "SELECT id, path, title, project_id, norm_rang, gilt_ab, gilt_bis "
+        "SELECT id, path, title, project_id, norm_rang, norm_art, gilt_ab, gilt_bis "
         "FROM knowledge_nodes WHERE norm_rang IS NOT NULL"
     ).fetchall()
     out = []
@@ -618,6 +638,7 @@ def _normen_in_kraft(conn: sqlite3.Connection, now: datetime | None = None) -> l
                 continue
         out.append({
             "id": r["id"], "path": r["path"], "norm_rang": r["norm_rang"],
+            "norm_art": r["norm_art"],
             "gilt_ab": r["gilt_ab"],
             "scope": geltungsbereich.geltungsbereich(r),
             "tokens": _subject_tokens(r["title"]),
@@ -628,7 +649,7 @@ def _normen_in_kraft(conn: sqlite3.Connection, now: datetime | None = None) -> l
 def find_norm_conflicts(conn: sqlite3.Connection, now: datetime | None = None) -> dict:
     norms = _normen_in_kraft(conn, now)
 
-    entschieden, echte = [], []
+    entschieden, echte, spannungen = [], [], []
     for i in range(len(norms)):
         for j in range(i + 1, len(norms)):
             a, b = norms[i], norms[j]
@@ -637,16 +658,19 @@ def find_norm_conflicts(conn: sqlite3.Connection, now: datetime | None = None) -
             score = _subject_overlap(a["tokens"], b["tokens"])
             if score < SUBJECT_OVERLAP_THRESHOLD:
                 continue
-            regel, gewinner = _resolve_norm_conflict(a, b)
             eintrag = {"a": a["path"], "b": b["path"], "a_rang": a["norm_rang"],
                        "b_rang": b["norm_rang"], "subject_score": round(score, 3)}
+            if _is_spannung(a, b):
+                spannungen.append({**eintrag, "a_art": a["norm_art"], "b_art": b["norm_art"]})
+                continue
+            regel, gewinner = _resolve_norm_conflict(a, b)
             if regel is None:
                 echte.append(eintrag)
             else:
                 eintrag["regel"] = regel
                 eintrag["gewinner"] = gewinner
                 entschieden.append(eintrag)
-    return {"entschieden": entschieden, "echte_konflikte": echte}
+    return {"entschieden": entschieden, "echte_konflikte": echte, "spannungen": spannungen}
 
 
 def find_norm_conflicts_for(conn: sqlite3.Connection, node_id: str,
@@ -656,7 +680,10 @@ def find_norm_conflicts_for(conn: sqlite3.Connection, node_id: str,
     anderen Paare wurden schon bei ihrem eigenen Schreibvorgang geprueft
     (ADR-034: ein Widerspruch entsteht nur durch Schreiben). Liefert nur
     ECHTE Konflikte (keine Regel entscheidet) -- entschiedene Paare sind kein
-    Vorgang, siehe ADR-034 Beschluss."""
+    Vorgang, siehe ADR-034 Beschluss. Paare verschiedener Art (_is_spannung)
+    sind ebenfalls kein Vorgang -- eine Spannung ist ein Befund ueber die
+    Welt, kein Fehler im Wissen (Knoten dd367fd1), loest also KEINE Lehre
+    aus."""
     norms = {n["id"]: n for n in _normen_in_kraft(conn, now)}
     a = norms.get(node_id)
     if a is None:
@@ -669,6 +696,8 @@ def find_norm_conflicts_for(conn: sqlite3.Connection, node_id: str,
             continue
         score = _subject_overlap(a["tokens"], b["tokens"])
         if score < SUBJECT_OVERLAP_THRESHOLD:
+            continue
+        if _is_spannung(a, b):
             continue
         regel, _ = _resolve_norm_conflict(a, b)
         if regel is not None:
@@ -1043,6 +1072,10 @@ def print_report(result: dict) -> None:
     _print_section("Normkonflikte -- ECHTER KONFLIKT (keine der drei Regeln entscheidet)",
                    nc["echte_konflikte"],
                    lambda i: f"{i['a']} (Rang {i['a_rang']}) vs {i['b']} (Rang {i['b_rang']}), "
+                             f"Themenscore {i['subject_score']}")
+    _print_section("Normkonflikte -- SPANNUNG (verschiedene Art, keine Aufloesung)",
+                   nc["spannungen"],
+                   lambda i: f"{i['a']} ({i['a_art']}) <-> {i['b']} ({i['b_art']}), "
                              f"Themenscore {i['subject_score']}")
     _print_section("Ohne Herkunft (source leer/fehlend)", result["missing_source"],
                    lambda i: f"{i['path']}: {i['title']}")
@@ -1426,6 +1459,28 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
              "Regel Reifendruck Sommer", "S", 1, 1.0, 2, fixture_source, t_early, t_ausser_kraft, fresh),
         ],
     )
+    # Gruppe 9 -- wie Gruppe 4 (gleicher Rang/Bereich/gilt_ab), aber BEIDE
+    # Seiten tragen dieselbe Art: bleibt ECHTER KONFLIKT. Negativfall aus der
+    # Abnahme (Auftrag 2026-08-07/08) -- die zweite Achse darf die
+    # bestehende Erkennung nicht entschaerfen.
+    #
+    # Gruppe 10 -- wie Gruppe 4, aber verschiedene Art: SPANNUNG statt
+    # Konflikt, beide Fundstellen genannt, keine Aufloesung (Knoten dd367fd1).
+    conn.executemany(
+        "INSERT INTO knowledge_nodes "
+        "(id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, norm_art, source, gilt_ab, updated_at) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [
+            ("nc_9a", "/shared/normtest/ladeleistung-schnelllader", "/shared", "artgleich",
+             "Regel Ladeleistung Schnelllader", "S", 1, 1.0, 2, "sollen", fixture_source, t_early, fresh),
+            ("nc_9b", "/shared/normtest/ladeleistung-normallader", "/shared", "artgleich",
+             "Regel Ladeleistung Normallader", "S", 1, 1.0, 2, "sollen", fixture_source, t_early, fresh),
+            ("nc_10a", "/shared/normtest/pruefintervall-messung", "/shared", "artverschieden",
+             "Regel Pruefintervall Messung", "S", 1, 1.0, 2, "sein", fixture_source, t_early, fresh),
+            ("nc_10b", "/shared/normtest/pruefintervall-vorgabe", "/shared", "artverschieden",
+             "Regel Pruefintervall Vorgabe", "S", 1, 1.0, 2, "sollen", fixture_source, t_early, fresh),
+        ],
+    )
     conn.commit()
     conn.close()
     return db_path
@@ -1629,6 +1684,20 @@ def selftest() -> None:
         _overlap_b = {"path": "/ob", "norm_rang": 2, "scope": frozenset({"b", "c"}), "gilt_ab": t_early}
         assert _resolve_norm_conflict(_overlap_a, _overlap_b) == (None, None)
 
+        # 9b. Zweite Achse (Auftrag 2026-08-07/08, Knoten dd367fd1):
+        # _is_spannung() direkt. Rot vor gruen -- vor dieser Aenderung gab es
+        # die Funktion nicht, jedes gleichrangige/gleichbereichige Paar mit
+        # gleichem gilt_ab war unbedingt ein echter Konflikt.
+        _sein = {"path": "/sein", "norm_art": "sein"}
+        _sollen = {"path": "/sollen", "norm_art": "sollen"}
+        _sollen2 = {"path": "/sollen2", "norm_art": "sollen"}
+        _ohne_art = {"path": "/ohne", "norm_art": None}
+        assert _is_spannung(_sein, _sollen) is True, "verschiedene, je gesetzte Art -> Spannung"
+        assert _is_spannung(_sollen, _sollen2) is False, "gleiche Art -> keine Spannung, normale Aufloesung"
+        assert _is_spannung(_sein, _ohne_art) is False, \
+            "eine Seite ohne Art (nicht geraten) -> KEINE Spannung, Verhalten wie vor der Aenderung"
+        assert _is_spannung(_ohne_art, _ohne_art) is False
+
         nc = result["norm_conflicts"]
         entschieden_by_pair = {frozenset((e["a"], e["b"])): e for e in nc["entschieden"]}
         echte_by_pair = {frozenset((e["a"], e["b"])) for e in nc["echte_konflikte"]}
@@ -1659,15 +1728,40 @@ def selftest() -> None:
         assert p8 not in entschieden_by_pair and p8 not in echte_by_pair, \
             "eine Seite ist per gilt_bis ausser Kraft -- darf nicht mehr als Konflikt gemeldet werden"
 
+        # Negativfall (Abnahme Punkt 3, verbindlich): Gruppe 9 -- gleiche Art
+        # auf beiden Seiten -- bleibt ECHTER KONFLIKT, exakt wie Gruppe 4 vor
+        # dieser Aenderung. Die zweite Achse darf die Erkennung nicht
+        # entschaerfen.
+        p9 = frozenset(("/shared/normtest/ladeleistung-schnelllader", "/shared/normtest/ladeleistung-normallader"))
+        assert p9 in echte_by_pair, echte_by_pair
+        assert p9 not in entschieden_by_pair
+        spannungen_by_pair = {frozenset((s["a"], s["b"])): s for s in nc["spannungen"]}
+        assert p9 not in spannungen_by_pair
+
+        # Gruen (Abnahme Punkt 2): Gruppe 10 -- gleicher Rang/Bereich/gilt_ab
+        # wie Gruppe 4/9, aber verschiedene Art -- SPANNUNG, nicht Konflikt,
+        # beide Fundstellen im Befund.
+        p10 = frozenset(("/shared/normtest/pruefintervall-messung", "/shared/normtest/pruefintervall-vorgabe"))
+        assert p10 in spannungen_by_pair, spannungen_by_pair
+        assert p10 not in echte_by_pair and p10 not in entschieden_by_pair, \
+            "verschiedene Art darf NICHT als Konflikt gemeldet werden"
+        _sp10 = spannungen_by_pair[p10]
+        assert {_sp10["a_art"], _sp10["b_art"]} == {"sein", "sollen"}, _sp10
+
         # find_norm_conflicts_for(): Schreibzeit-Variante liefert dieselben
         # ECHTEN Konflikte fuer einen einzelnen Knoten wie der volle Scan --
-        # und liefert nichts mehr fuer die per gilt_bis geschlossene Gruppe 8.
+        # und liefert nichts mehr fuer die per gilt_bis geschlossene Gruppe 8
+        # UND nichts fuer eine Spannung (Gruppe 10, kein Vorgang).
         scoped_conn = get_ro_conn(db_path)
         try:
             for_a = find_norm_conflicts_for(scoped_conn, "nc_4a", now)
             assert {frozenset((t["a"], t["b"])) for t in for_a} == {p4}, for_a
             for_8a = find_norm_conflicts_for(scoped_conn, "nc_8a", now)
             assert for_8a == [], for_8a
+            for_9a = find_norm_conflicts_for(scoped_conn, "nc_9a", now)
+            assert {frozenset((t["a"], t["b"])) for t in for_9a} == {p9}, for_9a
+            for_10a = find_norm_conflicts_for(scoped_conn, "nc_10a", now)
+            assert for_10a == [], "Spannung ist kein Vorgang -- find_norm_conflicts_for meldet nichts"
             assert find_norm_conflicts_for(scoped_conn, "does-not-exist", now) == []
         finally:
             scoped_conn.close()

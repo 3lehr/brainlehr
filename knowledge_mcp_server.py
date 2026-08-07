@@ -315,6 +315,37 @@ def _ensure_abgeleitet_von_column(conn: sqlite3.Connection) -> None:
     conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN abgeleitet_von TEXT")
 
 
+def _ensure_norm_art_column(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die Spalte norm_art (Auftrag
+    2026-08-07/08, Knoten dd367fd1: zweite, von norm_rang unabhaengige Achse
+    -- Sein/Sollen/Duerfen). Gleiches Muster wie _ensure_abgeleitet_von_column
+    direkt darueber: additiv, NULL-faehig, kein Rueckfuell-Schritt (Altbestand
+    bleibt ausnahmslos NULL -- Art wird nie geraten, nur explizit gesetzt),
+    aber trotzdem WAL-Checkpoint + Sicherungskopie VOR dem ALTER (Lehre
+    L-218f1e)."""
+    if "knowledge_nodes" not in {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }:
+        return
+    if "norm_art" in {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"Spalte 'norm_art' fehlt, aber die Sicherung vor dem automatischen "
+            f"Nachzug ist blockiert (WAL-Checkpoint busy={busy}, {log_frames} Frames, "
+            f"{checkpointed} checkpointed) -- vermutlich schreibt gerade ein anderer "
+            "Prozess auf dieselbe Datenbank. Nachzug abgebrochen, nichts geaendert."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN norm_art TEXT")
+
+
 _ZURUECKNAHME_COLUMNS = {
     "zurueckgezogen": "INTEGER NOT NULL DEFAULT 0",
     "zurueckgezogen_grund": "TEXT",
@@ -641,6 +672,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_core_schema(conn)
     _ensure_anlass_columns(conn)
     _ensure_abgeleitet_von_column(conn)
+    _ensure_norm_art_column(conn)
     _ensure_zuruecknahme_columns(conn)
     _ensure_schreiber_columns(conn)
     _ensure_node_constraint_triggers(conn)

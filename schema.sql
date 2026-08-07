@@ -37,6 +37,16 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     norm_rang INTEGER,
     gilt_ab TEXT,
     gilt_bis TEXT,                            -- NULL = unbefristet in Kraft
+    -- Art (Auftrag 2026-08-07/08, Knoten dd367fd1): zweite, von norm_rang
+    -- UNABHAENGIGE Achse. norm_rang sagt wie bindend ein Satz ist, norm_art
+    -- sagt, WAS FUER EINEN Satz er ueberhaupt macht -- Sein (Studie/Messung),
+    -- Sollen (Leitlinie/Direktive) oder Duerfen (Gebuehrenordnung/Lizenz).
+    -- Zwei Normen verschiedener Art konkurrieren nicht, egal welchen Rang sie
+    -- tragen (knowledge_lint.py::_is_spannung). NULL = Art nicht erfasst --
+    -- fuer den gesamten Altbestand der Fall, wird nie geraten, nur explizit
+    -- gesetzt. Werte bewusst nicht per CHECK erzwungen (gleiche Haltung wie
+    -- norm_rang: die Skala/Menge ist noch nicht abschliessend belegt).
+    norm_art TEXT,
     -- Quellhash (Auftrag 2026-08-06, Betreiber-Idee "Selbstentwertung statt
     -- Beleg"). Hash des ABSCHNITTS, aus dem der Knoten erzeugt wurde (siehe
     -- normbestand.py::parse_sections) -- NICHT der ganzen Quelldatei: eine
