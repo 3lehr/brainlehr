@@ -13,18 +13,21 @@ tatsaechliches Kopieren in ein leeres Verzeichnis + Nachziehen jedes
 ModuleNotFoundError, nicht geraten:
 
 Kern (dieses Modul starten, erster Eintrag, Werkzeuge wie knowledge_add):
-diese Datei + zwei Nachbarn, sonst nur Stdlib:
+diese Datei + drei Nachbarn, sonst nur Stdlib:
   - schema.sql    (Erstanlage aller Kerntabellen, siehe ensure_schema/
                    _ensure_core_schema; einzige Schemaquelle, nicht im Code
                    nachgebaut)
   - embeddings.py (lokale Embeddings + RRF-Fusion; best-effort, ein Ausfall
                    blockiert die Suche nie, siehe embeddings.py-Docstring)
+  - einschleusung.py (ADR-034: Verdachtserkennung TOP-LEVEL importiert,
+                   feuert live in knowledge_add/knowledge_update/
+                   lesson_record/lesson_update -- kein Bestandteil der
+                   Selbstpruefung mehr, sondern des Schreibpfads selbst)
 
 Selbstpruefung (zusaetzlich fuer knowledge_lint.py + konfidenz.py, beide
-gegen eine frische DB durchlaufgeprueft): obige drei Kerndateien PLUS
+gegen eine frische DB durchlaufgeprueft): obige Kerndateien PLUS
   - ankerverfahren.py   (externe Verankerung; braucht zusaetzlich das
                          Pip-Paket 'cryptography', keine weitere Datei)
-  - einschleusung.py    (Erkennung anweisungsartigen Texts)
   - geltungsbereich.py  (Bereichs-/Projektzuordnung)
   - kettenerklaerung.py (Erklaerungen zu Bruechen der Auditkette)
   - konfidenz.py        (Konfidenzverfall; importiert normkraft.py mit)
@@ -78,6 +81,9 @@ import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
 import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-Fanout
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
                           # expliziten Batch-Lauf, nicht daneben nachgebaut.
+import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
+                       # (knowledge_add/knowledge_update/lesson_record/lesson_update),
+                       # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
 
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad (gleiche Bauform wie die drei
 # BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
@@ -939,6 +945,40 @@ def _or_query(query: str) -> str:
 ZERO_HIT_LOG = Path(__file__).parent / "zero_hit_log.jsonl"
 ZERO_HIT_LOG_MAX_BYTES = 200_000  # klein halten, gleiche Kappung wie recall_log.jsonl
 
+INJECTION_SUSPECT_LOG = Path(__file__).parent / "injection_suspect_log.jsonl"
+INJECTION_SUSPECT_LOG_MAX_BYTES = 200_000  # gleiche Kappung wie zero_hit_log.jsonl
+
+
+def _check_injection_suspects(kind: str, ref: str, felder: dict) -> None:
+    """ADR-034 (einschleusung.find_injection_suspects): ein neuer Verdacht
+    entsteht nur beim SCHREIBEN von Text -- knowledge_lint.py scannt bislang
+    den ganzen Bestand periodisch, obwohl 543 reine Lesevorgaenge nie einen
+    neuen Fund erzeugen koennen. Hier direkt am Schreibvorgang: nur die
+    gerade geschriebenen Felder pruefen (erkenne() ist reiner Text-Scan,
+    kein DB-Zugriff), Funde anhaengen -- nie blockieren (Modul-Docstring
+    einschleusung.py: 'ein Fund ist ein Befund, keine Ablehnung'). Jeder
+    Fehler wird verschluckt, gleiches Muster wie _log_zero_hit: eine
+    Nebenpruefung darf den Schreibvorgang nie zum Scheitern bringen."""
+    try:
+        funde = []
+        for feld, text in felder.items():
+            if not text:
+                continue
+            for fund in einschleusung.erkenne(text):
+                funde.append({"feld": feld, **fund})
+        if not funde:
+            return
+        entry = json.dumps({
+            "ts": now_iso(), "kind": kind, "ref": ref, "funde": funde,
+        }, ensure_ascii=False)
+        if INJECTION_SUSPECT_LOG.exists() and INJECTION_SUSPECT_LOG.stat().st_size > INJECTION_SUSPECT_LOG_MAX_BYTES:
+            lines = INJECTION_SUSPECT_LOG.read_text(encoding="utf-8").splitlines(keepends=True)
+            INJECTION_SUSPECT_LOG.write_text("".join(lines[len(lines) // 2:]), encoding="utf-8")
+        with INJECTION_SUSPECT_LOG.open("a", encoding="utf-8") as f:
+            f.write(entry + "\n")
+    except Exception:
+        pass
+
 
 def _cwd_project(cwd: str | None) -> str | None:
     """Projekt/Worktree aus cwd -- exakte Kopie von
@@ -1660,6 +1700,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     _rebuild_node_embedding(conn, node_id, project_id, node_path, title, summary, content)
     conn.commit()
     conn.close()
+    _check_injection_suspects("node", node_path, {"title": title, "summary": summary, "content": content})
     return {"id": node_id, "path": node_path, "status": "created", "source": source, **wikilinks}
 
 
@@ -1793,6 +1834,10 @@ def knowledge_update(node_id: str, summary: str | None = None,
                affected_row=dict(updated_row) if updated_row else None)
     conn.commit()
     conn.close()
+    # ADR-034 (einschleusung): nur die tatsaechlich UMGESCHRIEBENEN Felder
+    # pruefen, nicht den ganzen Knoten -- summary/content bleiben None, wo
+    # der Aufrufer sie nicht mitgegeben hat.
+    _check_injection_suspects("node", row["path"], {"summary": summary, "content": content})
     return {"id": row["id"], "status": "updated", **wikilinks}
 
 
@@ -2573,6 +2618,10 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                               description, root_cause, prevention)
     conn.commit()
     conn.close()
+    _check_injection_suspects("lesson", lesson_id, {
+        "description": description, "root_cause": root_cause,
+        "resolution": resolution, "prevention": prevention,
+    })
     result = {"id": lesson_id, "status": "recorded", "occurrences": 1}
     if similar:
         result["similar_lesson_hint"] = similar
@@ -2661,6 +2710,10 @@ def lesson_update(lesson_id: str, description: str | None = None,
                affected_row=dict(updated_row) if updated_row else None)
     conn.commit()
     conn.close()
+    _check_injection_suspects("lesson", lesson_id, {
+        "description": given.get("description"), "root_cause": given.get("root_cause"),
+        "resolution": given.get("resolution"), "prevention": given.get("prevention"),
+    })
     return {"id": lesson_id, "status": "updated"}
 
 
