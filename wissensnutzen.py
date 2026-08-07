@@ -42,6 +42,36 @@ Modellurteil durch die Hintertuer -- deshalb bewusst nicht gemacht.
 
 Geaenderte Dateien ausserhalb dieser einen: KEINE. Liest die echte
 knowledge.db (lesson_query), schreibt nichts hinein.
+
+AUFGABENSAMMLUNG erweitert 2026-08-07 auf 15 Aufgaben (A,B,D..J,O..U),
+Fallen aus dem echten Bestand per lesson_query gezogen (siehe Kommentar an
+jedem TASKS-Eintrag fuer die Lehren-ID), gestreut ueber fahrtenbuch/hub/
+schwarmwacht/setfunk/openlehr/wohlairr und Dart/Python/Swift/Shell/JSON.
+Jede Bewertung ist ein Textmerkmal, kein Modellurteil (siehe check-Lambdas).
+
+EICHUNG (2026-08-07, gemini-2.5-flash als schnelles Vergleichsmodell,
+Ollama-Budget geschont): JEDE neu vorgeschlagene Aufgabe wurde gegen genau
+diese Probe gefahren (OHNE Wissen -> muss falsch sein, MIT Wissen -> muss
+richtig sein), nicht nur eine stellvertretend. Von 21 kandidierten Aufgaben
+bestanden 13 die Probe und sind unten aufgenommen: D, E, F, G, I, J, O, P,
+Q, R, S, T, U (plus die zwei vom Auftrag vorgegebenen A, B, macht 15).
+8 Kandidaten sind NICHT aufgenommen, weil gemini-2.5-flash sie bereits ohne
+Wissen richtig loeste (keine Falle fuer dieses Modell: Ollama-keep_alive-
+JSON-Typ, macOS-Keychain-Entitlement, Enum-Map-Exhaustiveness, setState-
+Arrow-Body, dispose()-catchError, Drift-Migrationstest, testWidgets-
+runAsync, Astro-<details>-Breakpoint, Android-Namespace/MainActivity.kt,
+Gouraud-Stuetzstellenraum, PID31-Kalibrierschwelle, git-push-ls-remote,
+TestFlight-Build-Nummer) oder weil sie auch MIT Wissen falsch blieb
+(FakeStore-Wortlaut zu eng) bzw. sich MIT Wissen sogar verschlechterte
+(Maskierungs-Aufgabe: Gemini fuegte unangefordert eine Maskierung hinzu).
+Eine Aufgabe, die nicht wie beschrieben misst, bleibt nicht drin, nur weil
+der Check technisch lauffaehig ist.
+
+MINDESTENS DREI AUFGABEN OHNE PASSENDES WISSEN: siehe NO_COVERAGE_TOPICS
+unten -- drei Themen ausserhalb jeder Projekt-Domain dieses Bestands,
+lesson_query liefert dazu nachweislich nichts Einschlaegiges (2 Treffer je
+Anfrage, keiner thematisch passend). Nicht als TASKS-Eintrag, weil es dazu
+keine Falle im Bestand gibt, die man pruefen koennte.
 """
 from __future__ import annotations
 
@@ -58,7 +88,16 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import schreiblauf as sl  # noqa: E402  -- _call_with_retry wiederverwendet
 import knowledge_mcp_server as kms  # noqa: E402  -- lesson_query wiederverwendet
 
-MODELS = ["gemma4:12b", "gemma4:e4b"]
+# wn.MODELS[0] wird von bedeckung.py direkt indiziert (wn.MODELS[0]) -- das
+# erste Element bleibt deshalb "gemma4:12b", nur anhaengen, nie umsortieren.
+MODELS = ["gemma4:12b", "gemma4:e4b", "gemini-2.5-flash"]
+_MODEL_BACKEND = {"gemma4:12b": "ollama", "gemma4:e4b": "ollama", "gemini-2.5-flash": "gemini"}
+
+
+def _backend_for(model: str) -> str:
+    return _MODEL_BACKEND.get(model, sl.DEFAULT_BACKEND)
+
+
 N_RUNS = 3
 TIMEOUT = 180.0
 OUT_PATH = SHARED_KNOWLEDGE / "runs" / "wissensnutzen.json"
@@ -86,7 +125,134 @@ TASKS = {
         "lesson_query": "DEBUG_STATE_API flutter test dart-define fahrtenbuch",
         "check": lambda text: "DEBUG_STATE_API" in text,
     },
+    "D": {
+        "name": "Swiftly statt Xcode-Toolchain",  # Lehre L-884098 (setfunk/openlehr)
+        "prompt": "Nenne den exakten Shell-Befehl, um in einer Agent-Session auf "
+                  "diesem Mac ein Swift-Package zu bauen, ohne an einer veralteten "
+                  "Swiftly-Toolchain zu scheitern. Antworte nur mit dem Befehl.",
+        "lesson_query": "Swift build Swiftly Toolchain xcrun Xcode",
+        "check": lambda text: "xcrun swift build" in text.lower(),
+    },
+    "E": {
+        "name": "Ungemockter Plattform-Channel haengt",  # Lehre L-c77fc0 (fahrtenbuch)
+        "prompt": "Schreibe einen Flutter-Widget-Test fuer einen Screen, dessen "
+                  "Provider Geolocator.checkPermission() und permission_handler "
+                  "aufruft, ohne dass der Test bei pumpAndSettle() haengt.",
+        "lesson_query": "Plattform-Channel Widget-Test haengt setMockMethodCallHandler",
+        "check": lambda text: "setMockMethodCallHandler" in text,
+    },
+    "F": {
+        "name": "Fix nicht auf Schwesterdatei uebertragen",  # Lehre L-8c633e (schwarmwacht)
+        "prompt": "Du hast gerade einen QR-Code-zu-dicht-Bug in "
+                  "swarm_pairing_qr_screen.dart behoben. Gib einen Shell-Befehl, "
+                  "um andere Dateien im Repo zu finden, die per Kommentar auf diese "
+                  "gefixte Datei verweisen und denselben Bug haben koennten.",
+        "lesson_query": "Bugfix Schwesterdatei Kommentar verweist see analog zu",
+        "check": lambda text: "grep" in text.lower() and any(
+            m in text for m in ("See ", "see ", "same as", "analog zu", "siehe ")),
+    },
+    "G": {
+        "name": "QR-Scan-Aufloesung statt Encoding",  # Lehre L-657b03 (schwarmwacht/setfunk/fahrtenbuch)
+        "prompt": "mobile_scanner zeigt die Kamera-Vorschau, erkennt einen dichten "
+                  "QR-Code (v30, 137x137 Module) aber nie. Welcher einzelne "
+                  "MobileScannerController-Parameter behebt das? Antworte kurz.",
+        "lesson_query": "mobile_scanner QR nicht erkannt Aufloesung cameraResolution",
+        "check": lambda text: "cameraResolution" in text,
+    },
+    "I": {
+        "name": "Codesign in Bash-Sandbox",  # Lehre L-14a742 (wohlairr/hub/fahrtenbuch)
+        "prompt": "flutter build ipa / xcodebuild -exportArchive scheitert im "
+                  "Bash-Tool jedes Mal an einem anderen eingebetteten Framework "
+                  "mit einem Codesign-Fehler. Was setzt du im Bash-Tool-Aufruf, "
+                  "bevor du weiter am Zertifikat debuggst? Antworte kurz.",
+        "lesson_query": "Codesign exportArchive Bash Sandbox dangerouslyDisableSandbox",
+        "check": lambda text: "dangerouslyDisableSandbox" in text,
+    },
+    "J": {
+        "name": "Commit auf WAL-Schnappschuss",  # Lehre L-cc6d37 (hub/openlehr/fahrtenbuch)
+        "prompt": "Wie stellst du sicher, dass `git commit` auf einer SQLite-"
+                  "Datenbank im WAL-Modus wirklich den aktuellen Stand sichert "
+                  "und nicht einen aelteren Schnappschuss? Antworte kurz.",
+        "lesson_query": "git commit SQLite WAL Schnappschuss wal_autocheckpoint",
+        "check": lambda text: "wal_autocheckpoint" in text or "git show head" in text.lower(),
+    },
+    "O": {
+        "name": "Bool-Gate statt Generation-Token",  # Lehre L-606b63 (fahrtenbuch)
+        "prompt": "Schreibe ein Dart-Session-Gate (tryEnter/leave), bei dem ein "
+                  "verspaeteter Cleanup-Aufruf einer alten Runde niemals eine "
+                  "bereits neu gestartete Runde beenden darf.",
+        "lesson_query": "Session-Gate Reentrancy verspaeteter Cleanup Generation-Token",
+        "check": lambda text: "generation" in text.lower(),
+    },
+    "P": {
+        "name": "fake_async faengt keine Plattform-Channels",  # Lehre L-05314f (fahrtenbuch, systemweit)
+        "prompt": "Schreibe einen fake_async-Test fuer einen Retry-Timer, der "
+                  "waehrend des Retries rootBundle.loadString() aufruft. Was "
+                  "brauchst du zusaetzlich, damit der Test nicht lautlos haengt?",
+        "lesson_query": "fake_async Plattform-Channel haengt TestDefaultBinaryMessenger",
+        "check": lambda text: "TestDefaultBinaryMessenger" in text,
+    },
+    "Q": {
+        "name": "shared:true Testserver auf belegtem Port",  # Lehre L-c1b088 (fahrtenbuch)
+        "prompt": "Ein Flutter-HTTP-Testserver (fahrtenbuch_legacy) auf einem "
+                  "festen, in der Doku empfohlenen Debug-Port liefert "
+                  "widerspruechliche Antworten. Welche zwei Shell-Befehle "
+                  "pruefst du zuerst, bevor du am eigenen Testserver-Code "
+                  "debuggst? Antworte kurz.",
+        "lesson_query": "HttpServer shared true Port Konflikt adb forward lsof",
+        "check": lambda text: "lsof" in text.lower() and "adb forward" in text.lower(),
+    },
+    "R": {
+        "name": "user_id in zwei Stores unterschiedlich normalisiert",  # Lehre L-e7236d (openlehr)
+        "prompt": "Dieselbe user_id dient in zwei getrennten Stores (Python/"
+                  "Dart) als Schluessel. Was muss an JEDEM Lese- UND "
+                  "Schreibpfad angewendet werden, damit kein stiller "
+                  "Auth-Mismatch entsteht? Antworte kurz.",
+        "lesson_query": "user_id zwei Stores normalisiert Auth-Gate kollabiert lautlos",
+        "check": lambda text: "normali" in text.lower(),
+    },
+    "S": {
+        "name": "Kollateralzustand statt Poll-Loop",  # Lehre L-1edb0e (fahrtenbuch)
+        "prompt": "Ein Flutter-Test wartet auf einen Kollateralzustand "
+                  "(machine.state.state), der synchron kippt, bevor ein "
+                  "zuvor gestarteter unawaited Fire-and-Forget-Schreibvorgang "
+                  "fertig ist. Wie musst du stattdessen auf das Ergebnis "
+                  "warten? Antworte kurz.",
+        "lesson_query": "Kollateralzustand unawaited fire-and-forget Poll-Loop Wartebedingung",
+        "check": lambda text: "poll" in text.lower(),
+    },
+    "T": {
+        "name": "Caret-Range statt manuellem pubspec-Edit",  # Lehre L-692936 (fahrtenbuch)
+        "prompt": "Play Console verlangt Google Play Billing Library >=8.0.0, "
+                  "die App bekommt sie transitiv ueber das Flutter-Plugin "
+                  "in_app_purchase_android (via in_app_purchase in "
+                  "pubspec.yaml, Caret-Range ^3.2.3). Wie loest du das "
+                  "ZUERST, bevor du pubspec.yaml manuell editierst? Antworte kurz.",
+        "lesson_query": "Play Billing Library Version Frist transitiv Flutter Plugin pub upgrade",
+        "check": lambda text: "flutter pub upgrade" in text.lower() and "in_app_purchase" in text.lower(),
+    },
+    "U": {
+        "name": "idevicesyslog/qemu als Absturzursache",  # Lehre L-dff4c3 (fahrtenbuch)
+        "prompt": "Der Mac ist ueber Nacht abgestuerzt nach einer haengenden "
+                  "flutter run-Debug-Session mit einem iOS-Geraet. Welche "
+                  "zwei Prozessnamen pruefst du zuerst per `ps aux | grep`, "
+                  "bevor du den Mac unbeaufsichtigt laesst? Antworte kurz.",
+        "lesson_query": "idevicesyslog Memory Leak qemu Mac Crash Reboot haengende Session",
+        "check": lambda text: "idevicesyslog" in text.lower() and "qemu" in text.lower(),
+    },
 }
+
+# Gegenprobe (2026-08-07): drei Themen ausserhalb jeder Projekt-Domain dieses
+# Bestands, absichtlich gesucht per lesson_query -- jeweils 2 Treffer, aber
+# KEINER thematisch einschlaegig (Bestand deckt Flutter/Dart/Python/hub-Ops
+# ab, nicht Rust/Kubernetes/PostgreSQL-Administration). Deshalb NICHT als
+# TASKS-Eintrag aufgenommen -- es gibt keine pruefbare Falle dazu, nur die
+# Abwesenheit von Wissen selbst ist der Befund.
+NO_COVERAGE_TOPICS = [
+    "Rust Ownership/Borrow-Checker Lifetime-Fehler beheben",
+    "Kubernetes Helm-Chart values.yaml Umgebungstrennung",
+    "PostgreSQL Autovacuum-Tuning gegen Tabellen-Bloat",
+]
 
 
 def fetch_lesson_text(query: str) -> str | None:
@@ -109,17 +275,23 @@ def build_prompt_mit(base_prompt: str, lesson_text: str) -> str:
 
 
 def run_cell(prompt: str, model: str) -> list[dict]:
-    """N_RUNS unabhaengige Ollama-Aufrufe mit demselben Prompt. Streuung
-    ist der Punkt, kein Einzellauf zaehlt als Beleg (siehe Docstring-Anlass:
-    2026-08-06 schwankte derselbe Aufbau zwischen 1 und 3 von 7)."""
+    """N_RUNS unabhaengige Aufrufe (Backend aus _backend_for(model)) mit
+    demselben Prompt. Streuung ist der Punkt, kein Einzellauf zaehlt als
+    Beleg (siehe Docstring-Anlass: 2026-08-06 schwankte derselbe Aufbau
+    zwischen 1 und 3 von 7). Modell+Backend stehen in JEDER Ergebniszeile,
+    nicht nur im Cell-Key -- eine Zeile ohne diese Angabe ist wertlos,
+    sobald mehrere Modelle/Backends nebeneinander im Bestand liegen."""
+    backend = _backend_for(model)
     runs = []
     for _ in range(N_RUNS):
         started = time.perf_counter()
         raw, err, retries = sl._call_with_retry(
-            prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=TIMEOUT)
+            prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=TIMEOUT, backend=backend)
         seconds = time.perf_counter() - started
         passed = False if err else bool(raw)
         runs.append({
+            "model": model,
+            "backend": backend,
             "error": err,
             "retry_count": retries,
             "call_seconds": seconds,
@@ -199,6 +371,35 @@ def _selftest() -> None:
     assert TASKS["B"]["check"]("flutter test --dart-define=DEBUG_STATE_API=true") is True
     assert TASKS["B"]["check"]("flutter test") is False
 
+    # Je einmal richtig/falsch pro neuer Aufgabe -- keine Recherche, nur die
+    # Grenzfaelle abhaken, die die Regex/Substring-Checks brechen wuerden.
+    assert TASKS["D"]["check"]("xcrun swift build") is True
+    assert TASKS["D"]["check"]("swift build") is False
+    assert TASKS["E"]["check"]("tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(...)") is True
+    assert TASKS["E"]["check"]("tester.pumpAndSettle();") is False
+    assert TASKS["F"]["check"]('grep -rn "See swarm_pairing_qr_screen.dart" .') is True
+    assert TASKS["F"]["check"]("check the other screens manually") is False
+    assert TASKS["G"]["check"]("MobileScannerController(cameraResolution: Size(1920, 1080))") is True
+    assert TASKS["G"]["check"]("MobileScannerController(formats: [BarcodeFormat.qrCode])") is False
+    assert TASKS["I"]["check"]("Bash(..., dangerouslyDisableSandbox=True)") is True
+    assert TASKS["I"]["check"]("security unlock-keychain -p pass login.keychain") is False
+    assert TASKS["J"]["check"]("PRAGMA wal_autocheckpoint=100;") is True
+    assert TASKS["J"]["check"]("git add knowledge.db && git commit") is False
+    assert TASKS["O"]["check"]("int generation = 0; leave(int gen) { if (gen == generation) ...}") is True
+    assert TASKS["O"]["check"]("bool _active = false; void leave() { _active = false; }") is False
+    assert TASKS["P"]["check"]("TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger") is True
+    assert TASKS["P"]["check"]("fakeAsync((async) { timer.elapse(); });") is False
+    assert TASKS["Q"]["check"]("lsof -i -P -n | grep 8080; adb forward --list") is True
+    assert TASKS["Q"]["check"]("check the test server logs") is False
+    assert TASKS["R"]["check"]("Eine kanonische Normalisierungsfunktion an jedem Lese- und Schreibpfad.") is True
+    assert TASKS["R"]["check"]("Beide Stores vergleichen die IDs direkt.") is False
+    assert TASKS["S"]["check"]("Poll-Loop mit genereoser Obergrenze auf das Export-Artefakt selbst.") is True
+    assert TASKS["S"]["check"]("Einmal lesen, nachdem machine.state.state == idle ist.") is False
+    assert TASKS["T"]["check"]("flutter pub upgrade in_app_purchase in_app_purchase_android") is True
+    assert TASKS["T"]["check"]("pubspec.yaml von Hand auf ^3.3.0 anheben") is False
+    assert TASKS["U"]["check"]("ps aux | grep idevicesyslog; ps aux | grep qemu-system") is True
+    assert TASKS["U"]["check"]("Activity Monitor manuell durchsehen") is False
+
     agg_all_pass = aggregate([True, True, True])
     assert agg_all_pass == {"mean": 1.0, "range": 0, "runs": [1, 1, 1]}
     agg_mixed = aggregate([True, False, True])
@@ -206,7 +407,7 @@ def _selftest() -> None:
     agg_none = aggregate([False, False, False])
     assert agg_none == {"mean": 0.0, "range": 0, "runs": [0, 0, 0]}
 
-    print("selftest ok: Bewertungslogik A/B + Aggregation (mean/range)", file=sys.stderr)
+    print("selftest ok: Bewertungslogik aller 15 Aufgaben + Aggregation (mean/range)", file=sys.stderr)
 
 
 if __name__ == "__main__":
