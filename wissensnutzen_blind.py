@@ -51,6 +51,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
 import schreiblauf as sl  # noqa: E402  -- _call_with_retry wiederverwendet
 import wissensnutzen as wn  # noqa: E402  -- Aufgaben A/B + Bewertung uebernommen
 import knowledge_recall_hook as rh  # noqa: E402  -- echter Abrufweg (keywords+query)
+from messparameter import schnappschuss  # noqa: E402
 
 MODELS = wn.MODELS
 N_RUNS = wn.N_RUNS
@@ -178,7 +179,7 @@ def main() -> None:
     runtime_total = time.perf_counter() - started_total
     output = {
         "models": MODELS, "n_runs": N_RUNS, "retrieval": retrieval, "cells": cells,
-        "runtime_seconds_total": runtime_total,
+        "runtime_seconds_total": runtime_total, "konfiguration": schnappschuss(),
     }
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)

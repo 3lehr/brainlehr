@@ -16,6 +16,7 @@ from pathlib import Path
 SHARED_KNOWLEDGE = Path(__file__).resolve().parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import messlauf_abrufguete as m  # noqa: E402  -- nur gelesen/aufgerufen
+from messparameter import schnappschuss  # noqa: E402
 
 CORPUS = SHARED_KNOWLEDGE / "runs/pruefkorpus_v2.jsonl"
 RESULT = SHARED_KNOWLEDGE / "runs/messlauf_abrufguete_v2.json"
@@ -47,6 +48,7 @@ if __name__ == "__main__":
     ergebnis = {"messlauf": m.messlauf(cases)}
     if "--eichung-only" not in sys.argv:
         ergebnis["eichung"] = m.eichung(cases)
+    ergebnis["konfiguration"] = schnappschuss()
     RESULT.parent.mkdir(exist_ok=True)
     RESULT.write_text(json.dumps(ergebnis, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\ngeschrieben: {RESULT}")
