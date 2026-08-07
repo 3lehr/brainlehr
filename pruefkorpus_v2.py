@@ -83,15 +83,38 @@ def is_circular_v2(task_text: str, target_text: str, n: int = NGRAM_N) -> set[tu
     return ngrams(task_text, n) & ngrams(target_text, n)
 
 
-_GEN_TEMPLATE = """Ausgangswissen (wird NICHT direkt zitiert oder umschrieben):
+# Fassung 2 des Prompts (Folgeauftrag): die erste Fassung sagte nur, was
+# NICHT geschehen soll ("nicht woertlich uebernehmen") -- ein Modell legt
+# eine Verbots-Auflage maximal aus und meidet dann JEDE identifizierende
+# Vokabel, auch die ausdruecklich erlaubte (belegt am Pilotfall L-a9ccd0:
+# "Fahrtdaten nach einem Telefonanruf verschwunden" nennt weder "Timeout"
+# im Fachsinn noch sonst ein Wort des Ziels). Dieselbe Form dreimal am
+# selben Tag im Verbund (Anti-Zirkularitaet v1, Ensemble-Pflicht, jetzt
+# hier) -- darum jetzt eine POSITIVE Anweisung ("nenn die Sache beim
+# Namen") plus ein ausgearbeitetes Beispiel statt einer Verbotsregel; die
+# Vier-Wort-Pruefung bleibt der Waechter im Code, nicht die Anweisung im
+# Prompt.
+_GEN_TEMPLATE = """Beispiel, wie eine gute Aufgabe aussieht:
+  Zieleintrag: "Bei Verdacht auf Schlaganfall wird nicht der Hausarzt, \
+sondern direkt 112 gerufen, weil jede Minute zaehlt (Lyse-Fenster 4,5h)."
+  Gute Aufgabe: "In der Familien-Chatgruppe fragt jemand, ob man bei einer \
+Verwandten mit ploetzlicher Sprachstoerung und haengendem Mundwinkel erst \
+den Hausarzt anrufen soll oder direkt den Notruf."
+  Warum gut: Sie nennt die Fachsache beim Namen (Schlaganfall-Symptome, \
+Notruf vs. Hausarzt) -- genau wie ein Kollege im Gespraech reden wuerde --, \
+uebernimmt aber keinen zusammenhaengenden Satzteil aus dem Zieleintrag \
+woertlich ("Lyse-Fenster 4,5h" taucht nicht auf).
+
+Ausgangswissen fuer deine Aufgabe:
 {quelle}
 
 Schreibe EINE realistische Alltags- oder Arbeitssituation (2-4 Saetze, \
 deutsch), in der genau dieses Wissen gebraucht wuerde. Beschreibe eine \
-konkrete Lage/ein Problem, KEINE Frage nach dem Eintrag selbst. Uebliche \
-Fachbegriffe des Themas darfst du nennen -- verboten ist nur, einen \
-zusammenhaengenden Satzteil (vier oder mehr Woerter am Stueck) woertlich aus \
-dem Ausgangstext zu uebernehmen.{vermeiden}
+konkrete Lage/ein Problem, KEINE Frage nach dem Eintrag selbst. Nenn die \
+Fachsache beim Namen, so wie ein Kollege sie im Gespraech nennen wuerde -- \
+Fachbegriffe, Systemnamen, uebliche Ausdruecke des Themas gehoeren in eine \
+gute Aufgabe hinein. Nur die charakteristische FORMULIERUNG des \
+Zieleintrags darf nicht abgeschrieben sein.{vermeiden}
 Antworte NUR mit dem Aufgabentext, kein Vorwort, keine Ueberschrift."""
 
 
@@ -194,14 +217,27 @@ def run(out_path: Path = OUT_PATH, seed: int = SEED, model: str = MODEL) -> dict
     from collections import Counter
     verteilung = Counter(c["category"] for c in cases)
     versuche = Counter()
+    # Wie oft schlug der Vier-Wort-Waechter (is_circular_v2) tatsaechlich an,
+    # getrennt von technischen Fehlern (Ollama-Timeout etc.) -- Auftrag:
+    # "verwirft die Pruefung jetzt etwas, oder ist sie nutzlos/zu scharf?"
+    zirkularitaet_verworfen = fehler_verworfen = gesamt_versuche = 0
     for c_record_line in JSONL_PATH.read_text(encoding="utf-8").splitlines():
         r = json.loads(c_record_line)
         versuche[len(r["attempts"])] += 1
+        for a in r["attempts"]:
+            gesamt_versuche += 1
+            if a.get("error"):
+                fehler_verworfen += 1
+            elif a.get("collision"):
+                zirkularitaet_verworfen += 1
 
     output = {
         "seed": seed, "model": model, "ngram_n": NGRAM_N, "max_attempts": MAX_ATTEMPTS,
         "n_cases": len(cases), "n_skipped": len(skipped),
         "verteilung": dict(verteilung), "versuche_je_fall": dict(versuche),
+        "gesamt_versuche": gesamt_versuche,
+        "verworfen_wegen_vier_wort_ueberlappung": zirkularitaet_verworfen,
+        "verworfen_wegen_technischem_fehler": fehler_verworfen,
         "pilot": pilot_result, "aborted": False,
         "cases": cases, "skipped": skipped,
     }

@@ -1,17 +1,17 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 323 in 20 Aesten · Lehren: 580 · erzeugt: 2026-08-07T10:39:29+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 330 in 20 Aesten · Lehren: 597 · erzeugt: 2026-08-07T15:08:10+0200
 
 Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowledge_search <begriff>`, `lesson_query <begriff>`.
 
 ## Landkarte (Ast: Anzahl Knoten)
 
-- /methodik: 89
-- /apps: 50
+- /methodik: 90
+- /apps: 51
 - /shared: 43
 - /ops: 39
-- /openlehr: 23
-- /brainlehr: 17
+- /openlehr: 24
+- /brainlehr: 21
 - /arch: 15
 - /testing: 9
 - /frontend: 7
@@ -27,13 +27,20 @@ Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowled
 - /probe: 1
 - /probe2: 1
 
-## Lehren gebuendelt (580 gesamt)
+## Lehren gebuendelt (597 gesamt)
 
-nach Art: antipattern 261, insight 138, error 99, pattern 82
-nach Projekt: fahrtenbuch 229, openlehr 188, hub 129, shared 63, systemweit 54, buckeberg 48, wohlair 40, global 39, +22 weitere Projekte (151)
+nach Art: antipattern 267, insight 140, error 102, pattern 88
+nach Projekt: fahrtenbuch 232, openlehr 194, hub 137, systemweit 66, shared 63, buckeberg 48, wohlair 40, global 39, +22 weitere Projekte (153)
 
 ## Juengste 15 Knoten
 
+- 2026-08-07 /brainlehr/fremder-pruefkorpus-gefunden-1637-nasa — Fremder Pruefkorpus gefunden: 1637 NASA-Lehren, gleiche Bauform wie unsere
+- 2026-08-07 /openlehr/anlage-s-2024-ist-oeffentlich-nicht — Anlage S 2024 ist oeffentlich nicht beschaffbar — Beschriftungen statt Zeilennummern
+- 2026-08-07 /apps/fahrtenbuch/blackscreen-2026-08-07-was-die — Blackscreen 2026-08-07: was die Feldmessung ausschliesst, und zwei Diagnose-Fallen dabei
+- 2026-08-07 /methodik/arbeitsweise/unbedingtes-lebenszeichen-macht-stille — Unbedingtes Lebenszeichen macht Stille deutbar — Verfahren gegen nicht reproduzierbare Feldfehler
+- 2026-08-07 /brainlehr/fremde-anbieter-nach-aufgabe-getrennt — Fremde Anbieter: nach Aufgabe getrennt, nicht nach Anbieter erlaubt
+- 2026-08-07 /brainlehr/das-einbettungsmodell-trennt-auf — Das Einbettungsmodell trennt auf deutschem Fachtext nicht — und hat damit einen ganzen Abrufkanal entwertet
+- 2026-08-07 /brainlehr/der-austauschstudent-der-fall-in-dem — Der Austauschstudent — der Fall, in dem vier Eigenschaften zugleich gebraucht werden
 - 2026-08-07 /openlehr/imap-zugangsdaten-konten-in-der-db — IMAP-Zugangsdaten: Konten in der DB, Passwort nur im Schluesselbund
 - 2026-08-07 /brainlehr/erste-felddaten-nach-dem-abruf-umbau — Erste Felddaten nach dem Abruf-Umbau — drei von sieben treffen, aber der Radar schweigt nie
 - 2026-08-07 /brainlehr/kleines-lokales-modell-als-reranker-ja — Kleines lokales Modell als Reranker — ja; als Wissenstraeger — nein
@@ -42,28 +49,21 @@ nach Projekt: fahrtenbuch 229, openlehr 188, hub 129, shared 63, systemweit 54, 
 - 2026-08-07 /brainlehr/blinde-nutzenmessung-die-auffindbarkeit — Blinde Nutzenmessung — die Auffindbarkeit ist der Engpass, nicht der Speicher
 - 2026-08-07 /brainlehr/erste-nutzenmessung-mit-gegen-ohne — Erste Nutzenmessung mit gegen ohne Wissen — und warum sie weniger belegt, als die Zahlen nahelegen
 - 2026-08-07 /stadtwerke/koeder-frau-elvira-quenzelbach-kd-nr — Koeder Frau Elvira Quenzelbach, Kd-Nr. 990177
-- 2026-08-07 /stadtwerke — Stadtwerke
-- 2026-08-07 /openlehr/steuer/toter-ddl-rest-idx-intake-source-sha256 — Toter DDL-Rest idx_intake_source_sha256 entfernt
-- 2026-08-07 /probe — probe
-- 2026-08-07 /probe2 — probe2
-- 2026-08-07 /brainlehr/brainlehr-papernetz-angelegt-citation — brainlehr Papernetz angelegt (citation-network.json, 18 Nodes, ADR-021)
-- 2026-08-07 /brainlehr/nullbefund-ueber-drei-unabhaengige — Nullbefund ueber drei unabhaengige Suchrichtungen — kein System vereint mehr als zwei der sechs
-- 2026-08-06 /brainlehr/keine-veroeffentlichung-von-brainlehr — KEINE Veroeffentlichung von brainlehr ohne ausdrueckliche Freigabe
 
 ## Juengste 15 Lehren
 
-- 2026-08-07 [insight] Eine Seltenheitsschwelle ist zwischen Bestaenden verschiedener Groesse nicht uebertragbar — uebertragbar ist ihre Eigenschaft
-- 2026-08-07 [antipattern] Pruefstand so gegen Zirkularitaet gehaertet, dass er das Gemessene unmoeglich machte — Trefferguete 0 in allen Zustaenden
-- 2026-08-07 [antipattern] Ein toter Subagent ist nicht an der Ausgabegroesse erkennbar — das Kennzeichen sind Artefakte im Arbeitsbereich
-- 2026-08-07 [antipattern] Zwei verschiedene Apps unter derselben Bundle-Kennung, und nur das Geruest hat eine Veroeffentlichungsspur
-- 2026-08-07 [antipattern] Aus 'passiv nicht beobachtbar' wurde 'nicht messbar' — der Eingriff wurde nie geprueft
-- 2026-08-07 [antipattern] Eine im Gespraech korrigierte Zahl blieb im Knoten stehen — und der naechste Leser widersprach damit dem korrigierten Stand
-- 2026-08-07 [pattern] Was funktioniert hat, openlehr 2026-08-07: eine Existenzbehauptung aus dem eigenen STAND ("fuer die Postfach-Einstellung fehlt der Ort")…
-- 2026-08-07 [error] Eigener Fehler, openlehr 2026-08-07: Regressionslauf mit falschem Testpfad gestartet (`pytest apps/openlehr/tests/steuer` — der Ordner…
-- 2026-08-07 [pattern] Eine Ausnahmeliste, die ein deterministisches Gate stumm schaltet, verrottet unbemerkt — und zwar schnell: in tools/ui_sweep.py…
-- 2026-08-07 [antipattern] Acht Messartefakte an einem Tag, alle mit derselben Bauform: das Werkzeug beantwortet eine engere Frage als der Satz, in dem seine Zahl…
-- 2026-08-07 [antipattern] Testlauf schrieb in echte Repo-Dateien, weil zwei Schreibpfade keine Ueberschreibung kannten
-- 2026-08-07 [antipattern] Ungemessene Groessenordnung als Argument benutzt — dritter Fall an einem Tag, jedes Mal vom Betreiber bemerkt, nicht von mir
-- 2026-08-07 [insight] Median+MAD-Ausreissererkennung (Radar-Rauschteppich, ADR-033 Schritt 2) auf n=3 Kandidaten liess einen echten, eindeutigen Treffer (SetFunk…
-- 2026-08-07 [antipattern] Session-ID quer über den hub in zwei Laengen geschrieben (8-stellig gekuerzt vs. volle 36-stellige UUID) -- ein exakter SQL-Gleichheitstest…
-- 2026-08-07 [pattern] Bauform fuer eine ehrliche Selbstauskunft an einen fachkundigen Pruefer — Reihenfolge und Auflagen, nicht Inhalt
+- 2026-08-07 [insight] openlehr _execute_openlehr_action (apps/openlehr/daemon/app.py, ~Z.12752): zwei Fehlerzweige sind ueber den echten HTTP-Pfad (/v1/ask)…
+- 2026-08-07 [pattern] Ein Rechercheauftrag nach aussen (amtliche ELSTER-Zeilennummern 2024) begann mit der Auflage, ZUERST im Repo nachzusehen, welche Formular-…
+- 2026-08-07 [pattern] Wenn ein Subagent eine Ableitung baut und im Kommentar erklaert, WARUM sie heute aufgeht, ist genau dieser Kommentar das Erkennungszeichen…
+- 2026-08-07 [pattern] Einen Agentenbericht mit einer Rechnung widerlegen statt mit einer Nachmessung -- und die Ursache erst nach Ausschluss der Umgebung…
+- 2026-08-07 [antipattern] Ein Verbot des Betreibers auf eine breitere Klasse ausgedehnt und damit seine EIGENE fruehere Entscheidung ueberschrieben. Er hatte…
+- 2026-08-07 [antipattern] openlehr 2026-08-07: Ein Test fiel zweimal hintereinander (im Arbeitsbaum und im Worktree auf dem Stand vor der Sitzung). Daraus habe ich…
+- 2026-08-07 [antipattern] fahrtenbuch, 2026-08-07: Einen zwanzigminuetigen Bau- und Upload-Lauf (ios/deploy_testflight.sh nach TestFlight) im Hintergrund gestartet…
+- 2026-08-07 [error] Feldvorfall 2026-08-07 (fahrtenbuch, build68): Vollbild-Nachfrage per Navigator.of(context, rootNavigator:true).push geoeffnet,…
+- 2026-08-07 [pattern] Waechter fuer nicht versionierte Konfigdatei (~/.claude/settings.json): Baseline ist eine versionierte Kopie im Repo…
+- 2026-08-07 [error] Ein Subagent startete einen Stundenlauf (gemma4:12b, 15 Aufgaben x 2 Aufrufe a 140s) im Hintergrund und beendete seinen Zug mit "Prozess…
+- 2026-08-07 [pattern] Neue Schreiber-Spalte, die der Aufrufer erfahrungsgemaess nie liefert (wie zuvor actor/session/model): NICHT als Parameter durchreichen,…
+- 2026-08-07 [antipattern] Ein Subagent mit dem Auftrag "Erzeugungs-Backend austauschbar machen" durchsuchte unaufgefordert Zugangsdatenspeicher: Umgebungsvariablen,…
+- 2026-08-07 [antipattern] openlehr 2026-08-07, Recherche amtlicher ELSTER-Zeilennummern: Ein Seitenabruf, bei dem ein zusammenfassendes Modell zwischen Quelle und…
+- 2026-08-07 [pattern] openlehr/steuer: GET /v1/steuer/clarifications (router.py, clarification.list_open) kennt nur `limit`, kein `offset`/`total` -- anders als…
+- 2026-08-07 [antipattern] fahrtenbuch_legacy, main_isolate_watchdog_heartbeat_telemetry_test.dart: ein test(), der VOR dem Eintritt in package:fake_async echtes…

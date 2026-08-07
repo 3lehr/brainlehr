@@ -229,3 +229,407 @@
 {"ts": "2026-08-06T19:40:38+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0}
 {"ts": "2026-08-06T19:40:46+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0}
 {"ts": "2026-08-06T19:40:46+02:00", "query": "Freigeben-Testknoten", "hits": 0}
+{"ts": "2026-08-06T20:27:21+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0}
+{"ts": "2026-08-06T20:27:32+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0}
+{"ts": "2026-08-06T20:27:33+02:00", "query": "Freigeben-Testknoten", "hits": 0}
+{"ts": "2026-08-06T20:34:33+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0}
+{"ts": "2026-08-06T20:35:03+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0}
+{"ts": "2026-08-06T20:35:04+02:00", "query": "Freigeben-Testknoten", "hits": 0}
+{"ts": "2026-08-06T20:36:11+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0}
+{"ts": "2026-08-06T20:36:39+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0}
+{"ts": "2026-08-06T20:36:39+02:00", "query": "Freigeben-Testknoten", "hits": 0}
+{"ts": "2026-08-06T21:21:45+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0}
+{"ts": "2026-08-06T21:21:56+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0}
+{"ts": "2026-08-06T21:21:56+02:00", "query": "Freigeben-Testknoten", "hits": 0}
+{"ts": "2026-08-06T21:23:35+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T21:23:44+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T21:23:45+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T22:05:39+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T22:05:48+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T22:05:48+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T22:07:42+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T22:07:51+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T22:07:51+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T22:08:48+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T22:08:57+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T22:08:57+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:02:25+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:02:35+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:02:35+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:05:09+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:05:18+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:05:18+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:22:47+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:22:56+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:22:56+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:23:32+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:23:42+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:23:42+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:24:59+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:25:09+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:25:09+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:54:52+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:54:58+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:54:58+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:57:13+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:57:24+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:57:24+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:58:49+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:59:00+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-06T23:59:00+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:36:33+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:36:45+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:36:45+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:37:32+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:37:44+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:37:44+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:45:08+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:45:21+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:45:21+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:47:02+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:47:14+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T00:47:14+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:09:37+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:09:37+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:09:54+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:10:05+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:10:05+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:10:27+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:10:39+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:10:39+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:14:01+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:14:12+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:14:12+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:14:33+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:14:45+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:14:45+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:15:34+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:15:46+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:15:46+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:16:35+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:16:47+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:16:47+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:22:47+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:22:58+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:22:58+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:27:23+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:27:33+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:27:33+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:37:50+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:38:03+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:38:03+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:52:11+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:52:23+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:52:23+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:53:06+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:53:19+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:53:19+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:54:55+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:55:09+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:55:09+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:59:37+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:59:56+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T01:59:56+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:02:26+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:02:46+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:02:46+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:03:12+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:03:31+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:03:32+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:09:43+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:10:03+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:10:03+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:14:04+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:14:23+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T02:14:23+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T06:26:53+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T06:27:13+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T06:27:13+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T06:30:02+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T06:30:22+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T06:30:22+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T06:41:19+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T06:41:45+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T06:41:45+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T07:01:57+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T07:02:23+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T07:02:23+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T07:17:38+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T07:17:56+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T07:17:56+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:03:06+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:03:28+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:03:28+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:09:13+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:09:31+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:09:31+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:15:07+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:15:23+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:15:23+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:15:55+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:16:11+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:16:11+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:16:44+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:17:00+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:17:00+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:21:05+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:21:21+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:21:21+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:22:33+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:22:50+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:22:50+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:24:29+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:24:54+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:24:54+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:33:34+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:33:53+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:33:53+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:39:09+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:39:27+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:39:27+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:40:39+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:40:56+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T08:40:56+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T09:50:56+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T09:51:22+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T09:51:22+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T09:57:01+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T09:57:17+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T09:57:18+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:01:43+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:02:01+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:02:01+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:07+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:07+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:07+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:07+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:07+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:07+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:15+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:15+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:15+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:15+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:15+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:03:15+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:05:23+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:06:03+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:06:03+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:12:39+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:12:57+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:12:57+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:18:40+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:19:03+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:19:04+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:34:04+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:34:19+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:34:19+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:40:24+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:40:42+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:40:42+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:42:30+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:42:47+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T10:42:47+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:23:56+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:05+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:05+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:05+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:05+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:05+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:05+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:07+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:07+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:07+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:07+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:07+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:07+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:08+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:08+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:08+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:08+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:08+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:08+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:10+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:10+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:10+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:10+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:10+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:10+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:11+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:11+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:11+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:11+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:11+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:11+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:12+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:12+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:12+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:12+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:12+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:12+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:14+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:24:14+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:34+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:44+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:44+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:44+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:44+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:44+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:44+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:46+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:46+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:46+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:46+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:46+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:46+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:46+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:46+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:46+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:47+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:47+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:47+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:49+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:49+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:49+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:49+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:49+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:49+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:50+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:50+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:50+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:50+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:50+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:50+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:51+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:51+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:51+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:51+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:51+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:51+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:52+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:25:52+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:32+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:44+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:44+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:44+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:44+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:44+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:44+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:46+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:46+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:46+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:46+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:46+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:46+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:47+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:47+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:47+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:47+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:47+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:47+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:49+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:49+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:49+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:49+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:49+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:49+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:50+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:50+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:50+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:50+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:50+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:50+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:51+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:51+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:51+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:51+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:51+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:51+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:53+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:40:53+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:42+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:53+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:53+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:53+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:53+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:53+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:53+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:56+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:56+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:56+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:56+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:56+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:56+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:57+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:57+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:57+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:57+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:57+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:57+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:59+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:59+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:59+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:59+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:59+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:43:59+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:00+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:00+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:00+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:00+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:00+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:00+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:01+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:01+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:01+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:01+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:01+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:01+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:04+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:44:04+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:57:24+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:57:39+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:57:39+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:17+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:26+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:26+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:26+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:26+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:26+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:26+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:28+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:28+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:28+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:28+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:28+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:28+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:29+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:29+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:29+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:29+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:29+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:29+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:31+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:31+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:31+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:31+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:31+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:31+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:32+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:32+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:32+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:32+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:32+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:32+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:33+02:00", "query": "Quantenverschränkung Kryo-Kühlung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:33+02:00", "query": "Kryo-Kühlung Qubit-Fehlerkorrektur", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:33+02:00", "query": "Bienenstockpflege Honigschleuder", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:33+02:00", "query": "Honigschleuder Wabenbau", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:33+02:00", "query": "Sternzeichen-Deutung Horoskoperstellung", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:33+02:00", "query": "Horoskoperstellung Planetenkonstellation", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:35+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T11:59:35+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T12:03:18+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T12:03:37+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T12:03:37+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T12:26:16+02:00", "query": "qxzvwkpfjhtklonpqrstuvw zzxxccvvbbnnmm", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T12:26:34+02:00", "query": "Zuruecknahme-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}
+{"ts": "2026-08-07T12:26:34+02:00", "query": "Freigeben-Testknoten", "hits": 0, "cwd": null, "worktree": null, "session": null}

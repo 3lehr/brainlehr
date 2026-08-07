@@ -1,19 +1,347 @@
 {
-  "pilot": {
-    "ok": false,
-    "zustand": null,
-    "target_id": "L-a9ccd0",
-    "task": "Ein Nutzer meldet, dass seine Fahrtdaten nach einem Telefonanruf während einer Abfrage plötzlich verschwunden sind. Wir müssen sicherstellen, dass ein automatisches Timeout des Dialogs lediglich das Fenster schließt und keine permanenten Löschvorgänge in der Datenbank auslöst."
+  "seed": 20260807,
+  "model": "gemma4:12b",
+  "ngram_n": 4,
+  "max_attempts": 4,
+  "n_cases": 45,
+  "n_skipped": 0,
+  "verteilung": {
+    "lesson": 15,
+    "fact": 12,
+    "norm": 8,
+    "negative": 10
   },
-  "aborted": true,
-  "n_cases": 1,
+  "versuche_je_fall": {
+    "1": 38,
+    "2": 6,
+    "3": 1
+  },
+  "gesamt_versuche": 53,
+  "verworfen_wegen_vier_wort_ueberlappung": 8,
+  "verworfen_wegen_technischem_fehler": 0,
+  "pilot": {
+    "ok": true,
+    "zustand": "A_beide_aus",
+    "target_id": "L-a9ccd0",
+    "task": "Im Bereich der Joker-Trips führen wir aktuell Datenverluste, weil der Timeout des Prompts denselben Codepfad nutzt wie die explizite Ablehnung. Wir müssen den Auto-Dismiss-Timer so umbauen, dass er nur das UI schließt und keine destruktiven Aktionen wie ein softDelete im Repository ausführt, damit Fahrten auch bei App-Unterbrechungen oder Anrufen erhalten bleiben."
+  },
+  "aborted": false,
   "cases": [
     {
       "category": "lesson",
       "target_kind": "lesson",
       "target_id": "L-a9ccd0",
       "target_label": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in j",
-      "prompt": "Ein Nutzer meldet, dass seine Fahrtdaten nach einem Telefonanruf während einer Abfrage plötzlich verschwunden sind. Wir müssen sicherstellen, dass ein automatisches Timeout des Dialogs lediglich das Fenster schließt und keine permanenten Löschvorgänge in der Datenbank auslöst."
+      "prompt": "Im Bereich der Joker-Trips führen wir aktuell Datenverluste, weil der Timeout des Prompts denselben Codepfad nutzt wie die explizite Ablehnung. Wir müssen den Auto-Dismiss-Timer so umbauen, dass er nur das UI schließt und keine destruktiven Aktionen wie ein softDelete im Repository ausführt, damit Fahrten auch bei App-Unterbrechungen oder Anrufen erhalten bleiben."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-298823",
+      "target_label": "openlehr/steuer: vierter Fall am selben Tag (2026-07-31), in dem ein Feld/eine K",
+      "prompt": "Du hast gerade die Logik zur Bestimmung des Belegtyps in der Ingest-Pipeline fertiggestellt und das entsprechende Flag für Reverse-Charge-Umlagen in die Datenbank geschrieben. Überprüfe jetzt, ob dieser Wert auch tatsächlich von anderen Komponenten oder der UI abgegriffen wird, damit sichergestellt ist, dass die Klassifizierung zu einer sichtbaren Konsequenz im System führt."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-f9f654",
+      "target_label": "try/catch um einen nicht awaiteten (unawaited) async-Aufruf faengt dessen Fehler",
+      "prompt": "Beim Review des Fahrtenbuch-Moduls ist mir aufgefallen, dass die Telemetrie-Übermittlung mittels unawaited ausgeführt wird. Obwohl dieser Aufruf in einem try/catch-Block steckt, landen Fehler immer noch als \"unhandled-future\" im Log und werden nicht vom Catch abgefangen."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-b4b443",
+      "target_label": "fahrtenbuch Build 59 (2026-08-01, 06:21 UTC): JokerTripPromptRequest.source (Jok",
+      "prompt": "Ein Kollege fragt, warum im JokerTripPromptScreen bei einer manuell gestarteten Fahrt eine veraltete Hardware-Konfiguration aus den SharedPreferences angezeigt wird. Es scheint so, als würde beim restorePending() ein alter Snapshot übernommen werden, anstatt die aktuelle Verfügbarkeit des obdDongle zu prüfen."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-44a838",
+      "target_label": "LLM-Output als neuer ungeschützter Schreibpfad: Neue KI-Features (mail_classify,",
+      "prompt": "Beim Bau der `mail_reply`-Funktion müssen wir sicherstellen, dass die Daten nicht einfach direkt über ein SQL-Statement in die Datenbank fließen. Da das LLM den Inhalt des Mail-Bodys oft eins zu eins widerspiegelt, muss jeder Output vor dem Speichervorgang zwingend durch einen PII-Redactor laufen, damit keine IBANs oder andere sensible Daten ungeschützt im System landen."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-cdac52",
+      "target_label": "Fahrtenbuch Prompt-Listener: Navigator.of(context) auf ambientem Widget-context ",
+      "prompt": "Bei der Fehleranalyse der neuen UI-Komponenten ist aufgefallen, dass die Vollbild-Prompts in bestimmten Systemzuständen – etwa bei einer Verbindung über CarPlay oder im Hintergrund – sporadisch abstürzen. Wir müssen sicherstellen, dass diese Listener konsequent auf den rootNavigatorKey zugreifen und nicht versuchen, die Navigation über den lokalen BuildContext innerhalb eines asynchronen Callbacks abzufragen."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-e7bc5e",
+      "target_label": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern a",
+      "prompt": "Der `fastlane supply`-Befehl wird vom Permissions-Classifier blockiert und es ist unklar, ob der Dienst technisch defekt ist oder eine beabsichtigt Sperre darstellt. Bevor wir den Upload über ein eigenes Skript umgehen, müssen wir klären, ob das Werkzeug kaputt ist oder ob die Blockade als Kontrollpunkt vor einer Freigabe dient."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-e1a441",
+      "target_label": "wohlair: Herkunfts-Trennung zweier gleich aussehender Datenbestände (importierte",
+      "prompt": "Wir müssen sicherstellen, dass die Bereinigungsroutine im wohlair-Backend strikt das `isLegacyImport`-Flag ausliest. Eine Filterung nach Klarnamen oder Zeitstempeln ist zu riskant, da wir sonst bei identischen Bezeichnungen nicht mehr zwischen den Testdatensätzen und den echten Nutzerdaten unterscheiden können."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-b91ed6",
+      "target_label": "Vorbestehende rote Tests pauschal als \"Umgebungszustand\" abgetan, ohne jeden Fal",
+      "prompt": "Die CI zeigt wieder eine ganze Reihe an Fehlern, und ein Kollege schlägt vor, das Ganze direkt als Instabilität der Testumgebung abzutun. Ich muss die Stacktraces analysieren, um zu prüfen, ob es sich bei den Lambda-Stubs oder dem Modell-Modus tatsächlich um echte Code-Mismatches handelt."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-bbd7fb",
+      "target_label": "Ein Eingang wird aus einer Gesamtbewertung entfernt, weil er unbelegt war — die ",
+      "prompt": "Warum gibt die App im Basis-Modus bei fehlenden Infrarot-Messungen so oft ein positives Signal? Wir müssen prüfen, ob in `overallAmpelConfigured` kritische Parameter wie der Taupunktabstand oder die Oberflächenfeuchte ignoriert werden und das System stattdessen fälschlicherweise rein auf Basis der Raumluftfeuchtemessung entscheidet."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-503687",
+      "target_label": "mycel.py Stufe 2 (hub/scripts/mycel.py), 2026-07-31: Rollen-Heuristik (Quelle/Pr",
+      "prompt": "Warum werden bei den Router-Dateilen immer noch Warnungen für fehlende Prüfstellen ausgegeben? Es scheint so, als könne der Graph die semantische Unterscheidung zwischen reinen Importen (Barrel-Files) und echtem Datenfluss nicht leisten, weshalb auch ein Schwellenwert beim Fan-out das Problem nicht löst."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-8c633e",
+      "target_label": "SchwarmWacht: camera_invite_screen.dart (Sensor/Waechter-QR) blieb bei M-Fehlerk",
+      "prompt": "Ein User meldet, dass der QR-Code im Invite-Screen kaum scanbar ist, obwohl wir die Fehlerkorrektur für ähnliche UI-Muster bereits umgesetzt haben. Wir müssen prüfen, ob die Anpassungen bei diesem Bugfix auch in den Schwester-Dateien mitgegreppt wurden, besonders wenn diese explizite Kommentare auf identische Implementierungen enthalten."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-606b63",
+      "target_label": "Generation-Token gegen Reentrancy bei fire-and-forget Cleanup async gestarteter ",
+      "prompt": "Warum wird eine neue Voice-Session oft unmittelbar nach dem Start abgeblockt oder beendet, wenn die vorherige Verbindung über einen Fehlerpfad (z.B. Timeout) abgebrochen wurde? Es scheint so, als würde der Cleanup-Prozess für die Audio-Ressourcen nicht prüfen, ob die zu bereinigende Sitzung noch aktuell ist oder bereits eine neue Instanz übernommen hat."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-0392e4",
+      "target_label": "norm_rang ist eine Zahl ohne Einheit. Die Spalte trug bis heute ausschliesslich ",
+      "prompt": "Beim Versuch, die Ergebnisse der Verwalterwahl mit den Daten des Heizungsknotens zusammenzuführen, fällt auf, dass eine Sortierung über den norm_rang nicht konsistent ist. Da ein Wert von 3 je nach Ursprung unterschiedliche Prioritäten wie BGH-Urteile oder mündliche Vereinbarungen abbildet, lässt sich keine zuverlässige Kollisionsprüfung über die Astgrenzen hinweg durchführen."
+    },
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-476602",
+      "target_label": "MCP tools/list per Env-Var profilieren (BEGOD_KNOWLEDGE_PROFIL=klein), ohne tool",
+      "prompt": "Ein Kollege fragt, wie man den Kontextverbrauch beim Start eines MCP-Clients minimieren kann, wenn die `tools/list` des Servers zu umfangreich ist. Er sucht nach einer Lösung, um die Sichtbarkeit der Werkzeuge auf Basis von Profilen einzuschränken, anstatt ein eigenes Berechtigungssystem für die Autorisierung zu entwickeln."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "target_label": "Buckeberg Konsil 2026-07-22: Governance vor Ranking, 11 harte Schranken, Meilensteine M0-M13",
+      "prompt": "Ein Kollege fragt mich in einer Vorbesprechung, ob wir die 1/4-Quorum-Einberufung nutzen sollten, um den ETV-Beschluss als kritischen Pfad zeitnah zu sichern. Er ist zudem unsicher, wie wir das Beiratspapier so formulieren können, dass es nicht nach Machtübernahme klingt und die Kosten stattdessen als Spannbreite kommuniziert werden."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "target_label": "10. Verhältnismäßigkeit ist Teil der Antwort.",
+      "prompt": "In einer Architekturbesprechung diskutieren die Entwickler, welche Funktionen für den aktuellen Release zwingend sind und welche erst nachgerüstt werden können. Sie müssen dabei die Verhältnismäßigkeit wahren und klar definieren, welche Kernkomponenten bereits jetzt so robust gebaut sein müssen, dass die Basisarchitektur später nicht grundlegend überarbeitet werden muss."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "target_label": "6. Eine falsche Zahl ist schlimmer als keine.",
+      "prompt": "Ein Kollege fragt dich bei der Erstellung des Betriebsprotokolls, ab welchem Schwellenwert die Warnanzeige für die Überhitzung einsetzen muss. Da die spezifischen Messwerte noch nicht vorliegen und nur vage Angaben aus den Unterlagen vorhanden sind, musst du entscheiden, wie du diesen kritischen Wert im Dokument festhältst."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "target_label": "Betriebszustand: openlehr muss bis zum ersten Beta-Test nicht laufen",
+      "prompt": "Ein Entwickler möchte die veraltete UI und die alten Testdaten aus dem Projekt löschen, um den Code zu bereinigen. Ein Kollege widerspricht jedoch mit dem Argument, dass das System ohne diese Bestandteile in der Zeit vor dem Rollout unbrauchbar wäre."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/apps/metahuman-podcast-one-command-pipeline",
+      "target_label": "MetaHuman Podcast — One-Command-Pipeline, Status 2026-08-01T00:00:00+0200",
+      "prompt": "Ein Kollege fragt im Teammeeting, warum wir nach dem erfolgreichen Durchlauf von pilot-bodyonly nicht sofort auf den Aera-E2E-Workflow umsteigen können. Du erklärst ihm, dass die Validierung der Common-Bestände innerhalb von AeraNative noch abgeschlossen werden muss, bevor das nächste Ziel – der Audio-only Modus – angefasst werden kann."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/openlehr/volltextindex-wird-beim-einlesen",
+      "target_label": "Volltextindex wird beim Einlesen fortgeschrieben — hat fuer Belege und Mails aber keinen Leser",
+      "prompt": "Ein Kollege fragt, ob seit dem letzten Update die automatisierte Indizierung von Mails und Belegen korrekt funktioniert. Er ist unsicher, ob die Filterung von leeren OCR-Zeilen im Index greift und wir den manuellen Rebuild künftig weglassen können."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/lessons/phase2-summary",
+      "target_label": "Meta-Optimierung Phase 2 Zusammenfassung",
+      "prompt": "Ich arbeite gerade an der Dokumentation für den Abschluss der Meta-Optimierung. Könntest du mir kurz sagen, wie viele MCP-Server wir mittlerweile integriert haben und wie viele Knowledge-Nodes aktuell in der Datenbank liegen?"
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/testing/pytest",
+      "target_label": "pytest",
+      "prompt": "Die Testläufe in der CI-Pipeline dauern viel zu lange, weil Unit- und Integrationstests nicht sauber getrennt sind. Wir müssen eine Lösung finden, um die verschiedenen Testgruppen mittels Markern abzubilden, die Fixtures konsistenter bereitzustellen und die Coverage besser zu visualisieren."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/brainlehr/inference-control-was-andere-faecher",
+      "target_label": "Inference Control — was andere Faecher geloest haben und wo die bewiesene Grenze liegt",
+      "prompt": "Ein Sicherheitsarchitekt entwirft ein System für eine mehrstufig gesicherte Datenbank und muss entscheiden, wie Abfragen von Nutzern mit niedriger Freigabestufe zu behandeln sind, wenn die eigentlichen Daten durch Schlussfolgerungen (Inference) geheim bleiben müssen. Er prüft gerade, ob er auf Polyinstantiation setzt, um dem Nutzer eine konsistente Cover Story zu präsentieren, oder oberwohl Simulatable Auditing implementiert werden muss, damit selbst eine Verweigerung keine Informationen preisgibt."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/methodik/einstieg",
+      "target_label": "So benutzt du diesen Zweig",
+      "prompt": "Ein neuer Kollege fragt im Team-Chat nach dem korrekten Vorgehen bei den verbindlichen Regeln für das Projektverbund. Er möchte wissen, wo die zentralen Anweisungen zu den Arbeitsmethodiken und internen Direktiven abgelegt sind, um nicht jedes Mal das gesamte Dokumentationsverzeichnis manuell durchforsten zu müssen."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/stadtwerke",
+      "target_label": "Stadtwerke",
+      "prompt": "Ein Kollege aus der IT fragt mich gerade, ob die Verbundpartner im System, die speziell für die Nutzer mit Doppelzugehörigkeit zu Stadtwerke und openlehr eingerichtet wurden, echte Kundendaten sind. Er ist unsicher, ob diese Konten Teil des geplanten Selbstlern-Szenarios mit den entsprechenden Testdaten sind."
+    },
+    {
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/openlehr/steuer/ui",
+      "target_label": "Ui",
+      "prompt": "Ein Kollege aus dem Frontend fragt dich im Chat, ob die UI für das Steuer-Modul vollständig konfiguriert wurde. Du musst prüfen, wie viele Kind-Knoten der Namensraum unter /openlehr/steuer/ui in den knowledge_nodes enthält."
+    },
+    {
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "target_label": "efbe: der Vertrag regelt die Vergabe an eigene Gewerke nicht — Vertragsfrage vor der Unterschrift",
+      "prompt": "Ein Eigentümer reklamiert, dass die Hausverwaltung für die Sanierung direkt den Handwerksbetrieb aus ihrer eigenen Firmengruppe beauftragt hat, ohne vorher andere Angebote einzuholen. Er möchte wissen, ob dieses Insichgeschäft vertraglich zulässig ist oder ob es an einer klaren Regelung zur Vergabe und Vergütung mangelt."
+    },
+    {
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "target_label": "Buckeberg Anbieterabend 2026-08-05: mündliche Aussagen kippen zwei Angebotsbewertungen, ein Widerspruch bleibt offen",
+      "prompt": "Ein Kollege wundert sich beim Buckeberg Anbieterabend darüber, warum die Ranglisten dort noch als Fließtext vorliegen, und fragt, ob diese Daten veraltet sind. Du erklärst ihm, dass dieser Knoten einen wichtigen Zwischenstand des Entstehungsprozesses dokumentiert und für die aktuelle Verwalterwahl stattdessen die entsprechenden Nachfolgerknoten herangezogen werden müssen."
+    },
+    {
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "target_label": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+      "prompt": "Ein Kollege fragt dich während einer Design-Review, wie die Fehlermeldung im Frontend formuliert sein soll, wenn ein Nutzer versucht, eine Datei hochzuladen, aber der Server den Import aufgrund eines internen Systemfehlers ablehnt. Die interne Meldung lautet „Upload_Failed (Status_Code: 502)“."
+    },
+    {
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "target_label": "Vor der Wahl zu klären: wer unterschreibt den Verwaltervertrag — zwei Personen nötig",
+      "prompt": "Während des Termins mit einem potenziellen neuen Dienstleister fragt ein Kollege, ob wir erst klären müssen, wer genau den Verwaltervertrag unterschreiben darf. Er ist unsicher, ob die internen Regeln zum Ermächtigungsbeschluss und zur Vertretung durch das Beirat bereits beschlossene Fakten sind oder ob dies noch als offener Punkt in der Verhandlung mit dem Anbieter behandelt werden muss."
+    },
+    {
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "target_label": "Modell-Kaskade v3: Opus-Hauptfaden + Delegation nach unten (seit 2026-08-05T09:40:00+0200)",
+      "prompt": "Ein Kollege fragt im Slack-Channel, wie die aktuelle Struktur der Modell-Kaskade nach dem Wechsel auf den Opus-Hauptfaden aussieht und ob für komplexe Abwägungen oder ein Peer-Review weiterhin der Architekt für ein echtes Konsil hinzugezogen wird."
+    },
+    {
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "target_label": "Widerspruch 2: Brennertausch Haus 22 — vom Anbieterabend unberührt, unverändert offen",
+      "prompt": "Während der Prüfung der Bestandsunterlagen für Haus 22 fällt auf, dass die Schornsteinfeger-Bescheinigungen weiterhin den alten Buderus-Brenner von 1995 aufführen. Die Rechnung vom September 2024 belegt jedoch den Einbau eines neuen MHG Raketenbrenners; es muss nun geklärt werden, ob der Schornsteinfeger die Änderung übersehen hat oder die Dokumentation bei der Heizungsfirma noch nicht aktualisiert wurde."
+    },
+    {
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "target_label": "ADR-007: Trust Zones — Content-Sandbox für externe Inhalte",
+      "prompt": "Wir müssen die Kooperation mit der AWO planen und entscheiden, wie wir externe Feeds wie das Magazin oder den Veranstaltungskalender sicher in die App integrieren. Wie setzen wir dafür am besten eine Trust Zone als Content-Sandbox um?"
+    },
+    {
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "target_label": "ADR-006: Token-Kompression fuer Multi-Agent Systeme",
+      "prompt": "In einem Meeting zum Projekt BEGOD stellt ein Entwickler fest, dass die Latenz der Agenten massiv ansteigt, weil zu viele redundante Informationen in den .md-Dateien über das Context-Fenster geschickt werden. Er bittet um eine Lösung zur Token-Kompression, um die Datenmenge pro Turn drastisch zu reduzieren und die Kosten für die API-Abrufe zu senken."
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?"
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?"
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten."
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungsamt?"
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Beschreibe in 2 Saetzen, wie man einen Hefeteig fuer Pizza ansetzt."
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Wie berechnet man die Umlaufbahnperiode eines Satelliten aus der Bahnhoehe?"
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Nenne die Zutaten fuer einen klassischen Bechamel."
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Nenne drei Faustregeln fuer Rosenschnitt im Fruehjahr."
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Erklaere kurz den Unterschied zwischen TCP und UDP."
+    },
+    {
+      "category": "negative",
+      "target_kind": null,
+      "target_id": null,
+      "target_label": null,
+      "prompt": "Wie lautet der Befehl, um in git einen Branch umzubenennen (lokal + remote)?"
     }
-  ]
+  ],
+  "skipped": []
 }

@@ -1,0 +1,271 @@
+{
+  "model": "gemma4:12b",
+  "num_ctx_values": [
+    4096,
+    8192,
+    32768,
+    131072
+  ],
+  "n_runs": 3,
+  "output_margin_tokens": 64,
+  "calibration": {
+    "tool_tokens": 5624,
+    "wiedereinstieg_tokens": 638,
+    "reference_full_tokens": {
+      "mit": 6708,
+      "ohne": 6085
+    }
+  },
+  "cells": {
+    "4096|ohne": {
+      "num_ctx": 4096,
+      "variant": "ohne",
+      "passt": false,
+      "rest_fuer_aufgabe_tokens": -1528,
+      "reference_full_tokens": 6085
+    },
+    "4096|mit": {
+      "num_ctx": 4096,
+      "variant": "mit",
+      "passt": false,
+      "rest_fuer_aufgabe_tokens": -2166,
+      "reference_full_tokens": 6708
+    },
+    "8192|ohne": {
+      "num_ctx": 8192,
+      "variant": "ohne",
+      "passt": true,
+      "rest_fuer_aufgabe_tokens": 2568,
+      "reference_full_tokens": 6085,
+      "aggregate": {
+        "mean": 0.3333333333333333,
+        "range": 1,
+        "runs": [
+          0,
+          1,
+          0
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 147.68214695807546,
+          "prompt_eval_count": 6085,
+          "response_full": ""
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 103.79465308401268,
+          "prompt_eval_count": 6085,
+          "response_full": "```dart\nNavigator.push(\n  context,\n  fullscreenDialog: true,\n  MaterialPageRoute(\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      primaryAction: () {\n        // Handhabung für \"Ja\"\n      },\n      secondaryAction: () {\n        // Handhabung für \"Nein\"\n      },\n      expandPrimaryAction: true,\n    ),\n  ),\n);\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 104.86014650005382,
+          "prompt_eval_count": 6085,
+          "response_full": ""
+        }
+      ]
+    },
+    "8192|mit": {
+      "num_ctx": 8192,
+      "variant": "mit",
+      "passt": true,
+      "rest_fuer_aufgabe_tokens": 1930,
+      "reference_full_tokens": 6708,
+      "aggregate": {
+        "mean": 0.0,
+        "range": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 79.66839583299588,
+          "prompt_eval_count": 6708,
+          "response_full": ""
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 70.2997227080632,
+          "prompt_eval_count": 6708,
+          "response_full": ""
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 69.58755770791322,
+          "prompt_eval_count": 6708,
+          "response_full": ""
+        }
+      ]
+    },
+    "32768|ohne": {
+      "num_ctx": 32768,
+      "variant": "ohne",
+      "passt": true,
+      "rest_fuer_aufgabe_tokens": 27144,
+      "reference_full_tokens": 6085,
+      "aggregate": {
+        "mean": 0.6666666666666666,
+        "range": 1,
+        "runs": [
+          0,
+          1,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+          "retry_count": 1,
+          "call_seconds": 300.00293712492567,
+          "prompt_eval_count": null,
+          "response_full": null
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 106.53084816702176,
+          "prompt_eval_count": 6085,
+          "response_full": "```dart\nvoid _handleEndTripPressed() {\n  // Verwendung von ActionScreen statt AlertDialog, um den Whitespace-Bug \n  // bei Vollbild-Navigationspfaden zu vermeiden.\n  Navigator.push(\n    context,\n    MaterialPageRoute(\n      builder: (context) => ActionScreen(\n        title: 'Fahrt beenden?',\n        expandPrimaryAction: true,\n        actions: [\n          _ActionButton(\n            label: 'Ja',\n            onPressed: () {\n              // Logik zum Beenden der Fahrt\n            },\n          ),\n          _ActionButton(\n            label: 'Nein',\n            onPressed: () {\n              // Aktion abbrechen / auf Startseite bleiben\n            },\n          ),\n        ],\n      ),\n    ),\n  );\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 102.88557145895902,
+          "prompt_eval_count": 6085,
+          "response_full": "```dart\nvoid _showEndTripConfirmation(BuildContext context) {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    MaterialPageRoute(\n      builder: (context) => ActionScreen(\n        title: 'Fahrt beenden?',\n        expandPrimaryAction: true,\n        actions: [\n          TextButton(\n            onPressed: () {\n              // Logik zum Beenden der Fahrt hier einfügen\n            },\n            child: const Text('Ja'),\n          ),\n          TextButton(\n            onPressed: () => Navigator.pop(context),\n            child: const Text('Nein'),\n          ),\n        ],\n      ),\n    ),\n  );\n}\n```"
+        }
+      ]
+    },
+    "32768|mit": {
+      "num_ctx": 32768,
+      "variant": "mit",
+      "passt": true,
+      "rest_fuer_aufgabe_tokens": 26506,
+      "reference_full_tokens": 6708,
+      "aggregate": {
+        "mean": 0.6666666666666666,
+        "range": 1,
+        "runs": [
+          1,
+          1,
+          0
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 126.37039991596248,
+          "prompt_eval_count": 6708,
+          "response_full": "```dart\n_handleFinishTripPressed() async {\n  await Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      primaryAction: () {\n        // Logik für \"Ja\"\n      },\n      secondaryAction: () {\n        // Logik für \"Nein\"\n      },\n      expandPrimaryAction: true,\n    ),\n  );\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 103.15588612505235,
+          "prompt_eval_count": 6708,
+          "response_full": "```dart\nvoid _showEndTripDialog(BuildContext context) async {\n  await Navigator.push(\n    context,\n    fullscreenDialog: true,\n    MaterialPageRoute(\n      builder: (context) => ActionScreen(\n        title: 'Fahrt beenden?',\n        expandPrimaryAction: true,\n        confirmButtonText: 'Ja',\n        cancelButtonText: 'Nein',\n        onConfirm: () {\n          // Logik für \"Ja\" (Fahrt beenden)\n        },\n        onCancel: () {\n          // Logik für \"Nein\" (Fahrt fortsetzen)\n        },\n      ),\n    ),\n  );\n}\n```"
+        },
+        {
+          "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+          "retry_count": 1,
+          "call_seconds": 300.00246666697785,
+          "prompt_eval_count": null,
+          "response_full": null
+        }
+      ]
+    },
+    "131072|ohne": {
+      "num_ctx": 131072,
+      "variant": "ohne",
+      "passt": true,
+      "rest_fuer_aufgabe_tokens": 125448,
+      "reference_full_tokens": 6085,
+      "aggregate": {
+        "mean": 1.0,
+        "range": 0,
+        "runs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 1,
+          "call_seconds": 241.87753612501547,
+          "prompt_eval_count": 6085,
+          "response_full": "```dart\nonPressed: () async {\n  final confirmed = await Navigator.push<bool>(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      confirmLabel: 'Ja',\n      cancelLabel: 'Nein',\n      expandPrimaryAction: true,\n    ),\n  );\n\n  if (confirmed == true) {\n    // Logik zum Beenden der Fahrt hier einfügen\n  }\n},\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 115.14396112505347,
+          "prompt_eval_count": 6085,
+          "response_full": "```dart\nonPressed: () async {\n  await Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      primaryAction: ActionButton(\n        label: 'Ja',\n        onPressed: () {\n          // Logik zum Beenden der Fahrt einfügen\n        },\n      ),\n      secondaryAction: ActionButton(\n        label: 'Nein',\n        onPressed: () {},\n      ),\n    ),\n  );\n},\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 1,
+          "call_seconds": 258.88188966701273,
+          "prompt_eval_count": 6085,
+          "response_full": "```dart\nNavigator.push(\n  context,\n  fullscreenDialog: true,\n  builder: (context) => ActionScreen(\n    title: 'Fahrt beenden?',\n    primaryActionLabel: 'Ja',\n    secondaryActionLabel: 'Nein',\n    expandPrimaryAction: true,\n    onPrimaryActionPressed: () {\n      // Logic für \"Ja\" - Fahrt beenden\n    },\n    onSecondaryActionPressed: () {\n      // Logic für \"Nein\"\n    },\n  ),\n);\n```"
+        }
+      ]
+    },
+    "131072|mit": {
+      "num_ctx": 131072,
+      "variant": "mit",
+      "passt": true,
+      "rest_fuer_aufgabe_tokens": 124810,
+      "reference_full_tokens": 6708,
+      "aggregate": {
+        "mean": 1.0,
+        "range": 0,
+        "runs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 91.23177879094146,
+          "prompt_eval_count": 6708,
+          "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      primaryAction: () {\n        // Logik für \"Ja\"\n      },\n      secondaryAction: () {\n        // Logik für \"Nein\"\n      },\n      expandPrimaryAction: true,\n    ),\n  );\n},\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 1,
+          "call_seconds": 239.02214312495198,
+          "prompt_eval_count": 6708,
+          "response_full": "```dart\nNavigator.push(\n  context,\n  fullscreenDialog: true,\n  builder: (context) => ActionScreen(\n    title: 'Fahrt beenden?',\n    primaryAction: () {\n      // Logik für \"Ja\"\n    },\n    secondaryAction: () {\n      // Logik für \"Nein\"\n    },\n    expandPrimaryAction: true,\n  ),\n);\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 109.95774529199116,
+          "prompt_eval_count": 6708,
+          "response_full": "```dart\nonPressed: () async {\n  await Navigator.push(\n    context,\n    fullscreenDialog: true,\n    actionScreen: ActionScreen(\n      title: 'Fahrt beenden?',\n      primaryAction: ActionButton(\n        label: 'Ja',\n        onPressed: () => _handleEndTrip(),\n      ),\n      secondaryAction: ActionButton(\n        label: 'Nein',\n        onPressed: () {},\n      ),\n    ),\n  );\n},\n```"
+        }
+      ]
+    }
+  },
+  "kipppunkt": "8192",
+  "runtime_seconds_total": 2733.0286534579936
+}

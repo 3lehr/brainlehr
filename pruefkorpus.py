@@ -1,0 +1,378 @@
+"""Pruefkorpus fuer Abrufguete (Plan hub/docs/PLAN_ABRUFGUETE_2026-08-07.md,
+Schritt 1). Baut 40-60 Faelle aus dem echten Bestand: je Fall eine realistische
+AUFGABE (von einem lokalen Ollama-Modell erzeugt) + die Kennung des Eintrags,
+der dafuer der richtige waere. Ersetzt die bisherige Messung (Titel als
+Anfrage, 20/20 -- misst nichts, siehe Plan).
+
+ANTI-ZIRKULARITAET (Kern des Auftrags, deterministisch, KEIN Modellurteil):
+    seltene Begriffe(Aufgabentext) ∩ seltene Begriffe(Zieleintrag) = leer
+"selten" = IDF ueber den ganzen Bestand (Nodes + aktive Lessons, siehe
+build_idf()) oberhalb einer Dokumenthaeufigkeits-Schwelle. RARE_MAX_DF=3 ist
+GERATEN (nicht gemessen) -- Begruendung siehe dort. Teilt eine erzeugte
+Aufgabe seltene Begriffe mit ihrem Ziel, wird sie verworfen und mit einer
+Vermeidungs-Anweisung neu erzeugt (MAX_ATTEMPTS Versuche, danach Eintrag
+uebersprungen und gezaehlt -- ein Eintrag ohne erzeugbare nicht-zirkulaere
+Aufgabe ist selbst ein Befund).
+
+STREUUNG ueber Sorten (CATEGORY_TARGETS): vorschreibende Lehren (type
+pattern/antipattern), Fakten (knowledge_nodes.norm_rang IS NULL -- laut
+schema.sql die "zentrale Unterscheidung", Fakt statt Norm), Normknoten mit
+Geltungszeitraum (norm_rang NOT NULL, gilt_ab gesetzt), und Faelle OHNE
+passendes Wissen als Eichung (target_id=None, feste Themenliste ausserhalb
+jeder Projekt-Domaene -- Eichung braucht keine Zirkularitaetspruefung, es
+gibt nichts, womit sie zirkulaer sein koennte).
+
+ZIELGROESSE 40-60 Faelle: GERATEN (Plan §1, "Darunter bleibt die Streuung
+groesser als jeder Effekt").
+
+Wiederverwendet, nicht neu gebaut (Ponytail-Leiter): schreibpruefstand/
+schreiblauf.py::_call_with_retry (Ollama-Aufruf, ein Retry bei Ausfall) --
+derselbe Weg wie wissensnutzen.py/wissensnutzen_blind.py/fenstergroesse.py.
+Fortschritt sofort als JSONL weggeschrieben (ein Fall je Zeile), Muster aus
+fenstergroesse.py._append_jsonl (Auftrag Punkt 5: "seit heute").
+
+Geaenderte Dateien ausserhalb dieser einen: KEINE. Nur diese Datei + eine
+Testdatei (tests/test_pruefkorpus.py). knowledge_recall_hook.py, wissens-
+nutzen*.py, wirkung.py, fenstergroesse.py, werkzeugabdeckung.py: nur
+gelesen. Liest die echte knowledge.db read-only (mode=ro), schreibt nichts
+hinein.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import random
+import re
+import sqlite3
+import sys
+import time
+from collections import Counter
+from pathlib import Path
+
+SHARED_KNOWLEDGE = Path(__file__).resolve().parent
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
+sys.path.insert(0, str(SHARED_KNOWLEDGE))
+
+import schreiblauf as sl  # noqa: E402  -- _call_with_retry + DEFAULT_MODEL wiederverwendet
+
+DB = str(SHARED_KNOWLEDGE / "knowledge.db")
+MODEL = sl.DEFAULT_MODEL
+TIMEOUT = 180.0
+OUT_PATH = SHARED_KNOWLEDGE / "runs" / "pruefkorpus.json"
+JSONL_PATH = OUT_PATH.with_suffix(".jsonl")
+
+SEED = 20260807  # GERATEN (heutiges Datum als Seed, wie DEFAULT_SEED in pruefstand/korpus.py)
+
+# GERATEN, nicht gemessen (Auftrag Punkt 2 verlangt, das zu kennzeichnen).
+# Ein Begriff, der in hoechstens RARE_MAX_DF von ~880 Dokumenten vorkommt,
+# gilt als "selten". Bei N~880 entspricht das idf >= log(880/3) ~= 5.68.
+# Begruendung fuer 3 statt 1 oder 10: 1 waere zu eng (fast jedes Fachwort
+# mit zwei Vorkommen faellt raus, die Pruefung wuerde nie mehr anschlagen);
+# 10 waere zu locker (allgemeine Fachbegriffe wie "Flutter" oder "Ollama"
+# kommen in > 10 Dokumenten vor und wuerden trotzdem als "selten" durchgehen,
+# die Pruefung liesse dann echte Ueberschneidungen unbeanstandet). 3 ist ein
+# Mittelwert, keine Messung -- wenn Schritt 3 (Optuna) je diese Zahl braucht,
+# ist sie hier der Anschlusspunkt.
+RARE_MAX_DF = 3
+
+MAX_ATTEMPTS = 4  # GERATEN ("mehrere Fehlversuche", Auftrag Punkt 2)
+
+# Wieviele Faelle je Sorte -- Summe 45, innerhalb der geratenen Zielgroesse 40-60.
+CATEGORY_TARGETS = {"lesson": 15, "fact": 12, "norm": 8, "negative": 10}
+
+# Kurze Stopwortliste, identisch zur Absicht von scripts/knowledge_recall_hook.py
+# STOP (dort nicht importiert -- dieser Pruefstand liest die DB direkt und
+# braucht keine sonstige Hook-Logik, ein Reimport waere die einzige Kopplung
+# an eine Datei, die laut Grenzen tabu ist).
+STOP = {
+    "und", "oder", "der", "die", "das", "den", "dem", "ein", "eine", "einen", "einem",
+    "ist", "sind", "war", "wird", "werden", "kann", "soll", "muss", "für", "mit", "von",
+    "auf", "aus", "bei", "zum", "zur", "des", "als", "auch", "nicht", "noch", "wie", "was",
+    "wenn", "dann", "aber", "nur", "mir", "mich", "dir", "dich", "ich", "wir", "ihr", "sie",
+    "the", "and", "for", "that", "this", "with", "from", "have", "has", "was", "are", "you",
+    "sowie", "diese", "dieser", "dieses", "einem", "einer", "sein", "seine", "ihre",
+}
+
+_FOLD_TABLE = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"})
+
+
+def fold_de(text: str) -> str:
+    return text.lower().translate(_FOLD_TABLE)
+
+
+def tokenize(text: str) -> set[str]:
+    """Alle Woerter ab 4 Zeichen, gefaltet, ohne Stopwoerter -- anders als
+    knowledge_recall_hook.keywords() KEIN [:8]-Deckel: fuer die IDF-Ermittlung
+    und die Zirkularitaetspruefung zaehlt jedes Wort, nicht nur die ersten acht."""
+    words = re.findall(r"[A-Za-zÄÖÜäöüß0-9]{4,}", fold_de(text))
+    return {w for w in words if w not in STOP}
+
+
+# --- Bestand lesen -----------------------------------------------------
+
+def load_bestand(db_path: str = DB) -> tuple[list[dict], list[dict]]:
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5.0)
+    conn.row_factory = sqlite3.Row
+    nodes = [dict(r) for r in conn.execute(
+        "SELECT id, path, title, summary, content, norm_rang, gilt_ab "
+        "FROM knowledge_nodes WHERE zurueckgezogen = 0"
+    )]
+    lessons = [dict(r) for r in conn.execute(
+        "SELECT id, type, description, root_cause, prevention, severity "
+        "FROM lessons_learned WHERE status != 'resolved'"
+    )]
+    conn.close()
+    return nodes, lessons
+
+
+def node_text(n: dict) -> str:
+    return f"{n['title']}\n{n['summary']}\n{(n.get('content') or '')[:800]}"
+
+
+def lesson_text(l: dict) -> str:
+    return f"{l['description']}\n{l.get('root_cause') or ''}\n{l.get('prevention') or ''}"
+
+
+def build_idf(nodes: list[dict], lessons: list[dict]) -> dict[str, float]:
+    """IDF ueber den ganzen Bestand (Nodes + aktive Lessons), ein Dokument =
+    eine Zeile. df = wieviele Dokumente ein Wort mindestens einmal enthalten."""
+    df: Counter[str] = Counter()
+    n_docs = 0
+    for n in nodes:
+        df.update(tokenize(node_text(n)))
+        n_docs += 1
+    for l in lessons:
+        df.update(tokenize(lesson_text(l)))
+        n_docs += 1
+    return {w: math.log(n_docs / c) for w, c in df.items()}, n_docs, df
+
+
+def rare_terms(text: str, idf: dict[str, float], df: Counter, rare_max_df: int = RARE_MAX_DF) -> set[str]:
+    return {w for w in tokenize(text) if df.get(w, 0) <= rare_max_df and w in idf}
+
+
+def is_circular(task_text: str, target_text: str, idf: dict, df: Counter) -> set[str]:
+    """Gibt die geteilten seltenen Begriffe zurueck (leer = nicht zirkulaer)."""
+    return rare_terms(task_text, idf, df) & rare_terms(target_text, idf, df)
+
+
+# --- Erzeugung -----------------------------------------------------------
+
+_GEN_TEMPLATE = """Ausgangswissen (wird NICHT direkt zitiert oder umschrieben):
+{quelle}
+
+Schreibe EINE realistische Alltags- oder Arbeitssituation (2-4 Saetze, \
+deutsch), in der genau dieses Wissen gebraucht wuerde. Beschreibe eine \
+konkrete Lage/ein Problem, KEINE Frage nach dem Eintrag selbst. Verwende \
+andere Woerter als der Ausgangstext -- keine Fachbegriffe oder Eigennamen \
+von dort wiederholen.{vermeiden}
+Antworte NUR mit dem Aufgabentext, kein Vorwort, keine Ueberschrift."""
+
+_NEGATIVE_TOPICS = [
+    "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten.",
+    "Beschreibe in 2 Saetzen, wie man einen Hefeteig fuer Pizza ansetzt.",
+    "Welche Excel-Formel summiert Spalte B, wenn Spalte A 'ja' enthaelt?",
+    "Wie lautet der Befehl, um in git einen Branch umzubenennen (lokal + remote)?",
+    "Nenne drei Faustregeln fuer Rosenschnitt im Fruehjahr.",
+    "Wie berechnet man die Umlaufbahnperiode eines Satelliten aus der Bahnhoehe?",
+    "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungsamt?",
+    "Erklaere kurz den Unterschied zwischen TCP und UDP.",
+    "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+    "Nenne die Zutaten fuer einen klassischen Bechamel.",
+    "Wie kuendigt man in Deutschland einen Handyvertrag fristgerecht?",
+    "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+]
+
+
+def _generate(prompt: str, model: str = MODEL, timeout: float = TIMEOUT) -> tuple[str | None, str | None, int]:
+    return sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=timeout)
+
+
+def generate_task(target_text: str, idf: dict, df: Counter, rng: random.Random,
+                   model: str = MODEL) -> dict:
+    """Erzeugt eine Aufgabe zu target_text, prueft Zirkularitaet, versucht bei
+    Kollision bis zu MAX_ATTEMPTS mal neu (mit Vermeidungshinweis). Gibt
+    {"accepted": bool, "task": str|None, "attempts": [...], "error": str|None}."""
+    attempts = []
+    vermeiden = ""
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        prompt = _GEN_TEMPLATE.format(quelle=target_text[:1200], vermeiden=vermeiden)
+        raw, err, retries = _generate(prompt, model=model)
+        if err or not raw or not raw.strip():
+            attempts.append({"attempt": attempt, "text": None, "error": err, "collision": None})
+            continue
+        task_text = raw.strip()
+        collision = is_circular(task_text, target_text, idf, df)
+        attempts.append({
+            "attempt": attempt, "text": task_text, "error": None,
+            "collision": sorted(collision) if collision else [],
+        })
+        if not collision:
+            return {"accepted": True, "task": task_text, "attempts": attempts, "error": None}
+        vermeiden = f" Vermeide zusaetzlich diese Woerter: {', '.join(sorted(collision))}."
+    return {"accepted": False, "task": None, "attempts": attempts,
+            "error": "kein nicht-zirkulaerer Fall nach MAX_ATTEMPTS Versuchen"}
+
+
+# --- Auswahl je Sorte -----------------------------------------------------
+
+def pick_candidates(nodes: list[dict], lessons: list[dict], rng: random.Random) -> dict[str, list[dict]]:
+    lesson_pool = [l for l in lessons if l["type"] in ("pattern", "antipattern")]
+    fact_pool = [n for n in nodes if n["norm_rang"] is None and n["summary"]]
+    norm_pool = [n for n in nodes if n["norm_rang"] is not None and n["gilt_ab"]]
+    picks = {}
+    for key, pool in (("lesson", lesson_pool), ("fact", fact_pool), ("norm", norm_pool)):
+        k = min(CATEGORY_TARGETS[key], len(pool))
+        picks[key] = rng.sample(pool, k) if pool else []
+    return picks
+
+
+# --- Lauf ------------------------------------------------------------------
+
+def _append_jsonl(record: dict, path: Path = JSONL_PATH) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        f.flush()
+
+
+def run(out_path: Path = OUT_PATH, seed: int = SEED, model: str = MODEL) -> dict:
+    rng = random.Random(seed)
+    nodes, lessons = load_bestand()
+    idf, n_docs, df = build_idf(nodes, lessons)
+    print(f"Bestand: {len(nodes)} Nodes + {len(lessons)} Lessons = {n_docs} Dokumente, "
+          f"{len(idf)} Vokabeln, RARE_MAX_DF={RARE_MAX_DF}", flush=True)
+
+    picks = pick_candidates(nodes, lessons, rng)
+    cases: list[dict] = []
+    skipped: list[dict] = []
+
+    for category in ("lesson", "fact", "norm"):
+        for entry in picks[category]:
+            if category == "lesson":
+                target_id, label, text = entry["id"], entry["description"][:80], lesson_text(entry)
+            else:
+                target_id, label, text = entry["path"], entry["title"], node_text(entry)
+            result = generate_task(text, idf, df, rng, model=model)
+            record = {
+                "category": category, "target_kind": "lesson" if category == "lesson" else "node",
+                "target_id": target_id, "target_label": label,
+                "accepted": result["accepted"], "task": result["task"],
+                "attempts": result["attempts"],
+            }
+            _append_jsonl(record)
+            if result["accepted"]:
+                cases.append({"category": category, "target_kind": record["target_kind"],
+                               "target_id": target_id, "target_label": label, "prompt": result["task"]})
+                print(f"  {category} {target_id}: ok nach {len(result['attempts'])} Versuch(en)", flush=True)
+            else:
+                skipped.append({"category": category, "target_id": target_id, "target_label": label,
+                                 "reason": result["error"]})
+                print(f"  {category} {target_id}: UEBERSPRUNGEN ({result['error']})", flush=True)
+
+    # Negativfaelle sind bereits fertig formulierte Aufgaben (siehe
+    # _NEGATIVE_TOPICS, Stil wie PROMPT_C in wissensnutzen_blind.py) -- KEIN
+    # Ollama-Aufruf hier. Fund beim Berichten (vor Abschluss korrigiert):
+    # die vorherige Fassung schickte die Topic-FRAGE an Ollama und speicherte
+    # dessen ANTWORT als "task" -- Rollentausch, die Aufgabe waere die
+    # Modellantwort gewesen statt die Frage selbst.
+    topics = rng.sample(_NEGATIVE_TOPICS, min(CATEGORY_TARGETS["negative"], len(_NEGATIVE_TOPICS)))
+    for topic in topics:
+        record = {"category": "negative", "target_kind": None, "target_id": None,
+                   "target_label": None, "accepted": True,
+                   "task": topic, "attempts": [{"attempt": 1, "text": topic, "error": None}]}
+        _append_jsonl(record)
+        cases.append({"category": "negative", "target_kind": None, "target_id": None,
+                       "target_label": None, "prompt": topic})
+        print(f"  negative: ok ({topic[:40]}...)", flush=True)
+
+    verteilung = Counter(c["category"] for c in cases)
+    output = {
+        "seed": seed, "model": model, "rare_max_df": RARE_MAX_DF, "max_attempts": MAX_ATTEMPTS,
+        "n_docs": n_docs, "n_vocab": len(idf),
+        "n_cases": len(cases), "n_skipped": len(skipped),
+        "verteilung": dict(verteilung), "cases": cases, "skipped": skipped,
+    }
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\nGeschrieben: {out_path}", flush=True)
+    print(f"Erzeugt: {len(cases)}  Uebersprungen: {len(skipped)}  Verteilung: {dict(verteilung)}", flush=True)
+    return output
+
+
+def _selftest() -> None:
+    """Netzloser Selbsttest: IDF/Tokenize/Zirkularitaetspruefung, kein Ollama."""
+    nodes = [
+        {"id": "n1", "path": "/a/x", "title": "Existenzgruender Broschuere",
+         "summary": "Amtliche Beschreibung fuer Existenzgruender in Niedersachsen.",
+         "content": "", "norm_rang": None, "gilt_ab": None},
+        {"id": "n2", "path": "/a/y", "title": "Allgemeiner Hinweis",
+         "summary": "Ein Text ueber irgendetwas Allgemeines mit vielen ueblichen Woertern.",
+         "content": "", "norm_rang": 1, "gilt_ab": "2026-01-01"},
+    ]
+    lessons = [
+        {"id": "L-1", "type": "antipattern", "severity": "high",
+         "description": "AlertDialog showDialog erzeugt Vollbild-Weissraum in ActionScreen.",
+         "root_cause": "Globaler Shim faengt showDialog ab.",
+         "prevention": "ActionScreen(expandPrimaryAction:true) verwenden."},
+    ]
+    idf, n_docs, df = build_idf(nodes, lessons)
+    assert n_docs == 3
+    assert "existenzgruender" in idf  # gefaltet, in Node n1
+    assert df["existenzgruender"] == 1
+
+    # Zirkularitaetspruefung MUSS anschlagen, wenn die Aufgabe den Zieltitel
+    # woertlich enthaelt (Abnahme-Vorgabe: "bau probeweise einen Fall ...").
+    target_text = lesson_text(lessons[0])
+    zirkulaer_task = "Ich habe ein Problem mit ActionScreen und showDialog in meiner App."
+    collision = is_circular(zirkulaer_task, target_text, idf, df)
+    assert collision, "Woertliche Titel-Uebernahme haette erkannt werden muessen"
+    print(f"  Zirkularitaet erkannt: geteilte seltene Begriffe = {sorted(collision)}")
+
+    # Gegenprobe: eine Aufgabe, die dasselbe Wissen braucht, aber andere
+    # Woerter benutzt, darf NICHT als zirkulaer gelten.
+    freie_task = ("Im Auto-Werkstattbuch soll eine Bestaetigung erscheinen, bevor "
+                  "eine Fahrt beendet wird, ohne den Bildschirm mit weissem Rand zu zeigen.")
+    collision2 = is_circular(freie_task, target_text, idf, df)
+    assert not collision2, f"Frei formulierte Aufgabe faelschlich als zirkulaer erkannt: {collision2}"
+    print("  Frei formulierte Aufgabe (andere Woerter) NICHT als zirkulaer erkannt: ok")
+
+    # rare_terms: ein Wort, das in > RARE_MAX_DF Dokumenten vorkommt, gilt
+    # NICHT als selten -- Allerweltswort darf keine Kollision ausloesen.
+    haeufig_idf, haeufig_n, haeufig_df = build_idf(
+        [{"id": f"n{i}", "path": f"/x{i}", "title": "Uebersicht", "summary": "Uebersicht ueber alles",
+          "content": "", "norm_rang": None, "gilt_ab": None} for i in range(6)],
+        [],
+    )
+    assert haeufig_df["uebersicht"] == 6 > RARE_MAX_DF
+    assert rare_terms("Uebersicht", haeufig_idf, haeufig_df) == set()
+    print("  Haeufiges Wort ueber RARE_MAX_DF gilt nicht als selten: ok")
+
+    # pick_candidates: Kategorien liefern nur passende Eintraege, nie mehr
+    # als angefordert, und respektieren einen leeren Pool.
+    picks = pick_candidates(nodes, lessons, random.Random(1))
+    assert picks["lesson"] and picks["lesson"][0]["id"] == "L-1"
+    assert all(n["norm_rang"] is None for n in picks["fact"])
+    assert all(n["norm_rang"] is not None and n["gilt_ab"] for n in picks["norm"])
+    print("  pick_candidates: Kategorien-Filter ok")
+
+    print(f"selftest ok ({len(idf)} Vokabeln im Mini-Bestand, RARE_MAX_DF={RARE_MAX_DF})", file=sys.stderr)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--out", default=str(OUT_PATH))
+    ap.add_argument("--seed", type=int, default=SEED)
+    ap.add_argument("--model", default=MODEL)
+    ap.add_argument("--selftest", action="store_true",
+                     help="Netzloser Selbsttest von IDF/Zirkularitaetspruefung, kein Ollama-Aufruf")
+    args = ap.parse_args()
+    if args.selftest:
+        _selftest()
+        return
+    run(out_path=Path(args.out), seed=args.seed, model=args.model)
+
+
+if __name__ == "__main__":
+    main()

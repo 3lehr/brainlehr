@@ -1,0 +1,236 @@
+{
+  "model": "gemma4:12b",
+  "task": "A",
+  "target_lesson_id": "L-c0e910",
+  "n_hits": 5,
+  "n_runs_full": 5,
+  "n_runs_loo": 3,
+  "hits": [
+    "L-c0e910",
+    "L-a08f87",
+    "L-39b018",
+    "L-503687",
+    "L-874260"
+  ],
+  "full": {
+    "aggregate": {
+      "mean": 0.2,
+      "range": 1,
+      "runs": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    "majority": false,
+    "runs": [
+      {
+        "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+        "retry_count": 1,
+        "call_seconds": 360.0073762909742,
+        "response_full": null
+      },
+      {
+        "error": null,
+        "retry_count": 0,
+        "call_seconds": 154.8395305420272,
+        "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      content: 'Möchten Sie die aktuelle Fahrt jetzt beenden?',\n      primaryAction: () {\n        // Logik zum Beenden der Fahrt\n        _handleEndTrip();\n      },\n      secondaryAction: () {\n        Navigator.pop(context);\n      },\n      expandPrimaryAction: true,\n    ),\n  );\n}\n```"
+      },
+      {
+        "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+        "retry_count": 1,
+        "call_seconds": 360.0049781249836,
+        "response_full": null
+      },
+      {
+        "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+        "retry_count": 1,
+        "call_seconds": 360.00451199989766,
+        "response_full": null
+      },
+      {
+        "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+        "retry_count": 1,
+        "call_seconds": 360.0061396668898,
+        "response_full": null
+      }
+    ]
+  },
+  "leave_one_out": {
+    "L-c0e910": {
+      "aggregate": {
+        "mean": 0.0,
+        "range": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "majority": false,
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 156.75560887495521,
+          "response_full": "```dart\nvoid _showEndTripConfirmation(BuildContext context) {\n  showDialog(\n    context: context,\n    builder: (BuildContext context) => AlertDialog(\n      title: const Text('Fahrt beenden?'),\n      content: const Text('Möchten Sie die aktuelle Fahrt jetzt beenden?'),\n      actions: [\n        TextButton(\n          onPressed: () {\n            Navigator.of(context).pop(); // Schließt den Dialog (Nein)\n          },\n          child: const Text('Nein'),\n        ),\n        TextButton(\n          onPressed: () {\n            // Hier die Logik zum Beenden der Fahrt einfügen\n            Navigator.of(context).pop(); // Schließt den Dialog (Ja)\n          },\n          child: const Text('Ja'),\n        ),\n      ],\n    ),\n  );\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 134.4761900829617,
+          "response_full": "```dart\nFuture<bool> showEndTripDialog(BuildContext context) async {\n  final bool? result = await showDialog(\n    context: context,\n    builder: (BuildContext context) => AlertDialog(\n      title: const Text('Fahrt beenden?'),\n      content: const Text('Möchten Sie die aktuelle Fahrt jetzt beenden?'),\n      actions: <Widget>[\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(false),\n          child: const Text('Nein'),\n        ),\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(true),\n          child: const Text('Ja'),\n        ),\n      ],\n    ),\n  );\n  return result ?? false;\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 174.58033358398825,
+          "response_full": "```dart\nFuture<void> _handleEndTripButton(BuildContext context) async {\n  final bool? confirmed = await showDialog<bool>(\n    context: context,\n    builder: (context) => AlertDialog(\n      title: const Text('Fahrt beenden?'),\n      actions: [\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(false),\n          child: const Text('Nein'),\n        ),\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(true),\n          child: const Text('Ja'),\n        ),\n      ],\n    ),\n  );\n\n  if (confirmed == true) {\n    // Logik zum Beenden der Fahrt hier einfügen\n  }\n}\n```"
+        }
+      ],
+      "benutzt": false
+    },
+    "L-a08f87": {
+      "aggregate": {
+        "mean": 0.3333333333333333,
+        "range": 1,
+        "runs": [
+          0,
+          1,
+          0
+        ]
+      },
+      "majority": false,
+      "runs": [
+        {
+          "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+          "retry_count": 1,
+          "call_seconds": 360.0054068339523,
+          "response_full": null
+        },
+        {
+          "error": null,
+          "retry_count": 1,
+          "call_seconds": 333.48973433393985,
+          "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      primaryActionLabel: 'Ja',\n      secondaryActionLabel: 'Nein',\n      expandPrimaryAction: true,\n      onPrimaryAction: () {\n        // Logik zum Beenden der Fahrt hier einfügen\n      },\n      onSecondaryAction: () {\n        Navigator.pop(context);\n      },\n    ),\n  );\n}\n```"
+        },
+        {
+          "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+          "retry_count": 1,
+          "call_seconds": 360.00432395807,
+          "response_full": null
+        }
+      ],
+      "benutzt": false
+    },
+    "L-39b018": {
+      "aggregate": {
+        "mean": 0.6666666666666666,
+        "range": 1,
+        "runs": [
+          0,
+          1,
+          1
+        ]
+      },
+      "majority": true,
+      "runs": [
+        {
+          "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+          "retry_count": 1,
+          "call_seconds": 360.00342941691633,
+          "response_full": null
+        },
+        {
+          "error": null,
+          "retry_count": 1,
+          "call_seconds": 235.25026500003878,
+          "response_full": "```dart\nvoid _onEndTripPressed() async {\n  final bool? confirmed = await Navigator.push<bool>(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      content: const Text('Möchten Sie die aktuelle Fahrt jetzt beenden?'),\n      primaryAction: ActionButton(\n        label: 'Ja',\n        onPressed: () => Navigator.pop(context, true),\n      ),\n      secondaryAction: ActionButton(\n        label: 'Nein',\n        onPressed: () => Navigator.pop(context, false),\n      ),\n    ),\n  );\n\n  if (confirmed == true) {\n    // Logik zum Beenden der Fahrt einfügen\n  }\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 1,
+          "call_seconds": 267.00262774992734,
+          "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      content: 'Möchten Sie die aktuelle Fahrt jetzt beenden?',\n      primaryActionLabel: 'Ja',\n      secondaryActionLabel: 'Nein',\n      onPrimaryAction: () {\n        // Logik zum Beenden der Fahrt hier einfügen\n      },\n      onSecondaryAction: () {}, // Schließt den Dialog ohne Aktion\n      expandPrimaryAction: true,\n    ),\n  );\n}\n```"
+        }
+      ],
+      "benutzt": true
+    },
+    "L-503687": {
+      "aggregate": {
+        "mean": 1.0,
+        "range": 0,
+        "runs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "majority": true,
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 121.50155641697347,
+          "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      primaryAction: () {\n        // Logik zum Beenden der Fahrt\n      },\n      secondaryAction: () {\n        // Aktion für \"Nein\" (meistens nur Schließen des Dialogs)\n      },\n    ),\n  );\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 142.29049583291635,
+          "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      expandPrimaryAction: true,\n      actions: [\n        TextButton(\n          onPressed: () {\n            // Logik für \"Ja\"\n          },\n          child: const Text('Ja'),\n        ),\n        TextButton(\n          onPressed: () {\n            // Logik für \"Nein\"\n          },\n          child: const Text('Nein'),\n        ),\n      ],\n    ),\n  );\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 133.19185679091606,
+          "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      content: const Text('Möchten Sie die aktuelle Fahrt jetzt beenden?'),\n      primaryAction: () {\n        // Logik für \"Ja\" - Beende die Fahrt hier oder rufe entsprechende Funktion auf\n        _completeTrip();\n      },\n      secondaryAction: () => Navigator.pop(context), // \"Nein\"\n      expandPrimaryAction: true,\n    ),\n  );\n}\n```"
+        }
+      ],
+      "benutzt": true
+    },
+    "L-874260": {
+      "aggregate": {
+        "mean": 1.0,
+        "range": 0,
+        "runs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "majority": true,
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 157.598334374954,
+          "response_full": "```dart\nFuture<void> _handleEndTripButton(BuildContext context) async {\n  final isConfirmed = await Navigator.push<bool>(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      content: const Text('Möchten Sie die Fahrt jetzt beenden?'),\n      expandPrimaryAction: true,\n    ),\n  );\n\n  if (isConfirmed == true) {\n    // Logik zum Beenden der Fahrt einfügen\n  }\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 102.2807977499906,
+          "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      expandPrimaryAction: true,\n      primaryAction: () {\n        // Logik zum Beenden der Fahrt\n      },\n      secondaryAction: () {\n        Navigator.pop(context);\n      },\n    ),\n  );\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 129.82633508299477,
+          "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      expandPrimaryAction: true,\n      primaryAction: ActionButton(\n        label: 'Ja',\n        onPressed: () {\n          // Logik zum Beenden der Fahrt einfügen\n          Navigator.pop(context);\n        },\n      ),\n      secondaryAction: ActionButton(\n        label: 'Nein',\n        onPressed: () => Navigator.pop(context),\n      ),\n    ),\n  );\n}\n```"
+        }
+      ],
+      "benutzt": true
+    }
+  },
+  "target_benutzt": false,
+  "other_flips": [
+    "L-39b018",
+    "L-503687",
+    "L-874260"
+  ],
+  "geeicht": false,
+  "runtime_seconds_total": 4763.305652583018
+}

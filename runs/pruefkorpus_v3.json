@@ -1,0 +1,322 @@
+{
+  "eichung": {
+    "kennung": "v3-01",
+    "task": "Wie viele Zacken haben drei Glimberge zusammen?",
+    "erwartete_zahl": 21,
+    "ohne_abruf_roh": "weiss ich nicht",
+    "ohne_abruf_bestanden": false,
+    "mit_abruf_roh": "21",
+    "mit_abruf_bestanden": true,
+    "ziel_gefunden": true,
+    "eichung_ok": true
+  },
+  "aborted": false,
+  "model": "gemma4:e4b",
+  "vorher": 1968,
+  "vor_delete": 1986,
+  "entfernt": 18,
+  "nachher": 1968,
+  "n_cases": 30,
+  "rows": [
+    {
+      "kennung": "v3-01",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 21,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "21",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-02",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 36,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "36",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-03",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 30,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "30",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-04",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 33,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "33",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-05",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 26,
+      "ohne_abruf": "2",
+      "mit_abruf": "26",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-06",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 48,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "48",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-07",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 60,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "60",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-08",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 42,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "42",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-09",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 34,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "34",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-10",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 80,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "80",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-11",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 38,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "38",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-12",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 54,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "54",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-13",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 46,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "46",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-14",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 66,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "66",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-15",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 25,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "25",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-16",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 39,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "39",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-17",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 45,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "45",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-18",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 40,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "40",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-19",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 49,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "49",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-20",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 55,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "55",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-21",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 67,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "67",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-22",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 28,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "28",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-23",
+      "kategorie": "aehnlich",
+      "erwartete_zahl": 63,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "63",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-24",
+      "kategorie": "aehnlich",
+      "erwartete_zahl": 20,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "20",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true
+    },
+    {
+      "kennung": "v3-25",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false
+    },
+    {
+      "kennung": "v3-26",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false
+    },
+    {
+      "kennung": "v3-27",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false
+    },
+    {
+      "kennung": "v3-28",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false
+    },
+    {
+      "kennung": "v3-29",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false
+    },
+    {
+      "kennung": "v3-30",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false
+    }
+  ]
+}
