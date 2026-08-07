@@ -43,6 +43,12 @@ kurator_lauf() (Auftrag 2026-08-07) importiert knowledge_lint.py VERZOEGERT
 importiert seinerseits aus diesem Modul, ein Top-Level-Import waere ein
 echter Zirkel) und braucht deshalb zur Laufzeit die komplette
 Selbstpruefungs-Stufe, nicht nur den Kern.
+ankerverfahren.py und kettenerklaerung.py sind seit ADR-034 ebenfalls vom
+Schreibpfad erreichbar (Werkzeug kettenerklaerung_erklaeren), aber weiterhin
+VERZOEGERT importiert -- gleicher Zirkelgrund wie kurator_lauf() oben
+(kettenerklaerung.py importiert seinerseits aus diesem Modul). lesson_recorder.py
+ebenso verzoegert in _auto_rule_fuer_lesson() (importiert `knowledge_mcp_server
+as kms`, derselbe Zirkel).
 Alle uebrigen .py-Dateien in diesem Verzeichnis (auditanker, hebb_kanten,
 ...) sind eigenstaendige Skripte/Cronjobs ausserhalb dieser zwei Stufen --
 der MCP-Server importiert sie nicht, knowledge_lint.py auch nicht.
@@ -2438,6 +2444,29 @@ def _find_similar_lesson(conn: sqlite3.Connection, type_: str, description: str,
     return best
 
 
+def _auto_rule_fuer_lesson(conn: sqlite3.Connection, lesson_id: str) -> None:
+    """ADR-034 (lesson_recorder.cmd_auto_rules): Ausloeser ist
+    status='escalated_to_rule' bei occurrences>=3 -- entsteht ausschliesslich
+    beim Schreiben einer Lehre (hier, direkt nach der Eskalation in
+    _bump_lesson), nicht erst beim naechsten manuellen 'auto-rules'-CLI-Lauf.
+    Verzoegerter Import (nicht Modul-Top), weil lesson_recorder.py seinerseits
+    `import knowledge_mcp_server as kms` macht -- ein Top-Level-Import waere
+    hier derselbe Zirkel, den kurator_lauf() weiter oben schon vermeidet.
+    Nebenpruefung: darf den Schreibvorgang (die Eskalation ist bereits
+    committet) nie zum Scheitern bringen, deshalb Exception geschluckt."""
+    try:
+        import lesson_recorder
+        row = conn.execute("SELECT * FROM lessons_learned WHERE id = ?", (lesson_id,)).fetchone()
+        if row is None or row["auto_rule_generated"]:
+            return
+        rule_text = lesson_recorder.generate_rule(row)
+        lesson_recorder.write_rules_to_instructions([(row, rule_text)])
+        conn.execute("UPDATE lessons_learned SET auto_rule_generated = 1 WHERE id = ?", (lesson_id,))
+        conn.commit()
+    except Exception:
+        pass
+
+
 def _bump_lesson(conn: sqlite3.Connection, lesson_id: str, node_path: str,
                  log_query: str, new_description: str | None = None, *,
                  actor: str | None = None, session: str | None = None,
@@ -2494,6 +2523,7 @@ def _bump_lesson(conn: sqlite3.Connection, lesson_id: str, node_path: str,
             (lesson_id,)
         )
         conn.commit()
+        _auto_rule_fuer_lesson(conn, lesson_id)
 
     return {
         "id": lesson_id,

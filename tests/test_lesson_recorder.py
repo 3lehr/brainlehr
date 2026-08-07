@@ -31,7 +31,15 @@ import lesson_recorder as lr  # type: ignore  # noqa: E402
 
 @pytest.fixture()
 def temp_db(tmp_path, monkeypatch):
-    """Frische Test-DB mit dem echten Schema, DB_PATH umgebogen. NIE gegen knowledge.db."""
+    """Frische Test-DB mit dem echten Schema, DB_PATH umgebogen. NIE gegen knowledge.db.
+
+    PROJECTS ebenfalls umgebogen (ADR-034, Auto-Regel-Anschluss in
+    kms._auto_rule_fuer_lesson): ohne das schriebe eine Eskalation in diesem
+    Test echte Dateien nach hub/aka/bebetter .github/instructions/ --
+    lesson_recorder.write_rules_to_instructions() kennt nur das Modul-Dict
+    PROJECTS, kein Parameter dafuer. (conftest.py biegt das inzwischen fuer
+    die ganze Suite um; hier zusaetzlich explizit, damit diese Datei
+    unabhaengig lesbar bleibt.)"""
     db_path = tmp_path / "knowledge_test.db"
     schema = (SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8")
     conn = sqlite3.connect(str(db_path))
@@ -39,6 +47,7 @@ def temp_db(tmp_path, monkeypatch):
     conn.commit()
     conn.close()
     monkeypatch.setattr(lr, "DB_PATH", db_path)
+    monkeypatch.setattr(lr, "PROJECTS", {"shared": tmp_path / "shared_proj"})
     return db_path
 
 
@@ -123,6 +132,11 @@ def test_same_as_appends_repetition_text(temp_db):
 # --- Test 4: Schwelle erreicht -> Eskalation loest aus, erzeugt Vorschlag ----
 
 def test_threshold_reached_escalates_to_proposal(temp_db, capsys):
+    """ADR-034: die Eskalation selbst (kms._bump_lesson, Aufrufpfad hier ueber
+    lr.cmd_record) loest jetzt SOFORT kms._auto_rule_fuer_lesson() aus --
+    das frueher noetige manuelle 'auto-rules'-CLI ist fuer diesen Kandidaten
+    bereits erledigt, bevor er dort ueberhaupt ankommt (auto_rule_generated=1,
+    WHERE auto_rule_generated = 0 findet ihn also nicht mehr)."""
     lr.cmd_record(_record_args(desc="Basisfehler fuer Eskalationstest."))
     first_id = _all_ids(temp_db)[0]
     lr.cmd_record(_record_args(desc="Wiederholung Nr. 1.", same_as=first_id))
@@ -133,10 +147,11 @@ def test_threshold_reached_escalates_to_proposal(temp_db, capsys):
     row = _row(temp_db, first_id)
     assert row["occurrences"] == 3
     assert row["status"] == "escalated_to_rule"
+    assert row["auto_rule_generated"] == 1
 
-    # auto-rules erkennt ihn jetzt als Kandidat -- bleibt bei --dry-run ein Vorschlag, keine Regel.
+    # auto-rules (das alte manuelle CLI) findet keinen Kandidaten mehr -- der
+    # Schreibvorgang hat die Regel bereits erzeugt.
     lr.cmd_auto_rules(types.SimpleNamespace(dry_run=True))
     out2 = capsys.readouterr().out
-    assert first_id in out2
-    row_after = _row(temp_db, first_id)
-    assert row_after["auto_rule_generated"] == 0  # dry-run: nichts geschrieben, kein Flag gesetzt
+    assert first_id not in out2
+    assert "Keine Rule-Kandidaten" in out2
