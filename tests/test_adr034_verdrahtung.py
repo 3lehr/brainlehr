@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sqlite3
 import sys
+import urllib.error
 from pathlib import Path
 
 import pytest
@@ -26,6 +27,7 @@ SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
+import ankerverfahren  # type: ignore  # noqa: E402
 
 
 @pytest.fixture()
@@ -73,5 +75,72 @@ def test_kettenerklaerung_erklaeren_ist_als_werkzeug_erreichbar(temp_db):
     assert "error" not in ergebnis, ergebnis
 
     # NACHHER: genau ein Eintrag, ausgeloest durch den Werkzeugaufruf.
+    nachher = sqlite3.connect(str(temp_db)).execute("SELECT COUNT(*) FROM chain_explanations").fetchone()[0]
+    assert nachher == 1
+
+
+# ─── ankerverfahren.rueckstand: meldet sich nur beim Anker-Einstellen ───────
+
+def test_rueckstand_meldet_sich_nur_wenn_ein_anker_eingestellt_wird(temp_db, tmp_path, monkeypatch):
+    """Rot: eine Erklaerung OHNE Anker traegt keinen Rueckstand im Ergebnis
+    -- der Rueckstand aendert sich nur, wenn jemand tatsaechlich einen Anker
+    einstellt. Gruen: mit anker='rfc3161' und Netz nicht erreichbar (kein
+    echter Aufruf -- urlopen gezielt gepatcht, gleiches Muster wie
+    test_anker_warteschlange.py) landet der Versuch in der Warteschlange,
+    und GENAU DANN zeigt der zurueckgemeldete Rueckstand den neuen Eintrag."""
+    queue_path = tmp_path / "anker_queue.json"
+
+    _log3(2)
+    ids = [r[0] for r in sqlite3.connect(str(temp_db)).execute("SELECT id FROM access_log ORDER BY id")]
+    bruch_id = ids[0]
+    conn = sqlite3.connect(str(temp_db))
+    conn.execute("UPDATE access_log SET query = 'umgeschrieben' WHERE id = ?", (bruch_id,))
+    conn.commit()
+    conn.close()
+
+    # VORHER (kein Anker): kein anker_rueckstand-Schluessel im Ergebnis.
+    ohne_anker = kms.kettenerklaerung_erklaeren(bruch_id, "ohne Anker")
+    assert "anker_rueckstand" not in ohne_anker
+
+    assert ankerverfahren.rueckstand(queue_path)["anzahl"] == 0
+
+    _log3(1)
+    ids2 = [r[0] for r in sqlite3.connect(str(temp_db)).execute("SELECT id FROM access_log ORDER BY id")]
+    zweiter_bruch = ids2[-1]
+    conn = sqlite3.connect(str(temp_db))
+    conn.execute("UPDATE access_log SET query = 'umgeschrieben-2' WHERE id = ?", (zweiter_bruch,))
+    conn.commit()
+    conn.close()
+
+    monkeypatch.setattr(
+        ankerverfahren.urllib.request, "urlopen",
+        lambda *a, **k: (_ for _ in ()).throw(urllib.error.URLError(OSError("no route to host"))),
+    )
+    mit_anker = kms.kettenerklaerung_erklaeren(
+        zweiter_bruch, "mit Anker", anker="rfc3161",
+        queue_path=queue_path, senden=True,
+    )
+    assert "anker_rueckstand" in mit_anker
+    assert mit_anker["anker_rueckstand"]["anzahl"] == 1
+    assert ankerverfahren.rueckstand(queue_path)["anzahl"] == 1
+
+
+def test_rueckstand_fehler_bricht_die_erklaerung_nicht(temp_db, monkeypatch):
+    """Negativfall 2 (ADR-034): schlaegt der Rueckstand-Blick fehl (defekte
+    Warteschlangendatei), darf die Erklaerung selbst trotzdem geschrieben
+    werden -- der Beleg steht schon, das ist nur eine Nebenauskunft."""
+    _log3(1)
+    ids = [r[0] for r in sqlite3.connect(str(temp_db)).execute("SELECT id FROM access_log ORDER BY id")]
+    bruch_id = ids[0]
+    conn = sqlite3.connect(str(temp_db))
+    conn.execute("UPDATE access_log SET query = 'umgeschrieben' WHERE id = ?", (bruch_id,))
+    conn.commit()
+    conn.close()
+
+    monkeypatch.setattr(ankerverfahren, "rueckstand", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("kaputt")))
+
+    ergebnis = kms.kettenerklaerung_erklaeren(bruch_id, "trotzdem geschrieben", anker="rfc3161")
+    assert "error" not in ergebnis
+    assert "anker_rueckstand" not in ergebnis  # Nebenpruefung scheiterte, wurde verschluckt
     nachher = sqlite3.connect(str(temp_db)).execute("SELECT COUNT(*) FROM chain_explanations").fetchone()[0]
     assert nachher == 1

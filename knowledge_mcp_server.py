@@ -1894,7 +1894,13 @@ def kettenerklaerung_erklaeren(access_log_id: int, grund: str, *, commit_hash: s
     Umschreibung nachtraeglich erklaert (siehe kettenerklaerung.py-Docstring).
 
     anker (optional, "rfc3161"/"gegenzeichnung"): reicht an
-    ankerverfahren.versuche_anker() durch."""
+    ankerverfahren.versuche_anker() durch. Genau in diesem Moment -- ein
+    Anker wird eingestellt -- aendert sich auch ankerverfahren.rueckstand(),
+    darum wird er hier gleich mitgemeldet (anker_rueckstand im Ergebnis)
+    statt in einem periodischen Blick auf die Warteschlange, die sich sonst
+    nie aendert (ADR-034). Ein Fehler beim Rueckstand-Blick darf die
+    Erklaerung selbst nie zu Fall bringen (Negativfall 2) -- der Beleg wurde
+    ja schon geschrieben, das ist nur eine Nebenauskunft."""
     import kettenerklaerung  # verzoegert -- kettenerklaerung.py importiert seinerseits
                               # aus diesem Modul, Top-Level waere derselbe Zirkel wie kurator_lauf().
     conn = get_db()
@@ -1906,6 +1912,16 @@ def kettenerklaerung_erklaeren(access_log_id: int, grund: str, *, commit_hash: s
         )
     finally:
         conn.close()
+
+    if anker is not None:
+        try:
+            import ankerverfahren
+            # Derselbe queue_path wie beim Anker-Versuch selbst -- versuche_anker()
+            # bekam ihn (falls mitgegeben) ueber genau dieselben anker_kwargs.
+            queue_path = anker_kwargs.get("queue_path", ankerverfahren.ANKER_QUEUE_PATH)
+            ergebnis["anker_rueckstand"] = ankerverfahren.rueckstand(queue_path)
+        except Exception:
+            pass
     return ergebnis
 
 
@@ -3453,7 +3469,9 @@ TOOLS = {
                         "Never changes the stored ketten_hash; the break stays visible, this only records "
                         "who/when/why next to it. Optional anker=\"rfc3161\"/\"gegenzeichnung\" builds an "
                         "external anchor for the explanation via ankerverfahren.py (dry by default, no network "
-                        "without an explicit anker_kwargs override).",
+                        "without an explicit anker_kwargs override) -- when set, the current anchor backlog "
+                        "(ankerverfahren.rueckstand) is reported back as anker_rueckstand, since that backlog "
+                        "only ever changes at this moment.",
         "inputSchema": {
             "type": "object",
             "properties": {
