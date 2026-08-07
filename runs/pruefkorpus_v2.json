@@ -1,0 +1,19 @@
+{
+  "pilot": {
+    "ok": false,
+    "zustand": null,
+    "target_id": "L-a9ccd0",
+    "task": "Ein Nutzer meldet, dass seine Fahrtdaten nach einem Telefonanruf während einer Abfrage plötzlich verschwunden sind. Wir müssen sicherstellen, dass ein automatisches Timeout des Dialogs lediglich das Fenster schließt und keine permanenten Löschvorgänge in der Datenbank auslöst."
+  },
+  "aborted": true,
+  "n_cases": 1,
+  "cases": [
+    {
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-a9ccd0",
+      "target_label": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in j",
+      "prompt": "Ein Nutzer meldet, dass seine Fahrtdaten nach einem Telefonanruf während einer Abfrage plötzlich verschwunden sind. Wir müssen sicherstellen, dass ein automatisches Timeout des Dialogs lediglich das Fenster schließt und keine permanenten Löschvorgänge in der Datenbank auslöst."
+    }
+  ]
+}
