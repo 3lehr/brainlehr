@@ -111,18 +111,25 @@ def existierende_pfade(conn: sqlite3.Connection) -> set[str]:
     return {row[0] for row in conn.execute("SELECT path FROM knowledge_nodes")}
 
 
-def bestehende_kanten(conn: sqlite3.Connection) -> set[tuple[str, str]]:
+def bestehende_kanten(conn: sqlite3.Connection) -> dict[tuple[str, str], tuple[str, float]]:
+    """Pfad-Paar -> (relation_id, aktuelles Gewicht), nur eigener Kantentyp+Quelle."""
     rows = conn.execute(
-        "SELECT source_path, target_path FROM knowledge_relations WHERE relation_type=? AND source=?",
+        "SELECT id, source_path, target_path, weight FROM knowledge_relations WHERE relation_type=? AND source=?",
         (RELATION_TYPE, SOURCE_TAG),
     ).fetchall()
-    return {(r[0], r[1]) for r in rows}
+    return {(r[1], r[2]): (r[0], r[3]) for r in rows}
 
 
 def plane(zaehler: Counter, schwelle: int, gueltige_pfade: set[str],
-          vorhandene_kanten: set[tuple[str, str]]) -> tuple[list[tuple[str, str, int]], int]:
-    """Liefert (anzulegende Kanten [a,b,gewicht], Zahl uebersprungener Paare wegen fehlendem Knoten)."""
+          vorhandene_kanten: dict[tuple[str, str], tuple[str, float]],
+          ) -> tuple[list[tuple[str, str, int]], list[tuple[str, str, int, str, float]], int]:
+    """Liefert (neue Kanten [a,b,zaehlung], zu erhoehende [a,b,zaehlung,relation_id,altes_gewicht],
+    Zahl uebersprungener Paare wegen fehlendem Knoten).
+
+    Eine bereits angelegte Kante wird nicht uebersprungen, sondern im Gewicht erhoeht
+    (Auflage 3: 20 gemeinsame Abrufe sind ein staerkeres Indiz als 2)."""
     anzulegen = []
+    zu_erhoehen = []
     uebersprungen_fehlend = 0
     for (a, b), n in zaehler.items():
         if n < schwelle:
@@ -130,15 +137,19 @@ def plane(zaehler: Counter, schwelle: int, gueltige_pfade: set[str],
         if a not in gueltige_pfade or b not in gueltige_pfade:
             uebersprungen_fehlend += 1
             continue
-        if (a, b) in vorhandene_kanten or (b, a) in vorhandene_kanten:
-            continue
-        anzulegen.append((a, b, n))
-    return anzulegen, uebersprungen_fehlend
+        bestehend = vorhandene_kanten.get((a, b)) or vorhandene_kanten.get((b, a))
+        if bestehend:
+            relation_id, altes_gewicht = bestehend
+            zu_erhoehen.append((a, b, n, relation_id, altes_gewicht))
+        else:
+            anzulegen.append((a, b, n))
+    return anzulegen, zu_erhoehen, uebersprungen_fehlend
 
 
-def wende_an(conn: sqlite3.Connection, kanten: list[tuple[str, str, int]]) -> int:
+def wende_an(neu: list[tuple[str, str, int]],
+             erhoehungen: list[tuple[str, str, int, str, float]]) -> tuple[int, int]:
     angelegt = 0
-    for a, b, n in kanten:
+    for a, b, n in neu:
         kms.knowledge_relation_add(
             source_node=a, target_node=b, relation_type=RELATION_TYPE,
             confidence=0.5,  # abgeleitet, nicht belegt -- bewusst unter dem Default 0.8
@@ -148,11 +159,34 @@ def wende_an(conn: sqlite3.Connection, kanten: list[tuple[str, str, int]]) -> in
             creator=SOURCE_TAG,
         )
         angelegt += 1
-    return angelegt
+    erhoeht = 0
+    for a, b, n, relation_id, altes_gewicht in erhoehungen:
+        neues_gewicht = altes_gewicht + n
+        kms.knowledge_relation_update(
+            relation_id=relation_id,
+            weight=neues_gewicht,
+            evidence=f"{neues_gewicht:.0f} gemeinsame Abrufe insgesamt in recall_log.jsonl "
+                     f"(erneuter Lauf, +{n})",
+            creator=SOURCE_TAG,
+        )
+        erhoeht += 1
+    return angelegt, erhoeht
+
+
+def loesche_eigene_kanten(conn: sqlite3.Connection) -> list[str]:
+    """IDs aller Kanten dieses Typs+Quelle. Nur lesend -- Loeschen macht der Aufrufer
+    ueber kms.knowledge_relation_remove(), damit auch das Loeschen den Wissensvertrag
+    (audited Zugriff statt direktem DELETE) einhaelt."""
+    rows = conn.execute(
+        "SELECT id FROM knowledge_relations WHERE relation_type=? AND source=?",
+        (RELATION_TYPE, SOURCE_TAG),
+    ).fetchall()
+    return [r[0] for r in rows]
 
 
 def bericht(knoten_paare: Counter, lesson_paare: Counter, zeilen: int, schwelle: int,
-            kanten: list[tuple[str, str, int]], uebersprungen: int) -> None:
+            kanten: list[tuple[str, str, int]], erhoehungen: list[tuple[str, str, int, str, float]],
+            uebersprungen: int) -> None:
     gesamt = Counter(knoten_paare)
     gesamt.update(lesson_paare)
     print(f"recall_log.jsonl: {zeilen} Zeilen, {len(gesamt)} verschiedene Ko-Abruf-Paare insgesamt "
@@ -164,7 +198,7 @@ def bericht(knoten_paare: Counter, lesson_paare: Counter, zeilen: int, schwelle:
           f"{len(knoten_paare)} insgesamt, {sum(1 for c in knoten_paare.values() if c >= schwelle)} ab Schwelle {schwelle}")
     print(f"  davon Paare mit Lesson-Beteiligung (nie eine Kante -- knowledge_relations.source_path/"
           f"target_path referenziert nur knowledge_nodes, siehe schema.sql): {len(lesson_paare)}")
-    print(f"Schwelle={schwelle} -> {len(kanten)} anzulegende Kanten (neu, nicht bereits vorhanden)")
+    print(f"Schwelle={schwelle} -> {len(kanten)} neue Kanten, {len(erhoehungen)} bestehende werden im Gewicht erhoeht")
     print(f"  uebersprungen (Knoten-Knoten-Paar ab Schwelle, aber ein Pfad existiert nicht mehr): {uebersprungen}")
 
 
@@ -173,20 +207,37 @@ def lauf(log_path: Path, db_path: Path, schwelle: int, apply: bool) -> dict:
     conn = sqlite3.connect(str(db_path))
     gueltige_pfade = existierende_pfade(conn)
     vorhandene = bestehende_kanten(conn)
-    kanten, uebersprungen = plane(knoten_paare, schwelle, gueltige_pfade, vorhandene)
-    bericht(knoten_paare, lesson_paare, zeilen, schwelle, kanten, uebersprungen)
+    kanten, erhoehungen, uebersprungen = plane(knoten_paare, schwelle, gueltige_pfade, vorhandene)
+    conn.close()
+    bericht(knoten_paare, lesson_paare, zeilen, schwelle, kanten, erhoehungen, uebersprungen)
 
     if not apply:
-        conn.close()
         print("(--dry-run, nichts geschrieben. --apply zum Schreiben.)")
-        return {"geplant": len(kanten), "uebersprungen": uebersprungen}
+        return {"geplant": len(kanten), "erhoehungen": len(erhoehungen), "uebersprungen": uebersprungen}
 
-    conn.close()  # kms.knowledge_relation_add oeffnet seine eigene Verbindung
     sicherung = _backup(db_path)
     print(f"Sicherung: {sicherung}")
-    angelegt = wende_an(sqlite3.connect(str(db_path)), kanten)
-    print(f"Angelegt: {angelegt} Kanten.")
-    return {"angelegt": angelegt, "sicherung": str(sicherung)}
+    kms.DB_PATH = db_path  # knowledge_relation_add/_update oeffnen ueber kms.get_db() -> DB_PATH
+    angelegt, erhoeht = wende_an(kanten, erhoehungen)
+    print(f"Angelegt: {angelegt} Kanten. Erhoeht: {erhoeht} Kanten.")
+    return {"angelegt": angelegt, "erhoeht": erhoeht, "sicherung": str(sicherung)}
+
+
+def loesche(db_path: Path, apply: bool) -> dict:
+    conn = sqlite3.connect(str(db_path))
+    ids = loesche_eigene_kanten(conn)
+    conn.close()
+    print(f"Kanten relation_type={RELATION_TYPE!r} source={SOURCE_TAG!r}: {len(ids)} gefunden.")
+    if not apply:
+        print("(--dry-run, nichts geloescht. --delete --apply zum Loeschen.)")
+        return {"gefunden": len(ids)}
+    sicherung = _backup(db_path)
+    print(f"Sicherung: {sicherung}")
+    kms.DB_PATH = db_path
+    for relation_id in ids:
+        kms.knowledge_relation_remove(relation_id=relation_id, actor=SOURCE_TAG)
+    print(f"Geloescht: {len(ids)} Kanten.")
+    return {"geloescht": len(ids), "sicherung": str(sicherung)}
 
 
 # ─── Selbsttest ──────────────────────────────────────────────────────────
@@ -202,8 +253,8 @@ def _selftest() -> int:
     knoten = ["/a", "/b", "/c", "/d"]
     for i, p in enumerate(knoten):
         conn.execute(
-            "INSERT INTO knowledge_nodes (id,path,title,summary,created_at,updated_at) VALUES (?,?,?,?,?,?)",
-            (f"N-{i}", p, p, "Test", now, now),
+            "INSERT INTO knowledge_nodes (id,path,title,summary,source,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
+            (f"N-{i}", p, p, "Test", "selftest", now, now),
         )
     conn.commit()
     conn.close()
@@ -264,12 +315,49 @@ def _selftest() -> int:
     check(gewicht_cd == 3.0, f"/c-/d Gewicht 3 (haeufiger), war {gewicht_cd}")
     check(not any({r[0], r[1]} == {"/a", "/b"} for r in rows), "/a-/b (nur 1x) wurde NICHT angelegt")
 
-    # Lauf 3: zweiter apply-Lauf legt nichts doppelt an
-    lauf(log_path, db_path, SCHWELLE_DEFAULT, apply=True)
+    # Lauf 3: zweiter apply-Lauf legt nichts doppelt an, erhoeht aber das Gewicht
+    ergebnis3 = lauf(log_path, db_path, SCHWELLE_DEFAULT, apply=True)
     conn = sqlite3.connect(str(db_path))
-    n_nach = conn.execute("SELECT COUNT(*) FROM knowledge_relations").fetchone()[0]
+    rows_nach = conn.execute(
+        "SELECT source_path,target_path,weight FROM knowledge_relations ORDER BY source_path"
+    ).fetchall()
     conn.close()
-    check(n_nach == 2, f"zweiter apply-Lauf idempotent, weiter 2 Kanten, war {n_nach}")
+    check(len(rows_nach) == 2, f"zweiter apply-Lauf legt nichts doppelt an, weiter 2 Kanten, war {len(rows_nach)}")
+    check(ergebnis3["angelegt"] == 0, f"zweiter Lauf legt 0 neue Kanten an, war {ergebnis3['angelegt']}")
+    check(ergebnis3["erhoeht"] == 2, f"zweiter Lauf erhoeht 2 bestehende Kanten, war {ergebnis3['erhoeht']}")
+    gewicht_bc_2 = next((r[2] for r in rows_nach if {r[0], r[1]} == {"/b", "/c"}), None)
+    gewicht_cd_2 = next((r[2] for r in rows_nach if {r[0], r[1]} == {"/c", "/d"}), None)
+    check(gewicht_bc_2 == 4.0, f"/b-/c Gewicht nach 2. Lauf 2+2=4, war {gewicht_bc_2}")
+    check(gewicht_cd_2 == 6.0, f"/c-/d Gewicht nach 2. Lauf 3+3=6, war {gewicht_cd_2}")
+
+    # Lauf 4: Loeschbefehl trifft nur den eigenen Typ, eine fremde Kante bleibt
+    conn = sqlite3.connect(str(db_path))
+    fremd_now = now
+    conn.execute(
+        """INSERT INTO knowledge_relations
+           (id,source_path,target_path,relation_type,confidence,weight,evidence,source,
+            creator,model,session,created_at,updated_at)
+           VALUES ('R-fremd','/a','/d','constrains',0.8,1.0,'von Hand','betreiber',
+                   'betreiber',NULL,NULL,?,?)""",
+        (fremd_now, fremd_now),
+    )
+    conn.commit()
+    conn.close()
+
+    loesch_dry = loesche(db_path, apply=False)
+    conn = sqlite3.connect(str(db_path))
+    n_dry = conn.execute("SELECT COUNT(*) FROM knowledge_relations").fetchone()[0]
+    conn.close()
+    check(loesch_dry["gefunden"] == 2, f"Loesch-Trockenlauf findet 2 eigene Kanten, war {loesch_dry['gefunden']}")
+    check(n_dry == 3, f"Loesch-Trockenlauf loescht nichts, weiter 3 Kanten (2 eigene+1 fremd), war {n_dry}")
+
+    loesch_apply = loesche(db_path, apply=True)
+    conn = sqlite3.connect(str(db_path))
+    rest = conn.execute("SELECT relation_type,source FROM knowledge_relations").fetchall()
+    conn.close()
+    check(loesch_apply["geloescht"] == 2, f"Loeschung entfernt 2 eigene Kanten, war {loesch_apply['geloescht']}")
+    check(len(rest) == 1 and rest[0] == ("constrains", "betreiber"),
+          f"nur die fremde Kante bleibt, war {rest}")
 
     shutil.rmtree(tmp_dir, ignore_errors=True)
     print("SELFTEST " + ("BESTANDEN" if ok else "FEHLGESCHLAGEN"))
@@ -282,6 +370,9 @@ def main() -> int:
                    help=f"Mindestzahl gemeinsamer Abrufe (Vorgabe {SCHWELLE_DEFAULT})")
     p.add_argument("--apply", action="store_true", help="Schreibt Kanten (Vorgabe: nur --dry-run)")
     p.add_argument("--dry-run", action="store_true", help="Nur planen, nichts schreiben (Vorgabe)")
+    p.add_argument("--delete", action="store_true",
+                   help="Loescht nur eigene Kanten (relation_type=analogous_to, source=hebb_kanten.py). "
+                        "Ohne --apply nur Anzahl anzeigen.")
     p.add_argument("--selftest", action="store_true", help="Selbsttest mit temporaerer DB/Log")
     p.add_argument("--log", type=Path, default=RECALL_LOG)
     p.add_argument("--db", type=Path, default=kms.DB_PATH)
@@ -294,6 +385,11 @@ def main() -> int:
     if not args.db.exists():
         print(f"FEHLER: {args.db} nicht gefunden.")
         return 1
+
+    if args.delete:
+        loesche(args.db, apply)
+        return 0
+
     if not args.log.exists():
         print(f"FEHLER: {args.log} nicht gefunden.")
         return 1
