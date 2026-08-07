@@ -47,6 +47,9 @@ import eskalation_vorlage  # noqa: E402  -- nur Funktionen aufgerufen, Datei unv
 import knowledge_lint  # noqa: E402       -- nur find_norm_conflicts() gelesen
 import meisterschaft  # noqa: E402        -- nur *_lesen() gelesen/Schluessel-Namen
 import nachtlaeufer  # noqa: E402         -- nur _DEFAULTS gelesen
+import raum_daten  # noqa: E402           -- nur sammle() aufgerufen, Datei unveraendert
+
+RAUM_HTML_PATH = HERE / "raum.html"
 
 SIEGGROESSEN = meisterschaft.SIEGGROESSEN  # ("trefferquote","schweigequote","streuung","kosten")
 GEWICHT_PREFIX = "siegbedingung_gewicht_"
@@ -340,6 +343,28 @@ def _gesamtstand() -> dict:
     }
 
 
+# ─── Abschnitt 9: Wissensraum (Auftrag 2026-08-08) ──────────────────────────
+#
+# PCA-Lauf ist teuer (~1s bei 2600 Punkten) -- Zwischenspeicher, neu gerechnet
+# nur wenn knowledge.db oder recall_log.jsonl seit dem letzten Lauf eine
+# neuere mtime tragen. Kein Hintergrund-Refresh, keine Ablaufzeit: die zwei
+# mtimes SIND die Gueltigkeitsbedingung.
+
+_raum_cache: dict = {"ergebnis": None, "db_mtime": None, "log_mtime": None}
+
+
+def _raum_stand() -> dict:
+    db_mtime = raum_daten.DB_PATH.stat().st_mtime
+    log_mtime = raum_daten.RECALL_LOG_PATH.stat().st_mtime if raum_daten.RECALL_LOG_PATH.exists() else None
+    if (_raum_cache["ergebnis"] is None
+            or _raum_cache["db_mtime"] != db_mtime
+            or _raum_cache["log_mtime"] != log_mtime):
+        _raum_cache["ergebnis"] = raum_daten.sammle()
+        _raum_cache["db_mtime"] = db_mtime
+        _raum_cache["log_mtime"] = log_mtime
+    return _raum_cache["ergebnis"]
+
+
 # ─── HTTP ─────────────────────────────────────────────────────────────────
 
 class Handler(BaseHTTPRequestHandler):
@@ -366,6 +391,20 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/stand":
             try:
                 self._json(_gesamtstand())
+            except Exception as e:
+                self._json({"error": str(e)}, 500)
+            return
+        if self.path in ("/raum", "/raum.html"):
+            body = RAUM_HTML_PATH.read_text(encoding="utf-8").encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if self.path == "/api/raum":
+            try:
+                self._json(_raum_stand())
             except Exception as e:
                 self._json({"error": str(e)}, 500)
             return
