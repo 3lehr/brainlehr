@@ -1,0 +1,628 @@
+e66ca1d9-98f	B	Bedingung: pip install wird ausserhalb eines aktiven .venv (VIRTUAL_ENV unset bzw. sys.prefix==sys.base_prefix) aufgerufen, ohne Sprachmodell pruefbar.
+ec7b14b9-ce2	B	Bedingung: Test-Discovery liefert einen Pfad, der .worktrees/ oder _legacy/ enthaelt, deterministisch per String-Match pruefbar.
+6e77f7e0-a63	C	Arbeitsweisen-Empfehlung fuer den Agenten selbst (Skript-Datei statt Inline), kein Code-Zustand im Repo pruefbar.
+L-f4eb45	C	Faktisches Ereignisprotokoll eines BSI-Sync-Laufs, keine wiederkehrende Bedingung.
+L-71fd3a	C	Architektur-Uebersicht ueber fehlende Verifikation in zwei Apps, Beurteilung "kritischer Pfad" ist Urteil, kein generischer Test.
+L-6b3084	C	Prozessempfehlung (Walkthrough nach Feature-Bloecken fahren), keine Code-Bedingung.
+44c4a08f-3d2	B	Bedingung: eine als Future<bool> deklarierte Funktion enthaelt rethrow/unbehandelten throw statt return false, per Lint/AST deterministisch erkennbar.
+L-4ab9b0	B	Bedingung: Widget setzt Button-/Card-Hoehe als Zahlenliteral statt DesignTokens.buttonHeight, per Regex/AST-Scan erkennbar.
+L-021f62	C	Herleitung der richtigen Schwelle aus Hardware-Physik ist Urteilssache, je Sensor verschieden.
+L-bbe552	C	Tatsachenbehauptung ueber Verhalten fremder ELM327-Klon-Dongles.
+L-8054ae	C	Sammlung von Tatsachen ueber Claude-Code-Hook-Verhalten und SQLite-FTS5-Parsing, keine Repo-Bedingung.
+L-0dec26	B	Bedingung: ein im Backend als required markiertes Feld hat kein entsprechendes id/name im zugehoerigen Formular, per Diff pruefbar.
+L-1ecb0f	B	Bedingung: erzeugter PDF-Text enthaelt Platzhalter-String (z.B. "manuell ergaenzen") statt echter Pflichtangabe, per Textextraktion+Assert pruefbar.
+L-b6fbc4	B	Bedingung: setState(() => x = y) mit Future-typisiertem y (Arrow-Body statt Block-Body), per Lint/AST erkennbar.
+L-31ae3b	B	Bedingung: Migrationstest enthaelt hartkodierten CREATE-TABLE-SQL-String statt Migrator.createTable()-Subklasse, per Grep in Testdateien pruefbar.
+L-1b46fe	B	Bedingung: eine Guard-/Schutzfunktion (z.B. guard_write_for_pii) hat ausserhalb von Tests null Aufrufer, per Grep/Call-Graph pruefbar.
+L-18cec3	B	Bedingung: kein per grep bestaetigter passender Test-Treffer zu den genannten Dateien in diesem Repo gefunden, daher ohne Fundstelle B statt A; Kern ist aber die Regel "Sicherheits-Selbsttest muss in pytest/CI-Sammlung liegen" pro Modul pruefbar.
+L-657b03	C	Tatsachenbehauptung ueber Default-Aufloesung des mobile_scanner-Packages.
+L-1026ad	C	Kryptografische Design-Bewertung (Trust-Anchor im selben Payload) ist Urteilssache je Protokoll.
+L-ff4a53	C	Umgebungsfakt (Swift-Toolchain-Pfad auf einer bestimmten Maschine).
+L-e2758a	C	Einmaliger historischer Befund zur Branch-Topologie, keine wiederkehrende Bedingung.
+L-79cb81	C	Einmaliger Befund einer falschen Testzahl im Handoff, Prozessregel "Suite selbst laufen lassen" ist keine Code-Bedingung.
+L-cebc03	B	Bedingung: nach einem Testlauf zeigt git status neue/geaenderte Dateien unter docs/openlehr/reports/, per CI-Check pruefbar.
+L-c0e910	B	Bedingung: Datei ruft showDialog/AlertDialog direkt auf statt ActionScreen-Helper, per Lint/Grep pruefbar.
+L-43c65c	C	Migrations-vs-Fresh-Install-Unterscheidung bei Default-Aenderungen ist je Feature semantisch verschieden, kein generischer Check.
+L-69217d	B	Bedingung: eine Tabelle wird per SELECT in Produktionscode gelesen, hat aber repoweit keinen INSERT/Schreib-Aufrufer, per Grep pruefbar.
+L-943948	B	Bedingung: kein per grep bestaetigter Test-Treffer in diesem Repo gefunden, daher B statt A; Kern-Regel "Safe-Marker darf Gefahren-Muster nie uebertrumpfen bei Kombination" ist per Kombinations-Testfall pruefbar.
+L-7b2c20	B	Bedingung: check_disjoint_from_eval_set() ruft den Eval-Generator erneut auf statt eine persistierte Fixture-Datei einzulesen, per Code-/Call-Analyse pruefbar.
+L-5c3410	C	Tatsache ueber macOS-Electron-Umgebungsvererbung (GUI-Apps sourcen kein .zshrc).
+L-702556	B	Bedingung: PRODUCT_BUNDLE_IDENTIFIER im Xcode-Projekt weicht von der bei App Store Connect registrierten Bundle-ID ab, per API-Abgleich pruefbar.
+L-4f3d6c	B	Bedingung: extrahierter Geldbetrag (netto*MwSt bzw. Stueck*Preis) stimmt nicht mit dem im Dokument stehenden Summenwert ueberein, per Nachrechnung pruefbar.
+L-97f8bf	C	Beurteilung der inhaltlichen Vollstaendigkeit eines Portal-Archivs gegen gesetzliche Pflichtdokumente ist Urteilssache.
+L-48d8c8	C	Tatsache ueber die URL-Struktur von gesetze-im-internet.de.
+L-dc0f44	C	Methodenbeschreibung einer Pseudonymisierungs-Pipeline, Vorgehensempfehlung statt pruefbare Bedingung.
+L-1e7187	B	Bedingung: generiertes SVG/XML besteht xmllint --noout nicht bzw. enthaelt unescapte '&'/'<'/'>' in Text/Attributen, deterministisch pruefbar.
+L-9b0aaa	B	Bedingung: nutzersichtbarer Text enthaelt Konsil-Rollenbegriffe (Runde/Experten/Fachleute/Sondervotum) ohne Simulationshinweis, per Wortmuster-Scan pruefbar; genannter wording_check.sh nicht im Repo bestaetigt, daher B statt A.
+L-63ece3	B	Bedingung: Anon-Output (Inhalt oder Dateiname) enthaelt noch einen bekannten Klarnamen in Gross-/Apostroph-Variante, per Grep pruefbar.
+L-14a742	C	Arbeitsweisen-Empfehlung fuer Bash-Tool-Sandbox bei Codesign-Schritten, kein Repo-Zustand.
+L-e728c6	C	Abwaegung, ob ein Wake-Signal vertrauenswuerdig genug fuer UI-Feedback ist, ist kontextabhaengiges Design-Urteil.
+L-3b7506	B	Bedingung: flutter-build-ipa-Ausgabe enthaelt die Warnung 'App icon is set to the default placeholder icon', per Log-Grep vor Upload pruefbar.
+L-721faf	C	Korrektur eines fruehereren Fehlschlusses, einmaliger Sachverhalt.
+L-abd124	B	Bedingung: gerendertes HTML einer Seite enthaelt 0 Navigations-Links (Smoke-Test), deterministisch pruefbar.
+L-08dd0b	B	Bedingung: extrahiertes Vertragsdokument enthaelt 0 Treffer der Soll-Objektkennung (Adresse/Aktenzeichen), per Grep pruefbar.
+L-a9ccd0	C	Beurteilung, ob ein Timeout-Pfad "destruktiv" ist, erfordert Verstaendnis der Aktion, kein generischer Check.
+L-30aa02	B	Bedingung: Trip-End-Vorschlag wird ausgeloest, waehrend CarPlay/AndroidAuto isConnected==true ist, per Test simulierbar.
+L-154025	C	Dokumentierte Workaround-Technik (JWT direkt gegen ASC-REST-API), kein wiederkehrender Repo-Zustand.
+L-230c75	C	Vollstaendigkeit eines Grep-Sweeps nach jedem Tote-Tabelle-Fund ist Prozessdisziplin, nicht automatisch verifizierbar ohne Judgment ueber "Familie".
+L-a41de9	B	Bedingung: ein in Commit-Message als geguardet behauptetes Feld hat keinen zugehoerigen Fail-Test; genannter Test in diesem Verzeichnis nicht per Grep bestaetigt, daher B statt A.
+L-320d0a	C	Fairness-Bewertung von Vergleichsrechnungen (unbepreiste Posten als Risiko werten) ist inhaltliches Urteil.
+L-3cbd18	C	Methodenempfehlung fuer Multi-Agenten-Konsile, Prozessrichtlinie ohne Code-Bedingung.
+L-7d69ee	B	Bedingung: macOS-Entitlements haben app-sandbox=true ohne keychain-access-groups, waehrend flutter_secure_storage als Dependency vorhanden ist, statisch pruefbar.
+L-78dee4	C	Einmaliger Infrastruktur-Befund zur hub/phoenix-Worktree-Struktur.
+L-319e01	B	Bedingung: nach Fahrt-Start mit Vorlauf-Distanz X ist currentKm != kmStart+X, per Test pruefbar; genannter Test nicht per Grep im Repo bestaetigt, daher B statt A.
+L-ef8c01	B	Bedingung: nach Fahrt-Ende im Landscape-/Auto-Caller erscheint kein TripCompletionSheet, per Test pruefbar; genannter Test nicht per Grep im Repo bestaetigt, daher B statt A.
+L-36409a	B	Bedingung: eine Komponente/Methode hat ausserhalb von Tests null Aufrufer im Produktionspfad, per Grep/Call-Graph pruefbar.
+L-093dc4	B	Bedingung: unauthentifizierter Client erhaelt Zugriff auf MediaMTX-Pfad (publish/read) ohne Token, per Integrationstest pruefbar.
+L-aa4995	B	Bedingung: externe Referenz (z.B. Kalender-Marker) auf eine Fahrt loest nach updateVersioned nicht mehr auf, per Regressionstest pruefbar.
+L-165986	B	Bedingung: optionale native Abhaengigkeit (z.B. EventKit) wird auf Modulebene statt lazy im Konstruktor importiert, per AST-Scan pruefbar.
+L-5b08a7	C	Tatsachen ueber Recherche-Werkzeuge (reddit blockt WebFetch, Hersteller-Latenzangaben unbelegt).
+L-71bbd2	C	Tatsache ueber macOS-TCC-Attribution von CLI-Kindprozessen unter Claude.app.
+L-c18c62	B	Bedingung: eine per fullscreenDialog-Route geflachte Overlay-Seite hat keinen expliziten Schliessen-Button/Pop-Weg im Content, per Lint/Review-Scan pruefbar.
+L-13f9a5	C	Tatsache ueber AppleScript-Move-Verhalten auf iCloud-Kalendern in Calendar.app.
+L-44a838	B	Bedingung: eine Codestelle schreibt LLM-generierten Text in db.conn.execute/create_*_suggestion ohne vorausgehenden redact_pii/ensure_pii_redacted-Aufruf, per Grep/Call-Reihenfolge pruefbar.
+L-a3720a	B	Bedingung: ein Pseudonymisierungs-/Schutzmodul hat ausserhalb von Tests null Aufrufer im Produktionspfad (Serialisierungs-Chokepoint), per Grep/Call-Graph pruefbar.
+L-464d40	C	Tatsache ueber eine Beschraenkung des Claude-in-Chrome file_upload-Tools.
+L-c63e6f	C	Tatsache ueber fehlende Google-Play-API-Abdeckung fuer App-Inhalte-Formulare.
+L-e7236d	B	Bedingung: eine user_id-indexierte Speicherstelle (Schreiben oder Lesen) durchlaeuft nicht dieselbe kanonische Normalisierungsfunktion wie die uebrigen, per Grep aller Indexierungsstellen pruefbar.
+L-c41320	B	Bedingung: ein PreToolUse-Guard hat keinen Testfall, der einen Subagenten-Call ausdruecklich passieren laesst (Allow-Fall), per Testsuite-Pruefung feststellbar.
+L-b584e1	B	Bedingung: applicationId/namespace in build.gradle.kts stimmt nicht mit dem package-Statement/Verzeichnis der MainActivity.kt ueberein, statisch pruefbar.
+L-884098	C	Arbeitsweisen-Empfehlung fuer Swift-Builds in Agent-Sessions (xcrun-Praefix), Umgebungsfakt dieser Maschine.
+L-3a77da	A	Fundstelle: setfunk/scripts/anti_dummy_gate.py (Pre-Commit-Gate) blockt bereits delay(<Ziffern-Literal>) in Kotlin-Code.
+L-5c9fb1	B	Bedingung: TextStyle(fontSize: Zahlenliteral) liegt innerhalb eines const-Teilbaums statt Theme.of(context).textTheme, per AST-Scan pruefbar.
+L-2326bd	B	Bedingung: der native Fahrterkennungs-Code (iOS/Android) hat null Aufrufe von startUpdatingLocation()/sendLocationEvent-Aequivalent im gesamten nativen Ordner, per Grep pruefbar.
+L-121497	B	Bedingung: ein CI-Gate-Skript regeneriert seine Referenzdatei nur bei Nichtvorhandensein (if !existsSync) statt bei jedem Lauf, per Code-Review des Skripts pruefbar.
+L-bce3f4	C	Arbeitsweisen-Empfehlung (vor Nutzung eines unbekannten Widgets dessen Verwendungsstellen pruefen), kein Repo-Zustand.
+L-f7ee6a	C	Empfehlung zur Vorgehensweise beim Bau neuer Analyse-Skripte (Regex an echten Beispielen verifizieren), keine wiederkehrende Bedingung.
+L-74db23	C	Faktentreue-Audit von Erklaertexten gegen Code erfordert semantisches Verstehen von Text-Behauptungen, kein deterministischer Check.
+L-f54650	C	Plattformverhalten von Kalender-Sync (iOS EventKit vs. Android CalendarContract) ist Tatsachenbeschreibung.
+L-7b4857	C	Prozessregel (zitierte Fundstelle vor Umsetzung gegen aktuellen Code verifizieren), kein Code-Zustand.
+L-d3c6a4	A	Fundstelle: apps/fahrtenbuch_legacy/test/core/security/hash_chain_per_vehicle_test.dart (1500ms-Delay-Test vor verifyTripChain-Assertion) deckt genau diese Zeitstempel-Trunkierungs-Regression ab.
+L-ed0379	B	Bedingung: Insert einer neuen Zeile mit einem Feldwert, der noch von einer bestehenden, bald ersetzten Zeile gehalten wird, verletzt einen UNIQUE INDEX auf der Zieltabelle, per Grep auf UNIQUE-INDEX-Definitionen und Insert-Reihenfolge pruefbar; kein spezifischer Test dazu im Repo gefunden.
+L-c46550	C	Meta-Beobachtung ueber Agenten-Orchestrierung (SendMessage statt Neu-Spawn), kein Code-Zustand.
+L-f019e7	C	Framework-Tatsache ueber Flutters ListTile.trailing-Hoehen-Constraint, unabhaengig von isThreeLine.
+L-07c9d9	C	Tatsache ueber die Struktur des Apple-Developer-Portals fuer ein bestimmtes Entitlement.
+L-9b3012b6	C	Tatsache ueber jsdom-Verhalten (window.innerWidth beeinflusst @media-Aufloesung nicht).
+L-54ad4d	B	Bedingung: git diff auf ios/Runner.xcodeproj/project.pbxproj nach einem flutter_launcher_icons-Lauf zeigt Aenderungen ausserhalb der AppIcon-Referenzen, per Diff-Review pruefbar.
+L-8c633e	C	Beurteilung, ob ein per Kommentar referenzierter Fix auf eine Schwesterdatei uebertragen werden muss, erfordert semantisches Verstehen des Verweises.
+L-4ad804	B	Bedingung: eine Schutz-/Sicherheitsfunktion hat repoweit (fleet-uebergreifend) null Aufrufer ausserhalb von test/, per Grep/Call-Graph je App pruefbar.
+L-354ee6	B	Bedingung: eine auf der Publikumsseite zitierte Kernaussage stammt aus einer Quelldatei, die den Satz als UNBELEGT/Rang>=5 markiert, ohne dass die Publikumsseite den Vorbehalt wiedergibt; vom Text selbst als noch nicht umgesetztes Gate vorgeschlagen.
+L-184ffc	B	Bedingung: eine Selektorregel im scoped style-Block einer Astro-Layout-Komponente matcht ausschliesslich Elemente aus Slot-Inhalt der Kindseiten, nie das eigene Template, per Build+DOM-Abgleich pruefbar.
+L-606b63	C	Architekturentscheidung Generation-Token vs bool-Gate ist Werturteil, keine bindbare Bedingung.
+L-97d0f3	C	Veralteter-Kommentar-Erkennung braucht Sprachverstaendnis, kein deterministischer Check.
+L-2a4cc5	A	hub/scripts/agent_reuse_guard_hook.py und cascade_guard_hook.py pruefen Marker-Dateien und blocken Spawns ohne korrekten Override.
+L-eb9934	B	Bedingung: ListTile/InkWell-Widget mit DecoratedBox/AnimatedContainer statt Material als naechstem Vorfahren, per AST-Grep pruefbar.
+L-008f22	C	Meta-Lehre ueber Reachability-Fixes, die Folgefehler aufdecken, ist Urteil ueber Vorgehen.
+L-c96e51	C	Bewertung "kumulative Interaktion mehrerer Agenten-Diffs" erfordert Interpretation der Fehlermeldung.
+L-7c76df	B	Bedingung: Zieldateien zweier parallel gestarteter Agentenauftraege ueberschneiden sich (Set-Vergleich der genannten Pfade).
+L-6a3a03	C	Pruefung ob ADR-Beschluss auf echtem Fundament steht ist inhaltliches Urteil ueber die Codebasis.
+L-c4ae33	B	Bedingung: vor Datei-Loeschung liefert `grep -rn "<pfad>"` ueber gesamtes Repo inkl. test/ Treffer.
+L-a50ceb	C	Welche Uebertragungswege ein Auth-Gate kennen muss ist fachliche Analyse, kein bindbarer Test.
+L-d2c228	C	Verhalten von Chromiums CDP-Druckrendering ist externe Tatsache, kein pruefbarer Codezustand.
+L-f55167	B	Bedingung: `git commit` ohne explizite Pfadliste in geteiltem Working Tree, per Pre-Commit-Hook erkennbar.
+L-123662	B	Bedingung: `devicectl install` zielt auf anderen Pfad als juengsten `build/ios/iphoneos/Runner.app`-Zeitstempel.
+L-68b9bb	B	Bedingung: `Map<EnumName,...>`-Literal deckt nicht alle `EnumName.values` ab, per Skript ueber .values-Iteration pruefbar.
+L-a82bc8	B	Bedingung: String-zu-Enum-Parser hat default/else-Zweig der einen Wert statt throw liefert, per Musterscan auffindbar.
+L-d8c5fb	C	Ob eine Abkuerzungsaufloesung fachlich korrekt ist, ist inhaltliches Urteil gegen Primaerquelle.
+L-c33fbb	C	Vollstaendigkeit einer Korrektur ueber alle Publikationskanaele erfordert inhaltliche Bewertung, keine feste Bedingung.
+L-919d52	B	Bedingung: gepushter Blob ueberschreitet 100 MB, per Pre-Push-Hook mit `git cat-file --batch-check` pruefbar.
+L-b64493	A	test/features/onboarding/onboarding_screen_test.dart:55 prueft den geforderten Substring im Quelltext.
+L-c416fb	C	Ob ein Screen einen endlosen Spinner zeigt und pumpAndSettle statt pump braucht, ist Einzelfall-Urteil.
+L-2afb64	C	Empfehlung Debug-Control-API vor UI-Automatisierung ist Architekturrichtlinie ohne bindbare Bedingung.
+L-595196	C	Ob ein Screen mehrere verschachtelte Scrollables hat und expliziten scrollable-Finder braucht, ist fallweises Urteil.
+L-c77fc0	C	Welche Provider Plattform-Channels aufrufen und pump() statt pumpAndSettle() brauchen, ist Einzelfallpruefung.
+L-3eb7fe	C	Korrektheit der do/catch-Aufteilung im Retry-Loop ist Code-Review-Urteil, kein feste Bedingung.
+L-f141cb	C	Divergenz-Ueberwachung ueber 13 Repo-Klone ohne kanonischen Ort ist unbebaubar ohne vorherige Architekturentscheidung.
+L-aacc29	C	Boot-Reihenfolge-Race zwischen eager Trigger und Listener ist Architekturanalyse, kein bindbarer Test.
+L-4916d0	C	Meta-Regel "Handoff-Behauptungen vor Primärquelle pruefen" ist reines Verhaltensurteil.
+L-05e18b	B	Bedingung: `void dispose()`/`deactivate()`/`close()` startet Future-Aufruf ohne await/unawaited-catchError, per Musterscan erkennbar.
+L-5431a3	A	test/architecture/ios_plugin_registrant_allowlist_test.dart vergleicht Allowlist gegen GeneratedPluginRegistrant und faellt bei fehlenden Plugins.
+L-7a84c4	C	Fehlanalyse aus Subagentenbericht ist Urteil ueber Beweisfuehrung, kein bindbare Bedingung.
+L-5ad380	C	Vollstaendigkeit eines Ressourcen-Guards ueber alle Praesentationsstellen erfordert fachliche Codebase-Analyse.
+L-e9d409	C	Belegqualitaet von Fachaussagen ist inhaltliches Urteil, keine deterministische Pruefung.
+L-c7320e	B	Bedingung: delete/cleanup-Methode hat null Aufrufer im Repo, per Grep-Skript zaehlbar (bestehendes wiring_check.py deckt dies nicht zuverlaessig ab, siehe L-7ea6c7).
+L-260f08	C	Verhalten von sqlite/Drift bei NaN-Bindung ist externe Tatsache ueber eine Bibliothek.
+L-33a1b6	C	Delegationsentscheidung nach Eingabevolumen ist Abwaegung, keine feste Bedingung.
+L-22bc02	B	Bedingung: Bereichs-Guard auf double besteht nur aus Vergleichsoperatoren ohne vorangestelltes isFinite-Check, per Musterscan pruefbar.
+L-8527ca	C	Ob eine SnackBar einen eigenen Footer verdeckt, haengt vom konkreten Scaffold-Nesting ab und ist Einzelfallpruefung.
+L-c02334	C	Ob ein fruehes Return eine Persistenz-Zeile ueberspringt, erfordert Kontrollfluss-Verstaendnis je Methode.
+L-ab05b4	C	Ob ein Once-Latch vor oder nach Guard-Returns in einem async Callback gesetzt wird, erfordert fallweise Codelektuere.
+L-a9e7fa	A	hub/scripts/agent_reuse_guard_hook.py blockt Spawns bei Datei-Konflikten und ist die bereits laufende Pruefung, deren Fehlverhalten hier behoben wurde.
+L-b034c4	C	Ob ein Negativ-Test wirklich etwas verhindert oder nur nie ausgeloest wurde, ist inhaltliches Urteil ueber die Testabsicht.
+L-f9eef6	C	Konstruktion realistischer Alt-Format-Binaerdaten fuer Migrationstests ist Testdesign-Entscheidung.
+L-cfd1b6	C	Trennung von "nichts gespeichert" und "Wert nicht auflösbar" in Fallback-Logik ist Designentscheidung je Notifier.
+L-54cbd8	C	Diagnose von testWidgets-Haengern durch echtes I/O in Fake-Async-Zone erfordert fallweise Analyse.
+L-1b162b	C	Fehlende Spezifikation eines Join-Felds in einem ADR ist Dokumentationsluecke, kein pruefbarer Codezustand.
+L-5b136d	C	Interaktion von TestWidgetsFlutterBinding mit echtem HttpClient ist Testframework-Wissen, kein bindbare Bedingung je Fall.
+L-f0d97d	A	hub/scripts/knowledge_recall_hook.py besitzt --selftest mit MIN_HITS=3-Regressionsfaellen, die bei Regression fehlschlagen.
+L-84de44	C	Physikalische Plausibilitaet einer Luftwechselraten-Konstante ist Fachurteil gegen Literatur.
+L-708f45	C	Erkennung, welches von zwei parallelen Konzepten der tatsaechlich genutzte Pfad ist, erfordert Codebase-Verstaendnis.
+L-13cf26	B	Bedingung: Hive-Typ-Klasse wird nirgends per `<Typ>(` in lib/features/ konstruiert, per Grep-Skript pruefbar (im Text selbst als Skript vorgeschlagen).
+L-b8b311	C	Ob Seed-Zeitstempel und Produktionslogik dieselbe Zeitzonen-Repraesentation nutzen, ist fallweise Testdesign-Pruefung.
+L-897246	C	Welche Felder eines Edit-Flows Null-Reset brauchen statt copyWith, ist UI-fachliche Entscheidung.
+L-ebbd22	C	Fachliche Korrektheit von Normwerten (WTA/DIN) im Lexikontext ist inhaltliches Urteil gegen Primaerquellen.
+L-7ea6c7	C	Bewertung der strukturellen Vollstaendigkeit eines Erreichbarkeits-Pruefers ist Werkzeug-Design-Urteil.
+L-be2267	C	Statistische Durchrechnung eines Ausschlussfilters gegen Nutzsignalverteilung ist fachliche Analyse.
+L-3d72a5	C	Kosten-Nutzen-Abwaegung zur Subagenten-Wiederverwendung ist Heuristik, keine feste Bedingung.
+L-dff4c3	B	Bedingung: idevicesyslog- oder qemu-system-Prozess laeuft mit stark wachsendem RSS ueber laengere Zeit, per ps-Skript/Cron pruefbar.
+L-940f41	A	hub/scripts/agent_reuse_guard_hook.py mit zeilenweiser Ausschlusserkennung und 120s-Claim-Verfall ist die bereits gehaertete laufende Pruefung.
+L-08aa06	C	Ob eine Abbruchbedingung eines Exports alle Quellen beruecksichtigt, ist Designfrage je Feature.
+L-87939e	C	Ob ein neuer Parameter mit stillem Default eine Pruefung lautlos deaktiviert, erfordert Verstehen der Kernfunktion.
+L-bac968	A	hub/begod/scripts/pdf_to_knowledge.py besitzt --selftest fuer die Wortdichte-Heuristik mit kalibrierten Grenzfaellen.
+L-aecfae	B	Bedingung: `Provider.family<...>(...)` wird innerhalb einer build()-Methode statt auf Modulebene deklariert, per Grep+Kontextpruefung feststellbar.
+L-47e586	C	Fehlgeleitete Ursachenzuschreibung zu TestFlight-Upload-Fehlschlag ist Diagnoseurteil, spaeter selbst korrigiert.
+L-a7043b	C	Korrektur der Diagnose aus L-47e586 ist ebenfalls Interpretationsurteil ueber App-Store-Connect-Verhalten.
+L-90e507	C	Pruefreihenfolge Schutzfaehigkeit vor Verletzung ist juristisches Urteil, keine deterministische Pruefung.
+L-b22836	C	Unterscheidung Connectivity-Flag vs. Live-Signal-Nachweis ist fachliche Codeanalyse je Trigger.
+L-45b2f1	C	Ob ein Reminder vor dem Feuern einen Datencheck braucht, ist fachliche Designentscheidung je Trigger.
+L-8e768f	C	Ob ein Aufrufer einer Guard-Funktion tatsaechlich eine Wahl-UI zeigt, erfordert Pruefung des jeweiligen Call-Site-Verhaltens.
+L-f281aa	C	Bidirektionale Synchronisation zweier gekoppelter Zustandsautomaten ist Architekturanalyse je Fall.
+L-dd8754	B	Bedingung: fuer sortierbares Feld liefert `grep "ModelName("` Konstruktionsstellen ohne expliziten sortOrder-Wert bzw. Repository.getAll() sortiert nicht, per Skript pruefbar.
+L-539217	C	Ob ein TabBarView-Tab mit TextField einen unfocus()-Listener braucht, ist fallweise UI-Analyse.
+L-6fa963	C	Auswahl der richtigen Notification-Infrastruktur als Wiederverwendungsbasis ist Architektururteil.
+L-a922eb	B	Bedingung: berichtete Build-Nummer stammt aus pubspec.yaml statt aus der gebauten IPA/CFBundleVersion, per Skript-Vergleich pruefbar.
+L-9998e9	C	Divergenz zweier Distanz-Akkumulatoren mit unterschiedlicher Filterstrenge ist ungeloeste fachliche Analyse.
+L-cf6e46	A	test/core/utils/map_bounds_test.dart prueft safeCameraBounds() gegen nullgrosse LatLngBounds.
+L-afa2f8	C	Reihenfolge von flutter clean vor Release-Build ist Verfahrenswissen, keine bindbare Fehlerbedingung im Code.
+L-a1dff5	C	Einordnung eines Android-Lint-Fehlers als False-Positive einer Fremdbibliothek ist fallweises Urteil.
+L-4e4d72	C	Testfehler durch kollidierende Routen-Literale statt Produktionskonstanten ist fallweise Testharness-Diagnose.
+L-76daa6	B	Bedingung: `flutter test`-Lauf liefert Exit-Code 0 trotz "Some tests failed" im Output, per Wrapper-Skript grep-bar erzwingbar.
+L-720a22	C	Ursachenermittlung eines Datenverlusts durch fremden git reset im geteilten Worktree ist Einzelfall-Forensik.
+L-98c3c8	C	Trennung von Transformationspfad und Byte-Identitaetspruefung am Archiv-Schreibpunkt ist Architekturentscheidung.
+L-bce00d	C	Verhalten von `git worktree prune` bei uebernommenem Fremd-Repo ist externe Tatsache ueber Git.
+L-67cc9f	C	Diagnose eines Signatur-Fehlers durch gecachtes Framework ist fallweise Build-Forensik.
+L-30eb89	B	Bedingung: gemergtes AndroidManifest enthaelt gleichzeitig android.hardware.type.automotive und com.google.android.gms.car.application, per Grep im manifest-merger-blame-report pruefbar.
+L-692936	C	Abwaegung zwischen pub upgrade und Gradle-Versionserzwingung ist Entscheidungsurteil je Situation.
+L-d8cfc8	B	Bedingung: Testlauf verwendet System-python3 statt .venv/bin/python, per CI-Check auf sys.executable-Pfad pruefbar.
+L-b9d1f3	C	Meta-Lehre "Fehlerausgabe lesen statt Quelltext raten" ist Verhaltensregel ohne bindbare Codebedingung.
+L-95e9ab	B	Bedingung: `.first`/`.last`/`[0]`/`.single`-Zugriff auf eine Sammlung existiert im Repo, per Grep vor zentraler Sortierungsaenderung feststellbar.
+L-b3de6f	C	Vollstaendigkeit eines Snapshot-Mechanismus fuer unveraenderliche Dokumente ist Architekturanalyse je Datenmodell.
+L-ccc3ee	B	Bedingung: Anzeige-Code leitet Label aus Ablagepfad (`.name`/`.stem`) statt aus separat gespeichertem Anzeigenamen ab, per Grep vor Schema-Aenderung pruefbar.
+L-c610ed	B	Bedingung: jeder context.push(pfad)-Aufruf, dessen Zielpfad als GoRoute unterhalb einer StatefulShellRoute liegt, waere per Router-Konfig-Abgleich automatisch erkennbar, existiert aber nicht.
+L-57e059	C	Konkrete Einzelfall-Loesung eines bedingten Wizard-Schritts, keine generelle pruefbare Bedingung.
+L-bb2376	C	Urteil, ob eine Sicherheits-/Pflichtfeld-Haertung neuer ist als ein Test, ist kein deterministischer Check.
+L-7af2f3	B	Bedingung waere baubar: jede test/-Datei mit direkter RoomsNotifier(...)-Instanziierung muss alle required-Parameter des aktuellen Konstruktors setzen, kein eigener Repo-Mechanismus mit Fundstelle dafuer gefunden.
+L-784d8d	C	Ueberholt durch L-586001, urspruengliche Anordnungsentscheidung war situativ/Werturteil, keine feste Bedingung.
+L-e9aa47	A	test/privacy/health_fields_stay_local_test.dart (wohlair) scannt lib/core/services/*.dart per Text-Scan auf die vier Gesundheitsfeld-Namen -- Datei im Repo bestaetigt.
+L-586001	C	Meta-Lehre ueber das Schreiben von Lehren (Randbedingung mitschreiben), keine pruefbare Codebedingung.
+L-ad0dda	C	Werturteil ueber Nutzen von kopiertem Bestand, nicht deterministisch pruefbar.
+L-bb9972	C	Architekturentscheidung nach Codeverifikation, Werturteil ueber die einfachere Loesung.
+L-b2198d	C	Arbeitsweisen-Empfehlung (erst Code tracen vor Neubau), keine feste pruefbare Bedingung.
+L-919a81	B	Bedingung waere baubar: jeder *_prompt_listener.dart mit Navigator.push muss blockingPromptActiveProvider vor dem Push abfragen/setzen, kein repo-weiter automatischer Scan dafuer gefunden.
+L-e242aa	C	Architektur-/Ursachenanalyse einer Race-Condition, Symptom-Ebene-Fix als Werturteil.
+L-ab509d	A	test/features/auto_drive/auto_drive_coordinator_timeline_test.dart (fahrtenbuch_legacy) enthaelt laut Lehre den Race-Test mit debugStartLocationStreamOverride-Gate und countZombieTrips()==0-Pruefung -- Datei im Repo bestaetigt.
+L-2fea20	C	Tatsachenwissen ueber Fastlane/CocoaPods/Locale-Verhalten (fremde Software), immer C.
+L-a57d4b	C	UI-Textentscheidung fuer einen konkreten isStart-Fall mit Einzeltest, keine generische pruefbare Bedingung fuer alle Richtungs-Flags.
+L-f158c5	C	Formatierungsempfehlung fuer Zeitanzeigen, "keine nackte HH:MM-Notation" ist kein sauber ohne Sprachurteil pruefbares Muster.
+L-b46779	C	Tatsache ueber CarPlay-Head-Unit-Verhalten (fremde Hardware/Software), immer C.
+L-e32b2a	C	Architekturentscheidung (Cooldown-Wert nach Fahrtende) als Werturteil, keine bestehende automatische Pruefung genannt.
+L-3f2cd1	C	Tatsachenwissen ueber Bundler/Ruby/Fastlane-Umgebung (fremde Software), immer C.
+L-a823a5	C	Prozess-/Methodenlehre (erst Repo durchsuchen vor Architekturdebatte), kein pruefbarer Codezustand.
+L-f71528	C	Urteil ueber Rahmensetzung/Bias in einem Agenten-Konsil, nicht deterministisch pruefbar.
+L-fec3cf	B	Bedingung waere baubar: PUT-Endpoint muss bei fehlendem Payload-Schluessel den Bestandswert behalten statt ihn zu leeren -- laut Lehre nicht gefixt, kein Test vorhanden.
+L-2ef026	B	Bedingung waere baubar: PUT-Handler fuer maskierte Felder muss "key in payload" statt payload.get(key,'') pruefen -- Fix beschrieben, aber kein automatischer Repo-Check dafuer gefunden.
+L-7d0b49	C	Beschreibt eine Fehlkalibrierung eines bestehenden Eskalations-Hooks (zaehlt Beruehrung statt Misserfolg), Loesung ist Uebersteuerung von Hand, kein neuer Mechanismus.
+L-bb1c3b	B	Bedingung waere baubar: Login-Endpoint muss nach N Fehlversuchen sperren/verzoegern -- laut Lehre bewusst nicht gefixt, kein Test vorhanden.
+L-7985e4	B	Bedingung waere baubar: jeder LLM-Prompt-Aufbau-Pfad muss redact_pii() durchlaufen -- nicht gefixt, nur ein Sichtbarkeits-Endpoint zur Diagnose ergaenzt, kein Guard/Test.
+L-747223	C	Meta-Reflexion ueber eigene Orchestrator-Fehler einer Sitzung, reines Urteil.
+L-476c1b	A	~/.claude/skills/design-waechter/ui_guard.py, Regel "selbsterklaerung" prueft auf genau diese Formulierungsmuster -- Datei im Repo bestaetigt.
+L-d22263	C	Dokumentation einer inkonsistenten Fehlercode-Semantik zwischen zwei Endpunkten, kein pruefbarer Automatismus.
+L-26308d	B	Bedingung waere baubar: pubspec.yaml unter flutter_launcher_icons muss ios:true haben und das Quellbild darf nicht das Flutter-Default-Icon sein -- kein bestehender automatischer Check gefunden, nur eine manuelle grep-Anleitung.
+L-f892a9	C	Urteil ueber falsche Anwendung einer mechanischen Abgrenzungsregel auf eine inhaltliche Frage, nicht deterministisch pruefbar.
+L-6e48a9	C	Produkt-/UX-Entscheidung (Suche statt Gruppierung), Werturteil ueber Wirksamkeit.
+L-f27042	A	hub/shared-knowledge/knowledge_mcp_server.py::unmangle_lesson_fields() mit Tests in hub/shared-knowledge/tests/test_knowledge_mcp_server.py -- korrigiert verrutschte Feldmarker bei jedem Schreibzugriff, Dateien im Repo bestaetigt.
+L-03f61c	B	Bedingung waere baubar: eine Merge-Regel muesste je Feld zwischen leer/Default/gesetzt unterscheiden -- kein bestehender generischer Check dafuer gefunden.
+L-66a83e	C	Methodenlehre ueber den Nutzen von Flussdiagrammen beim Debuggen, kein pruefbarer Codezustand.
+L-7acc9c	A	apps/fahrtenbuch_legacy/ios/fastlane/Fastfile::verify_carplay_entitlement prueft nach dem Signieren per codesign, ob das CarPlay-Entitlement im Artefakt steckt, und bricht sonst hart ab -- im Repo bestaetigt.
+L-006b69	C	Methodenlehre zur Gegenprobe bei Verdrahtungstests, allgemeine Praxis statt einer festen automatisch pruefbaren Bedingung.
+L-8fbfd4	C	Anweisung zur Formulierung von Testauftraegen nach Reichweite, kein automatisierbarer Codezustand.
+L-044353	C	Git-Workflow-Disziplin (Commit-Grenzen), keine deterministische, generisch pruefbare Bedingung ohne manuelle Erwartungszahl.
+L-0fa18e	C	Technisches Faktenwissen ueber jsdom-artiges Hive/Testbinding-Deadlock-Verhalten (Flutter/Hive-Framework), kein Repo-Check.
+L-7e35b7	C	Architektur-/Root-Cause-Fix eines <details>-Navigationsbugs, Verifikation manuell im Browser bei mehreren Breiten, kein bestehender automatisierter Check.
+L-445b4b	C	Tatsache ueber CarPlay-Head-Unit-Verhalten (fremde Hardware), immer C.
+L-d7e998	A	buckeberg/scripts/render_briefe.py enthaelt die Skip-Liste NICHT_VEROEFFENTLICHEN, die interne Arbeitspapiere von der PDF-Erzeugung und damit vom Auslieferungsordner ausschliesst -- im Repo bestaetigt.
+L-91448c	C	Prozess-/Dokumentationsdisziplin (Versionierung der Dokumentklasse statt der genannten Dateien), Werturteil, kein pruefbarer Automatismus.
+L-f4c75d	C	Korrektur einer falschen Konsil-Existenzaussage durch Codepruefung, Einzelfall, keine generische pruefbare Bedingung.
+L-dcb508	C	Redaktionelle/produktbezogene Filterentscheidung fuer einen Fragenkatalog, reines Werturteil.
+L-a7ade7	C	Methodenlehre (Exit-Code statt Ausgabemuster pruefen, Artefakt verifizieren), Vorgehensregel ohne bestehenden erzwingenden Mechanismus.
+L-a60e2b	C	Tatsachenanalyse eines rechtlichen Dokumentenbestands (Grundbuch/Urkunde), immer C.
+L-4c224c	C	Einzelfall-Bugfix einer Merge-Vorrangregel bei einer Liste, kein bestehender oder generisch beschriebener automatischer Check.
+L-163051	B	Bedingung waere baubar: jede live wachsende Server-Datei unter status/ muss in der Deploy-Ausschlussliste stehen (idealerweise als Praefix-Regel) -- laut Lehre wurde nur die Einzeldatei ergaenzt, kein genereller Mechanismus.
+L-6edb15	C	Technisches Faktenwissen ueber ECMAScript indirect-eval-Scoping (Sprachregel), kein Repo-Check.
+L-d07097	C	Git-Workflow-Disziplin (git diff --numstat vor jedem Commit gegenlesen), manuelle Pruefung, kein bestehender automatischer Mechanismus.
+L-475fa2	B	Bedingung waere baubar: POST/PUT auf /v1/steuer/invoice/drafts muss bei flachem statt verschachteltem Payload 400/422 liefern -- laut Lehre noch nicht behoben, kein Test vorhanden.
+L-bf8007	A	openlehr/tools/openlehr/route_inventory.py enthaelt einen Selbsttest mit vier Regressionsfaellen (Apostroph, Anfuehrungszeichen, Attributzugriff, Verschachtelung) fuer die Platzhalter-Regex -- im Repo bestaetigt.
+L-19eb20	B	Bedingung waere baubar: alle int()/str()-Konvertierungen aus dem Body-Dict muessen innerhalb desselben try/except ValueError liegen wie der API-Aufruf -- laut Lehre nicht gefixt, nur als xfail dokumentiert, kein generischer Check ueber router.py.
+L-2837f3	A	~/.claude/skills/design-waechter/ui_guard.py, Regeln "selbsterklaerung" und "maskierter-wert" mit Ausnahme-Marker "waechter:" -- Datei und Regeln im Repo bestaetigt.
+L-18bc8d	C	Urteil, wer Empfaenger eines Feldes ist (Owner vs. Dritter), ist fallabhaengig und nicht ohne Kontextwissen deterministisch pruefbar.
+L-6af693	C	Gleiches Empfaenger-Urteil wie L-18bc8d, zusaetzlich Einzelfall-Fix an Backend-Feldern ohne repo-weiten Check auf alle *_masked-Backend-Ausgaben.
+L-2fe88c	A	apps/openlehr/tests/test_steuer_backoffice_settings.py mit vier Tests (AGB-Erhalt, Teilgruppe, Loeschen, Vollrumpf) plus Gegenprobe pruefen die Merge-statt-Ersetzen-Logik -- Datei im Repo bestaetigt.
+L-fa4371	B	Bedingung waere baubar: kein `detail=str(exc))` in router.py, wenn die Exception einen konfigurationsabgeleiteten Wert interpoliert -- als generischer Repo-Grep/Lint nicht gefunden, nur ein Einzeltest fuer den konkreten Fall erwaehnt.
+L-d500c2	C	Bugfix einer Zuordnungslogik ueber Position statt Identitaet, einzelfallbezogen, keine generische pruefbare Bedingung.
+L-a61849	C	Methodenlehre zur Verifikation von UI-Aenderungen (Inhalt statt Anzahl pruefen), kein automatisierbarer Codezustand.
+L-1ad326	C	Meta-Reflexion ueber sechs Fehler mit gemeinsamer Wurzel (Stellvertreter statt Quelle), reines Urteil.
+L-f42b07	C	Vorgehensbeschreibung zur Klaerung des CI-Status, kein bestehender oder generisch baubarer automatischer Check.
+L-b91ed6	C	Disziplin-Regel (Tracebacks einzeln lesen statt pauschal verallgemeinern), kein pruefbarer Codezustand.
+L-aa35f4	C	Architektur-/Root-Cause-Analyse einer Riverpod-Listener-Luecke, Werturteil ueber Fix-Platzierung.
+L-affae1	C	Beschreibt einen Konflikt zwischen zwei bestehenden Mechanismen (Auftrags-Doktrin vs. Reuse-Waechter), Loesung ist Formulierungsdisziplin, kein neuer pruefbarer Automatismus.
+L-48e6e7	B	Bedingung waere baubar: jeder Aufruf von assignCurrentObdToVehicle() ausserhalb des UI-Screens muss im selben Zug _onVehicleResolved aufrufen -- kein bestehender Grep-/Lint-Check dafuer gefunden.
+L-a08f87	A	apps/fahrtenbuch_legacy/test/main_protected_action_retry_test.dart prueft die retryProtectedAction()-Zustandslogik (6 Faelle) -- Datei im Repo bestaetigt.
+L-2feee9	C	Kommunikations-/Begriffsdisziplin (Eskalation vs. Kontext-Isolation benennen), kein pruefbarer Codezustand.
+L-8c3b8c	A	apps/openlehr/tests/test_app.py enthaelt test_ide_integration_state_registered_exactly_once (prueft len(routes mit Pfad)==1), plus F811 ist nicht mehr in der pyproject.toml-ignore-Liste -- beides im Repo bestaetigt.
+L-4fb357	A	Ruff-Regel B023 ist nicht mehr in der pyproject.toml-ignore-Liste des Projekts, faengt damit kuenftige echte Late-Binding-Faelle automatisch -- bestaetigt.
+L-958926	C	Beschreibt Testisolations-Rauschen der Gesamtsuite, Diagnosevorgehen ist Handarbeit, kein fester automatisierbarer Check.
+L-57e95e	C	Technisches Faktenwissen ueber TestWidgetsFlutterBinding-Defaultverhalten (Flutter-Framework), kein Repo-Check.
+L-9ed380	A	apps/fahrtenbuch_legacy/test/core/security/trip_table_write_guard_test.dart scannt lib/ auf Direktschreibzugriffe auf db.trips ausserhalb der Ausnahmeliste, inkl. Gegenprobe -- Datei im Repo bestaetigt.
+L-1af9bf	C	Technisches Faktenwissen ueber git-Pathspec-Aufloesung relativ zur cwd, kein pruefbarer Repo-Mechanismus.
+L-9e1d80	C	Verifikationsmethodik gegen einen falschen Plan-Befund, Einzelfall-Nachmessung, kein bestehender automatischer Check.
+L-9f5e60	C	Beschreibt eine Kollision zwischen Auftrags-Doktrin und Reuse-Waechter (Lektuere-Dateien), Loesung ist Formulierungsdisziplin.
+L-895b9a	C	Disziplinregel zur Wahl des richtigen Python-Interpreters (.venv statt system), kein bestehender oder eindeutig abgegrenzter automatischer Check gefunden.
+L-7fc31c	C	Technischer Fix einer spezifischen jsdom-Harness-Racebedingung, Einzelfall, keine generische pruefbare Bedingung.
+L-67a59f	A	~/.claude/skills/design-waechter/ui_guard.py mit AUSNAHME-Regex "waechter:\s*[a-z-]+" belegt die beschriebene Ausnahme-Markierung -- im Repo bestaetigt.
+L-ec460d	B	Bedingung waere baubar (Analogie zu test_tax_parameters_source_match.py): jeder neue steuerliche Zahlenwert ausserhalb tax_parameters.json braucht eine Fundstelle/Geltungsjahr-Referenz im Modul-Kommentar -- dafuer existiert kein Check.
+L-a7d249	C	Einmalige Audit-Methodik (Skript + Agenten-Triage) fuer Totcode-Suche, kein dauerhaft laufender Check.
+L-39b018	C	Methodenlehre zum Loeschen vermeintlich unreferenzierter Dateien (zusaetzliche Namenssuche), Einzelfall-Vorgehen, kein bestehender automatischer Check.
+L-987b9e	C	Beschreibt eine Verbesserung eines Suchwerkzeugs (symbolindex.py), ist selbst kein Pruef-/Fehlschlag-Mechanismus.
+L-177955	C	Methodenlehre zur manuellen diff-Pruefung vor Code-Zusammenlegung, Werturteil ueber Semantikgleichheit, nicht automatisierbar.
+L-cbb443	C	Architektur-/Root-Cause-Urteil ueber Einmal-Flag vs. In-Flight-Guard, Einzelfall-Fix.
+L-cdac52	C	Architektur-Musterbeschreibung fuer Prompt-Listener (Guard-Reihenfolge), Umsetzung variiert je Datei, kein einheitlicher bestehender Repo-Check gefunden.
+L-ad3d6e	A	apps/fahrtenbuch_legacy/test/features/auto_drive/movement_proof_threshold_test.dart und docs/adr/fahrtenbuch/F-021-hardware-bestaetigung-braucht-bewegungsnachweis.md belegen den geforderten Regressionstest gegen die Distanz-Summen-Schwelle -- Dateien im Repo bestaetigt.
+L-b391df	C	Architektur-/Root-Cause-Fix eines nativen CarPlay-Modal-Gates, Plattformverhalten und Werturteil, keine feste pruefbare Bedingung.
+L-fe6675	C	Prozeduraler Bedienungsweg fuer geteilte Dateien mit fremdem WIP, keine deterministische Bedingung pruefbar.
+L-b05f09	B	Bedingung: jedes INSERT INTO belege ausserhalb ingest.py setzt das neue Pflichtfeld -- grep-bares Dateipaar-Kriterium ohne Sprachmodell.
+L-243dde	C	Urteil ueber parallele Agentenlaeufe und Interpretation eines Testbefunds, keine feste Bedingung.
+L-f8926c	C	Betriebsanweisung fuer Skriptaufruf und Dateibehandlung, kein automatisiertes Kriterium.
+L-353192	B	Bedingung: Testdouble setzt im Konstruktor konstant genau den Endzustand, den derselbe Test als Ergebnis prueft -- grep-bares Muster (const State im Fake + Testname mit Verhalten des echten Objekts).
+L-697efb	B	Bedingung: jsdom-Test referenziert Tabellenzelle per nth-child(N), waehrend renderRow() N Spalten ohne Klasse an dieser Position rendert -- bei Spaltenzahl-Aenderung automatisch fehlschlagend, wenn Selector-Text gegen Renderer-Reihenfolge gehalten wird.
+L-46dfd3	C	Fachliche Analyse, ob ein Testszenario den geaenderten Codepfad ueberhaupt trifft, erfordert Lesen/Verstehen, keine feste Bedingung.
+L-a24b96	A	rot_probe.sh (apps/fahrtenbuch_legacy/tools/rot_probe.sh) wurde genau um diese drei Umgebungsluecken repariert (Commit 93fd79ce6) und ist die laufende Pruefmechanik selbst.
+L-b536a0	C	Empfehlung zu Umlaut-Normalisierung bei Freitext-Keywords ist Stilregel, nicht algorithmisch als Verletzung erkennbar ohne Sprachverstaendnis.
+L-298823	C	Ob ein geschriebenes Feld "gelesen" bzw. sinnvoll verdrahtet ist, erfordert fachliches Urteil ueber Code, kein festes Pruefkriterium.
+L-5e40a7	C	Bedienungsregel fuer git commit -o bei neuen Dateien, kein automatisiert pruefbares Kriterium.
+L-bf4d39	C	Architektur-/Bauform-Entscheidung fuer Klaerungs-Verdrahtung, Werturteil.
+L-05314f	C	Testtechnisches Fallwissen zu fakeAsync/Platform-Channels, erfordert Verstaendnis, keine feste Bedingung.
+L-e6882c	B	Bedingung: eine Funktionskoerper-Extraktion per Regex liefert bei benannten Parametern oder vorausgehendem Doc-Kommentar eine falsche Fundstelle -- deterministisch mit Regressionstests wie in test/core/time/clock_usage_guard_test.dart nachweisbar.
+L-cbf056	B	Bedingung: Spalte mit NOT NULL DEFAULT ohne dass irgendein INSERT-Pfad sie explizit setzt -- grep "INSERT INTO <tabelle>" gegen Spaltennamen, deterministisch pruefbar (verwandt mit L-a75dfc-Werkzeug).
+L-125f02	C	Arbeitsteilungs-/Prozessregel fuer Agentenlebensdauer, kein Code-Kriterium.
+L-e84883	B	Bedingung: try{}catch(_){} um eine Existenz-/Discovery-Abfrage vor irreversibler Aktion, ohne Fehlschlag-Signal -- grep-bares Codemuster (leerer catch um bekannte Directory-Lookup-Aufrufe).
+L-b38d85	B	Bedingung: Fachfunktion wird ausschliesslich aus tests/ importiert, nirgends aus router.py/api.py -- grep-bare Aufrufer-Pruefung ohne Urteil.
+L-d2e32a	B	Bedingung: neuer kontext_typ fehlt in einer Client-Allowlist (switch/if-else ueber kontext_typ), waehrend er serverseitig existiert -- Abgleich zweier Aufzaehlungen, deterministisch grep-bar.
+L-48c06f	C	Planungsluecke (fehlende Lese-Endpunkte vor UI-Bau) ist ein Sequenzierungsurteil, kein feststehendes Pruefkriterium.
+L-789e5e	C	Abgrenzungsfrage "ist das Fachlogik oder nur Lesefunktion" ist Werturteil.
+L-0b6af2	B	Bedingung: Export mit implizitem maxEvents-Deckel zeigt im Kopftext nicht die Gesamtzahl vor Kuerzung -- pruefbar als "capped.length < events.length => Text enthaelt Gesamtzahl", deterministisch testbar.
+L-8e8bd9	A	rot_probe.sh (apps/fahrtenbuch_legacy/tools/rot_probe.sh) meldet Exit 2 bei Compile-Fehlern bereits als eigenes, dokumentiertes Ergebnis dieses Werkzeugs.
+L-eff1e7	B	Bedingung: KV-Setter ueberschreibt einen Schluessel per set_setup/json.dumps(neues_dict) ohne vorheriges Lesen des Bestands -- grep-bares Muster (set_setup(...json.dumps({...}) ohne vorausgehendes get_setup/_load_prefs), deterministisch pruefbar.
+L-eed5e8	B	Bedingung: Test nutzt await Future.delayed(Duration.zero) unmittelbar vor einer State-Pruefung statt einer deadline-begrenzten while-Schleife -- per rg 'Future(?:<void>)?\\.delayed\\(\\s*Duration\\.zero\\s*\\)' vor state-Assertion deterministisch grep-bar.
+L-732ca5	C	Rechercheaufgabe, ob eine Route unter einem vermuteten Pfad-Praefix existiert bzw. ob eine Datenquelle einen Erzeuger hat, Einzelfallanalyse.
+L-c903c3	C	Vorgehensregel zum stufenweisen Aktivieren von Lint-Regeln, kein automatisiertes Kriterium selbst.
+L-f800f7	C	Bauform-Erkenntnis ueber ConstrainedBox.minHeight erfordert Nachmessen/Verstaendnis pro Fall, keine generische Bedingung.
+L-8b4799	C	Architektur-/Fehlerdiagnose zu Wiederholungs-Timer-Lebensdauer, fachliches Urteil.
+L-7c84b4	B	Bedingung: Rahmen-/Textfarbe eines Semantics(button:true)-Bereichs nutzt withAlpha/withOpacity statt voller Deckkraft -- grep-bares Muster, Kontrastrechner deckt Verletzung deterministisch auf.
+L-d0810d	C	Erkenntnis ueber eine Lücke im bestehenden a11y-Checker (implizite label-Erkennung fehlt); der Checker selbst existiert, deckt diesen Fall aber nicht ab und wurde nicht erweitert -- keine belegte laufende Pruefung fuer genau dieses Muster.
+L-f9f654	B	Bedingung: try/catch umschliesst einen unawaited(...)-Aufruf -- grep-bares Syntaxmuster (unawaited innerhalb try ohne await), deterministisch erkennbar.
+L-503687	C	Werkzeug-Kalibrierungserkenntnis (Fan-out/Router-Falschtreffer) beschreibt Grenzen einer Heuristik, kein neues festes Kriterium.
+L-ef3603	C	Fachliche SQL-Analyse zur Periodenisolation erfordert Verstaendnis der Aggregation, kein generisches Muster.
+L-7e43df	C	Prozessregel fuer git add/commit in geteiltem Arbeitsbaum, Bedienungsanweisung.
+L-633c10	B	Bedingung: Podfile-Kopf enthaelt require auf Pfad unter .symlinks vor dessen Erzeugung in post_install -- grep-bare Reihenfolgepruefung (require-Zeile vor post_install-Block).
+L-1b6476	A	hub/scripts/commit_guard_hook.py + hub/scripts/agent_commit.sh blocken Commits auf Pfaden noch laufender Agenten anhand des Registers, mit Override AGENT_COMMIT_FORCE=1 -- laufender Mechanismus im Repo bestaetigt.
+L-c1cdb9	A	fahrtenbuch/apps/fahrtenbuch_legacy/test/store_compliance_test.dart leitet die Soll-Menge an Permissions jetzt aus lib/-Code ab und haelt sie gegen Podfile-Makros/plist-Schluessel (Kreuzvergleich), im Repo bestaetigt.
+L-232fb5	B	Bedingung: zsh print-Aufruf mit Nutztext, der mit "-" beginnt, ohne "-r --" -- per rg 'print (-u2 )?"-' grep-bar und deterministisch als Risiko erkennbar.
+L-a75dfc	A	hub/scripts/nie_geschriebene_werte.py existiert im Repo als laufender Pruefer fuer Werte ohne Schreibpfad (Spalten mit Default ohne Schreiber); die hier notierte Erweiterung um Funktionsargumente ist eine PREV-Ergaenzung zum bestehenden Werkzeug.
+L-3cad13	C	Debugging-Vorgehensregel (erst Aufrufzeile lesen statt Architekturhypothese), prozedural, kein Code-Kriterium.
+L-c1654b	C	Fachliche Analyse einer falschen dataclass-Feldannahme und breitem except, erfordert Codeverstaendnis je Fall.
+L-48e414	C	Prozess-/Koordinationsregel fuer Subagenten-Wartemechanik, keine Code-Bedingung.
+L-ff7428	B	Bedingung: mehrfacher runApp()-Aufruf mit identischem Root-Widget-Typ ohne Key -- grep-bares Muster (runApp( ohne key: im selben Widget-Typ mehrfach im Codepfad), deterministisch pruefbar per Widget-Test mit zwei Runden.
+L-09fbcd	B	Bedingung: Smoke-/Rauchtest-Skript nutzt --debug statt des tatsaechlichen Ziel-Baumodus (Release) -- Abgleich Skript-Flag gegen Referenz-Baubefehl, deterministisch grep-bar.
+L-4e25e6	A	openlehr/apps/openlehr/daemon/steuer/output_scan.py existiert als zentrale Ausgabepruefung (scan_output) und wurde genau um diese Kategorien erweitert und in Chat-Endpunkte verdrahtet.
+L-94a7a6	C	Erkenntnis ueber Vorhersage-Formulierung in Statusdokumenten, sprachliches/inhaltliches Urteil, nicht deterministisch pruefbar.
+L-3079a1	B	Bedingung: Symlink-Zielpfad stimmt nicht mit der Ebenenzahl aus pubspec.yaml path-Eintrag ueberein -- pruefbar durch Vergleich der ../.. -Tiefe mit tatsaechlichem Symlink-Ort.
+L-6be428	C	Produktentscheidung zu Rueckfrage-UX beim LLM-Copilot, fachliches Urteil ueber Modellverhalten.
+L-9b7d64	C	Fachliche Korrektheitsanforderung fuer verzoegerte Korrekturen gegen bewegliche Untergrenze, erfordert Domaenwissen je Fall.
+L-b9bc55	C	Analyse unvollstaendiger Fehlerbehandlung an zwei Erkennungsstellen, erfordert Codeverstaendnis, kein generisches Muster.
+L-c214a0	C	Aussage ueber fremdes Fahrzeug-/BLE-Verhalten und Future-Verdrahtung, fachliches Urteil je Aufrufer.
+L-5d9449	C	Architekturentscheidung ueber Wartebedingung (Menge vs. Voraussetzung) ist Werturteil per Definition der Aufgabenstellung selbst (Beispiel fuer NICHT-B in der Vorgabe).
+L-874260	B	Bedingung: Datei importiert `hide showDialog, showModalBottomSheet` und definiert sie neu -- rg "hide \w+" --type dart liefert deterministisch die Fundstellen, ohne Sprachmodell.
+L-06d14c	C	Fachliche Fehldiagnose (Feldsemantik von categorySource) erfordert Domaenverstaendnis, kein generisches Kriterium.
+L-76eca2	B	Bedingung: Testdatei enthaelt null assert/expect-Aufrufe -- Datei mit Test-Suffix und 0 Assertions ist deterministisch zaehlbar, unabhaengig vom Inhalt.
+L-a306bc	C	Ob find.text(exakterString) den Testzweck (Navigation) oder einen Label-Kontrakt pruefen soll, ist Absichtsurteil, nicht ohne Sprachmodell aus dem Code ableitbar.
+L-977488	C	Steuerrechtliche Wirkungsanalyse eines Hoechstbetrags im gegebenen Datenmodell, fachliches Urteil.
+L-83fa36	B	Bedingung: git stash push mit "-m" NACH "--" -- Aufrufsyntax deterministisch per Parsing/Linting der eigenen Skriptaufrufe erkennbar (Reihenfolge -m vor --).
+L-709f07	C	Fachliche Pruefung, ob ein needs_clarification-Flag in eine sichtbare Nutzeraktion muendet, erfordert Codepfadverstaendnis je Fall.
+L-aa4a4e	C	Fachliche Analyse, welcher Zweig einer Funktion tatsaechlich zahlenwirksam ist, Domaenwissen noetig.
+L-c6e856	C	Lizenz-/Quellenrecherche fuer Formatkennungen, Urteilssache ueber externe Quellen.
+L-2daffd	B	Bedingung: git commit mit Pfadangabe nach vorherigem git add -p (partiellem Staging) derselben Pfade -- durch Vergleich Index-Diff vs. Arbeitsbaum-Diff vor dem Commit deterministisch erkennbar.
+L-50f6ea	A	hub/scripts/test_model_routing.py (sys.exit(1 if failed > 0 else 0)) und hub/begod/scripts/begod_test.py (cmd_suite/cmd_quick mit sys.exit) sind im Repo bestaetigt vorhanden.
+L-ff87c0	B	Bedingung: neues Feld in *_profile.py (get_profile/set_profile) wird nicht namentlich in api.py und router.py durchgereicht -- grep-bare Namensliste je Schicht, Abweichung deterministisch feststellbar.
+L-a54e84	B	Bedingung: in HEAD committete Datei fehlt im Arbeitsbaum ohne zugehoerigen Loeschcommit auf dem Branch -- git diff --diff-filter=D --name-status HEAD gegen tatsaechlich fehlende Dateien ist deterministisch prüfbar/automatisierbar.
+L-121f98	C	Faktenpruefung, ob ein Frontend-Formular fuer Geschwisterfelder existiert, ist eine Rechercheaufgabe je Auftrag, kein wiederkehrendes Kriterium.
+L-0948cd	B	Bedingung: Testdatei nutzt readAsStringSync + contains/indexOf auf literale Codezeilen als Assertion -- grep-bares Muster (String-Contract-Test statt Verhaltenstest), deterministisch auffindbar.
+L-98e563	B	Bedingung: neuer Speicher nutzt ProjectPaths.state_dir() statt des im Projekt etablierten OPENLEHR_STEUER_ROOT-Musters -- grep-bare Abweichung von der ueblichen Env-Var-Kette.
+L-70f784	C	UX-/Consent-Designentscheidung fuer ein Feldpaar, fachliches Urteil ueber Datenschutzanforderung.
+L-055a05	B	Bedingung: Rot-Probe gegen alten Code laeuft ohne HOME/Env-Monkeypatch auf tmp_path -- pruefbar als Testsetup-Regel (Environment-Isolation vor jedem Testlauf gegen Altcode), deterministisch als Lint/Fixture-Pflicht durchsetzbar.
+L-2d79cc	C	Fachliche Beurteilung, ob ein UI-Abschnitt einen externen Objektbezug braucht, ist Werturteil ueber Bildschirmsemantik.
+L-f25919	C	API-Designentscheidung fuer explizites Reset-Signal bei tri-state-Feldern, Architektururteil.
+L-91b8c5	C	Verfeinerung eines Checkers auf ein strukturelles, aber weiterhin interpretationsbeduerftiges Kriterium (Objektbindung einer JS-Funktion), erfordert Urteil ueber Faelle wie den bereits gefundenen Fehlalarm.
+L-79365e	C	Fachliche FOUC-Analyse (Ladefenster vorhanden? Fehlerpfad erreicht Render?) erfordert Codepfadverstaendnis je Bildschirm, kein generisches Kriterium.
+L-c49613	B	Bedingung: Checker liest belege.ust_cent statt SUM(positionen.ust_cent), obwohl die Spalte beim INSERT hart auf NULL gesetzt wird -- grep-bar (INSERT INTO belege setzt ust_cent literal NULL) gegen Leser-Stellen.
+L-ee9e47	C	Testdesign-Erkenntnis zu Fake-VLM-Kollisionen durch identische Platzhalterwerte, fallabhaengiges Urteil.
+L-e78cb4	C	Rechercheanforderung, welche Dateiendungen/Workflows ein Endpunkt tatsaechlich unterstuetzt, Einzelfallanalyse.
+L-360551	C	Ob ein Fehler-/Leerzweig fehlendes Reset/hidden noetig macht, haengt vom UI-Kontext je Bildschirm ab, erfordert Urteil.
+L-42fcea	C	Fachlicher Abgleich zwischen Manifest-Erwartung und tatsaechlichem Render-Output, Einzelfallpruefung.
+L-eb4734	B	Bedingung: gemeldeter Testlauf ohne resultierendes Artefakt (Datei/Prozess/Commit) -- pruefbar als "Meldung 'Lauf gestartet' ohne begleitende Ergebnisdatei binnen Frist", deterministisch mit Dateisystem-/Prozess-Check verifizierbar.
+L-97ab3c	C	Aussage ueber Instabilitaet eines lokalen LLM bei Prompt-Variationen, empirisches Modellverhalten, kein deterministisches Kriterium.
+L-42c4bf	C	Fachliche Bewertung, ob ein Korpus-Fixture sein beabsichtigtes Label (unlesbar) tatsaechlich erfuellt, erfordert Messinterpretation je Fall.
+L-29eaee	C	Rechercheaufgabe, ob ein Rueckfrage-Mechanismus fuer einen bestimmten Codepfad existiert, Einzelfallanalyse.
+L-e336ce	C	Empirische Kausalanalyse einer Nutzerempfehlung (Neustart-Wirkung), fachliches Urteil ueber Nebeneffekte.
+L-bf1b51	C	Grafik-/Rendering-Technikentscheidung (Vertex-Mesh vs. RadialGradient) je nach Datenmodell, Architektururteil.
+L-d66ab9	C	Ob ein Gate "per Name" statt "per Gesamtzustand" prueft, erfordert Verstaendnis der jeweiligen Gate-Logik, kein generisches Textmuster.
+L-5f4abd	B	Bedingung: eine *Light-Farbtoken-Konstante wird als alleinige/dominante Flaeche (nicht unter opakem Vordergrund) verwendet -- Kontrastrechner koennte pruefen, ob der Ton objektiv in der erwarteten Farbfamilie liegt (Hue-Bereich), deterministisch pruefbar ohne Sprachmodell.
+L-5f4dd3	B	Bedingung: testWidgets ruft toImage()/toByteData() ohne umschliessendes tester.runAsync() auf -- grep-bares Syntaxmuster (toImage()-Aufruf ausserhalb runAsync-Block), deterministisch erkennbar.
+L-ec9cf2	C	Prompt-Design-/Modellverhaltensfrage zur Anti-Halluzinationsregel, fachliches Urteil ueber LLM-Antworten.
+L-3aeb09	C	keine automatisierte Pruefung, ob mehrere Implementierungen derselben Lesson-Erfassung existieren
+L-a439b9	A	fahrtenbuch/apps/fahrtenbuch_legacy/test/core/security/empty_catch_guard_test.dart scannt auf catch(_) {} und faellt bei Verstoss rot
+L-5aca72	C	Wahl zwischen Observer und gecachtem Getter ist API-Kenntnis, kein automatisierter Verstoss-Check
+L-69b502	C	Aussage ueber Nichtdeterminismus von LLM-Laeufen ist Urteil, keine boolesche Bedingung
+L-324ed9	C	Prozessdisziplin bei parallelen Agenten waehrend Messreihen, kein Code-Gate dafuer gefunden
+L-26191b	C	Diagnoseverfahren fuer Testfehlerursachen ist Urteil ueber Ebenen, nicht mechanisierbar
+L-5a214e	C	Aussage ueber erwartetes gruen-vor-und-nach-Ergebnis bei Refactorings ist Einordnungsurteil
+L-e723cc	C	Wahl des richtigen Zaehl-Praedikats ist Urteilsfrage, keine feste pruefbare Bedingung je Fall
+L-9b2c1a	C	Vorsicht vor rm auf untracked Logdateien ist Handlungsregel, kein Automatismus vorhanden
+L-1edb0e	C	welcher Zustand als Wartebedingung taugt ist Fall-Urteil, nicht generisch pruefbar
+L-81e9bf	C	Wahl Unix-Timestamp vs. datetime-Vergleich ist Implementierungsentscheidung, kein bestehender Linter gefunden
+L-bea7c9	C	Einstufung reihenfolge- vs. umgebungsabhaengiger Testfehler ist Diagnosearbeit, kein Automatismus
+L-cfac15	C	Pruefung ob nachgelagerte Bibliothek ein Format wirklich dekodiert ist fachliches Urteil je Format
+L-e47622	C	Kalibrierung der Lesbarkeits-Schwelle gegen echte Fotos ist Messurteil, kein bestehender Test genannt
+L-e7bc5e	C	Unterscheidung kaputt vs. gesperrt ist Interpretationsfrage, keine boolesche Pruefung
+L-bf0bfe	C	Erkennen ob ein Test die Umgebung statt den Code misst ist Diagnoseurteil
+L-defb1e	C	Wahl Daten- vs. Code-Aenderung bei Treffer/Kein-Treffer-Debugging ist Vorgehensregel, nicht mechanisiert
+L-ac27c9	C	Erkennen globaler Bibliotheks-Kontamination in Tests ist Einzelfall-Urteil
+L-53af22	A	hub/scripts/test_push_guard.py prueft PEM-Kopfzeile+Base64-Rumpf, faellt ohne Rumpf rot
+L-a472cd	C	Unterscheidung ob Abschwaechung eigener Befund Wirkung oder Rueckzug ist, ist Interpretationsurteil
+L-cc6d37	C	WAL-Checkpoint-vor-Commit-Disziplin ist Handlungsregel, kein Pre-Commit-Hook dafuer gefunden
+L-00af13	A	openlehr/apps/openlehr/tests/test_steuer_plausibility.py::test_plausibility_names_factor10_comma_error_on_summe_vs_positionen prueft das Verhaeltnis-Band
+L-fbba58	A	wohlair/test/core/providers/regional_risk_score_no_ir_test.dart prueft hasIrData-Guard fuer Score-Ampel
+L-0968ae	C	Root Cause (Regex-Scope, gekoppelte try/except) bewusst nicht behoben, keine Pruefung dagegen
+L-b4b443	A	fahrtenbuch/.../test/features/trips/presentation/joker_trip_prompt_listener_test.dart prueft Abwesenheit des alten Gegenwarts-Satzes
+L-740172	C	ob ein Feld durch Schema/Prompt/DB fliesst ist Einzelfall-Recherche, kein generischer Check
+L-80e45c	B	subprocess.run(text=True) ohne encoding-Parameter im betroffenen Codepfad ist statisch grep-bar, aber kein Linter dafuer eingerichtet
+L-3d03bd	B	ein Praefix-Verbot fuer 'git stash'/'git rebase'-Aufrufe in Mehr-Agenten-Sitzungen waere als Command-Hook determinierbar, existiert aber nicht
+L-f19322	C	Wahl gleichmaessiger Stuetzstellen im Ausgaberaum ist physikalisch-mathematisches Entwurfsurteil
+L-6a44e5	C	Bewertung von Rueckruf-Verfahren anhand von 30 Proben ist Messurteil, kein Dauer-Check
+L-eb85ca	C	Erkennen linearer vs. nichtlinearer Zielfunktion vor Bisektion ist mathematisches Urteil
+L-a1b276	C	Erkennen von Ressourcen-Kollisionen bei parallelen Testlaeufen ist Diagnosearbeit, kein Automatismus
+L-d1d0d7	C	Wahl der Ausnahmeform (Feldname vs. Wertform) fuer PII-Scanner ist Entwurfsurteil
+L-3f1dbb	B	Monotonie-Nachweis (kein Fall wird nach Aenderung strenger/milder je nach Richtung eingestuft) ist als Vergleichslauf vorher/nachher determinierbar, aber nicht als laufende Pruefung institutionalisiert
+L-28385e	C	Modellwahl nach Tauglichkeitsprobe statt Groesse ist Betriebsurteil, kein Code-Gate
+L-3e21c4	C	ob ein Waechter am richtigen Datenpfad sitzt ist Architektururteil je Fall
+L-8d1e1d	B	Gegenprobe 'Verkabelung entfernen muss rot werden' ist als deterministischer Test-der-Tests baubar, aber nicht als laufende Pflichtpruefung vorhanden
+L-fc125d	B	ein Abwesenheits-Test ohne begleitenden Mengennachweis (N>0 verarbeitet) ist strukturell erkennbar, aber kein bestehender Linter dafuer gefunden
+L-c463de	C	Unterscheidung Namensbedeutung vs. tatsaechlich berechneter Wert im Code ist Leseurteil
+L-a39083	B	ein Linter, der repo-relative Markdown-Links gegen Dateien ausserhalb des aktuellen Arbeitsverzeichnisses prueft, waere baubar, existiert aber nicht
+L-6a7883	C	Bauform eines Screen-Walkers (echte Router-Config, Pump-Strategie) ist Entwurfsentscheidung
+L-f4aa97	C	Grep-vor-Vorschlag-Disziplin bei Formularfeldern ist Arbeitsweise, kein Automatismus
+L-b78a4d	B	eine Text-Signatur-Dublettenpruefung (>=3 identische Routen-Texte = verdaechtig) ist als Vergleichsskript determinierbar, aber nicht als staendiger Walker-Bestandteil belegt
+L-9dc0db	B	tester.runAsync()-Pflicht fuer echte I/O in testWidgets() ist als Lint-Regel (await ohne runAsync-Wrapper bei bekannten I/O-Aufrufen) denkbar, aber nicht umgesetzt
+L-2be21f	C	Modellparameter-Gleichheit zwischen Vergleichslaeufen sicherstellen ist Protokolldisziplin, kein Code-Gate
+L-a3b39e	A	wohlair/test/screen_walker_test.dart bzw. integration_test/screen_walker_test.dart enthaelt Gegenbeweis-Selbsttest fuer Semantics-Root-Suche
+L-e1e7ee	A	l10n-Parameter in generateSeasonalRecommendations ist als required deklariert (wohlair/lib/core/calculations/seasonal_recommendations.dart), Compiler erzwingt Uebergabe
+L-8d7350	C	Ampel-Aggregation um grauen Zustand ergaenzt, kein benannter Regressionstest fuer diese konkrete Stelle
+L-f93d8c	B	isButton-Flag statt nur Tap-Action fuer Rollen-Erkennung pruefen ist als Gegenbeispiel-Fixture (disabled Button) testbar, kein konkreter Test dafuer belegt
+L-a88e34	A	wohlair/test/screen_walker_test.dart enthaelt laut Beschreibung vier Eichtests (Align+Semantics-Fixture) fuer _spokenText/isHidden-Filter
+L-91aa80	B	Praezisierung von unverdrahtet.py (hub/scripts/unverdrahtet.py) auf Eingabe-Kontexte/Passthrough ist im Skript umgesetzt, aber keine Fixture-Testdatei dafuer gefunden
+L-6e7651	B	Laufzeit-Grenze (kein O(Parameter*Dateien)-Neuparsen) waere als Zeit-Limit-Test pruefbar, aber kein solcher Test gefunden
+L-0a4129	A	fahrtenbuch/.../test/features/obd/obd_auto_reconnect_hint_no_recursion_test.dart prueft No-Op-Guard gegen StackOverflow
+L-0a1ce1	A	openlehr/apps/openlehr/tests/test_reise_lauf_h1_empfaenger_rueckfrage.py prueft Beantwortung der ask-Rueckfrage vor accept
+L-108c3d	B	ein Laeufer-Check auf schmutzigen Arbeitsbaum ist als Skriptbedingung determinierbar, RES nennt Umsetzung im Laeufer aber ohne belegte Fundstelle in diesem Chunk
+L-5c7f86	C	Bewertung von Persona-Meldungen als Verdacht statt Befund ist methodisches Urteil
+L-bbd7fb	A	wohlair/test/features/home/home_status_aggregation_test.dart prueft AmpelStatus.gray-Zustand bei fehlender Datengrundlage
+L-f9f295	C	ob ein Walker die Vorbedingung fuer den Daten-Zustand saet ist Einzelfall-Pruefung je Screen
+L-5243df	C	Ersatz eines toten Hinweis-Codes durch datengetriebenen Helfer ist Entwurfsentscheidung, kein benannter Test
+L-e1a441	A	wohlair/test/core/services/legacy_real_data_service_test.dart bzw. legacy_import_service_test.dart prueft Loeschung nur ueber isLegacyImport-Merkmal
+L-1601fa	C	Architekturentscheidung physische Trennung statt Backup+Loeschung ist Entwurfsurteil, kein benannter Regressionstest
+L-09a75d	C	Bewertung externer Research gegen eigene Konfiguration/Kennzahlen ist Recherche-Urteil
+L-e00be4	C	Tatsachenaussage ueber ein Vertragsdokument eines Dritten (SWB), reine Faktenpruefung
+L-205af3	A	fahrtenbuch/apps/fahrtenbuch_legacy/test/app_error_fallback_test.dart nutzt takeException()+synchronen Reset, belegt den Fix
+L-9adcf9	C	Screen-Zahl aus main.dart/GoRouter ist Faktenfrage, RES-Feld leer, keine automatisierte Pruefung eingerichtet
+L-e1c9ba	C	Unterscheidung Retry-derselben-Quelle vs. Cross-Source-Merge ist fachliches Entwurfsurteil
+L-40782b	C	Mehrdeutigkeit von 'rot/gelb' in Handoff-Text ist Sprachverstaendnisfrage
+L-5d817f	C	git diff --numstat gegen eigene Erwartung pruefen ist Handlungsregel, keine automatisierte Schwelle vorhanden
+L-752cb2	A	fahrtenbuch/.../test/features/auto_drive/vehicle_presence_gate_test.dart prueft isFastConfirmationTrigger-Faelle inkl. Coordinator-Wiring
+L-50ebe3	C	Korrektur der PopScope-Messmethode ist Werkzeugkorrektur, kein Dauer-Test fuer die Messmethode selbst belegt
+L-a57c07	C	Formvektor-Eichung scheiterte, Ergebnis ist negatives Messurteil ohne weiteren Automatismus
+L-686fcf	C	Verifikation behaupteter bestehender Komponenten (Renderer/ADR/Endpunkt) ist Rechercheschritt je Fall
+L-8fb0eb	B	grep auf 'find.byType(...).at(' als fragiler Index-Finder in Testdateien ist deterministisch pruefbar, aber kein bestehender Lint/Test dafuer gefunden
+L-935ca9	C	Testanpassung auf Uebersichtsseite statt Feldseite ist Einzelfall-Fix, kein generischer Check
+L-965048	A	fahrtenbuch/.../test/features/trips/data/location_notifier_test.dart prueft kmStart-Erhalt in _snapshotDraftTrip fuer positiven/negativen Pivot
+L-ac86cf	A	fahrtenbuch/.../test/features/settings/data/trip_import_service_test.dart prueft Hash-Kette und Audit-Log nach Umstellung auf TripRepository.create
+L-ceaeed	C	git blame gegen Audit-Befund pruefen ist Vorgehensregel, kein Automatismus
+L-bceae6	A	fahrtenbuch/.../test/features/auto_drive/drive_state_machine_test.dart deckt onLocation-Verhalten im confirmedDrive-Zustand ab (Pause-Bypass-Guard)
+L-a39fe4	A	openlehr/apps/openlehr/tests/jsdom/run_all.js ruft node --test fest mit --test-force-exit auf, erzwingt die richtige Aufrufform
+L-f6e51d	A	fahrtenbuch/.../test/core/services/deferred_geocoding_service_test.dart reproduziert den Null-Check-Absturz und bleibt danach gruen
+L-468a04	C	Bestaetigung, dass die dokumentierte Aufrufform ausreicht, ist Diagnoseurteil ueber ein Einzelereignis
+L-07cc66	C	Wissen um flutter_test-eigene !timersPending-Assertion und die noetige Teardown-Sequenz ist Framework-Kenntnis, kein im Repo gebauter Regressionsschutz
+L-14a825	C	Angleichung der Beleg-Vorschau an das bessere Muster ist Einzelfall-Fix, genannte Testdatei wt_einzeln_vorschau_link.js im Repo nicht auffindbar
+L-2f67b2	C	Widerlegung einer Plan-Annahme durch Code-Lektuere ist Rechercheergebnis, RES-Feld leer, kein Automatismus
+L-40fd28	B	Verbotene Statuswerte ('nicht bestaetigt', 'nicht versandt' u.ae.) in Bestandsspalten sind als Textmuster-Verbot grep-bar, aber kein bestehender Linter dafuer gefunden
+L-53ad03	A	fahrtenbuch/.../test/features/trips/presentation/paused_trip_prompt_listener_test.dart belegt den neuen Listener (rot bei fehlender Datei, gruen danach)
+L-91828e	C	Aufteilung in kritische vs. Tick-Telemetriearten ist Entwurfsentscheidung, kein benannter Regressionstest
+L-b0063a	C	Lazy-iframe-src-Fix und FileResourceLoader-Verzeichnis-Mapping sind belegt, aber keine konkrete Testdatei dafuer im Repo auffindbar
+L-d09d25	C	Ein-DOM-Baum-Ansatz fuer responsive Navigation ist Architekturentscheidung, genannte Testdatei wt_navigation_mehr_verhalten.js im Repo nicht auffindbar
+L-fb8c94	C	Abbildung Klassenname->Route in settings_screen.dart ist Einzelfall-Verdrahtung, kein benannter Regressionstest
+L-4388c5	C	Urteil ueber Prozessfehler (Assertion geschwaecht statt Feature gebaut), keine Bedingung pruefbar.
+L-e5f5c1	A	test/features/obd/universal_dongle_manager_identify_exclusive_transport_test.dart + pid_reader_start_retry_test.dart im fahrtenbuch-Repo vorhanden.
+L-f180fb	C	Allgemeine Flutter-Timing-Erkenntnis (addTearDown vs Body-Ende), keine feste Bedingung fuer kuenftigen Code formulierbar.
+L-1cc54c	A	test/features/settings/data/trip_import_service_error_message_test.dart im fahrtenbuch-Repo vorhanden, prueft auf Rohtext-Marker.
+L-df5c13	C	Werturteil ueber eine Architekturempfehlung, keine deterministische Pruefung moeglich.
+L-3d7977	C	Design-Trade-off-Begruendung fuer Statuslogik, kein pruefbarer Zustand.
+L-845c74	C	Tatsachenwissen ueber flutter_map-Bibliotheksverhalten, kein eigener Code-Zustand pruefbar.
+L-35caa2	C	Empfiehlt manuelle Review-Kontrollfrage (grep), keine automatisierte laufende Pruefung vorhanden oder eindeutig spezifizierbar.
+L-4fc33b	A	test/features/obd/odometer_recalibration_route_gate_test.dart im fahrtenbuch-Repo vorhanden, prueft Gate-Umgehung.
+L-a5ebcf	B	Pruefbar waere: Regex-Scan auf CPInformationItem.detail/-title gegen bekannte interne Enum-Namen (wie fuer Android bereits gebaut), fuer CarPlay laut Lehre noch nicht umgesetzt.
+L-5f0f83	C	Beschreibt einen noch unbehobenen Bug (Gate-Freigabe an isMounted gekoppelt), kein Fix zu pruefen.
+L-424312	C	Reiner Messbefund einer Kollision, nicht behoben, keine Pruefung die den Zustand verhindert.
+L-e8b213	B	Pruefbar waere: Test, der Gate-Freigabe nach Widget-Dispose des Aufrufers erzwingt (ProviderScope.containerOf statt ref) -- kein eigener Testdateiname genannt/gefunden.
+L-ecc0af	C	Meta-Entscheidungsregel zur Modellwahl, reines Urteil.
+L-d72a77	C	Tatsachenbefund ueber Transkriptformat, keine Bedingung im Code pruefbar.
+L-312bd7	C	Empfehlung ist eine Kennzahl/Messmethode als Dauerbeobachtung, kein Pass/Fail-Gate.
+L-636a44	A	hub/shared-knowledge/tests/test_fts_projekt.py::test_every_trigger_writes_every_fts_column existiert im Repo.
+L-8d1597	C	Testisolationsluecke fuer messlauf.py bleibt laut Text ungefixt, kein Mechanismus vorhanden.
+L-b4b6fc	C	Methodische Erkenntnis ueber Korpus-Vollstaendigkeit, kein deterministischer Test formulierbar.
+L-dfe252	A	hub/scripts/test_push_guard.py existiert und prueft errors="replace" gegen kaputte Bytes.
+L-5b0d5a	C	Prozessregel (grep vor Pflichtfeld-Fix), keine feste pruefbare Bedingung.
+L-198241	A	hub/shared-knowledge/tests/test_auditkette.py::test_transaction_abort_leaves_neither_write_nor_log existiert.
+L-f2858b	C	Arbeitsweisen-Reflex (Wissenssystem vor grep fragen), kein Code-Zustand pruefbar.
+L-5c2d07	C	Messbefund zu Migrationsstand, kein wiederholbarer deterministischer Test genannt.
+L-1980bb	C	Logikkorrektur (Vergleich gegen Vorher-Wert), kein benannter Regressionstest.
+L-fb02b4	B	Pruefbar waere: Gegenprobe gegen bekannte Dublettenpaare im vollen Bestand vor Auslieferung -- als fester Test nicht bestaetigt vorhanden.
+L-2448c2	B	Pruefbar waere ein Regex-Scan auf rohe Enum-Suffixe in Anzeige-Strings; fuer Android als check_android_auto_text.py umgesetzt, fuer CarPlay laut Text ausdruecklich noch nicht.
+L-adb765	C	Regex-Korrektur mit Testfaellen belegt, aber kein dauerhafter Testdateiname genannt/gefunden.
+L-d5c56d	C	Architekturentscheidung (Darstellung statt Musterliste als Schutz), kein einzelner pruefbarer Zustand.
+L-67e27c	A	fahrtenbuch/apps/fahrtenbuch_legacy/tool/check_carplay_text.py existiert im Repo (deckt carplay/car_platform ab, wenn auch manuell aufgerufen).
+L-476602	B	Pruefbar waere: tools/list-Antwort enthaelt nur profilierte Teilmenge, tools/call bleibt vollstaendig -- kein Testname genannt/gefunden.
+L-ce7310	C	Tatsachenwissen ueber Ollama-API-Versionsverhalten.
+L-c5315d	C	Werkzeugwahl-Empfehlung (kill -0 statt pgrep), kein Code-Zustand im Repo pruefbar.
+L-62f1ff	A	fahrtenbuch/apps/fahrtenbuch_legacy/test/a11y/tap_target_size_regression_test.dart existiert und misst RenderBox direkt.
+L-601c5c	B	Selbstregenerierender Check (inventory_settings_ui.py --check) existiert im Repo, ist aber laut Text nicht per CI/pre-commit automatisiert -- daher kein aktuell laufender Gate.
+L-c43b1b	C	Reflexionslehre (eigenes System kennt sich selbst nicht), kein pruefbarer Code-Zustand.
+L-69a7ad	A	hub/shared-knowledge/knowledge_mcp_server.py::_ensure_ast_chain() existiert (Zeile 1474, aufgerufen aus knowledge_add) und erzeugt fehlende Astknoten automatisch.
+L-026791	B	Pruefbar waere: Gegenprobe-Skript, das nach jedem 'force'/'skip_check'-Schalter erneut die urspruengliche Zusicherung (kein Knoten ohne existierenden Elternpfad) durchlaufen laesst -- nicht als fester Test bestaetigt.
+L-462c35	B	Pruefbar waere: Testsuite setzt OPENLEHR_HYBRID_EMBEDDING_WEIGHT=0 vor jedem reinen FTS-Test -- als generelle Regel nicht durch ein Lint/CI-Gate erzwungen.
+L-baaa61	C	Schema-Luecken-Befund (Normschicht nicht ueber Werkzeug erreichbar), als Bericht dokumentiert, spaeter laut L-4e9401/L-4e9401-Notiz behoben, aber diese Zeile selbst ist der Befund/kein Test.
+L-f8e543	C	Werkzeugkalibrierungs-Erkenntnis (SQLite trim() vs Python strip()), keine feste pruefbare Bedingung im Code.
+L-4eb2bc	B	Pruefbar waere: knowledge_read liefert bei leerem content automatisch Titel/Summary der Kinder zurueck -- laut Text als offene Massnahme benannt, nicht bestaetigt umgesetzt.
+L-68ff10	B	Pruefbar waere: CI-Lauf fuer fahrtenbuch_legacy erzwingt --dart-define=DEBUG_STATE_API=true fuer die betroffene Testklasse -- als Erzwingung nicht gefunden.
+L-b68464	C	Methodische Regel fuer Simulator-Vertrauen (Beleg durch echten Client), kein automatisierbares Kriterium ohne Interpretation.
+L-6795de	C	Tatsachenwissen ueber Android-Emulator-Verhalten (geo fix Mindestdistanz).
+L-0c2d52	B	Pruefbar waere: Lint/Pre-Commit-Hook lehnt git commit -m "..." mit Backtick im String ab, wenn nicht per Heredoc uebergeben -- nicht als vorhandener Mechanismus gefunden.
+L-c20cfe	C	Deploy-Vorgehensregel (worktree statt Live-Verzeichnis), kein einzelner pruefbarer Codezustand.
+L-0af742	C	Betriebsregel zum Lesen von Deploy-Logzeilen, kein automatisierbares Kriterium ohne Interpretation des Wortlauts.
+L-00fd90	C	Tatsachenwissen ueber Astro-CSS-Scoping-Verhalten, kein pruefbarer Zustand im Repo belegt.
+L-abb17f	B	Pruefbar waere: Mess-/Build-Agent gibt zu Beginn Pfad/Commit-Hash gegen Sollwert aus und bricht bei Abweichung ab -- nicht als vorhandener Mechanismus gefunden.
+L-db33de	C	Betriebswissen (Daemon-Neustart noetig nach Codeaenderung), kein automatisierbares Kriterium ohne externen Zustand.
+L-4e9401	B	Pruefbar waere: Test, der knowledge_add/update mit norm_rang/gilt_ab/gilt_bis aufruft und die Persistenz prueft -- kein konkreter Testdateiname genannt/gefunden.
+L-183517	C	Server-Verhaltensluecke (Aehnlichkeitshinweis nach statt vor dem Schreiben), als Prozessregel formuliert, kein fester Test.
+L-17f922	C	Bugfix-Beschreibung (Text-Weg statt Bild-Modell bei PDF-Textlayer), kein benannter Regressionstest gefunden.
+L-5d4f24	A	openlehr/apps/openlehr/tests/test_text_index_leitangaben.py enthaelt test_archiv_pfad_landet_nicht_im_index gegen PII-Leck im Pfad.
+L-401aeb	C	Refactoring-Beschreibung (Funktionssplit), Korrektheit ueber bestehende 73 Tests, aber keine neue spezifische Pruefung fuer diese Lehre benannt.
+L-c1b088	C	Infrastruktur-Debugging-Erkenntnis (adb forward blockiert Testport), kein automatisierbares Kriterium ohne externen Systemzustand.
+L-9ed5a5	C	Bugfix-Beschreibung (flush vor Lesezugriff), kein benannter Regressionstest gefunden.
+L-7e0823	A	hub/shared-knowledge/tests/test_anlass_schema_backfill.py existiert und prueft additive Spalten-Nachzucht.
+L-8487fb	C	Sicherheitsfix (Kollisionspruefung vor Demo-Grant), kein benannter Regressionstest gefunden.
+L-17602e	C	Architekturentscheidung (Guard im Choke-Point statt pro Aufrufer), kein benannter Test gefunden.
+L-73dc51	B	Pruefbar waere: repo-weites grep nach 'INSERT INTO <tabelle>' als Vorbedingung vor Aktivierung eines neuen DB-Constraints -- als automatisierter Gate-Schritt nicht gefunden.
+L-cde3ee	C	Bugfix-Beschreibung (Batch-Dublettenpruefung), kein benannter Regressionstest gefunden.
+L-cfee1c	C	Tatsachenpruefung einer Literaturangabe (Existenz einer Quelle), reines Urteil/Recherche.
+L-f0722d	B	Pruefbar waere: Vor jedem alten_string-Edit ans Dateiende pruefen, ob Datei mit Newline endet (z.B. tail -c1) -- als automatisierter Check nicht vorhanden.
+L-7ef715	C	Feature-Ergaenzung (Geltungsauswertung in knowledge_search), kein einzelner pruefbarer Fehlerzustand ohne Testreferenz.
+L-f7912d	A	hub/shared-knowledge/tests/test_geltung_konsistenz.py existiert und haelt beide Auswerter von gilt_bis synchron.
+L-7aad34	C	Unbehobener Befund (Pflichtfeld source tautologisch erfuellbar), als Problem dokumentiert, keine Pruefung vorhanden.
+L-fa9a82	A	hub/shared-knowledge/knowledge_mcp_server.py::_validate_source_provenance und tests/test_knowledge_add_source.py setzen/pruefen das Zwei-Gate-Kriterium.
+L-f0c4ba	B	Pruefbar waere: Vor Einfuehrung eines neuen DB-Triggers grep nach 'INSERT INTO <tabelle>' in Test-/Selftest-Dateien -- als automatisierter Schritt nicht vorhanden.
+L-1cf1ac	C	iOS-Systemwissen (Systemuhren vs Prozessuhren), Implementierungsmuster ohne benannten Test.
+L-adfb33	C	Unbehobener Datenschutz-Befund (Personaldatum im source-Feld), keine Pruefung vorhanden.
+L-45ba44	C	Bugfix-Beschreibung (Mock-Routing ueber Registry), kein benannter Regressionstest gefunden.
+L-73da37	A	hub/shared-knowledge/tests/test_nie_gezogen_fenster.py existiert und deckt Fensterlogik/Grenzwerte ab.
+L-44d996	B	Pruefbar waere: Lint prueft, dass neue ~/.xyz-Default-Pfade als Funktion mit Env-Override statt als Modulkonstante angelegt sind -- kein solcher Check gefunden.
+L-3b45fc	C	iOS-Systemprogrammierregel (keine Allokation im Suspend-Fenster), keine deterministische Pruefung ohne Interpretation moeglich.
+L-94e297	C	Bugfix-Beschreibung (try/finally um Env-Mutation), kein benannter Regressionstest gefunden.
+L-7c445c	C	Debugging-Vorgehensregel (kein tail auf Testausgabe), keine automatisierbare Bedingung im Code.
+L-4ffcb7	B	Pruefbar waere: Lint prueft Test-Fixture-Dateien auf %r/f-string-JSON-Konstruktion statt json.dumps() -- kein solcher Check gefunden.
+L-c0731a	C	Empirische Prompt-Tuning-Erkenntnis (Beispiel wirkt besser als Beschreibung), kein pruefbarer Codezustand.
+L-d33850	C	Meta-Erkenntnis ueber Schlussfolgerungen aus Momentaufnahmen, reines Urteil.
+L-9e8b5b	C	Prozessregel fuer Auftragserstellung (Rot-Probe vor eigener Aenderung), kein automatisierbares Kriterium.
+L-6a1f70	C	Architekturentscheidung (zwei getrennte Loeschpfade statt einem Tool), Werturteil ueber Sicherheitsdesign.
+L-a7b433	C	Meta-Erkenntnis ueber eigenes Entscheidungsverhalten (wer darf loeschen), reines Urteil.
+L-ae9cba	A	hub/shared-knowledge/tests/test_updated_at_nebenwirkungen.py existiert und belegt die drei Stellen plus Konfidenzverfall-Gegenprobe.
+L-efa7d4	C	Bugfix-Beschreibung (Identitaets-Fallback, neue Parameter), kein benannter Regressionstest gefunden.
+L-c64f3b	C	Konfigurationsluecke (fehlende Env-Vars fuer Identitaet), keine Codepruefung moeglich ohne Aufrufer-Umgebung.
+L-cb619e	C	Unabhaengige Wiederholung derselben Konfigurationsluecke (Fremdclient-Probe), gleiche Einordnung wie L-c64f3b.
+L-a846ba	C	Dokumentierte Design-Grenze (Sekundenaufloesung fuer optimistischen Lock), bewusst nicht behoben, keine Pruefung vorhanden.
+L-218f1e	A	hub/shared-knowledge/tests/test_backup_wal_checkpoint.py existiert und beweist WAL-Checkpoint vor shutil.copy2 in allen vier Fassungen.
+L-d3e729	C	Werturteil ueber Schema-Wahl bei neuem Datensatz, keine deterministische Bedingung formulierbar.
+L-cde4e9	C	Frage ob eine Auslassung fuer eine neue Fragestellung noch gilt ist Interpretation, kein pruefbarer Zustand.
+L-4f7b36	B	Bedingung waere: jedes Eichskript muss mindestens einen absichtlich verfaelschten Negativfall enthalten, der ein schlechteres Mass liefert als der Positivfall.
+L-3faad7	A	hub/shared-knowledge/konfidenz.py::_selftest() (--selftest) prueft REGIME_BEOBACHTBAR/DEKLARIERT/UNBEOBACHTBAR inkl. commits_seit-Rechnung wirklich.
+L-0392e4	C	Ob ein norm_rang-Vergleich zwischen Aesten sinnvoll ist, ist fachliches Urteil ueber die jeweilige Skala.
+L-49c3f4	C	Ob eine Geltungsgrenze ein Datum verdient oder als Ereignis im Text bleibt ist Einzelfallurteil.
+L-dd0daf	B	Bedingung waere: erzeugter Herkunftstext bei abgeleitet_von muss die Kennung des Elternknotens enthalten (Stringpruefung).
+L-bc7a32	C	Ob ein Widerspruch durch eine neue Quelle tatsaechlich aufgeloest ist, ist inhaltliche Wuerdigung.
+L-0e6d2d	C	Vier projektspezifische Fallstricke der Homepage sind Tatsachenwissen ueber Astro/Deploy, kein pruefbarer Automatismus.
+L-abdb47	C	Zuverlaessigkeit einer Gespraechsmitschrift und Zuordnung von Zahlen ist inhaltliche Wuerdigung, nicht automatisierbar.
+L-3cb7c3	B	Bedingung waere: Serverstart gegen leere Datenbank an neutralem Ort darf nicht mit ModuleNotFoundError/OperationalError abbrechen (Rauchtest).
+L-48c31a	B	Bedingung waere: nach schema.sql-Aenderung muss Backfill-Guard COUNT(leere source)==0 pruefen statt nur Trigger-Existenz -- kein bestehender Test dafuer gefunden.
+L-881592	A	hub/scripts/knowledge_recall_hook.py Zeilen 1645-1648 assert _cwd_project() fuer Fremdpfad/None, existierender Selbsttest.
+L-7d37f4	A	hub/shared-knowledge/knowledge_mcp_server.py nutzt _docsize-Schattentabelle als Vollstaendigkeits-Guard fuer den FTS5-Index (im Code verankert, kein reiner Vorschlag).
+L-fd1221	A	10 von hub/shared-knowledge/migrate_*.py-Skripten pruefen inzwischen BEGOD_KNOWLEDGE_DB statt festen Pfad (Grep bestaetigt).
+L-480c87	C	Kein je_ast_hoechstens()/Selbsttest in hub/shared-knowledge/wiedereinstieg.py auffindbar; laut Text selbst offen (Wurzelfix am MCP-Server steht noch aus).
+L-712516	C	Abrufversaeumnis ist ein Vorgang im eigenen Arbeitsgedaechtnis, keine im Code pruefbare Bedingung.
+L-1b461d	C	Formel-Guete eines Vertrauenswerts (trust_score) ist Bewertungsfrage, nicht durch feste Bedingung entscheidbar.
+L-40d9a5	B	Bedingung waere: ein Dateianspruch im Register darf nur aus einem echten ev=file-Eintrag entstehen, nie aus blosser Texterwaehnung im Auftrag -- laut Text bereits behoben (claim-Pfad entfernt), aber kein Test dafuer gefunden.
+L-a3cc7a	A	hub/shared-knowledge (bzw. scripts/test_methodik_export.py) patch_skills_json() erzeugt Fixture selbst statt fremden Sitzungspfad zu referenzieren -- laut RES bereits umgesetzter Test.
+L-b63633	C	Ob eine 'vorbestehend rot'-Einordnung die Fehlerursache verdeckt, erfordert Lesen des Fehlertexts, kein automatisierbares Kriterium.
+L-749544	C	Abwesenheitsschluss ('nicht gefunden != nicht vorhanden') ist Urteil ueber eigene Recherchesorgfalt.
+L-e107ee	A	hub/shared-knowledge/tests/test_project_id_enum_stale.py existiert und prueft die Enum-Beschreibung gegen freien Projekt-Slug.
+L-ec0cf9	B	Bedingung waere: jede neue Erkennungsregel braucht vor Freigabe einen Lauf gegen den echten Bestand mit gezaehlter Fehlalarmquote statt nur konstruierter Faelle.
+L-f61f86	B	Bedingung waere: vor Verdrahtung eines neuen Signals mit Gewicht pruefen, ob im echten Bestand beide moeglichen Auspraegungen (genutzt/ignoriert) ueberhaupt vorkommen.
+L-1ca32d	C	Bauform einer Selbstauskunft fuer ein Fachgespraech ist Stil-/Kommunikationsfrage, kein pruefbarer Zustand.
+L-cfda57	A	hub/shared-knowledge/wirkung.py::outcome() wurde laut RES auf Praefixvergleich (LIKE) statt Gleichheit umgestellt -- fixt den strukturell unerreichbaren Vergleich unmittelbar im Code.
+L-effd52	B	Bedingung waere: Median+MAD-Ausreissererkennung mit n < RADAR_MIN_SAMPLE_N darf keine Kandidaten ausschliessen (Mindeststichprobenkonstante als Guard).
+L-dbdb28	C	Ob eine Groessenordnungsangabe ungemessen und das tragende Argumentbein ist, ist inhaltliches Urteil.
+L-74ff04	A	hub/shared-knowledge/tests/conftest.py enthaelt eine autouse-Fixture, die die Schreibziele fuer die gesamte Testsuite auf tmp_path umbiegt (Grep bestaetigt Datei/Bezug).
+L-352afa	C	Acht/neun Messartefakte mit derselben Bauform sind Einzelfallanalysen von Mess-Semantik, nicht generisch pruefbar.
+L-e2bb41	A	tools/ui_sweep.py (fahrtenbuch) hat laut RES eine Selbstpruefung ergaenzt, die jeden Ausnahmelisten-Eintrag gegen Existenz/Kriterium prueft und mit Exit!=0 bei veralteter Klassifikation abbricht -- Gegenprobe beider Richtungen dokumentiert.
+L-d8d970	B	Bedingung waere: jeder Testlauf-Beleg muss Exit-Code UND Anzahl gesammelter Faelle zeigen, ein Exit-Code 4/'0 items' darf nicht als 'gruen' gelten.
+L-9fd861	C	Vierschrittiges Rechercheverfahren vor Neubau ist methodisches Vorgehen, keine feste pruefbare Bedingung.
+L-bed14a	B	Bedingung waere: wird eine Zahl im Gespraech als Artefakt widerlegt, muss der sie tragende Wissensknoten im selben Zug nachgezogen werden (Abgleich Text-Korrektur gegen Knotenstand ist grundsaetzlich pruefbar, aber kein Automatismus existiert).
+L-6a215a	C	Unterscheidung 'nicht beobachtbar' vs 'nicht messbar' ist methodisches Urteil ueber Verfahren, kein Code-Zustand.
+L-e3456a	B	Bedingung waere: keine zwei App-Verzeichnisse duerfen dieselbe Bundle-ID fuehren (grep nach Kennung ueber Appfile/plist/build.gradle, Kollision hart pruefbar) -- laut Text noch nicht gebaut, Befund nur gemeldet.
+L-d339ab	C	Erkennung eines toten Subagenten aus git status/Prozessliste ist Einzelfall-Heuristik, keine feste deterministische Bedingung ohne Fehlalarme.
+L-01783a	B	Bedingung waere: vor grossem Pruefkorpuslauf ein bekannter Positivfall muss vom Aufbau sicher gefunden werden, sonst Abbruch.
+L-fc8474	C	Ob eine Gegenprobe echte Redundanz oder Scheinredundanz ist, haengt an inhaltlicher Unabhaengigkeit der Wege, kein Automatismus.
+L-d57d29	B	Bedingung waere: Testdatei-Reihenfolge/Isolation so erzwingen, dass ein Test mit echtem I/O vor fakeAsync() immer zuerst laeuft -- in main_isolate_watchdog_heartbeat_telemetry_test.dart bereits als Reihenfolge umgesetzt, aber kein generischer Lint dafuer gefunden.
+L-9dda2e	A	apps/openlehr/tests/jsdom/klaerungen/wt_weitere_laden.test.js existiert und ist laut RES rot-vor-gruen belegt (268/268 danach).
+L-248867	B	Bedingung waere: bei exakten kleinen Werten aus Webquellen (Zeilennummern, Betraege) dieselbe URL zweimal abrufen und Werte vergleichen, bei Abweichung Weg als untauglich verwerfen.
+L-67a9c9	B	Bedingung waere: Agentenauftrag mit Aussenanbindungs-Risiko muss ein ausdrueckliches Verbot (kein security-Aufruf, kein Schluesselbund, keine .env-Suche) mit Abbruchbedingung im Kopf enthalten -- Vorhandensein dieses Satzes im Auftragstext ist grep-pruefbar.
+L-681727	A	3-INSERT/3-UPDATE-Stellen in hub/shared-knowledge/knowledge_mcp_server.py setzen laut RES eine serverseitige _KLIENT-Konstante statt Parameter zu erwarten -- im Schema als client-Spalte umgesetzt.
+L-ad02b8	C	Erste Fassung zu einer Regel ('Subagent-Hintergrundlauf stirbt mit Sitzung') wurde am selben Tag durch Gegenbeispiel widerlegt -- Einzelfall-Urteil ueber Ausfuehrungsumgebung.
+L-94a315	A	hub/shared-knowledge/settings_guard.py vergleicht Live-settings.json gegen hub/config/settings.json und meldet Schrumpfung je Ereignistyp, per SessionStart-Hook eingebunden.
+L-54b414	C	Feldvorfall-Reproduktion (GoRouter wirft imperative Route aus Verlauf) ist Tatsachenbefund ueber Framework-Verhalten, kein pruefbares Kriterium formuliert.
+L-4753d0	B	Bedingung waere: Build-/Upload-Skript darf niemals in eine Pipe (| tail) geleitet werden bzw. muss set -o pipefail/PIPESTATUS auswerten, damit der Rueckgabewert stimmt.
+L-4e9fab	B	Bedingung waere: ein Fehlschlag darf erst nach einem isolierten Einzellauf als 'vorbestehend rot' statt 'flatterhaft' eingeordnet werden -- Regel fuer Testklassifikation, kein bestehendes Werkzeug gefunden.
+L-a69129	C	Unterscheidung ob ein Verbot einen Anbieter oder eine Rolle betrifft ist Interpretationsfrage bei Anweisungen des Betreibers.
+L-686ab4	C	Fuenfschrittige Verifikationsreihenfolge fuer Agentenberichte ist methodisches Vorgehen, keine feste Bedingung.
+L-fccb49	B	Bedingung waere: liefert eine Ableitung einen erklaerenden Kommentar der Form 'das geht auf, weil X eine Nebenwirkung hat', muss ein Trennfall gebaut werden, der Ableitung und direkte Messung unterschiedlich ausgehen laesst -- Kommentarmuster grep-erkennbar, Trennfallbau bleibt Urteil.
+L-e96c87	C	Ob ein Rechercheauftrag zuerst eine Kennungs-Inventur des Repos verlangt, ist Vorgehensregel, nicht als feste Bedingung pruefbar.
+L-908d78	A	apps/openlehr/tests/test_execute_openlehr_action_broker.py dokumentiert die zwei unerreichbaren Fehlerzweige explizit als Kommentar/Testfall statt sie stillschweigend als gedeckt zu fuehren.
+L-3ccc3a	C	Erkenntnis ueber Zeichen-zu-Token-Verhaeltnis bei aktivem Denken ist eine Mess-/Werkzeuggrenze, keine im Code pruefbare Bedingung.
+L-415124	C	Einschaetzung eines GitHub-Repos als moeglicher Koeder ist Sicherheitsurteil ueber fremden Inhalt, nicht deterministisch pruefbar.
+L-4750fc	C	iOS-Simulator/XCTest-Berechtigungsverhalten ist Tatsachenbefund ueber Plattform, kein automatisierbares Kriterium.
+L-813c8f	B	Bedingung waere: zaehle Plandokumente, die nach Datum des verbindlichen Plans entstanden sind und ihn nicht nennen -- laut Text als Skriptidee benannt, aber noch nicht gebaut.
+L-ef9310	A	lib/features/settings/data/export_service.dart _startAddressLabel(trip, includePrivateStart) mit Positiv-/Negativtests ('exportPrivateArchive (Positiv): alle vier Felder erscheinen', 5 von 6 Negativtests als Gegenprobe) ist laut RES bereits als Testpaar umgesetzt.
+L-453f78	B	Bedingung waere: alle Aufrufstellen eines Audit-Feldes muessen die verifizierte Aufrufer-Identitaet (nicht den Objekt-Eigentuemer) uebergeben -- grep auf steuer_actor/default_actor im aktuellen app.py findet die beschriebene Umsetzung nicht mehr, Stand unklar.
+L-84014b	A	fahrtenbuch_legacy MainIsolateWatchdog hat laut RES ein Guard-Flag (Commit e48d050a9), das stop() nur abmeldet wenn zuvor angemeldet wurde, rot-vor-gruen ueber Paarlauf belegt.
+L-2a7180	B	Bedingung waere: vor Einbau eines neuen Pflicht-Auth-Gates auf bisher offenem Endpoint muss der volle betroffene Testlauf VOR dem Commit gefahren werden, um Blast-Radius zu zaehlen.
+L-86e92d	B	Bedingung waere: ein Eskalationsmechanismus, der 'escalated_to_rule' meldet, darf nicht existieren ohne dass das Ziel (z.B. .instructions.md) vom tatsaechlichen Leser (Claude Code) auch geladen wird -- Abgleich Ziel-Pfad gegen settings.json ist pruefbar, aber kein Guard dafuer gefunden.
+L-1feb37	A	apps/openlehr/daemon/app.py Zeile 7980 ruft _require_daemon_login() vor Ausgabe des admin_confirm_token in issue_permissions_admin_token, wie im RES beschrieben.
+L-5615d2	C	Unterscheidung Oberflaechenbeobachtung vs. Tatsachenbehauptung ist Urteil ueber eigene Berichtssorgfalt.
+L-c72944	B	Bedingung waere: ein ADR-Beschlusswert (ZWEITER_KANAL=True) muss maschinell gegen den tatsaechlichen Codewert verglichen werden, Abweichung meldepflichtig -- laut Text noch nicht gebaut.
+L-de8ee0	A	hub/scripts/eilmeldung_hook.py implementiert PostToolUse-Hook mit delivered_count/acked-Zustand, Backoff und Eskalation nach n unquittierten Zustellungen, wie im RES beschrieben.
+L-80fa5c	A	knowledge_relations traegt laut RES jetzt lesson_mentions_file-Kanten (8 auf 51 gestiegen), nur fuer tatsaechlich existierende Dateien angelegt -- Kennzahl ist im Bestand nachvollziehbar gefuehrt.
+L-abf434	C	Bewertung der Aussagekraft von Dublettenscores (lexikalisch/semantisch) ist Verfahrensurteil ueber Messmethode, nicht selbst eine feste Bedingung.
+L-136f2b	A	shared-knowledge/knowledge_lint.py::selftest() lief laut RES nach Fix (model=embeddings.DEFAULT_EMBED_MODEL statt hartem String) wieder durch -- Selbsttest ist der Mechanismus.
+L-ec167a	B	Bedingung waere: jede Funktion, die DB-Datum gegen datetime.now() vergleicht, muss vorher auf einheitliches tz-Format normalisiert und gegen den echten Bestand probegelaufen sein -- in _normen_in_kraft() laut RES umgesetzt, aber kein generischer Lint fuer neue Funktionen gefunden.
+L-83782c	B	Bedingung waere: MIN_EDITS-Schwelle des Erfassungs-Hooks muesste auch Lese-/Planungssitzungen mit substanziellem Ergebnis abdecken -- laut RES bewusst NICHT geaendert, nur nachtraeglich von Hand ausgeglichen.
+L-6c6661	B	Bedingung waere: fuer jede zielumlenkende Umgebungsvariable (BEGOD_KNOWLEDGE_DB) zaehlen, wie viele Zugriffsstellen sie tatsaechlich achten (grep nach Zieldateiname), Kollisionsscript denkbar -- laut Text noch nicht gebaut.
+L-486be9	A	CSS-Regel wurde laut RES von :invalid auf [aria-invalid="true"] als Fehlerselektor umgestellt -- deterministische Formregel, aber ohne konkrete Fundstelle im aktuellen Repo verifiziert (Text beschreibt die Umsetzung direkt im Code).
+L-ecf08c	A	hub/shared-knowledge/hebb_kanten.py setzt laut RES kms.DB_PATH vor jedem Schreib-/Loeschlauf explizit und der Selftest-INSERT wurde um das Pflichtfeld source ergaenzt, damit der Selbsttest durchlaeuft.
+L-84869f	B	Bedingung waere: PRAGMA integrity_check muss vor jedem Committen der Wissensdatenbank laufen und darf keine Beschaedigung melden -- laut Text als Regel formuliert, aber kein Pre-Commit-Hook dafuer gefunden.
+L-3ec6d0	B	Bedingung waere: jede in gemeinsam/*.js neu eingebundene Datei muss auch in der zugehoerigen tests/jsdom/<screen>/harness.js per readFileSync auftauchen -- als Abgleich zwischen Quell- und Harness-Dateiliste grundsaetzlich skriptbar, aber kein Check dafuer gefunden.
+L-a8e476	B	Bedingung waere: jedes dataset.xyzAbc-Attribut muss im zugehoerigen querySelector als kebab-case data-xyz-abc referenziert werden -- als Lint/Grep-Regel ueber JS-Dateien baubar, aber laut Text fuer gemeinsam/liste.js noch ungetestet.
+L-80e002	C	Kostenaussagen zu Skalierung von Trust-Score-Aufrufen und Tokenkosten der CLAUDE.md sind gemessene Einzelbefunde, keine generisch pruefbare Bedingung.
+L-5a6397	B	Bedingung waere: TABU-/GRENZEN-Liste eines Auftrags muss VOR der Messphase gegen die Kandidatenliste angewendet werden, nicht erst danach -- Reihenfolgeregel, kein bestehendes Werkzeug gefunden.
+L-8a5813	A	hub/shared-knowledge/wirkung.py::_trust_aggregate(kind) scannt das Log laut RES einmal statt je Kandidat neu, mit Rueckwaertskompatibilitaets-Default -- konkrete Codeaenderung, direkt im Modul verankert.
+L-eff3ec	C	Ob eine View-Migration bestehendes Markup ersetzen oder danebenstellen soll, ist Entwurfsentscheidung je Baustein.
+L-42c0b2	A	hub/scripts/knowledge_recall_hook.py::_ist_geltend()/_parse_iso_grenze() filtern laut RES beide Abrufkanaele (FTS, Embedding-Nachlade) nach gilt_ab/gilt_bis, Code ist direkt im Hook verankert.
+L-daca0a	B	Bedingung waere: eine aus einem anderen Bestand uebernommene Seltenheitsschwelle (RARE_MAX_DF) muss im Zielbestand als Anteil (df/Gesamtzahl) neu berechnet statt als feste Zahl kopiert werden.
+L-790af2	B	Bedingung waere: vor jedem run_in_background-Start gegen einen lokalen gemeinsam genutzten Dienst (Ollama) per ps aux pruefen, ob bereits ein gleichnamiger Prozess laeuft.
+L-2febb5	C	Tatsache ueber das Claude-Code-Hook-Payload-Format (kein Eltern-Feld bei verschachtelten Subagenten-Spawns).
+L-b79360	B	Bedingung: eine Agenten-Antwort enthaelt einen Hintergrund-Spawn-Aufruf, gefolgt vom Rundenende ohne synchrone Weiterarbeit, per Harness-Traceanalyse der Tool-Aufruf-Sequenz pruefbar.
