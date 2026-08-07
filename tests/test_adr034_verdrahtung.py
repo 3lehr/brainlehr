@@ -191,3 +191,52 @@ def test_injection_pruefung_blockiert_den_schreibvorgang_nie(temp_db, monkeypatc
         source="erzeugt aus Testfall (Stand 2026-08-07T00:00:00+02:00)",
     )
     assert "error" not in ergebnis, ergebnis
+
+
+# ─── normrang: Rang faellt deterministisch mit dem Knoten ───────────────────
+
+def test_norm_rang_faellt_deterministisch_aus_adr_source(temp_db):
+    """Rot: ohne Ableitung bliebe norm_rang NULL, obwohl die Herkunft
+    eindeutig ein ADR ist. Gruen: knowledge_add() leitet Rang 3 (ADR) selbst
+    ab und setzt gilt_ab auf den Erfassungszeitpunkt, wenn der Aufrufer
+    keinen eigenen norm_rang mitgibt."""
+    ergebnis = kms.knowledge_add(
+        "/", "ADR-Testnorm",
+        "Testzusammenfassung einer Norm aus einem ADR.",
+        source="erzeugt aus docs/adr/ADR-999-testfall.md (Stand 2026-08-07T00:00:00+02:00)",
+    )
+    assert "error" not in ergebnis, ergebnis
+    row = sqlite3.connect(str(temp_db)).execute(
+        "SELECT norm_rang, gilt_ab FROM knowledge_nodes WHERE id = ?", (ergebnis["id"],)
+    ).fetchone()
+    assert row[0] == 3
+    assert row[1] is not None
+
+
+def test_norm_rang_bleibt_null_bei_gewoehnlicher_quelle(temp_db):
+    """Gegenprobe: eine Quelle, die zu keinem der drei Muster passt, bekommt
+    weiterhin KEINEN Rang -- kein Rateversuch."""
+    ergebnis = kms.knowledge_add(
+        "/", "Reiner Faktenknoten",
+        "Ein Fakt ohne Normbezug.",
+        source="erzeugt aus normbestand.py::ensure_category (Stand 2026-08-07T00:00:00+02:00)",
+    )
+    row = sqlite3.connect(str(temp_db)).execute(
+        "SELECT norm_rang FROM knowledge_nodes WHERE id = ?", (ergebnis["id"],)
+    ).fetchone()
+    assert row[0] is None
+
+
+def test_norm_rang_aufrufer_hat_vorrang_vor_ableitung(temp_db):
+    """Ein explizit mitgegebener norm_rang wird NICHT von der Ableitung
+    ueberschrieben."""
+    ergebnis = kms.knowledge_add(
+        "/", "Explizit anderer Rang",
+        "Zusammenfassung.",
+        source="erzeugt aus docs/adr/ADR-998-testfall.md (Stand 2026-08-07T00:00:00+02:00)",
+        norm_rang=1,
+    )
+    row = sqlite3.connect(str(temp_db)).execute(
+        "SELECT norm_rang FROM knowledge_nodes WHERE id = ?", (ergebnis["id"],)
+    ).fetchone()
+    assert row[0] == 1

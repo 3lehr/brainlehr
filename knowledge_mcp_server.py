@@ -13,7 +13,7 @@ tatsaechliches Kopieren in ein leeres Verzeichnis + Nachziehen jedes
 ModuleNotFoundError, nicht geraten:
 
 Kern (dieses Modul starten, erster Eintrag, Werkzeuge wie knowledge_add):
-diese Datei + drei Nachbarn, sonst nur Stdlib:
+diese Datei + vier Nachbarn, sonst nur Stdlib:
   - schema.sql    (Erstanlage aller Kerntabellen, siehe ensure_schema/
                    _ensure_core_schema; einzige Schemaquelle, nicht im Code
                    nachgebaut)
@@ -23,6 +23,8 @@ diese Datei + drei Nachbarn, sonst nur Stdlib:
                    feuert live in knowledge_add/knowledge_update/
                    lesson_record/lesson_update -- kein Bestandteil der
                    Selbstpruefung mehr, sondern des Schreibpfads selbst)
+  - normrang.py   (ADR-034: norm_rang faellt bei knowledge_add() deterministisch
+                   aus source, TOP-LEVEL importiert, gleicher Grund)
 
 Selbstpruefung (zusaetzlich fuer knowledge_lint.py + konfidenz.py, beide
 gegen eine frische DB durchlaufgeprueft): obige Kerndateien PLUS
@@ -84,6 +86,8 @@ import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-
 import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # (knowledge_add/knowledge_update/lesson_record/lesson_update),
                        # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
+import normrang  # ADR-034: norm_rang faellt bei knowledge_add() deterministisch aus
+                 # source, wenn der Aufrufer keinen eigenen mitgibt. Kein Zirkel.
 
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad (gleiche Bauform wie die drei
 # BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
@@ -1676,6 +1680,19 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session, status="started")
     created_at = now_iso()
+
+    # ADR-034 (normrang): Rang folgt deterministisch aus source und entsteht
+    # mit dem Knoten -- nur wenn der Aufrufer nicht selbst schon einen
+    # norm_rang mitgegeben hat (der bleibt Vorrang). gilt_ab bekommt bei
+    # Ableitung denselben Wert wie normrang.py's Batch-Lauf verwendet hat:
+    # den eigenen Erfassungszeitpunkt des Knotens, kein erfundenes Datum.
+    if norm_rang is None:
+        abgeleiteter_rang = normrang.rang_fuer_source(source)
+        if abgeleiteter_rang is not None:
+            norm_rang = abgeleiteter_rang
+            if gilt_ab is None:
+                gilt_ab = created_at
+
     conn.execute(
         """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von, actor, session, model)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
