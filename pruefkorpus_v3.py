@@ -713,6 +713,61 @@ def _run_case(case: dict, model: str, *, force_fail: bool = False) -> dict:
     }
 
 
+def _positivkontrolle_pruefen(case: dict, model: str, *, force_fail: bool = False,
+                               max_versuche: int = 3) -> tuple[bool, list[dict]]:
+    """Mehrheitsentscheid statt Einzelversuch (Coordinator-Befund 2026-08-08,
+    Fehlerklasse L-01783a): ein Einzelversuch von CASES[0] unterliegt
+    derselben Streuung wie der Rest des Korpus (22/36 vs. 15/36 bei zwei
+    identischen Laeufen, s. Auftrag Punkt 1) und darf einen gueltigen Lauf
+    nicht wegen EINES Ausreissers abbrechen. Erst ab Mehrheit der Versuche
+    durchgefallen (2 von 3) gilt das Messgeraet als kaputt. Fruehabbruch,
+    sobald die Mehrheit in eine Richtung feststeht (2 Erfolge -> ok ohne
+    dritten Versuch, 2 Fehlschlaege -> Abbruch ohne dritten Versuch)."""
+    noetig = max_versuche // 2 + 1
+    versuche: list[dict] = []
+    erfolge = fehlschlaege = 0
+    for _ in range(max_versuche):
+        row = _run_case(case, model, force_fail=force_fail)
+        versuche.append(row)
+        if row["mit_bestanden"]:
+            erfolge += 1
+        else:
+            fehlschlaege += 1
+        if erfolge >= noetig or fehlschlaege >= noetig:
+            break
+    return erfolge >= noetig, versuche
+
+
+def kalibriere_positivkontrolle(
+        model: str = CAL_MODEL, n: int = 10,
+        out_path: Path = SHARED_KNOWLEDGE / "runs" / "positivkontrolle_kalibrierung.json") -> dict:
+    """Wie oft faellt CASES[0] bei unveraendertem Bestand/Einstellung durch --
+    billig zu messen (n Aufrufe desselben Falls), entscheidet ueber die
+    Bauform der Positivkontrolle (s. _positivkontrolle_pruefen-Docstring)."""
+    conn = sqlite3.connect(hook.DB)
+    conn.row_factory = sqlite3.Row
+    vorher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
+    insert_nodes(conn)
+    case = CASES[0]
+    versuche = [_run_case(case, model) for _ in range(n)]
+    n_entfernt = delete_nodes(conn)
+    nachher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
+    conn.close()
+    n_durchgefallen = sum(1 for v in versuche if not v["mit_bestanden"])
+    out = {
+        "kennung": case["kennung"], "n": n, "model": model,
+        "n_durchgefallen": n_durchgefallen, "quote_durchgefallen": n_durchgefallen / n,
+        "roh": [v["mit_bestanden"] for v in versuche],
+        "konfiguration": messparameter.schnappschuss(),
+        "vorher": vorher, "entfernt": n_entfernt, "nachher": nachher,
+    }
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"CASES[0] durchgefallen: {n_durchgefallen}/{n} ({out['quote_durchgefallen']:.0%})", flush=True)
+    print(f"Geschrieben: {out_path}", flush=True)
+    return out
+
+
 def saturation_curve(rows: list[dict]) -> list[dict]:
     """Kumulative Menge distinkter classify()-Kategorien in Fallreihenfolge
     -- Wachstumskurve fuer das Saettigungskriterium (Auftrag D)."""
@@ -785,18 +840,23 @@ def run_repeated(model: str = CAL_MODEL, out_path: Path = OUT_JSON_ERWEITERT,
     messgeraet_kaputt = False
     for lauf_nr in range(n_runs):
         rows = []
+        pk_versuche = None
         for i, case in enumerate(cases):
             if i == pk_index:
-                pk_row = _run_case(pk_case, model, force_fail=force_positivkontrolle_fail)
-                print(f"  [lauf {lauf_nr}] Positivkontrolle n={i}: mit_bestanden={pk_row['mit_bestanden']}", flush=True)
-                if not pk_row["mit_bestanden"]:
-                    print("MESSGERAET KAPUTT -- Abbruch, keine Ergebnisse aus diesem Lauf.", flush=True)
+                pk_ok, pk_versuche = _positivkontrolle_pruefen(pk_case, model, force_fail=force_positivkontrolle_fail)
+                bestanden = sum(1 for v in pk_versuche if v["mit_bestanden"])
+                print(f"  [lauf {lauf_nr}] Positivkontrolle n={i}: {bestanden}/{len(pk_versuche)} "
+                      f"Versuche bestanden -> ok={pk_ok}", flush=True)
+                if not pk_ok:
+                    print("MESSGERAET KAPUTT (Mehrheit der Versuche durchgefallen) -- "
+                          "Abbruch, keine Ergebnisse aus diesem Lauf.", flush=True)
                     messgeraet_kaputt = True
                     break
             row = _run_case(case, model)
             rows.append(row)
             print(f"  [lauf {lauf_nr}] {row['kennung']}  einordnung={row['einordnung']}", flush=True)
-        laeufe.append({"lauf_nr": lauf_nr, "rows": rows, "messgeraet_kaputt": messgeraet_kaputt})
+        laeufe.append({"lauf_nr": lauf_nr, "rows": rows, "messgeraet_kaputt": messgeraet_kaputt,
+                        "positivkontrolle_versuche": pk_versuche})
         if messgeraet_kaputt:
             break
 
@@ -1042,6 +1102,39 @@ def _selftest() -> None:
     assert pk_fail["mit_bestanden"] is False and pk_fail["synthetisch"] is True
     print("  _run_case(force_fail=True): synthetische Fehlmeldung ohne Netzaufruf: ok")
 
+    # Coordinator-Befund 2026-08-08 (L-01783a): Einzelversuch der Positiv-
+    # kontrolle unterliegt derselben Streuung wie der Rest des Korpus und
+    # darf einen gueltigen Lauf nicht abbrechen -- ab jetzt Mehrheitsentscheid
+    # (2 von 3) mit Fruehabbruch. force_fail=True bricht nach genau 2
+    # Versuchen ab (kein dritter noetig); ein einzelner Ausreisser (2. von 3
+    # Versuchen faellt durch, Rest besteht) darf NICHT abbrechen.
+    self_mod = sys.modules[__name__]
+    orig_run_case = self_mod._run_case
+    calls = {"n": 0}
+
+    def _fake_ein_ausreisser(case, model, *, force_fail=False):
+        calls["n"] += 1
+        bestanden = calls["n"] != 2  # nur der zweite Versuch faellt durch
+        return {"mit_bestanden": bestanden, "kennung": case["kennung"], "kategorie": case["kategorie"],
+                "erwartete_zahl": case["erwartete_zahl"], "falsche_zahl": case["falsche_zahl"],
+                "ohne_abruf": None, "mit_abruf": None, "ziel_gefunden": bestanden,
+                "abgerufene_pfade": [], "einordnung": "bestanden" if bestanden else "kein_treffer",
+                "synthetisch": False}
+
+    try:
+        self_mod._run_case = _fake_ein_ausreisser
+        ok, versuche = _positivkontrolle_pruefen(CASES[0], CAL_MODEL)
+        assert ok is True and len(versuche) == 3, (
+            f"1 von 3 Fehlschlaegen (Einzelausreisser) darf nicht abbrechen: ok={ok} n={len(versuche)}")
+    finally:
+        self_mod._run_case = orig_run_case
+
+    ok2, versuche2 = _positivkontrolle_pruefen(CASES[0], CAL_MODEL, force_fail=True)
+    assert ok2 is False and len(versuche2) == 2, (
+        f"force_fail muss ab 2 Fehlschlaegen fruehabbrechen: ok={ok2} n={len(versuche2)}")
+    print("  Positivkontrolle: Mehrheitsentscheid (2/3) uebersteht Einzelausreisser, "
+          "force_fail bricht nach 2 Fehlschlaegen frueh ab: ok")
+
     print(f"selftest ok ({len(CASES)} Faelle)", file=sys.stderr)
 
 
@@ -1062,10 +1155,17 @@ def main() -> None:
     ap.add_argument("--positivkontrolle-index", type=int, default=None)
     ap.add_argument("--force-positivkontrolle-fail", action="store_true",
                      help="NUR Demo/Abnahme: erzwingt synthetischen Abbruch, kein echter Lauf")
+    ap.add_argument("--kalibriere-positivkontrolle", action="store_true",
+                     help="misst, wie oft CASES[0] bei n Versuchen durchfaellt (entscheidet ueber die Kontroll-Bauform)")
+    ap.add_argument("--kalibriere-n", type=int, default=10)
     args = ap.parse_args()
 
     if args.selftest:
         _selftest()
+        return
+
+    if args.kalibriere_positivkontrolle:
+        kalibriere_positivkontrolle(model=args.model, n=args.kalibriere_n)
         return
 
     if args.delete:
