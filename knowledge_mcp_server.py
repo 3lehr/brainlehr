@@ -638,13 +638,20 @@ UNBEKANNTER_SCHREIBER = "unbekannt"
 # "so bauen, dass der Fehler unmoeglich ist" statt im Werkzeug pruefen). Ein
 # vom Claude-Code-Host gestarteter MCP-Server-Prozess erbt CLAUDE_CODE_SESSION_ID
 # von der Elternsitzung -- dieselbe Kennung, die SessionStart als session_id
-# an wiedereinstieg.py reicht (dort per session_id[:8]-Praefix gematcht, was
-# hier funktioniert, weil die volle Kennung mit demselben Praefix beginnt).
-# Vorher haengte JEDER Schreibvorgang ohne von Hand mitgegebene `session`
-# still bei "unbekannt" -- ein Feld, das der Aufrufer freiwillig fuellen
-# muss, ist im Mittel leer (gemessen 2026-08-06/07: nur handgestempelte
-# Aufrufe trugen eine Kennung).
-_PROZESS_SITZUNG = os.environ.get("CLAUDE_CODE_SESSION_ID")
+# an wiedereinstieg.py reicht.
+#
+# Auftrag 2026-08-07 (Nachtrag): auf 8 Zeichen gekuerzt -- das ist die Form,
+# die im Rest vom hub bereits kanonisch ist (knowledge_recall_hook.py::
+# log_recall, agent_register_hook.py, agent_reuse_guard_hook.py,
+# quality_gate_hook.py, wiedereinstieg.py -- alle five schreiben/lesen
+# session_id[:8]). Diese Zeile war bisher die EINZIGE Stelle, die die volle
+# 36-Zeichen-UUID in eine Spalte schrieb, die anderswo als 8-stelliges
+# Praefix erwartet wird (access_log.session, knowledge_relations.session) --
+# ein exakter SQL-Gleichheitstest zwischen beiden Formen kann nie wahr
+# werden (wirkung.py::outcome(), Auftrag 2026-08-07). ALTZEILEN in voller
+# Laenge bleiben unangetastet (keine Migration) -- wirkung.py vergleicht
+# deshalb per Praefix, nicht per Gleichheit.
+_PROZESS_SITZUNG = (os.environ.get("CLAUDE_CODE_SESSION_ID") or "")[:8] or None
 
 
 def _identity(actor: str | None = None, model: str | None = None,
@@ -2996,6 +3003,18 @@ def knowledge_trust_score(kind: str, ref: str) -> dict:
 
     recall_sessions = _recall_sessions(kind, canonical)
     wirkung_n = _wirkung_counts(kind, canonical)
+    # Auftrag 2026-08-07 (Nachtrag, Folge des Session-Formatfehlers oben):
+    # der ignoriert-Abzug darf nur wirken, wenn im GESAMTEN Bestand (nicht
+    # nur bei diesem Eintrag) schon mindestens ein 'genutzt' beobachtet
+    # wurde. Solange 'genutzt' strukturell unerreichbar war (Session-Format
+    # nie deckungsgleich, siehe wirkung.py::outcome()), war 'ignoriert' ein
+    # Signal, das NUR senken konnte -- eine Strafe fuer alle statt einer
+    # Messung. import verzoegert wie bei _wirkung_counts oben; log_path/
+    # db_path explizit durchgereicht, sonst unisoliert bei Tests (dieselbe
+    # Begruendung wie dort).
+    import wirkung  # noqa: PLC0415
+    genutzt_bestandsweit = wirkung.report(kind, log_path=RECALL_LOG_PATH, db_path=DB_PATH)["genutzt"] > 0
+    ignoriert_abzug = 0.10 * math.tanh(wirkung_n["ignoriert"] / 5) if genutzt_bestandsweit else 0.0
     # 0.35 > 0.30 (Signal 1): Wirkung ist das staerkste Signal (Docstring
     # Punkt 5). Rueckwirkungs-Grenze: alle drei Zaehler sind 0 fuer jeden
     # Eintrag ohne Wirkungsdaten -> tanh(0/n)=0 -> Term traegt nichts bei,
@@ -3007,7 +3026,7 @@ def knowledge_trust_score(kind: str, ref: str) -> dict:
         + 0.15 * math.tanh(wiederholung / 2)
         - 0.15 * math.tanh(rejected / 3)
         + 0.35 * math.tanh(wirkung_n["genutzt"] / 3)
-        - 0.10 * math.tanh(wirkung_n["ignoriert"] / 5)
+        - ignoriert_abzug
         - 0.35 * math.tanh(wirkung_n["widerlegt"] / 2)
     )
     score = max(0.05, min(0.95, score))

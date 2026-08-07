@@ -177,9 +177,12 @@ def _access(db_path, node_path, action, session, ts, status="completed"):
     conn.close()
 
 
-def test_wirkung_ignoriert_senkt_score_rot_vor_gruen(tmp_path, monkeypatch):
-    """ROT VOR GRUEN: dreimal eingespielt, dreimal ignoriert (kein Zugriff
-    danach) -- Score muss unter den Vorgabewert 0.5 rutschen, messbar."""
+def test_wirkung_ignoriert_ohne_bestandsweites_genutzt_senkt_score_nicht(tmp_path, monkeypatch):
+    """Auftrag 2026-08-07 (Nachtrag): solange 'genutzt' im GESAMTEN Bestand
+    kein einziges Mal beobachtet wurde, ist 'ignoriert' kein Signal, sondern
+    eine Strafe fuer alle (das Tor war zuvor faktisch immer zu, weil der
+    Session-Formatfehler 'genutzt' strukturell unerreichbar machte -- siehe
+    wirkung.py). Score bleibt beim Vorgabewert."""
     db_path = _db(tmp_path, monkeypatch)
     _add_node(db_path, "n1", "/x/ignoriert")
     vorher = kms.knowledge_trust_score("node", "/x/ignoriert")["trust_score"]
@@ -188,8 +191,36 @@ def test_wirkung_ignoriert_senkt_score_rot_vor_gruen(tmp_path, monkeypatch):
         _recall_line(tmp_path, s, f"2026-08-07T10:0{i}:00+00:00", node="/x/ignoriert")
     nachher = kms.knowledge_trust_score("node", "/x/ignoriert")
     assert nachher["inputs"]["wirkung_ignoriert"] == 3, nachher
+    # >= statt ==: die 3 Recall-Zeilen zaehlen auch als recall_sessions
+    # (eigener, unabhaengiger Bonus-Term) -- der hebt den Score unabhaengig
+    # vom ignoriert-Abzug. Entscheidend ist nur, dass der ignoriert-Abzug
+    # selbst nicht mehr greift (siehe Gegenprobe unten: mit bestandsweitem
+    # genutzt sinkt derselbe Aufbau UNTER vorher, trotz desselben Bonus).
+    assert nachher["trust_score"] >= vorher, (
+        f"kein genutzt im Bestand -> ignoriert darf nicht senken: "
+        f"vorher={vorher} nachher={nachher['trust_score']}"
+    )
+
+
+def test_wirkung_ignoriert_senkt_score_wenn_bestandsweit_genutzt_existiert(tmp_path, monkeypatch):
+    """ROT VOR GRUEN (Gegenrichtung): sobald IRGENDWO im Bestand ein
+    'genutzt' existiert -- hier bei einem ANDEREN Knoten --, oeffnet sich
+    das Tor, und 'ignoriert' senkt wieder, wie vor dem Nachtrag."""
+    db_path = _db(tmp_path, monkeypatch)
+    _add_node(db_path, "n1", "/x/genutzt-anderswo")
+    _add_node(db_path, "n2", "/x/ignoriert-hier")
+    _recall_line(tmp_path, "sg", "2026-08-07T09:00:00+00:00", node="/x/genutzt-anderswo")
+    _access(db_path, "/x/genutzt-anderswo", "read", "sg", "2026-08-07T09:00:05Z")
+
+    vorher = kms.knowledge_trust_score("node", "/x/ignoriert-hier")["trust_score"]
+    assert vorher == 0.5, f"rot-Ausgangswert: {vorher}"
+    for i, s in enumerate(("s1", "s2", "s3")):
+        _recall_line(tmp_path, s, f"2026-08-07T10:0{i}:00+00:00", node="/x/ignoriert-hier")
+    nachher = kms.knowledge_trust_score("node", "/x/ignoriert-hier")
+    assert nachher["inputs"]["wirkung_ignoriert"] == 3, nachher
     assert nachher["trust_score"] < vorher, (
-        f"3x ignoriert muss sinken: vorher={vorher} nachher={nachher['trust_score']}"
+        f"genutzt existiert bestandsweit (anderer Knoten) -> ignoriert muss hier senken: "
+        f"vorher={vorher} nachher={nachher['trust_score']}"
     )
     print(f"rot={vorher} gruen={nachher['trust_score']}")
 

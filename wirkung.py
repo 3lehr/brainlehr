@@ -127,44 +127,57 @@ def unauswertbar(kind: str, log_path: Path | str | None = None) -> int:
 
 
 def outcome(kind: str, ref: str, session: str, recall_ts: datetime, conn: sqlite3.Connection) -> str:
-    """Ausgang EINER Einspielung: 'genutzt' | 'ignoriert' | 'widerlegt'."""
+    """Ausgang EINER Einspielung: 'genutzt' | 'ignoriert' | 'widerlegt'.
+
+    session-Vergleich per Praefix, nicht Gleichheit (Auftrag 2026-08-07):
+    recall_log.jsonl schreibt immer die 8-stellig gekuerzte Form (siehe
+    knowledge_recall_hook.py::log_recall), access_log/knowledge_relations
+    tragen fuer Altzeilen (vor der Kuerzung von knowledge_mcp_server.py's
+    _PROZESS_SITZUNG) noch die volle 36-stellige UUID -- ein exakter
+    Gleichheitstest zwischen 8 und 36 Zeichen ist nie wahr. 'session || %'
+    matcht beide Formen, ohne die Altzeilen zu migrieren: eine kuerzere
+    DB-Zeile (schon 8-stellig) matcht exakt (leeres Suffix), eine laengere
+    (volle UUID) matcht per Praefix. `session` selbst ist immer die kurze
+    Form (kommt aus recall_log.jsonl), enthaelt also keine SQL-LIKE-
+    Sonderzeichen (Hex-Ziffern)."""
     cutoff = _fmt_ts(recall_ts)
+    session_prefix = f"{session}%"
     if kind == "node":
         row = conn.execute(
             "SELECT path FROM knowledge_nodes WHERE id = ? OR path = ?", (ref, ref)
         ).fetchone()
         canonical = row["path"] if row else ref
         widerlegt = conn.execute(
-            "SELECT COUNT(*) FROM access_log WHERE node_path = ? AND session = ? "
+            "SELECT COUNT(*) FROM access_log WHERE node_path = ? AND session LIKE ? "
             "AND action = 'zurueckziehen' AND status = 'completed' AND timestamp > ?",
-            (canonical, session, cutoff),
+            (canonical, session_prefix, cutoff),
         ).fetchone()[0]
         if widerlegt:
             return "widerlegt"
         beruehrt = conn.execute(
-            "SELECT COUNT(*) FROM access_log WHERE node_path = ? AND session = ? "
+            "SELECT COUNT(*) FROM access_log WHERE node_path = ? AND session LIKE ? "
             "AND action IN ('read','browse','update') AND status = 'completed' AND timestamp > ?",
-            (canonical, session, cutoff),
+            (canonical, session_prefix, cutoff),
         ).fetchone()[0]
         if not beruehrt:
             beruehrt = conn.execute(
                 "SELECT COUNT(*) FROM knowledge_relations WHERE (source_path = ? OR target_path = ?) "
-                "AND session = ? AND created_at > ?",
-                (canonical, canonical, session, cutoff),
+                "AND session LIKE ? AND created_at > ?",
+                (canonical, canonical, session_prefix, cutoff),
             ).fetchone()[0]
         return "genutzt" if beruehrt else "ignoriert"
     if kind == "lesson":
         widerlegt = conn.execute(
             "SELECT COUNT(*) FROM access_log WHERE action = 'lesson_delete' AND query = ? "
-            "AND session = ? AND timestamp > ?",
-            (ref, session, cutoff),
+            "AND session LIKE ? AND timestamp > ?",
+            (ref, session_prefix, cutoff),
         ).fetchone()[0]
         if widerlegt:
             return "widerlegt"
         beruehrt = conn.execute(
             "SELECT COUNT(*) FROM access_log WHERE action = 'lesson_update' AND query = ? "
-            "AND session = ? AND status = 'completed' AND timestamp > ?",
-            (ref, session, cutoff),
+            "AND session LIKE ? AND status = 'completed' AND timestamp > ?",
+            (ref, session_prefix, cutoff),
         ).fetchone()[0]
         return "genutzt" if beruehrt else "ignoriert"
     raise ValueError(f"kind muss 'node' oder 'lesson' sein, nicht {kind!r}")

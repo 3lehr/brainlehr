@@ -192,6 +192,60 @@ def test_mehrfacheinspielung_gleicher_sitzung_zaehlt_einmal(tmp_path):
     assert r["genutzt"] == 1  # nicht 2
 
 
+# --- Auftrag 2026-08-07 (Nachtrag): Session-Formatfehler --------------------
+# recall_log.jsonl schreibt IMMER die 8-stellig gekuerzte Form (siehe
+# knowledge_recall_hook.py::log_recall). access_log/knowledge_relations
+# trugen fuer Altzeilen (vor der Kuerzung von knowledge_mcp_server.py's
+# _PROZESS_SITZUNG) die volle 36-stellige UUID -- ein exakter
+# Gleichheitstest zwischen 8 und 36 Zeichen war nie wahr, 'genutzt' also
+# strukturell unerreichbar. Praefixvergleich ohne Migration der Altzeilen.
+
+def test_altzeile_mit_voller_uuid_wird_trotz_gekuerzter_recall_session_zugeordnet(tmp_path):
+    """ROT VOR GRUEN: recall_log traegt die gekuerzte Form ('abcdef12'),
+    access_log (Altzeile, vor der Kuerzung) die volle UUID -- muss trotzdem
+    als 'genutzt' erkannt werden."""
+    db_path = _db(tmp_path)
+    _node(db_path, "n1", "/x/altzeile")
+    _access(db_path, node_path="/x/altzeile", action="read", status="completed",
+            session="abcdef12-2ceb-4433-9a11-000000000000", timestamp="2026-08-07T10:00:05Z")
+    log = tmp_path / "recall_log.jsonl"
+    log.write_text(_recall_line(nodes=["/x/altzeile"], session="abcdef12"), encoding="utf-8")
+
+    r = wirkung.report("node", log, db_path)
+    assert r["genutzt"] == 1, r
+    assert r["ignoriert"] == 0, r
+
+
+def test_praefixvergleich_zaehlt_keine_fremde_sitzung_mit(tmp_path):
+    """NEGATIVFALL: Einspielung in Sitzung X, gelesen in Sitzung Y (anderes
+    Praefix) -> NICHT genutzt. Sonst wuerde der Praefixvergleich fremde
+    Sitzungen mitzaehlen."""
+    db_path = _db(tmp_path)
+    _node(db_path, "n1", "/x/fremde-sitzung")
+    _access(db_path, node_path="/x/fremde-sitzung", action="read", status="completed",
+            session="fedcba98-lang-anders", timestamp="2026-08-07T10:00:05Z")
+    log = tmp_path / "recall_log.jsonl"
+    log.write_text(_recall_line(nodes=["/x/fremde-sitzung"], session="abcdef12"), encoding="utf-8")
+
+    r = wirkung.report("node", log, db_path)
+    assert r["genutzt"] == 0, r
+    assert r["ignoriert"] == 1, r
+
+
+def test_widerlegt_bleibt_wirksam_bei_voller_uuid_altzeile(tmp_path):
+    """NEGATIVFALL-Gegenprobe: 'widerlegt' ist ein eindeutiger Vorgang und
+    muss auch bei einer Altzeile mit voller UUID weiterhin greifen."""
+    db_path = _db(tmp_path)
+    _node(db_path, "n1", "/x/widerlegt-alt")
+    _access(db_path, node_path="/x/widerlegt-alt", action="zurueckziehen", status="completed",
+            session="abcdef12-2ceb-4433-9a11-000000000000", timestamp="2026-08-07T10:00:05Z")
+    log = tmp_path / "recall_log.jsonl"
+    log.write_text(_recall_line(nodes=["/x/widerlegt-alt"], session="abcdef12"), encoding="utf-8")
+
+    r = wirkung.report("node", log, db_path)
+    assert r["widerlegt"] == 1, r
+
+
 def test_ohne_sitzung_nicht_auswertbar_aber_gezaehlt(tmp_path):
     """Recall-Zeile ohne Sitzung darf nicht als 'ignoriert' verbucht werden
     (waere geraten) -- sie fehlt auch nicht still, sondern zaehlt eigens."""
