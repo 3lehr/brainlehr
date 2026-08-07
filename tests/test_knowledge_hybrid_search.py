@@ -79,12 +79,31 @@ def _insert_embedding(db_path: Path, kind: str, ref_id: str, vector: tuple[float
     # NICHT ein fester String -- die Modell-Sperre (Auftrag 2026-08-07) liest nur Vektoren
     # mit passendem model, ein hartkodierter Fremdname wuerde jeden Test hier sonst
     # unbemerkt auf reines FTS5-Verhalten zurueckfallen lassen.
+    #
+    # Seit dem DB-Trigger knowledge_embeddings_model_check_bi (Auftrag
+    # 2026-08-07, Stufe 2) lehnt die DB einen INSERT mit einem von
+    # knowledge_config abweichenden Modell ab -- genau das reale Vorbild
+    # (stale Prozess schreibt Fremdmodell) ist damit gar nicht mehr moeglich.
+    # Ein absichtlich FREMDES Modell fuer einen Testfall wird deshalb nicht
+    # mehr per hartem INSERT erzwungen, sondern so simuliert, wie es real
+    # entsteht: die Zeile war GUELTIG, als sie geschrieben wurde (Config kurz
+    # auf dieses Modell gesetzt), und wurde erst durch einen SPAETEREN
+    # Modellwechsel zur Altlast -- Config wird danach zurueckgesetzt.
+    target_model = model or kms.embeddings.DEFAULT_EMBED_MODEL
     conn = sqlite3.connect(str(db_path))
+    current = conn.execute(
+        "SELECT value FROM knowledge_config WHERE key = 'embed_model'"
+    ).fetchone()
+    current_model = current[0] if current else kms.embeddings.DEFAULT_EMBED_MODEL
+    if target_model != current_model:
+        conn.execute("UPDATE knowledge_config SET value = ? WHERE key = 'embed_model'", (target_model,))
     conn.execute(
         "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, model, dim, vector, updated_at) "
         "VALUES (?, ?, ?, ?, ?, '2026-07-31T00:00:00+01:00')",
-        (kind, ref_id, model or kms.embeddings.DEFAULT_EMBED_MODEL, len(vector), _fake_vec(*vector)),
+        (kind, ref_id, target_model, len(vector), _fake_vec(*vector)),
     )
+    if target_model != current_model:
+        conn.execute("UPDATE knowledge_config SET value = ? WHERE key = 'embed_model'", (current_model,))
     conn.commit()
     conn.close()
 

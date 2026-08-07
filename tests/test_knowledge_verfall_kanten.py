@@ -75,10 +75,16 @@ def _insert_node(db_path, node_id, path, title, content="", parent_path="/shared
 
 
 def _insert_vector(db_path, kind, ref_id):
+    # model = das aktuell konfigurierte Modell (nicht ein fester Fantasiename):
+    # dieser Test prueft NUR, ob ein VORHANDENER Vektor beim naechsten Update
+    # neu gebaut wird -- welches Modell die Altzeile traegt, ist irrelevant
+    # fuer diese Frage, muss aber seit der Modell-Sperre (Auftrag 2026-08-07,
+    # knowledge_embeddings_model_check_bi) mit knowledge_config uebereinstimmen,
+    # sonst lehnt schon dieser Setup-INSERT ab.
     conn = sqlite3.connect(str(db_path))
     conn.execute(
         "INSERT INTO knowledge_embeddings (kind, ref_id, model, vector, updated_at) VALUES (?,?,?,?,?)",
-        (kind, ref_id, "test-model", b"\x00\x00\x80?" * 4, kms.now_iso()),
+        (kind, ref_id, kms.embeddings.DEFAULT_EMBED_MODEL, b"\x00\x00\x80?" * 4, kms.now_iso()),
     )
     conn.commit()
     conn.close()

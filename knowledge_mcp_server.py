@@ -1535,16 +1535,25 @@ def _rebuild_node_embedding(conn: sqlite3.Connection, node_id: str, project_id: 
     geworfen -- der Schreibvorgang bleibt gueltig, die Luecke bleibt bestehen
     und zeigt sich weiter im naechsten Kurator-Trockenlauf. Kurzer Default-
     Timeout (embeddings.embed_text(), 5s), damit ein totes Modell einen
-    Schreibvorgang nicht spuerbar verzoegert."""
+    Schreibvorgang nicht spuerbar verzoegert.
+
+    Gleiches gilt, wenn embed_text() liefert, der INSERT aber am Trigger
+    knowledge_embeddings_model_check_bi scheitert (Auftrag 2026-08-07,
+    veralteter Prozess mit fremdem Modell im Speicher): sqlite3.IntegrityError
+    wird abgefangen, der Knoten bleibt geschrieben, nur die Einbettungs-Zeile
+    fehlt -- derselbe Vertrag wie beim vec is None-Fall oben."""
     text = f"{path}\n{title}\n{summary}\n{content or ''}"
     vec = embeddings.embed_text(text)
     if vec is None:
         return
-    conn.execute(
-        "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
-        "VALUES ('node', ?, ?, ?, ?, ?, ?)",
-        (node_id, project_id, embeddings.DEFAULT_EMBED_MODEL, len(vec), embeddings.pack_embedding(vec), now_iso()),
-    )
+    try:
+        conn.execute(
+            "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
+            "VALUES ('node', ?, ?, ?, ?, ?, ?)",
+            (node_id, project_id, embeddings.DEFAULT_EMBED_MODEL, len(vec), embeddings.pack_embedding(vec), now_iso()),
+        )
+    except sqlite3.IntegrityError:
+        pass
 
 
 def _rebuild_lesson_embedding(conn: sqlite3.Connection, lesson_id: str, node_path: str | None,
@@ -1552,7 +1561,11 @@ def _rebuild_lesson_embedding(conn: sqlite3.Connection, lesson_id: str, node_pat
                               root_cause: str | None, prevention: str | None) -> None:
     """Wie _rebuild_node_embedding, fuer lessons_learned -- inkl. Bereichs-
     Fanout (eine Embedding-Zeile je Bereich, gleicher Vektor) ueber
-    build_embeddings.resolve_lesson_projects(), nicht danebengebaut."""
+    build_embeddings.resolve_lesson_projects(), nicht danebengebaut.
+
+    Trigger-Ablehnung (Modellsperre, siehe _rebuild_node_embedding) wird je
+    Bereichs-Zeile abgefangen -- eine abgelehnte Zeile darf die uebrigen
+    Bereiche und vor allem die Lehre selbst nicht mitreissen."""
     zuordnung = node_path or projects_json or ""
     text = f"{zuordnung}\n{description}\n{root_cause or ''}\n{prevention or ''}"
     vec = embeddings.embed_text(text)
@@ -1561,11 +1574,14 @@ def _rebuild_lesson_embedding(conn: sqlite3.Connection, lesson_id: str, node_pat
     packed = embeddings.pack_embedding(vec)
     ts = now_iso()
     for proj in build_embeddings.resolve_lesson_projects(projects_json):
-        conn.execute(
-            "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
-            "VALUES ('lesson', ?, ?, ?, ?, ?, ?)",
-            (lesson_id, proj, embeddings.DEFAULT_EMBED_MODEL, len(vec), packed, ts),
-        )
+        try:
+            conn.execute(
+                "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
+                "VALUES ('lesson', ?, ?, ?, ?, ?, ?)",
+                (lesson_id, proj, embeddings.DEFAULT_EMBED_MODEL, len(vec), packed, ts),
+            )
+        except sqlite3.IntegrityError:
+            pass
 
 
 def knowledge_add(parent_path: str, title: str, summary: str,

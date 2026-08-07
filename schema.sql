@@ -471,6 +471,48 @@ CREATE TABLE IF NOT EXISTS knowledge_embeddings (
     PRIMARY KEY (kind, ref_id, project_id)
 );
 
+-- knowledge_config: kleine Schluessel/Wert-Tabelle fuer Werte, die ein
+-- Trigger lesen muss, eine ENV-Variable aber nicht (Auftrag 2026-08-07,
+-- Modellsperre). Einziger Schluessel bisher: embed_model -- das Modell, mit
+-- dem build_embeddings.py zuletzt ALLE Vektoren neu gerechnet hat. Seed unten
+-- haelt den Wert synchron zu embeddings.DEFAULT_EMBED_MODEL (Python-Default);
+-- ein Modellwechsel schreibt beide Stellen (build_embeddings.py macht das
+-- beim Neu-Rechnen automatisch, siehe dortiger UPSERT vor der Schreibschleife).
+CREATE TABLE IF NOT EXISTS knowledge_config (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+INSERT OR IGNORE INTO knowledge_config (key, value, updated_at)
+    VALUES ('embed_model', 'bge-m3', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'));
+
+-- Sperre Stufe 2 (ADR-028, Vorgang 2026-08-07): ein veralteter Prozess mit
+-- fremdem Modell im Speicher kann keinen Vektor mit diesem Modell mehr in
+-- knowledge_embeddings schreiben -- unabhaengig vom Melder in
+-- scripts/mcp_veraltet.py (nur Stufe 4, meldet, verhindert nichts). Bewusst
+-- NUR an knowledge_embeddings, nicht an knowledge_nodes/lessons_learned: ein
+-- Knoten/eine Lehre muss auch geschrieben werden koennen, wenn NUR die
+-- Einbettung abgelehnt wird (Entscheidung 2026-08-07 frueh, bereits so
+-- gehandhabt in _rebuild_node_embedding/_rebuild_lesson_embedding in
+-- knowledge_mcp_server.py -- try/except dort um genau diesen INSERT).
+-- WHEN NEW.model <> (SELECT ...): liefert die Unterabfrage NULL (Tabelle
+-- ohne Zeile, z.B. eine minimale Testfixture ohne den Seed-INSERT oben),
+-- ist der Vergleich NULL -> WHEN false -> Trigger bleibt aus, kein Absturz
+-- auf einer DB ohne Konfigurationszeile.
+CREATE TRIGGER IF NOT EXISTS knowledge_embeddings_model_check_bi
+BEFORE INSERT ON knowledge_embeddings
+FOR EACH ROW WHEN NEW.model <> (SELECT value FROM knowledge_config WHERE key = 'embed_model')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_embeddings.model weicht vom gueltigen Modell in knowledge_config ab -- Prozess laeuft vermutlich mit veraltetem Code (siehe scripts/mcp_veraltet.py), Sitzung neu starten oder build_embeddings.py fuer das aktuelle Modell erneut laufen lassen');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_embeddings_model_check_bu
+BEFORE UPDATE ON knowledge_embeddings
+FOR EACH ROW WHEN NEW.model <> (SELECT value FROM knowledge_config WHERE key = 'embed_model')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_embeddings.model weicht vom gueltigen Modell in knowledge_config ab -- Prozess laeuft vermutlich mit veraltetem Code (siehe scripts/mcp_veraltet.py), Sitzung neu starten oder build_embeddings.py fuer das aktuelle Modell erneut laufen lassen');
+END;
+
 -- Indices für Performance
 CREATE INDEX IF NOT EXISTS idx_nodes_path ON knowledge_nodes(path);
 CREATE INDEX IF NOT EXISTS idx_nodes_parent ON knowledge_nodes(parent_path);

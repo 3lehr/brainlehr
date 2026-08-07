@@ -55,6 +55,19 @@ CREATE TABLE IF NOT EXISTS knowledge_embeddings (
 # CREATE TABLE IF NOT EXISTS oben legt sie nur bei einer ganz neuen Tabelle an.
 ENSURE_DIM_COLUMN_SQL = "ALTER TABLE knowledge_embeddings ADD COLUMN dim INTEGER"
 
+# Config-Tabelle fuer die Modellsperre (Auftrag 2026-08-07, siehe schema.sql-
+# Kommentar bei knowledge_embeddings_model_check_bi/_bu). Dieses Skript
+# verbindet sich direkt (nicht ueber knowledge_mcp_server.get_db/ensure_schema)
+# -- ohne dieses CREATE TABLE waere die Tabelle auf einer DB fehlend, deren
+# Server noch nicht neu gestartet wurde, und der UPSERT unten schluege fehl.
+CREATE_CONFIG_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS knowledge_config (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+"""
+
 
 def resolve_lesson_projects(raw: str | None) -> list[str]:
     """lessons_learned.projects (JSON-Array, mehrwertig) -> Liste der Bereiche,
@@ -154,6 +167,7 @@ def main() -> int:
     emb_columns = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_embeddings)")}
     if "dim" not in emb_columns:
         conn.execute(ENSURE_DIM_COLUMN_SQL)
+    conn.execute(CREATE_CONFIG_TABLE_SQL)
     conn.commit()
 
     # Cold-Start des lokalen Modells kann > 5s dauern (gemessen: ~8s) -- fuer
@@ -172,6 +186,16 @@ def main() -> int:
         return 1
 
     model = embeddings.DEFAULT_EMBED_MODEL
+    # Modellsperre (schema.sql, knowledge_embeddings_model_check_bi/_bu) VOR
+    # der Schreibschleife freischalten -- sonst weist der eigene Trigger die
+    # erste Zeile mit dem neuen Modell ab, weil knowledge_config noch das
+    # alte traegt.
+    conn.execute(
+        "INSERT INTO knowledge_config (key, value, updated_at) VALUES ('embed_model', ?, ?) "
+        "ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
+        (model, now_iso()),
+    )
+    conn.commit()
     t0 = time.monotonic()
     embedded, skipped = 0, 0
 

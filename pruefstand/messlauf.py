@@ -118,10 +118,10 @@ def _install_synthetic_embeddings(db_path: Path, corpus: dict, queries: list[dic
     conn = sqlite3.connect(str(db_path))
     rows = []
     for n in corpus["nodes"]:
-        rows.append(("node", n["id"], "synthetic-topic-onehot", embeddings.pack_embedding(vec(n["topic_id"])),
+        rows.append(("node", n["id"], embeddings.DEFAULT_EMBED_MODEL, embeddings.pack_embedding(vec(n["topic_id"])),
                      "2026-08-05T00:00:00+01:00"))
     for l in corpus["lessons"]:
-        rows.append(("lesson", l["id"], "synthetic-topic-onehot", embeddings.pack_embedding(vec(l["topic_id"])),
+        rows.append(("lesson", l["id"], embeddings.DEFAULT_EMBED_MODEL, embeddings.pack_embedding(vec(l["topic_id"])),
                      "2026-08-05T00:00:00+01:00"))
     conn.executemany(
         "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, model, vector, updated_at) "
