@@ -42,32 +42,7 @@ import knowledge_mcp_server as kms  # noqa: E402
 
 DEFAULT_MODEL = "gemma4:12b"
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
-
-# Erzeugung ist austauschbar (Ollama lokal <-> Gemini gehostet), Einbettungen
-# bleiben lokal (embeddings.py, hier nicht angefasst) -- Einbettungen sind
-# billig und muessen zum lokalen Bestand passen, Erzeugung ist teuer (~150s/
-# Aufruf bei gemma4:12b) und damit der Hebel, den ein Vergleich braucht.
 DEFAULT_BACKEND = "ollama"
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
-_GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-_gemini_key_cache: str | None = None
-
-
-def _gemini_api_key() -> str:
-    """Liest GEMINI_API_KEY aus ~/.begod.env (gleiche Quelle wie
-    begod/scripts/benchmark_gaia2.py) -- gecacht pro Prozess."""
-    global _gemini_key_cache
-    if _gemini_key_cache is not None:
-        return _gemini_key_cache
-    env_path = Path.home() / ".begod.env"
-    key = ""
-    if env_path.exists():
-        for line in env_path.read_text(encoding="utf-8").splitlines():
-            if line.strip().startswith("GEMINI_API_KEY="):
-                key = line.split("=", 1)[1].strip()
-                break
-    _gemini_key_cache = key
-    return key
 
 # Hergeleitet aus runs/lauf2.json (23 Aufrufe, gemma4:12b): Mittelwert 90,4s,
 # Standardabweichung 16,7s -> Mittelwert+3*Stdabw = 140,5s, aufgerundet.
@@ -143,40 +118,6 @@ def _call_ollama(prompt: str, *, model: str, base_url: str, timeout: float) -> t
     return body.get("response", ""), None
 
 
-def _call_gemini(prompt: str, *, model: str, timeout: float) -> tuple[str | None, str | None]:
-    """Gibt (rohtext, fehler) zurueck, gleiche Form wie _call_ollama --
-    austauschbare Stelle fuer die Erzeugung, kein Einfluss auf Einbettungen."""
-    key = _gemini_api_key()
-    if not key:
-        return None, "Gemini-Aufruf fehlgeschlagen: GEMINI_API_KEY fehlt in ~/.begod.env"
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    url = _GEMINI_ENDPOINT.format(model=model) + f"?key={key}"
-    req = urllib.request.Request(
-        url, data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"}, method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as response:
-            body = json.loads(response.read().decode("utf-8"))
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
-        return None, f"Gemini-Aufruf fehlgeschlagen: {exc}"
-    try:
-        text = body["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError):
-        return None, f"Gemini-Aufruf fehlgeschlagen: unerwartete Antwortform {body!r}"
-    return text, None
-
-
-def _call_generate(prompt: str, *, backend: str, model: str, base_url: str,
-                    timeout: float) -> tuple[str | None, str | None]:
-    """Austauschbare Stelle: Erzeugung wahlweise gegen Ollama (lokal) oder
-    Gemini (gehostet, schnell). Einbettungen (embeddings.py) sind davon
-    nicht betroffen und bleiben lokal."""
-    if backend == "gemini":
-        return _call_gemini(prompt, model=model, timeout=timeout)
-    if backend == "ollama":
-        return _call_ollama(prompt, model=model, base_url=base_url, timeout=timeout)
-    raise ValueError(f"unbekanntes backend: {backend!r} (erlaubt: ollama, gemini)")
 
 
 def _call_with_retry(prompt: str, *, model: str, base_url: str, timeout: float,
@@ -184,10 +125,10 @@ def _call_with_retry(prompt: str, *, model: str, base_url: str, timeout: float,
     """Ein Werkzeugausfall (Timeout/Verbindung) darf EINMAL wiederholt werden,
     kein stilles Endlos-Retry -- sonst verschwindet die Ausfallquote, die der
     Lauf gerade messen soll. Gibt (rohtext, fehler, retry_count) zurueck."""
-    raw_response, call_error = _call_generate(prompt, backend=backend, model=model, base_url=base_url, timeout=timeout)
+    raw_response, call_error = _call_ollama(prompt, model=model, base_url=base_url, timeout=timeout)
     if call_error is None:
         return raw_response, call_error, 0
-    raw_response, call_error = _call_generate(prompt, backend=backend, model=model, base_url=base_url, timeout=timeout)
+    raw_response, call_error = _call_ollama(prompt, model=model, base_url=base_url, timeout=timeout)
     return raw_response, call_error, 1
 
 
@@ -385,9 +326,7 @@ def _selftest() -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--backend", choices=["ollama", "gemini"], default=DEFAULT_BACKEND)
-    ap.add_argument("--model", default=None,
-                     help=f"Default backend-abhaengig: ollama->{DEFAULT_MODEL}, gemini->{DEFAULT_GEMINI_MODEL}")
+    ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--base-url", default=DEFAULT_OLLAMA_URL)
     ap.add_argument("--timeout", type=float, default=CALL_TIMEOUT)
     ap.add_argument("--out", type=str, default=None, help="Protokoll als JSON schreiben")
@@ -399,8 +338,7 @@ def main() -> None:
         _selftest()
         return
 
-    model = args.model or (DEFAULT_MODEL if args.backend == "ollama" else DEFAULT_GEMINI_MODEL)
-    result = run(model=model, base_url=args.base_url, timeout=args.timeout, backend=args.backend)
+    result = run(model=args.model, base_url=args.base_url, timeout=args.timeout, backend=DEFAULT_BACKEND)
     text = json.dumps(result, ensure_ascii=False, indent=2)
     if args.out:
         Path(args.out).write_text(text, encoding="utf-8")
