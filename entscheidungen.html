@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Entscheidungen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #55595e;
+    --card-bg: #f4f5f6;
+    --border: #6e7278;
+    --accent: #0a5c9c;
+    --accent-fg: #ffffff;
+    --danger: #7a1f1f;
+    --danger-bg: #fbe9e9;
+    --ok-bg: #e8f3ea;
+    --ok-fg: #1c4023;
+    --focus: #0a5c9c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181b;
+      --fg: #f0f1f2;
+      --muted: #b7bcc2;
+      --card-bg: #212327;
+      --border: #6a6f76;
+      --accent: #6cb2ef;
+      --accent-fg: #0a1420;
+      --danger: #ffb4b4;
+      --danger-bg: #3a1e1e;
+      --ok-bg: #16311c;
+      --ok-fg: #b9e6bf;
+      --focus: #6cb2ef;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16181b; --fg: #f0f1f2; --muted: #b7bcc2; --card-bg: #212327;
+    --border: #6a6f76; --accent: #6cb2ef; --accent-fg: #0a1420;
+    --danger: #ffb4b4; --danger-bg: #3a1e1e; --ok-bg: #16311c; --ok-fg: #b9e6bf; --focus: #6cb2ef;
+  }
+  :root[data-theme="light"] {
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #55595e; --card-bg: #f4f5f6;
+    --border: #6e7278; --accent: #0a5c9c; --accent-fg: #ffffff;
+    --danger: #7a1f1f; --danger-bg: #fbe9e9; --ok-bg: #e8f3ea; --ok-fg: #1c4023; --focus: #0a5c9c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font: 16px/1.5 -apple-system, "Segoe UI", Arial, sans-serif;
+    max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 4rem;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .einleitung { color: var(--muted); margin-top: 0; }
+  section.karte {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.25rem; margin: 1.25rem 0;
+  }
+  section.karte h2 { font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: baseline; gap: 0.5rem; }
+  .zahl-pille {
+    display: inline-block; background: var(--accent); color: var(--accent-fg);
+    border-radius: 999px; padding: 0.05rem 0.6rem; font-size: 0.85rem; font-weight: 600;
+  }
+  .eintrag {
+    border-top: 1px solid var(--border); padding: 0.75rem 0;
+  }
+  .eintrag:first-of-type { border-top: none; }
+  .eintrag h3 { margin: 0 0 0.25rem; font-size: 1rem; }
+  .eintrag p { margin: 0.25rem 0; color: var(--muted); }
+  .regelzeile { font-family: ui-monospace, Menlo, monospace; font-size: 0.9rem;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.4rem 0.6rem; margin: 0.35rem 0; }
+  .knoten-paar { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.35rem 0; }
+  .knoten { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+  .aktionen { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  button {
+    min-height: 24px; min-width: 24px; padding: 0.5rem 0.9rem;
+    border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--fg); font: inherit; cursor: pointer;
+  }
+  button.primaer { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  button.gefahr { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+  button:focus-visible, input:focus-visible, a:focus-visible {
+    outline: 3px solid var(--focus); outline-offset: 2px;
+  }
+  label { display: block; font-size: 0.9rem; margin: 0.5rem 0 0.15rem; }
+  input[type="number"], input[type="text"], select {
+    font: inherit; padding: 0.4rem 0.5rem; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--bg); color: var(--fg); min-height: 24px;
+  }
+  .gewicht-feld { display: inline-flex; flex-direction: column; margin: 0 0.75rem 0.5rem 0; }
+  .gewicht-feld input { width: 6rem; }
+  .status-zeile { font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2em; }
+  .status-zeile[data-art="ok"] { color: var(--ok-fg); }
+  .status-zeile[data-art="fehler"] { color: var(--danger); }
+  .marke { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem;
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.05rem 0.55rem; color: var(--muted); }
+  .marke::before { content: "●"; }
+  .marke.geraten::before { content: "◆"; }
+  fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 0.5rem 0; padding: 0.75rem; }
+  legend { padding: 0 0.4rem; font-size: 0.9rem; color: var(--muted); }
+  .radio-zeile { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .radio-zeile label { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 1rem; margin: 0; }
+  .leer { color: var(--muted); font-style: italic; }
+  details.kontrast summary { cursor: pointer; color: var(--muted); font-size: 0.85rem; }
+  table.kontrast-tabelle { border-collapse: collapse; margin-top: 0.5rem; font-size: 0.85rem; width: 100%; }
+  table.kontrast-tabelle th, table.kontrast-tabelle td { text-align: left; padding: 0.25rem 0.5rem; border-bottom: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<h1>Entscheidungen</h1>
+<p class="einleitung">Acht offene Punkte. Was hier steht, ist der aktuelle Stand aus der Wissensablage — nichts wird automatisch geändert, außer wenn eine Schaltfläche ausdrücklich betätigt wird.</p>
+
+<section class="karte" id="karte-eskalation">
+  <h2>1. Lehren befördern oder zurückstufen <span class="zahl-pille" id="esk-anzahl">–</span></h2>
+  <p id="esk-preis" class="eintrag"></p>
+  <div id="esk-liste"><p class="leer">wird geladen …</p></div>
+</section>
+
+<section class="karte" id="karte-normkonflikte">
+  <h2>2. Normkonflikte</h2>
+  <p>Zwei Regeln, die sich zum selben Thema widersprechen und bei denen keine automatische Regel (höherer Rang, engerer Geltungsbereich, jüngeres Datum) entscheiden konnte. Die Entscheidung liegt hier bei Ihnen — die Seite zeigt nur, ändert nichts.</p>
+  <div id="konflikt-liste"><p class="leer">wird geladen …</p></div>
+</section>
+
+<section class="karte" id="karte-sieg">
+  <h2>3. Trefferbewertung gewichten <span class="marke geraten" id="sieg-marke">geraten</span></h2>
+  <p>Wie stark zählen Trefferquote, Schweigequote (kein Treffer, wo auch keiner nötig war), Streuung zwischen Testläufen und Kosten, wenn eine neue Einstellung gegen die bisher beste antritt?</p>
+  <form id="form-sieg">
+    <div id="sieg-felder"></div>
+    <button type="submit" class="primaer">Gewichte speichern</button>
+    <p class="status-zeile" id="sieg-status" role="status"></p>
+  </form>
+</section>
+
+<section class="karte" id="karte-nacht">
+  <h2>4. Nachtschicht</h2>
+  <p>Ein Hintergrundlauf, der Vorschläge zur Wissensablage sammelt, wenn niemand am Rechner sitzt. Kein Modell fest verdrahtet — ohne gewählten Antrieb bleibt er wirkungslos.</p>
+  <form id="form-nacht">
+    <fieldset>
+      <legend>Zustand</legend>
+      <div class="radio-zeile">
+        <label><input type="radio" name="nacht-aktiv" value="ein"> An</label>
+        <label><input type="radio" name="nacht-aktiv" value="aus"> Aus</label>
+      </div>
+    </fieldset>
+    <label for="nacht-antrieb">Antrieb</label>
+    <input type="text" id="nacht-antrieb" name="antrieb" placeholder="z. B. keiner">
+    <label for="nacht-budget">Budget in Aufrufen je Lauf (nicht in Tokens — die sind hier nicht genau messbar)</label>
+    <input type="number" id="nacht-budget" name="budget" min="0" step="1">
+    <div class="aktionen"><button type="submit" class="primaer">Übernehmen</button></div>
+    <p class="status-zeile" id="nacht-status" role="status"></p>
+  </form>
+</section>
+
+<section class="karte" id="karte-eil">
+  <h2>5. Eilmeldungen quittieren <span class="zahl-pille" id="eil-anzahl">–</span></h2>
+  <p>Meldungen, die eine laufende Sitzung gesehen, aber noch nicht ausdrücklich bestätigt hat.</p>
+  <div id="eil-liste"><p class="leer">wird geladen …</p></div>
+</section>
+
+<section class="karte" id="karte-herkunft">
+  <h2>6. Herkunftsmodus</h2>
+  <p id="herkunft-text"></p>
+</section>
+
+<section class="karte" id="karte-fremdanbieter">
+  <h2>7. Freigabe fremder Anbieter</h2>
+  <p id="fremdanbieter-text"></p>
+</section>
+
+<section class="karte" id="karte-titel">
+  <h2>8. Zuletzt gewonnene Einstellung</h2>
+  <div id="titel-text"><p class="leer">wird geladen …</p></div>
+</section>
+
+<details class="kontrast">
+  <summary>Kontrastprüfung dieser Seite (berechnet, nicht behauptet)</summary>
+  <table class="kontrast-tabelle" id="kontrast-tabelle">
+    <thead><tr><th>Vordergrund auf Hintergrund</th><th>Verhältnis</th><th>Anforderung</th><th>Ergebnis</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</details>
+
+<script>
+'use strict';
+
+async function laden(pfad, optionen) {
+  const r = await fetch(pfad, optionen);
+  return r.json();
+}
+
+function el(tag, attrs, ...kinder) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'text') n.textContent = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const k of kinder) if (k) n.appendChild(typeof k === 'string' ? document.createTextNode(k) : k);
+  return n;
+}
+
+function status(nodeId, text, art) {
+  const n = document.getElementById(nodeId);
+  n.textContent = text;
+  n.dataset.art = art || '';
+}
+
+// ---- Abschnitt 1: Eskalation --------------------------------------------
+
+function renderEskalation(d) {
+  document.getElementById('esk-anzahl').textContent = d.kandidaten.length;
+  document.getElementById('esk-preis').textContent = d.kandidaten.length
+    ? `Zusammen ${d.erhoehung_zeichen} Zeichen` +
+      (d.erhoehung_prozent !== null ? ` (+${d.erhoehung_prozent} % der aktuellen Länge)` : '') +
+      ` — dieser Text lädt bei jeder Anfrage mit, in jedem Projekt.`
+    : '';
+  const liste = document.getElementById('esk-liste');
+  liste.innerHTML = '';
+  if (!d.kandidaten.length) {
+    liste.appendChild(el('p', { class: 'leer', text: 'Nichts wartet gerade auf eine Entscheidung.' }));
+    return;
+  }
+  for (const k of d.kandidaten) {
+    const eintrag = el('div', { class: 'eintrag' });
+    eintrag.appendChild(el('h3', { text: `${k.description} (${k.occurrences}× aufgetreten)` }));
+    eintrag.appendChild(el('div', { class: 'regelzeile', text: k.als_regel }));
+    const aktionen = el('div', { class: 'aktionen' });
+    const btnAuf = el('button', { class: 'primaer', type: 'button',
+      'aria-label': `${k.description} befördern`,
+      onclick: () => eskalationHandeln('befoerdern', k.id, k.description) });
+    btnAuf.textContent = 'Befördern';
+    const btnAb = el('button', { type: 'button',
+      'aria-label': `${k.description} zurückstufen`,
+      onclick: () => eskalationHandeln('zurueckstufen', k.id, k.description) });
+    btnAb.textContent = 'Zurückstufen';
+    aktionen.appendChild(btnAuf);
+    aktionen.appendChild(btnAb);
+    eintrag.appendChild(aktionen);
+    liste.appendChild(eintrag);
+  }
+}
+
+async function eskalationHandeln(handlung, id, beschreibung) {
+  const verb = handlung === 'befoerdern' ? 'befördern' : 'zurückstufen';
+  if (!confirm(`"${beschreibung}" wirklich ${verb}?`)) return;
+  const out = await laden('/api/eskalation', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ handlung, id }),
+  });
+  if (out.error || out.ok === false) {
+    alert('Das hat nicht geklappt. Bitte später erneut versuchen.');
+  }
+  await ladeAlles();
+}
+
+// ---- Abschnitt 2: Normkonflikte ------------------------------------------
+
+function renderNormkonflikte(d) {
+  const liste = document.getElementById('konflikt-liste');
+  liste.innerHTML = '';
+  if (!d.echte_konflikte.length) {
+    liste.appendChild(el('p', { class: 'leer', text: 'Kein offener Normkonflikt.' }));
+    return;
+  }
+  for (const kf of d.echte_konflikte) {
+    const eintrag = el('div', { class: 'eintrag' });
+    eintrag.appendChild(el('p', { text: `Übereinstimmung im Thema: ${Math.round(kf.subject_score * 100)} %` }));
+    const paar = el('div', { class: 'knoten-paar' });
+    paar.appendChild(el('div', { class: 'knoten', text: kf.a }));
+    paar.appendChild(el('div', { class: 'knoten', text: kf.b }));
+    eintrag.appendChild(paar);
+    liste.appendChild(eintrag);
+  }
+}
+
+// ---- Abschnitt 3: Siegbedingung -------------------------------------------
+
+const SIEG_LABEL = {
+  trefferquote: 'Trefferquote', schweigequote: 'Schweigequote',
+  streuung: 'Streuung', kosten: 'Kosten',
+};
+
+function renderSieg(d) {
+  document.getElementById('sieg-marke').style.display = d.geraten ? '' : 'none';
+  document.getElementById('sieg-marke').textContent = d.geraten ? 'geraten' : 'eingestellt';
+  const felder = document.getElementById('sieg-felder');
+  felder.innerHTML = '';
+  for (const [k, v] of Object.entries(d.gewichte)) {
+    const feld = el('div', { class: 'gewicht-feld' });
+    feld.appendChild(el('label', { for: `sieg-${k}`, text: SIEG_LABEL[k] || k }));
+    feld.appendChild(el('input', { type: 'number', id: `sieg-${k}`, name: k, step: '0.1', min: '0', value: v }));
+    felder.appendChild(feld);
+  }
+}
+
+document.getElementById('form-sieg').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const gewichte = {};
+  for (const k of Object.keys(SIEG_LABEL)) {
+    const input = document.getElementById(`sieg-${k}`);
+    if (input) gewichte[k] = parseFloat(input.value);
+  }
+  const out = await laden('/api/siegbedingung', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ gewichte }),
+  });
+  if (out.error) status('sieg-status', 'Nicht gespeichert: ungültiger Wert.', 'fehler');
+  else { status('sieg-status', 'Gespeichert.', 'ok'); renderSieg(out); }
+});
+
+// ---- Abschnitt 4: Nachtschicht --------------------------------------------
+
+function renderNacht(d) {
+  document.querySelector(`#form-nacht input[name="nacht-aktiv"][value="${d.aktiv}"]`).checked = true;
+  document.getElementById('nacht-antrieb').value = d.antrieb;
+  document.getElementById('nacht-budget').value = d.budget_aufrufe;
+}
+
+document.getElementById('form-nacht').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const aktiv = document.querySelector('#form-nacht input[name="nacht-aktiv"]:checked')?.value;
+  const antrieb = document.getElementById('nacht-antrieb').value.trim();
+  const budget = document.getElementById('nacht-budget').value;
+  const out = await laden('/api/nachtschicht', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ aktiv, antrieb, budget }),
+  });
+  if (out.error) status('nacht-status', 'Nicht gespeichert: ' + (aktiv ? 'ungültiges Budget.' : 'Zustand fehlt.'), 'fehler');
+  else { status('nacht-status', 'Gespeichert.', 'ok'); renderNacht(out); }
+});
+
+// ---- Abschnitt 5: Eilmeldungen ---------------------------------------------
+
+function renderEil(liste) {
+  document.getElementById('eil-anzahl').textContent = liste.length;
+  const ziel = document.getElementById('eil-liste');
+  ziel.innerHTML = '';
+  if (!liste.length) {
+    ziel.appendChild(el('p', { class: 'leer', text: 'Nichts offen.' }));
+    return;
+  }
+  for (const m of liste) {
+    const eintrag = el('div', { class: 'eintrag' });
+    eintrag.appendChild(el('p', { text: m.text }));
+    const btn = el('button', { class: 'primaer', type: 'button',
+      onclick: () => eilQuittieren(m.sitzung, m.schluessel) });
+    btn.textContent = 'Quittieren';
+    eintrag.appendChild(btn);
+    ziel.appendChild(eintrag);
+  }
+}
+
+async function eilQuittieren(sitzung, schluessel) {
+  await laden('/api/eilmeldung', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sitzung, schluessel }),
+  });
+  await ladeAlles();
+}
+
+// ---- Abschnitt 6-8: nur anzeigen -------------------------------------------
+
+function renderHerkunft(h) {
+  document.getElementById('herkunft-text').textContent = h.gefunden
+    ? h.text
+    : 'Für diese Einstellung liegt noch kein gespeicherter Zustand vor. Vor einer Wahl gilt: bereits gespeicherte Einträge behalten ihre bisherige Herkunft, auch wenn sich die Einstellung später ändert.';
+}
+
+function renderFremdanbieter(f) {
+  document.getElementById('fremdanbieter-text').textContent = f.gefunden
+    ? f.text
+    : 'Für diese Einstellung liegt noch kein gespeicherter Zustand vor.';
+}
+
+function renderTitel(t) {
+  const ziel = document.getElementById('titel-text');
+  ziel.innerHTML = '';
+  if (!t) {
+    ziel.appendChild(el('p', { class: 'leer', text: 'Noch keine Einstellung als beste festgehalten.' }));
+    return;
+  }
+  ziel.appendChild(el('p', { text: `Stand vom ${t.datum || '–'}, geprüft auf: ${t.pruefmenge || '–'}.` }));
+  ziel.appendChild(el('p', { text: `${(t.laeufe || []).length} Testläufe zugrunde gelegt.` }));
+}
+
+// ---- Kontrastprüfung (gerechnet) -------------------------------------------
+
+function srgbZuLinear(c) {
+  c /= 255;
+  return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+function relLuminanz(hex) {
+  const n = hex.replace('#', '');
+  const r = parseInt(n.substring(0, 2), 16), g = parseInt(n.substring(2, 4), 16), b = parseInt(n.substring(4, 6), 16);
+  return 0.2126 * srgbZuLinear(r) + 0.7152 * srgbZuLinear(g) + 0.0722 * srgbZuLinear(b);
+}
+function kontrastverhaeltnis(hexA, hexB) {
+  const la = relLuminanz(hexA), lb = relLuminanz(hexB);
+  const hell = Math.max(la, lb), dunkel = Math.min(la, lb);
+  return (hell + 0.05) / (dunkel + 0.05);
+}
+
+function renderKontrast() {
+  const stil = getComputedStyle(document.documentElement);
+  const paare = [
+    ['Fließtext auf Hintergrund', '--fg', '--bg', 4.5],
+    ['Gedämpfter Text auf Hintergrund', '--muted', '--bg', 4.5],
+    ['Schaltflächentext auf Akzent', '--accent-fg', '--accent', 4.5],
+    ['Rahmen auf Hintergrund', '--border', '--bg', 3.0],
+  ];
+  const tbody = document.querySelector('#kontrast-tabelle tbody');
+  tbody.innerHTML = '';
+  for (const [name, va, vb, mindest] of paare) {
+    const ca = stil.getPropertyValue(va).trim();
+    const cb = stil.getPropertyValue(vb).trim();
+    let verhaeltnis = '–', ok = false;
+    try {
+      verhaeltnis = kontrastverhaeltnis(ca, cb).toFixed(2) + ' : 1';
+      ok = kontrastverhaeltnis(ca, cb) >= mindest;
+    } catch (e) { /* Farbwert nicht als Hex lesbar -- Zeile bleibt "-" */ }
+    const zeile = el('tr', {});
+    zeile.appendChild(el('td', { text: name }));
+    zeile.appendChild(el('td', { text: verhaeltnis }));
+    zeile.appendChild(el('td', { text: `≥ ${mindest.toFixed(1)} : 1` }));
+    zeile.appendChild(el('td', { text: ok ? 'erfüllt' : 'nicht erfüllt' }));
+    tbody.appendChild(zeile);
+  }
+}
+
+// ---- Gesamtlauf --------------------------------------------------------
+
+async function ladeAlles() {
+  const d = await laden('/api/stand');
+  renderEskalation(d.eskalation);
+  renderNormkonflikte(d.normkonflikte);
+  renderSieg(d.siegbedingung);
+  renderNacht(d.nachtschicht);
+  renderEil(d.eilmeldungen);
+  renderHerkunft(d.herkunftsmodus);
+  renderFremdanbieter(d.freigabe_fremder_anbieter);
+  renderTitel(d.titelverteidiger);
+}
+
+ladeAlles();
+renderKontrast();
+</script>
+</body>
+</html>
