@@ -90,8 +90,10 @@ import knowledge_mcp_server as kms  # noqa: E402  -- lesson_query wiederverwende
 
 # wn.MODELS[0] wird von bedeckung.py direkt indiziert (wn.MODELS[0]) -- das
 # erste Element bleibt deshalb "gemma4:12b", nur anhaengen, nie umsortieren.
-MODELS = ["gemma4:12b", "gemma4:e4b", "gemini-2.5-flash"]
-_MODEL_BACKEND = {"gemma4:12b": "ollama", "gemma4:e4b": "ollama", "gemini-2.5-flash": "gemini"}
+# Nur noch lokales Ollama -- fremdes Backend (gemini) 2026-08-07 entfernt,
+# Betreiber-Verbot fremder Erzeugung.
+MODELS = ["gemma4:12b", "gemma4:e4b"]
+_MODEL_BACKEND = {"gemma4:12b": "ollama", "gemma4:e4b": "ollama"}
 
 
 def _backend_for(model: str) -> str:
