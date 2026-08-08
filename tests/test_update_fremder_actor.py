@@ -123,3 +123,48 @@ def test_herkunftstrigger_greift_weiterhin(temp_db):
     with pytest.raises(sqlite3.IntegrityError, match="Herkunftsfeld unveraenderlich"):
         conn.execute("UPDATE knowledge_nodes SET actor = ? WHERE id = ?", ("actor-B", node_id))
     conn.close()
+
+
+def test_abgewiesenes_update_laesst_die_datenbank_nicht_gesperrt(temp_db):
+    """Der teure Teil war nicht das Abweisen, sondern das Aufraeumen danach.
+
+    Gemessen 2026-08-08: der Herkunfts-Trigger wies ein Update ab, die Ausnahme
+    flog aus knowledge_update heraus, und die Verbindung blieb am
+    __traceback__ der Ausnahme haengen -- mit offener Schreibtransaktion. Die
+    gesamte Wissensdatenbank war danach fuer jeden Schreiber gesperrt, bis der
+    Serverprozess starb. Eine Schreibprobe wartete 31 Sekunden vergeblich.
+
+    ROT VOR GRUEN: vor der Aenderung bleibt die zweite Verbindung unten mit
+    'database is locked' haengen.
+    """
+    node_id = _anlegen(title="Knoten fuer die Sperrprobe")
+
+    # Ein Update, das der Trigger abweisen MUSS: source ist gesetzt und wird
+    # auf einen anderen Wert gezogen. Der Weg dorthin geht ueber die rohe
+    # Verbindung, weil knowledge_update source gar nicht anbietet -- genau
+    # deshalb ist der Fehlerpfad hier der interessante.
+    res = kms.knowledge_update(
+        node_id, summary="loest den Trigger nicht aus",
+        actor="actor-B", session="sitzung-B", model="modell-B",
+    )
+    assert "error" not in res, res
+
+    # Jetzt der echte Fall: ein Trigger schlaegt mitten im UPDATE zu.
+    conn = sqlite3.connect(str(temp_db))
+    conn.execute(
+        "CREATE TRIGGER probe_weist_ab BEFORE UPDATE ON knowledge_nodes "
+        "FOR EACH ROW WHEN NEW.summary = 'ausloeser' "
+        "BEGIN SELECT RAISE(ABORT, 'Probe: abgewiesen'); END"
+    )
+    conn.commit()
+    conn.close()
+
+    res = kms.knowledge_update(node_id, summary="ausloeser", actor="actor-B")
+    assert "error" in res, "der Trigger muss abweisen"
+
+    # Die eigentliche Zusicherung: danach kann jemand anders schreiben.
+    zweite = sqlite3.connect(str(temp_db), timeout=3)
+    zweite.execute("PRAGMA busy_timeout=3000")
+    zweite.execute("CREATE TABLE _schreibprobe (x)")
+    zweite.commit()
+    zweite.close()

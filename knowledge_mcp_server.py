@@ -1031,6 +1031,17 @@ def _ensure_herkunft_triggers(conn: sqlite3.Connection) -> None:
     ist das ein harter Fehler und keine Warnung: eine Installation ohne
     diese Schranke sieht funktionsfaehig aus und ist es nicht.
     """
+    # Erst nachsehen, dann schreiben: die Datei enthaelt DROP/CREATE TRIGGER,
+    # also DDL — sie bedingungslos bei jedem get_db() auszufuehren macht aus
+    # JEDER Verbindung einen Schreiber und damit aus jedem Lesezugriff einen
+    # Kandidaten fuer "database is locked". Genau das ist am 2026-08-08
+    # unmittelbar nach dem Einbau eingetreten, bei fuenf laufenden Servern.
+    vorhanden = {r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='trigger' AND name IN "
+        "('knowledge_nodes_herkunft_bu', 'lessons_herkunft_bu')")}
+    if len(vorhanden) == 2:
+        return
+
     pfad = Path(__file__).parent / "herkunft_unveraenderlich.sql"
     if not pfad.exists():
         raise RuntimeError(
@@ -2523,10 +2534,24 @@ def knowledge_update(node_id: str, summary: str | None = None,
 
     log_access(conn, row["path"], "update", project_id=row["project_id"],
                actor=actor, model=model, session=session, status="started")
-    cursor = conn.execute(
-        f"UPDATE knowledge_nodes SET {', '.join(updates)} WHERE id = ? AND updated_at = ?",
-        params,
-    )
+    try:
+        cursor = conn.execute(
+            f"UPDATE knowledge_nodes SET {', '.join(updates)} WHERE id = ? AND updated_at = ?",
+            params,
+        )
+    except sqlite3.IntegrityError as e:
+        # Ein abweisender Trigger darf die Verbindung nicht offen lassen.
+        # Gemessen am 2026-08-08: der Herkunfts-Trigger wies ein Update ab, die
+        # Ausnahme flog aus dieser Funktion heraus, und die Verbindung blieb am
+        # __traceback__ der Ausnahme haengen -- samt offener Schreibtransaktion.
+        # Ergebnis: die gesamte Datenbank war fuer JEDEN Schreiber gesperrt, bis
+        # der Serverprozess starb. Der lange Fehlerweg ist der gefaehrliche:
+        # nicht das Abweisen, sondern das Aufraeumen danach.
+        conn.rollback()
+        log_access(conn, row["path"], "update", project_id=row["project_id"],
+                   actor=actor, model=model, session=session, status="rejected")
+        conn.close()
+        return {"error": str(e), "id": row["id"]}
     if cursor.rowcount == 0:
         conn.rollback()
         current = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ?", (row["id"],)).fetchone()
