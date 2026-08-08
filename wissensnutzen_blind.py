@@ -47,6 +47,7 @@ SHARED_KNOWLEDGE = Path(__file__).resolve().parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "haken"))  # knowledge_recall_hook liegt seit 2026-08-08 hier, nicht mehr im Wurzelverzeichnis
 
 import schreiblauf as sl  # noqa: E402  -- _call_with_retry wiederverwendet
 import wissensnutzen as wn  # noqa: E402  -- Aufgaben A/B + Bewertung uebernommen
