@@ -36,3 +36,6 @@ injection_suspect_log.jsonl
 schreibpruefstand/demo/*.db
 schreibpruefstand/demo/*.db-wal
 schreibpruefstand/demo/*.db-shm
+
+# Eskalations-Protokoll des Eilmeldungs-Melders — waechst im Betrieb
+eilmeldung_eskalation.jsonl
