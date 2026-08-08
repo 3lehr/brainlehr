@@ -1136,6 +1136,53 @@ _PROZESS_SITZUNG = (os.environ.get("CLAUDE_CODE_SESSION_ID") or "")[:8] or None
 _KLIENT = "claude-code" if (os.environ.get("CLAUDECODE") or os.environ.get("CLAUDE_CODE_SESSION_ID")) else "skript"
 
 
+# Ein Modell, fuenf Schreibweisen -- gemessen 2026-08-08 am Bestand:
+# "Anthropic/claude-opus-5" (27), "anthropic/claude-opus-5" (8),
+# "claude-opus-5" (3), "Anthropic/Opus 5" (2), "claude-sonnet-5" (22).
+# Nach Modell gruppieren geht damit nicht, auch nicht fuer die 5 Prozent,
+# die ueberhaupt gefuellt sind.
+#
+# Bewusst KEINE geschlossene Liste erlaubter Werte: ein unbekanntes Modell
+# soll eingetragen werden koennen, nicht abgewiesen. Normalisiert wird die
+# Schreibweise, nicht der Inhalt -- was nicht erkannt wird, geht unveraendert
+# (nur getrimmt) durch und bleibt damit sichtbar statt zu verschwinden.
+_MODELL_ALIAS = {
+    "opus 5": "claude-opus-5", "opus5": "claude-opus-5", "opus-5": "claude-opus-5",
+    "sonnet 5": "claude-sonnet-5", "sonnet5": "claude-sonnet-5", "sonnet-5": "claude-sonnet-5",
+    "haiku 4.5": "claude-haiku-4-5", "haiku-4.5": "claude-haiku-4-5",
+    "fable 5": "claude-fable-5", "fable-5": "claude-fable-5",
+}
+_ANBIETER = ("anthropic/", "openai/", "google/", "ollama/", "meta/", "mistral/")
+
+
+def modell_normalisieren(model: str | None) -> str | None:
+    """Eine Schreibweise je Modell. Anbieter bleibt erhalten, wenn er
+    mitgegeben wurde -- er unterscheidet ein lokales Llama von einem
+    gehosteten. Rueckgabe None nur fuer None; ein leerer String bleibt leer,
+    damit ein Aufrufer, der bewusst nichts sagt, nicht wie einer aussieht,
+    der nichts uebergeben hat."""
+    if model is None:
+        return None
+    roh = model.strip()
+    if not roh:
+        return roh
+    klein = roh.lower()
+    anbieter = ""
+    for a in _ANBIETER:
+        if klein.startswith(a):
+            anbieter, klein = a, klein[len(a):]
+            break
+    klein = _MODELL_ALIAS.get(klein, klein)
+    # Traegt der Modellname den Anbieter schon (claude-*, gpt-*, gemini-*),
+    # faellt das Praefix weg -- sonst stehen "anthropic/claude-opus-5" und
+    # "claude-opus-5" weiter als zwei Gruppen nebeneinander, und genau das
+    # war der gemessene Mangel. Bei allem anderen bleibt es stehen: ein
+    # "ollama/gemma3:12b" ist etwas anderes als ein gehostetes gemma3.
+    if klein.startswith(("claude-", "gpt-", "gemini-")):
+        return klein
+    return anbieter + klein
+
+
 def _identity(actor: str | None = None, model: str | None = None,
               session: str | None = None) -> tuple[str, str, str]:
     """Aufloesung actor/model/session (Auftrag 2026-08-06, Mangel: 9%/0,5%
@@ -1157,7 +1204,7 @@ def _identity(actor: str | None = None, model: str | None = None,
     Ein von Hand mitgegebener Wert (Parameter oder Env-Var) hat weiter Vorrang."""
     return (
         actor or os.environ.get("BEGOD_KNOWLEDGE_ACTOR") or UNBEKANNTER_SCHREIBER,
-        model or os.environ.get("BEGOD_KNOWLEDGE_MODEL") or UNBEKANNTER_SCHREIBER,
+        modell_normalisieren(model or os.environ.get("BEGOD_KNOWLEDGE_MODEL")) or UNBEKANNTER_SCHREIBER,
         session or os.environ.get("BEGOD_KNOWLEDGE_SESSION") or _PROZESS_SITZUNG or UNBEKANNTER_SCHREIBER,
     )
 
@@ -4260,7 +4307,11 @@ def annahme_liste(status: str = "offen", max_results: int = 20, *,
 
 
 def _identity_args(args: dict) -> dict:
-    return {key: args.get(key) for key in ("actor", "model", "session")}
+    """Eine Stelle, durch die jeder Werkzeugaufruf laeuft -- deshalb wird die
+    Schreibweise des Modells hier vereinheitlicht und nicht in 23 Handlern."""
+    werte = {key: args.get(key) for key in ("actor", "model", "session")}
+    werte["model"] = modell_normalisieren(werte["model"])
+    return werte
 
 
 def _resolve_node_ref(args: dict) -> str:
