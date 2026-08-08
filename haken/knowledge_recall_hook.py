@@ -47,6 +47,12 @@ from geltungsbereich import projekte_aus_projects_json  # noqa: E402
 # fuer_ausgabe() kennzeichnet Funde, aendert nie den Bestand -- nur die
 # Kopie, die hier ausgegeben wird.
 from einschleusung import entschaerfe_fuer_ausgabe  # noqa: E402
+# bereinigung.py liegt bei DIESEM Quelltext, nicht bei der Datenbank: setzt
+# jemand BEGOD_KNOWLEDGE_DB auf eine Kopie anderswo, zeigt os.path.dirname(DB)
+# oben ins falsche Verzeichnis. Beim ersten Verdrahten genau so passiert --
+# der Import brach, sobald die Variable gesetzt war.
+sys.path.insert(0, str(ort.WURZEL))
+import bereinigung  # noqa: E402
 # knowledge_mcp_server.py liegt ebenfalls neben der DB, reiner Stdlib-Import
 # (siehe dessen Kopf: nur difflib/hashlib/.../embeddings.py, kein MCP-SDK) --
 # bricht die "abhaengigkeitsfreie Hook"-Regel oben nicht. Fuer trust_score,
@@ -1299,6 +1305,16 @@ def main() -> None:
         lines.append(f"- {tag} ({l['type']}, {l['occurrences']}×{herkunft}){alter(l.get('last_seen'))}{fremd}: "
                      f"{entschaerfe_fuer_ausgabe(l['description'])}{prev}")
     lines.append("</knowledge-recall>")
+    # Bereinigung, Punkt 2 der Stiftshuetten-Uebernahme: was das Haus
+    # verlaesst, wird angesehen -- vorerst nur angesehen (Entscheidung des
+    # Betreibers 2026-08-08: melden, nicht entfernen). Geprueft wird der ROHE
+    # Bestandstext, NICHT die Zeilen oben: die tragen bereits die Rahmung aus
+    # entschaerfe_fuer_ausgabe(), und genau daran hat sich L-d1d0d7 mit 216
+    # Fehlalarmen verschluckt. Der Aufruf aendert nichts und wirft nie.
+    bereinigung.melde("recall", [
+        *[(n["path"], {"title": n.get("title"), "summary": n.get("summary")}) for n in nodes],
+        *[(l["id"], {"description": l.get("description"), "prevention": l.get("prevention")}) for l in lessons],
+    ])
     print("\n".join(lines))
 
 
