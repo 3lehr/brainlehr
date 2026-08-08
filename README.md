@@ -31,10 +31,10 @@ Zeigt, welche vier Haken fehlen und was jeder tut. Mit `--einbauen` trägt der B
 
 | Haken | Wann | Was er erzwingt |
 |---|---|---|
-| `knowledge_recall_hook.py` | bei jedem Prompt | passendes Wissen wird eingespielt, ohne dass jemand es abruft |
-| `auftrag_recall_hook.py` | bei jedem Prompt | offene Aufträge werden gemeldet |
-| `mcp_veraltet.py` | bei jedem Prompt | Warnung, wenn ein laufender Server älteren Code hält als die Datei |
-| `knowledge_capture_hook.py` | am Sitzungsende | Dauerhaftes wird abgelegt, statt im Gesprächsverlauf zu verfallen |
+| `haken/knowledge_recall_hook.py` | bei jedem Prompt | passendes Wissen wird eingespielt, ohne dass jemand es abruft |
+| `haken/auftrag_recall_hook.py` | bei jedem Prompt | offene Aufträge werden gemeldet |
+| `haken/mcp_veraltet.py` | bei jedem Prompt | Warnung, wenn ein laufender Server älteren Code hält als die Datei |
+| `haken/knowledge_capture_hook.py` | am Sitzungsende | Dauerhaftes wird abgelegt, statt im Gesprächsverlauf zu verfallen |
 
 Turnusmäßig, kein Haken: `python3 haken/kurator_taeglich.py` (Verdichtung, einmal täglich).
 
