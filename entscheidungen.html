@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Entscheidungen</title>
+<title>brainlehr — Wissensraum</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root {
@@ -18,6 +18,12 @@
     --ok-bg: #e8f3ea;
     --ok-fg: #1c4023;
     --focus: #0a5c9c;
+    --lehre: #1c6b4f;
+    --spur: #7a3f9c;
+    --fehlt: #9a9da3;
+    --a-farbe: #0a5c9c;
+    --b-farbe: #8a5a1f;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -33,47 +39,97 @@
       --ok-bg: #16311c;
       --ok-fg: #b9e6bf;
       --focus: #6cb2ef;
+      --lehre: #6fc9ac;
+      --spur: #c495e6;
+      --fehlt: #6a6d75;
+      --a-farbe: #6cb2ef;
+      --b-farbe: #e0a860;
     }
   }
   :root[data-theme="dark"] {
     --bg: #16181b; --fg: #f0f1f2; --muted: #b7bcc2; --card-bg: #212327;
     --border: #6a6f76; --accent: #6cb2ef; --accent-fg: #0a1420;
     --danger: #ffb4b4; --danger-bg: #3a1e1e; --ok-bg: #16311c; --ok-fg: #b9e6bf; --focus: #6cb2ef;
+    --lehre: #6fc9ac; --spur: #c495e6; --fehlt: #6a6d75; --a-farbe: #6cb2ef; --b-farbe: #e0a860;
   }
   :root[data-theme="light"] {
     --bg: #ffffff; --fg: #1a1a1a; --muted: #55595e; --card-bg: #f4f5f6;
     --border: #6e7278; --accent: #0a5c9c; --accent-fg: #ffffff;
     --danger: #7a1f1f; --danger-bg: #fbe9e9; --ok-bg: #e8f3ea; --ok-fg: #1c4023; --focus: #0a5c9c;
+    --lehre: #1c6b4f; --spur: #7a3f9c; --fehlt: #9a9da3; --a-farbe: #0a5c9c; --b-farbe: #8a5a1f;
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
   body {
     background: var(--bg); color: var(--fg);
     font: 16px/1.5 -apple-system, "Segoe UI", Arial, sans-serif;
-    max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 4rem;
   }
-  h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-  .einleitung { color: var(--muted); margin-top: 0; }
+
+  /* ── Grundschicht: Zeichenflaeche fuellt das Fenster ─────────────────── */
+  .vollflaeche { position: fixed; inset: 0; overflow: hidden; background: var(--card-bg); }
+  canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  canvas:active { cursor: grabbing; }
+  .fahne { position: absolute; pointer-events: none; background: var(--bg); color: var(--fg);
+    border: 1px solid var(--border); border-radius: 4px; padding: .4rem .55rem; font-size: .76rem;
+    max-width: 26rem; line-height: 1.4; opacity: 0; transition: opacity .1s; box-shadow: 0 2px 10px rgba(0,0,0,.18); z-index: 4; }
+  .fahne .weg { font-family: var(--mono); font-size: .68rem; color: var(--muted); display: block; margin-top: .2rem; word-break: break-all; }
+  .hinweis { position: absolute; left: .7rem; bottom: .6rem; z-index: 4; font-family: var(--mono); font-size: .7rem;
+    color: var(--muted); pointer-events: none; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: .2rem .5rem; }
+
+  /* ── Ruckholschalter: immer sichtbar, ausserhalb der Auflage ─────────── */
+  #klapper { position: absolute; top: .7rem; right: .7rem; z-index: 6; font: inherit; font-size: .85rem;
+    background: var(--bg); color: var(--fg); border: 1px solid var(--border); border-radius: 6px;
+    padding: .5rem .9rem; cursor: pointer; min-height: 24px; }
+  #klapper:hover { border-color: var(--accent); }
+  #klapper:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  /* ── Einklappbare Auflage: Ansichtswahl, Zeit, Einstellungen ─────────── */
+  .tafel { position: absolute; top: 3.3rem; right: .7rem; z-index: 5; width: min(46rem, calc(100vw - 1.4rem));
+    max-height: calc(100% - 4.3rem); overflow: auto; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.25rem 1.4rem; box-shadow: 0 8px 28px rgba(0,0,0,.25); }
+  .tafel[hidden] { display: none; }
+  .tafel h1 { font-size: 1.3rem; margin: 0 0 .2rem; }
+  .einleitung { color: var(--muted); margin-top: 0; font-size: .9rem; }
+
+  .leiste { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .7rem; margin: .6rem 0; }
+  .leiste button { font: inherit; font-size: .82rem; background: transparent; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 6px; padding: .35rem .75rem; cursor: pointer; min-height: 24px; }
+  .leiste button:hover { color: var(--fg); border-color: var(--accent); }
+  .leiste button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .trenn { width: 1px; height: 1.3rem; background: var(--border); }
+  .leiste label { font-size: .78rem; color: var(--muted); font-family: var(--mono); }
+  input[type=range] { accent-color: var(--accent); flex: 1; min-width: 8rem; }
+  .stand { font-family: var(--mono); font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .legende { display: flex; flex-wrap: wrap; gap: .7rem 1rem; font-size: .78rem; color: var(--muted); margin: .6rem 0; }
+  .legende b { display: inline-flex; align-items: center; gap: .4rem; font-weight: 400; }
+  .pkt { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .fuss { border-top: 1px solid var(--border); padding-top: .7rem; font-size: .78rem; color: var(--muted);
+    display: flex; flex-direction: column; gap: .35rem; }
+
+  details.einstellungen { margin-top: .8rem; border: 1px solid var(--border); border-radius: 10px; padding: 0; }
+  details.einstellungen > summary { cursor: pointer; padding: .7rem 1rem; font-weight: 600; list-style: none; }
+  details.einstellungen > summary::-webkit-details-marker { display: none; }
+  details.einstellungen > summary:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
+  details.einstellungen > summary::before { content: "▸ "; }
+  details.einstellungen[open] > summary::before { content: "▾ "; }
+  details.einstellungen .inhalt { padding: 0 1rem 1rem; }
+
   section.karte {
     background: var(--card-bg); border: 1px solid var(--border);
     border-radius: 10px; padding: 1rem 1.25rem; margin: 1.25rem 0;
   }
   section.karte h2 { font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: baseline; gap: 0.5rem; }
-  nav.brainlehr-nav { display: flex; gap: 1rem; font-size: 0.9rem; margin-bottom: 0.75rem; }
-  nav.brainlehr-nav a { color: var(--accent); text-decoration: none; }
-  nav.brainlehr-nav a:hover { text-decoration: underline; }
-  nav.brainlehr-nav a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-  nav.brainlehr-nav a[aria-current="page"] { color: var(--fg); font-weight: 600; text-decoration: none; }
   .zahl-pille {
     display: inline-block; background: var(--accent); color: var(--accent-fg);
     border-radius: 999px; padding: 0.05rem 0.6rem; font-size: 0.85rem; font-weight: 600;
   }
-  .eintrag {
-    border-top: 1px solid var(--border); padding: 0.75rem 0;
-  }
+  .eintrag { border-top: 1px solid var(--border); padding: 0.75rem 0; }
   .eintrag:first-of-type { border-top: none; }
   .eintrag h3 { margin: 0 0 0.25rem; font-size: 1rem; }
   .eintrag p { margin: 0.25rem 0; color: var(--muted); }
-  .regelzeile { font-family: ui-monospace, Menlo, monospace; font-size: 0.9rem;
+  .regelzeile { font-family: var(--mono); font-size: 0.9rem;
     background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
     padding: 0.4rem 0.6rem; margin: 0.35rem 0; }
   .knoten-paar { display: flex; flex-direction: column; gap: 0.35rem; margin: 0.35rem 0; }
@@ -86,7 +142,7 @@
   }
   button.primaer { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
   button.gefahr { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
-  button:focus-visible, input:focus-visible, a:focus-visible {
+  button:focus-visible, input:focus-visible, a:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
     outline: 3px solid var(--focus); outline-offset: 2px;
   }
   label { display: block; font-size: 0.9rem; margin: 0.5rem 0 0.15rem; }
@@ -103,6 +159,7 @@
     border: 1px solid var(--border); border-radius: 999px; padding: 0.05rem 0.55rem; color: var(--muted); }
   .marke::before { content: "●"; }
   .marke.geraten::before { content: "◆"; }
+  .marke.bestanden { color: var(--fg); }
   fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 0.5rem 0; padding: 0.75rem; }
   legend { padding: 0 0.4rem; font-size: 0.9rem; color: var(--muted); }
   .radio-zeile { display: flex; gap: 1rem; flex-wrap: wrap; }
@@ -111,15 +168,74 @@
   details.kontrast summary { cursor: pointer; color: var(--muted); font-size: 0.85rem; }
   table.kontrast-tabelle { border-collapse: collapse; margin-top: 0.5rem; font-size: 0.85rem; width: 100%; }
   table.kontrast-tabelle th, table.kontrast-tabelle td { text-align: left; padding: 0.25rem 0.5rem; border-bottom: 1px solid var(--border); }
+
+  /* ── Vergleichsansicht (vierte Ansicht, zeigt statt zu zeichnen) ─────── */
+  .vergleich-kopf p { margin: 0.3rem 0; color: var(--muted); font-size: 0.9rem; }
+  .vergleich-kopf .warnung { color: var(--fg); }
+  .zahlen { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; font-size: 0.83rem; color: var(--muted); margin-top: 0.4rem; }
+  .zahlen b { color: var(--fg); font-weight: 600; }
+  .fall { border-top: 1px solid var(--border); padding: 0.85rem 0; }
+  .fall:first-of-type { border-top: none; }
+  .fall h3 { margin: 0 0 0.15rem; font-size: 1rem; }
+  .fall .kennung { color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
+  .fall .ziel { margin: 0.25rem 0 0.6rem; color: var(--muted); font-size: 0.88rem; }
+  .seiten { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  @media (max-width: 34rem) { .seiten { grid-template-columns: 1fr; } }
+  .seite { border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.75rem; background: var(--bg); }
+  .seite h4 { margin: 0 0 0.4rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; }
+  .seite.a h4 { color: var(--a-farbe); }
+  .seite.b h4 { color: var(--b-farbe); }
+  .seite .antwort { font-size: 0.94rem; margin: 0 0 0.4rem; }
+  .seite .pfade { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin: 0; padding-left: 1rem; }
 </style>
 </head>
 <body>
-<nav class="brainlehr-nav" aria-label="Wissensraum-Werkzeuge">
-  <a href="/" aria-current="page">Entscheidungen</a>
-  <a href="/raum">Raum</a>
-</nav>
-<h1>Entscheidungen</h1>
-<p class="einleitung">Acht offene Punkte. Was hier steht, ist der aktuelle Stand aus der Wissensablage — nichts wird automatisch geändert, außer wenn eine Schaltfläche ausdrücklich betätigt wird.</p>
+
+<div class="vollflaeche">
+  <canvas id="c"></canvas>
+  <div class="fahne" id="fahne"></div>
+  <div class="hinweis" id="hinweis">lädt…</div>
+
+  <button id="klapper" type="button" aria-expanded="true" aria-controls="tafel">Bedienung ausblenden</button>
+
+  <div class="tafel" id="tafel">
+    <h1>brainlehr — Wissensraum</h1>
+    <p class="einleitung">Acht offene Punkte, drei Anordnungen desselben Wissensbestands, ein Vergleich
+      zweier Abrufketten — eine Adresse. Nichts wird automatisch geändert, außer wenn eine Schaltfläche
+      ausdrücklich betätigt wird; die Zeichenflaeche selbst zeigt nur und schreibt nichts.</p>
+
+    <div class="leiste" role="group" aria-label="Ansicht wählen">
+      <button id="b0" aria-pressed="true">Baum</button>
+      <button id="b1" aria-pressed="false">Bedeutung</button>
+      <button id="b2" aria-pressed="false">Spuren</button>
+      <button id="b3" aria-pressed="false">Vergleich</button>
+      <span class="trenn"></span>
+      <button id="lauf" aria-pressed="false">Ablauf</button>
+    </div>
+    <div class="leiste" id="zeitleiste">
+      <label for="zeit">Zeit</label>
+      <input type="range" id="zeit" min="0" max="100" value="100">
+      <span class="stand" id="stand"></span>
+    </div>
+
+    <div class="legende" id="legende">
+      <b><i class="pkt" style="background:var(--accent)"></i>Wissensknoten</b>
+      <b><i class="pkt" style="background:var(--lehre)"></i>Lehre</b>
+      <b><i class="pkt" style="background:var(--fehlt)"></i>noch nie abgerufen</b>
+      <b><i class="pkt" style="background:var(--spur)"></i>gemeinsam abgerufen</b>
+      <b>Größe = wie oft ausgeliefert</b>
+    </div>
+    <div class="fuss" id="fuss"></div>
+
+    <section id="vergleichBlock" hidden>
+      <div class="vergleich-kopf" id="vergleichKopf"><p class="leer">wird geladen …</p></div>
+      <h3 id="vergleichTitel">Unterschiedliche Fälle</h3>
+      <div id="vergleichListe"></div>
+    </section>
+
+    <details class="einstellungen" id="einstellungen">
+      <summary>Einstellungen — acht offene Punkte</summary>
+      <div class="inhalt">
 
 <section class="karte" id="karte-eskalation">
   <h2>1. Lehren befördern oder zurückstufen <span class="zahl-pille" id="esk-anzahl">–</span></h2>
@@ -209,8 +325,26 @@
   </table>
 </details>
 
+      </div>
+    </details>
+  </div>
+</div>
+
 <script>
 'use strict';
+
+// ── Auflage einklappen: sofort verfuegbar, ueberlebt Neuladen. Der
+// Ruckholschalter liegt AUSSERHALB der Auflage und klappt nie mit ein. ──
+const tafel = document.getElementById('tafel');
+const klapper = document.getElementById('klapper');
+function tafelSetzen(verborgen) {
+  tafel.hidden = verborgen;
+  klapper.setAttribute('aria-expanded', String(!verborgen));
+  klapper.textContent = verborgen ? 'Bedienung einblenden' : 'Bedienung ausblenden';
+  localStorage.setItem('brainlehr-tafel-verborgen', verborgen ? '1' : '0');
+}
+tafelSetzen(localStorage.getItem('brainlehr-tafel-verborgen') === '1');
+klapper.addEventListener('click', () => tafelSetzen(!tafel.hidden));
 
 async function laden(pfad, optionen) {
   const r = await fetch(pfad, optionen);
@@ -237,9 +371,6 @@ function status(nodeId, text, art) {
 // ---- Abschnitt 1: Eskalation --------------------------------------------
 
 function kandidatEintrag(k, zusatz) {
-  // Regeltext kommt fertig aus der Wissensablage (Erzeuger ausserhalb dieser
-  // Seite, kein Modellaufruf hier) -- das Feld ist vorbelegt und aenderbar,
-  // aber Aendern ist nie Pflicht. Fehlt er noch, gibt es keine Befoerderung.
   const eintrag = el('div', { class: 'eintrag' });
   eintrag.appendChild(el('h3', { text: `${k.description} (${k.occurrences}× aufgetreten)` }));
   if (zusatz) eintrag.appendChild(el('p', { text: zusatz }));
@@ -502,7 +633,7 @@ function renderKontrast() {
   }
 }
 
-// ---- Gesamtlauf --------------------------------------------------------
+// ---- Gesamtlauf (Einstellungen) --------------------------------------------
 
 async function ladeAlles() {
   const d = await laden('/api/stand');
@@ -518,6 +649,300 @@ async function ladeAlles() {
 
 ladeAlles();
 renderKontrast();
+
+// ---- Vergleichsansicht (vierte Ansicht -- zeigt, zeichnet nicht) ----------
+// Kein Sieger: die Faelle, in denen A und B auseinandergehen, einzeln.
+
+function seite(bezeichnung, klasse, antwort, pfade, bestanden) {
+  const box = el('div', { class: `seite ${klasse}` });
+  box.appendChild(el('h4', {}, bezeichnung,
+    el('span', { class: `marke ${bestanden ? 'bestanden' : ''}`,
+      text: bestanden ? 'bestanden' : 'nicht bestanden' })));
+  box.appendChild(el('p', { class: 'antwort', text: antwort == null ? '(keine Antwort erfasst)' : String(antwort) }));
+  const liste = el('ul', { class: 'pfade' });
+  for (const p of (pfade || [])) liste.appendChild(el('li', { text: p }));
+  if (!(pfade || []).length) liste.appendChild(el('li', { class: 'leer', text: 'keine Stelle gefunden' }));
+  box.appendChild(liste);
+  return box;
+}
+
+function renderVergleichKopf(d) {
+  const ziel = document.getElementById('vergleichKopf');
+  ziel.innerHTML = '';
+  ziel.appendChild(el('p', {},
+    el('span', { text: `Modell ${d.model || '–'} · Lauf vom ${d.datum || '–'} · ${d.n_cases} Prüffälle.` })));
+  if (d.bestand_unveraendert === false) {
+    ziel.appendChild(el('p', { class: 'warnung', text:
+      `Der Lauf hat den Bestand verändert: ${d.bestand_vorher} → ${d.bestand_nachher} Einträge. `
+      + `Die Zahlen unten sind deshalb nicht ohne Weiteres reproduzierbar.` }));
+  } else {
+    ziel.appendChild(el('p', { text: `Bestand unverändert bei ${d.bestand_nachher} Einträgen.` }));
+  }
+  const z = d.zusammenfassung || {};
+  const zahlen = el('div', { class: 'zahlen' });
+  for (const [name, s] of [['A — volle Kette', z.A], ['B — rohe Top-3-Suche', z.B]]) {
+    if (!s) continue;
+    zahlen.appendChild(el('span', {},
+      el('b', { text: name + ': ' }),
+      document.createTextNode(`Ziel gefunden in ${s.ziel_gefunden.treffer} von ${s.ziel_gefunden.n} Fällen, `
+        + `gelöst in ${s.geloest.treffer} von ${s.geloest.n}.`)));
+  }
+  ziel.appendChild(zahlen);
+}
+
+function renderVergleichListe(d) {
+  document.getElementById('vergleichTitel').textContent =
+    `Unterschiedliche Fälle — ${d.unterschiede.length} von ${d.n_cases} Prüffällen unterscheiden sich zwischen A und B`;
+  const ziel = document.getElementById('vergleichListe');
+  ziel.innerHTML = '';
+  if (!d.unterschiede.length) {
+    ziel.appendChild(el('p', { class: 'leer', text: 'Keine Unterschiede in diesem Lauf.' }));
+    return;
+  }
+  for (const u of d.unterschiede) {
+    const fall = el('div', { class: 'fall' });
+    fall.appendChild(el('h3', {}, u.task, ' ', el('span', { class: 'kennung', text: u.kennung })));
+    if (u.erwartete_zahl != null) fall.appendChild(el('p', { class: 'ziel', text: `Ziel: ${u.erwartete_zahl}` }));
+    const seiten = el('div', { class: 'seiten' });
+    seiten.appendChild(seite('A — volle Kette', 'a', u.A_antwort, u.A_pfade, u.A_bestanden));
+    seiten.appendChild(seite('B — Top-3-Suche', 'b', u.B_antwort, u.B_pfade, u.B_bestanden));
+    fall.appendChild(seiten);
+    ziel.appendChild(fall);
+  }
+}
+
+let vergleichD = null;
+laden('/api/vergleich').then(d => {
+  vergleichD = d;
+  if (d.error) {
+    document.getElementById('vergleichKopf').innerHTML = '';
+    document.getElementById('vergleichKopf').appendChild(el('p', { class: 'leer', text: d.error }));
+    return;
+  }
+  renderVergleichKopf(d);
+  renderVergleichListe(d);
+}).catch(() => {
+  document.getElementById('vergleichKopf').textContent = 'Daten nicht erreichbar.';
+});
+
+// ---- Wissensraum-Zeichenflaeche (Ansichten 0-2) ----------------------------
+// Reine Anzeige: die folgenden Ereignisbehandlungen (pointerdown/up/move/
+// leave, wheel) veraendern ausschliesslich lokale Zustandsvariablen
+// (drehX/drehY/zoom/zeitAnteil) und rufen zeichne() -- keiner ruft /api/*
+// mit einer schreibenden Methode auf.
+
+let D = null;
+fetch('/api/raum').then(r=>r.json()).then(d=>{ D=d; starte(); })
+  .catch(()=>{ document.getElementById('hinweis').textContent='Daten nicht erreichbar'; });
+
+function starte(){
+const c = document.getElementById('c'), g = c.getContext('2d');
+const fahne = document.getElementById('fahne'), hinweis = document.getElementById('hinweis');
+const P = D.punkte, N = P.length;
+let ansicht = 0, drehX = -0.35, drehY = 0.6, zoom = 1, zeitAnteil = 1, spielt = false;
+let skala = 1; // Punktgroesse folgt der Fenstergroesse, Basis 1520x880
+
+const tage = [...new Set(P.map(p=>p.d).filter(Boolean))].sort();
+const evz = [...new Set(D.ereignisse.map(e=>e.t))].sort();
+
+// --- Baum-Anordnung: Position ist eine Adresse, keine Projektion ---
+const aeste = {};
+P.forEach((p,i)=>{ (aeste[p.a] = aeste[p.a] || []).push(i); });
+const astNamen = Object.keys(aeste).sort((a,b)=>aeste[b].length-aeste[a].length);
+const baum = new Float32Array(N*2);
+function baueBaum(){
+  let x=0, y=0, zeilenH=0; const B=c.width-80;
+  astNamen.forEach(a=>{
+    const n = aeste[a].length, seite = Math.max(46, Math.sqrt(n)*13)*skala;
+    if (x + seite > B) { x = 0; y += zeilenH + 30*skala; zeilenH = 0; }
+    const spalten = Math.ceil(Math.sqrt(n));
+    aeste[a].forEach((idx,k)=>{
+      const r = Math.floor(k/spalten), s = k % spalten;
+      baum[idx*2]   = 40 + x + (s+0.5)*(seite/spalten);
+      baum[idx*2+1] = 70 + y + (r+0.5)*(seite/spalten);
+    });
+    aeste[a].kachel = {x:40+x, y:70+y, s:seite};
+    x += seite + 26*skala; zeilenH = Math.max(zeilenH, seite);
+  });
+}
+
+function groesseAendern(){
+  const rect = c.getBoundingClientRect();
+  c.width = Math.max(200, Math.round(rect.width));
+  c.height = Math.max(200, Math.round(rect.height));
+  skala = Math.max(0.5, Math.min(3, Math.min(c.width/1520, c.height/880)));
+  baueBaum();
+  zeichne();
+}
+let groesseWartet = false;
+window.addEventListener('resize', () => {
+  if (groesseWartet) return; groesseWartet = true;
+  requestAnimationFrame(() => { groesseAendern(); groesseWartet = false; });
+});
+
+function sichtbar(i){
+  const d = P[i].d; if(!d) return true;
+  return d <= grenzTag();
+}
+function grenzTag(){
+  const k = Math.min(tage.length-1, Math.floor(zeitAnteil*(tage.length-1)));
+  return tage[k];
+}
+function grenzEreignis(){
+  const k = Math.min(evz.length-1, Math.floor(zeitAnteil*(evz.length-1)));
+  return evz[k];
+}
+
+const bild = new Float32Array(N*3);
+function rechnePlatz(){
+  const W=c.width, H=c.height, cx=W/2, cy=H/2;
+  const sx=Math.sin(drehX), kx=Math.cos(drehX), sy=Math.sin(drehY), ky=Math.cos(drehY);
+  for(let i=0;i<N;i++){
+    if(ansicht===0){ bild[i*3]=baum[i*2]; bild[i*3+1]=baum[i*2+1]; bild[i*3+2]=0; continue; }
+    const v=P[i].v; let x=v[0],y=v[1],z=v[2];
+    let x1=x*ky - z*sy, z1=x*sy + z*ky;
+    let y1=y*kx - z1*sx, z2=y*sx + z1*kx;
+    const s=380*zoom*skala/(2.6+z2);
+    bild[i*3]=cx+x1*s*1.9; bild[i*3+1]=cy+y1*s*1.9; bild[i*3+2]=z2;
+  }
+}
+
+let cDa, cLehre, cFehlt, cSpur, cLinie, cStill;
+function ladeFarben(){
+  const s=getComputedStyle(document.documentElement);
+  cDa=s.getPropertyValue('--accent').trim(); cLehre=s.getPropertyValue('--lehre').trim();
+  cFehlt=s.getPropertyValue('--fehlt').trim(); cSpur=s.getPropertyValue('--spur').trim();
+  cLinie=s.getPropertyValue('--border').trim(); cStill=s.getPropertyValue('--muted').trim();
+}
+
+function zeichne(){
+  if (ansicht === 3) { g.clearRect(0,0,c.width,c.height); hinweis.textContent = 'Vergleich zeigt keine Punktwolke.'; return; }
+  ladeFarben(); rechnePlatz();
+  g.clearRect(0,0,c.width,c.height);
+
+  if(ansicht===0){
+    g.strokeStyle=cLinie; g.lineWidth=1; g.font=Math.max(9,11*skala)+'px ui-monospace,monospace';
+    astNamen.forEach(a=>{
+      const k=aeste[a].kachel; if(!k) return;
+      g.strokeRect(k.x-7, k.y-7, k.s+14, k.s+14);
+      g.fillStyle=cStill; g.fillText(a+'  '+aeste[a].length, k.x-7, k.y-13);
+    });
+  }
+
+  const gz = ansicht===2 ? grenzEreignis() : null;
+  if(ansicht===2){
+    const zaehler = new Map();
+    for(const e of D.ereignisse){
+      if(e.t > gz) break;
+      for(let a=0;a<e.n.length;a++) for(let b=a+1;b<e.n.length;b++){
+        const s=e.n[a]+'_'+e.n[b]; zaehler.set(s,(zaehler.get(s)||0)+1);
+      }
+    }
+    g.lineCap='round';
+    for(const [s,w] of zaehler){
+      if(w<2) continue;
+      const [a,b]=s.split('_').map(Number);
+      g.strokeStyle=cSpur; g.globalAlpha=Math.min(.75,.18+w*.09); g.lineWidth=Math.min(4,.8+w*.35);
+      g.beginPath(); g.moveTo(bild[a*3],bild[a*3+1]); g.lineTo(bild[b*3],bild[b*3+1]); g.stroke();
+    }
+    g.globalAlpha=1;
+  } else {
+    g.strokeStyle=cStill; g.globalAlpha=.5; g.lineWidth=1;
+    for(const k of D.gesetzt){
+      if(!sichtbar(k.a)||!sichtbar(k.b)) continue;
+      g.beginPath(); g.moveTo(bild[k.a*3],bild[k.a*3+1]); g.lineTo(bild[k.b*3],bild[k.b*3+1]); g.stroke();
+    }
+    g.globalAlpha=1;
+  }
+
+  const reihe = ansicht===0 ? null : [...Array(N).keys()].sort((a,b)=>bild[b*3+2]-bild[a*3+2]);
+  const durch = reihe || [...Array(N).keys()];
+  let gezeigt=0;
+  for(const i of durch){
+    if(ansicht!==2 && !sichtbar(i)) continue;
+    const p=P[i];
+    const r = Math.max(1.3, Math.min(7, 1.5 + Math.sqrt(p.h||0)*1.15)) * (ansicht===0?1:zoom*0.85) * skala;
+    g.fillStyle = p.h ? (p.k==='l'?cLehre:cDa) : cFehlt;
+    g.globalAlpha = p.h ? 0.92 : 0.42;
+    g.beginPath(); g.arc(bild[i*3],bild[i*3+1],r,0,6.2832); g.fill();
+    gezeigt++;
+  }
+  g.globalAlpha=1;
+  hinweis.textContent = ansicht===2
+    ? 'Abrufe bis '+grenzEreignis().replace('T',' ')
+    : gezeigt+' von '+N+' Einträgen · angelegt bis '+grenzTag();
+}
+
+// --- Bedienung: reine Anzeige, kein Aufruf schreibt ---
+let zieht=false, lx=0, ly=0;
+c.addEventListener('pointerdown',e=>{ if(ansicht===0||ansicht===3) return; zieht=true; lx=e.clientX; ly=e.clientY; c.setPointerCapture(e.pointerId); });
+c.addEventListener('pointerup',e=>{ zieht=false; });
+c.addEventListener('pointermove',e=>{
+  if (ansicht===3) return;
+  const rect=c.getBoundingClientRect(), sk=c.width/rect.width;
+  if(zieht){ drehY += (e.clientX-lx)*0.006; drehX += (e.clientY-ly)*0.006; lx=e.clientX; ly=e.clientY; zeichne(); return; }
+  const mx=(e.clientX-rect.left)*sk, my=(e.clientY-rect.top)*sk;
+  let best=-1, bd=210*skala*skala;
+  for(let i=0;i<N;i++){
+    if(ansicht!==2 && !sichtbar(i)) continue;
+    const dx=bild[i*3]-mx, dy=bild[i*3+1]-my, d=dx*dx+dy*dy;
+    if(d<bd){ bd=d; best=i; }
+  }
+  if(best<0){ fahne.style.opacity=0; return; }
+  const p=P[best];
+  fahne.innerHTML = (p.k==='l'?'Lehre · ':'Knoten · ') + (p.a) +
+    (p.h ? ' · '+p.h+'× ausgeliefert' : ' · noch nie ausgeliefert') +
+    '<br>' + p.t.replace(/</g,'&lt;') + '<span class="weg">' + (p.p||'') + (p.d? ' · '+p.d : '') + '</span>';
+  fahne.style.opacity=1;
+  fahne.style.left = Math.min(rect.width-330, e.clientX-rect.left+14)+'px';
+  fahne.style.top  = Math.max(4, e.clientY-rect.top-14)+'px';
+});
+c.addEventListener('pointerleave',()=>{ fahne.style.opacity=0; zieht=false; });
+c.addEventListener('wheel',e=>{ if(ansicht===0||ansicht===3) return; e.preventDefault();
+  zoom = Math.max(.4, Math.min(4, zoom*(e.deltaY>0?0.92:1.08))); zeichne(); },{passive:false});
+
+const stand=document.getElementById('stand');
+function setzeStand(){ stand.textContent = ansicht===2 ? grenzEreignis().replace('T',' ') : (ansicht===3 ? '–' : grenzTag()); }
+document.getElementById('zeit').addEventListener('input',e=>{
+  zeitAnteil = e.target.value/100; setzeStand(); zeichne();
+});
+const legende = document.getElementById('legende'), fuss = document.getElementById('fuss');
+const zeitleiste = document.getElementById('zeitleiste'), vergleichBlock = document.getElementById('vergleichBlock');
+[0,1,2,3].forEach(k=>{
+  document.getElementById('b'+k).addEventListener('click',()=>{
+    ansicht=k; [0,1,2,3].forEach(j=>document.getElementById('b'+j).setAttribute('aria-pressed', j===k?'true':'false'));
+    const istVergleich = ansicht===3;
+    vergleichBlock.hidden = !istVergleich;
+    legende.hidden = istVergleich; fuss.hidden = istVergleich; zeitleiste.hidden = istVergleich;
+    setzeStand(); zeichne();
+  });
+});
+let timer=null;
+document.getElementById('lauf').addEventListener('click',e=>{
+  spielt=!spielt; e.target.setAttribute('aria-pressed',spielt?'true':'false');
+  if(timer){ clearInterval(timer); timer=null; }
+  if(spielt){
+    let v=0; const s=document.getElementById('zeit');
+    timer=setInterval(()=>{ v+=1; if(v>100){ v=0; } s.value=v; zeitAnteil=v/100; setzeStand(); zeichne(); },90);
+  }
+});
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change',zeichne);
+
+document.getElementById('fuss').innerHTML =
+  '<div>Der <b>Baum</b> setzt jeden Eintrag an seine Adresse — keine Projektion, kein Informationsverlust. '+
+  'Nachbarschaft heißt dort <em>gleicher Ast</em>, nicht <em>ähnlicher Inhalt</em>.</div>'+
+  '<div><b>Bedeutung</b> ist eine lineare Projektion aus 1024 Dimensionen auf drei. Die drei Achsen tragen '+
+  (D.varianz.map(v=>(v*100).toFixed(1)+'&thinsp;%').join(' · '))+' der Streuung. Nähe ist hier <em>Modell-Nachbarschaft</em>, nicht geprüfte Verwandtschaft.</div>'+
+  '<div><b>Spuren</b> zeigt, welche Einträge gemeinsam ausgeliefert wurden — gemessen, nicht projiziert. '+
+  'Eine Linie bedeutet <em>kam zusammen vor</em>, nicht <em>hängt zusammen</em> und schon gar nicht <em>führt zu</em>.</div>'+
+  '<div>Graue Linien sind die '+D.gesetzt.length+' von Hand gesetzten Beziehungen, deren beide Enden auffindbar sind. '+
+  'Es wird keine Linie gezeichnet, die aus bloßer Nähe entstünde.</div>'+
+  '<div>Nicht dargestellt, weil nicht auflösbar: 572 Treffer im Abrufprotokoll zeigen auf Pfade, die es seit '+
+  'der Pfadsäuberung nicht mehr gibt. Das Protokoll war zum Schreibzeitpunkt richtig — es verweist nur auf '+
+  'einen veränderlichen Schlüssel statt auf die Kennung.</div>';
+
+setzeStand(); groesseAendern();
+}
 </script>
 </body>
 </html>

@@ -49,7 +49,10 @@ import meisterschaft  # noqa: E402        -- nur *_lesen() gelesen/Schluessel-Na
 import nachtlaeufer  # noqa: E402         -- nur _DEFAULTS gelesen
 import raum_daten  # noqa: E402           -- nur sammle() aufgerufen, Datei unveraendert
 
-RAUM_HTML_PATH = HERE / "raum.html"
+RUNS_DIR = HERE / "runs"
+# raum.html/vergleich.html sind aufgegangen in entscheidungen.html (Betreiber-
+# Weisung 2026-08-08: eine Adresse statt drei). /raum und /vergleich bleiben
+# als Weiterleitung erreichbar, falls ein Reiter noch die alte Adresse offen hat.
 
 SIEGGROESSEN = meisterschaft.SIEGGROESSEN  # ("trefferquote","schweigequote","streuung","kosten")
 GEWICHT_PREFIX = "siegbedingung_gewicht_"
@@ -365,6 +368,55 @@ def _raum_stand() -> dict:
     return _raum_cache["ergebnis"]
 
 
+# ─── Abschnitt 10: A/B-Vergleich Abruf (Auftrag 2026-08-07) ────────────────
+#
+# Zeigt keinen Sieger. Die Faelle, in denen A (volle Kette) und B (rohe
+# Top-3-Suche) auseinandergehen, kommen einzeln nebeneinander -- angereichert
+# um die gelieferte Antwort je Seite aus `rows` (unterschiede_A_B traegt nur
+# Pfade/bestanden, nicht die Antwort selbst). Zwischenspeicher wie /api/raum:
+# neu gelesen nur wenn Dateiname oder mtime der juengsten Laufdatei wechselt.
+
+_vergleich_cache: dict = {"ergebnis": None, "pfad": None, "mtime": None}
+
+
+def _vergleich_neueste_datei() -> Path | None:
+    kandidaten = sorted(RUNS_DIR.glob("ab_vergleich_abruf_*.json"))
+    return kandidaten[-1] if kandidaten else None
+
+
+def _vergleich_stand() -> dict:
+    pfad = _vergleich_neueste_datei()
+    if pfad is None:
+        return {"error": "kein Vergleichslauf gefunden (runs/ab_vergleich_abruf_*.json)"}
+    mtime = pfad.stat().st_mtime
+    if (_vergleich_cache["ergebnis"] is None
+            or _vergleich_cache["pfad"] != str(pfad)
+            or _vergleich_cache["mtime"] != mtime):
+        roh = json.loads(pfad.read_text(encoding="utf-8"))
+        rows_je_kennung = {r["kennung"]: r for r in roh.get("rows", [])}
+        unterschiede = []
+        for u in roh.get("unterschiede_A_B", []):
+            zeile = rows_je_kennung.get(u["kennung"], {})
+            unterschiede.append({
+                **u,
+                "A_antwort": (zeile.get("A") or {}).get("mit_abruf"),
+                "B_antwort": (zeile.get("B") or {}).get("mit_abruf"),
+            })
+        datum = pfad.stem.replace("ab_vergleich_abruf_", "")
+        _vergleich_cache["ergebnis"] = {
+            "datei": pfad.name, "datum": datum,
+            "model": roh.get("model"), "n_cases": roh.get("n_cases"),
+            "bestand_vorher": roh.get("bestand_vorher"),
+            "bestand_nachher": roh.get("bestand_nachher"),
+            "bestand_unveraendert": roh.get("bestand_unveraendert"),
+            "zusammenfassung": roh.get("zusammenfassung"),
+            "unterschiede": unterschiede,
+        }
+        _vergleich_cache["pfad"] = str(pfad)
+        _vergleich_cache["mtime"] = mtime
+    return _vergleich_cache["ergebnis"]
+
+
 # ─── HTTP ─────────────────────────────────────────────────────────────────
 
 class Handler(BaseHTTPRequestHandler):
@@ -394,17 +446,21 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._json({"error": str(e)}, 500)
             return
-        if self.path in ("/raum", "/raum.html"):
-            body = RAUM_HTML_PATH.read_text(encoding="utf-8").encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(body)))
+        if self.path in ("/raum", "/raum.html", "/vergleich", "/vergleich.html"):
+            self.send_response(302)
+            self.send_header("Location", "/")
+            self.send_header("Content-Length", "0")
             self.end_headers()
-            self.wfile.write(body)
             return
         if self.path == "/api/raum":
             try:
                 self._json(_raum_stand())
+            except Exception as e:
+                self._json({"error": str(e)}, 500)
+            return
+        if self.path == "/api/vergleich":
+            try:
+                self._json(_vergleich_stand())
             except Exception as e:
                 self._json({"error": str(e)}, 500)
             return
@@ -550,6 +606,13 @@ def _selftest() -> int:
 
     # 3) Eilmeldungen: leerer/kaputter Zustand darf nicht crashen (Negativfall).
     assert isinstance(_eilmeldungen_stand(), list)
+
+    # 3b) Vergleich: Zusammenfuehrung unterschiede_A_B + rows ueber `kennung`.
+    v = _vergleich_stand()
+    if "error" not in v:
+        assert v["n_cases"] == len(json.loads(_vergleich_neueste_datei().read_text(encoding="utf-8"))["rows"])
+        for u in v["unterschiede"]:
+            assert "A_antwort" in u and "B_antwort" in u
 
     print("Selbsttest gruen: Gesamtstand read-only unveraendert, "
           "Siegbedingung/Nachtschicht-Rundlauf inkl. Negativfall bestanden.")
