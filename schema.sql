@@ -751,3 +751,22 @@ CREATE INDEX IF NOT EXISTS idx_lessons_project ON lessons_learned(projects);
 CREATE INDEX IF NOT EXISTS idx_relations_source ON knowledge_relations(source_path);
 CREATE INDEX IF NOT EXISTS idx_relations_target ON knowledge_relations(target_path);
 CREATE INDEX IF NOT EXISTS idx_relations_type ON knowledge_relations(relation_type);
+
+-- Eskalation von Lehren zu Regeln (Nachtrag 2026-08-08).
+-- Beide Tabellen wurden von eskalation_vorlage.py zur Laufzeit angelegt und
+-- fehlten darum jeder Erstinstallation: gemessen an einem Rundlauf
+-- (brainlehr.py raus/rein) trug eine frische Datenbank sechs Tabellen und
+-- zwei Spalten weniger als der Betrieb, ohne dass irgendetwas es meldete.
+-- Schema gehoert hierher, nicht in das Skript, das die Tabelle zufaellig
+-- zuerst braucht.
+CREATE TABLE IF NOT EXISTS eskalation_historie (
+    lesson_id TEXT PRIMARY KEY,
+    promoted_at TEXT NOT NULL,
+    occurrences_at_promotion INTEGER NOT NULL,
+    demoted_at TEXT
+);
+CREATE TABLE IF NOT EXISTS eskalation_vorschlag (
+    lesson_id TEXT PRIMARY KEY,
+    regel_vorschlag TEXT NOT NULL,
+    erzeugt_am TEXT NOT NULL
+);

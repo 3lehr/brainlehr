@@ -1041,10 +1041,29 @@ def _ensure_herkunft_triggers(conn: sqlite3.Connection) -> None:
     conn.executescript(pfad.read_text(encoding="utf-8"))
 
 
+def _ensure_nachgezogene_spalten(conn: sqlite3.Connection) -> None:
+    """Zwei Spalten, die per Migration in die Betriebsdatenbank kamen und in
+    keiner Erstanlage ankamen (Befund 2026-08-08, Rundlauf brainlehr.py):
+
+      lessons_learned.pruefstelle        Lehre zeigt auf ihre Pruefung
+      knowledge_embeddings.text_checksum erkennt veraltete Vektoren
+
+    Ohne sie bricht das Wiedereinlesen eines Auszugs an genau diesen Spalten
+    ab -- 644 von 644 Lehren abgewiesen, gemessen. Dieselbe Fehlerklasse wie
+    die fehlenden Herkunfts-Trigger: eine Regel oder Spalte, die nur die
+    gewachsene Datenbank kennt, ist keine Eigenschaft des Systems."""
+    for tabelle, spalte, typ in (("lessons_learned", "pruefstelle", "TEXT"),
+                                 ("knowledge_embeddings", "text_checksum", "TEXT")):
+        vorhanden = {r[1] for r in conn.execute(f"PRAGMA table_info({tabelle})")}
+        if spalte not in vorhanden:
+            conn.execute(f"ALTER TABLE {tabelle} ADD COLUMN {spalte} {typ}")
+
+
 def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old knowledge.db copies."""
     _ensure_core_schema(conn)
     _ensure_herkunft_triggers(conn)
+    _ensure_nachgezogene_spalten(conn)
     _ensure_anlass_columns(conn)
     _ensure_abgeleitet_von_column(conn)
     _ensure_norm_art_column(conn)
