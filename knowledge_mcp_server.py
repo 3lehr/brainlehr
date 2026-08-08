@@ -208,6 +208,136 @@ BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.anlass unzulaessig: erlaubt sind selbst, betreiber, hook, skript, unbekannt');
 END;
 """
+# norm_entscheidung (Auftrag 2026-08-08): "offen" heisst nie entschieden --
+# deckt AUSSCHLIESSLICH den Altbestand ab (durch ALTER TABLE ... DEFAULT
+# 'offen' beim Nachzug befuellt, siehe _ensure_norm_entscheidung_column, NIE
+# durch einen Trigger). Die drei anderen Werte sind ausdrueckliche
+# Entscheidungen -- siehe Spaltenkommentar in schema.sql fuer die volle
+# Begruendung, inklusive der vier Loecher, die ein unabhaengiges Review
+# (Agent acf807ee8e6756f27, 2026-08-08) VOR der Live-Migration fand und die
+# hier bereits geschlossen sind (identischer Text wie schema.sql, gleiches
+# Zwei-Kopien-Muster wie NODE_CONSTRAINT_TRIGGERS_SQL oben).
+ALLOWED_NORM_ENTSCHEIDUNG = {"keine_norm", "norm_befristet", "norm_unbefristet"}
+NORM_ENTSCHEIDUNG_TRIGGERS_SQL = """
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung NOT IN ('offen','keine_norm','norm_befristet','norm_unbefristet')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung unzulaessig: erlaubt sind offen, keine_norm, norm_befristet, norm_unbefristet');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung NOT IN ('offen','keine_norm','norm_befristet','norm_unbefristet')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung unzulaessig: erlaubt sind offen, keine_norm, norm_befristet, norm_unbefristet');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_pflicht_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung = 'offen'
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung fehlt: beim Anlegen entscheiden, ob dieser Knoten eine Norm ist -- keine_norm (Fakt), norm_befristet (Norm mit Enddatum) oder norm_unbefristet (Norm ohne Ende)');
+END;
+
+-- (a) Loch aus dem Review: 'offen' darf bei UPDATE (und damit auch bei
+-- INSERT ... ON CONFLICT DO UPDATE, das nur den bu-Zweig feuert) niemals
+-- NEU gesetzt werden -- nur Zeilen, die schon vor diesem Feld 'offen'
+-- waren, duerfen es bleiben (OLD.norm_entscheidung = 'offen' AND NEW = 'offen'
+-- ist in dieser WHEN-Klausel nicht erfasst, bleibt also erlaubt).
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_pflicht_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung = 'offen' AND OLD.norm_entscheidung <> 'offen'
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung kann nicht auf offen zurueckgesetzt werden: eine getroffene Entscheidung bleibt stehen, hoechstens auf einen anderen entschiedenen Wert aendern');
+END;
+
+-- (b) Loch aus dem Review: eine bisher 'offen'e Zeile bekommt per UPDATE
+-- einen norm_rang, OHNE dass norm_entscheidung mitgeschrieben wird -- die
+-- Rang-Vergabe IST die Entscheidung und muss sie explizit tragen.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_rang_neu_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN OLD.norm_entscheidung = 'offen' AND NEW.norm_entscheidung = 'offen'
+    AND OLD.norm_rang IS NULL AND NEW.norm_rang IS NOT NULL
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang neu vergeben, aber norm_entscheidung fehlt: norm_befristet oder norm_unbefristet mitgeben');
+END;
+
+-- (c) erweitert um gilt_ab/gilt_bis: keine_norm verlangt ALLE DREI
+-- Normschicht-Felder leer, nicht nur norm_rang.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_rang_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN (NEW.norm_entscheidung = 'keine_norm' AND (NEW.norm_rang IS NOT NULL OR NEW.gilt_ab IS NOT NULL))
+    OR (NEW.norm_entscheidung IN ('norm_befristet','norm_unbefristet') AND NEW.norm_rang IS NULL)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung widerspricht norm_rang/gilt_ab: keine_norm verlangt norm_rang und gilt_ab NULL, norm_befristet/norm_unbefristet verlangen norm_rang gesetzt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_rang_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN (NEW.norm_entscheidung = 'keine_norm' AND (NEW.norm_rang IS NOT NULL OR NEW.gilt_ab IS NOT NULL))
+    OR (NEW.norm_entscheidung IN ('norm_befristet','norm_unbefristet') AND NEW.norm_rang IS NULL)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung widerspricht norm_rang/gilt_ab: keine_norm verlangt norm_rang und gilt_ab NULL, norm_befristet/norm_unbefristet verlangen norm_rang gesetzt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_rang_gilt_ab_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_rang IS NOT NULL AND NEW.gilt_ab IS NULL
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang gesetzt aber gilt_ab fehlt: ab wann gilt die Norm?');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_rang_gilt_ab_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_rang IS NOT NULL AND NEW.gilt_ab IS NULL
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang gesetzt aber gilt_ab fehlt: ab wann gilt die Norm?');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_gilt_bis_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN (NEW.norm_entscheidung = 'norm_befristet' AND NEW.gilt_bis IS NULL)
+    OR (NEW.norm_entscheidung = 'norm_unbefristet' AND NEW.gilt_bis IS NOT NULL)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung widerspricht gilt_bis: norm_befristet verlangt gilt_bis gesetzt, norm_unbefristet verlangt gilt_bis NULL');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_gilt_bis_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN (NEW.norm_entscheidung = 'norm_befristet' AND NEW.gilt_bis IS NULL)
+    OR (NEW.norm_entscheidung = 'norm_unbefristet' AND NEW.gilt_bis IS NOT NULL)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung widerspricht gilt_bis: norm_befristet verlangt gilt_bis gesetzt, norm_unbefristet verlangt gilt_bis NULL');
+END;
+
+-- (d) Loch aus dem Review: gilt_bis < gilt_ab war nur python-seitig
+-- geprueft (_validate_geltung in knowledge_mcp_server.py), nicht in der DB
+-- selbst -- Skripte, die direkt per SQL schreiben, waren ungeschuetzt.
+-- julianday() statt Stringvergleich: L-ec167a (Bestand mischt Datumsform
+-- "YYYY-MM-DD" und volle ISO-Zeit mit Offset, ein reiner "<"-Stringvergleich
+-- waere an dieser Grenze falsch) -- gemessen gegen den echten Bestand
+-- (sqlite3 knowledge.db, 2026-08-08): julianday() parst beide Formen korrekt
+-- und vergleichbar. Gleicher Tag ist ERLAUBT (Grenzwert, Auftrag Punkt 4):
+-- eine Norm, die am Tag ihres Inkrafttretens schon wieder endet (z.B.
+-- Direktive, die am selben Tag zurueckgenommen wird), ist ein legitimer,
+-- wenn auch entarteter Fall -- nur "danach" wird abgelehnt.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gilt_bis_vor_gilt_ab_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gilt_ab IS NOT NULL AND NEW.gilt_bis IS NOT NULL
+    AND julianday(NEW.gilt_bis) < julianday(NEW.gilt_ab)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gilt_bis liegt vor gilt_ab');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gilt_bis_vor_gilt_ab_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gilt_ab IS NOT NULL AND NEW.gilt_bis IS NOT NULL
+    AND julianday(NEW.gilt_bis) < julianday(NEW.gilt_ab)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gilt_bis liegt vor gilt_ab');
+END;
+"""
 # Auditkette ueber access_log (Auftrag 2026-08-06). Gleiche Laenge/Form wie
 # ein SHA-256-Hexdigest, damit ein Genesis-Wert nicht wie ein "kaputter"
 # Hash aussieht. Fachtrennung zu einer gleichnamigen Konstante in einer
@@ -344,6 +474,84 @@ def _ensure_norm_art_column(conn: sqlite3.Connection) -> None:
         shutil.copy2(DB_PATH, backup_path)
 
     conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN norm_art TEXT")
+
+
+def _ensure_norm_entscheidung_column(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die Spalte norm_entscheidung (Auftrag
+    2026-08-08). Gleiches Muster wie _ensure_anlass_columns: additiv, NOT
+    NULL DEFAULT 'offen' -- SQLite befuellt Bestandszeilen beim ALTER selbst
+    mit 'offen' (kein separater Rueckfuell-Schritt), und genau das ist
+    gewollt: 'offen' heisst "nie entschieden", exakt der Zustand des
+    gesamten Altbestands vor diesem Feld (Auftrag Punkt 2 -- nicht raten).
+    WAL-Checkpoint + Sicherungskopie VOR dem ALTER (Lehre L-218f1e)."""
+    if "knowledge_nodes" not in {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }:
+        return
+    if "norm_entscheidung" in {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"Spalte 'norm_entscheidung' fehlt, aber die Sicherung vor dem automatischen "
+            f"Nachzug ist blockiert (WAL-Checkpoint busy={busy}, {log_frames} Frames, "
+            f"{checkpointed} checkpointed) -- vermutlich schreibt gerade ein anderer "
+            "Prozess auf dieselbe Datenbank. Nachzug abgebrochen, nichts geaendert."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN norm_entscheidung TEXT NOT NULL DEFAULT 'offen'")
+
+
+def _ensure_norm_entscheidung_triggers(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die 13 norm_entscheidung-Trigger
+    (Auftrag 2026-08-08, vier davon aus dem unabhaengigen Review vom selben
+    Tag). Anders als _ensure_node_constraint_triggers braucht es hier KEINEN
+    Daten-Backfill vor der Trigger-Erzeugung: die Spalte kommt bereits mit
+    'offen' befuellt aus _ensure_norm_entscheidung_column, und die
+    Pflicht-/Konsistenz-Trigger greifen ausschliesslich auf Zeilen, deren
+    norm_entscheidung NICHT 'offen' ist bzw. auf den UEBERGANG weg von
+    'offen' (siehe Kommentar an NORM_ENTSCHEIDUNG_TRIGGERS_SQL) -- Altbestand
+    bleibt beim Nachziehen unberuehrt."""
+    if "knowledge_nodes" not in {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }:
+        return
+    if "norm_entscheidung" not in {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}:
+        return  # Spalte selbst fehlt noch (sollte durch die Aufrufreihenfolge in ensure_schema nicht vorkommen)
+    existing_triggers = {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")
+    }
+    needed = {
+        "knowledge_nodes_norm_entscheidung_check_bi", "knowledge_nodes_norm_entscheidung_check_bu",
+        "knowledge_nodes_norm_entscheidung_pflicht_bi", "knowledge_nodes_norm_entscheidung_pflicht_bu",
+        "knowledge_nodes_norm_entscheidung_rang_neu_bu",
+        "knowledge_nodes_norm_entscheidung_rang_bi", "knowledge_nodes_norm_entscheidung_rang_bu",
+        "knowledge_nodes_norm_rang_gilt_ab_bi", "knowledge_nodes_norm_rang_gilt_ab_bu",
+        "knowledge_nodes_norm_entscheidung_gilt_bis_bi", "knowledge_nodes_norm_entscheidung_gilt_bis_bu",
+        "knowledge_nodes_gilt_bis_vor_gilt_ab_bi", "knowledge_nodes_gilt_bis_vor_gilt_ab_bu",
+    }
+    if needed <= existing_triggers:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"norm_entscheidung-Trigger an knowledge_nodes fehlen, aber die Sicherung vor dem "
+            f"automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
+            "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, nichts geaendert."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    conn.executescript(NORM_ENTSCHEIDUNG_TRIGGERS_SQL)
 
 
 _ZURUECKNAHME_COLUMNS = {
@@ -673,6 +881,8 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_anlass_columns(conn)
     _ensure_abgeleitet_von_column(conn)
     _ensure_norm_art_column(conn)
+    _ensure_norm_entscheidung_column(conn)
+    _ensure_norm_entscheidung_triggers(conn)
     _ensure_zuruecknahme_columns(conn)
     _ensure_schreiber_columns(conn)
     _ensure_node_constraint_triggers(conn)
@@ -919,6 +1129,7 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
         "norm_rang": row["norm_rang"],
         "gilt_ab": row["gilt_ab"],
         "gilt_bis": row["gilt_bis"],
+        "norm_entscheidung": row["norm_entscheidung"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
         "children": [{"title": c["title"], "summary": c["summary"]} for c in children],
@@ -1485,13 +1696,17 @@ def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
         parent = current.rsplit("/", 1)[0] or "/"
         created_at = now_iso()
         conn.execute(
-            """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_entscheidung)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (str(uuid.uuid4())[:8], current, parent, project_id, seg,
              f"Automatisch erzeugter Astknoten fuer {seg}", "",
              current.count("/") - 1, json.dumps([]),
              f"neuer_ast=True, automatisch erzeugt durch {triggering_child_path}",
-             created_at, created_at),
+             created_at, created_at,
+             # keine_norm (Auftrag 2026-08-08): ein automatisch erzeugter
+             # Astknoten ist nie eine Norm -- die Entscheidung ist hier so
+             # eindeutig wie die Herkunft selbst.
+             "keine_norm"),
         )
 
 
@@ -1510,6 +1725,38 @@ def _validate_geltung(norm_rang: int | None, gilt_ab: str | None, gilt_bis: str 
             return f"{name} ist kein gueltiges ISO-8601-Datum/Zeitstempel: {value!r}"
     if gilt_ab is not None and gilt_bis is not None and gilt_bis < gilt_ab:
         return f"gilt_bis ({gilt_bis!r}) liegt vor gilt_ab ({gilt_ab!r})."
+    return None
+
+
+def _validate_norm_entscheidung(norm_entscheidung: str | None, norm_rang: int | None,
+                                 gilt_ab: str | None, gilt_bis: str | None) -> str | None:
+    """Erzwingt die Entscheidung aus dem Auftrag 2026-08-08: 'offen' (nie
+    entschieden) ist fuer NEUE Knoten kein zulaessiger Wert, nur Altbestand
+    traegt ihn (siehe schema.sql-Spaltenkommentar). Prueft ausserdem die
+    Konsistenz zu norm_rang/gilt_ab/gilt_bis -- dieselben drei Regeln wie die
+    DB-Trigger in NORM_ENTSCHEIDUNG_TRIGGERS_SQL, hier VORAB mit sprechendem
+    Text statt der rohen sqlite3.IntegrityError aus RAISE(ABORT). Aufrufer
+    muss norm_rang (und bei Bedarf gilt_ab/gilt_bis) VOR diesem Aufruf schon
+    final gesetzt haben (inkl. ADR-034-Ableitung), sonst prueft diese
+    Funktion gegen einen Zwischenstand."""
+    if norm_entscheidung not in ALLOWED_NORM_ENTSCHEIDUNG:
+        return (f"norm_entscheidung fehlt oder unbekannt: {norm_entscheidung!r}. Beim Anlegen "
+                f"muss entschieden werden, ob dieser Knoten eine Norm ist. Erlaubt: "
+                f"{sorted(ALLOWED_NORM_ENTSCHEIDUNG)} (keine_norm=Fakt ohne Rang, "
+                f"norm_befristet=Norm mit Enddatum, norm_unbefristet=Norm ohne Enddatum).")
+    if norm_entscheidung == "keine_norm":
+        if norm_rang is not None:
+            return "norm_entscheidung=keine_norm aber norm_rang gesetzt: widerspruechlich -- norm_rang weglassen oder norm_befristet/norm_unbefristet waehlen."
+        return None
+    # norm_befristet / norm_unbefristet
+    if norm_rang is None:
+        return f"norm_entscheidung={norm_entscheidung!r} verlangt norm_rang (1=global, 2=hub, 3=ADR)."
+    if gilt_ab is None:
+        return f"norm_entscheidung={norm_entscheidung!r} verlangt gilt_ab (ab wann die Norm gilt)."
+    if norm_entscheidung == "norm_befristet" and gilt_bis is None:
+        return "norm_entscheidung=norm_befristet verlangt gilt_bis; fuer unbefristet norm_unbefristet waehlen."
+    if norm_entscheidung == "norm_unbefristet" and gilt_bis is not None:
+        return "norm_entscheidung=norm_unbefristet aber gilt_bis gesetzt: widerspruechlich -- norm_befristet waehlen."
     return None
 
 
@@ -1697,6 +1944,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                   neuer_ast: bool = False,
                   norm_rang: int | None = None, gilt_ab: str | None = None,
                   gilt_bis: str | None = None, anlass: str = "unbekannt",
+                  norm_entscheidung: str | None = None,
                   abgeleitet_von: str | None = None,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
@@ -1708,6 +1956,13 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     'selbst'/'betreiber' sind selbstberichtet vom Aufrufer, nicht geprueft;
     'hook'/'skript' objektiv, weil der Aufrufweg sie kennt. Unbekannter Wert
     wird abgelehnt (sprechender Fehler, kein stiller Erfolg).
+
+    norm_entscheidung: PFLICHT (Auftrag 2026-08-08) -- keine_norm (Fakt,
+    kein Rang), norm_befristet (Norm mit gilt_bis) oder norm_unbefristet
+    (Norm ohne Ende). Fehlt sie oder widerspricht sie norm_rang/gilt_ab/
+    gilt_bis, wird der Aufruf abgelehnt -- siehe _validate_norm_entscheidung.
+    Kein Vorgabewert: 'offen' (nie entschieden) ist ausschliesslich der
+    Zustand des Altbestands vor diesem Feld, niemals eine neue Entscheidung.
 
     abgeleitet_von: Kennung (id oder path) eines vorhandenen Quellknotens
     (ADR-027 Nachtrag 4, Lehre L-adfb33). Gesetzt heisst: source wird VOM
@@ -1833,6 +2088,15 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     # norm_rang mitgegeben hat (der bleibt Vorrang). gilt_ab bekommt bei
     # Ableitung denselben Wert wie normrang.py's Batch-Lauf verwendet hat:
     # den eigenen Erfassungszeitpunkt des Knotens, kein erfundenes Datum.
+    #
+    # Auftrag 2026-08-08, Review-Punkt 3 (Agent acf807ee8e6756f27): die
+    # Ableitung wird IMMER gerechnet, auch bei norm_entscheidung=keine_norm --
+    # ein Unterdruecken wuerde einen echten Widerspruch verschlucken (source
+    # sieht nach Direktive/ADR aus, Aufrufer sagt aber keine_norm). Der
+    # Konflikt wird unten von _validate_norm_entscheidung erkannt (keine_norm
+    # verlangt norm_rang NULL) und mit sprechendem Text abgelehnt, statt die
+    # Ableitung still zu ignorieren.
+    abgeleiteter_rang = None
     if norm_rang is None:
         abgeleiteter_rang = normrang.rang_fuer_source(source)
         if abgeleiteter_rang is not None:
@@ -1840,12 +2104,28 @@ def knowledge_add(parent_path: str, title: str, summary: str,
             if gilt_ab is None:
                 gilt_ab = created_at
 
+    # Entscheidungspflicht (Auftrag 2026-08-08): erst HIER pruefbar, weil
+    # norm_rang/gilt_ab bis eben noch durch ADR-034 automatisch ausfallen
+    # konnten -- siehe _validate_norm_entscheidung-Docstring.
+    entscheidung_fehler = _validate_norm_entscheidung(norm_entscheidung, norm_rang, gilt_ab, gilt_bis)
+    if entscheidung_fehler:
+        if norm_entscheidung == "keine_norm" and abgeleiteter_rang is not None:
+            entscheidung_fehler = (
+                f"norm_entscheidung=keine_norm, aber source deutet per ADR-034 auf Rang "
+                f"{abgeleiteter_rang} hin ({source!r}): pruefen, ob source stimmt, oder "
+                f"norm_befristet/norm_unbefristet waehlen."
+            )
+        log_access(conn, node_path, "add", project_id=project_id, actor=actor, model=model,
+                   session=session, status="rejected", query="norm_entscheidung_ungueltig")
+        conn.close()
+        return {"error": entscheidung_fehler}
+
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von, actor, session, model, client)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung, anlass, abgeleitet_von, actor, session, model, client)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
-         norm_rang, gilt_ab, gilt_bis, anlass, abgeleitet_von, actor, session, model, _KLIENT)
+         norm_rang, gilt_ab, gilt_bis, norm_entscheidung, anlass, abgeleitet_von, actor, session, model, _KLIENT)
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,
@@ -1855,6 +2135,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                    "content": content, "level": level, "tags": tags or [],
                    "source": source, "created_at": created_at, "updated_at": created_at,
                    "norm_rang": norm_rang, "gilt_ab": gilt_ab, "gilt_bis": gilt_bis,
+                   "norm_entscheidung": norm_entscheidung,
                    "anlass": anlass, "abgeleitet_von": abgeleitet_von,
                    "actor": actor, "session": session, "model": model,
                })
@@ -1872,12 +2153,20 @@ def knowledge_add(parent_path: str, title: str, summary: str,
 def knowledge_update(node_id: str, summary: str | None = None,
                      content: str | None = None, tags: list | None = None, *,
                      norm_rang: int | None = None, gilt_ab: str | None = None,
-                     gilt_bis: str | None = None,
+                     gilt_bis: str | None = None, norm_entscheidung: str | None = None,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
     """Update an existing knowledge node. Like summary/content/tags, only
     given norm_rang/gilt_ab/gilt_bis fields are changed -- a node stays frozen
-    at "no Normschicht values" until one is explicitly passed."""
+    at "no Normschicht values" until one is explicitly passed.
+
+    norm_entscheidung (Auftrag 2026-08-08): nur noetig, wenn die Aenderung
+    die BESTEHENDE Entscheidung widersprechen wuerde (z.B. einer bisher
+    norm_unbefristet-en Norm nachtraeglich ein gilt_bis geben -- dafuer muss
+    hier zugleich norm_entscheidung='norm_befristet' mitkommen). Bleibt sie
+    weg, gilt die am Knoten gespeicherte Entscheidung unveraendert weiter --
+    Altbestand mit norm_entscheidung='offen' bleibt beim reinen
+    Feldaenderungen 'offen' (Auftrag Punkt 2: nicht rueckwirkend erzwingen)."""
     conn = get_db()
     row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
     if not row:
@@ -1899,6 +2188,48 @@ def knowledge_update(node_id: str, summary: str | None = None,
                    status="rejected", query="geltung_ungueltig")
         conn.close()
         return {"error": geltung_fehler}
+
+    # norm_entscheidung-Konsistenz. Drei Faelle (Auftrag 2026-08-08, zwei
+    # davon Loecher aus dem unabhaengigen Review, Agent acf807ee8e6756f27,
+    # VOR der Live-Migration geschlossen):
+    effektiv_norm_rang = norm_rang if norm_rang is not None else row["norm_rang"]
+    entscheidung_fehler = None
+    if norm_entscheidung is not None:
+        # (a) Aufrufer aendert die Entscheidung ausdruecklich -- 'offen' ist
+        # dabei NIE zulaessig (auch nicht als Rueckzug einer bereits
+        # getroffenen Entscheidung: eine getroffene Entscheidung bleibt
+        # stehen, siehe DB-Trigger knowledge_nodes_norm_entscheidung_pflicht_bu).
+        # _validate_norm_entscheidung lehnt 'offen' schon ab (nicht in
+        # ALLOWED_NORM_ENTSCHEIDUNG), hier nur der sprechendere Text dafuer.
+        if norm_entscheidung == "offen":
+            entscheidung_fehler = ("norm_entscheidung kann nicht auf offen zurueckgesetzt werden: eine "
+                                    "getroffene Entscheidung bleibt stehen, hoechstens auf keine_norm/"
+                                    "norm_befristet/norm_unbefristet aendern.")
+        else:
+            entscheidung_fehler = _validate_norm_entscheidung(
+                norm_entscheidung, effektiv_norm_rang, effektiv_gilt_ab, effektiv_gilt_bis)
+    elif row["norm_entscheidung"] != "offen":
+        # Zeile war schon entschieden, Aufrufer aendert norm_rang/gilt_ab/
+        # gilt_bis ohne norm_entscheidung anzufassen -- muss weiter zur
+        # gespeicherten Entscheidung passen (sonst liesse sich z.B. einer
+        # norm_unbefristet-en Norm per gilt_bis-Update stillschweigend ein
+        # Ende geben).
+        entscheidung_fehler = _validate_norm_entscheidung(
+            row["norm_entscheidung"], effektiv_norm_rang, effektiv_gilt_ab, effektiv_gilt_bis)
+    elif norm_rang is not None:
+        # (b) Zeile war 'offen' UND bleibt es (norm_entscheidung nicht
+        # mitgegeben), bekommt aber jetzt einen norm_rang -- die Rang-Vergabe
+        # IST eine Entscheidung und muss sie explizit tragen (DB-Trigger
+        # knowledge_nodes_norm_entscheidung_rang_neu_bu waere sonst der
+        # einzige Schutz, mit roher sqlite3.IntegrityError statt Klartext).
+        entscheidung_fehler = ("norm_rang neu vergeben, aber diese Zeile war bisher 'offen' (nie entschieden): "
+                                "norm_entscheidung mitgeben (norm_befristet oder norm_unbefristet).")
+    if entscheidung_fehler:
+        log_access(conn, row["path"], "update", project_id=row["project_id"],
+                   actor=actor, model=model, session=session,
+                   status="rejected", query="norm_entscheidung_ungueltig")
+        conn.close()
+        return {"error": entscheidung_fehler}
 
     # Schreiber gehoert an den Datensatz (Auftrag 2026-08-06, wie knowledge_add).
     actor, model, session = _identity(actor, model, session)
@@ -1933,6 +2264,9 @@ def knowledge_update(node_id: str, summary: str | None = None,
     if gilt_bis is not None:
         updates.append("gilt_bis = ?")
         params.append(gilt_bis)
+    if norm_entscheidung is not None:
+        updates.append("norm_entscheidung = ?")
+        params.append(norm_entscheidung)
 
     updates.append("updated_at = ?")
     params.append(now_iso())
@@ -3667,16 +4001,23 @@ TOOLS = {
                         "parent_path must already exist (or be '/'); an unknown parent_path is rejected with "
                         "suggested nearby paths unless neuer_ast=True explicitly opens a new branch. "
                         "source is required and rejected if empty -- e.g. \"erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)\". "
-                        "norm_rang/gilt_ab/gilt_bis are all optional and only for norms (directives/ADRs/escalated "
-                        "lessons); a plain fact leaves them unset (norm_rang stays NULL). gilt_ab/gilt_bis must be "
-                        "ISO-8601 date or timestamp; gilt_bis before gilt_ab is rejected. "
+                        "norm_entscheidung is REQUIRED: 'keine_norm' (plain fact, no rank), 'norm_befristet' "
+                        "(norm with an end date) or 'norm_unbefristet' (norm without one). Omitting it, or "
+                        "combining it inconsistently with norm_rang/gilt_ab/gilt_bis, is rejected -- there is no "
+                        "default, because a silent default would recreate the exact ambiguity this field exists "
+                        "to remove (was a fact really decided to be non-normative, or did nobody look?). "
+                        "norm_rang/gilt_ab/gilt_bis stay optional inputs, but 'norm_befristet'/'norm_unbefristet' "
+                        "require norm_rang and gilt_ab to end up set (either given directly, or deterministically "
+                        "derived from source for directive/ADR imports -- ADR-034); 'norm_befristet' additionally "
+                        "requires gilt_bis, 'norm_unbefristet' requires gilt_bis stay unset. gilt_ab/gilt_bis must "
+                        "be ISO-8601 date or timestamp; gilt_bis before gilt_ab is rejected. "
                         "Example -- raw material \"Sozialtarif-Zuschlag entfaellt zum 01.03.2027 "
                         "vollstaendig, loest die Uebergangsregelung von 2022 ab.\" -> "
                         "{\"parent_path\": \"/wissensnetz-pflegeverbund\", \"title\": "
                         "\"Sozialtarif-Zuschlag entfaellt 01.03.2027\", \"summary\": "
                         "\"Sozialtarif-Zuschlag entfaellt zum 01.03.2027, loest Regelung von 2022 "
-                        "ab.\", \"norm_rang\": 2, \"gilt_ab\": \"2027-03-01\", "
-                        "\"source\": \"erzeugt aus Rohmaterial (Beispiel)\"}. "
+                        "ab.\", \"norm_rang\": 2, \"gilt_ab\": \"2027-03-01\", \"norm_entscheidung\": "
+                        "\"norm_unbefristet\", \"source\": \"erzeugt aus Rohmaterial (Beispiel)\"}. "
                         "anlass records what triggered this entry: 'selbst' (you wrote it unprompted) or "
                         "'betreiber' (an explicit human instruction, e.g. \"merk dir das\") are SELF-REPORTED -- "
                         "only as reliable as the caller. 'hook' (the enforcing Stop-hook made you call this) and "
@@ -3700,11 +4041,15 @@ TOOLS = {
                 "norm_rang": {"type": "integer", "description": "Optional: rank of a norm (1=global directive, 2=hub directive, 3=ADR). Omit for plain facts."},
                 "gilt_ab": {"type": "string", "description": "Optional: ISO-8601 date/timestamp the norm takes effect"},
                 "gilt_bis": {"type": "string", "description": "Optional: ISO-8601 date/timestamp the norm expires; omit for indefinite. Must not be before gilt_ab."},
+                "norm_entscheidung": {"type": "string", "enum": sorted(ALLOWED_NORM_ENTSCHEIDUNG),
+                                       "description": "REQUIRED (no default): keine_norm=plain fact/no rank, "
+                                                       "norm_befristet=norm with an end date, "
+                                                       "norm_unbefristet=norm without one. See tool description."},
                 "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
                            "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."},
                 **IDENTITY_PROPERTIES,
             },
-            "required": ["parent_path", "title", "summary"]
+            "required": ["parent_path", "title", "summary", "norm_entscheidung"]
         },
         "handler": lambda args: knowledge_add(
             _require(args, "parent_path", "der Pfad des Elternknotens, z.B. '/shared/arch' (muss existieren oder '/' sein)."),
@@ -3713,13 +4058,17 @@ TOOLS = {
             args.get("content", ""), args.get("project_id", "shared"),
             args.get("tags"), args.get("source", ""), neuer_ast=args.get("neuer_ast", False),
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
+            norm_entscheidung=_require(args, "norm_entscheidung", "keine_norm/norm_befristet/norm_unbefristet -- ist dieser Knoten eine Norm?"),
             anlass=args.get("anlass", "unbekannt"), abgeleitet_von=args.get("abgeleitet_von"),
             **_identity_args(args)
         )
     },
     "knowledge_update": {
         "description": "Update an existing knowledge node (summary, content, tags, and/or the Normschicht fields "
-                        "norm_rang/gilt_ab/gilt_bis -- see knowledge_add for their meaning). Only given fields change.",
+                        "norm_rang/gilt_ab/gilt_bis/norm_entscheidung -- see knowledge_add for their meaning). "
+                        "Only given fields change; norm_entscheidung is optional here (unlike knowledge_add) and "
+                        "only needed when the change would otherwise contradict the node's existing decision "
+                        "(e.g. giving a norm_unbefristet norm a gilt_bis).",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -3730,6 +4079,8 @@ TOOLS = {
                 "norm_rang": {"type": "integer", "description": "Optional: set/change the norm rank"},
                 "gilt_ab": {"type": "string", "description": "Optional: ISO-8601 date/timestamp"},
                 "gilt_bis": {"type": "string", "description": "Optional: ISO-8601 date/timestamp; must not be before gilt_ab (existing or given)"},
+                "norm_entscheidung": {"type": "string", "enum": sorted(ALLOWED_NORM_ENTSCHEIDUNG),
+                                       "description": "Optional: change the norm/fact decision (see knowledge_add)."},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["node_id"]
@@ -3738,6 +4089,7 @@ TOOLS = {
             _require(args, "node_id", "die Node-ID oder der Pfad des zu aendernden Knotens."),
             args.get("summary"), args.get("content"), args.get("tags"),
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
+            norm_entscheidung=args.get("norm_entscheidung"),
             **_identity_args(args)
         )
     },

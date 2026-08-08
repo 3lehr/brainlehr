@@ -29,7 +29,7 @@ def _db(tmp_path):
 def _node(db_path, node_id, path):
     conn = sqlite3.connect(str(db_path))
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, title, summary, source) VALUES (?, ?, 't', 's', 'test')",
+        "INSERT INTO knowledge_nodes (id, path, title, summary, source, norm_entscheidung) VALUES (?, ?, 't', 's', 'test', 'keine_norm')",
         (node_id, path),
     )
     conn.commit()

@@ -31,8 +31,8 @@ def _db(tmp_path, monkeypatch):
 def _add_node(db_path, node_id, path, content="unauffaellig"):
     conn = sqlite3.connect(str(db_path))
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, title, summary, content, source) "
-        "VALUES (?, ?, 't', 's', ?, 'test')",
+        "INSERT INTO knowledge_nodes (id, path, title, summary, content, source, norm_entscheidung) "
+        "VALUES (?, ?, 't', 's', ?, 'test', 'keine_norm')",
         (node_id, path, content),
     )
     conn.commit()

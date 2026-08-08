@@ -205,6 +205,7 @@ def test_norm_rang_faellt_deterministisch_aus_adr_source(temp_db):
         "/", "ADR-Testnorm",
         "Testzusammenfassung einer Norm aus einem ADR.",
         source="erzeugt aus docs/adr/ADR-999-testfall.md (Stand 2026-08-07T00:00:00+02:00)",
+        norm_entscheidung="norm_unbefristet",
     )
     assert "error" not in ergebnis, ergebnis
     row = sqlite3.connect(str(temp_db)).execute(
@@ -235,7 +236,7 @@ def test_norm_rang_aufrufer_hat_vorrang_vor_ableitung(temp_db):
         "/", "Explizit anderer Rang",
         "Zusammenfassung.",
         source="erzeugt aus docs/adr/ADR-998-testfall.md (Stand 2026-08-07T00:00:00+02:00)",
-        norm_rang=1,
+        norm_rang=1, gilt_ab="2026-08-07", norm_entscheidung="norm_unbefristet",
     )
     row = sqlite3.connect(str(temp_db)).execute(
         "SELECT norm_rang FROM knowledge_nodes WHERE id = ?", (ergebnis["id"],)

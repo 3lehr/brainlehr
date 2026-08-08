@@ -50,6 +50,7 @@ def test_add_writes_norm_felder(temp_db):
     result = kms.knowledge_add(
         "/", "WEG-Beschluss", "Testnorm", source="test",
         norm_rang=3, gilt_ab="2026-08-01", gilt_bis="2026-12-31",
+        norm_entscheidung="norm_befristet",
     )
     assert "error" not in result
     read = kms.knowledge_read(result["id"])
@@ -77,6 +78,7 @@ def test_add_grenzwerte_gilt_bis_vs_gilt_ab(temp_db, gilt_ab, gilt_bis, soll_ok)
     result = kms.knowledge_add(
         "/", f"Grenzfall {gilt_bis}", "Test", source="test",
         norm_rang=3, gilt_ab=gilt_ab, gilt_bis=gilt_bis,
+        norm_entscheidung="norm_befristet",
     )
     if soll_ok:
         assert "error" not in result
@@ -100,8 +102,10 @@ def test_update_setzt_gilt_bis(temp_db):
     """ROT VOR GRUEN: vor der Aenderung kannte knowledge_update() kein
     gilt_bis-Keyword -- eine Norm war nach dem Anlegen eingefroren."""
     node = kms.knowledge_add("/", "Norm ohne Ende", "Test", source="test",
-                              norm_rang=2, gilt_ab="2026-01-01")
-    result = kms.knowledge_update(node["id"], gilt_bis="2026-12-31")
+                              norm_rang=2, gilt_ab="2026-01-01",
+                              norm_entscheidung="norm_unbefristet")
+    result = kms.knowledge_update(node["id"], gilt_bis="2026-12-31",
+                                   norm_entscheidung="norm_befristet")
     assert "error" not in result
     read = kms.knowledge_read(node["id"])
     assert read["gilt_bis"] == "2026-12-31"
@@ -111,7 +115,8 @@ def test_update_lehnt_gilt_bis_vor_bestehendem_gilt_ab_ab(temp_db):
     """Grenzwertpruefung greift auch, wenn nur gilt_bis geaendert wird und
     gilt_ab aus dem Bestand kommt."""
     node = kms.knowledge_add("/", "Norm mit Start", "Test", source="test",
-                              norm_rang=2, gilt_ab="2026-08-01")
+                              norm_rang=2, gilt_ab="2026-08-01",
+                              norm_entscheidung="norm_unbefristet")
     result = kms.knowledge_update(node["id"], gilt_bis="2026-01-01")
     assert "error" in result
     read = kms.knowledge_read(node["id"])

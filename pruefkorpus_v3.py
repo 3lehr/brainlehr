@@ -491,10 +491,15 @@ def _insert_node(conn: sqlite3.Connection, node_id: str, path: str, name: str, t
     conn.execute(
         "INSERT INTO knowledge_nodes "
         "(id, path, parent_path, project_id, title, summary, content, level, "
-        " tags, source, confidence, anlass, gilt_bis) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        " tags, source, confidence, anlass, gilt_bis, norm_entscheidung) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (node_id, path, None, PROJECT_ID, name, text, text,
          0, json.dumps([TAG]), f"{PROJECT_ID} (erfunden, restlos loeschbar via delete_nodes())",
-         0.8, "skript", gilt_bis),
+         0.8, "skript", gilt_bis,
+         # keine_norm (Auftrag 2026-08-08): erfundene Pruefkorpus-Knoten sind
+         # Fakten, kein norm_rang -- gilt_bis bleibt hier wie bisher ein
+         # inertes "veraltet"-Flag (_geltung_status wirkt nur bei gesetztem
+         # norm_rang, siehe knowledge_mcp_server.py), kein Normschicht-Feld.
+         "keine_norm"),
     )
 
 

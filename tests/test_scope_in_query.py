@@ -28,8 +28,8 @@ def temp_db(tmp_path, monkeypatch):
     conn = sqlite3.connect(str(db_path))
     conn.executescript(schema)
     conn.executemany(
-        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source) "
-        "VALUES (?, ?, ?, ?, ?, NULL, 0, 'test')",
+        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, norm_entscheidung) "
+        "VALUES (?, ?, ?, ?, ?, NULL, 0, 'test', 'keine_norm')",
         [
             ("n-own", "/projA/regel", "projA", "Abschreibungsregel projA",
              "Regel zur Abschreibung von Anlageguetern im ersten Jahr"),

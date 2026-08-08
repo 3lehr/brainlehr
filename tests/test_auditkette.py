@@ -183,8 +183,8 @@ def test_transaction_abort_leaves_neither_write_nor_log(temp_db):
     stellt keinen echten Prozessabsturz mitten im Python-Aufruf nach."""
     conn = kms.get_db()
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at) "
-        "VALUES ('crash1', '/crash', '/', 'shared', 'Crash', 's', 'c', 0, '[]', 'Test', '2026-08-06T00:00:00+01:00', '2026-08-06T00:00:00+01:00')"
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_entscheidung) "
+        "VALUES ('crash1', '/crash', '/', 'shared', 'Crash', 's', 'c', 0, '[]', 'Test', '2026-08-06T00:00:00+01:00', '2026-08-06T00:00:00+01:00', 'keine_norm')"
     )
     # Abbruch VOR log_access()/commit -- Verbindung schliessen rollt die
     # offene Transaktion zurueck (Python-sqlite3-Default).
@@ -201,8 +201,8 @@ def test_transaction_abort_leaves_neither_write_nor_log(temp_db):
     # jetzt sind BEIDE da, nie nur eine Haelfte.
     conn2 = kms.get_db()
     conn2.execute(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at) "
-        "VALUES ('ok1', '/ok', '/', 'shared', 'Ok', 's', 'c', 0, '[]', 'Test', '2026-08-06T00:00:00+01:00', '2026-08-06T00:00:00+01:00')"
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_entscheidung) "
+        "VALUES ('ok1', '/ok', '/', 'shared', 'Ok', 's', 'c', 0, '[]', 'Test', '2026-08-06T00:00:00+01:00', '2026-08-06T00:00:00+01:00', 'keine_norm')"
     )
     kms.log_access(conn2, "/ok", "add", affected_row={"id": "ok1"})
     conn2.close()

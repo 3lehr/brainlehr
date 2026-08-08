@@ -34,10 +34,10 @@ def _insert_raw(conn: sqlite3.Connection, *, id_: str, path: str,
     Befund erzeugte."""
     conn.execute(
         "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, "
-        "summary, content, level, tags, source, created_at, updated_at, anlass) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "summary, content, level, tags, source, created_at, updated_at, anlass, norm_entscheidung) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (id_, path, parent_path, "shared", "Titel", "Summary", "Inhalt", 0,
-         "[]", source, "2026-08-06T00:00:00+02:00", "2026-08-06T00:00:00+02:00", anlass),
+         "[]", source, "2026-08-06T00:00:00+02:00", "2026-08-06T00:00:00+02:00", anlass, "keine_norm"),
     )
     conn.commit()
 

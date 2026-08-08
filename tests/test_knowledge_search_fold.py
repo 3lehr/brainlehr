@@ -81,15 +81,15 @@ def test_more_matching_words_rank_higher(real_db_copy):
     ist: n_alle enthaelt alle drei Suchworte, n_eins nur eines."""
     conn = kms.get_db()
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source) "
+        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, norm_entscheidung) "
         "VALUES ('rank_all', '/test/rank-all', 'shared', "
         "'Kraftfahrzeugsteuer Erstattung Widerspruch', "
-        "'Kraftfahrzeugsteuer Erstattung Widerspruch komplett', NULL, 0, 'test')"
+        "'Kraftfahrzeugsteuer Erstattung Widerspruch komplett', NULL, 0, 'test', 'keine_norm')"
     )
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source) "
+        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, norm_entscheidung) "
         "VALUES ('rank_one', '/test/rank-one', 'shared', "
-        "'Nur Widerspruch', 'Nur das Wort Widerspruch alleine', NULL, 0, 'test')"
+        "'Nur Widerspruch', 'Nur das Wort Widerspruch alleine', NULL, 0, 'test', 'keine_norm')"
     )
     conn.commit()
     conn.close()

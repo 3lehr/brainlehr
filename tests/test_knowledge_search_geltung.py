@@ -31,24 +31,24 @@ def temp_db(tmp_path, monkeypatch):
     conn.executescript(schema)
     conn.executemany(
         """INSERT INTO knowledge_nodes
-           (id, path, project_id, title, summary, content, level, source, norm_rang, gilt_ab, gilt_bis)
-           VALUES (?, ?, 'shared', ?, ?, NULL, 0, 'test', ?, ?, ?)""",
+           (id, path, project_id, title, summary, content, level, source, norm_rang, gilt_ab, gilt_bis, norm_entscheidung)
+           VALUES (?, ?, 'shared', ?, ?, NULL, 0, 'test', ?, ?, ?, ?)""",
         [
             # Fakt -- norm_rang NULL, von der Geltungspruefung unberuehrt.
             ("f1", "/steuer/fakt-abschreibung", "AfA Fakt", "Abschreibung Fakttext",
-             None, None, None),
+             None, None, None, "keine_norm"),
             # Norm, aktuell gueltig.
             ("n-aktuell", "/steuer/regel-aktuell", "Abschreibung aktuell", "Abschreibung geltende Regel",
-             3, "2026-01-01T00:00:00+01:00", "2026-12-31T23:59:59+01:00"),
+             3, "2026-01-01T00:00:00+01:00", "2026-12-31T23:59:59+01:00", "norm_befristet"),
             # Norm, abgelaufen.
             ("n-abgelaufen", "/steuer/regel-2024", "Abschreibung 2024", "Abschreibung alte Regel",
-             3, "2024-01-01T00:00:00+01:00", "2024-12-31T23:59:59+01:00"),
+             3, "2024-01-01T00:00:00+01:00", "2024-12-31T23:59:59+01:00", "norm_befristet"),
             # Norm, noch nicht in Kraft.
             ("n-kuenftig", "/steuer/regel-2027", "Abschreibung 2027", "Abschreibung kuenftige Regel",
-             3, "2027-01-01T00:00:00+01:00", None),
+             3, "2027-01-01T00:00:00+01:00", None, "norm_unbefristet"),
             # Norm, unbefristet (gilt_bis NULL).
             ("n-unbefristet", "/steuer/regel-dauer", "Abschreibung dauerhaft", "Abschreibung unbefristete Regel",
-             3, "2020-01-01T00:00:00+01:00", None),
+             3, "2020-01-01T00:00:00+01:00", None, "norm_unbefristet"),
         ],
     )
     conn.commit()

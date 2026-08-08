@@ -44,6 +44,7 @@ def _make_node(**overrides):
         summary="Zusammenfassung mit Klartext, den zurueckziehen leeren soll",
         content="Inhalt, der nach dem Zurueckziehen weg sein muss",
         source="erzeugt aus Test (Stand 2026-08-06T00:00:00+0200)",
+        norm_entscheidung="keine_norm",
     )
     payload.update(overrides)
     return kms.knowledge_add(**payload)

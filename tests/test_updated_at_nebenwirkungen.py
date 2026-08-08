@@ -59,8 +59,8 @@ def test_source_backfill_laesst_updated_at_unveraendert(temp_db):
     """)
     conn.execute(
         "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, "
-        "source, created_at, updated_at, anlass) "
-        "VALUES ('n1', '/x', 'shared', 'Titel', 'Summary', 'Inhalt', 0, '', ?, ?, 'unbekannt')",
+        "source, created_at, updated_at, anlass, norm_entscheidung) "
+        "VALUES ('n1', '/x', 'shared', 'Titel', 'Summary', 'Inhalt', 0, '', ?, ?, 'unbekannt', 'keine_norm')",
         (alt_updated_at, alt_updated_at),
     )
     conn.commit()

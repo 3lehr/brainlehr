@@ -3,320 +3,666 @@
     "kennung": "v3-01",
     "task": "Wie viele Zacken haben drei Glimberge zusammen?",
     "erwartete_zahl": 21,
+    "falsche_zahl": null,
     "ohne_abruf_roh": "weiss ich nicht",
     "ohne_abruf_bestanden": false,
     "mit_abruf_roh": "21",
     "mit_abruf_bestanden": true,
     "ziel_gefunden": true,
+    "abgerufene_pfade": [
+      "/pruefkorpus_v3/glimberg"
+    ],
+    "einordnung": "bestanden",
     "eichung_ok": true
   },
   "aborted": false,
   "model": "gemma4:e4b",
-  "vorher": 1968,
-  "vor_delete": 1986,
-  "entfernt": 18,
-  "nachher": 1968,
-  "n_cases": 30,
+  "vorher": 1975,
+  "vor_delete": 2007,
+  "entfernt": 32,
+  "nachher": 1975,
+  "n_cases": 42,
   "rows": [
     {
       "kennung": "v3-01",
       "kategorie": "einzelwert",
       "erwartete_zahl": 21,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "21",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/glimberg"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-02",
       "kategorie": "einzelwert",
       "erwartete_zahl": 36,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "36",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/trebolit"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-03",
       "kategorie": "einzelwert",
       "erwartete_zahl": 30,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "30",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/fasnerkel"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-04",
       "kategorie": "einzelwert",
       "erwartete_zahl": 33,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "33",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/quandtor"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-05",
       "kategorie": "einzelwert",
       "erwartete_zahl": 26,
+      "falsche_zahl": null,
       "ohne_abruf": "2",
       "mit_abruf": "26",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/bilkrone"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-06",
       "kategorie": "einzelwert",
       "erwartete_zahl": 48,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "48",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/snarwal"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-07",
       "kategorie": "einzelwert",
       "erwartete_zahl": 60,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "60",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/worbel"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-08",
       "kategorie": "einzelwert",
       "erwartete_zahl": 42,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "42",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/kessnitt"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-09",
       "kategorie": "einzelwert",
       "erwartete_zahl": 34,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "34",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/dromfeld"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-10",
       "kategorie": "einzelwert",
       "erwartete_zahl": 80,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "80",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/miglor"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-11",
       "kategorie": "einzelwert",
       "erwartete_zahl": 38,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "38",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/pentrusch"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-12",
       "kategorie": "einzelwert",
       "erwartete_zahl": 54,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "54",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/halbsted"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-13",
       "kategorie": "einzelwert",
       "erwartete_zahl": 46,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "46",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/orbeling"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-14",
       "kategorie": "einzelwert",
       "erwartete_zahl": 66,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "66",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/tuckram"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-15",
       "kategorie": "kombiniert",
       "erwartete_zahl": 25,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "25",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/glimberg",
+        "/pruefkorpus_v3/trebolit"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-16",
       "kategorie": "kombiniert",
       "erwartete_zahl": 39,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "39",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/fasnerkel",
+        "/pruefkorpus_v3/quandtor"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-17",
       "kategorie": "kombiniert",
       "erwartete_zahl": 45,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "45",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/bilkrone",
+        "/pruefkorpus_v3/snarwal"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-18",
       "kategorie": "kombiniert",
       "erwartete_zahl": 40,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "40",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/worbel",
+        "/pruefkorpus_v3/kessnitt"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-19",
       "kategorie": "kombiniert",
       "erwartete_zahl": 49,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "49",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/dromfeld",
+        "/pruefkorpus_v3/miglor"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-20",
       "kategorie": "kombiniert",
       "erwartete_zahl": 55,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "55",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/pentrusch",
+        "/pruefkorpus_v3/halbsted"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-21",
       "kategorie": "kombiniert",
       "erwartete_zahl": 67,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "67",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/orbeling",
+        "/pruefkorpus_v3/tuckram"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-22",
       "kategorie": "kombiniert",
       "erwartete_zahl": 28,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "28",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/kessnitt",
+        "/pruefkorpus_v3/glimberg"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-23",
       "kategorie": "aehnlich",
       "erwartete_zahl": 63,
+      "falsche_zahl": 45,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "63",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/velunip",
+        "/pruefkorpus_v3/velunit"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-24",
       "kategorie": "aehnlich",
       "erwartete_zahl": 20,
+      "falsche_zahl": 96,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "20",
       "ohne_bestanden": false,
       "mit_bestanden": true,
-      "ziel_gefunden": true
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/frastel",
+        "/pruefkorpus_v3/frastek"
+      ],
+      "einordnung": "bestanden"
     },
     {
       "kennung": "v3-25",
       "kategorie": "eichfall",
       "erwartete_zahl": null,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "weiss ich nicht",
       "ohne_bestanden": true,
       "mit_bestanden": true,
-      "ziel_gefunden": false
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/ops/buckeberg-dokument-pipeline-2026-07-28",
+        "/apps/fahrtenbuch/café-international-konsil-einstellungseb"
+      ],
+      "einordnung": "eichfall"
     },
     {
       "kennung": "v3-26",
       "kategorie": "eichfall",
       "erwartete_zahl": null,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "weiss ich nicht",
       "ohne_bestanden": true,
       "mit_bestanden": true,
-      "ziel_gefunden": false
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [],
+      "einordnung": "eichfall"
     },
     {
       "kennung": "v3-27",
       "kategorie": "eichfall",
       "erwartete_zahl": null,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "weiss ich nicht",
       "ohne_bestanden": true,
       "mit_bestanden": true,
-      "ziel_gefunden": false
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [],
+      "einordnung": "eichfall"
     },
     {
       "kennung": "v3-28",
       "kategorie": "eichfall",
       "erwartete_zahl": null,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "weiss ich nicht",
       "ohne_bestanden": true,
       "mit_bestanden": true,
-      "ziel_gefunden": false
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [],
+      "einordnung": "eichfall"
     },
     {
       "kennung": "v3-29",
       "kategorie": "eichfall",
       "erwartete_zahl": null,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "weiss ich nicht",
       "ohne_bestanden": true,
       "mit_bestanden": true,
-      "ziel_gefunden": false
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [],
+      "einordnung": "eichfall"
     },
     {
       "kennung": "v3-30",
       "kategorie": "eichfall",
       "erwartete_zahl": null,
+      "falsche_zahl": null,
       "ohne_abruf": "weiss ich nicht",
       "mit_abruf": "weiss ich nicht",
       "ohne_bestanden": true,
       "mit_bestanden": true,
-      "ziel_gefunden": false
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [],
+      "einordnung": "eichfall"
+    },
+    {
+      "kennung": "v3-31",
+      "kategorie": "aehnlich",
+      "erwartete_zahl": 195,
+      "falsche_zahl": 130,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "195",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/moldrion",
+        "/pruefkorpus_v3/moldrian"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-32",
+      "kategorie": "aehnlich",
+      "erwartete_zahl": 5,
+      "falsche_zahl": 24,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "5",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/frastek",
+        "/pruefkorpus_v3/frastel"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-33",
+      "kategorie": "eigenschaft",
+      "erwartete_zahl": 62,
+      "falsche_zahl": 8,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "62",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/kraiber_zacken",
+        "/pruefkorpus_v3/kraiber_gewicht"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-34",
+      "kategorie": "eigenschaft",
+      "erwartete_zahl": 99,
+      "falsche_zahl": 6,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "99",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/silphon_kanten",
+        "/pruefkorpus_v3/silphon_hoehe"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-35",
+      "kategorie": "gleiche_einheit",
+      "erwartete_zahl": 193,
+      "falsche_zahl": 205,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "193",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/nafur",
+        "/pruefkorpus_v3/boltrek"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-36",
+      "kategorie": "gleiche_einheit",
+      "erwartete_zahl": 187,
+      "falsche_zahl": 215,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "187",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/torkade",
+        "/pruefkorpus_v3/zirkulat"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-37",
+      "kategorie": "veraltet",
+      "erwartete_zahl": 135,
+      "falsche_zahl": 36,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "135",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/drallmesser",
+        "/pruefkorpus_v3/drallmesser_alt",
+        "/openlehr/steuer/cafe-international-abschlusskonsil"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-38",
+      "kategorie": "veraltet",
+      "erwartete_zahl": 208,
+      "falsche_zahl": 36,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "208",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/quirlband",
+        "/pruefkorpus_v3/quirlband_alt",
+        "/openlehr/steuer/cafe-international-abschlusskonsil"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-39",
+      "kategorie": "kombiniert3",
+      "erwartete_zahl": 138,
+      "falsche_zahl": null,
+      "ohne_abruf": "60",
+      "mit_abruf": "138",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/orbeling",
+        "/pruefkorpus_v3/pentrusch",
+        "/pruefkorpus_v3/halbsted"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-40",
+      "kategorie": "kombiniert3",
+      "erwartete_zahl": 127,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "127",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/tuckram",
+        "/pruefkorpus_v3/miglor",
+        "/pruefkorpus_v3/dromfeld"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-41",
+      "kategorie": "kombiniert_ablenker",
+      "erwartete_zahl": 73,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [],
+      "einordnung": "kein_treffer"
+    },
+    {
+      "kennung": "v3-42",
+      "kategorie": "kombiniert_ablenker",
+      "erwartete_zahl": 162,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [],
+      "einordnung": "kein_treffer"
     }
   ]
 }

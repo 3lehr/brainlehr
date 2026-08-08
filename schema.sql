@@ -47,6 +47,36 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- gesetzt. Werte bewusst nicht per CHECK erzwungen (gleiche Haltung wie
     -- norm_rang: die Skala/Menge ist noch nicht abschliessend belegt).
     norm_art TEXT,
+    -- Entscheidung (Auftrag 2026-08-08, Konsil docs/KONSIL_WISSENSRAUM_ANSICHT_2026-08-08.md):
+    -- norm_rang/gilt_bis NULL sind seit N2 doppeldeutig -- "Fakt, bewusst
+    -- keine Norm" UND "nie jemand hat hingesehen" sehen in der Spalte
+    -- IDENTISCH aus. Bei einer Million Zeilen ist das nicht mehr nachholbar,
+    -- nur noch geraten. norm_entscheidung traegt die Entscheidung SELBST,
+    -- getrennt von ihrem Ergebnis:
+    --   'offen'            -- nie entschieden. Einziger Vorgabewert, deckt
+    --                          AUSSCHLIESSLICH den Altbestand vor diesem
+    --                          Feld ab (ALTER TABLE befuellt ihn beim
+    --                          Anlegen der Spalte, das laeuft NICHT durch
+    --                          die Trigger unten). Wird nie neu vergeben --
+    --                          siehe knowledge_nodes_norm_entscheidung_pflicht_bi.
+    --   'keine_norm'        -- ausdruecklich entschieden: Fakt, kein Rang.
+    --   'norm_befristet'    -- Norm mit Enddatum (gilt_bis gesetzt).
+    --   'norm_unbefristet'  -- Norm ausdruecklich ohne Ende (gilt_bis NULL
+    --                          heisst ab jetzt "entschieden unbefristet",
+    --                          nicht mehr "keiner hat gilt_bis ausgefuellt").
+    -- Same Bauform wie anlass oben (NOT NULL DEFAULT, Werte-Trigger bi+bu),
+    -- zusaetzlich ein reiner BEFORE-INSERT-Trigger, der 'offen' beim
+    -- Neuanlegen ablehnt -- ABSICHTLICH nicht auch bei UPDATE, sonst würde
+    -- jede spaetere Aenderung (auch eine, die mit Normen nichts zu tun hat)
+    -- an einer Altzeile erzwingen, ihre Normfrage rueckwirkend zu
+    -- beantworten, obwohl Punkt 2 des Auftrags genau das verbietet ("Der
+    -- Altbestand wird NICHT geraten"). Konsistenz-Trigger
+    -- (norm_entscheidung_rang_*, norm_rang_gilt_ab_*,
+    -- norm_entscheidung_gilt_bis_*) sichern die drei Felder gegeneinander
+    -- ab, bei INSERT wie bei UPDATE, weil das ein Datenintegritaets- kein
+    -- Geschichtsproblem ist: eine Zeile darf nie widerspruechlich WERDEN,
+    -- unabhaengig davon, ob sie neu oder alt ist.
+    norm_entscheidung TEXT NOT NULL DEFAULT 'offen',
     -- Quellhash (Auftrag 2026-08-06, Betreiber-Idee "Selbstentwertung statt
     -- Beleg"). Hash des ABSCHNITTS, aus dem der Knoten erzeugt wurde (siehe
     -- normbestand.py::parse_sections) -- NICHT der ganzen Quelldatei: eine
@@ -268,6 +298,139 @@ BEFORE UPDATE ON knowledge_nodes
 FOR EACH ROW WHEN NEW.anlass NOT IN ('selbst','betreiber','hook','skript','unbekannt')
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.anlass unzulaessig: erlaubt sind selbst, betreiber, hook, skript, unbekannt');
+END;
+
+-- norm_entscheidung (Auftrag 2026-08-08): 13 Zusicherungen, siehe
+-- Spaltenkommentar oben fuer die Begruendung je Regel. Identischer Text wie
+-- NORM_ENTSCHEIDUNG_TRIGGERS_SQL in knowledge_mcp_server.py (gleiches
+-- Zwei-Kopien-Muster wie die drei Trigger-Paare oben). Vier Loecher hier
+-- geschlossen, gefunden im unabhaengigen Review vor der Live-Migration
+-- (Agent acf807ee8e6756f27, 2026-08-08): (a) ein UPDATE/UPSERT konnte eine
+-- ENTSCHIEDENE Zeile stillschweigend zurueck auf 'offen' setzen -- die
+-- Doppeldeutigkeit, die die ganze Spalte beseitigen soll, waere wieder da;
+-- (b) ein UPDATE konnte auf einer 'offen'-Zeile norm_rang NEU vergeben, ohne
+-- die Entscheidung mitzuschreiben (genau das tat normrang.py::anwenden roh);
+-- (c) keine_norm liess gilt_ab/gilt_bis unbeachtet -- ein "Fakt" mit
+-- Ablaufdatum ist dieselbe Ambiguitaet nur an anderer Stelle; (d) gilt_bis <
+-- gilt_ab war nur python-seitig geprueft (_validate_geltung), nicht in der
+-- DB selbst -- ~20 Skripte schreiben direkt per SQL.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung NOT IN ('offen','keine_norm','norm_befristet','norm_unbefristet')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung unzulaessig: erlaubt sind offen, keine_norm, norm_befristet, norm_unbefristet');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung NOT IN ('offen','keine_norm','norm_befristet','norm_unbefristet')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung unzulaessig: erlaubt sind offen, keine_norm, norm_befristet, norm_unbefristet');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_pflicht_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung = 'offen'
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung fehlt: beim Anlegen entscheiden, ob dieser Knoten eine Norm ist -- keine_norm (Fakt), norm_befristet (Norm mit Enddatum) oder norm_unbefristet (Norm ohne Ende)');
+END;
+
+-- (a) Loch aus dem Review: 'offen' darf bei UPDATE (und damit auch bei
+-- INSERT ... ON CONFLICT DO UPDATE, das nur den bu-Zweig feuert) niemals
+-- NEU gesetzt werden -- nur Zeilen, die schon vor diesem Feld 'offen'
+-- waren, duerfen es bleiben (OLD.norm_entscheidung = 'offen' AND NEW = 'offen'
+-- ist in dieser WHEN-Klausel nicht erfasst, bleibt also erlaubt).
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_pflicht_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung = 'offen' AND OLD.norm_entscheidung <> 'offen'
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung kann nicht auf offen zurueckgesetzt werden: eine getroffene Entscheidung bleibt stehen, hoechstens auf einen anderen entschiedenen Wert aendern');
+END;
+
+-- (b) Loch aus dem Review: eine bisher 'offen'e Zeile bekommt per UPDATE
+-- einen norm_rang, OHNE dass norm_entscheidung mitgeschrieben wird -- die
+-- Rang-Vergabe IST die Entscheidung und muss sie explizit tragen.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_rang_neu_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN OLD.norm_entscheidung = 'offen' AND NEW.norm_entscheidung = 'offen'
+    AND OLD.norm_rang IS NULL AND NEW.norm_rang IS NOT NULL
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang neu vergeben, aber norm_entscheidung fehlt: norm_befristet oder norm_unbefristet mitgeben');
+END;
+
+-- (c) erweitert um gilt_ab/gilt_bis: keine_norm verlangt ALLE DREI
+-- Normschicht-Felder leer, nicht nur norm_rang.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_rang_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN (NEW.norm_entscheidung = 'keine_norm' AND (NEW.norm_rang IS NOT NULL OR NEW.gilt_ab IS NOT NULL))
+    OR (NEW.norm_entscheidung IN ('norm_befristet','norm_unbefristet') AND NEW.norm_rang IS NULL)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung widerspricht norm_rang/gilt_ab: keine_norm verlangt norm_rang und gilt_ab NULL, norm_befristet/norm_unbefristet verlangen norm_rang gesetzt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_rang_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN (NEW.norm_entscheidung = 'keine_norm' AND (NEW.norm_rang IS NOT NULL OR NEW.gilt_ab IS NOT NULL))
+    OR (NEW.norm_entscheidung IN ('norm_befristet','norm_unbefristet') AND NEW.norm_rang IS NULL)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung widerspricht norm_rang/gilt_ab: keine_norm verlangt norm_rang und gilt_ab NULL, norm_befristet/norm_unbefristet verlangen norm_rang gesetzt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_rang_gilt_ab_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_rang IS NOT NULL AND NEW.gilt_ab IS NULL
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang gesetzt aber gilt_ab fehlt: ab wann gilt die Norm?');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_rang_gilt_ab_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_rang IS NOT NULL AND NEW.gilt_ab IS NULL
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang gesetzt aber gilt_ab fehlt: ab wann gilt die Norm?');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_gilt_bis_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN (NEW.norm_entscheidung = 'norm_befristet' AND NEW.gilt_bis IS NULL)
+    OR (NEW.norm_entscheidung = 'norm_unbefristet' AND NEW.gilt_bis IS NOT NULL)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung widerspricht gilt_bis: norm_befristet verlangt gilt_bis gesetzt, norm_unbefristet verlangt gilt_bis NULL');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_gilt_bis_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN (NEW.norm_entscheidung = 'norm_befristet' AND NEW.gilt_bis IS NULL)
+    OR (NEW.norm_entscheidung = 'norm_unbefristet' AND NEW.gilt_bis IS NOT NULL)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung widerspricht gilt_bis: norm_befristet verlangt gilt_bis gesetzt, norm_unbefristet verlangt gilt_bis NULL');
+END;
+
+-- (d) Loch aus dem Review: gilt_bis < gilt_ab war nur python-seitig
+-- geprueft (_validate_geltung in knowledge_mcp_server.py), nicht in der DB
+-- selbst -- Skripte, die direkt per SQL schreiben, waren ungeschuetzt.
+-- julianday() statt Stringvergleich: L-ec167a (Bestand mischt Datumsform
+-- "YYYY-MM-DD" und volle ISO-Zeit mit Offset, ein reiner "<"-Stringvergleich
+-- waere an dieser Grenze falsch) -- gemessen gegen den echten Bestand
+-- (sqlite3 knowledge.db, 2026-08-08): julianday() parst beide Formen korrekt
+-- und vergleichbar. Gleicher Tag ist ERLAUBT (Grenzwert, Auftrag Punkt 4):
+-- eine Norm, die am Tag ihres Inkrafttretens schon wieder endet (z.B.
+-- Direktive, die am selben Tag zurueckgenommen wird), ist ein legitimer,
+-- wenn auch entarteter Fall -- nur "danach" wird abgelehnt.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gilt_bis_vor_gilt_ab_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gilt_ab IS NOT NULL AND NEW.gilt_bis IS NOT NULL
+    AND julianday(NEW.gilt_bis) < julianday(NEW.gilt_ab)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gilt_bis liegt vor gilt_ab');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gilt_bis_vor_gilt_ab_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gilt_ab IS NOT NULL AND NEW.gilt_bis IS NOT NULL
+    AND julianday(NEW.gilt_bis) < julianday(NEW.gilt_ab)
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gilt_bis liegt vor gilt_ab');
 END;
 
 -- Lessons Learned Tabelle

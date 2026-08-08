@@ -35,3 +35,27 @@ import lesson_recorder  # type: ignore  # noqa: E402
 def _keine_echten_seiteneffekt_dateien(tmp_path, monkeypatch):
     monkeypatch.setattr(kms, "INJECTION_SUSPECT_LOG", tmp_path / "injection_suspect_log.jsonl")
     monkeypatch.setattr(lesson_recorder, "PROJECTS", {"shared": tmp_path / "auto_rule_projects"})
+
+
+@pytest.fixture(autouse=True)
+def _norm_entscheidung_test_default(monkeypatch):
+    """norm_entscheidung ist seit Auftrag 2026-08-08 PFLICHT bei
+    kms.knowledge_add() (schema.sql-Trigger knowledge_nodes_norm_entscheidung_
+    pflicht_bi lehnt 'offen' bei INSERT ab). Die meisten bestehenden Tests in
+    diesem Verzeichnis pruefen etwas anderes (anlass, source, Pfad-Logik,
+    Embeddings, ...) und kennen dieses Feld nicht -- ohne diesen Default
+    wuerden sie alle mit demselben, fuer sie irrelevanten Fehler abbrechen.
+    Default nur, wenn der Aufrufer das Keyword GAR NICHT mitgibt (kwargs-
+    Check VOR dem Aufruf, nicht Pythons eigener Parameter-Default) -- ein
+    explizit gesetzter Wert (auch None, um die Ablehnung selbst zu pruefen)
+    bleibt unangetastet. Die echte Durchsetzung inklusive Rot-vor-Gruen-Beleg
+    steht in tests/test_norm_entscheidung.py, gegen die per Modul-Kopf VOR
+    diesem Fixture-Lauf gesicherte Original-Funktion, nicht gegen diesen
+    Wrapper."""
+    original = kms.knowledge_add
+
+    def _mit_default(*args, **kwargs):
+        kwargs.setdefault("norm_entscheidung", "keine_norm")
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(kms, "knowledge_add", _mit_default)

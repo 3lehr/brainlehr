@@ -44,17 +44,17 @@ def temp_db(tmp_path):
     src = "Testvorrichtung test_nie_gezogen_fenster.py (kein echter Fund)"
     conn.executemany(
         "INSERT INTO knowledge_nodes "
-        "(id, path, parent_path, project_id, title, summary, level, source, created_at, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?)",
+        "(id, path, parent_path, project_id, title, summary, level, source, created_at, updated_at, norm_entscheidung) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
         [
             ("n_pulled", "/x/pulled", None, "shared", "Gezogen", "s", 0, src,
-             window_start.strftime(FMT), now.strftime(FMT)),
+             window_start.strftime(FMT), now.strftime(FMT), "keine_norm"),
             ("n_on_boundary", "/x/on-boundary", None, "shared", "Auf Fensterbeginn", "s", 0, src,
-             window_start.strftime(FMT), now.strftime(FMT)),
+             window_start.strftime(FMT), now.strftime(FMT), "keine_norm"),
             ("n_before_boundary", "/x/before-boundary", None, "shared", "Vor Fensterbeginn", "s", 0, src,
-             (window_start - timedelta(seconds=1)).strftime(FMT), now.strftime(FMT)),
+             (window_start - timedelta(seconds=1)).strftime(FMT), now.strftime(FMT), "keine_norm"),
             ("n_after_boundary", "/x/after-boundary", None, "shared", "Nach Fensterbeginn", "s", 0, src,
-             (window_start + timedelta(seconds=1)).strftime(FMT), now.strftime(FMT)),
+             (window_start + timedelta(seconds=1)).strftime(FMT), now.strftime(FMT), "keine_norm"),
         ],
     )
     conn.executemany(
