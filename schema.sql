@@ -770,3 +770,82 @@ CREATE TABLE IF NOT EXISTS eskalation_vorschlag (
     regel_vorschlag TEXT NOT NULL,
     erzeugt_am TEXT NOT NULL
 );
+
+-- ── Annahmen (Uebernahme aus der Stiftshuette, 2026-08-08) ────────────────
+-- Uebernommen aus assumptions.json (hub/docs/PLAN_STIFTSHUETTE_UEBERNAHME_
+-- 2026-08-08.md, Punkt 1). Dort lag das Schema tot: es gab keinen Schreiber,
+-- weil es einen Reiter gebraucht haette. Hier braucht es keine Oberflaeche.
+--
+-- Der Zweck ist nicht Ablage, sondern Zwang: wer eine Annahme eintraegt, muss
+-- sagen, WIE GUT der Beleg ist und WAS EIN IRRTUM KOSTET. Beides sind Felder,
+-- die man nicht ausfuellen kann, ohne nachzudenken -- dieselbe Klasse wie
+-- "keine Zahl ohne Nenner".
+--
+-- Warum die Regeln in der Datenbank stehen und nicht im aufrufenden Code:
+-- ein Schreiber, der sie vergisst, ist der Normalfall (gemessen: BEGOD_
+-- KNOWLEDGE_DB wurde von 3 von 6 Skripten geachtet, L-6c6661). Was gelten
+-- soll, gilt an der Tabelle.
+CREATE TABLE IF NOT EXISTS annahmen (
+    id TEXT PRIMARY KEY,
+    annahme TEXT NOT NULL,                    -- was angenommen wird, in einem Satz
+    kategorie TEXT,                           -- frei, z.B. 'technik'|'nutzung'|'recht'
+    status TEXT NOT NULL DEFAULT 'offen'
+        CHECK (status IN ('offen', 'bestaetigt', 'widerlegt')),
+    beleg TEXT DEFAULT '',                    -- worauf sich das stuetzt, wortwoertlich
+    belegrang TEXT NOT NULL DEFAULT 'geraten'
+        CHECK (belegrang IN ('gemessen', 'fremdbericht', 'plausibel', 'geraten')),
+    kosten_wenn_falsch TEXT NOT NULL,         -- ohne diesen Satz kein Eintrag
+    geprueft_von TEXT DEFAULT '',
+    geprueft_am TEXT DEFAULT '',
+    tatsaechliche_kosten TEXT DEFAULT '',     -- erst nach einem Irrtum ausfuellbar
+    notizen TEXT DEFAULT '',
+    projects TEXT DEFAULT '[]',               -- JSON-Array wie lessons_learned.projects
+    node_path TEXT,                           -- Bezug auf knowledge_nodes.path
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    anlass TEXT NOT NULL DEFAULT 'unbekannt', -- siehe knowledge_nodes.anlass
+    actor TEXT,
+    session TEXT,
+    model TEXT,
+    client TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_annahmen_status ON annahmen(status);
+
+-- 'gemessen' ohne Beleg ist keine Messung, sondern eine Behauptung mit
+-- besserem Namen. Die teuerste Verwechslung des Hauses, darum an der Tabelle.
+CREATE TRIGGER IF NOT EXISTS annahmen_gemessen_braucht_beleg_bi
+BEFORE INSERT ON annahmen
+WHEN new.belegrang = 'gemessen' AND TRIM(COALESCE(new.beleg, '')) = ''
+BEGIN
+    SELECT RAISE(ABORT, 'belegrang=gemessen verlangt einen nicht leeren beleg -- eine Messung ohne Protokoll ist keine');
+END;
+
+CREATE TRIGGER IF NOT EXISTS annahmen_gemessen_braucht_beleg_bu
+BEFORE UPDATE ON annahmen
+WHEN new.belegrang = 'gemessen' AND TRIM(COALESCE(new.beleg, '')) = ''
+BEGIN
+    SELECT RAISE(ABORT, 'belegrang=gemessen verlangt einen nicht leeren beleg -- eine Messung ohne Protokoll ist keine');
+END;
+
+-- Eine Annahme verlaesst 'offen' nur mit Beleg UND Pruefer UND Zeitpunkt.
+-- Ohne diese drei ist "bestaetigt" bloss eine Meinung mit Zeitstempel.
+CREATE TRIGGER IF NOT EXISTS annahmen_entscheidung_braucht_pruefung_bu
+BEFORE UPDATE ON annahmen
+WHEN new.status <> 'offen'
+ AND (TRIM(COALESCE(new.beleg, '')) = ''
+      OR TRIM(COALESCE(new.geprueft_von, '')) = ''
+      OR TRIM(COALESCE(new.geprueft_am, '')) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'status bestaetigt/widerlegt verlangt beleg, geprueft_von und geprueft_am');
+END;
+
+-- Herkunft ist unveraenderlich, wie bei knowledge_nodes: der Wortlaut der
+-- Annahme und ihr Entstehungszeitpunkt bleiben stehen. Wer die Annahme
+-- umschreibt, faelscht die Vorgeschichte der Entscheidung, die auf ihr fusst.
+CREATE TRIGGER IF NOT EXISTS annahmen_herkunft_unveraenderlich_bu
+BEFORE UPDATE ON annahmen
+WHEN new.annahme <> old.annahme OR new.created_at <> old.created_at
+BEGIN
+    SELECT RAISE(ABORT, 'annahme und created_at sind unveraenderlich -- neue Annahme anlegen, alte widerlegen');
+END;

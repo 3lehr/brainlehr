@@ -4152,6 +4152,113 @@ def kurator_lauf(*, scharf: bool = False, actor: str | None = None,
 
 # ─── MCP Server Protocol (stdio JSON-RPC 2.0) ───────────────────────────
 
+# ── Annahmen (Uebernahme aus der Stiftshuette, 2026-08-08) ────────────────
+# Die Regeln stehen an der Tabelle (schema.sql), nicht hier. Diese drei
+# Funktionen sind der SCHREIBER -- ohne ihn waere die Tabelle das, was
+# assumptions.json in der Stiftshuette war: ein Schema ohne Befueller, sieben
+# von dreizehn Dateien dort hatten keinen.
+
+def annahme_erfassen(annahme: str, kosten_wenn_falsch: str, belegrang: str = "geraten",
+                     beleg: str = "", kategorie: str = "", projects: list | None = None,
+                     node_path: str = "", notizen: str = "", anlass: str = "unbekannt", *,
+                     actor: str | None = None, model: str | None = None,
+                     session: str | None = None) -> dict:
+    """Eine Annahme festhalten, solange sie noch als Annahme erkennbar ist.
+
+    Der Zweck ist der Zeitpunkt: eine Annahme, die man erst nachtraeglich als
+    solche erkennt, ist bereits als Messung weitergetragen worden. Deshalb
+    sind belegrang und kosten_wenn_falsch Pflicht -- beide zwingen beim
+    Aufschreiben zu einer Aussage, die man spaeter gegen sich gelten lassen
+    muss.
+
+    Die Ablehnungen kommen aus der Datenbank (CHECK/TRIGGER), nicht von hier;
+    ein zweiter Regelsatz im Aufrufer waere die naechste Stelle, die
+    auseinanderlaeuft."""
+    conn = get_db()
+    annahme_id = f"A-{str(uuid.uuid4())[:6]}"
+    jetzt = now_iso()
+    try:
+        conn.execute(
+            """INSERT INTO annahmen (id, annahme, kategorie, status, beleg, belegrang,
+                                     kosten_wenn_falsch, notizen, projects, node_path,
+                                     created_at, updated_at, anlass, actor, session, model, client)
+               VALUES (?, ?, ?, 'offen', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (annahme_id, annahme, kategorie or None, beleg, belegrang, kosten_wenn_falsch,
+             notizen, json.dumps(projects or []), node_path or None, jetzt, jetzt,
+             anlass, actor, session, model, _KLIENT),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError as e:
+        log_access(conn, node_path or None, "annahme", actor=actor, model=model,
+                   session=session, status="rejected", query=str(e))
+        conn.close()
+        return {"status": "rejected", "error": str(e)}
+    log_access(conn, node_path or None, "annahme", query=annahme,
+               actor=actor, model=model, session=session,
+               affected_row={"id": annahme_id, "annahme": annahme, "belegrang": belegrang,
+                             "kosten_wenn_falsch": kosten_wenn_falsch, "status": "offen"})
+    conn.close()
+    return {"id": annahme_id, "status": "offen", "belegrang": belegrang}
+
+
+def annahme_entscheiden(annahme_id: str, status: str, beleg: str, geprueft_von: str,
+                        belegrang: str = "", tatsaechliche_kosten: str = "", *,
+                        actor: str | None = None, model: str | None = None,
+                        session: str | None = None) -> dict:
+    """Eine Annahme bestaetigen oder widerlegen -- nur mit Beleg und Pruefer.
+
+    geprueft_am setzt der Server, nicht der Aufrufer: ein selbst gewaehlter
+    Pruefzeitpunkt ist keine Angabe, sondern eine Behauptung."""
+    conn = get_db()
+    zeile = conn.execute("SELECT id, belegrang FROM annahmen WHERE id = ?", (annahme_id,)).fetchone()
+    if not zeile:
+        conn.close()
+        return {"status": "rejected",
+                "error": f"annahme_id verweist auf keine bestehende Annahme: {annahme_id}"}
+    jetzt = now_iso()
+    try:
+        conn.execute(
+            """UPDATE annahmen SET status = ?, beleg = ?, belegrang = ?, geprueft_von = ?,
+                                   geprueft_am = ?, tatsaechliche_kosten = ?, updated_at = ?
+               WHERE id = ?""",
+            (status, beleg, belegrang or zeile["belegrang"], geprueft_von, jetzt,
+             tatsaechliche_kosten, jetzt, annahme_id),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError as e:
+        log_access(conn, None, "annahme", actor=actor, model=model, session=session,
+                   status="rejected", query=str(e))
+        conn.close()
+        return {"status": "rejected", "error": str(e)}
+    log_access(conn, None, "annahme", query=f"{annahme_id} -> {status}",
+               actor=actor, model=model, session=session,
+               affected_row={"id": annahme_id, "status": status, "beleg": beleg,
+                             "geprueft_von": geprueft_von, "geprueft_am": jetzt})
+    conn.close()
+    return {"id": annahme_id, "status": status, "geprueft_am": jetzt}
+
+
+def annahme_liste(status: str = "offen", max_results: int = 20, *,
+                  actor: str | None = None, model: str | None = None,
+                  session: str | None = None) -> dict:
+    """Offene Annahmen sichtbar halten. Sortiert nach Belegrang (geraten
+    zuerst) und Alter -- die schlechtest belegte aelteste Annahme steht oben,
+    weil sie am laengsten unwidersprochen weitergetragen wurde."""
+    conn = get_db()
+    rang = "CASE belegrang WHEN 'geraten' THEN 0 WHEN 'plausibel' THEN 1 WHEN 'fremdbericht' THEN 2 ELSE 3 END"
+    zeilen = conn.execute(
+        f"""SELECT id, annahme, kategorie, status, belegrang, beleg, kosten_wenn_falsch,
+                   geprueft_von, geprueft_am, created_at
+            FROM annahmen WHERE status = ? ORDER BY {rang}, created_at LIMIT ?""",
+        (status, max_results),
+    ).fetchall()
+    offen = conn.execute("SELECT COUNT(*) FROM annahmen WHERE status = 'offen'").fetchone()[0]
+    log_access(conn, None, "annahme", query=f"liste:{status}",
+               actor=actor, model=model, session=session)
+    conn.close()
+    return {"results": [dict(z) for z in zeilen], "count": len(zeilen), "offen_gesamt": offen}
+
+
 def _identity_args(args: dict) -> dict:
     return {key: args.get(key) for key in ("actor", "model", "session")}
 
@@ -4498,6 +4605,89 @@ TOOLS = {
         "handler": lambda args: knowledge_relation_remove(
             _require(args, "relation_id", "die ID der zu entfernenden Beziehung."),
             **_identity_args(args))
+    },
+    "annahme_erfassen": {
+        "description": (
+            "Eine ANNAHME festhalten, solange sie noch als Annahme erkennbar ist -- nicht "
+            "erst, wenn sie sich als falsch herausgestellt hat. Zwei Pflichtangaben, und "
+            "sie sind der ganze Zweck: 'belegrang' (gemessen|fremdbericht|plausibel|geraten) "
+            "sagt, WIE GUT der Beleg ist, 'kosten_wenn_falsch' sagt, WAS EIN IRRTUM KOSTET. "
+            "belegrang='gemessen' ohne nicht leeren 'beleg' wird abgelehnt -- eine Messung "
+            "ohne Protokoll ist keine. Der Eintrag beginnt immer auf status='offen'; "
+            "bestaetigt/widerlegt geht nur ueber annahme_entscheiden."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "annahme": {"type": "string", "description": "Was angenommen wird, in einem Satz"},
+                "kosten_wenn_falsch": {"type": "string", "description": "Was ein Irrtum kostet -- Pflicht, ohne diesen Satz kein Eintrag"},
+                "belegrang": {"type": "string", "enum": ["gemessen", "fremdbericht", "plausibel", "geraten"], "default": "geraten"},
+                "beleg": {"type": "string", "description": "Worauf sich das stuetzt, wortwoertlich (Lauf, Datei, Zitat)"},
+                "kategorie": {"type": "string"},
+                "projects": {"type": "array", "items": {"type": "string"}},
+                "node_path": {"type": "string", "description": "Bezug auf einen Wissensknoten"},
+                "notizen": {"type": "string"},
+                "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt"},
+                **IDENTITY_PROPERTIES,
+            },
+            "required": ["annahme", "kosten_wenn_falsch"]
+        },
+        "handler": lambda args: annahme_erfassen(
+            _require(args, "annahme", "was angenommen wird, in einem Satz."),
+            _require(args, "kosten_wenn_falsch", "was ein Irrtum kostet -- ohne diesen Satz kein Eintrag."),
+            args.get("belegrang", "geraten"), args.get("beleg", ""), args.get("kategorie", ""),
+            args.get("projects"), args.get("node_path", ""), args.get("notizen", ""),
+            args.get("anlass", "unbekannt"), **_identity_args(args)
+        )
+    },
+    "annahme_entscheiden": {
+        "description": (
+            "Eine Annahme bestaetigen oder widerlegen. Beleg und Pruefer sind Pflicht -- "
+            "ohne beides ist 'bestaetigt' nur eine Meinung mit Zeitstempel, und die Datenbank "
+            "lehnt es ab. Den Pruefzeitpunkt setzt der Server, nicht der Aufrufer. Bei "
+            "status='widerlegt' gehoert nach Moeglichkeit 'tatsaechliche_kosten' dazu: erst "
+            "der Vergleich mit kosten_wenn_falsch zeigt, ob die Einschaetzung damals taugte."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "annahme_id": {"type": "string", "description": "z.B. 'A-3f9a2b'"},
+                "status": {"type": "string", "enum": ["bestaetigt", "widerlegt"]},
+                "beleg": {"type": "string", "description": "Was die Entscheidung traegt, wortwoertlich"},
+                "geprueft_von": {"type": "string"},
+                "belegrang": {"type": "string", "enum": ["gemessen", "fremdbericht", "plausibel", "geraten"],
+                              "description": "Neuer Belegrang, falls die Pruefung ihn aendert; sonst bleibt der alte"},
+                "tatsaechliche_kosten": {"type": "string"},
+                **IDENTITY_PROPERTIES,
+            },
+            "required": ["annahme_id", "status", "beleg", "geprueft_von"]
+        },
+        "handler": lambda args: annahme_entscheiden(
+            _require(args, "annahme_id", "die Kennung der Annahme, z.B. 'A-3f9a2b'."),
+            _require(args, "status", "bestaetigt oder widerlegt."),
+            _require(args, "beleg", "was die Entscheidung traegt -- ohne Beleg keine Entscheidung."),
+            _require(args, "geprueft_von", "wer geprueft hat."),
+            args.get("belegrang", ""), args.get("tatsaechliche_kosten", ""),
+            **_identity_args(args)
+        )
+    },
+    "annahme_liste": {
+        "description": (
+            "Offene Annahmen auflisten, schlechtest belegt und aeltest zuerst -- das ist die "
+            "Reihenfolge, in der sie schaden: was am laengsten unwidersprochen weitergetragen "
+            "wurde, ist am tiefsten in spaeteren Entscheidungen verbaut."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "status": {"type": "string", "enum": ["offen", "bestaetigt", "widerlegt"], "default": "offen"},
+                "max_results": {"type": "integer", "default": 20},
+                **IDENTITY_PROPERTIES,
+            }
+        },
+        "handler": lambda args: annahme_liste(
+            args.get("status", "offen"), args.get("max_results", 20), **_identity_args(args)
+        )
     },
     "lesson_record": {
         "description": (
