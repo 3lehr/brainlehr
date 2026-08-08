@@ -1,6 +1,6 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 1989 in 22 Aesten · Lehren: 646 · erzeugt: 2026-08-08T09:48:58+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 1989 in 22 Aesten · Lehren: 647 · erzeugt: 2026-08-08T10:15:21+0200
 
 Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowledge_search <begriff>`, `lesson_query <begriff>`.
 
@@ -29,10 +29,10 @@ Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowled
 - /probe: 1
 - /probe2: 1
 
-## Lehren gebuendelt (646 gesamt)
+## Lehren gebuendelt (647 gesamt)
 
-nach Art: antipattern 288, insight 151, error 110, pattern 97
-nach Projekt: fahrtenbuch 237, openlehr 205, hub 168, systemweit 81, shared 64, buckeberg 48, wohlair 40, global 39, +23 weitere Projekte (173)
+nach Art: antipattern 289, insight 151, error 110, pattern 97
+nach Projekt: fahrtenbuch 237, openlehr 205, hub 169, systemweit 82, shared 64, buckeberg 48, wohlair 40, global 39, +23 weitere Projekte (174)
 
 ## Juengste 15 Knoten
 
@@ -54,6 +54,7 @@ nach Projekt: fahrtenbuch 237, openlehr 205, hub 168, systemweit 81, shared 64, 
 
 ## Juengste 15 Lehren
 
+- 2026-08-08 [antipattern] Ein Fehlerweg ohne Aufraeumen legte die gesamte Wissensdatenbank still. Am 2026-08-08 wies der Herkunfts-Trigger ein knowledge_update ab;…
 - 2026-08-08 [pattern] Nebenarbeit waehrend eines langlaufenden Datenzuges, ohne den Zug zu verfaelschen — Verfahren, das am 2026-08-08 in sigmaforge zwei Bloecke…
 - 2026-08-08 [antipattern] brainlehr war nicht installierbar, ohne dass es irgendwo aufgefallen waere: eine Erstanlage an einem leeren Ort trug 2 Trigger, 6 Tabellen…
 - 2026-08-08 [pattern] Sammelentscheidung ueber 62 Knoten (Normschicht, Weisung des Betreibers 2026-08-08) ohne direktes UPDATE und ohne 62 einzelne…
@@ -68,4 +69,3 @@ nach Projekt: fahrtenbuch 237, openlehr 205, hub 168, systemweit 81, shared 64, 
 - 2026-08-08 [insight] Fuer die Beurteilung von Erkennungsregeln liefert die Epidemiologie keine Metapher, sondern eine fertige RECHENBARE Sprache — und sie…
 - 2026-08-08 [antipattern] `git stash` / `git stash pop` in einem Monorepo mit vielen Worktrees (hub/shared-knowledge) stashte und verlor kurzzeitig eigene UND fremde…
 - 2026-08-08 [insight] knowledge_mcp_server.py "database is locked" Untersuchung (2026-08-08): operator-Zaehlung "15 laufende Prozesse" war eine…
-- 2026-08-08 [pattern] Reihenfolge, die am 2026-08-08 in sigmaforge zweimal einen teuren Fehlgriff verhindert hat: die Groesse bzw. Feldstruktur eines…
