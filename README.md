@@ -61,6 +61,24 @@ python3 -m pytest tests -q
 
 Der Test, der am meisten über dieses Vorhaben sagt, heißt `test_erstanlage_traegt_dasselbe_schema_wie_der_betrieb`. Er darf nur in eine Richtung ausschlagen: **der Betrieb darf nichts kennen, was eine Erstanlage nicht bekommt.** Am 2026-08-08 schlug er aus — eine frische Installation trug zwei Trigger, sechs Tabellen und zwei Spalten weniger als die gewachsene Datenbank, darunter ausgerechnet die Herkunftsschranke. Wer damals klonte, bekam brainlehr ohne die Regel, die brainlehr ist.
 
+## Nachsehen, was still kaputt ist
+
+```bash
+python3 doctor.py
+```
+
+Fünf Proben, keine ausgedacht — jede hatte am 2026-08-08 einen echten Befund: Regelgleichheit (Erstanlage gegen Betrieb), tote Pfade in Konfigurationen, Schreibbarkeit der Datenbank, verwaiste Funktionen, Bestandshygiene. Rückgabewert 0 nur, wenn nichts gefunden wurde — damit taugt er als Tor.
+
+## Aufsätze
+
+`aufsaetze/` enthält, was **zeigt statt zu binden**. Die Trennlinie ist ein Satz: *Darf es ausfallen, ohne dass eine Aussage ihre Herkunft verliert?* Ja → Aufsatz. Nein → Kern.
+
+```bash
+python3 aufsaetze/agenten.py
+```
+
+Welcher Agent läuft, welcher liegt brach. Die interessante Zahl ist nicht die Rangliste, sondern der Nenner: wie viele der definierten Agenten wurden **nie** ausgelöst.
+
 ## Wo was liegt
 
 ```
@@ -69,6 +87,8 @@ schema.sql                  einzige Schemaquelle — Regeln gehören hierher, ni
 herkunft_unveraenderlich.sql die Herkunftsschranke
 brainlehr.py                init / raus / rein / haken
 haken/                      die Automatik samt haken/ort.py (ein Ort für den Pfad)
+doctor.py                   sucht, was still kaputt ist
+aufsaetze/                  was zeigt statt zu binden — darf ausfallen
 auszug/                     versionierte Auszüge des Bestands
 tests/                      pytest
 ```

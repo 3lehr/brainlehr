@@ -1,6 +1,6 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 1989 in 22 Aesten · Lehren: 647 · erzeugt: 2026-08-08T10:15:21+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 1989 in 22 Aesten · Lehren: 647 · erzeugt: 2026-08-08T10:18:13+0200
 
 Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowledge_search <begriff>`, `lesson_query <begriff>`.
 
