@@ -7,6 +7,7 @@ Schritte S2 und S3):
     python3 brainlehr.py init  <zielverzeichnis>
     python3 brainlehr.py raus  <auszug.jsonl> [--db <quelle.db>]
     python3 brainlehr.py rein  <auszug.jsonl>  --db <ziel.db>
+    python3 brainlehr.py haken [--einbauen]
 
 WARUM ZEILENWEISE UND NICHT DIE DATEI KOPIEREN: eine SQLite-Datei laesst sich
 nicht zusammenfuehren, git ueberschreibt sie. Zeilen lassen sich vergleichen,
@@ -258,6 +259,76 @@ def rein(quelle_datei: Path, db: Path) -> int:
     return 0 if (alles_gleich and not fehlend and not fehler) else 1
 
 
+HAKEN = (
+    ("UserPromptSubmit", "knowledge_recall_hook.py",
+     "spielt bei JEDEM Prompt passendes Wissen ein — der Abruf, den niemand aufrufen muss"),
+    ("UserPromptSubmit", "auftrag_recall_hook.py",
+     "meldet offene Auftraege aus dem Anweisungsregister"),
+    ("UserPromptSubmit", "mcp_veraltet.py",
+     "warnt, wenn ein laufender Server aelteren Code haelt als die Datei"),
+    ("Stop", "knowledge_capture_hook.py",
+     "erzwingt am Sitzungsende, dass Dauerhaftes abgelegt wird"),
+)
+
+
+def haken(einbauen: bool) -> int:
+    """Die Automatik anschliessen.
+
+    Ohne sie ist brainlehr ein Speicher, und ein Speicher ist es laut
+    Verfassung ausdruecklich nicht: die Schranken in der Datenbank halten
+    fest, WAS abgelegt werden darf — diese vier Haken sorgen dafuer, dass
+    ueberhaupt abgelegt und abgerufen wird, ohne dass jemand daran denkt.
+    Deshalb gehoeren sie mitgeliefert und nicht in ein fremdes Verzeichnis.
+
+    Ohne --einbauen wird nur gezeigt, was einzutragen waere. Fremde
+    Konfiguration wird nicht ungefragt veraendert.
+    """
+    ziel = Path.home() / ".claude" / "settings.json"
+    eintraege = [
+        (ev, {"type": "command",
+              "command": f"python3 {HIER / 'haken' / datei} 2>/dev/null || true"}, zweck)
+        for ev, datei, zweck in HAKEN
+    ]
+
+    vorhanden = ziel.read_text(encoding="utf-8") if ziel.exists() else ""
+    fehlend = [(ev, e, z) for ev, e, z in eintraege if e["command"] not in vorhanden]
+
+    print(f"Einstellungsdatei: {ziel}{'' if ziel.exists() else '  (existiert nicht)'}")
+    for ev, e, zweck in eintraege:
+        marke = "fehlt " if (ev, e, zweck) in fehlend else "steht "
+        print(f"  [{marke}] {ev:18s} {Path(e['command'].split()[1]).name}")
+        print(f"            {zweck}")
+    print()
+    print("Nicht als Haken, sondern turnusmaessig aufzurufen:")
+    print(f"  python3 {HIER / 'haken' / 'kurator_taeglich.py'}   (Verdichtung, einmal taeglich)")
+
+    if not fehlend:
+        print()
+        print("Alles angeschlossen, nichts zu tun.")
+        return 0
+    if not einbauen:
+        print()
+        print(f"{len(fehlend)} Eintrag/Eintraege fehlen. Mit --einbauen eintragen "
+              f"(eine Sicherung wird vorher angelegt).")
+        return 1
+
+    daten = json.loads(vorhanden) if vorhanden.strip() else {}
+    if ziel.exists():
+        sicherung = ziel.with_suffix(f".json.sicherung-{_jetzt().replace(':', '')}")
+        sicherung.write_text(vorhanden, encoding="utf-8")
+        print(f"Sicherung: {sicherung}")
+    daten.setdefault("hooks", {})
+    for ev, e, _ in fehlend:
+        gruppen = daten["hooks"].setdefault(ev, [])
+        if not gruppen:
+            gruppen.append({"hooks": []})
+        gruppen[0].setdefault("hooks", []).append(e)
+    ziel.parent.mkdir(parents=True, exist_ok=True)
+    ziel.write_text(json.dumps(daten, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"{len(fehlend)} Eintrag/Eintraege ergaenzt.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -274,11 +345,17 @@ def main(argv: list[str] | None = None) -> int:
     p_rein.add_argument("datei", type=Path)
     p_rein.add_argument("--db", type=Path, required=True)
 
+    p_haken = unter.add_parser("haken", help="die Automatik anschliessen (zeigen oder eintragen)")
+    p_haken.add_argument("--einbauen", action="store_true",
+                         help="fehlende Eintraege in ~/.claude/settings.json ergaenzen")
+
     a = p.parse_args(argv)
     if a.verb == "init":
         return init(a.ziel)
     if a.verb == "raus":
         return raus(a.datei, a.db)
+    if a.verb == "haken":
+        return haken(a.einbauen)
     return rein(a.datei, a.db)
 
 

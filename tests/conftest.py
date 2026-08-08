@@ -52,6 +52,11 @@ def hub_wurzel() -> Path | None:
     return None
 
 
+# Die Automatik liegt seit dem 2026-08-08 in brainlehr selbst (haken/), nicht
+# mehr in hub/scripts — sie ist der Teil, der zeigt, was brainlehr ausmacht,
+# und gehoert deshalb mitgeliefert.
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "haken"))
+
 HUB = hub_wurzel()
 if HUB:
     for zusatz in (HUB / "scripts", HUB / "begod" / "scripts"):

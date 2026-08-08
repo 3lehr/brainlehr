@@ -20,6 +20,7 @@ Herkunftsschranke wieder greifen.
 """
 from __future__ import annotations
 
+import json
 import sqlite3
 import sys
 from pathlib import Path
@@ -175,3 +176,30 @@ def test_erstanlage_traegt_dasselbe_schema_wie_der_betrieb(tmp_path):
     fehlende_spalten = {t: sorted(b[t] - n[t]) for t in set(b) & set(n) if b[t] - n[t]}
     assert not fehlende_tabellen, f"Erstanlage fehlen Tabellen: {fehlende_tabellen}"
     assert not fehlende_spalten, f"Erstanlage fehlen Spalten: {fehlende_spalten}"
+
+
+def test_haken_zeigt_baut_ein_und_doppelt_nicht(tmp_path, monkeypatch, capsys):
+    """Die Automatik muss sich anschliessen lassen, sonst ist sie nur
+    mitgeliefert und nicht wirksam. Drei Zusicherungen in einem Lauf:
+    in einer leeren Umgebung fehlen alle vier, nach --einbauen stehen sie,
+    und ein zweiter Lauf aendert nichts (sonst wachsen die Eintraege bei
+    jedem Aufruf).
+
+    ROT VOR GRUEN: vor dem Verb gab es nichts, was die Haken eintraegt —
+    ein frischer Klon haette die Dateien gehabt und nichts, was sie ruft.
+    """
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path))
+
+    assert brainlehr.haken(einbauen=False) == 1
+    assert capsys.readouterr().out.count("[fehlt ]") == 4
+
+    assert brainlehr.haken(einbauen=True) == 0
+    ziel = tmp_path / ".claude" / "settings.json"
+    daten = json.loads(ziel.read_text(encoding="utf-8"))
+    anzahl = sum(len(g["hooks"]) for ev in daten["hooks"] for g in daten["hooks"][ev])
+    assert anzahl == 4
+
+    assert brainlehr.haken(einbauen=True) == 0
+    assert "Alles angeschlossen" in capsys.readouterr().out
+    assert json.loads(ziel.read_text(encoding="utf-8")) == daten
