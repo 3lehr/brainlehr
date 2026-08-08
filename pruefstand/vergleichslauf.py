@@ -94,7 +94,8 @@ def _populate_db_index_ablated(db_path: Path, corpus: dict) -> None:
     # der synthetische Korpus kennt keine Herkunft, 'korpus' ist der Platzhalter.
     conn.executemany(
         "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, "
-        "summary, content, level, tags, source) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        "summary, content, level, tags, source, norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,'keine_norm','skript:vergleichslauf.py','synthetischer Pruefkorpus, kein Normtraeger')",
         [(n["id"], n["path"], n["parent_path"], n["project_id"], n["title"],
           n["summary"], n["content"], n["level"], json.dumps(n["tags"], ensure_ascii=False), "korpus")
          for n in corpus["nodes"]],

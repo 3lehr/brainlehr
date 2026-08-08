@@ -36,8 +36,9 @@ def temp_db(tmp_path, monkeypatch):
     conn = sqlite3.connect(str(db_path))
     conn.executescript(schema)
     conn.executemany(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, source, norm_entscheidung) "
-        "VALUES (?, ?, ?, 'shared', ?, ?, ?, 'test', 'keine_norm')",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, source, norm_entscheidung, "
+        "norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?, ?, ?, 'shared', ?, ?, ?, 'test', 'keine_norm', 'skript:test', 'Testvorrichtung')",
         [
             ("r1", "/shared", None, "Shared", "Wurzel fuer projektuebergreifendes", 0),
             ("r2", "/shared/arch", "/shared", "Architektur", "Architekturentscheidungen", 1),

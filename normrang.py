@@ -163,13 +163,23 @@ def anwenden(db_path: Path, apply: bool) -> dict:
         return result
 
     result["backup"] = str(_backup(db_path))
+    # norm_entscheidung (Auftrag 2026-08-08): diese Zuweisung IST die
+    # Entscheidung -- gilt_bis bleibt laut Modul-Docstring immer NULL
+    # (unbefristet in Kraft), norm_entscheidung deshalb immer
+    # norm_unbefristet. norm_entschieden_grund verweist auf die
+    # deterministische ADR-034-Ableitung, nicht auf eine Einzelpruefung.
+    jetzt = datetime.now(CET).isoformat(timespec="seconds")
     conn = sqlite3.connect(str(db_path))
     try:
         for c in result["aenderungen"]:
             rang, gilt_ab, gilt_bis = c["nachher"]
             conn.execute(
-                "UPDATE knowledge_nodes SET norm_rang = ?, gilt_ab = ?, gilt_bis = ? WHERE id = ?",
-                (rang, gilt_ab, gilt_bis, c["id"]),
+                "UPDATE knowledge_nodes SET norm_rang = ?, gilt_ab = ?, gilt_bis = ?, "
+                "norm_entscheidung = 'norm_unbefristet', norm_entschieden_von = ?, "
+                "norm_entschieden_am = ?, norm_entschieden_grund = ? WHERE id = ?",
+                (rang, gilt_ab, gilt_bis, "skript:normrang.py", jetzt,
+                 "deterministisch aus source abgeleitet (ADR-034): Rang folgt aus der Quelldatei "
+                 "(globale/hub-CLAUDE.md oder ADR-Bestand), kein Ermessen", c["id"]),
             )
         conn.commit()
     finally:
@@ -221,12 +231,18 @@ def _init_temp_db(path: Path) -> None:
 
 def _insert_node(conn: sqlite3.Connection, node_id: str, path: str, source: str | None,
                   created_at: str) -> None:
+    # norm_entscheidung (Auftrag 2026-08-08): diese Zeile entsteht als
+    # unentschiedener Fakt -- anwenden() unten ist der Schritt, der die
+    # Entscheidung trifft (setzt norm_rang UND norm_entscheidung zusammen,
+    # niemals eines ohne das andere), nicht das Anlegen hier.
     conn.execute(
         """INSERT INTO knowledge_nodes
            (id, path, parent_path, project_id, title, summary, content, level, tags, source,
-            created_at, updated_at)
-           VALUES (?, ?, '/', 'shared', ?, 'summary', '', 1, '[]', ?, ?, ?)""",
-        (node_id, path, node_id, source, created_at, created_at),
+            created_at, updated_at, norm_entscheidung,
+            norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
+           VALUES (?, ?, '/', 'shared', ?, 'summary', '', 1, '[]', ?, ?, ?, 'keine_norm', ?, ?, ?)""",
+        (node_id, path, node_id, source, created_at, created_at,
+         "skript:normrang.py", created_at, "Testvorrichtung vor der Rang-Ableitung -- noch kein Normtraeger"),
     )
 
 

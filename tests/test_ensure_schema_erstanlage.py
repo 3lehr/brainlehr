@@ -45,8 +45,8 @@ def test_vorhandene_datenbank_bleibt_unveraendert(tmp_path):
     kms.ensure_schema(conn)
     conn.execute(
         "INSERT INTO knowledge_nodes (id, path, parent_path, level, title, "
-        "summary, source, updated_at, norm_entscheidung) "
-        "VALUES ('n1', '/x', NULL, 0, 't', 's', 'test', 'jetzt', 'keine_norm')"
+        "summary, source, updated_at, norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES ('n1', '/x', NULL, 0, 't', 's', 'test', 'jetzt', 'keine_norm', 'skript:test', 'Testvorrichtung')"
     )
     conn.commit()
     vor = conn.execute("SELECT * FROM knowledge_nodes WHERE id='n1'").fetchone()

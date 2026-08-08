@@ -105,7 +105,8 @@ def test_update_setzt_gilt_bis(temp_db):
                               norm_rang=2, gilt_ab="2026-01-01",
                               norm_entscheidung="norm_unbefristet")
     result = kms.knowledge_update(node["id"], gilt_bis="2026-12-31",
-                                   norm_entscheidung="norm_befristet")
+                                   norm_entscheidung="norm_befristet",
+                                   norm_entschieden_grund="Testvorrichtung: Norm bekommt nachtraeglich ein Enddatum")
     assert "error" not in result
     read = kms.knowledge_read(node["id"])
     assert read["gilt_bis"] == "2026-12-31"

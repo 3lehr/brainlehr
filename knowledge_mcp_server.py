@@ -77,6 +77,7 @@ Tools:
 """
 
 import difflib
+import fcntl
 import hashlib
 import json
 import math
@@ -85,8 +86,10 @@ import re
 import shutil
 import sqlite3
 import sys
+import time
 import unicodedata
 import uuid
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -117,6 +120,21 @@ BERLIN = ZoneInfo("Europe/Berlin")
 # oeffnet (dort als timeout=2.0) -- lang genug fuer einen normalen Schreibvorgang
 # eines anderen Prozesses, kurz genug, dass ein Hook nicht spuerbar haengt.
 BUSY_TIMEOUT_MS = 2000
+
+# Prozessuebergreifende Schreibsperre (Auftrag 2026-08-08 Punkt 3: mehrere
+# gleichzeitige knowledge_mcp_server-Prozesse kollidierten in SQLite mit
+# "database is locked", weil busy_timeout=2000ms bei echtem Gedraenge nicht
+# reicht und SQLites eigener Busy-Retry nicht fair/FIFO ist). Sitzt als
+# Datei-Lock NEBEN der DB (eigene .lock-Datei, DB_PATH selbst bleibt
+# unangetastet), damit Schreiber sich auf Betriebssystemebene stauen statt
+# in SQLite zu kollidieren. Pfad wird in _write_lock() bei jedem Aufruf NEU
+# aus DB_PATH gebildet (nicht hier fest verdrahtet), damit ein Test, der
+# DB_PATH per monkeypatch auf eine tmp-DB umbiegt, automatisch auch die
+# passende Lock-Datei bekommt.
+_WRITE_LOCK_TIMEOUT_S = 10.0  # ponytail: harte Obergrenze -- danach ehrlicher
+                              # Fehler statt endlosem Haengen (Abnahme-Punkt
+                              # "scheitert EHRLICH"), kein globaler Dienst/keine
+                              # Warteschlange noetig fuer dieses eine Problem.
 RELATION_TYPES = {
     "references", "supersedes", "interprets", "implements", "contradicts",
     "supports", "derived_from", "cites", "evaluates_with", "constrains",
@@ -263,6 +281,32 @@ BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang neu vergeben, aber norm_entscheidung fehlt: norm_befristet oder norm_unbefristet mitgeben');
 END;
 
+-- Entscheider (Nachtrag 2026-08-08, Betreiber-Nachfrage "wer hat
+-- entschieden?"): jede Zeile mit norm_entscheidung <> 'offen' braucht
+-- norm_entschieden_von UND norm_entschieden_grund nicht-leer -- dieselbe
+-- Pflicht, die knowledge_zurueckziehen() fuer grund schon durchsetzt
+-- (Python-seitig dort), hier zusaetzlich als DB-Trigger (bi+bu, Daten-
+-- integritaet, kein Geschichtsproblem: eine Zeile darf nie ENTSCHIEDEN
+-- OHNE Entscheider sein, unabhaengig davon ob neu oder alt). Altbestand
+-- bleibt unberuehrt: 'offen' matcht die WHEN-Klausel nicht.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_wer_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung <> 'offen'
+    AND (NEW.norm_entschieden_von IS NULL OR TRIM(NEW.norm_entschieden_von) = ''
+         OR NEW.norm_entschieden_grund IS NULL OR TRIM(NEW.norm_entschieden_grund) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung gesetzt, aber norm_entschieden_von/norm_entschieden_grund fehlen: wer entscheidet und warum?');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_wer_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung <> 'offen'
+    AND (NEW.norm_entschieden_von IS NULL OR TRIM(NEW.norm_entschieden_von) = ''
+         OR NEW.norm_entschieden_grund IS NULL OR TRIM(NEW.norm_entschieden_grund) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung gesetzt, aber norm_entschieden_von/norm_entschieden_grund fehlen: wer entscheidet und warum?');
+END;
+
 -- (c) erweitert um gilt_ab/gilt_bis: keine_norm verlangt ALLE DREI
 -- Normschicht-Felder leer, nicht nur norm_rang.
 CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_rang_bi
@@ -350,6 +394,60 @@ def now_iso() -> str:
     # echter Versatz statt fest "+01:00" -- isoformat() liefert bereits
     # Doppelpunkt-Form ("+02:00"), DST-Wechsel automatisch via zoneinfo.
     return datetime.now(BERLIN).isoformat(timespec="seconds")
+
+
+@contextmanager
+def _write_lock():
+    """Prozessuebergreifende Dateisperre um EINEN kompletten tools/call
+    (Auftrag 2026-08-08 Punkt 3). Sitzt bewusst in handle_request() um den
+    gesamten Werkzeugaufruf, NICHT in get_db() oder an jedem der ueber zwei
+    Dutzend get_db()-Aufrufer: ein Lock, dessen Freigabe an conn.close()
+    haengt, bliebe bei jeder ungefangenen Exception zwischen get_db() und
+    close() fuer den Rest der Prozesslaufzeit haengen -- kein finally an
+    jeder Stelle einzeln nachtraeglich verifizierbar. Hier deckt EIN
+    try/finally jeden tools/call-Pfad ab, garantiert freigegeben, egal was
+    der Handler tut.
+
+    ponytail: sperrt auch reine Lesewerkzeuge mit statt Lese-/Schreibpfade
+    einzeln zu klassifizieren -- fast jedes Werkzeug schreibt ohnehin
+    mindestens einen access_log-Eintrag (siehe log_access()), eine Trennung
+    haette 26 Aufrufstellen einzeln durchgehen muessen fuer keinen belegten
+    Gewinn. Aufwertung (nur Schreibwerkzeuge sperren) moeglich, wenn Lesetempo
+    unter vielen Prozessen je gemessen zum Problem wird.
+
+    Wachsende Wartezeit (50ms verdoppelt bis 500ms Deckel), harte
+    Gesamt-Obergrenze _WRITE_LOCK_TIMEOUT_S -- danach RuntimeError statt
+    endlosem Haengen; handle_request() faengt das wie jeden anderen
+    Handler-Fehler und meldet es dem Aufrufer.
+
+    Alt neben neu: ein Prozess mit altem Code (ohne _write_lock) nimmt diese
+    Datei nie in den Mund und schreibt weiterhin direkt per busy_timeout
+    (siehe get_db()) -- er wird weder ausgesperrt noch sperrt er selbst
+    jemanden aus, flock() ist rein advisory zwischen Prozessen, die es
+    beide anfordern."""
+    lock_path = DB_PATH.parent / f"{DB_PATH.name}.lock"
+    fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o644)
+    try:
+        delay = 0.05
+        waited = 0.0
+        while True:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if waited >= _WRITE_LOCK_TIMEOUT_S:
+                    raise RuntimeError(
+                        f"Schreibsperre {lock_path.name} nach {_WRITE_LOCK_TIMEOUT_S}s "
+                        "nicht erhalten -- ein anderer Prozess haelt sie laenger als erwartet. "
+                        "Abgebrochen, nichts geschrieben."
+                    )
+                time.sleep(delay)
+                waited += delay
+                delay = min(delay * 2, 0.5)
+        yield
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
 
 
 def get_db() -> sqlite3.Connection:
@@ -507,6 +605,46 @@ def _ensure_norm_entscheidung_column(conn: sqlite3.Connection) -> None:
     conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN norm_entscheidung TEXT NOT NULL DEFAULT 'offen'")
 
 
+_NORM_ENTSCHIEDEN_COLUMNS = {
+    "norm_entschieden_von": "TEXT",
+    "norm_entschieden_am": "TEXT",
+    "norm_entschieden_grund": "TEXT",
+}
+
+
+def _ensure_norm_entschieden_columns(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die drei Entscheider-Spalten (Nachtrag
+    2026-08-08, Betreiber-Nachfrage "wer hat entschieden?"). Gleiches Muster
+    wie _ensure_zuruecknahme_columns direkt darueber: additiv, NULL-faehig
+    (kein Rueckfuellwert -- Altbestand auf 'offen' hat KEINEN Entscheider,
+    das ist korrekt, nicht erfunden), WAL-Checkpoint + Sicherungskopie VOR
+    dem ALTER (Lehre L-218f1e)."""
+    if "knowledge_nodes" not in {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }:
+        return
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}
+    missing = set(_NORM_ENTSCHIEDEN_COLUMNS) - existing
+    if not missing:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"Spalten {sorted(missing)} fehlen an knowledge_nodes, aber die Sicherung vor "
+            f"dem automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
+            "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, nichts geaendert."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    for name in missing:
+        conn.execute(f"ALTER TABLE knowledge_nodes ADD COLUMN {name} {_NORM_ENTSCHIEDEN_COLUMNS[name]}")
+
+
 def _ensure_norm_entscheidung_triggers(conn: sqlite3.Connection) -> None:
     """Nachzug fuer Bestands-DBs ohne die 13 norm_entscheidung-Trigger
     (Auftrag 2026-08-08, vier davon aus dem unabhaengigen Review vom selben
@@ -521,8 +659,9 @@ def _ensure_norm_entscheidung_triggers(conn: sqlite3.Connection) -> None:
         row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
     }:
         return
-    if "norm_entscheidung" not in {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}:
-        return  # Spalte selbst fehlt noch (sollte durch die Aufrufreihenfolge in ensure_schema nicht vorkommen)
+    node_columns = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}
+    if not {"norm_entscheidung", "norm_entschieden_von", "norm_entschieden_grund"} <= node_columns:
+        return  # Spalten fehlen noch (sollte durch die Aufrufreihenfolge in ensure_schema nicht vorkommen)
     existing_triggers = {
         row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")
     }
@@ -530,6 +669,7 @@ def _ensure_norm_entscheidung_triggers(conn: sqlite3.Connection) -> None:
         "knowledge_nodes_norm_entscheidung_check_bi", "knowledge_nodes_norm_entscheidung_check_bu",
         "knowledge_nodes_norm_entscheidung_pflicht_bi", "knowledge_nodes_norm_entscheidung_pflicht_bu",
         "knowledge_nodes_norm_entscheidung_rang_neu_bu",
+        "knowledge_nodes_norm_entscheidung_wer_bi", "knowledge_nodes_norm_entscheidung_wer_bu",
         "knowledge_nodes_norm_entscheidung_rang_bi", "knowledge_nodes_norm_entscheidung_rang_bu",
         "knowledge_nodes_norm_rang_gilt_ab_bi", "knowledge_nodes_norm_rang_gilt_ab_bu",
         "knowledge_nodes_norm_entscheidung_gilt_bis_bi", "knowledge_nodes_norm_entscheidung_gilt_bis_bu",
@@ -882,6 +1022,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_abgeleitet_von_column(conn)
     _ensure_norm_art_column(conn)
     _ensure_norm_entscheidung_column(conn)
+    _ensure_norm_entschieden_columns(conn)
     _ensure_norm_entscheidung_triggers(conn)
     _ensure_zuruecknahme_columns(conn)
     _ensure_schreiber_columns(conn)
@@ -1130,6 +1271,9 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
         "gilt_ab": row["gilt_ab"],
         "gilt_bis": row["gilt_bis"],
         "norm_entscheidung": row["norm_entscheidung"],
+        "norm_entschieden_von": row["norm_entschieden_von"],
+        "norm_entschieden_am": row["norm_entschieden_am"],
+        "norm_entschieden_grund": row["norm_entschieden_grund"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
         "children": [{"title": c["title"], "summary": c["summary"]} for c in children],
@@ -1696,8 +1840,8 @@ def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
         parent = current.rsplit("/", 1)[0] or "/"
         created_at = now_iso()
         conn.execute(
-            """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_entscheidung)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (str(uuid.uuid4())[:8], current, parent, project_id, seg,
              f"Automatisch erzeugter Astknoten fuer {seg}", "",
              current.count("/") - 1, json.dumps([]),
@@ -1705,8 +1849,11 @@ def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
              created_at, created_at,
              # keine_norm (Auftrag 2026-08-08): ein automatisch erzeugter
              # Astknoten ist nie eine Norm -- die Entscheidung ist hier so
-             # eindeutig wie die Herkunft selbst.
-             "keine_norm"),
+             # eindeutig wie die Herkunft selbst. norm_entschieden_*
+             # (Nachtrag 2026-08-08): Entscheider ist der Server-Mechanismus
+             # selbst, kein Aufrufer-Identitaetsargument vorhanden hier.
+             "keine_norm", "system:_ensure_ast_chain", created_at,
+             "automatisch erzeugter Astknoten -- kann keine Norm sein"),
         )
 
 
@@ -1728,6 +1875,20 @@ def _validate_geltung(norm_rang: int | None, gilt_ab: str | None, gilt_bis: str 
     return None
 
 
+def _validate_norm_entschieden_grund(norm_entschieden_grund: str | None) -> str | None:
+    """Pflicht GENAU dann, wenn eine Entscheidung neu GETROFFEN wird (nicht
+    bei einer reinen Konsistenzpruefung einer bereits gespeicherten
+    Entscheidung -- siehe knowledge_update()) -- Nachtrag 2026-08-08,
+    Betreiber-Nachfrage "wer hat entschieden?". Wie grund bei
+    knowledge_zurueckziehen(): eine Entscheidung ohne Begruendung waere
+    dieselbe Blackbox. Wer entschieden hat (norm_entschieden_von) wird NICHT
+    hier, sondern von den Aufrufern aus _identity() aufgeloest (wie actor)."""
+    if not norm_entschieden_grund or not norm_entschieden_grund.strip():
+        return ("norm_entschieden_grund fehlt: eine Norm-Entscheidung verlangt eine Begruendung, "
+                "wie bei knowledge_zurueckziehen()'s grund -- wer entscheidet und warum?")
+    return None
+
+
 def _validate_norm_entscheidung(norm_entscheidung: str | None, norm_rang: int | None,
                                  gilt_ab: str | None, gilt_bis: str | None) -> str | None:
     """Erzwingt die Entscheidung aus dem Auftrag 2026-08-08: 'offen' (nie
@@ -1738,7 +1899,11 @@ def _validate_norm_entscheidung(norm_entscheidung: str | None, norm_rang: int | 
     Text statt der rohen sqlite3.IntegrityError aus RAISE(ABORT). Aufrufer
     muss norm_rang (und bei Bedarf gilt_ab/gilt_bis) VOR diesem Aufruf schon
     final gesetzt haben (inkl. ADR-034-Ableitung), sonst prueft diese
-    Funktion gegen einen Zwischenstand."""
+    Funktion gegen einen Zwischenstand. Prueft NICHT norm_entschieden_grund
+    (siehe _validate_norm_entschieden_grund) -- getrennt, weil diese Funktion
+    auch fuer die reine Konsistenzpruefung EINER SCHON GESPEICHERTEN
+    Entscheidung wiederverwendet wird (knowledge_update(), Fall "Zeile war
+    schon entschieden")."""
     if norm_entscheidung not in ALLOWED_NORM_ENTSCHEIDUNG:
         return (f"norm_entscheidung fehlt oder unbekannt: {norm_entscheidung!r}. Beim Anlegen "
                 f"muss entschieden werden, ob dieser Knoten eine Norm ist. Erlaubt: "
@@ -1945,6 +2110,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                   norm_rang: int | None = None, gilt_ab: str | None = None,
                   gilt_bis: str | None = None, anlass: str = "unbekannt",
                   norm_entscheidung: str | None = None,
+                  norm_entschieden_grund: str | None = None,
                   abgeleitet_von: str | None = None,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
@@ -1963,6 +2129,13 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     gilt_bis, wird der Aufruf abgelehnt -- siehe _validate_norm_entscheidung.
     Kein Vorgabewert: 'offen' (nie entschieden) ist ausschliesslich der
     Zustand des Altbestands vor diesem Feld, niemals eine neue Entscheidung.
+
+    norm_entschieden_grund: PFLICHT sobald norm_entscheidung gesetzt wird
+    (Nachtrag 2026-08-08) -- wie grund bei knowledge_zurueckziehen(), eine
+    Freitext-Begruendung, warum diese Entscheidung so gefallen ist. Wer
+    entschieden hat (norm_entschieden_von) wird automatisch aus actor
+    aufgeloest -- diese Aufruf-Identitaet IST der Entscheider, weil die
+    Entscheidung genau jetzt, mit diesem Aufruf, faellt.
 
     abgeleitet_von: Kennung (id oder path) eines vorhandenen Quellknotens
     (ADR-027 Nachtrag 4, Lehre L-adfb33). Gesetzt heisst: source wird VOM
@@ -2107,7 +2280,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     # Entscheidungspflicht (Auftrag 2026-08-08): erst HIER pruefbar, weil
     # norm_rang/gilt_ab bis eben noch durch ADR-034 automatisch ausfallen
     # konnten -- siehe _validate_norm_entscheidung-Docstring.
-    entscheidung_fehler = _validate_norm_entscheidung(norm_entscheidung, norm_rang, gilt_ab, gilt_bis)
+    entscheidung_fehler = (_validate_norm_entscheidung(norm_entscheidung, norm_rang, gilt_ab, gilt_bis)
+                            or _validate_norm_entschieden_grund(norm_entschieden_grund))
     if entscheidung_fehler:
         if norm_entscheidung == "keine_norm" and abgeleiteter_rang is not None:
             entscheidung_fehler = (
@@ -2121,11 +2295,12 @@ def knowledge_add(parent_path: str, title: str, summary: str,
         return {"error": entscheidung_fehler}
 
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung, anlass, abgeleitet_von, actor, session, model, client)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
-         norm_rang, gilt_ab, gilt_bis, norm_entscheidung, anlass, abgeleitet_von, actor, session, model, _KLIENT)
+         norm_rang, gilt_ab, gilt_bis, norm_entscheidung, actor, created_at, norm_entschieden_grund,
+         anlass, abgeleitet_von, actor, session, model, _KLIENT)
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,
@@ -2154,6 +2329,7 @@ def knowledge_update(node_id: str, summary: str | None = None,
                      content: str | None = None, tags: list | None = None, *,
                      norm_rang: int | None = None, gilt_ab: str | None = None,
                      gilt_bis: str | None = None, norm_entscheidung: str | None = None,
+                     norm_entschieden_grund: str | None = None,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
     """Update an existing knowledge node. Like summary/content/tags, only
@@ -2206,8 +2382,10 @@ def knowledge_update(node_id: str, summary: str | None = None,
                                     "getroffene Entscheidung bleibt stehen, hoechstens auf keine_norm/"
                                     "norm_befristet/norm_unbefristet aendern.")
         else:
-            entscheidung_fehler = _validate_norm_entscheidung(
-                norm_entscheidung, effektiv_norm_rang, effektiv_gilt_ab, effektiv_gilt_bis)
+            # (a) echte NEUE Entscheidung -- Begruendung Pflicht.
+            entscheidung_fehler = (
+                _validate_norm_entscheidung(norm_entscheidung, effektiv_norm_rang, effektiv_gilt_ab, effektiv_gilt_bis)
+                or _validate_norm_entschieden_grund(norm_entschieden_grund))
     elif row["norm_entscheidung"] != "offen":
         # Zeile war schon entschieden, Aufrufer aendert norm_rang/gilt_ab/
         # gilt_bis ohne norm_entscheidung anzufassen -- muss weiter zur
@@ -2264,12 +2442,18 @@ def knowledge_update(node_id: str, summary: str | None = None,
     if gilt_bis is not None:
         updates.append("gilt_bis = ?")
         params.append(gilt_bis)
+    neuer_zeitpunkt = now_iso()
     if norm_entscheidung is not None:
         updates.append("norm_entscheidung = ?")
         params.append(norm_entscheidung)
+        # Entscheider (Nachtrag 2026-08-08): diese UPDATE-Anweisung IST der
+        # Moment der Entscheidung -- actor/Zeitpunkt/Begruendung gehoeren
+        # zusammen mit der Entscheidung selbst, nicht nachtraeglich getrennt.
+        updates.append("norm_entschieden_von = ?, norm_entschieden_am = ?, norm_entschieden_grund = ?")
+        params.extend([actor, neuer_zeitpunkt, norm_entschieden_grund])
 
     updates.append("updated_at = ?")
-    params.append(now_iso())
+    params.append(neuer_zeitpunkt)
     updates.append("actor = ?")
     params.append(actor)
     updates.append("session = ?")
@@ -4017,7 +4201,12 @@ TOOLS = {
                         "\"Sozialtarif-Zuschlag entfaellt 01.03.2027\", \"summary\": "
                         "\"Sozialtarif-Zuschlag entfaellt zum 01.03.2027, loest Regelung von 2022 "
                         "ab.\", \"norm_rang\": 2, \"gilt_ab\": \"2027-03-01\", \"norm_entscheidung\": "
-                        "\"norm_unbefristet\", \"source\": \"erzeugt aus Rohmaterial (Beispiel)\"}. "
+                        "\"norm_unbefristet\", \"norm_entschieden_grund\": \"Uebergangsregelung 2022 laeuft "
+                        "aus, Nachfolgeregel greift direkt\", \"source\": \"erzeugt aus Rohmaterial (Beispiel)\"}. "
+                        "norm_entschieden_grund is REQUIRED whenever norm_entscheidung is given (like grund on "
+                        "knowledge_zurueckziehen) -- a free-text reason for the decision. Who decided "
+                        "(norm_entschieden_von) is resolved automatically from your caller identity, not a "
+                        "separate input. "
                         "anlass records what triggered this entry: 'selbst' (you wrote it unprompted) or "
                         "'betreiber' (an explicit human instruction, e.g. \"merk dir das\") are SELF-REPORTED -- "
                         "only as reliable as the caller. 'hook' (the enforcing Stop-hook made you call this) and "
@@ -4045,11 +4234,13 @@ TOOLS = {
                                        "description": "REQUIRED (no default): keine_norm=plain fact/no rank, "
                                                        "norm_befristet=norm with an end date, "
                                                        "norm_unbefristet=norm without one. See tool description."},
+                "norm_entschieden_grund": {"type": "string",
+                                            "description": "REQUIRED alongside norm_entscheidung: free-text reason for the decision (see tool description)."},
                 "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
                            "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."},
                 **IDENTITY_PROPERTIES,
             },
-            "required": ["parent_path", "title", "summary", "norm_entscheidung"]
+            "required": ["parent_path", "title", "summary", "norm_entscheidung", "norm_entschieden_grund"]
         },
         "handler": lambda args: knowledge_add(
             _require(args, "parent_path", "der Pfad des Elternknotens, z.B. '/shared/arch' (muss existieren oder '/' sein)."),
@@ -4059,6 +4250,7 @@ TOOLS = {
             args.get("tags"), args.get("source", ""), neuer_ast=args.get("neuer_ast", False),
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
             norm_entscheidung=_require(args, "norm_entscheidung", "keine_norm/norm_befristet/norm_unbefristet -- ist dieser Knoten eine Norm?"),
+            norm_entschieden_grund=_require(args, "norm_entschieden_grund", "Begruendung fuer die Norm-Entscheidung -- wer entscheidet und warum?"),
             anlass=args.get("anlass", "unbekannt"), abgeleitet_von=args.get("abgeleitet_von"),
             **_identity_args(args)
         )
@@ -4068,7 +4260,8 @@ TOOLS = {
                         "norm_rang/gilt_ab/gilt_bis/norm_entscheidung -- see knowledge_add for their meaning). "
                         "Only given fields change; norm_entscheidung is optional here (unlike knowledge_add) and "
                         "only needed when the change would otherwise contradict the node's existing decision "
-                        "(e.g. giving a norm_unbefristet norm a gilt_bis).",
+                        "(e.g. giving a norm_unbefristet norm a gilt_bis) -- if given, norm_entschieden_grund "
+                        "is then REQUIRED too.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -4080,7 +4273,9 @@ TOOLS = {
                 "gilt_ab": {"type": "string", "description": "Optional: ISO-8601 date/timestamp"},
                 "gilt_bis": {"type": "string", "description": "Optional: ISO-8601 date/timestamp; must not be before gilt_ab (existing or given)"},
                 "norm_entscheidung": {"type": "string", "enum": sorted(ALLOWED_NORM_ENTSCHEIDUNG),
-                                       "description": "Optional: change the norm/fact decision (see knowledge_add)."},
+                                       "description": "Optional: change the norm/fact decision (see knowledge_add). Requires norm_entschieden_grund if given."},
+                "norm_entschieden_grund": {"type": "string",
+                                            "description": "Required if norm_entscheidung is given: free-text reason."},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["node_id"]
@@ -4090,6 +4285,7 @@ TOOLS = {
             args.get("summary"), args.get("content"), args.get("tags"),
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
             norm_entscheidung=args.get("norm_entscheidung"),
+            norm_entschieden_grund=args.get("norm_entschieden_grund"),
             **_identity_args(args)
         )
     },
@@ -4403,6 +4599,22 @@ def handle_request(req: dict) -> dict:
     req_id = req.get("id")
 
     if method == "initialize":
+        # listChanged bleibt False (Auftrag 2026-08-08 Punkt 2, geprueft statt
+        # blind auf True gesetzt): TOOLS ist ein Modul-Konstante-dict, einmal
+        # beim Import gefuellt und danach nie mehr veraendert -- kein Codepfad
+        # in diesem Prozess mutiert TOOLS oder sendet je eine
+        # notifications/tools/list_changed-Benachrichtigung. True zu setzen
+        # waere eine Faehigkeit, die nie eingeloest wird (schlimmer als sie
+        # nicht anzukuendigen, siehe Auftrag). Das eigentliche Symptom
+        # (Client haelt an einem veralteten Schema fest, waehrend ein
+        # laengst laufender Prozess neuen Code im Speicher haette) tritt hier
+        # gar nicht auf: Python laedt Code beim Start, ein bereits laufender
+        # Prozess sieht spaetere Aenderungen an dieser Datei nie, sein TOOLS
+        # ist exakt das Schema, mit dem er antwortet -- Versionsbruch entsteht
+        # nur zwischen ALT laufendem Prozess und NEU editierter Datei, nicht
+        # durch eine Aenderung waehrend der Laufzeit. Hot-Reload waere die
+        # tatsaechliche Abhilfe, aber ein eigenes, hier nicht beauftragtes
+        # Feature.
         return {
             "jsonrpc": "2.0", "id": req_id,
             "result": {
@@ -4447,7 +4659,8 @@ def handle_request(req: dict) -> dict:
             }
 
         try:
-            result = TOOLS[tool_name]["handler"](arguments)
+            with _write_lock():
+                result = TOOLS[tool_name]["handler"](arguments)
             return {
                 "jsonrpc": "2.0", "id": req_id,
                 "result": {"content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]}

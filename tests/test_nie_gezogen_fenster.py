@@ -44,8 +44,9 @@ def temp_db(tmp_path):
     src = "Testvorrichtung test_nie_gezogen_fenster.py (kein echter Fund)"
     conn.executemany(
         "INSERT INTO knowledge_nodes "
-        "(id, path, parent_path, project_id, title, summary, level, source, created_at, updated_at, norm_entscheidung) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        "(id, path, parent_path, project_id, title, summary, level, source, created_at, updated_at, norm_entscheidung, "
+        " norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,'skript:test','Testvorrichtung')",
         [
             ("n_pulled", "/x/pulled", None, "shared", "Gezogen", "s", 0, src,
              window_start.strftime(FMT), now.strftime(FMT), "keine_norm"),

@@ -31,8 +31,9 @@ def temp_db(tmp_path, monkeypatch):
     conn.executescript(schema)
     conn.executemany(
         """INSERT INTO knowledge_nodes
-           (id, path, project_id, title, summary, content, level, source, norm_rang, gilt_ab, gilt_bis, norm_entscheidung)
-           VALUES (?, ?, 'shared', ?, ?, NULL, 0, 'test', ?, ?, ?, ?)""",
+           (id, path, project_id, title, summary, content, level, source, norm_rang, gilt_ab, gilt_bis, norm_entscheidung,
+            norm_entschieden_von, norm_entschieden_grund)
+           VALUES (?, ?, 'shared', ?, ?, NULL, 0, 'test', ?, ?, ?, ?, 'skript:test', 'Testvorrichtung')""",
         [
             # Fakt -- norm_rang NULL, von der Geltungspruefung unberuehrt.
             ("f1", "/steuer/fakt-abschreibung", "AfA Fakt", "Abschreibung Fakttext",

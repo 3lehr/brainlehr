@@ -97,8 +97,10 @@ def row_to_node(row, ts):
 INSERT_SQL = """
 INSERT OR IGNORE INTO knowledge_nodes
     (id, path, parent_path, project_id, title, summary, content, level, tags,
-     source, confidence, created_at, updated_at, anlass, actor)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+     source, confidence, created_at, updated_at, anlass, actor,
+     norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'keine_norm','skript:nasa_llis_import.py',
+        'importierte Fremdlehre (NASA LLIS) ist kein Normtext')
 """
 
 
@@ -215,8 +217,9 @@ def selftest():
     # anderer Bestand bleibt unangetastet
     conn = sqlite3.connect(str(db))
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, source) "
-        "VALUES ('x1','/shared/x1','shared','X','x','selftest')"
+        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, source, "
+        "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES ('x1','/shared/x1','shared','X','x','selftest','keine_norm','skript:test','Testvorrichtung')"
     )
     conn.commit()
     conn.close()

@@ -211,16 +211,16 @@ def selftest() -> None:
         conn = sqlite3.connect(str(db_path))
         conn.executescript(schema_path.read_text(encoding="utf-8"))
         conn.execute(
-            "INSERT INTO knowledge_nodes (id, path, title, summary, source) "
-            "VALUES ('n1', '/x/genutzt', 't', 's', 'test')"
+            "INSERT INTO knowledge_nodes (id, path, title, summary, source, norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+            "VALUES ('n1', '/x/genutzt', 't', 's', 'test', 'keine_norm', 'skript:test', 'Testvorrichtung')"
         )
         conn.execute(
-            "INSERT INTO knowledge_nodes (id, path, title, summary, source) "
-            "VALUES ('n2', '/x/ignoriert', 't', 's', 'test')"
+            "INSERT INTO knowledge_nodes (id, path, title, summary, source, norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+            "VALUES ('n2', '/x/ignoriert', 't', 's', 'test', 'keine_norm', 'skript:test', 'Testvorrichtung')"
         )
         conn.execute(
-            "INSERT INTO knowledge_nodes (id, path, title, summary, source) "
-            "VALUES ('n3', '/x/widerlegt', 't', 's', 'test')"
+            "INSERT INTO knowledge_nodes (id, path, title, summary, source, norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+            "VALUES ('n3', '/x/widerlegt', 't', 's', 'test', 'keine_norm', 'skript:test', 'Testvorrichtung')"
         )
         conn.execute(
             "INSERT INTO lessons_learned (id, type, description, occurrences) "

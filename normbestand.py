@@ -520,14 +520,16 @@ def _init_temp_db(path: Path) -> None:
     now = kms.now_iso()
     conn.execute(
         """INSERT INTO knowledge_nodes
-           (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
-           VALUES ('root0001', '/', NULL, 'shared', 'root', 'root', '', 0, '[]', '', ?, ?)""",
+           (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at,
+            norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
+           VALUES ('root0001', '/', NULL, 'shared', 'root', 'root', '', 0, '[]', '', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: Wurzelknoten')""",
         (now, now),
     )
     conn.execute(
         """INSERT INTO knowledge_nodes
-           (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
-           VALUES ('meth0001', '/methodik', '/', 'shared', 'methodik', 'methodik', '', 1, '[]', '', ?, ?)""",
+           (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at,
+            norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
+           VALUES ('meth0001', '/methodik', '/', 'shared', 'methodik', 'methodik', '', 1, '[]', '', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: Sammelknoten')""",
         (now, now),
     )
     conn.commit()
@@ -565,20 +567,23 @@ def _selftest() -> int:
         now = kms.now_iso()
         conn.execute(
             """INSERT INTO knowledge_nodes
-               (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
-               VALUES ('dir00001', '/methodik/direktiven', '/methodik', 'shared', 'direktiven', 'x', '', 2, '[]', '', ?, ?)""",
+               (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at,
+                norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
+               VALUES ('dir00001', '/methodik/direktiven', '/methodik', 'shared', 'direktiven', 'x', '', 2, '[]', '', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: Sammelknoten')""",
             (now, now),
         )
         conn.execute(
             """INSERT INTO knowledge_nodes
-               (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
-               VALUES ('dir00002', '/methodik/direktiven/vorhanden', '/methodik/direktiven', 'shared', 'Vorhanden', 'x', 'x', 3, '[]', ?, ?, ?)""",
+               (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at,
+                norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
+               VALUES ('dir00002', '/methodik/direktiven/vorhanden', '/methodik/direktiven', 'shared', 'Vorhanden', 'x', 'x', 3, '[]', ?, ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: simuliert vorhandenen Direktiven-Knoten')""",
             (f"erzeugt aus {global_md} (Stand {stand})", now, now),
         )
         conn.execute(
             """INSERT INTO knowledge_nodes
-               (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at)
-               VALUES ('dir00003', '/methodik/direktiven/verwaist', '/methodik/direktiven', 'shared', 'Nicht mehr in der Quelle', 'x', 'x', 3, '[]', '', ?, ?)""",
+               (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at,
+                norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
+               VALUES ('dir00003', '/methodik/direktiven/verwaist', '/methodik/direktiven', 'shared', 'Nicht mehr in der Quelle', 'x', 'x', 3, '[]', '', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: simuliert verwaisten Knoten')""",
             (now, now),
         )
         conn.commit()

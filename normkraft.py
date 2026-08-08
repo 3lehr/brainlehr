@@ -159,9 +159,18 @@ def ausser_kraft(db_path: Path, pfad: str, ab: str, wegen: str,
             "SELECT content FROM knowledge_nodes WHERE id = ?", (result["id"],)
         ).fetchone()
         neuer_content = (row[0] or "") + result["content_anhang"]
+        # norm_entscheidung (Nachtrag 2026-08-08): ein gesetztes gilt_bis
+        # macht aus einer norm_unbefristet-en Norm eine norm_befristet-e --
+        # dieselbe Aenderung wie knowledge_update() sie fuer diesen Fall
+        # verlangt. wegen ist bereits eine Pflichtangabe des Aufrufers
+        # (siehe unten), wird hier fuer norm_entschieden_grund wiederverwendet
+        # statt eine zweite Begruendung zu verlangen.
+        jetzt = now_iso()
         conn.execute(
-            "UPDATE knowledge_nodes SET gilt_bis = ?, content = ?, updated_at = ? WHERE id = ?",
-            (ab, neuer_content, now_iso(), result["id"]),
+            "UPDATE knowledge_nodes SET gilt_bis = ?, content = ?, updated_at = ?, "
+            "norm_entscheidung = 'norm_befristet', norm_entschieden_von = ?, "
+            "norm_entschieden_am = ?, norm_entschieden_grund = ? WHERE id = ?",
+            (ab, neuer_content, jetzt, "skript:normkraft.py", jetzt, wegen.strip(), result["id"]),
         )
         conn.execute(
             """INSERT INTO access_log (node_path, action, query, status, timestamp)
@@ -282,13 +291,26 @@ def _init_temp_db(path: Path) -> None:
 
 def _insert_node(conn: sqlite3.Connection, node_id: str, path: str, *, norm_rang: int | None,
                   gilt_ab: str | None, gilt_bis: str | None = None, content: str = "") -> None:
+    # norm_entscheidung (Auftrag 2026-08-08): dieses Modul PRUEFT Normkraft
+    # (Ausserkraftsetzung), norm_rang=None steht hier ausdruecklich fuer
+    # "kein Normtraeger" (test_ablehnung_kein_norm_traeger) -- keine_norm.
+    # Sonst Norm: befristet, wenn der Aufrufer ein gilt_bis mitgibt, sonst
+    # unbefristet. Folgt direkt aus den Aufrufer-Parametern, kein Raten.
+    norm_entscheidung = "keine_norm" if norm_rang is None else (
+        "norm_befristet" if gilt_bis is not None else "norm_unbefristet")
+    # norm_entschieden_* (Nachtrag 2026-08-08): dieser Helfer selbst ist der
+    # Entscheider, Begruendung folgt aus demselben Parameter wie oben.
+    grund = ("Testvorrichtung ohne Rang -- kein Normtraeger" if norm_rang is None
+             else "Testvorrichtung: Normkraft-Test braucht einen echten Normtraeger")
+    zeitpunkt = gilt_ab or "2026-01-01T00:00:00+01:00"
     conn.execute(
         """INSERT INTO knowledge_nodes
            (id, path, parent_path, project_id, title, summary, content, level, tags,
-            created_at, updated_at, norm_rang, gilt_ab, gilt_bis, source)
-           VALUES (?, ?, '/', 'shared', ?, 'summary', ?, 1, '[]', ?, ?, ?, ?, ?, 'selftest')""",
-        (node_id, path, node_id, content, gilt_ab or "2026-01-01T00:00:00+01:00",
-         gilt_ab or "2026-01-01T00:00:00+01:00", norm_rang, gilt_ab, gilt_bis),
+            created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung,
+            norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, source)
+           VALUES (?, ?, '/', 'shared', ?, 'summary', ?, 1, '[]', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'selftest')""",
+        (node_id, path, node_id, content, zeitpunkt, zeitpunkt, norm_rang, gilt_ab, gilt_bis,
+         norm_entscheidung, "skript:normkraft.py", zeitpunkt, grund),
     )
 
 

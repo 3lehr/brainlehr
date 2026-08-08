@@ -343,7 +343,7 @@ def _selftest() -> int:
     knoten = ["/a", "/b", "/c", "/d", "/e", "/f"]
     for i, p in enumerate(knoten):
         conn.execute(
-            "INSERT INTO knowledge_nodes (id,path,title,summary,source,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
+            "INSERT INTO knowledge_nodes (id,path,title,summary,source,created_at,updated_at,norm_entscheidung,norm_entschieden_von,norm_entschieden_grund) VALUES (?,?,?,?,?,?,?,'keine_norm','skript:hebb_kanten.py','Testvorrichtung, keine echte Norm-Pruefung')",
             (f"N-{i}", p, p, "Test", "selftest", now, now),
         )
     conn.commit()
@@ -449,7 +449,7 @@ def _selftest() -> int:
     conn.executescript(Path(HERE / "schema.sql").read_text(encoding="utf-8"))
     for i, p in enumerate(["/c", "/d", "/e", "/f"]):
         conn.execute(
-            "INSERT INTO knowledge_nodes (id,path,title,summary,source,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
+            "INSERT INTO knowledge_nodes (id,path,title,summary,source,created_at,updated_at,norm_entscheidung,norm_entschieden_von,norm_entschieden_grund) VALUES (?,?,?,?,?,?,?,'keine_norm','skript:hebb_kanten.py','Testvorrichtung, keine echte Norm-Pruefung')",
             (f"M-{i}", p, p, "Test", "selftest", now, now),
         )
     conn.commit()

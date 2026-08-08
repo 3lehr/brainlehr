@@ -208,8 +208,9 @@ def build_demo_db(db_path: Path = DEMO_DB_PATH) -> Path:
         level = path.count("/") - 1
         conn.execute(
             "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, "
-            "summary, content, level, tags, source, created_at, updated_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            "summary, content, level, tags, source, created_at, updated_at, "
+            "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'keine_norm','skript:demo_db.py','Namensraum-Knoten, kein Normtext')",
             (f"NS-{i:02d}", path, parent_path, project_id, title,
              f"Namensraum-Knoten fuer {title}.", "", level, "[]",
              "schreibpruefstand-grundbestand", now, now),

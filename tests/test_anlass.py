@@ -119,8 +119,9 @@ def test_schema_default_deckt_ohne_migration_geschriebene_altzeilen_ab(temp_db):
     der DEFAULT-Mechanismus, den migrate_anlass.py fuer die Rueckfuellung nutzt."""
     conn = sqlite3.connect(str(temp_db))
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, norm_entscheidung) "
-        "VALUES ('alt1', '/alt', 'shared', 'Alt', 'x', 'x', 0, 'x', 'keine_norm')"
+        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, norm_entscheidung, "
+        "norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES ('alt1', '/alt', 'shared', 'Alt', 'x', 'x', 0, 'x', 'keine_norm', 'skript:test', 'Testvorrichtung')"
     )
     conn.execute("INSERT INTO lessons_learned (id, type, description) VALUES ('L-alt', 'insight', 'Alt-Fund')")
     conn.commit()

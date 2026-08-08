@@ -324,8 +324,9 @@ def _selftest() -> None:
         c = sqlite3.connect(str(heil))
         c.executescript(SCHEMA_SQL.read_text())
         c.execute(
-            "INSERT INTO knowledge_nodes(id, path, project_id, title, summary) "
-            "VALUES ('n1','/x','shared','T','S')"
+            "INSERT INTO knowledge_nodes(id, path, project_id, title, summary, source, "
+            "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+            "VALUES ('n1','/x','shared','T','S','selftest','keine_norm','skript:test','Testvorrichtung')"
         )
         c.commit()
         c.close()
@@ -337,6 +338,16 @@ def _selftest() -> None:
         alt = tmpdir / "alt.db"
         c = sqlite3.connect(str(alt))
         c.executescript(SCHEMA_SQL.read_text())
+        # Trigger, die NEW.norm_rang lesen, verhindern DROP COLUMN (Nachtrag
+        # 2026-08-08) -- fuer dieses Selbsttest-Szenario (absichtlich
+        # veraltetes Schema) irrelevant, DROP TRIGGER vorher.
+        c.executescript("""
+            DROP TRIGGER IF EXISTS knowledge_nodes_norm_rang_gilt_ab_bi;
+            DROP TRIGGER IF EXISTS knowledge_nodes_norm_rang_gilt_ab_bu;
+            DROP TRIGGER IF EXISTS knowledge_nodes_norm_entscheidung_rang_bi;
+            DROP TRIGGER IF EXISTS knowledge_nodes_norm_entscheidung_rang_bu;
+            DROP TRIGGER IF EXISTS knowledge_nodes_norm_entscheidung_rang_neu_bu;
+        """)
         c.execute("ALTER TABLE knowledge_nodes DROP COLUMN norm_rang")
         c.commit()
         c.close()

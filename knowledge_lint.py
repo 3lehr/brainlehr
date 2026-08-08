@@ -1177,8 +1177,9 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
     fixture_source = "Testvorrichtung _selftest_db (knowledge_lint.py, kein echter Fund)"
 
     conn.executemany(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, source, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, source, updated_at, "
+        "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,'keine_norm','skript:knowledge_lint.py','Testvorrichtung')",
         [
             ("n_root", "/shared", None, "shared", "Shared", "Wurzel", 0, fixture_source, fresh),
             ("n_ok_parent", "/shared/kind", "/shared", "shared", "Kind", "Gueltiger Elternpfad", 1, fixture_source, fresh),
@@ -1194,8 +1195,9 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
     # K3: ein Knoten mit abweichender Konfidenz -- die anderen bleiben
     # auf dem Schema-Vorgabewert (0.8), der ueber pragma_table_info gelesen wird.
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, source, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, source, updated_at, "
+        "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,'keine_norm','skript:knowledge_lint.py','Testvorrichtung')",
         ("n_conf_custom", "/shared/geprueft", "/shared", "shared", "Geprueft", "Abweichende Konfidenz", 1, 1.0, fixture_source, fresh),
     )
     # 3. Nie gezogen -- Fenster-Splittung (Auftrag 2026-08-06, Lehre L-73da37).
@@ -1210,8 +1212,9 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
     after_boundary = (window_start_dt + timedelta(seconds=1)).strftime(fmt)
     conn.executemany(
         "INSERT INTO knowledge_nodes "
-        "(id, path, parent_path, project_id, title, summary, level, confidence, source, created_at, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        "(id, path, parent_path, project_id, title, summary, level, confidence, source, created_at, updated_at, "
+        " norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,'keine_norm','skript:knowledge_lint.py','Testvorrichtung')",
         [
             ("n_np_on_boundary", "/shared/np/on-boundary", "/shared", "shared", "Auf Fensterbeginn",
              "Nie gezogen, Entstehung genau am Fensterbeginn -- zaehlt als im Fenster", 1, 1.0,
@@ -1230,21 +1233,25 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
     # desselben Alters nie auftauchen.
     uralt = (now - timedelta(days=400)).strftime(fmt)
     conn.executemany(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, source, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, "
+        "gilt_ab, source, updated_at, norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         [
             ("n_conf_verfallen", "/shared/verfallen", "/shared", "shared", "Verfallen",
-             "Sehr alter Fakt", 1, 1.0, None, fixture_source, uralt),
+             "Sehr alter Fakt", 1, 1.0, None, None, fixture_source, uralt,
+             "keine_norm", "skript:knowledge_lint.py", "Testvorrichtung"),
             ("n_conf_norm_uralt", "/shared/normtest/uralte-norm", "/shared", "shared", "Uralte Norm",
-             "Norm verfaellt trotz Alter nicht", 1, 1.0, 1, fixture_source, uralt),
+             "Norm verfaellt trotz Alter nicht", 1, 1.0, 1, uralt, fixture_source, uralt,
+             "norm_unbefristet", "skript:knowledge_lint.py", "Testvorrichtung: Norm zu Testzwecken"),
         ],
     )
     # 10. Ohne Herkunft: ein Knoten mit nur Leerzeichen als source (zaehlt
     # als fehlend, wie in knowledge_add()), ein Knoten mit echter source als
     # Gegenprobe -- der darf in keiner Ausgabe der Kategorie auftauchen.
     conn.executemany(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, source, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, source, updated_at, "
+        "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,'keine_norm','skript:knowledge_lint.py','Testvorrichtung')",
         [
             ("n_no_source", "/shared/ohne-herkunft", "/shared", "shared", "Ohne Herkunft",
              "Nur Leerzeichen als source", 1, "   ", fresh),
@@ -1269,8 +1276,9 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
     # confidence explizit 1.0 (Muster wie bei den Normkonflikt-Fixtures
     # oben) -- sonst verfaelschen sechs weitere Vorgabewert-Knoten K3.
     conn.executemany(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, source, quell_hash, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, confidence, source, quell_hash, updated_at, "
+        "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,'keine_norm','skript:knowledge_lint.py','Testvorrichtung')",
         [
             # Gegenprobe: Hash stimmt -> darf in keiner der drei Listen auftauchen.
             ("n_src_ok", "/shared/quelle-ok", "/shared", "shared", "Abschnitt OK", "S", 1, 1.0,
@@ -1392,55 +1400,60 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
     # Kategorien, die auf dieser Fixture exakte Mengen/Zahlen pruefen.
     t_early = "2026-01-01T00:00:00+00:00"
     t_late = "2026-02-01T00:00:00+00:00"
+    _NC_ENTSCHIEDEN = ("skript:knowledge_lint.py", "Testvorrichtung: Normkonflikt-Fixture")
     conn.executemany(
         "INSERT INTO knowledge_nodes "
-        "(id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, source, gilt_ab, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        "(id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, source, gilt_ab, updated_at, "
+        " norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         [
             # Gruppe 1 -- verschiedener Rang, gleicher Bereich: lex superior,
             # kleinere Zahl gewinnt.
             ("nc_1a", "/shared/normtest/kranwinkel-grenzwert", "/shared", "testproj",
-             "Regel Kranwinkel Grenzwert", "S", 1, 1.0, 1, fixture_source, t_early, fresh),
+             "Regel Kranwinkel Grenzwert", "S", 1, 1.0, 1, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             ("nc_1b", "/shared/normtest/kranwinkel-ausnahme", "/shared", "testproj",
-             "Regel Kranwinkel Ausnahme", "S", 1, 1.0, 3, fixture_source, t_early, fresh),
+             "Regel Kranwinkel Ausnahme", "S", 1, 1.0, 3, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             # Gruppe 2 -- gleicher Rang, leerer Bereich (ueberall) gegen ein
             # Projekt: Bereiche ueberschneiden sich, lex specialis, der
             # konkrete Bereich gewinnt (nicht "disjunkt").
             ("nc_2a", "/shared/normtest/ladekurve-nachtbetrieb", "/shared", "fahrzeugpark",
-             "Regel Ladekurve Nachtbetrieb", "S", 1, 1.0, 2, fixture_source, t_early, fresh),
+             "Regel Ladekurve Nachtbetrieb", "S", 1, 1.0, 2, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             ("nc_2b", "/shared/normtest/ladekurve-feiertagsbetrieb", "/shared", "",
-             "Regel Ladekurve Feiertagsbetrieb", "S", 1, 1.0, 2, fixture_source, t_early, fresh),
+             "Regel Ladekurve Feiertagsbetrieb", "S", 1, 1.0, 2, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             # Gruppe 3 -- gleicher Rang, gleicher Bereich, verschiedenes
             # gilt_ab: lex posterior, juengeres gewinnt.
             ("nc_3a", "/shared/normtest/standheizung-sommerzeit", "/shared", "fahrzeugpark2",
-             "Regel Standheizung Sommerzeit", "S", 1, 1.0, 2, fixture_source, t_early, fresh),
+             "Regel Standheizung Sommerzeit", "S", 1, 1.0, 2, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             ("nc_3b", "/shared/normtest/standheizung-winterzeit", "/shared", "fahrzeugpark2",
-             "Regel Standheizung Winterzeit", "S", 1, 1.0, 2, fixture_source, t_late, fresh),
+             "Regel Standheizung Winterzeit", "S", 1, 1.0, 2, fixture_source, t_late, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             # Gruppe 4 -- gleicher Rang, gleicher Bereich, gleiches gilt_ab:
             # der wichtigste Fall, echter Konflikt, keine Regel entscheidet.
             ("nc_4a", "/shared/normtest/blinkfrequenz-anhaenger", "/shared", "fahrzeugpark3",
-             "Regel Blinkfrequenz Anhaenger", "S", 1, 1.0, 2, fixture_source, t_early, fresh),
+             "Regel Blinkfrequenz Anhaenger", "S", 1, 1.0, 2, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             ("nc_4b", "/shared/normtest/blinkfrequenz-kombi", "/shared", "fahrzeugpark3",
-             "Regel Blinkfrequenz Kombi", "S", 1, 1.0, 2, fixture_source, t_early, fresh),
+             "Regel Blinkfrequenz Kombi", "S", 1, 1.0, 2, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             # Gruppe 5 -- disjunkte, konkrete Bereiche: kein Konflikt, taucht
             # nirgends auf (identischer Titel, damit klar ist: einzig der
             # Bereich verhindert die Meldung).
             ("nc_5a", "/shared/normtest/hupsignal-baustelle-insel-a", "/shared", "inselA",
-             "Regel Hupsignal Baustelle", "S", 1, 1.0, 1, fixture_source, t_early, fresh),
+             "Regel Hupsignal Baustelle", "S", 1, 1.0, 1, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             ("nc_5b", "/shared/normtest/hupsignal-baustelle-insel-b", "/shared", "inselB",
-             "Regel Hupsignal Baustelle", "S", 1, 1.0, 1, fixture_source, t_early, fresh),
+             "Regel Hupsignal Baustelle", "S", 1, 1.0, 1, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             # Gruppe 6 -- Norm gegen Fakt (norm_rang NULL): kein Konflikt,
-            # der Fakt wird von der SQL-Abfrage schon ausgeschlossen.
+            # der Fakt wird von der SQL-Abfrage schon ausgeschlossen. Fakt
+            # bekommt gilt_ab=None statt t_early -- keine_norm verlangt
+            # norm_rang UND gilt_ab NULL, und die Abfrage filtert ohnehin
+            # nach norm_rang IS NOT NULL, gilt_ab war hier nie ausgewertet.
             ("nc_6norm", "/shared/normtest/sichtpruefung-bremslicht-norm", "/shared", "faktcheck",
-             "Regel Sichtpruefung Bremslicht", "S", 1, 1.0, 1, fixture_source, t_early, fresh),
+             "Regel Sichtpruefung Bremslicht", "S", 1, 1.0, 1, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             ("nc_6fakt", "/shared/normtest/sichtpruefung-bremslicht-fakt", "/shared", "faktcheck",
-             "Regel Sichtpruefung Bremslicht", "S", 1, 1.0, None, fixture_source, t_early, fresh),
+             "Regel Sichtpruefung Bremslicht", "S", 1, 1.0, None, fixture_source, None, fresh, "keine_norm", *_NC_ENTSCHIEDEN),
             # Gruppe 7 -- gleicher Rang/Bereich, aber Themenscore unter der
             # Schwelle: keine Regel wird ueberhaupt aufgerufen, kein Treffer.
             ("nc_7a", "/shared/normtest/randfall-alpha-eins", "/shared", "randfall",
-             "Alpha Beta Gamma Eins", "S", 1, 1.0, 1, fixture_source, t_early, fresh),
+             "Alpha Beta Gamma Eins", "S", 1, 1.0, 1, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
             ("nc_7b", "/shared/normtest/randfall-zeta-zwei", "/shared", "randfall",
-             "Zeta Omega Zwei", "S", 1, 1.0, 3, fixture_source, t_early, fresh),
+             "Zeta Omega Zwei", "S", 1, 1.0, 3, fixture_source, t_early, fresh, "norm_unbefristet", *_NC_ENTSCHIEDEN),
         ],
     )
     # Gruppe 8 -- wie Gruppe 4 (echter Konflikt), aber eine Seite ist per
@@ -1450,13 +1463,14 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
     t_ausser_kraft = "2026-03-01T00:00:00+00:00"
     conn.executemany(
         "INSERT INTO knowledge_nodes "
-        "(id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, source, gilt_ab, gilt_bis, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "(id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, source, gilt_ab, gilt_bis, updated_at, "
+        " norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'skript:knowledge_lint.py','Testvorrichtung: Normkonflikt-Fixture')",
         [
             ("nc_8a", "/shared/normtest/reifendruck-winter", "/shared", "fahrzeugpark4",
-             "Regel Reifendruck Winter", "S", 1, 1.0, 2, fixture_source, t_early, None, fresh),
+             "Regel Reifendruck Winter", "S", 1, 1.0, 2, fixture_source, t_early, None, fresh, "norm_unbefristet"),
             ("nc_8b", "/shared/normtest/reifendruck-sommer", "/shared", "fahrzeugpark4",
-             "Regel Reifendruck Sommer", "S", 1, 1.0, 2, fixture_source, t_early, t_ausser_kraft, fresh),
+             "Regel Reifendruck Sommer", "S", 1, 1.0, 2, fixture_source, t_early, t_ausser_kraft, fresh, "norm_befristet"),
         ],
     )
     # Gruppe 9 -- wie Gruppe 4 (gleicher Rang/Bereich/gilt_ab), aber BEIDE
@@ -1468,8 +1482,9 @@ def _selftest_db(tmp_path: Path, now: datetime) -> Path:
     # Konflikt, beide Fundstellen genannt, keine Aufloesung (Knoten dd367fd1).
     conn.executemany(
         "INSERT INTO knowledge_nodes "
-        "(id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, norm_art, source, gilt_ab, updated_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "(id, path, parent_path, project_id, title, summary, level, confidence, norm_rang, norm_art, source, gilt_ab, updated_at, "
+        " norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'norm_unbefristet','skript:knowledge_lint.py','Testvorrichtung: Normkonflikt-Fixture')",
         [
             ("nc_9a", "/shared/normtest/ladeleistung-schnelllader", "/shared", "artgleich",
              "Regel Ladeleistung Schnelllader", "S", 1, 1.0, 2, "sollen", fixture_source, t_early, fresh),
@@ -1875,7 +1890,8 @@ def selftest() -> None:
         conn = sqlite3.connect(str(edge_db))
         conn.executescript((SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8"))
         conn.executemany(
-            "INSERT INTO knowledge_nodes (id, path, title, summary, source) VALUES (?,?,?,?,?)",
+            "INSERT INTO knowledge_nodes (id, path, title, summary, source, norm_entscheidung, "
+            "norm_entschieden_von, norm_entschieden_grund) VALUES (?,?,?,?,?,'keine_norm','skript:knowledge_lint.py','Testvorrichtung')",
             [(f"e{i}", f"/e/{i}", "T", "S", "Testvorrichtung Gegenprobe B (knowledge_lint.py)") for i in range(4)],
         )
         conn.executemany(

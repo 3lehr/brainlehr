@@ -56,6 +56,10 @@ def _norm_entscheidung_test_default(monkeypatch):
 
     def _mit_default(*args, **kwargs):
         kwargs.setdefault("norm_entscheidung", "keine_norm")
+        # norm_entschieden_grund (Nachtrag 2026-08-08): dieselbe Testbequemlichkeit
+        # wie norm_entscheidung oben -- Pflicht seit dem Nachtrag, fuer diese
+        # norm-fernen Tests irrelevant.
+        kwargs.setdefault("norm_entschieden_grund", "Testvorrichtung, keine echte Norm-Pruefung")
         return original(*args, **kwargs)
 
     monkeypatch.setattr(kms, "knowledge_add", _mit_default)

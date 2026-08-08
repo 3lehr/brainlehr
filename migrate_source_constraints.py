@@ -205,8 +205,10 @@ def _selftest() -> int:
         for t in NEEDED_TRIGGERS:
             conn.execute(f"DROP TRIGGER IF EXISTS {t}")
         conn.execute(
-            "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source) "
-            "VALUES ('n1', '/x', 'shared', 'Titel', 'Summary', 'Inhalt', 0, '')"
+            "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, "
+            "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+            "VALUES ('n1', '/x', 'shared', 'Titel', 'Summary', 'Inhalt', 0, '', "
+            "'keine_norm', 'skript:test', 'Testvorrichtung')"
         )
         conn.commit()
         conn.close()

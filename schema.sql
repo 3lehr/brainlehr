@@ -77,6 +77,26 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- Geschichtsproblem ist: eine Zeile darf nie widerspruechlich WERDEN,
     -- unabhaengig davon, ob sie neu oder alt ist.
     norm_entscheidung TEXT NOT NULL DEFAULT 'offen',
+    -- Entscheider (Nachtrag zum Auftrag 2026-08-08, Betreiber-Nachfrage:
+    -- "wer hat entschieden?"). GEMESSEN: actor/session halten fest, wer den
+    -- KNOTEN ANGELEGT hat, nicht wer ueber seinen Normstatus entschieden hat
+    -- -- bei nachtraeglichen Sammelentscheidungen (siehe die 67 Alt-Knoten
+    -- mit vorbestehendem norm_rang) faellt die Entscheidung Monate spaeter
+    -- und von jemand anderem als dem urspruenglichen Schreiber. Gleiche
+    -- Bauform wie zurueckgezogen_grund/_am/_von oben (drei einfache TEXT-
+    -- Spalten, kein Vorgabewert ausser NULL) -- NICHT eine eigene Machart.
+    -- Altbestand auf 'offen' hat KEINEN Entscheider: alle drei bleiben NULL,
+    -- das ist korrekt (niemand hat entschieden). Sobald norm_entscheidung
+    -- von 'offen' abweicht, verlangt der Trigger
+    -- knowledge_nodes_norm_entscheidung_wer_bi/bu unten norm_entschieden_von
+    -- UND norm_entschieden_grund nicht-leer -- exakt dieselbe Pflicht wie
+    -- knowledge_zurueckziehen() sie fuer grund schon durchsetzt (Python-
+    -- seitig dort, hier zusaetzlich als DB-Trigger, weil norm_entscheidung
+    -- -- anders als zurueckziehen -- auch von Skripten direkt per SQL
+    -- gesetzt wird, nicht nur ueber ein einzelnes MCP-Werkzeug).
+    norm_entschieden_von TEXT,
+    norm_entschieden_am TEXT,
+    norm_entschieden_grund TEXT,
     -- Quellhash (Auftrag 2026-08-06, Betreiber-Idee "Selbstentwertung statt
     -- Beleg"). Hash des ABSCHNITTS, aus dem der Knoten erzeugt wurde (siehe
     -- normbestand.py::parse_sections) -- NICHT der ganzen Quelldatei: eine
@@ -356,6 +376,32 @@ FOR EACH ROW WHEN OLD.norm_entscheidung = 'offen' AND NEW.norm_entscheidung = 'o
     AND OLD.norm_rang IS NULL AND NEW.norm_rang IS NOT NULL
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang neu vergeben, aber norm_entscheidung fehlt: norm_befristet oder norm_unbefristet mitgeben');
+END;
+
+-- Entscheider (Nachtrag 2026-08-08, Betreiber-Nachfrage "wer hat
+-- entschieden?"): jede Zeile mit norm_entscheidung <> 'offen' braucht
+-- norm_entschieden_von UND norm_entschieden_grund nicht-leer -- dieselbe
+-- Pflicht, die knowledge_zurueckziehen() fuer grund schon durchsetzt
+-- (Python-seitig dort), hier zusaetzlich als DB-Trigger (bi+bu, Daten-
+-- integritaet, kein Geschichtsproblem: eine Zeile darf nie ENTSCHIEDEN
+-- OHNE Entscheider sein, unabhaengig davon ob neu oder alt). Altbestand
+-- bleibt unberuehrt: 'offen' matcht die WHEN-Klausel nicht.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_wer_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung <> 'offen'
+    AND (NEW.norm_entschieden_von IS NULL OR TRIM(NEW.norm_entschieden_von) = ''
+         OR NEW.norm_entschieden_grund IS NULL OR TRIM(NEW.norm_entschieden_grund) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung gesetzt, aber norm_entschieden_von/norm_entschieden_grund fehlen: wer entscheidet und warum?');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_wer_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entscheidung <> 'offen'
+    AND (NEW.norm_entschieden_von IS NULL OR TRIM(NEW.norm_entschieden_von) = ''
+         OR NEW.norm_entschieden_grund IS NULL OR TRIM(NEW.norm_entschieden_grund) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entscheidung gesetzt, aber norm_entschieden_von/norm_entschieden_grund fehlen: wer entscheidet und warum?');
 END;
 
 -- (c) erweitert um gilt_ab/gilt_bis: keine_norm verlangt ALLE DREI

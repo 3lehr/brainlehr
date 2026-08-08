@@ -111,7 +111,9 @@ def baue_db(eintraege: list[dict], db_path: Path, mit_embeddings: bool,
             pfad = korpus.kennung(e)
             conn.execute(
                 "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, "
-                "content, level, tags, source, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                "content, level, tags, source, created_at, updated_at, "
+                "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'keine_norm','skript:abrufpruefstand.py','synthetischer Pruefkorpus, kein Normtraeger')",
                 (f"N-{i:03d}", pfad, None, e["abteilung"], e["title"], e["summary"],
                  e["content"], pfad.count("/") - 1, "[]", "abrufpruefstand", jetzt, jetzt))
         else:

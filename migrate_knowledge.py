@@ -33,8 +33,9 @@ def add_node(conn, path, parent_path, title, summary, content="",
     try:
         conn.execute(
             """INSERT INTO knowledge_nodes
-               (id, path, parent_path, project_id, title, summary, content, level, tags, source, confidence, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               (id, path, parent_path, project_id, title, summary, content, level, tags, source, confidence, created_at, updated_at,
+                norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'keine_norm', 'skript:migrate_knowledge.py', 'Struktur-/Sammelknoten, kein Normtext')""",
             (node_id, path, parent_path, project_id, title, summary, content,
              level, json.dumps(tags or []), source, confidence, now_iso(), now_iso())
         )

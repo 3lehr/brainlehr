@@ -180,9 +180,10 @@ def demo() -> None:
         conn.executescript(schema)
         conn.execute(
             "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, "
-            "content, level, source) VALUES ('n1', '/test/x', 'shared', "
+            "content, level, source, norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+            "VALUES ('n1', '/test/x', 'shared', "
             "'Quartalsbericht Dachrinne', 'Fahrradkorb Regenschirm Testeintrag', "
-            "NULL, 0, 'test')"
+            "NULL, 0, 'test', 'keine_norm', 'skript:knowledge_recall_replay.py', 'Testvorrichtung')"
         )
         conn.commit()
         conn.close()

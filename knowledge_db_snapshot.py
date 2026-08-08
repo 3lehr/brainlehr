@@ -68,7 +68,9 @@ def demo() -> None:
         conn.executescript((SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8"))
         conn.execute(
             "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, "
-            "content, level, source) VALUES ('n1', '/t', 'shared', 'T', 'S', NULL, 0, 'test')"
+            "content, level, source, norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+            "VALUES ('n1', '/t', 'shared', 'T', 'S', NULL, 0, 'test', "
+            "'keine_norm', 'skript:knowledge_db_snapshot.py', 'Testvorrichtung, keine echte Norm-Pruefung')"
         )
         conn.commit()
         conn.close()

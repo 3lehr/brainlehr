@@ -28,7 +28,8 @@ nodes = [
 
 for n in nodes:
     conn.execute(
-        "INSERT OR IGNORE INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, confidence, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT OR IGNORE INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, confidence, created_at, updated_at, "
+        "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'keine_norm','skript:_add_phase2_nodes.py','Zusammenfassungsknoten, kein Normtext')",
         n
     )
 conn.commit()

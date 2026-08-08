@@ -123,8 +123,10 @@ def _selftest() -> int:
         conn = sqlite3.connect(str(db_path))
         conn.executescript(schema_sql)
         conn.execute(
-            "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, anlass) "
-            "VALUES ('n1', '/x', 'shared', 'Titel', 'Summary', 'Inhalt', 0, 'quelle', 'unbekannt')"
+            "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, anlass, "
+            "norm_entscheidung, norm_entschieden_von, norm_entschieden_grund) "
+            "VALUES ('n1', '/x', 'shared', 'Titel', 'Summary', 'Inhalt', 0, 'quelle', 'unbekannt', "
+            "'keine_norm', 'skript:endgueltig_entfernen.py', 'Testvorrichtung, keine echte Norm-Pruefung')"
         )
         conn.commit()
         conn.close()

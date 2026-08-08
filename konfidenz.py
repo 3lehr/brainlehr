@@ -576,12 +576,26 @@ def _insert_node(conn: sqlite3.Connection, node_id: str, path: str, *, confidenc
     # Selbsttest-Platzhalter statt None, wenn der Aufrufer keinen echten Wert
     # mitgibt.
     source = source or "selftest"
+    # norm_entscheidung (Auftrag 2026-08-08): dieser Helfer erzeugt reine
+    # Testvorrichtungen -- ein gesetzter norm_rang macht sie zur (unbefristet
+    # gueltigen, gilt_ab = updated_at als belegbarer Zeitpunkt) Norm, sonst
+    # bleiben sie Fakt (keine_norm). Kein Vorgabewert, der raet: die
+    # Entscheidung folgt direkt aus dem Aufrufer-Parameter norm_rang.
+    norm_entscheidung = "keine_norm" if norm_rang is None else "norm_unbefristet"
+    gilt_ab = updated_at if norm_rang is not None else None
+    # norm_entschieden_* (Nachtrag 2026-08-08): Entscheider ist dieser
+    # Testvorrichtungs-Helfer selbst, Begruendung folgt direkt aus
+    # norm_entscheidung oben.
+    grund = ("Testvorrichtung ohne Rang -- Fakt" if norm_rang is None
+             else "Testvorrichtung mit vorgegebenem norm_rang -- Norm ohne Enddatum")
     conn.execute(
         """INSERT INTO knowledge_nodes
            (id, path, parent_path, project_id, title, summary, content, level, tags,
-            created_at, updated_at, confidence, norm_rang, source)
-           VALUES (?, ?, '/', 'shared', ?, 'summary', ?, 1, '[]', ?, ?, ?, ?, ?)""",
-        (node_id, path, node_id, content, updated_at, updated_at, confidence, norm_rang, source),
+            created_at, updated_at, confidence, norm_rang, gilt_ab, norm_entscheidung,
+            norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, source)
+           VALUES (?, ?, '/', 'shared', ?, 'summary', ?, 1, '[]', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (node_id, path, node_id, content, updated_at, updated_at, confidence, norm_rang,
+         gilt_ab, norm_entscheidung, "skript:konfidenz.py", updated_at, grund, source),
     )
 
 

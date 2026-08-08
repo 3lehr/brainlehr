@@ -69,8 +69,9 @@ def old_db(tmp_path, monkeypatch):
     conn = sqlite3.connect(str(db_path))
     conn.executescript(_old_schema_without_anlass())
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, norm_entscheidung) "
-        "VALUES ('n1', '/x', 'shared', 'Bestandsknoten', 'x', 'x', 0, 'x', 'keine_norm')"
+        "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, norm_entscheidung, "
+        "norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES ('n1', '/x', 'shared', 'Bestandsknoten', 'x', 'x', 0, 'x', 'keine_norm', 'skript:test', 'Testvorrichtung')"
     )
     conn.execute(
         "INSERT INTO lessons_learned (id, type, description) VALUES ('L-1', 'insight', 'Bestandslehre')"

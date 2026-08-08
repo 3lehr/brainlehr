@@ -53,8 +53,9 @@ def temp_db(tmp_path, monkeypatch):
     # /shared muss als echter Knoten existieren, sonst lehnt knowledge_add()
     # seit P1 den Elternpfad ab (unbekannter parent_path).
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, updated_at, source, norm_entscheidung) "
-        "VALUES ('root', '/shared', NULL, 'shared', 'Shared', 'Wurzel', 0, ?, 'test', 'keine_norm')",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, level, updated_at, source, norm_entscheidung, "
+        "norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES ('root', '/shared', NULL, 'shared', 'Shared', 'Wurzel', 0, ?, 'test', 'keine_norm', 'skript:test', 'Testvorrichtung')",
         (kms.now_iso(),),
     )
     conn.commit()
@@ -66,8 +67,9 @@ def temp_db(tmp_path, monkeypatch):
 def _insert_node(db_path, node_id, path, title, content="", parent_path="/shared"):
     conn = sqlite3.connect(str(db_path))
     conn.execute(
-        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, updated_at, source, norm_entscheidung) "
-        "VALUES (?, ?, ?, 'shared', ?, 'Zusammenfassung', ?, 1, ?, 'test', 'keine_norm')",
+        "INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, updated_at, source, norm_entscheidung, "
+        "norm_entschieden_von, norm_entschieden_grund) "
+        "VALUES (?, ?, ?, 'shared', ?, 'Zusammenfassung', ?, 1, ?, 'test', 'keine_norm', 'skript:test', 'Testvorrichtung')",
         (node_id, path, parent_path, title, content, kms.now_iso()),
     )
     conn.commit()
