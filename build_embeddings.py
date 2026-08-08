@@ -23,6 +23,9 @@ import shutil
 import sqlite3
 import sys
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -32,6 +35,24 @@ import embeddings
 
 DB_PATH = Path(__file__).parent / "knowledge.db"
 BERLIN = ZoneInfo("Europe/Berlin")
+
+# --force (Auftrag 2026-08-07, Modellwechsel-Fall): rechnet ALLES neu, auch
+# wenn Pruefsumme+Modell passen. Noetig, wenn embed_text() selbst anders
+# rechnet (neue Modellversion unter gleichem Tag) -- die Pruefsumme sieht das
+# nicht, weil sich der eingebettete TEXT dabei nicht aendert.
+FORCE = "--force" in sys.argv[1:]
+
+# Stapelgroesse fuer /api/embed (Ergaenzung 2026-08-07, gemessen waehrend des
+# Vollaufs): Ollama nimmt bei `input` eine Liste entgegen -- 1 Text/Aufruf
+# maass 132-205ms/Text (HTTP-Overhead dominiert, nicht Rechenzeit), 32
+# Texte/Aufruf 17,7-18,6ms/Text (Faktor ~7-11, zwei unabhaengige Messungen).
+# Eigene Messreihe (1/8/16/32/64/128/256, waehrend ein Parallellauf denselben
+# Ollama-Prozess mit Einzelanfragen belegte): Gewinn flacht zwischen 16 und
+# 32 ab, danach unter Nebenlast SCHLECHTER (64 45,7ms/Text, 256 88,7ms/Text)
+# -- ein grosser Stapel haelt Ollama laenger blockiert und verliert unter
+# echter Nebenlast (z.B. knowledge_recall_hook waehrenddessen) mehr, als er
+# gewinnt. 32 ist der belegte Sweet Spot, nicht geraten.
+BATCH_SIZE = 32
 
 # project_id additiv (siehe schema.sql-Kommentar bei knowledge_embeddings):
 # PRIMARY KEY jetzt (kind, ref_id, project_id), damit eine Suche die
@@ -54,6 +75,20 @@ CREATE TABLE IF NOT EXISTS knowledge_embeddings (
 # eine bereits bestehende Tabelle, die vor der Spalte angelegt wurde -- die
 # CREATE TABLE IF NOT EXISTS oben legt sie nur bei einer ganz neuen Tabelle an.
 ENSURE_DIM_COLUMN_SQL = "ALTER TABLE knowledge_embeddings ADD COLUMN dim INTEGER"
+
+# text_checksum (Auftrag 2026-08-07, Ueberspringen unveraenderter Eintraege):
+# sha256 ueber genau den Text, der eingebettet wurde -- gleiches additive
+# Nachfuehrungs-Idiom wie dim oben. Warum Pruefsumme statt updated_at-
+# Zeitstempel: updated_at wird an anderer Stelle (knowledge_update() u.ae.)
+# auch OHNE Textaenderung neu gesetzt (siehe test_updated_at_nebenwirkungen.py)
+# -- ein Zeitstempelvergleich haette in genau diesem Fall unveraenderten Text
+# faelschlich neu gerechnet, ist also kein verlaesslicher Indikator fuer
+# "Text hat sich geaendert". Die Pruefsumme schuetzt NICHT davor, dass sich
+# embeddings.embed_text() selbst aendert (Ollama-Modell-Update unter gleichem
+# Tag, andere Praeprozessierung) oder dass jemand den vector-Blob manuell
+# verfaelscht, ohne Text/Modell anzufassen -- fuer den ersten Fall existiert
+# der FORCE-Schalter unten, der zweite Fall ist ausserhalb des Auftrags.
+ENSURE_CHECKSUM_COLUMN_SQL = "ALTER TABLE knowledge_embeddings ADD COLUMN text_checksum TEXT"
 
 # Config-Tabelle fuer die Modellsperre (Auftrag 2026-08-07, siehe schema.sql-
 # Kommentar bei knowledge_embeddings_model_check_bi/_bu). Dieses Skript
@@ -103,6 +138,79 @@ def resolve_lesson_projects(raw: str | None) -> list[str]:
 
 def now_iso() -> str:
     return datetime.now(BERLIN).isoformat(timespec="seconds")
+
+
+def _text_checksum(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _needs_recompute(
+    conn: sqlite3.Connection, kind: str, ref_id: str, project_ids: list[str],
+    model: str, checksum: str, force: bool,
+) -> bool:
+    """True, wenn mindestens einer der Ziel-Bereiche neu gerechnet werden muss
+    (fehlende Zeile, anderes Modell, oder Pruefsumme weicht ab -- Text hat
+    sich seither geaendert oder die Zeile stammt von vor diesem Auftrag und
+    traegt noch keine Pruefsumme)."""
+    if force:
+        return True
+    for pid in project_ids:
+        row = conn.execute(
+            "SELECT model, text_checksum FROM knowledge_embeddings "
+            "WHERE kind = ? AND ref_id = ? AND project_id = ?",
+            (kind, ref_id, pid),
+        ).fetchone()
+        if row is None or row[0] != model or row[1] != checksum:
+            return True
+    return False
+
+
+def _embed_batch(texts: list[str], *, timeout: float) -> list[list[float] | None]:
+    """Ein HTTP-Aufruf gegen Ollamas /api/embed fuer bis zu BATCH_SIZE Texte
+    (Grenze aus dem Auftrag: embeddings.py bleibt unangetastet, deshalb hier
+    dieselbe Anfrage-/Sicherheitslogik wie embeddings.embed_text() dupliziert
+    -- nur fuer `input` als Liste statt einzelnem String).
+
+    Rueckgabe: gleich lange Liste wie texts, je Eintrag Vektor oder None.
+    Scheitert der GANZE Stapel (Netzwerk/Timeout/Ollama liefert eine andere
+    Anzahl Vektoren als gesendet), werden die Texte NICHT still verworfen --
+    Fallback ist der bestehende Einzelpfad embeddings.embed_text() je Text
+    (dieselbe Fehlerbehandlung wie vor diesem Umbau, nur langsamer). Damit
+    verliert ein kaputter Stapel bestenfalls Zeit, nie Vektoren."""
+    cleaned = [(t or "").strip() for t in texts]
+    non_empty = [i for i, t in enumerate(cleaned) if t]
+    result: list[list[float] | None] = [None] * len(texts)
+    if not non_empty:
+        return result
+
+    url = embeddings.DEFAULT_OLLAMA_URL.rstrip("/")
+    parsed = urllib.parse.urlparse(url)
+    if parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
+        raise ValueError("Ollama-Embeddings duerfen nur Loopback-URLs nutzen")
+    payload = {"model": embeddings.DEFAULT_EMBED_MODEL, "input": [cleaned[i] for i in non_empty]}
+    req = urllib.request.Request(
+        f"{url}/api/embed",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            raw_body = json.loads(response.read().decode("utf-8"))
+        vectors = raw_body.get("embeddings")
+        if not isinstance(vectors, list) or len(vectors) != len(non_empty):
+            raise ValueError(f"Stapel-Antwort: {len(vectors) if isinstance(vectors, list) else 'keine Liste'} "
+                              f"Vektoren fuer {len(non_empty)} gesendete Texte")
+        for pos, idx in enumerate(non_empty):
+            vec = vectors[pos]
+            result[idx] = [float(x) for x in vec] if isinstance(vec, list) else None
+        return result
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError, ValueError, TypeError) as exc:
+        print(f"WARNUNG: Stapel-Einbettung fehlgeschlagen ({len(non_empty)} Texte, {exc}) "
+              "-- fahre einzeln nach, kein stiller Vektorverlust.")
+        for idx in non_empty:
+            result[idx] = embeddings.embed_text(cleaned[idx], timeout=timeout)
+        return result
 
 
 def _checksum(conn: sqlite3.Connection) -> str:
@@ -167,6 +275,8 @@ def main() -> int:
     emb_columns = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_embeddings)")}
     if "dim" not in emb_columns:
         conn.execute(ENSURE_DIM_COLUMN_SQL)
+    if "text_checksum" not in emb_columns:
+        conn.execute(ENSURE_CHECKSUM_COLUMN_SQL)
     conn.execute(CREATE_CONFIG_TABLE_SQL)
     conn.commit()
 
@@ -197,45 +307,71 @@ def main() -> int:
     )
     conn.commit()
     t0 = time.monotonic()
-    embedded, skipped = 0, 0
+    embedded, skipped_error, skipped_unchanged = 0, 0, 0
 
     rows_written = 0
 
+    # Erst sammeln, wer ueberhaupt neu gerechnet werden muss (kein Ollama-
+    # Aufruf fuer unveraenderte Eintraege), dann in BATCH_SIZE-Haeppchen ueber
+    # /api/embed einbetten -- ein HTTP-Request statt einem je Text.
     nodes = conn.execute("SELECT id, path, project_id, title, summary, content FROM knowledge_nodes").fetchall()
+    node_pending = []
     for n in nodes:
         text = f"{n['path']}\n{n['title']}\n{n['summary']}\n{n['content'] or ''}"
-        vec = embeddings.embed_text(text, timeout=BATCH_TIMEOUT)
-        if vec is None:
-            skipped += 1
-            continue
-        conn.execute(
-            "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
-            "VALUES ('node', ?, ?, ?, ?, ?, ?)",
-            (n["id"], n["project_id"], model, len(vec), embeddings.pack_embedding(vec), now_iso())
-        )
-        embedded += 1
-        rows_written += 1
+        text_checksum = _text_checksum(text)
+        if _needs_recompute(conn, "node", n["id"], [n["project_id"]], model, text_checksum, FORCE):
+            node_pending.append((n, text, text_checksum))
+        else:
+            skipped_unchanged += 1
+
+    for i in range(0, len(node_pending), BATCH_SIZE):
+        chunk = node_pending[i:i + BATCH_SIZE]
+        vecs = _embed_batch([c[1] for c in chunk], timeout=BATCH_TIMEOUT)
+        for (n, text, text_checksum), vec in zip(chunk, vecs):
+            if vec is None:
+                skipped_error += 1
+                continue
+            conn.execute(
+                "INSERT OR REPLACE INTO knowledge_embeddings "
+                "(kind, ref_id, project_id, model, dim, vector, updated_at, text_checksum) "
+                "VALUES ('node', ?, ?, ?, ?, ?, ?, ?)",
+                (n["id"], n["project_id"], model, len(vec), embeddings.pack_embedding(vec), now_iso(), text_checksum)
+            )
+            embedded += 1
+            rows_written += 1
 
     lessons = conn.execute(
         "SELECT id, node_path, projects, description, root_cause, prevention FROM lessons_learned"
     ).fetchall()
+    lesson_pending = []
     for l in lessons:
         zuordnung = l["node_path"] or l["projects"] or ""
         text = f"{zuordnung}\n{l['description']}\n{l['root_cause'] or ''}\n{l['prevention'] or ''}"
-        vec = embeddings.embed_text(text, timeout=BATCH_TIMEOUT)
-        if vec is None:
-            skipped += 1
-            continue
-        packed = embeddings.pack_embedding(vec)
-        ts = now_iso()
-        for proj in resolve_lesson_projects(l["projects"]):
-            conn.execute(
-                "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
-                "VALUES ('lesson', ?, ?, ?, ?, ?, ?)",
-                (l["id"], proj, model, len(vec), packed, ts)
-            )
-            rows_written += 1
-        embedded += 1
+        text_checksum = _text_checksum(text)
+        target_projects = resolve_lesson_projects(l["projects"])
+        if _needs_recompute(conn, "lesson", l["id"], target_projects, model, text_checksum, FORCE):
+            lesson_pending.append((l, text, text_checksum, target_projects))
+        else:
+            skipped_unchanged += 1
+
+    for i in range(0, len(lesson_pending), BATCH_SIZE):
+        chunk = lesson_pending[i:i + BATCH_SIZE]
+        vecs = _embed_batch([c[1] for c in chunk], timeout=BATCH_TIMEOUT)
+        for (l, text, text_checksum, target_projects), vec in zip(chunk, vecs):
+            if vec is None:
+                skipped_error += 1
+                continue
+            packed = embeddings.pack_embedding(vec)
+            ts = now_iso()
+            for proj in target_projects:
+                conn.execute(
+                    "INSERT OR REPLACE INTO knowledge_embeddings "
+                    "(kind, ref_id, project_id, model, dim, vector, updated_at, text_checksum) "
+                    "VALUES ('lesson', ?, ?, ?, ?, ?, ?, ?)",
+                    (l["id"], proj, model, len(vec), packed, ts, text_checksum)
+                )
+                rows_written += 1
+            embedded += 1
 
     conn.commit()
     elapsed = time.monotonic() - t0
@@ -244,7 +380,8 @@ def main() -> int:
     conn.close()
 
     print(f"Nodes: {len(nodes)}, Lessons: {len(lessons)}")
-    print(f"Eingebettet (Vektoren berechnet): {embedded}, uebersprungen (Embedding-Fehler): {skipped}")
+    print(f"Neu gerechnet: {embedded}, uebersprungen (unveraendert): {skipped_unchanged}, "
+          f"uebersprungen (Embedding-Fehler): {skipped_error}")
     print(f"Embedding-Zeilen geschrieben (mit Bereichs-Fanout bei Lessons): {rows_written}")
     print(f"Laufzeit: {elapsed:.1f}s")
 

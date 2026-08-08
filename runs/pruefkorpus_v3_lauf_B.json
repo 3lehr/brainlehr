@@ -1,0 +1,20 @@
+{
+  "eichung": {
+    "kennung": "v3-01",
+    "task": "Wie viele Zacken haben drei Glimberge zusammen?",
+    "erwartete_zahl": 21,
+    "falsche_zahl": null,
+    "ohne_abruf_roh": "weiss ich nicht",
+    "ohne_abruf_bestanden": false,
+    "mit_abruf_roh": "weiss ich nicht",
+    "mit_abruf_bestanden": false,
+    "ziel_gefunden": false,
+    "abgerufene_pfade": [],
+    "einordnung": "kein_treffer",
+    "eichung_ok": false
+  },
+  "aborted": true,
+  "vorher": 1976,
+  "entfernt": 32,
+  "nachher": 1976
+}

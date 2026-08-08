@@ -1,0 +1,743 @@
+{
+  "eichung": {
+    "kennung": "v3-01",
+    "task": "Wie viele Zacken haben drei Glimberge zusammen?",
+    "erwartete_zahl": 21,
+    "falsche_zahl": null,
+    "ohne_abruf_roh": "weiss ich nicht",
+    "ohne_abruf_bestanden": false,
+    "mit_abruf_roh": "21",
+    "mit_abruf_bestanden": true,
+    "ziel_gefunden": true,
+    "abgerufene_pfade": [
+      "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+      "/pruefkorpus_v3/glimberg",
+      "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/betreuungsschluessel-die-einzige"
+    ],
+    "einordnung": "bestanden",
+    "eichung_ok": true
+  },
+  "aborted": false,
+  "model": "gemma4:e4b",
+  "vorher": 1976,
+  "vor_delete": 1976,
+  "entfernt": 0,
+  "nachher": 1976,
+  "n_cases": 42,
+  "rows": [
+    {
+      "kennung": "v3-01",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 21,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "21",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/pruefkorpus_v3/glimberg",
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/betreuungsschluessel-die-einzige"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-02",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 36,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "36",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/methodik/fertigkeiten/synergien",
+        "/pruefkorpus_v3/trebolit",
+        "/methodik/vier-wissenschaftliche-arbeitsregeln"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-03",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 30,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "30",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/fasnerkel",
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/betreuungsschluessel-die-einzige",
+        "/nasa-llis/1599"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-04",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 33,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "33",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/pruefkorpus_v3/quandtor",
+        "/methodik/adr-bestand-hub-docs-adr/adr-021-akapp-drei-schichten"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-05",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 26,
+      "falsche_zahl": null,
+      "ohne_abruf": "2",
+      "mit_abruf": "26",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/bilkrone",
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/betreuungsschluessel-die-einzige",
+        "/testing/walkthrough-methode-(e2e-journey-als-tes"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-06",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 48,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "48",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/pruefkorpus_v3/snarwal",
+        "/shared"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-07",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 60,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "60",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/worbel",
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/betreuungsschluessel-die-einzige",
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-08",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 42,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "42",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/apps/fahrtenbuch/café-international-konsil-einstellungseb",
+        "/pruefkorpus_v3/kessnitt",
+        "/fahrtenbuch/konsil-beschluss-keine-dritte"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-09",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 34,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "34",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/dromfeld",
+        "/nasa-llis/1027",
+        "/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-10",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 80,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "80",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/miglor",
+        "/ops/openlehr/openlehr-hat-zwei-getrennte-fts5",
+        "/shared/arch/begod-fleet/cross-app-integration-begod-vertagt-bis-"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-11",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 38,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "38",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/pentrusch",
+        "/methodik/fertigkeiten/synergien",
+        "/tools/ctoc-tokenzahl-fuer-claude-offline"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-12",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 54,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "54",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/halbsted",
+        "/fahrtenbuch/konsil-beschluss-keine-dritte",
+        "/nasa-llis/4059"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-13",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 46,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "46",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/pruefkorpus_v3/orbeling",
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/betreuungsschluessel-die-einzige"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-14",
+      "kategorie": "einzelwert",
+      "erwartete_zahl": 66,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "66",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/pruefkorpus_v3/tuckram",
+        "/nasa-llis/5897",
+        "/nasa-llis/171"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-15",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 25,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/methodik/fertigkeiten/synergien",
+        "/methodik/arbeitsweise",
+        "/pruefkorpus_v3/glimberg"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-16",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 39,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/methodik/arbeitsweise",
+        "/pruefkorpus_v3/fasnerkel",
+        "/shared/arch/stellvertreter-regel-zahl-der-noetigen"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-17",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 45,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/methodik/fertigkeiten/synergien",
+        "/pruefkorpus_v3/bilkrone",
+        "/brainlehr/die-rangordnung-braucht-eine-zweite"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-18",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 40,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/methodik/direktiven",
+        "/methodik",
+        "/methodik/arbeitsweise"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-19",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 49,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/methodik/direktiven",
+        "/pruefkorpus_v3/dromfeld",
+        "/methodik/arbeitsweise"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-20",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 55,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/methodik/direktiven",
+        "/methodik/arbeitsweise",
+        "/pruefkorpus_v3/pentrusch"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-21",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 67,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "67",
+      "ohne_bestanden": false,
+      "mit_bestanden": true,
+      "ziel_gefunden": true,
+      "abgerufene_pfade": [
+        "/methodik/fertigkeiten/synergien",
+        "/pruefkorpus_v3/orbeling",
+        "/pruefkorpus_v3/tuckram"
+      ],
+      "einordnung": "bestanden"
+    },
+    {
+      "kennung": "v3-22",
+      "kategorie": "kombiniert",
+      "erwartete_zahl": 28,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/methodik/fertigkeiten/synergien",
+        "/methodik/arbeitsweise",
+        "/pruefkorpus_v3/kessnitt"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-23",
+      "kategorie": "aehnlich",
+      "erwartete_zahl": 63,
+      "falsche_zahl": 45,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/shared/arch/stellvertreter-regel-zahl-der-noetigen",
+        "/methodik/adr-bestand-hub-docs-adr/adr-021-akapp-drei-schichten"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-24",
+      "kategorie": "aehnlich",
+      "erwartete_zahl": 20,
+      "falsche_zahl": 96,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/apps/setfunk-research-digest-v2-2026-07",
+        "/nasa-llis/1599",
+        "/methodik/vier-wissenschaftliche-arbeitsregeln"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-25",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/apps/fahrtenbuch/café-international-konsil-einstellungseb",
+        "/ops/buckeberg-dokument-pipeline-2026-07-28",
+        "/nasa-llis/5003"
+      ],
+      "einordnung": "eichfall"
+    },
+    {
+      "kennung": "v3-26",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/methodik/adr-bestand-hub-docs-adr/adr-021-akapp-drei-schichten",
+        "/apps/fahrtenbuch/zweckwechsel-waehrend-der-fahrt-zaesur",
+        "/arch/token-economy/premium-multipliers"
+      ],
+      "einordnung": "eichfall"
+    },
+    {
+      "kennung": "v3-27",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-",
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/apps/setfunk-research-digest-v2-2026-07"
+      ],
+      "einordnung": "eichfall"
+    },
+    {
+      "kennung": "v3-28",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/ops/openlehr/openlehr-profil-tags-fragebaum-wissens",
+        "/arch/knowledge-mgmt/tree-structure",
+        "/apps/fahrtenbuch/café-international-konsil-einstellungseb"
+      ],
+      "einordnung": "eichfall"
+    },
+    {
+      "kennung": "v3-29",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/fahrtenbuch/konsil-beschluss-keine-dritte",
+        "/nasa-llis/306",
+        "/nasa-llis/1478"
+      ],
+      "einordnung": "eichfall"
+    },
+    {
+      "kennung": "v3-30",
+      "kategorie": "eichfall",
+      "erwartete_zahl": null,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "mit_bestanden": true,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05-82",
+        "/apps/schwarmwacht-voll-audit-verifikation",
+        "/apps/fahrtenbuch/café-international-konsil-einstellungseb"
+      ],
+      "einordnung": "eichfall"
+    },
+    {
+      "kennung": "v3-31",
+      "kategorie": "aehnlich",
+      "erwartete_zahl": 195,
+      "falsche_zahl": 130,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/brainlehr/das-einbettungsmodell-trennt-auf",
+        "/arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05-82",
+        "/nasa-llis/1187"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-32",
+      "kategorie": "aehnlich",
+      "erwartete_zahl": 5,
+      "falsche_zahl": 24,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/nasa-llis/1534",
+        "/apps/setfunk-research-digest-v2-2026-07",
+        "/nasa-llis/700"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-33",
+      "kategorie": "eigenschaft",
+      "erwartete_zahl": 62,
+      "falsche_zahl": 8,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/betreuungsschluessel-die-einzige",
+        "/apps/fahrtenbuch/café-international-konsil-einstellungseb"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-34",
+      "kategorie": "eigenschaft",
+      "erwartete_zahl": 99,
+      "falsche_zahl": 6,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05-82",
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/apps/setfunk-research-digest-v2-2026-07"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-35",
+      "kategorie": "gleiche_einheit",
+      "erwartete_zahl": 193,
+      "falsche_zahl": 205,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "5",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/apps/setfunk-research-digest-v2-2026-07",
+        "/nasa-llis/950"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-36",
+      "kategorie": "gleiche_einheit",
+      "erwartete_zahl": 187,
+      "falsche_zahl": 215,
+      "ohne_abruf": "5",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/arch/knowledge-mgmt/tree-structure",
+        "/fahrtenbuch/konsil-beschluss-keine-dritte",
+        "/apps/setfunk-research-digest-v2-2026-07"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-37",
+      "kategorie": "veraltet",
+      "erwartete_zahl": 135,
+      "falsche_zahl": 36,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/openlehr/steuer/cafe-international-abschlusskonsil",
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/fahrtenbuch/konsil-beschluss-keine-dritte"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-38",
+      "kategorie": "veraltet",
+      "erwartete_zahl": 208,
+      "falsche_zahl": 36,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/openlehr/steuer/cafe-international-abschlusskonsil",
+        "/arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05-82",
+        "/apps/schwarmwacht-voll-audit-verifikation"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-39",
+      "kategorie": "kombiniert3",
+      "erwartete_zahl": 138,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/ops/angebotsvergleich-drei-unvergleichbare",
+        "/methodik/fertigkeiten/synergien"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-40",
+      "kategorie": "kombiniert3",
+      "erwartete_zahl": 127,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/brainlehr/offene-faeden-aus-dem-ursprungsentwurf",
+        "/methodik/fertigkeiten/synergien",
+        "/lessons/phase2-summary"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-41",
+      "kategorie": "kombiniert_ablenker",
+      "erwartete_zahl": 73,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/shared/arch/stellvertreter-regel-zahl-der-noetigen",
+        "/methodik/fertigkeiten/synergien"
+      ],
+      "einordnung": "falscher_treffer"
+    },
+    {
+      "kennung": "v3-42",
+      "kategorie": "kombiniert_ablenker",
+      "erwartete_zahl": 162,
+      "falsche_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "mit_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "mit_bestanden": false,
+      "ziel_gefunden": false,
+      "abgerufene_pfade": [
+        "/arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05-82",
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+        "/nasa-llis/1187"
+      ],
+      "einordnung": "falscher_treffer"
+    }
+  ]
+}

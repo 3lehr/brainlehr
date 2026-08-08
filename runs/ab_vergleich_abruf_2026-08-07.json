@@ -1,0 +1,2003 @@
+{
+  "model": "gemma4:e4b",
+  "n_cases": 42,
+  "bestand_vorher": 1971,
+  "bestand_nachher": 1974,
+  "bestand_unveraendert": false,
+  "zusammenfassung": {
+    "A": {
+      "ziel_gefunden": {
+        "treffer": 34,
+        "n": 36,
+        "ci95": [
+          0.8185502589238879,
+          0.9846303362329331
+        ]
+      },
+      "geloest": {
+        "treffer": 34,
+        "n": 36,
+        "ci95": [
+          0.8185502589238879,
+          0.9846303362329331
+        ]
+      },
+      "eichfall_korrekt_stumm": {
+        "treffer": 6,
+        "n": 6
+      },
+      "je_kategorie": {
+        "einzelwert": {
+          "treffer": 14,
+          "n": 14,
+          "ci95": [
+            0.7846829880728186,
+            1.0
+          ]
+        },
+        "kombiniert": {
+          "treffer": 8,
+          "n": 8,
+          "ci95": [
+            0.6755843804891231,
+            1.0
+          ]
+        },
+        "kombiniert3": {
+          "treffer": 2,
+          "n": 2,
+          "ci95": null
+        },
+        "kombiniert_ablenker": {
+          "treffer": 0,
+          "n": 2,
+          "ci95": null
+        },
+        "aehnlich": {
+          "treffer": 4,
+          "n": 4,
+          "ci95": null
+        },
+        "eigenschaft": {
+          "treffer": 2,
+          "n": 2,
+          "ci95": null
+        },
+        "gleiche_einheit": {
+          "treffer": 2,
+          "n": 2,
+          "ci95": null
+        },
+        "veraltet": {
+          "treffer": 2,
+          "n": 2,
+          "ci95": null
+        },
+        "eichfall": {
+          "treffer": 6,
+          "n": 6,
+          "ci95": [
+            0.6096569663469354,
+            1.0
+          ]
+        }
+      }
+    },
+    "B": {
+      "ziel_gefunden": {
+        "treffer": 35,
+        "n": 36,
+        "ci95": [
+          0.8582996626496918,
+          0.9950797197044302
+        ]
+      },
+      "geloest": {
+        "treffer": 34,
+        "n": 36,
+        "ci95": [
+          0.8185502589238879,
+          0.9846303362329331
+        ]
+      },
+      "eichfall_korrekt_stumm": {
+        "treffer": 6,
+        "n": 6
+      },
+      "je_kategorie": {
+        "einzelwert": {
+          "treffer": 14,
+          "n": 14,
+          "ci95": [
+            0.7846829880728186,
+            1.0
+          ]
+        },
+        "kombiniert": {
+          "treffer": 8,
+          "n": 8,
+          "ci95": [
+            0.6755843804891231,
+            1.0
+          ]
+        },
+        "kombiniert3": {
+          "treffer": 2,
+          "n": 2,
+          "ci95": null
+        },
+        "kombiniert_ablenker": {
+          "treffer": 1,
+          "n": 2,
+          "ci95": null
+        },
+        "aehnlich": {
+          "treffer": 4,
+          "n": 4,
+          "ci95": null
+        },
+        "eigenschaft": {
+          "treffer": 2,
+          "n": 2,
+          "ci95": null
+        },
+        "gleiche_einheit": {
+          "treffer": 1,
+          "n": 2,
+          "ci95": null
+        },
+        "veraltet": {
+          "treffer": 2,
+          "n": 2,
+          "ci95": null
+        },
+        "eichfall": {
+          "treffer": 6,
+          "n": 6,
+          "ci95": [
+            0.6096569663469354,
+            1.0
+          ]
+        }
+      }
+    }
+  },
+  "unterschiede_A_B": [
+    {
+      "kennung": "v3-01",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Zacken haben drei Glimberge zusammen?",
+      "erwartete_zahl": 21,
+      "A_pfade": [
+        "/pruefkorpus_v3/glimberg"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/bilkrone",
+        "/pruefkorpus_v3/glimberg",
+        "/pruefkorpus_v3/kraiber_zacken"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-02",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Ringe haben vier Trebolite zusammen?",
+      "erwartete_zahl": 36,
+      "A_pfade": [
+        "/pruefkorpus_v3/trebolit"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/drallmesser",
+        "/pruefkorpus_v3/drallmesser_alt",
+        "/pruefkorpus_v3/trebolit"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-03",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Noppen haben fuenf Fasnerkele zusammen?",
+      "erwartete_zahl": 30,
+      "A_pfade": [
+        "/pruefkorpus_v3/fasnerkel"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/fasnerkel",
+        "/pruefkorpus_v3/frastek",
+        "/pruefkorpus_v3/frastel"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-04",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Facetten haben drei Quandtore zusammen?",
+      "erwartete_zahl": 33,
+      "A_pfade": [
+        "/pruefkorpus_v3/quandtor"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/methodik/adr-bestand-hub-docs-adr/adr-021-akapp-drei-schichten",
+        "/pruefkorpus_v3/halbsted",
+        "/pruefkorpus_v3/quandtor"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-05",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Zaehne haben zwei Bilkronee zusammen?",
+      "erwartete_zahl": 26,
+      "A_pfade": [
+        "/pruefkorpus_v3/bilkrone"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/bilkrone",
+        "/pruefkorpus_v3/glimberg",
+        "/pruefkorpus_v3/kraiber_zacken"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-06",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Kerben haben sechs Snarwale zusammen?",
+      "erwartete_zahl": 48,
+      "A_pfade": [
+        "/pruefkorpus_v3/snarwal"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/quirlband",
+        "/pruefkorpus_v3/snarwal",
+        "/pruefkorpus_v3/worbel"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-07",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Streben haben fuenf Worbele zusammen?",
+      "erwartete_zahl": 60,
+      "A_pfade": [
+        "/pruefkorpus_v3/worbel"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/orbeling",
+        "/pruefkorpus_v3/snarwal",
+        "/pruefkorpus_v3/worbel"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-08",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Rippen haben drei Kessnitte zusammen?",
+      "erwartete_zahl": 42,
+      "A_pfade": [
+        "/pruefkorpus_v3/kessnitt"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/boltrek",
+        "/pruefkorpus_v3/kessnitt",
+        "/pruefkorpus_v3/quirlband"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-09",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Falten haben zwei Dromfelde zusammen?",
+      "erwartete_zahl": 34,
+      "A_pfade": [
+        "/pruefkorpus_v3/dromfeld"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/nasa-llis/1027",
+        "/pruefkorpus_v3/drallmesser",
+        "/pruefkorpus_v3/dromfeld"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-10",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Speichen haben fuenf Miglore zusammen?",
+      "erwartete_zahl": 80,
+      "A_pfade": [
+        "/pruefkorpus_v3/miglor"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/miglor",
+        "/pruefkorpus_v3/moldrian",
+        "/pruefkorpus_v3/moldrion"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-11",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Dornen haben zwei Pentrusche zusammen?",
+      "erwartete_zahl": 38,
+      "A_pfade": [
+        "/pruefkorpus_v3/pentrusch"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/bilkrone",
+        "/pruefkorpus_v3/moldrian",
+        "/pruefkorpus_v3/pentrusch"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-12",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Kanten haben drei Halbstede zusammen?",
+      "erwartete_zahl": 54,
+      "A_pfade": [
+        "/pruefkorpus_v3/halbsted"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/fahrtenbuch/konsil-beschluss-keine-dritte",
+        "/pruefkorpus_v3/halbsted",
+        "/pruefkorpus_v3/silphon_kanten"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-13",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Waben haben zwei Orbelinge zusammen?",
+      "erwartete_zahl": 46,
+      "A_pfade": [
+        "/pruefkorpus_v3/orbeling"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/orbeling",
+        "/pruefkorpus_v3/snarwal",
+        "/pruefkorpus_v3/worbel"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-14",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Stege haben drei Tuckrame zusammen?",
+      "erwartete_zahl": 66,
+      "A_pfade": [
+        "/pruefkorpus_v3/tuckram"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/nasa-llis/5897",
+        "/pruefkorpus_v3/torkade",
+        "/pruefkorpus_v3/tuckram"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-15",
+      "kategorie": "kombiniert",
+      "task": "ein Glimberg hat zusammen wie viele Zacken? Und zwei Trebolite haben zusammen wie viele Ringe? Nenne die Gesamtsumme aus beiden Werten (Zacken der Glimberg plus Ringe der Trebolite).",
+      "erwartete_zahl": 25,
+      "A_pfade": [
+        "/pruefkorpus_v3/glimberg",
+        "/pruefkorpus_v3/trebolit"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/glimberg",
+        "/pruefkorpus_v3/kraiber_zacken",
+        "/pruefkorpus_v3/trebolit"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-16",
+      "kategorie": "kombiniert",
+      "task": "ein Fasnerkel hat zusammen wie viele Noppen? Und drei Quandtore haben zusammen wie viele Facetten? Nenne die Gesamtsumme aus beiden Werten (Noppen der Fasnerkel plus Facetten der Quandtore).",
+      "erwartete_zahl": 39,
+      "A_pfade": [
+        "/pruefkorpus_v3/fasnerkel",
+        "/pruefkorpus_v3/quandtor"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/fasnerkel",
+        "/pruefkorpus_v3/frastel",
+        "/pruefkorpus_v3/quandtor"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-17",
+      "kategorie": "kombiniert",
+      "task": "ein Bilkrone hat zusammen wie viele Zaehne? Und vier Snarwale haben zusammen wie viele Kerben? Nenne die Gesamtsumme aus beiden Werten (Zaehne der Bilkrone plus Kerben der Snarwale).",
+      "erwartete_zahl": 45,
+      "A_pfade": [
+        "/pruefkorpus_v3/bilkrone",
+        "/pruefkorpus_v3/snarwal"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/bilkrone",
+        "/pruefkorpus_v3/kraiber_gewicht",
+        "/pruefkorpus_v3/snarwal"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-18",
+      "kategorie": "kombiniert",
+      "task": "ein Worbel hat zusammen wie viele Streben? Und zwei Kessnitte haben zusammen wie viele Rippen? Nenne die Gesamtsumme aus beiden Werten (Streben der Worbel plus Rippen der Kessnitte).",
+      "erwartete_zahl": 40,
+      "A_pfade": [
+        "/pruefkorpus_v3/kessnitt",
+        "/pruefkorpus_v3/worbel"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/kessnitt",
+        "/pruefkorpus_v3/orbeling",
+        "/pruefkorpus_v3/worbel"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-19",
+      "kategorie": "kombiniert",
+      "task": "ein Dromfeld hat zusammen wie viele Falten? Und zwei Miglore haben zusammen wie viele Speichen? Nenne die Gesamtsumme aus beiden Werten (Falten der Dromfeld plus Speichen der Miglore).",
+      "erwartete_zahl": 49,
+      "A_pfade": [
+        "/pruefkorpus_v3/dromfeld",
+        "/pruefkorpus_v3/miglor"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/dromfeld",
+        "/pruefkorpus_v3/miglor",
+        "/pruefkorpus_v3/moldrion"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-20",
+      "kategorie": "kombiniert",
+      "task": "ein Pentrusch hat zusammen wie viele Dornen? Und zwei Halbstede haben zusammen wie viele Kanten? Nenne die Gesamtsumme aus beiden Werten (Dornen der Pentrusch plus Kanten der Halbstede).",
+      "erwartete_zahl": 55,
+      "A_pfade": [
+        "/pruefkorpus_v3/halbsted",
+        "/pruefkorpus_v3/pentrusch"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/halbsted",
+        "/pruefkorpus_v3/pentrusch",
+        "/pruefkorpus_v3/silphon_kanten"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-21",
+      "kategorie": "kombiniert",
+      "task": "ein Orbeling hat zusammen wie viele Waben? Und zwei Tuckrame haben zusammen wie viele Stege? Nenne die Gesamtsumme aus beiden Werten (Waben der Orbeling plus Stege der Tuckrame).",
+      "erwartete_zahl": 67,
+      "A_pfade": [
+        "/pruefkorpus_v3/orbeling",
+        "/pruefkorpus_v3/tuckram"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/orbeling",
+        "/pruefkorpus_v3/tuckram",
+        "/pruefkorpus_v3/worbel"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-22",
+      "kategorie": "kombiniert",
+      "task": "zwei Glimberge haben zusammen wie viele Zacken? Und ein Kessnitt hat zusammen wie viele Rippen? Nenne die Gesamtsumme aus beiden Werten (Zacken der Glimberge plus Rippen der Kessnitt).",
+      "erwartete_zahl": 28,
+      "A_pfade": [
+        "/pruefkorpus_v3/glimberg",
+        "/pruefkorpus_v3/kessnitt"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/glimberg",
+        "/pruefkorpus_v3/kessnitt",
+        "/pruefkorpus_v3/kraiber_zacken"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-23",
+      "kategorie": "aehnlich",
+      "task": "Wie viele Klammern haben drei Velunite zusammen (nicht zu verwechseln mit Velunip)?",
+      "erwartete_zahl": 63,
+      "A_pfade": [
+        "/pruefkorpus_v3/velunip",
+        "/pruefkorpus_v3/velunit"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/silphon_kanten",
+        "/pruefkorpus_v3/velunip",
+        "/pruefkorpus_v3/velunit"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-24",
+      "kategorie": "aehnlich",
+      "task": "Wie viele Naehte haben vier Frasteke zusammen (nicht zu verwechseln mit Frastel)?",
+      "erwartete_zahl": 20,
+      "A_pfade": [
+        "/pruefkorpus_v3/frastek",
+        "/pruefkorpus_v3/frastel"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/apps/setfunk-research-digest-v2-2026-07",
+        "/pruefkorpus_v3/frastek",
+        "/pruefkorpus_v3/frastel"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-25",
+      "kategorie": "eichfall",
+      "task": "Wie viele Ecken haben zwei Fluxnorbel zusammen?",
+      "erwartete_zahl": null,
+      "A_pfade": [
+        "/apps/fahrtenbuch/café-international-konsil-einstellungseb",
+        "/ops/buckeberg-dokument-pipeline-2026-07-28"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/nasa-llis/5003",
+        "/pruefkorpus_v3/fasnerkel",
+        "/pruefkorpus_v3/worbel"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-26",
+      "kategorie": "eichfall",
+      "task": "Wie viele Zapfen haben drei Krispatur zusammen?",
+      "erwartete_zahl": null,
+      "A_pfade": [],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/kraiber_zacken",
+        "/pruefkorpus_v3/snarwal",
+        "/pruefkorpus_v3/velunip"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-27",
+      "kategorie": "eichfall",
+      "task": "Wie viele Haken haben vier Dellwark zusammen?",
+      "erwartete_zahl": null,
+      "A_pfade": [],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/apps/setfunk-research-digest-v2-2026-07",
+        "/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-",
+        "/brainlehr/nullbefund-ueber-drei-unabhaengige"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-28",
+      "kategorie": "eichfall",
+      "task": "Wie viele Bogen haben zwei Tangvolk zusammen?",
+      "erwartete_zahl": null,
+      "A_pfade": [],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/torkade",
+        "/pruefkorpus_v3/trebolit",
+        "/pruefkorpus_v3/tuckram"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-29",
+      "kategorie": "eichfall",
+      "task": "Wie viele Riegel haben drei Orsprint zusammen?",
+      "erwartete_zahl": null,
+      "A_pfade": [],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/boltrek",
+        "/pruefkorpus_v3/orbeling",
+        "/pruefkorpus_v3/trebolit"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-30",
+      "kategorie": "eichfall",
+      "task": "Wie viele Spangen haben vier Halmquin zusammen?",
+      "erwartete_zahl": null,
+      "A_pfade": [],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/boltrek",
+        "/pruefkorpus_v3/halbsted",
+        "/pruefkorpus_v3/quirlband"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-31",
+      "kategorie": "aehnlich",
+      "task": "Wie viele Sprossen haben fuenf Moldriane zusammen (nicht zu verwechseln mit Moldrion)?",
+      "erwartete_zahl": 195,
+      "A_pfade": [
+        "/pruefkorpus_v3/moldrian",
+        "/pruefkorpus_v3/moldrion"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/miglor",
+        "/pruefkorpus_v3/moldrian",
+        "/pruefkorpus_v3/moldrion"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-32",
+      "kategorie": "aehnlich",
+      "task": "Wie viele Naehte hat ein Frastek zusammen (nicht zu verwechseln mit Frastel)?",
+      "erwartete_zahl": 5,
+      "A_pfade": [
+        "/pruefkorpus_v3/frastek",
+        "/pruefkorpus_v3/frastel"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/boltrek",
+        "/pruefkorpus_v3/frastek",
+        "/pruefkorpus_v3/frastel"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-33",
+      "kategorie": "eigenschaft",
+      "task": "Wie viele Zacken haben zwei Kraibere zusammen?",
+      "erwartete_zahl": 62,
+      "A_pfade": [
+        "/pruefkorpus_v3/kraiber_gewicht",
+        "/pruefkorpus_v3/kraiber_zacken"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/glimberg",
+        "/pruefkorpus_v3/kraiber_gewicht",
+        "/pruefkorpus_v3/kraiber_zacken"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-34",
+      "kategorie": "eigenschaft",
+      "task": "Wie viele Kanten haben drei Silphone zusammen?",
+      "erwartete_zahl": 99,
+      "A_pfade": [
+        "/pruefkorpus_v3/silphon_hoehe",
+        "/pruefkorpus_v3/silphon_kanten"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/quirlband",
+        "/pruefkorpus_v3/silphon_hoehe",
+        "/pruefkorpus_v3/silphon_kanten"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-35",
+      "kategorie": "gleiche_einheit",
+      "task": "zwei Nafure und drei Boltreke zusammen: wie viele Riemen sind das insgesamt?",
+      "erwartete_zahl": 193,
+      "A_pfade": [
+        "/pruefkorpus_v3/boltrek",
+        "/pruefkorpus_v3/nafur"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/apps/setfunk-research-digest-v2-2026-07",
+        "/pruefkorpus_v3/boltrek",
+        "/pruefkorpus_v3/nafur"
+      ],
+      "B_bestanden": false
+    },
+    {
+      "kennung": "v3-36",
+      "kategorie": "gleiche_einheit",
+      "task": "drei Zirkulate und zwei Torkadee zusammen: wie viele Bahnen sind das insgesamt?",
+      "erwartete_zahl": 187,
+      "A_pfade": [
+        "/pruefkorpus_v3/torkade",
+        "/pruefkorpus_v3/zirkulat"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/torkade",
+        "/pruefkorpus_v3/trebolit",
+        "/pruefkorpus_v3/zirkulat"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-37",
+      "kategorie": "veraltet",
+      "task": "Wie viele Ringe haben drei Drallmessere zusammen (aktueller Stand)?",
+      "erwartete_zahl": 135,
+      "A_pfade": [
+        "/openlehr/steuer/cafe-international-abschlusskonsil",
+        "/pruefkorpus_v3/drallmesser",
+        "/pruefkorpus_v3/drallmesser_alt"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/pruefkorpus_v3/drallmesser",
+        "/pruefkorpus_v3/drallmesser_alt",
+        "/pruefkorpus_v3/trebolit"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-38",
+      "kategorie": "veraltet",
+      "task": "Wie viele Spulen haben vier Quirlbande zusammen (aktueller Stand)?",
+      "erwartete_zahl": 208,
+      "A_pfade": [
+        "/openlehr/steuer/cafe-international-abschlusskonsil",
+        "/pruefkorpus_v3/quirlband",
+        "/pruefkorpus_v3/quirlband_alt"
+      ],
+      "A_bestanden": true,
+      "B_pfade": [
+        "/arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05-82",
+        "/pruefkorpus_v3/quirlband",
+        "/pruefkorpus_v3/quirlband_alt"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-41",
+      "kategorie": "kombiniert_ablenker",
+      "task": "3 Velunite (nicht Velunip) haben zusammen wie viele Klammern? Und 2 Frasteke (nicht Frastel) haben zusammen wie viele Naehte? Nenne die Gesamtsumme aus beiden Werten.",
+      "erwartete_zahl": 73,
+      "A_pfade": [],
+      "A_bestanden": false,
+      "B_pfade": [
+        "/pruefkorpus_v3/frastek",
+        "/pruefkorpus_v3/velunip",
+        "/pruefkorpus_v3/velunit"
+      ],
+      "B_bestanden": true
+    },
+    {
+      "kennung": "v3-42",
+      "kategorie": "kombiniert_ablenker",
+      "task": "2 Moldriane (nicht Moldrion) haben zusammen wie viele Sprossen? Und 4 Velunite (nicht Velunip) haben zusammen wie viele Klammern? Nenne die Gesamtsumme aus beiden Werten.",
+      "erwartete_zahl": 162,
+      "A_pfade": [],
+      "A_bestanden": false,
+      "B_pfade": [
+        "/pruefkorpus_v3/moldrion",
+        "/pruefkorpus_v3/velunip",
+        "/pruefkorpus_v3/velunit"
+      ],
+      "B_bestanden": false
+    }
+  ],
+  "rows": [
+    {
+      "kennung": "v3-01",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Zacken haben drei Glimberge zusammen?",
+      "erwartete_zahl": 21,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "21",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/glimberg"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "21",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/glimberg",
+          "/pruefkorpus_v3/kraiber_zacken",
+          "/pruefkorpus_v3/bilkrone"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-02",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Ringe haben vier Trebolite zusammen?",
+      "erwartete_zahl": 36,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "36",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/trebolit"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "36",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/trebolit",
+          "/pruefkorpus_v3/drallmesser",
+          "/pruefkorpus_v3/drallmesser_alt"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-03",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Noppen haben fuenf Fasnerkele zusammen?",
+      "erwartete_zahl": 30,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "30",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/fasnerkel"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "30",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/fasnerkel",
+          "/pruefkorpus_v3/frastel",
+          "/pruefkorpus_v3/frastek"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-04",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Facetten haben drei Quandtore zusammen?",
+      "erwartete_zahl": 33,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "33",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/quandtor"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "33",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/quandtor",
+          "/methodik/adr-bestand-hub-docs-adr/adr-021-akapp-drei-schichten",
+          "/pruefkorpus_v3/halbsted"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-05",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Zaehne haben zwei Bilkronee zusammen?",
+      "erwartete_zahl": 26,
+      "ohne_abruf": "2",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "26",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/bilkrone"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "26",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/bilkrone",
+          "/pruefkorpus_v3/glimberg",
+          "/pruefkorpus_v3/kraiber_zacken"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-06",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Kerben haben sechs Snarwale zusammen?",
+      "erwartete_zahl": 48,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "48",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/snarwal"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "48",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/snarwal",
+          "/pruefkorpus_v3/quirlband",
+          "/pruefkorpus_v3/worbel"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-07",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Streben haben fuenf Worbele zusammen?",
+      "erwartete_zahl": 60,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "60",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/worbel"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "60",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/worbel",
+          "/pruefkorpus_v3/orbeling",
+          "/pruefkorpus_v3/snarwal"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-08",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Rippen haben drei Kessnitte zusammen?",
+      "erwartete_zahl": 42,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "42",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/kessnitt"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "42",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/kessnitt",
+          "/pruefkorpus_v3/boltrek",
+          "/pruefkorpus_v3/quirlband"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-09",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Falten haben zwei Dromfelde zusammen?",
+      "erwartete_zahl": 34,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "34",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/dromfeld"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "34",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/dromfeld",
+          "/nasa-llis/1027",
+          "/pruefkorpus_v3/drallmesser"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-10",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Speichen haben fuenf Miglore zusammen?",
+      "erwartete_zahl": 80,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "80",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/miglor"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "80",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/miglor",
+          "/pruefkorpus_v3/moldrion",
+          "/pruefkorpus_v3/moldrian"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-11",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Dornen haben zwei Pentrusche zusammen?",
+      "erwartete_zahl": 38,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "38",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/pentrusch"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "38",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/pentrusch",
+          "/pruefkorpus_v3/moldrian",
+          "/pruefkorpus_v3/bilkrone"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-12",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Kanten haben drei Halbstede zusammen?",
+      "erwartete_zahl": 54,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "54",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/halbsted"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "54",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/halbsted",
+          "/pruefkorpus_v3/silphon_kanten",
+          "/fahrtenbuch/konsil-beschluss-keine-dritte"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-13",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Waben haben zwei Orbelinge zusammen?",
+      "erwartete_zahl": 46,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "46",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/orbeling"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "46",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/orbeling",
+          "/pruefkorpus_v3/worbel",
+          "/pruefkorpus_v3/snarwal"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-14",
+      "kategorie": "einzelwert",
+      "task": "Wie viele Stege haben drei Tuckrame zusammen?",
+      "erwartete_zahl": 66,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "66",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/tuckram"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "66",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/tuckram",
+          "/pruefkorpus_v3/torkade",
+          "/nasa-llis/5897"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-15",
+      "kategorie": "kombiniert",
+      "task": "ein Glimberg hat zusammen wie viele Zacken? Und zwei Trebolite haben zusammen wie viele Ringe? Nenne die Gesamtsumme aus beiden Werten (Zacken der Glimberg plus Ringe der Trebolite).",
+      "erwartete_zahl": 25,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "25",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/glimberg",
+          "/pruefkorpus_v3/trebolit"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "25",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/glimberg",
+          "/pruefkorpus_v3/trebolit",
+          "/pruefkorpus_v3/kraiber_zacken"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-16",
+      "kategorie": "kombiniert",
+      "task": "ein Fasnerkel hat zusammen wie viele Noppen? Und drei Quandtore haben zusammen wie viele Facetten? Nenne die Gesamtsumme aus beiden Werten (Noppen der Fasnerkel plus Facetten der Quandtore).",
+      "erwartete_zahl": 39,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "39",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/fasnerkel",
+          "/pruefkorpus_v3/quandtor"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "39",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/fasnerkel",
+          "/pruefkorpus_v3/quandtor",
+          "/pruefkorpus_v3/frastel"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-17",
+      "kategorie": "kombiniert",
+      "task": "ein Bilkrone hat zusammen wie viele Zaehne? Und vier Snarwale haben zusammen wie viele Kerben? Nenne die Gesamtsumme aus beiden Werten (Zaehne der Bilkrone plus Kerben der Snarwale).",
+      "erwartete_zahl": 45,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "45",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/bilkrone",
+          "/pruefkorpus_v3/snarwal"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "45",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/bilkrone",
+          "/pruefkorpus_v3/snarwal",
+          "/pruefkorpus_v3/kraiber_gewicht"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-18",
+      "kategorie": "kombiniert",
+      "task": "ein Worbel hat zusammen wie viele Streben? Und zwei Kessnitte haben zusammen wie viele Rippen? Nenne die Gesamtsumme aus beiden Werten (Streben der Worbel plus Rippen der Kessnitte).",
+      "erwartete_zahl": 40,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "40",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/worbel",
+          "/pruefkorpus_v3/kessnitt"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "40",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/worbel",
+          "/pruefkorpus_v3/kessnitt",
+          "/pruefkorpus_v3/orbeling"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-19",
+      "kategorie": "kombiniert",
+      "task": "ein Dromfeld hat zusammen wie viele Falten? Und zwei Miglore haben zusammen wie viele Speichen? Nenne die Gesamtsumme aus beiden Werten (Falten der Dromfeld plus Speichen der Miglore).",
+      "erwartete_zahl": 49,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "49",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/dromfeld",
+          "/pruefkorpus_v3/miglor"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "49",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/dromfeld",
+          "/pruefkorpus_v3/miglor",
+          "/pruefkorpus_v3/moldrion"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-20",
+      "kategorie": "kombiniert",
+      "task": "ein Pentrusch hat zusammen wie viele Dornen? Und zwei Halbstede haben zusammen wie viele Kanten? Nenne die Gesamtsumme aus beiden Werten (Dornen der Pentrusch plus Kanten der Halbstede).",
+      "erwartete_zahl": 55,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "55",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/pentrusch",
+          "/pruefkorpus_v3/halbsted"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "55",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/pentrusch",
+          "/pruefkorpus_v3/halbsted",
+          "/pruefkorpus_v3/silphon_kanten"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-21",
+      "kategorie": "kombiniert",
+      "task": "ein Orbeling hat zusammen wie viele Waben? Und zwei Tuckrame haben zusammen wie viele Stege? Nenne die Gesamtsumme aus beiden Werten (Waben der Orbeling plus Stege der Tuckrame).",
+      "erwartete_zahl": 67,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "67",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/orbeling",
+          "/pruefkorpus_v3/tuckram"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "67",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/tuckram",
+          "/pruefkorpus_v3/orbeling",
+          "/pruefkorpus_v3/worbel"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-22",
+      "kategorie": "kombiniert",
+      "task": "zwei Glimberge haben zusammen wie viele Zacken? Und ein Kessnitt hat zusammen wie viele Rippen? Nenne die Gesamtsumme aus beiden Werten (Zacken der Glimberge plus Rippen der Kessnitt).",
+      "erwartete_zahl": 28,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "28",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/kessnitt",
+          "/pruefkorpus_v3/glimberg"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "28",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/glimberg",
+          "/pruefkorpus_v3/kessnitt",
+          "/pruefkorpus_v3/kraiber_zacken"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-23",
+      "kategorie": "aehnlich",
+      "task": "Wie viele Klammern haben drei Velunite zusammen (nicht zu verwechseln mit Velunip)?",
+      "erwartete_zahl": 63,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "63",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/velunip",
+          "/pruefkorpus_v3/velunit"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "63",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/velunit",
+          "/pruefkorpus_v3/velunip",
+          "/pruefkorpus_v3/silphon_kanten"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-24",
+      "kategorie": "aehnlich",
+      "task": "Wie viele Naehte haben vier Frasteke zusammen (nicht zu verwechseln mit Frastel)?",
+      "erwartete_zahl": 20,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "20",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/frastel",
+          "/pruefkorpus_v3/frastek"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "20",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/frastek",
+          "/pruefkorpus_v3/frastel",
+          "/apps/setfunk-research-digest-v2-2026-07"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-25",
+      "kategorie": "eichfall",
+      "task": "Wie viele Ecken haben zwei Fluxnorbel zusammen?",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "A": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [
+          "/ops/buckeberg-dokument-pipeline-2026-07-28",
+          "/apps/fahrtenbuch/café-international-konsil-einstellungseb"
+        ],
+        "einordnung": "eichfall"
+      },
+      "B": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/fasnerkel",
+          "/pruefkorpus_v3/worbel",
+          "/nasa-llis/5003"
+        ],
+        "einordnung": "eichfall"
+      }
+    },
+    {
+      "kennung": "v3-26",
+      "kategorie": "eichfall",
+      "task": "Wie viele Zapfen haben drei Krispatur zusammen?",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "A": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [],
+        "einordnung": "eichfall"
+      },
+      "B": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/kraiber_zacken",
+          "/pruefkorpus_v3/velunip",
+          "/pruefkorpus_v3/snarwal"
+        ],
+        "einordnung": "eichfall"
+      }
+    },
+    {
+      "kennung": "v3-27",
+      "kategorie": "eichfall",
+      "task": "Wie viele Haken haben vier Dellwark zusammen?",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "A": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [],
+        "einordnung": "eichfall"
+      },
+      "B": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [
+          "/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-",
+          "/apps/setfunk-research-digest-v2-2026-07",
+          "/brainlehr/nullbefund-ueber-drei-unabhaengige"
+        ],
+        "einordnung": "eichfall"
+      }
+    },
+    {
+      "kennung": "v3-28",
+      "kategorie": "eichfall",
+      "task": "Wie viele Bogen haben zwei Tangvolk zusammen?",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "A": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [],
+        "einordnung": "eichfall"
+      },
+      "B": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/trebolit",
+          "/pruefkorpus_v3/torkade",
+          "/pruefkorpus_v3/tuckram"
+        ],
+        "einordnung": "eichfall"
+      }
+    },
+    {
+      "kennung": "v3-29",
+      "kategorie": "eichfall",
+      "task": "Wie viele Riegel haben drei Orsprint zusammen?",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "A": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [],
+        "einordnung": "eichfall"
+      },
+      "B": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/orbeling",
+          "/pruefkorpus_v3/boltrek",
+          "/pruefkorpus_v3/trebolit"
+        ],
+        "einordnung": "eichfall"
+      }
+    },
+    {
+      "kennung": "v3-30",
+      "kategorie": "eichfall",
+      "task": "Wie viele Spangen haben vier Halmquin zusammen?",
+      "erwartete_zahl": null,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": true,
+      "A": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [],
+        "einordnung": "eichfall"
+      },
+      "B": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": true,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/halbsted",
+          "/pruefkorpus_v3/boltrek",
+          "/pruefkorpus_v3/quirlband"
+        ],
+        "einordnung": "eichfall"
+      }
+    },
+    {
+      "kennung": "v3-31",
+      "kategorie": "aehnlich",
+      "task": "Wie viele Sprossen haben fuenf Moldriane zusammen (nicht zu verwechseln mit Moldrion)?",
+      "erwartete_zahl": 195,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "195",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/moldrion",
+          "/pruefkorpus_v3/moldrian"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "195",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/moldrion",
+          "/pruefkorpus_v3/moldrian",
+          "/pruefkorpus_v3/miglor"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-32",
+      "kategorie": "aehnlich",
+      "task": "Wie viele Naehte hat ein Frastek zusammen (nicht zu verwechseln mit Frastel)?",
+      "erwartete_zahl": 5,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "5",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/frastek",
+          "/pruefkorpus_v3/frastel"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "5",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/frastek",
+          "/pruefkorpus_v3/frastel",
+          "/pruefkorpus_v3/boltrek"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-33",
+      "kategorie": "eigenschaft",
+      "task": "Wie viele Zacken haben zwei Kraibere zusammen?",
+      "erwartete_zahl": 62,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "62",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/kraiber_zacken",
+          "/pruefkorpus_v3/kraiber_gewicht"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "62",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/kraiber_zacken",
+          "/pruefkorpus_v3/kraiber_gewicht",
+          "/pruefkorpus_v3/glimberg"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-34",
+      "kategorie": "eigenschaft",
+      "task": "Wie viele Kanten haben drei Silphone zusammen?",
+      "erwartete_zahl": 99,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "99",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/silphon_kanten",
+          "/pruefkorpus_v3/silphon_hoehe"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "99",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/silphon_kanten",
+          "/pruefkorpus_v3/silphon_hoehe",
+          "/pruefkorpus_v3/quirlband"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-35",
+      "kategorie": "gleiche_einheit",
+      "task": "zwei Nafure und drei Boltreke zusammen: wie viele Riemen sind das insgesamt?",
+      "erwartete_zahl": 193,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "193",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/nafur",
+          "/pruefkorpus_v3/boltrek"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "203",
+        "mit_bestanden": false,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/boltrek",
+          "/pruefkorpus_v3/nafur",
+          "/apps/setfunk-research-digest-v2-2026-07"
+        ],
+        "einordnung": "richtig_falsch_gerechnet"
+      }
+    },
+    {
+      "kennung": "v3-36",
+      "kategorie": "gleiche_einheit",
+      "task": "drei Zirkulate und zwei Torkadee zusammen: wie viele Bahnen sind das insgesamt?",
+      "erwartete_zahl": 187,
+      "ohne_abruf": "5",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "187",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/torkade",
+          "/pruefkorpus_v3/zirkulat"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "187",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/torkade",
+          "/pruefkorpus_v3/zirkulat",
+          "/pruefkorpus_v3/trebolit"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-37",
+      "kategorie": "veraltet",
+      "task": "Wie viele Ringe haben drei Drallmessere zusammen (aktueller Stand)?",
+      "erwartete_zahl": 135,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "135",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/drallmesser",
+          "/pruefkorpus_v3/drallmesser_alt",
+          "/openlehr/steuer/cafe-international-abschlusskonsil"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "135",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/drallmesser",
+          "/pruefkorpus_v3/drallmesser_alt",
+          "/pruefkorpus_v3/trebolit"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-38",
+      "kategorie": "veraltet",
+      "task": "Wie viele Spulen haben vier Quirlbande zusammen (aktueller Stand)?",
+      "erwartete_zahl": 208,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "208",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/quirlband",
+          "/pruefkorpus_v3/quirlband_alt",
+          "/openlehr/steuer/cafe-international-abschlusskonsil"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "208",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/quirlband",
+          "/pruefkorpus_v3/quirlband_alt",
+          "/arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05-82"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-39",
+      "kategorie": "kombiniert3",
+      "task": "2 Pentrusche haben zusammen wie viele Dornen? Und 3 Halbstede haben zusammen wie viele Kanten? Und 2 Orbelinge haben zusammen wie viele Waben? Nenne die Gesamtsumme aus allen drei Werten.",
+      "erwartete_zahl": 138,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "138",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/orbeling",
+          "/pruefkorpus_v3/pentrusch",
+          "/pruefkorpus_v3/halbsted"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "138",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/pentrusch",
+          "/pruefkorpus_v3/orbeling",
+          "/pruefkorpus_v3/halbsted"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-40",
+      "kategorie": "kombiniert3",
+      "task": "2 Tuckrame haben zusammen wie viele Stege? Und 3 Dromfelde haben zusammen wie viele Falten? Und 2 Miglore haben zusammen wie viele Speichen? Nenne die Gesamtsumme aus allen drei Werten.",
+      "erwartete_zahl": 127,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "127",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/tuckram",
+          "/pruefkorpus_v3/miglor",
+          "/pruefkorpus_v3/dromfeld"
+        ],
+        "einordnung": "bestanden"
+      },
+      "B": {
+        "mit_abruf": "127",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/tuckram",
+          "/pruefkorpus_v3/dromfeld",
+          "/pruefkorpus_v3/miglor"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-41",
+      "kategorie": "kombiniert_ablenker",
+      "task": "3 Velunite (nicht Velunip) haben zusammen wie viele Klammern? Und 2 Frasteke (nicht Frastel) haben zusammen wie viele Naehte? Nenne die Gesamtsumme aus beiden Werten.",
+      "erwartete_zahl": 73,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": false,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [],
+        "einordnung": "kein_treffer"
+      },
+      "B": {
+        "mit_abruf": "73",
+        "mit_bestanden": true,
+        "ziel_gefunden": true,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/velunit",
+          "/pruefkorpus_v3/frastek",
+          "/pruefkorpus_v3/velunip"
+        ],
+        "einordnung": "bestanden"
+      }
+    },
+    {
+      "kennung": "v3-42",
+      "kategorie": "kombiniert_ablenker",
+      "task": "2 Moldriane (nicht Moldrion) haben zusammen wie viele Sprossen? Und 4 Velunite (nicht Velunip) haben zusammen wie viele Klammern? Nenne die Gesamtsumme aus beiden Werten.",
+      "erwartete_zahl": 162,
+      "ohne_abruf": "weiss ich nicht",
+      "ohne_bestanden": false,
+      "A": {
+        "mit_abruf": "weiss ich nicht",
+        "mit_bestanden": false,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [],
+        "einordnung": "kein_treffer"
+      },
+      "B": {
+        "mit_abruf": "136",
+        "mit_bestanden": false,
+        "ziel_gefunden": false,
+        "abgerufene_pfade": [
+          "/pruefkorpus_v3/velunit",
+          "/pruefkorpus_v3/moldrion",
+          "/pruefkorpus_v3/velunip"
+        ],
+        "einordnung": "falscher_treffer"
+      }
+    }
+  ]
+}

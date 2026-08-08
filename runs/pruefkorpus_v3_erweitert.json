@@ -1,0 +1,49 @@
+{
+  "eichung": {
+    "kennung": "v3-01",
+    "task": "Wie viele Zacken haben drei Glimberge zusammen?",
+    "erwartete_zahl": 21,
+    "falsche_zahl": null,
+    "ohne_abruf_roh": "weiss ich nicht",
+    "ohne_abruf_bestanden": false,
+    "mit_abruf_roh": "21",
+    "mit_abruf_bestanden": true,
+    "ziel_gefunden": true,
+    "abgerufene_pfade": [
+      "/pruefkorpus_v3/glimberg"
+    ],
+    "einordnung": "bestanden",
+    "eichung_ok": true
+  },
+  "aborted": true,
+  "grund": "positivkontrolle_mitten_im_lauf_fehlgeschlagen",
+  "positivkontrolle_index": 0,
+  "konfiguration": {
+    "min_hits": 3,
+    "explore_rate": 0.15,
+    "trust_weight": 0.35,
+    "max_nodes": 3,
+    "max_lessons": 2,
+    "noise_floor_mad_mult": 2.0,
+    "radar_min_sample_n": 4,
+    "full_scan_row_cap": 5000,
+    "project_calibration_min_samples": 50,
+    "ensemble_top_n": 5,
+    "zweiter_kanal": false,
+    "ensemble_pflicht": true,
+    "embed_model": "bge-m3",
+    "bestand_knowledge_nodes": 1978,
+    "bestand_lessons_learned": 618,
+    "bestand_knowledge_embeddings": 2988
+  },
+  "vorher": 1978,
+  "entfernt": 32,
+  "nachher": 1978,
+  "laeufe": [
+    {
+      "lauf_nr": 0,
+      "rows": [],
+      "messgeraet_kaputt": true
+    }
+  ]
+}

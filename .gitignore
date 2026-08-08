@@ -1,0 +1,38 @@
+# Der lebende Bestand gehoert nicht in die Versionsverwaltung.
+# Grund (Dienst-Plan A1, Lehre L-84869f): git fuehrt eine Binaerdatei nicht
+# zusammen, es ueberschreibt sie — ein Arbeitstag der Gegenseite verschwindet
+# ohne Konflikthinweis. Am 2026-08-07 lag zudem eine BESCHAEDIGTE Fassung
+# bereits im Commit, womit die Versionsverwaltung als Rettungsweg wertlos war.
+#
+# Was stattdessen versioniert wird: schema.sql, herkunft_unveraenderlich.sql
+# und ein zeilenweiser Auszug unter auszug/ (brainlehr.py raus). Der Auszug
+# ist Text, laesst sich vergleichen und zusammenfuehren — und aus ihm laesst
+# sich der Bestand vollstaendig wiederherstellen (brainlehr.py rein).
+knowledge.db
+knowledge.db-wal
+knowledge.db-shm
+knowledge.db.lock
+knowledge.db.bak-*
+knowledge.db.backup_*
+knowledge.db.beschaedigt-*
+backups/
+snapshots/
+fremdclient/knowledge.db
+
+# Abgeleitet, jederzeit neu erzeugbar
+symbols.db
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Laufende Protokolle — waechst bei jedem Prompt, kein Inhalt fuer die Historie
+recall_log.jsonl
+zero_hit_log.jsonl
+wissensverlauf.jsonl
+injection_suspect_log.jsonl
+.kurator_taeglich_marker
+
+# Pruefstands-Datenbanken, bei jedem Lauf neu erzeugt
+schreibpruefstand/demo/*.db
+schreibpruefstand/demo/*.db-wal
+schreibpruefstand/demo/*.db-shm
