@@ -27,6 +27,37 @@ import pytest
 SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
+
+def hub_wurzel() -> Path | None:
+    """Wo liegt der hub, aus dessen scripts/ vier Tests Module laden?
+
+    Bis zum Umzug am 2026-08-08 war das schlicht der Elternordner: brainlehr
+    lag als hub/shared-knowledge darin. Seit brainlehr ein eigenes Repo ist,
+    stimmt diese Annahme nicht mehr, und vier Tests brachen beim Sammeln ab
+    (caveman_bulk, caveman_compress, wiedereinstieg, knowledge_recall_hook).
+
+    Bewusst tolerant statt fest verdrahtet: ein Klon von brainlehr allein hat
+    keinen hub, und dann sollen diese vier Tests sich UEBERSPRINGEN, nicht die
+    Sammlung sprengen. Reihenfolge: ausdrueckliche Angabe, Nachbarordner,
+    alte Lage."""
+    import os
+    kandidaten = [
+        Path(os.environ["BEGOD_HUB"]) if os.environ.get("BEGOD_HUB") else None,
+        SHARED_KNOWLEDGE.parent / "hub",      # brainlehr und hub nebeneinander
+        SHARED_KNOWLEDGE.parent,              # alte Lage: hub/shared-knowledge
+    ]
+    for k in kandidaten:
+        if k and (k / "scripts").is_dir():
+            return k
+    return None
+
+
+HUB = hub_wurzel()
+if HUB:
+    for zusatz in (HUB / "scripts", HUB / "begod" / "scripts"):
+        if zusatz.is_dir():
+            sys.path.insert(0, str(zusatz))
+
 import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
 import lesson_recorder  # type: ignore  # noqa: E402
 

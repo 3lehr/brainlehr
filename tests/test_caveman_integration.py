@@ -7,7 +7,13 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# REPO_ROOT ist der hub, nicht der Elternordner: seit dem Umzug am
+# 2026-08-08 liegt brainlehr neben dem hub statt darin, und parents[2]
+# zeigte auf den Verbund-Ordner. Die Aufloesung steht in conftest.py,
+# damit sie an einer Stelle korrigierbar bleibt.
+from conftest import HUB  # noqa: E402
+
+REPO_ROOT = HUB if HUB else Path(__file__).resolve().parents[2]
 SCRIPTS = REPO_ROOT / "begod/scripts"
 sys.path.insert(0, str(SCRIPTS))
 
