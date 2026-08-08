@@ -1,0 +1,9 @@
+{
+  "geprueft_am": "2026-08-08T19:40:06+0200",
+  "geprueft_von": "gegenprobe.py (zweite Instanz, rechnerisch)",
+  "bestanden": false,
+  "befunde": [
+    "Lauf hat sich selbst abgebrochen (positivkontrolle_mitten_im_lauf_fehlgeschlagen) -- kein verwertbares Ergebnis"
+  ],
+  "umfang": "Rechnerische Selbstkonsistenz: Abbruchkennzeichen, Stillstand des Bestands, Zaehler gegen Nenner, Punktschaetzer im eigenen Vertrauensbereich. NICHT geprueft: ob die Messung die richtige Frage stellte, und ob das Modell dasselbe noch einmal liefern wuerde."
+}
