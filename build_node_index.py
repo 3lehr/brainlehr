@@ -29,8 +29,11 @@ import sys
 import tempfile
 import os
 
-DB = "/Volumes/daten/Begod2026/hub/shared-knowledge/knowledge.db"
-OUT = Path("/Volumes/daten/Begod2026/hub/shared-knowledge/NODE_INDEX.md")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from haken.ort import DB as _DB, WURZEL  # noqa: E402
+
+DB = str(_DB)
+OUT = WURZEL / "NODE_INDEX.md"
 
 NEUESTE_N = 15  # Anzahl juengster Knoten/Lehren mit vollem Titel
 

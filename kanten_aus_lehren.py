@@ -21,8 +21,8 @@ from dataclasses import dataclass
 from typing import Set, Tuple, List
 
 # Config
-DB_PATH = Path("/Volumes/daten/Begod2026/hub/shared-knowledge/knowledge.db")
-REPO_ROOT = Path("/Volumes/daten/Begod2026")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from haken.ort import DB as DB_PATH, VERBUND as REPO_ROOT  # noqa: E402
 RELATION_TYPE = "lesson_mentions_file"  # Distinguishes edges created by this script
 
 # Regex patterns to find file paths

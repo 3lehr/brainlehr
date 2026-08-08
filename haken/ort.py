@@ -21,3 +21,9 @@ SERVER = WURZEL / "knowledge_mcp_server.py"
 REGISTER = WURZEL / "auftraege.jsonl"
 RECALL_LOG = WURZEL / "recall_log.jsonl"
 SCHATTEN_LOG = WURZEL / "schatten_log.jsonl"
+
+# Die Verbundwurzel (hub/, fahrtenbuch/, openlehr/ ... nebeneinander). Seit
+# brainlehr NEBEN hub liegt statt darin, ist sie aus dem eigenen Ort nicht
+# mehr ableitbar: ein Arbeitsbaum liegt drei Ebenen tiefer, und "zwei nach
+# oben" landete dann in .claude/. Darum absolut -- und nur hier.
+VERBUND = Path("/Volumes/daten/Begod2026")

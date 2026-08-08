@@ -73,11 +73,11 @@ sys.path.insert(0, str(HERE))
 from normkraft import Ablehnung, _backup, now_iso, CET  # noqa: E402
 
 DB_PATH = HERE / "knowledge.db"
-# .../hub/shared-knowledge -> hub -> Begod2026 (Verbund-Wurzel: mehrere
-# eigene Git-Repos nebeneinander, z.B. hub/, fahrtenbuch/, setfunk/ --
-# relative Pfade in `source` sind dagegen aufzuloesen, siehe
-# beobachtbare_datei()).
-BEGOD_ROOT = HERE.parent.parent
+# Verbund-Wurzel: mehrere eigene Git-Repos nebeneinander (hub/, fahrtenbuch/,
+# setfunk/ ...) -- relative Pfade in `source` sind dagegen aufzuloesen, siehe
+# beobachtbare_datei(). Kommt aus haken/ort.py, weil "zwei Ebenen ueber mir"
+# seit dem Umzug in .claude/ landet statt in Begod2026.
+from haken.ort import VERBUND as BEGOD_ROOT  # noqa: E402
 
 # ─── Wissensart: Halbwertszeit je Art, deterministisch aus Bestand ─────────
 #
