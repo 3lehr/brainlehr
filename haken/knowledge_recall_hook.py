@@ -64,6 +64,10 @@ from knowledge_mcp_server import knowledge_trust_score, _trust_aggregate  # noqa
 # Fusionsmechanismus (rrf_fuse/hybrid_retrieval_weight) wie der aktive
 # Suchweg in knowledge_mcp_server.py, nichts danebengebaut.
 import embeddings  # noqa: E402
+# rangfolge.py liegt ebenfalls neben der DB -- zwei zusaetzliche Rangsignale
+# (norm_rang, Hebb-Kanten), eigenes Modul (Monolith-Stopp hier, siehe dessen
+# Kopf), aus diesem Hook nur AUFGERUFEN (Auftrag 2026-08-08).
+import rangfolge  # noqa: E402
 
 # Protokoll, WAS gezogen wurde -- neben der DB, eigene Datei (kein Tabelle in
 # knowledge.db: sonst schreibt JEDE Sitzung bei JEDEM Prompt in dieselbe DB,
@@ -889,6 +893,7 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
 
         signal = _combine_channels(kw_signal, emb_signal, emb_scores is not None)
         signal = _apply_trust_score(signal, "node")
+        signal = rangfolge.anwenden(signal, conn)
         if own:
             signal = _tag_node_scope(signal, own)
         nodes = _maybe_explore(signal[:MAX_NODES], signal, rand, log_path)
