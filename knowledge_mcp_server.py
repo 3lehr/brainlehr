@@ -2454,12 +2454,13 @@ def knowledge_update(node_id: str, summary: str | None = None,
 
     updates.append("updated_at = ?")
     params.append(neuer_zeitpunkt)
-    updates.append("actor = ?")
-    params.append(actor)
-    updates.append("session = ?")
-    params.append(session)
-    updates.append("model = ?")
-    params.append(model)
+    # actor/session/model bleiben stehen (2026-08-08): der Trigger
+    # knowledge_nodes_herkunft_bu haelt actor und session fuer
+    # unveraenderlich. Wer sie beim Update ueberschrieb, brach jeden Aufruf
+    # ab, sobald ein anderer Urheber als der Anleger schrieb -- gemessen an
+    # der Sammelentscheidung ueber 62 Knoten, IntegrityError beim ersten.
+    # Wer die Aenderung vorgenommen hat, steht ohnehin an zwei Stellen: im
+    # access_log und, bei einer Normentscheidung, in norm_entschieden_von.
     updates.append("client = ?")
     params.append(_KLIENT)
     params.append(row["id"])
