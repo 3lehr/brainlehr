@@ -1,8 +1,8 @@
 {
-  "last_sync": "2026-07-21T07:26:17.099849",
-  "last_commit": "12abb438fcdb4f4b63fb3e751e89d7c526e647b5",
-  "controls_count": 947,
-  "review_pending": true,
-  "last_review": "2026-07-13T07:55:00+02:00",
-  "last_review_note": "Delta 4dd5ef19->d6153cbb (926->945 Controls): rein additiv. ABSOLUT-Hard-Stops DEV.2.5/KONF.2.3/DEV.2.6 semantisch unveraendert. HS-U1..U9 kein Update noetig."
+  "last_sync": "2026-08-08T19:43:23.776613",
+  "last_commit": "47de2824a341812438ef3f044b3f65ce2cad6e32",
+  "controls_count": 951,
+  "review_pending": false,
+  "last_review": "2026-08-08T19:43:23+02:00",
+  "last_review_note": "Delta 12abb438->47de2824 (947->951 Controls, dev-relevant 490->492). Die Gegenseite hat ihre ABLAGE umgebaut (Anwenderkataloge/Quellkataloge -> control_layer/...), nicht nur Inhalte geaendert -- der Sync fand dadurch zunaechst 0 Controls und ueberschrieb das Profil; wiederhergestellt, Pfade nachgezogen, Einbruchssperre eingebaut. Inhaltlich nach Titeln aufgeschluesselt: 18 der 25 entfallenen Kennungen sind nur UMNUMMERIERT (BER.3.x->BER.5.x, BER.6.x->BER.7.x, gleicher Titel). 7 ohne Nachfolger, alle aus dem Zugangs-/Notfallbereich (BER.3.26-3.31 Zwischenspeicherung von Zugangsdaten, Dienstekonten, Notfallzugang, alternative Authentifizierung; BER.4.9 Entzug von Berechtigungen). 9 echt neu, Schwerpunkt Kryptographie (BER.7.1-7.6: Algorithmen bei Schluesselerzeugung und Transport, Schluessellaenge, Qualitaet von Zufallszahlen) sowie BER.5.11/5.12/5.14 (Zugriffsbeschraenkung je Anwendung, Zugang nur durch zwei Personen, kompromittierte Authentifizierungsmittel). ABSOLUT-Hard-Stops DEV.2.5/KONF.2.3/DEV.2.6 alle drei weiterhin im Bestand, semantisch unveraendert -- HS-U1..U9 brauchen kein Update. NICHT geprueft: der Volltext der 492 dev-relevanten Controls; der Abgleich lief ueber Kennung und Titel."
 }
