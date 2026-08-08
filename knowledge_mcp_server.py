@@ -1015,9 +1015,36 @@ def _ensure_core_schema(conn: sqlite3.Connection) -> None:
         """)
 
 
+def _ensure_herkunft_triggers(conn: sqlite3.Connection) -> None:
+    """Spielt herkunft_unveraenderlich.sql ein (Befund 2026-08-08).
+
+    Gemessen an einer Erstanlage am leeren Ort: 29 Trigger statt der 31 des
+    Betriebs -- und die beiden fehlenden waren ausgerechnet
+    knowledge_nodes_herkunft_bu und lessons_herkunft_bu. Wer brainlehr neu
+    installierte, bekam es also ohne die Regel, die brainlehr AUSMACHT: dass
+    Herkunft nachgetragen, aber nie umgeschrieben werden kann. Ursache war
+    die Ablage -- die Regel stand in einer eigenen SQL-Datei, die von Hand
+    eingespielt worden war und die ensure_schema nicht kannte.
+
+    Die Datei ist idempotent (DROP TRIGGER IF EXISTS vor jedem CREATE), ein
+    Lauf gegen eine vollstaendige Datenbank aendert also nichts. Fehlt sie,
+    ist das ein harter Fehler und keine Warnung: eine Installation ohne
+    diese Schranke sieht funktionsfaehig aus und ist es nicht.
+    """
+    pfad = Path(__file__).parent / "herkunft_unveraenderlich.sql"
+    if not pfad.exists():
+        raise RuntimeError(
+            f"herkunft_unveraenderlich.sql fehlt unter {pfad} -- ohne sie "
+            "entsteht eine Datenbank ohne Herkunftsschranke. Datei gehoert "
+            "neben knowledge_mcp_server.py ins selbe Verzeichnis."
+        )
+    conn.executescript(pfad.read_text(encoding="utf-8"))
+
+
 def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old knowledge.db copies."""
     _ensure_core_schema(conn)
+    _ensure_herkunft_triggers(conn)
     _ensure_anlass_columns(conn)
     _ensure_abgeleitet_von_column(conn)
     _ensure_norm_art_column(conn)
