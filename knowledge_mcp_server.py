@@ -1767,7 +1767,9 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
                WHERE lessons_fts MATCH ? AND l.status = 'active'
-                 AND (l.projects LIKE '%"shared"%' OR l.projects LIKE ?)
+                 AND (l.projects LIKE '%"shared"%'
+                      OR l.projects LIKE '%"systemweit"%'
+                      OR l.projects LIKE ?)
                ORDER BY rank""",
             (fts_query, f'%"{scope}"%')
         ).fetchall()
