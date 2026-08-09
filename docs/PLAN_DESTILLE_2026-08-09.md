@@ -2,6 +2,20 @@
 
 Stand: 2026-08-09T06:05:00+0200 · Anlass: Betreiber, nach dem Video zu „Distill" (YouTube YU9GscXWK-E) · Grundlage: eigene Messungen vom 2026-08-08/09, alle unten mit Zahl
 
+## Wo steht was — damit dieser Plan nicht zur zweiten Wahrheit wird
+
+Dieses Dokument und der Wissensspeicher sagen teilweise dasselbe. Das ist die Fehlerklasse, die am 2026-08-09 an zwei Fassungen desselben Katalogpfades aufgeflogen ist: Zwei Fassungen laufen auseinander, die Frage ist nur wann. Darum die Arbeitsteilung, ab hier verbindlich:
+
+| | gehoert hierhin (.md) | gehoert in den Speicher |
+|---|---|---|
+| **Was** | Reihenfolge, Begruendung, verworfene Wege, Messreihen | die ENTSCHEIDUNG selbst, als Knoten mit Herkunft und Geltung |
+| **Warum** | ein Gedankengang hat eine Richtung, ein Bestand hat keine | nur der Speicher kann sich weigern, zaehlen und von selbst ausliefern |
+| **Bei Widerspruch gilt** | — | **der Knoten** |
+
+**Der Plan verweist, statt nachzuerzaehlen.** Wo hier eine Entscheidung ausformuliert steht, die als Knoten existiert, ist die Knotenkennung genannt und der Knoten die massgebliche Fassung. Entscheidungen dieses Plans, die noch KEINEN Knoten haben, sind daran erkennbar, dass keine Kennung dabeisteht -- das ist kein Versehen, sondern der Hinweis, dass sie noch nicht bindend abgelegt sind.
+
+Bekannte Knoten zu diesem Plan: `b6305304` (drei Normachsen), `d6f0dd0f` (brainlehr bleibt privat), `745f7ac1` (Recall fragt den Prompt, nicht das gelesene Material), `e504b10c` (Tokenspalten ohne Zeilenschreiber), `4361e92d` / `ad4bb80e` (UN- und EU-Nachhaltigkeitsziele als Nachschlagewerk).
+
 ## Der gemessene Ist-Stand, nicht der vermutete
 
 | Frage | gemessen | wo |
