@@ -110,6 +110,25 @@ def _vector_bytes(db_path, kind, ref_id) -> bytes | None:
     return row[0] if row else None
 
 
+def _insert_relation(db_path, source_path, target_path, relation_type):
+    """Legt eine Kante direkt per SQL an, wie sie ein Aehnlichkeits-Lauf oder
+    eine von Hand gesetzte Belegkante hinterlaesst -- nicht ueber
+    knowledge_relation_add(), das nur die knowledge_relation_add()-eigene
+    RELATION_TYPES-Menge zulaesst und 'aehnlich_bedeutung' (vom
+    Aehnlichkeits-Rechenlauf) gar nicht kennt."""
+    conn = sqlite3.connect(str(db_path))
+    conn.execute(
+        "INSERT INTO knowledge_relations "
+        "(id, source_path, target_path, relation_type, confidence, weight, "
+        "evidence, source, creator, model, session, created_at, updated_at) "
+        "VALUES (?,?,?,?,0.5,1.0,'test','test','test',NULL,NULL,?,?)",
+        (f"R-{source_path}-{target_path}-{relation_type}", source_path, target_path,
+         relation_type, kms.now_iso(), kms.now_iso()),
+    )
+    conn.commit()
+    conn.close()
+
+
 def _relations_from(db_path, source_path) -> list[sqlite3.Row]:
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
@@ -219,3 +238,63 @@ def test_self_link_creates_no_relation(temp_db):
     result = kms.knowledge_update("self", content="siehe [[Selbstbezug]]")
     assert result["relations_created"] == []
     assert _relations_from(temp_db, "/shared/selbstbezug") == []
+
+
+# --- Auftrag 2026-08-09: DELETE vor _sync_wikilinks darf nur 'references' --
+# treffen, sonst reisst jedes knowledge_update() gerechnete Aehnlichkeits-
+# kanten und von Hand gesetzte Belegkanten mit, die _sync_wikilinks gar nicht
+# neu anlegen kann (die stammen nicht aus [[Wiki-Links]] im content).
+
+def test_update_keeps_analogous_to_edge(temp_db):
+    _insert_node(temp_db, "quelle", "/shared/quelle", "Quelle", content="ohne links")
+    _insert_node(temp_db, "ziel", "/shared/ziel", "Ziel")
+    _insert_relation(temp_db, "/shared/quelle", "/shared/ziel", "analogous_to")
+
+    kms.knowledge_update("quelle", content="immer noch ohne links")
+
+    types = {r["relation_type"] for r in _relations_from(temp_db, "/shared/quelle")}
+    assert "analogous_to" in types, "von Hand gesetzte Belegkante darf ein knowledge_update nicht ueberleben"
+
+
+def test_update_keeps_aehnlich_bedeutung_edge(temp_db):
+    _insert_node(temp_db, "quelle", "/shared/quelle", "Quelle", content="ohne links")
+    _insert_node(temp_db, "ziel", "/shared/ziel", "Ziel")
+    _insert_relation(temp_db, "/shared/quelle", "/shared/ziel", "aehnlich_bedeutung")
+
+    kms.knowledge_update("quelle", content="immer noch ohne links")
+
+    types = {r["relation_type"] for r in _relations_from(temp_db, "/shared/quelle")}
+    assert "aehnlich_bedeutung" in types, "gerechnete Aehnlichkeitskante darf ein knowledge_update nicht ueberleben"
+
+
+def test_update_still_drops_removed_wikilink_reference_edge(temp_db):
+    """Gegenrichtung: die Einschraenkung darf das Loeschen nicht abschalten,
+    nur auf 'references' begrenzen -- ein aus dem content entfernter
+    [[Wiki-Link]] muss weiterhin verschwinden."""
+    _insert_node(temp_db, "ziel", "/shared/ziel", "Zielknoten")
+    add_result = kms.knowledge_add("/shared", "Quellknoten", "Zsf",
+                                   content="siehe [[Zielknoten]]", source="test")
+    assert len(_relations_from(temp_db, add_result["path"])) == 1
+
+    kms.knowledge_update(add_result["id"], content="kein Verweis mehr")
+
+    rows = _relations_from(temp_db, add_result["path"])
+    assert not any(r["relation_type"] == "references" for r in rows)
+
+
+def test_update_without_content_leaves_relations_untouched(temp_db):
+    """Negativfall: ein Update ohne content-Aenderung ruft _sync_wikilinks
+    (und damit das DELETE davor) gar nicht auf -- Kanten jeder Art bleiben
+    unangetastet."""
+    _insert_node(temp_db, "quelle", "/shared/quelle", "Quelle", content="siehe [[Ziel]]")
+    _insert_node(temp_db, "ziel", "/shared/ziel", "Ziel")
+    _insert_relation(temp_db, "/shared/quelle", "/shared/ziel", "analogous_to")
+    _insert_relation(temp_db, "/shared/quelle", "/shared/ziel", "aehnlich_bedeutung")
+    _insert_relation(temp_db, "/shared/quelle", "/shared/ziel", "references")
+
+    before = {r["relation_type"] for r in _relations_from(temp_db, "/shared/quelle")}
+    result = kms.knowledge_update("quelle", tags=["a"])
+    assert result["status"] == "updated"
+    after = {r["relation_type"] for r in _relations_from(temp_db, "/shared/quelle")}
+
+    assert before == after == {"analogous_to", "aehnlich_bedeutung", "references"}

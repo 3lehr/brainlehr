@@ -2623,7 +2623,10 @@ def knowledge_update(node_id: str, summary: str | None = None,
     if content is not None:
         # P5: Kanten dieses Knotens komplett neu ziehen, sonst ueberlebt ein
         # aus dem content entfernter Verweis als Karteileiche.
-        conn.execute("DELETE FROM knowledge_relations WHERE source_path = ?", (row["path"],))
+        conn.execute(
+            "DELETE FROM knowledge_relations WHERE source_path = ? AND relation_type = 'references'",
+            (row["path"],),
+        )
         wikilinks = _sync_wikilinks(conn, row["path"], content, actor=actor, model=model, session=session)
 
     updated_row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ?", (row["id"],)).fetchone()
