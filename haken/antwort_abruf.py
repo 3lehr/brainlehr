@@ -74,12 +74,69 @@ erst die Nachfrage des Betreibers oeffnete ihn. Darum merkt --prompt sich in
 kennzeichnende Begriffe aus der Ausgabezeile), und der naechste --stop prueft
 die NEUE Antwort darauf: WOERTLICH wenn die Kennung selbst vorkommt (harter
 Nachweis), BEGRIFFLICH wenn mindestens BEGRIFFLICH_MIN der kennzeichnenden
-Begriffe vorkommen, sonst NICHT_VERWENDET. Geprueft wird genau EINMAL (beim
-naechsten Zug), danach verlaesst der Eintrag "ausgespielt_offen" -- der
-Auftrag verlangt keine Mehrfachpruefung ueber viele Zuege. Auch WOERTLICH
-beweist nur, dass der Eintrag VORKAM, nicht dass er die Antwort besser
-gemacht hat -- dieselbe Verwechslung wie zwischen Lieferung und Wirkung, nur
-eine Ebene hoeher, siehe Kommentar an der Zaehlung selbst.
+Begriffe vorkommen, sonst NICHT_VERWENDET. Ein QUITTIERTER Eintrag (woertlich
+oder begrifflich erkannt) verlaesst "ausgespielt_offen" beim naechsten --stop.
+Ein NICHT verwendeter Eintrag blieb hier urspruenglich trotzdem nur EINMAL
+geprueft und wurde danach verworfen -- siehe WIEDERVORLAGE UND ESKALATION
+unten, das genau das aendert (zweiter Betreiber-Nachtrag: der urspruengliche
+Auftrag verlangte keine Mehrfachpruefung, der Nachtrag verlangt sie
+ausdruecklich). Auch WOERTLICH beweist nur, dass der Eintrag VORKAM, nicht
+dass er die Antwort besser gemacht hat -- dieselbe Verwechslung wie zwischen
+Lieferung und Wirkung, nur eine Ebene hoeher, siehe Kommentar an der Zaehlung
+selbst.
+
+WIEDERVORLAGE UND ESKALATION (Nachtrag 2026-08-09, zweiter Betreiber-Auftrag,
+Lehre L-ff8fff): Zustellung und Quittierung sind zwei verschiedene Zustaende
+(gleiches Muster wie eilmeldung_hook.py). VERWENDUNG STATT NUR LIEFERUNG oben
+hat frueher jeden Eintrag in "ausgespielt_offen" GENAU EINMAL geprueft und
+danach verworfen -- ein nicht gelesener Treffer war damit fuer immer weg,
+obwohl er einmal als relevant beurteilt wurde. Jetzt bleibt ein NICHT
+verwendeter Eintrag in "ausgespielt_offen" stehen (statt geleert zu werden)
+und wird beim naechsten --prompt erneut vorgelegt -- VOR jedem neuen
+Kandidaten, mit einem Hinweistext, dass und die wievielte Wiedervorlage es
+ist (sonst sieht sie aus wie ein neuer Treffer, und genau das Uebersehen
+soll sie beheben). Wiedervorlagen zaehlen NICHT auf die Sitzungsobergrenze
+(MAX_ANTWORT_EINTRAEGE_JE_SITZUNG) -- sonst wuerde eine Wiedervorlage das
+Kontingent fuer neue Funde verbrauchen. Nach WIEDERVORLAGE_MAX_ZUSTELLUNGEN
+erfolglosen Zustellungen desselben Eintrags wird nicht weiter zugestellt,
+sondern eine Zeile in die BEREITS VORHANDENE Eilmeldungs-Ablage
+(eilmeldung_eskalation.jsonl, siehe eilmeldung_hook.py) geschrieben -- keine
+zweite Eskalationsmechanik, dieselbe Form (ts/session/key/delivered/text)
+wiederverwendet.
+
+ZIELKONFLIKT Dedup vs. Wiedervorlage (Betreiber-Nachtrag): der Dedup gegen
+recall_log.jsonl (siehe _bereits_geliefert) und die Wiedervorlagepflicht
+greifen auf dieselbe Menge zu -- ein ausgespielter, aber unquittierter
+Treffer steht bereits in recall_log.jsonl und wuerde vom normalen Dedup als
+"schon geliefert" ausgefiltert. AUFLOESUNG: der Dedup gilt nur fuer
+QUITTIERTE Eintraege. Ein Eintrag, der noch in "ausgespielt_offen" steht,
+durchlaeuft den recall_log-Dedup-Filter in modus_prompt gar nicht erst --
+er wird direkt (mit Wiedervorlage-Kennzeichnung) vor die neuen Kandidaten
+gesetzt. Vorrang der Quittierung vor dem Dedup, nicht umgekehrt.
+
+FENSTERKENNUNG STATT SITZUNGSKENNUNG (Betreiber-Nachtrag): Dedup und
+Quittierung hingen bisher an der Sitzungskennung -- eine Sitzung ueberlebt
+aber die Verdichtung ihres Kontextfensters (Kennung bleibt, Inhalt ist weg).
+Nach einer Kompaktierung waere ausgerechnet das Wissen, das dann am
+noetigsten waere, dauerhaft gesperrt gewesen. GEPRUEFT statt angenommen:
+der SessionStart-Haltepunkt kennt zwar die Anlaesse startup/resume/clear/
+compact (Payload-Feld "source"), aber antwort_abruf.py haengt an Stop/
+UserPromptSubmit, deren Payload das NICHT liefert (gemessen an
+haken/knowledge_recall_hook.py, Kommentar bei log_recall(): "zeigte NUR:
+session_id, transcript_path, cwd, prompt_id, permission_mode"). Verlaesslich
+ist dagegen das TRANSCRIPT selbst: jede Kompaktierung hinterlaesst dort eine
+Zeile mit '"isCompactSummary":true' (gemessen an echten Sitzungsprotokollen
+unter ~/.claude/projects/**/*.jsonl -- mehrere Treffer ueber verschiedene
+Sitzungen und Projekte). Die ANZAHL dieser Zeilen bis zum aktuellen Aufruf
+(siehe _fenster_kennung) ist eine monoton steigende, aus derselben Quelle
+wie Antwort und session_id gewonnene Fensterkennung -- kein externes Feld,
+keine zweite Datei. /clear erzeugt ohnehin eine neue Transcript-Datei mit
+neuer session_id (gemessen an den Dateinamen unter ~/.claude/projects/) --
+dafuer sorgt die bestehende Session-Bindung bereits, hier nicht gesondert
+behandelt. Betroffen sind NUR Dedup (_bereits_geliefert) und die
+Wiedervorlage-Warteschlange, nicht die Bestaetigung-ueber-zwei-Zuege
+("vorherige"/"aktuelle") -- die bleibt wie beauftragt session-weit
+unveraendert.
 
 Beide Pfade fangen jede Ausnahme ab und enden still -- ein Haken darf die
 Sitzung nie stoeren (gleiche Regel wie in knowledge_recall_hook.py und
@@ -114,6 +171,8 @@ import pruefkorpus  # noqa: E402
 
 RECALL_LOG = WURZEL / "recall_log.jsonl"
 TREFFER_DATEI = WURZEL / "antwort_treffer.json"
+ESKALATION_DATEI = WURZEL / "eilmeldung_eskalation.jsonl"  # bestehende Ablage
+# (eilmeldung_hook.py) wiederverwendet, keine zweite Eskalationsmechanik.
 
 MIN_LEN = 400          # kuerzere Antworten sind selten inhaltsreich genug
 MAX_BEGRIFFE = 30       # Auftragsvorgabe
@@ -153,6 +212,18 @@ BEGRIFFLICH_MIN = 2
 # weil eine falsch verengte Sitzung teurer ist als ein einzelner ausbleibender
 # Treffer.
 MAX_ANTWORT_EINTRAEGE_JE_SITZUNG = 10
+
+# Nach wievielen erfolglosen Zustellungen desselben unquittierten Eintrags
+# nicht mehr weiter zugestellt, sondern eskaliert wird (Auftrag Punkt 3).
+# PREIS IN BEIDE RICHTUNGEN: zu klein eskaliert zu frueh -- eine Eilmeldung
+# fuer etwas, das beim naechsten Blick ohnehin aufgefallen waere, kostet
+# Aufmerksamkeit fuer nichts. Zu gross laesst dieselbe Wiedervorlage immer
+# weiter Zeichen im Deckel (CAP_ZEICHEN) binden, ohne dass sich je etwas
+# aendert -- kostet Platz in jeder Ausgabe, die sie verdraengt. 3 uebernimmt
+# die im Repo bereits etablierte Staffel aus eilmeldung_hook.py
+# (ESCALATE_AFTER=3) -- keine neue Abwaegung, derselbe Wert fuer denselben
+# Tradeoff, damit zwei Meldewege nicht unterschiedlich schnell eskalieren.
+WIEDERVORLAGE_MAX_ZUSTELLUNGEN = 3
 
 KOPF = "<antwort-recall>"
 FUSS = "</antwort-recall>"
@@ -198,6 +269,32 @@ def top_begriffe(text: str, n: int = MAX_BEGRIFFE) -> list[str]:
     return geordnet[:n]
 
 
+def _fenster_kennung(session_id: str | None, transcript_path: str | None) -> str | None:
+    """Fensterkennung fuer Dedup und Quittierung (siehe Moduldoc,
+    FENSTERKENNUNG STATT SITZUNGSKENNUNG) -- session_id[:8] plus die Anzahl
+    der Kompaktierungen, die dieses Transcript bereits durchlaufen hat.
+    Steigt monoton, aendert sich bei jeder Kompaktierung, bleibt sonst
+    stabil. Kein Transcript oder keine Session -> None (Aufrufer muss damit
+    umgehen koennen, wie mit jedem anderen fehlenden Payload-Feld)."""
+    if not session_id:
+        return None
+    n = 0
+    if transcript_path:
+        try:
+            with open(transcript_path, encoding="utf-8", errors="replace") as f:
+                for zeile in f:
+                    # beide Schreibweisen abgedeckt (kompakt ohne Leerzeichen,
+                    # wie in echten Transcripten gemessen, UND mit Leerzeichen,
+                    # wie json.dumps() es standardmaessig erzeugt) -- billiger
+                    # String-Vergleich statt json.loads() pro Zeile, kostet
+                    # nichts an Genauigkeit, weil das Feld nur bool ist.
+                    if '"isCompactSummary":true' in zeile or '"isCompactSummary": true' in zeile:
+                        n += 1
+        except OSError:
+            pass
+    return f"{session_id[:8]}#{n}"
+
+
 # --- Schwanz-Statistik (Kriterium 3) ----------------------------------------
 
 def _leere_statistik() -> dict:
@@ -237,33 +334,74 @@ def _schwanz_zaehlen(statistik: dict, spitze: list[dict], schwanz: list[dict]) -
 
 # --- Verwendungs-Statistik (Auftrag L-ff8fff) -------------------------------
 
-def _verwendung_pruefen(statistik: dict, antwort: str) -> None:
+def _eskalieren(session: str | None, eintrag: dict) -> None:
+    """Schreibt EINE Zeile in die vorhandene Eilmeldungs-Ablage
+    (eilmeldung_eskalation.jsonl) -- gleiche Form wie eilmeldung_hook.py
+    (ts/session/key/delivered/text), keine zweite Eskalationsmechanik.
+    Beiwerk, darf nie eine Ausnahme nach aussen tragen (gleiche Regel wie
+    _protokolliere)."""
+    key = f"antwort_unquittiert:{eintrag.get('kind')}:{eintrag.get('schluessel')}"
+    zeile = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "session": session,
+        "key": key,
+        "delivered": eintrag.get("versuche", 0),
+        "text": (
+            f"[UNQUITTIERT] {eintrag.get('kind')} {eintrag.get('schluessel')} wurde "
+            f"{eintrag.get('versuche', 0)}x aus der eigenen Antwort automatisch "
+            f"eingespielt, kam aber in keiner Folgeantwort woertlich oder begrifflich "
+            f"vor -- wird nicht weiter zugestellt."
+        ),
+    }
+    try:
+        with open(ESKALATION_DATEI, "a", encoding="utf-8") as f:
+            f.write(json.dumps(zeile, ensure_ascii=False) + "\n")
+    except OSError:
+        pass
+
+
+def _verwendung_pruefen(statistik: dict, antwort: str, session: str | None) -> None:
     """Prueft die beim VORIGEN --prompt ausgespielten Eintraege gegen die
     NEUE Antwort (voller Text, nicht die 30 IDF-Begriffe). WOERTLICH wenn
     die Kennung selbst im Text steht, sonst BEGRIFFLICH wenn mindestens
     BEGRIFFLICH_MIN der kennzeichnenden Begriffe vorkommen, sonst
-    NICHT_VERWENDET. Genau EINE Pruefung je Eintrag -- "ausgespielt_offen"
-    wird danach geleert, der Auftrag verlangt keine Mehrfachpruefung ueber
-    mehrere Zuege. Auch WOERTLICH beweist nur, dass der Eintrag VORKAM --
+    NICHT_VERWENDET. Auch WOERTLICH beweist nur, dass der Eintrag VORKAM --
     nicht, dass er die Antwort besser gemacht hat (dieselbe Verwechslung wie
-    Lieferung vs. Wirkung, nur eine Ebene hoeher)."""
+    Lieferung vs. Wirkung, nur eine Ebene hoeher).
+
+    Nachtrag Wiedervorlage (siehe Moduldoc): ein QUITTIERTER Eintrag (woertlich
+    oder begrifflich erkannt) verlaesst "ausgespielt_offen" wie bisher. Ein
+    NICHT verwendeter Eintrag bleibt jetzt bewusst STEHEN, statt geleert zu
+    werden -- er wird beim naechsten --prompt erneut vorgelegt, es sei denn
+    er hat WIEDERVORLAGE_MAX_ZUSTELLUNGEN erfolglose Zustellungen bereits
+    hinter sich; dann wird eskaliert (_eskalieren) und der Eintrag verlaesst
+    die Warteschlange endgueltig -- keine vierte Zustellung."""
     offen = statistik.get("ausgespielt_offen") or []
     if not offen:
         return
     verwendung = statistik.setdefault(
         "verwendung", {"geliefert": 0, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0})
     antwort_begriffe = pruefkorpus.tokenize(antwort)
+    rest = []
     for eintrag in offen:
         schluessel = eintrag.get("schluessel") or ""
+        quittiert = False
         if schluessel and schluessel in antwort:
             verwendung["woertlich"] = verwendung.get("woertlich", 0) + 1
-            continue
-        begriffe = set(eintrag.get("begriffe") or [])
-        if len(begriffe & antwort_begriffe) >= BEGRIFFLICH_MIN:
-            verwendung["begrifflich"] = verwendung.get("begrifflich", 0) + 1
+            quittiert = True
         else:
-            verwendung["nicht_verwendet"] = verwendung.get("nicht_verwendet", 0) + 1
-    statistik["ausgespielt_offen"] = []
+            begriffe = set(eintrag.get("begriffe") or [])
+            if len(begriffe & antwort_begriffe) >= BEGRIFFLICH_MIN:
+                verwendung["begrifflich"] = verwendung.get("begrifflich", 0) + 1
+                quittiert = True
+        if quittiert:
+            continue
+        verwendung["nicht_verwendet"] = verwendung.get("nicht_verwendet", 0) + 1
+        if eintrag.get("versuche", 0) >= WIEDERVORLAGE_MAX_ZUSTELLUNGEN:
+            _eskalieren(session, eintrag)
+            continue  # eskaliert -> keine weitere Wiedervorlage
+        rest.append(eintrag)  # bleibt unquittiert -> naechster --prompt legt erneut vor
+    statistik["ausgespielt_offen"] = rest
 
 
 # --- Betriebsart --stop -----------------------------------------------------
@@ -284,6 +422,7 @@ def modus_stop(payload: dict) -> None:
         return
     session = payload.get("session_id")
     session8 = session[:8] if session else None
+    fenster = _fenster_kennung(session, pfad)
     spitze = treffer[:SPITZE_GROESSE]
     schwanz = treffer[SPITZE_GROESSE:]
 
@@ -303,11 +442,12 @@ def modus_stop(payload: dict) -> None:
     except (OSError, json.JSONDecodeError):
         pass
 
-    _verwendung_pruefen(statistik, antwort)
+    _verwendung_pruefen(statistik, antwort, session8)
     _schwanz_zaehlen(statistik, spitze, schwanz)
 
     daten = {
         "session": session8,
+        "fenster": fenster,
         "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "verbraucht": False,
         "vorherige": vorherige,
@@ -320,13 +460,26 @@ def modus_stop(payload: dict) -> None:
 
 # --- Betriebsart --prompt ---------------------------------------------------
 
-def _bereits_geliefert(session: str) -> tuple[set, set, int]:
+def _bereits_geliefert(session: str, fenster: str | None) -> tuple[set, set, int]:
     """Pfade/Kennungen, die recall_log.jsonl fuer diese Sitzung schon
     ausgeliefert hat -- ueber ALLE Zeilen dieser Sitzung, nicht nur die
     letzte -- plus wieviele davon ueber DIESEN Weg kamen (ausloeser=="antwort",
     fuer die Sitzungsobergrenze). Zeilen des normalen Prompt-Wegs (kein
     "ausloeser"-Feld) zaehlen fuer den Dedup mit, aber NICHT auf die
-    Obergrenze."""
+    Obergrenze -- die Obergrenze bleibt bewusst sitzungsweit (Auftrag:
+    Sitzungsobergrenze unveraendert), nicht fensterweit.
+
+    Fenster-Vorrang (Betreiber-Nachtrag, siehe Moduldoc): eine EIGENE Zeile
+    (ausloeser=="antwort") aus einem AELTEREN Fenster sperrt ihren Treffer
+    NICHT mehr fuer den Dedup -- das Kontextfenster, das ihn kannte, ist
+    weg (Kompaktierung), der Treffer darf wieder ausgespielt werden. Das
+    gilt nur fuer QUITTIERTE Eintraege (die als quittiert delivered wurden
+    und den Dedup ueberhaupt erreichen); unquittierte Eintraege umgehen den
+    Dedup ohnehin ueber die Wiedervorlage-Warteschlange in modus_prompt,
+    unabhaengig vom Fenster. Zeilen ohne "fenster" (aeltere Eintraege vor
+    diesem Umbau, oder der normale Prompt-Weg ohne Fensterbegriff) bleiben
+    unveraendert sitzungsweit gesperrt -- nur wo wir selbst ein Fenster
+    eingetragen haben, koennen wir es auch auswerten."""
     nodes, lessons = set(), set()
     antwort_eintraege = 0
     try:
@@ -340,10 +493,13 @@ def _bereits_geliefert(session: str) -> tuple[set, set, int]:
                     continue
                 zeilen_nodes = d.get("nodes") or []
                 zeilen_lessons = d.get("lessons") or []
+                ist_eigen = d.get("ausloeser") == "antwort"
+                if ist_eigen:
+                    antwort_eintraege += len(zeilen_nodes) + len(zeilen_lessons)
+                if ist_eigen and d.get("fenster") and fenster and d["fenster"] != fenster:
+                    continue  # altes Fenster -> zaehlt nicht mehr fuer den Dedup
                 nodes.update(zeilen_nodes)
                 lessons.update(zeilen_lessons)
-                if d.get("ausloeser") == "antwort":
-                    antwort_eintraege += len(zeilen_nodes) + len(zeilen_lessons)
     except OSError:
         pass
     return nodes, lessons, antwort_eintraege
@@ -362,18 +518,20 @@ def _schluessel_und_zeile(e: dict) -> tuple[str, str, str]:
     return kind, schluessel, zeile
 
 
-def _protokolliere(session: str, eintraege: list[tuple[str, str, str]]) -> None:
+def _protokolliere(session: str, eintraege: list[tuple[str, str, str]], fenster: str | None) -> None:
     """Schreibt, was tatsaechlich ausgegeben wurde (NACH Dedup und Deckel,
     keine Rohtreffer) als eigene Zeile nach recall_log.jsonl -- gleiches
     Format wie die bestehenden Zeilen, damit der vorhandene Dedup ab dem
     naechsten Zug greift, plus "ausloeser": "antwort" zur Kennzeichnung des
-    Wegs. Beiwerk, darf die Ausgabe nie zum Scheitern bringen."""
+    Wegs und "fenster" fuer den Fenster-Vorrang in _bereits_geliefert.
+    Beiwerk, darf die Ausgabe nie zum Scheitern bringen."""
     zeile = {
         "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "nodes": [s for k, s, _ in eintraege if k == "node"],
         "lessons": [s for k, s, _ in eintraege if k == "lesson"],
         "session": session,
         "ausloeser": "antwort",
+        "fenster": fenster,
     }
     try:
         with open(RECALL_LOG, "a", encoding="utf-8") as f:
@@ -435,11 +593,22 @@ def _kriterium_3(statistik: dict, ausgeschlossen: set) -> tuple[list[tuple[str, 
     return kandidaten, gefeuert
 
 
+def _wiedervorlage_zeile(eintrag: dict) -> str:
+    """Haengt an die urspruengliche Ausgabezeile den Wiederholungshinweis
+    (Auftrag Punkt 4) an -- sonst sieht eine Wiedervorlage aus wie ein neuer
+    Treffer, und genau das Uebersehen soll sie beheben. Zeigt die WIEVIELTE
+    Zustellung dieser Zug waere (Versuche bisher + 1)."""
+    versuch_nr = eintrag.get("versuche", 0) + 1
+    basis = eintrag.get("zeile") or f"- [{eintrag.get('schluessel')}]"
+    return f"{basis} (Wiedervorlage, {versuch_nr}. Versuch von {WIEDERVORLAGE_MAX_ZUSTELLUNGEN})"
+
+
 def modus_prompt(payload: dict) -> None:
-    session = payload.get("session_id")
-    if not session:
+    session_raw = payload.get("session_id")
+    if not session_raw:
         return
-    session = session[:8]
+    session = session_raw[:8]
+    fenster = _fenster_kennung(session_raw, payload.get("transcript_path"))
     try:
         with open(TREFFER_DATEI, encoding="utf-8") as f:
             daten = json.load(f)
@@ -463,8 +632,25 @@ def modus_prompt(payload: dict) -> None:
         statistik.setdefault("kriterium_feuer", {})[k] = statistik["kriterium_feuer"].get(k, 0) + fired[k]
     daten["statistik"] = statistik
 
+    # Wiedervorlage geht JEDEM neuen Kandidaten vor (Auftrag Punkt 2) und
+    # umgeht bewusst den recall_log-Dedup unten (Zielkonflikt-Aufloesung,
+    # siehe Moduldoc): der Dedup gilt nur fuer QUITTIERTE Eintraege, ein noch
+    # unquittierter Eintrag steht zwar schon in recall_log.jsonl, darf den
+    # Dedup-Filter aber gar nicht erst durchlaufen -- sonst waere er nie
+    # wieder ausspielbar.
+    warteschlange = list(statistik.get("ausgespielt_offen") or [])
+    wiedervorlage_keys = {(w.get("kind"), w.get("schluessel")) for w in warteschlange}
+    wiedervorlage = [
+        (w.get("kind"), w.get("schluessel"), _wiedervorlage_zeile(w))
+        for w in warteschlange
+    ]
+
+    # Neue Kandidaten: Dedup + Sitzungsobergrenze gelten NUR hier (Deckel,
+    # Dedup und Obergrenze bleiben laut Auftrag unveraendert) -- eine
+    # Wiedervorlage verbraucht kein Kontingent der Obergrenze (Punkt 2).
+    kandidaten = [(k, s, z) for k, s, z in kandidaten if (k, s) not in wiedervorlage_keys]
     if kandidaten:
-        geliefert_nodes, geliefert_lessons, antwort_bisher = _bereits_geliefert(session)
+        geliefert_nodes, geliefert_lessons, antwort_bisher = _bereits_geliefert(session, fenster)
         verfuegbar = MAX_ANTWORT_EINTRAEGE_JE_SITZUNG - antwort_bisher
         if verfuegbar <= 0:
             kandidaten = []
@@ -473,30 +659,52 @@ def modus_prompt(payload: dict) -> None:
                 (kind, schluessel, zeile) for kind, schluessel, zeile in kandidaten
                 if schluessel not in (geliefert_lessons if kind == "lesson" else geliefert_nodes)
             ]
-            kandidaten = kandidaten[:min(CAP_EINTRAEGE, verfuegbar)]
-            while kandidaten:
-                block = "\n".join([KOPF, HINWEIS, *[z for _, _, z in kandidaten], FUSS])
-                if len(block) <= CAP_ZEICHEN:
-                    break
-                kandidaten.pop()  # Ueberzaehliges wird verworfen, nicht gekuerzt
+            kandidaten = kandidaten[:verfuegbar]
 
-    if kandidaten:
+    # Deckel gilt fuer die Summe aus Wiedervorlage + neuen Kandidaten
+    # (unveraendert: 3 Eintraege / 1200 Zeichen). Wiedervorlagen stehen
+    # zuerst in der Liste und werden darum zuletzt verworfen -- Prioritaet
+    # nach Auftrag Punkt 2 ("vor allen neuen Kandidaten").
+    gesamt = wiedervorlage + kandidaten
+    block = ""
+    while gesamt:
+        block = "\n".join([KOPF, HINWEIS, *[z for _, _, z in gesamt], FUSS])
+        if len(gesamt) <= CAP_EINTRAEGE and len(block) <= CAP_ZEICHEN:
+            break
+        gesamt.pop()  # Ueberzaehliges wird verworfen, nicht gekuerzt
+
+    if gesamt:
         print(block)
         daten["verbraucht"] = True
         # Verwendungs-Statistik (Auftrag L-ff8fff): "geliefert" zaehlt sofort,
         # unabhaengig davon, ob der naechste --stop je dazu kommt zu pruefen.
-        # kennzeichnende Begriffe werden aus der fertigen Ausgabezeile
-        # gezogen (enthaelt Kennung, Titel und Zusammenfassung bereits) --
-        # kein zweiter Zugriff auf den Rohtreffer noetig.
         verwendung = statistik.setdefault(
             "verwendung", {"geliefert": 0, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0})
-        ausgespielt_offen = statistik.setdefault("ausgespielt_offen", [])
-        for kind, schluessel, zeile in kandidaten:
+        nach_key = {(w.get("kind"), w.get("schluessel")): w for w in warteschlange}
+        gesamt_keys = {(k, s) for k, s, _ in gesamt}
+        neue_warteschlange = []
+        for kind, schluessel, zeile in gesamt:
             verwendung["geliefert"] = verwendung.get("geliefert", 0) + 1
-            ausgespielt_offen.append({
-                "kind": kind, "schluessel": schluessel,
-                "begriffe": sorted(pruefkorpus.tokenize(zeile)),
-            })
+            alt = nach_key.get((kind, schluessel))
+            if alt is not None:
+                alt["versuche"] = alt.get("versuche", 0) + 1  # Wiedervorlage zugestellt
+                neue_warteschlange.append(alt)
+            else:
+                neue_warteschlange.append({
+                    "kind": kind, "schluessel": schluessel,
+                    "zeile": zeile,
+                    "begriffe": sorted(pruefkorpus.tokenize(zeile)),
+                    "versuche": 1,
+                })
+        # Wiedervorlagen, die der Deckel diesmal verdraengt hat, bleiben
+        # UNVERAENDERT in der Warteschlange -- kein Zustellversuch verbraucht,
+        # wenn gar nicht zugestellt wurde.
+        for w in warteschlange:
+            key = (w.get("kind"), w.get("schluessel"))
+            if key not in gesamt_keys:
+                neue_warteschlange.append(w)
+        statistik["ausgespielt_offen"] = neue_warteschlange
+        daten["statistik"] = statistik
 
     try:
         with open(TREFFER_DATEI, "w", encoding="utf-8") as f:
@@ -504,8 +712,8 @@ def modus_prompt(payload: dict) -> None:
     except OSError:
         pass
 
-    if kandidaten:
-        _protokolliere(session, kandidaten)
+    if gesamt:
+        _protokolliere(session, gesamt, fenster)
 
 
 # --- Einstieg ---------------------------------------------------------------
@@ -540,8 +748,8 @@ def main() -> None:
 def _selftest() -> None:
     import tempfile
 
-    global TREFFER_DATEI, RECALL_LOG
-    orig_treffer, orig_log = TREFFER_DATEI, RECALL_LOG
+    global TREFFER_DATEI, RECALL_LOG, ESKALATION_DATEI
+    orig_treffer, orig_log, orig_eskalation = TREFFER_DATEI, RECALL_LOG, ESKALATION_DATEI
     orig_search = kms.knowledge_search
     faelle = 0
 
@@ -559,6 +767,7 @@ def _selftest() -> None:
             tmp = Path(tmp)
             TREFFER_DATEI = tmp / "antwort_treffer.json"
             RECALL_LOG = tmp / "recall_log.jsonl"
+            ESKALATION_DATEI = tmp / "eilmeldung_eskalation.jsonl"
 
             # (a) Antwort unter 400 Zeichen -> keine Ablage.
             faelle += 1
@@ -638,16 +847,30 @@ def _selftest() -> None:
             print(f"  Fall {faelle}: --prompt ohne session_id -> still ok")
 
             # (g) Nachtrag: ein ueber diesen Weg (--prompt) ausgeliefertes Fundstueck
-            # steht danach selbst in recall_log.jsonl und bleibt beim naechsten
-            # Zug aussen vor -- auch wenn dieselbe Suche es erneut liefert.
+            # steht danach selbst in recall_log.jsonl und bleibt beim naechsten Zug
+            # aussen vor -- auch wenn dieselbe Suche es erneut liefert. GEAENDERT
+            # gegenueber dem urspruenglichen Test (Betreiber-Nachtrag Wiedervorlage):
+            # das gilt nur, wenn der Treffer INZWISCHEN QUITTIERT wurde -- ein
+            # unquittierter Treffer soll ausdruecklich zurueckkommen (siehe Fall l),
+            # darum erwaehnt der Transcript hier "/fake/2" woertlich, damit
+            # _verwendung_pruefen ihn beim Durchlauf als quittiert erkennt.
             faelle += 1
             kms.knowledge_search = fake_search  # liefert wieder fake/0..4
-            modus_stop({"transcript_path": str(transcript2), "session_id": "sess0001x"})
+            transcript_g = tmp / "t_quittiert.jsonl"
+            transcript_g.write_text(json.dumps({
+                "type": "assistant",
+                "message": {"content": [{"type": "text",
+                                          "text": "Erwaehnt /fake/2 woertlich. " + ("wort " * 200)}]},
+            }) + "\n", encoding="utf-8")
+            modus_stop({"transcript_path": str(transcript_g), "session_id": "sess0001x"})
+            statistik_g = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))["statistik"]
+            assert statistik_g["ausgespielt_offen"] == [], statistik_g  # quittiert -> Warteschlange leer
             buf4 = io.StringIO()
             with contextlib.redirect_stdout(buf4):
                 modus_prompt({"session_id": "sess0001x"})
             assert buf4.getvalue() == "", buf4.getvalue()
-            print(f"  Fall {faelle}: (g) ueber --prompt ausgelieferter Treffer kehrt nicht zurueck ok")
+            print(f"  Fall {faelle}: (g) quittierter, ueber --prompt ausgelieferter Treffer "
+                  f"kehrt nicht zurueck ok")
 
             # (c) Deckel gilt fuer ALLE drei Kriterien gemeinsam: 3 bestaetigte
             # Spitzen-Treffer (Kriterium 1) + 2 verbindende Schwanz-Treffer
@@ -846,6 +1069,15 @@ def _selftest() -> None:
             print(f"  Fall {faelle}: dreimal im Schwanz, nie Spitze -> ausgegeben, "
                   f"als verbindend gekennzeichnet, Feuerzaehler lesbar ok")
 
+            # /connector direkt quittieren (wie in Fall m nachgestellt) -- sonst
+            # kaeme es unten ueber die Wiedervorlage zurueck und die eigentliche
+            # Frage dieses Falls (feuert Kriterium 3 ein zweites Mal, wenn der
+            # Treffer inzwischen in der Spitze steht?) waere nicht mehr isoliert
+            # pruefbar.
+            daten_schw = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))
+            daten_schw["statistik"]["ausgespielt_offen"] = []
+            TREFFER_DATEI.write_text(json.dumps(daten_schw), encoding="utf-8")
+
             faelle += 1
             modus_stop({"transcript_path": str(transcript_schw), "session_id": "sesschw1"})  # n=3, /connector in Spitze
             buf_schw3 = io.StringIO()
@@ -906,9 +1138,15 @@ def _selftest() -> None:
             assert verwendung["begrifflich"] == 1, verwendung         # (b) Grenzwert: genau 2 Begriffe -> ja
             assert verwendung["nicht_verwendet"] == 2, verwendung     # (c)+(d): 1 Begriff und 0 Begriffe -> nein
             assert verwendung["geliefert"] == 3, verwendung           # unveraendert -- nur modus_prompt erhoeht das
-            assert statistik_verw["ausgespielt_offen"] == [], statistik_verw
-            print(f"  Fall {faelle}: (i) woertlich/begrifflich(Grenzwert ja)/nicht_verwendet(Grenzwert nein) "
-                  f"in einem Zug erkannt, ausgespielt_offen geleert ok")
+            # Nachtrag Wiedervorlage: quittierte Eintraege (woertlich/begrifflich)
+            # verlassen die Warteschlange, NICHT verwendete bleiben stehen (erster
+            # erfolgloser Zustellversuch, noch weit unter WIEDERVORLAGE_MAX_ZUSTELLUNGEN).
+            offen_schluessel = {e["schluessel"] for e in statistik_verw["ausgespielt_offen"]}
+            assert offen_schluessel == {"/verw/eins", "/verw/null"}, statistik_verw
+            for e in statistik_verw["ausgespielt_offen"]:
+                assert e.get("versuche", 0) == 0, e  # noch kein Zustellversuch gezaehlt (direkt konstruiert)
+            print(f"  Fall {faelle}: (i) woertlich/begrifflich(Grenzwert ja) verlassen die Warteschlange, "
+                  f"nicht_verwendet(Grenzwert nein) bleibt fuer Wiedervorlage stehen ok")
 
             # (j) kumulativ: ein zweiter Zug mit neuer Ausspielung addiert sich zu
             # den Zaehlern von oben, statt sie zu ueberschreiben.
@@ -955,8 +1193,258 @@ def _selftest() -> None:
             print(f"  Fall {faelle}: (k) modus_prompt traegt Ausspielung selbst in "
                   f"'geliefert'/'ausgespielt_offen' ein ok")
 
+            # --- Nachtrag 6: Wiedervorlage + Eskalation (2. Betreiber-Auftrag) ------
+
+            # (l) ein NICHT verwendeter Treffer wird im naechsten Zug erneut
+            # ausgespielt, mit Wiederholungshinweis und korrekter Versuchsnummer.
+            faelle += 1
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "wied0001", "verbraucht": False,
+                "vorherige": {"treffer": [{"kind": "node", "path": "/wied/a", "title": "W", "summary": "text"}],
+                              "begriffe": ["alpha"]},
+                "aktuelle": {"treffer": [{"kind": "node", "path": "/wied/a", "title": "W", "summary": "text"}],
+                             "begriffe": ["alpha"]},
+            }), encoding="utf-8")
+            buf_w1 = io.StringIO()
+            with contextlib.redirect_stdout(buf_w1):
+                modus_prompt({"session_id": "wied0001x"})
+            ausgabe_w1 = buf_w1.getvalue()
+            assert "/wied/a" in ausgabe_w1 and "Wiedervorlage" not in ausgabe_w1, ausgabe_w1
+            statistik_w1 = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))["statistik"]
+            assert statistik_w1["ausgespielt_offen"][0]["versuche"] == 1, statistik_w1
+
+            kms.knowledge_search = fake_search
+            antwort_w_leer = "Voellig anderes Thema. " + ("fuellstoff " * 60)
+            transcript_w = tmp / "t_wied.jsonl"
+            transcript_w.write_text(json.dumps({
+                "type": "assistant",
+                "message": {"content": [{"type": "text", "text": antwort_w_leer}]},
+            }) + "\n", encoding="utf-8")
+            modus_stop({"transcript_path": str(transcript_w), "session_id": "wied0001x"})
+            statistik_w2 = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))["statistik"]
+            assert len(statistik_w2["ausgespielt_offen"]) == 1, statistik_w2
+            assert statistik_w2["ausgespielt_offen"][0]["schluessel"] == "/wied/a", statistik_w2
+            assert statistik_w2["ausgespielt_offen"][0]["versuche"] == 1, statistik_w2  # noch nicht erhoeht
+
+            buf_w2 = io.StringIO()
+            with contextlib.redirect_stdout(buf_w2):
+                modus_prompt({"session_id": "wied0001x"})
+            ausgabe_w2 = buf_w2.getvalue()
+            assert "/wied/a" in ausgabe_w2, ausgabe_w2
+            assert "Wiedervorlage, 2. Versuch von 3" in ausgabe_w2, ausgabe_w2
+            print(f"  Fall {faelle}: (l) unquittierter Treffer wird erneut vorgelegt, "
+                  f"mit Wiederholungshinweis und Versuchsnummer ok")
+
+            # (m) ein VERWENDETER (quittierter) Treffer wird NICHT erneut ausgespielt.
+            # Erste Zustellung real ueber modus_prompt, die Quittierung selbst wird
+            # DIREKT nachgestellt (ausgespielt_offen geleert, wie es
+            # _verwendung_pruefen bei woertlichem/begrifflichem Treffer tut) --
+            # isoliert vom Kandidaten-Wechsel, den ein echter modus_stop-Zug
+            # nebenbei ausloesen wuerde (neue "aktuelle" ueberschreibt sonst den
+            # Kandidaten und die Dedup-Frage waere gar nicht mehr geprueft).
+            faelle += 1
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "wied0002", "verbraucht": False,
+                "vorherige": {"treffer": [{"kind": "node", "path": "/wied/b", "title": "W", "summary": "text"}],
+                              "begriffe": ["alpha"]},
+                "aktuelle": {"treffer": [{"kind": "node", "path": "/wied/b", "title": "W", "summary": "text"}],
+                             "begriffe": ["alpha"]},
+            }), encoding="utf-8")
+            buf_m1 = io.StringIO()
+            with contextlib.redirect_stdout(buf_m1):
+                modus_prompt({"session_id": "wied0002x"})
+            assert "/wied/b" in buf_m1.getvalue(), buf_m1.getvalue()
+            daten_m = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))
+            daten_m["verbraucht"] = False
+            daten_m["statistik"]["ausgespielt_offen"] = []  # quittiert nachgestellt
+            TREFFER_DATEI.write_text(json.dumps(daten_m), encoding="utf-8")
+            buf_m2 = io.StringIO()
+            with contextlib.redirect_stdout(buf_m2):
+                modus_prompt({"session_id": "wied0002x"})
+            assert "/wied/b" not in buf_m2.getvalue(), buf_m2.getvalue()  # Dedup haelt (gleiches Fenster)
+            print(f"  Fall {faelle}: (m) quittierter Treffer wird nicht erneut vorgelegt "
+                  f"(Dedup haelt im gleichen Fenster) ok")
+
+            # (n) Grenzwert: nach der DRITTEN erfolglosen Zustellung wird eskaliert,
+            # keine vierte Zustellung.
+            faelle += 1
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "wied0003", "verbraucht": True,
+                "vorherige": None, "aktuelle": None,
+                "statistik": {
+                    "schwanz": {}, "spitze_gesehen": [], "kriterium_feuer": {"1": 0, "2": 0, "3": 0},
+                    "verwendung": {"geliefert": 3, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0},
+                    "ausgespielt_offen": [
+                        {"kind": "node", "schluessel": "/wied/eskalation", "zeile": "- [/wied/eskalation] E: text",
+                         "begriffe": ["nirgends", "erwaehnt"], "versuche": 3},
+                    ],
+                },
+            }), encoding="utf-8")
+            antwort_n = "Kein Bezug. " + ("fuellstoff " * 60)
+            transcript_n = tmp / "t_wied_n.jsonl"
+            transcript_n.write_text(json.dumps({
+                "type": "assistant",
+                "message": {"content": [{"type": "text", "text": antwort_n}]},
+            }) + "\n", encoding="utf-8")
+            assert not ESKALATION_DATEI.exists()
+            modus_stop({"transcript_path": str(transcript_n), "session_id": "wied0003x"})
+            statistik_n = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))["statistik"]
+            assert statistik_n["ausgespielt_offen"] == [], statistik_n  # eskaliert -> Warteschlange verlassen
+            eskalation_zeilen = ESKALATION_DATEI.read_text(encoding="utf-8").splitlines()
+            assert len(eskalation_zeilen) == 1, eskalation_zeilen
+            eskalation = json.loads(eskalation_zeilen[0])
+            assert eskalation["delivered"] == 3, eskalation
+            assert "/wied/eskalation" in eskalation["key"], eskalation
+            # keine vierte Zustellung: naechster --prompt liefert dazu nichts mehr.
+            buf_n = io.StringIO()
+            with contextlib.redirect_stdout(buf_n):
+                modus_prompt({"session_id": "wied0003x"})
+            assert "/wied/eskalation" not in buf_n.getvalue(), buf_n.getvalue()
+            print(f"  Fall {faelle}: (n) dritte erfolglose Zustellung eskaliert statt einer vierten, "
+                  f"Eilmeldungs-Ablage bekommt eine Zeile ok")
+
+            # (o) eine Wiedervorlage verbraucht KEIN Kontingent der Sitzungsobergrenze.
+            faelle += 1
+            RECALL_LOG.write_text(json.dumps({
+                "session": "wied0004",
+                "nodes": [f"/cap/{i}" for i in range(10)],
+                "lessons": [], "ausloeser": "antwort",
+            }) + "\n", encoding="utf-8")
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "wied0004", "verbraucht": False,
+                "vorherige": None, "aktuelle": None,
+                "statistik": {
+                    "schwanz": {}, "spitze_gesehen": [], "kriterium_feuer": {"1": 0, "2": 0, "3": 0},
+                    "verwendung": {"geliefert": 0, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0},
+                    "ausgespielt_offen": [
+                        {"kind": "node", "schluessel": "/wied/trotzdem", "zeile": "- [/wied/trotzdem] T: text",
+                         "begriffe": ["irrelevant"], "versuche": 1},
+                    ],
+                },
+            }), encoding="utf-8")
+            buf_o = io.StringIO()
+            with contextlib.redirect_stdout(buf_o):
+                modus_prompt({"session_id": "wied0004x"})
+            assert "/wied/trotzdem" in buf_o.getvalue(), buf_o.getvalue()
+            print(f"  Fall {faelle}: (o) Wiedervorlage zaehlt nicht auf die Sitzungsobergrenze ok")
+
+            # (p) Negativfall: ohne offene unquittierte Eintraege verhaelt sich der
+            # Weg wie zuvor -- keine Wiedervorlage-Zeile, keine Aenderung am Ablauf.
+            faelle += 1
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "wied0005", "verbraucht": False,
+                "vorherige": {"treffer": [{"kind": "node", "path": "/wied/c", "title": "W", "summary": "text"}],
+                              "begriffe": ["alpha"]},
+                "aktuelle": {"treffer": [{"kind": "node", "path": "/wied/c", "title": "W", "summary": "text"}],
+                             "begriffe": ["alpha"]},
+                "statistik": {
+                    "schwanz": {}, "spitze_gesehen": [], "kriterium_feuer": {"1": 0, "2": 0, "3": 0},
+                    "verwendung": {"geliefert": 0, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0},
+                    "ausgespielt_offen": [],
+                },
+            }), encoding="utf-8")
+            buf_p = io.StringIO()
+            with contextlib.redirect_stdout(buf_p):
+                modus_prompt({"session_id": "wied0005x"})
+            ausgabe_p = buf_p.getvalue()
+            assert "/wied/c" in ausgabe_p and "Wiedervorlage" not in ausgabe_p, ausgabe_p
+            print(f"  Fall {faelle}: (p) ohne offene unquittierte Eintraege unveraendertes Verhalten ok")
+
+            # --- Nachtrag 7: Fensterkennung statt Sitzungskennung -------------------
+
+            def _transcript_mit_kompaktierungen(pfad: Path, anzahl: int, text: str) -> None:
+                zeilen = []
+                for _ in range(anzahl):
+                    zeilen.append(json.dumps({
+                        "type": "assistant", "isCompactSummary": True,
+                        "message": {"content": [{"type": "text", "text": "zusammenfassung"}]},
+                    }))
+                zeilen.append(json.dumps({
+                    "type": "assistant",
+                    "message": {"content": [{"type": "text", "text": text}]},
+                }))
+                pfad.write_text("\n".join(zeilen) + "\n", encoding="utf-8")
+
+            # (q) ein quittierter Eintrag wird nach einem Fensterwechsel wieder
+            # ausgabefaehig -- die alte Zustellung (Fenster #0) sperrt ihn im NEUEN
+            # Fenster (#1, eine Kompaktierung dazwischen) nicht mehr.
+            faelle += 1
+            RECALL_LOG.write_text(json.dumps({
+                "session": "fenster0", "nodes": ["/fen/a"], "lessons": [],
+                "ausloeser": "antwort", "fenster": "fenster0#0",
+            }) + "\n", encoding="utf-8")
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "fenster0", "verbraucht": False,
+                "vorherige": {"treffer": [{"kind": "node", "path": "/fen/a", "title": "F", "summary": "text"}],
+                              "begriffe": ["alpha"]},
+                "aktuelle": {"treffer": [{"kind": "node", "path": "/fen/a", "title": "F", "summary": "text"}],
+                             "begriffe": ["alpha"]},
+            }), encoding="utf-8")
+            transcript_q = tmp / "t_fenster_q.jsonl"
+            _transcript_mit_kompaktierungen(transcript_q, 1, "irrelevanter text")
+            buf_q = io.StringIO()
+            with contextlib.redirect_stdout(buf_q):
+                modus_prompt({"session_id": "fenster0x", "transcript_path": str(transcript_q)})
+            assert "/fen/a" in buf_q.getvalue(), buf_q.getvalue()
+            print(f"  Fall {faelle}: (q) quittierter Treffer wird nach Fensterwechsel "
+                  f"wieder ausgabefaehig ok")
+
+            # (r) ein unquittierter Eintrag wird auch OHNE Fensterwechsel wieder
+            # vorgelegt -- Vorrang der Quittierung vor dem Dedup, selbst wenn
+            # recall_log denselben Schluessel im GLEICHEN Fenster schon als
+            # geliefert fuehrt (das wuerde den Dedup sonst greifen lassen).
+            faelle += 1
+            RECALL_LOG.write_text(json.dumps({
+                "session": "fenster1", "nodes": ["/fen/b"], "lessons": [],
+                "ausloeser": "antwort", "fenster": "fenster1#0",
+            }) + "\n", encoding="utf-8")
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "fenster1", "verbraucht": False,
+                "vorherige": None, "aktuelle": None,
+                "statistik": {
+                    "schwanz": {}, "spitze_gesehen": [], "kriterium_feuer": {"1": 0, "2": 0, "3": 0},
+                    "verwendung": {"geliefert": 1, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0},
+                    "ausgespielt_offen": [
+                        {"kind": "node", "schluessel": "/fen/b", "zeile": "- [/fen/b] F: text",
+                         "begriffe": ["irrelevant"], "versuche": 1},
+                    ],
+                },
+            }), encoding="utf-8")
+            transcript_r = tmp / "t_fenster_r.jsonl"
+            _transcript_mit_kompaktierungen(transcript_r, 0, "irrelevanter text")
+            buf_r = io.StringIO()
+            with contextlib.redirect_stdout(buf_r):
+                modus_prompt({"session_id": "fenster1x", "transcript_path": str(transcript_r)})
+            assert "/fen/b" in buf_r.getvalue() and "Wiedervorlage" in buf_r.getvalue(), buf_r.getvalue()
+            print(f"  Fall {faelle}: (r) unquittierter Treffer wird auch ohne Fensterwechsel "
+                  f"wieder vorgelegt (Vorrang vor Dedup) ok")
+
+            # (s) ein quittierter Eintrag wird im SELBEN Fenster NICHT erneut
+            # ausgespielt -- Gegenprobe zu (q): gleiches Fenster (#0 zu #0, keine
+            # Kompaktierung dazwischen) haelt den Dedup wie gehabt.
+            faelle += 1
+            RECALL_LOG.write_text(json.dumps({
+                "session": "fenster2", "nodes": ["/fen/c"], "lessons": [],
+                "ausloeser": "antwort", "fenster": "fenster2#0",
+            }) + "\n", encoding="utf-8")
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "fenster2", "verbraucht": False,
+                "vorherige": {"treffer": [{"kind": "node", "path": "/fen/c", "title": "F", "summary": "text"}],
+                              "begriffe": ["alpha"]},
+                "aktuelle": {"treffer": [{"kind": "node", "path": "/fen/c", "title": "F", "summary": "text"}],
+                             "begriffe": ["alpha"]},
+            }), encoding="utf-8")
+            transcript_s = tmp / "t_fenster_s.jsonl"
+            _transcript_mit_kompaktierungen(transcript_s, 0, "irrelevanter text")
+            buf_s = io.StringIO()
+            with contextlib.redirect_stdout(buf_s):
+                modus_prompt({"session_id": "fenster2x", "transcript_path": str(transcript_s)})
+            assert "/fen/c" not in buf_s.getvalue(), buf_s.getvalue()
+            print(f"  Fall {faelle}: (s) quittierter Treffer bleibt im gleichen Fenster "
+                  f"gesperrt (Gegenprobe zu q) ok")
+
     finally:
-        TREFFER_DATEI, RECALL_LOG = orig_treffer, orig_log
+        TREFFER_DATEI, RECALL_LOG, ESKALATION_DATEI = orig_treffer, orig_log, orig_eskalation
         kms.knowledge_search = orig_search
 
     print(f"Selbsttest: {faelle} Faelle, alle ok")
