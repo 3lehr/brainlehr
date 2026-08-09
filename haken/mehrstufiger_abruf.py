@@ -77,6 +77,15 @@ from __future__ import annotations
 import os
 import re
 import sqlite3
+import sys
+from pathlib import Path
+
+# Beim Aufruf ueber den Haken setzt knowledge_recall_hook.py den Pfad; beim
+# Direktaufruf (--selftest) niemand. Ohne diese zwei Zeilen ist der Selbsttest
+# nur ueber den Umweg des Hakens fahrbar -- und ein Selbsttest, den man nicht
+# direkt starten kann, wird nicht gefahren.
+sys.path.insert(0, str(Path(__file__).resolve().parent))          # suchpfad_abruf
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # knowledge_mcp_server
 
 from knowledge_mcp_server import fold_de
 import suchpfad_abruf
