@@ -33,8 +33,10 @@ Aufruf:
 from __future__ import annotations
 
 import argparse
+import json
 import sqlite3
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "haken"))
@@ -123,6 +125,79 @@ def stumme_spalte(conn: sqlite3.Connection, spalte: str, zweck: str,
     }
 
 
+# Epoche als Untergrenze, wenn ein Protokoll beim ersten Lauf leer ist --
+# dann zaehlt ab dem naechsten Lauf jede vorhandene Zeile als "seit".
+_EPOCHE = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+# Feldname unterscheidet sich je Protokoll gemessen: recall_log.jsonl
+# schreibt "ts", bereinigung_log.jsonl schreibt "zeit" -- keins der beiden
+# schreibt "timestamp", das bleibt als dritter Kandidat fuer kuenftige
+# Protokolle stehen.
+_ZEITFELDER = ("ts", "timestamp", "zeit")
+
+
+def _zeile_zeit(d: dict) -> datetime | None:
+    """Liest das Zeitfeld einer Protokollzeile, oder None wenn keins passt."""
+    for feld in _ZEITFELDER:
+        wert = d.get(feld)
+        if wert:
+            try:
+                return datetime.fromisoformat(str(wert).replace("Z", "+00:00"))
+            except ValueError:
+                return None
+    return None
+
+
+def _lies_zeiten(datei: Path) -> tuple[list[datetime], int]:
+    """Liest alle Zeilen einer JSONL-Datei.
+
+    Rueckgabe (Zeitstempel aller Zeilen mit verwertbarem Zeitfeld, Anzahl
+    Zeilen OHNE eins -- kaputtes JSON zaehlt dazu). Die zweite Zahl wird nie
+    verschluckt, sie geht an den Aufrufer weiter."""
+    zeiten: list[datetime] = []
+    uebersprungen = 0
+    if not datei.exists():
+        return zeiten, uebersprungen
+    with datei.open(encoding="utf-8") as fh:
+        for zeile in fh:
+            zeile = zeile.strip()
+            if not zeile:
+                continue
+            zeit = None
+            try:
+                zeit = _zeile_zeit(json.loads(zeile))
+            except Exception:
+                zeit = None
+            if zeit is None:
+                uebersprungen += 1
+            else:
+                zeiten.append(zeit)
+    return zeiten, uebersprungen
+
+
+def _seit_untergrenze(datei: Path) -> tuple[int, int] | None:
+    """Zaehlt Protokollzeilen juenger als die gespeicherte Zeit-Untergrenze.
+
+    Rueckgabe (Anzahl juengerer Zeilen, Anzahl uebersprungener Zeilen ohne
+    Zeitfeld) -- oder None beim ersten Lauf: der setzt die Untergrenze aus
+    der juengsten vorhandenen Zeile (Epoche, wenn keine da ist) und meldet
+    nie sofort, aus demselben Grund wie vorher bei der Zeilenzahl."""
+    zeiten, uebersprungen = _lies_zeiten(datei)
+    marke = datei.with_suffix(datei.suffix + ".nulllinie")
+    untergrenze = None
+    if marke.exists():
+        try:
+            untergrenze = datetime.fromisoformat(marke.read_text(encoding="utf-8").strip())
+        except ValueError:
+            untergrenze = None   # altes Format (Zeilenzahl) -- wie erster Lauf behandeln
+    if untergrenze is None:
+        neu = max(zeiten) if zeiten else _EPOCHE
+        marke.write_text(neu.isoformat(), encoding="utf-8")
+        return None
+    seit = sum(1 for z in zeiten if z > untergrenze)
+    return seit, uebersprungen
+
+
 def faellige_auswertung(conn: sqlite3.Connection) -> dict | None:
     """Wartet eine Auswertung auf genug FAELLE -- nicht auf genug Tage.
 
@@ -149,6 +224,13 @@ def faellige_auswertung(conn: sqlite3.Connection) -> dict | None:
     # Darum: der erste Lauf legt die Nulllinie selbst an, dort wo er laeuft.
     # Eine Zahl, die im Quelltext steht, gilt fuer einen Ort, den der Autor
     # im Kopf hatte -- nicht fuer den, an dem sie gelesen wird.
+    #
+    # ZEIT statt ZEILENZAHL (L-cb3f28): eine Zeilenzahl sagt nichts darueber,
+    # AB WANN ein Protokoll den Negativfall ueberhaupt aufzeichnet -- wer von
+    # Hand nacheintraegt oder ein Protokoll zusammenfuehrt, verschiebt die
+    # Zeilenzahl, nicht die Zeit. Darum haelt die Markerdatei jetzt einen
+    # ISO-Zeitstempel, keinen Zaehlerstand, und es zaehlt nur, wessen
+    # Zeitfeld JUENGER als dieser Stempel ist.
     offen = [
         # (Bezeichnung, Zaehldatei, zusaetzliche Faelle, was dann zu tun ist)
         ("Suchpfad im Abruf", ort.WURZEL / "recall_log.jsonl", 200,
@@ -161,17 +243,15 @@ def faellige_auswertung(conn: sqlite3.Connection) -> dict | None:
     faellig = []
     for name, datei, schwelle, dann in offen:
         try:
-            n = sum(1 for _ in datei.open(encoding="utf-8")) if datei.exists() else 0
-            marke = datei.with_suffix(datei.suffix + ".nulllinie")
-            if not marke.exists():
-                marke.write_text(str(n), encoding="utf-8")   # erster Lauf setzt sie
-                continue                                      # und meldet nie sofort
-            nulllinie = int(marke.read_text(encoding="utf-8").strip() or 0)
+            ergebnis = _seit_untergrenze(datei)
         except Exception:
             continue
-        seit = n - nulllinie
+        if ergebnis is None:
+            continue   # erster Lauf setzt die Untergrenze und meldet nie sofort
+        seit, uebersprungen = ergebnis
         if seit >= schwelle:
-            faellig.append(f"{name}: {seit} von {schwelle} Faellen seit der Umstellung -- {dann}")
+            hinweis = f", {uebersprungen} ohne Zeitfeld uebersprungen" if uebersprungen else ""
+            faellig.append(f"{name}: {seit} von {schwelle} Faellen seit der Umstellung{hinweis} -- {dann}")
     if not faellig:
         return None
     return {
@@ -330,7 +410,27 @@ def _selftest() -> None:
     p3(30, ""); p3(2, "markus")
     assert platzhalterfuellung(c3, "actor", "z") is not None, "leerer Text ist auch blind"
 
-    print("selftest ok (13 Faelle)")
+    # Zeit-Untergrenze statt Zeilenzahl-Nulllinie (L-cb3f28): eine Zeile
+    # zaehlt nur, wenn ihr Zeitfeld JUENGER als die gespeicherte Untergrenze
+    # ist -- Grenzwert bei Untergrenze-1/-genau/-plus1, plus der Negativfall
+    # "kein Zeitfeld wird uebersprungen und ausgewiesen, nicht verschluckt".
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        protokoll = Path(tmp) / "z.jsonl"
+        marke = Path(tmp) / "z.jsonl.nulllinie"
+        marke.write_text("2026-08-09T12:00:00+00:00", encoding="utf-8")
+        protokoll.write_text(
+            '{"ts": "2026-08-09T11:59:59+00:00", "x": 1}\n'   # Untergrenze-1s: zaehlt NICHT
+            '{"ts": "2026-08-09T12:00:00+00:00", "x": 2}\n'   # genau Untergrenze: zaehlt NICHT
+            '{"ts": "2026-08-09T12:00:01+00:00", "x": 3}\n'   # Untergrenze+1s: zaehlt
+            '{"x": 4}\n',                                      # kein Zeitfeld: uebersprungen
+            encoding="utf-8",
+        )
+        seit, uebersprungen = _seit_untergrenze(protokoll)
+        assert seit == 1, f"nur die Zeile nach der Untergrenze darf zaehlen, war {seit}"
+        assert uebersprungen == 1, f"die Zeile ohne Zeitfeld muss ausgewiesen sein, war {uebersprungen}"
+
+    print("selftest ok (14 Faelle)")
 
 
 def main() -> None:
