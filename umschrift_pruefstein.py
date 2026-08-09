@@ -58,8 +58,21 @@ def _traeger(text: str) -> set[str]:
     # ('.py') ein grossgeschriebenes 'ORT.PY' nicht und meldet es als fehlend.
     # Im Selbsttest aufgefallen, bevor der erste Lauf davon betroffen war.
     t = (text or "").lower()
-    return {m.group().rstrip(".,;:") for m in _ZAHL.finditer(t)} | \
-           {m.group().rstrip(".,;:") for m in _KENNUNG.finditer(t)}
+    roh = {m.group().rstrip(".,;:") for m in _ZAHL.finditer(t)} | \
+          {m.group().rstrip(".,;:") for m in _KENNUNG.finditer(t)}
+    # Aufzaehlungen zerlegen: '100,294,301' im Original wird beim Umschreiben zu
+    # '100, 294, 301' -- ohne diesen Schritt meldet das Sieb einen fehlenden und
+    # drei erfundene Traeger, obwohl nichts verlorenging. Genau ein Komma bleibt
+    # unangetastet: '8,50' ist eine Dezimalzahl, keine Liste.
+    fertig = set()
+    for x in roh:
+        if x.count(",") > 1:
+            # Nur die Teile, nicht die zusammengesetzte Form: sonst gilt die
+            # umformatierte Liste weiterhin als verloren.
+            fertig.update(teil for teil in x.split(",") if teil)
+        else:
+            fertig.add(x)
+    return fertig
 
 
 def pruefe_knoten(alt: dict, neu: dict) -> dict:
