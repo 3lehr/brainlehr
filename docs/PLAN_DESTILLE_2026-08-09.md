@@ -285,6 +285,30 @@ Das ist zugleich die Antwort auf die Frage des Betreibers, warum wir nicht beide
 
 *Reihenfolge:* vor S4 (Promotion). Eine Umstellung des Abrufs auf den Suchpfad aendert jede Messung danach -- sie gehoert vor alles, was sich an Abrufzahlen bewerten laesst.
 
+### S10 · Nuetzlichkeit messen, nicht nur Ziel-Identitaet
+
+**Der Betreiber fragte, ob 7 von 35 heisst "28 nicht gefunden" oder "28 nicht wichtig genug". Nachgemessen:**
+
+| | |
+|---|---|
+| Ziel getroffen | 7 |
+| etwas anderes kam | **28** |
+| gar nichts kam | **0** |
+
+**In keinem einzigen Fall kam nichts.** Jeder Fall hat genau EINE hinterlegte Ziel-Kennung (keine Listen), und die Aufgabe wurde aus dieser Lehre geschrieben und dann so lange umformuliert, bis keine woertliche Ueberschneidung blieb (`attempts[].collision`). Gemessen wird also: kommt genau diese eine Lehre zurueck, obwohl die Frage kein Wort mit ihr teilt.
+
+**Damit traegt jede Zahl dieses Tages eine Fussnote:** `0/35`, `4/35`, `7/35` messen ZIEL-IDENTITAET, nicht NUETZLICHKEIT. Der Vergleich zwischen Konfigurationen bleibt gueltig -- gleicher Massstab. Die absolute Zahl ist zu streng, und um wieviel, weiss niemand.
+
+Ich habe heute mehrfach gesagt "der Abruf trifft nichts". Richtig waere gewesen: *er trifft nie das hinterlegte Ziel, und was er stattdessen liefert, hat niemand beurteilt.*
+
+**Zu bauen: eine zweite Kennzahl.** Die 28 Antworten werden gelesen und in drei Toepfe sortiert -- *haette geholfen* · *thematisch nah, aber nutzlos* · *am Thema vorbei*. Erst beide Zahlen zusammen sagen, wo das System steht.
+
+**Die Auflage, ohne die das Urteil wertlos ist -- eine NEGATIVKONTROLLE im Urteilssatz.** Ein Modell als Richter neigt dazu, alles Plausible fuer hilfreich zu halten. Darum werden dem Urteilenden zusaetzlich absichtlich FALSCHE Paare untergemischt (Aufgabe A mit der Antwort zu Aufgabe B). Haelt er die fuer hilfreich, ist sein Urteil ueber die echten 28 wertlos, und die Messung wird verworfen statt berichtet. Ohne diesen Anteil misst man die Gutmuetigkeit des Richters, nicht die Guete des Abrufs.
+
+*Zweite Auflage:* Der Urteilende erfaehrt NICHT, welches System die Antwort erzeugt hat und ob ein Fall als Treffer galt -- sonst begruendet er das bekannte Ergebnis nach.
+
+*Reihenfolge:* nach S9. Erst umstellen, dann beide Wege mit beiden Kennzahlen vergleichen -- sonst misst man zweimal.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
