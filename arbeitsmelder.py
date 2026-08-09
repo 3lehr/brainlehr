@@ -300,6 +300,30 @@ _ZEITVERGLEICH_RE = re.compile(
     r"|(>=|>|<|<=).{0,60}\b(ts|timestamp|datum)\w*\b",
     re.IGNORECASE | re.DOTALL,
 )
+# Erkennung ueber das VERFAHREN statt ueber den Variablennamen: ein Rumpf mit
+# einer Zeitumwandlung (fromisoformat/strptime/datetime/date), deren
+# Ergebnis irgendwo im selben Rumpf verglichen wird, oder mit einer
+# Modulkonstante, deren Name auf Zeitfelder deutet (z.B. _ZEITFELDER) --
+# beides ohne die Woerter ts/timestamp/datum im Vergleich selbst.
+_ZEITUMWANDLUNG_RE = re.compile(r"\b(fromisoformat|strptime|datetime|date)\s*\(", re.IGNORECASE)
+_VERGLEICH_RE = re.compile(r">=|<=|>|<")
+_ZEITKONSTANTE_RE = re.compile(r"\b_?[A-Z][A-Z0-9_]*(ZEIT|DATUM)[A-Z0-9_]*\b")
+
+
+def _zeitfilterung_in_koerper(koerper: str) -> bool:
+    """True, wenn der Rumpf nach IRGENDEINEM der beiden Verfahren als
+    zeitfilternd gilt: Name nahe Vergleich (_ZEITVERGLEICH_RE) oder
+    Zeitumwandlung plus Vergleichsoperator plus Modulkonstante mit
+    zeitdeutendem Namen. Kein Rumpf ohne jede Zeitbehandlung faellt
+    darunter -- beide Zusatzkriterien setzen einen tatsaechlichen
+    Umwandlungsaufruf bzw. eine tatsaechliche Konstantenreferenz voraus."""
+    if _ZEITVERGLEICH_RE.search(koerper):
+        return True
+    if _ZEITUMWANDLUNG_RE.search(koerper) and _VERGLEICH_RE.search(koerper):
+        return True
+    if _ZEITKONSTANTE_RE.search(koerper):
+        return True
+    return False
 
 
 def _funktion_grenzen(voll: list[str], zeilen_nr: int) -> tuple[int, int]:
@@ -350,7 +374,7 @@ def _helfer_mit_zeitvergleich(voll: list[str], koerper: str) -> bool:
                 if len(z) - len(z.lstrip()) <= indent:
                     ende = j
                     break
-            if _ZEITVERGLEICH_RE.search("\n".join(voll[i:ende])):
+            if _zeitfilterung_in_koerper("\n".join(voll[i:ende])):
                 return True
     return False
 
@@ -391,7 +415,7 @@ def protokoll_als_nenner(cwd: Path, basis: str,
             koerper = "\n".join(voll[start:ende])
             if not _NENNER_RE.search(koerper):
                 continue
-            if _ZEITVERGLEICH_RE.search(koerper):
+            if _zeitfilterung_in_koerper(koerper):
                 continue  # Zeitvergleich auf den Protokollzeilen vorhanden
             if _helfer_mit_zeitvergleich(voll, koerper):
                 continue  # Zeitvergleich eine Ebene tiefer, in aufgerufenem Helfer
@@ -646,6 +670,43 @@ def _selftest() -> None:
         assert any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
             "Helfer ohne Zeitvergleich darf den Fund nicht unterdruecken"
 
+        # --- Verfahren statt Variablenname: Zeitumwandlung (fromisoformat)
+        # plus Vergleich, OHNE die Woerter ts/timestamp/datum zu benutzen
+        # (wie in pruefer.py -- dort heissen die Namen untergrenze/z/marke).
+        # Muss NICHT mehr anschlagen.
+        verfahren_ohne_zeitwoerter = (
+            "import json\n"
+            "from datetime import datetime\n"
+            "def quote_unerklaert(pfad, grenze):\n"
+            "    zeilen = [json.loads(z) for z in open(pfad + '/recall_log.jsonl')]\n"
+            "    zeilen = [z for z in zeilen if datetime.fromisoformat(z.get('wert', '1970-01-01')) >= grenze]\n"
+            "    unerklaert = sum(1 for z in zeilen if not z.get('treffer'))\n"
+            "    if unerklaert / len(zeilen) > 0.3:\n"
+            "        print(f\"{unerklaert} von {len(zeilen)} unerklaert\")\n"
+            "    return unerklaert\n"
+        )
+        (repo / "melder_test.py").write_text(verfahren_ohne_zeitwoerter, encoding="utf-8")
+        funde = alle(repo, basis)
+        assert not any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
+            "Zeitumwandlung (fromisoformat) plus Vergleich ohne ts/timestamp/datum-Woerter darf nicht anschlagen"
+
+        # --- Gegenprobe zum Verfahren: keinerlei Zeitbehandlung -- keine
+        # Zeitumwandlung, keine zeitdeutende Konstante. Muss weiterhin
+        # anschlagen, sonst wird die Erkennung zu grosszuegig.
+        gar_keine_zeitbehandlung = (
+            "import json\n"
+            "def quote_unerklaert(pfad, schwelle):\n"
+            "    zeilen = [json.loads(z) for z in open(pfad + '/recall_log.jsonl')]\n"
+            "    unerklaert = sum(1 for z in zeilen if not z.get('treffer'))\n"
+            "    if unerklaert / len(zeilen) > schwelle:\n"
+            "        print(f\"{unerklaert} von {len(zeilen)} unerklaert\")\n"
+            "    return unerklaert\n"
+        )
+        (repo / "melder_test.py").write_text(gar_keine_zeitbehandlung, encoding="utf-8")
+        funde = alle(repo, basis)
+        assert any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
+            "Rumpf ganz ohne Zeitbehandlung muss weiterhin gemeldet werden"
+
         # --- Fehlalarm-Test: das Protokoll wird gelesen und gezaehlt, aber
         # es wird KEINE Quote/Prozentzahl daraus gebildet (reiner Durchsatz-
         # Ausdruck, kein Nenner-Missbrauch) -- darf nicht anschlagen.
@@ -661,8 +722,8 @@ def _selftest() -> None:
         assert not any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
             "reines Zaehlen ohne Quote ist kein Nenner-Missbrauch -- Fehlalarm"
 
-    print("selftest ok (12 Faelle: 4 Pruefsteine je rot+gruen, 1 Aufrufketten-Ebene "
-          "je rot+gruen, 2 Fehlalarm)")
+    print("selftest ok (14 Faelle: 4 Pruefsteine je rot+gruen, 1 Aufrufketten-Ebene "
+          "je rot+gruen, 1 Verfahren-statt-Name je rot+gruen, 2 Fehlalarm)")
 
 
 def main() -> None:
