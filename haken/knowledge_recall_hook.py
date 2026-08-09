@@ -76,6 +76,13 @@ import rangfolge  # noqa: E402
 # Stopp hier), nur der Kandidaten-Beschaffung wegen aufgerufen (S9, Auftrag
 # 2026-08-09). Aus diesem Hook nur AUFGERUFEN, s. _suchpfad_aktiv() oben.
 import suchpfad_abruf  # noqa: E402
+# mehrstufiger_abruf.py liegt ebenfalls in haken/ -- eigenes Modul (Monolith-
+# Stopp hier), S12 (Auftrag 2026-08-09). Vorgabe AUS und gemessen wirkungslos/
+# schaedlich (s. Moduldoc mehrstufiger_abruf.py) -- aus diesem Hook nur
+# AUFGERUFEN, ersetzt unten den direkten suchpfad_abruf.kandidaten()-Aufruf
+# 1:1 (kandidaten_geschaltet() faellt bei AUS byte-gleich auf
+# suchpfad_abruf.kandidaten() zurueck).
+import mehrstufiger_abruf  # noqa: E402
 
 # Protokoll, WAS gezogen wurde -- neben der DB, eigene Datei (kein Tabelle in
 # knowledge.db: sonst schreibt JEDE Sitzung bei JEDEM Prompt in dieselbe DB,
@@ -906,7 +913,10 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
         # Deckel, geltend-Filter) bleibt dieselbe wie im Zweig darunter.
         node_rows, lesson_rows = [], []
         try:
-            node_rows, lesson_rows = suchpfad_abruf.kandidaten(
+            # S12: mehrstufiger_abruf.kandidaten_geschaltet() ersetzt den
+            # Direktaufruf 1:1 (faellt bei KNOWLEDGE_MEHRSTUFIGER_ABRUF=AUS,
+            # der Vorgabe, byte-gleich auf suchpfad_abruf.kandidaten() zurueck).
+            node_rows, lesson_rows = mehrstufiger_abruf.kandidaten_geschaltet(
                 conn, prompt if prompt else " ".join(kws), query_vec, MAX_NODES + MAX_LESSONS)
         except sqlite3.Error:
             pass
