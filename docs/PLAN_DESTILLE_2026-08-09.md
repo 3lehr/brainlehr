@@ -237,6 +237,30 @@ Ein Wissensspeicher ist eine MENGE, ein Plan ist eine FOLGE. Der Speicher kann h
 
 *Traeger ist sofort da:* dieser Plan, acht Abschnitte, mit begruendeter Reihenfolge.
 
+### S8 · Pruefer, die urteilen statt zaehlen — GEBAUT am 2026-08-09
+
+Anlass: Der Betreiber vermisste, dass sich Pruefer von selbst melden. Die Recherche korrigierte die Erinnerung (Lehre `L-479171`): der alte Skeptiker hat NIE autonom gefeuert -- er war Schritt 3 einer von Hand gestarteten Pipeline, und die `ACTIVATION: proaktiv`-Zeilen waren Prosa fuer ein Modell, kein Mechanismus. Null Treffer unter 75 registrierten Agenten.
+
+**An Autonomie fehlt es nicht** -- 23 Haken feuern heute von selbst. Es fehlte, dass einer ein URTEIL faellt: ein Melder vergleicht eine Schwelle, ein Pruefer sagt, dass etwas schief steht, obwohl keine Zahl ueberschritten ist.
+
+`pruefer.py` ist gebaut und am Sitzungsstart verdrahtet. Drei Auflagen fuer jede Pruefung darin, und sie sind der eigentliche Inhalt:
+
+1. **Messbar aus dem Bestand**, nicht aus Stimmung.
+2. **Fehlklasse benannt** -- ein Befund ohne Fehlklasse ist eine Meinung.
+3. **Preis eines Fehlalarms beziffert** -- wer ihn nicht nennen kann, hat die Pruefung nicht zu Ende gedacht.
+
+Dazu: schweigt, solange nichts anschlaegt.
+
+**Zwei Pruefungen, beide schlagen heute an:**
+- *Selbstzuschreibung*: 62 von 72 Normentscheidungen (86 %) hat ein KI-Akteur sich selbst gegeben. Fehlklasse: stille Selbstermaechtigung, Geltung ohne Gegenueber.
+- *Stumme Spalte*: `norm_art` bei allen 72 leer. Fehlklasse: gebaute Regel ohne Wirkung -- dieselbe Signatur wie vier Tokenspalten ueber 2167 Zeilen NULL und wie der Skeptiker, dessen Ausloeser Prosa war.
+
+**Bewusst NICHT gebaut**, obwohl es als Beispiel diente: die Erkennung "Plan-Nummerierung behauptet Abhaengigkeit". Reine Textheuristik, zu fehlalarmanfaellig. Die Zurueckhaltung ist Teil der Bauform.
+
+**Untergrenze `MINDESTZAHL = 20`:** Unter 20 Zeilen wird nicht geurteilt, auch nicht bei 100 Prozent -- 2 von 3 sind 67 Prozent und sagen nichts. Der Negativfall steht als erster im Selbsttest.
+
+**Elf weitere pruefende Rollen liegen in der alten Bibliothek** (`sokrates-review`, `pivot-richter`, `verfassungsgericht`, `spaghetti-monster`, `archaeologe` und sieben weitere) -- als Vorlage fuer Fehlklassen, nicht als Agenten zum Starten.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
