@@ -1,0 +1,15 @@
+Bestand: /Volumes/daten/Begod2026/brainlehr/knowledge.db
+Korpus: pruefkorpus.jsonl, pruefkorpus_haiku_2026-08-09.jsonl
+Faelle gesamt im Korpus: 99
+Dubletten verworfen (gleiches target_kind+target_id, mehrere Dateien): 1
+
+Reihe                 LESSON          NODE     MIT_KANTE    OHNE_KANTE
+AUS/AUS                30/40         36/49         28/35         38/54
+NUR_NORMRANG           30/40         36/49         28/35         38/54
+NUR_HEBB               30/40         36/49         28/35         38/54
+BEIDE_AN               30/40         36/49         28/35         38/54
+
+Uebergangen (kein target_kind, nicht in obiger Tabelle): 10/99
+NODE: 36 von 49 Faellen mit Ziel, aus pruefkorpus.jsonl, pruefkorpus_haiku_2026-08-09.jsonl
+LESSON: 30 von 40 Faellen mit Ziel, aus pruefkorpus.jsonl, pruefkorpus_haiku_2026-08-09.jsonl
+Unterschied AUS/AUS vs BEIDE_AN: NEIN (LESSON: 30/40 -> 30/40, NODE: 36/49 -> 36/49, MIT_KANTE: 28/35 -> 28/35, OHNE_KANTE: 38/54 -> 38/54)

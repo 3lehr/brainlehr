@@ -23,6 +23,7 @@ unangetastet, es liest die Variable nur bei jedem Aufruf neu).
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sqlite3
@@ -41,14 +42,34 @@ def _kein_explore() -> float:
     return 1.0
 
 
-def lade_korpus(pfad: Path = KORPUS) -> list[dict]:
-    faelle = []
-    with pfad.open(encoding="utf-8") as f:
-        for zeile in f:
-            zeile = zeile.strip()
-            if zeile:
-                faelle.append(json.loads(zeile))
-    return faelle
+def lade_korpus(pfade: list[Path] | None = None) -> tuple[list[dict], int]:
+    """Liest einen oder mehrere Korpora zusammen. Faelle mit accepted=false
+    werden uebersprungen (accepted fehlend = gueltig). Faelle mit target_kind
+    werden ueber (target_kind, target_id) dedupliziert -- Dubletten aus
+    spaeteren Dateien fallen weg, gezaehlt in der zweiten Rueckgabe."""
+    if pfade is None:
+        pfade = [KORPUS]
+    gesehen: set[tuple[str, str]] = set()
+    faelle: list[dict] = []
+    dubletten = 0
+    for pfad in pfade:
+        with pfad.open(encoding="utf-8") as f:
+            for zeile in f:
+                zeile = zeile.strip()
+                if not zeile:
+                    continue
+                fall = json.loads(zeile)
+                if fall.get("accepted") is False:
+                    continue
+                kind = fall.get("target_kind")
+                if kind:
+                    schluessel = (kind, fall["target_id"])
+                    if schluessel in gesehen:
+                        dubletten += 1
+                        continue
+                    gesehen.add(schluessel)
+                faelle.append(fall)
+    return faelle, dubletten
 
 
 def hat_kante(conn: sqlite3.Connection, target_id: str) -> bool:
@@ -148,10 +169,22 @@ def _zelle(paar: tuple) -> str:
 
 
 def main() -> None:
-    faelle = lade_korpus()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--korpus", action="append", type=Path, default=None,
+        help="Pfad zu einer Pruefkorpus-JSONL-Datei; mehrfach angebbar, wird zusammengefuehrt "
+             "(Vorgabe: runs/pruefkorpus.jsonl)")
+    args = parser.parse_args()
+    korpus_pfade = args.korpus or [KORPUS]
+    dateien = ", ".join(p.name for p in korpus_pfade)
+
+    faelle, dubletten = lade_korpus(korpus_pfade)
     conn = sqlite3.connect(f"file:{rh.DB}?mode=ro", uri=True)
     print(f"Bestand: {rh.DB}")
+    print(f"Korpus: {dateien}")
     print(f"Faelle gesamt im Korpus: {len(faelle)}")
+    if dubletten:
+        print(f"Dubletten verworfen (gleiches target_kind+target_id, mehrere Dateien): {dubletten}")
 
     zeilen = [(label, messreihe(en, eh, faelle, conn)) for label, en, eh in REIHEN]
 
@@ -163,6 +196,11 @@ def main() -> None:
 
     uebergangen = zeilen[0][1]["UEBERGANGEN"][1]
     print(f"\nUebergangen (kein target_kind, nicht in obiger Tabelle): {uebergangen}/{len(faelle)}")
+
+    beide_an = zeilen[-1][1]
+    for g in ("NODE", "LESSON"):
+        treffer_n, gesamt_n = beide_an[g]
+        print(f"{g}: {treffer_n} von {gesamt_n} Faellen mit Ziel, aus {dateien}")
 
     aus_aus = zeilen[0][1]
     beide_an = zeilen[-1][1]
@@ -186,7 +224,37 @@ def demo() -> None:
        Handauswahl der Treffer, nur der Aufgabentext ist konstruiert statt aus
        dem Korpus.
     2) Namentlicher Fehlgriff aus dem ECHTEN Korpus: der erste Fall
-       (L-a9ccd0) -- nachgewiesen nicht gefunden, echter Lauf."""
+       (L-a9ccd0) -- nachgewiesen nicht gefunden, echter Lauf.
+    3) Merge-Probe (kein DB-Zugriff, kein Modellaufruf): zwei kleine
+       Korpusdateien in einem tempfile.TemporaryDirectory belegen
+       Zusammenfuehrung, Dublettenzaehlung ueber Dateigrenzen und dass ein
+       Fall ohne accepted-Feld mitgezaehlt wird."""
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        a, b = d / "a.jsonl", d / "b.jsonl"
+        a.write_text(
+            '{"target_kind": "node", "target_id": "/x/a", "task": "t1", "accepted": true}\n'
+            '{"target_kind": "lesson", "target_id": "L-1", "task": "t2"}\n'
+            '{"target_kind": "node", "target_id": "/x/b", "task": "t3", "accepted": false}\n',
+            encoding="utf-8",
+        )
+        b.write_text(
+            '{"target_kind": "node", "target_id": "/x/a", "task": "t1-dup", "accepted": true}\n'
+            '{"target_kind": "lesson", "target_id": "L-2", "task": "t4"}\n'
+            '{"task": "kein ziel"}\n',
+            encoding="utf-8",
+        )
+        merged, dubletten = lade_korpus([a, b])
+        assert dubletten == 1, f"eine Dublette (/x/a) erwartet, war {dubletten}"
+        assert len(merged) == 4, f"4 gueltige Faelle erwartet (6 Zeilen - 1 accepted=false - 1 Dublette), war {len(merged)}"
+        schluessel = {(f["target_kind"], f["target_id"]) for f in merged if f.get("target_kind")}
+        assert ("node", "/x/b") not in schluessel, "accepted=false haette uebersprungen werden muessen"
+        assert ("lesson", "L-1") in schluessel, "Fall ohne accepted-Feld haette mitgezaehlt werden muessen"
+        assert any(not f.get("target_kind") for f in merged), "uebergangener Fall (kein target_kind) fehlt"
+    print("Merge-Probe (2 Dateien, temp): Zusammenfuehrung, Dublette und fehlendes accepted-Feld korrekt -- ok.")
+
     conn = sqlite3.connect(f"file:{rh.DB}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
 
@@ -210,7 +278,7 @@ def demo() -> None:
     print(f"Mutationsprobe (synthetischer Fall {zeile['path']}): "
           f"echt=True, mutiert=False -- Messwerkzeug misst tatsaechlich.")
 
-    faelle = lade_korpus()
+    faelle, _ = lade_korpus()
     erster_lesson_fall = next(f for f in faelle if f.get("target_kind") == "lesson")
     kws = rh.keywords(erster_lesson_fall["task"])
     _, lessons = abrufen(erster_lesson_fall["task"])

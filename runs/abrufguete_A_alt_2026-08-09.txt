@@ -1,0 +1,14 @@
+Bestand: /Volumes/daten/Begod2026/brainlehr/knowledge.db
+Korpus: pruefkorpus.jsonl
+Faelle gesamt im Korpus: 45
+
+Reihe                 LESSON          NODE     MIT_KANTE    OHNE_KANTE
+AUS/AUS                 6/15         10/20         10/16          6/19
+NUR_NORMRANG            6/15         10/20         10/16          6/19
+NUR_HEBB                6/15         10/20         10/16          6/19
+BEIDE_AN                6/15         10/20         10/16          6/19
+
+Uebergangen (kein target_kind, nicht in obiger Tabelle): 10/45
+NODE: 10 von 20 Faellen mit Ziel, aus pruefkorpus.jsonl
+LESSON: 6 von 15 Faellen mit Ziel, aus pruefkorpus.jsonl
+Unterschied AUS/AUS vs BEIDE_AN: NEIN (LESSON: 6/15 -> 6/15, NODE: 10/20 -> 10/20, MIT_KANTE: 10/16 -> 10/16, OHNE_KANTE: 6/19 -> 6/19)

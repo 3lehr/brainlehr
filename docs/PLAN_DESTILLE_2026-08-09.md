@@ -456,6 +456,30 @@ Ueberschneidung mit den 69 alten Zielen). Zusammen 90.
 ist der Vergleich vorher/nachher verloren — `abrufguete.py` bekommt statt dessen einen
 Schalter fuer mehrere Korpusdateien samt Dublettenmeldung.
 
+**KORREKTUR am selben Tag, nach der ersten Messung — die Zusammenfuehrung ist ausgesetzt.**
+Gemessen ueber die zusammengefuehrten Faelle: 66 von 89 gegen vorher 16 von 35, also
+scheinbar 46 auf 74 Prozent. Die Aufschluesselung zeigt zwei verschiedene Massstaebe unter
+einer Zahl:
+
+| Korpus | Faelle | Wortueberlappung Aufgabe→Ziel | Treffer |
+|---|---|---|---|
+| alt (mit Kollisionsschleife erzeugt) | 35 | **10,7 %** | 16/35 = 46 % |
+| neu (Haiku) | 55 | **34,1 %** | 51/55 = **93 %** |
+
+Der neue Korpus ist dreimal woertlicher und misst damit den leichten Fall. Mein Beleg fuer
+seine Sauberkeit war zu schwach: `is_circular` prueft nur Begriffe mit Dokumenthaeufigkeit
+≤ 3 — alles Mittelhaeufige, und daraus besteht Fachsprache, laeuft durch (`L-352afa`, jetzt
+4 Vorkommen, damit zur Regel eskaliert).
+
+**Daraus folgt fuer diesen Schritt:** Vergroessern allein hilft nicht gegen Rauschen; ein
+Korpus braucht ein AUFNAHMEKRITERIUM statt einer nachtraeglichen Sichtprobe. Vorschlag zur
+Messung, nicht als Beschluss: Wortueberlappung als Aufnahmegrenze, geeicht am alten Korpus
+(dessen 10,7 % sind der einzige belegte Bezugspunkt), und je Fall im Korpus mitgefuehrt —
+dann laesst sich die Trefferquote nach Schwierigkeitsgrad aufschluesseln, statt sie zu
+mitteln.
+
+*Bis dahin gilt:* Zahlen werden je Korpus getrennt berichtet, nie zusammengefasst.
+
 ### S16 · Quellenpflege ohne Anstoss — zuerst als FRAGE, Umsetzung erst danach
 
 Vorschlag des Betreibers 2026-08-09, und er trifft die letzte Stelle, an der noch ein Mensch
