@@ -1,63 +1,5 @@
 [
   {
-    "id": "163392bf",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "1-3"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "cb762fcc",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "190",
-      "460"
-    ],
-    "erfunden": [
-      "190/:460"
-    ]
-  },
-  {
-    "id": "e151d0e5",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "ios-26"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "c748337e",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "001..003"
-    ],
-    "erfunden": [
-      "001"
-    ]
-  },
-  {
-    "id": "a384626c",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "0,1",
-      "3",
-      "4",
-      "6",
-      "7",
-      "8"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "2b1d62f6",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "gegen-80"
-    ],
-    "erfunden": []
-  },
-  {
     "id": "98ec5a00",
     "grund": "Traeger verloren oder erfunden",
     "fehlend": [
@@ -74,33 +16,6 @@
     "erfunden": []
   },
   {
-    "id": "ed25b78e",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "0.05/-0.10"
-    ],
-    "erfunden": [
-      "0.05",
-      "0.10"
-    ]
-  },
-  {
-    "id": "d2e99f0a",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "opus-5"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "a6326b03",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "opus-5"
-    ],
-    "erfunden": []
-  },
-  {
     "id": "55524b09",
     "grund": "Traeger verloren oder erfunden",
     "fehlend": [],
@@ -113,7 +28,7 @@
     "grund": "Traeger verloren oder erfunden",
     "fehlend": [],
     "erfunden": [
-      "hub-claude.md"
+      "claude.md"
     ]
   },
   {
@@ -121,14 +36,6 @@
     "grund": "Traeger verloren oder erfunden",
     "fehlend": [
       "systemprotocols.md"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "47cf6bab",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "3-4"
     ],
     "erfunden": []
   },
@@ -149,101 +56,11 @@
     "erfunden": []
   },
   {
-    "id": "60d2f741",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "vue-3"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "59b83468",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [],
-    "erfunden": [
-      "28",
-      "3,6"
-    ]
-  },
-  {
-    "id": "9024db30",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "1-4"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "91c3f181",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "draft-400"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "4c1f5f5c",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "1800-2099"
-    ],
-    "erfunden": [
-      "1800",
-      "2099"
-    ]
-  },
-  {
-    "id": "8811ce4b",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "steuer.db"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "b4e5dfe9",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "12-16"
-    ],
-    "erfunden": [
-      "16"
-    ]
-  },
-  {
-    "id": "0ef30d71",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "31"
-    ],
-    "erfunden": []
-  },
-  {
-    "id": "c1a5ac55",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [],
-    "erfunden": [
-      "4.6",
-      "4.7",
-      "4.8"
-    ]
-  },
-  {
     "id": "06c6fb97",
     "grund": "Traeger verloren oder erfunden",
     "fehlend": [],
     "erfunden": [
       "/openlehr/"
-    ]
-  },
-  {
-    "id": "a739f018",
-    "grund": "Traeger verloren oder erfunden",
-    "fehlend": [
-      "0-10"
-    ],
-    "erfunden": [
-      "10"
     ]
   }
 ]

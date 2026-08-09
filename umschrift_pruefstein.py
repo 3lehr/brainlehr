@@ -62,6 +62,16 @@ _KENNUNG = re.compile(
 TOLERANZ_FEHLEND = 0  # keine fehlende Zahl ist hinnehmbar
 
 
+def _zaehlbar(teile: list[str]) -> list[str]:
+    """Beim Zerlegen einer Aufzaehlung nur die Teile behalten, die das Muster
+    auch von sich aus gefunden haette. Sonst erzeugt die Zerlegung einstellige
+    Traeger ('0,1,3,4,6,7,8' -> '3','4','6'), die _ZAHL nie erfasst -- sie
+    gelten dann im neuen Text zwangslaeufig als verloren, obwohl sie
+    dastehen. Vierte und letzte Fehlalarmquelle des eigenen Musters,
+    gefunden 2026-08-09 an der Nachbesserung."""
+    return [t for t in teile if t and (not t.isdigit() or len(t) >= 2)]
+
+
 def _traeger(text: str) -> set[str]:
     """Die harten Traeger einer Aussage. Kleingeschrieben, damit eine
     geaenderte Gross-/Kleinschreibung keinen Fehlalarm ausloest."""
@@ -82,11 +92,11 @@ def _traeger(text: str) -> set[str]:
         # '1080 Zeilen bei 25 Bildern'. Nur zerlegen, wenn BEIDE Seiten Zahlen
         # sind -- sonst zerfiele auch ein echter Pfad.
         if "/" in x and all(teil.isdigit() for teil in x.split("/") if teil):
-            fertig.update(teil for teil in x.split("/") if teil)
+            fertig.update(_zaehlbar(x.split("/")))
         elif x.count(",") > 1:
             # Nur die Teile, nicht die zusammengesetzte Form: sonst gilt die
             # umformatierte Liste weiterhin als verloren.
-            fertig.update(teil for teil in x.split(",") if teil)
+            fertig.update(_zaehlbar(x.split(",")))
         else:
             fertig.add(x)
     return fertig

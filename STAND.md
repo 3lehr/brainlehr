@@ -1,16 +1,16 @@
-# STAND brainlehr — 2026-08-09T17:30:00+0200
+# STAND brainlehr — 2026-08-09T18:45:00+0200
 
-Offen: 26 Knoten mit norm_rang 1/2 (Hausnormen) wurden von der
-Herkunftsschranke abgewiesen und tragen weiter den alten Text — eine Maschine
-formuliert keine Direktive um. Dazu 28 vom Pruefstein abgelehnte Knoten
-(`runs/umschrift_abgelehnt.json`) und das Tag `diagnose`, das in der
-Art-9-Sperre haengt, obwohl es Fehlerdiagnose meint.
-Naechstes: `KNOWLEDGE_ZWEITER_KANAL=1` entscheiden — im umgeschriebenen
-Bestand bringt er 13/35 statt 8/35, das ist sein eigentlicher Wert.
-Danach Tag-Katalog angleichen (`tagkatalog.py`, Haeufigkeiten haben sich
-verschoben) und Aehnlichkeitskanten neu rechnen — die 5799 vorhandenen
-beschreiben die alten Texte.
+Offen: 117 Knoten tragen project_id 'shared', obwohl ihr Pfad das Projekt
+nennt (37 brainlehr, 29 openlehr, 26 fahrtenbuch, 12 buckeberg, Rest einzeln)
+— nachtragbar, aber mit dem jetzigen Pruefkorpus nicht als Gewinn messbar.
+Dazu 9 Knoten, die der Pruefstein weiter abweist (`runs/umschrift_abgelehnt.json`),
+und 26 Hausnormen, die bewusst den alten Text behalten.
+Naechstes: Vorgabewert von project_id in knowledge_add aus parent_path
+ableiten statt 'shared' — dieser bequeme Default hat die 117 erzeugt.
+Danach Aehnlichkeitskanten neu rechnen (die 5799 beschreiben die alten Texte)
+und beide Plaene fortschreiben.
 Wartet auf: `~/.claude.json` -> `mcpServers.knowledge.env` (actor) · Papernetz-
 Umfang · sechs Knoten Rang 4/6 · abgelaufene Norm buckeberg-anbieterabend.
-Nicht vergessen: Momentaufnahme `snapshots/knowledge_2026-08-09.db`, jede
-abgeloeste Fassung in `knowledge_fassungen` (331 Zeilen).
+Nicht vergessen: Rueckweg ist `snapshots/knowledge_2026-08-09.db` plus 350
+Zeilen in `knowledge_fassungen`; Abruf steht bei 13/35 (vorher 7/35) bei 2604
+statt 2735 Zeichen je Prompt.
