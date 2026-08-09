@@ -280,8 +280,35 @@ TRUST_WEIGHT = 0.35
 
 # Anzahl ausgegebener Treffer je Abruf -- bisher als nacktes ":3"/":2" an den
 # Slice-Stellen in query() verstreut, jetzt hier benannt.
-MAX_NODES = 3
-MAX_LESSONS = 2
+#
+# 10/7 seit 2026-08-09, Entscheidung des Betreibers. Vorher 3/2, und das war
+# damals richtig: am alten Bestand war die Deckelreihe FLACH -- 3/2 bis 10/7
+# lieferten allesamt 7 von 35 Treffern, nur die Zeichenmenge stieg. Unter Rang
+# 5 lag Rauschen, mehr liefern hiess mehr Rauschen liefern.
+#
+# Nach der Umschrift der 350 Knoten ist es eine andere Kurve
+# (runs/deckelreihe_nach_umschrift_2026-08-09.json):
+#
+#   Deckel   Treffer   Zeichen   je Treffer
+#     3/2     13/35       4409      339
+#     7/5     14/35      11473      819
+#    10/7     16/35      16470     1029
+#   15/10     19/35      24746     1302
+#
+# Der Grund steht in der Kandidatendiagnose desselben Tages: der Median-Rang
+# des Ziels fiel von 79 auf 27. Unter Rang 5 liegt jetzt Substanz, und genau
+# die schnitt der alte Deckel ab.
+#
+# Warum 10/7 und nicht 15/10: dort ist die Kurve noch steil. Jeder weitere
+# Treffer wird teurer als der davor -- 339 Zeichen je Treffer bei 3/2, 1029
+# bei 10/7, 1302 bei 15/10.
+#
+# DIE GRENZE DIESER ZAHLEN, und sie ist nicht klein: gemessen ist ABRUF, nicht
+# Antwortqualitaet. Ob ein Modell mit 16470 Zeichen besser antwortet als mit
+# 4409, ist NICHT gemessen -- die Literatur zu 'lost in the middle' laesst das
+# Gegenteil fuer moeglich halten. Wer das misst, misst die eigentliche Groesse.
+MAX_NODES = 10
+MAX_LESSONS = 7
 
 # Radar-Schwelle (ADR-033 Schritt 2c): wieviele robuste Standardabweichungen
 # (MAD, Median Absolute Deviation, skaliert mit 1.4826 auf Normalverteilungs-
