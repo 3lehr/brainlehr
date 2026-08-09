@@ -1,4 +1,68 @@
-# STAND brainlehr — 2026-08-09T11:55:00+0200
+# STAND brainlehr — 2026-08-09T12:40:00+0200
+
+## Warum die 26 nicht in die Kandidatenliste kommen — gemessen, nicht vermutet
+
+Werkzeug `kandidatendiagnose.py`, Ergebnis `runs/kandidatendiagnose_2026-08-09.json`,
+Nenner 35, Commit `bac8fcb`. Lehre `L-99f100`.
+
+**Es ist kein Vorfilter.** 0 von 175 Kandidatenplaetzen (35 Faelle x 5) belegt
+eine ID, die danach ohnehin wegfaellt. Kein Fall geht an Gattung, Ruecknahme,
+Status oder Geltungsdauer verloren.
+
+**Es ist der Rang, in BEIDEN Kanaelen.** Median-Rang des Ziels: 101 im
+Stichwortkanal, 96 im Bedeutungskanal. Nur 2 der 35 Ziele fehlen im
+Stichwortkanal ueberhaupt.
+
+**Und der Bedeutungskanal war zweimal abgeklemmt, nicht einmal:**
+1. `ZWEITER_KANAL=False` seit dem 2026-08-07 (Notbremse wegen gemischter
+   Embedding-Modelle). Die Bedingung zur Wiederschaerfung ist **erfuellt**:
+   genau ein Modell in der Tabelle (bge-m3), 0 fehlende und 0 veraltete
+   Vektoren bei 2027 Knoten und 674 aktiven Lehren.
+2. Der Stichwort-Sockel in `_fuse_with_keyword_floor` reservierte alle 5
+   Plaetze fuer den ersten Kanal — die Kandidatenliste war in **35 von 35**
+   Faellen byte-gleich mit dessen Top 5. Ein Prompt zieht per ODER-Verknuepfung
+   Median 348 von 383 Knoten und 674 von 674 Lehren; der Sockel wird damit
+   zur Alleinherrschaft.
+
+Bester Beleg dafuer, dass der zweite Kanal nie einen eigenen Treffer beitrug:
+sein Nachladepfad in `suchpfad_abruf.py` warf beim ersten echten Lauf
+`no such column: n.gattung` — fehlender Alias, kann nie gelaufen sein. Behoben.
+
+**Zerlegung am echten Abrufweg** (`abrufguete.py`, Nenner 35):
+
+| Zustand | Treffer |
+|---|---|
+| Kanal AUS, alter Sockel (Ist) | 7/35 |
+| Kanal AN, alter Sockel | 7/35 |
+| Kanal AUS, neue Fusion | 7/35 |
+| **Kanal AN, neue Fusion** | **8/35** |
+
+Beide Aenderungen einzeln null, zusammen +1. Liefermenge unveraendert (Deckel
+bleiben 3/2), Preis rund 0,2 s je Prompt fuer den Ollama-Aufruf.
+**`ZWEITER_KANAL` bleibt auf der Vorgabe AUS** — das Einschalten
+(`KNOWLEDGE_ZWEITER_KANAL=1`) ist eine Betreiberentscheidung.
+
+**Gemessen widerlegt, darum nicht gebaut:** den Stichwortkanal auf die
+Stichwortliste des Hakens verengen (STOP-Woerter raus, <4 Zeichen raus) macht
+ihn schlechter — 1/35 statt 7/35, das Ziel ist dann nur noch in 19 von 35
+Anfragen ueberhaupt enthalten. Der Rohprompt ist die bessere Eingabe.
+
+**Was das nicht loest:** der Median-Rang bleibt bei 34 (gefiltert) bzw. 101.
+Vier von fuenf Faellen erreichen den Speicher weiterhin nicht. Der naechste
+Hebel liegt in der Anfrage oder im indizierten Text, nicht in der Verschmelzung.
+
+## actor: Rot-vor-gruen-Probe GESCHEITERT — die Konfiguration wirkt nicht
+
+Probeknoten `e8333002` ohne `actor`-Parameter geschrieben, danach ausgelesen:
+`actor='unbekannt'`. Grund gemessen, nicht vermutet: diese Sitzung startet den
+MCP-Server ueber `--mcp-config {...}` **inline aus `~/.claude.json`** (PID 26845),
+und dort steht **kein** `env`-Block. `hub/.mcp.json` gilt nur fuer Sitzungen,
+die in `hub/` starten. Die Aenderung von gestern liegt am falschen Ort.
+
+Nachzuziehen ist `~/.claude.json` → `mcpServers.knowledge.env` mit
+`BEGOD_KNOWLEDGE_ACTOR=claude-code`. **Nicht von mir ausgefuehrt:** der Klient
+haelt die Datei offen und schreibt sie bei Sitzungsende zurueck — ein Eingriff
+von aussen geht dabei verloren oder ueberschreibt Fremdes.
 
 ## Der eine Befund, auf den heute drei unabhaengige Messungen zeigen
 
