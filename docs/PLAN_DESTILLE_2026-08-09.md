@@ -575,6 +575,35 @@ sondern die Abnahme.
 setzt, setzt sie zum Ergebnis passend. Das ist die Fehlklasse, die heute viermal auftrat
 (`L-352afa`, inzwischen zur Regel eskaliert).
 
+### Die drei abgeleiteten Schwellen (2026-08-09, aus Daten statt geraten)
+
+Der Betreiber hat entschieden: S3 wird eine Einstellung in der Oberflaeche, S10 folgt der
+Wissenschaft, die drei uebrigen werden abgeleitet. Auflage dabei: jede Schwelle folgt aus
+einer Groesse, die UNABHAENGIG von der Trefferquote ist, die sie spaeter bewertet.
+
+| Schwelle | Wert | Herleitung | nicht geeicht gegen |
+|---|---|---|---|
+| Wortueberlappung, Aufnahmegrenze | **27,8 %** | exaktes Maximum des alten Korpus (n=35; Quartile 0 / 7,1 / 8,7 / 13,6 / 27,8). Laesst 35/35 alte Faelle durch, verwirft **35 von 55** neuen | Trefferquote (16/35 gegen 51/55) |
+| Reifegrad-Zuwachs | **Untergrenze > 0**, kein Prozentziel | das mechanische Potenzial ist **0**: von 2517 unbestimmten Knoten erfuellt keiner die Ableitungsbedingungen — nur 4 von 1856 genannten Dateien existieren noch, keine git-verfolgt, alle 661 Lehren stehen auf occurrences=1 | dem Wuenschenswerten |
+| Abrufverbesserung lohnt ab | **Elastizitaet ≥ 1** (Trefferzuwachs in Prozent ≥ Zeichenzuwachs in Prozent) | aus der Deckelkurve: bester gemessener Schritt (10/7 → 15/10) liegt bei **0,64** — +28,6 % Treffer fuer +44,4 % Zeichen. Keine der gemessenen Deckelerhoehungen war es wert | absoluter Zeichenzahl (gilt als Verhaeltnis auch bei anderer Korpusgroesse) |
+
+**KORREKTUR einer Zahl, die ich heute mehrfach weitergetragen habe:** Der Anteil abgeleiteter
+Reifegrade betraegt **7,17 %** (197 von 2748), nicht 43 %. Die 43 stammten aus einer
+Uebergabedatei und reproduzieren gegen den heutigen Bestand nicht; nur die 34 "erklaert"
+stimmen. Uebernommen ohne Pruefung — an dem Tag, an dem dieselbe Regel viermal eingefordert
+wurde.
+
+### Auflage an JEDES Abnahmekriterium: es muss fehlschlagen koennen
+
+Aus `L-b034c4`: Ein Test war jahrelang gruen, weil die geprueffte Methode das Feld gar nicht
+auswertete — er konnte nicht fehlschlagen und prueffte deshalb nichts. Dieselbe Gefahr trifft
+jede Zeile der Abnahmespalte oben.
+
+**Deshalb gilt fuer jedes Kriterium: einmal die Gegenprobe fahren — den Gegenstand absichtlich
+kaputt machen und belegen, dass das Kriterium anschlaegt.** Ein Melder, der schweigt, ist erst
+dann ein Nachweis, wenn gezeigt wurde, dass er auch sprechen kann. Ohne diese Gegenprobe ist
+"Kriterium erfuellt" derselbe Selbstbetrug wie ein gruener Test ohne Zusicherung.
+
 *Was diese Spalte NICHT leistet, und das steht auch im Werkzeug:* Ein gruener Selbsttest
 belegt das Werkzeug, ein schweigender Melder den heutigen Bestand. Beides ist notwendig und
 nicht hinreichend fuer "der Schritt ist inhaltlich erledigt". Wo ein Kriterium nur das
