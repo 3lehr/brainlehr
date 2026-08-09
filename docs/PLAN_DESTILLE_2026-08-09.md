@@ -442,14 +442,80 @@ bleiben die zwei Zahlen — Zieltreffer und Zeichen je Prompt; ein Startblock ve
 von je-Prompt auf einmalig und ist damit nicht direkt vergleichbar. Das gehoert vor dem Bau
 gemessen.
 
-### Was NICHT uebernommen wird, samt Preis
+### Was NICHT uebernommen wird, samt Preis — KORRIGIERT am selben Tag
 
-Der Transaktionsapparat (`transaction.py`, 4.680 Zeilen: eine Mutation als Buendel, Entwuerfe
-paralleler Arbeiter, Inspektion, atomare Anwendung). Bei einer lokalen Datenbank mit einem
-Schreiber leistet die Datenbanktransaktion dasselbe, und `knowledge_fassungen` haelt den
-Rueckweg. **Preis:** Kaeme je ein zweiter Schreiber oder ein verteilter Bestand hinzu, fehlt
-uns genau dieser Apparat — die Abbruchbedingung ist dieselbe wie bei S6 (mehr als eine Person
-schreibt).
+*Erste Fassung dieses Abschnitts, falsch:* "Der Transaktionsapparat wird nicht uebernommen.
+Bei einer lokalen Datenbank mit EINEM Schreiber leistet die Datenbanktransaktion dasselbe.
+Die Abbruchbedingung ist dieselbe wie bei S6 (mehr als eine Person schreibt)."
+
+**Der Betreiber hat widersprochen, und die Messung gibt ihm recht.** Die Abbruchbedingung ist
+nicht "mehr als eine PERSON", sondern "mehr als ein gleichzeitiger SCHREIBER" — und der
+existiert seit Wochen. Gemessen im `access_log`: in acht verschiedenen Stunden am
+2026-08-08/09 schrieben ZWEI bis DREI verschiedene Sitzungen in dieselbe Datenbank, in der
+Spitzenstunde 634 Zeilen. Der Grund ist die Arbeitsweise dieses Hauses: mehrere Arbeitsbaeume,
+mehrere Klienten, Agenten nebenher. Eine Person mit fuenf Sitzungen ist fuer die Datenbank
+dasselbe wie fuenf Personen.
+
+**Was heute an dieser Stelle steht** (`knowledge_mcp_server.py`): WAL plus
+`BUSY_TIMEOUT_MS = 2000`. Der Quelltext benennt die Grenze selbst — bei echtem Gedraenge
+reichen zwei Sekunden nicht, dann kommt "database is locked". Das ist Warten und Hoffen, kein
+Konfliktbegriff: es gibt keine Zusammenfuehrung zweier gleichzeitiger Aenderungen, keine
+Inspektion vor der Anwendung, keinen Rueckweg bei Kollision. Genau das leistet der dortige
+Apparat.
+
+**Neue Fassung der Entscheidung:** Der Apparat wird nicht als Ganzes uebernommen (4.680 Zeilen
+fuer eine lokale Datei waeren unverhaeltnismaessig), aber die Frage ist ab jetzt OFFEN statt
+vertagt, und sie hat einen Messpunkt: wie oft schlaegt ein Schreibvorgang heute wegen Sperre
+fehl, und was passiert dann mit dem Inhalt? Solange das ungemessen ist, ist "wir brauchen es
+nicht" eine Behauptung. **Zu bauen zuerst: der Zaehler, nicht der Apparat.**
+
+*Was S6 (Rechtemodell) davon NICHT beruehrt:* Nebenlaeufigkeit und Rechte sind zwei Fragen.
+Wer gleichzeitig schreibt, ist ein Sperrproblem; wer schreiben DARF, ein Rechteproblem. Die
+Vertagung von S6 stand auf "es gibt genau einen Menschen" — das bleibt richtig. Die
+Vertagung der Nebenlaeufigkeit stand auf derselben Begruendung, und dort war sie falsch.
+
+### Einwand des Betreibers zur Unabhaengigkeitsregel — sie gilt nicht ueberall
+
+Der Betreiber wandte ein: Bei einem Gesetzestext gibt es nur EINE Wahrheitsquelle, die
+amtliche. Zwei unabhaengige Quellen zu verlangen waere dort nicht strenger, sondern falsch.
+
+Das trifft, und es zeigt eine Schwaeche der dortigen Bauform: ihre Regel haengt am RISIKO
+(`high-risk acceptance requires two independent sources`), nicht an der ART der Aussage.
+Fuer eine empirische Behauptung ist Mehrfachbestaetigung der richtige Massstab; fuer eine
+Norm ist es AUTHENTIZITAET — stammt der Text von der Stelle, die ihn erlassen darf. Eine
+zweite Quelle macht ein Gesetz nicht gueltiger, sie macht es nur abgeschrieben.
+
+**Daraus die eigene, schaerfere Fassung** (und hier ist die Normachse aus Knoten `b6305304`
+der Vorteil, den die dortige Bauform nicht hat):
+
+| Art der Aussage | Massstab | zweite Quelle |
+|---|---|---|
+| empirische Behauptung | Mehrfachbestaetigung | ja, bei hohem Risiko zwei unabhaengige |
+| Norm fremder Herkunft (Gesetz, DIN, BSI) | Authentizitaet der erlassenden Stelle | nein — eine amtliche Quelle genuegt und ist die beste |
+| Hausnorm | Hausrecht des Betreibers | nein |
+
+Der Unabhaengigkeitsschluessel bleibt trotzdem noetig — aber fuer die empirische Zeile, und
+dort loest er ein echtes Problem: drei Meldungen derselben Agentur sind eine Quelle.
+
+### Einwand des Betreibers zum Startblock — dynamisch schlaegt statisch, ausser bei einer Klasse
+
+Der Betreiber wandte ein: Der eigene Weg ist dynamisch und sparsamer; die gesamte Datenbank
+laesst sich nicht am Anfang einspielen.
+
+Richtig, und die Zahlen stehen dagegen: 2.032 Knoten und 706 Lehren passen in keinen
+Startblock. Der eigene Abruf waehlt je Prompt aus und liefert 9.409 Zeichen bei Deckel 10/7 —
+ein Startblock verschiebt diese Kosten auf einmalig, kann aber nicht wissen, was in der
+dritten Stunde gebraucht wird.
+
+**Deshalb NICHT entweder/oder.** Der Startblock ist keine Alternative zum Abruf, sondern eine
+Grundversorgung fuer die eine Klasse, die der Abruf strukturell nicht erreicht: die 28 von 94
+Nachrichten, die waehrend laufender Arbeit zugestellt werden und keinen Haltepunkt ausloesen.
+Fuer sie ist "dynamisch" wertlos, weil gar nicht gefragt wird.
+
+*Massstab, bevor gebaut wird:* Der Startblock waere klein und an den Arbeitsgegenstand
+gebunden (Groessenordnung: die Handvoll Knoten des aktuellen Projekts), nicht der Bestand.
+Und er wird gegen die richtige Klasse gemessen — nicht gegen den Pruefkorpus, sondern gegen
+die Frage, ob eine Antwort auf eine eingereihte Nachricht danach besser ausfaellt.
 
 ### Was der Vergleich NICHT hergibt
 
