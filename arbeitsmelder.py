@@ -328,6 +328,33 @@ def _funktion_grenzen(voll: list[str], zeilen_nr: int) -> tuple[int, int]:
     return (def_idx, ende)
 
 
+def _helfer_mit_zeitvergleich(voll: list[str], koerper: str) -> bool:
+    """Eine Ebene der Aufrufkette: enthaelt der Rumpf selbst keinen
+    Zeitvergleich, aber ruft er eine andere Funktion DESSELBEN Moduls auf,
+    deren eigener Rumpf einen Zeitvergleich enthaelt, gilt das als erfuellt.
+    Tiefer wird bewusst nicht verfolgt (kein rekursiver Abstieg in die
+    Helfer der Helfer) -- Preis: eine ueber zwei Ebenen versteckte Filterung
+    wird weiterhin faelschlich gemeldet, der Leser muss dann eine
+    Fundstelle lesen."""
+    for name in set(re.findall(r"\b([a-zA-Z_]\w*)\s*\(", koerper)):
+        for i, zeile in enumerate(voll):
+            m = re.match(rf"^(\s*)def\s+{re.escape(name)}\(", zeile)
+            if not m:
+                continue
+            indent = len(m.group(1))
+            ende = len(voll)
+            for j in range(i + 1, len(voll)):
+                z = voll[j]
+                if not z.strip():
+                    continue
+                if len(z) - len(z.lstrip()) <= indent:
+                    ende = j
+                    break
+            if _ZEITVERGLEICH_RE.search("\n".join(voll[i:ende])):
+                return True
+    return False
+
+
 def protokoll_als_nenner(cwd: Path, basis: str,
                          geaendert: dict[str, list[Zeile]]) -> list[dict]:
     """Ein Protokoll (.jsonl/.log oder eine log-benannte Datei) wird als
@@ -366,6 +393,8 @@ def protokoll_als_nenner(cwd: Path, basis: str,
                 continue
             if _ZEITVERGLEICH_RE.search(koerper):
                 continue  # Zeitvergleich auf den Protokollzeilen vorhanden
+            if _helfer_mit_zeitvergleich(voll, koerper):
+                continue  # Zeitvergleich eine Ebene tiefer, in aufgerufenem Helfer
             gemeldete_funktionen.add(schluessel)
             funde.append({
                 "pruefung": "protokoll_als_nenner",
@@ -578,6 +607,45 @@ def _selftest() -> None:
         assert not any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
             "Fassung mit Zeitvergleich auf den Protokollzeilen darf nicht anschlagen"
 
+        # --- Eine Ebene der Aufrufkette: der Zeitvergleich sitzt nicht in
+        # der pruefenden Funktion selbst, sondern in einem Helfer desselben
+        # Moduls, den sie aufruft (wie in pruefer.py: _seit_untergrenze).
+        helfer_mit_zeit = (
+            "import json\n"
+            "def _seit_untergrenze(zeilen, seit):\n"
+            "    return [z for z in zeilen if z.get('timestamp', 0) >= seit]\n"
+            "def quote_unerklaert(pfad, seit):\n"
+            "    zeilen = [json.loads(z) for z in open(pfad + '/recall_log.jsonl')]\n"
+            "    zeilen = _seit_untergrenze(zeilen, seit)\n"
+            "    unerklaert = sum(1 for z in zeilen if not z.get('treffer'))\n"
+            "    if unerklaert / len(zeilen) > 0.3:\n"
+            "        print(f\"{unerklaert} von {len(zeilen)} unerklaert\")\n"
+            "    return unerklaert\n"
+        )
+        (repo / "melder_test.py").write_text(helfer_mit_zeit, encoding="utf-8")
+        funde = alle(repo, basis)
+        assert not any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
+            "Zeitvergleich im aufgerufenen Helfer (eine Ebene) darf nicht anschlagen"
+
+        # --- Gegenprobe: derselbe Aufbau, aber der aufgerufene Helfer
+        # filtert NICHT nach Zeit -- muss weiterhin anschlagen.
+        helfer_ohne_zeit = (
+            "import json\n"
+            "def _alle_zeilen(zeilen):\n"
+            "    return [z for z in zeilen if z.get('treffer') is not None]\n"
+            "def quote_unerklaert(pfad, seit):\n"
+            "    zeilen = [json.loads(z) for z in open(pfad + '/recall_log.jsonl')]\n"
+            "    zeilen = _alle_zeilen(zeilen)\n"
+            "    unerklaert = sum(1 for z in zeilen if not z.get('treffer'))\n"
+            "    if unerklaert / len(zeilen) > 0.3:\n"
+            "        print(f\"{unerklaert} von {len(zeilen)} unerklaert\")\n"
+            "    return unerklaert\n"
+        )
+        (repo / "melder_test.py").write_text(helfer_ohne_zeit, encoding="utf-8")
+        funde = alle(repo, basis)
+        assert any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
+            "Helfer ohne Zeitvergleich darf den Fund nicht unterdruecken"
+
         # --- Fehlalarm-Test: das Protokoll wird gelesen und gezaehlt, aber
         # es wird KEINE Quote/Prozentzahl daraus gebildet (reiner Durchsatz-
         # Ausdruck, kein Nenner-Missbrauch) -- darf nicht anschlagen.
@@ -593,7 +661,8 @@ def _selftest() -> None:
         assert not any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
             "reines Zaehlen ohne Quote ist kein Nenner-Missbrauch -- Fehlalarm"
 
-    print("selftest ok (10 Faelle: 4 Pruefsteine je rot+gruen, 2 Fehlalarm)")
+    print("selftest ok (12 Faelle: 4 Pruefsteine je rot+gruen, 1 Aufrufketten-Ebene "
+          "je rot+gruen, 2 Fehlalarm)")
 
 
 def main() -> None:
