@@ -100,6 +100,7 @@ import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
                           # expliziten Batch-Lauf, nicht daneben nachgebaut.
 import ausweis  # B4.1: actor wird beglaubigt, nicht behauptet (siehe _identity)
+import werkzeugrechte  # B4.3: Durchsetzung an tools/call statt nur an tools/list
 import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # (knowledge_add/knowledge_update/lesson_record/lesson_update),
                        # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
@@ -5061,6 +5062,33 @@ def handle_request(req: dict) -> dict:
             return {
                 "jsonrpc": "2.0", "id": req_id,
                 "result": {"content": [{"type": "text", "text": json.dumps({"error": f"Unknown tool: {tool_name}"})}], "isError": True}
+            }
+
+        # B4.3: die Pruefung, die es bisher NICHT gab. Der Kommentar an
+        # BEGOD_KNOWLEDGE_PROFIL sagt es selbst -- die Profilbeschraenkung
+        # betrifft nur tools/list, "kein Autorisierungsmechanismus". Hier ist
+        # der eine Punkt, durch den JEDER Werkzeugaufruf laeuft; eine Pruefung
+        # je Werkzeug waere die Fehlklasse aus L-44a838 (drei Umgehungen
+        # desselben Choke-Points in einer Woche).
+        darf, grund = werkzeugrechte.erlaubt(tool_name)
+        if not darf:
+            # Ablehnung im Protokoll, damit sichtbarkeit.py sie zeigt: eine
+            # stille Abweisung ist von einem Absturz nicht zu unterscheiden.
+            try:
+                conn = get_db()
+                try:
+                    log_access(conn, None, tool_name, query=grund,
+                               status="rejected")
+                    conn.commit()
+                finally:
+                    conn.close()
+            except Exception:  # noqa: BLE001 -- Protokoll darf nie blockieren
+                pass
+            return {
+                "jsonrpc": "2.0", "id": req_id,
+                "result": {"content": [{"type": "text", "text": json.dumps(
+                    {"error": "nicht erlaubt", "grund": grund},
+                    ensure_ascii=False)}], "isError": True}
             }
 
         try:
