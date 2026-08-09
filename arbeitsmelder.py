@@ -281,7 +281,106 @@ def leere_als_befund(cwd: Path, basis: str,
     return funde
 
 
-PRUEFUNGEN = (zustand_als_durchsatz, ortsabhaengige_zahl, leere_als_befund)
+# ---------------------------------------------------------------------------
+# Pruefstein 4: Protokoll als Nenner, ohne Beginn des Aufzeichnens (L-cb3f28)
+# ---------------------------------------------------------------------------
+
+_LOG_OEFFNEN_RE = re.compile(
+    r"\b\w*log\w*\b\s*\.\s*(open|read_text|readlines)\("
+    r"|open\([^)]*\blog\w*\b"
+    r"|\.(jsonl|log)\b",
+    re.IGNORECASE,
+)
+_NENNER_RE = re.compile(
+    r"/[^\w]{0,3}len\(|len\([^)]*\)[^\w]{0,3}/|\bvon\s+(len\(|\{)|%\s*\)",
+    re.IGNORECASE,
+)
+_ZEITVERGLEICH_RE = re.compile(
+    r"\b(ts|timestamp|datum)\w*\b.{0,60}(>=|>|<|<=)"
+    r"|(>=|>|<|<=).{0,60}\b(ts|timestamp|datum)\w*\b",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _funktion_grenzen(voll: list[str], zeilen_nr: int) -> tuple[int, int]:
+    """Start- und Endindex (0-basiert, Ende exklusiv) der Funktion, in der
+    Zeile `zeilen_nr` (1-basiert) liegt. Ohne umschliessendes `def` ein
+    schmales Fenster als Rueckfall -- besser eine zu enge Pruefung als ein
+    Absturz."""
+    idx = zeilen_nr - 1
+    def_idx = def_indent = None
+    for i in range(idx, -1, -1):
+        m = re.match(r"^(\s*)def\s+\w+\(", voll[i])
+        if m:
+            def_idx, def_indent = i, len(m.group(1))
+            break
+    if def_idx is None:
+        return (max(0, idx - 5), min(len(voll), idx + 5))
+    ende = len(voll)
+    for j in range(def_idx + 1, len(voll)):
+        zeile = voll[j]
+        if not zeile.strip():
+            continue
+        einzug = len(zeile) - len(zeile.lstrip())
+        if einzug <= def_indent:
+            ende = j
+            break
+    return (def_idx, ende)
+
+
+def protokoll_als_nenner(cwd: Path, basis: str,
+                         geaendert: dict[str, list[Zeile]]) -> list[dict]:
+    """Ein Protokoll (.jsonl/.log oder eine log-benannte Datei) wird als
+    Ganzes gelesen und dient als Nenner einer Quote/Prozentzahl -- ohne dass
+    dieselbe Funktion die Protokollzeilen gegen eine Zeit-/Datumsuntergrenze
+    filtert.
+
+    FEHLKLASSE: Protokoll als Nenner, ohne Beginn des Aufzeichnens (L-cb3f28).
+    Konkret zweimal am 2026-08-09 eingetreten: recall_log.jsonl wurde
+    vollstaendig als Grundmenge gelesen und daraus eine Quote gebildet (88
+    von 205 "unerklaert"), obwohl leere Abrufe erst seit Commit e3ef28f
+    (2026-08-09 09:52:53) ueberhaupt protokolliert werden -- "leerer Abruf"
+    war davon nicht von "gar kein Abruf" zu unterscheiden. Nach Beschneiden
+    des Fensters blieben von 94 Faellen 2 unerklaert statt 88 von 205.
+
+    PREIS EINES FEHLALARMS: mittel. Eine Auswertung, die absichtlich das
+    GESAMTE Protokoll zaehlen will (Durchsatz statt Zustand seit einem
+    Ereignis -- z.B. eine reine Statistik ueber den kompletten Bestand),
+    wird hier faelschlich gemeldet, sobald sie zusaetzlich eine Quote
+    daraus bildet; grob geschaetzt jede 3.-5. Meldung dieser Sorte. Der
+    Leser muss dann eine Zeile lesen und entscheiden -- reines Zaehlen ohne
+    Quote (`_NENNER_RE`) loest dagegen gar nicht erst aus."""
+    funde = []
+    gemeldete_funktionen: set[tuple[str, int]] = set()
+    for pfad, zeilen in geaendert.items():
+        voll = _voller_text(cwd, pfad)
+        for z in zeilen:
+            if not _LOG_OEFFNEN_RE.search(z.text):
+                continue
+            start, ende = _funktion_grenzen(voll, z.nr)
+            schluessel = (pfad, start)
+            if schluessel in gemeldete_funktionen:
+                continue
+            koerper = "\n".join(voll[start:ende])
+            if not _NENNER_RE.search(koerper):
+                continue
+            if _ZEITVERGLEICH_RE.search(koerper):
+                continue  # Zeitvergleich auf den Protokollzeilen vorhanden
+            gemeldete_funktionen.add(schluessel)
+            funde.append({
+                "pruefung": "protokoll_als_nenner",
+                "befund": f"{pfad}:{z.nr} liest ein Protokoll vollstaendig und bildet "
+                          f"daraus eine Quote, ohne die Zeilen gegen eine Zeit-/"
+                          f"Datumsuntergrenze zu filtern: `{z.text.strip()}`",
+                "fehlklasse": "Protokoll als Nenner, ohne Beginn des Aufzeichnens (L-cb3f28)",
+                "fehlalarm_kostet": "mittel: eine absichtliche Zaehlung ueber das GESAMTE "
+                                    "Protokoll (Durchsatz statt Zustand) wird hier "
+                                    "faelschlich gemeldet -- Fundstelle lesen, nicht blind aendern",
+            })
+    return funde
+
+
+PRUEFUNGEN = (zustand_als_durchsatz, ortsabhaengige_zahl, leere_als_befund, protokoll_als_nenner)
 
 
 _EIGENE_DATEI = Path(__file__).name
@@ -443,7 +542,58 @@ def _selftest() -> None:
         assert not any(f["pruefung"] == "leere_als_befund" for f in funde), \
             "Fassung ohne Befund-Wortlaut im leeren Zweig darf nicht anschlagen"
 
-    print("selftest ok (7 Faelle: 3 Pruefsteine je rot+gruen, 1 Fehlalarm)")
+        # --- Pruefstein 4, historische Fassung: recall_log.jsonl wird
+        # komplett gelesen und daraus eine Quote gebildet -- ohne
+        # Zeitvergleich auf den Protokollzeilen (L-cb3f28, woertlich siehe
+        # oben: 88 von 205 "unerklaert", weil leere Abrufe erst seit einem
+        # bestimmten Commit ueberhaupt protokolliert werden).
+        buggy_4 = (
+            "import json\n"
+            "def quote_unerklaert(pfad):\n"
+            "    zeilen = [json.loads(z) for z in open(pfad + '/recall_log.jsonl')]\n"
+            "    unerklaert = sum(1 for z in zeilen if not z.get('treffer'))\n"
+            "    if unerklaert / len(zeilen) > 0.3:\n"
+            "        print(f\"{unerklaert} von {len(zeilen)} unerklaert\")\n"
+            "    return unerklaert\n"
+        )
+        (repo / "melder_test.py").write_text(buggy_4, encoding="utf-8")
+        funde = alle(repo, basis)
+        assert any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
+            "Pruefstein 4 muss anschlagen, wenn ein Protokoll ohne Zeitvergleich als Nenner dient"
+
+        # Korrigierte Fassung: dieselbe Quote, aber die Zeilen werden zuerst
+        # auf einen Zeitraum ab einer Untergrenze beschnitten.
+        fix_4 = (
+            "import json\n"
+            "def quote_unerklaert(pfad, seit):\n"
+            "    zeilen = [json.loads(z) for z in open(pfad + '/recall_log.jsonl')]\n"
+            "    zeilen = [z for z in zeilen if z.get('timestamp', 0) >= seit]\n"
+            "    unerklaert = sum(1 for z in zeilen if not z.get('treffer'))\n"
+            "    if unerklaert / len(zeilen) > 0.3:\n"
+            "        print(f\"{unerklaert} von {len(zeilen)} unerklaert\")\n"
+            "    return unerklaert\n"
+        )
+        (repo / "melder_test.py").write_text(fix_4, encoding="utf-8")
+        funde = alle(repo, basis)
+        assert not any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
+            "Fassung mit Zeitvergleich auf den Protokollzeilen darf nicht anschlagen"
+
+        # --- Fehlalarm-Test: das Protokoll wird gelesen und gezaehlt, aber
+        # es wird KEINE Quote/Prozentzahl daraus gebildet (reiner Durchsatz-
+        # Ausdruck, kein Nenner-Missbrauch) -- darf nicht anschlagen.
+        harmlos_4 = (
+            "def zeilen_zaehlen(pfad):\n"
+            "    with open(pfad + '/recall_log.jsonl') as f:\n"
+            "        zeilen = f.readlines()\n"
+            "    print(f\"{len(zeilen)} Zeilen im Protokoll\")\n"
+            "    return len(zeilen)\n"
+        )
+        (repo / "melder_test.py").write_text(harmlos_4, encoding="utf-8")
+        funde = alle(repo, basis)
+        assert not any(f["pruefung"] == "protokoll_als_nenner" for f in funde), \
+            "reines Zaehlen ohne Quote ist kein Nenner-Missbrauch -- Fehlalarm"
+
+    print("selftest ok (10 Faelle: 4 Pruefsteine je rot+gruen, 2 Fehlalarm)")
 
 
 def main() -> None:
