@@ -64,6 +64,23 @@ auftaucht. Die Schwanz-Zaehlung UND die Feuerzaehler je Kriterium (1/2/3)
 laufen bei jedem --stop bzw. --prompt mit, auch wenn nichts ausgegeben wird
 -- sonst laesst sich die geratene Drei nie an echten Daten korrigieren.
 
+VERWENDUNG STATT NUR LIEFERUNG (Nachtrag 2026-08-09, Lehre L-ff8fff): der
+Feuerzaehler oben misst nur, dass ein Treffer AUSGESPIELT wurde -- nicht, ob
+er in der naechsten Antwort auch VORKAM. Gemessener Anlass: ein eingespielter
+Treffer loeste den offenen Denkfehler der laufenden Antwort, wurde aber nur
+als Beleg fuer "der Mechanismus feuert" erwaehnt, nicht inhaltlich benutzt --
+erst die Nachfrage des Betreibers oeffnete ihn. Darum merkt --prompt sich in
+"ausgespielt_offen", welche Eintraege es ausgeliefert hat (Kennung +
+kennzeichnende Begriffe aus der Ausgabezeile), und der naechste --stop prueft
+die NEUE Antwort darauf: WOERTLICH wenn die Kennung selbst vorkommt (harter
+Nachweis), BEGRIFFLICH wenn mindestens BEGRIFFLICH_MIN der kennzeichnenden
+Begriffe vorkommen, sonst NICHT_VERWENDET. Geprueft wird genau EINMAL (beim
+naechsten Zug), danach verlaesst der Eintrag "ausgespielt_offen" -- der
+Auftrag verlangt keine Mehrfachpruefung ueber viele Zuege. Auch WOERTLICH
+beweist nur, dass der Eintrag VORKAM, nicht dass er die Antwort besser
+gemacht hat -- dieselbe Verwechslung wie zwischen Lieferung und Wirkung, nur
+eine Ebene hoeher, siehe Kommentar an der Zaehlung selbst.
+
 Beide Pfade fangen jede Ausnahme ab und enden still -- ein Haken darf die
 Sitzung nie stoeren (gleiche Regel wie in knowledge_recall_hook.py und
 existenzpruefung.py, hier eigenstaendig nachgebaut statt importiert, siehe
@@ -109,6 +126,21 @@ SPITZE_GROESSE = 3      # Rang 1-3, speist Kriterium 1+2 (Auftrag Nachtrag 4)
 SCHWANZ_SCHWELLE = 3
 CAP_EINTRAEGE = 3       # Deckel Auftrag
 CAP_ZEICHEN = 1200      # Deckel Auftrag
+
+# Wieviele kennzeichnende Begriffe (aus Titel+Zusammenfassung eines
+# ausgespielten Eintrags) muessen in der naechsten Antwort vorkommen, damit
+# er als "begrifflich verwendet" zaehlt, wenn die Kennung selbst NICHT
+# vorkommt. GEWAEHLT: 2 -- bei 1 reicht ein einzelnes, haeufiges Wort
+# (z.B. "Deckel", "Sitzung") zum Falsch-Positiv, weil es zufaellig auch im
+# naechsten, thematisch anderen Absatz auftaucht. Preis eines Fehlalarms:
+# die Verwendungs-Statistik meldet Wirkung, die es nicht gab, und genau DAS
+# soll dieser Auftrag verhindern (siehe BEFUND). 2 verlangt zwei voneinander
+# unabhaengige Zufallstreffer, was bei Woertern >=4 Zeichen (tokenize())
+# deutlich unwahrscheinlicher ist. Keine hoehere Zahl gewaehlt, weil kurze
+# Zusammenfassungen sonst nie genug Begriffe liefern, um ueberhaupt zu
+# feuern -- 2 ist der kleinste Wert, der einen Einzelwort-Zufallstreffer
+# ausschliesst.
+BEGRIFFLICH_MIN = 2
 
 # Zweite Sicherung gegen die Rueckkopplung (Nachtrag 2026-08-09): ohne diesen
 # Deckel wuerde jede Antwort, die ein zuvor eingespieltes Thema wieder
@@ -169,7 +201,16 @@ def top_begriffe(text: str, n: int = MAX_BEGRIFFE) -> list[str]:
 # --- Schwanz-Statistik (Kriterium 3) ----------------------------------------
 
 def _leere_statistik() -> dict:
-    return {"schwanz": {}, "spitze_gesehen": [], "kriterium_feuer": {"1": 0, "2": 0, "3": 0}}
+    return {
+        "schwanz": {}, "spitze_gesehen": [], "kriterium_feuer": {"1": 0, "2": 0, "3": 0},
+        # Verwendungs-Statistik (Auftrag L-ff8fff): "geliefert" zaehlt jede
+        # Ausspielung sofort (in modus_prompt), die drei anderen erst wenn
+        # der naechste --stop tatsaechlich geprueft hat -- darum koennen sie
+        # in Summe unter "geliefert" liegen, wenn eine Sitzung vor der
+        # Pruefung endet. Das ist gewollt, kein Zaehlfehler.
+        "verwendung": {"geliefert": 0, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0},
+        "ausgespielt_offen": [],
+    }
 
 
 def _schwanz_zaehlen(statistik: dict, spitze: list[dict], schwanz: list[dict]) -> None:
@@ -192,6 +233,37 @@ def _schwanz_zaehlen(statistik: dict, spitze: list[dict], schwanz: list[dict]) -
         eintrag["anzahl"] = eintrag.get("anzahl", 0) + 1
         eintrag["titel"] = e.get("title") or e.get("type") or ""
         eintrag["zusammenfassung"] = e.get("summary") or ""
+
+
+# --- Verwendungs-Statistik (Auftrag L-ff8fff) -------------------------------
+
+def _verwendung_pruefen(statistik: dict, antwort: str) -> None:
+    """Prueft die beim VORIGEN --prompt ausgespielten Eintraege gegen die
+    NEUE Antwort (voller Text, nicht die 30 IDF-Begriffe). WOERTLICH wenn
+    die Kennung selbst im Text steht, sonst BEGRIFFLICH wenn mindestens
+    BEGRIFFLICH_MIN der kennzeichnenden Begriffe vorkommen, sonst
+    NICHT_VERWENDET. Genau EINE Pruefung je Eintrag -- "ausgespielt_offen"
+    wird danach geleert, der Auftrag verlangt keine Mehrfachpruefung ueber
+    mehrere Zuege. Auch WOERTLICH beweist nur, dass der Eintrag VORKAM --
+    nicht, dass er die Antwort besser gemacht hat (dieselbe Verwechslung wie
+    Lieferung vs. Wirkung, nur eine Ebene hoeher)."""
+    offen = statistik.get("ausgespielt_offen") or []
+    if not offen:
+        return
+    verwendung = statistik.setdefault(
+        "verwendung", {"geliefert": 0, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0})
+    antwort_begriffe = pruefkorpus.tokenize(antwort)
+    for eintrag in offen:
+        schluessel = eintrag.get("schluessel") or ""
+        if schluessel and schluessel in antwort:
+            verwendung["woertlich"] = verwendung.get("woertlich", 0) + 1
+            continue
+        begriffe = set(eintrag.get("begriffe") or [])
+        if len(begriffe & antwort_begriffe) >= BEGRIFFLICH_MIN:
+            verwendung["begrifflich"] = verwendung.get("begrifflich", 0) + 1
+        else:
+            verwendung["nicht_verwendet"] = verwendung.get("nicht_verwendet", 0) + 1
+    statistik["ausgespielt_offen"] = []
 
 
 # --- Betriebsart --stop -----------------------------------------------------
@@ -231,6 +303,7 @@ def modus_stop(payload: dict) -> None:
     except (OSError, json.JSONDecodeError):
         pass
 
+    _verwendung_pruefen(statistik, antwort)
     _schwanz_zaehlen(statistik, spitze, schwanz)
 
     daten = {
@@ -410,6 +483,20 @@ def modus_prompt(payload: dict) -> None:
     if kandidaten:
         print(block)
         daten["verbraucht"] = True
+        # Verwendungs-Statistik (Auftrag L-ff8fff): "geliefert" zaehlt sofort,
+        # unabhaengig davon, ob der naechste --stop je dazu kommt zu pruefen.
+        # kennzeichnende Begriffe werden aus der fertigen Ausgabezeile
+        # gezogen (enthaelt Kennung, Titel und Zusammenfassung bereits) --
+        # kein zweiter Zugriff auf den Rohtreffer noetig.
+        verwendung = statistik.setdefault(
+            "verwendung", {"geliefert": 0, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0})
+        ausgespielt_offen = statistik.setdefault("ausgespielt_offen", [])
+        for kind, schluessel, zeile in kandidaten:
+            verwendung["geliefert"] = verwendung.get("geliefert", 0) + 1
+            ausgespielt_offen.append({
+                "kind": kind, "schluessel": schluessel,
+                "begriffe": sorted(pruefkorpus.tokenize(zeile)),
+            })
 
     try:
         with open(TREFFER_DATEI, "w", encoding="utf-8") as f:
@@ -771,6 +858,102 @@ def _selftest() -> None:
             # der Feuerzaehler steigt nur, wenn ein Kriterium wirklich zugeschlagen hat.
             assert statistik_nach_4["kriterium_feuer"]["3"] == 1, statistik_nach_4
             print(f"  Fall {faelle}: einmal in der Spitze gewesen -> ueber Kriterium 3 nicht mehr ausgabefaehig ok")
+
+            # --- Nachtrag 5: Verwendungs-Statistik (Auftrag L-ff8fff) ---------------
+            # Direkt konstruierte Ablage mit "ausgespielt_offen" -- isoliert von
+            # Kriterium 1/2/3, prueft nur ob die vorige Ausspielung in der neuen
+            # Antwort VORKAM. Vier Eintraege decken (a) woertlich, (b) genau
+            # BEGRIFFLICH_MIN Begriffe -> begrifflich (Grenzwert, "genau darauf
+            # ja"), (c) BEGRIFFLICH_MIN-1 Begriffe -> nicht_verwendet (Grenzwert,
+            # "eins darunter nein"), (d) keine Begriffe -> nicht_verwendet.
+            faelle += 1
+            kms.knowledge_search = fake_search  # muss nichtleer sein, sonst kehrt
+            # modus_stop vor der Verwendungspruefung zurueck (siehe Reihenfolge
+            # im Code: leere Treffer -> frueher return, VOR _verwendung_pruefen).
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "verw0001", "verbraucht": True,
+                "vorherige": None, "aktuelle": None,
+                "statistik": {
+                    "schwanz": {}, "spitze_gesehen": [], "kriterium_feuer": {"1": 0, "2": 0, "3": 0},
+                    "verwendung": {"geliefert": 3, "woertlich": 0, "begrifflich": 0, "nicht_verwendet": 0},
+                    "ausgespielt_offen": [
+                        {"kind": "node", "schluessel": "/verw/woertlich", "begriffe": ["alpha", "beta", "gamma"]},
+                        {"kind": "node", "schluessel": "/verw/zwei", "begriffe": ["delta", "epsilon", "zeta"]},
+                        {"kind": "node", "schluessel": "/verw/eins", "begriffe": ["theta", "iota", "kappa"]},
+                        {"kind": "node", "schluessel": "/verw/null", "begriffe": ["lambda", "omikron", "sigma"]},
+                    ],
+                },
+            }), encoding="utf-8")
+            # WICHTIG: die drei "abwesenden" Begriffe (zeta, iota, kappa, lambda,
+            # omikron, sigma) duerfen NICHT im Text stehen -- auch nicht in einem
+            # Satz, der ihre Abwesenheit behauptet ("... zeta kommt nicht vor").
+            # Der Abgleich ist reine Tokenmenge ohne Verneinungserkennung, ein
+            # erwaehntes Wort zaehlt als vorhanden, egal in welchem Satzzusammenhang.
+            antwort_verw = (
+                "Die Antwort erwaehnt /verw/woertlich woertlich als Kennung. "
+                "Ausserdem kommen delta und epsilon vor. Auch theta ist dabei. "
+                + ("fuellstoff " * 60)
+            )
+            transcript_verw = tmp / "t_verw.jsonl"
+            transcript_verw.write_text(json.dumps({
+                "type": "assistant",
+                "message": {"content": [{"type": "text", "text": antwort_verw}]},
+            }) + "\n", encoding="utf-8")
+            modus_stop({"transcript_path": str(transcript_verw), "session_id": "verw0001x"})
+            statistik_verw = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))["statistik"]
+            verwendung = statistik_verw["verwendung"]
+            assert verwendung["woertlich"] == 1, verwendung           # (a) Kennung im Text
+            assert verwendung["begrifflich"] == 1, verwendung         # (b) Grenzwert: genau 2 Begriffe -> ja
+            assert verwendung["nicht_verwendet"] == 2, verwendung     # (c)+(d): 1 Begriff und 0 Begriffe -> nein
+            assert verwendung["geliefert"] == 3, verwendung           # unveraendert -- nur modus_prompt erhoeht das
+            assert statistik_verw["ausgespielt_offen"] == [], statistik_verw
+            print(f"  Fall {faelle}: (i) woertlich/begrifflich(Grenzwert ja)/nicht_verwendet(Grenzwert nein) "
+                  f"in einem Zug erkannt, ausgespielt_offen geleert ok")
+
+            # (j) kumulativ: ein zweiter Zug mit neuer Ausspielung addiert sich zu
+            # den Zaehlern von oben, statt sie zu ueberschreiben.
+            faelle += 1
+            statistik_verw["ausgespielt_offen"] = [
+                {"kind": "node", "schluessel": "/verw/zweite/runde", "begriffe": ["omega", "psi", "chi"]},
+            ]
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "verw0001", "verbraucht": True,
+                "vorherige": None, "aktuelle": None, "statistik": statistik_verw,
+            }), encoding="utf-8")
+            antwort_verw2 = "Kein Bezug, andere Themen. " + ("fuellstoff " * 60)
+            transcript_verw2 = tmp / "t_verw2.jsonl"
+            transcript_verw2.write_text(json.dumps({
+                "type": "assistant",
+                "message": {"content": [{"type": "text", "text": antwort_verw2}]},
+            }) + "\n", encoding="utf-8")
+            modus_stop({"transcript_path": str(transcript_verw2), "session_id": "verw0001x"})
+            statistik_verw2 = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))["statistik"]
+            verwendung2 = statistik_verw2["verwendung"]
+            assert verwendung2["woertlich"] == 1, verwendung2         # unveraendert vom ersten Zug
+            assert verwendung2["begrifflich"] == 1, verwendung2       # unveraendert vom ersten Zug
+            assert verwendung2["nicht_verwendet"] == 3, verwendung2   # 2 (erster Zug) + 1 (neuer, unbenutzter Eintrag)
+            print(f"  Fall {faelle}: (j) Verwendungszaehler sind kumulativ ueber zwei Zuege ok")
+
+            # (k) modus_prompt selbst schreibt "geliefert" und "ausgespielt_offen"
+            # beim Ausspielen -- Ende-zu-Ende ohne direkt konstruierte Ablage.
+            faelle += 1
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "verw0002", "verbraucht": False,
+                "vorherige": {"treffer": [{"kind": "node", "path": "/e2e/a", "title": "EA", "summary": "text"}],
+                              "begriffe": ["alpha"]},
+                "aktuelle": {"treffer": [{"kind": "node", "path": "/e2e/a", "title": "EA", "summary": "text"}],
+                             "begriffe": ["alpha"]},
+            }), encoding="utf-8")
+            buf_e2e = io.StringIO()
+            with contextlib.redirect_stdout(buf_e2e):
+                modus_prompt({"session_id": "verw0002x"})
+            assert "/e2e/a" in buf_e2e.getvalue(), buf_e2e.getvalue()
+            statistik_e2e = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))["statistik"]
+            assert statistik_e2e["verwendung"]["geliefert"] == 1, statistik_e2e
+            assert len(statistik_e2e["ausgespielt_offen"]) == 1, statistik_e2e
+            assert statistik_e2e["ausgespielt_offen"][0]["schluessel"] == "/e2e/a", statistik_e2e
+            print(f"  Fall {faelle}: (k) modus_prompt traegt Ausspielung selbst in "
+                  f"'geliefert'/'ausgespielt_offen' ein ok")
 
     finally:
         TREFFER_DATEI, RECALL_LOG = orig_treffer, orig_log
