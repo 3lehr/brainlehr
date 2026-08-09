@@ -78,6 +78,37 @@ RARE_MAX_DF = 3
 
 MAX_ATTEMPTS = 4  # GERATEN ("mehrere Fehlversuche", Auftrag Punkt 2)
 
+# Aufnahmegrenze fuer die Wortueberlappung Aufgabe->Ziel, in Prozent.
+# HERLEITUNG (gemessen 2026-08-09, NICHT gegen die Trefferquote geeicht):
+# exaktes MAXIMUM des alten Pruefkorpus runs/pruefkorpus.jsonl (35 Faelle mit
+# Ziel; Quartile 0 / 7,1 / 8,7 / 13,6 / 27,8). Diese Grenze laesst also alle
+# 35 alten Faelle durch (der groesste davon liegt GENAU auf ihr) und
+# verwirft beim neuen Haiku-Korpus (55 Faelle, mittlere Ueberlappung 34,1 %)
+# den leichteren Teil. Waere sie gegen die Trefferquote (16/35 vs. 51/55)
+# geeicht, waere sie zirkulaer -- die Grenze soll die Schwierigkeit messen,
+# nicht das Ergebnis rechtfertigen.
+AUFNAHMEGRENZE_PROZENT = 27.8
+
+
+def wortueberlappung(task_text: str, target_text: str) -> float:
+    """Wortueberlappung Aufgabe->Ziel in Prozent: |tokenize(task) ∩
+    tokenize(target)| / |tokenize(task)| * 100. Nenner ist die AUFGABE, nicht
+    das Ziel (siehe FAKTEN des Auftrags) -- eine kurze Aufgabe, die das Ziel
+    komplett zitiert, waere sonst milder bewertet als eine lange."""
+    task_tokens = tokenize(task_text)
+    if not task_tokens:
+        return 0.0
+    target_tokens = tokenize(target_text)
+    return len(task_tokens & target_tokens) / len(task_tokens) * 100.0
+
+
+def erfuellt_aufnahmegrenze(overlap_prozent: float, grenze: float = AUFNAHMEGRENZE_PROZENT) -> bool:
+    """Inklusiv (<=): die Grenze ist der exakte Maximalwert des alten
+    Korpus, also gehoert der Fall, der sie definiert, selbst noch dazu --
+    eine exklusive Grenze wuerde sonst den eigenen Ableitungsfall verwerfen
+    und "laesst alle 35 alten Faelle durch" waere falsch."""
+    return overlap_prozent <= grenze
+
 # Wieviele Faelle je Sorte -- Summe 45, innerhalb der geratenen Zielgroesse 40-60.
 CATEGORY_TARGETS = {"lesson": 15, "fact": 12, "norm": 8, "negative": 10}
 
@@ -191,28 +222,40 @@ def _generate(prompt: str, model: str = MODEL, timeout: float = TIMEOUT) -> tupl
 
 def generate_task(target_text: str, idf: dict, df: Counter, rng: random.Random,
                    model: str = MODEL) -> dict:
-    """Erzeugt eine Aufgabe zu target_text, prueft Zirkularitaet, versucht bei
-    Kollision bis zu MAX_ATTEMPTS mal neu (mit Vermeidungshinweis). Gibt
-    {"accepted": bool, "task": str|None, "attempts": [...], "error": str|None}."""
+    """Erzeugt eine Aufgabe zu target_text, prueft Zirkularitaet UND
+    Wortueberlappung (Auftrag Punkt 3 -- dieselbe Wiederholungsmechanik,
+    keine zweite), versucht bei Verstoss bis zu MAX_ATTEMPTS mal neu (mit
+    Vermeidungshinweis). Gibt {"accepted": bool, "task": str|None,
+    "attempts": [...], "error": str|None, "ueberlappung": float|None}."""
     attempts = []
     vermeiden = ""
     for attempt in range(1, MAX_ATTEMPTS + 1):
         prompt = _GEN_TEMPLATE.format(quelle=target_text[:1200], vermeiden=vermeiden)
         raw, err, retries = _generate(prompt, model=model)
         if err or not raw or not raw.strip():
-            attempts.append({"attempt": attempt, "text": None, "error": err, "collision": None})
+            attempts.append({"attempt": attempt, "text": None, "error": err,
+                              "collision": None, "ueberlappung": None})
             continue
         task_text = raw.strip()
         collision = is_circular(task_text, target_text, idf, df)
+        overlap = wortueberlappung(task_text, target_text)
+        zu_aehnlich = not erfuellt_aufnahmegrenze(overlap)
         attempts.append({
             "attempt": attempt, "text": task_text, "error": None,
             "collision": sorted(collision) if collision else [],
+            "ueberlappung": round(overlap, 1),
         })
-        if not collision:
-            return {"accepted": True, "task": task_text, "attempts": attempts, "error": None}
-        vermeiden = f" Vermeide zusaetzlich diese Woerter: {', '.join(sorted(collision))}."
-    return {"accepted": False, "task": None, "attempts": attempts,
-            "error": "kein nicht-zirkulaerer Fall nach MAX_ATTEMPTS Versuchen"}
+        if not collision and not zu_aehnlich:
+            return {"accepted": True, "task": task_text, "attempts": attempts,
+                     "error": None, "ueberlappung": round(overlap, 1)}
+        if collision:
+            vermeiden = f" Vermeide zusaetzlich diese Woerter: {', '.join(sorted(collision))}."
+        else:
+            vermeiden = (" Formuliere deutlich freier -- die Ueberschneidung mit dem "
+                         "Ausgangswissen war zu hoch, benutze andere Woerter und Saetze.")
+    return {"accepted": False, "task": None, "attempts": attempts, "ueberlappung": None,
+            "error": "kein zulaessiger Fall (unzirkulaer und unter Aufnahmegrenze) "
+                     "nach MAX_ATTEMPTS Versuchen"}
 
 
 # --- Auswahl je Sorte -----------------------------------------------------
@@ -275,12 +318,13 @@ def run(out_path: Path = OUT_PATH, seed: int = SEED, model: str = MODEL) -> dict
                 "category": category, "target_kind": "lesson" if category == "lesson" else "node",
                 "target_id": target_id, "target_label": label,
                 "accepted": result["accepted"], "task": result["task"],
-                "attempts": result["attempts"],
+                "attempts": result["attempts"], "ueberlappung": result.get("ueberlappung"),
             }
             _append_jsonl(record, path=jsonl_path)
             if result["accepted"]:
                 cases.append({"category": category, "target_kind": record["target_kind"],
-                               "target_id": target_id, "target_label": label, "prompt": result["task"]})
+                               "target_id": target_id, "target_label": label, "prompt": result["task"],
+                               "ueberlappung": result.get("ueberlappung")})
                 print(f"  {category} {target_id}: ok nach {len(result['attempts'])} Versuch(en)", flush=True)
             else:
                 skipped.append({"category": category, "target_id": target_id, "target_label": label,
@@ -295,12 +339,16 @@ def run(out_path: Path = OUT_PATH, seed: int = SEED, model: str = MODEL) -> dict
     # Modellantwort gewesen statt die Frage selbst.
     topics = rng.sample(_NEGATIVE_TOPICS, min(CATEGORY_TARGETS["negative"], len(_NEGATIVE_TOPICS)))
     for topic in topics:
+        # Kein Ziel -> keine Wortueberlappung berechenbar, ueberlappung bleibt
+        # None (nicht 0.0 -- 0.0 waere "gemessen und leer", None ist "nicht
+        # anwendbar", ein Unterschied fuer spaetere Auswertung).
         record = {"category": "negative", "target_kind": None, "target_id": None,
                    "target_label": None, "accepted": True,
-                   "task": topic, "attempts": [{"attempt": 1, "text": topic, "error": None}]}
+                   "task": topic, "attempts": [{"attempt": 1, "text": topic, "error": None}],
+                   "ueberlappung": None}
         _append_jsonl(record, path=jsonl_path)
         cases.append({"category": "negative", "target_kind": None, "target_id": None,
-                       "target_label": None, "prompt": topic})
+                       "target_label": None, "prompt": topic, "ueberlappung": None})
         print(f"  negative: ok ({topic[:40]}...)", flush=True)
 
     verteilung = Counter(c["category"] for c in cases)
@@ -315,6 +363,72 @@ def run(out_path: Path = OUT_PATH, seed: int = SEED, model: str = MODEL) -> dict
     print(f"\nGeschrieben: {out_path}", flush=True)
     print(f"Erzeugt: {len(cases)}  Uebersprungen: {len(skipped)}  Verteilung: {dict(verteilung)}", flush=True)
     return output
+
+
+def _resolve_target_text(rec: dict, node_by_path: dict, lesson_by_id: dict) -> str | None:
+    """Loest target_id eines JSONL-Falls gegen den aktuellen Bestand auf.
+    target_kind=='node' -> target_id ist ein PFAD (nicht die id, siehe
+    FAKTEN); target_kind=='lesson' -> target_id ist die id. Gibt None, wenn
+    das Ziel im aktuellen Bestand nicht (mehr) existiert."""
+    if rec.get("target_kind") == "node":
+        node = node_by_path.get(rec["target_id"])
+        return node_text(node) if node else None
+    if rec.get("target_kind") == "lesson":
+        lesson = lesson_by_id.get(rec["target_id"])
+        return lesson_text(lesson) if lesson else None
+    return None
+
+
+def filter_bestehenden_korpus(in_path: Path, out_path: Path,
+                               grenze: float = AUFNAHMEGRENZE_PROZENT,
+                               nodes: list[dict] | None = None,
+                               lessons: list[dict] | None = None) -> dict:
+    """Filtert eine VOR Einfuehrung der Aufnahmegrenze erzeugte JSONL-Datei
+    nachtraeglich: berechnet je Fall die Wortueberlappung gegen den
+    aktuellen Bestand und schreibt nur die Faelle bis einschliesslich
+    `grenze` nach out_path, jeweils mit eigenem "ueberlappung"-Feld. Liest
+    in_path nur (oeffnet es nie zum Schreiben) -- die Ursprungsdatei bleibt
+    unveraendert. nodes/lessons injizierbar fuer Tests (Walkthrough-Doktrin);
+    None -> live aus load_bestand()."""
+    if nodes is None or lessons is None:
+        nodes, lessons = load_bestand()
+    node_by_path = {n["path"]: n for n in nodes}
+    lesson_by_id = {l["id"]: l for l in lessons}
+
+    gelesen = 0
+    ohne_ziel = 0
+    ziel_nicht_gefunden = 0
+    behalten = []
+    verworfen = []
+    with in_path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            gelesen += 1
+            rec = json.loads(line)
+            if not rec.get("target_id"):
+                ohne_ziel += 1
+                continue
+            target_text = _resolve_target_text(rec, node_by_path, lesson_by_id)
+            if target_text is None:
+                ziel_nicht_gefunden += 1
+                continue
+            overlap = round(wortueberlappung(rec["task"], target_text), 1)
+            rec_out = dict(rec, ueberlappung=overlap)
+            if erfuellt_aufnahmegrenze(overlap, grenze):
+                behalten.append(rec_out)
+            else:
+                verworfen.append(rec_out)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8") as f:
+        for rec_out in behalten:
+            f.write(json.dumps(rec_out, ensure_ascii=False) + "\n")
+
+    return {"gelesen": gelesen, "behalten": len(behalten), "verworfen": len(verworfen),
+            "ohne_ziel_uebersprungen": ohne_ziel, "ziel_nicht_gefunden": ziel_nicht_gefunden,
+            "verworfene_faelle": verworfen}
 
 
 def _selftest() -> None:
@@ -375,7 +489,108 @@ def _selftest() -> None:
 
     print(f"selftest ok ({len(idf)} Vokabeln im Mini-Bestand, RARE_MAX_DF={RARE_MAX_DF})", file=sys.stderr)
 
+    _selftest_wortueberlappung()
     _selftest_run_routing_und_gattung()
+    _selftest_filter_bestehenden_korpus()
+
+
+def _selftest_wortueberlappung() -> None:
+    """(a)/(b)/(c) der Abnahme: knapp unter/ueber/exakt auf der Aufnahmegrenze.
+    Rechnet direkt mit der Grenze als Wert -- vermeidet, einen Aufgaben/Ziel-
+    Text so zu konstruieren, dass float-Rundung zufaellig genau 27.8 ergibt."""
+    assert erfuellt_aufnahmegrenze(AUFNAHMEGRENZE_PROZENT - 0.1) is True, (
+        "(a) knapp unter der Grenze haette angenommen werden muessen")
+    print("  (a) knapp unter der Aufnahmegrenze: angenommen -- ok")
+
+    assert erfuellt_aufnahmegrenze(AUFNAHMEGRENZE_PROZENT + 0.1) is False, (
+        "(b) knapp ueber der Grenze haette verworfen werden muessen")
+    print("  (b) knapp ueber der Aufnahmegrenze: verworfen -- ok")
+
+    assert erfuellt_aufnahmegrenze(AUFNAHMEGRENZE_PROZENT) is True, (
+        "(c) exakt auf der Grenze haette angenommen werden muessen (inklusiv, siehe Kommentar)")
+    print("  (c) exakt auf der Aufnahmegrenze: angenommen (inklusiv) -- ok")
+
+    # wortueberlappung(): 4 von 5 Aufgaben-Token stecken auch im Ziel -> 80%.
+    task = "Katze Hund Baum Wolke Regen"
+    target = "Katze Hund Baum Wolke Sonne"
+    overlap = wortueberlappung(task, target)
+    assert abs(overlap - 80.0) < 0.01, f"erwartet 80.0, war {overlap}"
+    print(f"  wortueberlappung() Grundrechnung: {overlap}% -- ok")
+
+    # (d) generate_task() liefert das Ueberlappungsfeld mit -- sowohl im
+    # akzeptierten Fall als auch, wenn MAX_ATTEMPTS wegen zu hoher
+    # Ueberlappung ausgeschoepft wird (nie zirkulaer, aber immer zu aehnlich).
+    idf, n_docs, df = build_idf([], [])
+    zu_aehnliche_antwort = "Katze Hund Baum Wolke Regen"  # exakt = target, 100% Ueberlappung
+
+    def _fake_generate_immer_zu_aehnlich(prompt, model=MODEL, timeout=TIMEOUT):
+        return zu_aehnliche_antwort, None, 0
+
+    global _generate
+    orig_generate = _generate
+    try:
+        _generate = _fake_generate_immer_zu_aehnlich
+        result = generate_task("Katze Hund Baum Wolke Regen", idf, df, random.Random(1))
+    finally:
+        _generate = orig_generate
+    assert result["accepted"] is False, "haette nach MAX_ATTEMPTS als zu aehnlich verworfen werden muessen"
+    assert result["ueberlappung"] is None
+    assert len(result["attempts"]) == MAX_ATTEMPTS
+    assert all(a["ueberlappung"] == 100.0 for a in result["attempts"])
+    print("  (d) generate_task() traegt ueberlappung in jedem Versuch mit, "
+          "verwirft bei Dauer-Ueberschreitung nach MAX_ATTEMPTS -- ok")
+
+    def _fake_generate_frei(prompt, model=MODEL, timeout=TIMEOUT):
+        return "Ein voellig anderer Satz ohne jede Beruehrung mit dem Ziel.", None, 0
+
+    try:
+        _generate = _fake_generate_frei
+        result2 = generate_task("Katze Hund Baum Wolke Regen", idf, df, random.Random(1))
+    finally:
+        _generate = orig_generate
+    assert result2["accepted"] is True
+    assert result2["ueberlappung"] is not None and result2["ueberlappung"] < AUFNAHMEGRENZE_PROZENT
+    print(f"  (d) frei formulierter Fall angenommen, ueberlappung={result2['ueberlappung']}% -- ok")
+
+
+def _selftest_filter_bestehenden_korpus() -> None:
+    """(e): filter_bestehenden_korpus() liest die Eingabedatei nur -- Inhalt
+    vor/nach dem Lauf identisch. Zusaetzlich: ein Fall unter der Grenze
+    bleibt, einer darueber faellt weg, beide tragen ein ueberlappung-Feld."""
+    import tempfile
+    nodes = [{"id": "n1", "path": "/p/ziel", "title": "Katze Hund Baum Wolke Regen",
+               "summary": "", "content": "", "norm_rang": None, "gilt_ab": None, "gattung": "arbeitsbestand"}]
+    lessons: list[dict] = []
+    tmpdir = Path(tempfile.mkdtemp(prefix="pruefkorpus_filter_selftest_"))
+    in_path = tmpdir / "in.jsonl"
+    out_path = tmpdir / "out.jsonl"
+    faelle = [
+        {"target_kind": "node", "target_id": "/p/ziel",
+         "task": "Katze Hund Baum Wolke Sonne"},  # 4/5 Token treffen -> 80%, ueber der Grenze
+        {"target_kind": "node", "target_id": "/p/ziel",
+         "task": "Ein Text ohne jede Beruehrung ueberhaupt"},  # 0% -> unter der Grenze
+    ]
+    inhalt_vorher = "\n".join(json.dumps(f, ensure_ascii=False) for f in faelle) + "\n"
+    in_path.write_text(inhalt_vorher, encoding="utf-8")
+
+    ergebnis = filter_bestehenden_korpus(in_path, out_path, nodes=nodes, lessons=lessons)
+
+    inhalt_nachher = in_path.read_text(encoding="utf-8")
+    assert inhalt_nachher == inhalt_vorher, "(e) Ursprungsdatei wurde durch das Filtern veraendert"
+    print("  (e) Ursprungsdatei beim Filtern unveraendert -- ok")
+
+    assert ergebnis["gelesen"] == 2 and ergebnis["behalten"] == 1 and ergebnis["verworfen"] == 1
+    behaltene = [json.loads(l) for l in out_path.read_text(encoding="utf-8").splitlines()]
+    assert len(behaltene) == 1
+    assert behaltene[0]["task"].startswith("Ein Text")
+    assert "ueberlappung" in behaltene[0] and behaltene[0]["ueberlappung"] < AUFNAHMEGRENZE_PROZENT
+    print(f"  Filterlauf: gelesen={ergebnis['gelesen']} behalten={ergebnis['behalten']} "
+          f"verworfen={ergebnis['verworfen']} -- ok")
+
+    for p in (in_path, out_path):
+        if p.exists():
+            p.unlink()
+    tmpdir.rmdir()
 
 
 def _fake_load_bestand(db_path: str = DB) -> tuple[list[dict], list[dict]]:
@@ -404,7 +619,8 @@ def _fake_generate_task(target_text: str, idf: dict, df: Counter, rng: random.Ra
     """Ersatz fuer generate_task() im Selbsttest -- KEIN Ollama-Aufruf, liefert
     sofort einen akzeptierten Fall. So bleibt run() im Selbsttest netzlos
     durchlaufbar (Abnahme-Vorgabe: kein Modellaufruf)."""
-    return {"accepted": True, "task": f"Testaufgabe zu {target_text[:20]}", "attempts": [], "error": None}
+    return {"accepted": True, "task": f"Testaufgabe zu {target_text[:20]}", "attempts": [],
+            "error": None, "ueberlappung": 1.2}
 
 
 def _selftest_run_routing_und_gattung() -> None:
