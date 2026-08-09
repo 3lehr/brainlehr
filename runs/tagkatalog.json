@@ -50,7 +50,6 @@
     "aka2026": 4,
     "audit": 4,
     "citation-network": 4,
-    "diagnose": 4,
     "efbe": 4,
     "fastlane": 4,
     "hu": 4,
@@ -216,5 +215,8 @@
     "herkunftsschranke": "herkunft",
     "knowledge-db": "knowledge",
     "monorepo-divergenz": "monorepo"
+  },
+  "pruefpflichtig": {
+    "diagnose": 4
   }
 }

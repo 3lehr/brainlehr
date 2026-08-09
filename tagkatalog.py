@@ -33,6 +33,40 @@ import ort  # noqa: E402
 KATALOG = WURZEL / "runs" / "tagkatalog.json"
 MIN_VERGABEN = 2
 
+# Ein Tag ist ein SUCHINDEX. Es macht eine Eigenschaft filterbar, unabhaengig
+# davon, was im Text steht -- und genau darum ist die Aufnahme in den Katalog
+# etwas anderes als das Schreiben eines Satzes. Ein Knoten, der beilaeufig eine
+# Krankenkasse erwaehnt, ist eine Erwaehnung; hundert Knoten mit dem Tag
+# 'krankenkasse' sind eine Liste.
+#
+# Darum kann Haeufigkeit allein hier nicht entscheiden: ohne diese Sperre wird
+# jedes Tag ab zwei Vergaben automatisch Kategorie, und niemand sieht hin
+# (Befund der Compliance-Pruefung 2026-08-09, als BLOCKER gemeldet).
+#
+# Die Liste deckt die besonderen Kategorien nach Art. 9 DSGVO ab (Gesundheit,
+# Religion, Politik, Gewerkschaft, ethnische Herkunft, Biometrie, Sexualleben)
+# und dazu Begriffe, die eine Person KENNZEICHNEN statt eine Sache zu benennen.
+# Sie ist bewusst breit: ein Fehlalarm kostet eine Handentscheidung, ein
+# uebersehener Treffer erzeugt einen dauerhaften Filter ueber Menschen.
+ART9_STAEMME = (
+    "gesundheit", "krank", "diagnos", "therapi", "patient", "arzt", "aerzt",
+    "medizin", "rezept", "impf", "behinder", "pflegegrad", "sucht",
+    "religion", "kirche", "konfession", "glaub",
+    "partei", "politisch", "wahlverhalten", "gewerkschaft",
+    "ethni", "rasse", "herkunftsland", "migrations", "asyl",
+    "biometr", "fingerabdruck", "gesichtserkennung", "dna",
+    "sexual", "geschlechtsident", "orientierung",
+    "mandant", "klient", "patientin", "privatperson", "personenbezogen",
+    "vorstrafe", "schuld", "bonitaet", "schufa",
+)
+
+
+def ist_pruefpflichtig(tag: str) -> bool:
+    """Beruehrt dieses Tag eine besondere Kategorie oder kennzeichnet es eine
+    Person? Dann entscheidet ein Mensch, nicht die Haeufigkeit."""
+    t = tag.lower()
+    return any(s in t for s in ART9_STAEMME)
+
 
 def tags_lesen(conn: sqlite3.Connection) -> Counter:
     z: Counter = Counter()
@@ -76,7 +110,11 @@ def _stamm(tag: str) -> str:
 
 
 def bauen(z: Counter, min_vergaben: int = MIN_VERGABEN) -> dict:
-    kandidaten = {t: k for t, k in z.items() if k >= min_vergaben}
+    # Vor der Haeufigkeit: die Art-9-Sperre. Ein pruefpflichtiges Tag wird NICHT
+    # Kategorie, egal wie oft es vergeben wurde -- es landet in einer eigenen
+    # Liste und wartet auf eine Handentscheidung.
+    pruefpflichtig = {t: k for t, k in z.items() if k >= min_vergaben and ist_pruefpflichtig(t)}
+    kandidaten = {t: k for t, k in z.items() if k >= min_vergaben and not ist_pruefpflichtig(t)}
     gruppen: dict[str, list[str]] = defaultdict(list)
     for t in kandidaten:
         # Eigener Stamm -> eigene Gruppe -> bleibt eigenstaendige Kategorie
@@ -95,6 +133,11 @@ def bauen(z: Counter, min_vergaben: int = MIN_VERGABEN) -> dict:
     for t, k in z.items():
         if t in katalog or t in ersetzungen or t in NICHT_ZUSAMMENFUEHREN:
             continue
+        if ist_pruefpflichtig(t):
+            # Auch als ERSETZUNG nicht durchlassen: sonst kaeme 'krankenkassen'
+            # ueber den Stammvergleich doch noch auf eine Kategorie und waere
+            # damit wieder filterbar.
+            continue
         leit = stamm_zu_leit.get(_stamm(t))
         if leit:
             ersetzungen[t] = leit
@@ -103,6 +146,7 @@ def bauen(z: Counter, min_vergaben: int = MIN_VERGABEN) -> dict:
         "min_vergaben": min_vergaben,
         "tags": dict(sorted(katalog.items(), key=lambda p: (-p[1], p[0]))),
         "ersetzungen": dict(sorted(ersetzungen.items())),
+        "pruefpflichtig": dict(sorted(pruefpflichtig.items(), key=lambda p: (-p[1], p[0]))),
     }
 
 
@@ -112,15 +156,21 @@ def pruefe(tags: list[str], katalog: dict) -> dict:
     -- er wird gesammelt und von Hand entschieden, nie automatisch
     aufgenommen. Sonst waechst der Katalog beim Anwenden, und genau so sind
     die 698 entstanden."""
-    bekannt, ersetzt, unbekannt = [], {}, []
+    bekannt, ersetzt, unbekannt, pruefpflichtig = [], {}, [], []
     for t in (x.strip().lower() for x in tags if x.strip()):
-        if t in katalog["tags"]:
+        if ist_pruefpflichtig(t):
+            # Vor allem anderen: auch ein Tag, das schon einmal im Katalog
+            # stuende, wird hier abgefangen -- die Sperre soll auch dann
+            # greifen, wenn ein alter Katalogstand weiterbenutzt wird.
+            pruefpflichtig.append(t)
+        elif t in katalog["tags"]:
             bekannt.append(t)
         elif t in katalog["ersetzungen"]:
             ersetzt[t] = katalog["ersetzungen"][t]
         else:
             unbekannt.append(t)
-    return {"bekannt": bekannt, "ersetzt": ersetzt, "vorschlaege": unbekannt}
+    return {"bekannt": bekannt, "ersetzt": ersetzt, "vorschlaege": unbekannt,
+            "pruefpflichtig": pruefpflichtig}
 
 
 def main() -> None:
@@ -154,6 +204,26 @@ def demo() -> None:
     assert p["bekannt"] == ["methodik"], p
     assert p["ersetzt"] == {"entscheid": "entscheidung"}, p
     assert p["vorschlaege"] == ["voellig-neues-tag"], p
+
+    # Art-9-Sperre, rot gegen den Stand vor der Compliance-Pruefung: dort wurde
+    # 'krankenkasse' bei fuenf Vergaben zur Kategorie. Gegenprobe in beide
+    # Richtungen -- ein harmloses Tag derselben Haeufigkeit geht weiter durch.
+    z9 = Counter({"krankenkasse": 5, "diagnose": 4, "mandant": 3, "methodik": 5})
+    k9 = bauen(z9)
+    for heikel in ("krankenkasse", "diagnose", "mandant"):
+        assert heikel not in k9["tags"], f"{heikel} darf keine Kategorie werden: {k9['tags']}"
+        assert heikel not in k9["ersetzungen"], f"{heikel} darf auch keine Ersetzung sein"
+        assert heikel in k9["pruefpflichtig"], f"{heikel} muss zur Handentscheidung: {k9}"
+    assert "methodik" in k9["tags"], "harmloses Tag gleicher Haeufigkeit muss durchgehen"
+
+    p9 = pruefe(["krankenkasse", "methodik"], k9)
+    assert p9["pruefpflichtig"] == ["krankenkasse"], p9
+    assert p9["bekannt"] == ["methodik"], p9
+    assert "krankenkasse" not in p9["vorschlaege"], "darf nicht als harmloser Vorschlag durchgehen"
+
+    # Negativfall: die Sperre darf nicht alles fangen, was entfernt aehnlich klingt.
+    assert not ist_pruefpflichtig("methodik") and not ist_pruefpflichtig("kanten")
+    assert ist_pruefpflichtig("Krankenkassen-Beitrag"), "Wortform darf nicht entkommen"
 
     assert normalisieren('["a","B"]') == ["a", "b"]
     assert normalisieren("a, B") == ["a", "b"], "Kommatext aus Altbestand"

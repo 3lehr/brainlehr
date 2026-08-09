@@ -34,7 +34,8 @@ from umschrift_pruefstein import pruefe_knoten  # noqa: E402
 
 
 def einspielen(los_verzeichnis: Path, neu_verzeichnis: Path, apply: bool,
-               update_fn=None, katalog: dict | None = None) -> dict:
+               update_fn=None, katalog: dict | None = None,
+               ersetzungen: dict | None = None) -> dict:
     """update_fn injizierbar (Walkthrough-Doktrin): der Selbsttest laeuft
     ohne Datenbank und ohne Ollama."""
     if update_fn is None:
@@ -68,7 +69,12 @@ def einspielen(los_verzeichnis: Path, neu_verzeichnis: Path, apply: bool,
                 except json.JSONDecodeError:
                     tags = None
             if katalog is not None and isinstance(tags, list):
-                erlaubt = [t for t in tags if t in katalog]
+                # Erst auf den Leitbegriff abbilden, dann filtern. Ohne diesen
+                # Schritt faellt ein bekanntes Synonym ('entscheid') heraus,
+                # statt auf seine Kategorie ('entscheidung') zu zeigen -- der
+                # Schreiber hatte recht, nur das Wort war ein anderes.
+                abgebildet = [(ersetzungen or {}).get(t, t) for t in tags]
+                erlaubt = list(dict.fromkeys(t for t in abgebildet if t in katalog))
                 bericht["tags_verworfen"] += len(tags) - len(erlaubt)
                 tags = erlaubt
             if not apply:
@@ -89,9 +95,12 @@ def main(argv: list[str]) -> int:
     los_verzeichnis = neu_verzeichnis.parent / "lose"
     apply = "--apply" in argv
     kat_pfad = WURZEL / "runs" / "tagkatalog.json"
-    katalog = json.loads(kat_pfad.read_text(encoding="utf-8"))["tags"] if kat_pfad.exists() else None
+    kat = json.loads(kat_pfad.read_text(encoding="utf-8")) if kat_pfad.exists() else {}
+    katalog = kat.get("tags")
+    ersetzungen = kat.get("ersetzungen", {})
     print(f"Ziel: {ort.DB}\nModus: {'SCHREIBEN' if apply else 'nur zaehlen'}\n")
-    b = einspielen(los_verzeichnis, neu_verzeichnis, apply, katalog=katalog)
+    b = einspielen(los_verzeichnis, neu_verzeichnis, apply, katalog=katalog,
+                   ersetzungen=ersetzungen)
     print(f"geprueft:    {b['geprueft']}")
     print(f"geschrieben: {b['geschrieben']}")
     print(f"abgelehnt:   {len(b['abgelehnt'])}  (bleiben unveraendert im Bestand)")
@@ -122,7 +131,7 @@ def demo() -> None:
         neu = [
             {"id": "a", "title": "Was die Kaskade kostet (ADR-023)",
              "summary": "Je Nachricht wurden 8,50 USD gemessen.", "co": "Das ist Faktor 3.",
-             "tags": ["methodik", "erfundenes-tag"]},
+             "tags": ["methodik", "erfundenes-tag", "entscheid"]},
             {"id": "b", "title": "Zweiter Knoten", "summary": "Eine Messreihe lag vor.",
              "co": "", "tags": []},                       # 285/426/657 verloren -> Schranke
             {"id": "c", "title": "Dritter Knoten", "summary": "Nichts Besonderes, Wert 99.",
@@ -138,19 +147,24 @@ def demo() -> None:
             return {"status": "ok"}
 
         b = einspielen(wurzel / "lose", wurzel / "neu", apply=True,
-                       update_fn=fake_update, katalog={"methodik": 91})
+                       update_fn=fake_update, katalog={"methodik": 91, "entscheidung": 11},
+                       ersetzungen={"entscheid": "entscheidung"})
         assert b["geprueft"] == 3, b
         assert b["geschrieben"] == 1, f"nur der saubere Knoten darf durch: {b}"
         assert [g[0] for g in geschrieben] == ["a"], geschrieben
         abgelehnt = {x["id"] for x in b["abgelehnt"]}
         assert abgelehnt == {"b", "c"}, abgelehnt
-        assert geschrieben[0][1] == ["methodik"], f"Tag ausserhalb des Katalogs muss fallen: {geschrieben}"
-        assert b["tags_verworfen"] == 1, b
+        # 'entscheid' ist kein Katalogeintrag, aber eine bekannte Ersetzung --
+        # es muss als 'entscheidung' ankommen, nicht verworfen werden.
+        assert geschrieben[0][1] == ["methodik", "entscheidung"], (
+            f"Synonym muss auf den Leitbegriff zeigen: {geschrieben}")
+        assert b["tags_verworfen"] == 1, f"nur das erfundene Tag darf fallen: {b}"
 
         # Gegenprobe: ohne --apply wird nichts geschrieben, aber gleich gezaehlt.
         geschrieben.clear()
         b2 = einspielen(wurzel / "lose", wurzel / "neu", apply=False,
-                        update_fn=fake_update, katalog={"methodik": 91})
+                        update_fn=fake_update, katalog={"methodik": 91, "entscheidung": 11},
+                        ersetzungen={"entscheid": "entscheidung"})
         assert not geschrieben, "Trockenlauf darf nicht schreiben"
         assert b2["geschrieben"] == 1 and len(b2["abgelehnt"]) == 2, b2
     print("umschrift_einspielen.demo ok")
