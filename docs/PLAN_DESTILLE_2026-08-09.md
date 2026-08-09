@@ -219,6 +219,24 @@ Warum ein Melder und keine Notiz: Am selben Tag wurde Achse 3 mit derselben Begr
 
 **Zu klaeren beim Bau, nicht vorher entschieden:** ob Rechte an der Person haengen, an der Rolle oder am Gegenstand (etwa: "Normrang 1 nur mit Rolle X"), und wie sich das zu `gattung` und `gilt_bis` verhaelt -- ein Recht, einen Schalter umzulegen, ist etwas anderes als das Recht, eine Aussage zu schreiben.
 
+### S7 · Darlegung — der Speicher lernt Reihenfolge
+
+Ein Wissensspeicher ist eine MENGE, ein Plan ist eine FOLGE. Der Speicher kann heute sagen, dass zwei Knoten zusammenhaengen -- nicht, dass einer VOR dem anderen zu lesen ist, und schon gar nicht, welcher Satz sie verbindet. Genau deshalb liegt dieser Plan als Datei und nicht im Bestand.
+
+**Zu bauen:** eine Darlegung ist ein Knoten, dessen Inhalt die verbindende Prosa ist und dessen Teile ueber GEORDNETE Kanten haengen (`knowledge_relations` hat `relation_type`, es fehlt eine Ordnungszahl). Aus Knoten plus geordneten Gliedern rendert ein Erzeuger die lesbare Datei.
+
+**Der Gewinn ist nicht Schoenheit, sondern Pruefbarkeit.** "S3 nach S1" ist heute ein Satz in Prosa, den niemand gegen die Wirklichkeit halten kann. Als Kante ist es eine Aussage, die ein Melder pruefen kann: *ist S3 gebaut, waehrend S1 offen ist?*
+
+**Damit fallen zwei .md-Vorteile ohne Zusatzarbeit an den Speicher:**
+- *In zwanzig Jahren lesbar*: die Datei wird ERZEUGT statt gepflegt -- eine Ansicht kann nicht driften. Das Muster existiert bereits (`build_node_index.py` -> `NODE_INDEX.md`).
+- *Vergleichbar in git*: die erzeugte Datei liefert einen lesbaren Diff, der Auszug den zeilenweisen.
+
+**Und die zwei Nachteile des Speichers bekommen ihre Gegenmittel benannt:**
+- *Zerbrechlicher Stack* (heute dreimal erlebt: der MCP-Prozess lief stundenlang mit altem Code). Regel: **jeder Lesepfad muss ohne den Server funktionieren**. Vorbild ist `nachschlagewerk_suche.py` -- reine Standardbibliothek, nur lesend. Dann ist der Server Bequemlichkeit statt Voraussetzung.
+- *Kein Zusammenfuehren*: der Auszug ist zeilenweises JSONL und damit grundsaetzlich mischbar. UNGEPRUEFT ist, ob zwei Sitzungen ihn konfliktfrei zusammenfuehren -- gehoert gemessen, nicht angenommen.
+
+*Traeger ist sofort da:* dieser Plan, acht Abschnitte, mit begruendeter Reihenfolge.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
