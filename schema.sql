@@ -966,3 +966,48 @@ FOR EACH ROW WHEN NEW.norm_rang IN (1,2)
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang 1/2 verlangt fuer Hausnormen einen menschlichen Entscheider: norm_entschieden_von auf einen Menschen setzen -- ODER, falls dies eine Norm fremder Herkunft ist (Gesetz/Verordnung/Urteil/Normungsstelle), source entsprechend nennen (z.B. Gesetz, Urteil, DIN, ISO, BSI, WCAG) -- oder anlass=betreiber, wenn der Betreiber es angewiesen hat');
 END;
+
+-- ---------------------------------------------------------------------------
+-- Fassungshistorie (2026-08-09)
+--
+-- Befund, der dazu fuehrte: `knowledge_versions` traegt genau zwei Spalten
+-- (id, version) und 2029 Zeilen, ALLE auf 1 -- ein Zaehler, keine Historie.
+-- Ein UPDATE auf title/summary/content/tags war damit endgueltig; es gab
+-- keinen Weg zurueck auf Feldebene. Das fiel auf, als 384 Knoten maschinell
+-- umgeschrieben werden sollten.
+--
+-- Warum Trigger und nicht Anwendungscode: der Trigger greift bei JEDEM
+-- Schreibweg, auch bei direktem SQL an knowledge_mcp_server.py vorbei
+-- (Migrationsskripte, Messlaeufe, Reparaturen von Hand). Genau dort entsteht
+-- der Datenverlust, den ein Archiv verhindern soll -- eine Sicherung, die nur
+-- den ordentlichen Weg absichert, sichert den Fall nicht ab, fuer den es sie
+-- gibt. Dieselbe Ueberlegung wie bei den FTS-Triggern darueber.
+--
+-- Archiviert wird die ALTE Fassung (OLD), nicht die neue: die neue steht ja
+-- in knowledge_nodes. Nur bei echter Aenderung eines der vier Textfelder --
+-- ein UPDATE, das nur updated_at oder norm_rang anfasst, erzeugt keine Zeile.
+CREATE TABLE IF NOT EXISTS knowledge_fassungen (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    node_id TEXT NOT NULL,
+    path TEXT NOT NULL,                      -- Pfad zum Zeitpunkt der Aenderung
+    title TEXT,
+    summary TEXT,
+    content TEXT,
+    tags TEXT,
+    actor TEXT,                              -- wer die ABGELOESTE Fassung geschrieben hatte
+    model TEXT,
+    session TEXT,
+    galt_bis TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_fassungen_node ON knowledge_fassungen(node_id, id DESC);
+
+CREATE TRIGGER IF NOT EXISTS knowledge_fassung_au AFTER UPDATE ON knowledge_nodes
+WHEN COALESCE(OLD.title,'')   <> COALESCE(NEW.title,'')
+  OR COALESCE(OLD.summary,'') <> COALESCE(NEW.summary,'')
+  OR COALESCE(OLD.content,'') <> COALESCE(NEW.content,'')
+  OR COALESCE(OLD.tags,'')    <> COALESCE(NEW.tags,'')
+BEGIN
+    INSERT INTO knowledge_fassungen (node_id, path, title, summary, content, tags, actor, model, session)
+    VALUES (OLD.id, OLD.path, OLD.title, OLD.summary, OLD.content, OLD.tags, OLD.actor, OLD.model, OLD.session);
+END;

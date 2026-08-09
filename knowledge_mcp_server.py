@@ -2430,7 +2430,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
 
 
 def knowledge_update(node_id: str, summary: str | None = None,
-                     content: str | None = None, tags: list | None = None, *,
+                     content: str | None = None, tags: list | None = None,
+                     title: str | None = None, *,
                      norm_rang: int | None = None, gilt_ab: str | None = None,
                      gilt_bis: str | None = None, norm_entscheidung: str | None = None,
                      norm_entschieden_grund: str | None = None,
@@ -2438,7 +2439,9 @@ def knowledge_update(node_id: str, summary: str | None = None,
                      session: str | None = None) -> dict:
     """Update an existing knowledge node. Like summary/content/tags, only
     given norm_rang/gilt_ab/gilt_bis fields are changed -- a node stays frozen
-    at "no Normschicht values" until one is explicitly passed.
+    at "no Normschicht values" until one is explicitly passed. title aendert
+    nur den Titel -- path bleibt unveraendert stehen (path wird nur bei
+    knowledge_add aus dem Titel abgeleitet, nie nachtraeglich).
 
     norm_entscheidung (Auftrag 2026-08-08): nur noetig, wenn die Aenderung
     die BESTEHENDE Entscheidung widersprechen wuerde (z.B. einer bisher
@@ -2518,16 +2521,20 @@ def knowledge_update(node_id: str, summary: str | None = None,
 
     # Derselbe Aufrufer-Fehler wie bei knowledge_add moeglich (Parametergrenze
     # verrutscht ins Textfeld) -- nur uebergebene Felder unmangeln.
-    given = {k: v for k, v in {"summary": summary, "content": content, "tags": tags}.items()
+    given = {k: v for k, v in {"summary": summary, "content": content, "tags": tags, "title": title}.items()
              if v is not None}
     if given:
         fixed = unmangle_knowledge_fields(given)
         summary = fixed.get("summary", summary)
         content = fixed.get("content", content)
         tags = fixed.get("tags", tags)
+        title = fixed.get("title", title)
 
     updates = []
     params = []
+    if title is not None:
+        updates.append("title = ?")
+        params.append(title)
     if summary is not None:
         updates.append("summary = ?")
         params.append(summary)
@@ -4486,7 +4493,7 @@ TOOLS = {
         )
     },
     "knowledge_update": {
-        "description": "Update an existing knowledge node (summary, content, tags, and/or the Normschicht fields "
+        "description": "Update an existing knowledge node (title, summary, content, tags, and/or the Normschicht fields "
                         "norm_rang/gilt_ab/gilt_bis/norm_entscheidung -- see knowledge_add for their meaning). "
                         "Only given fields change; norm_entscheidung is optional here (unlike knowledge_add) and "
                         "only needed when the change would otherwise contradict the node's existing decision "
@@ -4499,6 +4506,7 @@ TOOLS = {
                 "summary": {"type": "string"},
                 "content": {"type": "string"},
                 "tags": {"type": "array", "items": {"type": "string"}},
+                "title": {"type": "string", "description": "Optional: rename the node. path stays unchanged (path is derived from the title only at knowledge_add, never retroactively)."},
                 "norm_rang": {"type": "integer", "description": "Optional: set/change the norm rank"},
                 "gilt_ab": {"type": "string", "description": "Optional: ISO-8601 date/timestamp"},
                 "gilt_bis": {"type": "string", "description": "Optional: ISO-8601 date/timestamp; must not be before gilt_ab (existing or given)"},
@@ -4512,7 +4520,7 @@ TOOLS = {
         },
         "handler": lambda args: knowledge_update(
             _require(args, "node_id", "die Node-ID oder der Pfad des zu aendernden Knotens."),
-            args.get("summary"), args.get("content"), args.get("tags"),
+            args.get("summary"), args.get("content"), args.get("tags"), args.get("title"),
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
             norm_entscheidung=args.get("norm_entscheidung"),
             norm_entschieden_grund=args.get("norm_entschieden_grund"),
