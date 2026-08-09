@@ -72,6 +72,10 @@ import embeddings  # noqa: E402
 # (norm_rang, Hebb-Kanten), eigenes Modul (Monolith-Stopp hier, siehe dessen
 # Kopf), aus diesem Hook nur AUFGERUFEN (Auftrag 2026-08-08).
 import rangfolge  # noqa: E402
+# suchpfad_abruf.py liegt in diesem Ordner (haken/) -- eigenes Modul (Monolith-
+# Stopp hier), nur der Kandidaten-Beschaffung wegen aufgerufen (S9, Auftrag
+# 2026-08-09). Aus diesem Hook nur AUFGERUFEN, s. _suchpfad_aktiv() oben.
+import suchpfad_abruf  # noqa: E402
 
 # Protokoll, WAS gezogen wurde -- neben der DB, eigene Datei (kein Tabelle in
 # knowledge.db: sonst schreibt JEDE Sitzung bei JEDEM Prompt in dieselbe DB,
@@ -415,6 +419,24 @@ def _ensemble_pflicht_aktiv() -> bool:
     if override is not None:
         return override == "1"
     return ENSEMBLE_PFLICHT
+
+
+# S9 (docs/PLAN_DESTILLE_2026-08-09.md): Kandidaten ueber denselben
+# Suchpfad wie knowledge_search (haken/suchpfad_abruf.py) statt ueber das
+# MIN_HITS/ENSEMBLE_PFLICHT-Sieb dieser Datei. Gemessen 2026-08-09 gegen
+# 35 Faelle: alter Weg 0/35 (Vorgabe) bzw. 4/35 (beide Kanaele), neuer Weg
+# 7/35 -- siehe Modul-Docstring von suchpfad_abruf.py fuer die volle Zahl.
+# Vorgabe zunaechst AUS: gleiche Bauform wie ZWEITER_KANAL oben (Modul-
+# Konstante mit Env-Uebersteuerung), bis die Messung ueber die Betriebsdaten
+# entscheidet.
+SUCHPFAD_ABRUF = False
+
+
+def _suchpfad_aktiv() -> bool:
+    override = os.environ.get("KNOWLEDGE_SUCHPFAD_ABRUF")
+    if override is not None:
+        return override == "1"
+    return SUCHPFAD_ABRUF
 
 
 def _radar_select(candidates: list, score_key: str,
@@ -863,6 +885,39 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
     # project_id=None: cwd->project_id-Bezug noch nicht verdrahtet, siehe
     # _effective_noise_mult()-Docstring. Faellt auf den gemeinsamen Wert zurueck.
     mad_mult = _effective_noise_mult(None, project_counts)
+    if _suchpfad_aktiv():
+        # S9: Kandidaten ueber denselben Suchpfad wie knowledge_search
+        # (suchpfad_abruf.kandidaten, RRF ueber Stichwort+Bedeutung, kein
+        # MIN_HITS/ENSEMBLE_PFLICHT-Vorfilter) -- die Nachbehandlung
+        # (trust_score, rangfolge, Scope, Explore, MAX_NODES/MAX_LESSONS-
+        # Deckel, geltend-Filter) bleibt dieselbe wie im Zweig darunter.
+        node_rows, lesson_rows = [], []
+        try:
+            node_rows, lesson_rows = suchpfad_abruf.kandidaten(
+                conn, prompt if prompt else " ".join(kws), query_vec, MAX_NODES + MAX_LESSONS)
+        except sqlite3.Error:
+            pass
+        try:
+            node_rows = [r for r in node_rows if _ist_geltend(r.get("gilt_ab"), r.get("gilt_bis"))]
+            signal = _apply_trust_score(node_rows, "node")
+            signal = rangfolge.anwenden(signal, conn)
+            if own:
+                signal = _tag_node_scope(signal, own)
+            nodes = _maybe_explore(signal[:MAX_NODES], signal, rand, log_path)
+        except sqlite3.Error:
+            pass
+        try:
+            scored = [(hits(f"{c['description']} {c['root_cause']} {c['prevention']}", kws),
+                       c["severity"] in ("critical", "high"), c["occurrences"], c) for c in lesson_rows]
+            scored.sort(key=lambda s: s[1:3], reverse=True)
+            scored = _apply_trust_score(scored, "lesson", ref_of=lambda s: s[3]["id"])
+            if own:
+                scored = _tag_lesson_scope(scored, own)
+            lessons = [s[3] for s in scored[:MAX_LESSONS]]
+        except sqlite3.Error:
+            pass
+        conn.close()
+        return nodes, lessons
     try:
         rows = conn.execute(
             "SELECT n.id, n.path, n.title, n.summary, n.updated_at, n.gilt_ab, n.gilt_bis, "
