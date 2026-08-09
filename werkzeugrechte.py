@@ -172,12 +172,18 @@ def _bezug_pruefen(eintraege: list[dict], bezug: str, ausw: ausweis.Ausweis,
     for e in eintraege:
         m = merkmale.get(e.get("id"))
         if m is None:
-            # Kein Knoten (z.B. eine Lehre) -- Bezug ist hier nicht
-            # entscheidbar. Durchlassen waere die stille Variante; wir lassen
-            # durch UND merken es am Eintrag, damit der Mangel sichtbar ist
-            # statt vermutet.
-            e = {**e, "bezug_ungeprueft": True}
-            behalten.append(e)
+            # Kein Knoten -- in der Praxis eine LEHRE. lessons_learned traegt
+            # keine freigabe-Spalte (migrate_freigabe.py ging nur ueber
+            # knowledge_nodes), der Bezug ist hier also nicht entscheidbar.
+            #
+            # DENY, NICHT DURCHLASSEN. Die erste Fassung liess durch und
+            # markierte nur -- der Koederlauf am 2026-08-10 zeigte sofort, was
+            # das heisst: ein Gast sah 5 von 10 Treffern statt 0, allesamt
+            # Lehren. Und Lehren sind das DESTILLAT, also gerade die kompakten,
+            # merkbaren Aussagen. "published" heisst "nur ausdruecklich
+            # Freigegebenes"; was kein Freigabemerkmal tragen KANN, ist nicht
+            # freigegeben. Bei "own" gilt dasselbe: was ich nicht als meines
+            # belegen kann, ist nicht meines.
             continue
         if bezug == "published" and (m["freigabe"] or "intern") != "offen":
             continue

@@ -122,6 +122,36 @@ def test_count_wandert_mit(bestand, monkeypatch):
     assert daten.get("gefiltert_nach_bezug") == "published"
 
 
+def test_lehren_sind_fuer_gast_nicht_freigegeben(bestand, monkeypatch):
+    """Der Befund des Koederlaufs vom 2026-08-10.
+
+    lessons_learned traegt keine freigabe-Spalte -- der Bezug ist dort nicht
+    entscheidbar. Die erste Fassung liess solche Eintraege durch und markierte
+    sie nur; im Lauf gegen den echten Bestand sah ein Gast dadurch 5 von 10
+    Treffern statt 0, allesamt Lehren. Und Lehren sind das DESTILLAT, also
+    gerade die kompakten, merkbaren Aussagen. "published" heisst "nur
+    ausdruecklich Freigegebenes"; was kein Freigabemerkmal tragen KANN, ist
+    nicht freigegeben.
+    """
+    kms.lesson_record(type_="insight",
+                      description="Wetterbericht: montags faellt mehr Regen",
+                      projects=["shared"], actor="fremder", session="s")
+    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json")
+    monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g)
+    ausweis._pruefe.cache_clear()
+
+    res = kms.handle_request({
+        "jsonrpc": "2.0", "id": 1, "method": "tools/call",
+        "params": {"name": "knowledge_search",
+                   "arguments": {"query": "Wetterbericht"}}})["result"]
+    daten = json.loads(res["content"][0]["text"])
+    arten = [t.get("kind") for t in daten["results"]]
+
+    assert "lesson" not in arten, (
+        f"Gast sah Lehren, obwohl sie keine Freigabe tragen koennen: {arten}")
+    assert daten["results"] and all(a == "node" for a in arten)
+
+
 def test_own_greift_auf_den_schreiber(bestand, monkeypatch):
     """P5: own. Der Fachkundige darf nur EIGENE Knoten schreiben -- geprueft
     ueber die Sicht, weil der Bezug dort messbar wird."""
