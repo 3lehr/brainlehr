@@ -128,6 +128,105 @@ def erlaubt(werkzeug: str, *, ausw: ausweis.Ausweis | None = None,
     return True, f"erlaubt:{recht}:{bezug}"
 
 
+# --- B4.4: der Bezug -------------------------------------------------------
+# Die dritte Stelle eines Rechts (:own, :published) haengt am einzelnen
+# DATENSATZ, nicht am Werkzeug -- darum wirkt sie nach dem Aufruf auf das
+# Ergebnis, nicht davor auf die Erlaubnis.
+#
+# WARUM AN EINER STELLE UND NICHT IN DEN HANDLERN: knowledge_search,
+# knowledge_read, knowledge_browse und lesson_query liefern alle Treffer.
+# Vier Filter waeren vier Gelegenheiten, einen zu vergessen -- dieselbe
+# Fehlklasse wie bei der Erlaubnispruefung (L-44a838).
+#
+# WAS ES KOSTET, ehrlich: der Filter braucht Felder, die im Ergebnis nicht
+# stehen (freigabe, actor). Er schlaegt sie mit EINEM Query fuer alle Treffer
+# nach, nicht mit einem je Treffer.
+
+# Welche Ergebnisliste welches Werkzeugs Knoten bzw. Lehren traegt.
+_LISTEN = ("results", "nodes", "children", "relations")
+
+
+def _bezug_pruefen(eintraege: list[dict], bezug: str, ausw: ausweis.Ausweis,
+                   db_pfad) -> list[dict]:
+    """Behaelt nur, was der Bezug zulaesst. 'alle' geht ungefiltert durch."""
+    if bezug == "alle" or not eintraege:
+        return eintraege
+
+    import sqlite3
+    ids = [e.get("id") for e in eintraege if e.get("id")]
+    if not ids:
+        return eintraege
+    platz = ",".join("?" * len(ids))
+    conn = sqlite3.connect(f"file:{db_pfad}?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    try:
+        merkmale = {r["id"]: r for r in conn.execute(
+            f"SELECT id, freigabe, actor FROM knowledge_nodes WHERE id IN ({platz})",
+            ids)}
+    except sqlite3.OperationalError:
+        return eintraege          # altes Schema ohne freigabe -> nicht filtern
+    finally:
+        conn.close()
+
+    behalten = []
+    for e in eintraege:
+        m = merkmale.get(e.get("id"))
+        if m is None:
+            # Kein Knoten (z.B. eine Lehre) -- Bezug ist hier nicht
+            # entscheidbar. Durchlassen waere die stille Variante; wir lassen
+            # durch UND merken es am Eintrag, damit der Mangel sichtbar ist
+            # statt vermutet.
+            e = {**e, "bezug_ungeprueft": True}
+            behalten.append(e)
+            continue
+        if bezug == "published" and (m["freigabe"] or "intern") != "offen":
+            continue
+        if bezug == "own" and (m["actor"] or "") != ausw.name:
+            continue
+        behalten.append(e)
+    return behalten
+
+
+def filtere(werkzeug: str, ergebnis, *, ausw: ausweis.Ausweis | None = None,
+            db_pfad=None):
+    """Wendet den Bezug des Aufrufers auf ein Werkzeugergebnis an.
+
+    Unbeglaubigte Aufrufer werden NICHT gefiltert -- sie haben keine Rollen und
+    damit keinen Bezug; ihre Sichtbarkeit regelt die Stufe (weich/streng), nicht
+    diese Funktion. Sonst saehe ein Aufrufer ohne Ausweis plotzlich weniger als
+    vorher, und das waere der Bruch, den B4.1 ausdruecklich vermeidet."""
+    if not isinstance(ergebnis, dict):
+        return ergebnis
+    ausw = ausw if ausw is not None else ausweis.loese_auf()
+    if not ausw.beglaubigt:
+        return ergebnis
+    recht = RECHTE.get(werkzeug)
+    if not recht:
+        return ergebnis
+    bezug = ausweis.bezug_fuer(ausw, recht)
+    if bezug is None or bezug == "alle":
+        return ergebnis
+
+    if db_pfad is None:
+        import knowledge_mcp_server as kms
+        db_pfad = kms.DB_PATH
+
+    gefiltert = dict(ergebnis)
+    for schluessel in _LISTEN:
+        wert = gefiltert.get(schluessel)
+        if isinstance(wert, list):
+            vorher = len(wert)
+            wert = _bezug_pruefen(wert, bezug, ausw, db_pfad)
+            gefiltert[schluessel] = wert
+            if len(wert) != vorher:
+                # Die Zahl daneben muss mitwandern, sonst behauptet 'count'
+                # mehr, als die Liste zeigt.
+                if isinstance(gefiltert.get("count"), int):
+                    gefiltert["count"] = len(wert)
+                gefiltert["gefiltert_nach_bezug"] = bezug
+    return gefiltert
+
+
 def fehlende_zuordnung(werkzeuge) -> list[str]:
     """Welche Werkzeuge haben kein Recht? Fuer den Selbsttest des Servers --
     ohne diese Probe faellt ein neu hinzugefuegtes Werkzeug erst auf, wenn es

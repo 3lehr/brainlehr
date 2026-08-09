@@ -5094,6 +5094,10 @@ def handle_request(req: dict) -> dict:
         try:
             with _write_lock():
                 result = TOOLS[tool_name]["handler"](arguments)
+            # B4.4: der Bezug (:own/:published) haengt am Datensatz, nicht am
+            # Werkzeug -- er wirkt darum HIER auf das Ergebnis, an derselben
+            # einen Stelle wie die Erlaubnispruefung davor.
+            result = werkzeugrechte.filtere(tool_name, result)
             return {
                 "jsonrpc": "2.0", "id": req_id,
                 "result": {"content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]}
