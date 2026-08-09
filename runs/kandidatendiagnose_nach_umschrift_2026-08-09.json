@@ -1,0 +1,667 @@
+[
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 4,
+    "rang_bedeutung": 6,
+    "rang_verschmolzen": 2,
+    "in_kandidatenliste": true,
+    "final_ids": [
+      "5aa89a97",
+      "L-2326bd",
+      "8576fb66",
+      "L-a9ccd0",
+      "c60b1b46"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-a9ccd0",
+    "art": "lesson",
+    "station": "IN_LISTE"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 62,
+    "rang_bedeutung": 48,
+    "rang_verschmolzen": 24,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "b7e78ed0",
+      "L-476c1b",
+      "e60034e3",
+      "L-1cc54c",
+      "aa778d8e"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-298823",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 462,
+    "rang_bedeutung": 44,
+    "rang_verschmolzen": 80,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "efa1f597",
+      "L-db33de",
+      "b3d97592",
+      "L-121497",
+      "42c4d176"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-f9f654",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 380,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 246,
+    "rang_bedeutung": 100,
+    "rang_verschmolzen": 124,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "bd393245",
+      "L-1980bb",
+      "306d8fa8",
+      "L-74db23",
+      "210738f1"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-b4b443",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 4,
+    "rang_bedeutung": 34,
+    "rang_verschmolzen": 3,
+    "in_kandidatenliste": true,
+    "final_ids": [
+      "d4c23899",
+      "L-01783a",
+      "5aa89a97",
+      "L-44a838",
+      "a3bc0bc1"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-44a838",
+    "art": "lesson",
+    "station": "IN_LISTE"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 218,
+    "rang_bedeutung": 1282,
+    "rang_verschmolzen": 439,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "20f33ced",
+      "L-bf0bfe",
+      "bb9a1caf",
+      "L-1cd9c8",
+      "210738f1"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-cdac52",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 70,
+    "rang_bedeutung": 2,
+    "rang_verschmolzen": 1,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "55170eb7",
+      "L-1cf1ac",
+      "482bd74d",
+      "L-473ba2",
+      "cbb40e73"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-e7bc5e",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 380,
+    "fts_treffer_lehren": 678,
+    "rang_stichwort": 2,
+    "rang_bedeutung": 2,
+    "rang_verschmolzen": 2,
+    "in_kandidatenliste": true,
+    "final_ids": [
+      "222acfea",
+      "L-e1a441",
+      "df5f2345",
+      "L-1601fa",
+      "f6d00767"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-e1a441",
+    "art": "lesson",
+    "station": "IN_LISTE"
+  },
+  {
+    "fts_treffer_knoten": 381,
+    "fts_treffer_lehren": 679,
+    "rang_stichwort": 1033,
+    "rang_bedeutung": 96,
+    "rang_verschmolzen": 199,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "e063194d",
+      "L-121497",
+      "2068ae1c",
+      "L-aacc29",
+      "621c1b77"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-b91ed6",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 679,
+    "rang_stichwort": 112,
+    "rang_bedeutung": 116,
+    "rang_verschmolzen": 86,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "bd393245",
+      "L-353192",
+      "58b82df7",
+      "L-f27042",
+      "ab4f443e"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-bbd7fb",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 44,
+    "rang_bedeutung": 294,
+    "rang_verschmolzen": 68,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "86b2296b",
+      "L-f7ee6a",
+      "745f7ac1",
+      "L-40d9a5",
+      "2b1d62f6"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-503687",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 382,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 128,
+    "rang_bedeutung": 102,
+    "rang_verschmolzen": 81,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "5aa89a97",
+      "L-e00be4",
+      "e063194d",
+      "L-bea7c9",
+      "bb9a1caf"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-8c633e",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 2,
+    "rang_bedeutung": 58,
+    "rang_verschmolzen": 9,
+    "in_kandidatenliste": true,
+    "final_ids": [
+      "55f3c709",
+      "L-606b63",
+      "b7e78ed0",
+      "L-940f41",
+      "dd2f3cd3"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-606b63",
+    "art": "lesson",
+    "station": "IN_LISTE"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 20,
+    "rang_bedeutung": 10,
+    "rang_verschmolzen": 3,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "dd1a5382",
+      "L-fc8474",
+      "7ce9630c",
+      "L-177955",
+      "0829bbe3"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-0392e4",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 383,
+    "fts_treffer_lehren": 679,
+    "rang_stichwort": 24,
+    "rang_bedeutung": 4,
+    "rang_verschmolzen": 2,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "c60b1b46",
+      "L-198241",
+      "71fd9cdd",
+      "L-c1b088",
+      "86b2296b"
+    ],
+    "tote_plaetze": [],
+    "ziel": "L-476602",
+    "art": "lesson",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 5,
+    "rang_bedeutung": 293,
+    "rang_verschmolzen": 4,
+    "in_kandidatenliste": true,
+    "final_ids": [
+      "2a6098d1",
+      "L-f281aa",
+      "96c1198c",
+      "L-b9bc55",
+      "58b82df7"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+    "art": "node",
+    "station": "IN_LISTE"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 103,
+    "rang_bedeutung": 95,
+    "rang_verschmolzen": 64,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "f6d00767",
+      "L-a69129",
+      "72993241",
+      "L-789e5e",
+      "456dea78"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 379,
+    "fts_treffer_lehren": 676,
+    "rang_stichwort": 377,
+    "rang_bedeutung": 13,
+    "rang_verschmolzen": 27,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "1a548891",
+      "L-5ad380",
+      "bb9a1caf",
+      "L-b9bc55",
+      "5aa89a97"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 379,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 251,
+    "rang_bedeutung": 69,
+    "rang_verschmolzen": 95,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "a3bc0bc1",
+      "L-fc125d",
+      "465716f0",
+      "L-2326bd",
+      "71fd9cdd"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 13,
+    "rang_bedeutung": 93,
+    "rang_verschmolzen": 4,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "3a978881",
+      "L-e96c87",
+      "02937ddb",
+      "L-123662",
+      "5aa89a97"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 679,
+    "rang_stichwort": 251,
+    "rang_bedeutung": 3,
+    "rang_verschmolzen": 19,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "df5f2345",
+      "L-b68464",
+      "2a6098d1",
+      "L-b4b6fc",
+      "aace2817"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 381,
+    "fts_treffer_lehren": 679,
+    "rang_stichwort": 559,
+    "rang_bedeutung": 1573,
+    "rang_verschmolzen": 972,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "2a6098d1",
+      "L-d2e32a",
+      "bb9a1caf",
+      "L-bc7a32",
+      "b11e75c5"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/lessons/phase2-summary",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 729,
+    "rang_bedeutung": 145,
+    "rang_verschmolzen": 269,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "ee1986fd",
+      "L-121497",
+      "306d8fa8",
+      "L-3e21c4",
+      "f6d00767"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/testing/pytest",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 679,
+    "rang_stichwort": 25,
+    "rang_bedeutung": 71,
+    "rang_verschmolzen": 8,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "5aa89a97",
+      "L-e84883",
+      "71fd9cdd",
+      "L-354ee6",
+      "aace2817"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/brainlehr/inference-control-was-andere-faecher",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 9,
+    "rang_bedeutung": 157,
+    "rang_verschmolzen": 8,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "894645f1",
+      "L-fb8c94",
+      "81afeb5b",
+      "L-33a1b6",
+      "0ff6aba6"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/methodik/einstieg",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 607,
+    "rang_bedeutung": 23,
+    "rang_verschmolzen": 49,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "5aa89a97",
+      "L-476602",
+      "cdf21da6",
+      "L-b64493",
+      "0829bbe3"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/stadtwerke",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 679,
+    "rang_stichwort": 433,
+    "rang_bedeutung": 1075,
+    "rang_verschmolzen": 724,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "7b2e8a1a",
+      "L-c43b1b",
+      "c3eb7927",
+      "L-360551",
+      "093d4486"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/openlehr/steuer/ui",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 679,
+    "rang_stichwort": 1,
+    "rang_bedeutung": 1,
+    "rang_verschmolzen": 1,
+    "in_kandidatenliste": true,
+    "final_ids": [
+      "cb56f7d1",
+      "L-445b4b",
+      "db0a448b",
+      "L-320d0a",
+      "aace2817"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+    "art": "node",
+    "station": "IN_LISTE"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 299,
+    "rang_bedeutung": 761,
+    "rang_verschmolzen": 479,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "0ff6aba6",
+      "L-e78cb4",
+      "fe9e7aff",
+      "L-a82bc8",
+      "18314d8e"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 9,
+    "rang_bedeutung": 1,
+    "rang_verschmolzen": 1,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "bd393245",
+      "L-abd124",
+      "0aec1445",
+      "L-f158c5",
+      "b0a8f6a6"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 3,
+    "rang_bedeutung": 27,
+    "rang_verschmolzen": 3,
+    "in_kandidatenliste": true,
+    "final_ids": [
+      "456dea78",
+      "L-a82bc8",
+      "465716f0",
+      "L-4ad804",
+      "ca5a6fc2"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+    "art": "node",
+    "station": "IN_LISTE"
+  },
+  {
+    "fts_treffer_knoten": 385,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 237,
+    "rang_bedeutung": 1486,
+    "rang_verschmolzen": 471,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "9d100663",
+      "6e77f7e0-a63",
+      "16fda372",
+      "L-b0063a",
+      "71fd9cdd"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 1,
+    "rang_bedeutung": 53,
+    "rang_verschmolzen": 6,
+    "in_kandidatenliste": true,
+    "final_ids": [
+      "c7d1e77d",
+      "L-40fd28",
+      "55170eb7",
+      "L-08dd0b",
+      "2a6098d1"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+    "art": "node",
+    "station": "IN_LISTE"
+  },
+  {
+    "fts_treffer_knoten": 384,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 107,
+    "rang_bedeutung": 153,
+    "rang_verschmolzen": 91,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "8e3dccf7",
+      "L-2837f3",
+      "bb9a1caf",
+      "L-f54650",
+      "b7e78ed0"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  },
+  {
+    "fts_treffer_knoten": 382,
+    "fts_treffer_lehren": 680,
+    "rang_stichwort": 241,
+    "rang_bedeutung": 503,
+    "rang_verschmolzen": 349,
+    "in_kandidatenliste": false,
+    "final_ids": [
+      "e063194d",
+      "L-effd52",
+      "5aa89a97",
+      "L-de8ee0",
+      "b7e78ed0"
+    ],
+    "tote_plaetze": [],
+    "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+    "art": "node",
+    "station": "IN_BEIDEN_KANAELEN_ZU_TIEF"
+  }
+]
