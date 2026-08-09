@@ -1,0 +1,92 @@
+[
+  {
+    "id": "b46066a2",
+    "path": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+    "title": "Warum Verhältnismäßigkeit Teil jeder Antwort ist",
+    "summary": "Regel 10 der Arbeitsweise verlangt, in jeder Antwort drei Zeithorizonte auseinanderzuhalten: was jetzt nötig ist, was erst später und durch welchen Auslöser, und was schon heute so gebaut sein muss, damit es später nicht wieder aufgerissen wird. Gerade der letzte Punkt ist meist der eigentliche Ertrag der Antwort.",
+    "co": "**Regel 10: Verhältnismäßigkeit ist Teil der Antwort.** Sag ausdrücklich, was **jetzt** nötig ist, was **später** und wodurch ausgelöst, und was **heute schon so gebaut sein muss**, dass es später nicht aufgerissen wird. Der letzte Teil ist meist der eigentliche Ertrag. Diese Regel 10 der Arbeitsweise-Direktiven ist eine Frage der Verhältnismäßigkeit: Sie unterscheidet zwischen dem, was jetzt gebraucht wird, dem, was später gebraucht wird, und der Vorbereitung, die beides ermöglicht.",
+    "tags": ["methodik", "arbeitsweise", "direktiven"],
+    "project_id": "shared"
+  },
+  {
+    "id": "d400460e",
+    "path": "/methodik/arbeitsweise/11-begruende-nie-mit-dem-bestand",
+    "title": "Warum der Bestand nie das Argument sein darf",
+    "summary": "Regel 11 der Arbeitsweise verbietet, eine Entscheidung mit dem Datenbestand zu begründen — weder damit, dass noch nichts gespeichert ist, noch damit, dass es dafür zu spät sei. Beide Begründungen setzen einen laufenden Betrieb voraus, den es nicht gibt. Trägt eine Begründung tatsächlich, ist es fast immer die Reihenfolge und nicht die Menge der Daten: Ein Schnappschuss muss stehen, bevor die erste Auswertung den Wert liest, und das gilt bei null Datensätzen genauso wie bei einer Million.",
+    "co": "**Regel 11: Begründe nie mit dem Bestand.** Weder „das geht jetzt noch billig, weil noch nichts gespeichert ist\" noch „dafür ist es zu spät\". Beides setzt einen Betrieb voraus. Meist ist die **Reihenfolge** das Argument, nicht die Menge: Ein Schnappschuss muss stehen, *bevor* die erste Auswertung den Wert liest — das gilt bei null Datensätzen wie bei einer Million. Steht und fällt eine Begründung mit dem Füllstand, ist sie die falsche, selbst wenn der Beschluss stimmt. Diese Regel 11 richtet sich gegen den Bestand als Argument, gleich ob er für oder gegen eine Entscheidung angeführt wird — entscheidend bleibt die Reihenfolge der Schritte, nicht der Füllstand der Datenbank.",
+    "tags": ["methodik", "arbeitsweise", "direktiven"],
+    "project_id": "shared"
+  },
+  {
+    "id": "af078b71",
+    "path": "/methodik/arbeitsweise/12-schreib-beschluesse-dorthin",
+    "title": "Wohin Beschlüsse gehören, damit sie überleben",
+    "summary": "Regel 12 der Arbeitsweise besagt: Ein Beschluss gehört nicht in den Gesprächsverlauf, denn das ist die flüchtigste Stelle überhaupt. Befund und Begründung gehören in die Commit-Nachricht, Entscheidungen in ein Entscheidungsdokument, der Arbeitsstand in eine einzige Übergabedatei, die überschrieben statt angehängt wird.",
+    "co": "**Regel 12: Schreib Beschlüsse dorthin, wo sie überleben.** Nicht in den Gesprächsverlauf — das ist die flüchtigste Stelle. Befund und Begründung gehören in die **Commit-Nachricht**, Entscheidungen in ein **Entscheidungsdokument**, der Arbeitsstand in **eine** Übergabedatei, die überschrieben statt angehängt wird. Wer es in den Chat schreibt, hat es weggeworfen. Diese Regel 12 unterscheidet drei Ablageorte für Beschlüsse: die Commit-Nachricht für Begründungen, das Entscheidungsdokument für Beschlüsse selbst, und die eine Übergabedatei für den laufenden Arbeitsstand.",
+    "tags": ["methodik", "arbeitsweise", "direktiven", "adr"],
+    "project_id": "shared"
+  },
+  {
+    "id": "9598f9f8",
+    "path": "/methodik/arbeitsweise/13-pruef-dein-eigenes-positivbeispiel-gegen-deine-eigene-regel",
+    "title": "Warum das eigene Positivbeispiel gegen die eigene Regel geprüft werden muss",
+    "summary": "Regel 13 der Arbeitsweise warnt davor, dass ein Beispiel, das nur die schlimmste Fassung eines Fehlers vermeidet, damit die zweitschlimmste Fassung als Vorbild lehrt. Als Beleg dient ein selbst erlebter Fall: Eine Regel gegen Entwicklersprache in der Oberfläche enthielt als Vorbild ausgerechnet den Satz, der später beanstandet wurde.",
+    "co": "**Regel 13: Prüf dein eigenes Positivbeispiel gegen deine eigene Regel.** Ein Beispiel, das nur die schlimmste Fassung vermeidet, lehrt die zweitschlimmste als Vorbild. (Mir passiert: Eine Regel gegen Entwicklersprache in der Oberfläche enthielt als Vorbild genau den Satz, der später beanstandet wurde.) Diese Regel 13 der Arbeitsweise-Direktiven macht die eigene Selbstprüfung zum Thema: Ein Positivbeispiel, das gegen die eigene Regel nicht standhält, untergräbt die Regel, selbst wenn es das offensichtlich Schlimmste vermeidet.",
+    "tags": ["methodik", "arbeitsweise", "direktiven"],
+    "project_id": "shared"
+  },
+  {
+    "id": "8e3dccf7",
+    "path": "/methodik/arbeitsweise/14-bei-nutzertexten-beschreibe-seine-lage",
+    "title": "Was in Nutzertexten stehen darf: seine Lage, nie der Zustand des Programms",
+    "summary": "Regel 14 der Arbeitsweise verlangt, dass Nutzertexte die Lage des Nutzers beschreiben und nie den internen Zustand des Programms — keine Statuscodes, keine internen Pfade, keine Feldnamen, keine Erklärung darüber, warum die Software etwas tut. Was der Nutzer nicht in eine Handlung übersetzen kann, gehört ins Protokoll statt in die Oberfläche. Seine eigenen Daten werden ihm dabei nie vorenthalten; maskiert wird ausschließlich, wenn der Empfänger ein Dritter ist.",
+    "co": "**Regel 14: Bei Nutzertexten: beschreibe seine Lage, nie den Zustand des Programms.** Keine Statuscodes, keine internen Pfade, keine Feldnamen, keine Erklärung darüber, warum die Software etwas tut. Kann der Nutzer die Angabe nicht in eine Handlung übersetzen, gehört sie ins Protokoll. Und: Seine eigenen Daten werden ihm **nie** vorenthalten — maskiert wird nur, wenn der Empfänger ein Dritter ist. Diese Regel 14 der Arbeitsweise-Direktiven betrifft Wortwahl und Textgestaltung gegenüber dem Nutzer: Statuscodes, Pfade und Feldnamen sind Entwicklersprache und gehören nicht in einen Nutzertext, während die eigenen Daten des Nutzers ihm gegenüber niemals maskiert werden dürfen.",
+    "tags": ["methodik", "arbeitsweise", "direktiven", "wording", "ux"],
+    "project_id": "shared"
+  },
+  {
+    "id": "6f9a73fe",
+    "path": "/methodik/arbeitsweise/15-wenn-du-unabhaengig-pruefen-willst",
+    "title": "Warum unabhängige Prüfung ein frisches Fenster braucht",
+    "summary": "Regel 15 der Arbeitsweise empfiehlt für unabhängige Prüfungen ein frisches Fenster — nicht weil ein anderes Modell klüger wäre, sondern weil ein neuer Kontext die eigenen Annahmen nicht erbt. Das ist Kontext-Isolation, keine Eskalation; bei Konsilen mit mehreren Rollen ist die Unabhängigkeit selbst die Funktion, nicht Verschwendung. In der Antwort sollen Zahlen, Dateinamen, Funktionsnamen, Fehlertexte und Zuschreibungen immer exakt und ausgeschrieben genannt werden — dort wird nicht gekürzt.",
+    "co": "**Regel 15: Wenn du unabhängig prüfen willst, nimm ein frisches Fenster.** Nicht weil ein anderes Modell klüger wäre, sondern weil ein neuer Kontext deine Annahmen nicht erbt. Das ist Kontext-Isolation, keine Eskalation — und bei Konsilen mit mehreren Rollen ist Unabhängigkeit die Funktion, nicht Verschwendung. Antworte knapp. Zahlen, Dateinamen, Funktionsnamen, Fehlertexte und Zuschreibungen immer exakt und ausgeschrieben — dort wird nicht gekürzt. Diese Regel 15 der Arbeitsweise-Direktiven begründet, warum ein frisches Fenster für eine unabhängige Prüfung nötig ist: Kontext-Isolation verhindert, dass ein neues Fenster dieselben Annahmen erbt wie das Fenster, das geprüft werden soll.",
+    "tags": ["methodik", "arbeitsweise", "direktiven", "agents"],
+    "project_id": "shared"
+  },
+  {
+    "id": "8576fb66",
+    "path": "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+    "title": "Warum nichts davon im Betrieb ist — alles Beta, alle Daten Testdaten",
+    "summary": "Grundsatz H1 der Arbeitsweise stellt fest, dass nichts im System im Betrieb ist: keine echten Nutzer, keine echten Daten, was in einer Datenbank liegt, sind ausnahmslos Testdaten. Daraus folgt, dass Testkonten, Beispieldaten und Vorbelegungen ohne Rückfrage angelegt werden dürfen, Daten gelöscht und neu erzeugt werden dürfen, und dass „das System wäre zwischenzeitlich unbenutzbar\" kein Argument ist. Die Frage „das sind doch Echtdaten?\" ist unzulässig; der Betreiber meldet ausdrücklich, wenn sich das ändert.",
+    "co": "**H1. Nichts davon ist im Betrieb.** Keine echten Nutzer, keine echten Daten. Was in einer Datenbank liegt, sind ausnahmslos Testdaten. Daraus folgt: Testkonten, Beispieldaten und Vorbelegungen werden **ohne Rückfrage** angelegt · Daten dürfen gelöscht und neu erzeugt werden · „das System wäre zwischenzeitlich unbenutzbar\" ist **kein** Argument · frag nie „das sind doch Echtdaten?\". Der Betreiber meldet ausdrücklich, wenn sich das ändert. Dieser Grundsatz H1 der Arbeitsweise-Direktiven gilt so lange, bis der Betreiber den Betrieb ausdrücklich meldet — bis dahin sind alle Datenbanken und alle darin liegenden Daten Testdaten, mit denen frei umgegangen werden darf.",
+    "tags": ["methodik", "arbeitsweise", "direktiven", "testdaten"],
+    "project_id": "shared"
+  },
+  {
+    "id": "43a90df8",
+    "path": "/methodik/arbeitsweise/h2-drei-dinge-sind-nie-verhandelbar",
+    "title": "Welche drei Dinge nie verhandelbar sind",
+    "summary": "Grundsatz H2 der Arbeitsweise nennt drei absolute Verbote, auch in einem Entwurf und auch nur zum Testen: keine Zugangsdaten, Schlüssel oder Tokens im Quelltext (nur Umgebungsvariablen), keine voreingestellten Zugangsdaten, und kein eval() oder exec() mit Eingaben von außen. Mit Veto, aber begründbar, gelten zusätzlich: Abhängigkeiten nur aus vertrauenswürdigen Quellen, keine schützenswerten Daten in Fehlermeldungen, Sperrdateien mit einchecken, Passwörter nur mit bcrypt oder argon2.",
+    "co": "**H2. Drei Dinge sind nie verhandelbar** — auch nicht in einem Entwurf, auch nicht „nur zum Testen\": keine Zugangsdaten, Schlüssel oder Tokens im Quelltext (nur Umgebungsvariablen) · keine voreingestellten Zugangsdaten · kein `eval()`/`exec()` mit Eingaben von außen. Mit Veto, aber begründbar: Abhängigkeiten nur aus vertrauenswürdigen Quellen · keine schützenswerten Daten in Fehlermeldungen · Sperrdateien mit einchecken · Passwörter nur mit bcrypt oder argon2. Dieser Grundsatz H2 der Arbeitsweise-Direktiven trennt zwei Härtegrade: absolute Verbote ohne Ausnahme (Zugangsdaten, voreingestellte Zugangsdaten, eval()/exec()) und Regeln mit Vetorecht, die begründet abweichen dürfen (vertrauenswürdige Abhängigkeiten, Fehlermeldungen ohne schützenswerte Daten, eingecheckte Sperrdateien, Passwörter nur über bcrypt oder argon2).",
+    "tags": ["methodik", "arbeitsweise", "direktiven", "bsi", "security"],
+    "project_id": "shared"
+  },
+  {
+    "id": "58c1c3c2",
+    "path": "/methodik/arbeitsweise/h3-jede-oberflaeche-erfuellt-wcag-2-2-aa-fassung-2-2",
+    "title": "Warum jede Oberfläche WCAG 2.2 AA erfüllt — Fassung 2.2, nicht 2.1",
+    "summary": "Grundsatz H3 der Arbeitsweise verpflichtet jede Oberfläche auf WCAG 2.2 AA, ausdrücklich Fassung 2.2 statt 2.1. Namentlich genannt werden die sechs Kriterien, die in 2.1 noch fehlten und am häufigsten übersehen werden: Fokus nicht verdeckt (2.4.11), keine Aktion nur per Ziehen (2.5.7), Zielgröße mindestens 24×24 CSS-Pixel (2.5.8), Hilfe an konsistenter Stelle (3.2.6), keine redundante Eingabe in derselben Sitzung (3.3.7), Anmeldung ohne kognitiven Funktionstest (3.3.8). Kontrastwerte werden gerechnet, nie behauptet, weil sich das Verfahren mit WCAG 3.0 absehbar ändert.",
+    "co": "**H3. Jede Oberfläche erfüllt WCAG 2.2 AA — Fassung 2.2, nicht 2.1.** Die sechs Kriterien, die in 2.1 noch fehlten, werden am häufigsten übersehen und stehen deshalb namentlich hier: Fokus nicht verdeckt (2.4.11) · keine Aktion nur per Ziehen (2.5.7) · Zielgröße mindestens 24×24 CSS-Pixel (2.5.8) · Hilfe an konsistenter Stelle (3.2.6) · keine redundante Eingabe in derselben Sitzung (3.3.7) · Anmeldung ohne kognitiven Funktionstest (3.3.8). Dazu unverändert aus 2.1: jedes Eingabefeld mit sichtbarem, dauerhaftem Label — ein Platzhalter ist kein Label · Fokusring sichtbar, nie `outline: none` ohne Ersatz · Bedeutung nie allein über Farbe · 200 % Zoom ohne waagerechtes Scrollen. **Kontrastwerte werden gerechnet, nie behauptet** — und nie als Zahl in Fließtext oder Kommentar festgeschrieben, sondern aus den Farbtokens berechnet, weil sich das Verfahren mit WCAG 3.0 absehbar ändert. Ein grüner Prüfer ist kein Nachweis; er deckt nur einen Teil der Kriterien ab. Dieser Grundsatz H3 der Arbeitsweise-Direktiven macht WCAG 2.2 AA zum verbindlichen Maßstab für jede Oberfläche und listet die Kriterien 2.4.11, 2.5.7, 2.5.8, 3.2.6, 3.3.7 und 3.3.8 als die Ergänzungen gegenüber der Fassung 2.1.",
+    "tags": ["methodik", "arbeitsweise", "direktiven", "wcag", "barrierefreiheit", "a11y"],
+    "project_id": "shared"
+  },
+  {
+    "id": "c436aaa2",
+    "path": "/methodik/arbeitsweise/h4-datumsangaben-in-fliesstext-und-dokumenten-immer-mit-uhrzeit",
+    "title": "Warum Datumsangaben in Fließtext und Dokumenten immer die Uhrzeit tragen",
+    "summary": "Grundsatz H4 der Arbeitsweise schreibt vor, Datumsangaben in Fließtext und Dokumenten immer mit Uhrzeit anzugeben, im Format ISO 8601 mit Zeitzone, zum Beispiel 2026-08-01T07:11:40+0200. Ein reines Datum gilt als unvollständig, weil bei mehreren Einträgen am selben Tag sonst die Reihenfolge verloren geht. Ausgenommen sind Programmcode und Dateinamen, dort nur, wo die Logik es verlangt.",
+    "co": "**H4. Datumsangaben in Fließtext und Dokumenten immer mit Uhrzeit**, ISO 8601 mit Zeitzone (`2026-08-01T07:11:40+0200`). Ein reines Datum ist unvollständig — bei mehreren Einträgen am selben Tag ist die Reihenfolge sonst verloren. **Ausnahme:** Programmcode und Dateinamen; dort nur, wo die Logik es verlangt. Dieser Grundsatz H4 der Arbeitsweise-Direktiven verlangt für Fließtext und Dokumente durchgehend das Format ISO 8601 samt Zeitzone, wie im Beispiel 2026-08-01T07:11:40+0200 gezeigt, damit die zeitliche Reihenfolge mehrerer Einträge am selben Tag erkennbar bleibt.",
+    "tags": ["methodik", "arbeitsweise", "direktiven"],
+    "project_id": "shared"
+  }
+]

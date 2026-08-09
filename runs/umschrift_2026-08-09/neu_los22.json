@@ -1,0 +1,145 @@
+[
+  {
+    "id": "5f85be35",
+    "path": "/methodik/direktiven-hub-claude-md/wissen-knowledge-mcp",
+    "title": "Wie vor der Arbeit Wissen abgerufen und danach neues Wissen gesichert wird",
+    "summary": "Vor jeder Umsetzung wird zuerst im Wissensspeicher nachgesehen, ob zum Vorhaben schon etwas festgehalten ist, und erst danach begonnen. Neue Erkenntnisse werden anschließend selbst wieder als Wissen abgelegt, damit die nächste Sitzung sie vorfindet.",
+    "co": "## Wissen (Knowledge-MCP)\nBevor mit der Implementierung begonnen wird, wird das vorhandene Wissen geprüft: Der Aufruf `mcp__knowledge__knowledge_search` durchsucht den Wissensspeicher mit den Stichworten der jeweiligen Aufgabe. Treffer, die dabei als einschlägig erscheinen, werden vollständig gelesen, und zwar über `mcp__knowledge__knowledge_read`.\nNeue Erkenntnisse, die während der Arbeit entstehen, werden festgehalten: entweder als Baumeintrag über `mcp__knowledge__knowledge_add`, oder, wenn es sich um eine Lehre aus einem Fehler, einer Einsicht, einem Muster oder einem Antimuster handelt, über `mcp__knowledge__lesson_record` mit der passenden Art (`error`, `insight`, `pattern` oder `antipattern`). Solche Lehren werden automatisch zu einer verbindlichen Regel hochgestuft, sobald sie ab 3 Vorkommen wiederholt auftreten.\nVor kniffligen Änderungen lohnt sich zusätzlich der Aufruf `mcp__knowledge__lesson_query`, um bereits bekannte Fallstricke zum Thema abzurufen, bevor derselbe Fehler ein weiteres Mal gemacht wird.",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "hub",
+      "knowledge",
+      "lessons",
+      "mcp"
+    ],
+    "project_id": "shared"
+  },
+  {
+    "id": "95603632",
+    "path": "/methodik/direktiven/abwesenheitsmodus-ist-die-voreinstellung-systemweit",
+    "title": "Warum eintreffende Agentenmeldungen im Abwesenheitsmodus keine Chatausgabe auslösen",
+    "summary": "Der Abwesenheitsmodus gilt von der ersten Antwort jeder Sitzung an, in jedem Projekt, ohne dass er eigens aufgerufen werden muss — genau wie „Caveman mode: always on\". Trifft während dieses Modus eine Agentenmeldung ein, löst sie weitere Arbeit aus, aber keinen Bericht im Chat: Befund und Begründung gehören in die Commit-Nachricht, die Lehre in den Wissensspeicher, Lage und Fallen in STAND.md, Entscheidungen in eine ADR.",
+    "co": "## Abwesenheitsmodus ist die Voreinstellung (systemweit)\n\nWie „Caveman mode: always on\": Der Abwesenheitsmodus gilt **ab der ersten Antwort jeder Sitzung, in jedem Projekt, ohne Aufruf**. Es wird nicht auf den Befehl `/abwesend` gewartet, sondern der Modus ist von Beginn an aktiv.\n\n**Der Kern der Regel:** Eintreffende Agentenmeldungen lösen **Arbeit** aus, keine Ausgabe im Chatfenster. Es gibt dann keinen Bericht, keine Zusammenfassung und keine Lehre im Chat — auch keine kurze. Stattdessen wandert der Befund und seine Begründung in die **Commit-Nachricht**, die daraus gezogene Lehre in den **Wissensspeicher**, die aktuelle Lage samt Fallstricken in die Datei **STAND.md**, und eine getroffene Entscheidung in eine **ADR** (Architecture Decision Record). Wer eine solche Information stattdessen in den Chat schreibt, hat sie an die flüchtigste Stelle geschrieben, die es überhaupt gibt.\n\n**Die Abgrenzung, ohne die diese Voreinstellung schadet — sie ist Teil der Regel selbst, keine Ausnahme davon:**\n\n- **Eine direkte Frage des Betreibers wird vollständig beantwortet.** Der Abwesenheitsmodus regelt nur die **unaufgeforderte** Ausgabe, nicht die Antwort auf eine gestellte Frage. Ohne diese Klarstellung würde die Voreinstellung den Assistenten stumm machen, sobald jemand tatsächlich etwas wissen möchte.\n- **Die vier Stopp-Punkte bleiben von diesem Modus unberührt.** Bei ihnen wird weiterhin gewartet statt eigenständig entschieden: Kennwörter und Zugangsdaten (die tippt der Betreiber selbst) · Push, Veröffentlichung und jede Außenwirkung · Unumkehrbares ohne Rückweg · und alles, was Geld betrifft. Diese Punkte werden gesammelt und dem Betreiber am Ende vorgelegt, niemals unter eigener Annahme erledigt.\n- **Ein Befund, der den Betreiber zum Handeln zwingt, wird trotzdem gemeldet** — er wird nicht in eine Datei geschoben, die der Betreiber erst am nächsten Tag liest.\n\nDer Befehl `/abwesend` bleibt weiterhin gültig, wirkt aber nur noch als Bekräftigung eines ohnehin aktiven Zustands. Abgeschaltet wird der Modus mit den Worten „bin zurück\" oder „stop abwesend\".",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "arbeitsweise",
+      "systemweit"
+    ],
+    "project_id": "shared"
+  },
+  {
+    "id": "222acfea",
+    "path": "/methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf",
+    "title": "Warum in jeder App des Verbunds ausschließlich mit Testdaten gearbeitet wird",
+    "summary": "Jede App in diesem Verbund befindet sich im Entwicklungsstand: Es gibt keine echten Nutzer, keine echten Daten und keinen Livebetrieb — alles, was in den Datenbanken liegt, sind ausnahmslos Testdaten, bis der Betreiber ausdrücklich das Gegenteil meldet. Der Datenbestand selbst darf deshalb niemals als Argument dienen, weder dafür noch dagegen; tragfähige Gründe liegen fast immer in der Reihenfolge von Schritten, nicht in der Menge der Daten.",
+    "co": "## ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)\n\n**Jede App in diesem Verbund ist ein Entwicklungsstand.** Es gibt keine echten Nutzer, keine echten Daten und keinen Livebetrieb. **Was in den Datenbanken liegt, sind ausnahmslos Testdaten.** Der Betreiber meldet ausdrücklich, wenn sich das ändert — bis dahin gilt dieser Satz ohne Einschränkung, in jedem Projekt und in jeder Sitzung.\n\n**Daraus folgt für den Umgang mit dem Datenbestand:**\n- Daten dürfen gelöscht, neu erzeugt, überschrieben und umgebaut werden. Es braucht keine Migration für Bestandsdaten und keine Rückwärtskompatibilität um ihrer selbst willen.\n- Ausfallzeit kostet nichts. Der Einwand „das System wäre zwischenzeitlich unbenutzbar\" ist **kein** gültiges Argument.\n- Testkonten, Beispieldaten und Fixtures werden **ohne Rückfrage** angelegt.\n- Es gibt keine Rückfrage der Art „soll ich wirklich, das sind Echtdaten?\" — sie sind es nicht.\n\n**Und das ist der Teil, der am häufigsten verletzt wird — nicht durch Rückfragen, sondern durch Begründungen:**\n\n**Der Bestand ist NIE ein Argument.** Weder dafür noch dagegen. Sätze wie „das geht jetzt noch billig, weil noch nichts gespeichert ist\", „dafür ist es zu spät, es gibt schon Datensätze\" oder „nach Schadenspotential wäre X dringender\" setzen alle einen Betrieb voraus, den es gar nicht gibt. Auch die *positive* Wendung ist falsch: Wer eine Entscheidung damit rechtfertigt, dass die Tabelle heute leer sei, verletzt dieselbe Direktive wie derjenige, der Bestandsdaten schützen will.\n\n**Es gibt fast immer einen besseren Grund für eine Entscheidung, und dieser Grund trägt auch später noch.** Meist liegt der eigentliche Grund in der **Reihenfolge**, nicht in der Menge. Beispiel: Ein Schnappschuss muss stehen, *bevor* die erste Auswertung den Parameter liest — nachträglich lässt sich nicht mehr rekonstruieren, welcher Wert damals galt. Dieser Grund gilt bei null Datensätzen genauso wie bei einer Million. Wenn eine Begründung mit dem Füllstand der Datenbank steht und fällt, ist sie die falsche Begründung, selbst wenn der Beschluss am Ende richtig ist.\n\n**Auch die Priorisierung von Arbeit fällt darunter.** Nach „Schadenspotential\" oder „Betriebsrisiko\" zu sortieren ist ein Maßstab für den Produktivbetrieb. Solange noch gebaut wird, gilt stattdessen: Was blockiert den nächsten Schritt, was entwertet spätere Arbeit, und was ist später nur teurer nachzuholen.\n\n**Die Abgrenzung, die trotzdem bestehen bleibt:** Echte technische Abhängigkeiten sind ausdrücklich zu benennen statt sie mit einem Betriebsbedürfnis zu verwechseln (Beispiel: Ein Bildschirm braucht ein Anmelde-Cookie, das nur eine andere Komponente setzen kann — das ist harte Kopplung, kein Komfortverlust). Und Zugangsdaten des Betreibers bleiben seine eigenen: Passwörter tippt er selbst ein.",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "systemweit"
+    ],
+    "project_id": "shared"
+  },
+  {
+    "id": "894645f1",
+    "path": "/methodik/direktiven/auftraege-an-agenten-sind-schnappschuesse-systemweit",
+    "title": "Warum ein Agentenauftrag nur den Quelltext zum Zeitpunkt des Schreibens beschreibt",
+    "summary": "Ein Agentenauftrag beschreibt den Quelltext so, wie er beim Verfassen aussah — während der Agent arbeitet, ändern andere Agenten und der Betreiber selbst diesen Code weiter, sodass derselbe Fehler entsteht wie bei historisierten Daten: gültig zu seinem Zeitpunkt, danach zu prüfen oder als historisch zu behandeln. Vier Handgriffe sollen jeden Auftrag deshalb verlässlicher machen.",
+    "co": "## Aufträge an Agenten sind Schnappschüsse (systemweit)\n\nEin Agentenauftrag beschreibt den Quelltext zum Zeitpunkt des Schreibens. Während der Agent an der Aufgabe arbeitet, ändern andere Agenten diesen Quelltext — und der Betreiber selbst ebenfalls. Es handelt sich um dieselbe Fehlerklasse wie bei historisierten Daten: **gültig zu seinem Zeitpunkt, danach zu prüfen oder als historisch zu behandeln.**\n\n**Vier Handgriffe, verbindlich beim Verfassen jedes Auftrags:**\n\n1. **Keine Zeilennummern als Anweisung.** Es werden Datei- und Funktionsnamen genannt; die genaue Fundstelle sucht der Agent selbst. Eine Zeilennummer im Auftrag ist zur Ausführungszeit oft schon falsch und wird trotzdem geglaubt. Als grobe Orientierung („etwa Zeile 3800\") ist sie zulässig, als feste Adresse nicht.\n2. **Aufträge werden nach Dateien getrennt, nicht nach Themen.** Zwei Agenten, die gleichzeitig in derselben Datei arbeiten, verlieren garantiert Arbeit. Jeder Auftrag nennt deshalb ausdrücklich, welche Dateien gerade von anderen Agenten gehalten werden und damit tabu sind.\n3. **Die Reihenfolge wird dort erzwungen, wo eine Änderung die Voraussetzung einer anderen entwertet.** Ein Beispiel: Eine große Löschung entwertet jede vorher erhobene Toter-Code-Analyse. Solche Auftragspaare laufen deshalb hintereinander; alle anderen Aufträge dürfen nebeneinander laufen.\n4. **Dieser Satz gehört in jeden Auftrag:** „Sieht der Code anders aus als hier beschrieben, halte dich an den Code und melde die Abweichung.\" Dieser Satz verwandelt eine veraltete Beschreibung von einer Fehlerquelle in einen eigenständigen Befund.\n\n**Für den Betreiber selbst gilt derselbe Grundsatz:** Jede Zahl, jeder Dateiname und jede Existenzaussage aus einem Agentenbericht oder aus der eigenen Erinnerung wird VOR dem Weitertragen mit einem eigenen Werkzeugaufruf geprüft. Ein Befund von gestern ist keine Tatsache von heute.",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "arbeitsweise",
+      "systemweit",
+      "agents"
+    ],
+    "project_id": "shared"
+  },
+  {
+    "id": "197425fe",
+    "path": "/methodik/direktiven/bsi-compliance-systemweit-lazy-nur-trigger-kein-katalog-im-kontext",
+    "title": "Welche Sicherheitsregeln aus dem BSI-Katalog ohne Ausnahme gelten",
+    "summary": "Die Sicherheitsvorgaben stammen aus der BSI Stand-der-Technik-Bibliothek (Grundschutz++, 945 Dev-Controls) und, für KI-Trainingsdaten, aus QUAIDAL; die Detail-Controls selbst liegen in hub/shared-knowledge/bsi-dev-profile.json und der Knowledge-DB und werden nicht dauerhaft in den Kontext geladen. Absolut ohne Ausnahme gilt: keine Credentials, Secrets oder Tokens im Quellcode, keine Default-Credentials in Produktion, kein eval() oder exec() mit Nutzereingaben; als starke Regel mit Vetorecht gelten außerdem vertrauenswürdige Abhängigkeiten, keine sensiblen Daten in Fehlermeldungen, committete Lock-Files, Schutz gegen die OWASP Top 10 und Passwörter ausschließlich über bcrypt oder argon2.",
+    "co": "## BSI-Compliance (systemweit, lazy) — nur Trigger, kein Katalog im Kontext\n\nQuelle dieser Vorgaben ist die BSI Stand-der-Technik-Bibliothek (Grundschutz++, 945 Dev-Controls) zusammen mit QUAIDAL (Regelwerk für KI-Trainingsdaten). Die einzelnen Detail-Controls liegen in der Datei `hub/shared-knowledge/bsi-dev-profile.json` sowie in der Knowledge-DB — sie werden **nicht** dauerhaft hier in den Kontext geladen, sondern nur bei Bedarf abgerufen.\n\n**Hard-Stops (ABSOLUT — keine Ausnahme):**\n- Keine Credentials, Secrets oder Tokens im Quellcode → nur über Env-Vars beziehungsweise `.env` (BSI-Control `DEV.2.5`).\n- Keine Default-Credentials in einer Produktivumgebung (Control `KONF.2.3`).\n- Kein `eval()` oder `exec()` mit Eingaben von Nutzern (Control `DEV.2.6`).\n\n**Hard-Stops (STARK — mit Vetorecht):** Abhängigkeiten nur aus vertrauenswürdigen Quellen beziehen; keine sensiblen Daten in Fehlermeldungen preisgeben; Lock-Files stets committen; Schutz gegen die OWASP Top 10 (darunter SQL-Injection, XSS, CSRF); Passwörter ausschließlich über bcrypt oder argon2 sichern.",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "bsi",
+      "compliance",
+      "systemweit"
+    ],
+    "project_id": "shared"
+  },
+  {
+    "id": "6913eb47",
+    "path": "/methodik/direktiven/caveman-mode-always-on",
+    "title": "Warum die knappe Caveman-Sprache ohne Auslösewort ab der ersten Antwort läuft",
+    "summary": "Die Fähigkeit caveman wird in der Stufe ultra ab der allerersten Antwort jeder Sitzung und in jedem Projekt eingeschaltet, ohne dass ein Auslösewort nötig wäre, und bleibt gemäß der eigenen Bestehensregel der Fähigkeit über die ganze Sitzung aktiv. Die in der Fähigkeit vorgesehenen „Auto-Clarity\"-Ausnahmen gelten dabei weiterhin: Bei Sicherheitswarnungen, bei Bestätigungen unumkehrbarer Handlungen und bei mehrstufigen Abläufen, wo eine zu starke Verdichtung zu Missverständnissen führen könnte, wird die knappe Form verlassen.",
+    "co": "## Caveman mode: always on\n\nDie Fähigkeit `caveman` wird in der Intensitätsstufe **ultra** ab der allerersten Antwort jeder Sitzung eingeschaltet, in jedem Projekt, ohne dass zuvor ein Auslösewort abgewartet würde. Der Modus bleibt für die gesamte Sitzung aktiv, so wie es die eigene Bestehensregel der Fähigkeit vorsieht.\n\nDabei gelten weiterhin die in der Fähigkeit selbst festgelegten „Auto-Clarity\"-Ausnahmen: Bei Sicherheitswarnungen, bei Bestätigungen unumkehrbarer Handlungen und bei mehrstufigen Abläufen, in denen eine zu starke sprachliche Verdichtung das Risiko eines Missverständnisses birgt, wird der Caveman-Modus verlassen und normal formuliert.",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "arbeitsweise"
+    ],
+    "project_id": "shared"
+  },
+  {
+    "id": "e38dec52",
+    "path": "/methodik/direktiven/committen-ohne-aufforderung-systemweit",
+    "title": "Wann nach einem Arbeitsschritt ohne Nachfrage committet wird und wie fremde Dateien erkannt werden",
+    "summary": "Git ersetzt jedes andere Verzeichnis, weil der Befehl git log -- <datei> beantwortet, was, wann, warum und von wem geändert wurde, ohne eigene Pflege — deshalb wird nach jedem abgeschlossenen Arbeitsschritt committet, ohne zu fragen, wobei ein Commit jeweils eine Sache umfasst und die Nachricht das Warum nennt. Ob eine Datei einem anderen Agenten gehört, steht in der Datei /tmp/claude-agent-register.jsonl, die je Datei Sitzung und Agent sowie ein „stop\"-Ereignis bei Abschluss protokolliert; ohne dieses Ereignis bleibt die Datei unangetastet.",
+    "co": "## Committen ohne Aufforderung (systemweit)\n\nGit ist das Verzeichnis, das alle anderen ersetzt: Der Befehl `git log -- <datei>` beantwortet was, wann, warum und von wem geändert wurde — ohne eigene Pflege und ohne Verrottung. Dieses Verzeichnis ist aber nur so gut, wie regelmäßig darin eingetragen wird. Liegt der Arbeitsbereich voller uncommitteter Änderungen, gibt es kein „gestern\" mehr, gegen das sich eine Regression vergleichen ließe.\n\n**Nach jedem abgeschlossenen Arbeitsschritt wird committet, ohne zu fragen.** Nicht erst am Ende einer Sitzung alles zusammen — ein Sammelcommit über Hunderte Dateien ist als Verzeichnis wertlos, weil sich daraus nichts einzeln zurücknehmen und nichts einzeln nachvollziehen lässt. Ein Commit umfasst jeweils eine Sache: einen Fehler, ein Merkmal oder einen Umbau.\n\nDie Commit-Nachricht nennt **warum** etwas geändert wurde, nicht nur was geändert wurde. Der Fehlerbefund, die verworfene Alternative, der dafür bezahlte Preis — genau das wird später gesucht.\n\nDrei Grenzen gelten dabei:\n- **Kein Push ohne ein ausdrückliches Wort dazu.** Committen ist lokal und umkehrbar, ein Push ist es nicht.\n- **Es wird nicht auf dem Hauptzweig committet.** Vorher wird abgezweigt.\n- **Fremde Arbeit wird nicht als eigene festgeschrieben** — und das lässt sich nachprüfen, es muss nicht erraten werden (siehe unten).\n\n**Wie erkannt wird, ob eine Datei jemand anderem gehört:** Die Datei `/tmp/claude-agent-register.jsonl` protokolliert je Datei, welche Sitzung und welcher Agent sie angefasst hat, dazu ein `stop`-Ereignis, sobald ein Agent seine Arbeit beendet hat. Vor dem Committen wird dieses Protokoll ausgewertet:\n\n- **Ein Agent ohne `stop`-Ereignis läuft noch → Finger weg.** Diese Dateien bleiben liegen, selbst wenn man meint, „damit nichts verloren geht\". Ein halbfertiger Zwischenstand fremder Arbeit im Verzeichnis ist schlimmer als gar keiner.\n- **Fremde Sitzung, aber alle Agenten bereits gestoppt** → darf festgeschrieben werden, allerdings **in einem eigenen Commit**, der ausdrücklich als solcher benannt wird („lag bereits vor dieser Sitzung im Arbeitsbereich, nicht einzeln geprüft\"). Diese Änderungen werden nicht mit den eigenen thematischen Commits vermischt — dort sähen sie wie eigene Arbeit aus, und genau das macht ein Verzeichnis unbrauchbar.\n\nOhne diese Auswertung bleibt die Regel bloße Absicht: Eine Datei weiß von sich aus nicht, wer sie anfasst. Das Register weiß es.",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "systemweit",
+      "agents"
+    ],
+    "project_id": "shared"
+  },
+  {
+    "id": "e9c6774a",
+    "path": "/methodik/direktiven/datumsangaben-immer-zuerst-beachten",
+    "title": "In welchem Format Datum und Uhrzeit in Dokumenten geschrieben werden",
+    "summary": "In .md-Dateien und jedem sonstigen Fließtext oder Dokumentationsinhalt werden Datumsangaben immer mit Uhrzeit geschrieben, und zwar im Format ISO 8601 YYYY-MM-DDTHH:MM:SS±ZZ, erzeugt über den Befehl date \"+%Y-%m-%dT%H:%M:%S%z\" — ein reines Datum ohne Uhrzeit gilt als unvollständig. Ausgenommen ist Programmcode wie Konstanten, Test-Fixtures, Konfigurationswerte und date-Formatstrings, dort nur soweit die Logik es verlangt; Dateinamen dürfen weiterhin nur das sortierbare Datum tragen, während die volle Uhrzeit dann im Header oder Inhalt der Datei steht.",
+    "co": "## Datumsangaben (immer zuerst beachten)\n\nIn **`.md`-Dateien und jedem Fließtext beziehungsweise jedem Dokumentationsinhalt** werden Datumsangaben IMMER zusammen mit der Uhrzeit geschrieben: im Format ISO 8601 `YYYY-MM-DDTHH:MM:SS±ZZ`, erzeugt über den Befehl `date \"+%Y-%m-%dT%H:%M:%S%z\"`. Das gilt für Header, Changelog-Zeilen, Statusfelder und das Konsil-Feld `datum`. Ein reines Datum ohne Uhrzeitangabe gilt als unvollständig.\n\n**Ausnahme:** Programmcode — also Konstanten, Test-Fixtures, Konfigurationswerte und `date`-Formatstrings — verlangt die volle Schreibweise nur dann, wenn die eigene Logik es erfordert. **Dateinamen** dürfen weiterhin nur das reine, sortierbare Datum tragen; die vollständige Uhrzeit steht dann im Header oder im Inhalt der jeweiligen Datei.",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "arbeitsweise"
+    ],
+    "project_id": "shared"
+  },
+  {
+    "id": "c7edde55",
+    "path": "/methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit",
+    "title": "Warum eine Behebung erst mit einer zuvor rot gewesenen Prüfung als belegt gilt",
+    "summary": "Die Aussage „jetzt klappt es\", „behoben\" oder „funktioniert\" ist nur mit einer Prüfung zulässig, die vor der Änderung fehlschlug und danach besteht — beschlossen am 2026-07-30, nachdem 3720 grüne Tests neben einem Merkmal standen, das im Feld tot war. Der Beleg muss dabei auf der Ebene liegen, auf der der Fehler tatsächlich lebte, wie das Beispiel aus dem Fahrtenbuch mit der Geräte-Bindung zeigt, und fünf feste Fragen — Grenzwert, Negativfall, verschluckte Fehler, fehlende Lint-Regel, Rot-Probe — sollen beim Abschluss jedes Fixes abgehakt werden, obwohl dafür laut Messung vom 2026-07-31 im BSI-Dev-Profil mit 947 Controls kein eigenes Control existiert.",
+    "co": "## „Es funktioniert\" braucht einen Beleg, der vorher rot war (systemweit)\n\n**Es gibt kein „jetzt klappt es\", „behoben\" oder „funktioniert\" ohne eine Prüfung, die vor der Änderung fehlschlug und danach besteht.** Rot vor dem Fix ist der ganze Punkt dieser Regel: Ein Test, der von Anfang an grün war, beweist nur, dass er den Fehler gar nicht berührt. Diese Regel wurde am 2026-07-30 beschlossen, nachdem in einer Nacht 3720 grüne Tests neben einem Merkmal standen, das im Feld tatsächlich tot war.\n\n**Die teuerste Verwechslung ist dabei die Ebene.** Im Fahrtenbuch war die reine Entscheidungsfunktion für die Geräte-Bindung einzeln getestet und korrekt; der eigentliche Fehler saß jedoch in der **Sitzung** (ein Einmal-Versuch beim Verbinden, der nach einem Reconnect nie nachgeholt wurde). Deshalb muss der Beleg auf der Ebene liegen, auf der der Fehler tatsächlich lebte — also im Ablauf, in der Reihenfolge, bei der Wiederverbindung, auf der Zeitachse oder beim Neustart. Eine einzelne Funktion isoliert zu prüfen und daraus auf das gesamte Merkmal zu schließen, ist derselbe Fehler wie eine Existenzaussage ohne vorheriges Nachsehen.\n\n**Drei Formulierungen bleiben zulässig, wenn ein solcher Beleg nicht existiert:** „geändert, nicht verifiziert\" · „Tests grün, aber sie deckten den Fehler nicht ab\" · „im Kopflauf belegt, am Gerät nicht\". Alle drei Formulierungen sind ehrlich. Das Wort „funktioniert\" ist es in diesem Fall dagegen nicht.\n\n**Wo ein solcher Beleg sich nicht herstellen lässt** (etwa weil die Plattform die App weckt, echte Hardware beteiligt ist oder die Außenwelt hineinspielt): Dann wird das ausdrücklich als Gerätefahrt beziehungsweise Handprobe benannt und getrennt vom Kopflauf ausgewiesen — ein grüner Automatenlauf wird niemals als „im Betrieb geprüft\" verkauft.\n\nDiese Regel gilt für eigene Aussagen **und** für Agentenberichte gleichermaßen: „Sichtprüfung, Verhalten unverändert\" ist kein Beleg. In derselben Nacht meldete ein Agent genau diesen Satz für Code, der gar nicht kompilierte.\n\n**Fünf Fragen beim Abschluss eines Fixes** — keine Recherche nötig, nur zum Abhaken. Am 2026-07-30 hätten sie vier von vier Feldfehlern vorab erwischt:\n1. **Grenzwert** geprüft, nicht nur ein bequemer Wert? Jede Schwelle braucht einen Test bei Schwelle−1, bei der Schwelle selbst und bei Schwelle+1.\n2. **Negativfall** geprüft — wird tatsächlich Falsches abgelehnt, nicht nur Richtiges akzeptiert?\n3. **Fehler nicht verschluckt** — kein leerer `catch`, kein nicht abgewarteter asynchroner Aufruf auf dem geänderten Pfad?\n4. **Lint-Regel** vorhanden, die diese ganze Fehlerklasse künftig fängt (statt nur diesen einen Einzelfall zu beheben)?\n5. **Rot-Probe** gefahren — war der neue Test gegen den Stand vor dem Fix tatsächlich rot?\n\nDer BSI-Katalog hilft an dieser Stelle ausdrücklich **nicht**: Im BSI-Dev-Profil mit 947 Controls gibt es **kein** Control zu Negativtests, zur Grenzwertprüfung, zum Nachweis der Testwirksamkeit und zur statischen Analyse — so gemessen am 2026-07-31, festgehalten im Knowledge-Knoten mit der Kennung `0aec1445`. Vorhanden sind lediglich `DEV.3.2` (Fehlerbehandlung, allgemein gehalten), `DET.3.1.4` und `DET.3.1.9` (Feldfehler protokollieren), `DEV.3.3` (keine schützenswerten Daten in Fehlermeldungen) sowie `TEST.3.2` (Testabdeckung, nicht deren Wirksamkeit). Diese fünf Fragen sind also eine **Eigenentscheidung** und nicht durch den „Stand der Technik\" gedeckt — wer sie streicht, streicht sie bewusst.",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "systemweit",
+      "bsi",
+      "testing"
+    ],
+    "project_id": "shared"
+  },
+  {
+    "id": "8dc84938",
+    "path": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+    "title": "Was der Nutzer auf dem Bildschirm zu lesen bekommt und was nur ins Protokoll gehört",
+    "summary": "Der sichtbare Text einer Oberfläche beschreibt ausschließlich die Lage des Nutzers und seine nächste Handlung, niemals den Zustand des Quellcodes — verboten sind darin bekannte Fehler, Verweise auf interne Artefakte, Modell- oder Versionsnamen, Rohfehler und Konfidenzzahlen. Eigene Daten des Nutzers werden ihm dagegen immer vollständig gezeigt, ohne Maskierung; die Regeln selbsterklaerung und maskierter-wert prüft dazu deterministisch die Datei ~/.claude/skills/design-waechter/ui_guard.py, beanstandet am 2026-07-30T13:05:00+0200. Bei Code, der Secrets, Auth, Crypto, Abhängigkeiten (Dependencies), Datenbank (DB), Nutzereingaben (User-Input) oder Fehlerbehandlung berührt, wird der compliance-Agent aufgerufen, und der Katalog selbst wird über bash hub/scripts/bsi_sync.sh beziehungsweise den Befehl /bsi-sync synchronisiert.",
+    "co": "## Keine Entwicklerinformation in der Oberfläche (systemweit)\n\nWas der Nutzer liest, beschreibt **seine Lage und seine nächste Handlung** — niemals den Zustand des Quellcodes.\n\nVerboten sind im sichtbaren Text, in Meldungen, Rückfragen, Platzhaltern und Beschriftungen: bekannte Fehler und Lücken (etwa „bekannte Server-Lücke\", „Workaround\", „vorerst nicht unterstützt\"), Verweise auf interne Artefakte (Berichte, Tickets, ADRs, Dateinamen, Funktionsnamen, Zeilennummern), Modell-, Anbieter- oder Versionsnamen, Rohfehler samt Stapelspuren, sowie Konfidenz- oder Wahrscheinlichkeitszahlen.\n\nFaustregel: **Wenn der Nutzer eine Information nicht in eine Entscheidung übersetzen kann, gehört sie ins Protokoll und nicht auf den Bildschirm.** Statt „Adresse wird gelöscht (bekannte Server-Lücke, siehe Bericht)\" zeigt das Feld schlicht die gespeicherte Adresse, und Ändern sowie Leeren wirken wie bei jedem anderen Feld auch. Ein Erklärsatz ist dann nicht nötig, weil es nichts zu erklären gibt.\n\n**Dem Nutzer werden seine eigenen Daten nicht vorenthalten.** Was er selbst angelegt, eingelesen oder importiert hat — Adressen, E-Mail-Adressen, Kontakte, Stammdaten — wird ihm vollständig gezeigt. Es gibt keine Maskierung, keine Kürzung, kein `***`, und erst recht keinen Erklärtext darüber, warum etwas verborgen bleibt. Maskierung ist ausschließlich dort richtig, wo der **Empfänger ein Dritter** ist (etwa ein Text an ein Sprachmodell, ein Protokoll oder ein Export) — der entscheidende Unterschied ist also der Empfänger, nicht die eingesetzte Technik.\n\nEin Datenschutzreflex gegen den Eigentümer der eigenen Daten ist kein Datenschutz, sondern eine Fehlfunktion, und diese Fehlfunktion bleibt nicht folgenlos: Weil ein Feld nie befüllt werden konnte, entstand ringsum eine Ersatzmechanik („fehlender Schlüssel behält den Wert\", „leeres Feld heißt löschen, vorher fragen\") und dazu der Satz, der sie erklärt. **Findet sich ein solcher Erklärsatz, ist meist nicht der Text die eigentliche Ursache, sondern das Verbergen dahinter.** Diese Prüfung erfolgt deterministisch über die Datei `~/.claude/skills/design-waechter/ui_guard.py`, mit den Regeln `selbsterklaerung` und `maskierter-wert` — beanstandet am 2026-07-30T13:05:00+0200 und seither fest im Wächter samt eigenem Selbsttest verankert.\n\nDas entbindet nicht von Ehrlichkeit: Eine Einschränkung, die den Nutzer tatsächlich trifft, wird benannt — in seiner eigenen Sprache und mit dem Hinweis, was er selbst tun kann. Verschwiegen wird allein die interne Ursache, nicht die Wirkung, die der Nutzer erlebt.\n\n**Auslöser, bei denen der `compliance`-Agent aufgerufen wird** (der zieht sich die Details dann selbst, in eigenem Kontext):\n- Code berührt Secrets, Auth, Crypto, Abhängigkeiten (Dependencies), Datenbank (DB), Nutzereingaben (User-Input) oder Fehlerbehandlung → `compliance` (BSI-Scan mitsamt Guidance).\n- Eine Aufgabe berührt **KI-Trainingsdaten, Datensätze oder Modelltraining** → `compliance` (QUAIDAL-Zweig).\n- In allen anderen Fällen wird nichts geladen. Der Katalog wird nur bei einem tatsächlichen Auslöser abgerufen.\n\nDie Synchronisation beziehungsweise Aktualisierung erfolgt über `bash hub/scripts/bsi_sync.sh` beziehungsweise den Befehl `/bsi-sync`. Beim Sitzungsstart wird gewarnt, wenn der Stand veraltet ist oder ein `review_pending` vorliegt.",
+    "tags": [
+      "methodik",
+      "direktiven",
+      "systemweit",
+      "a11y",
+      "compliance"
+    ],
+    "project_id": "shared"
+  }
+]

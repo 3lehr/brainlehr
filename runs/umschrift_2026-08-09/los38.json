@@ -1,0 +1,92 @@
+[
+  {
+    "id": "b93a9cbf",
+    "path": "/tools/ctoc-tokenzahl-fuer-claude-offline",
+    "title": "ctoc — Tokenzahl fuer Claude offline schaetzen (rund 4 Prozent Abweichung)",
+    "summary": "rohangpta/ctoc schaetzt offline, wieviele Tokens ein Text bei Claude kostet -- rund 4 Prozent Abweichung gegen die offizielle Zaehl-Schnittstelle, gegenueber ueber 20 Prozent bei tiktoken und der Faustregel Bytes-durch-vier. Keine Lizenzangabe, neun Sterne, Vokabular der fremden Schnittstelle abgerungen.\n<anlass>betreiber</anlass>\n<model>claude-opus-5</model>",
+    "co": "Gefunden 2026-08-07T16:40:00+0200 auf Anweisung des Betreibers, nachdem sich zeigte, dass Tokens auf dieser Maschine gar nicht exakt messbar sind (kein Tokenizer installiert, Zaehl-Schnittstelle braucht Zugangsdaten, siehe L-3ccc3a).\n\nDAS VERFAHREN, weil es uebertragbar ist: Der Autor hat die offizielle Zaehl-Schnittstelle etwa 276.000 Mal mit gezielten Texten befragt und aus den Antworten rueckgeschlossen, welche Zeichenfolgen als EIN Token gelten. Ergebnis ist eine Liste von 36.495 Tokens, mit der sich offline nachrechnen laesst (gieriges Laengstes-Treffer-Verfahren ueber einen Praefixbaum). Selbstgenuegsames C++17-Programm ohne Abhaengigkeiten, etwa 1 Million Tokens je Sekunde.\n\n  ctoc                    ~4 Prozent Abweichung\n  tiktoken (OpenAI, MIT)  ueber 20 Prozent Unterschaetzung\n  Bytes durch vier        ueber 20 Prozent Unterschaetzung\n\nDREI GRUENDE GEGEN DEN DAUERHAFTEN EINBAU, alle drei am 2026-08-07 benannt:\n1. Keine Lizenzangabe im Verzeichnis. Bei Programmcode schwerer wiegend als bei Daten.\n2. Neun Sterne -- praktisch von niemandem ausser dem Autor nachgerechnet.\n3. Die Vokabelliste wurde einer fremden Schnittstelle abgerungen; ob das deren\n   Nutzungsbedingungen entspricht, ist offen.\nFremden ungepruefen Programmcode auszufuehren bleibt dem Betreiber vorbehalten, auch\nbei einmaligem Einsatz -- er hat den Einsatz freigegeben, das Bauen macht er selbst.\n\nDER BESSERE WEG FUER DIE FRAGE, DIE WIR TATSAECHLICH HABEN: Wer wissen will, was ein\nBestandteil des Prompts KOSTET (etwa der Abruf-Hook), braucht keinen Tokenizer. Das\nSitzungsprotokoll unter ~/.claude/projects/<projekt>/<sitzung>.jsonl enthaelt die\ntatsaechlich abgerechneten input_tokens je Anfrage. Eine Reihe Prompts einmal mit und\neinmal ohne den fraglichen Bestandteil laufen lassen und vergleichen -- das ist keine\nSchaetzung, sondern der abgerechnete Betrag. Ein Tokenizer wird erst noetig, wenn ein\nEINZELNER Satz bewertet werden soll, bevor er existiert.\n\nWARNUNG zur Eichung aus demselben Protokoll: output_tokens taugt NICHT, um ein\nVerhaeltnis Zeichen-zu-Token zu eichen -- es zaehlt verdeckte Denk-Tokens mit, die im\nsichtbaren Text nicht vorkommen. Siehe L-3ccc3a.",
+    "tags": "[\"tokens\", \"messwerkzeug\", \"fremdquelle\", \"offen\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "b78326a8",
+    "path": "/tools/knowledge-mcp",
+    "title": "Knowledge MCP",
+    "summary": "Shared Knowledge MCP Server (browse/read/search/lesson).",
+    "co": "",
+    "tags": "[\"mcp\", \"knowledge\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "2eca2068",
+    "path": "/tools/lesson-recorder",
+    "title": "Lesson Recorder",
+    "summary": "CLI + MCP Tool für automatisches Fehler-Lernen.",
+    "co": "",
+    "tags": "[\"lessons\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "213ea0c9",
+    "path": "/tools/metroviz-umbau:-code-fluss-analysetool-(",
+    "title": "Metroviz-Umbau: Code-Fluss-Analysetool (Konsil-Entscheide)",
+    "summary": "Phase 1+2 umgesetzt (2026-07-24): CDN 9→4, Stale-Check-Hook, --flow-skeleton (≤8 Linien, deterministisch), Writer-Extraktion + Kollisions-Lint (find_writers/collision_candidates, Label strikt collision-candidate; fahrtenbuch: 38 Kandidaten inkl. trips/_db/Provider-Schreiber), vscode://-Links (sanitizeHtml-Config + linkifyCodePaths, nur Tooltip-Pfad), Filter/Suche im Renderer. Patch final 1613 Zeilen — Fork-Neubewertung beim User offen (Empfehlung Orchestrator: Klon versionieren). Plan: hub/docs/PROMPT_METROVIZ_UMBAU.md, Commits f9a68be71/79a46d235/ff10b7a26 + Phase 1.",
+    "co": "Plan: hub/docs/PROMPT_METROVIZ_UMBAU.md · Konsil: begod/knowledge/konsil/konsil-metroviz-codeflow-2026-07-23.json. Phasen: 1=Entschlacken+Stale-Check+Skeleton+Determinismus(codemap-Depth bei Zyklen)+git apply --check+Karten-Typ-Doku; 2=Writer-Extraktion+Lint+vscode-Links+Filter/Suche; 3=bewusst nie (Diff-Ansicht, Trace-Overlay, Auto-Build-Hook, Release-Pipeline-Karte). Modul- vs Journey-Ebene strikt trennen (36 auto-Linien OK, flows.json ≤8 kuratiert). Karten-Typen (2026-07-23 beschlossen, Schema unverändert, Dateinamen <app>_<typ>.json): _flows (Datenfluss), _screens (Klickpfade, Quelle /ux-walkthrough, Zyklen als relations), _dsgvo (PII-Fluss, compliance-Agent), _migrations (Drift-Schema), _orchestrierung (hub Hooks/Agenten, knowledge.db als Umsteigebahnhof), _coverage (walkthrough-xfail), Verfahrensabläufe mit Kalenderachse (Buckeberg WEG-Wechsel = Originalzweck). _screens hat Priorität; keine Karten auf Vorrat.",
+    "tags": "[\"metroviz\", \"flowmap\", \"codemap\", \"visualisierung\", \"kollision\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "da662b05",
+    "path": "/tools/repos-ausserhalb-begod2026-sind-fuer-die",
+    "title": "Repos ausserhalb Begod2026 sind fuer die gesamte Hook-Infrastruktur unsichtbar",
+    "summary": "codemap_active.py, flowmap_stale_check.py und der Knowledge-Recall arbeiten gegen $PWD bzw. den Monorepo-Baum. Ein App-Repo ausserhalb von /Volumes/daten/Begod2026 bekommt daher nie CODEMAP, Flowmap, Papernetz oder Recall-Treffer — ohne dass irgendwo ein Fehler auftaucht. Nachgewiesen an WohlAir (schimmel_guard_app unter /Volumes/daten/be_old/).",
+    "co": "Befund 2026-07-28T00:25:00+0200 an WohlAir/schimmel_guard_app (214 Dart-Files, liegt unter \"/Volumes/daten/be_old/schwarze Poren/\").\n\nWas still ausfaellt:\n- CODEMAP: `codemap_active.py` laeuft als SessionStart- und PostEdit-Hook gegen `$PWD`. Repo nie gesehen → `ls CODEMAP*` leer.\n- Flowmap: `hub/tools/flowmaps/` enthaelt nur fahrtenbuch_* und openhood_*. `flowmap_stale_check.py` prueft entsprechend nichts und meldet auch nichts.\n- Papernetz: `citation-network.json` existiert nur fuer afrika-desktop-protokoll und openhood.\n- Knowledge-Recall: Volltextsuche \"schimmel OR wohlair OR luftreiniger OR entfeuchter OR raumluft\" → 2 Treffer, beide rein organisatorisch (Code-Ort, Play-Console). Null Fachwissen zur Domaene.\n\nDer Ausfall ist LAUTLOS. Kein Hook meldet \"diese App kenne ich nicht\". Symptom bemerkt man erst daran, dass jeder Agent die Struktur neu ergreppen muss und Plaene auf Stichproben statt auf einer Gesamtkarte beruhen.\n\nKonsequenz fuer Ablage-Entscheidungen: ADR-021 will das Papernetz unter `<app>/docs/papers/citation-network.json` — im App-Repo, an genau EINER Stelle (die ADR warnt vor Merge-Konflikten). Liegt das App-Repo ausserhalb des Monorepos, ist die ADR-konforme Ablage zugleich die unsichtbare. Aufloesung: Repo umziehen (Wurzelbehandlung), nicht zweite Kopie anlegen. Uebergangsweise ein Zeiger-Node in der Knowledge-DB, der nur den Pfad nennt — ein Zeiger dupliziert nichts und rottet nicht.\n\nPruefroutine vor Arbeit an einer App: liegt das Repo unter /Volumes/daten/Begod2026? Wenn nein, mit fehlenden Karten rechnen und das im Plan als Einschraenkung benennen statt Vollstaendigkeit zu behaupten.",
+    "tags": "[\"hooks\", \"codemap\", \"flowmap\", \"papernetz\", \"monorepo\", \"adr-021\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "505d5cdc",
+    "path": "/tools/stiftshütte-(begodapp-desktop):-audit-20",
+    "title": "Stiftshütte (BegodApp Desktop): Audit 2026-07-23 + Reaktivierungslage",
+    "summary": "Reaktiviert 2026-07-23: LaunchAgent de.begod.stiftshuette (RunAtLoad, Restart nur bei Crash), Release-Build aktuell, MCP-Binary neu (14 Tools), Desktop-API 7788 live mit desktop_bound=true, fahrtenbuch im Portfolio. WICHTIG: hub/begod und phoenix/begod sind HARTVERLINKT (gleiche Inodes — Edits wirken in beiden), apps/ und docs/ sind getrennt; die App löst Root auf phoenix auf (unkommittete _knownRoots-Reihenfolge). fahrtenbuch-Symlink daher in BEIDEN apps/-Verzeichnissen (hub + phoenix) → ../../fahrtenbuch/apps/fahrtenbuch_legacy.",
+    "co": "Reaktivierung 2026-07-23 abgeschlossen: (1) 4 Tabs wieder verdrahtet (Papers/ImageForge/Homepage/E-Mail, Shell-Modi 19-22) — waren beim Juni-Port verloren gegangen. (2) Juni-Port hatte auch ApiServer-Autostart + DesktopAutomationController.bind() aus main.dart verloren (Fund des Testfix-Agenten) — aus HEAD 9b62cd361 restauriert, inkl. _desktopStateSnapshot/_desktopActionTargets/_performDesktopAction/_setActiveApp. (3) Tests: 132/132 grün, 0 skipped (4 Struktur-Tests auf _AppToggleBar-UI umgeschrieben, Test-Keys app-toggle-bar/app-toggle-chip-*). (4) MCP-Binary neu kompiliert (dart compile exe, 14 Tools ohne begod_desktop_* — Löschung vom User als 'wahrscheinlich unnötig' belassen, via git restore rückholbar). (5) LaunchAgent ~/Library/LaunchAgents/de.begod.stiftshuette.plist, Logs hub/begod/local/logs/. (6) PersonaBridge 8787 nur im Debug-Run. Offene Altlasten: unkommittete Änderungen in hub (project_paths phoenix-first + Hardcode-Env, architecture/homepage-Tab-Diffs) — bewusst nicht angerührt. Platzhalter-Docs nach begod/knowledge/apps/fahrtenbuch/ verschoben (hub git mv, phoenix git rm da identische Kopie in knowledge). Nichts committet.",
+    "tags": "[\"stiftshuette\", \"begod-desktop\", \"mcp\", \"audit\", \"reaktivierung\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "297260d3",
+    "path": "/tools/wiring-check-py-erreichbarkeitspruefung",
+    "title": "wiring_check.py — Erreichbarkeitspruefung fuer deklarierten, nie erreichten Code",
+    "summary": "hub/scripts/wiring_check.py findet Code, der existiert, aber nie erreicht wird — Typen ohne Konstruktoraufruf, Methoden ohne Aufrufer, Provider ohne Konsumenten, Enum-Werte und l10n-Schluessel ohne Verwendung, Felder die gelesen aber nie geschrieben werden. Reines stdlib-Python, Baseline je App, Exit-Code 1 nur bei NEUEN Funden. Entscheidender Beleg: `flutter analyze` meldet \"No issues found!\", waehrend das Skript im selben Repo 88 reale Luecken findet.",
+    "co": "Entstanden 2026-07-28, nachdem in wohlair nach stundenlanger Arbeit zufaellig auffiel, dass das vollstaendig gebaute Modell MeasurePoint (Hive-Adapter, Repository, Provider, uebersetzte Labels in zwei Sprachen) in lib/features/ nie konstruiert wurde. Am selben Tag zwei weitere Faelle derselben Klasse im selben Repo. Die Erkenntnis: Das ist eine Grep-Frage, keine Verstaendnisfrage — ein Skript findet es in Sekunden, wiederholbar, und bleibt wahr, weil es neu ausgefuehrt statt erinnert wird.\n\nAUFRUF: python3 /Volumes/daten/Begod2026/hub/scripts/wiring_check.py <app-root> [--baseline <datei>] [--update-baseline] [--selftest]\n\nWARUM ES NOETIG IST, obwohl es Linter gibt: `dart analyze` meldet ungenutzte PRIVATE Elemente, aber keine unerreichbare oeffentliche API. Genau dort sitzt diese Fehlerklasse. Belegt an fahrtenbuch_legacy: analyze sagt \"No issues found!\", das Skript findet 88 reale Luecken.\n\nVERIFIZIERTE BLINDFLECKEN — beim Einsatz mitdenken, nicht Vollstaendigkeit annehmen:\n1. NATIVER CODE. Scannt nur *.dart. Der fahrtenbuch-Fund \"automatische Fahrterkennung seit Tag 1 funktionsunfaehig\" lag in Kotlin und Swift (fehlendes startUpdatingLocation, GPS-Tracking nur als Kommentar-Stub) und ist strukturell unsichtbar.\n2. DATENFLUSS. Findet fehlende AUFRUFE, keine toten ZWEIGE. Beispiel trustHardwareFilter/applyUdsProbeFilter: Die Methode hat vier echte Aufrufer, aber kein Aufrufer uebergibt je `true` — erreichbar und trotzdem tot. Braeuchte Dataflow-Analyse.\n3. Kein AST-Parser, zeilenbasierte Regex. Bekannte Falsch-Positive: enhanced enums mit Konstruktor-Argumenten (Argumente werden als Enum-Werte gelesen), Callback-Typ-Parameter in Konstruktoren (`bool Function()? x` wird als Methode gelesen).\n\nWICHTIGE KALIBRIERUNG (2026-07-28, nach Fehlschlag): Der urspruengliche Suchbereich fuer Check 2 war auf lib/core/repositories/ und lib/core/services/ beschraenkt und verfehlte dadurch zwei bekannte echte Funde — ein Festschreibungs-Service unter lib/core/gobd/ und verifyAuditChain unter lib/features/settings/data/. Bestandscode benennt Services nach FACHLICHKEIT statt nach Schicht, und lib/features/*/data/ ist das idiomatische Feature-first-Muster. Jetzt Substring-Erkennung auf (service|repositor|repo|data) im Pfad. Trefferzahl stieg dadurch von 27 auf 277 — beide bekannten Faelle werden gefunden.\n\nDer l10n-Check war anfangs fast reines Rauschen (443 von ~470 Schluesseln), weil das App-Idiom `AppLocalizations.of(context).<key>` lautet und nicht `l10n.<key>`. Nach Verallgemeinerung auf beliebigen Member-Zugriff und Beruecksichtigung von String-Interpolation (`'${l10n.key}'` wurde vom Kommentar-Stripping mitgeloescht) auf 236 gesunken.\n\nEINSATZ: Vor-Commit-Pruefung mit Baseline je App ist die empfohlene Verdrahtung — Altlasten duerfen nicht bei jedem Lauf melden, Alarm nur bei NEUEN Funden. Laufzeit rund 10 s bei 500 Dart-Dateien, also kein Sitzungsstart-Kandidat. Stand 2026-07-28 ist das Skript NICHT verdrahtet und liegt im Hub untracked.\n\nBEWERTUNGSSTUFE NICHT UEBERSPRINGEN: Nicht jeder Fund ist ein Fehler — bewusst vorgehaltene API, Testhilfen, Plattform-Sonderfaelle. Im fahrtenbuch-Einsatz war bei zwei Dateien die Loeschempfehlung falsch, sie wurden bewusst behalten. Die entscheidende Frage lautet: Wird hier ein Feature beworben oder erwartet, das nicht existiert? Das trennt toten Code von einem stillen Produktfehler. Beleg fuer den Wert der Uebung: Beim Aufraeumen fiel multiScalingSearch, dessen Datumsfilter 12,1 Prozent echter Kilometerstaende verworfen haette — kein toter Code, sondern ein wartender Datenverlust (siehe Lehre L-be2267).",
+    "tags": "[\"tooling\", \"code-health\", \"erreichbarkeit\", \"toter-code\", \"flottenweit\", \"wiring\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "4a0e3624",
+    "path": "/werkzeuge",
+    "title": "Werkzeuge",
+    "summary": "Astknoten fuer Bestandsaufnahmen fremder und eigener Werkzeuge — was es gibt, wo es liegt, was es tut.",
+    "co": "",
+    "tags": "[]",
+    "project_id": "shared"
+  },
+  {
+    "id": "3c968bff",
+    "path": "/werkzeuge/stiftshuette-werkzeugbestand-stand-2026",
+    "title": "Stiftshuette — Werkzeugbestand, Stand 2026-08-08",
+    "summary": "Vollstaendige Bestandsaufnahme der Stiftshuette (hub/begod/desktop, hub/begod/mcp) am 2026-08-08. Anwendung laeuft nicht (LaunchAgent Code 78, nicht gebaut, letzter Commit cd1ac5fde vom 2026-07-25) — alle Aussagen aus dem Quelltext gelesen, nichts im Betrieb beobachtet. Die Sortierung (uebernehmen/spaeter/Aufsatz) steht getrennt im Uebernahmeplan.",
+    "co": "Anlass: Weisung des Betreibers, \"zumindest sollten wir diese alle einmal in brainlehr dokumentieren! nicht dass es wieder vergessen wird wie unsere Physik- und Chemie-Metaphern\".\n\nZweck: nicht sortieren, nicht bewerten — festhalten, damit es auffindbar bleibt.\n\nKinder dieses Knotens tragen die sieben Abschnitte der Aufnahme. Quelle: hub/docs/WERKZEUGBESTAND_STIFTSHUETTE_2026-08-08.md. Bewertung und Reihenfolge: hub/docs/PLAN_STIFTSHUETTE_UEBERNAHME_2026-08-08.md.\n\nWarum die Aufnahme zuerst als Datei entstand: beim Anlegen liessen sich keine Wissensknoten schreiben, MCP-Prozesse liefen mit Code von vor der Schemaaenderung.",
+    "tags": "[\"stiftshuette\", \"bestandsaufnahme\", \"werkzeuge\"]",
+    "project_id": "begod"
+  },
+  {
+    "id": "15eb8d32",
+    "path": "/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten",
+    "title": "Stiftshuette: Ansichten und Baukaesten",
+    "summary": "Neun Ansichten. Bemerkenswert: der Staatsgruendungs-Assistent erzeugt Worktree, Verfassung, Handoff-Geruest, code-dna.json, context.json, Roadmap-Saat und Domaenen-Agent vollstaendig ohne Modellaufruf; die HTTP-Schnittstelle auf Port 7788 laesst jede Antwort durch PiiScannerService.sanitize laufen.",
+    "co": "| Werkzeug | Fundstelle | Was es tut |\n|---|---|---|\n| Konsil-Baukasten | desktop/lib/features/konsile/konsil_builder_view.dart | Rollen und Joker per Ziehen auf einen Tisch, erzeugt Prompt-Text, Ein-Klick in die Zwischenablage. Das Konsil laeuft ausserhalb |\n| Zitationsgraph | desktop/lib/features/papers/papers_tab.dart | Kraftgesteuerter Graph ueber alle Domaenen, Fruchterman-Reingold selbst gerechnet, Statistik, Hub-Erkennung |\n| Code-Karte | desktop/lib/features/architecture/code_map_tab.dart | Anzeige des von scan_codebase.py erzeugten Import-Graphen |\n| Code-Gesundheit | desktop/lib/features/architecture/code_health_tab.dart | Dateien, Zeilen, Kommentarquote, God-Files — live gezaehlt, nichts gespeichert |\n| Wiki | desktop/lib/features/wiki/wiki_tab.dart | Markdown mit Frontmatter, Volltextsuche, Schlagwortfilter, Editor. Einzige Stelle mit freiem Redigieren |\n| Worktree-Uebersicht | desktop/lib/features/worktrees/worktrees_tab.dart | git worktree list mit Kontinent-Metapher, Zuordnung fest im Code |\n| Staatsgruendungs-Assistent | desktop/lib/features/worktrees/staatsgruendung_wizard.dart | Legt Worktree an, erzeugt Verfassung, Handoff-Geruest, code-dna.json, context.json, Roadmap-Saat, Domaenen-Agent, Anweisungsdatei — alles ohne Modellaufruf, reines Textzusammensetzen |\n| Dashboard | desktop/lib/features/dashboard/dashboard_tab.dart | Zaehlt offene Fragen, Aufgaben, Konsile, Fehler; springt in die Fachreiter |\n| HTTP-Schnittstelle | desktop/lib/server/api_server.dart, ApiServer | Port 7788. Endpunkte fuer Status, Konsile, Sprint-Menue, Kontext-Schnappschuss, offene Fragen, Beta-Tests, Agenten. Jede Antwort laeuft durch PiiScannerService.sanitize — samt eingebettetem Browser-Dashboard ohne Flutter |",
+    "tags": "[\"stiftshuette\", \"oberflaeche\", \"pii\"]",
+    "project_id": "begod"
+  }
+]

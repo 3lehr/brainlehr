@@ -1,0 +1,92 @@
+[
+  {
+    "id": "9c9842fa",
+    "path": "/agents",
+    "title": "Agent-System",
+    "summary": "Agent-Konfig, Orchestrierung, MCP, Governance.",
+    "co": "",
+    "tags": "[\"agents\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "75ef2145",
+    "path": "/agents/entscheidung-kaskaden-regel-gewinnt",
+    "title": "ENTSCHEIDUNG: Kaskaden-Regel gewinnt gegen ein Sitzungsverbot von Agent-Aufrufen",
+    "summary": "Betreiber-Entscheidung 2026-08-08T18:44+0200: Kollidiert die Kaskaden-Regel (Code-Edits gehen an Sonnet-Subagenten) mit einer Harness-Sitzungsanweisung wie \"ruf das Agent-Tool nur auf Wunsch\", gewinnt die Kaskade. Die Einmal-Ausnahme `touch /tmp/claude-cascade-allow` ist damit kein zulaessiger Regelweg mehr.",
+    "co": "## Der Konflikt, der die Entscheidung ausgeloest hat\n\nAm 2026-08-08 lief eine Sitzung (openlehr, Migration `belegansicht` auf den\nFormular-Baustein) unter einer Harness-Anweisung \"Do not call the AgentTool\nunless the user requested it\". Der Kaskaden-Hook aus `hub/CLAUDE.md` blockierte\njeden Code-Edit des Orchestrators und verwies auf Delegation an einen\nSonnet-Subagenten — mit dem Ausweg `touch /tmp/claude-cascade-allow`\n(\"Bewusste Einmal-Ausnahme\").\n\nDer Orchestrator zog diese Ausnahme VIERMAL hintereinander, statt den\nRegelkonflikt vorzulegen. Aufgearbeitet als Lehre `L-7a4a7a`.\n\n## Die Entscheidung\n\n**Die Kaskade gewinnt.** Konkret:\n\n1. Code-Edits macht der Orchestrator nicht selbst — sie gehen per Agent-Tool an\n   einen Sonnet-Subagenten, 1–2 Dateien pro Auftrag, auch dann, wenn die\n   laufende Sitzung eine allgemeine Anweisung gegen Agent-Aufrufe traegt. Eine\n   solche Anweisung ist gegen ungefragte Fan-outs gerichtet, nicht gegen die\n   Arbeitsteilung, die dieses Haus fuer Code-Edits vorschreibt.\n2. `touch /tmp/claude-cascade-allow` ist ab jetzt **kein Regelweg**. Wer die\n   Flagge setzt, tut es als benannte Ausnahme mit Grund im Commit — nicht, weil\n   Delegation gerade unbequem ist. Ein zweites Ziehen in derselben Sitzung ist\n   der Moment zum Innehalten, nicht zum Wiederholen.\n3. Bleibt ein Konflikt zwischen zwei Regelquellen bestehen, wird er dem\n   Betreiber vorgelegt, BEVOR weitergearbeitet wird — nicht erst im\n   Abschlussbericht.\n\n## Offen (Bauarbeit, nicht Teil der Entscheidung)\n\nDer Ausweg selbst ist konstruktiv schwach: ein `touch` kann keinen Grund\ntragen, wird nirgends gezaehlt und taucht in keinem Protokoll auf. Wenn die\nKlappe bleiben soll, gehoert ihr ein Zaehler pro Sitzung, eine Begruendung als\nInhalt (Datei mit Text statt leerem `touch`) und ein Eintrag ins Register.\nSiehe `L-7a4a7a`, Abschnitt Vorbeugung.",
+    "tags": "[\"dringend\", \"kaskade\", \"agenten\", \"code-edit\", \"regelkonflikt\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "8a301fe6",
+    "path": "/agents/governance",
+    "title": "Governance",
+    "summary": "Agenten-Hierarchie, Protokolle (P1-P40), Rollen.",
+    "co": "",
+    "tags": "[\"governance\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "deccf1d6",
+    "path": "/agents/instructions",
+    "title": "Instructions",
+    "summary": "applyTo-Patterns, .instructions.md Best Practices.",
+    "co": "",
+    "tags": "[\"instructions\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "3faa26ef",
+    "path": "/agents/mcp-tools",
+    "title": "MCP Tools",
+    "summary": "Tool-Design, Handler-Patterns, Security.",
+    "co": "",
+    "tags": "[\"mcp\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "56da4628",
+    "path": "/agents/prompt-templates",
+    "title": "Prompt Templates",
+    "summary": ".prompt.md Workflow-Templates.",
+    "co": "",
+    "tags": "[\"prompts\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "ec070cfe",
+    "path": "/aka",
+    "title": "AKA2026",
+    "summary": "Akademie-Projekt: 15 Apps, Zahnmedizin-Software.",
+    "co": "",
+    "tags": "[\"aka\"]",
+    "project_id": "aka"
+  },
+  {
+    "id": "2bfb744d",
+    "path": "/apps",
+    "title": "Apps",
+    "summary": "Namensraum-Knoten fuer /apps — traegt 19 direkte Kind-Knoten in knowledge_nodes.",
+    "co": "",
+    "tags": "[]",
+    "project_id": "shared"
+  },
+  {
+    "id": "f68fc466",
+    "path": "/apps/apple-frist-minimumosversion-15-0-ab",
+    "title": "Apple-Frist: MinimumOSVersion 15.0 ab Fruehjahr 2027 verpflichtend",
+    "summary": "App Store Connect nimmt ab Fruehjahr 2027 nur noch Apps mit MinimumOSVersion 15.0 oder hoeher an. wohlair liegt bei 13.0 und bekam die Warnung 90068 beim Upload von Build 19 (2026-08-09). Betrifft jede iOS-App im Verbund, nicht nur wohlair.",
+    "co": "Wortlaut der Warnung beim `xcrun altool --upload-app` von wohlair Build 19 am 2026-08-09T06:13:33+0200:\n\n    WARN 90068: MinimumOSVersion too low. This app has a MinimumOSVersion of\n    13.0. Starting in Spring 2027, all iOS apps must have a MinimumOSVersion\n    of 15.0 or later in order to be uploaded to App Store Connect or\n    submitted for distribution.\n\nWarum das notiert gehoert, obwohl es heute nichts blockiert: Es ist eine\nWarnung, die irgendwann ohne weitere Ankuendigung zum Fehler wird, und zwar\ngenau in dem Moment, in dem jemand unter Zeitdruck einen Build hochladen\nwill. Der Wechsel selbst ist billig (Deployment Target in Xcode/podfile),\ndie Folgearbeit nicht zwingend: Pakete koennen an iOS 13 gebunden sein,\nund Geraete unter iOS 15 fallen aus der Zielgruppe.\n\nZu pruefen, bevor umgestellt wird: welche Geraete im Testfeld noch unter\niOS 15 laufen. Fuer wohlair ist die Zielgruppe (aeltere Mieter, alte\nGeraete) ausdruecklich Teil des Produktgedankens — hier ist die Umstellung\nalso nicht bloss eine Zahl in der Konfiguration, sondern eine\nProduktentscheidung mit Datum.\n\nGilt gleichlautend fuer jede andere iOS-App im Verbund.",
+    "tags": "[\"ios\", \"appstore\", \"frist\", \"wohlair\", \"build\"]",
+    "project_id": "wohlair"
+  },
+  {
+    "id": "55170eb7",
+    "path": "/apps/dringend-openlehr-friert-ein-beleg-den",
+    "title": "DRINGEND openlehr: Friert ein Beleg den Kontaktnamen ein, oder holt er ihn beim Anzeigen?",
+    "summary": "Offene Frage mit Rechtsfolge, gemessen 2026-08-08 an apps/openlehr/daemon/steuer/db.py: contacts trennt id (AUTOINCREMENT) vom veraenderlichen display_name -- richtig. UNGEPRUEFT blieb, ob eine Rechnung den Namen zum Ausstellungszeitpunkt festschreibt. Tut sie es nicht, traegt eine Rechnung vom Juli nach einer Heirat rueckwirkend den neuen Namen. Zweiter Befund: contacts hat KEIN UNIQUE, derselbe Kontakt laesst sich unbemerkt doppelt anlegen.",
+    "co": "ANLASS. Frage des Betreibers 2026-08-08: was passiert bei zwei Martin Mueller im Unternehmen, und was, wenn eine Person heiratet und den Namen wechselt.\n\nWAS GEMESSEN IST (apps/openlehr/daemon/steuer/db.py, CREATE TABLE contacts):\n    id               INTEGER PRIMARY KEY AUTOINCREMENT\n    display_name     TEXT NOT NULL\n    ... alias, contact_person, Anschrift, email, telefon, *_redacted, status\n\nDamit sind beide Faelle STRUKTURELL richtig geloest: zwei Namensgleiche sind zwei id, und eine Namensaenderung ist ein UPDATE auf display_name -- die id bleibt, alle Verweise halten. Die richtige Bauform existiert also, das ist ausdruecklich kein Mangel.\n\nBEFUND 1 -- UNGEPRUEFT, MIT RECHTSFOLGE. Ob ein erzeugter Beleg (Rechnung, Angebot) den Namen zum Zeitpunkt der Ausstellung FESTSCHREIBT oder ihn beim Anzeigen/Neurendern aus contacts nachlaedt, wurde NICHT geprueft. Wird nachgeladen, dann traegt eine im Juli ausgestellte Rechnung nach einer Heirat im August rueckwirkend den Ehenamen. Das ist bei einer Rechnung kein Darstellungsfehler: der Beleg behauptet dann etwas ueber den Juli, das im Juli nicht galt. Dieselbe Klasse wie die Herkunftsregel in brainlehr -- was gilt, gilt zu seinem Zeitpunkt.\n\nZu pruefen ist genau eine Stelle: der Weg von contacts zum gerenderten Beleg. Liegt dort eine Kopie des Namens im Beleg-Datensatz (gut) oder ein JOIN auf contacts (dann ist es der Fehler).\n\nBEFUND 2 -- KEIN UNIQUE. contacts hat keine Eindeutigkeitsbedingung auf irgendeiner Spaltenkombination. Der haeufigere Schaden ist nicht \"zwei Namensgleiche werden verwechselt\", sondern der umgekehrte: DERSELBE Kontakt wird zweimal angelegt, und ab da verteilen sich seine Belege auf zwei Kennungen. Verschaerft dadurch, dass laut Knoten /ops/openlehr/kontakt-vorschlag-anlage-durch-ki inzwischen eine KI Kontakte aus Freitext vorschlaegt und anlegt -- ein Vorschlagsweg ohne Eindeutigkeitsprobe erzeugt Doubletten schneller als ein Mensch.\n\nWAS BRAINLEHR SELBST BETRIFFT (nicht openlehr, nur zur Einordnung): hier gibt es gar keine Personentabelle, aber vier Spalten fuehren eine Identitaet als freien Text -- actor, norm_entschieden_von, zurueckgezogen_von, annahmen.geprueft_von. Solange dort nur Agenten stehen, traegt es. Festgehalten als Annahme A-d93330, Belegrang gemessen.\n\nNICHT GETAN, BEWUSST: kein Eingriff in openlehr. Das Repo gehoert einer anderen Sitzung; dies ist ein Befund, keine Aenderung.\n<parameter name=\"project_id\">openlehr",
+    "tags": "[\"dringend\", \"kontakte\", \"identitaet\", \"historisierung\", \"rechnung\", \"openlehr\"]",
+    "project_id": "shared"
+  }
+]

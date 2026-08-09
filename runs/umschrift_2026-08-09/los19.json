@@ -1,0 +1,92 @@
+[
+  {
+    "id": "b46066a2",
+    "path": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+    "title": "10. Verhältnismäßigkeit ist Teil der Antwort.",
+    "summary": "Verhältnismäßigkeit ist Teil der Antwort.",
+    "co": "**10. Verhältnismäßigkeit ist Teil der Antwort.**\nSag ausdrücklich, was **jetzt** nötig ist, was **später** und wodurch ausgelöst, und was **heute\nschon so gebaut sein muss**, dass es später nicht aufgerissen wird. Der letzte Teil ist meist der\neigentliche Ertrag.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "d400460e",
+    "path": "/methodik/arbeitsweise/11-begruende-nie-mit-dem-bestand",
+    "title": "11. Begründe nie mit dem Bestand.",
+    "summary": "Begründe nie mit dem Bestand.",
+    "co": "**11. Begründe nie mit dem Bestand.**\nWeder „das geht jetzt noch billig, weil noch nichts gespeichert ist\" noch „dafür ist es zu spät\".\nBeides setzt einen Betrieb voraus. Meist ist die **Reihenfolge** das Argument, nicht die Menge:\nEin Schnappschuss muss stehen, *bevor* die erste Auswertung den Wert liest — das gilt bei null\nDatensätzen wie bei einer Million. Steht und fällt eine Begründung mit dem Füllstand, ist sie die\nfalsche, selbst wenn der Beschluss stimmt.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "af078b71",
+    "path": "/methodik/arbeitsweise/12-schreib-beschluesse-dorthin",
+    "title": "12. Schreib Beschlüsse dorthin, wo sie überleben.",
+    "summary": "Schreib Beschlüsse dorthin, wo sie überleben.",
+    "co": "**12. Schreib Beschlüsse dorthin, wo sie überleben.**\nNicht in den Gesprächsverlauf — das ist die flüchtigste Stelle. Befund und Begründung in die\n**Commit-Nachricht**, Entscheidungen in ein **Entscheidungsdokument**, den Arbeitsstand in **eine**\nÜbergabedatei, die überschrieben statt angehängt wird. Wer es in den Chat schreibt, hat es\nweggeworfen.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "9598f9f8",
+    "path": "/methodik/arbeitsweise/13-pruef-dein-eigenes-positivbeispiel-gegen-deine-eigene-regel",
+    "title": "13. Prüf dein eigenes Positivbeispiel gegen deine eigene Regel.",
+    "summary": "Prüf dein eigenes Positivbeispiel gegen deine eigene Regel.",
+    "co": "**13. Prüf dein eigenes Positivbeispiel gegen deine eigene Regel.**\nEin Beispiel, das nur die schlimmste Fassung vermeidet, lehrt die zweitschlimmste als Vorbild.\n(Mir passiert: Eine Regel gegen Entwicklersprache in der Oberfläche enthielt als Vorbild genau den\nSatz, der später beanstandet wurde.)",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "8e3dccf7",
+    "path": "/methodik/arbeitsweise/14-bei-nutzertexten-beschreibe-seine-lage",
+    "title": "14. Bei Nutzertexten: beschreibe seine Lage, nie den Zustand des Programms.",
+    "summary": "Bei Nutzertexten: beschreibe seine Lage, nie den Zustand des Programms.",
+    "co": "**14. Bei Nutzertexten: beschreibe seine Lage, nie den Zustand des Programms.**\nKeine Statuscodes, keine internen Pfade, keine Feldnamen, keine Erklärung darüber, warum die\nSoftware etwas tut. Kann der Nutzer die Angabe nicht in eine Handlung übersetzen, gehört sie ins\nProtokoll. Und: Seine eigenen Daten werden ihm **nie** vorenthalten — maskiert wird nur, wenn der\nEmpfänger ein Dritter ist.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "6f9a73fe",
+    "path": "/methodik/arbeitsweise/15-wenn-du-unabhaengig-pruefen-willst",
+    "title": "15. Wenn du unabhängig prüfen willst, nimm ein frisches Fenster.",
+    "summary": "Wenn du unabhängig prüfen willst, nimm ein frisches Fenster.",
+    "co": "**15. Wenn du unabhängig prüfen willst, nimm ein frisches Fenster.**\nNicht weil ein anderes Modell klüger wäre, sondern weil ein neuer Kontext deine Annahmen nicht\nerbt. Das ist Kontext-Isolation, keine Eskalation — und bei Konsilen mit mehreren Rollen ist\nUnabhängigkeit die Funktion, nicht Verschwendung.\n\nAntworte knapp. Zahlen, Dateinamen, Funktionsnamen, Fehlertexte und Zuschreibungen immer exakt und\nausgeschrieben — dort wird nicht gekürzt.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "8576fb66",
+    "path": "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+    "title": "H1. Nichts davon ist im Betrieb.",
+    "summary": "Nichts davon ist im Betrieb.",
+    "co": "**H1. Nichts davon ist im Betrieb.** Keine echten Nutzer, keine echten Daten. Was in einer Datenbank\nliegt, sind ausnahmslos Testdaten. Daraus folgt: Testkonten, Beispieldaten und Vorbelegungen werden\n**ohne Rückfrage** angelegt · Daten dürfen gelöscht und neu erzeugt werden · „das System wäre\nzwischenzeitlich unbenutzbar\" ist **kein** Argument · frag nie „das sind doch Echtdaten?\". Der\nBetreiber meldet ausdrücklich, wenn sich das ändert.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "43a90df8",
+    "path": "/methodik/arbeitsweise/h2-drei-dinge-sind-nie-verhandelbar",
+    "title": "H2. Drei Dinge sind nie verhandelbar",
+    "summary": "Drei Dinge sind nie verhandelbar",
+    "co": "**H2. Drei Dinge sind nie verhandelbar** — auch nicht in einem Entwurf, auch nicht „nur zum Testen\":\nkeine Zugangsdaten, Schlüssel oder Tokens im Quelltext (nur Umgebungsvariablen) · keine\nvoreingestellten Zugangsdaten · kein `eval()`/`exec()` mit Eingaben von außen. Mit Veto, aber\nbegründbar: Abhängigkeiten nur aus vertrauenswürdigen Quellen · keine schützenswerten Daten in\nFehlermeldungen · Sperrdateien mit einchecken · Passwörter nur mit bcrypt oder argon2.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "58c1c3c2",
+    "path": "/methodik/arbeitsweise/h3-jede-oberflaeche-erfuellt-wcag-2-2-aa-fassung-2-2",
+    "title": "H3. Jede Oberfläche erfüllt WCAG 2.2 AA — Fassung 2.2, nicht 2.1.",
+    "summary": "Jede Oberfläche erfüllt WCAG 2.2 AA — Fassung 2.2, nicht 2.1.",
+    "co": "**H3. Jede Oberfläche erfüllt WCAG 2.2 AA — Fassung 2.2, nicht 2.1.** Die sechs Kriterien, die in\n2.1 noch fehlten, werden am häufigsten übersehen und stehen deshalb namentlich hier: Fokus nicht\nverdeckt (2.4.11) · keine Aktion nur per Ziehen (2.5.7) · Zielgröße mindestens 24×24 CSS-Pixel\n(2.5.8) · Hilfe an konsistenter Stelle (3.2.6) · keine redundante Eingabe in derselben Sitzung\n(3.3.7) · Anmeldung ohne kognitiven Funktionstest (3.3.8). Dazu unverändert aus 2.1: jedes\nEingabefeld mit sichtbarem, dauerhaftem Label — ein Platzhalter ist kein Label · Fokusring sichtbar,\nnie `outline: none` ohne Ersatz · Bedeutung nie allein über Farbe · 200 % Zoom ohne waagerechtes\nScrollen. **Kontrastwerte werden gerechnet, nie behauptet** — und nie als Zahl in Fließtext oder\nKommentar festgeschrieben, sondern aus den Farbtokens berechnet, weil sich das Verfahren mit\nWCAG 3.0 absehbar ändert. Ein grüner Prüfer ist kein Nachweis; er deckt nur einen Teil der Kriterien\nab.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "c436aaa2",
+    "path": "/methodik/arbeitsweise/h4-datumsangaben-in-fliesstext-und-dokumenten-immer-mit-uhrzeit",
+    "title": "H4. Datumsangaben in Fließtext und Dokumenten immer mit Uhrzeit",
+    "summary": "Datumsangaben in Fließtext und Dokumenten immer mit Uhrzeit",
+    "co": "**H4. Datumsangaben in Fließtext und Dokumenten immer mit Uhrzeit**, ISO 8601 mit Zeitzone\n(`2026-08-01T07:11:40+0200`). Ein reines Datum ist unvollständig — bei mehreren Einträgen am selben\nTag ist die Reihenfolge sonst verloren. **Ausnahme:** Programmcode und Dateinamen; dort nur, wo die\nLogik es verlangt.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  }
+]

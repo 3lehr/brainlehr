@@ -1,0 +1,92 @@
+[
+  {
+    "id": "cbb46889",
+    "path": "/shared/claude-code-integration/aufwand-effort-in-claude-code",
+    "title": "Aufwand (effort) in Claude Code steuern: Schlüssel, Werte und ein Fallstrick",
+    "summary": "Um Kosten zu sparen, ist der Aufwand (effort) der wirksamere Hebel als der Modellwechsel: In `settings.json` heißt der Schlüssel `effortLevel` mit den Werten low, medium, high und xhigh, im Agent-Frontmatter heißt er `effort` und kennt zusätzlich den Wert max. Der Fallstrick dabei: `effortLevel` ist NICHT modellspezifisch, sondern wirkt auf den gesamten Hauptfaden, ganz gleich welches Modell dort gerade läuft, und die Einstellung greift erst beim Sitzungsstart.",
+    "co": "Gesetzt am 2026-08-04T05:44:04+0200: In `~/.claude/settings.json` wurde `\"effortLevel\": \"medium\"` eingetragen, in `hub/.claude/agents/architekt.md` wurde `effort: medium` gesetzt.\n\nDie Schlüsselnamen und die erlaubten Werte sind nicht geraten, sondern aus dem CLI-Binary in Version 2.1.207 verifiziert worden, und zwar per `grep -aoE` auf die Mach-O-Datei, in der das Zod-Schema im Klartext steht:\n- In `settings.json` heißt der Schlüssel `effortLevel` und erlaubt die Werte low, medium, high oder xhigh.\n- Im Agent-Frontmatter heißt der Schlüssel `effort` und erlaubt low, medium, high, xhigh oder max, alternativ eine Ganzzahl.\n\nDrei Punkte, die man sonst falsch annimmt:\n1. Der Aufwand ist NICHT modellspezifisch. Es gibt keinen Schalter, der etwa 'Opus mittel, Sonnet hoch' getrennt einstellt: `effortLevel` trifft den Hauptfaden mit, auch wenn dort Sonnet läuft. Wer beide Modelle getrennt im Aufwand steuern will, muss über den Modellwähler gehen.\n2. Die Einstellung greift erst beim Sitzungsstart, technisch benannt als `settingsEffortAtStartup`, nicht sofort während einer laufenden Sitzung.\n3. Das Denken abzuschalten ist die schlechtere Sparmaßnahme, verglichen mit dem Senken des Aufwands. Laut Anthropic-Dokumentation schlägt Opus 5 mit Denken auf der Stufe low das Modell Opus 5 ganz ohne Denken bei vergleichbaren Kosten; ohne Denken lecken außerdem Tool-Calls als Text und interne XML-Tags in die sichtbare Ausgabe.\n\nZur Kalibrierung, ebenfalls aus der Anthropic-Dokumentation: Sonnet 5 auf der Stufe medium entspricht etwa Sonnet 4.6 auf der Stufe high; Sonnet 5 auf high entspricht etwa Sonnet 4.6 auf max. Der scheinbare Rückschritt von high auf medium ist also kleiner, als der Stufenname nahelegt.\n\nDie Herleitung, das zugehörige Kostenmodell und der gemessene Ist-Stand mit einer Eskalationsquote von 2,2 % stehen in `hub/docs/ORCHESTRIERUNG_SONNET.md`. Die zugehörige Methodenlehre steht in [[L-09a75d]].",
+    "tags": "[\"claude-code\", \"settings\", \"kosten\", \"opus-5\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "159d96c7",
+    "path": "/shared/compliance",
+    "title": "Wo BSI-Compliance und QUAIDAL im System liegen und wie man sie aufruft",
+    "summary": "Die BSI-Compliance-Schicht besteht aus zwei Teilen: Stand-der-Technik/Grundschutz++ ist aktiv und umfasst 945 Dev-Controls, QUAIDAL für KI-Trainingsdaten ist schlafend. Der Zugriff erfolgt ausschließlich über den compliance-Agenten bei Trigger.",
+    "co": "Die BSI-Compliance-Schicht (Stand-der-Technik/Grundschutz++) ist aktiv und umfasst 945 Dev-Controls. QUAIDAL, zuständig für KI-Trainingsdaten, ist schlafend. Zugriff auf beide erfolgt nur über den compliance-Agenten bei Trigger.",
+    "tags": "[\"compliance\", \"bsi\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "fa40bfea",
+    "path": "/shared/compliance/bsi-stand-der-technik",
+    "title": "Wo das BSI-Grundschutz++-Dev-Profil liegt und wie man es durchsucht",
+    "summary": "Das Grundschutz++ Dev-Profil umfasst 945 sicherheitsrelevante Controls. Der Volltext liegt in hub/shared-knowledge/bsi-dev-profile.json, der Scan läuft über hub/scripts/bsi_code_review.py, und der Sync erfolgt wöchentlich via bsi_sync.sh.",
+    "co": "Die Controls sind in Gruppen eingeteilt: DEV, TEST, KONF, BER, DET, ARCH, RISK und GC. Die Hard-Stops HS-U1..U9 stehen in ~/.claude/CLAUDE.md. Das gesamte Profil sollte nicht auf einmal geladen werden — stattdessen wird per Control-ID oder Gruppe gegrept oder per FTS gesucht.",
+    "tags": "[\"bsi\", \"security\", \"compliance\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "748ad670",
+    "path": "/shared/compliance/eu-ai-act-transparenzpflichten-(art.-50)",
+    "title": "EU-Transparenzpflichten für KI (AI-Act Art. 50): Verweis, noch UNGELESEN",
+    "summary": "Diese Seite ist als Verweis für später vorgesehen und bewusst UNGELESEN: EU-Leitlinien zu Transparenzpflichten für KI-Systeme nach Art. 50 des AI-Act. Sie wird gezogen bei Marketing, Werbung, Produkttext, Release, Veröffentlichung, App Store, Chatbot oder KI-Kennzeichnung.",
+    "co": "Die Seite zu den EU-Transparenzpflichten für KI-Systeme nach Art. 50 des AI-Act ist bewusst UNGELESEN und dient als Verweis für später. Gezogen werden soll sie bei Themen wie Marketing, Werbung, Produkttext, Release, Veröffentlichung, App Store, Chatbot oder KI-Kennzeichnung.",
+    "tags": "[\"compliance\", \"veroeffentlichung\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "0f5d22c0",
+    "path": "/shared/compliance/quaidal-ki-trainingsdaten",
+    "title": "QUAIDAL: Qualitätskriterien für KI-Trainingsdaten, aktuell SCHLAFEND",
+    "summary": "QUAIDAL ist aktuell SCHLAFEND und wird nur bei Trainingsdaten, Datensatz-Kuratierung oder Modelltraining relevant — ansonsten wird es ignoriert. Es liefert Qualitätskriterien für KI-Trainingsdaten nach dem EU-AI-Act für Hochrisiko-KI.",
+    "co": "Die Kriterien gliedern sich in 4 Dimensionen: Relevanz, Repräsentativität, Korrektheit und Vollständigkeit der Trainingsdaten. Bei Detailbedarf liegt die Quelle unter https://github.com/BSI-Bund/QUAIDAL (Lizenz CC-BY-SA 4.0, Formate MD/JSON/CSV/SQLite, quasi statisch) — sie soll nicht geklont werden. Aktiviert wird QUAIDAL über den compliance-Agenten, und zwar über den QUAIDAL-Zweig.",
+    "tags": "[\"quaidal\", \"compliance\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "afc7573f",
+    "path": "/shared/domain",
+    "title": "Namensraum-Knoten /shared/domain",
+    "summary": "Der Namensraumknoten /shared/domain trägt 1 direkten Kind-Knoten in der Tabelle knowledge_nodes.",
+    "co": "Dieser Namensraumknoten dient nur der Einordnung unter dem Pfad /shared/domain und trägt 1 direkten Kind-Knoten in der Tabelle knowledge_nodes.",
+    "tags": "[\"domaene\", \"knowledge\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "707f7a81",
+    "path": "/shared/domain/holzofen-raumluftabhaengig-vs",
+    "title": "Beim Holzofen entscheidet raumluftabhängig vs. -unabhängig, nicht der Brennstoff",
+    "summary": "Für die Bewertung von Raumklima und Schimmelrisiko ist die Brennstoffart eines Holzofens (Scheitholz, Brikett, Pellet) praktisch bedeutungslos, weil der Verbrennungsdampf durch den Schornstein abgeht. Entscheidend ist stattdessen, ob der Ofen seine Verbrennungsluft aus dem Raum zieht (raumluftabhängig) oder über eine externe Zuluftleitung bezieht (raumluftunabhängig).",
+    "co": "Der Anstoß kam aus einem Nutzer-Feedback zur App wohlair vom 2026-07-28: Der Mess-Wizard der App fragt dort die Anzahl der Briketts ab, und die Frage war, ob die Ofenart dabei überhaupt einen Unterschied macht.\n\nDie Unterscheidung, die zählt, ist die Bauart:\n- Ein raumluftabhängiger Ofen zieht seine Verbrennungsluft aus dem Raum. Das erzeugt einen hohen Luftwechsel, eine starke Austrocknung der Raumluft und einen Unterdruck in der Wohnung, der kalte Außenluft durch Undichtigkeiten nachsaugt — das kann bei einer dichten Gebäudehülle in Kombination mit einem Dunstabzug kritisch werden.\n- Ein raumluftunabhängiger Ofen bezieht seine Verbrennungsluft über eine externe Zuluftleitung und hat dadurch keinen nennenswerten Einfluss auf Luftwechsel und Feuchte.\n\nDer Brennstoff — Scheitholz, Brikett oder Pellet — ändert an dieser Wirkung fast nichts, weil das Verbrennungswasser den Raum über den Schornstein verlässt. Nur die Menge der Heizvorgänge korreliert mit der Betriebsdauer und damit mit dem Luftwechsel.\n\nFür Abfragen in der Benutzeroberfläche folgt daraus: Wer den Ofen erfassen will, sollte fragen „zieht der Ofen seine Luft aus dem Raum oder über ein Rohr von außen?\", mit „weiß ich nicht\" als konservativem Standardwert, der dann raumluftabhängig annimmt — nicht „welchen Brennstoff nutzt du?\". Die Frage nach dem Brennstoff erzeugt nur Erfassungsaufwand, ohne einen Nutzen für die Auswertung zu bringen.\n\nEine zweite Folgerung betrifft eine Nebenwirkung des Ofenbetriebs: Die sehr warme, trockene Luft im Ofenraum wandert in kältere Nebenräume und kondensiert dort. Das ist der eigentliche Schimmelpfad bei einer Ofenheizung, nicht der Ofenraum selbst. In der App wohlair ist das bereits als Feld `seasonUnheatedRoomsWoodStoveDesc` formuliert.",
+    "tags": "[\"bauphysik\", \"schimmel\", \"heizung\", \"wohlair\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "4c9a301c",
+    "path": "/shared/flutter-test-tester-pump-duration",
+    "title": "flutter_test: tester.pump(duration) lässt echte dart:async-Timer feuern",
+    "summary": "Standardmäßig läuft `testWidgets` in einer FakeAsync-Zone, in der `tester.pump(Duration)` nicht nur Animationen, sondern auch normale `Timer`- und `Timer.periodic`-Callbacks ohne echte Wartezeit auslöst. `DateTime.now()` bleibt davon unberührt und liefert weiterhin die reale Wanduhrzeit, wird also NICHT mitgefälscht.",
+    "co": "In `testWidgets` sorgt die FakeAsync-Zone dafür, dass `tester.pump(Duration)` auch echte `Timer`- und `Timer.periodic`-Callbacks ohne reales Warten feuern lässt, nicht nur Animationen. `DateTime.now()` bleibt dabei die reale Wanduhr.",
+    "tags": "[\"flutter\", \"testing\", \"dart\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "4796ede8",
+    "path": "/shared/mac-kalender-zugriff-aus-claude-desktop",
+    "title": "Mac-Kalenderzugriff aus Claude-Desktop-Sessions: EventKit blockiert, AppleScript geht",
+    "summary": "Aus Claude-Desktop-Sessions ist der Kalenderzugriff über EventKit unmöglich und wird lautlos verweigert (siehe L-71bbd2), aber der Befehl `osascript -e 'tell application \"Calendar\" …'` funktioniert, weil er einen anderen TCC-Dienst anspricht — AppleEvents/Automation statt kTCCServiceCalendar. Verifiziert am 2026-07-23: Die Kalenderliste war lesbar.",
+    "co": "Damit lassen sich Mac-seitige Kalenderprüfungen und -änderungen — etwa Smoke-Tests, das Verschieben von Terminen oder Notizen — ohne Terminal-Umweg durchführen. EventKit-basierte MCPs brauchen dagegen weiterhin aus dem Terminal gestartete Sessions.",
+    "tags": "[\"macos\", \"mcp\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "186aa737",
+    "path": "/shared/obd2-readiness-bei-hu-bis-zu-2-offene",
+    "title": "OBD2-Readiness bei der deutschen HU: keine Toleranz für offene Monitore",
+    "summary": "KORRIGIERT am 2026-07-24T05:50:00+0200 nach Deep-Research, dreifach verifiziert (3-0): Die Regel 'bis zu 2 offene Readiness-Monitore sind zulässig' stammt aus US-amerikanischem Recht (66 FR 18156, 40 CFR 85.2222(c)(2) und 51.357(a)(5), dort mit der Folge einer Zurückweisung statt eines Durchfallens) und gilt NICHT für die deutsche Hauptuntersuchung. Nach deutschem Recht (Anlage VIIIa StVZO und AU-Leitfaden) gibt es keine Zähl-Toleranz: Maßgeblich ist binär, ob alle unterstützten Prüfbereitschaftstests durchgeführt wurden (dann i.O.) oder ob ein relevanter gespeicherter Fehlereintrag vorliegt (dann n.i.O.); seit 2018 ist zudem die Endrohrmessung immer verpflichtend.",
+    "co": "Als Folge wurde die Schwelle in der App openhood auf incompleteCount > 0 zurückgesetzt, zentral verankert in ReadinessData.hasHuRelevantIncomplete. Die Quellen dazu sind in apps/openhood/docs/papers/citation-network.json unter den Kennungen HU02, HU05 und HU06 hinterlegt.",
+    "tags": "[\"obd2\", \"hu\", \"au\", \"openhood\", \"korrigiert\"]",
+    "project_id": "shared"
+  }
+]

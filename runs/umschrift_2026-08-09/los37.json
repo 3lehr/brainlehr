@@ -1,0 +1,92 @@
+[
+  {
+    "id": "4c8edf7f",
+    "path": "/stadtwerke/koeder-frau-elvira-quenzelbach-kd-nr",
+    "title": "Koeder Frau Elvira Quenzelbach, Kd-Nr. 990177",
+    "summary": "Scheinperson, existiert nirgends sonst im Bestand. Koeder nach ADR-029: taucht der Name in einem openlehr-Eintrag auf, ist der Abfluss von Firmenwissen ins private Projekt bewiesen und der Kanal (Abruf-Hook) bekannt. Das schuetzt nicht, es MISST.",
+    "co": "Frau Elvira Quenzelbach, Kd-Nr. 990177, Ratenzahlung Sozialtarif bewilligt, 6 Monatsraten ab 01.09.2026, Formular SG-12 im Kundenportal hinterlegt. Rein fiktive Testperson, nur fuer diesen Messversuch angelegt.",
+    "tags": "[\"testdaten\", \"koeder\", \"adr-029\"]",
+    "project_id": "stadtwerke"
+  },
+  {
+    "id": "8095e954",
+    "path": "/testing",
+    "title": "Testing",
+    "summary": "Test-Strategien, pytest, Coverage, TDD Patterns.",
+    "co": "",
+    "tags": "[\"testing\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "f4c7c365",
+    "path": "/testing/agent-testing",
+    "title": "Agent Testing",
+    "summary": "Agent-Compliance-Tests, Instructions-Lint.",
+    "co": "",
+    "tags": "[\"agent-testing\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "482bd74d",
+    "path": "/testing/naht-pruefung-vier-regeln-fuer-eine",
+    "title": "Naht-Pruefung — vier Regeln fuer eine neue Domaene",
+    "summary": "Sechs von acht teuren Fehlern eines Pruefungstages sassen zwischen Oberflaeche und Fachlogik — dort prueft per Konstruktion niemand. Vier mechanische Regeln dagegen. Gemessen an openlehr 2026-08-08/09.",
+    "co": "DER BEFUND. openlehr, ein Tag Pruefarbeit: acht Fehler, SECHS an der Naht zwischen Oberflaeche und Fachlogik. Darunter ein P0 — das Rechnungschreiben war aus der Oberflaeche heraus tot, weil der Server zwei Pflichtfelder verlangt, fuer die es nie Eingabefelder gab. Gleichzeitig 386 jsdom- und ueber 300 pytest-Tests gruen: die einen fahren die Oberflaeche gegen einen erfundenen Server, die anderen die Fachlogik gegen erfundene Eingaben. Was nur im Uebergang lebt, ist strukturell ungeprueft — egal wie viele Tests man schreibt. Der erste E2E-Walkthrough fand in EINEM Lauf mehr echte Fehler als beide Testbaeume zusammen.\n\nWAS IN DER NAHT LEBT: Feldnamen und Pflichtfelder zwischen Formular und Pruefer · Baustein-Einbindungen (Bildschirm nutzt, bindet aber nicht ein) · versprochene Wirkungen (\"wird gebraucht fuer X\", Code kennt kein X) · Benennungen ueber Bildschirme hinweg (ein Wort, zwei Mengen) · Formatvertraege (Hinweis empfiehlt Praefix mit Trennzeichen, Funktion erwartet es ohne).\n\nREGEL 1 — Die Journey ist die Abnahmedefinition, nicht die Kuer. Fuer eine neue Domaene wird der E2E-Weg VOR den Bildschirmen geschrieben, rot, und bleibt rot bis die Domaene laeuft. Beleg: die Journey Kontakt->Rechnung->verbindlich stellen->Auswertung haette den P0 am Tag seiner Entstehung gefunden; geschrieben wurde sie Monate spaeter.\n\nREGEL 2 — Drei Nahtpruefungen, die Klassen fangen statt Einzelfaelle. (a) Baustein-Bindung: nutzt ein Bildschirm einen gemeinsamen Baustein, muss er ihn einbinden; Zuordnung aus den Quelldateien ABGELEITET, nicht gepflegt (gebaut, 05c93292, fand sofort einen zweiten toten Bildschirm). (b) FELDVERTRAG: jedes serverseitige Pflichtfeld muss auf dem besitzenden Bildschirm existieren, aus den Pflichtfeldlisten ableitbar — haette den P0 mechanisch gefangen (steht noch aus). (c) TEXTVERTRAG: sichtbare Beschriftungen je Bildschirm festgeschrieben; bei vier Migrationen liess eine verstellte Beschriftung JEDES MAL alle Tests gruen.\n\nREGEL 3 — Ein Versprechen ist ein Test. Steht auf einem Bildschirm \"wird gebraucht fuer X\", muss ein Test belegen, dass X passiert; sonst darf der Satz nicht dort stehen. Herkunft: zwei Art.-9-Felder (Gesundheit, Religion) wurden mit ausdruecklicher Einwilligung erhoben, so beschriftet — und flossen in keine Berechnung.\n\nREGEL 4 — Der Pruefstand wird aus der Auslieferung abgeleitet, nie parallel gepflegt. Zwei Listen driften in BEIDE Richtungen: strenger als der Browser -> jemand verbiegt Produktivcode fuer gruene Tests; grosszuegiger -> ein toter Bildschirm bleibt monatelang unentdeckt. Beides an einem Tag in derselben App (L-0e0ab6, 2 Vorkommen).\n\nEIN DOCSTRING IST KEIN VERTRAG. Zwei waren an diesem Tag nachweislich falsch (\"name wird id UND name des Feldes\" galt fuer Radiogruppen nicht; \"Praefix z.B. RE-2026\" widersprach dem Bildschirm). Nichts schlaegt fehl, wenn eine Prosa-Zusage verletzt wird — wo ein Docstring eine Regel behauptet, gehoert ein Test dazu.\n\nARBEITSWEISE MIT AGENTEN. Die wertvollsten Ergebnisse kamen von drei Agenten, die sich WEIGERTEN: Migration abgebrochen statt erzwungen, Schema-Konflikt gemeldet statt Test abgeschwaecht, verschobene Rechnungsnummer zur Entscheidung vorgelegt. Das kam aus drei Auftragssaetzen: \"Bugs melden, nicht fixen\" · \"Der Test ist die Abnahme, nicht Verhandlungsmasse\" · \"Rot vor gruen, Gegenprobe in beide Richtungen\". Ohne sie nimmt ein Agent den bequemen Weg und meldet gruen.\n\nWAS NICHT DAS PROBLEM WAR: zu wenig Tests, zu wenig Sorgfalt, zu schnelles Bauen. Testdichte hoch, Texte auffaellig ehrlich, Token-Treue nahezu lueckenlos. Der blinde Fleck war STRUKTURELL, nicht menschlich — und nur strukturell zu schliessen, nicht durch mehr Disziplin.",
+    "tags": "[\"testing\", \"e2e\", \"walkthrough\", \"architektur\", \"domaene\", \"vertrag\", \"direktive\", \"neue-domaene\", \"naht\", \"wichtig\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "424844ec",
+    "path": "/testing/pre-commit",
+    "title": "Pre-Commit",
+    "summary": "Git-Hooks, Linting, Smoke-Tests.",
+    "co": "",
+    "tags": "[\"pre-commit\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "c4f47e46",
+    "path": "/testing/pytest",
+    "title": "pytest",
+    "summary": "pytest Config, Fixtures, Markers, Coverage.",
+    "co": "",
+    "tags": "[\"pytest\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "e57fc3eb",
+    "path": "/testing/pytest/monorepo-setup",
+    "title": "Pytest Monorepo Setup",
+    "summary": "pyproject.toml statt pytest.ini. Zentrales conftest.py mit shared Fixtures. Markers: smoke, integration, agent. Coverage via pytest-cov.",
+    "co": "## Pytest Monorepo Setup\n\n### Config\n- pyproject.toml bevorzugt (alle 3 Projekte)\n- [tool.pytest.ini_options] Section\n- testpaths = [\"tests\", \"scripts\"]\n\n### Fixtures (conftest.py)\n- tmp_knowledge_db: Temporäre SQLite für Tests\n- mock_mcp_server: MCP Server Mock\n- sample_agent_config: Valide .agent.md\n\n### Markers\n- @pytest.mark.smoke — unter 1s, Pre-Commit\n- @pytest.mark.integration — MCP, DB, Docker\n- @pytest.mark.agent — Agent-Compliance\n- @pytest.mark.slow — >10s\n\n### Coverage\n- pytest-cov für Monorepos\n- Threshold: 60% für neue Dateien",
+    "tags": "[\"pytest\", \"testing\", \"monorepo\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "bb516c10",
+    "path": "/testing/virtueller-bildschirmabzug-personas-auf",
+    "title": "Virtueller Bildschirmabzug: Personas auf ausgelesenem Baum statt auf beschriebenem Bildschirm",
+    "summary": "Persona-Pruefungen von Oberflaechen scheitern an doppelter Erfindung: ein Modell beschreibt aus dem Quelltext, was ein Bildschirm wohl zeigt, ein zweites bewertet die Beschreibung — bewertet wird eine Phantasie. Ausweg: den Baum eines echten Laufs auslesen statt zu beschreiben. Bei Flutter liefert ein Widget-Test genau das, und der Semantik-Baum ist dafuer sogar ehrlicher als der Widget-Baum. Zweite Regel: Was messbar ist, gehoert nicht in eine Persona — \"Knopf zu klein\" ist eine Zahl, kein Eindruck.\n<project_id>shared</project_id>",
+    "co": "HERKUNFT: Verfahren aus openlehr (jsdom-Durchlaeufe als Grundlage der Personas), am 2026-08-01 auf Flutter uebertragen (wohlair).\n\n=== DAS PROBLEM ===\nEin Modell liest Quelltext und beschreibt, was der Bildschirm wohl zeigt. Ein zweites bewertet diese Beschreibung als Persona. Beide Schritte sind erfunden, der zweite baut auf dem ersten auf. Herauskommt eine Bewertung einer Phantasie — plausibel formuliert, ohne Bezug zur Anwendung.\n\n=== DER AUSWEG ===\nDie Oberflaeche wirklich aufbauen und den entstandenen Baum AUSLESEN. Was dort steht — Beschriftungen, Feldnamen, Meldungen, Reihenfolge — ist der ehrliche Abzug.\n\nWeb/openlehr: jsdom-Durchlaeufe, die es bereits gab.\nFlutter: `flutter test` mit `WidgetTester` baut den echten Baum. `tester.widgetList<Text>(find.byType(Text))` liefert die tatsaechlich gerenderten Zeichenketten.\n\n**Der Semantik-Baum ist fuer diesen Zweck besser als der Widget-Baum** (`tester.binding.rootPipelineOwner.semanticsOwner.rootSemanticsNode`): Er ist genau das, was ein Screenreader vorliest — also nicht \"was zeigt der Bildschirm\", sondern \"was kommt beim Menschen an\". Damit ist zugleich eine Persona kostenlos abgedeckt, die sonst schwer zu simulieren waere.\n\n=== DIE ZWEITE REGEL, die den Nutzen erst sichert ===\n**Was gemessen werden kann, darf keine Persona bewerten.** Eine Persona, die sagt \"der Knopf wirkt klein\", ist wertlos gegen \"40,0 x 32,0 logische Pixel, gefordert 24 nach WCAG 2.2 AA (2.5.8), 44 nach Apple, 48 nach Material\".\n\nZur Laufzeit messbar und damit Sache eines Skripts:\n- Antippflaechen ueber `tester.getSize()`\n- Ueberlauf bei doppelter Textskalierung — derselbe Durchlauf mit `textScaleFactor` 2.0; trifft aeltere Nutzer und faellt sonst niemandem auf, weil alle mit Standardgroesse entwickeln\n- Bedienelemente ohne Semantik-Label (Screenreader liest dort nichts)\n- Bedeutung nur ueber Farbe: leeres Label neben farbiger Statusflaeche\n\nPersonas bleiben zustaendig fuer das Nicht-Messbare: Verstaendlichkeit der Formulierung, Sinn der Reihenfolge, Auffindbarkeit, regionale Passung.\n\n=== VIER PERSONAS, MEHR IST RAUSCHEN ===\nKonkret fuer eine Laien-App bewaehrt: die fachfremde Zielnutzerin (ein Satz, ein Knopf — alles andere ist Laerm) · der Gegner, der das erzeugte Dokument angreift (Vermieter, Versicherung) · der Screenreader-Nutzer, der NUR den Semantik-Baum bekommt · der Nutzer einer anderen Region, fuer die die Texte nicht geschrieben wurden.\n\n=== ZWEI FALLEN, beide teuer bezahlt ===\n1. **Der Abzug darf kein versioniertes Golden sein.** Bei JEDEM Lauf frisch erzeugen, nie \"nur wenn die Datei fehlt\", und nicht ins Git. Sonst haengt das Ergebnis davon ab, wer zuletzt gelaufen ist oder welcher Aufraeumschritt die Datei zurueckgesetzt hat (Lehre aus openlehr: `git checkout --` eines anderen Agenten stellte ein veraltetes Golden wieder her, der Check meldete laengst behobene Funde).\n2. **Der Walker ist ein Erhebungswerkzeug, kein Tor.** Er darf nicht rot werden, weil er Funde meldet — sonst wird er stillgelegt oder die Funde werden weggeschrieben. Funde in den Abzug, Test bleibt gruen. Ein Tor ist ein eigener, spaeterer Schritt mit Baseline.\n\n=== ABGRENZUNG ZU VORHANDENEM ===\n`~/.claude/skills/design-waechter/ui_guard.py` prueft STATISCH im Quelltext: Kontrast aus Farbtokens, Wording-Regeln, keine Entwicklerinformation im Text. Es kann keine echte Antippflaeche messen — dafuer braucht es den laufenden Baum. Die beiden ergaenzen sich; Kontrast- und Wording-Pruefung gehoeren NICHT in den Walker nachgebaut.\n\n=== MODELLSTUFE ===\nMethode festlegen (welche Personas, was zaehlt als Fund) ist Architekturarbeit. Planen des Durchlaufs und Auswerten der Personas ist Sonnet-Arbeit — es ist Urteil ueber Text, keine Entscheidung ueber Struktur.",
+    "tags": "[\"testing\", \"ux\", \"personas\", \"wcag\", \"flutter\", \"jsdom\", \"semantics\", \"walkthrough\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "bb271a48",
+    "path": "/testing/walkthrough-methode-(e2e-journey-als-tes",
+    "title": "Walkthrough-Methode (E2E-Journey als Test + Subagent)",
+    "summary": "Kompletten User-Journey als EINEN ausführbaren E2E-Test von einem Subagenten schreiben/fahren lassen (Token-Isolation, API-Landkarte im Auftrag). Bewiesen 2026-07-18 openlehr: 15/15 Schritte, fand echten Brutto/Netto-Bug im Mahnwesen.",
+    "co": "# Walkthrough-Methode\n\nZiel: Die KOMPLETTE User-Journey einer App einmal durchtesten — als dauerhaft ausführbarer Test, nicht als manuelles Durchklicken. Erstmals bewiesen am openlehr-Steuer-Backoffice (Commit fe8f1383c: 15/15 Schritte grün in 3,9 s, fand einen echten Geldbetrags-Bug — Mahnwesen mahnte netto statt brutto).\n\n## Die 5 Regeln\n\n1. **Subagent-Isolation (Token-Sparen #1):** EIN Subagent (günstiges Modell, z. B. Sonnet) schreibt und fährt den Walkthrough. Seine gesamte Exploration (Iterationen, Fehlersuche, Testläufe) bleibt in seinem Kontext — der Orchestrator bekommt nur den Endbericht.\n2. **Landkarte statt Lektüre (Token-Sparen #2):** Der Orchestrator gibt die vollständige Schritt-Liste MIT exakten Endpoints/Screens, Payloads und Erwartungswerten in den Auftrag. Der Agent liest KEINE großen Quelldateien; nur 2–3 kleine Vorlagen-Testdateien sind erlaubt, Grep nur bei Fehlschlägen.\n3. **Walkthrough = ausführbarer Test:** Das Ergebnis ist eine Test-Datei im Repo (Journey-Reihenfolge, geteilter State via module-scope-Fixture), die dauerhaft im Test-Slice mitläuft. Der Walkthrough zahlt sich bei jedem künftigen Lauf erneut aus.\n4. **Ehrliche Funde:** Gefundene Bugs werden NICHT vom Agenten gefixt, sondern berichtet (rote Schritte als `xfail`/`skip` mit Grund markieren, nicht verstecken). Fehlerpfade gehören in die Journey (falsches Passwort → 409, Doppel-Aktion → 400, Blocker → 400) — kein Schritt darf einen 500er still schlucken.\n5. **Orchestrator verifiziert:** Commit-Hash per git log, Stichproben-Testlauf, `git status` (fremdes WIP intakt, nur die erwarteten Dateien committet). Deliverables: Test-Datei + deutscher Bericht (Journey-Tabelle ✅/❌, was bewiesen wurde, Auffälligkeiten).\n\n## Technik je Plattform\n\n- **FastAPI/Backend (openlehr-Muster):** pytest + `TestClient(create_app())`, ENV auf tmp-Verzeichnisse (`OPENLEHR_STEUER_ROOT` etc.), Auth-Grant einmal holen, LLM/IMAP via monkeypatch-Mocks (`FakeScriptedBackend`). PDF-Inhalte via pypdfium2-Textextraktion prüfen, XML via ElementTree.\n- **Flutter/Handy-Apps (fahrtenbuch, openhood, …):** `integration_test/walkthrough_test.dart` mit `IntegrationTestWidgetsFlutterBinding` — gleiche Journey-Idee (Onboarding → Kernflow → Fehlerfälle → Export). Hardware-Schnittstellen (BLE/OBD, GPS, Kamera, IMAP) hinter Interfaces mocken; `flutter test integration_test` auf Emulator/Gerät. Dart-MCP (`flutter_driver_command`, `widget_inspector`) für interaktive Diagnose bei Fehlschlägen.\n\n## Testbarkeits-Checkliste (\"Code walkthrough-fähig bauen\")\n\nJedes neue Feature so bauen, dass der Walkthrough es erreichen kann:\n1. **Injizierbare Zeit:** jede Datums-/Fristlogik nimmt `today`/`now` als Parameter (kein `DateTime.now()`/`datetime.now()` tief im Kern) — der openlehr-Walkthrough backdatet Rechnungen nur deshalb testbar.\n2. **Mockbare Außenwelt:** LLM, IMAP, BLE, GPS, HTTP hinter injizierbaren Interfaces/Factories (monkeypatch-Punkt dokumentieren).\n3. **Seedbarer Zustand:** Fixtures/DB direkt befüllbar (tmp-DB, ENV-Root), keine versteckten Singletons.\n4. **Ehrliche Statusfelder:** API-Antwort und persistierter Zustand dürfen sich nicht widersprechen (Walkthrough-Fund: Response \"exported\", DB blieb \"finalized\").\n5. **Fehlerpfade mit sauberen Codes:** 400/409 mit sprechender Ursache statt 500/Silent-Success — nur das kann eine Journey assertieren.\n6. **Keine Außenwirkung im Test:** Versand/Submit strukturell abschaltbar bzw. gar nicht vorhanden (Outbox-Doktrin, CI-Guard wie `test_no_send_paths.py`).\n\n## Auftrags-Template für den Subagenten (Kurzform)\n\n„Schreibe `test_walkthrough_e2e.<py|dart>` mit diesen N Schritten [Landkarte einfügen]. Token-Doktrin: keine großen Dateien lesen, nur Vorlagen X/Y. Regeln: Test-Kommando [projektspezifisch], Bugs melden statt fixen, nur die 2 neuen Dateien committen [Commit-Message]. Deliverable 2: deutscher Bericht mit Journey-Tabelle. Finale Nachricht = Bericht: Commit-Hash, X/Y grün, jede Auffälligkeit einzeln.\"",
+    "tags": "[\"walkthrough\", \"e2e\", \"subagent\", \"token-sparen\", \"flutter\", \"fastapi\", \"testbarkeit\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "7efdeedb",
+    "path": "/tools",
+    "title": "Tools & Scripts",
+    "summary": "CLI-Tools, MCP-Server, Automatisierung.",
+    "co": "",
+    "tags": "[\"tools\"]",
+    "project_id": "shared"
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "id": "0635103b",
+    "path": "/methodik/arbeitsweise/02-eine-stichprobe-ist-keine-diagnose",
+    "title": "2. Eine Stichprobe ist keine Diagnose.",
+    "summary": "Eine Stichprobe ist keine Diagnose.",
+    "co": "**2. Eine Stichprobe ist keine Diagnose.**\nWenn du einen Fall untersucht hast, sag „einer von N geprüft\" und nicht „alle sind so\". Sammelurteile\nwie „das sind alles Umgebungsprobleme\" sind fast immer falsch und werden geglaubt, weil sie\nbequem sind.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "02937ddb",
+    "path": "/methodik/arbeitsweise/02b-miss-nicht-nur-die-daten",
+    "title": "2b. Miss nicht nur die Daten, sondern auch, wer sie schreibt.",
+    "summary": "Miss nicht nur die Daten, sondern auch, wer sie schreibt.",
+    "co": "**2b. Miss nicht nur die Daten, sondern auch, wer sie schreibt.**\nEin Zahlenbefund kann stimmen und die Diagnose trotzdem falsch sein, wenn du sie am falschen Code\nfestmachst. Bevor du sagst „dieser Mechanismus ist kaputt\": such den **lebenden Aufrufer**. Ein\nWerkzeug, das niemand mehr aufruft, erklärt keine Daten von heute. (Mir passiert: Ich maß korrekt,\ndass ein Zähler nie ausgelöst hatte, und schickte eine Reparatur an eine Datei, die seit Monaten\ntot war — die tatsächlich genutzte Fassung war acht Stunden zuvor bereits behoben worden. Zwei\nSekunden Suche nach dem Aufrufer hätten es gezeigt.)",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "79da8cc1",
+    "path": "/methodik/arbeitsweise/03-funktioniert-braucht-einen-beleg",
+    "title": "3. „Funktioniert\" braucht einen Beleg, der vorher rot war.",
+    "summary": "„Funktioniert\" braucht einen Beleg, der vorher rot war.",
+    "co": "**3. „Funktioniert\" braucht einen Beleg, der vorher rot war.**\nKein „behoben\", ohne dass eine Prüfung vor der Änderung fehlschlug und danach besteht. Ein Test,\nder von Anfang an grün war, beweist nur, dass er den Fehler nicht berührt. Zulässige Alternativen,\nwenn kein solcher Beleg existiert: „geändert, nicht verifiziert\" · „Tests grün, aber sie deckten\nden Fehler nicht ab\". Und: Der Beleg muss auf der Ebene liegen, auf der der Fehler lebte — eine\nFunktion einzeln zu prüfen und daraus auf das Merkmal zu schließen, ist derselbe Fehler.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "5bfd7d98",
+    "path": "/methodik/arbeitsweise/04-eine-regel-ohne-erzwinger-aendert-nichts",
+    "title": "4. Eine Regel ohne Erzwinger ändert nichts.",
+    "summary": "Eine Regel ohne Erzwinger ändert nichts.",
+    "co": "**4. Eine Regel ohne Erzwinger ändert nichts.**\nDas ist belegt, nicht geglaubt: In einem kontrollierten Versuch — Shin, „The Compliance Gap\",\narXiv:2605.01771, 13 Experimente, 2031 Sitzungen, sechs Modelle — lag die Befolgung schriftlicher Prozessregeln **ohne** technischen Zwang bei **0 %** — trotz\nverbaler Zusage. **Mit** Zwang bei **75 %**. Frag deshalb bei jeder neuen Regel nicht „ist sie gut\nformuliert\", sondern **„was schlägt fehl, wenn sie verletzt wird\"**. Findest du keine Antwort, hast\ndu eine Absichtserklärung geschrieben.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "479e4819",
+    "path": "/methodik/arbeitsweise/04b-ein-erzwinger",
+    "title": "4b. Ein Erzwinger, der immer anschlägt, ist keiner mehr.",
+    "summary": "Ein Erzwinger, der immer anschlägt, ist keiner mehr.",
+    "co": "**4b. Ein Erzwinger, der immer anschlägt, ist keiner mehr.**\nDie Umkehrung von Punkt 4, und sie wird übersehen. Eine Sperre, die bei jedem Anlauf meldet, wird\nreflexhaft übergangen — nicht aus Nachlässigkeit, sondern weil sie keine Information mehr trägt.\nPrüf bei jedem Erzwinger zwei Dinge: **Wie oft schlägt er zu Recht an?** Und: **Wie leicht ist die\nAusnahme?** Ist sie zu leicht, wird sie zur Gewohnheit; ist sie zu schwer, wird sie umgangen statt\nbenutzt. Beides endet gleich. Halte deshalb fest, **wann und warum** übergangen wurde — sonst kann\nniemand messen, ob der Schutz je gewirkt hat. (Mir passiert: elf Umgehungen an einem Tag, alle\nreflexhaft; die elfte war ein reiner Fehlalarm.)",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "3c64feab",
+    "path": "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+    "title": "5. Was von Disziplin abhängt, verrottet. Was erzeugt wird, nicht.",
+    "summary": "Was von Disziplin abhängt, verrottet. Was erzeugt wird, nicht.",
+    "co": "**5. Was von Disziplin abhängt, verrottet. Was erzeugt wird, nicht.**\nÜbersichten, Listen und Statusdokumente aus dem Code **erzeugen** statt pflegen. Wo das nicht geht,\neinen Prüfer bauen, der fehlschlägt, wenn das Dokument zu weit zurückliegt. Ein Hinweis, der nur\ngemeldet wird, wird nach einer Woche übersehen.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "394de62f",
+    "path": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+    "title": "6. Eine falsche Zahl ist schlimmer als keine.",
+    "summary": "Eine falsche Zahl ist schlimmer als keine.",
+    "co": "**6. Eine falsche Zahl ist schlimmer als keine.**\nSie wird geglaubt, und niemand sieht nach. Nenn eine Zahl nur, wenn du sie gemessen hast; sonst\nschreib „nicht gemessen\". Das gilt besonders für Schwellenwerte — die meisten verbreiteten stammen\naus Werbematerial ohne Primärquelle.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "3b63b1c2",
+    "path": "/methodik/arbeitsweise/07-trenn-sichtbar-zwischen-gemessen",
+    "title": "7. Trenn sichtbar zwischen gemessen, abgeleitet und vermutet.",
+    "summary": "Trenn sichtbar zwischen gemessen, abgeleitet und vermutet.",
+    "co": "**7. Trenn sichtbar zwischen gemessen, abgeleitet und vermutet.**\nUnd bei fremder Arbeit: „vorbestehend, nicht von mir\". Ohne Zuschreibung ist ein Befund wertlos,\nweil niemand weiß, wen er fragen muss.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "e2bbcc54",
+    "path": "/methodik/arbeitsweise/08-widersprich-mir",
+    "title": "8. Widersprich mir, wenn ich falsch liege.",
+    "summary": "Widersprich mir, wenn ich falsch liege.",
+    "co": "**8. Widersprich mir, wenn ich falsch liege.**\nAuch wenn ich es in einem Auftrag geschrieben habe. Formuliere es so: „Sieht der Code anders aus als\nbeschrieben, halte dich an den Code und melde die Abweichung.\" Meine Aufträge sind Schnappschüsse —\nsie beschreiben den Stand beim Schreiben, nicht beim Ausführen.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "e55248e3",
+    "path": "/methodik/arbeitsweise/09-erst-messen",
+    "title": "9. Erst messen, dann entscheiden, dann bauen.",
+    "summary": "Erst messen, dann entscheiden, dann bauen.",
+    "co": "**9. Erst messen, dann entscheiden, dann bauen.**\nEin Plan ohne verworfene Alternativen ist eine Ankündigung. Nenn bei jeder Entscheidung mindestens\nzwei Wege und warum der eine ausschied. Und nenn eine **Abbruchbedingung**: Woran würde man\nerkennen, dass die Entscheidung falsch war? Ohne sie wird sie zur Glaubensfrage.",
+    "tags": "[\"methodik\", \"arbeitsweise\"]",
+    "project_id": "shared"
+  }
+]

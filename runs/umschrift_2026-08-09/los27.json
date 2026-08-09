@@ -1,0 +1,92 @@
+[
+  {
+    "id": "afec0fe4",
+    "path": "/openlehr/testisolation-war-der-eigentliche",
+    "title": "Testisolation war der eigentliche Engpass — nicht die einzelnen Fehlschlaege",
+    "summary": "Die openlehr-Suite lieferte im vollen Lauf andere Ergebnisse als einzeln, weil Testlaeufe in ~/.openlehr schrieben und os.environ dauerhaft veraenderten. Seit conftest.py beides je Test isoliert (8aa337f5, fc1e7394, cb042dd2), faehrt sie 2954 gruen in 14:52 statt 13 rot in 32:39.",
+    "co": "GEMESSEN 2026-08-06, Zweig merge/daten-features.\n\nDIE ZWEI UNDICHTEN STELLEN\n1. `JsonFileCapabilityStore.DEFAULT_PATH` und `permissions.DEFAULT_POLICY_PATH` zeigten fest auf `~/.openlehr/...`. Jeder Testlauf las und schrieb die echten Dateien des Betreibers; `permissions.json` war dadurch auf 5 MB gewachsen. Behoben, indem beide Vorgabepfade zuerst `OPENLEHR_HOME_DIR` lesen (`fc1e7394`) und `conftest.py` diese Variable je Test auf ein temporaeres Verzeichnis setzt (`8aa337f5`).\n2. `reise_lauf.Kontext.__init__` setzte sechs Umgebungsvariablen prozessweit ohne Rueckstellung, darunter `OPENLEHR_STEUER_VLM = \"test-modell\"`. Jeder spaetere Test im selben pytest-Prozess sah diesen Wert. Behoben durch Schnappschuss und `close()` an der Setzstelle (`cb042dd2`) plus einen generischen `os.environ`-Schnappschuss je Test in `conftest.py`.\n\nWIRKUNG, gemessen\nVorher: 13 rot / 2937 gruen in 32:39 min, fuenf davon isoliert gruen.\nNachher: 2954 gruen / 0 rot in 14:52 min. Die Laufzeit halbierte sich, weil Tests nicht mehr nach Netz und Benutzerverzeichnis greifen.\n\nWARUM ES SO TEUER WAR\nDer Wert `test-modell` fiel erst auf, seit `40370eff` die Attrappe als Voreinstellung von `ingest_beleg` entfernt hat: vorher fiel ein unbekanntes Modell still auf die Attrappe zurueck, danach wird es abgelehnt (`Unbekannter VLM ...; kein Mock-Fallback aus Sicherheitsgruenden`). Die Aenderung hat den Fehler nicht verursacht, sondern sichtbar gemacht — dieselbe stille Attrappe hatte zuvor 527 von 546 Belegen unlesbar gemacht.\n\nFuenf Agenten liefen auf widerlegte Hypothesen (vergiftendes Testpaar, Cache-Datei, Modul-Caches, Ollama-Auslastung), weil der erste volle Lauf mit `| tail -20` gestartet war und keine einzige Fehlermeldung uebrigblieb. Siehe Lehre L-7c445c.\n\nBEWUSST NICHT GEAENDERT: die Ablehnung unbekannter Modelle. Ein stiller Rueckfall auf die Attrappe waere der bequeme Weg gewesen und haette die Fehlerklasse wieder unsichtbar gemacht.",
+    "tags": "[\"openlehr\", \"tests\", \"isolation\", \"pytest\", \"conftest\", \"os.environ\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "5e90c2f7",
+    "path": "/openlehr/volltextindex-wird-beim-einlesen",
+    "title": "Volltextindex wird beim Einlesen fortgeschrieben — hat fuer Belege und Mails aber keinen Leser",
+    "summary": "text_docs war in jeder Nutzer-DB leer, weil text_index.rebuild() die einzige Schreibstelle ist und nur an einem Endpunkt ohne Aufrufer haengt. Seit Commit a5085064 schreiben ingest_beleg und _mail_sync selbst in den Index. Sichtbar wird davon noch nichts: /v1/steuer/similar hat keinen Aufrufer in der Oberflaeche, aehnliche_projekte_kontext liest nur offer_item/invoice_draft_pos, und Belege wie Mails stehen per fester Regel in Quarantaene.",
+    "co": "GEMESSEN 2026-08-06T10:20:00+0200, Nutzer markus: 546 Belege, 775 Mails, text_docs=0. Nach einmaligem rebuild: 920 Dokumente (7 offer_item, 775 mail, 138 beleg), Suche nach einem Begriff aus einem echten Beleg von 0 auf 5 Treffer.\n\nWARUM 138 UND NICHT 546: 408 Belege tragen nur Weissraum aus Zeilenumbruechen in ocr_text. rebuild() ueberspringt sie zu Recht. Die Vorabmessung mit SQLite trim() zaehlte sie faelschlich mit -- siehe Lehre L-f8e543.\n\nWAS JETZT SCHREIBT\n- ingest.py::_ingest_beleg_after_conversion, nach dem Commit, doc_type='beleg'.\n- api.py::_mail_sync, hinter beiden Zweigen an EINER Stelle, doc_type='mail'. Verliert eine Mail beim Re-Sync Subject und Summary, wird die Indexzeile geloescht statt stehengelassen.\nBeide Haken in try/except: der INSERT in text_docs kann selbst werfen (database is locked, volle Platte), und zwar nachdem der Beleg bereits committet ist. Ohne das Netz sieht der Aufrufer einen Fehler fuer einen erfolgreichen Ingest.\n\nWAS FEHLT, DAMIT ES ETWAS NUETZT\nDer gefuellte Index hat fuer Belege und Mails heute keinen Verbraucher:\n- /v1/steuer/similar: kein Aufrufer in *.js oder *.html.\n- aehnliche_projekte_kontext (der einzige echte Verbraucher) filtert auf offer_item und invoice_draft_pos.\n- _SOURCE_TO_PROVENANCE ordnet beleg->ocr_extracted und mail->mail_incoming fest zu, beide landen per _PROVENANCE_TRUST in trust='quarantaene'; text_index.search() blendet sie ohne include_quarantine=True aus.\nEin Leser zu bauen ist damit der naechste Schritt, nicht das Fuellen.\n\nBEWUSST NICHT GEAENDERT: Quarantaene-Regel, text_index.py, Schema.",
+    "tags": "[\"openlehr\", \"steuer\", \"volltextindex\", \"fts5\", \"belege\", \"mail\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "f54b7c9b",
+    "path": "/ops",
+    "title": "Operations",
+    "summary": "DevOps, Deployment, Docker, CI/CD Patterns.",
+    "co": "",
+    "tags": "[\"devops\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "f16654f3",
+    "path": "/ops/angebotsvergleich-drei-unvergleichbare",
+    "title": "Angebotsvergleich: drei unvergleichbare Preismodelle — der Grundpreis entscheidet nicht",
+    "summary": "Buckeberg, Stand 2026-08-04: Drei von sechs Bietern haben ihre Vergütungsstruktur offengelegt, und sie sind strukturell verschieden — Volksbank reine Pauschale ohne Sondervergütungen, efbe zwölf feste Beträge, SWB rund vierzig Positionen überwiegend „nach Zeitaufwand\" bei 107,10 € je ANGEFANGENER Stunde. Ein Vergleich über den Grundpreis führt dabei in die Irre: efbe liegt 1.542 €/Jahr vor der Volksbank, nach Einrechnung der Übergangsposten 2027 sind es 35 €. Entscheidend ist nicht die Höhe, sondern die Vorhersehbarkeit.",
+    "co": "DIE DREI MODELLE (brutto, 16 Wohneinheiten, Jahr 2027)\n\n| | Volksbank | efbe | SWB |\n|---|---|---|---|\n| Grundpreis/Jahr | 11.138 € | 9.596 € | 11.281 € (mit Garagen) |\n| Zusatzpositionen | 0 | 12 feste Beträge | ~40, meist Zeitaufwand |\n| Planbarkeit | hoch | mittel | niedrig |\n\nWARUM DER GRUNDPREIS TRÜGT\nefbe liegt beim Grundpreis 1.542 €/Jahr vor der Volksbank. Rechnet man die Übergangsposten des ersten Jahres hinzu (Jahresabrechnung 2026 750 €, Aufarbeitung fehlender Unterlagen 75 €, Abholung 50 €, ein Umlaufbeschluss 150 €, zwei Beiratssitzungen 300 € = 1.577 € brutto), bleiben 35 € Unterschied. Ab dem Folgejahr sind es rund 1.006 € zugunsten efbe. Häufigkeiten sind ANGENOMMEN, nicht gemessen.\n\nDER HEBEL, DEN MAN ÜBERSIEHT: „JE ANGEFANGENE STUNDE\"\nSWBs Sätze: Inhaber/Geschäftsführer 107,10 €, Sachbearbeiter 77,35 €, Auszubildende 35,70 €, Fahrt 0,40 €/km. „Je angefangene Stunde\" heißt: ein Telefonat von zehn Minuten kostet eine volle Stunde. Bei ~40 zeitabgerechneten Positionen hängt der Gesamtpreis an dieser einen Formulierung, nicht an den Sätzen.\n\nDIE ZWEI FRAGEN, DIE DREI MODELLE VERGLEICHBAR MACHEN\n1. „Was kostet eine Gemeinschaft unserer Größe bei Ihnen in einem durchschnittlichen Jahr — nach Ihren eigenen Erfahrungswerten?\" Verlangt vom Anbieter, seine Erfahrung zu beziffern statt eine Liste vorzulegen.\n2. „Welche drei Positionen rechnen Sie bei einer WEG unserer Größe am häufigsten ab?\" Schwerer auszuweichen, und die Antwort sagt, was uns tatsächlich trifft.\n\nWEITERE BEFUNDE MIT GELDWERT\n- SWB: 7,14 € brutto je Garage und Monat kommen zum Wohnungspreis hinzu (+771 €/Jahr), stand in keiner früheren Auswertung.\n- SWB: einmalige Datenübertragung zur Objektanlage 350–900 €, MiLoG-Pauschale 35,70 €/Monat (= 428,40 €/Jahr), Instandhaltung über 20.000 €: 2 % der Maßnahmenkosten plus 1 % bei Sonderfachleuten.\n- SWB: Beiratssitzungen außerhalb der Bürozeiten (Mo/Di/Do bis 16 Uhr, Mi/Fr bis 12 Uhr) sind zusatzpflichtig — also praktisch jede Sitzung, die Berufstätige wahrnehmen können.\n- SWB: Veräußerung MIT Verwalterzustimmung 357,00 €, OHNE 89,25 €. Für diese WEG gilt der niedrigere Satz, weil die Veräußerungsbeschränkung 2009 im Grundbuch gelöscht wurde (Knoten 5e98f22b) — wer das nicht weiß, zahlt das Vierfache.\n- efbe: bei fünf von zwölf Positionen ist nicht geregelt, wer zahlt, darunter der teuerste Posten. Nur die Mahnung trägt nachweislich der säumige Eigentümer.\n- efbe: Vertrauensschadenversicherung besteht ausdrücklich NICHT. Volksbank hat dazu gar nichts gesagt. Alle drei Vermögensschadenhaftpflichten liegen exakt beim gesetzlichen Mindestmaß nach § 15 MaBV (500 T€/1 Mio €) — die Zahl taugt nicht zur Unterscheidung.\n\nÜBERTRAGBAR\nBei jedem Angebotsvergleich mit Grundpreis plus variablen Anteilen: zuerst das MODELL vergleichen, dann die Höhe. Ein Anbieter ohne Preisliste ist nicht automatisch teuer und einer mit langer Liste nicht automatisch teurer — die Liste macht ihn nur nachrechenbar. Und die Abrechnungseinheit („je angefangene Stunde\" gegen „je Viertelstunde\") ist ein eigener Verhandlungspunkt.",
+    "tags": "[\"buckeberg\", \"weg\", \"angebotsvergleich\", \"preismodell\", \"verhandlung\", \"swb\", \"efbe\", \"volksbank\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "dbfc0255",
+    "path": "/ops/appstoreconnect",
+    "title": "Appstoreconnect",
+    "summary": "Namensraum-Knoten fuer /ops/appstoreconnect — traegt 2 direkte Kind-Knoten in knowledge_nodes.",
+    "co": "",
+    "tags": "[]",
+    "project_id": "shared"
+  },
+  {
+    "id": "5affb27f",
+    "path": "/ops/appstoreconnect/app-store-connect-api-keys-nur-einer",
+    "title": "App Store Connect API-Keys: nur einer der drei Team-Keys funktioniert lokal",
+    "summary": "Account hat jetzt 4 Team-API-Keys (App-Manager, accountweit): FAHRTENBUCH 63G68WBN64 und OPENHOOD A8QMM6NZA7 sind kaputte Symlinks (Ziel in ~/Documents bzw. ~/Documents/IMPORTANT fehlt weiterhin, bewusst nicht bereinigt). FAHRTENBUCH2 (HX35C4ZA9X, ~/.private_keys/) war schon real. NEU 2026-07-28: OPENHOOD-Ersatzkey PA44SS8SMU real unter ~/.appstoreconnect/private_keys/AuthKey_PA44SS8SMU.p8 (chmod 600), in apps/openhood/ios/fastlane/Fastfile eingetragen (key_id + key_filepath). Ob der eigentliche TestFlight-Upload damit durchläuft, war zum Zeitpunkt dieses Eintrags noch nicht verifiziert — nur der Key selbst ist jetzt vorhanden und verdrahtet. Issuer-ID weiterhin 67ab3681-c985-4ca0-b6a2-3559ace1d441 (accountweit gleich, ändert sich nicht pro Key), Team-ID JR9H9Q532P. asc-mcp braucht weiterhin APP_STORE_CONNECT_KEY_ID/ISSUER_ID/KEY_PATH als Env-Var, dafür wurde PA44SS8SMU nicht global gesetzt, nur im Fastfile hartkodiert.",
+    "co": "",
+    "tags": "[\"appstoreconnect\", \"api-key\", \"fastlane\", \"asc-mcp\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "84a5b0f7",
+    "path": "/ops/appstoreconnect/testflight-externe-beta-app-review",
+    "title": "TestFlight externe Beta-App-Review: Pflichtfelder-Checkliste",
+    "summary": "Ein Build für eine externe TestFlight-Gruppe (Public Link) einzureichen scheitert mit generischem 422 MISSING_REQUIRED_DATA, bis drei separate Ressourcen befüllt sind: (1) build.usesNonExemptEncryption (nicht null), (2) betaAppLocalizations.description pro Locale, (3) betaAppReviewDetails mit contactFirstName/Last/Email/Phone (Phone MUSS E.164-Format sein, z.B. \"+4917639878936\" — \"0176 39878936\" wird mit INVALID_PHONE_NUMBER abgelehnt) + demoAccountRequired. Erst danach akzeptiert POST /v1/betaAppReviewSubmissions.",
+    "co": "",
+    "tags": "[\"appstoreconnect\", \"testflight\", \"beta-review\", \"checklist\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "59b83468",
+    "path": "/ops/buckeberg-anbieter-recherche-2026-07-23:",
+    "title": "Buckeberg Anbieter-Recherche 2026-07-23: 5 Hausverwaltungen, Reputation + Identitäts-Fallen",
+    "summary": "Web-Hintergrund (Rang 5-6, kein Erstrang-Entscheidungskriterium) zu den 5 Bietern: Volksbank Immobilien AG Ettlingen (HRB 738929) beste Bewertungslage (~110 Rez., Ø4,5); SWB = Sparkassen-Wohnbau GmbH Karlsruhe, LBS-Tochter, einziger mit VDIV-BW-Listung (Ø4,3); efbe Einzelunternehmen Hannah Brust, klein aber durchweg positiv (12-53 Rez.); Heisig Immobilien GmbH Ettlingen (HRB 754156 Mannheim, 4 MA) ACHTUNG Verwechslungsgefahr mit namensgleicher Münchner Hausverwaltung; ImmoPoint Waldbronn schwächste Reputation (Ø3,6/28) + Website zeitweise 503, Zuordnung unsicher. Übergreifende Lücke: bei keinem das Portal-/Softwareprodukt ermittelbar → als Frage in Rückfragen-Katalog aufgenommen. Volltext mit URLs+Abrufdaten: buckeberg/auswertung/anbieter-recherche.md — bewusst NUR intern, nicht auf der Homepage (Bewertungs-Meinungen könnten Bieter verärgern).",
+    "co": "",
+    "tags": "[\"buckeberg\", \"anbieter\", \"recherche\", \"hausverwaltung\", \"reputation\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "e4c346ea",
+    "path": "/ops/buckeberg-anbieterabend-2026-08-05",
+    "title": "Buckeberg Anbieterabend 2026-08-05: mündliche Aussagen kippen zwei Angebotsbewertungen, ein Widerspruch bleibt offen",
+    "summary": "ÜBERHOLT IN DER FORM, NICHT IN DER SACHE: Erste Ablage zum Anbieterabend, als Rang und Geltung noch nicht in die Felder passten und deshalb als Fließtext im Inhalt standen. Die Befunde sind seit 2026-08-06 in einzelne Knoten unter /ops/verwalterwahl-weg-im-buckeberg-zum-2027 aufgeteilt, dort mit gefülltem norm_rang und einem begründeten Rangmaßstab. Dieser Knoten bleibt als Spur des Zwischenstands.",
+    "co": "Dieser Knoten ist der Zwischenstand vom Vormittag des 2026-08-06. Er ist sachlich nicht widerrufen, aber überall dort überholt, wo die Nachfolgeknoten genauer sind. Wer zur Verwalterwahl arbeitet, liest den Ast /ops/verwalterwahl-weg-im-buckeberg-zum-2027, nicht diesen Knoten.\n\nWARUM ER NICHT ZURÜCKGEZOGEN WURDE\nZurückziehen löscht den Text. Hier ist nichts falsch, sondern nur ungünstig abgelegt — die Rangangaben standen im Fließtext, weil die Felder norm_rang, gilt_ab und gilt_bis über das Werkzeug damals nicht erreichbar waren. Ein Zwischenstand, der zeigt, wie eine Aussage entstanden ist, ist mehr wert als ein leeres Gerüst.\n\nEINE INHALTLICHE KORREKTUR, die die Nachfolgeknoten tragen und dieser Knoten noch nicht hatte\nDer hier festgehaltene Satz, SWBs Preis-Widerspruch sei durch die mündlichen Angaben „vermutlich aufgelöst\" zugunsten der Nettospalte, greift zu weit. Der Vertragsentwurf, dessen Spalten verglichen wurden, ist vollständig auf eine fremde Gemeinschaft ausgestellt („Rinheimer Str. 59, Karlsruhe\"; kein Bezug auf Im Buckeberg, Karlsbad oder 76307). Eine mündliche Zahl kann eine widersprüchliche Tabelle nicht auflösen, die nicht zu diesem Objekt gehört. Der Preis ist damit nicht geklärt, sondern hat eine zweite mögliche Ursache bekommen. Ausgeführt im Knoten „SWB: der Preis ist NICHT geklärt\".\n\nWAS AN BEFUNDEN WOHIN GEWANDERT IST\n- SWB-Preis → „SWB: der Preis ist NICHT geklärt — der Entwurf ist auf eine fremde Gemeinschaft ausgestellt\"\n- efbe Vertrauensschaden und Gemeinschaftskonten → „efbe: Gemeinschaftskonten statt Vertrauensschadenversicherung\"\n- Volksbank Deckungssumme, Haftungsausschluss, zweites Preismodell → „Volksbank: zehn Millionen Deckungssumme neben einem Haftungsausschluss\"\n- Betreuungsschlüssel → „Betreuungsschlüssel: die einzige förmlich abgestimmte Frage\"\n- Jahresabrechnung 2026 → „Widerspruch 1\", dazu neu die Rechtslage nach § 28 Abs. 2 WEG und BGH V ZR 206/24\n- Der Rangmaßstab selbst → „Rangmaßstab Buckeberg: Verbindlichkeit, nicht Glaubwürdigkeit\"\n\nDie hier verwendete Skala (1 Vertrag, 2 schriftlich, 3 mündlich) ist NICHT die des Nachfolgeasts (1 Gesetz bis 6 mündlich). Wer beide Knoten nebeneinander liest, darf die Zahlen nicht vergleichen.",
+    "tags": "[\"buckeberg\", \"weg\", \"verwalterwechsel\", \"anbietergespraech\", \"ueberholt\", \"zwischenstand\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "3edf4fe6",
+    "path": "/ops/buckeberg-dokument-pipeline-2026-07-28",
+    "title": "Buckeberg Dokument-Pipeline 2026-07-28: Objekt-Anker scharf, paperless-Bewertung, offener MÜKRO-Fall",
+    "summary": "Buckeberg hat eine funktionierende paperless-artige Dokument-Pipeline (356 Dokumente aus dem casavi-Verwalterportal, je Beleg .pdf/.txt/.json); paperless zu installieren wurde deshalb abgelehnt, ein KO-Klassifikator ist erst ab der Selbstverwaltung 2027 sinnvoll. Der Objekt-Anker ist fest verdrahtet und fand sofort einen zweiten Verdachtsfall. KORREKTUR 2026-07-28T17:10:00+0200 (Prüfung im Code): (a) `pdf_to_knowledge.py` liegt NICHT in buckeberg, sondern ist ein geteiltes Hub-Skript (`hub/begod/scripts/pdf_to_knowledge.py`, ursprünglich für phoenix-recovery-engine, `app`-Feld dort noch fest verdrahtet) — buckeberg nutzt ein fremdes generisches Tool, hat also keine eigene Pipeline im engeren Sinn. (b) Der Objekt-Anker ist kein Klassifikator, sondern ein deterministischer Grep in `scripts/pdf_batch_ocr.sh` (~Z.42-53, Regex `buckeberg|karlsbad|76307` über die .txt-Dateien, Treffer-lose Dokumente nach `pdf_batch_ocr_no_object.txt`); bewusst ohne Allowlist, weil eine Allowlist genau den Fall verstecken würde, den der Check finden soll. (c) Die „265 gelabelten Belege\" sind nicht im Code belegbar — es gibt kein Label-Feld, nur die händische Kategorie-Zuordnung aus 13 Portal-Ordnern; die JSONs tragen `zusammenfassung: TODO` und leere Erkenntnis-Listen. VERTAGT 2026-07-28T08:05:00+0200, beides bewusst offen: (1) MÜKRO-Rechnung KO=29.2011 vom 24.04.2026 lautet auf „WEG Im Buckenberg\" statt Buckeberg — Buckenberg ist ein Pforzheimer Stadtteil, Klammer &amp; Zeh sitzt in Pforzheim, also Tippfehler ODER fremde WEG; Wiederaufnahme bei der nächsten Belegprüfung. (2) Volltextsuche via Pagefind ist technisch geklärt, blockiert am Entscheid anonymisierter vs. voller Bestand. Gegenstück: Node 698fc6b9 (knowledge.db). Verwandt: 5fd7fc78 (openlehr/steuer, dritter Paperless-Befund).",
+    "co": "",
+    "tags": "[]",
+    "project_id": "shared"
+  }
+]

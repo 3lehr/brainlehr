@@ -1,0 +1,92 @@
+[
+  {
+    "id": "07e3ae78",
+    "path": "/arch",
+    "title": "Architektur",
+    "summary": "Architektur-Entscheidungen, Patterns und Systemdesign.",
+    "co": "",
+    "tags": "[\"architecture\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "c9275fd1",
+    "path": "/arch/adr-022-evidenzqualitaet-und",
+    "title": "ADR-022: Evidenzqualitaet und Geltungsbereich im Citation-Network (Schema 1.2.0)",
+    "summary": "ADR-021 bewertet Papers nur nach Wichtigkeit (heat, hub_score, citations_count, weight), nicht nach Belastbarkeit oder Geltungsbereich. ADR-022 ergaenzt Pflichtfelder evidence_tier (guideline|systematic_review|primary_study|authority_guidance|technical_spec|vendor|anecdotal), region + climate_zone sowie eine Quell-ID (source_url|doi|isbn). App-Texte duerfen nur auf den oberen fuenf Stufen fussen; vendor/anecdotal darf im Netz stehen, aber nie eine Aussage tragen.",
+    "co": "Datei: afrika/docs/adr/ADR-022-evidenzqualitaet-und-geltungsbereich.md (Accepted, 2026-07-28T01:20:00+0200).\n\nAUSLOESER — zwei reale Fehlschlaege bei der WohlAir-Recherche:\n1. Belastbarkeit: Websuche zu \"Luftreiniger gegen Schimmel\" lieferte fast nur Hersteller-/Haendlerseiten. Ohne Qualitaetsfeld waeren die formal gleichwertige Nodes neben der WHO-Leitlinie gewesen — drei Aussagen waeren als Studienlage in App-Texte gewandert.\n2. Geltungsbereich: WohlAir bedient AppRegion.dach/au/nz mit eigenen Normprofilen, alle tragenden Quellen sind aber deutsch. Die UBA-Schwelle 0,5 m² wurde zunaechst als globale Eskalationsregel formuliert. Schwerwiegender: das Kondensationsmodell (warme Innenluft, kalte Aussenwand, Stosslueften senkt absolute Feuchte) ist ein HEIZKLIMA-Modell — in feuchtwarmen Zonen traegt die Aussenluft fast immer mehr Wasser, dieselbe Empfehlung verschlechtert dort.\n\nKERNSATZ: Die gefaehrlichste Zelle einer Abdeckungsmatrix ist nicht die leere, sondern die stillschweigend mit Evidenz der falschen Region gefuellte. Eine Luecke faellt auf, eine falsche Uebertragung nicht.\n\nWEITERE FESTLEGUNGEN:\n- region/climate_zone sind Listen; \"global\"/\"any\" ist eine Behauptung, keine Vorgabe — nur setzen, wenn die Quelle Allgemeingueltigkeit selbst begruendet. Im Zweifel enger markieren.\n- conflict_of_interest: true fuer herstellerfinanzierte Studien; der Tier beschreibt die Methode, nicht die Unabhaengigkeit.\n- claims.json neben dem Netz: Behauptung x Region als Matrix, Status covered|open|regionalised_out|dropped. Abgleich ist ein SKRIPT, kein Modelldurchgang.\n- Keine Zwangsmigration von Bestandsnetzen (fehlende Felder = unknown), aber ein Netz, das App-Aussagen belegen soll, muss vorher vollstaendig sein.\n\nURHEBERRECHT (offener Punkt im ADR): Im afrika-Repo liegen 22 Original-PDFs unter Versionskontrolle; .gitignore schliesst nur infra/datenquellen/*.pdf aus. Privat unproblematisch (Eigenbedarf), bei Veroeffentlichung des Repos angreifbar. Extrahierte Volltexte sind rechtlich nicht besser als das PDF.",
+    "tags": "[\"adr\", \"papernetz\", \"citation-network\", \"evidenzqualitaet\", \"regionalisierung\", \"wohlairr\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "4eb8812f",
+    "path": "/arch/echtzeit-medien-apps-uebertragbare",
+    "title": "Echtzeit-Medien-Apps: übertragbare Muster SetFunk↔SchwarmWacht (2026-07-23T21:30:00+0200)",
+    "summary": "Cross-App-Playbook: Push=Klingel/Relay=Paketfach, HKDF-Domain-Trennung Sign≠Encrypt, Dep-Vertrauenskriterium, Reconnect-Backoff-Cap, QR-Payload-Fallstricke, pro Installation eigener widerrufbarer Push-Token.",
+    "co": "Muster aus SchwarmWacht-ADRs, geprüft übertragbar auf SetFunk und künftige Echtzeit-Apps:\n\n1. Push = Klingel, Relay = Paketfach: FCM/APNs nur Metadaten (4096-B-Limit!), Medien E2E-verschlüsselt separat vom Relay holen. Hub/Heim-Server taugt NICHT als Push-Registrar, wenn er per Design nicht dauerhaft erreichbar ist (ADR-004/005).\n2. Multi-Tenant-Push: pro Installation eigener widerrufbarer Broker-Token statt geteiltem Firebase-Service-Account-Key — sonst kann jede Installation an alle pushen. Relevant sobald SetFunk an Dritte geht.\n3. Krypto-Domain-Trennung: Signatur-Key ≠ Verschlüsselungs-Key, beide HKDF-abgeleitet, mit Test \"roher Key entschlüsselt NICHT\" (ADR-002 SchwarmWacht). Bei jeder neuen App prüfen.\n4. Trust-Anchor: echter 256-bit-Random-Key im QR statt Kurzcode als HMAC-Key; und nie den Verify-Key im selben Payload transportieren (L-1026ad).\n5. Dependency-Vertrauenskriterium: Broker/Krypto-Deps nur mit realem Publisher + Downloads; alle Dart-MQTT-Broker fielen durch → 20 Zeilen shelf+SSE selbst gebaut (ADR-001 SchwarmWacht). Deckt sich mit SetFunks Go-Server-Weg.\n6. Reconnect immer mit exponentiellem Backoff + Cap — musste in SchwarmWacht nachgerüstet werden; bei jedem SSE/WS-Client prüfen.\n7. QR-Praxis: Payload-Größe klein halten (kein doppelt-base64), Error-Correction-Level setzen, Anzeige-Dichte testen — QR wurde mehrfach nachgebessert (L-657b03).\n8. WebRTC: flutter_webrtc + eigener signierter Signaling-Kanal, LAN-P2P ohne STUN machbar (ADR-003 SchwarmWacht); für SetFunk-Video ist WHEP der analoge Schritt (setfunk ADR-003).",
+    "tags": "[\"webrtc\", \"push\", \"qr-pairing\", \"crypto\", \"reconnect\", \"setfunk\", \"schwarmwacht\"]",
+    "project_id": "begod"
+  },
+  {
+    "id": "204b523d",
+    "path": "/arch/gate-system",
+    "title": "Gate-System",
+    "summary": "Gate-basierte Qualitätssicherung (-2 bis 10).",
+    "co": "",
+    "tags": "[\"gates\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "093d4486",
+    "path": "/arch/knowledge-mgmt",
+    "title": "Knowledge Management",
+    "summary": "Wissens-DB, Baumstruktur, Token-Effizienz.",
+    "co": "",
+    "tags": "[\"knowledge\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "1a714374",
+    "path": "/arch/knowledge-mgmt/auto-capture-recall-wissenssystem",
+    "title": "Auto-Capture/Recall-Wissenssystem (systemweit, hook-getrieben)",
+    "summary": "Geschlossener Kreis über hub/shared-knowledge/knowledge.db: UserPromptSubmit-Hook (knowledge_recall_hook.py) sucht pro Prompt in FTS-Nodes + lessons_learned und spritzt Treffer als <knowledge-recall>-Block ein; Stop-Hook (knowledge_capture_hook.py) zwingt 1×/Session ab 3 Edits via decision:block den /learn-Aufruf. Verdrahtet in hub/.claude/settings.json. Relevanzschwelle MIN_HITS=3 seit 2026-07-28 (Regressionsnetz: `--selftest`). ACHTUNG zwei ungleiche Suchwege, gemessen 2026-08-05: der aktive Weg (MCP knowledge_search) nutzt Hybrid-Retrieval mit RRF über Embeddings, der passive Hook dagegen nur bm25() mit LIMIT 12 — der häufiger benutzte Weg ist der schwächere. Auslastung damals: 180/219 Knoten nie gezogen, siehe Knoten cc5042dd.",
+    "co": "Gebaut 2026-07-22. Dateien: hub/scripts/knowledge_recall_hook.py (UserPromptSubmit, still bei Slash/kurz/kein-Treffer, max 3 Nodes + 2 Lessons), hub/scripts/session_edit_tick.py (PostToolUse Edit|Write, Zähler /tmp/claude_know_<sid>.dirty), hub/scripts/knowledge_capture_hook.py (Stop, _DECISION_BLOCK=True erzwingt /learn, .harvested-Marker = 1×/Session, stop_hook_active-Guard). Skill-Kriterien in hub/.claude/commands/learn.md. Doktrin in ~/.claude/CLAUDE.md ('Wissen festhalten & abrufen'). Capture schreibt via mcp__knowledge__lesson_record/knowledge_add in dieselbe DB, aus der Recall liest — kein Store-Sync nötig. Recall-Hook liest read-only (file:...?mode=ro). Abschaltbar: _DECISION_BLOCK=False → reiner Reminder statt Turn-Kaperung. Ergänzt den bestehenden SessionStart-Scout (knowledge_scout.py, file-basierte Konsile).",
+    "tags": "[\"knowledge\", \"hooks\", \"claude-code\", \"automation\", \"recall\", \"capture\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "698fc6b9",
+    "path": "/arch/knowledge-mgmt/entscheid-2026-07-28:-paperless-ngx-ml-f",
+    "title": "Entscheid 2026-07-28: paperless-ngx-ML für unsere Knowledge-DB abgelehnt, Ollama vertagt",
+    "summary": "Der paperless-ngx-Ansatz (TF-IDF + MLPClassifier) wurde für knowledge.db ABGELEHNT: Klassifikation braucht Wiederholung, jeder Eintrag ist ein Unikat. Übertragbar war genau eine Idee — die Relevanzschwelle. NACHTRAG 2026-08-05: Der vertagte Ollama-Zweig ist längst umgesetzt (602 nomic-embed-text-Vektoren seit 2026-08-01, rrf_fuse in knowledge_search verdrahtet und getestet) — die damals formulierte Wiederaufnahmebedingung (\"erst wenn der Recall zu oft LEER statt falsch ist\") wurde nie geprüft, die Umsetzung überholte sie. Der gemessene Engpass war ein anderer als erwartet: nicht Leere, sondern Konzentration (ein Knoten = 53 Prozent aller Abrufe, 180/219 nie gezogen), und der passive Hook nutzt die Vektoren bis heute nicht. Siehe cc5042dd.",
+    "co": "",
+    "tags": "[]",
+    "project_id": "shared"
+  },
+  {
+    "id": "cc5042dd",
+    "path": "/arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05-82",
+    "title": "Erreichbarkeitsbefund 2026-08-05: 82 Prozent des Wissens wurden nie abgerufen",
+    "summary": "Gemessen über recall_log.jsonl: 180 von 219 Knoten und 411 von 457 Lessons wurden nie ausgeliefert, ein einziger Knoten macht 53 Prozent aller Abrufe aus. Ursache ist nicht die Rangfolge der Treffer, sondern die Ablage: knowledge_add nahm parent_path ungeprüft entgegen, der Slug kappte hart bei 40 Zeichen mitten im Wort, und der Bestand hatte keine Landkarte.",
+    "co": "Erhoben 2026-08-05T09:00+0200, Anlass war ein Vergleich mit superpowers, qmd, Karpathys LLM-Wiki, gbrain, graphify und Obsidian.\n\nBESTAND\n  knowledge_nodes 219 · lessons_learned 471 (465 mit occurrences=1, nur 2 eskaliert)\n  knowledge_relations 0 (Tabelle leer, MCP-Tools dafür existieren seit der Relations-Migration)\n  knowledge_embeddings 602, alle vom 2026-08-01; davon 134 veraltet oder fehlend\n  Korpus gesamt ~1,27 Mio Zeichen (350-420k Token) · nur path+title 23214 Zeichen (~7k Token)\n\nAUSLASTUNG (python3 scripts/knowledge_recall_hook.py --report, 387 Ereignisse)\n  Nodes nie gezogen 180/219 · Lessons nie gezogen 411/457\n  Spitzenknoten /openlehr/steuer/ui/adr-...-(vue-3),-arbeit: 206 Abrufe = 53 Prozent\n\nDREI URSACHEN, absteigend nach Wirkung\n  U1 knowledge_add() übernahm parent_path wörtlich, ohne zu prüfen ob der Elternknoten\n     existiert. Jeder schreibende Agent konnte einen eigenen Ast erfinden.\n  U2 Der Slug entstand aus title[:40], harte Kappung mitten im Wort, Satzzeichen blieben\n     stehen. Belege im Bestand: /openlehr/steuer/ui/adr-—-frontend-framework-(vue-3),-arbeit\n     und /apps/fahrtenbuch/café-international-konsil-einstellungseb\n  U3 Es gab keine Landkarte. Der Agent sah immer nur die 0-3 BM25-Treffer und erfuhr nie,\n     dass 219 Knoten existieren, konnte also nie gezielt nachladen.\n  Die 0 Kanten sind NICHT ursächlich: traversiert wird erst, wenn man überhaupt irgendwo landet.\n\nWAS BEREITS EXISTIERTE und beim ersten Durchgang fälschlich als fehlend gemeldet wurde\n  Hybrid-Retrieval mit RRF (embeddings.rrf_fuse + hybrid_retrieval_weight) ist in\n  knowledge_mcp_server.knowledge_search() verdrahtet und getestet. NUR der passive\n  Prompt-Hook nutzt es nicht — er ist reines bm25() mit LIMIT 12 und MIN_HITS=3.\n  Es gibt also zwei Suchwege, und der häufiger benutzte ist der schwächere.\n  Ebenso: was Anthropic \"Contextual Embeddings\" nennt, leistet unser Schema bereits\n  geschenkt — build_embeddings.py bettet title+summary+content ein, und unsere Knoten\n  sind keine Chunks, sondern semantische Einheiten mit handgeschriebenem summary.\n  Siehe Lesson L-b9d1f3 (dort der dritte Fall derselben Wurzel, mit Eskalation zur Regel).\n\nMASSNAHMEN (Plan, bindende Reihenfolge, Stand 2026-08-05T10:00+0200)\n  P1 Elternpfad-Prüfung + Slug an Wortgrenze          FERTIG (9 Tests, 7 davon vorher rot)\n  P2 Knoten-Index als Landkarte, SessionStart-Hook    FERTIG (219 Zeilen, 25270 Zeichen)\n  P6 lint-Finder, deterministisch, meldet nur         in Arbeit\n  P3 path+tags in FTS und Embedding-Text              offen\n  P4 Embedding-Verfall bei jedem Schreibvorgang       offen\n  P5 [[wikilink]] im content zu Kanten auflösen       offen\n  P7 lint-Urteil über die 465 Einzel-Lessons          offen, Sonnet, nur Vorschlagsdatei\n\nBEWUSST NICHT GETAN, mit Preis\n  Kein Reranker in dieser Runde: löst Rangfolge, nicht Erreichbarkeit; braucht zusätzlich\n  llama-server/LM Studio als Dauerprozess (Ollama hat keinen Rerank-Endpoint, HTTP 404\n  verifiziert). Kein Postgres/pgvector. Kein Markdown-als-System-of-Record. Keine\n  Migration der 219 Bestandspfade — P1 wirkt ab dem nächsten Schreibvorgang.",
+    "tags": "[\"knowledge-db\", \"recall\", \"retrieval\", \"messung\", \"plan\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "c465c9db",
+    "path": "/arch/knowledge-mgmt/konfidenzverfall-gebaut-konfidenz-py",
+    "title": "Konfidenzverfall gebaut (konfidenz.py) — ADR-026 Z3 baulich abgeschlossen",
+    "summary": "Verfall wird berechnet (nicht gespeichert): confidence bleibt Ausgangswert, gerechnete Konfidenz = Ausgangswert * 0.5^(alter_tage/halbwertszeit), Bezugszeitpunkt ist updated_at (kein neues Feld). Normen (norm_rang IS NOT NULL) sind vom Verfall ausdrücklich ausgenommen.",
+    "co": "Auftrag 2026-08-06: letztes bauliches Stück von ADR-026 Z3. Datei shared-knowledge/konfidenz.py (neu, importiert Ablehnung/_backup/now_iso/CET aus normkraft.py statt sie zu duplizieren).\n\nHalbwertszeiten (alle GERATEN, als HALBWERTSZEIT_TAGE-Dict mit Begründung im Code): Architektur/ADR/Konsil (path startswith /arch ODER \"adr\"/\"konsil\" in source, case-insensitive) = 365 Tage; Betrieb (path startswith /testing oder /ops) = 30 Tage; Standard (Rest) = 120 Tage. tags wurde geprüft und verworfen als Klassifikationsmerkmal: nur ~55/225 Fakten tragen überhaupt Tags, zu uneinheitlich für deterministische Dreiteilung.\n\nSchwelle für Lint-Kategorie 14 (Konfidenzverfall): KONFIDENZ_SCHWELLE=0.3, geraten. Realer Bestand 2026-08-06: 225 Fakten, 6 unter Schwelle, ältester Fakt /arch mit 133.6 Tagen Alter (gerechnete Konfidenz 0.6208).\n\nbestaetigen()-Verb (Bauform identisch zu normkraft.py::ausser_kraft): setzt NUR updated_at neu (Alter zurück auf 0, gerechnete Konfidenz springt auf Ausgangswert), nie die confidence-Spalte selbst. Pflichtgrund, dry-run per Default, Backup vor --apply, Content-Anhang + access_log-Zeile (action='bestaetigt').\n\nRecall-Hook (scripts/knowledge_recall_hook.py) NICHT geändert: das Modul ist im eigenen Kommentar ausdrücklich \"bewusst abhängigkeitsfrei\" (dupliziert sogar fold_de() statt es zu importieren, weil der Hook vor JEDEM Prompt läuft und exit 0 garantieren muss). Ein Import von konfidenz.py würde diese Design-Entscheidung verletzen; eine Duplizierung der Verfallsformel (Wissensart-Klassifikation + Halbwertszeiten-Dict) wäre mehr als die bisherigen Ein-Zeiler-Duplikate und ein Drift-Risiko wie das schon dokumentierte SQL-Fold-Problem. Empfehlung: eigener, separater Schritt, falls gewünscht.\n\nGetestet: --selftest in konfidenz.py (Formel an drei Grenzwerten von Hand nachgerechnet, Norm-Gegenprobe, 4 Ablehnungen, dry-run, Erfolgsfall, find_confidence_decay), plus shared-knowledge/tests/test_konfidenz.py (12 Tests). Volle Suite: 400 grün (388 + 12 neue), dieselben 3 vorbestehenden Fehler unverändert (test_agent_compliance, test_caveman_integration x2 — nicht dieser Auftrag). DB-Hash vor/nach jedem Lauf identisch (keine Schreibzugriffe außer expliziten --apply-Aufrufen gegen temporäre Test-DBs).",
+    "tags": "[\"konfidenz\", \"adr-026\", \"z3\", \"brainlehr\", \"normrang\", \"verfall\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "7b2e8a1a",
+    "path": "/arch/knowledge-mgmt/tree-structure",
+    "title": "Baumstruktur-Wissens-DB",
+    "summary": "SQLite + FTS5 mit Materialized Path. 3-4 Ebenen Tiefe. Agent navigiert mit browse→read in 2-3 Calls statt 15k Tokens Flat-Files.",
+    "co": "## Knowledge DB Baumstruktur\n\n### Warum\n- 60+ JSON/MD Dateien flat = ~15.000 Tokens wenn alles geladen\n- Baumstruktur: browse() gibt ~200 Tokens (nur Titel+Summary)\n- read() gibt ~500 Tokens für einen Knoten\n- 2-3 Calls statt Context-Flut\n\n### Technologie\n- SQLite + FTS5 (Full-Text Search)\n- Materialized Path: `/shared/arch/mcp` (semantisch lesbar)\n- 3-4 Ebenen optimal\n\n### MCP Tools\n- knowledge_browse(path) → Kinder (Titel+Summary)\n- knowledge_read(id) → Volltext\n- knowledge_search(query) → FTS5 Suche\n- lesson_record() → Fehler-Learning\n- lesson_query() → Lessons abfragen",
+    "tags": "[\"knowledge\", \"database\", \"sqlite\", \"tree\"]",
+    "project_id": "shared"
+  }
+]

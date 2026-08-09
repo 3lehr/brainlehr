@@ -1,0 +1,92 @@
+[
+  {
+    "id": "a97c5aaa",
+    "path": "/fahrtenbuch/voice",
+    "title": "Sprachausgabe im Fahrtenbuch (Namensraum)",
+    "summary": "Der Knoten /fahrtenbuch/voice ist ein Namensraum und traegt in knowledge_nodes genau 1 direkten Kind-Knoten.",
+    "co": "Dieser Namensraum-Knoten liegt unter dem Pfad /fahrtenbuch/voice und buendelt die Themen rund um Sprachausgabe im Fahrtenbuch. In der Datenbanktabelle knowledge_nodes traegt er genau 1 direkten Kind-Knoten.",
+    "tags": "[\"fahrtenbuch\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "5cf42f57",
+    "path": "/fahrtenbuch/voice/flutter-tts-ios-getvoices-map-schema",
+    "title": "Das Map-Schema von flutter_tts unter iOS fuer getVoices() und die Auswahl per selectGermanVoice",
+    "summary": "Unter iOS liefert SwiftFlutterTtsPlugin.getVoices() fuer jede Stimme ein Objekt mit den Feldern {name, locale, quality: default|enhanced|premium, ab iOS13 gender, identifier}; genutzt wurde das bislang nie ueber setVoice. Die Funktion selectGermanVoice() in voice_assistant_service.dart trifft die Auswahl deterministisch: de-Praefix ist Pflicht, danach entscheidet der quality-Rang, bei Gleichstand der Name alphabetisch. Ergebnis null bedeutet lediglich, dass keine passende Stimme gefunden wurde, kein Fehler.",
+    "co": "Auf iOS-Geraeten stellt das Plugin SwiftFlutterTtsPlugin ueber die Methode getVoices() fuer jede verfuegbare Sprachausgabe-Stimme ein Objekt mit den Feldern {name, locale, quality: default|enhanced|premium, ab iOS13 gender, identifier} bereit. Dieses Map-Schema wurde bisher nie dazu benutzt, ueber setVoice() eine Stimme aktiv zu setzen. Fuer die deutsche Sprachausgabe im Fahrtenbuch waehlt die Funktion selectGermanVoice() aus voice_assistant_service.dart deterministisch eine Stimme aus: Pflicht ist ein de-Praefix in der locale, danach entscheidet der quality-Rang (default|enhanced|premium), und bei Gleichstand gewinnt der Name in alphabetischer Reihenfolge. Liefert selectGermanVoice() den Wert null zurueck, heisst das nur, dass keine passende Stimme gefunden wurde — das ist kein Fehlerfall.",
+    "tags": "[\"ios\", \"fahrtenbuch\", \"flutter\", \"dart\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "01878a1a",
+    "path": "/frontend",
+    "title": "Frontend-Themen: Oberflaeche, Komponenten und Barrierefreiheit",
+    "summary": "Dieser Bereich sammelt Themen zu Oberflaeche und Bedienung: UI/UX, Design-Tokens, Komponenten und Barrierefreiheit.",
+    "co": "Der Namensraum buendelt alles rund um das Frontend: die Gestaltung der Benutzeroberflaeche und Nutzerfuehrung (UI/UX), die Design-Tokens als Grundlage fuer Farben und Abstaende, wiederverwendbare Komponenten sowie Fragen der Barrierefreiheit.",
+    "tags": "[\"ui\", \"ux\", \"design\", \"barrierefreiheit\", \"a11y\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "396ab555",
+    "path": "/frontend/accessibility",
+    "title": "Barrierefreiheit: WCAG, ARIA und Screenreader-Unterstuetzung",
+    "summary": "Themen der Barrierefreiheit: WCAG 2.2, ARIA, Kontraste und Screenreader.",
+    "co": "Dieser Knoten sammelt Wissen zur Barrierefreiheit der Oberflaeche: die Vorgaben aus WCAG 2.2, der Einsatz von ARIA-Attributen, ausreichende Kontraste sowie die Unterstuetzung von Screenreadern.",
+    "tags": "[\"a11y\", \"wcag\", \"barrierefreiheit\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "b5a12bbb",
+    "path": "/frontend/accessibility/barrierefreiheit-ist-voreinstellung",
+    "title": "Warum Barrierefreiheit die Voreinstellung ist und keine Zwangsjacke (Betreiber-Direktive 2026-08-04)",
+    "summary": "WCAG 2.2 AA gilt für den Auslieferungszustand, nicht für jede vom Nutzer wählbare Darstellung; ein selbst gewählter dichter Modus darf darunter liegen und wird getrennt ausgewiesen. Vorher prüfen, ob überhaupt ein Zielkonflikt besteht — meist keiner, denn ein Symbolmenü mit zugänglichen Namen kostet Platz, nicht Konformität.",
+    "co": "Diese Regel geht auf eine Direktive des Betreibers vom 2026-08-04T21:01:04+0200 zurueck und gilt systemweit. Der vollstaendige Wortlaut steht in ~/.claude/CLAUDE.md, im Abschnitt \"WCAG 2.2 AA\", Unterabschnitt \"Voreinstellung, nicht Zwangsjacke\". Ausloeser war die Frage, ob die Seiten-Navigation von openlehr einklappbar und als Symbolleiste darstellbar sein soll, um Bildschirmflaeche zu gewinnen.\n\nWORTLAUT DER DIREKTIVE: \"Barrierefreiheit ja als Default, sie darf aber nicht einschraenken, wenn sie fuer \"normale\" Nutzer einer optimalen Nutzung entgegensteht.\"\n\nOperativ ergeben sich daraus sechs Punkte:\n\n1. AA ist eine Eigenschaft des Auslieferungszustands, nicht jeder erreichbaren Einstellung. Waehlt der Nutzer selbst eine dichtere, schnellere oder platzsparendere Darstellung, darf diese darunter liegen.\n\n2. Der Regelfall ist gar kein Konflikt, und das ist zuerst zu pruefen. Ein eingeklapptes Symbolmenue ist AA-konform, sobald jedes Symbol einen zugaenglichen Namen traegt, per Tastatur erreichbar bleibt und der Zustand umschaltbar ist — es kostet Platz, nicht Konformitaet. Die Direktive greift erst, wenn eine Massnahme nachweislich Platz, Tempo oder Uebersicht kostet und keine gleichwertige Bauform existiert. \"Wirkt aufgeraeumter\" ist kein Nachweis (vergleiche Kiger 1984: objektive Leistung und subjektive Praeferenz fallen auseinander).\n\n3. Vier Dinge bleiben auch im dichtesten Modus erhalten — nicht aus Ruecksicht, sondern weil sonst die Oberflaeche fuer alle bricht: a) zugaenglicher Name an jedem Bedienelement, b) Tastaturerreichbarkeit mit sichtbarem Fokus, c) Bedeutung nie allein ueber Farbe, d) ein Rueckweg aus dem dichten Modus, der ohne dessen eigene Bedienmittel auffindbar ist.\n\n4. Das Argument, das bei Punkt a) traegt und sachlich stimmt: Der zugaengliche Name ist zugleich der Griff, an dem Tests, Automatisierung und die KI die Oberflaeche anfassen. In openlehr ist accessibility Pflichtfeld im View-Envelope (Kernel-Vertrag §3.3) — \"oeffne Rechnungen\" ist ohne ihn nicht aufloesbar. Ihn zu streichen bricht das KI-native Versprechen, nicht nur die Barrierefreiheit. Damit ist Barrierefreiheit hier Infrastruktur, nicht Ruecksichtnahme — das ist die Formulierung, die den Zielkonflikt aufloest, statt ihn zu moderieren.\n\n5. Voreinstellung bleibt die unverdichtete Fassung. Verdichtung ist Moeglichkeit, nicht Zwang: eine ausgelieferte Symbolleiste muesste ein Erstnutzer raten.\n\n6. Der Preis wird benannt: Der Auslieferungszustand behaelt die AA-Aussage; ein nutzergewaehlter dichter Modus wird getrennt ausgewiesen und traegt sie nicht. Keine pauschale \"die App ist AA\"-Behauptung ueber alle Zustaende hinweg.\n\nWirkung auf bestehende Beschluesse: Diese Direktive revidiert die pauschale Ablehnung einer Icon-only-Navigation in ADR_WEB_3SPALTEN_MUSTER_UND_NAVIGATION_2026-08-04.md — aber nur fuer den EINKLAPPBAREN Zustand, nicht fuer die Voreinstellung.",
+    "tags": "[\"wcag\", \"barrierefreiheit\", \"direktiven\", \"ui\", \"systemweit\", \"openlehr\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "8c9555f0",
+    "path": "/frontend/buckeberg-design-guide-apple-hig",
+    "title": "Buckeberg Design-Guide: Apple-HIG-orientiert, ein Guide für alle Medien",
+    "summary": "Verbindlich fuer alle Buckeberg-Medien (Homepage/PDF/Onepager/Vorlagen) gilt: Klarheit vor Dichte, Inhalt vor Deko, System-Fonts, ein einziges Akzentblau #0a5bd3, eine Ampel nur mit Wortlabel und ein Kontrast von mindestens ≥4.5:1. Der Fliesstext ist mindestens ≥17px im Web bzw. 11pt im Print, im Onepager mindestens ≥13pt, weil Seniorin 78 als Leserin Nr. 1 gilt. Geldbetraege stehen immer als €/WE/Monat, jede Zahl bekommt eine Quellen-Fussnote, und ein KI-Hinweis erscheint als eine einzige ehrliche Fussnote. Vor jedem Termin fuer Frau Döldissen ist das Onepager-Pflichtformat einzuhalten: Titel/Worum/Ziele/Sprechpunkte/Nicht-zusagen/Kümmerer-Telefon. Volltext: buckeberg/design/DESIGN-GUIDE.md",
+    "co": "Der Design-Guide orientiert sich an den Apple Human Interface Guidelines und gilt einheitlich fuer alle Medien von Buckeberg: Homepage, PDF, Onepager und Vorlagen. Leitsatz ist Klarheit vor Dichte und Inhalt vor Deko. Verwendet werden System-Fonts sowie genau ein Akzentblau, #0a5bd3. Eine Ampel-Darstellung braucht immer ein zusaetzliches Wortlabel, Farbe allein genuegt nicht. Der Kontrast muss mindestens ≥4.5:1 betragen. Fuer die Schriftgroesse des Fliesstexts gilt mindestens ≥17px im Web und mindestens 11pt im Druck, im Onepager sogar mindestens ≥13pt — Massstab dafuer ist Seniorin 78 als Leserin Nr. 1. Geldbetraege werden durchgaengig als €/WE/Monat angegeben, jede genannte Zahl erhaelt eine Quellen-Fussnote, und ein Hinweis auf den Einsatz von KI steht als eine einzige ehrliche Fussnote im Dokument. Vor jedem Termin fuer Frau Döldissen ist das Onepager-Pflichtformat zu verwenden mit den Abschnitten Titel/Worum/Ziele/Sprechpunkte/Nicht-zusagen/Kümmerer-Telefon. Der Volltext des Guides liegt unter buckeberg/design/DESIGN-GUIDE.md.",
+    "tags": "[\"buckeberg\", \"design\", \"barrierefreiheit\", \"wording\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "d5bbb7c3",
+    "path": "/frontend/design-tokens",
+    "title": "Design-Tokens: Farben, Typografie und Bewegung",
+    "summary": "Sammelt die Design-Tokens fuer Farben, Typografie, Spacing (Abstaende) und Motion-Tokens (Bewegung).",
+    "co": "Dieser Knoten buendelt die Design-Tokens der Oberflaeche: Farbwerte, typografische Einstellungen, das Spacing genannte Abstandssystem sowie die Motion-Tokens fuer Animationen und Bewegungsablaeufe.",
+    "tags": "[\"design\", \"tokens\", \"ui\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "a7cdcb1f",
+    "path": "/frontend/flutter",
+    "title": "Flutter: Dart-Patterns und Plattform-Channels",
+    "summary": "Sammelt Wissen zu Dart/Flutter Patterns und zu Plattform-Channels.",
+    "co": "Dieser Knoten haelt Wissen zur App-Entwicklung mit Flutter fest: wiederkehrende Dart/Flutter Patterns sowie der Einsatz von Plattform-Channels, ueber die Flutter-Code mit nativem Plattformcode kommuniziert.",
+    "tags": "[\"flutter\", \"dart\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "8566ba99",
+    "path": "/frontend/web",
+    "title": "Web-Frontend: Astro, HTML, CSS, JavaScript und Tailwind",
+    "summary": "Sammelt Wissen zu den Web-Technologien Astro, HTML, CSS, JavaScript und Tailwind.",
+    "co": "Dieser Knoten buendelt Wissen zur Webentwicklung: das Framework Astro, die Grundtechniken HTML, CSS und JavaScript sowie das Utility-CSS-Framework Tailwind.",
+    "tags": "[]",
+    "project_id": "shared"
+  },
+  {
+    "id": "af57cfed",
+    "path": "/lessons",
+    "title": "Gesammelte Lehren aus Fehlern (Lessons Learned)",
+    "summary": "Sammelt gemachte Erfahrungen und wiederkehrende Fehler-Patterns.",
+    "co": "Dieser Knoten haelt gesammelte Erfahrungen fest, insbesondere wiederkehrende Fehler-Patterns, aus denen sich Lehren fuer kuenftige Arbeit ziehen lassen.",
+    "tags": "[\"lessons\"]",
+    "project_id": "shared"
+  }
+]

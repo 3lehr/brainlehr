@@ -1,0 +1,92 @@
+[
+  {
+    "id": "a97c5aaa",
+    "path": "/fahrtenbuch/voice",
+    "title": "Voice",
+    "summary": "Namensraum-Knoten fuer /fahrtenbuch/voice — traegt 1 direkte Kind-Knoten in knowledge_nodes.",
+    "co": "",
+    "tags": "[]",
+    "project_id": "shared"
+  },
+  {
+    "id": "5cf42f57",
+    "path": "/fahrtenbuch/voice/flutter-tts-ios-getvoices-map-schema",
+    "title": "flutter_tts iOS getVoices() Map-Schema + selectGermanVoice",
+    "summary": "iOS SwiftFlutterTtsPlugin.getVoices() liefert je Stimme {name, locale, quality: default|enhanced|premium, ab iOS13 gender, identifier} — bislang nie via setVoice genutzt. selectGermanVoice() in voice_assistant_service.dart waehlt deterministisch (de-Praefix Pflicht, quality-Rang, Name alphabetisch bei Gleichstand); null = keine gefunden, kein Fehler.",
+    "co": "",
+    "tags": "[\"flutter_tts\", \"voice\", \"ios\", \"fahrtenbuch\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "01878a1a",
+    "path": "/frontend",
+    "title": "Frontend",
+    "summary": "UI/UX, Design-Tokens, Komponenten, Barrierefreiheit.",
+    "co": "",
+    "tags": "[\"frontend\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "396ab555",
+    "path": "/frontend/accessibility",
+    "title": "Barrierefreiheit",
+    "summary": "WCAG 2.2, ARIA, Kontraste, Screenreader.",
+    "co": "",
+    "tags": "[\"a11y\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "b5a12bbb",
+    "path": "/frontend/accessibility/barrierefreiheit-ist-voreinstellung",
+    "title": "Barrierefreiheit ist Voreinstellung, nicht Zwangsjacke (Betreiber-Direktive 2026-08-04)",
+    "summary": "WCAG 2.2 AA gilt für den Auslieferungszustand, nicht für jede vom Nutzer wählbare Darstellung; ein selbst gewählter dichter Modus darf darunter liegen und wird getrennt ausgewiesen. Vorher prüfen, ob überhaupt ein Zielkonflikt besteht — meist keiner, denn ein Symbolmenü mit zugänglichen Namen kostet Platz, nicht Konformität.",
+    "co": "Direktive des Betreibers vom 2026-08-04T21:01:04+0200, systemweit. Volltext in ~/.claude/CLAUDE.md, Abschnitt \"WCAG 2.2 AA\", Unterabschnitt \"Voreinstellung, nicht Zwangsjacke\". Ausloeser: die Seiten-Navigation von openlehr soll einklappbar und als Symbolleiste darstellbar sein, um Bildschirmflaeche zu gewinnen.\n\nWORTLAUT DER DIREKTIVE: Barrierefreiheit ja als Default, sie darf aber nicht einschraenken, wenn sie fuer \"normale\" Nutzer einer optimalen Nutzung entgegensteht.\n\nWAS DARAUS OPERATIV WIRD:\n\n1. AA ist Eigenschaft des AUSLIEFERUNGSZUSTANDS, nicht jeder erreichbaren Einstellung. Waehlt der Nutzer selbst eine dichtere/schnellere/platzsparendere Darstellung, darf diese darunter liegen.\n\n2. DER REGELFALL IST GAR KEIN KONFLIKT, und das ist zuerst zu pruefen. Ein eingeklapptes Symbolmenue ist AA-konform, sobald jedes Symbol einen zugaenglichen Namen traegt, per Tastatur erreichbar bleibt und der Zustand umschaltbar ist — es kostet Platz, nicht Konformitaet. Die Direktive greift erst, wenn eine Massnahme nachweislich Platz, Tempo oder Uebersicht kostet UND keine gleichwertige Bauform existiert. \"Wirkt aufgeraeumter\" ist kein Nachweis (vgl. Kiger 1984: objektive Leistung und subjektive Praeferenz fallen auseinander).\n\n3. VIER DINGE BLEIBEN AUCH IM DICHTESTEN MODUS — nicht aus Ruecksicht, sondern weil sonst die Oberflaeche fuer alle bricht:\n   a) zugaenglicher Name an jedem Bedienelement,\n   b) Tastaturerreichbarkeit mit sichtbarem Fokus,\n   c) Bedeutung nie allein ueber Farbe,\n   d) ein Rueckweg aus dem dichten Modus, der ohne dessen eigene Bedienmittel auffindbar ist.\n\n4. DAS ARGUMENT, DAS BEI (a) TRAEGT UND SACHLICH STIMMT: Der zugaengliche Name ist zugleich der Griff, an dem Tests, Automatisierung und die KI die Oberflaeche anfassen. In openlehr ist `accessibility` Pflichtfeld im View-Envelope (Kernel-Vertrag §3.3) — \"oeffne Rechnungen\" ist ohne ihn nicht aufloesbar. Ihn zu streichen bricht das KI-native Versprechen, nicht nur die Barrierefreiheit. Damit ist Barrierefreiheit hier Infrastruktur, nicht Ruecksichtnahme — das ist die Formulierung, die den Zielkonflikt aufloest, statt ihn zu moderieren.\n\n5. VOREINSTELLUNG BLEIBT DIE UNVERDICHTETE FASSUNG. Verdichtung ist Moeglichkeit, nicht Zwang: eine ausgelieferte Symbolleiste muesste ein Erstnutzer raten.\n\n6. DER PREIS WIRD BENANNT: Der Auslieferungszustand behaelt die AA-Aussage; ein nutzergewaehlter dichter Modus wird getrennt ausgewiesen und traegt sie nicht. Keine pauschale \"die App ist AA\"-Behauptung ueber alle Zustaende hinweg.\n\nWIRKUNG AUF BESTEHENDE BESCHLUESSE: revidiert die pauschale Ablehnung einer Icon-only-Navigation in ADR_WEB_3SPALTEN_MUSTER_UND_NAVIGATION_2026-08-04.md — aber nur fuer den EINKLAPPBAREN Zustand, nicht fuer die Voreinstellung.",
+    "tags": "[\"wcag\", \"barrierefreiheit\", \"direktive\", \"ui\", \"systemweit\", \"openlehr\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "8c9555f0",
+    "path": "/frontend/buckeberg-design-guide-apple-hig",
+    "title": "Buckeberg Design-Guide: Apple-HIG-orientiert, ein Guide für alle Medien",
+    "summary": "Verbindlich für alle Buckeberg-Medien (Homepage/PDF/Onepager/Vorlagen): Klarheit > Dichte, Inhalt > Deko, System-Fonts, ein Akzentblau #0a5bd3, Ampel nur mit Wortlabel, Kontrast ≥4.5:1, Body ≥17px Web/11pt Print, Onepager ≥13pt (Seniorin 78 = Leserin Nr. 1). Geld immer €/WE/Monat, jede Zahl mit Quellen-Fußnote, KI-Hinweis als eine ehrliche Fußnote. Onepager-Pflichtformat vor jedem Termin für Frau Döldissen (Titel/Worum/Ziele/Sprechpunkte/Nicht-zusagen/Kümmerer-Telefon). Volltext: buckeberg/design/DESIGN-GUIDE.md",
+    "co": "",
+    "tags": "[\"buckeberg\", \"design\", \"apple-hig\", \"barrierefreiheit\", \"onepager\", \"wording\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "d5bbb7c3",
+    "path": "/frontend/design-tokens",
+    "title": "Design Tokens",
+    "summary": "Farben, Typografie, Spacing, Motion-Tokens.",
+    "co": "",
+    "tags": "[\"design\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "a7cdcb1f",
+    "path": "/frontend/flutter",
+    "title": "Flutter",
+    "summary": "Dart/Flutter Patterns, Plattform-Channels.",
+    "co": "",
+    "tags": "[\"flutter\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "8566ba99",
+    "path": "/frontend/web",
+    "title": "Web",
+    "summary": "Astro, HTML, CSS, JavaScript, Tailwind.",
+    "co": "",
+    "tags": "[\"web\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "af57cfed",
+    "path": "/lessons",
+    "title": "Lessons Learned",
+    "summary": "Gesammelte Erfahrungen und Fehler-Patterns.",
+    "co": "",
+    "tags": "[\"lessons\"]",
+    "project_id": "shared"
+  }
+]

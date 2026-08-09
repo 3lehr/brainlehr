@@ -1,0 +1,92 @@
+[
+  {
+    "id": "5599aa94",
+    "path": "/arch/mcp",
+    "title": "MCP Server",
+    "summary": "Model Context Protocol Server-Architektur und Patterns.",
+    "co": "",
+    "tags": "[\"mcp\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "3b4c7f68",
+    "path": "/arch/mcp/server-design",
+    "title": "MCP Server Design Patterns",
+    "summary": "stdio für lokale Server, Streamable HTTP für Shared. @mcp.tool() Decorator-Pattern. Max 15-20 Tools pro Server. sandboxEnabled für Security.",
+    "co": "## MCP Server Design Patterns (März 2026)\n\n### Transport\n- **stdio**: Lokal, 1:1, isoliert. Für projektspezifische Tools.\n- **Streamable HTTP**: Remote, skalierbar, Multi-Client. Für Shared Server.\n\n### SDK\n- Python SDK v1.26, TypeScript SDK v1.27.1\n- `@mcp.tool()` Decorator für Tool-Registration\n- Async ist Standard für I/O\n\n### VS Code Integration\n- `.vscode/mcp.json` pro Workspace\n- `sandboxEnabled: true` für macOS/Linux Sandboxing\n- Debugging via `dev`-Key\n\n### Best Practices\n- Max 15-20 Tools pro Server (Context Window)\n- Read-Only Tools explizit markieren\n- Destruktive Aktionen hinter User-Consent\n- Pydantic für Input-Validierung",
+    "tags": "[\"mcp\", \"architecture\", \"patterns\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "436cb221",
+    "path": "/arch/mcp/stdio-wurde-nie-entschieden-der",
+    "title": "stdio wurde nie entschieden — der zitierte Beleg ist ein Rechercheergebnis",
+    "summary": "Es gibt keine ADR und keinen Beschluss zum Transport. Der einzige Knoten dazu (3b4c7f68, 2026-03-25) traegt source=dr-mcp-architecture-2026_result.json, norm_entscheidung=offen, keinen Rang und keinen Entscheider — er fasst die MCP-Doku zusammen. Im Dienst-Plan wird er als \"bestehende Festlegung\" zitiert. stdio ist die Voreinstellung von MCP und wurde uebernommen, weil sie trug.",
+    "co": "GEPRUEFT 2026-08-08 auf Frage des Betreibers (\"warum stdio, wann haben wir das entschieden?\"): keine Datei in hub/docs/adr/ nennt stdio; die Suche im Bestand liefert nur 3b4c7f68 samt Recherche-Herkunft.\n\nWAS STDIO LEISTET, gemessen und nicht aus der Doku:\n- Kein Port, keine Anmeldung, keine Angriffsflaeche von aussen.\n- Lebenszyklus geschenkt: `for line in sys.stdin` endet bei EOF, der Prozess stirbt mit der Sitzung. Nachgemessen: genau ein Prozess je Sitzung, kein Leck.\n- actor/session/model sind aus dem Prozesskontext ableitbar. Ueber HTTP muessten sie mitgeschickt UND geprueft werden.\n- Es hat die Zugriffskontrolle bisher ERSPART, nicht verwehrt: es gibt keine Rechteverwaltung, weil es keinen Zugang gibt, den man verwalten muesste.\n\nWAS ES KOSTET, alles am 2026-08-08 aufgetreten:\n- Acht Prozesse schreiben in dieselbe Datei; ein Fehlerweg ohne Aufraeumen sperrte sie fuer jeden Schreiber (L-f3edbf).\n- Ein laufender Server ist nicht erreichbar -- daher der Eilmeldungs-Umweg ueber PostToolUse.\n- Codeaenderungen greifen erst nach Neustart (Veraltet-Melder).\n- Kein zweites Geraet, per Konstruktion.\n\nWANN DER WECHSEL FAELLIG IST, drei Ausloeser, jeder fuer sich hinreichend:\n1. Ein fremder Kunde, den wir nicht gebaut haben (Hermes wird gerade einer). stdio zwingt ihn, unser Verzeichnis zu besitzen.\n2. Ein zweites Geraet -- Ereignis, kein Datum.\n3. Wenn Durchsetzung gebraucht wird. Hier traegt stdio strukturell nicht mehr: wer den Prozess selbst startet, kann auch die Datei direkt oeffnen (L-bd1562, am selben Tag belegt).\n\nUND DIE KEHRSEITE, die zum Wechsel gehoert: mit HTTP wird B4 (Befugnis) nicht optional, sondern Pflicht am ersten Tag. Ein offener Port ohne Rechte ist schlimmer als eine offene Datei.",
+    "tags": "[\"mcp\", \"stdio\", \"transport\", \"entscheidungslage\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "455c4dd0",
+    "path": "/arch/token-economy",
+    "title": "Token-Ökonomie",
+    "summary": "Premium-Request-Multiplikatoren, Lazy-Loading, Context-Optimierung.",
+    "co": "",
+    "tags": "[\"tokens\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "ef501973",
+    "path": "/arch/token-economy/lazy-loading",
+    "title": "applyTo Lazy-Loading",
+    "summary": "VS Code lädt .instructions.md nur wenn die geöffnete Datei zum applyTo-Pattern passt. Ohne spezifisches Pattern (applyTo: '**') wird IMMER geladen — verschwendet Tokens.",
+    "co": "## applyTo Lazy-Loading (GA seit VS Code 2025)\n\n- `.instructions.md` mit YAML-Frontmatter `applyTo: \"pattern\"` werden nur geladen wenn die aktive Datei zum Glob-Pattern passt\n- `applyTo: \"**\"` = wird IMMER geladen (wie copilot-instructions.md)\n- `applyTo: \"apps/myapp/**\"` = wird NUR geladen wenn Agent in apps/myapp/ arbeitet\n- Best Practice: Jede .instructions.md so spezifisch wie möglich scopen\n- AKA2026 hatte 6/9 Dateien mit `**` → nach Fix auf spezifische Pfade: ~40-60% Token-Ersparnis pro Request\n\nQuelle: Meta-Optimization Phase 1, Gemini Deep Research 2026-03-25",
+    "tags": "[\"tokens\", \"instructions\", \"applyTo\", \"lazy-loading\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "98ec5a00",
+    "path": "/arch/token-economy/premium-multipliers",
+    "title": "Premium-Request-Multiplikatoren",
+    "summary": "Claude Opus 4.6 kostet 3× pro Request, Haiku 0.33×, Sonnet 1×. Bei Pro+ Plan: 1500 Requests/Monat. Opus nur für komplexe Konsile nutzen.",
+    "co": "## Premium Request Multipliers (Stand März 2026)\n\n| Modell | Multiplikator | Einsatz |\n|--------|---------------|---------|\n| Claude Haiku 4.5 | 0.33× | Routine, Gates, Triage |\n| Gemini 3 Flash | 0.33× | Schnelle Analysen |\n| Claude Sonnet 4.5/4.6 | 1× | Standard-Arbeit |\n| Claude Opus 4.5/4.6 | 3× | Komplexe Konsile |\n| Claude Opus Fast | 30× | VERMEIDEN |\n\nPro Plan: 300/Monat, Pro+: 1500/Monat.\nREGEL: Opus nur für Architektur-Konsile und komplexe Debugging-Sessions.",
+    "tags": "[\"tokens\", \"premium\", \"models\", \"cost\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "c327bc3c",
+    "path": "/backend",
+    "title": "Backend",
+    "summary": "Server, APIs, Datenbanken, WordPress.",
+    "co": "",
+    "tags": "[\"backend\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "f9375c3d",
+    "path": "/backend/database",
+    "title": "Datenbank",
+    "summary": "SQLite, PostgreSQL, Migration-Patterns.",
+    "co": "",
+    "tags": "[\"database\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "db6eabd3",
+    "path": "/backend/python",
+    "title": "Python",
+    "summary": "Scripts, FastAPI, SQLAlchemy Patterns.",
+    "co": "",
+    "tags": "[\"python\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "bbf6404e",
+    "path": "/backend/wordpress",
+    "title": "WordPress",
+    "summary": "WP-CLI, PHP, Plugins, Docker, 10-Phasen-Workflow.",
+    "co": "",
+    "tags": "[\"wordpress\"]",
+    "project_id": "shared"
+  }
+]

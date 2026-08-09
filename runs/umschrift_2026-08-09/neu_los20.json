@@ -1,0 +1,92 @@
+[
+  {
+    "id": "ac634781",
+    "path": "/methodik/arbeitsweise/h5-git-grenzen",
+    "title": "Wann und wie ein Commit entsteht (H5)",
+    "summary": "Nach jedem abgeschlossenen Schritt wird ohne Rückfrage committet: ein Commit enthält eine Sache, die Nachricht nennt das Warum. Veröffentlicht wird nie ohne ausdrückliches Wort, nie auf dem Hauptzweig und nie fremde Arbeit als eigene. Die teuerste Falle: `git commit -o <pfade>` trennt nur zwischen Dateien, nicht innerhalb einer Datei — wer eine Datei angibt, schreibt jede Änderung darin fest, auch fremde.",
+    "co": "**H5. Git-Grenzen.** Ein abgeschlossener Schritt wird sofort und ohne Rückfrage festgeschrieben (committet). Ein Commit umfasst dabei stets nur eine Sache, und die Commit-Nachricht benennt das Warum, nicht bloß das Was. Drei Grenzen gelten uneingeschränkt: Veröffentlichung (`push`) **nie** ohne ausdrückliches Wort, **nie** auf dem Hauptzweig arbeiten, und **nie** fremde Arbeit als eigene festschreiben. Die teuerste Falle stammt aus eigenem Schaden: Der Befehl `git commit -o <pfade>` grenzt nur **zwischen Dateien** ab, **nicht innerhalb einer Datei** — wer eine Datei benennt, schreibt damit jede Änderung in dieser Datei fest, auch eine Änderung von jemand anderem. Deshalb wird vor jedem Festschreiben `git diff --numstat` gegen die eigene Erwartung geprüft; weicht das Ergebnis ab, wird abgebrochen.",
+    "tags": "[\"methodik\", \"arbeitsweise\", \"governance\", \"werkzeuge\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "d4c23899",
+    "path": "/methodik/arbeitsweise/h6-bau-so",
+    "title": "Wie ein Durchlauf ohne Menschen prüfbar bleibt (H6)",
+    "summary": "Code wird so gebaut, dass er ohne menschliches Zutun durchlaufen und geprüft werden kann: Zeit ist injizierbar statt fest in `now()` verankert, Außenwelt läuft über austauschbare Schnittstellen, Zustand ist gezielt setzbar, Statusfelder sind ehrlich, Fehler kommen als sprechende 400/409 statt als 500, und im Testmodus entsteht keine Außenwirkung. Bei nativen und mobilen Anwendungen kommt eine lokale Steuerschnittstelle hinzu, die ausschließlich im Debug-Build existiert.",
+    "co": "**H6. Bau so, dass ein Durchlauf ohne Menschen prüfbar ist.** Zeit muss injizierbar sein, darf also nicht tief im Kern über `now()` fest verankert werden. Die Außenwelt — Netz, Modell, Sensoren, Kamera — liegt hinter austauschbaren Schnittstellen. Der Zustand ist setzbar, etwa über eine temporäre Datenbank, statt über ein verstecktes Singleton. Statusfelder sind ehrlich: Was die Antwort behauptet, ist auch tatsächlich gespeichert. Fehler werden sprechend als 400/409 gemeldet, nicht als 500 oder als stiller Erfolg. Im Testmodus darf **keine Außenwirkung** entstehen, also weder Versand noch Zahlung. Bei nativen und mobilen Anwendungen kommt zusätzlich eine lokale Steuerschnittstelle hinzu, die **nur im Debug-Build** existiert, statt sich auf Klick-Automatisierung zu verlassen — das macht die Prüfung robuster gegen Oberflächenänderungen und unabhängig von Bildschirmfotos.",
+    "tags": "[\"methodik\", \"arbeitsweise\", \"testing\", \"walkthrough\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "d4bb9484",
+    "path": "/methodik/arbeitsweise/unbedingtes-lebenszeichen-macht-stille",
+    "title": "Warum ein unbedingtes Lebenszeichen Stille deutbar macht — Verfahren gegen nicht reproduzierbare Feldfehler",
+    "summary": "Bei einem Feldfehler, der sich nicht nachstellen lässt, ist die teuerste Lücke nicht die fehlende Messung, sondern die mehrdeutige: Ein Protokoll, das nur bei Verdacht schreibt, kann Abwesenheit nicht deuten. Ein unbedingtes, gleichmäßig getaktetes Lebenszeichen verwandelt Stille in eine Aussage und räumte am 2026-08-07 fünf Deutungen an einem Nachmittag ab.",
+    "co": "AUSGANGSLAGE (Fahrtenbuch-Anwendung, Blackscreen im Feld). Sechs Untersuchungsrunden am ruhenden Quelltext lieferten je eine plausible These, aber keine ließ sich widerlegen. Der erste Feldbericht zeigte eine Lücke von 109 Sekunden im Diagnose-Protokoll, und genau diese Lücke passte auf jede These gleich gut: angehaltener Prozess, blockiertes Isolate, fehlgeschlagenes Schreiben oder eine beendete App. An dieser Mehrdeutigkeit scheiterte die Deutung, nicht an fehlenden Daten.\n\nREIHENFOLGE, die schließlich griff:\n1. Keine weitere Instrumentierung bauen, solange die vorhandene noch nichts geliefert hat.\n2. Sobald Felddaten vorliegen, zuerst fragen: Ist eine Abwesenheit in diesen Daten mehrdeutig? Wenn ja, ist genau das der Befund — nicht die Abwesenheit selbst.\n3. Das kleinste unbedingte Signal bauen, das eine Abwesenheit eindeutig macht: ein fester Takt, unabhängig von jedem Merkmal, mit den wenigen Zustandsgrößen, die die Fälle trennen. Konkret: alle 15 s ein Eintrag mit Laufzeit, Lebenszyklus-Zustand und Alter des letzten Protokollschreibens. Bewusst nicht gebaut: mehr Ereignisarten am verdächtigen Codepfad.\n4. Ausliefern und auf den nächsten Vorfall warten.\n5. Beim nächsten Vorfall Fallklassen abräumen, statt nur eine einzelne These zu prüfen.\n\nERGEBNIS, gemessen am 2026-08-07: Das Lebenszeichen war lückenlos durch das schwarze Fenster vorhanden, der Lebenszyklus-Zustand überwiegend `resumed`, das Schreibalter lag bei 0-6 s. Damit fielen an einem einzigen Nachmittag fünf Deutungen: ein blockiertes Isolate (nein), ein angehaltener Prozess (nein), verlorene Protokollzeilen (nein), eine Engine-Übernahme durch die Zweitoberfläche (nein, per Code widerlegt) und ein nativer Ersatzbildschirm (nein, dieser trägt Text und braucht einen Tipper). Übrig blieben zwei Fälle, die sich für den Nutzer gleich anfühlen und die sich erst durch eine weitere Zahl trennen lassen, nämlich die Zahl der fertigen Bilder je Takt.\n\nVORAUSSETZUNG, ohne die das Verfahren nicht trägt:\n- Das Signal muss unbedingt sein. Ein Herzschlag, der nur bei Verdacht, nur im Vordergrund oder nur bei aktivem Merkmal schreibt, erbt genau die Mehrdeutigkeit, die er eigentlich beseitigen soll.\n- Es muss vor Kappung geschützt sein. Ein Protokoll mit Stückzahl-Deckel wirft im Zweifel gerade die gleichmäßigen Einträge weg.\n- Der Takt muss zur Fensterlänge des Fehlers passen: deutlich kürzer als der kürzeste beobachtete Vorfall, hier also 15 s gegenüber rund ~2 min.\n- Und es braucht einen Vorfall danach: Das Verfahren beschleunigt nicht die erste Diagnose, sondern macht die nächste erst entscheidbar.\n\nABGRENZUNG: Das Verfahren ersetzt keinen Reproduktionsversuch im Kopflauf. Dieser lief am selben Tag parallel und blieb grün, was seinerseits eine weitere These erledigte, nämlich einen leeren Seitenstapel nach dem Schließen einer Vollbild-Nachfrage. Beide Wege ergänzen sich: Der Kopflauf widerlegt billig, das Lebenszeichen deutet die teuer erkauften Feldvorfälle.",
+    "tags": "[\"diagnose\", \"telemetrie\", \"messmethode\", \"flutter\", \"ios\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "0beacbfa",
+    "path": "/methodik/das-agentenregister-liegt-in-hub",
+    "title": "Wo das Agentenregister wirklich liegt — hub/laufzeit statt /tmp, CLAUDE.md nennt den toten Pfad",
+    "summary": "Wer nach `/tmp/claude-agent-register.jsonl` greift, schreibt oder liest ins Leere: Die Datei existiert und wird weiterhin beschrieben, aber kein Werkzeug liest sie mehr. Maßgeblich ist `/Volumes/daten/Begod2026/hub/laufzeit/agent-register.jsonl`. Die globale ~/.claude/CLAUDE.md nennt weiterhin den alten Pfad und führt damit jede neue Sitzung erneut in dieselbe Falle.",
+    "co": "ERSTE EILMELDUNG ÜBERHAUPT (2026-08-08T12:40). Der Kanal für Eilmeldungen existiert seit Tagen, war verdrahtet und hatte null Nutzungen — weil nirgends stand, wie man ihn auslöst. Diese Meldung ist zugleich seine erste Probe.\n\nDER BEFUND, doppelt bestätigt: Gemeldet wurde er von der openlehr-Sitzung, die beim Nachtragen eines fehlenden stop-Ereignisses in die falsche Datei schrieb (siehe Lehre L-76395d). Unabhängig nachgemessen wurde er in dieser Sitzung: ~/.claude/CLAUDE.md nennt den /tmp-Pfad, das echte Register liegt aber unter hub/laufzeit/agent-register.jsonl und wird über hub/scripts/agent_register_ort.py aufgelöst. Beide Dateien existieren, beide werden beschrieben, gelesen wird jedoch nur die zweite.\n\nWARUM DRINGEND, und nicht nur wissenswert: Das Agentenregister entscheidet, wessen Datei jemand anfasst und ob ein Commit fremde Arbeit einsackt. Wer die falsche Datei liest, bekommt eine plausible, aber unvollständige Antwort — kein Fehler, keine Warnung, nur ein falsches Bild. Solange beide Dateien nebeneinander liegen, läuft die nächste Sitzung erneut in dieselbe Falle.\n\nWAS ZU TUN IST (Entscheidung des Betreibers): Die zwei Stellen in ~/.claude/CLAUDE.md sind auf hub/laufzeit zu ziehen. Zusätzlich ist zu erwägen, /tmp/claude-agent-register.jsonl zu entfernen: Solange diese Datei existiert und beschrieben wird, sieht sie wie eine gültige Quelle aus. Eine Datei, die geschrieben und nie gelesen wird, ist schlimmer als gar keine Datei.\n\nZUM KANAL SELBST: Ausgelöst wird eine Eilmeldung, indem ein Knoten den Tag \"dringend\" trägt. Das steht bislang in keiner Anleitung, in keiner Direktive und in keiner Werkzeugbeschreibung — der Grund, warum der Kanal in seiner ganzen Lebenszeit nie benutzt wurde. Es ist derselbe Befund wie beim compliance-Agenten: gebaut, verdrahtet, nie ausgelöst.",
+    "tags": "[\"dringend\", \"hub\", \"werkzeuge\", \"governance\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "81206d19",
+    "path": "/methodik/direktiven",
+    "title": "Direktiven — Sammelknoten für projektübergreifende Regeln",
+    "summary": "Sammelknoten für verbindliche, projektübergreifende Regeln.",
+    "co": "Dieser Knoten sammelt verbindliche, projektübergreifende Regeln (Direktiven).",
+    "tags": "[\"methodik\", \"direktiven\", \"governance\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "024810d2",
+    "path": "/methodik/direktiven-hub-claude-md",
+    "title": "Direktiven-Sammelknoten aus der hub-CLAUDE.md",
+    "summary": "Dieser Sammelknoten wurde vom Werkzeug normbestand.py angelegt, und zwar im Schritt N1 am 2026-08-05T22:19:31.012686+02:00.",
+    "co": "Der Knoten fasst die Direktiven aus der hub-CLAUDE.md zusammen. Angelegt wurde er von normbestand.py im Schritt N1 am 2026-08-05T22:19:31.012686+02:00.",
+    "tags": "[\"methodik\", \"direktiven\", \"hub\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "9a058518",
+    "path": "/methodik/direktiven-hub-claude-md/arbeitsweise",
+    "title": "Arbeitsweise-Regeln aus der hub-CLAUDE.md",
+    "summary": "Vor breiten Repo-Reads wird gezielt geladen (Tool-first). Bei Governance- oder Prompt-Aufgaben wird zuerst die betroffene .github/*-Datei gelesen, dann gearbeitet. Nach substanziellen Analysen oder Code-Änderungen wird /chronist aufgerufen (bzw. begod/scripts/chronist.py log …). Nach größeren Feature-Blöcken folgt ein weiterer Schritt.",
+    "co": "## Arbeitsweise\nGearbeitet wird tool-first: breite Repo-Reads werden vermieden, stattdessen wird gezielt geladen. Bei Governance- und Prompt-Aufgaben wird zuerst die betroffene `.github/*`-Datei gelesen, danach erst gearbeitet. Nach substanziellen Analysen oder Code-Änderungen wird `/chronist` aufgerufen (beziehungsweise `begod/scripts/chronist.py log …`). Nach größeren Feature-Blöcken folgt `/walkthrough` — ein Ende-zu-Ende-Durchlauf der Journey (E2E-Journey), der als dauerhafter Test per Subagent entsteht. Neue Features werden von vornherein walkthrough-fähig gebaut: mit injizierbarer Zeit, mockbarer Außenwelt, seedbarem Zustand und ehrlichen Statusfeldern. Die zugehörige Checkliste steht im Knowledge-Knoten `/testing` (bb271a48).",
+    "tags": "[\"methodik\", \"direktiven\", \"hub\", \"arbeitsweise\", \"walkthrough\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "2812ec1b",
+    "path": "/methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an",
+    "title": "Caveman als Token-Kompression ist standardmäßig eingeschaltet",
+    "summary": "Chat-Antworten laufen standardmäßig im Caveman-Ultra-Stil: kurz, fragmentarisch, tokensparend (Skill caveman). Ausgenommen von jeder Kompression bleiben Rechtsthemen sowie bestimmte Dateien, und der Nutzer kann jederzeit mit „normal reden\" abschalten.",
+    "co": "## Caveman (Token-Kompression) — Default AN\nChat-Antworten laufen standardmäßig im Caveman-Ultra-Stil: kurz, fragmentarisch, tokensparend, umgesetzt über den Skill `caveman`. Niemals komprimiert werden folgende Bereiche: legal/recht/gesetz/gesetze/urteile/din/normen/dsgvo, `konsil/*.json`, `schema.json`, `AGENTS.md` und `SYSTEM_PROTOCOLS.md`. Der Nutzer kann die Kompression jederzeit mit „normal reden\" beziehungsweise „kein caveman\" abschalten.\n\nAuch Subagenten-Berichte laufen im Caveman-Ultra-Stil — der Satzbau wird komprimiert, aber exakt bleiben müssen Zahlen, Dateinamen, Funktionsnamen, Fehlertexte, Commit-Hashes und vor allem Zuschreibungen wie „vorbestehend, nicht von mir verursacht\", „Gegenprobe gefahren\", „gemessen\" gegenüber „aus Quelltext abgeleitet\". Die Verhältnismäßigkeit zeigt eine Messung vom 2026-07-30: Der Bericht macht dort nur 0,4 % der Agentenkosten aus — bei Fall D2 stehen 177.862 Tokens Gesamtaufwand rund 700 Tokens für den Bericht gegenüber, bei Fall D3 stehen 160.612 Tokens rund 600 Tokens gegenüber. Der Hebel liegt also bei dem, was der Agent liest, nicht dabei, wie er schreibt. Deshalb steht der entsprechende Satz zwar in der Auftragsvorlage, doch daran wird keine Erwartung an Ersparnis geknüpft — ein verwertbarer Live-Zugang wie ein Testkonto oder eine Debug-API spart pro Auftrag ein Vielfaches. Wird die Zuschreibung wegkomprimiert, wird der Bericht wertlos: „208 statt 203\" ohne den Zusatz „von mir nicht verursacht\" ist kein Befund mehr.",
+    "tags": "[\"methodik\", \"direktiven\", \"hub\", \"tokens\", \"instructions\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "71775386",
+    "path": "/methodik/direktiven-hub-claude-md/den-betreiber-korrigieren-seit-2026-08",
+    "title": "Warum der Betreiber widersprochen wird, seit 2026-08-04T05:44:04+0200",
+    "summary": "Widerspruch ist seit 2026-08-04T05:44:04+0200 eine Bringschuld, keine Höflichkeitsfrage: Widerspricht eine Vorgabe des Betreibers dem Code, einer Messung oder einer eigenen früheren Festlegung, wird das vor dem Bauen in einem Satz sachlich benannt. Bestätigt der Betreiber die Vorgabe danach, wird sie vollständig ausgeführt.",
+    "co": "## Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)\nWiderspruch ist Bringschuld, nicht Höflichkeitsfrage. Wo eine Vorgabe des Betreibers dem Code, einer Messung oder einer eigenen früheren Festlegung widerspricht, wird das benannt, bevor gebaut wird — in einem Satz, sachlich, ohne Belehrung. Danach wird weitergearbeitet: Bestätigt der Betreiber die Vorgabe, ist das seine Entscheidung, und sie wird vollständig ausgeführt.\n\nDrei Fälle werden ausdrücklich in Erinnerung gerufen, weil sie sich in der Praxis wiederholen:\n- Eine bestehende Regel wird gerade verletzt, eigene wie fremde — dann werden Regel und Fundstelle genannt, und es wird weitergearbeitet.\n- Eine Behauptung im Auftrag lässt sich mit einem Werkzeugaufruf widerlegen, etwa weil eine Datei nicht existiert, eine Zahl nicht stimmt oder ein anderer Zweig gemeint ist — dann wird erst nachgesehen und danach gemeldet, nie „das gibt es nicht\" aus dem Gedächtnis behauptet.\n- Die Begründung trägt nicht, obwohl der Beschluss richtig ist — der Klassiker ist ein Argument, das mit dem Füllstand der Datenbank steht und fällt. Dann wird der Beschluss übernommen und nur die Begründung ersetzt.\n\nNicht darunter fällt Geschmack, Reihenfolge und alles, wo der Betreiber schlicht anders entscheiden darf. Ein Widerspruch wird einmal vorgebracht, nicht wiederholt.",
+    "tags": "[\"methodik\", \"direktiven\", \"hub\", \"widerspruch\"]",
+    "project_id": "shared"
+  },
+  {
+    "id": "198ac704",
+    "path": "/methodik/direktiven-hub-claude-md/fluss-karten-metroviz-trigger",
+    "title": "Fluss-Karten (Metroviz) — wann sie gepflegt werden",
+    "summary": "Die Datenfluss- und Kollisions-Visualisierung (Datenfluss/Kollisions-Visualisierung) je App liegt getrackt unter hub/tools/flowmaps/<app>_flows.json (in der Kurzfassung auch hub/tools/flowmaps/<app>flows.json genannt). Bei einer Journey-Änderung, einer Timing-/Race-Frage oder einem Fleet-Rollout greift /flowmap. Gepflegt wird ausschließlich per Sonnet-Subagent, Kollisionen werden als Task-Chip gemeldet, nie still behoben.",
+    "co": "## Fluss-Karten (Metroviz) — Trigger\nDie Datenfluss- und Kollisions-Visualisierung je App liegt getrackt in `hub/tools/flowmaps/<app>_flows.json`. Bei einer Journey-Änderung, einer Timing- oder Race-Frage oder einem Fleet-Rollout wird `/flowmap` aufgerufen (Details und Schema samt Sonnet-Auftrag stehen dort). Gepflegt wird ausschließlich per Sonnet-Subagent, und Kollisionen werden als Task-Chip gemeldet — nie still behoben.",
+    "tags": "[\"methodik\", \"direktiven\", \"hub\", \"flowmap\", \"metroviz\"]",
+    "project_id": "shared"
+  }
+]
