@@ -123,9 +123,69 @@ def stumme_spalte(conn: sqlite3.Connection, spalte: str, zweck: str,
     }
 
 
+def faellige_auswertung(conn: sqlite3.Connection) -> dict | None:
+    """Wartet eine Auswertung auf genug FAELLE -- nicht auf genug Tage.
+
+    FEHLKLASSE: Zeit als Massstab. "Eine Woche laufen lassen" ist derselbe
+    Fehler wie "der Bestand ist noch klein" -- beides setzt einen Betrieb
+    voraus, dessen Umfang niemand kennt. Eine Woche kann drei Abrufe
+    bedeuten oder dreitausend; die Aussagekraft haengt an der Zahl der
+    Faelle, nie am Kalender. Am 2026-08-09 habe ich die Zeitform zweimal an
+    einem Tag benutzt, und der Betreiber hat beide Male widersprochen.
+
+    PREIS EINES FEHLALARMS: keiner. Der Befund sagt "jetzt lohnt sich ein
+    Blick", er verlangt nichts.
+
+    Die offenen Auswertungen stehen unten als Tabelle -- Datei, Schwelle,
+    was dann zu tun ist. Wer eine neue vertagt, traegt sie hier ein statt
+    ein Datum zu nennen."""
+    # NULLLINIE, und sie wird GEMESSEN statt eingetragen. Zweimal in drei
+    # Minuten falsch gewesen: erst zaehlte der Melder den Gesamtbestand
+    # (866 von 200 "erreicht", ueberwiegend aus dem alten Weg), dann trug
+    # ich sie von Hand ein -- aus dem Hauptverzeichnis (42 Zeilen), waehrend
+    # der Melder die Datei an SEINEM Ort liest (866). Zwei verschiedene
+    # Dateien, eine Zahl.
+    #
+    # Darum: der erste Lauf legt die Nulllinie selbst an, dort wo er laeuft.
+    # Eine Zahl, die im Quelltext steht, gilt fuer einen Ort, den der Autor
+    # im Kopf hatte -- nicht fuer den, an dem sie gelesen wird.
+    offen = [
+        # (Bezeichnung, Zaehldatei, zusaetzliche Faelle, was dann zu tun ist)
+        ("Suchpfad im Abruf", ort.WURZEL / "recall_log.jsonl", 200,
+         "frisch lesen, ob das Mehr an Zeichen Nutzen oder Rauschen ist -- "
+         "und ob der Verlust des Schweigens (vorher 37,8 % leer) stoert"),
+        ("Bereinigung", ort.WURZEL / "bereinigung_log.jsonl", 500,
+         "python3 bereinigung.py --bericht -- Schwelle und Schwaerzung an "
+         "gemessenen Daten entscheiden statt an geratenen"),
+    ]
+    faellig = []
+    for name, datei, schwelle, dann in offen:
+        try:
+            n = sum(1 for _ in datei.open(encoding="utf-8")) if datei.exists() else 0
+            marke = datei.with_suffix(datei.suffix + ".nulllinie")
+            if not marke.exists():
+                marke.write_text(str(n), encoding="utf-8")   # erster Lauf setzt sie
+                continue                                      # und meldet nie sofort
+            nulllinie = int(marke.read_text(encoding="utf-8").strip() or 0)
+        except Exception:
+            continue
+        seit = n - nulllinie
+        if seit >= schwelle:
+            faellig.append(f"{name}: {seit} von {schwelle} Faellen seit der Umstellung -- {dann}")
+    if not faellig:
+        return None
+    return {
+        "pruefung": "faellige_auswertung",
+        "befund": " | ".join(faellig),
+        "fehlklasse": "Zeit als Massstab -- eine Woche kann drei Faelle bedeuten oder dreitausend",
+        "fehlalarm_kostet": "keiner: der Befund sagt 'jetzt lohnt ein Blick', er verlangt nichts",
+    }
+
+
 def alle(conn: sqlite3.Connection) -> list[dict]:
     funde = [
         selbstzuschreibung(conn),
+        faellige_auswertung(conn),
         stumme_spalte(conn, "norm_art",
                       "Sein/Sollen/Duerfen -- zwei Normen verschiedener Art konkurrieren nicht"),
     ]

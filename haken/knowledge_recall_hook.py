@@ -429,7 +429,20 @@ def _ensemble_pflicht_aktiv() -> bool:
 # Vorgabe zunaechst AUS: gleiche Bauform wie ZWEITER_KANAL oben (Modul-
 # Konstante mit Env-Uebersteuerung), bis die Messung ueber die Betriebsdaten
 # entscheidet.
-SUCHPFAD_ABRUF = False
+# EIN seit 2026-08-09, Entscheidung des Betreibers. Gemessen mit korrekter
+# Eingabe (Prompt durchgereicht, wie der Betrieb ruft): alter Weg 0 von 35
+# Treffern bei 2540 Zeichen und 37,8 Prozent leeren Faellen, Suchpfad 7 von
+# 35 bei 4776 Zeichen und 0 Prozent leer. Erstmals ueberhaupt Lehren (4 von
+# 15). Nuetzlichkeit auf demselben Pfad blind beurteilt: 11 von 35 haetten
+# geholfen, Negativkontrolle bestanden (1 von 12 falschen Paaren).
+#
+# Der Preis ist benannt und nicht schoengeredet: 88 Prozent mehr Zeichen in
+# JEDEM Prompt, und das Schweigen geht verloren -- der alte Weg lieferte in
+# 37,8 Prozent der Faelle nichts, und nichts ist manchmal die richtige
+# Antwort. Eine frische Lesung von 15 Eintraegen fand 2 thematisch nah.
+#
+# Rueckweg: KNOWLEDGE_SUCHPFAD_ABRUF=0 in der Umgebung, kostet nichts.
+SUCHPFAD_ABRUF = True
 
 
 def _suchpfad_aktiv() -> bool:

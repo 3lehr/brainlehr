@@ -309,6 +309,31 @@ Ich habe heute mehrfach gesagt "der Abruf trifft nichts". Richtig waere gewesen:
 
 *Reihenfolge:* nach S9. Erst umstellen, dann beide Wege mit beiden Kennzahlen vergleichen -- sonst misst man zweimal.
 
+### S11 · Ein Melder auf die ARBEIT, nicht auf den Bestand
+
+**Anlass, und er ist ein Selbstbeleg.** Innerhalb einer Stunde am 2026-08-09 habe ich drei Fehler gemacht, zu denen jeweils eine Lehre im Bestand liegt:
+
+1. Einen Melder gebaut, der die GESAMTZAHL der Protokollzeilen zaehlte statt der Zeilen seit der Umstellung -- 866 statt 0. Lehre dazu: `L-502be0`, woertlich *"pruefen ob die gesuchte Groesse ein ZUSTAND oder ein DURCHSATZ ist. Ein Zustand steht in genau einer Zeile; wer ihn summiert, bekommt ein Integral und merkt es nicht."* Gestern erfasst.
+2. Die Nulllinie danach von HAND eingetragen -- aus dem Hauptverzeichnis (42 Zeilen), waehrend der Melder die Datei an seinem eigenen Ort liest (866). Eine Zahl im Quelltext gilt fuer den Ort, den der Autor im Kopf hatte.
+3. Zuvor behauptet, alle Zahlen des Tages seien wegen der fehlenden Prompt-Eingabe zu hart -- und es erst danach gemessen. Sie waren es nicht.
+
+**Warum der Speicher schwieg -- gemessen, nicht vermutet:**
+
+- Der Abruf durchsucht den PROMPT des Menschen. Der lautete "mach das!". Es gab nichts zu treffen. (Der offene Kreis aus `745f7ac1`, bis heute halb geschlossen.)
+- Auch mit gutem Prompt haette er nichts gefunden: 0 von 35 im alten Weg, der bis zu diesem Zeitpunkt lief.
+- Und das Werkzeug, das genau dafuer gebaut wurde (`befund_gegen_speicher.py`), habe ich auf den Fehler angesetzt: Es fand fuenf Lehren ueber `recall_log.jsonl` -- und `L-502be0` NICHT. Weil es nach BEZEICHNERN sucht (Dateien, Symbole, Ereignisnamen). Mein Fehler ist ein Denkfehler und hat keinen Bezeichner.
+
+**Die Luecke in einem Satz:** Die Melder pruefen den BESTAND. Keiner prueft, was gerade ENTSTEHT. Der Speicher haengt am Gespraech, nicht an der Arbeit -- vierzig Werkzeugaufrufe in dieser Stunde haben ihn kein einziges Mal befragt.
+
+**Zu bauen:** ein Melder, der geaenderten Code gegen bekannte FEHLERKLASSEN haelt, nicht gegen Bezeichner. Erste Kandidaten, alle drei mit Lehre im Bestand und alle drei heute eingetreten:
+- eine Summe ueber ein Protokoll, wo ein Zustand gemeint ist (`L-502be0`)
+- ein leeres Ergebnis, das als Befund gelesen wird, ohne den Filter zu verdaechtigen (`L-36d092`)
+- eine Zahl im Quelltext, die einen ORT voraussetzt (Pfad, Nulllinie, Schwelle aus einem anderen Verzeichnis)
+
+**Die Auflage, ohne die es ein Aergernis wird:** Ein Melder auf die Arbeit sieht viel und trifft selten. Er braucht dieselben drei Auflagen wie `pruefer.py` (messbar, Fehlklasse benannt, Preis eines Fehlalarms beziffert) UND eine vierte: **er meldet nur zu Code, der in DIESER Sitzung geaendert wurde.** Wer den ganzen Bestand prueft, erzeugt eine Liste, die niemand liest.
+
+*Vorbehalt:* Fehlerklassen ohne Bezeichner maschinell zu erkennen ist schwer und fehlalarmanfaellig. Faellt die Trefferquote zu schlecht aus, ist die ehrliche Antwort, ihn auf die drei obigen Muster zu beschraenken statt ihn zu verallgemeinern.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
