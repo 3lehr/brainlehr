@@ -406,6 +406,22 @@ def _verwendung_pruefen(statistik: dict, antwort: str, session: str | None) -> N
 
 # --- Betriebsart --stop -----------------------------------------------------
 
+def _normbezug_melden(antwort: str) -> None:
+    """Meldet Normzitate ohne Beleg (normbezug.py, Betreiber-Auftrag
+    2026-08-10). Schweigt, wenn alles belegt und frisch ist.
+
+    Jeder Fehler bleibt hier stumm: dieser Melder ist eine Zugabe am
+    Stop-Haltepunkt, und ein Absturz wuerde den Abruf mitreissen, der die
+    eigentliche Aufgabe dieses Hooks ist."""
+    try:
+        import normbezug
+        meldung = normbezug.melde(normbezug.pruefe(antwort))
+        if meldung:
+            print(meldung)
+    except Exception:  # noqa: BLE001 -- siehe Docstring
+        pass
+
+
 def modus_stop(payload: dict) -> None:
     pfad = payload.get("transcript_path")
     if not pfad:
@@ -413,6 +429,15 @@ def modus_stop(payload: dict) -> None:
     antwort = letzte_antwort(pfad)
     if len(antwort) < MIN_LEN:
         return
+
+    # Normbezug ZUERST und vor jedem fruehen return: eine Antwort, die
+    # "§ 87 BetrVG" behauptet, muss auch dann gemeldet werden, wenn sie keine
+    # brauchbaren Suchbegriffe traegt oder der Abruf nichts findet. Haengt hier
+    # statt an einem eigenen Hook, weil der Antworttext an dieser Stelle bereits
+    # gelesen ist -- ein zweiter Hook wuerde dieselbe Datei ein zweites Mal
+    # lesen und muesste in die Klientenkonfiguration eingetragen werden.
+    _normbezug_melden(antwort)
+
     begriffe = top_begriffe(antwort)
     if not begriffe:
         return
