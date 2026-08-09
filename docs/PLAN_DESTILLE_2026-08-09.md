@@ -104,7 +104,36 @@ Das trifft uns an vier Stellen gleichzeitig, und an dreien hat es heute schon Ge
 
 **Regel, ab sofort:** Jeder Durchgang durch eine Menge (Knoten, Laeufe, Dateien, Regelwerke) haelt fest, WAS abgesucht wurde -- nicht nur, was dabei herauskam. Ein Ergebnis ohne Raster ist nicht wiederholbar, sondern nur wiederhol**bar von vorn**.
 
+**Und ein Raster ohne den Blick, der es absuchte, behauptet eine Vollstaendigkeit, die es nicht hat** (Einwand des Betreibers). Dieselbe Suche liefert in einer anderen Sitzung ein anderes Ergebnis -- weil der Bestand sich bewegt, weil der Abruf je nach Prompt anderes einspielt, und weil ein Sucher mit engem Kontextfenster weniger halten kann als einer mit weitem. Wer spaeter "durchsucht" liest, wiederholt es nicht -- und uebersieht, was der damalige Blick nicht sehen konnte.
+
+Zum Vermerk gehoert deshalb, WER mit WELCHEM Blick gesucht hat:
+
+- **Sitzung und Agent** (`session`, `actor`) -- die Spalten gibt es bereits an Knoten und Lehren.
+- **Modell** (`model`) -- seit heute in einer Schreibweise, also gruppierbar.
+- **Bestandsstand**: Knotenzahl, Lehrenzahl, Kantenzahl zum Zeitpunkt der Suche. Heute sind 5799 Kanten dazugekommen; jede Suche von gestern hat ein anderes Gelaende abgesucht als dieselbe heute. Der Auszug unter `auszug/` ist der natuerliche Anker dafuer.
+- **Kontextfenster**: wieviel der Sucher ueberhaupt halten konnte. Gemessen, nicht geschaetzt -- L-502be0 haelt fest, wie leicht sich hier das Gefuehl wie Wissen anfuehlt.
+
+Beleg, dass das kein Formalismus ist: `ab_vergleich_abruf_2026-08-07` wurde von der Gegenprobe beanstandet, weil der Bestand waehrend des Laufs von 1971 auf 1974 wuchs. Derselbe Fehler, nur innerhalb einer einzigen Messung.
+
 *Reihenfolge:* zwischen S1 und S3. Der Rang braucht die Belegquelle, und die Brücke aus S3 darf nicht schon wieder ein Nachschlagewerk in den Arbeitsbestand kippen.
+
+### S1d · Geltung als dritte Achse — und die Vorgabe haengt an der Art der Aussage
+
+Gemessen 2026-08-09: Die Arbeitssprache ist **Deutsch** (286 eigene Knoten deutsch, 2 englisch; 688 Lehren deutsch), mit einem **englischen** Nachschlagewerk darin (1045 NASA-Knoten englisch). Das Einbettungsmodell bge-m3 ist mehrsprachig, der Stichwortkanal ist es nicht -- Trigramme mit deutscher Umlautfaltung treffen englischen Text nie.
+
+**Daraus folgt eine Unmoeglichkeit, keine Unwahrscheinlichkeit:** Solange die Ensemble-Pflicht verlangt, dass BEIDE Kanaele einen Kandidaten tragen, ist sprachuebergreifender Abruf ausgeschlossen -- der Stichwortkanal kann fuer ein deutsch-englisches Paar nie beitragen. Das ist die zweite, unabhaengige Erklaerung dafuer, dass genau eine von 5799 Kanten die NASA-Wolke verlaesst, und sie stuetzt die Entscheidung von S1b: ein Werk, das der automatische Abruf gar nicht erreichen kann, gehoert hinter eine eigene Tuer.
+
+**Uebersetzt wird der Bestand NICHT.** Eine Uebersetzung ist eine zweite Fassung derselben Aussage; ab da gibt es zwei Wahrheiten, von denen eine ungeprueft altert -- derselbe Grund, aus dem die Herkunft unveraenderlich ist. Die Bruecke liegt in der **destillierten Behauptung**, die fuer die Analogie-Arbeit ohnehin entsteht: formuliert in der Arbeitssprache, das Original unangetastet daneben.
+
+**Kulturwissen ist kein Uebersetzungsproblem, sondern ein Geltungsproblem.** "In Deutschland siezt man Fremde" ins Englische zu uebersetzen macht den Satz in den USA nicht richtig, nur lesbar. Wir haben zwei Geltungsachsen -- *wann* (`gilt_ab`/`gilt_bis`) und *wo im Wissen* (Zweig). Kultur- und Rechtsraum sind die dritte.
+
+Der gefaehrliche Teil ist die **Vorgabe**: Fehlende Angabe heisst heute `shared`, also *gilt ueberall*. Fuer Technisches meist richtig, fuer Aussagen ueber Menschen, Umgangsformen, Recht und Erwartungen **immer falsch** -- und der Fehler ist still. Die Regel sieht universell aus, wird universell angewandt und ist es nie.
+
+> **Die Vorgabe fuer die Geltung haengt an der ART der Aussage.** Technisches gilt bis zum Beweis des Gegenteils ueberall. Soziales, Rechtliches und Kulturelles gilt **gebunden**, bis jemand die Reichweite ausdruecklich weitet.
+
+Das ist dieselbe Bewegung, die die NASA-Stichprobe schon vollzogen hat: 6 von 39 Lehren wurden als *gebunden* aussortiert, weil sie an Physik hingen. Bei Kulturwissen ist der Anteil hoeher und der Schaden anders gelagert -- eine falsch uebertragene Vibrationslehre faellt auf, eine falsch uebertragene Hoeflichkeitsregel nicht. Sie fuehrt nur dazu, dass jemand als unhoeflich gilt und nie erfaehrt, warum.
+
+Japanisches Wissen waere danach kein Sonderfall, sondern der Normalfall in Reinform: Aussage im Original, destillierte Behauptung in der Arbeitssprache, Geltung ausdruecklich auf den Kulturraum gesetzt -- und ohne diese dritte Angabe kommt es gar nicht erst herein.
 
 ### S2 · Sichtbarkeit: was der Speicher liest und schreibt, steht im Gespräch
 
