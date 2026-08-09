@@ -169,7 +169,23 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- Skriptzugriff) tut das faktisch nie. Anders als die drei: wird
     -- serverseitig in _identity() aus der Umgebung abgeleitet, nie vom
     -- Aufrufer erwartet. NULL fuer Altbestand vor dieser Spalte.
-    client TEXT
+    client TEXT,
+    -- Gattung (Auftrag S1b, docs/PLAN_DESTILLE_2026-08-09.md). Haengt am
+    -- WERK, nicht an der einzelnen Aussage: ein Nachschlagewerk (NASA LLIS,
+    -- eine Normensammlung) wird nachgeschlagen, es draengt sich nicht auf --
+    -- anders als Arbeitsbestand (eigene Direktiven, Befunde, Lehren aus
+    -- diesem Haus), der im automatischen Abruf mitspielen soll. Gemessen
+    -- 2026-08-09: 1638 von 2020 Knoten (81%) sind /nasa-llis, anlass='skript',
+    -- source nennt nen.nasa.gov/llis.csv, norm_entscheidung durchgaengig
+    -- 'offen', in der gesamten Protokollhistorie 3 mal gezogen -- ein Werk,
+    -- das sich beim Abruf vor das eigene Wissen draengt (0 von 35 Pruefaellen
+    -- getroffen, siehe abrufguete.py). Vorgabe 'arbeitsbestand' deckt den
+    -- gesamten Altbestand ab, kein Wert wird geraten -- gleiche Bauform wie
+    -- anlass oben (NOT NULL DEFAULT, Werte-Trigger bi+bu unten). NUR die 1638
+    -- per migrate_gattung.py identifizierten NASA-Knoten werden per Migration
+    -- auf 'nachschlagewerk' gesetzt, siehe dort fuer die Erkennungsregel und
+    -- deren Begruendung.
+    gattung TEXT NOT NULL DEFAULT 'arbeitsbestand'
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -318,6 +334,21 @@ BEFORE UPDATE ON knowledge_nodes
 FOR EACH ROW WHEN NEW.anlass NOT IN ('selbst','betreiber','hook','skript','unbekannt')
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.anlass unzulaessig: erlaubt sind selbst, betreiber, hook, skript, unbekannt');
+END;
+
+-- Gattung (Auftrag S1b): gleiche Bauform wie anlass oben, zwei Werte.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gattung_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gattung NOT IN ('arbeitsbestand','nachschlagewerk')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gattung unzulaessig: erlaubt sind arbeitsbestand, nachschlagewerk');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gattung_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gattung NOT IN ('arbeitsbestand','nachschlagewerk')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gattung unzulaessig: erlaubt sind arbeitsbestand, nachschlagewerk');
 END;
 
 -- norm_entscheidung (Auftrag 2026-08-08): 13 Zusicherungen, siehe

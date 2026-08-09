@@ -42,6 +42,10 @@ DB = str(ort.DB)
 # nur fuer dieses Modul, kein neues Package.
 sys.path.insert(0, os.path.dirname(DB))
 from geltungsbereich import projekte_aus_projects_json  # noqa: E402
+# gattung_filter.py liegt wie geltungsbereich.py neben der DB (Auftrag S1b,
+# docs/PLAN_DESTILLE_2026-08-09.md): Nachschlagewerke (NASA LLIS, 1638
+# Knoten) nehmen am automatischen Abruf nicht mehr teil.
+from gattung_filter import SQL_ARBEITSBESTAND_NUR  # noqa: E402
 # Auftrag 2026-08-06: Bestandstext koennte anweisungsartig sein (Schreib-
 # pruefstand nimmt Text von einem lokalen Modell entgegen). entschaerfe_
 # fuer_ausgabe() kennzeichnet Funde, aendert nie den Bestand -- nur die
@@ -593,8 +597,8 @@ def _node_info(conn, node_id: str) -> dict | None:
     """Knotendaten fuer eine ref_id, die der Stichwort-Kanal NICHT mitbrachte
     (reiner Embedding-Fund -- genau der Fall, den Teil 1 loesen soll)."""
     row = conn.execute(
-        "SELECT path, title, summary, updated_at, gilt_ab, gilt_bis FROM knowledge_nodes "
-        "WHERE id = ? AND zurueckgezogen = 0", (node_id,)
+        "SELECT path, title, summary, updated_at, gilt_ab, gilt_bis FROM knowledge_nodes n "
+        f"WHERE id = ? AND zurueckgezogen = 0 {SQL_ARBEITSBESTAND_NUR}", (node_id,)
     ).fetchone()
     if row is None:
         return None
@@ -864,7 +868,7 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
             "SELECT n.id, n.path, n.title, n.summary, n.updated_at, n.gilt_ab, n.gilt_bis, "
             "bm25(knowledge_fts) AS score "
             "FROM knowledge_fts f JOIN knowledge_nodes n ON n.rowid = f.rowid "
-            "WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 "
+            f"WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 {SQL_ARBEITSBESTAND_NUR} "
             "ORDER BY bm25(knowledge_fts) LIMIT ?",
             (fts_match(kws), FULL_SCAN_ROW_CAP),
         ).fetchall()
