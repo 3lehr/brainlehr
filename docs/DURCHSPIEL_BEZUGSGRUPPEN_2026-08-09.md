@@ -257,7 +257,126 @@ ohne Gruppe gegen Aussage mit Gruppe · zwei Gruppen mit Schnittmenge.
 
 ---
 
-## 8. Der Satz, der beim Durchspielen haengenblieb
+## 8. Nachgetragen: die Mitbestimmung durchgespielt
+
+**Anlass:** Betreiber, 2026-08-09T23:3x: „und das mit dem gewerkscahdften noch
+einmal durchspielen!" — zusammen mit der Weisung, Mandat und Rotation gleich mit
+einzubauen. Beides gehoert zusammen: **Mitbestimmung IST das Delegationsmodell.**
+
+### 8.1 Der Unterschied, an dem alles haengt: imperatives gegen freies Mandat
+
+Ein Gewerkschaftsdelegierter ist typischerweise **weisungsgebunden** — er traegt
+die vorher beschlossene Position seiner Basis. Kommt eine Frage auf, die niemand
+vorhergesehen hat, muss er **zurueck**. Ein Abgeordneter dagegen hat ein **freies
+Mandat**: er entscheidet selbst.
+
+> **Fuer ein Modell ist nur das imperative Mandat zulaessig.**
+
+Ein freies Mandat fuer ein Modell hiesse: es entscheidet im Namen eines Menschen
+ueber Dinge, die dieser Mensch nie gesehen hat — der Confused Deputy, diesmal mit
+Vollmacht. Daraus folgt technisch, und das ist keine Vorsichtsmassnahme, sondern
+die Bauform:
+
+- **Die Gegenstandsbindung ist nicht optional, sondern konstitutiv.** Ein Mandat
+  ohne Gegenstand ist ein freies Mandat und wird abgewiesen.
+- **Ausserhalb des Gegenstands wird verweigert, nicht geraten.** „Zurueck in die
+  Gruppe" heisst im Code: die Mandatsrechte fallen weg, die eigenen bleiben.
+  Kein Fehler, kein Abbruch — aber auch keine Vollmacht.
+
+### 8.2 Nicht-delegierbare Rechte — die Urabstimmung
+
+Bei Grundsatzfragen entscheidet die Basis selbst, nicht der Delegierte. Das ist
+kein Misstrauen gegen den Delegierten, sondern eine Eigenschaft der Frage.
+
+Technisch ein Bauteil, **das in Kapitel 5 noch fehlte**: manche Rechte sind
+*per se* nicht weitergebbar, egal was im Mandat steht. Kandidaten hier: eine Norm
+im Rang 1/2 setzen · ein Veto legen · einen Ausweis anlegen · die Verfassung
+wechseln. Ein Mandat, das sie zu uebertragen versucht, wird nicht stillschweigend
+beschnitten, sondern **beim Anlegen abgewiesen** — sonst entsteht ein Ausweis,
+der aussieht, als koennte er etwas.
+
+### 8.3 Der eigentliche Fund: Anhoerungsrecht schlaegt Vetorecht
+
+Was Gewerkschaften historisch erreicht haben — Arbeitsschutz, Tarifbindung,
+Kuendigungsschutz, Sitze im Aufsichtsrat — folgt einem Muster:
+
+> **Die inhaltlich Unterlegenen erzwingen VERFAHRENSrechte. Verfahren schuetzt
+> dort, wo Macht fehlt.**
+
+Uebertragen auf den Hausmeister: Er braucht kein Recht auf die richtige
+Entscheidung. Er braucht ein **Recht auf Gehoer** — dass seine Messung
+ausgeliefert wird, wenn jemand ueber ihren Gegenstand entscheidet.
+
+Und das ist technisch **billiger und sicherer als jedes Veto**:
+
+| | Vetorecht | **Anhoerungsrecht** |
+|---|---|---|
+| Wirkung | haelt einen Beschluss auf | erzwingt Mitlieferung beim Abruf |
+| Blockade moeglich (A1) | **ja** — ein Ausweis blockiert alles | **nein** |
+| Injektionswaffe (A5) | **ja** — Blockade per fremdem Text | **nein** — es entsteht nur mehr Information |
+| noetige Schranke | `art=mensch` | **keine** — auch eine Maschine darf anhoeren lassen |
+| Einbauort | Beschlusslogik (neu) | Rangfolge des Abrufs (**existiert**) |
+
+Der letzte Punkt ist der entscheidende: **Es ist genau die Stelle, an der
+brainlehr heute nachweislich schwach ist.** Gemessen am 2026-08-09: von 28
+verfehlten Zielen stehen 26 nicht einmal in der Kandidatenliste — der Rueckstand
+sitzt in der Rangfolge, nicht in der Menge. Ein Anhoerungsrecht ist eine
+**Pflicht-Beimischung** in genau diese Liste: wer nach Gegenstand X fragt,
+bekommt die belegte Gegenaussage mitgeliefert, unabhaengig von ihrem Rang.
+
+Damit loest dieselbe Massnahme zwei Dinge, die bisher als getrennt galten: die
+Beteiligung der Fachkundigen **und** den gemessenen Abrufmangel.
+
+### 8.4 Quorum und Paritaet — und die Luege im Wort
+
+Ein Beschluss braucht Zustimmung **aus beiden Baenken**, nicht bloss eine Mehrheit
+im Ganzen. Technisch zaehlbar, und angreifbar an drei Stellen: wer ist
+stimmberechtigt, wer zaehlt, was passiert beim Patt.
+
+Der ehrliche Teil: In der deutschen Aufsichtsratsmitbestimmung ist die Paritaet
+nicht ganz paritaetisch — bei Stimmengleichheit entscheidet die Stimme des
+Vorsitzenden, und der kommt von der Kapitalseite. **Wer „paritaetisch" baut, ohne
+die Pattaufloesung zu benennen, baut eine Luege ins Modell.** Die Pattregel ist
+darum ein Pflichtfeld, kein Vorgabewert.
+
+### 8.5 Was daraus zusaetzlich zu bauen ist
+
+Aufgenommen in die Liste aus Kapitel 6, **vorgezogen** auf Weisung des
+Betreibers:
+
+- **Ablauf am Ausweis** (`gilt_bis`) — Rotation.
+- **Mandat, imperativ**: von wem, wofuer (Pflichtfeld), bis wann. Rechte als
+  Schnittmenge, **zur Laufzeit** gebildet, nicht beim Ausstellen eingefroren.
+- **Nicht-delegierbare Rechte**, beim Anlegen geprueft (8.2).
+- **Ein Mandat hebt die Art nie an**: ein Maschinenausweis mit Mandat eines
+  Menschen bleibt Maschine. Sonst ist das Mandat der Umweg zur Menschwerdung —
+  dieselbe Luecke, die `art` gerade geschlossen hat.
+- **Keine Weiterdelegation**: ein Mandat aus einem Mandat wird abgewiesen. Eine
+  Kette ist nicht mehr pruefbar, und niemand braucht sie bei einem Menschen.
+- **Anhoerungsrecht** (8.3) — als Pflicht-Beimischung im Abruf, nicht als Veto.
+
+### 8.6 Proben, zusaetzlich
+
+| Nr. | Probe | Erwartung |
+|---|---|---|
+| M1 | Mandat vergibt ein Recht, das der Mandant **nicht** hat | wirkungslos |
+| M2 | Mandant verliert das Recht **nach** Ausstellung | Delegierter verliert es sofort |
+| M3 | Maschinenausweis mit Mandat eines Menschen | bleibt `maschine` |
+| M4 | Mandat ohne Gegenstand | **beim Anlegen** abgewiesen (freies Mandat) |
+| M5 | Aufruf ausserhalb des Gegenstands | nur eigene Rechte, kein Abbruch |
+| M6 | abgelaufenes Mandat / abgelaufener Ausweis | wirkungslos, faellt auf unbeglaubigt |
+| M7 | Mandat aus einem Mandat | abgewiesen |
+| M8 | Mandat auf ein nicht-delegierbares Recht | abgewiesen |
+| M9 | Mandant existiert nicht / ist abgelaufen | Mandat wirkungslos |
+| M10 | nach Rotation: alter Ausweis | scheitert |
+
+**Grenzwerte:** `gilt_bis` genau jetzt · eine Sekunde davor · eine Sekunde
+danach · Mandat laeuft laenger als der Ausweis des Mandanten (der kuerzere
+gewinnt).
+
+---
+
+## 9. Der Satz, der beim Durchspielen haengenblieb
 
 Die Bezugsgruppen-Verfassung verlangt vom Speicher etwas, das schwerer ist als jede
 Rechtepruefung: **einen Konflikt auszuhalten, statt ihn aufzuloesen.** Jedes Werkzeug
