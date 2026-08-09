@@ -69,13 +69,37 @@ def treffer(nodes: list, lessons: list, target_kind: str, target_id: str) -> boo
     return False
 
 
+# Ob der Aufgabentext als PROMPT mitgegeben wird -- und das ist keine
+# Feinheit, sondern der groesste Messfehler dieses Tages.
+#
+# Gemessen 2026-08-09: Der Betrieb ruft `query(kws, cwd=cwd, prompt=prompt)`
+# (haken/knowledge_recall_hook.py::main). Dieses Werkzeug rief bis heute
+# `query(kws, cwd=None)` -- OHNE prompt. Der Prompt speist den
+# Bedeutungskanal; ohne ihn misst man den Abruf ohne seine wichtigste
+# Eingabe. Alle Zahlen dieses Tages ("0 von 35") sind so entstanden.
+#
+# Die Vergleiche untereinander blieben gueltig, weil alle Zustaende gleich
+# verstuemmelt gemessen wurden. Die absoluten Zahlen waren zu hart.
+#
+# MIT_PROMPT=True ist ab jetzt die Vorgabe, weil sie den Betrieb abbildet.
+# Der alte Zustand bleibt erreichbar, damit die Zahlen von heute frueh
+# reproduzierbar bleiben -- eine geaenderte Messlatte, die alte Werte still
+# unvergleichbar macht, ist schlimmer als eine falsche.
+MIT_PROMPT = os.environ.get("ABRUFGUETE_MIT_PROMPT", "1") == "1"
+
+
 def abrufen(task_text: str) -> tuple[list, list]:
-    """Identisch zu wissensnutzen_blind.blind_retrieve(), cwd=None (Korpus
-    traegt keine cwd-Angabe je Fall -- fuer alle 45 Faelle und alle vier
-    Messreihen gleich, also vergleichbar)."""
+    """Ruft den Abruf so, wie der Betrieb ihn ruft (siehe MIT_PROMPT).
+
+    cwd=None, weil der Korpus keine cwd-Angabe je Fall traegt -- fuer alle
+    Faelle und alle Messreihen gleich, also vergleichbar. Die
+    MIN_HITS-Sperre bildet die des Betriebs ab (dort: 'kann die Schwelle
+    gar nicht reissen -> gar nicht fragen'), nachgeprueft 2026-08-09."""
     kws = rh.keywords(task_text)
     if len(kws) < rh.MIN_HITS:
         return [], []
+    if MIT_PROMPT:
+        return rh.query(kws, rand=_kein_explore, cwd=None, prompt=task_text)
     return rh.query(kws, rand=_kein_explore, cwd=None)
 
 
