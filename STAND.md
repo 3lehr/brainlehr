@@ -1,16 +1,18 @@
-# STAND brainlehr — 2026-08-09T18:45:00+0200
+# STAND brainlehr — 2026-08-09T20:15:00+0200
 
-Offen: 117 Knoten tragen project_id 'shared', obwohl ihr Pfad das Projekt
-nennt (37 brainlehr, 29 openlehr, 26 fahrtenbuch, 12 buckeberg, Rest einzeln)
-— nachtragbar, aber mit dem jetzigen Pruefkorpus nicht als Gewinn messbar.
-Dazu 9 Knoten, die der Pruefstein weiter abweist (`runs/umschrift_abgelehnt.json`),
-und 26 Hausnormen, die bewusst den alten Text behalten.
-Naechstes: Vorgabewert von project_id in knowledge_add aus parent_path
-ableiten statt 'shared' — dieser bequeme Default hat die 117 erzeugt.
-Danach Aehnlichkeitskanten neu rechnen (die 5799 beschreiben die alten Texte)
-und beide Plaene fortschreiben.
+Offen: Der Abruf trifft (16/35, robust auch gegen 2024 Ablenkungen statt 386),
+aber er feuert zur falschen Zeit — nur 3 von 8 Betreibernachrichten loesten
+einen Recall aus, 4 von 7 Einspielungen kamen auf Systemmeldungen
+(Feldbericht, Knoten `1d2e6458`). Eine Suche, die nicht gefragt wird, hat
+keine Trefferquote.
+Naechstes: `recall_log.jsonl` auswerten (89 Zeilen von heute, jede mit
+ausloesendem Prompt) — bei welcher Art Eingabe feuert der Haken, bei welcher
+nicht. Dieselbe Diagnose wie heute frueh, eine Station frueher in der Kette.
+Danach: Pruefkorpus vergroessern (35 Faelle rauschen, belegt), Antwortqualitaet
+messen (`wissensnutzen.py`), Planschritte S3/S4/S5/S7.
 Wartet auf: `~/.claude.json` -> `mcpServers.knowledge.env` (actor) · Papernetz-
-Umfang · sechs Knoten Rang 4/6 · abgelaufene Norm buckeberg-anbieterabend.
+Umfang · sechs Knoten Rang 4/6 · Projektliste aus dem Verbundverzeichnis statt
+aus dem Bestand (`51f3695e`, 12 buckeberg-Knoten bleiben sonst 'shared').
 Nicht vergessen: Rueckweg ist `snapshots/knowledge_2026-08-09.db` plus 350
-Zeilen in `knowledge_fassungen`; Abruf steht bei 13/35 (vorher 7/35) bei 2604
-statt 2735 Zeichen je Prompt.
+Zeilen `knowledge_fassungen`; Deckel steht auf 10/7 (9409 statt 2604 Zeichen
+je Prompt) — ob mehr Kontext die ANTWORT verbessert, ist nicht gemessen.
