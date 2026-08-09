@@ -182,12 +182,72 @@ def faellige_auswertung(conn: sqlite3.Connection) -> dict | None:
     }
 
 
+def platzhalterfuellung(conn: sqlite3.Connection, spalte: str, zweck: str,
+                        schwelle: float = 0.8) -> dict | None:
+    """Eine Spalte, die formal gefuellt ist und nichts sagt.
+
+    FEHLKLASSE: Tautologisch erfuelltes Pflichtfeld. Nicht dieselbe wie
+    stumme_spalte -- die meldet nur bei 100 Prozent LEER, weil eine
+    teilweise gefuellte Spalte wenigstens dort wirkt, wo sie gefuellt ist.
+    Hier ist die Spalte GEFUELLT, aber mit 'unbekannt' bzw. leerem Text,
+    und faellt damit durch beide Netze: kein NULL, also nicht stumm; kein
+    Inhalt, also ohne Wirkung. Gemessen 2026-08-09 an actor/model:
+    361 von 383 Knoten ausserhalb des NASA-Imports, darunter der Knoten,
+    in dem ich zwei Minuten zuvor genau diese Felder als Alleinstellung
+    gegen fremde Systeme aufgeschrieben hatte.
+
+    Verwandt und schon belegt: L-7aad34 (source liess sich mit einer
+    Tautologie erfuellen) und L-86e92d (ordnungsgemaess abgelegt, in einer
+    Ablage, die der Empfaenger nicht kennt). Dieselbe Signatur, andere
+    Spalte -- ein Feld sieht befuellt aus und traegt nichts.
+
+    PREIS EINES FEHLALARMS: gering. 'unbekannt' kann ehrlich sein, wo die
+    Herkunft wirklich nicht feststellbar war. Darum die Schwelle bei 80
+    Prozent statt bei jedem Einzelfall, und darum nennt der Befund die
+    Zahl mit, statt nur zu urteilen.
+
+    Warum nicht bei 100 Prozent wie stumme_spalte: ein Identitaetsfeld,
+    das bei vier von fuenf Zeilen 'unbekannt' sagt, ist als Nachweis schon
+    tot -- man kann daraus keine Aussage ueber den Bestand mehr ziehen.
+    Der Unterschied zwischen 80 und 100 Prozent aendert daran nichts.
+
+    NUR ARBEITSBESTAND, und das ist keine Bequemlichkeit, sondern der
+    Nenner. Beim ersten Entwurf zaehlte die Pruefung ueber ALLE Knoten und
+    schwieg: 361 blinde von 2021 sind 18 Prozent, weil der NASA-Import mit
+    1638 Zeilen einen echten Schreiber traegt ('nasa_llis_import.py') und
+    die Quote verduennt. Gemessen, BEVOR die Pruefung eingebaut wurde --
+    dieselbe Fehlerklasse wie 'ortsabhaengige Zahl' im Arbeitsmelder.
+    Sachlich richtig ist der engere Nenner ohnehin: bei einem
+    Nachschlagewerk IST der Schreiber der Importeur, das sagt nichts ueber
+    die Herkunftskette. Beim Arbeitsbestand ist er der ganze Punkt."""
+    leerwerte = ("unbekannt", "unknown", "", "n/a", "none", "null")
+    platz = ",".join("?" * len(leerwerte))
+    r = conn.execute(
+        f"SELECT COUNT(*) n, SUM(LOWER(TRIM(COALESCE({spalte},''))) IN ({platz})) blind "
+        f"FROM knowledge_nodes WHERE zurueckgezogen = 0 "
+        f"AND COALESCE(gattung,'arbeitsbestand') = 'arbeitsbestand'", leerwerte
+    ).fetchone()
+    n, blind = r["n"] or 0, r["blind"] or 0
+    if n < MINDESTZAHL or blind / n < schwelle:
+        return None
+    return {
+        "pruefung": f"platzhalterfuellung:{spalte}",
+        "befund": f"{spalte} sagt bei {blind} von {n} Zeilen ({blind / n:.0%}) nichts aus",
+        "fehlklasse": f"tautologisch erfuelltes Pflichtfeld -- Zweck laut Schema: {zweck}",
+        "fehlalarm_kostet": "gering: 'unbekannt' darf ehrlich sein, die Quote steht daneben",
+    }
+
+
 def alle(conn: sqlite3.Connection) -> list[dict]:
     funde = [
         selbstzuschreibung(conn),
         faellige_auswertung(conn),
         stumme_spalte(conn, "norm_art",
                       "Sein/Sollen/Duerfen -- zwei Normen verschiedener Art konkurrieren nicht"),
+        platzhalterfuellung(conn, "actor",
+                            "wer die Aussage geschrieben hat -- traegt die ganze Herkunftskette"),
+        platzhalterfuellung(conn, "model",
+                            "welches Modell die Aussage geschrieben hat"),
     ]
     return [f for f in funde if f]
 
@@ -231,7 +291,46 @@ def _selftest() -> None:
     conn2.execute("INSERT INTO knowledge_nodes VALUES (1, 'sollen', 'x', 0)")
     assert stumme_spalte(conn2, "norm_art", "z") is None, "teilweise gefuellt ist kein Befund"
 
-    print("selftest ok (7 Faelle)")
+    # Platzhalterfuellung. Eigene Tabelle, weil gattung dazukommt.
+    c3 = sqlite3.connect(":memory:"); c3.row_factory = sqlite3.Row
+    c3.execute("""CREATE TABLE knowledge_nodes (actor TEXT, gattung TEXT,
+                  zurueckgezogen INTEGER DEFAULT 0)""")
+
+    def p3(n, actor, gattung='arbeitsbestand', zur=0):
+        for _ in range(n):
+            c3.execute("INSERT INTO knowledge_nodes VALUES (?,?,?)", (actor, gattung, zur))
+
+    # Negativfall: unter der Mindestzahl schweigt sie, auch bei 100 Prozent.
+    p3(5, "unbekannt")
+    assert platzhalterfuellung(c3, "actor", "z") is None, "unter der Mindestzahl kein Urteil"
+
+    # Grenzwert um die Schwelle: 79 Prozent schweigt, 80 Prozent meldet.
+    c3.execute("DELETE FROM knowledge_nodes")
+    p3(79, "unbekannt"); p3(21, "markus")
+    assert platzhalterfuellung(c3, "actor", "z") is None, "79 Prozent ist unter der Schwelle"
+    c3.execute("DELETE FROM knowledge_nodes")
+    p3(80, "unbekannt"); p3(20, "markus")
+    f3 = platzhalterfuellung(c3, "actor", "z")
+    assert f3 and "80 von 100" in f3["befund"], f3
+    assert f3["fehlklasse"] and f3["fehlalarm_kostet"], "Fehlklasse und Preis sind Pflicht"
+
+    # Der Fehler, der beim Bau fast durchging: ein Nachschlagewerk mit
+    # echtem Schreiber darf die Quote NICHT verduennen.
+    p3(1000, "nasa_llis_import.py", gattung="nachschlagewerk")
+    f4 = platzhalterfuellung(c3, "actor", "z")
+    assert f4 and "80 von 100" in f4["befund"], ("Nachschlagewerk darf den Nenner nicht aufblaehen", f4)
+
+    # Gegenprobe in die andere Richtung: echte Schreiber im Arbeitsbestand
+    # muessen den Melder wieder zum Schweigen bringen.
+    p3(200, "claude-code/opus-5")
+    assert platzhalterfuellung(c3, "actor", "z") is None, "echte Schreiber loeschen den Befund"
+
+    # Leerer Text zaehlt wie 'unbekannt' -- sonst faellt er durch beide Netze.
+    c3.execute("DELETE FROM knowledge_nodes")
+    p3(30, ""); p3(2, "markus")
+    assert platzhalterfuellung(c3, "actor", "z") is not None, "leerer Text ist auch blind"
+
+    print("selftest ok (13 Faelle)")
 
 
 def main() -> None:
