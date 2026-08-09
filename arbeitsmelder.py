@@ -292,7 +292,23 @@ def alle(cwd: Path | None = None, basis: str | None = None) -> list[dict]:
     historischen Fehlermuster als STRINGS (Fixtures), und diese Zeilen
     matchen textlich genauso wie echter Code -- ohne den Ausschluss meldet
     sich der Melder selbst, sobald er unversioniert im Arbeitsbaum liegt."""
-    cwd = cwd or WURZEL
+    # DER ORT WIRD GEMESSEN, NICHT ANGENOMMEN -- und das ist genau der
+    # Pruefstein, den dieses Modul selbst sucht (ortsabhaengige Groesse im
+    # Quelltext). Erste Fassung nahm WURZEL, also brainlehrs eigenes
+    # Verzeichnis. Gemessen 2026-08-09 aus dem fahrtenbuch-Arbeitsbaum
+    # heraus: dort lagen 43 geaenderte Dateien, der Melder sagte "nichts
+    # anzumerken" -- er sah die ganze Arbeit des Betreibers in fremden
+    # Baeumen nie.
+    #
+    # Der Melder haengt an PostToolUse und laeuft im Arbeitsverzeichnis der
+    # SITZUNG. Genau das ist der Baum, in dem gerade geschrieben wird.
+    # WURZEL bleibt nur der Rueckfall, wenn dort kein Repo liegt.
+    if cwd is None:
+        import os
+        hier = Path(os.getcwd())
+        r = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+                           capture_output=True, text=True, cwd=hier)
+        cwd = Path(r.stdout.strip()) if r.returncode == 0 and r.stdout.strip() else WURZEL
     basis = basis or _heutiger_tagesanfang(cwd)
     geaendert = {p: z for p, z in _geaenderte_zeilen(cwd, basis).items()
                 if Path(p).name != _EIGENE_DATEI}
