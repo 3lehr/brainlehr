@@ -187,6 +187,24 @@ Drei Sorten Linie -- Adresse, Modellnaehe, gemeinsame Auslieferung -- sehen im K
 
 *Reihenfolge:* nach S1b. Erst gehoert entschieden, was ueberhaupt zum Arbeitsbestand zaehlt -- sonst baut die Oberflaeche eine Trennung nach, die im Speicher nicht existiert.
 
+### S6 · Rechtevergabe — wer darf einen Schalter umlegen
+
+Einwand des Betreibers 2026-08-09: Manche Schalter darf nicht jeder umlegen; in einem Unternehmen entscheidet ueber manches nur die Geschaeftsfuehrung.
+
+Der Einwand trifft eine echte Luecke. Heute haelt der Speicher fest, WER entschieden hat (`norm_entschieden_von`, `actor`) -- und erzwingt **nichts**. Die Spalte ist ein Protokoll, keine Schranke. Gemessen: 62 von 71 Normen hat die Maschine sich selbst zugeschrieben.
+
+Und es ist eine VIERTE Groesse, unabhaengig von den drei aus Knoten b6305304: nicht was der Satz sagt (Art), nicht wie bindend (Rang), nicht wie widerrufbar (Unabaenderlichkeit) -- sondern **wer ihn anfassen darf**.
+
+**Trotzdem wird jetzt kein Rollenmodell gebaut.** In dieser Installation gibt es genau einen Menschen. Ein Rechtemodell mit einem Nutzer ist ein Schema ohne Schreiber -- dieselbe Krankheit wie `norm_art` (72 von 72 leer) und die vier Tokenspalten (2167 Zeilen, alle NULL). Beide wurden am 2026-08-08/09 diagnostiziert; sie ein drittes Mal selbst zu bauen waere schwer zu verteidigen.
+
+**Was ohne Rollen schon gilt und echte Traeger hat:** die Unterscheidung Mensch gegen Maschine. Sie ist bereits eine Rechtefrage und in S1 entschieden -- abgeleiteter Rang braucht Beleg, das Hausrecht des Betreibers sticht. Ein Rechtemodell mit zwei Rollen, und beide sind besetzt.
+
+**Abbruchbedingung, und sie bekommt einen MELDER statt einer Notiz:** Das Rollenmodell wird gebaut, sobald eine Installation existiert, in der **mehr als eine Person schreibt** -- messbar an verschiedenen menschlichen Schreibern in `actor`/`norm_entschieden_von` oder an einer fremden Installation. Vorher unterscheidet sich "darf" von "darf nicht" nicht messbar.
+
+Warum ein Melder und keine Notiz: Am selben Tag wurde Achse 3 mit derselben Begruendung vertagt -- und der Melder, der ihre Abbruchbedingung pruefen sollte, widerlegte die Vertagung in derselben Minute (zwei Normen fremder Herkunft lagen laengst im Bestand). Eine Vertagung ohne Melder ist ein Vielleicht.
+
+**Zu klaeren beim Bau, nicht vorher entschieden:** ob Rechte an der Person haengen, an der Rolle oder am Gegenstand (etwa: "Normrang 1 nur mit Rolle X"), und wie sich das zu `gattung` und `gilt_bis` verhaelt -- ein Recht, einen Schalter umzulegen, ist etwas anderes als das Recht, eine Aussage zu schreiben.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
