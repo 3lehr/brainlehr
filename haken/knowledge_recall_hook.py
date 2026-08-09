@@ -1344,10 +1344,22 @@ def main() -> None:
     except Exception:
         pass
 
-    if not nodes and not lessons:
-        return
-    nodes, lessons = _dedup_session(nodes, lessons, session_id)
-    if not nodes and not lessons:
+    # LEERE ABRUFE WERDEN AUCH PROTOKOLLIERT (Betreiber 2026-08-09).
+    # Vorher endete der Abruf hier ersatzlos -- und damit war die wichtigste
+    # Fehlerklasse unsichtbar: "der Speicher wusste es und schwieg" erzeugt
+    # keine Zeile, also kommt sie in keiner Auswertung vor. Ein Urteil ueber
+    # die Nuetzlichkeit haette immer zu gut ausgefallen, weil die
+    # Fehlschlaege per Bauart nicht in der Stichprobe stehen (dieselbe
+    # Fehlklasse wie L-73da37: die Kennzahl misst das Protokoll, nicht das
+    # System). Der leere Abruf wird als Zeile mit leeren Listen vermerkt --
+    # unterscheidbar von "kein Abruf" durch die blosse Existenz der Zeile.
+    leer = not nodes and not lessons
+    if not leer:
+        nodes, lessons = _dedup_session(nodes, lessons, session_id)
+        leer = not nodes and not lessons
+    if leer:
+        log_recall([], [], cwd=cwd, session_id=session_id, prompt=prompt,
+                   agent_id=payload.get("agent_id"), agent_type=payload.get("agent_type"))
         return
     # agent_id/agent_type: GEMESSEN nicht vorhanden im UserPromptSubmit-Payload
     # (s. log_recall()-Docstring) -- .get() trotzdem statt hartem None, falls
