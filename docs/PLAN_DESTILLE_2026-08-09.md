@@ -456,6 +456,67 @@ Ueberschneidung mit den 69 alten Zielen). Zusammen 90.
 ist der Vergleich vorher/nachher verloren — `abrufguete.py` bekommt statt dessen einen
 Schalter fuer mehrere Korpusdateien samt Dublettenmeldung.
 
+### S16 · Quellenpflege ohne Anstoss — zuerst als FRAGE, Umsetzung erst danach
+
+Vorschlag des Betreibers 2026-08-09, und er trifft die letzte Stelle, an der noch ein Mensch
+anstossen muss: Bei den Barrierefreiheits-Anforderungen hat ER die Recherche ausgeloest, und
+erst dabei kam heraus, dass eine neue Fassung ansteht. Der Speicher wusste weder, dass ihm
+Quellwissen fehlte, noch dass eine Quelle altert.
+
+**Zwei Fragen, die vor jedem Bau zu beantworten sind — und die erste ist nicht die
+naheliegende:**
+
+**Frage 1 — Woran erkennt das System, dass es zu einer Aussage KEIN Quellwissen hat?**
+Das ist die schwerere Haelfte. Eine fehlende Quelle erzeugt kein Ereignis; sie sieht aus wie
+gar nichts. Kandidaten, die es zu messen gilt: der Belegrang aus S1b (eine Aussage ohne
+`belegt`/`berichtet` waere ein Kandidat), die Gattung (Fachaussage gegen Hausregel), und der
+Weg aus S13 — die eigene Antwort traegt die Fachbegriffe, zu denen ein Beleg fehlen koennte.
+Gegen die Verwechslung mit dem leeren Filter (`L-36d092`): Erst wenn belegt ist, dass eine
+Fachaussage ueberhaupt erkennbar ist, taugt "kein Quellwissen gefunden" als Befund.
+
+**Frage 2 — Was hat der Kalender ueberhaupt zu tun?** Gemessen am 2026-08-09:
+
+| | |
+|---|---|
+| Normen im Bestand | 73 |
+| davon mit `gilt_bis` | **2** |
+| davon bereits abgelaufen | 2 |
+| Knoten mit URL-Quelle | 1642 (ueberwiegend NASA-Nachschlagewerk) |
+| Knoten, die Gesetz/Verordnung/Richtlinie/WCAG/BSI im Titel oder in der Quelle fuehren | 16 |
+
+**Ein Ablaufkalender haette heute genau zwei Eintraege, und beide sind schon abgelaufen.**
+Nicht weil nichts altert, sondern weil `gilt_bis` bei 71 von 73 Normen leer ist (gemessen als
+stumme Spalte, S14). Der Kalender ist damit nicht die erste Massnahme, sondern die zweite:
+**ohne gepflegte Ablaufdaten meldet er nichts und sieht dabei gesund aus** — dieselbe
+Signatur wie die vier Funde aus S14.
+
+**Zu bauen ist deshalb in dieser Reihenfolge, und die ist bindend:**
+1. **Erst die Frist erheben, dann den Kalender.** Fuer die 16 Knoten fremder Herkunft ein
+   Ablauf- ODER Wiedervorlagedatum bestimmen. Bei Gesetzen gibt es oft kein Ablaufdatum,
+   sondern nur eine Fassung — dann traegt der Knoten ein Pruefdatum statt eines Ablaufs. Das
+   Vorbild dafuer ist gemessen: `claude-obsidian` fuehrt `refresh_due` an jeder aktiven
+   Quelle und verlangt es fuer jede akzeptierte Behauptung (Knoten `0011e658`).
+2. **Dann der Melder**: was laeuft in den naechsten N Tagen ab, was ist bereits abgelaufen,
+   und WELCHE Knoten stuetzen sich darauf. Die Kante dafuer existiert noch nicht — das ist
+   dieselbe Bauform wie `bindend_vor` aus S7.
+3. **Dann erst die Recherche ohne Anstoss**, mit Vermerk je Lauf: wonach gesucht, in welchen
+   Raeumen, erfolgreich oder nicht, und wann eine Wiederholung sinnvoll ist. Der Rastervermerk
+   aus S1c ist dafuer bereits die Form; ein erfolgloser Lauf ist ein Ergebnis und gehoert
+   festgehalten, sonst sucht der naechste Durchgang dasselbe noch einmal.
+
+**Die Verbindung zum Zitationsnetz, die der Betreiber sieht, ist real und noch ungenutzt:**
+Das Papernetz kennt Quellen samt Zitationskanten (9 Netze, 297 Paper, 1624 belegte Kanten,
+Umfang noch nicht entschieden). Eine Quelle, die dort als ueberholt gilt, ist derselbe
+Vorgang wie eine abgelaufene Norm hier. S3 (die Papernetz-Bruecke) und dieser Schritt teilen
+sich damit die Kante "stuetzt sich auf" — sie sollten dieselbe bekommen, nicht zwei
+aehnliche.
+
+*Was ausdruecklich NICHT beschlossen ist:* ob eine Recherche wirklich ohne Rueckfrage laufen
+darf. Sie kostet, sie geht nach draussen, und ihr Ergebnis landet im Bestand. Die vier
+Stopp-Punkte des Hauses (Zugangsdaten, Aussenwirkung, Unumkehrbares, Geld) beruehren das
+mindestens an einer Stelle. Diese Entscheidung gehoert dem Betreiber und ist hier offen
+vermerkt, nicht vorweggenommen.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
