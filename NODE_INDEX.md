@@ -1,24 +1,25 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 1989 in 22 Aesten · Lehren: 647 · erzeugt: 2026-08-08T10:18:13+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 2025 in 23 Aesten · Lehren: 694 · erzeugt: 2026-08-09T10:18:10+0200
 
 Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowledge_search <begriff>`, `lesson_query <begriff>`.
 
 ## Landkarte (Ast: Anzahl Knoten)
 
 - /nasa-llis: 1638
-- /methodik: 91
-- /apps: 51
-- /shared: 43
+- /methodik: 95
+- /apps: 53
+- /shared: 45
+- /brainlehr: 41
 - /ops: 39
-- /brainlehr: 32
-- /openlehr: 24
-- /arch: 15
-- /testing: 9
+- /openlehr: 25
+- /arch: 16
+- /simulation-akademie-messaufbau-kein: 15
+- /testing: 10
 - /tools: 8
 - /werkzeuge: 8
 - /frontend: 7
-- /agents: 5
+- /agents: 6
 - /backend: 4
 - /fahrtenbuch: 4
 - /lessons: 3
@@ -29,43 +30,43 @@ Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowled
 - /probe: 1
 - /probe2: 1
 
-## Lehren gebuendelt (647 gesamt)
+## Lehren gebuendelt (694 gesamt)
 
-nach Art: antipattern 289, insight 151, error 110, pattern 97
-nach Projekt: fahrtenbuch 237, openlehr 205, hub 169, systemweit 82, shared 64, buckeberg 48, wohlair 40, global 39, +23 weitere Projekte (174)
+nach Art: antipattern 311, insight 161, error 118, pattern 104
+nach Projekt: fahrtenbuch 244, openlehr 216, hub 182, systemweit 127, shared 64, brainlehr 54, buckeberg 48, wohlair 46, +23 weitere Projekte (183)
 
 ## Juengste 15 Knoten
 
-- 2026-08-08 /werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-was-app-spezifisch-ist-und — Stiftshuette: Was app-spezifisch ist und wo nicht gesucht wurde
-- 2026-08-08 /werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-bekannte-defekte-und — Stiftshuette: Bekannte Defekte und Leichen (10 Befunde)
-- 2026-08-08 /werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten — Stiftshuette: Ansichten und Baukaesten
-- 2026-08-08 /werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und — Stiftshuette: Wissens- und Entscheidungsregister (13 Dateien, 7 ohne Schreiber)
-- 2026-08-08 /werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-fuer-betatest — Stiftshuette: Werkzeuge fuer Betatest und Walkthrough
-- 2026-08-08 /werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand — Stiftshuette: Werkzeuge, die Aufwand sparen
-- 2026-08-08 /werkzeuge/stiftshuette-werkzeugbestand-stand-2026 — Stiftshuette — Werkzeugbestand, Stand 2026-08-08
-- 2026-08-08 /werkzeuge — Werkzeuge
-- 2026-08-07 /brainlehr/formale-gleichheit-als-entdopplung — Formale Gleichheit als Entdopplung, Beweisgewicht und Ortsangabe eines Gesetzes
-- 2026-08-07 /brainlehr/drei-orte-fuer-eine-regel-text-findet — Drei Orte fuer eine Regel: Text findet, Code bindet, Mathematik uebersetzt
-- 2026-08-07 /brainlehr/warum-der-bedeutungskanal-streut-er — Warum der Bedeutungskanal streut: er trennt Signal von Rauschen, aber nicht die Spitze
-- 2026-08-07 /brainlehr/brainlehrs-zugriffsprotokoll-ist — brainlehrs Zugriffsprotokoll ist bereits ein Sicherheits-Ereignisstrom — Sigma passt ohne Umbau
-- 2026-08-07 /brainlehr/brainlehr-braucht-ein-eigenes — brainlehr braucht ein eigenes Verzeichnis — Umzug erst bei Ruhe
-- 2026-08-07 /brainlehr/der-mehrwert-entsteht-an-der-kante-zur — Der Mehrwert entsteht an der Kante zur Wirklichkeit, nicht zwischen zwei Dokumentsammlungen
-- 2026-08-07 /brainlehr/was-der-journalismus-an-formaten-kennt — Was der Journalismus an Formaten kennt und uns fehlt: Unterbrechung, Vorläufigkeit, Korrekturpflicht
+- 2026-08-09 /shared/eu-taxonomie-sechs-umweltziele — EU-Taxonomie: sechs Umweltziele (Verordnung 2020/852/EU) — geltendes Recht, nicht unsere Wahl
+- 2026-08-09 /shared/un-nachhaltigkeitsziele-17-agenda-2030 — UN-Nachhaltigkeitsziele (17, Agenda 2030) — Nachschlagewerk, bindet uns zu nichts
+- 2026-08-09 /methodik/normen-ordnen-sich-nach-drei — Normen ordnen sich nach drei unabhaengigen Achsen, nicht nach einer Zahl
+- 2026-08-09 /apps/apple-frist-minimumosversion-15-0-ab — Apple-Frist: MinimumOSVersion 15.0 ab Fruehjahr 2027 verpflichtend
+- 2026-08-09 /testing/naht-pruefung-vier-regeln-fuer-eine — Naht-Pruefung — vier Regeln fuer eine neue Domaene
+- 2026-08-08 /brainlehr/recall-fragt-den-prompt-nicht-das — Recall fragt den Prompt, nicht das gelesene Material — gemessene Luecke
+- 2026-08-08 /methodik/feldbericht-auswerten-erst-befund-dann — Feldbericht auswerten: erst Befund, dann datieren -- trennt "neu gebaut" von "neu sichtbar"
+- 2026-08-08 /brainlehr/access-log-tokenspalten-kein-zeilen — access_log-Tokenspalten: kein Zeilen-Schreiber, Koernung passt nicht
+- 2026-08-08 /apps/dringend-openlehr-friert-ein-beleg-den — DRINGEND openlehr: Friert ein Beleg den Kontaktnamen ein, oder holt er ihn beim Anzeigen?
+- 2026-08-08 /brainlehr/entscheidung-brainlehr-bleibt-privat — Entscheidung: brainlehr bleibt privat, Veroeffentlichung nur ueber ein neues Repo
+- 2026-08-08 /agents/entscheidung-kaskaden-regel-gewinnt — ENTSCHEIDUNG: Kaskaden-Regel gewinnt gegen ein Sitzungsverbot von Agent-Aufrufen
+- 2026-08-08 /brainlehr/zu-tun-bereichsauslieferung-gehoert-in — ZU TUN: Bereichsauslieferung gehoert in den Server, nicht in den Klienten
+- 2026-08-08 /brainlehr/zu-tun-die-nasa-wolke-ist-unverbunden — ZU TUN: Die NASA-Wolke ist unverbunden — kein Verfahren zieht Kanten aus Aehnlichkeit
+- 2026-08-08 /brainlehr/wiedervorlage-warum-vier-tokenspalten — WIEDERVORLAGE: Warum vier Tokenspalten und nicht zwei
+- 2026-08-08 /brainlehr/zu-tun-rangfolge-verschraenken-vier — ZU TUN: Rangfolge verschraenken — vier stumme Signale in die Suche holen
 
 ## Juengste 15 Lehren
 
-- 2026-08-08 [antipattern] Ein Fehlerweg ohne Aufraeumen legte die gesamte Wissensdatenbank still. Am 2026-08-08 wies der Herkunfts-Trigger ein knowledge_update ab;…
-- 2026-08-08 [pattern] Nebenarbeit waehrend eines langlaufenden Datenzuges, ohne den Zug zu verfaelschen — Verfahren, das am 2026-08-08 in sigmaforge zwei Bloecke…
-- 2026-08-08 [antipattern] brainlehr war nicht installierbar, ohne dass es irgendwo aufgefallen waere: eine Erstanlage an einem leeren Ort trug 2 Trigger, 6 Tabellen…
-- 2026-08-08 [pattern] Sammelentscheidung ueber 62 Knoten (Normschicht, Weisung des Betreibers 2026-08-08) ohne direktes UPDATE und ohne 62 einzelne…
-- 2026-08-08 [error] Betreiber gab den Ablageort ausdruecklich vor ("Knoten unter /werkzeuge/stiftshuette/ einspielen"). Ich habe den Sammelknoten mit einem…
-- 2026-08-08 [antipattern] Zwei Bausteine desselben Tages (2026-08-08) machten knowledge_update fuer den gesamten Fremdbestand unbenutzbar: der Trigger…
-- 2026-08-08 [antipattern] Normkonflikt ungeloest: /methodik/direktiven/wcag-2-2-aa-verbindlich-bei-jeder-oberflaeche-systemweit (Rang 1) <->…
-- 2026-08-08 [antipattern] Normkonflikt ungeloest: /methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der (Rang 3) <->…
-- 2026-08-08 [antipattern] Normkonflikt ungeloest: /methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit (Rang 1) <->…
-- 2026-08-08 [antipattern] Normkonflikt ungeloest: /methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge (Rang 3) <->…
-- 2026-08-08 [antipattern] Normkonflikt ungeloest: /methodik/direktiven-hub-claude-md/den-betreiber-korrigieren-seit-2026-08 (Rang 2) <->…
-- 2026-08-08 [antipattern] Normkonflikt ungeloest: /methodik/direktiven-hub-claude-md/modellverhalten-opus-5-sonnet-5-seit (Rang 2) <->…
-- 2026-08-08 [insight] Fuer die Beurteilung von Erkennungsregeln liefert die Epidemiologie keine Metapher, sondern eine fertige RECHENBARE Sprache — und sie…
-- 2026-08-08 [antipattern] `git stash` / `git stash pop` in einem Monorepo mit vielen Worktrees (hub/shared-knowledge) stashte und verlor kurzzeitig eigene UND fremde…
-- 2026-08-08 [insight] knowledge_mcp_server.py "database is locked" Untersuchung (2026-08-08): operator-Zaehlung "15 laufende Prozesse" war eine…
+- 2026-08-09 [antipattern] Abschnittsnummern eines Plans sind ENTSTEHUNGSREIHENFOLGE und werden als ABHAENGIGKEIT gelesen. Gemessen 2026-08-09 am eigenen…
+- 2026-08-09 [antipattern] fahrtenbuch 2026-08-09: Eine frisch gebaute Konsistenzpruefung wurde an EINE Emissionsstelle gehaengt…
+- 2026-08-09 [insight] Der autonome Skeptiker hat nie autonom gefeuert -- die Erinnerung an ihn ist echt, der Mechanismus war es nicht. Gemessen 2026-08-09 im…
+- 2026-08-09 [antipattern] Ein hängender Test wird dort gesucht, wo er sich vom Nachbarn unterscheidet — und das ist systematisch die falsche Stelle. Gemessen…
+- 2026-08-09 [antipattern] Ein Tag Pruefarbeit an openlehr (2026-08-08/09) foerderte acht Fehler zutage, und SECHS davon sassen an derselben Stelle: der Naht zwischen…
+- 2026-08-08 [insight] EIGENSTAENDIGER Feldfehler, NICHT der bekannte "Blackscreen bei laufender Fahrt" (Build 68/72, s. L-4750fc) -- die Zuordnung im Erstentwurf…
+- 2026-08-08 [antipattern] fahrtenbuch 2026-08-08: Ein 197-KB-Feldbericht (946 Zeilen, 929 Telemetrie-Ereignisse) sollte kontextschonend verdichtet werden. Ich…
+- 2026-08-08 [antipattern] fahrtenbuch 2026-08-08: Ein Sonnet-Subagent baute einen Guard gegen veraltete GPS-Fixes in DriveStateMachine.onLocation und schwaechte ihn…
+- 2026-08-08 [antipattern] Ein Push-Gate, das den ganzen Arbeitsverbund sperrt, weil unbeteiligte Repos rot sind, erzieht zu `--no-verify` — und schaltet damit auch…
+- 2026-08-08 [antipattern] Ein Test, dessen Finder die gesuchte Zeichenkette nie trifft, ist in BEIDE Richtungen wertlos — als gruener wie als roter. Gemessen…
+- 2026-08-08 [antipattern] Eine Sitzung startete im Arbeitsbaum von Repo A (brainlehr), der Betreiber waehlte per Startfrage Projekt B (openlehr). Ich habe B ueber…
+- 2026-08-08 [error] Eine leere Ausgabe als Befund gelesen, ohne vorher eine Nulllinie zu haben. Gemessen 2026-08-08 bei der Probe, ob vier Melder das Entfernen…
+- 2026-08-08 [error] Ein Umzug, der die Verschachtelungstiefe aendert, macht jede aus der eigenen Lage ABGELEITETE Wurzel still falsch -- und keine Suche nach…
+- 2026-08-08 [pattern] Um alle Nutzer eines Uebergangs-Symlinks zu finden, klemmt man ihn ab und startet alles, was ihn benutzt -- man sucht ihn nicht mit grep.…
+- 2026-08-08 [insight] "Noch Handbau" und "als naechstes faellig" sind zwei verschiedene Listen, und der Unterschied faellt erst bei der Messung auf. openlehr…

@@ -39,3 +39,8 @@ schreibpruefstand/demo/*.db-shm
 
 # Eskalations-Protokoll des Eilmeldungs-Melders — waechst im Betrieb
 eilmeldung_eskalation.jsonl
+
+# Laufzeitmarken der Sichtbarkeitsmeldung (je Sitzung eine Zeilennummer).
+sichtbarkeit_stand/
+*.nulllinie
+knowledge.db.vor-*
