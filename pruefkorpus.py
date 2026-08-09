@@ -115,7 +115,7 @@ def load_bestand(db_path: str = DB) -> tuple[list[dict], list[dict]]:
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5.0)
     conn.row_factory = sqlite3.Row
     nodes = [dict(r) for r in conn.execute(
-        "SELECT id, path, title, summary, content, norm_rang, gilt_ab "
+        "SELECT id, path, title, summary, content, norm_rang, gilt_ab, gattung "
         "FROM knowledge_nodes WHERE zurueckgezogen = 0"
     )]
     lessons = [dict(r) for r in conn.execute(
@@ -218,9 +218,14 @@ def generate_task(target_text: str, idf: dict, df: Counter, rng: random.Random,
 # --- Auswahl je Sorte -----------------------------------------------------
 
 def pick_candidates(nodes: list[dict], lessons: list[dict], rng: random.Random) -> dict[str, list[dict]]:
+    # gattung='nachschlagewerk' (z.B. NASA-Import) ist laut Wissensknoten
+    # 096669de ausdruecklich Heuhaufen -- darf als Ablenkung im Bestand liegen
+    # (bleibt in load_bestand()/IDF unberuehrt), aber nie ZIEL eines Prueffalls.
     lesson_pool = [l for l in lessons if l["type"] in ("pattern", "antipattern")]
-    fact_pool = [n for n in nodes if n["norm_rang"] is None and n["summary"]]
-    norm_pool = [n for n in nodes if n["norm_rang"] is not None and n["gilt_ab"]]
+    fact_pool = [n for n in nodes if n["norm_rang"] is None and n["summary"]
+                 and n["gattung"] != "nachschlagewerk"]
+    norm_pool = [n for n in nodes if n["norm_rang"] is not None and n["gilt_ab"]
+                 and n["gattung"] != "nachschlagewerk"]
     picks = {}
     for key, pool in (("lesson", lesson_pool), ("fact", fact_pool), ("norm", norm_pool)):
         k = min(CATEGORY_TARGETS[key], len(pool))
@@ -238,6 +243,17 @@ def _append_jsonl(record: dict, path: Path = JSONL_PATH) -> None:
 
 
 def run(out_path: Path = OUT_PATH, seed: int = SEED, model: str = MODEL) -> dict:
+    # _append_jsonl()'s Vorgabewert (path: Path = JSONL_PATH) wird nur
+    # ausgewertet, wenn NICHTS uebergeben wird -- er kennt out_path nicht und
+    # kann es nicht kennen. Genau das geschah hier: run(out_path=...) reichte
+    # den gewaehlten Pfad nie weiter, jeder Aufruf traf also immer JSONL_PATH,
+    # unabhaengig von --out. Ein Vorgabewert fuer einen Ausgabepfad ist
+    # deshalb gefaehrlich, sobald es einen zweiten, von aussen wählbaren
+    # Ausgabepfad gibt: er wird zur stillen Rueckfallkonstante, die den
+    # eigentlich gewaehlten Wert ueberstimmt. Fix: EIN aus out_path
+    # abgeleiteter jsonl_path, explizit an jeden _append_jsonl()-Aufruf
+    # durchgereicht -- derselbe Bezug wie OUT_PATH/JSONL_PATH oben.
+    jsonl_path = out_path.with_suffix(".jsonl")
     rng = random.Random(seed)
     nodes, lessons = load_bestand()
     idf, n_docs, df = build_idf(nodes, lessons)
@@ -261,7 +277,7 @@ def run(out_path: Path = OUT_PATH, seed: int = SEED, model: str = MODEL) -> dict
                 "accepted": result["accepted"], "task": result["task"],
                 "attempts": result["attempts"],
             }
-            _append_jsonl(record)
+            _append_jsonl(record, path=jsonl_path)
             if result["accepted"]:
                 cases.append({"category": category, "target_kind": record["target_kind"],
                                "target_id": target_id, "target_label": label, "prompt": result["task"]})
@@ -282,7 +298,7 @@ def run(out_path: Path = OUT_PATH, seed: int = SEED, model: str = MODEL) -> dict
         record = {"category": "negative", "target_kind": None, "target_id": None,
                    "target_label": None, "accepted": True,
                    "task": topic, "attempts": [{"attempt": 1, "text": topic, "error": None}]}
-        _append_jsonl(record)
+        _append_jsonl(record, path=jsonl_path)
         cases.append({"category": "negative", "target_kind": None, "target_id": None,
                        "target_label": None, "prompt": topic})
         print(f"  negative: ok ({topic[:40]}...)", flush=True)
@@ -306,10 +322,10 @@ def _selftest() -> None:
     nodes = [
         {"id": "n1", "path": "/a/x", "title": "Existenzgruender Broschuere",
          "summary": "Amtliche Beschreibung fuer Existenzgruender in Niedersachsen.",
-         "content": "", "norm_rang": None, "gilt_ab": None},
+         "content": "", "norm_rang": None, "gilt_ab": None, "gattung": "arbeitsbestand"},
         {"id": "n2", "path": "/a/y", "title": "Allgemeiner Hinweis",
          "summary": "Ein Text ueber irgendetwas Allgemeines mit vielen ueblichen Woertern.",
-         "content": "", "norm_rang": 1, "gilt_ab": "2026-01-01"},
+         "content": "", "norm_rang": 1, "gilt_ab": "2026-01-01", "gattung": "arbeitsbestand"},
     ]
     lessons = [
         {"id": "L-1", "type": "antipattern", "severity": "high",
@@ -358,6 +374,83 @@ def _selftest() -> None:
     print("  pick_candidates: Kategorien-Filter ok")
 
     print(f"selftest ok ({len(idf)} Vokabeln im Mini-Bestand, RARE_MAX_DF={RARE_MAX_DF})", file=sys.stderr)
+
+    _selftest_run_routing_und_gattung()
+
+
+def _fake_load_bestand(db_path: str = DB) -> tuple[list[dict], list[dict]]:
+    """Ersatz fuer load_bestand() im Selbsttest -- kein DB-Zugriff noetig,
+    liefert je Kategorie einen arbeitsbestand- und einen nachschlagewerk-
+    Eintrag, damit die Ausschluss-Pruefung etwas zum Ausschliessen hat."""
+    nodes = [
+        {"id": "n1", "path": "/f/1", "title": "Fakt eins", "summary": "s1", "content": "",
+         "norm_rang": None, "gilt_ab": None, "gattung": "arbeitsbestand"},
+        {"id": "n2", "path": "/f/2", "title": "Nachschlage-Fakt", "summary": "s2", "content": "",
+         "norm_rang": None, "gilt_ab": None, "gattung": "nachschlagewerk"},
+        {"id": "n3", "path": "/n/1", "title": "Norm eins", "summary": "s3", "content": "",
+         "norm_rang": 1, "gilt_ab": "2026-01-01", "gattung": "arbeitsbestand"},
+        {"id": "n4", "path": "/n/2", "title": "Nachschlage-Norm", "summary": "s4", "content": "",
+         "norm_rang": 1, "gilt_ab": "2026-01-01", "gattung": "nachschlagewerk"},
+    ]
+    lessons = [
+        {"id": "L-1", "type": "pattern", "description": "d1", "root_cause": "", "prevention": "",
+         "severity": "low"},
+    ]
+    return nodes, lessons
+
+
+def _fake_generate_task(target_text: str, idf: dict, df: Counter, rng: random.Random,
+                         model: str = MODEL) -> dict:
+    """Ersatz fuer generate_task() im Selbsttest -- KEIN Ollama-Aufruf, liefert
+    sofort einen akzeptierten Fall. So bleibt run() im Selbsttest netzlos
+    durchlaufbar (Abnahme-Vorgabe: kein Modellaufruf)."""
+    return {"accepted": True, "task": f"Testaufgabe zu {target_text[:20]}", "attempts": [], "error": None}
+
+
+def _selftest_run_routing_und_gattung() -> None:
+    """(a) run(out_path=...) darf JSONL_PATH (die Vorgabedatei) nicht anfassen
+    -- die Zeilenzahl vor/nach dem Lauf muss gleich bleiben.
+    (b) Kein erzeugter Fall hat ein Ziel mit gattung='nachschlagewerk'.
+    load_bestand/generate_task werden durch netzlose Fakes ersetzt (Modul-
+    globale Umschaltung mit Wiederherstellung im finally) -- kein Ollama,
+    keine Netzverbindung."""
+    import tempfile
+    global load_bestand, generate_task
+    orig_load_bestand, orig_generate_task = load_bestand, generate_task
+    tmpdir = Path(tempfile.mkdtemp(prefix="pruefkorpus_selftest_"))
+    custom_out = tmpdir / "custom_run.json"
+    custom_jsonl = custom_out.with_suffix(".jsonl")
+    vor = JSONL_PATH.read_text(encoding="utf-8").count("\n") if JSONL_PATH.exists() else -1
+    try:
+        load_bestand = _fake_load_bestand
+        generate_task = _fake_generate_task
+        output = run(out_path=custom_out, seed=1, model="fake-model")
+    finally:
+        load_bestand, generate_task = orig_load_bestand, orig_generate_task
+
+    nach = JSONL_PATH.read_text(encoding="utf-8").count("\n") if JSONL_PATH.exists() else -1
+    assert vor == nach, (
+        f"run(out_path=...) hat die Vorgabedatei {JSONL_PATH} veraendert "
+        f"({vor} -> {nach} Zeilen)"
+    )
+    print(f"  Vorgabedatei {JSONL_PATH.name} unveraendert ({vor} Zeilen): ok")
+
+    assert custom_jsonl.exists() and custom_jsonl.read_text(encoding="utf-8").strip(), (
+        f"eigene JSONL {custom_jsonl} wurde nicht befuellt"
+    )
+    print(f"  eigener Ausgabepfad {custom_jsonl.name} befuellt: ok")
+
+    nachschlagewerk_ziele = [
+        c for c in output["cases"]
+        if c["target_kind"] == "node" and c["target_id"] in ("/f/2", "/n/2")
+    ]
+    assert not nachschlagewerk_ziele, f"nachschlagewerk-Knoten als Ziel gewaehlt: {nachschlagewerk_ziele}"
+    print("  kein nachschlagewerk-Knoten als Ziel: ok")
+
+    for p in (custom_out, custom_jsonl):
+        if p.exists():
+            p.unlink()
+    tmpdir.rmdir()
 
 
 def main() -> None:
