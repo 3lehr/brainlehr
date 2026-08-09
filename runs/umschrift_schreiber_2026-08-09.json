@@ -1,0 +1,38 @@
+{
+  "datum": "2026-08-09T15:00:00+0200",
+  "frage": "Reicht Haiku als Umschreiber, oder braucht es Sonnet?",
+  "aufbau": "Nur Los 1 (10 Knoten) umgeschrieben, Los 2 in beiden Armen unveraendert. Gezaehlt werden nur die 10 Ziele aus Los 1. Zweiter Relevanzkanal an.",
+  "ergebnis": {
+    "ist": "1/10",
+    "sonnet": "8/10",
+    "haiku": "6/10"
+  },
+  "kosten": {
+    "sonnet": {
+      "tokens": 85089,
+      "sekunden": 167
+    },
+    "haiku": {
+      "tokens": 60254,
+      "sekunden": 159
+    }
+  },
+  "grenze": "n=10. Der Abstand Sonnet zu Haiku betraegt zwei Faelle und ist bei dieser Fallzahl nicht belastbar; belastbar ist nur der Abstand beider zum Ist-Zustand.",
+  "metadaten": {
+    "frage": "Helfen actor/model/project_id beim Abruf?",
+    "actor": "94 % unbekannt, 3 verschiedene Werte im ganzen Arbeitsbestand",
+    "model": "82 % unbekannt",
+    "project_id": "100 % gefuellt, aber 336 von 384 stehen auf 'shared' (87 %) -- ein Filter, der 87 % durchlaesst, filtert nichts. 19 von 20 Zielknoten sind 'shared'.",
+    "tags": "94 % gefuellt, 272 verschiedene Werte -- einziges Metadatenfeld mit Trennschaerfe, und es wird bereits mitindiziert (Spalte tags in knowledge_fts).",
+    "norm_rang_und_anlass": "je 81 % leer"
+  },
+  "kanten": {
+    "frage": "Papernetz-Verfahren: traegt ein Treffer seine Nachbarn mit?",
+    "gemessen_auf": "umgeschriebenem Bestand, 20 Zielknoten",
+    "direkt": 13,
+    "ueber_eine_kante": 0,
+    "ueber_zwei_kanten": 1,
+    "unerreichbar": 6,
+    "ursache": "5799 von 5853 Kanten sind vom Typ aehnlich_bedeutung -- gerechnete Aehnlichkeit. Ihr zu folgen liefert nichts, was der Bedeutungskanal nicht schon direkt misst."
+  }
+}
