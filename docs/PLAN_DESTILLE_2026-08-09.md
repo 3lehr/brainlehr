@@ -386,6 +386,84 @@ Ausschließlich an den zwei Zahlen, die heute schon stehen: **Treffer auf dem Pr
 
 Zusatzkennzahl ab S1: Anteil der Knoten mit **abgeleitetem** Reifegrad. Steigt er nicht, misst die Ableitung nichts.
 
+## Fortschreibung 2026-08-09T17:40:00+0200 — was der Quelltextvergleich mit claude-obsidian aendert
+
+Anlass: Der Betreiber brachte `github.com/AgriciDaniel/claude-obsidian` ein (10.609 Sterne,
+seit 2026-04-07, MIT, letzter Push 2026-08-01). Die Wettbewerbsrecherche dieses Tages hatte
+es uebersehen, weil sie nach EIGENSCHAFTEN suchte und nur WebSearch als Suchraum hatte —
+Codeverzeichnisse standen nicht einmal in ihrem Rastervermerk (`L-402a51`). Befund der
+Quelltextpruefung: Knoten `0011e658`.
+
+**Drei Abschnitte dieses Plans aendern sich, einer faellt weg.**
+
+### S1b wird konkreter: zwei Merkmale fehlen im eigenen Entwurf
+
+Der dortige Belegapparat ist gebaut und im Code durchgesetzt, nicht nur beschrieben
+(`claude_obsidian/ledgers.py`): eine akzeptierte Behauptung braucht ein Pruefdatum und
+frische, aktive, **nicht-synthetische** Stuetze; eine hochriskante braucht **zwei
+unabhaengige** Quellen, wobei `_independent_group_count()` nach einem `independence_key`
+gruppiert — drei Meldungen derselben Agentur zaehlen als eine Quelle; und eine akzeptierte
+Behauptung mit frischem Gegenbeleg muss auf `contested` oder auf Schlichtungsnotizen.
+
+Der eigene Entwurf (`belegt`/`berichtet`/`bekundet`) hat davon keines. **Zu ergaenzen:**
+1. **Unabhaengigkeitsschluessel** am Werk. Ohne ihn zaehlt derselbe Urheber mehrfach.
+2. **Eine eigene Stufe fuer maschinell Erzeugtes.** Das trifft die gemessene Wunde direkt:
+   62 von 72 Normentscheidungen hat ein KI-Akteur sich selbst gegeben. Unter dieser Regel
+   traegt keine davon eine akzeptierte Aussage.
+
+*Nicht uebernommen:* die dortige Trennung in Quellen- und Behauptungsverzeichnis als zwei
+Dateien. Unsere Aussagen sind Zeilen einer Datenbank; die Trennung ist bei uns eine Spalte.
+
+### S12 ist kein Forschungsschritt mehr, sondern ein Nachbau
+
+Dort laeuft, was hier als groesster Rueckstand gefuehrt wird (`scripts/retrieve.py`):
+BM25 ueber kontextualisierte Abschnitte, top-20, danach Cosinus-Rerank ueber lokale
+Ollama-Einbettungen auf top-5, mit Rueckfall auf reine BM25-Reihenfolge, wenn kein Modell
+erreichbar ist. Alle Bausteine liegen hier bereits vor (bge-m3 laeuft lokal, Einbettungen
+sind im Bestand). Die Reihenfolge aus S12 bleibt — billig vor teuer —, aber Stufe 2
+(Reranking nach der Vereinigung, VOR der Deckelung) ist ab jetzt eine Uebertragung mit
+lesbarem Vorbild unter MIT-Lizenz, keine Erfindung.
+
+### NEU: Auslieferung am Sitzungsstart, als Antwort auf eine Klasse, die der Haken nicht erreicht
+
+Dort haengt Wissen NICHT am Prompt: `hooks/hooks.json` kennt nur `SessionStart` und `Stop`.
+Am Sitzungsstart wird ein begrenzter Block (`wiki/hot.md`) eingespielt, sonst wird auf
+Aufruf gesucht.
+
+Das ist zuerst als Schwaeche gelesen worden und ist an einer Stelle eine Staerke: gemessen
+am 2026-08-09 erreichen **28 von 94** Betreibernachrichten den `UserPromptSubmit`-Haltepunkt
+nie, weil der Klient sie waehrend laufender Arbeit als `attachment` zustellt. Fuer diese
+Klasse ist ein Prompt-Haken strukturell blind — was am Sitzungsstart geladen wurde, ist
+dagegen da, egal wie eine spaetere Nachricht zugestellt wird.
+
+*Zu pruefen, nicht beschlossen:* ob ein begrenzter Startblock (Umfang gedeckelt, Auswahl aus
+dem Arbeitsgegenstand) mehr traegt als die 44 von 94 gefeuerten Einspielungen. Massstab
+bleiben die zwei Zahlen — Zieltreffer und Zeichen je Prompt; ein Startblock verschiebt Kosten
+von je-Prompt auf einmalig und ist damit nicht direkt vergleichbar. Das gehoert vor dem Bau
+gemessen.
+
+### Was NICHT uebernommen wird, samt Preis
+
+Der Transaktionsapparat (`transaction.py`, 4.680 Zeilen: eine Mutation als Buendel, Entwuerfe
+paralleler Arbeiter, Inspektion, atomare Anwendung). Bei einer lokalen Datenbank mit einem
+Schreiber leistet die Datenbanktransaktion dasselbe, und `knowledge_fassungen` haelt den
+Rueckweg. **Preis:** Kaeme je ein zweiter Schreiber oder ein verteilter Bestand hinzu, fehlt
+uns genau dieser Apparat — die Abbruchbedingung ist dieselbe wie bei S6 (mehr als eine Person
+schreibt).
+
+### Was der Vergleich NICHT hergibt
+
+Keine veroeffentlichte Abrufzahl. Ein Pruefkorpus (`wiki/meta/retrieval-benchmark-v1.7.md`)
+und ein Laeufer (`scripts/benchmark-runner.py`) sind in den Tests vorgesehen — der Laeufer ist
+im ausgelieferten Stand nicht enthalten, die Tests behandeln ihn ausdruecklich als optional,
+und in der gesamten Dokumentation steht keine Zahl zu Recall oder Trefferquote. Der Vorsprung
+dieses Hauses bei der Selbstmessung besteht also weiter; er ist nur kein Vorsprung mehr beim
+Belegapparat und keiner beim Reranking.
+
+*Grenze der Pruefung:* gelesen wurden README, WIKI.md, `hooks/hooks.json`, `scripts/retrieve.py`
+und `claude_obsidian/ledgers.py` in Auszuegen — nicht `transaction.py`, `capture.py`,
+`release.py`. Aussagen ueber deren Inneres waeren unbelegt.
+
 ## Was bewusst nicht getan wird
 
 Kein eigener Betrachter (der vorhandene reicht, und im Video ist er selbst „schön zum Zeigen, zum Arbeiten kaum relevant"). Keine PDF-Verarbeitung im Speicher — das Papernetz kann das, die Arbeitsteilung bleibt. Keine Rückrechnung alter Bestände vor dem jeweiligen Mechanismus.
