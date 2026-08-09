@@ -69,6 +69,41 @@ Belegt ist der Mechanismus bereits: Von 13 gefundenen Entsprechungen waren **13 
 
 **Und der Widerspruchsfall fällt gratis ab:** Widerspricht eine Lehre dort einer unserer Regeln, ist das kein Gütesiegel, sondern ein Vorgang — dieselbe Bahn wie ein Normkonflikt.
 
+**Der Quellenrang haengt am WERK, nicht an der Aussage.** Gemessen: 1876 verschiedene Quellenangaben, alle Freitext, keine Werk-Tabelle. Ohne sie muesste dieselbe NASA-Sammlung 1638 mal beurteilt werden. Einmal einstufen, 1638 mal erben -- und stellt sich ein Werk als schlechter heraus, sinkt alles daraus in einem Zug.
+
+`fremdbericht` wirft heute eine Institution mit dreissig Jahren bezahlter Fehler und einen Mann mit einer Kamera in denselben Topf. Drei Merkmale trennen sie, in der Reihenfolge ihrer Haerte:
+
+1. **Preis des Irrtums beim Urheber.** NASA-Lehren stammen aus Fehlern, die Geraete, Missionen und Menschen gekostet haben -- der Urheber hatte etwas zu verlieren. Ein Video kostet nichts, wenn es falsch ist. Das schaerfste Kriterium, weil es nicht vom Ansehen abhaengt, sondern vom Einsatz.
+2. **Nachpruefbarkeit.** Nennt das Werk Einzelfall, Kennung, Datum -- kommt man an den Fall heran?
+3. **Fremdes Verfahren.** Hat jemand ausser dem Urheber es geprueft, bevor es hinausging?
+
+Daraus drei Stufen, grob genug zum Entscheiden:
+
+| Stufe | Bedeutung | Beispiele |
+|---|---|---|
+| `belegt` | nachpruefbare Einzelfaelle **und** fremdes Verfahren | NASA LLIS, DIN, BSI |
+| `berichtet` | nachvollziehbare Herkunft, keine fremde Pruefung | Fachartikel, Konferenzbeitrag, gute Doku |
+| `bekundet` | eine Person sagt etwas | Video, Blog, Forenbeitrag |
+
+**Gesamtordnung:** `gemessen` > `belegt` > `berichtet` > `bekundet`. Eine eigene Messung an unserem Code sticht die NASA -- sie hat unseren Fall nie gesehen.
+
+**Die Warnung dazu, und sie betrifft genau das Video, das diesen Plan ausgeloest hat:** Der Quellenrang steuert, wieviel eine Bestaetigung NORMATIV wiegt. Er sagt nichts darueber, ob eine Idee brauchbar ist. Das Transkript war `bekundet` und hat zwei Dinge geliefert, die diesen Plan geaendert haben (Reifegrad, Promotion). Wer aus dem Quellenrang einen Ideenfilter macht, haette beides weggeworfen.
+
+> **Ein `bekundet` darf jeden Gedanken anstossen und keine Regel tragen.**
+
+### S1c · Rastersuche: was abgesucht wurde, wird vermerkt
+
+Aus der Bundeswehr, vom Betreiber eingebracht: Wer ein Gelaende absucht, teilt es in Raster und vermerkt jedes durchsuchte. Fehlt der Vermerk auch nur fuer eines, ist nicht ein Raster offen -- die ganze Suche ist unbrauchbar und beginnt von vorn.
+
+Das trifft uns an vier Stellen gleichzeitig, und an dreien hat es heute schon Geld gekostet:
+
+1. **Der NASA-Durchgang.** 40 von 1638 beurteilt. Ohne Vermerk, WELCHE 40, faengt der naechste Durchgang bei null an. (Die Datei `runs/nasa_uebertragung_2026-08-09.md` nennt sie -- der Vermerk existiert also, aber nur als Fliesstext, nicht als Zustand am Knoten.)
+2. **Verlorene Messungen.** Ein Gitterlauf lief heute vollstaendig durch und war weg, weil seine Ausgabe nur auf der Standardausgabe stand. Ein Raster ohne Vermerk.
+3. **Der Abruf selbst.** Der Fahrtenbuch-Fall: fuenf von sechs Befunden waren bereits als Lehre erfasst, zwei davon behoben -- und wurden erneut untersucht. Niemand hatte vermerkt, dass dieses Raster schon abgesucht war, weil der Speicher nur Funde kennt und keine Suchen.
+4. **Der Bestand als Suchprotokoll.** Der eigentliche Gedanke dahinter: Eine Wissensdatenbank, die nur festhaelt, was gefunden wurde, zwingt zur Wiederholung jeder erfolglosen Suche. `zero_hit_log.jsonl` ist genau dieser Vermerk und wird heute nur zum Zaehlen benutzt.
+
+**Regel, ab sofort:** Jeder Durchgang durch eine Menge (Knoten, Laeufe, Dateien, Regelwerke) haelt fest, WAS abgesucht wurde -- nicht nur, was dabei herauskam. Ein Ergebnis ohne Raster ist nicht wiederholbar, sondern nur wiederhol**bar von vorn**.
+
 *Reihenfolge:* zwischen S1 und S3. Der Rang braucht die Belegquelle, und die Brücke aus S3 darf nicht schon wieder ein Nachschlagewerk in den Arbeitsbestand kippen.
 
 ### S2 · Sichtbarkeit: was der Speicher liest und schreibt, steht im Gespräch
