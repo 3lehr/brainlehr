@@ -27,7 +27,21 @@ import sqlite3
 
 import embeddings
 from gattung_filter import SQL_ARBEITSBESTAND_NUR
-from knowledge_mcp_server import _embedding_ranking, _fuse_with_keyword_floor, _or_query
+from knowledge_mcp_server import _embedding_ranking, _or_query
+
+
+def _erlaubte_ids(conn: sqlite3.Connection) -> tuple[set, set]:
+    """Der Bedeutungskanal rankte bisher ueber ALLE Vektoren -- auch ueber die
+    1638 Nachschlagewerk-Knoten, die der Stichwortkanal per
+    SQL_ARBEITSBESTAND_NUR ausschliesst und die der Abruf am Ende ohnehin
+    nicht liefert. Gemessen 2026-08-09 ueber runs/pruefkorpus.jsonl (35
+    Faelle): Median-Rang des Ziels im Bedeutungskanal 96 ungefiltert, 34
+    gefiltert; Ziel unter den ersten 10: 8/35 ungefiltert, 14/35 gefiltert."""
+    nodes = {r["id"] for r in conn.execute(
+        f"SELECT n.id FROM knowledge_nodes n WHERE n.zurueckgezogen = 0 {SQL_ARBEITSBESTAND_NUR}")}
+    lessons = {r["id"] for r in conn.execute(
+        "SELECT id FROM lessons_learned WHERE status != 'resolved'")}
+    return nodes, lessons
 
 
 def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | None,
@@ -67,13 +81,25 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
         list(node_by_id.keys()), list(lesson_by_id.keys()), embedding_weight=1.0)
 
     if query_vec is not None:
-        emb_node_ids = _embedding_ranking(conn, "node", query_vec, None)
-        emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, None)
+        erl_nodes, erl_lessons = _erlaubte_ids(conn)
+        emb_node_ids = _embedding_ranking(conn, "node", query_vec, erl_nodes)
+        emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, erl_lessons)
     else:
         emb_node_ids, emb_lesson_ids = [], []
     embedding_ordered_ids = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
 
-    final_ids = _fuse_with_keyword_floor(keyword_ordered_ids, embedding_ordered_ids, max_results)
+    # Kein Stichwort-Sockel (_fuse_with_keyword_floor) mehr: er reservierte die
+    # ersten max_results Plaetze fuer den Stichwortkanal -- und weil dieser bei
+    # einem Prompt als Anfrage per _or_query praktisch den ganzen Bestand zieht
+    # (Median 348 von 383 Knoten, 674 von 674 Lehren), war die Kandidatenliste
+    # in 35 von 35 gemessenen Faellen BYTE-GLEICH mit seinen Top 5. Der
+    # Bedeutungskanal wurde gerechnet (ein Ollama-Aufruf je Prompt) und hatte
+    # null Einfluss. Reine RRF-Verschmelzung: 9/35 statt 7/35, bei gleicher
+    # Liefermenge. Der Sockel bleibt in knowledge_search unangetastet -- dort
+    # ist die Anfrage ein Suchbegriff, kein Prompt, und zieht nicht den Bestand.
+    final_ids = embeddings.rrf_fuse(
+        keyword_ordered_ids, embedding_ordered_ids,
+        embedding_weight=embeddings.hybrid_retrieval_weight())[:max_results]
 
     # Embedding-Kanal kann IDs liefern, die die FTS-Abfrage oben nicht
     # gezogen hat (das ist der ganze Witz des zweiten Kanals) -- fehlende
@@ -83,8 +109,12 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
     if missing_node_ids:
         placeholders = ",".join("?" for _ in missing_node_ids)
         for r in conn.execute(
-            "SELECT id, path, title, summary, updated_at, gilt_ab, gilt_bis "
-            f"FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 "
+            # Alias n: SQL_ARBEITSBESTAND_NUR spricht n.gattung an. Ohne ihn warf
+            # diese Abfrage "no such column: n.gattung" -- unbemerkt, weil der
+            # Stichwort-Sockel bis 2026-08-09 jeden Platz belegte und der Block
+            # damit nie lief. Der Bedeutungskanal macht ihn erst scharf.
+            "SELECT n.id, n.path, n.title, n.summary, n.updated_at, n.gilt_ab, n.gilt_bis "
+            f"FROM knowledge_nodes n WHERE n.id IN ({placeholders}) AND n.zurueckgezogen = 0 "
             f"{SQL_ARBEITSBESTAND_NUR}",
             missing_node_ids,
         ):
@@ -116,6 +146,29 @@ def _selftest() -> None:
     assert nodes == [] and lessons == [], "leerer Text muss leere Kandidaten liefern"
     nodes, lessons = kandidaten(conn, "qwfpqwfpblorx zvxjkq wibbnfrx", None, 5)
     assert nodes == [] and lessons == [], "Nonsens-Text darf keine Kandidaten erfinden"
+
+    # Negativfall zum Gattungsfilter im Bedeutungskanal: als Anfragevektor
+    # dient der Vektor eines Nachschlagewerk-Knotens selbst. Ungefiltert steht
+    # er damit auf Rang 1 seines eigenen Kanals -- er darf trotzdem nirgends
+    # auftauchen. Gegenprobe in die andere Richtung gleich darunter: derselbe
+    # Aufruf mit allowed_ids=None kennt ihn sehr wohl (sonst pruefte der Test
+    # nur, dass irgendetwas leer ist).
+    zeile = conn.execute(
+        "SELECT e.ref_id, e.vector FROM knowledge_embeddings e JOIN knowledge_nodes n "
+        "ON n.id = e.ref_id WHERE e.kind = 'node' AND n.gattung = 'nachschlagewerk' "
+        "AND e.model = ? LIMIT 1", (embeddings.DEFAULT_EMBED_MODEL,)).fetchone()
+    if zeile is not None:  # DB ohne Nachschlagewerk-Bestand: nichts zu pruefen
+        vec = embeddings.unpack_embedding(zeile["vector"])
+        erl_nodes, _ = _erlaubte_ids(conn)
+        assert zeile["ref_id"] not in erl_nodes, "Fixtur falsch: Knoten ist kein Nachschlagewerk"
+        ohne_filter = _embedding_ranking(conn, "node", vec, None)
+        assert ohne_filter and ohne_filter[0] == zeile["ref_id"], (
+            "Gegenprobe: ungefiltert muesste der Knoten sein eigener Rang 1 sein")
+        mit_filter = _embedding_ranking(conn, "node", vec, erl_nodes)
+        assert zeile["ref_id"] not in mit_filter, "Nachschlagewerk im Bedeutungskanal durchgekommen"
+        nodes, lessons = kandidaten(conn, "Nachschlagewerk", vec, 5)
+        assert zeile["ref_id"] not in [n["id"] for n in nodes], (
+            "Nachschlagewerk in der Kandidatenliste gelandet")
     conn.close()
     print("suchpfad_abruf._selftest ok")
 
