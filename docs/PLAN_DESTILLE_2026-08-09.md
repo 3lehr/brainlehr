@@ -45,6 +45,32 @@ Der Deckel gilt dann nur noch für **Normrang 1 und 2**: Was für alle gelten so
 
 *Nicht getan:* Reifegrad rückwirkend auf 2020 Knoten rechnen. Erst der Mechanismus, dann ein Lauf.
 
+### S1b · Nachschlagewerke sind eine eigene Gattung — und die Belegquelle für S1
+
+**Gemessen 2026-08-09, nachdem der Betreiber die Einordnung korrigiert hat:** Der NASA-Bestand kam als `anlass=skript` aus einem Datensatz für Themenmodellierung (`github.com/NASADatanauts/llis_topicModel`, `data/llis.csv`). Alle 1638 Knoten stehen auf `norm_entscheidung=offen` — sie tragen keine einzige Norm. Und sie wurden in der gesamten Protokollhistorie **3 mal** gezogen.
+
+Das ist kein Wissen des Hauses. Es ist ein **Nachschlagewerk**: wissenschaftlich gewonnene Lebensweisheiten, wie eine Normensammlung. Man schlägt darin nach, es drängt sich nicht auf.
+
+**Erste Folge — eine eigene Tür statt eines Platzes am Tisch.** Nachschlagewerke werden als Gattung gekennzeichnet und nehmen am automatischen Abruf NICHT teil. Sie bekommen eine gezielte Abfrage („hat das jemand vor uns bezahlt?"). Damit misst der Prüfstand wieder unser Wissen statt eines Wörterbuchs — heute sind 81 % des Bestands ein solches Werk, und der Abruf trifft 0 von 35.
+
+*Grenze, die nicht verschwiegen wird:* Die 3 Zugriffe beweisen für sich genommen nichts — sie könnten auch heißen, dass der Abruf es nie an die Oberfläche bringt. Beides ist gemessen (1 von 5799 Kanten verlässt die Wolke; 0 von 13 Entsprechungen waren neu). Zusammen tragen die Befunde den Schluss, einzeln keiner.
+
+**Zweite Folge, und sie ist der eigentliche Gewinn: das Nachschlagewerk wird zur Belegquelle für den maschinellen Rang aus S1.**
+
+Die offene Frage von S1 lautete: Wenn nicht der Mensch die Gültigkeit verbürgt — was dann? Antwort: `belegrang`, und dort steht die Stufe **`fremdbericht`** bisher ohne Quelle. Eine Regel von uns, die im Nachschlagewerk eine Entsprechung findet, ist unabhängig gestützt — aus einem anderen Fach, teuer bezahlt, von niemandem hier beeinflusst. Genau das kann keine unserer eigenen Quellen leisten.
+
+Belegt ist der Mechanismus bereits: Von 13 gefundenen Entsprechungen waren **13 Bestätigungen** eigener Direktiven (Walkthrough-Doktrin, Rot-Probe, WCAG, Grenzwert-Regel) — zwei davon fast wortgleich, dreißig Jahre früher.
+
+**Drei Regeln, ohne die daraus ein Gütesiegel-Automat wird:**
+
+1. Bestätigung ergibt `fremdbericht`, **niemals** `gemessen`. Dass jemand anders dasselbe lernte, macht eine Regel unabhängig gestützt, nicht messbar. Der Unterschied ist der ganze Wert der Skala.
+2. **Fehlende Bestätigung ist kein Gegenbeleg.** Das Werk deckt Ingenieursarbeit ab, nicht unsere ganze Welt — gemessen waren 6 von 39 Lehren an Hardware gebunden. Unbestätigt ist nicht widerlegt. Dieselbe Falle wie beim leeren Filter (L-36d092): Leere ist erst ein Befund, wenn sie einer sein kann.
+3. Der Abgleich läuft über die **destillierte Behauptung**, nicht über den Wortlaut — auf beiden Seiten. Belegt: 1 von 5799 Wortähnlichkeits-Kanten überschreitet die Grenze. Dafür müssen auch unsere eigenen Regeln destilliert werden, nicht nur die fremden.
+
+**Und der Widerspruchsfall fällt gratis ab:** Widerspricht eine Lehre dort einer unserer Regeln, ist das kein Gütesiegel, sondern ein Vorgang — dieselbe Bahn wie ein Normkonflikt.
+
+*Reihenfolge:* zwischen S1 und S3. Der Rang braucht die Belegquelle, und die Brücke aus S3 darf nicht schon wieder ein Nachschlagewerk in den Arbeitsbestand kippen.
+
 ### S2 · Sichtbarkeit: was der Speicher liest und schreibt, steht im Gespräch
 
 Betreiberwunsch, und er trifft eine echte Blindstelle. Der Abruf ist heute sichtbar (`<knowledge-recall>`), **jeder Schreibvorgang ist unsichtbar**. Genau daraus entstand die gemessene Lehre L-706807: Ein Agent meldete „gespeichert", die Herkunftsschranke hatte abgewiesen, niemand sah es.
