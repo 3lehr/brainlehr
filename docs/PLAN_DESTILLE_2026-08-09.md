@@ -261,6 +261,30 @@ Dazu: schweigt, solange nichts anschlaegt.
 
 **Elf weitere pruefende Rollen liegen in der alten Bibliothek** (`sokrates-review`, `pivot-richter`, `verfassungsgericht`, `spaghetti-monster`, `archaeologe` und sieben weitere) -- als Vorlage fuer Fehlklassen, nicht als Agenten zum Starten.
 
+### S9 · Der Abruf soll den Suchpfad benutzen, statt einen eigenen zu haben
+
+**Gemessen 2026-08-09, gegen DIESELBEN 35 Faelle:**
+
+| Weg | Treffer | Preis |
+|---|---|---|
+| Abruf, Vorgabe (heute im Betrieb) | 0/35 | 2540 Zeichen **je Prompt** |
+| Abruf, beide Kanaele offen | 4/35 | 6924 Zeichen je Prompt |
+| **`knowledge_search`, gezielt** | **7/35** (Lehren 4/15, Knoten 3/20) | **3480 Zeichen je Anfrage** |
+
+**Die gezielte Suche ist fast doppelt so gut wie der beste Abruf, zum halben Preis.** Und sie findet Lehren -- 4 von 15, waehrend der Abruf in JEDER Einstellung 0 von 15 lieferte.
+
+**Damit faellt eine Diagnose dieses Tages.** "Lehren werden nicht gefunden" galt als Eigenschaft des Bestands (zu enger Trichter, MIN_HITS=3, Rang 7 bis 597 im Bedeutungskanal). Es ist eine Eigenschaft des ABRUFPFADS. Derselbe Bestand, dieselben Aufgaben, andere Implementierung -- und es geht.
+
+**Der Unterschied liegt in der Bauform**, nicht in einer Einstellung: `knowledge_search` verschmilzt Stichwort- und Bedeutungsrangliste per RRF und kennt weder eine `MIN_HITS`-Sperre noch eine Ensemble-Pflicht. Der Abruf hat beides -- und beides wirft Kandidaten weg, BEVOR eine Rangfolge greift.
+
+**Zu bauen ist deshalb keine zweite Einstellung, sondern eine Zusammenfuehrung:** Der Abruf ruft den Suchpfad auf und begrenzt danach die Menge, statt vorher zu sieben. Die Strenge des Abrufs gehoert an den AUSGANG (wieviel wird eingespielt), nicht an den EINGANG (was darf ueberhaupt Kandidat werden).
+
+Das ist zugleich die Antwort auf die Frage des Betreibers, warum wir nicht beide Wege zugleich gehen: **wir haben beide, und der schlechtere laeuft im Betrieb.**
+
+*Vorbehalt, der bestehen bleibt:* 7 von 35 sind 20 Prozent -- gut gegen 0, schlecht in absoluten Zahlen. Und der Pruefkorpus vermeidet woertliche Ueberschneidung absichtlich, misst also den schweren Fall.
+
+*Reihenfolge:* vor S4 (Promotion). Eine Umstellung des Abrufs auf den Suchpfad aendert jede Messung danach -- sie gehoert vor alles, was sich an Abrufzahlen bewerten laesst.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
