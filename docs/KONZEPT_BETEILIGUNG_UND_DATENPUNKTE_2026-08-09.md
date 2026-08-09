@@ -167,6 +167,99 @@ Wege laufen; eine Maske ist die billigste und am leichtesten nachzuholende Schic
 
 ---
 
+## 7b. Zweck als Pflichtfeld — „nur mit begruendetem Interesse"
+
+**Anlass:** Betreiber: „wir hatten bei aka2026 den reverse proxy gedacht um zb dsvgo
+einzuhalten und dinge datenschutzkomform zu machen, nur mit begruendeten interesse
+durf man daten lesen".
+
+### Was in AKA2026 wirklich steht (nachgesehen, nicht uebernommen)
+
+`L-ad0dda` warnt genau davor, Muster aus AKA2026 pauschal zu kopieren — 86 Agent-
+Dateien uebernommen, 11 genutzt. Also geprueft:
+
+- **OD13 ist Infrastruktur, nicht Zweckpruefung.** Woertlich: „Dev und Prod verwenden
+  DIESELBE Infrastruktur-Stack: Docker Compose, **Traefik als Reverse Proxy**,
+  PostgreSQL, HTTPS. Kein 'das funktioniert nur lokal'-Kompromiss." Das ist
+  Umgebungsparitaet und TLS.
+- **Die DSGVO-Bindung steht in der VERFASSUNG** (Art. 5, 6, 17 fuer Teilnehmerdaten)
+  und als eigener `legal`-Agent fuer Verstoesse.
+- **Das eigentliche Muster steckt bei den Purpose-Strings:** „Purpose strings fuer
+  alle Datenzugriffe (Kamera fuer QR-Scan benoetigt explizite Begruendung)", plus
+  „Explizite User-Einwilligung + Purpose-String im Onboarding/Info.plist PFLICHT".
+
+Das ist Apples Zwang, **vor** dem Zugriff den Zweck zu deklarieren. Der Gedanke des
+Betreibers uebertraegt ihn von Geraetesensoren auf Datensaetze — und das ist die
+staerkere Fassung, nicht die schwaechere.
+
+### Warum ein Reverse Proxy der richtige Ort, aber die falsche Schicht ist
+
+Ein Proxy sieht **Anfragen**, keine Datensaetze. Er kann `/api/personal/*` sperren; er
+kann nicht „dieses Feld fuer diesen Zweck". Bei uns liegt die Stelle, an der beides
+bekannt ist — Aufrufer, Werkzeug und betroffener Datensatz — an **`tools/call`**, dem
+Choke-Point aus B4.3.
+
+Mit ADR-001 (Streamable HTTP) wird ein Proxy trotzdem real: fuer TLS, `Origin`-Pruefung
+und Ratenbegrenzung. **Zwei Aufgaben, zwei Orte** — sie zu vermischen erzeugt eine
+Schranke, die aussieht wie Datenschutz und Verkehrsregelung ist.
+
+### Die Regel, ohne die es eine Rechteerweiterung per Behauptung waere
+
+> **Der Zweck verengt. Er erweitert nie.**
+> Wirksame Sicht = Rolle **geschnitten mit** Zweck, nie vereinigt.
+
+Der Zweck ist eine **Behauptung** und kann es nicht anders sein: anders als `actor`,
+der einen Ausweis hat, lebt der Zweck im Kopf des Aufrufers. Es gibt nichts, wogegen
+man ihn pruefen koennte. Wer daraus mehr Rechte ableitet, hat dieselbe Luecke gebaut
+wie `actor` im Argument — nur schwerer zu sehen.
+
+Was trotzdem geht, und das ist viel:
+
+1. **Geschlossene Liste statt Freitext.** Ein Freitextzweck ist nicht auswertbar und
+   damit auch nicht pruefbar.
+2. **Der Zweck bestimmt die PROJEKTION, nicht nur die Erlaubnis.** Das ist der
+   eigentliche Gewinn und echte Datenminimierung (Art. 5 Abs. 1 lit. c) statt eines
+   Vermerks. Am gemessenen Fall `L-adfb33`:
+
+   | Zweck | sieht |
+   |---|---|
+   | Dienstplanung | „abwesend bis 2026-08-15" |
+   | Personalverwaltung | zusaetzlich den Grund |
+
+   Heute gibt es nur ganz-oder-gar-nicht — und deshalb stand der Name im
+   Pflichtfeld `source`, wo ihn niemand vermutete. **Die Zweckprojektion loest genau
+   diesen Befund**, den Sichtbarkeitsregeln allein nicht loesen konnten.
+3. **Protokoll macht die Behauptung nachpruefbar.** `access_log` traegt den Zweck mit;
+   Muster wie „derselbe Zweck fuer 1.000 Datensaetze in 3 Sekunden" sind zaehlbar. Der
+   Knoten `brainlehrs-zugriffsprotokoll-ist` haelt fest, dass die Feldform dafuer
+   bereits Sigma-tauglich ist.
+4. **Zweckwechsel ist ein Ereignis.** Wer denselben Datensatz unter zwei Zwecken
+   abruft, tut etwas Auffaelliges — nicht verboten, aber sichtbar.
+
+### Die Grenze, ehrlich benannt
+
+„Berechtigtes Interesse" nach Art. 6 Abs. 1 lit. f DSGVO verlangt eine **Abwaegung**
+gegen die Interessen der betroffenen Person. **Keine Software trifft diese Abwaegung.**
+Was Software kann: Zweckbindung (Art. 5 Abs. 1 lit. b) und Datenminimierung
+(lit. c) technisch durchsetzen und die Abwaegung dokumentierbar machen.
+
+Das ist dieselbe Haltung, die `kanonymitaet.py` schon im Kopf traegt: es nennt die
+Zahl k und verwendet nie das Wort „anonym", weil das eine Rechtsaussage waere. Ein
+Werkzeug, das „DSGVO-konform" von sich behauptet, hat diese Grenze ueberschritten.
+
+### Proben
+
+| Nr. | Probe | Erwartung |
+|---|---|---|
+| Z1 | Zugriff ohne Zweck | abgewiesen, wo der Datensatz Personenbezug traegt |
+| Z2 | unbekannter Zweck (Freitext) | abgewiesen, nicht als „sonstiges" gefuehrt |
+| Z3 | Zweck gewaehrt ein Feld, das die Rolle nicht hat | **Feld bleibt weg** (Schnitt, nicht Vereinigung) |
+| Z4 | Rolle erlaubt alles, Zweck ist eng | nur die Zweckprojektion |
+| Z5 | derselbe Datensatz, zwei Zwecke | zwei Protokollzeilen, unterschiedliche Felder |
+| Z6 | Zweck steht im Protokoll | bei **jedem** Lesezugriff, nicht nur bei Schreibvorgaengen |
+
+---
+
 ## 8. Was ich falsch gerahmt hatte
 
 `art=mensch` habe ich als **Schranke gegen Missbrauch** gebaut — damit ein Modell
