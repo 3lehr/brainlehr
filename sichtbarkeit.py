@@ -143,6 +143,15 @@ def neue_zeilen(conn: sqlite3.Connection, ab_id: int) -> tuple[list[str], int]:
     return zeilen, letzte_id
 
 
+def _gedeckelt(zeilen: list[str], deckel: int = 5) -> list[str]:
+    """Hoechstens `deckel` Zeilen, Rest als Zahl -- wer zwanzig Zeilen
+    ausgibt, wird ueberlesen (Planschritt S2, Vorgabe 4)."""
+    if len(zeilen) <= deckel:
+        return zeilen
+    rest = len(zeilen) - deckel
+    return zeilen[:deckel] + [f"... und {rest} weitere"]
+
+
 def _marke_pfad(session: str) -> Path:
     sid = "".join(c for c in (session or "unbekannt") if c.isalnum() or c in "-_")[:40]
     return STAND_DIR / f"{sid}.txt"
@@ -163,7 +172,7 @@ def _hook_lauf(session: str) -> None:
     marke.write_text(str(letzte_id), encoding="utf-8")
 
     if zeilen:
-        print("\n".join(zeilen))
+        print("\n".join(_gedeckelt(zeilen)))
 
 
 def _letzte_id_beim_start() -> int:
@@ -263,6 +272,16 @@ def _selftest() -> None:
     z, letzte = neue_zeilen(conn, 12)
     assert z == [] and letzte == 12, "an der Grenze darf nichts doppelt erscheinen"
 
+    # Deckel: bei 7 Vorgaengen erscheinen 5 plus die Restzahl.
+    for i in range(13, 20):
+        zeile(i, "add", f"/n{i}", None, "completed")
+    z, letzte = neue_zeilen(conn, 12)
+    assert len(z) == 7, z
+    gedeckelt = _gedeckelt(z)
+    assert len(gedeckelt) == 6, gedeckelt
+    assert gedeckelt[-1] == "... und 2 weitere", gedeckelt
+    assert _gedeckelt(["a"]) == ["a"], "unter dem Deckel bleibt unveraendert"
+
     # init_falls_neu: setzt die Marke einmalig auf den Stand VOR dem ersten
     # Schreibvorgang -- und ruehrt eine bestehende Marke NICHT an, sonst
     # wuerde eine fortgesetzte Sitzung alte Zeilen nochmal zeigen.
@@ -274,13 +293,13 @@ def _selftest() -> None:
         _verbindung = lambda db=None: conn  # noqa: E731 -- selbe In-Memory-DB wie oben
         init_falls_neu("probe")
         marke = _marke_pfad("probe")
-        assert marke.exists() and marke.read_text() == "12", marke.read_text()
+        assert marke.exists() and marke.read_text() == "19", marke.read_text()
         marke.write_text("3", encoding="utf-8")  # simuliert eine bereits laufende Sitzung
         init_falls_neu("probe")
         assert marke.read_text() == "3", "eine bestehende Marke darf init nicht ueberschreiben"
     STAND_DIR, _verbindung = alter_stand, alte_verbindung
 
-    print("selftest ok (11 Faelle)")
+    print("selftest ok (12 Faelle)")
 
 
 def main() -> None:
@@ -320,7 +339,7 @@ def main() -> None:
     zeilen, _ = neue_zeilen(conn, ab)
     conn.close()
     if zeilen:
-        print("\n".join(zeilen))
+        print("\n".join(_gedeckelt(zeilen)))
     else:
         print("Sichtbarkeit: keine Schreibzeilen seit --seit.")
 
