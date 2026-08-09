@@ -42,9 +42,20 @@ _ZAHL = re.compile(r"\d[\d.,:/-]*\d|\b\d{2,}\b")
 # der weit ueberwiegende Teil der Beanstandungen kam aus diesem einen Muster.
 # Ein Sieb mit hoher Fehlalarmquote wird nicht gelesen, und dann faengt es gar
 # nichts mehr.
+#
+# Dritte Praezisierung: auch mit zwei Segmenten sind '/android/windows' und
+# '/synonyme/route/screenid/order/gate' keine Pfade, sondern Aufzaehlungen im
+# Fliesstext. Ein Knotenpfad beginnt bei uns immer mit einem der Aeste des
+# Bestands (gemessen: SELECT DISTINCT erstes Segment aus knowledge_nodes.path),
+# ein Dateisystempfad mit /volumes, /users, /tmp oder /private. Alles andere
+# nach einem Schraegstrich ist Sprache, nicht Adresse.
+_AESTE = ("agents|aka|apps|arch|backend|bebetter|begod|brainlehr|fahrtenbuch|frontend|"
+          "lessons|methodik|nasa-llis|openlehr|ops|probe|probe2|shared|"
+          "simulation-akademie-messaufbau-kein|stadtwerke|testing|tools|werkzeuge|"
+          "volumes|users|tmp|private")
 _KENNUNG = re.compile(
     r"\b[a-z]{2,}-\d+\b"                       # adr-023, l-4750fc
-    r"|/[\w.-]+/[\w./-]+"                      # /ops/verwalterwahl/... (zwei Segmente)
+    rf"|/(?:{_AESTE})/[\w./-]+"                # /ops/verwalterwahl/... (echter Pfad)
     r"|\b[\w-]+\.(?:py|md|json|db|sql|dart|yaml|yml|sh|txt)\b"  # datei.py
 )
 
@@ -66,7 +77,13 @@ def _traeger(text: str) -> set[str]:
     # unangetastet: '8,50' ist eine Dezimalzahl, keine Liste.
     fertig = set()
     for x in roh:
-        if x.count(",") > 1:
+        # Zahlenpaare mit Schraegstrich sind dieselbe Klasse wie Kommalisten:
+        # '169/352' wird beim Umschreiben zu '169 von 352', '1080/25' zu
+        # '1080 Zeilen bei 25 Bildern'. Nur zerlegen, wenn BEIDE Seiten Zahlen
+        # sind -- sonst zerfiele auch ein echter Pfad.
+        if "/" in x and all(teil.isdigit() for teil in x.split("/") if teil):
+            fertig.update(teil for teil in x.split("/") if teil)
+        elif x.count(",") > 1:
             # Nur die Teile, nicht die zusammengesetzte Form: sonst gilt die
             # umformatierte Liste weiterhin als verloren.
             fertig.update(teil for teil in x.split(",") if teil)
