@@ -157,6 +157,36 @@ Projektlokale Entstehung, Beförderung nach Prüfung. Das ist der größte Hebel
 
 *Warum zuletzt:* Er ändert die Ablage. Jede Messung davor bleibt vergleichbar, jede danach nicht. Und ohne S1 fehlt das Kriterium, wonach befördert wird.
 
+### S5 · Eine Oberflaeche, zwei Erbschaften
+
+Es gibt zwei Betrachter, und sie zeigen verschiedene Dinge:
+
+| | BeGood Wissensnetz | brainlehr Wissensraum |
+|---|---|---|
+| Ort | `hub/tools/knowledge-viz` | `brainlehr/entscheidungen*` |
+| Umfang | 531 Zeilen + app.js 21,7 KB | 623 + 334 Zeilen, HTML 45 KB |
+| zeigt | 385 Knoten, 835 Beziehungen | **2713 von 2713 Eintraegen**, Knoten UND Lehren |
+| Darstellung | 3D-Kraeftegraph, Raeume farbig, Live-Spur | Baum · Bedeutung · Spuren · Vergleich · Ablauf, Zeitachse |
+| fremde Adressen | **`cdn.jsdelivr.net` (3d-force-graph)** | **keine** |
+
+**Die Richtung ist damit gemessen, nicht gewaehlt.** brainlehr ist seit dem 2026-08-08 ein eigenstaendiges Repo, und nach Entscheidung `d6f0dd0f` entsteht eine Veroeffentlichung als eigenes Repo mit frischer Historie. Eine Oberflaeche, die ohne Netz schwarz bleibt und einem Dritten meldet, wann jemand seinen Wissensspeicher oeffnet, kann nicht die Basis sein. **Der Wissensraum ist die Basis, das Wissensnetz die Ideenquelle.**
+
+**Was der Wissensraum vom Wissensnetz erbt:** Kraefte-Anordnung als zusaetzliche Ansicht, Raeume farbig, die Live-Spur der Abrufe. Die Bibliothek wird dafuer mitgeliefert statt geladen (Lizenz vorher pruefen, nicht annehmen) -- oder die Anordnung selbst gerechnet, wenn die Lizenz das nicht hergibt.
+
+**Was NICHT geerbt wird, und das ist der Kern:** Ein Kraeftegraph ordnet nach Anziehung und **sieht dadurch nach Erkenntnis aus** -- Naehe wirkt wie Verwandtschaft. Der Wissensraum schreibt statt dessen hin, was man sieht:
+
+> *Bedeutung* ist eine lineare Projektion aus 1024 Dimensionen auf drei. Die drei Achsen tragen **8,9 % · 2,9 % · 2,0 %** der Streuung.
+
+> Eine Linie in *Spuren* bedeutet **kam zusammen vor**, nicht *haengt zusammen* und schon gar nicht *fuehrt zu*.
+
+Drei Sorten Linie -- Adresse, Modellnaehe, gemeinsame Auslieferung -- sehen im Kraeftegraph alle gleich aus. Diese Beschriftungen sind keine Zierde, sie sind der Unterschied zwischen einem Werkzeug und einem Bild.
+
+**Und der Wissensraum liefert das Argument fuer S1b als Bild:** Im Baum-Modus erschlaegt der Block `nasa-llis 1638` optisch alles andere. Man muss die Verduennung nicht erklaeren, man sieht sie.
+
+*Zu pruefen beim Zusammenfuehren:* warum das Wissensnetz nur 385 der 2020 Knoten zeigt -- der Mechanismus ist nicht nachgesehen, nur beobachtet. Wenn er die NASA-Wolke ausblendet, tut er heute schon, was S1b beschliesst; wenn er etwas anderes tut, ist es ein Fehler.
+
+*Reihenfolge:* nach S1b. Erst gehoert entschieden, was ueberhaupt zum Arbeitsbestand zaehlt -- sonst baut die Oberflaeche eine Trennung nach, die im Speicher nicht existiert.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
