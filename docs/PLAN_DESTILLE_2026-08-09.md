@@ -667,6 +667,60 @@ vertagt), und jede Mandantentrennung. Beides braucht mehr als einen Schreiber. G
 nur die Spalte, ihre Vorgabe und der Whitelist-Export — die drei Dinge, deren Reihenfolge
 sonst verloren geht.
 
+### S18 · Der Speicher schlaegt Werkzeuge vor — aber startet sie nicht
+
+Betreiberfrage 2026-08-09: kann brainlehr selbst Agenten und Faehigkeiten erzeugen oder
+wenigstens vorschlagen? Die Datengrundlage ist gemessen vorhanden:
+
+| | |
+|---|---|
+| Verfahrenslehren (`pattern`) | 109, davon **24 mit ausformulierter Reihenfolge** |
+| Fehlerklassen (`antipattern`) | 318, davon **21 mehrfach aufgetreten** |
+| protokollierte Auftraege | **1986** |
+
+Eine `pattern`-Lehre traegt per Ablageregel bereits, was eine Faehigkeit braucht: Reihenfolge
+UND Voraussetzung — ohne beides gilt sie als blosse Beobachtung und darf nicht abgelegt
+werden. Jede ist damit ein Entwurf, der nur nicht als solcher formuliert ist.
+
+**DAS AUSWAHLKRITERIUM steht bereits im Bestand (`L-b79360`) und ist nicht Geschmack:**
+
+> Zuerst fragen, ob die Lehre MECHANISIERBAR ist — ob eine Bedingung benennbar ist, die genau
+> dann fehlschlaegt, wenn sie verletzt wird, ohne Urteil und ohne Sprachmodell. Ist sie es,
+> gehoert sie in CODE, und der Regeltext schrumpft auf einen Zeiger darauf. Nur was NICHT
+> mechanisierbar ist, rechtfertigt Prosa, die bei jeder Sitzung mitgeladen wird.
+
+| Bestand | mechanisierbar | wird zu |
+|---|---|---|
+| 21 mehrfach aufgetretene Fehlerklassen | ja | **Pruefstein im Code** |
+| 24 Verfahrenslehren mit Reihenfolge | meist nein | **Faehigkeit** (Prosa, verlangt ein Urteil) |
+| alles uebrige | — | bleibt Lehre |
+
+Der Beleg, dass die Unterscheidung traegt: `L-48e414` wurde nach drei Vorfaellen zur Regel im
+Klartext befoerdert — und danach am selben Tag ZWEIMAL weiter verletzt, einmal unmittelbar
+nach einer Ermahnung, die die Kennung woertlich zitierte. Eine Regel als Text aendert das
+Verhalten nicht; eine Bedingung im Code schon.
+
+**VORSCHLAGEN JA, STARTEN NEIN — und die Bedingung dafuer ist benannt.** Ein automatisch
+erzeugter Auftrag, dessen Bericht niemand prueft, ist schlechter als keiner: `L-eb4734` haelt
+fest, wie ein Agent zweimal einen gestarteten Messlauf meldete, von dem danach kein Artefakt
+existierte. Die Vorbedingung fuer "automatisch" ist deshalb nicht die Erzeugung, sondern die
+maschinelle ABNAHME — dieselbe Luecke, die heute fuer den Plan gemessen wurde: 4 von 21
+Kriterien, und alle vier prueften das Werkzeug statt den Schritt.
+
+**Zu bauen ist deshalb nur die Vorschlagsseite:**
+1. Kandidaten erheben: Fehlerklassen ab zwei Vorkommen ohne zugehoerigen Pruefstein, und
+   Verfahrenslehren mit Reihenfolge ohne zugehoerige Faehigkeit.
+2. Je Kandidat die vier Auftragsteile aus dem Bestand FUELLEN, nicht erfinden: Fakten aus der
+   Lehre, Grenzen aus dem Agentenregister, Abnahme aus den Hausregeln, Einsatz aus dem Anlass.
+3. Hoechstens DREI Vorschlaege je Lauf, nach Vorkommenszahl geordnet. Aus 109 Kandidaten drei
+   zu nennen ist nuetzlich, alle zu nennen ist eine Liste, die niemand liest.
+4. Der Vorschlag wird ausgegeben, nicht ausgefuehrt. Kein Spawn, kein Schreiben.
+
+*Abbruchbedingung, an der dieser Schritt als falsch erkennbar waere:* Wenn die erzeugten
+Auftragsentwuerfe regelmaessig umgeschrieben werden muessen, bevor sie brauchbar sind, ist
+die Ableitung aus dem Bestand zu duenn — dann ist nicht der Auslöser das Problem, sondern die
+Annahme, dass eine Lehre einen Auftrag bereits enthaelt.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.

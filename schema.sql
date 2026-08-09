@@ -185,7 +185,16 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- per migrate_gattung.py identifizierten NASA-Knoten werden per Migration
     -- auf 'nachschlagewerk' gesetzt, siehe dort fuer die Erkennungsregel und
     -- deren Begruendung.
-    gattung TEXT NOT NULL DEFAULT 'arbeitsbestand'
+    gattung TEXT NOT NULL DEFAULT 'arbeitsbestand',
+    -- Freigabe (Planschritt S17): haelt fest, WER einen Knoten sehen darf --
+    -- Rang, Art und Geltung sagen nichts darueber. Vorgabe 'intern': ein
+    -- Knoten ohne eigene Entscheidung geht NIE nach 'offen' hinaus (gleiche
+    -- Haltung wie norm_entscheidung='offen', nur ohne dessen Rueckfall-Sperre
+    -- -- freigabe darf jederzeit in beide Richtungen geaendert werden, es
+    -- gibt keine einmal getroffene, bindende Entscheidung wie bei einer
+    -- Norm). Gleiche Bauform wie gattung oben (NOT NULL DEFAULT, Werte-
+    -- Trigger bi+bu unten), keine Massenzuweisung ausser der Vorgabe.
+    freigabe TEXT NOT NULL DEFAULT 'intern'
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -349,6 +358,21 @@ BEFORE UPDATE ON knowledge_nodes
 FOR EACH ROW WHEN NEW.gattung NOT IN ('arbeitsbestand','nachschlagewerk')
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.gattung unzulaessig: erlaubt sind arbeitsbestand, nachschlagewerk');
+END;
+
+-- Freigabe (Planschritt S17): gleiche Bauform wie gattung oben, drei Werte.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_freigabe_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.freigabe NOT IN ('offen','intern','gesperrt')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.freigabe unzulaessig: erlaubt sind offen, intern, gesperrt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_freigabe_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.freigabe NOT IN ('offen','intern','gesperrt')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.freigabe unzulaessig: erlaubt sind offen, intern, gesperrt');
 END;
 
 -- norm_entscheidung (Auftrag 2026-08-08): 13 Zusicherungen, siehe
