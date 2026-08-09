@@ -293,6 +293,71 @@ bereits genau: Maskierung ist richtig, **wo der Empfaenger ein Dritter ist** —
 Unterschied ist der Empfaenger, nicht die Technik. Ohne Stufe 9 ist die ganze Kette
 gebaut und laeuft dann in ein Kontextfenster, das anschliessend weitererzaehlt.
 
+### Stufe 0: die Einwilligung — und der Widerruf, der teurer ist als alles andere
+
+Betreiber: „eins hast du vergessen, der datenpunkt selbst, bzw der mensch muss der
+datenverarbeitung zugestimmt haben und kann diese auch wieder wiederrufen!"
+
+Berechtigt. Ich hatte „Einwilligung, Widerspruch" in Stufe 5 stehen — aber nur als
+**Pruefung beim Lesen**. Das ist zu schwach. Einwilligung ist kein Feld, das man
+abfragt, sondern ein **Lebenszyklus**, und sie steht **vor** der ganzen Kette:
+
+| | |
+|---|---|
+| **eingeholt** | aktiv, dokumentiert, vor der ersten Verarbeitung |
+| **granular** | je Zweck, nicht pauschal — sonst ist sie keine |
+| **widerrufbar** | so leicht wie erteilt (Art. 7 Abs. 3) |
+| **ex nunc** | Widerruf stoppt kuenftige Verarbeitung; Vergangenes bleibt rechtmaessig |
+
+Ohne Stufe 0 pruefen die Stufen 1–10 sauber die Berechtigung an einem Datum, das gar
+nicht haette erhoben werden duerfen. **Eine perfekte Zugriffskette auf einem
+unrechtmaessigen Bestand ist ein sauber verschlossener Tresor mit Diebesgut darin.**
+
+### Wohin ein Datum bei uns wandert — gezaehlt, nicht geschaetzt
+
+Der Widerruf ist deshalb teuer, weil ein Datum sich vermehrt. Stand 2026-08-10:
+
+| Weg | Zeilen | Erreicht ein Loeschen es? |
+|---|---|---|
+| `knowledge_nodes` | 2.037 | ja |
+| `knowledge_fassungen` (alte Fassungen, per Trigger) | 351 | **nur wenn jemand daran denkt** |
+| `knowledge_embeddings` (Vektoren) | 3.262 | nein, solange niemand neu rechnet |
+| `knowledge_relations` (Kanten) | 5.868 | nein — die Kante traegt selbst Aussage |
+| `lessons_learned` (destilliert) | 722 | **nein, und das ist der Kern** |
+| `access_log` | 4.013 | **nein, siehe unten** |
+
+**Der harte Konflikt, belegt:** `compute_ketten_hash()` nimmt `query` in die Hashkette
+auf — der Quelltext nennt die Feldreihenfolge ausdruecklich „Teil des Vertrags; eine
+Aenderung hier bricht jede bereits geschriebene Kette rueckwirkend". 2.785 Zeilen
+tragen bereits eine Kette. Eine Suchanfrage, die einen Namen enthaelt, steht damit
+**unloeschbar** darin: loeschen bricht den Nachweis, behalten bricht das Recht.
+
+Dasselbe Muster wie Herkunftspflicht gegen Wahlgeheimnis (Kapitel 5) — und wieder
+gilt: **nicht heilbar, nur vermeidbar.**
+
+### Was daraus folgt
+
+1. **Praevention statt Reparatur.** Personenbezogenes darf nicht in Felder gelangen,
+   die in die Kette eingehen. `query` ist Freitext — dort ist die Stelle.
+2. **Krypto-Loeschung, wo beides gebraucht wird.** Das Datum verschluesselt ablegen,
+   je betroffener Person ein Schluessel; Widerruf = Schluessel vernichten. Der Hash
+   bleibt gueltig, die Kette haelt, der Klartext ist unwiederbringlich fort. Die
+   etablierte Antwort auf „unveraenderlich UND loeschbar", und sie muss **vorher**
+   stehen.
+3. **Ableitungen brauchen einen Rueckweg.** Die Spalte `abgeleitet_von` existiert —
+   und ist bei 2.032 von 2.033 Zeilen leer. Sie ist gebaut und ungenutzt; damit
+   erreicht ein Widerruf heute keine einzige Ableitung.
+4. **Ein Vektor ist keine Anonymisierung.** Embeddings gelten leicht als harmlos, weil
+   sie unlesbar aussehen. Sie sind eine Ableitung, aus der sich Inhalt teilweise
+   rekonstruieren laesst — sie gehoeren in den Widerruf, nicht daneben.
+5. **Und die Frage, die brainlehr eigener trifft als jedes andere System:** Was wird
+   aus einer **Lehre**, die aus einem widerrufenen Fall destilliert wurde? Wenn sie
+   keinen Personenbezug mehr traegt, darf sie bleiben (Erwaegungsgrund 26) — aber
+   „traegt keinen mehr" ist eine Behauptung, solange es niemand misst. `kanonymitaet.py`
+   ist das Werkzeug dafuer, und es ist bisher nie auf die Lehren angesetzt worden.
+   **Destillieren ist bei uns das Kerngeschaeft; damit ist das hier keine Randfrage,
+   sondern die Hauptfrage.**
+
 **Zwei Dinge, die keine Stufe sind, aber ohne die die Kette leckt:**
 
 **Das Protokoll ist selbst ein Bestand.** Dass X am Dienstag den Datensatz von Y
