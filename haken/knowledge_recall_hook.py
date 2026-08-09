@@ -42,6 +42,10 @@ DB = str(ort.DB)
 # nur fuer dieses Modul, kein neues Package.
 sys.path.insert(0, os.path.dirname(DB))
 from geltungsbereich import projekte_aus_projects_json  # noqa: E402
+# gattung_filter.py liegt wie geltungsbereich.py neben der DB (Auftrag S1b,
+# docs/PLAN_DESTILLE_2026-08-09.md): Nachschlagewerke (NASA LLIS, 1638
+# Knoten) nehmen am automatischen Abruf nicht mehr teil.
+from gattung_filter import SQL_ARBEITSBESTAND_NUR  # noqa: E402
 # Auftrag 2026-08-06: Bestandstext koennte anweisungsartig sein (Schreib-
 # pruefstand nimmt Text von einem lokalen Modell entgegen). entschaerfe_
 # fuer_ausgabe() kennzeichnet Funde, aendert nie den Bestand -- nur die
@@ -64,6 +68,14 @@ from knowledge_mcp_server import knowledge_trust_score, _trust_aggregate  # noqa
 # Fusionsmechanismus (rrf_fuse/hybrid_retrieval_weight) wie der aktive
 # Suchweg in knowledge_mcp_server.py, nichts danebengebaut.
 import embeddings  # noqa: E402
+# rangfolge.py liegt ebenfalls neben der DB -- zwei zusaetzliche Rangsignale
+# (norm_rang, Hebb-Kanten), eigenes Modul (Monolith-Stopp hier, siehe dessen
+# Kopf), aus diesem Hook nur AUFGERUFEN (Auftrag 2026-08-08).
+import rangfolge  # noqa: E402
+# suchpfad_abruf.py liegt in diesem Ordner (haken/) -- eigenes Modul (Monolith-
+# Stopp hier), nur der Kandidaten-Beschaffung wegen aufgerufen (S9, Auftrag
+# 2026-08-09). Aus diesem Hook nur AUFGERUFEN, s. _suchpfad_aktiv() oben.
+import suchpfad_abruf  # noqa: E402
 
 # Protokoll, WAS gezogen wurde -- neben der DB, eigene Datei (kein Tabelle in
 # knowledge.db: sonst schreibt JEDE Sitzung bei JEDEM Prompt in dieselbe DB,
@@ -409,6 +421,37 @@ def _ensemble_pflicht_aktiv() -> bool:
     return ENSEMBLE_PFLICHT
 
 
+# S9 (docs/PLAN_DESTILLE_2026-08-09.md): Kandidaten ueber denselben
+# Suchpfad wie knowledge_search (haken/suchpfad_abruf.py) statt ueber das
+# MIN_HITS/ENSEMBLE_PFLICHT-Sieb dieser Datei. Gemessen 2026-08-09 gegen
+# 35 Faelle: alter Weg 0/35 (Vorgabe) bzw. 4/35 (beide Kanaele), neuer Weg
+# 7/35 -- siehe Modul-Docstring von suchpfad_abruf.py fuer die volle Zahl.
+# Vorgabe zunaechst AUS: gleiche Bauform wie ZWEITER_KANAL oben (Modul-
+# Konstante mit Env-Uebersteuerung), bis die Messung ueber die Betriebsdaten
+# entscheidet.
+# EIN seit 2026-08-09, Entscheidung des Betreibers. Gemessen mit korrekter
+# Eingabe (Prompt durchgereicht, wie der Betrieb ruft): alter Weg 0 von 35
+# Treffern bei 2540 Zeichen und 37,8 Prozent leeren Faellen, Suchpfad 7 von
+# 35 bei 4776 Zeichen und 0 Prozent leer. Erstmals ueberhaupt Lehren (4 von
+# 15). Nuetzlichkeit auf demselben Pfad blind beurteilt: 11 von 35 haetten
+# geholfen, Negativkontrolle bestanden (1 von 12 falschen Paaren).
+#
+# Der Preis ist benannt und nicht schoengeredet: 88 Prozent mehr Zeichen in
+# JEDEM Prompt, und das Schweigen geht verloren -- der alte Weg lieferte in
+# 37,8 Prozent der Faelle nichts, und nichts ist manchmal die richtige
+# Antwort. Eine frische Lesung von 15 Eintraegen fand 2 thematisch nah.
+#
+# Rueckweg: KNOWLEDGE_SUCHPFAD_ABRUF=0 in der Umgebung, kostet nichts.
+SUCHPFAD_ABRUF = True
+
+
+def _suchpfad_aktiv() -> bool:
+    override = os.environ.get("KNOWLEDGE_SUCHPFAD_ABRUF")
+    if override is not None:
+        return override == "1"
+    return SUCHPFAD_ABRUF
+
+
 def _radar_select(candidates: list, score_key: str,
                    mad_mult: float = NOISE_FLOOR_MAD_MULT) -> list:
     """Radar statt Kappung (ADR-033 Schritt 2): ALLE Kandidaten sind hier schon
@@ -589,8 +632,8 @@ def _node_info(conn, node_id: str) -> dict | None:
     """Knotendaten fuer eine ref_id, die der Stichwort-Kanal NICHT mitbrachte
     (reiner Embedding-Fund -- genau der Fall, den Teil 1 loesen soll)."""
     row = conn.execute(
-        "SELECT path, title, summary, updated_at, gilt_ab, gilt_bis FROM knowledge_nodes "
-        "WHERE id = ? AND zurueckgezogen = 0", (node_id,)
+        "SELECT path, title, summary, updated_at, gilt_ab, gilt_bis FROM knowledge_nodes n "
+        f"WHERE id = ? AND zurueckgezogen = 0 {SQL_ARBEITSBESTAND_NUR}", (node_id,)
     ).fetchone()
     if row is None:
         return None
@@ -855,12 +898,45 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
     # project_id=None: cwd->project_id-Bezug noch nicht verdrahtet, siehe
     # _effective_noise_mult()-Docstring. Faellt auf den gemeinsamen Wert zurueck.
     mad_mult = _effective_noise_mult(None, project_counts)
+    if _suchpfad_aktiv():
+        # S9: Kandidaten ueber denselben Suchpfad wie knowledge_search
+        # (suchpfad_abruf.kandidaten, RRF ueber Stichwort+Bedeutung, kein
+        # MIN_HITS/ENSEMBLE_PFLICHT-Vorfilter) -- die Nachbehandlung
+        # (trust_score, rangfolge, Scope, Explore, MAX_NODES/MAX_LESSONS-
+        # Deckel, geltend-Filter) bleibt dieselbe wie im Zweig darunter.
+        node_rows, lesson_rows = [], []
+        try:
+            node_rows, lesson_rows = suchpfad_abruf.kandidaten(
+                conn, prompt if prompt else " ".join(kws), query_vec, MAX_NODES + MAX_LESSONS)
+        except sqlite3.Error:
+            pass
+        try:
+            node_rows = [r for r in node_rows if _ist_geltend(r.get("gilt_ab"), r.get("gilt_bis"))]
+            signal = _apply_trust_score(node_rows, "node")
+            signal = rangfolge.anwenden(signal, conn)
+            if own:
+                signal = _tag_node_scope(signal, own)
+            nodes = _maybe_explore(signal[:MAX_NODES], signal, rand, log_path)
+        except sqlite3.Error:
+            pass
+        try:
+            scored = [(hits(f"{c['description']} {c['root_cause']} {c['prevention']}", kws),
+                       c["severity"] in ("critical", "high"), c["occurrences"], c) for c in lesson_rows]
+            scored.sort(key=lambda s: s[1:3], reverse=True)
+            scored = _apply_trust_score(scored, "lesson", ref_of=lambda s: s[3]["id"])
+            if own:
+                scored = _tag_lesson_scope(scored, own)
+            lessons = [s[3] for s in scored[:MAX_LESSONS]]
+        except sqlite3.Error:
+            pass
+        conn.close()
+        return nodes, lessons
     try:
         rows = conn.execute(
             "SELECT n.id, n.path, n.title, n.summary, n.updated_at, n.gilt_ab, n.gilt_bis, "
             "bm25(knowledge_fts) AS score "
             "FROM knowledge_fts f JOIN knowledge_nodes n ON n.rowid = f.rowid "
-            "WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 "
+            f"WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 {SQL_ARBEITSBESTAND_NUR} "
             "ORDER BY bm25(knowledge_fts) LIMIT ?",
             (fts_match(kws), FULL_SCAN_ROW_CAP),
         ).fetchall()
@@ -889,6 +965,7 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
 
         signal = _combine_channels(kw_signal, emb_signal, emb_scores is not None)
         signal = _apply_trust_score(signal, "node")
+        signal = rangfolge.anwenden(signal, conn)
         if own:
             signal = _tag_node_scope(signal, own)
         nodes = _maybe_explore(signal[:MAX_NODES], signal, rand, log_path)
@@ -1267,10 +1344,22 @@ def main() -> None:
     except Exception:
         pass
 
-    if not nodes and not lessons:
-        return
-    nodes, lessons = _dedup_session(nodes, lessons, session_id)
-    if not nodes and not lessons:
+    # LEERE ABRUFE WERDEN AUCH PROTOKOLLIERT (Betreiber 2026-08-09).
+    # Vorher endete der Abruf hier ersatzlos -- und damit war die wichtigste
+    # Fehlerklasse unsichtbar: "der Speicher wusste es und schwieg" erzeugt
+    # keine Zeile, also kommt sie in keiner Auswertung vor. Ein Urteil ueber
+    # die Nuetzlichkeit haette immer zu gut ausgefallen, weil die
+    # Fehlschlaege per Bauart nicht in der Stichprobe stehen (dieselbe
+    # Fehlklasse wie L-73da37: die Kennzahl misst das Protokoll, nicht das
+    # System). Der leere Abruf wird als Zeile mit leeren Listen vermerkt --
+    # unterscheidbar von "kein Abruf" durch die blosse Existenz der Zeile.
+    leer = not nodes and not lessons
+    if not leer:
+        nodes, lessons = _dedup_session(nodes, lessons, session_id)
+        leer = not nodes and not lessons
+    if leer:
+        log_recall([], [], cwd=cwd, session_id=session_id, prompt=prompt,
+                   agent_id=payload.get("agent_id"), agent_type=payload.get("agent_type"))
         return
     # agent_id/agent_type: GEMESSEN nicht vorhanden im UserPromptSubmit-Payload
     # (s. log_recall()-Docstring) -- .get() trotzdem statt hartem None, falls

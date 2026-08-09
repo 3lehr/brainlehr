@@ -169,7 +169,23 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- Skriptzugriff) tut das faktisch nie. Anders als die drei: wird
     -- serverseitig in _identity() aus der Umgebung abgeleitet, nie vom
     -- Aufrufer erwartet. NULL fuer Altbestand vor dieser Spalte.
-    client TEXT
+    client TEXT,
+    -- Gattung (Auftrag S1b, docs/PLAN_DESTILLE_2026-08-09.md). Haengt am
+    -- WERK, nicht an der einzelnen Aussage: ein Nachschlagewerk (NASA LLIS,
+    -- eine Normensammlung) wird nachgeschlagen, es draengt sich nicht auf --
+    -- anders als Arbeitsbestand (eigene Direktiven, Befunde, Lehren aus
+    -- diesem Haus), der im automatischen Abruf mitspielen soll. Gemessen
+    -- 2026-08-09: 1638 von 2020 Knoten (81%) sind /nasa-llis, anlass='skript',
+    -- source nennt nen.nasa.gov/llis.csv, norm_entscheidung durchgaengig
+    -- 'offen', in der gesamten Protokollhistorie 3 mal gezogen -- ein Werk,
+    -- das sich beim Abruf vor das eigene Wissen draengt (0 von 35 Pruefaellen
+    -- getroffen, siehe abrufguete.py). Vorgabe 'arbeitsbestand' deckt den
+    -- gesamten Altbestand ab, kein Wert wird geraten -- gleiche Bauform wie
+    -- anlass oben (NOT NULL DEFAULT, Werte-Trigger bi+bu unten). NUR die 1638
+    -- per migrate_gattung.py identifizierten NASA-Knoten werden per Migration
+    -- auf 'nachschlagewerk' gesetzt, siehe dort fuer die Erkennungsregel und
+    -- deren Begruendung.
+    gattung TEXT NOT NULL DEFAULT 'arbeitsbestand'
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -318,6 +334,21 @@ BEFORE UPDATE ON knowledge_nodes
 FOR EACH ROW WHEN NEW.anlass NOT IN ('selbst','betreiber','hook','skript','unbekannt')
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.anlass unzulaessig: erlaubt sind selbst, betreiber, hook, skript, unbekannt');
+END;
+
+-- Gattung (Auftrag S1b): gleiche Bauform wie anlass oben, zwei Werte.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gattung_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gattung NOT IN ('arbeitsbestand','nachschlagewerk')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gattung unzulaessig: erlaubt sind arbeitsbestand, nachschlagewerk');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gattung_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gattung NOT IN ('arbeitsbestand','nachschlagewerk')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gattung unzulaessig: erlaubt sind arbeitsbestand, nachschlagewerk');
 END;
 
 -- norm_entscheidung (Auftrag 2026-08-08): 13 Zusicherungen, siehe
@@ -848,4 +879,90 @@ BEFORE UPDATE ON annahmen
 WHEN new.annahme <> old.annahme OR new.created_at <> old.created_at
 BEGIN
     SELECT RAISE(ABORT, 'annahme und created_at sind unveraenderlich -- neue Annahme anlegen, alte widerlegen');
+END;
+
+-- Herkunftsschranke Normrang 1/2 (S1 Teil 2, docs/PLAN_DESTILLE_2026-08-09.md,
+-- korrigiert 2026-08-09 nach Betreibereinwand: eine Schranke, die JEDEN
+-- maschinellen Schreiber blockt, haette 100% der 37 gemessenen Rang-1/2-
+-- Normen abgewiesen -- darunter zwei legitime Aufzeichnungen deutschen
+-- WEG-Rechts (/ops/verwalterwahl-weg-im-buckeberg-zum-2027/rechtslage-die-*).
+-- ENTSCHEIDEN (Normsetzung, Sache des Menschen) und AUFZEICHNEN (Bericht
+-- ueber eine fremde Tatsache, darf die Maschine) sind zwei Handlungen.
+-- Die Schranke haengt darum an der HERKUNFT (source), nicht am Schreiber:
+-- eine Hausnorm (source zeigt NICHT auf eine externe Stelle) braucht bei
+-- Rang 1/2 einen menschlichen Entscheider; eine Fremdnorm (Gesetz,
+-- Verordnung, Urteil, Normungsstelle) darf die Maschine mit jedem Rang
+-- aufzeichnen. Die zweite WHEN-Klausel (source-Erkennung) ist von Hand aus
+-- normachsen.py::FREMDE_QUELLE uebersetzt -- SQLite kennt kein eingebautes
+-- REGEXP, ein registriertes Custom-Function haette ~20 raw-SQL-Skripte
+-- gebrochen, die diese DB ohne eine Python-Verbindung anfassen. Die dritte
+-- WHEN-Klausel (Maschinen-Erkennung) ist von Hand aus reifegrad.py::
+-- MASCHINEN_MERKMALE uebersetzt -- Selbstauskunft in norm_entschieden_von,
+-- gemessen: alle 33 maschinell entschiedenen Rang-1/2-Normen tragen
+-- woertlich 'claude-code/opus-5'. reifegrad.py::_selftest() prueft beide
+-- Python-Fassungen gegen dieselben Beispielsaetze wie hier und bricht bei
+-- Abweichung; die Wahrheit fuer JEDEN Schreiber bleibt trotzdem dieser
+-- Trigger, auch fuer Skripte, die reifegrad.py nie importieren.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_normrang_herkunft_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_rang IN (1,2)
+    AND NOT (NEW.source IS NOT NULL AND (
+        NEW.source LIKE '%gesetz%' OR NEW.source LIKE '%verordnung%' OR NEW.source LIKE '%urteil%'
+        OR NEW.source LIKE '%az.%' OR NEW.source LIKE '%aktenzeichen%' OR NEW.source LIKE '%BGBl%'
+        OR NEW.source LIKE '%EU-Verordnung%' OR NEW.source LIKE '%Richtlinie%' OR NEW.source LIKE '%DIN %'
+        OR NEW.source LIKE '%EN %' OR NEW.source LIKE '%ISO %' OR NEW.source LIKE '%IEC %'
+        OR NEW.source LIKE '%BSI %' OR NEW.source LIKE '%WCAG%' OR NEW.source LIKE '%RFC%'
+    ))
+    -- AUSWEG, ohne den die Schranke aussperrt statt zu schuetzen:
+    -- norm_entschieden_von wird vom Server automatisch aus `actor` gesetzt und
+    -- traegt damit IMMER die Maschine -- ein Mensch kann dort strukturell nicht
+    -- stehen. Ohne diese Zeile waere jede kuenftige Hausnorm auf Rang 1/2
+    -- blockiert, auch die auf ausdrueckliche Weisung des Betreibers. Genau der
+    -- Fehler aus L-40d9a5: eine Wache ohne benutzbaren Ausweg erzieht zur
+    -- Umgehung. `anlass='betreiber'` ist die einzige Stelle, an der eine
+    -- menschliche Weisung in die Zeile kommt. Sie ist SELBSTAUSKUNFT des
+    -- Schreibers und kein Nachweis -- aber sie ist eine Behauptung im
+    -- Protokoll, die sich gegen den Gespraechsverlauf pruefen laesst, und das
+    -- ist mehr als das stille Selbstermaechtigen von heute (62 von 72).
+    AND COALESCE(NEW.anlass, '') <> 'betreiber'
+    AND (
+        NEW.norm_entschieden_von LIKE '%claude%' OR NEW.norm_entschieden_von LIKE '%gpt%'
+        OR NEW.norm_entschieden_von LIKE '%gemini%' OR NEW.norm_entschieden_von LIKE '%anthropic%'
+        OR NEW.norm_entschieden_von LIKE '%opus%' OR NEW.norm_entschieden_von LIKE '%sonnet%'
+        OR NEW.norm_entschieden_von LIKE '%haiku%'
+    )
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang 1/2 verlangt fuer Hausnormen einen menschlichen Entscheider: norm_entschieden_von auf einen Menschen setzen -- ODER, falls dies eine Norm fremder Herkunft ist (Gesetz/Verordnung/Urteil/Normungsstelle), source entsprechend nennen (z.B. Gesetz, Urteil, DIN, ISO, BSI, WCAG) -- oder anlass=betreiber, wenn der Betreiber es angewiesen hat');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_normrang_herkunft_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_rang IN (1,2)
+    AND NOT (NEW.source IS NOT NULL AND (
+        NEW.source LIKE '%gesetz%' OR NEW.source LIKE '%verordnung%' OR NEW.source LIKE '%urteil%'
+        OR NEW.source LIKE '%az.%' OR NEW.source LIKE '%aktenzeichen%' OR NEW.source LIKE '%BGBl%'
+        OR NEW.source LIKE '%EU-Verordnung%' OR NEW.source LIKE '%Richtlinie%' OR NEW.source LIKE '%DIN %'
+        OR NEW.source LIKE '%EN %' OR NEW.source LIKE '%ISO %' OR NEW.source LIKE '%IEC %'
+        OR NEW.source LIKE '%BSI %' OR NEW.source LIKE '%WCAG%' OR NEW.source LIKE '%RFC%'
+    ))
+    -- AUSWEG, ohne den die Schranke aussperrt statt zu schuetzen:
+    -- norm_entschieden_von wird vom Server automatisch aus `actor` gesetzt und
+    -- traegt damit IMMER die Maschine -- ein Mensch kann dort strukturell nicht
+    -- stehen. Ohne diese Zeile waere jede kuenftige Hausnorm auf Rang 1/2
+    -- blockiert, auch die auf ausdrueckliche Weisung des Betreibers. Genau der
+    -- Fehler aus L-40d9a5: eine Wache ohne benutzbaren Ausweg erzieht zur
+    -- Umgehung. `anlass='betreiber'` ist die einzige Stelle, an der eine
+    -- menschliche Weisung in die Zeile kommt. Sie ist SELBSTAUSKUNFT des
+    -- Schreibers und kein Nachweis -- aber sie ist eine Behauptung im
+    -- Protokoll, die sich gegen den Gespraechsverlauf pruefen laesst, und das
+    -- ist mehr als das stille Selbstermaechtigen von heute (62 von 72).
+    AND COALESCE(NEW.anlass, '') <> 'betreiber'
+    AND (
+        NEW.norm_entschieden_von LIKE '%claude%' OR NEW.norm_entschieden_von LIKE '%gpt%'
+        OR NEW.norm_entschieden_von LIKE '%gemini%' OR NEW.norm_entschieden_von LIKE '%anthropic%'
+        OR NEW.norm_entschieden_von LIKE '%opus%' OR NEW.norm_entschieden_von LIKE '%sonnet%'
+        OR NEW.norm_entschieden_von LIKE '%haiku%'
+    )
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang 1/2 verlangt fuer Hausnormen einen menschlichen Entscheider: norm_entschieden_von auf einen Menschen setzen -- ODER, falls dies eine Norm fremder Herkunft ist (Gesetz/Verordnung/Urteil/Normungsstelle), source entsprechend nennen (z.B. Gesetz, Urteil, DIN, ISO, BSI, WCAG) -- oder anlass=betreiber, wenn der Betreiber es angewiesen hat');
 END;
