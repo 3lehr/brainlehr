@@ -43,6 +43,27 @@ es keine vorige Antwort; die Differenzmenge ist dann ABSICHTLICH leer statt
 haette die Bestaetigungspflicht komplett ausgehebelt, noch bevor sie greifen
 konnte.
 
+DRITTES KRITERIUM -- VERBINDENDE TREFFER (Nachtrag 2026-08-09, zweiter
+Nachtrag): Messung ueber acht echte Antworten (max_results=15): die Spitze
+(Rang 1-3) zeigte ueber 24 Plaetze 24 VERSCHIEDENE Eintraege -- Kriterium 1
+kam im Fenster nie zum Zug, weil die acht Antworten acht verschiedene Themen
+waren (kein Beleg GEGEN Kriterium 1, nur ein Fenster ohne den Fall, in dem es
+greift -- L-b4b6fc). Im Schwanz (Rang 4-15) dagegen: EIN Eintrag kam
+dreimal vor, nie in der Spitze -- er passte zu keinem der acht Themen genau,
+zu dreien halb. Ein solcher Treffer liegt QUER ueber den Themen und wird
+darum eigens erfasst statt am Bestaetigungs-/Neu-Kriterium zu scheitern
+(die vergleichen nur zwei aufeinanderfolgende Zuege, ein quer liegender
+Treffer wiederholt sich ueber viele Zuege in wechselnder Umgebung).
+Schwelle SCHWANZ_SCHWELLE=3 ist GERATEN -- die einzige Zahl, die dahinter
+steht, ist der EINE Fund bei acht Anfragen in der Messung oben. Ein Treffer,
+der die Schwelle erreicht und NIE in der Spitze stand, wird als
+"verbindender Treffer" (eigene Kennzeichnung im Ausgabetext, siehe
+_kriterium_3) statt als Thementreffer ausgegeben -- sonst haelt ihn, wer die
+Kennzeichnung nicht kennt, fuer einen schlechten Treffer, der zufaellig oft
+auftaucht. Die Schwanz-Zaehlung UND die Feuerzaehler je Kriterium (1/2/3)
+laufen bei jedem --stop bzw. --prompt mit, auch wenn nichts ausgegeben wird
+-- sonst laesst sich die geratene Drei nie an echten Daten korrigieren.
+
 Beide Pfade fangen jede Ausnahme ab und enden still -- ein Haken darf die
 Sitzung nie stoeren (gleiche Regel wie in knowledge_recall_hook.py und
 existenzpruefung.py, hier eigenstaendig nachgebaut statt importiert, siehe
@@ -80,7 +101,12 @@ TREFFER_DATEI = WURZEL / "antwort_treffer.json"
 MIN_LEN = 400          # kuerzere Antworten sind selten inhaltsreich genug
 MAX_BEGRIFFE = 30       # Auftragsvorgabe
 MIN_BEGRIFF_LAENGE = 4  # ">3 Zeichen" -- pruefkorpus.tokenize() filtert das schon mit
-MAX_RESULTS_STOP = 5    # knowledge_search max_results am Stop-Haltepunkt
+MAX_RESULTS_STOP = 15   # war 5, jetzt Spitze(3) + Schwanz(12) fuer Kriterium 3
+SPITZE_GROESSE = 3      # Rang 1-3, speist Kriterium 1+2 (Auftrag Nachtrag 4)
+# GERATEN: die einzige Grundlage ist EIN Fund (L-6a44e5) bei acht Anfragen in
+# der Auftragsmessung -- keine statistisch tragfaehige Zahl, nur der erste
+# Anschlusspunkt zum Nachjustieren, sobald die Feuerzaehler mehr Daten haben.
+SCHWANZ_SCHWELLE = 3
 CAP_EINTRAEGE = 3       # Deckel Auftrag
 CAP_ZEICHEN = 1200      # Deckel Auftrag
 
@@ -140,6 +166,34 @@ def top_begriffe(text: str, n: int = MAX_BEGRIFFE) -> list[str]:
     return geordnet[:n]
 
 
+# --- Schwanz-Statistik (Kriterium 3) ----------------------------------------
+
+def _leere_statistik() -> dict:
+    return {"schwanz": {}, "spitze_gesehen": [], "kriterium_feuer": {"1": 0, "2": 0, "3": 0}}
+
+
+def _schwanz_zaehlen(statistik: dict, spitze: list[dict], schwanz: list[dict]) -> None:
+    """Laeuft bei JEDEM --stop mit, unabhaengig davon, ob je etwas ausgegeben
+    wird (Auftrag Punkt 5) -- sonst laesst sich SCHWANZ_SCHWELLE nie an echten
+    Daten korrigieren. 'nie in der Spitze' ist eine LEBENSZEIT-Aussage ueber
+    die ganze Sitzung, darum ein eigenes 'spitze_gesehen'-Register statt nur
+    ein Flag am Schwanz-Eintrag -- ein Treffer kann in Zug 1 Spitze und in
+    Zug 5 Schwanz sein, die Reihenfolge darf das Ergebnis nicht aendern."""
+    spitze_keys = {f"{k}|{s}" for k, s, _ in (_schluessel_und_zeile(e) for e in spitze)}
+    gesehen = set(statistik.get("spitze_gesehen") or []) | spitze_keys
+    statistik["spitze_gesehen"] = sorted(gesehen)
+
+    schwanz_dict = statistik.setdefault("schwanz", {})
+    for e in schwanz:
+        kind, schluessel, _ = _schluessel_und_zeile(e)
+        key = f"{kind}|{schluessel}"
+        eintrag = schwanz_dict.setdefault(
+            key, {"kind": kind, "schluessel": schluessel, "anzahl": 0, "titel": "", "zusammenfassung": ""})
+        eintrag["anzahl"] = eintrag.get("anzahl", 0) + 1
+        eintrag["titel"] = e.get("title") or e.get("type") or ""
+        eintrag["zusammenfassung"] = e.get("summary") or ""
+
+
 # --- Betriebsart --stop -----------------------------------------------------
 
 def modus_stop(payload: dict) -> None:
@@ -158,25 +212,34 @@ def modus_stop(payload: dict) -> None:
         return
     session = payload.get("session_id")
     session8 = session[:8] if session else None
+    spitze = treffer[:SPITZE_GROESSE]
+    schwanz = treffer[SPITZE_GROESSE:]
 
     # Vergleichsstand fuer die Bestaetigung: die ALTE "aktuelle" Ablage
-    # wird zur neuen "vorherigen" -- nur wenn sie zur selben Sitzung
-    # gehoert, sonst gibt es (wie beim allerersten Zug) keinen Vergleich.
+    # (nur die Spitze) wird zur neuen "vorherigen" -- nur wenn sie zur
+    # selben Sitzung gehoert, sonst gibt es (wie beim allerersten Zug)
+    # keinen Vergleich. Die Schwanz-Statistik ist SITZUNGSWEIT und wird
+    # ebenso uebernommen, nicht neu angelegt.
     vorherige = None
+    statistik = _leere_statistik()
     try:
         with open(TREFFER_DATEI, encoding="utf-8") as f:
             alt = json.load(f)
         if alt.get("session") == session8:
             vorherige = alt.get("aktuelle")
+            statistik = alt.get("statistik") or statistik
     except (OSError, json.JSONDecodeError):
         pass
+
+    _schwanz_zaehlen(statistik, spitze, schwanz)
 
     daten = {
         "session": session8,
         "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "verbraucht": False,
         "vorherige": vorherige,
-        "aktuelle": {"treffer": treffer, "begriffe": begriffe},
+        "aktuelle": {"treffer": spitze, "begriffe": begriffe},
+        "statistik": statistik,
     }
     with open(TREFFER_DATEI, "w", encoding="utf-8") as f:
         json.dump(daten, f, ensure_ascii=False)
@@ -187,9 +250,9 @@ def modus_stop(payload: dict) -> None:
 def _bereits_geliefert(session: str) -> tuple[set, set, int]:
     """Pfade/Kennungen, die recall_log.jsonl fuer diese Sitzung schon
     ausgeliefert hat -- ueber ALLE Zeilen dieser Sitzung, nicht nur die
-    letzte -- plus wieviele davon ueber DIESEN Weg kamen (quelle=="antwort",
+    letzte -- plus wieviele davon ueber DIESEN Weg kamen (ausloeser=="antwort",
     fuer die Sitzungsobergrenze). Zeilen des normalen Prompt-Wegs (kein
-    "quelle"-Feld) zaehlen fuer den Dedup mit, aber NICHT auf die
+    "ausloeser"-Feld) zaehlen fuer den Dedup mit, aber NICHT auf die
     Obergrenze."""
     nodes, lessons = set(), set()
     antwort_eintraege = 0
@@ -206,7 +269,7 @@ def _bereits_geliefert(session: str) -> tuple[set, set, int]:
                 zeilen_lessons = d.get("lessons") or []
                 nodes.update(zeilen_nodes)
                 lessons.update(zeilen_lessons)
-                if d.get("quelle") == "antwort":
+                if d.get("ausloeser") == "antwort":
                     antwort_eintraege += len(zeilen_nodes) + len(zeilen_lessons)
     except OSError:
         pass
@@ -230,14 +293,14 @@ def _protokolliere(session: str, eintraege: list[tuple[str, str, str]]) -> None:
     """Schreibt, was tatsaechlich ausgegeben wurde (NACH Dedup und Deckel,
     keine Rohtreffer) als eigene Zeile nach recall_log.jsonl -- gleiches
     Format wie die bestehenden Zeilen, damit der vorhandene Dedup ab dem
-    naechsten Zug greift, plus "quelle": "antwort" zur Kennzeichnung des
+    naechsten Zug greift, plus "ausloeser": "antwort" zur Kennzeichnung des
     Wegs. Beiwerk, darf die Ausgabe nie zum Scheitern bringen."""
     zeile = {
         "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "nodes": [s for k, s, _ in eintraege if k == "node"],
         "lessons": [s for k, s, _ in eintraege if k == "lesson"],
         "session": session,
-        "quelle": "antwort",
+        "ausloeser": "antwort",
     }
     try:
         with open(RECALL_LOG, "a", encoding="utf-8") as f:
@@ -246,11 +309,14 @@ def _protokolliere(session: str, eintraege: list[tuple[str, str, str]]) -> None:
         pass
 
 
-def _ausgabefaehig(aktuelle: dict, vorherige: dict | None) -> list[tuple[str, str, str]]:
-    """Wendet die Bestaetigung-ueber-zwei-Zuege-Regel an (siehe Moduldoc).
-    vorherige=None (erster Zug der Sitzung) -> keine Bestaetigungsbasis UND
-    eine leere Differenzmenge, sonst wuerde jeder Begriff beim ersten Zug
-    als 'neu' gelten und die Bestaetigungspflicht wirkungslos machen."""
+def _ausgabefaehig(aktuelle: dict, vorherige: dict | None) -> tuple[list[tuple[str, str, str]], dict]:
+    """Kriterium 1+2, wendet die Bestaetigung-ueber-zwei-Zuege-Regel an
+    (siehe Moduldoc) auf die SPITZE (aktuelle["treffer"] enthaelt seit
+    Nachtrag 4 nur noch Rang 1-3). vorherige=None (erster Zug der Sitzung)
+    -> keine Bestaetigungsbasis UND eine leere Differenzmenge, sonst wuerde
+    jeder Begriff beim ersten Zug als 'neu' gelten und die
+    Bestaetigungspflicht wirkungslos machen. Gibt zusaetzlich zurueck, wie
+    oft jedes Kriterium gefeuert hat (Auftrag Punkt 5)."""
     vorherige_treffer = (vorherige or {}).get("treffer") or []
     vorherige_schluessel = {_schluessel_und_zeile(e)[:2] for e in vorherige_treffer}
     if vorherige is not None:
@@ -259,14 +325,41 @@ def _ausgabefaehig(aktuelle: dict, vorherige: dict | None) -> list[tuple[str, st
         neue_begriffe = set()
 
     ausgefiltert = []
+    fired = {"1": 0, "2": 0}
     for e in aktuelle.get("treffer") or []:
         kind, schluessel, zeile = _schluessel_und_zeile(e)
         bestaetigt = (kind, schluessel) in vorherige_schluessel
         text = f"{e.get('title') or e.get('type') or ''} {e.get('summary') or ''} {schluessel}"
         hat_neuen_begriff = bool(pruefkorpus.tokenize(text) & neue_begriffe)
+        if bestaetigt:
+            fired["1"] += 1
+        if hat_neuen_begriff:
+            fired["2"] += 1
         if bestaetigt or hat_neuen_begriff:
             ausgefiltert.append((kind, schluessel, zeile))
-    return ausgefiltert
+    return ausgefiltert, fired
+
+
+def _kriterium_3(statistik: dict, ausgeschlossen: set) -> tuple[list[tuple[str, str, str]], int]:
+    """Verbindende Treffer: mindestens SCHWANZ_SCHWELLE mal im Schwanz
+    aufgetaucht und NIE in der Spitze gestanden (siehe Moduldoc). Eigene
+    Kennzeichnung im Ausgabetext -- sonst haelt sie, wer sie nicht kennt,
+    fuer schwache Thementreffer, die zufaellig oft auftauchen. `ausgeschlossen`
+    sind (kind, schluessel)-Paare, die schon ueber Kriterium 1/2 im Ergebnis
+    stehen -- kein Doppeleintrag."""
+    spitze_gesehen = set(statistik.get("spitze_gesehen") or [])
+    kandidaten = []
+    gefeuert = 0
+    for key, eintrag in (statistik.get("schwanz") or {}).items():
+        kind, schluessel = eintrag.get("kind"), eintrag.get("schluessel")
+        if (kind, schluessel) in ausgeschlossen:
+            continue
+        if eintrag.get("anzahl", 0) >= SCHWANZ_SCHWELLE and key not in spitze_gesehen:
+            zeile = (f"- [{schluessel}] (verbindender Treffer, kein Thementreffer) "
+                     f"{eintrag.get('titel') or ''}: {eintrag.get('zusammenfassung') or ''}")
+            kandidaten.append((kind, schluessel, zeile))
+            gefeuert += 1
+    return kandidaten, gefeuert
 
 
 def modus_prompt(payload: dict) -> None:
@@ -282,39 +375,50 @@ def modus_prompt(payload: dict) -> None:
     if daten.get("verbraucht") or daten.get("session") != session:
         return
 
-    kandidaten = _ausgabefaehig(daten.get("aktuelle") or {}, daten.get("vorherige"))
-    if not kandidaten:
-        return
+    # Kriterium 1+2 (Spitze) zuerst, Kriterium 3 (Schwanz) ergaenzt nur, was
+    # dort noch nicht steht -- kein Doppeleintrag. Die Feuerzaehler laufen
+    # IMMER mit (Auftrag Punkt 5), auch wenn am Ende nichts ausgegeben wird --
+    # darum wird "statistik" unten in JEDEM Fall zurueckgeschrieben, nicht nur
+    # bei erfolgreicher Ausgabe.
+    statistik = daten.get("statistik") or _leere_statistik()
+    kandidaten, fired = _ausgabefaehig(daten.get("aktuelle") or {}, daten.get("vorherige"))
+    ausgeschlossen = {(k, s) for k, s, _ in kandidaten}
+    kandidaten_3, fired3 = _kriterium_3(statistik, ausgeschlossen)
+    kandidaten += kandidaten_3
+    fired["3"] = fired3
+    for k in ("1", "2", "3"):
+        statistik.setdefault("kriterium_feuer", {})[k] = statistik["kriterium_feuer"].get(k, 0) + fired[k]
+    daten["statistik"] = statistik
 
-    geliefert_nodes, geliefert_lessons, antwort_bisher = _bereits_geliefert(session)
-    verfuegbar = MAX_ANTWORT_EINTRAEGE_JE_SITZUNG - antwort_bisher
-    if verfuegbar <= 0:
-        return
+    if kandidaten:
+        geliefert_nodes, geliefert_lessons, antwort_bisher = _bereits_geliefert(session)
+        verfuegbar = MAX_ANTWORT_EINTRAEGE_JE_SITZUNG - antwort_bisher
+        if verfuegbar <= 0:
+            kandidaten = []
+        else:
+            kandidaten = [
+                (kind, schluessel, zeile) for kind, schluessel, zeile in kandidaten
+                if schluessel not in (geliefert_lessons if kind == "lesson" else geliefert_nodes)
+            ]
+            kandidaten = kandidaten[:min(CAP_EINTRAEGE, verfuegbar)]
+            while kandidaten:
+                block = "\n".join([KOPF, HINWEIS, *[z for _, _, z in kandidaten], FUSS])
+                if len(block) <= CAP_ZEICHEN:
+                    break
+                kandidaten.pop()  # Ueberzaehliges wird verworfen, nicht gekuerzt
 
-    kandidaten = [
-        (kind, schluessel, zeile) for kind, schluessel, zeile in kandidaten
-        if schluessel not in (geliefert_lessons if kind == "lesson" else geliefert_nodes)
-    ]
-    if not kandidaten:
-        return
+    if kandidaten:
+        print(block)
+        daten["verbraucht"] = True
 
-    kandidaten = kandidaten[:min(CAP_EINTRAEGE, verfuegbar)]
-    while kandidaten:
-        block = "\n".join([KOPF, HINWEIS, *[z for _, _, z in kandidaten], FUSS])
-        if len(block) <= CAP_ZEICHEN:
-            break
-        kandidaten.pop()  # Ueberzaehliges wird verworfen, nicht gekuerzt
-    if not kandidaten:
-        return
-
-    print(block)
-    daten["verbraucht"] = True
     try:
         with open(TREFFER_DATEI, "w", encoding="utf-8") as f:
             json.dump(daten, f, ensure_ascii=False)
     except OSError:
         pass
-    _protokolliere(session, kandidaten)
+
+    if kandidaten:
+        _protokolliere(session, kandidaten)
 
 
 # --- Einstieg ---------------------------------------------------------------
@@ -355,9 +459,12 @@ def _selftest() -> None:
     faelle = 0
 
     def fake_search(query, scope="all", max_results=10, **kw):
+        # Genau SPITZE_GROESSE Treffer -- kein Schwanz, damit diese Faelle
+        # (Kriterium 1+2, Dedup, Sitzungsobergrenze) nicht ungewollt mit
+        # Kriterium 3 interferieren (eigener Testblock weiter unten).
         return {"results": [
             {"kind": "node", "path": f"/fake/{i}", "title": f"T{i}", "summary": f"S{i}"}
-            for i in range(5)
+            for i in range(SPITZE_GROESSE)
         ]}
 
     try:
@@ -398,17 +505,17 @@ def _selftest() -> None:
             abgelegt = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))
             assert abgelegt["session"] == "sess0001"
             assert abgelegt["vorherige"] is None
-            assert len(abgelegt["aktuelle"]["treffer"]) == 5
+            assert len(abgelegt["aktuelle"]["treffer"]) == SPITZE_GROESSE  # nur noch Rang 1-3 (fake/0,1,2)
             print(f"  Fall {faelle}: (f) lange Antwort -> Ablage mit Attrappen-Treffern, erster Zug ok")
 
-            # Zweiter Zug, dieselben Treffer -> die alte "aktuelle" (fake/0..4) wird zur
-            # neuen "vorherigen", die neue "aktuelle" ist wieder fake/0..4: alle 5
+            # Zweiter Zug, dieselben Treffer -> die alte "aktuelle" (fake/0,1,2) wird zur
+            # neuen "vorherigen", die neue "aktuelle" ist wieder fake/0,1,2: alle 3
             # Treffer sind damit ueber ZWEI Zuege bestaetigt (Kriterium 1).
             faelle += 1
             modus_stop({"transcript_path": str(transcript2), "session_id": "sess0001x"})
             abgelegt2 = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))
             assert abgelegt2["vorherige"] is not None
-            assert len(abgelegt2["vorherige"]["treffer"]) == 5
+            assert len(abgelegt2["vorherige"]["treffer"]) == SPITZE_GROESSE
             print(f"  Fall {faelle}: zweiter Zug schiebt 'aktuelle' zu 'vorherige' ok")
 
             # (b) Dedup: Treffer, der laut recall_log.jsonl dieser Sitzung schon
@@ -426,13 +533,6 @@ def _selftest() -> None:
             assert "/fake/0" not in ausgabe and "/fake/1" not in ausgabe
             assert "/fake/2" in ausgabe
             print(f"  Fall {faelle}: (b) bereits gelieferte Treffer bleiben aussen vor ok")
-
-            # (c) Deckel: von den verbleibenden 3 (fake/2,3,4) stehen hoechstens 3 im Block.
-            faelle += 1
-            zeilen_im_block = [z for z in ausgabe.splitlines() if z.startswith("- [")]
-            assert len(zeilen_im_block) <= CAP_EINTRAEGE, zeilen_im_block
-            assert len(zeilen_im_block) == 3, zeilen_im_block  # genau die 3 uebrigen
-            print(f"  Fall {faelle}: (c) Deckel haelt (<= {CAP_EINTRAEGE} Eintraege) ok")
 
             # (d) verbrauchte Ablage liefert beim zweiten Aufruf nichts mehr.
             faelle += 1
@@ -462,6 +562,38 @@ def _selftest() -> None:
             assert buf4.getvalue() == "", buf4.getvalue()
             print(f"  Fall {faelle}: (g) ueber --prompt ausgelieferter Treffer kehrt nicht zurueck ok")
 
+            # (c) Deckel gilt fuer ALLE drei Kriterien gemeinsam: 3 bestaetigte
+            # Spitzen-Treffer (Kriterium 1) + 2 verbindende Schwanz-Treffer
+            # (Kriterium 3) sind 5 Kandidaten, hoechstens 3 duerfen im Block stehen.
+            # Eigene Sitzung, direkt konstruierte Ablage -- unabhaengig von der
+            # sess0001-Kette oben.
+            faelle += 1
+            _kappe_spitze = {
+                "treffer": [{"kind": "node", "path": f"/kappe/{i}", "title": f"K{i}", "summary": "s"}
+                            for i in range(SPITZE_GROESSE)],
+                "begriffe": ["kappx"],
+            }
+            TREFFER_DATEI.write_text(json.dumps({
+                "session": "seskappe", "verbraucht": False,
+                "vorherige": _kappe_spitze, "aktuelle": _kappe_spitze,
+                "statistik": {
+                    "schwanz": {
+                        "node|/kappe/schwanz1": {"kind": "node", "schluessel": "/kappe/schwanz1",
+                                                  "anzahl": SCHWANZ_SCHWELLE, "titel": "V1", "zusammenfassung": "s"},
+                        "node|/kappe/schwanz2": {"kind": "node", "schluessel": "/kappe/schwanz2",
+                                                  "anzahl": SCHWANZ_SCHWELLE, "titel": "V2", "zusammenfassung": "s"},
+                    },
+                    "spitze_gesehen": [], "kriterium_feuer": {"1": 0, "2": 0, "3": 0},
+                },
+            }), encoding="utf-8")
+            buf_kappe = io.StringIO()
+            with contextlib.redirect_stdout(buf_kappe):
+                modus_prompt({"session_id": "seskappex"})
+            zeilen_im_block = [z for z in buf_kappe.getvalue().splitlines() if z.startswith("- [")]
+            assert len(zeilen_im_block) <= CAP_EINTRAEGE, zeilen_im_block
+            assert len(zeilen_im_block) == CAP_EINTRAEGE, zeilen_im_block  # 5 Kandidaten, Deckel bei 3
+            print(f"  Fall {faelle}: (c) Deckel haelt ueber alle drei Kriterien gemeinsam ok")
+
             # (h) Sitzungsobergrenze haelt: 10 bereits ueber diesen Weg protokollierte
             # Eintraege -> modus_prompt bleibt still, auch bei einem bestaetigten
             # (also sonst ausgabefaehigen) Treffer. "vorherige" == "aktuelle" macht
@@ -473,7 +605,7 @@ def _selftest() -> None:
             RECALL_LOG.write_text(json.dumps({
                 "session": "sesscap1",
                 "nodes": [f"/cap/{i}" for i in range(10)],
-                "lessons": [], "quelle": "antwort",
+                "lessons": [], "ausloeser": "antwort",
             }) + "\n", encoding="utf-8")
             TREFFER_DATEI.write_text(json.dumps({
                 "session": "sesscap1", "verbraucht": False,
@@ -486,7 +618,7 @@ def _selftest() -> None:
             print(f"  Fall {faelle}: (h) Sitzungsobergrenze ({MAX_ANTWORT_EINTRAEGE_JE_SITZUNG}) haelt ok")
 
             # Negativfall zu (h): Eintraege ueber den NORMALEN Prompt-Weg (kein
-            # "quelle": "antwort") zaehlen NICHT auf die Obergrenze.
+            # "ausloeser": "antwort") zaehlen NICHT auf die Obergrenze.
             faelle += 1
             _cap2_treffer = {"treffer": [{"kind": "node", "path": "/cap2/neu", "title": "N", "summary": "S"}],
                               "begriffe": ["x"]}
@@ -569,6 +701,76 @@ def _selftest() -> None:
                 modus_prompt({"session_id": "seskonf4x"})
             assert buf10.getvalue() == "", buf10.getvalue()
             print(f"  Fall {faelle}: erster Zug der Sitzung -> Differenzmenge leer, nichts ausgegeben ok")
+
+            # --- Nachtrag 4: drittes Kriterium (verbindende Treffer) ----------------
+            # Eine Sitzung, vier Stop-Zuege: /connector liegt in Zug 0-2 immer im
+            # Schwanz (nie in der Spitze), in Zug 3 rutscht er in die Spitze. Die
+            # Spitze wechselt jeden Zug komplett (andere Pfade) und die Begriffsmenge
+            # bleibt gleich (derselbe lange Antworttext) -- damit feuern Kriterium 1
+            # und 2 in dieser Sitzung nie, und der Schwanz-Effekt ist isoliert
+            # nachweisbar.
+            faelle += 1
+            zaehler = [0]
+
+            def fake_search_schwanz(query, scope="all", max_results=10, **kw):
+                n = zaehler[0]
+                zaehler[0] += 1
+                if n < 3:
+                    spitze = [{"kind": "node", "path": f"/spitze/{n}/{i}", "title": f"S{n}{i}",
+                               "summary": "eigenes thema"} for i in range(SPITZE_GROESSE)]
+                    schwanz = [{"kind": "node", "path": "/connector", "title": "C",
+                                "summary": "verbindet alles"}]
+                else:
+                    spitze = [{"kind": "node", "path": "/connector", "title": "C", "summary": "verbindet alles"}] + \
+                              [{"kind": "node", "path": f"/spitze/{n}/{i}", "title": f"S{n}{i}",
+                                "summary": "eigenes thema"} for i in range(SPITZE_GROESSE - 1)]
+                    schwanz = []
+                rest = [{"kind": "node", "path": f"/rest/{n}/{i}", "title": f"R{n}{i}", "summary": "fuellmaterial"}
+                        for i in range(11)]
+                return {"results": spitze + schwanz + rest}
+
+            kms.knowledge_search = fake_search_schwanz
+            transcript_schw = tmp / "t_schwanz.jsonl"
+            transcript_schw.write_text(json.dumps({
+                "type": "assistant",
+                "message": {"content": [{"type": "text", "text": lang}]},  # gleicher Text, gleiche Begriffe
+            }) + "\n", encoding="utf-8")
+
+            modus_stop({"transcript_path": str(transcript_schw), "session_id": "sesschw1"})  # n=0
+            modus_stop({"transcript_path": str(transcript_schw), "session_id": "sesschw1"})  # n=1, /connector anzahl=2
+
+            # Grenzwert: 2x im Schwanz reicht NICHT.
+            buf_schw1 = io.StringIO()
+            with contextlib.redirect_stdout(buf_schw1):
+                modus_prompt({"session_id": "sesschw1xx"})
+            assert buf_schw1.getvalue() == "", buf_schw1.getvalue()
+            print(f"  Fall {faelle}: zweimal im Schwanz reicht nicht (Grenzwert) ok")
+
+            faelle += 1
+            modus_stop({"transcript_path": str(transcript_schw), "session_id": "sesschw1"})  # n=2, /connector anzahl=3
+            buf_schw2 = io.StringIO()
+            with contextlib.redirect_stdout(buf_schw2):
+                modus_prompt({"session_id": "sesschw1xx"})
+            ausgabe_schw = buf_schw2.getvalue()
+            assert "/connector" in ausgabe_schw, ausgabe_schw
+            assert "verbindender Treffer" in ausgabe_schw, ausgabe_schw
+            statistik_nach_3 = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))["statistik"]
+            assert statistik_nach_3["kriterium_feuer"]["3"] == 1, statistik_nach_3
+            print(f"  Fall {faelle}: dreimal im Schwanz, nie Spitze -> ausgegeben, "
+                  f"als verbindend gekennzeichnet, Feuerzaehler lesbar ok")
+
+            faelle += 1
+            modus_stop({"transcript_path": str(transcript_schw), "session_id": "sesschw1"})  # n=3, /connector in Spitze
+            buf_schw3 = io.StringIO()
+            with contextlib.redirect_stdout(buf_schw3):
+                modus_prompt({"session_id": "sesschw1xx"})
+            assert "/connector" not in buf_schw3.getvalue(), buf_schw3.getvalue()
+            statistik_nach_4 = json.loads(TREFFER_DATEI.read_text(encoding="utf-8"))["statistik"]
+            # Feuerzaehler 3 bleibt bei 1 -- /connector zaehlt nicht nochmal, weil es
+            # inzwischen (Zug 3) in der Spitze stand. Dedup-unabhaengiger Beleg:
+            # der Feuerzaehler steigt nur, wenn ein Kriterium wirklich zugeschlagen hat.
+            assert statistik_nach_4["kriterium_feuer"]["3"] == 1, statistik_nach_4
+            print(f"  Fall {faelle}: einmal in der Spitze gewesen -> ueber Kriterium 3 nicht mehr ausgabefaehig ok")
 
     finally:
         TREFFER_DATEI, RECALL_LOG = orig_treffer, orig_log
