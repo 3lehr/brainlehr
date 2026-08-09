@@ -1,0 +1,46 @@
+{
+  "datum": "2026-08-09T14:10:00+0200",
+  "frage": "Liegt der Abrufrueckstand an der Schreibweise der Knoten?",
+  "nenner": {
+    "NODE": 20,
+    "LESSON": 15
+  },
+  "arme": {
+    "ist": {
+      "zeichen_median": 2537,
+      "kanal_aus": {
+        "LESSON": 4,
+        "NODE": 3
+      },
+      "kanal_an": {
+        "LESSON": 4,
+        "NODE": 4
+      }
+    },
+    "nur_laenge_verdoppelt": {
+      "zeichen_median": 5075,
+      "kanal_aus": {
+        "LESSON": 4,
+        "NODE": 4
+      },
+      "kanal_an": {
+        "LESSON": 3,
+        "NODE": 5
+      }
+    },
+    "umgeschrieben": {
+      "zeichen_median": 3257,
+      "kanal_aus": {
+        "LESSON": 4,
+        "NODE": 10
+      },
+      "kanal_an": {
+        "LESSON": 4,
+        "NODE": 13
+      }
+    }
+  },
+  "negativkontrolle": "LESSON bleibt 4/15 im Umschrift-Arm (Lehren wurden nicht angefasst). Im Laengen-Arm faellt LESSON bei angeschaltetem zweiten Kanal auf 3/15 -- aufgeblaehte Knoten verdraengen Lehren aus der gemeinsamen Kandidatenliste.",
+  "voraussetzung": "Die umschreibenden Subagenten kannten den Pruefkorpus nicht und wussten nicht, dass einer existiert.",
+  "messkopie": "scratchpad/probe.db bzw. kontroll.db, beide aus knowledge.db kopiert; die Betriebs-DB wurde nicht geschrieben."
+}
