@@ -522,14 +522,14 @@ def _init_temp_db(path: Path) -> None:
         """INSERT INTO knowledge_nodes
            (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at,
             norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
-           VALUES ('root0001', '/', NULL, 'shared', 'root', 'root', '', 0, '[]', '', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: Wurzelknoten')""",
+           VALUES ('root0001', '/', NULL, 'shared', 'root', 'root', '', 0, '[]', 'testfixtur:normbestand.py::_init_temp_db (Wurzelknoten)', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: Wurzelknoten')""",
         (now, now),
     )
     conn.execute(
         """INSERT INTO knowledge_nodes
            (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at,
             norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
-           VALUES ('meth0001', '/methodik', '/', 'shared', 'methodik', 'methodik', '', 1, '[]', '', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: Sammelknoten')""",
+           VALUES ('meth0001', '/methodik', '/', 'shared', 'methodik', 'methodik', '', 1, '[]', 'testfixtur:normbestand.py::_init_temp_db (Sammelknoten)', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: Sammelknoten')""",
         (now, now),
     )
     conn.commit()
@@ -569,7 +569,7 @@ def _selftest() -> int:
             """INSERT INTO knowledge_nodes
                (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at,
                 norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
-               VALUES ('dir00001', '/methodik/direktiven', '/methodik', 'shared', 'direktiven', 'x', '', 2, '[]', '', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: Sammelknoten')""",
+               VALUES ('dir00001', '/methodik/direktiven', '/methodik', 'shared', 'direktiven', 'x', '', 2, '[]', 'testfixtur:normbestand.py::_selftest (Sammelknoten)', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: Sammelknoten')""",
             (now, now),
         )
         conn.execute(
@@ -583,7 +583,7 @@ def _selftest() -> int:
             """INSERT INTO knowledge_nodes
                (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at,
                 norm_entscheidung, norm_entschieden_von, norm_entschieden_grund)
-               VALUES ('dir00003', '/methodik/direktiven/verwaist', '/methodik/direktiven', 'shared', 'Nicht mehr in der Quelle', 'x', 'x', 3, '[]', '', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: simuliert verwaisten Knoten')""",
+               VALUES ('dir00003', '/methodik/direktiven/verwaist', '/methodik/direktiven', 'shared', 'Nicht mehr in der Quelle', 'x', 'x', 3, '[]', 'testfixtur:normbestand.py::_selftest (verwaister Knoten)', ?, ?, 'keine_norm', 'skript:normbestand.py', 'Testvorrichtung: simuliert verwaisten Knoten')""",
             (now, now),
         )
         conn.commit()

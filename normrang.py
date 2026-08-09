@@ -267,7 +267,8 @@ def _selftest() -> int:
             _insert_node(conn, "n-adr", "/x/adr", adr_src, "2026-08-03T00:00:00+01:00")
             _insert_node(conn, "n-sammel", "/x/sammel", sammel_src, "2026-08-04T00:00:00+01:00")
             _insert_node(conn, "n-fakt", "/x/fakt", fakt_src, "2026-08-04T00:00:00+01:00")
-            _insert_node(conn, "n-nosrc", "/x/nosrc", None, "2026-08-04T00:00:00+01:00")
+            nosrc_src = "testfixtur:normrang.py::_selftest (kein Normtraeger, keine echte Quelle)"
+            _insert_node(conn, "n-nosrc", "/x/nosrc", nosrc_src, "2026-08-04T00:00:00+01:00")
             conn.commit()
         finally:
             conn.close()
