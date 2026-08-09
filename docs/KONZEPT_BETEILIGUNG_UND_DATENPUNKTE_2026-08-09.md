@@ -247,16 +247,87 @@ Das ist dieselbe Haltung, die `kanonymitaet.py` schon im Kopf traegt: es nennt d
 Zahl k und verwendet nie das Wort „anonym", weil das eine Rechtsaussage waere. Ein
 Werkzeug, das „DSGVO-konform" von sich behauptet, hat diese Grenze ueberschritten.
 
+### Woraus die Projektion entsteht — die Kette, vollstaendig
+
+Betreiber: „aber die projections muss aus wer fraegt, hat er die rechte ueberhaupt
+dazu, hat er ein berichtigtes interresse, das er das interesse ueberhaupt haben
+[darf]?! was habe ich noch vergessen?"
+
+Die vier genannten Stufen stimmen, und **die vierte ist die, die fast alle
+vergessen**: dass ein Zweck legitim ist, heisst nicht, dass DIESER Aufrufer ihn
+geltend machen darf. Ein Hausmeister mit dem Zweck „Personalverwaltung" ist weder
+ein Rechte- noch ein Zweckfehler — er ist ein **Zustaendigkeitsfehler** und faellt
+durch beide Raster.
+
+**Es ist kein UND, sondern ein Filter: jede Stufe kann nur wegnehmen.** Sobald eine
+Stufe etwas hinzufuegen kann, ist die ganze Kette wertlos, weil dann die schwaechste
+Stufe gewinnt statt der staerksten.
+
+| # | Stufe | Frage | Woran sie haengt | Status |
+|---|---|---|---|---|
+| 1 | Identitaet | wer fragt | Ausweis, nicht Behauptung | **gebaut** (B4.1) |
+| 2 | Befugnis | darf er es grundsaetzlich | Rolle | B4.3 |
+| 3 | Zweck | wofuer | geschlossene Liste | 7b |
+| 4 | **Zustaendigkeit** | darf er diesen Zweck haben | Zweck × Rolle × Gruppe | **fehlte** |
+| 5 | **Betroffener** | was sagt die Person selbst | Einwilligung, Widerspruch (Art. 21) | fehlt |
+| 6 | **Datenart** | ist es eine besondere Kategorie | Art. 9 (Gesundheit, Religion, Gewerkschaft…) | fehlt |
+| 7 | **Frist** | duerfte es noch existieren | Aufbewahrung / Loeschung (Art. 17) | `gilt_bis` steht |
+| 8 | **Menge** | einer oder zehntausend | Schwelle je Zweck | fehlt |
+| 9 | **Empfaenger** | wohin geht es | Bildschirm / Modell / Export | **fehlt, wiegt am schwersten** |
+| 10 | **Verkettung** | wird es durch Nachbarfelder identifizierend | k-Anonymitaet | `kanonymitaet.py` steht |
+
+**Zu 5:** Der Betroffene ist kein Objekt der Entscheidung, er ist Partei. Die
+Hausregel sagt zugleich das Gegenstueck: **dem Nutzer werden seine eigenen Daten nie
+vorenthalten** — Maskierung gegen den Eigentuemer der Daten ist keine Sicherheit,
+sondern eine Fehlfunktion.
+
+**Zu 6:** Der Stadtwerke-Fall war genau das. Der Grund einer Abwesenheit ist ein
+Gesundheitsdatum (Art. 9) — eine Rolle-und-Zweck-Kombination, die fuer „abwesend"
+reicht, reicht dafuer nicht. Zwei Stufen, nicht eine.
+
+**Zu 9 — und das ist der wichtigste vergessene Punkt, weil er bei uns anders liegt
+als in jedem klassischen System:** Der Aufrufer ist ein **Modell**. Dieselben Daten
+auf dem Bildschirm des Berechtigten, im Kontextfenster eines Modells oder in einem
+Export sind drei verschiedene Vorgaenge. Die Hausregel trifft die Unterscheidung
+bereits genau: Maskierung ist richtig, **wo der Empfaenger ein Dritter ist** — der
+Unterschied ist der Empfaenger, nicht die Technik. Ohne Stufe 9 ist die ganze Kette
+gebaut und laeuft dann in ein Kontextfenster, das anschliessend weitererzaehlt.
+
+**Zwei Dinge, die keine Stufe sind, aber ohne die die Kette leckt:**
+
+**Das Protokoll ist selbst ein Bestand.** Dass X am Dienstag den Datensatz von Y
+gelesen hat, ist ein Datum ueber Y **und** ueber X. Wer `access_log` liest, braucht
+darum ebenfalls Zweck und Befugnis. Sonst ist die Kontrollinstanz das Leck — und
+zwar das ergiebigste, weil dort alles zusammenlaeuft.
+
+**Die Verweigerung darf nicht verraten, was es gaebe.** „Kein Zugriff auf diesen
+Datensatz" beantwortet die Frage, ob es ihn gibt. Bei einer Personalakte ist das
+bereits die Auskunft. Ein Fehlschlag muss darum ununterscheidbar sein von „nicht
+vorhanden" — was mit der Hausregel zusammenfaellt, keine Entwicklerinformation in
+die Oberflaeche zu geben.
+
+**Und ein Gewinn, der fast geschenkt ist:** Weil `access_log` jeden Lesezugriff mit
+Hashkette fuehrt, kann brainlehr die **Auskunft nach Art. 15** beantworten — wer hat
+meine Daten wann und zu welchem Zweck gelesen. Das ist bei den meisten Systemen ein
+Projekt und hier ein Bericht. Es ist zugleich der Grund, warum Stufe 3 den Zweck
+**protokollieren** und nicht nur pruefen muss.
+
 ### Proben
 
 | Nr. | Probe | Erwartung |
 |---|---|---|
+| Z0 | zulaessiger Zweck, aber unzustaendiger Aufrufer (Hausmeister/Personalverwaltung) | abgewiesen — weder Rechte- noch Zweckfehler |
 | Z1 | Zugriff ohne Zweck | abgewiesen, wo der Datensatz Personenbezug traegt |
 | Z2 | unbekannter Zweck (Freitext) | abgewiesen, nicht als „sonstiges" gefuehrt |
 | Z3 | Zweck gewaehrt ein Feld, das die Rolle nicht hat | **Feld bleibt weg** (Schnitt, nicht Vereinigung) |
 | Z4 | Rolle erlaubt alles, Zweck ist eng | nur die Zweckprojektion |
 | Z5 | derselbe Datensatz, zwei Zwecke | zwei Protokollzeilen, unterschiedliche Felder |
 | Z6 | Zweck steht im Protokoll | bei **jedem** Lesezugriff, nicht nur bei Schreibvorgaengen |
+| Z7 | Datensatz existiert nicht **gegen** Datensatz gesperrt | ununterscheidbare Antwort |
+| Z8 | Ausgabe an ein Modell gegen Ausgabe an den Berechtigten | verschiedene Projektionen |
+| Z9 | `access_log` lesen ohne Zweck | abgewiesen — das Protokoll ist selbst ein Bestand |
+| Z10 | Art.-15-Auskunft: wer las meine Daten | vollstaendig aus `access_log`, mit Zweck |
+| Z11 | 10.000 Datensaetze unter einem Einzelfallzweck | Schwelle greift |
 
 ---
 
