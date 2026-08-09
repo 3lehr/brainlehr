@@ -93,36 +93,134 @@ def selbstzuschreibung(conn: sqlite3.Connection) -> dict | None:
     }
 
 
-def stumme_spalte(conn: sqlite3.Connection, spalte: str, zweck: str,
-                  nur_normen: bool = True) -> dict | None:
-    """Eine Spalte mit definiertem Zweck, die zu 100 Prozent leer steht.
+# Ausnahmeliste fuer die generische stumme-Spalte-Pruefung (Auftrag
+# 2026-08-09). Jede Spalte hier wurde einzeln am Schema (schema.sql)
+# nachgesehen, keine geraten. Drei Sorten, wie im Auftrag verlangt:
+# Schluessel, Zeitstempel der Anlage, technische Felder -- je Eintrag
+# steht daneben, warum genau diese Spalte von Bauart her einwertig sein
+# DARF, ohne dass das ein Schreiber-Ausfall waere.
+_AUSNAHMEN_KNOWLEDGE_NODES = {
+    "id": "Schluesselspalte (PRIMARY KEY) -- Eindeutigkeit ist die Bauart selbst",
+    "path": "Schluesselspalte (UNIQUE NOT NULL) -- dasselbe wie id",
+    "created_at": "Zeitstempel der Anlage (NOT NULL, strftime-Vorgabe) -- ein "
+                  "Sammelimport darf identische Werte tragen, das ist kein Ausfall",
+    "updated_at": "Zeitstempel der Aenderung, gleiche Begruendung wie created_at",
+    "norm_rang": "technisches Unterscheidungsmerkmal Norm-vs-Fakt. Laut Schema-"
+                 "Kommentar IST norm_rang IS NULL bei der Mehrheit der Zeilen "
+                 "die Aussage selbst ('das hier ist ein Fakt, keine Norm') -- "
+                 "keine Luecke, sondern der Zweck der Spalte",
+    "zurueckgezogen": "technisches Statusflag -- eine ueberwiegende Mehrheit auf "
+                      "0 ist der gesunde Normalfall (wenige Zurueckziehungen)",
+}
+_AUSNAHMEN_LESSONS_LEARNED = {
+    "id": "Schluesselspalte (PRIMARY KEY)",
+    "first_seen": "Zeitstempel der Anlage, gleiche Begruendung wie bei knowledge_nodes",
+    "last_seen": "Zeitstempel der letzten Beobachtung, gleiche Begruendung",
+}
+_AUSNAHMEN_ACCESS_LOG = {
+    "id": "Schluesselspalte (PRIMARY KEY AUTOINCREMENT)",
+    "timestamp": "Zeitstempel der Anlage, gleiche Begruendung wie oben",
+    "zeilen_hash": "technisches Auditketten-Feld -- laut Schema-Kommentar "
+                   "planmaessig NULL bei reinen Lesezugriffen und bei "
+                   "Loeschungen, dokumentierter Zustand, keine Luecke",
+    "ketten_hash": "technisches Auditketten-Feld -- laut Schema-Kommentar fuer "
+                   "alle Bestandszeilen vor der Migration NULL (kein "
+                   "Kettenanfang vor 2026-08-06), dokumentierter Zustand",
+}
+
+# Sechs Spalten der Normschicht (schema.sql-Kommentar an knowledge_nodes)
+# gelten nur fuer die Teilmenge der Zeilen, die ueberhaupt eine Norm sind
+# (norm_rang IS NOT NULL) -- ausserhalb davon ist NULL Bauart, nicht
+# Ausfall (dieselbe Begruendung wie oben bei norm_rang selbst). Statt sie
+# auf die Ausnahmeliste zu setzen (und damit den urspruenglichen Fund an
+# norm_art zu verlieren), bekommen sie den ENGEREN Nenner -- exakt das,
+# was die alte Einzelpruefung schon fuer norm_art tat. Neu generisch: die
+# anderen fuenf (gilt_ab, gilt_bis, norm_entschieden_*) wurden vorher nie
+# geprueft.
+_NORMSCHICHT_SPALTEN = {
+    "norm_art", "gilt_ab", "gilt_bis",
+    "norm_entschieden_von", "norm_entschieden_am", "norm_entschieden_grund",
+}
+
+
+def _tabellenspalten(conn: sqlite3.Connection, tabelle: str) -> list[str]:
+    return [r["name"] for r in conn.execute(f"PRAGMA table_info({tabelle})")]
+
+
+def _stille_spalten(conn: sqlite3.Connection, tabelle: str, wo: str,
+                    ausnahmen: dict[str, str], sonderwo: dict[str, str] | None = None
+                    ) -> list[dict]:
+    """Prueft ALLE Spalten einer Tabelle generisch auf zwei Signaturen
+    derselben Fehlklasse: durchgehend leer, oder durchgehend derselbe Wert
+    (einwertig). Beides sagt dasselbe -- die Spalte unterscheidet nichts.
 
     FEHLKLASSE: gebaute Regel ohne Wirkung. Sie sieht im Quelltext aus wie
-    Schutz und unterscheidet nichts -- dieselbe Signatur wie ein Schema
-    ohne Schreiber (vier Tokenspalten ueber 2167 Zeilen NULL) und wie der
-    Skeptiker, dessen Ausloeser Prosa war (L-479171).
+    Schutz oder wie eine erfasste Unterscheidung und traegt keine -- dieselbe
+    Signatur wie vier Tokenspalten ueber 3638 Zeilen NULL und wie actor bei
+    366 von 390 Zeilen ohne Aussage.
 
-    PREIS EINES FEHLALARMS: gering, aber nicht null -- eine Spalte kann
-    absichtlich leer sein (Altbestand, der nie geraten werden soll). Darum
-    nennt der Befund den ZWECK mit, damit sich das beurteilen laesst.
+    PREIS EINES FEHLALARMS: gering, aber nicht null -- eine Spalte darf von
+    Bauart her einwertig sein (Schluessel, Zeitstempel, technische Felder).
+    Genau dafuer gibt es die Ausnahmeliste mit Begruendung je Eintrag; wer
+    sie ignoriert, sieht sich eine Spalte an, die es nicht wert war.
 
-    Nur bei 100 Prozent, nicht bei 90: eine teilweise gefuellte Spalte
-    wirkt wenigstens dort, wo sie gefuellt ist. Der Sprung von 'wirkt nie'
-    auf 'wirkt manchmal' ist der Unterschied, um den es geht."""
-    wo = "WHERE norm_rang IS NOT NULL AND zurueckgezogen = 0" if nur_normen else "WHERE zurueckgezogen = 0"
-    r = conn.execute(
-        f"SELECT COUNT(*) n, SUM({spalte} IS NULL OR TRIM({spalte})='') leer "
-        f"FROM knowledge_nodes {wo}"
-    ).fetchone()
-    n, leer = r["n"] or 0, r["leer"] or 0
-    if n < MINDESTZAHL or leer != n:
-        return None
-    return {
-        "pruefung": f"stumme_spalte:{spalte}",
-        "befund": f"{spalte} ist bei allen {n} betroffenen Zeilen leer",
-        "fehlklasse": f"gebaute Regel ohne Wirkung -- Zweck laut Schema: {zweck}",
-        "fehlalarm_kostet": "gering: eine Spalte darf absichtlich leer sein, der Zweck steht daneben",
-    }
+    Schwelle 95 Prozent statt 100: anders als beim alten Einzelfall (nur
+    100 Prozent leer) soll die generische Pruefung auch eine Spalte finden,
+    die zu 96 Prozent 'unbekannt' sagt -- das unterscheidet praktisch
+    nichts, auch wenn vier Zeilen einen echten Wert tragen."""
+    funde = []
+    for spalte in _tabellenspalten(conn, tabelle):
+        if spalte in ausnahmen:
+            continue
+        eigene_wo = (sonderwo or {}).get(spalte, wo)
+        leer_ausdruck = f"{spalte} IS NULL OR TRIM(CAST({spalte} AS TEXT))=''"
+        r = conn.execute(
+            f"SELECT COUNT(*) n, SUM(CASE WHEN {leer_ausdruck} THEN 1 ELSE 0 END) leer "
+            f"FROM {tabelle} WHERE {eigene_wo}"
+        ).fetchone()
+        n, leer = r["n"] or 0, r["leer"] or 0
+        if n < MINDESTZAHL:
+            continue
+        leer_anteil = leer / n
+        if leer_anteil >= 0.95:
+            funde.append({
+                "pruefung": f"stumme_spalte:{tabelle}.{spalte}",
+                "befund": f"{tabelle}.{spalte} ist bei {leer} von {n} Zeilen ({leer_anteil:.0%}) leer",
+                "fehlklasse": "gebaute Regel ohne Wirkung -- Spalte unterscheidet nichts",
+                "fehlalarm_kostet": "gering: eine Spalte darf ueberwiegend leer sein, "
+                                    "steht sie nicht auf der begruendeten Ausnahmeliste, lohnt ein Blick",
+            })
+            continue
+        top = conn.execute(
+            f"SELECT TRIM(CAST({spalte} AS TEXT)) wert, COUNT(*) c FROM {tabelle} "
+            f"WHERE ({eigene_wo}) AND NOT ({leer_ausdruck}) "
+            f"GROUP BY wert ORDER BY c DESC LIMIT 1"
+        ).fetchone()
+        if top and (top["c"] / n) >= 0.95:
+            anteil = top["c"] / n
+            funde.append({
+                "pruefung": f"stumme_spalte:{tabelle}.{spalte}",
+                "befund": f"{tabelle}.{spalte} ist bei {top['c']} von {n} Zeilen ({anteil:.0%}) "
+                          f"derselbe Wert ('{top['wert']}')",
+                "fehlklasse": "gebaute Regel ohne Wirkung -- Spalte unterscheidet nichts",
+                "fehlalarm_kostet": "gering: eine Spalte darf ueberwiegend einwertig sein, "
+                                    "steht sie nicht auf der begruendeten Ausnahmeliste, lohnt ein Blick",
+            })
+    return funde
+
+
+def stumme_spalten(conn: sqlite3.Connection) -> list[dict]:
+    """Generische Fassung der stummen-Spalte-Pruefung ueber alle drei
+    Kern-Tabellen (Auftrag 2026-08-09) -- ersetzt die alte Einzelpruefung,
+    die nur auf norm_art zeigte. Siehe _stille_spalten fuer Fehlklasse und
+    Preis, hier nur die drei Nenner + Ausnahmelisten je Tabelle."""
+    sonderwo = {s: "norm_rang IS NOT NULL AND zurueckgezogen = 0" for s in _NORMSCHICHT_SPALTEN}
+    return (
+        _stille_spalten(conn, "knowledge_nodes", "zurueckgezogen = 0",
+                        _AUSNAHMEN_KNOWLEDGE_NODES, sonderwo)
+        + _stille_spalten(conn, "lessons_learned", "1=1", _AUSNAHMEN_LESSONS_LEARNED)
+        + _stille_spalten(conn, "access_log", "1=1", _AUSNAHMEN_ACCESS_LOG)
+    )
 
 
 # Epoche als Untergrenze, wenn ein Protokoll beim ersten Lauf leer ist --
@@ -322,14 +420,12 @@ def alle(conn: sqlite3.Connection) -> list[dict]:
     funde = [
         selbstzuschreibung(conn),
         faellige_auswertung(conn),
-        stumme_spalte(conn, "norm_art",
-                      "Sein/Sollen/Duerfen -- zwei Normen verschiedener Art konkurrieren nicht"),
         platzhalterfuellung(conn, "actor",
                             "wer die Aussage geschrieben hat -- traegt die ganze Herkunftskette"),
         platzhalterfuellung(conn, "model",
                             "welches Modell die Aussage geschrieben hat"),
     ]
-    return [f for f in funde if f]
+    return [f for f in funde if f] + stumme_spalten(conn)
 
 
 def _selftest() -> None:
@@ -361,15 +457,78 @@ def _selftest() -> None:
     fuelle(100, "claude-code/opus-5", zurueck=1)
     assert selbstzuschreibung(conn) is None, "zurueckgezogene Zeilen duerfen nicht kippen"
 
-    # Stumme Spalte: 100 Prozent meldet, 99 Prozent nicht.
-    conn2 = sqlite3.connect(":memory:"); conn2.row_factory = sqlite3.Row
-    conn2.execute("""CREATE TABLE knowledge_nodes (norm_rang INTEGER, norm_art TEXT,
-                     norm_entschieden_von TEXT, zurueckgezogen INTEGER DEFAULT 0)""")
-    for _ in range(25):
-        conn2.execute("INSERT INTO knowledge_nodes VALUES (1, NULL, 'x', 0)")
-    assert stumme_spalte(conn2, "norm_art", "z") is not None
-    conn2.execute("INSERT INTO knowledge_nodes VALUES (1, 'sollen', 'x', 0)")
-    assert stumme_spalte(conn2, "norm_art", "z") is None, "teilweise gefuellt ist kein Befund"
+    # Generische stumme Spalte -- fuenf Pflichtfaelle aus dem Auftrag
+    # 2026-08-09. Eigene Tabelle "t", weil die Pruefung ALLE Spalten einer
+    # Tabelle abgeht, nicht mehr eine benannte.
+    g = sqlite3.connect(":memory:"); g.row_factory = sqlite3.Row
+    g.execute("CREATE TABLE t (leer TEXT, verteilt TEXT, grenzwert TEXT, ausnahme TEXT)")
+
+    def g_fuelle(n, leer=None, verteilt=None, grenzwert=None, ausnahme=None):
+        for _ in range(n):
+            g.execute("INSERT INTO t VALUES (?,?,?,?)", (leer, verteilt, grenzwert, ausnahme))
+
+    # (d) zuerst, unter MINDESTZAHL: 19 Zeilen, 'leer' zu 100 Prozent leer,
+    # trotzdem kein Befund -- die Mindestzahl schlaegt jede Prozentzahl.
+    g_fuelle(19)
+    assert _stille_spalten(g, "t", "1=1", {}) == [], "unter MINDESTZAHL wird nicht geurteilt, auch bei 100 Prozent"
+
+    # (a) 100 Prozent leer, jetzt ueber der Mindestzahl -> gemeldet.
+    g_fuelle(1)  # 20. Zeile, 'leer' bleibt NULL
+    funde = _stille_spalten(g, "t", "1=1", {})
+    treffer = [f for f in funde if f["pruefung"] == "stumme_spalte:t.leer"]
+    assert treffer and "20 von 20" in treffer[0]["befund"], treffer
+
+    # (b) gleichmaessig verteilte Werte -> kein Befund, egal wie viele Zeilen.
+    g.execute("DELETE FROM t")
+    for i in range(100):
+        g.execute("INSERT INTO t (verteilt) VALUES (?)", (f"wert{i % 20}",))
+    funde = _stille_spalten(g, "t", "1=1", {})
+    assert not [f for f in funde if "verteilt" in f["pruefung"]], "gleichmaessige Verteilung ist kein Befund"
+
+    # (c) Grenzwert: 94 Prozent Einwertigkeit schweigt, 95 Prozent meldet.
+    g.execute("DELETE FROM t")
+    for _ in range(94):
+        g.execute("INSERT INTO t (grenzwert) VALUES ('x')")
+    for _ in range(6):
+        g.execute("INSERT INTO t (grenzwert) VALUES ('y')")
+    funde = _stille_spalten(g, "t", "1=1", {})
+    assert not [f for f in funde if "grenzwert" in f["pruefung"]], "94 Prozent ist unter der Schwelle"
+    g.execute("UPDATE t SET grenzwert = 'x' WHERE grenzwert = 'y' AND rowid IN (SELECT rowid FROM t WHERE grenzwert='y' LIMIT 1)")
+    funde = _stille_spalten(g, "t", "1=1", {})
+    treffer = [f for f in funde if "grenzwert" in f["pruefung"]]
+    assert treffer and "95 von 100" in treffer[0]["befund"], (treffer, "bei 95 Prozent muss gemeldet werden")
+
+    # (e) Ausnahmeliste: eine Spalte, die 100 Prozent leer ist, aber auf
+    # der Ausnahmeliste steht, wird NICHT gemeldet.
+    g.execute("DELETE FROM t")
+    g_fuelle(25)
+    funde_ohne_ausnahme = _stille_spalten(g, "t", "1=1", {})
+    assert [f for f in funde_ohne_ausnahme if "ausnahme" in f["pruefung"]], "Kontrollprobe: ohne Ausnahmeliste wird gemeldet"
+    funde_mit_ausnahme = _stille_spalten(g, "t", "1=1", {"ausnahme": "Testbegruendung"})
+    assert not [f for f in funde_mit_ausnahme if "ausnahme" in f["pruefung"]], "Ausnahmeliste muss greifen"
+
+    # Normschicht-Sonderfall: norm_art wird nur INNERHALB der Normen
+    # geprueft (norm_rang IS NOT NULL), nicht ueber den ganzen Bestand --
+    # das ist der urspruengliche Einzelfund, den die generische Fassung
+    # nicht verlieren darf.
+    n2 = sqlite3.connect(":memory:"); n2.row_factory = sqlite3.Row
+    n2.execute("""CREATE TABLE knowledge_nodes (id TEXT, path TEXT, norm_rang INTEGER,
+                 norm_art TEXT, gilt_ab TEXT, gilt_bis TEXT, norm_entschieden_von TEXT,
+                 norm_entschieden_am TEXT, norm_entschieden_grund TEXT,
+                 created_at TEXT, updated_at TEXT, zurueckgezogen INTEGER DEFAULT 0)""")
+    for i in range(25):
+        n2.execute("INSERT INTO knowledge_nodes VALUES (?,?,1,NULL,NULL,NULL,'x','x','x','t','t',0)",
+                   (str(i), str(i)))
+    for i in range(500):  # viele Fakt-Zeilen ohne norm_rang -- duerfen die Quote nicht verduennen
+        n2.execute("INSERT INTO knowledge_nodes VALUES (?,?,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'t','t',0)",
+                   (f"f{i}", f"f{i}"))
+    funde = stumme_spalten(n2)
+    treffer = [f for f in funde if f["pruefung"] == "stumme_spalte:knowledge_nodes.norm_art"]
+    assert treffer and "25 von 25" in treffer[0]["befund"], (treffer, "norm_art muss auf die Normen-Teilmenge bezogen sein, nicht auf 525 Zeilen")
+    # id/path/created_at/updated_at/norm_rang/zurueckgezogen stehen auf der
+    # Ausnahmeliste und duerfen trotz Einwertigkeit nicht auftauchen.
+    for spalte in ("id", "path", "created_at", "updated_at", "norm_rang", "zurueckgezogen"):
+        assert not [f for f in funde if f["pruefung"] == f"stumme_spalte:knowledge_nodes.{spalte}"], spalte
 
     # Platzhalterfuellung. Eigene Tabelle, weil gattung dazukommt.
     c3 = sqlite3.connect(":memory:"); c3.row_factory = sqlite3.Row
@@ -430,7 +589,7 @@ def _selftest() -> None:
         assert seit == 1, f"nur die Zeile nach der Untergrenze darf zaehlen, war {seit}"
         assert uebersprungen == 1, f"die Zeile ohne Zeitfeld muss ausgewiesen sein, war {uebersprungen}"
 
-    print("selftest ok (14 Faelle)")
+    print("selftest ok (20 Faelle)")
 
 
 def main() -> None:
