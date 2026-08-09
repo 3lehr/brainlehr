@@ -334,6 +334,29 @@ Ich habe heute mehrfach gesagt "der Abruf trifft nichts". Richtig waere gewesen:
 
 *Vorbehalt:* Fehlerklassen ohne Bezeichner maschinell zu erkennen ist schwer und fehlalarmanfaellig. Faellt die Trefferquote zu schlecht aus, ist die ehrliche Antwort, ihn auf die drei obigen Muster zu beschraenken statt ihn zu verallgemeinern.
 
+### S12 · Mehrstufiger Abruf — der gemessen groesste Rueckstand
+
+**Recherchiert 2026-08-09 (`runs/wettbewerb_2026-08-09.md`), und das Ergebnis ist unbequem:**
+
+| | Recall |
+|---|---|
+| Standard-Hybrid-RAG 2026 (BM25 + Dense + Reranking + Query-Rewriting) | ~91 % |
+| einfache Dense-only-Vektorsuche | 25-33 % |
+| **brainlehr** | **20 %** (7 von 35) |
+
+Wir liegen unter dem SCHWACHEN Referenzwert. Die benannte Ursache ist keine Feinheit, sondern eine fehlende Stufe: **Query-Rewriting und Reranking**. Unser Abruf sucht mit dem rohen Prompt und nimmt, was die RRF-Verschmelzung liefert.
+
+**Zwei Einschraenkungen, die dazugehoeren und keine Ausrede sind:** Die Branchenzahlen sind selbstveroeffentlicht und oeffentlich umstritten (Mem0 nannte 91,6 % auf LoCoMo, Zep korrigierte auf 58,44 % und stellte 94,7 % dagegen). Und unser Pruefkorpus vermeidet woertliche Ueberschneidung ABSICHTLICH -- ein haerterer Massstab. Der Abstand bleibt trotzdem zu gross, um ihn wegzuerklaeren.
+
+**Reihenfolge innerhalb des Schrittes, billig vor teuer:**
+1. **Deterministische Erweiterung zuerst**, ohne Modell: Komposita zerlegen (deutsche Zusammensetzungen sind hier ein echter Faktor -- "Kilometergeld" gegen "Kilometersatz"), Umlautfaltung auch in der Anfrage, Stammformen. Kostet nichts je Prompt und ist vollstaendig nachvollziehbar.
+2. **Reranking** ueber die vereinigte Kandidatenliste, bevor gedeckelt wird. Heute deckelt der Abruf VOR jeder Bewertung.
+3. **Erst dann** Query-Rewriting mit Modell -- und nur, wenn 1 und 2 gemessen nicht reichen. Ein Modellaufruf je Prompt ist Laufzeit und Kosten in jeder Sitzung; das ist ein Tausch und gehoert als solcher gemessen.
+
+*Massstab:* dieselben zwei Kennzahlen wie bisher -- Zieltreffer (heute 7/35) UND Zeichen je Prompt (heute 4776). Eine Verbesserung, die die Liefermenge verdoppelt, ist ein Tausch.
+
+*Warum das jetzt vor S4 und S7 kommt:* Es ist der einzige gemessene Rueckstand gegen den Stand der Technik. Alles andere im Plan macht den Speicher genauer; dies macht ihn erst brauchbar.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
