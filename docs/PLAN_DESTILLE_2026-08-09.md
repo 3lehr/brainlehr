@@ -563,7 +563,7 @@ sondern die Abnahme.
 | S7 | `--schreiben` gelaufen, erzeugte `.md` deckungsgleich mit dem Bestand, Kantenarten im Server erlaubt | `planordnung.py --selftest` |
 | S8 | Selbsttest gruen UND mindestens eine Pruefung, die im Bestand anschlaegt | `pruefer.py` ✓ erfuellt |
 | S9 | Suchpfad-Weg trifft mindestens so viel wie der alte, bei nicht hoeherer Zeichenzahl | `abrufguete.py` |
-| S10 | Bericht liegt vor UND die Negativkontrolle ist bestanden: untergemischte falsche Paare werden als nicht hilfreich erkannt | **Schwelle offen** |
+| S10 | Vorlaufmessung mit 50–100 eindeutig unaehnlichen Negativpaaren ist gefahren UND die Grenze ist AUS IHR abgeleitet (Fehlerquote samt Konfidenzintervall), nicht gesetzt | Recherche 2026-08-09: **es gibt keinen Standardwert** |
 | S11 | Selbsttest gruen UND mindestens ein echter Fund im Bestand | `arbeitsmelder.py` ✓ erfuellt |
 | S12 | Reranking gebaut UND Trefferzahl steigt gegen die Basislinie bei gleicher Zeichenmenge | **Schwelle offen** |
 | S13 | Selbsttest gruen UND `recall_log` fuehrt Zeilen mit `ausloeser=antwort` | `haken/antwort_abruf.py` ✓ fast erfuellt (3 Zeilen) |
