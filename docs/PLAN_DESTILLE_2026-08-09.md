@@ -609,6 +609,64 @@ belegt das Werkzeug, ein schweigender Melder den heutigen Bestand. Beides ist no
 nicht hinreichend fuer "der Schritt ist inhaltlich erledigt". Wo ein Kriterium nur das
 Werkzeug prueft, ist es als solches gekennzeichnet.
 
+### S17 · Freigabe als vierte Achse — wer darf es SEHEN
+
+Vorschlag des Betreibers 2026-08-09, ausgeloest durch die Lizenzpruefung von neun fremden
+Wissensspeichern. Der Bestand kennt heute drei Achsen: Rang (wie bindend), Art (Sein/Sollen/
+Duerfen), Geltung (wann und wo). Es fehlt: **wer es sehen darf.**
+
+**Die Begruendung ist die REIHENFOLGE, nicht der Fuellstand.** Ein Freigabefeld muss stehen,
+BEVOR der erste Export laeuft — nachtraeglich laesst sich nicht rekonstruieren, was zum
+Zeitpunkt der Weitergabe erlaubt war. Das gilt bei null Eintraegen wie bei einer Million.
+("Kostet jetzt noch wenig" waere der Bestand als Argument und damit verboten.)
+
+**Das Feld ist die HERKUNFT, nicht die Sperre.** Ein Merkmal am Datensatz muesste an jeder
+Auswertung erneut abgefragt werden, und eine vergessene Stelle genuegt. Die Sperre ist der
+EXPORTWEG, und der wird als Whitelist gebaut: hinaus geht nur, was ausdruecklich freigegeben
+ist. Jede Sperrliste hat ein Loch, und bei einem Wissensspeicher ist dieses Loch
+personenbezogen oder vertraulich.
+
+| Wert | Bedeutung | erste Anwendungsfaelle (2026-08-09 geprueft) |
+|---|---|---|
+| `offen` | darf oeffentlich weitergegeben werden | ASRS, eigene destillierte Behauptungen |
+| `intern` | privat nutzbar, nicht weitergebbar | NASA LLIS, NIST, ESA/ECSS, Angebotsdaten Dritter |
+| `gesperrt` | auch intern nur mit ausdruecklicher Erlaubnis | IAEA, Zugangsdaten, Personenbezogenes |
+
+**Vorgabe ist `intern`, nicht `offen`.** Ein Eintrag ohne Entscheidung geht nie hinaus —
+dieselbe Umkehr wie bei der Geltung (S1d): nicht stillschweigend "ueberall", sondern
+stillschweigend "hier".
+
+**Warum dies NICHT dieselbe Vertagung ist wie S6:** S6 (wer darf schreiben) wurde vertagt,
+weil ein Rollenmodell mit einem Nutzer ein Schema ohne Schreiber waere — dieselbe Krankheit
+wie `norm_art` mit 72 von 72 leer. Das Freigabefeld hat seinen Schreiber SOFORT: jeder Import
+fremder Quellen braucht es, und es liegen neun Quellen mit drei verschiedenen Ampeln vor.
+S6 und S17 sind dieselbe Frage von zwei Seiten — dort Schreiben, hier Lesen.
+
+### Der Unternehmenskontext, jetzt mitgedacht statt spaeter nachgeruestet
+
+Nicht weil es heute billig waere, sondern weil drei dieser Entscheidungen die Ablage aendern
+und jede spaetere Aenderung den Bestand umschreiben muesste:
+
+1. **Die Freigabe ist mehrstufig, nicht zweistufig.** In einem Unternehmen heisst "intern"
+   nicht dasselbe fuer die Entwicklung wie fuer die Buchhaltung. Der Wert traegt deshalb
+   einen BEZUG, nicht nur eine Stufe — das Muster dafuer liegt bereits im Bestand
+   (`modul:aktion:bezug` aus dem Zahnakademie-System, Rechte haengen am Bezug zum Objekt,
+   nicht nur an der Rolle). Wer heute nur zwei Stufen anlegt, baut die Mehrstufigkeit spaeter
+   als Sonderfall ein.
+2. **Die Freigabe gehoert an die AUSSAGE, nicht an das Werk.** Ein Nachschlagewerk kann als
+   Ganzes intern sein, waehrend eine daraus destillierte eigene Behauptung offen ist — das
+   ist genau der dritte Weg aus der Lizenzpruefung. Umgekehrt kann ein offenes Werk eine
+   Aussage tragen, die durch den Anwendungsfall vertraulich wird.
+3. **Der Export protokolliert, WAS er weitergegeben hat.** Ohne dieses Protokoll ist nach
+   einer Weitergabe nicht mehr feststellbar, welche Fassung eines Eintrags hinausging — und
+   damit auch keine Korrektur oder Ruecknahme moeglich. Dieselbe Begruendung wie beim
+   Zugriffsprotokoll: ein Vorgang ohne Spur ist spaeter nicht beantwortbar.
+
+*Was ausdruecklich NICHT jetzt gebaut wird:* das Rollenmodell selbst (S6, unveraendert
+vertagt), und jede Mandantentrennung. Beides braucht mehr als einen Schreiber. Gebaut wird
+nur die Spalte, ihre Vorgabe und der Whitelist-Export — die drei Dinge, deren Reihenfolge
+sonst verloren geht.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
