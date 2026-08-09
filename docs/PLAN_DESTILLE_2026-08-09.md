@@ -410,6 +410,52 @@ Klasse, um die es geht. Zweitens die Zeichen je Prompt, wie bei jedem Schritt.
 und sechs Antworten sind eine kleine Stichprobe. Belegt ist bisher nur, dass dieser Weg
 anderen Bestand erreicht — nicht, dass er den besseren erreicht.
 
+### S14 · Die Fehlklasse dieses Tages hat einen Namen: gebaut und ohne Wirkung
+
+Nicht geplant, sondern aus vier unabhaengigen Funden des 2026-08-09 abgeleitet. Alle vier
+haben dieselbe Signatur, und keiner waere durch Benutzen aufgefallen:
+
+| Fund | Signatur |
+|---|---|
+| `norm_art` | 72 von 72 Normen leer — Regel gebaut, nie geschrieben |
+| vier Tokenspalten in `access_log` | 3638 Zeilen durchgehend NULL |
+| Selbsttest von `knowledge_recall_hook.py` | an fuenf Stellen rot, weil nichts ihn startet (`L-9a45b7`) |
+| zweiter Relevanzkanal | an zwei Stellen abgeklemmt, im Ergebnis unsichtbar (`L-99f100`) |
+| `_append_jsonl` | Vorgabewert ueberstimmte die Wahl des Aufrufers bei JEDEM Lauf |
+
+**Verworfen, mit Grund:** `hub/scripts/wiring_check.py` auf brainlehr anzuwenden. Es findet
+genau diese Klasse — deklarierter, nie erreichter Code — ist aber fuer Flutter/Dart gebaut
+(25 Dart-Stellen im Quelltext) und kennt kein Python. Der Fund stammte aus dem Abruf und
+wurde ohne Blick in die Kopfzeile weitergetragen; die Absage ist selbst ein Beleg fuer die
+Regel, vor jeder Existenzaussage nachzusehen.
+
+**Zu bauen statt dessen, weil es dieselbe Klasse ohne neue Bauform trifft:** die vorhandene
+Pruefung "stumme Spalte" in `pruefer.py` wird generisch — nicht mehr eine fest benannte
+Spalte, sondern jede Spalte in `knowledge_nodes`, `lessons_learned` und `access_log`, die zu
+95 Prozent leer ODER zu 95 Prozent einwertig ist. Beides sagt dasselbe: die Spalte traegt
+keine Unterscheidung. Mit `MINDESTZAHL = 20` wie bisher und einer benannten Ausnahmeliste,
+je Eintrag begruendet.
+
+*Warum das genuegt und kein zweites Werkzeug noetig ist:* Die vier Funde sind keine toten
+Codepfade, sondern leere Traeger. Ein Schema ohne Schreiber ist aus dem Bestand messbar; ein
+toter Codepfad braucht eine Aufrufanalyse, die es fuer Python hier nicht gibt. Wer beides in
+einem Werkzeug will, baut das schwerere von beiden fuer den selteneren Fall.
+
+### S15 · Der Pruefkorpus wird zusammengefuehrt, bevor irgendetwas daran gemessen wird
+
+*Reihenfolge: BINDEND vor jeder weiteren Abrufmessung.* 35 Faelle rauschen nachweislich — die
+Deckelreihe lieferte bei GROESSEREM Deckel weniger Treffer (12 gegen 13), was sachlich
+unmoeglich ist. Jede Zahl, die vor der Zusammenfuehrung erhoben wird, ist gegen die spaeteren
+nicht vergleichbar.
+
+Vorhanden: 35 Faelle mit Ziel im alten Korpus, 55 im neuen (Haiku, 2026-08-09, 0 von 55 mit
+Wortueberschneidung gegen dieselbe Prueffunktion gemessen, keine NASA-Ziele, keine
+Ueberschneidung mit den 69 alten Zielen). Zusammen 90.
+
+*Nicht getan:* die alte Korpusdatei ueberschreiben. Sie bleibt als eigene Datei stehen, sonst
+ist der Vergleich vorher/nachher verloren — `abrufguete.py` bekommt statt dessen einen
+Schalter fuer mehrere Korpusdateien samt Dublettenmeldung.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
