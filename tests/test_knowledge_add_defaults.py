@@ -121,4 +121,8 @@ def test_fremdnorm_traegt_weiterhin_den_actor(temp_db):
         norm_entschieden_grund="g", actor="claude-code/opus-5",
     )
     assert "error" not in res, res
-    assert _entschieden_von_of(temp_db, "Aufgezeichnetes WEG Urteil") == "claude-code/opus-5"
+    # B4.1: der Name traegt seine Beglaubigung mit. Ohne Ausweis heisst der
+    # Aufrufer 'unbeglaubigt:<name>' -- die Herkunftsregel selbst ist
+    # unveraendert, nur die Schreibweise des Namens.
+    assert (_entschieden_von_of(temp_db, "Aufgezeichnetes WEG Urteil")
+            == "unbeglaubigt:claude-code/opus-5")

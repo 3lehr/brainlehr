@@ -86,7 +86,8 @@ def test_update_durch_fremden_actor(temp_db):
 
     assert row["summary"] == "geaendert von actor-B"
     # Herkunft bleibt beim Anleger -- das ist die Regel, die der Trigger schuetzt.
-    assert row["actor"] == "actor-A"
+    # B4.1: Praefix, weil kein Ausweis vorliegt. Die Regel ist unveraendert.
+    assert row["actor"] == "unbeglaubigt:actor-A"
     assert row["session"] == "sitzung-A"
 
 
@@ -110,8 +111,8 @@ def test_normentscheidung_durch_fremden_actor_haelt_entscheider_fest(temp_db):
     conn.close()
 
     assert row["norm_entscheidung"] == "norm_unbefristet"
-    assert row["norm_entschieden_von"] == "actor-B"
-    assert row["actor"] == "actor-A"
+    assert row["norm_entschieden_von"] == "unbeglaubigt:actor-B"
+    assert row["actor"] == "unbeglaubigt:actor-A"
 
 
 def test_herkunftstrigger_greift_weiterhin(temp_db):

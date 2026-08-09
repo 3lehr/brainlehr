@@ -66,8 +66,8 @@ def test_access_identity_env_and_update_logging(temp_db, monkeypatch):
         ("update", "started"), ("update", "completed"),
     ]
     assert {(row["actor"], row["model"], row["session"], row["status"]) for row in rows} == {
-        ("codex", "gpt-test", "session-42", "started"),
-        ("codex", "gpt-test", "session-42", "completed"),
+        ("unbeglaubigt:codex", "gpt-test", "session-42", "started"),
+        ("unbeglaubigt:codex", "gpt-test", "session-42", "completed"),
     }
 
 
@@ -164,7 +164,8 @@ def test_relation_contract_round_trip_and_validation(temp_db):
     listed = kms.knowledge_relation_list(source["path"])
     assert listed["count"] == 1
     assert listed["relations"][0]["target_path"] == target["path"]
-    assert listed["relations"][0]["creator"] == "codex"
+    # B4.1: ohne Ausweis traegt der Name sein Praefix.
+    assert listed["relations"][0]["creator"] == "unbeglaubigt:codex"
     assert kms.knowledge_relation_update(created["id"], confidence=0.95, evidence="Updated proof")["status"] == "updated"
     assert _db_rows(temp_db, "SELECT confidence,evidence FROM knowledge_relations")[0] == {
         "confidence": 0.95, "evidence": "Updated proof"

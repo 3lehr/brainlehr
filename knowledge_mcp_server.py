@@ -99,6 +99,7 @@ import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
 import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-Fanout
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
                           # expliziten Batch-Lauf, nicht daneben nachgebaut.
+import ausweis  # B4.1: actor wird beglaubigt, nicht behauptet (siehe _identity)
 import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # (knowledge_add/knowledge_update/lesson_record/lesson_update),
                        # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
@@ -1205,9 +1206,26 @@ def _identity(actor: str | None = None, model: str | None = None,
 
     session zusaetzlich (Auftrag 2026-08-07): vor UNBEKANNTER_SCHREIBER greift
     _PROZESS_SITZUNG, vom Server selbst ermittelt statt vom Aufrufer erwartet.
-    Ein von Hand mitgegebener Wert (Parameter oder Env-Var) hat weiter Vorrang."""
+    Ein von Hand mitgegebener Wert (Parameter oder Env-Var) hat weiter Vorrang.
+
+    UMKEHRUNG FUER actor (B4.1, docs/PLAN_B4_AUSWEIS_2026-08-09.md): Genau das
+    'Parameter zuerst' war bei actor die Luecke -- wer `actor="betreiber"`
+    mitschickte, WAR Betreiber, und es gab kein if und kein Abweisen
+    (bauartgleich L-8487fb). Jetzt entscheidet ausweis.loese_auf(): ein
+    beglaubigter Ausweis gewinnt immer, danach ist das Argument stumm.
+
+    Ohne Ausweis bleibt der bisherige Weg offen -- Argument, dann Umgebung,
+    dann UNBEKANNTER_SCHREIBER -- aber die Zuschreibung traegt das Praefix
+    'unbeglaubigt:'. Kein Bruch fuer die bestehenden Schreiber (Skripte,
+    ChatGPT-Zugang), und trotzdem im Protokoll dauerhaft unterscheidbar, ob
+    eine Identitaet geprueft oder nur behauptet war.
+
+    model und session bleiben absichtlich unberuehrt: sie beschreiben den
+    VORGANG, nicht die Identitaet -- ein falscher Modellname erschleicht keine
+    Rechte."""
+    aufgeloest = ausweis.loese_auf(actor)
     return (
-        actor or os.environ.get("BEGOD_KNOWLEDGE_ACTOR") or UNBEKANNTER_SCHREIBER,
+        aufgeloest.protokollname,
         modell_normalisieren(model or os.environ.get("BEGOD_KNOWLEDGE_MODEL")) or UNBEKANNTER_SCHREIBER,
         session or os.environ.get("BEGOD_KNOWLEDGE_SESSION") or _PROZESS_SITZUNG or UNBEKANNTER_SCHREIBER,
     )
