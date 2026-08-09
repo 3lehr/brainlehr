@@ -541,6 +541,45 @@ Stopp-Punkte des Hauses (Zugangsdaten, Aussenwirkung, Unumkehrbares, Geld) berue
 mindestens an einer Stelle. Diese Entscheidung gehoert dem Betreiber und ist hier offen
 vermerkt, nicht vorweggenommen.
 
+## Abnahme je Schritt — ENTWURF, fuenf Schwellen warten auf den Betreiber
+
+Erhoben mit `abnahme.py` am 2026-08-09: 4 von 21 Abschnitten haben ueberhaupt ein Kriterium,
+und alle vier zeigen auf `pruefer.py` — dessen Selbsttest prueft das Werkzeug, nicht den
+Schritt. **Kein Abschnitt ist heute maschinell abnehmbar.** Ohne diese Spalte ist die
+Zielvorgabe `82d678f2` (Plan autonom abarbeiten) nicht erreichbar: nicht der Anstoss fehlt,
+sondern die Abnahme.
+
+| Schritt | Fertig, wenn | Werkzeug |
+|---|---|---|
+| S1 | Anteil Knoten mit ABGELEITETEM Reifegrad steigt gegen die Vormessung (43 %) | `reifegrad.py --selftest` |
+| S1b | kein Treffer aus `gattung=nachschlagewerk` im `recall_log` ueber N Einspielungen | Abfrage, Werkzeug fehlt |
+| S1c | schweigt | `rasterblick.py --melder` |
+| S1d | jede Aussage ueber Menschen/Recht/Umgangsformen traegt einen Geltungsraum; Melder meldet 0 ohne | `normachsen.py --melder`, Achse fehlt noch |
+| S2 | jeder abgewiesene Schreibversuch erscheint im Gespraech — Quote gemeldet/abgewiesen = 1 | `sichtbarkeit.py --selftest` + Zaehlung |
+| S3 | Zahl der Knoten mit Quelle aus dem Zitationsnetz ueber Schwelle | **Schwelle offen** |
+| S4 | mindestens ein Knoten ist nachweislich befoerdert worden, mit Herkunft und Zeitpunkt | Werkzeug fehlt |
+| S5 | 0 fremde Adressen im ausgelieferten Betrachter, und er zeigt alle Eintraege | `grep` + Zaehlung |
+| S6 | bewusst NICHT gebaut. Fertig ist der MELDER auf die Abbruchbedingung, nicht das Rollenmodell | Melder pruefen |
+| S7 | `--schreiben` gelaufen, erzeugte `.md` deckungsgleich mit dem Bestand, Kantenarten im Server erlaubt | `planordnung.py --selftest` |
+| S8 | Selbsttest gruen UND mindestens eine Pruefung, die im Bestand anschlaegt | `pruefer.py` ✓ erfuellt |
+| S9 | Suchpfad-Weg trifft mindestens so viel wie der alte, bei nicht hoeherer Zeichenzahl | `abrufguete.py` |
+| S10 | Bericht liegt vor UND die Negativkontrolle ist bestanden: untergemischte falsche Paare werden als nicht hilfreich erkannt | **Schwelle offen** |
+| S11 | Selbsttest gruen UND mindestens ein echter Fund im Bestand | `arbeitsmelder.py` ✓ erfuellt |
+| S12 | Reranking gebaut UND Trefferzahl steigt gegen die Basislinie bei gleicher Zeichenmenge | **Schwelle offen** |
+| S13 | Selbsttest gruen UND `recall_log` fuehrt Zeilen mit `ausloeser=antwort` | `haken/antwort_abruf.py` ✓ fast erfuellt (3 Zeilen) |
+| S14 | jede vom Melder genannte Spalte hat einen Schreiber ODER einen begruendeten Ausnahmeeintrag — Rest 0 | `pruefer.py --melder` |
+| S15 | jeder Korpusfall traegt seine Wortueberlappung, und keiner liegt ueber der Aufnahmegrenze | **Schwelle offen** (Bezug: 10,7 %) |
+| S16 | Stufe 1: alle 16 Knoten fremder Herkunft tragen eine Frist oder ein Pruefdatum | Abfrage |
+
+**Die fuenf Schwellen gehoeren dem Betreiber, nicht dem Assistenten** — wer sie nachtraeglich
+setzt, setzt sie zum Ergebnis passend. Das ist die Fehlklasse, die heute viermal auftrat
+(`L-352afa`, inzwischen zur Regel eskaliert).
+
+*Was diese Spalte NICHT leistet, und das steht auch im Werkzeug:* Ein gruener Selbsttest
+belegt das Werkzeug, ein schweigender Melder den heutigen Bestand. Beides ist notwendig und
+nicht hinreichend fuer "der Schritt ist inhaltlich erledigt". Wo ein Kriterium nur das
+Werkzeug prueft, ist es als solches gekennzeichnet.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
