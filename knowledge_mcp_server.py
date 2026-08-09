@@ -104,6 +104,10 @@ import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
 import normrang  # ADR-034: norm_rang faellt bei knowledge_add() deterministisch aus
                  # source, wenn der Aufrufer keinen eigenen mitgibt. Kein Zirkel.
+import herkunft_normentscheider  # Auftrag 2026-08-09: norm_entschieden_von traegt
+                                  # 'betreiber' statt actor, wenn source einen belegten
+                                  # Betreiber-Urheber zeigt (CLAUDE.md-Import). Kein
+                                  # Zirkel -- das Modul importiert nichts von hier.
 
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad (gleiche Bauform wie die drei
 # BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
@@ -2207,8 +2211,41 @@ def _rebuild_lesson_embedding(conn: sqlite3.Connection, lesson_id: str, node_pat
             pass
 
 
+# Auftrag 2026-08-09: project_id-Default 'shared' verschluckte 26 von 384
+# Knoten, die ihr path eindeutig einem Projekt zuordnet (z.B.
+# /apps/fahrtenbuch/...). Der bekannte-Projekte-Katalog wird NICHT
+# hartcodiert (Enum war schon einmal veraltet, siehe test_project_id_enum_
+# stale.py) und NICHT bei jedem Aufruf per SELECT DISTINCT neu gezogen --
+# ein Prozess-Cache je DB-Pfad reicht, weil sich die Projektliste innerhalb
+# eines Laufs praktisch nie aendert. Key ist der DB-Pfad, nicht global,
+# damit Tests mit eigener temp_db sich nicht gegenseitig verunreinigen.
+_BEKANNTE_PROJEKTE_CACHE: dict[str, set[str]] = {}
+
+
+def _bekannte_projekte(conn: sqlite3.Connection) -> set[str]:
+    key = str(DB_PATH)
+    projekte = _BEKANNTE_PROJEKTE_CACHE.get(key)
+    if projekte is None:
+        projekte = {r[0] for r in conn.execute(
+            "SELECT DISTINCT project_id FROM knowledge_nodes WHERE project_id != 'shared'")}
+        _BEKANNTE_PROJEKTE_CACHE[key] = projekte
+    return projekte
+
+
+def _projekt_aus_pfad(parent_path: str, projekte: set[str]) -> str:
+    """Erstes Pfadsegment von parent_path, das einem bekannten Projekt
+    entspricht. Container-Segmente wie 'apps'/'ops' werden dabei einfach
+    uebersprungen (kein Projekt, kein Treffer): /apps/fahrtenbuch/... ->
+    'fahrtenbuch', nicht 'apps'. Kein Treffer irgendwo im Pfad: 'shared' --
+    keine Erfindung, siehe Auftrag Negativfall '/methodik'."""
+    for segment in (parent_path or "").strip("/").split("/"):
+        if segment and segment in projekte:
+            return segment
+    return "shared"
+
+
 def knowledge_add(parent_path: str, title: str, summary: str,
-                  content: str = "", project_id: str = "shared",
+                  content: str = "", project_id: str | None = None,
                   tags: list | None = None, source: str = "", *,
                   neuer_ast: bool = False,
                   norm_rang: int | None = None, gilt_ab: str | None = None,
@@ -2237,9 +2274,19 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     norm_entschieden_grund: PFLICHT sobald norm_entscheidung gesetzt wird
     (Nachtrag 2026-08-08) -- wie grund bei knowledge_zurueckziehen(), eine
     Freitext-Begruendung, warum diese Entscheidung so gefallen ist. Wer
-    entschieden hat (norm_entschieden_von) wird automatisch aus actor
-    aufgeloest -- diese Aufruf-Identitaet IST der Entscheider, weil die
-    Entscheidung genau jetzt, mit diesem Aufruf, faellt.
+    entschieden hat (norm_entschieden_von) wird aus actor aufgeloest --
+    AUSSER herkunft_normentscheider.ist_urheber_betreiber(source) sagt, dass
+    source einen belegten Betreiber-Urheber zeigt (CLAUDE.md-Import): dann
+    ist der Betreiber der Entscheider, nicht die Maschine, die ihn nur
+    abgeschrieben hat (Auftrag 2026-08-09, Befund: 31 von 37 Rang-1/2-Normen
+    trugen faelschlich eine Maschine).
+
+    project_id: ohne Angabe (None) wird aus parent_path abgeleitet -- das
+    erste Pfadsegment, das einem bereits im Bestand vorkommenden Projekt
+    entspricht (siehe _projekt_aus_pfad). Kein Treffer: 'shared', wie bisher.
+    Ausdruecklich uebergeben (auch als leerer String) gewinnt immer gegen
+    die Ableitung (Auftrag 2026-08-09, Befund: 26 von 336 'shared'-Knoten
+    waren aus ihrem eigenen Pfad einem Projekt zuzuordnen).
 
     abgeleitet_von: Kennung (id oder path) eines vorhandenen Quellknotens
     (ADR-027 Nachtrag 4, Lehre L-adfb33). Gesetzt heisst: source wird VOM
@@ -2247,6 +2294,11 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     selbst nicht mitliefern -- "dem Schreiber die Feder nehmen", denn ein
     selbst formulierter Herkunftstext kann leaken, egal wie gut die
     Zitat-Pruefung unten ist."""
+    if project_id is None:
+        _pid_conn = get_db()
+        project_id = _projekt_aus_pfad(parent_path, _bekannte_projekte(_pid_conn))
+        _pid_conn.close()
+
     anlass_fehler = _validate_anlass(anlass)
     if anlass_fehler:
         conn = get_db()
@@ -2398,12 +2450,21 @@ def knowledge_add(parent_path: str, title: str, summary: str,
         conn.close()
         return {"error": entscheidung_fehler}
 
+    # Auftrag 2026-08-09: Entscheider ist der Betreiber, wenn source ihn als
+    # belegten Urheber zeigt -- sonst bleibt es actor (unveraendertes
+    # Verhalten). herkunft_normentscheider.ist_urheber_betreiber() sticht
+    # explizit auf Fremdnorm (Gesetz/Urteil/WEG-Recht/...) nicht an, siehe
+    # dortiger Selbsttest.
+    norm_entschieden_von = (herkunft_normentscheider.BETREIBER
+                             if herkunft_normentscheider.ist_urheber_betreiber(source)
+                             else actor)
+
     conn.execute(
         """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
-         norm_rang, gilt_ab, gilt_bis, norm_entscheidung, actor, created_at, norm_entschieden_grund,
+         norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, created_at, norm_entschieden_grund,
          anlass, abgeleitet_von, actor, session, model, _KLIENT)
     )
     log_access(conn, node_path, "add", project_id=project_id,
@@ -4462,7 +4523,7 @@ TOOLS = {
                 "title": {"type": "string"},
                 "summary": {"type": "string", "description": "1-2 sentences summary (token-efficient)"},
                 "content": {"type": "string", "description": "Full content (loaded only on read)"},
-                "project_id": {"type": "string", "description": "Free-form project slug (any app dir under Begod2026/, e.g. 'fahrtenbuch', 'openlehr'), not a fixed set. 'shared' for cross-project knowledge.", "default": "shared"},
+                "project_id": {"type": "string", "description": "Free-form project slug (any app dir under Begod2026/, e.g. 'fahrtenbuch', 'openlehr'), not a fixed set. Omit to derive it from a matching segment in parent_path (falls back to 'shared' if none matches); pass explicitly (including '') to override the derivation."},
                 "tags": {"type": "array", "items": {"type": "string"}},
                 "source": {"type": "string", "description": "Required unless abgeleitet_von is set (then it must be omitted -- the system generates it). Origin: file path, konsil ID, or research ID. Example: 'erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)'"},
                 "abgeleitet_von": {"type": "string", "description": "Optional: id or path of an EXISTING source node. If set, source is generated by the system from the source node's kind (parent_path/norm_rang/tags, never its title/summary/content) -- giving your own source is rejected."},
