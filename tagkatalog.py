@@ -61,10 +61,23 @@ ART9_STAEMME = (
 )
 
 
+# Was ein Mensch nach Sichtprüfung freigegeben hat. Die Sperre bleibt bestehen
+# -- hier steht nur, wo sie einen Fehlalarm hatte, mit Datum und Grund. Ein
+# leerer Eintrag ist nicht zulaessig: eine Freigabe ohne Begruendung ist keine
+# Entscheidung, sondern eine Ausnahme, die niemand mehr pruefen kann.
+FREIGEGEBEN = {
+    "diagnose": ("Betreiber, 2026-08-09 -- meint in allen vier Fundstellen "
+                 "Fehlerdiagnose (BLE-Feldfehler, Blackscreen-Auswertung, "
+                 "Feldbericht), nicht Medizin. Nachgesehen, nicht vermutet."),
+}
+
+
 def ist_pruefpflichtig(tag: str) -> bool:
     """Beruehrt dieses Tag eine besondere Kategorie oder kennzeichnet es eine
     Person? Dann entscheidet ein Mensch, nicht die Haeufigkeit."""
     t = tag.lower()
+    if t in FREIGEGEBEN:
+        return False
     return any(s in t for s in ART9_STAEMME)
 
 
@@ -208,9 +221,9 @@ def demo() -> None:
     # Art-9-Sperre, rot gegen den Stand vor der Compliance-Pruefung: dort wurde
     # 'krankenkasse' bei fuenf Vergaben zur Kategorie. Gegenprobe in beide
     # Richtungen -- ein harmloses Tag derselben Haeufigkeit geht weiter durch.
-    z9 = Counter({"krankenkasse": 5, "diagnose": 4, "mandant": 3, "methodik": 5})
+    z9 = Counter({"krankenkasse": 5, "therapieplan": 4, "mandant": 3, "methodik": 5})
     k9 = bauen(z9)
-    for heikel in ("krankenkasse", "diagnose", "mandant"):
+    for heikel in ("krankenkasse", "therapieplan", "mandant"):
         assert heikel not in k9["tags"], f"{heikel} darf keine Kategorie werden: {k9['tags']}"
         assert heikel not in k9["ersetzungen"], f"{heikel} darf auch keine Ersetzung sein"
         assert heikel in k9["pruefpflichtig"], f"{heikel} muss zur Handentscheidung: {k9}"
@@ -224,6 +237,13 @@ def demo() -> None:
     # Negativfall: die Sperre darf nicht alles fangen, was entfernt aehnlich klingt.
     assert not ist_pruefpflichtig("methodik") and not ist_pruefpflichtig("kanten")
     assert ist_pruefpflichtig("Krankenkassen-Beitrag"), "Wortform darf nicht entkommen"
+
+    # Freigabe wirkt nur fuer den EINEN freigegebenen Begriff, nicht fuer seine
+    # Nachbarn -- sonst waere die Ausnahme ein Loch statt einer Entscheidung.
+    assert not ist_pruefpflichtig("diagnose"), "freigegeben, muss durchgehen"
+    assert ist_pruefpflichtig("diagnostik"), "Nachbarbegriff bleibt gesperrt"
+    assert ist_pruefpflichtig("ferndiagnose-patient"), "Zusammensetzung bleibt gesperrt"
+    assert all(FREIGEGEBEN.values()), "jede Freigabe braucht eine Begruendung"
 
     assert normalisieren('["a","B"]') == ["a", "b"]
     assert normalisieren("a, B") == ["a", "b"], "Kommatext aus Altbestand"
