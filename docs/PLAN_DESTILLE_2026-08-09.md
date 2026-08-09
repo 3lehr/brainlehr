@@ -357,6 +357,59 @@ Wir liegen unter dem SCHWACHEN Referenzwert. Die benannte Ursache ist keine Fein
 
 *Warum das jetzt vor S4 und S7 kommt:* Es ist der einzige gemessene Rueckstand gegen den Stand der Technik. Alles andere im Plan macht den Speicher genauer; dies macht ihn erst brauchbar.
 
+### S13 · Die ANTWORT als Anfrage — der zweite Ausloeser, den 745f7ac1 seit Tagen fordert
+
+Vorschlag des Betreibers 2026-08-09: die bereits erzeugten Antworten des Assistenten gegen
+den Speicher werfen. Sie existieren ohnehin, die Anfrage kostet also nichts mehr.
+
+**Gemessen, bevor entschieden wurde** — die letzten sechs eigenen Antworten dieser Sitzung als
+Anfrage gegen `knowledge_search`, verglichen mit allem, was der Prompt-Abruf in derselben
+Sitzung geliefert hat (167 Eintraege):
+
+| Anfrage | Zeichen | Eintraege, die der Prompt-Weg NIE lieferte |
+|---|---|---|
+| ganze Antwort (1200 Zeichen je Stueck) | 7200 | 7 |
+| top-60 Begriffe nach IDF | 3214 | 9 |
+| **top-30 Begriffe nach IDF** | **1719** | **17** |
+| top-15 Begriffe nach IDF | 902 | 15 |
+
+**Der Befund ist nicht, dass es funktioniert, sondern dass VERDICHTEN SCHAERFT.** Ein Viertel
+der Zeichen findet das Zweieinhalbfache. Der Volltext verwaessert die Anfrage; die dreissig
+Begriffe mit dem hoechsten IDF-Gewicht sind das Thema, alles andere ist Bindegewebe. Damit
+beantwortet sich die Kostenfrage des Betreibers von selbst — die kleine Anfrage ist nicht der
+Kompromiss, sie ist die bessere Messung.
+
+*Verworfen, mit Grund:* `pruefkorpus.rare_terms()` als Verdichter (Begriffe mit
+Dokumenthaeufigkeit <= 3). Gemessen 0 Treffer aus 6 Antworten — es filtert auf das, was im
+BESTAND selten ist, und der Assistent schreibt naturgemaess ueber genau die Themen, die dort
+haeufig sind. Richtig ist die Gewichtung (hoechstes IDF), nicht der Seltenheitsfilter.
+
+**Warum dieser Ausloeser die Luecke schliesst, die kein anderer erreicht:** 28 von 94
+Betreibernachrichten erreichen den `UserPromptSubmit`-Haltepunkt nie (waehrend laufender
+Arbeit als `attachment` zugestellt), weitere 22 reissen `MIN_HITS` nicht. Fuer beide Klassen
+gibt es auf der Eingabeseite nichts zu suchen. Die Antwort dagegen liegt IMMER vor, traegt das
+vollstaendige Fachvokabular und ist ueber den `Stop`-Haken erreichbar.
+
+Dazu der Selbstbeleg dieses Tages: Der Assistent schrieb ueber stdio, ohne dass ein Abgleich
+stattfand — der Speicher haelt dazu einen geprueften Knoten (`436cb221`). Der Abruf feuerte
+erst, als der BETREIBER das Wort schrieb. Der Speicher prueft Eingaben, nie Ausgaben.
+
+**Zu bauen, in dieser Reihenfolge:**
+1. `Stop`-Haken verdichtet die letzte Antwort auf die dreissig Begriffe mit hoechstem
+   IDF-Gewicht, sucht damit und legt die Treffer ab (Datei, nicht Gespraech — der Haken kann
+   nicht in den laufenden Zug schreiben).
+2. Der naechste `UserPromptSubmit` spielt sie zusaetzlich ein, dedupliziert gegen alles, was
+   die Sitzung bereits gesehen hat (`_dedup_session` existiert).
+3. Erst danach messen, ob der Deckel dafuer eigene Werte braucht.
+
+*Massstab, und er ist NICHT der Pruefkorpus:* Der misst Ziel-Identitaet auf Eingabefragen.
+Hier gehoert gemessen, ob eine Antwort auf eine EINGEREIHTE Nachricht besser ausfaellt — die
+Klasse, um die es geht. Zweitens die Zeichen je Prompt, wie bei jedem Schritt.
+
+*Vorbehalt, der bestehen bleibt:* "neu" heisst nicht "nuetzlich" (derselbe Einwand wie S10),
+und sechs Antworten sind eine kleine Stichprobe. Belegt ist bisher nur, dass dieser Weg
+anderen Bestand erreicht — nicht, dass er den besseren erreicht.
+
 ## Alternativen mit Ablehnungsgrund
 
 **Obsidian oder ein fertiges Zweitgehirn übernehmen.** Abgelehnt: löst Wiederfinden, nicht Widerspruchsfreiheit und nicht Geltung. Beides haben wir bereits härter.
