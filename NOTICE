@@ -1,0 +1,21 @@
+brainlehr — Hinweise zu fremden Inhalten
+
+bsi-dev-profile.json
+    Abgeleitet aus: BSI-Bund/Stand-der-Technik-Bibliothek
+    https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek
+    Lizenz der Quelle: Creative Commons Attribution-ShareAlike 4.0
+    International (CC BY-SA 4.0)
+
+    Diese Datei ist eine BEARBEITUNG (Auswahl der entwicklungsrelevanten
+    Controls, 951 von 1867, plus eigene Zuordnung zu Hausregeln). Nach der
+    Share-Alike-Bedingung steht sie damit ebenfalls unter CC BY-SA 4.0 --
+    unabhaengig davon, unter welcher Lizenz der uebrige Quelltext steht.
+    Geprueft am 2026-08-10 an der Lizenzangabe des Quell-Repositorys.
+
+auszug-offen/bestand.jsonl
+    Enthaelt 1637 Eintraege aus dem NASA Lessons Learned Information System
+    (https://llis.nasa.gov/). Werke der US-Bundesbehoerden sind nach
+    17 U.S.C. §105 gemeinfrei -- NICHT an der Primaerquelle geprueft, siehe
+    quellen/fremdquellen.json.
+
+Alles Uebrige ist eigener Quelltext.
