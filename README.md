@@ -153,7 +153,7 @@ eigene Schreibweise statt der Suchgüte.
 | [NIST](https://www.nist.gov/) | NIST | ⚪ ungeprüft | Teilbestand noch zu benennen |
 | [FDA MAUDE](https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm) | FDA | ⚪ ungeprüft | **Art.-9-Risiko**: Gesundheitsdaten möglich |
 | [IAEA IRS](https://www.iaea.org/) | IAEA | ⚪ ungeprüft | Zugang beschränkt — voraussichtlich rot |
-| [BSI IT-Grundschutz](https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/IT-Grundschutz/it-grundschutz_node.html) | BSI | ⚪ ungeprüft | abgeleitetes Profil (`bsi-dev-profile.json`, 947 Controls) liegt bei |
+| [BSI IT-Grundschutz](https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/IT-Grundschutz/it-grundschutz_node.html) | BSI | 🟡 **gelb** | intern ja, **Weitergabe nein** — `bsi-dev-profile.json` liegt deshalb **nicht** bei |
 
 Die Ampel steht in `quellen/fremdquellen.json` mit Prüfauftrag je Quelle.
 **Vorgabe ist deny:** Was nicht ausdrücklich grün ist, wird weder importiert noch
@@ -165,9 +165,20 @@ Warum überall „ungeprüft": Lizenzangaben aus einem Modellgedächtnis sind we
 Zeile erst, wenn jemand die Lizenzseite aufgerufen und Datum plus Fundstelle
 eingetragen hat.
 
-**Zum BSI-Profil im Besonderen:** Es ist eine *abgeleitete* Fassung. Steht die
-Quelle unter einer ND-Lizenz, wäre schon die Bearbeitung unzulässig — das ist zu
-klären, bevor die Datei weitergegeben wird. Und der Katalog hat eine gemessene
+**Zum BSI-Profil im Besonderen — geprüft am 2026-08-10, mit Folge:** Die
+[Nutzungsbedingungen](https://www.bsi.bund.de/DE/Service/Nutzungsbedingungen/Nutzungsbedingungen_node.html)
+sagen wörtlich, kommerzielle Verwendung „insbesondere denen des IT‑Grundschutzes"
+brauche „eine lizenzrechtliche Vereinbarung mit dem BSI", Downloads dürften „nur
+zu nicht kommerziellen Zwecken verwendet werden", und eine „insbesondere
+kommerzielle oder **publizistische** Verwendung" bedürfe der Zustimmung. Verändern
+ist erlaubt — aber „zur Umsetzung **interner** Sicherheitsmaßnahmen".
+
+Ein weitergebbares Repo ist keine interne Maßnahme, Veröffentlichung ist
+publizistische Verwendung. **`bsi-dev-profile.json` liegt deshalb nicht in diesem
+Repo** (lokal weiter nutzbar, dort gitignored). Für Weitergabe oder kommerzielle
+Nutzung: `it-grundschutz@bsi.bund.de`.
+
+Und der Katalog hat eine gemessene
 Lücke: **keine Controls zu Negativtests, Grenzwertprüfung, Nachweis der
 Testwirksamkeit und statischer Analyse.** Wer diese vier Bereiche regelt, trifft
 eine eigene Entscheidung — „Stand der Technik laut BSI" deckt sie nicht.
