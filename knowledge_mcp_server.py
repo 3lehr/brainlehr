@@ -1139,6 +1139,24 @@ def _ensure_lessons_freigabe_column(conn) -> None:
                      "ADD COLUMN freigabe TEXT NOT NULL DEFAULT 'intern'")
 
 
+def _version() -> str:
+    """Die Fassung steht in EINER Datei, nicht an drei Stellen.
+
+    Bis 2026-08-10 meldete der Server hier fest "1.0.0" -- eine
+    Stabilitaetszusage, die nichts deckte, und ein Klient liest sie. Eine Zahl
+    im Quelltext neben einer Zahl in der README neben einem git-Tag ist
+    dieselbe Fehlklasse wie zwei Auszugsformate: sie laufen auseinander, und
+    niemand merkt welche stimmt.
+
+    Fehlt die Datei (etwa in einem Teilklon), gilt "0.0.0-unbekannt" -- eine
+    erfundene Zahl waere schlimmer als das Eingestaendnis."""
+    try:
+        return (Path(__file__).resolve().parent / "VERSION").read_text(
+            encoding="utf-8").strip() or "0.0.0-unbekannt"
+    except OSError:
+        return "0.0.0-unbekannt"
+
+
 UNBEKANNTER_SCHREIBER = "unbekannt"
 
 # Einmal beim Prozessstart bestimmt (Auftrag 2026-08-07, ADR-028-Rangfolge:
@@ -5096,7 +5114,7 @@ def handle_request(req: dict) -> dict:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {"listChanged": False}},
-                "serverInfo": {"name": "knowledge-mcp", "version": "1.0.0"}
+                "serverInfo": {"name": "knowledge-mcp", "version": _version()}
             }
         }
 
