@@ -39,7 +39,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
+sys.path.insert(0, str(Path(__file__).resolve().parent / "haken"))  # diese Datei liegt IN der Wurzel: eine Ebene, nicht zwei
 import ort  # noqa: E402
 
 # Woran ein KI-Entscheider erkennbar ist. Gleiche Liste wie in der
