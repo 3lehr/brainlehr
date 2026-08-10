@@ -121,3 +121,50 @@ def test_quelltext_gibt_im_haken_nicht_blossen_text_aus():
     assert 'print("\\n".join(' not in hook, (
         "_hook_lauf gibt wieder blossen Text aus statt JSON"
     )
+
+
+def _melder():
+    import importlib.util
+    s = importlib.util.spec_from_file_location("sb_probe", MELDER)
+    m = importlib.util.module_from_spec(s)
+    sys.modules["sb_probe"] = m
+    s.loader.exec_module(m)
+    return m
+
+
+def test_eingespielte_lehren_werden_mit_kennung_gemeldet(tmp_path, monkeypatch):
+    """Die zweite Quelle: recall_log.jsonl, nicht access_log.
+
+    Der Abruf-Haken protokolliert NICHT ins access_log. Ohne diesen Zweig
+    kennt der Melder jeden Schreibvorgang und keine einzige Einspielung --
+    also gerade das, was den Nutzer am meisten angeht.
+    """
+    m = _melder()
+    log = tmp_path / "recall_log.jsonl"
+    log.write_text(
+        json.dumps({"session": "S", "lessons": ["L-aaaaaa", "L-bbbbbb"]}) + "\n"
+        + json.dumps({"session": "FREMD", "lessons": ["L-cccccc"]}) + "\n",
+        encoding="utf-8")
+    monkeypatch.setattr(m.ort, "WURZEL", tmp_path)
+
+    zeilen, marke = m.neue_einspielungen("S", 0)
+    assert zeilen == ["eingespielt: L-aaaaaa, L-bbbbbb"], zeilen
+    assert "L-cccccc" not in zeilen[0], "fremde Sitzung darf nicht durchschlagen"
+    assert marke == 2
+
+    # Gegenprobe: ab der Marke ist nichts Neues da und es entsteht KEINE
+    # Zeile. Ein Melder, der bei jedem Aufruf dasselbe wiederholt, wird
+    # ueberlesen -- dann kann er auch schweigen.
+    assert m.neue_einspielungen("S", marke)[0] == []
+
+
+def test_viele_lehren_werden_gebuendelt(tmp_path, monkeypatch):
+    """Vier Kennungen im Klartext, der Rest als Zahl."""
+    m = _melder()
+    (tmp_path / "recall_log.jsonl").write_text(
+        json.dumps({"session": "S",
+                    "lessons": [f"L-{i:06d}" for i in range(7)]}) + "\n",
+        encoding="utf-8")
+    monkeypatch.setattr(m.ort, "WURZEL", tmp_path)
+    zeilen, _ = m.neue_einspielungen("S", 0)
+    assert zeilen[0].endswith("und 3 weitere"), zeilen[0]

@@ -136,6 +136,45 @@ def _kennung(conn: sqlite3.Connection, row: sqlite3.Row) -> str | None:
     return row["node_path"] or query or "?"
 
 
+def neue_einspielungen(session: str, ab_zeile: int) -> tuple[list[str], int]:
+    """Was der Abruf-Haken in DIESE Sitzung eingespielt hat.
+
+    Zweite Quelle neben access_log, und ohne sie fehlt die Haelfte: der
+    Abruf-Haken (knowledge_recall_hook.py) protokolliert NICHT ins
+    access_log, sondern nach recall_log.jsonl. Deshalb kannte der Melder
+    zwar jeden Schreibvorgang, aber keine einzige Einspielung -- also genau
+    das, was den Nutzer am meisten angeht: welche Lehre gerade seine Frage
+    beantwortet hat.
+
+    Gezaehlt wird in ZEILEN, nicht in Bytes: eine angehaengte Zeile
+    verschiebt keine frueheren, und eine halb geschriebene Zeile faellt beim
+    JSON-Lesen einfach durch, statt den Zaehler zu verschieben.
+    """
+    log = ort.WURZEL / "recall_log.jsonl"
+    if not log.exists():
+        return [], ab_zeile
+    kennungen: list[str] = []
+    nr = 0
+    for nr, roh in enumerate(log.read_text(encoding="utf-8").splitlines(), 1):
+        if nr <= ab_zeile or not roh.strip():
+            continue
+        try:
+            satz = json.loads(roh)
+        except json.JSONDecodeError:
+            continue
+        if session and satz.get("session") and satz["session"] != session:
+            continue
+        kennungen.extend(satz.get("lessons") or [])
+    if not kennungen:
+        return [], max(nr, ab_zeile)
+    ohne_doppel = list(dict.fromkeys(kennungen))
+    if len(ohne_doppel) > 4:
+        text = ", ".join(ohne_doppel[:4]) + f" und {len(ohne_doppel) - 4} weitere"
+    else:
+        text = ", ".join(ohne_doppel)
+    return [f"eingespielt: {text}"], max(nr, ab_zeile)
+
+
 def _knotenname(conn: sqlite3.Connection, pfad: str) -> str:
     """Der NAME eines Knotens, nicht sein Pfad (Betreiber-Vorgabe 2026-08-10:
     "mir wuerde eigentlich reichen wenn der knotennamen angezeigt wird").
@@ -229,8 +268,19 @@ def _hook_lauf(session: str) -> None:
     zeilen, letzte_id = neue_zeilen(conn, ab_id)
     conn.close()
 
+    # Einspielungen ganz nach vorn: sie stehen VOR der Antwort, die der
+    # Nutzer gerade liest, und erklaeren sie.
+    rmarke = STAND_DIR / f"{_marke_pfad(session).stem}.recall"
+    try:
+        ab_zeile = int(rmarke.read_text(encoding="utf-8").strip())
+    except Exception:
+        ab_zeile = 0
+    ezeilen, letzte_zeile = neue_einspielungen(session, ab_zeile)
+    zeilen = ezeilen + zeilen
+
     STAND_DIR.mkdir(exist_ok=True)
     marke.write_text(str(letzte_id), encoding="utf-8")
+    rmarke.write_text(str(letzte_zeile), encoding="utf-8")
 
     if zeilen:
         # Als JSON-Feld systemMessage, NICHT als blosser Text. Ein
