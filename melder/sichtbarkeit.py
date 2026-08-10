@@ -185,7 +185,13 @@ def _hook_lauf(session: str) -> None:
     marke.write_text(str(letzte_id), encoding="utf-8")
 
     if zeilen:
-        print("\n".join(_gedeckelt(zeilen)))
+        # Als JSON-Feld systemMessage, NICHT als blosser Text. Ein
+        # PostToolUse-Haken schreibt sein stdout ins Protokoll, wo es der
+        # Nutzer nur im ausfuehrlichen Modus zu sehen bekommt -- deshalb hat
+        # dieser Melder monatelang gearbeitet und 1715 Vorgaenge abgelegt,
+        # ohne dass eine einzige Zeile im Gespraech ankam. Er war nie kaputt,
+        # er hat mit sich selbst geredet.
+        print(json.dumps({"systemMessage": "\n".join(_gedeckelt(zeilen))}))
 
 
 def _letzte_id_beim_start() -> int:
