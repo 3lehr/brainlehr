@@ -90,7 +90,49 @@ VERBOTENE_MUSTER = {
     # Teilenummern wie "GSC-05-82730-00" (gemessen 2026-08-10, einziger
     # Treffer in 1731 NASA-/Methodik-Knoten -- und ein Fehlalarm).
     "Telefon": re.compile(r"(?<![A-Za-z0-9-])(?:\+49|0)[\d /()-]{9,20}\d\b"),
+    # Nachtrag 2026-08-10: Ein Heimatverzeichnis traegt den Benutzernamen des
+    # Betreibers, ein Plattenpfad sein Ablagelayout. Gemessen im Auszug vom
+    # selben Tag: 61 von 1746 freigegebenen Knoten trugen so etwas, 59 davon im
+    # Herkunftsfeld -- darunter 15 mit "erzeugt aus /Users/<name>/.claude/
+    # CLAUDE.md", also dem Pfad zu den privaten Arbeitsanweisungen. FREIGABE
+    # HEISST NICHT FREI VON INTERNEN SPUREN: das Feld sagt, dass der INHALT
+    # hinausgehen darf, nicht dass die Herkunftsangabe daneben es auch darf.
+    "Heimatverzeichnis": re.compile(r"/Users/[^/\s\"]+/"),
+    "Plattenpfad": re.compile(r"/Volumes/[^/\s\"]+/"),
 }
+
+# Ersetzungen, die VOR der Kontrolle laufen. Sie nehmen der Herkunftsangabe den
+# Personen- und Geraetebezug und lassen ihre Aussage stehen: welche Datei die
+# Quelle war, bleibt lesbar, nur Benutzername und Plattenlayout entfallen.
+# Genau die Regel aus L-adfb33 -- ein Beleg braucht die FORM des Datums, nicht
+# seinen INHALT. Der Empfaenger ist hier ein Dritter, und nur dort ist
+# Maskierung richtig (Direktive "Keine Entwicklerinformation in der
+# Oberflaeche": der Unterschied ist der Empfaenger, nicht die Technik).
+ENTLOKALISIERUNG = (
+    (re.compile(r"/Users/[^/\s\"]+/"), "<heim>/"),
+    (re.compile(r"/Volumes/[^/\s\"]+/"), "<ablage>/"),
+)
+
+
+def entlokalisiere(zeilen: list[dict]) -> tuple[list[dict], int]:
+    """Pfade entschaerfen. Gibt die bereinigten Zeilen und die Zahl der
+    betroffenen Felder zurueck -- eine stille Ersetzung waere schlimmer als
+    keine, weil niemand merkt, wie viel sie anfasst."""
+    getroffen = 0
+    sauber = []
+    for eintrag in zeilen:
+        zeile = dict(eintrag["zeile"])
+        for feld, wert in zeile.items():
+            if not isinstance(wert, str):
+                continue
+            neu = wert
+            for rx, ersatz in ENTLOKALISIERUNG:
+                neu = rx.sub(ersatz, neu)
+            if neu != wert:
+                zeile[feld] = neu
+                getroffen += 1
+        sauber.append({**eintrag, "zeile": zeile})
+    return sauber, getroffen
 # Mailadressen aus oeffentlichen Fremdquellen sind kein Personenbezug des
 # Betreibers -- die NASA-LLIS-Eintraege tragen Behoerdenadressen.
 MAIL = re.compile(r"\b[\w.%+-]+@([\w.-]+\.[a-zA-Z]{2,})\b")
@@ -168,6 +210,10 @@ def exportiere(db: Path, ziel: Path, *, jetzt: datetime | None = None) -> dict:
     """Schreibt NUR, wenn die Kontrolle sauber ist. Ein Export, der beim
     Fund noch schreibt, verlaesst sich darauf, dass jemand die Warnung liest."""
     zeilen = sammle(db)
+    # Reihenfolge ist tragend: erst entschaerfen, dann pruefen. Umgekehrt waere
+    # die Kontrolle bloss die Ansage dessen, was gleich ersetzt wird -- und ein
+    # Muster, das die Ersetzung uebersieht, faende niemand mehr.
+    zeilen, ersetzt = entlokalisiere(zeilen)
     funde = pruefe(zeilen)
     if funde:
         return {"status": "abgebrochen", "zeilen": len(zeilen), "funde": funde}
@@ -185,7 +231,8 @@ def exportiere(db: Path, ziel: Path, *, jetzt: datetime | None = None) -> dict:
         f.write(json.dumps(kopf, ensure_ascii=False) + "\n")
         for z in zeilen:
             f.write(json.dumps(z, ensure_ascii=False) + "\n")
-    return {"status": "geschrieben", "zeilen": len(zeilen), "ziel": str(ziel)}
+    return {"status": "geschrieben", "zeilen": len(zeilen), "ziel": str(ziel),
+            "entlokalisierte_felder": ersetzt}
 
 
 def _selftest() -> None:
@@ -234,6 +281,43 @@ def _selftest() -> None:
             assert any(wort in f for f in pruefe([{"summary": text}])), text
         # ... und die erlaubte Ausnahme
         assert pruefe([{"summary": "david@nasa.gov"}]) == []
+
+    # Entlokalisierung (Nachtrag 2026-08-10). Rot vor gruen: gegen den Stand
+    # ohne ENTLOKALISIERUNG scheitert dieser Block an der ersten Zusicherung,
+    # denn dann steht der Benutzername unveraendert im Export.
+    probe = [{"tabelle": "knowledge_nodes", "zeile": {
+        "id": "p1",
+        "source": "erzeugt aus /Users/mustermann/.claude/CLAUDE.md (Stand X)",
+        "content": "Massgeblich ist /Volumes/platte/verbund/hub/laufzeit/register.jsonl.",
+        "level": 0}}]
+    sauber, getroffen = entlokalisiere(probe)
+    z = sauber[0]["zeile"]
+    assert "/Users/" not in z["source"], z["source"]
+    assert z["source"] == "erzeugt aus <heim>/.claude/CLAUDE.md (Stand X)", z["source"]
+    assert z["content"] == "Massgeblich ist <ablage>/verbund/hub/laufzeit/register.jsonl.", z["content"]
+    assert getroffen == 2, getroffen
+
+    # Die Aussage bleibt: der Dateiname ist weiter lesbar, nur Person und
+    # Ablageort sind weg. Ein Beleg braucht die Form, nicht den Inhalt.
+    assert "CLAUDE.md" in z["source"] and "register.jsonl" in z["content"]
+
+    # Negativfall: was keinen lokalen Pfad traegt, wird nicht angefasst.
+    unberuehrt = [{"tabelle": "knowledge_nodes", "zeile": {
+        "id": "p2", "source": "NASA LLIS 1227", "level": 0}}]
+    gleich, null = entlokalisiere(unberuehrt)
+    assert gleich[0]["zeile"] == unberuehrt[0]["zeile"] and null == 0, gleich
+
+    # Nichtzeichenketten ueberstehen den Durchgang unveraendert.
+    gemischt = [{"tabelle": "knowledge_nodes", "zeile": {
+        "id": "p3", "level": 3, "confidence": 1.0, "tags": None,
+        "source": "/Users/x/y"}}]
+    g, _ = entlokalisiere(gemischt)
+    assert g[0]["zeile"]["level"] == 3 and g[0]["zeile"]["tags"] is None
+
+    # Das Netz hinter der Ersetzung: pruefe() faengt, was sie uebersieht.
+    assert pruefe([{"tabelle": "knowledge_nodes",
+                    "zeile": {"id": "p4", "source": "/Users/rest/pfad"}}]), \
+        "Heimatverzeichnis muss von pruefe() gefunden werden"
 
     print("export_offen.py: Selbsttest gruen")
 
