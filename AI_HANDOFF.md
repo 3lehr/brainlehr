@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-10T23:00:00+02:00 — test(enigma): extend synthetic contract to consent and trade-secret gates
+
+- Files: `tests/test_enigma_hausmeister_contract.py`
+- Why: The red Enigma acceptance case must distinguish a broad Stufe-0 release, a narrow field/purpose release, and a non-personal trade secret; none may be exposed by the raw public read path without its own gate.
+- Verified: `pytest -q tests/test_enigma_hausmeister_contract.py` — 1 expected failure; `pytest -q tests/test_enigma_hausmeister_contract.py --runxfail` — 1 failure, raw content and metadata returned for all three synthetic records; `pytest -q tests/test_ausweis_identitaet.py` — 7 passed.
+- Remaining risk: Tags are test labels, not enforcement. `knowledge_read` has no purpose, recipient, field, provider, or trade-secret decision and remains red by design.
+- Next test: Add one closed gate/projection boundary, then require A deny, B minimal utility response, and trade-secret deny before lifting this xfail.
+
 ## 2026-08-10T22:48:00+02:00 — test(enigma): pin synthetic housekeeper confidentiality contract
 
 - Files: `tests/test_enigma_hausmeister_contract.py`

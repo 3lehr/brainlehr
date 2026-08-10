@@ -32,15 +32,29 @@ def hausmeister_umgebung(tmp_path, monkeypatch):
     monkeypatch.delenv(ausweis.ENV_GEHEIMNIS, raising=False)
     ausweis._pruefe.cache_clear()
 
-    sensitive = kms.knowledge_add(
+    # A: broad Stufe-0 release must never add a role, purpose, or recipient.
+    person_a = kms.knowledge_add(
         "/", "<PERSON_A>: Abwesenheit", "nicht verfuegbar",
-        content="<SENSITIVER_GRUND>", source="synthetische Testquelle",
+        content="<SENSITIVER_GRUND_A>", source="synthetische Testquelle",
+        tags=["synthetisch", "stufe-0:breit"],
     )
-    assert sensitive["status"] == "created"
+    # B: field/purpose release is an intersection, never a blanket read.
+    person_b = kms.knowledge_add(
+        "/", "<PERSON_B>: Abwesenheit", "nicht verfuegbar",
+        content="<SENSITIVER_GRUND_B>", source="synthetische Testquelle",
+        tags=["synthetisch", "feld:nutzinformation", "zweck:raumplanung"],
+    )
+    # Trade secrets have an independent provider/purpose gate, even without PII.
+    geheimnis = kms.knowledge_add(
+        "/", "<BETRIEBSFRAGMENT>", "synthetisch klassifiziert",
+        content="<GESCHAEFTSGEHEIMNIS>", source="synthetische Testquelle",
+        tags=["synthetisch", "geschaeftsgeheimnis", "anbieter:lokal", "zweck:betrieb"],
+    )
+    assert all(node["status"] == "created" for node in (person_a, person_b, geheimnis))
     secret = ausweis.anlegen("hausmeister", ["leser"], pfad=ausweise)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, secret)
     ausweis._pruefe.cache_clear()
-    return sensitive["id"]
+    return {"person_a": person_a["id"], "person_b": person_b["id"], "geheimnis": geheimnis["id"]}
 
 
 def _public_read(node_id: str) -> dict:
@@ -59,7 +73,12 @@ def test_z0_bis_z8_hausmeister_erhaelt_nur_nutzinformation(hausmeister_umgebung)
     actor, _, _ = kms._identity(actor="behauptet-andere-identitaet")
     assert actor == "hausmeister"  # Z0: credential wins over request data.
 
-    # The desired public answer is intentionally tiny.  Current MCP exposes
-    # the complete stored node: Z1--Z8 therefore fail at the first read.
-    answer = _public_read(hausmeister_umgebung)
-    assert answer == {"nutzinformation": "Bereich verfuegbar"}
+    # A's broad release does not add role, purpose, or recipient. B's narrow
+    # release therefore yields only the allowed intersection. The secret has
+    # its independent provider/purpose gate. Current raw MCP exposes all three.
+    answers = {name: _public_read(node_id) for name, node_id in hausmeister_umgebung.items()}
+    assert answers == {
+        "person_a": {"error": "zugriff verweigert"},
+        "person_b": {"nutzinformation": "Bereich verfuegbar"},
+        "geheimnis": {"error": "zugriff verweigert"},
+    }
