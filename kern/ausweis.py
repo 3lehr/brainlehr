@@ -912,6 +912,21 @@ def loese_auf(argument: str | None = None, *,
     unbeglaubigten Zweig zurueck. Ein falsches Geheimnis darf nie mehr Rechte
     ergeben als gar keines."""
     geheimnis = geheimnis if geheimnis is not None else os.environ.get(ENV_GEHEIMNIS)
+    if not geheimnis and sys.stdin.isatty():
+        # Verdeckt nachfragen, statt den Aufrufer auf die Umgebungsvariable zu
+        # zwingen. Anlass 2026-08-10: BRAINLEHR_GEHEIMNIS=... im Befehl landet
+        # in der Shell-Historie und ist fuer jeden Prozess auf dem Rechner
+        # lesbar; die Umgehung per `read -s -p` ist bash-Syntax und scheitert
+        # in zsh lautlos -- der Aufruf brach dreimal ab, ohne dass die leere
+        # Einladungsdatei den Grund verriet.
+        # isatty(), damit Haken, Dienste und Testlaeufe nicht blockieren: dort
+        # gibt es niemanden, der tippen koennte, und der unbeglaubigte Zweig
+        # ist die richtige Antwort.
+        import getpass
+        try:
+            geheimnis = getpass.getpass("Geheimnis (bleibt verdeckt): ") or None
+        except (EOFError, KeyboardInterrupt):
+            geheimnis = None
     if geheimnis:
         datei = pfad or ausweisdatei()
         name = _pruefe(geheimnis, str(datei), _stand(datei))
