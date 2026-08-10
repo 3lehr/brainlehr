@@ -44,7 +44,8 @@ def test_tote_pfade_werden_gefunden(tmp_path, monkeypatch):
 
 def test_heile_pfade_melden_nichts(tmp_path, monkeypatch):
     datei = tmp_path / "settings.json"
-    datei.write_text(f'{{"a":"python3 {WURZEL}/doctor.py"}}', encoding="utf-8")
+    # Fundort des Moduls statt fester Wurzel — ueberlebt den naechsten Umzug
+    datei.write_text(f'{{"a":"python3 {Path(doctor.__file__).resolve()}"}}', encoding="utf-8")
     monkeypatch.setattr(doctor, "KONFIGURATIONEN", (datei,))
     _frisch()
     doctor.probe_tote_pfade()
