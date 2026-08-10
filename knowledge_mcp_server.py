@@ -5149,7 +5149,14 @@ def handle_request(req: dict) -> dict:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {"listChanged": False}},
-                "serverInfo": {"name": "knowledge-mcp", "version": _version()}
+                "serverInfo": {"name": "knowledge-mcp", "version": _version()},
+                "instructions": (
+                    "Erkläre dem Nutzer zu Beginn jeder neuen Unterhaltung kurz die vier "
+                    "Brainlehr-Referenztypen: xxxxxxxx = Wissensknoten-ID für Fakt, Regel "
+                    "oder Entscheidung; L-xxxxxx = Lehre/Lesson aus Erfahrung; A-xxxxxx = "
+                    "offene oder entschiedene Annahme; Relation = gerichtete, typisierte "
+                    "Verbindung zwischen zwei Einträgen ohne eigene Präfixform."
+                ),
             }
         }
 

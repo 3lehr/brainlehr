@@ -50,6 +50,15 @@ def test_server_meldet_die_datei():
         f"Server meldet {gemeldet!r}, die Datei sagt {_datei()!r}")
 
 
+def test_server_erklaert_alle_referenztypen_beim_start():
+    antwort = kms.handle_request(
+        {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+    anweisung = antwort["result"]["instructions"]
+    for referenztyp in ("Wissensknoten-ID", "L-xxxxxx", "A-xxxxxx", "Relation"):
+        assert referenztyp in anweisung
+    assert "Beginn jeder neuen Unterhaltung" in anweisung
+
+
 def test_readme_nennt_dieselbe_fassung():
     text = (WURZEL / "README.md").read_text(encoding="utf-8")
     assert _datei() in text, (
