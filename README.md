@@ -18,6 +18,11 @@ Fehlerklasse dreimal, wird sie von selbst zur Regel.
 erst — das erzwingt ein Datenbank-Trigger, nicht eine Konvention. Wer eine
 Hausregel setzen will, muss ein Mensch sein, und der Speicher prüft das.
 
+**Es kennzeichnet fremden Text als Daten.** Jeder Bestandstext, der in ein
+Modell fließt, wird abgegrenzt und als Daten beschriftet — nicht per Wortliste
+(die ist prinzipiell unvollständig), sondern durch die Darstellung selbst, plus
+sprachunabhängige Anomaliesignale.
+
 **Es misst sich selbst.** Trefferquote, Nutzen, Rangfolge — gegen einen fremden
 Prüfkorpus, blind bewertet. Die Zahlen fallen regelmäßig schlecht aus; das ist
 der Zweck. Ein Speicher, der seine eigene Trefferquote nicht kennt, behauptet
@@ -112,10 +117,21 @@ Diese Liste ist wichtiger als die obere, weil sie das Vertrauen bestimmt:
 - **Keine BSI-Zertifizierung.** Es gibt ein Prüfprofil und harte Verbote
   (keine Secrets im Code, kein `eval` auf Nutzereingaben, Passwort-Hashing).
   „Erfüllt den Stand der Technik" wäre eine Behauptung, kein Nachweis.
-- **Kein Schutz gegen Promptinjektion.** Rechte begrenzen den *Radius*, nicht
-  die *Möglichkeit*: Wer den Kontext eines Modells steuert, handelt mit dessen
-  Rechten, und die Prüfung sieht einen legitimen Aufruf. Siehe
-  `docs/KONZEPT_BETEILIGUNG_UND_DATENPUNKTE_2026-08-09.md`, Kapitel 5b.
+- **Kein *vollständiger* Schutz gegen Promptinjektion — aber auch nicht nichts.**
+  Gebaut ist `einschleusung.py`, dreistufig und am Schreibvorgang verdrahtet:
+  jeder Bestandstext wird bei der Ausgabe als **Daten abgegrenzt und
+  gekennzeichnet** (das ist der eigentliche Schutz), dazu kommen
+  sprachunabhängige Anomaliesignale (Skriptmischung, kodierte Blöcke,
+  verwechselbare Zeichen) und zuletzt Wortmuster. 16 Angriffsformen im
+  Selbsttest erkannt, 9 harmlose Gegenbeispiele nicht.
+  Was es **nicht** leistet, sagt das Modul selbst: eine Musterliste ist
+  prinzipiell unvollständig, ein umformulierter Angriff fällt durch jedes
+  Regex-Set. Und ein Fund **blockiert nicht** — sonst könnte eine geschickte
+  Formulierung das Schreiben fremder, legitimer Einträge verhindern.
+  Die Grenze darüber bleibt: Rechte begrenzen den *Radius*, nicht die
+  *Möglichkeit* — wer den Kontext eines Modells steuert, handelt mit dessen
+  Rechten, und die Prüfung sieht einen legitimen Aufruf
+  (`docs/KONZEPT_BETEILIGUNG_UND_DATENPUNKTE_2026-08-09.md`, Kapitel 5b).
 - **Kein Mehrbenutzerbetrieb.** Ausweise und Rollen existieren, aber der
   Transport ist stdio: ein Prozess, ein Rechner. HTTP ist entschieden
   (`ADR-001`), nicht gebaut.
@@ -219,18 +235,12 @@ Warum überall „ungeprüft": Lizenzangaben aus einem Modellgedächtnis sind we
 Zeile erst, wenn jemand die Lizenzseite aufgerufen und Datum plus Fundstelle
 eingetragen hat.
 
-**Zum BSI-Profil im Besonderen — und zu einem Fehler, den ich dabei gemacht
-habe:** Ich hatte es zunächst auf gelb gesetzt und die Datei aus dem Repo
-entfernt, gestützt auf die Nutzungsbedingungen von `bsi.bund.de` (kommerzielle
-Verwendung des IT-Grundschutzes ist dort lizenzpflichtig). Die tatsächliche
-Quelle stand aber **in der Datei selbst**: `BSI-Bund/Stand-der-Technik-Bibliothek`
-unter **CC BY-SA 4.0** — kommerzielle Nutzung, Bearbeitung und Weitergabe
-erlaubt. Die Lehre daraus steht in `quellen/fremdquellen.json`: erst am Artefakt
-nachsehen, dann die Website suchen.
-
-Die **Share-Alike-Bedingung** bleibt und ist in `NOTICE` vermerkt: Das
-abgeleitete Profil steht unter CC BY-SA 4.0, unabhängig davon, unter welcher
-Lizenz der übrige Quelltext steht.
+**Zum BSI-Profil:** Quelle ist die
+[BSI Stand-der-Technik-Bibliothek](https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek)
+unter **CC BY-SA 4.0** — kommerzielle Nutzung, Bearbeitung und Weitergabe sind
+erlaubt. Die **Share-Alike-Bedingung** gilt und steht in `NOTICE`: Das
+abgeleitete Profil bleibt CC BY-SA 4.0, unabhängig von der Lizenz des übrigen
+Quelltextes.
 
 Und der Katalog hat eine gemessene
 Lücke: **keine Controls zu Negativtests, Grenzwertprüfung, Nachweis der
@@ -266,12 +276,18 @@ jeden Hook-Pfad und wartet deshalb auf eine Runde mit Testabsicherung.
 
 ---
 
-## Herkunft dieser Datei
+---
 
-Die Struktur folgt einem Vorschlag, der aus einer Analyse des Repos entstand.
-Drei Aussagen daraus wurden beim Gegenlesen am Quelltext **nicht bestätigt** und
-sind hier korrigiert: automatische Anonymisierung (findet nicht statt),
-„kryptografisch verankert" (SHA-256 ohne Signatur), sowie zwei genannte Dateien,
-die es nicht gibt. Das ist kein Nebensatz, sondern die Arbeitsweise dieses
-Projekts: **eine Aussage über den Code wird am Code geprüft, bevor sie
-weitergetragen wird.**
+## Lizenz
+
+Der Code steht unter der **GNU Affero General Public License v3.0**
+([`LICENSE`](./LICENSE)). Kurzfassung ohne Juristendeutsch:
+[`LICENSE_FAQ.md`](./LICENSE_FAQ.md).
+
+**Privat, in der Forschung und in Open-Source-Projekten: kostenlos, ohne
+Einschränkung.** Wer eine veränderte Fassung weitergibt oder als Netzwerkdienst
+betreibt, legt seinen Quelltext ebenfalls unter der AGPLv3 offen. Für den
+Einbau in geschlossene Produkte gibt es eine kommerzielle Lizenz.
+
+Zwei Dateien tragen eine **eigene** Lizenz — das ist ausgewiesen, nicht
+versehentlich: siehe [`NOTICE`](./NOTICE).
