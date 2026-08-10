@@ -4,7 +4,7 @@
 
 Auftrag: der Recall-Hook zieht seit Monaten Wissen, aber niemand kann sagen,
 welche Lehre je gelesen wurde. Dieser Test belegt: Treffer -> Protokollzeile
-(Zeitpunkt + Kennung, KEIN Prompt-Text), kein Treffer -> keine Zeile, ein
+(Zeitpunkt + Kennung, KEIN Prompt-Text), kein Treffer -> leere Zeile, ein
 unschreibbares Protokollziel darf den Abruf selbst NIE stoppen (wichtigster
 Fall), die Auswertung liefert gegen ein synthetisches Protokoll plausible
 Zahlen, und die Groessen-Bremse (Rotation) greift.
@@ -56,6 +56,7 @@ CREATE TABLE knowledge_nodes (
     summary TEXT NOT NULL, content TEXT, level INTEGER NOT NULL DEFAULT 0,
     tags TEXT DEFAULT '[]', source TEXT, confidence REAL DEFAULT 0.8,
     access_count INTEGER DEFAULT 0, zurueckgezogen INTEGER NOT NULL DEFAULT 0,
+    gattung TEXT NOT NULL DEFAULT 'arbeitsbestand',
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00','now','localtime')),
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00','now','localtime')),
     gilt_ab TEXT, gilt_bis TEXT
@@ -72,6 +73,7 @@ CREATE TABLE lessons_learned (
     severity TEXT DEFAULT 'medium', description TEXT NOT NULL,
     root_cause TEXT, resolution TEXT, prevention TEXT,
     occurrences INTEGER DEFAULT 1, projects TEXT DEFAULT '[]',
+    session TEXT,
     status TEXT DEFAULT 'active',
     first_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00','now','localtime')),
     last_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S+01:00','now','localtime')),
@@ -142,14 +144,15 @@ def treffer_erzeugt_protokollzeile() -> str:
         return f"Treffer -> 1 Protokollzeile: {entry}"
 
 
-def kein_treffer_keine_zeile() -> str:
+def kein_treffer_leere_zeile() -> str:
     with tempfile.TemporaryDirectory() as td:
         db, log = pathlib.Path(td) / "knowledge.db", pathlib.Path(td) / "recall_log.jsonl"
         _build_db(db)
         hook.DB, hook.RECALL_LOG = str(db), str(log)
         _run_main_with_prompt("voellig unverwandtes thema ohne jeden treffer irgendwo")
-        assert not log.exists(), "Protokollzeile trotz Null-Treffer entstanden"
-        return "kein Treffer -> keine Zeile (Protokoll bleibt klein)"
+        entry = json.loads(log.read_text(encoding="utf-8"))
+        assert entry["nodes"] == [] and entry["lessons"] == [], entry
+        return "kein Treffer -> leere Protokollzeile"
 
 
 def kaputtes_ziel_bricht_abruf_nicht() -> str:
@@ -209,7 +212,7 @@ def rotation_kappt_bei_ueberlauf() -> str:
 def main() -> None:
     checks = [
         ("HIT", treffer_erzeugt_protokollzeile),
-        ("MISS", kein_treffer_keine_zeile),
+        ("MISS", kein_treffer_leere_zeile),
         ("KAPUTTES-ZIEL", kaputtes_ziel_bricht_abruf_nicht),
         ("AUSWERTUNG", auswertung_liefert_plausible_zahlen),
         ("ROTATION", rotation_kappt_bei_ueberlauf),
