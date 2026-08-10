@@ -78,27 +78,100 @@ mitgeliefert und werden bei Bedarf selbst gerechnet — Begründung und Befehl i
 | **Assoziative Kanten** | verstärkt, was gemeinsam abgerufen wird; eine Kante heißt „kam zusammen vor", nicht „hängt zusammen" |
 | **Zugriffsprotokoll** | jeder Lese- und Schreibvorgang in `access_log`, per SHA-256 verkettet — Änderung wird nachweisbar, nicht verhindert |
 
-## Fünf Fälle, mit Fundstelle
+## Acht Fälle, mit Fundstelle
 
-Kein Werbeabschnitt. Fünf Vorgänge, die belegbar sind — jeder mit Zeitpunkt,
-Fundstelle und dem beteiligten Modell, **soweit es festgehalten wurde**. Wo es
-nicht festgehalten wurde, steht das da: eine Herkunftskette, die sich selbst
-Lücken durchgehen lässt, ist keine. Der fünfte Fall ist einer, den wir *nicht*
-behaupten können, und er steht aus demselben Grund hier wie die anderen vier.
+Acht Vorgänge, je mit Zeitpunkt, Fundstelle und beteiligtem Modell.
+Angaben, die nicht festgehalten wurden, sind als solche benannt.
 
 <details>
-<summary><b>1. Eine abgelaufene Regel wurde als abgelaufen erkannt</b> — Geltung, nicht nur Fund</summary>
+<summary><b>1. Eine Lehre aus Python half vier Stunden später in Dart</b> — anderes Projekt, andere Sprache, dieselbe Fehlerform</summary>
 
-**Wann:** 2026-08-08, Suchen um 13:33, Befund festgehalten 13:36:02 (+02:00)
-**Geprüftes Modell:** nicht festgehalten — das Protokoll führt den Agenten als
-`client=skript`, `model=unbekannt`
-**Befund geschrieben von:** `claude-opus-5` über `claude-code`
-**Fundstelle:** Knoten `a3c66be9`, Regel im Knoten `1d0fd081`
+- **Wann:** aufgezeichnet 2026-08-01T08:47, eingespielt 2026-08-07T11:34:22, angewandt 2026-08-07T15:50 (+02:00)
+- **Beteiligtes Modell:** `claude-opus-5`
+- **Fundstelle:** Knoten `5eca513a`, Lehre `L-0968ae`, Einspielung protokolliert in `recall_log.jsonl`
+
+In **openlehr** (Python) fing eine Route jeden Fehler in einem `try/except` ab
+und gab ihn nur als Warnung aus, die kein Test und keine Oberfläche liest —
+stiller Datenverlust im Betrieb. Sechs Tage später spielte der Abruf-Hook diese
+Lehre in eine Sitzung ein, in der an **wohlair** (Dart/Flutter) gearbeitet
+wurde. Vier Stunden danach traf sie auf einen neu gebauten Schalter mit
+`catch (_)`: freundlicher Text für den Nutzer, Ursache restlos verworfen.
+
+Übertragen wurde keine Technik, sondern eine **Form**: der Nutzer bekommt eine
+Meldung, die Ursache verschwindet. Anderes Projekt, andere Sprache, anderes
+Rahmenwerk — genau die Übertragung, die ein projektlokales Wiki nicht leisten
+kann.
+
+*Was damit ausdrücklich nicht belegt ist: dass so etwas automatisch geschieht.
+Der Hook hat eingespielt; gelesen und die Analogie erkannt hat der Mensch am
+Werkzeug. Und wäre die Anwendung eine Sitzung später erfolgt, wäre sie
+unsichtbar geblieben — das steht so im Knoten.*
+</details>
+
+<details>
+<summary><b>2. Ein PDF-Konverter meldete Erfolg und schrieb Zeichensalat</b> — und der erste Fix war messbar falsch</summary>
+
+- **Wann:** 2026-07-28T07:57:34 (+02:00)
+- **Modell:** nicht festgehalten
+- **Fundstelle:** Lehre `L-bac968`, Prüfstelle `hub/begod/scripts/pdf_to_knowledge.py`
+
+Die Fallback-Kette PyMuPDF → pdftotext → OCR schaltete nur weiter, wenn der Text
+**leer** war. PDFs mit eingebettetem Font ohne ToUnicode-Tabelle liefern aber
+nicht-leeren Salat (`!!!"# $% &'(` statt `Rechnung`). Ergebnis: Datei
+geschrieben, Rückgabewert 0, und weil die Ausgabedatei zugleich das
+Erledigt-Signal der Stapelschleife war, zementierte sich der Fehlschlag selbst.
+Ein Beleg lag seit der Ersterfassung unauswertbar in der Ablage — 1 von 358.
+
+Der lehrreiche Teil ist der **erste Fixversuch**: ein Detektor über den Anteil
+„plausibler Zeichen", Schwelle 0,80. Er klagte zwei intakte Belege an
+(ziffernlastige Tabellen, 0,78) und ließ denselben kaputten Beleg durch (dessen
+Salat war ziffernlastig und kam auf ~0,9). Die Zahl war plausibel und falsch.
+
+Der zweite Anlauf misst Wortdichte und wurde **am echten Bestand kalibriert**:
+358 Dokumente, Median 69,7 Wörter je 1000 Zeichen, schlechtestes echtes Dokument
+15,0, kaputte Extraktion 3,3 — die Schwelle 10,0 liegt in der Lücke dazwischen.
+Bei Misserfolg entsteht jetzt gar keine Ausgabedatei.
+
+*Daraus die Regel: Heuristik-Schwellen nie raten, sondern die Verteilung des
+echten Bestands ansehen. Gibt es keine Lücke, ist die Metrik falsch — nicht die
+Schwelle.*
+</details>
+
+<details>
+<summary><b>3. „Upload erfolgreich" — der Build erschien nie</b></summary>
+
+- **Wann:** 2026-07-28T08:17:07 (+02:00)
+- **Modell:** nicht festgehalten
+- **Fundstelle:** Lehre `L-47e586`
+
+Ein TestFlight-Upload meldete `UPLOAD SUCCEEDED with no errors` samt
+Vorgangsnummer. In App Store Connect tauchte der Build nie auf. Ursache: die
+Build-Nummer war bereits vergeben. Sie war aus einer lokalen Metadatendatei
+abgeleitet worden, die naturgemäß hinterherläuft — der Store stand längst zwei
+Nummern weiter. Apple verwirft das Duplikat erst bei der Verarbeitung, und zwar
+wortlos.
+
+Der Fund löste zugleich einen älteren, nie geklärten Fehlschlag derselben App,
+den man damals auf Platzhalter-Icons geschoben hatte.
+
+*Die übertragbare Regel steht in der Lehre: Wenn ein Dokument in einem Punkt
+nachweislich veraltet ist, gilt es in allen Punkten als unbelegt, bis geprüft.
+Teilvertrauen in eine als unzuverlässig erkannte Quelle ist der eigentliche
+Fehler.*
+</details>
+
+<details>
+<summary><b>4. Eine abgelaufene Regel wurde als abgelaufen erkannt</b> — Geltung, nicht nur Fund</summary>
+
+- **Wann:** 2026-08-08, Suchen um 13:33, Befund festgehalten 13:36:02 (+02:00)
+- **Geprüftes Modell:** nicht festgehalten — das Protokoll führt den Agenten als `client=skript`, `model=unbekannt`
+- **Befund geschrieben von:** `claude-opus-5` über `claude-code`
+- **Fundstelle:** Knoten `a3c66be9`, Regel im Knoten `1d0fd081`
 
 Im Testbestand lag ein erfundener Gebührenerlass von 20 %, gültig 2026-05-01 bis
 2026-07-31. Auf die Frage danach suchte der Agent, nannte den Zeitraum und
 folgerte richtig, dass der Rabatt nicht mehr gilt. Das Protokoll zeigt zwei
-Suchen — er hat also nachgesehen, statt zu raten.
+Suchen — er hat nachgesehen, statt zu raten.
 
 Ein Volltextindex hätte die Regel gefunden und als gültig ausgeliefert. Der
 Unterschied liegt im Feld `gilt_bis`, nicht in der Trefferquote.
@@ -109,13 +182,12 @@ Regel verlangte, und fragte erst danach, ob er nachsehen solle.*
 </details>
 
 <details>
-<summary><b>2. Die Datenbank verhinderte einen Eintrag, den das Modell bereits als erledigt meldete</b></summary>
+<summary><b>5. Die Datenbank verhinderte einen Eintrag, den das Modell bereits als erledigt meldete</b></summary>
 
-**Wann:** 2026-08-08, Vorgang 7 (Befund festgehalten 13:50:00), Folgefall
-Vorgang 9 (13:58:43), beide +02:00
-**Geprüftes Modell:** nicht festgehalten (`client=skript`, `model=unbekannt`)
-**Befund geschrieben von:** `claude-opus-5` über `claude-code`
-**Fundstelle:** Knoten `bd393245` und `…/messlauf-5-die-kette-v7-zu-v9-zeigt-den`
+- **Wann:** 2026-08-08, Vorgang 7 (festgehalten 13:50:00), Folgefall Vorgang 9 (13:58:43), beide +02:00
+- **Geprüftes Modell:** nicht festgehalten (`client=skript`, `model=unbekannt`)
+- **Befund geschrieben von:** `claude-opus-5` über `claude-code`
+- **Fundstelle:** Knoten `bd393245` und `…/messlauf-5-die-kette-v7-zu-v9-zeigt-den`
 
 Auftrag war, einen Vermerk festzuhalten. Das Zugriffsprotokoll zeigt
 `add | rejected | source_fehlt` — die Herkunftspflicht wies den Schreibversuch
@@ -132,12 +204,11 @@ Bestand, und niemand hätte einen Fehler gesehen.
 </details>
 
 <details>
-<summary><b>3. Ein Prüfwerkzeug gegen 210 falsche Paare geprüft — 0 Fehlalarme</b></summary>
+<summary><b>6. Ein Prüfwerkzeug gegen 210 falsche Paare geprüft — 0 Fehlalarme</b></summary>
 
-**Wann:** 2026-08-09T20:47:20+02:00
-**Modell:** keines beteiligt — die Prüfung ist deterministisch (Substring- und
-ID-Vergleich), kein Modellaufruf, Laufzeit unter einer Sekunde
-**Fundstelle:** `runs/antwortqualitaet_2026-08-09.md`
+- **Wann:** 2026-08-09T20:47:20 (+02:00)
+- **Modell:** keines beteiligt — die Prüfung ist deterministisch (Substring- und ID-Vergleich), Laufzeit unter einer Sekunde
+- **Fundstelle:** `runs/antwortqualitaet_2026-08-09.md`
 
 Jede der 15 Prüfaufgaben wurde gegen die korrekten Antworten der 14 *anderen*
 Aufgaben gehalten: 210 Negativpaare, 0 Falsch-Positive. Die Aufgaben stammen aus
@@ -150,11 +221,11 @@ leihen, wurde die eigene gemessen.
 </details>
 
 <details>
-<summary><b>4. Ein Datenschutzfund, den der Musterkatalog nicht fand</b></summary>
+<summary><b>7. Ein Datenschutzfund, den der Musterkatalog nicht fand</b></summary>
 
-**Wann:** Befund 2026-08-06T11:56:13, Nachtrag 2026-08-10T00:09:03 (+02:00)
-**Modell:** nicht festgehalten (`model` der Lehre ist leer)
-**Fundstelle:** Lehre `L-adfb33`
+- **Wann:** Befund 2026-08-06T11:56:13, Nachtrag 2026-08-10T00:09:03 (+02:00)
+- **Modell:** nicht festgehalten
+- **Fundstelle:** Lehre `L-adfb33`
 
 Ein Katalog aus regulären Ausdrücken (E-Mail, IBAN, Kundennummer, Anrede) lief
 über alle 722 Lehren und meldete 44 Verdachtsfälle — 44 davon Fehlalarme
@@ -169,14 +240,11 @@ fertig destilliert.
 </details>
 
 <details>
-<summary><b>5. Was wir nicht behaupten können — und warum es hier steht</b></summary>
+<summary><b>8. Was wir nicht behaupten können — und warum es hier steht</b></summary>
 
-**Wann:** blinder Lauf `runs/wissensnutzen_blind.json` (Stand 2026-08-09T21:21:34),
-Wettbewerbsmessung 2026-08-09T10:05:52 (+02:00)
-**Modelle im blinden Lauf:** `gemma4:12b` und `gemma4:e4b`, je 3 Durchläufe,
-lokal gerechnet
-**Fundstelle:** `runs/wissensnutzen_blind.json`,
-`runs/antwortqualitaet_2026-08-09.md`, `runs/wettbewerb_2026-08-09.md`
+- **Wann:** blinder Lauf Stand 2026-08-09T21:21:34, Wettbewerbsmessung 2026-08-09T10:05:52 (+02:00)
+- **Modelle im blinden Lauf:** `gemma4:12b` und `gemma4:e4b`, je 3 Durchläufe, lokal gerechnet
+- **Fundstelle:** `runs/wissensnutzen_blind.json`, `runs/antwortqualitaet_2026-08-09.md`, `runs/wettbewerb_2026-08-09.md`
 
 Es gibt einen A/B-Lauf, der gut aussieht: ein kleines Modell schlägt ohne
 eingespieltes Wissen ein dokumentiertes Antipattern vor, mit Wissen die richtige
