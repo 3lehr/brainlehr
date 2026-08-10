@@ -30,6 +30,14 @@ REPO_ROOT = HUB if HUB else Path(__file__).resolve().parents[2]
 SCRIPTS = REPO_ROOT / "begod/scripts"
 sys.path.insert(0, str(SCRIPTS))
 
+# Wie in test_caveman_integration: der geprueffte Code liegt im hub, nicht
+# in diesem Repo. Ohne diese Weiche bricht die GESAMTE Suite eines
+# Fremden beim Einsammeln ab -- gemessen an einem Klon ausserhalb des
+# Verbunds: 1 error nach 0,62 Sekunden, kein einziger Test gelaufen.
+if HUB is None or not (SCRIPTS / "caveman_bulk.py").exists():
+    pytest.skip("caveman_bulk liegt im hub, der hier nicht vorhanden ist",
+                allow_module_level=True)
+
 import caveman_bulk as cb  # type: ignore  # noqa: E402
 import json_minify as jm  # type: ignore  # noqa: E402
 

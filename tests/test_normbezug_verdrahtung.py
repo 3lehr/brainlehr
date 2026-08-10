@@ -32,6 +32,8 @@ from pathlib import Path
 
 import pytest
 
+from conftest import braucht_bestand  # noqa: E402
+
 SHARED_KNOWLEDGE = Path(__file__).resolve().parent.parent
 HAKEN = SHARED_KNOWLEDGE / "haken" / "antwort_abruf.py"
 
@@ -71,6 +73,10 @@ def test_unbelegtes_zitat_wird_am_stop_gemeldet(tmp_path, zitat, erwartet):
 def test_belegtes_zitat_erzeugt_keine_meldung(tmp_path):
     """Gegenprobe: ein Melder, der auch bei Ordnung spricht, wird
     abgeschaltet. Ohne diese Probe waere ein 'melde immer' genauso gruen."""
+    # Braucht den DSGVO-Knoten im Bestand: ohne ihn ist das Zitat zu Recht
+    # unbelegt, und der Melder meldet richtig -- der Test pruefte dann das
+    # Gegenteil dessen, was er soll.
+    braucht_bestand()
     aus = _stop(tmp_path, "Nach Art. 6 Abs. 1 lit. f DSGVO zulaessig.")
     assert "NORMBEZUG OHNE BELEG" not in aus, aus
 

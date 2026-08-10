@@ -9,6 +9,7 @@ laesst jeden relativen `source` unbeobachtbar werden -- die Konfidenz faellt
 dann still in Regime 3, statt zu melden.
 """
 
+import pytest
 import sys as _sys
 from pathlib import Path as _Path
 
@@ -50,6 +51,11 @@ def test_verbundwurzel_zeigt_auf_begod2026_nicht_eine_ebene_hoeher():
     """
     import konfidenz
 
+    # Der hub ist ein NACHBARPROJEKT, kein Bestandteil von brainlehr. Ein
+    # Klon ohne ihn darf hier nicht rot werden -- die Zusicherung gilt der
+    # Ableitung der Wurzel, nicht der Existenz des Nachbarn.
+    if not (konfidenz.BEGOD_ROOT / "hub").is_dir():
+        pytest.skip("kein hub neben diesem Repo -- Nachbarprojekt des Verbunds")
     assert (konfidenz.BEGOD_ROOT / "hub" / "scripts").is_dir()
     assert (konfidenz.BEGOD_ROOT / "brainlehr").is_dir(), \
         "brainlehr liegt NEBEN hub, nicht darin"

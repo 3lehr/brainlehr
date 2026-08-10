@@ -42,7 +42,14 @@ DOKUMENTE = ("START.md", "README.md")
 
 
 def _text(name: str) -> str:
-    return (WURZEL / name).read_text(encoding="utf-8")
+    # Ein Dokument, das es in DIESEM Baum nicht gibt, kann nicht verrotten.
+    # START.md liegt nur im internen Repo, README.md in beiden -- ohne
+    # diese Weiche ist der Test im weitergebbaren Baum rot, ohne dass
+    # jemand etwas falsch gemacht haette.
+    pfad = WURZEL / name
+    if not pfad.exists():
+        pytest.skip(f"{name} gibt es in diesem Baum nicht")
+    return pfad.read_text(encoding="utf-8")
 
 
 @pytest.mark.parametrize("name", DOKUMENTE)
@@ -59,7 +66,13 @@ def test_genannte_dateien_gibt_es(name):
     # Pfade in Backticks, die wie Dateien oder Ordner aussehen
     kandidaten = set(re.findall(r"`([a-z_]+(?:/[a-z_.]+)*\.(?:py|sql|md|jsonl))`", text))
     kandidaten |= set(re.findall(r"`(haken/|tests/|auszug/)`", text))
-    fehlend = [k for k in kandidaten if not (WURZEL / k).exists()]
+    # Was erst im BETRIEB entsteht, ist keine Falschaussage der Doku:
+    # eine frische Instanz hat noch kein Abrufprotokoll. Wer es hier
+    # mitzaehlt, macht aus "noch nicht benutzt" einen Dokumentationsfehler.
+    IM_BETRIEB = {"recall_log.jsonl", "schatten_log.jsonl", "auftraege.jsonl",
+                  "antwort_treffer.json", "sichtbarkeit.log"}
+    fehlend = [k for k in kandidaten
+               if k not in IM_BETRIEB and not (WURZEL / k).exists()]
     assert not fehlend, f"{name} nennt, was es nicht gibt: {sorted(fehlend)}"
 
 

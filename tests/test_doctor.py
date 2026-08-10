@@ -6,6 +6,7 @@ Zustand gefahren -- rot vor gruen, nur eben herum: erst muss sie anschlagen.
 """
 from __future__ import annotations
 
+import json
 import sys as _sys
 from pathlib import Path as _Path
 
@@ -35,7 +36,12 @@ def _frisch():
 
 def test_tote_pfade_werden_gefunden(tmp_path, monkeypatch):
     datei = tmp_path / "settings.json"
-    datei.write_text('{"a":"python3 /Volumes/daten/Begod2026/gibtsnicht/tot.py"}', encoding="utf-8")
+    # Pfad IM eigenen Verbund: doctor prueft seit 2026-08-10 nur noch solche
+    # (fremde Eintraege in derselben Konfiguration gehen ihn nichts an).
+    # Ein fest getippter Begod2026-Pfad fiel deshalb bei einem Fremden aus
+    # dem Filter -- der Test war gruen ohne zu pruefen.
+    tot = doctor.ort.VERBUND / "gibtsnicht" / "tot.py"
+    datei.write_text(json.dumps({"a": f"python3 {tot}"}), encoding="utf-8")
     monkeypatch.setattr(doctor, "KONFIGURATIONEN", (datei,))
     _frisch()
     doctor.probe_tote_pfade()

@@ -32,6 +32,7 @@ while not (_w / "schema.sql").exists() and _w != _w.parent:
 _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
+import os
 import sys
 from pathlib import Path
 
@@ -75,6 +76,34 @@ if HUB:
     for zusatz in (HUB / "scripts", HUB / "begod" / "scripts"):
         if zusatz.is_dir():
             sys.path.insert(0, str(zusatz))
+
+def braucht_bestand(mindestens: int = 100) -> None:
+    """Ueberspringt einen Test, der gegen den gewachsenen Bestand misst.
+
+    Einige Tests pruefen die Abrufguete an ECHTEN Eintraegen -- sie suchen
+    nach Inhalten wie "Existenzgruender", die in einer frisch angelegten
+    Instanz nicht stehen. Gemessen an einem Klon ausserhalb des Verbunds:
+    9 solche Tests rot, und keiner davon sagte etwas ueber den Code.
+
+    Bewusst UEBERSPRINGEN statt auf synthetische Vorrichtungen umbauen:
+    diese Tests messen echte Guete an echtem Bestand, das ist ihr Zweck.
+    Ein Test, dessen Voraussetzung fehlt, ist zu ueberspringen -- ein
+    umgebauter Test misst etwas anderes und sieht dabei gruen aus."""
+    import sqlite3
+    import pytest
+    pfad = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (SHARED_KNOWLEDGE / "knowledge.db"))
+    if not pfad.exists():
+        pytest.skip(f"kein Bestand unter {pfad} -- erst `python3 schnellstart.py --bestand`")
+    try:
+        con = sqlite3.connect(f"file:{pfad}?mode=ro", uri=True)
+        n = con.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
+        con.close()
+    except sqlite3.Error as fehler:
+        pytest.skip(f"Bestand nicht lesbar ({fehler})")
+    if n < mindestens:
+        pytest.skip(f"Bestand zu klein ({n} < {mindestens} Knoten) -- "
+                    "erst `python3 schnellstart.py --bestand` einspielen")
+
 
 import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
 import lesson_recorder  # type: ignore  # noqa: E402

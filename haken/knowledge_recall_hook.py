@@ -1487,6 +1487,19 @@ def main() -> None:
                                       "additionalContext": block}}
     if teile:
         ausgabe["systemMessage"] = "eingespielt: " + " | ".join(teile)
+        # NACHTRAG 2026-08-10: systemMessage ALLEIN rendert transient -- die
+        # Zeile blitzt rund eine Sekunde auf und verschwindet. Erst zusammen
+        # mit continue und suppressOutput bleibt sie stehen (Knoten 9f283897,
+        # Ursache 4 von vieren; die Frage "warum sehe ich die Melderzeile
+        # nicht mehr" kostete an diesem Tag rund vier Stunden).
+        #
+        # suppressOutput betrifft NUR stdout im Verlauf, nicht den
+        # additionalContext -- der geht ueber hookSpecificOutput und bleibt
+        # unberuehrt. continue=true ist ohnehin das Verhalten ohne Angabe;
+        # es steht hier, weil die Anzeige laut Befund an der Kombination
+        # haengt, nicht an einem der beiden Werte allein.
+        ausgabe["continue"] = True
+        ausgabe["suppressOutput"] = True
     print(json.dumps(ausgabe, ensure_ascii=False))
 
 
