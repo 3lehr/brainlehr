@@ -1,0 +1,19 @@
+A Abruf: kws=['arbeitest', 'flutter', 'repo', 'fahrtenbuch', 'legacy', 'schreibe', 'dart', 'code'] nodes=['/tools/wiring-check-py-erreichbarkeitspruefung', '/apps/fahrtenbuch/apps-fahrtenbuch-legacy-bleibt-so', '/methodik/direktiven-hub-claude-md/fokus', '/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht', '/frontend/flutter', '/testing/walkthrough-methode-(e2e-journey-als-tes', '/fahrtenbuch/voice/flutter-tts-ios-getvoices-map-schema', '/apps/fahrtenbuch/geraete-teststrategie-debug-variante', '/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand', '/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-'] lessons=['L-243dde', 'L-afa2f8', 'L-958926', 'L-68ff10', 'L-eed5e8', 'L-3079a1', 'L-a439b9'] ziel=L-c0e910 trefferguete=False
+A gemma4:12b   OHNE  mean=0.00 range=0 runs=[0, 0, 0]
+A gemma4:12b   MIT   mean=0.00 range=0 runs=[0, 0, 0]
+A gemma4:e4b   OHNE  mean=0.00 range=0 runs=[0, 0, 0]
+A gemma4:e4b   MIT   mean=0.00 range=0 runs=[0, 0, 0]
+B Abruf: kws=['arbeitest', 'flutter', 'repo', 'fahrtenbuch', 'legacy', 'nenne', 'exakten', 'shell'] nodes=['/apps/fahrtenbuch/apps-fahrtenbuch-legacy-bleibt-so', '/methodik/direktiven-hub-claude-md/fokus', '/tools/wiring-check-py-erreichbarkeitspruefung', '/apps/fahrtenbuch/google-play-internal-testing-upload', '/fahrtenbuch/voice/flutter-tts-ios-getvoices-map-schema', '/apps/fahrtenbuch/geraete-teststrategie-debug-variante', '/apps/fahrtenbuch', '/fahrtenbuch', '/fahrtenbuch/voice', '/begod/neuen-app-worktree-bootstrappen'] lessons=['L-9ed380', 'L-3079a1', 'L-a7d249', 'L-692936', 'L-c0e910', 'L-958926', 'L-68ff10'] ziel=L-68ff10 trefferguete=True
+B gemma4:12b   OHNE  mean=0.00 range=0 runs=[0, 0, 0]
+B gemma4:12b   MIT   mean=1.00 range=0 runs=[1, 1, 1]
+B gemma4:e4b   OHNE  mean=0.00 range=0 runs=[0, 0, 0]
+B gemma4:e4b   MIT   mean=1.00 range=0 runs=[1, 1, 1]
+C Abruf: kws=['nenne', 'kubectl', 'befehl', 'alle', 'pods', 'namespace', 'default', 'aufzulisten'] nodes=['/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network', '/begod/neuen-app-worktree-bootstrappen', '/methodik/fertigkeiten/pause', '/brainlehr/zu-tun-bereichsauslieferung-gehoert-in', '/apps/fahrtenbuch/feldtest-diktat-des-nutzers-enthaelt', '/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden', '/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge', '/methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an', '/openlehr/steuer/toter-ddl-rest-idx-intake-source-sha256', '/apps/fahrtenbuch/geraete-teststrategie-debug-variante'] lessons=['L-633c10', 'L-bdfeef', 'L-7a719d', 'L-b584e1', 'L-9f8816', 'L-d7e998', 'L-2fea20'] ziel=None trefferguete=False
+C gemma4:12b   OHNE  mean=1.00 range=0 runs=[1, 1, 1]
+C gemma4:12b   MIT   mean=1.00 range=0 runs=[1, 1, 1]
+C gemma4:e4b   OHNE  mean=1.00 range=0 runs=[1, 1, 1]
+C gemma4:e4b   MIT   mean=1.00 range=0 runs=[1, 1, 1]
+
+Geschrieben: /Volumes/daten/Begod2026/brainlehr/runs/wissensnutzen_blind.json
+Laufzeit gesamt: 1986.5s
+Fehlgriffe (Ziel-Lehre vorhanden, aber verpasst): 1/2

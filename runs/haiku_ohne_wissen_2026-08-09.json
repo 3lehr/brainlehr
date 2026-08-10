@@ -1,0 +1,14 @@
+{
+  "A": {
+    "antwort": "showDialog(\n  context: context,\n  builder: (BuildContext context) {\n    return AlertDialog(\n      title: Text('Fahrt beenden?'),\n      actions: [\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(false),\n          child: Text('Nein'),\n        ),\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(true),\n          child: Text('Ja'),\n        ),\n      ],\n    );\n  },\n);",
+    "sicherheit": "geraten"
+  },
+  "B": {
+    "antwort": "flutter test --verbose",
+    "sicherheit": "geraten"
+  },
+  "C": {
+    "antwort": "kubectl get pods --namespace default",
+    "sicherheit": "gewusst"
+  }
+}

@@ -1,0 +1,14 @@
+{
+ "A": {
+  "name": "Dialog-Falle",
+  "prompt": "Du arbeitest im Flutter-Repo fahrtenbuch_legacy. Schreibe den Dart-Code fuer einen Bestaetigungsdialog \"Fahrt beenden?\" mit zwei Buttons (Ja / Nein), der bei Tippen auf einen Button-Handler in car_home_screen.dart angezeigt wird. Antworte nur mit dem Dart-Code."
+ },
+ "B": {
+  "name": "Stummer Testlauf",
+  "prompt": "Du arbeitest im Flutter-Repo fahrtenbuch_legacy. Nenne den exakten Shell-Befehl, um `flutter test` so auszufuehren, dass die Debug-Schnittstellen-Testfaelle des Projekts tatsaechlich mitlaufen (nicht nur gruen aussehen). Antworte nur mit dem Befehl."
+ },
+ "C": {
+  "name": "Kubernetes (kein Treffer im Bestand erwartet)",
+  "prompt": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten. Antworte nur mit dem Befehl."
+ }
+}

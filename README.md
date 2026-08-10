@@ -1,7 +1,27 @@
 # brainlehr 0.1.0
 
-Ein lokaler Wissensspeicher für Sprachmodelle, der nicht nur festhält, **was
-gesagt wurde**, sondern **was gilt** — und der misst, ob er dabei hilft.
+**Ein Wissensspeicher, der sich meldet.**
+
+Übliche Speicher warten auf eine Frage und liefern ähnlichen Text. brainlehr tut
+vier Dinge, die ein Archiv nicht tut:
+
+**Es meldet sich ungefragt.** Bei jeder Antwort prüft es, ob darin ein Gesetz,
+eine Norm oder eine interne Kennung zitiert wird — und ob dafür ein Beleg im
+Bestand liegt. Fehlt er, sagt es das. Modellwissen ist eingefroren; eine präzise
+Fundstelle aus dem Gedächtnis ist verdächtiger als eine vage.
+
+**Es schlägt vor, was fehlt.** Es erkennt wiederkehrende Handgriffe und schlägt
+dafür Werkzeuge und Prüfsteine vor — samt fertigem Auftrag. Wiederholt sich eine
+Fehlerklasse dreimal, wird sie von selbst zur Regel.
+
+**Es widerspricht.** Ein Eintrag ohne nachprüfbare Herkunft entsteht gar nicht
+erst — das erzwingt ein Datenbank-Trigger, nicht eine Konvention. Wer eine
+Hausregel setzen will, muss ein Mensch sein, und der Speicher prüft das.
+
+**Es misst sich selbst.** Trefferquote, Nutzen, Rangfolge — gegen einen fremden
+Prüfkorpus, blind bewertet. Die Zahlen fallen regelmäßig schlecht aus; das ist
+der Zweck. Ein Speicher, der seine eigene Trefferquote nicht kennt, behauptet
+seinen Nutzen.
 
 Läuft offline als MCP-Server auf SQLite. Kein Dienst, kein Konto, keine Cloud.
 
@@ -232,8 +252,17 @@ hebb_kanten.py            assoziative Kanten aus gemeinsamem Abruf
 kanonymitaet.py           misst k-Anonymität (misst, anonymisiert nicht)
 haken/                    Hooks für Abruf und Erfassung
 schreibpruefstand/        Messläufe gegen lokale Modelle
+vorschlag.py              schlägt Werkzeuge und Prüfsteine vor, mit fertigem Auftrag
 docs/adr/                 Entscheidungen mit Begründung und Abbruchbedingung
+migrationen/              historische Läufe — für eine Neuanlage nicht nötig
+quellen/                  Lizenzampel der Fremdbestände
 ```
+
+Im Wurzelverzeichnis liegen bewusst viele einzelne Werkzeuge statt eines
+Pakets: jedes ist für sich aufrufbar, hat einen `--selftest` und einen Modulkopf,
+der seine **Fehlklasse** benennt — wogegen es schützt und was ein Fehlalarm
+kostet. Eine Paketstruktur (`src/brainlehr/`) ist der nächste Umbau; sie berührt
+jeden Hook-Pfad und wartet deshalb auf eine Runde mit Testabsicherung.
 
 ---
 

@@ -1,0 +1,20 @@
+{
+  "A": {
+    "aufgabe": "Du arbeitest im Flutter-Repo fahrtenbuch_legacy. Schreibe den Dart-Code fuer einen Bestaetigungsdialog \"Fahrt beenden?\" mit zwei Buttons (Ja / Nein), der bei Tippen auf einen Button-Handler in car_home_screen.dart angezeigt wird. Antworte nur mit dem Dart-Code.",
+    "antwort": "Navigator.push(\n  context,\n  MaterialPageRoute(\n    fullscreenDialog: true,\n    builder: (_) => ActionScreen(\n      title: \"Fahrt beenden?\",\n      expandPrimaryAction: true,\n      body: const Center(\n        child: Text(\"Die aktuelle Fahrt wird beendet.\")\n      ),\n      primaryAction: FilledButton(\n        onPressed: () {\n          // Button Handler fuer Ja\n          onConfirmHandler();\n          Navigator.pop(context);\n        },\n        child: const Text(\"Ja\"),\n      ),\n      secondaryActions: [\n        TextButton(\n          onPressed: () => Navigator.pop(context),\n          child: const Text(\"Nein\"),\n        ),\n      ],\n    ),\n  ),\n);",
+    "wissen_brauchbar": "ja",
+    "gruende": "L-c0e910 lieferte die antipattern-Diagnose (AlertDialog+showDialog erzeugt Vollbild-Screen mit Weissraum) und die explizite Loesung: ActionScreen(expandPrimaryAction:true) via Navigator.push(fullscreenDialog:true)"
+  },
+  "B": {
+    "aufgabe": "Du arbeitest im Flutter-Repo fahrtenbuch_legacy. Nenne den exakten Shell-Befehl, um `flutter test` so auszufuehren, dass die Debug-Schnittstellen-Testfaelle des Projekts tatsaechlich mitlaufen (nicht nur gruen aussehen). Antworte nur mit dem Befehl.",
+    "antwort": "flutter test --dart-define=DEBUG_STATE_API=true",
+    "wissen_brauchbar": "ja",
+    "gruende": "L-68ff10 dokumentiert explizit, dass flutter test ohne --dart-define=DEBUG_STATE_API=true die Debug-State-API-Tests still ueberpsringt (5 von 6 Faellen), obwohl der Lauf gruen aussieht"
+  },
+  "C": {
+    "aufgabe": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten. Antworte nur mit dem Befehl.",
+    "antwort": "kubectl get pods -n default",
+    "wissen_brauchbar": "nein",
+    "gruende": "Die Knowledge-DB enthaelt keine einschlaegigen Eintraege zu Kubernetes/kubectl. Die Antwort stammt aus eigenem Wissen (Standard Kubernetes CLI)"
+  }
+}

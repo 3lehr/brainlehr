@@ -1,0 +1,11 @@
+brainlehr ist eine in Datenbank-Trigger gegossene Disziplin, nicht Speicher. Jeder Eintrag wird gezwungen, Herkunft zu offenbaren; fehlt sie, wird abgewiesen. Wissen ohne Herkunft entwertet sich selbst — das unterscheidet es von Notizen.
+
+Vier automatische Haken wirken ohne Aufruf: Lehren werden eingespielt, Aufträge auftauchen, Veralterungen erkannt, neue Erkenntnisse gehen in den Speicher. Eine Auditkette protokolliert jeden Zugriff mit Urheber, Zeit, Aktion — Basis für Missbrauchserkennung.
+
+Einsatz: wo Wissen zeitgebunden oder rechtlich versetzt ist. Steuerberatung: ein Satz ohne Gültigkeitszeitraum ist falsch, nicht unvollständig. Auch Rechtsinformation, Verwaltung, technische Projektlehren. Ein Fall zeigt, wie eine Lehre über zwei Programmiersprachen und zwei Projekte wandert.
+
+Die Normschicht unterscheidet nicht nur Bindungsgrad, sondern auch Typ: Sein, Sollen, Dürfen. Widerspruch liegt nur vor, wenn beide Sätze derselben Art gehören. Studien und Gebührenordnungen konkurrieren nicht miteinander.
+
+Okkultation zeigt, ob ein Treffer benutzt wurde: Entfernung offenbart, wo Abruf versagt — ob Suche nicht findet, eingespielt aber ungenutzt, oder untergegangen.
+
+Volltext dokumentiert Papernetz zu Nanopublishing, Inference Control, Quellenschutz, ungelöste Widersprüche zwischen Herkunftsnachweis und journalistischem Schutz, Fallstudien und Messergebnisse.
