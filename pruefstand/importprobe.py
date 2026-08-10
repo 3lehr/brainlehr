@@ -27,7 +27,7 @@ _w = _Path(__file__).resolve().parent
 while not (_w / "schema.sql").exists() and _w != _w.parent:
     _w = _w.parent
 _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
-                 ("kern", "haken", "schreibpruefstand", "melder")]
+                 ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
 import argparse
 import json
@@ -37,7 +37,14 @@ from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent.parent
 # Wandert der Ordner mit, bleibt der Ausschluss richtig -- Namen, keine Pfade.
-AUS = {".git", ".venv", "node_modules", "__pycache__", "auszug-offen"}
+PFAD_ZUSATZ = ("kern", "haken", "melder", "schreibpruefstand",
+                "migrationen", "tests")
+# .claude enthaelt Arbeitsbaeume (.claude/worktrees/<name>) -- vollstaendige
+# Kopien des Repos mit eigenem, oft aelterem Stand. Ohne diesen Ausschluss
+# meldet die Probe Dateien als "neu kaputt", die nur in einem fremden
+# Arbeitsbaum liegen und mit der geprueften Aenderung nichts zu tun haben.
+AUS = {".git", ".claude", ".venv", "node_modules", "__pycache__",
+       "auszug-offen"}
 
 
 def _ladbar(datei: Path) -> tuple[bool, str]:
@@ -61,6 +68,8 @@ def _ladbar(datei: Path) -> tuple[bool, str]:
          "s.loader.exec_module(m)",
          str(datei)],
         cwd=WURZEL, capture_output=True, text=True, timeout=60,
+        env={**__import__("os").environ, "PYTHONPATH": ":".join(
+            str(WURZEL / o) for o in PFAD_ZUSATZ)},
     )
     if p.returncode == 0:
         return True, ""

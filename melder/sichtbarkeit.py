@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Jeder Schreibvorgang in den Speicher wird eine Zeile im Gespraech.
+"""Jeder Lese- und Schreibvorgang am Speicher wird eine Zeile im Gespraech.
 
 Anlass (S2, docs/PLAN_DESTILLE_2026-08-09.md): Der Abruf ist sichtbar
 (<knowledge-recall>), jeder SCHREIBVORGANG war es nicht. Daraus die Lehre
@@ -34,7 +34,7 @@ zeigen (Textabgleich misslingt), aber nie einen Vorgang behaupten, der
 nicht stattfand.
 
 Aufruf:
-    python3 sichtbarkeit.py --seit 0          # alle Schreibzeilen ab id>0
+    python3 sichtbarkeit.py --seit 0          # alle Zeilen ab id>0
     python3 sichtbarkeit.py --hook            # fuer PostToolUse: Marke je Sitzung
     python3 sichtbarkeit.py --selftest
 """
@@ -70,6 +70,17 @@ SCHREIB_AKTIONEN = {
     "add", "update", "lesson", "lesson_update", "lesson_delete",
     "annahme", "relation_add", "relation_update", "relation_remove",
     "freigeben", "zurueckziehen",
+}
+
+# Lesen wurde bis 2026-08-10 gar nicht gemeldet -- der Melder kannte nur
+# Schreibvorgaenge. Fuer jemanden, der brainlehr zum ersten Mal benutzt, ist
+# aber gerade das Nachschlagen die sichtbare Leistung: zu sehen, WELCHER
+# Knoten die Antwort getragen hat, statt einem Modell glauben zu muessen.
+LESE_AKTIONEN = {"search", "read", "browse", "lesson_query"}
+
+LESEWORT = {
+    "search": "nachgeschlagen", "lesson_query": "nachgeschlagen",
+    "read": "gelesen", "browse": "durchgesehen",
 }
 
 TYPWORT = {
@@ -139,9 +150,18 @@ def neue_zeilen(conn: sqlite3.Connection, ab_id: int) -> tuple[list[str], int]:
     ).fetchall()
     zeilen: list[str] = []
     letzte_id = ab_id
+    gelesen: dict[str, set[str]] = {}
     for r in rows:
         letzte_id = max(letzte_id, r["id"])
-        if r["status"] == "started" or r["action"] not in SCHREIB_AKTIONEN:
+        if r["status"] == "started":
+            continue
+        if r["action"] in LESE_AKTIONEN:
+            # Nach Wortwahl gebuendelt und ohne Doppelte: eine Suche schreibt
+            # eine Zeile JE TREFFER, und zwanzig Zeilen liest niemand.
+            if r["status"] == "completed" and r["node_path"]:
+                gelesen.setdefault(LESEWORT[r["action"]], set()).add(r["node_path"])
+            continue
+        if r["action"] not in SCHREIB_AKTIONEN:
             continue
         typwort = TYPWORT.get(r["action"], r["action"])
         if r["status"] == "completed":
@@ -153,7 +173,22 @@ def neue_zeilen(conn: sqlite3.Connection, ab_id: int) -> tuple[list[str], int]:
             zeilen.append(f"abgewiesen: {r['query'] or 'kein Grund protokolliert'} ({typwort})")
         elif r["status"] == "failed":
             zeilen.append(f"fehlgeschlagen: {r['query'] or 'kein Grund protokolliert'} ({typwort})")
-    return zeilen, letzte_id
+
+    # Lesen VOR das Schreiben: es ist die haeufigere Haelfte und beantwortet
+    # die Frage, die ein Nutzer beim Lesen einer Antwort wirklich hat --
+    # worauf stuetzt sich das. Geschrieben wird seltener und faellt dadurch
+    # auch am Ende der Liste noch auf.
+    lesezeilen: list[str] = []
+    for wort in ("nachgeschlagen", "gelesen", "durchgesehen"):
+        pfade = sorted(gelesen.get(wort, ()))
+        if not pfade:
+            continue
+        if len(pfade) <= 3:
+            lesezeilen.append(f"{wort}: {', '.join(pfade)}")
+        else:
+            lesezeilen.append(
+                f"{wort}: {', '.join(pfade[:3])} und {len(pfade) - 3} weitere")
+    return lesezeilen + zeilen, letzte_id
 
 
 def _gedeckelt(zeilen: list[str], deckel: int = 5) -> list[str]:
@@ -234,13 +269,23 @@ def _selftest() -> None:
     def zeile(id_, action, node_path, query, status):
         conn.execute("INSERT INTO access_log VALUES (?,?,?,?,?)", (id_, action, node_path, query, status))
 
-    # Negativfall zuerst: reine Lesezugriffe erzeugen KEINE Zeile.
+    # Lesen WIRD gemeldet -- Betreiber-Vorgabe 2026-08-10: "wir wollten im
+    # chat anzeigen lassen was du aus brainlehr liest und was du dort
+    # reinschreibst, das ist das beeindruckende fuer neue user". Bis dahin
+    # stand hier der umgekehrte Satz, Lesen erzeugte bewusst keine Zeile.
+    # Die alte Sorge bleibt berechtigt und ist jetzt anders geloest: nicht
+    # durch Schweigen, sondern durch Buendeln (eine Zeile je Wortwahl,
+    # hoechstens drei Pfade, Rest als Zahl).
     zeile(1, "browse", "/x", None, "completed")
     zeile(2, "search", None, "frage", "completed")
     zeile(3, "relation_list", "/x", None, "completed")
     zeile(4, "annahme", None, "liste:offen", "completed")
     z, letzte = neue_zeilen(conn, 0)
-    assert z == [], f"Lesezugriffe duerfen keine Zeile erzeugen, bekam: {z}"
+    assert z == ["durchgesehen: /x"], f"Lesen muss gemeldet werden, bekam: {z}"
+    # Ohne Knotenpfad keine Zeile: eine Suche ohne Treffer hat nichts zu
+    # zeigen, und "nachgeschlagen: nichts" ist Laerm.
+    assert not any("nachgeschlagen" in x for x in z), \
+        "Suche ohne Treffer darf keine Zeile erzeugen"
     assert letzte == 4, "letzte_id muss trotzdem mitwachsen, sonst haengt die Marke"
 
     # 'started' allein (Absturz zwischen started und completed) -- keine Zeile.
