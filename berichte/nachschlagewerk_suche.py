@@ -23,11 +23,17 @@ Usage:
 """
 from __future__ import annotations
 
+# Liegt eine Ebene unter der Wurzel: die Wurzel muss auf den Suchpfad,
+# sonst findet `import knowledge_mcp_server` nichts. Muster aus haken/.
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+
 import sqlite3
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).parent
+HERE = Path(__file__).parent.parent  # eine Ebene tiefer seit dem Umzug 2026-08-10
 sys.path.insert(0, str(HERE / "haken"))
 import knowledge_recall_hook as rh  # noqa: E402 -- keywords()/fts_match(), kein neuer Apparat
 import ort  # noqa: E402

@@ -24,6 +24,12 @@ Aufruf:
 """
 from __future__ import annotations
 
+# Liegt eine Ebene unter der Wurzel: die Wurzel muss auf den Suchpfad,
+# sonst findet `import knowledge_mcp_server` nichts. Muster aus haken/.
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+
 import argparse
 import datetime
 import glob
@@ -35,7 +41,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from types import SimpleNamespace
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent  # eine Ebene tiefer seit dem Umzug 2026-08-10
 HUB = HERE.parent
 DB_PATH = HERE / "knowledge.db"
 HTML_PATH = HERE / "entscheidungen.html"

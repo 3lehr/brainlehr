@@ -38,6 +38,12 @@ Usage:
 """
 from __future__ import annotations
 
+# Liegt eine Ebene unter der Wurzel: die Wurzel muss auf den Suchpfad,
+# sonst findet `import knowledge_mcp_server` nichts. Muster aus haken/.
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+
 import argparse
 import hashlib
 import json
@@ -50,7 +56,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-HERE = Path(__file__).parent
+HERE = Path(__file__).parent.parent  # eine Ebene tiefer seit dem Umzug 2026-08-10
 sys.path.insert(0, str(HERE))
 from knowledge_mcp_server import fold_de  # noqa: E402
 

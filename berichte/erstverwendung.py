@@ -51,6 +51,12 @@ Betriebsarten:
 """
 from __future__ import annotations
 
+# Liegt eine Ebene unter der Wurzel: die Wurzel muss auf den Suchpfad,
+# sonst findet `import knowledge_mcp_server` nichts. Muster aus haken/.
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+
 import argparse
 import os
 import re
@@ -58,7 +64,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).parent
+HERE = Path(__file__).parent.parent  # eine Ebene tiefer seit dem Umzug 2026-08-10
 DEFAULT_DB = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
 
 # Wortgrenzen-Suche, Kleinschreibung -- ein Treffer als Teilstring reicht,

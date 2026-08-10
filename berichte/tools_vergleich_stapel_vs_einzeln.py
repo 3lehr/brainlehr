@@ -5,6 +5,12 @@ gleiche ref_id/kind/project_id, Kosinus. Stichprobe gemischt kurz/lang ueber
 Textlaenge (len(coalesce(content,''))+len(summary) fuer Knoten, len(description)
 fuer Lehren).
 """
+
+# Liegt eine Ebene unter der Wurzel: die Wurzel muss auf den Suchpfad,
+# sonst findet `import knowledge_mcp_server` nichts. Muster aus haken/.
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
 import sqlite3
 import statistics
 import sys

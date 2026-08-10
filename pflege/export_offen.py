@@ -35,6 +35,12 @@ Aufruf:
 """
 from __future__ import annotations
 
+# Liegt eine Ebene unter der Wurzel: die Wurzel muss auf den Suchpfad,
+# sonst findet `import knowledge_mcp_server` nichts. Muster aus haken/.
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+
 import argparse
 import json
 import re
@@ -53,7 +59,7 @@ from pathlib import Path
 # (L-dc0f44). Die Werte liegen daneben in koederwerte.txt, eine Zeile je Wert,
 # gitignored. Fehlt die Datei, laeuft der Export NICHT ohne Kontrolle durch --
 # er bricht ab, denn eine Positivkontrolle ohne bekannte Werte ist keine.
-KOEDERDATEI = Path(__file__).resolve().parent / "koederwerte.txt"
+KOEDERDATEI = Path(__file__).resolve().parent.parent / "koederwerte.txt"  # Wurzel, eine Ebene ueber diesem Ordner (Umzug 2026-08-10)
 
 
 def koederwerte() -> tuple[str, ...]:
