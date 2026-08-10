@@ -30,6 +30,13 @@ REPO_ROOT = HUB if HUB else Path(__file__).resolve().parents[2]
 SCRIPTS = REPO_ROOT / "begod/scripts"
 sys.path.insert(0, str(SCRIPTS))
 
+# Der geprueffte Code liegt im hub, nicht in diesem Repo. Fehlt der hub
+# (frischer Klon, fremder Rechner), gibt es hier nichts zu pruefen --
+# uebersprungen statt beim Einsammeln mit ImportError zu scheitern.
+if HUB is None or not (SCRIPTS / "caveman_compress.py").exists():
+    pytest.skip("caveman_compress liegt im hub, der hier nicht vorhanden ist",
+                allow_module_level=True)
+
 import caveman_compress as cc  # type: ignore  # noqa: E402
 
 

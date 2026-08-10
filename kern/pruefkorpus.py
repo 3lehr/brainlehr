@@ -277,11 +277,16 @@ def pick_candidates(nodes: list[dict], lessons: list[dict], rng: random.Random) 
     # gattung='nachschlagewerk' (z.B. NASA-Import) ist laut Wissensknoten
     # 096669de ausdruecklich Heuhaufen -- darf als Ablenkung im Bestand liegen
     # (bleibt in load_bestand()/IDF unberuehrt), aber nie ZIEL eines Prueffalls.
+    # .get() statt [], weil die Spalte erst per migrate_gattung dazukam: eine
+    # Zeile aus einer Datenbank ohne sie liess pick_candidates mit KeyError
+    # abstuerzen -- mitten im Messlauf, nicht beim Laden. In der heutigen
+    # Datenbank ist gattung NOT NULL DEFAULT 'arbeitsbestand', ein fehlender
+    # Wert heisst also "kein Nachschlagewerk" und darf Ziel sein.
     lesson_pool = [l for l in lessons if l["type"] in ("pattern", "antipattern")]
     fact_pool = [n for n in nodes if n["norm_rang"] is None and n["summary"]
-                 and n["gattung"] != "nachschlagewerk"]
+                 and n.get("gattung") != "nachschlagewerk"]
     norm_pool = [n for n in nodes if n["norm_rang"] is not None and n["gilt_ab"]
-                 and n["gattung"] != "nachschlagewerk"]
+                 and n.get("gattung") != "nachschlagewerk"]
     picks = {}
     for key, pool in (("lesson", lesson_pool), ("fact", fact_pool), ("norm", norm_pool)):
         k = min(CATEGORY_TARGETS[key], len(pool))

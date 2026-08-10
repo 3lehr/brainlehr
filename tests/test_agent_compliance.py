@@ -36,6 +36,31 @@ PROJECTS = {
     "bebetter": Path("/Volumes/daten/BEBETTER"),
 }
 
+# Diese Datei prueft ausschliesslich NACHBARPROJEKTE des Verbunds, nicht
+# brainlehr selbst. Liegt keines davon vor -- frischer Klon, fremder
+# Rechner --, gibt es hier nichts zu pruefen: die ganze Datei wird
+# uebersprungen, statt einen Fremden mit Fehlern ueber Dateien zu
+# begruessen, die es bei ihm gar nicht gibt. Pro Test reichte nicht:
+# mehrere Testklassen greifen auf dieselben Pfade zu, gemessen blieben
+# dabei 9 rot.
+if not any(pfad.is_dir() for pfad in PROJECTS.values()):
+    pytest.skip("kein Nachbarprojekt des Verbunds vorhanden",
+                allow_module_level=True)
+
+
+def vorhanden(pfad) -> None:
+    """Ueberspringt einen Test, dessen Pruefgegenstand hier nicht liegt.
+
+    Diese Datei prueft NACHBARPROJEKTE des Verbunds, nicht brainlehr. Ein
+    frischer Klon hat sie nicht -- ohne diese Weiche begruesst er einen
+    Fremden mit Fehlern ueber Dateien, die es bei ihm gar nicht gibt.
+    Bewusst NICHT ueber eine abgeleitete Pfadliste geloest: der erste
+    Versuch dabei setzte AKA2026 unter Begod2026 statt daneben und machte
+    aus 2 roten Tests 8. Die Pfade bleiben, die Weiche kommt dazu."""
+    if not pfad or not Path(pfad).is_dir():
+        pytest.skip(f"{pfad} liegt nicht vor -- Nachbarprojekt des Verbunds")
+
+
 MAX_COPILOT_INSTRUCTIONS_LINES = 500
 MAX_INSTRUCTIONS_LINES = 200
 MAX_AGENT_DESCRIPTION_LINES = 100
@@ -131,6 +156,7 @@ class TestInstructionsCompliance:
 
     def test_apply_to_not_too_broad(self, filepath, project):
         """applyTo should not be '**' unless it's a meta/governance file."""
+        vorhanden(Path(filepath).parent)
         fm, _ = parse_frontmatter(filepath)
         apply_to = fm.get("applyTo", "")
         if apply_to == "**":
@@ -216,6 +242,7 @@ class TestMCPConfig:
     ])
     def test_knowledge_mcp_configured(self, project, path):
         """Each project must have the shared knowledge-mcp server."""
+        vorhanden(path)
         mcp_file = path / ".vscode" / "mcp.json"
         data = json.loads(mcp_file.read_text())
         assert "knowledge-mcp" in data["servers"], (
