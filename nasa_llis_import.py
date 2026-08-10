@@ -257,7 +257,7 @@ def selftest():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--csv", default="/tmp/llis_probe.csv")
-    ap.add_argument("--db", default=str(Path(__file__).parent / "knowledge.db"))
+    ap.add_argument("--db", default=str(Path(__file__).parent.parent / "knowledge.db"))
     ap.add_argument("--write", action="store_true", help="echt schreiben (sonst Trockenlauf)")
     ap.add_argument("--delete", action="store_true", help="alle nasa-llis-Knoten restlos entfernen")
     ap.add_argument("--selftest", action="store_true")

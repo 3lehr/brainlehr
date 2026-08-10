@@ -176,7 +176,7 @@ def _selftest() -> None:
         kw = koederwerte()
         db = Path(tmp) / "k.db"
         conn = sqlite3.connect(str(db))
-        conn.executescript((Path(__file__).resolve().parent / "schema.sql")
+        conn.executescript((Path(__file__).resolve().parent.parent / "schema.sql")
                            .read_text(encoding="utf-8"))
         def add(nid, path, summary, freigabe):
             conn.execute(
@@ -222,7 +222,7 @@ def _selftest() -> None:
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--db", type=Path,
-                   default=Path(__file__).resolve().parent / "knowledge.db")
+                   default=Path(__file__).resolve().parent.parent / "knowledge.db")
     p.add_argument("--ziel", type=Path)
     p.add_argument("--was-waere-offen", action="store_true")
     p.add_argument("--selftest", action="store_true")

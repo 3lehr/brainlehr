@@ -52,10 +52,10 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from knowledge_mcp_server import fold_de, _fts_phrase  # noqa: E402 -- reine Textfunktionen
 
-DB = os.environ.get("BEGOD_KNOWLEDGE_DB") or str(Path(__file__).resolve().parent / "knowledge.db")
+DB = os.environ.get("BEGOD_KNOWLEDGE_DB") or str(Path(__file__).resolve().parent.parent / "knowledge.db")
 
 _TOKEN_RE = re.compile(r"[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß0-9_.]*")
 

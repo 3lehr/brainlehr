@@ -51,7 +51,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "haken"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
 import ort  # noqa: E402
 
 CET = timezone(timedelta(hours=2))

@@ -38,7 +38,7 @@ from pathlib import Path
 
 # Gleiche Bauform wie knowledge_mcp_server.py: BEGOD_KNOWLEDGE_DB
 # ueberschreibt den Pfad, sonst knowledge.db neben dieser Datei.
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent.parent / "knowledge.db"))
 
 _RE_NAME = re.compile(r"Abwesenheit: (.+?) \(")
 _RE_SUMMARY = re.compile(

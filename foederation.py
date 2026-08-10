@@ -63,7 +63,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import ausweis  # noqa: E402
 
 # knowledge_config.updated_at ist im Betriebsschema NOT NULL. Der Selbsttest
@@ -286,7 +286,7 @@ def _config_ddl() -> str:
 
     Ein handgebautes Testschema ist gruen und der Betrieb bricht ab, sobald
     eine Spalte fehlt (hier: updated_at NOT NULL). Lieber die Quelle lesen."""
-    text = (Path(__file__).resolve().parent / "schema.sql").read_text(encoding="utf-8")
+    text = (Path(__file__).resolve().parent.parent / "schema.sql").read_text(encoding="utf-8")
     start = text.index("CREATE TABLE IF NOT EXISTS knowledge_config")
     return text[start:text.index(");", start) + 2]
 

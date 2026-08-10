@@ -10,11 +10,11 @@ import statistics
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 import embeddings
 
 OLD = "/tmp/vektoren_vorher.db"
-NEW = str(Path(__file__).parent / "knowledge.db")
+NEW = str(Path(__file__).parent.parent / "knowledge.db")
 
 old = sqlite3.connect(OLD)
 new = sqlite3.connect(NEW)

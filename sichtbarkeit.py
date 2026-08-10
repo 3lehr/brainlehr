@@ -46,7 +46,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "haken"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
 import ort  # noqa: E402
 
 # Aktionen, die einen SCHREIBVORGANG bedeuten -- nicht browse/read/search/

@@ -551,7 +551,7 @@ def _selftest() -> int:
             fehler = _nachtschicht_setzen("vielleicht", "keiner", "12")
             assert "error" in fehler, "Negativfall: ungueltiger aktiv-Wert muss abgelehnt werden"
         finally:
-            DB_PATH = Path(__file__).resolve().parent / "knowledge.db"
+            DB_PATH = Path(__file__).resolve().parent.parent / "knowledge.db"
 
     # 2b) Eskalation: befoerdern/zurueckstufen gegen Kopien von DB und
     # CLAUDE.md -- eskalation_vorlage haelt DB_PATH/CLAUDE_MD_PATH als

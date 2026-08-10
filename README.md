@@ -268,11 +268,15 @@ migrationen/              historische Läufe — für eine Neuanlage nicht nöti
 quellen/                  Lizenzampel der Fremdbestände
 ```
 
-Im Wurzelverzeichnis liegen bewusst viele einzelne Werkzeuge statt eines
-Pakets: jedes ist für sich aufrufbar, hat einen `--selftest` und einen Modulkopf,
-der seine **Fehlklasse** benennt — wogegen es schützt und was ein Fehlalarm
-kostet. Eine Paketstruktur (`src/brainlehr/`) ist der nächste Umbau; sie berührt
-jeden Hook-Pfad und wartet deshalb auf eine Runde mit Testabsicherung.
+> **Das Wurzelverzeichnis ist zu voll — 88 Python-Dateien.** Das ist gewachsen,
+> nicht entworfen, und für ein Repo, das jemand von außen lesen soll, ist es zu
+> viel. Der Umbau auf `src/brainlehr/` plus `werkzeuge/` steht als nächster
+> Schritt an; er berührt jede Pfadauflösung und braucht deshalb eine eigene
+> Runde mit Testabsicherung, statt nebenbei zu passieren.
+
+Was die vielen Dateien wenigstens einlösen: jedes Werkzeug ist für sich
+aufrufbar, hat einen `--selftest` und einen Modulkopf, der seine **Fehlklasse**
+benennt — wogegen es schützt und was ein Fehlalarm kostet.
 
 ---
 

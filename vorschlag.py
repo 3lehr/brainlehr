@@ -40,7 +40,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from haken.ort import DB as _DB, WURZEL  # noqa: E402
 
 DB = str(_DB)
