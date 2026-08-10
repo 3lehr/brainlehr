@@ -47,9 +47,3 @@ knowledge.db.vor-*
 
 # Koederliste fuer die Exportkontrolle: im Repo waere sie wirkungslos.
 koederwerte.txt
-
-# BSI-Entwicklungsprofil: abgeleitet aus IT-Grundschutz-Inhalten.
-# Bearbeitung ist nur "zur Umsetzung interner Sicherheitsmassnahmen" gestattet,
-# publizistische oder kommerzielle Verwendung verlangt die Zustimmung des BSI.
-# Ein weitergebbares Repo ist beides nicht. Bleibt lokal.
-bsi-dev-profile.json

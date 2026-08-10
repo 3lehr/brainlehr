@@ -153,7 +153,7 @@ eigene Schreibweise statt der Suchgüte.
 | [NIST](https://www.nist.gov/) | NIST | ⚪ ungeprüft | Teilbestand noch zu benennen |
 | [FDA MAUDE](https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm) | FDA | ⚪ ungeprüft | **Art.-9-Risiko**: Gesundheitsdaten möglich |
 | [IAEA IRS](https://www.iaea.org/) | IAEA | ⚪ ungeprüft | Zugang beschränkt — voraussichtlich rot |
-| [BSI IT-Grundschutz](https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/IT-Grundschutz/it-grundschutz_node.html) | BSI | 🟡 **gelb** | intern ja, **Weitergabe nein** — `bsi-dev-profile.json` liegt deshalb **nicht** bei |
+| [BSI Stand-der-Technik-Bibliothek](https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek) | BSI | 🟢 grün | CC BY-SA 4.0 — `bsi-dev-profile.json` liegt bei, **Share-Alike** siehe `NOTICE` |
 
 Die Ampel steht in `quellen/fremdquellen.json` mit Prüfauftrag je Quelle.
 **Vorgabe ist deny:** Was nicht ausdrücklich grün ist, wird weder importiert noch
@@ -165,18 +165,18 @@ Warum überall „ungeprüft": Lizenzangaben aus einem Modellgedächtnis sind we
 Zeile erst, wenn jemand die Lizenzseite aufgerufen und Datum plus Fundstelle
 eingetragen hat.
 
-**Zum BSI-Profil im Besonderen — geprüft am 2026-08-10, mit Folge:** Die
-[Nutzungsbedingungen](https://www.bsi.bund.de/DE/Service/Nutzungsbedingungen/Nutzungsbedingungen_node.html)
-sagen wörtlich, kommerzielle Verwendung „insbesondere denen des IT‑Grundschutzes"
-brauche „eine lizenzrechtliche Vereinbarung mit dem BSI", Downloads dürften „nur
-zu nicht kommerziellen Zwecken verwendet werden", und eine „insbesondere
-kommerzielle oder **publizistische** Verwendung" bedürfe der Zustimmung. Verändern
-ist erlaubt — aber „zur Umsetzung **interner** Sicherheitsmaßnahmen".
+**Zum BSI-Profil im Besonderen — und zu einem Fehler, den ich dabei gemacht
+habe:** Ich hatte es zunächst auf gelb gesetzt und die Datei aus dem Repo
+entfernt, gestützt auf die Nutzungsbedingungen von `bsi.bund.de` (kommerzielle
+Verwendung des IT-Grundschutzes ist dort lizenzpflichtig). Die tatsächliche
+Quelle stand aber **in der Datei selbst**: `BSI-Bund/Stand-der-Technik-Bibliothek`
+unter **CC BY-SA 4.0** — kommerzielle Nutzung, Bearbeitung und Weitergabe
+erlaubt. Die Lehre daraus steht in `quellen/fremdquellen.json`: erst am Artefakt
+nachsehen, dann die Website suchen.
 
-Ein weitergebbares Repo ist keine interne Maßnahme, Veröffentlichung ist
-publizistische Verwendung. **`bsi-dev-profile.json` liegt deshalb nicht in diesem
-Repo** (lokal weiter nutzbar, dort gitignored). Für Weitergabe oder kommerzielle
-Nutzung: `it-grundschutz@bsi.bund.de`.
+Die **Share-Alike-Bedingung** bleibt und ist in `NOTICE` vermerkt: Das
+abgeleitete Profil steht unter CC BY-SA 4.0, unabhängig davon, unter welcher
+Lizenz der übrige Quelltext steht.
 
 Und der Katalog hat eine gemessene
 Lücke: **keine Controls zu Negativtests, Grenzwertprüfung, Nachweis der

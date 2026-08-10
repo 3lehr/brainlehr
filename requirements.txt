@@ -1,0 +1,15 @@
+# brainlehr — Fremdabhaengigkeiten
+#
+# Ermittelt aus den tatsaechlichen Importen (2026-08-10), nicht geschaetzt.
+# Der Kern laeuft ohne alles davon: SQLite, FTS5 und der MCP-Server kommen
+# mit der Standardbibliothek aus. Die drei unten sind fuer den Bedeutungskanal
+# und die Auditkette.
+#
+# Lizenzen zum Zeitpunkt der Aufnahme -- vor einer Lizenzentscheidung am
+# jeweiligen Projekt gegenlesen, ein Modellgedaechtnis taugt dafuer nicht:
+numpy>=1.26          # BSD-3-Clause
+scikit-learn>=1.4    # BSD-3-Clause  (PCA fuer die Wissensraum-Ansicht)
+cryptography>=42     # Apache-2.0 ODER BSD-3-Clause (Wahlrecht des Nutzers)
+
+# Nur fuer die Tests:
+pytest>=8.0          # MIT
