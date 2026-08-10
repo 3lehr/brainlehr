@@ -310,7 +310,7 @@ def _selftest() -> int:
         "WCAG 2.2 AA Kriterium 2.4.11",
     ]
     haus_beispiele = [
-        "erzeugt aus /Users/lehrmacbook/.claude/CLAUDE.md (Stand 2026-08-01T13:07:10+02:00)",
+        f"erzeugt aus {Path.home()}/.claude/CLAUDE.md (Stand 2026-08-01T13:07:10+02:00)",
         "Entscheidung des Betreibers im Gespraech 2026-08-07T12:30:00+0200",
         "Betreiberentscheidung im Chat 2026-08-09T07:40:00+0200",
     ]

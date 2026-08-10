@@ -24,6 +24,10 @@ Läuft offline als MCP-Server auf SQLite. Kein Dienst, kein Konto, keine Cloud.
 > **Fassung 0.1.0.** Die führende Null ist die Aussage: keine stabile
 > Schnittstelle, keine Zusage zur Aufwärtskompatibilität. Was funktioniert, ist
 > belegt — was zugesagt wird, ist nichts.
+>
+> **Nächster Stand.** Die Arbeit ruht bis heute Abend, 2026-08-10T23:00+02:00.
+> Danach entsteht voraussichtlich 0.1.1 — voraussichtlich, weil auch das keine
+> Zusage ist.
 
 ---
 
@@ -113,7 +117,7 @@ unsichtbar geblieben — das steht so im Knoten.*
 
 - **Wann:** 2026-07-28T07:57:34 (+02:00)
 - **Modell:** nicht festgehalten
-- **Fundstelle:** Lehre `L-bac968`, Prüfstelle `hub/begod/scripts/pdf_to_knowledge.py`
+- **Fundstelle:** Lehre `L-bac968` (der Konverter selbst liegt in einem Nachbarprojekt des Verbunds, nicht in diesem Repo)
 
 Die Fallback-Kette PyMuPDF → pdftotext → OCR schaltete nur weiter, wenn der Text
 **leer** war. PDFs mit eingebettetem Font ohne ToUnicode-Tabelle liefern aber

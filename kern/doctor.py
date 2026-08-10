@@ -52,6 +52,8 @@ from pathlib import Path
 
 WURZEL = _w
 sys.path.insert(0, str(WURZEL))
+sys.path.insert(0, str(WURZEL / "haken"))
+import ort  # noqa: E402  -- EINE Stelle entscheidet, wo der Verbund liegt
 
 BEFUNDE: list[tuple[str, str]] = []
 
@@ -123,7 +125,9 @@ def probe_tote_pfade() -> None:
             continue
         text = datei.read_text(encoding="utf-8", errors="replace")
         for pfad in sorted(set(muster.findall(text))):
-            if "/Volumes/daten/Begod2026" not in pfad:
+            # Nur Pfade des eigenen Verbunds pruefen; fremde Eintraege in
+            # derselben Konfigurationsdatei gehen uns nichts an.
+            if str(ort.VERBUND) not in pfad:
                 continue
             geprueft += 1
             if not Path(pfad).exists():

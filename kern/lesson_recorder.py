@@ -44,10 +44,17 @@ BERLIN = ZoneInfo("Europe/Berlin")
 
 RULE_THRESHOLD = 3  # Minimum occurrences to auto-generate a rule
 
+# Abgeleitet statt ausgeschrieben (2026-08-10): absolute Pfade EINES Rechners
+# machen ein weitergebbares Repo unbrauchbar, ohne dass etwas fehlschlaegt --
+# es wird nur nichts gefunden. ort.VERBUND sucht die Verbundwurzel am
+# Merkmal; die Nachbarprojekte liegen daneben.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
+import ort  # noqa: E402
+
 PROJECTS = {
-    "begod": Path("/Volumes/daten/Begod2026/hub"),
-    "aka": Path("/Volumes/daten/AKA2026"),
-    "bebetter": Path("/Volumes/daten/BEBETTER"),
+    "begod": ort.VERBUND / "hub",
+    "aka": ort.VERBUND.parent / "AKA2026",
+    "bebetter": ort.VERBUND.parent / "BEBETTER",
 }
 
 

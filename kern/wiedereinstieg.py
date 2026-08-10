@@ -46,7 +46,13 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-DB = Path("/Volumes/daten/Begod2026/brainlehr") / "knowledge.db"  # A3: brainlehr ist eigenstaendig, nicht mehr hub/shared-knowledge
+# A3: brainlehr ist eigenstaendig, nicht mehr hub/shared-knowledge. Der Ort
+# kommt aus haken/ort.py -- EINE Stelle entscheidet ihn, sonst achtet ein
+# Teil der Skripte BEGOD_KNOWLEDGE_DB und ein Teil nicht (L-6c6661).
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
+import ort  # noqa: E402
+
+DB = ort.DB
 MAX_LINES = 60
 PER_LIST = 12
 

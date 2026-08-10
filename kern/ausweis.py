@@ -298,8 +298,8 @@ def selbstbedienung_moeglich(pfad: Path | None = None) -> tuple[bool, str]:
     eine identitaet schaffen?" -- ja. `ausweis.py --anlegen chef --rollen
     betreiber --art mensch` steht jedem offen, der die Datei schreiben darf, und
     das schliesst ein Modell ein, das unter demselben Benutzer laeuft. Gemessen:
-    der Ordner auf dem Schreibtisch gehoert 'lehrmacbook', und der Serverprozess
-    laeuft als 'lehrmacbook'.
+    der Ordner auf dem Schreibtisch gehoert dem angemeldeten Benutzer, und der
+    Serverprozess laeuft unter demselben Konto.
 
     DAMIT IST art=mensch EIN MERKMAL, KEINE SPERRE. Es verhindert, dass ein
     Modell per Konfigurationszeile zum Menschen wird -- nicht, dass es sich per

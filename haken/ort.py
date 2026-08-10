@@ -37,6 +37,29 @@ SCHATTEN_LOG = WURZEL / "schatten_log.jsonl"
 
 # Die Verbundwurzel (hub/, fahrtenbuch/, openlehr/ ... nebeneinander). Seit
 # brainlehr NEBEN hub liegt statt darin, ist sie aus dem eigenen Ort nicht
-# mehr ableitbar: ein Arbeitsbaum liegt drei Ebenen tiefer, und "zwei nach
-# oben" landete dann in .claude/. Darum absolut -- und nur hier.
-VERBUND = Path("/Volumes/daten/Begod2026")
+# durch blosses Hochzaehlen ableitbar: ein Arbeitsbaum liegt drei Ebenen
+# tiefer, und "zwei nach oben" landete dann in .claude/.
+#
+# Bis 2026-08-10 stand hier deshalb der absolute Pfad EINES Rechners. Das war
+# fuer den Betrieb richtig und fuer ein weitergebbares Repo falsch: wer es
+# klont, bekommt einen Pfad, den es bei ihm nicht gibt -- und weil nichts
+# fehlschlaegt, sondern nur nichts gefunden wird, merkt er es spaet.
+#
+# Jetzt am MERKMAL gesucht statt am Namen, dieselbe Idee wie die Repo-Wurzel
+# an schema.sql weiter oben: nach oben, bis ein Verzeichnis gefunden ist, das
+# hub/ enthaelt. BEGOD_VERBUND sticht das, wo die Ableitung nicht greift.
+def _verbundwurzel() -> Path:
+    gesetzt = os.environ.get("BEGOD_VERBUND")
+    if gesetzt:
+        return Path(gesetzt)
+    p = WURZEL
+    while p != p.parent:
+        if (p / "hub").is_dir():
+            return p
+        p = p.parent
+    # Kein Verbund gefunden -- eine Einzelinstallation. Der Ordner ueber dem
+    # Repo ist die ehrlichste Annahme; wer mehr braucht, setzt BEGOD_VERBUND.
+    return WURZEL.parent
+
+
+VERBUND = _verbundwurzel()

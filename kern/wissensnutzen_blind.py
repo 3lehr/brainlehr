@@ -37,6 +37,7 @@ angefasst. Liest knowledge.db (query()/lesson_query), schreibt nichts hinein.
 """
 from __future__ import annotations
 
+import os
 import sys as _sys
 from pathlib import Path as _Path
 
@@ -59,6 +60,8 @@ from pathlib import Path
 SHARED_KNOWLEDGE = _w
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "haken"))
+import ort  # noqa: E402  -- EINE Stelle entscheidet, wo der Verbund liegt
 sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "haken"))  # knowledge_recall_hook liegt seit 2026-08-08 hier, nicht mehr im Wurzelverzeichnis
 
@@ -72,7 +75,12 @@ N_RUNS = wn.N_RUNS
 TIMEOUT = wn.TIMEOUT
 OUT_PATH = SHARED_KNOWLEDGE / "runs" / "wissensnutzen_blind.json"
 JSONL_PATH = OUT_PATH.with_suffix(".jsonl")
-RECALL_CWD = "/Volumes/daten/Begod2026/fahrtenbuch/apps/fahrtenbuch_legacy"
+# Das Arbeitsverzeichnis, aus dem der Abruf-Hook befragt wird -- es bestimmt
+# die Projektzuordnung der Treffer. Ueber BEGOD_RECALL_CWD setzbar, damit der
+# Messlauf auch dort faehrt, wo dieses Nachbarprojekt nicht liegt.
+RECALL_CWD = os.environ.get(
+    "BEGOD_RECALL_CWD",
+    str(ort.VERBUND / "fahrtenbuch" / "apps" / "fahrtenbuch_legacy"))
 
 PROMPT_C = ("Nenne den kubectl-Befehl, um alle Pods im Namespace default "
             "aufzulisten. Antworte nur mit dem Befehl.")

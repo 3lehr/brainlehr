@@ -39,6 +39,7 @@ Aufruf:
 """
 from __future__ import annotations
 
+import os
 import sys as _sys
 from pathlib import Path as _Path
 
@@ -64,7 +65,13 @@ BETREIBER = "betreiber"
 
 # Quellen, die den Betreiber als Urheber belegen.
 URHEBER_MERKMALE = (
-    "/users/lehrmacbook/.claude/claude.md",
+    # Die globalen Arbeitsanweisungen des Betreibers. Der Benutzername stand
+    # bis 2026-08-10 hier im Klartext -- in einem weitergebbaren Repo ist das
+    # ein Personenbezug, und bei jedem anderen Nutzer waere das Muster obendrein
+    # falsch. Aus dem Heimatverzeichnis abgeleitet, per BEGOD_BETREIBER_MERKMAL
+    # ueberschreibbar.
+    os.environ.get("BEGOD_BETREIBER_MERKMAL")
+    or str(Path.home() / ".claude" / "CLAUDE.md").lower(),
     "/begod2026/hub/claude.md",
     "betreiber-entscheidung",
     "entscheidung des betreibers",
@@ -128,7 +135,11 @@ def demo() -> None:
     """Gegenprobe in beide Richtungen plus der Negativfall, der hier der
     wichtigste ist: eine aufgezeichnete Fremdnorm darf NICHT dem Betreiber
     zugeschrieben werden."""
-    assert ist_urheber_betreiber("erzeugt aus /Users/lehrmacbook/.claude/CLAUDE.md (Stand ...)")
+    # Aus dem Heimatverzeichnis DIESES Rechners gebaut statt fest getippt --
+    # ein hartkodierter Benutzername macht die Probe bei jedem anderen Nutzer
+    # rot, und zwar ohne dass an der Sache etwas falsch waere.
+    eigen = f"erzeugt aus {Path.home()}/.claude/CLAUDE.md (Stand ...)"
+    assert ist_urheber_betreiber(eigen), eigen
     assert ist_urheber_betreiber("erzeugt aus /Volumes/daten/Begod2026/hub/CLAUDE.md")
     assert ist_urheber_betreiber("Betreiber-Entscheidung im Chat 2026-08-08T18:40")
     assert ist_urheber_betreiber("Entscheidung des Betreibers im Gespraech 2026-08-07")
