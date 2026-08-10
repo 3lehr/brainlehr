@@ -112,6 +112,28 @@ der Klientenkonfiguration nehmen. Danach ist der Zustand wie vorher.
 ENV_GEHEIMNIS = "BRAINLEHR_GEHEIMNIS"
 ENV_AUSWEISDATEI = "BRAINLEHR_AUSWEISE"
 
+# --- Einladung per PIN (Betreiber, 2026-08-10) ----------------------------
+# "hier erscheint eine tan/pin plus anmeldenamen, dann kann ich von hieraus die
+# pin chatgpt geben und so kann sich chatgpt als gesteuert von mir ausweisen"
+#
+# Das ist ein OUT-OF-BAND-Verfahren: die PIN laeuft ueber einen anderen Kanal
+# (den Menschen) als die Anmeldung (die Maschine). Die Einloesung ist damit der
+# Beweis, dass ein Mensch sie weitergegeben hat -- und genau das ist die
+# Zurechnung, die ein Modell sich sonst nur selbst zuschreiben koennte.
+#
+# WER ERZEUGT DIE PIN, ist die ganze Sicherheit: der MENSCH, nicht der
+# Anmeldende. Ein Endpunkt, an dem sich jeder eine PIN ausstellen laesst, waere
+# L-1feb37 (Token-Ausgabe ohne Schutz -- ein korrektes consume() ohne
+# geschuetztes issue() ist wirkungslos) und L-8487fb (Onboarding, das die
+# Kennung frei waehlen laesst).
+#
+# EINMALIG UND BEFRISTET: eine PIN wird beim Einloesen verbraucht (L-d66ab9:
+# ein Bootstrap-Weg, der sich nach einer Nutzung selbst schliesst), und sie
+# laeuft ab. 15 Minuten sind lang genug zum Kopieren und kurz genug, dass eine
+# vergessene PIN nicht wochenlang gilt.
+EINLADUNG_GUELTIG_MINUTEN = 15
+PIN_LAENGE = 8
+
 UNBEGLAUBIGT = "unbeglaubigt:"
 UNBEKANNT = "unbekannt"
 
@@ -222,6 +244,9 @@ class Ausweis:
     # daran ist eigenes Recht. Gehoert ins Protokoll, sonst ist hinterher nicht
     # unterscheidbar, ob jemand aus eigenem Recht oder als Delegierter handelte.
     mandat_von: str | None = None
+    # Wer diesen Ausweis verantwortet -- gesetzt beim Einloesen einer Einladung,
+    # also von einem Menschen. Ein Modell kann es sich nicht selbst geben.
+    bedient_von: str = ""
 
     @property
     def ist_mensch(self) -> bool:
@@ -366,7 +391,22 @@ def anlegen(name: str, rollen: list[str], *, geheimnis: str | None = None,
     pfad = pfad or ausweisdatei()
     bestand = _lies_datei(pfad)
     _pruefe_einbuergerung(bestand, pfad, name, aussteller)
-    eintraege = [e for e in bestand if e.get("name") != name]
+    return _anlegen_ohne_pruefung(name, rollen, geheimnis=geheimnis, art=art,
+                                  gilt_bis=gilt_bis, mandat=mandat, pfad=pfad)
+
+
+def _anlegen_ohne_pruefung(name: str, rollen: list[str], *,
+                           geheimnis: str | None = None, art: str = "maschine",
+                           gilt_bis: str | None = None, mandat: dict | None = None,
+                           bedient_von: str = "", pfad: Path | None = None) -> str:
+    """Der Kern von anlegen(), ohne die Einbuergerungspruefung.
+
+    Getrennt, weil einloesen() bereits geprueft hat -- dort ist die PIN die
+    Berechtigung, und sie wurde von jemandem ausgestellt, der einbuergern
+    durfte. Zweimal pruefen hiesse, den Einloesenden nach einem Ausweis zu
+    fragen, den er gerade erst holen will."""
+    pfad = pfad or ausweisdatei()
+    eintraege = [e for e in _lies_datei(pfad) if e.get("name") != name]
 
     if mandat is not None:
         mandat = _pruefe_mandat(mandat, eintraege)
@@ -385,6 +425,10 @@ def anlegen(name: str, rollen: list[str], *, geheimnis: str | None = None,
         eintrag["gilt_bis"] = gilt_bis
     if mandat:
         eintrag["mandat"] = mandat
+    if bedient_von:
+        # Wer diesen Ausweis verantwortet. Kommt aus der Einladung, also von
+        # einem Menschen -- ein Modell kann es sich nicht selbst eintragen.
+        eintrag["bedient_von"] = bedient_von
     eintraege.append(eintrag)
     _schreibe_datei(pfad, eintraege)
     return geheimnis
@@ -421,6 +465,121 @@ def _pruefe_einbuergerung(bestand: list[dict], pfad: Path, name: str,
             f"'{ausw.name}' darf keine Ausweise ausstellen "
             f"(Rollen: {','.join(ausw.rollen) or '-'}). Noetig ist eine "
             f"Rolle mit 'ausweis:ausstellen' — betreiber oder meldeamt.")
+
+
+
+# --- Einladung: PIN erzeugen und einloesen ---------------------------------
+
+def einladen(name: str, *, bedient_von: str, rollen: list[str] | None = None,
+             art: str = "maschine", pfad: Path | None = None,
+             aussteller: str | None = None, jetzt: datetime | None = None) -> str:
+    """Erzeugt eine EINMALIGE, BEFRISTETE PIN. Gibt sie zurueck -- der Mensch
+    reicht sie ueber seinen eigenen Kanal weiter.
+
+    `bedient_von` ist der Mensch, der diese Einladung ausspricht. Er landet im
+    spaeteren Ausweis und beantwortet damit die Frage, die ein Modell sich
+    sonst selbst beantworten muesste: in wessen Auftrag handelt es.
+
+    Wer einladen darf, muss `ausweis:ausstellen` tragen -- eine Einladung IST
+    eine Einbuergerung, nur zeitversetzt. Ohne diese Pruefung waere sie der
+    Umweg um das Meldeamt."""
+    jetzt = jetzt or _jetzt()
+    pfad = pfad or ausweisdatei()
+    bestand = _lies_datei(pfad)
+    _pruefe_einbuergerung(bestand, pfad, name, aussteller)
+    if not bedient_von or not bedient_von.strip():
+        raise ValueError(
+            "bedient_von fehlt. Eine Einladung ohne Menschen dahinter ist eine "
+            "Selbstbedienung mit Zwischenschritt.")
+    if art not in ARTEN:
+        raise ValueError(f"art muss eine von {ARTEN} sein, nicht {art!r}")
+
+    pin = secrets.token_urlsafe(PIN_LAENGE)[:PIN_LAENGE].upper()
+    salz = secrets.token_bytes(16)
+    einladungen = [e for e in _lies_einladungen(pfad)
+                   if e.get("name") != name
+                   and not _abgelaufen(e.get("gilt_bis"), jetzt)]
+    einladungen.append({
+        "name": name,
+        "bedient_von": bedient_von.strip(),
+        "rollen": list(rollen or ["leser"]),
+        "art": art,
+        "salz": salz.hex(),
+        "hash": _ableiten(pin, salz).hex(),
+        "gilt_bis": (jetzt + timedelta(minutes=EINLADUNG_GUELTIG_MINUTEN)).isoformat(),
+    })
+    _schreibe_einladungen(pfad, einladungen)
+    return pin
+
+
+def einloesen(pin: str, *, pfad: Path | None = None,
+              jetzt: datetime | None = None) -> dict:
+    """Loest eine PIN ein und gibt {name, geheimnis, bedient_von, rollen}.
+
+    Die PIN wird dabei VERBRAUCHT -- auch bei einem zweiten Versuch mit
+    derselben. Und sie ist die einzige Berechtigung: dieser Weg ist bewusst
+    ohne Ausweis aufrufbar, denn wer sich anmeldet, hat noch keinen.
+
+    Rueckgabe enthaelt das Geheimnis GENAU EINMAL. Es wird nicht gespeichert,
+    nur sein Hash."""
+    jetzt = jetzt or _jetzt()
+    pfad = pfad or ausweisdatei()
+    offen = _lies_einladungen(pfad)
+    for eintrag in offen:
+        if _abgelaufen(eintrag.get("gilt_bis"), jetzt):
+            continue
+        try:
+            salz = bytes.fromhex(eintrag["salz"])
+            erwartet = bytes.fromhex(eintrag["hash"])
+        except (KeyError, ValueError):
+            continue
+        if not hmac.compare_digest(_ableiten(pin, salz), erwartet):
+            continue
+        # Treffer: verbrauchen, BEVOR der Ausweis entsteht -- sonst koennte ein
+        # Fehler beim Anlegen die PIN wiederverwendbar zuruecklassen.
+        _schreibe_einladungen(pfad, [e for e in offen if e is not eintrag])
+        geheimnis = _anlegen_ohne_pruefung(
+            eintrag["name"], eintrag.get("rollen") or ["leser"],
+            art=eintrag.get("art", "maschine"),
+            bedient_von=eintrag.get("bedient_von", ""), pfad=pfad)
+        return {"name": eintrag["name"], "geheimnis": geheimnis,
+                "bedient_von": eintrag.get("bedient_von", ""),
+                "rollen": eintrag.get("rollen") or ["leser"]}
+    raise PermissionError(
+        "PIN unbekannt, bereits verbraucht oder abgelaufen. Eine neue "
+        "Einladung erzeugt der Mensch, der sie verantwortet.")
+
+
+def _einladungsdatei(pfad: Path) -> Path:
+    return pfad.parent / "einladungen.json"
+
+
+def _lies_einladungen(pfad: Path) -> list[dict]:
+    datei = _einladungsdatei(pfad)
+    if not datei.exists():
+        return []
+    modus = datei.stat().st_mode
+    if modus & (stat.S_IRWXG | stat.S_IRWXO):
+        print(f"ausweis: {datei} ist fuer Gruppe/Andere zugaenglich -- "
+              f"ignoriert. Beheben: chmod 600 {datei}", file=sys.stderr)
+        return []
+    try:
+        daten = json.loads(datei.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    eintraege = daten.get("einladungen") if isinstance(daten, dict) else None
+    return eintraege if isinstance(eintraege, list) else []
+
+
+def _schreibe_einladungen(pfad: Path, eintraege: list[dict]) -> None:
+    datei = _einladungsdatei(pfad)
+    datei.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    fd = os.open(datei, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        json.dump({"version": 1, "einladungen": eintraege}, f,
+                  ensure_ascii=False, indent=2)
+        f.write("\n")
+    os.chmod(datei, 0o600)
 
 
 def _pruefe_datum(wert: str | None, feld: str) -> None:
@@ -653,6 +812,7 @@ def loese_auf(argument: str | None = None, *,
                     # Luecke, die `art` gerade geschlossen hat.
                     art=_art_von(eintrag),
                     mandat_von=von,
+                    bedient_von=eintrag.get("bedient_von", ""),
                 )
 
     name = argument or os.environ.get("BEGOD_KNOWLEDGE_ACTOR") or UNBEKANNT
@@ -859,7 +1019,88 @@ def _selftest() -> None:
 
     _selftest_mandat()
     _selftest_einbuergerung()
+    _selftest_einladung()
     print("ausweis.py: Selbsttest gruen")
+
+
+def _selftest_einladung() -> None:
+    """PIN-Verfahren: der Mensch erzeugt, die Maschine loest ein."""
+    import tempfile
+
+    T0 = datetime(2026, 8, 10, 12, 0, 0, tzinfo=timezone.utc)
+    with tempfile.TemporaryDirectory() as tmp:
+        pfad = Path(tmp) / "ausweise.json"
+        G = anlegen("gruender", ["betreiber"], art="mensch", pfad=pfad)
+
+        # --- der Mensch laedt ein, die Maschine loest ein -------------------
+        pin = einladen("chatgpt", bedient_von="Markus Lehr", rollen=["leser"],
+                       pfad=pfad, aussteller=G, jetzt=T0)
+        assert len(pin) == PIN_LAENGE
+        erg = einloesen(pin, pfad=pfad, jetzt=T0)
+        assert erg["name"] == "chatgpt" and erg["bedient_von"] == "Markus Lehr"
+
+        a = loese_auf(geheimnis=erg["geheimnis"], pfad=pfad)
+        assert a.beglaubigt and a.name == "chatgpt"
+        assert a.bedient_von == "Markus Lehr", a.bedient_von
+        assert a.art == "maschine" and not a.ist_mensch, \
+            "eine Einladung darf keine Maschine zum Menschen machen"
+        assert bezug_fuer(a, "wissen:lesen") == "alle"
+        assert bezug_fuer(a, "wissen:schreiben") is None
+
+        # --- EINMALIG: dieselbe PIN ein zweites Mal ------------------------
+        try:
+            einloesen(pin, pfad=pfad, jetzt=T0)
+        except PermissionError:
+            pass
+        else:
+            raise AssertionError("PIN war mehrfach einloesbar")
+
+        # --- BEFRISTET: Grenzwerte am Ablauf -------------------------------
+        pin2 = einladen("bote", bedient_von="Markus Lehr", pfad=pfad,
+                        aussteller=G, jetzt=T0)
+        knapp = T0 + timedelta(minutes=EINLADUNG_GUELTIG_MINUTEN) - timedelta(seconds=1)
+        genau = T0 + timedelta(minutes=EINLADUNG_GUELTIG_MINUTEN)
+        assert einloesen(pin2, pfad=pfad, jetzt=knapp)["name"] == "bote"
+        pin3 = einladen("bote2", bedient_von="Markus Lehr", pfad=pfad,
+                        aussteller=G, jetzt=T0)
+        for zeitpunkt in (genau, genau + timedelta(seconds=1)):
+            try:
+                einloesen(pin3, pfad=pfad, jetzt=zeitpunkt)
+            except PermissionError:
+                pass
+            else:
+                raise AssertionError(f"abgelaufene PIN galt bei {zeitpunkt}")
+
+        # --- falsche PIN ---------------------------------------------------
+        for falsch in ("", "XXXXXXXX", pin.lower()):
+            try:
+                einloesen(falsch, pfad=pfad, jetzt=T0)
+            except PermissionError:
+                pass
+            else:
+                raise AssertionError(f"falsche PIN ging durch: {falsch!r}")
+
+        # --- wer einlaedt, muss einbuergern duerfen -------------------------
+        g_les = anlegen("nurleser", ["leser"], pfad=pfad, aussteller=G)
+        try:
+            einladen("schmuggel", bedient_von="X", pfad=pfad, aussteller=g_les)
+        except PermissionError as f:
+            assert "darf keine Ausweise ausstellen" in str(f), f
+        else:
+            raise AssertionError("ein Leser konnte einladen")
+
+        # --- ohne Menschen dahinter keine Einladung ------------------------
+        for leer in ("", "   "):
+            try:
+                einladen("geist", bedient_von=leer, pfad=pfad, aussteller=G)
+            except ValueError as f:
+                assert "bedient_von" in str(f), f
+            else:
+                raise AssertionError("Einladung ohne Menschen ging durch")
+
+        # --- die PIN steht nirgends im Klartext ----------------------------
+        roh = (_einladungsdatei(pfad)).read_text(encoding="utf-8")
+        assert pin not in roh and pin3 not in roh
 
 
 def _selftest_einbuergerung() -> None:
@@ -1107,6 +1348,10 @@ def main() -> int:
                    help="mensch nur fuer echte Personen — siehe ARTEN")
     p.add_argument("--rollen", default="leser",
                    help=f"kommagetrennt, bekannt: {','.join(sorted(ROLLEN))}")
+    p.add_argument("--einladen", metavar="NAME",
+                   help="PIN fuer eine Anmeldung erzeugen (einmalig, befristet)")
+    p.add_argument("--fuer", metavar="MENSCH",
+                   help="wer diese Einladung verantwortet")
     p.add_argument("--liste", action="store_true")
     p.add_argument("--selftest", action="store_true")
     p.add_argument("--datei", type=Path, default=None)
@@ -1141,6 +1386,21 @@ def main() -> int:
         print("Eintragen beim Klienten, nicht im Gespraech -- in ~/.claude.json "
               "unter mcpServers.knowledge.env:")
         print(f'    "{ENV_GEHEIMNIS}": "{geheimnis}"')
+        return 0
+
+    if args.einladen:
+        if not args.fuer:
+            p.error("--einladen braucht --fuer \"<Name des Menschen>\"")
+        pin = einladen(args.einladen, bedient_von=args.fuer,
+                       rollen=args.rollen.split(","), art=args.art, pfad=pfad)
+        print(f"\nEinladung fuer '{args.einladen}', verantwortet von {args.fuer}")
+        print(f"Rollen: {args.rollen}   Art: {args.art}")
+        print(f"gueltig {EINLADUNG_GUELTIG_MINUTEN} Minuten, EINMALIG\n")
+        print(f"    Anmeldename: {args.einladen}")
+        print(f"    PIN:         {pin}\n")
+        print("Diese PIN weitergeben (Chat, E-Mail, Zuruf) — der Empfaenger "
+              "loest sie mit dem Werkzeug knowledge_anmelden ein und erhaelt\n"
+              "dabei sein Geheimnis. Danach ist die PIN verbraucht.")
         return 0
 
     if args.liste:

@@ -58,6 +58,12 @@ ENV_DURCHSETZUNG = "BRAINLEHR_DURCHSETZUNG"
 # Werkzeug -> benoetigtes Recht (modul:aktion). Der BEZUG (:own/:published)
 # steht bewusst NICHT hier: er haengt am einzelnen Datensatz, nicht am Werkzeug,
 # und wird in B4.4 im Handler ausgewertet.
+# Das einzige Werkzeug OHNE Rechtebedarf. Kein Versehen, sondern die einzige
+# Stelle, an der die Deny-Vorgabe nicht gelten darf: wer sich anmeldet, hat noch
+# keinen Ausweis. Die Berechtigung ist die PIN, und die hat ein Mensch
+# ausgestellt, der einbuergern durfte.
+OHNE_RECHT = frozenset({"knowledge_anmelden"})
+
 RECHTE: dict[str, str] = {
     # lesen
     "knowledge_search": "wissen:lesen",
@@ -110,6 +116,9 @@ def erlaubt(werkzeug: str, *, ausw: ausweis.Ausweis | None = None,
     etwas durchging, nicht nur dass es durchging."""
     ausw = ausw if ausw is not None else ausweis.loese_auf()
     durchsetzung = durchsetzung or stufe()
+
+    if werkzeug in OHNE_RECHT:
+        return True, f"anmeldung_ohne_ausweis:{werkzeug}"
 
     recht = RECHTE.get(werkzeug)
     if recht is None:
@@ -247,7 +256,7 @@ def fehlende_zuordnung(werkzeuge) -> list[str]:
     """Welche Werkzeuge haben kein Recht? Fuer den Selbsttest des Servers --
     ohne diese Probe faellt ein neu hinzugefuegtes Werkzeug erst auf, wenn es
     jemand aufruft und abgewiesen wird."""
-    return sorted(w for w in werkzeuge if w not in RECHTE)
+    return sorted(w for w in werkzeuge if w not in RECHTE and w not in OHNE_RECHT)
 
 
 def _selftest() -> None:
@@ -255,8 +264,10 @@ def _selftest() -> None:
 
     with tempfile.TemporaryDirectory() as tmp:
         pfad = Path(tmp) / "a.json"
-        g_leser = ausweis.anlegen("nur-lesen", ["leser"], pfad=pfad)
-        g_schreib = ausweis.anlegen("schreiber1", ["schreiber"], pfad=pfad)
+        # Gruendungsakt, dann buergert der Gruender ein (Einbuergerungsregel).
+        G = ausweis.anlegen("gruender", ["betreiber"], art="mensch", pfad=pfad)
+        g_leser = ausweis.anlegen("nur-lesen", ["leser"], pfad=pfad, aussteller=G)
+        g_schreib = ausweis.anlegen("schreiber1", ["schreiber"], pfad=pfad, aussteller=G)
         L = ausweis.loese_auf(geheimnis=g_leser, pfad=pfad)
         S = ausweis.loese_auf(geheimnis=g_schreib, pfad=pfad)
         U = ausweis.loese_auf("irgendwer", geheimnis=None, pfad=pfad)

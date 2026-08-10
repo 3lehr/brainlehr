@@ -4484,7 +4484,49 @@ IDENTITY_PROPERTIES = {
     "session": {"type": "string", "description": "Stable session ID; else BEGOD_KNOWLEDGE_SESSION or unknown"},
 }
 
+def _tool_anmelden(args: dict) -> dict:
+    """Eine Einladungs-PIN einloesen und den eigenen Ausweis erhalten.
+
+    DAS EINZIGE WERKZEUG OHNE RECHTEBEDARF -- und das mit Absicht: wer sich
+    anmeldet, hat noch keinen Ausweis. Die PIN IST die Berechtigung, und sie
+    wurde von einem Menschen ausgestellt, der einbuergern durfte (siehe
+    ausweis.einladen). Damit ist die Einloesung zugleich der Nachweis, dass ein
+    Mensch sie weitergegeben hat.
+
+    Das Geheimnis wird GENAU EINMAL zurueckgegeben und nirgends protokolliert."""
+    pin = (args.get("pin") or "").strip()
+    if not pin:
+        return {"error": "pin fehlt"}
+    try:
+        erg = ausweis.einloesen(pin)
+    except PermissionError as fehler:
+        return {"error": str(fehler)}
+    return {
+        "status": "angemeldet",
+        "name": erg["name"],
+        "bedient_von": erg["bedient_von"],
+        "rollen": erg["rollen"],
+        "geheimnis": erg["geheimnis"],
+        "hinweis": ("Dieses Geheimnis erscheint genau einmal. Es gehoert in die "
+                    "Konfiguration des Klienten als BRAINLEHR_GEHEIMNIS, nicht "
+                    "in den Gespraechsverlauf."),
+    }
+
+
 TOOLS = {
+    "knowledge_anmelden": {
+        "description": "Redeem a one-time invitation PIN and receive your own credential. "
+                       "The PIN is issued by a human who is allowed to naturalise (ausweis.einladen); "
+                       "redeeming it is therefore the proof that a human handed it over. The secret is "
+                       "returned exactly once and is never logged. This is the only tool callable without "
+                       "a credential -- whoever is signing in does not have one yet.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"pin": {"type": "string", "description": "the one-time PIN you were given"}},
+            "required": ["pin"],
+        },
+        "handler": _tool_anmelden,
+    },
     "knowledge_browse": {
         "description": "Browse children of a knowledge tree node. Returns titles+summaries only (token-efficient). Use '/' for root.",
         "inputSchema": {
