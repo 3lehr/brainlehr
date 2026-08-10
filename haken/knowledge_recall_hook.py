@@ -1466,7 +1466,28 @@ def main() -> None:
         *[(n["path"], {"title": n.get("title"), "summary": n.get("summary")}) for n in nodes],
         *[(l["id"], {"description": l.get("description"), "prevention": l.get("prevention")}) for l in lessons],
     ])
-    print("\n".join(lines))
+    # ZWEI EMPFAENGER, EINE AUSGABE. Bis 2026-08-10 ging der Block als
+    # blosser Text hinaus -- bei UserPromptSubmit landet stdout im KONTEXT
+    # des Modells, nicht auf dem Bildschirm. Der Betreiber sah deshalb nie,
+    # welche Lehre gerade seine Frage beantwortet hat, obwohl der Abruf die
+    # ganze Zeit lief. Mit hookSpecificOutput.additionalContext geht der
+    # Block weiter an das Modell, mit systemMessage zusaetzlich eine kurze
+    # Zeile an den Menschen.
+    block = "\n".join(lines)
+    kennungen = [l["id"] for l in lessons if l.get("id")]
+    pfade = [n["path"].rsplit("/", 1)[-1] for n in nodes if n.get("path")]
+    teile = []
+    if kennungen:
+        teile.append("Lehren " + ", ".join(kennungen[:4])
+                     + (f" und {len(kennungen) - 4} weitere" if len(kennungen) > 4 else ""))
+    if pfade:
+        teile.append("Wissen " + ", ".join(pfade[:3])
+                     + (f" und {len(pfade) - 3} weitere" if len(pfade) > 3 else ""))
+    ausgabe = {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                      "additionalContext": block}}
+    if teile:
+        ausgabe["systemMessage"] = "eingespielt: " + " | ".join(teile)
+    print(json.dumps(ausgabe, ensure_ascii=False))
 
 
 def zielfunktion(params: dict | None = None) -> dict:

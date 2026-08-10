@@ -56,6 +56,7 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
 import argparse
 import json
 import sqlite3
+from datetime import datetime
 import sys
 from pathlib import Path
 
@@ -307,7 +308,37 @@ def _hook_lauf(session: str) -> None:
         # dieser Melder monatelang gearbeitet und 1715 Vorgaenge abgelegt,
         # ohne dass eine einzige Zeile im Gespraech ankam. Er war nie kaputt,
         # er hat mit sich selbst geredet.
-        print(json.dumps({"systemMessage": "\n".join(_gedeckelt(zeilen))}))
+        # BLOSSER TEXT, kein JSON -- und das ist ein Rueckbau mit Grund.
+        # Am 2026-08-10 auf {"systemMessage": ...} umgestellt, weil die
+        # CLI-Doku das Feld als "Display a message to the user (all hooks)"
+        # fuehrt. Danach sah der Betreiber NICHTS mehr, waehrend er die
+        # Textfassung am Vortag nachweislich gelesen hatte. Ein Beleg aus dem
+        # Betrieb schlaegt eine Zeile Dokumentation.
+        text = "\n".join(_gedeckelt(zeilen))
+        # VOLLES SCHEMA, nicht nur systemMessage. Belegt 2026-08-10 aus der
+        # Hook-Dokumentation und einem Fehlerbericht: (1) stdout eines
+        # PostToolUse-Hakens landet im Debug-Protokoll und wird dem Nutzer NIE
+        # gezeigt -- Ausnahmen sind nur UserPromptSubmit, UserPromptExpansion
+        # und SessionStart. Reiner Text konnte hier also nie ankommen.
+        # (2) Ein blosses {"systemMessage": ...} rendert TRANSIENT, blitzt
+        # rund eine Sekunde auf und verschwindet; erst zusammen mit continue
+        # und suppressOutput bleibt es stehen.
+        print(json.dumps({"continue": True, "suppressOutput": False,
+                          "systemMessage": text}, ensure_ascii=False))
+        # ZWEITER WEG, unabhaengig von der Anzeige des Clients. Am 2026-08-10
+        # gemessen: der Haken feuert (die Marke springt), die Ausgabe
+        # entsteht (im Terminal sichtbar) -- beim Betreiber kommt sie an
+        # KEINEM Haltepunkt an, weder als Text noch als systemMessage. Eine
+        # Datei umgeht die Frage: `tail -f sichtbarkeit.log` in einem zweiten
+        # Fenster zeigt dasselbe, und die Zeile stammt weiter aus dem
+        # Protokoll statt aus der Selbstauskunft eines Agenten -- genau das
+        # war der Zweck des Melders (L-706807).
+        try:
+            with (ort.WURZEL / "sichtbarkeit.log").open("a", encoding="utf-8") as f:
+                f.write(f"{datetime.now().strftime('%H:%M:%S')}  {text}\n")
+        except OSError:
+            pass  # der Melder ist eine Zugabe; ein voller Datentraeger darf
+                  # den Abruf nicht mitreissen
 
 
 def _letzte_id_beim_start() -> int:

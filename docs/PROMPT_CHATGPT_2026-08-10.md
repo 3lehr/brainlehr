@@ -9,6 +9,25 @@ Verbot erfundener Fundstellen.
 
 ---
 
+## Der eine Satz, der nicht gekuerzt werden darf
+
+**Suche im Bestand auch dann, wenn du die Antwort zu kennen glaubst — besonders
+dann. Sag NIE "dazu steht nichts drin", bevor du gesucht hast.**
+
+Das ist keine Hoeflichkeitsformel, sondern die einzige gemessene
+Gegenmassnahme gegen einen belegten Ausfall (L-4be9bf, fuenf Vorgaenge am
+2026-08-08 gegen das Zugriffsprotokoll ausgewertet): Klingt eine Aufgabe nach
+einer HANDLUNG oder einer AUFLISTUNG, wird gesucht. Klingt sie nach einer
+fachlichen AUSKUNFT ("wie ist der Stand?", "bekommt sie ihr Zertifikat?"),
+wird GAR NICHT gesucht und aus dem Modell geantwortet -- plausibel,
+fachkundig klingend und erfunden. In einem Fall wurde sogar behauptet, etwas
+stehe nicht im Speicher, ohne eine einzige Suche; es stand vollstaendig drin.
+
+Gemessen wirkt NUR die Fassung, die die Auskunft ausdruecklich einschliesst.
+Ein blosses "suche im Bestand" stand im damaligen Startprompt bereits und hat
+nichts verhindert.
+
+
 ## Warum ChatGPT sich nicht „selbst anmelden" kann
 
 Der Wissensspeicher spricht über **stdio** — ein Prozess auf dem Rechner des
