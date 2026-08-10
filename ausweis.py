@@ -134,8 +134,34 @@ SCRYPT_LEN = 32
 # Im Code statt in der Ausweisdatei: die Datei sagt, WER jemand ist. Was eine
 # Rolle darf, ist eine Entscheidung und gehoert versioniert. Sonst kann, wer
 # eine Ausweiszeile schreiben darf, sich auch Rechte erfinden.
+# EINBUERGERUNG statt Selbsteintritt (Betreiber, 2026-08-10: "wir brauchen ein
+# art einbuergerungsamt, das nicht jeder in brainlehr kommen kann").
+#
+# Die Unterscheidung, die dahintersteckt, ist die zwischen MELDEREGISTER und
+# EINBUERGERUNG: das eine haelt fest, WER DA IST -- das leistet access_log
+# bereits, fuer jeden Aufrufer, auch fuer unbeglaubigte. Das andere verleiht
+# ZUGEHOERIGKEIT MIT RECHTEN, und die kann sich niemand selbst nehmen.
+#
+# Technisch: 'ausweis:ausstellen' ist ein eigenes Recht und steht in
+# NICHT_DELEGIERBAR. Wer einbuergern darf, kann diese Befugnis nicht
+# weiterreichen -- sonst waere die erste Einbuergerung die letzte Kontrolle.
+#
+# DAS HENNE-EI-PROBLEM und seine ehrliche Antwort: Der erste Ausweis kann nicht
+# nach dieser Regel entstehen, denn es gibt noch niemanden, der ihn ausstellen
+# duerfte. Dieser Gruendungsakt liegt AUSSERHALB des Systems -- so wie ein Staat
+# sich nicht selbst per Formular gruendet. Bei uns ist das der Griff ins
+# Dateisystem (siehe selbstbedienung_moeglich): solange der Ordner dem laufenden
+# Prozess gehoert, ist der Gruendungsakt fuer jeden offen, auch fuer ein Modell.
+# Erst `sudo chown root` macht ihn zu dem, was er sein soll -- ein Akt, der das
+# Passwort des Betreibers verlangt.
 ROLLEN: dict[str, tuple[str, ...]] = {
+    # Nur der Betreiber buergert ein. '*' schliesst ausweis:ausstellen ein.
     "betreiber":   ("*",),
+    # Eine eigene Rolle fuer das Einbuergerungsamt: sie darf Ausweise
+    # ausstellen und sonst nichts. Damit laesst sich die Befugnis vergeben,
+    # ohne gleich alles mitzugeben -- und sie bleibt trotzdem
+    # nicht-delegierbar, kann also nicht weitergereicht werden.
+    "meldeamt":    ("ausweis:ausstellen",),
     "schreiber":   ("wissen:lesen", "wissen:schreiben",
                     "lehre:lesen", "lehre:schreiben",
                     "kante:lesen", "kante:schreiben",
@@ -180,7 +206,7 @@ ARTEN = ("maschine", "mensch")
 # abgewiesen statt stillschweigend beschnitten -- sonst entstuende ein Ausweis,
 # der aussieht, als koennte er etwas.
 NICHT_DELEGIERBAR = frozenset({"*", "verwaltung:schreiben", "norm:setzen",
-                               "veto:sperren"})
+                               "veto:sperren", "ausweis:ausstellen"})
 
 
 @dataclass(frozen=True)
@@ -225,6 +251,46 @@ class Ausweis:
 def ausweisdatei() -> Path:
     roh = os.environ.get(ENV_AUSWEISDATEI)
     return Path(roh) if roh else VORGABE_AUSWEISDATEI
+
+
+def selbstbedienung_moeglich(pfad: Path | None = None) -> tuple[bool, str]:
+    """Kann der laufende Prozess sich SELBST einen Ausweis ausstellen?
+
+    Auf die Frage des Betreibers am 2026-08-10: "nun kann sich jeder aber selbst
+    eine identitaet schaffen?" -- ja. `ausweis.py --anlegen chef --rollen
+    betreiber --art mensch` steht jedem offen, der die Datei schreiben darf, und
+    das schliesst ein Modell ein, das unter demselben Benutzer laeuft. Gemessen:
+    der Ordner auf dem Schreibtisch gehoert 'lehrmacbook', und der Serverprozess
+    laeuft als 'lehrmacbook'.
+
+    DAMIT IST art=mensch EIN MERKMAL, KEINE SPERRE. Es verhindert, dass ein
+    Modell per Konfigurationszeile zum Menschen wird -- nicht, dass es sich per
+    Kommandozeile einen Menschenausweis ausstellt. Dieselbe Unterscheidung wie
+    beim Testdaten-Merkmal (Knoten /shared/arch/testdaten-kennzeichnen-sperre-ist):
+    ein Merkmal traegt die Herkunft, die Sperre ist physische Trennung.
+
+    DIE ECHTE SPERRE verlangt etwas, das ein Prozess nicht hat -- das Passwort
+    des Betreibers. Zwei Wege, beide muss der Betreiber selbst gehen:
+      chown root + chmod 644  ->  lesbar fuer alle, schreibbar nur mit sudo
+      macOS-Keychain           ->  jeder Zugriff verlangt Touch ID/Passwort
+
+    Diese Funktion loest nichts. Sie macht den Zustand sichtbar, statt ihn zu
+    verschweigen -- und das ist der ehrliche Zwischenstand, solange die Trennung
+    fehlt."""
+    import os
+    pfad = pfad or ausweisdatei()
+    ziel = pfad if pfad.exists() else pfad.parent
+    try:
+        eigner = ziel.stat().st_uid
+    except OSError:
+        return True, "ausweisdatei_nicht_lesbar"
+    if eigner == os.getuid():
+        return True, (f"selbstbedienung: {ziel} gehoert dem laufenden Prozess "
+                      f"(uid {eigner}) — jeder Aufruf kann sich einen Ausweis "
+                      f"mit art=mensch ausstellen")
+    if os.access(ziel, os.W_OK):
+        return True, f"selbstbedienung: {ziel} ist fuer den Prozess schreibbar"
+    return False, "getrennt: Anlegen verlangt fremde Rechte"
 
 
 def _lies_datei(pfad: Path) -> list[dict]:
@@ -275,7 +341,8 @@ def _ableiten(geheimnis: str, salz: bytes) -> bytes:
 
 def anlegen(name: str, rollen: list[str], *, geheimnis: str | None = None,
             art: str = "maschine", gilt_bis: str | None = None,
-            mandat: dict | None = None, pfad: Path | None = None) -> str:
+            mandat: dict | None = None, pfad: Path | None = None,
+            aussteller: str | None = None) -> str:
     """Legt einen Ausweis an und gibt das Geheimnis EINMAL zurueck. Danach
     steht in der Datei nur noch sein Hash -- ein verlorenes Geheimnis wird
     ersetzt, nie wiederhergestellt.
@@ -297,7 +364,9 @@ def anlegen(name: str, rollen: list[str], *, geheimnis: str | None = None,
     _pruefe_datum(gilt_bis, "gilt_bis")
 
     pfad = pfad or ausweisdatei()
-    eintraege = [e for e in _lies_datei(pfad) if e.get("name") != name]
+    bestand = _lies_datei(pfad)
+    _pruefe_einbuergerung(bestand, pfad, name, aussteller)
+    eintraege = [e for e in bestand if e.get("name") != name]
 
     if mandat is not None:
         mandat = _pruefe_mandat(mandat, eintraege)
@@ -319,6 +388,39 @@ def anlegen(name: str, rollen: list[str], *, geheimnis: str | None = None,
     eintraege.append(eintrag)
     _schreibe_datei(pfad, eintraege)
     return geheimnis
+
+
+def _pruefe_einbuergerung(bestand: list[dict], pfad: Path, name: str,
+                          aussteller: str | None = None) -> None:
+    """Wer darf einbuergern? Nur, wer 'ausweis:ausstellen' traegt.
+
+    DER GRUENDUNGSAKT ist die eine Ausnahme: ist die Datei leer, gibt es
+    niemanden, der ausstellen koennte. Dieser erste Ausweis entsteht darum ohne
+    Pruefung -- so wie ein Staat sich nicht selbst per Formular gruendet. Er
+    sollte deshalb der des Betreibers sein, und er ist der einzige, bei dem die
+    Reihenfolge zaehlt.
+
+    WAS DIESE PRUEFUNG NICHT LEISTET, ausdruecklich: sie haelt gegen Versehen
+    und gegen einen Aufrufer, der sich an Regeln haelt. Sie haelt NICHT gegen
+    jemanden, der die JSON-Datei direkt schreibt -- und solange der Ordner dem
+    laufenden Prozess gehoert, kann das jeder, auch ein Modell (siehe
+    selbstbedienung_moeglich). Zwei Schichten, und nur die untere haelt gegen
+    Absicht: `sudo chown root` am Ordner. Diese hier ist die obere.
+    """
+    if not bestand:
+        return                                    # Gruendungsakt
+    ausw = loese_auf(geheimnis=aussteller, pfad=pfad)
+    if not ausw.beglaubigt:
+        raise PermissionError(
+            f"Einbuergerung verlangt einen Ausweis mit 'ausweis:ausstellen'. "
+            f"Es liegt keiner vor ({ENV_GEHEIMNIS} nicht gesetzt oder unbekannt). "
+            f"Der Bestand in {pfad} ist nicht leer — ein Gruendungsakt ist es "
+            f"also nicht.")
+    if bezug_fuer(ausw, "ausweis:ausstellen") is None:
+        raise PermissionError(
+            f"'{ausw.name}' darf keine Ausweise ausstellen "
+            f"(Rollen: {','.join(ausw.rollen) or '-'}). Noetig ist eine "
+            f"Rolle mit 'ausweis:ausstellen' — betreiber oder meldeamt.")
 
 
 def _pruefe_datum(wert: str | None, feld: str) -> None:
@@ -608,6 +710,10 @@ def _selftest() -> None:
 
     with tempfile.TemporaryDirectory() as tmp:
         pfad = Path(tmp) / "ausweise.json"
+        # Gruendungsakt: der erste Ausweis entsteht ohne Aussteller. Alle
+        # weiteren im Selbsttest gehen ueber ihn -- genau wie im Betrieb.
+        G = anlegen("gruender", ["betreiber"], art="mensch", pfad=pfad)
+        _a = lambda *ar, **kw: anlegen(*ar, aussteller=G, **kw)  # noqa: E731
 
         # --- P1: kein Ausweis -> Argument gilt, aber unbeglaubigt ----------
         a = loese_auf("betreiber", geheimnis=None, pfad=pfad)
@@ -617,7 +723,7 @@ def _selftest() -> None:
             "unbeglaubigt darf nichts"
 
         # --- P2: DER Kern. Ausweis gewinnt, Argument ist stumm -------------
-        g = anlegen("hausmeister", ["leser"], pfad=pfad)
+        g = _a("hausmeister", ["leser"], pfad=pfad)
         a = loese_auf("betreiber", geheimnis=g, pfad=pfad)
         assert a.name == "hausmeister", \
             f"Argument hat den Ausweis ueberstimmt: {a.name}"
@@ -662,23 +768,23 @@ def _selftest() -> None:
         assert bezug_fuer(leser, "wissen:lesen") == "alle"
         assert bezug_fuer(leser, "wissen:schreiben") is None, "Vorgabe ist deny"
 
-        g2 = anlegen("gastnutzer", ["gast"], pfad=pfad)
+        g2 = _a("gastnutzer", ["gast"], pfad=pfad)
         gast = loese_auf(geheimnis=g2, pfad=pfad)
         assert bezug_fuer(gast, "wissen:lesen") == "published"
         assert bezug_fuer(gast, "kante:lesen") is None
 
-        g3 = anlegen("fachmann", ["fachkundig"], pfad=pfad)
+        g3 = _a("fachmann", ["fachkundig"], pfad=pfad)
         fach = loese_auf(geheimnis=g3, pfad=pfad)
         assert bezug_fuer(fach, "wissen:schreiben") == "own"
         assert bezug_fuer(fach, "wissen:lesen") == "alle"
 
-        g4 = anlegen("chef", ["betreiber"], pfad=pfad)
+        g4 = _a("chef", ["betreiber"], pfad=pfad)
         chef = loese_auf(geheimnis=g4, pfad=pfad)
         assert bezug_fuer(chef, "was:auch:immer".partition(":")[0] + ":lesen") == "alle"
 
         # --- Reihenfolge der Rollen darf das Ergebnis nicht aendern ---------
-        g5 = anlegen("beides", ["gast", "leser"], pfad=pfad)
-        g6 = anlegen("beides2", ["leser", "gast"], pfad=pfad)
+        g5 = _a("beides", ["gast", "leser"], pfad=pfad)
+        g6 = _a("beides2", ["leser", "gast"], pfad=pfad)
         assert (bezug_fuer(loese_auf(geheimnis=g5, pfad=pfad), "wissen:lesen")
                 == bezug_fuer(loese_auf(geheimnis=g6, pfad=pfad), "wissen:lesen")
                 == "alle"), "weiterer Bezug muss gewinnen, unabhaengig von der Reihenfolge"
@@ -689,7 +795,7 @@ def _selftest() -> None:
             "Klientenkonfiguration, also bei einem Modell"
         assert not loese_auf(geheimnis=g, pfad=pfad).ist_mensch
 
-        g7 = anlegen("markus", ["betreiber"], art="mensch", pfad=pfad)
+        g7 = _a("markus", ["betreiber"], art="mensch", pfad=pfad)
         mensch = loese_auf(geheimnis=g7, pfad=pfad)
         assert mensch.ist_mensch and mensch.art == "mensch"
 
@@ -705,10 +811,10 @@ def _selftest() -> None:
         assert loese_auf(geheimnis=g7, pfad=pfad).art == "maschine", \
             "fehlendes Feld darf niemanden zum Menschen machen"
         assert not loese_auf(geheimnis=g7, pfad=pfad).ist_mensch
-        g7 = anlegen("markus", ["betreiber"], art="mensch", pfad=pfad)
+        g7 = _a("markus", ["betreiber"], art="mensch", pfad=pfad)
 
         try:
-            anlegen("x", ["leser"], art="halbgott", pfad=pfad)
+            _a("x", ["leser"], art="halbgott", pfad=pfad)
         except ValueError:
             pass
         else:
@@ -752,7 +858,70 @@ def _selftest() -> None:
             raise AssertionError("Recht ohne Aktion haette abweisen muessen")
 
     _selftest_mandat()
+    _selftest_einbuergerung()
     print("ausweis.py: Selbsttest gruen")
+
+
+def _selftest_einbuergerung() -> None:
+    """Das Einbuergerungsamt: niemand tritt sich selbst bei."""
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        pfad = Path(tmp) / "ausweise.json"
+
+        # --- Gruendungsakt: der erste Ausweis geht ohne Aussteller ---------
+        G = anlegen("gruender", ["betreiber"], art="mensch", pfad=pfad)
+        assert loese_auf(geheimnis=G, pfad=pfad).beglaubigt
+
+        # --- ab jetzt NICHT mehr: kein zweiter Selbsteintritt --------------
+        try:
+            anlegen("schlaubi", ["betreiber"], art="mensch", pfad=pfad)
+        except PermissionError as f:
+            assert "Gruendungsakt" in str(f), f
+        else:
+            raise AssertionError("Selbsteintritt nach der Gruendung ging durch")
+
+        # --- der Gruender darf einbuergern --------------------------------
+        g_amt = anlegen("meldeamt1", ["meldeamt"], pfad=pfad, aussteller=G)
+        g_les = anlegen("leser1", ["leser"], pfad=pfad, aussteller=G)
+
+        # --- das Meldeamt darf einbuergern, aber sonst nichts --------------
+        anlegen("neubuerger", ["leser"], pfad=pfad, aussteller=g_amt)
+        amt = loese_auf(geheimnis=g_amt, pfad=pfad)
+        assert bezug_fuer(amt, "ausweis:ausstellen") == "alle"
+        assert bezug_fuer(amt, "wissen:lesen") is None, \
+            "Meldeamt darf nur einbuergern, nicht lesen"
+
+        # --- ein Leser darf NICHT einbuergern ------------------------------
+        try:
+            anlegen("schwarzarbeiter", ["betreiber"], pfad=pfad, aussteller=g_les)
+        except PermissionError as f:
+            assert "darf keine Ausweise ausstellen" in str(f), f
+        else:
+            raise AssertionError("ein Leser konnte einbuergern")
+
+        # --- ein FALSCHES Geheimnis buergert nicht ein ---------------------
+        try:
+            anlegen("geist", ["leser"], pfad=pfad, aussteller="erfunden")
+        except PermissionError:
+            pass
+        else:
+            raise AssertionError("falsches Geheimnis buergerte ein")
+
+        # --- die Befugnis ist nicht weiterreichbar -------------------------
+        try:
+            anlegen("statthalter", ["leser"], pfad=pfad, aussteller=G,
+                    mandat={"von": "meldeamt1", "rollen": ["meldeamt"],
+                            "gegenstand": ["einbuergerung"]})
+        except ValueError as f:
+            assert "nicht delegierbar" in str(f), f
+        else:
+            raise AssertionError("ausweis:ausstellen war delegierbar")
+
+        # --- die untere Schicht: haelt das Dateisystem ueberhaupt? ---------
+        offen, grund = selbstbedienung_moeglich(pfad)
+        assert offen, "im Test gehoert die Datei dem Prozess — das ist der Punkt"
+        assert "selbstbedienung" in grund
 
 
 def _selftest_mandat() -> None:
@@ -764,9 +933,12 @@ def _selftest_mandat() -> None:
 
     with tempfile.TemporaryDirectory() as tmp:
         pfad = Path(tmp) / "ausweise.json"
+        # Gruendungsakt, dann buergert der Gruender ein -- wie im Betrieb.
+        G = anlegen("gruender", ["betreiber"], art="mensch", pfad=pfad)
+        _a = lambda *ar, **kw: anlegen(*ar, aussteller=G, **kw)  # noqa: E731
 
-        g_chef = anlegen("chefin", ["schreiber"], art="mensch", pfad=pfad)
-        g_bote = anlegen("bote", ["leser"], pfad=pfad,
+        g_chef = _a("chefin", ["schreiber"], art="mensch", pfad=pfad)
+        g_bote = _a("bote", ["leser"], pfad=pfad,
                          mandat={"von": "chefin", "rollen": ["schreiber"],
                                  "gegenstand": ["abfallwirtschaft"]})
 
@@ -787,16 +959,16 @@ def _selftest_mandat() -> None:
             "Mandat eines Menschen darf keine Maschine befoerdern"
 
         # --- M2: Mandant verliert das Recht -> Delegierter sofort auch -------
-        anlegen("chefin", ["leser"], art="mensch", geheimnis=g_chef, pfad=pfad)
+        _a("chefin", ["leser"], art="mensch", geheimnis=g_chef, pfad=pfad)
         a = loese_auf(geheimnis=g_bote, pfad=pfad, jetzt=T0,
                       gegenstand="abfallwirtschaft")
         assert a.rollen == ("leser",), \
             f"Schnitt wurde eingefroren statt zur Laufzeit gebildet: {a.rollen}"
-        anlegen("chefin", ["schreiber"], art="mensch", geheimnis=g_chef, pfad=pfad)
+        _a("chefin", ["schreiber"], art="mensch", geheimnis=g_chef, pfad=pfad)
 
         # --- M1: Mandat ueber ein Recht, das der Mandant nie hatte -----------
         try:
-            anlegen("bote2", ["leser"], pfad=pfad,
+            _a("bote2", ["leser"], pfad=pfad,
                     mandat={"von": "chefin", "rollen": ["betreiber"],
                             "gegenstand": ["x"]})
         except ValueError as f:
@@ -808,16 +980,16 @@ def _selftest_mandat() -> None:
         for kaputt in ({"von": "chefin", "rollen": ["schreiber"]},
                        {"von": "chefin", "rollen": ["schreiber"], "gegenstand": []}):
             try:
-                anlegen("bote3", ["leser"], pfad=pfad, mandat=kaputt)
+                _a("bote3", ["leser"], pfad=pfad, mandat=kaputt)
             except ValueError as f:
                 assert "gegenstand" in str(f).lower(), f
             else:
                 raise AssertionError("M4: freies Mandat haette abweisen muessen")
 
         # --- M8: nicht-delegierbares Recht ----------------------------------
-        anlegen("gott", ["betreiber"], art="mensch", pfad=pfad)
+        _a("gott", ["betreiber"], art="mensch", pfad=pfad)
         try:
-            anlegen("statthalter", ["leser"], pfad=pfad,
+            _a("statthalter", ["leser"], pfad=pfad,
                     mandat={"von": "gott", "rollen": ["betreiber"],
                             "gegenstand": ["alles"]})
         except ValueError as f:
@@ -827,7 +999,7 @@ def _selftest_mandat() -> None:
 
         # --- M9: Mandant gibt es gar nicht ----------------------------------
         try:
-            anlegen("bote4", ["leser"], pfad=pfad,
+            _a("bote4", ["leser"], pfad=pfad,
                     mandat={"von": "niemand", "rollen": ["leser"],
                             "gegenstand": ["x"]})
         except ValueError as f:
@@ -837,7 +1009,7 @@ def _selftest_mandat() -> None:
 
         # --- M7: keine Weiterdelegation --------------------------------------
         try:
-            anlegen("unterbote", ["leser"], pfad=pfad,
+            _a("unterbote", ["leser"], pfad=pfad,
                     mandat={"von": "bote", "rollen": ["leser"],
                             "gegenstand": ["abfallwirtschaft"]})
         except ValueError as f:
@@ -847,7 +1019,7 @@ def _selftest_mandat() -> None:
 
         # --- M6 + Grenzwerte am Ablauf ---------------------------------------
         ende = T0 + timedelta(hours=1)
-        g_kurz = anlegen("zeitweise", ["leser"], pfad=pfad, gilt_bis=iso(ende))
+        g_kurz = _a("zeitweise", ["leser"], pfad=pfad, gilt_bis=iso(ende))
         eine_sek = timedelta(seconds=1)
         assert loese_auf(geheimnis=g_kurz, pfad=pfad, jetzt=ende - eine_sek).beglaubigt
         # genau auf der Schwelle: abgelaufen. Ein Ablauf, der die Sekunde des
@@ -859,7 +1031,7 @@ def _selftest_mandat() -> None:
         assert a.protokollname == "unbeglaubigt:zeitweise" and a.rollen == ()
 
         # abgelaufenes MANDAT: Ausweis gilt weiter, Vollmacht nicht
-        g_frist = anlegen("fristbote", ["leser"], pfad=pfad,
+        g_frist = _a("fristbote", ["leser"], pfad=pfad,
                           mandat={"von": "chefin", "rollen": ["schreiber"],
                                   "gegenstand": ["abfallwirtschaft"],
                                   "gilt_bis": iso(ende)})
@@ -868,7 +1040,7 @@ def _selftest_mandat() -> None:
         assert a.beglaubigt and a.rollen == ("leser",) and a.mandat_von is None
 
         # M9 zur Laufzeit: Mandant laeuft ab -> Vollmacht faellt mit ihm
-        anlegen("chefin", ["schreiber"], art="mensch", geheimnis=g_chef,
+        _a("chefin", ["schreiber"], art="mensch", geheimnis=g_chef,
                 pfad=pfad, gilt_bis=iso(ende))
         a = loese_auf(geheimnis=g_bote, pfad=pfad, jetzt=ende,
                       gegenstand="abfallwirtschaft")
@@ -883,8 +1055,8 @@ def _selftest_mandat() -> None:
             "unlesbares Ablaufdatum darf keinen unbegrenzten Zugang erzeugen"
 
         # --- M10: Rotation -- der alte Ausweis muss scheitern -----------------
-        g_alt = anlegen("sprecher", ["schreiber"], pfad=pfad)
-        g_neu = anlegen("sprecher", ["schreiber"], pfad=pfad)
+        g_alt = _a("sprecher", ["schreiber"], pfad=pfad)
+        g_neu = _a("sprecher", ["schreiber"], pfad=pfad)
         assert loese_auf(geheimnis=g_neu, pfad=pfad, jetzt=T0).beglaubigt
         assert not loese_auf(geheimnis=g_alt, pfad=pfad, jetzt=T0).beglaubigt, \
             "M10: nach der Rotation gilt das alte Geheimnis weiter"
@@ -931,6 +1103,8 @@ def main() -> int:
     import argparse
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--anlegen", metavar="NAME")
+    p.add_argument("--art", default="maschine", choices=list(ARTEN),
+                   help="mensch nur fuer echte Personen — siehe ARTEN")
     p.add_argument("--rollen", default="leser",
                    help=f"kommagetrennt, bekannt: {','.join(sorted(ROLLEN))}")
     p.add_argument("--liste", action="store_true")
@@ -945,7 +1119,21 @@ def main() -> int:
     pfad = args.datei or ausweisdatei()
 
     if args.anlegen:
-        geheimnis = anlegen(args.anlegen, args.rollen.split(","), pfad=pfad)
+        offen, grund = selbstbedienung_moeglich(pfad)
+        if offen and args.art == "mensch":
+            # Kein Abbruch -- solange die Trennung fehlt, waere ein Verbot hier
+            # nur Zeremonie (wer das Skript aendern kann, hebt es auf). Aber die
+            # Zeile MUSS fallen: ein Menschenausweis, der ohne jede Huerde
+            # entsteht, darf nicht so aussehen, als haette er eine genommen.
+            print(f"WARNUNG: {grund}\n"
+                  f"  Ein Ausweis mit art=mensch entsteht hier ohne Huerde. "
+                  f"Solange das so ist, belegt 'mensch' die HERKUNFT, nicht die "
+                  f"Eigenschaft.\n"
+                  f"  Echte Trennung: sudo chown root {pfad} && sudo chmod 644 "
+                  f"{pfad} — danach verlangt jedes Anlegen dein Passwort.\n",
+                  file=sys.stderr)
+        geheimnis = anlegen(args.anlegen, args.rollen.split(","),
+                            art=args.art, pfad=pfad)
         print(f"Ausweis '{args.anlegen}' angelegt in {pfad} (Rechte 600).")
         print("\nDas Geheimnis steht genau EINMAL hier. Es wird nicht "
               "gespeichert, nur sein Hash:\n")

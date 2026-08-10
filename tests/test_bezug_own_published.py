@@ -23,6 +23,8 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import ausweis  # noqa: E402
 import knowledge_mcp_server as kms  # noqa: E402
 
+GRUENDER = ""  # wird von der Fixture gesetzt (Gruendungsakt)
+
 
 @pytest.fixture()
 def bestand(tmp_path, monkeypatch):
@@ -36,6 +38,12 @@ def bestand(tmp_path, monkeypatch):
     monkeypatch.delenv(ausweis.ENV_GEHEIMNIS, raising=False)
     monkeypatch.delenv("BRAINLEHR_DURCHSETZUNG", raising=False)
     ausweis._pruefe.cache_clear()
+    # Gruendungsakt: ohne ihn darf niemand mehr einbuergern. Der Schluessel
+    # wandert als Modulattribut zu den Tests, damit sie ihn nicht durchreichen
+    # muessen.
+    global GRUENDER
+    GRUENDER = ausweis.anlegen("gruender", ["betreiber"], art="mensch",
+                               pfad=tmp_path / "a.json")
 
     def anlegen(titel: str) -> None:
         kms.knowledge_add(parent_path="/", title=titel,
@@ -55,7 +63,8 @@ def bestand(tmp_path, monkeypatch):
     # denn 'unbeglaubigt:fachmann' kann von jedem stammen. Der Herkunftstrigger
     # macht das unumkehrbar -- actor ist nachtraeglich nicht aenderbar, und
     # genau daran ist die erste Fassung dieses Tests gescheitert.
-    g_fach = ausweis.anlegen("fachmann", ["fachkundig"], pfad=tmp_path / "a.json")
+    g_fach = ausweis.anlegen("fachmann", ["fachkundig"], pfad=tmp_path / "a.json",
+                             aussteller=GRUENDER)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g_fach)
     ausweis._pruefe.cache_clear()
     anlegen("Wetterbericht eigen")
@@ -82,7 +91,7 @@ def _titel(werkzeug="knowledge_search", args=None) -> list[str]:
 
 def test_gast_sieht_nur_freigegebene(bestand, monkeypatch):
     """P6: published. Alle Knoten stehen auf 'intern' ausser einem."""
-    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json")
+    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json", aussteller=GRUENDER)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g)
     ausweis._pruefe.cache_clear()
 
@@ -95,7 +104,7 @@ def test_gast_sieht_nur_freigegebene(bestand, monkeypatch):
 def test_leser_sieht_alle(bestand, monkeypatch):
     """Gegenprobe: wer 'alle' hat, wird nicht gefiltert -- sonst saehe der
     Filter genauso aus wie 'gib nie etwas zurueck'."""
-    g = ausweis.anlegen("leser1", ["leser"], pfad=bestand / "a.json")
+    g = ausweis.anlegen("leser1", ["leser"], pfad=bestand / "a.json", aussteller=GRUENDER)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g)
     ausweis._pruefe.cache_clear()
     assert len(_titel()) == 3
@@ -110,7 +119,7 @@ def test_ohne_ausweis_wird_nicht_gefiltert(bestand):
 def test_count_wandert_mit(bestand, monkeypatch):
     """Eine Zahl, die mehr behauptet als die Liste zeigt, ist schlimmer als
     keine Zahl."""
-    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json")
+    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json", aussteller=GRUENDER)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g)
     ausweis._pruefe.cache_clear()
     res = kms.handle_request({
@@ -141,7 +150,7 @@ def test_freigegebene_lehre_ist_fuer_gast_sichtbar(bestand, monkeypatch):
     conn.commit()
     conn.close()
 
-    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json")
+    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json", aussteller=GRUENDER)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g)
     ausweis._pruefe.cache_clear()
 
@@ -170,7 +179,7 @@ def test_lehren_sind_fuer_gast_nicht_freigegeben(bestand, monkeypatch):
     kms.lesson_record(type_="insight",
                       description="Wetterbericht: montags faellt mehr Regen",
                       projects=["shared"], actor="fremder", session="s")
-    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json")
+    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json", aussteller=GRUENDER)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g)
     ausweis._pruefe.cache_clear()
 
@@ -191,7 +200,7 @@ def test_own_greift_auf_den_schreiber(bestand, monkeypatch):
     ueber die Sicht, weil der Bezug dort messbar wird."""
     import werkzeugrechte
     # Ausweis existiert bereits aus der Fixture -- nur wieder aktivieren.
-    g = ausweis.anlegen("fachmann", ["fachkundig"], pfad=bestand / "a.json")
+    g = ausweis.anlegen("fachmann", ["fachkundig"], pfad=bestand / "a.json", aussteller=GRUENDER)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g)
     ausweis._pruefe.cache_clear()
     a = ausweis.loese_auf()
