@@ -119,6 +119,7 @@ import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
 import normrang  # ADR-034: norm_rang faellt bei knowledge_add() deterministisch aus
                  # source, wenn der Aufrufer keinen eigenen mitgibt. Kein Zirkel.
+import schema_nachzug  # 2026-08-10: fehlende Spalten generisch aus schema.sql
 import herkunft_normentscheider  # Auftrag 2026-08-09: norm_entschieden_von traegt
                                   # 'betreiber' statt actor, wenn source einen belegten
                                   # Betreiber-Urheber zeigt (CLAUDE.md-Import). Kein
@@ -1092,6 +1093,13 @@ def _ensure_nachgezogene_spalten(conn: sqlite3.Connection) -> None:
 def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old knowledge.db copies."""
     _ensure_core_schema(conn)
+    # Generischer Nachzug VOR allen Trigger-Anlegern: ein Trigger, der eine
+    # noch fehlende Spalte liest, laesst jeden spaeteren Schreibvorgang mit
+    # 'no such column: NEW.x' auffliegen. Genau so lag es am 2026-08-10 bei
+    # freigabe und gattung. Die einzelnen _ensure_*-Funktionen darunter
+    # bleiben: sie tragen Sicherung und WAL-Checkpoint, die dieser Nachzug
+    # bewusst nicht nachbaut -- er ergaenzt nur, was sonst niemand nennt.
+    schema_nachzug.nachziehen(conn, db_path=DB_PATH)
     _ensure_herkunft_triggers(conn)
     _ensure_nachgezogene_spalten(conn)
     _ensure_anlass_columns(conn)
@@ -1140,16 +1148,30 @@ def _ensure_lessons_freigabe_column(conn) -> None:
     normalen Schreibpfad mit einem rohen sqlite3-Fehler ab. Beide Wege im
     selben Arbeitsschritt.
 
-    Kein Trigger auf den Wertebereich: knowledge_nodes hat ihn, hier waere er
-    ein zweiter Ort fuer dieselbe Regel. Die Pruefung sitzt im Schreibpfad."""
+    Kein Trigger auf den Wertebereich an lessons_learned: knowledge_nodes hat
+    ihn, dort waere er ein zweiter Ort fuer dieselbe Regel. Die Pruefung sitzt
+    im Schreibpfad.
+
+    NACHTRAG 2026-08-10, und es ist genau derselbe Fehler eine Ebene tiefer:
+    Diese Funktion zog die Spalte nur an lessons_learned nach und zitierte
+    dabei L-7e0823 -- waehrend knowledge_nodes.freigabe seinerseits nur per
+    migrate_freigabe.py existierte und in ensure_schema fehlte. Auf einer DB
+    aus schema.sql ohne Migrationslauf legt _ensure_node_constraint_triggers
+    die beiden freigabe-Pruefer an, und der naechste knowledge_add bricht mit
+    'no such column: NEW.freigabe' ab -- ein roher SQLite-Fehler im normalen
+    Schreibpfad, also die Fehlerklasse, gegen die die zitierte Lehre gerade
+    schuetzen sollte. Aufgefallen ueber tests/test_anlass_schema_backfill.py,
+    nachdem dessen Vorrichtung repariert war. Beide Tabellen im selben
+    Schritt, damit hier nicht ein drittes Mal die Haelfte nachgezogen wird."""
     tabellen = {r[0] for r in conn.execute(
         "SELECT name FROM sqlite_master WHERE type='table'")}
-    if "lessons_learned" not in tabellen:
-        return
-    spalten = {r[1] for r in conn.execute("PRAGMA table_info(lessons_learned)")}
-    if "freigabe" not in spalten:
-        conn.execute("ALTER TABLE lessons_learned "
-                     "ADD COLUMN freigabe TEXT NOT NULL DEFAULT 'intern'")
+    for tabelle in ("lessons_learned", "knowledge_nodes"):
+        if tabelle not in tabellen:
+            continue
+        spalten = {r[1] for r in conn.execute(f"PRAGMA table_info({tabelle})")}
+        if "freigabe" not in spalten:
+            conn.execute(f"ALTER TABLE {tabelle} "
+                         "ADD COLUMN freigabe TEXT NOT NULL DEFAULT 'intern'")
 
 
 def _version() -> str:

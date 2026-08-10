@@ -60,20 +60,60 @@ def _old_schema_without_anlass() -> str:
         r"\1);", old_schema, count=1, flags=re.DOTALL,
     )
     assert n2 == 1, "Anlass-Spalte an lessons_learned nicht wie erwartet gefunden"
-    # Die beiden anlass-Zusicherungs-Trigger (Auftrag 2026-08-06, DB-Trigger
-    # fuer Rohschreibzugriffe) referenzieren NEW.anlass -- ohne die Spalte
-    # waere jedes INSERT/UPDATE ein "no such column: NEW.anlass", nicht der
-    # hier zu simulierende Alt-Zustand. Mitentfernen, gleiche Regel-Idee wie
-    # oben: alte DB kannte weder die Spalte noch den Trigger.
-    old_schema, n3 = re.subn(
-        r"CREATE TRIGGER IF NOT EXISTS knowledge_nodes_anlass_check_b[iu]\n"
-        r"BEFORE (?:INSERT|UPDATE) ON knowledge_nodes\n"
-        r"FOR EACH ROW WHEN NEW\.anlass NOT IN \([^)]*\)\nBEGIN\n"
-        r"    SELECT RAISE\(ABORT, '[^']*'\);\nEND;\n\n?",
-        "", old_schema, flags=re.DOTALL,
-    )
-    assert n3 == 2, f"anlass-Check-Trigger nicht wie erwartet gefunden (n={n3})"
+    # JEDER Trigger, der NEW.anlass nennt, muss mit heraus -- sonst ist jedes
+    # INSERT ein "no such column: NEW.anlass" statt des hier zu simulierenden
+    # Alt-Zustands. Bewusst ueber den INHALT gesucht statt ueber Triggernamen:
+    # eine Namensliste altert. Genau daran ist dieser Test am 2026-08-10
+    # gescheitert -- er kannte die beiden anlass_check-Trigger und nicht die
+    # zwei spaeter dazugekommenen normrang_herkunft-Trigger, die NEW.anlass
+    # ebenfalls lesen. Ein Wortlaut-Kriterium bricht beim naechsten Trigger
+    # nicht mehr.
+    entfallen = _entfallene_spalten(schema_sql, old_schema)
+    assert "anlass" in entfallen, f"anlass nicht ausgeschnitten (entfallen={entfallen})"
+    # Nur Trigger auf DIESEN beiden Tabellen pruefen: Spaltennamen sind nicht
+    # eindeutig. knowledge_embeddings hat ebenfalls ein `model`, und sein
+    # Pruef-Trigger ist voellig in Ordnung -- ihn mitzuschneiden hiesse, das
+    # Alt-Schema an einer Stelle zu veraendern, die mit anlass nichts zu tun
+    # hat.
+    def betrifft(blk: str) -> bool:
+        return bool(re.search(r"\bON (knowledge_nodes|lessons_learned)\b", blk))
+
+    bloecke = re.findall(r"CREATE TRIGGER.*?\nEND;\n?", old_schema, flags=re.DOTALL)
+    n3 = 0
+    for blk in bloecke:
+        if betrifft(blk) and {m for m in re.findall(r"NEW\.(\w+)", blk)} & entfallen:
+            old_schema = old_schema.replace(blk, "", 1)
+            n3 += 1
+    assert n3 >= 2, f"anlass-Trigger nicht wie erwartet gefunden (n={n3})"
+    uebrig = {
+        m
+        for blk in re.findall(r"CREATE TRIGGER.*?\nEND;\n?", old_schema, flags=re.DOTALL)
+        if betrifft(blk)
+        for m in re.findall(r"NEW\.(\w+)", blk)
+    } & entfallen
+    assert not uebrig, f"Alt-Schema nennt weiter entfallene Spalten: {sorted(uebrig)}"
     return old_schema
+
+
+def _entfallene_spalten(neu: str, alt: str) -> set[str]:
+    """Spalten, die der Schnitt oben aus knowledge_nodes/lessons_learned
+    entfernt hat. Wird gebraucht, um JEDEN Trigger mitzuentfernen, der eine
+    davon liest -- sonst bricht die Alt-DB mit 'no such column: NEW.x'.
+
+    Ueber den Inhalt bestimmt statt ueber eine Namensliste, weil eine Liste
+    altert: derselbe Test fiel am 2026-08-10 zweimal hintereinander aus,
+    erst wegen zweier neuer Trigger auf NEW.anlass, dann wegen NEW.freigabe.
+    Beide Male war nicht der gepruefte Nachzug kaputt, sondern die
+    Testvorrichtung veraltet."""
+    def spalten(text: str) -> set[str]:
+        gefunden = set()
+        for tab in ("knowledge_nodes", "lessons_learned"):
+            m = re.search(rf"CREATE TABLE IF NOT EXISTS {tab} \((.*?)\n\);",
+                          text, flags=re.DOTALL)
+            if m:
+                gefunden |= set(re.findall(r"^\s{4}(\w+) ", m.group(1), flags=re.M))
+        return gefunden
+    return spalten(neu) - spalten(alt)
 
 
 @pytest.fixture()
