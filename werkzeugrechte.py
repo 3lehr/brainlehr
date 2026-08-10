@@ -187,6 +187,7 @@ def _bezug_pruefen(eintraege: list[dict], bezug: str, ausw: ausweis.Ausweis,
     finally:
         conn.close()
 
+    eigene = ausweis.zugaenge_derselben_person(ausw) if bezug == "own" else frozenset()
     behalten = []
     for e in eintraege:
         m = merkmale.get(e.get("id"))
@@ -206,7 +207,9 @@ def _bezug_pruefen(eintraege: list[dict], bezug: str, ausw: ausweis.Ausweis,
             continue
         if bezug == "published" and (m.get("freigabe") or "intern") != "offen":
             continue
-        if bezug == "own" and (m.get("actor") or "") != ausw.name:
+        # 'own' meint die PERSON, nicht den Zugang: wer ueber zwei Zugaenge
+        # arbeitet (Claude Code und ChatGPT), soll sich nicht selbst aussperren.
+        if bezug == "own" and (m.get("actor") or "") not in eigene:
             continue
         behalten.append(e)
     return behalten

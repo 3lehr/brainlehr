@@ -195,6 +195,40 @@ def test_lehren_sind_fuer_gast_nicht_freigegeben(bestand, monkeypatch):
     assert daten["results"] and all(a == "node" for a in arten)
 
 
+def test_own_meint_die_person_nicht_den_zugang(bestand, monkeypatch):
+    """Zwei Zugaenge desselben Menschen sperren sich nicht gegenseitig aus.
+
+    Betreiber 2026-08-10: "chatgpt und claude hier wird ja beides von mir
+    bedient". Vorher verglich der Bezug 'own' mit dem Namen des ZUGANGS -- was
+    ueber den einen Zugang entstand, war fuer den anderen fremd.
+    """
+    import werkzeugrechte
+    # 'fachmann' hat in der Fixture einen Knoten geschrieben. Ein ZWEITER
+    # Zugang derselben Person muss ihn als eigen sehen.
+    ausweis.anlegen("fachmann-mensch", ["fachkundig"], art="mensch",
+                    pfad=bestand / "a.json", aussteller=GRUENDER)
+    g2 = ausweis.anlegen("zweitzugang", ["fachkundig"], pfad=bestand / "a.json",
+                         aussteller=GRUENDER)
+    # beide Zugaenge derselben Person verknuepfen
+    import json as _json
+    datei = bestand / "a.json"
+    daten = _json.loads(datei.read_text(encoding="utf-8"))
+    for e in daten["ausweise"]:
+        if e["name"] in ("fachmann", "zweitzugang"):
+            e["bedient_von"] = "fachmann-mensch"
+    datei.write_text(_json.dumps(daten), encoding="utf-8")
+    datei.chmod(0o600)
+    ausweis._pruefe.cache_clear()
+
+    a = ausweis.loese_auf(geheimnis=g2, pfad=datei)
+    ergebnis = kms.knowledge_search("Wetterbericht")
+    gefiltert = werkzeugrechte.filtere("knowledge_add", ergebnis, ausw=a,
+                                       db_pfad=kms.DB_PATH)
+    titel = sorted(t["title"] for t in gefiltert["results"])
+    assert titel == ["Wetterbericht eigen"], (
+        f"Zweitzugang sah den Knoten des Erstzugangs nicht als eigen: {titel}")
+
+
 def test_own_greift_auf_den_schreiber(bestand, monkeypatch):
     """P5: own. Der Fachkundige darf nur EIGENE Knoten schreiben -- geprueft
     ueber die Sicht, weil der Bezug dort messbar wird."""

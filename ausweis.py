@@ -392,13 +392,30 @@ def anlegen(name: str, rollen: list[str], *, geheimnis: str | None = None,
     bestand = _lies_datei(pfad)
     _pruefe_einbuergerung(bestand, pfad, name, aussteller)
     return _anlegen_ohne_pruefung(name, rollen, geheimnis=geheimnis, art=art,
-                                  gilt_bis=gilt_bis, mandat=mandat, pfad=pfad)
+                                  gilt_bis=gilt_bis, mandat=mandat,
+                                  aussteller_geheimnis=aussteller, pfad=pfad)
+
+
+def _aussteller_name(aussteller_geheimnis: str | None, pfad: Path) -> str:
+    """Wer stellt aus? Aufgeloest, nicht behauptet.
+
+    Ist die Datei leer, ist es der Gruendungsakt -- und der wird als solcher
+    vermerkt, samt der ehrlichen Angabe, dass ihn ein Prozess vollzogen hat,
+    der sich nicht ausweisen konnte. Genau das ist beim ersten Ausweis dieser
+    Instanz passiert (ein Modell fuehrte den Befehl aus, der Mensch wurde sein
+    erster Buerger)."""
+    if not _lies_datei(pfad):
+        return "gruendungsakt (kein Aussteller vorhanden)"
+    a = loese_auf(geheimnis=aussteller_geheimnis, pfad=pfad)
+    return a.protokollname
 
 
 def _anlegen_ohne_pruefung(name: str, rollen: list[str], *,
                            geheimnis: str | None = None, art: str = "maschine",
                            gilt_bis: str | None = None, mandat: dict | None = None,
-                           bedient_von: str = "", pfad: Path | None = None) -> str:
+                           bedient_von: str = "",
+                           aussteller_geheimnis: str | None = None,
+                           pfad: Path | None = None) -> str:
     """Der Kern von anlegen(), ohne die Einbuergerungspruefung.
 
     Getrennt, weil einloesen() bereits geprueft hat -- dort ist die PIN die
@@ -413,9 +430,20 @@ def _anlegen_ohne_pruefung(name: str, rollen: list[str], *,
 
     geheimnis = geheimnis or secrets.token_urlsafe(32)
     salz = secrets.token_bytes(16)
+    # HERKUNFT AM AUSWEIS (Betreiberfrage 2026-08-10: "sind wir hier jetzt
+    # gruender und gegruendet?"). Der erste Eintrag lautete
+    # {'name':'markus','art':'mensch','rollen':['betreiber']} -- und sagte
+    # nicht, WER ihn geschrieben hat. Bei Wissen erzwingt ein Trigger die
+    # Herkunft ("ein Eintrag ohne nachpruefbare Herkunft ist eine Behauptung");
+    # ausgerechnet dort, wo IDENTITAET entsteht, fehlte sie. Der Gruendungsakt
+    # hinterliess keine Spur, obwohl er der folgenreichste Schreibvorgang
+    # ueberhaupt ist.
+    ausstellender = _aussteller_name(aussteller_geheimnis, pfad)
     eintrag = {
         "name": name,
         "art": art,
+        "ausgestellt_von": ausstellender,
+        "ausgestellt_am": _jetzt().isoformat(),
         "rollen": list(rollen),
         "salz": salz.hex(),
         "hash": _ableiten(geheimnis, salz).hex(),
@@ -491,6 +519,38 @@ def einladen(name: str, *, bedient_von: str, rollen: list[str] | None = None,
         raise ValueError(
             "bedient_von fehlt. Eine Einladung ohne Menschen dahinter ist eine "
             "Selbstbedienung mit Zwischenschritt.")
+
+    # PERSON UND ZUGANG SIND ZWEIERLEI (Betreiber, 2026-08-10: "die erste
+    # chatgpt anmeldung ist der gleiche mensch wie ich hier, ich melde mich als
+    # ich ja nur ueber chatgpt an"). Ein Mensch hat mehrere Zugaenge -- Claude
+    # Code, ChatGPT, ein zweites Geraet. Jeder bekommt einen EIGENEN Ausweis,
+    # damit er einzeln gesperrt werden kann; aber sie gehoeren derselben
+    # Person, und daraus folgt die Grenze:
+    #
+    #   EIN ZUGANG KANN NIE MEHR ALS SEINE PERSON.
+    #
+    # Ohne diese Pruefung waere `bedient_von` blosser Freitext, und man koennte
+    # einem Zugang die Rolle 'betreiber' geben, obwohl die Person nur liest --
+    # eine Rechteerweiterung ueber den Umweg "im Auftrag von".
+    person = _finde(bestand, bedient_von.strip())
+    if person is None:
+        raise ValueError(
+            f"'{bedient_von}' ist kein Ausweis in diesem Bestand. bedient_von "
+            f"zeigt auf eine PERSON, nicht auf einen freien Namen — sonst ist "
+            f"der Auftrag eine Behauptung.")
+    if _art_von(person) != "mensch":
+        raise ValueError(
+            f"'{bedient_von}' ist kein Mensch (art={_art_von(person)}). Ein "
+            f"Zugang wird von einem Menschen verantwortet, nicht von einer "
+            f"weiteren Maschine — sonst entstuende eine Kette ohne Ende.")
+    gewollt = set(rollen or ["leser"])
+    zuviel = sorted(r for r in gewollt
+                    if not _rolle_gedeckt(r, person.get("rollen", ())))
+    if zuviel:
+        raise ValueError(
+            f"Der Zugang soll {zuviel} bekommen, aber '{bedient_von}' hat das "
+            f"selbst nicht (Rollen: {person.get('rollen', [])}). Ein Zugang "
+            f"kann nie mehr als seine Person.")
     if art not in ARTEN:
         raise ValueError(f"art muss eine von {ARTEN} sein, nicht {art!r}")
 
@@ -548,6 +608,56 @@ def einloesen(pin: str, *, pfad: Path | None = None,
     raise PermissionError(
         "PIN unbekannt, bereits verbraucht oder abgelaufen. Eine neue "
         "Einladung erzeugt der Mensch, der sie verantwortet.")
+
+
+def zugaenge_derselben_person(ausw: "Ausweis", pfad: Path | None = None) -> frozenset:
+    """Alle Namen, die derselben Person gehoeren wie dieser Ausweis.
+
+    ANLASS (Betreiber, 2026-08-10): "aber chatgpt und claude hier wird ja beides
+    von mir bedient, gerade wechsle ich zu chatgpt nur weil mir hier die tokens
+    ausgehen." Genau richtig -- und es deckt einen Fehler auf: der Bezug `own`
+    verglich bis dahin mit dem Namen des ZUGANGS. Zwei Zugaenge desselben
+    Menschen haetten sich damit gegenseitig ausgesperrt: was ueber Claude Code
+    entstand, waere fuer ChatGPT fremd gewesen, obwohl derselbe Mensch dahinter
+    steht.
+
+    'Eigen' heisst darum: von mir, von meiner Person, oder von einem anderen
+    Zugang derselben Person. Ein Ausweis ohne bedient_von steht fuer sich --
+    dort bleibt es beim Namen allein."""
+    namen = {ausw.name}
+    person = ausw.bedient_von or (ausw.name if ausw.art == "mensch" else "")
+    if not person:
+        return frozenset(namen)
+    namen.add(person)
+    for e in _lies_datei(pfad or ausweisdatei()):
+        if e.get("bedient_von") == person or e.get("name") == person:
+            namen.add(e.get("name", ""))
+    return frozenset(n for n in namen if n)
+
+
+def _rolle_gedeckt(rolle: str, person_rollen) -> bool:
+    """Deckt eine der Rollen der Person diese Rolle ganz ab?
+
+    Ueber die Bezugsweite verglichen, nicht ueber Rollennamen -- 'leser' deckt
+    'gast' ab, obwohl die Namen nichts gemein haben. Derselbe Vergleich wie bei
+    der Obergrenze in foederation.py, aus demselben Grund: ein
+    Zeichenkettenvergleich haelt 'wissen:lesen:published' faelschlich fuer etwas
+    anderes als 'wissen:lesen', obwohl es enger ist."""
+    rechte = ROLLEN.get(rolle, ())
+    if not rechte:
+        return False
+    p = Ausweis(name="_p", rollen=tuple(person_rollen), beglaubigt=True)
+    r = Ausweis(name="_r", rollen=(rolle,), beglaubigt=True)
+    for recht in rechte:
+        if recht == "*":
+            return any("*" in ROLLEN.get(x, ()) for x in person_rollen)
+        modul, _, rest = recht.partition(":")
+        aktion = rest.partition(":")[0]
+        eigen = bezug_fuer(r, f"{modul}:{aktion}")
+        erlaubt = bezug_fuer(p, f"{modul}:{aktion}")
+        if erlaubt is None or _BEZUG_WEITE[erlaubt] < _BEZUG_WEITE[eigen]:
+            return False
+    return True
 
 
 def _einladungsdatei(pfad: Path) -> Path:
@@ -1033,15 +1143,15 @@ def _selftest_einladung() -> None:
         G = anlegen("gruender", ["betreiber"], art="mensch", pfad=pfad)
 
         # --- der Mensch laedt ein, die Maschine loest ein -------------------
-        pin = einladen("chatgpt", bedient_von="Markus Lehr", rollen=["leser"],
+        pin = einladen("chatgpt", bedient_von="gruender", rollen=["leser"],
                        pfad=pfad, aussteller=G, jetzt=T0)
         assert len(pin) == PIN_LAENGE
         erg = einloesen(pin, pfad=pfad, jetzt=T0)
-        assert erg["name"] == "chatgpt" and erg["bedient_von"] == "Markus Lehr"
+        assert erg["name"] == "chatgpt" and erg["bedient_von"] == "gruender"
 
         a = loese_auf(geheimnis=erg["geheimnis"], pfad=pfad)
         assert a.beglaubigt and a.name == "chatgpt"
-        assert a.bedient_von == "Markus Lehr", a.bedient_von
+        assert a.bedient_von == "gruender", a.bedient_von
         assert a.art == "maschine" and not a.ist_mensch, \
             "eine Einladung darf keine Maschine zum Menschen machen"
         assert bezug_fuer(a, "wissen:lesen") == "alle"
@@ -1056,12 +1166,12 @@ def _selftest_einladung() -> None:
             raise AssertionError("PIN war mehrfach einloesbar")
 
         # --- BEFRISTET: Grenzwerte am Ablauf -------------------------------
-        pin2 = einladen("bote", bedient_von="Markus Lehr", pfad=pfad,
+        pin2 = einladen("bote", bedient_von="gruender", pfad=pfad,
                         aussteller=G, jetzt=T0)
         knapp = T0 + timedelta(minutes=EINLADUNG_GUELTIG_MINUTEN) - timedelta(seconds=1)
         genau = T0 + timedelta(minutes=EINLADUNG_GUELTIG_MINUTEN)
         assert einloesen(pin2, pfad=pfad, jetzt=knapp)["name"] == "bote"
-        pin3 = einladen("bote2", bedient_von="Markus Lehr", pfad=pfad,
+        pin3 = einladen("bote2", bedient_von="gruender", pfad=pfad,
                         aussteller=G, jetzt=T0)
         for zeitpunkt in (genau, genau + timedelta(seconds=1)):
             try:
@@ -1079,6 +1189,29 @@ def _selftest_einladung() -> None:
                 pass
             else:
                 raise AssertionError(f"falsche PIN ging durch: {falsch!r}")
+
+        # --- Person und Zugang: der Zugang kann nie mehr als die Person ----
+        anlegen("kleiner", ["leser"], art="mensch", pfad=pfad, aussteller=G)
+        try:
+            einladen("zuviel", bedient_von="kleiner", rollen=["betreiber"],
+                     pfad=pfad, aussteller=G, jetzt=T0)
+        except ValueError as f:
+            assert "nie mehr als seine Person" in str(f), f
+        else:
+            raise AssertionError("Zugang bekam mehr Rechte als seine Person")
+        # gedeckt: 'gast' liegt ganz unter 'leser'
+        einladen("kleiner-gast", bedient_von="kleiner", rollen=["gast"],
+                 pfad=pfad, aussteller=G, jetzt=T0)
+
+        # --- bedient_von muss auf einen ECHTEN Menschen zeigen -------------
+        for wer, wort in (("Markus Lehr", "kein Ausweis"), ("chatgpt", "kein Mensch")):
+            try:
+                einladen("geist2", bedient_von=wer, pfad=pfad, aussteller=G,
+                         jetzt=T0)
+            except ValueError as f:
+                assert wort in str(f), (wer, f)
+            else:
+                raise AssertionError(f"bedient_von={wer!r} ging durch")
 
         # --- wer einlaedt, muss einbuergern duerfen -------------------------
         g_les = anlegen("nurleser", ["leser"], pfad=pfad, aussteller=G)
@@ -1122,9 +1255,19 @@ def _selftest_einbuergerung() -> None:
         else:
             raise AssertionError("Selbsteintritt nach der Gruendung ging durch")
 
+        # --- HERKUNFT: jeder Eintrag sagt, wer ihn ausgestellt hat ---------
+        eintraege = _lies_datei(pfad)
+        gr = _finde(eintraege, "gruender")
+        assert "gruendungsakt" in gr["ausgestellt_von"], gr.get("ausgestellt_von")
+        assert gr.get("ausgestellt_am"), "kein Zeitpunkt am Gruendungsakt"
+
         # --- der Gruender darf einbuergern --------------------------------
         g_amt = anlegen("meldeamt1", ["meldeamt"], pfad=pfad, aussteller=G)
         g_les = anlegen("leser1", ["leser"], pfad=pfad, aussteller=G)
+
+        # ... und ein spaeterer Eintrag nennt den Aussteller beim Namen
+        nach = _finde(_lies_datei(pfad), "meldeamt1")
+        assert nach["ausgestellt_von"] == "gruender", nach.get("ausgestellt_von")
 
         # --- das Meldeamt darf einbuergern, aber sonst nichts --------------
         anlegen("neubuerger", ["leser"], pfad=pfad, aussteller=g_amt)
