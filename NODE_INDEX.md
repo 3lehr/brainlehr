@@ -1,6 +1,6 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 2056 in 24 Aesten · Lehren: 732 · erzeugt: 2026-08-10T11:42:43+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 2058 in 24 Aesten · Lehren: 735 · erzeugt: 2026-08-10T11:52:25+0200
 
 Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowledge_search <begriff>`, `lesson_query <begriff>`.
 
@@ -8,7 +8,7 @@ Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowled
 
 - /nasa-llis: 1638
 - /methodik: 95
-- /brainlehr: 70
+- /brainlehr: 72
 - /apps: 53
 - /shared: 45
 - /ops: 39
@@ -31,13 +31,15 @@ Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowled
 - /probe2: 1
 - /testdatenknoten-schreibrechtepruefung: 1
 
-## Lehren gebuendelt (732 gesamt)
+## Lehren gebuendelt (735 gesamt)
 
-nach Art: antipattern 330, insight 163, error 126, pattern 113
-nach Projekt: fahrtenbuch 253, openlehr 219, hub 187, systemweit 165, brainlehr 81, shared 67, buckeberg 49, wohlair 46, +23 weitere Projekte (183)
+nach Art: antipattern 332, insight 163, error 127, pattern 113
+nach Projekt: fahrtenbuch 253, openlehr 219, hub 187, systemweit 168, brainlehr 84, shared 67, buckeberg 49, wohlair 46, +23 weitere Projekte (183)
 
 ## Juengste 15 Knoten
 
+- 2026-08-10 /brainlehr/brainlehr-ist-globale-standard — Brainlehr ist globale Standard-Wissensquelle fuer Codex
+- 2026-08-10 /brainlehr/der-melder-war-nie-kaputt-die-anzeige — Der Melder war nie kaputt — die Anzeige war es, und die Suche lief vier Stunden im eigenen Haus
 - 2026-08-10 /brainlehr/faehigkeiten/aus-wiederholten-fehlern-regeln-machen — Aus wiederholten Fehlern Regeln machen
 - 2026-08-10 /brainlehr/faehigkeiten/die-eigene-trefferquote-kennen — Die eigene Trefferquote kennen
 - 2026-08-10 /brainlehr/faehigkeiten/fremden-text-als-daten-kennzeichnen — Fremden Text als Daten kennzeichnen
@@ -51,11 +53,12 @@ nach Projekt: fahrtenbuch 253, openlehr 219, hub 187, systemweit 165, brainlehr 
 - 2026-08-10 /brainlehr/faehigkeiten/sagen-woher-eine-aussage-stammt — Sagen, woher eine Aussage stammt
 - 2026-08-10 /brainlehr/faehigkeiten/widersprueche-aushalten-statt-sie-zu — Widersprueche aushalten statt sie zu verstecken
 - 2026-08-10 /testdatenknoten-schreibrechtepruefung — Testdatenknoten – Schreibrechteprüfung 2026-08-10
-- 2026-08-10 /brainlehr/zwei-brainlehr-instanzen-einbuergerung — Zwei brainlehr-Instanzen: Einbuergerung, Visum, Asyl — drei davon sind schon gebaut
-- 2026-08-10 /brainlehr/lehren-die-niemand-bilden-darf-die — Lehren, die niemand bilden darf — die Destille als Ueberwachungsmaschine
 
 ## Juengste 15 Lehren
 
+- 2026-08-10 [antipattern] Vier Negativbefunde an einem Tag beschrieben das eigene PRUEFWERKZEUG statt der Sache -- jedes Mal ueberzeugend, jedes Mal falsch. Gemessen…
+- 2026-08-10 [antipattern] Ein Geheimnis liegt in einer Datei, die AUCH Erklaertext enthaelt -- und wird per `cat` als Ganzes uebergeben. Gemessen 2026-08-10 in…
+- 2026-08-10 [error] Vier Stunden Fehlersuche an einer Anzeige, deren Verhalten dokumentiert ist. Gemessen 2026-08-10 in brainlehr: Ein PostToolUse-Haken gab…
 - 2026-08-10 [antipattern] Ein Melder war fehlerfrei, sein Selbsttest gruen, seine Ausgabe belegt -- und er lief trotzdem nie. Gemessen 2026-08-10 in brainlehr:…
 - 2026-08-10 [pattern] Verfahren, das am 2026-08-10 in brainlehr einen Datei-Massenumzug (88 Skripte flach im Wurzelverzeichnis) von einer Rateuebung in eine…
 - 2026-08-10 [error] Eine Selbsttest-Reihe ueber 19 Skripte meldete am 2026-08-10 fuer JEDE Datei Erfolg, obwohl 7 davon mit Traceback abstuerzten. Die Schleife…
@@ -68,6 +71,3 @@ nach Projekt: fahrtenbuch 253, openlehr 219, hub 187, systemweit 165, brainlehr 
 - 2026-08-10 [antipattern] Ein Negativbefund aus einem Musterkatalog wurde beinahe als "sauber" weitergetragen. Gemessen 2026-08-10 in brainlehr: ein Regex-Katalog…
 - 2026-08-09 [insight] Die Frage "sperrt uns diese Sicherheitsmassnahme aus?" hat 2026-08-09 in brainlehr eine Luecke in der GEGENRICHTUNG aufgedeckt, nicht die…
 - 2026-08-09 [pattern] Verfahren, das 2026-08-09 in brainlehr die Ortswahl fuer einen Pruefstein entschieden hat, nachdem der Auftrag drei Einbauorte als…
-- 2026-08-09 [error] Die Standard-Shell dieser Umgebung ist zsh, nicht bash. `grep -rn "muster" . --include=*.py` bricht dort mit `zsh: no matches found:…
-- 2026-08-09 [antipattern] "Erfolgreich hochgeladen" als "beim Tester angekommen" gelesen. Gemessen 2026-08-09 in fahrtenbuch: Zwischen einem erfolgreichen…
-- 2026-08-09 [antipattern] Ein eingespielter Wissenstreffer wurde als Betriebsmeldung gelesen statt als Inhalt — und blieb dadurch wirkungslos, obwohl er genau den…

@@ -47,3 +47,6 @@ knowledge.db.vor-*
 
 # Koederliste fuer die Exportkontrolle: im Repo waere sie wirkungslos.
 koederwerte.txt
+
+# Melder-Protokoll: waechst bei jedem Vorgang, gehoert dem Rechner
+sichtbarkeit.log
