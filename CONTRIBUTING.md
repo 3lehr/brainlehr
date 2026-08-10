@@ -35,13 +35,20 @@ Wenn dir das zu weit geht: das ist eine legitime Entscheidung. Sag es im Issue,
 dann finden wir eine andere Form (Fehlerbericht, Reproduktionsfall,
 Dokumentation), die keine Rechteeinräumung braucht.
 
-## 3. Contributor License Agreement (CLA)
+## 3. Contributor License Agreement (CLA) — Fassung 2026-08-10
 
-> **Dies ist ein Entwurf und keine Rechtsberatung.** Der Text ist bewusst weit
-> gefasst. Vor dem ersten Einsatz gegenüber Dritten gehört er einer
-> Rechtsanwältin oder einem Rechtsanwalt für Urheber- und IT-Recht vorgelegt.
-> Bis dahin gilt er als Absichtserklärung des Projekts, nicht als geprüftes
-> Vertragswerk.
+> **Dieser Text gilt.** Er ist die Fassung, der du mit einem Beitrag zustimmst,
+> und der Projektinhaber richtet sich danach.
+>
+> **Er ist anwaltlich nicht geprüft**, und das steht hier, weil du es vor deiner
+> Zustimmung wissen sollst — nicht als Einschränkung seiner Geltung. Eine
+> Prüfung durch eine Rechtsanwältin oder einen Rechtsanwalt für Urheber- und
+> IT-Recht ist vorgesehen; ergibt sie Änderungsbedarf, entsteht eine neue
+> Fassung mit neuem Datum. **Spätere Fassungen wirken nicht rückwirkend:** für
+> deinen Beitrag gilt die Fassung, die du bei der Zustimmung genannt hast.
+>
+> Reicht dir das nicht, ist das eine legitime Entscheidung — Abschnitt 5 nennt
+> die Beitragsformen, die ohne CLA auskommen.
 
 Mit dem Einreichen eines Beitrags erklärst du Folgendes:
 
@@ -111,9 +118,14 @@ eine Bestimmung unwirksam, bleibt der Rest wirksam.
 Schreibe in den Pull Request eine Zeile:
 
 ```
-Ich habe CONTRIBUTING.md gelesen und stimme dem CLA in Abschnitt 3 zu.
+Ich habe CONTRIBUTING.md gelesen und stimme dem CLA in Abschnitt 3,
+Fassung 2026-08-10, zu.
 Name: <voller Name>   E-Mail: <Adresse>   Datum: <YYYY-MM-DD>
 ```
+
+Die Fassungsangabe gehört dazu. Ohne sie lässt sich später nicht mehr sagen,
+welchem Wortlaut du zugestimmt hast — und genau das ist die Frage, auf die es
+im Streitfall ankommt.
 
 Firmenbeiträge brauchen zusätzlich die Zeichnung durch eine vertretungs-
 berechtigte Person mit Angabe der Funktion.
