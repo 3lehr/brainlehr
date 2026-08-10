@@ -1,96 +1,150 @@
 # brainlehr
 
-Ein projektübergreifender Wissensspeicher — genauer: **kein Speicher für Wissen, sondern eine erzwungene Disziplin, an der Wissen anfällt.**
+Ein lokaler Wissensspeicher für Sprachmodelle, der nicht nur festhält, **was
+gesagt wurde**, sondern **was gilt** — und der misst, ob er dabei hilft.
 
-Der Unterschied ist nicht sprachlich. Er entscheidet, was hier drin ist:
+Läuft offline als MCP-Server auf SQLite. Kein Dienst, kein Konto, keine Cloud.
 
-| als Speicher gedacht | als Disziplin gedacht |
-|---|---|
-| Erfolg = viele Einträge | Erfolg = keine Aussage ohne Herkunft |
-| fehlende Inhalte sind der Mangel | umgehbare Regeln sind der Mangel |
-| der Abruf ist das Herz | die Schranke ist das Herz |
-| portabel heißt: Daten mitnehmen | portabel heißt: **Regeln** mitnehmen |
+---
 
-Die Regeln stehen als **31 Trigger in der Datenbank**, nicht im Anwendungscode. Sie binden jeden Schreiber — auch `sqlite3` von Hand, auch ein fremdes Werkzeug, auch ein Skript, das diese Zeilen nie gelesen hat. Wer ohne Herkunft schreibt, wird abgewiesen. Wer eine Herkunft umschreiben will, wird abgewiesen; nachtragen darf er.
+## Wofür das gut ist
 
-## Installieren
+Ein Sprachmodell vergisst zwischen zwei Sitzungen alles. Übliche Abhilfen legen
+Text in eine Vektordatenbank und holen ihn ähnlichkeitsbasiert zurück. Das
+beantwortet „worüber haben wir gesprochen" — aber nicht:
+
+- **Wer** hat das behauptet, und wurde es je geprüft?
+- Gilt es **noch**, oder ist es abgelöst?
+- Was, wenn **zwei Einträge sich widersprechen**?
+- Und: **wirkt** der Speicher überhaupt, oder liefert er nur Treffer?
+
+brainlehr beantwortet diese vier Fragen mit Feldern und Messungen statt mit
+Zuversicht.
+
+---
+
+## Was wirklich drin ist
+
+### Herkunft ist Pflicht, nicht Konvention
+`source` ist ein Pflichtfeld, erzwungen per **Datenbank-Trigger** — nicht per
+Konvention im Anwendungscode. Ein Eintrag ohne nachprüfbare Herkunft entsteht
+gar nicht erst. Herkunftsfelder sind nach dem Schreiben unveränderlich.
+
+### Geltung als eigene Achse
+Jede Aussage kann eine Norm sein: `norm_rang` (1 globale Regel, 2
+Projektentscheidung, 3 ADR), `gilt_ab` / `gilt_bis`, und die ausdrückliche
+Entscheidung `keine_norm | norm_befristet | norm_unbefristet` — ohne
+Vorgabewert, weil ein stiller Vorgabewert genau die Mehrdeutigkeit
+zurückbringt, die das Feld beseitigen soll.
+
+### Identität wird gemessen, nicht behauptet
+Wer schreibt, weist sich mit einem Ausweis aus (scrypt, Datei mit `0600`
+außerhalb der Datenbank). Ein Aufrufer kann seine Identität **nicht mehr im
+Aufruf behaupten**; ohne Ausweis trägt die Zuschreibung dauerhaft das Präfix
+`unbeglaubigt:`. Rollen folgen dem Muster `modul:aktion:bezug` — die dritte
+Stelle (`own`, `published`) macht Sichtbarkeit vom Bezug zum Datensatz
+abhängig statt von der Rolle allein. Siehe `docs/adr/ADR-002`.
+
+### Zwei Sorten Wissen
+**Knoten** tragen Sachverhalte, **Lehren** tragen Fehlerklassen samt Ursache,
+Behebung und Vermeidung. Wiederholt sich eine Lehre dreimal, eskaliert sie
+automatisch zur Regel.
+
+### Hybride Suche
+FTS5-Volltext (inkl. Trigramm) zusammen mit lokalen Vektor-Embeddings (bge-m3),
+per RRF verschmolzen. Beides läuft auf dem Gerät.
+
+### Assoziative Kanten
+`hebb_kanten.py` verstärkt Verbindungen zwischen Einträgen, die gemeinsam
+abgerufen werden. Eine Kante bedeutet dabei ausdrücklich **„kam zusammen vor"**,
+nicht „hängt zusammen" und schon gar nicht „führt zu".
+
+### Der Speicher misst sich selbst
+`abrufguete.py`, `pruefkorpus.py`, `wissensnutzen_blind.py`: A/B-Läufe gegen
+einen Prüfkorpus, blinde Nutzenbewertung, Rangfolge-Diagnose. Die Zahlen fallen
+regelmäßig schlecht aus — das ist der Zweck. Ein Speicher, der seine eigene
+Trefferquote nicht kennt, behauptet seinen Nutzen.
+
+### Zugriffsprotokoll mit Hashkette
+Jeder Lese- und Schreibvorgang landet in `access_log`, verkettet per SHA-256.
+Damit ist eine **nachträgliche Änderung nachweisbar** — sie ist dadurch nicht
+verhindert (keine Signatur, kein zweiter Rechner: wer Schreibrechte auf die
+Datei hat, kann die Kette neu rechnen).
+
+---
+
+## Was es ausdrücklich NICHT ist
+
+Diese Liste ist wichtiger als die obere, weil sie das Vertrauen bestimmt:
+
+- **Keine Anonymisierung.** `kanonymitaet.py` *misst* k-Anonymität und
+  verwendet das Wort „anonym" bewusst nie — ob ein gemessenes k genügt, ist
+  eine Rechtsfrage und hängt von Kontextwissen ab, das keine Datenbank hat.
+  Das Werkzeug liefert die Zahl, den Schluss zieht ein Mensch.
+- **Keine Verschlüsselung.** Die Hashkette weist Änderungen nach, sie verhindert
+  sie nicht.
+- **Keine BSI-Zertifizierung.** Es gibt ein Prüfprofil und harte Verbote
+  (keine Secrets im Code, kein `eval` auf Nutzereingaben, Passwort-Hashing).
+  „Erfüllt den Stand der Technik" wäre eine Behauptung, kein Nachweis.
+- **Kein Schutz gegen Promptinjektion.** Rechte begrenzen den *Radius*, nicht
+  die *Möglichkeit*: Wer den Kontext eines Modells steuert, handelt mit dessen
+  Rechten, und die Prüfung sieht einen legitimen Aufruf. Siehe
+  `docs/KONZEPT_BETEILIGUNG_UND_DATENPUNKTE_2026-08-09.md`, Kapitel 5b.
+- **Kein Mehrbenutzerbetrieb.** Ausweise und Rollen existieren, aber der
+  Transport ist stdio: ein Prozess, ein Rechner. HTTP ist entschieden
+  (`ADR-001`), nicht gebaut.
+
+---
+
+## Schnellstart
 
 ```bash
-python3 brainlehr.py init /pfad/zum/ort
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# Datenbank anlegen
+sqlite3 knowledge.db < schema.sql
+sqlite3 knowledge.db < herkunft_unveraenderlich.sql
+
+# Selbsttests der Kernmodule
+python3 ausweis.py --selftest
+python3 werkzeugrechte.py --selftest
+python3 normbezug.py --selftest
+pytest -q
+
+# als MCP-Server starten (stdio)
+python3 knowledge_mcp_server.py
 ```
 
-Legt an einem beliebigen Ort eine leere, vollständig regelbewehrte Datenbank an und sagt, was sie enthält. Ein vorhandener Bestand wird nie überschrieben.
+Anbindung an einen MCP-Klienten über dessen Konfiguration; der Server spricht
+JSON-RPC über Standardein- und -ausgabe.
 
-Dann die Automatik anschließen — **ohne sie ist es nur ein Speicher**:
+---
 
-```bash
-python3 brainlehr.py haken
-```
-
-Zeigt, welche vier Haken fehlen und was jeder tut. Mit `--einbauen` trägt der Befehl sie in `~/.claude/settings.json` ein (Sicherung vorher, zweiter Lauf ändert nichts).
-
-| Haken | Wann | Was er erzwingt |
-|---|---|---|
-| `haken/knowledge_recall_hook.py` | bei jedem Prompt | passendes Wissen wird eingespielt, ohne dass jemand es abruft |
-| `haken/auftrag_recall_hook.py` | bei jedem Prompt | offene Aufträge werden gemeldet |
-| `haken/mcp_veraltet.py` | bei jedem Prompt | Warnung, wenn ein laufender Server älteren Code hält als die Datei |
-| `haken/knowledge_capture_hook.py` | am Sitzungsende | Dauerhaftes wird abgelegt, statt im Gesprächsverlauf zu verfallen |
-
-Turnusmäßig, kein Haken: `python3 haken/kurator_taeglich.py` (Verdichtung, einmal täglich).
-
-## Bestand mitnehmen
-
-```bash
-python3 brainlehr.py raus auszug.jsonl
-```
-```bash
-python3 brainlehr.py rein auszug.jsonl --db /neuer/ort/knowledge.db
-```
-
-Zeilenweise statt Dateikopie, aus einem Grund: **eine SQLite-Datei lässt sich nicht zusammenführen, git überschreibt sie.** Zeilen lassen sich vergleichen, zusammenführen und lesen.
-
-Der Auszug trägt Knoten, Lehren, Kanten, Einstellungen, das Zugriffsprotokoll und die Eskalationen. Nicht mit gehen die Vektoren und der Volltextindex — beide ableitbar. Den Volltext bauen die Trigger beim Einlesen selbst auf; die Vektoren rechnet `build_embeddings.py` neu. Ein Vektor aus einem anderen Einbettungsmodell wäre still falsch, und still falsch ist schlimmer als fehlend.
-
-**`knowledge.db` ist absichtlich nicht versioniert.** Versioniert wird `schema.sql`, `herkunft_unveraenderlich.sql` und ein Auszug unter `auszug/`. Grund: git führt eine Binärdatei nicht zusammen, es überschreibt sie — und am 2026-08-07 lag hier bereits eine beschädigte Fassung im Commit, womit die Versionsverwaltung als Rettungsweg wertlos war.
-
-## Prüfen
-
-```bash
-python3 -m pytest tests -q
-```
-
-Der Test, der am meisten über dieses Vorhaben sagt, heißt `test_erstanlage_traegt_dasselbe_schema_wie_der_betrieb`. Er darf nur in eine Richtung ausschlagen: **der Betrieb darf nichts kennen, was eine Erstanlage nicht bekommt.** Am 2026-08-08 schlug er aus — eine frische Installation trug zwei Trigger, sechs Tabellen und zwei Spalten weniger als die gewachsene Datenbank, darunter ausgerechnet die Herkunftsschranke. Wer damals klonte, bekam brainlehr ohne die Regel, die brainlehr ist.
-
-## Nachsehen, was still kaputt ist
-
-```bash
-python3 doctor.py
-```
-
-Fünf Proben, keine ausgedacht — jede hatte am 2026-08-08 einen echten Befund: Regelgleichheit (Erstanlage gegen Betrieb), tote Pfade in Konfigurationen, Schreibbarkeit der Datenbank, verwaiste Funktionen, Bestandshygiene. Rückgabewert 0 nur, wenn nichts gefunden wurde — damit taugt er als Tor.
-
-## Aufsätze
-
-`aufsaetze/` enthält, was **zeigt statt zu binden**. Die Trennlinie ist ein Satz: *Darf es ausfallen, ohne dass eine Aussage ihre Herkunft verliert?* Ja → Aufsatz. Nein → Kern.
-
-```bash
-python3 aufsaetze/agenten.py
-```
-
-Welcher Agent läuft, welcher liegt brach. Die interessante Zahl ist nicht die Rangliste, sondern der Nenner: wie viele der definierten Agenten wurden **nie** ausgelöst.
-
-## Wo was liegt
+## Aufbau
 
 ```
-knowledge_mcp_server.py     der Server (MCP über stdio) und zugleich die Bibliothek
-schema.sql                  einzige Schemaquelle — Regeln gehören hierher, nicht in ein Skript
-herkunft_unveraenderlich.sql die Herkunftsschranke
-brainlehr.py                init / raus / rein / haken
-haken/                      die Automatik samt haken/ort.py (ein Ort für den Pfad)
-doctor.py                   sucht, was still kaputt ist
-aufsaetze/                  was zeigt statt zu binden — darf ausfallen
-auszug/                     versionierte Auszüge des Bestands
-tests/                      pytest
+knowledge_mcp_server.py   MCP-Schnittstelle, 23 Werkzeuge, ein Choke-Point
+ausweis.py                Identität, Rollen, Mandate, Einladungen
+werkzeugrechte.py         Durchsetzung an tools/call, Bezug own/published
+foederation.py            Instanzkennung, Vertrauensliste zwischen Instanzen
+normbezug.py              meldet Normzitate ohne Beleg in eigenen Antworten
+embeddings.py             lokale Vektoren + RRF-Fusion
+hebb_kanten.py            assoziative Kanten aus gemeinsamem Abruf
+kanonymitaet.py           misst k-Anonymität (misst, anonymisiert nicht)
+haken/                    Hooks für Abruf und Erfassung
+schreibpruefstand/        Messläufe gegen lokale Modelle
+docs/adr/                 Entscheidungen mit Begründung und Abbruchbedingung
 ```
 
-`BEGOD_KNOWLEDGE_DB` sticht den Vorgabepfad — geachtet von `haken/ort.py` und vom Server.
+---
+
+## Herkunft dieser Datei
+
+Die Struktur folgt einem Vorschlag, der aus einer Analyse des Repos entstand.
+Drei Aussagen daraus wurden beim Gegenlesen am Quelltext **nicht bestätigt** und
+sind hier korrigiert: automatische Anonymisierung (findet nicht statt),
+„kryptografisch verankert" (SHA-256 ohne Signatur), sowie zwei genannte Dateien,
+die es nicht gibt. Das ist kein Nebensatz, sondern die Arbeitsweise dieses
+Projekts: **eine Aussage über den Code wird am Code geprüft, bevor sie
+weitergetragen wird.**

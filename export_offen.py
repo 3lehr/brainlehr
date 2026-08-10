@@ -51,7 +51,10 @@ VERBOTENE_WERTE = ("Quenzelbach", "990177", "Fritz Mueller", "Fritz Müller",
                    "Im Buckeberg")
 VERBOTENE_MUSTER = {
     "IBAN": re.compile(r"\bDE\d{2}[ ]?(?:\d{4}[ ]?){4}\d{2}\b"),
-    "Telefon": re.compile(r"\b(?:\+49|0)[\d /()-]{9,20}\d\b"),
+    # Kein Buchstabe unmittelbar davor: sonst trifft das Muster
+    # Teilenummern wie "GSC-05-82730-00" (gemessen 2026-08-10, einziger
+    # Treffer in 1731 NASA-/Methodik-Knoten -- und ein Fehlalarm).
+    "Telefon": re.compile(r"(?<![A-Za-z0-9-])(?:\+49|0)[\d /()-]{9,20}\d\b"),
 }
 # Mailadressen aus oeffentlichen Fremdquellen sind kein Personenbezug des
 # Betreibers -- die NASA-LLIS-Eintraege tragen Behoerdenadressen.
