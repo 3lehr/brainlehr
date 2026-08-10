@@ -74,6 +74,19 @@ knowledge_mcp_server.py und suchpfad_abruf.py werden NICHT geaendert, nur
 importiert (gleiche Bauform wie suchpfad_abruf.py selbst)."""
 from __future__ import annotations
 
+import sys as _sys
+from pathlib import Path as _Path
+
+# Findet die Repo-Wurzel an schema.sql statt an einer Anzahl von Ebenen.
+# Eine feste Ebenenzahl (parent.parent) bricht beim naechsten Umzug lautlos;
+# ein Merkmal der Wurzel bricht nie. Danach liegen Wurzel und die beiden
+# Ordner mit importierbaren Modulen im Suchpfad.
+_w = _Path(__file__).resolve().parent
+while not (_w / "schema.sql").exists() and _w != _w.parent:
+    _w = _w.parent
+_sys.path[:0] = [str(_w)] + [str(_w / o) for o in
+                 ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
+
 import os
 import re
 import sqlite3

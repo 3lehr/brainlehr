@@ -5,6 +5,19 @@ Abweichung vom Auftrag: lessons_learned hat keine Spalte created_at, nur
 first_seen/last_seen -> first_seen wird als Zeitstempel verwendet.
 """
 
+import sys as _sys
+from pathlib import Path as _Path
+
+# Findet die Repo-Wurzel an schema.sql statt an einer Anzahl von Ebenen.
+# Eine feste Ebenenzahl (parent.parent) bricht beim naechsten Umzug lautlos;
+# ein Merkmal der Wurzel bricht nie. Danach liegen Wurzel und die beiden
+# Ordner mit importierbaren Modulen im Suchpfad.
+_w = _Path(__file__).resolve().parent
+while not (_w / "schema.sql").exists() and _w != _w.parent:
+    _w = _w.parent
+_sys.path[:0] = [str(_w)] + [str(_w / o) for o in
+                 ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
+
 # Liegt eine Ebene unter der Wurzel: die Wurzel muss auf den Suchpfad,
 # sonst findet `import knowledge_mcp_server` nichts. Muster aus haken/.
 import sys as _sys
