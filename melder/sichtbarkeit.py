@@ -136,6 +136,18 @@ def _kennung(conn: sqlite3.Connection, row: sqlite3.Row) -> str | None:
     return row["node_path"] or query or "?"
 
 
+def _knotenname(conn: sqlite3.Connection, pfad: str) -> str:
+    """Der NAME eines Knotens, nicht sein Pfad (Betreiber-Vorgabe 2026-08-10:
+    "mir wuerde eigentlich reichen wenn der knotennamen angezeigt wird").
+
+    Der letzte Pfadteil, nicht der Titel aus dem Bestand. Der Titel war der
+    erste Versuch und machte die Zeile LAENGER statt kuerzer -- drei Titel
+    fuellen zwei Zeilen, und die Aufgabe war Verknappung. Die Elternkette
+    davor traegt fuer den Leser ohnehin nichts bei.
+    """
+    return pfad.rstrip("/").rsplit("/", 1)[-1] or pfad
+
+
 def neue_zeilen(conn: sqlite3.Connection, ab_id: int) -> tuple[list[str], int]:
     """Meldezeilen fuer jeden Schreibvorgang mit id > ab_id.
 
@@ -183,11 +195,12 @@ def neue_zeilen(conn: sqlite3.Connection, ab_id: int) -> tuple[list[str], int]:
         pfade = sorted(gelesen.get(wort, ()))
         if not pfade:
             continue
-        if len(pfade) <= 3:
-            lesezeilen.append(f"{wort}: {', '.join(pfade)}")
+        namen = [_knotenname(conn, p) for p in pfade]
+        if len(namen) <= 3:
+            lesezeilen.append(f"{wort}: {', '.join(namen)}")
         else:
             lesezeilen.append(
-                f"{wort}: {', '.join(pfade[:3])} und {len(pfade) - 3} weitere")
+                f"{wort}: {', '.join(namen[:3])} und {len(namen) - 3} weitere")
     return lesezeilen + zeilen, letzte_id
 
 
@@ -281,7 +294,7 @@ def _selftest() -> None:
     zeile(3, "relation_list", "/x", None, "completed")
     zeile(4, "annahme", None, "liste:offen", "completed")
     z, letzte = neue_zeilen(conn, 0)
-    assert z == ["durchgesehen: /x"], f"Lesen muss gemeldet werden, bekam: {z}"
+    assert z == ["durchgesehen: x"], f"Lesen muss gemeldet werden, bekam: {z}"
     # Ohne Knotenpfad keine Zeile: eine Suche ohne Treffer hat nichts zu
     # zeigen, und "nachgeschlagen: nichts" ist Laerm.
     assert not any("nachgeschlagen" in x for x in z), \
