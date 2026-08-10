@@ -133,7 +133,25 @@ def _kennung(conn: sqlite3.Connection, row: sqlite3.Row) -> str | None:
     if action == "annahme" and query:
         return query
 
-    return row["node_path"] or query or "?"
+    pfad = row["node_path"]
+    if not pfad:
+        return query or "?"
+    # Name UND Kennung (Betreiber-Vorgabe 2026-08-10). Knoten tragen anders
+    # als Lehren kein sprechendes Praefix -- ihre Kennung ist achtstellig und
+    # praefixlos (cc5042dd). Ein "W-" einzufuehren haette 2056 vorhandene
+    # Kennungen umgeschrieben, die in unveraenderlichen Herkunftsfeldern und
+    # in knowledge_relations stehen; der Preis steht in keinem Verhaeltnis.
+    # Der Name allein genuegt nicht: mit der Kennung findet man den Knoten
+    # wieder, mit dem Namen nur, solange er einmalig ist.
+    try:
+        treffer = conn.execute(
+            "SELECT id FROM knowledge_nodes WHERE path = ?", (pfad,)
+        ).fetchone()
+        if treffer and treffer["id"]:
+            return f"{_knotenname(conn, pfad)} \u00b7 {treffer['id']}"
+    except sqlite3.Error:
+        pass
+    return _knotenname(conn, pfad)
 
 
 def neue_einspielungen(session: str, ab_zeile: int) -> tuple[list[str], int]:
@@ -365,7 +383,10 @@ def _selftest() -> None:
     # Angelegt: node_path traegt die Kennung direkt.
     zeile(7, "add", "/neu", None, "completed")
     z, letzte = neue_zeilen(conn, 6)
-    assert z == ["abgelegt: /neu (Knoten)"], z
+    # Name statt Pfad, und die Kennung dahinter, sobald der Knoten im
+    # Bestand steht. Die Testdatenbank hat keine knowledge_nodes-Tabelle --
+    # dort greift der Rueckfall auf den blossen Namen, und genau das soll er.
+    assert z == ["abgelegt: neu (Knoten)"], z
 
     # Lehre neu: query ist der Volltext, die ID kommt aus dem Join.
     conn.execute("INSERT INTO lessons_learned VALUES ('L-a1b2c3', 'ein Testfehler', '2026-08-09')")
