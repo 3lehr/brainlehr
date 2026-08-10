@@ -1,14 +1,10 @@
-# STAND brainlehr — 2026-08-10T06:40:00+0200
-
-Gebaut auf Zweig `brainlehr/b4-ausweis` (17 Commits, NICHT gepusht): B4.1-B4.5.
-Identitaet aus Ausweis statt Behauptung (`ausweis.py`), Durchsetzung an
-`tools/call` (`werkzeugrechte.py`), Bezug :own/:published, Einbuergerungsamt
-(`ausweis:ausstellen`, nicht delegierbar, Gruendungsakt ausgenommen). Dazu
-`normbezug.py` — meldet bei jeder Antwort unbelegte Normzitate und erfundene
-Kennungen, verdrahtet in `haken/antwort_abruf.py --stop`. Entscheidung: ADR-002.
-Nebenbefund mit groesster Wirkung: der Bereichsfilter kannte `systemweit` nicht —
-150 Lehren waren bei gesetztem scope unsichtbar, jetzt behoben.
-Naechstes: B4.6 Verfassung, Zweckprojektion (Konzept Kap. 7b), Abstimmung.
-WICHTIG: `weich` ist die Vorgabe und KEIN Schutz — ohne Ausweis darf jeder
-alles. Wartet auf den Betreiber: ersten Ausweis anlegen (Gruendungsakt),
-`sudo chown root` am Ausweisordner, `BRAINLEHR_DURCHSETZUNG=streng`.
+# STAND brainlehr — 2026-08-10T08:55:00+0200
+**Zuerst lesen:** `docs/STARTPROMPT_2026-08-09_ABEND.md`, dann `docs/PLAN_B4_AUSWEIS_2026-08-09.md`.
+**Gepusht auf `brainlehr/b4-ausweis` (`8141ffc`):** 19 Skripte aus der Wurzel nach `messungen/`, `pflege/`, `berichte/` (88 → 69 .py); drei verdrahtete Melder repariert; `CONTRIBUTING.md` mit CLA-Entwurf. Plan und Abnahme in `docs/PLAN_WURZELORDNUNG_2026-08-10.md`.
+**Der Melder-Befund war der Grund, warum im Chat nichts mehr von brainlehr kam:** `sichtbarkeit.py`, `pruefer.py`, `rasterblick.py` suchten `haken/` eine Ebene zu hoch und starben mit `ModuleNotFoundError`. Jeder Haken endet auf `2>/dev/null || true` — Absturz sieht aus wie „nichts zu melden".
+**Noch offen, dieselbe falsche Ebene, nicht verdrahtet:** `eskalation_vorlage.py`, `foederation.py`, `kanonymitaet.py`, `faehigkeiten.py`, `nasa_llis_import.py`.
+**Wartet auf Betreiber (kritisch):** `origin/main` enthält **kein LICENSE, NOTICE, LICENSE_FAQ.md** — die liegen nur auf dem Arbeitszweig, main ist 132 Commits zurück. Wer heute klont, bekommt Quelltext ohne Lizenz. Dazu: CLA-Entwurf braucht anwaltliche Prüfung.
+**Gemessener Defekt der Neuinstallation:** `tests/test_brainlehr_umzug.py` zeigt, dass eine Erstanlage aus `schema.sql` zwei Tabellen weniger trägt als der Betrieb (`knowledge_versions`, `schema_migrations`). Ein frischer Klon bekommt also ein anderes Schema.
+**Testsuite:** 8 fehlgeschlagen / 762 grün / 6 Fehler. Namentlich gegen einen frischen Baum auf `cc5c531` verglichen — genau ein Unterschied, und der ist der Schema-Defekt oben, nicht der Umzug.
+**Nicht vergessen:** Exit-Code hinter einer Pipe (`cmd | tail; $?`) misst `tail`, nicht `cmd` — hat hier 7 abstürzende Selbsttests als grün gemeldet (L-733583). Fehlgeschlagene Massenumbauten werden zurückgesetzt, nicht repariert (L-6903d2).
+**Nächster Schritt:** frischen Klon `/Volumes/daten/Begod2026/_probe_brainlehr` nach README-Schnellstart aufsetzen und prüfen, ob eine Neuinstallation ohne unsere Datenbank durchläuft.
