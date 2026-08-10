@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-10T22:48:00+02:00 — test(enigma): pin synthetic housekeeper confidentiality contract
+
+- Files: `tests/test_enigma_hausmeister_contract.py`
+- Why: The public MCP read path needs an executable, PII-free red acceptance case before an Enigma purpose-projection boundary is built.
+- Verified: `pytest -q tests/test_enigma_hausmeister_contract.py` — 1 expected failure; `pytest -q --runxfail tests/test_enigma_hausmeister_contract.py` exposes the current raw content and metadata leak; focused existing identity/right/derivation suite passed (20 tests).
+- Remaining risk: Identity binding only proves who called; this server still has no purpose, responsibility, recipient, or response projection decision.
+- Next test: Implement one closed purpose/recipient gate and make Z0–Z8 green without exposing content, source, path, times, IDs, or edges.
+
 ## 2026-08-10T20:38:19+02:00 — docs(brainlehr): record client-documentation source gates
 
 - Files: `docs/FREMDBESTAENDE.md`, `docs/PLAN_KLIENTENDOKU_2026-08-10.md`
