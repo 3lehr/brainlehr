@@ -17,7 +17,7 @@ Terminal öffnen, dann:
 
 ```
 cd /Volumes/daten/Begod2026/hub/shared-knowledge
-python3 wiederherstellung.py pruefe --alle
+python3 pflege/wiederherstellung.py pruefe --alle
 ```
 
 Das listet jede vorhandene Sicherung mit einem Urteil:
@@ -34,7 +34,7 @@ erkennbar ist, wie viel Verlust ein Rückspielen bedeutet.
 Nur eine bestimmte Sicherung prüfen (Dateiname aus der Liste):
 
 ```
-python3 wiederherstellung.py pruefe knowledge.db.bak-20260805T230122
+python3 pflege/wiederherstellung.py pruefe knowledge.db.bak-20260805T230122
 ```
 
 ## Schritt 2: Sicherung zurückspielen
@@ -44,7 +44,7 @@ einen ANDEREN Ort zurückspielen, dort prüfen, danach von Hand entscheiden,
 ob die Live-Datenbank ersetzt wird.
 
 ```
-python3 wiederherstellung.py stelle_her knowledge.db.bak-20260805T230122 --ziel /tmp/wiederhergestellt.db
+python3 pflege/wiederherstellung.py stelle_her knowledge.db.bak-20260805T230122 --ziel /tmp/wiederhergestellt.db
 ```
 
 Ausgabe zeigt `stimmt ueberein: True` oder `False`. Bei `False` stehen die

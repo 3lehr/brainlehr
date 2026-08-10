@@ -58,9 +58,9 @@ sqlite3 knowledge.db < herkunft_unveraenderlich.sql
 python3 brainlehr.py rein auszug-offen/bestand.jsonl --db knowledge.db
 
 # Selbsttests der Kernmodule — brauchen KEINE Abhängigkeiten
-python3 ausweis.py --selftest
-python3 werkzeugrechte.py --selftest
-python3 normbezug.py --selftest
+python3 kern/ausweis.py --selftest
+python3 kern/werkzeugrechte.py --selftest
+python3 kern/normbezug.py --selftest
 
 # als MCP-Server starten (stdio)
 python3 knowledge_mcp_server.py

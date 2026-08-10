@@ -76,6 +76,22 @@ def test_genannte_dateien_gibt_es(name):
     assert not fehlend, f"{name} nennt, was es nicht gibt: {sorted(fehlend)}"
 
 
+@pytest.mark.parametrize("name", DOKUMENTE)
+def test_genannte_befehle_sind_ausfuehrbar(name):
+    """Jeder dokumentierte `python3 <datei>.py` muss existieren.
+
+    ROT VOR GRUEN: Am 2026-08-10 nannte die README `python3 ausweis.py
+    --selftest` -- die Datei war beim Wurzelumzug nach kern/ gewandert. Fuenf
+    solcher Befehle waren kaputt, in README, AUFBAU.md und dem Runbook. Der
+    vorhandene Datei-Test fand sie nicht: er prueft Pfade in Backticks, nicht
+    Befehle in Codebloecken. Eine Anleitung, deren erster Befehl scheitert,
+    ist schlimmer als keine."""
+    text = _text(name)
+    befehle = set(re.findall(r"python3 ([a-z_][a-z_/]*\.py)", text))
+    fehlend = [b for b in befehle if not (WURZEL / b).exists()]
+    assert not fehlend, f"{name} nennt Befehle, deren Datei fehlt: {sorted(fehlend)}"
+
+
 def test_genannte_fehlermeldungen_stehen_im_code():
     """Die Tabelle 'Wenn etwas nicht geht' ist nur brauchbar, solange die
     Meldungen wirklich so lauten. Sie stammen aus den Triggern und aus dem

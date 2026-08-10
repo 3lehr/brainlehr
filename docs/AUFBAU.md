@@ -17,7 +17,7 @@ Der Beispielbestand enthält **keine** Embeddings. Das ist kein Vergessen:
 
 ```bash
 pip install -r requirements.txt
-python3 build_embeddings.py          # einmalig, dauert je nach Gerät
+python3 kern/build_embeddings.py          # einmalig, dauert je nach Gerät
 ```
 
 Danach läuft die hybride Suche (FTS5 + Vektoren, per RRF verschmolzen). Ein
