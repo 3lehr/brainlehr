@@ -1,0 +1,129 @@
+{
+  "zweck": "Lizenzampel fuer Fremdquellen. Entscheidet, was in ein weitergebbares Repo darf.",
+  "stand": "2026-08-10T07:30:00+0200",
+  "herkunftsvorbehalt": [
+    "Die Felder 'betreiber', 'url' und 'lizenz_vermutet' stammen aus MODELLWISSEN",
+    "und sind NICHT an der Primaerquelle geprueft. Ein Modellgedaechtnis ist",
+    "eingefroren; Lizenzen und Zugangswege aendern sich. Genau diese Klasse von",
+    "Aussage darf nicht aus der Erinnerung weitergetragen werden (L-62b600).",
+    "",
+    "Darum steht 'ampel' bei JEDER Quelle auf 'unbekannt', bis jemand die",
+    "Lizenzseite aufgerufen und das Ergebnis mit Datum und Fundstelle eingetragen",
+    "hat. Vorgabe ist damit deny: was nicht ausdruecklich gruen ist, wird nicht",
+    "importiert und schon gar nicht weitergegeben."
+  ],
+  "ampel": {
+    "gruen": "Lizenz erlaubt Weitergabe im Repo. Import und Export zulaessig.",
+    "gelb": "Import zulaessig, Weitergabe NICHT. Bleibt freigabe='intern'.",
+    "rot": "Kein Import. Lizenz verbietet es oder ist nicht klaerbar.",
+    "unbekannt": "Nicht geprueft. Verhaelt sich wie rot."
+  },
+  "quellen": [
+    {
+      "kennung": "nasa-llis",
+      "name": "NASA Lessons Learned Information System",
+      "betreiber": "NASA",
+      "url": "https://llis.nasa.gov/",
+      "lizenz_vermutet": "US-Bundeswerk, gemeinfrei (17 U.S.C. §105) — UNGEPRUEFT",
+      "ampel": "gruen",
+      "geprueft_am": "2026-08-09",
+      "geprueft_wie": "1637 Eintraege importiert und im Bestand; die Ampel folgt der bereits vollzogenen Uebernahme, nicht einer neuen Pruefung der Lizenzseite",
+      "importiert": true,
+      "eintraege": 1637,
+      "pfad": "/nasa-llis",
+      "importskript": "nasa_llis_import.py"
+    },
+    {
+      "kennung": "esa-lessons",
+      "name": "ESA Lessons Learned",
+      "betreiber": "European Space Agency",
+      "url": "https://www.esa.int/",
+      "lizenz_vermutet": "unklar — ESA-Inhalte teils CC BY-SA 3.0 IGO, teils nicht — UNGEPRUEFT",
+      "ampel": "unbekannt",
+      "importiert": false,
+      "pruefauftrag": "Lizenzseite aufrufen, Nutzungsbedingungen des Lessons-Bestands klaeren, Zugangsweg (Portal/Download/API) feststellen"
+    },
+    {
+      "kennung": "asrs",
+      "name": "Aviation Safety Reporting System",
+      "betreiber": "NASA/FAA",
+      "url": "https://asrs.arc.nasa.gov/search/database.html",
+      "lizenz_vermutet": "oeffentliche Datenbank, Berichte anonymisiert — UNGEPRUEFT",
+      "ampel": "unbekannt",
+      "importiert": false,
+      "pruefauftrag": "Nutzungsbedingungen pruefen; besonders: sind die Berichte fuer eine Weitergabe im Repo freigegeben, und wie belastbar ist die Anonymisierung?"
+    },
+    {
+      "kennung": "faa",
+      "name": "FAA Lessons Learned from Transport Airplane Accidents",
+      "betreiber": "Federal Aviation Administration",
+      "url": "https://lessonslearned.faa.gov/",
+      "lizenz_vermutet": "US-Bundeswerk, gemeinfrei — UNGEPRUEFT",
+      "ampel": "unbekannt",
+      "importiert": false,
+      "pruefauftrag": "Lizenz und Abrufweg pruefen (Portal ohne API?)"
+    },
+    {
+      "kennung": "nrc-ler",
+      "name": "NRC Licensee Event Reports",
+      "betreiber": "U.S. Nuclear Regulatory Commission",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/event-status/",
+      "lizenz_vermutet": "US-Bundeswerk, gemeinfrei — UNGEPRUEFT",
+      "ampel": "unbekannt",
+      "importiert": false,
+      "pruefauftrag": "Lizenz pruefen; enthalten die Berichte Personenbezug (Betreiberpersonal)?"
+    },
+    {
+      "kennung": "cross",
+      "name": "CROSS — Confidential Reporting on Structural Safety",
+      "betreiber": "CROSS-UK / CROSS-US",
+      "url": "https://www.cross-safety.org/",
+      "lizenz_vermutet": "vertrauliche Meldungen, veroeffentlichte Fassungen anonymisiert — UNGEPRUEFT",
+      "ampel": "unbekannt",
+      "importiert": false,
+      "pruefauftrag": "Nutzungsbedingungen pruefen. Vertraulichkeit ist hier der Kern des Systems — eine Weitergabe im Repo ist voraussichtlich NICHT gedeckt"
+    },
+    {
+      "kennung": "nist",
+      "name": "NIST — Ausfall- und Untersuchungsberichte",
+      "betreiber": "National Institute of Standards and Technology",
+      "url": "https://www.nist.gov/",
+      "lizenz_vermutet": "US-Bundeswerk, gemeinfrei — UNGEPRUEFT",
+      "ampel": "unbekannt",
+      "importiert": false,
+      "pruefauftrag": "Welcher Bestand genau? NIST ist breit — vor dem Import den Teilbestand benennen"
+    },
+    {
+      "kennung": "fda-maude",
+      "name": "FDA MAUDE — Manufacturer and User Facility Device Experience",
+      "betreiber": "U.S. Food and Drug Administration",
+      "url": "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm",
+      "lizenz_vermutet": "oeffentlich, US-Bundeswerk — UNGEPRUEFT",
+      "ampel": "unbekannt",
+      "importiert": false,
+      "pruefauftrag": "Lizenz pruefen. ACHTUNG Personenbezug: Meldungen zu Medizinprodukten koennen Gesundheitsdaten (Art. 9 DSGVO) enthalten — vor Import kanonymitaet.py ansetzen"
+    },
+    {
+      "kennung": "iaea-irs",
+      "name": "IAEA International Reporting System for Operating Experience",
+      "betreiber": "International Atomic Energy Agency",
+      "url": "https://www.iaea.org/",
+      "lizenz_vermutet": "Zugang auf Mitgliedstaaten/berechtigte Stellen beschraenkt — UNGEPRUEFT",
+      "ampel": "unbekannt",
+      "importiert": false,
+      "pruefauftrag": "Zugangsberechtigung klaeren. Voraussichtlich ROT: ein beschraenkter Bestand darf weder importiert noch weitergegeben werden"
+    },
+    {
+      "kennung": "bsi-grundschutz",
+      "name": "BSI Grundschutz++ / Stand der Technik (Entwicklungsprofil)",
+      "betreiber": "Bundesamt fuer Sicherheit in der Informationstechnik",
+      "url": "https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/IT-Grundschutz/it-grundschutz_node.html",
+      "lizenz_vermutet": "BSI-Inhalte oft unter CC BY-ND oder eigener Nutzungsregel — UNGEPRUEFT, und ND wuerde Bearbeitung ausschliessen",
+      "ampel": "unbekannt",
+      "importiert": "teilweise",
+      "hinweis": "Das abgeleitete Entwicklungsprofil (bsi-dev-profile.json, 947 Controls) liegt im Repo und wird von compliance-Pruefungen gelesen. Ob eine Weitergabe der ABGELEITETEN Fassung gedeckt ist, ist genau die offene Frage — bei einer ND-Lizenz waere eine Bearbeitung unzulaessig.",
+      "pruefauftrag": "Nutzungsbedingungen der Quelldokumente pruefen, BEVOR bsi-dev-profile.json weitergegeben wird",
+      "bekannte_luecke": "Der Katalog deckt vier Pruefbereiche NICHT ab: Negativtests, Grenzwertpruefung, Nachweis der Testwirksamkeit (Mutationstests) und statische Analyse. Wer sie regelt, trifft eine eigene Entscheidung — 'Stand der Technik laut BSI' deckt sie nicht (Knoten /shared/arch/bsi-katalog-deckt-prueftiefe-nicht-ab, gemessen 2026-07-31)."
+    }
+  ]
+}
