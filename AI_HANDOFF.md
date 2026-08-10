@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-10T20:40:00+02:00 — test(compliance): recognize active Claude-Code knowledge MCP
+
+- Files: `tests/test_agent_compliance.py`
+- Why: The external compliance check only recognised the historical VS-Code `knowledge-mcp` entry, although the active Hub Claude-Code client declares the same server as `knowledge` in `.mcp.json`. It also classified the generated global lessons instruction as a narrow file.
+- Verified: `python3 -m pytest -q tests/test_agent_compliance.py tests/test_caveman_integration.py` — 174 passed; the two remaining failures are the known, uncommitted Hub Caveman-policy contradictions below.
+- Remaining risk: Hub's untracked `begod/knowledge/meta/caveman_policy.json` allows agent definitions and sets `ultra`, contrary to its `.github/instructions/caveman.instructions.md` and the failing policy tests; do not overwrite those foreign changes.
+- Next test: After the Hub owner resolves that policy conflict, rerun `python3 -m pytest -q tests/test_caveman_integration.py`.
+
 ## 2026-08-10T20:33:15+02:00 — test(recall): align selftest fixture with active recall contract
 
 - Files: `tests/test_knowledge_recall_hook.py`

@@ -160,7 +160,7 @@ class TestInstructionsCompliance:
         fm, _ = parse_frontmatter(filepath)
         apply_to = fm.get("applyTo", "")
         if apply_to == "**":
-            meta_names = ["orchestration", "governance", "bridge", "token", "git", "session"]
+            meta_names = ["orchestration", "governance", "bridge", "token", "git", "session", "lessons"]
             is_meta = any(m in filepath.stem.lower() for m in meta_names)
             if not is_meta:
                 pytest.fail(f"{filepath.name}: applyTo='**' is too broad. Use a specific glob pattern.")
@@ -241,12 +241,17 @@ class TestMCPConfig:
         ("bebetter", PROJECTS["bebetter"]),
     ])
     def test_knowledge_mcp_configured(self, project, path):
-        """Each project must have the shared knowledge-mcp server."""
+        """Each project must configure the shared knowledge server for its client."""
         vorhanden(path)
         mcp_file = path / ".vscode" / "mcp.json"
         data = json.loads(mcp_file.read_text())
-        assert "knowledge-mcp" in data["servers"], (
-            f"{project}: knowledge-mcp not configured in mcp.json")
+        claude_mcp_file = path / ".mcp.json"
+        claude_servers = (
+            json.loads(claude_mcp_file.read_text()).get("mcpServers", {})
+            if claude_mcp_file.exists() else {}
+        )
+        assert "knowledge-mcp" in data["servers"] or "knowledge" in claude_servers, (
+            f"{project}: knowledge server not configured for VS Code or Claude Code")
 
 
 # ─── Tests: Settings.json ───────────────────────────────────────────────
