@@ -1,6 +1,6 @@
 # Knoten-Index (generiert — nicht von Hand editieren)
 
-Quelle: `shared-knowledge/build_node_index.py`. Knoten: 2056 in 24 Aesten · Lehren: 731 · erzeugt: 2026-08-10T10:28:11+0200
+Quelle: `shared-knowledge/build_node_index.py`. Knoten: 2056 in 24 Aesten · Lehren: 732 · erzeugt: 2026-08-10T10:47:27+0200
 
 Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowledge_search <begriff>`, `lesson_query <begriff>`.
 
@@ -31,10 +31,10 @@ Landkarte, keine Volltexte. Gezielt nachladen: `knowledge_read <path>`, `knowled
 - /probe2: 1
 - /testdatenknoten-schreibrechtepruefung: 1
 
-## Lehren gebuendelt (731 gesamt)
+## Lehren gebuendelt (732 gesamt)
 
-nach Art: antipattern 329, insight 163, error 126, pattern 113
-nach Projekt: fahrtenbuch 253, openlehr 219, hub 187, systemweit 164, brainlehr 80, shared 67, buckeberg 49, wohlair 46, +23 weitere Projekte (183)
+nach Art: antipattern 330, insight 163, error 126, pattern 113
+nach Projekt: fahrtenbuch 253, openlehr 219, hub 187, systemweit 165, brainlehr 81, shared 67, buckeberg 49, wohlair 46, +23 weitere Projekte (183)
 
 ## Juengste 15 Knoten
 
@@ -56,6 +56,7 @@ nach Projekt: fahrtenbuch 253, openlehr 219, hub 187, systemweit 164, brainlehr 
 
 ## Juengste 15 Lehren
 
+- 2026-08-10 [antipattern] Ein Melder war fehlerfrei, sein Selbsttest gruen, seine Ausgabe belegt -- und er lief trotzdem nie. Gemessen 2026-08-10 in brainlehr:…
 - 2026-08-10 [pattern] Verfahren, das am 2026-08-10 in brainlehr einen Datei-Massenumzug (88 Skripte flach im Wurzelverzeichnis) von einer Rateuebung in eine…
 - 2026-08-10 [error] Eine Selbsttest-Reihe ueber 19 Skripte meldete am 2026-08-10 fuer JEDE Datei Erfolg, obwohl 7 davon mit Traceback abstuerzten. Die Schleife…
 - 2026-08-10 [error] Ein mechanischer Massenumbau (19 Python-Dateien in Unterordner verschoben, je ein sys.path-Dreizeiler eingefuegt) ging am 2026-08-10 in…
@@ -70,4 +71,3 @@ nach Projekt: fahrtenbuch 253, openlehr 219, hub 187, systemweit 164, brainlehr 
 - 2026-08-09 [error] Die Standard-Shell dieser Umgebung ist zsh, nicht bash. `grep -rn "muster" . --include=*.py` bricht dort mit `zsh: no matches found:…
 - 2026-08-09 [antipattern] "Erfolgreich hochgeladen" als "beim Tester angekommen" gelesen. Gemessen 2026-08-09 in fahrtenbuch: Zwischen einem erfolgreichen…
 - 2026-08-09 [antipattern] Ein eingespielter Wissenstreffer wurde als Betriebsmeldung gelesen statt als Inhalt — und blieb dadurch wirkungslos, obwohl er genau den…
-- 2026-08-09 [pattern] Verfahren, das 2026-08-09 in fahrtenbuch drei Befunde fand, darunter einen echten Fehler, nachdem zwei vorherige Architektur-Anläufe am…
