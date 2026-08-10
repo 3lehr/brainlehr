@@ -32,4 +32,16 @@ Diese Liste ist wichtiger als die obere, weil sie das Vertrauen bestimmt:
 - **Kein Mehrbenutzerbetrieb.** Ausweise und Rollen existieren, aber der
   Transport ist stdio: ein Prozess, ein Rechner. HTTP ist entschieden
   (`ADR-001`), nicht gebaut.
+- **Die Rechtedurchsetzung ist per Vorgabe WEICH.** Ohne gesetztes
+  `BRAINLEHR_DURCHSETZUNG=streng` wird ein Schreibvorgang ohne Ausweis
+  ausgeführt und lediglich als `unbeglaubigt_weich:<recht>` vermerkt — er wird
+  **nicht** abgewiesen. Erst `streng` weist jeden schreibenden Aufruf ohne
+  Ausweis zurück (`kein_ausweis_streng:<recht>`).
+
+  Das ist Absicht und keine Nachlässigkeit: Eine frische Instanz hat keinen
+  Ausweis, und eine harte Vorgabe würde jeden Erstlauf blockieren, bevor
+  jemand einen anlegen kann. Es heißt aber, dass die Zuschreibung im
+  Auslieferungszustand eine **Kennzeichnung** ist und keine **Schranke**.
+  Wer die Schranke will, setzt die Variable — und muss vorher einen Ausweis
+  angelegt haben, sonst schreibt niemand mehr.
 

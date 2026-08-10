@@ -18,4 +18,10 @@ auszug-offen/bestand.jsonl
     17 U.S.C. §105 gemeinfrei -- NICHT an der Primaerquelle geprueft, siehe
     quellen/fremdquellen.json.
 
+Beitraege
+    Fuer beigetragenen Quelltext gilt neben der AGPLv3 eine zusaetzliche
+    Vereinbarung: CONTRIBUTING.md, Abschnitt 3, Fassung 2026-08-10.
+    Fehlerberichte, Reproduktionen, Messungen und Dokumentation fallen nicht
+    darunter.
+
 Alles Uebrige ist eigener Quelltext.
