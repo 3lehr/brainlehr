@@ -1,0 +1,12 @@
+{
+  "model": "gemma4:12b",
+  "n_pieces": 21,
+  "n_accepted": 21,
+  "acceptance_rate": 1.0,
+  "by_category": {
+    "angenommen": 21
+  },
+  "rejection_reasons": {},
+  "runtime_seconds": 1518.6812221669825
+}
+Protokoll geschrieben: runs/lauf1.json

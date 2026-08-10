@@ -1,0 +1,222 @@
+{
+  "model": "gemma4:12b",
+  "session": "schreibpruefstand-1d6a6798",
+  "db_path": "/Volumes/daten/Begod2026/hub/shared-knowledge/schreibpruefstand/demo/schreibpruefstand.db",
+  "runtime_seconds": 725.0655739170033,
+  "n_pieces": 8,
+  "protocol": [
+    {
+      "material_id": "M-00",
+      "raw_material": "~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \"Kostenlos\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Pricing-Entscheidung & Evidenzprüfung\",\n  \"summary\": \"Korrektur der Preisgestaltung: 4,99€ Einmalkauf ist die K1-Empfehlung; 'kostenlos' war kein finales Narrativ.\",\n  \"content\": \"~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \\\"Kostenlos\\\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.\",\n  \"source\": \"Rohmaterial Session 22\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 77.96225083305035,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Pricing-Entscheidung & Evidenzprüfung",
+        "summary": "Korrektur der Preisgestaltung: 4,99€ Einmalkauf ist die K1-Empfehlung; 'kostenlos' war kein finales Narrativ.",
+        "content": "~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \"Kostenlos\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.",
+        "source": "Rohmaterial Session 22",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "e8348a1e",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/pricing-entscheidung-evidenzpruefung",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-01",
+      "raw_material": "\"Null check\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox\",\n  \"title\": \"Fix Null-Check Crash (FAB Tooltip)\",\n  \"summary\": \"Behebung eines Absturzes bei fehlendem Overlay-Ancestor und Verbesserung des Crash-Handlings für FAB-Tooltips.\",\n  \"content\": \"\\\"Null check\\\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.\",\n  \"source\": \"erzeugt aus Rohmaterial\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 92.26541812496725,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox",
+        "title": "Fix Null-Check Crash (FAB Tooltip)",
+        "summary": "Behebung eines Absturzes bei fehlendem Overlay-Ancestor und Verbesserung des Crash-Handlings für FAB-Tooltips.",
+        "content": "\"Null check\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.",
+        "source": "erzeugt aus Rohmaterial",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "666aaf73",
+        "path": "/entwicklungsplattform-toolbox/fix-null-check-crash-fab-tooltip",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-02",
+      "raw_material": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Wizard-Pfade und Systemanforderungen\",\n  \"summary\": \"Dokumentation der Wizard-Pfade (Nba, DecisionTree), Konfiguration des Demo-Modus sowie systemtechnische Anforderungen.\",\n  \"content\": \"Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \\\"Protokoll teilen\\\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.\",\n  \"source\": \"erzeugt aus Rohmaterial\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 102.60562695807312,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Wizard-Pfade und Systemanforderungen",
+        "summary": "Dokumentation der Wizard-Pfade (Nba, DecisionTree), Konfiguration des Demo-Modus sowie systemtechnische Anforderungen.",
+        "content": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+        "source": "erzeugt aus Rohmaterial",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "0db2f147",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/wizard-pfade-und-systemanforderungen",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-03",
+      "raw_material": "Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox\",\n  \"title\": \"Tooling-Konfigurationen und Fehlerbehebungen\",\n  \"summary\": \"Dokumentation zu spezifischen Implementierungen bei Drift, Riverpod (v2.x) sowie Workarounds für Flutter Driver Bugs.\",\n  \"content\": \"Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.\",\n  \"source\": \"erzeugt aus Rohmaterial (Stand 2024-05-23)\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 76.42748445901088,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox",
+        "title": "Tooling-Konfigurationen und Fehlerbehebungen",
+        "summary": "Dokumentation zu spezifischen Implementierungen bei Drift, Riverpod (v2.x) sowie Workarounds für Flutter Driver Bugs.",
+        "content": "Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.",
+        "source": "erzeugt aus Rohmaterial (Stand 2024-05-23)",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "80ec2bd8",
+        "path": "/entwicklungsplattform-toolbox/tooling-konfigurationen-und",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-04",
+      "raw_material": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Status TalkBack, TTS und STT\",\n  \"summary\": \"Übersicht über die lokal verfügbaren sowie Cloud-basierten Funktionen von Sprachausgabe und -erkennung.\",\n  \"content\": \"TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.\",\n  \"source\": \"erzeugt aus Rohmaterial\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 134.5050905420212,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Status TalkBack, TTS und STT",
+        "summary": "Übersicht über die lokal verfügbaren sowie Cloud-basierten Funktionen von Sprachausgabe und -erkennung.",
+        "content": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+        "source": "erzeugt aus Rohmaterial",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "0a83641c",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/status-talkback-tts-und-stt",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-05",
+      "raw_material": "pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Entscheidung zu PDF-Passwort-Support\",\n  \"summary\": \"Kein Passwort-Support für PDFs aufgrund von Sicherheitsrisiken bei Drittanbieterpaketen; Fokus auf Drucken und E-Mail-Warnungen.\",\n  \"content\": \"pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.\",\n  \"project_id\": \"begod\",\n  \"source\": \"erzeugt aus Rohmaterial (Rohmaterial zu PDF-Spezifikation)\",\n  \"tags\": [\n    \"pdf\",\n    \"security\",\n    \"feature-decision\"\n  ]\n}\n```",
+      "call_error": null,
+      "call_seconds": 60.212225915980525,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Entscheidung zu PDF-Passwort-Support",
+        "summary": "Kein Passwort-Support für PDFs aufgrund von Sicherheitsrisiken bei Drittanbieterpaketen; Fokus auf Drucken und E-Mail-Warnungen.",
+        "content": "pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.",
+        "project_id": "begod",
+        "source": "erzeugt aus Rohmaterial (Rohmaterial zu PDF-Spezifikation)",
+        "tags": [
+          "pdf",
+          "security",
+          "feature-decision"
+        ]
+      },
+      "system_response": {
+        "id": "66c1bfa2",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/entscheidung-zu-pdf-passwort-support",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-06",
+      "raw_material": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox/code-qualitaet-god-files\",\n  \"title\": \"Analyse der Größe und Duplikation von God-Files\",\n  \"summary\": \"Statistische Erfassung von 7 großen Dateien (>500 Zeilen) mit Fokus auf Hotspots (decision_tree vs. nba_wizard) und Klonraten.\",\n  \"content\": \"God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.\",\n  \"source\": \"Rohmaterial zur Codequalität\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 63.300719875027426,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files",
+        "title": "Analyse der Größe und Duplikation von God-Files",
+        "summary": "Statistische Erfassung von 7 großen Dateien (>500 Zeilen) mit Fokus auf Hotspots (decision_tree vs. nba_wizard) und Klonraten.",
+        "content": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.",
+        "source": "Rohmaterial zur Codequalität",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "b0a64926",
+        "path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files/analyse-der-groesse-und-duplikation-von",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-07",
+      "raw_material": "Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox/tooling-konfigurationen-und\",\n  \"title\": \"3D-Visualisierung des Wissensnetzwerks (knowledge-viz)\",\n  \"summary\": \"Entscheidung für eine lokale 3D-Ansicht mittels Python API und Vanilla JS unter tools/knowledge-viz.\",\n  \"content\": \"Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.\",\n  \"source\": \"erzeugt aus Rohmaterial (Kontext: 3D View)\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 117.67561995796859,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox/tooling-konfigurationen-und",
+        "title": "3D-Visualisierung des Wissensnetzwerks (knowledge-viz)",
+        "summary": "Entscheidung für eine lokale 3D-Ansicht mittels Python API und Vanilla JS unter tools/knowledge-viz.",
+        "content": "Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+        "source": "erzeugt aus Rohmaterial (Kontext: 3D View)",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "92cf0da3",
+        "path": "/entwicklungsplattform-toolbox/tooling-konfigurationen-und/3d-visualisierung-des-wissensnetzwerks",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    }
+  ]
+}

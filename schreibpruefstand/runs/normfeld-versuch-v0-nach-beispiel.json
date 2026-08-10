@@ -1,0 +1,206 @@
+{
+  "model": "gemma4:e4b",
+  "n_runs_je_variante": 3,
+  "n_stuecke": 7,
+  "norm_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "runtime_seconds": 569.45705537498,
+  "laeufe": {
+    "V0_unveraendert": [
+      {
+        "variante": "V0_unveraendert",
+        "n_stuecke": 7,
+        "norm_rang": 5,
+        "gilt_ab": 6,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-10-01"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-15T00:00:00Z"
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-11-01"
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 0
+      },
+      {
+        "variante": "V0_unveraendert",
+        "n_stuecke": 7,
+        "norm_rang": 5,
+        "gilt_ab": 5,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-10-01"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-15"
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": 3,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 1
+      },
+      {
+        "variante": "V0_unveraendert",
+        "n_stuecke": 7,
+        "norm_rang": 6,
+        "gilt_ab": 5,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": 3,
+            "gilt_ab": "2026-10-01"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-15"
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 2
+      }
+    ]
+  },
+  "tabelle": {
+    "V0_unveraendert": {
+      "norm_rang": {
+        "werte": [
+          5,
+          5,
+          6
+        ],
+        "mittelwert": 5.333333333333333,
+        "spannweite": 1
+      },
+      "gilt_ab": {
+        "werte": [
+          6,
+          5,
+          5
+        ],
+        "mittelwert": 5.333333333333333,
+        "spannweite": 1
+      },
+      "unbrauchbar": {
+        "werte": [
+          0,
+          0,
+          0
+        ],
+        "mittelwert": 0,
+        "spannweite": 0
+      }
+    }
+  }
+}

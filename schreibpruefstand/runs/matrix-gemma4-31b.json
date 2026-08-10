@@ -1,0 +1,198 @@
+{
+  "model": "gemma4:31b",
+  "session": "schreibpruefstand-c29b041c",
+  "db_path": "/Volumes/daten/Begod2026/hub/shared-knowledge/schreibpruefstand/demo/schreibpruefstand.db",
+  "runtime_seconds": 1830.8797405000078,
+  "n_pieces": 8,
+  "protocol": [
+    {
+      "material_id": "M-00",
+      "raw_material": "~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \"Kostenlos\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.",
+      "model_response_raw": null,
+      "call_error": "Ollama-Aufruf fehlgeschlagen: timed out",
+      "call_seconds": 300.00796475005336,
+      "retry_count": 1,
+      "category": "ollama_fehler",
+      "accepted": false,
+      "reason": "Ollama-Aufruf fehlgeschlagen: timed out"
+    },
+    {
+      "material_id": "M-01",
+      "raw_material": "\"Null check\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.",
+      "model_response_raw": null,
+      "call_error": "Ollama-Aufruf fehlgeschlagen: timed out",
+      "call_seconds": 300.02333141700365,
+      "retry_count": 1,
+      "category": "ollama_fehler",
+      "accepted": false,
+      "reason": "Ollama-Aufruf fehlgeschlagen: timed out"
+    },
+    {
+      "material_id": "M-02",
+      "raw_material": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Wizard-Konfiguration und Systemvoraussetzungen\",\n  \"summary\": \"Technische Details zu den Wizard-Pfaden (NbaWizardScreen, DecisionTreeWizardScreen), Demo-Modus sowie Android-Systemanforderungen.\",\n  \"content\": \"Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \\\"Protokoll teilen\\\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.\",\n  \"source\": \"erzeugt aus Rohmaterial-Übermittlung\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 276.5025749580236,
+      "retry_count": 1,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Wizard-Konfiguration und Systemvoraussetzungen",
+        "summary": "Technische Details zu den Wizard-Pfaden (NbaWizardScreen, DecisionTreeWizardScreen), Demo-Modus sowie Android-Systemanforderungen.",
+        "content": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+        "source": "erzeugt aus Rohmaterial-Übermittlung",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "baae9c0e",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/wizard-konfiguration-und",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-03",
+      "raw_material": "Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox\",\n  \"title\": \"Flutter Entwicklungshinweise: Drift, Riverpod & Driver Bug\",\n  \"summary\": \"Technische Notizen zu Drift Migration, Riverpod 2.x (ohne Codegen) und einem Typkonflikt im Flutter Driver.\",\n  \"content\": \"Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.\",\n  \"project_id\": \"begod\",\n  \"tags\": [\"Flutter\", \"Drift\", \"Riverpod\", \"Bug\"],\n  \"source\": \"erzeugt aus Rohmaterial-Eingabe (Stand 2023-10-27T10:00:00+02:00)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 136.27845341607463,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox",
+        "title": "Flutter Entwicklungshinweise: Drift, Riverpod & Driver Bug",
+        "summary": "Technische Notizen zu Drift Migration, Riverpod 2.x (ohne Codegen) und einem Typkonflikt im Flutter Driver.",
+        "content": "Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.",
+        "project_id": "begod",
+        "tags": [
+          "Flutter",
+          "Drift",
+          "Riverpod",
+          "Bug"
+        ],
+        "source": "erzeugt aus Rohmaterial-Eingabe (Stand 2023-10-27T10:00:00+02:00)"
+      },
+      "system_response": {
+        "id": "17c85cf0",
+        "path": "/entwicklungsplattform-toolbox/flutter-entwicklungshinweise-drift",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-04",
+      "raw_material": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app/rechtlicher-rahmen-legal-trias\",\n  \"title\": \"Analyse Sprachtechnologien Datenschutz\",\n  \"summary\": \"Überblick über lokale vs. cloudbasierte Verarbeitung von TalkBack, VoiceOver, TTS und STT sowie Notwendigkeit der Transparenz.\",\n  \"content\": \"TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.\",\n  \"project_id\": \"begod\",\n  \"tags\": [\"Datenschutz\", \"Accessibility\", \"TTS\", \"STT\"],\n  \"source\": \"erzeugt aus Rohmaterial (Stand 2023-10-27T12:00:00+02:00)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 115.96101541700773,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app/rechtlicher-rahmen-legal-trias",
+        "title": "Analyse Sprachtechnologien Datenschutz",
+        "summary": "Überblick über lokale vs. cloudbasierte Verarbeitung von TalkBack, VoiceOver, TTS und STT sowie Notwendigkeit der Transparenz.",
+        "content": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+        "project_id": "begod",
+        "tags": [
+          "Datenschutz",
+          "Accessibility",
+          "TTS",
+          "STT"
+        ],
+        "source": "erzeugt aus Rohmaterial (Stand 2023-10-27T12:00:00+02:00)"
+      },
+      "system_response": {
+        "id": "d0d31dbf",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/rechtlicher-rahmen-legal-trias/analyse-sprachtechnologien-datenschutz",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-05",
+      "raw_material": "pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.",
+      "model_response_raw": null,
+      "call_error": "Ollama-Aufruf fehlgeschlagen: timed out",
+      "call_seconds": 300.01403520908207,
+      "retry_count": 1,
+      "category": "ollama_fehler",
+      "accepted": false,
+      "reason": "Ollama-Aufruf fehlgeschlagen: timed out"
+    },
+    {
+      "material_id": "M-06",
+      "raw_material": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox/code-qualitaet-god-files\",\n  \"title\": \"Analyse God-Files und Duplikationsrate\",\n  \"summary\": \"Statistik zu Dateien mit >500 Zeilen, jscpd Duplikationsanalyse sowie die Definition der Regel 'Max 1 public Widget pro Datei'.\",\n  \"content\": \"God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.\",\n  \"project_id\": \"begod\",\n  \"tags\": [\"code-quality\", \"metrics\", \"god-files\", \"jscpd\"],\n  \"source\": \"erzeugt aus Rohmaterial-Input (Stand 2024-05-23T12:00:00+02:00)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 290.47967637493275,
+      "retry_count": 1,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files",
+        "title": "Analyse God-Files und Duplikationsrate",
+        "summary": "Statistik zu Dateien mit >500 Zeilen, jscpd Duplikationsanalyse sowie die Definition der Regel 'Max 1 public Widget pro Datei'.",
+        "content": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.",
+        "project_id": "begod",
+        "tags": [
+          "code-quality",
+          "metrics",
+          "god-files",
+          "jscpd"
+        ],
+        "source": "erzeugt aus Rohmaterial-Input (Stand 2024-05-23T12:00:00+02:00)"
+      },
+      "system_response": {
+        "id": "6e898cab",
+        "path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files/analyse-god-files-und-duplikationsrate",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-07",
+      "raw_material": "Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox\",\n  \"title\": \"Wissensvisualisierung 3D-Ansicht\",\n  \"summary\": \"Lokale, read-only 3D-Visualisierung des Wissensbaums mittels Python HTTP API und Vanilla HTML/CSS/JS.\",\n  \"content\": \"BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.\",\n  \"project_id\": \"begod\",\n  \"tags\": [\"visualisierung\", \"3d-force-graph\", \"python\", \"frontend\"],\n  \"source\": \"erzeugt aus Context-Rohmaterial (Stand 2024-05-22)\",\n  \"actor\": \"KNOWLEDGE_AGENT\",\n  \"model\": \"GPT-4o\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 111.50016091600992,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox",
+        "title": "Wissensvisualisierung 3D-Ansicht",
+        "summary": "Lokale, read-only 3D-Visualisierung des Wissensbaums mittels Python HTTP API und Vanilla HTML/CSS/JS.",
+        "content": "BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+        "project_id": "begod",
+        "tags": [
+          "visualisierung",
+          "3d-force-graph",
+          "python",
+          "frontend"
+        ],
+        "source": "erzeugt aus Context-Rohmaterial (Stand 2024-05-22)",
+        "actor": "KNOWLEDGE_AGENT",
+        "model": "GPT-4o"
+      },
+      "system_response": {
+        "id": "bf5019eb",
+        "path": "/entwicklungsplattform-toolbox/wissensvisualisierung-3d-ansicht",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    }
+  ]
+}

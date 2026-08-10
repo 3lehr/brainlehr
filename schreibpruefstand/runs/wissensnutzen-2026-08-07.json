@@ -1,0 +1,310 @@
+{
+  "models": [
+    "gemma4:12b",
+    "gemma4:e4b"
+  ],
+  "n_runs": 3,
+  "cells": {
+    "A|gemma4:12b|OHNE": {
+      "task": "A",
+      "model": "gemma4:12b",
+      "condition": "OHNE",
+      "aggregate": {
+        "mean": 0.0,
+        "range": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 38.12663795903791,
+          "response_excerpt": "```dart\n  Future<void> _showEndTripDialog(BuildContext context) async {\n    final bool? confirmed = await showDialog<bool>(\n      context: context,\n      builder: (BuildContext context) => AlertDialog(\n        title: const Text('Fahrt beenden?'),\n        content: const Text('Möchtest du die aktuelle Fahrt jetzt beenden?'),\n        actions: [\n          TextButton(\n            onPressed: () => Navig",
+          "response_full": "```dart\n  Future<void> _showEndTripDialog(BuildContext context) async {\n    final bool? confirmed = await showDialog<bool>(\n      context: context,\n      builder: (BuildContext context) => AlertDialog(\n        title: const Text('Fahrt beenden?'),\n        content: const Text('Möchtest du die aktuelle Fahrt jetzt beenden?'),\n        actions: [\n          TextButton(\n            onPressed: () => Navigator.of(context).pop(false),\n            child: const Text('Nein'),\n          ),\n          TextButton(\n            onPressed: () => Navigator.of(context).pop(true),\n            child: const Text('Ja'),\n          ),\n        ],\n      ),\n    );\n\n    if (confirmed == true) {\n      // Logik zum Beenden der Fahrt hier einfügen\n    }\n  }\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 37.845365458051674,
+          "response_excerpt": "```dart\nFuture<void> _showEndTripDialog(BuildContext context) async {\n  final bool? confirmed = await showDialog<bool>(\n    context: context,\n    builder: (BuildContext context) => AlertDialog(\n      title: const Text('Fahrt beenden?'),\n      content: const Text('Möchten Sie die aktuelle Fahrt jetzt beenden?'),\n      actions: [\n        TextButton(\n          onPressed: () => Navigator.of(context).p",
+          "response_full": "```dart\nFuture<void> _showEndTripDialog(BuildContext context) async {\n  final bool? confirmed = await showDialog<bool>(\n    context: context,\n    builder: (BuildContext context) => AlertDialog(\n      title: const Text('Fahrt beenden?'),\n      content: const Text('Möchten Sie die aktuelle Fahrt jetzt beenden?'),\n      actions: [\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(false),\n          child: const Text('Nein'),\n        ),\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(true),\n          child: const Text('Ja'),\n        ),\n      ],\n    ),\n  );\n\n  if (confirmed == true) {\n    // Logik zum Beenden der Fahrt hier einfügen\n  }\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 97.70003537496086,
+          "response_excerpt": "```dart\nFuture<void> _showEndTripDialog(BuildContext context) async {\n  final bool? confirmed = await showDialog<bool>(\n    context: context,\n    builder: (BuildContext context) => AlertDialog(\n      title: const Text('Fahrt beenden?'),\n      content: const Text('Möchten Sie die aktuelle Fahrt jetzt beenden?'),\n      actions: [\n        TextButton(\n          onPressed: () => Navigator.of(context).p",
+          "response_full": "```dart\nFuture<void> _showEndTripDialog(BuildContext context) async {\n  final bool? confirmed = await showDialog<bool>(\n    context: context,\n    builder: (BuildContext context) => AlertDialog(\n      title: const Text('Fahrt beenden?'),\n      content: const Text('Möchten Sie die aktuelle Fahrt jetzt beenden?'),\n      actions: [\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(false),\n          child: const Text('Nein'),\n        ),\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(true),\n          child: const Text('Ja'),\n        ),\n      ],\n    ),\n  );\n\n  if (confirmed == true) {\n    // Logik zum Beenden der Fahrt hier einfügen\n  }\n}\n```"
+        }
+      ]
+    },
+    "A|gemma4:12b|MIT": {
+      "task": "A",
+      "model": "gemma4:12b",
+      "condition": "MIT",
+      "aggregate": {
+        "mean": 0.6666666666666666,
+        "range": 1,
+        "runs": [
+          0,
+          1,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+          "retry_count": 1,
+          "call_seconds": 360.0034182079835,
+          "response_excerpt": "",
+          "response_full": null
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 112.17663779202849,
+          "response_excerpt": "```dart\nonPressed: () => _showEndTripDialog(context),\n\nFuture<void> _showEndTripDialog(BuildContext context) async {\n  await Navigator.push(\n    context,\n    MaterialPageRoute(\n      builder: (context) => ActionScreen(\n        title: 'Fahrt beenden?',\n        expandPrimaryAction: true,\n        onConfirm: () {\n          // Logik zum Beenden der Fahrt hier einfügen\n          Navigator.pop(context);\n",
+          "response_full": "```dart\nonPressed: () => _showEndTripDialog(context),\n\nFuture<void> _showEndTripDialog(BuildContext context) async {\n  await Navigator.push(\n    context,\n    MaterialPageRoute(\n      builder: (context) => ActionScreen(\n        title: 'Fahrt beenden?',\n        expandPrimaryAction: true,\n        onConfirm: () {\n          // Logik zum Beenden der Fahrt hier einfügen\n          Navigator.pop(context);\n        },\n        onCancel: () {\n          Navigator.pop(context);\n        },\n      ),\n    ),\n  );\n}\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 131.76203670806717,
+          "response_excerpt": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      expandPrimaryAction: true,\n      actions: [\n        ActionItem(\n          label: 'Ja',\n          onPressed: () {\n            // Logik zum Beenden der Fahrt hier einfügen\n          },\n        ),\n        ActionItem(\n          label: 'Nein',\n ",
+          "response_full": "```dart\nonPressed: () {\n  Navigator.push(\n    context,\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: 'Fahrt beenden?',\n      expandPrimaryAction: true,\n      actions: [\n        ActionItem(\n          label: 'Ja',\n          onPressed: () {\n            // Logik zum Beenden der Fahrt hier einfügen\n          },\n        ),\n        ActionItem(\n          label: 'Nein',\n          onPressed: () {\n            Navigator.pop(context);\n          },\n        ),\n      ],\n    ),\n  );\n},\n```"
+        }
+      ]
+    },
+    "A|gemma4:e4b|OHNE": {
+      "task": "A",
+      "model": "gemma4:e4b",
+      "condition": "OHNE",
+      "aggregate": {
+        "mean": 0.0,
+        "range": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 32.16327712498605,
+          "response_excerpt": "```dart\nimport 'package:flutter/material.dart';\n\n/// Zeigt einen Bestätigungsdialog für das Beenden einer Fahrt an.\n///\n/// Dieser Dialog enthält die Frage \"Fahrt beenden?\" und zwei Buttons.\n/// Die Callback-Funktionen werden ausgeführt, wenn der Benutzer auf die entsprechenden Buttons tippt.\n///\n/// [context]: Der aktuelle BuildContext, der für das Anzeigen des Dialogs erforderlich ist.\n/// [onCo",
+          "response_full": "```dart\nimport 'package:flutter/material.dart';\n\n/// Zeigt einen Bestätigungsdialog für das Beenden einer Fahrt an.\n///\n/// Dieser Dialog enthält die Frage \"Fahrt beenden?\" und zwei Buttons.\n/// Die Callback-Funktionen werden ausgeführt, wenn der Benutzer auf die entsprechenden Buttons tippt.\n///\n/// [context]: Der aktuelle BuildContext, der für das Anzeigen des Dialogs erforderlich ist.\n/// [onConfirm]: Die Funktion, die ausgeführt wird, wenn der Benutzer auf \"Ja\" (Bestätigen) klickt.\n/// [onCancel]: Die Funktion, die ausgeführt wird, wenn der Benutzer auf \"Nein\" (Abbrechen) klickt.\nFuture<void> showEndTripConfirmationDialog({\n  required BuildContext context,\n  required Function() onConfirm,\n  required Function() onCancel,\n}) async {\n  // Verwenden Sie showDialog um den modalen Dialog anzuzeigen.\n  await showDialog(\n    context: context,\n    builder: (BuildContext dialogContext) {\n      return AlertDialog(\n        title: const Text('Fahrt beenden?'),\n        content: const Text('Möchten Sie die aktuelle Fahrt wirklich beenden?'),\n        actions: <Widget>[\n          // Button für \"Nein\" (Abbrechen)\n          TextButton(\n            onPressed: () {\n              Navigator.of(dialogContext).pop(); // Dialog schließen\n              onCancel(); // Abbrecher-Callback ausführen\n            },\n            child: const Text('Nein'),\n          ),\n          // Button für \"Ja\" (Bestätigen)\n          ElevatedButton(\n            onPressed: () {\n              Navigator.of(dialogContext).pop(); // Dialog schließen\n              onConfirm(); // Bestätigungs-Callback ausführen\n            },\n            child: const Text('Ja'),\n          ),\n        ],\n      );\n    },\n  );\n}\n\n// Beispiel, wie man die Funktion in car_home_screen.dart aufruft:\n/*\nclass CarHomeScreen extends StatelessWidget {\n  const CarHomeScreen({super.key});\n\n  void _handleEndTripConfirmation(BuildContext context) async {\n    await showEndTripConfirmationDialog(\n      context: context,\n      onConfirm: () {\n        // LOGIK FÜR DAS BEENDEN DER FAHRT (z.B. API-Call senden)\n        print('Fahrt wurde erfolgreich beendet.');\n        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text(\"Fahrt endgültig gespeichert.\")));\n      },\n      onCancel: () {\n        // LOGIK, WENN DIE ABBRECHUNG BESTÄTIGT WIRD (z.B. nichts tun oder Warnung zeigen)\n        print('Fahrt wurde abgebrochen.');\n      },\n    );\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      appBar: AppBar(title: const Text(\"Car Home\")),\n      body: Center(\n        child: ElevatedButton(\n          onPressed: () => _handleEndTripConfirmation(context),\n          child: const Text(\"Fahrt beenden\"),\n        ),\n      ),\n    );\n  }\n}\n*/\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 30.619239249965176,
+          "response_excerpt": "```dart\nimport 'package:flutter/material.dart';\n\n/// Hilfsfunktion zum Anzeigen des Bestätigungsdialogs \"Fahrt beenden?\".\n/// Sie nimmt einen BuildContext und zwei Callbacks entgegen, um die Logik\n/// nach dem Betätigen der Buttons auszulösen.\nFuture<void> showEndTripDialog(BuildContext context, Function() onConfirm, Function() onCancel) async {\n  return await showDialog<void>(\n    context: contex",
+          "response_full": "```dart\nimport 'package:flutter/material.dart';\n\n/// Hilfsfunktion zum Anzeigen des Bestätigungsdialogs \"Fahrt beenden?\".\n/// Sie nimmt einen BuildContext und zwei Callbacks entgegen, um die Logik\n/// nach dem Betätigen der Buttons auszulösen.\nFuture<void> showEndTripDialog(BuildContext context, Function() onConfirm, Function() onCancel) async {\n  return await showDialog<void>(\n    context: context,\n    barrierDismissible: true, // Der Dialog kann durch Tippen außerhalb geschlossen werden\n    builder: (BuildContext dialogContext) {\n      return AlertDialog(\n        title: const Text('Fahrt beenden?'),\n        content: const Text('Sind Sie sicher, dass Sie die Fahrt beenden möchten? Dadurch wird der aktuelle Fahrtenvorgang gespeichert und die Datenverarbeitung stoppt.'),\n        actions: <Widget>[\n          // Der Nein/Abbrechen-Button\n          TextButton(\n            child: const Text('Nein'),\n            onPressed: () {\n              Navigator.of(dialogContext).pop(); // Schließt den Dialog\n              onCancel(); // Ruft den Abbrechen-Handler auf\n            },\n          ),\n          // Der Ja/Bestätigen-Button\n          ElevatedButton(\n            style: ElevatedButton.gradient(\n                // Optional: Stellt sicher, dass der Button hervorgehoben ist\n                begin: Colors.blueAccent, end: Colors.blue), \n            child: const Text('Ja', style: TextStyle(color: Colors.white)),\n            onPressed: () {\n              Navigator.of(dialogContext).pop(); // Schließt den Dialog\n              onConfirm(); // Ruft den Bestätigungs-Handler auf\n            },\n          ),\n        ],\n      );\n    },\n  );\n}\n\n\n// Beispielhafte Nutzung innerhalb einer Widget-Klasse (z.B. im CarHomeScreenState)\nclass CarHomeScreen extends StatefulWidget {\n  const CarHomeScreen({super.key});\n\n  @override\n  State<CarHomeScreen> createState() => _CarHomeScreenState();\n}\n\nclass _CarHomeScreenState extends State<CarHomeScreen> {\n  // Simuliertes Logging oder Statusupdate nach einer Aktion\n  void _logAction(String action) {\n    print('Aktion erfolgreich ausgelöst: $action');\n    ScaffoldMessenger.of(context).showSnackBar(\n      SnackBar(content: Text('$action wurde ausgeführt.')),\n    );\n  }\n\n  /// Diese Methode simuliert den Button-Klick, der den Dialog öffnet.\n  void _handleStartEndTripFlow() {\n    showDialog(\n      context: context,\n      builder: (BuildContext context) {\n        // Hier wird der eigentliche AlertDialog über die Hilfsfunktion angezeigt\n        return showEndTripDialog(\n            context,\n            // --- Handler für Ja-Klick (Bestätigung) ---\n            () {\n              _logAction('Fahrt erfolgreich beendet und gespeichert!');\n              // HIER: Die gesamte Logik zum Speichern der Daten aufrufen.\n            },\n            // --- Handler für Nein-Klick (Abbrechen) ---\n            () {\n              _logAction('Fahrtenbeendigung abgebrochen.');\n              // HIER: Nichts tun oder einen Hinweis anzeigen, dass die Fahrt läuft.\n            }\n          );\n      },\n    );\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      appBar: AppBar(title: const Text('Fahrtenbuch Legacy')),\n      body: Center(\n        child: Column(\n          mainAxisAlignment: MainAxisAlignment.center,\n          children: <Widget>[\n            const Padding(\n              padding: EdgeInsets.all(20.0),\n              child: Text(\n                'Drücke diesen Button, um den Bestätigungsdialog zu öffnen.',\n                textAlign: TextAlign.center,\n                style: TextStyle(fontSize: 16),\n              ),\n            ),\n            SizedBox(\n              width: 300,\n              height: 50,\n              child: ElevatedButton(\n                onPressed: _handleStartEndTripFlow,\n                child: const Text('Fahrt beenden?', style: TextStyle(fontSize: 18)),\n              ),\n            ),\n          ],\n        ),\n      ),\n    );\n  }\n}\n\n// Beispiel für den Haupt-Widgetbaum (kann entfernt werden, falls nur der Code block gewünscht ist)\n/*\nvoid main() {\n  runApp(MaterialApp(\n    home: CarHomeScreen(),\n  ));\n}\n*/\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 26.34445341594983,
+          "response_excerpt": "```dart\nimport 'package:flutter/material.dart';\n\n/// Funktion zum Anzeigen des Bestätigungsdialogs \"Fahrt beenden?\".\n/// Dies sollte in car_home_screen.dart (oder einem unterstützenden Service) aufgerufen werden.\nvoid showTripEndConfirmation({\n  required BuildContext context,\n  required VoidCallback onConfirmTap, // Wird aufgerufen, wenn der Benutzer 'Ja' drückt (Fahrt beenden).\n  VoidCallback? on",
+          "response_full": "```dart\nimport 'package:flutter/material.dart';\n\n/// Funktion zum Anzeigen des Bestätigungsdialogs \"Fahrt beenden?\".\n/// Dies sollte in car_home_screen.dart (oder einem unterstützenden Service) aufgerufen werden.\nvoid showTripEndConfirmation({\n  required BuildContext context,\n  required VoidCallback onConfirmTap, // Wird aufgerufen, wenn der Benutzer 'Ja' drückt (Fahrt beenden).\n  VoidCallback? onCancelTap,          // Wird aufgerufen, wenn der Benutzer 'Nein' oder das Dialog geschlossen wird.\n}) {\n  showDialog(\n    context: context,\n    builder: (BuildContext context) {\n      return AlertDialog(\n        title: const Text(\"Fahrt beenden?\"),\n        content: const Text(\"Sind Sie sicher, dass Sie die aktuelle Fahrt beenden möchten?\"),\n        actions: <Widget>[\n          // Button Nein (Absagen)\n          TextButton(\n            onPressed: () {\n              // Optional: Aufrufe den Cancel-Handler, falls vorhanden.\n              if (onCancelTap != null) {\n                onCancelTap!();\n              }\n              Navigator.of(context).pop(); // Dialog schließen\n            },\n            child: const Text(\"Nein\"),\n          ),\n          // Separator für visuelle Trennung\n          Padding(\n            padding: const EdgeInsets.symmetric(horizontal: 8.0),\n            child: const Divider(),\n          ),\n          // Button Ja (Bestätigen)\n          TextButton(\n            onPressed: () {\n              // Aufrufe den Confirm-Handler, da dies die Hauptaktion ist.\n              if (onConfirmTap != null) {\n                onConfirmTap!();\n              }\n              Navigator.of(context).pop(); // Dialog schließen\n            },\n            style: TextButton.styleFrom(\n              foregroundColor: Colors.red, // Visuelle Hervorhebung für Beenden/Verlust\n            ),\n            child: const Text(\"Ja\"),\n          ),\n        ],\n      );\n    },\n  );\n}\n\n/* \n// --- Beispielhafte Integration in car_home_screen.dart (Nur zur Veranschaulichung) ---\n\nclass CarHomeScreen extends StatelessWidget {\n  const CarHomeScreen({super.key});\n\n  void _handleStartEndingTrip(BuildContext context) {\n    showTripEndConfirmation(\n      context: context,\n      // Aktion bei \"Ja\" (Bestätigung des Endens)\n      onConfirmTap: () {\n        print(\"-> Fahrt wurde erfolgreich beendet!\");\n        // Hier Logik einfügen: Daten senden, UI aktualisieren etc.\n      },\n      // Aktion bei \"Nein\" (Abbrechen der Bestätigungsaktion)\n      onCancelTap: () {\n        print(\"-> Abgebrochen: Die Fahrt läuft weiter.\");\n      },\n    );\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      appBar: AppBar(title: const Text('Fahrtenbuch Legacy')),\n      body: Center(\n        child: ElevatedButton(\n          onPressed: () => _handleStartEndingTrip(context), // Aufruf des Dialogs\n          child: const Text(\"Fahrt beenden?\"),\n        ),\n      ),\n    );\n  }\n}\n\n*/\n```"
+        }
+      ]
+    },
+    "A|gemma4:e4b|MIT": {
+      "task": "A",
+      "model": "gemma4:e4b",
+      "condition": "MIT",
+      "aggregate": {
+        "mean": 0.3333333333333333,
+        "range": 1,
+        "runs": [
+          0,
+          0,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 28.273528083926067,
+          "response_excerpt": "```dart\nimport 'package:flutter/material.dart';\n// Annahme: Existiert ein Helper oder Kontext, der die expanded Action Screen Funktionalität bereitstellt.\n// Da wir nicht AlertDialog nutzen dürfen und stattdessen eine Vollbild-Route mit expandierter Aktion benötigen, \n// definieren wir hier das Pattern als Funktion, wie es in car_home_screen.dart aufgerufen wird.\n\n/// Zeigt einen strukturierten Be",
+          "response_full": "```dart\nimport 'package:flutter/material.dart';\n// Annahme: Existiert ein Helper oder Kontext, der die expanded Action Screen Funktionalität bereitstellt.\n// Da wir nicht AlertDialog nutzen dürfen und stattdessen eine Vollbild-Route mit expandierter Aktion benötigen, \n// definieren wir hier das Pattern als Funktion, wie es in car_home_screen.dart aufgerufen wird.\n\n/// Zeigt einen strukturierten Bestätigungsdialog (\"Fahrt beenden?\") an, der keine unnötigen weißen Lücken erzeugt.\n/// Die Implementierung nutzt das vorgesehene Vollbild-Overlay-Pattern (ActionScreen/Custom Route) \n/// und vermeidet daher Standard Flutter Dialogs wie AlertDialog oder showDialog().\nFuture<void> _showEndTripConfirmation(BuildContext context) async {\n  final result = await Navigator.of(context).push(\n    MaterialPageRoute(builder: (context) => ConfirmationScreen(\n      title: \"Fahrt beenden?\",\n      primaryActionText: \"Ja\",\n      onPrimaryPressed: () {\n        // Logik für das Beenden der Fahrt (z.B. Daten speichern, Status ändern)\n        print(\"--- Fahrt Ende bestätigt und gespeichert.\");\n        // Hier müsste die Zustandsänderung des Routines erfolgen.\n      },\n      secondaryActionText: \"Nein\",\n      onSecondaryPressed: () {\n        // Logik bei Abbrechen (z.B. einfach schließen, keinen Statuswechsel)\n        print(\"--- Fahrt Ende abgebrochen.\");\n      },\n    )),\n  );\n\n  if (result == true) {\n    // Hier nach erfolgreichem Bestätigen weitere Navigation/Zustandsänderung durchführen\n  }\n}\n\n\n/// Widget, das die visuelle Struktur des erweiterten Dialogs bereitstellt.\nclass ConfirmationScreen extends StatelessWidget {\n  final String title;\n  final String primaryActionText;\n  final VoidCallback onPrimaryPressed;\n  final String secondaryActionText;\n  final VoidCallback onSecondaryPressed;\n\n  const ConfirmationScreen({\n    required Key key, \n    required this.title, \n    required this.primaryActionText, \n    required this.onPrimaryPressed, \n    required this.secondaryActionText, \n    required this.onSecondaryPressed\n  }) : super(key: key);\n\n  @override\n  Widget build(BuildContext context) {\n    // Wir verwenden hier eine Struktur, die idealerweise von ActionScreen übernommen wird,\n    // um das Full-Height/Expandable-Layout zu gewährleisten.\n    return Scaffold(\n      body: Center(\n        child: Padding(\n          padding: const EdgeInsets.symmetric(horizontal: 32.0),\n          child: Column(\n            mainAxisAlignment: MainAxisAlignment.center,\n            children: [\n              // Title und Content bleiben oben\n              Text(\n                title,\n                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),\n                textAlign: TextAlign.center,\n              ),\n              const SizedBox(height: 48),\n\n              // Button Row, die vom Full-Screen Overlay gestützt wird, um keinen großen weißen Raum zu lassen.\n              SizedBox(\n                width: double.infinity, // Erzwingt Breite des Containers\n                child: Row(\n                  mainAxisAlignment: MainAxisAlignment.spaceBetween,\n                  children: [\n                    // Button 1: Nein (Secondary Action)\n                    OutlinedButton(\n                      onPressed: () {\n                        onSecondaryPressed();\n                        Navigator.of(context).pop(false); // Flag setzen bei Abbrechen\n                      },\n                      child: Text(secondaryActionText),\n                    ),\n                    // Button 2: Ja (Primary Action)\n                    ElevatedButton(\n                      onPressed: () {\n                        onPrimaryPressed();\n                        Navigator.of(context).pop(true); // Flag setzen bei Bestätigung\n                      },\n                      child: Text(primaryActionText),\n                    ),\n                  ],\n                ),\n              ),\n            ],\n          ),\n        ),\n      ),\n    );\n  }\n}\n\n\n// --- Beispielhafter Aufruf im car_home_screen.dart Kontext ---\n\n/* \nclass CarHomeScreenState extends State<CarHomeScreen> {\n\n  Future<void> _handleEndTripConfirmation() async {\n    await _showEndTripConfirmation(context);\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      // ... rest der UI\n      body: Column(\n        children: [\n          // ... andere Elemente\n          ElevatedButton(\n            onPressed: _handleEndTripConfirmation, // Nutzung des Handlers\n            child: const Text(\"Fahrt beenden\"),\n          ),\n        ],\n      ),\n    );\n  }\n}\n*/\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 27.85603995807469,
+          "response_excerpt": "```dart\nimport 'package:flutter/material.dart';\n\n// Helper Function zur Anzeige des Bestätigungsdialogs, \n// die die Einschränkungen von AlertDialog umgeht und einen strukturierten Container nutzt.\nFuture<void> showTripEndingConfirmation({\n    required BuildContext context,\n    required VoidCallback onConfirm, // Aktion bei \"Ja\" (Bestätigen)\n    required VoidCallback onCancel, // Aktion bei \"Nein\"",
+          "response_full": "```dart\nimport 'package:flutter/material.dart';\n\n// Helper Function zur Anzeige des Bestätigungsdialogs, \n// die die Einschränkungen von AlertDialog umgeht und einen strukturierten Container nutzt.\nFuture<void> showTripEndingConfirmation({\n    required BuildContext context,\n    required VoidCallback onConfirm, // Aktion bei \"Ja\" (Bestätigen)\n    required VoidCallback onCancel, // Aktion bei \"Nein\" (Abbrechen)\n}) async {\n  // WARNUNG: Statt das native showDialog zu verwenden, wird hier \n  // ein stark vereinfachtes Widget verwendet, um die Notwendigkeit eines \n  // benutzerdefinierten 'ActionScreen' oder eines Fullscreen-Routes zu simulieren.\n  // Im realen Repo MUSS dieser Dialog über Navigator.push(fullscreen: true) angezeigt werden!\n\n  await showDialog<void>(\n    context: context,\n    builder: (BuildContext dialogContext) {\n      return AlertDialog(\n        titlePadding: const EdgeInsets.only(left: 24.0, right: 24.0),\n        contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),\n        content: Column(\n          mainAxisSize: MainAxisSize.min, // Wichtig: Verhindert unnötige Ausdehnung des Contents\n          crossAxisAlignment: CrossAxisAlignment.start,\n          children: [\n            const Text(\n              \"Möchten Sie die Fahrt wirklich beenden?\", \n              style: TextStyle(fontSize: 16),\n            ),\n            const SizedBox(height: 8),\n            const Text(\n                \"Bitte stellen Sie sicher, dass alle Daten gespeichert sind und Ihr Ziel erreicht wurde.\",\n                style: TextStyle(color: Colors.grey)),\n          ],\n        ),\n        actionsPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),\n        actions: <Widget>[\n          TextButton(\n            onPressed: () {\n              // Hier wird der Dialog geschlossen und die Aktion abgebrochen\n              Navigator.of(dialogContext).pop(); \n              onCancel(); // Callback ausführen\n            },\n            child: const Text('Nein'),\n          ),\n          const SizedBox(width: 12),\n          ElevatedButton(\n            onPressed: () {\n              // Hier wird der Dialog geschlossen und die Bestätigung ausgeführt\n              Navigator.of(dialogContext).pop(); \n              onConfirm(); // Callback ausführen\n            },\n            child: const Text('Ja'),\n          ),\n        ],\n      );\n    },\n  );\n}\n\n// Beispiel-Aufruf, wie dies in car_home_screen.dart aussehen würde:\n/*\nvoid handleEndTripTapped(BuildContext context) async {\n  await showTripEndingConfirmation(\n    context: context,\n    onConfirm: () {\n      // Hier die Logik für das Beenden der Fahrt implementieren (z.B. API-Call senden)\n      print(\"Fahrt wird offiziell beendet!\");\n      // Navigation oder State Update hier...\n    }, \n    onCancel: () {\n      // Nichts tun, nur den Dialog schließen und die aktuelle Ansicht belassen\n      print(\"Fahrtenbeendigung abgebrochen.\");\n    },\n  );\n}\n*/\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 21.727993416949175,
+          "response_excerpt": "```dart\nimport 'package:flutter/material.dart';\n\n// Hinweis: Da das Standard-AlertDialog aufgrund des globalen Shims im Repo \n// zu großem White Space führt, wird hier die Verwendung eines angenommenen \n// Helpers \"showFullScreenActionDialog\" simuliert, der intern ActionScreen nutzt \n// und die gewünschte Vollbild-Funktionalität gewährleistet.\n\n/// Zeigt einen Bestätigungsdialog mit zwei Buttons (",
+          "response_full": "```dart\nimport 'package:flutter/material.dart';\n\n// Hinweis: Da das Standard-AlertDialog aufgrund des globalen Shims im Repo \n// zu großem White Space führt, wird hier die Verwendung eines angenommenen \n// Helpers \"showFullScreenActionDialog\" simuliert, der intern ActionScreen nutzt \n// und die gewünschte Vollbild-Funktionalität gewährleistet.\n\n/// Zeigt einen Bestätigungsdialog mit zwei Buttons (Ja/Nein) in einem Vollbild-Overlay an.\nFuture<void> _showEndTripConfirmationDialog(BuildContext context, Function() onConfirm, Function() onCancel) {\n  // Implementierung des Dialogs mithilfe der erlaubten Pattern: \n  // fullscreen action overlay statt AlertDialog.\n\n  return showFullScreenActionDialog(\n    context,\n    title: \"Fahrt beenden?\",\n    subtitle: \"Möchten Sie wirklich die Fahrt speichern und beenden?\",\n    primaryActionLabel: 'Ja', // Bestätigt das Beenden der Fahrt\n    primaryOnPressed: () {\n      onConfirm();\n    },\n    secondaryActionLabel: 'Nein', // Bleibt in der aktuellen Ansicht oder storniert\n    secondaryOnPressed: () {\n      onCancel();\n    },\n  );\n}\n\n// Beispiel-Aufruf innerhalb einer Methode von CarHomeScreen (z.B. bei einem Swipe oder Button-Click)\nvoid handleEndTripConfirmation(BuildContext context, BuildContext buildContext) async {\n  await _showEndTripConfirmationDialog(\n    context,\n    () {\n      // Handler für 'Ja' geklickt\n      print('Fahrt wurde bestätigt und wird beendet.');\n      // Hier die Geschäftslogik zum Speichern der Daten und Navigieren zur Übersicht aufrufen.\n    },\n    () {\n      // Handler für 'Nein' geklickt (Abbrechen)\n      print('Fahrt wird fortgesetzt. Dialog geschlossen.');\n    },\n  );\n}\n\n// Dummy/Mock-Widget, das die benötigte Fullscreen-Logik abstrahiert \n// und stattdessen einen standardmäßigen AlertDialog zurückgibt, nur zur Kompilierbarkeit.\n// ECHTE IMPLEMENTIERUNG MUSS showFullScreenActionDialog VERWENDEN!\nWidget showFullScreenActionDialog(BuildContext context, {required String title, required String subtitle, required String primaryActionLabel, Function()? primaryOnPressed, required String secondaryActionLabel, Function()? secondaryOnPressed}) {\n  return AlertDialog( // HINWEIS: Nur Dummy-Platzhalter. Produziert den White-Space Bug!\n    title: Text(title),\n    content: Column(\n      mainAxisSize: MainAxisSize.min,\n      children: [\n        Text(subtitle),\n        SizedBox(height: 20),\n      ],\n    ),\n    actions: <Widget>[\n      TextButton(\n        onPressed: () {\n          secondaryOnPressed?.call();\n        },\n        child: Text(secondaryActionLabel),\n      ),\n      ElevatedButton(\n        onPressed: primaryOnPressed,\n        child: Text(primaryActionLabel),\n      ),\n    ],\n  );\n}\n```"
+        }
+      ]
+    },
+    "B|gemma4:12b|OHNE": {
+      "task": "B",
+      "model": "gemma4:12b",
+      "condition": "OHNE",
+      "aggregate": {
+        "mean": 0.0,
+        "range": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "runs": [
+        {
+          "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+          "retry_count": 1,
+          "call_seconds": 360.0030464590527,
+          "response_excerpt": "",
+          "response_full": null
+        },
+        {
+          "error": "Ollama-Aufruf fehlgeschlagen: timed out",
+          "retry_count": 1,
+          "call_seconds": 360.0025429170346,
+          "response_excerpt": "",
+          "response_full": null
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 112.76037029200234,
+          "response_excerpt": "flutter test --no-mocks",
+          "response_full": "flutter test --no-mocks"
+        }
+      ]
+    },
+    "B|gemma4:12b|MIT": {
+      "task": "B",
+      "model": "gemma4:12b",
+      "condition": "MIT",
+      "aggregate": {
+        "mean": 1.0,
+        "range": 0,
+        "runs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 9.541984500014223,
+          "response_excerpt": "flutter test --dart-define=DEBUG_STATE_API=true",
+          "response_full": "flutter test --dart-define=DEBUG_STATE_API=true"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 7.837052959017456,
+          "response_excerpt": "flutter test --dart-define=DEBUG_STATE_API=true",
+          "response_full": "flutter test --dart-define=DEBUG_STATE_API=true"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 8.005721250083297,
+          "response_excerpt": "flutter test --dart-define=DEBUG_STATE_API=true",
+          "response_full": "flutter test --dart-define=DEBUG_STATE_API=true"
+        }
+      ]
+    },
+    "B|gemma4:e4b|OHNE": {
+      "task": "B",
+      "model": "gemma4:e4b",
+      "condition": "OHNE",
+      "aggregate": {
+        "mean": 0.0,
+        "range": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 25.500646041007712,
+          "response_excerpt": "flutter test",
+          "response_full": "flutter test"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 20.397423707996495,
+          "response_excerpt": "```bash\nflutter test\n```",
+          "response_full": "```bash\nflutter test\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 19.523764583049342,
+          "response_excerpt": "flutter test --verbose",
+          "response_full": "flutter test --verbose"
+        }
+      ]
+    },
+    "B|gemma4:e4b|MIT": {
+      "task": "B",
+      "model": "gemma4:e4b",
+      "condition": "MIT",
+      "aggregate": {
+        "mean": 1.0,
+        "range": 0,
+        "runs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 6.132947292062454,
+          "response_excerpt": "flutter test --dart-define=DEBUG_STATE_API=true",
+          "response_full": "flutter test --dart-define=DEBUG_STATE_API=true"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 7.2945789999794215,
+          "response_excerpt": "```shell\nflutter test --dart-define=DEBUG_STATE_API=true\n```",
+          "response_full": "```shell\nflutter test --dart-define=DEBUG_STATE_API=true\n```"
+        },
+        {
+          "error": null,
+          "retry_count": 0,
+          "call_seconds": 6.224763500038534,
+          "response_excerpt": "flutter test --dart-define=DEBUG_STATE_API=true",
+          "response_full": "flutter test --dart-define=DEBUG_STATE_API=true"
+        }
+      ]
+    }
+  },
+  "honesty_check_task_a_prompts": {
+    "ohne": "Du arbeitest im Flutter-Repo fahrtenbuch_legacy. Schreibe den Dart-Code fuer einen Bestaetigungsdialog \"Fahrt beenden?\" mit zwei Buttons (Ja / Nein), der bei Tippen auf einen Button-Handler in car_home_screen.dart angezeigt wird. Antworte nur mit dem Dart-Code.",
+    "mit": "Du arbeitest im Flutter-Repo fahrtenbuch_legacy. Schreibe den Dart-Code fuer einen Bestaetigungsdialog \"Fahrt beenden?\" mit zwei Buttons (Ja / Nein), der bei Tippen auf einen Button-Handler in car_home_screen.dart angezeigt wird. Antworte nur mit dem Dart-Code.\n\nBekanntes Wissen aus fruehreren Sessions:\nfahrtenbuch_legacy: ~27 Files hiden Flutter's natives showDialog/showModalBottomSheet und ersetzen sie via `lib/core/navigation/fullscreen_overlay_route.dart` durch einen Shim, der den Dialog/BottomSheet als Vollbild-Route pusht (dialogTheme.constraints: BoxConstraints.expand(), insetPadding: EdgeInsets.zero). Ein normales AlertDialog/SimpleDialog groesst sich aber weiterhin nur nach seinem Inhalt (Title+Content+Actions) — der Rest des expandierten Screens bleibt leerer Weissraum. Das erzeugt app-weit bei jedem einfachen Bestaetigungs-Dialog (2-3 Buttons) einen Screen mit winzigen Buttons oben und viel totem Weissraum darunter (User-Beschwerde am Beispiel 'Fahrt beenden?'-Dialog in car_home_screen.dart).\nUrsache: Der Shim macht den CONTAINER vollbild-gross, aber AlertDialog/SimpleDialog haben keinen Mechanismus, um einzelne Action-Buttons die Restflaeche fuellen zu lassen — Vollbild-Container + kompakt-groesserndes Content-Widget = viel ungenutzter Platz.\nLoesung/Praevention: Bei neuen Bestaetigungs-Dialogen in diesem Repo: NICHT AlertDialog+showDialog verwenden (auch wenn der lokale Import es scheinbar erlaubt — der globale Shim macht daraus einen Vollbild-Screen mit Weissraum-Bug). Stattdessen ActionScreen(expandPrimaryAction: true) via eigenem Navigator.push(fullscreenDialog:true) nutzen. Vor jedem neuen AlertDialog pruefen: gibt es schon einen fast-identischen Dialog anderswo im Repo (grep Title-String) — mind. 2 Duplikate wurden bei dieser Session gefunden und auf gemeinsame Helper konsolidiert."
+  },
+  "runtime_seconds_total": 1888.350896207965
+}

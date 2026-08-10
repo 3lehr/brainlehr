@@ -1,0 +1,530 @@
+{
+  "model": "gemma4:12b",
+  "session": "schreibpruefstand-1fe4499f",
+  "db_path": "/Volumes/daten/Begod2026/hub/shared-knowledge/schreibpruefstand/demo/schreibpruefstand.db",
+  "runtime_seconds": 2078.363512375043,
+  "n_pieces": 23,
+  "protocol": [
+    {
+      "material_id": "M-00",
+      "raw_material": "~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \"Kostenlos\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Preismodell-Entscheidung (Kostenlos vs. Einmalkauf)\",\n  \"summary\": \"Klärung der Pricing-Strategie basierend auf der Evidenz-Pyramide P14; die Entscheidung zwischen einem 4,99€ Einmalkauf und dem Modell 'kostenlos' steht noch aus.\",\n  \"content\": \"~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \\\"Kostenlos\\\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.\",\n  \"source\": \"erzeugt aus Protokoll Session 22\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 87.25295212503988,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Preismodell-Entscheidung (Kostenlos vs. Einmalkauf)",
+        "summary": "Klärung der Pricing-Strategie basierend auf der Evidenz-Pyramide P14; die Entscheidung zwischen einem 4,99€ Einmalkauf und dem Modell 'kostenlos' steht noch aus.",
+        "content": "~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \"Kostenlos\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.",
+        "source": "erzeugt aus Protokoll Session 22",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "55ff12a7",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/preismodell-entscheidung-kostenlos-vs",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-01",
+      "raw_material": "\"Null check\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox\",\n  \"title\": \"Fix Null Check Crash (DemoOverlay)\",\n  \"summary\": \"Behebung eines Absturzes bei fehlendem Overlay-Ancestor beim FAB-Tooltip und Erweiterung des Crash-Handlers.\",\n  \"content\": \"\\\"Null check\\\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.\",\n  \"project_id\": \"begod\",\n  \"source\": \"Commits: acbef54, 51eb046, 85c0384\",\n  \"tags\": [\"bugfix\", \"crash-handler\", \"demooverlay\"]\n}\n```",
+      "call_error": null,
+      "call_seconds": 96.6724474170478,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox",
+        "title": "Fix Null Check Crash (DemoOverlay)",
+        "summary": "Behebung eines Absturzes bei fehlendem Overlay-Ancestor beim FAB-Tooltip und Erweiterung des Crash-Handlers.",
+        "content": "\"Null check\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.",
+        "project_id": "begod",
+        "source": "Commits: acbef54, 51eb046, 85c0384",
+        "tags": [
+          "bugfix",
+          "crash-handler",
+          "demooverlay"
+        ]
+      },
+      "system_response": {
+        "id": "2db39ee5",
+        "path": "/entwicklungsplattform-toolbox/fix-null-check-crash-demooverlay",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-02",
+      "raw_material": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Wizard-Pfade und Systemanforderungen\",\n  \"summary\": \"Beschreibung der Wizard-Strukturen (Nba, DecisionTree), des Demo-Modus sowie der technischen Mindestanforderungen.\",\n  \"content\": \"Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \\\"Protokoll teilen\\\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.\",\n  \"source\": \"erzeugt aus Rohmaterial\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 61.85682066692971,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Wizard-Pfade und Systemanforderungen",
+        "summary": "Beschreibung der Wizard-Strukturen (Nba, DecisionTree), des Demo-Modus sowie der technischen Mindestanforderungen.",
+        "content": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+        "source": "erzeugt aus Rohmaterial",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "c949afe7",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/wizard-pfade-und-systemanforderungen",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-03",
+      "raw_material": "Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.",
+      "model_response_raw": null,
+      "call_error": "Ollama-Aufruf fehlgeschlagen: timed out",
+      "call_seconds": 120.00035004189704,
+      "category": "ollama_fehler",
+      "accepted": false,
+      "reason": "Ollama-Aufruf fehlgeschlagen: timed out"
+    },
+    {
+      "material_id": "M-04",
+      "raw_material": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Barrierefreiheit & Sprachausgaben\",\n  \"summary\": \"Details zu TalkBack, VoiceOver sowie der Cloud-Abhängigkeit von TTS- und STT-Funktionen.\",\n  \"content\": \"TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.\",\n  \"source\": \"erzeugt aus Rohmaterial (Stand 2024-05-23)\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 75.23323812498711,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Barrierefreiheit & Sprachausgaben",
+        "summary": "Details zu TalkBack, VoiceOver sowie der Cloud-Abhängigkeit von TTS- und STT-Funktionen.",
+        "content": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+        "source": "erzeugt aus Rohmaterial (Stand 2024-05-23)",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "cc11dab1",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/barrierefreiheit-sprachausgaben",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-05",
+      "raw_material": "pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.",
+      "model_response_raw": null,
+      "call_error": "Ollama-Aufruf fehlgeschlagen: timed out",
+      "call_seconds": 120.00178974994924,
+      "category": "ollama_fehler",
+      "accepted": false,
+      "reason": "Ollama-Aufruf fehlgeschlagen: timed out"
+    },
+    {
+      "material_id": "M-06",
+      "raw_material": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox/code-qualitaet-god-files\",\n  \"title\": \"Statistik und Hotspots zu God-Files\",\n  \"summary\": \"Analyse von 7 Dateien >500 Zeilen mit Identifikation von Duplikaten sowie Etablierung der Regel 'Max 1 public Widget pro Datei'.\",\n  \"content\": \"God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.\",\n  \"project_id\": \"begod\",\n  \"source\": \"erzeugt aus Rohmaterial-Input\",\n  \"actor\": \"BEGOD_KNOWLEDGE_ACTOR\",\n  \"model\": \"BEGOD_KNOWLEDGE_MODEL\",\n  \"session\": \"BEGOD_KNOWLEDGE_SESSION\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 58.51758300000802,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files",
+        "title": "Statistik und Hotspots zu God-Files",
+        "summary": "Analyse von 7 Dateien >500 Zeilen mit Identifikation von Duplikaten sowie Etablierung der Regel 'Max 1 public Widget pro Datei'.",
+        "content": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.",
+        "project_id": "begod",
+        "source": "erzeugt aus Rohmaterial-Input",
+        "actor": "BEGOD_KNOWLEDGE_ACTOR",
+        "model": "BEGOD_KNOWLEDGE_MODEL",
+        "session": "BEGOD_KNOWLEDGE_SESSION"
+      },
+      "system_response": {
+        "id": "3a47384c",
+        "path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files/statistik-und-hotspots-zu-god-files",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-07",
+      "raw_material": "Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox\",\n  \"title\": \"Knowledge Visualization (3D View)\",\n  \"summary\": \"A 3D visualization for knowledge items using a Python API and Vanilla JS/HTML/CSS.\",\n  \"content\": \"Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.\",\n  \"source\": \"erzeugt aus Rohmaterial (Stand 2024-10-26T10:00:00+02:00)\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 84.71089200000279,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox",
+        "title": "Knowledge Visualization (3D View)",
+        "summary": "A 3D visualization for knowledge items using a Python API and Vanilla JS/HTML/CSS.",
+        "content": "Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+        "source": "erzeugt aus Rohmaterial (Stand 2024-10-26T10:00:00+02:00)",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "19f94dd0",
+        "path": "/entwicklungsplattform-toolbox/knowledge-visualization-3d-view",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-08",
+      "raw_material": "Context: semantic strength, provenance, and live readers/writers must be factual and remain current after knowledge changes; 237 permanent text sprites would waste GPU memory. Chosen: extend the existing knowledge MCP with validated `knowledge_relations` CRUD and access identity/status.",
+      "model_response_raw": null,
+      "call_error": "Ollama-Aufruf fehlgeschlagen: timed out",
+      "call_seconds": 120.00150699994992,
+      "category": "ollama_fehler",
+      "accepted": false,
+      "reason": "Ollama-Aufruf fehlgeschlagen: timed out"
+    },
+    {
+      "material_id": "M-09",
+      "raw_material": "Fuer die Beta-Phase und darueber hinaus besteht die Moeglichkeit, externe Inhalte in die App zu integrieren: AWO Plus Magazin (Monatliches Kundenmagazin als In-App-Content), Bundestag-Abstimmungsverhalten (Pflegerelevante Abstimmungen ohne Wahlempfehlung), Veranstaltungen/Kurse.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app/betaphase-externe-inhalte\",\n  \"title\": \"Mögliche externe Inhaltsformate\",\n  \"summary\": \"Übersicht der integrierbaren externen Inhalte wie AWO Plus Magazin, Bundestag-Abstimmungsverhalten und Veranstaltungen.\",\n  \"content\": \"Fuer die Beta-Phase und darueber hinaus besteht die Moeglichkeit, externe Inhalte in die App zu integrieren: AWO Plus Magazin (Monatliches Kundenmagazin als In-App-Content), Bundestag-Abstimmungsverhalten (Pflegerelevante Abstimmungen ohne Wahlempfehlung), Veranstaltungen/Kurse.\",\n  \"project_id\": \"begod\",\n  \"source\": \"erzeugt aus Rohmaterial\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 85.17603508301545,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app/betaphase-externe-inhalte",
+        "title": "Mögliche externe Inhaltsformate",
+        "summary": "Übersicht der integrierbaren externen Inhalte wie AWO Plus Magazin, Bundestag-Abstimmungsverhalten und Veranstaltungen.",
+        "content": "Fuer die Beta-Phase und darueber hinaus besteht die Moeglichkeit, externe Inhalte in die App zu integrieren: AWO Plus Magazin (Monatliches Kundenmagazin als In-App-Content), Bundestag-Abstimmungsverhalten (Pflegerelevante Abstimmungen ohne Wahlempfehlung), Veranstaltungen/Kurse.",
+        "project_id": "begod",
+        "source": "erzeugt aus Rohmaterial"
+      },
+      "system_response": {
+        "id": "eeed54c5",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/betaphase-externe-inhalte/moegliche-externe-inhaltsformate",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-10",
+      "raw_material": "Die Kernfrage: Koennen wir externe Inhalte empfangen, ohne dass diese Zugriff auf medizinische/persoenliche Daten haben? Zone A: Medical (Offline-Only, DSGVO Household Exemption). Internet: NIEMALS. DB: Bestehende app_database.dart (medical tables).",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app/betaphase-externe-inhalte\",\n  \"title\": \"Datentrennung bei externen Inhalten\",\n  \"summary\": \"Klärung der Anforderungen für den Empfang externer Inhalte ohne Zugriff auf medizinische Daten.\",\n  \"content\": \"Die Kernfrage: Koennen wir externe Inhalte empfangen, ohne dass diese Zugriff auf medizinische/persoenliche Daten haben? Zone A: Medical (Offline-Only, DSGVO Household Exemption). Internet: NIEMALS. DB: Bestehende app_database.dart (medical tables).\",\n  \"project_id\": \"begod\",\n  \"source\": \"erzeugt aus Rohmaterial (Stand 2024-05-23)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 53.36806245800108,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app/betaphase-externe-inhalte",
+        "title": "Datentrennung bei externen Inhalten",
+        "summary": "Klärung der Anforderungen für den Empfang externer Inhalte ohne Zugriff auf medizinische Daten.",
+        "content": "Die Kernfrage: Koennen wir externe Inhalte empfangen, ohne dass diese Zugriff auf medizinische/persoenliche Daten haben? Zone A: Medical (Offline-Only, DSGVO Household Exemption). Internet: NIEMALS. DB: Bestehende app_database.dart (medical tables).",
+        "project_id": "begod",
+        "source": "erzeugt aus Rohmaterial (Stand 2024-05-23)"
+      },
+      "system_response": {
+        "id": "312c14e2",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/betaphase-externe-inhalte/datentrennung-bei-externen-inhalten",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-11",
+      "raw_material": "Die Pflege-Lotse Plattform wird ueber PflegeTageBuch hinaus weitere Schwester-Apps bekommen. Die Toolbox (BegodApp) ist das entwicklerseitige Steuerungswerkzeug und braucht visuelle Eigenstaendigkeit. Gleichzeitig muss die Familien-DNA erkennbar bleiben.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Plattformstrategie und Identität\",\n  \"summary\": \"Ausbau der Plattform zu mehreren Schwester-Apps und visuelle Eigenständigkeit der BegodApp bei Wahrung der Familien-DNA.\",\n  \"content\": \"Die Pflege-Lotse Plattform wird ueber PflegeTageBuch hinaus weitere Schwester-Apps bekommen. Die Toolbox (BegodApp) ist das entwicklerseitige Steuerungswerkzeug und braucht visuelle Eigenstaendigkeit. Gleichzeitig muss die Familien-DNA erkennbar bleiben.\",\n  \"project_id\": \"begod\",\n  \"source\": \"erzeugt aus Rohmaterial: Strategie Pflege-Lotse Plattform\",\n  \"tags\": [\n    \"strategie\",\n    \"branding\",\n    \"architektur\"\n  ]\n}\n```",
+      "call_error": null,
+      "call_seconds": 74.3680895830039,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Plattformstrategie und Identität",
+        "summary": "Ausbau der Plattform zu mehreren Schwester-Apps und visuelle Eigenständigkeit der BegodApp bei Wahrung der Familien-DNA.",
+        "content": "Die Pflege-Lotse Plattform wird ueber PflegeTageBuch hinaus weitere Schwester-Apps bekommen. Die Toolbox (BegodApp) ist das entwicklerseitige Steuerungswerkzeug und braucht visuelle Eigenstaendigkeit. Gleichzeitig muss die Familien-DNA erkennbar bleiben.",
+        "project_id": "begod",
+        "source": "erzeugt aus Rohmaterial: Strategie Pflege-Lotse Plattform",
+        "tags": [
+          "strategie",
+          "branding",
+          "architektur"
+        ]
+      },
+      "system_response": {
+        "id": "8464528a",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/plattformstrategie-und-identitaet",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-12",
+      "raw_material": "Teal #2E7D6F erscheint in JEDER App als Wiedererkennungs-Element -- im Logo-Bereich, Footer, oder als Accent-Zweitfarbe, nie als Primary einer Nicht-Pflege-App. Warmes Off-White #FAFAF5 als Surface (nicht kalt-weiss). Kein aggressives Rot -- immer warmes Orange fuer Fehler.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Brand-Identität und Design-System-Farben\",\n  \"summary\": \"Festlegung derer Kernfarben (Teal, Off-White) sowie das Farbschema für Fehlermeldungen.\",\n  \"content\": \"Teal #2E7D6F erscheint in JEDER App als Wiedererkennungs-Element -- im Logo-Bereich, Footer, oder als Accent-Zweitfarbe, nie als Primary einer Nicht-Pflege-App. Warmes Off-White #FAFAF5 als Surface (nicht kalt-weiss). Kein aggressives Rot -- immer warmes Orange fuer Fehler.\",\n  \"source\": \"erzeugt aus Rohmaterial\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 101.64778183295857,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Brand-Identität und Design-System-Farben",
+        "summary": "Festlegung derer Kernfarben (Teal, Off-White) sowie das Farbschema für Fehlermeldungen.",
+        "content": "Teal #2E7D6F erscheint in JEDER App als Wiedererkennungs-Element -- im Logo-Bereich, Footer, oder als Accent-Zweitfarbe, nie als Primary einer Nicht-Pflege-App. Warmes Off-White #FAFAF5 als Surface (nicht kalt-weiss). Kein aggressives Rot -- immer warmes Orange fuer Fehler.",
+        "source": "erzeugt aus Rohmaterial",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "8d1835d5",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/brand-identitaet-und-design-system",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-13",
+      "raw_material": "Phase 0 Quick Wins (Sofort, 0-1 Tag): stiftshuette-errors.json geleert (DONE); git-wall-setup-v1-UNSAFE.sh entfernen/archivieren (OFFEN); Worktree-Pfade in copilot-instructions.md verifizieren (OFFEN); Rate-Tracking bei naechster Session befuellen (OFFEN).",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/aka2026-sprintplanung/phase0-quick-wins\",\n  \"title\": \"Status Phase 0 Quick Wins\",\n  \"summary\": \"Übersicht derer Fortschritte und Aufgaben für die Phase 0 Quick Wins.\",\n  \"content\": \"Phase 0 Quick Wins (Sofort, 0-1 Tag): stiftshuette-errors.json geleert (DONE); git-wall-setup-v1-UNSAFE.sh entfernen/archivieren (OFFEN); Worktree-Pfade in copilot-instructions.md verifizieren (OFFEN); Rate-Tracking bei naechster Session befuellen (OFFEN).\",\n  \"project_id\": \"aka\",\n  \"source\": \"Rohmaterial extrahiert am 2024-05-23\",\n  \"tags\": [\"quick-wins\", \"status\"],\n  \"actor\": \"BEGOD_KNOWLEDGE_ACTOR\",\n  \"model\": \"BEGOD_KNOWLEDGE_MODEL\",\n  \"session\": \"BEGOD_KNOWLEDGE_SESSION\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 73.63835416699294,
+      "model_wanted": {
+        "parent_path": "/aka2026-sprintplanung/phase0-quick-wins",
+        "title": "Status Phase 0 Quick Wins",
+        "summary": "Übersicht derer Fortschritte und Aufgaben für die Phase 0 Quick Wins.",
+        "content": "Phase 0 Quick Wins (Sofort, 0-1 Tag): stiftshuette-errors.json geleert (DONE); git-wall-setup-v1-UNSAFE.sh entfernen/archivieren (OFFEN); Worktree-Pfade in copilot-instructions.md verifizieren (OFFEN); Rate-Tracking bei naechster Session befuellen (OFFEN).",
+        "project_id": "aka",
+        "source": "Rohmaterial extrahiert am 2024-05-23",
+        "tags": [
+          "quick-wins",
+          "status"
+        ],
+        "actor": "BEGOD_KNOWLEDGE_ACTOR",
+        "model": "BEGOD_KNOWLEDGE_MODEL",
+        "session": "BEGOD_KNOWLEDGE_SESSION"
+      },
+      "system_response": {
+        "id": "9f70245f",
+        "path": "/aka2026-sprintplanung/phase0-quick-wins/status-phase-0-quick-wins",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-14",
+      "raw_material": "Sprint 1.1 Pre-Release Blocker (1-2 Tage): Pre-existing Test-Fail fixen (1 von 1618); dart pub outdated Dependency-Audit; In-App Datenschutzerklaerung-Screen erstellen; Privacy Policy URL auf begod-homepage hosten; Apple Privacy Manifests pruefen.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/aka2026-sprintplanung\",\n  \"title\": \"Sprint 1.1 Pre-Release Blocker\",\n  \"summary\": \"Übersicht der Blocker für den Sprint 1.1 Pre-Release, einschließlich Testfehlerbehebungen und Datenschutzanforderungen.\",\n  \"content\": \"Sprint 1.1 Pre-Release Blocker (1-2 Tage): Pre-existing Test-Fail fixen (1 von 1618); dart pub outdated Dependency-Audit; In-App Datenschutzerklaerung-Screen erstellen; Privacy Policy URL auf begod-homepage hosten; Apple Privacy Manifests pruefen.\",\n  \"project_id\": \"aka\",\n  \"source\": \"Rohmaterial: Sprint 1.1 Pre-Release Blocker\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 74.44366558303591,
+      "model_wanted": {
+        "parent_path": "/aka2026-sprintplanung",
+        "title": "Sprint 1.1 Pre-Release Blocker",
+        "summary": "Übersicht der Blocker für den Sprint 1.1 Pre-Release, einschließlich Testfehlerbehebungen und Datenschutzanforderungen.",
+        "content": "Sprint 1.1 Pre-Release Blocker (1-2 Tage): Pre-existing Test-Fail fixen (1 von 1618); dart pub outdated Dependency-Audit; In-App Datenschutzerklaerung-Screen erstellen; Privacy Policy URL auf begod-homepage hosten; Apple Privacy Manifests pruefen.",
+        "project_id": "aka",
+        "source": "Rohmaterial: Sprint 1.1 Pre-Release Blocker"
+      },
+      "system_response": {
+        "id": "1bb0eab2",
+        "path": "/aka2026-sprintplanung/sprint-1-1-pre-release-blocker",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-15",
+      "raw_material": "REDIRECT: Komprimierter Status in toolbox/knowledge/context-snapshot.json. Diese Datei existiert als Marker fuer ProjectPaths (Root-Erkennung). Projekt: Pflege-Lotse | Case: B | Branch: feature/1-frage-pro-screen | Phase: 3 (Polish+Release) | Tests: 228/228 | Features: 6 complete.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app\",\n  \"title\": \"Status: Frage pro Screen (Case B)\",\n  \"summary\": \"Fortschrittsbericht für Feature 1 in Phase 3 (Polish+Release).\",\n  \"content\": \"REDIRECT: Komprimierter Status in toolbox/knowledge/context-snapshot.json. Diese Datei existiert als Marker fuer ProjectPaths (Root-Erkennung). Projekt: Pflege-Lotse | Case: B | Branch: feature/1-frage-pro-screen | Phase: 3 (Polish+Release) | Tests: 228/228 | Features: 6 complete.\",\n  \"project_id\": \"begod\",\n  \"source\": \"toolbox/knowledge/context-snapshot.json\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 88.50654883298557,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app",
+        "title": "Status: Frage pro Screen (Case B)",
+        "summary": "Fortschrittsbericht für Feature 1 in Phase 3 (Polish+Release).",
+        "content": "REDIRECT: Komprimierter Status in toolbox/knowledge/context-snapshot.json. Diese Datei existiert als Marker fuer ProjectPaths (Root-Erkennung). Projekt: Pflege-Lotse | Case: B | Branch: feature/1-frage-pro-screen | Phase: 3 (Polish+Release) | Tests: 228/228 | Features: 6 complete.",
+        "project_id": "begod",
+        "source": "toolbox/knowledge/context-snapshot.json"
+      },
+      "system_response": {
+        "id": "c490276b",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/status-frage-pro-screen-case-b",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-16",
+      "raw_material": "Die BSI Stand-der-Technik-Bibliothek (Grundschutz++ Katalog, 647 Controls in 20 Gruppen, plus Kernel-Katalog -- gesamt 1855 Controls im OSCAL-Format) wurde als Evidenz-Rang 2 in die obersten Direktiven aller drei Repositories verankert.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox/bsi-stand-der-technik-bibliothek\",\n  \"title\": \"Verankerung als Evidenz-Rang 2\",\n  \"summary\": \"Die BSI Stand-der-Technik-Bibliothek wurde als Evidenz-Rang 2 in die obersten Direktiven aller drei Repositories verankert.\",\n  \"content\": \"Die BSI Stand-der-Technik-Bibliothek (Grundschutz++ Katalog, 647 Controls in 20 Gruppen, plus Kernel-Katalog -- gesamt 1855 Controls im OSCAL-Format) wurde als Evidenz-Rang 2 in die obersten Direktiven aller drei Repositories verankert.\",\n  \"source\": \"erzeugt aus Rohmaterial\",\n  \"project_id\": \"shared\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 117.51487258297857,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox/bsi-stand-der-technik-bibliothek",
+        "title": "Verankerung als Evidenz-Rang 2",
+        "summary": "Die BSI Stand-der-Technik-Bibliothek wurde als Evidenz-Rang 2 in die obersten Direktiven aller drei Repositories verankert.",
+        "content": "Die BSI Stand-der-Technik-Bibliothek (Grundschutz++ Katalog, 647 Controls in 20 Gruppen, plus Kernel-Katalog -- gesamt 1855 Controls im OSCAL-Format) wurde als Evidenz-Rang 2 in die obersten Direktiven aller drei Repositories verankert.",
+        "source": "erzeugt aus Rohmaterial",
+        "project_id": "shared"
+      },
+      "system_response": {
+        "id": "1170d697",
+        "path": "/entwicklungsplattform-toolbox/bsi-stand-der-technik-bibliothek/verankerung-als-evidenz-rang-2",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-17",
+      "raw_material": "Status: MVP Complete, Phase 3 (Polish+Release). App-DNA: Offline-First, Privacy-First, Kein Account, Kostenlos+Werbefrei, 70-Jahre-Test. Stack: Flutter 3.38.9, Dart 3.10.8, Riverpod(plain), Drift(SQLite), GoRouter, Material 3, Freezed, pdf+printing, ARB(DE/EN).",
+      "model_response_raw": null,
+      "call_error": "Ollama-Aufruf fehlgeschlagen: timed out",
+      "call_seconds": 120.00159795803484,
+      "category": "ollama_fehler",
+      "accepted": false,
+      "reason": "Ollama-Aufruf fehlgeschlagen: timed out"
+    },
+    {
+      "material_id": "M-18",
+      "raw_material": "Legal: Konjunktiv-Zwang | Disclaimer-Trias(3 Stellen) | NBA!=Rechtsberatung (RDG) | !=Medizinprodukt(MDR) | DSGVO Household. Hard Stops: Nie \"Anspruch\", nie \"Widerspruch einlegen\", nie Schreiben, nie med. Einschaetzung.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app/rechtlicher-rahmen-legal-trias\",\n  \"title\": \"Rechtliche Leitplanken und Verbote\",\n  \"summary\": \"Definition der rechtlichen Rahmenbedingungen, inklusive Konjunktiv-Zwang, Disclaimer-Trias und expliziter Liste untersagter Begriffe.\",\n  \"content\": \"Legal: Konjunktiv-Zwang | Disclaimer-Trias(3 Stellen) | NBA!=Rechtsberatung (RDG) | !=Medizinprodukt(MDR) | DSGVO Household. Hard Stops: Nie 'Anspruch', nie 'Widerspruch einlegen', nie Schreiben, nie med. Einschaetzung.\",\n  \"source\": \"erzeugt aus Rohmaterial-Input\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 82.49907941604033,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app/rechtlicher-rahmen-legal-trias",
+        "title": "Rechtliche Leitplanken und Verbote",
+        "summary": "Definition der rechtlichen Rahmenbedingungen, inklusive Konjunktiv-Zwang, Disclaimer-Trias und expliziter Liste untersagter Begriffe.",
+        "content": "Legal: Konjunktiv-Zwang | Disclaimer-Trias(3 Stellen) | NBA!=Rechtsberatung (RDG) | !=Medizinprodukt(MDR) | DSGVO Household. Hard Stops: Nie 'Anspruch', nie 'Widerspruch einlegen', nie Schreiben, nie med. Einschaetzung.",
+        "source": "erzeugt aus Rohmaterial-Input",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "4c78103a",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/rechtlicher-rahmen-legal-trias/rechtliche-leitplanken-und-verbote",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-19",
+      "raw_material": "Fork-Entscheid: Patch wuchs 89 -> 1397 -> 1613 Zeilen (Schwelle 300). User 2026-07-24: Fork = Klon versionieren (nach diesem Handoff umgesetzt -- siehe Changelog unten). Damit entfallen Patch-Datei + Clone/Apply-Reproduktionsritual.",
+      "model_response_raw": null,
+      "call_error": "Ollama-Aufruf fehlgeschlagen: timed out",
+      "call_seconds": 120.00217445800081,
+      "category": "ollama_fehler",
+      "accepted": false,
+      "reason": "Ollama-Aufruf fehlgeschlagen: timed out"
+    },
+    {
+      "material_id": "M-20",
+      "raw_material": "Nachsehen schlaegt erinnern. Bevor du sagst „das gibt es nicht\", „das ist fest verdrahtet\" oder „dafuer braeuchten wir ein neues Paket\": sieh in der naheliegendsten Datei nach. Wer nicht nachgesehen hat, sagt „ich habe nicht nachgesehen\" -- nicht „es gibt das nicht\".",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund\",\n  \"title\": \"Nachsehen schlägt Erinnern\",\n  \"summary\": \"Verhaltensregel für die Informationssuche: Vor der Behauptung einer Nichtexistenz muss in den verfügbaren Daten nachgesehen werden.\",\n  \"content\": \"Nachsehen schlaegt erinnern. Bevor du sagst „das gibt es nicht\\\", „das ist fest verdrahtet\\\" oder „dafuer braeuchten wir ein neues Paket\\\": sieh in der naheliegendsten Datei nach. Wer nicht nachgesehen hat, sagt „ich habe nicht nachgesehen\\\" -- nicht „es gibt das nicht\\\".\",\n  \"project_id\": \"shared\",\n  \"source\": \"erzeugt aus Rohmaterial (Suche-Prinzip)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 66.93792175000999,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund",
+        "title": "Nachsehen schlägt Erinnern",
+        "summary": "Verhaltensregel für die Informationssuche: Vor der Behauptung einer Nichtexistenz muss in den verfügbaren Daten nachgesehen werden.",
+        "content": "Nachsehen schlaegt erinnern. Bevor du sagst „das gibt es nicht\", „das ist fest verdrahtet\" oder „dafuer braeuchten wir ein neues Paket\": sieh in der naheliegendsten Datei nach. Wer nicht nachgesehen hat, sagt „ich habe nicht nachgesehen\" -- nicht „es gibt das nicht\".",
+        "project_id": "shared",
+        "source": "erzeugt aus Rohmaterial (Suche-Prinzip)"
+      },
+      "system_response": {
+        "id": "1d0f3d82",
+        "path": "/wissensnetz-pflegeverbund/nachsehen-schlaegt-erinnern",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-21",
+      "raw_material": "Domain: Audio / DSP / Music Information Retrieval. EA1 Keine Latenz-Spikes im Echtzeit-Pfad -- Audio-Dropouts sind sofort hoerbar und zerstoeren das User-Erlebnis, Max 10ms im Audio-Callback. EA4 Audio-Daten = personenbezogen -- Stimmen in Audio-Aufnahmen sind PII (Art. 4 Nr. 1 DSGVO), Offline-First, keine Audio-Uploads. Keine Allokation im Audio-Thread -- stackalloc oder ArrayPool. Keine BPM ohne Konfidenz -- \"120 BPM (0.85)\" statt \"120 BPM\".",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox\",\n  \"title\": \"Audio & DSP Anforderungen\",\n  \"summary\": \"Technische Richtlinien für die Audio-Verarbeitung, einschließlich Echtzeit-Beschränkungen (10ms), Datenschutz (PII) und Speichermanagement.\",\n  \"content\": \"Domain: Audio / DSP / Music Information Retrieval. EA1 Keine Latenz-Spikes im Echtzeit-Pfad -- Audio-Dropouts sind sofort hoerbar und zerstoeren das User-Erlebnis, Max 10ms im Audio-Callback. EA4 Audio-Daten = personenbezogen -- Stimmen in Audio-Aufnahmen sind PII (Art. 4 Nr. 1 DSGVO), Offline-First, keine Audio-Uploads. Keine Allokation im Audio-Thread -- stackalloc oder ArrayPool. Keine BPM ohne Konfidenz -- \\\"120 BPM (0.85)\\\" statt \\\"120 BPM\\\".\",\n  \"project_id\": \"shared\",\n  \"source\": \"erzeugt aus Rohmaterial: Audio / DSP / Music Information Retrieval\",\n  \"neuer_ast\": false\n}\n```",
+      "call_error": null,
+      "call_seconds": 102.82215483300388,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox",
+        "title": "Audio & DSP Anforderungen",
+        "summary": "Technische Richtlinien für die Audio-Verarbeitung, einschließlich Echtzeit-Beschränkungen (10ms), Datenschutz (PII) und Speichermanagement.",
+        "content": "Domain: Audio / DSP / Music Information Retrieval. EA1 Keine Latenz-Spikes im Echtzeit-Pfad -- Audio-Dropouts sind sofort hoerbar und zerstoeren das User-Erlebnis, Max 10ms im Audio-Callback. EA4 Audio-Daten = personenbezogen -- Stimmen in Audio-Aufnahmen sind PII (Art. 4 Nr. 1 DSGVO), Offline-First, keine Audio-Uploads. Keine Allokation im Audio-Thread -- stackalloc oder ArrayPool. Keine BPM ohne Konfidenz -- \"120 BPM (0.85)\" statt \"120 BPM\".",
+        "project_id": "shared",
+        "source": "erzeugt aus Rohmaterial: Audio / DSP / Music Information Retrieval",
+        "neuer_ast": false
+      },
+      "system_response": {
+        "id": "10e2592e",
+        "path": "/entwicklungsplattform-toolbox/audio-dsp-anforderungen",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-22",
+      "raw_material": "Plus App-spezifische Ewigkeitsklauseln (EA1-EA5) pro Kontinent-Verfassung. Beispiel OpenHood: EA1 verbietet OBD2 Mode 04/08 (Fehlercodes loeschen, Komponenten-Tests starten). Durchsetzung: Das Verfassungsgericht (BVerfG-Agent) kann Urteile faellen. Antragsberechtigt sind Hippokrates, Legal und Polizei (Stufe 1), Guide (Stufe 2) und User (Stufe 3). Urteile werden als JSON archiviert.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/pflege-lotse-app/rechtlicher-rahmen-legal-trias\",\n  \"title\": \"Ewigkeitsklauseln (EA1-EA5) & Verfassungsgericht\",\n  \"summary\": \"Definition der Ewigkeitsklauseln und des Durchsetzungsverfahrens durch den BVerfG-Agent.\",\n  \"content\": \"Plus App-spezifische Ewigkeitsklauseln (EA1-EA5) pro Kontinent-Verfassung. Beispiel OpenHood: EA1 verbietet OBD2 Mode 04/08 (Fehlercodes loeschen, Komponenten-Tests starten). Durchsetzung: Das Verfassungsgericht (BVerfG-Agent) kann Urteile faellen. Antragsberechtigt sind Hippokrates, Legal und Polizei (Stufe 1), Guide (Stufe 2) und User (Stufe 3). Urteile werden als JSON archiviert.\",\n  \"project_id\": \"begod\",\n  \"source\": \"erzeugt aus Rohmaterial: Ewigkeitsklauseln-Spezifikation\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 93.04420320899226,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/pflege-lotse-app/rechtlicher-rahmen-legal-trias",
+        "title": "Ewigkeitsklauseln (EA1-EA5) & Verfassungsgericht",
+        "summary": "Definition der Ewigkeitsklauseln und des Durchsetzungsverfahrens durch den BVerfG-Agent.",
+        "content": "Plus App-spezifische Ewigkeitsklauseln (EA1-EA5) pro Kontinent-Verfassung. Beispiel OpenHood: EA1 verbietet OBD2 Mode 04/08 (Fehlercodes loeschen, Komponenten-Tests starten). Durchsetzung: Das Verfassungsgericht (BVerfG-Agent) kann Urteile faellen. Antragsberechtigt sind Hippokrates, Legal und Polizei (Stufe 1), Guide (Stufe 2) und User (Stufe 3). Urteile werden als JSON archiviert.",
+        "project_id": "begod",
+        "source": "erzeugt aus Rohmaterial: Ewigkeitsklauseln-Spezifikation"
+      },
+      "system_response": {
+        "id": "1475ac41",
+        "path": "/wissensnetz-pflegeverbund/pflege-lotse-app/rechtlicher-rahmen-legal-trias/ewigkeitsklauseln-ea1-ea5",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    }
+  ]
+}

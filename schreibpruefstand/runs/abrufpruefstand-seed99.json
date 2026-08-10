@@ -1,0 +1,1569 @@
+{
+  "zeitpunkt": "2026-08-07T10:29:44+0200",
+  "seed": 99,
+  "hub_head": "c2f85cd540c9c2865d0cd3a639977d10a8765764",
+  "hook_datei": "/Volumes/daten/Begod2026/hub/scripts/knowledge_recall_hook.py",
+  "hook_sha256": "a5f5763c60814047e060f8c1d6cfe8234875f523831c61320b782bd9ef4f0f24",
+  "hook_hat_zweiter_kanal_schalter": true,
+  "hook_parameter": {
+    "MIN_HITS": 3,
+    "MAX_NODES": 3,
+    "MAX_LESSONS": 2,
+    "EXPLORE_RATE": 0.15,
+    "TRUST_WEIGHT": 0.35,
+    "NOISE_FLOOR_MAD_MULT": 2.0,
+    "RADAR_MIN_SAMPLE_N": 4,
+    "ENSEMBLE_TOP_N": 5
+  },
+  "bestand": {
+    "n_eintraege": 98,
+    "n_knoten": 60,
+    "n_lehren": 38,
+    "n_cluster_eintraege": 32,
+    "n_fuellmaterial": 66,
+    "abteilungen": {
+      "verbrauchsabrechnung": 30,
+      "netzbetrieb": 17,
+      "kundenservice": 17,
+      "personal": 17,
+      "openlehr-privat": 17
+    }
+  },
+  "aufgaben": {
+    "gesamt": 24,
+    "je_sorte": {
+      "loesbar": 8,
+      "verfuehrerisch": 8,
+      "unloesbar": 8
+    }
+  },
+  "zirkularitaet": {
+    "n_docs": 98,
+    "rare_max_df": 1,
+    "rare_max_df_pruefkorpus": 3,
+    "befunde": [
+      {
+        "aufgabe": "S1",
+        "ziel": "/apps/verbrauchsabrechnung/mahnstaffel-drei-stufen",
+        "kollision": [],
+        "nachrichtlich": {
+          "df<=2": [
+            "euro"
+          ],
+          "df<=3": [
+            "euro",
+            "mahnung"
+          ]
+        }
+      },
+      {
+        "aufgabe": "S2",
+        "ziel": "/apps/verbrauchsabrechnung/zaehlerstand-zahlendreher-korrektur",
+        "kollision": [],
+        "nachrichtlich": {
+          "df<=2": [],
+          "df<=3": [
+            "ablesung"
+          ]
+        }
+      },
+      {
+        "aufgabe": "S3",
+        "ziel": "/apps/verbrauchsabrechnung/rechnung-uebergangsfrist-ende",
+        "kollision": [],
+        "nachrichtlich": {
+          "df<=2": [
+            "papier"
+          ],
+          "df<=3": [
+            "papier",
+            "versand"
+          ]
+        }
+      },
+      {
+        "aufgabe": "S4",
+        "ziel": "/apps/netzbetrieb/stoerung-meldeweg-nacht",
+        "kollision": [],
+        "nachrichtlich": {
+          "df<=2": [
+            "bereitschaft",
+            "darf"
+          ],
+          "df<=3": [
+            "bereitschaft",
+            "darf"
+          ]
+        }
+      },
+      {
+        "aufgabe": "S5",
+        "ziel": "/apps/kundenservice/portal-formular-ratenweg",
+        "kollision": [],
+        "nachrichtlich": {
+          "df<=2": [],
+          "df<=3": []
+        }
+      },
+      {
+        "aufgabe": "S6",
+        "ziel": "L-KOEDER-01",
+        "kollision": [],
+        "nachrichtlich": {
+          "df<=2": [
+            "vertretung"
+          ],
+          "df<=3": [
+            "schicht",
+            "vertretung"
+          ]
+        }
+      },
+      {
+        "aufgabe": "S7",
+        "ziel": "L-LAUF-01",
+        "kollision": [],
+        "nachrichtlich": {
+          "df<=2": [
+            "gutschrift",
+            "monat"
+          ],
+          "df<=3": [
+            "gutschrift",
+            "monat",
+            "rechnungen"
+          ]
+        }
+      },
+      {
+        "aufgabe": "S8",
+        "ziel": "L-OL-01",
+        "kollision": [],
+        "nachrichtlich": {
+          "df<=2": [
+            "faelle",
+            "gruen",
+            "testlauf"
+          ],
+          "df<=3": [
+            "faelle",
+            "gruen",
+            "testlauf"
+          ]
+        }
+      }
+    ],
+    "zirkulaer": []
+  },
+  "eichung": {
+    "aufgabe": "S4",
+    "entferntes_ziel": "/apps/netzbetrieb/stoerung-meldeweg-nacht"
+  },
+  "betriebsarten": {
+    "A": {
+      "beschreibung": "zweiter Kanal AUS (Stand vor 4167aef78)",
+      "zweiter_kanal": false,
+      "ensemble_pflicht": false,
+      "kennzahlen": {
+        "trefferguete": {
+          "zaehler": 4,
+          "nenner": 8,
+          "sorte": "loesbar"
+        },
+        "schweigen_loesbar_FEHLER": {
+          "zaehler": 4,
+          "nenner": 8,
+          "sorte": "loesbar"
+        },
+        "schweigen_unloesbar_RICHTIG": {
+          "zaehler": 8,
+          "nenner": 8,
+          "sorte": "unloesbar"
+        },
+        "fehlgriff_verfuehrerisch": {
+          "zaehler": 0,
+          "nenner": 8,
+          "sorte": "verfuehrerisch"
+        },
+        "schweigen_gesamt": {
+          "zaehler": 20,
+          "nenner": 24,
+          "sorte": "alle"
+        },
+        "koeder_ausserhalb_personal": {
+          "zaehler": 0,
+          "nenner": 21,
+          "sorte": "alle ausser Abteilung personal"
+        },
+        "fremdprojekt_uebertritt": {
+          "zaehler": 1,
+          "nenner": 24,
+          "sorte": "alle"
+        }
+      },
+      "eichung_schweigt": true,
+      "eichung_treffer": [],
+      "einzeln": [
+        {
+          "aufgabe": "S1",
+          "sorte": "loesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "mahnwesen",
+          "ziel": "/apps/verbrauchsabrechnung/mahnstaffel-drei-stufen",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/mahnstaffel-drei-stufen"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S2",
+          "sorte": "loesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "zaehlerstand",
+          "ziel": "/apps/verbrauchsabrechnung/zaehlerstand-zahlendreher-korrektur",
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S3",
+          "sorte": "loesbar",
+          "abteilung": "kundenservice",
+          "cluster": "rechnungsversand",
+          "ziel": "/apps/verbrauchsabrechnung/rechnung-uebergangsfrist-ende",
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S4",
+          "sorte": "loesbar",
+          "abteilung": "netzbetrieb",
+          "cluster": "stoerungsdienst",
+          "ziel": "/apps/netzbetrieb/stoerung-meldeweg-nacht",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/netzbetrieb/stoerung-meldeweg-nacht"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S5",
+          "sorte": "loesbar",
+          "abteilung": "kundenservice",
+          "cluster": "kundenportal",
+          "ziel": "/apps/kundenservice/portal-formular-ratenweg",
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S6",
+          "sorte": "loesbar",
+          "abteilung": "personal",
+          "cluster": "dienstplan",
+          "ziel": "L-KOEDER-01",
+          "n_keywords": 8,
+          "treffer": [
+            "L-KOEDER-01"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": true
+        },
+        {
+          "aufgabe": "S7",
+          "sorte": "loesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "abrechnungslauf",
+          "ziel": "L-LAUF-01",
+          "n_keywords": 8,
+          "treffer": [
+            "L-LAUF-01",
+            "L-DIENST-04"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "L-DIENST-04"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S8",
+          "sorte": "loesbar",
+          "abteilung": "openlehr-privat",
+          "cluster": "openlehr",
+          "ziel": "L-OL-01",
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V1",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "mahnwesen",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V2",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "zaehlerstand",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V3",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "rechnungsversand",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V4",
+          "sorte": "verfuehrerisch",
+          "abteilung": "netzbetrieb",
+          "cluster": "stoerungsdienst",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V5",
+          "sorte": "verfuehrerisch",
+          "abteilung": "kundenservice",
+          "cluster": "kundenportal",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V6",
+          "sorte": "verfuehrerisch",
+          "abteilung": "personal",
+          "cluster": "dienstplan",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V7",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "abrechnungslauf",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V8",
+          "sorte": "verfuehrerisch",
+          "abteilung": "openlehr-privat",
+          "cluster": "openlehr",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U1",
+          "sorte": "unloesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 6,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U2",
+          "sorte": "unloesbar",
+          "abteilung": "netzbetrieb",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 4,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U3",
+          "sorte": "unloesbar",
+          "abteilung": "kundenservice",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 7,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U4",
+          "sorte": "unloesbar",
+          "abteilung": "personal",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 5,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U5",
+          "sorte": "unloesbar",
+          "abteilung": "openlehr-privat",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U6",
+          "sorte": "unloesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 5,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U7",
+          "sorte": "unloesbar",
+          "abteilung": "kundenservice",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 5,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U8",
+          "sorte": "unloesbar",
+          "abteilung": "netzbetrieb",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 6,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        }
+      ]
+    },
+    "B": {
+      "beschreibung": "zweiter Kanal AN, Ensemble-Pflicht AUS (Auslieferung heute)",
+      "zweiter_kanal": true,
+      "ensemble_pflicht": false,
+      "kennzahlen": {
+        "trefferguete": {
+          "zaehler": 6,
+          "nenner": 8,
+          "sorte": "loesbar"
+        },
+        "schweigen_loesbar_FEHLER": {
+          "zaehler": 0,
+          "nenner": 8,
+          "sorte": "loesbar"
+        },
+        "schweigen_unloesbar_RICHTIG": {
+          "zaehler": 1,
+          "nenner": 8,
+          "sorte": "unloesbar"
+        },
+        "fehlgriff_verfuehrerisch": {
+          "zaehler": 6,
+          "nenner": 8,
+          "sorte": "verfuehrerisch"
+        },
+        "schweigen_gesamt": {
+          "zaehler": 1,
+          "nenner": 24,
+          "sorte": "alle"
+        },
+        "koeder_ausserhalb_personal": {
+          "zaehler": 0,
+          "nenner": 21,
+          "sorte": "alle ausser Abteilung personal"
+        },
+        "fremdprojekt_uebertritt": {
+          "zaehler": 15,
+          "nenner": 24,
+          "sorte": "alle"
+        }
+      },
+      "eichung_schweigt": false,
+      "eichung_treffer": [
+        "/apps/netzbetrieb/stoerung-einstufung-dringlichkeit",
+        "/apps/netzbetrieb/stoerung-haeufung-auswertung"
+      ],
+      "einzeln": [
+        {
+          "aufgabe": "S1",
+          "sorte": "loesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "mahnwesen",
+          "ziel": "/apps/verbrauchsabrechnung/mahnstaffel-drei-stufen",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/mahnstaffel-drei-stufen",
+            "/apps/verbrauchsabrechnung/mahnung-kleinbetragsgrenze",
+            "/apps/verbrauchsabrechnung/mahnung-fristen-tage",
+            "L-LAUF-04",
+            "L-LAUF-03"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S2",
+          "sorte": "loesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "zaehlerstand",
+          "ziel": "/apps/verbrauchsabrechnung/zaehlerstand-zahlendreher-korrektur",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/zaehlerstand-melden-wege",
+            "/apps/verbrauchsabrechnung/zaehlerstand-selbstablesung-turnus",
+            "/apps/verbrauchsabrechnung/zaehlerstand-plausibilitaet"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S3",
+          "sorte": "loesbar",
+          "abteilung": "kundenservice",
+          "cluster": "rechnungsversand",
+          "ziel": "/apps/verbrauchsabrechnung/rechnung-uebergangsfrist-ende",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/kundenservice/warteschleifenansage-aktualisierung",
+            "/apps/kundenservice/portal-stammdaten-aendern",
+            "/apps/verbrauchsabrechnung/rechnung-uebergangsfrist-ende",
+            "L-FUELL-14",
+            "L-FUELL-04"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 3,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "/apps/verbrauchsabrechnung/rechnung-uebergangsfrist-ende",
+            "L-FUELL-04"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S4",
+          "sorte": "loesbar",
+          "abteilung": "netzbetrieb",
+          "cluster": "stoerungsdienst",
+          "ziel": "/apps/netzbetrieb/stoerung-meldeweg-nacht",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/netzbetrieb/stoerung-meldeweg-nacht",
+            "/apps/netzbetrieb/stoerung-einstufung-dringlichkeit",
+            "/apps/netzbetrieb/stoerung-haeufung-auswertung"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S5",
+          "sorte": "loesbar",
+          "abteilung": "kundenservice",
+          "cluster": "kundenportal",
+          "ziel": "/apps/kundenservice/portal-formular-ratenweg",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/kundenservice/portal-dokumente-aufbewahrung",
+            "/apps/kundenservice/portal-stammdaten-aendern",
+            "L-FUELL-14",
+            "L-FUELL-15"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S6",
+          "sorte": "loesbar",
+          "abteilung": "personal",
+          "cluster": "dienstplan",
+          "ziel": "L-KOEDER-01",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/personal/bereitschaftsdienst-rotation",
+            "/apps/verbrauchsabrechnung/zaehlerplatz-normgroesse",
+            "/apps/netzbetrieb/stoerung-meldeweg-nacht",
+            "L-KOEDER-01",
+            "L-DIENST-02"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 4,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "/apps/verbrauchsabrechnung/zaehlerplatz-normgroesse",
+            "/apps/netzbetrieb/stoerung-meldeweg-nacht"
+          ],
+          "koeder_aufgetaucht": true
+        },
+        {
+          "aufgabe": "S7",
+          "sorte": "loesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "abrechnungslauf",
+          "ziel": "L-LAUF-01",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/rechnung-adresse-abweichend",
+            "/apps/verbrauchsabrechnung/rechnung-korrektur-storno",
+            "/apps/verbrauchsabrechnung/mahnung-kleinbetragsgrenze",
+            "L-LAUF-01",
+            "L-DIENST-04"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 4,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "L-DIENST-04"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S8",
+          "sorte": "loesbar",
+          "abteilung": "openlehr-privat",
+          "cluster": "openlehr",
+          "ziel": "L-OL-01",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/zaehlerstand-plausibilitaet",
+            "L-OL-01",
+            "L-OL-04"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 2,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "/apps/verbrauchsabrechnung/zaehlerstand-plausibilitaet"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V1",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "mahnwesen",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/mahnung-kleinbetragsgrenze"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [
+            "/apps/verbrauchsabrechnung/mahnung-kleinbetragsgrenze"
+          ],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V2",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "zaehlerstand",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/zaehlerstand-melden-wege",
+            "/apps/verbrauchsabrechnung/zaehlerstand-plausibilitaet",
+            "/apps/verbrauchsabrechnung/zaehlerplatz-normgroesse",
+            "L-OL-01"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [
+            "/apps/verbrauchsabrechnung/zaehlerstand-melden-wege",
+            "/apps/verbrauchsabrechnung/zaehlerstand-plausibilitaet"
+          ],
+          "fremdprojekt": [
+            "L-OL-01"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V3",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "rechnungsversand",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/rechnung-adresse-abweichend",
+            "/apps/verbrauchsabrechnung/zaehlerstand-zahlendreher-korrektur",
+            "/apps/verbrauchsabrechnung/rechnung-korrektur-storno",
+            "L-FUELL-05",
+            "L-OL-02"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [
+            "/apps/verbrauchsabrechnung/rechnung-adresse-abweichend",
+            "/apps/verbrauchsabrechnung/rechnung-korrektur-storno"
+          ],
+          "fremdprojekt": [
+            "L-OL-02"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V4",
+          "sorte": "verfuehrerisch",
+          "abteilung": "netzbetrieb",
+          "cluster": "stoerungsdienst",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/netzbetrieb/stoerung-meldeweg-nacht",
+            "/apps/netzbetrieb/stoerung-protokoll-abschluss",
+            "/apps/netzbetrieb/stoerung-einstufung-dringlichkeit",
+            "L-FUELL-20",
+            "L-FUELL-18"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [
+            "/apps/netzbetrieb/stoerung-meldeweg-nacht",
+            "/apps/netzbetrieb/stoerung-protokoll-abschluss",
+            "/apps/netzbetrieb/stoerung-einstufung-dringlichkeit"
+          ],
+          "fremdprojekt": [
+            "L-FUELL-20",
+            "L-FUELL-18"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V5",
+          "sorte": "verfuehrerisch",
+          "abteilung": "kundenservice",
+          "cluster": "kundenportal",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/kundenservice/portal-dokumente-aufbewahrung",
+            "/apps/kundenservice/kundenportal-self-service",
+            "/apps/kundenservice/portal-stammdaten-aendern"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [
+            "/apps/kundenservice/portal-dokumente-aufbewahrung",
+            "/apps/kundenservice/portal-stammdaten-aendern"
+          ],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V6",
+          "sorte": "verfuehrerisch",
+          "abteilung": "personal",
+          "cluster": "dienstplan",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/personal/dienstplan-schichtwechsel",
+            "L-FUELL-16"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V7",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "abrechnungslauf",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/rechnung-korrektur-storno",
+            "/apps/verbrauchsabrechnung/jahresabrechnung-terminplan",
+            "/apps/verbrauchsabrechnung/zaehlerstand-plausibilitaet",
+            "L-LAUF-02",
+            "L-LAUF-03"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [
+            "L-LAUF-02",
+            "L-LAUF-03"
+          ],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V8",
+          "sorte": "verfuehrerisch",
+          "abteilung": "openlehr-privat",
+          "cluster": "openlehr",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/openlehr-privat/openlehr-fehlerprotokoll-auswertung",
+            "/apps/openlehr-privat/openlehr-startzeit-optimierung",
+            "/apps/personal/teamsitzung-protokollpflicht"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "/apps/personal/teamsitzung-protokollpflicht"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U1",
+          "sorte": "unloesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 6,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/zaehlerplatz-normgroesse",
+            "/apps/verbrauchsabrechnung/mahnung-fristen-tage",
+            "/apps/personal/schulungsnachweis-pflichttermine"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "/apps/personal/schulungsnachweis-pflichttermine"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U2",
+          "sorte": "unloesbar",
+          "abteilung": "netzbetrieb",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 4,
+          "treffer": [
+            "L-FUELL-14"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "L-FUELL-14"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U3",
+          "sorte": "unloesbar",
+          "abteilung": "kundenservice",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 7,
+          "treffer": [
+            "L-FUELL-20",
+            "L-FUELL-25"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "L-FUELL-20",
+            "L-FUELL-25"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U4",
+          "sorte": "unloesbar",
+          "abteilung": "personal",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 5,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/zaehlerstand-melden-wege",
+            "/apps/netzbetrieb/strassenbeleuchtung-ausfallmeldung",
+            "/apps/kundenservice/mehrsprachige-hotline-pilot",
+            "L-FUELL-04"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "/apps/verbrauchsabrechnung/zaehlerstand-melden-wege",
+            "/apps/netzbetrieb/strassenbeleuchtung-ausfallmeldung",
+            "/apps/kundenservice/mehrsprachige-hotline-pilot",
+            "L-FUELL-04"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U5",
+          "sorte": "unloesbar",
+          "abteilung": "openlehr-privat",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/openlehr-privat/openlehr-barrierefreiheit-kontrast",
+            "/apps/kundenservice/mehrsprachige-hotline-pilot",
+            "/apps/personal/dienstplan-schichtwechsel",
+            "L-DIENST-04"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "/apps/kundenservice/mehrsprachige-hotline-pilot",
+            "/apps/personal/dienstplan-schichtwechsel",
+            "L-DIENST-04"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U6",
+          "sorte": "unloesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 5,
+          "treffer": [
+            "/apps/netzbetrieb/stoerung-protokoll-abschluss",
+            "L-FUELL-20"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "/apps/netzbetrieb/stoerung-protokoll-abschluss",
+            "L-FUELL-20"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U7",
+          "sorte": "unloesbar",
+          "abteilung": "kundenservice",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 5,
+          "treffer": [
+            "/apps/kundenservice/portal-dokumente-aufbewahrung",
+            "/apps/kundenservice/portal-formular-ratenweg",
+            "/apps/verbrauchsabrechnung/zaehlerstand-melden-wege",
+            "L-FUELL-14",
+            "L-FUELL-22"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [
+            "/apps/verbrauchsabrechnung/zaehlerstand-melden-wege",
+            "L-FUELL-22"
+          ],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U8",
+          "sorte": "unloesbar",
+          "abteilung": "netzbetrieb",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 6,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        }
+      ]
+    },
+    "C": {
+      "beschreibung": "zweiter Kanal AN, Ensemble-Pflicht AN",
+      "zweiter_kanal": true,
+      "ensemble_pflicht": true,
+      "kennzahlen": {
+        "trefferguete": {
+          "zaehler": 4,
+          "nenner": 8,
+          "sorte": "loesbar"
+        },
+        "schweigen_loesbar_FEHLER": {
+          "zaehler": 4,
+          "nenner": 8,
+          "sorte": "loesbar"
+        },
+        "schweigen_unloesbar_RICHTIG": {
+          "zaehler": 8,
+          "nenner": 8,
+          "sorte": "unloesbar"
+        },
+        "fehlgriff_verfuehrerisch": {
+          "zaehler": 0,
+          "nenner": 8,
+          "sorte": "verfuehrerisch"
+        },
+        "schweigen_gesamt": {
+          "zaehler": 20,
+          "nenner": 24,
+          "sorte": "alle"
+        },
+        "koeder_ausserhalb_personal": {
+          "zaehler": 0,
+          "nenner": 21,
+          "sorte": "alle ausser Abteilung personal"
+        },
+        "fremdprojekt_uebertritt": {
+          "zaehler": 0,
+          "nenner": 24,
+          "sorte": "alle"
+        }
+      },
+      "eichung_schweigt": true,
+      "eichung_treffer": [],
+      "einzeln": [
+        {
+          "aufgabe": "S1",
+          "sorte": "loesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "mahnwesen",
+          "ziel": "/apps/verbrauchsabrechnung/mahnstaffel-drei-stufen",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/verbrauchsabrechnung/mahnstaffel-drei-stufen"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S2",
+          "sorte": "loesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "zaehlerstand",
+          "ziel": "/apps/verbrauchsabrechnung/zaehlerstand-zahlendreher-korrektur",
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S3",
+          "sorte": "loesbar",
+          "abteilung": "kundenservice",
+          "cluster": "rechnungsversand",
+          "ziel": "/apps/verbrauchsabrechnung/rechnung-uebergangsfrist-ende",
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S4",
+          "sorte": "loesbar",
+          "abteilung": "netzbetrieb",
+          "cluster": "stoerungsdienst",
+          "ziel": "/apps/netzbetrieb/stoerung-meldeweg-nacht",
+          "n_keywords": 8,
+          "treffer": [
+            "/apps/netzbetrieb/stoerung-meldeweg-nacht"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S5",
+          "sorte": "loesbar",
+          "abteilung": "kundenservice",
+          "cluster": "kundenportal",
+          "ziel": "/apps/kundenservice/portal-formular-ratenweg",
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S6",
+          "sorte": "loesbar",
+          "abteilung": "personal",
+          "cluster": "dienstplan",
+          "ziel": "L-KOEDER-01",
+          "n_keywords": 8,
+          "treffer": [
+            "L-KOEDER-01"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": true
+        },
+        {
+          "aufgabe": "S7",
+          "sorte": "loesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "abrechnungslauf",
+          "ziel": "L-LAUF-01",
+          "n_keywords": 8,
+          "treffer": [
+            "L-LAUF-01"
+          ],
+          "schweigen": false,
+          "ziel_getroffen": true,
+          "ziel_rang": 1,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "S8",
+          "sorte": "loesbar",
+          "abteilung": "openlehr-privat",
+          "cluster": "openlehr",
+          "ziel": "L-OL-01",
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V1",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "mahnwesen",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V2",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "zaehlerstand",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V3",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "rechnungsversand",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V4",
+          "sorte": "verfuehrerisch",
+          "abteilung": "netzbetrieb",
+          "cluster": "stoerungsdienst",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V5",
+          "sorte": "verfuehrerisch",
+          "abteilung": "kundenservice",
+          "cluster": "kundenportal",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V6",
+          "sorte": "verfuehrerisch",
+          "abteilung": "personal",
+          "cluster": "dienstplan",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V7",
+          "sorte": "verfuehrerisch",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": "abrechnungslauf",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "V8",
+          "sorte": "verfuehrerisch",
+          "abteilung": "openlehr-privat",
+          "cluster": "openlehr",
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U1",
+          "sorte": "unloesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 6,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U2",
+          "sorte": "unloesbar",
+          "abteilung": "netzbetrieb",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 4,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U3",
+          "sorte": "unloesbar",
+          "abteilung": "kundenservice",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 7,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U4",
+          "sorte": "unloesbar",
+          "abteilung": "personal",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 5,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U5",
+          "sorte": "unloesbar",
+          "abteilung": "openlehr-privat",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 8,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U6",
+          "sorte": "unloesbar",
+          "abteilung": "verbrauchsabrechnung",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 5,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U7",
+          "sorte": "unloesbar",
+          "abteilung": "kundenservice",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 5,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        },
+        {
+          "aufgabe": "U8",
+          "sorte": "unloesbar",
+          "abteilung": "netzbetrieb",
+          "cluster": null,
+          "ziel": null,
+          "n_keywords": 6,
+          "treffer": [],
+          "schweigen": true,
+          "ziel_getroffen": false,
+          "ziel_rang": null,
+          "fehlgriff": [],
+          "fremdprojekt": [],
+          "koeder_aufgetaucht": false
+        }
+      ]
+    }
+  },
+  "laufzeit_s": 5.2
+}

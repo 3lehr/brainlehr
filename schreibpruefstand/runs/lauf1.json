@@ -1,0 +1,523 @@
+{
+  "model": "gemma4:12b",
+  "session": "schreibpruefstand-ae2a6905",
+  "db_path": "/Volumes/daten/Begod2026/hub/shared-knowledge/schreibpruefstand/demo/schreibpruefstand.db",
+  "runtime_seconds": 1518.6812221669825,
+  "n_pieces": 21,
+  "protocol": [
+    {
+      "material_id": "M-00",
+      "raw_material": "~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \"Kostenlos\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared\",\n  \"title\": \"Status der Preisentscheidung\",\n  \"summary\": \"Status und Evidenzlage zur Pricing-Entscheidung (K1, K3, P14).\",\n  \"content\": \"~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \\\"Kostenlos\\\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.\",\n  \"project_id\": \"shared\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 53.48964225000236,
+      "model_wanted": {
+        "parent_path": "/shared",
+        "title": "Status der Preisentscheidung",
+        "summary": "Status und Evidenzlage zur Pricing-Entscheidung (K1, K3, P14).",
+        "content": "~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \"Kostenlos\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.",
+        "project_id": "shared"
+      },
+      "system_response": {
+        "id": "ffc56578",
+        "path": "/shared/status-der-preisentscheidung",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-01",
+      "raw_material": "\"Null check\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/begod\",\n  \"title\": \"Fix Null Check Crash in DemoOverlay\",\n  \"summary\": \"Addresses an Overlay-Bug caused by missing FAB tooltip ancestors by implementing empty string fallbacks and improved stack logging.\",\n  \"content\": \"\\\"Null check\\\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 108.70858204201795,
+      "model_wanted": {
+        "parent_path": "/begod",
+        "title": "Fix Null Check Crash in DemoOverlay",
+        "summary": "Addresses an Overlay-Bug caused by missing FAB tooltip ancestors by implementing empty string fallbacks and improved stack logging.",
+        "content": "\"Null check\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "abfeeb35",
+        "path": "/begod/fix-null-check-crash-in-demooverlay",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-02",
+      "raw_material": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/begod\",\n  \"title\": \"Wizard-Pfade und Systemanforderungen\",\n  \"summary\": \"Dokumentation der Wizard-Pfade, Einstellungen zum Demo-Modus sowie technische Systemvoraussetzungen.\",\n  \"content\": \"Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \\\"Protokoll teilen\\\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 89.83502870902885,
+      "model_wanted": {
+        "parent_path": "/begod",
+        "title": "Wizard-Pfade und Systemanforderungen",
+        "summary": "Dokumentation der Wizard-Pfade, Einstellungen zum Demo-Modus sowie technische Systemvoraussetzungen.",
+        "content": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "65d93828",
+        "path": "/begod/wizard-pfade-und-systemanforderungen",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-03",
+      "raw_material": "Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared\",\n  \"title\": \"Tech Stack & Tooling Details\",\n  \"summary\": \"Notes on Drift migration, Riverpod version selection to avoid conflicts, and Flutter Driver bug workarounds.\",\n  \"content\": \"Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.\",\n  \"project_id\": \"shared\",\n  \"tags\": [\n    \"drift\",\n    \"riverpod\",\n    \"flutter\",\n    \"bugfix\"\n  ]\n}\n```",
+      "call_error": null,
+      "call_seconds": 91.82253674999811,
+      "model_wanted": {
+        "parent_path": "/shared",
+        "title": "Tech Stack & Tooling Details",
+        "summary": "Notes on Drift migration, Riverpod version selection to avoid conflicts, and Flutter Driver bug workarounds.",
+        "content": "Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.",
+        "project_id": "shared",
+        "tags": [
+          "drift",
+          "riverpod",
+          "flutter",
+          "bugfix"
+        ]
+      },
+      "system_response": {
+        "id": "cacef58b",
+        "path": "/shared/tech-stack-tooling-details",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-04",
+      "raw_material": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared/tech-stack-tooling-details\",\n  \"title\": \"Accessibility & Speech Tools (TalkBack, TTS, STT)\",\n  \"summary\": \"Details about the infrastructure and cloud status of accessibility features like TalkBack, TTS, and STT.\",\n  \"content\": \"TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.\",\n  \"project_id\": \"shared\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 59.549021041952074,
+      "model_wanted": {
+        "parent_path": "/shared/tech-stack-tooling-details",
+        "title": "Accessibility & Speech Tools (TalkBack, TTS, STT)",
+        "summary": "Details about the infrastructure and cloud status of accessibility features like TalkBack, TTS, and STT.",
+        "content": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+        "project_id": "shared"
+      },
+      "system_response": {
+        "id": "8d752422",
+        "path": "/shared/tech-stack-tooling-details/accessibility-speech-tools-talkback-tts",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-05",
+      "raw_material": "pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared/tech-stack-tooling-details\",\n  \"title\": \"Entscheidung zum PDF Passwort-Support\",\n  \"summary\": \"Verzicht auf Passwörter für PDF v3.x aufgrund von Sicherheitsrisiken bei verfügbaren Paketen; alternative Maßnahmen (Drucken, E-Mail-Warnung) werden stattdessen umgesetzt.\",\n  \"content\": \"pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.\",\n  \"project_id\": \"shared\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 106.22549950005487,
+      "model_wanted": {
+        "parent_path": "/shared/tech-stack-tooling-details",
+        "title": "Entscheidung zum PDF Passwort-Support",
+        "summary": "Verzicht auf Passwörter für PDF v3.x aufgrund von Sicherheitsrisiken bei verfügbaren Paketen; alternative Maßnahmen (Drucken, E-Mail-Warnung) werden stattdessen umgesetzt.",
+        "content": "pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.",
+        "project_id": "shared"
+      },
+      "system_response": {
+        "id": "cb710e35",
+        "path": "/shared/tech-stack-tooling-details/entscheidung-zum-pdf-passwort-support",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-06",
+      "raw_material": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/begod\",\n  \"title\": \"Analyse von God-Files und Duplikationen\",\n  \"summary\": \"Statistik zu Dateigrößen (>500 Zeilen), jscpd-Klons sowie die Regel zur Widget-Beschränkung.\",\n  \"content\": \"God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 51.054853833978996,
+      "model_wanted": {
+        "parent_path": "/begod",
+        "title": "Analyse von God-Files und Duplikationen",
+        "summary": "Statistik zu Dateigrößen (>500 Zeilen), jscpd-Klons sowie die Regel zur Widget-Beschränkung.",
+        "content": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei."
+      },
+      "system_response": {
+        "id": "6a05c7d0",
+        "path": "/begod/analyse-von-god-files-und-duplikationen",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-07",
+      "raw_material": "Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/begod\",\n  \"title\": \"Entscheidung zur 3D-Visualisierung (knowledge-viz)\",\n  \"summary\": \"Einführung einer read-only Python API und einer Vanilla HTML/CSS/JS UI unter 'tools/knowledge-viz' für die automatisierte Visualisierung von Wissensdaten.\",\n  \"content\": \"Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 128.5547450419981,
+      "model_wanted": {
+        "parent_path": "/begod",
+        "title": "Entscheidung zur 3D-Visualisierung (knowledge-viz)",
+        "summary": "Einführung einer read-only Python API und einer Vanilla HTML/CSS/JS UI unter 'tools/knowledge-viz' für die automatisierte Visualisierung von Wissensdaten.",
+        "content": "Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "ee9f3f3a",
+        "path": "/begod/entscheidung-zur-3d-visualisierung",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-08",
+      "raw_material": "Context: semantic strength, provenance, and live readers/writers must be factual and remain current after knowledge changes; 237 permanent text sprites would waste GPU memory. Chosen: extend the existing knowledge MCP with validated `knowledge_relations` CRUD and access identity/status.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared/architektur\",\n  \"title\": \"Erweiterung des Knowledge-Systems und GPU-Optimierung\",\n  \"summary\": \"Entscheidung gegen Text-Sprites zur Einsparung von GPU-Speicher sowie Erweiterung des Knowledge-MCP um `knowledge_relations` CRUD.\",\n  \"content\": \"Context: semantic strength, provenance, and live readers/writers must be factual and remain current after knowledge changes; 237 permanent text sprites would waste GPU memory. Chosen: extend the existing knowledge MCP with validated `knowledge_relations` CRUD and access identity/status.\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 63.50556829094421,
+      "model_wanted": {
+        "parent_path": "/shared/architektur",
+        "title": "Erweiterung des Knowledge-Systems und GPU-Optimierung",
+        "summary": "Entscheidung gegen Text-Sprites zur Einsparung von GPU-Speicher sowie Erweiterung des Knowledge-MCP um `knowledge_relations` CRUD.",
+        "content": "Context: semantic strength, provenance, and live readers/writers must be factual and remain current after knowledge changes; 237 permanent text sprites would waste GPU memory. Chosen: extend the existing knowledge MCP with validated `knowledge_relations` CRUD and access identity/status."
+      },
+      "system_response": {
+        "id": "7d10f693",
+        "path": "/shared/architektur/erweiterung-des-knowledge-systems-und",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-09",
+      "raw_material": "Fuer die Beta-Phase und darueber hinaus besteht die Moeglichkeit, externe Inhalte in die App zu integrieren: AWO Plus Magazin (Monatliches Kundenmagazin als In-App-Content), Bundestag-Abstimmungsverhalten (Pflegerelevante Abstimmungen ohne Wahlempfehlung), Veranstaltungen/Kurse.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared\",\n  \"title\": \"Möglichkeiten zur Content-Integration\",\n  \"summary\": \"Geplante Erweiterungen der App um das AWO Plus Magazin, Bundestag-Abstimmungsverhalten sowie Veranstaltungen und Kurse.\",\n  \"content\": \"Fuer die Beta-Phase und darueber hinaus besteht die Moeglichkeit, externe Inhalte in die App zu integrieren: AWO Plus Magazin (Monatliches Kundenmagazin als In-App-Content), Bundestag-Abstimmungsverhalten (Pflegerelevante Abstimmungen ohne Wahlempfehlung), Veranstaltungen/Kurse.\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 76.34322237502784,
+      "model_wanted": {
+        "parent_path": "/shared",
+        "title": "Möglichkeiten zur Content-Integration",
+        "summary": "Geplante Erweiterungen der App um das AWO Plus Magazin, Bundestag-Abstimmungsverhalten sowie Veranstaltungen und Kurse.",
+        "content": "Fuer die Beta-Phase und darueber hinaus besteht die Moeglichkeit, externe Inhalte in die App zu integrieren: AWO Plus Magazin (Monatliches Kundenmagazin als In-App-Content), Bundestag-Abstimmungsverhalten (Pflegerelevante Abstimmungen ohne Wahlempfehlung), Veranstaltungen/Kurse."
+      },
+      "system_response": {
+        "id": "10471e40",
+        "path": "/shared/moeglichkeiten-zur-content-integration",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-10",
+      "raw_material": "Die Kernfrage: Koennen wir externe Inhalte empfangen, ohne dass diese Zugriff auf medizinische/persoenliche Daten haben? Zone A: Medical (Offline-Only, DSGVO Household Exemption). Internet: NIEMALS. DB: Bestehende app_database.dart (medical tables).",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared/architektur\",\n  \"title\": \"Datentrennung und Empfang externer Inhalte (Zone A)\",\n  \"summary\": \"Entscheidung zur Zulassung externer Inhalte unter strikter Isolation von medizinischen Daten in Zone A.\",\n  \"content\": \"Die Kernfrage: Koennen wir externe Inhalte empfangen, ohne dass diese Zugriff auf medizinische/persoenliche Daten haben? Zone A: Medical (Offline-Only, DSGVO Household Exemption). Internet: NIEMALS. DB: Bestehende app_database.dart (medical tables).\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 45.07238183403388,
+      "model_wanted": {
+        "parent_path": "/shared/architektur",
+        "title": "Datentrennung und Empfang externer Inhalte (Zone A)",
+        "summary": "Entscheidung zur Zulassung externer Inhalte unter strikter Isolation von medizinischen Daten in Zone A.",
+        "content": "Die Kernfrage: Koennen wir externe Inhalte empfangen, ohne dass diese Zugriff auf medizinische/persoenliche Daten haben? Zone A: Medical (Offline-Only, DSGVO Household Exemption). Internet: NIEMALS. DB: Bestehende app_database.dart (medical tables)."
+      },
+      "system_response": {
+        "id": "4e2f5d37",
+        "path": "/shared/architektur/datentrennung-und-empfang-externer",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-11",
+      "raw_material": "Die Pflege-Lotse Plattform wird ueber PflegeTageBuch hinaus weitere Schwester-Apps bekommen. Die Toolbox (BegodApp) ist das entwicklerseitige Steuerungswerkzeug und braucht visuelle Eigenstaendigkeit. Gleichzeitig muss die Familien-DNA erkennbar bleiben.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/begod/pflege-lotse\",\n  \"title\": \"Pflege-Lotse Plattformstrategie und App-Struktur\",\n  \"summary\": \"Strategie zur Erweiterung der Pflege-Lotse um Schwester-Apps unter Wahrung der Familien-DNA.\",\n  \"content\": \"Die Pflege-Lotse Plattform wird ueber PflegeTageBuch hinaus weitere Schwester-Apps bekommen. Die Toolbox (BegodApp) ist das entwicklerseitige Steuerungswerkzeug und braucht visuelle Eigenstaendigkeit. Gleichzeitig muss die Familien-DNA erkennbar bleiben.\",\n  \"project_id\": \"begod\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 46.66270170896314,
+      "model_wanted": {
+        "parent_path": "/begod/pflege-lotse",
+        "title": "Pflege-Lotse Plattformstrategie und App-Struktur",
+        "summary": "Strategie zur Erweiterung der Pflege-Lotse um Schwester-Apps unter Wahrung der Familien-DNA.",
+        "content": "Die Pflege-Lotse Plattform wird ueber PflegeTageBuch hinaus weitere Schwester-Apps bekommen. Die Toolbox (BegodApp) ist das entwicklerseitige Steuerungswerkzeug und braucht visuelle Eigenstaendigkeit. Gleichzeitig muss die Familien-DNA erkennbar bleiben.",
+        "project_id": "begod"
+      },
+      "system_response": {
+        "id": "e86be6a1",
+        "path": "/begod/pflege-lotse/pflege-lotse-plattformstrategie-und-app",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-12",
+      "raw_material": "Teal #2E7D6F erscheint in JEDER App als Wiedererkennungs-Element -- im Logo-Bereich, Footer, oder als Accent-Zweitfarbe, nie als Primary einer Nicht-Pflege-App. Warmes Off-White #FAFAF5 als Surface (nicht kalt-weiss). Kein aggressives Rot -- immer warmes Orange fuer Fehler.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared/architektur\",\n  \"title\": \"UI Design & Markenfarben\",\n  \"summary\": \"Festlegung der offiziellen Farbpalette und UI-Elemente zur Sicherstellung einer konsistenten App-Identität.\",\n  \"content\": \"Teal #2E7D6F erscheint in JEDER App als Wiedererkennungs-Element -- im Logo-Bereich, Footer, oder als Accent-Zweitfarbe, nie als Primary einer Nicht-Pflege-App. Warmes Off-White #FAFAF5 als Surface (nicht kalt-weiss). Kein aggressives Rot -- immer warmes Orange fuer Fehler.\",\n  \"project_id\": \"shared\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 101.41095833398867,
+      "model_wanted": {
+        "parent_path": "/shared/architektur",
+        "title": "UI Design & Markenfarben",
+        "summary": "Festlegung der offiziellen Farbpalette und UI-Elemente zur Sicherstellung einer konsistenten App-Identität.",
+        "content": "Teal #2E7D6F erscheint in JEDER App als Wiedererkennungs-Element -- im Logo-Bereich, Footer, oder als Accent-Zweitfarbe, nie als Primary einer Nicht-Pflege-App. Warmes Off-White #FAFAF5 als Surface (nicht kalt-weiss). Kein aggressives Rot -- immer warmes Orange fuer Fehler.",
+        "project_id": "shared"
+      },
+      "system_response": {
+        "id": "b927655f",
+        "path": "/shared/architektur/ui-design-markenfarben",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-13",
+      "raw_material": "Phase 0 Quick Wins (Sofort, 0-1 Tag): stiftshuette-errors.json geleert (DONE); git-wall-setup-v1-UNSAFE.sh entfernen/archivieren (OFFEN); Worktree-Pfade in copilot-instructions.md verifizieren (OFFEN); Rate-Tracking bei naechster Session befuellen (OFFEN).",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared\",\n  \"title\": \"Phase 0 Quick Wins\",\n  \"summary\": \"Liste der Sofort-Aufgaben und Status-Updates für Phase 0, einschließlich Konfigurationsanpassungen und Fehlerbehebungen.\",\n  \"content\": \"Phase 0 Quick Wins (Sofort, 0-1 Tag): stiftshuette-errors.json geleert (DONE); git-wall-setup-v1-UNSAFE.sh entfernen/archivieren (OFFEN); Worktree-Pfade in copilot-instructions.md verifizieren (OFFEN); Rate-Tracking bei naechster Session befuellen (OFFEN).\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 47.548092957935296,
+      "model_wanted": {
+        "parent_path": "/shared",
+        "title": "Phase 0 Quick Wins",
+        "summary": "Liste der Sofort-Aufgaben und Status-Updates für Phase 0, einschließlich Konfigurationsanpassungen und Fehlerbehebungen.",
+        "content": "Phase 0 Quick Wins (Sofort, 0-1 Tag): stiftshuette-errors.json geleert (DONE); git-wall-setup-v1-UNSAFE.sh entfernen/archivieren (OFFEN); Worktree-Pfade in copilot-instructions.md verifizieren (OFFEN); Rate-Tracking bei naechster Session befuellen (OFFEN)."
+      },
+      "system_response": {
+        "id": "4ea07f0b",
+        "path": "/shared/phase-0-quick-wins",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-14",
+      "raw_material": "Sprint 1.1 Pre-Release Blocker (1-2 Tage): Pre-existing Test-Fail fixen (1 von 1618); dart pub outdated Dependency-Audit; In-App Datenschutzerklaerung-Screen erstellen; Privacy Policy URL auf begod-homepage hosten; Apple Privacy Manifests pruefen.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/begod\",\n  \"title\": \"Sprint 1.1 Pre-Release Blocker\",\n  \"summary\": \"Liste der kritischen Blocker für Sprint 1.1, einschliesslich Test-Fixes, Dependency-Audits und Datenschutzanforderungen.\",\n  \"content\": \"Sprint 1.1 Pre-Release Blocker (1-2 Tage): Pre-existing Test-Fail fixen (1 von 1618); dart pub outdated Dependency-Audit; In-App Datenschutzerklaerung-Screen erstellen; Privacy Policy URL auf begod-homepage hosten; Apple Privacy Manifests pruefen.\",\n  \"project_id\": \"begod\",\n  \"tags\": [\n    \"sprint\",\n    \"blocker\",\n    \"release\",\n    \"roadmap\"\n  ]\n}\n```",
+      "call_error": null,
+      "call_seconds": 75.90210179099813,
+      "model_wanted": {
+        "parent_path": "/begod",
+        "title": "Sprint 1.1 Pre-Release Blocker",
+        "summary": "Liste der kritischen Blocker für Sprint 1.1, einschliesslich Test-Fixes, Dependency-Audits und Datenschutzanforderungen.",
+        "content": "Sprint 1.1 Pre-Release Blocker (1-2 Tage): Pre-existing Test-Fail fixen (1 von 1618); dart pub outdated Dependency-Audit; In-App Datenschutzerklaerung-Screen erstellen; Privacy Policy URL auf begod-homepage hosten; Apple Privacy Manifests pruefen.",
+        "project_id": "begod",
+        "tags": [
+          "sprint",
+          "blocker",
+          "release",
+          "roadmap"
+        ]
+      },
+      "system_response": {
+        "id": "6fb0f9bb",
+        "path": "/begod/sprint-1-1-pre-release-blocker",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-15",
+      "raw_material": "REDIRECT: Komprimierter Status in toolbox/knowledge/context-snapshot.json. Diese Datei existiert als Marker fuer ProjectPaths (Root-Erkennung). Projekt: Pflege-Lotse | Case: B | Branch: feature/1-frage-pro-screen | Phase: 3 (Polish+Release) | Tests: 228/228 | Features: 6 complete.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/begod/pflege-lotse\",\n  \"title\": \"Projektstatus Pflege-Lotse (Case B)\",\n  \"summary\": \"Statusbericht zu Case B in Phase 3 (Polish+Release) mit erfolgreichen Tests und fertigen Features.\",\n  \"content\": \"REDIRECT: Komprimierter Status in toolbox/knowledge/context-snapshot.json. Projekt: Pflege-Lotse | Case: B | Branch: feature/1-frage-pro-screen | Phase: 3 (Polish+Release) | Tests: 228/228 | Features: 6 complete.\",\n  \"project_id\": \"begod\",\n  \"source\": \"context-snapshot.json\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 63.79244404111523,
+      "model_wanted": {
+        "parent_path": "/begod/pflege-lotse",
+        "title": "Projektstatus Pflege-Lotse (Case B)",
+        "summary": "Statusbericht zu Case B in Phase 3 (Polish+Release) mit erfolgreichen Tests und fertigen Features.",
+        "content": "REDIRECT: Komprimierter Status in toolbox/knowledge/context-snapshot.json. Projekt: Pflege-Lotse | Case: B | Branch: feature/1-frage-pro-screen | Phase: 3 (Polish+Release) | Tests: 228/228 | Features: 6 complete.",
+        "project_id": "begod",
+        "source": "context-snapshot.json"
+      },
+      "system_response": {
+        "id": "5f51ccd3",
+        "path": "/begod/pflege-lotse/projektstatus-pflege-lotse-case-b",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-16",
+      "raw_material": "Die BSI Stand-der-Technik-Bibliothek (Grundschutz++ Katalog, 647 Controls in 20 Gruppen, plus Kernel-Katalog -- gesamt 1855 Controls im OSCAL-Format) wurde als Evidenz-Rang 2 in die obersten Direktiven aller drei Repositories verankert.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared\",\n  \"title\": \"BSI Stand-der-Technik-Bibliothek Integration\",\n  \"summary\": \"Verankerung des BSI Grundschutz++ Katalogs (1855 Controls im OSCAL-Format) als Evidenz-Rang 2 in den Direktiven der Repositories.\",\n  \"content\": \"Die BSI Stand-der-Technik-Bibliothek (Grundschutz++ Katalog, 647 Controls in 20 Gruppen, plus Kernel-Katalog -- gesamt 1855 Controls im OSCAL-Format) wurde als Evidenz-Rang 2 in die obersten Direktiven aller drei Repositories verankert.\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 55.762901958078146,
+      "model_wanted": {
+        "parent_path": "/shared",
+        "title": "BSI Stand-der-Technik-Bibliothek Integration",
+        "summary": "Verankerung des BSI Grundschutz++ Katalogs (1855 Controls im OSCAL-Format) als Evidenz-Rang 2 in den Direktiven der Repositories.",
+        "content": "Die BSI Stand-der-Technik-Bibliothek (Grundschutz++ Katalog, 647 Controls in 20 Gruppen, plus Kernel-Katalog -- gesamt 1855 Controls im OSCAL-Format) wurde als Evidenz-Rang 2 in die obersten Direktiven aller drei Repositories verankert."
+      },
+      "system_response": {
+        "id": "e449e5ac",
+        "path": "/shared/bsi-stand-der-technik-bibliothek",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-17",
+      "raw_material": "Status: MVP Complete, Phase 3 (Polish+Release). App-DNA: Offline-First, Privacy-First, Kein Account, Kostenlos+Werbefrei, 70-Jahre-Test. Stack: Flutter 3.38.9, Dart 3.10.8, Riverpod(plain), Drift(SQLite), GoRouter, Material 3, Freezed, pdf+printing, ARB(DE/EN).",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared\",\n  \"title\": \"App-Kernmerkmale und Technologie-Stack\",\n  \"summary\": \"Zusammenfassung der Kernprinzipien (App-DNA) sowie des verwendeten technischen Stacks.\",\n  \"content\": \"Status: MVP Complete, Phase 3 (Polish+Release). App-DNA: Offline-First, Privacy-First, Kein Account, Kostenlos+Werbefrei, 70-Jahre-Test. Stack: Flutter 3.38.9, Dart 3.10.8, Riverpod(plain), Drift(SQLite), GoRouter, Material 3, Freezed, pdf+printing, ARB(DE/EN).\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 80.27582579094451,
+      "model_wanted": {
+        "parent_path": "/shared",
+        "title": "App-Kernmerkmale und Technologie-Stack",
+        "summary": "Zusammenfassung der Kernprinzipien (App-DNA) sowie des verwendeten technischen Stacks.",
+        "content": "Status: MVP Complete, Phase 3 (Polish+Release). App-DNA: Offline-First, Privacy-First, Kein Account, Kostenlos+Werbefrei, 70-Jahre-Test. Stack: Flutter 3.38.9, Dart 3.10.8, Riverpod(plain), Drift(SQLite), GoRouter, Material 3, Freezed, pdf+printing, ARB(DE/EN)."
+      },
+      "system_response": {
+        "id": "6c2b6b03",
+        "path": "/shared/app-kernmerkmale-und-technologie-stack",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-18",
+      "raw_material": "Legal: Konjunktiv-Zwang | Disclaimer-Trias(3 Stellen) | NBA!=Rechtsberatung (RDG) | !=Medizinprodukt(MDR) | DSGVO Household. Hard Stops: Nie \"Anspruch\", nie \"Widerspruch einlegen\", nie Schreiben, nie med. Einschaetzung.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared\",\n  \"title\": \"Rechtliche Vorgaben und Disclaimer (Legal & Compliance)\",\n  \"summary\": \"Übersicht zu rechtlichen Einschränkungen, Konjunktiv-Zwang und Abgrenzungen von Medizinprodukten/Rechtsberatung.\",\n  \"content\": \"Legal: Konjunktiv-Zwang | Disclaimer-Trias(3 Stellen) | NBA!=Rechtsberatung (RDG) | !=Medizinprodukt(MDR) | DSGVO Household. Hard Stops: Nie \\\"Anspruch\\\", nie \\\"Widerspruch einlegen\\\", nie Schreiben, nie med. Einschaetzung.\",\n  \"project_id\": \"shared\",\n  \"tags\": [\n    \"legal\",\n    \"compliance\",\n    \"risk-management\",\n    \"dsgvo\"\n  ]\n}\n```",
+      "call_error": null,
+      "call_seconds": 55.05984941695351,
+      "model_wanted": {
+        "parent_path": "/shared",
+        "title": "Rechtliche Vorgaben und Disclaimer (Legal & Compliance)",
+        "summary": "Übersicht zu rechtlichen Einschränkungen, Konjunktiv-Zwang und Abgrenzungen von Medizinprodukten/Rechtsberatung.",
+        "content": "Legal: Konjunktiv-Zwang | Disclaimer-Trias(3 Stellen) | NBA!=Rechtsberatung (RDG) | !=Medizinprodukt(MDR) | DSGVO Household. Hard Stops: Nie \"Anspruch\", nie \"Widerspruch einlegen\", nie Schreiben, nie med. Einschaetzung.",
+        "project_id": "shared",
+        "tags": [
+          "legal",
+          "compliance",
+          "risk-management",
+          "dsgvo"
+        ]
+      },
+      "system_response": {
+        "id": "df767bb0",
+        "path": "/shared/rechtliche-vorgaben-und-disclaimer-legal",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-19",
+      "raw_material": "Fork-Entscheid: Patch wuchs 89 -> 1397 -> 1613 Zeilen (Schwelle 300). User 2026-07-24: Fork = Klon versionieren (nach diesem Handoff umgesetzt -- siehe Changelog unten). Damit entfallen Patch-Datei + Clone/Apply-Reproduktionsritual.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/aka2026\",\n  \"title\": \"Entscheidung: Fork statt Patching\",\n  \"summary\": \"Umstellung auf Klonversionierung da Patches die 300-Zeilen-Schwelle überschritten haben.\",\n  \"content\": \"Fork-Entscheid: Patch wuchs 89 -> 1397 -> 1613 Zeilen (Schwelle 300). User 2026-07-24: Fork = Klon versionieren (nach diesem Handoff umgesetzt -- siehe Changelog unten). Damit entfallen Patch-Datei + Clone/Apply-Reproduktionsritual.\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 54.707440291997045,
+      "model_wanted": {
+        "parent_path": "/aka2026",
+        "title": "Entscheidung: Fork statt Patching",
+        "summary": "Umstellung auf Klonversionierung da Patches die 300-Zeilen-Schwelle überschritten haben.",
+        "content": "Fork-Entscheid: Patch wuchs 89 -> 1397 -> 1613 Zeilen (Schwelle 300). User 2026-07-24: Fork = Klon versionieren (nach diesem Handoff umgesetzt -- siehe Changelog unten). Damit entfallen Patch-Datei + Clone/Apply-Reproduktionsritual."
+      },
+      "system_response": {
+        "id": "1c5eaf05",
+        "path": "/aka2026/entscheidung-fork-statt-patching",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-20",
+      "raw_material": "Nachsehen schlaegt erinnern. Bevor du sagst „das gibt es nicht\", „das ist fest verdrahtet\" oder „dafuer braeuchten wir ein neues Paket\": sieh in der naheliegendsten Datei nach. Wer nicht nachgesehen hat, sagt „ich habe nicht nachgesehen\" -- nicht „es gibt das nicht\".",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/shared\",\n  \"title\": \"Nachsehen schlaegt erinnern\",\n  \"summary\": \"Verifikationsregel: Bevor eine Nichtexistenz behauptt wird, muss die entsprechende Dokumentation geprüft werden.\",\n  \"content\": \"Nachsehen schlaegt erinnern. Bevor du sagst „das gibt es nicht\\\", \\\"das ist fest verdrahtet\\\" oder \\\"dafuer braeuchten wir ein neues Paket\\\": sieh in der naheliegendsten Datei nach. Wer nicht nachgesehen hat, sagt „ich habe nicht nachgesehen\\\" -- nicht „es gibt das nicht\\\".\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 63.30060383398086,
+      "model_wanted": {
+        "parent_path": "/shared",
+        "title": "Nachsehen schlaegt erinnern",
+        "summary": "Verifikationsregel: Bevor eine Nichtexistenz behauptt wird, muss die entsprechende Dokumentation geprüft werden.",
+        "content": "Nachsehen schlaegt erinnern. Bevor du sagst „das gibt es nicht\", \"das ist fest verdrahtet\" oder \"dafuer braeuchten wir ein neues Paket\": sieh in der naheliegendsten Datei nach. Wer nicht nachgesehen hat, sagt „ich habe nicht nachgesehen\" -- nicht „es gibt das nicht\"."
+      },
+      "system_response": {
+        "id": "765241ec",
+        "path": "/shared/nachsehen-schlaegt-erinnern",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    }
+  ]
+}

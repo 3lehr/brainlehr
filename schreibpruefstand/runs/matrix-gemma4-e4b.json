@@ -1,0 +1,242 @@
+{
+  "model": "gemma4:e4b",
+  "session": "schreibpruefstand-94daee67",
+  "db_path": "/Volumes/daten/Begod2026/hub/shared-knowledge/schreibpruefstand/demo/schreibpruefstand.db",
+  "runtime_seconds": 215.21999558305833,
+  "n_pieces": 8,
+  "protocol": [
+    {
+      "material_id": "M-00",
+      "raw_material": "~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \"Kostenlos\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund\",\n  \"title\": \"Korrektur: Status der Pricing-Entscheidung ('Kostenlos' vs. Bezahlmodell)\",\n  \"summary\": \"\\\"Kostenlos\\\" ist ein PR-Narrativ (PK-Simulation K3) und keine finale Entscheidung. Die aktuelle Analyse empfiehlt einen Einmalkauf von 4,99€, aber eine autoritative Pricing-Entscheidung steht noch aus.\",\n  \"content\": \"~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \\\"Kostenlos\\\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.\",\n  \"source\": \"erzeugt aus Rohmaterial (Session 22)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 26.71133716602344,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund",
+        "title": "Korrektur: Status der Pricing-Entscheidung ('Kostenlos' vs. Bezahlmodell)",
+        "summary": "\"Kostenlos\" ist ein PR-Narrativ (PK-Simulation K3) und keine finale Entscheidung. Die aktuelle Analyse empfiehlt einen Einmalkauf von 4,99€, aber eine autoritative Pricing-Entscheidung steht noch aus.",
+        "content": "~~ALT: 4,99 Einmalkauf | NEU: Kostenlos+Werbefrei~~ KORREKTUR (Session 22): \"Kostenlos\" war PR-Narrativ aus PK-Simulation (K3), KEINE Entscheidung. K1 (Analyse) empfahl 4,99€ Einmalkauf. Evidenz-Pyramide P14: Analyse (Rang 5) > Simulation (Rang 5, aber TYPE=simulation). Pricing-Entscheidung steht noch aus — weder K1 noch K3 haben autoritativen Rang.",
+        "source": "erzeugt aus Rohmaterial (Session 22)"
+      },
+      "system_response": {
+        "id": "4ffa02ed",
+        "path": "/wissensnetz-pflegeverbund/korrektur-status-der-pricing",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-01",
+      "raw_material": "\"Null check\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox/code-qualitaet-god-files\",\n  \"title\": \"Crash Fix: Overlay-Bug bei FAB Tooltips durch Null Check\",\n  \"summary\": \"Behebt einen Null-Check-Crash, der beim Anzeigen von FAB Tooltips auftritt, wenn kein Overlay-Ancestor im DemoOverlay verfügbar ist. Die Lösung beinhaltet eine Überprüfung des vorherigen Crash-Status und verbesserte Stack-Logging.\",\n  \"content\": \"\\\"Null check\\\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.\",\n  \"project_id\": \"begod\",\n  \"tags\": [\n    \"Bugfix\",\n    \"Overlay\",\n    \"DemoOverlay\",\n    \"NullCheck\",\n    \"Tooltip\"\n  ],\n  \"source\": \"erzeugt aus Rohmaterial Dump (Stand 2024-06-18T...)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 29.308104834053665,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files",
+        "title": "Crash Fix: Overlay-Bug bei FAB Tooltips durch Null Check",
+        "summary": "Behebt einen Null-Check-Crash, der beim Anzeigen von FAB Tooltips auftritt, wenn kein Overlay-Ancestor im DemoOverlay verfügbar ist. Die Lösung beinhaltet eine Überprüfung des vorherigen Crash-Status und verbesserte Stack-Logging.",
+        "content": "\"Null check\" Crash: Overlay-Bug (FAB tooltip ohne Overlay-Ancestor in DemoOverlay). Fix: tooltip='' | DemoOverlay prueft previousCrashDetected | Crash-Handler loggt voller Stack. Commits: acbef54, 51eb046, 85c0384.",
+        "project_id": "begod",
+        "tags": [
+          "Bugfix",
+          "Overlay",
+          "DemoOverlay",
+          "NullCheck",
+          "Tooltip"
+        ],
+        "source": "erzeugt aus Rohmaterial Dump (Stand 2024-06-18T...)"
+      },
+      "system_response": {
+        "id": "6163a9e5",
+        "path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files/crash-fix-overlay-bug-bei-fab-tooltips",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-02",
+      "raw_material": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox\",\n  \"title\": \"Beschreibung von Wizard-Pfaden und Protokoll-Sharing im Demomodus\",\n  \"summary\": \"Dokumentiert zwei spezifische Wizard-Pfade (NbaWizardScreen und DecisionTreeWizardScreen) sowie den notwendigen Ablauf, um das Protokoll über die Funktion 'Protokoll teilen' zu erfassen.\",\n  \"content\": \"Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \\\"Protokoll teilen\\\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.\",\n  \"project_id\": \"begod\",\n  \"tags\": [\n    \"UI/UX\",\n    \"Wizard\",\n    \"Demo-Modus\",\n    \"Protokollteilen\",\n    \"Android\"\n  ],\n  \"source\": \"erzeugt aus Rohteil (Stand 2024-05-31T00:00:00+00:00)\",\n  \"neuer_ast\": false,\n  \"actor\": \"Agent\",\n  \"model\": \"Gemma 4\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 28.460120292031206,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox",
+        "title": "Beschreibung von Wizard-Pfaden und Protokoll-Sharing im Demomodus",
+        "summary": "Dokumentiert zwei spezifische Wizard-Pfade (NbaWizardScreen und DecisionTreeWizardScreen) sowie den notwendigen Ablauf, um das Protokoll über die Funktion 'Protokoll teilen' zu erfassen.",
+        "content": "Zwei Wizard-Pfade: NbaWizardScreen (64Q PageView) + DecisionTreeWizardScreen (Ja/Nein). Demo-Modus: Settings -> aktivieren -> \"Protokoll teilen\" -> SharePlus. System: Android 6.0+, ~65MB, kein Internet.",
+        "project_id": "begod",
+        "tags": [
+          "UI/UX",
+          "Wizard",
+          "Demo-Modus",
+          "Protokollteilen",
+          "Android"
+        ],
+        "source": "erzeugt aus Rohteil (Stand 2024-05-31T00:00:00+00:00)",
+        "neuer_ast": false,
+        "actor": "Agent",
+        "model": "Gemma 4"
+      },
+      "system_response": {
+        "id": "5cf3a76b",
+        "path": "/entwicklungsplattform-toolbox/beschreibung-von-wizard-pfaden-und",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-03",
+      "raw_material": "Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund\",\n  \"title\": \"Technische Entwicklungsbeobachtungen: Drift, Riverpod und Flutter Driver Bug\",\n  \"summary\": \"Notizen zu technischen Einschränkungen wie der Drift-Migration im Konstruktor (forTesting() Factory), der Nutzung von Riverpod Plain 2.x ohne Codegen wegen Konflikten und einem spezifischen Dart/Flutter Driver Bug ('int' vs 'String?') bei Finder-Befehlen.\",\n  \"content\": \"Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.\",\n  \"source\": \"erzeugt aus internen Entwicklungsmitschriften (Stand 2024-06-20T12:00:00+02:00)\",\n  \"tags\": [\n    \"Flutter\",\n    \"Dart\",\n    \"Drift\",\n    \"Riverpod\",\n    \"Bugreport\"\n  ]\n}\n```",
+      "call_error": null,
+      "call_seconds": 24.880946584045887,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund",
+        "title": "Technische Entwicklungsbeobachtungen: Drift, Riverpod und Flutter Driver Bug",
+        "summary": "Notizen zu technischen Einschränkungen wie der Drift-Migration im Konstruktor (forTesting() Factory), der Nutzung von Riverpod Plain 2.x ohne Codegen wegen Konflikten und einem spezifischen Dart/Flutter Driver Bug ('int' vs 'String?') bei Finder-Befehlen.",
+        "content": "Drift: Migration im Konstruktor, forTesting() Factory. Riverpod: Plain 2.x (kein Codegen wegen Konflikte mit drift_dev/json_serializable). Flutter Driver Bug: type 'int' not subtype 'String?' bei Finder-Befehlen. Nur screenshot+get_health OK.",
+        "source": "erzeugt aus internen Entwicklungsmitschriften (Stand 2024-06-20T12:00:00+02:00)",
+        "tags": [
+          "Flutter",
+          "Dart",
+          "Drift",
+          "Riverpod",
+          "Bugreport"
+        ]
+      },
+      "system_response": {
+        "id": "0288a852",
+        "path": "/wissensnetz-pflegeverbund/technische-entwicklungsbeobachtungen",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-04",
+      "raw_material": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/technische-entwicklungsbeobachtungen\",\n  \"title\": \"Barrierefreiheit: VoiceOver/TalkBack und Sprachdatenverarbeitung\",\n  \"summary\": \"Überblick über die technische Implementierung von TalkBack/VoiceOver (lokal, unkritisch), die Datenquellen für Text-to-Speech (TTS) und Speech-to-Text (STT), sowie die Notwendigkeit transparenter Nutzerinformationen.\",\n  \"content\": \"TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.\",\n  \"source\": \"erzeugt aus rohmaterialdaten (Stand 2024-XX-XX)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 34.199717625044286,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/technische-entwicklungsbeobachtungen",
+        "title": "Barrierefreiheit: VoiceOver/TalkBack und Sprachdatenverarbeitung",
+        "summary": "Überblick über die technische Implementierung von TalkBack/VoiceOver (lokal, unkritisch), die Datenquellen für Text-to-Speech (TTS) und Speech-to-Text (STT), sowie die Notwendigkeit transparenter Nutzerinformationen.",
+        "content": "TalkBack/VoiceOver: lokal, unkritisch. TTS: meist lokal, manche Stimmen online. STT: potenziell cloudbasiert (Google). Transparenz in Onboarding/Settings noetig. Aktuell: GBoard-Mikrofon (potenziell cloud). Kein eigener SpeechRecognizer.",
+        "source": "erzeugt aus rohmaterialdaten (Stand 2024-XX-XX)"
+      },
+      "system_response": {
+        "id": "c8627e7a",
+        "path": "/wissensnetz-pflegeverbund/technische-entwicklungsbeobachtungen/barrierefreiheit-voiceover-talkback-und",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-05",
+      "raw_material": "pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/wissensnetz-pflegeverbund/technische-entwicklungsbeobachtungen\",\n  \"title\": \"Technische Beschränkung: PDF-Passwortschutz und Risikoabwägung\",\n  \"summary\": \"Aufgrund technischer Einschränkungen (fehlender Passwort-Support in PDF v3.x) und einer Risikobewertung wird die Verwendung von PDF-Passwörtern abgeschafft. Stattdessen werden Alternativen wie das Priorisieren des Drucks oder eine E-Mail-Warnung empfohlen.\",\n  \"content\": \"pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.\",\n  \"source\": \"erzeugt aus Rohmaterialdokumentation\",\n  \"tags\": [\n    \"PDF\",\n    \"Sicherheit\",\n    \"Risikoanalyse\",\n    \"Passwortschutz\"\n  ],\n  \"project_id\": \"shared\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 30.05462399998214,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/wissensnetz-pflegeverbund/technische-entwicklungsbeobachtungen",
+        "title": "Technische Beschränkung: PDF-Passwortschutz und Risikoabwägung",
+        "summary": "Aufgrund technischer Einschränkungen (fehlender Passwort-Support in PDF v3.x) und einer Risikobewertung wird die Verwendung von PDF-Passwörtern abgeschafft. Stattdessen werden Alternativen wie das Priorisieren des Drucks oder eine E-Mail-Warnung empfohlen.",
+        "content": "pdf v3.x hat kein Passwort-Support. Einziges Paket (ares_defence_labs) zu riskant (84 Downloads). Entscheidung: Kein PDF-Passwort. Stattdessen: Drucken priorisieren, E-Mail-Warnung, Personendaten optional.",
+        "source": "erzeugt aus Rohmaterialdokumentation",
+        "tags": [
+          "PDF",
+          "Sicherheit",
+          "Risikoanalyse",
+          "Passwortschutz"
+        ],
+        "project_id": "shared"
+      },
+      "system_response": {
+        "id": "51391354",
+        "path": "/wissensnetz-pflegeverbund/technische-entwicklungsbeobachtungen/technische-beschraenkung-pdf",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-06",
+      "raw_material": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox/code-qualitaet-god-files\",\n  \"title\": \"Codequalitätsprobe: God-Files, Duplikationsrate und Kodierregeln\",\n  \"summary\": \"Erkennung signifikanter Codequalitätsprobleme wie 'God-Files' (>500 Zeilen), hohes Duplikationspotenzial (1.38%) und Hotspots in Wizard-Screens. Es wird die Regel von maximal einem Public Widget pro Datei hervorgehoben.\",\n  \"content\": \"God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.\",\n  \"source\": \"erzeugt aus Rohmaterial Input (Datum des Inputs)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 21.379803749965504,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files",
+        "title": "Codequalitätsprobe: God-Files, Duplikationsrate und Kodierregeln",
+        "summary": "Erkennung signifikanter Codequalitätsprobleme wie 'God-Files' (>500 Zeilen), hohes Duplikationspotenzial (1.38%) und Hotspots in Wizard-Screens. Es wird die Regel von maximal einem Public Widget pro Datei hervorgehoben.",
+        "content": "God-Files: 7 Dateien >500 Zeilen, davon 3 >800 (settings 1156, onboarding 1186, dashboard 989). Duplikation: jscpd 26 Klone, 1.38% Rate. Hotspot: decision_tree_wizard_screen vs nba_wizard_screen (7 Klon-Paare!). Regel: Max 1 public Widget pro Datei.",
+        "source": "erzeugt aus Rohmaterial Input (Datum des Inputs)"
+      },
+      "system_response": {
+        "id": "2362e34f",
+        "path": "/entwicklungsplattform-toolbox/code-qualitaet-god-files/codequalitaetsprobe-god-files",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    },
+    {
+      "material_id": "M-07",
+      "raw_material": "Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+      "model_response_raw": "```json\n{\n  \"parent_path\": \"/entwicklungsplattform-toolbox\",\n  \"title\": \"3D Wissensvisualisierungstool für BeGood\",\n  \"summary\": \"Entwurf eines lokalen, ansprechenden und automatisch aktualisierten 3D-Views der Wissensquellen. Die Lösung basiert auf einer read-only Python Standard-Library HTTP API kombiniert mit Vanilla HTML/CSS/JS unter dem Pfad 'tools/knowledge-viz'.\",\n  \"content\": \"Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.\",\n  \"source\": \"erzeugt aus Kontextbeschreibung (Stand 2024-07-26T10:00:00+02:00)\"\n}\n```",
+      "call_error": null,
+      "call_seconds": 20.193044416955672,
+      "retry_count": 0,
+      "model_wanted": {
+        "parent_path": "/entwicklungsplattform-toolbox",
+        "title": "3D Wissensvisualisierungstool für BeGood",
+        "summary": "Entwurf eines lokalen, ansprechenden und automatisch aktualisierten 3D-Views der Wissensquellen. Die Lösung basiert auf einer read-only Python Standard-Library HTTP API kombiniert mit Vanilla HTML/CSS/JS unter dem Pfad 'tools/knowledge-viz'.",
+        "content": "Context: BeGood needs a local, attractive, automatically updated 3D view without changing the existing knowledge sources. Chosen: a read-only Python standard-library HTTP API and Vanilla HTML/CSS/JS UI under `tools/knowledge-viz`, with pinned `3d-force-graph` loaded by the browser.",
+        "source": "erzeugt aus Kontextbeschreibung (Stand 2024-07-26T10:00:00+02:00)"
+      },
+      "system_response": {
+        "id": "84a431b1",
+        "path": "/entwicklungsplattform-toolbox/3d-wissensvisualisierungstool-fuer",
+        "status": "created",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "category": "angenommen",
+      "accepted": true,
+      "reason": null
+    }
+  ]
+}

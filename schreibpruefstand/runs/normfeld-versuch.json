@@ -1,0 +1,767 @@
+{
+  "model": "gemma4:e4b",
+  "n_runs_je_variante": 3,
+  "n_stuecke": 7,
+  "norm_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "runtime_seconds": 2392.3771896250546,
+  "laeufe": {
+    "V0_unveraendert": [
+      {
+        "variante": "V0_unveraendert",
+        "n_stuecke": 7,
+        "norm_rang": 3,
+        "gilt_ab": 5,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": 3,
+            "gilt_ab": "2026-10-01T00:00:00+02:00"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01T00:00:00Z"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": "2026-09-15T00:00:00Z"
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": 3,
+            "gilt_ab": "2026-09-01T00:00:00+02:00"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01T00:00:00"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 0
+      },
+      {
+        "variante": "V0_unveraendert",
+        "n_stuecke": 7,
+        "norm_rang": 1,
+        "gilt_ab": 3,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-10-01"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01T00:00:00+00:00"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 1
+      },
+      {
+        "variante": "V0_unveraendert",
+        "n_stuecke": 7,
+        "norm_rang": 1,
+        "gilt_ab": 4,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-10-01T00:00:00Z"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-09-01T00:00:00Z"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01T00:00:00Z"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 2
+      }
+    ],
+    "V1_num_ctx_8192": [
+      {
+        "variante": "V1_num_ctx_8192",
+        "n_stuecke": 7,
+        "norm_rang": 2,
+        "gilt_ab": 4,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-10-01"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": "2027-01-01T00:00:00"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": "2026-09-15T00:00:00"
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 0
+      },
+      {
+        "variante": "V1_num_ctx_8192",
+        "n_stuecke": 7,
+        "norm_rang": 2,
+        "gilt_ab": 3,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": "2026-10-01T00:00:00+00:00"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-09-01T00:00:00+02:00"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 1
+      },
+      {
+        "variante": "V1_num_ctx_8192",
+        "n_stuecke": 7,
+        "norm_rang": 0,
+        "gilt_ab": 2,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-10-01"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-09-01T00:00:00"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 2
+      }
+    ],
+    "V2_deutsche_feldbeschreibung": [
+      {
+        "variante": "V2_deutsche_feldbeschreibung",
+        "n_stuecke": 7,
+        "norm_rang": 3,
+        "gilt_ab": 5,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-10-01T00:00:00+02:00"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 3,
+            "gilt_ab": "2027-01-01T00:00:00"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": "2026-11-01T00:00:00Z"
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": 3,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01T00:00:00+00:00"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 0
+      },
+      {
+        "variante": "V2_deutsche_feldbeschreibung",
+        "n_stuecke": 7,
+        "norm_rang": 2,
+        "gilt_ab": 6,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": 3,
+            "gilt_ab": "2026-10-01T00:00:00+02:00"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-09-15T00:00:00Z"
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": 3,
+            "gilt_ab": "2026-11-01T00:00:00+02:00"
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-09-01T00:00:00+02:00"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 1
+      },
+      {
+        "variante": "V2_deutsche_feldbeschreibung",
+        "n_stuecke": 7,
+        "norm_rang": 3,
+        "gilt_ab": 4,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": "2026-10-01T00:00:00Z"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": "2027-01-01T00:00:00Z"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": 3,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01T00:00:00Z"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 2
+      }
+    ],
+    "V3_ein_beispiel": [
+      {
+        "variante": "V3_ein_beispiel",
+        "n_stuecke": 7,
+        "norm_rang": 7,
+        "gilt_ab": 5,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-10-01"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-15T00:00:00"
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 0
+      },
+      {
+        "variante": "V3_ein_beispiel",
+        "n_stuecke": 7,
+        "norm_rang": 5,
+        "gilt_ab": 5,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2026-10-01"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-15"
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": null,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 1
+      },
+      {
+        "variante": "V3_ein_beispiel",
+        "n_stuecke": 7,
+        "norm_rang": 7,
+        "gilt_ab": 5,
+        "unbrauchbar": 0,
+        "per_stueck": [
+          {
+            "index": 0,
+            "unbrauchbar": false,
+            "norm_rang": 1,
+            "gilt_ab": "2026-10-01"
+          },
+          {
+            "index": 1,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 2,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-15"
+          },
+          {
+            "index": 3,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": null
+          },
+          {
+            "index": 4,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2026-09-01"
+          },
+          {
+            "index": 5,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": "2027-01-01"
+          },
+          {
+            "index": 6,
+            "unbrauchbar": false,
+            "norm_rang": 2,
+            "gilt_ab": null
+          }
+        ],
+        "lauf_nr": 2
+      }
+    ]
+  },
+  "tabelle": {
+    "V0_unveraendert": {
+      "norm_rang": {
+        "werte": [
+          3,
+          1,
+          1
+        ],
+        "mittelwert": 1.6666666666666667,
+        "spannweite": 2
+      },
+      "gilt_ab": {
+        "werte": [
+          5,
+          3,
+          4
+        ],
+        "mittelwert": 4,
+        "spannweite": 2
+      },
+      "unbrauchbar": {
+        "werte": [
+          0,
+          0,
+          0
+        ],
+        "mittelwert": 0,
+        "spannweite": 0
+      }
+    },
+    "V1_num_ctx_8192": {
+      "norm_rang": {
+        "werte": [
+          2,
+          2,
+          0
+        ],
+        "mittelwert": 1.3333333333333333,
+        "spannweite": 2
+      },
+      "gilt_ab": {
+        "werte": [
+          4,
+          3,
+          2
+        ],
+        "mittelwert": 3,
+        "spannweite": 2
+      },
+      "unbrauchbar": {
+        "werte": [
+          0,
+          0,
+          0
+        ],
+        "mittelwert": 0,
+        "spannweite": 0
+      }
+    },
+    "V2_deutsche_feldbeschreibung": {
+      "norm_rang": {
+        "werte": [
+          3,
+          2,
+          3
+        ],
+        "mittelwert": 2.6666666666666665,
+        "spannweite": 1
+      },
+      "gilt_ab": {
+        "werte": [
+          5,
+          6,
+          4
+        ],
+        "mittelwert": 5,
+        "spannweite": 2
+      },
+      "unbrauchbar": {
+        "werte": [
+          0,
+          0,
+          0
+        ],
+        "mittelwert": 0,
+        "spannweite": 0
+      }
+    },
+    "V3_ein_beispiel": {
+      "norm_rang": {
+        "werte": [
+          7,
+          5,
+          7
+        ],
+        "mittelwert": 6.333333333333333,
+        "spannweite": 2
+      },
+      "gilt_ab": {
+        "werte": [
+          5,
+          5,
+          5
+        ],
+        "mittelwert": 5,
+        "spannweite": 0
+      },
+      "unbrauchbar": {
+        "werte": [
+          0,
+          0,
+          0
+        ],
+        "mittelwert": 0,
+        "spannweite": 0
+      }
+    }
+  }
+}
