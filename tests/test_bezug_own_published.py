@@ -122,6 +122,40 @@ def test_count_wandert_mit(bestand, monkeypatch):
     assert daten.get("gefiltert_nach_bezug") == "published"
 
 
+def test_freigegebene_lehre_ist_fuer_gast_sichtbar(bestand, monkeypatch):
+    """Nachtrag zu B4.5: die Spalte macht aus dem groben Schnitt einen feinen.
+
+    Vorher war KEINE Lehre je fuer einen Gast sichtbar -- korrekt (was kein
+    Freigabemerkmal tragen kann, ist nicht freigegeben), aber grob. Mit der
+    nachgezogenen Spalte ist eine ausdruecklich freigegebene Lehre sichtbar und
+    eine interne nicht.
+    """
+    off = kms.lesson_record(type_="insight",
+                            description="Wetterbericht offen: Regen am Montag",
+                            projects=["shared"], actor="fremder", session="s")["id"]
+    kms.lesson_record(type_="insight",
+                      description="Wetterbericht intern: Personallage montags",
+                      projects=["shared"], actor="fremder", session="s")
+    conn = sqlite3.connect(str(kms.DB_PATH))
+    conn.execute("UPDATE lessons_learned SET freigabe='offen' WHERE id=?", (off,))
+    conn.commit()
+    conn.close()
+
+    g = ausweis.anlegen("gastnutzer", ["gast"], pfad=bestand / "a.json")
+    monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g)
+    ausweis._pruefe.cache_clear()
+
+    res = kms.handle_request({
+        "jsonrpc": "2.0", "id": 1, "method": "tools/call",
+        "params": {"name": "knowledge_search",
+                   "arguments": {"query": "Wetterbericht"}}})["result"]
+    treffer = json.loads(res["content"][0]["text"])["results"]
+    lehren = [t["id"] for t in treffer if t.get("kind") == "lesson"]
+
+    assert off in lehren, "freigegebene Lehre blieb unsichtbar"
+    assert len(lehren) == 1, f"interne Lehre kam durch: {lehren}"
+
+
 def test_lehren_sind_fuer_gast_nicht_freigegeben(bestand, monkeypatch):
     """Der Befund des Koederlaufs vom 2026-08-10.
 

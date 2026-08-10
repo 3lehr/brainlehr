@@ -160,9 +160,19 @@ def _bezug_pruefen(eintraege: list[dict], bezug: str, ausw: ausweis.Ausweis,
     conn = sqlite3.connect(f"file:{db_pfad}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     try:
-        merkmale = {r["id"]: r for r in conn.execute(
+        merkmale = {r["id"]: dict(r) for r in conn.execute(
             f"SELECT id, freigabe, actor FROM knowledge_nodes WHERE id IN ({platz})",
             ids)}
+        # Lehren tragen dieselben zwei Merkmale, seit die Spalte nachgezogen
+        # ist (B4.5-Nachtrag). Eigener Query statt UNION, weil eine DB ohne
+        # die Spalte hier scheitern darf, ohne die Knoten mitzureissen: dann
+        # bleiben Lehren beim groben Schnitt (kein Merkmal -> nicht sichtbar).
+        try:
+            merkmale.update({r["id"]: dict(r) for r in conn.execute(
+                f"SELECT id, freigabe, actor FROM lessons_learned WHERE id IN ({platz})",
+                ids)})
+        except sqlite3.OperationalError:
+            pass
     except sqlite3.OperationalError:
         return eintraege          # altes Schema ohne freigabe -> nicht filtern
     finally:
@@ -185,9 +195,9 @@ def _bezug_pruefen(eintraege: list[dict], bezug: str, ausw: ausweis.Ausweis,
             # freigegeben. Bei "own" gilt dasselbe: was ich nicht als meines
             # belegen kann, ist nicht meines.
             continue
-        if bezug == "published" and (m["freigabe"] or "intern") != "offen":
+        if bezug == "published" and (m.get("freigabe") or "intern") != "offen":
             continue
-        if bezug == "own" and (m["actor"] or "") != ausw.name:
+        if bezug == "own" and (m.get("actor") or "") != ausw.name:
             continue
         behalten.append(e)
     return behalten

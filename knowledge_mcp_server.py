@@ -1091,6 +1091,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_schreiber_columns(conn)
     _ensure_node_constraint_triggers(conn)
     _ensure_lessons_fts_backfill(conn)
+    _ensure_lessons_freigabe_column(conn)
     columns = {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
     for name, declaration in {
         "actor": "TEXT", "model": "TEXT", "session": "TEXT", "client": "TEXT",
@@ -1109,6 +1110,33 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         if "dim" not in emb_columns:
             conn.execute("ALTER TABLE knowledge_embeddings ADD COLUMN dim INTEGER")
     conn.commit()
+
+
+def _ensure_lessons_freigabe_column(conn) -> None:
+    """freigabe an lessons_learned nachziehen (B4.5-Nachtrag, 2026-08-10).
+
+    Der Koederlauf zeigte: ein Gast (Bezug 'published') sah 5 von 10 Treffern,
+    allesamt Lehren -- lessons_learned trug die Spalte nicht, weil
+    migrate_freigabe.py nur ueber knowledge_nodes ging. Der Filter sperrt sie
+    seither pauschal, was richtig, aber grob ist: KEINE Lehre kann dann je
+    freigegeben werden.
+
+    Additiv und hier statt nur im Migrationsskript -- genau die Lehre L-7e0823:
+    dieselbe Spalte wurde damals per Skript nachgezogen, aber nicht in
+    ensure_schema(), und eine DB mit schema.sql ohne Migrationslauf brach im
+    normalen Schreibpfad mit einem rohen sqlite3-Fehler ab. Beide Wege im
+    selben Arbeitsschritt.
+
+    Kein Trigger auf den Wertebereich: knowledge_nodes hat ihn, hier waere er
+    ein zweiter Ort fuer dieselbe Regel. Die Pruefung sitzt im Schreibpfad."""
+    tabellen = {r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'")}
+    if "lessons_learned" not in tabellen:
+        return
+    spalten = {r[1] for r in conn.execute("PRAGMA table_info(lessons_learned)")}
+    if "freigabe" not in spalten:
+        conn.execute("ALTER TABLE lessons_learned "
+                     "ADD COLUMN freigabe TEXT NOT NULL DEFAULT 'intern'")
 
 
 UNBEKANNTER_SCHREIBER = "unbekannt"

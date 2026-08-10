@@ -554,7 +554,13 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     actor TEXT,                               -- siehe Kommentar an knowledge_nodes.actor/.session/.model
     session TEXT,
     model TEXT,
-    client TEXT                               -- siehe Kommentar an knowledge_nodes.client
+    client TEXT,                              -- siehe Kommentar an knowledge_nodes.client
+    -- freigabe (B4.5-Nachtrag 2026-08-10): wie an knowledge_nodes.freigabe.
+    -- Nachgezogen, weil der Koederlauf zeigte, dass ein Gast (Bezug
+    -- 'published') alle Lehren sah -- sie trugen kein Freigabemerkmal, und was
+    -- keines tragen KANN, laesst der Filter seither pauschal weg. Mit dieser
+    -- Spalte wird aus dem groben Schnitt ein feiner.
+    freigabe TEXT NOT NULL DEFAULT 'intern'
 );
 
 -- Volltext-Suche ueber Lehren (Auftrag 2026-08-07). Gleiche Bauart wie
