@@ -1,17 +1,14 @@
-# STAND brainlehr — 2026-08-09T16:55:00+0200
+# STAND brainlehr — 2026-08-10T06:40:00+0200
 
-Offen: 53 % der Betreibernachrichten erreichen den Speicher nie — gemessen mit
-der Warteschlange als Nenner (`ausloeser.py`, `runs/ausloeser_2026-08-09.json`,
-94 Nachrichten ab Commit e3ef28f): 28 nie am Haltepunkt (waehrend laufender
-Arbeit eingereiht, 5-8 Stichworte), 22 unter MIN_HITS (kurze Zurufe),
-44 eingespielt, 0 leer. Die 16/35 Abrufguete gilt fuer die andere Haelfte.
-Naechstes: die 28 angehen — vermutlich Haltepunkt, nicht brainlehr; erst
-messen, ob eingereihte Nachrichten den Hook ueberhaupt erreichen koennen.
-Danach die 22 (Prompt traegt keinen Inhalt, der Arbeitskontext schon,
-Knoten `745f7ac1`), dann Pruefkorpus vergroessern, Antwortqualitaet messen.
-Wartet auf: `~/.claude.json` -> `mcpServers.knowledge.env` (actor, tippt der
-Betreiber selbst) · Papernetz-Umfang · sechs Knoten Rang 4/6.
-Falle: ein Protokoll taugt erst als Nenner, seit es den Negativfall schreibt
-(`L-cb3f28`); eine Widerlegung erst, wenn ihr Einzelfall im Nenner steht
-(`L-bd4e5f`, Verfahren dagegen `L-1c9dc8`).
-Uebergabe wird seit hub-Commit 4dea71518 beim Sitzungsstart genannt.
+Gebaut auf Zweig `brainlehr/b4-ausweis` (17 Commits, NICHT gepusht): B4.1-B4.5.
+Identitaet aus Ausweis statt Behauptung (`ausweis.py`), Durchsetzung an
+`tools/call` (`werkzeugrechte.py`), Bezug :own/:published, Einbuergerungsamt
+(`ausweis:ausstellen`, nicht delegierbar, Gruendungsakt ausgenommen). Dazu
+`normbezug.py` — meldet bei jeder Antwort unbelegte Normzitate und erfundene
+Kennungen, verdrahtet in `haken/antwort_abruf.py --stop`. Entscheidung: ADR-002.
+Nebenbefund mit groesster Wirkung: der Bereichsfilter kannte `systemweit` nicht —
+150 Lehren waren bei gesetztem scope unsichtbar, jetzt behoben.
+Naechstes: B4.6 Verfassung, Zweckprojektion (Konzept Kap. 7b), Abstimmung.
+WICHTIG: `weich` ist die Vorgabe und KEIN Schutz — ohne Ausweis darf jeder
+alles. Wartet auf den Betreiber: ersten Ausweis anlegen (Gruendungsakt),
+`sudo chown root` am Ausweisordner, `BRAINLEHR_DURCHSETZUNG=streng`.
