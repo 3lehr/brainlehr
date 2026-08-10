@@ -332,7 +332,51 @@ P2 — und P2 ist der ganze Plan in einer Zeile.
 
 ---
 
-## 8. Fortschreibung
+## 8. Fortschreibung — Stand 2026-08-10T05:54
 
-Nach der Umsetzung: was anders kam als geplant, und warum. Die Entscheidung wandert als
-ADR-002 nach `docs/adr/`.
+**Umgesetzt: B4.1 bis B4.5, dazu die Freigabe-Achse an `lessons_learned`.**
+Entscheidung als `docs/adr/ADR-002-ausweis-statt-behauptung.md`.
+
+### Was anders kam als geplant
+
+**B4.4b (Art des Traegers) war nicht im Plan.** Er entstand waehrend der
+Umsetzung aus der Frage „nicht dass wir uns nun selbst aussperren!". Aussperren
+war unmoeglich; die Gefahr lag in der Gegenrichtung — ein Ausweis mit
+menschlichem Namen in der Konfiguration eines Modells haette die Normrang-Sperre
+lautlos ausgehebelt. **Die Frage nach dem einen Risiko fand das andere.**
+
+**Mandat und Rotation wurden vorgezogen.** Der Plan hatte sie an eine Bedingung
+gehaengt („erst wenn es mehr als einen Menschen gibt"). Der Betreiber widersprach
+— zu Recht: dasselbe Dokument begruendet bei der Verfassung, dass spaeteres
+Aufpfropfen teurer ist. Die Begruendung war inkonsistent, nicht der Zeitpunkt.
+
+**Die Mitbestimmung lieferte die haerteste Regel.** Aus dem Durchspielen der
+Gewerkschaftsseite kam **imperatives statt freies Mandat** — fuer ein Modell ist
+nur das weisungsgebundene zulaessig. Damit wurde der Gegenstand ein Pflichtfeld,
+was der Plan so nicht vorsah.
+
+**Der Koederlauf fand ein Leck, das der Plan nicht kannte:** Lehren trugen kein
+Freigabemerkmal und fielen durch den `published`-Filter. Der erste Fix war
+pauschal, danach folgte die Spalte.
+
+### Was der Plan richtig vorhergesagt hat
+
+Die Reihenfolge. B4.1 war tatsaechlich Voraussetzung fuer alles: haette B4.3
+zuerst gestanden, waere eine Schranke entstanden, die im selben Aufruf umgangen
+wird — und auf jedem Bildschirm wie eine Schranke ausgesehen haette.
+
+### Offen
+
+- **B4.6 Verfassung** (Knoten `b933ec35`, Durchspiel
+  `docs/DURCHSPIEL_BEZUGSGRUPPEN_2026-08-09.md`)
+- **Zweckprojektion** (Konzept Kapitel 7b) — die Stufen 3, 4 und 9 der
+  Zugriffskette
+- **Abstimmung als Vorgang**, mit `art=mensch` als Teilnahmebedingung
+- **Sperrliste fuer Destillationsgegenstaende** (`cd0a871b`)
+- **Der Schalter auf `streng`** — Entscheidung des Betreibers, betrifft den
+  Betrieb
+
+### Der Satz, an dem diese Runde zu messen ist
+
+`weich` ist kein Schutz. Gebaut ist, dass ein Ausweis **wirkt** — nicht, dass
+einer verlangt wird.
