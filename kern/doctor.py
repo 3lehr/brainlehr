@@ -29,6 +29,7 @@ Rueckgabewert 0 = nichts gefunden, 1 = Befunde. Damit taugt es als Tor.
 from __future__ import annotations
 
 import sys as _sys
+import json
 from pathlib import Path as _Path
 
 # Findet die Repo-Wurzel an schema.sql statt an einer Anzahl von Ebenen.
@@ -235,11 +236,86 @@ def probe_bestand() -> None:
     c.close()
 
 
+def probe_melder_ohne_ausloeser() -> None:
+    """Kann jeder verdrahtete Melder ueberhaupt feuern?
+
+    Anlass 2026-08-10: sichtbarkeit.py meldete Lese- UND Schreibvorgaenge,
+    sein Haken hatte aber nur die Schreibwerkzeuge im Matcher stehen. Der
+    Melder war fehlerfrei, lief nie, und niemand sah es -- der Aufruf endet
+    auf '2>/dev/null || true'. Vier Stunden Suche an der falschen Stelle
+    (Verdichtung? Arbeitsbaum? Anmeldung?), waehrend die Ursache in einer
+    Zeile Konfiguration stand.
+
+    Diese Probe vergleicht, WAS ein Melder anzeigen will, mit dem, WORAUF er
+    gestartet wird. Sie ist die einzige Stelle, an der eine Luecke zwischen
+    beiden sichtbar wird -- ein Melder ohne Ausloeser sieht in jedem Test
+    gesund aus, weil an ihm selbst nichts fehlt.
+    """
+    abschnitt("Melder ohne Ausloeser")
+    import re
+
+    einstellungen = Path.home() / ".claude" / "settings.json"
+    if not einstellungen.exists():
+        print("  keine ~/.claude/settings.json  uebersprungen")
+        return
+
+    try:
+        daten = json.loads(einstellungen.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        befund("melder", f"~/.claude/settings.json ist kein gueltiges JSON: {e}")
+        return
+
+    # Aktionsname im Protokoll -> Werkzeugname am MCP-Server. Nur die, bei
+    # denen beide auseinanderfallen; alles andere heisst gleich.
+    WERKZEUG = {"add": "knowledge_add", "update": "knowledge_update",
+                "lesson": "lesson_record", "search": "knowledge_search",
+                "read": "knowledge_read", "browse": "knowledge_browse"}
+
+    geprueft = 0
+    # Nur Haltepunkte, die ueberhaupt auf Werkzeuge matchen. SessionStart
+    # und Stop tragen einen Anlass-Matcher ("compact") oder gar keinen --
+    # dort ist ein fehlender Werkzeugname kein Mangel, sondern die Bauform.
+    for haltepunkt, gruppen in daten.get("hooks", {}).items():
+        if haltepunkt not in ("PreToolUse", "PostToolUse"):
+            continue
+        for gruppe in gruppen:
+            matcher = gruppe.get("matcher") or ""
+            for h in gruppe.get("hooks", []):
+                befehl = str(h.get("command", ""))
+                treffer = re.search(r"([a-z_0-9]+)\.py\b", befehl)
+                if not treffer or "sichtbarkeit" not in befehl:
+                    continue
+                quelle = next((q for q in WURZEL.rglob(f"{treffer.group(1)}.py")
+                               if ".claude" not in q.parts), None)
+                if quelle is None:
+                    continue
+                geprueft += 1
+                text = quelle.read_text(encoding="utf-8")
+                gemeldet: set[str] = set()
+                for feld in ("LESE_AKTIONEN", "SCHREIB_AKTIONEN"):
+                    block = re.search(feld + r"\s*=\s*\{(.*?)\}", text, re.S)
+                    if block:
+                        gemeldet |= set(re.findall(r'"([a-z_]+)"', block.group(1)))
+                fehlend = sorted(
+                    w for a in gemeldet
+                    if (w := WERKZEUG.get(a, a)) not in matcher)
+                if fehlend:
+                    befund("melder", f"{quelle.name} meldet {len(fehlend)} Vorgangsart(en), "
+                           f"auf die sein {haltepunkt}-Haken nie startet: "
+                           f"{', '.join(fehlend[:6])}")
+                else:
+                    print(f"  {quelle.name}: Matcher deckt alles ab, was er meldet  ok")
+
+    if not geprueft:
+        print("  kein verdrahteter Melder gefunden  uebersprungen")
+
+
 def main() -> int:
     print("doctor — brainlehr")
     print(f"Ort: {WURZEL}")
     for probe in (probe_regelgleichheit, probe_tote_pfade, probe_schreibbarkeit,
-                  probe_verwaiste_funktionen, probe_bestand):
+                  probe_verwaiste_funktionen, probe_bestand,
+                  probe_melder_ohne_ausloeser):
         try:
             probe()
         except Exception as e:  # eine kaputte Probe darf den Rest nicht verhindern
