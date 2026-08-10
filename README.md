@@ -19,7 +19,12 @@ fünf Dinge, die ein Archiv nicht tut:
   Prüfkorpus, blind bewertet. Die Zahlen fallen regelmäßig schlecht aus; das ist
   der Zweck.
 
-Läuft offline als MCP-Server auf SQLite. Kein Dienst, kein Konto, keine Cloud.
+Läuft als **MCP-Server** auf SQLite — damit an jedem MCP-fähigen Klienten:
+Claude Code und Desktop, Codex, [Hermes](https://hermes-agent.nousresearch.com/)
+oder einem eigenen. *Offline* meint den **Speicher**, nicht das Modell:
+Datenbank, Volltextindex und Vektoren bleiben auf dem Gerät. Welches Modell
+davor sitzt, ist deine Wahl — auch ein gehostetes, es sieht nie mehr, als der
+Klient ihm schickt.
 
 > **Fassung 0.1.0.** Die führende Null ist die Aussage: keine stabile
 > Schnittstelle, keine Zusage zur Aufwärtskompatibilität. Was funktioniert, ist
