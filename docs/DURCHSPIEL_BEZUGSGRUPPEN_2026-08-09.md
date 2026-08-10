@@ -203,7 +203,7 @@ Organisation anfuehlt, nicht wie Rechtevergabe.
 *Gegen:* **Zwei getrennte Felder.** Geltung (in welcher Gruppe gilt eine Aussage) ist
 nicht Sichtbarkeit (wer darf sie lesen). Der Stadtwerke-Befund `L-adfb33` zeigt, wie
 teuer die Vermischung ist: der Grund der Abwesenheit war sauber entfernt, aber das
-Pflichtfeld `source` trug „Abwesenheit Fritz Mueller" — Herkunftspflicht und
+Pflichtfeld `source` trug „Abwesenheit <Vorname Nachname>" — Herkunftspflicht und
 Berechtigungstrennung zogen gegeneinander.
 
 ---

@@ -46,19 +46,23 @@ def test_a_vorher_source_traegt_den_namen(temp_db):
     """VORHER (ohne abgeleitet_von, wie im gemessenen Befund): der Schreiber
     formuliert source selbst, source traegt den Namen woertlich."""
     quelle = kms.knowledge_add(
-        "/", "Abwesenheit: Fritz Mueller (Reha)", "Abwesend bis 2026-08-15",
+        "/", "Abwesenheit: <Vorname Nachname> (Reha)", "Abwesend bis 2026-08-15",
         content="Reha-Aufenthalt, Rueckkehr voraussichtlich 2026-08-15",
         source="erzeugt aus Personalakte (Stand 2026-08-06T10:00:00+0200)",
     )
     assert quelle.get("status") == "created", quelle
 
     ableitung_vorher = kms.knowledge_add(
-        "/", "Hausmeisterei-Hinweis (vorher)", "Abwesenheit Fritz Mueller (gueltig bis 2026-08-15)",
-        source="Abwesenheit Fritz Mueller (gueltig bis 2026-08-15)",
+        "/", "Hausmeisterei-Hinweis (vorher)", "Abwesenheit <Vorname Nachname> (gueltig bis 2026-08-15)",
+        source="Abwesenheit <Vorname Nachname> (gueltig bis 2026-08-15)",
     )
     assert ableitung_vorher.get("status") == "created", ableitung_vorher
     row = _sql(temp_db, "SELECT source FROM knowledge_nodes WHERE id = ?", (ableitung_vorher["id"],))
-    assert "Fritz" in row["source"] and "Mueller" in row["source"], (
+    # Der Testbestand traegt seit 2026-08-10 einen PLATZHALTER statt eines
+    # Namens (dieselbe Regel wie in L-adfb33: ein Beleg braucht die FORM des
+    # Datums, nicht seinen INHALT). Der Befund ist unveraendert -- die A-Seite
+    # zeigt, WER abwesend ist; nur steht der Name nicht mehr im Repo.
+    assert "<Vorname Nachname>" in row["source"], (
         f"Vorher-Fall soll den Namen woertlich zeigen, tut es nicht: {row['source']!r}"
     )
 
@@ -67,7 +71,7 @@ def test_a_nachher_erzeugter_source_enthaelt_weder_namen_noch_diagnose(temp_db):
     """NACHHER: dieselbe Ableitung ueber abgeleitet_von. Der erzeugte
     source-Text enthaelt weder 'Fritz' noch 'Mueller' noch 'Reha'."""
     quelle = kms.knowledge_add(
-        "/", "Abwesenheit: Fritz Mueller (Reha)", "Abwesend bis 2026-08-15",
+        "/", "Abwesenheit: <Vorname Nachname> (Reha)", "Abwesend bis 2026-08-15",
         content="Reha-Aufenthalt, Rueckkehr voraussichtlich 2026-08-15",
         source="erzeugt aus Personalakte (Stand 2026-08-06T10:00:00+0200)",
         tags=["personal", "abwesenheit"],
@@ -81,7 +85,7 @@ def test_a_nachher_erzeugter_source_enthaelt_weder_namen_noch_diagnose(temp_db):
     assert ableitung.get("status") == "created", ableitung
     row = _sql(temp_db, "SELECT source, abgeleitet_von FROM knowledge_nodes WHERE id = ?", (ableitung["id"],))
     erzeugte_source = row["source"]
-    print("VORHER (Freitext):", "Abwesenheit Fritz Mueller (gueltig bis 2026-08-15)")
+    print("VORHER (Freitext):", "Abwesenheit <Vorname Nachname> (gueltig bis 2026-08-15)")
     print("NACHHER (erzeugt): ", erzeugte_source)
     assert "Fritz" not in erzeugte_source, erzeugte_source
     assert "Mueller" not in erzeugte_source, erzeugte_source

@@ -86,7 +86,7 @@ keine Frage der Technik, sondern der Erlaubnis.
 Dieselben Check-in-Daten, die Stimmberechtigung begruenden, ergeben ein
 **Bewegungsprofil**: wer war wann wo, wie lange, mit wem. Der Stadtwerke-Befund
 `L-adfb33` zeigt, wie leise das passiert: der Grund der Abwesenheit war sauber
-entfernt — und das Pflichtfeld `source` trug „Abwesenheit Fritz Mueller (gueltig bis
+entfernt — und das Pflichtfeld `source` trug „Abwesenheit <Vorname Nachname> (gueltig bis
 2026-08-15)". Herkunftspflicht und Berechtigungstrennung zogen gegeneinander, und die
 Herkunftspflicht gewann, weil sie ein Trigger ist.
 

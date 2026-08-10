@@ -47,8 +47,24 @@ from pathlib import Path
 # bekannte Koeder (sie MUESSEN fehlen -- sonst ist der Filter blind) und
 # Formmuster fuer Kontaktdaten. Die Koeder sind die eigentliche Kontrolle;
 # ein Formkatalog allein findet einen Nachnamen ohne Anrede nie.
-VERBOTENE_WERTE = ("Quenzelbach", "990177", "Fritz Mueller", "Fritz Müller",
-                   "Im Buckeberg")
+# DIE KOEDERLISTE STEHT NICHT IM CODE. Ein Koeder, der im Repo liegt, ist
+# keiner mehr -- wer die Liste liest, weiss, welche Werte markiert sind. Aus
+# demselben Grund wird auch die Pseudonym-Mapping-Tabelle nie committet
+# (L-dc0f44). Die Werte liegen daneben in koederwerte.txt, eine Zeile je Wert,
+# gitignored. Fehlt die Datei, laeuft der Export NICHT ohne Kontrolle durch --
+# er bricht ab, denn eine Positivkontrolle ohne bekannte Werte ist keine.
+KOEDERDATEI = Path(__file__).resolve().parent / "koederwerte.txt"
+
+
+def koederwerte() -> tuple[str, ...]:
+    if not KOEDERDATEI.exists():
+        raise SystemExit(
+            f"Keine Koederliste unter {KOEDERDATEI}. Ohne bekannte Werte ist "
+            f"die Positivkontrolle blind, und ein 'sauber' saegt nichts aus. "
+            f"Eine Zeile je Wert anlegen (die Datei ist gitignored).")
+    return tuple(z.strip() for z in
+                 KOEDERDATEI.read_text(encoding="utf-8").splitlines()
+                 if z.strip() and not z.startswith("#"))
 VERBOTENE_MUSTER = {
     "IBAN": re.compile(r"\bDE\d{2}[ ]?(?:\d{4}[ ]?){4}\d{2}\b"),
     # Kein Buchstabe unmittelbar davor: sonst trifft das Muster
@@ -93,7 +109,7 @@ def sammle(pfad: Path) -> list[dict]:
 def pruefe(zeilen: list[dict]) -> list[str]:
     """Findet, was nicht hinausgehen darf. Leere Liste = sauber."""
     text = json.dumps(zeilen, ensure_ascii=False)
-    funde = [f"Koederwert im Export: {w!r}" for w in VERBOTENE_WERTE if w in text]
+    funde = [f"Koederwert im Export: {w[:4]}…" for w in koederwerte() if w in text]
     funde += [f"{name} im Export: {m.group(0)[:8]}…"
               for name, rx in VERBOTENE_MUSTER.items()
               for m in [rx.search(text)] if m]
@@ -124,6 +140,7 @@ def _selftest() -> None:
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
+        kw = koederwerte()
         db = Path(tmp) / "k.db"
         conn = sqlite3.connect(str(db))
         conn.executescript((Path(__file__).resolve().parent / "schema.sql")
@@ -139,7 +156,7 @@ def _selftest() -> None:
                 .replace("'keine_norm',?", "'keine_norm','test','test',?"),
                 (nid, path, path, summary, freigabe))
         add("n1", "/nasa-llis/1", "Ventil versagte bei Kaelte", "offen")
-        add("n2", "/ops/weg", "Vorgang Im Buckeberg 16-26", "intern")
+        add("n2", "/ops/weg", f"Vorgang {kw[0]}", "intern")
         conn.commit(); conn.close()
 
         # --- Vorgabe deny: nur 'offen' geht raus ---------------------------
@@ -154,7 +171,7 @@ def _selftest() -> None:
         conn.commit(); conn.close()
         erg = exportiere(db, Path(tmp) / "out2.jsonl")
         assert erg["status"] == "abgebrochen", erg
-        assert any("Buckeberg" in f for f in erg["funde"]), erg["funde"]
+        assert any("Koederwert" in f for f in erg["funde"]), erg["funde"]
         assert not (Path(tmp) / "out2.jsonl").exists(), \
             "bei einem Fund darf NICHTS geschrieben werden"
 

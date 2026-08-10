@@ -243,7 +243,7 @@ def _selftest() -> int:
     # --- Teil 1: Reifegrad, ein Fall je Regime -----------------------------
     erklaert = bewerten_knoten({
         "path": "/x", "source": "Chatgespraech", "updated_at": now.isoformat(),
-        "norm_entscheidung": "norm_unbefristet", "norm_entschieden_von": "Markus Lehr",
+        "norm_entscheidung": "norm_unbefristet", "norm_entschieden_von": "Erika Mustermann",
         "norm_entschieden_grund": "Betreiberentscheidung im Gespraech",
     }, now)
     assert erklaert["regime"] == REIFE_ERKLAERT, erklaert
@@ -285,7 +285,7 @@ def _selftest() -> int:
     # --- Teil 2: Machinen-/Fremd-Erkennung ----------------------------------
     assert ist_maschine("claude-code/opus-5") is True
     assert ist_maschine("unbekannt") is False
-    assert ist_maschine("Markus Lehr") is False
+    assert ist_maschine("Erika Mustermann") is False
     assert ist_maschine(None) is False
 
     fremd_beispiele = [
@@ -360,7 +360,7 @@ def _selftest() -> int:
                 "erzeugt aus /Users/x/.claude/CLAUDE.md")
 
         # Fall 4: menschlicher Entscheider, Hausnorm, Rang 1 -- DURCHGELASSEN.
-        _insert("/t/haus-mensch-rang1", 1, "Markus Lehr", "Chatgespraech 2026-08-09")
+        _insert("/t/haus-mensch-rang1", 1, "Erika Mustermann", "Chatgespraech 2026-08-09")
 
         # Fall 5: maschineller Entscheider, Fremdnorm, Rang 1 -- DURCHGELASSEN
         # (die Maschine zeichnet eine fremde Tatsache auf, entscheidet nichts).

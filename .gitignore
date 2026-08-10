@@ -44,3 +44,6 @@ eilmeldung_eskalation.jsonl
 sichtbarkeit_stand/
 *.nulllinie
 knowledge.db.vor-*
+
+# Koederliste fuer die Exportkontrolle: im Repo waere sie wirkungslos.
+koederwerte.txt

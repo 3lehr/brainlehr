@@ -116,6 +116,21 @@ pytest -q
 python3 knowledge_mcp_server.py
 ```
 
+### Bestand sichern und wiederherstellen
+
+Die Datenbank selbst gehoert **nicht** in die Versionsverwaltung: Git fuehrt eine
+Binaerdatei nicht zusammen, es ueberschreibt sie — ein Arbeitstag der Gegenseite
+verschwindet dann ohne Konflikthinweis. Versioniert wird stattdessen ein
+zeilenweiser Textauszug, aus dem sich der Bestand vollstaendig wiederherstellen
+laesst:
+
+```bash
+python3 brainlehr.py raus     # Bestand -> auszug/ (Text, vergleichbar)
+python3 brainlehr.py rein     # auszug/ -> Bestand
+python3 brainlehr.py init     # leere Datenbank anlegen
+python3 brainlehr.py haken    # Hooks im Klienten verdrahten
+```
+
 Anbindung an einen MCP-Klienten über dessen Konfiguration; der Server spricht
 JSON-RPC über Standardein- und -ausgabe.
 

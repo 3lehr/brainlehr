@@ -1204,7 +1204,7 @@ def _selftest_einladung() -> None:
                  pfad=pfad, aussteller=G, jetzt=T0)
 
         # --- bedient_von muss auf einen ECHTEN Menschen zeigen -------------
-        for wer, wort in (("Markus Lehr", "kein Ausweis"), ("chatgpt", "kein Mensch")):
+        for wer, wort in (("Erika Mustermann", "kein Ausweis"), ("chatgpt", "kein Mensch")):
             try:
                 einladen("geist2", bedient_von=wer, pfad=pfad, aussteller=G,
                          jetzt=T0)

@@ -87,7 +87,7 @@ Ein nicht angekuendigtes Werkzeug ist trotzdem aufrufbar.
 - `geltungsbereich.py` — Projektmenge, leere Menge heisst „gilt ueberall"
 - `access_log` mit Hashkette — die Beweiskette, unveraendert nutzbar
 - `sichtbarkeit.py` — jeder Schreibvorgang wird eine Zeile im Gespraech
-- `/stadtwerke` + Koeder (Kd-Nr. 990177) und die Simulationsakademie mit sieben
+- `/stadtwerke` + Koeder (Kd-Nr. <Kd-Nr.>) und die Simulationsakademie mit sieben
   Messlaeufen — der Pruefstand steht bereits
 
 ---
@@ -179,7 +179,7 @@ Argument, um einer zu werden.
 
 ### B4.5 — Der Koederlauf misst jetzt Versagen
 
-Der Lauf mit Frau Quenzelbach (Kd-Nr. 990177) wird wiederholt. Bis heute mass er laut
+Der Lauf mit Frau <Nachname> (Kd-Nr. <Kd-Nr.>) wird wiederholt. Bis heute mass er laut
 eigenem Knoten nur eine **Ausgangsmarke**, weil die Trennung nicht gebaut war. Danach ist
 ein Treffer ein Befund.
 
@@ -291,7 +291,7 @@ Bauform laesst sich nicht ueberreden.
 
 *Was auch B4.7 nicht loest, ausdruecklich:* Ein Modell, das lesen darf, kann
 Gelesenes weitertragen. Gegen Abfluss durch Erzaehlen hilft kein Schreibverbot.
-Dagegen steht nur der Koeder (Kd-Nr. 990177) — er verhindert nichts, aber er
+Dagegen steht nur der Koeder (Kd-Nr. <Kd-Nr.>) — er verhindert nichts, aber er
 macht den Abfluss beweisbar und nennt den Kanal.
 
 ---
@@ -321,7 +321,7 @@ Jede Zeile ist eine Pruefung, die **vor** dem Bau fehlschlagen muss (rot vor gru
 | P5 | `:own` — fremder Eintrag | sichtbar | nicht sichtbar |
 | P6 | `:published` — Eintrag `freigabe='intern'` fuer `readonly` | sichtbar | nicht sichtbar |
 | P7 | Geheimnis irgendwo im Klartext (Repo, DB, Protokoll) | — | Suche liefert null Treffer |
-| P8 | Koeder Kd-Nr. 990177 quert die Abteilungsgrenze | Ausgangsmarke | Befund |
+| P8 | Koeder Kd-Nr. <Kd-Nr.> quert die Abteilungsgrenze | Ausgangsmarke | Befund |
 
 **Negativfall, der am leichtesten vergessen wird** (aus ADR-001 uebernommen): ein gueltiger
 Aufruf mit selbstbehauptetem `actor` im Rumpf darf diesen Wert NICHT uebernehmen. Das ist
