@@ -1,9 +1,15 @@
-# brainlehr
+# brainlehr 0.1.0
 
 Ein lokaler Wissensspeicher für Sprachmodelle, der nicht nur festhält, **was
 gesagt wurde**, sondern **was gilt** — und der misst, ob er dabei hilft.
 
 Läuft offline als MCP-Server auf SQLite. Kein Dienst, kein Konto, keine Cloud.
+
+> **Fassung 0.1.0.** Die führende Null ist die Aussage: keine stabile
+> Schnittstelle, keine Zusage zur Aufwärtskompatibilität, Felder und Werkzeuge
+> können sich ändern. Was funktioniert, ist belegt — was zugesagt wird, ist
+> nichts. Die Fassung steht in `VERSION`; ein Test hält Datei, Server und diese
+> Zeile zusammen.
 
 ---
 
