@@ -663,7 +663,19 @@ CREATE TABLE IF NOT EXISTS access_log (
     -- keine Verschluesselung, keine Signatur. Wer Schreibrechte auf die
     -- DB-Datei hat, kann die Kette neu rechnen.
     zeilen_hash TEXT,
-    ketten_hash TEXT
+    ketten_hash TEXT,
+    -- Tokenkosten je Zugriff (ADR-003, nachgezogen 2026-08-10). Im Betrieb
+    -- existierten diese vier Spalten seit laengerem, in schema.sql nicht --
+    -- eine Neuanlage konnte `kern/tokenkosten.py` deshalb gar nicht tragen.
+    -- Sie sind bis heute in ALLEN Zeilen NULL, und das ist kein Versaeumnis
+    -- dieser Datei: der LESER existiert samt Tests, ein SCHREIBER nicht
+    -- (siehe Modulkopf von kern/tokenkosten.py). Die Spalten gehoeren
+    -- trotzdem hierher, damit Neuanlage und Betrieb dieselbe Sache messen,
+    -- sobald ein Schreiber dazukommt.
+    tokens_input INTEGER,
+    tokens_output INTEGER,
+    tokens_cache_creation INTEGER,
+    tokens_cache_read INTEGER
 );
 
 -- Erklaerte Kettenbrueche (Nachtrag 2026-08-06, additiv per
@@ -1041,3 +1053,21 @@ BEGIN
     INSERT INTO knowledge_fassungen (node_id, path, title, summary, content, tags, actor, model, session)
     VALUES (OLD.id, OLD.path, OLD.title, OLD.summary, OLD.content, OLD.tags, OLD.actor, OLD.model, OLD.session);
 END;
+
+-- ---------------------------------------------------------------------------
+-- Schemastand (ADR-003, 2026-08-10)
+--
+-- Die Marke muss stehen, BEVOR die erste Migration laeuft. Danach laesst sich
+-- nicht mehr feststellen, welcher Stand vorher galt -- genau das ist dem
+-- Betriebsbestand am 2026-08-08 passiert, wo die einzige Zeile dieser Tabelle
+-- sich selbst als nachtraeglich gesetzt ausweist. Der Grund ist die
+-- Reihenfolge, nicht die Menge: er gilt bei null Zeilen wie bei einer Million.
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    version INTEGER PRIMARY KEY,
+    angewandt_am TEXT NOT NULL,
+    beschreibung TEXT NOT NULL
+);
+
+INSERT OR IGNORE INTO schema_migrations (version, angewandt_am, beschreibung)
+VALUES (1, strftime('%Y-%m-%dT%H:%M:%SZ','now'),
+        'Erstanlage aus schema.sql -- Stand vollstaendig bekannt, keine Vorgeschichte');
