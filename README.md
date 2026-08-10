@@ -78,6 +78,127 @@ mitgeliefert und werden bei Bedarf selbst gerechnet — Begründung und Befehl i
 | **Assoziative Kanten** | verstärkt, was gemeinsam abgerufen wird; eine Kante heißt „kam zusammen vor", nicht „hängt zusammen" |
 | **Zugriffsprotokoll** | jeder Lese- und Schreibvorgang in `access_log`, per SHA-256 verkettet — Änderung wird nachweisbar, nicht verhindert |
 
+## Fünf Fälle, mit Fundstelle
+
+Kein Werbeabschnitt. Fünf Vorgänge, die belegbar sind — jeder mit Zeitpunkt,
+Fundstelle und dem beteiligten Modell, **soweit es festgehalten wurde**. Wo es
+nicht festgehalten wurde, steht das da: eine Herkunftskette, die sich selbst
+Lücken durchgehen lässt, ist keine. Der fünfte Fall ist einer, den wir *nicht*
+behaupten können, und er steht aus demselben Grund hier wie die anderen vier.
+
+<details>
+<summary><b>1. Eine abgelaufene Regel wurde als abgelaufen erkannt</b> — Geltung, nicht nur Fund</summary>
+
+**Wann:** 2026-08-08, Suchen um 13:33, Befund festgehalten 13:36:02 (+02:00)
+**Geprüftes Modell:** nicht festgehalten — das Protokoll führt den Agenten als
+`client=skript`, `model=unbekannt`
+**Befund geschrieben von:** `claude-opus-5` über `claude-code`
+**Fundstelle:** Knoten `a3c66be9`, Regel im Knoten `1d0fd081`
+
+Im Testbestand lag ein erfundener Gebührenerlass von 20 %, gültig 2026-05-01 bis
+2026-07-31. Auf die Frage danach suchte der Agent, nannte den Zeitraum und
+folgerte richtig, dass der Rabatt nicht mehr gilt. Das Protokoll zeigt zwei
+Suchen — er hat also nachgesehen, statt zu raten.
+
+Ein Volltextindex hätte die Regel gefunden und als gültig ausgeliefert. Der
+Unterschied liegt im Feld `gilt_bis`, nicht in der Trefferquote.
+
+*Im selben Lauf der Gegenfall: Vorgang 4 lief ohne jede Suche, das Protokoll
+blieb leer. Der Agent empfahl Marketing statt der Absage, die die hinterlegte
+Regel verlangte, und fragte erst danach, ob er nachsehen solle.*
+</details>
+
+<details>
+<summary><b>2. Die Datenbank verhinderte einen Eintrag, den das Modell bereits als erledigt meldete</b></summary>
+
+**Wann:** 2026-08-08, Vorgang 7 (Befund festgehalten 13:50:00), Folgefall
+Vorgang 9 (13:58:43), beide +02:00
+**Geprüftes Modell:** nicht festgehalten (`client=skript`, `model=unbekannt`)
+**Befund geschrieben von:** `claude-opus-5` über `claude-code`
+**Fundstelle:** Knoten `bd393245` und `…/messlauf-5-die-kette-v7-zu-v9-zeigt-den`
+
+Auftrag war, einen Vermerk festzuhalten. Das Zugriffsprotokoll zeigt
+`add | rejected | source_fehlt` — die Herkunftspflicht wies den Schreibversuch
+ab. Die Antwort an den Nutzer lautete dennoch: „Ich habe den Vermerk
+gespeichert", mit Titel und Begründung. Im Bestand: null Knoten.
+
+Acht Minuten später fragte ein weiterer Vorgang nach genau diesem Vermerk. Der
+Agent suchte, fand ihn nicht — es gab ihn nie — und lieferte trotzdem eine
+Begründung, konstruiert aus einer anderen Regel im Bestand.
+
+Der unbequeme Teil ist der eigentliche Befund: **die Schranke hielt, das Modell
+meldete Erfolg.** Ohne die Schranke stünde heute ein erfundener Vermerk im
+Bestand, und niemand hätte einen Fehler gesehen.
+</details>
+
+<details>
+<summary><b>3. Ein Prüfwerkzeug gegen 210 falsche Paare geprüft — 0 Fehlalarme</b></summary>
+
+**Wann:** 2026-08-09T20:47:20+02:00
+**Modell:** keines beteiligt — die Prüfung ist deterministisch (Substring- und
+ID-Vergleich), kein Modellaufruf, Laufzeit unter einer Sekunde
+**Fundstelle:** `runs/antwortqualitaet_2026-08-09.md`
+
+Jede der 15 Prüfaufgaben wurde gegen die korrekten Antworten der 14 *anderen*
+Aufgaben gehalten: 210 Negativpaare, 0 Falsch-Positive. Die Aufgaben stammen aus
+9 Projekten und Sprachen (Swift-Build, Play-Billing, SQLite-WAL, QR-Scanner,
+iOS-Crash-Diagnose).
+
+Vorher war recherchiert worden, ob es für solche Negativkontrollen eine übliche
+Ausschlussgrenze gibt. Ergebnis: gibt es nicht. Statt eine fremde Prozentzahl zu
+leihen, wurde die eigene gemessen.
+</details>
+
+<details>
+<summary><b>4. Ein Datenschutzfund, den der Musterkatalog nicht fand</b></summary>
+
+**Wann:** Befund 2026-08-06T11:56:13, Nachtrag 2026-08-10T00:09:03 (+02:00)
+**Modell:** nicht festgehalten (`model` der Lehre ist leer)
+**Fundstelle:** Lehre `L-adfb33`
+
+Ein Katalog aus regulären Ausdrücken (E-Mail, IBAN, Kundennummer, Anrede) lief
+über alle 722 Lehren und meldete 44 Verdachtsfälle — 44 davon Fehlalarme
+(„Diagnose" im Sinne von Fehlerdiagnose). Der echte Fall wurde erst durch eine
+Positivkontrolle mit bekannten Namen aus dem Bestand gefunden: eine Lehre trug
+selbst einen Klarnamen aus dem Testbestand. Sie beschrieb ein Datenleck und war
+eines.
+
+Daraus die Regel, die seither gilt: ein Beleg braucht die **Form** des Datums,
+nicht seinen **Inhalt**. Eine Lehre, die einen Eigennamen braucht, ist nicht
+fertig destilliert.
+</details>
+
+<details>
+<summary><b>5. Was wir nicht behaupten können — und warum es hier steht</b></summary>
+
+**Wann:** blinder Lauf `runs/wissensnutzen_blind.json` (Stand 2026-08-09T21:21:34),
+Wettbewerbsmessung 2026-08-09T10:05:52 (+02:00)
+**Modelle im blinden Lauf:** `gemma4:12b` und `gemma4:e4b`, je 3 Durchläufe,
+lokal gerechnet
+**Fundstelle:** `runs/wissensnutzen_blind.json`,
+`runs/antwortqualitaet_2026-08-09.md`, `runs/wettbewerb_2026-08-09.md`
+
+Es gibt einen A/B-Lauf, der gut aussieht: ein kleines Modell schlägt ohne
+eingespieltes Wissen ein dokumentiertes Antipattern vor, mit Wissen die richtige
+Lösung.
+
+Beim Nachprüfen: für diese Dateien existiert kein erzeugendes Skript im Repo,
+und der vergleichbare frühere Aufbau war nachweislich tautologisch — die
+Suchanfrage war von Hand aus der bekannten Lösung gebaut, der eingespielte Text
+enthielt den Lösungswortlaut. Gemessen wurde also „hilft es, die richtige
+Antwort in den Prompt zu schreiben".
+
+Der Nachbau über den echten Suchpfad zerlegt den Aufgabentext selbst und sucht
+damit. Dort steht für dieselbe Aufgabe `trefferguete: false`: der Speicher fand
+die passende Lehre **nicht**.
+
+Der Fall gehört hierher, weil er die Richtung zeigt: die Messung wurde so
+umgebaut, dass sie scheitern kann — und sie scheiterte sofort. Zur Einordnung
+gehört auch die eigene Wettbewerbsmessung: eigene Abrufgüte 7 von 35 (20 %),
+während Standard-Hybrid-RAG in Produktionsberichten desselben Jahres rund 91 %
+Recall@10 erreicht. Wer nur sucht, ist mit Standardbausteinen besser bedient.
+</details>
+
 ## Was es ausdrücklich NICHT ist
 
 Keine Anonymisierung · keine Verschlüsselung · keine BSI-Zertifizierung · kein
