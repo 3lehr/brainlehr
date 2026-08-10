@@ -77,4 +77,32 @@ Arbeitsbestand denselben Kanal teilen.
 
 ## §5 Nachtrag nach der Umsetzung
 
-(wird nach dem Lauf gefuellt)
+Stand: 2026-08-10T20:38:19+02:00. Abgerufen wurden ausschließlich die
+Herstellerseiten von Claude Code, OpenAI/Codex und Hermes Agent. Die Ampel
+steht vor jeder **neuen** Aufnahme in `docs/FREMDBESTAENDE.md`; importiert
+wurde kein Dokumentvolltext.
+
+| Quelle | Geprüfter Ertrag | Bestehender eigener Abgleich |
+|---|---|---|
+| Claude Code | Hooks sind Lebenszyklus-Ereignisse; MCP kann lokale stdio-Server anbinden; Subagents lassen sich über Tools und Skills begrenzen. | `88ecf57f`: 31 dokumentierte Hook-Ereignisse gegen 7 verdrahtete. |
+| Codex/ChatGPT | Plugins bündeln Skills, Apps und App-Templates; App-Rechte, Freigaben und Quellsystemrechte bleiben wirksam. | Kein neuer Herstellerknoten: die vorhandene Codex-Entscheidung `a13cd3f4` ist Betreiberregel, keine Herstellerdoku. |
+| Hermes Agent | Die offizielle Doku und das MIT-lizenzierte Repository belegen CLI/Gateway, Skills und MCP als getrennte Bausteine. | `81729a24`: MCP-Toolfilter sind klientenseitig; der Server bleibt die Durchsetzungsstelle (`kern/werkzeugrechte.py`). |
+
+Die vier Erfolgskriterien ergeben ausdrücklich **nicht 4/4**:
+
+1. Die Ampel ist jetzt für alle drei Quellen geprüft, aber die vorhandenen
+   Claude-/Hermes-Knoten wurden vor dem dokumentierten Ampeleintrag angelegt.
+   Das ist kein nachträglich erfülltes „vorher".
+2. Die beiden vorhandenen Herstellerknoten nennen URL und Abrufzeitpunkt;
+   für Codex fehlt noch ein solcher Knoten.
+3. Claude und Hermes enthalten einen überprüfbaren Bestandsabgleich; Codex
+   noch nicht.
+4. **Nicht erfüllt:** Der MCP-Schreibvertrag bietet beim Anlegen/Aktualisieren
+   kein Feld `gattung`. Deshalb stehen die vorhandenen Knoten trotz externer
+   Quelle als `arbeitsbestand`; ein rohes SQLite-Update wäre ein Audit-Bypass
+   und wurde nicht vorgenommen.
+
+Der nächste kleine, sichere Schritt ist daher kein weiterer Dokuimport,
+sondern ein getesteter MCP-Schreibpfad für `gattung`; erst danach können die
+drei Destillate korrekt als `nachschlagewerk` angelegt beziehungsweise
+umklassifiziert werden.

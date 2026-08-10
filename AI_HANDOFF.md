@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-10T20:38:19+02:00 — docs(brainlehr): record client-documentation source gates
+
+- Files: `docs/FREMDBESTAENDE.md`, `docs/PLAN_KLIENTENDOKU_2026-08-10.md`
+- Why: Claude Code, Codex/ChatGPT, and Hermes documentation must be treated as linked, dated source material rather than copied into the repository.
+- Verified: `git diff --check`; official Anthropic, OpenAI, and Nous Research pages opened on 2026-08-10; SQLite check confirmed the existing source nodes still have `gattung='arbeitsbestand'`.
+- Remaining risk: `knowledge_add` and `knowledge_update` do not expose `gattung`; do not bypass their audit path with direct SQLite just to mark external documentation as `nachschlagewerk`.
+- Next test: Add a tested MCP classification field, then create or reclassify one distilled node per client and verify all three are excluded from automatic recall.
+
 ## 2026-08-10T20:40:00+02:00 — test(compliance): recognize active Claude-Code knowledge MCP
 
 - Files: `tests/test_agent_compliance.py`
