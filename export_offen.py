@@ -85,20 +85,46 @@ def _db(pfad: Path) -> sqlite3.Connection:
 
 
 def sammle(pfad: Path) -> list[dict]:
-    """Alles mit freigabe='offen' -- Knoten und Lehren."""
+    """Alles mit freigabe='offen' -- im Format von brainlehr.py raus.
+
+    DASSELBE FORMAT, NICHT EIN ZWEITES: Der erste Entwurf schrieb eine eigene,
+    reduzierte Zeilenform. Der Erstlauf an einem leeren Ort zeigte, was das
+    heisst -- `brainlehr.py rein` weist die Datei ab (Kopfzeile
+    'brainlehr_auszug' fehlt), der Beispielbestand liess sich also gar nicht
+    einspielen, und die Suche lieferte 0 Treffer. Ein zweites Format ist eine
+    zweite Wahrheit.
+
+    ELTERN VOR KINDERN: knowledge_nodes_parent_check_bi weist ein Kind ab,
+    dessen Elternknoten fehlt. Der Filter 'path LIKE /nasa-llis/%' trifft den
+    Astknoten '/nasa-llis' NICHT -- er wird darum ergaenzt, sonst ist der
+    Auszug nicht einlesbar. Auch das fiel erst beim Erstlauf auf."""
     conn = _db(pfad)
     try:
-        zeilen = [dict(r) | {"art": "knoten"} for r in conn.execute(
-            "SELECT id, path, title, summary, content, tags, source, project_id,"
-            " norm_rang, gilt_ab, gilt_bis, gattung, freigabe"
-            " FROM knowledge_nodes WHERE freigabe='offen' AND zurueckgezogen=0"
-            " ORDER BY path")]
+        offene = [dict(r) for r in conn.execute(
+            "SELECT * FROM knowledge_nodes WHERE freigabe='offen' "
+            "AND zurueckgezogen=0")]
+        # fehlende Elternknoten nachziehen, bis die Kette steht
+        vorhanden = {z["path"] for z in offene}
+        fehlend = {z["parent_path"] for z in offene
+                   if z.get("parent_path") and z["parent_path"] not in vorhanden} - {"/"}
+        while fehlend:
+            platz = ",".join("?" * len(fehlend))
+            neu = [dict(r) for r in conn.execute(
+                f"SELECT * FROM knowledge_nodes WHERE path IN ({platz})",
+                sorted(fehlend))]
+            if not neu:
+                break
+            offene += neu
+            vorhanden |= {z["path"] for z in neu}
+            fehlend = {z["parent_path"] for z in neu
+                       if z.get("parent_path") and z["parent_path"] not in vorhanden} - {"/"}
+        zeilen = [{"tabelle": "knowledge_nodes", "zeile": z}
+                  for z in sorted(offene, key=lambda z: (z.get("level") or 0, z["path"]))]
         try:
-            zeilen += [dict(r) | {"art": "lehre"} for r in conn.execute(
-                "SELECT id, type, description, root_cause, resolution,"
-                " prevention, severity, projects, freigabe"
-                " FROM lessons_learned WHERE freigabe='offen' AND status='active'"
-                " ORDER BY id")]
+            zeilen += [{"tabelle": "lessons_learned", "zeile": dict(r)}
+                       for r in conn.execute(
+                           "SELECT * FROM lessons_learned WHERE freigabe='offen' "
+                           "AND status='active' ORDER BY id")]
         except sqlite3.OperationalError:
             pass          # DB ohne die Spalte -> keine Lehren im Export
     finally:
@@ -127,8 +153,15 @@ def exportiere(db: Path, ziel: Path, *, jetzt: datetime | None = None) -> dict:
     if funde:
         return {"status": "abgebrochen", "zeilen": len(zeilen), "funde": funde}
     ziel.parent.mkdir(parents=True, exist_ok=True)
-    kopf = {"art": "kopf", "erzeugt": (jetzt or datetime.now(timezone.utc)).isoformat(),
-            "regel": "nur freigabe='offen'", "zeilen": len(zeilen)}
+    # Kopfzeile im Format von brainlehr.py raus -- sonst weist `rein` sie ab.
+    anzahl = {}
+    for z in zeilen:
+        anzahl[z["tabelle"]] = anzahl.get(z["tabelle"], 0) + 1
+    kopf = {"brainlehr_auszug": 1,
+            "erzeugt": (jetzt or datetime.now(timezone.utc)).isoformat(),
+            "quelle": "Auszug des Freigegebenen (freigabe='offen')",
+            "regel": "nur freigabe='offen'",
+            "trigger": [], "zeilen": anzahl}
     with ziel.open("w", encoding="utf-8") as f:
         f.write(json.dumps(kopf, ensure_ascii=False) + "\n")
         for z in zeilen:
@@ -161,7 +194,7 @@ def _selftest() -> None:
 
         # --- Vorgabe deny: nur 'offen' geht raus ---------------------------
         z = sammle(db)
-        assert [x["id"] for x in z] == ["n1"], z
+        assert [x["zeile"]["id"] for x in z] == ["n1"], z
         erg = exportiere(db, Path(tmp) / "out.jsonl")
         assert erg["status"] == "geschrieben" and erg["zeilen"] == 1
 

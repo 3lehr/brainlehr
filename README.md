@@ -106,15 +106,43 @@ pip install -r requirements.txt
 sqlite3 knowledge.db < schema.sql
 sqlite3 knowledge.db < herkunft_unveraenderlich.sql
 
-# Selbsttests der Kernmodule
+# Beispielbestand einspielen (1.733 Einträge, NASA-LLIS + Methodik)
+python3 brainlehr.py rein auszug-offen/bestand.jsonl --db knowledge.db
+
+# Selbsttests der Kernmodule — brauchen KEINE Abhängigkeiten
 python3 ausweis.py --selftest
 python3 werkzeugrechte.py --selftest
 python3 normbezug.py --selftest
-pytest -q
 
 # als MCP-Server starten (stdio)
 python3 knowledge_mcp_server.py
 ```
+
+Ab hier ist die Volltextsuche benutzbar. Die drei Pakete aus
+`requirements.txt` und `pytest` braucht erst der nächste Schritt.
+
+### Vektoren: bewusst nicht mitgeliefert
+
+Der Beispielbestand enthält **keine** Embeddings. Das ist kein Vergessen:
+
+- **Ein Vektor gehört zu genau einem Modell.** Mitgelieferte Vektoren würden
+  die Modellwahl vorwegnehmen — ein Datenbank-Trigger erzwingt ohnehin, dass
+  alle Vektoren im Bestand vom selben Modell stammen.
+- **Sie sind nicht nötig, um anzufangen.** FTS5 trägt die Suche allein; oben
+  liefert sie ohne einen einzigen Vektor Treffer.
+- **Sie sind reproduzierbar.** Wer sie will, rechnet sie selbst — das kostet
+  einmal Rechenzeit und einen Modell-Download, aber niemand muss fremden
+  Zahlenkolonnen vertrauen, deren Herkunft er nicht prüfen kann.
+
+```bash
+pip install -r requirements.txt
+python3 build_embeddings.py          # einmalig, dauert je nach Gerät
+```
+
+Danach läuft die hybride Suche (FTS5 + Vektoren, per RRF verschmolzen). Ein
+näherungsweiser Index (HNSW) ist bewusst **nicht** gebaut: er fände den besten
+Treffer nicht garantiert und würde damit die Gütemessung entwerten, an der
+dieses Projekt hängt.
 
 ### Bestand sichern und wiederherstellen
 
