@@ -33,6 +33,15 @@
 - Remaining risk: This remains a synthetic harness; C0–C4, physical consumers/egress, and the P2 host boundary are NOT_MEASURED; `A-c0edbd` remains open.
 - Next test: Exercise stale-anchor semantics against an independently implemented serving boundary, once one exists.
 
+## 2026-08-11 — test(enigma): measure logical two-store boundary
+
+- Files: `tests/test_enigma_two_process_spike.py`, `AI_HANDOFF.md`
+- Why: A synthetic Pipe-based keyholder/workstore harness measures the existing crypto-shredding kills across distinct processes and exposes the same-UID direct-vault limitation.
+- Verified: `python3 -m pytest -q tests/test_enigma_two_process_spike.py` — 1 passed.
+- Remaining risk: `logical_two_store_only` is not P2: the parent can directly read the synthetic vault under the same UID (`P2_SHARED_ROOT_SAME_UID`). C0–C4 and a physical P2 boundary remain NOT_MEASURED.
+- Next test: Repeat the harness with genuinely separate local UIDs and an external anchor.
+- Harness repair: an initial IPC timeout came from `stop` returning no acknowledgement; a second failure was a vault-startup race. Both are test-only: explicit stop replies and a public-IPC initialization handshake.
+
 ## 2026-08-11T08:15:00+02:00 — operator: act, do not ask (applies to Codex too)
 
 - Files: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` (both backed up first).
