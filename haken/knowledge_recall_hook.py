@@ -1416,9 +1416,23 @@ def main() -> None:
     log_recall(nodes, lessons, cwd=cwd, session_id=session_id, prompt=prompt,
                agent_id=payload.get("agent_id"), agent_type=payload.get("agent_type"))
 
+    # FRAGEFORM statt Fundliste (Konsil 2026-08-11, Stimme 3, Pruefspruch #3):
+    # Von der Closed-Loop-Infusion bei NASA/ESA ist die Kontrollinstanz hier
+    # nicht uebertragbar -- sie braucht eine zweite Person, die den Status eines
+    # anderen dokumentiert. Uebertragbar ist die BEWEISLASTUMKEHR als blosse
+    # Frageform: nicht "hier ist relevantes Wissen" (das laesst sich wegklicken),
+    # sondern "warum trifft das hier NICHT zu" (das verlangt eine Antwort).
+    # Eine Frageform braucht keine Instanz und kostet keine Reibung -- der
+    # billigste der drei Vorschlaege des Konsils.
+    #
+    # Was das NICHT ist: eine Sperre. Niemand wird aufgehalten, es wird nichts
+    # quittiert. Wirkt es nicht, ist das an derselben Stelle messbar wie bisher
+    # (recall_log) und die Aenderung ist eine Zeile zurueckzunehmen.
     lines = ["<knowledge-recall>",
-             "Relevantes Wissen aus der Knowledge-DB (Auto-Recall, ungeprüft — "
-             "vor Nutzung kurz verifizieren):"]
+             "Aus dem Speicher, ungeprüft. Nicht als Fundliste lesen, sondern "
+             "als Frage: Trifft das hier zu? Wenn NEIN — woran liegt es? "
+             "(Ein Eintrag, der nicht passt, ist eine Antwort; ein übergangener "
+             "ist keine.)"]
     for n in nodes:
         tag = " (Erkundung -- selten gezogen)" if n.get("explore") else ""
         fremd = f" [anderes Projekt: {n['foreign_project']}]" if n.get("foreign_project") else ""
