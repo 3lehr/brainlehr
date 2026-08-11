@@ -68,6 +68,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(_w / "haken"))
+import ort  # noqa: E402 -- liefert DB, siehe haken/ort.py (L-6c6661)
 
 # Ab diesem Alter gilt ein Beleg als nachpruefbeduerftig. 365 Tage, weil
 # Gesetzesaenderungen in Deutschland ueblicherweise zum Jahreswechsel oder
@@ -174,9 +175,7 @@ def erkenne(text: str) -> list[Fundstelle]:
 # --- Bestandsabgleich ------------------------------------------------------
 
 def _db_pfad() -> Path:
-    import os
-    roh = os.environ.get("BEGOD_KNOWLEDGE_DB")
-    return Path(roh) if roh else _w / "knowledge.db"
+    return ort.DB
 
 
 def _suchbegriffe(f: Fundstelle) -> list[str]:
@@ -200,14 +199,23 @@ def belegt(f: Fundstelle, pfad: Path | None = None,
     Rueckgabe: {status, treffer, alter_tage}. status ist einer von
       'belegt'        -- Beleg vorhanden und juenger als PRUEFALTER_TAGE
       'veraltet'      -- Beleg vorhanden, aber aelter (nachpruefen)
-      'unbelegt'      -- kein Beleg im Bestand
+      'unbelegt'      -- Bestand da, aber kein Beleg zu dieser Fundstelle
+      'ungeprueft'    -- kein Bestand vorhanden, gar nicht geprueft
     'veraltet' ist der Fall, den ein blosses "steht im Bestand" verschweigt --
     und der eigentliche Grund fuer dieses Werkzeug: eingefrorenes Wissen wird
-    nicht dadurch richtig, dass es einmal aufgeschrieben wurde."""
+    nicht dadurch richtig, dass es einmal aufgeschrieben wurde.
+
+    'unbelegt' und 'ungeprueft' sind ABSICHTLICH verschiedene Befunde. Ohne
+    diese Trennung behauptete eine fehlende Datenbank stillschweigend "kein
+    Beleg" fuer JEDES Zitat -- ein Aussagegehalt, den der Pruefer gar nicht
+    hat, denn er hat nicht nachgesehen. Genau das geschah nach der Umbenennung
+    knowledge.db -> brainlehr.db: der alte, selbst gebaute Pfad existierte
+    nicht mehr, und jedes Zitat wurde als 'unbelegt' gemeldet, ohne dass die
+    DB je geoeffnet wurde (Befund 3bd128cc)."""
     jetzt = jetzt or datetime.now(timezone.utc)
     pfad = pfad or _db_pfad()
     if not pfad.exists():
-        return {"status": "unbelegt", "treffer": [], "alter_tage": None}
+        return {"status": "ungeprueft", "treffer": [], "alter_tage": None}
 
     conn = sqlite3.connect(f"file:{pfad}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
@@ -299,7 +307,10 @@ def melde(ergebnis: list[dict]) -> str:
     zeilen = ["NORMBEZUG OHNE BELEG — Modellwissen ist eingefroren und kann "
               "ueberholt sein:"]
     for e in offen:
-        if e["art"] == "hausnorm":
+        if e["status"] == "ungeprueft":
+            zeilen.append(f"  {e['roh']}  ->  kein Bestand gefunden, NICHT "
+                          f"geprueft (nicht mit 'unbelegt' verwechseln).")
+        elif e["art"] == "hausnorm":
             zeilen.append(f"  {e['roh']}  ->  Kennung existiert im Bestand "
                           f"NICHT. Aus dem Sitzungsgedaechtnis zitiert oder "
                           f"erfunden — nachsehen, bevor sie weitergetragen wird.")
@@ -421,8 +432,15 @@ def _selftest() -> None:
         meldung = melde(list(h.values()))
         assert "existiert im Bestand" in meldung and "ADR-999" in meldung
 
-        # --- fehlende DB ist kein Absturz, sondern 'unbelegt' --------------
-        assert pruefe("§ 87 BetrVG", pfad=Path(tmp) / "gibtsnicht.db")[0]["status"] == "unbelegt"
+        # --- fehlende DB ist kein Absturz UND kein 'unbelegt' --------------
+        # 'unbelegt' hiesse "nachgesehen, nichts gefunden" -- das waere hier
+        # falsch, denn nachgesehen wurde gar nicht. Der eigene Befund dieses
+        # Auftrags (3bd128cc): nach der Umbenennung knowledge.db->brainlehr.db
+        # meldete genau diese Verwechslung JEDES Zitat als grundlos unbelegt.
+        r_fehlend = pruefe("§ 87 BetrVG", pfad=Path(tmp) / "gibtsnicht.db")[0]
+        assert r_fehlend["status"] == "ungeprueft", r_fehlend
+        m_fehlend = melde([r_fehlend])
+        assert "kein Bestand gefunden" in m_fehlend and "NICHT" in m_fehlend, m_fehlend
 
     print("normbezug.py: Selbsttest gruen")
 
