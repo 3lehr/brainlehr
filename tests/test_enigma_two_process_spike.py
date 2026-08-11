@@ -5,6 +5,7 @@ import hashlib
 import multiprocessing as mp
 import os
 import secrets
+import subprocess
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -76,6 +77,13 @@ def _p2_gate(vault_path):
     return (False, "P2_SHARED_ROOT_SAME_UID") if os.access(vault_path, os.R_OK) else (True, None)
 
 
+def _lsof_handle(path):
+    out = subprocess.run(["/usr/sbin/lsof", "-Fn", "-p", str(os.getpid())], text=True, capture_output=True, check=True).stdout
+    hits = [line for line in out.splitlines() if str(path) in line]
+    assert hits, "lsof did not observe the open synthetic vault FD"
+    return "lsof:" + str(path)
+
+
 def test_logical_two_store_ipc_oracles_and_same_uid_root(tmp_path):
     ctx = mp.get_context("spawn")
     kp_parent, kp_child = ctx.Pipe(); ws_parent, ws_child = ctx.Pipe(); vault = tmp_path / "synthetic-vault"
@@ -88,8 +96,11 @@ def test_logical_two_store_ipc_oracles_and_same_uid_root(tmp_path):
         assert _ask(kp_parent, "a") == "SYNTHETIC-A"; assert _ask(kp_parent, "b") == "SYNTHETIC-B"
         old_fd = os.open(vault, os.O_RDONLY)
         _ask(kp_parent, "delete"); assert not vault.exists(); assert _ask(kp_parent, "a") is None and _ask(kp_parent, "b") == "SYNTHETIC-B"; assert _ask(ws_parent, ("gate",)) == (True, None)
-        assert os.read(old_fd, 32); os.close(old_fd)
-        _ask(ws_parent, ("inject", "old_handles", ["opaque-fd-1"])); assert _ask(ws_parent, ("gate",)) == (False, "CACHE_FD_SESSION")
+        assert os.read(old_fd, 32)
+        _ask(ws_parent, ("inject", "old_handles", [_lsof_handle(vault)])); assert _ask(ws_parent, ("gate",)) == (False, "CACHE_FD_SESSION")
+        os.close(old_fd)
+        out = subprocess.run(["/usr/sbin/lsof", "-Fn", "-p", str(os.getpid())], text=True, capture_output=True, check=True).stdout
+        assert str(vault) not in out
         _ask(ws_parent, ("inject", "old_handles", [])); assert _ask(ws_parent, ("gate",)) == (True, None)
         # New isolated runs make pre-delete mutation observable without preserving test state.
         for command, expected in [("copy", "KEY_COPY"), ("master", "DETERMINISTIC_MASTER_DERIVATION")]:
@@ -105,6 +116,7 @@ def test_logical_two_store_ipc_oracles_and_same_uid_root(tmp_path):
         assert _ask(ws_parent, ("restore", {"epoch": 1}, {"epoch": 2, "reachable": True, "authentic": True})) == (False, "STALE_SNAPSHOT")
         assert _ask(ws_parent, ("restore", {"epoch": 2}, None)) == (False, "RESTORE_WITHOUT_CURRENT_ANCHOR")
         assert _ask(ws_parent, ("restore", {"epoch": 2}, {"epoch": 2, "reachable": False, "authentic": True})) == (False, "RESTORE_WITHOUT_CURRENT_ANCHOR")
+        assert _ask(ws_parent, ("restore", {"epoch": 2}, {"epoch": 2, "reachable": True, "authentic": False})) == (False, "RESTORE_WITHOUT_CURRENT_ANCHOR")
         assert _ask(ws_parent, ("restore", {"epoch": 2}, {"epoch": 2, "reachable": True, "authentic": True})) == (True, None)
         # A real mutation passes a retained A key/blob through the public test protocol.
         _ask(kp_parent, "stop"); kp.join(2); kp = ctx.Process(target=_keyholder, args=(kp_child, str(vault))); kp.start()
