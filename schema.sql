@@ -589,6 +589,28 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     freigabe TEXT NOT NULL DEFAULT 'intern'
 );
 
+-- Werte-Trigger fuer lessons_learned.freigabe, gleiche Bauform wie an
+-- knowledge_nodes darunter (B4.5-Nachtrag hatte die SPALTE gebracht, die
+-- Schranke fehlte). Die Pruefung gehoert in die Datenbank und nicht in den
+-- Aufrufer: gemessen 2026-08-11 arbeiten 32 Serverprozesse gleichzeitig auf
+-- derselben Datei, der aelteste mit 23 Stunden altem Code (Knoten 4603f990).
+-- Ein Trigger gilt ab seiner Anlage fuer alle; eine Pruefung in Python nur
+-- fuer neu gestartete Prozesse.
+CREATE TRIGGER IF NOT EXISTS lessons_learned_freigabe_check_bi
+BEFORE INSERT ON lessons_learned
+FOR EACH ROW WHEN NEW.freigabe NOT IN ('offen','intern','gesperrt')
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.freigabe unzulaessig: erlaubt sind offen, intern, gesperrt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lessons_learned_freigabe_check_bu
+BEFORE UPDATE ON lessons_learned
+FOR EACH ROW WHEN NEW.freigabe NOT IN ('offen','intern','gesperrt')
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.freigabe unzulaessig: erlaubt sind offen, intern, gesperrt');
+END;
+
+
 -- Volltext-Suche ueber Lehren (Auftrag 2026-08-07). Gleiche Bauart wie
 -- knowledge_fts oben, nicht anders: externe Inhaltstabelle, trigram-
 -- Tokenizer, dieselbe Umlaut-Faltung vor dem Indizieren, ein Trigger-Trio

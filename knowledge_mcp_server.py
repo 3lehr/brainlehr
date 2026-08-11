@@ -201,6 +201,25 @@ SOURCE_BACKFILL_PLACEHOLDER = "unbekannt (Altbestand vor Migration 2026-08-06, n
 # Kopien statt gemeinsamer Quelle, gleiches Muster wie jede andere additive
 # Migration in diesem Server (z.B. _ensure_anlass_columns neben dem
 # anlass-Block in schema.sql).
+# Werte-Schranke fuer lessons_learned.freigabe -- woertlich wie in schema.sql,
+# dort fuer frisch angelegte Dateien, hier als Nachzug fuer Bestands-DBs.
+# Zwei Kopien statt gemeinsamer Quelle, gleiches Muster wie beim Block darunter.
+LESSON_FREIGABE_TRIGGERS_SQL = """
+CREATE TRIGGER IF NOT EXISTS lessons_learned_freigabe_check_bi
+BEFORE INSERT ON lessons_learned
+FOR EACH ROW WHEN NEW.freigabe NOT IN ('offen','intern','gesperrt')
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.freigabe unzulaessig: erlaubt sind offen, intern, gesperrt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lessons_learned_freigabe_check_bu
+BEFORE UPDATE ON lessons_learned
+FOR EACH ROW WHEN NEW.freigabe NOT IN ('offen','intern','gesperrt')
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.freigabe unzulaessig: erlaubt sind offen, intern, gesperrt');
+END;
+"""
+
 NODE_CONSTRAINT_TRIGGERS_SQL = """
 CREATE TRIGGER IF NOT EXISTS knowledge_nodes_source_check_bi
 BEFORE INSERT ON knowledge_nodes
@@ -1177,6 +1196,14 @@ def _ensure_lessons_freigabe_column(conn) -> None:
         if "freigabe" not in spalten:
             conn.execute(f"ALTER TABLE {tabelle} "
                          "ADD COLUMN freigabe TEXT NOT NULL DEFAULT 'intern'")
+
+    # Die Werte-Schranke gehoert zur Spalte, nicht daneben. Bis 2026-08-11 kam
+    # die Spalte per Nachzug, der Trigger aber nur bei knowledge_nodes -- an
+    # lessons_learned nahm die Datenbank jeden Wert an. Dieselbe
+    # Haelfte-nachgezogen-Falle, vor der der Docstring dieser Funktion warnt
+    # (L-7e0823), eine Ebene tiefer: nicht die Spalte fehlte, sondern ihre Regel.
+    if "lessons_learned" in tabellen:
+        conn.executescript(LESSON_FREIGABE_TRIGGERS_SQL)
 
 
 def _version() -> str:
@@ -2902,6 +2929,110 @@ def knowledge_update(node_id: str, summary: str | None = None,
     _check_injection_suspects("node", row["path"], {"summary": summary, "content": content})
     _check_norm_conflicts(row["id"], row["path"], updated_row["norm_rang"])
     return {"id": row["id"], "status": "updated", **wikilinks}
+
+
+ALLOWED_FREIGABE = ("offen", "intern", "gesperrt")
+
+# Welche Tabellen eine Freigabestufe tragen. Als Zuordnung und nicht als zwei
+# fast gleiche Funktionen: die Lehre L-0de1a9 stammt aus genau diesem Haus --
+# vierzehn `_ensure_<spalte>_column`, jede fuer sich korrekt, zusammen eine
+# Handliste, die ab dem naechsten Zuwachs falsch war.
+_FREIGABE_TABELLEN = (
+    ("lessons_learned", "id"),
+    ("knowledge_nodes", "id"),
+)
+
+
+def freigabe_setzen(eintrag_id: str, stufe: str, *, actor: str | None = None,
+                    model: str | None = None, session: str | None = None) -> dict:
+    """Entscheidet fuer EINEN Eintrag, wer ihn sehen darf.
+
+    BEFUND, der dieses Werkzeug veranlasst hat (2026-08-11): Die Spalte
+    `freigabe` gab es seit dem 2026-08-10 an lessons_learned und laenger an
+    knowledge_nodes -- aber keinen Weg, sie zu setzen. 753 von 753 Lehren
+    standen auf 'intern'. Das war die entworfene Vorgabe, kein Defekt; der
+    Defekt war der fehlende Schreibweg.
+
+    Was es ausdruecklich NICHT gibt, und das ist der Kern:
+
+      KEINE MASSENZUWEISUNG. Genau eine Kennung, kein Muster, keine Liste.
+      migrate_freigabe.py haelt fest: "jeder Bestandsknoten bleibt 'intern',
+      bis jemand ihn EINZELN entscheidet." Der einzige heute existierende
+      Knoten-Schreibweg verletzt das -- melder/selbstbeschreibung.py setzt per
+      rohem `UPDATE ... WHERE path LIKE` und ohne Protokolleintrag. Dieses
+      Werkzeug ist der Gegenentwurf, nicht dessen Nachbau.
+
+      KEINE STILLE ANNAHME. Ein unzulaessiger Wert wird abgewiesen, bevor
+      geschrieben wird -- und die Datenbank haelt unabhaengig davon mit einem
+      Trigger dagegen. Zwei Schranken, weil 32 Serverprozesse gleichzeitig
+      arbeiten und der aelteste 23 Stunden alten Code faehrt (Knoten
+      4603f990): eine Pruefung hier gilt nur fuer neu gestartete, der Trigger
+      fuer alle.
+
+    Anders als bei einer Norm ist die Entscheidung NICHT bindend -- der
+    Rueckweg von 'offen' nach 'intern' ist ausdruecklich erlaubt
+    (Spaltenkommentar in schema.sql).
+    """
+    if stufe not in ALLOWED_FREIGABE:
+        return {"error": f"freigabe unzulaessig: {stufe!r}. Erlaubt sind "
+                         f"{', '.join(ALLOWED_FREIGABE)}."}
+    kennung = (eintrag_id or "").strip()
+    if not kennung:
+        return {"error": "eintrag_id fehlt"}
+    if "," in kennung or "%" in kennung or "*" in kennung:
+        # Keine Massenzuweisung: eine Liste oder ein Muster wird nicht
+        # aufgeteilt, sondern abgelehnt. Wer zehn Eintraege entscheiden will,
+        # entscheidet zehnmal -- das ist der Zweck der Schranke, nicht ihr Preis.
+        return {"error": "freigabe_setzen nimmt genau EINE Kennung -- keine "
+                         "Liste, kein Muster. Jeder Eintrag wird einzeln "
+                         "entschieden."}
+
+    conn = get_db()
+    treffer = []
+    for tabelle, schluessel in _FREIGABE_TABELLEN:
+        try:
+            zeile = conn.execute(
+                f"SELECT {schluessel} AS id, freigabe FROM {tabelle} WHERE {schluessel} = ?",
+                (kennung,)).fetchone()
+        except sqlite3.OperationalError:
+            continue                      # Tabelle oder Spalte fehlt: nichts zu tun
+        if zeile:
+            treffer.append((tabelle, zeile))
+
+    if not treffer:
+        log_access(conn, kennung, "freigabe_setzen", actor=actor, model=model,
+                   session=session, status="rejected", query="eintrag_nicht_gefunden")
+        conn.commit()
+        conn.close()
+        return {"error": f"Kein Eintrag mit dieser Kennung: {kennung}"}
+    if len(treffer) > 1:
+        # Doppeldeutig heisst ABBRECHEN, nicht raten. Eine Kennung, die in
+        # beiden Tabellen steht, ist ein Befund und keine Auswahlfrage.
+        conn.close()
+        return {"error": f"Kennung {kennung} kommt in mehreren Tabellen vor: "
+                         f"{', '.join(t for t, _ in treffer)}"}
+
+    tabelle, zeile = treffer[0]
+    vorher = zeile["freigabe"]
+    actor, model, session = _identity(actor, model, session)
+    log_access(conn, kennung, "freigabe_setzen", actor=actor, model=model,
+               session=session, status="started", query=f"{vorher} -> {stufe}")
+    if vorher == stufe:
+        conn.commit()
+        conn.close()
+        return {"id": kennung, "tabelle": tabelle, "freigabe": stufe,
+                "status": "unchanged"}
+
+    conn.execute(f"UPDATE {tabelle} SET freigabe = ? WHERE id = ?", (stufe, kennung))
+    nachher = conn.execute(
+        f"SELECT * FROM {tabelle} WHERE id = ?", (kennung,)).fetchone()
+    log_access(conn, kennung, "freigabe_setzen", actor=actor, model=model,
+               session=session, query=f"{vorher} -> {stufe}",
+               affected_row=dict(nachher) if nachher else None)
+    conn.commit()
+    conn.close()
+    return {"id": kennung, "tabelle": tabelle, "freigabe": stufe,
+            "vorher": vorher, "status": "gesetzt"}
 
 
 def knowledge_zurueckziehen(node_id: str, grund: str, *, actor: str | None = None,
@@ -4826,6 +4957,28 @@ TOOLS = {
             gattung=args.get("gattung"),
             **_identity_args(args)
         )
+    },
+    "freigabe_setzen": {
+        "description": "Decide, for ONE entry, who may see it: 'offen' (may leave the house), "
+                       "'intern' (default -- stays here) or 'gesperrt'. Works for a lesson or a "
+                       "node; the id decides which, and an id found in both tables is rejected as "
+                       "ambiguous rather than guessed. Takes exactly ONE id -- a comma-separated "
+                       "list or a wildcard is refused, not split up: every entry is decided "
+                       "individually or stays 'intern' (migrate_freigabe.py). Unlike a norm "
+                       "decision this is NOT binding -- the way back from 'offen' to 'intern' is "
+                       "explicitly allowed. Logged in access_log like any other decision.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "eintrag_id": {"type": "string",
+                               "description": "Exactly one lesson id or node id -- no list, no pattern"},
+                "stufe": {"type": "string", "enum": ["offen", "intern", "gesperrt"],
+                          "description": "offen = may be exported, intern = stays here, gesperrt = blocked"},
+                **IDENTITY_PROPERTIES,
+            },
+            "required": ["eintrag_id", "stufe"]
+        },
+        "handler": lambda args: freigabe_setzen(args.get("eintrag_id", ""), args.get("stufe", ""), **_identity_args(args))
     },
     "knowledge_zurueckziehen": {
         "description": "Withdraw a node: clears content and summary (no backup -- the text is gone), "
