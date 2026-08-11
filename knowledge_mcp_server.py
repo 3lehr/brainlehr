@@ -1410,6 +1410,27 @@ def log_access(conn: sqlite3.Connection, node_path: str | None, action: str,
 
 # ─── MCP Tool Implementations ────────────────────────────────────────────
 
+# Credential-bound Serving policy.  The client cannot supply purpose, field,
+# or recipient: the role fixes the purpose/field and the credential fixes the
+# recipient.  The row may only narrow that server-side policy via tags.
+_KNOWLEDGE_READ_PROJEKTION = {
+    "raumplaner": ("raumplanung", "nutzinformation"),
+}
+
+
+def _knowledge_read_projection(row: sqlite3.Row) -> dict | None:
+    ausw = ausweis.loese_auf()
+    policies = [_KNOWLEDGE_READ_PROJEKTION[r]
+                for r in ausw.rollen if r in _KNOWLEDGE_READ_PROJEKTION]
+    if not ausw.beglaubigt or not policies:
+        return None
+
+    tags = set(json.loads(row["tags"]) if row["tags"] else [])
+    for purpose, field in policies:
+        if f"zweck:{purpose}" in tags and f"feld:{field}" in tags:
+            return {field: row["summary"]}
+    return {"error": "zugriff verweigert"}
+
 def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
@@ -1466,6 +1487,14 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
         conn.close()
         return {"error": f"Node not found: {node_id}"}
 
+    projection = _knowledge_read_projection(row)
+    if projection == {"error": "zugriff verweigert"}:
+        log_access(conn, None, "read", actor=actor, model=model, session=session,
+                   status="rejected", query="zweckprojektion")
+        conn.commit()
+        conn.close()
+        return projection
+
     log_access(conn, row["path"], "read", project_id=row["project_id"],
                actor=actor, model=model, session=session, status="started")
     # ENTSCHEIDUNG (Auftrag 2026-08-06, Nebenbefund Konfidenzverfall):
@@ -1480,6 +1509,10 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
     log_access(conn, row["path"], "read", project_id=row["project_id"],
                actor=actor, model=model, session=session)
     conn.commit()
+
+    if projection is not None:
+        conn.close()
+        return projection
 
     # Befund 2026-08-06: ein Astknoten ("Automatisch erzeugter Astknoten",
     # kein content) liefert ohne diesen Zusatz eine leere Seite -- Zweck und

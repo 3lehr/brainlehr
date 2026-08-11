@@ -1,8 +1,8 @@
 """Enigma Phase 2: synthetic housekeeper acceptance contract.
 
-This is deliberately a strict xfail: the current public MCP read path has no
-purpose projection.  It records the boundary that must turn green before an
-Enigma confidentiality claim is made; it does not add a proxy or policy engine.
+The public MCP read path must project a credential-bound serving role before
+returning protected content. This remains a synthetic P1 contract, not a
+production-security or anonymity claim.
 """
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def hausmeister_umgebung(tmp_path, monkeypatch):
     )
     # B: field/purpose release is an intersection, never a blanket read.
     person_b = kms.knowledge_add(
-        "/", "<PERSON_B>: Abwesenheit", "nicht verfuegbar",
+        "/", "<PERSON_B>: Abwesenheit", "Bereich verfuegbar",
         content="<SENSITIVER_GRUND_B>", source="synthetische Testquelle",
         tags=["synthetisch", "feld:nutzinformation", "zweck:raumplanung"],
     )
@@ -51,7 +51,7 @@ def hausmeister_umgebung(tmp_path, monkeypatch):
         tags=["synthetisch", "geschaeftsgeheimnis", "anbieter:lokal", "zweck:betrieb"],
     )
     assert all(node["status"] == "created" for node in (person_a, person_b, geheimnis))
-    secret = ausweis.anlegen("hausmeister", ["leser"], pfad=ausweise)
+    secret = ausweis.anlegen("hausmeister", ["raumplaner"], pfad=ausweise)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, secret)
     ausweis._pruefe.cache_clear()
     return {"person_a": person_a["id"], "person_b": person_b["id"], "geheimnis": geheimnis["id"]}
@@ -65,7 +65,6 @@ def _public_read(node_id: str) -> dict:
     return json.loads(response["result"]["content"][0]["text"])
 
 
-@pytest.mark.xfail(strict=True, reason="Enigma Zweckprojektion existiert noch nicht")
 def test_z0_bis_z8_hausmeister_erhaelt_nur_nutzinformation(hausmeister_umgebung):
     """Z0 Identitaet; Z1 Befugnis; Z2 Zweck; Z3 Zustaendigkeit;
     Z4 Nutzinformation; Z5 kein Grund; Z6 keine Metadaten; Z7 leere
@@ -82,3 +81,5 @@ def test_z0_bis_z8_hausmeister_erhaelt_nur_nutzinformation(hausmeister_umgebung)
         "person_b": {"nutzinformation": "Bereich verfuegbar"},
         "geheimnis": {"error": "zugriff verweigert"},
     }
+    assert {name: _public_read(node_id)
+            for name, node_id in hausmeister_umgebung.items()} == answers

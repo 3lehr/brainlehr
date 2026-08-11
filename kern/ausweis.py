@@ -207,6 +207,9 @@ ROLLEN: dict[str, tuple[str, ...]] = {
                     "kante:lesen", "annahme:lesen", "annahme:schreiben:own"),
     "leser":       ("wissen:lesen", "lehre:lesen", "kante:lesen",
                     "annahme:lesen"),
+    # Enger Serving-Zugang: Volltext bleibt gesperrt; knowledge_read liefert
+    # nur die am Datensatz fuer Raumplanung freigegebene Nutzinformation.
+    "raumplaner":  ("wissen:lesen",),
     "gast":        ("wissen:lesen:published", "lehre:lesen:published"),
 }
 

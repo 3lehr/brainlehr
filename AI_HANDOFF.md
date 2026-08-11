@@ -1,5 +1,15 @@
 # AI handoff
 
+## 2026-08-11T11:06:37+02:00 — fix(enigma): project credential-bound reads
+
+- Files: `kern/ausweis.py`, `knowledge_mcp_server.py`, `tests/test_enigma_hausmeister_contract.py`, `docs/AI_DECISIONS.md`, `AI_HANDOFF.md`
+- Why: The real public `knowledge_read` path returned raw protected content and metadata to the synthetic housekeeper. A narrow credential role now fixes purpose and field server-side and returns only the tagged utility projection or one metadata-free denial.
+- Red: `python3 -m pytest -q --runxfail tests/test_enigma_hausmeister_contract.py -vv` — 1 failed; all three synthetic records returned raw content and metadata. `python3 -m pytest -q tests/test_brainlehr_umzug.py::test_erstanlage_traegt_dasselbe_schema_wie_der_betrieb -vv` — 1 failed; live-only empty tables `documents`, `chunks`, `bundle_cache` were absent from a fresh schema.
+- Verified: `python3 -m pytest -q tests/test_brainlehr_umzug.py::test_erstanlage_traegt_dasselbe_schema_wie_der_betrieb tests/test_enigma_hausmeister_contract.py tests/test_werkzeugrechte_durchsetzung.py tests/test_ausweis_identitaet.py tests/test_enigma_two_process_spike.py` — 22 passed.
+- Live-DB remediation: all three spike tables and associated `chunks_fts` had zero rows and no external schema/code references; structure-only recovery SQL is in ignored `backups/knowledge.db.spike-schema-vor-entfernung-20260811T110337+0200.sql`, then the artifacts were removed atomically. `schema.sql` was not expanded.
+- Remaining risk: Projection policy is measured only with synthetic data. Search/browse, independent storage edges, C0/C2/C3/C4, and P2 remain unmeasured; no anonymity, legal, compliance, or production-security claim.
+- Next test: Run the complete `python3 -m pytest -q tests/` suite, then design the next cheapest C0/C2/C3/C4 falsification without widening this projection.
+
 ## 2026-08-11T08:20:00+02:00 — solved: the 5.02 s per test was ONE hung transaction
 
 - Files: none changed. Diagnosis + one process killed.
