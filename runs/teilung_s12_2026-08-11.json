@@ -1,0 +1,12 @@
+{
+  "zweck": "Festschreibung der Teilung behandelt/unbehandelt, S12 zweiter Anlauf (docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md, Schritt 1). Diese Datei ist ein Protokoll des Einfrierens, NICHT die Quelle der Wahrheit -- die ist kern/teilung_s12.py::haelfte(), eine reine Funktion der Kennung ohne gespeicherten Zufallsstartwert und ohne Liste. Wiederholtes Ziehen aus derselben Kennung ergibt immer dasselbe Ergebnis; das ist die Festschreibung.",
+  "verfahren": "sha256('art:id')[:8] als Hex-Int, Bit 0 -> 'behandelt' bei geradem Wert, sonst 'unbehandelt'. Getrennt je Art (knoten/lehre) gezogen, weil sha256('knoten:X') != sha256('lehre:X') -- verhindert, dass eine Art zufaellig komplett in eine Haelfte faellt.",
+  "eingefroren_am": "2026-08-11T22:24:25+0200",
+  "population": "Bestand, nicht Auslieferungs-Deckel: Knoten mit zurueckgezogen=0 (ohne Gattungsfilter), Lehren mit status != 'resolved'. Deckel (MAX_NODES=10, MAX_LESSONS=7) und Gattungsfilter (SQL_ARBEITSBESTAND_NUR) greifen erst beim Abruf, nicht bei der Teilung.",
+  "verteilung_beim_einfrieren": {
+    "knoten": {"gesamt": 2123, "behandelt": 1008, "unbehandelt": 1115},
+    "lehre": {"gesamt": 755, "behandelt": 396, "unbehandelt": 359}
+  },
+  "abweichung_zum_plan": "FAKTEN im Auftrag nennt 2125 Knoten / 775 Lehren. Gemessen beim Einfrieren: 2123 Knoten (zurueckgezogen=0), 755 Lehren (status != 'resolved') -- Differenz durch laufende Fremdarbeit im selben Baum (andere Sitzung haelt u.a. kern/schema_nachzug.py, pflege/probeinstanz.py). Kein Grund, die Teilung zu verschieben: die Funktion zieht aus der Kennung, nicht aus einer Momentaufnahme der Zaehlung.",
+  "unveraenderlich_ab": "2026-08-11T22:24:25+0200 -- kern/teilung_s12.py::haelfte() wird ab hier nicht mehr umgeschrieben, solange S12 laeuft. Aenderungsbedarf wird als neue Funktion/neuer Knoten geführt, nicht als Umschreiben."
+}
