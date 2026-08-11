@@ -30,47 +30,72 @@ from typing import Callable
 PSQL = "/opt/homebrew/opt/postgresql@17/bin/psql"
 
 
-def suche_bauen(dsn: str, deckel_art: bool = True) -> Callable[[list[str], int], list[str]]:
-    """Liefert eine Suchfunktion mit derselben Form wie suche_sqlite.
+VARIANTEN = ("teilstring", "wortgrenze", "kurzfeld", "kurz_gewichtet")
 
-    Rangfolge nach `similarity()` absteigend -- das Gegenstueck zu FTS5s
-    `rank`. Wie bei der SQLite-Seite werden Knoten und Lehren GETRENNT
-    gedeckelt und dann aneinandergehaengt, damit der Vergleich nicht an
-    unterschiedlicher Mischung scheitert statt an der Suche.
+
+def suche_bauen(dsn: str, variante: str = "teilstring") -> Callable[[list[str], int], list[str]]:
+    r"""Liefert eine Suchfunktion mit derselben Form wie suche_sqlite.
+
+    Vier Bauformen, weil die erste nicht die einzige moegliche ist und "6 von
+    35" sonst als Eigenschaft von Postgres gelesen wuerde statt als Eigenschaft
+    EINER Formulierung:
+
+      teilstring       ILIKE '%wort%' ueber den ganzen Text. Naechstes
+                       Gegenstueck zu FTS5-Trigramm, findet auch Wortteile
+                       (Komposita, Kennungen) -- und Zufallstreffer mitten in
+                       laengeren Woertern.
+      wortgrenze       dasselbe mit Wortgrenzen (~* '\mwort\M'). Weniger
+                       Zufall, verliert dafuer die Komposita-Treffer, die in
+                       diesem deutschen Bestand haeufig sind.
+      kurzfeld         Suche im KURZEN Feld (Titel+Zusammenfassung bzw.
+                       description) statt im Volltext. Das ist der Text, den
+                       der Abruf spaeter tatsaechlich einspielt.
+      kurz_gewichtet   Suche im Volltext, aber Rang nach Treffern im kurzen
+                       Feld -- ein Treffer im Titel wiegt schwerer als einer
+                       auf Seite drei.
+                       GEMESSEN 2026-08-11: liefert auf diesem Bestand exakt
+                       dasselbe wie 'kurzfeld' -- 35 von 35 Faellen identisch,
+                       und auch bei Deckel 50 kein einziger zusaetzlicher
+                       Kandidat. Der Grund liegt im Bestand, nicht im SQL: das
+                       kurze Feld ist hier Teil des Volltextes, also findet die
+                       weitere Bedingung dieselben Zeilen, und der Rang nach
+                       kurz-Treffern sortiert sie gleich. Die Variante bleibt
+                       stehen, weil sie sich bei einem Bestand mit laengeren
+                       Volltexten trennen WUERDE -- aber sie zaehlt heute nicht
+                       als eigene Messung.
+
+    Rang immer: erst wie viele Stichworte vorkommen, dann Wortaehnlichkeit.
+    Bewusst NICHT dasselbe Mass wie FTS5s rank (BM25-artig) -- ein
+    Rangunterschied ist deshalb erwartbar und kein Fehler.
     """
+    if variante not in VARIANTEN:
+        raise ValueError(f"unbekannte Variante {variante!r}, erlaubt: {', '.join(VARIANTEN)}")
+
     def suche(worte: list[str], deckel: int) -> list[str]:
         if not worte:
             return []
-        muster = " ".join(w for w in worte if w.isalnum())
+        einzelworte = [w for w in worte if w.isalnum()]
+        muster = " ".join(einzelworte)
         if not muster:
             return []
-        einzelworte = [w for w in worte if w.isalnum()]
+
+        feld = "kurz" if variante == "kurzfeld" else "text"
+        rangfeld = "kurz" if variante in ("kurzfeld", "kurz_gewichtet") else "text"
+
+        if variante == "wortgrenze":
+            bedingung = " OR ".join(f"text ~* ('\\m' || $${w}$$ || '\\M')" for w in einzelworte)
+            treffer = " + ".join(f"(text ~* ('\\m' || $${w}$$ || '\\M'))::int" for w in einzelworte)
+        else:
+            bedingung = " OR ".join(f"{feld} ILIKE '%' || $${w}$$ || '%'" for w in einzelworte)
+            treffer = " + ".join(f"({rangfeld} ILIKE '%' || $${w}$$ || '%')::int" for w in einzelworte)
+
         ergebnis: list[str] = []
         for art in ("knoten", "lehre"):
-            # ILIKE '%wort%' je Stichwort, NICHT similarity(text, muster).
-            #
-            # Erste Fassung nahm den Aehnlichkeitsoperator % gegen den ganzen
-            # Text und fand 0 von 35 Zielen. Das war kein Befund ueber
-            # Postgres, sondern ein Fehler in der Formulierung: % vergleicht
-            # zwei Zeichenketten als GANZE. Eine achtwortige Anfrage gegen ein
-            # mehrere Kilobyte langes Dokument hat immer eine winzige
-            # Aehnlichkeit -- die Schwelle 0,3 wird nie erreicht. FTS5-Trigramm
-            # sucht dagegen TEILSTRINGS. Das Gegenstueck dazu ist ILIKE, vom
-            # GIN-Index mit gin_trgm_ops beschleunigt.
-            #
-            # Rang: zuerst wie viele Stichworte ueberhaupt vorkommen, dann die
-            # Wortaehnlichkeit. Das ist bewusst NICHT dasselbe Mass wie FTS5s
-            # rank (BM25-artig) -- ein Rangunterschied zwischen beiden Seiten
-            # ist deshalb erwartbar und kein Fehler.
-            treffer_ausdruck = " + ".join(
-                f"(text ILIKE '%%' || $${w}$$ || '%%')::int" for w in einzelworte)
-            bedingung = " OR ".join(
-                f"text ILIKE '%%' || $${w}$$ || '%%'" for w in einzelworte)
             sql = (
                 f"SELECT id FROM suchtext "
                 f"WHERE art = '{art}' AND ({bedingung}) "
-                f"ORDER BY ({treffer_ausdruck}) DESC, "
-                f"word_similarity($${muster}$$, text) DESC, id "
+                f"ORDER BY ({treffer}) DESC, "
+                f"word_similarity($${muster}$$, {rangfeld}) DESC, id "
                 f"LIMIT {int(deckel)}"
             )
             roh = subprocess.run([PSQL, "-d", dsn, "-tAc", sql],
