@@ -54,6 +54,19 @@ BEOBACHTET = (
 
 ZUSTAND = Path.home() / ".brainlehr-regelwechsel.json"
 
+# Bindende Normen liegen nicht in Dateien, sondern im Speicher -- und sie
+# melden sich dort von selbst NICHT. Anlass: c14adcfe (Rang 2) wurde am
+# 2026-08-11 um 08:39 gesetzt und verlangt die autonome Pflege des
+# Lageknotens; sie lag den ganzen Vormittag im passiven Recall und wurde nicht
+# gelesen. Die Regel sagt in ihrem Punkt 5 selbst: passiver Recall ist kein
+# Handoff.
+DB = Path(__file__).resolve().parent.parent / "knowledge.db"
+
+# Nur Rang 1 (global) und 2 (Hub) -- das sind Direktiven. Ab Rang 3 sind es
+# ADRs und Fakten; wer die mitmeldet, erzeugt Rauschen, und wer Rauschen
+# abschaltet, schaltet die Direktiven mit ab.
+BINDENDE_RAENGE = (1, 2)
+
 
 def _ueberschriften(text: str) -> list[str]:
     return re.findall(r"^#{1,3} (.+)$", text, re.M)
@@ -74,6 +87,35 @@ def _lies_zustand() -> dict:
         return json.loads(ZUSTAND.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {}
+
+
+def _normen() -> dict[str, tuple] | None:
+    """Kennung -> (Rang, Titel, updated_at) fuer alle bindenden Normen.
+
+    Lesend, mit eigener Verbindung und ohne Schreibrechte am Bestand: der
+    Melder laeuft bei JEDEM Prompt und darf nie zur Sperrquelle werden.
+
+    LEER und NICHT LESBAR sind zwei verschiedene Dinge und muessen es bleiben:
+    {} heisst "es gibt keine bindenden Normen" und ist ein gueltiger Stand,
+    None heisst "konnte nicht nachsehen". Wuerde beides als {} zurueckkommen,
+    meldete der Melder nach jedem Lesefehler den GESAMTEN Normbestand als neu
+    -- und wer einmal zwanzig Meldungen bekommt, liest die einundzwanzigste
+    nicht mehr."""
+    import sqlite3
+    try:
+        conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True, timeout=2.0)
+    except sqlite3.Error:
+        return None
+    try:
+        platz = ",".join("?" * len(BINDENDE_RAENGE))
+        return {r[0]: (r[1], r[2], r[3]) for r in conn.execute(
+            f"SELECT id, norm_rang, title, updated_at FROM knowledge_nodes "
+            f"WHERE norm_rang IN ({platz}) AND IFNULL(zurueckgezogen,0)=0",
+            BINDENDE_RAENGE)}
+    except sqlite3.Error:
+        return None
+    finally:
+        conn.close()
 
 
 def pruefe(sitzung: str) -> list[str]:
@@ -115,6 +157,28 @@ def pruefe(sitzung: str) -> list[str]:
                      "nicht laufend. Lies die genannten Abschnitte nach, bevor "
                      "du weiterarbeitest.")
         meldungen.append(" ".join(teile))
+
+    # --- Bindende Normen im Speicher --------------------------------------
+    schluessel = f"{sitzung}|normen"
+    jetzt = _normen()
+    if jetzt is not None:
+        neu_stand = {k: list(v) for k, v in jetzt.items()}
+        vorher = alt.get(schluessel)
+        if vorher is not None:
+            geaendert = [
+                (kid, rang, titel) for kid, (rang, titel, stand) in jetzt.items()
+                if kid not in vorher or list(vorher[kid])[2] != stand
+            ]
+            for kid, rang, titel in geaendert[:5]:
+                meldungen.append(
+                    f"Bindende Norm Rang {rang} neu oder geaendert: {kid} -- "
+                    f"{titel}. Sie gilt fuer diese Sitzung, unabhaengig davon, "
+                    f"ob sie im Systemprompt steht. Lies sie mit "
+                    f"knowledge_read, bevor du weiterarbeitest -- passiver "
+                    f"Recall ist kein Handoff (c14adcfe, Punkt 5).")
+            if len(geaendert) > 5:
+                meldungen.append(f"... und {len(geaendert) - 5} weitere.")
+        neu[schluessel] = neu_stand
 
     # Zustand nur fortschreiben, wenn auch gemeldet werden konnte -- sonst
     # ginge genau die eine Aenderung verloren, die niemand gesehen hat.
