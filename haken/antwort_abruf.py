@@ -712,7 +712,30 @@ def modus_prompt(payload: dict) -> None:
         gesamt.pop()  # Ueberzaehliges wird verworfen, nicht gekuerzt
 
     if gesamt:
-        print(block)
+        # ZWEI EMPFAENGER, EINE AUSGABE -- nachgezogen 2026-08-11, weil dieser
+        # Weg beim Umbau des anderen Abrufs uebersehen wurde. Bis dahin ging
+        # der Block als blosser Text hinaus: bei UserPromptSubmit landet stdout
+        # im KONTEXT DES MODELLS, nicht auf dem Bildschirm. Der Betreiber sah
+        # deshalb nie, welcher Eintrag gerade seine Antwort begleitet hat --
+        # und zwar ausgerechnet auf dem Weg, der HAEUFIGER liefert: der andere
+        # schweigt bei kurzen Zurufen (MIN_HITS), dieser fragt die Antwort.
+        # systemMessage geht an den Menschen, additionalContext ans Modell;
+        # continue und suppressOutput sind noetig, damit die Zeile stehen
+        # bleibt statt eine Sekunde aufzublitzen (Knoten 9f283897, Ursache 4).
+        namen = []
+        for kind, schluessel, _ in gesamt:
+            kurz = schluessel.rsplit("/", 1)[-1] if kind != "lesson" else schluessel
+            namen.append(kurz)
+        ausgabe = {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                          "additionalContext": block}}
+        if namen:
+            ausgabe["systemMessage"] = ("aus der Antwort eingespielt: "
+                                        + ", ".join(namen[:4])
+                                        + (f" und {len(namen) - 4} weitere"
+                                           if len(namen) > 4 else ""))
+            ausgabe["continue"] = True
+            ausgabe["suppressOutput"] = True
+        print(json.dumps(ausgabe, ensure_ascii=False))
         daten["verbraucht"] = True
         # Verwendungs-Statistik (Auftrag L-ff8fff): "geliefert" zaehlt sofort,
         # unabhaengig davon, ob der naechste --stop je dazu kommt zu pruefen.
@@ -782,6 +805,23 @@ def main() -> None:
 
 
 # --- Selbsttest (rot vor gruen, kein Modellaufruf/Netz) ---------------------
+
+def _block_aus_ausgabe(roh: str) -> str:
+    """Der Blocktext aus der Hook-Ausgabe.
+
+    Seit 2026-08-11 gibt modus_prompt JSON aus (additionalContext fuer das
+    Modell, systemMessage fuer den Menschen). Substring-Pruefungen tragen
+    dadurch weiter -- die Pfade stehen im JSON-String --, eine ZEILENzaehlung
+    nicht: dort stehen die Umbrueche als \\n. Diese Funktion holt den Block
+    zurueck, damit beide Pruefarten dasselbe sehen."""
+    roh = roh.strip()
+    if not roh.startswith("{"):
+        return roh
+    try:
+        return json.loads(roh)["hookSpecificOutput"]["additionalContext"]
+    except (json.JSONDecodeError, KeyError):
+        return roh
+
 
 def _selftest() -> None:
     import tempfile
@@ -937,7 +977,8 @@ def _selftest() -> None:
             buf_kappe = io.StringIO()
             with contextlib.redirect_stdout(buf_kappe):
                 modus_prompt({"session_id": "seskappex"})
-            zeilen_im_block = [z for z in buf_kappe.getvalue().splitlines() if z.startswith("- [")]
+            zeilen_im_block = [z for z in _block_aus_ausgabe(buf_kappe.getvalue()).splitlines()
+                               if z.startswith("- [")]
             assert len(zeilen_im_block) <= CAP_EINTRAEGE, zeilen_im_block
             assert len(zeilen_im_block) == CAP_EINTRAEGE, zeilen_im_block  # 5 Kandidaten, Deckel bei 3
             print(f"  Fall {faelle}: (c) Deckel haelt ueber alle drei Kriterien gemeinsam ok")
