@@ -1106,6 +1106,40 @@ BEGIN
 END;
 
 -- ---------------------------------------------------------------------------
+-- Zwei Tabellen, die bisher erst beim ersten Zugriff entstanden (2026-08-11)
+--
+-- kern/codekanten.py und kern/pruefspruch.py legen ihre Tabelle selbst an,
+-- wenn sie fehlt. Das genuegt im Betrieb und ist in der Erstanlage falsch:
+-- eine frische Datenbank hat die Tabellen dann nicht, und wer ihr Schema
+-- liest, sieht ein Haus mit zwei fehlenden Zimmern. Hier stehen sie, damit
+-- Erstanlage und Betrieb dasselbe Schema tragen; die Selbstanlage in den
+-- beiden Modulen bleibt, weil sie bestehende Datenbanken nachruestet.
+CREATE TABLE IF NOT EXISTS code_kanten (
+    id            TEXT PRIMARY KEY,
+    quelle_art    TEXT NOT NULL CHECK(quelle_art IN ('lehre','knoten')),
+    quelle_id     TEXT NOT NULL,
+    kandidat      TEXT NOT NULL,
+    pfad          TEXT NOT NULL,
+    mehrdeutig    INTEGER NOT NULL DEFAULT 0,
+    erhoben_am    TEXT NOT NULL,
+    UNIQUE(quelle_art, quelle_id, pfad)
+);
+CREATE INDEX IF NOT EXISTS code_kanten_pfad ON code_kanten(pfad);
+
+CREATE TABLE IF NOT EXISTS pruefsprueche (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    frage         TEXT NOT NULL,
+    urteil        TEXT NOT NULL,
+    begruendung   TEXT NOT NULL,
+    pruefer       TEXT NOT NULL,
+    auftraggeber  TEXT NOT NULL,
+    modell        TEXT,
+    sitzung       TEXT,
+    erstellt_am   TEXT NOT NULL,
+    ketten_hash   TEXT NOT NULL
+);
+
+-- ---------------------------------------------------------------------------
 -- Schemastand (ADR-003, 2026-08-10)
 --
 -- Die Marke muss stehen, BEVOR die erste Migration laeuft. Danach laesst sich
