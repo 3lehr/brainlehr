@@ -87,21 +87,34 @@ CREATE INDEX IF NOT EXISTS code_kanten_pfad ON code_kanten(pfad);
 """
 
 
-def dateiindex(wurzel: Path = VERBUND) -> dict[str, list[str]]:
-    """Basisname -> alle Pfade im Verbund. Arbeitsbaeume unter .claude/ werden
+# Zweite Wurzel: die Hauswerkzeuge liegen NICHT im Verbund, sondern unter
+# ~/.claude (Faehigkeiten, Haken, Einstellungen). Gemessen 2026-08-11: von den
+# 106 angeblich toten Verweisen war ui_guard.py keiner -- die Datei existiert,
+# nur eben dort. Ein Index, der die Wurzel des Werkzeugkastens auslaesst,
+# erklaert fremde Wirklichkeit fuer verschwunden.
+ZWEITE_WURZEL = Path.home() / ".claude"
+
+
+def dateiindex(wurzel: Path = VERBUND,
+               wurzeln: list[Path] | None = None) -> dict[str, list[str]]:
+    """Basisname -> alle Pfade. Arbeitsbaeume (.claude/worktrees/) werden
     uebersprungen: dieselbe Datei laege sonst dutzendfach vor und jede Kante
-    waere mehrdeutig, ohne dass es einen Unterschied machte."""
+    waere mehrdeutig, ohne dass es einen Unterschied machte. Der Rest von
+    .claude/ zaehlt aber sehr wohl -- dort stehen die Werkzeuge."""
     index: dict[str, list[str]] = defaultdict(list)
-    for pfad in wurzel.rglob("*"):
-        if not pfad.is_file() or pfad.suffix.lstrip(".") not in ENDUNGEN:
+    for w in (wurzeln if wurzeln is not None else [wurzel]):
+        if not w.exists():
             continue
-        teile = set(pfad.parts)
-        if teile & _AUSGENOMMEN or ".claude" in teile:
-            continue
-        rel = pfad.relative_to(wurzel)
-        if rel.parts and rel.parts[0].startswith(_KOPIEN):
-            continue
-        index[pfad.name].append(str(rel))
+        for pfad in w.rglob("*"):
+            if not pfad.is_file() or pfad.suffix.lstrip(".") not in ENDUNGEN:
+                continue
+            teile = pfad.parts
+            if set(teile) & _AUSGENOMMEN or "worktrees" in teile:
+                continue
+            rel = pfad.relative_to(w)
+            if rel.parts and rel.parts[0].startswith(_KOPIEN):
+                continue
+            index[pfad.name].append(str(rel if w == wurzel else Path("~/.claude") / rel))
     return dict(index)
 
 
@@ -210,12 +223,18 @@ def _selftest() -> None:
     (tmp / "app" / "lib" / "ort.py").write_text("x")
     (tmp / "zweit").mkdir()
     (tmp / "zweit" / "ort.py").write_text("x")
-    (tmp / ".claude").mkdir()
-    (tmp / ".claude" / "trip_service.dart").write_text("x")
+    (tmp / ".claude" / "worktrees" / "kopie").mkdir(parents=True)
+    (tmp / ".claude" / "worktrees" / "kopie" / "trip_service.dart").write_text("x")
+    (tmp / ".claude" / "skills").mkdir(parents=True)
+    (tmp / ".claude" / "skills" / "waechter.py").write_text("x")
 
     index = dateiindex(tmp)
     assert "trip_service.dart" in index and len(index["trip_service.dart"]) == 1, \
-        "Arbeitsbaeume unter .claude/ duerfen nicht mitgezaehlt werden"
+        "Arbeitsbaeume unter .claude/worktrees/ duerfen nicht mitgezaehlt werden"
+    # Gegenprobe zur Korrektur vom 2026-08-11: der REST von .claude/ zaehlt,
+    # dort liegen die Werkzeuge. Vorher fielen sie mit den Arbeitsbaeumen
+    # zusammen heraus und galten als verschwunden.
+    assert "waechter.py" in index, "Werkzeuge unter .claude/ fehlen im Index"
     assert len(index["ort.py"]) == 2
 
     # 1) Kandidaten klauben: Rauschen faellt raus.
@@ -287,7 +306,7 @@ def main() -> None:
 
     if a.bauen or a.bericht:
         print("Dateiindex wird gebaut ...", flush=True)
-        index = dateiindex()
+        index = dateiindex(wurzeln=[VERBUND, ZWEITE_WURZEL])
         print(f"  {sum(len(v) for v in index.values())} Dateien, "
               f"{len(index)} verschiedene Namen", flush=True)
         with speicher.lesen() as conn:
