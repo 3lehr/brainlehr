@@ -221,10 +221,10 @@ def _andere_laeufe(eigene_pid: int) -> list[str]:
 
 
 def _call_model(prompt: str) -> tuple[str | None, str | None]:
-    # werkzeug: verdichtet Bestandstext, beantwortet keine Pruefaufgabe --
-    # lokal zulaessig (L-a69129 trennt nach Rolle, nicht nach Anbieter).
+    # erzeugen: verdichtet Bestandstext, beantwortet keine Pruefaufgabe --
+    # lokal zulaessig, aber nur mit ausdruecklicher Freigabe BRAINLEHR_LOKAL=1.
     raw, err, _retries = sl._call_with_retry(prompt, model=MODEL, base_url=OLLAMA_URL,
-                                              timeout=TIMEOUT, rolle="werkzeug")
+                                              timeout=TIMEOUT, rolle="erzeugen")
     if err:
         return None, err
     return (raw or "").strip(), None
