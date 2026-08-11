@@ -65,8 +65,35 @@ RECALL_LOG = _NEBEN_DER_DB if _NEBEN_DER_DB.exists() else ort.RECALL_LOG
 MASCHINENTEXT = re.compile(
     r"<task-notification>|<system-reminder>|<knowledge-recall>|tool-use-id|"
     r"<antwort-recall>|<persisted-output>")
+# Fertigkeits-/Werkzeug-Vorspann ist kein Betreibertext (gemessen 2026-08-11:
+# 4 von 92 Faellen waren genau das). Erkennbar am Anfang der Nachricht.
+VORSPANN = re.compile(r"^\s*Base directory for this skill:")
 MIN_LAENGE = 25
 MAX_ZIELE = 3
+
+# Satzart als eigenes Feld (nicht als Filter, siehe Modulkopf-Auftrag): eine
+# Auskunftsfrage und ein Arbeitsauftrag loesen verschiedenes Verhalten aus
+# (L-4be9bf), beides in einen Topf zu werfen misst zwei Dinge gleichzeitig.
+_IMPERATIV = re.compile(
+    r"\b(lies|lese|arbeite|übernimm|übernehme|mach|erledige|bearbeite|"
+    r"fahre fort|setze fort|starte|beginne|erstelle|implementiere|behebe|"
+    r"fixe|prüfe|ändere)\b", re.IGNORECASE)
+_UEBERSCHRIFT = re.compile(r"^[A-ZÄÖÜ][A-ZÄÖÜa-zäöüß ]{2,30}:?\s*$")
+AUFTRAG_LAENGE = 300
+
+
+def satzart(text: str) -> str:
+    """Beobachtbare Merkmale, nicht Laenge allein: Imperativ am Anfang,
+    oder mehrzeilige Struktur mit Ueberschriften, oder langer Fliesstext
+    mit mehreren Zeilen."""
+    zeilen = text.split("\n")
+    imperativ_am_anfang = bool(_IMPERATIV.search(text[:120]))
+    mehrzeilig_mit_ueberschrift = len(zeilen) >= 3 and any(
+        _UEBERSCHRIFT.match(z.strip()) for z in zeilen)
+    langer_fliesstext = len(text) > AUFTRAG_LAENGE and len(zeilen) > 1
+    if imperativ_am_anfang or mehrzeilig_mit_ueberschrift or langer_fliesstext:
+        return "auftrag"
+    return "frage"
 
 # Zweiter Zielkanal: eine Kennung STEHT im Text -- keine Aufloesung noetig,
 # nur eine Existenzpruefung gegen die Datenbank. Das macht diese Faelle
@@ -84,7 +111,8 @@ def _ist_echte_frage(text: str) -> bool:
     """Gemeinsamer Filter beider Quellen. '<' am Anfang und Maschinentext
     sind keine Fragen -- eine Frage ist der Gegenstand der Messung."""
     return (len(text) >= MIN_LAENGE and not text.startswith("<")
-            and not MASCHINENTEXT.search(text))
+            and not MASCHINENTEXT.search(text)
+            and not VORSPANN.match(text))
 
 
 def echte_nachrichten(pfad: Path = RECALL_LOG) -> list[str]:
@@ -151,7 +179,8 @@ def faelle_bilden(nachrichten: list[str], conn) -> list[dict]:
                 if not w["mehrdeutig"]:
                     ziele.add((w["quelle_art"], w["quelle_id"]))
         if ziele and len(ziele) <= MAX_ZIELE:
-            faelle.append({"prompt": text, "klasse": "pfad", "pfade": pfade,
+            faelle.append({"prompt": text, "klasse": "pfad", "satzart": satzart(text),
+                            "pfade": pfade,
                             "ziele": [{"art": a, "id": i} for a, i in sorted(ziele)]})
     return faelle
 
@@ -182,7 +211,7 @@ def kennung_faelle_bilden(nachrichten: list[str], conn) -> list[dict]:
             if treffer:
                 ziele.add((treffer["art"], treffer["id"]))
         if ziele:
-            faelle.append({"prompt": text, "klasse": "kennung",
+            faelle.append({"prompt": text, "klasse": "kennung", "satzart": satzart(text),
                             "ziele": [{"art": a, "id": i} for a, i in sorted(ziele)]})
     return faelle
 
@@ -196,11 +225,17 @@ def _selftest() -> None:
         {"prompt": "<task-notification>lib/trip_service.dart ist fertig</task-notification>"},
         {"prompt": "kurz"},
         {"prompt": "Was ist mit settings.json?"},
+        {"prompt": "Base directory for this skill: /Volumes/daten/foo\n\nTu etwas Sinnvolles hier."},
     ]) + "\n")
 
     n = echte_nachrichten(log)
-    assert len(n) == 2, n                      # Maschinentext und zu Kurzes raus
+    assert len(n) == 2, n                      # Maschinentext, Vorspann und zu Kurzes raus
     assert all("task-notification" not in x for x in n)
+    assert all("Base directory for this skill" not in x for x in n)
+
+    # Vorspann ergibt auch bei erfundener Kennung/spezifischem Pfad keinen Fall.
+    vorspann_text = "Base directory for this skill: /Volumes/x\n\nSiehe L-0f4036 dazu."
+    assert not _ist_echte_frage(vorspann_text)
 
     class FakeConn:
         def __init__(self, treffer): self.treffer = treffer
@@ -250,12 +285,18 @@ def _selftest() -> None:
     echte_kennung_text = "Siehe L-0f4036 zur Lesetuer, das war der Befund."
     erfundene_kennung_text = "Siehe L-ffffff, das steht nirgends."
     knotenpfad_text = "Der Knoten /agents/mcp-tools erklaert das genauer."
+    uebergabe_text = (
+        "brainlehr, Fortsetzung. Lies zuerst STAND.md, dann arbeite.\n\n"
+        "FAKTEN (gemessen 2026-08-09):\n"
+        "  Der Knoten /agents/mcp-tools traegt den Befund.\n"
+        "  Weitere Zeile Kontext, damit der Text lang genug ist fuer die Pruefung.\n")
 
     conn2 = FakeConn2(echte_lehre_ids={"L-0f4036"}, echte_pfade={"/agents/mcp-tools"})
 
     kf = kennung_faelle_bilden([echte_kennung_text], conn2)
     assert len(kf) == 1 and kf[0]["klasse"] == "kennung", kf
     assert kf[0]["ziele"] == [{"art": "lehre", "id": "L-0f4036"}]
+    assert kf[0]["satzart"] == "frage", kf              # kurzer Fliesstext, kein Imperativ
 
     assert kennung_faelle_bilden([erfundene_kennung_text], conn2) == [], \
         "eine erfundene Kennung wurde als Fall gezaehlt"
@@ -264,12 +305,18 @@ def _selftest() -> None:
     assert len(kf_pfad) == 1
     assert kf_pfad[0]["ziele"] == [{"art": "knoten", "id": "/agents/mcp-tools"}]
 
+    # Uebergabe-Prompt: echt, aber keine Frage -- bleibt erhalten, satzart 'auftrag'.
+    kf_uebergabe = kennung_faelle_bilden([uebergabe_text], conn2)
+    assert len(kf_uebergabe) == 1, kf_uebergabe
+    assert kf_uebergabe[0]["satzart"] == "auftrag", kf_uebergabe
+
     # Ein 'pfad'-Fall bleibt Klasse 'pfad', nicht vermischt mit 'kennung'.
     with mock.patch.object(ck, "wissen_zu",
                             lambda pfad, conn: [{"quelle_art": "lehre", "quelle_id": "L-1",
                                                   "mehrdeutig": 0}] if "trip_service" in pfad else []):
         f_pfad = faelle_bilden(n, None)
     assert f_pfad[0]["klasse"] == "pfad", f_pfad
+    assert f_pfad[0]["satzart"] == "frage", f_pfad      # Bitte-Formulierung, kein Auftrag-Marker
 
     # Doppelter Text ergibt einen Fall, nicht zwei.
     doppelt = _ohne_doppelte([echte_kennung_text, echte_kennung_text, knotenpfad_text])
@@ -299,16 +346,22 @@ def main() -> None:
         faelle = faelle_bilden(nachrichten, conn) + kennung_faelle_bilden(nachrichten, conn)
 
     nach_klasse = {k: sum(1 for f in faelle if f["klasse"] == k) for k in ("pfad", "kennung")}
+    nach_satzart = {s: sum(1 for f in faelle if f["satzart"] == s) for s in ("frage", "auftrag")}
     print(f"{len(aus_log)} aus recall_log + {len(aus_sitzungen)} aus Sitzungen "
           f"-> {len(nachrichten)} eindeutige Nachrichten -> {len(faelle)} Faelle "
-          f"(pfad: {nach_klasse['pfad']}, kennung: {nach_klasse['kennung']})")
+          f"(pfad: {nach_klasse['pfad']}, kennung: {nach_klasse['kennung']}) "
+          f"(frage: {nach_satzart['frage']}, auftrag: {nach_satzart['auftrag']})")
+    for k in ("pfad", "kennung"):
+        for s in ("frage", "auftrag"):
+            n = sum(1 for f in faelle if f["klasse"] == k and f["satzart"] == s)
+            print(f"    {k} x {s}: {n}")
     if len(faelle) < 20:
         print(f"  ZU WENIG ZUM MESSEN. {len(faelle)} Faelle sind ein Anfang, keine "
               "Grundlage -- die Anforderungen zu senken waere der Rueckweg zum "
               "erfundenen Korpus.")
     for f in faelle[:6]:
         quelle = f.get("pfade", sorted(kennungen(f["prompt"])))[:2]
-        print(f"  [{f['klasse']}] {quelle} -> {[z['id'] for z in f['ziele']]}")
+        print(f"  [{f['klasse']}/{f['satzart']}] {quelle} -> {[z['id'] for z in f['ziele']]}")
     if a.out:
         a.out.write_text(json.dumps(
             {"verfahren": "Aufgabentext aus recall_log + Sitzungstranskripten (echte "
