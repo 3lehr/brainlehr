@@ -26,12 +26,21 @@ WURZEL = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(WURZEL))
 
 import knowledge_mcp_server as kms  # noqa: E402
+import werkzeugrechte  # noqa: E402
 
 
 @pytest.fixture()
 def db(tmp_path, monkeypatch):
     pfad = tmp_path / "probe.db"
     monkeypatch.setattr(kms, "DB_PATH", pfad)
+    # werkzeugrechte prueft seit B4.3 jeden Aufruf gegen eine Positivliste
+    # (Vorgabe deny). '_probe' ist kein echtes Werkzeug und stuende sonst nicht
+    # drin -- ohne Eintrag weist handle_request es ab, BEVOR der Handler
+    # ueberhaupt laeuft, und genau der Codepfad, den dieser Test pruefen soll
+    # (_offene_verbindungen_schliessen nach einer geplatzten Transaktion),
+    # wuerde nie erreicht. Nur fuer die Dauer des Tests freigeben, nicht im
+    # Produktivcode.
+    monkeypatch.setitem(werkzeugrechte.RECHTE, "_probe", "wissen:schreiben")
     conn = kms.get_db()          # legt Schema an
     kms._offene_verbindungen_schliessen()
     del conn
