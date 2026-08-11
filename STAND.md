@@ -1,16 +1,39 @@
-# STAND brainlehr — 2026-08-11T21:55:00+0200
+# STAND brainlehr — 2026-08-12T00:15:00+0200
 
-Erledigt seit 21:40: Die Datenbank heißt jetzt `brainlehr.db` (Probe: `brainlehr-probe.db`), Variable `BRAINLEHR_DB`, alter Name bleibt gültig mit einmaligem Hinweis. Bestand unverändert 2125/775, Sicherung `knowledge.db.vor-umzug-20260811T212654`. Alle Vektoren aktuell (0 fehlend, 0 veraltet).
-Dabei aufgefallen: `.gitignore` kannte nur den alten Namen, dadurch war die Datenbank kurzzeitig versionsverwaltet — behoben in 464ec3f, Lehre L-2b5f6f.
+## SCHREIBSPERRE auf den Bestand, solange die S12-Ausgangsmessung läuft
 
-Offen: 18 % der Betreibernachrichten erreichen den Haltepunkt nie (15 von 82, Knoten 8215ac0d) — drei Erklärungen gemessen und ausgeschlossen, der Grund bleibt offen. Keine neue Vermutung ohne Messung.
-`freigabe` fehlt in `knowledge_search`/`knowledge_browse` — gesperrter Knoten bleibt auffindbar; zweimal unabhängig gefunden (cda47024, Enigma-Landkarte). **Läuft gerade** bei einem Sonnet-Agenten, ebenso das Entrauschen des Prüfkorpus.
+Kein `knowledge_add`, kein `lesson_record`, kein Import in `brainlehr.db`, bis die Messung je Hälfte vorliegt. Wer während der Messung schreibt, misst einen anderen Speicher als den, auf dem die Teilung gezogen wurde — und die Teilung ist der ganze Sinn des Aufbaus. Betrifft besonders den vorbereiteten MAUDE-Import (Planpunkt 4), der sonst der naheliegende nächste Schritt wäre.
 
-Neun Tests sind rot und waren es vor dem Merge schon: `test_knowledge_search_fold` (7), `test_lesson_query_fold` (2). Alle neun suchen gegen die echte Datenbank. Eine zehnte wäre neu.
+## Erledigt in dieser Nacht
 
-Naechstes nach den beiden Agenten: S12 zweiter Anlauf — die Anfrage in den Wortschatz der Antwort übersetzen (L-3ba807). Erst danach Abrufgüte gegen die Nulllinie 15/178, sonst misst sie sich selbst.
+| | Commit |
+|---|---|
+| Datenbank heißt `brainlehr.db`, Bestand unverändert 2125/775 | Umzug + `464ec3f` |
+| Freigabe wirkt in allen drei Lesewegen | `bb9bc7f` |
+| Prüffall-Sammler abgesichert, 78 Fälle mit Nenner | `d43fece` |
+| Testumgebung fragt den Auflöser — 14 stumme Tests sprechen wieder | `762293b` |
+| Erstanlage trägt `code_kanten` und `pruefsprueche` | `1d64458` |
+| Sechs Produktivdateien fragen den Auflöser | `349e738`, `cdaaafd`, `2c9890c` |
+| S12 neu geplant: Hebel liegt auf der Schreibseite | `3447ba1` |
+| Gesamtplan fortgeschrieben, zwei Punkte abgehakt | `02f2da5` |
 
-Wartet auf: `~/.claude.json` → actor (tippt der Betreiber selbst) · NIST-Teilbestand unbenannt · ASRS braucht Ausfuhrlauf statt Schnittstelle.
+Suite: 853 grün, 1 übersprungen, 7 xfail, **0 rot**.
 
-Nicht vergessen: `gattung=nachschlagewerk` heißt Heuhaufen, nie Ziel eines Prüffalls (L-051d71). Code-Edits und Messläufe gehen an Sonnet (Norm 75ef2145). `migrationen/lauf_titelverteidiger_2026-08-08.py` nennt weiterhin `knowledge.db` — die Datei gehört einer fremden Sitzung, nicht angefasst.
-Gesamtplan: docs/PLAN_GESAMT_2026-08-11.md · Enigma-Landkarte: docs/ENIGMA_LANDKARTE_2026-08-11.md · Fremdbestände: docs/LIZENZPRUEFUNG_FREMDBESTAENDE_2026-08-11.md
+## Der Befund der Nacht
+
+`kern/normbezug.py` meldete seit dem Umzug **jedes** Normzitat als unbelegt — ohne Fehler, ohne Warnung. Ursache war nicht der Dateiname, sondern die Bauform: `if not pfad.exists(): return "unbelegt"` unterscheidet „geprüft und nichts gefunden" nicht von „gar nicht geprüft". Behoben durch einen dritten Zustand `ungeprueft`. Knoten `73ed942f` trägt das Unterscheidungskriterium und **zehn weitere Fundstellen derselben Form**, die absichtlich nicht pauschal geändert wurden — ob leer dort richtig ist, entscheidet die Rolle der jeweiligen Datei.
+
+Die neun angeblich roten Umlauttests waren nie kaputt. Gegen den Suchcode von vor der Freigabe-Änderung und gegen die Datenbank-Sicherung von 21:26 einzeln nachgemessen, beide Male grün. Es gab nie einen Umlautfehler.
+
+## Offen
+
+`migrationen/lauf_titelverteidiger_2026-08-08.py` trägt weiter den alten Dateinamen — gehört einer fremden Sitzung, nicht angefasst, nur gemeldet.
+Korpus-Zusammensetzung: 72 Aufträge gegen 6 Fragen. Ein Abruf, der an Aufträgen gut abschneidet, sagt wenig über Fragen.
+Wartet auf den Betreiber: `~/.claude.json` → actor · NIST-Teilbestand unbenannt · ASRS braucht Ausfuhrlauf statt Schnittstelle.
+
+## Nicht vergessen
+
+Code-Edits und Messläufe gehen an Sonnet (Norm 75ef2145). Aufträge mit Läufen über eine Minute: ausdrücklich **Vordergrund** verlangen — drei Agenten haben heute ihren Zug im Wartemodus beendet (`L-1056bb`).
+Bei gemeinsam benutztem Baum committen Agenten nur mit Pfadangabe (`L-73020e`).
+
+Pläne: `docs/PLAN_GESAMT_2026-08-11.md` · `docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md` · Enigma: `docs/ENIGMA_LANDKARTE_2026-08-11.md`
