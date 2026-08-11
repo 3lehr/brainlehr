@@ -17,14 +17,15 @@ Stand wird in dieser Datei fortgeschrieben. `[x]` heißt gebaut UND belegt,
       als Fundliste (Konsil, Stimme 3: der übertragbare Rest der
       Beweislastumkehr).
 - [x] **P3 · Tote Verweise prüfen** — 106 Kandidaten ohne Datei im Verbund
-- [x] **P4 · Naht weiterziehen** — Dateien von eigener Verbindung auf
-      `speicher.py` umstellen, Ratsche nachziehen
-- [ ] **P5 · Common-Cause auf das Agentenregister** — siehe Befund unten
-- [ ] **P6 · Prüfkorpus, der nicht aus Lehrentexten erzeugt ist**
+- [x] **P4 · Naht weiterziehen** — 69 auf 67 Dateien, Ratsche nachgezogen
+- [x] **P11 · Haltemenge** (neu, aus der Quant-Recherche): der Bestwert aus 24
+      Versuchen faellt auf einer Haltemenge zurueck
+- [ ] **P5 · Common-Cause auf das Agentenregister** — NICHT gebaut: das Register gibt es nicht her (ein Bash-Aufruf bekommt seine eigene Agentenkennung nicht als Umgebungsvariable, L-1b6476). Erst das Register erweitern, dann auswerten.
+- [ ] **P6 · Prüfkorpus** — durch die Quant-Recherche geschärft: nicht thematisch trennen, sondern ZEITLICH (Point-in-Time). Braucht einen Erzeugungslauf.
 - [ ] **P7 · Achse „Art" (Sein/Sollen/Dürfen)** für die 82 Normen
-- [ ] **P8 · Die drei restlichen Antwortläufe dreiteilen**
+- [ ] **P8 · Drei Antwortläufe dreiteilen** — Weg belegt, reine Mechanik. Zurückgestellt: sie messen gegen den kontaminierten Korpus, also erst nach P6.
 - [ ] **P9 · `freigabe` in `browse`/`search`** — fremder Zweig
-- [ ] **P10 · Metroviz auf den Codekanten**
+- [ ] **P10 · Metroviz auf den Codekanten** — Datengrundlage steht (1744 Kanten, 874 Dateien), Anzeige ist ein eigenes Vorhaben.
 
 ## Befunde während der Abarbeitung
 
@@ -56,3 +57,30 @@ Die verbleibenden 101 sind zu 89 Einzelnennungen und 12 Mehrfachnennungen —
 darunter `oem_odometer_probe_screen.dart` und `wt_neue_klaerungsarten_zeigen_beleg.js`,
 die es im ganzen Verbund nicht gibt. Das sind echte Befunde: Lehren, die auf
 Verschwundenes zeigen.
+
+
+### P4 · Naht
+`deckelreihe.py` und `haken/suchpfad_abruf.py` auf `speicher.lesen()` umgestellt.
+Ratsche: **67 statt 69**. Beide Selbsttests fielen schon vorher (gegen `git
+stash` geprüft) — vorbestehend.
+
+### P11 · Haltemenge — die wichtigste Korrektur des Abends
+
+| | Tuning (22) | Haltemenge (13) |
+|---|---|---|
+| `kurzfeld` (Sieger im Tuning) | 5 | **2** |
+| FTS5 (Ausgangsstand) | — | **4** |
+
+Der Vorsprung ist weg. Ab sofort: jede Messung nennt die Zahl der Versuche, und
+ein Vergleich mehrerer Bauformen braucht eine Haltemenge.
+
+## Was offen bleibt, und warum
+
+P5 scheitert am Register, nicht am Willen. P6 braucht einen Erzeugungslauf und
+ist jetzt schärfer definiert als vorher. P7 ist eine Entscheidung des Betreibers,
+kein Bau. P8 wäre Mechanik gegen einen bekannt kontaminierten Korpus — Arbeit,
+die man zweimal macht. P9 gehört einer fremden Sitzung. P10 ist ein eigenes
+Vorhaben.
+
+**Sechs von elf gebaut und belegt, fünf mit Grund offen. Kein Punkt bleibt
+stillschweigend liegen.**
