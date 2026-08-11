@@ -49,6 +49,23 @@ DEFAULT_OLLAMA_URL = os.environ.get("KNOWLEDGE_OLLAMA_URL", "http://127.0.0.1:11
 # 0,106). KNOWLEDGE_OLLAMA_EMBED_MODEL ueberschreibt weiterhin.
 DEFAULT_EMBED_MODEL = os.environ.get("KNOWLEDGE_OLLAMA_EMBED_MODEL", "bge-m3")
 
+# Warmhaltung und Timeout gehoeren zusammen -- getrennt loest keines das
+# Problem. Gemessen 2026-08-11: Kaltstart von bge-m3 11,5 s, warmer Aufruf
+# 0,12 s, Vorgabe-Timeout war 5,0 s. Jeder Versuch lief damit in den Timeout
+# und gab still None zurueck; weil er abbrach, wurde das Modell nie warm, und
+# der naechste Versuch fand denselben Kaltstart vor. Ein Teufelskreis, der im
+# Bestand ein Datum hinterlassen hat: juengster Vektor 2026-08-10T12:26.
+#
+# EINHEIT NICHT VERGESSEN: Ollama lehnt keep_alive ohne Zeiteinheit mit
+# HTTP 400 ab ("time: missing unit in duration") -- auch die naheliegende
+# "-1" fuer unbegrenzt. Belegt in L-ce7310.
+DEFAULT_KEEP_ALIVE = os.environ.get("KNOWLEDGE_OLLAMA_KEEP_ALIVE", "30m")
+
+# Deckt den gemessenen Kaltstart mit Reserve. Der Preis ist eine laengere
+# Wartezeit im echten Ausfall (Dienst tot) -- aber genau EINMAL je Prozess,
+# weil der Rueckfall auf Stichwortsuche danach still weiterlaeuft.
+DEFAULT_TIMEOUT = float(os.environ.get("KNOWLEDGE_OLLAMA_TIMEOUT", "20"))
+
 
 def hybrid_retrieval_weight() -> float:
     """Fusion-Gewicht Embedding=0 -> reines Stichwortmatching (heutiger Zustand,
@@ -61,7 +78,8 @@ def hybrid_retrieval_weight() -> float:
     return max(0.0, weight)
 
 
-def embed_text(text: str, *, base_url: str = "", model: str = "", timeout: float = 5.0) -> list[float] | None:
+def embed_text(text: str, *, base_url: str = "", model: str = "",
+               timeout: float | None = None) -> list[float] | None:
     """Best-effort Embedding ueber Ollamas `/api/embed`. None bei jedem
     Netzwerk-/Modell-Fehler (Ollama nicht erreichbar, Modell fehlt, Timeout).
     AUSNAHME bewusst laut: Nicht-Loopback-URL wirft weiterhin ValueError,
@@ -75,7 +93,8 @@ def embed_text(text: str, *, base_url: str = "", model: str = "", timeout: float
     parsed = urllib.parse.urlparse(url)
     if parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
         raise ValueError("Ollama-Embeddings duerfen nur Loopback-URLs nutzen")
-    payload = {"model": model or DEFAULT_EMBED_MODEL, "input": cleaned}
+    payload = {"model": model or DEFAULT_EMBED_MODEL, "input": cleaned,
+               "keep_alive": DEFAULT_KEEP_ALIVE}
     req = urllib.request.Request(
         f"{url}/api/embed",
         data=json.dumps(payload).encode("utf-8"),
@@ -83,7 +102,8 @@ def embed_text(text: str, *, base_url: str = "", model: str = "", timeout: float
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as response:
+        with urllib.request.urlopen(
+                req, timeout=DEFAULT_TIMEOUT if timeout is None else timeout) as response:
             raw_body = json.loads(response.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError, ValueError):
         return None
