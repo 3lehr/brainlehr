@@ -52,7 +52,9 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "haken"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ort  # noqa: E402
+import speicher  # noqa: E402  -- eine Tuer zur Datenbank statt einer eigenen
 
 CET = timezone(timedelta(hours=2))
 RUNS = ort.WURZEL / "runs"
@@ -70,10 +72,9 @@ def _jetzt() -> str:
     return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S%z")
 
 
-def _verbindung(db: Path | None = None) -> sqlite3.Connection:
-    conn = sqlite3.connect(f"file:{db or ort.DB}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
-    return conn
+# Nur-lesender Zugang ueber die Naht (speicher.py) statt eigener Verbindung.
+# Umgestellt am 2026-08-11 als erster Beleg, dass die Naht traegt: derselbe
+# mode=ro wie vorher, aber das Schliessen haengt nicht mehr an dieser Datei.
 
 
 def bestandsstand(conn: sqlite3.Connection) -> dict:
@@ -96,13 +97,11 @@ def blick(session: str, kontextfenster: int | str, *, actor: str = "unbekannt",
     if kontextfenster in (None, "", 0):
         raise ValueError("rasterblick.blick: kontextfenster fehlt -- ohne diese Zahl behauptet "
                          "der Vermerk eine Vollstaendigkeit, die er nicht belegen kann")
-    eigene_verbindung = conn is None
-    conn = conn or _verbindung()
-    try:
+    if conn is not None:
         b = bestandsstand(conn)
-    finally:
-        if eigene_verbindung:
-            conn.close()
+    else:
+        with speicher.lesen(db=None) as eigene:
+            b = bestandsstand(eigene)
     return {
         "session": session,
         "actor": actor,
