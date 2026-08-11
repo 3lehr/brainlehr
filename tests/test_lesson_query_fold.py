@@ -34,16 +34,17 @@ import pytest
 SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
-from conftest import braucht_bestand  # noqa: E402
+from conftest import bestand_schnappschuss, braucht_bestand  # noqa: E402
 import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
 
 
 @pytest.fixture()
 def real_db_copy(tmp_path, monkeypatch):
+    """Kopie des EINEN Lauf-Schnappschusses, siehe test_knowledge_search_fold.py."""
     # Misst Abrufguete an ECHTEN Lehren -- eine frische Instanz hat sie
     # nicht, dann ist hier nichts zu pruefen.
     braucht_bestand()
-    src = SHARED_KNOWLEDGE / "brainlehr.db"
+    src = bestand_schnappschuss().pfad
     dst = tmp_path / "knowledge_real_copy.db"
     shutil.copy2(src, dst)
     monkeypatch.setattr(kms, "DB_PATH", dst)

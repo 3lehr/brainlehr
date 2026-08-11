@@ -77,6 +77,79 @@ if HUB:
         if zusatz.is_dir():
             sys.path.insert(0, str(zusatz))
 
+import atexit
+import shutil
+import sqlite3
+import tempfile
+from dataclasses import dataclass
+from datetime import datetime
+
+
+@dataclass(frozen=True)
+class BestandSchnappschuss:
+    """Ein Schnappschuss des Bestands, benennbar statt einer nackten Zahl.
+
+    Eine Messung gegen `knoten`/`lehren` soll spaeter angeben koennen, GEGEN
+    WELCHEN Stand sie gemessen hat -- `aufgenommen` traegt genau das."""
+    pfad: Path
+    knoten: int
+    lehren: int
+    aufgenommen: str
+
+
+def _erzeuge_schnappschuss(quelle: Path) -> BestandSchnappschuss:
+    """WAL-konsistente Kopie via sqlite3 Connection.backup() (Online-Backup-
+    API), nicht shutil.copy2 -- Vorlage: kern/migrate_relations.py::migrate().
+    Bewusst NICHT normrang.py::_backup()s Weg (PRAGMA wal_checkpoint(TRUNCATE)
+    vor dem Kopieren): die Quelle hier ist der LEBENDE, geteilte Bestand, an
+    dem andere Sitzungen gleichzeitig schreiben (siehe Auftrag-FAKTEN) -- ein
+    TRUNCATE-Checkpoint dort waere ein Eingriff in fremden Betrieb, den diese
+    Vorrichtung nicht braucht: Connection.backup() liest WAL-Aenderungen
+    korrekt mit, ganz ohne die Quelle anzufassen (Beleg: tests/test_bestand_
+    schnappschuss.py, Gegenprobe zu tests/test_backup_wal_checkpoint.py)."""
+    ziel_dir = Path(tempfile.mkdtemp(prefix="brainlehr_schnappschuss_"))
+    # ponytail: os-tmp-Aufraeumung statt pytest tmp_path_factory, weil
+    # braucht_bestand() als nackte Funktion ohne Fixture-Parameter aus
+    # mehreren Testdateien aufgerufen wird -- kein Fixture-Kontext verfuegbar.
+    atexit.register(shutil.rmtree, ziel_dir, ignore_errors=True)
+    ziel = ziel_dir / "brainlehr_snapshot.db"
+    quelle_conn = sqlite3.connect(f"file:{quelle}?mode=ro", uri=True)
+    ziel_conn = sqlite3.connect(str(ziel))
+    try:
+        quelle_conn.backup(ziel_conn)
+    finally:
+        ziel_conn.close()
+        quelle_conn.close()
+    con = sqlite3.connect(f"file:{ziel}?mode=ro", uri=True)
+    try:
+        knoten = con.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
+        lehren = con.execute("SELECT COUNT(*) FROM lessons_learned").fetchone()[0]
+    finally:
+        con.close()
+    aufgenommen = datetime.now().astimezone().isoformat(timespec="seconds")
+    return BestandSchnappschuss(ziel, knoten, lehren, aufgenommen)
+
+
+_SCHNAPPSCHUSS: BestandSchnappschuss | None = None
+
+
+def bestand_schnappschuss() -> BestandSchnappschuss | None:
+    """Liefert EINEN Schnappschuss je pytest-Prozess (gecacht, nicht neu
+    gezogen) -- None, wenn keine Quelle existiert. Modul-globaler Cache statt
+    pytest.fixture(scope="session"): braucht_bestand() und die kopierenden
+    Testdateien rufen diese Funktion als nackten Aufruf, ausserhalb jeder
+    Fixture-Injektion -- ein Session-Fixture waere fuer sie unerreichbar."""
+    global _SCHNAPPSCHUSS
+    if _SCHNAPPSCHUSS is None:
+        # Den Aufloeser fragen, nicht den Pfad bauen: ein selbst gebauter Name
+        # ueberlebt keine Umbenennung (L-2b5f6f).
+        from haken.ort import DB as quelle
+        if not quelle.exists():
+            return None
+        _SCHNAPPSCHUSS = _erzeuge_schnappschuss(quelle)
+    return _SCHNAPPSCHUSS
+
+
 def braucht_bestand(mindestens: int = 100) -> None:
     """Ueberspringt einen Test, der gegen den gewachsenen Bestand misst.
 
@@ -88,23 +161,20 @@ def braucht_bestand(mindestens: int = 100) -> None:
     Bewusst UEBERSPRINGEN statt auf synthetische Vorrichtungen umbauen:
     diese Tests messen echte Guete an echtem Bestand, das ist ihr Zweck.
     Ein Test, dessen Voraussetzung fehlt, ist zu ueberspringen -- ein
-    umgebauter Test misst etwas anderes und sieht dabei gruen aus."""
-    import sqlite3
+    umgebauter Test misst etwas anderes und sieht dabei gruen aus.
+
+    Prueft jetzt gegen den EINEN Schnappschuss des Laufs (bestand_
+    schnappschuss()), nicht mehr gegen den lebenden Bestand direkt -- sonst
+    koennte dieselbe Pruefung, zweimal im selben Lauf aufgerufen, durch eine
+    fremde, gleichzeitig schreibende Sitzung zwei verschiedene Antworten
+    geben."""
     import pytest
-    # Den Aufloeser fragen, nicht den Pfad bauen: ein selbst gebauter Name
-    # ueberlebt keine Umbenennung und meldet ihr Scheitern als "Bestand
-    # fehlt, uebersprungen" -- also als Umstand statt als Fehler (L-2b5f6f).
-    from haken.ort import DB as pfad
-    if not pfad.exists():
+    snap = bestand_schnappschuss()
+    if snap is None:
+        from haken.ort import DB as pfad
         pytest.skip(f"kein Bestand unter {pfad} -- erst `python3 schnellstart.py --bestand`")
-    try:
-        con = sqlite3.connect(f"file:{pfad}?mode=ro", uri=True)
-        n = con.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
-        con.close()
-    except sqlite3.Error as fehler:
-        pytest.skip(f"Bestand nicht lesbar ({fehler})")
-    if n < mindestens:
-        pytest.skip(f"Bestand zu klein ({n} < {mindestens} Knoten) -- "
+    if snap.knoten < mindestens:
+        pytest.skip(f"Bestand zu klein ({snap.knoten} < {mindestens} Knoten) -- "
                     "erst `python3 schnellstart.py --bestand` einspielen")
 
 
