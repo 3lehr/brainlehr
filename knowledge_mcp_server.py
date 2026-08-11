@@ -1318,6 +1318,30 @@ def _identity(actor: str | None = None, model: str | None = None,
     )
 
 
+def _bedient_von(actor: str | None = None) -> str | None:
+    """Wer FUEHRT die Maschine, die gerade schreibt -- aus dem Ausweis, nie
+    aus einem Argument (Betreiberweisung 2026-08-11).
+
+    Bewusst eine eigene Aufloesung statt eines vierten Rueckgabewerts von
+    _identity(): das haette alle 17 Aufrufstellen gebrochen, und der Preis
+    ist gemessen gering -- 2,5 ms je Aufloesung (20 Durchlaeufe, scrypt
+    n=16384). Die Zahl steht hier, weil sie den Verzicht auf einen
+    Zwischenspeicher traegt; steigt sie, ist die Entscheidung neu zu treffen.
+
+    None in drei Faellen, und alle drei sind richtig so:
+      unbeglaubigt   kein Nachweis, also keine Behauptung
+      Mensch selbst  niemand steht ueber ihm -- "chefin gefuehrt von chefin"
+                     waere eine leere Aussage
+      kein Eintrag   der Ausweis entstand per --anlegen statt per Einladung;
+                     bedient_von setzt NUR der Einladungsweg, weil nur dort
+                     ein Mensch die PIN ausspricht
+    """
+    a = ausweis.loese_auf(actor)
+    if not a.beglaubigt or a.ist_mensch:
+        return None
+    return a.bedient_von or None
+
+
 def compute_zeilen_hash(affected_row: dict | None) -> str | None:
     """SHA-256 ueber den von einer Aktion betroffenen Datensatz NACH der
     Aenderung. None (-> NULL in access_log.zeilen_hash) bei reinen
@@ -2576,15 +2600,19 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                          f"{', '.join(ALLOWED_GATTUNG)}."}
 
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client, gattung)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
          norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, created_at, norm_entschieden_grund,
          anlass, abgeleitet_von, actor, session, model, _KLIENT,
          # Vorgabe kommt aus dem Schema (arbeitsbestand) -- None laesst sie
          # stehen, statt sie hier ein zweites Mal zu behaupten.
-         gattung if gattung is not None else 'arbeitsbestand')
+         gattung if gattung is not None else 'arbeitsbestand',
+         # Aus dem Ausweis, nicht aus der Signatur: es gibt bewusst KEINEN
+         # Parameter dafuer. Waere er da, koennte jeder Schreiber eine
+         # menschliche Deckung behaupten.
+         _bedient_von(actor))
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,

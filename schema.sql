@@ -161,6 +161,18 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- rekonstruierbar, und die ist bei gleichzeitigen Schreibern (mehrere
     -- Worktrees) nicht eindeutig -- derselbe Grund, der schon actor/session
     -- an den Datensatz gebracht hat.
+    -- WER FUEHRT DIE MASCHINE, die hier geschrieben hat (Betreiberweisung
+    -- 2026-08-11: "chatgpt kann den gleichen Ausweis benutzen, muss aber
+    -- mitgeben dass chatgpt gefuehrt von markus"). Der Wert stammt
+    -- AUSSCHLIESSLICH aus dem beglaubigten Ausweis (ausweis.Ausweis.
+    -- bedient_von), nie aus einem Argument -- waere er setzbar, koennte jeder
+    -- Schreiber eine menschliche Deckung behaupten, und das Feld waere so
+    -- wertlos wie actor vor B4.1 (wer actor="betreiber" mitschickte, WAR
+    -- Betreiber).
+    -- LEER ist der Normalfall und kein Mangel: bei unbeglaubigten Schreibern
+    -- gibt es keinen Nachweis, und bei einem Menschen gibt es niemanden ueber
+    -- ihm -- "chefin gefuehrt von chefin" waere eine leere Aussage.
+    bedient_von TEXT,
     actor TEXT,
     session TEXT,
     model TEXT,
@@ -313,6 +325,17 @@ BEFORE UPDATE ON knowledge_nodes
 FOR EACH ROW WHEN NEW.source IS NULL OR TRIM(NEW.source) = ''
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.source darf nicht leer sein: Herkunft angeben (Datei, Konsil oder Recherche, aus der dieser Knoten stammt)');
+END;
+
+-- Herkunft wird nicht nachtraeglich umgeschrieben. Ohne diesen Trigger
+-- koennte ein Schreiber die menschliche Deckung eines fremden Knotens
+-- nachtraeglich auf sich selbst umbiegen -- die Kette waere dann kein
+-- Nachweis mehr, sondern eine Behauptung mit Zeitstempel.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_bedient_von_unveraenderlich_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN IFNULL(NEW.bedient_von,'') <> IFNULL(OLD.bedient_von,'')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.bedient_von ist unveraenderlich -- wer eine Maschine fuehrt, steht ab dem Schreiben fest');
 END;
 
 CREATE TRIGGER IF NOT EXISTS knowledge_nodes_parent_check_bi
@@ -551,6 +574,9 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     last_seen TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     auto_rule_generated INTEGER DEFAULT 0,    -- 1 wenn bereits Regel generiert
     anlass TEXT NOT NULL DEFAULT 'unbekannt', -- siehe Kommentar an knowledge_nodes.anlass
+    -- siehe Kommentar an knowledge_nodes.bedient_von: kommt nur aus
+    -- dem beglaubigten Ausweis, nie aus einem Argument.
+    bedient_von TEXT,
     actor TEXT,                               -- siehe Kommentar an knowledge_nodes.actor/.session/.model
     session TEXT,
     model TEXT,
@@ -630,6 +656,9 @@ CREATE TABLE IF NOT EXISTS access_log (
     action TEXT NOT NULL,                     -- browse|read|search|add|lesson
     query TEXT,
     project_id TEXT,
+    -- siehe Kommentar an knowledge_nodes.bedient_von: kommt nur aus
+    -- dem beglaubigten Ausweis, nie aus einem Argument.
+    bedient_von TEXT,
     actor TEXT,                               -- explizite Identitaet; sonst NULL
     model TEXT,
     session TEXT,
