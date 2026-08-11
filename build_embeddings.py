@@ -32,8 +32,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).parent))
 import embeddings
-
-DB_PATH = Path(__file__).parent / "knowledge.db"
+from haken.ort import DB as DB_PATH  # noqa: E402
 BERLIN = ZoneInfo("Europe/Berlin")
 
 # --force (Auftrag 2026-08-07, Modellwechsel-Fall): rechnet ALLES neu, auch
@@ -142,6 +141,19 @@ def now_iso() -> str:
 
 def _text_checksum(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+# Textzusammensetzung EINMAL hier, nicht an jeder Stelle neu abgeschrieben --
+# vektorstand.py (Melder fuer veraltete/fehlende Vektoren) importiert genau
+# diese zwei Funktionen, statt den Text ein zweites Mal zu erfinden. Nur so
+# gibt es eine Wahrheit darueber, was eingebettet wurde.
+def node_text(row) -> str:
+    return f"{row['path']}\n{row['title']}\n{row['summary']}\n{row['content'] or ''}"
+
+
+def lesson_text(row) -> str:
+    zuordnung = row["node_path"] or row["projects"] or ""
+    return f"{zuordnung}\n{row['description']}\n{row['root_cause'] or ''}\n{row['prevention'] or ''}"
 
 
 def _needs_recompute(
@@ -317,7 +329,7 @@ def main() -> int:
     nodes = conn.execute("SELECT id, path, project_id, title, summary, content FROM knowledge_nodes").fetchall()
     node_pending = []
     for n in nodes:
-        text = f"{n['path']}\n{n['title']}\n{n['summary']}\n{n['content'] or ''}"
+        text = node_text(n)
         text_checksum = _text_checksum(text)
         if _needs_recompute(conn, "node", n["id"], [n["project_id"]], model, text_checksum, FORCE):
             node_pending.append((n, text, text_checksum))
@@ -345,8 +357,7 @@ def main() -> int:
     ).fetchall()
     lesson_pending = []
     for l in lessons:
-        zuordnung = l["node_path"] or l["projects"] or ""
-        text = f"{zuordnung}\n{l['description']}\n{l['root_cause'] or ''}\n{l['prevention'] or ''}"
+        text = lesson_text(l)
         text_checksum = _text_checksum(text)
         target_projects = resolve_lesson_projects(l["projects"])
         if _needs_recompute(conn, "lesson", l["id"], target_projects, model, text_checksum, FORCE):
