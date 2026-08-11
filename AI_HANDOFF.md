@@ -9,6 +9,14 @@
 - If your writes to `knowledge.db` ever hang for ~5 s: `lsof knowledge.db`, check whether `knowledge.db-wal` is growing. Not growing + writes failing = hung transaction, not contention.
 - Lesson `L-2bdfea` (now 2 occurrences, both diagnoses recorded including the wrong ones).
 
+## 2026-08-11 — test(enigma): falsify surviving key copy
+
+- Files: `tests/test_enigma_crypto_shredding_spike.py`, `AI_HANDOFF.md`
+- Why: Smallest synthetic P1 harness measures the baseline and kills a surviving `KEY_COPY`.
+- Verified: `python3 -m pytest -q tests/test_enigma_crypto_shredding_spike.py` — 2 passed.
+- Remaining risk: Four mutations and C0–C4 overall remain NOT_MEASURED; `A-c0edbd` remains open.
+- Next test: `DETERMINISTIC_MASTER_DERIVATION`.
+
 ## 2026-08-11T08:15:00+02:00 — operator: act, do not ask (applies to Codex too)
 
 - Files: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` (both backed up first).
