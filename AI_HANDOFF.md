@@ -51,6 +51,14 @@
 - Next test: Repeat with separate local UIDs and an external anchor.
 - Repair: key-mutant probe initially invoked the mutation after deletion, masking it; it now invokes mutation pre-delete and verifies its exact post-delete public kill.
 
+## 2026-08-11 — test(enigma): prove stale handle revocation
+
+- Files: `tests/test_enigma_two_process_spike.py`, `AI_HANDOFF.md`
+- Why: Prove stale Pipe closure and the real post-unlink vault-FD mutation; Workstore receives only opaque handle evidence and rejects it as `CACHE_FD_SESSION`.
+- Verified: `python3 -m pytest -q tests/test_enigma_two_process_spike.py` — 1 passed.
+- Remaining risk: The old vault FD remains readable after unlink by design; this is a detected mutation that blocks denial-pass, not a repair. Same-UID direct vault read remains `P2_SHARED_ROOT_SAME_UID`.
+- Next test: Separate local UIDs plus an externally anchored vault process.
+
 ## 2026-08-11T08:15:00+02:00 — operator: act, do not ask (applies to Codex too)
 
 - Files: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` (both backed up first).

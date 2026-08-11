@@ -46,7 +46,7 @@ def _keyholder(conn, vault_path):
 
 
 def _workstore(conn):
-    state = {"cache": "", "log": "", "vector": "", "key_mutant": None, "shared": None, "run": secrets.token_hex(6)}
+    state = {"cache": "", "log": "", "vector": "", "key_mutant": None, "shared": None, "old_handles": [], "run": secrets.token_hex(6)}
     while True:
         msg = conn.recv()
         if msg[0] == "init": state["projection"] = {"groups": 2}; state["cipher"] = msg[1]; conn.send(os.getpid())
@@ -56,10 +56,11 @@ def _workstore(conn):
             if state["key_mutant"]: conn.send((False, state["key_mutant"]))
             elif any("SYNTHETIC-A" in state[x] for x in ("cache", "log", "vector")): conn.send((False, "PLAINTEXT_CACHE_LOG_EMBEDDING"))
             elif state["shared"] and _open(state["shared"]["key"], "A", state["shared"]["blob"]) == "SYNTHETIC-A": conn.send((False, "SHARED_BLOB"))
+            elif state["old_handles"]: conn.send((False, "CACHE_FD_SESSION"))
             else: conn.send((True, None))
         elif msg[0] == "restore":
             snapshot, anchor = msg[1:]
-            conn.send((False, "RESTORE_WITHOUT_CURRENT_ANCHOR") if not anchor else (False, "STALE_SNAPSHOT") if snapshot["epoch"] < anchor["epoch"] else (True, None))
+            conn.send((False, "RESTORE_WITHOUT_CURRENT_ANCHOR") if not anchor or not anchor.get("reachable") or not anchor.get("authentic") else (False, "STALE_SNAPSHOT") if snapshot["epoch"] < anchor["epoch"] else (True, None))
         elif msg[0] == "serve": conn.send((False, "CACHE_FD_SESSION") if msg[1] != state["run"] else (True, None))
         elif msg[0] == "state": conn.send({k: v for k, v in state.items() if k not in {"cipher"}})
         elif msg[0] == "stop": conn.send(True); conn.close(); return
@@ -76,16 +77,20 @@ def _p2_gate(vault_path):
 
 
 def test_logical_two_store_ipc_oracles_and_same_uid_root(tmp_path):
-    ctx = mp.get_context("fork")
+    ctx = mp.get_context("spawn")
     kp_parent, kp_child = ctx.Pipe(); ws_parent, ws_child = ctx.Pipe(); vault = tmp_path / "synthetic-vault"
     kp = ctx.Process(target=_keyholder, args=(kp_child, str(vault))); ws = ctx.Process(target=_workstore, args=(ws_child,))
-    kp.start(); ws.start()
+    kp.start(); ws.start(); ws_child.close()
     try:
         public = _ask(kp_parent, "public"); ws_pid = _ask(ws_parent, ("init", public["a_blob"]))
         assert len({os.getpid(), public["pid"], ws_pid}) == 3
         assert set(_ask(ws_parent, ("state",))).isdisjoint({"a_key", "b_key", "dek"})
         assert _ask(kp_parent, "a") == "SYNTHETIC-A"; assert _ask(kp_parent, "b") == "SYNTHETIC-B"
-        _ask(kp_parent, "delete"); assert not vault.exists(); assert _ask(kp_parent, "a") is None; assert _ask(ws_parent, ("gate",)) == (True, None)
+        old_fd = os.open(vault, os.O_RDONLY)
+        _ask(kp_parent, "delete"); assert not vault.exists(); assert _ask(kp_parent, "a") is None and _ask(kp_parent, "b") == "SYNTHETIC-B"; assert _ask(ws_parent, ("gate",)) == (True, None)
+        assert os.read(old_fd, 32); os.close(old_fd)
+        _ask(ws_parent, ("inject", "old_handles", ["opaque-fd-1"])); assert _ask(ws_parent, ("gate",)) == (False, "CACHE_FD_SESSION")
+        _ask(ws_parent, ("inject", "old_handles", [])); assert _ask(ws_parent, ("gate",)) == (True, None)
         # New isolated runs make pre-delete mutation observable without preserving test state.
         for command, expected in [("copy", "KEY_COPY"), ("master", "DETERMINISTIC_MASTER_DERIVATION")]:
             _ask(kp_parent, "stop"); kp.join(2); kp = ctx.Process(target=_keyholder, args=(kp_child, str(vault))); kp.start()
@@ -97,17 +102,23 @@ def test_logical_two_store_ipc_oracles_and_same_uid_root(tmp_path):
             _ask(ws_parent, ("inject", surface, "")); assert _ask(ws_parent, ("gate",)) == (True, None)
             _ask(ws_parent, ("inject", surface, "SYNTHETIC-A")); assert _ask(ws_parent, ("gate",)) == (False, "PLAINTEXT_CACHE_LOG_EMBEDDING")
             _ask(ws_parent, ("inject", surface, ""))
-        assert _ask(ws_parent, ("restore", {"epoch": 1}, {"epoch": 2})) == (False, "STALE_SNAPSHOT")
+        assert _ask(ws_parent, ("restore", {"epoch": 1}, {"epoch": 2, "reachable": True, "authentic": True})) == (False, "STALE_SNAPSHOT")
         assert _ask(ws_parent, ("restore", {"epoch": 2}, None)) == (False, "RESTORE_WITHOUT_CURRENT_ANCHOR")
-        assert _ask(ws_parent, ("restore", {"epoch": 2}, {"epoch": 2})) == (True, None)
+        assert _ask(ws_parent, ("restore", {"epoch": 2}, {"epoch": 2, "reachable": False, "authentic": True})) == (False, "RESTORE_WITHOUT_CURRENT_ANCHOR")
+        assert _ask(ws_parent, ("restore", {"epoch": 2}, {"epoch": 2, "reachable": True, "authentic": True})) == (True, None)
         # A real mutation passes a retained A key/blob through the public test protocol.
         _ask(kp_parent, "stop"); kp.join(2); kp = ctx.Process(target=_keyholder, args=(kp_child, str(vault))); kp.start()
         _ask(ws_parent, ("shared", _ask(kp_parent, "shared"))); _ask(kp_parent, "delete")
         assert _ask(ws_parent, ("gate",)) == (False, "SHARED_BLOB")
         old_session = _ask(ws_parent, ("state",))["run"]
         assert _ask(ws_parent, ("serve", old_session)) == (True, None)
-        _ask(ws_parent, ("stop",)); ws.join(2); ws_parent.close()
-        ws_parent, ws_child = ctx.Pipe(); ws = ctx.Process(target=_workstore, args=(ws_child,)); ws.start()
+        _ask(ws_parent, ("stop",)); ws.join(2)
+        try:
+            ws_parent.send(("state",)); ws_parent.recv()
+            assert False, "old IPC unexpectedly served"
+        except (EOFError, BrokenPipeError, OSError): pass
+        ws_parent.close()
+        ws_parent, ws_child = ctx.Pipe(); ws = ctx.Process(target=_workstore, args=(ws_child,)); ws.start(); ws_child.close()
         _ask(ws_parent, ("init", b"ciphertext-only")); new_session = _ask(ws_parent, ("state",))["run"]
         assert new_session != old_session and _ask(ws_parent, ("serve", old_session)) == (False, "CACHE_FD_SESSION")
         assert _ask(ws_parent, ("serve", new_session)) == (True, None) and _ask(ws_parent, ("state",))["cache"] == ""
