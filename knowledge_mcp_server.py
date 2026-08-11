@@ -454,6 +454,11 @@ def _write_lock():
         os.close(fd)
 
 
+# Verbindungen, die waehrend EINES tools/call geoeffnet wurden. handle_request()
+# raeumt sie im finally weg -- siehe _offene_verbindungen_schliessen().
+_OFFENE_VERBINDUNGEN: list[sqlite3.Connection] = []
+
+
 def get_db() -> sqlite3.Connection:
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
@@ -461,7 +466,50 @@ def get_db() -> sqlite3.Connection:
     conn.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_MS}")
     conn.execute("PRAGMA foreign_keys=ON")
     ensure_schema(conn)
+    _OFFENE_VERBINDUNGEN.append(conn)
     return conn
+
+
+def _offene_verbindungen_schliessen() -> int:
+    """Jede in diesem Aufruf geoeffnete Verbindung zurueckrollen und schliessen.
+
+    ANLASS, gemessen am 2026-08-11: Ab 14:10 konnte KEINE Sitzung mehr in die
+    Wissensdatenbank schreiben -- lesson_record, knowledge_add und
+    freigabe_setzen liefen alle in 'database is locked'. Ursache war EINE
+    Verbindung: ein Serverprozess (PID 25897, fremde Sitzung) hielt eine
+    offene Schreibtransaktion und war dabei untaetig, 0,68 s Rechenzeit in
+    2:40 h. Nachgewiesen durch Ausschluss -- den eigenen Server beendet, die
+    Sperre blieb, der einzige verbliebene Halter war es.
+
+    Warum die vorhandene Dateisperre das nicht abfaengt: _write_lock() gibt im
+    finally die flock frei, die SQLite-Transaktion der geleakten Verbindung
+    aber nicht. Zwei Sperren, nur eine hatte ein finally. Der Docstring von
+    _write_lock beschreibt diese Fehlerform sogar -- fuer die flock geloest,
+    fuer die Verbindung offen geblieben.
+
+    Warum HIER und nicht an den ueber zwei Dutzend get_db()-Aufrufern:
+    dieselbe Begruendung wie bei _write_lock(). Ein finally je Aufrufstelle
+    ist nicht nachpruefbar; ein finally um den ganzen tools/call deckt jeden
+    Pfad ab, auch den, den niemand vorhergesehen hat.
+
+    rollback() vor close(): close() allein wuerde eine offene Transaktion
+    zwar aufloesen, aber der Rueckweg ist ausdruecklich -- ein halb
+    geschriebener Vorgang wird verworfen, nicht dem Zufall der Aufraeumreihen-
+    folge ueberlassen.
+    """
+    geschlossen = 0
+    while _OFFENE_VERBINDUNGEN:
+        conn = _OFFENE_VERBINDUNGEN.pop()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        try:
+            conn.close()
+            geschlossen += 1
+        except Exception:
+            pass
+    return geschlossen
 
 
 def _ensure_anlass_columns(conn: sqlite3.Connection) -> None:
@@ -5045,7 +5093,14 @@ def handle_request(req: dict) -> dict:
 
         try:
             with _write_lock():
-                result = TOOLS[tool_name]["handler"](arguments)
+                try:
+                    result = TOOLS[tool_name]["handler"](arguments)
+                finally:
+                    # Muss INNERHALB der Dateisperre stehen: sonst gibt der
+                    # Prozess die flock frei, waehrend seine SQLite-Transaktion
+                    # noch offen ist -- der naechste Wartende bekaeme die
+                    # Dateisperre und liefe trotzdem in 'database is locked'.
+                    _offene_verbindungen_schliessen()
             return {
                 "jsonrpc": "2.0", "id": req_id,
                 "result": {"content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]}
