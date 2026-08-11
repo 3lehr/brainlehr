@@ -1,0 +1,38 @@
+{
+  "model": "claude-haiku-4-5",
+  "erzeugt_am": "2026-08-11",
+  "laeufe": 3,
+  "hinweis": "drei unabhaengige Subagenten, je ein Lauf pro Zelle -- Streuung nicht aus einem Fenster",
+  "antworten": {
+    "A|OHNE": [
+      "showDialog(\n  context: context,\n  builder: (BuildContext context) {\n    return AlertDialog(\n      title: Text('Fahrt beenden?'),\n      actions: [\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(false),\n          child: Text('Nein'),\n        ),\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(true),\n          child: Text('Ja'),\n        ),\n      ],\n    );\n  },\n).then((result) {\n  if (result == true) {\n    // Fahrt beenden\n  }\n});",
+      "import 'package:flutter/material.dart';\n\nFuture<void> showEndTripDialog(BuildContext context) async {\n  showDialog(\n    context: context,\n    builder: (BuildContext context) => AlertDialog(\n      title: const Text('Fahrt beenden?'),\n      actions: [\n        TextButton(\n          onPressed: () => Navigator.of(context).pop(),\n          child: const Text('Nein'),\n        ),\n        TextButton(\n          onPressed: () {\n            Navigator.of(context).pop();\n            _handleEndTrip();\n          },\n          child: const Text('Ja'),\n        ),\n      ],\n    ),\n  );\n}\n\nvoid _handleEndTrip() {\n  // Handler implementation\n}",
+      "showDialog(\n  context: context,\n  builder: (BuildContext context) => AlertDialog(\n    title: Text('Fahrt beenden?'),\n    actions: [\n      TextButton(\n        onPressed: () => Navigator.of(context).pop(),\n        child: Text('Nein'),\n      ),\n      TextButton(\n        onPressed: () {\n          Navigator.of(context).pop();\n          _onRideEndConfirmed();\n        },\n        child: Text('Ja'),\n      ),\n    ],\n  ),\n);"
+    ],
+    "A|MIT": [
+      "showDialog(\n  context: context,\n  builder: (BuildContext context) => ActionScreen(\n    title: 'Fahrt beenden?',\n    expandPrimaryAction: true,\n    actions: [\n      ActionButton(\n        label: 'Nein',\n        onPressed: () => Navigator.of(context).pop(false),\n      ),\n      ActionButton(\n        label: 'Ja',\n        onPressed: () => Navigator.of(context).pop(true),\n        isPrimary: true,\n      ),\n    ],\n  ),\n).then((result) {\n  if (result == true) {\n    // Fahrt beenden\n  }\n});",
+      "import 'package:flutter/material.dart';\n\nFuture<void> showEndTripDialog(BuildContext context) async {\n  Navigator.of(context).push(\n    PageRoute(\n      fullscreenDialog: true,\n      builder: (BuildContext context) => ActionScreen(\n        title: 'Fahrt beenden?',\n        expandPrimaryAction: true,\n        primaryAction: ActionItem(\n          label: 'Ja',\n          onPressed: () {\n            Navigator.of(context).pop();\n            _handleEndTrip();\n          },\n        ),\n        secondaryAction: ActionItem(\n          label: 'Nein',\n          onPressed: () => Navigator.of(context).pop(),\n        ),\n      ),\n    ),\n  );\n}\n\nvoid _handleEndTrip() {\n  // Handler implementation\n}",
+      "Navigator.push(\n  context,\n  MaterialPageRoute(\n    fullscreenDialog: true,\n    builder: (context) => ActionScreen(\n      title: Text('Fahrt beenden?'),\n      expandPrimaryAction: true,\n      actions: [\n        ActionItem(label: 'Nein', onTap: () => Navigator.pop(context)),\n        ActionItem(label: 'Ja', onTap: () {\n          Navigator.pop(context);\n          _onRideEndConfirmed();\n        }),\n      ],\n    ),\n  ),\n);"
+    ],
+    "B|OHNE": [
+      "flutter test",
+      "flutter test",
+      "flutter test"
+    ],
+    "B|MIT": [
+      "flutter test --dart-define=DEBUG_STATE_API=true",
+      "flutter test --dart-define=DEBUG_STATE_API=true",
+      "flutter test --dart-define=DEBUG_STATE_API=true"
+    ],
+    "C|OHNE": [
+      "kubectl get pods -n default",
+      "kubectl get pods --namespace default",
+      "kubectl get pods -n default"
+    ],
+    "C|MIT": [
+      "kubectl get pods -n default",
+      "kubectl get pods --namespace default",
+      "kubectl get pods -n default"
+    ]
+  }
+}
