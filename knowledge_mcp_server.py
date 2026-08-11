@@ -119,6 +119,7 @@ import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
 import normrang  # ADR-034: norm_rang faellt bei knowledge_add() deterministisch aus
                  # source, wenn der Aufrufer keinen eigenen mitgibt. Kein Zirkel.
+import geltungsbereich  # exakter Projektfilter fuer Lehren (sql_projects_exact), statt LIKE
 import schema_nachzug  # 2026-08-10: fehlende Spalten generisch aus schema.sql
 import herkunft_normentscheider  # Auftrag 2026-08-09: norm_entschieden_von traegt
                                   # 'betreiber' statt actor, wenn source einen belegten
@@ -1936,20 +1937,20 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         allowed_node_ids = {r["id"] for r in conn.execute(
             "SELECT id FROM knowledge_nodes WHERE project_id IN ('shared', ?)", (scope,)
         )}
+        _proj_clause = geltungsbereich.sql_projects_exact("l.projects")
         fts_lesson_rows = conn.execute(
-            """SELECT l.id, l.description, l.type, l.severity, l.projects
+            f"""SELECT l.id, l.description, l.type, l.severity, l.projects
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
                WHERE lessons_fts MATCH ? AND l.status = 'active'
-                 AND (l.projects LIKE '%"shared"%'
-                      OR l.projects LIKE '%"systemweit"%'
-                      OR l.projects LIKE ?)
+                 AND ({_proj_clause} OR {_proj_clause} OR {_proj_clause})
                ORDER BY rank""",
-            (fts_query, f'%"{scope}"%')
+            (fts_query, "shared", "systemweit", scope)
         ).fetchall()
+        _proj_clause2 = geltungsbereich.sql_projects_exact("projects")
         allowed_lesson_ids = {r["id"] for r in conn.execute(
-            "SELECT id FROM lessons_learned WHERE status = 'active' "
-            "AND (projects LIKE '%\"shared\"%' OR projects LIKE ?)", (f'%"{scope}"%',)
+            f"SELECT id FROM lessons_learned WHERE status = 'active' "
+            f"AND ({_proj_clause2} OR {_proj_clause2})", ("shared", scope)
         )}
 
     by_id = {r["id"]: r for r in fts_rows}
@@ -3959,8 +3960,8 @@ def lesson_query(type_: str | None = None, project: str | None = None,
         conditions.append("status = ?")
         params.append(status)
     if project:
-        conditions.append("projects LIKE ?")
-        params.append(f'%"{project}"%')
+        conditions.append(geltungsbereich.sql_projects_exact())
+        params.append(project)
 
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
 

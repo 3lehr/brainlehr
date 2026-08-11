@@ -38,6 +38,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(_w))
 import knowledge_mcp_server as kms  # noqa: E402  -- liefert kalibrierte Aehnlichkeitserkennung
+import geltungsbereich  # noqa: E402  -- exakter Projektfilter (sql_projects_exact), statt LIKE
 
 DB_PATH = _w / "knowledge.db"
 BERLIN = ZoneInfo("Europe/Berlin")
@@ -158,8 +159,8 @@ def cmd_query(args):
         conditions.append("type = ?")
         params.append(args.type)
     if args.project:
-        conditions.append("projects LIKE ?")
-        params.append(f'%"{args.project}"%')
+        conditions.append(geltungsbereich.sql_projects_exact())
+        params.append(args.project)
     if args.status:
         conditions.append("status = ?")
         params.append(args.status)
