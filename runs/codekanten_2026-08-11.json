@@ -1,0 +1,1178 @@
+{
+  "kanten": 1716,
+  "quellen": 647,
+  "mehrdeutig": 471,
+  "nicht_aufgeloest": {
+    "oem_odometer_probe_screen.dart": [
+      "lehre:L-4ab9b0",
+      "lehre:L-c4ae33"
+    ],
+    "dongle_vin_assignment_screen.dart": [
+      "lehre:L-4ab9b0"
+    ],
+    "chronist.py": [
+      "lehre:L-8054ae"
+    ],
+    "router.py": [
+      "lehre:L-1b46fe",
+      "lehre:L-a50ceb",
+      "lehre:L-7985e4",
+      "lehre:L-747223",
+      "lehre:L-f4c75d",
+      "lehre:L-19eb20",
+      "lehre:L-6af693",
+      "lehre:L-fa4371",
+      "lehre:L-9e1d80",
+      "lehre:L-732ca5",
+      "lehre:L-ff87c0",
+      "lehre:L-e78cb4",
+      "lehre:L-29eaee",
+      "lehre:L-f4aa97",
+      "lehre:L-686fcf",
+      "lehre:L-9dda2e",
+      "lehre:L-453f78",
+      "knoten:/ops/openlehr/kontakt-vorschlag-anlage-durch-ki",
+      "knoten:/ops/openlehr/openlehr-steuer-marktreife",
+      "knoten:/openlehr/steuer/cafe-international-abschlusskonsil",
+      "knoten:/openlehr/steuer/konsil-beschluss-aenderungsprotokoll"
+    ],
+    "Package.swift": [
+      "lehre:L-ff4a53",
+      "knoten:/ops/openlehr/openlehr-macos-ist-totes-skeleton"
+    ],
+    "_begod_preprompt_rollout_openlehr_wenn_logik.json": [
+      "lehre:L-cebc03"
+    ],
+    "api.py": [
+      "lehre:L-69217d",
+      "lehre:L-ccc3ee",
+      "lehre:L-bb2376",
+      "lehre:L-6af693",
+      "lehre:L-9e1d80",
+      "lehre:L-b38d85",
+      "lehre:L-732ca5",
+      "lehre:L-709f07",
+      "lehre:L-ff87c0",
+      "lehre:L-5a6397",
+      "knoten:/shared/arch/offen-fuer-weitere-geraete-eine-tuer",
+      "knoten:/openlehr/volltextindex-wird-beim-einlesen",
+      "knoten:/openlehr/imap-zugangsdaten-konten-in-der-db"
+    ],
+    "main.dart": [
+      "lehre:L-78dee4",
+      "lehre:L-319e01",
+      "lehre:L-97d0f3",
+      "lehre:L-008f22",
+      "lehre:L-aacc29",
+      "lehre:L-8e768f",
+      "lehre:L-e242aa",
+      "lehre:L-a08f87",
+      "lehre:L-9adcf9",
+      "lehre:L-5d817f",
+      "lehre:L-8bfd66",
+      "knoten:/tools/stiftshütte-(begodapp-desktop):-audit-20",
+      "knoten:/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht",
+      "knoten:/apps/fahrtenbuch/adr-joker-trip-nicht-loeschen-sondern",
+      "knoten:/apps/fahrtenbuch/autonome-fahrtaufzeichnung:-verlorenes-c",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "server.py": [
+      "lehre:L-165986"
+    ],
+    "hub/.claude/settings.json": [
+      "lehre:L-c41320",
+      "knoten:/arch/knowledge-mgmt/auto-capture-recall-wissenssystem"
+    ],
+    "android/app/src/main/kotlin/de/dreilehr/wohlairr/MainActivity.kt": [
+      "lehre:L-b584e1"
+    ],
+    "MainActivity.kt": [
+      "lehre:L-b584e1",
+      "lehre:L-f54650",
+      "knoten:/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit"
+    ],
+    "string_inventory.js": [
+      "lehre:L-121497"
+    ],
+    "wt_wording_check.js": [
+      "lehre:L-121497"
+    ],
+    "jsdom/wt_wording_check.js": [
+      "lehre:L-121497"
+    ],
+    "list_tile.dart": [
+      "lehre:L-f019e7"
+    ],
+    "wiring_contract.json": [
+      "lehre:L-4ad804",
+      "knoten:/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit"
+    ],
+    "pfad/zur/datei.dart": [
+      "lehre:L-c4ae33"
+    ],
+    "assets/fleet/fleet_demo_data.json": [
+      "lehre:L-a82bc8"
+    ],
+    "pubspec.yaml": [
+      "lehre:L-f141cb",
+      "lehre:L-a922eb",
+      "lehre:L-afa2f8",
+      "lehre:L-692936",
+      "lehre:L-26308d",
+      "lehre:L-3079a1",
+      "lehre:L-81402f",
+      "knoten:/apps/wohlairr/wohlair-android-play-console-stand-2026",
+      "knoten:/shared/arch/begod-fleet/cross-app-integration-begod-vertagt-bis-",
+      "knoten:/apps/fahrtenbuch/geraete-teststrategie-debug-variante",
+      "knoten:/methodik/direktiven/nachsehen-bevor-gefragt-oder-delegiert-wird-systemweit",
+      "knoten:/apps/fahrtenbuch/apps-fahrtenbuch-legacy-bleibt-so",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "lib/main.dart": [
+      "lehre:L-05e18b",
+      "lehre:L-940f41",
+      "lehre:L-a08f87"
+    ],
+    "SafePluginRegistrant.swift": [
+      "lehre:L-5431a3"
+    ],
+    "ios/Runner/AppDelegate.swift": [
+      "lehre:L-5431a3"
+    ],
+    "AppDelegate.swift": [
+      "lehre:L-5431a3",
+      "lehre:L-a08f87",
+      "knoten:/apps/fahrtenbuch/geraete-teststrategie-debug-variante"
+    ],
+    "_impl.dart": [
+      "lehre:L-f9eef6"
+    ],
+    "camera_fit.dart": [
+      "lehre:L-cf6e46"
+    ],
+    "flutter_tools/lib/src/flutter_plugins.dart": [
+      "lehre:L-afa2f8"
+    ],
+    "native_plugin_loader/PluginHandler.kt": [
+      "lehre:L-afa2f8"
+    ],
+    "PluginHandler.kt": [
+      "lehre:L-afa2f8"
+    ],
+    "comparison_result.dart": [
+      "lehre:L-720a22"
+    ],
+    "_test.dart": [
+      "lehre:L-7af2f3"
+    ],
+    "SwiftFlutterCarplayPlugin.swift": [
+      "lehre:L-b46779"
+    ],
+    "status/ereignisse.json": [
+      "lehre:L-163051"
+    ],
+    "status/fortschritt-live.json": [
+      "lehre:L-163051"
+    ],
+    "harness.js": [
+      "lehre:L-6edb15",
+      "lehre:L-9f5e60",
+      "lehre:L-7fc31c",
+      "lehre:L-b0063a",
+      "lehre:L-3ec6d0",
+      "knoten:/methodik/fertigkeiten/ux-walkthrough",
+      "knoten:/openlehr/openlehr-steuer-fallen-beim-testen-und"
+    ],
+    "settings.json": [
+      "lehre:L-d07097",
+      "lehre:L-fe6675",
+      "lehre:L-09a75d",
+      "lehre:L-5af2e2",
+      "lehre:L-6b0bf6",
+      "lehre:L-cd95a1",
+      "lehre:L-07d9ac",
+      "knoten:/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-",
+      "knoten:/shared/claude-code-integration/aufwand-effort-in-claude-code",
+      "knoten:/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-023-modell-kaskade-v3-opus-5-als",
+      "knoten:/brainlehr/brainlehr-braucht-ein-eigenes",
+      "knoten:/brainlehr/zu-tun-bereichsauslieferung-gehoert-in"
+    ],
+    "STAND.md": [
+      "lehre:L-d07097",
+      "lehre:L-c64f3b",
+      "lehre:L-220f20",
+      "knoten:/shared/arch/monorepo-arbeitsbaeume-dieselbe-app",
+      "knoten:/methodik/direktiven/abwesenheitsmodus-ist-die-voreinstellung-systemweit",
+      "knoten:/methodik/fertigkeiten/abwesend",
+      "knoten:/methodik/fertigkeiten/pause",
+      "knoten:/methodik/direktiven-hub-claude-md/stand-md-uebergabe-zettel-je-app"
+    ],
+    ".claude/skills/design-waechter/ui_guard.py": [
+      "lehre:L-2837f3",
+      "knoten:/testing/virtueller-bildschirmabzug-personas-auf",
+      "knoten:/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "knoten:/methodik/fertigkeiten/design-waechter"
+    ],
+    "FastAPI-app.py": [
+      "lehre:L-8c3b8c"
+    ],
+    "router.py/api.py": [
+      "lehre:L-9e1d80",
+      "lehre:L-b38d85",
+      "lehre:L-789e5e",
+      "knoten:/ops/openlehr/openlehr-steuer-marktreife"
+    ],
+    "wt_403_zeigt_anmeldelink.js": [
+      "lehre:L-7fc31c"
+    ],
+    "ui_guard.py": [
+      "lehre:L-67a59f",
+      "knoten:/methodik/fertigkeiten/design-waechter"
+    ],
+    "./skript.sh": [
+      "lehre:L-f8926c"
+    ],
+    "wt_fertige_rechnung_beschriftet.js": [
+      "lehre:L-697efb"
+    ],
+    "wt_unbekannte_art_neutral.js": [
+      "lehre:L-697efb"
+    ],
+    "freezed.dart": [
+      "lehre:L-a24b96",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "klassifizierer.py": [
+      "lehre:L-bf4d39"
+    ],
+    "assets/obd/oem_pid_registry.json": [
+      "lehre:L-05314f"
+    ],
+    "wt_neue_klaerungsarten_zeigen_beleg.js": [
+      "lehre:L-d2e32a",
+      "lehre:L-14a825"
+    ],
+    "api.py/router.py": [
+      "lehre:L-732ca5",
+      "lehre:L-ff87c0"
+    ],
+    "analysis_options.yaml": [
+      "lehre:L-c903c3",
+      "lehre:L-a439b9",
+      "knoten:/shared/arch/bsi-katalog-deckt-prueftiefe-nicht-ab"
+    ],
+    "Root-analysis_options.yaml": [
+      "lehre:L-c903c3"
+    ],
+    "app_router.dart": [
+      "lehre:L-503687",
+      "lehre:L-874260",
+      "lehre:L-6a7883",
+      "lehre:L-50ebe3",
+      "lehre:L-53ad03",
+      "lehre:L-fb8c94",
+      "knoten:/fahrtenbuch/konsil-beschluss-keine-dritte"
+    ],
+    "PrintJob.swift": [
+      "lehre:L-09fbcd"
+    ],
+    "ble_obd2_service.dart": [
+      "lehre:L-c214a0",
+      "knoten:/apps/fahrtenbuch/adr-f-026-kein-autoconnect-der-ble"
+    ],
+    "flutter/material.dart": [
+      "lehre:L-874260"
+    ],
+    "apps/openlehr/tests/jsdom/anzahlungen/run_anzahlungen.js": [
+      "lehre:L-76eca2"
+    ],
+    "_source_match.py": [
+      "lehre:L-76eca2"
+    ],
+    "_profile.py": [
+      "lehre:L-ff87c0"
+    ],
+    "apps/wohlairr/.../MainActivity.kt": [
+      "lehre:L-a54e84"
+    ],
+    "Drehbuch.json": [
+      "lehre:L-29eaee"
+    ],
+    "obd_auto_reconnect_service.dart/universal_dongle_manager.dart/openhood_obd_core/ble_obd2_service.dart": [
+      "lehre:L-e336ce"
+    ],
+    "knowledge_mcp_server.py": [
+      "lehre:L-3aeb09",
+      "lehre:L-cb619e",
+      "lehre:L-a846ba",
+      "lehre:L-198241",
+      "lehre:L-69a7ad",
+      "lehre:L-7e0823",
+      "lehre:L-f7912d",
+      "lehre:L-fa9a82",
+      "lehre:L-3cb7c3",
+      "lehre:L-48c31a",
+      "lehre:L-881592",
+      "lehre:L-cfda57",
+      "lehre:L-2f87d4",
+      "knoten:/brainlehr/zwei-sitzungen-arbeiten-parallel-an",
+      "knoten:/brainlehr/es-gibt-keine-live-instanz-30",
+      "knoten:/brainlehr/freigabe-kollision-lesepfad-dicht"
+    ],
+    "lesson_recorder.py": [
+      "lehre:L-3aeb09"
+    ],
+    "scheduler/binding.dart": [
+      "lehre:L-5aca72"
+    ],
+    "src/widgets/binding.dart": [
+      "lehre:L-5aca72"
+    ],
+    "hub/postausgang/worktree_markusx25.md": [
+      "lehre:L-53af22"
+    ],
+    "knowledge_index.py": [
+      "lehre:L-3d03bd",
+      "knoten:/ops/openlehr/openlehr-profil-tags-fragebaum-wissens"
+    ],
+    "invoice_draft.py/invoice_export.py/router.py": [
+      "lehre:L-f4aa97"
+    ],
+    "flutter_test/src/finders.dart": [
+      "lehre:L-a3b39e"
+    ],
+    "button_style_button.dart": [
+      "lehre:L-f93d8c"
+    ],
+    "input_decorator.dart": [
+      "lehre:L-a88e34"
+    ],
+    ".claude/settings.json": [
+      "lehre:L-09a75d",
+      "lehre:L-94a315",
+      "lehre:L-86e92d",
+      "lehre:L-6b0bf6",
+      "lehre:L-cd95a1",
+      "knoten:/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-",
+      "knoten:/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit",
+      "knoten:/shared/claude-code-integration/aufwand-effort-in-claude-code",
+      "knoten:/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-023-modell-kaskade-v3-opus-5-als",
+      "knoten:/brainlehr/zu-tun-bereichsauslieferung-gehoert-in"
+    ],
+    "apps/openlehr/tests/jsdom/gemeinsam/wt_navigation_mehr_verhalten.js": [
+      "lehre:L-d09d25"
+    ],
+    "wt_einzeln_vorschau_link.js": [
+      "lehre:L-14a825"
+    ],
+    "settings_screen.dart": [
+      "lehre:L-fb8c94"
+    ],
+    "test.js": [
+      "lehre:L-a39fe4",
+      "lehre:L-9dda2e",
+      "lehre:L-3ec6d0",
+      "knoten:/openlehr/openlehr-steuer-fallen-beim-testen-und",
+      "knoten:/openlehr/steuer/envelope-beschluss-formular-file-und"
+    ],
+    "datei.dart": [
+      "lehre:L-e5f5c1"
+    ],
+    "binding.dart": [
+      "lehre:L-f180fb"
+    ],
+    "pubspec/package.json": [
+      "lehre:L-df5c13",
+      "knoten:/shared/arch/repo-aufteilung-2026-08-11-19-app-repos"
+    ],
+    "flutter_map/src/map/camera/camera.dart": [
+      "lehre:L-845c74"
+    ],
+    "schema.sql": [
+      "lehre:L-636a44",
+      "lehre:L-7e0823",
+      "lehre:L-f0c4ba",
+      "lehre:L-6a1f70",
+      "lehre:L-cde4e9",
+      "lehre:L-3cb7c3",
+      "lehre:L-48c31a",
+      "lehre:L-fd1221",
+      "lehre:L-e107ee",
+      "lehre:L-136f2b",
+      "lehre:L-ecf08c",
+      "knoten:/brainlehr"
+    ],
+    "file.dart": [
+      "lehre:L-601c5c"
+    ],
+    "shared-knowledge/schema.sql": [
+      "lehre:L-73dc51"
+    ],
+    "hub/shared-knowledge/knowledge_mcp_server.py": [
+      "lehre:L-ae9cba",
+      "lehre:L-efa7d4",
+      "lehre:L-cde4e9"
+    ],
+    "belege_2024/golden_manifest.json": [
+      "lehre:L-d3e729"
+    ],
+    "private/tmp/.../9f1cc49a-.../skills_klassifikation.json": [
+      "lehre:L-a3cc7a"
+    ],
+    "instructions.md": [
+      "lehre:L-74ff04",
+      "lehre:L-86e92d",
+      "knoten:/agents/instructions",
+      "knoten:/arch/token-economy/lazy-loading",
+      "knoten:/lessons/reflexion-pattern",
+      "knoten:/brainlehr/zu-tun-bereichsauslieferung-gehoert-in"
+    ],
+    "conftest.py": [
+      "lehre:L-74ff04",
+      "knoten:/testing/pytest/monorepo-setup"
+    ],
+    "_prompt_listener.dart": [
+      "lehre:L-54b414"
+    ],
+    "tmp/optc_targets_nachzug.json": [
+      "lehre:L-dc5c49"
+    ],
+    "pipeline.py": [
+      "lehre:L-fa8d76"
+    ],
+    "App-STAND.md": [
+      "lehre:L-02fb6a"
+    ],
+    "tests/test_modellsperre.py": [
+      "lehre:L-358e31"
+    ],
+    "claude.json": [
+      "lehre:L-6b0bf6",
+      "knoten:/brainlehr/brainlehr-braucht-ein-eigenes",
+      "knoten:/brainlehr/lage-brainlehr-2026-08-09-abrufbefund",
+      "knoten:/brainlehr/die-einbuergerungsschranke-hat-ihre"
+    ],
+    "AGENTS.md": [
+      "lehre:L-54b09d",
+      "knoten:/methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "knoten:/brainlehr/szenario-bausteine-akademie-abteilungen"
+    ],
+    "agent.md": [
+      "lehre:L-54b09d",
+      "knoten:/testing/pytest/monorepo-setup",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi"
+    ],
+    ".codex/AGENTS.md": [
+      "lehre:L-cd95a1",
+      "knoten:/methodik/direktiven/testumgebung-selbstaendig-handeln-bis"
+    ],
+    "vertrauen.json": [
+      "lehre:L-39574b"
+    ],
+    "kontamination.py": [
+      "lehre:L-aa6087"
+    ],
+    "prompt.md": [
+      "knoten:/agents/prompt-templates"
+    ],
+    "copilot-instructions.md": [
+      "knoten:/arch/token-economy/lazy-loading",
+      "knoten:/lessons/reflexion-pattern",
+      "knoten:/begod/neuen-app-worktree-bootstrappen",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge"
+    ],
+    ".vscode/mcp.json": [
+      "knoten:/arch/mcp/server-design"
+    ],
+    "shared-knowledge/knowledge_mcp_server.py": [
+      "knoten:/shared/claude-code-integration",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-024-wissensschichten-und-portabler"
+    ],
+    "CLAUDE.md": [
+      "knoten:/shared/claude-code-integration",
+      "knoten:/begod/neuen-app-worktree-bootstrappen",
+      "knoten:/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-",
+      "knoten:/methodik/direktiven/wissen-festhalten-abrufen-systemweit-automatisch",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-024-wissensschichten-und-portabler",
+      "knoten:/brainlehr/richtig-in-brainlehr-ablegen-regeln",
+      "knoten:/methodik/das-agentenregister-liegt-in-hub",
+      "knoten:/methodik/direktiven/kurze-zustimmung-ist-eine-entscheidung"
+    ],
+    "mcp.json": [
+      "knoten:/shared/claude-code-integration",
+      "knoten:/brainlehr/brainlehr-braucht-ein-eigenes",
+      "knoten:/brainlehr/rot-vor-gruen-probe-traegt-actor-nach",
+      "knoten:/brainlehr/lage-brainlehr-2026-08-09-abrufbefund"
+    ],
+    ".claude/CLAUDE.md": [
+      "knoten:/shared/compliance/bsi-stand-der-technik",
+      "knoten:/arch/knowledge-mgmt/auto-capture-recall-wissenssystem",
+      "knoten:/shared/arch/bsi-katalog-deckt-prueftiefe-nicht-ab",
+      "knoten:/methodik/fertigkeiten/design-waechter",
+      "knoten:/frontend/accessibility/barrierefreiheit-ist-voreinstellung",
+      "knoten:/methodik/direktiven-hub-claude-md/hard-stops-immer-gueltig",
+      "knoten:/methodik/direktiven-hub-claude-md/modellverhalten-opus-5-sonnet-5-seit",
+      "knoten:/methodik/das-agentenregister-liegt-in-hub",
+      "knoten:/methodik/direktiven/kurze-zustimmung-ist-eine-entscheidung",
+      "knoten:/methodik/direktiven/testumgebung-selbstaendig-handeln-bis"
+    ],
+    "hub/shared-knowledge/bsi-dev-profile.json": [
+      "knoten:/shared/compliance/bsi-stand-der-technik",
+      "knoten:/shared/arch/bsi-katalog-deckt-prueftiefe-nicht-ab",
+      "knoten:/methodik/direktiven/bsi-compliance-systemweit-lazy-nur-trigger-kein-katalog-im-kontext"
+    ],
+    "integration_test/walkthrough_test.dart": [
+      "knoten:/testing/walkthrough-methode-(e2e-journey-als-tes"
+    ],
+    "hub/.claude/commands/learn.md": [
+      "knoten:/arch/knowledge-mgmt/auto-capture-recall-wissenssystem"
+    ],
+    "knowledge_scout.py": [
+      "knoten:/arch/knowledge-mgmt/auto-capture-recall-wissenssystem"
+    ],
+    "dashboard_screen.dart": [
+      "knoten:/apps/schwarmwacht-voll-audit-verifikation"
+    ],
+    "models.json": [
+      "knoten:/ops/openlehr/openlehr-mandantenmodell-nutzer"
+    ],
+    "SYSTEM_PROTOCOLS.md": [
+      "knoten:/begod/neuen-app-worktree-bootstrappen",
+      "knoten:/methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi"
+    ],
+    "deep_research.py": [
+      "knoten:/begod/neuen-app-worktree-bootstrappen"
+    ],
+    "VERFASSUNG.md": [
+      "knoten:/begod/neuen-app-worktree-bootstrappen",
+      "knoten:/methodik/direktiven-hub-claude-md/hard-stops-immer-gueltig",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-021-akapp-drei-schichten"
+    ],
+    "local.md": [
+      "knoten:/begod/neuen-app-worktree-bootstrappen"
+    ],
+    "init_worktree.py": [
+      "knoten:/begod/neuen-app-worktree-bootstrappen"
+    ],
+    "Volumes/daten/Begod2026/hub/CLAUDE.md": [
+      "knoten:/begod/neuen-app-worktree-bootstrappen"
+    ],
+    "UMGEZOGEN.md": [
+      "knoten:/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-"
+    ],
+    "doc_qa.py": [
+      "knoten:/ops/buckeberg-weg-verwaltungswechsel:-archit"
+    ],
+    "flows.json": [
+      "knoten:/tools/metroviz-umbau:-code-fluss-analysetool-(",
+      "knoten:/methodik/direktiven-hub-claude-md/fluss-karten-metroviz-trigger"
+    ],
+    "vdoninja-sdk.js": [
+      "knoten:/apps/setfunk-research-digest-v2-2026-07"
+    ],
+    "whip-client.js": [
+      "knoten:/apps/setfunk-research-digest-v2-2026-07"
+    ],
+    "whep-client.js": [
+      "knoten:/apps/setfunk-research-digest-v2-2026-07"
+    ],
+    "citation-network.json": [
+      "knoten:/apps/setfunk-papernetz-angelegt-citation",
+      "knoten:/apps/openhood-beschlossener-ampel-scoring",
+      "knoten:/apps/openhood-hu-au-rechtsquellen-papernetz",
+      "knoten:/tools/repos-ausserhalb-begod2026-sind-fuer-die",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network",
+      "knoten:/brainlehr/brainlehr-papernetz-angelegt-citation"
+    ],
+    "report_text_generator.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "tuv_check_provider.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "traffic_light_ui.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "fleet_shell.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "fleet_group_screen.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "fleet_overview_screen.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "fleet_repository.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "combined_check_provider.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "pdf_report_service.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "used_car_check_provider.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "test/core/tuv_check_provider_test.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "test/core/providers/combined_check_provider_test.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "used_car_result_screen.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "lib/core/providers/used_car_check_provider.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "lib/core/extensions/traffic_light_ui.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "lib/core/providers/tuv_check_provider.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "lib/core/models/comparison_result.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "vehicle_group.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "test/core/combined_check_provider_test.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "prose_report_card.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "lib/ui/screens/used_car_check/used_car_result_screen.dart": [
+      "knoten:/apps/openhood-beschlossener-ampel-scoring"
+    ],
+    "assistant_suggestions.py": [
+      "knoten:/ops/openlehr/kontakt-vorschlag-anlage-durch-ki"
+    ],
+    "apps/openlehr/docs/papers/citation-network.json": [
+      "knoten:/apps/openlehr-steuer-papernetz-fotograf"
+    ],
+    "docs/openlehr/tax_research/knowledge_tags.json": [
+      "knoten:/ops/openlehr/openlehr-profil-tags-fragebaum-wissens"
+    ],
+    "daemon/steuer/profil_tags.py": [
+      "knoten:/ops/openlehr/openlehr-profil-tags-fragebaum-wissens"
+    ],
+    "architekt.md": [
+      "knoten:/shared/arch/model-cascade/fable-retired-opus-5-authoritative-for",
+      "knoten:/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden"
+    ],
+    "flowmap.md": [
+      "knoten:/shared/arch/model-cascade/fable-retired-opus-5-authoritative-for"
+    ],
+    "coverage_gap.py": [
+      "knoten:/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit"
+    ],
+    "safety_audit.sh": [
+      "knoten:/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit"
+    ],
+    "models.py": [
+      "knoten:/openlehr/steuer/cafe-international-abschlusskonsil"
+    ],
+    "0200_steuer-cafe-international-abschluss.md": [
+      "knoten:/openlehr/steuer/session-pause-2026-07-25-cafe"
+    ],
+    "edges.json": [
+      "knoten:/apps/wohlairr/schimmel-raumluft-belegstand-und",
+      "knoten:/apps/wohlair-papernetz-runde-3-erste",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-013-knowledge-graph-als"
+    ],
+    "lib/features/auto_drive/domain/carplay_audio_route_observer.dart": [
+      "knoten:/apps/fahrtenbuch/vorschlag-offen-carplay-audio-route"
+    ],
+    "carplay_audio_route_observer.dart": [
+      "knoten:/apps/fahrtenbuch/vorschlag-offen-carplay-audio-route"
+    ],
+    "pdf_to_knowledge.py": [
+      "knoten:/ops/buckeberg-dokument-pipeline-2026-07-28"
+    ],
+    "schnaeppvalid_PLAN.md": [
+      "knoten:/apps/schnaeppvalid-konzeption-2026-07-28"
+    ],
+    "bsi-sync-state.json": [
+      "knoten:/shared/arch/bsi-katalog-deckt-prueftiefe-nicht-ab"
+    ],
+    "lib/core/router/app_router.dart": [
+      "knoten:/fahrtenbuch/konsil-beschluss-keine-dritte"
+    ],
+    "apps/openhood/pubspec.yaml": [
+      "knoten:/apps/fahrtenbuch/adr-f-026-kein-autoconnect-der-ble",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "Content/Python/avatar_profiles.json": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "studio/projects/metahuman-podcast/scripts/run_episode.sh": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "studio/projects/metahuman-podcast/AI_HANDOFF.md": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "manifest.json": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-012-akzeptiertes-risiko"
+    ],
+    "job.json": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "Content/Python/render_rigged_mrq.py": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "docs/AI_DECISIONS.md": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline",
+      "knoten:/brainlehr/zwei-sitzungen-arbeiten-parallel-an"
+    ],
+    "studio/outputs/metahuman/episodes/pilot-bodyonly-20260731/manifest.json": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "QA_automatic.md": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "scripts/run_episode.sh": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "package.json": [
+      "knoten:/methodik/direktiven/nachsehen-bevor-gefragt-oder-delegiert-wird-systemweit",
+      "knoten:/methodik/fertigkeiten/ux-walkthrough"
+    ],
+    "app.js": [
+      "knoten:/methodik/fertigkeiten/ux-walkthrough"
+    ],
+    "hub/.claude/agents/architekt.md": [
+      "knoten:/shared/claude-code-integration/aufwand-effort-in-claude-code"
+    ],
+    "whatsapp-web.js": [
+      "knoten:/openlehr/remote-channels-telegram-whatsapp"
+    ],
+    "hub-CLAUDE.md": [
+      "knoten:/methodik/direktiven-hub-claude-md"
+    ],
+    "begod/scripts/chronist.py": [
+      "knoten:/methodik/direktiven-hub-claude-md/arbeitsweise"
+    ],
+    "_flows.json": [
+      "knoten:/methodik/direktiven-hub-claude-md/fluss-karten-metroviz-trigger"
+    ],
+    "docs/PROMPT.md": [
+      "knoten:/methodik/direktiven-hub-claude-md/token-workflow-immer-anwenden"
+    ],
+    "schema.json": [
+      "knoten:/methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-013-knowledge-graph-als"
+    ],
+    "SYSTEMPROTOCOLS.md": [
+      "knoten:/methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an"
+    ],
+    "version.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "zeitschaetzungen.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "beratungsstellen.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "leistungswerte.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "nba_algorithmus.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "partner.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "nba_bewertungsmerkmale.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "nba_bewertungssystem.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "checklisten.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "konzept-master-app-versioning.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "disclaimer.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "hilfetexte.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "nba_alltagsfragen.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-005-entscheidungsbaum-statt-flat"
+    ],
+    "index.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi"
+    ],
+    "context-snapshot.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-bekannte-defekte-und"
+    ],
+    "AGENT_GUIDE.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi"
+    ],
+    "README.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "app_database.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox"
+    ],
+    "begod_theme.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-009-farbkonzept-produktfamilie"
+    ],
+    "konsil-study-mode-blueprint-2026-02-20.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-010-study-mode-architecture-state"
+    ],
+    "assets/data/study_keys.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-010-study-mode-architecture-state"
+    ],
+    "study_config.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-010-study-mode-architecture-state"
+    ],
+    "quellen-katalog.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-011-offline-knowledge-pipeline"
+    ],
+    "scripts/build_knowledge_db.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-011-offline-knowledge-pipeline"
+    ],
+    "docs/quellen/quellen-katalog.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-011-offline-knowledge-pipeline",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "begod/knowledge/konsil/konsil-web-security-2026-02-21.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-012-akzeptiertes-risiko"
+    ],
+    "apps/pflegelotse/lib/core/security/web_data_policy.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-012-akzeptiertes-risiko"
+    ],
+    "apps/pflegelotse/lib/core/database/sqlcipher_config.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-012-akzeptiertes-risiko"
+    ],
+    "begod/knowledge/kg/schema.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-013-knowledge-graph-als"
+    ],
+    "docs/LEARNINGS.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-013-knowledge-graph-als"
+    ],
+    "nav-index.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "meta/index.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "context.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "open_questions.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "optimization.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge"
+    ],
+    "optimization-matrix.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge"
+    ],
+    "focus-reminder.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge"
+    ],
+    "scan_codebase.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "meta/app-family.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge"
+    ],
+    "openquestions.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge"
+    ],
+    "focus.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge"
+    ],
+    "agent-index.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge"
+    ],
+    "features/dependencies/dependencies_tab.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "apps/drg/pubspec.yaml": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "features/builds/build_deploy_view.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "features/architecture/code_health_tab.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "docs/adr/ADR-015-multi-app-knowledge-architecture.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "features/beta_tests/beta_test_tab.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "apps/pflegelotse/pubspec.yaml": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "app-meta.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "features/l10n/l10n_tab.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "core/app_context.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "core/project_paths.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "features/testing/test_chain_tab.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der"
+    ],
+    "nav_lookup.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "begod/scripts/scan_codebase.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand"
+    ],
+    "features/nba_rechner/data/nba_rechner.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "scripts/remove_redundant_comments.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "begod/knowledge/code/nav-index.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "begod/scripts/nav_lookup.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "begod/knowledge/konsil/konsil-ki-code-navigation-2026-02-20.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "begod/knowledge/konsil/konsil-medikamentenplan-2026-02-22.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-018-medikamentenfunktion-scope"
+    ],
+    "xrefs.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-019-universum-kreuzreferenz-system"
+    ],
+    "xref-schema.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-019-universum-kreuzreferenz-system"
+    ],
+    "cross_references.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-019-universum-kreuzreferenz-system"
+    ],
+    "xref-graph.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-019-universum-kreuzreferenz-system"
+    ],
+    "begod/knowledge/apps/afrika-desktop-protokoll/papers/citation-network.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network"
+    ],
+    "paper_network.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-was-app-spezifisch-ist-und"
+    ],
+    "begod/wiki/paper-beschaffung.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network"
+    ],
+    "begod/scripts/paper_network.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network"
+    ],
+    "papernetwork.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network"
+    ],
+    "paper-network-global.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network"
+    ],
+    "begod/knowledge/meta/paper-network-global.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network"
+    ],
+    "begod/templates/paper-domain-onboarding.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network"
+    ],
+    "papers/citation-network.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network"
+    ],
+    "begod/knowledge/apps/AKAAPP/VERFASSUNG.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-022-akapp-hybride-architektur"
+    ],
+    "begod/knowledge/konsil/konsil-akapp-hybrid-architektur-2026-03-04.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-022-akapp-hybride-architektur"
+    ],
+    "hub/docs/ORCHESTRIERUNGSONNET.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-023-modell-kaskade-v3-opus-5-als"
+    ],
+    "MEMORY.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-024-wissensschichten-und-portabler"
+    ],
+    "wmi_decoder.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-oh-020-mein-datenrecht-eu-data-act"
+    ],
+    "docs/features/F-OH-001-datenrecht-assistent.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-oh-020-mein-datenrecht-eu-data-act"
+    ],
+    "assets/data/oem_contacts.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-oh-020-mein-datenrecht-eu-data-act"
+    ],
+    "permissions.json": [
+      "knoten:/openlehr/testisolation-war-der-eigentliche"
+    ],
+    "desktop/lib/features/security/security_scanner.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand"
+    ],
+    "desktop/lib/features/dependencies/dependency_checker.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand"
+    ],
+    "desktop/lib/features/architecture/ki_sync_tab.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand"
+    ],
+    "model_auto_router.py": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand"
+    ],
+    "knowledge/meta/security-scan.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand"
+    ],
+    "ai_export.py": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand"
+    ],
+    "mcp/lib/tools/begod_tools.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand"
+    ],
+    "desktop/lib/features/testing/test_chain.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand"
+    ],
+    "desktop/lib/features/ui_generator/nl_patch_engine.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-fuer-betatest"
+    ],
+    "chronist_bridge.py": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-fuer-betatest",
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-was-app-spezifisch-ist-und"
+    ],
+    "desktop/lib/features/beta_tests/beta_test_tab.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-fuer-betatest"
+    ],
+    "tasks.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "meta/assumptions.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "meta/sprint-menu.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "konsil-presets.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "meta/paper-network-global.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "meta/roadmap.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "desktop/lib/features/papers/papers_tab.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "desktop/lib/features/architecture/code_health_tab.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "desktop/lib/features/wiki/wiki_tab.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "desktop/lib/server/api_server.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "desktop/lib/features/worktrees/staatsgruendung_wizard.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "desktop/lib/features/worktrees/worktrees_tab.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "code-dna.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "desktop/lib/features/architecture/code_map_tab.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "desktop/lib/features/dashboard/dashboard_tab.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "desktop/lib/features/konsile/konsil_builder_view.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "roadmap.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-bekannte-defekte-und"
+    ],
+    "X-postfach/routing.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-was-app-spezifisch-ist-und"
+    ],
+    "help_server.py": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-was-app-spezifisch-ist-und"
+    ],
+    "desktop/lib/core/desktop_automation.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-was-app-spezifisch-ist-und"
+    ],
+    "code_watcher.py": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-was-app-spezifisch-ist-und"
+    ],
+    "desktop_automation.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-was-app-spezifisch-ist-und"
+    ],
+    "docs/PLAN_AKADEMIE_SIMULATION_2026-08-08.md": [
+      "knoten:/simulation-akademie-messaufbau-kein",
+      "knoten:/simulation-akademie-messaufbau-kein/messlauf-1-2026-08-08-auskuenfte-werden"
+    ],
+    "dr-mcp-architecture-2026_result.json": [
+      "knoten:/arch/mcp/stdio-wurde-nie-entschieden-der"
+    ],
+    "herkunft_prozess.py": [
+      "knoten:/brainlehr/zu-tun-bereichsauslieferung-gehoert-in"
+    ],
+    "capture.py": [
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "WIKI.md": [
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "scripts/benchmark-runner.py": [
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "wiki/hot.md": [
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "scripts/retrieve.py": [
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "Users/lehrmacbook/.codex/AGENTS.md": [
+      "knoten:/brainlehr/brainlehr-ist-globale-standard"
+    ],
+    "AI_HANDOFF.md": [
+      "knoten:/brainlehr/zwei-sitzungen-arbeiten-parallel-an"
+    ],
+    "0200.sql": [
+      "knoten:/brainlehr/zwei-sitzungen-arbeiten-parallel-an"
+    ],
+    "Volumes/daten/tmp/enigma_c1_diag_f6f9e39.py": [
+      "knoten:/brainlehr/enigma-p1-v3-maschinenlesbarer-c0-c4/enigma-c1-rot-unbeglaubigter-direkt"
+    ]
+  }
+}
