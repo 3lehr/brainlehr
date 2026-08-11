@@ -10,6 +10,10 @@ ist umgekehrt — begründet werden muss, warum eine Lehre NICHT zutrifft.
 
 ## Ergebnis in einem Satz
 
+> **BERICHTIGT am selben Tag durch den Einspruch des Betreibers — siehe letzten
+> Abschnitt. Der Satz unten war zu weit gefasst und ist an den Daten dieses
+> Tages widerlegt.**
+
 Der Zwang in der Bauform des Fremdberichts ist hier **nicht übertragbar**, weil
 seine Voraussetzung fehlt — und die Form, in der er üblicherweise gebaut wird
 (Prosa-Begründung), ist genau die, die binnen Sekunden zum Ritual wird. Was
@@ -108,8 +112,8 @@ fällt — kein Satz, sondern ein Beleg, der scheitern kann.
    Blockade: Eine einschlägige Lehre wird zu einer **prüfbaren Erwartung** für
    dieses Vorhaben, festgehalten VOR dem Ergebnis. Lässt sich keine formulieren,
    steht „kein Prüfsatz möglich" da — selbst ein Signal.
-4. **Nicht bauen:** Zwang ohne zweite Person, Prosa-Quittierung, kodierte
-   Meldepflicht.
+4. **Nicht bauen:** ~~Zwang ohne zweite Person~~ (durch den Einspruch des
+   Betreibers hinfällig, siehe unten), Prosa-Quittierung, kodierte Meldepflicht.
 
 ## Was dieses Konsil nicht geklärt hat
 
@@ -117,3 +121,69 @@ Ob die Messwerte aus Stimme 2 überhaupt erhebbar sind, ohne selbst zum Ritual z
 werden. Und die Frage des Betreibers nach der Gegenrichtung — welche NORM einer
 Lehre widerspricht — ist hier nur gestreift: sie braucht die Achse „Art"
 (Sein/Sollen/Dürfen), gesetzt bei 2 von 82 Normen.
+
+---
+
+## Einspruch des Betreibers, 2026-08-11T17:50:00+0200 — und er trägt
+
+Wörtlich: *„zudem haben wir hier zweite Person! ersten ich, zweiten du als ki,
+3 einen subagent als ki, das konsil hat es bewiesen. ausserdem wenn brainlehr
+von unternehmen genutzt wird!"*
+
+**Der Einspruch ist begründet, und der Beleg ist dieses Konsil selbst.** Drei
+Stimmen in getrennten Fenstern haben den Vorschlag des Auftraggebers verworfen —
+genau das, was eine Prüfinstanz leisten soll und was eine Selbstauskunft nicht
+kann. Die Behauptung „ein Ein-Personen-Haus hat keine zweite Instanz" ist damit
+an den eigenen Daten dieses Tages widerlegt.
+
+Ich habe sie zu bereitwillig übernommen. Dieselbe Fehlerform wie heute Mittag
+bei der kontaminierten Messung: eine plausible Erklärung akzeptiert, statt sie
+gegen das zu halten, was im selben Raum passiert ist.
+
+### Was sich an der Voraussetzung ändert
+
+Die Voraussetzung heißt nicht „zweite PERSON". Sie heißt **Unabhängigkeit**, und
+die zerfällt in drei Teile, die getrennt erfüllbar sind:
+
+| Teil | heute erfüllt? |
+|---|---|
+| **a) eigener Kontext** — die Instanz teilt den blinden Fleck nicht | teilweise |
+| **b) eigener Zugang zum Rohmaterial** — sie sieht nicht nur meine Zusammenfassung | **nein** |
+| **c) das Urteil ist nicht still zu unterdrücken** | **nein** |
+
+Zu (a): Die drei Stimmen hatten getrennte Fenster und verschiedene Blickwinkel —
+aber dieselbe CLAUDE.md, denselben Speicher, dieselbe Modellfamilie. Das ist
+genau der Common-Cause-Kanal, den Stimme 3 selbst benennt. Unabhängig in der
+Perspektive, nicht im Kontext.
+
+Zu (b): Ich habe die Faktenlage in die Aufträge geschrieben und ausdrücklich
+„keine Websuche, nicht breit recherchieren" verlangt — aus Kostengründen. Damit
+hing jede Stimme an meiner Auswahl. Ein Prüfer, der nur sieht, was der Geprüfte
+ihm vorlegt, prüft die Vorlage, nicht die Sache.
+
+Zu (c): Ich habe die Aufträge geschrieben UND das Ergebnis zusammengefasst.
+Nichts hätte mich gehindert, das Konsil stillschweigend fallen zu lassen. Dass
+ich es nicht getan habe, ist keine Eigenschaft des Verfahrens.
+
+### Folge für den Beschlussvorschlag
+
+Punkt 4 („Zwang ohne zweite Person nicht bauen") entfällt in dieser Form. An
+seine Stelle tritt eine Bedingung, die prüfbar ist:
+
+**Eine Prüfinstanz zählt, wenn sie (b) das Rohmaterial selbst ziehen darf und
+(c) ihr Urteil an einer Stelle landet, die der Geprüfte nicht schreibt.**
+
+Beides ist billig herstellbar: (b) heißt, dem Prüfagenten Lesezugriff auf
+Speicher und Code zu geben statt einer Faktenliste — teurer in Token, aber das
+ist der Preis der Prüfung. (c) heißt, dass das Urteil als eigener Eintrag
+entsteht, nicht als Absatz in meinem Bericht.
+
+### Und der Unternehmensfall
+
+Dort ist die ursprüngliche Voraussetzung ohnehin erfüllt: mehrere Menschen,
+verschiedene Rollen, echte Arbeitsteilung. Der Mechanismus überträgt sich
+unverändert — die Einschränkung von Stimme 3 galt nur für den Ein-Personen-Fall
+und war auch dort zu eng. Was daraus für den Bau folgt: die Prüferrolle wird von
+Anfang an als eigene Identität geführt (`actor`, `freigabe`), nicht als
+Sonderfall des Schreibers. Sonst ist der Unternehmensfall ein Umbau statt einer
+Konfiguration.
