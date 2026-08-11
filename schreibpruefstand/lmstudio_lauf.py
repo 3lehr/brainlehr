@@ -12,7 +12,7 @@ Nur der Transport (Ollama /api/generate vs. LM Studio /v1/chat/completions
 mit tools=) unterscheidet sich.
 
 geaenderte Dateien ausserhalb dieses Verzeichnisses: KEINE. Kein
-Schreibzugriff auf shared-knowledge/knowledge.db.
+Schreibzugriff auf shared-knowledge/brainlehr.db.
 """
 from __future__ import annotations
 
@@ -127,6 +127,10 @@ def _call_lmstudio(messages: list[dict], *, model: str, base_url: str,
     return message.get("content") or "", None
 
 
+# Decke des Rollen-Pruefsteins (L-a69129): er sitzt im Ollama-Weg
+# (schreiblauf.rolle_pruefen) und greift hier NICHT -- dieser Weg fuehrt zu
+# LM Studio, ebenfalls lokal. Erweitern, sobald ein Antwortlauf ueber LM Studio
+# entsteht; heute existiert keiner, deshalb kein zweiter Pruefstein.
 def _call_with_retry(messages: list[dict], *, model: str, base_url: str,
                       timeout: float) -> tuple[str | None, str | None, int]:
     raw_response, call_error = _call_lmstudio(messages, model=model, base_url=base_url, timeout=timeout)

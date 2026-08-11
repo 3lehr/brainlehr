@@ -52,7 +52,7 @@ def test_hebb_score_normierung():
 
 @pytest.fixture
 def db(tmp_path) -> sqlite3.Connection:
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     schema_sql = (SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8")
     conn = sqlite3.connect(str(db_path))
     conn.executescript(schema_sql)

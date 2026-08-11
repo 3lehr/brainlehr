@@ -8,6 +8,23 @@ er arbeite auf einer Testkopie, schrieb in Wahrheit in den Betrieb.
 
 Hier gilt: die Wurzel ist der Ordner ueber diesem, und BEGOD_KNOWLEDGE_DB
 sticht sie fuer die Datenbank. Kein zweiter Kandidat, keine Ratekette.
+
+Seit 2026-08-11 gibt es zwei Namen. BRAINLEHR_DB ist der neue, massgebliche --
+das BEGOD-Praefix stammt aus der Zeit, als dieser Speicher noch unter
+hub/shared-knowledge im BEGOD-Verbund lag; brainlehr zog am 2026-08-08 in ein
+eigenes Repository und soll auch bei Dritten laufen, die den Verbundnamen nie
+gehoert haben. BEGOD_KNOWLEDGE_DB bleibt bewusst bestehen: 52 Stellen setzen
+ihn (Doku, Tests, Kommandozeilen), ein hartes Umschalten haette laufende
+Sitzungen und fremde Skripte gebrochen. Sind beide gesetzt, gewinnt
+BRAINLEHR_DB. Wird nur der alte Name benutzt, meldet dieses Modul das einmal
+pro Prozess auf stderr -- ein Hinweis pro Aufruf wuerde nur weggeblendet.
+
+Dieselbe Uebergangsform gilt fuer den Dateinamen ohne gesetzte Variable:
+knowledge.db hiess die Datei bis 2026-08-11, brainlehr.db ist der neue Name
+(zwei Speicher im Verbund hiessen beide knowledge.db und unterschieden sich
+nur im Ordner -- eine Fehlerquelle, siehe Auftrag zum Umzug). Existiert
+brainlehr.db bereits, wird sie genommen, ohne Hinweis. Sonst faellt dieses
+Modul auf knowledge.db zurueck und meldet das einmal pro Prozess auf stderr.
 """
 from __future__ import annotations
 
@@ -25,11 +42,33 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
 import os
+import sys
 from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent.parent
 
-DB = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (WURZEL / "knowledge.db"))
+
+def _ermittle_db(wurzel: Path, neu: str | None, alt: str | None) -> Path:
+    if neu or alt:
+        return Path(neu or alt)
+    kandidat = wurzel / "brainlehr.db"
+    if kandidat.exists():
+        return kandidat
+    print(
+        "hinweis: knowledge.db ist der alte Dateiname, bitte auf brainlehr.db umbenennen",
+        file=sys.stderr,
+    )
+    return wurzel / "knowledge.db"
+
+
+_neu = os.environ.get("BRAINLEHR_DB")
+_alt = os.environ.get("BEGOD_KNOWLEDGE_DB")
+if not _neu and _alt:
+    print(
+        "hinweis: BEGOD_KNOWLEDGE_DB ist veraltet, bitte BRAINLEHR_DB setzen",
+        file=sys.stderr,
+    )
+DB = _ermittle_db(WURZEL, _neu, _alt)
 SERVER = WURZEL / "knowledge_mcp_server.py"
 REGISTER = WURZEL / "auftraege.jsonl"
 RECALL_LOG = WURZEL / "recall_log.jsonl"

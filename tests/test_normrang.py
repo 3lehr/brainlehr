@@ -71,7 +71,7 @@ def test_fakt_bleibt_ohne_rang():
 
 
 def test_apply_setzt_rang_und_gilt_ab_faktbleibt_null(tmp_path):
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     _init_temp_db(db_path)
     conn = sqlite3.connect(str(db_path))
     try:
@@ -97,7 +97,7 @@ def test_apply_setzt_rang_und_gilt_ab_faktbleibt_null(tmp_path):
 
 
 def test_zweiter_lauf_aendert_nichts(tmp_path):
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     _init_temp_db(db_path)
     conn = sqlite3.connect(str(db_path))
     try:
@@ -117,7 +117,7 @@ def test_zweiter_lauf_aendert_nichts(tmp_path):
 
 def test_reproduzierbarkeit_gleiche_db_gleiche_raenge(tmp_path):
     """Abnahme Punkt 5: --apply auf einer Kopie liefert dieselben Raenge."""
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     _init_temp_db(db_path)
     conn = sqlite3.connect(str(db_path))
     try:

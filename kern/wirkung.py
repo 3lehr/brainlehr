@@ -63,7 +63,7 @@ import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (_w / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (_w / "brainlehr.db"))
 RECALL_LOG_PATH = _w / "recall_log.jsonl"
 
 

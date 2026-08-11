@@ -52,7 +52,7 @@ import normbestand  # noqa: E402  (parse_source, abschnitt_hash, current_section
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad -- gleiches Muster wie
 # knowledge_mcp_server.py::DB_PATH, sonst laesst sich dieses Skript nie gegen
 # eine Testkopie fahren, ohne die Produktiv-DB anzufassen.
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "brainlehr.db"))
 CET = timezone(timedelta(hours=1))
 
 NEW_COLUMNS = {"quell_hash": "TEXT"}
@@ -269,7 +269,7 @@ def _selftest() -> int:
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
-        db_path = tmp_path / "knowledge.db"
+        db_path = tmp_path / "brainlehr.db"
         schema_sql = (HERE / "schema.sql").read_text(encoding="utf-8")
 
         # Alte Form simulieren: Tabelle OHNE quell_hash, wie eine echte

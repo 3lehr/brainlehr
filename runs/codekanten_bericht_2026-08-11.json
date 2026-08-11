@@ -1,0 +1,326 @@
+{
+  "kanten": 1744,
+  "quellen": 655,
+  "mehrdeutig": 472,
+  "nicht_aufgeloest": {
+    "dongle_vin_assignment_screen.dart": [
+      "lehre:L-4ab9b0"
+    ],
+    "oem_odometer_probe_screen.dart": [
+      "lehre:L-4ab9b0",
+      "lehre:L-c4ae33"
+    ],
+    "_begod_preprompt_rollout_openlehr_wenn_logik.json": [
+      "lehre:L-cebc03"
+    ],
+    "string_inventory.js": [
+      "lehre:L-121497"
+    ],
+    "jsdom/wt_wording_check.js": [
+      "lehre:L-121497"
+    ],
+    "wt_wording_check.js": [
+      "lehre:L-121497"
+    ],
+    "list_tile.dart": [
+      "lehre:L-f019e7"
+    ],
+    "wiring_contract.json": [
+      "lehre:L-4ad804",
+      "knoten:/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit"
+    ],
+    "pfad/zur/datei.dart": [
+      "lehre:L-c4ae33"
+    ],
+    "SafePluginRegistrant.swift": [
+      "lehre:L-5431a3"
+    ],
+    "_impl.dart": [
+      "lehre:L-f9eef6"
+    ],
+    "camera_fit.dart": [
+      "lehre:L-cf6e46"
+    ],
+    "native_plugin_loader/PluginHandler.kt": [
+      "lehre:L-afa2f8"
+    ],
+    "flutter_tools/lib/src/flutter_plugins.dart": [
+      "lehre:L-afa2f8"
+    ],
+    "PluginHandler.kt": [
+      "lehre:L-afa2f8"
+    ],
+    "_test.dart": [
+      "lehre:L-7af2f3"
+    ],
+    "SwiftFlutterCarplayPlugin.swift": [
+      "lehre:L-b46779"
+    ],
+    "FastAPI-app.py": [
+      "lehre:L-8c3b8c"
+    ],
+    "wt_403_zeigt_anmeldelink.js": [
+      "lehre:L-7fc31c"
+    ],
+    "./skript.sh": [
+      "lehre:L-f8926c"
+    ],
+    "wt_unbekannte_art_neutral.js": [
+      "lehre:L-697efb"
+    ],
+    "wt_fertige_rechnung_beschriftet.js": [
+      "lehre:L-697efb"
+    ],
+    "freezed.dart": [
+      "lehre:L-a24b96",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "klassifizierer.py": [
+      "lehre:L-bf4d39"
+    ],
+    "wt_neue_klaerungsarten_zeigen_beleg.js": [
+      "lehre:L-d2e32a",
+      "lehre:L-14a825"
+    ],
+    "Root-analysis_options.yaml": [
+      "lehre:L-c903c3"
+    ],
+    "PrintJob.swift": [
+      "lehre:L-09fbcd"
+    ],
+    "flutter/material.dart": [
+      "lehre:L-874260"
+    ],
+    "_source_match.py": [
+      "lehre:L-76eca2"
+    ],
+    "apps/openlehr/tests/jsdom/anzahlungen/run_anzahlungen.js": [
+      "lehre:L-76eca2"
+    ],
+    "_profile.py": [
+      "lehre:L-ff87c0"
+    ],
+    "Drehbuch.json": [
+      "lehre:L-29eaee"
+    ],
+    "scheduler/binding.dart": [
+      "lehre:L-5aca72"
+    ],
+    "src/widgets/binding.dart": [
+      "lehre:L-5aca72"
+    ],
+    "flutter_test/src/finders.dart": [
+      "lehre:L-a3b39e"
+    ],
+    "button_style_button.dart": [
+      "lehre:L-f93d8c"
+    ],
+    "input_decorator.dart": [
+      "lehre:L-a88e34"
+    ],
+    "apps/openlehr/tests/jsdom/gemeinsam/wt_navigation_mehr_verhalten.js": [
+      "lehre:L-d09d25"
+    ],
+    "wt_einzeln_vorschau_link.js": [
+      "lehre:L-14a825"
+    ],
+    "datei.dart": [
+      "lehre:L-e5f5c1"
+    ],
+    "binding.dart": [
+      "lehre:L-f180fb"
+    ],
+    "flutter_map/src/map/camera/camera.dart": [
+      "lehre:L-845c74"
+    ],
+    "belege_2024/golden_manifest.json": [
+      "lehre:L-d3e729"
+    ],
+    "private/tmp/.../9f1cc49a-.../skills_klassifikation.json": [
+      "lehre:L-a3cc7a"
+    ],
+    "instructions.md": [
+      "lehre:L-74ff04",
+      "lehre:L-86e92d",
+      "knoten:/agents/instructions",
+      "knoten:/arch/token-economy/lazy-loading",
+      "knoten:/lessons/reflexion-pattern",
+      "knoten:/brainlehr/zu-tun-bereichsauslieferung-gehoert-in"
+    ],
+    "_prompt_listener.dart": [
+      "lehre:L-54b414"
+    ],
+    "tmp/optc_targets_nachzug.json": [
+      "lehre:L-dc5c49"
+    ],
+    "App-STAND.md": [
+      "lehre:L-02fb6a"
+    ],
+    "tests/test_modellsperre.py": [
+      "lehre:L-358e31"
+    ],
+    "claude.json": [
+      "lehre:L-6b0bf6",
+      "knoten:/brainlehr/brainlehr-braucht-ein-eigenes",
+      "knoten:/brainlehr/lage-brainlehr-2026-08-09-abrufbefund",
+      "knoten:/brainlehr/die-einbuergerungsschranke-hat-ihre"
+    ],
+    "agent.md": [
+      "lehre:L-54b09d",
+      "knoten:/testing/pytest/monorepo-setup",
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi"
+    ],
+    "vertrauen.json": [
+      "lehre:L-39574b"
+    ],
+    "kontamination.py": [
+      "lehre:L-aa6087"
+    ],
+    "prompt.md": [
+      "knoten:/agents/prompt-templates"
+    ],
+    "integration_test/walkthrough_test.dart": [
+      "knoten:/testing/walkthrough-methode-(e2e-journey-als-tes"
+    ],
+    "models.json": [
+      "knoten:/ops/openlehr/openlehr-mandantenmodell-nutzer"
+    ],
+    "local.md": [
+      "knoten:/begod/neuen-app-worktree-bootstrappen"
+    ],
+    "UMGEZOGEN.md": [
+      "knoten:/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-"
+    ],
+    "flows.json": [
+      "knoten:/tools/metroviz-umbau:-code-fluss-analysetool-(",
+      "knoten:/methodik/direktiven-hub-claude-md/fluss-karten-metroviz-trigger"
+    ],
+    "whip-client.js": [
+      "knoten:/apps/setfunk-research-digest-v2-2026-07"
+    ],
+    "whep-client.js": [
+      "knoten:/apps/setfunk-research-digest-v2-2026-07"
+    ],
+    "vdoninja-sdk.js": [
+      "knoten:/apps/setfunk-research-digest-v2-2026-07"
+    ],
+    "assistant_suggestions.py": [
+      "knoten:/ops/openlehr/kontakt-vorschlag-anlage-durch-ki"
+    ],
+    "daemon/steuer/profil_tags.py": [
+      "knoten:/ops/openlehr/openlehr-profil-tags-fragebaum-wissens"
+    ],
+    "docs/openlehr/tax_research/knowledge_tags.json": [
+      "knoten:/ops/openlehr/openlehr-profil-tags-fragebaum-wissens"
+    ],
+    "0200_steuer-cafe-international-abschluss.md": [
+      "knoten:/openlehr/steuer/session-pause-2026-07-25-cafe"
+    ],
+    "lib/features/auto_drive/domain/carplay_audio_route_observer.dart": [
+      "knoten:/apps/fahrtenbuch/vorschlag-offen-carplay-audio-route"
+    ],
+    "carplay_audio_route_observer.dart": [
+      "knoten:/apps/fahrtenbuch/vorschlag-offen-carplay-audio-route"
+    ],
+    "schnaeppvalid_PLAN.md": [
+      "knoten:/apps/schnaeppvalid-konzeption-2026-07-28"
+    ],
+    "scripts/run_episode.sh": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "job.json": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "studio/projects/metahuman-podcast/scripts/run_episode.sh": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "QA_automatic.md": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "Content/Python/avatar_profiles.json": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "Content/Python/render_rigged_mrq.py": [
+      "knoten:/apps/metahuman-podcast-one-command-pipeline"
+    ],
+    "whatsapp-web.js": [
+      "knoten:/openlehr/remote-channels-telegram-whatsapp"
+    ],
+    "hub-CLAUDE.md": [
+      "knoten:/methodik/direktiven-hub-claude-md"
+    ],
+    "_flows.json": [
+      "knoten:/methodik/direktiven-hub-claude-md/fluss-karten-metroviz-trigger"
+    ],
+    "docs/PROMPT.md": [
+      "knoten:/methodik/direktiven-hub-claude-md/token-workflow-immer-anwenden"
+    ],
+    "SYSTEMPROTOCOLS.md": [
+      "knoten:/methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an"
+    ],
+    "zeitschaetzungen.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-002-json-config-data-layer-f-007"
+    ],
+    "assets/data/study_keys.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-010-study-mode-architecture-state"
+    ],
+    "scripts/build_knowledge_db.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-011-offline-knowledge-pipeline"
+    ],
+    "openquestions.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge"
+    ],
+    "features/nba_rechner/data/nba_rechner.dart": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+    ],
+    "xref-graph.json": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-019-universum-kreuzreferenz-system"
+    ],
+    "papernetwork.py": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network"
+    ],
+    "hub/docs/ORCHESTRIERUNGSONNET.md": [
+      "knoten:/methodik/adr-bestand-hub-docs-adr/adr-023-modell-kaskade-v3-opus-5-als"
+    ],
+    "permissions.json": [
+      "knoten:/openlehr/testisolation-war-der-eigentliche"
+    ],
+    "konsil-presets.json": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-wissens-und"
+    ],
+    "desktop/lib/features/worktrees/staatsgruendung_wizard.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "desktop/lib/features/worktrees/worktrees_tab.dart": [
+      "knoten:/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-ansichten-und-baukaesten"
+    ],
+    "docs/PLAN_AKADEMIE_SIMULATION_2026-08-08.md": [
+      "knoten:/simulation-akademie-messaufbau-kein",
+      "knoten:/simulation-akademie-messaufbau-kein/messlauf-1-2026-08-08-auskuenfte-werden"
+    ],
+    "dr-mcp-architecture-2026_result.json": [
+      "knoten:/arch/mcp/stdio-wurde-nie-entschieden-der"
+    ],
+    "herkunft_prozess.py": [
+      "knoten:/brainlehr/zu-tun-bereichsauslieferung-gehoert-in"
+    ],
+    "scripts/retrieve.py": [
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "wiki/hot.md": [
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "scripts/benchmark-runner.py": [
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "WIKI.md": [
+      "knoten:/brainlehr/claude-obsidian-im-quelltext-geprueft"
+    ],
+    "0200.sql": [
+      "knoten:/brainlehr/zwei-sitzungen-arbeiten-parallel-an"
+    ],
+    "Volumes/daten/tmp/enigma_c1_diag_f6f9e39.py": [
+      "knoten:/brainlehr/enigma-p1-v3-maschinenlesbarer-c0-c4/enigma-c1-rot-unbeglaubigter-direkt"
+    ]
+  }
+}

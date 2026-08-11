@@ -213,10 +213,10 @@ def test_sprachunabhaengigkeit_dritte_sprache_spanisch(temp_db):
 
 def test_fuenf_echte_bestands_quellen_bleiben_erlaubt(temp_db):
     """Abnahme (b), wichtigster Punkt: fuenf ECHTE source-Werte, per SQL aus
-    der Produktions-DB (knowledge.db, nicht temp_db) gezogen
+    der Produktions-DB (brainlehr.db, nicht temp_db) gezogen
     ('SELECT path, source FROM knowledge_nodes ORDER BY created_at DESC
     LIMIT 10' am 2026-08-06 gegen /Volumes/daten/Begod2026/hub/shared-
-    knowledge/knowledge.db). Woertlich uebernommen, gegen den TEMP-Knoten
+    knowledge/brainlehr.db). Woertlich uebernommen, gegen den TEMP-Knoten
     getestet -- faellt einer durch, ist das Kriterium falsch."""
     echte_quellen = [
         ("erzeugt aus buckeberg/auswertung/efbe-gruppe-recherche.md, dieses aus "

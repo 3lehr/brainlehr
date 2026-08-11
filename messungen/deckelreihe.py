@@ -64,11 +64,13 @@ from pathlib import Path
 HIER = _w
 sys.path.insert(0, str(HIER))
 sys.path.insert(0, str(HIER / "haken"))
+sys.path.insert(0, str(HIER / "kern"))
 
 import abrufguete  # noqa: E402
 import knowledge_recall_hook as rh  # noqa: E402
 import liefermenge  # noqa: E402
-import ort  # noqa: E402
+import ort
+import speicher  # noqa: E402
 
 # Die Reihe. 3/2 ist der Ist-Stand, 7/5 liegt bei der Fremdzahl (12 gesamt
 # waere deren "sieben je Entitaet" nicht vergleichbar -- unser Deckel gilt je
@@ -103,12 +105,10 @@ def _zahl(d: dict, *pfad, vorgabe=None):
 
 def lauf() -> list[dict]:
     faelle = abrufguete.lade_korpus()
-    conn = sqlite3.connect(f"file:{ort.DB}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
-    try:
+    # Ueber die Naht (speicher.py) statt eigener Verbindung -- dasselbe
+    # mode=ro wie vorher, aber das Schliessen haengt nicht mehr an dieser Datei.
+    with speicher.lesen() as conn:
         return [_mit_deckel(n, l, faelle, conn) for n, l in REIHE]
-    finally:
-        conn.close()
 
 
 def _selftest() -> None:

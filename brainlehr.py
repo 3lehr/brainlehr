@@ -130,7 +130,7 @@ def init(ziel: Path) -> int:
     """Legt an einem beliebigen Ort eine leere, vollstaendig regelbewehrte
     brainlehr an. Ein bestehender Bestand wird nie angefasst."""
     ziel = ziel.resolve()
-    db = ziel / "knowledge.db" if ziel.is_dir() or not ziel.suffix else ziel
+    db = ziel / "brainlehr.db" if ziel.is_dir() or not ziel.suffix else ziel
     if db.exists() and db.stat().st_size > 0:
         print(f"FEHLER: {db} existiert bereits und ist nicht leer. "
               f"Nichts getan -- eine Erstanlage ueberschreibt keinen Bestand.")
@@ -352,7 +352,7 @@ def main(argv: list[str] | None = None) -> int:
 
     p_raus = unter.add_parser("raus", help="Bestand zeilenweise herausschreiben")
     p_raus.add_argument("datei", type=Path)
-    p_raus.add_argument("--db", type=Path, default=HIER / "knowledge.db")
+    p_raus.add_argument("--db", type=Path, default=HIER / "brainlehr.db")
 
     p_rein = unter.add_parser("rein", help="Bestand in eine Datenbank einlesen")
     p_rein.add_argument("datei", type=Path)

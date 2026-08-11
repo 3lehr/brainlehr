@@ -34,7 +34,7 @@ fenstergroesse.py._append_jsonl (Auftrag Punkt 5: "seit heute").
 Geaenderte Dateien ausserhalb dieser einen: KEINE. Nur diese Datei + eine
 Testdatei (tests/test_pruefkorpus.py). knowledge_recall_hook.py, wissens-
 nutzen*.py, wirkung.py, fenstergroesse.py, werkzeugabdeckung.py: nur
-gelesen. Liest die echte knowledge.db read-only (mode=ro), schreibt nichts
+gelesen. Liest die echte brainlehr.db read-only (mode=ro), schreibt nichts
 hinein.
 """
 from __future__ import annotations
@@ -69,7 +69,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import schreiblauf as sl  # noqa: E402  -- _call_with_retry + DEFAULT_MODEL wiederverwendet
 
-DB = str(SHARED_KNOWLEDGE / "knowledge.db")
+DB = str(SHARED_KNOWLEDGE / "brainlehr.db")
 MODEL = sl.DEFAULT_MODEL
 TIMEOUT = 180.0
 OUT_PATH = SHARED_KNOWLEDGE / "runs" / "pruefkorpus.json"
@@ -230,7 +230,10 @@ _NEGATIVE_TOPICS = [
 
 
 def _generate(prompt: str, model: str = MODEL, timeout: float = TIMEOUT) -> tuple[str | None, str | None, int]:
-    return sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=timeout)
+    # erzeugen: Aufgaben ERZEUGEN darf lokal und schwach laufen (Absicht --
+    # sonst werden die Aufgaben glatter als echte Anfragen), L-a69129.
+    return sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL,
+                                timeout=timeout, rolle="erzeugen")
 
 
 def generate_task(target_text: str, idf: dict, df: Counter, rng: random.Random,

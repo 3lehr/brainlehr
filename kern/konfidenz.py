@@ -85,7 +85,7 @@ sys.path.insert(0, str(HERE))
 
 from normkraft import Ablehnung, _backup, now_iso, CET  # noqa: E402
 
-DB_PATH = HERE / "knowledge.db"
+DB_PATH = HERE / "brainlehr.db"
 # Verbund-Wurzel: mehrere eigene Git-Repos nebeneinander (hub/, fahrtenbuch/,
 # setfunk/ ...) -- relative Pfade in `source` sind dagegen aufzuloesen, siehe
 # beobachtbare_datei(). Kommt aus haken/ort.py, weil "zwei Ebenen ueber mir"
@@ -755,7 +755,7 @@ def _selftest() -> int:
         print("SELFTEST Regime-Unterscheidung + Wissensart OK.")
 
         # --- bestaetigen(): DB-Rundfahrt -----------------------------------------
-        db_path = tmp_path / "knowledge.db"
+        db_path = tmp_path / "brainlehr.db"
         _init_temp_db(db_path)
 
         conn = sqlite3.connect(str(db_path))

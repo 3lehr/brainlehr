@@ -24,6 +24,7 @@ from pathlib import Path
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 
 import pruefkorpus as pk  # noqa: E402
 

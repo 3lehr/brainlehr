@@ -75,7 +75,7 @@ def test_null_project_id_heisst_ueberall():
 def test_gegen_live_bestand_falls_vorhanden():
     """Gegenprobe direkt gegen die Live-DB, falls vorhanden -- L-9b3012b6
     muss auch dort als kaputtes JSON erkannt werden, nicht als Crash."""
-    db_path = SHARED_KNOWLEDGE / "knowledge.db"
+    db_path = SHARED_KNOWLEDGE / "brainlehr.db"
     if not db_path.exists():
         return
     conn = sqlite3.connect(str(db_path))

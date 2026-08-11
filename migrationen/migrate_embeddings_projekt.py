@@ -49,6 +49,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent / "kern"))
 from knowledge_mcp_server import DB_PATH  # noqa: E402
 from build_embeddings import resolve_lesson_projects  # noqa: E402
 

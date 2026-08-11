@@ -1,6 +1,6 @@
 """Messkorpus mit BEKANNTER Wahrheit fuer den passiven Abruf (Auftrag
 2026-08-07, Abrufpruefstand). Gegenstueck zu wissensnutzen_blind.py: dort
-laeuft der Abruf gegen die echte knowledge.db, und "nichts gefunden" kann
+laeuft der Abruf gegen die echte brainlehr.db, und "nichts gefunden" kann
 ER-HAT-VERSAGT oder ES-GAB-NICHTS heissen. Hier ist beides trennbar, weil
 je Aufgabe im Voraus feststeht, ob es eine richtige Antwort gibt und welche.
 
@@ -88,6 +88,7 @@ from pathlib import Path
 SCHREIBPRUEFSTAND = Path(__file__).resolve().parent
 SHARED_KNOWLEDGE = SCHREIBPRUEFSTAND.parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 
 import pruefkorpus as pk  # noqa: E402  -- tokenize/rare_terms/is_circular wiederverwendet
 
@@ -560,7 +561,7 @@ def volltext(e: dict) -> str:
 
 
 def _idf_ueber_korpus(eintraege: list[dict]):
-    """IDF genau ueber DIESEN Bestand -- nicht ueber die echte knowledge.db.
+    """IDF genau ueber DIESEN Bestand -- nicht ueber die echte brainlehr.db.
     Seltenheit ist eine Eigenschaft des Bestands, gegen den gemessen wird;
     eine IDF aus 880 fremden Dokumenten wuerde hier die falschen Woerter
     als selten ausweisen."""

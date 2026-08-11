@@ -101,7 +101,7 @@ def _selftest() -> int:
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        db_path = Path(tmp) / "knowledge.db"
+        db_path = Path(tmp) / "brainlehr.db"
         schema_sql = (HERE / "schema.sql").read_text(encoding="utf-8")
         conn = sqlite3.connect(str(db_path))
         conn.executescript(schema_sql)

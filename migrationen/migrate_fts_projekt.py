@@ -7,7 +7,7 @@ docs/PLAN_WISSENSSYSTEM_2026-08-05.md).
 Grund: Der Suchindex muss sich nach Bereich trennen lassen, bevor weiter an
 ihm gebaut wird -- ein Filter HINTER der Suche leckt ueber Trefferzahl/Rang
 (BM25 rechnet sonst ueber Dokumente, die der Fragende nie sehen duerfte).
-Diese Migration wendet das erweiterte Schema auf die LEBENDE knowledge.db an
+Diese Migration wendet das erweiterte Schema auf die LEBENDE brainlehr.db an
 und baut den Index aus den Rohspalten von knowledge_nodes neu auf (gleiches
 Muster wie migrate_fts_pfad_tags.py) -- `INSERT INTO fts(fts) VALUES('rebuild')`
 wuerde das NICHT tun, weil es die Rohspalten kopiert statt durch die Faltung

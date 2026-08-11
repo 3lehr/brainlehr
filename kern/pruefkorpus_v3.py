@@ -15,7 +15,7 @@ scheiterten, siehe deren eigene Docstrings und L-352afa):
 ECHTER ABRUFWEG (Auflage 1): dieselbe Funktion, die im Betrieb vor jedem
 Prompt feuert -- knowledge_recall_hook.query()/keywords()/hits() --,
 importiert und unveraendert aufgerufen. Kein Wissen wird in den Prompt
-kopiert; die erfundenen Knoten liegen als echte Zeilen in knowledge.db
+kopiert; die erfundenen Knoten liegen als echte Zeilen in brainlehr.db
 zwischen dem echten Bestand.
 
 RESTLOS ENTFERNBAR (Auflage 2): alle erfundenen Knoten tragen
@@ -574,7 +574,11 @@ def answer(task: str, context: str | None, model: str = CAL_MODEL) -> str:
     else:
         prompt = (f"Frage: {task}\nAntworte NUR mit der Zahl, keine Erklaerung. "
                    "Wenn du sie nicht weisst, antworte 'weiss ich nicht'.")
-    raw, err, _retries = sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=CAL_TIMEOUT)
+    # beantworten -- der Docstring kuendigt seit jeher "spaeter per Haiku-
+    # Subagent" an und laeuft bis dahin lokal. Genau diese Zwischenloesung ist
+    # der Verstoss aus L-a69129; ab jetzt gesperrt statt weiter angekuendigt.
+    raw, err, _retries = sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL,
+                                              timeout=CAL_TIMEOUT, rolle="beantworten")
     return (raw or f"[FEHLER: {err}]").strip()
 
 

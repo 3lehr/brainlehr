@@ -434,12 +434,23 @@ writing path needs a credential first, including your own scripts and hooks. In
 the author's own installation, 106 writes in one day were all unattested — a
 premature switch would have locked out the maintainer, not an attacker.
 
+```bash
+python3 brainlehr.py raus auszug.jsonl
+```
+```bash
+python3 brainlehr.py rein auszug.jsonl --db /neuer/ort/brainlehr.db
+```
+
 The credential file itself lives on your desktop
 (`~/Desktop/brainlehr-ausweise/`), overridable via `BRAINLEHR_AUSWEISE`. It
 holds scrypt hashes and roles, no secrets. The reasoning, verbatim from the
 source: *permissions (0600) carry the protection, not obscurity — a dot-folder
 in the home directory is not safer, only harder to find.* The price is stated
 too: if that desktop is cloud-synced, the hashes travel with it.
+
+Der Auszug trägt Knoten, Lehren, Kanten, Einstellungen, das Zugriffsprotokoll und die Eskalationen. Nicht mit gehen die Vektoren und der Volltextindex — beide ableitbar. Den Volltext bauen die Trigger beim Einlesen selbst auf; die Vektoren rechnet `kern/build_embeddings.py` neu. Ein Vektor aus einem anderen Einbettungsmodell wäre still falsch, und still falsch ist schlimmer als fehlend.
+
+**`brainlehr.db` ist absichtlich nicht versioniert.** Versioniert wird `schema.sql`, `herkunft_unveraenderlich.sql` und ein Auszug unter `auszug/`. Grund: git führt eine Binärdatei nicht zusammen, es überschreibt sie — und am 2026-08-07 lag hier bereits eine beschädigte Fassung im Commit, womit die Versionsverwaltung als Rettungsweg wertlos war.
 
 ## Eight cases, with sources
 

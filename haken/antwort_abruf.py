@@ -178,6 +178,8 @@ from pathlib import Path
 WURZEL = Path(__file__).resolve().parent.parent
 if str(WURZEL) not in sys.path:
     sys.path.insert(0, str(WURZEL))
+if str(WURZEL / "kern") not in sys.path:
+    sys.path.insert(0, str(WURZEL / "kern"))
 
 import knowledge_mcp_server as kms  # noqa: E402
 import pruefkorpus  # noqa: E402

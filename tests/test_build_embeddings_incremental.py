@@ -34,6 +34,7 @@ import pytest
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 
 import build_embeddings as be  # noqa: E402
 

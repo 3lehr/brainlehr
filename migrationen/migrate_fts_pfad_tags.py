@@ -7,7 +7,7 @@ Grund: Der Materialized Path (z.B. "/apps/fahrtenbuch/…") ist die staerkste
 Kontextangabe eines Knotens, war im FTS-Index aber nicht durchsuchbar --
 "fahrtenbuch" fand Knoten unter /apps/fahrtenbuch/ nur, wenn das Wort
 zufaellig auch im Text stand. Diese Migration wendet das erweiterte Schema
-auf die LEBENDE knowledge.db an und baut den Index aus den Rohspalten von
+auf die LEBENDE brainlehr.db an und baut den Index aus den Rohspalten von
 knowledge_nodes neu auf (gleiches Muster wie migrate_fts_trigram_fold.py) --
 `INSERT INTO fts(fts) VALUES('rebuild')` wuerde das NICHT tun, weil es die
 Rohspalten kopiert statt durch die Faltung zu gehen.

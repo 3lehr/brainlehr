@@ -73,6 +73,7 @@ from pathlib import Path
 
 SHARED_KNOWLEDGE = _w
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
 

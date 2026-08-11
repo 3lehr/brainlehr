@@ -1,6 +1,6 @@
 # Knowledge MCP contract
 
-`knowledge_mcp_server.py` is the only supported read/write boundary. Clients must not write `knowledge.db` directly.
+`knowledge_mcp_server.py` is the only supported read/write boundary. Clients must not write `brainlehr.db` directly.
 
 ## Nodes
 

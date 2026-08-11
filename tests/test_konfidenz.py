@@ -174,7 +174,7 @@ def test_wissensart_klassifikation():
 
 
 def _basis_db(tmp_path):
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     _init_temp_db(db_path)
     conn = sqlite3.connect(str(db_path))
     try:

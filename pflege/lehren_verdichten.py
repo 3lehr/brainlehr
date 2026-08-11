@@ -90,7 +90,7 @@ sys.path.insert(0, str(HERE / "schreibpruefstand"))
 from migrate_schreiber import _backup  # noqa: E402 -- nur gelesen/importiert
 import schreiblauf as sl  # noqa: E402 -- nur gelesen/importiert (_call_ollama, _call_with_retry, Konstanten)
 
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "brainlehr.db"))
 MODEL = sl.DEFAULT_MODEL
 OLLAMA_URL = sl.DEFAULT_OLLAMA_URL
 TIMEOUT = sl.CALL_TIMEOUT
@@ -240,7 +240,10 @@ def _andere_laeufe(eigene_pid: int) -> list[str]:
 
 
 def _call_model(prompt: str) -> tuple[str | None, str | None]:
-    raw, err, _retries = sl._call_with_retry(prompt, model=MODEL, base_url=OLLAMA_URL, timeout=TIMEOUT)
+    # erzeugen: verdichtet Bestandstext, beantwortet keine Pruefaufgabe --
+    # lokal zulaessig, aber nur mit ausdruecklicher Freigabe BRAINLEHR_LOKAL=1.
+    raw, err, _retries = sl._call_with_retry(prompt, model=MODEL, base_url=OLLAMA_URL,
+                                              timeout=TIMEOUT, rolle="erzeugen")
     if err:
         return None, err
     return (raw or "").strip(), None
@@ -453,7 +456,7 @@ def _selftest() -> int:
 
     # 5) Additive Migration gegen Tempkopie, idempotent, Zeilenzahl unveraendert.
     with tempfile.TemporaryDirectory() as tmp:
-        tmp_db = Path(tmp) / "knowledge.db"
+        tmp_db = Path(tmp) / "brainlehr.db"
         shutil.copy2(DB_PATH, tmp_db)
         orig_db_path = DB_PATH
         DB_PATH = tmp_db

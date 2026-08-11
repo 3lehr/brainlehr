@@ -1,0 +1,362 @@
+{
+  "faelle": 35,
+  "gefunden_links": 9,
+  "gefunden_rechts": 9,
+  "nur_links_gefunden": [],
+  "nur_rechts_gefunden": [],
+  "rang_verschoben": 0,
+  "groesste_verschlechterung": 0,
+  "ueberlappung_mittel": 1.0,
+  "einzeln": [
+    {
+      "fall": "L-a9ccd0",
+      "ziel": "L-a9ccd0",
+      "rang_links": 11,
+      "rang_rechts": 11,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-298823",
+      "ziel": "L-298823",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-f9f654",
+      "ziel": "L-f9f654",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-b4b443",
+      "ziel": "L-b4b443",
+      "rang_links": 11,
+      "rang_rechts": 11,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-44a838",
+      "ziel": "L-44a838",
+      "rang_links": 11,
+      "rang_rechts": 11,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-cdac52",
+      "ziel": "L-cdac52",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-e7bc5e",
+      "ziel": "L-e7bc5e",
+      "rang_links": 11,
+      "rang_rechts": 11,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-e1a441",
+      "ziel": "L-e1a441",
+      "rang_links": 11,
+      "rang_rechts": 11,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-b91ed6",
+      "ziel": "L-b91ed6",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-bbd7fb",
+      "ziel": "L-bbd7fb",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-503687",
+      "ziel": "L-503687",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-8c633e",
+      "ziel": "L-8c633e",
+      "rang_links": 11,
+      "rang_rechts": 11,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-606b63",
+      "ziel": "L-606b63",
+      "rang_links": 11,
+      "rang_rechts": 11,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-0392e4",
+      "ziel": "L-0392e4",
+      "rang_links": 15,
+      "rang_rechts": 15,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "L-476602",
+      "ziel": "L-476602",
+      "rang_links": 13,
+      "rang_rechts": 13,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/apps/metahuman-podcast-one-command-pipeline",
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/openlehr/volltextindex-wird-beim-einlesen",
+      "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/lessons/phase2-summary",
+      "ziel": "/lessons/phase2-summary",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/testing/pytest",
+      "ziel": "/testing/pytest",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/brainlehr/inference-control-was-andere-faecher",
+      "ziel": "/brainlehr/inference-control-was-andere-faecher",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/methodik/einstieg",
+      "ziel": "/methodik/einstieg",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/stadtwerke",
+      "ziel": "/stadtwerke",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/openlehr/steuer/ui",
+      "ziel": "/openlehr/steuer/ui",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    },
+    {
+      "fall": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 1.0
+    }
+  ]
+}

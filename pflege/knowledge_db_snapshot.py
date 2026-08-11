@@ -1,4 +1,4 @@
-"""Momentaufnahme der knowledge.db (Auftrag 2026-08-08, Teil 2): Kopie des
+"""Momentaufnahme der brainlehr.db (Auftrag 2026-08-08, Teil 2): Kopie des
 heutigen Bestands, damit spaeter aufgezeichnete Anfragen (recall_log.jsonl,
 siehe knowledge_recall_replay.py) gegen GENAU diesen Stand erneut abgerufen
 werden koennen, nicht gegen einen, der seither weitergewachsen ist.
@@ -29,12 +29,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SHARED_KNOWLEDGE = _w
-DB = SHARED_KNOWLEDGE / "knowledge.db"
+DB = SHARED_KNOWLEDGE / "brainlehr.db"
 SNAPSHOT_DIR = SHARED_KNOWLEDGE / "snapshots"
 
 
 def freeze(zielverzeichnis: Path | None = None, quelle: Path | None = None) -> dict:
-    """Kopiert knowledge.db per sqlite3-Online-Backup-API (konsistent auch
+    """Kopiert brainlehr.db per sqlite3-Online-Backup-API (konsistent auch
     bei gleichzeitigem Schreibzugriff einer anderen Sitzung -- ein reines
     Datei-Kopieren koennte mitten in einer Schreibtransaktion greifen).
     Rueckgabe: Pfad, Datum, Groesse in Byte, Bestandsgroessen zum
@@ -72,7 +72,7 @@ def freeze(zielverzeichnis: Path | None = None, quelle: Path | None = None) -> d
 
 def demo() -> None:
     """Selbsttest gegen eine kleine eigene Quell-DB (kein Zugriff auf die
-    echte knowledge.db noetig -- schnell, deterministisch)."""
+    echte brainlehr.db noetig -- schnell, deterministisch)."""
     import tempfile
 
     with tempfile.TemporaryDirectory() as td:

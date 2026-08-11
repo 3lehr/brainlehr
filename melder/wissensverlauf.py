@@ -15,7 +15,7 @@ Zwei Unterbefehle:
                   Abweichungen. Bei Gleichstand: keine Ausgabe.
 
 knowledge_lint.py wird importiert, nie geaendert. Rein lesend gegenueber
-knowledge.db (ueber knowledge_lint.run(), Verbindung mode=ro).
+brainlehr.db (ueber knowledge_lint.run(), Verbindung mode=ro).
 """
 from __future__ import annotations
 
@@ -170,7 +170,7 @@ def _selftest() -> None:
         history_path = tmp / "verlauf.jsonl"
 
         out1 = aufzeichnen(db_path, log_path, history_path, now)
-        assert out1["db_unchanged"], "run() darf knowledge.db nicht veraendern"
+        assert out1["db_unchanged"], "run() darf brainlehr.db nicht veraendern"
         rec1 = out1["record"]
         assert rec1["orphans"] == 1, rec1
         assert rec1["path_hygiene"] == 2, rec1
@@ -260,7 +260,7 @@ def main() -> None:
         out = aufzeichnen(Path(args.db), Path(args.log), Path(args.history), ts)
         print(f"aufgezeichnet: {out['record']}")
         status = "ja" if out["db_unchanged"] else "NEIN -- SOFORT MELDEN"
-        print(f"knowledge.db unveraendert: {status} "
+        print(f"brainlehr.db unveraendert: {status} "
               f"(sha256 vorher={out['db_sha256_before']} nachher={out['db_sha256_after']})")
     elif args.cmd == "differenz":
         msg = differenz(Path(args.history), args.gegen)

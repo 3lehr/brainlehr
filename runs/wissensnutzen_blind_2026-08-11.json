@@ -1,0 +1,225 @@
+{
+  "models": [
+    "claude-haiku-4-5"
+  ],
+  "n_runs": 3,
+  "retrieval": {
+    "A": {
+      "keywords": [
+        "arbeitest",
+        "flutter",
+        "repo",
+        "fahrtenbuch",
+        "legacy",
+        "schreibe",
+        "dart",
+        "code"
+      ],
+      "node_paths": [
+        "/tools/wiring-check-py-erreichbarkeitspruefung",
+        "/apps/fahrtenbuch/apps-fahrtenbuch-legacy-bleibt-so",
+        "/methodik/direktiven-hub-claude-md/fokus",
+        "/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht",
+        "/frontend/flutter",
+        "/testing/walkthrough-methode-(e2e-journey-als-tes",
+        "/fahrtenbuch/voice/flutter-tts-ios-getvoices-map-schema",
+        "/werkzeuge/stiftshuette-werkzeugbestand-stand-2026/stiftshuette-werkzeuge-die-aufwand",
+        "/apps/wohlairr/wohlairr:-kanonischer-code-ort-vs.-repo-"
+      ],
+      "lesson_ids": [
+        "L-243dde",
+        "L-afa2f8",
+        "L-9ed5a5",
+        "L-958926",
+        "L-68ff10",
+        "L-eed5e8",
+        "L-3079a1"
+      ],
+      "target_lesson_id": "L-c0e910",
+      "trefferguete": false,
+      "retrieval_empty": false
+    },
+    "B": {
+      "keywords": [
+        "arbeitest",
+        "flutter",
+        "repo",
+        "fahrtenbuch",
+        "legacy",
+        "nenne",
+        "exakten",
+        "shell"
+      ],
+      "node_paths": [
+        "/apps/fahrtenbuch/apps-fahrtenbuch-legacy-bleibt-so",
+        "/methodik/direktiven-hub-claude-md/fokus",
+        "/tools/wiring-check-py-erreichbarkeitspruefung",
+        "/apps/fahrtenbuch/google-play-internal-testing-upload",
+        "/fahrtenbuch/voice/flutter-tts-ios-getvoices-map-schema",
+        "/apps/fahrtenbuch/geraete-teststrategie-debug-variante",
+        "/apps/fahrtenbuch",
+        "/fahrtenbuch",
+        "/begod/neuen-app-worktree-bootstrappen"
+      ],
+      "lesson_ids": [
+        "L-9ed380",
+        "L-3079a1",
+        "L-a7d249",
+        "L-692936",
+        "L-958926",
+        "L-c0e910",
+        "L-68ff10"
+      ],
+      "target_lesson_id": "L-68ff10",
+      "trefferguete": true,
+      "retrieval_empty": false
+    },
+    "C": {
+      "keywords": [
+        "nenne",
+        "kubectl",
+        "befehl",
+        "alle",
+        "pods",
+        "namespace",
+        "default",
+        "aufzulisten"
+      ],
+      "node_paths": [
+        "/methodik/adr-bestand-hub-docs-adr/adr-020-einheitliches-citation-network",
+        "/begod/neuen-app-worktree-bootstrappen",
+        "/methodik/fertigkeiten/pause",
+        "/brainlehr/zu-tun-bereichsauslieferung-gehoert-in",
+        "/apps/fahrtenbuch/feldtest-diktat-des-nutzers-enthaelt",
+        "/methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge",
+        "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "/methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an",
+        "/openlehr/steuer/toter-ddl-rest-idx-intake-source-sha256",
+        "/apps/fahrtenbuch/geraete-teststrategie-debug-variante"
+      ],
+      "lesson_ids": [
+        "L-633c10",
+        "L-bdfeef",
+        "L-7a719d",
+        "L-b584e1",
+        "L-d7e998",
+        "L-9f8816",
+        "L-2fea20"
+      ],
+      "target_lesson_id": null,
+      "trefferguete": false,
+      "retrieval_empty": false
+    }
+  },
+  "cells": {
+    "B|MIT|claude-haiku-4-5": {
+      "task": "B",
+      "model": "claude-haiku-4-5",
+      "condition": "MIT",
+      "aggregate": {
+        "mean": 1.0,
+        "range": 0,
+        "runs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "response_full": "flutter test --dart-define=DEBUG_STATE_API=true",
+          "error": null
+        },
+        {
+          "response_full": "flutter test --dart-define=DEBUG_STATE_API=true",
+          "error": null
+        },
+        {
+          "response_full": "flutter test --dart-define=DEBUG_STATE_API=true",
+          "error": null
+        }
+      ]
+    },
+    "C|OHNE|claude-haiku-4-5": {
+      "task": "C",
+      "model": "claude-haiku-4-5",
+      "condition": "OHNE",
+      "aggregate": {
+        "mean": 1.0,
+        "range": 0,
+        "runs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "response_full": "kubectl get pods -n default",
+          "error": null
+        },
+        {
+          "response_full": "kubectl get pods --namespace default",
+          "error": null
+        },
+        {
+          "response_full": "kubectl get pods -n default",
+          "error": null
+        }
+      ]
+    },
+    "C|MIT|claude-haiku-4-5": {
+      "task": "C",
+      "model": "claude-haiku-4-5",
+      "condition": "MIT",
+      "aggregate": {
+        "mean": 1.0,
+        "range": 0,
+        "runs": [
+          1,
+          1,
+          1
+        ]
+      },
+      "runs": [
+        {
+          "response_full": "kubectl get pods -n default",
+          "error": null
+        },
+        {
+          "response_full": "kubectl get pods --namespace default",
+          "error": null
+        },
+        {
+          "response_full": "kubectl get pods -n default",
+          "error": null
+        }
+      ]
+    }
+  },
+  "fehlbestand": [],
+  "verworfen_kontaminiert": [
+    "A|OHNE",
+    "A|MIT",
+    "B|OHNE"
+  ],
+  "ausgewertet_am": "2026-08-11T14:23:55+0200",
+  "konfiguration": {
+    "min_hits": 3,
+    "explore_rate": 0.15,
+    "trust_weight": 0.35,
+    "max_nodes": 10,
+    "max_lessons": 7,
+    "noise_floor_mad_mult": 2.0,
+    "radar_min_sample_n": 4,
+    "full_scan_row_cap": 5000,
+    "project_calibration_min_samples": 50,
+    "ensemble_top_n": 5,
+    "zweiter_kanal": true,
+    "ensemble_pflicht": true,
+    "embed_model": "bge-m3",
+    "bestand_knowledge_nodes": 0,
+    "bestand_lessons_learned": 0,
+    "bestand_knowledge_embeddings": 0
+  }
+}

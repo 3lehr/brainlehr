@@ -153,9 +153,13 @@ def _selftest() -> None:
     """Netzloser Selbsttest gegen die echte (nur gelesene) DB -- kein Ollama
     noetig, query_vec=None testet den reinen Stichwort-Pfad."""
     import ort  # noqa: E402 -- liegt in haken/, s. Modulkopf des Hooks
-    conn = sqlite3.connect(f"file:{ort.DB}?mode=ro", uri=True, timeout=2.0)
-    conn.row_factory = sqlite3.Row
-    nodes, lessons = kandidaten(conn, "", None, 5)
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent / "kern"))
+    import speicher  # noqa: E402 -- eine Tuer zur Datenbank statt einer eigenen
+    with speicher.lesen() as conn:
+        nodes, lessons = kandidaten(conn, "", None, 5)
     assert nodes == [] and lessons == [], "leerer Text muss leere Kandidaten liefern"
     nodes, lessons = kandidaten(conn, "qwfpqwfpblorx zvxjkq wibbnfrx", None, 5)
     assert nodes == [] and lessons == [], "Nonsens-Text darf keine Kandidaten erfinden"

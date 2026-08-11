@@ -31,7 +31,7 @@ from zoneinfo import ZoneInfo
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad -- gleiches Muster wie
 # knowledge_mcp_server.py::DB_PATH, sonst laesst sich dieses Skript nie gegen
 # eine Testkopie fahren, ohne die Produktiv-DB anzufassen.
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (_w / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (_w / "brainlehr.db"))
 BERLIN = ZoneInfo("Europe/Berlin")
 
 

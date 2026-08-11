@@ -17,7 +17,7 @@ geaenderte Dateien ausserhalb dieses Verzeichnisses: KEINE.
 shared-knowledge/knowledge_mcp_server.py wird nur importiert; sein
 Modulattribut DB_PATH wird zur Laufzeit dieses Prozesses auf die Demo-DB
 umgebogen (exakt das Muster aus pruefstand/messlauf.py). Kein
-Schreibzugriff auf shared-knowledge/knowledge.db.
+Schreibzugriff auf shared-knowledge/brainlehr.db.
 """
 from __future__ import annotations
 
@@ -40,7 +40,9 @@ import re
 import sqlite3
 import sys
 import time
+import os
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 from pathlib import Path
@@ -133,11 +135,95 @@ def _call_ollama(prompt: str, *, model: str, base_url: str, timeout: float) -> t
 
 
 
+# --- Sperre gegen den unbeabsichtigten lokalen Prueflauf (L-a69129) --------
+# Der Betreiber hat am 2026-08-07 entschieden: Haiku fuer die Prueflaeufe.
+# Am 2026-08-09 lief das dreimal trotzdem lokal, jedes Mal von ihm bemerkt,
+# nie vom Assistenten -- weil der Modellname als Vorgabewert im Modul steht
+# (MODEL = sl.DEFAULT_MODEL) und in keiner Kommandozeile auftaucht. Gemessene
+# Kosten: 45 Faelle in 30 Minuten statt 55 in 2,6 Minuten (pruefkorpus.py),
+# und eine unbrauchbare Tagesmessung (wissensnutzen_blind.py).
+#
+# HERKUNFT: Die Ortswahl, der Loopback-Test und die Laufzeit-Freigabe stammen
+# aus der Sitzung vom 2026-08-09 (Verfahren dazu in L-358e31), die im
+# Arbeitsbaum happy-hugle-b813dc liegen blieb und nie festgeschrieben wurde --
+# darum fand sie am 2026-08-11 weder vorschlag.py noch die Zitatsuche. Hier
+# zusammengefuehrt statt neu gebaut.
+#
+# ZWEI SIEBE, weil ein einzelnes je eine Luecke hat:
+#   (1) ROLLE, Pflichtfeld am Aufrufort. Sagt, WAS dieser Aufruf ist. Ohne sie
+#       waere jeder lokale Lauf gleich viel wert, und die Entscheidung des
+#       Betreibers geht nach Rolle, nicht nach Anbieter.
+#   (2) LAUFZEIT-FREIGABE BRAINLEHR_LOKAL=1 fuer die Rolle 'erzeugen'.
+#       Ausdruecklich heisst zur Laufzeit, nicht als Zeile im Quelltext -- eine
+#       Quelltextzeile stand bei allen drei Vorkommen schon da und wurde beim
+#       Start nicht gelesen.
+# Die Rolle 'beantworten' ist NICHT freigebbar: dafuer gilt das Betriebsmodell,
+# und ein Python-Skript kann keinen Haiku-Subagenten starten -- solche Laeufe
+# gehoeren in den Hauptfaden. Eine Umgebungsvariable, die auch das aufmacht,
+# waere nach drei Vorkommen genau die Hintertuer, die man sich angewoehnt.
+#
+# Enger Schnitt, absichtlich: Embeddings (bge-m3) nehmen /api/embed in
+# embeddings.py und kommen hier nie vorbei. Preis eines Fehlalarms: ein
+# Abbruch vor dem ersten Modellaufruf, kein Token, keine Minute verbrannt --
+# der Lauf wird mit BRAINLEHR_LOKAL=1 neu gestartet, Kosten ~10 Sekunden.
+#
+# PREIS DER ROLLE: geprueft wird die DEKLARATION, nicht ihre Wahrheit. Wer
+# 'erzeugen' schreibt und in Wahrheit beantwortet, kommt durch (dann aber nur
+# mit ausdruecklicher Laufzeit-Freigabe, siehe Sieb 2). Statisch ist die Rolle
+# nicht entscheidbar -- ein statischer Pruefer auf eine statisch unentscheidbare
+# Frage lieferte am 2026-08-11 vier Treffer, vier davon falsch.
+ROLLEN = ("erzeugen", "beantworten", "messobjekt")
+LOKAL_IST_MESSOBJEKT = True  # nur fuer run(): dort IST das lokale Modell der Gegenstand
+_LOOPBACK = ("127.0.0.1", "localhost", "::1", "[::1]")
+
+
+def _ist_lokal(base_url: str) -> bool:
+    host = urllib.parse.urlsplit(base_url).hostname or ""
+    return host in _LOOPBACK
+
+
+def rolle_pruefen(rolle: str, model: str, base_url: str) -> None:
+    """Pruefstein zu L-a69129 (antipattern, 3 Vorkommen, zur Regel eskaliert).
+
+    erzeugen    Pruefaufgaben/Text erzeugen -- lokal und schwach ist Absicht
+                (sonst werden die Aufgaben glatter als echte Anfragen), aber
+                nur mit ausdruecklicher Laufzeit-Freigabe BRAINLEHR_LOKAL=1.
+    beantworten Pruefaufgaben beantworten -- lokal NIE, auch nicht mit
+                Freigabe. Gehoert in den Hauptfaden (Betriebsmodell).
+    messobjekt  das lokale Modell ist der Gegenstand der Messung, nicht ihr
+                Werkzeug (Schreibpruefstand) -- lokal ohne Freigabe.
+    """
+    if rolle not in ROLLEN:
+        raise ValueError(f"unbekannte Rolle {rolle!r}, erlaubt: {', '.join(ROLLEN)}")
+    if rolle == "beantworten":
+        raise RuntimeError(
+            f"L-a69129: Pruefaufgabe BEANTWORTEN gegen '{model}' ({base_url}) abgelehnt. "
+            "Beschluss 2026-08-07: Prueflaeufe fahren gegen Haiku. Diese Rolle ist "
+            "auch mit BRAINLEHR_LOKAL nicht freigebbar -- ein Skript kann keinen "
+            "Subagenten starten, der Lauf gehoert in den Hauptfaden."
+        )
+    if rolle == "messobjekt" or not _ist_lokal(base_url) or os.environ.get("BRAINLEHR_LOKAL"):
+        return
+    raise RuntimeError(
+        f"L-a69129: lokaler Erzeugungslauf gegen '{model}' ({base_url}) abgelehnt. "
+        "Beschluss 2026-08-07: Prueflaeufe fahren gegen Haiku. Ist der lokale Lauf "
+        "hier ausdruecklich gewollt (Korpus-Erzeugung, Modellvergleich), dann mit "
+        "BRAINLEHR_LOKAL=1 starten."
+    )
+
+
 def _call_with_retry(prompt: str, *, model: str, base_url: str, timeout: float,
+                      rolle: str,
                       backend: str = DEFAULT_BACKEND) -> tuple[str | None, str | None, int]:
     """Ein Werkzeugausfall (Timeout/Verbindung) darf EINMAL wiederholt werden,
     kein stilles Endlos-Retry -- sonst verschwindet die Ausfallquote, die der
-    Lauf gerade messen soll. Gibt (rohtext, fehler, retry_count) zurueck."""
+    Lauf gerade messen soll. Gibt (rohtext, fehler, retry_count) zurueck.
+
+    `rolle` ist Pflicht ohne Vorgabewert: der zweite der drei Vorfaelle zu
+    L-a69129 entstand genau daraus, dass ein Vorgabewert ungeprueft uebernommen
+    wurde. Ein Vorgabewert hier waere derselbe Fehler noch einmal.
+    """
+    rolle_pruefen(rolle, model, base_url)
     raw_response, call_error = _call_ollama(prompt, model=model, base_url=base_url, timeout=timeout)
     if call_error is None:
         return raw_response, call_error, 0
@@ -185,7 +271,11 @@ def run(*, model: str = DEFAULT_MODEL, base_url: str = DEFAULT_OLLAMA_URL,
 
         call_started = time.perf_counter()
         raw_response, call_error, retry_count = _call_with_retry(
-            prompt, model=model, base_url=base_url, timeout=timeout, backend=backend)
+            # messobjekt: das lokale Modell ist hier der PRUEFGEGENSTAND (schafft
+            # es die knowledge_add-Ablage?), es beantwortet keine Pruefaufgabe.
+            prompt, model=model, base_url=base_url, timeout=timeout,
+            rolle="messobjekt" if LOKAL_IST_MESSOBJEKT else "erzeugen",
+            backend=backend)
         call_seconds = time.perf_counter() - call_started
 
         record: dict = {
@@ -301,7 +391,7 @@ def _selftest() -> None:
         return '{"parent_path": "/x", "title": "t", "summary": "s"}', None
 
     with mock.patch.object(module, "_call_ollama", fake_fail_then_ok):
-        _, err, retries = _call_with_retry("p", model="m", base_url="u", timeout=1.0)
+        _, err, retries = _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle="erzeugen")
     assert err is None and retries == 1 and len(calls) == 2, \
         f"Retry griff nicht wie erwartet: err={err!r} retries={retries} calls={len(calls)}"
 
@@ -313,7 +403,7 @@ def _selftest() -> None:
         return None, "Ollama-Aufruf fehlgeschlagen: timed out"
 
     with mock.patch.object(module, "_call_ollama", fake_always_fail):
-        _, err, retries = _call_with_retry("p", model="m", base_url="u", timeout=1.0)
+        _, err, retries = _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle="erzeugen")
     assert err is not None and retries == 1 and len(calls2) == 2, \
         f"kein stilles Endlos-Retry erwartet: err={err!r} retries={retries} calls={len(calls2)}"
 
@@ -334,7 +424,42 @@ def _selftest() -> None:
     assert "Ollama-Aufruf fehlgeschlagen: timed out" not in summary["gate_rejection_reasons"], \
         "Werkzeugausfall faelschlich als Sperren-Ablehnung gezaehlt"
 
-    print("selftest ok: Retry-Mechanik + Werkzeugausfall/Sperren-Trennung", file=sys.stderr)
+    # 4) Pruefstein L-a69129, beide Richtungen -- ein Sieb, das nur durchlaesst,
+    #    beweist nichts, und eines, das nur sperrt, ebenso wenig.
+    aufrufe: list[int] = []
+
+    def fake_ok(prompt, *, model, base_url, timeout):
+        aufrufe.append(1)
+        return "x", None
+
+    with mock.patch.object(module, "_call_ollama", fake_ok):
+        # 4a) Negativfall: 'beantworten' wird abgewiesen, BEVOR ein Aufruf rausgeht.
+        try:
+            _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle="beantworten")
+        except RuntimeError as exc:
+            assert "L-a69129" in str(exc), f"Fehlertext nennt die Lehre nicht: {exc}"
+        else:
+            raise AssertionError("Rolle 'beantworten' lief lokal durch -- Pruefstein wirkungslos")
+        assert not aufrufe, "abgewiesener Lauf hat trotzdem das Modell aufgerufen"
+
+        # 4b) Positivfall: 'erzeugen' (nicht-lokale Gegenstelle) und 'messobjekt'
+        #     kommen durch. base_url 'u' hat keinen Loopback-Host, ist also
+        #     nicht lokal -- die Laufzeit-Freigabe steht in tests/test_modellsperre.py.
+        for erlaubt in ("erzeugen", "messobjekt"):
+            raw, err, _ = _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle=erlaubt)
+            assert err is None and raw == "x", f"Rolle {erlaubt!r} faelschlich gesperrt"
+        assert len(aufrufe) == 2, f"erwartet 2 durchgelassene Aufrufe, waren {len(aufrufe)}"
+
+        # 4c) Tippfehler in der Rolle ist ein Fehler, kein stilles Durchlassen.
+        try:
+            _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle="Beantworten")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("unbekannte Rolle lief durch -- Schreibfehler waere ein Loch")
+
+    print("selftest ok: Retry-Mechanik + Werkzeugausfall/Sperren-Trennung + Rollenpruefstein",
+          file=sys.stderr)
 
 
 def main() -> None:

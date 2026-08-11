@@ -1,0 +1,15 @@
+{
+  "verfahren": "Haltemenge nach Hash der Zielkennung, Drittel",
+  "tuning": 22,
+  "halten": 13,
+  "tuning_ergebnisse": {
+    "teilstring": 3,
+    "wortgrenze": 4,
+    "kurzfeld": 5,
+    "kurz_gewichtet": 5
+  },
+  "beste_bauform": "kurzfeld",
+  "haltemenge_beste": 2,
+  "haltemenge_fts5": 4,
+  "versuche": 4
+}

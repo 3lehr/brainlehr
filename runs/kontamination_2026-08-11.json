@@ -1,0 +1,59 @@
+{
+  "kontaminierte_zellen": [
+    "A|MIT",
+    "A|OHNE",
+    "B|OHNE"
+  ],
+  "befunde": [
+    {
+      "zelle": "A|OHNE",
+      "traeger": "ActionScreen",
+      "im_prompt": false,
+      "protokolle": [
+        "agent-a16faf2fa7e7bad26.jsonl",
+        "agent-aa7db9a62f9b48223.jsonl",
+        "agent-af13257cab0146374.jsonl"
+      ],
+      "urteil": "kontaminiert"
+    },
+    {
+      "zelle": "A|MIT",
+      "traeger": "ActionScreen",
+      "im_prompt": false,
+      "protokolle": [
+        "agent-a16faf2fa7e7bad26.jsonl",
+        "agent-aa7db9a62f9b48223.jsonl",
+        "agent-af13257cab0146374.jsonl"
+      ],
+      "urteil": "kontaminiert"
+    },
+    {
+      "zelle": "B|OHNE",
+      "traeger": "DEBUG_STATE_API",
+      "im_prompt": false,
+      "protokolle": [
+        "agent-a16faf2fa7e7bad26.jsonl",
+        "agent-aa7db9a62f9b48223.jsonl",
+        "agent-af13257cab0146374.jsonl"
+      ],
+      "urteil": "kontaminiert"
+    },
+    {
+      "zelle": "B|MIT",
+      "traeger": "DEBUG_STATE_API",
+      "im_prompt": true,
+      "protokolle": [
+        "agent-a16faf2fa7e7bad26.jsonl",
+        "agent-aa7db9a62f9b48223.jsonl",
+        "agent-af13257cab0146374.jsonl"
+      ],
+      "urteil": "erwartet -- der Traeger stand in der Aufgabe selbst"
+    }
+  ],
+  "gepruefte_protokolle": [
+    "agent-a16faf2fa7e7bad26.jsonl",
+    "agent-aa7db9a62f9b48223.jsonl",
+    "agent-af13257cab0146374.jsonl"
+  ],
+  "urteil": "Messung unbrauchbar fuer diese Zellen"
+}

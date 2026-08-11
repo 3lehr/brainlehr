@@ -437,7 +437,7 @@ def erfasse(db_path: Path, apply: bool, global_md: Path = GLOBAL_CLAUDE_MD,
     stand = datetime.now().astimezone().isoformat()
     backup_path = None
     if apply:
-        backup_path = db_path.parent / f"knowledge.db.bak-{datetime.now().strftime('%Y%m%dT%H%M%S')}"
+        backup_path = db_path.parent / f"brainlehr.db.bak-{datetime.now().strftime('%Y%m%dT%H%M%S')}"
         shutil.copy2(db_path, backup_path)
 
     # Sammelknoten fuer hub-CLAUDE.md und ADRs zuerst -- Kinder brauchen den
@@ -554,7 +554,7 @@ def _selftest() -> int:
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
-        db_path = tmp_path / "knowledge.db"
+        db_path = tmp_path / "brainlehr.db"
         _init_temp_db(db_path)
 
         global_md = tmp_path / "global.md"

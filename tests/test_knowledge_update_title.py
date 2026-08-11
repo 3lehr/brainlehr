@@ -10,7 +10,7 @@ Parameter von knowledge_update).
 Die Fassungshistorie (Trigger knowledge_fassung_au, schema.sql,
 2026-08-09) existiert in DIESEM Repo-Wurzel-schema.sql noch nicht -- nur
 in der Worktree hallo-3b3c8d, wo der Trigger geschrieben wurde. In der
-LIVE-DB (knowledge.db am Repo-Stamm) steht er trotzdem schon (per Hand
+LIVE-DB (brainlehr.db am Repo-Stamm) steht er trotzdem schon (per Hand
 angewendet). Diese Testdatei spielt ihn deshalb direkt als DDL ein, wie
 test_update_fremder_actor.py es fuer herkunft_unveraenderlich.sql tut --
 sonst wuerde der Test die Archivierung gar nicht pruefen."""

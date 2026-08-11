@@ -38,7 +38,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-DB_PATH = _w / "knowledge.db"
+DB_PATH = _w / "brainlehr.db"
 BERLIN = ZoneInfo("Europe/Berlin")
 SOURCE = "fix_namensraum_knoten.py 2026-08-05"
 
@@ -69,7 +69,7 @@ def _backup() -> Path:
     finally:
         conn.close()
     stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-    dest = DB_PATH.parent / f"knowledge.db.bak-{stamp}"
+    dest = DB_PATH.parent / f"brainlehr.db.bak-{stamp}"
     shutil.copy2(DB_PATH, dest)
     return dest
 

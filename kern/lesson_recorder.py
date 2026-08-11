@@ -40,7 +40,7 @@ sys.path.insert(0, str(_w))
 import knowledge_mcp_server as kms  # noqa: E402  -- liefert kalibrierte Aehnlichkeitserkennung
 import geltungsbereich  # noqa: E402  -- exakter Projektfilter (sql_projects_exact), statt LIKE
 
-DB_PATH = _w / "knowledge.db"
+DB_PATH = _w / "brainlehr.db"
 BERLIN = ZoneInfo("Europe/Berlin")
 
 RULE_THRESHOLD = 3  # Minimum occurrences to auto-generate a rule

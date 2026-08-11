@@ -25,7 +25,7 @@ WAS DER BLICK ENTHAELT, und warum jedes Feld GEMESSEN statt geraten ist:
   - session/actor/model: dieselben drei Spalten wie an jedem Knoten/jeder
     Lehre (Auftrag 2026-08-06) -- hier vom Aufrufer uebergeben, nicht neu
     erfunden.
-  - bestand: Knoten-/Lehren-/Kantenzahl, LIVE aus knowledge.db gezaehlt in
+  - bestand: Knoten-/Lehren-/Kantenzahl, LIVE aus brainlehr.db gezaehlt in
     demselben Aufruf, der den Vermerk schreibt -- keine Konstante, die
     schon beim naechsten Schreibvorgang veraltet waere.
   - kontextfenster: MUSS der Aufrufer mitgeben. Dieses Modul misst es nicht
@@ -64,8 +64,8 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(_w / "haken"))  # diese Datei liegt IN der Wurzel: eine Ebene, nicht zwei
 import ort  # noqa: E402
+import speicher  # noqa: E402  -- eine Tuer zur Datenbank statt einer eigenen
 
 CET = timezone(timedelta(hours=2))
 RUNS = ort.WURZEL / "runs"
@@ -83,10 +83,9 @@ def _jetzt() -> str:
     return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S%z")
 
 
-def _verbindung(db: Path | None = None) -> sqlite3.Connection:
-    conn = sqlite3.connect(f"file:{db or ort.DB}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
-    return conn
+# Nur-lesender Zugang ueber die Naht (speicher.py) statt eigener Verbindung.
+# Umgestellt am 2026-08-11 als erster Beleg, dass die Naht traegt: derselbe
+# mode=ro wie vorher, aber das Schliessen haengt nicht mehr an dieser Datei.
 
 
 def bestandsstand(conn: sqlite3.Connection) -> dict:
@@ -109,13 +108,11 @@ def blick(session: str, kontextfenster: int | str, *, actor: str = "unbekannt",
     if kontextfenster in (None, "", 0):
         raise ValueError("rasterblick.blick: kontextfenster fehlt -- ohne diese Zahl behauptet "
                          "der Vermerk eine Vollstaendigkeit, die er nicht belegen kann")
-    eigene_verbindung = conn is None
-    conn = conn or _verbindung()
-    try:
+    if conn is not None:
         b = bestandsstand(conn)
-    finally:
-        if eigene_verbindung:
-            conn.close()
+    else:
+        with speicher.lesen(db=None) as eigene:
+            b = bestandsstand(eigene)
     return {
         "session": session,
         "actor": actor,
@@ -140,6 +137,40 @@ def ablegen(ergebnisdatei: Path, blick_daten: dict, force: bool = False) -> Path
         raise FileExistsError(f"{ziel} existiert bereits -- --force fuer eine bewusste Ueberschreibung")
     ziel.write_text(json.dumps(blick_daten, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return ziel
+
+
+def verlust_vermerken(ergebnisdatei: Path, grund: str) -> Path:
+    """Haelt fest, dass der Blick dieser Suche NICHT MEHR ZU HABEN ist.
+
+    Anlass 2026-08-11: 30 Ergebnisdateien standen ohne Vermerk, der Melder
+    schlug bei jedem Sitzungsstart an, und es gab genau zwei Auswege -- einen
+    Vermerk erfinden oder den Melder ignorieren. Beide sind schlechter als das
+    Dritte: aufschreiben, dass nichts aufgeschrieben wurde.
+
+    Die naheliegende Erklaerung war zudem falsch und wurde gemessen statt
+    geglaubt: 'die Dateien sind aelter als das Werkzeug' stimmt nicht --
+    rasterblick.py kam am 2026-08-09T10:19:22+0200 ins Repo, die unvermerkten
+    Ergebnisdateien danach (12:12, 16:30). Das Werkzeug war da und wurde nicht
+    aufgerufen; das ist kein Altbestand, sondern eine gebaute Regel ohne
+    Wirkung.
+
+    Was hier NICHT passiert: session, actor, model, kontextfenster und
+    Bestandsstand von damals werden nicht rekonstruiert. Sie sind weg. Ein
+    nachtraeglich gefuellter Blick waere eine Behauptung ueber eine Sitzung,
+    die niemand mehr befragen kann -- und der Vermerk existiert gerade, um
+    solche Behauptungen zu verhindern.
+
+    Preis: der Melder schweigt danach zu diesen Dateien. Genau richtig -- er
+    hat seinen Zweck erfuellt, sobald der Verlust festgehalten ist. Neue
+    Ergebnisdateien ohne Vermerk loesen ihn unveraendert aus.
+    """
+    return ablegen(ergebnisdatei, {
+        "status": "nicht_rekonstruierbar",
+        "grund": grund,
+        "abgeschlossen_am": _jetzt(),
+        "session": None, "actor": None, "model": None,
+        "kontextfenster": None, "bestand": None,
+    })
 
 
 def fehlende(runs: Path = RUNS) -> list[Path]:
@@ -237,19 +268,48 @@ def _selftest() -> None:
         m = melden(runs)
         assert m and "3 Ergebnisdatei" in m["befund"] and m["fehlklasse"] and m["fehlalarm_kostet"]
 
-    print("selftest ok (10 Faelle)")
+        # Verlustvermerk: bringt den Melder zum Schweigen, OHNE etwas zu erfinden.
+        for name in ("b.json", "d.json", "e.json"):
+            verlust_vermerken(runs / name, "Lauf beendet, Blick nicht mehr befragbar")
+        assert fehlende(runs) == [], "nach dem Abschluss darf keine Datei mehr offen sein"
+        assert melden(runs) is None, "der Melder muss danach schweigen"
+        vermerkt = json.loads(sidecar(runs / "b.json").read_text())
+        assert vermerkt["status"] == "nicht_rekonstruierbar"
+        assert vermerkt["kontextfenster"] is None and vermerkt["bestand"] is None, \
+            "ein Verlustvermerk darf keine Zahl behaupten, die niemand mehr kennt"
+        assert vermerkt["grund"], "ohne Grund waere es ein stiller Abschluss"
+
+        # Und eine NEUE Ergebnisdatei loest den Melder unveraendert aus --
+        # der Abschluss gilt dem Bestand, nicht der Regel.
+        for name in ("f.json", "g.json", "h.json"):
+            (runs / name).write_text("{}")
+        assert melden(runs), "neue Dateien ohne Vermerk muessen weiter anschlagen"
+
+    print("selftest ok (16 Faelle)")
 
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--fehlende", action="store_true", help="Ergebnisdateien ohne Rastervermerk auflisten")
     p.add_argument("--melder", action="store_true", help="nur sprechen, wenn die Meldeschwelle erreicht ist")
+    p.add_argument("--verlust-abschliessen", metavar="GRUND",
+                    help="fuer JEDE Datei ohne Vermerk festhalten, dass der Blick verloren ist "
+                         "(rekonstruiert nichts, siehe verlust_vermerken)")
     p.add_argument("--selftest", action="store_true")
     p.add_argument("--runs", type=Path, default=RUNS)
     a = p.parse_args()
 
     if a.selftest:
         _selftest()
+        return
+
+    if a.verlust_abschliessen:
+        offen = fehlende(a.runs)
+        for pfad in offen:
+            verlust_vermerken(pfad, a.verlust_abschliessen)
+            print(f"  verloren vermerkt: {pfad.name}")
+        print(f"\n{len(offen)} Datei(en) als nicht rekonstruierbar abgeschlossen. "
+              "Nichts erfunden -- der Verlust steht jetzt in der Akte.")
         return
 
     if a.melder:

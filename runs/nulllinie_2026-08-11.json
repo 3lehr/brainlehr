@@ -1,0 +1,63 @@
+{
+  "beschreibung": "Nulllinie der Abrufguete auf runs/echtkorpus_2026-08-11.json (77 Pruefaelle), getrennt nach satzart, drei Bedingungen je Gruppe.",
+  "quelle_korpus": "runs/echtkorpus_2026-08-11.json",
+  "datum": "2026-08-11",
+  "deckel": {
+    "knoten": 10,
+    "lehre": 7
+  },
+  "kandidatentiefe_vor_verschmelzung": 30,
+  "faelle_je_satzart": {
+    "auftrag": 71,
+    "frage": 6
+  },
+  "ziele_je_satzart": {
+    "auftrag": 178,
+    "frage": 6
+  },
+  "versuche": 3,
+  "bedingungen": [
+    "nur_stichwort",
+    "nur_vektor",
+    "hybrid_1_0"
+  ],
+  "ergebnis_je_gruppe": {
+    "auftrag": {
+      "nur_stichwort": {
+        "gefunden": 7,
+        "gesamt": 178,
+        "text": "7 von 178"
+      },
+      "nur_vektor": {
+        "gefunden": 11,
+        "gesamt": 178,
+        "text": "11 von 178"
+      },
+      "hybrid_1_0": {
+        "gefunden": 15,
+        "gesamt": 178,
+        "text": "15 von 178"
+      }
+    },
+    "frage": {
+      "nur_stichwort": {
+        "gefunden": 3,
+        "gesamt": 6,
+        "text": "3 von 6"
+      },
+      "nur_vektor": {
+        "gefunden": 3,
+        "gesamt": 6,
+        "text": "3 von 6"
+      },
+      "hybrid_1_0": {
+        "gefunden": 3,
+        "gesamt": 6,
+        "text": "3 von 6"
+      }
+    }
+  },
+  "ohne_anfragevektor": "0 von 77",
+  "verfahren": "Bestandsaufnahme, keine Auswahl. Es wird nichts optimiert und nichts gegeneinander ausgespielt -- die drei Bedingungen sind keine Kandidaten fuer einen Sieger, sondern drei Blickwinkel auf denselben heutigen Stand. Darum keine Haltemenge: eine Haltemenge trennt Tuning-Menge von Bestaetigungs-menge, und hier wird nicht getunt. Diese Datei ist der Bezugspunkt, gegen den kuenftige Aenderungen verglichen werden.",
+  "was_nicht_gemessen_wurde": "Keine Trennung nach klasse (pfad/kennung) -- nur nach satzart, wie beauftragt. Keine Rangdifferenz und keine Ueberlappung der Trefferlisten (das misst suchparitaet.py/hybridvergleich.py bereits fuer den Datenbankumzug, hier nicht wiederholt). Kein Postgres/pg_trgm -- alle drei Bedingungen laufen gegen SQLite/FTS5 und die lokalen Vektoren, denn die Nulllinie gilt dem Abruf selbst, nicht dem Umzug. Keine Aussage zur Gruppe 'frage': 6 von 77 Faellen sind zu wenig fuer eine Deutung -- die Zahl steht unten mit Nenner, wird aber nicht interpretiert. Kein Fall-Ebenen-Wert ('mindestens ein Ziel je Fall gefunden') -- gezaehlt wird je Ziel, weil ein auftrag-Fall im Schnitt mehrere Ziele fuehrt (178 Ziele auf 71 auftrag-Faelle) und ein Fall-Wert das verdeckt."
+}

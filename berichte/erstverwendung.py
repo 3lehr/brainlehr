@@ -78,7 +78,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).parent.parent  # eine Ebene tiefer seit dem Umzug 2026-08-10
-DEFAULT_DB = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
+DEFAULT_DB = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "brainlehr.db"))
 
 # Wortgrenzen-Suche, Kleinschreibung -- ein Treffer als Teilstring reicht,
 # keine Grammatikanalyse (waere Ermessen, nicht Ableitung).

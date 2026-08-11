@@ -1,0 +1,407 @@
+{
+  "lehren": 741,
+  "codepfad": [
+    {
+      "id": "L-d3c6a4",
+      "severity": "critical",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 4,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 1 = 4 >= 3",
+      "description": "fahrtenbuch: TripRepository.updateVersioned() schrieb beim Supersede-Write der alten/ersetzten Trip-Zeile zusätzlich `up"
+    },
+    {
+      "id": "L-bbd7fb",
+      "severity": "high",
+      "occurrences": 3,
+      "mechanisierbar": true,
+      "punkte": 4,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 2 = 4 >= 3",
+      "description": "Ein Eingang wird aus einer Gesamtbewertung entfernt, weil er unbelegt war — die Gesamtbewertung behauptet danach aber we"
+    },
+    {
+      "id": "L-352afa",
+      "severity": "high",
+      "occurrences": 4,
+      "mechanisierbar": true,
+      "punkte": 4,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 2 = 4 >= 3",
+      "description": "Acht Messartefakte an einem Tag, alle mit derselben Bauform: das Werkzeug beantwortet eine engere Frage als der Satz, in"
+    },
+    {
+      "id": "L-a69129",
+      "severity": "high",
+      "occurrences": 3,
+      "mechanisierbar": true,
+      "punkte": 4,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 2 = 4 >= 3",
+      "description": "Ein Verbot des Betreibers auf eine breitere Klasse ausgedehnt und damit seine EIGENE fruehere Entscheidung ueberschriebe"
+    },
+    {
+      "id": "L-4be9bf",
+      "severity": "high",
+      "occurrences": 3,
+      "mechanisierbar": true,
+      "punkte": 4,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 2 = 4 >= 3",
+      "description": "Ein Agent mit Wissensspeicher sucht nicht nach Themen, sondern nach SATZART. Gemessen am 2026-08-08 in fuenf Vorgaengen "
+    },
+    {
+      "id": "L-402a51",
+      "severity": "high",
+      "occurrences": 3,
+      "mechanisierbar": true,
+      "punkte": 4,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 2 = 4 >= 3",
+      "description": "Die Wettbewerbsrecherche vom 2026-08-09 (runs/wettbewerb_2026-08-09.md) suchte ausschliesslich nach EIGENSCHAFTEN (\"memo"
+    },
+    {
+      "id": "L-c9d2aa",
+      "severity": "high",
+      "occurrences": 3,
+      "mechanisierbar": true,
+      "punkte": 4,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 2 = 4 >= 3",
+      "description": "Vier Negativbefunde an einem Tag beschrieben das eigene PRUEFWERKZEUG statt der Sache -- jedes Mal ueberzeugend, jedes M"
+    },
+    {
+      "id": "L-69217d",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "OpenLehr steuer: normalisierte Tabellen `invoices`/`invoice_items` (mit `BackofficeRepository.create_invoice`/`add_invoi"
+    },
+    {
+      "id": "L-14a742",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "`flutter build ipa`/`xcodebuild -exportArchive` scheitert reproduzierbar (jedes Mal an einem anderen eingebetteten Frame"
+    },
+    {
+      "id": "L-a9ccd0",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in joker_trip_prompt_controller.dart), desse"
+    },
+    {
+      "id": "L-2326bd",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "fahrtenbuch: Automatische Fahrterkennung (Auto Drive Detection) war seit dem allerersten Commit auf beiden Plattformen s"
+    },
+    {
+      "id": "L-008f22",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Einen bisher unerreichbaren Codepfad reparieren kann einen ZWEITEN, dahinterliegenden Bug zum ersten Mal sichtbar machen"
+    },
+    {
+      "id": "L-aacc29",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "Flutter/Dart: Ein Broadcast-Stream für verpflichtende Lifecycle-Ereignisse verwirft beim App-Kaltstart Transitionen, wen"
+    },
+    {
+      "id": "L-4916d0",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Übergebene Beweislage (Handoff-Dokument, STAND.md, Fehlerbericht-Export) wurde als Faktenlage statt als Behauptung behan"
+    },
+    {
+      "id": "L-5431a3",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "Zwei gleichnamige Plugin-Registrant-Klassen im selben Ordner, davon eine toter Code — und die Fehlersuche landete zweima"
+    },
+    {
+      "id": "L-ab05b4",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Dedupe-/Once-Latch wird VOR den Guard-Returns eines asynchronen Anzeige-Callbacks gesetzt statt danach — bricht der Call"
+    },
+    {
+      "id": "L-e9aa47",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "wohlair household_sync_service.dart: Auftrag lautete \"gleiche Sync-Serialisierung vollständig gegen @HiveField-Liste von"
+    },
+    {
+      "id": "L-044353",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Ein Commit sackt die vorgemerkte Arbeit eines parallel laufenden Agenten mit ein. Zweiter Fall am selben Tag: zuerst bei"
+    },
+    {
+      "id": "L-a08f87",
+      "severity": "medium",
+      "occurrences": 3,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 1 + Wiederholung 2 = 3 >= 3",
+      "description": "fahrtenbuch_legacy: Der Vollbild-Retry-Dialog fuer den DB-Schluessel-Lesefehler entschied ueber den blockierenden Dialog"
+    },
+    {
+      "id": "L-353192",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "fahrtenbuch, Konsil-Befund 2026-07-31 (ADR-F-022): Fuer den Feldfehler „autonome Fahrterkennung tot\" EXISTIERTE ein Test"
+    },
+    {
+      "id": "L-1601fa",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "wohlair Demo-Modus (Build 17, demo_replay_provider.dart) sicherte echte Nutzdaten nur im Dart-Arbeitsspeicher (RAM-Felde"
+    },
+    {
+      "id": "L-965048",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "fahrtenbuch: dieselbe Auslassung wie L-090579 (dort _stopTripOnce), hier _snapshotDraftTrip() (lib/features/trips/data/l"
+    },
+    {
+      "id": "L-ac86cf",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "fahrtenbuch_legacy: TripImportService (lib/features/settings/data/trip_import_service.dart) schrieb Importe (JSON/CSV/Vi"
+    },
+    {
+      "id": "L-5f0f83",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "showBlockingPrompt() in lib/core/widgets/blocking_prompt_gate.dart: haengt der aufrufende Zuhoerer waehrend push() offen"
+    },
+    {
+      "id": "L-424312",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "fahrtenbuch: OdometerRecalibrationBlockerListener (lib/features/obd/presentation/odometer_recalibration_blocker_listener"
+    },
+    {
+      "id": "L-8487fb",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "OpenLehr Demo-Konto (Commit 27ab0f2c): /v1/steuer/demo/enter rief _UserGrantStore.issue(user_id=\"demo\") unauthentifizier"
+    },
+    {
+      "id": "L-7aad34",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "Pflichtfeld source ist mit einer Tautologie erfuellbar -- die Pflicht erzeugt Erfindung statt Herkunft. Lauf mit gemma4:"
+    },
+    {
+      "id": "L-ad02b8",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Ein Subagent startete einen Stundenlauf (gemma4:12b, 15 Aufgaben x 2 Aufrufe a 140s) im Hintergrund und beendete seinen "
+    },
+    {
+      "id": "L-86e92d",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Der Weg von unten nach oben existiert und endet im Nichts. Eine Lehre, die dreimal auftritt, wird automatisch auf status"
+    },
+    {
+      "id": "L-84869f",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "Die Wissensdatenbank war beschaedigt, und die Beschaedigung lag bereits IM COMMIT. Gefunden 2026-08-07T22:00:00+0200 dur"
+    },
+    {
+      "id": "L-f3edbf",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Ein Fehlerweg ohne Aufraeumen legte die gesamte Wissensdatenbank still. Am 2026-08-08 wies der Herkunfts-Trigger ein kno"
+    },
+    {
+      "id": "L-0e0ab6",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Beim Umzug eines handgebauten Formulars (openlehr, anlagegueter/anlegen-form) auf einen gemeinsamen Renderer schlug der "
+    },
+    {
+      "id": "L-502be0",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Mehrfach in einer Sitzung behauptet, der Kontext sei \"weitgehend aufgebraucht\" und deshalb Arbeit abgebrochen und eine S"
+    },
+    {
+      "id": "L-3d738e",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Bei vier Bildschirm-Migrationen auf einen gemeinsamen UI-Baustein (openlehr, 2026-08-08: anlagegueter, vorsorge, anzahlu"
+    },
+    {
+      "id": "L-871c8a",
+      "severity": "high",
+      "occurrences": 2,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 2 + Wiederholung 1 = 3 >= 3",
+      "description": "Eine leere Ausgabe als Befund gelesen, ohne vorher eine Nulllinie zu haben. Gemessen 2026-08-08 bei der Probe, ob vier M"
+    },
+    {
+      "id": "L-473ba2",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "Ein Tag Pruefarbeit an openlehr (2026-08-08/09) foerderte acht Fehler zutage, und SECHS davon sassen an derselben Stelle"
+    },
+    {
+      "id": "L-4d07e5",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "Warum eine vorhandene Lehre 19 Tage lang unauffindbar blieb (L-dc0f44, gemessen 2026-08-10): Die Bedeutungssuche legt je"
+    },
+    {
+      "id": "L-aa6087",
+      "severity": "critical",
+      "occurrences": 1,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 3 + Wiederholung 0 = 3 >= 3",
+      "description": "Eine Messung mit Subagenten gefahren und uebersehen, dass der UserPromptSubmit-Haken auf den AUFTRAGSTEXT AN DEN SUBAGEN"
+    },
+    {
+      "id": "L-b9d1f3",
+      "severity": "medium",
+      "occurrences": 3,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 1 + Wiederholung 2 = 3 >= 3",
+      "description": "Eine Fehlerursache behauptet, ohne die Fehlermeldung gelesen zu haben — und die Behauptung in ein Uebergabedokument gesc"
+    },
+    {
+      "id": "L-abf434",
+      "severity": "medium",
+      "occurrences": 3,
+      "mechanisierbar": true,
+      "punkte": 3,
+      "empfehlung": "codepfad",
+      "grund": "Schaden 1 + Wiederholung 2 = 3 >= 3",
+      "description": "Lexikalische Entdopplung (Fellegi-Sunter/EM auf Wort-Jaccard, kein Modellaufruf) stoesst bei lessons_learned an eine Dec"
+    }
+  ],
+  "nachschlagewerk": 701,
+  "nicht_mechanisierbar": 141
+}

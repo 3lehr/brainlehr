@@ -74,7 +74,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from knowledge_mcp_server import fold_de, _fts_phrase  # noqa: E402 -- reine Textfunktionen
 
-DB = os.environ.get("BEGOD_KNOWLEDGE_DB") or str(Path(__file__).resolve().parent.parent / "knowledge.db")
+DB = os.environ.get("BEGOD_KNOWLEDGE_DB") or str(Path(__file__).resolve().parent.parent / "brainlehr.db")
 
 _TOKEN_RE = re.compile(r"[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß0-9_.]*")
 
@@ -256,7 +256,7 @@ def demo() -> None:
     print(
         "Die drei im Auftrag genannten Ereignisnamen (unknown_hardware_rebind, "
         "auto_drive.missed, drive_flow.completion) stehen NICHT woertlich in der "
-        "echten knowledge.db (LIKE-Suche ueber description/root_cause/prevention "
+        "echten brainlehr.db (LIKE-Suche ueber description/root_cause/prevention "
         "aller 689 Lehren: 0 Treffer je Name). Naeheste echte Entsprechung in den "
         "sechs genannten Lehren: 'confirm_blocked.unknownHardware' (L-8b4799), "
         "'Auto-Drive-Vorlauf-Kilometer' als Fliesstext (L-319e01, keine "

@@ -62,6 +62,7 @@ from pathlib import Path
 
 SHARED_KNOWLEDGE = _w
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import schreiblauf as sl  # noqa: E402  -- _call_with_retry wiederverwendet
@@ -136,7 +137,9 @@ def generate_task(target_text: str, rng: random.Random, model: str = MODEL) -> d
     vermeiden = ""
     for attempt in range(1, MAX_ATTEMPTS + 1):
         prompt = _GEN_TEMPLATE.format(quelle=target_text[:1200], vermeiden=vermeiden)
-        raw, err, retries = sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=TIMEOUT)
+        # erzeugen (Aufgabentext), lokal absichtlich -- L-a69129.
+        raw, err, retries = sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL,
+                                                 timeout=TIMEOUT, rolle="erzeugen")
         if err or not raw or not raw.strip():
             attempts.append({"attempt": attempt, "text": None, "error": err, "collision": None})
             continue

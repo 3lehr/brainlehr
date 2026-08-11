@@ -6,7 +6,7 @@
      "Existenzgründer" (ü) nicht, weil FTS5s remove_diacritics nur ü->u macht,
      nicht ue->u.
 
-Laeuft gegen eine Kopie der ECHTEN knowledge.db (derselbe Bestand, den auch
+Laeuft gegen eine Kopie der ECHTEN brainlehr.db (derselbe Bestand, den auch
 die Agenten im Betrieb sehen) -- nicht gegen synthetische Fixtures, weil der
 Fehler an genau diesem Bestand gemessen wurde (siehe Auftrag: Tabelle mit
 sechs Anfragen, vier davon 0 Treffer trotz vorhandenem Knoten).
@@ -45,7 +45,7 @@ def real_db_copy(tmp_path, monkeypatch):
     # Diese Datei misst Abrufguete an ECHTEN Eintraegen. Eine frisch
     # angelegte Instanz hat sie nicht -- dann ist hier nichts zu pruefen.
     braucht_bestand()
-    src = SHARED_KNOWLEDGE / "knowledge.db"
+    src = SHARED_KNOWLEDGE / "brainlehr.db"
     dst = tmp_path / "knowledge_real_copy.db"
     shutil.copy2(src, dst)
     monkeypatch.setattr(kms, "DB_PATH", dst)

@@ -6,7 +6,7 @@ passenden Lehre im Suchtext -- das misst "hilft es, dem Modell die Loesung in
 den Prompt zu schreiben", nicht ob der Abruf sie selbst findet. Hier laeuft
 derselbe Weg wie eine echte Sitzung: knowledge_recall_hook.keywords() zerlegt
 den unveraenderten Aufgabentext, knowledge_recall_hook.query() sucht damit in
-derselben knowledge.db (FTS-Nodes + Lessons-LIKE) -- keine Handauswahl.
+derselben brainlehr.db (FTS-Nodes + Lessons-LIKE) -- keine Handauswahl.
 
 ZWEI GROESSEN GETRENNT gemessen, das ist der Kern:
   TREFFERGUETE  war die passende Lehre unter den tatsaechlichen Treffern?
@@ -33,7 +33,7 @@ nein" heisst: es KANN nicht ja sein, nicht dass der Abruf leer bleiben muss).
 Modelle/N_RUNS/Ollama-Aufruf: identisch zu wissensnutzen.py (Vergleichbarkeit).
 
 Geaenderte Dateien ausserhalb dieser einen: KEINE. wissensnutzen.py nicht
-angefasst. Liest knowledge.db (query()/lesson_query), schreibt nichts hinein.
+angefasst. Liest brainlehr.db (query()/lesson_query), schreibt nichts hinein.
 """
 from __future__ import annotations
 
@@ -139,11 +139,16 @@ def format_recall_block(nodes: list, lessons: list) -> str | None:
 
 
 def run_cell(prompt: str, model: str) -> list[dict]:
+    """Der alte Einzelweg: Aufgabe lokal beantworten. Seit der Modellsperre
+    (L-a69129) gesperrt und nur noch als Beleg vorhanden, dass genau dieser
+    Aufruf der dritte Vorfall war (2026-08-09, gemma4:12b/e4b). Der lauffaehige
+    Weg ist die Dreiteilung: --aufgaben, Hauptfaden, --auswerten."""
     runs = []
     for _ in range(N_RUNS):
         started = time.perf_counter()
         raw, err, retries = sl._call_with_retry(
-            prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=TIMEOUT)
+            prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=TIMEOUT,
+            rolle="beantworten")
         seconds = time.perf_counter() - started
         runs.append({
             "error": err, "retry_count": retries, "call_seconds": seconds,
@@ -152,15 +157,144 @@ def run_cell(prompt: str, model: str) -> list[dict]:
     return runs
 
 
+# --- Dreiteilung: erzeugen (Skript) -> beantworten (Hauptfaden) -> auswerten --
+#
+# Ein Python-Skript kann keinen Subagenten starten. Deshalb faellt der
+# Antwortschritt aus dem Skript heraus, statt die Sperre aufzuweichen; die
+# resolution von L-a69129 sagt genau das. Was bleibt, ist beidseitig billig:
+# Schritt 1 und 3 sind reine Rechnung ohne Modell, Schritt 2 ist der einzige,
+# der ein Modell braucht -- und laeuft dort, wo das Betriebsmodell ohnehin ist.
+
+def aufgaben_erzeugen() -> dict:
+    """Abruf + Promptbau, KEIN Modellaufruf. Ergebnis ist die Arbeitsliste fuer
+    den Hauptfaden: je Zelle der fertige Prompt und wie oft er zu stellen ist."""
+    retrieval: dict[str, dict] = {}
+    zellen: list[dict] = []
+
+    for task_id, task in TASKS.items():
+        nodes, lessons, kws = blind_retrieve(task["prompt"], task["cwd"])
+        lesson_ids = [l["id"] for l in lessons]
+        target = task["target_lesson_id"]
+        retrieval[task_id] = {
+            "keywords": kws, "node_paths": [n["path"] for n in nodes],
+            "lesson_ids": lesson_ids, "target_lesson_id": target,
+            "trefferguete": (target is not None) and (target in lesson_ids),
+            "retrieval_empty": not nodes and not lessons,
+        }
+        block = format_recall_block(nodes, lessons)
+        prompt_ohne = task["prompt"]
+        prompt_mit = f"{prompt_ohne}\n\n{block}" if block else prompt_ohne
+        for condition, prompt in (("OHNE", prompt_ohne), ("MIT", prompt_mit)):
+            zellen.append({"key": f"{task_id}|{condition}", "task": task_id,
+                            "condition": condition, "prompt": prompt, "n_runs": N_RUNS})
+
+    return {"erzeugt_am": _jetzt(), "n_runs": N_RUNS, "retrieval": retrieval,
+            "zellen": zellen, "konfiguration": schnappschuss()}
+
+
+def auswerten(aufgaben: dict, antworten: dict, kontaminiert: set[str] | None = None) -> dict:
+    """Schritt 3: Antworten des Hauptfadens gegen dieselbe check-Funktion wie
+    frueher, gleiche Aggregation. Kein Modellaufruf, keine Sperre.
+
+    Fehlende oder zu kurze Antwortlisten werden NICHT stillschweigend auf die
+    vorhandenen gekuerzt -- eine Zelle mit zwei statt drei Laeufen hat eine
+    andere Streuung, und Streuung ist hier der Messgegenstand. Sie faellt als
+    Fehlbestand auf, damit der Lauf sichtbar unvollstaendig ist statt still
+    optimistisch."""
+    model = antworten.get("model")
+    if not model:
+        raise ValueError("Antwortdatei nennt kein Modell -- ohne Modellangabe ist "
+                          "die Zeile wertlos, sobald mehrere nebeneinander liegen.")
+    gegeben = antworten.get("antworten", {})
+    kontaminiert = kontaminiert or set()
+    cells: dict[str, dict] = {}
+    fehlbestand: list[str] = []
+    verworfen: list[str] = []
+
+    for zelle in aufgaben["zellen"]:
+        key = zelle["key"]
+        # Eine kontaminierte Zelle wird NICHT ausgewertet und nicht als
+        # Randnotiz mitgefuehrt: der Antwortende kannte den Traeger der
+        # Loesung, bevor er die Aufgabe las (kontamination.py). Ein Mittelwert
+        # daneben waere eine Zahl, die aussieht wie eine Messung.
+        if key in kontaminiert:
+            verworfen.append(key)
+            continue
+        texte = gegeben.get(key)
+        if not texte or len(texte) < zelle["n_runs"]:
+            fehlbestand.append(f"{key}: {len(texte or [])}/{zelle['n_runs']}")
+            continue
+        check = TASKS[zelle["task"]]["check"]
+        passed_flags = [check(t or "") for t in texte[:zelle["n_runs"]]]
+        cells[f"{key}|{model}"] = {
+            "task": zelle["task"], "model": model, "condition": zelle["condition"],
+            "aggregate": wn.aggregate(passed_flags),
+            "runs": [{"response_full": t, "error": None} for t in texte[:zelle["n_runs"]]],
+        }
+
+    return {"models": [model], "n_runs": aufgaben["n_runs"],
+            "retrieval": aufgaben["retrieval"], "cells": cells,
+            "fehlbestand": fehlbestand, "verworfen_kontaminiert": verworfen,
+            "ausgewertet_am": _jetzt(),
+            "konfiguration": aufgaben.get("konfiguration")}
+
+
+def _jetzt() -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%S%z")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", default=str(OUT_PATH))
+    ap.add_argument("--aufgaben", metavar="DATEI",
+                     help="Schritt 1: Abruf + Prompts schreiben, kein Modellaufruf")
+    ap.add_argument("--auswerten", nargs=2, metavar=("AUFGABEN", "ANTWORTEN"),
+                     help="Schritt 3: Antworten des Hauptfadens bewerten, kein Modellaufruf")
+    ap.add_argument("--kontamination", metavar="DATEI",
+                     help="Befund von kontamination.py -- die dort genannten Zellen "
+                          "werden verworfen statt ausgewertet")
     ap.add_argument("--selftest", action="store_true",
                      help="Netzloser Selbsttest von Trefferguete/Blockformat, kein Ollama-Aufruf")
     args = ap.parse_args()
 
     if args.selftest:
         _selftest()
+        return
+
+    if args.aufgaben:
+        daten = aufgaben_erzeugen()
+        ziel = Path(args.aufgaben)
+        ziel.parent.mkdir(parents=True, exist_ok=True)
+        ziel.write_text(json.dumps(daten, ensure_ascii=False, indent=2), encoding="utf-8")
+        for t, r in daten["retrieval"].items():
+            print(f"{t} Abruf: kws={r['keywords']} lessons={r['lesson_ids']} "
+                  f"ziel={r['target_lesson_id']} trefferguete={r['trefferguete']}", flush=True)
+        print(f"\nGeschrieben: {ziel} ({len(daten['zellen'])} Zellen x "
+              f"{daten['n_runs']} Laeufe = {len(daten['zellen']) * daten['n_runs']} Antworten)",
+              flush=True)
+        return
+
+    if args.auswerten:
+        aufg = json.loads(Path(args.auswerten[0]).read_text(encoding="utf-8"))
+        antw = json.loads(Path(args.auswerten[1]).read_text(encoding="utf-8"))
+        kont = set()
+        if args.kontamination:
+            kont = set(json.loads(Path(args.kontamination).read_text(
+                encoding="utf-8"))["kontaminierte_zellen"])
+        ergebnis = auswerten(aufg, antw, kont)
+        ziel = Path(args.out)
+        ziel.parent.mkdir(parents=True, exist_ok=True)
+        ziel.write_text(json.dumps(ergebnis, ensure_ascii=False, indent=2), encoding="utf-8")
+        for key, zelle in ergebnis["cells"].items():
+            print(f"{key:28s} mean={zelle['aggregate']['mean']:.2f} "
+                  f"range={zelle['aggregate']['range']}", flush=True)
+        if ergebnis["verworfen_kontaminiert"]:
+            print(f"\nVERWORFEN (kontaminiert, siehe kontamination.py): "
+                  f"{', '.join(ergebnis['verworfen_kontaminiert'])}", flush=True)
+        if ergebnis["fehlbestand"]:
+            print(f"\nFEHLBESTAND (nicht ausgewertet): {', '.join(ergebnis['fehlbestand'])}",
+                  flush=True)
+        print(f"\nGeschrieben: {ziel}", flush=True)
         return
 
     started_total = time.perf_counter()
@@ -239,7 +373,48 @@ def _selftest() -> None:
     assert TASKS["C"]["check"]("kubectl get pods -n default") is True
     assert TASKS["C"]["check"]("kubectl get pod default") is False
 
-    print("selftest ok: Blockformat + Trefferguete-Logik + Aufgabe-C-Check", file=sys.stderr)
+    # Dreiteilung: auswerten() ohne Netz, mit gestellten Aufgaben/Antworten.
+    aufg = {"n_runs": 2, "retrieval": {}, "konfiguration": None, "zellen": [
+        {"key": "C|OHNE", "task": "C", "condition": "OHNE", "prompt": PROMPT_C, "n_runs": 2},
+        {"key": "C|MIT", "task": "C", "condition": "MIT", "prompt": PROMPT_C, "n_runs": 2},
+    ]}
+    erg = auswerten(aufg, {"model": "claude-haiku-4-5", "antworten": {
+        "C|OHNE": ["kubectl get pods -n default", "kubectl get pod"],   # 1 von 2 richtig
+        "C|MIT": ["kubectl get pods", "kubectl get pods -n default"],    # 2 von 2 richtig
+    }})
+    assert erg["cells"]["C|OHNE|claude-haiku-4-5"]["aggregate"]["mean"] == 0.5, \
+        "Bewertung der Antworten stimmt nicht"
+    assert erg["cells"]["C|MIT|claude-haiku-4-5"]["aggregate"]["mean"] == 1.0
+    assert erg["models"] == ["claude-haiku-4-5"], "Modell kommt aus der Antwortdatei, nicht aus MODELS"
+    assert not erg["fehlbestand"] and not erg["verworfen_kontaminiert"]
+
+    # Kontaminierte Zelle: verworfen, NICHT ausgewertet -- und die saubere
+    # daneben bleibt erhalten (Gegenprobe, sonst wuerde ein Befund den
+    # ganzen Lauf loeschen statt der betroffenen Zelle).
+    kont = auswerten(aufg, {"model": "m", "antworten": {
+        "C|OHNE": ["kubectl get pods -n default", "kubectl get pod"],
+        "C|MIT": ["kubectl get pods", "kubectl get pods -n default"],
+    }}, kontaminiert={"C|OHNE"})
+    assert kont["verworfen_kontaminiert"] == ["C|OHNE"]
+    assert "C|OHNE|m" not in kont["cells"], "kontaminierte Zelle darf keinen Mittelwert bekommen"
+    assert "C|MIT|m" in kont["cells"], "die saubere Zelle muss stehen bleiben"
+
+    # Negativfall: eine zu kurze Antwortliste wird NICHT auf die vorhandenen
+    # gekuerzt -- sonst sieht eine halbe Zelle aus wie eine ganze.
+    luecke = auswerten(aufg, {"model": "m", "antworten": {"C|OHNE": ["kubectl get pods -n default"]}})
+    assert luecke["fehlbestand"] == ["C|OHNE: 1/2", "C|MIT: 0/2"], luecke["fehlbestand"]
+    assert luecke["cells"] == {}, "unvollstaendige Zelle darf nicht ausgewertet werden"
+
+    # Und ohne Modellangabe gar nichts -- eine Zeile ohne Modell ist wertlos.
+    try:
+        auswerten(aufg, {"antworten": {}})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Antwortdatei ohne Modell wurde angenommen")
+
+    print("selftest ok: Blockformat + Trefferguete-Logik + Aufgabe-C-Check + Dreiteilung",
+          file=sys.stderr)
 
 
 if __name__ == "__main__":

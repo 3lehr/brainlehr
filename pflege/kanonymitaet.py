@@ -50,8 +50,8 @@ from collections import defaultdict
 from pathlib import Path
 
 # Gleiche Bauform wie knowledge_mcp_server.py: BEGOD_KNOWLEDGE_DB
-# ueberschreibt den Pfad, sonst knowledge.db neben dieser Datei.
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (_w.parent / "knowledge.db"))
+# ueberschreibt den Pfad, sonst brainlehr.db neben dieser Datei.
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (_w.parent / "brainlehr.db"))
 
 _RE_NAME = re.compile(r"Abwesenheit: (.+?) \(")
 _RE_SUMMARY = re.compile(
@@ -154,7 +154,7 @@ def _selbsttest():
 
 def main():
     ap = argparse.ArgumentParser(description="k-Anonymitaet messen (nur lesend)")
-    ap.add_argument("--db", default=str(DB_PATH), help="Pfad zur DB (Default: BEGOD_KNOWLEDGE_DB oder knowledge.db)")
+    ap.add_argument("--db", default=str(DB_PATH), help="Pfad zur DB (Default: BEGOD_KNOWLEDGE_DB oder brainlehr.db)")
     ap.add_argument("--pfad", help="Pfad-Praefix, z.B. /organisational/hr_confidential")
     ap.add_argument(
         "--merkmal",

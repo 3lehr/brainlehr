@@ -1,0 +1,10 @@
+{
+  "status": "nicht_rekonstruierbar",
+  "grund": "Lauf am 2026-08-09/11 beendet; Blick (session/actor/model/kontextfenster/Bestandsstand) nicht mehr befragbar, wird nicht rekonstruiert",
+  "abgeschlossen_am": "2026-08-11T12:38:31+0200",
+  "session": null,
+  "actor": null,
+  "model": null,
+  "kontextfenster": null,
+  "bestand": null
+}

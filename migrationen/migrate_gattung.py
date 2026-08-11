@@ -57,7 +57,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HERE = Path(__file__).parent
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "brainlehr.db"))
 CET = timezone(timedelta(hours=1))
 
 NEW_COLUMN_SQL = "gattung TEXT NOT NULL DEFAULT 'arbeitsbestand'"
@@ -185,7 +185,7 @@ def _selftest() -> int:
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        db_path = Path(tmp) / "knowledge.db"
+        db_path = Path(tmp) / "brainlehr.db"
         schema_sql = (HERE / "schema.sql").read_text(encoding="utf-8")
 
         import re as _re

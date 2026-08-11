@@ -1,0 +1,7 @@
+{
+  "geprueft_am": "2026-08-11T19:38:14+0200",
+  "geprueft_von": "gegenprobe.py (zweite Instanz, rechnerisch)",
+  "bestanden": true,
+  "befunde": [],
+  "umfang": "Rechnerische Selbstkonsistenz: Abbruchkennzeichen, Stillstand des Bestands, Zaehler gegen Nenner, Punktschaetzer im eigenen Vertrauensbereich. NICHT geprueft: ob die Messung die richtige Frage stellte, und ob das Modell dasselbe noch einmal liefern wuerde."
+}

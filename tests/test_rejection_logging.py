@@ -43,7 +43,7 @@ import knowledge_lint as lint  # type: ignore  # noqa: E402
 
 @pytest.fixture()
 def temp_db(tmp_path, monkeypatch):
-    """Frische Test-DB mit dem echten Schema, DB_PATH umgebogen. NIE gegen knowledge.db."""
+    """Frische Test-DB mit dem echten Schema, DB_PATH umgebogen. NIE gegen brainlehr.db."""
     db_path = tmp_path / "knowledge_test.db"
     schema = (SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8")
     conn = sqlite3.connect(str(db_path))

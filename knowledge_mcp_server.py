@@ -44,7 +44,7 @@ gegen eine frische DB durchlaufgeprueft): obige Kerndateien PLUS
   - normbestand.py      (Quellstatus-Pruefung)
   - knowledge_lint.py    (die Selbstpruefung selbst, importiert alle
                          obigen; DB_PATH darin fest an
-                         SHARED_KNOWLEDGE/knowledge.db, keine BEGOD_KNOWLEDGE_DB-Uebersteuerung)
+                         SHARED_KNOWLEDGE/brainlehr.db, keine BEGOD_KNOWLEDGE_DB-Uebersteuerung)
 kurator_lauf() (Auftrag 2026-08-07) importiert knowledge_lint.py VERZOEGERT
 (erst beim Aufruf, nicht beim Laden dieses Moduls -- knowledge_lint.py
 importiert seinerseits aus diesem Modul, ein Top-Level-Import waere ein
@@ -108,6 +108,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent / "kern"))
 import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
 import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-Fanout
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
@@ -132,7 +133,7 @@ import herkunft_normentscheider  # Auftrag 2026-08-09: norm_entschieden_von trae
 # jeden Betrieb ausserhalb dieses Verzeichnisses (Fremdclient-Test, spaeter
 # Portabilitaet ausserhalb Begod2026) und laesst sich nicht gegen eine
 # Testkopie fahren, ohne die echte DB anzufassen.
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "brainlehr.db"))
 BERLIN = ZoneInfo("Europe/Berlin")
 # Mehrere MCP-Prozesse/Sitzungen schreiben gleichzeitig auf dieselbe WAL-DB.
 # WAL erlaubt genau einen Schreiber; ohne busy_timeout wirft ein zweiter
@@ -406,7 +407,7 @@ END;
 -- julianday() statt Stringvergleich: L-ec167a (Bestand mischt Datumsform
 -- "YYYY-MM-DD" und volle ISO-Zeit mit Offset, ein reiner "<"-Stringvergleich
 -- waere an dieser Grenze falsch) -- gemessen gegen den echten Bestand
--- (sqlite3 knowledge.db, 2026-08-08): julianday() parst beide Formen korrekt
+-- (sqlite3 brainlehr.db, 2026-08-08): julianday() parst beide Formen korrekt
 -- und vergleichbar. Gleicher Tag ist ERLAUBT (Grenzwert, Auftrag Punkt 4):
 -- eine Norm, die am Tag ihres Inkrafttretens schon wieder endet (z.B.
 -- Direktive, die am selben Tag zurueckgenommen wird), ist ein legitimer,
@@ -495,6 +496,11 @@ def _write_lock():
         os.close(fd)
 
 
+# Verbindungen, die waehrend EINES tools/call geoeffnet wurden. handle_request()
+# raeumt sie im finally weg -- siehe _offene_verbindungen_schliessen().
+_OFFENE_VERBINDUNGEN: list[sqlite3.Connection] = []
+
+
 def get_db() -> sqlite3.Connection:
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
@@ -502,7 +508,50 @@ def get_db() -> sqlite3.Connection:
     conn.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_MS}")
     conn.execute("PRAGMA foreign_keys=ON")
     ensure_schema(conn)
+    _OFFENE_VERBINDUNGEN.append(conn)
     return conn
+
+
+def _offene_verbindungen_schliessen() -> int:
+    """Jede in diesem Aufruf geoeffnete Verbindung zurueckrollen und schliessen.
+
+    ANLASS, gemessen am 2026-08-11: Ab 14:10 konnte KEINE Sitzung mehr in die
+    Wissensdatenbank schreiben -- lesson_record, knowledge_add und
+    freigabe_setzen liefen alle in 'database is locked'. Ursache war EINE
+    Verbindung: ein Serverprozess (PID 25897, fremde Sitzung) hielt eine
+    offene Schreibtransaktion und war dabei untaetig, 0,68 s Rechenzeit in
+    2:40 h. Nachgewiesen durch Ausschluss -- den eigenen Server beendet, die
+    Sperre blieb, der einzige verbliebene Halter war es.
+
+    Warum die vorhandene Dateisperre das nicht abfaengt: _write_lock() gibt im
+    finally die flock frei, die SQLite-Transaktion der geleakten Verbindung
+    aber nicht. Zwei Sperren, nur eine hatte ein finally. Der Docstring von
+    _write_lock beschreibt diese Fehlerform sogar -- fuer die flock geloest,
+    fuer die Verbindung offen geblieben.
+
+    Warum HIER und nicht an den ueber zwei Dutzend get_db()-Aufrufern:
+    dieselbe Begruendung wie bei _write_lock(). Ein finally je Aufrufstelle
+    ist nicht nachpruefbar; ein finally um den ganzen tools/call deckt jeden
+    Pfad ab, auch den, den niemand vorhergesehen hat.
+
+    rollback() vor close(): close() allein wuerde eine offene Transaktion
+    zwar aufloesen, aber der Rueckweg ist ausdruecklich -- ein halb
+    geschriebener Vorgang wird verworfen, nicht dem Zufall der Aufraeumreihen-
+    folge ueberlassen.
+    """
+    geschlossen = 0
+    while _OFFENE_VERBINDUNGEN:
+        conn = _OFFENE_VERBINDUNGEN.pop()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        try:
+            conn.close()
+            geschlossen += 1
+        except Exception:
+            pass
+    return geschlossen
 
 
 def _ensure_anlass_columns(conn: sqlite3.Connection) -> None:
@@ -1008,7 +1057,7 @@ def _ensure_core_schema(conn: sqlite3.Connection) -> None:
 
     Befund an fremdem Ort (leere DB): ensure_schema zog bisher nur Spalten
     nach (ALTER TABLE) und nahm an, dass die Kerntabellen schon existieren --
-    stimmt nur fuer eine bereits gepflegte knowledge.db, nie fuer eine neue.
+    stimmt nur fuer eine bereits gepflegte brainlehr.db, nie fuer eine neue.
     Quelle ist schema.sql neben dieser Datei, nicht ein zweiter im Code
     nachgebauter Schemastand. Jede Anweisung dort steht unter IF NOT EXISTS,
     ein Lauf gegen eine vollstaendige DB aendert also nichts. Ausnahme siehe
@@ -1116,7 +1165,7 @@ def _ensure_nachgezogene_spalten(conn: sqlite3.Connection) -> None:
 
 
 def ensure_schema(conn: sqlite3.Connection) -> None:
-    """Idempotent additive migration for old knowledge.db copies."""
+    """Idempotent additive migration for old brainlehr.db copies."""
     _ensure_core_schema(conn)
     # Generischer Nachzug VOR allen Trigger-Anlegern: ein Trigger, der eine
     # noch fehlende Spalte liest, laesst jeden spaeteren Schreibvorgang mit
@@ -5472,11 +5521,18 @@ def handle_request(req: dict) -> dict:
 
         try:
             with _write_lock():
-                result = TOOLS[tool_name]["handler"](arguments)
-            # B4.4: der Bezug (:own/:published) haengt am Datensatz, nicht am
-            # Werkzeug -- er wirkt darum HIER auf das Ergebnis, an derselben
-            # einen Stelle wie die Erlaubnispruefung davor.
-            result = werkzeugrechte.filtere(tool_name, result)
+                try:
+                    result = TOOLS[tool_name]["handler"](arguments)
+                finally:
+                    # Muss INNERHALB der Dateisperre stehen: sonst gibt der
+                    # Prozess die flock frei, waehrend seine SQLite-Transaktion
+                    # noch offen ist -- der naechste Wartende bekaeme die
+                    # Dateisperre und liefe trotzdem in 'database is locked'.
+                    _offene_verbindungen_schliessen()
+                # B4.4: der Bezug (:own/:published) haengt am Datensatz, nicht am
+                # Werkzeug -- er wirkt darum HIER auf das Ergebnis, an derselben
+                # einen Stelle wie die Erlaubnispruefung davor.
+                result = werkzeugrechte.filtere(tool_name, result)
             return {
                 "jsonrpc": "2.0", "id": req_id,
                 "result": {"content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]}

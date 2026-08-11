@@ -23,7 +23,7 @@ import auszug_nachziehen as an  # noqa: E402
 
 
 def test_noetig_nur_wenn_der_bestand_juenger_ist(tmp_path):
-    db = tmp_path / "knowledge.db"
+    db = tmp_path / "brainlehr.db"
     auszug = tmp_path / "bestand_2026-08-08.jsonl"
 
     db.write_text("x")

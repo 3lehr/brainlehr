@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Wiederherstellung -- prueft .bak-*-Sicherungen von knowledge.db auf
+"""Wiederherstellung -- prueft .bak-*-Sicherungen von brainlehr.db auf
 Brauchbarkeit und spielt eine geprueft brauchbare Sicherung an einen
 NICHT-Live-Zielpfad zurueck (Auftrag 2026-08-06, Anlass: alle vier
 _backup()-Fassungen kopierten bis 2026-08-05 nur die Hauptdatei ohne
-WAL-Checkpoint -- knowledge.db.bak-20260805T221931 fehlt norm_rang,
+WAL-Checkpoint -- brainlehr.db.bak-20260805T221931 fehlt norm_rang,
 siehe Lehre L-218f1e. Bisher wurde KEINE Sicherung je zurueckgespielt.
 
 Sicherheitsprinzip: JEDE Pruefung laeuft auf einer WEGWERF-KOPIE der
 Sicherung in einem Temp-Verzeichnis, nie auf der Sicherungsdatei selbst
 (FTS5-'integrity-check' ist intern ein INSERT-Statement und scheitert
 auf einer mode=ro-Verbindung mit 'attempt to write a readonly database'
--- gemessen beim Bau dieses Skripts) und niemals auf knowledge.db. Die
+-- gemessen beim Bau dieses Skripts) und niemals auf brainlehr.db. Die
 Sicherung wird nur per shutil.copy2 GELESEN, nie geoeffnet.
 """
 from __future__ import annotations
@@ -42,7 +42,7 @@ import tempfile
 from pathlib import Path
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parent.parent  # Wurzel, eine Ebene ueber diesem Ordner (Umzug 2026-08-10)
-DB_PATH = SHARED_KNOWLEDGE / "knowledge.db"
+DB_PATH = SHARED_KNOWLEDGE / "brainlehr.db"
 SCHEMA_SQL = SHARED_KNOWLEDGE / "schema.sql"
 
 # Tabellen, deren Bestandsgroesse den "Nutzen auf einen Blick" ausmacht.
@@ -254,7 +254,7 @@ def _alle_sicherungen() -> list[Path]:
     """Alle .bak-*-Hauptdateien im Verzeichnis, ohne -shm/-wal-Sidecars und
     ohne das schreibpruefstand/-Verzeichnis (laeuft laut Auftrag gerade)."""
     out = []
-    for p in sorted(SHARED_KNOWLEDGE.glob("knowledge.db.bak-*")):
+    for p in sorted(SHARED_KNOWLEDGE.glob("brainlehr.db.bak-*")):
         if p.name.endswith("-shm") or p.name.endswith("-wal"):
             continue
         out.append(p)
@@ -263,7 +263,7 @@ def _alle_sicherungen() -> list[Path]:
 
 def _resolve_und_pruefe_ziel(ziel: Path) -> None:
     """Bricht ab, wenn `ziel` die Live-Datenbank ist -- Pruefung, kein
-    Kommentar. Vergleich ueber realpath, damit '../knowledge.db' o.ae.
+    Kommentar. Vergleich ueber realpath, damit '../brainlehr.db' o.ae.
     nicht durchrutscht."""
     if ziel.exists() and ziel.resolve() == DB_PATH.resolve():
         raise SystemExit(

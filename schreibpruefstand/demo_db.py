@@ -2,7 +2,7 @@
 docs/PLAN_SCHREIBPRUEFSTAND_2026-08-05.md).
 
 Baut shared-knowledge/schreibpruefstand/demo/schreibpruefstand.db aus
-schema.sql -- NIE die echte shared-knowledge/knowledge.db, das ist ueber
+schema.sql -- NIE die echte shared-knowledge/brainlehr.db, das ist ueber
 _assert_not_real_db() erzwungen, nicht nur behauptet. Grundbestand (Haertung
 Runde 2, Plan §1): ein 3 Ebenen tiefer, thema-spezifischer Baum statt der
 ersten, zu flachen Fassung ("/begod" existierte als bequemer Sammelplatz,
@@ -40,7 +40,7 @@ from pathlib import Path
 
 SCHREIBPRUEFSTAND_DIR = Path(__file__).resolve().parent
 SHARED_KNOWLEDGE = SCHREIBPRUEFSTAND_DIR.parent
-REAL_DB_PATH = SHARED_KNOWLEDGE / "knowledge.db"
+REAL_DB_PATH = SHARED_KNOWLEDGE / "brainlehr.db"
 DEMO_DIR = SCHREIBPRUEFSTAND_DIR / "demo"
 DEMO_DB_PATH = DEMO_DIR / "schreibpruefstand.db"
 
@@ -266,7 +266,7 @@ def selftest() -> None:
     assert 15 <= len(RAW_MATERIAL) <= 25, f"Rohmaterial ausserhalb 15-25: {len(RAW_MATERIAL)}"
 
     real_hash_after = hashlib.sha256(REAL_DB_PATH.read_bytes()).hexdigest() if REAL_DB_PATH.exists() else None
-    assert real_hash_before == real_hash_after, "echte knowledge.db wurde waehrend des Selbsttests veraendert"
+    assert real_hash_before == real_hash_after, "echte brainlehr.db wurde waehrend des Selbsttests veraendert"
 
     print(f"demo_db.py selftest ok (checksum={c1[:12]}..., raw_material={len(RAW_MATERIAL)} Stuecke, "
           f"echte DB unveraendert: {real_hash_before == real_hash_after})")

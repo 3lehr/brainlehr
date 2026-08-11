@@ -1,6 +1,6 @@
 """Einmal-Werkzeug, nicht Teil der Lieferung: vergleicht Vektoren aus
 /tmp/vektoren_vorher.db (einzeln gerechnet, Rot-Lauf 2026-08-07T20:06:15) mit
-denen in der aktuellen knowledge.db (stapelweise gerechnet, BATCH_SIZE=32) --
+denen in der aktuellen brainlehr.db (stapelweise gerechnet, BATCH_SIZE=32) --
 gleiche ref_id/kind/project_id, Kosinus. Stichprobe gemischt kurz/lang ueber
 Textlaenge (len(coalesce(content,''))+len(summary) fuer Knoten, len(description)
 fuer Lehren).
@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import embeddings
 
 OLD = "/tmp/vektoren_vorher.db"
-NEW = str(Path(__file__).parent.parent / "knowledge.db")
+NEW = str(Path(__file__).parent.parent / "brainlehr.db")
 
 old = sqlite3.connect(OLD)
 new = sqlite3.connect(NEW)

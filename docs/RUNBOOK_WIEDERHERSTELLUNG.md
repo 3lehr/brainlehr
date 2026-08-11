@@ -1,6 +1,6 @@
 # Wiederherstellung — wenn die Wissensdatenbank kaputt ist
 
-Gilt für: `shared-knowledge/knowledge.db`.
+Gilt für: `shared-knowledge/brainlehr.db`.
 
 Kein git nötig, keine Python-Kenntnisse nötig. Nur die Befehle unten, in
 dieser Reihenfolge.
@@ -9,7 +9,7 @@ dieser Reihenfolge.
 
 **Nie zuerst die Live-Datenbank überschreiben.** Erst prüfen, welche
 Sicherung überhaupt etwas taugt — danach erst zurückspielen. Das Werkzeug
-verweigert von sich aus, wenn `--ziel` auf `knowledge.db` zeigt.
+verweigert von sich aus, wenn `--ziel` auf `brainlehr.db` zeigt.
 
 ## Schritt 1: Welche Sicherungen taugen etwas?
 
@@ -34,24 +34,24 @@ erkennbar ist, wie viel Verlust ein Rückspielen bedeutet.
 Nur eine bestimmte Sicherung prüfen (Dateiname aus der Liste):
 
 ```
-python3 pflege/wiederherstellung.py pruefe knowledge.db.bak-20260805T230122
+python3 pflege/wiederherstellung.py pruefe brainlehr.db.bak-20260805T230122
 ```
 
 ## Schritt 2: Sicherung zurückspielen
 
-**Niemals ohne `--ziel`, und `--ziel` niemals `knowledge.db`.** Erst an
+**Niemals ohne `--ziel`, und `--ziel` niemals `brainlehr.db`.** Erst an
 einen ANDEREN Ort zurückspielen, dort prüfen, danach von Hand entscheiden,
 ob die Live-Datenbank ersetzt wird.
 
 ```
-python3 pflege/wiederherstellung.py stelle_her knowledge.db.bak-20260805T230122 --ziel /tmp/wiederhergestellt.db
+python3 pflege/wiederherstellung.py stelle_her brainlehr.db.bak-20260805T230122 --ziel /tmp/wiederhergestellt.db
 ```
 
 Ausgabe zeigt `stimmt ueberein: True` oder `False`. Bei `False` stehen die
 Abweichungen einzeln darunter — dann diese Sicherung nicht weiterverwenden,
 sondern eine andere aus Schritt 1 probieren.
 
-Ein Versuch mit `--ziel knowledge.db` bricht sofort ab, ohne irgendetwas
+Ein Versuch mit `--ziel brainlehr.db` bricht sofort ab, ohne irgendetwas
 anzufassen — das ist Absicht, keine Fehlfunktion.
 
 ## Schritt 3: Live-Datenbank ersetzen (von Hand, nicht durch das Werkzeug)
@@ -61,14 +61,14 @@ abgedeckte Zeitraum aus Schritt 1 akzeptabel ist:
 
 ```
 cd /Volumes/daten/Begod2026/hub/shared-knowledge
-cp knowledge.db knowledge.db.vor-wiederherstellung-$(date +%Y%m%dT%H%M%S)
-cp /tmp/wiederhergestellt.db knowledge.db
-rm -f knowledge.db-shm knowledge.db-wal
+cp brainlehr.db brainlehr.db.vor-wiederherstellung-$(date +%Y%m%dT%H%M%S)
+cp /tmp/wiederhergestellt.db brainlehr.db
+rm -f brainlehr.db-shm brainlehr.db-wal
 ```
 
 Die erste Zeile sichert den kaputten Stand, falls sich die Entscheidung als
 falsch herausstellt. Die letzte Zeile entfernt Reste der alten
-Journal-Dateien, damit die neue `knowledge.db` sauber startet.
+Journal-Dateien, damit die neue `brainlehr.db` sauber startet.
 
 ## Was diese Prüfung NICHT beweist
 

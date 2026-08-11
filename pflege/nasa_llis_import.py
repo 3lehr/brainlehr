@@ -11,9 +11,9 @@ Trockenlauf ist Voreinstellung. Embeddings NICHT hier -- eigener Schritt
 (build_embeddings.py), vom Hauptfaden angestossen.
 
 Nutzung:
-  python3 nasa_llis_import.py --csv /tmp/llis_probe.csv --db knowledge.db          # Trockenlauf
-  python3 nasa_llis_import.py --csv /tmp/llis_probe.csv --db knowledge.db --write  # echter Import
-  python3 nasa_llis_import.py --db knowledge.db --delete                          # restlos entfernen
+  python3 nasa_llis_import.py --csv /tmp/llis_probe.csv --db brainlehr.db          # Trockenlauf
+  python3 nasa_llis_import.py --csv /tmp/llis_probe.csv --db brainlehr.db --write  # echter Import
+  python3 nasa_llis_import.py --db brainlehr.db --delete                          # restlos entfernen
   python3 nasa_llis_import.py --selftest
 """
 
@@ -270,7 +270,7 @@ def selftest():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--csv", default="/tmp/llis_probe.csv")
-    ap.add_argument("--db", default=str(_w.parent / "knowledge.db"))
+    ap.add_argument("--db", default=str(_w.parent / "brainlehr.db"))
     ap.add_argument("--write", action="store_true", help="echt schreiben (sonst Trockenlauf)")
     ap.add_argument("--delete", action="store_true", help="alle nasa-llis-Knoten restlos entfernen")
     ap.add_argument("--selftest", action="store_true")

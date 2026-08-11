@@ -213,7 +213,7 @@ def _selftest() -> int:
     check(hebb_score(4.0, 4.0) == 1.0, "hebb_score des staerksten Kandidaten -> 1.0")
 
     with tempfile.TemporaryDirectory() as tmp:
-        db_path = Path(tmp) / "knowledge.db"
+        db_path = Path(tmp) / "brainlehr.db"
         schema_sql = (_w / "schema.sql").read_text(encoding="utf-8")
         conn = sqlite3.connect(str(db_path))
         conn.executescript(schema_sql)

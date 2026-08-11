@@ -26,7 +26,7 @@ zeigen die Streuung OHNE jede Aenderung, bevor irgendein Weglass-Ergebnis
 gegen sie gehalten wird.
 
 Geaenderte Dateien ausserhalb dieser einen: KEINE. Liest die echte
-knowledge.db (lesson_query), schreibt nichts hinein.
+brainlehr.db (lesson_query), schreibt nichts hinein.
 """
 from __future__ import annotations
 
@@ -53,6 +53,7 @@ from pathlib import Path
 
 SHARED_KNOWLEDGE = _w
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import schreiblauf as sl  # noqa: E402  -- _call_with_retry wiederverwendet
@@ -120,7 +121,13 @@ def run_n(prompt: str, n: int, *, phase: str, label: str, check) -> dict:
     for i in range(n):
         started = time.perf_counter()
         raw, err, retries = sl._call_with_retry(
-            prompt, model=MODEL, base_url=sl.DEFAULT_OLLAMA_URL, timeout=wn.TIMEOUT)
+            # beantworten: dieser Lauf BEANTWORTET Pruefaufgaben (A/B) und darf
+            # deshalb nicht lokal laufen -- der Pruefstein zu L-a69129 in
+            # schreiblauf.rolle_pruefen sperrt ihn ab jetzt. Der Lauf gehoert in
+            # den Hauptfaden (Subagent mit Betriebsmodell), nicht in dieses
+            # Skript; bis dahin ist er gesperrt statt still falsch zu messen.
+            prompt, model=MODEL, base_url=sl.DEFAULT_OLLAMA_URL, timeout=wn.TIMEOUT,
+            rolle="beantworten")
         seconds = time.perf_counter() - started
         runs.append({"error": err, "retry_count": retries, "call_seconds": seconds,
                       "response_full": raw})

@@ -40,6 +40,7 @@ from pathlib import Path
 
 SHARED_KNOWLEDGE = _w
 sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import knowledge_recall_hook as hook  # noqa: E402
