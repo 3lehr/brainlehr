@@ -25,6 +25,14 @@
 - Remaining risk: This is only a synthetic harness; C0–C4, physical consumers/egress, and the P2 host boundary remain NOT_MEASURED; `A-c0edbd` remains open.
 - Next test: Exercise the same mutation oracles against an independently implemented serving boundary, once one exists.
 
+## 2026-08-11 — test(enigma): reject stale snapshot restore
+
+- Files: `tests/test_enigma_crypto_shredding_spike.py`, `AI_HANDOFF.md`
+- Why: The synthetic restore oracle previously checked only anchor presence; it now rejects snapshots older than the authenticated monotonic tombstone and accepts only a current sanitized snapshot.
+- Verified: `python3 -m pytest -q tests/test_enigma_crypto_shredding_spike.py` — 8 passed.
+- Remaining risk: This remains a synthetic harness; C0–C4, physical consumers/egress, and the P2 host boundary are NOT_MEASURED; `A-c0edbd` remains open.
+- Next test: Exercise stale-anchor semantics against an independently implemented serving boundary, once one exists.
+
 ## 2026-08-11T08:15:00+02:00 — operator: act, do not ask (applies to Codex too)
 
 - Files: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` (both backed up first).

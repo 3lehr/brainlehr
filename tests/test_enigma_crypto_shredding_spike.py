@@ -43,6 +43,8 @@ def _deletion_gate(case) -> tuple[bool, str | None]:
 def _restore_gate(snapshot: dict, anchor: dict | None) -> tuple[bool, str | None]:
     if not anchor or not anchor.get("reachable") or not anchor.get("authentic"):
         return False, "RESTORE_WITHOUT_CURRENT_ANCHOR"
+    if snapshot["epoch"] < anchor["epoch"]:
+        return False, "STALE_SNAPSHOT"
     return True, None
 
 
@@ -58,7 +60,8 @@ def _fixture():
         "a_canary": a_canary, "a_semantic": "SYNTHETIC-A-SEMANTIC", "b_canary": b_canary,
         "consumers": {"cache": "", "log": "", "fts": "", "vector": "", "export": ""},
         "kernel": json.dumps({"group_count": 2, "purpose": "synthetic"}),
-        "snapshot": {"epoch": 1}, "anchor": {"reachable": True, "authentic": True, "epoch": 2},
+        "snapshot": {"epoch": 1}, "sanitized_snapshot": {"epoch": 2},
+        "anchor": {"reachable": True, "authentic": True, "epoch": 2},
         "copies": [], "master": None, "shared_holds": [],
     }
 
@@ -83,8 +86,8 @@ def test_crypto_shredding_baseline():
     assert all(case["a_canary"] not in str(value) for value in (case["a_blob"], *case["consumers"].values()))
     assert _open(case["vault"][case["b_ref"]], "B", case["b_blob"]) == case["b_canary"]
     assert json.loads(case["kernel"])["group_count"] == 2
-    assert case["snapshot"]["epoch"] < case["anchor"]["epoch"]
-    assert _restore_gate(case["snapshot"], case["anchor"]) == (True, None)
+    assert _restore_gate(case["snapshot"], case["anchor"]) == (False, "STALE_SNAPSHOT")
+    assert _restore_gate(case["sanitized_snapshot"], case["anchor"]) == (True, None)
     assert _deletion_gate(case) == (True, None)
 
 
@@ -118,5 +121,5 @@ def test_shared_blob_is_rejected():
 def test_restore_without_current_anchor_is_rejected():
     case = _fixture()
     _delete_a(case)
-    assert _restore_gate(case["snapshot"], case["anchor"]) == (True, None)
-    assert _restore_gate(case["snapshot"], None) == (False, "RESTORE_WITHOUT_CURRENT_ANCHOR")
+    assert _restore_gate(case["sanitized_snapshot"], case["anchor"]) == (True, None)
+    assert _restore_gate(case["sanitized_snapshot"], None) == (False, "RESTORE_WITHOUT_CURRENT_ANCHOR")
