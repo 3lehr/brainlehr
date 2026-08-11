@@ -5,8 +5,29 @@ Fassung 2: der Nenner "type=user + promptSource" war nachweislich zu klein.
 Gemessen im Fenster ab 2026-08-09T07:52:53+00:00 stehen 94 menschliche
 Nachrichten in der Warteschlange (queue-operation, enqueue), aber nur 66
 davon haben je eine promptSource-Zeile -- 28 erreichen den
-UserPromptSubmit-Haltepunkt nie (Grund unbekannt: Warteschlange verworfen,
-Sitzung anders beendet o.ae.) und fielen im alten Nenner unter den Tisch.
+UserPromptSubmit-Haltepunkt nie und fielen im alten Nenner unter den Tisch.
+
+ZUM GRUND, und was davon inzwischen AUSGESCHLOSSEN ist (Knoten 8215ac0d,
+gemessen 2026-08-11 an Sitzung c5d06d04, 82 Nachrichten, 15 ohne Haltepunkt
+= 18,3 %): Hier stand die Vermutung "Warteschlange verworfen, Sitzung anders
+beendet o.ae.". Sie ist WIDERLEGT, ebenso zwei weitere:
+
+  Warteschlange/laufende Arbeit -- sagt das Gegenteil voraus: 62 Nachrichten
+      erreichten den Haltepunkt TROTZ laufender Arbeit, 11 verfehlten ihn
+      in Ruhe.
+  Abgleichfehler dieses Skripts -- Gegenprobe in der Gegenrichtung: von 76
+      promptSource-Zeilen hat genau EINE keinen enqueue-Partner, und die ist
+      eine Aufgabenmeldung. Der Textabgleich verliert also nichts.
+  Zeitweiser Ausfall des Hakens unter Last -- die Fehlenden verteilen sich
+      gleichmaessig ueber 21 Stunden, kein Block. Auch die Textlaenge
+      unterscheidet nicht.
+
+Der Grund bleibt damit OFFEN, und das ist der Stand -- keine neue Vermutung
+an diese Stelle schreiben, ohne sie gemessen zu haben. Wichtig fuer die
+Einordnung: alle betroffenen Nachrichten wurden vom Modell empfangen und
+beantwortet. Es ist kein Zustellungsproblem, sondern ein Ausfall des
+Haltepunkts -- betroffen ist genau die Sorte Nachricht, aus der nie eine
+Lehre entstehen kann.
 
 Zaehler und Nenner jetzt:
 
