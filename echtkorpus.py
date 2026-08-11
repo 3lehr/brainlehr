@@ -68,10 +68,27 @@ MASCHINENTEXT = re.compile(
 MIN_LAENGE = 25
 MAX_ZIELE = 3
 
+# Zweiter Zielkanal: eine Kennung STEHT im Text -- keine Aufloesung noetig,
+# nur eine Existenzpruefung gegen die Datenbank. Das macht diese Faelle
+# LEICHT (Antwort im Prompt) und darum eine eigene Klasse (siehe Modulkopf).
+_LEHRE = re.compile(r"\bL-[0-9a-f]{6}\b")
+# Knotenpfad: beginnt mit '/', mindestens zwei Segmente -- ein blosses '/etc'
+# waere Rauschen. Die DB-Pruefung filtert den Rest (dieselbe Wirklichkeit-
+# statt-Vertrauen-Regel wie in codekanten.aufloesen): ein Kandidat wie
+# '/Volumes/daten/...' loest sich hier einfach nicht auf.
+_KNOTENPFAD = re.compile(r"(?<!\S)/[a-zA-Z][\w\-]*(?:/[\w\-]+)+")
+SITZUNGEN = Path.home() / ".claude" / "projects"
+
+
+def _ist_echte_frage(text: str) -> bool:
+    """Gemeinsamer Filter beider Quellen. '<' am Anfang und Maschinentext
+    sind keine Fragen -- eine Frage ist der Gegenstand der Messung."""
+    return (len(text) >= MIN_LAENGE and not text.startswith("<")
+            and not MASCHINENTEXT.search(text))
+
 
 def echte_nachrichten(pfad: Path = RECALL_LOG) -> list[str]:
-    """Nur was ein Mensch geschrieben hat. Maschinentext traegt zwar Pfade,
-    aber keine Frage -- und eine Frage ist der Gegenstand der Messung."""
+    """Quelle 1: recall_log.jsonl -- nur was den Haltepunkt erreicht hat."""
     if not pfad.exists():
         return []
     raus = []
@@ -81,12 +98,50 @@ def echte_nachrichten(pfad: Path = RECALL_LOG) -> list[str]:
         except json.JSONDecodeError:
             continue
         text = (satz.get("prompt") or "").strip()
-        if len(text) >= MIN_LAENGE and not MASCHINENTEXT.search(text):
+        if _ist_echte_frage(text):
             raus.append(text)
     return raus
 
 
+def sitzungs_nachrichten(wurzel: Path = SITZUNGEN) -> list[str]:
+    """Quelle 2: Sitzungstranskripte -- auch die Nachrichten, die den
+    Haltepunkt nie erreicht haben (gemessen: 18,3 % tun das nicht)."""
+    if not wurzel.exists():
+        return []
+    raus = []
+    for pfad in wurzel.glob("*/[0-9a-f-]*.jsonl"):
+        try:
+            zeilen = pfad.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        for zeile in zeilen:
+            try:
+                satz = json.loads(zeile)
+            except json.JSONDecodeError:
+                continue
+            if satz.get("type") != "user":
+                continue
+            inhalt = (satz.get("message") or {}).get("content")
+            if isinstance(inhalt, str):
+                text = inhalt.strip()
+            elif isinstance(inhalt, list):
+                text = "\n".join(
+                    t.get("text", "") for t in inhalt
+                    if isinstance(t, dict) and t.get("type") == "text").strip()
+            else:
+                continue
+            if _ist_echte_frage(text):
+                raus.append(text)
+    return raus
+
+
+def _ohne_doppelte(nachrichten: list[str]) -> list[str]:
+    return list(dict.fromkeys(nachrichten))
+
+
 def faelle_bilden(nachrichten: list[str], conn) -> list[dict]:
+    """Klasse 'pfad': die Zielangabe kommt ueber code_kanten, nicht aus dem
+    Text -- der schwere Fall, um den es diesem Korpus eigentlich geht."""
     faelle = []
     for text in nachrichten:
         pfade = sorted(k for k in ck.kandidaten(text) if "/" in k)
@@ -96,7 +151,38 @@ def faelle_bilden(nachrichten: list[str], conn) -> list[dict]:
                 if not w["mehrdeutig"]:
                     ziele.add((w["quelle_art"], w["quelle_id"]))
         if ziele and len(ziele) <= MAX_ZIELE:
-            faelle.append({"prompt": text, "pfade": pfade,
+            faelle.append({"prompt": text, "klasse": "pfad", "pfade": pfade,
+                            "ziele": [{"art": a, "id": i} for a, i in sorted(ziele)]})
+    return faelle
+
+
+def kennungen(text: str) -> set[str]:
+    return set(_LEHRE.findall(text or "")) | set(_KNOTENPFAD.findall(text or ""))
+
+
+def kennung_pruefen(kandidat: str, conn) -> dict | None:
+    """Existenzpruefung -- eine erfundene Kennung ist kein Fall."""
+    if _LEHRE.fullmatch(kandidat):
+        zeile = conn.execute(
+            "SELECT id FROM lessons_learned WHERE id = ?", (kandidat,)).fetchone()
+        return {"art": "lehre", "id": zeile["id"]} if zeile else None
+    zeile = conn.execute(
+        "SELECT path FROM knowledge_nodes WHERE path = ?", (kandidat,)).fetchone()
+    return {"art": "knoten", "id": zeile["path"]} if zeile else None
+
+
+def kennung_faelle_bilden(nachrichten: list[str], conn) -> list[dict]:
+    """Klasse 'kennung': die Zielangabe steht wortwoertlich im Text -- der
+    LEICHTE Fall, deshalb eigene Klasse statt gemeinsamer Topf mit 'pfad'."""
+    faelle = []
+    for text in nachrichten:
+        ziele = set()
+        for k in sorted(kennungen(text)):
+            treffer = kennung_pruefen(k, conn)
+            if treffer:
+                ziele.add((treffer["art"], treffer["id"]))
+        if ziele:
+            faelle.append({"prompt": text, "klasse": "kennung",
                             "ziele": [{"art": a, "id": i} for a, i in sorted(ziele)]})
     return faelle
 
@@ -144,7 +230,53 @@ def _selftest() -> None:
                                                   "mehrdeutig": 1}]):
         assert faelle_bilden(n, None) == []
 
-    print("selftest ok (4 Faelle, Gegenprobe in beide Richtungen)", file=sys.stderr)
+    # Klasse 'kennung': existierende Kennung im Text ergibt einen Fall,
+    # eine erfundene keinen -- beide Richtungen, wie beim Pfad-Kanal.
+    class FakeCursor:
+        def __init__(self, treffer): self._treffer = treffer
+        def fetchone(self): return self._treffer
+
+    class FakeConn2:
+        def __init__(self, echte_lehre_ids, echte_pfade):
+            self._lehren = echte_lehre_ids
+            self._pfade = echte_pfade
+
+        def execute(self, sql, params):
+            wert = params[0]
+            if "lessons_learned" in sql:
+                return FakeCursor({"id": wert} if wert in self._lehren else None)
+            return FakeCursor({"path": wert} if wert in self._pfade else None)
+
+    echte_kennung_text = "Siehe L-0f4036 zur Lesetuer, das war der Befund."
+    erfundene_kennung_text = "Siehe L-ffffff, das steht nirgends."
+    knotenpfad_text = "Der Knoten /agents/mcp-tools erklaert das genauer."
+
+    conn2 = FakeConn2(echte_lehre_ids={"L-0f4036"}, echte_pfade={"/agents/mcp-tools"})
+
+    kf = kennung_faelle_bilden([echte_kennung_text], conn2)
+    assert len(kf) == 1 and kf[0]["klasse"] == "kennung", kf
+    assert kf[0]["ziele"] == [{"art": "lehre", "id": "L-0f4036"}]
+
+    assert kennung_faelle_bilden([erfundene_kennung_text], conn2) == [], \
+        "eine erfundene Kennung wurde als Fall gezaehlt"
+
+    kf_pfad = kennung_faelle_bilden([knotenpfad_text], conn2)
+    assert len(kf_pfad) == 1
+    assert kf_pfad[0]["ziele"] == [{"art": "knoten", "id": "/agents/mcp-tools"}]
+
+    # Ein 'pfad'-Fall bleibt Klasse 'pfad', nicht vermischt mit 'kennung'.
+    with mock.patch.object(ck, "wissen_zu",
+                            lambda pfad, conn: [{"quelle_art": "lehre", "quelle_id": "L-1",
+                                                  "mehrdeutig": 0}] if "trip_service" in pfad else []):
+        f_pfad = faelle_bilden(n, None)
+    assert f_pfad[0]["klasse"] == "pfad", f_pfad
+
+    # Doppelter Text ergibt einen Fall, nicht zwei.
+    doppelt = _ohne_doppelte([echte_kennung_text, echte_kennung_text, knotenpfad_text])
+    assert doppelt == [echte_kennung_text, knotenpfad_text], doppelt
+    assert len(kennung_faelle_bilden(doppelt, conn2)) == 2
+
+    print("selftest ok (Gegenprobe je Klasse in beide Richtungen)", file=sys.stderr)
 
 
 def main() -> None:
@@ -159,22 +291,33 @@ def main() -> None:
         _selftest()
         return
 
-    nachrichten = echte_nachrichten()
-    with speicher.lesen() as conn:
-        faelle = faelle_bilden(nachrichten, conn)
+    aus_log = echte_nachrichten()
+    aus_sitzungen = sitzungs_nachrichten()
+    nachrichten = _ohne_doppelte(aus_log + aus_sitzungen)
 
-    print(f"{len(nachrichten)} echte Nachrichten -> {len(faelle)} Faelle")
+    with speicher.lesen() as conn:
+        faelle = faelle_bilden(nachrichten, conn) + kennung_faelle_bilden(nachrichten, conn)
+
+    nach_klasse = {k: sum(1 for f in faelle if f["klasse"] == k) for k in ("pfad", "kennung")}
+    print(f"{len(aus_log)} aus recall_log + {len(aus_sitzungen)} aus Sitzungen "
+          f"-> {len(nachrichten)} eindeutige Nachrichten -> {len(faelle)} Faelle "
+          f"(pfad: {nach_klasse['pfad']}, kennung: {nach_klasse['kennung']})")
     if len(faelle) < 20:
         print(f"  ZU WENIG ZUM MESSEN. {len(faelle)} Faelle sind ein Anfang, keine "
               "Grundlage -- die Anforderungen zu senken waere der Rueckweg zum "
               "erfundenen Korpus.")
     for f in faelle[:6]:
-        print(f"  {f['pfade'][:2]} -> {[z['id'] for z in f['ziele']]}")
+        quelle = f.get("pfade", sorted(kennungen(f["prompt"])))[:2]
+        print(f"  [{f['klasse']}] {quelle} -> {[z['id'] for z in f['ziele']]}")
     if a.out:
         a.out.write_text(json.dumps(
-            {"verfahren": "Aufgabentext aus recall_log (echte Nachricht), Ziel ueber "
-                          "code_kanten (Dateipfad) -- getrennte Kanaele, keine Erzeugung",
-             "nachrichten": len(nachrichten), "faelle": faelle},
+            {"verfahren": "Aufgabentext aus recall_log + Sitzungstranskripten (echte "
+                          "Nachricht), Ziel ueber code_kanten (Pfad) oder Existenzpruefung "
+                          "(Kennung) -- getrennte Kanaele, keine Erzeugung",
+             "nachrichten": len(nachrichten),
+             "nachrichten_aus_log": len(aus_log),
+             "nachrichten_aus_sitzungen": len(aus_sitzungen),
+             "faelle": faelle},
             ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"\nGeschrieben: {a.out}")
 
