@@ -171,7 +171,7 @@ def aufgaben_erzeugen() -> dict:
             "zellen": zellen, "konfiguration": schnappschuss()}
 
 
-def auswerten(aufgaben: dict, antworten: dict) -> dict:
+def auswerten(aufgaben: dict, antworten: dict, kontaminiert: set[str] | None = None) -> dict:
     """Schritt 3: Antworten des Hauptfadens gegen dieselbe check-Funktion wie
     frueher, gleiche Aggregation. Kein Modellaufruf, keine Sperre.
 
@@ -185,11 +185,20 @@ def auswerten(aufgaben: dict, antworten: dict) -> dict:
         raise ValueError("Antwortdatei nennt kein Modell -- ohne Modellangabe ist "
                           "die Zeile wertlos, sobald mehrere nebeneinander liegen.")
     gegeben = antworten.get("antworten", {})
+    kontaminiert = kontaminiert or set()
     cells: dict[str, dict] = {}
     fehlbestand: list[str] = []
+    verworfen: list[str] = []
 
     for zelle in aufgaben["zellen"]:
         key = zelle["key"]
+        # Eine kontaminierte Zelle wird NICHT ausgewertet und nicht als
+        # Randnotiz mitgefuehrt: der Antwortende kannte den Traeger der
+        # Loesung, bevor er die Aufgabe las (kontamination.py). Ein Mittelwert
+        # daneben waere eine Zahl, die aussieht wie eine Messung.
+        if key in kontaminiert:
+            verworfen.append(key)
+            continue
         texte = gegeben.get(key)
         if not texte or len(texte) < zelle["n_runs"]:
             fehlbestand.append(f"{key}: {len(texte or [])}/{zelle['n_runs']}")
@@ -204,7 +213,8 @@ def auswerten(aufgaben: dict, antworten: dict) -> dict:
 
     return {"models": [model], "n_runs": aufgaben["n_runs"],
             "retrieval": aufgaben["retrieval"], "cells": cells,
-            "fehlbestand": fehlbestand, "ausgewertet_am": _jetzt(),
+            "fehlbestand": fehlbestand, "verworfen_kontaminiert": verworfen,
+            "ausgewertet_am": _jetzt(),
             "konfiguration": aufgaben.get("konfiguration")}
 
 
@@ -219,6 +229,9 @@ def main() -> None:
                      help="Schritt 1: Abruf + Prompts schreiben, kein Modellaufruf")
     ap.add_argument("--auswerten", nargs=2, metavar=("AUFGABEN", "ANTWORTEN"),
                      help="Schritt 3: Antworten des Hauptfadens bewerten, kein Modellaufruf")
+    ap.add_argument("--kontamination", metavar="DATEI",
+                     help="Befund von kontamination.py -- die dort genannten Zellen "
+                          "werden verworfen statt ausgewertet")
     ap.add_argument("--selftest", action="store_true",
                      help="Netzloser Selbsttest von Trefferguete/Blockformat, kein Ollama-Aufruf")
     args = ap.parse_args()
@@ -243,13 +256,20 @@ def main() -> None:
     if args.auswerten:
         aufg = json.loads(Path(args.auswerten[0]).read_text(encoding="utf-8"))
         antw = json.loads(Path(args.auswerten[1]).read_text(encoding="utf-8"))
-        ergebnis = auswerten(aufg, antw)
+        kont = set()
+        if args.kontamination:
+            kont = set(json.loads(Path(args.kontamination).read_text(
+                encoding="utf-8"))["kontaminierte_zellen"])
+        ergebnis = auswerten(aufg, antw, kont)
         ziel = Path(args.out)
         ziel.parent.mkdir(parents=True, exist_ok=True)
         ziel.write_text(json.dumps(ergebnis, ensure_ascii=False, indent=2), encoding="utf-8")
         for key, zelle in ergebnis["cells"].items():
             print(f"{key:28s} mean={zelle['aggregate']['mean']:.2f} "
                   f"range={zelle['aggregate']['range']}", flush=True)
+        if ergebnis["verworfen_kontaminiert"]:
+            print(f"\nVERWORFEN (kontaminiert, siehe kontamination.py): "
+                  f"{', '.join(ergebnis['verworfen_kontaminiert'])}", flush=True)
         if ergebnis["fehlbestand"]:
             print(f"\nFEHLBESTAND (nicht ausgewertet): {', '.join(ergebnis['fehlbestand'])}",
                   flush=True)
@@ -345,7 +365,18 @@ def _selftest() -> None:
         "Bewertung der Antworten stimmt nicht"
     assert erg["cells"]["C|MIT|claude-haiku-4-5"]["aggregate"]["mean"] == 1.0
     assert erg["models"] == ["claude-haiku-4-5"], "Modell kommt aus der Antwortdatei, nicht aus MODELS"
-    assert not erg["fehlbestand"]
+    assert not erg["fehlbestand"] and not erg["verworfen_kontaminiert"]
+
+    # Kontaminierte Zelle: verworfen, NICHT ausgewertet -- und die saubere
+    # daneben bleibt erhalten (Gegenprobe, sonst wuerde ein Befund den
+    # ganzen Lauf loeschen statt der betroffenen Zelle).
+    kont = auswerten(aufg, {"model": "m", "antworten": {
+        "C|OHNE": ["kubectl get pods -n default", "kubectl get pod"],
+        "C|MIT": ["kubectl get pods", "kubectl get pods -n default"],
+    }}, kontaminiert={"C|OHNE"})
+    assert kont["verworfen_kontaminiert"] == ["C|OHNE"]
+    assert "C|OHNE|m" not in kont["cells"], "kontaminierte Zelle darf keinen Mittelwert bekommen"
+    assert "C|MIT|m" in kont["cells"], "die saubere Zelle muss stehen bleiben"
 
     # Negativfall: eine zu kurze Antwortliste wird NICHT auf die vorhandenen
     # gekuerzt -- sonst sieht eine halbe Zelle aus wie eine ganze.
