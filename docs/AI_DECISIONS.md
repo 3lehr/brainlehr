@@ -1,5 +1,22 @@
 # AI architecture decisions
 
+## 2026-08-11 — Locked visibility overrides serving projections
+
+- Context: The credential-bound room-planning projection and the later
+  `freigabe` write path independently decided whether a node could be served.
+  A node marked `gesperrt` still returned its utility projection.
+- Decision: `freigabe='gesperrt'` is checked first in the shared projection
+  function and always returns the same metadata-free denial. Changing
+  `freigabe` through MCP requires `verwaltung:schreiben`.
+- Reason: A lock must dominate narrower role/tag grants, and visibility is an
+  administrative decision rather than an ordinary content edit.
+- Rejected alternatives: filtering the response after projection (too late),
+  duplicating the check in each caller (future bypass risk), and assigning
+  `wissen:schreiben` (would let every writer change visibility).
+- Verification: `python3 -m pytest -q tests/test_enigma_hausmeister_contract.py tests/test_lehre_freigabe.py tests/test_werkzeugrechte_durchsetzung.py tests/test_ausweis_identitaet.py` — 29 passed.
+- Boundary: Synthetic P1 evidence only; no P2, anonymity, legal, compliance,
+  production-security, or complete C1 claim.
+
 ## 2026-08-11 — Bind narrow knowledge projections to credentials
 
 - Context: The synthetic housekeeper acceptance test showed that the real

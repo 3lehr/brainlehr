@@ -1446,6 +1446,9 @@ _KNOWLEDGE_READ_PROJEKTION = {
 
 
 def _knowledge_read_projection(row: sqlite3.Row) -> dict | None:
+    if row["freigabe"] == "gesperrt":
+        return {"error": "zugriff verweigert"}
+
     ausw = ausweis.loese_auf()
     policies = [_KNOWLEDGE_READ_PROJEKTION[r]
                 for r in ausw.rollen if r in _KNOWLEDGE_READ_PROJEKTION]

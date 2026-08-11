@@ -103,6 +103,7 @@ RECHTE: dict[str, str] = {
     "annahme_erfassen": "annahme:schreiben",
     "annahme_entscheiden": "annahme:schreiben",
     # verwaltend -- laeuft ueber den ganzen Bestand, darum eigene Aktion
+    "freigabe_setzen": "verwaltung:schreiben",
     "kurator_lauf": "verwaltung:schreiben",
 }
 

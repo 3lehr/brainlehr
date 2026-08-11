@@ -83,3 +83,28 @@ def test_z0_bis_z8_hausmeister_erhaelt_nur_nutzinformation(hausmeister_umgebung)
     }
     assert {name: _public_read(node_id)
             for name, node_id in hausmeister_umgebung.items()} == answers
+
+
+def test_gesperrter_knoten_wird_vor_der_projektion_neutral_abgelehnt(
+        hausmeister_umgebung):
+    node_id = hausmeister_umgebung["person_b"]
+    assert kms.freigabe_setzen(node_id, "gesperrt")["status"] == "gesetzt"
+
+    conn = sqlite3.connect(kms.DB_PATH)
+    vorher = conn.execute(
+        "SELECT access_count FROM knowledge_nodes WHERE id = ?", (node_id,)
+    ).fetchone()[0]
+    conn.close()
+
+    antwort = _public_read(node_id)
+    assert antwort == {"error": "zugriff verweigert"}
+    assert antwort.get("content") is None
+    assert antwort.get("metadata") is None
+    assert "SENSITIVER_GRUND_B" not in json.dumps(antwort)
+
+    conn = sqlite3.connect(kms.DB_PATH)
+    nachher = conn.execute(
+        "SELECT access_count FROM knowledge_nodes WHERE id = ?", (node_id,)
+    ).fetchone()[0]
+    conn.close()
+    assert vorher == nachher == 0

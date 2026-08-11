@@ -1,5 +1,14 @@
 # AI handoff
 
+## 2026-08-11T11:40:45+02:00 — fix(enigma): block projected reads when locked
+
+- Files: `knowledge_mcp_server.py`, `kern/werkzeugrechte.py`, `tests/test_enigma_hausmeister_contract.py`, `docs/AI_DECISIONS.md`, `AI_HANDOFF.md`
+- Why: `freigabe='gesperrt'` was ignored by the shared room-planning projection and still returned utility data. The lock now wins before role/tag projection, access-count mutation, or response delivery. The new visibility tool is assigned to the administrative write right instead of remaining unreachable or becoming ordinary writer authority.
+- Red: `python3 -m pytest -q tests/test_enigma_hausmeister_contract.py -k gesperrter -vv` — 1 failed, 1 deselected; the locked synthetic node returned `nutzinformation`. First combined rights run — 1 failed, 28 passed; `freigabe_setzen` had no central rights mapping.
+- Verified: targeted locked-node run — 1 passed, 1 deselected; `python3 -m pytest -q tests/test_enigma_hausmeister_contract.py tests/test_lehre_freigabe.py tests/test_werkzeugrechte_durchsetzung.py tests/test_ausweis_identitaet.py` — 29 passed.
+- Remaining risk: This is a synthetic P1 read-path test. Search/browse, C0/C2/C3/C4, independent storage edges and P2 remain unmeasured; no anonymity, legal, compliance or production-security claim. The complete suite was not rerun because the unrelated untracked `tests/test_stammformen.py` remains foreign and red.
+- Next test: Register a separate locked-node mutation for search/browse previews before expanding any Enigma claim.
+
 ## 2026-08-11T11:06:37+02:00 — fix(enigma): project credential-bound reads
 
 - Files: `kern/ausweis.py`, `knowledge_mcp_server.py`, `tests/test_enigma_hausmeister_contract.py`, `docs/AI_DECISIONS.md`, `AI_HANDOFF.md`
