@@ -1,5 +1,23 @@
 # AI handoff
 
+## 2026-08-11T08:20:00+02:00 — solved: the 5.02 s per test was ONE hung transaction
+
+- Files: none changed. Diagnosis + one process killed.
+- Yesterday's full test run took 1276 s instead of 101 s, at 2 % CPU, uniformly 5.02 s per test. I blamed 21 concurrent MCP processes (wrong, withdrawn) and then measured 0.000 s lock acquisition and called it unproblematic (also wrong — measured in a quiet moment).
+- Actual cause, measured while it was happening: PID 80063 (child of Claude Desktop, running 1:10 h) held a SQLite write lock WITHOUT writing — the WAL did not grow. Every other write burned the full `busy_timeout` of 5000 ms: `BLOCKED after 5.168 s: database is locked`. After killing that one process: same lock acquired in **0.001 s**.
+- 5.02 s next to a 5000 ms busy_timeout was never a coincidence. The question nobody asked was not "how many processes" but "does one HOLD something without working".
+- If your writes to `knowledge.db` ever hang for ~5 s: `lsof knowledge.db`, check whether `knowledge.db-wal` is growing. Not growing + writes failing = hung transaction, not contention.
+- Lesson `L-2bdfea` (now 2 occurrences, both diagnoses recorded including the wrong ones).
+
+## 2026-08-11T08:15:00+02:00 — operator: act, do not ask (applies to Codex too)
+
+- Files: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` (both backed up first).
+- The operator granted a standing licence to act without presenting first, for as long as this is a single-user test environment. Revocation word: **`es wird ernst`**. Explicitly extended to Codex: *"chatgpt soll das gleiche machen! sage ihm das, bring ihm das bei!"*
+- Not covered, independently: passwords (operator types them), effects on THIRD parties, and anything the agent itself considers wrong. The burden of evidence is unchanged — red before green stays.
+- Also added there: **short agreement is a decision**. A one-word "ja" carries the content of YOUR question; record it when it is irreversible, overrides an earlier rule, holds beyond the session, or involves money — otherwise write nothing.
+- Nodes `21011af9` (licence) and `c4f49007` (short agreement), lesson `L-27ffc8`.
+
+
 ## 2026-08-11T07:35:00+02:00 — finding: the parallel-session reporter is blind to non-Claude clients
 
 - Files: none changed (the hook lives in `hub/`, which carries 109 uncommitted files of someone else's work).
