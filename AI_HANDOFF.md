@@ -76,6 +76,16 @@
 - Next test: Repeat the same boundary checks with separate local UIDs and an external anchor.
 - Root cause repaired: the prior test opened `old_fd` before claiming baseline PASS and reused `kp_child` across processes, so its baseline and lifecycle evidence were invalid.
 
+## 2026-08-11 — test(enigma): enforce grant projection boundary
+
+- Files: `tests/test_enigma_two_process_spike.py`, `AI_HANDOFF.md`
+- Why: Repair `C1_DIRECT_UNGRANTED_DECRYPT` by removing raw public decrypt operations, separating Serving from privileged Control IPC, and validating server-registered grants before every protected read.
+- Red: `python3 -m pytest -q tests/test_enigma_two_process_spike.py -k 'c1_missing_grant or c1_wrong_purpose'` — 2 failed, 3 deselected: raw `a` returned `SYNTHETIC-A`; a wrong-purpose request produced no denial response.
+- Verified: `python3 -m pytest -q tests/test_enigma_two_process_spike.py -k c1` — 3 passed, 3 deselected; full file — 6 passed; mutation/control separation selection — 3 passed, 3 deselected.
+- Remaining risk: This is a synthetic P1 harness only. Same-UID direct vault access remains `P2_SHARED_ROOT_SAME_UID`; no P2, anonymity, legal, compliance, or production-security claim. C0/C2/C3/C4 remain unmeasured after this C1 repair.
+- Next test: Re-run the independently defined C1 diagnostic against the Serving channel, then proceed only to the next cheapest C0–C4 kill.
+- C1 matrix: exact 1/4, 2/4, 4/4 projections; 16 one-factor grant mutations plus missing grant, nonce replay, revoked replay, deleted subject, raw/control-command denial; denial is always `{content: None, metadata: None, protected_edge_reads: 0}` and does not increment protected reads.
+
 ## 2026-08-11T08:15:00+02:00 — operator: act, do not ask (applies to Codex too)
 
 - Files: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` (both backed up first).
