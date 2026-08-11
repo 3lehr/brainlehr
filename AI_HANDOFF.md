@@ -42,6 +42,15 @@
 - Next test: Repeat the harness with genuinely separate local UIDs and an external anchor.
 - Harness repair: an initial IPC timeout came from `stop` returning no acknowledgement; a second failure was a vault-startup race. Both are test-only: explicit stop replies and a public-IPC initialization handshake.
 
+## 2026-08-11 — test(enigma): exercise real IPC boundary state
+
+- Files: `tests/test_enigma_two_process_spike.py`, `AI_HANDOFF.md`
+- Why: Correct the review finding that parent-side flags were not boundary evidence: Workstore now owns public gate/restore/serve/introspection commands, real cache/log/vector data, shared A key/blob mutation, and session restart evidence.
+- Verified: `python3 -m pytest -q tests/test_enigma_two_process_spike.py` — 1 passed.
+- Remaining risk: Synthetic same-UID vault remains directly readable (`P2_SHARED_ROOT_SAME_UID`); logical two-store is not P2, and C0–C4 remain NOT_MEASURED.
+- Next test: Repeat with separate local UIDs and an external anchor.
+- Repair: key-mutant probe initially invoked the mutation after deletion, masking it; it now invokes mutation pre-delete and verifies its exact post-delete public kill.
+
 ## 2026-08-11T08:15:00+02:00 — operator: act, do not ask (applies to Codex too)
 
 - Files: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` (both backed up first).

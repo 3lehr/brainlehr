@@ -38,6 +38,7 @@ def _keyholder(conn, vault_path):
         elif op == "copy": copy = a_key; conn.send(True)
         elif op == "master":
             master = secrets.token_bytes(32); a_key = _derive(master, ref); a_blob = _seal(a_key, "A", "SYNTHETIC-A"); conn.send(True)
+        elif op == "shared": conn.send({"key": a_key, "blob": a_blob})
         elif op == "delete": a_key = None; os.unlink(vault_path); conn.send(True)
         elif op == "mutant": conn.send("KEY_COPY" if copy and _open(copy, "A", a_blob) else "DETERMINISTIC_MASTER_DERIVATION" if master and _open(_derive(master, ref), "A", a_blob) else None)
         elif op == "restart": run = secrets.token_hex(6); conn.send({"run": run, "pid": os.getpid()})
@@ -45,11 +46,21 @@ def _keyholder(conn, vault_path):
 
 
 def _workstore(conn):
-    state = {"cache": "", "log": "", "vector": "", "shared": False, "stale": False, "anchor": True, "session": None}
+    state = {"cache": "", "log": "", "vector": "", "key_mutant": None, "shared": None, "run": secrets.token_hex(6)}
     while True:
         msg = conn.recv()
         if msg[0] == "init": state["projection"] = {"groups": 2}; state["cipher"] = msg[1]; conn.send(os.getpid())
         elif msg[0] == "inject": state[msg[1]] = msg[2]; conn.send(True)
+        elif msg[0] == "shared": state["shared"] = msg[1]; conn.send(True)
+        elif msg[0] == "gate":
+            if state["key_mutant"]: conn.send((False, state["key_mutant"]))
+            elif any("SYNTHETIC-A" in state[x] for x in ("cache", "log", "vector")): conn.send((False, "PLAINTEXT_CACHE_LOG_EMBEDDING"))
+            elif state["shared"] and _open(state["shared"]["key"], "A", state["shared"]["blob"]) == "SYNTHETIC-A": conn.send((False, "SHARED_BLOB"))
+            else: conn.send((True, None))
+        elif msg[0] == "restore":
+            snapshot, anchor = msg[1:]
+            conn.send((False, "RESTORE_WITHOUT_CURRENT_ANCHOR") if not anchor else (False, "STALE_SNAPSHOT") if snapshot["epoch"] < anchor["epoch"] else (True, None))
+        elif msg[0] == "serve": conn.send((False, "CACHE_FD_SESSION") if msg[1] != state["run"] else (True, None))
         elif msg[0] == "state": conn.send({k: v for k, v in state.items() if k not in {"cipher"}})
         elif msg[0] == "stop": conn.send(True); conn.close(); return
 
@@ -58,16 +69,6 @@ def _ask(conn, message):
     conn.send(message)
     assert conn.poll(2), "IPC timeout"
     return conn.recv()
-
-
-def _gate(key_mutant, state):
-    if key_mutant: return False, key_mutant
-    if any("SYNTHETIC-A" in state[x] for x in ("cache", "log", "vector")): return False, "PLAINTEXT_CACHE_LOG_EMBEDDING"
-    if state["shared"]: return False, "SHARED_BLOB"
-    if state["stale"]: return False, "STALE_SNAPSHOT"
-    if not state["anchor"]: return False, "RESTORE_WITHOUT_CURRENT_ANCHOR"
-    if state["session"]: return False, "CACHE_FD_SESSION"
-    return True, None
 
 
 def _p2_gate(vault_path):
@@ -84,22 +85,32 @@ def test_logical_two_store_ipc_oracles_and_same_uid_root(tmp_path):
         assert len({os.getpid(), public["pid"], ws_pid}) == 3
         assert set(_ask(ws_parent, ("state",))).isdisjoint({"a_key", "b_key", "dek"})
         assert _ask(kp_parent, "a") == "SYNTHETIC-A"; assert _ask(kp_parent, "b") == "SYNTHETIC-B"
-        _ask(kp_parent, "delete"); assert not vault.exists(); assert _ask(kp_parent, "a") is None; assert _gate(_ask(kp_parent, "mutant"), _ask(ws_parent, ("state",))) == (True, None)
-        # Every mutant first sees this same IPC baseline, then must kill exactly.
-        for command, expected in [("copy", "KEY_COPY"), ("master", "DETERMINISTIC_MASTER_DERIVATION")]:
-            # fresh keyholder gives a fresh baseline; mutation is deliberately test-only.
-            assert expected in {"KEY_COPY", "DETERMINISTIC_MASTER_DERIVATION"}
+        _ask(kp_parent, "delete"); assert not vault.exists(); assert _ask(kp_parent, "a") is None; assert _ask(ws_parent, ("gate",)) == (True, None)
         # New isolated runs make pre-delete mutation observable without preserving test state.
         for command, expected in [("copy", "KEY_COPY"), ("master", "DETERMINISTIC_MASTER_DERIVATION")]:
             _ask(kp_parent, "stop"); kp.join(2); kp = ctx.Process(target=_keyholder, args=(kp_child, str(vault))); kp.start()
-            _ask(kp_parent, command); _ask(kp_parent, "delete"); assert _gate(_ask(kp_parent, "mutant"), _ask(ws_parent, ("state",))) == (False, expected)
+            assert _ask(kp_parent, "a") == "SYNTHETIC-A" and _ask(kp_parent, "b") == "SYNTHETIC-B"
+            _ask(kp_parent, command); _ask(kp_parent, "delete"); assert _ask(kp_parent, "a") is None
+            _ask(ws_parent, ("inject", "key_mutant", _ask(kp_parent, "mutant"))); assert _ask(ws_parent, ("gate",)) == (False, expected)
+            _ask(ws_parent, ("inject", "key_mutant", None))
         for surface in ("cache", "log", "vector"):
-            _ask(ws_parent, ("inject", surface, "")); assert _gate(None, _ask(ws_parent, ("state",))) == (True, None)
-            _ask(ws_parent, ("inject", surface, "SYNTHETIC-A")); assert _gate(None, _ask(ws_parent, ("state",))) == (False, "PLAINTEXT_CACHE_LOG_EMBEDDING")
+            _ask(ws_parent, ("inject", surface, "")); assert _ask(ws_parent, ("gate",)) == (True, None)
+            _ask(ws_parent, ("inject", surface, "SYNTHETIC-A")); assert _ask(ws_parent, ("gate",)) == (False, "PLAINTEXT_CACHE_LOG_EMBEDDING")
             _ask(ws_parent, ("inject", surface, ""))
-        for field, expected in [("shared", "SHARED_BLOB"), ("stale", "STALE_SNAPSHOT"), ("anchor", "RESTORE_WITHOUT_CURRENT_ANCHOR"), ("session", "CACHE_FD_SESSION")]:
-            _ask(ws_parent, ("inject", field, False if field == "anchor" else True)); assert _gate(None, _ask(ws_parent, ("state",))) == (False, expected)
-            _ask(ws_parent, ("inject", field, True if field == "anchor" else False)); assert _gate(None, _ask(ws_parent, ("state",))) == (True, None)
+        assert _ask(ws_parent, ("restore", {"epoch": 1}, {"epoch": 2})) == (False, "STALE_SNAPSHOT")
+        assert _ask(ws_parent, ("restore", {"epoch": 2}, None)) == (False, "RESTORE_WITHOUT_CURRENT_ANCHOR")
+        assert _ask(ws_parent, ("restore", {"epoch": 2}, {"epoch": 2})) == (True, None)
+        # A real mutation passes a retained A key/blob through the public test protocol.
+        _ask(kp_parent, "stop"); kp.join(2); kp = ctx.Process(target=_keyholder, args=(kp_child, str(vault))); kp.start()
+        _ask(ws_parent, ("shared", _ask(kp_parent, "shared"))); _ask(kp_parent, "delete")
+        assert _ask(ws_parent, ("gate",)) == (False, "SHARED_BLOB")
+        old_session = _ask(ws_parent, ("state",))["run"]
+        assert _ask(ws_parent, ("serve", old_session)) == (True, None)
+        _ask(ws_parent, ("stop",)); ws.join(2); ws_parent.close()
+        ws_parent, ws_child = ctx.Pipe(); ws = ctx.Process(target=_workstore, args=(ws_child,)); ws.start()
+        _ask(ws_parent, ("init", b"ciphertext-only")); new_session = _ask(ws_parent, ("state",))["run"]
+        assert new_session != old_session and _ask(ws_parent, ("serve", old_session)) == (False, "CACHE_FD_SESSION")
+        assert _ask(ws_parent, ("serve", new_session)) == (True, None) and _ask(ws_parent, ("state",))["cache"] == ""
         # Expected fatal: parent under the same UID can read the synthetic vault directly.
         _ask(kp_parent, "stop"); kp.join(2); kp = ctx.Process(target=_keyholder, args=(kp_child, str(vault))); kp.start()
         again = _ask(kp_parent, "public")
