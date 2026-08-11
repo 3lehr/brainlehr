@@ -1,5 +1,15 @@
 # AI handoff
 
+## 2026-08-11T07:22:00+02:00 — note: coordination now also lives in the store
+
+- Node `23456f3b` (`/brainlehr/zwei-sitzungen-arbeiten-parallel-an`) carries the
+  CURRENT division of work and is overwritten as it changes. This file carries
+  the individual event and grows. Two questions, two places: "who is where right
+  now" vs. "what just happened".
+- Read it with `knowledge_read 23456f3b` before touching a file the other
+  session might hold.
+
+
 ## 2026-08-11T07:15:00+02:00 — measure(locks): the 21 server processes cost nothing measurable
 
 - Files: none changed. Measurement only.
