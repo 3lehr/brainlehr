@@ -9,6 +9,17 @@
 # ist Text, laesst sich vergleichen und zusammenfuehren — und aus ihm laesst
 # sich der Bestand vollstaendig wiederherstellen (brainlehr.py rein).
 knowledge.db
+brainlehr.db
+brainlehr.db-wal
+brainlehr.db-shm
+brainlehr.db.lock
+brainlehr.db.bak-*
+brainlehr.db.backup_*
+brainlehr.db.beschaedigt-*
+brainlehr.db.vor-*
+brainlehr.db.leer-*
+brainlehr.db-wal.leer-*
+brainlehr-probe.db*
 knowledge.db-wal
 knowledge.db-shm
 knowledge.db.lock
