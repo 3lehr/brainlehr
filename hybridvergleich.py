@@ -46,44 +46,79 @@ import suchparitaet as sp  # noqa: E402
 DECKEL = 10
 
 
-def vektorrang(anfrage_vektor: list[float], deckel: int) -> list[str]:
-    """Exakte Kosinus-Rangfolge ueber alle Vektoren -- derselbe Weg wie
-    ab_vergleich_abruf.py. Kein Index, keine Naeherung: bei 3508 Zeilen ist
-    das schnell genug, und es haelt die Seite als Konstante sauber. Ein
-    Naeherungsindex (HNSW) waere die erste Stelle, an der die beiden
-    Datenbanken doch auseinanderliefen -- deshalb hier bewusst exakt."""
+def vektorrang(anfrage_vektor: list[float], deckel: int) -> dict[str, list[str]]:
+    """Exakte Kosinus-Rangfolge, GETRENNT nach Gattung -- die Spalte `kind`
+    fuehrt 2190 Knoten und 1318 Lehren. Getrennt aus demselben Grund wie bei
+    der Stichwortsuche: der Betrieb deckelt getrennt, und eine gemeinsame
+    Liste wuerde die kleinere Gattung verdraengen.
+
+    Kein Index, keine Naeherung: bei 3508 Zeilen schnell genug, und es haelt
+    die Vektorseite als Konstante sauber. Ein Naeherungsindex (HNSW) waere die
+    erste Stelle, an der die beiden Datenbanken doch auseinanderliefen.
+    """
     with speicher.lesen() as conn:
         zeilen = conn.execute(
-            "SELECT ref_id, vector FROM knowledge_embeddings").fetchall()
-    bewertet = [
-        (embeddings.cosine_similarity(anfrage_vektor, embeddings.unpack_embedding(z["vector"])),
-         z["ref_id"])
-        for z in zeilen
-    ]
-    bewertet.sort(reverse=True)
-    return [ref for _, ref in bewertet[:deckel]]
+            "SELECT kind, ref_id, vector FROM knowledge_embeddings").fetchall()
+    nach_art: dict[str, list[tuple[float, str]]] = {"knoten": [], "lehre": []}
+    for z in zeilen:
+        art = "lehre" if z["kind"] == "lesson" else "knoten"
+        nach_art[art].append(
+            (embeddings.cosine_similarity(anfrage_vektor,
+                                          embeddings.unpack_embedding(z["vector"])),
+             z["ref_id"]))
+    for art in nach_art:
+        nach_art[art].sort(reverse=True)
+    return {art: [ref for _, ref in liste[:deckel]] for art, liste in nach_art.items()}
 
 
-def messen(faelle: list[dict], rechts_lexikalisch, deckel: int = DECKEL,
-           gewicht: float = 1.0) -> dict:
-    einzeln = []
+def fall_vorbereiten(fall: dict, rechts_lexikalisch, kandidaten: int) -> dict | None:
+    """Die teuren Teile EINMAL je Fall: Anfrage einbetten, Kosinus ueber alle
+    3508 Vektoren, beide Stichwortsuchen. Die Verschmelzung ist danach reine
+    Rechnung und kann fuer beliebig viele Gewichte wiederholt werden."""
+    anfrage_vektor = embeddings.embed_text(fall["prompt"])
+    if anfrage_vektor is None:
+        return None
+    worte = sp.stichworte(fall["prompt"])
+    return {
+        "ziel": fall["target_id"],
+        "gattung": sp.gattung_von(fall),
+        "vektoren": vektorrang(anfrage_vektor, kandidaten),
+        "links_lex": sp.suche_sqlite(worte, kandidaten),
+        "rechts_lex": rechts_lexikalisch(worte, kandidaten),
+    }
+
+
+def messen(faelle: list[dict], rechts_lexikalisch, gewicht: float = 1.0,
+           vorbereitet: list[dict] | None = None, kandidaten: int = 30) -> dict:
+    """Verschmelzung und Deckel je GATTUNG -- ein Lehren-Ziel gegen die besten
+    7 Lehren, ein Knoten-Ziel gegen die besten 10 Knoten, so wie im Betrieb.
+
+    Kandidaten werden tiefer geholt als der Deckel: sonst kann ein Gewicht
+    nichts bewegen, weil beide Listen schon vor der Verschmelzung beschnitten
+    waeren. Der Deckel gilt erst NACH der Verschmelzung."""
     ohne_vektor = 0
-    for fall in faelle:
-        worte = sp.stichworte(fall["prompt"])
-        anfrage_vektor = embeddings.embed_text(fall["prompt"])
-        if anfrage_vektor is None:
-            ohne_vektor += 1
-            continue
-        vektoren = vektorrang(anfrage_vektor, deckel)
+    if vorbereitet is None:
+        vorbereitet = []
+        for fall in faelle:
+            v = fall_vorbereiten(fall, rechts_lexikalisch, kandidaten)
+            if v is None:
+                ohne_vektor += 1
+            else:
+                vorbereitet.append(v)
 
-        links = embeddings.rrf_fuse(sp.suche_sqlite(worte, deckel), vektoren,
-                                     embedding_weight=gewicht)[:deckel]
-        rechts = embeddings.rrf_fuse(rechts_lexikalisch(worte, deckel), vektoren,
-                                      embedding_weight=gewicht)[:deckel]
-        nur_vektor = vektoren[:deckel]
-
-        e = sp.vergleiche_fall(fall["target_id"], links, rechts)
-        e["gefunden_nur_vektor"] = fall["target_id"] in nur_vektor
+    einzeln = []
+    for v in vorbereitet:
+        g = v["gattung"]
+        k = sp.deckel_fuer(g)
+        vek = v["vektoren"].get(g, [])
+        links = embeddings.rrf_fuse(v["links_lex"].get(g, []), vek,
+                                     embedding_weight=gewicht)[:k]
+        rechts = embeddings.rrf_fuse(v["rechts_lex"].get(g, []), vek,
+                                      embedding_weight=gewicht)[:k]
+        e = sp.vergleiche_fall(v["ziel"], links, rechts)
+        e["gattung"] = g
+        e["gefunden_nur_vektor"] = v["ziel"] in vek[:k]
+        e["gefunden_nur_lexikalisch"] = v["ziel"] in v["links_lex"].get(g, [])[:k]
         einzeln.append(e)
 
     n = len(einzeln)
@@ -94,39 +129,48 @@ def messen(faelle: list[dict], rechts_lexikalisch, deckel: int = DECKEL,
         "hybrid_links_fts5": sum(1 for e in einzeln if e["gefunden_links"]),
         "hybrid_rechts_postgres": sum(1 for e in einzeln if e["gefunden_rechts"]),
         "nur_vektor": sum(1 for e in einzeln if e["gefunden_nur_vektor"]),
+        "nur_lexikalisch": sum(1 for e in einzeln if e["gefunden_nur_lexikalisch"]),
+        "lexikalisch_rettet": [e["ziel"] for e in einzeln
+                                if e["gefunden_links"] and not e["gefunden_nur_vektor"]],
+        "vektor_rettet": [e["ziel"] for e in einzeln
+                           if e["gefunden_nur_vektor"] and not e["gefunden_nur_lexikalisch"]],
         "ueberlappung_mittel": round(sum(e["ueberlappung"] for e in einzeln) / n, 3) if n else None,
         "einzeln": einzeln,
+        "vorbereitet": vorbereitet,
     }
 
 
 def _selftest() -> None:
     import unittest.mock as mock
 
-    faelle = [{"target_id": "Z", "prompt": "eins"}, {"target_id": "Q", "prompt": "zwei"}]
+    faelle = [{"target_id": "L-Z", "prompt": "eins", "target_kind": "lesson"},
+              {"target_id": "L-Q", "prompt": "zwei", "target_kind": "lesson"}]
     modul = sys.modules[__name__]
+    leer = lambda w, k: {"knoten": [], "lehre": []}
 
     with mock.patch.object(sp, "stichworte", lambda p: [p]), \
          mock.patch.object(embeddings, "embed_text", lambda t, **kw: [1.0]), \
-         mock.patch.object(modul, "vektorrang", lambda v, d: ["Z"]):
+         mock.patch.object(modul, "vektorrang", lambda v, d: {"knoten": [], "lehre": ["L-Z"]}):
 
-        # Die Vektorhaelfte allein findet Z, nicht Q. Eine lexikalische Seite,
-        # die nichts beitraegt, darf das Ergebnis nicht verschlechtern.
-        leer = lambda w, k: []
-        e = messen(faelle, leer)
+        # Vektorhaelfte findet L-Z, nicht L-Q. Eine lexikalische Seite, die
+        # nichts beitraegt, darf das Ergebnis nicht verschlechtern.
+        with mock.patch.object(sp, "suche_sqlite", leer):
+            e = messen(faelle, leer)
         assert e["hybrid_links_fts5"] == e["hybrid_rechts_postgres"] == 1, e
-        assert e["nur_vektor"] == 1
+        assert e["nur_vektor"] == 1 and e["nur_lexikalisch"] == 0
 
-        # Gegenprobe: eine lexikalische Seite, die Q beitraegt, MUSS das
-        # Ergebnis heben -- sonst misst die Verschmelzung nichts.
-        with mock.patch.object(sp, "suche_sqlite", lambda w, k: ["Q"]):
+        # Gegenprobe: eine lexikalische Seite, die L-Q beitraegt, MUSS heben --
+        # und der Fall muss in 'lexikalisch_rettet' auftauchen.
+        with mock.patch.object(sp, "suche_sqlite", lambda w, k: {"knoten": [], "lehre": ["L-Q"]}):
             e2 = messen(faelle, leer)
         assert e2["hybrid_links_fts5"] == 2, e2["hybrid_links_fts5"]
         assert e2["hybrid_rechts_postgres"] == 1, "die rechte Seite darf nicht mitprofitieren"
+        assert e2["lexikalisch_rettet"] == ["L-Q"], e2["lexikalisch_rettet"]
 
-        # Und mit Gewicht 0 faellt die Vektorhaelfte weg (Rollback-Weg der
-        # rrf_fuse) -- dann findet die leere Seite gar nichts.
-        e3 = messen(faelle, leer, gewicht=0.0)
-        assert e3["hybrid_rechts_postgres"] == 0, e3
+        # Mit Gewicht 0 faellt die Vektorhaelfte weg (Rollback-Weg der rrf_fuse).
+        with mock.patch.object(sp, "suche_sqlite", leer):
+            e3 = messen(faelle, leer, gewicht=0.0)
+        assert e3["hybrid_links_fts5"] == 0, e3
 
     print("selftest ok (3 Faelle, Gegenprobe in beide Richtungen)", file=sys.stderr)
 

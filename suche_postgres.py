@@ -33,7 +33,7 @@ PSQL = "/opt/homebrew/opt/postgresql@17/bin/psql"
 VARIANTEN = ("teilstring", "wortgrenze", "kurzfeld", "kurz_gewichtet")
 
 
-def suche_bauen(dsn: str, variante: str = "teilstring") -> Callable[[list[str], int], list[str]]:
+def suche_bauen(dsn: str, variante: str = "teilstring") -> Callable[[list[str], int], dict[str, list[str]]]:
     r"""Liefert eine Suchfunktion mit derselben Form wie suche_sqlite.
 
     Vier Bauformen, weil die erste nicht die einzige moegliche ist und "6 von
@@ -73,11 +73,11 @@ def suche_bauen(dsn: str, variante: str = "teilstring") -> Callable[[list[str], 
 
     def suche(worte: list[str], deckel: int) -> list[str]:
         if not worte:
-            return []
+            return {"knoten": [], "lehre": []}
         einzelworte = [w for w in worte if w.isalnum()]
         muster = " ".join(einzelworte)
         if not muster:
-            return []
+            return {"knoten": [], "lehre": []}
 
         feld = "kurz" if variante == "kurzfeld" else "text"
         rangfeld = "kurz" if variante in ("kurzfeld", "kurz_gewichtet") else "text"
@@ -89,7 +89,7 @@ def suche_bauen(dsn: str, variante: str = "teilstring") -> Callable[[list[str], 
             bedingung = " OR ".join(f"{feld} ILIKE '%' || $${w}$$ || '%'" for w in einzelworte)
             treffer = " + ".join(f"({rangfeld} ILIKE '%' || $${w}$$ || '%')::int" for w in einzelworte)
 
-        ergebnis: list[str] = []
+        ergebnis: dict[str, list[str]] = {"knoten": [], "lehre": []}
         for art in ("knoten", "lehre"):
             sql = (
                 f"SELECT id FROM suchtext "
@@ -102,7 +102,7 @@ def suche_bauen(dsn: str, variante: str = "teilstring") -> Callable[[list[str], 
                                   capture_output=True, text=True)
             if roh.returncode != 0:
                 raise RuntimeError(f"psql fehlgeschlagen: {roh.stderr.strip()[:200]}")
-            ergebnis += [z for z in roh.stdout.split() if z]
+            ergebnis[art] = [z for z in roh.stdout.split() if z]
         return ergebnis
 
     return suche
@@ -113,8 +113,9 @@ def _selftest() -> None:
     Datenbank. Der Selbsttest prueft deshalb nur, was ohne sie pruefbar ist:
     dass eine leere Wortliste keine Anfrage stellt."""
     suche = suche_bauen("gibtsnicht")
-    assert suche([], 10) == []
-    assert suche(["!!!"], 10) == []
+    leer = {"knoten": [], "lehre": []}
+    assert suche([], 10) == leer
+    assert suche(["!!!"], 10) == leer
     print("selftest ok (2 Faelle, ohne Datenbank pruefbar)")
 
 

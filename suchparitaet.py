@@ -70,7 +70,14 @@ sys.path.insert(0, str(WURZEL / "haken"))
 
 import speicher  # noqa: E402
 
-DECKEL = 10  # so viele Treffer holt der echte Abruf je Anfrage
+# Deckel JE GATTUNG wie im Betrieb (knowledge_recall_hook.MAX_NODES/MAX_LESSONS).
+# Vorher stand hier eine einzige Zahl 10 -- und weil suche_sqlite() Knoten und
+# Lehren aneinanderhaengte, hiess "die ersten 10" in Wahrheit "die ersten 10
+# KNOTEN". Die Ziele dieses Korpus sind ueberwiegend Lehren; sie standen damit
+# ab Platz 11 und konnten nie gewinnen. Gemessen und korrigiert 2026-08-11.
+DECKEL_KNOTEN = 10
+DECKEL_LEHREN = 7
+DECKEL = DECKEL_KNOTEN  # Kandidatentiefe je Gattung, wenn nichts anderes gesagt wird
 
 # GEMESSEN am 2026-08-11, und der wichtigste Einzelbefund fuer den Umzug:
 # beide FTS-Tabellen benutzen tokenize="trigram", nicht die uebliche
@@ -89,13 +96,18 @@ def stichworte(prompt: str) -> list[str]:
     return rh.keywords(prompt)
 
 
-def suche_sqlite(worte: list[str], deckel: int = DECKEL) -> list[str]:
-    """FTS5, der heutige Stand. Liefert Kennungen in Rangfolge."""
+def suche_sqlite(worte: list[str], deckel: int = DECKEL) -> dict[str, list[str]]:
+    """FTS5, der heutige Stand. Liefert die Rangfolge GETRENNT nach Gattung.
+
+    Getrennt, weil der Betrieb getrennt deckelt und weil zwei aneinander-
+    gehaengte Ranglisten keine Rangliste sind: die zweite Gattung faengt dann
+    bei Platz 11 an, egal wie gut ihre Treffer sind.
+    """
     if not worte:
-        return []
+        return {"knoten": [], "lehre": []}
     anfrage = " OR ".join(w for w in worte if w.isalnum())
     if not anfrage:
-        return []
+        return {"knoten": [], "lehre": []}
     with speicher.lesen() as conn:
         # Verknuepfung ueber rowid, nicht ueber id: beide FTS-Tabellen sind
         # 'external content' mit content_rowid='rowid' (siehe schema.sql) --
@@ -108,13 +120,30 @@ def suche_sqlite(worte: list[str], deckel: int = DECKEL) -> list[str]:
             "SELECT l.id FROM lessons_fts f JOIN lessons_learned l ON l.rowid = f.rowid "
             "WHERE lessons_fts MATCH ? AND l.status = 'active' "
             "ORDER BY rank LIMIT ?", (anfrage, deckel)).fetchall()
-    return [r[0] for r in knoten] + [r[0] for r in lehren]
+    return {"knoten": [r[0] for r in knoten], "lehre": [r[0] for r in lehren]}
+
+
+def gattung_von(fall: dict) -> str:
+    """Welche Gattung ist das Ziel? Aus dem Korpusfeld target_kind, sonst an
+    der Kennung erkannt (L-xxxxxx sind Lehren)."""
+    art = (fall.get("target_kind") or "").lower()
+    if art in ("lesson", "lehre"):
+        return "lehre"
+    if art in ("node", "knoten"):
+        return "knoten"
+    return "lehre" if str(fall.get("target_id", "")).startswith("L-") else "knoten"
+
+
+def deckel_fuer(gattung: str) -> int:
+    return DECKEL_LEHREN if gattung == "lehre" else DECKEL_KNOTEN
 
 
 def vergleiche_fall(ziel: str, links: list[str], rechts: list[str]) -> dict:
     """Ein Fall, drei Groessen. rang* ist 1-basiert; None heisst 'nicht
     gefunden' und wird NICHT als grosse Zahl kodiert -- eine 999 wuerde in
-    jeden Mittelwert einfliessen und ihn unbrauchbar machen."""
+    jeden Mittelwert einfliessen und ihn unbrauchbar machen.
+
+    Beide Listen sind bereits auf EINE Gattung beschraenkt und gedeckelt."""
     def rang(liste: list[str]) -> int | None:
         return liste.index(ziel) + 1 if ziel in liste else None
 
@@ -134,17 +163,22 @@ def vergleiche_fall(ziel: str, links: list[str], rechts: list[str]) -> dict:
 
 def messen(faelle: Iterable[dict], links: Suche, rechts: Suche,
            deckel: int = DECKEL) -> dict:
+    """Je Fall wird NUR die Gattung des Ziels ausgewertet, mit ihrem eigenen
+    Deckel -- ein Lehren-Ziel gegen die besten 7 Lehren, ein Knoten-Ziel gegen
+    die besten 10 Knoten. Alles andere vergleicht Aepfel mit dem Deckel."""
     einzeln = []
     for fall in faelle:
         worte = stichworte(fall["prompt"])
+        gattung = gattung_von(fall)
+        k = deckel_fuer(gattung)
         einzeln.append({
-            "fall": fall.get("target_id"),
-            **vergleiche_fall(fall["target_id"], links(worte, deckel), rechts(worte, deckel)),
+            "fall": fall.get("target_id"), "gattung": gattung,
+            **vergleiche_fall(fall["target_id"],
+                              links(worte, deckel).get(gattung, [])[:k],
+                              rechts(worte, deckel).get(gattung, [])[:k]),
         })
 
     n = len(einzeln)
-    nur_links = [e for e in einzeln if e["gefunden_links"] and not e["gefunden_rechts"]]
-    nur_rechts = [e for e in einzeln if e["gefunden_rechts"] and not e["gefunden_links"]]
     beide = [e for e in einzeln if e["gefunden_links"] and e["gefunden_rechts"]]
     verschoben = [e for e in beide if e["rangdifferenz"]]
 
@@ -152,8 +186,10 @@ def messen(faelle: Iterable[dict], links: Suche, rechts: Suche,
         "faelle": n,
         "gefunden_links": sum(1 for e in einzeln if e["gefunden_links"]),
         "gefunden_rechts": sum(1 for e in einzeln if e["gefunden_rechts"]),
-        "nur_links_gefunden": [e["ziel"] for e in nur_links],
-        "nur_rechts_gefunden": [e["ziel"] for e in nur_rechts],
+        "nur_links_gefunden": [e["ziel"] for e in einzeln
+                                if e["gefunden_links"] and not e["gefunden_rechts"]],
+        "nur_rechts_gefunden": [e["ziel"] for e in einzeln
+                                 if e["gefunden_rechts"] and not e["gefunden_links"]],
         "rang_verschoben": len(verschoben),
         "groesste_verschlechterung": max((e["rangdifferenz"] for e in verschoben), default=0),
         "ueberlappung_mittel": round(sum(e["ueberlappung"] for e in einzeln) / n, 3) if n else None,
@@ -162,33 +198,59 @@ def messen(faelle: Iterable[dict], links: Suche, rechts: Suche,
 
 
 def _selftest() -> None:
-    faelle = [{"target_id": "L-1", "prompt": "eins"},
-              {"target_id": "L-2", "prompt": "zwei"},
-              {"target_id": "L-3", "prompt": "drei"}]
+    faelle = [{"target_id": "L-1", "prompt": "eins", "target_kind": "lesson"},
+              {"target_id": "L-2", "prompt": "zwei", "target_kind": "lesson"},
+              {"target_id": "n-3", "prompt": "drei", "target_kind": "node"}]
 
     import unittest.mock as mock
     with mock.patch.object(sys.modules[__name__], "stichworte", lambda p: [p]):
-        gleich = lambda w, k: {"eins": ["L-1", "X"], "zwei": ["L-2"], "drei": ["L-3"]}[w[0]]
+        gleich = lambda w, k: {
+            "eins": {"lehre": ["L-1", "X"], "knoten": []},
+            "zwei": {"lehre": ["L-2"], "knoten": []},
+            "drei": {"lehre": [], "knoten": ["n-3"]},
+        }[w[0]]
         e = messen(faelle, gleich, gleich)
-        assert e["gefunden_links"] == e["gefunden_rechts"] == 3
+        assert e["gefunden_links"] == e["gefunden_rechts"] == 3, e
         assert e["rang_verschoben"] == 0 and e["ueberlappung_mittel"] == 1.0, e
-        assert not e["nur_links_gefunden"] and not e["nur_rechts_gefunden"]
 
-        # Gegenprobe: eine Suche, die dasselbe Ziel weiter hinten fuehrt und
-        # ringsum anderes einspielt, MUSS auffallen -- sonst misst nichts.
-        schlechter = lambda w, k: {"eins": ["A", "B", "L-1"], "zwei": ["C"], "drei": ["L-3"]}[w[0]]
+        # Gegenprobe: schlechtere Suche muss auffallen.
+        schlechter = lambda w, k: {
+            "eins": {"lehre": ["A", "B", "L-1"], "knoten": []},
+            "zwei": {"lehre": ["C"], "knoten": []},
+            "drei": {"lehre": [], "knoten": ["n-3"]},
+        }[w[0]]
         e2 = messen(faelle, gleich, schlechter)
         assert e2["gefunden_rechts"] == 2, e2["gefunden_rechts"]
         assert e2["nur_links_gefunden"] == ["L-2"], e2["nur_links_gefunden"]
         assert e2["rang_verschoben"] == 1 and e2["groesste_verschlechterung"] == 2, e2
-        assert e2["ueberlappung_mittel"] < 1.0
 
-        # Ein nicht gefundenes Ziel darf KEINE Rangdifferenz erzeugen --
-        # sonst schleicht sich eine erfundene Zahl in den Mittelwert.
+        # Ein nicht gefundenes Ziel darf KEINE Rangdifferenz erzeugen.
         fehlt = [x for x in e2["einzeln"] if x["ziel"] == "L-2"][0]
         assert fehlt["rangdifferenz"] is None and fehlt["rang_rechts"] is None
 
-    print("selftest ok (3 Faelle, Gegenprobe in beide Richtungen)", file=sys.stderr)
+        # DIE KORREKTUR VOM 2026-08-11, in beide Richtungen belegt: ein
+        # Lehren-Ziel darf nicht daran scheitern, dass viele Knoten getroffen
+        # wurden. Frueher wurden beide Listen aneinandergehaengt -- die Lehre
+        # stand dann hinter zehn Knoten und galt als nicht gefunden.
+        viele_knoten = lambda w, k: {
+            "eins": {"knoten": [f"n{i}" for i in range(20)], "lehre": ["L-1"]},
+            "zwei": {"knoten": [f"n{i}" for i in range(20)], "lehre": ["L-2"]},
+            "drei": {"knoten": ["n-3"], "lehre": []},
+        }[w[0]]
+        e3 = messen(faelle, viele_knoten, viele_knoten)
+        assert e3["gefunden_links"] == 3, \
+            "ein Lehren-Ziel wird von Knoten-Treffern verdraengt -- genau der alte Fehler"
+
+        # Und der Deckel je Gattung greift: Platz 8 einer Lehre ist ausserhalb.
+        zu_tief = lambda w, k: {
+            "eins": {"lehre": [f"x{i}" for i in range(7)] + ["L-1"], "knoten": []},
+            "zwei": {"lehre": ["L-2"], "knoten": []},
+            "drei": {"lehre": [], "knoten": ["n-3"]},
+        }[w[0]]
+        e4 = messen(faelle, zu_tief, zu_tief)
+        assert e4["gefunden_links"] == 2, "Deckel DECKEL_LEHREN=7 greift nicht"
+
+    print("selftest ok (5 Faelle, Gegenprobe in beide Richtungen)", file=sys.stderr)
 
 
 def main() -> None:

@@ -1,0 +1,85 @@
+{
+  "korpus": "pruefkorpus_v2.json",
+  "faelle": 35,
+  "deckel": 10,
+  "kandidatentiefe": 30,
+  "reihe": {
+    "0.0": {
+      "faelle": 35,
+      "ohne_anfragevektor": 0,
+      "gewicht_vektor": 0.0,
+      "hybrid_links_fts5": 0,
+      "hybrid_rechts_postgres": 0,
+      "nur_vektor": 15,
+      "nur_lexikalisch": 0,
+      "lexikalisch_rettet": [],
+      "ueberlappung_mittel": 0.202
+    },
+    "0.25": {
+      "faelle": 35,
+      "ohne_anfragevektor": 0,
+      "gewicht_vektor": 0.25,
+      "hybrid_links_fts5": 10,
+      "hybrid_rechts_postgres": 8,
+      "nur_vektor": 15,
+      "nur_lexikalisch": 0,
+      "lexikalisch_rettet": [],
+      "ueberlappung_mittel": 0.232
+    },
+    "0.5": {
+      "faelle": 35,
+      "ohne_anfragevektor": 0,
+      "gewicht_vektor": 0.5,
+      "hybrid_links_fts5": 13,
+      "hybrid_rechts_postgres": 12,
+      "nur_vektor": 15,
+      "nur_lexikalisch": 0,
+      "lexikalisch_rettet": [],
+      "ueberlappung_mittel": 0.359
+    },
+    "1.0": {
+      "faelle": 35,
+      "ohne_anfragevektor": 0,
+      "gewicht_vektor": 1.0,
+      "hybrid_links_fts5": 14,
+      "hybrid_rechts_postgres": 15,
+      "nur_vektor": 15,
+      "nur_lexikalisch": 0,
+      "lexikalisch_rettet": [],
+      "ueberlappung_mittel": 0.646
+    },
+    "2.0": {
+      "faelle": 35,
+      "ohne_anfragevektor": 0,
+      "gewicht_vektor": 2.0,
+      "hybrid_links_fts5": 14,
+      "hybrid_rechts_postgres": 15,
+      "nur_vektor": 15,
+      "nur_lexikalisch": 0,
+      "lexikalisch_rettet": [],
+      "ueberlappung_mittel": 0.852
+    },
+    "4.0": {
+      "faelle": 35,
+      "ohne_anfragevektor": 0,
+      "gewicht_vektor": 4.0,
+      "hybrid_links_fts5": 15,
+      "hybrid_rechts_postgres": 15,
+      "nur_vektor": 15,
+      "nur_lexikalisch": 0,
+      "lexikalisch_rettet": [],
+      "ueberlappung_mittel": 0.89
+    },
+    "10.0": {
+      "faelle": 35,
+      "ohne_anfragevektor": 0,
+      "gewicht_vektor": 10.0,
+      "hybrid_links_fts5": 15,
+      "hybrid_rechts_postgres": 15,
+      "nur_vektor": 15,
+      "nur_lexikalisch": 0,
+      "lexikalisch_rettet": [],
+      "ueberlappung_mittel": 0.97
+    }
+  }
+}
