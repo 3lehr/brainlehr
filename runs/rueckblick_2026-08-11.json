@@ -1,0 +1,19 @@
+{
+  "verfahren": "Aufgabentext = Vorgaengernachricht vor einer rueckblickenden Beschwerde ('warum hast du X nicht gelesen'); Ziel = die vom Betreiber in der Beschwerde genannte Kennung, gegen die Datenbank geprueft",
+  "transkripte": 163,
+  "kandidaten": 1,
+  "faelle": [
+    {
+      "prompt": "\"L-ebbd22, Schimmel-Lexikon \" was stand darin?",
+      "beschwerde": "aber warum hast du \"L-ebbd22, Schimmel-Lexikon \" nicht gelesen und ich müsste dich erste fragen was darin steht? hätte ich nicht gefragt hätte das \"L-ebbd22, Schimmel-Lexikon \" garnichts genutzt?",
+      "klasse": "rueckblick",
+      "satzart": "frage",
+      "ziele": [
+        {
+          "art": "lehre",
+          "id": "L-ebbd22"
+        }
+      ]
+    }
+  ]
+}
