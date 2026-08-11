@@ -67,6 +67,15 @@
 - Remaining risk: The open FD is intentionally a detected mutation; it blocks denial-pass. Same-UID direct vault read remains `P2_SHARED_ROOT_SAME_UID`; no P2 claim.
 - Next test: Repeat under separate local UIDs with an external anchor.
 
+## 2026-08-11 — test(enigma): isolate boundary process lifecycles
+
+- Files: `tests/test_enigma_two_process_spike.py`, `AI_HANDOFF.md`
+- Why: Repair the invalid lifecycle baseline from `cfea586`: every Keyholder/Workstore run now owns a fresh Pipe, the parent closes each child end immediately, and the clean baseline is measured before any stale FD exists.
+- Verified: `python3 -m pytest -q tests/test_enigma_two_process_spike.py` — 3 passed; `python3 -m pytest -q tests/test_enigma_two_process_spike.py -k 'crypto_mutants or fd_and_same_uid_mutants'` — 2 passed, 1 deselected.
+- Remaining risk: The independently observed unlinked FD blocks denial-pass as `CACHE_FD_SESSION`, and same-UID direct vault access remains `P2_SHARED_ROOT_SAME_UID`; this proves only `logical_two_store_only`, not P2. C0–C4 remain NOT_MEASURED.
+- Next test: Repeat the same boundary checks with separate local UIDs and an external anchor.
+- Root cause repaired: the prior test opened `old_fd` before claiming baseline PASS and reused `kp_child` across processes, so its baseline and lifecycle evidence were invalid.
+
 ## 2026-08-11T08:15:00+02:00 — operator: act, do not ask (applies to Codex too)
 
 - Files: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` (both backed up first).
