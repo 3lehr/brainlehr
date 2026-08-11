@@ -68,10 +68,14 @@ Abruf-Haken, ein Fehler im eigenen Messaufbau, ein Tuning-Maximum aus 24
 Versuchen. Die Regeln dagegen stehen jetzt als Prüfung (`messregeln.py`,
 beanstandet die drei eigenen Dateien von heute).
 
-**Der Engpass ist der Korpus.** `echtkorpus.py` sammelt kontaminationsfrei —
-Aufgabentext aus echten Nachrichten, Ziel über den Pfadschlüssel — aber der
-Ertrag ist **4 Fälle aus 300 Nachrichten**. Ohne ihn ist jede weitere Abrufzahl
-eine, die wir später zurücknehmen.
+**Der Engpass war der Korpus** — er steht seit dem 2026-08-11T23:00: 78 Fälle
+aus 2518 eindeutigen Nachrichten (vorher 4 aus 300). Damit ist Linie A wieder
+messbar.
+
+**Der neue Engpass ist die Zusammensetzung, nicht die Menge.** 72 der 78 Fälle
+sind Aufträge, 6 sind Fragen. Der Kanal, aus dem gesammelt wird, ist zu
+Aufträgen hin voreingenommen — und ein Abruf, der an Aufträgen gut abschneidet,
+sagt wenig über Fragen. Das ist der nächste Befund, nicht die nächste Zahl.
 
 ## Enigma — was steht, was blockiert
 
@@ -120,15 +124,50 @@ Architekturregel, die dieses Haus schon anwendet, ohne sie benannt zu haben.
 
 ## Reihenfolge, und wo sie bindend ist
 
-1. **Korpus vor Abrufarbeit** (Linie C vor Linie A). Bindend: ohne ihn ist
-   jede Verbesserung unbelegbar, und wir haben heute dreimal erlebt, was das
-   kostet.
-2. **Freigabe in `search`/`browse`** (Enigma 1). Unabhängig von allem anderen,
-   zweimal unabhängig gefunden, und es ist eine Lücke, keine Verbesserung.
-3. **S12 zweiter Anlauf** — erst wenn 1 steht, sonst misst er sich selbst.
+1. **[ERLEDIGT 2026-08-11T23:00]** **Korpus vor Abrufarbeit** (Linie C vor
+   Linie A). Bindend: ohne ihn ist jede Verbesserung unbelegbar, und wir haben
+   heute dreimal erlebt, was das kostet.
+   → 78 Fälle aus 2518 eindeutigen Nachrichten, Zielmarke war 20. Commit
+   `d43fece`. **Offener Befund daraus:** 72 Aufträge gegen 6 Fragen — der
+   Kanal, aus dem gesammelt wird, ist zu Aufträgen hin voreingenommen.
+2. **[ERLEDIGT 2026-08-11T22:50]** **Freigabe in `search`/`browse`**
+   (Enigma 1). → Commit `bb9bc7f`, gemeinsame Prüfstelle statt zweiter Logik
+   daneben, einschließlich der Erlaubnislisten der Bedeutungssuche. Vier
+   Tests, rot vor grün.
+3. **S12 zweiter Anlauf** — eigener Plan seit `3447ba1`:
+   `docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md`. Der Weg hat sich geändert:
+   nicht die Anfrage umschreiben, sondern den Bestand in die Sprache der Frage
+   bringen (`b4238789`: 3 → 10 von 20 gemessen). Bindend darin: Teilung des
+   Bestands **vor** der ersten Neuformulierung.
 4. **Fremdbestände**: ASRS und NIST vollständig, MAUDE über die Whitelist. FAA
    danach. CROSS, ESA, NRC, IAEA nicht.
 5. Enigma 2–6 nach Blockierwirkung, aber auf ihrem Zweig.
+
+## Was der Umzug der Datenbank am 2026-08-11 offenlegte
+
+Nicht geplant, gehört aber in diesen Plan, weil es die Messbarkeit selbst
+betrifft. Die Umbenennung `knowledge.db` → `brainlehr.db` traf vier Stellen,
+die den Dateinamen als **Text** tragen und keinen Auflöser davor haben:
+
+| Stelle | Wirkung | Stand |
+|---|---|---|
+| `.gitignore` | 75-MB-Datenbank versionsverwaltet | `464ec3f` |
+| `tests/conftest.py`, `tests/test_vektorlage.py` | 14 Tests stumm statt rot | `762293b` |
+| `schema.sql` (Erstanlage) | zwei Tabellen fehlten | `1d64458` |
+| sechs Produktivdateien | Normbezugs-Prüfer meldet **alles** als unbelegt | läuft |
+
+Die neun angeblich roten Umlauttests waren nie kaputt: gegen den Suchcode von
+vor der Freigabe-Änderung und gegen die Datenbank-Sicherung von 21:26 einzeln
+nachgemessen, beide Male grün. Beinahe wäre ein Suchfehler gemeldet worden,
+den es nicht gibt.
+
+Der schwerste Fall ist `kern/normbezug.py`. Sein `belegt()` beginnt mit
+`if not pfad.exists(): return "unbelegt"` — es unterscheidet „geprüft und
+nichts gefunden" nicht von „gar nicht geprüft". Das ist keine Nachlässigkeit,
+sondern ein Konstruktionsfehler, und er ist unabhängig von jeder Umbenennung:
+Wo eine Prüfung ihre Quelle nicht erreicht, darf sie nicht das Ergebnis
+zurückgeben, das ein leerer Bestand ergäbe. Lehre `L-2b5f6f`, bei drei
+Vorkommen selbsttätig zur Regel eskaliert.
 
 ## Was bewusst nicht getan wird
 
