@@ -1,12 +1,12 @@
-# STAND brainlehr — 2026-08-11T13:20:00+0200
+# STAND brainlehr — 2026-08-11T14:30:00+0200
 
-Offen: 15 von 82 Nachrichten (18,3 %) erreichen den UserPromptSubmit-Haltepunkt nicht, ohne Muster — Warteschlangen-Erklaerung widerlegt (Knoten /brainlehr/18-prozent-der-nachrichten-erreichen).
-Die Zweckprojektion prueft die Spalte `freigabe` nicht: ein als gesperrt markierter Eintrag kann ueber sie ausgeliefert werden.
+Offen: knowledge_browse und knowledge_search filtern `freigabe` nicht — ein gesperrter Knoten erscheint dort mit Titel und Summary (Knoten cda47024, Datei liegt auf fremdem Zweig brainlehr/b4-ausweis).
+15 von 82 Nachrichten (18,3 %) erreichen den UserPromptSubmit-Haltepunkt nicht, ohne Muster.
 
-Naechstes: die vier von der Modellsperre blockierten Antwortlaeufe (bedeckung, wissensnutzen, wissensnutzen_blind, pruefkorpus_v3::answer) in den Hauptfaden verlegen — ein Skript kann keinen Subagenten starten.
-Danach: 17 Ergebnisdateien ohne Gegenprobe-, 30 ohne Rastervermerk — nachtragen oder Stichtag ziehen.
+Naechstes: die drei restlichen Antwortlaeufe dreiteilen wie wissensnutzen_blind (bedeckung, wissensnutzen, pruefkorpus_v3::answer) — der Weg ist belegt.
+Danach: Pruefkorpus vergroessern, damit die 6-Zellen-Messung mehr als drei Aufgaben traegt.
 
-Wartet auf: `~/.claude.json` → `mcpServers.knowledge.env` (actor, tippt der Betreiber selbst) · Papernetz-Umfang · sechs Knoten Rang 4/6.
+Wartet auf: `~/.claude.json` → `mcpServers.knowledge.env` (actor, tippt der Betreiber selbst) · Papernetz-Umfang · Push-Freigabe fuer 6 lokale Commits.
 
-Nicht vergessen: dieser Arbeitsbaum hat KEINE eigene knowledge.db — `sqlite3.connect` legt still eine leere an, lesend immer `mode=ro` (L-0f4036).
-Der Arbeitsbaum happy-hugle-b813dc haelt uncommittete Arbeit vom 2026-08-09, inhaltlich hier aufgenommen (178df5e), dort unangetastet.
+Nicht vergessen: dieser Arbeitsbaum hat KEINE eigene knowledge.db — lesend immer `mode=ro`, sonst legt sqlite3 still eine leere an (L-0f4036).
+Arbeitsbaum happy-hugle-b813dc haelt uncommittete Arbeit vom 2026-08-09, inhaltlich aufgenommen (178df5e), dort unangetastet.

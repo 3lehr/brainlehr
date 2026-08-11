@@ -72,3 +72,29 @@ S1: eine Zahl zu „nuetzt eingespieltes Wissen der Antwort", erzeugt mit dem
 Betriebsmodell, mit Artefakt unter `runs/`. S2: ein Test, der vor dem Fix rot
 ist. S3: der Startmelder schweigt zum Altbestand und schlaegt beim naechsten
 neuen Lauf ohne Vermerk trotzdem an.
+
+## Fortschreibung 2026-08-11T14:30:00+0200 — was anders kam
+
+**S1 kam wie geplant**, mit einem Zusatz, der im Plan fehlte: drei getrennte
+Subagenten statt eines, der dreimal antwortet. Streuung ist der Messgegenstand;
+drei Antworten aus einem Fenster waeren eine Antwort mit Varianten gewesen.
+Sichtbar an A|MIT: range 1 ueber drei Laeufe.
+
+**S2 entfiel — der Befund war ueberholt.** Der Filter sass seit 7dec67a (11:41)
+im Code, elf Minuten nach dem Checkpoint, der ihn vermisste. Der Plan hatte den
+Knoten geglaubt statt den Kopf des Zweigs zu lesen. Gefunden wurde dabei die
+echte, heute offene Luecke eine Ebene daneben (browse/search filtern `freigabe`
+nicht, Knoten cda47024) — nicht gebaut, weil die Datei einer fremden Sitzung
+gehoert.
+
+**S3 kam anders, und die Planbegruendung war falsch.** „Die Dateien stammen aus
+der Zeit vor S1c" — gemessen: `rasterblick.py` kam 10:19 ins Repo, die
+unvermerkten Dateien um 12:12 und 16:30. Kein Altbestand, sondern eine gebaute
+Regel ohne Wirkung. Der Stichtag waere eine Ausrede gewesen; stattdessen haelt
+`verlust_vermerken()` fest, DASS nichts festgehalten wurde. Sechs Dateien von
+heute bekamen einen echten Vermerk statt eines Verlustvermerks.
+
+**Lehre aus der Fortschreibung:** zwei von drei Planbegruendungen hielten der
+Messung nicht stand, und beide waren die bequemen („ist schon kaputt",
+„ist zu alt"). Der Plan war trotzdem nuetzlich — er hat die Reihenfolge
+richtig gesetzt.
