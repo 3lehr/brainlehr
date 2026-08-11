@@ -31,7 +31,7 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 import knowledge_mcp_server as kms  # noqa: E402  -- nur log_access/now_iso wiederverwendet
 
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "brainlehr.db"))
 CET = timezone(timedelta(hours=1))
 REQUIRED_CONFIRMATION = "ENDGUELTIG LOESCHEN"
 
@@ -118,7 +118,7 @@ def _selftest() -> int:
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        db_path = Path(tmp) / "knowledge.db"
+        db_path = Path(tmp) / "brainlehr.db"
         schema_sql = (HERE / "schema.sql").read_text(encoding="utf-8")
         conn = sqlite3.connect(str(db_path))
         conn.executescript(schema_sql)

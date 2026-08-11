@@ -55,7 +55,7 @@ def abschnitt(name: str) -> None:
 def probe_regelgleichheit() -> None:
     abschnitt("Regelgleichheit: Erstanlage gegen Betrieb")
     import knowledge_mcp_server as kms
-    betrieb_pfad = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (WURZEL / "knowledge.db"))
+    betrieb_pfad = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (WURZEL / "brainlehr.db"))
     if not betrieb_pfad.exists():
         print("  keine Betriebsdatenbank an diesem Ort — uebersprungen")
         return
@@ -126,7 +126,7 @@ def probe_tote_pfade() -> None:
 
 def probe_schreibbarkeit() -> None:
     abschnitt("Schreibbarkeit der Datenbank")
-    db = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (WURZEL / "knowledge.db"))
+    db = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (WURZEL / "brainlehr.db"))
     if not db.exists():
         print("  keine Datenbank — uebersprungen")
         return
@@ -192,7 +192,7 @@ def probe_verwaiste_funktionen() -> None:
 
 def probe_bestand() -> None:
     abschnitt("Bestandshygiene")
-    db = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (WURZEL / "knowledge.db"))
+    db = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (WURZEL / "brainlehr.db"))
     if not db.exists():
         print("  keine Datenbank — uebersprungen")
         return

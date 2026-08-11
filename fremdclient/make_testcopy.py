@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Zieht eine Testkopie der echten knowledge.db nach shared-knowledge/fremdclient/.
+"""Zieht eine Testkopie der echten brainlehr.db nach shared-knowledge/fremdclient/.
 
 Muster aus Commit 2cb22705f (migrate_normfelder.py::_backup): WAL-Checkpoint
 (TRUNCATE) auf der ECHTEN DB vor dem Kopieren, sonst fehlen committete,
@@ -12,8 +12,8 @@ import sqlite3
 import sys
 from pathlib import Path
 
-REAL_DB = Path(__file__).parent.parent / "knowledge.db"
-TEST_DB = Path(__file__).parent / "knowledge.db"
+REAL_DB = Path(__file__).parent.parent / "brainlehr.db"
+TEST_DB = Path(__file__).parent / "brainlehr.db"
 
 
 def make_testcopy() -> Path:

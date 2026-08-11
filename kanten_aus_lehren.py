@@ -228,7 +228,7 @@ def main():
     # Write mode: need a copy
     if "--write" in sys.argv:
         import shutil
-        copy_path = DB_PATH.parent / "knowledge.db.copy"
+        copy_path = DB_PATH.parent / "brainlehr.db.copy"
 
         if copy_path.exists():
             print(f"Using existing copy: {copy_path}")
@@ -281,7 +281,7 @@ def main():
 
         conn.close()
         print(f"\nCopy database: {copy_path}")
-        print("Review, then: cp knowledge.db.copy knowledge.db")
+        print("Review, then: cp brainlehr.db.copy brainlehr.db")
 
 def run_self_test():
     """Quick sanity check on regex patterns."""

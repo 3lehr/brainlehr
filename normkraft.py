@@ -47,7 +47,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HERE = Path(__file__).parent
-DB_PATH = HERE / "knowledge.db"
+DB_PATH = HERE / "brainlehr.db"
 CET = timezone(timedelta(hours=1))
 
 
@@ -65,7 +65,7 @@ def _backup(db_path: Path) -> Path:
     finally:
         conn.close()
     stamp = datetime.now(CET).strftime("%Y%m%dT%H%M%S")
-    dest = db_path.parent / f"knowledge.db.bak-{stamp}"
+    dest = db_path.parent / f"brainlehr.db.bak-{stamp}"
     shutil.copy2(db_path, dest)
     return dest
 
@@ -319,7 +319,7 @@ def _selftest() -> int:
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
-        db_path = tmp_path / "knowledge.db"
+        db_path = tmp_path / "brainlehr.db"
         _init_temp_db(db_path)
 
         conn = sqlite3.connect(str(db_path))

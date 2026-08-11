@@ -24,7 +24,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HERE = Path(__file__).parent
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "brainlehr.db"))
 CET = timezone(timedelta(hours=1))
 
 NEW_COLUMNS = {
@@ -110,7 +110,7 @@ def _selftest() -> int:
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        db_path = Path(tmp) / "knowledge.db"
+        db_path = Path(tmp) / "brainlehr.db"
         schema_sql = (HERE / "schema.sql").read_text(encoding="utf-8")
 
         conn = sqlite3.connect(str(db_path))

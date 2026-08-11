@@ -31,7 +31,7 @@ import lesson_recorder as lr  # type: ignore  # noqa: E402
 
 @pytest.fixture()
 def temp_db(tmp_path, monkeypatch):
-    """Frische Test-DB mit dem echten Schema, DB_PATH umgebogen. NIE gegen knowledge.db.
+    """Frische Test-DB mit dem echten Schema, DB_PATH umgebogen. NIE gegen brainlehr.db.
 
     PROJECTS ebenfalls umgebogen (ADR-034, Auto-Regel-Anschluss in
     kms._auto_rule_fuer_lesson): ohne das schriebe eine Eskalation in diesem

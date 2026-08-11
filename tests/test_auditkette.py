@@ -3,7 +3,7 @@
 Rot-vor-gruen-Beleg fuer knowledge_mcp_server.py::log_access() (schreibt
 zeilen_hash/ketten_hash, siehe Spaltenkommentar an access_log in schema.sql)
 und knowledge_lint.py::find_broken_chain() (rein lesende Pruefung, Kategorie
-12). NIE gegen die echte knowledge.db -- immer frische Temp-DB aus schema.sql.
+12). NIE gegen die echte brainlehr.db -- immer frische Temp-DB aus schema.sql.
 """
 from __future__ import annotations
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Adds Phase 2 summary nodes to knowledge.db."""
+"""Adds Phase 2 summary nodes to brainlehr.db."""
 import sqlite3
 import uuid
 import json
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-DB = Path(__file__).parent / "knowledge.db"
+DB = Path(__file__).parent / "brainlehr.db"
 CET = timezone(timedelta(hours=1))
 now = datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S+01:00")
 

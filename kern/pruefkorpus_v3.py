@@ -15,7 +15,7 @@ scheiterten, siehe deren eigene Docstrings und L-352afa):
 ECHTER ABRUFWEG (Auflage 1): dieselbe Funktion, die im Betrieb vor jedem
 Prompt feuert -- knowledge_recall_hook.query()/keywords()/hits() --,
 importiert und unveraendert aufgerufen. Kein Wissen wird in den Prompt
-kopiert; die erfundenen Knoten liegen als echte Zeilen in knowledge.db
+kopiert; die erfundenen Knoten liegen als echte Zeilen in brainlehr.db
 zwischen dem echten Bestand.
 
 RESTLOS ENTFERNBAR (Auflage 2): alle erfundenen Knoten tragen
@@ -48,7 +48,7 @@ import statistics
 import sys
 from pathlib import Path
 
-SHARED_KNOWLEDGE = Path(__file__).resolve().parent
+SHARED_KNOWLEDGE = Path(__file__).resolve().parent.parent
 HUB = SHARED_KNOWLEDGE.parent
 sys.path.insert(0, str(HUB / "scripts"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))

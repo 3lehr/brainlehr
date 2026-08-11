@@ -36,7 +36,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "knowledge.db"
+DB_PATH = Path(__file__).parent / "brainlehr.db"
 CLAUDE_MD_PATH = Path(__file__).parent.parent / "CLAUDE.md"
 
 MARK_START = "<!-- ESKALATION:START -->"
@@ -184,7 +184,7 @@ def cmd_selftest(_args):
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)
-        db_copy = tmp / "knowledge.db"
+        db_copy = tmp / "brainlehr.db"
         md_copy = tmp / "CLAUDE.md"
         shutil.copy(DB_PATH, db_copy)
         md_copy.write_text("# Testkopf\n", encoding="utf-8")

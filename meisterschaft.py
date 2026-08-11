@@ -59,7 +59,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parent
-DEFAULT_DB = SHARED_KNOWLEDGE / "knowledge.db"
+DEFAULT_DB = SHARED_KNOWLEDGE / "brainlehr.db"
 
 # Richtung je Rohgroesse fuer den Komposit-Score: +1 hoeher besser, -1 niedriger
 # besser. "streuung" ist absichtlich NICHT hier drin -- sie wird aus der

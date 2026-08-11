@@ -513,7 +513,7 @@ END;
 -- julianday() statt Stringvergleich: L-ec167a (Bestand mischt Datumsform
 -- "YYYY-MM-DD" und volle ISO-Zeit mit Offset, ein reiner "<"-Stringvergleich
 -- waere an dieser Grenze falsch) -- gemessen gegen den echten Bestand
--- (sqlite3 knowledge.db, 2026-08-08): julianday() parst beide Formen korrekt
+-- (sqlite3 brainlehr.db, 2026-08-08): julianday() parst beide Formen korrekt
 -- und vergleichbar. Gleicher Tag ist ERLAUBT (Grenzwert, Auftrag Punkt 4):
 -- eine Norm, die am Tag ihres Inkrafttretens schon wieder endet (z.B.
 -- Direktive, die am selben Tag zurueckgenommen wird), ist ein legitimer,

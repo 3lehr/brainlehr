@@ -36,8 +36,11 @@ import sys
 from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent
+ROOT = WURZEL.parent
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "haken"))
+sys.path.insert(0, str(ROOT / "kern"))
 sys.path.insert(0, str(WURZEL))
-sys.path.insert(0, str(WURZEL / "haken"))
 
 import embeddings  # noqa: E402
 import speicher  # noqa: E402

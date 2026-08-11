@@ -33,6 +33,7 @@ import pytest
 SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 
 import embeddings  # noqa: E402
 import schreiblauf as sl  # noqa: E402

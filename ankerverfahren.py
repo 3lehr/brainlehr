@@ -400,7 +400,7 @@ def pruefe_beleg(beleg: dict, wurzel: str, bereich: dict, zeitstempel: str) -> b
 # ab -- Netz, Zeitueberschreitung, Dienstablehnung, fehlender Schluessel --
 # und legt einen Eintrag in einer eigenen Datei ab, statt hochzureichen.
 #
-# ABLAGEORT: eigene JSON-Datei neben knowledge.db, NICHT eine Tabelle darin.
+# ABLAGEORT: eigene JSON-Datei neben brainlehr.db, NICHT eine Tabelle darin.
 # Begruendung: die Warteschlange muss lesbar bleiben, waehrend die DB
 # gerade gesichert/wiederhergestellt wird (Auftrag) -- eine eigene Datei
 # hat dabei keine Sperre/Transaktion mit der DB gemeinsam. Read-modify-write

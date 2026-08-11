@@ -53,7 +53,7 @@ from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent
 sys.path.insert(0, str(WURZEL))
-sys.path.insert(0, str(WURZEL / "haken"))
+sys.path.insert(0, str(WURZEL.parent / "haken"))
 
 import speicher  # noqa: E402
 

@@ -52,9 +52,20 @@ def test_beide_gesetzt_neuer_gewinnt(monkeypatch, capsys):
     assert capsys.readouterr().err == ""
 
 
-def test_keiner_gesetzt(monkeypatch, capsys):
+def test_keiner_gesetzt_kein_brainlehr_db_am_ort(tmp_path, monkeypatch, capsys):
     mod = _lade(monkeypatch)
-    assert mod.DB == mod.WURZEL / "knowledge.db"
+    capsys.readouterr()  # Hinweis aus dem Modul-Reload gegen die echte WURZEL verwerfen
+    pfad = mod._ermittle_db(tmp_path, None, None)
+    assert pfad == tmp_path / "knowledge.db"
+    assert "knowledge.db ist der alte Dateiname" in capsys.readouterr().err
+
+
+def test_keiner_gesetzt_brainlehr_db_existiert_am_ort(tmp_path, monkeypatch, capsys):
+    (tmp_path / "brainlehr.db").touch()
+    mod = _lade(monkeypatch)
+    capsys.readouterr()  # Hinweis aus dem Modul-Reload gegen die echte WURZEL verwerfen
+    pfad = mod._ermittle_db(tmp_path, None, None)
+    assert pfad == tmp_path / "brainlehr.db"
     assert capsys.readouterr().err == ""
 
 

@@ -2,7 +2,7 @@
 
 Deckt zwei Ebenen: die reine Merkle-Baum-Mathematik (kein DB-Zugriff) und
 den Bestandslauf gegen eine frische Temp-DB (echtes schema.sql, NIE gegen
-die echte knowledge.db).
+die echte brainlehr.db).
 """
 from __future__ import annotations
 

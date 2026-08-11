@@ -60,7 +60,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE))
 from knowledge_lint import get_ro_conn  # noqa: E402
 from knowledge_mcp_server import now_iso  # noqa: E402
 
-DB_PATH = SHARED_KNOWLEDGE / "knowledge.db"
+DB_PATH = SHARED_KNOWLEDGE / "brainlehr.db"
 
 
 class LeereStreckeError(ValueError):

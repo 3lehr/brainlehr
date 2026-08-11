@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Meldet neue Schreibvorgaenge in brainlehr (knowledge.db), waehrend anderswo gearbeitet wird.
+"""Meldet neue Schreibvorgaenge in brainlehr (brainlehr.db), waehrend anderswo gearbeitet wird.
 
 Abweichung vom Auftrag: lessons_learned hat keine Spalte created_at, nur
 first_seen/last_seen -> first_seen wird als Zeitstempel verwendet.
@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 
 BERLIN = ZoneInfo("Europe/Berlin")
 SHARED_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.environ.get("BEGOD_KNOWLEDGE_DB", os.path.join(SHARED_DIR, "knowledge.db"))
+DB_PATH = os.environ.get("BEGOD_KNOWLEDGE_DB", os.path.join(SHARED_DIR, "brainlehr.db"))
 RECALL_LOG = os.path.join(SHARED_DIR, "recall_log.jsonl")
 STAND_PATH = os.path.join(SHARED_DIR, ".neuschreibungen_stand.json")
 

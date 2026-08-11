@@ -17,7 +17,7 @@ geaenderte Dateien ausserhalb dieses Verzeichnisses: KEINE.
 shared-knowledge/knowledge_mcp_server.py wird nur importiert; sein
 Modulattribut DB_PATH wird zur Laufzeit dieses Prozesses auf die Demo-DB
 umgebogen (exakt das Muster aus pruefstand/messlauf.py). Kein
-Schreibzugriff auf shared-knowledge/knowledge.db.
+Schreibzugriff auf shared-knowledge/brainlehr.db.
 """
 from __future__ import annotations
 

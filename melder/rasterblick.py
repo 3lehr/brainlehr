@@ -25,7 +25,7 @@ WAS DER BLICK ENTHAELT, und warum jedes Feld GEMESSEN statt geraten ist:
   - session/actor/model: dieselben drei Spalten wie an jedem Knoten/jeder
     Lehre (Auftrag 2026-08-06) -- hier vom Aufrufer uebergeben, nicht neu
     erfunden.
-  - bestand: Knoten-/Lehren-/Kantenzahl, LIVE aus knowledge.db gezaehlt in
+  - bestand: Knoten-/Lehren-/Kantenzahl, LIVE aus brainlehr.db gezaehlt in
     demselben Aufruf, der den Vermerk schreibt -- keine Konstante, die
     schon beim naechsten Schreibvorgang veraltet waere.
   - kontextfenster: MUSS der Aufrufer mitgeben. Dieses Modul misst es nicht
@@ -51,8 +51,9 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "haken"))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "kern"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import ort  # noqa: E402
 import speicher  # noqa: E402  -- eine Tuer zur Datenbank statt einer eigenen
 

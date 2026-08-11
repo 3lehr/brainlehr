@@ -16,7 +16,7 @@ extrahiert, siehe kanten_aus_lehren.py): diese Kanten entstehen
 AUSSCHLIESSLICH aus Vektor-Aehnlichkeit.
 
 SCHWELLE -- gemessen, nicht geraten (Messung 2026-08-08, echter Bestand
-/Volumes/daten/Begod2026/brainlehr/knowledge.db, 2013 Knoten mit
+/Volumes/daten/Begod2026/brainlehr/brainlehr.db, 2013 Knoten mit
 bge-m3-Embedding, 2 025 078 Paare):
 
 Das Histogramm der Kosinus-Aehnlichkeit faellt von 0.50 bis 1.00 in

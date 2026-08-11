@@ -2,7 +2,7 @@
 tests/test_auditkette.py). Rot-vor-gruen-Beleg fuer knowledge_lint.py::
 find_broken_chain() mit kettenerklaerung.py -- eine Umschreibung wird
 simuliert, vorher zeigt der Lint einen unerklaerten Bruch, nachher denselben
-Bruch als erklaert. NIE gegen die echte knowledge.db -- immer frische
+Bruch als erklaert. NIE gegen die echte brainlehr.db -- immer frische
 Temp-DB aus schema.sql.
 """
 from __future__ import annotations

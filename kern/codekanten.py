@@ -47,8 +47,9 @@ from collections import defaultdict
 from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent
+ROOT = WURZEL.parent
 sys.path.insert(0, str(WURZEL))
-sys.path.insert(0, str(WURZEL / "haken"))
+sys.path.insert(0, str(ROOT / "haken"))
 
 import ort  # noqa: E402
 import speicher  # noqa: E402

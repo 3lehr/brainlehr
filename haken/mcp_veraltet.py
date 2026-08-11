@@ -4,7 +4,7 @@ mcp_veraltet.py — meldet veraltete knowledge_mcp_server.py-Prozesse (UserPromp
 
 Ein laufender MCP-Server haelt beim Start geladenen Code im Speicher. Wird die
 Quelldatei danach repariert, schreiben alle noch laufenden Prozesse weiter mit
-dem alten (falschen) Code in die gemeinsame knowledge.db — kein Melder bisher.
+dem alten (falschen) Code in die gemeinsame brainlehr.db — kein Melder bisher.
 
 Erkennung ohne Servereingriff: Prozessstart (ps lstart) je Prozess mit der
 mtime von knowledge_mcp_server.py vergleichen. Datei neuer als Prozessstart

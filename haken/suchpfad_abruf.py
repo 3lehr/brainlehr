@@ -143,6 +143,7 @@ def _selftest() -> None:
     import sys as _sys
     from pathlib import Path as _Path
     _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent / "kern"))
     import speicher  # noqa: E402 -- eine Tuer zur Datenbank statt einer eigenen
     with speicher.lesen() as conn:
         nodes, lessons = kandidaten(conn, "", None, 5)

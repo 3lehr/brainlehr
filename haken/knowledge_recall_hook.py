@@ -3,7 +3,7 @@
 knowledge_recall_hook.py — Auto-Recall (UserPromptSubmit-Hook, systemweit).
 
 Liest den User-Prompt von stdin (Claude-Code-Hook-JSON), sucht in der
-gemeinsamen knowledge.db (FTS-Nodes + lessons_learned) nach dem aktuellen
+gemeinsamen brainlehr.db (FTS-Nodes + lessons_learned) nach dem aktuellen
 Thema und spritzt die stärksten Treffer als kompakten Kontext-Block ein.
 
 Regeln:
@@ -85,7 +85,7 @@ import suchpfad_abruf  # noqa: E402
 import mehrstufiger_abruf  # noqa: E402
 
 # Protokoll, WAS gezogen wurde -- neben der DB, eigene Datei (kein Tabelle in
-# knowledge.db: sonst schreibt JEDE Sitzung bei JEDEM Prompt in dieselbe DB,
+# brainlehr.db: sonst schreibt JEDE Sitzung bei JEDEM Prompt in dieselbe DB,
 # die auch lesson_recorder beschreibt -> Schreibsperren quer durchs Fleet).
 # JSONL, Append-only. Zeilen < 4096 Byte (PIPE_BUF) sind auf POSIX atomar --
 # parallele Prozesse koennen sich nicht mitten in eine Zeile schreiben, auch
@@ -1509,7 +1509,8 @@ def zielfunktion(params: dict | None = None) -> dict:
         for k, v in overrides.items():
             globals()[k] = v
         shared_knowledge = Path(DB).resolve().parent
-        for p in (str(shared_knowledge / "schreibpruefstand"), str(shared_knowledge),
+        for p in (str(shared_knowledge / "schreibpruefstand"), str(shared_knowledge / "kern"),
+                  str(shared_knowledge),
                   str(shared_knowledge.parent / "scripts")):
             if p not in sys.path:
                 sys.path.insert(0, p)
@@ -2069,7 +2070,7 @@ def selftest() -> None:
 
     # --- Embedding-Kanal + Ensemble (Auftrag 2026-08-07 Teil 1+2) --------
     # Eigene Test-DB (echtes schema.sql, wie shared-knowledge/tests/
-    # test_knowledge_hybrid_search.py::temp_db) statt der echten knowledge.db --
+    # test_knowledge_hybrid_search.py::temp_db) statt der echten brainlehr.db --
     # deterministisch, kein Netzwerk. DB (Modulglobal) wird fuer die Dauer
     # des Blocks umgebogen, danach garantiert zurueckgesetzt.
     #

@@ -8,7 +8,7 @@ das nicht vorkommt, killt die ganze Anfrage) und "ue"-Schreibung fand "ü"
 nicht (remove_diacritics macht nur ü→u, nicht ue→u). Behoben in
 knowledge_mcp_server.py::knowledge_search (ODER-Verknuepfung) + schema.sql
 (Trigram-Tokenizer + Faltung vor dem Indizieren). Diese Migration wendet das
-neue Schema auf die LEBENDE knowledge.db an und baut den Index aus den
+neue Schema auf die LEBENDE brainlehr.db an und baut den Index aus den
 (bereits gefaltet zu erwartenden) Spalten von knowledge_nodes neu auf --
 `INSERT INTO fts(fts) VALUES('rebuild')` wuerde das NICHT tun, weil es die
 Rohspalten kopiert statt durch die Trigger zu gehen.

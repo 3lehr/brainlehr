@@ -44,7 +44,7 @@ gegen eine frische DB durchlaufgeprueft): obige Kerndateien PLUS
   - normbestand.py      (Quellstatus-Pruefung)
   - knowledge_lint.py    (die Selbstpruefung selbst, importiert alle
                          obigen; DB_PATH darin fest an
-                         SHARED_KNOWLEDGE/knowledge.db, keine BEGOD_KNOWLEDGE_DB-Uebersteuerung)
+                         SHARED_KNOWLEDGE/brainlehr.db, keine BEGOD_KNOWLEDGE_DB-Uebersteuerung)
 kurator_lauf() (Auftrag 2026-08-07) importiert knowledge_lint.py VERZOEGERT
 (erst beim Aufruf, nicht beim Laden dieses Moduls -- knowledge_lint.py
 importiert seinerseits aus diesem Modul, ein Top-Level-Import waere ein
@@ -95,6 +95,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent / "kern"))
 import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
 import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-Fanout
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
@@ -115,7 +116,7 @@ import herkunft_normentscheider  # Auftrag 2026-08-09: norm_entschieden_von trae
 # jeden Betrieb ausserhalb dieses Verzeichnisses (Fremdclient-Test, spaeter
 # Portabilitaet ausserhalb Begod2026) und laesst sich nicht gegen eine
 # Testkopie fahren, ohne die echte DB anzufassen.
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "brainlehr.db"))
 BERLIN = ZoneInfo("Europe/Berlin")
 # Mehrere MCP-Prozesse/Sitzungen schreiben gleichzeitig auf dieselbe WAL-DB.
 # WAL erlaubt genau einen Schreiber; ohne busy_timeout wirft ein zweiter
@@ -365,7 +366,7 @@ END;
 -- julianday() statt Stringvergleich: L-ec167a (Bestand mischt Datumsform
 -- "YYYY-MM-DD" und volle ISO-Zeit mit Offset, ein reiner "<"-Stringvergleich
 -- waere an dieser Grenze falsch) -- gemessen gegen den echten Bestand
--- (sqlite3 knowledge.db, 2026-08-08): julianday() parst beide Formen korrekt
+-- (sqlite3 brainlehr.db, 2026-08-08): julianday() parst beide Formen korrekt
 -- und vergleichbar. Gleicher Tag ist ERLAUBT (Grenzwert, Auftrag Punkt 4):
 -- eine Norm, die am Tag ihres Inkrafttretens schon wieder endet (z.B.
 -- Direktive, die am selben Tag zurueckgenommen wird), ist ein legitimer,
@@ -1015,7 +1016,7 @@ def _ensure_core_schema(conn: sqlite3.Connection) -> None:
 
     Befund an fremdem Ort (leere DB): ensure_schema zog bisher nur Spalten
     nach (ALTER TABLE) und nahm an, dass die Kerntabellen schon existieren --
-    stimmt nur fuer eine bereits gepflegte knowledge.db, nie fuer eine neue.
+    stimmt nur fuer eine bereits gepflegte brainlehr.db, nie fuer eine neue.
     Quelle ist schema.sql neben dieser Datei, nicht ein zweiter im Code
     nachgebauter Schemastand. Jede Anweisung dort steht unter IF NOT EXISTS,
     ein Lauf gegen eine vollstaendige DB aendert also nichts. Ausnahme siehe
@@ -1123,7 +1124,7 @@ def _ensure_nachgezogene_spalten(conn: sqlite3.Connection) -> None:
 
 
 def ensure_schema(conn: sqlite3.Connection) -> None:
-    """Idempotent additive migration for old knowledge.db copies."""
+    """Idempotent additive migration for old brainlehr.db copies."""
     _ensure_core_schema(conn)
     _ensure_herkunft_triggers(conn)
     _ensure_nachgezogene_spalten(conn)

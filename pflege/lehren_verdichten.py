@@ -64,14 +64,14 @@ import sys
 import time
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE / "schreibpruefstand"))
 
 from migrate_schreiber import _backup  # noqa: E402 -- nur gelesen/importiert
 import schreiblauf as sl  # noqa: E402 -- nur gelesen/importiert (_call_ollama, _call_with_retry, Konstanten)
 
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "brainlehr.db"))
 MODEL = sl.DEFAULT_MODEL
 OLLAMA_URL = sl.DEFAULT_OLLAMA_URL
 TIMEOUT = sl.CALL_TIMEOUT
@@ -437,7 +437,7 @@ def _selftest() -> int:
 
     # 5) Additive Migration gegen Tempkopie, idempotent, Zeilenzahl unveraendert.
     with tempfile.TemporaryDirectory() as tmp:
-        tmp_db = Path(tmp) / "knowledge.db"
+        tmp_db = Path(tmp) / "brainlehr.db"
         shutil.copy2(DB_PATH, tmp_db)
         orig_db_path = DB_PATH
         DB_PATH = tmp_db

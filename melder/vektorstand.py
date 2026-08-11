@@ -33,8 +33,9 @@ import sqlite3
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "haken"))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "kern"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import speicher  # noqa: E402 -- eine Tuer zur Datenbank statt einer eigenen
 import build_embeddings  # noqa: E402 -- eine Wahrheit ueber den Einbettungstext
 import embeddings  # noqa: E402 -- fuer das erwartete Modell

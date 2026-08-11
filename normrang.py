@@ -55,7 +55,7 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 HUB_ROOT = HERE.parent
-DB_PATH = HERE / "knowledge.db"
+DB_PATH = HERE / "brainlehr.db"
 CET = timezone(timedelta(hours=1))
 
 # Gleiche Pfade wie normbestand.py (N1) beim Anlegen der Artefakte verwendet
@@ -74,7 +74,7 @@ def _backup(db_path: Path) -> Path:
     ein Blick ins Verzeichnis findet alle Sicherungsarten gleich wieder.
 
     Zusatz gegenueber jenen beiden Vorbildern: WAL-Checkpoint vor dem
-    Kopieren. Die Live-DB laeuft im WAL-Modus (knowledge.db-wal daneben) --
+    Kopieren. Die Live-DB laeuft im WAL-Modus (brainlehr.db-wal daneben) --
     ein reiner shutil.copy2 der Hauptdatei kann juengst committete, aber
     noch nicht zurueckgeschriebene Aenderungen verlieren (live beobachtet:
     eine so gezogene Kopie hatte die norm_rang/gilt_ab/gilt_bis-Spalten aus
@@ -87,7 +87,7 @@ def _backup(db_path: Path) -> Path:
     finally:
         conn.close()
     stamp = datetime.now(CET).strftime("%Y%m%dT%H%M%S")
-    dest = db_path.parent / f"knowledge.db.bak-{stamp}"
+    dest = db_path.parent / f"brainlehr.db.bak-{stamp}"
     shutil.copy2(db_path, dest)
     return dest
 
@@ -251,7 +251,7 @@ def _selftest() -> int:
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
-        db_path = tmp_path / "knowledge.db"
+        db_path = tmp_path / "brainlehr.db"
         _init_temp_db(db_path)
 
         global_src = f"erzeugt aus {GLOBAL_CLAUDE_MD} (Stand 2026-08-05T00:00:00+02:00)"

@@ -33,7 +33,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import brainlehr  # type: ignore  # noqa: E402
 import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
 
-BETRIEB_DB = SHARED_KNOWLEDGE / "knowledge.db"
+BETRIEB_DB = SHARED_KNOWLEDGE / "brainlehr.db"
 
 # Tabellen, die absichtlich NICHT zur Erstanlage gehoeren. Beide sind
 # nachgesehen, nicht vermutet:
@@ -56,7 +56,7 @@ def test_init_legt_regelbewehrte_datenbank_an(tmp_path, capsys):
     """S2: ein Befehl, ein leerer Ort, eine benutzbare brainlehr."""
     ziel = tmp_path / "neuer_ort"
     assert brainlehr.init(ziel) == 0
-    db = ziel / "knowledge.db"
+    db = ziel / "brainlehr.db"
     assert db.exists()
 
     conn = sqlite3.connect(db)
@@ -70,7 +70,7 @@ def test_init_ueberschreibt_keinen_bestand(tmp_path):
     """Die eine Zusicherung, die eine Erstanlage geben muss."""
     ziel = tmp_path / "ort"
     assert brainlehr.init(ziel) == 0
-    db = ziel / "knowledge.db"
+    db = ziel / "brainlehr.db"
     vorher = db.stat().st_size
     assert brainlehr.init(ziel) == 1  # zweiter Lauf verweigert
     assert db.stat().st_size == vorher
@@ -117,7 +117,7 @@ def test_rundlauf_erhaelt_bestand_und_herkunft(tmp_path):
 
     ziel_ordner = tmp_path / "ziel"
     assert brainlehr.init(ziel_ordner) == 0
-    ziel = ziel_ordner / "knowledge.db"
+    ziel = ziel_ordner / "brainlehr.db"
     assert brainlehr.rein(auszug, ziel) == 0, "Rundlauf muss vollstaendig sein"
 
     z = sqlite3.connect(ziel)

@@ -111,7 +111,7 @@ def _backup(db_path: Path) -> Path:
     finally:
         conn.close()
     stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-    dest = db_path.parent / f"knowledge.db.bak-{stamp}"
+    dest = db_path.parent / f"brainlehr.db.bak-{stamp}"
     shutil.copy2(db_path, dest)
     return dest
 
@@ -334,7 +334,7 @@ def loesche(db_path: Path, apply: bool) -> dict:
 
 def _selftest() -> int:
     tmp_dir = Path(tempfile.mkdtemp(prefix="hebb_selftest_"))
-    db_path = tmp_dir / "knowledge.db"
+    db_path = tmp_dir / "brainlehr.db"
     log_path = tmp_dir / "recall_log.jsonl"
 
     conn = sqlite3.connect(str(db_path))

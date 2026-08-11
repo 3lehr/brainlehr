@@ -37,7 +37,7 @@ from types import SimpleNamespace
 
 HERE = Path(__file__).resolve().parent
 HUB = HERE.parent
-DB_PATH = HERE / "knowledge.db"
+DB_PATH = HERE / "brainlehr.db"
 HTML_PATH = HERE / "entscheidungen.html"
 ESKALATION_SCRIPT = HERE / "eskalation_vorlage.py"
 EILMELDUNG_SCRIPT = HUB / "scripts" / "eilmeldung_quittieren.py"
@@ -73,7 +73,7 @@ GEWICHT_GERATEN_KEY = "siegbedingung_gewichte_geraten"
 # beiden Dateien liegt und hier NICHT gebaut wird. Diese Datei liest nur.
 #
 # ERWARTETES FELD FUER DEN ERZEUGER: Tabelle `eskalation_vorschlag` in
-# derselben knowledge.db, Spalten (lesson_id TEXT PRIMARY KEY, regel_vorschlag
+# derselben brainlehr.db, Spalten (lesson_id TEXT PRIMARY KEY, regel_vorschlag
 # TEXT NOT NULL, erzeugt_am TEXT NOT NULL). Ein Upsert pro Lehre, sobald sie
 # nach status='escalated_to_rule' wechselt. Ohne Zeile dort zeigt die
 # Oberflaeche ehrlich "Regeltext wird noch erstellt" und bietet dort keine
@@ -349,7 +349,7 @@ def _gesamtstand() -> dict:
 # ─── Abschnitt 9: Wissensraum (Auftrag 2026-08-08) ──────────────────────────
 #
 # PCA-Lauf ist teuer (~1s bei 2600 Punkten) -- Zwischenspeicher, neu gerechnet
-# nur wenn knowledge.db oder recall_log.jsonl seit dem letzten Lauf eine
+# nur wenn brainlehr.db oder recall_log.jsonl seit dem letzten Lauf eine
 # neuere mtime tragen. Kein Hintergrund-Refresh, keine Ablaufzeit: die zwei
 # mtimes SIND die Gueltigkeitsbedingung.
 
@@ -529,7 +529,7 @@ def _selftest() -> int:
 
     # 2) Schreibpfade (Siegbedingung/Nachtschicht) gegen eine Kopie.
     with tempfile.TemporaryDirectory() as tmp:
-        copy = Path(tmp) / "knowledge.db"
+        copy = Path(tmp) / "brainlehr.db"
         shutil.copy2(DB_PATH, copy)
         DB_PATH = copy
         try:
@@ -551,14 +551,14 @@ def _selftest() -> int:
             fehler = _nachtschicht_setzen("vielleicht", "keiner", "12")
             assert "error" in fehler, "Negativfall: ungueltiger aktiv-Wert muss abgelehnt werden"
         finally:
-            DB_PATH = Path(__file__).resolve().parent / "knowledge.db"
+            DB_PATH = Path(__file__).resolve().parent / "brainlehr.db"
 
     # 2b) Eskalation: befoerdern/zurueckstufen gegen Kopien von DB und
     # CLAUDE.md -- eskalation_vorlage haelt DB_PATH/CLAUDE_MD_PATH als
     # eigene Modul-Globale, deshalb hier eigens umgehaengt statt ueber
     # entscheidungen_server.DB_PATH (das eskalation_vorlage nicht sieht).
     with tempfile.TemporaryDirectory() as tmp:
-        db_copy = Path(tmp) / "knowledge.db"
+        db_copy = Path(tmp) / "brainlehr.db"
         md_copy = Path(tmp) / "CLAUDE.md"
         shutil.copy2(eskalation_vorlage.DB_PATH, db_copy)
         md_copy.write_text("# Testkopf\n", encoding="utf-8")

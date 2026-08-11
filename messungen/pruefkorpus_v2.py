@@ -47,8 +47,9 @@ import re
 import sys
 from pathlib import Path
 
-SHARED_KNOWLEDGE = Path(__file__).resolve().parent
+SHARED_KNOWLEDGE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import schreiblauf as sl  # noqa: E402  -- _call_with_retry wiederverwendet

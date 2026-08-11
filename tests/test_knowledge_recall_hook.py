@@ -15,7 +15,7 @@ Rot-Probe (im Auftrag verlangt):
     das ist KAPUTTES-ZIEL; ohne die Fehlerbehandlung fliegt main() dort.
 
 Alles gegen tempfile.TemporaryDirectory() -- nie gegen shared-knowledge/
-knowledge.db oder ein echtes recall_log.jsonl.
+brainlehr.db oder ein echtes recall_log.jsonl.
 """
 import importlib.util
 import io
@@ -34,7 +34,7 @@ _spec = importlib.util.spec_from_file_location("knowledge_recall_hook", HOOK_PAT
 hook = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(hook)
 
-# Schema-Ausschnitt wie shared-knowledge/knowledge.db (siehe .schema dort) --
+# Schema-Ausschnitt wie shared-knowledge/brainlehr.db (siehe .schema dort) --
 # nur die Spalten, die query()/report() tatsaechlich lesen.
 SCHEMA = """
 CREATE TABLE knowledge_nodes (
@@ -109,7 +109,7 @@ def _run_main_with_prompt(prompt: str) -> str:
 
 def treffer_erzeugt_protokollzeile() -> str:
     with tempfile.TemporaryDirectory() as td:
-        db, log = pathlib.Path(td) / "knowledge.db", pathlib.Path(td) / "recall_log.jsonl"
+        db, log = pathlib.Path(td) / "brainlehr.db", pathlib.Path(td) / "recall_log.jsonl"
         _build_db(db)
         hook.DB, hook.RECALL_LOG = str(db), str(log)
         _run_main_with_prompt(TREFFER_PROMPT)
@@ -131,7 +131,7 @@ def treffer_erzeugt_protokollzeile() -> str:
 
 def kein_treffer_keine_zeile() -> str:
     with tempfile.TemporaryDirectory() as td:
-        db, log = pathlib.Path(td) / "knowledge.db", pathlib.Path(td) / "recall_log.jsonl"
+        db, log = pathlib.Path(td) / "brainlehr.db", pathlib.Path(td) / "recall_log.jsonl"
         _build_db(db)
         hook.DB, hook.RECALL_LOG = str(db), str(log)
         _run_main_with_prompt("voellig unverwandtes thema ohne jeden treffer irgendwo")
@@ -144,7 +144,7 @@ def kaputtes_ziel_bricht_abruf_nicht() -> str:
     -> der Abruf selbst liefert trotzdem sein <knowledge-recall>, keine
     Exception nach oben."""
     with tempfile.TemporaryDirectory() as td:
-        db = pathlib.Path(td) / "knowledge.db"
+        db = pathlib.Path(td) / "brainlehr.db"
         kaputt = pathlib.Path(td) / "kaputtes_ziel"
         kaputt.mkdir()  # Verzeichnis, nicht beschreibbar als Datei
         _build_db(db)
@@ -159,7 +159,7 @@ def kaputtes_ziel_bricht_abruf_nicht() -> str:
 
 def auswertung_liefert_plausible_zahlen() -> str:
     with tempfile.TemporaryDirectory() as td:
-        db, log = pathlib.Path(td) / "knowledge.db", pathlib.Path(td) / "recall_log.jsonl"
+        db, log = pathlib.Path(td) / "brainlehr.db", pathlib.Path(td) / "recall_log.jsonl"
         _build_db(db)
         log.write_text(
             json.dumps({"ts": "2026-08-01T10:00:00+00:00", "nodes": ["/test/gobd"], "lessons": []}) + "\n" +

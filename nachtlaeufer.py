@@ -3,11 +3,11 @@
 
 ROLLENTRENNUNG IST DER KERN (Auftrag 2026-08-07): der Laeufer beobachtet und
 legt vor, er entscheidet nichts -- das ist baulich erzwungen, nicht per
-Kommentar. Er oeffnet knowledge.db NUR LESEND (SQLite-URI mode=ro, s.
+Kommentar. Er oeffnet brainlehr.db NUR LESEND (SQLite-URI mode=ro, s.
 _ro_connect()) -- ein Schreibversuch scheitert mit sqlite3.OperationalError
 ("attempt to write a readonly database"), unabhaengig davon, was der Code
 spaeter mal versucht. Einzige Ausnahme: die eigene Vorlage schreibt er in
-eine EIGENE Datei (VORLAGE_PFAD), nie nach knowledge.db.
+eine EIGENE Datei (VORLAGE_PFAD), nie nach brainlehr.db.
 
 KONFIGURATION in der vorhandenen Tabelle knowledge_config (Muster: embed_model
 in schema.sql, dort per Trigger gesichert -- hier nur gelesen, kein Trigger
@@ -65,7 +65,8 @@ import sys
 from pathlib import Path
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parent
-DB_PATH = SHARED_KNOWLEDGE / "knowledge.db"
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))  # pruefkorpus_v3 liegt seit der Ordnersortierung dort
+DB_PATH = SHARED_KNOWLEDGE / "brainlehr.db"
 VORLAGE_PFAD = SHARED_KNOWLEDGE / "nachtlaeufer_vorlage.md"
 
 _DEFAULTS = {
@@ -288,6 +289,7 @@ def _selbsttest() -> None:
 
         # nachtlaeufer_vorlage.jsonl / pruefkorpus_v3 muessen im Pfad liegen.
         sys.path.insert(0, str(SHARED_KNOWLEDGE))
+        sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 
         # Abnahme 4: Budget wirkt.
         text = lauf(db_path, vorlage)

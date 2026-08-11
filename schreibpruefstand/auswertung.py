@@ -29,7 +29,7 @@ import demo_db  # noqa: E402
 import knowledge_lint  # noqa: E402
 import schreiblauf  # noqa: E402
 
-REAL_DB_PATH = SHARED_KNOWLEDGE / "knowledge.db"
+REAL_DB_PATH = SHARED_KNOWLEDGE / "brainlehr.db"
 NO_RECALL_LOG = SCHREIBPRUEFSTAND_DIR / "demo" / "no_recall_log.jsonl"  # existiert nicht -> leere Treffermenge
 
 

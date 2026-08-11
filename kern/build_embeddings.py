@@ -30,7 +30,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import embeddings
 from haken.ort import DB as DB_PATH  # noqa: E402
 BERLIN = ZoneInfo("Europe/Berlin")
@@ -265,7 +265,7 @@ def _backup() -> Path:
     finally:
         conn.close()
     stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-    dest = DB_PATH.parent / f"knowledge.db.bak-{stamp}"
+    dest = DB_PATH.parent / f"brainlehr.db.bak-{stamp}"
     shutil.copy2(DB_PATH, dest)
     return dest
 

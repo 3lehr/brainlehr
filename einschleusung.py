@@ -329,7 +329,7 @@ def sortiert_nach_sicherheit(funde: list[dict]) -> list[dict]:
     return sorted(funde, key=lambda f: (_SEV_ORDER.get(f["sicherheit"], 9), f.get("ref", ""), f["position"]))
 
 
-# ─── Lint-Kategorie 15: gegen knowledge.db ─────────────────────────────────
+# ─── Lint-Kategorie 15: gegen brainlehr.db ─────────────────────────────────
 # Wird von knowledge_lint.py importiert (find_injection_suspects). Felder
 # 1:1 wie in Kategorie 7 (Einbettung abgeschnitten) -- dieselben Felder, die
 # auch tatsaechlich in Recall-Ausgaben landen.

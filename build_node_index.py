@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-build_node_index.py — Landkarte aller Knoten in knowledge.db.
+build_node_index.py — Landkarte aller Knoten in brainlehr.db.
 
 Vorbild: begod/scripts/knowledge_index.py (Konsile+ADRs). Dasselbe Muster,
 hier ueber die Knoten der Datenbank, die dort fehlen -- Agent sieht sonst

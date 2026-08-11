@@ -25,7 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 import knowledge_mcp_server as kms  # _slugify(), now_iso() -- dieselbe Regel wie am Schreibvorgang
 
-DB_PATH = Path(__file__).parent / "knowledge.db"
+DB_PATH = Path(__file__).parent / "brainlehr.db"
 _PATH_PUNCT_RE = re.compile(r"[^A-Za-z0-9/\-]")  # wortgleich aus knowledge_lint.py
 SLUG_MAX_LEN = kms.SLUG_MAX_LEN
 

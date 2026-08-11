@@ -1,5 +1,5 @@
 """Wiedervorspielen aufgezeichneter Anfragen gegen eine eingefrorene
-knowledge.db-Momentaufnahme (Auftrag 2026-08-08, Teil 3, siehe
+brainlehr.db-Momentaufnahme (Auftrag 2026-08-08, Teil 3, siehe
 knowledge_db_snapshot.py fuer die Momentaufnahme selbst).
 
 Drei Auswertungen, alle OHNE bekannte richtige Antwort -- KEIN Modell

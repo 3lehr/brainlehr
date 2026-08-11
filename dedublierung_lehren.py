@@ -21,7 +21,7 @@ Verfahren, kein Modellaufruf:
      automatisch-zusammenfuehren / Unentschieden / automatisch-verwerfen.
 
 Zusammenfuehren (--apply) laeuft NUR gegen eine Arbeitskopie der DB
-(--copy-path, Default: scratchpad-Datei) und veraendert live knowledge.db
+(--copy-path, Default: scratchpad-Datei) und veraendert live brainlehr.db
 nie. Verlustfrei: der Verlierer-Datensatz bleibt als Zeile erhalten
 (status='resolved' + Verweis), Zielzeile erbt Vereinigungsmenge der Felder
 (Text nicht ueberschrieben, sondern um Unterschiedliches ergaenzt).
@@ -54,7 +54,7 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 from knowledge_mcp_server import fold_de  # noqa: E402
 
-DB_PATH = HERE / "knowledge.db"
+DB_PATH = HERE / "brainlehr.db"
 CET = timezone(timedelta(hours=1))
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
 

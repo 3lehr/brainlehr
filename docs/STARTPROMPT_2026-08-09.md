@@ -71,7 +71,7 @@ Norm /ops/buckeberg-anbieterabend-2026-08-05.
 ## Was beim Neustart passieren soll, in dieser Reihenfolge
 
 1. **Sitzung beenden.** Damit stirbt `knowledge_mcp_server.py` (PID 61742),
-   der als einziger Schreibhandles auf `knowledge.db` hielt. Kein `kill`
+   der als einziger Schreibhandles auf `brainlehr.db` hielt. Kein `kill`
    noetig.
 2. **Neu starten.** Der frische Serverprozess liest dann erstmals
    `BEGOD_KNOWLEDGE_ACTOR=claude-code` aus `hub/.mcp.json` — und die drei

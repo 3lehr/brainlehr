@@ -6,7 +6,7 @@ passenden Lehre im Suchtext -- das misst "hilft es, dem Modell die Loesung in
 den Prompt zu schreiben", nicht ob der Abruf sie selbst findet. Hier laeuft
 derselbe Weg wie eine echte Sitzung: knowledge_recall_hook.keywords() zerlegt
 den unveraenderten Aufgabentext, knowledge_recall_hook.query() sucht damit in
-derselben knowledge.db (FTS-Nodes + Lessons-LIKE) -- keine Handauswahl.
+derselben brainlehr.db (FTS-Nodes + Lessons-LIKE) -- keine Handauswahl.
 
 ZWEI GROESSEN GETRENNT gemessen, das ist der Kern:
   TREFFERGUETE  war die passende Lehre unter den tatsaechlichen Treffern?
@@ -33,7 +33,7 @@ nein" heisst: es KANN nicht ja sein, nicht dass der Abruf leer bleiben muss).
 Modelle/N_RUNS/Ollama-Aufruf: identisch zu wissensnutzen.py (Vergleichbarkeit).
 
 Geaenderte Dateien ausserhalb dieser einen: KEINE. wissensnutzen.py nicht
-angefasst. Liest knowledge.db (query()/lesson_query), schreibt nichts hinein.
+angefasst. Liest brainlehr.db (query()/lesson_query), schreibt nichts hinein.
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ import sys
 import time
 from pathlib import Path
 
-SHARED_KNOWLEDGE = Path(__file__).resolve().parent
+SHARED_KNOWLEDGE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))

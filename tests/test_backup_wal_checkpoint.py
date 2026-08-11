@@ -26,6 +26,7 @@ import pytest
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 
 import build_embeddings
 import fix_namensraum_knoten
@@ -79,12 +80,12 @@ def _has_column(db_path: Path, col: str) -> bool:
 def test_rot_vor_gruen_alter_copy2_verliert_wal_daten(tmp_path):
     """Beleg fuer den Fehler selbst: reiner shutil.copy2 (der alte Stand
     aller vier Fassungen vor diesem Fix) verliert die WAL-Aenderung."""
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     holder = sqlite3.connect(str(db_path))  # bleibt offen, siehe Docstring oben
     try:
         _make_wal_db(db_path, keep_open=holder)
         _add_column_leave_in_wal(db_path, keep_open=holder)
-        assert (db_path.parent / "knowledge.db-wal").exists()
+        assert (db_path.parent / "brainlehr.db-wal").exists()
         assert _has_column(db_path, "norm_rang")  # Live-DB hat die Spalte
 
         dest = tmp_path / "alt.bak"
@@ -101,7 +102,7 @@ def test_rot_vor_gruen_alter_copy2_verliert_wal_daten(tmp_path):
 
 @pytest.mark.parametrize("mod", NO_ARG)
 def test_backup_no_arg_enthaelt_wal_daten(tmp_path, monkeypatch, mod):
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     holder = sqlite3.connect(str(db_path))
     try:
         _make_wal_db(db_path, keep_open=holder)
@@ -116,7 +117,7 @@ def test_backup_no_arg_enthaelt_wal_daten(tmp_path, monkeypatch, mod):
 
 @pytest.mark.parametrize("mod", WITH_ARG)
 def test_backup_with_arg_enthaelt_wal_daten(tmp_path, mod):
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     holder = sqlite3.connect(str(db_path))
     try:
         _make_wal_db(db_path, keep_open=holder)
@@ -132,13 +133,13 @@ def test_backup_with_arg_enthaelt_wal_daten(tmp_path, mod):
 
 @pytest.mark.parametrize("mod", NO_ARG)
 def test_backup_ohne_wal_sidecar_no_arg(tmp_path, monkeypatch, mod):
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     conn = sqlite3.connect(str(db_path))
     conn.execute("CREATE TABLE t (x INTEGER)")
     conn.execute("INSERT INTO t VALUES (1)")
     conn.commit()
     conn.close()
-    assert not (db_path.parent / "knowledge.db-wal").exists()
+    assert not (db_path.parent / "brainlehr.db-wal").exists()
     monkeypatch.setattr(mod, "DB_PATH", db_path)
 
     dest = mod._backup()
@@ -150,7 +151,7 @@ def test_backup_ohne_wal_sidecar_no_arg(tmp_path, monkeypatch, mod):
 
 @pytest.mark.parametrize("mod", WITH_ARG)
 def test_backup_ohne_wal_sidecar_with_arg(tmp_path, mod):
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     conn = sqlite3.connect(str(db_path))
     conn.execute("CREATE TABLE t (x INTEGER)")
     conn.execute("INSERT INTO t VALUES (1)")
@@ -168,7 +169,7 @@ def test_backup_ohne_wal_sidecar_with_arg(tmp_path, mod):
 
 @pytest.mark.parametrize("mod", WITH_ARG)
 def test_backup_bricht_ab_wenn_checkpoint_busy(tmp_path, mod):
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     _make_wal_db(db_path)
 
     # Zweite Verbindung haelt eine offene Schreibtransaktion -> TRUNCATE-
@@ -178,10 +179,10 @@ def test_backup_bricht_ab_wenn_checkpoint_busy(tmp_path, mod):
     blocker.execute("BEGIN IMMEDIATE")
     blocker.execute("INSERT INTO t VALUES (2)")
     try:
-        before = set(db_path.parent.glob("knowledge.db.bak-*"))
+        before = set(db_path.parent.glob("brainlehr.db.bak-*"))
         with pytest.raises(RuntimeError, match="WAL-Checkpoint blockiert"):
             mod._backup(db_path)
-        after = set(db_path.parent.glob("knowledge.db.bak-*"))
+        after = set(db_path.parent.glob("brainlehr.db.bak-*"))
         assert before == after, "kein neues Sicherungsfile bei blockiertem Checkpoint"
     finally:
         blocker.rollback()

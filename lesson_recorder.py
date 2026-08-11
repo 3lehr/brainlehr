@@ -26,7 +26,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).parent))
 import knowledge_mcp_server as kms  # noqa: E402  -- liefert kalibrierte Aehnlichkeitserkennung
 
-DB_PATH = Path(__file__).parent / "knowledge.db"
+DB_PATH = Path(__file__).parent / "brainlehr.db"
 BERLIN = ZoneInfo("Europe/Berlin")
 
 RULE_THRESHOLD = 3  # Minimum occurrences to auto-generate a rule

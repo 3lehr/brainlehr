@@ -36,7 +36,7 @@ HERE = Path(__file__).parent
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad -- gleiches Muster wie
 # knowledge_mcp_server.py::DB_PATH, sonst laesst sich dieses Skript nie gegen
 # eine Testkopie fahren, ohne die Produktiv-DB anzufassen.
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "knowledge.db"))
+DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "brainlehr.db"))
 CET = timezone(timedelta(hours=1))
 
 NEW_COLUMNS = {
@@ -175,7 +175,7 @@ def _selftest() -> int:
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        db_path = Path(tmp) / "knowledge.db"
+        db_path = Path(tmp) / "brainlehr.db"
         schema_sql = (HERE / "schema.sql").read_text(encoding="utf-8")
         # Alte Form simulieren: Tabelle OHNE die drei neuen Spalten anlegen,
         # wie es eine echte Alt-DB vor N2 waere -- der Normschicht-Block

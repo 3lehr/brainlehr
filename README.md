@@ -44,14 +44,14 @@ Turnusmäßig, kein Haken: `python3 haken/kurator_taeglich.py` (Verdichtung, ein
 python3 brainlehr.py raus auszug.jsonl
 ```
 ```bash
-python3 brainlehr.py rein auszug.jsonl --db /neuer/ort/knowledge.db
+python3 brainlehr.py rein auszug.jsonl --db /neuer/ort/brainlehr.db
 ```
 
 Zeilenweise statt Dateikopie, aus einem Grund: **eine SQLite-Datei lässt sich nicht zusammenführen, git überschreibt sie.** Zeilen lassen sich vergleichen, zusammenführen und lesen.
 
-Der Auszug trägt Knoten, Lehren, Kanten, Einstellungen, das Zugriffsprotokoll und die Eskalationen. Nicht mit gehen die Vektoren und der Volltextindex — beide ableitbar. Den Volltext bauen die Trigger beim Einlesen selbst auf; die Vektoren rechnet `build_embeddings.py` neu. Ein Vektor aus einem anderen Einbettungsmodell wäre still falsch, und still falsch ist schlimmer als fehlend.
+Der Auszug trägt Knoten, Lehren, Kanten, Einstellungen, das Zugriffsprotokoll und die Eskalationen. Nicht mit gehen die Vektoren und der Volltextindex — beide ableitbar. Den Volltext bauen die Trigger beim Einlesen selbst auf; die Vektoren rechnet `kern/build_embeddings.py` neu. Ein Vektor aus einem anderen Einbettungsmodell wäre still falsch, und still falsch ist schlimmer als fehlend.
 
-**`knowledge.db` ist absichtlich nicht versioniert.** Versioniert wird `schema.sql`, `herkunft_unveraenderlich.sql` und ein Auszug unter `auszug/`. Grund: git führt eine Binärdatei nicht zusammen, es überschreibt sie — und am 2026-08-07 lag hier bereits eine beschädigte Fassung im Commit, womit die Versionsverwaltung als Rettungsweg wertlos war.
+**`brainlehr.db` ist absichtlich nicht versioniert.** Versioniert wird `schema.sql`, `herkunft_unveraenderlich.sql` und ein Auszug unter `auszug/`. Grund: git führt eine Binärdatei nicht zusammen, es überschreibt sie — und am 2026-08-07 lag hier bereits eine beschädigte Fassung im Commit, womit die Versionsverwaltung als Rettungsweg wertlos war.
 
 ## Prüfen
 

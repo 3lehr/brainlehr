@@ -3,7 +3,7 @@ Vergleich: dasselbe Modell MIT gegen OHNE Wissenszugang (lesson_query-Treffer
 im Prompt), nicht Modell gegen Modell.
 
 ZWEI AUFGABEN aus echten Fallen des Bestands (Wortlaut per lesson_query
-gegen die echte knowledge.db geholt, nicht aus dem Gedaechtnis geschrieben):
+gegen die echte brainlehr.db geholt, nicht aus dem Gedaechtnis geschrieben):
   A) Dialog-Falle (Lehre L-c0e910): AlertDialog+showDialog wird in
      fahrtenbuch_legacy durch einen globalen Shim zum Vollbild-Screen mit
      Weissraum. Richtig: ActionScreen(expandPrimaryAction:true) ueber
@@ -41,7 +41,7 @@ Jede andere Bewertung (Teilpunkte, Wortlaut-Aehnlichkeit) waere ein
 Modellurteil durch die Hintertuer -- deshalb bewusst nicht gemacht.
 
 Geaenderte Dateien ausserhalb dieser einen: KEINE. Liest die echte
-knowledge.db (lesson_query), schreibt nichts hinein.
+brainlehr.db (lesson_query), schreibt nichts hinein.
 
 AUFGABENSAMMLUNG erweitert 2026-08-07 auf 15 Aufgaben (A,B,D..J,O..U),
 Fallen aus dem echten Bestand per lesson_query gezogen (siehe Kommentar an
@@ -81,7 +81,7 @@ import sys
 import time
 from pathlib import Path
 
-SHARED_KNOWLEDGE = Path(__file__).resolve().parent
+SHARED_KNOWLEDGE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
@@ -393,7 +393,7 @@ def _selftest() -> None:
     assert TASKS["I"]["check"]("Bash(..., dangerouslyDisableSandbox=True)") is True
     assert TASKS["I"]["check"]("security unlock-keychain -p pass login.keychain") is False
     assert TASKS["J"]["check"]("PRAGMA wal_autocheckpoint=100;") is True
-    assert TASKS["J"]["check"]("git add knowledge.db && git commit") is False
+    assert TASKS["J"]["check"]("git add brainlehr.db && git commit") is False
     assert TASKS["O"]["check"]("int generation = 0; leave(int gen) { if (gen == generation) ...}") is True
     assert TASKS["O"]["check"]("bool _active = false; void leave() { _active = false; }") is False
     assert TASKS["P"]["check"]("TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger") is True

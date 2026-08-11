@@ -2,7 +2,7 @@
 Wahrheit (Auftrag 2026-08-07). Der Unterschied zu jeder bisherigen Messung
 steht in einem Satz: hier ist vorher entschieden, ob eine Aufgabe eine
 richtige Antwort hat -- damit zerfaellt "der Abruf lieferte nichts" in die
-zwei Faelle, die sich an der echten knowledge.db nicht trennen lassen
+zwei Faelle, die sich an der echten brainlehr.db nicht trennen lassen
 (ER HAT VERSAGT / ES GAB NICHTS).
 
 DREI BETRIEBSARTEN, nicht zwei (Nachtrag des Auftrags):
@@ -80,7 +80,7 @@ import stadtwerke_korpus as korpus  # noqa: E402
 sys.path.insert(0, str(HUB / "scripts"))
 import knowledge_recall_hook as rh  # noqa: E402
 
-ECHTE_DB = SHARED_KNOWLEDGE / "knowledge.db"
+ECHTE_DB = SHARED_KNOWLEDGE / "brainlehr.db"
 
 
 def _sicherheitsnetz(pfad: Path) -> None:

@@ -34,7 +34,7 @@ fenstergroesse.py._append_jsonl (Auftrag Punkt 5: "seit heute").
 Geaenderte Dateien ausserhalb dieser einen: KEINE. Nur diese Datei + eine
 Testdatei (tests/test_pruefkorpus.py). knowledge_recall_hook.py, wissens-
 nutzen*.py, wirkung.py, fenstergroesse.py, werkzeugabdeckung.py: nur
-gelesen. Liest die echte knowledge.db read-only (mode=ro), schreibt nichts
+gelesen. Liest die echte brainlehr.db read-only (mode=ro), schreibt nichts
 hinein.
 """
 from __future__ import annotations
@@ -50,13 +50,13 @@ import time
 from collections import Counter
 from pathlib import Path
 
-SHARED_KNOWLEDGE = Path(__file__).resolve().parent
+SHARED_KNOWLEDGE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import schreiblauf as sl  # noqa: E402  -- _call_with_retry + DEFAULT_MODEL wiederverwendet
 
-DB = str(SHARED_KNOWLEDGE / "knowledge.db")
+DB = str(SHARED_KNOWLEDGE / "brainlehr.db")
 MODEL = sl.DEFAULT_MODEL
 TIMEOUT = 180.0
 OUT_PATH = SHARED_KNOWLEDGE / "runs" / "pruefkorpus.json"

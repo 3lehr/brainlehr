@@ -26,7 +26,7 @@ zeigen die Streuung OHNE jede Aenderung, bevor irgendein Weglass-Ergebnis
 gegen sie gehalten wird.
 
 Geaenderte Dateien ausserhalb dieser einen: KEINE. Liest die echte
-knowledge.db (lesson_query), schreibt nichts hinein.
+brainlehr.db (lesson_query), schreibt nichts hinein.
 """
 from __future__ import annotations
 
@@ -38,8 +38,9 @@ import sys
 import time
 from pathlib import Path
 
-SHARED_KNOWLEDGE = Path(__file__).resolve().parent
+SHARED_KNOWLEDGE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import schreiblauf as sl  # noqa: E402  -- _call_with_retry wiederverwendet

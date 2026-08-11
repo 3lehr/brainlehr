@@ -35,8 +35,11 @@ import sys
 from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent
+ROOT = WURZEL.parent
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "haken"))
+sys.path.insert(0, str(ROOT / "kern"))
 sys.path.insert(0, str(WURZEL))
-sys.path.insert(0, str(WURZEL / "haken"))
 
 import echtkorpus as ek  # noqa: E402  -- SITZUNGEN, kennungen, kennung_pruefen, satzart, Filter
 import speicher  # noqa: E402

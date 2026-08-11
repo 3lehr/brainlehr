@@ -52,7 +52,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "haken"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
 import ort  # noqa: E402
 
 # 2 s wie im Server (knowledge_mcp_server.BUSY_TIMEOUT_MS). Bewusst derselbe

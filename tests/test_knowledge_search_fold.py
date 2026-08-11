@@ -6,7 +6,7 @@
      "Existenzgründer" (ü) nicht, weil FTS5s remove_diacritics nur ü->u macht,
      nicht ue->u.
 
-Laeuft gegen eine Kopie der ECHTEN knowledge.db (derselbe Bestand, den auch
+Laeuft gegen eine Kopie der ECHTEN brainlehr.db (derselbe Bestand, den auch
 die Agenten im Betrieb sehen) -- nicht gegen synthetische Fixtures, weil der
 Fehler an genau diesem Bestand gemessen wurde (siehe Auftrag: Tabelle mit
 sechs Anfragen, vier davon 0 Treffer trotz vorhandenem Knoten).
@@ -28,7 +28,7 @@ import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
 @pytest.fixture()
 def real_db_copy(tmp_path, monkeypatch):
     """Kopie der echten DB -- Schreibzugriffe der Tests treffen nie das Original."""
-    src = SHARED_KNOWLEDGE / "knowledge.db"
+    src = SHARED_KNOWLEDGE / "brainlehr.db"
     dst = tmp_path / "knowledge_real_copy.db"
     shutil.copy2(src, dst)
     monkeypatch.setattr(kms, "DB_PATH", dst)

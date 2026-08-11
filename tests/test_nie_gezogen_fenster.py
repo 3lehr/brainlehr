@@ -10,7 +10,7 @@ den Knoten, sondern ueber das Protokoll. Diese Tests belegen die Trennung:
 "im Fenster nie gezogen" (echter Befund) vs. "aelter als das Protokoll"
 (keine Aussage moeglich).
 
-NIE gegen die echte knowledge.db -- immer frische Temp-DB aus schema.sql.
+NIE gegen die echte brainlehr.db -- immer frische Temp-DB aus schema.sql.
 """
 from __future__ import annotations
 

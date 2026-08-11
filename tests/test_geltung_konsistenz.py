@@ -27,7 +27,7 @@ GILT_BIS = "2026-12-31T23:59:59+01:00"
 
 
 def _db(tmp_path):
-    db_path = tmp_path / "knowledge.db"
+    db_path = tmp_path / "brainlehr.db"
     _init_temp_db(db_path)
     conn = sqlite3.connect(str(db_path))
     try:

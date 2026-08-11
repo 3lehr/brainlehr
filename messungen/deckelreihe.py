@@ -48,9 +48,10 @@ import sqlite3
 import sys
 from pathlib import Path
 
-HIER = Path(__file__).resolve().parent
+HIER = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(HIER))
 sys.path.insert(0, str(HIER / "haken"))
+sys.path.insert(0, str(HIER / "kern"))
 
 import abrufguete  # noqa: E402
 import knowledge_recall_hook as rh  # noqa: E402

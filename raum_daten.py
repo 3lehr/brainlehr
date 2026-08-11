@@ -34,7 +34,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-DB_PATH = HERE / "knowledge.db"
+DB_PATH = HERE / "brainlehr.db"
 RECALL_LOG_PATH = HERE / "recall_log.jsonl"
 
 _CTRL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f�]")
@@ -234,7 +234,7 @@ def _selftest() -> int:
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)
-        db = tmp / "knowledge.db"
+        db = tmp / "brainlehr.db"
         DB_PATH = db
         RECALL_LOG_PATH = tmp / "recall_log.jsonl"
 
@@ -311,7 +311,7 @@ def _selftest() -> int:
         assert len(d["punkte"]) == 5  # 3 Knoten + 2 Lehren
 
     # Live-DB darf durch den Selbsttest nicht angefasst worden sein.
-    DB_PATH = HERE / "knowledge.db"
+    DB_PATH = HERE / "brainlehr.db"
     RECALL_LOG_PATH = HERE / "recall_log.jsonl"
     assert DB_PATH.stat().st_size == real_db_size
     assert DB_PATH.stat().st_mtime == real_db_mtime

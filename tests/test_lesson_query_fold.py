@@ -7,7 +7,7 @@ Nachtrag zum urspruenglichen Auftrag (2026-08-01): 374 der 153+374 Eintraege
 im Wissensspeicher sind Lehren, nicht Knoten -- der groessere Teil des
 Bestands stand also weiter hinter derselben Wand.
 
-Laeuft gegen eine Kopie der echten knowledge.db, wie test_knowledge_search_fold.py.
+Laeuft gegen eine Kopie der echten brainlehr.db, wie test_knowledge_search_fold.py.
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
 
 @pytest.fixture()
 def real_db_copy(tmp_path, monkeypatch):
-    src = SHARED_KNOWLEDGE / "knowledge.db"
+    src = SHARED_KNOWLEDGE / "brainlehr.db"
     dst = tmp_path / "knowledge_real_copy.db"
     shutil.copy2(src, dst)
     monkeypatch.setattr(kms, "DB_PATH", dst)

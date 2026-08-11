@@ -2,14 +2,14 @@
 Erstellt: 2026-08-01T06:45:00+0200
 Autor: BEGOD-Implementer (hub/subagent-bericht-caveman)
 Zweck: Kalibrier-Auswertung fuer lesson_recorder.py-Aehnlichkeitserkennung.
-Keine Datenbankaenderung -- reine Auswertung gegen eine Kopie von knowledge.db.
+Keine Datenbankaenderung -- reine Auswertung gegen eine Kopie von brainlehr.db.
 ---
 
 # Kalibrierung: Aehnlichkeitserkennung ueber die 366/367 Lessons
 
 ## Ausgangsbefund (gemessen, 2026-08-01)
 
-`shared-knowledge/knowledge.db`, Tabelle `lessons_learned`: **367** Zeilen
+`shared-knowledge/brainlehr.db`, Tabelle `lessons_learned`: **367** Zeilen
 insgesamt, **366** mit `occurrences=1`, **0** mit `auto_rule_generated=1`,
 **0** mit `status='escalated_to_rule'`. Ursache: `lesson_recorder.py` verglich
 Dubletten nur ueber `type` + byte-identische `description` -- zwei Formulierungen
@@ -38,7 +38,7 @@ Schwelle und denselben `same_as`-Mechanismus teilen und nicht auseinanderlaufen.
 
 ## Kalibrierung gegen die echten aktiven Lessons
 
-Lauf gegen eine **Kopie** von `knowledge.db` (keine Schreiboperation auf das
+Lauf gegen eine **Kopie** von `brainlehr.db` (keine Schreiboperation auf das
 Original). Aktive Lessons (`status='active'`): **320** von 367 (47 sind
 `resolved`/`escalated_to_rule` und fliessen nicht in den Vergleich ein, da
 `_find_similar_lesson` nur aktive Lessons desselben Typs vergleicht).

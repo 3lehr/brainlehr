@@ -6,7 +6,7 @@
     "./abrufversagen.py",
     "./befund_gegen_speicher.py",
     "./brainlehr.py",
-    "./build_embeddings.py",
+    "./kern/build_embeddings.py",
     "./build_node_index.py",
     "./dedublierung_lehren.py",
     "./doctor.py",
@@ -33,7 +33,7 @@
     "./knowledge_recall_replay.py",
     "./konfidenz.py",
     "./lauf_titelverteidiger_2026-08-08.py",
-    "./lehren_verdichten.py",
+    "./pflege/lehren_verdichten.py",
     "./lesson_recorder.py",
     "./meisterschaft.py",
     "./messlauf_abrufguete.py",
@@ -49,8 +49,8 @@
     "./normrang.py",
     "./planbindung.py",
     "./pruefer.py",
-    "./pruefkorpus.py",
-    "./pruefkorpus_v3.py",
+    "./kern/pruefkorpus.py",
+    "./kern/pruefkorpus_v3.py",
     "./pruefstand/messlauf.py",
     "./pruefstand/vergleichslauf.py",
     "./rangfolge.py",
@@ -93,7 +93,7 @@
   "erhoben_am": "2026-08-11T18:45:00+0200",
   "zweck": "Ausgangsstand der Naht (speicher.py). 'dauerhaft' darf nur schrumpfen -- tests/test_naht_ratsche.py haelt das fest. Migrationen laufen einmal und wandern bei einem Datenbankwechsel nicht mit. ':memory:'-Verbindungen zaehlen nicht, das sind Testkulissen.",
   "umgestellt": [
-    "./deckelreihe.py",
+    "./messungen/deckelreihe.py",
     "./haken/suchpfad_abruf.py"
   ]
 }

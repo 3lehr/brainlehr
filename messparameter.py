@@ -2,7 +2,7 @@
 Knoten 557ab47f, Punkt 2 "Konfiguration im Ergebnis"): eine Ergebnisdatei
 ohne Methodenteil ist nicht wiederholbar. schnappschuss() liest die
 Stellschrauben aus knowledge_recall_hook.py (nur gelesen, nicht importiert
-veraendert) plus Embedding-Modell und Bestandsgroessen aus knowledge.db.
+veraendert) plus Embedding-Modell und Bestandsgroessen aus brainlehr.db.
 
 Aufruf in einem Messskript, das nach runs/ schreibt:
     from messparameter import schnappschuss
@@ -16,7 +16,7 @@ from pathlib import Path
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parent
 HUB = SHARED_KNOWLEDGE.parent
-DB = SHARED_KNOWLEDGE / "knowledge.db"
+DB = SHARED_KNOWLEDGE / "brainlehr.db"
 
 if str(HUB / "scripts") not in sys.path:
     sys.path.insert(0, str(HUB / "scripts"))

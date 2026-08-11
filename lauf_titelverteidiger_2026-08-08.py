@@ -1,6 +1,6 @@
 """Einmal-Laufskript: heutigen Stand als Titelverteidiger festhalten (Auftrag
 2026-08-08). Fahrt pruefkorpus_v3.run_repeated() gegen eine KOPIE von
-knowledge.db (Umlenkung von hook.DB, wie bereits in knowledge_recall_replay.py
+brainlehr.db (Umlenkung von hook.DB, wie bereits in knowledge_recall_replay.py
 vorgemacht -- s. dessen _replay()), NIE gegen die Live-DB (L-ecf08c).
 
 Nur lesen/aufrufen von pruefkorpus_v3.py, keine Aenderung dort.
@@ -16,6 +16,7 @@ from pathlib import Path
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
+sys.path.insert(0, str(SHARED_KNOWLEDGE / "kern"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE.parent / "scripts"))
 
 import knowledge_recall_hook as hook  # noqa: E402
@@ -23,7 +24,7 @@ import messparameter  # noqa: E402
 import pruefkorpus_v3 as pk  # noqa: E402
 from meisterschaft import titelverteidiger_festhalten, titelverteidiger_lesen, herausforderer_bewerten  # noqa: E402
 
-LIVE_DB = SHARED_KNOWLEDGE / "knowledge.db"
+LIVE_DB = SHARED_KNOWLEDGE / "brainlehr.db"
 SCRATCH_DB = Path("/private/tmp/claude-501/-Volumes-daten-Begod2026-fahrtenbuch/"
                    "43459d92-9f7a-4fca-b8cb-3f4ed6709f30/scratchpad/knowledge_meisterschaft_kopie.db")
 N_RUNS = 5

@@ -8,7 +8,7 @@ Zwei Dinge werden hier geprueft:
 1. Rueckwaertsvertraeglichkeit: ohne gesetzte Variable exakt der alte,
    fest verdrahtete Pfad.
 2. Die Zusicherung, die den Fremdclient-Test ueberhaupt sicher macht --
-   zeigt BEGOD_KNOWLEDGE_DB auf die ECHTE knowledge.db, bricht sie ab,
+   zeigt BEGOD_KNOWLEDGE_DB auf die ECHTE brainlehr.db, bricht sie ab,
    damit ein fremder Client nie versehentlich gegen den echten Bestand
    schreibt.
 """
@@ -22,7 +22,7 @@ from pathlib import Path
 import pytest
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
-REAL_DB = SHARED_KNOWLEDGE / "knowledge.db"
+REAL_DB = SHARED_KNOWLEDGE / "brainlehr.db"
 
 
 def _load_server_module():
@@ -52,7 +52,7 @@ def test_env_var_ueberschreibt_pfad(monkeypatch, tmp_path):
 
 def assert_not_real_db(db_path: Path) -> None:
     """Zusicherung fuer den Fremdclient-Test: bricht ab, wenn BEGOD_KNOWLEDGE_DB
-    auf die echte knowledge.db zeigt. Reiner Pfadvergleich (resolve()), keine
+    auf die echte brainlehr.db zeigt. Reiner Pfadvergleich (resolve()), keine
     Datenbankverbindung -- funktioniert auch, wenn die Datei gerade WAL-Locks haelt."""
     if Path(db_path).resolve() == REAL_DB.resolve():
         raise AssertionError(

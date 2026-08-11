@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Stop-Haken: den Auszug nachziehen, wenn der Bestand juenger ist.
 
-`knowledge.db` ist nicht versioniert (Dienst-Plan A1, L-84869f: git fuehrt
+`brainlehr.db` ist nicht versioniert (Dienst-Plan A1, L-84869f: git fuehrt
 eine Binaerdatei nicht zusammen, es ueberschreibt sie). Versioniert wird der
 zeilenweise Auszug unter `auszug/`. Damit ist die Sicherung genau so frisch
 wie der letzte `brainlehr.py raus` -- und der lief bisher von Hand.

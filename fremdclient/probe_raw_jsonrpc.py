@@ -5,7 +5,7 @@ MCP-Client (z.B. LM Studio) es tun wuerde -- kein Import des Servermoduls,
 kein Umweg ueber unsere eigenen Python-Handler.
 
 Laeuft NUR gegen BEGOD_KNOWLEDGE_DB (Testkopie). Bricht ab, wenn die
-Variable fehlt oder auf die echte knowledge.db zeigt.
+Variable fehlt oder auf die echte brainlehr.db zeigt.
 """
 import json
 import os
@@ -15,7 +15,7 @@ from pathlib import Path
 
 FREMDCLIENT = Path(__file__).parent
 SHARED_KNOWLEDGE = FREMDCLIENT.parent
-REAL_DB = SHARED_KNOWLEDGE / "knowledge.db"
+REAL_DB = SHARED_KNOWLEDGE / "brainlehr.db"
 SERVER = SHARED_KNOWLEDGE / "knowledge_mcp_server.py"
 
 

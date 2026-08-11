@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Knowledge-Lint — rein lesende Bestandsprüfung von shared-knowledge/knowledge.db.
+"""Knowledge-Lint — rein lesende Bestandsprüfung von shared-knowledge/brainlehr.db.
 
 Plan docs/PLAN_WISSENSSYSTEM_2026-08-05.md, Maßnahme P6. Ändert nichts,
 schreibt nichts in die DB (Verbindung immer mode=ro). Meldet sechs
@@ -39,7 +39,7 @@ import konfidenz  # noqa: E402  (find_confidence_decay() -- Auftrag 2026-08-06, 
 import normbestand  # noqa: E402  (quellstatus() -- Auftrag 2026-08-06)
 from knowledge_mcp_server import fold_de, SLUG_MAX_LEN, compute_ketten_hash  # noqa: E402
 
-DB_PATH = SHARED_KNOWLEDGE / "knowledge.db"
+DB_PATH = SHARED_KNOWLEDGE / "brainlehr.db"
 RECALL_LOG = SHARED_KNOWLEDGE / "recall_log.jsonl"
 
 STALE_DAYS = 90
@@ -817,7 +817,7 @@ def find_broken_chain(conn: sqlite3.Connection) -> dict:
 
 # ─── 13. Anker-Warteschlange laeuft voll ────────────────────────────────────
 # Auftrag 2026-08-06 (Warteschlange fuer ankerverfahren.py, "darf nie
-# blockieren"). Liest NICHTS aus knowledge.db -- die Warteschlange ist eine
+# blockieren"). Liest NICHTS aus brainlehr.db -- die Warteschlange ist eine
 # eigene Datei neben der DB (ankerverfahren.ANKER_QUEUE_PATH, Begruendung
 # dort). Reine Wiederverwendung von ankerverfahren.rueckstand(), keine
 # zweite Fassung der Altersrechnung.
@@ -1925,7 +1925,7 @@ def _sha256(path: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json", action="store_true", help="Bericht als JSON statt Text")
-    parser.add_argument("--selftest", action="store_true", help="Selbsttest gegen temporaere DB, kein Zugriff auf knowledge.db")
+    parser.add_argument("--selftest", action="store_true", help="Selbsttest gegen temporaere DB, kein Zugriff auf brainlehr.db")
     args = parser.parse_args()
 
     if args.selftest:
@@ -1944,7 +1944,7 @@ def main() -> None:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
         print_report(result)
-        print(f"\nknowledge.db unveraendert: sha256 vorher={before_hash} nachher={after_hash} "
+        print(f"\nbrainlehr.db unveraendert: sha256 vorher={before_hash} nachher={after_hash} "
               f"({'gleich' if unchanged else 'ABWEICHUNG -- SOFORT MELDEN'})")
 
 

@@ -12,7 +12,7 @@ Nur der Transport (Ollama /api/generate vs. LM Studio /v1/chat/completions
 mit tools=) unterscheidet sich.
 
 geaenderte Dateien ausserhalb dieses Verzeichnisses: KEINE. Kein
-Schreibzugriff auf shared-knowledge/knowledge.db.
+Schreibzugriff auf shared-knowledge/brainlehr.db.
 """
 from __future__ import annotations
 
