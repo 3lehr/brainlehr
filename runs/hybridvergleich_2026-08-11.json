@@ -1,0 +1,361 @@
+{
+  "faelle": 35,
+  "ohne_anfragevektor": 0,
+  "gewicht_vektor": 1.0,
+  "hybrid_links_fts5": 15,
+  "hybrid_rechts_postgres": 15,
+  "nur_vektor": 15,
+  "ueberlappung_mittel": 0.442,
+  "einzeln": [
+    {
+      "ziel": "L-a9ccd0",
+      "rang_links": 2,
+      "rang_rechts": 3,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 1,
+      "ueberlappung": 0.5384615384615384,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-298823",
+      "rang_links": 3,
+      "rang_rechts": 2,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": -1,
+      "ueberlappung": 0.5384615384615384,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-f9f654",
+      "rang_links": 4,
+      "rang_rechts": 3,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": -1,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-b4b443",
+      "rang_links": 1,
+      "rang_rechts": 2,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 1,
+      "ueberlappung": 0.3333333333333333,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-44a838",
+      "rang_links": 1,
+      "rang_rechts": 4,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 3,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-cdac52",
+      "rang_links": 3,
+      "rang_rechts": 3,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 0.3333333333333333,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-e7bc5e",
+      "rang_links": 1,
+      "rang_rechts": 1,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-e1a441",
+      "rang_links": 1,
+      "rang_rechts": 1,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-b91ed6",
+      "rang_links": 4,
+      "rang_rechts": 5,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 1,
+      "ueberlappung": 0.6666666666666666,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-bbd7fb",
+      "rang_links": 1,
+      "rang_rechts": 1,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 0.5384615384615384,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-503687",
+      "rang_links": 1,
+      "rang_rechts": 1,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-8c633e",
+      "rang_links": 4,
+      "rang_rechts": 4,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-606b63",
+      "rang_links": 2,
+      "rang_rechts": 3,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 1,
+      "ueberlappung": 0.5384615384615384,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-0392e4",
+      "rang_links": 1,
+      "rang_rechts": 1,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 0,
+      "ueberlappung": 0.3333333333333333,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "L-476602",
+      "rang_links": 1,
+      "rang_rechts": 2,
+      "gefunden_links": true,
+      "gefunden_rechts": true,
+      "rangdifferenz": 1,
+      "ueberlappung": 0.3333333333333333,
+      "gefunden_nur_vektor": true
+    },
+    {
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.5384615384615384,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.25,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.5384615384615384,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/lessons/phase2-summary",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.5384615384615384,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/testing/pytest",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/brainlehr/inference-control-was-andere-faecher",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/methodik/einstieg",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.5384615384615384,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/stadtwerke",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.3333333333333333,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/openlehr/steuer/ui",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.3333333333333333,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.5384615384615384,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "rang_links": null,
+      "rang_rechts": null,
+      "gefunden_links": false,
+      "gefunden_rechts": false,
+      "rangdifferenz": null,
+      "ueberlappung": 0.42857142857142855,
+      "gefunden_nur_vektor": false
+    }
+  ]
+}
