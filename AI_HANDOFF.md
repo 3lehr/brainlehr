@@ -1,5 +1,15 @@
 # AI handoff
 
+## 2026-08-11T07:35:00+02:00 — finding: the parallel-session reporter is blind to non-Claude clients
+
+- Files: none changed (the hook lives in `hub/`, which carries 109 uncommitted files of someone else's work).
+- What happened: at session start `projekt_waehler_hook.py` reported "keine weitere offene Claude-Sitzung gemessen (lsof)" — while 8 live parent sessions were running (14 of the 21 MCP processes under `codex`) and a Codex session had made FIVE commits overnight, touching exactly the test files this session was tracking as open.
+- Why it is blind: its stronger question ("not where someone stands, but where they reach") is fed by the agent register, and that register is filled by `agent_register_hook.py` — a Claude Code hook. A foreign client never triggers it. Measured over 24 h, the register knows three sessions (28 / 15 / 8 file events), all Claude; the Codex session with five commits appears with zero.
+- The wording is literally correct — it says "Claude session". That is what makes it misleading: it reads as an all-clear.
+- Proposed fix, no new machinery: add one client-independent source. `git log --since <last own state>` sees every commit regardless of client, and would have reported the five commits with their file list.
+- Recorded as lesson `L-87532c`; coordination state in node `23456f3b`.
+
+
 ## 2026-08-11T07:22:00+02:00 — note: coordination now also lives in the store
 
 - Node `23456f3b` (`/brainlehr/zwei-sitzungen-arbeiten-parallel-an`) carries the
