@@ -1,5 +1,23 @@
 # AI handoff
 
+## 2026-08-11T07:15:00+02:00 — measure(locks): the 21 server processes cost nothing measurable
+
+- Files: none changed. Measurement only.
+- Why: Yesterday a full test run took 1276 s instead of 101 s, at 2 % CPU and exactly 5.02 s per test — a wait, not computation. I attributed it to 21 concurrent `knowledge_mcp_server` processes contending for `knowledge.db` and recommended cleaning them up first. That recommendation was wrong and I am withdrawing it.
+- Verified now, with 21 processes running: plain read 0.001 s (2081 nodes) · `BEGIN IMMEDIATE` write lock 0.021 s · the server's own `_write_lock()` (flock on `knowledge.db.lock`) acquired in 0.000 s. SQLite/WAL is not the bottleneck, and the file lock is not held.
+- The 21 processes belong to 8 live parent sessions (mostly `codex`, two Claude Desktop, two python). None is orphaned — killing them would interrupt your running sessions, not free a resource.
+- Remaining risk: the 5.02 s per test from yesterday is therefore NOT explained. It was reproducible and uniform, so something serialised those runs; the candidate is no longer the lock. Unmeasured: whether it was the `--durations` path, an embedding call with a network timeout, or a per-test fixture. Do not repeat "too many processes" as the cause — it is measured false.
+- Next test: instrument one slow test with a timestamp before/after each fixture, rather than guessing again.
+
+## 2026-08-11T07:10:00+02:00 — note: parallel sessions, division of files
+
+- Files: none. Coordination note.
+- Working here (Claude Code, worktree `hallo-acd761`): measurement of lock/process contention, and the question whether stdio should become a shared HTTP server for multi-session use (node `3b4c7f68` names exactly this trigger).
+- NOT touching, assumed yours: `tests/test_enigma_*`, `docs/FREMDBESTAENDE.md`, `docs/PLAN_KLIENTENDOKU_2026-08-10.md`, `AI_HANDOFF.md` beyond appending.
+- Shared and not separable by worktree: `knowledge.db` and the README of the giveable repo. Both were edited by both of us yesterday.
+- Note: six `git worktree` trees exist but both sessions were writing in the main tree.
+
+
 ## 2026-08-10T23:00:00+02:00 — test(enigma): extend synthetic contract to consent and trade-secret gates
 
 - Files: `tests/test_enigma_hausmeister_contract.py`
