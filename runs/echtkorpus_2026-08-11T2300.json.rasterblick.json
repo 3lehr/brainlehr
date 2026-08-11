@@ -1,0 +1,12 @@
+{
+  "session": "hallo-01e380",
+  "actor": "claude-sonnet-5",
+  "model": "claude-sonnet-5",
+  "kontextfenster": "nicht gemessen -- Sammellauf ueber recall_log + Sitzungstranskripte",
+  "bestand": {
+    "knoten": 2121,
+    "lehren": 742,
+    "kanten": 5875
+  },
+  "erzeugt_am": "2026-08-11T21:34:56+0200"
+}
