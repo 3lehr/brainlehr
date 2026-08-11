@@ -1,12 +1,12 @@
-# STAND brainlehr — 2026-08-11T15:55:00+0200
+# STAND brainlehr — 2026-08-11T21:15:00+0200
 
-Offen: die Kernzahl (nuetzt eingespieltes Wissen der Antwort) ist WEITER OFFEN — der Lauf von heute war kontaminiert, der Abruf-Haken spielte den Subagenten die Loesung ein (4360a82 widerruft cade91d).
-Prozess 25897 (fremde Sitzung) haelt die Schreibsperre der knowledge.db seit 14:10 mit altem Code — bis zu seinem Ende kann niemand schreiben; der Fix wirkt erst fuer neu gestartete Server.
+Offen: Der Prüfkorpus steht bei 92 Fällen (vorher 4), aber die Positivkontrolle fand Rauschen — 4 Fertigkeits-Vorspänne und mehrere Übergabe-Prompts, die keine Frage stellen. Belastbare Zahl liegt darunter.
+`freigabe` fehlt weiterhin in `knowledge_search`/`knowledge_browse` — zweimal unabhängig gefunden (cda47024, Enigma-Landkarte), gesperrter Knoten bleibt dort auffindbar.
 
-Naechstes: Naht weiterziehen — 69 Produktivdateien oeffnen noch eigene Verbindungen, Ratsche in tests/naht_basis.json haelt den Stand. Zweiter Rechner steht an, danach wird der Transport entschieden (Dienst oder Postgres).
-Danach: Aufgaben bauen, deren Traeger NUR im Bestand steht — solange die Loesung im Kontext des Antwortenden auftauchen kann, misst kein OHNE/MIT-Vergleich.
+Naechstes: Vorspann ausschliessen, Übergabe-Prompts als eigene Klasse — danach ist die Abrufgüte wieder messbar (Gesamtplan Linie C vor A).
+Danach S12 zweiter Anlauf: die Anfrage in den Wortschatz der Antwort übersetzen (L-3ba807 — der Speicher ist in der Sprache der Antwort abgelegt).
 
-Wartet auf: freies Schreibfenster der knowledge.db fuer die geparkte Lehre in docs/nachzutragen/ · `mcpServers.knowledge.env` (actor) · Push-Freigabe fuer 11 lokale Commits.
+Wartet auf: Entscheidung zum NIST-Teilbestand (im Register unbenannt) · ASRS braucht einen Ausfuhrlauf der Oberfläche, keine Schnittstelle · `mcpServers.knowledge.env` (actor).
 
-Nicht vergessen: neue DB-Zugriffe gehen durch `speicher.lesen()` / `speicher.schreiben()`, sonst faellt die Ratsche.
-Subagenten sind keine leeren Gefaesse — Haken feuern auf ihren Auftragstext; vor jeder Messung `python3 kontamination.py`.
+Nicht vergessen: Code-Edits und Messläufe gehen an Sonnet (Norm 75ef2145) — heute zweimal verletzt, siehe L-53eeda.
+Der Gesamtplan ist neu: docs/PLAN_GESAMT_2026-08-11.md ersetzt die Leitannahme von PLAN_DESTILLE. Enigma-Landkarte: docs/ENIGMA_LANDKARTE_2026-08-11.md.
