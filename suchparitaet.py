@@ -24,11 +24,28 @@ Dinge, weil eine einzelne Zahl den falschen Eindruck macht:
                  koennen dasselbe Ziel finden und ringsum voellig
                  verschiedenes einspielen -- und eingespielt wird alles.
 
-WAS DAS VERFAHREN NICHT ENTSCHEIDET: ob die neue Suche BESSER ist. Es misst
-den Unterschied gegen den heutigen Stand, nicht die Wahrheit. Faellt die
-Differenz gross aus, ist das ein Grund zum Nachrechnen, kein Urteil -- die
-neue Suche koennte auch die bessere sein. Wer das entscheiden will, braucht
-Fallurteile, keine Rangvergleiche.
+WOZU DIESES WERKZEUG NICHT DIENT -- korrigiert am 2026-08-11 nach Einspruch
+des Betreibers, weil die erste Fassung dieses Absatzes eine Konservierung
+begruendet haette, die niemand will:
+
+Der Unterschied zwischen den Suchen ist KEIN Schadensmass und erst recht kein
+Grund, beim alten Stand zu bleiben. Der Bruch ist beim Umzug ohnehin
+unvermeidlich (trigram gegen pg_trgm, siehe unten) und obendrein gewollt --
+die heutige Trefferlage ist die, die verbessert werden soll, nicht die, die
+verteidigt werden muss.
+
+Der Einspruch stuetzte sich auf Gemessenes, nicht auf Geschmack: das
+Einbettungsmodell wurde hier bereits einmal getauscht (nomic-embed-text ->
+bge-m3, Commit 1305390), der Einbettungspfad achtmal umgebaut, und die
+Vektoren an vier Tagen neu gerechnet (2624 am 2026-08-07, 794 am 2026-08-11).
+Neuberechnung ist in diesem Haus Routine, kein Ereignis.
+
+Die Zahl, auf die es ankommt, ist deshalb nicht die Differenz zwischen links
+und rechts, sondern `gefunden_links` gegen `gefunden_rechts`: welche Suche
+findet den Zieleintrag oefter. Das ist eine Auswahl zwischen Bauformen, kein
+Bestandsschutz. Die Differenzmasse (rangdifferenz, ueberlappung) bleiben --
+aber als Beschreibung, WIE anders sich die neue Suche verhaelt, damit die
+Aenderung erklaerbar ist und nicht als Raetsel auftaucht.
 
 Die Suchen sind austauschbar (Parameter `suchen`), damit dieses Modul ohne
 laufenden Postgres pruefbar bleibt -- der Selbsttest fuehrt zwei gestellte
@@ -205,12 +222,13 @@ def main() -> None:
 
     ergebnis = messen(faelle, suche_sqlite, rechts)
     print(f"Faelle: {ergebnis['faelle']}")
-    print(f"Ziel gefunden -- links (FTS5): {ergebnis['gefunden_links']} | "
-          f"rechts: {ergebnis['gefunden_rechts']}")
+    print(f"ZIEL GEFUNDEN (die Zahl, die entscheidet) -- links FTS5: "
+          f"{ergebnis['gefunden_links']} | rechts: {ergebnis['gefunden_rechts']}")
     print(f"nur links gefunden: {len(ergebnis['nur_links_gefunden'])} | "
           f"nur rechts: {len(ergebnis['nur_rechts_gefunden'])}")
     print(f"Rang verschoben: {ergebnis['rang_verschoben']} "
-          f"(groesste Verschlechterung: {ergebnis['groesste_verschlechterung']} Plaetze)")
+          f"(groesste Verschiebung: {ergebnis['groesste_verschlechterung']} Plaetze) "
+          f"-- Beschreibung des Unterschieds, kein Schadensmass")
     print(f"Ueberlappung der Trefferlisten im Mittel: {ergebnis['ueberlappung_mittel']}")
     if a.out:
         a.out.write_text(json.dumps(ergebnis, ensure_ascii=False, indent=2) + "\n",
