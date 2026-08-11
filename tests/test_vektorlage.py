@@ -30,7 +30,8 @@ _w = Path(__file__).resolve().parent
 while not (_w / "schema.sql").exists() and _w != _w.parent:
     _w = _w.parent
 
-DB = _w / "knowledge.db"
+# Aufloeser statt selbst gebautem Namen -- siehe tests/test_testumgebung_nutzt_ort.py
+from haken.ort import DB
 
 if not DB.exists():
     pytest.skip("kein Bestand vorhanden -- nichts zu pruefen",

@@ -91,7 +91,10 @@ def braucht_bestand(mindestens: int = 100) -> None:
     umgebauter Test misst etwas anderes und sieht dabei gruen aus."""
     import sqlite3
     import pytest
-    pfad = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (SHARED_KNOWLEDGE / "knowledge.db"))
+    # Den Aufloeser fragen, nicht den Pfad bauen: ein selbst gebauter Name
+    # ueberlebt keine Umbenennung und meldet ihr Scheitern als "Bestand
+    # fehlt, uebersprungen" -- also als Umstand statt als Fehler (L-2b5f6f).
+    from haken.ort import DB as pfad
     if not pfad.exists():
         pytest.skip(f"kein Bestand unter {pfad} -- erst `python3 schnellstart.py --bestand`")
     try:
