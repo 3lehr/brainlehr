@@ -129,6 +129,40 @@ def ablegen(ergebnisdatei: Path, blick_daten: dict, force: bool = False) -> Path
     return ziel
 
 
+def verlust_vermerken(ergebnisdatei: Path, grund: str) -> Path:
+    """Haelt fest, dass der Blick dieser Suche NICHT MEHR ZU HABEN ist.
+
+    Anlass 2026-08-11: 30 Ergebnisdateien standen ohne Vermerk, der Melder
+    schlug bei jedem Sitzungsstart an, und es gab genau zwei Auswege -- einen
+    Vermerk erfinden oder den Melder ignorieren. Beide sind schlechter als das
+    Dritte: aufschreiben, dass nichts aufgeschrieben wurde.
+
+    Die naheliegende Erklaerung war zudem falsch und wurde gemessen statt
+    geglaubt: 'die Dateien sind aelter als das Werkzeug' stimmt nicht --
+    rasterblick.py kam am 2026-08-09T10:19:22+0200 ins Repo, die unvermerkten
+    Ergebnisdateien danach (12:12, 16:30). Das Werkzeug war da und wurde nicht
+    aufgerufen; das ist kein Altbestand, sondern eine gebaute Regel ohne
+    Wirkung.
+
+    Was hier NICHT passiert: session, actor, model, kontextfenster und
+    Bestandsstand von damals werden nicht rekonstruiert. Sie sind weg. Ein
+    nachtraeglich gefuellter Blick waere eine Behauptung ueber eine Sitzung,
+    die niemand mehr befragen kann -- und der Vermerk existiert gerade, um
+    solche Behauptungen zu verhindern.
+
+    Preis: der Melder schweigt danach zu diesen Dateien. Genau richtig -- er
+    hat seinen Zweck erfuellt, sobald der Verlust festgehalten ist. Neue
+    Ergebnisdateien ohne Vermerk loesen ihn unveraendert aus.
+    """
+    return ablegen(ergebnisdatei, {
+        "status": "nicht_rekonstruierbar",
+        "grund": grund,
+        "abgeschlossen_am": _jetzt(),
+        "session": None, "actor": None, "model": None,
+        "kontextfenster": None, "bestand": None,
+    })
+
+
 def fehlende(runs: Path = RUNS) -> list[Path]:
     """Ergebnisdateien unter runs/*.json ohne Rastervermerk -- dieselbe
     Grundgesamtheit wie gegenprobe.offene() (*.json, keine .jsonl/.log/.md,
@@ -224,19 +258,48 @@ def _selftest() -> None:
         m = melden(runs)
         assert m and "3 Ergebnisdatei" in m["befund"] and m["fehlklasse"] and m["fehlalarm_kostet"]
 
-    print("selftest ok (10 Faelle)")
+        # Verlustvermerk: bringt den Melder zum Schweigen, OHNE etwas zu erfinden.
+        for name in ("b.json", "d.json", "e.json"):
+            verlust_vermerken(runs / name, "Lauf beendet, Blick nicht mehr befragbar")
+        assert fehlende(runs) == [], "nach dem Abschluss darf keine Datei mehr offen sein"
+        assert melden(runs) is None, "der Melder muss danach schweigen"
+        vermerkt = json.loads(sidecar(runs / "b.json").read_text())
+        assert vermerkt["status"] == "nicht_rekonstruierbar"
+        assert vermerkt["kontextfenster"] is None and vermerkt["bestand"] is None, \
+            "ein Verlustvermerk darf keine Zahl behaupten, die niemand mehr kennt"
+        assert vermerkt["grund"], "ohne Grund waere es ein stiller Abschluss"
+
+        # Und eine NEUE Ergebnisdatei loest den Melder unveraendert aus --
+        # der Abschluss gilt dem Bestand, nicht der Regel.
+        for name in ("f.json", "g.json", "h.json"):
+            (runs / name).write_text("{}")
+        assert melden(runs), "neue Dateien ohne Vermerk muessen weiter anschlagen"
+
+    print("selftest ok (16 Faelle)")
 
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--fehlende", action="store_true", help="Ergebnisdateien ohne Rastervermerk auflisten")
     p.add_argument("--melder", action="store_true", help="nur sprechen, wenn die Meldeschwelle erreicht ist")
+    p.add_argument("--verlust-abschliessen", metavar="GRUND",
+                    help="fuer JEDE Datei ohne Vermerk festhalten, dass der Blick verloren ist "
+                         "(rekonstruiert nichts, siehe verlust_vermerken)")
     p.add_argument("--selftest", action="store_true")
     p.add_argument("--runs", type=Path, default=RUNS)
     a = p.parse_args()
 
     if a.selftest:
         _selftest()
+        return
+
+    if a.verlust_abschliessen:
+        offen = fehlende(a.runs)
+        for pfad in offen:
+            verlust_vermerken(pfad, a.verlust_abschliessen)
+            print(f"  verloren vermerkt: {pfad.name}")
+        print(f"\n{len(offen)} Datei(en) als nicht rekonstruierbar abgeschlossen. "
+              "Nichts erfunden -- der Verlust steht jetzt in der Akte.")
         return
 
     if a.melder:
