@@ -83,6 +83,42 @@ als eines. Keine Neuformulierung der Lehren; sie tragen mit `description`,
 `root_cause`, `resolution`, `prevention` bereits vier Textfelder und sind damit
 ein anderer Fall.
 
+## Ausgangsmessung, gefahren 2026-08-12T01:30 (Schritt 1 und 2 erledigt)
+
+Teilung: `c69c7e4`, gezogen aus `sha256('art:id')`, getrennt je Art. Sie ist
+damit **aus der Kennung reproduzierbar** und braucht keine gespeicherte Liste —
+neue Knoten bekommen ihre Hälfte automatisch. Das ist mehr als Bequemlichkeit:
+Am Speicher wird parallel aus anderen Projekten geschrieben, und eine Teilung
+aus einer Momentaufnahme wäre am nächsten Tag falsch.
+
+| | Treffer | Nenner | Quote |
+|---|---|---|---|
+| behandelt | 19 | 94 | 20,2 % |
+| unbehandelt | 25 | 97 | 25,8 % |
+
+Einheit ist das Paar (Fall, Ziel), nicht der Fall — 78 Fälle tragen 191 Ziele.
+Gemessen über den echten Abrufweg mit den Betriebsdeckeln 10/7.
+
+**Die Hälften sind vergleichbar, aber nicht symmetrisch.** 5,6 Prozentpunkte
+Abstand liegen unter der gesetzten Toleranz von 10. Die Richtung ist jedoch
+ungünstig: Die zu behandelnde Hälfte startet **schlechter**. Verbessert sie
+sich, wäre ein Teil des Gewinns bloße Rückkehr zum Mittelwert.
+
+**Folge für den Aufbau, bindend:** Gemessen wird nicht behandelt gegen
+unbehandelt, sondern die **Differenz der Differenzen** — die Veränderung der
+behandelten Hälfte von vorher zu nachher, abzüglich der Veränderung der
+unbehandelten im selben Zeitraum. Damit hebt sich der Startabstand heraus, und
+gleichzeitig fängt die unbehandelte Hälfte alles ab, was sich sonst noch ändert:
+Wachstum des Bestands durch die Parallelarbeit, Änderungen am Abrufweg,
+Schwankungen des Einbettungsdienstes. Ohne diesen zweiten Arm wäre jede
+Verbesserung nicht von einem Nebeneffekt zu unterscheiden.
+
+**Was in dieser Messung ausdrücklich NICHT steht:** eine Aussage über Fragen.
+Die Zellen tragen 2 und 4 Fälle. Bei diesen Zahlen ist jede Quote eine
+Einzelbeobachtung mit Prozentzeichen. Der Korpus bleibt bei 6 Fragen zu 72
+Aufträgen voreingenommen, und keine Verfeinerung der Messung heilt das — nur
+ein anderer Sammelkanal.
+
 ## Woran sich Erfolg messen lässt
 
 Die behandelte Hälfte gewinnt gegenüber der unbehandelten, gemessen an
