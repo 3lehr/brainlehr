@@ -1,0 +1,67 @@
+{
+  "verfahren": "Aufgabentext aus recall_log (echte Nachricht), Ziel ueber code_kanten (Dateipfad) -- getrennte Kanaele, keine Erzeugung",
+  "nachrichten": 300,
+  "faelle": [
+    {
+      "prompt": "brainlehr, Fortsetzung. Lies zuerst STAND.md, dann arbeite.\n\nFAKTEN (gemessen 2026-08-09, alle im Repo belegt)\n\n- Abrufguete: 7 von 35 Zielen getroffen (Lehren 4/15, Knoten 3/20).\n- Von den 28 verfehlten stehen 26 ueberhaupt nicht in der Kandidatenliste.\n  Sie werden nicht abgeschnitten, sie werden nicht gefunden. Belegt durch\n  runs/deckelreihe_2026-08-09.json: die Deckel 3/2, 5/3, 7/5 und 10/7\n  liefern ALLE 7/35, bei 4769 bis 16476 Zeichen je Prompt. Erst 15/10\n  bringt 9/35 bei 23788 Zeichen.\n- Der Pruefkorpus paraphrasiert absichtlich: nur 6 von 28 Fehlschlaegen\n  teilen ueberhaupt einen Wortstamm mit dem Ziel.\n- S12 (haken/mehrstufiger_abruf.py) ist gebaut und steht auf AUS: Stufe 1\n  aenderte nichts, Stufe 2 senkte auf 6/35.\n- Die Sortierung in knowledge_recall_hook.query() wurde als Ursache\n  genannt, testweise entfernt und gemessen: unveraendert 7/35. Die\n  Aenderung ist zurueckgenommen, die Diagnose gilt fuer den Code, nicht\n  fuer die Wirkung.\n\nAUFGABE\n\nFinde heraus, warum diese 26 Faelle nicht in die Kandidatenliste kommen.\nMiss es, stelle keine These auf und pruefe sie. Der Weg dorthin ist deine\nEntscheidung; naheliegende Messpunkte sind der Stichwortkanal, der\nBedeutungskanal, die RRF-Verschmelzung und die Vorfilter — welcher davon\ndie Faelle verliert, ist offen und soll gemessen werden, nicht geraten.\n\nGRENZEN\n\n- Deckel bleiben bei MAX_NODES=3 / MAX_LESSONS=2. Fuenffache Liefermenge\n  fuer +2 von 35 ist eine Rechnung, kein Fortschritt.\n- knowledge_recall_hook.py ist ein Monolith mit ueber 2000 Zeilen. Nur\n  Importe, Aufrufe und Schalter darin aendern, keine Logik umbauen.\n- Nichts einschalten, was nicht gemessen besser ist.\n- Fremde Arbeitsstaende nicht mitcommitten: haken/existenzpruefung.py und\n  tests/test_existenzpruefung.py gehoeren einer anderen Sitzung.\n\nABNAHME\n\n- Rot vor gruen: eine Pruefung, die VOR der Aenderung fehlschlaegt und\n  danach besteht. Laesst sich kein solcher Beleg herstellen, sag das\n  ausdruecklich statt \"funktioniert\".\n- Jede Zahl mit ihrem Nenner.\n- Gegenprobe in beide Richtungen und ein Negativfall.\n- Bei jedem Melder: Fehlklasse benennen und den Preis eines Fehlalarms.\n\nERSTE HANDLUNG, vor allem anderen: einen Knoten anlegen und nachsehen, ob\nactor jetzt 'claude-code' traegt statt 'unbekannt'. Vorher waren 359 von\n382 blind — das ist die Rot-vor-gruen-Probe fuer die Konfigurationsaenderung\nin hub/.mcp.json.\n\nEINSATZ\n\nSolange vier von fuenf Faellen den Speicher nicht erreichen, ist jede\nDisziplin darin Zierrat — sie wirkt nur an dem, was ankommt.\n\nOFFEN, ich entscheide das, frag mich beilaeufig und nicht als Blocker:\nPapernetz-Umfang (9 Netze mit 297 Papern und 1624 belegten Zitationskanten,\noder nur die zwei mit 56), die sechs Knoten Rang 4/6, und die abgelaufene\nNorm /ops/buckeberg-anbieterabend-2026-08-05.",
+      "pfade": [
+        "haken/existenzpruefung.py",
+        "haken/mehrstufiger_abruf.py",
+        "runs/deckelreihe_2026-08-09.json",
+        "tests/test_existenzpruefung.py"
+      ],
+      "ziele": [
+        {
+          "art": "knoten",
+          "id": "/brainlehr"
+        }
+      ]
+    },
+    {
+      "prompt": "* Kein Schutz gegen Promptinjektion. Rechte begrenzen den Radius, nicht die Möglichkeit: Wer den Kontext eines Modells steuert, handelt mit dessen Rechten, und die Prüfung sieht einen legitimen Aufruf. Siehe `docs/KONZEPT_BETEILIGUNG_UND_DATENPUNKTE_2026-08-09.md`, Kapitel 5b.\n\nhaben wir das wirklich nicht, ich dachte wir haben da schon etwas eingebaut, und auch von duathron gelernt?\n\n\nZUDEM:\n\"tausende\" .py im main ornder, wir sollten unterordner erstellen!!!!!\n\nwas ist mit den lizenzbedingen usw?",
+      "pfade": [
+        "docs/KONZEPT_BETEILIGUNG_UND_DATENPUNKTE_2026-08-09.md"
+      ],
+      "ziele": [
+        {
+          "art": "knoten",
+          "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter"
+        },
+        {
+          "art": "knoten",
+          "id": "/brainlehr/enigma-phase-1-mcp-ist-keine"
+        }
+      ]
+    },
+    {
+      "prompt": "Du übernimmst die laufende Fahrtenbuch-Arbeit.\n\nProjekt:\n  /Volumes/daten/Begod2026/fahrtenbuch\n\nAktiver Schwerpunkt:\n  Build 77 – schwarze/unbenutzbare Phone-Fläche nach automatischem\n  Fahrtstart und Phone-Joker, während CarPlay weiter funktionierte.\n\nArbeite autonom, evidenzbasiert und root-cause-first. Bewahre alle vorhandenen\nÄnderungen anderer Sitzungen. Niemals den gesamten gemischten Arbeitsbaum\npauschal stagen, zurücksetzen oder committen.\n\n1. Brainlehr und Pflichtquellen\n\nLass zuerst die vorhandenen Brainlehr-Hooks laufen und rufe gezielt ab:\n\n- Wissensknoten `2610c5ac`\n- Lehre `L-424312`\n- offene Annahme `A-c1f1ca`\n\nLies danach ausschließlich die relevanten aktuellen Quellen:\n\n- /Volumes/daten/Begod2026/fahrtenbuch/AI_HANDOFF.md\n  – oberster Eintrag vom 2026-08-10T16:00\n- /Volumes/daten/Begod2026/fahrtenbuch/apps/fahrtenbuch_legacy/STAND.md\n- /Volumes/daten/Begod2026/fahrtenbuch/begod/knowledge/apps/fahrtenbuch/build77-phone-joker-auto-calibration-collision-2026-08-10.json\n- /Volumes/daten/Begod2026/fahrtenbuch/begod/knowledge/beta_tests/real/bt-real-fahrtenbuch-build77-carplay-2026-08-10.json\n- MetroViz-Einträge `FLOW-104` und\n  `COLLISION-AUTO-CALIBRATION-JOKER-ROOT-NAVIGATOR`\n- Commit `befac44e9`\n\nPrüfe anschließend `git status`, `git diff` und die Eigentumsgrenzen der\nÄnderungen.\n\n2. Gesicherter Befund\n\nDer reale Build-77-Lauf zeigte:\n\n- OBD-Autostart und Aufzeichnung funktionierten.\n- Nach `joker_render_phone` wurde die Phone-Fläche unbenutzbar.\n- Heartbeats blieben `resumed`, `framesCompleted` stieg weiter.\n- CarPlay blieb funktionsfähig.\n- Damit ist kein Dart-Isolate- oder Frame-Hänger belegt.\n- `/odometer-correction` wurde um 12:20:28.530Z manuell über die sichtbare\n  Kilometerleiste geöffnet. Dafür gibt es keinen belegten automatischen Pfad.\n\nSource-Befund:\n\n`_AutoCalibrationSuggestionBanner` konnte eine PID31-Kalibrierung direkt auf\nden Root-Navigator pushen und dabei `blockingPromptActiveProvider` umgehen.\n\nWichtige Evidenzgrenze:\n\nDer Build-77-Export enthält kein eigenes AutoCalibration-Lifecycle-Ereignis.\nDie konkrete Ursache des schwarzen Screens ist deshalb weiterhin nur eine\n„source-backed collision hypothesis“, keine real bestätigte Root Cause.\n`A-c1f1ca` muss offen bleiben, bis eine reale Bestätigungsfahrt sie bestätigt\noder widerlegt.\n\n3. Bereits implementierte Mitigation\n\nDie Auto-Kalibrierung:\n\n- wird während `recording` oder `paused` nicht angezeigt,\n- bleibt bei belegtem Prompt-Gate unverbraucht,\n- läuft erst bei `idle`/`stopped` und freiem Gate über `showBlockingPrompt`,\n- setzt ihren Einmal-Latch erst nach erfolgreichem Gate-Erwerb,\n- erhält PII-freie Lifecycle-Telemetrie,\n- versucht nach busy→free erneut, solange das Dashboard gemountet ist.\n\nAktuell verifiziert am 2026-08-11:\n\nflutter test \\\n  test/features/dashboard/auto_calibration_bottom_sheet_test.dart \\\n  test/core/widgets/blocking_prompt_gate_stuck_route_test.dart \\\n  test/features/trips/presentation/joker_blocking_prompt_gate_test.dart\n\nErgebnis: 8/8 bestanden.\n\n4. Arbeitsbaumgrenze\n\nBranch:\n  fahrtenbuch/feldfixes-build75\n\nDer Branch ist gegenüber Origin mindestens einen Commit voraus.\n\nDer Arbeitsbaum enthält sowohl Fahrtenbuch-Nachreview als auch fremde bzw.\nunabhängige OpenHood-, Begod-, Fastlane- und Tool-Änderungen.\n\nDaher:\n\n- nichts pauschal stagen,\n- nichts pauschal zurücksetzen,\n- relevante Änderungen einzeln prüfen,\n- nur einen isolierbaren, verifizierten Fahrtenbuch-Schnitt committen,\n- keine fremden Dateien übernehmen oder löschen.\n\n5. Nächster belastbarer Nachweis\n\nBenötigt wird eine reale Fahrt mit:\n\n1. ausstehender PID31-Kalibrierung,\n2. automatischem OBD-Fahrtstart,\n3. Phone-Joker,\n4. Fahrtende,\n5. anschließend freiem Prompt-Gate.\n\nErwartung:\n\n- während der Fahrt kein konkurrierender Kalibrierungsscreen,\n- Phone bleibt bedienbar,\n- Kalibrierung erscheint erst nach Fahrtende und Gate-Freigabe,\n- Telemetrie zeigt den AutoCalibration-Lifecycle.\n\nOhne neuen Realbericht darfst du die Annahme nicht als bestätigt markieren\nund keinen weiteren spekulativen Blackscreen-Fix bauen.\n\n6. Danach: offener UX-/Listener-Audit\n\nGetrennt vom Build-77-Befund weiter untersuchen:\n\n- 8 von 36 Screens besitzen noch Erklärungslücken,\n- Screens beziehungsweise Bedienelemente, die auf Eingaben nicht reagieren,\n- Aussagen und Oberflächentexte, die fachlich keinen Sinn ergeben,\n- Wording-Prüfer meldet beim Siri-Beispielsatz einen bekannten Fehlalarm,\n- `gps_auto_stop` bezeichnet tatsächlich den Akku-Stopp,\n- Naht 1 wartet auf die Entscheidung „Trennungsereignis oder Zeitfenster“.\n\nNutze dafür deterministische Screen-/Control-Inventare und MetroViz. Keine\npauschale LLM-Schätzung und keine Vermischung mit der offenen\nAutoCalibration-Hypothese.\n\nBerichte zuerst knapp:\n- was committed ist,\n- was nur uncommitted gesichert ist,\n- welche Annahmen offen bleiben,\n- welcher kleinste nächste belastbare Schritt ausgeführt wurde.",
+      "pfade": [
+        "Volumes/daten/Begod2026/fahrtenbuch/AI_HANDOFF.md",
+        "Volumes/daten/Begod2026/fahrtenbuch/apps/fahrtenbuch_legacy/STAND.md",
+        "Volumes/daten/Begod2026/fahrtenbuch/begod/knowledge/apps/fahrtenbuch/build77-phone-joker-auto-calibration-collision-2026-08-10.json",
+        "Volumes/daten/Begod2026/fahrtenbuch/begod/knowledge/beta_tests/real/bt-real-fahrtenbuch-build77-carplay-2026-08-10.json",
+        "test/core/widgets/blocking_prompt_gate_stuck_route_test.dart",
+        "test/features/dashboard/auto_calibration_bottom_sheet_test.dart",
+        "test/features/trips/presentation/joker_blocking_prompt_gate_test.dart"
+      ],
+      "ziele": [
+        {
+          "art": "knoten",
+          "id": "/apps/fahrtenbuch/build-77-phone-black-screen-gesicherter"
+        }
+      ]
+    },
+    {
+      "prompt": "Lies docs/PROMPT_FREIGABE_LEHREN_2026-08-11.md und arbeite ihn ab.",
+      "pfade": [
+        "docs/PROMPT_FREIGABE_LEHREN_2026-08-11.md"
+      ],
+      "ziele": [
+        {
+          "art": "knoten",
+          "id": "/brainlehr/zwei-sitzungen-arbeiten-parallel-an"
+        }
+      ]
+    }
+  ]
+}

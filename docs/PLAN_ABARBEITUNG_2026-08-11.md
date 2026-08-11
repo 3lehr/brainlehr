@@ -21,7 +21,7 @@ Stand wird in dieser Datei fortgeschrieben. `[x]` heißt gebaut UND belegt,
 - [x] **P11 · Haltemenge** (neu, aus der Quant-Recherche): der Bestwert aus 24
       Versuchen faellt auf einer Haltemenge zurueck
 - [ ] **P5 · Common-Cause auf das Agentenregister** — NICHT gebaut: das Register gibt es nicht her (ein Bash-Aufruf bekommt seine eigene Agentenkennung nicht als Umgebungsvariable, L-1b6476). Erst das Register erweitern, dann auswerten.
-- [ ] **P6 · Prüfkorpus** — durch die Quant-Recherche geschärft: nicht thematisch trennen, sondern ZEITLICH (Point-in-Time). Braucht einen Erzeugungslauf.
+- [~] **P6 · Prüfkorpus** — Sammler gebaut (`echtkorpus.py`), Kanäle getrennt. Ertrag heute: **4 Fälle aus 300 echten Nachrichten** — zu wenig zum Messen, wächst aber von selbst.
 - [ ] **P7 · Achse „Art" (Sein/Sollen/Dürfen)** für die 82 Normen
 - [ ] **P8 · Drei Antwortläufe dreiteilen** — Weg belegt, reine Mechanik. Zurückgestellt: sie messen gegen den kontaminierten Korpus, also erst nach P6.
 - [ ] **P9 · `freigabe` in `browse`/`search`** — fremder Zweig
@@ -84,3 +84,22 @@ Vorhaben.
 
 **Sechs von elf gebaut und belegt, fünf mit Grund offen. Kein Punkt bleibt
 stillschweigend liegen.**
+
+
+### P6 · Prüfkorpus — Sammler statt Erzeugung
+Beide Kontaminationen dieses Tages hatten dieselbe Wurzel: **Aufgabentext und
+Zielangabe kamen aus derselben Quelle.** `echtkorpus.py` trennt die Kanäle:
+
+- **Aufgabentext** = eine echte Nachricht aus `recall_log.jsonl`, so gestellt
+  wie sie gestellt wurde, ohne Kenntnis eines Ziels
+- **Zielangabe** = über `code_kanten`, also über den Dateipfad — ein Kanal, der
+  mit dem Wortlaut der Nachricht nichts zu tun hat
+
+Niemand formuliert dafür etwas. **Ertrag beim ersten Lauf: 4 Fälle aus 300
+echten Nachrichten.** Das misst nichts, und die Anforderungen zu senken wäre der
+Rückweg zum erfundenen Korpus. Der Sammler wächst stattdessen mit jeder
+künftigen Nachricht, die eine Datei nennt.
+
+Beim Bau noch einmal dieselbe Falle wie heute früh: `ort.RECALL_LOG` leitet den
+Pfad aus dem Arbeitsbaum ab, und ein Arbeitsbaum trägt keine Daten — 0 statt 300
+Nachrichten. Jetzt wird der Ort **neben der Datenbank** gesucht.
