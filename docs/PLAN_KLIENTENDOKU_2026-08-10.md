@@ -106,3 +106,47 @@ Der nächste kleine, sichere Schritt ist daher kein weiterer Dokuimport,
 sondern ein getesteter MCP-Schreibpfad für `gattung`; erst danach können die
 drei Destillate korrekt als `nachschlagewerk` angelegt beziehungsweise
 umklassifiziert werden.
+
+## §6 Nachtrag: der Schreibpfad steht — die Umklassifizierung entfällt
+
+Stand: 2026-08-11T08:33:08+0200.
+
+**Gebaut und belegt:** `knowledge_add` und `knowledge_update` nehmen `gattung`
+entgegen, beide Werkzeugschemata nennen sie mit Wertebereich, der
+Datenbank-Trigger bleibt die Durchsetzungsstelle.
+`tests/test_gattung_schreibpfad.py` deckt sechs Fälle ab (Vorgabe, Setzen,
+Negativfall, Umklassifizieren, Gegenprobe, Schema) — rot vor grün belegt.
+
+**Nicht ausgeführt: die im letzten Satz von §5 angekündigte Umklassifizierung.**
+Sie wäre falsch gewesen, und der Fehler steckt in §1 dieses Plans.
+
+§1 begründete `gattung='nachschlagewerk'` damit, dass die Einträge „nicht in
+den automatischen Abruf drücken". Das ist NICHT, wofür die Gattung da ist.
+Knoten `096669de` definiert sie eng: Nachschlagewerke sind **Heuhaufen** —
+realistische Ablenkung, gegen die der Abruf seine Nadeln finden muss, und
+ausdrücklich **nie Ziel** eines Prüffalls. `kern/pruefkorpus.py` filtert genau
+danach.
+
+Die beiden vorhandenen Destillate sind das Gegenteil eines Heuhaufens. Ihr
+Wert liegt im ABGLEICH mit der eigenen Anlage — „31 Haken-Ereignisse gibt es,
+7 sind verdrahtet" (`88ecf57f`), „MCP-Toolfilter sind klientenseitig, der
+Server bleibt die Durchsetzungsstelle" (`81729a24`). Genau das soll gefunden
+werden, wenn jemand am nächsten Haken arbeitet. Als Heuhaufen markiert wären
+sie aus dem Abruf genommen — und damit um ihren einzigen Zweck gebracht.
+
+**Die Unterscheidung, die §1 fehlte:** Nicht die HERKUNFT entscheidet über die
+Gattung, sondern die BAUFORM. Ein Volltextabzug fremder Dokumentation ist
+Heuhaufen. Ein Destillat mit eigenem Abgleich ist Arbeitsbestand — auch wenn
+die Quelle fremd ist. §1 verwechselte beides, weil dort beide Eigenschaften
+zufällig zusammenfielen.
+
+**Erfolgskriterium 4 aus §4 wird damit zurückgezogen**, nicht erfüllt. „Alle
+neuen Knoten tragen `gattung='nachschlagewerk'`" war das falsche Maß. Richtig
+ist: Volltextabzüge tragen sie, Destillate nicht. Nach diesem Maß liegen die
+beiden Knoten bereits korrekt.
+
+**Der Schreibpfad war trotzdem nötig.** In `docs/FREMDBESTAENDE.md` stehen ESA,
+ASRS und FAA auf ungeprüft; wird einer davon aufgenommen, ist er der Fall, für
+den die Gattung existiert. Ohne den Schreibpfad landete er als Arbeitsbestand
+und verdünnte den Abruf — genau die Schieflage, die 1638 NASA-Knoten
+verursacht hätten.

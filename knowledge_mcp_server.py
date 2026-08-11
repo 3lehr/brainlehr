@@ -255,6 +255,11 @@ END;
 # (Agent acf807ee8e6756f27, 2026-08-08) VOR der Live-Migration fand und die
 # hier bereits geschlossen sind (identischer Text wie schema.sql, gleiches
 # Zwei-Kopien-Muster wie NODE_CONSTRAINT_TRIGGERS_SQL oben).
+# Wertebereich der Gattung -- EINE Quelle fuer Schema, Vorabpruefung und den
+# Trigger knowledge_nodes_gattung_check_bi. Laufen sie auseinander, weist die
+# Datenbank etwas ab, das das Werkzeugschema erlaubt hat (L-636a44).
+ALLOWED_GATTUNG = ("arbeitsbestand", "nachschlagewerk")
+
 ALLOWED_NORM_ENTSCHEIDUNG = {"keine_norm", "norm_befristet", "norm_unbefristet"}
 NORM_ENTSCHEIDUNG_TRIGGERS_SQL = """
 CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entscheidung_check_bi
@@ -2355,6 +2360,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                   norm_entscheidung: str | None = None,
                   norm_entschieden_grund: str | None = None,
                   abgeleitet_von: str | None = None,
+                  gattung: str | None = None,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
     """Add a new knowledge node to the tree. Rejects an unknown parent_path
@@ -2561,13 +2567,24 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                              if herkunft_normentscheider.ist_urheber_betreiber(source)
                              else actor)
 
+    if gattung is not None and gattung not in ALLOWED_GATTUNG:
+        # Vorab und mit Klartext statt roher IntegrityError aus RAISE(ABORT) --
+        # dasselbe Muster wie bei norm_entscheidung. Der Trigger bleibt die
+        # eigentliche Schranke; er faengt auch Wege, die hier vorbeischreiben.
+        conn.close()
+        return {"error": f"gattung unzulaessig: {gattung!r}. Erlaubt sind "
+                         f"{', '.join(ALLOWED_GATTUNG)}."}
+
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client, gattung)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
          norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, created_at, norm_entschieden_grund,
-         anlass, abgeleitet_von, actor, session, model, _KLIENT)
+         anlass, abgeleitet_von, actor, session, model, _KLIENT,
+         # Vorgabe kommt aus dem Schema (arbeitsbestand) -- None laesst sie
+         # stehen, statt sie hier ein zweites Mal zu behaupten.
+         gattung if gattung is not None else 'arbeitsbestand')
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,
@@ -2598,6 +2615,7 @@ def knowledge_update(node_id: str, summary: str | None = None,
                      norm_rang: int | None = None, gilt_ab: str | None = None,
                      gilt_bis: str | None = None, norm_entscheidung: str | None = None,
                      norm_entschieden_grund: str | None = None,
+                     gattung: str | None = None,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
     """Update an existing knowledge node. Like summary/content/tags, only
@@ -2725,6 +2743,12 @@ def knowledge_update(node_id: str, summary: str | None = None,
         # zusammen mit der Entscheidung selbst, nicht nachtraeglich getrennt.
         updates.append("norm_entschieden_von = ?, norm_entschieden_am = ?, norm_entschieden_grund = ?")
         params.extend([actor, neuer_zeitpunkt, norm_entschieden_grund])
+
+    if gattung is not None:
+        # Nur bei ausdruecklicher Angabe -- ein Update anderer Felder darf die
+        # Gattung nicht stillschweigend auf die Vorgabe zuruecksetzen.
+        updates.append("gattung = ?")
+        params.append(gattung)
 
     updates.append("updated_at = ?")
     params.append(neuer_zeitpunkt)
@@ -4683,6 +4707,9 @@ TOOLS = {
                                             "description": "REQUIRED alongside norm_entscheidung: free-text reason for the decision (see tool description)."},
                 "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
                            "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."},
+                "gattung": {"type": "string", "enum": list(ALLOWED_GATTUNG),
+                            "default": "arbeitsbestand",
+                            "description": "Kind of entry: 'arbeitsbestand' (working set, the default) or 'nachschlagewerk' (reference corpus -- may sit in the store as a distractor but is never the TARGET of a test case, see node 096669de). Set this for imported third-party material, otherwise it dilutes retrieval."},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["parent_path", "title", "summary", "norm_entscheidung", "norm_entschieden_grund"]
@@ -4697,6 +4724,7 @@ TOOLS = {
             norm_entscheidung=_require(args, "norm_entscheidung", "keine_norm/norm_befristet/norm_unbefristet -- ist dieser Knoten eine Norm?"),
             norm_entschieden_grund=_require(args, "norm_entschieden_grund", "Begruendung fuer die Norm-Entscheidung -- wer entscheidet und warum?"),
             anlass=args.get("anlass", "unbekannt"), abgeleitet_von=args.get("abgeleitet_von"),
+            gattung=args.get("gattung"),
             **_identity_args(args)
         )
     },
@@ -4722,6 +4750,8 @@ TOOLS = {
                                        "description": "Optional: change the norm/fact decision (see knowledge_add). Requires norm_entschieden_grund if given."},
                 "norm_entschieden_grund": {"type": "string",
                                             "description": "Required if norm_entscheidung is given: free-text reason."},
+                "gattung": {"type": "string", "enum": list(ALLOWED_GATTUNG),
+                            "description": "Reclassify. Only changed when given -- omitting it leaves the current kind untouched."},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["node_id"]
@@ -4732,6 +4762,7 @@ TOOLS = {
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
             norm_entscheidung=args.get("norm_entscheidung"),
             norm_entschieden_grund=args.get("norm_entschieden_grund"),
+            gattung=args.get("gattung"),
             **_identity_args(args)
         )
     },
