@@ -107,7 +107,13 @@ def run_n(prompt: str, n: int, *, phase: str, label: str, check) -> dict:
     for i in range(n):
         started = time.perf_counter()
         raw, err, retries = sl._call_with_retry(
-            prompt, model=MODEL, base_url=sl.DEFAULT_OLLAMA_URL, timeout=wn.TIMEOUT)
+            # beantworten: dieser Lauf BEANTWORTET Pruefaufgaben (A/B) und darf
+            # deshalb nicht lokal laufen -- der Pruefstein zu L-a69129 in
+            # schreiblauf.rolle_pruefen sperrt ihn ab jetzt. Der Lauf gehoert in
+            # den Hauptfaden (Subagent mit Betriebsmodell), nicht in dieses
+            # Skript; bis dahin ist er gesperrt statt still falsch zu messen.
+            prompt, model=MODEL, base_url=sl.DEFAULT_OLLAMA_URL, timeout=wn.TIMEOUT,
+            rolle="beantworten")
         seconds = time.perf_counter() - started
         runs.append({"error": err, "retry_count": retries, "call_seconds": seconds,
                       "response_full": raw})

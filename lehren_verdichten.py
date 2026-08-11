@@ -221,7 +221,10 @@ def _andere_laeufe(eigene_pid: int) -> list[str]:
 
 
 def _call_model(prompt: str) -> tuple[str | None, str | None]:
-    raw, err, _retries = sl._call_with_retry(prompt, model=MODEL, base_url=OLLAMA_URL, timeout=TIMEOUT)
+    # werkzeug: verdichtet Bestandstext, beantwortet keine Pruefaufgabe --
+    # lokal zulaessig (L-a69129 trennt nach Rolle, nicht nach Anbieter).
+    raw, err, _retries = sl._call_with_retry(prompt, model=MODEL, base_url=OLLAMA_URL,
+                                              timeout=TIMEOUT, rolle="werkzeug")
     if err:
         return None, err
     return (raw or "").strip(), None

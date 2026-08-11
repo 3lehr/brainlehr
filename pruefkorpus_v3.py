@@ -561,7 +561,11 @@ def answer(task: str, context: str | None, model: str = CAL_MODEL) -> str:
     else:
         prompt = (f"Frage: {task}\nAntworte NUR mit der Zahl, keine Erklaerung. "
                    "Wenn du sie nicht weisst, antworte 'weiss ich nicht'.")
-    raw, err, _retries = sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=CAL_TIMEOUT)
+    # beantworten -- der Docstring kuendigt seit jeher "spaeter per Haiku-
+    # Subagent" an und laeuft bis dahin lokal. Genau diese Zwischenloesung ist
+    # der Verstoss aus L-a69129; ab jetzt gesperrt statt weiter angekuendigt.
+    raw, err, _retries = sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL,
+                                              timeout=CAL_TIMEOUT, rolle="beantworten")
     return (raw or f"[FEHLER: {err}]").strip()
 
 

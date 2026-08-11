@@ -122,7 +122,11 @@ def run_cell(prompt: str, model: str) -> list[dict]:
     for _ in range(N_RUNS):
         started = time.perf_counter()
         raw, err, retries = sl._call_with_retry(
-            prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=TIMEOUT)
+            # beantworten -- das dritte Vorkommen von L-a69129 war genau dieser
+            # Lauf (2026-08-09, gemma4:12b/e4b). Ab jetzt gesperrt statt still
+            # mit dem falschen Modell gemessen.
+            prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=TIMEOUT,
+            rolle="beantworten")
         seconds = time.perf_counter() - started
         runs.append({
             "error": err, "retry_count": retries, "call_seconds": seconds,

@@ -120,11 +120,57 @@ def _call_ollama(prompt: str, *, model: str, base_url: str, timeout: float) -> t
 
 
 
+ROLLEN = ("erzeugen", "beantworten", "werkzeug")
+
+
+def rolle_pruefen(rolle: str) -> None:
+    """Pruefstein zu L-a69129 (antipattern, 3 Vorkommen, zur Regel eskaliert).
+
+    Die Entscheidung des Betreibers vom 2026-08-07 lautet nach ROLLE, nicht
+    nach Anbieter: eine Pruefaufgabe ERZEUGEN darf ein schwaches lokales
+    Modell (das ist Absicht, sonst werden die Aufgaben glatter als echte
+    Anfragen) -- eine Pruefaufgabe BEANTWORTEN muss das Modell, das auch im
+    Betrieb antwortet. Dreimal wurde stattdessen lokal geantwortet
+    (2026-08-07 Eichlauf, 2026-08-09 pruefkorpus.py, 2026-08-09
+    wissensnutzen_blind.py), jedes Mal fiel es dem Betreiber auf, nicht mir.
+    Eine Regel im Klartext hat das nicht verhindert (L-b79360) -- diese
+    Bedingung im Code kann es.
+
+    Jeder Weg durch dieses Modul endet in _call_ollama, ist also IMMER lokal.
+    Darum braucht es keine Modellnamensliste: Rolle 'beantworten' auf diesem
+    Weg ist der Verstoss, unabhaengig vom Modellnamen. Ein Python-Skript kann
+    keinen Haiku-Subagenten starten; solche Laeufe gehoeren in den Hauptfaden.
+
+    Preis und Fehlklasse: Der Pruefstein prueft die DEKLARATION, nicht die
+    Wahrheit der Deklaration. Wer 'erzeugen' schreibt und in Wahrheit
+    beantwortet, kommt durch. Statisch ist die Rolle nicht entscheidbar
+    (L-2026-08-11: ein statischer Pruefer auf eine statisch unentscheidbare
+    Frage lieferte 4 Treffer, 4 davon falsch) -- deshalb hier ausdruecklich
+    ein Pflichtfeld am Aufrufort statt einer Ratemechanik.
+    """
+    if rolle not in ROLLEN:
+        raise ValueError(f"unbekannte Rolle {rolle!r}, erlaubt: {', '.join(ROLLEN)}")
+    if rolle == "beantworten":
+        raise RuntimeError(
+            "L-a69129: Pruefaufgaben BEANTWORTEN darf nicht ueber den lokalen "
+            "Ollama-Weg laufen -- dafuer gilt das Betriebsmodell (Betreiber-"
+            "entscheidung 2026-08-07). Lauf in den Hauptfaden verlegen "
+            "(Subagent) oder Rolle richtig deklarieren."
+        )
+
+
 def _call_with_retry(prompt: str, *, model: str, base_url: str, timeout: float,
+                      rolle: str,
                       backend: str = DEFAULT_BACKEND) -> tuple[str | None, str | None, int]:
     """Ein Werkzeugausfall (Timeout/Verbindung) darf EINMAL wiederholt werden,
     kein stilles Endlos-Retry -- sonst verschwindet die Ausfallquote, die der
-    Lauf gerade messen soll. Gibt (rohtext, fehler, retry_count) zurueck."""
+    Lauf gerade messen soll. Gibt (rohtext, fehler, retry_count) zurueck.
+
+    `rolle` ist Pflicht ohne Vorgabewert: der zweite der drei Vorfaelle zu
+    L-a69129 entstand genau daraus, dass ein Vorgabewert ungeprueft uebernommen
+    wurde. Ein Vorgabewert hier waere derselbe Fehler noch einmal.
+    """
+    rolle_pruefen(rolle)
     raw_response, call_error = _call_ollama(prompt, model=model, base_url=base_url, timeout=timeout)
     if call_error is None:
         return raw_response, call_error, 0
@@ -172,7 +218,10 @@ def run(*, model: str = DEFAULT_MODEL, base_url: str = DEFAULT_OLLAMA_URL,
 
         call_started = time.perf_counter()
         raw_response, call_error, retry_count = _call_with_retry(
-            prompt, model=model, base_url=base_url, timeout=timeout, backend=backend)
+            # werkzeug: das lokale Modell ist hier der PRUEFGEGENSTAND (schafft
+            # es die knowledge_add-Ablage?), es beantwortet keine Pruefaufgabe.
+            prompt, model=model, base_url=base_url, timeout=timeout,
+            rolle="werkzeug", backend=backend)
         call_seconds = time.perf_counter() - call_started
 
         record: dict = {
@@ -288,7 +337,7 @@ def _selftest() -> None:
         return '{"parent_path": "/x", "title": "t", "summary": "s"}', None
 
     with mock.patch.object(module, "_call_ollama", fake_fail_then_ok):
-        _, err, retries = _call_with_retry("p", model="m", base_url="u", timeout=1.0)
+        _, err, retries = _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle="erzeugen")
     assert err is None and retries == 1 and len(calls) == 2, \
         f"Retry griff nicht wie erwartet: err={err!r} retries={retries} calls={len(calls)}"
 
@@ -300,7 +349,7 @@ def _selftest() -> None:
         return None, "Ollama-Aufruf fehlgeschlagen: timed out"
 
     with mock.patch.object(module, "_call_ollama", fake_always_fail):
-        _, err, retries = _call_with_retry("p", model="m", base_url="u", timeout=1.0)
+        _, err, retries = _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle="erzeugen")
     assert err is not None and retries == 1 and len(calls2) == 2, \
         f"kein stilles Endlos-Retry erwartet: err={err!r} retries={retries} calls={len(calls2)}"
 
@@ -321,7 +370,40 @@ def _selftest() -> None:
     assert "Ollama-Aufruf fehlgeschlagen: timed out" not in summary["gate_rejection_reasons"], \
         "Werkzeugausfall faelschlich als Sperren-Ablehnung gezaehlt"
 
-    print("selftest ok: Retry-Mechanik + Werkzeugausfall/Sperren-Trennung", file=sys.stderr)
+    # 4) Pruefstein L-a69129, beide Richtungen -- ein Sieb, das nur durchlaesst,
+    #    beweist nichts, und eines, das nur sperrt, ebenso wenig.
+    aufrufe: list[int] = []
+
+    def fake_ok(prompt, *, model, base_url, timeout):
+        aufrufe.append(1)
+        return "x", None
+
+    with mock.patch.object(module, "_call_ollama", fake_ok):
+        # 4a) Negativfall: 'beantworten' wird abgewiesen, BEVOR ein Aufruf rausgeht.
+        try:
+            _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle="beantworten")
+        except RuntimeError as exc:
+            assert "L-a69129" in str(exc), f"Fehlertext nennt die Lehre nicht: {exc}"
+        else:
+            raise AssertionError("Rolle 'beantworten' lief lokal durch -- Pruefstein wirkungslos")
+        assert not aufrufe, "abgewiesener Lauf hat trotzdem das Modell aufgerufen"
+
+        # 4b) Positivfall: 'erzeugen' und 'werkzeug' kommen durch.
+        for erlaubt in ("erzeugen", "werkzeug"):
+            raw, err, _ = _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle=erlaubt)
+            assert err is None and raw == "x", f"Rolle {erlaubt!r} faelschlich gesperrt"
+        assert len(aufrufe) == 2, f"erwartet 2 durchgelassene Aufrufe, waren {len(aufrufe)}"
+
+        # 4c) Tippfehler in der Rolle ist ein Fehler, kein stilles Durchlassen.
+        try:
+            _call_with_retry("p", model="m", base_url="u", timeout=1.0, rolle="Beantworten")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("unbekannte Rolle lief durch -- Schreibfehler waere ein Loch")
+
+    print("selftest ok: Retry-Mechanik + Werkzeugausfall/Sperren-Trennung + Rollenpruefstein",
+          file=sys.stderr)
 
 
 def main() -> None:

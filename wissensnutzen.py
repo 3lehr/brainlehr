@@ -288,7 +288,14 @@ def run_cell(prompt: str, model: str) -> list[dict]:
     for _ in range(N_RUNS):
         started = time.perf_counter()
         raw, err, retries = sl._call_with_retry(
-            prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=TIMEOUT, backend=backend)
+            # beantworten (Aufgaben A/B) -> ab jetzt gesperrt, siehe L-a69129.
+            # Nebenbefund beim Deklarieren: `backend` wird hier berechnet, in
+            # jede Ergebniszeile geschrieben und von _call_with_retry NIE
+            # ausgewertet -- jeder Aufruf ging ueber Ollama. Die Spalte
+            # 'backend' in den Ergebnisdateien behauptet eine Wahl, die es
+            # nicht gab (Fehlklasse S14: gebaut und ohne Wirkung).
+            prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=TIMEOUT,
+            rolle="beantworten", backend=backend)
         seconds = time.perf_counter() - started
         passed = False if err else bool(raw)
         runs.append({

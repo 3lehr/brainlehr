@@ -217,7 +217,10 @@ _NEGATIVE_TOPICS = [
 
 
 def _generate(prompt: str, model: str = MODEL, timeout: float = TIMEOUT) -> tuple[str | None, str | None, int]:
-    return sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL, timeout=timeout)
+    # erzeugen: Aufgaben ERZEUGEN darf lokal und schwach laufen (Absicht --
+    # sonst werden die Aufgaben glatter als echte Anfragen), L-a69129.
+    return sl._call_with_retry(prompt, model=model, base_url=sl.DEFAULT_OLLAMA_URL,
+                                timeout=timeout, rolle="erzeugen")
 
 
 def generate_task(target_text: str, idf: dict, df: Counter, rng: random.Random,
