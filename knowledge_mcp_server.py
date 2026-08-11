@@ -1487,6 +1487,21 @@ def log_access(conn: sqlite3.Connection, node_path: str | None, action: str,
 
 # ─── MCP Tool Implementations ────────────────────────────────────────────
 
+# Freigabe-Sperre (Auftrag 2026-08-11, Knoten cda47024): 'gesperrt' macht
+# einen Knoten/eine Lehre fuer JEDEN Aufrufer unsichtbar -- keine Ausnahme,
+# keine Rolle sieht daran vorbei. Bisher nur inline in knowledge_read
+# geprueft; knowledge_search und knowledge_browse kannten die Sperre nicht,
+# ein gesperrter Knoten tauchte dort trotzdem mit Titel/Auszug auf. Einzige
+# Pruefstelle, von allen drei Lesewegen aufgerufen -- SQL-Filter (Suche,
+# Blaettern) und Row-Check (Read) muessen denselben Wert vergleichen.
+FREIGABE_GESPERRT = "gesperrt"
+_NICHT_GESPERRT_SQL = f"freigabe != '{FREIGABE_GESPERRT}'"
+
+
+def _ist_gesperrt(freigabe: str) -> bool:
+    return freigabe == FREIGABE_GESPERRT
+
+
 # Credential-bound Serving policy.  The client cannot supply purpose, field,
 # or recipient: the role fixes the purpose/field and the credential fixes the
 # recipient.  The row may only narrow that server-side policy via tags.
@@ -1496,7 +1511,7 @@ _KNOWLEDGE_READ_PROJEKTION = {
 
 
 def _knowledge_read_projection(row: sqlite3.Row) -> dict | None:
-    if row["freigabe"] == "gesperrt":
+    if _ist_gesperrt(row["freigabe"]):
         return {"error": "zugriff verweigert"}
 
     ausw = ausweis.loese_auf()
@@ -1519,12 +1534,16 @@ def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
     log_access(conn, path, "browse", project_id=project_filter,
                actor=actor, model=model, session=session, status="started")
 
+    # Gesperrte Knoten sind fuer jeden Aufrufer unsichtbar -- gleiche Sperre
+    # wie knowledge_read/_ist_gesperrt, hier als SQL-Filter statt Row-Check,
+    # damit ein gesperrter Knoten weder auftaucht noch in children_count
+    # mitzaehlt (kein Leck ueber "hat Kinder, zeigt aber keine").
     if path == "/":
-        query = "SELECT id, path, title, summary, project_id, level, access_count FROM knowledge_nodes WHERE level = 0 ORDER BY path"
+        query = f"SELECT id, path, title, summary, project_id, level, access_count FROM knowledge_nodes WHERE level = 0 AND {_NICHT_GESPERRT_SQL} ORDER BY path"
         params: tuple = ()
     else:
         normalized = path.rstrip("/")
-        query = "SELECT id, path, title, summary, project_id, level, access_count FROM knowledge_nodes WHERE parent_path = ? ORDER BY path"
+        query = f"SELECT id, path, title, summary, project_id, level, access_count FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL} ORDER BY path"
         params = (normalized,)
 
     if project_filter:
@@ -1532,7 +1551,7 @@ def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
         params = (*params, project_filter)
 
     rows = conn.execute(query, params).fetchall()
-    children_count_q = "SELECT COUNT(*) FROM knowledge_nodes WHERE parent_path = ?"
+    children_count_q = f"SELECT COUNT(*) FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL}"
 
     results = []
     for r in rows:
@@ -1955,50 +1974,59 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         conn.close()
         return {"query": query, "scope": scope, "results": [], "count": 0}
 
+    # Gesperrte Knoten/Lehren sind fuer jeden Aufrufer unsichtbar -- gleiche
+    # Sperre wie knowledge_read/knowledge_browse (_NICHT_GESPERRT_SQL), hier
+    # in JEDER Teilabfrage: Treffer-, Nachlade- ("missing") UND
+    # Embedding-Erlaubnisliste, sonst wuerde ein gesperrter Knoten ueber die
+    # Bedeutungssuche wieder hereinkommen.
     if scope == "all":
         fts_rows = conn.execute(
-            """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
+            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
-               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0
+               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.{_NICHT_GESPERRT_SQL}
                ORDER BY rank""",
             (fts_query,)
         ).fetchall()
-        allowed_node_ids = None
+        allowed_node_ids = {r["id"] for r in conn.execute(
+            f"SELECT id FROM knowledge_nodes WHERE {_NICHT_GESPERRT_SQL}"
+        )}
         fts_lesson_rows = conn.execute(
-            """SELECT l.id, l.description, l.type, l.severity, l.projects
+            f"""SELECT l.id, l.description, l.type, l.severity, l.projects
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
-               WHERE lessons_fts MATCH ? AND l.status = 'active'
+               WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL}
                ORDER BY rank""",
             (fts_query,)
         ).fetchall()
-        allowed_lesson_ids = None
+        allowed_lesson_ids = {r["id"] for r in conn.execute(
+            f"SELECT id FROM lessons_learned WHERE status = 'active' AND {_NICHT_GESPERRT_SQL}"
+        )}
     else:
         fts_rows = conn.execute(
-            """SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
+            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
-               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?)
+               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?) AND n.{_NICHT_GESPERRT_SQL}
                ORDER BY rank""",
             (fts_query, scope)
         ).fetchall()
         allowed_node_ids = {r["id"] for r in conn.execute(
-            "SELECT id FROM knowledge_nodes WHERE project_id IN ('shared', ?)", (scope,)
+            f"SELECT id FROM knowledge_nodes WHERE project_id IN ('shared', ?) AND {_NICHT_GESPERRT_SQL}", (scope,)
         )}
         _proj_clause = geltungsbereich.sql_projects_exact("l.projects")
         fts_lesson_rows = conn.execute(
             f"""SELECT l.id, l.description, l.type, l.severity, l.projects
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
-               WHERE lessons_fts MATCH ? AND l.status = 'active'
+               WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL}
                  AND ({_proj_clause} OR {_proj_clause} OR {_proj_clause})
                ORDER BY rank""",
             (fts_query, "shared", "systemweit", scope)
         ).fetchall()
         _proj_clause2 = geltungsbereich.sql_projects_exact("projects")
         allowed_lesson_ids = {r["id"] for r in conn.execute(
-            f"SELECT id FROM lessons_learned WHERE status = 'active' "
+            f"SELECT id FROM lessons_learned WHERE status = 'active' AND {_NICHT_GESPERRT_SQL} "
             f"AND ({_proj_clause2} OR {_proj_clause2})", ("shared", scope)
         )}
 
@@ -2027,12 +2055,12 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         # beim Nachladen als Knoten missverstehen und stumm verlieren.
         placeholders = ",".join("?" for _ in missing)
         for r in conn.execute(
-            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0",
+            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 AND {_NICHT_GESPERRT_SQL}",
             missing
         ):
             by_id[r["id"]] = r
         for r in conn.execute(
-            f"SELECT id, description, type, severity, projects FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active'",
+            f"SELECT id, description, type, severity, projects FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active' AND {_NICHT_GESPERRT_SQL}",
             missing
         ):
             by_id_lessons[r["id"]] = r
