@@ -35,8 +35,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import ort  # noqa: E402 -- liefert DB, siehe haken/ort.py (L-6c6661)
+
 HIER = Path(__file__).resolve().parent
-DB = HIER / "knowledge.db"
+DB = ort.DB
 BESTAND = HIER / "auszug-offen" / "bestand.jsonl"
 
 # Womit belegt wird, dass die Instanz ueber sich selbst Auskunft gibt.

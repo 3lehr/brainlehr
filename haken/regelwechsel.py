@@ -43,6 +43,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import ort  # Ein Ort fuer den Pfad, siehe haken/ort.py (L-6c6661)  # noqa: E402
+
 # FESTE Liste. Wer sie erweitert, erweitert die Menge der Texte, die
 # ungefragt als Anweisung in den Kontext gelangen -- das ist eine
 # Sicherheitsentscheidung, keine Bequemlichkeit.
@@ -60,7 +63,7 @@ ZUSTAND = Path.home() / ".brainlehr-regelwechsel.json"
 # Lageknotens; sie lag den ganzen Vormittag im passiven Recall und wurde nicht
 # gelesen. Die Regel sagt in ihrem Punkt 5 selbst: passiver Recall ist kein
 # Handoff.
-DB = Path(__file__).resolve().parent.parent / "knowledge.db"
+DB = ort.DB
 
 # Nur Rang 1 (global) und 2 (Hub) -- das sind Direktiven. Ab Rang 3 sind es
 # ADRs und Fakten; wer die mitmeldet, erzeugt Rauschen, und wer Rauschen

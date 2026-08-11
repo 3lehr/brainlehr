@@ -49,6 +49,14 @@ _w = Path(__file__).resolve().parent
 while not (_w / "schema.sql").exists() and _w != _w.parent:
     _w = _w.parent
 
+sys.path.insert(0, str(_w / "haken"))
+# _ermittle_db, nicht DB: DB loest den GETEILTEN Bestand auf (per Umgebungs-
+# variable) -- die Probe-Instanz ist bewusst davon getrennt (siehe Modulkopf
+# "GETRENNT die Datenbank"). Dieselbe Migrationslogik (brainlehr.db, sonst
+# Rueckfall auf knowledge.db mit Hinweis) gilt trotzdem fuer ihren eigenen,
+# isolierten Ordner -- nur ohne die Umgebungsvariablen zu befragen.
+from ort import _ermittle_db  # noqa: E402 -- liegt in haken/, s. Modulkopf des Hooks
+
 NAME = "knowledge-probe"
 HEIMAT = Path.home() / ".brainlehr-probe"
 KONFIG = Path.home() / ".claude.json"
@@ -56,7 +64,7 @@ KONFIG = Path.home() / ".claude.json"
 
 def einrichten(neu: bool = False) -> dict:
     HEIMAT.mkdir(parents=True, exist_ok=True)
-    db = HEIMAT / "knowledge.db"
+    db = _ermittle_db(HEIMAT, None, None)
     ausweise = HEIMAT / "ausweise.json"
 
     if neu and db.exists():

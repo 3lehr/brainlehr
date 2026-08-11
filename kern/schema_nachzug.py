@@ -31,6 +31,9 @@ from pathlib import Path
 WURZEL = Path(__file__).resolve().parent.parent
 SCHEMA = WURZEL / "schema.sql"
 
+sys.path.insert(0, str(WURZEL / "haken"))
+import ort  # noqa: E402 -- liefert DB, siehe haken/ort.py (L-6c6661)
+
 # Tabellen, deren Spalten nachgezogen werden. Bewusst eine Aufzaehlung und
 # nicht "alle": FTS-Schattentabellen vertragen kein ALTER, und eine
 # Bergungstabelle wie lost_and_found soll gar nicht mitwachsen.
@@ -177,5 +180,5 @@ if __name__ == "__main__":
     if "--selftest" in sys.argv:
         _selftest()
     else:
-        conn = sqlite3.connect(str(WURZEL / "knowledge.db"))
+        conn = sqlite3.connect(str(ort.DB))
         print(fehlende(conn, SCHEMA.read_text(encoding="utf-8")) or "nichts offen")

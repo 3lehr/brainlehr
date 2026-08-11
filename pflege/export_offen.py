@@ -62,6 +62,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import ort  # noqa: E402 -- liefert DB, siehe haken/ort.py (L-6c6661)
+
 # Werte, die im Export NICHT vorkommen duerfen. Zwei Sorten, beide noetig:
 # bekannte Koeder (sie MUESSEN fehlen -- sonst ist der Filter blind) und
 # Formmuster fuer Kontaktdaten. Die Koeder sind die eigentliche Kontrolle;
@@ -324,8 +326,7 @@ def _selftest() -> None:
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    p.add_argument("--db", type=Path,
-                   default=Path(__file__).resolve().parent.parent / "knowledge.db")
+    p.add_argument("--db", type=Path, default=ort.DB)
     p.add_argument("--ziel", type=Path)
     p.add_argument("--was-waere-offen", action="store_true")
     p.add_argument("--selftest", action="store_true")
