@@ -1,0 +1,37 @@
+{
+  "zweck": "Reicht der Pruefkorpus, um die Wirkung der S12-Neuformulierung zu messen?",
+  "verfahren": "Zaehlung ueber code_kanten und den frischen Korpus, dazu eine Fallzahlrechnung fuer den Test auf Anteilsdifferenz (zweiseitig, alpha 0.05, Power 0.80).",
+  "versuche": 1,
+  "haltemenge": "keine -- reine Bestandszaehlung, kein Modell, keine Abstimmung von Parametern",
+  "erhoben_am": "2026-08-12T09:15:00+0200",
+  "bestand": {
+    "knoten_gesamt": 2126,
+    "knoten_mit_eindeutiger_codekante": 199,
+    "knoten_mit_irgendeiner_codekante": 211,
+    "anmerkung": "Der Deckel MAX_FUNDSTELLEN=3 in kern/codekanten.py ist NICHT der Engpass -- zwischen eindeutig (199) und beliebig (211) liegen zwoelf Knoten. Der Grund ist inhaltlich: die meisten Knoten handeln von keiner bestimmten Datei, allein 1638 stammen aus dem NASA-Fremdbestand."
+  },
+  "korpus": {
+    "datei": "runs/echtkorpus_2026-08-12T0900.json",
+    "ziele_gesamt": 192,
+    "lehrenziele": 164,
+    "knotenziel_instanzen": 28,
+    "verschiedene_knoten": 20,
+    "erreichbar_bei_gelockertem_falldeckel": {
+      "<=3": 20,
+      "<=5": 35,
+      "<=8": 51,
+      "<=15": 66,
+      "ohne": 94
+    }
+  },
+  "fallzahl_die_noetig_waere": {
+    "annahme_ausgangsquote": 0.2,
+    "grosser_effekt_0.20_auf_0.40": 81,
+    "sehr_grosser_effekt_0.20_auf_0.50": 38,
+    "mittlerer_effekt_0.20_auf_0.30": 293,
+    "einheit": "Faelle je Haelfte",
+    "vorhanden_je_haelfte": 14
+  },
+  "richtigstellung": "Die Schwelle 'etwa 60', mit der die Frage an den Betreiber gestellt wurde, war eine Faustregel des Assistenten und keine gerechnete Anforderung. Gerechnet ergibt sich: selbst der in b4238789 gemessene sehr grosse Effekt braeuchte 38 Faelle je Haelfte, vorhanden sind 14. Die urspruengliche Zahl war zu niedrig, nicht zu hoch.",
+  "folge": "Der Pfad-Kanal kann die noetige Zahl nicht liefern: sein Universum sind 211 Knoten, und davon erscheinen 94 ueberhaupt in Betreibernachrichten. 38 Faelle je Haelfte waeren erreichbar, aber nur mit einem Falldeckel um 15 zulaessige Ziele -- ein Fall mit fuenfzehn richtigen Antworten prueft nichts mehr."
+}
