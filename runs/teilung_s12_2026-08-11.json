@@ -4,9 +4,36 @@
   "eingefroren_am": "2026-08-11T22:24:25+0200",
   "population": "Bestand, nicht Auslieferungs-Deckel: Knoten mit zurueckgezogen=0 (ohne Gattungsfilter), Lehren mit status != 'resolved'. Deckel (MAX_NODES=10, MAX_LESSONS=7) und Gattungsfilter (SQL_ARBEITSBESTAND_NUR) greifen erst beim Abruf, nicht bei der Teilung.",
   "verteilung_beim_einfrieren": {
-    "knoten": {"gesamt": 2123, "behandelt": 1008, "unbehandelt": 1115},
-    "lehre": {"gesamt": 755, "behandelt": 396, "unbehandelt": 359}
+    "knoten": {
+      "gesamt": 2123,
+      "behandelt": 1008,
+      "unbehandelt": 1115
+    },
+    "lehre": {
+      "gesamt": 755,
+      "behandelt": 396,
+      "unbehandelt": 359
+    }
   },
   "abweichung_zum_plan": "FAKTEN im Auftrag nennt 2125 Knoten / 775 Lehren. Gemessen beim Einfrieren: 2123 Knoten (zurueckgezogen=0), 755 Lehren (status != 'resolved') -- Differenz durch laufende Fremdarbeit im selben Baum (andere Sitzung haelt u.a. kern/schema_nachzug.py, pflege/probeinstanz.py). Kein Grund, die Teilung zu verschieben: die Funktion zieht aus der Kennung, nicht aus einer Momentaufnahme der Zaehlung.",
-  "unveraenderlich_ab": "2026-08-11T22:24:25+0200 -- kern/teilung_s12.py::haelfte() wird ab hier nicht mehr umgeschrieben, solange S12 laeuft. Aenderungsbedarf wird als neue Funktion/neuer Knoten geführt, nicht als Umschreiben."
+  "unveraenderlich_ab": "2026-08-11T22:24:25+0200 -- kern/teilung_s12.py::haelfte() wird ab hier nicht mehr umgeschrieben, solange S12 laeuft. Aenderungsbedarf wird als neue Funktion/neuer Knoten geführt, nicht als Umschreiben.",
+  "korrektur_2026-08-12": {
+    "befund": "Die oben unter verteilung_beim_einfrieren festgehaltenen Zahlen sind aus dem Code dieses Commits NICHT reproduzierbar. Der im selben Commit c69c7e4 festgeschriebene teilung_s12.haelfte() liefert fuer Knoten 1070 behandelt / 1055 unbehandelt, aufgezeichnet sind 1008 / 1115. Der Bestand ist seither um zwei Knoten gewachsen -- das erklaert keine 62.",
+    "was_in_ordnung_ist": "Die Zuordnungsfunktion selbst. Die Fassung vor und nach dem Umbau auf den Aufloeser (Commit aa811ee) wurde ueber alle 2888 Eintraege verglichen: 0 Abweichungen. Die Teilung ist weiterhin allein aus der Kennung reproduzierbar, und das ist die Eigenschaft, auf der der S12-Aufbau steht.",
+    "folge": "Die aufgezeichneten Zahlen sind Beiwerk, nicht Anker. Anker ist die Funktion. Die Ausgangsmessung 8f3ae01 lief gegen die Funktion, nicht gegen diese Zahlen, und bleibt damit gueltig.",
+    "nicht_ueberschrieben_weil": "Der Kopf dieser Datei erklaert sich als unveraenderlich ab dem Einfrieren. Eine falsche Zahl stillschweigend zu berichtigen wuerde genau die Eigenschaft zerstoeren, wegen der die Datei existiert. Der falsche Wert bleibt oben stehen.",
+    "gerechnet_am": "2026-08-12T06:40:00+0200",
+    "verteilung_gerechnet": {
+      "knoten": {
+        "gesamt": 2125,
+        "unbehandelt": 1055,
+        "behandelt": 1070
+      },
+      "lehre": {
+        "gesamt": 763,
+        "behandelt": 401,
+        "unbehandelt": 362
+      }
+    }
+  }
 }
