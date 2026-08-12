@@ -148,5 +148,76 @@ der Auftragsbeschreibung nicht in `Sources/OpenLehrApp/`, sondern in
 `Sources/OpenLehrCore/I18n.swift` — nicht übernommen, da Schritt 1 keine
 Übersetzungstabelle braucht (nur deutsche Texte direkt im Code).
 
+**Zwischenschritt umgesetzt, 2026-08-12T19:58:00+0200: echtes Anwendungsbündel,
+volle Menüleiste, Symbol.** Betreiberwunsch wörtlich und zum dritten Mal:
+„eigentlich wuerde mir zuerst eine gute nach apple standarts gebaute .app am
+besten gefallen! und zwar richtig mit apple menue usw!" — diesmal gebaut,
+nicht abgewogen.
+
+`app/bauen.sh` erzeugt nach grünen Tests zusätzlich `app/Ausgabe/brainlehr.app`
+(Contents/MacOS, Contents/Resources, Info.plist, ad-hoc signiert). Ort bewusst
+repo-lokal (`app/.gitignore` schließt `Ausgabe/` aus), nicht der Schreibtisch.
+Neue Dateien: `app/Resources/Info.plist` (Vorlage mit `__FASSUNG__`/
+`__BAUNUMMER__`, aus `VERSION` bzw. `git rev-list --count HEAD` gefüllt),
+`app/Resources/erzeuge_icon.swift` (zeichnet ein schlichtes eigenes Symbol —
+abgerundetes Quadrat, blauer Verlauf, weißes „b" — bei jedem Bau frisch in
+allen zehn von macOS erwarteten Pixelgrößen, kein Fremdmaterial). `CFBundleLocalizations`
+auf `de` beschränkt, damit die Systemmenüs unabhängig von der Systemsprache
+deutsch bleiben. `NSSupportsAutomaticTermination`/`NSSupportsSuddenTermination`
+auf `false`, weil `applicationWillTerminate` den überwachten Dienstprozess
+sauber herunterfahren muss.
+
+`BrainlehrApp.swift` bekam eine `Settings`-Szene (Platzhalterinhalt, öffnet auf
+Befehlstaste-Komma) und eine Mindestgröße fürs Hauptfenster. Ein zuerst
+gebauter eigener Fensterlagen-Speicher (`NSWindow.setFrameAutosaveName`) wurde
+wieder entfernt: Rot-Probe zeigte, dass `WindowGroup` Größe und Lage bereits
+von selbst unter einer eigenen Kennung sichert (Schlüssel „NSWindow Frame
+main-AppWindow-1" in `~/Library/Preferences/de.brainlehr.app.plist`) — der
+eigene Code war totes Gewicht neben einem bereits vorhandenen Systemmechanismus.
+
+**Abnahme, mit Beleg:**
+- `app/bauen.sh`: weiterhin 12/12 XCTest-Fälle, 0 Fehlschläge, danach Bündel-
+  Bau, danach `codesign --force --deep --sign -`.
+- `codesign -dv Ausgabe/brainlehr.app`: `Format=app bundle with Mach-O thin
+  (arm64)`, `Signature=adhoc`, `Info.plist entries=19`.
+- Per `open Ausgabe/brainlehr.app` gestartet (nicht die nackte Binärdatei),
+  Prozessname „brainlehr" in der Prozessliste belegt, per `open`+`ps` und per
+  `tell application "System Events" to get name of every process` bestätigt.
+- Menüleiste tatsächlich per AppleScript ausgelesen (nicht nur behauptet):
+  **Apple-nahes Menü „brainlehr"**: Über „brainlehr", Einstellungen … (Befehl-Komma,
+  per Klick geprüft — öffnet ein eigenes Fenster „brainlehr-Einstellungen"),
+  Dienste, „brainlehr" ausblenden, Andere ausblenden, Alle einblenden,
+  „brainlehr" beenden. **Ablage**: Neues Fenster „Brainlehr", Schließen, Alle
+  schließen. **Bearbeiten**: Widerrufen, Wiederholen, Ausschneiden, Kopieren,
+  Einsetzen, Löschen, Alles auswählen (Standardkürzel, systemeigen).
+  **Darstellung**: Tableiste/Vollbildmodus (Systemstandard). **Fenster**: Im
+  Dock ablegen (heutige macOS-Bezeichnung für „Minimieren", weiterhin
+  Befehl-M), Zoomen, Alle nach vorne bringen, Fensterliste. **Hilfe**:
+  brainlehr-Hilfe. Fenster-Screenshot (über CGWindowID, kein Vollbild) zeigt
+  Seitenleiste mit sechs lesbaren Einträgen, kein Banner im Normalbetrieb.
+- Fensterlage: Fenster dreimal verschoben/vergrößert, App per
+  `tell application "brainlehr" to quit` beendet (Prozess danach weg — belegt
+  auch, dass der Dienst mitbeendet wird), neu gestartet. **Größe** kam jedes
+  Mal exakt zurück (z. B. 1000×700 → Neustart → 1000×700, dreifach
+  wiederholt). **Lage**: in `~/Library/Preferences/de.brainlehr.app.plist`
+  steht exakt die gesetzte Position, sichtbar wiederhergestellt wurde sie in
+  dieser Testumgebung trotzdem nicht zuverlässig — das Fenster erschien beim
+  Neustart auf dem eingebauten statt dem externen Bildschirm. Zwei Bildschirme
+  sind angeschlossen (`CG2700X` 2560×1440, eingebautes Display bei
+  x=2560/y=−267); welcher Bildschirm beim `open`-Aufruf als „aktiv" gilt,
+  scheint die Wiederherstellung zu überstimmen. Das ist derselbe
+  AppKit-Mechanismus, den auch ein eigener Code genutzt hätte — kein Fehler
+  der Kürzung, sondern eine Eigenschaft von `setFrameAutosaveName` bei
+  mehreren Bildschirmen, hier nicht weiter aufgelöst. Auf einem Rechner mit
+  einem Bildschirm (der Normalfall) ist davon nichts zu erwarten.
+- Volle Python-Suite: `972 passed, 2 skipped, 11 xfailed, 0 failed` — exakt
+  wie vor dieser Änderung, kein Rücklauf.
+
+**Was bewusst nicht getan wurde:** Notarisierung/Entwicklerzertifikat (weiter
+laut Plan bewusst verzichtet). Die acht Einstellungs-Abschnitte, die drei
+Ausweisabläufe und der Abrufmonitor bleiben Platzhalter — das ist Schritt 2–5,
+nicht dieser Zwischenschritt; hier zählte laut Auftrag nur, dass die Struktur
+stimmt.
+
 Offen für Schritt 2: Wissensraum-Ansichten in ein `WKWebView` einbetten.
 Entscheidungen wandern als ADR nach `docs/adr/`.

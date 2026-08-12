@@ -76,3 +76,35 @@ if [ "$lauf_ok" -ne 1 ]; then
 fi
 
 echo "BESTANDEN: $faelle XCTest-Faelle, 0 Fehlschlaege."
+
+# -- Anwendungsbuendel --
+# Ein echtes brainlehr.app statt der blanken Binaerdatei, die `swift build`
+# liefert: Contents/MacOS + Contents/Resources + Info.plist + Symbol,
+# ad-hoc signiert. Ort bewusst NICHT der Schreibtisch (app/Ausgabe/,
+# repo-lokal und in app/.gitignore ausgeschlossen) -- dorthin wird nur auf
+# ausdruecklichen Wunsch kopiert.
+
+REPO_WURZEL=$(cd "$HIER/.." && pwd)
+FASSUNG=$(cat "$REPO_WURZEL/VERSION" 2>/dev/null || echo "0.0.0")
+BAUNUMMER=$(cd "$REPO_WURZEL" && git rev-list --count HEAD 2>/dev/null || echo "0")
+
+BUENDEL="$HIER/Ausgabe/brainlehr.app"
+rm -rf "$BUENDEL"
+mkdir -p "$BUENDEL/Contents/MacOS" "$BUENDEL/Contents/Resources"
+
+cp "$HIER/.build/debug/BrainlehrApp" "$BUENDEL/Contents/MacOS/brainlehr"
+
+sed -e "s/__FASSUNG__/$FASSUNG/" -e "s/__BAUNUMMER__/$BAUNUMMER/" \
+	"$HIER/Resources/Info.plist" > "$BUENDEL/Contents/Info.plist"
+
+echo "-- Symbol erzeugen --"
+ICONSET="$HIER/Ausgabe/.AppIcon.iconset"
+rm -rf "$ICONSET"
+$SWIFT "$HIER/Resources/erzeuge_icon.swift" "$ICONSET"
+iconutil -c icns "$ICONSET" -o "$BUENDEL/Contents/Resources/AppIcon.icns"
+rm -rf "$ICONSET"
+
+echo "-- Ad-hoc-Signatur --"
+codesign --force --deep --sign - "$BUENDEL"
+
+echo "BUENDEL: $BUENDEL (Fassung $FASSUNG, Bau $BAUNUMMER)"
