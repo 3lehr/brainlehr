@@ -34,6 +34,32 @@ DREI FILTER, jeder gegen einen beobachteten Fehlerweg:
   3. Nur eindeutige Kanten und hoechstens drei Ziele. Ein Fall mit zwanzig
      richtigen Antworten prueft nichts.
 
+DRITTER KANAL 'lese' (2026-08-12): 'pfad' und 'kennung' lesen das Ziel AUS
+der Nachricht -- das Ziel steht im Wortlaut. 'lese' braucht das nicht: ein
+GEZIELTES access_log-read auf einen Knotenpfad, das zeitlich auf eine echte
+Nachricht folgt, belegt, dass jemand genau diesen Knoten wollte. Die Nachricht
+liefert weiterhin recall_log.jsonl -- derselbe Weg wie bei 'kennung', keine
+zweite Zuordnung ueber Sitzungstranskripte. Die Fenster-/Sitzungslogik
+(Praefixvergleich, Cutoff per Zeitstempel) stammt aus kern/wirkung.py, das
+dieselbe Frage schon fuer den Recall-Haken beantwortet -- hier nur auf ein
+einzelnes Nachrichtenfenster statt auf die ganze Sitzung verengt (sonst
+wuerde ein spaeteres Lesen mehreren fruehen Nachrichten zugleich zugeschrieben).
+
+Zwei zusaetzliche Ausschluesse, beide an der SPALTENBEDEUTUNG festgemacht,
+nicht an einer neuen Liste von Namen:
+  - client != 'claude-code' bleibt aussen vor. 'skript' traegt jeder
+    Selbstlauf (chatgpt/codex/terra/sol/enigma-Laeufer, siehe Modulkopf-
+    Auftrag); ein leerer client traegt Migrationen und Alt-Skripte ohne
+    Ausweis (ausweis.py nennt normbestand.py, hebb_kanten.py). Beide liegen
+    ohnehin nie in einer echten Betreiber-Sitzung mit recall_log-Eintrag --
+    der Filter macht das nur ausdruecklich.
+  - Kontamination: wurde derselbe Knoten von DERSELBEN Einspielung schon
+    eingespielt (recall_log-Feld 'nodes'/'node_ids'), ist das Lesen kein
+    unabhaengiger Beleg, sondern ein Griff nach dem, was ohnehin im Kontext
+    stand (siehe messungen/kontamination.py fuer dieselbe Frage bei
+    Subagenten). Ein solcher Fall wird VERWORFEN, nicht markiert -- markiert
+    saehe er in jeder Zaehlung noch wie ein Fall aus.
+
 Aufruf:
     python3 echtkorpus.py --sammeln --out runs/echtkorpus.json
     python3 echtkorpus.py --selftest
@@ -54,6 +80,8 @@ sys.path.insert(0, str(WURZEL / "kern"))
 import codekanten as ck  # noqa: E402
 import ort  # noqa: E402
 import speicher  # noqa: E402
+import teilung_s12  # noqa: E402
+import wirkung  # noqa: E402 -- Session-Fenster-Logik (_parse_ts/_fmt_ts) wiederverwendet, nicht zweimal gebaut
 
 # Das Protokoll liegt NEBEN der Datenbank, nicht neben dem Quelltext.
 # ort.RECALL_LOG leitet den Pfad aus der Wurzel des Arbeitsbaums ab -- und ein
@@ -217,6 +245,117 @@ def kennung_faelle_bilden(nachrichten: list[str], conn) -> list[dict]:
     return faelle
 
 
+# Dritter Kanal, siehe Modulkopf-Auftrag: 8 Hex-Ziffern ist die echte Form
+# einer Claude-Code-Sitzungskennung (session_id[:8], siehe knowledge_recall_
+# hook.py). 'probe'/'betriebs'/'probe2'/... sind Testzeilen aus der eigenen
+# Arbeit an diesem Sammler und an wirkung.py -- keine Betreiber-Sitzung.
+_SESSION_HEX = re.compile(r"^[0-9a-f]{8}$")
+
+
+def _einspielungen(pfad: Path = RECALL_LOG) -> list[dict]:
+    """Jede recall_log-Zeile mit echter Nachricht (siehe _ist_echte_frage)
+    und echter Sitzungskennung, sortiert je Sitzung nach Zeit -- die
+    Reihenfolge, die lese_faelle_bilden fuer die Fensterbildung braucht."""
+    if not pfad.exists():
+        return []
+    raus = []
+    for zeile in pfad.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            satz = json.loads(zeile)
+        except json.JSONDecodeError:
+            continue
+        session = satz.get("session")
+        ts = wirkung._parse_ts(satz.get("ts"))
+        text = (satz.get("prompt") or "").strip()
+        if not session or not ts or not _SESSION_HEX.match(session):
+            continue
+        if not _ist_echte_frage(text):
+            continue
+        raus.append({
+            "session": session, "ts": ts, "prompt": text,
+            "eingespielt": set(satz.get("nodes") or []) | set(satz.get("node_ids") or []),
+        })
+    raus.sort(key=lambda e: (e["session"], e["ts"]))
+    return raus
+
+
+def lese_faelle_bilden(conn, pfad: Path = RECALL_LOG) -> tuple[list[dict], int]:
+    """Klasse 'lese': das Ziel kommt aus einem GEZIELTEN access_log-read, der
+    zeitlich auf genau diese Nachricht folgt (und vor der naechsten Nachricht
+    derselben Sitzung liegt, falls es eine gibt). Gibt (Faelle, Anzahl
+    verworfener Kontaminationsfaelle) zurueck -- die Zahl gehoert in den
+    Bericht (Auftrag Punkt 3), nicht ins Dunkel."""
+    nach_sitzung: dict[str, list[dict]] = {}
+    for e in _einspielungen(pfad):
+        nach_sitzung.setdefault(e["session"], []).append(e)
+
+    faelle: list[dict] = []
+    kontaminiert = 0
+    for session, eintraege in nach_sitzung.items():
+        for i, e in enumerate(eintraege):
+            fenster_ende = eintraege[i + 1]["ts"] if i + 1 < len(eintraege) else None
+            sql = ("SELECT DISTINCT node_path FROM access_log WHERE action = 'read' "
+                   "AND status = 'completed' AND client = 'claude-code' "
+                   "AND node_path IS NOT NULL AND session LIKE ? AND timestamp > ?")
+            params = [f"{session}%", wirkung._fmt_ts(e["ts"])]
+            if fenster_ende is not None:
+                sql += " AND timestamp <= ?"
+                params.append(wirkung._fmt_ts(fenster_ende))
+            gelesen = {r[0] for r in conn.execute(sql, params)}
+
+            unabhaengig = sorted(gelesen - e["eingespielt"])
+            kontaminiert += len(gelesen & e["eingespielt"])
+            if unabhaengig and len(unabhaengig) <= MAX_ZIELE:
+                faelle.append({
+                    "prompt": e["prompt"], "klasse": "lese", "satzart": satzart(e["prompt"]),
+                    "ziele": [{"art": "knoten", "id": p} for p in unabhaengig],
+                })
+    return faelle, kontaminiert
+
+
+def s12_bericht(faelle: list[dict], conn) -> dict:
+    """Der Nenner fuer den S12-Versuch (Auftrag: 'Sammellauf mit Nenner'):
+    Knotenziele, verschiedene Knoten, und Faelle je Haelfte der Teilung aus
+    kern/teilung_s12.py. Reine Auszaehlung -- die Teilung selbst ist dort
+    bereits deterministisch, hier wird nicht neu gezogen.
+
+    ALLE drei Kanaele tragen den Knotenpfad als 'id' (siehe codekanten.erheben:
+    'SELECT path AS id ...' und kennung_pruefen: row['path']) -- die Faelle
+    dieses Sammlers kennen keine DB-id. teilung_s12.py teilt aber ausdruecklich
+    ueber die id, NICHT ueber den Pfad (dort begruendet: ein umbenannter Knoten
+    wanderte sonst lautlos die Haelfte). Ohne Aufloesung path->id wuerde hier
+    also eine ANDERE, instabile Teilung gemessen als die kanonische -- darum
+    die Aufloesung ueber knowledge_nodes vor jedem haelfte()-Aufruf."""
+    knotenziele = [z for f in faelle for z in f["ziele"] if z["art"] == "knoten"]
+    pfade = {z["id"] for z in knotenziele}
+    id_je_pfad = {}
+    if pfade:
+        platzhalter = ",".join("?" for _ in pfade)
+        for row in conn.execute(
+                f"SELECT path, id FROM knowledge_nodes WHERE path IN ({platzhalter})",
+                sorted(pfade)):
+            id_je_pfad[row["path"]] = row["id"]
+
+    je_haelfte = {teilung_s12.BEHANDELT: 0, teilung_s12.UNBEHANDELT: 0, "gemischt": 0}
+    for f in faelle:
+        haelften = set()
+        for z in f["ziele"]:
+            if z["art"] == "knoten":
+                db_id = id_je_pfad.get(z["id"])
+                if db_id is None:
+                    continue  # Pfad ohne (mehr) passenden Knoten -- keine Haelfte zuweisbar
+                haelften.add(teilung_s12.haelfte("knoten", db_id))
+            else:
+                haelften.add(teilung_s12.haelfte("lehre", z["id"]))
+        if haelften:
+            je_haelfte["gemischt" if len(haelften) > 1 else haelften.pop()] += 1
+    return {
+        "knotenziele": len(knotenziele),
+        "verschiedene_knoten": len(pfade),
+        "faelle_je_haelfte": je_haelfte,
+    }
+
+
 def _selftest() -> None:
     import tempfile
 
@@ -326,6 +465,91 @@ def _selftest() -> None:
 
     print("selftest ok (Gegenprobe je Klasse in beide Richtungen)", file=sys.stderr)
 
+    # Kanal 'lese': ein gezieltes read auf ein echtes Nachrichtenfenster ist
+    # ein Fall -- ohne Wortlaut-Ueberschneidung mit dem Prompt (anders als
+    # 'pfad'/'kennung'). Drei Gegenproben: Fenstergrenze, Kontamination,
+    # Selbstlauf-Ausschluss.
+    import sqlite3 as _sqlite3
+
+    recall_lese = Path(tempfile.mkdtemp()) / "recall_log.jsonl"
+    recall_lese.write_text("\n".join(json.dumps(z) for z in [
+        {"session": "aaaa1111", "ts": "2026-08-12T10:00:00+00:00",
+         "prompt": "Wo steht die Regel zur Fenstergroesse genau?", "nodes": []},
+        {"session": "aaaa1111", "ts": "2026-08-12T10:00:20+00:00",
+         "prompt": "Und was gilt fuer die zweite Frage in derselben Sitzung?", "nodes": []},
+        {"session": "bbbb2222", "ts": "2026-08-12T10:00:00+00:00",
+         "prompt": "Erklaer mir das Ergebnis, das du gerade eingespielt hast.",
+         "nodes": ["/x/schon-da"]},
+        {"session": "cccc3333", "ts": "2026-08-12T10:00:00+00:00",
+         "prompt": "Was steht eigentlich in der Fenstergroessen-Regel?", "nodes": []},
+        {"session": "probe", "ts": "2026-08-12T10:00:00+00:00",
+         "prompt": "Testzeile aus der eigenen Arbeit an diesem Sammler selbst.", "nodes": []},
+    ]) + "\n", encoding="utf-8")
+
+    conn3 = _sqlite3.connect(":memory:")
+    conn3.row_factory = _sqlite3.Row
+    conn3.execute("CREATE TABLE access_log (node_path TEXT, action TEXT, status TEXT, "
+                   "client TEXT, session TEXT, timestamp TEXT)")
+
+    def _log(session, node_path, ts, client="claude-code", action="read", status="completed"):
+        conn3.execute("INSERT INTO access_log VALUES (?,?,?,?,?,?)",
+                       (node_path, action, status, client, session, ts))
+
+    _log("aaaa1111", "/x/echt", "2026-08-12T10:00:05Z")            # im ersten Fenster -> Fall
+    _log("aaaa1111", "/x/nach-naechster", "2026-08-12T10:00:25Z")  # nach der 2. Nachricht -> gehoert dorthin
+    _log("bbbb2222", "/x/schon-da", "2026-08-12T10:00:05Z")        # Kontamination -> verworfen
+    _log("cccc3333", "/x/skript-only", "2026-08-12T10:00:05Z", client="skript")  # Selbstlauf -> kein Fall
+    conn3.commit()
+
+    lese_f, kontam = lese_faelle_bilden(conn3, recall_lese)
+    ziele_je_prompt = {f["prompt"]: [z["id"] for z in f["ziele"]] for f in lese_f}
+    assert ziele_je_prompt.get("Wo steht die Regel zur Fenstergroesse genau?") == ["/x/echt"], ziele_je_prompt
+    assert ziele_je_prompt.get("Und was gilt fuer die zweite Frage in derselben Sitzung?") \
+        == ["/x/nach-naechster"], ziele_je_prompt
+    assert "Erklaer mir das Ergebnis, das du gerade eingespielt hast." not in ziele_je_prompt, \
+        "ein kontaminierter Fall (Knoten war schon eingespielt) haette verworfen werden muessen"
+    assert kontam == 1, kontam
+    assert "Was steht eigentlich in der Fenstergroessen-Regel?" not in ziele_je_prompt, \
+        "ein Selbstlauf-Read (client='skript') wurde faelschlich als Fall gezaehlt"
+    assert all(f["klasse"] == "lese" for f in lese_f)
+    assert all(e["session"] != "probe" for e in _einspielungen(recall_lese)), \
+        "eine Testzeile (session 'probe') wurde als Betreiber-Sitzung genommen"
+
+    print("selftest ok (lese-Kanal: Fenstergrenze, Kontamination, Selbstlauf-Ausschluss geprueft)",
+          file=sys.stderr)
+
+    # s12_bericht: der Pfad aus den Faellen muss ueber knowledge_nodes.id
+    # aufgeloest werden, NICHT direkt als Teilungsschluessel dienen -- sonst
+    # misst der Nenner eine andere Teilung als teilung_s12.py selbst (siehe
+    # Funktions-Docstring). Gegenprobe: derselbe Pfad mit zwei verschiedenen
+    # ids muesste (Zufallsfall vorbehalten) unterschiedliche Haelften ziehen
+    # koennen -- hier reicht der Nachweis, dass ueberhaupt aufgeloest wird.
+    conn3.execute("CREATE TABLE knowledge_nodes (path TEXT, id TEXT)")
+    conn3.execute("INSERT INTO knowledge_nodes VALUES ('/x/a', 'nodeid-a')")
+    conn3.execute("INSERT INTO knowledge_nodes VALUES ('/x/b', 'nodeid-b')")
+    conn3.commit()
+    faelle_s12 = [
+        {"prompt": "p1", "klasse": "lese", "satzart": "frage",
+         "ziele": [{"art": "knoten", "id": "/x/a"}]},
+        {"prompt": "p2", "klasse": "lese", "satzart": "frage",
+         "ziele": [{"art": "knoten", "id": "/x/ohne-knoten"}]},  # kein passender Knoten mehr
+    ]
+    s12_test = s12_bericht(faelle_s12, conn3)
+    assert s12_test["knotenziele"] == 2 and s12_test["verschiedene_knoten"] == 2, s12_test
+    erwartete_haelfte = teilung_s12.haelfte("knoten", "nodeid-a")
+    andere_haelfte = teilung_s12.haelfte("knoten", "/x/a")  # der FALSCHE Schluessel (Pfad)
+    gezogene_haelfte = [h for h, n in s12_test["faelle_je_haelfte"].items() if n > 0
+                         and h != "gemischt"]
+    assert gezogene_haelfte == [erwartete_haelfte], (s12_test, erwartete_haelfte)
+    assert sum(s12_test["faelle_je_haelfte"].values()) == 1, \
+        "Fall p2 ohne aufloesbaren Knoten haette keine Haelfte bekommen duerfen"
+    if erwartete_haelfte != andere_haelfte:
+        print("  s12_bericht loest ueber die id auf, nicht ueber den Pfad (Gegenprobe traf zu)",
+              file=sys.stderr)
+
+    print("selftest ok (s12_bericht: Pfad->id-Aufloesung, unaufloesbarer Fall ohne Haelfte)",
+          file=sys.stderr)
+
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__,
@@ -345,14 +569,21 @@ def main() -> None:
 
     with speicher.lesen() as conn:
         faelle = faelle_bilden(nachrichten, conn) + kennung_faelle_bilden(nachrichten, conn)
+        lese_f, lese_kontaminiert = lese_faelle_bilden(conn)
+        faelle += lese_f
+        s12 = s12_bericht(faelle, conn)
 
-    nach_klasse = {k: sum(1 for f in faelle if f["klasse"] == k) for k in ("pfad", "kennung")}
+    KLASSEN = ("pfad", "kennung", "lese")
+    nach_klasse = {k: sum(1 for f in faelle if f["klasse"] == k) for k in KLASSEN}
     nach_satzart = {s: sum(1 for f in faelle if f["satzart"] == s) for s in ("frage", "auftrag")}
     print(f"{len(aus_log)} aus recall_log + {len(aus_sitzungen)} aus Sitzungen "
           f"-> {len(nachrichten)} eindeutige Nachrichten -> {len(faelle)} Faelle "
-          f"(pfad: {nach_klasse['pfad']}, kennung: {nach_klasse['kennung']}) "
+          f"(pfad: {nach_klasse['pfad']}, kennung: {nach_klasse['kennung']}, "
+          f"lese: {nach_klasse['lese']}) "
           f"(frage: {nach_satzart['frage']}, auftrag: {nach_satzart['auftrag']})")
-    for k in ("pfad", "kennung"):
+    print(f"    lese-Kanal: {lese_kontaminiert} Kontaminationsfaelle verworfen "
+          "(Knoten war der Sitzung schon eingespielt)")
+    for k in KLASSEN:
         for s in ("frage", "auftrag"):
             n = sum(1 for f in faelle if f["klasse"] == k and f["satzart"] == s)
             print(f"    {k} x {s}: {n}")
@@ -363,14 +594,22 @@ def main() -> None:
     for f in faelle[:6]:
         quelle = f.get("pfade", sorted(kennungen(f["prompt"])))[:2]
         print(f"  [{f['klasse']}/{f['satzart']}] {quelle} -> {[z['id'] for z in f['ziele']]}")
+
+    print(f"  S12-Nenner: {s12['knotenziele']} Knotenziele, {s12['verschiedene_knoten']} "
+          f"verschiedene Knoten, Faelle je Haelfte: {s12['faelle_je_haelfte']}")
+
     if a.out:
         a.out.write_text(json.dumps(
             {"verfahren": "Aufgabentext aus recall_log + Sitzungstranskripten (echte "
-                          "Nachricht), Ziel ueber code_kanten (Pfad) oder Existenzpruefung "
-                          "(Kennung) -- getrennte Kanaele, keine Erzeugung",
+                          "Nachricht), Ziel ueber code_kanten (Pfad), Existenzpruefung "
+                          "(Kennung) oder gezieltes access_log-read im Nachrichtenfenster "
+                          "(lese) -- getrennte Kanaele, keine Erzeugung",
              "nachrichten": len(nachrichten),
              "nachrichten_aus_log": len(aus_log),
              "nachrichten_aus_sitzungen": len(aus_sitzungen),
+             "faelle_je_kanal": nach_klasse,
+             "lese_kontaminationsfaelle_verworfen": lese_kontaminiert,
+             "s12_nenner": s12,
              "faelle": faelle},
             ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"\nGeschrieben: {a.out}")
