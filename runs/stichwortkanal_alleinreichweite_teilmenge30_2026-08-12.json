@@ -1,0 +1,50 @@
+{
+  "frage": "In wie vielen Ziel-Instanzen ist der beste gelieferte Treffer NUR ueber den Stichwortkanal erreichbar (Vektor allein liefert ihn nicht innerhalb des Betriebsdeckels)?",
+  "verfahren": "kern/abrufguete.py::abrufen() zweimal je Fall: einmal unveraendert (Betrieb, rrf_fuse), einmal mit embeddings.rrf_fuse per Laufzeit-Monkeypatch auf leere fts-Liste -- kern/, haken/ unveraendert auf der Platte. Zaehlung je Ziel-Instanz wie messungen/ausgangsmessung_s12.py::messe().",
+  "korpus": "echtkorpus_2026-08-12T1000.json",
+  "korpus_limit": 30,
+  "korpus_faelle_gesamt_in_datei": 89,
+  "code_stand": "51927d1 (Zweig brainlehr/b4-ausweis)",
+  "erzeugt_am": "2026-08-12T21:45:49+0200",
+  "ziel_instanzen_gesamt": 44,
+  "treffer_betrieb_rrf_fuse": 17,
+  "treffer_semantik_allein": 15,
+  "nur_ueber_stichwortkanal_erreichbar": 7,
+  "nur_ueber_stichwortkanal_erreichbar_faelle": [
+    {
+      "art": "knoten",
+      "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/brainlehr/enigma-phase-1-mcp-ist-keine",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/openlehr/imap-zugangsdaten-konten-in-der-db",
+      "satzart": "frage"
+    },
+    {
+      "art": "lehre",
+      "id": "L-9f8816",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-7b2c20",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-cafe-international-konsil-2026",
+      "satzart": "auftrag"
+    }
+  ]
+}

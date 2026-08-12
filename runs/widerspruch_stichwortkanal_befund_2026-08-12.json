@@ -1,0 +1,71 @@
+{
+  "auftrag": "Messauftrag 2026-08-12: Widerspruch aufloesen zwischen 'Stichwortkanal rettet keinen Fall und kostet zwei' (2026-08-11) und 'ihn zu daempfen kostet vierzehn Faelle' (2026-08-12, Positivkontrolle 45->31 von 205).",
+  "code_stand_beobachtung": "51927d1 (Zweig brainlehr/b4-ausweis)",
+
+  "befund_1_die_beiden_zahlen_messen_verschiedenes": {
+    "kostet_zwei": {
+      "quelle": "Commit 6aa0f0c (2026-08-11T17:18), runs/gewichtsreihe_2026-08-11.json, Skript messungen/hybridvergleich.py",
+      "korpus": "runs/pruefkorpus_v2.json -- 35 synthetische Faelle, AUS LEHRENTEXTEN erzeugt (Wortlaut nahe an den Zielen -- im Commit selbst als Bias benannt: 'ein Aufbau, der semantischer Aehnlichkeit entgegenkommt')",
+      "pfad": "ruft embeddings.rrf_fuse() DIREKT auf (ein Aufruf je Fall/Gattung) -- NICHT der Produktionspfad ueber haken/suchpfad_abruf.py",
+      "vergleich": "rrf_fuse mit Betriebsgewicht 1.0 (Stichwort+Vektor) GEGEN Gewicht 0.0 (reiner Vektor, Stichwortkanal vollstaendig entfernt)",
+      "denominator": 35,
+      "zahl_heute_reproduziert": {"gewicht_1.0_hybrid": 13, "gewicht_0.0_nur_vektor": 15, "differenz": -2,
+        "hinweis": "im Repo abgelegte runs/gewichtsreihe_2026-08-11.json zeigt bei Gewicht 1.0 den Wert 14 statt 13 -- kleine Abweichung zur Commit-Prosa und zur heutigen Reproduktion, vermutlich Restrauschen aus Ollama-Einbettung zwischen Laeufen; qualitativer Befund (Hybrid < reiner Vektor, lexikalisch_rettet leer) ist in beiden Faellen gleich."},
+      "frage_die_das_beantwortet": "Waere ein reiner Vektor-Abruf (Stichwortkanal ENTFERNT) auf diesem semantik-freundlichen Korpus besser als der heutige rrf_fuse mit Gewicht 1.0? -- Antwort: ja, um 2 von 35."
+    },
+    "kostet_vierzehn": {
+      "quelle": "Commit 251569e (2026-08-12T17:39), runs/ausgangsmessung_s12_2026-08-12_korrigiert.json (vorher) + runs/nachmessung_semantic_led_2026-08-12.json (nachher)",
+      "korpus": "runs/echtkorpus_2026-08-12T1000.json -- 89 ECHTE Faelle aus access_log/Sitzungen, 205 Ziel-Instanzen (mehrere Ziele je Fall)",
+      "pfad": "kern/abrufguete.py::abrufen() -> haken/knowledge_recall_hook.py::query() -> haken/suchpfad_abruf.py::kandidaten() -- der ECHTE Produktionspfad, inklusive Deckel MAX_NODES/MAX_LESSONS und allen Vor-/Nachfiltern",
+      "vergleich": "rrf_fuse (Betrieb, Stichwortkanal mit vollem RRF-Gewicht) GEGEN fuse_semantic_led (Bedeutung fuehrt, Stichwortkanal nur sein EINER bester Treffer als Sockel) -- eine ANDERE Fusionsfunktion, nicht 'Stichwortkanal entfernt'",
+      "denominator": 205,
+      "zahl_heute_verifiziert_arithmetisch": {"vorher_treffer": 45, "nachher_treffer": 31, "differenz": -14,
+        "pruefung": "beide Dateien tragen dieselben 205 Ziel-Instanz-Schluessel (art,id,satzart) -- 0 Abweichung in der Schluesselmenge, Treffersummen 45 bzw. 31 direkt aus den gespeicherten Einzelergebnissen nachgerechnet, nicht neu abgerufen (Begruendung s. befund_3)."},
+      "frage_die_das_beantwortet": "Waere fuse_semantic_led (eine STRUKTURELL ANDERE Fusion, die auch die Bedeutungsrangliste anders behandelt) auf echten Anfragen besser als der heutige rrf_fuse? -- Antwort: nein, um 14 von 205."
+    },
+    "warum_kein_widerspruch": [
+      "Unterschiedliche Alternative: 'kostet 2' vergleicht mit ENTFERNTEM Stichwortkanal (Gewicht 0). 'kostet 14' vergleicht mit einer ANDEREN Fusionsfunktion, die den Stichwortkanal nicht entfernt, sondern auf einen Sockelplatz begrenzt UND die Bedeutungsrangliste strukturell anders fuehrt -- das ist kein sauberer Kanal-Ablationstest.",
+      "Unterschiedlicher Korpus: 35 aus Lehrentexten erzeugte Faelle (semantik-freundlich, im Ursprungscommit selbst so benannt) gegen 89 echte Faelle aus access_log/Sitzungen (205 Ziel-Instanzen) -- unterschiedliche Anfrageverteilung.",
+      "Unterschiedlicher Pfad: 'kostet 2' misst rrf_fuse isoliert (ein Aufruf je Fall). 'kostet 14' misst durch den vollen Produktionspfad, der laut haken/suchpfad_abruf.py DREI rrf_fuse-Aufrufe je Anfrage verschachtelt (Stichwort-Teilkanaele verschmelzen, Bedeutungs-Teilkanaele verschmelzen, dann die eigentliche Fusion) -- ein Effekt, der bei einer isolierten rrf_fuse-Messung gar nicht auftreten kann.",
+      "Keine der beiden Zahlen beantwortet allein die Frage 'traegt der Stichwortkanal im Betrieb etwas bei': 'kostet 2' hat den falschen (semantik-freundlichen, synthetischen) Korpus fuer diese Frage, 'kostet 14' hat die falsche Vergleichsgroesse (eine andere Fusion statt einer Kanal-Ablation)."
+    ]
+  },
+
+  "befund_2_produktionspfad_seit_2026-08-09": {
+    "text": "SUCHPFAD_ABRUF=True ist seit 2026-08-09 die Vorgabe (haken/knowledge_recall_hook.py). Der reale Abruf laeuft seither NICHT mehr durch den einfachen Zwei-Kanal-Kombinierer _combine_channels dieser Datei, sondern durch haken/suchpfad_abruf.py::kandidaten(), die embeddings.rrf_fuse DREIMAL je Anfrage aufruft (Stichwort-Knoten+Lehren verschmelzen, Bedeutung-Knoten+Lehren verschmelzen, dann Stichwort-gegen-Bedeutung). Fuer eine sauberere Kanal-Ablation (Frage 4 unten) musste dieser Umstand beruecksichtigt werden -- ein pauschaler Monkeypatch, der jeden rrf_fuse-Aufruf gleich behandelt, zerstoert auch die beiden anderen, nicht gemeinten Verschmelzungen (siehe Modulkopf messungen/stichwortkanal_alleinreichweite.py fuer den Fehler und die Korrektur).",
+    "beleg": "Erster Versuch der Messung fuer Frage 4 ergab 0 von 44 Treffern unter 'Stichwortkanal stumm' -- ein unplausibler Totalausfall. Ursache gefunden und behoben (nur der DRITTE rrf_fuse-Aufruf je abrufen()-Invocation wird geleert, s. Skriptkopf). Nach der Korrektur: 15 von 44 unter Semantik allein, plausibel nahe an den 17 des Betriebs."
+  },
+
+  "befund_3_reproduktion": {
+    "35_fall_korpus_pruefkorpus_v2": "Heute (2026-08-12) neu gerechnet mit messungen/hybridvergleich.py (unveraendert): Gewicht 1.0 liefert 13/35 (Commit-Prosa nannte 13, die abgelegte JSON-Datei zeigt 14 -- kleine Abweichung, s. befund_1), reiner Vektor 15/35, 'lexikalisch_rettet' weiterhin LEER (0 Faelle) -- reproduziert.",
+    "89_fall_205_ziel_korpus_echtkorpus": "NICHT vollstaendig neu abgerufen. Grund: ein abrufen()-Aufruf ueber den echten Produktionspfad kostet ca. 3-4,5 s (brute-force Kosinus ueber 3508 Vektoren in reinem Python, kein Index -- Ponytail-Kommentar in kern/embeddings.py nennt das explizit als bewusste Grenze). Fuer 205 Ziel-Instanzen sind 89 Faelle x 2 Laeufe (Betrieb + Semantik-allein) = 178 Aufrufe noetig, geschaetzt 12-20 Minuten -- ueber der im Auftrag gesetzten Zehn-Minuten-Schwelle ('etwas ueber zehn Minuten: melden statt starten'). Ein erster Vollversuch lief 14 Minuten CPU-Zeit ohne Ergebnis und wurde abgebrochen. Stattdessen: arithmetische Nachrechnung der bereits abgelegten 45/205 und 31/205 aus den gespeicherten Einzel-Ergebnissen (identische 205 Ziel-Schluessel in beiden Dateien, s. befund_1) -- das ist eine Pruefung der Rechnung, KEIN neuer Abruf gegen den heutigen Bestand."
+  },
+
+  "antwort_auf_die_gestellte_frage": {
+    "frage": "In wie vielen Faellen ist der beste gelieferte Treffer NUR ueber den Stichwortkanal erreichbar gewesen -- in der Bedeutungsliste (Vektor allein, ueber denselben Produktionspfad und Deckel) also gar nicht oder so weit hinten, dass er ohne den Stichwortkanal nicht in die Lieferung gekommen waere?",
+    "messung": "kern/abrufguete.py::abrufen() zweimal je Fall -- unveraendert (Betrieb, rrf_fuse durch haken/suchpfad_abruf.py) und mit Laufzeit-Monkeypatch (nur der dritte, echte Stichwort-gegen-Bedeutung-Aufruf je Invocation erhaelt eine leere Stichwortliste; die zwei anderen rrf_fuse-Aufrufe je Invocation -- Verschmelzung der Teilkanaele -- bleiben unangetastet). kern/ und haken/ wurden dabei nicht geschrieben, nur zur Laufzeit gepatcht und danach exakt zurueckgesetzt.",
+    "teilmenge_wegen_zeitbudget": {
+      "korpus": "runs/echtkorpus_2026-08-12T1000.json, ERSTE 30 von 89 Faellen (Dateireihenfolge, kein Zufallszug -- Begruendung: Zeitbudget, s. befund_3)",
+      "ziel_instanzen_in_teilmenge": 44,
+      "treffer_betrieb_rrf_fuse": 17,
+      "treffer_semantik_allein": 15,
+      "nur_ueber_stichwortkanal_erreichbar": 7,
+      "nenner": "7 von 44 Ziel-Instanzen (Teilmenge, NICHT die vollen 205)"
+    },
+    "35_fall_korpus_als_zweiter_datenpunkt": {
+      "nenner": "0 von 35 Ziel-Instanzen (voller Korpus, heute reproduziert)",
+      "einschraenkung": "dieser Korpus ist semantik-freundlich (aus Lehrentexten erzeugt), im Ursprungscommit selbst so benannt -- als alleiniger Beleg fuer die Betriebsfrage nicht tragfaehig, aber als zweiter, methodisch sauberer (nicht durch den Drei-Aufruf-Pfad verschachtelter) Datenpunkt hier mitgefuehrt."
+    },
+    "gesamteinschaetzung": "Auf den gemessenen Teilmengen liegt die Zahl zwischen 0 von 35 (semantik-nahe Faelle) und 7 von 44 (echte Faelle, 30 von 89) -- also klar NICHT null im echten Betrieb. Eine belastbare Zahl fuer die vollen 205 Ziel-Instanzen wurde NICHT ermittelt (s. befund_3); 7/44 ist eine Teilmengenschaetzung, keine Vollerhebung."
+  },
+
+  "nicht_gemessen_und_warum": [
+    "Vollstaendige Neuerhebung der 205 Ziel-Instanzen fuer die Kanal-Ablation (Frage 4): 178 Abrufe x ca. 3-4,5 s ueberschreiten die Zehn-Minuten-Schwelle des Auftrags deutlich (geschaetzt 12-20 Minuten); ein erster Versuch wurde nach 14 Minuten CPU-Zeit ohne Ausgabe abgebrochen.",
+    "Vollstaendige Neuerhebung der 45/31-Positivkontrolle (fuse_semantic_led gegen rrf_fuse) auf dem heutigen Bestand: dafuer muessten die Aufrufstellen in haken/suchpfad_abruf.py testweise auf fuse_semantic_led umgestellt werden -- das waere ein Eingriff in haken/ (nur LESEN laut Auftrag) und zusaetzlich eine Fusionslogik-Aenderung, die dieser Messauftrag ausdruecklich nicht vorsieht. Stattdessen nur arithmetisch nachgerechnet (befund_1/befund_3).",
+    "Warum die abgelegte runs/gewichtsreihe_2026-08-11.json bei Gewicht 1.0 den Wert 14 zeigt, waehrend Commit-Prosa und heutige Reproduktion 13 ergeben: nicht untersucht (vermutlich Ollama-Einbettungsrauschen zwischen Laeufen), qualitativer Befund davon nicht beruehrt."
+  ],
+
+  "vorschlag_nicht_umgesetzt": "Fuer kuenftige Kanal-Ablationen auf dem Produktionspfad waere ein expliziter Test-Hook sinnvoller als ein aufrufzahl-basierter Monkeypatch (fragil, wenn suchpfad_abruf.kandidaten() seine interne rrf_fuse-Aufrufreihenfolge je aendert) -- z.B. ein optionales Test-Double-Argument fuer den Stichwortkanal in kandidaten() selbst. Das ist ein Vorschlag, kein umgesetzter Code -- Auftrag verbietet Aenderung an Fusionslogik.",
+
+  "testsuite": "python3 -m pytest tests -q --ignore=tests/test_caveman_bulk_minify.py --ignore=tests/test_caveman_integration.py --ignore=tests/test_fenstergroesse_persistenz.py -> 974 passed, 2 skipped, 11 xfailed, 0 failed, 204.80s -- deckungsgleich mit der genannten Ausgangslage."
+}
