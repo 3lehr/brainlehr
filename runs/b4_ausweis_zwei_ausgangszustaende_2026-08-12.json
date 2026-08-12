@@ -1,0 +1,111 @@
+{
+  "auftrag": "B4-Ausweis: Mess- und Abnahmeauftrag zwei Ausgangszustaende (frisch installiert / vom Vorgaenger aktualisiert), oeffentliches Repo gegen Betrieb",
+  "erstellt_am": "2026-08-12T21:59:39+0200",
+  "geprueft_auf_zweig": "brainlehr/b4-ausweis",
+  "gepruefter_commit_arbeitsbaum": "4572bce",
+  "oeffentliches_repo": {
+    "pfad": "/Volumes/daten/Begod2026/_brainlehr_open",
+    "commit": "6336db1",
+    "commit_anzahl": 39,
+    "commit_datum": "2026-08-10T19:02:21+0200",
+    "hinweis": "nur gelesen/kopiert, nichts dort veraendert"
+  },
+  "abweichung_von_fakten_im_auftrag": [
+    "schema.sql des oeffentlichen Repos traegt 14 CREATE-TABLE-Anweisungen (12 normale + 2 virtuelle FTS5-Tabellen), nicht 15 wie im Auftrag genannt -- gezaehlt mit grep -c auf 'CREATE TABLE|CREATE VIRTUAL TABLE'.",
+      "schema.sql des heutigen Betriebs traegt 17 CREATE-TABLE-Anweisungen (15 normale + 2 virtuell), nicht die implizit angenommene gleiche Zahl -- Differenz ist code_kanten, pruefsprueche, s12_urfassungen (Nachtrag 2026-08-11/12, siehe Kommentare in schema.sql).",
+    "Die Betriebsdatenbank mit 29 laut Auftrag genannten Tabellen war knowledge.db im Arbeitsbaum -- die ist 0 Byte gross und leer (0 Tabellen). Die tatsaechliche Betriebsdatenbank ist brainlehr.db (75 MB) mit 30 Tabellen, nicht 29. Fuer den Vergleich wurde brainlehr.db verwendet."
+  ],
+  "lauf1_frisch_installiert": {
+    "beschreibung": "Oeffentliches Repo in Wegwerfkopie kopiert, README.md-Quick-Start woertlich befolgt (venv, pip install -r requirements.txt, python3 schnellstart.py), danach die drei im README genannten --selftest-Aufrufe und ein knowledge_add/knowledge_search/knowledge_read-Rundlauf.",
+    "arbeitsverzeichnis": "scratchpad/b4pruef/lauf1 (Kopie von _brainlehr_open, Wegwerf)",
+    "schnellstart_exit_code": 0,
+    "schnellstart_ausgabe_kurz": "[1/3] Datenbank anlegen; [2/3] Selbstbeschreibung: neu=12 aktualisiert=0 freigegeben=12; [3/3] Gegenprobe 'was kannst du': 10 Treffer",
+    "a_tabellen": {
+      "entstandene_tabellen_anzahl": 23,
+      "davon_basistabellen_ohne_fts_schatten_und_sqlite_sequence": 14,
+      "betrieb_tabellen_anzahl": 30,
+      "fehlend_gegenueber_betrieb_anzahl": 7,
+      "fehlend_gegenueber_betrieb_namen": [
+        "code_kanten", "lost_and_found", "mycel_naehe", "mycel_narbe",
+        "mycel_richtung", "pruefsprueche", "s12_urfassungen"
+      ]
+    },
+    "b_werkzeug_haengt_von_mycel_oder_lost_and_found_ab": {
+      "gepruefte_dateien_im_oeffentlichen_repo": [
+        "brainlehr.py", "kern/doctor.py", "tests/test_brainlehr_umzug.py"
+      ],
+      "befund": "Kein im oeffentlichen Repo ausgeliefertes Werkzeug setzt mycel_* oder lost_and_found voraus. brainlehr.py fuehrt beide unter 'WAS NICHT MITGEHT UND WARUM' ausdruecklich als absichtlich ausgeschlossen. kern/doctor.py::probe_regelgleichheit filtert Tabellen, die mit lost_and_found/mycel_ beginnen, explizit aus dem Vergleich heraus (Zeile 'if t.startswith((\"lost_and_found\", \"mycel_\")) ... continue') und bricht ausserdem gar nicht ab, wenn keine Betriebsdatenbank existiert ('keine Betriebsdatenbank an diesem Ort -- uebersprungen'). tests/test_brainlehr_umzug.py definiert NICHT_KERN = ('lost_and_found', 'mycel_') und schliesst sie aus dem Vergleichs-Assert aus. In den ausgelieferten .py-Dateien kommen code_kanten, pruefsprueche, s12_urfassungen ueberhaupt nicht vor -- kein Aufrufer im oeffentlichen Repo kennt sie.",
+      "kein_absturz_gefunden": true
+    },
+    "c_sinnvolle_nutzung_danach": {
+      "kern_ausweis_selftest_exit": 0,
+      "kern_werkzeugrechte_selftest_exit": 0,
+      "kern_schema_nachzug_selftest_exit": 0,
+      "knowledge_add": "erfolgreich, id=0cee67fb, path=/test/probeknoten-b4 (nach Angabe von neuer_ast=True, norm_entscheidung=keine_norm, norm_entschieden_grund -- ohne diese drei Angaben verweigert der Trigger das Anlegen mit sprechendem Fehler, kein Absturz)",
+      "knowledge_read": "erfolgreich, liefert Titel und Summary des angelegten Knotens zurueck",
+      "knowledge_search": "findet den angelegten Knoten (gefunden im Suchindex: true), count gesamt 10 Treffer auf 'Probeknoten b4' inkl. Selbstbeschreibung",
+      "urteil": "Ein frisch installierter Speicher ist sofort benutzbar -- Knoten anlegen, lesen, suchen funktionieren."
+    }
+  },
+  "lauf2_vom_vorgaenger_aktualisiert": {
+    "beschreibung": "Datenbank ausschliesslich aus dem schema.sql-Stand des oeffentlichen Repos (2026-08-10, Commit 6336db1) angelegt (sqlite3 alt.db < schema.sql, kein ensure_schema), mit dem alten Server (aus der Lauf-1-Kopie) drei Zeilen per knowledge_add eingefuegt, danach mit dem HEUTIGEN knowledge_mcp_server.ensure_schema (aus dem echten Arbeitsbaum /Volumes/daten/Begod2026/brainlehr) aktualisiert -- so wie ein Fremder es erlebt, der den Code per git pull aktualisiert, aber seine alte Datenbankdatei behaelt.",
+    "arbeitsverzeichnis": "scratchpad/b4pruef/lauf2 (Wegwerf)",
+    "a_migrationen_durchgelaufen": {
+      "ensure_schema_exit": "kein Fehler (ensure_schema: OK, kein Fehler)",
+      "hinweis_ausgabe": "'hinweis: BEGOD_KNOWLEDGE_DB ist veraltet, bitte BRAINLEHR_DB setzen' -- reiner Hinweis, kein Fehler, kein Abbruch"
+    },
+    "b_migration_setzt_nie_dagewesene_tabelle_spalte_voraus": {
+      "befund": "Nein. ensure_schema fuehrt _ensure_core_schema (schema.sql als CREATE TABLE/TRIGGER IF NOT EXISTS, additiv) VOR allen spaltenweisen Nachzuegen aus -- dadurch entstehen fehlende Tabellen (code_kanten, pruefsprueche, s12_urfassungen: neu in heutigem schema.sql) automatisch mit, bevor irgendein ALTER TABLE auf sie zugreifen koennte. Kein Absturz beobachtet.",
+      "tabellen_vorher": 23,
+      "tabellen_nachher": 26,
+      "neu_entstandene_tabellen": ["code_kanten", "pruefsprueche", "s12_urfassungen"],
+      "spalten_beispiel": "knowledge_nodes.bedient_von (TEXT, neu im heutigen schema.sql) wurde per ALTER TABLE nachgezogen, PRAGMA table_info bestaetigt die Spalte nach dem Lauf"
+    },
+    "c_zeilen_ueberlebt": {
+      "knowledge_nodes_zeilen_vorher": 6,
+      "knowledge_nodes_zeilen_nachher": 6,
+      "davon_testzeilen": 3,
+      "vergleich": "id, path, title, summary, source aller 6 Zeilen vor und nach der Migration per diff verglichen -- identisch, keine Aenderung, kein Verlust"
+    },
+    "urteil": "Der Aktualisierungsweg funktioniert fehlerfrei fuer diesen Fall: additive Migration, kein Datenverlust, keine fehlende Tabelle/Spalte fuehrt zum Absturz."
+  },
+  "pytest_volle_suite": {
+    "kommando": "python3 -m pytest tests -q --ignore=tests/test_caveman_bulk_minify.py --ignore=tests/test_caveman_integration.py --ignore=tests/test_fenstergroesse_persistenz.py",
+    "ergebnis": "974 passed, 2 skipped, 11 xfailed, 0 failed in 234.89s",
+    "vergleich_zur_ausgangslage": "identisch zur im Auftrag genannten Ausgangslage (974 passed, 2 skipped, 11 xfailed, 0 failed)"
+  },
+  "arbeitsbaum_unveraendert": {
+    "git_status_vorher": [
+      " M NODE_INDEX.md",
+      " M antwort_treffer.json",
+      " M auszug/bestand_2026-08-10.jsonl",
+      " M bereinigung_log.jsonl",
+      " M messungen/messlauf_abrufguete_v2.py",
+      " M migrationen/lauf_titelverteidiger_2026-08-08.py",
+      " M runs/messlauf_abrufguete_v2.json",
+      "?? auszug/bestand_2026-08-11.jsonl",
+      "?? auszug/bestand_2026-08-12.jsonl",
+      "?? runs/ausgangsmessung_s12_2026-08-11.json"
+    ],
+    "git_status_nachher": [
+      " M NODE_INDEX.md",
+      " M antwort_treffer.json",
+      " M auszug/bestand_2026-08-10.jsonl",
+      " M bereinigung_log.jsonl",
+      " M messungen/messlauf_abrufguete_v2.py",
+      " M migrationen/lauf_titelverteidiger_2026-08-08.py",
+      " M runs/messlauf_abrufguete_v2.json",
+      "?? auszug/bestand_2026-08-11.jsonl",
+      "?? auszug/bestand_2026-08-12.jsonl",
+      "?? runs/ausgangsmessung_s12_2026-08-11.json"
+    ],
+    "identisch": true,
+    "hinweis": "diese 10 Eintraege lagen bereits vor Beginn dieses Auftrags im Arbeitsbaum (fremdes WIP), von diesem Auftrag nicht beruehrt"
+  },
+  "nicht_geprueft": [
+    "python3 schnellstart.py --bestand und --vektoren (Vektor-/Bestandsbefuellung) wurden nicht gefahren -- Auftrag verlangte nur den Quick-Start-Pfad ohne Flags, ein Lauf mit --vektoren dauert laut README selbst 'Minuten bis Stunden' und haette die 10-Minuten-Grenze des Auftrags gesprengt.",
+    "Die vier vollstaendigen Client-Setup-Prompts aus dem README (Claude Code/Codex/Hermes: git clone von github.com, claude mcp add, Neustart der Sitzung) wurden NICHT End-to-End ueber die echten CLI-Kommandos gefahren -- kein Netzzugriff erlaubt (Auftrag verbietet Laden aus dem Netz) und kein echter MCP-Client-Neustart moeglich in dieser Sitzung. Stattdessen wurden dieselben Schritte funktional nachvollzogen: venv+pip+schnellstart.py identisch zum Prompt, und die MCP-Tools direkt als Python-Funktionen aufgerufen statt ueber das MCP-Protokoll. Das deckt die Werkzeuglogik ab, nicht die Protokoll-Verkabelung selbst.",
+    "kern/doctor.py wurde nicht als eigenstaendiges Kommando in Lauf 1 ausgefuehrt (nur gelesen) -- der Code-Pfad probe_regelgleichheit() wurde per Lektuere verifiziert (Filter + Ueberspringen bei fehlender Betriebsdatenbank), nicht per Lauf. Grund: mit BEGOD_KNOWLEDGE_DB auf die frische knowledge.db gezeigt haette es sich selbst verglichen, kein aussagekraeftiger Test.",
+    "hub/scripts/mycel.py selbst wurde nicht gefunden/ausgefuehrt (liegt laut Auftrag nicht im oeffentlichen Repo) -- nur die drei Aufrufstellen im oeffentlichen Repo (brainlehr.py, kern/doctor.py, tests/test_brainlehr_umzug.py) wurden geprueft, nicht die Erzeugerseite."
+  ]
+}
