@@ -156,10 +156,72 @@ def rrf_fuse(
     return sorted(scores.keys(), key=lambda doc_id: scores[doc_id], reverse=True)
 
 
+def keyword_floor_size() -> int:
+    """Wie hybrid_retrieval_weight(): Modul-Konstante + Env-Uebersteuerung,
+    Rueckweg kostenlos. KNOWLEDGE_KEYWORD_FLOOR ueberschreibt."""
+    raw = os.environ.get("KNOWLEDGE_KEYWORD_FLOOR", "1")
+    try:
+        n = int(raw)
+    except ValueError:
+        return 1
+    return max(0, n)
+
+
+def fuse_semantic_led(
+    keyword_ordered_ids: list[Any],
+    embedding_ordered_ids: list[Any],
+    max_results: int,
+    *,
+    embedding_weight: float = 1.0,
+    floor: int | None = None,
+) -> list[Any]:
+    """Ersetzt die symmetrische RRF-Verschmelzung an der Stelle, wo ein
+    Stichwort- und ein Bedeutungskanal zusammentreffen (Auftrag 2026-08-12,
+    Knoten d84b6b64: rrf_fuse gewichtet den RANG im Kanal, nicht seine
+    GUETE -- ein Kanal mit wenigen, aber durchweg irrelevanten Treffern
+    verdraengt per Rangaddition einen einzelnen starken Treffer im anderen
+    Kanal).
+
+    GEPRUEFT UND VERWORFEN, 2026-08-12: ein numerischer Kanal-Guete-
+    Schwellwert (Trefferzahl, Abstand Rang1-zu-Median, absoluter bm25-Wert),
+    unter dem ein Kanal ganz stumm bleibt. Alle drei korrelieren mit der
+    SPEZIFITAET einer Anfrage, nicht mit ihrer Richtigkeit: eine treffsichere
+    Einwort-Anfrage ('reachability', 1 Treffer, bm25 -8.05) sieht in allen
+    drei Massen genauso schwach aus wie die acht themenfremden
+    Trigramm-Zufallstreffer der Anfrage, die den Fehler zeigte. Ein
+    Schwellwert haette die kurze richtige Anfrage stummgeschaltet oder die
+    falsche durchgelassen.
+
+    Stattdessen (Vorlage: eugeniughelbur/obsidian-second-brain, MIT-Lizenz --
+    dort fuehrt die Bedeutungssuche das Ranking, die Stichwortsuche ist nur
+    Stichentscheid): die Bedeutungsrangliste fuehrt, der Stichwortkanal
+    garantiert nur seinen EINEN besten Treffer einen Platz (der bisherige
+    Sockel reservierte bis zu max_results Plaetze -- genau der Mechanismus,
+    der bei einem grossen, aber irrelevanten Stichwortkanal ALLE Plaetze
+    fuer sich beanspruchte und den Bedeutungskanal vollstaendig verdraengte).
+    Weitere Stichworttreffer sind Nachtrag: sie fuellen nur, was nach der
+    Bedeutungsrangliste noch frei ist -- nichts geht verloren, nichts
+    verdraengt mehr die Bedeutungssuche.
+
+    embedding_weight<=0 oder kein Bedeutungskanal: reines Stichwortmatching,
+    unveraendert (Rueckweg wie bisher)."""
+    if embedding_weight <= 0.0 or not embedding_ordered_ids:
+        return list(keyword_ordered_ids)[:max_results]
+    floor_n = keyword_floor_size() if floor is None else max(0, floor)
+    kw_floor = list(keyword_ordered_ids)[:floor_n]
+    kw_floor_set = set(kw_floor)
+    ordered = kw_floor + [i for i in embedding_ordered_ids if i not in kw_floor_set]
+    ordered_set = set(ordered)
+    ordered += [i for i in keyword_ordered_ids[floor_n:] if i not in ordered_set]
+    return ordered[:max_results]
+
+
 __all__ = [
     "cosine_similarity",
     "embed_text",
+    "fuse_semantic_led",
     "hybrid_retrieval_weight",
+    "keyword_floor_size",
     "pack_embedding",
     "rrf_fuse",
     "unpack_embedding",

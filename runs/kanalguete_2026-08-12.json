@@ -1,0 +1,34 @@
+{
+  "frage": "Auftrag 2026-08-12 (Knoten d84b6b64): ein zur Laufzeit entscheidbares Mass fuer die GUETE des Stichwortkanals BEI EINER KONKRETEN ANFRAGE finden, unter dem der Kanal stumm bleibt statt mit Rauschen mitzureden. Kandidaten laut Auftrag: Trefferzahl, Abstand Rang1-zu-Median, absoluter bm25-Schwellwert.",
+  "leitfall": {
+    "de_query": "Dichtung Leckage Treibstofftank Fehleranalyse Startverzoegerung",
+    "de_treffer_gesamt": 8,
+    "de_treffer_nasa_llis": 0,
+    "quelle": "runs/diagnose_nasa_dichtung_2026-08-12.json"
+  },
+  "versuche": 3,
+  "varianten": {
+    "trefferzahl_schwelle": {
+      "methode": "Kanal stumm, wenn FTS-Gesamttrefferzahl < Schwelle. Schwelle=8 (die Trefferzahl des Leitfalls selbst -- jede kleinere Schwelle liesse ihn erst recht durch).",
+      "verworfen_weil": "Von 1436 echten, unterschiedlichen Anfragen aus access_log (action='search') liegen konsistent ueber beide Haelften der Haltemenge 3.2%/4.3% unter dieser Schwelle -- und die Beispiele sind durchweg treffsichere Einzeltopic-Anfragen, keine Trigramm-Zufallstreffer: 'reachability' (1 Treffer), 'Kilometerstand', 'QUAIDAL', 'autonome Fahrtaufzeichnung', 'Kaminzug Luftwechsel Verbrennungsluft Infiltration'. Eine Schwelle, die den Leitfall stummschaltet, schaltet diese ebenfalls stumm -- Trefferzahl misst Anfrage-Spezifitaet, nicht Kanal-Richtigkeit."
+    },
+    "rang1_median_abstand": {
+      "methode": "Kanal stumm, wenn (bm25(Rang1) - Median(bm25)) / MAD(bm25) klein ist -- kein klarer Ausreisser nach oben.",
+      "gemessen": "Leitfall (ohne den zwischenzeitlich selbst entstandenen Kontaminations-Treffer d84b6b64): z_top1 = -11.46. Vergleichsanfrage 'autonomous' (6 echte Treffer, thematisch stimmig): z_top1 = -1.25. Der Leitfall sieht damit GROESSER/ausreisserhafter aus als die gute Vergleichsanfrage -- falsche Richtung.",
+      "verworfen_weil": "Acht durchweg schwache Trigramm-Zufallstreffer erzeugen zufaellig denselben Abstand wie ein einzelner klar herausragender Treffer; das Mass unterscheidet 'ein Ausreisser in einer engen Verteilung' nicht von 'ein Ausreisser in einer flachen Rausch-Verteilung'."
+    },
+    "absoluter_bm25_schwellwert": {
+      "methode": "Kanal stumm, wenn bm25(Rang1) schwaecher als ein fester Wert ist.",
+      "gemessen": "Leitfall Rang1 (ohne Kontamination) bm25 ca. -9.3. 'reachability' bm25 -8.05, 'Spotlight' bm25 -8.89, 'autonomous' bm25 -7.15 -- alle drei echten, treffsicheren Anfragen liegen in DERSELBEN schwachen bm25-Bandbreite wie der Leitfall.",
+      "verworfen_weil": "bm25 ist ueber unterschiedliche Anfragelaengen/Korpusstatistik nicht so trennscharf, dass ein fester Schwellwert Rauschen von einer kurzen, aber richtigen Anfrage unterscheidet."
+    }
+  },
+  "haltemenge": {
+    "trennung": "1436 verschiedene echte Anfragen aus access_log (action='search'), per SHA-256(Anfragetext) mod 2 in zwei gleich grosse Haelften getrennt (kalibrierung/haltemenge) -- keine frei gewaehlte, chronologische Trennung (die war zuerst probiert und zeigte 6.7% vs. 0.8%, siehe verfahren-Feld unten -- inkonsistent, weil sie zufaellig Messkampagnen buendelt statt Anfragen).",
+    "kalibrierung": {"n": 717, "anteil_unter_schwelle_8": 0.0321},
+    "haltemenge": {"n": 720, "anteil_unter_schwelle_8": 0.0431},
+    "befund": "Der Anteil legitimer, treffsicherer Kurzanfragen unter der Trefferzahl-Schwelle ist auf BEIDEN Haelften in derselben Groessenordnung (3-4%) -- kein Zufallsausreisser einer Haelfte. Die Ablehnung der Trefferzahl-Schwelle steht auf beiden Haelften, nicht nur auf der, an der sie gefunden wurde."
+  },
+  "verfahren": "SHA-256(Anfragetext) mod 2, s. haltemenge.trennung. Verworfene Alternative (chronologische Trennung nach access_log.id) dokumentiert im selben Feld, weil sie als erste probiert wurde und ein instabiles Ergebnis lieferte -- Befund, nicht Vorgehen.",
+  "entscheidung": "Keine der drei Kandidaten-Guetemasse ist zur Laufzeit brauchbar, ohne echte Treffer zu verlieren. Umgesetzt stattdessen: kern/embeddings.py::fuse_semantic_led() (Vorlage eugeniughelbur/obsidian-second-brain, MIT -- Bedeutungssuche fuehrt das Ranking, Stichwortkanal garantiert nur seinen EINEN besten Treffer statt bis zu max_results). Das macht die Kanalgroesse strukturell irrelevant, statt sie ueber einen Schwellwert zu messen -- der Leitfall braucht dafuer keine gesonderte Kanal-Guete-Entscheidung mehr."
+}
