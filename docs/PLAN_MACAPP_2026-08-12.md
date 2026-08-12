@@ -94,5 +94,59 @@ Nicht am Eindruck:
 
 ## Fortschreibung
 
-Nach der Umsetzung: was anders kam als geplant, und warum. Entscheidungen
-wandern als ADR nach `docs/adr/`.
+**Schritt 1 umgesetzt, 2026-08-12T19:15:00+0200.** Neuer Ordner `app/`
+(Begründung: der Plan nennt `app/` zuerst, kein Grund für `macapp/` gefunden).
+SwiftPM-Paket `BrainlehrApp` (ausführbar) + `BrainlehrCore` (reine Logik) +
+`BrainlehrCoreTests` (12 Testfälle, u.a. Grenzfall „noch startend ≠
+unerwartet beendet" und Negativfall „absichtliches Anhalten überschreibt
+jeden Fehlerzustand"). macOS 14, swift-tools 5.10, kein Fremdpaket.
+
+Fenster mit `NavigationSplitView`, sechs Seitenleisten-Platzhalter
+(Wissensraum, Ausweise und Einladungen, Abrufmonitor, Einstellungen, Offene
+Arbeit, Eilmeldungen) — deckt den in der Ist-Stand-Tabelle genannten Umfang
+ab. Dienstaufsicht (`DienstAufsicht.swift`) nach Vorbild
+`ServiceSupervisor.swift`, aber kleiner — bewusst nicht übernommen: Bundle-
+Resource-Hinweis, `/Volumes`-Namenssuche, `.env`-Merge, UserDefaults-Cache
+des Repo-Pfads (siehe Kopfkommentar der Datei für die Begründung je Punkt).
+Health-Check per periodischem Poll (2 s) statt nur `terminationHandler`,
+damit auch ein von außen bereits laufender, nicht selbst gestarteter Dienst
+beim Sterben erkannt wird — das war im Vorbild nicht nötig, weil dort keine
+„schon jemand da"-Situation vorgesehen ist.
+
+**Ein Fehler unterwegs gefunden und mit Rot-Probe belegt, nicht nur behoben:**
+Der erste Health-Check nutzte HTTP HEAD. `berichte/entscheidungen_server.py`
+(BaseHTTPServer) beantwortet HEAD mit `501 Unsupported method` — das sah wie
+ein Ausfall aus, obwohl der Dienst lief, und verschluckte den echten Test:
+Die App zeigte nach einem tatsächlichen `kill -9` des Dienstes keinen Banner
+(Sichtprobe, Fenster-Screenshot vor/nach dem Kill identisch). Ursache über
+Datei-Log in der laufenden App gefunden (unified log filterte NSLog-Zeilen
+weg), dann mit `curl -I` bestätigt: `501`. Fix: GET statt HEAD, wie
+`pflege/wissensraum_start.sh` es mit `curl -s -o /dev/null` bereits vorlebt.
+Nach dem Fix erneut geprüft: Banner erscheint automatisch, „Erneut
+versuchen"-Knopf (per Accessibility-Klick ausgelöst, kein manueller Klick
+nötig) startet den Dienst neu, Banner verschwindet von selbst.
+
+**Abnahme, mit Beleg:**
+- `swift build` und `swift test` grün (12/12), auch unter
+  `env -i PATH=/usr/bin:/bin`.
+- App gestartet und per Fenster-Screenshot (nicht Vollbild — ein
+  versehentlicher Vollbild-Screenshot zeigte fremden, privaten Bildschirm-
+  inhalt und wurde sofort gelöscht; ab da nur noch gezielte
+  Fenster-Ausschnitte über die Fenster-ID) angesehen: Seitenleiste mit sechs
+  lesbaren Einträgen, kein Banner im Normalbetrieb.
+- Ausfall nachgestellt: `kill -9` auf den vom System-Python gestarteten
+  Dienstprozess, Banner erscheint automatisch ohne Klick.
+- Bereits laufender Dienst erkannt: zweiter App-Start bei schon laufendem
+  Dienst startete keinen zweiten Prozess (eine PID vor und nach dem Start).
+- App-Ende beendet den selbst gestarteten Dienst mit (geprüft über
+  `tell application "BrainlehrApp" to quit` — `tell application "System
+  Events" to quit application process …` griff nicht zuverlässig, nur die
+  direkte Apple-Event-Variante).
+
+**Kleine Abweichung vom Plantext:** `openlehr`s `I18n.swift` liegt entgegen
+der Auftragsbeschreibung nicht in `Sources/OpenLehrApp/`, sondern in
+`Sources/OpenLehrCore/I18n.swift` — nicht übernommen, da Schritt 1 keine
+Übersetzungstabelle braucht (nur deutsche Texte direkt im Code).
+
+Offen für Schritt 2: Wissensraum-Ansichten in ein `WKWebView` einbetten.
+Entscheidungen wandern als ADR nach `docs/adr/`.

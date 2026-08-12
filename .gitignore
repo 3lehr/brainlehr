@@ -61,3 +61,8 @@ koederwerte.txt
 
 # Melder-Protokoll: waechst bei jedem Vorgang, gehoert dem Rechner
 sichtbarkeit.log
+
+# SwiftPM-Build-Artefakte der Mac-App (app/) -- abgeleitet, jederzeit neu
+# erzeugbar per `swift build`.
+app/.build/
+app/.swiftpm/
