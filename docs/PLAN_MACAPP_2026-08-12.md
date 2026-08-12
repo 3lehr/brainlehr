@@ -66,6 +66,73 @@ sprach, spricht hier FÜR das Wiederverwenden des vorhandenen Bildes.
 Schritt 3 darf nicht vor Schritt 1 laufen: solange der Dienst unbeaufsichtigt
 ist, sieht ein Ausweisfehler aus wie ein Serverfehler.
 
+## Aufträge, fertig zum Übergeben
+
+Ergänzt am 2026-08-12T21:35:00+0200 auf Betreiberfrage („haben wir einen Plan,
+den dann Sonnet abarbeiten kann?"). Bis dahin sagte dieser Plan *was* und
+*warum*, aber nicht, was ein Agent anfassen darf und woran die Abnahme hängt —
+das wurde jedes Mal von Hand nachgeliefert und war jedes Mal eine Fehlerquelle.
+
+**Für alle Aufträge gleichermaßen gilt** (nicht je Auftrag wiederholen):
+
+- Arbeitsort `/Volumes/daten/Begod2026/brainlehr`, Zweig `brainlehr/b4-ausweis`.
+  Ein Startverzeichnis unter `.claude/worktrees/` ist ein alter Stand und nicht
+  gemeint.
+- Zuerst `CLAUDE.md` dort und in `~/.claude/` lesen, dann diesen Plan.
+- „Sieht der Code anders aus als hier beschrieben, halte dich an den Code und
+  melde die Abweichung."
+- Kein `git add -A`, kein Push, kein `git stash`, keine Datei zurücksetzen.
+- Bash über einer Minute mit `timeout=600000`. Läufe über zehn Minuten melden
+  statt starten.
+- Nicht `swift build` tippen, sondern `app/bauen.sh` — es wählt die taugliche
+  Kette nach Fähigkeit und zählt die Testfälle selbst nach.
+- Volle Python-Suite abwarten und das Ergebnis berichten, nicht in den
+  Hintergrund legen.
+- Dauerhaft tabu, weil fremde Sitzung: `messungen/messlauf_abrufguete_v2.py`,
+  `migrationen/lauf_titelverteidiger_2026-08-08.py`, `NODE_INDEX.md`,
+  `antwort_treffer.json`, `auszug/`, `bereinigung_log.jsonl`,
+  `runs/messlauf_abrufguete_v2.json`.
+- Deutsche Oberfläche, jedes Bedienelement mit zugänglichem Namen, keine
+  Entwicklerinformation im sichtbaren Text.
+
+### Schritt 2 — Wissensraum im Fenster
+
+| | |
+|---|---|
+| **Darf ändern** | `app/Sources/BrainlehrApp/`, `app/Package.swift`, `app/bauen.sh` |
+| **Tabu zusätzlich** | `entscheidungen.html`, `berichte/`, `kern/`, `pflege/`, `app/Sources/BrainlehrCore/` |
+| **Fakten** | Der Dienst liefert die fünf Ansichten auf Port 8799. `DienstAufsicht.swift` startet und überwacht ihn bereits. Die Seitenleiste hat sechs Platzhalter. |
+| **Zu bauen** | Die Ansichten eingebettet, Ansichtswahl **nativ in der Seitenleiste** statt als Knopfleiste im Web. |
+| **Abnahme** | Alle fünf Ansichten im Fenster tatsächlich geöffnet und angesehen, nicht aus dem Code geschlossen. Fensterbezogene Bildschirmfotos über die Fenster-Kennung, **nie Vollbild** — auf diesem Schirm liegen fremde private Inhalte. Der Puls läuft weiter; bei Ansichtswechsel hält die Schleife an. Läuft der Dienst nicht, zeigt das Fenster den Banner statt einer leeren Seite. |
+| **Wache** | `tests/test_app_schichtregel.py` bleibt grün — die Schale öffnet keine Datenbank. |
+
+### Schritt 3 — Ausweise nativ
+
+| | |
+|---|---|
+| **Darf ändern** | `app/Sources/BrainlehrApp/`, `app/Sources/BrainlehrCore/` |
+| **Tabu zusätzlich** | `kern/ausweis.py`, `kern/geheimnis.py`, `pflege/` — die Regeln bleiben im Dienst |
+| **Fakten** | Drei Abläufe in `pflege/brainlehr.applescript`: anlegen, einladen, anzeigen. Das Geheimnis wird dort über eine `mktemp`-Datei mit Rechten 600 gereicht, nie als Argument. |
+| **Harte Auflage** | Das Geheimnis berührt **keine Befehlszeile**. Alles in `do shell script` ist für jeden Prozess desselben Nutzers in `ps` lesbar. Der Agent liest das Geheimnis nicht und gibt es nicht aus. |
+| **Abnahme** | Alle drei Abläufe am laufenden Dienst gefahren. Negativfall: falsches Geheimnis führt zu einer verständlichen Ablehnung, nicht zu einer Stapelspur. `ps`-Probe während des Ablaufs zeigt das Geheimnis nirgends. |
+| **Danach** | Die AppleScript-App bleibt stehen, bis alle drei Abläufe nativ tragen. |
+
+### Schritt 4 — Abrufmonitor
+
+| | |
+|---|---|
+| **Darf ändern** | `app/Sources/`, `berichte/entscheidungen_server.py` (nur additiv, neue Route) |
+| **Fakten** | Aufgabe 41. Es gibt heute keine Ansicht, die zeigt, was gefunden **und verworfen** wurde. `/api/abrufweg` liefert Kandidaten je Kanal samt Ausscheidungsgrund. |
+| **Abnahme** | Drei Zahlen je Abruf: gefunden, geliefert, verworfen — jede mit Nenner. Ein verworfener Treffer nennt seinen Grund im Klartext. |
+
+### Schritt 5 — Einstellungen nativ
+
+| | |
+|---|---|
+| **Darf ändern** | `app/Sources/` |
+| **Fakten** | Acht Abschnitte in `entscheidungen.html`. Die Werte liegen im Dienst, nicht in der App. |
+| **Abnahme** | Eine Änderung in der App wirkt im Dienst und übersteht dessen Neustart. Rot-Probe: Wert ändern, Dienst neu starten, Wert nachlesen. |
+
 ## Was bewusst nicht getan wird, samt Preis
 
 - **Keine Notarisierung, keine Signatur.** Preis: Die App läuft nur auf diesem
