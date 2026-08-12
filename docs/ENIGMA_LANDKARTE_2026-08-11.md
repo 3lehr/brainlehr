@@ -115,15 +115,36 @@ explizit ("Lehre erledigt"). Ein Leser, der nur die Lehren liest, hält den Pfad
 - Zwei synthetische Machbarkeitsstudien (Crypto-Shredding, Zwei-Prozess-Grant) sind sauber isoliert
   gebaut, 12/12 Tests grün, und ehrlich als "kein P2-Anspruch"/"no production storage involved" markiert.
 
+## Nachgemessen am 2026-08-12T21:15:00+0200 — zwei Punkte sind seither erledigt
+
+Diese Landkarte ist ein Schnappschuss vom 11.08. Wer aus ihr arbeitet, ohne
+gegen den Code zu messen, baut an Erledigtem weiter. Gegengeprüft wurde:
+
+- **Punkt 1 (Suchpfad-Freigabe-Filter) ist GESCHLOSSEN.** Beleg:
+  `tests/test_freigabe_suchpfade.py`, vier Fälle grün — Positivfall (offener
+  Knoten erscheint in `search` und `browse`), Negativfall (gesperrter fehlt in
+  beiden), und ein Leck-Test über Zähler und Pfade. Im Code sitzt die Sperre
+  in `knowledge_browse` als **SQL-Filter statt Zeilenprüfung**, damit ein
+  gesperrter Knoten auch nicht über `children_count` durchschlägt; die
+  Embedding-Erlaubnisliste deckt denselben Weg ab. Commits `64bd010`,
+  `ec3a443`.
+- **Punkt 2 (Zweckprojektion nur eine Rolle) ist GESCHLOSSEN.** Die Projektion
+  arbeitet jetzt nach Default-Deny: eine unbeschriebene Rolle bekommt nichts,
+  statt mehr als eine beschriebene. Beleg:
+  `tests/test_enigma_zweckprojektion_unbekannte_rolle_default_deny.py`.
+
+Die ursprüngliche Fassung beider Punkte steht unten unverändert, damit
+nachvollziehbar bleibt, was am 11.08. galt.
+
 ## Offen — sortiert danach, was andere Punkte blockiert
 
-1. **Suchpfad-Freigabe-Filter fehlt** (`knowledge_search`, `knowledge_browse` prüfen `gesperrt` nicht) —
+1. ~~**Suchpfad-Freigabe-Filter fehlt** (`knowledge_search`, `knowledge_browse` prüfen `gesperrt` nicht) —
    blockiert jede Aussage "Freigabestufen wirken", weil ein gesperrter Knoten trotzdem über Titel/Summary
    auffindbar bleibt; betrifft direkt Baustein "Freigabestufen" aus dem Auftrag.
-   Kein Test vorhanden.
-2. **Zweckprojektion nur für eine Rolle/ein Zweckpaar** (`raumplaner`/`raumplanung`) — jede Ausweitung auf
+   Kein Test vorhanden.~~ **Erledigt, siehe oben.**
+2. ~~**Zweckprojektion nur für eine Rolle/ein Zweckpaar** (`raumplaner`/`raumplanung`) — jede Ausweitung auf
    reale Rollen (z. B. externe LLM-Anfragen) braucht diese Tabelle erst noch, sonst bleibt "Zweckprojektion"
-   im Auftrag ein Türspalt, keine Schicht.
+   im Auftrag ein Türspalt, keine Schicht.~~ **Erledigt, siehe oben.**
 3. **Ausweis-Sperre nicht real getrennt** (`L-33d3bd`) — solange Selbstbedienung möglich ist, hängt die
    ganze Zweckprojektion an einer Identität, die sich jeder mit Dateizugriff selbst geben kann; blockiert
    jede P2-Aussage.
