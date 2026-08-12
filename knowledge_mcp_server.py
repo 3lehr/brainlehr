@@ -1559,6 +1559,36 @@ def _knowledge_read_projection(row: sqlite3.Row) -> dict | None:
             return {field: row["summary"]}
     return {"error": "zugriff verweigert"}
 
+
+# Zweckprojektion auch in Trefferliste/Baum (Auftrag 2026-08-12). Bei
+# knowledge_read gibt es eine Zeile und ein Feld -- die Projektion kuerzt die
+# Zeile auf {feld: summary}. Eine Trefferliste hat kein Feld zu kuerzen:
+# title+summary SIND bereits die minimale Darstellung (siehe Docstring an
+# knowledge_search, "Returns summaries not full content"). Ein Treffer, den
+# die Rolle nicht sehen darf, kann also nur VERSCHWINDEN, nicht gekuerzt
+# erscheinen -- ein gekuerzter Titel wuerde die Existenz und das Thema des
+# Knotens trotzdem verraten (Titel bleibt Titel), also genau das Leck, das
+# die Sperre verhindern soll. Preis dieser Wahl: der Aufrufer erfaehrt nicht,
+# DASS es den Knoten gibt -- gleiche Kroete wie bei FREIGABE_GESPERRT
+# (_NICHT_GESPERRT_SQL), diese Funktion ist bewusst dasselbe Verhalten fuer
+# die Zweckachse. Gilt nur fuer Knoten: lessons_learned hat keine tags-Spalte
+# und keinen Rolle/Zweck-Bezug, knowledge_read liest ohnehin nur Knoten --
+# Lehren bleiben unveraendert, sonst waere die Projektion dort staerker als
+# beim Lesen selbst.
+def _zweckprojektion_sichtbar(ausw, tags_json: str | None) -> bool:
+    if not ausw.beglaubigt:
+        # KEIN ABWEISEN OHNE AUSWEIS -- wie in _knowledge_read_projection.
+        return True
+    if _KNOWLEDGE_READ_VOLLZUGRIFF.intersection(ausw.rollen):
+        return True
+    policies = [paar for r in ausw.rollen
+                for paar in _KNOWLEDGE_READ_PROJEKTION.get(r, [])]
+    if not policies:
+        return False
+    tags = set(json.loads(tags_json) if tags_json else [])
+    return any(f"zweck:{p}" in tags and f"feld:{f}" in tags for p, f in policies)
+
+
 def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
@@ -1572,23 +1602,29 @@ def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
     # damit ein gesperrter Knoten weder auftaucht noch in children_count
     # mitzaehlt (kein Leck ueber "hat Kinder, zeigt aber keine").
     if path == "/":
-        query = f"SELECT id, path, title, summary, project_id, level, access_count FROM knowledge_nodes WHERE level = 0 AND {_NICHT_GESPERRT_SQL} ORDER BY path"
+        query = f"SELECT id, path, title, summary, project_id, level, access_count, tags FROM knowledge_nodes WHERE level = 0 AND {_NICHT_GESPERRT_SQL} ORDER BY path"
         params: tuple = ()
     else:
         normalized = path.rstrip("/")
-        query = f"SELECT id, path, title, summary, project_id, level, access_count FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL} ORDER BY path"
+        query = f"SELECT id, path, title, summary, project_id, level, access_count, tags FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL} ORDER BY path"
         params = (normalized,)
 
     if project_filter:
         query = query.replace("ORDER BY", f"AND project_id IN ('shared', ?) ORDER BY")
         params = (*params, project_filter)
 
-    rows = conn.execute(query, params).fetchall()
-    children_count_q = f"SELECT COUNT(*) FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL}"
+    ausw = ausweis.loese_auf()
+    rows = [r for r in conn.execute(query, params).fetchall()
+            if _zweckprojektion_sichtbar(ausw, r["tags"])]
+    # Zaehler wie bei der Freigabe-Sperre ueber gefilterte Zeilen, nicht
+    # COUNT(*) -- sonst leckt die Zweckprojektion ueber children_count/
+    # has_children genau wie es fuer FREIGABE_GESPERRT schon behoben wurde.
+    children_count_q = f"SELECT tags FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL}"
 
     results = []
     for r in rows:
-        child_count = conn.execute(children_count_q, (r["path"],)).fetchone()[0]
+        child_tags = conn.execute(children_count_q, (r["path"],)).fetchall()
+        child_count = sum(1 for c in child_tags if _zweckprojektion_sichtbar(ausw, c["tags"]))
         results.append({
             "id": r["id"],
             "path": r["path"],
@@ -2012,18 +2048,26 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     # in JEDER Teilabfrage: Treffer-, Nachlade- ("missing") UND
     # Embedding-Erlaubnisliste, sonst wuerde ein gesperrter Knoten ueber die
     # Bedeutungssuche wieder hereinkommen.
+    #
+    # Zweckprojektion (Auftrag 2026-08-12): gleiche Stelle, gleicher Grund --
+    # ein Knoten ohne passendes Rolle/Zweck-Tag muss aus JEDER Teilliste
+    # verschwinden, nicht nur aus der am Ende gezeigten. Sonst zaehlt er in
+    # "count" mit oder verdraengt in der RRF-Fusion einen sichtbaren Treffer
+    # von einem Platz vor max_results. Nur Knoten: lessons_learned hat keine
+    # tags-Spalte, siehe _zweckprojektion_sichtbar.
+    ausw = ausweis.loese_auf()
     if scope == "all":
-        fts_rows = conn.execute(
-            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
+        fts_rows = [r for r in conn.execute(
+            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.{_NICHT_GESPERRT_SQL}
                ORDER BY rank""",
             (fts_query,)
-        ).fetchall()
+        ).fetchall() if _zweckprojektion_sichtbar(ausw, r["tags"])]
         allowed_node_ids = {r["id"] for r in conn.execute(
-            f"SELECT id FROM knowledge_nodes WHERE {_NICHT_GESPERRT_SQL}"
-        )}
+            f"SELECT id, tags FROM knowledge_nodes WHERE {_NICHT_GESPERRT_SQL}"
+        ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         fts_lesson_rows = conn.execute(
             f"""SELECT l.id, l.description, l.type, l.severity, l.projects
                FROM lessons_fts f
@@ -2036,17 +2080,17 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             f"SELECT id FROM lessons_learned WHERE status = 'active' AND {_NICHT_GESPERRT_SQL}"
         )}
     else:
-        fts_rows = conn.execute(
-            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von
+        fts_rows = [r for r in conn.execute(
+            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?) AND n.{_NICHT_GESPERRT_SQL}
                ORDER BY rank""",
             (fts_query, scope)
-        ).fetchall()
+        ).fetchall() if _zweckprojektion_sichtbar(ausw, r["tags"])]
         allowed_node_ids = {r["id"] for r in conn.execute(
-            f"SELECT id FROM knowledge_nodes WHERE project_id IN ('shared', ?) AND {_NICHT_GESPERRT_SQL}", (scope,)
-        )}
+            f"SELECT id, tags FROM knowledge_nodes WHERE project_id IN ('shared', ?) AND {_NICHT_GESPERRT_SQL}", (scope,)
+        ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         _proj_clause = geltungsbereich.sql_projects_exact("l.projects")
         fts_lesson_rows = conn.execute(
             f"""SELECT l.id, l.description, l.type, l.severity, l.projects
@@ -2088,10 +2132,11 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         # beim Nachladen als Knoten missverstehen und stumm verlieren.
         placeholders = ",".join("?" for _ in missing)
         for r in conn.execute(
-            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 AND {_NICHT_GESPERRT_SQL}",
+            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von, tags FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 AND {_NICHT_GESPERRT_SQL}",
             missing
         ):
-            by_id[r["id"]] = r
+            if _zweckprojektion_sichtbar(ausw, r["tags"]):
+                by_id[r["id"]] = r
         for r in conn.execute(
             f"SELECT id, description, type, severity, projects FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active' AND {_NICHT_GESPERRT_SQL}",
             missing

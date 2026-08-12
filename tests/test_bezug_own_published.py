@@ -58,17 +58,34 @@ def bestand(tmp_path, monkeypatch):
     GRUENDER = ausweis.anlegen("gruender", ["betreiber"], art="mensch",
                                pfad=tmp_path / "a.json")
 
-    def anlegen(titel: str) -> None:
+    def anlegen(titel: str, tags: list | None = None) -> None:
         kms.knowledge_add(parent_path="/", title=titel,
                           summary="Wetterbericht fuer die Bezugsprobe",
                           source="test_bezug", neuer_ast=True,
                           norm_entscheidung="keine_norm",
                           norm_entschieden_grund="Testknoten",
+                          tags=tags,
                           actor="fremder", session="s", model="m")
 
     # Zwei fremde Knoten OHNE Ausweis -> actor wird 'unbeglaubigt:fremder'.
-    anlegen("Wetterbericht offen")
-    anlegen("Wetterbericht intern")
+    #
+    # "offen" traegt zusaetzlich zweck:wartung/feld:wartungshinweis (Befund
+    # 2026-08-12, Auftrag Zweckprojektion-auch-bei-Suche): seit
+    # knowledge_search dieselbe Rolle/Zweck-Whitelist prueft wie
+    # knowledge_read, muss ein fuer 'gast' sichtbarer Knoten BEIDE Achsen
+    # bestehen -- den Bezug (offen/published, diese Datei) UND die
+    # Zweckprojektion (Tag-Whitelist, knowledge_mcp_server.py). Ohne das Tag
+    # bestand der Knoten den Bezug, scheiterte aber an der Whitelist und
+    # verschwand komplett -- die Achsen UND-verknuepfen sich, das ist keine
+    # Test-Bequemlichkeit, sondern die neue, staerkere Voraussetzung.
+    # "intern" traegt dasselbe Tag wie "offen" -- besteht die Zweckprojektion
+    # also ebenfalls, damit test_count_wandert_mit noch echt gegenprobt: der
+    # Knoten muss bis zur BEZUG-Pruefung (kern/werkzeugrechte.py::filtere)
+    # durchkommen, sonst filtert schon die Zweckprojektion ihn weg und die
+    # Bezug-Stufe hat nichts mehr zu tun -- "gefiltert_nach_bezug" bliebe
+    # unbelegt, obwohl der Bezug-Filter selbst unveraendert arbeitet.
+    anlegen("Wetterbericht offen", tags=["zweck:wartung", "feld:wartungshinweis"])
+    anlegen("Wetterbericht intern", tags=["zweck:wartung", "feld:wartungshinweis"])
 
     # Der eigene Knoten entsteht MIT Ausweis -- nur dann traegt er den
     # beglaubigten Namen. Das ist keine Testkosmetik, sondern die Regel: wer
@@ -116,8 +133,20 @@ def test_gast_sieht_nur_freigegebene(bestand, monkeypatch):
 
 def test_leser_sieht_alle(bestand, monkeypatch):
     """Gegenprobe: wer 'alle' hat, wird nicht gefiltert -- sonst saehe der
-    Filter genauso aus wie 'gib nie etwas zurueck'."""
-    g = ausweis.anlegen("leser1", ["leser"], pfad=bestand / "a.json", aussteller=GRUENDER)
+    Filter genauso aus wie 'gib nie etwas zurueck'.
+
+    Rolle 'schreiber' statt 'leser' (Befund 2026-08-12, Auftrag
+    Zweckprojektion-auch-bei-Suche): 'leser' traegt zwar Bezug 'alle' fuer
+    wissen:lesen, ist aber -- ausdruecklich und mit eigenem Test belegt,
+    tests/test_enigma_zweckprojektion_unbekannte_rolle_default_deny.py --
+    KEINE Zweckprojektions-Vollzugriffsrolle: eine beglaubigte, aber in
+    _KNOWLEDGE_READ_PROJEKTION/_KNOWLEDGE_READ_VOLLZUGRIFF unbeschriebene
+    Rolle bekommt seit ec3a443 absichtlich NICHTS, auch nicht ueber die
+    Suche. 'leser' ist also fuer DIESE Gegenprobe (Bezug-Achse allein, ohne
+    Interferenz der Zweckprojektion) nicht mehr geeignet -- 'schreiber' hat
+    denselben Bezug 'alle' UND volle Zweckprojektion, testet also wieder nur
+    die eine Achse, die diese Datei pruefen will."""
+    g = ausweis.anlegen("schreiber1", ["schreiber"], pfad=bestand / "a.json", aussteller=GRUENDER)
     monkeypatch.setenv(ausweis.ENV_GEHEIMNIS, g)
     ausweis._pruefe.cache_clear()
     assert len(_titel()) == 3
