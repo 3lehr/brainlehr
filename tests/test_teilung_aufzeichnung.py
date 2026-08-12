@@ -30,14 +30,17 @@ AUFZEICHNUNG = WURZEL / "runs" / "teilung_s12_2026-08-11.json"
 
 
 def _gerechnet() -> dict:
+    """Ruft das Werkzeug, statt seine Rechnung nachzubauen.
+
+    BEFUND 2026-08-12: Die erste Fassung dieses Tests baute die Zaehlung nach
+    -- mit `id` als Schluessel. teilung_s12.bestand() nimmt fuer Knoten aber
+    den `path`. Ergebnis: 1070 statt 1009 behandelte Knoten, und daraus wurde
+    ein Befund gegen eine Aufzeichnung gemacht, die richtig war. Ein Test, der
+    die Rechnung des Codes NACHBAUT, prueft seine eigene Nachbildung.
+    """
     from kern import speicher, teilung_s12 as t
     with speicher.lesen() as conn:
-        k = Counter(t.haelfte("knoten", i) for i, in conn.execute(
-            "select id from knowledge_nodes where zurueckgezogen=0"))
-        l = Counter(t.haelfte("lehre", i) for i, in conn.execute(
-            "select id from lessons_learned where status!='resolved'"))
-    return {"knoten": {"gesamt": sum(k.values()), **dict(k)},
-            "lehre": {"gesamt": sum(l.values()), **dict(l)}}
+        return t.zaehlen(conn)
 
 
 @pytest.mark.skipif(not AUFZEICHNUNG.exists(), reason="keine Aufzeichnung an diesem Ort")

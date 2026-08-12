@@ -18,21 +18,20 @@
   "abweichung_zum_plan": "FAKTEN im Auftrag nennt 2125 Knoten / 775 Lehren. Gemessen beim Einfrieren: 2123 Knoten (zurueckgezogen=0), 755 Lehren (status != 'resolved') -- Differenz durch laufende Fremdarbeit im selben Baum (andere Sitzung haelt u.a. kern/schema_nachzug.py, pflege/probeinstanz.py). Kein Grund, die Teilung zu verschieben: die Funktion zieht aus der Kennung, nicht aus einer Momentaufnahme der Zaehlung.",
   "unveraenderlich_ab": "2026-08-11T22:24:25+0200 -- kern/teilung_s12.py::haelfte() wird ab hier nicht mehr umgeschrieben, solange S12 laeuft. Aenderungsbedarf wird als neue Funktion/neuer Knoten geführt, nicht als Umschreiben.",
   "korrektur_2026-08-12": {
-    "befund": "Die oben unter verteilung_beim_einfrieren festgehaltenen Zahlen sind aus dem Code dieses Commits NICHT reproduzierbar. Der im selben Commit c69c7e4 festgeschriebene teilung_s12.haelfte() liefert fuer Knoten 1070 behandelt / 1055 unbehandelt, aufgezeichnet sind 1008 / 1115. Der Bestand ist seither um zwei Knoten gewachsen -- das erklaert keine 62.",
-    "was_in_ordnung_ist": "Die Zuordnungsfunktion selbst. Die Fassung vor und nach dem Umbau auf den Aufloeser (Commit aa811ee) wurde ueber alle 2888 Eintraege verglichen: 0 Abweichungen. Die Teilung ist weiterhin allein aus der Kennung reproduzierbar, und das ist die Eigenschaft, auf der der S12-Aufbau steht.",
-    "folge": "Die aufgezeichneten Zahlen sind Beiwerk, nicht Anker. Anker ist die Funktion. Die Ausgangsmessung 8f3ae01 lief gegen die Funktion, nicht gegen diese Zahlen, und bleibt damit gueltig.",
-    "nicht_ueberschrieben_weil": "Der Kopf dieser Datei erklaert sich als unveraenderlich ab dem Einfrieren. Eine falsche Zahl stillschweigend zu berichtigen wuerde genau die Eigenschaft zerstoeren, wegen der die Datei existiert. Der falsche Wert bleibt oben stehen.",
-    "gerechnet_am": "2026-08-12T06:40:00+0200",
+    "widerruf": "Der hier zuvor eingetragene Befund war FALSCH und ist zurueckgezogen. Er behauptete, die eingefrorene Verteilung sei aus dem Code nicht herleitbar (1008/1115 aufgezeichnet gegen angeblich 1070/1055 gerechnet). Die Aufzeichnung war richtig.",
+    "ursache_des_irrtums": "Die Gegenrechnung baute teilung_s12.bestand() nach, statt es aufzurufen -- und nahm dabei knowledge_nodes.id als Schluessel. Der Code nimmt fuer Knoten den PATH. Zwei verschiedene Schluessel ergeben zwei verschiedene Haelften, und die Nachbildung sah plausibel genug aus, um sie fuer die Wahrheit zu halten.",
+    "beleg_dass_die_aufzeichnung_stimmt": "Eingefroren waren 1008 behandelt / 1115 unbehandelt bei 2123 Knoten. Gerechnet ueber teilung_s12.zaehlen() am 2026-08-12: 1009 / 1116 bei 2125. Der Bestand ist um genau zwei Knoten gewachsen, und genau zwei Knoten sind hinzugekommen -- einer je Haelfte. Naeher kann eine Aufzeichnung nicht liegen.",
+    "gerechnet_am": "2026-08-12T07:45:00+0200",
     "verteilung_gerechnet": {
       "knoten": {
         "gesamt": 2125,
-        "unbehandelt": 1055,
-        "behandelt": 1070
+        "behandelt": 1009,
+        "unbehandelt": 1116
       },
       "lehre": {
-        "gesamt": 763,
-        "behandelt": 401,
-        "unbehandelt": 362
+        "gesamt": 766,
+        "behandelt": 403,
+        "unbehandelt": 363
       }
     }
   }
