@@ -1,0 +1,39 @@
+{
+  "auftrag": "Drei Fragen zu echtkorpus.py: frage/auftrag-Verhaeltnis, Lehre/Knoten-Verhaeltnis, erreichbare Knotenziele",
+  "verfahren": "Keine Bauform-Vergleich, keine Parametersuche -- reine Auszaehlung ueber den bestehenden Sammler (messungen/echtkorpus.py) und die Kantentabelle (kern/codekanten.py). Kein Tuning, daher kein Halteset noetig (siehe melder/messregeln.py, Regeln greifen nur bei Vergleich mehrerer Bauformen).",
+  "lauf_datei": "runs/echtkorpus_2026-08-12T0900.json",
+  "rasterhinweis": "Frisch erhoben am 2026-08-12 durch erneuten Lauf von messungen/echtkorpus.py --sammeln (nicht aus dem alten Stand vom 2026-08-11 uebernommen). DB-Zugriffe lesend, keine Schreibung an knowledge.db.",
+  "frage1_frage_vs_auftrag": {
+    "basis_alle_nachrichten": {"gesamt": 2553, "frage": 1802, "auftrag": 750, "hinweis": "satzart() ueber ALLE eindeutigen Nachrichten, unabhaengig vom Filter"},
+    "unter_pfad_kandidaten": {"gesamt": 159, "frage": 18, "auftrag": 141},
+    "unter_kennung_kandidaten": {"gesamt": 144, "frage": 28, "auftrag": 116},
+    "faelle_am_ende": {"frage": 6, "auftrag": 73},
+    "konversionsrate_pfad_kanal": {"frage": "2/18 = 11.1%", "auftrag": "33/141 = 23.4%"},
+    "konversionsrate_kennung_kanal": {"frage": "4/28 = 14.3%", "auftrag": "39/116 = 33.6%"},
+    "befund": "72(73):6 ist ueberwiegend Materialeigenschaft, nicht Verwerfung. Im Rohmaterial ist frage:auftrag ~70:30 zugunsten frage. Sobald eine Nachricht einen konkreten Datei- oder Kennungsverweis traegt, kippt das auf ~89:11 zugunsten auftrag -- konkrete Verweise haeufen sich in laengeren, strukturierten Auftraegen (Uebergaben, Fakten-Listen), nicht in kurzen Fragen. Zusaetzlich verdoppelt sich die Konversionsrate von Kandidat zu Fall bei auftrag gegenueber frage -- ein kleinerer, aber echter zweiter Effekt."
+  },
+  "frage2_lehre_vs_knoten": {
+    "kennung_kanal": {"lehre": 139, "knoten": 1, "lehre_kandidaten_gesamt": 123, "lehre_kandidaten_treffer": 120, "knotenpfad_kandidaten_gesamt": 107, "knotenpfad_kandidaten_treffer": 1},
+    "pfad_kanal": {"lehre": 25, "knoten": 27},
+    "befund": "163(164):28 ist zu ueberwiegendem Teil ein Artefakt des SUCHVERFAHRENS im Kennung-Kanal, nicht der Wirklichkeit. Die L-xxxxxx-Zeichenkette ist eine feste, seltene Form -- 120 von 123 im Text gefundenen Kandidaten existieren tatsaechlich (97.6%). Ein Knotenpfad hat dieselbe Form wie ein gewoehnlicher Dateipfad -- von 107 Kandidaten existierte nur 1 als echter Knotenpfad (0.9%), der Rest sind Dateiverweise, die zufaellig durchs Muster passen. Der PFAD-Kanal (ueber code_kanten, nicht ueber Literaltext) ist dagegen nahezu ausgeglichen: 25 Lehren zu 27 Knoten aus derselben Quelle. Das stuetzt die Vermutung des Betreibers: Knotenziele existieren im Material in aehnlicher Haeufigkeit wie Lehren, sie werden vom Kennung-Kanal nur nicht gefunden, weil Knoten keine wortwoertliche, seltene Kennung im Fliesstext tragen."
+  },
+  "frage3_erreichbare_knotenziele": {
+    "aktuell_als_saubere_faelle_deckel_3": 20,
+    "distinct_knoten_ohne_deckel_bei_ambiguitaetsfilter": 94,
+    "distinct_knoten_je_deckel": {"3": 19, "5": 35, "8": 51, "10": 53, "15": 66, "unbegrenzt": 94},
+    "universum_unambiguer_code_kanten_knoten": 199,
+    "gesamt_knowledge_nodes_in_db": 2130,
+    "befund": "Heute, mit dem bestehenden Sammelverfahren und Deckel <=3 Ziele pro Fall, sind 20 distinkte Knotenziele erreichbar -- unter der genannten Schwelle von etwa 60. Der Deckel ist die Stellschraube: bei <=15 Zielen je Fall (kein sauberer Fall mehr im Sinn des Moduls, aber noch keine 20-Antworten-Ausrede) waeren 66 distinkte Knoten erreichbar, also ueber der Schwelle. Ohne jede Qualitaetsgrenze (nur eindeutige Kante noetig) sind es 94 -- das ist die Decke, die das JETZIGE Nachrichtenmaterial (2553 Nachrichten) ueber den PFAD-Kanal hergibt. Das theoretische Universum aus der Kantentabelle (199 Knoten mit mindestens einer eindeutigen Kante, unabhaengig davon ob je erwaehnt) liegt nochmal hoeher. Ein zweiter Kanal ueber woertliche Knotenpfade im Text (wie bei Lehren) bringt fast nichts (1 zusaetzlicher Treffer von 107 Kandidaten) -- das ist NICHT der Hebel. Der Hebel ist der bestehende Pfad-Kanal mit gelockertem oder zeitabhaengigem Deckel, plus Warten auf mehr Sitzungen (Nachrichtenmenge wuchs in ~1 Tag von 2518 auf 2553)."
+  },
+  "positivkontrolle_verworfene_faelle": {
+    "gesamt_verworfen_mit_kandidat": 100,
+    "stichprobe_5_geprueft": [
+      "Nachricht nennt runs/deckelreihe_2026-08-09.json u.a. -- Datei existiert, aber keine Lehre/Knoten haengt textlich daran (keine Kante erhoben). Zu Recht verworfen.",
+      "'brainlehr, weiter nach docs/STARTPROMPT_2026-08-09_ABEND.md' -- reiner Fortsetzungshinweis, keine Kante zu dieser Datei vorhanden. Zu Recht verworfen.",
+      "Nachricht nennt docs/FELDBERICHT_NUTZUNG_2026-08-09.md als Vollpfad -- Datei existiert, keine Kante erhoben (kein Wissenseintrag zitiert diese Datei). Zu Recht verworfen.",
+      "'ich kann docs/PROMPT_CHATGPT_2026-08-10.md ... nicht oeffnen' -- reiner Zugriffshinweis, keine Kante. Zu Recht verworfen.",
+      "Nachricht nennt ./BSI_COMPLIANCE_GATE.md, ./KNOWLEDGE_CONTRACT.md, haken/kurator_taeglich.py -- alle drei ohne erhobene Kante. Zu Recht verworfen."
+    ],
+    "befund": "Alle 5 Stichproben sind zu Recht verworfen: die genannten Dateien existieren, aber keine Lehre und kein Knoten zitiert sie im Text, also gibt es keine Kante in code_kanten und folglich kein pruefbares Ziel. Der Filter wirft hier nicht zu viel, er wirft nur, wo tatsaechlich kein Wissen haengt."
+  }
+}
