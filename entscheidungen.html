@@ -187,6 +187,21 @@
   .seite.b h4 { color: var(--b-farbe); }
   .seite .antwort { font-size: 0.94rem; margin: 0 0 0.4rem; }
   .seite .pfade { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin: 0; padding-left: 1rem; }
+
+  /* ── Abrufweg (fuenfte Ansicht, zeichnet UND zeigt gleichwertig) ─────── */
+  #abrufwegLeiste input[type=text] { flex: 1; min-width: 14rem; }
+  .abrufweg-station { margin: 0.9rem 0; }
+  .abrufweg-station h3 { font-size: 0.95rem; margin: 0 0 0.3rem; }
+  .abrufweg-station p.hinweistext { color: var(--muted); font-size: 0.85rem; margin: 0.2rem 0 0.5rem; }
+  table.abrufweg-tabelle { border-collapse: collapse; width: 100%; font-size: 0.82rem; margin-bottom: 0.4rem; }
+  table.abrufweg-tabelle caption { text-align: left; font-size: 0.8rem; color: var(--muted); padding-bottom: 0.25rem; }
+  table.abrufweg-tabelle th, table.abrufweg-tabelle td {
+    text-align: left; padding: 0.22rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  table.abrufweg-tabelle td.zahl { font-family: var(--mono); text-variant-numeric: tabular-nums; white-space: nowrap; }
+  .abrufweg-grund { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--danger); }
+  .abrufweg-grund::before { content: "●"; }
+  .abrufweg-geliefert { color: var(--ok-fg); }
 </style>
 </head>
 <body>
@@ -209,6 +224,7 @@
       <button id="b1" aria-pressed="false">Bedeutung</button>
       <button id="b2" aria-pressed="false">Spuren</button>
       <button id="b3" aria-pressed="false">Vergleich</button>
+      <button id="b4" aria-pressed="false">Abrufweg</button>
       <span class="trenn"></span>
       <button id="lauf" aria-pressed="false">Ablauf</button>
     </div>
@@ -217,6 +233,13 @@
       <input type="range" id="zeit" min="0" max="100" value="100">
       <span class="stand" id="stand"></span>
     </div>
+    <form class="leiste" id="abrufwegLeiste" hidden>
+      <label for="abrufwegText">Anfrage für den Abrufweg</label>
+      <input type="text" id="abrufwegText" size="46"
+        value="Dichtung Leckage Treibstofftank Fehleranalyse Startverzoegerung">
+      <button type="submit" class="primaer">Weg berechnen</button>
+      <span class="stand" id="abrufwegStand" aria-live="polite"></span>
+    </form>
 
     <div class="legende" id="legende">
       <b><i class="pkt" style="background:var(--accent)"></i>Wissensknoten</b>
@@ -225,12 +248,24 @@
       <b><i class="pkt" style="background:var(--spur)"></i>gemeinsam abgerufen</b>
       <b>Größe = wie oft ausgeliefert</b>
     </div>
+    <div class="legende" id="legendeAbrufweg" hidden>
+      <b><i class="pkt" style="background:var(--accent)"></i>Wissensknoten</b>
+      <b><i class="pkt" style="background:var(--lehre)"></i>Lehre</b>
+      <b><i class="pkt" style="background:var(--fg)"></i>geliefert</b>
+      <b><i class="pkt" style="background:var(--danger)"></i>ausgeschieden</b>
+      <b>Linie = Rang in diesem Kanal</b>
+    </div>
     <div class="fuss" id="fuss"></div>
 
     <section id="vergleichBlock" hidden>
       <div class="vergleich-kopf" id="vergleichKopf"><p class="leer">wird geladen …</p></div>
       <h3 id="vergleichTitel">Unterschiedliche Fälle</h3>
       <div id="vergleichListe"></div>
+    </section>
+
+    <section id="abrufwegBlock" hidden>
+      <div id="abrufwegKopf"><p class="leer">Anfrage eingeben und „Weg berechnen” betätigen.</p></div>
+      <div id="abrufwegTabellen"></div>
     </section>
 
     <details class="einstellungen" id="einstellungen">
@@ -725,6 +760,133 @@ laden('/api/vergleich').then(d => {
   document.getElementById('vergleichKopf').textContent = 'Daten nicht erreichbar.';
 });
 
+// ---- Abrufweg (fuenfte Ansicht -- zeichnet UND zeigt gleichwertig) --------
+// Fuenf Stationen einer ECHTEN Anfrage, ueber /api/abrufweg live gerechnet:
+// Anfrage -> Kandidaten je Kanal (Stichwort/Bedeutung) -> Verschmelzung ->
+// Deckel -> geliefert. Kein Beispieltext mit erfundenen Zahlen: die
+// vorbelegte Anfrage lief durch denselben Code wie jede andere.
+
+const ABRUFWEG_GRUND_TEXT = {
+  gattung: 'Gattung Nachschlagewerk — zählt nicht zum Arbeitsbestand',
+  freigabe: 'nicht mehr freigegeben — Gültigkeit abgelaufen oder noch nicht begonnen',
+  deckel_art: 'Deckel dieser Art erreicht (Plätze belegt)',
+  deckel: 'über dem Deckel — Rang in der Verschmelzung zu weit hinten',
+};
+
+let abrufwegD = null;
+
+function abrufwegSpalte(art) { return art === 'lehre' ? 'Lehre' : 'Knoten'; }
+
+function abrufwegTitelZelle(e) {
+  const zelle = el('td', {}, e.titel || e.id);
+  if (e.pfad) zelle.appendChild(el('div', { class: 'weg', style: 'font-family:var(--mono);font-size:.72rem;color:var(--muted)', text: e.pfad }));
+  return zelle;
+}
+
+function abrufwegTabelle(kopf, hinweistext, zeilen) {
+  const block = el('div', { class: 'abrufweg-station' });
+  block.appendChild(el('h3', { text: kopf }));
+  if (hinweistext) block.appendChild(el('p', { class: 'hinweistext', text: hinweistext }));
+  if (!zeilen.length) {
+    block.appendChild(el('p', { class: 'leer', text: 'keine Einträge' }));
+    return block;
+  }
+  const tabelle = el('table', { class: 'abrufweg-tabelle' });
+  const kopfzeile = el('tr', {},
+    el('th', { text: 'Eintrag' }), el('th', { text: 'Art' }),
+    el('th', { text: 'Rang Stichwort' }), el('th', { text: 'Rang Bedeutung' }),
+    el('th', { text: 'Rang verschmolzen' }), el('th', { text: 'Status' }));
+  tabelle.appendChild(el('thead', {}, kopfzeile));
+  const koerper = el('tbody', {});
+  for (const e of zeilen) {
+    const zeile = el('tr', {});
+    zeile.appendChild(abrufwegTitelZelle(e));
+    zeile.appendChild(el('td', { text: abrufwegSpalte(e.art) }));
+    zeile.appendChild(el('td', { class: 'zahl', text: e.rang_stichwort ?? '—' }));
+    zeile.appendChild(el('td', { class: 'zahl', text: e.rang_bedeutung ?? '—' }));
+    zeile.appendChild(el('td', { class: 'zahl', text: e.rang_verschmolzen ?? '—' }));
+    const statusZelle = el('td', {});
+    if (e.ausgeschieden) statusZelle.appendChild(el('span', { class: 'abrufweg-grund', text: ABRUFWEG_GRUND_TEXT[e.ausgeschieden] || e.ausgeschieden }));
+    else statusZelle.appendChild(el('span', { class: 'abrufweg-geliefert', text: 'geliefert' }));
+    zeile.appendChild(statusZelle);
+    koerper.appendChild(zeile);
+  }
+  tabelle.appendChild(koerper);
+  block.appendChild(tabelle);
+  return block;
+}
+
+function renderAbrufweg(d) {
+  const kopf = document.getElementById('abrufwegKopf');
+  const ziel = document.getElementById('abrufwegTabellen');
+  kopf.innerHTML = ''; ziel.innerHTML = '';
+  if (d.leer) {
+    kopf.appendChild(el('p', { class: 'leer', text: 'Keine auswertbare Anfrage (leer oder ohne indexierbares Wort).' }));
+    return;
+  }
+  const a = d.anfrage;
+  kopf.appendChild(el('p', {}, `Schlüsselwörter: ${a.schluesselwoerter.join(', ') || '(keine)'} — `
+    + `Mindesttrefferschwelle ${a.min_hits_schwelle}: ${a.min_hits_erfuellt ? 'erfüllt' : 'nicht erfüllt'}`
+    + (a.min_hits_wirkt_im_aktiven_weg ? '.' : ' (wirkt im aktiven Abrufweg nicht — der prüft das nicht mehr).')));
+  if (!d.embedding_verfuegbar) kopf.appendChild(el('p', {}, '⚠ Bedeutungskanal nicht erreichbar — nur der Stichwortkanal ist gerechnet.'));
+
+  // Endlage jeder ID (aus Deckel-Pool oder dem Ueberhang direkt darueber) --
+  // die Kanaltabellen zeigen damit dieselbe Wahrheit wie die spaeteren
+  // Stationen, statt "geliefert" zu behaupten, bevor die Verschmelzung
+  // ueberhaupt gerechnet ist. Fehlt eine ID auch im Ueberhang, ist ihr
+  // Verschmelzungsrang schlechter als gezeigt -- eindeutig ueber dem Deckel.
+  const endlage = new Map([...d.deckel.eintraege, ...d.deckel.ueber_deckel].map(e => [e.id, e]));
+  const kanal = (bez, k) => abrufwegTabelle(
+    bez, `${k.treffer_gesamt} Treffer insgesamt, oberste ${k.gezeigt} gezeigt.`,
+    k.eintraege.map(e => {
+      const spaeter = endlage.get(e.id);
+      return {
+        ...e,
+        rang_stichwort: bez === 'Stichwortkanal' ? e.rang : (spaeter ? spaeter.rang_stichwort : null),
+        rang_bedeutung: bez === 'Bedeutungskanal' ? e.rang : (spaeter ? spaeter.rang_bedeutung : null),
+        rang_verschmolzen: spaeter ? spaeter.rang_verschmolzen : null,
+        ausgeschieden: spaeter ? spaeter.ausgeschieden : 'deckel',
+      };
+    }));
+  ziel.appendChild(kanal('Stichwortkanal', d.kanaele.stichwort));
+  ziel.appendChild(kanal('Bedeutungskanal', d.kanaele.bedeutung));
+
+  const verschmolzen = [...d.deckel.eintraege, ...d.deckel.ueber_deckel]
+    .sort((x, y) => x.rang_verschmolzen - y.rang_verschmolzen);
+  ziel.appendChild(abrufwegTabelle('Verschmelzung (rrf_fuse)',
+    `Gewicht Bedeutungskanal ${d.verschmelzung_gewicht.toFixed(2)}. Ungekappte Rangfolge, oberste ${verschmolzen.length} gezeigt.`,
+    verschmolzen));
+
+  ziel.appendChild(abrufwegTabelle(`Deckel (${d.deckel.max_nodes} Knoten, ${d.deckel.max_lessons} Lehren)`,
+    `Pool der obersten ${d.deckel.pool_groesse} Verschmelzungsränge.`, d.deckel.eintraege));
+
+  const geliefert = d.geliefert.eintraege.map(e => ({ ...e, ausgeschieden: null }));
+  ziel.appendChild(abrufwegTabelle('Geliefert', `${d.geliefert.knoten.length} Knoten, ${d.geliefert.lehren.length} Lehren.`, geliefert));
+}
+
+async function abrufwegLaden(text) {
+  const stand = document.getElementById('abrufwegStand');
+  stand.textContent = 'rechnet …';
+  try {
+    const r = await fetch('/api/abrufweg', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }),
+    });
+    const d = await r.json();
+    abrufwegD = d;
+    stand.textContent = d.leer ? 'keine auswertbare Anfrage' : `${d.geliefert.knoten.length + d.geliefert.lehren.length} geliefert`;
+    renderAbrufweg(d);
+    if (typeof ansichtAbrufwegNeuZeichnen === 'function') ansichtAbrufwegNeuZeichnen();
+  } catch (e) {
+    stand.textContent = 'Server nicht erreichbar';
+  }
+}
+
+document.getElementById('abrufwegLeiste').addEventListener('submit', e => {
+  e.preventDefault();
+  abrufwegLaden(document.getElementById('abrufwegText').value);
+});
+abrufwegLaden(document.getElementById('abrufwegText').value);
+
 // ---- Wissensraum-Zeichenflaeche (Ansichten 0-2) ----------------------------
 // Reine Anzeige: die folgenden Ereignisbehandlungen (pointerdown/up/move/
 // leave, wheel) veraendern ausschliesslich lokale Zustandsvariablen
@@ -807,16 +969,102 @@ function rechnePlatz(){
   }
 }
 
-let cDa, cLehre, cFehlt, cSpur, cLinie, cStill;
+let cDa, cLehre, cFehlt, cSpur, cLinie, cStill, cDanger, cFg;
 function ladeFarben(){
   const s=getComputedStyle(document.documentElement);
   cDa=s.getPropertyValue('--accent').trim(); cLehre=s.getPropertyValue('--lehre').trim();
   cFehlt=s.getPropertyValue('--fehlt').trim(); cSpur=s.getPropertyValue('--spur').trim();
   cLinie=s.getPropertyValue('--border').trim(); cStill=s.getPropertyValue('--muted').trim();
+  cDanger=s.getPropertyValue('--danger').trim(); cFg=s.getPropertyValue('--fg').trim();
 }
+
+// ---- Abrufweg-Zeichenflaeche (Ansicht 4): eigene Projektion, fuenf Spalten,
+// eigenes Punkte-Array fuer den Hover-Test (bild/P gehoeren der Punktwolke). ----
+let abrufwegPunkte = [];
+function zeichneAbrufwegCanvas(){
+  g.clearRect(0,0,c.width,c.height);
+  abrufwegPunkte = [];
+  const d = abrufwegD;
+  if (!d) { hinweis.textContent = 'lädt …'; return; }
+  if (d.leer) { hinweis.textContent = d.anfrage ? 'Keine auswertbare Anfrage (leer oder ohne indexierbares Wort).' : 'Anfrage eingeben und „Weg berechnen” betätigen.'; return; }
+
+  const W=c.width, H=c.height;
+  const xA=W*0.07, xK=W*0.30, xV=W*0.55, xD=W*0.77, xG=W*0.94;
+  const yTop=H*0.12, yMitte=H*0.5, yBot=H*0.92;
+  g.textAlign='center'; g.fillStyle=cStill; g.font=Math.max(9,11*skala)+'px ui-monospace,monospace';
+  g.fillText('Anfrage', xA, yTop-16);
+  g.fillText('Kandidaten je Kanal', xK, yTop-16);
+  g.fillText('Stichwort', xK, yTop-2);
+  g.fillText('Bedeutung', xK, yMitte+16);
+  g.fillText('Verschmelzung', xV, yTop-16);
+  g.fillText('Deckel', xD, yTop-16);
+  g.fillText('Geliefert', xG, yTop-16);
+  g.textAlign='left';
+
+  const logY = (rang, top, bot, maxRang) => {
+    const lr = Math.log(Math.max(1,rang)+1), lmax = Math.log(maxRang+1);
+    return top + Math.min(1, lmax>0 ? lr/lmax : 0)*(bot-top);
+  };
+  const stichwortMax = Math.max(1, d.kanaele.stichwort.treffer_gesamt);
+  const bedeutungMax = Math.max(1, d.kanaele.bedeutung.treffer_gesamt);
+  const stichwortY = new Map(), bedeutungY = new Map();
+  for (const e of d.kanaele.stichwort.eintraege) stichwortY.set(e.id, logY(e.rang, yTop, yMitte-10*skala, stichwortMax));
+  for (const e of d.kanaele.bedeutung.eintraege) bedeutungY.set(e.id, logY(e.rang, yMitte+10*skala, yBot, bedeutungMax));
+
+  const verschmolzen = [...d.deckel.eintraege, ...d.deckel.ueber_deckel];
+  const vMax = Math.max(1, ...verschmolzen.map(e=>e.rang_verschmolzen));
+  const vY = new Map(verschmolzen.map(e => [e.id, logY(e.rang_verschmolzen, yTop, yBot, vMax)]));
+
+  const deckelY = new Map();
+  d.deckel.eintraege.forEach((e,i) => deckelY.set(e.id, yTop + (d.deckel.eintraege.length<2?0:i/(d.deckel.eintraege.length-1))*(yBot-yTop)));
+  const geliefertListe = [...d.geliefert.knoten, ...d.geliefert.lehren];
+  const geliefertY = new Map(geliefertListe.map((id,i) => [id, yTop + (geliefertListe.length<2?0:i/(geliefertListe.length-1))*(yBot-yTop)]));
+  const deckelIds = new Set(d.deckel.eintraege.map(e=>e.id));
+
+  g.lineWidth=1;
+  const linie = (x1,y1,x2,y2,farbe,alpha) => { g.strokeStyle=farbe; g.globalAlpha=alpha; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); };
+  for (const [id,y] of stichwortY) linie(xA, yMitte, xK, y, cLinie, .3);
+  for (const [id,y] of bedeutungY) linie(xA, yMitte, xK, y, cLinie, .3);
+  for (const e of verschmolzen) {
+    const y3 = vY.get(e.id);
+    if (stichwortY.has(e.id)) linie(xK, stichwortY.get(e.id), xV, y3, cLinie, .38);
+    if (bedeutungY.has(e.id)) linie(xK, bedeutungY.get(e.id), xV, y3, cLinie, .38);
+    if (deckelIds.has(e.id)) {
+      const y4 = deckelY.get(e.id);
+      const ausg = d.deckel.eintraege.find(x=>x.id===e.id).ausgeschieden;
+      linie(xV, y3, xD, y4, ausg?cDanger:cLinie, ausg?.55:.5);
+      if (!ausg && geliefertY.has(e.id)) linie(xD, y4, xG, geliefertY.get(e.id), cLinie, .6);
+    } else {
+      linie(xV, y3, xV+(xD-xV)*0.35, Math.min(yBot, y3+34*skala), cDanger, .38);
+    }
+  }
+  g.globalAlpha=1;
+
+  const punkt = (x,y,e,zusatz) => {
+    const r = Math.max(2.6, 4*skala);
+    g.fillStyle = e.ausgeschieden ? cDanger : (e.art==='lehre' ? cLehre : cDa);
+    g.globalAlpha = e.ausgeschieden ? .6 : .92;
+    g.beginPath(); g.arc(x,y,r,0,6.2832); g.fill();
+    abrufwegPunkte.push({x,y,r:r+5,e,zusatz});
+  };
+  g.globalAlpha=1;
+  punkt(xA, yMitte, {art:'anfrage', titel:d.anfrage.text, ausgeschieden:null}, 'Anfrage');
+  for (const e of d.kanaele.stichwort.eintraege) punkt(xK, stichwortY.get(e.id), {...e, ausgeschieden:null}, 'Stichwortkanal Rang '+e.rang);
+  for (const e of d.kanaele.bedeutung.eintraege) punkt(xK, bedeutungY.get(e.id), {...e, ausgeschieden:null}, 'Bedeutungskanal Rang '+e.rang);
+  for (const e of verschmolzen) punkt(xV, vY.get(e.id), {...e, ausgeschieden:null}, 'Verschmelzung Rang '+e.rang_verschmolzen);
+  for (const e of d.deckel.eintraege) punkt(xD, deckelY.get(e.id), e, 'Deckel-Pool, Verschmelzungsrang '+e.rang_verschmolzen);
+  for (const id of geliefertListe) {
+    const meta = d.geliefert.eintraege.find(x=>x.id===id) || {art:'?', titel:id};
+    punkt(xG, geliefertY.get(id), {...meta, ausgeschieden:null}, 'geliefert');
+  }
+
+  hinweis.textContent = `${geliefertListe.length} geliefert von ${d.deckel.pool_groesse} im Deckel-Pool — Anfrage „${d.anfrage.text}”`;
+}
+window.ansichtAbrufwegNeuZeichnen = () => { if (typeof ansicht !== 'undefined' && ansicht === 4 && typeof zeichne === 'function') zeichne(); };
 
 function zeichne(){
   if (ansicht === 3) { g.clearRect(0,0,c.width,c.height); hinweis.textContent = 'Vergleich zeigt keine Punktwolke.'; return; }
+  if (ansicht === 4) { ladeFarben(); zeichneAbrufwegCanvas(); return; }
   ladeFarben(); rechnePlatz();
   g.clearRect(0,0,c.width,c.height);
 
@@ -875,10 +1123,28 @@ function zeichne(){
 
 // --- Bedienung: reine Anzeige, kein Aufruf schreibt ---
 let zieht=false, lx=0, ly=0;
-c.addEventListener('pointerdown',e=>{ if(ansicht===0||ansicht===3) return; zieht=true; lx=e.clientX; ly=e.clientY; c.setPointerCapture(e.pointerId); });
+c.addEventListener('pointerdown',e=>{ if(ansicht===0||ansicht===3||ansicht===4) return; zieht=true; lx=e.clientX; ly=e.clientY; c.setPointerCapture(e.pointerId); });
 c.addEventListener('pointerup',e=>{ zieht=false; });
 c.addEventListener('pointermove',e=>{
   if (ansicht===3) return;
+  if (ansicht===4) {
+    const rect=c.getBoundingClientRect(), sk=c.width/rect.width;
+    const mx=(e.clientX-rect.left)*sk, my=(e.clientY-rect.top)*sk;
+    let best=null, bd=1e9;
+    for (const pk of abrufwegPunkte) {
+      const dx=pk.x-mx, dy=pk.y-my, dist=dx*dx+dy*dy;
+      if (dist<bd && dist<pk.r*pk.r) { bd=dist; best=pk; }
+    }
+    if (!best) { fahne.style.opacity=0; return; }
+    const ee=best.e;
+    fahne.innerHTML = (ee.art==='lehre'?'Lehre · ':(ee.art==='anfrage'?'':'Knoten · ')) + (ee.titel||ee.id).toString().replace(/</g,'&lt;') +
+      '<br>' + best.zusatz + (ee.ausgeschieden ? ' — ausgeschieden: '+(ABRUFWEG_GRUND_TEXT[ee.ausgeschieden]||ee.ausgeschieden) : '') +
+      (ee.pfad ? '<span class="weg">'+ee.pfad+'</span>' : '');
+    fahne.style.opacity=1;
+    fahne.style.left = Math.min(rect.width-330, e.clientX-rect.left+14)+'px';
+    fahne.style.top  = Math.max(4, e.clientY-rect.top-14)+'px';
+    return;
+  }
   const rect=c.getBoundingClientRect(), sk=c.width/rect.width;
   if(zieht){ drehY += (e.clientX-lx)*0.006; drehX += (e.clientY-ly)*0.006; lx=e.clientX; ly=e.clientY; zeichne(); return; }
   const mx=(e.clientX-rect.left)*sk, my=(e.clientY-rect.top)*sk;
@@ -898,22 +1164,25 @@ c.addEventListener('pointermove',e=>{
   fahne.style.top  = Math.max(4, e.clientY-rect.top-14)+'px';
 });
 c.addEventListener('pointerleave',()=>{ fahne.style.opacity=0; zieht=false; });
-c.addEventListener('wheel',e=>{ if(ansicht===0||ansicht===3) return; e.preventDefault();
+c.addEventListener('wheel',e=>{ if(ansicht===0||ansicht===3||ansicht===4) return; e.preventDefault();
   zoom = Math.max(.4, Math.min(4, zoom*(e.deltaY>0?0.92:1.08))); zeichne(); },{passive:false});
 
 const stand=document.getElementById('stand');
-function setzeStand(){ stand.textContent = ansicht===2 ? grenzEreignis().replace('T',' ') : (ansicht===3 ? '–' : grenzTag()); }
+function setzeStand(){ stand.textContent = ansicht===2 ? grenzEreignis().replace('T',' ') : ((ansicht===3||ansicht===4) ? '–' : grenzTag()); }
 document.getElementById('zeit').addEventListener('input',e=>{
   zeitAnteil = e.target.value/100; setzeStand(); zeichne();
 });
 const legende = document.getElementById('legende'), fuss = document.getElementById('fuss');
+const legendeAbrufweg = document.getElementById('legendeAbrufweg');
 const zeitleiste = document.getElementById('zeitleiste'), vergleichBlock = document.getElementById('vergleichBlock');
-[0,1,2,3].forEach(k=>{
+const abrufwegLeiste = document.getElementById('abrufwegLeiste'), abrufwegBlock = document.getElementById('abrufwegBlock');
+[0,1,2,3,4].forEach(k=>{
   document.getElementById('b'+k).addEventListener('click',()=>{
-    ansicht=k; [0,1,2,3].forEach(j=>document.getElementById('b'+j).setAttribute('aria-pressed', j===k?'true':'false'));
-    const istVergleich = ansicht===3;
+    ansicht=k; [0,1,2,3,4].forEach(j=>document.getElementById('b'+j).setAttribute('aria-pressed', j===k?'true':'false'));
+    const istVergleich = ansicht===3, istAbrufweg = ansicht===4;
     vergleichBlock.hidden = !istVergleich;
-    legende.hidden = istVergleich; fuss.hidden = istVergleich; zeitleiste.hidden = istVergleich;
+    abrufwegBlock.hidden = !istAbrufweg; abrufwegLeiste.hidden = !istAbrufweg; legendeAbrufweg.hidden = !istAbrufweg;
+    legende.hidden = istVergleich||istAbrufweg; fuss.hidden = istVergleich||istAbrufweg; zeitleiste.hidden = istVergleich||istAbrufweg;
     setzeStand(); zeichne();
   });
 });

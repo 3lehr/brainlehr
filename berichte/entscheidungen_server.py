@@ -68,6 +68,14 @@ import meisterschaft  # noqa: E402        -- nur *_lesen() gelesen/Schluessel-Na
 import nachtlaeufer  # noqa: E402         -- nur _DEFAULTS gelesen
 import raum_daten  # noqa: E402           -- nur sammle() aufgerufen, Datei unveraendert
 
+# Abschnitt 11 (Abrufweg): nur GELESEN/AUFGERUFEN, keine dieser Dateien wird
+# veraendert. embeddings/knowledge_recall_hook gehoeren einem anderen Agenten
+# (haken/knowledge_recall_hook.py, kern/embeddings.py) -- hier nur importiert.
+import embeddings  # noqa: E402
+import gattung_filter  # noqa: E402
+import knowledge_recall_hook  # noqa: E402  -- nur MAX_NODES/MAX_LESSONS/MIN_HITS/keywords/_ist_geltend gelesen
+from knowledge_mcp_server import _embedding_ranking, _or_query  # noqa: E402
+
 RUNS_DIR = HERE / "runs"
 # raum.html/vergleich.html sind aufgegangen in entscheidungen.html (Betreiber-
 # Weisung 2026-08-08: eine Adresse statt drei). /raum und /vergleich bleiben
@@ -436,6 +444,191 @@ def _vergleich_stand() -> dict:
     return _vergleich_cache["ergebnis"]
 
 
+# ─── Abschnitt 11: Abrufweg (Auftrag 2026-08-12) ───────────────────────────
+#
+# Fuenf Stationen des Abrufs, ECHT gerechnet fuer eine eingegebene Anfrage --
+# dieselben Bausteine wie haken/suchpfad_abruf.kandidaten() und
+# messungen/kandidatendiagnose.py (kein Nachbau):
+#   1 Anfrage       -- _or_query()/keywords(), MIN_HITS informativ (der
+#                       aktive Weg SUCHPFAD_ABRUF=True prueft MIN_HITS NICHT,
+#                       das steht dazu -- sonst waere die Anzeige falsch)
+#   2 Kandidaten    -- Stichwortkanal (FTS5, _or_query) und Bedeutungskanal
+#      je Kanal        (Embedding, _embedding_ranking) GETRENNT, UNGEFILTERT
+#                       nach Gattung -- wie kandidatendiagnose.diagnose() es
+#                       fuer den Fall d84b6b64 tut, sonst waere die Gattung
+#                       schon in der Kanalliste verschwunden und nicht mehr
+#                       als EIGENE Station zeigbar
+#   3 Verschmelzung -- embeddings.rrf_fuse(stichwort, bedeutung), ungekappt
+#   4 Deckel        -- oberste MAX_NODES+MAX_LESSONS der Verschmelzung, dann
+#                       Gattung- und Freigabe-Filter, dann Deckel je Art
+#   5 geliefert     -- was uebrig bleibt
+#
+# NICHT nachgebildet (liegt HINTER der Deckel-Station, nicht in den fuenf
+# oben genannten): trust_score, rangfolge, Explore-Ersetzung, und bei Lehren
+# die Nachsortierung nach Stichworttreffern statt Verschmelzungsrang -- diese
+# Stationen aendern die Reihenfolge INNERHALB der bereits gelieferten Menge,
+# nicht mehr WER geliefert wird. Wer sie braucht, findet sie in
+# knowledge_recall_hook.query().
+#
+# Anzeige-Deckel je Kanal (ANZEIGE_TOP): nur die Bedeutungskanal-Liste kann
+# tausende Eintraege haben (jeder Knoten mit Vektor bekommt einen Rang) --
+# fuer die Darstellung werden nur die obersten ANZEIGE_TOP gezeigt, die
+# Gesamtzahl bleibt echt (treffer_gesamt).
+
+ANZEIGE_TOP = 30
+
+
+def _abrufweg_titel(conn: sqlite3.Connection, node_ids: set, lesson_ids: set) -> dict:
+    out: dict[str, dict] = {}
+    if node_ids:
+        ph = ",".join("?" for _ in node_ids)
+        for r in conn.execute(
+            f"SELECT id, path, title, gattung, gilt_ab, gilt_bis FROM knowledge_nodes WHERE id IN ({ph})",
+            list(node_ids),
+        ):
+            out[r["id"]] = {
+                "art": "knoten", "titel": r["title"], "pfad": r["path"],
+                "gattung_ok": gattung_filter.ist_arbeitsbestand(r["gattung"]),
+                "freigabe_ok": knowledge_recall_hook._ist_geltend(r["gilt_ab"], r["gilt_bis"]),
+            }
+    if lesson_ids:
+        ph = ",".join("?" for _ in lesson_ids)
+        for r in conn.execute(
+            f"SELECT id, description FROM lessons_learned WHERE id IN ({ph})", list(lesson_ids)
+        ):
+            out[r["id"]] = {"art": "lehre", "titel": r["description"], "pfad": None,
+                             "gattung_ok": True, "freigabe_ok": True}
+    return out
+
+
+def _abrufweg_kanal(ids: list[str], meta: dict) -> dict:
+    eintraege = []
+    for i, doc_id in enumerate(ids[:ANZEIGE_TOP]):
+        m = meta.get(doc_id, {"art": "?", "titel": doc_id, "pfad": None})
+        eintraege.append({"id": doc_id, "rang": i + 1, **m})
+    return {"treffer_gesamt": len(ids), "gezeigt": len(eintraege), "eintraege": eintraege}
+
+
+def abrufweg_berechnen(conn: sqlite3.Connection, text: str) -> dict:
+    text = (text or "").strip()
+    if not text:
+        return {"leer": True}
+    fts_query = _or_query(text)
+    kws = knowledge_recall_hook.keywords(text)
+    anfrage = {
+        "text": text, "schluesselwoerter": kws, "min_hits_schwelle": knowledge_recall_hook.MIN_HITS,
+        "min_hits_erfuellt": len(kws) >= knowledge_recall_hook.MIN_HITS,
+        "min_hits_wirkt_im_aktiven_weg": not knowledge_recall_hook._suchpfad_aktiv(),
+    }
+    if not fts_query:
+        return {"leer": True, "anfrage": anfrage}
+
+    node_ids = [r["id"] for r in conn.execute(
+        "SELECT n.id FROM knowledge_fts f JOIN knowledge_nodes n ON n.rowid = f.rowid "
+        "WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 ORDER BY rank", (fts_query,))]
+    lesson_ids = [r["id"] for r in conn.execute(
+        "SELECT l.id FROM lessons_fts f JOIN lessons_learned l ON l.rowid = f.rowid "
+        "WHERE lessons_fts MATCH ? AND l.status != 'resolved' ORDER BY rank", (fts_query,))]
+    stichwort_ordered = embeddings.rrf_fuse(node_ids, lesson_ids, embedding_weight=1.0)
+
+    query_vec = embeddings.embed_text(text)
+    if query_vec is not None:
+        emb_node_ids = _embedding_ranking(conn, "node", query_vec, None)
+        emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, None)
+    else:
+        emb_node_ids, emb_lesson_ids = [], []
+    bedeutung_ordered = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
+
+    gewicht = embeddings.hybrid_retrieval_weight()
+    fused = embeddings.rrf_fuse(stichwort_ordered, bedeutung_ordered, embedding_weight=gewicht)
+    fused_rang = {doc_id: i + 1 for i, doc_id in enumerate(fused)}
+    stichwort_rang = {doc_id: i + 1 for i, doc_id in enumerate(stichwort_ordered)}
+    bedeutung_rang = {doc_id: i + 1 for i, doc_id in enumerate(bedeutung_ordered)}
+
+    max_nodes, max_lessons = knowledge_recall_hook.MAX_NODES, knowledge_recall_hook.MAX_LESSONS
+    deckel_groesse = max_nodes + max_lessons
+    pool = fused[:deckel_groesse]
+
+    # Metadaten (Titel/Gattung/Freigabe) nur fuer das, was irgendwo angezeigt
+    # wird: die obersten ANZEIGE_TOP je Kanal, der ganze Deckel-Pool, und der
+    # Ueberhang direkt darueber (fuer die "ueber dem Deckel"-Station unten).
+    angezeigt = (set(stichwort_ordered[:ANZEIGE_TOP]) | set(bedeutung_ordered[:ANZEIGE_TOP])
+                 | set(pool) | set(fused[deckel_groesse:deckel_groesse + ANZEIGE_TOP]))
+    meta_ids_node = angezeigt & (set(node_ids) | set(emb_node_ids))
+    meta_ids_lesson = angezeigt & (set(lesson_ids) | set(emb_lesson_ids))
+    meta = _abrufweg_titel(conn, meta_ids_node, meta_ids_lesson)
+
+    # Deckel-Station: Reihenfolge des Pools bleibt die Verschmelzungs-Reihenfolge.
+    # Je Eintrag zuerst Gattung, dann Freigabe, dann -- unter den ueberlebenden --
+    # der Deckel je Art (Knoten/Lehren getrennt gezaehlt).
+    deckel_eintraege = []
+    n_gezaehlt = l_gezaehlt = 0
+    geliefert_knoten, geliefert_lehren = [], []
+    for doc_id in pool:
+        m = meta.get(doc_id, {"art": "?", "titel": doc_id, "pfad": None, "gattung_ok": True, "freigabe_ok": True})
+        grund = None
+        if not m.get("gattung_ok", True):
+            grund = "gattung"
+        elif not m.get("freigabe_ok", True):
+            grund = "freigabe"
+        else:
+            if m["art"] == "knoten":
+                if n_gezaehlt < max_nodes:
+                    n_gezaehlt += 1
+                    geliefert_knoten.append(doc_id)
+                else:
+                    grund = "deckel_art"
+            else:
+                if l_gezaehlt < max_lessons:
+                    l_gezaehlt += 1
+                    geliefert_lehren.append(doc_id)
+                else:
+                    grund = "deckel_art"
+        deckel_eintraege.append({
+            "id": doc_id, "rang_verschmolzen": fused_rang[doc_id],
+            "rang_stichwort": stichwort_rang.get(doc_id), "rang_bedeutung": bedeutung_rang.get(doc_id),
+            "art": m["art"], "titel": m["titel"], "pfad": m.get("pfad"),
+            "ausgeschieden": grund,
+        })
+
+    # Aussenherum: die besten je Kanal, die es nicht einmal in den Pool schaffen --
+    # Station "ueber dem Deckel", damit die Kanalspitze nicht kommentarlos endet.
+    ueber_deckel = []
+    for doc_id in fused[deckel_groesse:deckel_groesse + ANZEIGE_TOP]:
+        m = meta.get(doc_id)
+        if m is None:
+            continue
+        ueber_deckel.append({
+            "id": doc_id, "rang_verschmolzen": fused_rang[doc_id],
+            "rang_stichwort": stichwort_rang.get(doc_id), "rang_bedeutung": bedeutung_rang.get(doc_id),
+            "art": m["art"], "titel": m["titel"], "pfad": m.get("pfad"), "ausgeschieden": "deckel",
+        })
+
+    return {
+        "leer": False,
+        "anfrage": anfrage,
+        "kanaele": {
+            "stichwort": _abrufweg_kanal(stichwort_ordered, meta),
+            "bedeutung": _abrufweg_kanal(bedeutung_ordered, meta),
+        },
+        "embedding_verfuegbar": query_vec is not None,
+        "verschmelzung_gewicht": gewicht,
+        "deckel": {"max_nodes": max_nodes, "max_lessons": max_lessons, "pool_groesse": deckel_groesse,
+                   "eintraege": deckel_eintraege, "ueber_deckel": ueber_deckel},
+        "geliefert": {"knoten": geliefert_knoten, "lehren": geliefert_lehren,
+                      "eintraege": [dict(meta[i], id=i) for i in geliefert_knoten + geliefert_lehren]},
+    }
+
+
+def _abrufweg_stand(text: str) -> dict:
+    conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    try:
+        return abrufweg_berechnen(conn, text)
+    finally:
+        conn.close()
+
+
 # ─── HTTP ─────────────────────────────────────────────────────────────────
 
 class Handler(BaseHTTPRequestHandler):
@@ -503,6 +696,8 @@ class Handler(BaseHTTPRequestHandler):
             elif self.path == "/api/nachtschicht":
                 out = _nachtschicht_setzen(payload.get("aktiv", ""), payload.get("antrieb", ""),
                                             payload.get("budget", ""))
+            elif self.path == "/api/abrufweg":
+                out = _abrufweg_stand(payload.get("text", ""))
             else:
                 self._json({"error": "unbekannter Pfad"}, 404)
                 return
@@ -626,7 +821,23 @@ def _selftest() -> int:
     # 3) Eilmeldungen: leerer/kaputter Zustand darf nicht crashen (Negativfall).
     assert isinstance(_eilmeldungen_stand(), list)
 
-    # 3b) Vergleich: Zusammenfuehrung unterschiede_A_B + rows ueber `kennung`.
+    # 3b) Abrufweg: Negativfall (leere Anfrage), und der Fall aus Knoten
+    # d84b6b64 -- verliert seinen Rang-1-Treffer aus dem Bedeutungskanal an
+    # Rauschen aus zwei Kanaelen (Verschmelzungsrang schlechter als 1). Vor
+    # dem Vergleichs-Check (3c): dessen Datenlage haengt an einer fremden
+    # Laufdatei-Auswahl und darf einen eigenen, unabhaengigen Befund nicht
+    # verdecken (rot-vor-gruen gilt je Station, nicht nur am Blockende).
+    leer = _abrufweg_stand("   ")
+    assert leer.get("leer") is True, "Negativfall: leere Anfrage darf keinen Weg berechnen"
+    fall = _abrufweg_stand("Dichtung Leckage Treibstofftank Fehleranalyse Startverzoegerung")
+    assert fall["leer"] is False
+    ziel = next((e for e in fall["deckel"]["eintraege"] if e["id"] == "nasa-llis-812"), None)
+    assert ziel is not None, "Zielknoten muss im Deckel-Pool auftauchen (Verschmelzungsrang 7 von 17)"
+    assert ziel["rang_bedeutung"] == 1, "Zielknoten muss Rang 1 im Bedeutungskanal haben"
+    assert ziel["rang_verschmolzen"] > 1, "Rang muss sich in der Verschmelzung gegenueber dem Bedeutungskanal verschlechtern"
+    assert ziel["ausgeschieden"] is not None, "Zielknoten darf in diesem Bestand nicht geliefert werden"
+
+    # 3c) Vergleich: Zusammenfuehrung unterschiede_A_B + rows ueber `kennung`.
     v = _vergleich_stand()
     if "error" not in v:
         assert v["n_cases"] == len(json.loads(_vergleich_neueste_datei().read_text(encoding="utf-8"))["rows"])

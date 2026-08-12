@@ -245,7 +245,14 @@ def _lauf(relpath: str, db_kopie: Path) -> subprocess.CompletedProcess:
         env["BRAINLEHR_DB"] = str(db_kopie)
     return subprocess.run(
         [sys.executable, str(ROOT / relpath), "--selftest"],
-        cwd=str(ROOT), capture_output=True, text=True, timeout=30, env=env,
+        # 30 s waren zu knapp: kern/liefermenge.py braucht auf dieser Maschine
+        # 32-41 s, je nach Last. Der Test schlug damit fehl, wenn nebenher
+        # gearbeitet wurde, und bestand sonst -- ein Ergebnis, das von der
+        # Auslastung abhaengt, ist kein Ergebnis. Gemessen 2026-08-12.
+        # Wer hier weiter hochsetzen muss, hat einen langsamen Selbsttest und
+        # kein Zeitproblem: dann gehoert der Selbsttest verkuerzt, nicht die
+        # Grenze.
+        cwd=str(ROOT), capture_output=True, text=True, timeout=120, env=env,
     )
 
 
