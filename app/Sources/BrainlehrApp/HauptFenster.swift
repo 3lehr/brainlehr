@@ -40,20 +40,72 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
 struct HauptFenster: View {
     @Bindable var aufsicht: DienstAufsicht
     @State private var auswahl: SeitenleistenEintrag? = .wissensraum
+    @State private var wissensraumBlick: WissensraumBlick = .baum
 
     var body: some View {
         NavigationSplitView {
-            List(SeitenleistenEintrag.allCases, selection: $auswahl) { eintrag in
-                Label(eintrag.titel, systemImage: eintrag.symbol)
-                    .accessibilityLabel(eintrag.titel)
+            List(selection: $auswahl) {
+                ForEach(SeitenleistenEintrag.allCases) { eintrag in
+                    Label(eintrag.titel, systemImage: eintrag.symbol)
+                        .accessibilityLabel(eintrag.titel)
+                        .tag(eintrag)
+                    // Die Ansichtswahl des Wissensraums sitzt nativ direkt
+                    // unter seinem Eintrag in derselben Seitenleiste --
+                    // nicht als Knopfleiste im eingebetteten Web.
+                    if eintrag == .wissensraum && auswahl == .wissensraum {
+                        ForEach(WissensraumBlick.allCases) { blick in
+                            Button {
+                                wissensraumBlick = blick
+                            } label: {
+                                Text(blick.titel)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.leading, 24)
+                            .foregroundStyle(blick == wissensraumBlick ? Color.accentColor : Color.primary)
+                            .accessibilityAddTraits(blick == wissensraumBlick ? [.isSelected] : [])
+                            .accessibilityHint("Zeigt die Ansicht \(blick.titel) im Wissensraum.")
+                        }
+                    }
+                }
             }
             .navigationTitle("Brainlehr")
             .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             VStack(spacing: 0) {
                 DienstBanner(aufsicht: aufsicht)
-                PlatzhalterAnsicht(eintrag: auswahl)
+                if auswahl == .wissensraum {
+                    WissensraumAnsicht(aufsicht: aufsicht, blick: wissensraumBlick)
+                } else {
+                    PlatzhalterAnsicht(eintrag: auswahl)
+                }
             }
+        }
+    }
+}
+
+/// Traegt den Wechsel zwischen "Dienst laeuft" (Web-Fenster), "startet
+/// gerade" (kurzer Hinweis statt leerer Flaeche) und Fehler (Banner deckt
+/// die Meldung bereits ab, hier bleibt die Flaeche neutral).
+private struct WissensraumAnsicht: View {
+    @Bindable var aufsicht: DienstAufsicht
+    let blick: WissensraumBlick
+
+    var body: some View {
+        switch aufsicht.zustand {
+        case .laeuft:
+            WissensraumWebView(blick: blick)
+        case .startetGerade:
+            VStack {
+                Spacer()
+                ProgressView("Wissensraum wird geladen …")
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .unerwartetBeendet, .angehalten:
+            // Kein leeres weisses Rechteck, aber auch keine doppelte
+            // Fehlermeldung -- die steht schon im Banner darueber.
+            Color.clear
         }
     }
 }

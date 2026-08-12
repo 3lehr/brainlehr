@@ -25,8 +25,8 @@ final class DienstAufsicht {
     /// Meldung fuer die Oberflaeche -- niemals Pfad, Port oder Rohfehler.
     private(set) var meldung: String?
 
-    private static let port = 8799
-    private static let basisURL = URL(string: "http://127.0.0.1:\(port)/")!
+    static let port = 8799
+    static let basisURL = URL(string: "http://127.0.0.1:\(port)/")!
 
     private var prozess: Process?
     private var pollTimer: Timer?
