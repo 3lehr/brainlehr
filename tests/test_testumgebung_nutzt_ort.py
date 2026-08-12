@@ -40,6 +40,14 @@ def test_kein_testmodul_baut_den_db_namen_selbst_zusammen():
         for zeile_nr, zeile in enumerate(
             datei.read_text(encoding="utf-8").splitlines(), start=1
         ):
+            # Kommentare ausnehmen: die Geschwisterwache
+            # tests/test_produktivcode_nutzt_ort.py erklaert in einem Kommentar,
+            # welche Schreibweisen sie verbietet -- und nennt sie dabei woertlich.
+            # Ohne diese Zeile beanstandet eine Wache die andere dafuer, dass sie
+            # ihre eigene Regel dokumentiert. Kommentierter Code wird nie
+            # ausgefuehrt und kann keinen Pfad bauen.
+            if zeile.lstrip().startswith("#"):
+                continue
             if TREFFER.search(zeile) and not UNBEDENKLICH.search(zeile):
                 verdaechtig.append(f"{datei.name}:{zeile_nr}: {zeile.strip()}")
     assert not verdaechtig, (

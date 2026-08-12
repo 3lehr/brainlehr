@@ -29,6 +29,9 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
 import hashlib
 import sqlite3
 
+import ort as haken_ort
+import speicher
+
 WURZEL = _w
 
 BEHANDELT = "behandelt"
@@ -87,16 +90,15 @@ def demo() -> None:
     assert unterschiedlich
 
     # 4) Reale DB, falls vorhanden: beide Haelften enthalten beide Arten.
-    db = WURZEL / "brainlehr.db"
+    db = haken_ort.DB
     if db.exists() and db.stat().st_size > 0:
-        conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
-        z = zaehlen(conn)
-        conn.close()
+        with speicher.lesen(db) as conn:
+            z = zaehlen(conn)
         for art, z_art in z.items():
             assert z_art[BEHANDELT] > 0 and z_art[UNBEHANDELT] > 0, (art, z_art)
         print(f"demo ok (4 Faelle, reale DB: {z})")
     else:
-        print("demo ok (4 Faelle, reale DB uebersprungen -- brainlehr.db leer/fehlt)")
+        print("demo ok (4 Faelle, reale DB uebersprungen -- Datenbank leer/fehlt)")
 
 
 if __name__ == "__main__":
@@ -111,8 +113,7 @@ if __name__ == "__main__":
     if a.demo:
         demo()
     elif a.zaehlen:
-        conn = sqlite3.connect(f"file:{WURZEL / 'brainlehr.db'}?mode=ro", uri=True)
-        print(_json.dumps(zaehlen(conn), ensure_ascii=False, indent=2))
-        conn.close()
+        with speicher.lesen() as conn:
+            print(_json.dumps(zaehlen(conn), ensure_ascii=False, indent=2))
     else:
         demo()
