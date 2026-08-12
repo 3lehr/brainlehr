@@ -99,23 +99,45 @@ LIESMICH = """brainlehr — Ausweise
 Diese Datei sagt, WER jemand ist. Sie enthaelt KEINE Geheimnisse im Klartext,
 nur deren Pruefsummen (scrypt) — wer sie liest, kann sich damit nicht anmelden.
 
-Das Geheimnis selbst steht genau zweimal:
-  1. einmalig auf dem Bildschirm, als der Ausweis angelegt wurde
-  2. in der Konfiguration des Klienten, der damit arbeitet
-     (~/.claude.json, unter mcpServers.knowledge.env)
-Bewahre es in deinem Passwortmanager auf. Es wird nie wiederhergestellt,
-sondern ersetzt:  python3 ausweis.py --anlegen <name> --rollen <rollen>
+Das eigene Geheimnis (das, mit dem SICH DIESER RECHNER ausweist) steht in
+einer eigenen Datei daneben: mein-geheimnis.txt, Rechte 600, eine Zeile, kein
+JSON, kein Kommentar drumherum -- damit sie nie "aus Versehen ganz gelesen"
+wird, so wie es mit ~/.claude.json am 2026-08-12 passiert ist (ein Assistent
+las die Konfigurationsdatei als Ganzes und sah dabei das Geheimnis im
+Klartext). mein-geheimnis.txt hat GENAU EINEN Zweck und keinen Kontext, der
+einen Assistenten dazu bringen wuerde, sie versehentlich vollstaendig
+vorzulesen.
+
+EINRICHTEN:
+  1. echo -n "<dein Geheimnis>" > ~/Desktop/brainlehr-ausweise/mein-geheimnis.txt
+  2. chmod 600 ~/Desktop/brainlehr-ausweise/mein-geheimnis.txt
+  3. den Eintrag "BRAINLEHR_GEHEIMNIS" aus ~/.claude.json
+     (mcpServers.knowledge.env) LOESCHEN -- die Datei hat ab jetzt Vorrang,
+     ein doppelter Eintrag ist nur eine Kopie mehr, die kompromittiert werden
+     kann. Das Loeschen tippt der Betreiber selbst.
+
+Die Umgebungsvariable BRAINLEHR_GEHEIMNIS bleibt als Rueckfall gueltig, falls
+die Datei fehlt (z.B. eine laufende Sitzung, bevor umgestellt wurde). Stehen
+Datei UND Umgebungsvariable und sind sie verschieden, gewinnt die Datei, und
+brainlehr meldet das auf stderr -- keine stille Bevorzugung.
+
+Das Geheimnis steht sonst nur einmal: auf dem Bildschirm, als der Ausweis
+angelegt wurde. Bewahre es in deinem Passwortmanager auf. Es wird nie
+wiederhergestellt, sondern ersetzt:
+  python3 ausweis.py --anlegen <name> --rollen <rollen>
 
 Die Dateirechte sind 600 (nur du). Wird das aufgeweicht, ignoriert brainlehr
 die Datei und beglaubigt niemanden mehr — lieber alle unbeglaubigt als falsch
-beglaubigt.
+beglaubigt. Das gilt fuer ausweise.json genauso wie fuer
+mein-geheimnis.txt.
 
 ART: 'maschine' ist die Vorgabe. Nur ein Ausweis mit art=mensch gilt als
 menschlicher Entscheider (z.B. fuer Hausnormen im Rang 1/2). Ein Geheimnis,
 das in einer Klientenkonfiguration liegt, gehoert einer Maschine — auch wenn
 es deinen Namen traegt.
 
-Ordner verlegen:  Umgebungsvariable BRAINLEHR_AUSWEISE auf den neuen Pfad.
+Ordner verlegen:  Umgebungsvariable BRAINLEHR_AUSWEISE auf den neuen Pfad
+(mein-geheimnis.txt zieht automatisch mit, sie liegt immer daneben).
 Alles rueckgaengig machen:  diesen Ordner loeschen und BRAINLEHR_GEHEIMNIS aus
 der Klientenkonfiguration nehmen. Danach ist der Zustand wie vorher.
 """
@@ -124,6 +146,11 @@ der Klientenkonfiguration nehmen. Danach ist der Zustand wie vorher.
 # protokolliert, nie zurueckgegeben und nie in eine Fehlermeldung geschrieben.
 ENV_GEHEIMNIS = "BRAINLEHR_GEHEIMNIS"
 ENV_AUSWEISDATEI = "BRAINLEHR_AUSWEISE"
+
+# Die Datei fuer das eigene Geheimnis (mein-geheimnis.txt, Vorrang vor
+# ENV_GEHEIMNIS) lebt bewusst NICHT hier -- Monolith-Bremse bei 1500 Zeilen,
+# neue Logik geht in ein eigenes Modul. Siehe kern/geheimnis.py.
+from geheimnis import aufloesen_mit_datei  # noqa: E402
 
 # --- Einladung per PIN (Betreiber, 2026-08-10) ----------------------------
 # "hier erscheint eine tan/pin plus anmeldenamen, dann kann ich von hieraus die
@@ -905,16 +932,35 @@ def loese_auf(argument: str | None = None, *,
     _mandatsrollen). `jetzt` wird hereingereicht statt intern geholt -- ohne
     injizierbare Zeit laesst sich kein Ablauf pruefen, ohne die Uhr zu stellen.
 
-    Reihenfolge:
-      1. Geheimnis (Umgebung oder Parameter) trifft einen Eintrag -> beglaubigt.
-      2. Sonst: Argument, dann BEGOD_KNOWLEDGE_ACTOR, dann 'unbekannt' --
+    Reihenfolge, sofern `geheimnis` nicht als Parameter mitkommt (der gewinnt
+    immer, vor allem fuer Tests):
+      1. mein-geheimnis.txt neben der Ausweisdatei (kern/geheimnis.py) --
+         VORRANG, damit das Geheimnis nie mehr als Ganzes aus ~/.claude.json
+         gelesen werden muss.
+      2. sonst BRAINLEHR_GEHEIMNIS aus der Umgebung -- Ruecktritt, damit eine
+         laufende Sitzung nicht abbricht, waehrend noch keine Datei existiert.
+      Stehen beide UND unterscheiden sie sich, gewinnt die Datei UND es wird
+      auf stderr gemeldet -- ein Befund, keine stille Bevorzugung.
+      3. Trifft das Geheimnis (aus Datei oder Umgebung oder Parameter) einen
+         Eintrag -> beglaubigt.
+      4. Sonst: Argument, dann BEGOD_KNOWLEDGE_ACTOR, dann 'unbekannt' --
          jeweils UNbeglaubigt.
+
+    FEHLEN DATEI UND UMGEBUNG BEIDE: es wird NICHT stillschweigend mit
+    Rechten weitergearbeitet. Der Aufrufer faellt auf denselben unbeglaubigten
+    Zweig wie bei einem falschen Geheimnis -- ohne Rollen, und mit dem
+    Praefix 'unbeglaubigt:' an JEDER Stelle, an der der Name spaeter im
+    Protokoll auftaucht (protokollname). Das ist die bewusste Entscheidung
+    dieser Datei: kein Fehler, kein Abbruch, aber auch keine Rechte ohne
+    Nachweis und keine Spur, die das verschweigt.
 
     Ein Geheimnis, das keinen Eintrag trifft, fuehrt NICHT zu einem Fehler und
     NICHT zu einer stillen Beglaubigung: der Aufrufer faellt auf den
     unbeglaubigten Zweig zurueck. Ein falsches Geheimnis darf nie mehr Rechte
     ergeben als gar keines."""
-    geheimnis = geheimnis if geheimnis is not None else os.environ.get(ENV_GEHEIMNIS)
+    if geheimnis is None:
+        geheimnis = aufloesen_mit_datei(os.environ.get(ENV_GEHEIMNIS),
+                                        pfad or ausweisdatei())
     if not geheimnis and sys.stdin.isatty():
         # Verdeckt nachfragen, statt den Aufrufer auf die Umgebungsvariable zu
         # zwingen. Anlass 2026-08-10: BRAINLEHR_GEHEIMNIS=... im Befehl landet
