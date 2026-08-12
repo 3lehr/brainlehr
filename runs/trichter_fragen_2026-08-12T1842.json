@@ -1,0 +1,51 @@
+{
+  "rohbestand_turns": 6707,
+  "kette": {
+    "roh": {
+      "frage": 2901,
+      "auftrag": 3806
+    },
+    "echte_nachricht": {
+      "frage": 2125,
+      "auftrag": 954
+    },
+    "eindeutig": {
+      "frage": 1903,
+      "auftrag": 776
+    },
+    "kandidat_pfad": {
+      "frage": 17,
+      "auftrag": 144
+    },
+    "fall_pfad": {
+      "frage": 1,
+      "auftrag": 33
+    },
+    "kandidat_kennung": {
+      "frage": 28,
+      "auftrag": 118
+    },
+    "fall_kennung": {
+      "frage": 4,
+      "auftrag": 43
+    }
+  },
+  "lese_kette": {
+    "eingespielt": {
+      "frage": 106,
+      "auftrag": 43
+    },
+    "gelesen": {
+      "frage": 2,
+      "auftrag": 2
+    },
+    "unabhaengig": {
+      "frage": 2,
+      "auftrag": 2
+    },
+    "fall_lese": {
+      "frage": 2,
+      "auftrag": 2
+    }
+  }
+}
