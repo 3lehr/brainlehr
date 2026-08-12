@@ -452,6 +452,17 @@ def modus_stop(payload: dict) -> None:
     # gelesen ist -- ein zweiter Hook wuerde dieselbe Datei ein zweites Mal
     # lesen und muesste in die Klientenkonfiguration eingetragen werden.
     _normbezug_melden(antwort)
+    # Zahlenbezug: gleicher Grund wie Normbezug oben -- Datei-Monolith-Bremse
+    # (>1500 Zeilen) verbietet eine neue Top-Level-Funktion hier, darum inline
+    # statt eines eigenen _zahlenbezug_melden. Gleiche Bauform (stilles
+    # except): ein Melder-Absturz darf den Abruf nicht mitreissen.
+    try:
+        import zahlenbezug
+        z_meldung = zahlenbezug.pruefe(antwort)
+        if z_meldung:
+            print(z_meldung)
+    except Exception:  # noqa: BLE001
+        pass
 
     begriffe = top_begriffe(antwort)
     if not begriffe:
