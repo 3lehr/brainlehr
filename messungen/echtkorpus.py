@@ -114,7 +114,20 @@ AUFTRAG_LAENGE = 300
 def satzart(text: str) -> str:
     """Beobachtbare Merkmale, nicht Laenge allein: Imperativ am Anfang,
     oder mehrzeilige Struktur mit Ueberschriften, oder langer Fliesstext
-    mit mehreren Zeilen."""
+    mit mehreren Zeilen.
+
+    Maschinentext-Check ZUERST (gemessen 2026-08-12, Aufgabe 46): eine
+    Task-Notification ist oft selbst mehrzeilig mit ueberschriftartiger
+    erster Zeile und traf darum 'auftrag', BEVOR der _ist_echte_frage-Filter
+    sie ausscheiden konnte -- in echtkorpus.py folgenlos (satzart() wird dort
+    erst nach dem Filter aufgerufen), aber trichter_fragen.py bestimmt die
+    Satzart bewusst VOR dem Filter (das ist der Trichter-Zweck) und uebernahm
+    die Fehlklassifikation direkt in die Rohzahl. Entscheidung: eigene Klasse
+    statt Reihenfolge-Tausch, weil der Trichter den vollen Rohbestand als
+    Nenner braucht -- ein vorgezogener Filter wuerde die erste Trichterstufe
+    entwerten."""
+    if MASCHINENTEXT.search(text):
+        return "maschine"
     zeilen = text.split("\n")
     imperativ_am_anfang = bool(_IMPERATIV.search(text[:120]))
     mehrzeilig_mit_ueberschrift = len(zeilen) >= 3 and any(
