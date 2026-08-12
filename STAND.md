@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-12T23:10:00+0200
+# STAND brainlehr — 2026-08-13T02:35:00+0200
 
 ## Warum die Regeln nicht greifen — gemessen, nicht vermutet
 
@@ -19,6 +19,22 @@ Drei Ursachen, getrennt (`ffc52b7`, `runs/regelgriff_2026-08-12.json`):
 Der Defekt saß im Korpus: Die 35 Fälle wurden **aus den Zieltexten erzeugt** und können strukturell nicht zeigen, wozu ein Stichwortkanal da ist. Der Bias stand im Commit von damals und wurde beim späteren Vergleich nicht mitgelesen.
 
 Neu gemessen: **7 von 44** Ziel-Instanzen echter Fälle, in denen der beste Treffer nur über den Stichwortkanal erreichbar war — gegen **0 von 35** synthetisch. Einschränkung: erste 30 der 89 Fälle, kein Zufallszug (ein Abruf kostet 3–4,5 s, Kosinus über 3508 Vektoren ohne Index). Vollmessung als Aufgabe 59.
+
+## Die Okkultation ist gefahren — und liefert ein Instrument, keine Antwort (`fec7684`)
+
+M1 zwölf Fälle: **mit** Einspielung 1, **ohne** 0, **Negativkontrolle** 0. **Ein Fall Unterschied bei n=12 ist kein Ergebnis.**
+
+Was trägt: Von den zwölf lieferte der Abruf das Ziel in **sechs**. Diese Quote hängt nur am Abruf — mindestens die Hälfte des Problems liegt **vor** jeder Nutzungsfrage.
+Was nicht trägt: Von diesen sechs erschien eines in der Antwort. Beruht auf einer **Ersatzaufgabe**, weil die echten Prompts mehrseitig sind — Hinweis, kein Beleg.
+Was gehalten hat: Die Negativkontrolle (längengleicher Block aus 1641 fremden NASA-Knoten) erzeugte 0 von 12 — der Versuch misst nicht die Blocklänge. Der Selbstbezug vom 07.08. ist ausgeschlossen.
+
+Zum Abschließen fehlen: größere Fallmenge · echte statt Ersatzaufgabe · Negativkontrolle für M2 · Nachweis, dass die antwortenden Agenten keine Werkzeuge benutzten.
+
+## Neunte Erscheinungsform geschlossen: die Kalibrierbremse ist ausgebaut (`008a223`)
+
+Die Entscheidungsregel ergab **B**, nicht A. Etikettierte Abruffälle je Projekt: `shared` 12, `brainlehr` 8, `begod` 7, `fahrtenbuch` 4 — ADR-035 eichte den gemeinsamen Wert mit 24 Aufgaben und nannte das die Grenze zur Überanpassung. Ein Bruchteil davon je Projekt ist Raten mit Nachkommastellen.
+
+**Nebenfund:** Der xfail, der die Widersprüchlichkeit maskierte, verdeckte einen **zweiten**, unabhängigen Fehler. Ein xfail, der zwei Dinge verdeckt, ist die Bauform, in der ein Fehler jahrelang überlebt.
 
 ## Betreiberanweisung 2026-08-12T20:00
 
