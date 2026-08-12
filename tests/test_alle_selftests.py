@@ -82,6 +82,7 @@ MODULE = [
     "kern/kettenerklaerung.py",
     "kern/knowledge_lint.py",
     "kern/konfidenz.py",
+    "kern/lehrenpaket.py",
     "kern/liefermenge.py",
     "kern/meisterschaft.py",
     "kern/messlauf_abrufguete.py",
@@ -185,7 +186,7 @@ XFAIL = {
 }
 
 assert set(XFAIL) <= set(MODULE)
-assert len(MODULE) == 61, len(MODULE)
+assert len(MODULE) == 62, len(MODULE)  # 61 + kern/lehrenpaket.py (2026-08-12)
 
 # Nur diese 3 legen -wal/-shm NEBEN der echten Datenbank an, wenn sie
 # BRAINLEHR_DB unbesetzt lassen -- gemessen 2026-08-12 per Datei-Snapshot

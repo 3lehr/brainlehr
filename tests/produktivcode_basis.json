@@ -38,6 +38,7 @@
     "./schreibpruefstand/abrufpruefstand.py",
     "./schreibpruefstand/auswertung.py",
     "./schreibpruefstand/demo_db.py",
-    "./kern/regelpaket.py"
+    "./kern/regelpaket.py",
+    "./kern/lehrenpaket.py"
   ]
 }

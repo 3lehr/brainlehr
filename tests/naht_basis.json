@@ -74,7 +74,8 @@
     "./schreibpruefstand/auswertung.py",
     "./schreibpruefstand/demo_db.py",
     "./schreibpruefstand/schreiblauf.py",
-    "./kern/regelpaket.py"
+    "./kern/regelpaket.py",
+    "./kern/lehrenpaket.py"
   ],
   "migrationen": [
     "./kern/migrate_knowledge.py",
