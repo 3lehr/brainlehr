@@ -1,0 +1,76 @@
+{
+  "datum": "2026-08-13T00:00:00+0200",
+  "auftrag": "Lese- und Vergleichsauftrag, kein Produktivcode geaendert",
+  "quelle": {
+    "repo": "eugeniughelbur/obsidian-second-brain",
+    "branch": "main",
+    "zugriff": "raw.githubusercontent.com + api.github.com, Rohtext, gelesen 2026-08-13",
+    "lizenz": "MIT laut README-Badge, nicht gegen LICENSE-Volltext geprueft"
+  },
+  "gelesene_dateien": [
+    "README.md (954 Zeilen, vollstaendig)",
+    "scripts/eval/BASELINE.md (242 Zeilen, vollstaendig)",
+    "scripts/eval/README.md (56 Zeilen, vollstaendig)",
+    "scripts/eval/BENCHMARK.md (120 Zeilen, vollstaendig)",
+    "scripts/eval/corpus.py (306 Zeilen, teilweise: Funktionskoepfe + Kernlogik)",
+    "scripts/eval/retrieval_eval.py (395 Zeilen, teilweise: recall/MRR-Kern)",
+    "integrations/obsidian-mcp-server/vault_ops.py (1164 Zeilen, Zeilen 140-650 vollstaendig, Rest nicht)"
+  ],
+  "nicht_gelesen": [
+    "DEMOS.md", "CHANGELOG.md", "references/freshness-policy.md",
+    "scripts/eval/semantic_search.py", "scripts/freshness_lint.py",
+    "integrations/obsidian-mcp-server/server.py", "LICENSE-Volltext",
+    "vault_ops.py Zeilen 651-1164"
+  ],
+  "rangfolge_bauform": {
+    "mechanik": "Reciprocal Rank Fusion, K=60, identisch zur eigenen rrf_fuse-Formel",
+    "unterschied_1_gewicht": "semantischer Kanal 20x, lexikalischer Kanal 1x (modellabhaengig gemessen: w=3 fuer mxbai, w=20 fuer bge-m3)",
+    "unterschied_2_tiefe": "lexikalischer Kanal auf Top-25 Raenge begrenzt (FUSE_LEX_DEPTH=25), nicht auf einen Treffer reduziert",
+    "unterschied_3_weiche": "Anfrage mit genau einem Suchbegriff schaltet Bedeutung ganz ab, reine Stichwortsuche",
+    "frische": "Nachsortierung NACH der Fusion, nicht dritter Fusionssummand; Standardband 0.92-1.0, bei 'jetzt'-Absicht 0.6-1.0 mit ~90-Tage-Halbwertszeit",
+    "kanal_ohne_beitrag": "semantischer Totalausfall -> stiller Fallback auf reine Stichwortsuche (kein Fehler sichtbar); einzelner Pfad ohne lexikalischen Rang bekommt lexikalischen Summand 0, dominiert aber ohnehin durch 20x-Gewicht semantisch; unabhaengig gemessen: Index veraltet nicht selbstheilend, 29% (525/1828) einer echten Vault-Instanz unsichtbar fuer Bedeutungskanal ohne Warnung vor Fix"
+  },
+  "messung_bauform": {
+    "zwei_getrennte_grundlagen": true,
+    "readme_schlagzahlen": {
+      "korpus": "privater Vault des Betreibers, ~2350 Notizen, gitignored, nicht nachpruefbar",
+      "stichtag": "2026-07-11",
+      "modell": "bge-m3",
+      "fusionsgewicht": 20,
+      "fallmengen": "35 EN-Paraphrase, 30 EN-Stichwort, 16 RU/ES-Paraphrase",
+      "zahlen": {
+        "keyword_recall_at_10": 1.0,
+        "en_paraphrase_recall_at_10": 0.771,
+        "ruEs_recall_at_5_vorher_nachher": "0.125 -> 0.625 (Phase-B-Tabelle, entspricht README 13%->63%)"
+      }
+    },
+    "reproduzierbare_baseline": {
+      "korpus": "deterministisch generierter synthetischer Korpus, 300 Notizen, IM Repo (corpus.py), Hash a932e94f850830e9",
+      "aufbau": "je Thema eine kanonische Kurznotiz + mindestens 3 laengere Rivalinnen, die das Thema oefter erwaehnen",
+      "fallmengen": "keyword (12), paraphrase (12), multilingual (24, ES/RU gegen EN-Notizen)",
+      "zahlen_hybrid": {
+        "keyword_recall_at_10": 1.0,
+        "paraphrase_recall_at_10": 0.833,
+        "multilingual_recall_at_10": 0.75
+      },
+      "wichtig": "diese Zahlen weichen von den README-Schlagzahlen ab (75.0% vs 63%, 83.3% vs 77%) - zwei verschiedene Messgrundlagen, nicht dieselbe Zahl anders formuliert"
+    },
+    "auftragskorrektur": "Auftragstext nannte 'rund 300 Notizen im Repo' als Grundlage der zitierten Prozentzahlen - trifft nur auf die reproduzierbare Baseline zu, NICHT auf die README-Schlagzahlen (13->63%, keyword=1.0, paraphrase=77%), die aus dem privaten 2350-Notizen-Vault stammen",
+    "recall_formel": "Anteil Faelle mit 0 < Gold-Rang <= k, ein Gold pro Frage, MRR = Mittel(1/Rang), k in [1,3,5,10]"
+  },
+  "uebertragbarkeit": {
+    "uebertragbar": [
+      "deterministischer synthetischer Korpus-Generator (Kanon+Rivalinnen-Muster) - loest unser 0.9%-Korpusproblem strukturell",
+      "getrennte Kennzahl je Fehlerart (Stichwort/Paraphrase/Sprache) statt einer Gesamtzahl",
+      "Anfrage-abhaengige Vorweiche: einzelner Suchbegriff -> Bedeutung abschalten, unabhaengig von Korpus/Sprache",
+      "Frische als Nachsortierung nach der Fusion statt als dritter RRF-Summand"
+    ],
+    "nicht_direkt_uebertragbar": [
+      "Gewicht 20 ist an bge-m3 gekoppelt (mxbai brauchte nur w=3) - vor Uebernahme mit eigenem Einbettungsmodell messen",
+      "eigener gemessener fuse_semantic_led (nur bester Stichworttreffer zaehlt) ist eine schaerfere Variante als das Nachbar-Modell (Top-25 Raenge, 1:20 gewichtet) - die mildere Variante ist bei uns ungetestet",
+      "eigener 14-Faelle-Verlust vermutlich Folge der Kappung auf EINEN Treffer statt Tiefenbegrenzung plus Gewicht - neue Messung noetig, keine Bestaetigung durch die Nachbar-Zahlen"
+    ]
+  },
+  "koeder_pruefung": "README-Schlagzahlen (13%->63%) sind aus nicht nachpruefbarem privatem Korpus; die einzige oeffentlich reproduzierbare Messung liefert andere Zahlen (8.3%->75.0%). Kein Taeuschungsbefund, aber Marketingzahl != Nachrechenbare Zahl - fuer eigene Uebernahme zaehlt nur letztere.",
+  "produktivcode_geaendert": false
+}
