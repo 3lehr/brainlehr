@@ -175,7 +175,10 @@ def _selftest() -> None:
         assert rec1["orphans"] == 1, rec1
         assert rec1["path_hygiene"] == 2, rec1
         assert rec1["cross_project_lessons"] == 2, rec1
-        assert rec1["confidence_default_count"] == 9, rec1
+        # 11 seit knowledge_lint.py um die beiden Kategorie-10-Fixtures
+        # (n_no_source, n_has_source) erweitert wurde -- dort bereits als
+        # conf["count"] == 11 dokumentiert, hier nur nachgezogen.
+        assert rec1["confidence_default_count"] == 11, rec1
 
         out2 = aufzeichnen(db_path, log_path, history_path, now)
         rows = _read_history(history_path)

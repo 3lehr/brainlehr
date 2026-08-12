@@ -145,7 +145,7 @@ def demo() -> None:
     """Mutationsprobe: liefermenge_fall() durch eine Funktion ersetzt, die
     immer 0 liefert -> alle gemeldeten Durchschnitte (avg_nodes/avg_lessons/
     avg_zeichen) muessen auf 0 einbrechen."""
-    faelle = ag.lade_korpus()[:5]  # 5 reichen fuer die Probe, spart Laufzeit
+    faelle = ag.lade_korpus()[0][:5]  # lade_korpus() gibt (faelle, dubletten) zurueck; 5 reichen fuer die Probe, spart Laufzeit
     echt = messe_liefermenge(faelle)
     assert echt["avg_nodes"] > 0 or echt["avg_lessons"] > 0, (
         "echte Messung liefert nirgends etwas -- Mutationsprobe waere nicht aussagekraeftig")

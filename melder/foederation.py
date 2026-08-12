@@ -299,7 +299,10 @@ def _config_ddl() -> str:
 
     Ein handgebautes Testschema ist gruen und der Betrieb bricht ab, sobald
     eine Spalte fehlt (hier: updated_at NOT NULL). Lieber die Quelle lesen."""
-    text = (_w.parent / "schema.sql").read_text(encoding="utf-8")
+    # _w ist bereits die Wurzel (siehe Schleife oben, die genau bis zum
+    # Ordner mit schema.sql hochlaeuft) -- _w.parent zeigte einen Ordner zu
+    # hoch und brach den Selbsttest ausserhalb dieses Repos.
+    text = (_w / "schema.sql").read_text(encoding="utf-8")
     start = text.index("CREATE TABLE IF NOT EXISTS knowledge_config")
     return text[start:text.index(");", start) + 2]
 

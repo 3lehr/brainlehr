@@ -424,6 +424,8 @@ def ensure_category(db_path: Path, title: str, apply: bool) -> str:
             summary=f"Sammelknoten, angelegt von normbestand.py (N1, {datetime.now().astimezone().isoformat()}).",
             content="", project_id="shared", tags=["methodik"],
             source="normbestand.py::ensure_category", actor=ACTOR,
+            norm_entscheidung="keine_norm",
+            norm_entschieden_grund="Sammelknoten (Kategorie), keine Norm.",
         )
     finally:
         kms.DB_PATH = prev_db_path
