@@ -328,13 +328,7 @@ def s12_bericht(faelle: list[dict], conn) -> dict:
     die Aufloesung ueber knowledge_nodes vor jedem haelfte()-Aufruf."""
     knotenziele = [z for f in faelle for z in f["ziele"] if z["art"] == "knoten"]
     pfade = {z["id"] for z in knotenziele}
-    id_je_pfad = {}
-    if pfade:
-        platzhalter = ",".join("?" for _ in pfade)
-        for row in conn.execute(
-                f"SELECT path, id FROM knowledge_nodes WHERE path IN ({platzhalter})",
-                sorted(pfade)):
-            id_je_pfad[row["path"]] = row["id"]
+    id_je_pfad = teilung_s12.id_je_pfad(conn, pfade)
 
     je_haelfte = {teilung_s12.BEHANDELT: 0, teilung_s12.UNBEHANDELT: 0, "gemischt": 0}
     for f in faelle:

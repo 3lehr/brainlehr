@@ -55,13 +55,23 @@ def _leere_zelle() -> dict:
     return {"treffer": 0, "gesamt": 0}
 
 
-def messe(faelle: list[dict]) -> dict:
+def messe(faelle: list[dict], conn) -> dict:
     """Ein Abruf je Fall (Prompt), Zaehlung je (Haelfte, Satzart)-Zelle ueber
     alle Ziel-Instanzen des Falls. gefunden() prueft je Art getrennt --
-    ein Knotenpfad zaehlt nie als Lehrentreffer und umgekehrt."""
+    ein Knotenpfad zaehlt nie als Lehrentreffer und umgekehrt.
+
+    Der Korpus traegt fuer Knotenziele einen PFAD als 'id' (siehe
+    messungen/echtkorpus.py), teilung_s12.haelfte() teilt aber ueber die
+    knowledge_nodes.id (unveraenderlich, seit 655baf1 -- der Pfad ist es
+    nicht). Ohne Aufloesung wuerde hier eine andere, instabile Teilung
+    gemessen als die, nach der spaeter behandelt wird -- dieselbe
+    Fehlerklasse wie in echtkorpus.s12_bericht(), darum dieselbe Aufloesung
+    (teilung_s12.id_je_pfad), nicht eine zweite."""
     zellen: dict[str, dict[str, dict]] = {
         h: {s: _leere_zelle() for s in SATZARTEN} for h in HAELFTEN
     }
+    knoten_pfade = {z["id"] for f in faelle for z in f.get("ziele", []) if z["art"] == "knoten"}
+    id_je_pfad = teilung_s12.id_je_pfad(conn, knoten_pfade)
     einzel = []  # Nachvollziehbarkeit je Ziel-Instanz, kein Aggregat
     for fall in faelle:
         satzart = fall.get("satzart")
@@ -74,11 +84,15 @@ def messe(faelle: list[dict]) -> dict:
             art, id_ = ziel["art"], ziel["id"]
             if art == "knoten":
                 treffer = id_ in gefundene_knoten
+                schluessel = id_je_pfad.get(id_)
+                if schluessel is None:
+                    continue  # Pfad ohne (mehr) passenden Knoten -- keine Haelfte zuweisbar
             elif art == "lehre":
                 treffer = id_ in gefundene_lehren
+                schluessel = id_
             else:
                 continue  # unbekannte Art -- kein Ziel, das dieser Abruf je liefern koennte
-            halb = teilung_s12.haelfte(art, id_)
+            halb = teilung_s12.haelfte(art, schluessel)
             zelle = zellen[halb][satzart]
             zelle["gesamt"] += 1
             if treffer:
@@ -124,7 +138,9 @@ def main() -> None:
     a = p.parse_args()
 
     faelle = json.loads(a.korpus.read_text(encoding="utf-8"))["faelle"]
-    ergebnis = messe(faelle)
+    import speicher
+    with speicher.lesen() as conn:
+        ergebnis = messe(faelle, conn)
     zellen = ergebnis["zellen"]
     summe = _summe_je_haelfte(zellen)
     ok, begruendung = vergleichbar(zellen)
@@ -167,13 +183,33 @@ def main() -> None:
 
 
 def demo() -> None:
-    """Netzloser Selbsttest ohne DB-Zugriff: messe() mit einem gefaelschten
-    abrufen(), das feste Treffer liefert -- belegt Zellenzuordnung je
-    (Haelfte, Satzart) und die Mehrfach-Ziel-Behandlung eines Falls."""
+    """Netzloser Selbsttest (in-memory sqlite statt echter DB): messe() mit
+    einem gefaelschten abrufen(), das feste Treffer liefert -- belegt
+    Zellenzuordnung je (Haelfte, Satzart), Mehrfach-Ziel-Behandlung eines
+    Falls, UND dass der Korpus-Pfad ueber knowledge_nodes.id aufgeloest wird,
+    genau wie in messungen/echtkorpus.py::s12_bericht -- sonst misst diese
+    Datei eine andere Teilung als kern/teilung_s12.py::haelfte() selbst
+    tatsaechlich zieht (Auftrag A, 2026-08-12)."""
+    import sqlite3 as _sqlite3
     import teilung_s12 as t
 
-    k1, k2 = "/demo/eins", "/demo/zwei"
-    h1 = t.haelfte("knoten", k1)
+    k1, k2, k_verwaist = "/demo/eins", "/demo/zwei", "/demo/kein-knoten-mehr"
+    id1, id2 = "nodeid-eins", "nodeid-zwei"
+
+    conn = _sqlite3.connect(":memory:")
+    conn.row_factory = _sqlite3.Row
+    conn.execute("CREATE TABLE knowledge_nodes (path TEXT, id TEXT)")
+    conn.execute("INSERT INTO knowledge_nodes VALUES (?, ?)", (k1, id1))
+    conn.execute("INSERT INTO knowledge_nodes VALUES (?, ?)", (k2, id2))
+    conn.commit()  # k_verwaist bewusst NICHT eingetragen -- Pfad ohne Knoten mehr
+
+    # id != Pfad als sha256-Eingabe gewaehlt (nicht nur zufaellig verschieden):
+    # sonst koennte ein Test, der zufaellig dieselbe Haelfte trifft, die
+    # Pfad->id-Aufloesung vortaeuschen, ohne sie zu pruefen.
+    h1 = t.haelfte("knoten", id1)
+    assert h1 != t.haelfte("knoten", k1), (
+        "Testaufbau untauglich: id und Pfad ziehen zufaellig dieselbe Haelfte -- "
+        "eine falsche Aufloesung (Pfad statt id) waere hier nicht sichtbar")
 
     faelle = [
         {"prompt": "p1", "satzart": "auftrag",
@@ -182,6 +218,8 @@ def demo() -> None:
          "ziele": [{"art": "knoten", "id": k2}, {"art": "lehre", "id": "L-demo"}]},
         {"prompt": "p3", "satzart": "sonstiges",  # muss ignoriert werden
          "ziele": [{"art": "knoten", "id": k1}]},
+        {"prompt": "p4", "satzart": "frage",  # Pfad ohne passenden Knoten
+         "ziele": [{"art": "knoten", "id": k_verwaist}]},
     ]
 
     global abrufen
@@ -192,15 +230,20 @@ def demo() -> None:
             return [{"path": k1}], []
         if prompt == "p2":
             return [{"path": k2}], []  # L-demo NICHT gefunden
+        if prompt == "p4":
+            return [{"path": k_verwaist}], []
         return [], []
 
     abrufen = fake_abrufen  # ersetzt den Modul-Namen, den messe() aufruft
     try:
-        erg = messe(faelle)
+        erg = messe(faelle, conn)
     finally:
         abrufen = orig
+        conn.close()
 
     zellen = erg["zellen"]
+    # h1 ist ueber die ID gezogen -- faellt der Eintrag in die andere Zelle
+    # (Pfad statt id als Schluessel), schlaegt genau diese Zeile rot an.
     assert zellen[h1]["auftrag"] == {"treffer": 1, "gesamt": 1}, zellen[h1]["auftrag"]
     # p2 hat zwei Ziele mit je eigener Haelfte (Art wirkt auf haelfte(), siehe
     # kern/teilung_s12.py), darum ueber Summen pruefen statt ueber eine
@@ -208,13 +251,15 @@ def demo() -> None:
     # diesen Test irrelevant, nur DASS beide gezaehlt werden:
     gesamt_frage = sum(zellen[h]["frage"]["gesamt"] for h in HAELFTEN)
     treffer_frage = sum(zellen[h]["frage"]["treffer"] for h in HAELFTEN)
-    assert gesamt_frage == 2, gesamt_frage  # k2 + L-demo
+    assert gesamt_frage == 2, gesamt_frage  # k2 + L-demo, NICHT k_verwaist
     assert treffer_frage == 1, treffer_frage  # nur k2 gefunden, L-demo nicht
-    # dritter Fall (satzart 'sonstiges') taucht in keiner Zelle auf:
+    # dritter Fall (satzart 'sonstiges') taucht in keiner Zelle auf, vierter
+    # (Pfad ohne Knoten) ebenfalls nicht -- keine Haelfte zuweisbar:
     gesamt_ziele = sum(zellen[h][s]["gesamt"] for h in HAELFTEN for s in SATZARTEN)
-    assert gesamt_ziele == 3, gesamt_ziele  # k1 + k2 + L-demo, NICHT der dritte Fall
-    print("demo ok (3 Faelle synthetisch: Zellenzuordnung, Mehrfachziel, "
-          "unbekannte Satzart uebersprungen)")
+    assert gesamt_ziele == 3, gesamt_ziele  # k1 + k2 + L-demo, NICHT p3/p4
+    print("demo ok (4 Faelle synthetisch: Zellenzuordnung, Mehrfachziel, "
+          "unbekannte Satzart uebersprungen, Pfad->id-Aufloesung wie in "
+          "echtkorpus.s12_bericht, unaufloesbarer Pfad ohne Haelfte)")
 
 
 if __name__ == "__main__":

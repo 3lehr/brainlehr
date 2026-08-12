@@ -46,6 +46,21 @@ def haelfte(art: str, id_: str) -> str:
     return BEHANDELT if int(digest[:8], 16) % 2 == 0 else UNBEHANDELT
 
 
+def id_je_pfad(conn: sqlite3.Connection, pfade) -> dict[str, str]:
+    """Loest Knotenpfade zur (unveraenderlichen) id auf. haelfte() teilt ueber
+    die id, viele Aufrufer (Pruefkorpus, Messungen) kennen aber nur den Pfad --
+    diese Funktion ist die EINE Stelle fuer diese Aufloesung, damit sie nicht
+    an jeder Aufrufstelle neu (und ggf. abweichend) geschrieben wird. Pfade
+    ohne (mehr) passenden Knoten fehlen im Ergebnis-dict; der Aufrufer
+    entscheidet, was das fuer seinen Fall bedeutet (siehe messungen/echtkorpus.py)."""
+    pfade = sorted(set(pfade))
+    if not pfade:
+        return {}
+    platzhalter = ",".join("?" for _ in pfade)
+    return {row["path"]: row["id"] for row in conn.execute(
+        f"SELECT path, id FROM knowledge_nodes WHERE path IN ({platzhalter})", pfade)}
+
+
 def bestand(conn: sqlite3.Connection) -> dict[str, list[str]]:
     """Der volle Bestand (nicht der Auslieferungs-Deckel): alle Knoten ausser
     zurueckgezogenen, alle Lehren ausser aufgeloesten. Deckel (10/7) und
