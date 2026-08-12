@@ -67,6 +67,8 @@ Suite: 970 grün, 2 übersprungen, 11 xfail, 0 rot (vorher 945). Vektoren vollst
 
 **Der Korpus misst eine Bauform, nicht eine Frage** (`fa296b67`). Von 1903 eindeutigen Fragen nennen 0,9 % eine Adresse, von 776 Aufträgen 18,6 %. Kein Sammelkanal heilt das — gemessen, nicht vermutet. Jede veröffentlichte Abrufzahl braucht diesen Zusatz, sonst behauptet sie mehr als gemessen wurde (an Aufgabe 29 gehängt).
 
+**Handprobe offen, verschoben auf Betreiberwunsch (2026-08-13):** Ein Anlege- oder Einlade-Durchlauf **mit Geheimnis** in der nativen App (`8c1d528`) ist nicht gefahren — das Kennwortfeld verweigert synthetische Eingaben, macOS-Verhalten, kein Defekt. Belegt sind: „Ausweise anzeigen" gegen den echten Dienst mit drei echten Einträgen, die Fehlerweiterleitung im Swift-Code, der Negativfall über die Python-Suite. Für Schritt 3 gilt daher **„gebaut und in Teilen belegt, am Gerät nicht durchgefahren"** — nicht „funktioniert". Verschieben kostet nichts, weil die AppleScript-Fassung die drei Abläufe weiterhin trägt; genau deshalb steht sie noch auf dem Schreibtisch.
+
 **Handprobe offen:** `prefers-reduced-motion` ist für Baum, Bedeutung und Spuren nur gelesen, nicht am laufenden Bild gesehen — die Browser-Werkzeuge können die Systemeinstellung nicht umschalten. Dieselbe wiederverwendete Bedingung wie in Ansicht 4, die reine Funktion ist darauf geprüft. Ein Schluss, keine Sichtprobe.
 
 ## Wartet auf den Betreiber
