@@ -1517,16 +1517,41 @@ _KNOWLEDGE_READ_PROJEKTION: dict[str, list[tuple[str, str]]] = {
     "gast": [("wartung", "wartungshinweis")],
 }
 
+# VOLLZUGRIFF, KEINE PROJEKTION (Auftrag 2026-08-12, Befund Enigma-Vorrangregel):
+# die Zweckprojektion ist eine Schranke gegenueber DRITTEN -- einem
+# aussenstehenden Empfaenger, der nur den fuer seinen Zweck freigegebenen
+# Ausschnitt sehen soll (Raumplanungs-Software, Gast-Kiosk). Sie ist keine
+# Selbstbeschraenkung gegenueber dem Eigentuemer der Daten oder gegenueber
+# internen Mitarbeiterrollen mit allgemeinem, unbeschraenktem Leserecht
+# (ROLLEN in kern/ausweis.py: 'betreiber' traegt '*', 'fachkundig' und
+# 'schreiber' tragen ungebunden 'wissen:lesen'). Diese drei Rollen stehen
+# darum hier ausdruecklich, nicht weil sie "vergessen" wurden.
+#
+# Damit ist die Voreinstellung fuer JEDES Rolle/Zweck-Paar, das in KEINER der
+# beiden Tabellen steht, Ablehnung -- nicht nur fuer aussenstehende Rollen.
+# Vorher liess `not policies: return None` (voller Datensatz) jede unbekannte
+# Rolle durch, betreiber eingeschlossen -- zufaellig richtig fuer den
+# Eigentuemer, aber genauso falsch fuer jede kuenftige externe Rolle, die
+# hier zu ergaenzen vergessen wird.
+_KNOWLEDGE_READ_VOLLZUGRIFF = frozenset({"betreiber", "fachkundig", "schreiber"})
+
 
 def _knowledge_read_projection(row: sqlite3.Row) -> dict | None:
     if _ist_gesperrt(row["freigabe"]):
         return {"error": "zugriff verweigert"}
 
     ausw = ausweis.loese_auf()
+    if not ausw.beglaubigt:
+        # KEIN ABWEISEN OHNE AUSWEIS -- bewusste, unveraenderte Entscheidung,
+        # siehe kern/ausweis.py. Nicht Gegenstand dieser Verschaerfung.
+        return None
+    if _KNOWLEDGE_READ_VOLLZUGRIFF.intersection(ausw.rollen):
+        return None
+
     policies = [paar for r in ausw.rollen
                 for paar in _KNOWLEDGE_READ_PROJEKTION.get(r, [])]
-    if not ausw.beglaubigt or not policies:
-        return None
+    if not policies:
+        return {"error": "zugriff verweigert"}
 
     tags = set(json.loads(row["tags"]) if row["tags"] else [])
     for purpose, field in policies:
