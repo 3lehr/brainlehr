@@ -51,15 +51,32 @@ def test_aufgezeichnete_verteilung_ist_aus_dem_code_herleitbar():
     d = json.loads(AUFZEICHNUNG.read_text())
     korrektur = d.get("korrektur_2026-08-12")
     assert korrektur, "Korrekturblock fehlt -- die Aufzeichnung behauptet wieder ungeprueft"
-    assert korrektur["verteilung_gerechnet"] == _gerechnet(), (
-        "Korrigierte Aufzeichnung weicht von der Rechnung ab.\n"
-        f"aufgezeichnet: {korrektur['verteilung_gerechnet']}\n"
-        f"gerechnet:     {_gerechnet()}\n"
-        "Der Bestand waechst -- wenn nur die Gesamtzahl steigt, ist die "
-        "Aufzeichnung nachzuziehen. Verschieben sich die Haelften staerker als "
-        "der Zuwachs, hat sich die Zuordnung geaendert, und DAS entwertet jede "
-        "S12-Messung."
-    )
+    war, ist = korrektur["verteilung_gerechnet"], _gerechnet()
+
+    # Nicht auf Gleichheit pruefen. Am Speicher wird waehrend des Laufs aus
+    # anderen Projekten geschrieben -- ein Test auf absolute Zahlen ist dann
+    # nicht rot, weil etwas kaputt ist, sondern weil jemand gearbeitet hat.
+    # (Genau daran ist die erste Fassung dieses Tests gescheitert, im vollen
+    # Lauf am 2026-08-12: allein, gruen; in der Suite, rot.)
+    #
+    # Geprueft wird stattdessen die Eigenschaft, auf die es ankommt: eine
+    # einmal vergebene Haelfte aendert sich nie. Daraus folgt zwingend, dass
+    # jede Haelfte nur WACHSEN kann, und zwar hoechstens um den Zuwachs
+    # insgesamt. Diese Schranke haelt bei jedem Bestand und faengt trotzdem
+    # jede echte Umverteilung.
+    for art in ("knoten", "lehre"):
+        zuwachs = ist[art]["gesamt"] - war[art]["gesamt"]
+        assert zuwachs >= 0, f"{art}: Bestand geschrumpft ({war[art]} -> {ist[art]})"
+        for haelfte in ("behandelt", "unbehandelt"):
+            delta = ist[art].get(haelfte, 0) - war[art].get(haelfte, 0)
+            assert 0 <= delta <= zuwachs, (
+                f"{art}/{haelfte}: Zuordnung hat sich verschoben.\n"
+                f"aufgezeichnet: {war[art]}\ngerechnet:     {ist[art]}\n"
+                f"Diese Haelfte aenderte sich um {delta}, der Gesamtzuwachs "
+                f"betraegt aber nur {zuwachs}. Eine vergebene Haelfte darf sich "
+                "nie aendern -- passiert es doch, ist jede S12-Messung wertlos, "
+                "und niemand koennte sagen, ab wann."
+            )
 
 
 @pytest.mark.skipif(not AUFZEICHNUNG.exists(), reason="keine Aufzeichnung an diesem Ort")
