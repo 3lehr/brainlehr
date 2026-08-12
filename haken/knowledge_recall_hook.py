@@ -31,7 +31,7 @@ _w = _Path(__file__).resolve().parent
 while not (_w / "schema.sql").exists() and _w != _w.parent:
     _w = _w.parent
 _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
-                 ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
+                 ("kern", "haken", "schreibpruefstand", "melder", "migrationen", "berichte")]
 from collections import Counter
 from datetime import datetime, timezone
 import hashlib
@@ -85,6 +85,16 @@ import embeddings  # noqa: E402
 # (norm_rang, Hebb-Kanten), eigenes Modul (Monolith-Stopp hier, siehe dessen
 # Kopf), aus diesem Hook nur AUFGERUFEN (Auftrag 2026-08-08).
 import rangfolge  # noqa: E402
+# erstverwendung.py liegt in berichte/ -- Auftrag 2026-08-12: Entscheidung bei
+# der ERSTEN VERWENDUNG statt beim Import (kern/regelpaket.py legt Fremdregeln
+# mit norm_entscheidung='offen' ab, niemand fragt je nach). Gemessen: reiner
+# Funktionsaufruf norm_ableiten() kostet ~0,08ms je Knoten (1000x-Lauf lokal
+# gemessen) -- gegen das 2,3s-Zeitbudget des Hooks eine Rundungsdifferenz, ein
+# eigener selteneren Ausloeser (nur 1. Prompt/Sitzung, Subprozess) loest kein
+# Kostenproblem, das es nicht gibt. Nur norm_ableiten() (reine Textanalyse),
+# keine DB-Verbindung -- gattung_ableiten() braucht 'source', das hier nicht
+# geladen wird und fuer norm_rang ohnehin nicht die Frage ist.
+from erstverwendung import norm_ableiten as _erstverwendung_norm_ableiten  # noqa: E402
 # suchpfad_abruf.py liegt in diesem Ordner (haken/) -- eigenes Modul (Monolith-
 # Stopp hier), nur der Kandidaten-Beschaffung wegen aufgerufen (S9, Auftrag
 # 2026-08-09). Aus diesem Hook nur AUFGERUFEN, s. _suchpfad_aktiv() oben.
@@ -910,6 +920,84 @@ def _maybe_explore(nodes: list, candidates: list, rand=None, log_path: str | Non
     return out
 
 
+def _attach_norm_offen(conn: sqlite3.Connection, nodes: list) -> None:
+    """Haengt norm_entscheidung an die bereits ausgewaehlten (<= MAX_NODES)
+    Knoten an -- fuer den Erstverwendungs-Vorschlag in main(). Eigener Query
+    auf dem Primaerschluessel NACH der Auswahl, kein Teil von Rangfolge/Radar
+    (die kennen die Spalte nicht und sollen sie nicht kennen). Fehlt die
+    Spalte (z.B. schlanke Test-DB ohne norm_entscheidung) -> still nichts
+    anhaengen, kein Fehler nach oben."""
+    ids = [n["id"] for n in nodes if n.get("id")]
+    if not ids:
+        return
+    try:
+        platzhalter = ",".join("?" * len(ids))
+        rows = conn.execute(
+            f"SELECT id, norm_entscheidung FROM knowledge_nodes WHERE id IN ({platzhalter})",
+            ids,
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return
+    lookup = {r["id"]: r["norm_entscheidung"] for r in rows}
+    for n in nodes:
+        if n.get("id") in lookup:
+            n["norm_entscheidung"] = lookup[n["id"]]
+
+
+def _bereits_vorgeschlagen(ids: list[str], log_path: str | None = None) -> set:
+    """Knoten-IDs, denen schon einmal ein Erstverwendungs-Vorschlag gezeigt
+    wurde -- ueber ALLE Sitzungen hinweg (anders als _seen_this_session:
+    'erstes Auftreten ueberhaupt', nicht 'schon in dieser Sitzung'). Scan von
+    recall_log.jsonl (deckelt sich selbst, s. RECALL_LOG_MAX_BYTES). Kein
+    Log/Fehler -> leere Menge -- im Zweifel wird gezeigt, nicht geschluckt."""
+    if not ids:
+        return set()
+    log_path = log_path if log_path is not None else RECALL_LOG
+    gezeigt: set = set()
+    try:
+        with open(log_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    e = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                gezeigt.update(e.get("erstverwendung_vorschlag") or [])
+    except OSError:
+        pass
+    return gezeigt
+
+
+def _erstverwendung_zeile(n: dict) -> str:
+    """Eine Vorschlagszeile fuer EINEN offenen Knoten (norm_entscheidung ==
+    'offen'). Nutzt nur norm_ableiten() -- reine Textanalyse, keine DB, keine
+    Nebenwirkung, schreibt nichts. content liegt hier nicht vor (query()s
+    SELECT holt es nicht) -- title+summary reichen, erstverwendung.py laesst
+    content laut eigener Signatur bewusst optional (str | None)."""
+    norm = _erstverwendung_norm_ableiten(n.get("title") or "", n.get("summary") or "", None)
+    if norm["ableitbar"]:
+        return (f"- ERSTVERWENDUNG [{n['path']}]: {norm['begruendung']} "
+                f"-> norm_entscheidung={norm['norm_entscheidung']} vorschlagen (Vorschlag, keine Setzung).")
+    felder = ", ".join(norm["mensch_muss_setzen"])
+    return f"- ERSTVERWENDUNG [{n['path']}]: {norm['grund']} -- du entscheidest: {felder}."
+
+
+def _erstverwendungs_vorschlaege(nodes: list, log_path: str | None = None) -> tuple[list[str], list[str]]:
+    """(Zeilen, gezeigte IDs) fuer alle Knoten in `nodes` mit
+    norm_entscheidung == 'offen', die noch KEINEN Vorschlag hatten (s.
+    _bereits_vorgeschlagen). Leer -> ([], []), main() haengt dann nichts an."""
+    offene = [n for n in nodes if n.get("norm_entscheidung") == "offen" and n.get("id")]
+    if not offene:
+        return [], []
+    schon = _bereits_vorgeschlagen([n["id"] for n in offene], log_path)
+    neu = [n for n in offene if n["id"] not in schon]
+    if not neu:
+        return [], []
+    return [_erstverwendung_zeile(n) for n in neu], [n["id"] for n in neu]
+
+
 def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | None = None,
           prompt: str | None = None, embed_fn=None) -> tuple[list, list]:
     """ADR-033 Schritt 2: erst BEWERTEN (bm25 ueber knowledge_fts/lessons_fts,
@@ -991,6 +1079,7 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
             lessons = [s[3] for s in scored[:MAX_LESSONS]]
         except sqlite3.Error:
             pass
+        _attach_norm_offen(conn, nodes)
         conn.close()
         return nodes, lessons
     try:
@@ -1079,6 +1168,7 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
         lessons = [s[3] for s in scored[:MAX_LESSONS]]
     except sqlite3.Error:
         pass
+    _attach_norm_offen(conn, nodes)
     conn.close()
     return nodes, lessons
 
@@ -1127,7 +1217,8 @@ def _messparameter_kennung() -> str | None:
 def log_recall(nodes: list, lessons: list, log_path: str | None = None,
                 cwd: str | None = None, session_id: str | None = None,
                 prompt: str | None = None, agent_id: str | None = None,
-                agent_type: str | None = None) -> None:
+                agent_type: str | None = None,
+                erstverwendung_ids: list[str] | None = None) -> None:
     """Haelt fest, WAS gezogen wurde -- Beiwerk, nie ein Grund fuer den Abruf
     zu scheitern. Deshalb: alles in try/except, jeder Fehler wird verschluckt.
     Nur bei echten Treffern aufgerufen -- ein leerer Abruf erzeugt keine Zeile,
@@ -1185,6 +1276,12 @@ def log_recall(nodes: list, lessons: list, log_path: str | None = None,
         }
         if prompt is not None and _herkunftsmodus() != "aus":
             payload["prompt"] = prompt
+        # Erstverwendung (Auftrag 2026-08-12): welche Knoten-IDs GERADE einen
+        # Vorschlag bekamen -- Schluessel nur bei Treffer gesetzt (wie
+        # 'prompt' oben), damit _bereits_vorgeschlagen() alte Zeilen ohne den
+        # Schluessel unveraendert ueberspringt (.get() liest sie als leer).
+        if erstverwendung_ids:
+            payload["erstverwendung_vorschlag"] = erstverwendung_ids
         entry = json.dumps(payload, ensure_ascii=False)
         if os.path.exists(log_path) and os.path.getsize(log_path) > RECALL_LOG_MAX_BYTES:
             with open(log_path, encoding="utf-8") as f:
@@ -1423,11 +1520,21 @@ def main() -> None:
         log_recall([], [], cwd=cwd, session_id=session_id, prompt=prompt,
                    agent_id=payload.get("agent_id"), agent_type=payload.get("agent_type"))
         return
+    # Erstverwendung (Auftrag 2026-08-12): Vorschlag fuer offene Knoten
+    # (norm_entscheidung == 'offen') UNTER der gerade getroffenen Auswahl --
+    # kein eigener Suchpfad, reiner Zusatz. Gemessen: ~0,08ms je Knoten
+    # (norm_ableiten(), reine Textanalyse) -- gegen das 2,3s-Zeitbudget
+    # dieses Hooks eine Rundungsdifferenz, jeden Prompt zu pruefen kostet
+    # nichts Messbares. Vor log_recall(), damit die gezeigten IDs in
+    # DERSELBEN Protokollzeile landen wie der Rest des Treffers.
+    erstverwendung_zeilen, erstverwendung_ids = _erstverwendungs_vorschlaege(nodes)
+
     # agent_id/agent_type: GEMESSEN nicht vorhanden im UserPromptSubmit-Payload
     # (s. log_recall()-Docstring) -- .get() trotzdem statt hartem None, falls
     # der Haltepunkt sie kuenftig doch liefert.
     log_recall(nodes, lessons, cwd=cwd, session_id=session_id, prompt=prompt,
-               agent_id=payload.get("agent_id"), agent_type=payload.get("agent_type"))
+               agent_id=payload.get("agent_id"), agent_type=payload.get("agent_type"),
+               erstverwendung_ids=erstverwendung_ids)
 
     # FRAGEFORM statt Fundliste (Konsil 2026-08-11, Stimme 3, Pruefspruch #3):
     # Von der Closed-Loop-Infusion bei NASA/ESA ist die Kontrollinstanz hier
@@ -1469,6 +1576,7 @@ def main() -> None:
                 herkunft += f", Projekt {'/'.join(sorted(projs))}"
         lines.append(f"- {tag} ({l['type']}, {l['occurrences']}×{herkunft}){alter(l.get('last_seen'))}{fremd}: "
                      f"{entschaerfe_fuer_ausgabe(l['description'])}{prev}")
+    lines.extend(erstverwendung_zeilen)
     lines.append("</knowledge-recall>")
     # Bereinigung, Punkt 2 der Stiftshuetten-Uebernahme: was das Haus
     # verlaesst, wird angesehen -- vorerst nur angesehen (Entscheidung des
@@ -1497,6 +1605,13 @@ def main() -> None:
     if pfade:
         teile.append("Wissen " + ", ".join(pfade[:3])
                      + (f" und {len(pfade) - 3} weitere" if len(pfade) > 3 else ""))
+    if erstverwendung_ids:
+        # In die systemMessage, nicht nur in additionalContext: das ist der
+        # einzige belegt gelesene Kanal (additionalContext geht nur ans
+        # Modell, s. Kommentar unten) -- ein Vorschlag, der nur im Kontext
+        # steht, erreicht den Menschen so wenig wie eine Zeile in einer Datei,
+        # die niemand oeffnet.
+        teile.append(f"Erstverwendung {len(erstverwendung_ids)} Knoten ohne Norm-Entscheidung")
     ausgabe = {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
                                       "additionalContext": block}}
     if teile:
