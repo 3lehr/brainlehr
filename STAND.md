@@ -1,31 +1,24 @@
-# STAND brainlehr — 2026-08-12T07:00:00+0200
+# STAND brainlehr — 2026-08-12T08:30:00+0200
 
-Massgeblich ist die Aufgabenliste der Sitzung, nicht diese Datei. Beim Sitzungsstart zeigt `melder/offene_arbeit.py` den offenen Teil von `docs/SPRINTS.md` — in jedem Arbeitsbaum.
+Massgeblich ist die Aufgabenliste der Sitzung. Beim Sitzungsstart zeigt `melder/offene_arbeit.py` den offenen Teil von `docs/SPRINTS.md` — in jedem Arbeitsbaum.
 
-## Sprints
+## S12: Teilungsschlüssel gewechselt, Pfad → Kennung
 
-21 gesamt: 9 erledigt, 6 teilweise, 6 offen. Status mit Beleg je Zeile in `docs/SPRINTS.md`.
+Der Pfad ist veränderlich, und das ist belegt: `migrationen/nachziehung_pfad_hygiene_2026-08-07.py` hat Pfade bereits einmal in großer Zahl umgeschrieben. Ein Knoten hätte lautlos die Hälfte wechseln können. Gewechselt in `655baf1`, bevor ein einziger Text neu formuliert war — danach wäre der Wechsel unmöglich gewesen.
 
-## Erledigt seit 05:00
+Verschiebung durch den Wechsel: 572 Knoten von unbehandelt nach behandelt, 511 in die Gegenrichtung, 1042 unverändert. Neue Verteilung 1070 / 1055. Die alte Aufzeichnung bleibt wortgleich stehen, die neue liegt daneben (`runs/teilung_s12_2026-08-12_id.json`).
 
-| | Commit |
-|---|---|
-| Sprint-Register mit Beleg je Zeile | `ce2524e` |
-| Offene Arbeit beim Sitzungsstart, aus der Datei statt aus dem Sitzungsspeicher | `2daf68e` |
-| Vier Haken-Skripte im hub waren seit dem Umzug still tot | hub `469c147f8` |
-| Teilung fragt den Auflöser; Wache fängt jeden verdrahteten DB-Namen | `aa811ee` |
-| Eingefrorene Teilung berichtigt — die Zahl passte nie zum Code | `fa33bf0` |
-| Teilungstest prüft die Schranke statt der Zahl | `934e481` |
+**Läuft gerade:** Ausgangsmessung unter dem neuen Schlüssel. Die alte (`8f3ae01`) galt für die Pfad-Teilung und ist als Vergleichsbasis wertlos.
 
-Suite: 857 grün, 1 übersprungen, 7 xfail, 0 rot.
+## Zurückgezogen
 
-## Der Befund der Nacht, in drei Gestalten
+Der Befund „eingefrorene Teilung stimmt nicht mit dem Code überein" war **falsch** (`0cd159e`). Meine Gegenrechnung baute `bestand()` nach und nahm die Kennung, während der Code den Pfad nahm. Ein Test, der die Rechnung des Codes nachbaut, prüft seine eigene Nachbildung — und ist dann nicht bloß falsch, sondern überzeugend. Lehre `L-747b33`, umgeschrieben.
 
-Dieselbe Fehlerklasse, dreimal anders verkleidet:
+## Suite
 
-1. **Ein Werkzeug, das still nichts tut.** `kern/normbezug.py` meldete jedes Normzitat als unbelegt, weil sein Pfad ins Leere zeigte. `if not pfad.exists(): return "unbelegt"` — „geprüft und nichts gefunden" war von „gar nicht geprüft" nicht zu unterscheiden. Kriterium und zehn weitere Fundstellen: Knoten `73ed942f`.
-2. **Ein Kanal, der still nicht zustellt.** Der Eilmeldungs-Haken war von 21:26 bis 06:00 tot, `exit 0`, kein Mucks — bei drei wartenden dringenden Meldungen. Vierter Fundort derselben Umbenennung, und der erste außerhalb von brainlehr: eine Wache endet an der Repo-Grenze, ein Dateiname nicht.
-3. **Eine Aufzeichnung, die still etwas Falsches behauptet.** Die eingefrorene Teilung nannte 1008/1115, der Code im selben Commit liefert 1070/1055. Weil die Datei sich als unverändert*lich* ausgibt, wird sie gelesen statt nachgerechnet. „Unveränderlich" und „geprüft" sind zwei Eigenschaften; wer nur die erste herstellt, hat einen fälschungssicheren Irrtum (`L-747b33`).
+860 grün, 1 übersprungen, 7 xfail, 0 rot.
+
+Zwischenzeitlich beschädigt und repariert: Ein `git stash push … && … ; git stash pop` in einem verketteten Befehl kollidierte mit einem drei Stunden alten Stash — Konfliktmarker in zwei Testdateien, ein doppelter Tabellenblock in `schema.sql`. Aus HEAD zurückgeholt, alter Stash entsorgt, Lehre `L-56a352`. Für Rot-Proben künftig `git show <commit>:<datei>` in eine Datei außerhalb des Baums.
 
 ## Offen, ohne Betreiber
 
