@@ -1,33 +1,41 @@
-# STAND brainlehr — 2026-08-12T08:30:00+0200
+# STAND brainlehr — 2026-08-12T14:00:00+0200
 
-Massgeblich ist die Aufgabenliste der Sitzung. Beim Sitzungsstart zeigt `melder/offene_arbeit.py` den offenen Teil von `docs/SPRINTS.md` — in jedem Arbeitsbaum.
+Massgeblich ist die Aufgabenliste der Sitzung. `melder/offene_arbeit.py` zeigt beim Sitzungsstart den offenen Teil von `docs/SPRINTS.md` — in jedem Arbeitsbaum.
 
-## S12: Teilungsschlüssel gewechselt, Pfad → Kennung
+## Der Faden dieses Vormittags
 
-Der Pfad ist veränderlich, und das ist belegt: `migrationen/nachziehung_pfad_hygiene_2026-08-07.py` hat Pfade bereits einmal in großer Zahl umgeschrieben. Ein Knoten hätte lautlos die Hälfte wechseln können. Gewechselt in `655baf1`, bevor ein einziger Text neu formuliert war — danach wäre der Wechsel unmöglich gewesen.
+Eine Fehlerklasse, fünf Erscheinungsformen. Gemeinsam ist ihnen, dass nichts gemeldet wurde:
 
-Verschiebung durch den Wechsel: 572 Knoten von unbehandelt nach behandelt, 511 in die Gegenrichtung, 1042 unverändert. Neue Verteilung 1070 / 1055. Die alte Aufzeichnung bleibt wortgleich stehen, die neue liegt daneben (`runs/teilung_s12_2026-08-12_id.json`).
+1. **Ein Werkzeug, das still nichts tut** — `kern/normbezug.py` meldete jedes Normzitat als unbelegt, weil sein Pfad ins Leere zeigte.
+2. **Ein Kanal, der still nicht zustellt** — der Eilmeldungs-Haken war neun Stunden tot, `exit 0`, bei drei wartenden Meldungen.
+3. **Eine Aufzeichnung, die still etwas Falsches behauptet** — die eingefrorene S12-Teilung. Widerrufen: der Fehler lag in **meiner** Gegenrechnung.
+4. **Ein Prüfer, der das Gegenteil bestätigt** — „§ 71 GEG" wurde als *belegt* gemeldet, obwohl der Treffer die Streichung dokumentiert. Behoben, neuer Status `ausser_kraft`.
+5. **Ein Melder, der über ein Siebtel spricht und wie über das Ganze klingt** — `planbindung.py` sieht 23 von 139 Planabschnitten (`L-65d33e`).
 
-**Läuft gerade:** Ausgangsmessung unter dem neuen Schlüssel. Die alte (`8f3ae01`) galt für die Pfad-Teilung und ist als Vergleichsbasis wertlos.
+## Erledigt seit 08:30
 
-## Zurückgezogen
+| | Commit |
+|---|---|
+| Teilungsschlüssel Pfad → Kennung, 1083 Knoten verschoben | `655baf1` |
+| Messung teilt über dieselbe Kennung wie die Behandlung | `32d4e0a`, `715de14` |
+| Normbezug unterscheidet Erwähnung von Geltung | `a793432` |
+| Doktrin: was aus Modellwissen entstehen darf | `1eaf581` |
+| Dritter Melder: Zahl aus Annahme statt aus Quelle | `e57216b` |
+| Zweckprojektion trägt mehrere Rolle/Zweck-Paare | `b20a58a` |
+| Ausweis-Geheimnis aus eigener Datei, verträgt Kommentare | `776e338`, `bb3f644` |
+| Entscheidende Planabschnitte werden Knoten | `9b1d932`, `8a99a88` |
 
-Der Befund „eingefrorene Teilung stimmt nicht mit dem Code überein" war **falsch** (`0cd159e`). Meine Gegenrechnung baute `bestand()` nach und nahm die Kennung, während der Code den Pfad nahm. Ein Test, der die Rechnung des Codes nachbaut, prüft seine eigene Nachbildung — und ist dann nicht bloß falsch, sondern überzeugend. Lehre `L-747b33`, umgeschrieben.
-
-## Suite
-
-860 grün, 1 übersprungen, 7 xfail, 0 rot.
-
-Zwischenzeitlich beschädigt und repariert: Ein `git stash push … && … ; git stash pop` in einem verketteten Befehl kollidierte mit einem drei Stunden alten Stash — Konfliktmarker in zwei Testdateien, ein doppelter Tabellenblock in `schema.sql`. Aus HEAD zurückgeholt, alter Stash entsorgt, Lehre `L-56a352`. Für Rot-Proben künftig `git show <commit>:<datei>` in eine Datei außerhalb des Baums.
-
-## Offen, ohne Betreiber
-
-Aufgaben 4 bis 11 der Liste. Nächste ohne Vorbedingung: #5 Korpus-Voreingenommenheit (72 Aufträge gegen 6 Fragen), #6 die zehn Fundstellen einzeln, #11 die 52 Selbsttests außerhalb jeder Suite (8 davon rot).
+Suite: 882 grün, 1 übersprungen, 0 rot.
 
 ## Wartet auf den Betreiber
 
-`BRAINLEHR_GEHEIMNIS` steht im Klartext in `~/.claude.json` und gilt als kompromittiert — **Rotation tippt er selbst**, Aufgabe #10 bereitet nur die Stelle vor. · Rang für die Arbeitsweise-Direktive `2c365d54` (Rang 1 und 2 verlangen einen menschlichen Entscheider, der Speicher hat mich zu Recht abgewiesen). · `actor` in `mcpServers.knowledge.env`. · NIST-Teilbestand unbenannt. · ASRS braucht einen Ausfuhrlauf. · Eine ältere dringende Meldung fragt nach openlehr.
+**Aufgabe 20 und 23 gehören zusammen** — derselbe Ordner: Ausweisordner aus der Reichweite des Prozesses nehmen (`selbstbedienung_moeglich()` meldet weiterhin True), Geheimnis rotieren, Eintrag aus `~/.claude.json` entfernen.
+Aufgabe 7: MAUDE-Import holt Daten über das Netz — ein Download braucht das ausdrückliche Wort.
+Aufgabe 14: entschieden (Korpus erweitern), aber die Machbarkeit ist knapp — 31 Knotenziele gegen die gerechneten 38 je Hälfte.
 
 ## Nicht vergessen
 
-Läufe über zehn Minuten gehören nicht in einen Subagenten — sie enden im Wartezustand (`L-1056bb`, dreimal). Agenten committen nur mit Pfadangabe (`L-73020e`). Tests gegen absolute Zahlen des Bestands sind rot, sobald jemand nebenan arbeitet — Eigenschaft prüfen, nicht Zahl.
+Ein Melder nennt die geprüfte Menge, nicht nur die Befunde — Vorbild `melder/messregeln.py` mit `{"geprueft": 0}`.
+Läufe über zehn Minuten gehören nicht in einen Subagenten (`L-1056bb`).
+Kein `git stash` für Rot-Proben — `git show <commit>:<datei>` in eine Datei außerhalb des Baums (`L-56a352`).
+Wenn die Antwort auf einen Vorfall ein Dokument ist und kein Testfall, ist die nächste Wiederholung eingeplant (`L-122b1c`) — heute innerhalb von vier Stunden eingetreten.
