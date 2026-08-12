@@ -1,4 +1,4 @@
--- Ausweisstelle.app -- Ausweise und Einladungen fuer brainlehr, ohne Terminal.
+-- brainlehr.app -- Ausweise, Einladungen und der Wissensraum, ohne Terminal.
 --
 -- WARUM SYSTEMDIALOGE UND KEINE EIGENE OBERFLAECHE: Die Dialoge von macOS sind
 -- ab Werk mit VoiceOver bedienbar, vollstaendig tastaturerreichbar und folgen
@@ -13,10 +13,12 @@
 -- und in keiner Prozessliste. mktemp legt sie mit Rechten 600 an; geloescht
 -- wird sie in jedem Fall, auch nach einem Fehler.
 --
--- Erzeugen:  osacompile -o ~/Desktop/Ausweisstelle.app Ausweisstelle.applescript
+-- Erzeugen:  osacompile -o ~/Desktop/brainlehr.app brainlehr.applescript
 
 property kRepo : "/Volumes/daten/Begod2026/brainlehr"
 property kStarter : "pflege/ausweis_start.sh"
+property kWissensraumStarter : "pflege/wissensraum_start.sh"
+property kOffeneArbeit : "melder/offene_arbeit.py"
 
 on run
 	repeat
@@ -31,6 +33,10 @@ on run
 				listeZeigen()
 			else if wahl starts with "Rollen erklaeren" then
 				rollenZeigen()
+			else if wahl starts with "Wissensraum" then
+				wissensraumFluss()
+			else if wahl starts with "Offene Arbeit" then
+				offeneArbeitFluss()
 			end if
 		on error fehlertext number fehlernummer
 			if fehlernummer is -128 then
@@ -47,8 +53,10 @@ on waehleAktion()
 		"Ausweis anlegen — fuer einen Menschen oder ein Programm", ¬
 		"Einladung erzeugen — PIN, damit sich jemand selbst anmeldet", ¬
 		"Ausweise anzeigen — wer hat gerade Zugang", ¬
-		"Rollen erklaeren — was jede Rolle darf"} ¬
-		with title "Ausweisstelle" ¬
+		"Rollen erklaeren — was jede Rolle darf", ¬
+		"Wissensraum öffnen — Server starten, falls noetig, und im Browser zeigen", ¬
+		"Offene Arbeit anzeigen — welche Sprints noch offen sind"} ¬
+		with title "brainlehr" ¬
 		with prompt "Was moechtest du tun?" ¬
 		default items {"Einladung erzeugen — PIN, damit sich jemand selbst anmeldet"} ¬
 		OK button name "Weiter" cancel button name "Beenden"
@@ -121,6 +129,21 @@ on rollenZeigen()
 		"gast — sieht nur, was ausdruecklich freigegeben ist." & return & return & ¬
 		"meldeamt — darf Ausweise ausstellen, sonst nichts. Sparsam vergeben." ¬
 		buttons {"Schliessen"} default button 1
+end run
+
+-- Startet den Wissensraum-Server, falls er nicht schon laeuft, und oeffnet
+-- ihn im Standardbrowser. Braucht kein Geheimnis -- der Server liest nur.
+on wissensraumFluss()
+	set dieUrl to do shell script "cd " & q(kRepo) & " && " & q(kRepo & "/" & kWissensraumStarter)
+	open location dieUrl
+end run
+
+-- Liest docs/SPRINTS.md und zeigt den Stand. Reiner Lesevorgang, dauert
+-- unter einer Sekunde, kein Geheimnis noetig.
+on offeneArbeitFluss()
+	set derText to do shell script "cd " & q(kRepo) & " && /usr/bin/python3 " & q(kOffeneArbeit)
+	if derText is "" then set derText to "Zur Zeit nichts Offenes vermerkt."
+	display alert "Offene Arbeit" message derText buttons {"Schliessen"} default button 1
 end run
 
 -- ------------------------------------------------------------- Bausteine --
