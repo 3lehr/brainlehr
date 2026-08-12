@@ -1,0 +1,115 @@
+{
+  "datum": "2026-08-12T20:15:00+0200",
+  "auftrag": "Betreiberfrage woertlich: 'warum greifen unsere ganze regeln nicht? subagent soll das klaeren und testen!' -- Messauftrag, kein Bauauftrag.",
+  "anlass_beispiel": "2026-08-12: vier Agenten auf eine macOS-Anwendung angesetzt, bevor ein Plan zu Schichtung/Portierbarkeit existierte -- CLAUDE.md-Regel 'Plan vor Umsetzung' hat nicht gegriffen.",
+  "messskript": "messungen/regelgriff_2026-08-12.py",
+  "schritt1_bestand": {
+    "zaehlweise": "Eine Regel = ein '## '-Abschnitt in einer CLAUDE.md (grep -c '^## ', gleiche Zaehlweise wie kern/regelpaket.py); bei knowledge_nodes eine Regel = eine Zeile mit norm_rang IS NOT NULL (normierte Schicht laut schema.sql, getrennt von rohen/'offen'-Wissenseintraegen).",
+    "quellen": [
+      {"quelle": "~/.claude/CLAUDE.md (global)", "anzahl": 19, "methode": "grep -c '^## '"},
+      {"quelle": "hub/CLAUDE.md (projektfamilie)", "anzahl": 17, "methode": "grep -c '^## '"},
+      {"quelle": "brainlehr/CLAUDE.md (projekteigen)", "anzahl": 0, "befund": "existiert NICHT -- find bestaetigt nur .claude/launch.json und .claude/worktrees/ im Projekt, keine CLAUDE.md. Regelfamilie fuer dieses Projekt liegt ausschliesslich in ~/.claude/CLAUDE.md + hub/CLAUDE.md + Wissensknoten."},
+      {"quelle": "knowledge_nodes mit norm_rang gesetzt (brainlehr.db)", "anzahl": 83, "methode": "SELECT count(*) FROM knowledge_nodes WHERE norm_rang IS NOT NULL", "kontext": "von 2159 knowledge_nodes gesamt (162 keine_norm, 76 norm_unbefristet, 2 norm_befristet, 1919 offen/noch nicht entschieden) -- die grosse Mehrheit der Wissensbasis ist gar keine 'Regel' im normativen Sinn, sondern unentschiedener Fakt."},
+      {"quelle": "Hook-Skripte in ~/.claude/settings.json (einzige gefundene settings.json im ganzen Verbund -- keine im Projekt selbst)", "anzahl_distinct_skripte": 41, "methode": "alle *.py/*.sh-Pfade aus allen hooks[event][].hooks[].command extrahiert, dedupliziert"},
+      {"quelle": "brainlehr/tests/*.py", "anzahl_dateien": 119, "anzahl_mit_test_funktionen": 118}
+    ]
+  },
+  "schritt2_durchsetzung": {
+    "bezug": "Nur die 19 Abschnitte aus ~/.claude/CLAUDE.md einzeln zugeordnet (die 83 norm_rang-Knoten sind zu viele fuer Einzelzuordnung im Rahmen dieses Auftrags -- siehe 'nicht_gemessen').",
+    "zuordnung": [
+      {"regel": "ALLES IST BETA / keine echten Daten", "mechanismus": "keiner gefunden"},
+      {"regel": "Datumsangaben ISO 8601", "mechanismus": "keiner gefunden (kein Linter/Test auf Datumsformat in .md)"},
+      {"regel": "Caveman mode always on", "mechanismus": "Plugin-Hook (ponytail/caveman-Marketplace, SubagentStart-Kontextinjektion, im eigenen Systemreminder dieser Sitzung sichtbar) -- liegt ausserhalb brainlehr's eigenem haken/-Verzeichnis, technisch verdrahtet ueber Claude-Code-Plugin-Infrastruktur, nicht ueber ~/.claude/settings.json hooks."},
+      {"regel": "BSI-Compliance Hard-Stops", "mechanismus": "quality_gate_hook.py (Stop-Event, in settings.json verdrahtet) -- blockt Session-Ende bei Secrets/Auth/Crypto/DB-Mustern ohne compliance-Agent-Lauf"},
+      {"regel": "WCAG 2.2 AA", "mechanismus": "vorhanden (~/.claude/skills/design-waechter/ui_guard.py, deterministisch), aber NICHT automatisch verdrahtet -- 0 Treffer fuer 'ui_guard' in ~/.claude/settings.json. Nur manueller Skill-Aufruf."},
+      {"regel": "Aufträge an Agenten sind Schnappschüsse", "mechanismus": "keiner gefunden"},
+      {"regel": "Wie ein Agentenauftrag geschrieben wird", "mechanismus": "keiner gefunden"},
+      {"regel": "Abwesenheitsmodus Voreinstellung", "mechanismus": "Skill 'abwesend' vorhanden, aber manuell aufgerufen -- kein Hook erzwingt/prueft den Modus automatisch"},
+      {"regel": "Keine Entwicklerinformation in der Oberflaeche", "mechanismus": "derselbe ui_guard.py wie WCAG-Zeile -- vorhanden, NICHT automatisch verdrahtet"},
+      {"regel": "Wissen festhalten & abrufen", "mechanismus": "knowledge_recall_hook.py (UserPromptSubmit) + knowledge_capture_hook.py (Stop, decision:block) -- beide in settings.json verdrahtet"},
+      {"regel": "Testumgebung handeln bis 'es wird ernst'", "mechanismus": "keiner gefunden (Freigabe-Direktive, kein Verstoss technisch definierbar)"},
+      {"regel": "Kurze Zustimmung ist eine Entscheidung", "mechanismus": "keiner gefunden"},
+      {"regel": "Zweimal ist die Grenze, nicht dreimal", "mechanismus": "keiner gefunden"},
+      {"regel": "Walkthrough-Doktrin", "mechanismus": "Tests vorhanden (test_alle_selftests.py u.a.), pruefen aber nur ob Tests existieren/laufen -- nicht ob ein Agent die Doktrin beim Bauen befolgt hat. Schwacher/indirekter Mechanismus."},
+      {"regel": "Committen ohne Aufforderung", "mechanismus": "commit_guard_hook.py deckt NUR den Teilaspekt 'blanker git add/commit bei >1 aktivem Agent' (Index-Kollision) ab -- NICHT die Kernaussage 'nach jedem Schritt committen' und NICHT 'nicht auf dem Hauptzweig' (dafuer existiert push_guard.py separat, siehe Schritt 4 Probe C)"},
+      {"regel": "Nachsehen vor Fragen/Delegieren", "mechanismus": "keiner gefunden"},
+      {"regel": "Zwei Ausgangszustaende (frisch/gewachsen)", "mechanismus": "keiner gefunden"},
+      {"regel": "'Es funktioniert' braucht Beleg (rot vor gruen)", "mechanismus": "keiner gefunden -- Belegpflicht ist Berichtspflicht, kein automatischer Gate"},
+      {"regel": "Plan vor Umsetzung", "mechanismus": "KEINER -- durch Probe B in Schritt 4 bestaetigt: weder agent_model_guard.py noch agent_reuse_guard_hook.py (die einzigen beiden PreToolUse-Hooks mit Matcher 'Agent|Task') pruefen auf eine Plandatei oder Dateizahl-Schwelle."}
+    ],
+    "zaehlung": {
+      "regeln_gesamt": 19,
+      "mit_verdrahtetem_mechanismus_kernregel": 2,
+      "mit_mechanismus_nur_teilaspekt": 2,
+      "mit_mechanismus_aber_nicht_automatisch_verdrahtet": 3,
+      "mit_mechanismus_ueber_externes_plugin": 1,
+      "ohne_jeden_mechanismus": 11,
+      "nenner_pruefung": "2+2+3+1+11 = 19"
+    },
+    "verdrahtungspruefung": "41 Hook-Skripte insgesamt in settings.json referenziert (Schritt 1). Von den in dieser Tabelle als 'Mechanismus vorhanden' erkannten Skripten ist ui_guard.py (WCAG + Entwicklerinfo) NACHWEISLICH NICHT in settings.json referenziert -- 0 Treffer per grep. push_guard.py (Hauptzweig-Schutz beim Push, aus Schritt 4) ist ebenfalls NICHT unter den 41 -- es ist kein Claude-Code-Hook, sondern ein git-pre-push-Hook, der PRO ARBEITSKOPIE separat via install_push_guard.py installiert werden muss. Installationsstand ueber 8 stichprobenartig gepruefte Repos: nur 1/8 (openlehr) hat .git/hooks/pre-push tatsaechlich gesetzt; brainlehr selbst NICHT."
+  },
+  "schritt3_hat_es_gegriffen": {
+    "knowledge_capture_hook_und_recall": "laut settings.json UserPromptSubmit/Stop verdrahtet, laeuft also bei jedem Prompt/jedem Sessionende in jedem Projekt mit diesem globalen ~/.claude/settings.json -- ob und wie oft er tatsaechlich einen Treffer lieferte, war aus dem Dateibestand dieses Auftrags NICHT ohne Zugriff auf Session-Logs/Debug-Ausgaben verlaesslich bezifferbar; nicht gemessen (siehe unten).",
+    "gegenbeispiel_test_systemweit_sichtbar": "tests/test_systemweit_sichtbar.py dokumentiert einen ECHTEN, bereits gefundenen und behobenen Fehler: bis 2026-08-10 filterte knowledge_search bei gesetztem scope Lehren mit projects=['systemweit'] faelschlich heraus (kannte nur 'shared') -- 150 aktive Lehren mit 'systemweit' waren dadurch bei gesetztem scope unsichtbar, 98 davon auch ohne Treffer im Zielprojekt. Das ist ein dokumentierter, mit Zahl belegter Fall, in dem eine als 'gilt ueberall' gedachte Regel technisch NICHT ueberall ankam -- inzwischen per Test abgesichert (rot-vor-gruen-Beleg vorhanden im Testnamen selbst).",
+    "monolith_guard_lief_nachweislich": "In Probe A (Schritt 4) direkt am Skript gezeigt: Mechanismus funktioniert korrekt (Fund bei 1601 Zeilen, Stille bei 10 Zeilen). Ob er in echten Sitzungen je feuerte, ist aus /tmp-Markerdateien (sessionabhaengig, von Neustarts geleert) NICHT rekonstruierbar -- nicht gemessen."
+  },
+  "schritt4_probe": {
+    "hinweis": "Alle drei Proben in Wegwerfkopie/Scratchpad gefahren, NICHT im echten Arbeitsbaum. git status --short vorher/nachher identisch (siehe unten).",
+    "probe_a_mit_mechanismus": {
+      "regel": "Monolith-Bremse (hub/CLAUDE.md, Positivbeispiel -- NICHT einer der 19 globalen Abschnitte, aber ein Mechanismus der nachweislich verdrahtet UND korrekt ist)",
+      "verstoss_simuliert": "Datei mit 1601 Zeilen (>1500-Schwelle) editiert",
+      "ergebnis_verstoss": "monolith_guard.py meldet additionalContext mit Fund -- FUNKTIONIERT",
+      "negativfall": "Datei mit 10 Zeilen -- monolith_guard.py bleibt still -- KEIN Fehlalarm",
+      "fazit": "Positivkontrolle: ein verdrahteter Mechanismus kann tatsaechlich einen echten Verstoss fangen und schweigt beim sauberen Fall -- das Muster 'Mechanismus vorhanden + verdrahtet' funktioniert grundsaetzlich, wenn beide Bedingungen erfuellt sind."
+    },
+    "probe_b_ohne_mechanismus": {
+      "regel": "Plan vor Umsetzung (Abschnitt 19 aus ~/.claude/CLAUDE.md)",
+      "verstoss_simuliert": "PreToolUse-Event fuer Agent-Tool mit tool_input, der 3 Dateien in einem Zug anfassen soll, ohne jeden Verweis auf eine Plandatei -- an beide PreToolUse-Hooks mit Matcher 'Agent|Task' geschickt (agent_model_guard.py, agent_reuse_guard_hook.py)",
+      "ergebnis": "beide Skripte: exit 0, keine Ausgabe, kein Hinweis auf fehlenden Plan -- KEIN BLOCK, KEINE WARNUNG",
+      "fazit": "Bestaetigt den Anlass direkt: der Text der Regel steht im Systemprompt jedes Agenten (CLAUDE.md wird geladen), aber es gibt keinen technischen Gate an der Stelle, an der die Regel wirken muesste (PreToolUse Agent-Dispatch). Sichtbarkeit der Regel im Kontext ist NICHT dasselbe wie Durchsetzung -- genau diese Verwechslung erklaert den Anlass."
+    },
+    "probe_c_vorhanden_nicht_verdrahtet": {
+      "regel": "'Nicht auf dem Hauptzweig' / Hauptzweig-Schutz beim Push (Teilaspekt von 'Committen ohne Aufforderung')",
+      "mechanismus": "hub/scripts/push_guard.py -- als git pre-push-Hook konzipiert, prueft u.a. Push auf refs/heads/main, erzwungenes Ueberschreiben, Secrets/grosse Dateien",
+      "test_direkter_aufruf": "push_guard.py in einem frischen Wegwerf-Repo (scratchpad) direkt mit stdin gefuettert (Push-Zeile Richtung 'origin') -- Skript beendete mit Exit-Code 1 (Push abgebrochen) -- FUNKTIONIERT ALS CODE",
+      "realer_zustand": "ls /Volumes/daten/Begod2026/brainlehr/.git/hooks/pre-push -> 'No such file or directory'. Stichprobe ueber 8 Repos: nur openlehr (1/8) hat den Hook installiert.",
+      "fazit": "Der Mechanismus ist kein kaputter Code -- er ist funktionsfaehig, aber in brainlehr (und 6 von 8 geprueften Repos) nie an die Stelle gehaengt, an der git ihn automatisch aufruft. Ein echter 'git push' in brainlehr wuerde ihn NIE erreichen. Zweiter, unabhaengiger Beleg fuer 'vorhanden, aber nicht verdrahtet' neben ui_guard.py."
+    },
+    "arbeitsbaum_unveraendert": {
+      "git_status_vorher_nachher_identisch": true,
+      "beleg": "diff der beiden `git status --short`-Ausgaben vor und nach allen Proben war leer; die neun Zeilen, die git status zeigt, stammen erkennbar von fremdem, laufendem WIP (u.a. app/, NODE_INDEX.md, runs/messlauf_abrufguete_v2.json -- allesamt Tabu-Dateien dieses Auftrags, unangetastet)"
+    }
+  },
+  "schritt5_befund": {
+    "ursachen_nach_haeufigkeit": [
+      {
+        "rang": 1,
+        "ursache": "Fehlender Mechanismus, obwohl der Regeltext praesent ist (11 von 19 globalen Abschnitten haben ueberhaupt keinen technischen Pruefpunkt). Sichtbarkeit im Kontext (CLAUDE.md wird bei jedem Agenten geladen -- nachweislich, siehe dieser eigene Systemreminder) wird mit Durchsetzung verwechselt. Das ist die Kernursache fuer den Anlass: 'Plan vor Umsetzung' gehoert zu dieser Gruppe, direkt in Probe B belegt."
+      },
+      {
+        "rang": 2,
+        "ursache": "Mechanismus existiert als Code, ist aber nicht an den technischen Ausloesepunkt gehaengt ('vorhanden, nicht verdrahtet') -- 3 von 19 Regeln (ui_guard.py fuer WCAG/Entwicklerinfo, manuell statt automatisch) plus der eigenstaendige Fall push_guard.py (Hauptzweig-Schutz), der in 6 von 8 Repos, darunter brainlehr selbst, nie als .git/hooks/pre-push installiert wurde. Zwei unabhaengig belegte Faelle derselben Fehlklasse."
+      },
+      {
+        "rang": 3,
+        "ursache": "Mechanismus deckt nur einen Teilaspekt der Regel ab, nicht ihre Kernaussage -- commit_guard_hook.py loest 'Committen ohne Aufforderung' nur bei der Index-Kollisionsfrage aus, nicht bei der eigentlichen Anweisung (nach jedem Schritt committen). Wer nur zaehlt 'Regel X hat einen Hook', ohne zu pruefen WAS der Hook prueft, ueberschaetzt die Deckung."
+      },
+      {
+        "rang": 4,
+        "ursache": "Wo ein Mechanismus greift, wirkt er nachweislich auch (Probe A, Positivkontrolle) -- die Technik selbst ist also nicht grundsaetzlich unzuverlaessig. Ebenso: der 'systemweit'-Suchfehler (test_systemweit_sichtbar.py) zeigt einen Fall, in dem ein Mangel gefunden UND behoben wurde, nachdem er real Schaden anrichtete (150 Lehren unsichtbar) -- das System lernt aus Ausfaellen, aber reaktiv, nicht praeventiv."
+      }
+    ],
+    "gegenbeispiele_regeln_die_gegriffen_haben": [
+      "BSI-Compliance Hard-Stops -- quality_gate_hook.py verdrahtet, prueft am Session-Stop wirklich auf Secrets/Auth/Crypto-Muster ohne begleitenden compliance-Agent-Lauf.",
+      "Wissen festhalten & abrufen -- knowledge_recall_hook.py + knowledge_capture_hook.py sind in settings.json verdrahtet und laufen bei jedem Prompt bzw. jedem Sessionende (decision:block erzwingt sogar einmal pro Session ab 3 Edits).",
+      "Monolith-Bremse (hub/CLAUDE.md, kein globaler Abschnitt, aber ein sauberes Beispiel) -- Probe A zeigt live: Fund bei Verstoss, Stille bei sauberem Fall.",
+      "'systemweit' bleibt bei jedem scope sichtbar -- inzwischen durch test_systemweit_sichtbar.py rot-vor-gruen abgesichert, nachdem der Fehler real gefunden wurde."
+    ],
+    "nicht_gemessen": [
+      "Ob knowledge_recall_hook.py / knowledge_capture_hook.py in echten vergangenen Sitzungen tatsaechlich haeufig einen Treffer lieferten -- dafuer waeren Session-Logs/Debug-Dateien noetig, die dieser Auftrag nicht als Quelle vorgesehen hat (auszug/, berichte/ standen unter Tabu).",
+      "Einzelzuordnung Mechanismus/kein-Mechanismus fuer alle 83 knowledge_nodes mit norm_rang -- zu viele fuer eine belastbare Einzelpruefung in diesem Auftrag; stattdessen strukturell belegt, dass ihr einziger automatischer Zugangsweg (knowledge_recall_hook.py) keyword-basiert, kapazitaetsbegrenzt (max 3 Knoten + 2 Lehren) und bewusst STILL bei Nicht-Treffer ist -- also Best-Effort-Recall, keine Durchsetzung.",
+      "Ob und wie oft der agent_reuse_guard_hook.py / agent_model_guard.py in echten Sitzungen VOR diesem Auftrag tatsaechlich blockten -- ohne Zugriff auf /tmp/claude-agent-register.jsonl-Historie (Laufzeitdatei, nicht Teil des Repos, potenziell durch Neustarts geleert) nicht rekonstruierbar.",
+      "hub/CLAUDE.md-eigene 17 Abschnitte wurden nur gezaehlt (Schritt 1), nicht wie die 19 globalen einzeln auf Mechanismus zugeordnet (Schritt 2) -- aus Zeitgruenden nicht vertieft."
+    ]
+  }
+}
