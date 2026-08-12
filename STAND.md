@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-12T20:35:00+0200
+# STAND brainlehr — 2026-08-12T22:35:00+0200
 
 ## Warum die Regeln nicht greifen — gemessen, nicht vermutet
 
@@ -11,6 +11,14 @@ Drei Ursachen, getrennt (`ffc52b7`, `runs/regelgriff_2026-08-12.json`):
 **Wiederholungsfund:** `/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit` hat dasselbe vor drei Tagen über 20 Arbeitsbäume gemessen. Erhoben, abgelegt, nicht verdrahtet — ein Befund ohne Folge ist dieselbe Fehlerklasse eine Etage höher.
 
 **Der Beleg dafür, dass Verdrahtung wirkt, entstand aus Versehen** (`L-498f64`): Das Messskript brach selbst zwei Regeln, beide verdrahteten Wachen fingen es binnen Minuten. Was nur im Text steht, fiel erst auf, als der Betreiber fragte.
+
+## Zwei Zahlen, kein Widerspruch — und der Korpus war schuld (`546e1b8`, `L-7318ce`)
+
+„Stichwortkanal rettet keinen Fall und kostet zwei" gegen „ihn zu dämpfen kostet vierzehn": Beide richtig, beide beantworten eine andere Frage. Drei Unterschiede gleichzeitig — Korpus (35 synthetische gegen 89 echte Fälle), Pfad (`rrf_fuse` direkt gegen Produktionspfad), Vergleichsgröße (Kanal **entfernt** gegen **andere** Fusionsfunktion).
+
+Der Defekt saß im Korpus: Die 35 Fälle wurden **aus den Zieltexten erzeugt** und können strukturell nicht zeigen, wozu ein Stichwortkanal da ist. Der Bias stand im Commit von damals und wurde beim späteren Vergleich nicht mitgelesen.
+
+Neu gemessen: **7 von 44** Ziel-Instanzen echter Fälle, in denen der beste Treffer nur über den Stichwortkanal erreichbar war — gegen **0 von 35** synthetisch. Einschränkung: erste 30 der 89 Fälle, kein Zufallszug (ein Abruf kostet 3–4,5 s, Kosinus über 3508 Vektoren ohne Index). Vollmessung als Aufgabe 59.
 
 ## Betreiberanweisung 2026-08-12T20:00
 
