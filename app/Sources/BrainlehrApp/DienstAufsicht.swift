@@ -218,34 +218,30 @@ final class DienstAufsicht {
     // MARK: - Repo-Wurzel finden
 
     private func repoWurzel() -> URL? {
+        Self.findeRepoWurzel(zusatzStart: Bundle.main.bundleURL.deletingLastPathComponent())
+    }
+
+    /// Sucht die Repo-Wurzel, erkannt an `berichte/entscheidungen_server.py`
+    /// und `VERSION` -- geteilt mit AusweisDienst.swift (Aufstiegslogik
+    /// selbst liegt in BrainlehrCore.RepoWurzel, pruefbar ohne Dateisystem).
+    nonisolated static func findeRepoWurzel(zusatzStart: URL) -> URL? {
         if let env = ProcessInfo.processInfo.environment["BRAINLEHR_REPO_ROOT"] {
             let url = URL(fileURLWithPath: env)
             if istRepoWurzel(url) { return url }
         }
         let startpunkte = [
-            URL(fileURLWithPath: FileManager.default.currentDirectoryPath),
-            Bundle.main.bundleURL.deletingLastPathComponent(),
+            FileManager.default.currentDirectoryPath,
+            zusatzStart.standardizedFileURL.path,
         ]
         for start in startpunkte {
-            if let fund = geheHoch(von: start) {
-                return fund
+            if let fund = RepoWurzel.suche(ab: start, istWurzel: { istRepoWurzel(URL(fileURLWithPath: $0)) }) {
+                return URL(fileURLWithPath: fund)
             }
         }
         return nil
     }
 
-    private func geheHoch(von url: URL) -> URL? {
-        var current = url.standardizedFileURL
-        for _ in 0..<10 {
-            if istRepoWurzel(current) { return current }
-            let parent = current.deletingLastPathComponent()
-            if parent.path == current.path { return nil }
-            current = parent
-        }
-        return nil
-    }
-
-    private func istRepoWurzel(_ url: URL) -> Bool {
+    private nonisolated static func istRepoWurzel(_ url: URL) -> Bool {
         let fm = FileManager.default
         let server = url.appendingPathComponent("berichte/entscheidungen_server.py")
         let version = url.appendingPathComponent("VERSION")

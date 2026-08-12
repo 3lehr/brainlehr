@@ -73,9 +73,14 @@ struct HauptFenster: View {
             .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             VStack(spacing: 0) {
-                DienstBanner(aufsicht: aufsicht)
                 if auswahl == .wissensraum {
+                    // Banner nur hier: er meldet den Wissensraum-Dienst, mit
+                    // dem der Ausweis-Ablauf (eigener Subprozess) nichts zu
+                    // tun hat -- auf der Ausweise-Seite waere er irrefuehrend.
+                    DienstBanner(aufsicht: aufsicht)
                     WissensraumAnsicht(aufsicht: aufsicht, blick: wissensraumBlick)
+                } else if auswahl == .ausweise {
+                    AusweisAnsicht()
                 } else {
                     PlatzhalterAnsicht(eintrag: auswahl)
                 }
