@@ -1,0 +1,43 @@
+{
+  "datum": "2026-08-12",
+  "anlass": "L-402a51: Erhebung vom 2026-08-09 suchte nur nach Eigenschaft und uebersah zwei direkte Nachbarn. Diese Erhebung faehrt zwei Raster.",
+  "suchraum": {
+    "indizes": ["GitHub REST-Suche (gh api, authentifiziert)", "GitHub README-Volltext einzelner Treffer", "WebSearch"],
+    "raster_1_eigenschaft_suchbegriffe": [
+      "topic:memory-layer", "topic:llm-memory", "topic:agent-memory",
+      "README-Grep: accuracy|recall@|precision|benchmark|retrieval quality|LongMemEval|LoCoMo|F1|hit rate",
+      "WebSearch: \"second brain\" AI app benchmark \"recall@\" OR \"retrieval accuracy\" self-reported 2026"
+    ],
+    "raster_2_gattung_plattform_suchbegriffe": [
+      "topic:second-brain", "topic:pkm", "topic:ai-notes", "topic:claude-memory",
+      "topic:personal-knowledge-management", "topic:ai-second-brain", "topic:memory-management",
+      "second brain obsidian claude", "claude mem persistent context", "topic:claude-code memory",
+      "WebSearch: best AI notes app 2026 \"second brain\" comparison review"
+    ],
+    "ausgelassen": [
+      "keine Fachdatenbanken (ACM/IEEE)",
+      "README-Pruefung nur README-Datei, nicht Wikis/docs/Blogposts der Closed-Source-Anbieter",
+      "kein WebFetch der Listicle-Seiten, nur Snippet-Text",
+      "kein dritter Suchanlauf fuer die engere Unterscheidung 'laufende Selbstmessung im Betrieb vs. einmaliger synthetischer Benchmark'"
+    ]
+  },
+  "positivkontrolle": {
+    "bestanden": true,
+    "gefunden_ueber": "Raster 2 (topic:second-brain, topic:pkm, topic:claude-memory, topic:ai-second-brain + Stichwortsuche)"
+  },
+  "nachbarn": [
+    {"name": "AgriciDaniel/claude-obsidian", "raster": "2 (Positivkontrolle)", "sterne": 10785, "forks": 1251, "letzte_bewegung": "2026-08-01", "lizenz": "MIT", "misst_eigene_abrufguete": "nicht gefunden (nur README geprueft)"},
+    {"name": "thedotmack/claude-mem", "raster": "2 (Positivkontrolle)", "sterne": 90510, "forks": 7891, "letzte_bewegung": "2026-08-12", "lizenz": "Apache-2.0", "misst_eigene_abrufguete": "nicht gefunden (nur README geprueft)"},
+    {"name": "eugeniughelbur/obsidian-second-brain", "raster": "2", "sterne": 3969, "forks": 497, "letzte_bewegung": "2026-08-08", "lizenz": "MIT", "misst_eigene_abrufguete": "ja - /obsidian-retrieval-eval, recall@k+MRR, reproduzierbarer 300-Notizen-Korpus im Repo (scripts/eval/BENCHMARK.md, BASELINE.md)"},
+    {"name": "huytieu/COG-second-brain", "raster": "2", "sterne": 836, "forks": 102, "letzte_bewegung": "2026-08-07", "lizenz": "MIT", "misst_eigene_abrufguete": "teilweise - '95%+ source accuracy' genannt, keine Methodik/Korpus gefunden"},
+    {"name": "supermemoryai/supermemory", "raster": "1/2", "sterne": 28876, "forks": 2510, "letzte_bewegung": "2026-08-12", "lizenz": "MIT", "misst_eigene_abrufguete": "ja - LongMemEval/LoCoMo/ConvoMem, Tabelle im README"},
+    {"name": "MemTensor/MemOS", "raster": "1/2", "sterne": 10691, "forks": 990, "letzte_bewegung": "2026-08-12", "lizenz": "Apache-2.0", "misst_eigene_abrufguete": "ja - LoCoMo/LongMemEval-Tabelle im README"},
+    {"name": "topoteretes/cognee", "raster": "1/2", "sterne": 29972, "forks": 2914, "letzte_bewegung": "2026-08-12", "lizenz": "Apache-2.0", "misst_eigene_abrufguete": "ja - eigene BEAM-CI-Benchmarks im README"},
+    {"name": "maximem-ai/maximem_synap_sdk", "raster": "1", "sterne": 60, "forks": 13, "letzte_bewegung": "2026-08-10", "lizenz": "Apache-2.0", "misst_eigene_abrufguete": "ja - LongMemEval/LoCoMo, README + Blogpost"},
+    {"name": "XortexAI/XMem", "raster": "1", "sterne": 233, "forks": 56, "letzte_bewegung": "2026-06-03", "lizenz": "BSD-3-Clause", "misst_eigene_abrufguete": "ja - eigene Benchmark-Tabellen im README"},
+    {"name": "khoj-ai/khoj", "raster": "2", "sterne": 36461, "forks": 2381, "letzte_bewegung": "2026-08-02", "lizenz": "AGPL-3.0", "misst_eigene_abrufguete": "Verweis auf externen Blogpost, keine Zahl im README selbst"},
+    {"name": "breferrari/obsidian-mind", "raster": "2", "sterne": 4326, "forks": 504, "letzte_bewegung": "2026-08-03", "lizenz": "MIT", "misst_eigene_abrufguete": "nicht gefunden (README-Grep: 0 Treffer)"},
+    {"name": "reorproject/reor", "raster": "2", "sterne": 8573, "forks": 532, "letzte_bewegung": "2025-05-13 (inaktiv)", "lizenz": "AGPL-3.0", "misst_eigene_abrufguete": "nicht gefunden (README-Grep: 0 Treffer)"}
+  ],
+  "einordnung": "Die Aussage 'fast niemand nennt eine Zahl' haelt in der Infrastruktur-Memory-Branche nicht (Raster 1: mind. 5 laute Gegenbeispiele) und haelt auch innerhalb der engeren Gattung von brainlehr nicht (Raster 2: eugeniughelbur/obsidian-second-brain misst und veroeffentlicht reproduzierbar). Fuer Consumer-Notiz-Apps (Notion, Obsidian, Mem, Tana, Logseq) haelt sie in den gepruften Listicle-Quellen, die aber schwache Quellen sind."
+}
