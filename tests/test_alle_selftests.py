@@ -160,18 +160,6 @@ XFAIL = {
         "Reparatur, der Testaufbau selbst muss auf die gewachsene Datei "
         "umgestellt werden."
     ),
-    "haken/knowledge_recall_hook.py": (
-        "veralteter Selbsttest, gleiche Klasse wie die im Modul selbst "
-        "dokumentierte nasa-llis-Ausnahme: die Probe nimmt an, dass ausser "
-        "'nasa-llis' kein Projekt PROJECT_CALIBRATION_MIN_SAMPLES (50) "
-        "erreicht. Das Projekt 'brainlehr' hat inzwischen 99 Knoten und "
-        "reisst dieselbe Schwelle. Keine Testkosmetik: das ist eine echte "
-        "Verhaltensaenderung der Kalibrierbremse (Zeile ~578, "
-        "project_counts.get(...) < PROJECT_CALIBRATION_MIN_SAMPLES) fuer "
-        "das eigene Projekt, keine reine Zahl im Test -- ob 'brainlehr' wie "
-        "'nasa-llis' eine zweite dokumentierte Ausnahme wird, ist eine "
-        "fachliche Entscheidung, keine billige Reparatur."
-    ),
 }
 
 assert set(XFAIL) <= set(MODULE)

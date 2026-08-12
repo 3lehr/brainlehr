@@ -295,7 +295,7 @@ TRUST_WEIGHT = 0.35
 # NOISE_FLOOR_MAD_MULT        2.0   1.0..4.0          Radar-Schwelle (s.u.)
 # RADAR_MIN_SAMPLE_N          4     2..10             ab wann MAD ueberhaupt aussagekraeftig ist (s.u.)
 # FULL_SCAN_ROW_CAP           5000  -                 Sicherheitsdeckel (s.u.)
-# PROJECT_CALIBRATION_MIN_SAMPLES 50 -                Projektstufungs-Bremse (s.u.)
+# PROJECT_CALIBRATION_MIN_SAMPLES 50 -                nur noch gemeldete Konstante, keine Bremse mehr (s.u.)
 # MAD_TO_SIGMA                 1.4826 -                mathematische Konstante, KEINE Stellgroesse (s.u.)
 # ENSEMBLE_TOP_N               5     1..10             Ensemble-Uebereinstimmungsfenster je Kanal (s.u., Teil 2)
 # ZWEITER_KANAL                 True   True/False       Embedding-Kanal ueberhaupt aktiv, Vorgabe AN seit ADR-035 (s.u., Nachtrag)
@@ -363,24 +363,29 @@ RADAR_MIN_SAMPLE_N = 4
 # materialisierte Rangliste statt Live-bm25-Scan).
 FULL_SCAN_ROW_CAP = 5000
 
-# Projektstufung mit gemessener Bremse (Betreiber-Auftrag 2026-08-07): eine
-# projektspezifische Uebersteuerung von NOISE_FLOOR_MAD_MULT (siehe
-# PROJECT_NOISE_OVERRIDES/_effective_noise_mult()) gilt nur, wenn dieses
-# Projekt (project_id-Spalte, NICHT der aus cwd abgeleitete Ordnername --
-# Lehre L-fd1221 zu versteckten Umgebungsannahmen) mindestens so viele
-# eigene Knoten hat. GERATEN, NICHT GEMESSEN -- Begruendung: eine Eichung
-# auf einem einzigen Beispiel waere schlechter als der gemeinsame Wert.
-# Gemessener Bestand 2026-08-07 (_project_node_counts()): shared 286,
-# begod 25, stadtwerke 2, aka 1, bebetter 1, openlehr 1 -- KEIN Projekt
-# ausser 'shared' erreicht auch nur die Haelfte dieser Schwelle, darum
-# bleibt PROJECT_NOISE_OVERRIDES unten bewusst leer.
+# Projektstufungs-Bremse AUSGEBAUT (Auftrag 2026-08-13,
+# docs/PLAN_KALIBRIERBREMSE_2026-08-13.md): _effective_noise_mult(),
+# _project_node_counts() und PROJECT_NOISE_OVERRIDES sind entfernt. Messung
+# vor dem Ausbau (messungen/kalibrierbremse_messung_2026-08-13.py): query()
+# rief die Bremse ohnehin mit hartcodiertem project_id=None auf (Docstring
+# der entfernten Funktion sagte es selbst: "HERKUNFT NOCH NICHT
+# VERDRAHTET"), die Uebersteuerungstabelle war leer und blieb es zu Recht --
+# der reale Bestand hat fuer keines der drei Projekte ueber der
+# Knotenschwelle (50) genug ETIKETTIERTE Abruf-Faelle, um einen eigenen
+# Schwellenwert zu messen statt zu raten (gemessen: shared 12, brainlehr 8,
+# begod 7 Faelle in runs/echtkorpus_*.json -- weit unter dem, was ADR-035
+# schon fuer EINEN gemeinsamen Wert als Untergrenze fuer eine echte Eichung
+# ansetzte). Eine fertige, getestete, nie aufgerufene Struktur ist Ballast;
+# sie wird beim naechsten Lesen fuer wirksam gehalten. Rueckweg: siehe
+# Git-Historie dieser Datei vor diesem Commit.
+#
+# PROJECT_CALIBRATION_MIN_SAMPLES bleibt als blosser Wert stehen, weil
+# kern/messparameter.py (TABU fuer diese Sitzung) ihn ungeprueft aus dem
+# Modul liest und in Ergebnisdateien meldet (schnappschuss()) -- ohne
+# Bremse dahinter ist die Zahl nur noch eine gemeldete Konstante, keine
+# wirkende Schwelle mehr. Wer kern/messparameter.py als naechstes anfasst,
+# sollte das Feld dort streichen.
 PROJECT_CALIBRATION_MIN_SAMPLES = 50
-
-# Projektspezifische Uebersteuerungen von NOISE_FLOOR_MAD_MULT. Leer, weil
-# heute kein Projekt PROJECT_CALIBRATION_MIN_SAMPLES erreicht (s.o.) -- die
-# Struktur ist gebaut und getestet (_effective_noise_mult()), aber unbenutzt,
-# bis ein Projekt genug eigene Daten fuer eine eigene Eichung hat.
-PROJECT_NOISE_OVERRIDES: dict[str, float] = {}
 
 # Mathematische Konstante (MAD -> Sigma-Aequivalent bei Normalverteilung),
 # KEINE Stellgroesse -- hier benannt statt als nacktes Zahlenliteral in
@@ -556,38 +561,6 @@ def _radar_select(candidates: list, score_key: str,
     signal = [c for c in candidates if c[score_key] < threshold]
     signal.sort(key=lambda c: c[score_key])
     return signal
-
-
-def _project_node_counts(conn) -> dict:
-    """Rohbestand je project_id aus knowledge_nodes (Betreiber-Auftrag
-    2026-08-07, Punkt 3) -- die echte Bestandsspalte, nicht der aus cwd
-    abgeleitete Ordnername (siehe PROJECT_CALIBRATION_MIN_SAMPLES-Kommentar).
-    Gemessen 2026-08-07: {'shared': 286, 'begod': 25, 'stadtwerke': 2,
-    'aka': 1, 'bebetter': 1, 'openlehr': 1}."""
-    rows = conn.execute(
-        "SELECT project_id, COUNT(*) FROM knowledge_nodes GROUP BY project_id"
-    ).fetchall()
-    return {r[0]: r[1] for r in rows}
-
-
-def _effective_noise_mult(project_id: str | None, project_counts: dict | None) -> float:
-    """Projektstufung MIT Bremse: eine Uebersteuerung aus
-    PROJECT_NOISE_OVERRIDES gilt nur, wenn project_counts[project_id] >=
-    PROJECT_CALIBRATION_MIN_SAMPLES ist -- sonst (auch wenn eine
-    Uebersteuerung fuer diese project_id existiert) der gemeinsame
-    NOISE_FLOOR_MAD_MULT. Kein project_id/project_counts -> gemeinsamer Wert.
-    HERKUNFT NOCH NICHT VERDRAHTET: query() ruft dies heute mit
-    project_id=None auf, weil cwd (Ordnername) und project_id (Bestands-
-    spalte) sich nicht zuverlaessig aufeinander abbilden lassen (siehe
-    _TOPIC_SEGMENTS-Kommentar oben: 18 Knoten unter /openlehr/... tragen
-    project_id='shared'). Diese Funktion ist fertig und getestet; das
-    Herstellen eines verlaesslichen cwd->project_id-Bezugs ist ein eigener,
-    hier nicht beauftragter Schritt."""
-    if not project_id or not project_counts:
-        return NOISE_FLOOR_MAD_MULT
-    if project_counts.get(project_id, 0) < PROJECT_CALIBRATION_MIN_SAMPLES:
-        return NOISE_FLOOR_MAD_MULT
-    return PROJECT_NOISE_OVERRIDES.get(project_id, NOISE_FLOOR_MAD_MULT)
 
 
 def _apply_trust_score(items: list, kind: str, ref_of=lambda x: x["path"]) -> list:
@@ -1038,13 +1011,9 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
                 print("knowledge_recall_hook: Embedding-Kanal nicht verfuegbar "
                       "(Ollama nicht erreichbar oder kein Modell) -- Abruf faellt "
                       "auf Stichwort-Kanal zurueck.", file=sys.stderr)
-    try:
-        project_counts = _project_node_counts(conn)
-    except sqlite3.Error:
-        project_counts = {}
-    # project_id=None: cwd->project_id-Bezug noch nicht verdrahtet, siehe
-    # _effective_noise_mult()-Docstring. Faellt auf den gemeinsamen Wert zurueck.
-    mad_mult = _effective_noise_mult(None, project_counts)
+    # Projektstufungs-Bremse ausgebaut (Auftrag 2026-08-13, s.o. Kommentar
+    # bei PROJECT_CALIBRATION_MIN_SAMPLES) -- gemeinsamer Wert fuer alle.
+    mad_mult = NOISE_FLOOR_MAD_MULT
     if _suchpfad_aktiv():
         # S9: Kandidaten ueber denselben Suchpfad wie knowledge_search
         # (suchpfad_abruf.kandidaten, RRF ueber Stichwort+Bedeutung, kein
@@ -1636,7 +1605,7 @@ def zielfunktion(params: dict | None = None) -> dict:
     """Deterministische Zielfunktion (Betreiber-Auftrag 2026-08-07, Punkt 2):
     Parameter rein, Trefferguete ueber den Pruefkorpus raus -- KEIN
     Modellaufruf, kein Ollama, keine Optuna-Studie (hier nicht beauftragt,
-    siehe PROJECT_NOISE_OVERRIDES-Kommentar oben: der Pruefkorpus hat drei
+    NOISE_FLOOR_MAD_MULT-Kommentar oben: der Pruefkorpus hat drei
     Aufgaben, eine Suche darauf waere Ueberanpassung). Das ist der
     Ansatzpunkt, auf den eine spaetere Studie aufsetzen kann.
 
@@ -2168,73 +2137,11 @@ def selftest() -> None:
     assert [c["path"] for c in sig] == ["/spitze"], sig
     print("  Radar: klarer Ausreisser bleibt allein als Signal ok")
 
-    # --- Projektstufung mit Bremse (Erweiterung 2026-08-07, Punkt 3) ---
-    assert _effective_noise_mult(None, {"begod": 25}) == NOISE_FLOOR_MAD_MULT
-    assert _effective_noise_mult("begod", None) == NOISE_FLOOR_MAD_MULT
-    counts = {"begod": 25, "shared": 286}
-    # NEGATIVFALL: Projekt unterhalb der Schwelle bekommt den gemeinsamen
-    # Wert, AUCH WENN eine Uebersteuerung fuer diese project_id existiert --
-    # das Vorhandensein einer Uebersteuerung darf die Bremse nicht umgehen.
-    global PROJECT_NOISE_OVERRIDES
-    alt_overrides = dict(PROJECT_NOISE_OVERRIDES)
-    PROJECT_NOISE_OVERRIDES["begod"] = 9.9
-    try:
-        assert 25 < PROJECT_CALIBRATION_MIN_SAMPLES
-        assert _effective_noise_mult("begod", counts) == NOISE_FLOOR_MAD_MULT, (
-            "Projekt unterhalb der Schwelle nutzte trotzdem eine Uebersteuerung")
-        print("  Projektstufung NEGATIVFALL: begod (25 < Schwelle) bekommt gemeinsamen Wert ok")
-
-        # Positivfall: oberhalb der Schwelle greift die Uebersteuerung.
-        counts_hoch = {"begod": PROJECT_CALIBRATION_MIN_SAMPLES}
-        assert _effective_noise_mult("begod", counts_hoch) == 9.9
-        print("  Projektstufung: oberhalb der Schwelle greift die Uebersteuerung ok")
-    finally:
-        PROJECT_NOISE_OVERRIDES.clear()
-        PROJECT_NOISE_OVERRIDES.update(alt_overrides)
-
-    # Reale project_id-Verteilung (gemessen 2026-08-07): kein Nicht-'shared'-
-    # Projekt erreicht PROJECT_CALIBRATION_MIN_SAMPLES -- also greift heute
-    # ueberall der gemeinsame Wert, wenn diese Funktion echt verdrahtet waere.
-    #
-    # ZWEITE AUSNAHME 'brainlehr' (Auftrag 2026-08-12, xfail in
-    # tests/test_alle_selftests.py aufgeloest): 99 Knoten, reisst dieselbe
-    # Schwelle wie zuvor nur nasa-llis. ANDERS ALS BEI nasa-llis ist das
-    # HIER FOLGENLOS, nicht nur harmlos aus einem anderen Grund: query()
-    # ruft _effective_noise_mult(None, ...) mit HARTCODIERTEM project_id=None
-    # (Zeile ~959, "HERKUNFT NOCH NICHT VERDRAHTET" im Docstring oben) -- die
-    # PROJECT_CALIBRATION_MIN_SAMPLES-Pruefung in _effective_noise_mult()
-    # wird fuer KEIN Projekt je mit einer echten project_id erreicht, egal
-    # wie viele Knoten es traegt. Und selbst mit echter Verdrahtung liefert
-    # _effective_noise_mult("brainlehr", ...) denselben NOISE_FLOOR_MAD_MULT
-    # zurueck, weil PROJECT_NOISE_OVERRIDES (s.o.) leer ist -- keine
-    # Uebersteuerung zum Greifen vorhanden. Beides einzeln geprueft in
-    # messungen/kalibrierbremse_wirkung.py::_beleg_aequivalenz() und per
-    # Korpuslauf bestaetigt (runs/kalibrierbremse_wirkung_2026-08-12.json):
-    # 'Bremse wie heute' und 'Bremse fuer brainlehr ausgesetzt' liefern
-    # identische Trefferzahlen, weil es im Code keinen Zweig gibt, der sie
-    # unterscheidet. Die Aussage dieses Tests ("in DIESEM Bestand greift
-    # ueberall der gemeinsame Wert") bleibt darum wahr -- nur aus einem
-    # staerkeren Grund als 2026-08-07 angenommen (nicht "kein Projekt
-    # erreicht die Schwelle", sondern "die Schwelle wirkt auf keinen Fall,
-    # gleich ob erreicht").
-    conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True, timeout=2.0)
-    real_counts = _project_node_counts(conn)
-    conn.close()
-    FOLGENLOSE_SCHWELLENUEBERSCHREITUNGEN = {"nasa-llis", "brainlehr"}
-    for proj, n_proj in real_counts.items():
-        if proj == "shared":
-            continue
-        if proj in FOLGENLOSE_SCHWELLENUEBERSCHREITUNGEN:
-            # Beide reissen die Schwelle (nasa-llis: Nachschlagewerk, per
-            # gattung_filter ohnehin aus dem Abruf ausgeschlossen; brainlehr:
-            # Schwelle wirkt strukturell nie, s.o.) -- fuer beide bleibt die
-            # Testaussage richtig, aus je eigenem Grund.
-            assert n_proj >= PROJECT_CALIBRATION_MIN_SAMPLES, (
-                f"{proj} unter der Schwelle -- dann ist die Ausnahme hier unnoetig")
-            continue
-        assert n_proj < PROJECT_CALIBRATION_MIN_SAMPLES, (proj, n_proj)
-    print(f"  Realer Bestand {real_counts}: nasa-llis und brainlehr ueber der "
-          "Schwelle (folgenlos, s.o.), kein weiteres Nicht-shared-Projekt ok")
+    # Projektstufungs-Bremse (_effective_noise_mult/_project_node_counts/
+    # PROJECT_NOISE_OVERRIDES) ist ausgebaut (Auftrag 2026-08-13, s. Kommentar
+    # bei PROJECT_CALIBRATION_MIN_SAMPLES oben) -- query() nutzt jetzt
+    # unbedingt den gemeinsamen NOISE_FLOOR_MAD_MULT, nichts mehr zu testen,
+    # was nicht schon der Radar-Test oben abdeckt.
 
     # --- Zielfunktion (Erweiterung 2026-08-07, Punkt 2) ---
     r = zielfunktion()
@@ -2263,7 +2170,14 @@ def selftest() -> None:
     # woertlich UND denselben Vektor -- ein Kandidat, der in BEIDEN Kanaelen
     # vorn liegt.
     import tempfile as _tempfile
-    _schema = Path(DB).with_name("schema.sql").read_text(encoding="utf-8")
+    # ort.WURZEL statt Path(DB).with_name(...): BRAINLEHR_DB kann (Selbsttest
+    # unter BRAUCHT_ISOLIERTE_DB, tests/test_alle_selftests.py) auf eine
+    # Kopie zeigen, die ohne schema.sql daneben liegt -- die echte Repo-
+    # Wurzel bleibt davon unberuehrt. Vorher hier ein latenter, bis
+    # 2026-08-13 durch ein unabhaengiges xfail maskierter Fehler (siehe
+    # Commit-Historie): FileNotFoundError, sobald die isolierte Kopie kein
+    # Geschwister-schema.sql hat.
+    _schema = (ort.WURZEL / "schema.sql").read_text(encoding="utf-8")
     with _tempfile.TemporaryDirectory() as _td:
         _db_path = os.path.join(_td, "test.db")
         _conn = sqlite3.connect(_db_path)
