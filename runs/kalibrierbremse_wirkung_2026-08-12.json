@@ -1,0 +1,33 @@
+{
+  "verfahren": "Ein Korpuslauf ueber den echten Produktionspfad (rh.keywords + rh.query, MAX_NODES/MAX_LESSONS-Betriebsdeckel 10/7, Explore deterministisch aus). 'zustand_ausgesetzt' ist NICHT separat gelaufen -- Code-Beleg oben (und _beleg_aequivalenz(), lauffaehig) zeigt, dass query() heute project_id=None hartcodiert ruft und PROJECT_NOISE_OVERRIDES leer ist; ein zweiter Lauf mit project_id='brainlehr' liefert denselben mad_mult (2.0) und damit bitidentische Treffer.",
+  "korpus": "runs/echtkorpus_2026-08-12T1000.json",
+  "brainlehr_knoten": 99,
+  "project_calibration_min_samples": 50,
+  "noise_floor_mad_mult_heute": 2.0,
+  "noise_floor_mad_mult_ausgesetzt": 2.0,
+  "faelle_im_korpus": 89,
+  "dauer_sekunden": 843.1,
+  "zustand_heute": {
+    "knoten": [
+      17,
+      41
+    ],
+    "lehre": [
+      28,
+      164
+    ],
+    "uebersprungen_unter_min_hits": 0
+  },
+  "zustand_ausgesetzt": {
+    "knoten": [
+      17,
+      41
+    ],
+    "lehre": [
+      28,
+      164
+    ],
+    "uebersprungen_unter_min_hits": 0
+  },
+  "unterschied": false
+}

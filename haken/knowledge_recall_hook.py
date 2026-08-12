@@ -2080,25 +2080,46 @@ def selftest() -> None:
     # Reale project_id-Verteilung (gemessen 2026-08-07): kein Nicht-'shared'-
     # Projekt erreicht PROJECT_CALIBRATION_MIN_SAMPLES -- also greift heute
     # ueberall der gemeinsame Wert, wenn diese Funktion echt verdrahtet waere.
+    #
+    # ZWEITE AUSNAHME 'brainlehr' (Auftrag 2026-08-12, xfail in
+    # tests/test_alle_selftests.py aufgeloest): 99 Knoten, reisst dieselbe
+    # Schwelle wie zuvor nur nasa-llis. ANDERS ALS BEI nasa-llis ist das
+    # HIER FOLGENLOS, nicht nur harmlos aus einem anderen Grund: query()
+    # ruft _effective_noise_mult(None, ...) mit HARTCODIERTEM project_id=None
+    # (Zeile ~959, "HERKUNFT NOCH NICHT VERDRAHTET" im Docstring oben) -- die
+    # PROJECT_CALIBRATION_MIN_SAMPLES-Pruefung in _effective_noise_mult()
+    # wird fuer KEIN Projekt je mit einer echten project_id erreicht, egal
+    # wie viele Knoten es traegt. Und selbst mit echter Verdrahtung liefert
+    # _effective_noise_mult("brainlehr", ...) denselben NOISE_FLOOR_MAD_MULT
+    # zurueck, weil PROJECT_NOISE_OVERRIDES (s.o.) leer ist -- keine
+    # Uebersteuerung zum Greifen vorhanden. Beides einzeln geprueft in
+    # messungen/kalibrierbremse_wirkung.py::_beleg_aequivalenz() und per
+    # Korpuslauf bestaetigt (runs/kalibrierbremse_wirkung_2026-08-12.json):
+    # 'Bremse wie heute' und 'Bremse fuer brainlehr ausgesetzt' liefern
+    # identische Trefferzahlen, weil es im Code keinen Zweig gibt, der sie
+    # unterscheidet. Die Aussage dieses Tests ("in DIESEM Bestand greift
+    # ueberall der gemeinsame Wert") bleibt darum wahr -- nur aus einem
+    # staerkeren Grund als 2026-08-07 angenommen (nicht "kein Projekt
+    # erreicht die Schwelle", sondern "die Schwelle wirkt auf keinen Fall,
+    # gleich ob erreicht").
     conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True, timeout=2.0)
     real_counts = _project_node_counts(conn)
     conn.close()
+    FOLGENLOSE_SCHWELLENUEBERSCHREITUNGEN = {"nasa-llis", "brainlehr"}
     for proj, n_proj in real_counts.items():
         if proj == "shared":
             continue
-        if proj == "nasa-llis":
-            # Der NASA-LLIS-Import (1638 Knoten) kam nach diesem Test und
-            # reisst die Schwelle als einziges Projekt. Er ist Nachschlagewerk
-            # und aus dem Abruf ohnehin ausgeschlossen (gattung_filter) -- die
-            # Aussage des Tests ("in DIESEM Bestand greift ueberall der
-            # gemeinsame Wert") bleibt fuer den Arbeitsbestand richtig.
-            # Gemessen 2026-08-09: der Selbsttest dieser Datei war an drei
-            # Stellen rot, alle drei vorbestehend und keine bemerkt.
+        if proj in FOLGENLOSE_SCHWELLENUEBERSCHREITUNGEN:
+            # Beide reissen die Schwelle (nasa-llis: Nachschlagewerk, per
+            # gattung_filter ohnehin aus dem Abruf ausgeschlossen; brainlehr:
+            # Schwelle wirkt strukturell nie, s.o.) -- fuer beide bleibt die
+            # Testaussage richtig, aus je eigenem Grund.
             assert n_proj >= PROJECT_CALIBRATION_MIN_SAMPLES, (
-                "nasa-llis unter der Schwelle -- dann ist die Ausnahme hier unnoetig")
+                f"{proj} unter der Schwelle -- dann ist die Ausnahme hier unnoetig")
             continue
         assert n_proj < PROJECT_CALIBRATION_MIN_SAMPLES, (proj, n_proj)
-    print(f"  Realer Bestand {real_counts}: kein Nicht-shared-Projekt erreicht die Schwelle ok")
+    print(f"  Realer Bestand {real_counts}: nasa-llis und brainlehr ueber der "
+          "Schwelle (folgenlos, s.o.), kein weiteres Nicht-shared-Projekt ok")
 
     # --- Zielfunktion (Erweiterung 2026-08-07, Punkt 2) ---
     r = zielfunktion()
