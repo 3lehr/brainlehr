@@ -1,4 +1,20 @@
-# STAND brainlehr — 2026-08-12T18:50:00+0200
+# STAND brainlehr — 2026-08-12T20:35:00+0200
+
+## Warum die Regeln nicht greifen — gemessen, nicht vermutet
+
+Drei Ursachen, getrennt (`ffc52b7`, `runs/regelgriff_2026-08-12.json`):
+
+1. **Regel ohne Mechanismus** — 11 von 19 Abschnitten der globalen Hausregeln, darunter „Plan vor Umsetzung". Nachgestellt: Agenten-Auftrag über drei Dateien ohne Plan, beide Wächter `exit 0`.
+2. **Mechanismus ohne Verdrahtung** — `ui_guard.py` 0 Treffer in `settings.json`; `push_guard.py` in brainlehr und 6 von 8 Repos nicht installiert.
+3. **Keine projekteigene Ablage** — brainlehr hat weder `CLAUDE.md` noch `.claude/settings.json`.
+
+**Wiederholungsfund:** `/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit` hat dasselbe vor drei Tagen über 20 Arbeitsbäume gemessen. Erhoben, abgelegt, nicht verdrahtet — ein Befund ohne Folge ist dieselbe Fehlerklasse eine Etage höher.
+
+**Der Beleg dafür, dass Verdrahtung wirkt, entstand aus Versehen** (`L-498f64`): Das Messskript brach selbst zwei Regeln, beide verdrahteten Wachen fingen es binnen Minuten. Was nur im Text steht, fiel erst auf, als der Betreiber fragte.
+
+## Betreiberanweisung 2026-08-12T20:00
+
+„es darf nie wieder passeiren das wir sowas ohne plan bauen!" — abgelegt als `/methodik/direktiven/ohne-plan-wird-nicht-gebaut` (`0bd52cd8`). **Rang offen:** als Hausnorm Rang 1 vorgesehen, die Schranke verlangt einen menschlichen Entscheider. Der Rang wartet auf ihn.
 
 Massgeblich ist die Aufgabenliste der Sitzung. `melder/offene_arbeit.py` zeigt beim Sitzungsstart den offenen Teil von `docs/SPRINTS.md`.
 
@@ -35,6 +51,9 @@ Gemeinsam ist allen: nichts wurde gemeldet.
 | Abrufweg pulsiert, der vorige verglimmt — das Bild trägt sein Alter | `8389dc8` |
 | Der Weg liegt im Bedeutungsraum, Helligkeit aus dem Kosinus statt aus dem Rang | `f21b766` |
 | Fragen sterben nicht an einem Filter — sie nennen keine Adresse | `faf9f64` |
+| Dienst legt seine Datenbank nicht mehr selbst an, Startpfade geprüft | `00e94e1` |
+| `brainlehr.app` als echtes Bündel mit vollständiger Menüleiste | `c30a30b` |
+| Schichtwache: Kern ohne Oberfläche, Schale ohne Datenbank | `403309f` |
 
 Suite: 970 grün, 2 übersprungen, 11 xfail, 0 rot (vorher 945). Vektoren vollständig neu gerechnet (2963, 0 Fehler) — 0 Änderungen, aber jetzt gemessen statt geschlossen (`L-bc1499`).
 
