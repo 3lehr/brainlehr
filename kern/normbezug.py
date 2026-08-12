@@ -70,6 +70,45 @@ from pathlib import Path
 sys.path.insert(0, str(_w / "haken"))
 import ort  # noqa: E402 -- liefert DB, siehe haken/ort.py (L-6c6661)
 
+# ERWAEHNUNG vs. GELTUNG (Auftrag 2026-08-12, Befund 7a6b27e1): ein LIKE-Treffer
+# auf Reihe+Nummer beweist nur, dass ein Knoten die Norm NENNT -- nicht, dass
+# sie noch gilt. Der Knoten 7a6b27e1 nennt "GEG" und "§ 71" nur, um ihre
+# Streichung zu dokumentieren; belegt() nannte das bislang "belegt", das
+# Gegenteil des Befunds. Zwei Signale trennen die Faelle, keines davon aus
+# einer zweiten, selbst erfundenen Geltungspruefung -- die kanonische Formel
+# fuer gilt_ab/gilt_bis steht bereits in normkraft.py::in_kraft
+# (gilt_ab <= stichtag AND (gilt_bis IS NULL OR gilt_bis >= stichtag)), hier
+# nur als Stringvergleich wiederholt, nicht neu erfunden:
+#   1. STRUKTURELL: gilt_bis des juengsten Treffers liegt vor dem Stichtag.
+#      Verlaesslich, aber am Bestand fast wirkungslos -- siehe Befund unten.
+#   2. TEXTLICH: der Treffer nennt Streichung/Aufhebung/Ersetzung im Wortlaut.
+#      SCHWAECHE, ausdruecklich: das ist eine Wortliste. Wer "§ 71 GEG faellt
+#      weg" statt "gestrichen" schreibt, faellt durch. Besser als der Status
+#      quo (gar keine Pruefung), aber kein Ersatz fuer eine echte Geltungs-
+#      Annotation -- deshalb bleibt gilt_bis die vorrangige Pruefung, die
+#      Wortliste nur der Fallback fuer den (heute haeufigeren) Fall, dass
+#      gilt_bis nie gepflegt wurde.
+# BEFUND ZUM BESTAND (2134 Knoten, gemessen): gilt_bis ist bei 2 Knoten
+# gesetzt, zurueckgezogen bei 4 -- beide Male Test-/Probeknoten, keiner davon
+# eine echte Rechtsnorm. Eine allein auf diese Felder gebaute Pruefung waere
+# am heutigen Bestand wirkungslos gewesen; das ist der eigentliche Befund,
+# nicht nur eine Randnotiz. zurueckgezogen bleibt darum aus dieser Pruefung
+# aussen vor (WHERE zurueckgezogen = 0 unveraendert): die vier vorhandenen
+# Faelle sind Aufraeum-Ruecknahmen ohne Bezug zur Norm-Geltung, ein Knoten
+# als "ausser_kraft" zu werten, NUR weil er zurueckgezogen ist, waere die
+# gleiche Verwechslung wie oben -- Rueckzug des KNOTENS ist nicht dasselbe
+# wie Aufhebung der NORM.
+_AUFHEBUNG = re.compile(
+    r"(?i)\b(ersatzlos gestrichen|gestrichen|aufgehoben|außer kraft|"
+    r"ausser kraft|abgelöst|abgeloest|ersetzt durch|nicht mehr in kraft|"
+    r"nicht mehr gültig|nicht mehr gueltig)\b")
+
+
+def _aufhebung_im_treffer(row: sqlite3.Row) -> bool:
+    text = " ".join(str(row[f] or "") for f in ("title", "summary", "content"))
+    return bool(_AUFHEBUNG.search(text))
+
+
 # Ab diesem Alter gilt ein Beleg als nachpruefbeduerftig. 365 Tage, weil
 # Gesetzesaenderungen in Deutschland ueblicherweise zum Jahreswechsel oder
 # quartalsweise in Kraft treten -- ein Jahr faengt jede davon einmal ein.
@@ -199,6 +238,14 @@ def belegt(f: Fundstelle, pfad: Path | None = None,
     Rueckgabe: {status, treffer, alter_tage}. status ist einer von
       'belegt'        -- Beleg vorhanden und juenger als PRUEFALTER_TAGE
       'veraltet'      -- Beleg vorhanden, aber aelter (nachpruefen)
+      'ausser_kraft'  -- Beleg vorhanden, belegt aber die NICHTGELTUNG: die
+                         zitierte Norm ist laut juengstem Treffer gestrichen,
+                         aufgehoben, ersetzt, oder ihr gilt_bis liegt vor dem
+                         Stichtag. Ergaenzend im Rueckgabewert: 'grund'
+                         ('gilt_bis_abgelaufen' | 'aufhebung_dokumentiert').
+                         Zaehlt NICHT als Beleg fuer Geltung -- eigener Status,
+                         damit ein Aufrufer, der nur auf 'belegt' prueft, ihn
+                         nicht versehentlich als Erfolg liest.
       'unbelegt'      -- Bestand da, aber kein Beleg zu dieser Fundstelle
       'ungeprueft'    -- kein Bestand vorhanden, gar nicht geprueft
     'veraltet' ist der Fall, den ein blosses "steht im Bestand" verschweigt --
@@ -257,7 +304,8 @@ def belegt(f: Fundstelle, pfad: Path | None = None,
                     " OR source LIKE ?)")
                 werte += [f"%{b}%"] * 4
         rows = conn.execute(
-            "SELECT id, path, title, source, updated_at FROM knowledge_nodes "
+            "SELECT id, path, title, summary, COALESCE(content,'') AS content, "
+            "source, updated_at, gilt_bis FROM knowledge_nodes "
             f"WHERE zurueckgezogen = 0 AND ({' OR '.join(bedingungen)}) "
             "ORDER BY updated_at DESC LIMIT 5", werte).fetchall()
     finally:
@@ -265,6 +313,22 @@ def belegt(f: Fundstelle, pfad: Path | None = None,
 
     if not rows:
         return {"status": "unbelegt", "treffer": [], "alter_tage": None}
+
+    if f.art != "hausnorm":
+        # STRUKTURELL zuerst (verlaesslich, siehe Kommentar oben), dann
+        # TEXTLICH -- am juengsten Treffer, nicht an irgendeinem: die neueste
+        # Fassung im Bestand entscheidet, aeltere widersprechende Knoten sind
+        # der Grund, warum es ueberhaupt Versionsstaende gibt.
+        stichtag_tag = jetzt.strftime("%Y-%m-%d")
+        if rows[0]["gilt_bis"] is not None and rows[0]["gilt_bis"] < stichtag_tag:
+            return {"status": "ausser_kraft", "grund": "gilt_bis_abgelaufen",
+                    "treffer": [{"id": rows[0]["id"], "path": rows[0]["path"]}],
+                    "alter_tage": None}
+        for r in rows:
+            if _aufhebung_im_treffer(r):
+                return {"status": "ausser_kraft", "grund": "aufhebung_dokumentiert",
+                        "treffer": [{"id": r["id"], "path": r["path"]}],
+                        "alter_tage": None}
 
     juengster = rows[0]["updated_at"]
     alter = None
@@ -310,6 +374,13 @@ def melde(ergebnis: list[dict]) -> str:
         if e["status"] == "ungeprueft":
             zeilen.append(f"  {e['roh']}  ->  kein Bestand gefunden, NICHT "
                           f"geprueft (nicht mit 'unbelegt' verwechseln).")
+        elif e["status"] == "ausser_kraft":
+            grund = ("gilt_bis liegt vor dem Stichtag" if e.get("grund") ==
+                      "gilt_bis_abgelaufen" else
+                      "Beleg dokumentiert Streichung/Aufhebung/Ersetzung")
+            zeilen.append(f"  {e['roh']}  ->  Beleg zeigt: diese Fassung gilt "
+                          f"NICHT (mehr) — {grund} ({e['treffer'][0]['path']}). "
+                          f"Nicht als Beleg fuer Geltung verwenden.")
         elif e["art"] == "hausnorm":
             zeilen.append(f"  {e['roh']}  ->  Kennung existiert im Bestand "
                           f"NICHT. Aus dem Sitzungsgedaechtnis zitiert oder "
@@ -369,14 +440,15 @@ def _selftest() -> None:
         conn = sqlite3.connect(str(pfad))
         conn.execute("""CREATE TABLE knowledge_nodes (
             id TEXT, path TEXT, title TEXT, summary TEXT, content TEXT,
-            source TEXT, updated_at TEXT, zurueckgezogen INTEGER DEFAULT 0)""")
+            source TEXT, updated_at TEXT, zurueckgezogen INTEGER DEFAULT 0,
+            gilt_bis TEXT)""")
         jetzt = datetime(2026, 8, 10, tzinfo=timezone.utc)
         conn.execute(
-            "INSERT INTO knowledge_nodes VALUES (?,?,?,?,?,?,?,0)",
+            "INSERT INTO knowledge_nodes VALUES (?,?,?,?,?,?,?,0,NULL)",
             ("n1", "/recht/betrvg", "Mitbestimmung", "…", "Wortlaut § 87 BetrVG",
              "gesetze-im-internet.de", (jetzt - timedelta(days=10)).isoformat()))
         conn.execute(
-            "INSERT INTO knowledge_nodes VALUES (?,?,?,?,?,?,?,0)",
+            "INSERT INTO knowledge_nodes VALUES (?,?,?,?,?,?,?,0,NULL)",
             ("n2", "/recht/alt", "Alte Norm", "…", "ISO 27001 Anforderungen",
              "irgendwo", (jetzt - timedelta(days=400)).isoformat()))
         conn.commit(); conn.close()
@@ -415,10 +487,57 @@ def _selftest() -> None:
         conn.execute("""CREATE TABLE lessons_learned (id TEXT)""")
         conn.execute("INSERT INTO lessons_learned VALUES ('L-abc123')")
         conn.execute(
-            "INSERT INTO knowledge_nodes VALUES (?,?,?,?,?,?,?,0)",
+            "INSERT INTO knowledge_nodes VALUES (?,?,?,?,?,?,?,0,NULL)",
             ("n3", "/adr/001", "ADR-001 Transport", "…", "…", "adr",
              (jetzt - timedelta(days=800)).isoformat()))
         conn.commit(); conn.close()
+
+        # --- ERWAEHNUNG vs. GELTUNG: der eigentliche Auftrag ---------------
+        # Rot vor Gruen: gegen den Code VOR diesem Auftrag waere "GEG §71"
+        # 'belegt' gewesen (LIKE traf n_geg, keine Geltungspruefung existierte).
+        conn = sqlite3.connect(str(pfad))
+        conn.execute(
+            "INSERT INTO knowledge_nodes VALUES (?,?,?,?,?,?,?,0,NULL)",
+            ("n_geg", "/shared/geg-71-gestrichen",
+             "GEG heisst seit 29.07.2026 GModG — §§ 71 bis 73 gestrichen",
+             "Artikel 1 Nr. 32 streicht die §§ 71 bis 73 ersatzlos.",
+             "Die 65-Prozent-Pflicht nach § 71 GEG entfaellt.",
+             "BGBl. I 2026 Nr. 226", jetzt.isoformat()))
+        # Grenzfall: eine Norm, die zum Stichtag der Aussage galt (gilt_ab
+        # liegt davor) und HEUTE (jetzt) nicht mehr -- strukturell, ohne dass
+        # ein Wort wie "gestrichen" ueberhaupt vorkommt.
+        conn.execute(
+            "INSERT INTO knowledge_nodes (id,path,title,summary,content,"
+            "source,updated_at,zurueckgezogen,gilt_bis) VALUES (?,?,?,?,?,?,?,0,?)",
+            ("n_abgelaufen", "/simulation/erlass-2026",
+             "Erlass 2026", "Sommergebuehrenerlass", "§ 12 WEG regelt das befristet.",
+             "verordnung", jetzt.isoformat(), (jetzt - timedelta(days=1)).date().isoformat()))
+        conn.commit(); conn.close()
+
+        r_geg = pruefe("§ 71 GEG", pfad=pfad, jetzt=jetzt)[0]
+        assert r_geg["status"] == "ausser_kraft", r_geg
+        assert r_geg["grund"] == "aufhebung_dokumentiert", r_geg
+        meldung_geg = melde([r_geg])
+        assert "gilt NICHT (mehr)" in meldung_geg and "§ 71 GEG" in meldung_geg
+
+        r_abgelaufen = pruefe("§ 12 WEG", pfad=pfad, jetzt=jetzt)[0]
+        assert r_abgelaufen["status"] == "ausser_kraft", r_abgelaufen
+        assert r_abgelaufen["grund"] == "gilt_bis_abgelaufen", r_abgelaufen
+
+        # Positivfall: eine geltende Norm bleibt 'belegt' -- ohne ihn waere
+        # ein Melder gruen, der alles pauschal als ausser_kraft ablehnt. Bewusst
+        # dieselbe Reihe (GEG) wie der Streichungsfall, andere Nummer: beweist,
+        # dass die Kennung trennt und nicht die blosse Erwaehnung von "GEG".
+        conn = sqlite3.connect(str(pfad))
+        conn.execute(
+            "INSERT INTO knowledge_nodes VALUES (?,?,?,?,?,?,?,0,NULL)",
+            ("n_geg_gueltig", "/shared/geg-20-heizungslabel",
+             "§ 20 GEG regelt Heizungslabel weiter",
+             "§ 20 GEG bleibt von der Novelle unberuehrt und in Kraft.",
+             "unveraendert anwendbar", "BGBl. I 2026 Nr. 226", jetzt.isoformat()))
+        conn.commit(); conn.close()
+        assert pruefe("§ 20 GEG", pfad=pfad, jetzt=jetzt)[0]["status"] == "belegt", \
+            pruefe("§ 20 GEG", pfad=pfad, jetzt=jetzt)
 
         h = {e["kennung"]: e for e in pruefe(
             "Laut ADR-001, ADR-999 und L-abc123 sowie L-ffffff.",
