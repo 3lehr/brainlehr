@@ -116,6 +116,12 @@ EINRICHTEN:
      ein doppelter Eintrag ist nur eine Kopie mehr, die kompromittiert werden
      kann. Das Loeschen tippt der Betreiber selbst.
 
+Es zaehlt die ERSTE nicht-leere Zeile, die nicht mit '#' beginnt -- schreibst
+du dir eine Erinnerung dazu (z.B. "# nicht weitergeben"), darf sie ueber oder
+unter dem Geheimnis stehen, ohne es zu veraendern. Faellt eine Anmeldung
+unerwartet auf unbeglaubigt zurueck, obwohl die Datei existiert: pruefen, ob
+die erste passende Zeile wirklich das Geheimnis ist, nicht ein Kommentar.
+
 Die Umgebungsvariable BRAINLEHR_GEHEIMNIS bleibt als Rueckfall gueltig, falls
 die Datei fehlt (z.B. eine laufende Sitzung, bevor umgestellt wurde). Stehen
 Datei UND Umgebungsvariable und sind sie verschieden, gewinnt die Datei, und
@@ -957,7 +963,10 @@ def loese_auf(argument: str | None = None, *,
     Ein Geheimnis, das keinen Eintrag trifft, fuehrt NICHT zu einem Fehler und
     NICHT zu einer stillen Beglaubigung: der Aufrufer faellt auf den
     unbeglaubigten Zweig zurueck. Ein falsches Geheimnis darf nie mehr Rechte
-    ergeben als gar keines."""
+    ergeben als gar keines. Aber: "ein Geheimnis war da und hat nicht
+    gepasst" ist NICHT dasselbe wie "kein Geheimnis gesetzt" -- ersteres
+    meldet sich auf stderr, bevor der Rueckfall greift, sonst sind beide
+    Zustaende fuer den Bedienenden ununterscheidbar (L-ad7232)."""
     if geheimnis is None:
         geheimnis = aufloesen_mit_datei(os.environ.get(ENV_GEHEIMNIS),
                                         pfad or ausweisdatei())
@@ -1001,6 +1010,17 @@ def loese_auf(argument: str | None = None, *,
                     mandat_von=von,
                     bedient_von=eintrag.get("bedient_von", ""),
                 )
+        # HIER, nicht frueher: ein GESETZTES Geheimnis, das zu keinem
+        # gueltigen Ausweis fuehrte (unbekannt, falsch oder abgelaufen).
+        # Ohne diese Meldung sieht dieser Fall am Ende identisch aus wie
+        # "kein Geheimnis gesetzt" -- fuer den Bedienenden nicht von "nichts
+        # passiert" zu unterscheiden (L-ad7232, zweites Vorkommen: ein
+        # stiller Ruecktritt auf einen schwaecheren Zustand muss den Zustand
+        # nennen). Der WERT steht hier nicht -- nur dass einer da war.
+        print("ausweis: ein Geheimnis war gesetzt, hat aber zu keinem "
+              "gueltigen Ausweis gefuehrt (unbekannt, falsch oder "
+              "abgelaufen) -- faellt zurueck auf unbeglaubigt. Das ist etwas "
+              "anderes als 'kein Geheimnis gesetzt'.", file=sys.stderr)
 
     name = argument or os.environ.get("BEGOD_KNOWLEDGE_ACTOR") or UNBEKANNT
     # Ein Argument, das das Praefix selbst mitbringt, darf es nicht doppelt

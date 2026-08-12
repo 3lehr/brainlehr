@@ -59,8 +59,23 @@ def geheimnisdatei(ausweis_pfad: Path) -> Path:
 
 def _lies_geheimnisdatei(datei: Path) -> str | None:
     """None, wenn es die Datei nicht gibt, sie zu weite Rechte traegt oder
-    leer ist -- niemals ein Fehler, denn "Datei fehlt" ist vor der
-    Erstausstattung der Normalfall."""
+    keine verwertbare Zeile enthaelt -- niemals ein Fehler, denn "Datei
+    fehlt" ist vor der Erstausstattung der Normalfall.
+
+    L-ad7232 (GEHEIMNIS-markus.txt, 2026-08-10: 6 Zeilen, 4 davon
+    Erklaertext): eine Datei, die Wert UND Erklaerung mischt, macht
+    `.strip()` auf den ganzen Inhalt zum Geheimnis -- die Pruefung schlaegt
+    dann IMMER fehl, und der Rueckfall (unbeglaubigt) sieht wie "keine Datei
+    vorhanden" aus, nicht wie "Datei vorhanden, Inhalt falsch verstanden".
+    Der naechste Mensch, der die Datei von Hand anlegt, schreibt eine
+    Erklaerung wie in mein-geheimnis.txt selbst empfohlen -- also findet das
+    lesende Werkzeug die Zeile selbst: erste nicht-leere Zeile, die nicht mit
+    '#' beginnt, ohne umgebende Leerzeichen.
+
+    WEITERE ZEILEN werden still ignoriert, nicht gemeldet: diese Funktion
+    laeuft potenziell bei jeder Anmeldung. Eine Meldung bei jedem Lesen einer
+    kommentierten Datei waere Dauerlaerm fuer einen Zustand, der nicht falsch
+    ist -- nur die erste passende Zeile zaehlt, das ist keine Ausnahme."""
     if not datei.exists():
         return None
     modus = datei.stat().st_mode
@@ -70,12 +85,16 @@ def _lies_geheimnisdatei(datei: Path) -> str | None:
               file=sys.stderr)
         return None
     try:
-        wert = datei.read_text(encoding="utf-8").strip()
+        inhalt = datei.read_text(encoding="utf-8")
     except OSError as fehler:
         print(f"geheimnis: {datei} nicht lesbar ({fehler}) -- ignoriert.",
               file=sys.stderr)
         return None
-    return wert or None
+    for zeile in inhalt.splitlines():
+        zeile = zeile.strip()
+        if zeile and not zeile.startswith("#"):
+            return zeile
+    return None
 
 
 def aufloesen_mit_datei(umgebung_wert: str | None, ausweis_pfad: Path) -> str | None:
@@ -137,6 +156,21 @@ def _selftest() -> None:
         assert aufloesen_mit_datei(None, ausweis_pfad) is None
         os.chmod(datei, 0o600)
         assert aufloesen_mit_datei(None, ausweis_pfad) == "aus-datei"
+
+        # --- L-ad7232: Kommentare und Leerzeilen um den Wert werden nicht
+        # Teil des Geheimnisses -- die erste passende Zeile zaehlt ----------
+        fd = os.open(datei, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write("# Mein Geheimnis, nicht weitergeben\n\n"
+                    "GEHEIM-ABC-123\n\n# Ende\n")
+        assert aufloesen_mit_datei(None, ausweis_pfad) == "GEHEIM-ABC-123", \
+            "die Erklaerung drumherum wurde Teil des Geheimnisses"
+
+        # --- reine Kommentardatei ohne Wert -> None, kein kaputter Wert -----
+        fd = os.open(datei, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write("# nur Erklaerung, kein Geheimnis drin\n")
+        assert aufloesen_mit_datei(None, ausweis_pfad) is None
 
     print("geheimnis.py: Selbsttest gruen")
 

@@ -130,6 +130,47 @@ def test_zu_weite_rechte_an_der_geheimnisdatei_werden_ignoriert(ausweisdatei):
     assert not a.beglaubigt, "weltlesbare Geheimnisdatei darf niemanden beglaubigen"
 
 
+def test_kommentare_um_den_wert_werden_nicht_teil_des_geheimnisses(ausweisdatei):
+    """L-ad7232 (GEHEIMNIS-markus.txt, 2026-08-10, 6 Zeilen davon 4
+    Erklaertext): eine von Hand geschriebene Datei mischt fast immer Wert
+    und Erklaerung. Nur die erste nicht-leere, nicht auskommentierte Zeile
+    zaehlt -- Gegenprobe direkt gegen die gemeldete Kombination."""
+    g = ausweis.anlegen("azubi", ["leser"], pfad=ausweisdatei)
+    datei = geheimnis.geheimnisdatei(ausweisdatei)
+    fd = os.open(datei, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(f"# Mein Geheimnis, nicht weitergeben\n\n{g}\n\n# Ende\n")
+    os.chmod(datei, 0o600)
+
+    a = ausweis.loese_auf(pfad=ausweisdatei)
+
+    assert a.beglaubigt and a.name == "azubi", \
+        "die Erklaerung drumherum wurde Teil des gepruepften Geheimnisses"
+
+
+def test_geheimnis_gesetzt_aber_falsch_ist_von_keinem_geheimnis_unterscheidbar(
+        ausweisdatei, capsys):
+    """'ein Geheimnis war da und hat nicht gepasst' darf nicht denselben
+    stillen Rueckfall haben wie 'kein Geheimnis gesetzt' -- sonst kann der
+    Bedienende die beiden Zustaende nicht auseinanderhalten (L-ad7232,
+    zweites Vorkommen: stiller Ruecktritt ohne Nennung des Zustands)."""
+    ausweis.anlegen("hausmeister", ["leser"], pfad=ausweisdatei)
+
+    a_kein = ausweis.loese_auf("betreiber", pfad=ausweisdatei)
+    meldung_kein = capsys.readouterr().err
+
+    a_falsch = ausweis.loese_auf("betreiber", geheimnis="offensichtlich-falsch",
+                                 pfad=ausweisdatei)
+    meldung_falsch = capsys.readouterr().err
+
+    assert not a_kein.beglaubigt and not a_falsch.beglaubigt
+    assert meldung_kein == "", "kein Geheimnis gesetzt darf nichts melden"
+    assert meldung_falsch != "", \
+        "ein gesetztes, aber falsches Geheimnis muss sichtbar werden"
+    assert "offensichtlich-falsch" not in meldung_falsch, \
+        "der Geheimniswert stand in der Meldung -- Sicherheitsauflage verletzt"
+
+
 def test_explizites_geheimnis_argument_gewinnt_immer(ausweisdatei):
     """Der Parameter `geheimnis=` (Tests, interne Aufrufe wie _aussteller_name)
     bleibt unveraendert die hoechste Prioritaet -- Datei und Umgebung werden
