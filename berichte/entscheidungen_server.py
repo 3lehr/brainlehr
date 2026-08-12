@@ -501,12 +501,42 @@ def _abrufweg_titel(conn: sqlite3.Connection, node_ids: set, lesson_ids: set) ->
     return out
 
 
-def _abrufweg_kanal(ids: list[str], meta: dict) -> dict:
+def _abrufweg_kanal(ids: list[str], meta: dict, staerke: dict[str, float] | None = None) -> dict:
     eintraege = []
     for i, doc_id in enumerate(ids[:ANZEIGE_TOP]):
         m = meta.get(doc_id, {"art": "?", "titel": doc_id, "pfad": None})
-        eintraege.append({"id": doc_id, "rang": i + 1, **m})
+        eintrag = {"id": doc_id, "rang": i + 1, **m}
+        if staerke is not None and doc_id in staerke:
+            eintrag["staerke"] = round(staerke[doc_id], 4)
+        eintraege.append(eintrag)
     return {"treffer_gesamt": len(ids), "gezeigt": len(eintraege), "eintraege": eintraege}
+
+
+def _bedeutung_staerke(conn: sqlite3.Connection, query_vec: list[float] | None,
+                        node_ids: set, lesson_ids: set) -> dict[str, float]:
+    """Kanaleigenes Mass des Bedeutungskanals: Cosine-Aehnlichkeit der Anfrage
+    zu jedem angezeigten Eintrag. NICHT der Verschmelzungsrang (rrf_fuse) --
+    der gewichtet nur die Position IM Kanal, siehe Knoten
+    /brainlehr/rrf-gewichtet-den-rang-im-kanal-nicht. Und die rohe Zahl ist
+    selbst kein Relevanzfilter (/shared/cosine-aehnlichkeit-ist-anisotrop) --
+    hier nur als RELATIVES Mass innerhalb derselben Anfrage weitergereicht,
+    nie gegen eine absolute Schwelle geprueft.
+    Nur fuer die uebergebenen (angezeigten) IDs berechnet, nicht fuer die
+    gesamte Embedding-Tabelle."""
+    out: dict[str, float] = {}
+    if query_vec is None:
+        return out
+    for kind, id_set in (("node", node_ids), ("lesson", lesson_ids)):
+        if not id_set:
+            continue
+        ph = ",".join("?" for _ in id_set)
+        for r in conn.execute(
+            f"SELECT ref_id, vector FROM knowledge_embeddings WHERE kind = ? AND model = ? "
+            f"AND ref_id IN ({ph})",
+            (kind, embeddings.DEFAULT_EMBED_MODEL, *id_set),
+        ):
+            out[r["ref_id"]] = embeddings.cosine_similarity(query_vec, embeddings.unpack_embedding(r["vector"]))
+    return out
 
 
 def abrufweg_berechnen(conn: sqlite3.Connection, text: str) -> dict:
@@ -557,6 +587,7 @@ def abrufweg_berechnen(conn: sqlite3.Connection, text: str) -> dict:
     meta_ids_node = angezeigt & (set(node_ids) | set(emb_node_ids))
     meta_ids_lesson = angezeigt & (set(lesson_ids) | set(emb_lesson_ids))
     meta = _abrufweg_titel(conn, meta_ids_node, meta_ids_lesson)
+    staerke = _bedeutung_staerke(conn, query_vec, meta_ids_node, meta_ids_lesson)
 
     # Deckel-Station: Reihenfolge des Pools bleibt die Verschmelzungs-Reihenfolge.
     # Je Eintrag zuerst Gattung, dann Freigabe, dann -- unter den ueberlebenden --
@@ -609,7 +640,7 @@ def abrufweg_berechnen(conn: sqlite3.Connection, text: str) -> dict:
         "anfrage": anfrage,
         "kanaele": {
             "stichwort": _abrufweg_kanal(stichwort_ordered, meta),
-            "bedeutung": _abrufweg_kanal(bedeutung_ordered, meta),
+            "bedeutung": _abrufweg_kanal(bedeutung_ordered, meta, staerke),
         },
         "embedding_verfuegbar": query_vec is not None,
         "verschmelzung_gewicht": gewicht,
@@ -836,6 +867,13 @@ def _selftest() -> int:
     assert ziel["rang_bedeutung"] == 1, "Zielknoten muss Rang 1 im Bedeutungskanal haben"
     assert ziel["rang_verschmolzen"] > 1, "Rang muss sich in der Verschmelzung gegenueber dem Bedeutungskanal verschlechtern"
     assert ziel["ausgeschieden"] is not None, "Zielknoten darf in diesem Bestand nicht geliefert werden"
+    # Kanaleigenes Mass (Cosine, nicht Verschmelzungsrang) muss bis zur
+    # Oberflaeche durchgereicht sein -- der Bedeutungsraum-Ansicht braucht es.
+    if fall.get("embedding_verfuegbar"):
+        bed_eintrag = next((e for e in fall["kanaele"]["bedeutung"]["eintraege"] if e["id"] == "nasa-llis-812"), None)
+        assert bed_eintrag is not None and "staerke" in bed_eintrag, \
+            "Rang-1-Treffer im Bedeutungskanal muss eine Cosine-Staerke tragen"
+        assert -1.0 <= bed_eintrag["staerke"] <= 1.0, "Cosine-Staerke muss im gueltigen Wertebereich liegen"
 
     # 3c) Vergleich: Zusammenfuehrung unterschiede_A_B + rows ueber `kennung`.
     v = _vergleich_stand()

@@ -247,6 +247,7 @@
       <b><i class="pkt" style="background:var(--fehlt)"></i>noch nie abgerufen</b>
       <b><i class="pkt" style="background:var(--spur)"></i>gemeinsam abgerufen</b>
       <b>Größe = wie oft ausgeliefert</b>
+      <b><i class="pkt" style="background:var(--accent);box-shadow:0 0 0 2px var(--accent)"></i>pulsierender Ring = Teil des zuletzt berechneten Abrufwegs</b>
     </div>
     <div class="legende" id="legendeAbrufweg" hidden>
       <b><i class="pkt" style="background:var(--accent)"></i>Wissensknoten</b>
@@ -959,6 +960,11 @@ function starte(){
 const c = document.getElementById('c'), g = c.getContext('2d');
 const fahne = document.getElementById('fahne'), hinweis = document.getElementById('hinweis');
 const P = D.punkte, N = P.length;
+// Schluessel fuer die Zuordnung Abrufweg -> Punktwolke: Knoten unter ihrem
+// PFAD (wie kern/raum_daten.py pfad_index), Lehren unter ihrer KENNUNG (wie
+// lehre_index). Siehe abrufwegPunktIndex weiter unten.
+const pktPfadIndex = new Map(), pktLehreIndex = new Map();
+P.forEach((p,i)=>{ if (p.k==='n') pktPfadIndex.set(p.p, i); else pktLehreIndex.set(p.p, i); });
 let ansicht = 0, drehX = -0.35, drehY = 0.6, zoom = 1, zeitAnteil = 1, spielt = false;
 let skala = 1; // Punktgroesse folgt der Fenstergroesse, Basis 1520x880
 
@@ -1135,11 +1141,18 @@ function abrufwegZeichnePuls(){
   abrufwegZeichneDatensatz(zustand.aktuell.d, pulsAlpha, true);
 }
 
-// ---- Schleifensteuerung: laeuft nur, waehrend Ansicht 4 sichtbar ist -------
+// ---- Schleifensteuerung: laeuft in JEDER zeichnenden Ansicht (0,1,2,4),
+// solange das Dokument sichtbar ist -- der Puls gilt seit diesem Auftrag
+// fuer die ganze Klasse, nicht nur fuer Ansicht 4. Ansicht 3 (Vergleich)
+// zeichnet nichts und bleibt aussen vor. -----------------------------------
 let abrufwegRaf = null, abrufwegTextTimer = null;
 const abrufwegReducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 function abrufwegStatusAktualisieren(){
+  // Nur in Ansicht 4 eigenstaendig: dort zeichnet die RAF-Schleife das
+  // Diagramm ohne bei jedem Bild den Text neu zu setzen (60x/s waere zu oft).
+  // In 0/1/2 setzt zeichne() den Text bereits bei jedem Bild selbst mit.
+  if (ansicht !== 4) return;
   const zustand = abrufwegZustand(abrufwegVerlauf, Date.now(), ABRUFWEG_GLIMM_MS);
   const text = abrufwegStatusText(zustand);
   if (hinweis.textContent !== text) hinweis.textContent = text;
@@ -1152,22 +1165,173 @@ function abrufwegSchleifeStop(){
 
 function abrufwegSchleifeStart(){
   abrufwegSchleifeStop();
-  if (ansicht !== 4 || document.visibilityState !== 'visible') return;
+  if (ansicht === 3 || document.visibilityState !== 'visible') return;
   ladeFarben();
-  abrufwegStatusAktualisieren();
-  abrufwegTextTimer = setInterval(abrufwegStatusAktualisieren, 1000);
-  if (abrufwegReducedMotion.matches) { abrufwegZeichnePuls(); return; } // einmalig, ruhig, voll sichtbar
-  const bild_ = () => { abrufwegZeichnePuls(); abrufwegRaf = requestAnimationFrame(bild_); };
+  if (ansicht === 4) {
+    abrufwegStatusAktualisieren();
+    abrufwegTextTimer = setInterval(abrufwegStatusAktualisieren, 1000);
+  }
+  if (abrufwegReducedMotion.matches) { zeichne(); return; } // einmalig, ruhig, voll sichtbar
+  // ponytail: volle zeichne() bei 60fps inkl. Neusortierung nach Tiefe, auch
+  // wenn nur der Puls-Ring sich bewegt -- bei ~3000 Punkten unauffaellig,
+  // Aufwertung waere ein dirty-rect nur fuer die Ring-Ueberlagerung, falls
+  // die Punktzahl mal um eine Groessenordnung waechst.
+  const bild_ = () => { zeichne(); abrufwegRaf = requestAnimationFrame(bild_); };
   abrufwegRaf = requestAnimationFrame(bild_);
 }
 document.addEventListener('visibilitychange', abrufwegSchleifeStart);
 abrufwegReducedMotion.addEventListener('change', abrufwegSchleifeStart);
 
 window.ansichtAbrufwegNeuZeichnen = () => {
-  if (typeof ansicht === 'undefined' || ansicht !== 4) return;
+  if (typeof ansicht === 'undefined') return;
   abrufwegStatusAktualisieren();
   if (typeof zeichne === 'function') zeichne();
 };
+
+// ---- Punktwolken-Zuordnung (rein rechnerisch, ohne DOM) --------------------
+// Verbindet einen Abrufweg-Eintrag mit seinem Punkt in der Punktwolke.
+// FALLE (gemessen, Commit 0cd159e widerrufen): Knoten stehen im Abrufweg
+// unter ihrer DB-ID (e.id) -- die Punktwolke kennt Knoten aber nur unter
+// ihrem PFAD. Deshalb hier ueber e.pfad, nie ueber e.id fuer Knoten. Lehren
+// haben keinen Pfad (e.pfad ist null); fuer sie IST e.id die Kennung, und
+// genau darunter fuehrt die Punktwolke sie. Ein Fehlschlag liefert null statt
+// eines falschen Index -- der Aufrufer zaehlt das mit (abrufwegPunkteZuordnen),
+// damit ein leerer Weg nie still bleibt. Siehe tests/test_abrufweg_punktwolke.py.
+function abrufwegPunktIndex(eintrag, pfadIndex, lehreIndex) {
+  if (!eintrag) return null;
+  if (eintrag.art === 'lehre') {
+    const i = lehreIndex.get(eintrag.id);
+    return i === undefined ? null : i;
+  }
+  if (eintrag.pfad) {
+    const i = pfadIndex.get(eintrag.pfad);
+    return i === undefined ? null : i;
+  }
+  return null;
+}
+
+function abrufwegPunkteZuordnen(eintraege, pfadIndex, lehreIndex) {
+  const gefunden = [], nichtGefunden = [];
+  for (const e of (eintraege || [])) {
+    const idx = abrufwegPunktIndex(e, pfadIndex, lehreIndex);
+    if (idx === null) nichtGefunden.push(e); else gefunden.push({ index: idx, eintrag: e });
+  }
+  return { gefunden, nichtGefunden };
+}
+
+// Relatives Mass "wie stark im Vergleich zu den anderen Treffern DERSELBEN
+// Anfrage" -- Cosine ist anisotrop (/shared/cosine-aehnlichkeit-ist-anisotrop),
+// eine absolute Schwelle waere Unsinn, darum wird hier NUR innerhalb einer
+// Anfrage normiert. Ein einzelner oder lauter gleiche Werte -> keine
+// Abstufung darstellbar -> volle Deckkraft statt Division durch 0.
+function abrufwegStaerkeSkala(werte) {
+  if (!werte || !werte.length) return null;
+  let min = Infinity, max = -Infinity;
+  for (const w of werte) { if (w < min) min = w; if (w > max) max = w; }
+  return { min, max };
+}
+function abrufwegStaerkeNormiert(wert, skala) {
+  if (skala === null || wert === null || wert === undefined) return null;
+  if (skala.max === skala.min) return 1;
+  return (wert - skala.min) / (skala.max - skala.min);
+}
+
+// ---- Abrufweg-Ueberlagerung der Punktwolke (Ansichten 0-2): derselbe Puls
+// wie in Ansicht 4, hier als Ring um die zuletzt gelieferten Punkte. In
+// Ansicht 1 (Bedeutung) zusaetzlich: Ankerpunkt + Linien zu den Kandidaten
+// des Bedeutungskanals, nach Cosine-Staerke hervorgehoben. Gecacht je
+// Datensatz (WeakMap), damit nicht jeder Frame neu zuordnet/warnt.
+const abrufwegZuordnungCache = new WeakMap();
+function abrufwegZuordnungFuer(d) {
+  if (abrufwegZuordnungCache.has(d)) return abrufwegZuordnungCache.get(d);
+  const ergebnis = abrufwegPunkteZuordnen(d.geliefert.eintraege, pktPfadIndex, pktLehreIndex);
+  if (ergebnis.nichtGefunden.length) {
+    console.warn('Abrufweg-Punktwolke: ' + ergebnis.nichtGefunden.length + ' von ' +
+      d.geliefert.eintraege.length + ' gelieferten Eintraegen nicht in der Punktwolke gefunden.',
+      ergebnis.nichtGefunden);
+  }
+  abrufwegZuordnungCache.set(d, ergebnis);
+  return ergebnis;
+}
+const abrufwegBedeutungCache = new WeakMap();
+function abrufwegBedeutungFuer(d) {
+  if (abrufwegBedeutungCache.has(d)) return abrufwegBedeutungCache.get(d);
+  const zuordnung = abrufwegPunkteZuordnen(d.kanaele.bedeutung.eintraege, pktPfadIndex, pktLehreIndex);
+  const werte = zuordnung.gefunden.map(g => g.eintrag.staerke).filter(w => w !== undefined && w !== null);
+  const skala = abrufwegStaerkeSkala(werte);
+  const ergebnis = { zuordnung, skala };
+  abrufwegBedeutungCache.set(d, ergebnis);
+  return ergebnis;
+}
+
+// Zeichnet die Ueberlagerung fuer einen Datensatz mit gegebener Deckkraft
+// (Puls fuer aktuell, verglimmend fuer den vorherigen). bild[] ist zu diesem
+// Zeitpunkt bereits fuer die aktuelle Ansicht berechnet (rechnePlatz()).
+function abrufwegUeberlagerungZeichnen(d, alpha, mitWegzeichnung){
+  const zuordnung = abrufwegZuordnungFuer(d);
+  g.lineWidth = 1;
+  for (const {index} of zuordnung.gefunden) {
+    if (ansicht!==2 && !sichtbar(index)) continue;
+    const r = Math.max(4, 7*skala);
+    g.strokeStyle = cDa; g.globalAlpha = alpha; g.beginPath();
+    g.arc(bild[index*3], bild[index*3+1], r, 0, 6.2832); g.stroke();
+  }
+  g.globalAlpha = 1;
+  if (!mitWegzeichnung) return;
+  const { zuordnung: bedZuordnung, skala: staerkeSkala } = abrufwegBedeutungFuer(d);
+  if (!bedZuordnung.gefunden.length) return;
+  let ax=0, ay=0;
+  for (const {index} of bedZuordnung.gefunden) { ax += bild[index*3]; ay += bild[index*3+1]; }
+  ax /= bedZuordnung.gefunden.length; ay /= bedZuordnung.gefunden.length;
+  abrufwegAnkerPunkt = { x: ax, y: ay, alpha, d };
+  for (const {index, eintrag} of bedZuordnung.gefunden) {
+    const norm = abrufwegStaerkeNormiert(eintrag.staerke, staerkeSkala);
+    const staerkeAlpha = norm === null ? 0.35 : 0.25 + norm*0.55;
+    g.strokeStyle = cLinie; g.globalAlpha = staerkeAlpha*alpha; g.lineWidth = norm === null ? 1 : 1 + norm*2;
+    g.beginPath(); g.moveTo(ax, ay); g.lineTo(bild[index*3], bild[index*3+1]); g.stroke();
+    g.fillStyle = cDa; g.globalAlpha = (norm === null ? 0.6 : 0.4 + norm*0.55) * alpha;
+    g.beginPath(); g.arc(bild[index*3], bild[index*3+1], Math.max(3, 5*skala), 0, 6.2832); g.fill();
+  }
+  g.globalAlpha = 1;
+  g.fillStyle = cFg; g.beginPath(); g.arc(ax, ay, Math.max(4, 6*skala), 0, 6.2832); g.fill();
+}
+let abrufwegAnkerPunkt = null;
+
+// Textform dessen, was die Helligkeit/Liniendicke zeigt -- fuer die Fahne
+// beim Zeigen (WCAG: Bedeutung nie allein ueber Farbe/Bewegung).
+function abrufwegPunktZusatztext(i){
+  const zustand = abrufwegZustand(abrufwegVerlauf, Date.now(), ABRUFWEG_GLIMM_MS);
+  if (!zustand.aktuell) return '';
+  const d = zustand.aktuell.d;
+  const teile = [];
+  if (abrufwegZuordnungFuer(d).gefunden.some(g => g.index === i)) {
+    teile.push('Teil des zuletzt berechneten Abrufwegs (geliefert)');
+  }
+  const treffer = abrufwegBedeutungFuer(d).zuordnung.gefunden.find(g => g.index === i);
+  if (treffer && treffer.eintrag.staerke !== undefined && treffer.eintrag.staerke !== null) {
+    teile.push('Bedeutungskanal-Kosinus zur Anfrage „'+d.anfrage.text+'”: '+treffer.eintrag.staerke.toFixed(3)+' (Rang '+treffer.eintrag.rang+')');
+  }
+  return teile.length ? '<br><span class="weg">'+teile.join(' · ')+'</span>' : '';
+}
+
+function zeichnePunktwolkeAbrufweg(){
+  abrufwegAnkerPunkt = null;
+  const zustand = abrufwegZustand(abrufwegVerlauf, Date.now(), ABRUFWEG_GLIMM_MS);
+  if (!zustand.aktuell) return '';
+  const reduziert = abrufwegReducedMotion.matches;
+  const mitWegzeichnung = ansicht === 1;
+  if (zustand.verglimmend && !reduziert) {
+    abrufwegUeberlagerungZeichnen(zustand.verglimmend.d, 1 - zustand.verglimmend.fortschritt, false);
+  }
+  const pulsAlpha = reduziert ? 1 : abrufwegPulsAlpha(Date.now(), ABRUFWEG_PULS_PERIODE_MS, ABRUFWEG_PULS_BASIS, ABRUFWEG_PULS_AMPLITUDE);
+  abrufwegUeberlagerungZeichnen(zustand.aktuell.d, pulsAlpha, mitWegzeichnung);
+  const d = zustand.aktuell.d, zuordnung = abrufwegZuordnungFuer(d);
+  const n = d.geliefert.eintraege.length;
+  return n
+    ? ` · Abrufweg „${d.anfrage.text}”: ${zuordnung.gefunden.length}/${n} in der Punktwolke zugeordnet`
+      + (zuordnung.nichtGefunden.length ? ` (${zuordnung.nichtGefunden.length} nicht auffindbar)` : '')
+    : ` · Abrufweg „${d.anfrage.text}”: nichts geliefert`;
+}
 
 function zeichne(){
   if (ansicht === 3) { g.clearRect(0,0,c.width,c.height); hinweis.textContent = 'Vergleich zeigt keine Punktwolke.'; return; }
@@ -1223,9 +1387,10 @@ function zeichne(){
     gezeigt++;
   }
   g.globalAlpha=1;
-  hinweis.textContent = ansicht===2
+  const abrufwegZusatz = zeichnePunktwolkeAbrufweg();
+  hinweis.textContent = (ansicht===2
     ? 'Abrufe bis '+grenzEreignis().replace('T',' ')
-    : gezeigt+' von '+N+' Einträgen · angelegt bis '+grenzTag();
+    : gezeigt+' von '+N+' Einträgen · angelegt bis '+grenzTag()) + abrufwegZusatz;
 }
 
 // --- Bedienung: reine Anzeige, kein Aufruf schreibt ---
@@ -1265,7 +1430,8 @@ c.addEventListener('pointermove',e=>{
   const p=P[best];
   fahne.innerHTML = (p.k==='l'?'Lehre · ':'Knoten · ') + (p.a) +
     (p.h ? ' · '+p.h+'× ausgeliefert' : ' · noch nie ausgeliefert') +
-    '<br>' + p.t.replace(/</g,'&lt;') + '<span class="weg">' + (p.p||'') + (p.d? ' · '+p.d : '') + '</span>';
+    '<br>' + p.t.replace(/</g,'&lt;') + '<span class="weg">' + (p.p||'') + (p.d? ' · '+p.d : '') + '</span>' +
+    abrufwegPunktZusatztext(best);
   fahne.style.opacity=1;
   fahne.style.left = Math.min(rect.width-330, e.clientX-rect.left+14)+'px';
   fahne.style.top  = Math.max(4, e.clientY-rect.top-14)+'px';
@@ -1291,7 +1457,7 @@ const abrufwegLeiste = document.getElementById('abrufwegLeiste'), abrufwegBlock 
     abrufwegBlock.hidden = !istAbrufweg; abrufwegLeiste.hidden = !istAbrufweg; legendeAbrufweg.hidden = !istAbrufweg;
     legende.hidden = istVergleich||istAbrufweg; fuss.hidden = istVergleich||istAbrufweg; zeitleiste.hidden = istVergleich||istAbrufweg;
     setzeStand(); zeichne();
-    if (istAbrufweg) abrufwegSchleifeStart(); else abrufwegSchleifeStop();
+    abrufwegSchleifeStart(); // startet in 0/1/2/4, stoppt sich in 3 selbst
   });
 });
 let timer=null;
@@ -1309,7 +1475,10 @@ document.getElementById('fuss').innerHTML =
   '<div>Der <b>Baum</b> setzt jeden Eintrag an seine Adresse — keine Projektion, kein Informationsverlust. '+
   'Nachbarschaft heißt dort <em>gleicher Ast</em>, nicht <em>ähnlicher Inhalt</em>.</div>'+
   '<div><b>Bedeutung</b> ist eine lineare Projektion aus 1024 Dimensionen auf drei. Die drei Achsen tragen '+
-  (D.varianz.map(v=>(v*100).toFixed(1)+'&thinsp;%').join(' · '))+' der Streuung. Nähe ist hier <em>Modell-Nachbarschaft</em>, nicht geprüfte Verwandtschaft.</div>'+
+  (D.varianz.map(v=>(v*100).toFixed(1)+'&thinsp;%').join(' · '))+' der Streuung. Nähe ist hier <em>Modell-Nachbarschaft</em>, nicht geprüfte Verwandtschaft. '+
+  'Der zuletzt berechnete Abrufweg sitzt hier zusätzlich als Ankerpunkt mit Linien zu seinen Bedeutungskandidaten — '+
+  'dicker und heller heißt: höhere Kosinus-Ähnlichkeit zur Anfrage, relativ zu den anderen Kandidaten <em>derselben</em> Anfrage, '+
+  'keine absolute Schwelle. Der genaue Wert steht beim Zeigen dabei.</div>'+
   '<div><b>Spuren</b> zeigt, welche Einträge gemeinsam ausgeliefert wurden — gemessen, nicht projiziert. '+
   'Eine Linie bedeutet <em>kam zusammen vor</em>, nicht <em>hängt zusammen</em> und schon gar nicht <em>führt zu</em>.</div>'+
   '<div>Graue Linien sind die '+D.gesetzt.length+' von Hand gesetzten Beziehungen, deren beide Enden auffindbar sind. '+
@@ -1319,6 +1488,7 @@ document.getElementById('fuss').innerHTML =
   'einen veränderlichen Schlüssel statt auf die Kennung.</div>';
 
 setzeStand(); groesseAendern();
+abrufwegSchleifeStart(); // Puls laeuft von Anfang an mit, auch in der Start-Ansicht (Baum)
 }
 </script>
 </body>
