@@ -46,6 +46,7 @@ Zahlen. Sein System sieht funktionierend aus und er ist zufrieden; ob der Abruf 
 ## Vier Schritte, in bindender Reihenfolge
 
 ### S1 · Reifegrad MESSEN statt zuweisen (zuerst, weil billig und weil es eine gemessene Fehlstelle schließt)
+*Kennung: `d13bf0f8`*
 
 Der Deckel aus dem Video („Maschine darf höchstens *Entwurf*") ist die halbe Antwort. Die andere Hälfte, vom Betreiber eingewandt: *bei vielen Sachen kann ich den Reifegrad selbst nicht bestimmen.* Ein Deckel, der auf ein Urteil wartet, das niemand fällen kann, erzeugt eine Halde statt einer Prüfung.
 
@@ -60,6 +61,7 @@ Der Deckel gilt dann nur noch für **Normrang 1 und 2**: Was für alle gelten so
 *Nicht getan:* Reifegrad rückwirkend auf 2020 Knoten rechnen. Erst der Mechanismus, dann ein Lauf.
 
 ### S1b · Nachschlagewerke sind eine eigene Gattung — und die Belegquelle für S1
+*Kennung: `d3edee93`*
 
 **Gemessen 2026-08-09, nachdem der Betreiber die Einordnung korrigiert hat:** Der NASA-Bestand kam als `anlass=skript` aus einem Datensatz für Themenmodellierung (`github.com/NASADatanauts/llis_topicModel`, `data/llis.csv`). Alle 1638 Knoten stehen auf `norm_entscheidung=offen` — sie tragen keine einzige Norm. Und sie wurden in der gesamten Protokollhistorie **3 mal** gezogen.
 
@@ -106,6 +108,7 @@ Daraus drei Stufen, grob genug zum Entscheiden:
 > **Ein `bekundet` darf jeden Gedanken anstossen und keine Regel tragen.**
 
 ### S1c · Rastersuche: was abgesucht wurde, wird vermerkt
+*Kennung: `8a5b5910`*
 
 Aus der Bundeswehr, vom Betreiber eingebracht: Wer ein Gelaende absucht, teilt es in Raster und vermerkt jedes durchsuchte. Fehlt der Vermerk auch nur fuer eines, ist nicht ein Raster offen -- die ganze Suche ist unbrauchbar und beginnt von vorn.
 
@@ -132,6 +135,7 @@ Beleg, dass das kein Formalismus ist: `ab_vergleich_abruf_2026-08-07` wurde von 
 *Reihenfolge:* zwischen S1 und S3. Der Rang braucht die Belegquelle, und die Brücke aus S3 darf nicht schon wieder ein Nachschlagewerk in den Arbeitsbestand kippen.
 
 ### S1d · Geltung als dritte Achse — und die Vorgabe haengt an der Art der Aussage
+*Kennung: `80addafb`*
 
 Gemessen 2026-08-09: Die Arbeitssprache ist **Deutsch** (286 eigene Knoten deutsch, 2 englisch; 688 Lehren deutsch), mit einem **englischen** Nachschlagewerk darin (1045 NASA-Knoten englisch). Das Einbettungsmodell bge-m3 ist mehrsprachig, der Stichwortkanal ist es nicht -- Trigramme mit deutscher Umlautfaltung treffen englischen Text nie.
 
@@ -158,6 +162,7 @@ Eine Zeile je Vorgang, im Gespräch, mit Kennung: `abgelegt: A-d93330 (Annahme)`
 *Grenze:* Der MCP-Server kann nicht in den Chat schreiben. Der Weg führt über den vorhandenen `PostToolUse`-Haken, der das Zugriffsprotokoll ohnehin liest.
 
 ### S3 · Die Brücke vom Papernetz in den Speicher
+*Kennung: `8a526584`*
 
 Gemessen: 56 Paper gesammelt, 10 im Speicher, 1 Knoten mit PDF-Quelle. Die Sammelhälfte steht seit Langem, die Destillationshälfte fehlt.
 
@@ -220,6 +225,7 @@ Warum ein Melder und keine Notiz: Am selben Tag wurde Achse 3 mit derselben Begr
 **Zu klaeren beim Bau, nicht vorher entschieden:** ob Rechte an der Person haengen, an der Rolle oder am Gegenstand (etwa: "Normrang 1 nur mit Rolle X"), und wie sich das zu `gattung` und `gilt_bis` verhaelt -- ein Recht, einen Schalter umzulegen, ist etwas anderes als das Recht, eine Aussage zu schreiben.
 
 ### S7 · Darlegung — der Speicher lernt Reihenfolge
+*Kennung: `d49a93ab`*
 
 Ein Wissensspeicher ist eine MENGE, ein Plan ist eine FOLGE. Der Speicher kann heute sagen, dass zwei Knoten zusammenhaengen -- nicht, dass einer VOR dem anderen zu lesen ist, und schon gar nicht, welcher Satz sie verbindet. Genau deshalb liegt dieser Plan als Datei und nicht im Bestand.
 
@@ -238,6 +244,7 @@ Ein Wissensspeicher ist eine MENGE, ein Plan ist eine FOLGE. Der Speicher kann h
 *Traeger ist sofort da:* dieser Plan, acht Abschnitte, mit begruendeter Reihenfolge.
 
 ### S8 · Pruefer, die urteilen statt zaehlen — GEBAUT am 2026-08-09
+*Kennung: `2ad3ce99`*
 
 Anlass: Der Betreiber vermisste, dass sich Pruefer von selbst melden. Die Recherche korrigierte die Erinnerung (Lehre `L-479171`): der alte Skeptiker hat NIE autonom gefeuert -- er war Schritt 3 einer von Hand gestarteten Pipeline, und die `ACTIVATION: proaktiv`-Zeilen waren Prosa fuer ein Modell, kein Mechanismus. Null Treffer unter 75 registrierten Agenten.
 
@@ -286,6 +293,7 @@ Das ist zugleich die Antwort auf die Frage des Betreibers, warum wir nicht beide
 *Reihenfolge:* vor S4 (Promotion). Eine Umstellung des Abrufs auf den Suchpfad aendert jede Messung danach -- sie gehoert vor alles, was sich an Abrufzahlen bewerten laesst.
 
 ### S10 · Nuetzlichkeit messen, nicht nur Ziel-Identitaet
+*Kennung: `b8404996`*
 
 **Der Betreiber fragte, ob 7 von 35 heisst "28 nicht gefunden" oder "28 nicht wichtig genug". Nachgemessen:**
 
@@ -411,6 +419,7 @@ und sechs Antworten sind eine kleine Stichprobe. Belegt ist bisher nur, dass die
 anderen Bestand erreicht — nicht, dass er den besseren erreicht.
 
 ### S14 · Die Fehlklasse dieses Tages hat einen Namen: gebaut und ohne Wirkung
+*Kennung: `1a44c7b4`*
 
 Nicht geplant, sondern aus vier unabhaengigen Funden des 2026-08-09 abgeleitet. Alle vier
 haben dieselbe Signatur, und keiner waere durch Benutzen aufgefallen:
@@ -442,6 +451,7 @@ toter Codepfad braucht eine Aufrufanalyse, die es fuer Python hier nicht gibt. W
 einem Werkzeug will, baut das schwerere von beiden fuer den selteneren Fall.
 
 ### S15 · Der Pruefkorpus wird zusammengefuehrt, bevor irgendetwas daran gemessen wird
+*Kennung: `1c5ffa1c`*
 
 *Reihenfolge: BINDEND vor jeder weiteren Abrufmessung.* 35 Faelle rauschen nachweislich — die
 Deckelreihe lieferte bei GROESSEREM Deckel weniger Treffer (12 gegen 13), was sachlich
@@ -610,6 +620,7 @@ nicht hinreichend fuer "der Schritt ist inhaltlich erledigt". Wo ein Kriterium n
 Werkzeug prueft, ist es als solches gekennzeichnet.
 
 ### S17 · Freigabe als vierte Achse — wer darf es SEHEN
+*Kennung: `43deb9d2`*
 
 Vorschlag des Betreibers 2026-08-09, ausgeloest durch die Lizenzpruefung von neun fremden
 Wissensspeichern. Der Bestand kennt heute drei Achsen: Rang (wie bindend), Art (Sein/Sollen/
@@ -761,6 +772,7 @@ Quelltextpruefung: Knoten `0011e658`.
 **Drei Abschnitte dieses Plans aendern sich, einer faellt weg.**
 
 ### S1b wird konkreter: zwei Merkmale fehlen im eigenen Entwurf
+*Kennung: `99500fd9`*
 
 Der dortige Belegapparat ist gebaut und im Code durchgesetzt, nicht nur beschrieben
 (`claude_obsidian/ledgers.py`): eine akzeptierte Behauptung braucht ein Pruefdatum und
