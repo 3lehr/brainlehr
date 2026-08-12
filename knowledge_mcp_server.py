@@ -1527,13 +1527,25 @@ _KNOWLEDGE_READ_PROJEKTION: dict[str, list[tuple[str, str]]] = {
 # 'schreiber' tragen ungebunden 'wissen:lesen'). Diese drei Rollen stehen
 # darum hier ausdruecklich, nicht weil sie "vergessen" wurden.
 #
+# 'leser' dazugekommen (Auftrag 38, 2026-08-13): traegt in ROLLEN dieselbe
+# UNGEBUNDENE Rechtebreite wie 'fachkundig'/'schreiber' (wissen:lesen,
+# lehre:lesen, kante:lesen, annahme:lesen -- kein ':own', kein ':published')
+# und wird in kern/anmeldung.py als allgemeine interne Teilnehmerrolle
+# angeboten ("nur lesen"), nicht als zweckgebundener Serving-Zugang wie
+# 'raumplaner'/'gast' (die tragen ':published' oder einen im Code benannten
+# Serving-Zweck). Vorher stand 'leser' in KEINER der beiden Tabellen --
+# gemessen und gemeldet als Vollausfall: eine beglaubigte, leseberechtigte
+# Rolle bekam auf jeden Knoten "zugriff verweigert" (siehe
+# tests/test_leser_rolle_vollzugriff.py). Vergessene Eintragung, keine
+# gewollte Aussperrung.
+#
 # Damit ist die Voreinstellung fuer JEDES Rolle/Zweck-Paar, das in KEINER der
 # beiden Tabellen steht, Ablehnung -- nicht nur fuer aussenstehende Rollen.
 # Vorher liess `not policies: return None` (voller Datensatz) jede unbekannte
 # Rolle durch, betreiber eingeschlossen -- zufaellig richtig fuer den
 # Eigentuemer, aber genauso falsch fuer jede kuenftige externe Rolle, die
 # hier zu ergaenzen vergessen wird.
-_KNOWLEDGE_READ_VOLLZUGRIFF = frozenset({"betreiber", "fachkundig", "schreiber"})
+_KNOWLEDGE_READ_VOLLZUGRIFF = frozenset({"betreiber", "fachkundig", "schreiber", "leser"})
 
 
 def _knowledge_read_projection(row: sqlite3.Row) -> dict | None:

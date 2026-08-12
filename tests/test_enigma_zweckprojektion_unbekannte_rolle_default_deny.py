@@ -12,6 +12,14 @@ Aussperrung wird:
   2. Der Betreiber-Ausweis (Rolle 'betreiber', ebenfalls nicht in
      _KNOWLEDGE_READ_PROJEKTION) liest weiter vollstaendig -- er ist kein
      Dritter, dem gegenueber die Zweckprojektion gilt.
+
+Nachtrag Auftrag 38 (2026-08-13): urspruenglich stand hier die echte Rolle
+'leser' als Beispiel einer "unbeschriebenen Rolle". Das war der Befund, nicht
+der Sollzustand -- 'leser' ist seither in _KNOWLEDGE_READ_VOLLZUGRIFF
+eingetragen (siehe tests/test_leser_rolle_vollzugriff.py) und darum kein
+Beispiel fuer den Default-Deny-Fall mehr. Ersetzt durch eine per Monkeypatch
+erfundene Rolle, damit dieser Test unabhaengig von kuenftigen Eintragungen in
+den beiden Tabellen bleibt.
 """
 from __future__ import annotations
 
@@ -49,13 +57,16 @@ def umgebung(tmp_path, monkeypatch):
     assert knoten["status"] == "created"
 
     gruender = ausweis.anlegen("gruender", ["betreiber"], art="mensch", pfad=ausweise)
-    # 'leser' ist eine bekannte ROLLE (kern/ausweis.py: 'wissen:lesen') --
-    # sie besteht also die vorgelagerte Rechtepruefung. Sie steht aber in
-    # KEINER der beiden Zweckprojektions-Tabellen (weder
-    # _KNOWLEDGE_READ_PROJEKTION noch _KNOWLEDGE_READ_VOLLZUGRIFF). Genau der
-    # Fall aus den FAKTEN: eine beglaubigte, aber unbeschriebene Rolle.
+    # Erfundene ROLLE per Monkeypatch (monkeypatch.setitem entfernt den
+    # Schluessel beim Teardown wieder, da er vorher nicht existierte): traegt
+    # ein Leserecht, besteht also die vorgelagerte Rechtepruefung, steht aber
+    # bewusst in KEINER der beiden Zweckprojektions-Tabellen. Frueher stand
+    # hier die echte Rolle 'leser' -- die ist seit Auftrag 38 in
+    # _KNOWLEDGE_READ_VOLLZUGRIFF eingetragen und darum kein Beispiel fuer
+    # eine unbeschriebene Rolle mehr (siehe Moduldocstring).
+    monkeypatch.setitem(ausweis.ROLLEN, "unbeschriebene_testrolle", ("wissen:lesen",))
     geheimnis_extern = ausweis.anlegen(
-        "aussenstelle", ["leser"], pfad=ausweise, aussteller=gruender)
+        "aussenstelle", ["unbeschriebene_testrolle"], pfad=ausweise, aussteller=gruender)
 
     return {
         "node_id": knoten["id"],
