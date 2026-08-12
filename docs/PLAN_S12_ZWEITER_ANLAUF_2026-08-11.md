@@ -119,6 +119,35 @@ Einzelbeobachtung mit Prozentzeichen. Der Korpus bleibt bei 6 Fragen zu 72
 Aufträgen voreingenommen, und keine Verfeinerung der Messung heilt das — nur
 ein anderer Sammelkanal.
 
+## Nachtrag 2026-08-12T07:20 — zwei Befunde, bevor Schritt 3 beginnt
+
+**Es gibt keinen nicht-lokalen Erzeugungspfad.** Der einzige Erzeugungsaufruf
+im Haus geht gegen Ollama (`schreibpruefstand/schreiblauf.py::_call_ollama`),
+und die Modellsperre verbietet dafür genau die Rolle `erzeugen`. Ein
+API-Schlüssel ist nicht gesetzt, und einen zu beschaffen ist Sache des
+Betreibers. Die Neuformulierung läuft deshalb über **Subagenten** — sie sind
+nicht-lokale Modelle und der im Haus vorgeschriebene Weg ohnehin (Norm
+`75ef2145`). Das ist keine Notlösung: die gemessene Vorlage aus `b4238789`
+entstand auf demselben Weg.
+
+**Der Speicher hat keinen Platz für eine zweite Fassung.** `knowledge_nodes`
+trägt genau ein `title`, `summary`, `content`. Drei Wege standen zur Wahl:
+
+| Weg | Verworfen, weil |
+|---|---|
+| Drei neue Spalten `*_neu` | Dauerhafte Schemaänderung für einen Versuch, der scheitern darf |
+| Neuer Knoten per `abgeleitet_von` | Verdoppelt den Heuhaufen — und zwar auch für die **unbehandelte** Hälfte, die dadurch schwerer findbar würde. Der Versuch würde seine eigene Kontrollgruppe beschädigen |
+| **Gewählt:** Urfassung in eine Nebentabelle, Knoten trägt den neuen Text | Der Abruf misst dann wirklich den neuen Text. Umkehrbar durch Zurückschreiben. Die Nebentabelle ist löschbar, ohne dass am Hauptschema etwas bleibt |
+
+Bindend dabei: Die Urfassung wird gesichert, **bevor** der neue Text
+geschrieben wird — nicht danach. Nach dem Überschreiben lässt sich nicht
+rekonstruieren, was dort stand, und der ganze Versuch wäre unumkehrbar.
+
+Und: Die Einbettungen der behandelten Hälfte müssen nach dem Schreiben neu
+gerechnet werden. Sonst zeigt die Bedeutungssuche weiter auf den alten Text,
+und die Messung fände eine Wirkung, die es nicht gibt — oder keine, obwohl es
+sie gibt.
+
 ## Woran sich Erfolg messen lässt
 
 Die behandelte Hälfte gewinnt gegenüber der unbehandelten, gemessen an
