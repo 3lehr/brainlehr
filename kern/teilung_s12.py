@@ -50,9 +50,16 @@ def bestand(conn: sqlite3.Connection) -> dict[str, list[str]]:
     """Der volle Bestand (nicht der Auslieferungs-Deckel): alle Knoten ausser
     zurueckgezogenen, alle Lehren ausser aufgeloesten. Deckel (10/7) und
     Gattungsfilter greifen erst beim ABRUF, nicht bei der Teilung -- die
-    Teilung betrifft den Bestand, aus dem geliefert werden koennte."""
+    Teilung betrifft den Bestand, aus dem geliefert werden koennte.
+
+    Teilungsschluessel fuer Knoten ist `id` (PRIMARY KEY, unveraenderlich),
+    nicht `path`. Der Pfad ist veraenderlich -- migrationen/nachziehung_pfad_
+    hygiene_2026-08-07.py schreibt ihn in grosser Zahl um -- und ein Knoten,
+    der umbenannt wird, waere mit dem Pfad als Schluessel lautlos in die
+    andere Haelfte gewandert. Siehe runs/teilung_s12_2026-08-12_id.json fuer
+    die Begruendung und den Vergleich zur alten (Pfad-)Teilung."""
     knoten = [r[0] for r in conn.execute(
-        "SELECT path FROM knowledge_nodes WHERE zurueckgezogen = 0")]
+        "SELECT id FROM knowledge_nodes WHERE zurueckgezogen = 0")]
     lehren = [r[0] for r in conn.execute(
         "SELECT id FROM lessons_learned WHERE status != 'resolved'")]
     return {"knoten": knoten, "lehre": lehren}

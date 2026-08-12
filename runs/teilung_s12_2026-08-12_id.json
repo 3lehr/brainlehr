@@ -1,0 +1,32 @@
+{
+  "zweck": "Festschreibung der Teilung behandelt/unbehandelt fuer S12, NEU nach dem Wechsel des Teilungsschluessels fuer Knoten von `path` auf `id` (docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md, Auftrag 2026-08-12: 'bestand() liest fuer Knoten SELECT path ... Der Pfad ist veraenderlich'). Diese Datei ist ein Protokoll des Einfrierens, NICHT die Quelle der Wahrheit -- die ist kern/teilung_s12.py::haelfte(), eine reine Funktion der Kennung.",
+  "grund_des_wechsels": "kern/teilung_s12.py::bestand() zog den Teilungsschluessel fuer Knoten bislang aus `path`. Der Pfad ist veraenderlich und belegt: migrationen/nachziehung_pfad_hygiene_2026-08-07.py fuehrt `UPDATE knowledge_nodes SET path = ? ... WHERE id = ?` in grosser Zahl aus. Ein umbenannter Knoten wechselte damit lautlos die Haelfte, mitten im laufenden Versuch -- niemand haette sagen koennen, ab welchem Zeitpunkt eine Messung noch zur eingefrorenen Teilung gehoerte. `knowledge_nodes.id` ist PRIMARY KEY und unveraenderlich; sie ersetzt `path` als Schluessel. Lehren waren bereits ueber `id` geschluesselt und bleiben unveraendert.",
+  "referenz_alte_teilung": "runs/teilung_s12_2026-08-11.json -- bleibt UNVERAENDERT stehen, sie belegt, was mit dem Pfadschluessel galt. Diese Datei ersetzt sie nicht, sondern steht daneben.",
+  "verfahren": "sha256('art:id')[:8] als Hex-Int, Bit 0 -> 'behandelt' bei geradem Wert, sonst 'unbehandelt'. Getrennt je Art (knoten/lehre) gezogen. Fuer Knoten ist die Kennung ab hier `knowledge_nodes.id`, vorher war es `knowledge_nodes.path`.",
+  "eingefroren_am": "2026-08-12T07:02:11+0200",
+  "population": "Bestand, nicht Auslieferungs-Deckel: Knoten mit zurueckgezogen=0 (ohne Gattungsfilter), Lehren mit status != 'resolved'. Deckel (MAX_NODES=10, MAX_LESSONS=7) und Gattungsfilter (SQL_ARBEITSBESTAND_NUR) greifen erst beim Abruf, nicht bei der Teilung.",
+  "verteilung_beim_einfrieren": {
+    "knoten": {
+      "gesamt": 2125,
+      "behandelt": 1070,
+      "unbehandelt": 1055
+    },
+    "lehre": {
+      "gesamt": 767,
+      "behandelt": 404,
+      "unbehandelt": 363
+    }
+  },
+  "verschiebung_gegenueber_der_alten_pfadteilung": {
+    "gemessen_am": "2026-08-12T07:02:11+0200",
+    "erlaeuterung": "Vergleich je Knoten: Haelfte unter altem Schluessel (path) gegen Haelfte unter neuem Schluessel (id), bei identischem Bestand von 2125 Knoten (zurueckgezogen=0). Einheit ist der Knoten, nicht die Quote.",
+    "knoten_gesamt": 2125,
+    "unveraendert": 1042,
+    "unbehandelt_zu_behandelt": 572,
+    "behandelt_zu_unbehandelt": 511,
+    "netto_zuwachs_behandelt": 61,
+    "kontrolle": "1042 + 572 + 511 = 2125; 1009 (alt behandelt) + 572 - 511 = 1070 (neu behandelt) -- stimmt mit verteilung_beim_einfrieren.knoten ueberein.",
+    "lehre_verschiebung": "0 -- der Schluessel fuer Lehren war schon vor dem Wechsel `id` und ist unveraendert."
+  },
+  "unveraenderlich_ab": "2026-08-12T07:02:11+0200 -- kern/teilung_s12.py::haelfte() wird ab hier nicht mehr umgeschrieben, solange S12 laeuft. Aenderungsbedarf wird als neue Funktion/neuer Knoten geführt, nicht als Umschreiben."
+}

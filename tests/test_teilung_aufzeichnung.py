@@ -13,7 +13,20 @@ ist die gefaehrlichere Sorte Fehler, weil die Zahl das ist, was gelesen wird.
 
 Dieser Test haelt die AUFGEZEICHNETE Verteilung gegen die GERECHNETE. Er
 prueft nicht die Teilung, sondern die Ehrlichkeit ihrer Aufzeichnung.
-"""
+
+NACHTRAG 2026-08-12 (Schluesselwechsel path->id, siehe kern/teilung_s12.py::
+bestand()): Die Wachstumsschranke unten prueft, dass eine einmal vergebene
+Haelfte sich nie aendert -- das gilt nur INNERHALB desselben Schluessels.
+runs/teilung_s12_2026-08-11.json ist unter dem alten (Pfad-)Schluessel
+eingefroren und bleibt WORTGLEICH stehen (Beleg fuer die Vergangenheit); die
+Wachstumspruefung braucht aber eine Baseline unter dem AKTUELLEN (ID-)
+Schluessel, sonst vergleicht sie zwei verschiedene Teilungen und jede
+Umverteilung sieht wie eine Verschiebung aus, obwohl keine (im neuen
+Schluessel) stattfand. Baseline dafuer ist die NEUE Aufzeichnung
+runs/teilung_s12_2026-08-12_id.json, die den Wechsel dokumentiert. Der
+zweite Test unten (`test_der_falsche_wert_von_damals_steht_noch_da`) prueft
+weiterhin gegen die ALTE Datei -- er ist ein Audit ihrer historischen
+Unversehrtheit, kein Test der aktuellen Teilung."""
 from __future__ import annotations
 
 import json
@@ -27,6 +40,9 @@ WURZEL = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(WURZEL))
 
 AUFZEICHNUNG = WURZEL / "runs" / "teilung_s12_2026-08-11.json"
+# Neue Aufzeichnung nach dem Schluesselwechsel path->id (2026-08-12) --
+# Baseline fuer die Wachstumspruefung, siehe Nachtrag im Modul-Docstring.
+AUFZEICHNUNG_ID = WURZEL / "runs" / "teilung_s12_2026-08-12_id.json"
 
 
 def _gerechnet() -> dict:
@@ -43,18 +59,17 @@ def _gerechnet() -> dict:
         return t.zaehlen(conn)
 
 
-@pytest.mark.skipif(not AUFZEICHNUNG.exists(), reason="keine Aufzeichnung an diesem Ort")
+@pytest.mark.skipif(not AUFZEICHNUNG_ID.exists(), reason="keine Aufzeichnung an diesem Ort")
 def test_aufgezeichnete_verteilung_ist_aus_dem_code_herleitbar():
-    """Der Korrekturblock muss zur Rechnung passen -- sonst ist er selbst falsch.
+    """Die eingefrorene (ID-basierte) Verteilung muss zur Rechnung passen --
+    sonst ist die Aufzeichnung selbst falsch.
 
-    Bewusst gegen den KORREKTURBLOCK geprueft, nicht gegen das urspruengliche
-    Feld: der falsche Wert von damals bleibt absichtlich stehen, weil die Datei
-    sich als unveraenderlich erklaert. Getestet wird die Berichtigung.
+    Baseline ist runs/teilung_s12_2026-08-12_id.json (Schluessel `id`), nicht
+    mehr runs/teilung_s12_2026-08-11.json (Schluessel `path`, bleibt als
+    historischer Beleg unveraendert stehen -- siehe Modul-Docstring).
     """
-    d = json.loads(AUFZEICHNUNG.read_text())
-    korrektur = d.get("korrektur_2026-08-12")
-    assert korrektur, "Korrekturblock fehlt -- die Aufzeichnung behauptet wieder ungeprueft"
-    war, ist = korrektur["verteilung_gerechnet"], _gerechnet()
+    d = json.loads(AUFZEICHNUNG_ID.read_text())
+    war, ist = d["verteilung_beim_einfrieren"], _gerechnet()
 
     # Nicht auf Gleichheit pruefen. Am Speicher wird waehrend des Laufs aus
     # anderen Projekten geschrieben -- ein Test auf absolute Zahlen ist dann
