@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-12T20:00:00+0200
+# STAND brainlehr — 2026-08-12T18:50:00+0200
 
 Massgeblich ist die Aufgabenliste der Sitzung. `melder/offene_arbeit.py` zeigt beim Sitzungsstart den offenen Teil von `docs/SPRINTS.md`.
 
@@ -27,7 +27,20 @@ Gemeinsam ist allen: nichts wurde gemeldet.
 | Diagnose: RRF gewichtet Rang, nicht Güte des Kanals | `06bb156` |
 | `planbindung` sieht 79 statt 23 und nennt, was es nicht sieht | `f0f2c88` |
 
-Suite: 945 grün, 2 übersprungen, 12 xfail, 0 rot. Vektoren vollständig neu gerechnet (2963, 0 Fehler) — 0 Änderungen, aber jetzt gemessen statt geschlossen (`L-bc1499`).
+## Erledigt seit 17:30
+
+| | Commit |
+|---|---|
+| `brainlehr.app` löst die Ausweisstelle ab, Wissensraum im Menü | `4dc33ef` |
+| Abrufweg pulsiert, der vorige verglimmt — das Bild trägt sein Alter | `8389dc8` |
+| Der Weg liegt im Bedeutungsraum, Helligkeit aus dem Kosinus statt aus dem Rang | `f21b766` |
+| Fragen sterben nicht an einem Filter — sie nennen keine Adresse | `faf9f64` |
+
+Suite: 970 grün, 2 übersprungen, 11 xfail, 0 rot (vorher 945). Vektoren vollständig neu gerechnet (2963, 0 Fehler) — 0 Änderungen, aber jetzt gemessen statt geschlossen (`L-bc1499`).
+
+**Der Korpus misst eine Bauform, nicht eine Frage** (`fa296b67`). Von 1903 eindeutigen Fragen nennen 0,9 % eine Adresse, von 776 Aufträgen 18,6 %. Kein Sammelkanal heilt das — gemessen, nicht vermutet. Jede veröffentlichte Abrufzahl braucht diesen Zusatz, sonst behauptet sie mehr als gemessen wurde (an Aufgabe 29 gehängt).
+
+**Handprobe offen:** `prefers-reduced-motion` ist für Baum, Bedeutung und Spuren nur gelesen, nicht am laufenden Bild gesehen — die Browser-Werkzeuge können die Systemeinstellung nicht umschalten. Dieselbe wiederverwendete Bedingung wie in Ansicht 4, die reine Funktion ist darauf geprüft. Ein Schluss, keine Sichtprobe.
 
 ## Wartet auf den Betreiber
 
