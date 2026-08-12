@@ -209,7 +209,7 @@
 <div class="vollflaeche">
   <canvas id="c"></canvas>
   <div class="fahne" id="fahne"></div>
-  <div class="hinweis" id="hinweis">lädt…</div>
+  <div class="hinweis" id="hinweis" aria-live="polite">lädt…</div>
 
   <button id="klapper" type="button" aria-expanded="true" aria-controls="tafel">Bedienung ausblenden</button>
 
@@ -775,6 +775,58 @@ const ABRUFWEG_GRUND_TEXT = {
 
 let abrufwegD = null;
 
+// ---- Puls/Verglimmen (rein rechnerisch, ohne DOM) --------------------------
+// abrufwegVerlauf haelt hoechstens zwei Eintraege: den aktuellen und den
+// unmittelbar davor. Ein Weg tiefer zurueck wird nie aufgehoben -- er wird
+// beim naechsten Wechsel einfach ueberschrieben (siehe abrufwegLaden unten).
+const ABRUFWEG_GLIMM_MS = 4000;         // Dauer, bis der vorherige Weg ganz weg ist
+const ABRUFWEG_PULS_PERIODE_MS = 3200;  // ~0.31 Hz -- weit unter der Blitzschwelle
+                                          // aus WCAG 2.3.1 (die erst ab ~3 Hz greift);
+                                          // zudem eine weiche Sinuskurve, kein Ein/Aus.
+const ABRUFWEG_PULS_BASIS = 0.83;       // Grunddeckkraft
+const ABRUFWEG_PULS_AMPLITUDE = 0.13;   // gedaempfte Schwankung: Deckkraft bleibt in [0.70, 0.96]
+let abrufwegVerlauf = [];               // [{d, seit}], seit = Date.now() beim Eintreffen
+
+// Reine Funktion: welcher Weg ist aktuell, welcher verglimmt gerade, wie alt
+// ist jeder. Kein DOM, keine Zeit-Quelle ausser dem uebergebenen "jetzt" --
+// darum ohne Browser pruefbar (siehe tests/test_abrufweg_puls.py).
+function abrufwegZustand(verlauf, jetzt, glimmDauerMs) {
+  if (!verlauf.length) return { aktuell: null, verglimmend: null };
+  const aktuell = verlauf[verlauf.length - 1];
+  const alterAktuellMs = jetzt - aktuell.seit;
+  let verglimmend = null;
+  if (verlauf.length > 1 && alterAktuellMs < glimmDauerMs) {
+    const vorherig = verlauf[verlauf.length - 2];
+    verglimmend = {
+      d: vorherig.d,
+      alterMs: jetzt - vorherig.seit,
+      fortschritt: Math.min(1, alterAktuellMs / glimmDauerMs),
+    };
+  }
+  return { aktuell: { d: aktuell.d, alterMs: alterAktuellMs }, verglimmend };
+}
+
+// Reine Funktion: Deckkraft des Puls-Sinus zum Zeitpunkt "jetzt".
+function abrufwegPulsAlpha(jetzt, periodeMs, basis, amplitude) {
+  return basis + amplitude * Math.sin((2 * Math.PI * jetzt) / periodeMs);
+}
+
+// Reine Funktion: Text fuer den aria-live-Bereich -- muss auch ohne jede
+// Animation (prefers-reduced-motion) stimmen, darum getrennt vom Zeichnen.
+function abrufwegStatusText(zustand) {
+  if (!zustand.aktuell) return 'Anfrage eingeben und „Weg berechnen” betätigen.';
+  const alterS = Math.round(zustand.aktuell.alterMs / 1000);
+  const g = zustand.aktuell.d.geliefert;
+  let text = `Aktueller Weg — Anfrage „${zustand.aktuell.d.anfrage.text}”, vor ${alterS} s berechnet, `
+    + `${g.knoten.length + g.lehren.length} geliefert.`;
+  if (zustand.verglimmend) {
+    const alterVS = Math.round(zustand.verglimmend.alterMs / 1000);
+    const sichtbarPct = Math.round((1 - zustand.verglimmend.fortschritt) * 100);
+    text += ` Vorheriger Weg verglimmt (vor ${alterVS} s berechnet, noch ${sichtbarPct}% sichtbar).`;
+  }
+  return text;
+}
+
 function abrufwegSpalte(art) { return art === 'lehre' ? 'Lehre' : 'Knoten'; }
 
 function abrufwegTitelZelle(e) {
@@ -874,6 +926,12 @@ async function abrufwegLaden(text) {
     const d = await r.json();
     abrufwegD = d;
     stand.textContent = d.leer ? 'keine auswertbare Anfrage' : `${d.geliefert.knoten.length + d.geliefert.lehren.length} geliefert`;
+    if (!d.leer) {
+      // Genau ein Vorgaenger bleibt erhalten (der verglimmt), alles davor
+      // wird beim naechsten Eintreffen einfach ueberschrieben.
+      abrufwegVerlauf.push({ d, seit: Date.now() });
+      if (abrufwegVerlauf.length > 2) abrufwegVerlauf.shift();
+    }
     renderAbrufweg(d);
     if (typeof ansichtAbrufwegNeuZeichnen === 'function') ansichtAbrufwegNeuZeichnen();
   } catch (e) {
@@ -979,27 +1037,27 @@ function ladeFarben(){
 }
 
 // ---- Abrufweg-Zeichenflaeche (Ansicht 4): eigene Projektion, fuenf Spalten,
-// eigenes Punkte-Array fuer den Hover-Test (bild/P gehoeren der Punktwolke). ----
+// eigenes Punkte-Array fuer den Hover-Test (bild/P gehoeren der Punktwolke).
+// Zeichnet EIN Datenset (aktuell oder verglimmend) mit gegebener Deckkraft --
+// der Aufrufer (abrufwegZeichnePuls) loescht das Canvas einmal pro Bild und
+// ruft diese Funktion bis zu zweimal auf (Ghost zuerst, dann aktuell). ----
 let abrufwegPunkte = [];
-function zeichneAbrufwegCanvas(){
-  g.clearRect(0,0,c.width,c.height);
-  abrufwegPunkte = [];
-  const d = abrufwegD;
-  if (!d) { hinweis.textContent = 'lädt …'; return; }
-  if (d.leer) { hinweis.textContent = d.anfrage ? 'Keine auswertbare Anfrage (leer oder ohne indexierbares Wort).' : 'Anfrage eingeben und „Weg berechnen” betätigen.'; return; }
-
+function abrufwegZeichneDatensatz(d, alphaMulti, istAktuell){
   const W=c.width, H=c.height;
   const xA=W*0.07, xK=W*0.30, xV=W*0.55, xD=W*0.77, xG=W*0.94;
   const yTop=H*0.12, yMitte=H*0.5, yBot=H*0.92;
-  g.textAlign='center'; g.fillStyle=cStill; g.font=Math.max(9,11*skala)+'px ui-monospace,monospace';
-  g.fillText('Anfrage', xA, yTop-16);
-  g.fillText('Kandidaten je Kanal', xK, yTop-16);
-  g.fillText('Stichwort', xK, yTop-2);
-  g.fillText('Bedeutung', xK, yMitte+16);
-  g.fillText('Verschmelzung', xV, yTop-16);
-  g.fillText('Deckel', xD, yTop-16);
-  g.fillText('Geliefert', xG, yTop-16);
-  g.textAlign='left';
+  if (istAktuell) {
+    g.textAlign='center'; g.fillStyle=cStill; g.font=Math.max(9,11*skala)+'px ui-monospace,monospace';
+    g.globalAlpha=1;
+    g.fillText('Anfrage', xA, yTop-16);
+    g.fillText('Kandidaten je Kanal', xK, yTop-16);
+    g.fillText('Stichwort', xK, yTop-2);
+    g.fillText('Bedeutung', xK, yMitte+16);
+    g.fillText('Verschmelzung', xV, yTop-16);
+    g.fillText('Deckel', xD, yTop-16);
+    g.fillText('Geliefert', xG, yTop-16);
+    g.textAlign='left';
+  }
 
   const logY = (rang, top, bot, maxRang) => {
     const lr = Math.log(Math.max(1,rang)+1), lmax = Math.log(maxRang+1);
@@ -1022,7 +1080,7 @@ function zeichneAbrufwegCanvas(){
   const deckelIds = new Set(d.deckel.eintraege.map(e=>e.id));
 
   g.lineWidth=1;
-  const linie = (x1,y1,x2,y2,farbe,alpha) => { g.strokeStyle=farbe; g.globalAlpha=alpha; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); };
+  const linie = (x1,y1,x2,y2,farbe,alpha) => { g.strokeStyle=farbe; g.globalAlpha=alpha*alphaMulti; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); };
   for (const [id,y] of stichwortY) linie(xA, yMitte, xK, y, cLinie, .3);
   for (const [id,y] of bedeutungY) linie(xA, yMitte, xK, y, cLinie, .3);
   for (const e of verschmolzen) {
@@ -1043,9 +1101,9 @@ function zeichneAbrufwegCanvas(){
   const punkt = (x,y,e,zusatz) => {
     const r = Math.max(2.6, 4*skala);
     g.fillStyle = e.ausgeschieden ? cDanger : (e.art==='lehre' ? cLehre : cDa);
-    g.globalAlpha = e.ausgeschieden ? .6 : .92;
+    g.globalAlpha = (e.ausgeschieden ? .6 : .92) * alphaMulti;
     g.beginPath(); g.arc(x,y,r,0,6.2832); g.fill();
-    abrufwegPunkte.push({x,y,r:r+5,e,zusatz});
+    if (istAktuell) abrufwegPunkte.push({x,y,r:r+5,e,zusatz});
   };
   g.globalAlpha=1;
   punkt(xA, yMitte, {art:'anfrage', titel:d.anfrage.text, ausgeschieden:null}, 'Anfrage');
@@ -1057,14 +1115,63 @@ function zeichneAbrufwegCanvas(){
     const meta = d.geliefert.eintraege.find(x=>x.id===id) || {art:'?', titel:id};
     punkt(xG, geliefertY.get(id), {...meta, ausgeschieden:null}, 'geliefert');
   }
-
-  hinweis.textContent = `${geliefertListe.length} geliefert von ${d.deckel.pool_groesse} im Deckel-Pool — Anfrage „${d.anfrage.text}”`;
+  g.globalAlpha=1;
 }
-window.ansichtAbrufwegNeuZeichnen = () => { if (typeof ansicht !== 'undefined' && ansicht === 4 && typeof zeichne === 'function') zeichne(); };
+
+// Ein Bild zeichnen: Ghost (falls vorhanden, ohne Puls, nur verglimmend) zuerst,
+// aktueller Weg darueber (mit Puls, ausser bei reduzierter Bewegung). Der
+// aria-live-Text wird NICHT hier gesetzt (das waere 60x/s) -- dafuer siehe
+// abrufwegStatusAktualisieren, das per Intervall separat laeuft.
+function abrufwegZeichnePuls(){
+  const zustand = abrufwegZustand(abrufwegVerlauf, Date.now(), ABRUFWEG_GLIMM_MS);
+  g.clearRect(0,0,c.width,c.height);
+  abrufwegPunkte = [];
+  if (!zustand.aktuell) return;
+  const reduziert = abrufwegReducedMotion.matches;
+  if (zustand.verglimmend && !reduziert) {
+    abrufwegZeichneDatensatz(zustand.verglimmend.d, 1 - zustand.verglimmend.fortschritt, false);
+  }
+  const pulsAlpha = reduziert ? 1 : abrufwegPulsAlpha(Date.now(), ABRUFWEG_PULS_PERIODE_MS, ABRUFWEG_PULS_BASIS, ABRUFWEG_PULS_AMPLITUDE);
+  abrufwegZeichneDatensatz(zustand.aktuell.d, pulsAlpha, true);
+}
+
+// ---- Schleifensteuerung: laeuft nur, waehrend Ansicht 4 sichtbar ist -------
+let abrufwegRaf = null, abrufwegTextTimer = null;
+const abrufwegReducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+function abrufwegStatusAktualisieren(){
+  const zustand = abrufwegZustand(abrufwegVerlauf, Date.now(), ABRUFWEG_GLIMM_MS);
+  const text = abrufwegStatusText(zustand);
+  if (hinweis.textContent !== text) hinweis.textContent = text;
+}
+
+function abrufwegSchleifeStop(){
+  if (abrufwegRaf) { cancelAnimationFrame(abrufwegRaf); abrufwegRaf = null; }
+  if (abrufwegTextTimer) { clearInterval(abrufwegTextTimer); abrufwegTextTimer = null; }
+}
+
+function abrufwegSchleifeStart(){
+  abrufwegSchleifeStop();
+  if (ansicht !== 4 || document.visibilityState !== 'visible') return;
+  ladeFarben();
+  abrufwegStatusAktualisieren();
+  abrufwegTextTimer = setInterval(abrufwegStatusAktualisieren, 1000);
+  if (abrufwegReducedMotion.matches) { abrufwegZeichnePuls(); return; } // einmalig, ruhig, voll sichtbar
+  const bild_ = () => { abrufwegZeichnePuls(); abrufwegRaf = requestAnimationFrame(bild_); };
+  abrufwegRaf = requestAnimationFrame(bild_);
+}
+document.addEventListener('visibilitychange', abrufwegSchleifeStart);
+abrufwegReducedMotion.addEventListener('change', abrufwegSchleifeStart);
+
+window.ansichtAbrufwegNeuZeichnen = () => {
+  if (typeof ansicht === 'undefined' || ansicht !== 4) return;
+  abrufwegStatusAktualisieren();
+  if (typeof zeichne === 'function') zeichne();
+};
 
 function zeichne(){
   if (ansicht === 3) { g.clearRect(0,0,c.width,c.height); hinweis.textContent = 'Vergleich zeigt keine Punktwolke.'; return; }
-  if (ansicht === 4) { ladeFarben(); zeichneAbrufwegCanvas(); return; }
+  if (ansicht === 4) { ladeFarben(); abrufwegZeichnePuls(); return; }
   ladeFarben(); rechnePlatz();
   g.clearRect(0,0,c.width,c.height);
 
@@ -1184,6 +1291,7 @@ const abrufwegLeiste = document.getElementById('abrufwegLeiste'), abrufwegBlock 
     abrufwegBlock.hidden = !istAbrufweg; abrufwegLeiste.hidden = !istAbrufweg; legendeAbrufweg.hidden = !istAbrufweg;
     legende.hidden = istVergleich||istAbrufweg; fuss.hidden = istVergleich||istAbrufweg; zeitleiste.hidden = istVergleich||istAbrufweg;
     setzeStand(); zeichne();
+    if (istAbrufweg) abrufwegSchleifeStart(); else abrufwegSchleifeStop();
   });
 });
 let timer=null;
