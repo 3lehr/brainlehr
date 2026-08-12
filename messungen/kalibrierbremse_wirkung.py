@@ -42,6 +42,8 @@ import argparse
 import json
 import sqlite3
 import sys
+
+from kern import speicher
 import time
 from pathlib import Path
 
@@ -104,9 +106,10 @@ def messen(faelle: list[dict]) -> dict:
 
 
 def _selftest() -> None:
-    conn = sqlite3.connect(f"file:{rh.DB}?mode=ro", uri=True)
-    _beleg_aequivalenz(conn)
-    conn.close()
+    # Naht statt eigener Verbindung (tests/test_naht_ratsche.py). Hier lag
+    # zuerst ein eigenes sqlite3.connect -- ohne Not: gelesen wird nur.
+    with speicher.lesen() as conn:
+        _beleg_aequivalenz(conn)
     print("selftest ok (Code-Beleg: Bremse heute == Bremse ausgesetzt fuer "
           "brainlehr, project_id im Betrieb hartcodiert None, "
           "PROJECT_NOISE_OVERRIDES leer)", file=sys.stderr)
@@ -123,10 +126,9 @@ def main() -> None:
         _selftest()
         return
 
-    conn = sqlite3.connect(f"file:{rh.DB}?mode=ro", uri=True)
-    _beleg_aequivalenz(conn)
-    counts = rh._project_node_counts(conn)
-    conn.close()
+    with speicher.lesen() as conn:
+        _beleg_aequivalenz(conn)
+        counts = rh._project_node_counts(conn)
 
     daten = json.loads(a.korpus.read_text(encoding="utf-8"))
     faelle = daten["faelle"]

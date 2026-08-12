@@ -39,10 +39,22 @@ def dateien_mit_eigener_verbindung() -> dict[str, list[str]]:
     # Bestand. Ohne diese Unterscheidung bliebe eine Datei in der Liste
     # stehen, die laengst umgestellt ist -- und die Ratsche wuerde eine
     # erledigte Umstellung als offen fuehren.
+    # Kommentarzeilen zaehlen nicht. Eine Datei, die erklaert, warum hier
+    # frueher eine eigene Verbindung stand, nennt die verbotene Zeichenfolge
+    # zwangslaeufig -- und wuerde sich damit selbst anzeigen. Genau das ist am
+    # 2026-08-12 zweimal passiert: erst zwischen den beiden Namenswachen
+    # (tests/test_testumgebung_nutzt_ort.py, dort schon behoben), dann hier
+    # bei messungen/kalibrierbremse_wirkung.py. Kommentierter Code wird nie
+    # ausgefuehrt und oeffnet keine Verbindung.
+    def _ist_kommentar(zeile: str) -> bool:
+        teile = zeile.split(":", 2)
+        return len(teile) == 3 and teile[2].lstrip().startswith("#")
+
     treffer = sorted({
         zeile.split(":", 1)[0] for zeile in roh
         if ":memory:" not in zeile
         and "/worktrees/" not in zeile and "/tests/" not in zeile
+        and not _ist_kommentar(zeile)
         and Path(zeile.split(":", 1)[0]).name != "speicher.py"
     })
     return {
