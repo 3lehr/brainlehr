@@ -1139,6 +1139,20 @@ CREATE TABLE IF NOT EXISTS pruefsprueche (
     ketten_hash   TEXT NOT NULL
 );
 
+-- Urfassungen der S12-Neuformulierung (docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md,
+-- Nachtrag 2026-08-12T07:20, kern/sicherung_s12.py). node_id ist PRIMARY KEY,
+-- damit ein Knoten nur EINMAL gesichert werden kann -- ein zweiter Lauf nach
+-- dem Umschreiben darf das Original nicht mit dem schon veraenderten Text
+-- ueberschreiben. Loeschbar, ohne dass am Hauptschema etwas bleibt.
+CREATE TABLE IF NOT EXISTS s12_urfassungen (
+    node_id       TEXT PRIMARY KEY,
+    path          TEXT NOT NULL,
+    title         TEXT NOT NULL,
+    summary       TEXT NOT NULL,
+    content       TEXT,
+    gesichert_am  TEXT NOT NULL
+);
+
 -- ---------------------------------------------------------------------------
 -- Schemastand (ADR-003, 2026-08-10)
 --
