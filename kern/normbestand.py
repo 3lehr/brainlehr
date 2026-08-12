@@ -468,12 +468,41 @@ def erfasse(db_path: Path, apply: bool, global_md: Path = GLOBAL_CLAUDE_MD,
                         tags = tags + ["hub"]
                     summary = make_summary(a.body, a.title)
                     path_hint = f"{target_parent}/{kms._slugify(a.title)}"
+                    # norm_entscheidung (Auftrag 2026-08-08, Nachtrag N1-Luecke):
+                    # diese drei Quellen (globale CLAUDE.md, hub-CLAUDE.md,
+                    # docs/adr/*.md) SIND Regelartefakte, kein Fakt ohne Rang --
+                    # 'keine_norm' waere hier eine geratene Einordnung (anders als
+                    # bei ensure_category()'s Sammelknoten, der wirklich keine Norm
+                    # ist). norm_rang wird HIER explizit aus dem Schleifenschluessel
+                    # gesetzt (1=global/2=hub/3=ADR), NICHT kms.knowledge_add()'s
+                    # eigener ADR-034-Ableitung ueberlassen: jene vergleicht `source`
+                    # gegen die REALEN Pfadkonstanten (~/.claude/CLAUDE.md, hub/
+                    # CLAUDE.md) und trifft darum bei den injizierbaren global_md/
+                    # hub_md/adr_dir-Parametern des Selbsttests nie zu -- die
+                    # Ableitung waere fuer den Testaufbau blind. Beide Ableitungen
+                    # nutzen dieselbe Quelle (den Schluessel bzw. das source-Muster),
+                    # sind also keine zwei konkurrierenden Wahrheiten. gilt_ab
+                    # bekommt denselben `stand`-Zeitstempel, der auch im source-Text
+                    # steht ("Stand <stand>") -- kein zweites, leicht abweichendes
+                    # "jetzt". gilt_bis bleibt NULL (unbefristet): keine der drei
+                    # Quellen traegt ein Enddatum, darum durchgaengig
+                    # norm_unbefristet, nicht "je nach Quelle verschieden".
+                    norm_rang = {"global": 1, "hub": 2, "adr": 3}[key]
                     res = kms.knowledge_add(
                         parent_path=target_parent, title=a.title,
                         summary=summary,
                         content=cap_content(a.body, path_hint, a.title, summary),
                         project_id="shared", tags=tags,
                         source=a.source_needle, actor=ACTOR,
+                        norm_rang=norm_rang, gilt_ab=stand,
+                        norm_entscheidung="norm_unbefristet",
+                        norm_entschieden_grund=(
+                            f"Regelartefakt aus {key}-Quelle uebernommen (normbestand.py::erfasse), "
+                            f"Rang {norm_rang} folgt fest aus dieser Quelle, kein Ermessen der "
+                            "Maschine; norm_entschieden_von wird bei belegtem Betreiber-Ursprung "
+                            "(CLAUDE.md-Import) auf den Betreiber aufgeloest, siehe "
+                            "herkunft_normentscheider.ist_urheber_betreiber()."
+                        ),
                     )
                     if "error" in res:
                         raise RuntimeError(f"{key}/{a.title!r}: {res['error']}")

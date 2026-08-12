@@ -172,17 +172,6 @@ XFAIL = {
         "'nasa-llis' eine zweite dokumentierte Ausnahme wird, ist eine "
         "fachliche Entscheidung, keine billige Reparatur."
     ),
-    "kern/normbestand.py": (
-        "teilweise repariert, Rest kaputter Code: die Sammelknoten-Anlage "
-        "(ensure_category) rief kms.knowledge_add() ohne das seit "
-        "2026-08-08 PFLICHTIGE Feld norm_entscheidung auf -- behoben "
-        "(keine_norm, da ein Sammelknoten keine Norm ist). Dieselbe Luecke "
-        "steckt ein zweites Mal in der Direktiven-Uebernahme (erfasse(), "
-        "der 'created'-Zweig): dort importierte Direktiven/ADRs koennten "
-        "durchaus Normen sein -- das ist eine fachliche Einordnungsfrage "
-        "(norm_unbefristet? norm_befristet? je nach Quelle verschieden?), "
-        "keine billige Reparatur ohne Ratefehler."
-    ),
 }
 
 assert set(XFAIL) <= set(MODULE)
