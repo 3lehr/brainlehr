@@ -1,0 +1,201 @@
+{
+  "raster": "diagnose_nasa_2026-08-12",
+  "verdaechtiger_1_stichwortkanal": {
+    "methode": "FTS5 MATCH mit OR-verknuepften Wortphrasen (nachgebaut wie knowledge_mcp_server._or_query), gezaehlt gegen knowledge_fts",
+    "de_query": "Dichtung Leckage Treibstofftank Fehleranalyse Startverzoegerung",
+    "de_treffer_gesamt": 8,
+    "de_treffer_nasa_llis": 0,
+    "en_query": "seal leakage propellant tank failure analysis launch delay",
+    "en_treffer_gesamt": 773,
+    "en_treffer_nasa_llis": "747/773"
+  },
+  "verdaechtiger_2_bedeutungssuche": {
+    "methode": "bge-m3 embed_text() fuer Anfrage und je einen NASA-Knotenvektor (vorhandene knowledge_embeddings-Zeilen, kind=node, model=bge-m3), cosine_similarity(); n=30 NASA-Knoten je Anfrage, davon einer gezielt (Static Cryogenic Seals)",
+    "paar_1": {
+      "de_query": "Dichtung Leckage Treibstofftank Fehleranalyse Startverzoegerung",
+      "en_query": "seal leakage propellant tank failure analysis launch delay",
+      "de_gegen_nasa": {
+        "n": 31,
+        "max": 0.5814,
+        "median": 0.4278,
+        "min": 0.3532
+      },
+      "en_gegen_nasa": {
+        "n": 31,
+        "max": 0.6529,
+        "median": 0.4336,
+        "min": 0.3291
+      },
+      "de_top3_gegen_nasa": [
+        [
+          0.5814,
+          "/nasa-llis/701"
+        ],
+        [
+          0.5178,
+          "/nasa-llis/101"
+        ],
+        [
+          0.4961,
+          "/nasa-llis/102"
+        ]
+      ],
+      "en_top3_gegen_nasa": [
+        [
+          0.6529,
+          "/nasa-llis/701"
+        ],
+        [
+          0.5368,
+          "/nasa-llis/102"
+        ],
+        [
+          0.518,
+          "/nasa-llis/1026"
+        ]
+      ],
+      "de_gegen_eigene_top3": [
+        [
+          0.4603,
+          "/shared/arch/bsi-katalog-deckt-prueftiefe-nicht-ab"
+        ],
+        [
+          0.4525,
+          "/apps/fahrtenbuch/vin-lesepfad-psa-peugeot"
+        ],
+        [
+          0.4525,
+          "/apps/fahrtenbuch/vin-lesepfad-psa-peugeot"
+        ]
+      ],
+      "de_gegen_eigene": {
+        "n": 30,
+        "max": 0.4603,
+        "median": 0.4175,
+        "min": 0.3357
+      }
+    },
+    "paar_2_unabhaengige_gegenprobe": {
+      "de_query": "Software Fehler Bodenkontrollsystem Kommunikationsausfall",
+      "en_query": "software error ground control system communication failure",
+      "de_gegen_nasa": {
+        "n": 31,
+        "max": 0.5093,
+        "median": 0.4523,
+        "min": 0.3598
+      },
+      "en_gegen_nasa": {
+        "n": 31,
+        "max": 0.5175,
+        "median": 0.451,
+        "min": 0.3309
+      }
+    }
+  },
+  "verdaechtiger_3_textmenge": {
+    "methode": "EN-Anfrage gegen zwei Teilmengen INNERHALB /nasa-llis (gleiche Sprache, gleiche Domaene, isoliert nur die Textmenge): 'kurz' = content<300 Zeichen; 'lang' = content>1500 Zeichen. n je bis 30 Knoten. ABWEICHUNG vom Auftrag: die Annahme 'summary identisch title, kein Volltext' trifft NICHT mehr zu -- gemessen: content bei allen 1638 nasa-llis-Knoten gefuellt (min 100, max 33238, Mittel 896.4 Zeichen); title==summary gilt bei 769/1637, aendert an der content-Fuellung nichts, da build_embeddings.node_text() title+summary+content konkateniert.",
+    "bestand_nasa_llis": {
+      "gesamt": 1637,
+      "content_kurz_lt300": 373,
+      "content_lang_gt1500": 226,
+      "content_min_max_mittel": [
+        100,
+        33238,
+        896.4
+      ],
+      "title_eq_summary": "769/1637"
+    },
+    "en_query": "seal leakage propellant tank failure analysis launch delay",
+    "en_gegen_duenne_nasa_knoten": {
+      "n": 30,
+      "max": 0.511,
+      "median": 0.4095,
+      "min": 0.3291
+    },
+    "en_gegen_reiche_nasa_knoten": {
+      "n": 30,
+      "max": 0.5864,
+      "median": 0.4743,
+      "min": 0.3321
+    }
+  },
+  "zusatz_eigene_vs_nasa_reich_sprachkonfund": {
+    "hinweis": "Diese Zahl mischt Sprache UND Domaene -- nicht als reiner Textmengen-Beleg verwenden, nur als Groessenordnung.",
+    "de_gegen_eigene_reich": {
+      "n": 30,
+      "max": 0.4603,
+      "median": 0.4175,
+      "min": 0.3357
+    },
+    "en_gegen_nasa_reich": {
+      "n": 30,
+      "max": 0.5864,
+      "median": 0.4743,
+      "min": 0.3321
+    }
+  },
+  "einordnung_volle_embedding_rangfolge": {
+    "methode": "Rang des ERSTEN nasa-llis-Knotens im reinen Embedding-Ranking (cosine, ALLE 2151 Knoten mit Vektor) -- zeigt, ob nasa von anderen Knoten systematisch verdraengt wird, nicht nur ob der 30er-Ausschnitt zufaellig guenstig lag.",
+    "de_query": {
+      "top1_score_irgendein_knoten": 0.637,
+      "top1_pfad": "/nasa-llis/812",
+      "erster_nasa_rang_0basiert": 0,
+      "erster_nasa_score": 0.637,
+      "erster_nasa_pfad": "/nasa-llis/812"
+    },
+    "en_query": {
+      "top1_score_irgendein_knoten": 0.6631,
+      "top1_pfad": "/nasa-llis/812",
+      "erster_nasa_rang_0basiert": 0,
+      "erster_nasa_score": 0.6631,
+      "erster_nasa_pfad": "/nasa-llis/812"
+    }
+  },
+  "positivkontrolle_volle_fusion_ueber_alle_knoten": {
+    "methode": "rrf_fuse ueber ALLE Knoten (nicht nur die 30er-Stichprobe), FTS-Kanal + Embedding-Kanal, gleiche Fusion wie knowledge_mcp_server._fuse_with_keyword_floor",
+    "en_top5": [
+      "/nasa-llis/5396",
+      "/nasa-llis/4976",
+      "/nasa-llis/6036",
+      "/nasa-llis/6816",
+      "/nasa-llis/1777"
+    ],
+    "en_nasa_in_top5": "5/5",
+    "de_top5": [
+      "/shared/claude-code-integration/haken-ereignisse-in-claude-code-31-gibt",
+      "/ops/openlehr/openlehr-personalisierung-fakten-in-rag",
+      "/openlehr/steuer/ui/adr-openlehr-steuer-ui-ia-verdichtung",
+      "/brainlehr/kleines-lokales-modell-als-reranker-ja",
+      "/frontend/accessibility/barrierefreiheit-ist-voreinstellung"
+    ],
+    "de_nasa_in_top5": "0/5"
+  },
+  "viertes_gefundenes_ursache_rrf_plus_trigrammrauschen": {
+    "befund": "Weder der Stichwortkanal (0/8 DE-FTS-Treffer sind nasa) noch die Bedeutungssuche (nasa-llis/812 ist mit 0.637 der BESTE Treffer ueber ALLE 2151 Knoten fuer die DE-Anfrage) erklaeren allein das 0/5 in der vollen Fusion. Ursache ist die Fusionsformel selbst: rrf_fuse ist rang- und kanalzahl-additiv, nicht magnitudenbasiert. Die 8 DE-FTS-Treffer sind reines Trigramm-Zufallsrauschen (3-Byte-Teilstring-Ueberlappung, z.B. 'ver' aus 'Startverzoegerung' trifft 'Verdichtung') -- KEINER ist thematisch mit Dichtungen/Treibstoff verwandt, siehe fts_treffer_de unten. Weil diese 8 Knoten ZUSAETZLICH irgendwo (Rang 112..1209 von 2151) im Embedding-Kanal auftauchen, summiert RRF beide Kanalbeitraege und uebertrumpft nasa-llis/812, das nur im Embedding-Kanal (Rang 0) steht: 1/(60+6+1)+1/(60+112+1)=0.0207 > 1/(60+0+1)=0.0164 fuer nasa/812. Ein Knoten in BEIDEN Kanaelen schlaegt den EINZIGEN Spitzenreiter eines Kanals -- unabhaengig davon, wie schwach der andere Kanal traf.",
+    "fts_treffer_de_alle_8_thematisch_fremd": [
+      "/ops/openlehr/openlehr-personalisierung-fakten-in-rag",
+      "/openlehr/steuer/ui/adr-openlehr-steuer-ui-ia-verdichtung",
+      "/frontend/accessibility/barrierefreiheit-ist-voreinstellung",
+      "/methodik/adr-bestand-hub-docs-adr/adr-024-wissensschichten-und-portabler",
+      "/brainlehr/kleines-lokales-modell-als-reranker-ja",
+      "/brainlehr/der-melder-war-nie-kaputt-die-anzeige",
+      "/shared/claude-code-integration/haken-ereignisse-in-claude-code-31-gibt",
+      "/methodik/direktiven/dringend-arbeitsweise-ab-2026-08-12"
+    ],
+    "rechenbeispiel_gewinner_vs_nasa812": {
+      "gewinner": "/shared/claude-code-integration/haken-ereignisse-in-claude-code-31-gibt",
+      "gewinner_fts_rang_0basiert": 6,
+      "gewinner_emb_rang_0basiert": 112,
+      "gewinner_score": 0.0207,
+      "nasa812_fts_rang": null,
+      "nasa812_emb_rang_0basiert": 0,
+      "nasa812_score": 0.0164
+    }
+  },
+  "haltemenge": "entfaellt mit Begruendung: Dies ist eine DIAGNOSE ohne abgestimmten Parameter. Es wurde kein Gewicht, keine Schwelle und keine Formel gewaehlt, die an einem Satz gut aussehen und an einem anderen durchfallen koennte -- gemessen wurden Eigenschaften des vorhandenen Bestands (Trigramm-Ueberlappung, Vektoraehnlichkeit, Textlaenge) und eine Fusionsrechnung, die deterministisch ist. Eine Haltemenge traegt hier nichts bei; ihr Zweck ist der Schutz vor einem Abstimmungsmaximum, und es wurde nichts abgestimmt.",
+  "nachgerechnet_vom_auftraggeber": {
+    "am": "2026-08-12T18:05:00+0200",
+    "befund": "Die Fusionsrechnung stimmt fuer den gemessenen Fall: Rang 7 und Rang 113 in zwei Kanaelen ergeben 0.0207 gegen 0.0164 fuer Rang 1 in einem Kanal. Die naheliegende Verallgemeinerung ist aber FALSCH -- ein Treffer auf Rang 200 in beiden Kanaelen ergibt 0.0077 und verliert. Der Effekt haengt daran, dass der Stichwortkanal bei dieser Anfrage nur ACHT Treffer hatte: seine Spitzenraenge waren damit von Rauschen besetzt und trugen trotzdem volles Ranggewicht.",
+    "die_schaerfere_aussage": "RRF gewichtet den RANG innerhalb eines Kanals, nicht die GUETE des Kanals. Ein Kanal mit acht schlechten Treffern verleiht seinem schlechtesten Rang dasselbe Gewicht wie ein Kanal mit 773 guten Treffern seinem besten."
+  }
+}
