@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-12T22:35:00+0200
+# STAND brainlehr — 2026-08-12T23:10:00+0200
 
 ## Warum die Regeln nicht greifen — gemessen, nicht vermutet
 
@@ -74,7 +74,7 @@ Suite: 970 grün, 2 übersprungen, 11 xfail, 0 rot (vorher 945). Vektoren vollst
 Aufgabe 20 und 23 gehören zusammen (Ausweisordner sichern, Geheimnis rotieren, Eintrag aus `~/.claude.json`).
 Aufgabe 7: MAUDE-Import lädt über das Netz — Download braucht das ausdrückliche Wort.
 Aufgabe 31: alle 808 Lehren stehen auf `intern`; der Austausch läuft leer, bis jemand freigibt.
-Aufgabe 29/34: öffentlicher Schnitt erst nach beiden Ausgangszuständen der Fremdinstallation.
+Aufgabe 29: Der öffentliche Schnitt ist **vorbereitbar** — beide Ausgangszustände sind gefahren (`e2ff82d`), beide tragen. Frisch nach README benutzbar, Aktualisierung vom alten Schema additiv und verlustfrei, kein ausgeliefertes Werkzeug setzt eine nur hier entstehende Tabelle voraus. Damit ist der Zustand von `L-96db3e` belegt behoben. Offen vor einer Veröffentlichung: `--bestand`/`--vektoren`, ein MCP-Rundlauf über einen **neu gestarteten** Klienten, `doctor.py` als eigenständiges Kommando. **Push bleibt ein Stopp-Punkt.**
 
 ## Nicht vergessen
 
