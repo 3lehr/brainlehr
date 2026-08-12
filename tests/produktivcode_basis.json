@@ -37,6 +37,7 @@
     "./pflege/wiederherstellung.py",
     "./schreibpruefstand/abrufpruefstand.py",
     "./schreibpruefstand/auswertung.py",
-    "./schreibpruefstand/demo_db.py"
+    "./schreibpruefstand/demo_db.py",
+    "./kern/regelpaket.py"
   ]
 }
