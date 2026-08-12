@@ -1,0 +1,416 @@
+{
+  "stichprobe_gesamt_kandidaten": 266,
+  "stichprobe_gezogen": 25,
+  "ausgewertet": 25,
+  "ohne_idf_begriffe_uebersprungen": 0,
+  "davon_fuer_vektor_abgeschnitten": 0,
+  "top_n_je_weg": 15,
+  "summe_schnittmenge": 17,
+  "summe_nur_vektor": 189,
+  "summe_nur_stichwort": 358,
+  "durchschnitt_schnittmenge_von_top_n": 0.68,
+  "durchschnitt_nur_vektor_von_top_n": 7.56,
+  "faelle": [
+    {
+      "antwort_laenge": 1246,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 7,
+      "schnittmenge_n": 1,
+      "nur_vektor_n": 6,
+      "nur_stichwort_n": 14,
+      "nur_vektor_beispiele": [
+        "lesson:L-5615d2",
+        "lesson:L-813c8f",
+        "lesson:L-8bde89",
+        "lesson:L-b044fa",
+        "node:88ecf57f"
+      ]
+    },
+    {
+      "antwort_laenge": 1996,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 8,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 8,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-0b606e",
+        "lesson:L-78aa75",
+        "lesson:L-d3237f",
+        "lesson:L-defb1e",
+        "node:e063194d"
+      ]
+    },
+    {
+      "antwort_laenge": 3668,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 9,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 9,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-53eeda",
+        "lesson:L-747223",
+        "node:0ff6aba6",
+        "node:557ab47f",
+        "node:7c8df4e7"
+      ]
+    },
+    {
+      "antwort_laenge": 2116,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 12,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 12,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-7a84c4",
+        "lesson:L-ca6ea5",
+        "node:43deb9d2",
+        "node:c4f49007",
+        "node:c9275fd1"
+      ]
+    },
+    {
+      "antwort_laenge": 1200,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 8,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 8,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-2197e8",
+        "lesson:L-5767a7",
+        "lesson:L-a472cd",
+        "lesson:L-ad02b8",
+        "node:894645f1"
+      ]
+    },
+    {
+      "antwort_laenge": 1918,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 8,
+      "schnittmenge_n": 1,
+      "nur_vektor_n": 7,
+      "nur_stichwort_n": 14,
+      "nur_vektor_beispiele": [
+        "lesson:L-136f2b",
+        "lesson:L-45aadb",
+        "lesson:L-78e863",
+        "lesson:L-da6eb5",
+        "node:23a093d6"
+      ]
+    },
+    {
+      "antwort_laenge": 1127,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 8,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 8,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-2bdfea",
+        "lesson:L-6b0bf6",
+        "lesson:L-96db3e",
+        "lesson:L-d236eb",
+        "node:23a093d6"
+      ]
+    },
+    {
+      "antwort_laenge": 1005,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 9,
+      "schnittmenge_n": 1,
+      "nur_vektor_n": 8,
+      "nur_stichwort_n": 14,
+      "nur_vektor_beispiele": [
+        "lesson:L-4be9bf",
+        "lesson:L-5615d2",
+        "lesson:L-73da37",
+        "lesson:L-adfb33",
+        "node:1a44c7b4"
+      ]
+    },
+    {
+      "antwort_laenge": 1300,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 9,
+      "schnittmenge_n": 2,
+      "nur_vektor_n": 7,
+      "nur_stichwort_n": 13,
+      "nur_vektor_beispiele": [
+        "lesson:L-243dde",
+        "lesson:L-5615d2",
+        "lesson:L-b63633",
+        "lesson:L-d3237f",
+        "node:1d0d16bc"
+      ]
+    },
+    {
+      "antwort_laenge": 1000,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 8,
+      "schnittmenge_n": 2,
+      "nur_vektor_n": 6,
+      "nur_stichwort_n": 13,
+      "nur_vektor_beispiele": [
+        "lesson:L-044353",
+        "lesson:L-73020e",
+        "lesson:L-cc6d37",
+        "lesson:L-d07097",
+        "node:e38dec52"
+      ]
+    },
+    {
+      "antwort_laenge": 878,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 7,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 7,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-352afa",
+        "lesson:L-7318ce",
+        "lesson:L-99f100",
+        "lesson:L-e0f383",
+        "node:bc984eae"
+      ]
+    },
+    {
+      "antwort_laenge": 1361,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 7,
+      "schnittmenge_n": 2,
+      "nur_vektor_n": 5,
+      "nur_stichwort_n": 13,
+      "nur_vektor_beispiele": [
+        "lesson:L-006b69",
+        "lesson:L-40b5ab",
+        "lesson:L-706807",
+        "lesson:L-b9d1f3",
+        "lesson:L-f1fcb9"
+      ]
+    },
+    {
+      "antwort_laenge": 1324,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 9,
+      "schnittmenge_n": 2,
+      "nur_vektor_n": 7,
+      "nur_stichwort_n": 13,
+      "nur_vektor_beispiele": [
+        "lesson:L-ad02b8",
+        "lesson:L-dd61a0",
+        "node:1a44c7b4",
+        "node:51f3695e",
+        "node:e063194d"
+      ]
+    },
+    {
+      "antwort_laenge": 1030,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 8,
+      "schnittmenge_n": 1,
+      "nur_vektor_n": 7,
+      "nur_stichwort_n": 14,
+      "nur_vektor_beispiele": [
+        "lesson:L-626782",
+        "lesson:L-8c319e",
+        "node:0bd52cd8",
+        "node:71775386",
+        "node:8c81d489"
+      ]
+    },
+    {
+      "antwort_laenge": 502,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 7,
+      "schnittmenge_n": 1,
+      "nur_vektor_n": 6,
+      "nur_stichwort_n": 14,
+      "nur_vektor_beispiele": [
+        "lesson:L-014f8f",
+        "lesson:L-01783a",
+        "lesson:L-a61849",
+        "lesson:L-b4b6fc",
+        "lesson:L-cde4e9"
+      ]
+    },
+    {
+      "antwort_laenge": 2236,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 8,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 8,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-6b0bf6",
+        "lesson:L-78e863",
+        "lesson:L-e0f383",
+        "node:23a093d6",
+        "node:5adfdbe7"
+      ]
+    },
+    {
+      "antwort_laenge": 991,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 8,
+      "schnittmenge_n": 1,
+      "nur_vektor_n": 7,
+      "nur_stichwort_n": 14,
+      "nur_vektor_beispiele": [
+        "lesson:L-022cea",
+        "lesson:L-122b1c",
+        "lesson:L-2e23e5",
+        "lesson:L-b044fa",
+        "lesson:L-c9f9e9"
+      ]
+    },
+    {
+      "antwort_laenge": 514,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 8,
+      "schnittmenge_n": 1,
+      "nur_vektor_n": 7,
+      "nur_stichwort_n": 14,
+      "nur_vektor_beispiele": [
+        "lesson:L-c0731a",
+        "lesson:L-dd61a0",
+        "lesson:L-e723cc",
+        "node:19c15ea3",
+        "node:5bfd7d98"
+      ]
+    },
+    {
+      "antwort_laenge": 1114,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 7,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 7,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-6ad279",
+        "lesson:L-86e92d",
+        "lesson:L-aed27a",
+        "lesson:L-fcf495",
+        "node:68fe57e0"
+      ]
+    },
+    {
+      "antwort_laenge": 598,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 9,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 9,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-1056bb",
+        "lesson:L-4be9bf",
+        "lesson:L-9f5e60",
+        "lesson:L-ad02b8",
+        "node:894645f1"
+      ]
+    },
+    {
+      "antwort_laenge": 1227,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 9,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 9,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-360551",
+        "lesson:L-4eb2bc",
+        "lesson:L-ad7232",
+        "lesson:L-bfe140",
+        "node:9344431f"
+      ]
+    },
+    {
+      "antwort_laenge": 597,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 10,
+      "schnittmenge_n": 1,
+      "nur_vektor_n": 9,
+      "nur_stichwort_n": 14,
+      "nur_vektor_beispiele": [
+        "node:0bd52cd8",
+        "node:8c81d489",
+        "node:9b5c4e51",
+        "node:c3b3ecdf",
+        "node:cd0a871b"
+      ]
+    },
+    {
+      "antwort_laenge": 1308,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 7,
+      "schnittmenge_n": 1,
+      "nur_vektor_n": 6,
+      "nur_stichwort_n": 14,
+      "nur_vektor_beispiele": [
+        "lesson:L-38bcb0",
+        "lesson:L-473ba2",
+        "lesson:L-8bde89",
+        "node:0ff6aba6",
+        "node:210738f1"
+      ]
+    },
+    {
+      "antwort_laenge": 916,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 7,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 7,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-352afa",
+        "lesson:L-7d72d2",
+        "lesson:L-99f100",
+        "lesson:L-e0f383",
+        "node:34ef6d8e"
+      ]
+    },
+    {
+      "antwort_laenge": 2719,
+      "abgeschnitten_fuer_vektor": false,
+      "stichwort_treffer_n": 15,
+      "vektor_treffer_n": 9,
+      "schnittmenge_n": 0,
+      "nur_vektor_n": 9,
+      "nur_stichwort_n": 15,
+      "nur_vektor_beispiele": [
+        "lesson:L-2be21f",
+        "lesson:L-3cad13",
+        "lesson:L-7d72d2",
+        "lesson:L-d3237f",
+        "lesson:L-fcf495"
+      ]
+    }
+  ],
+  "befund_text": "Ueber 25 ausgewertete Antworten (von 25 gezogen, 0 ohne IDF-Begriffe uebersprungen): im Schnitt 0.68 von 15 Vektor-Treffern stehen bereits in der Stichwort-Trefferliste, 7.56 sind NUR ueber den Vektor erreichbar (nicht im Stichwort-Weg). 0 von 25 Antworten lagen ueber der in Messung 1 gefundenen Abschneidegrenze -- ihr Vektor bildet nur den Anfang ab."
+}

@@ -1,0 +1,2185 @@
+{
+  "worktree_marker": "hallo-01e380",
+  "recall_zeilen_im_scope": 72,
+  "assistant_nachrichten_im_transcript": 604,
+  "geprueft": 362,
+  "kontaminiert": 169,
+  "quote": "169/362",
+  "ohne_folgeantwort_im_fenster": 0,
+  "ohne_bestandsinhalt_mehr_vorhanden": 0,
+  "befunde": [
+    {
+      "ts": "2026-08-12T06:33:14+00:00",
+      "kind": "node",
+      "kennung": "/methodik/fehlende-quelle-ist-kein-leeres",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T06:39:41+00:00",
+      "kind": "node",
+      "kennung": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-gemeinschaftskonten-statt",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T06:39:41+00:00",
+      "kind": "node",
+      "kennung": "/ops/buckeberg-heizung-sechs-oelanlagen-von",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T06:39:41+00:00",
+      "kind": "node",
+      "kennung": "/openlehr/steuer/konsil-beschluss-aenderungsprotokoll",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T06:39:41+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/erster-lueckenlos-belegter-nutzungsfall",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T06:39:41+00:00",
+      "kind": "lesson",
+      "kennung": "L-b2f96b",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T06:44:59+00:00",
+      "kind": "node",
+      "kennung": "/ops/openlehr/kontakt-vorschlag-anlage-durch-ki",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T06:44:59+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/brainlehr-ist-globale-standard",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T06:44:59+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/plugins-sind-schutzbedienung-nicht-die",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T06:44:59+00:00",
+      "kind": "node",
+      "kennung": "/simulation-akademie-messaufbau-kein/messlauf-1-2026-08-08-auskuenfte-werden",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T06:44:59+00:00",
+      "kind": "lesson",
+      "kennung": "L-cebc03",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T06:49:15+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven-hub-claude-md/wissen-knowledge-mcp",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T06:49:15+00:00",
+      "kind": "node",
+      "kennung": "/tools/ctoc-tokenzahl-fuer-claude-offline",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T07:02:35+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/enigma-phase-1-mcp-ist-keine",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T07:11:53+00:00",
+      "kind": "node",
+      "kennung": "/shared/arch/stellvertreter-regel-zahl-der-noetigen",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T07:11:53+00:00",
+      "kind": "node",
+      "kennung": "/apps/wohlairr/feldmethode-messpunkt-findung-waende",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T07:11:53+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/erste-felddaten-nach-dem-abruf-umbau",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T07:11:53+00:00",
+      "kind": "lesson",
+      "kennung": "L-bbd7fb",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T07:11:53+00:00",
+      "kind": "lesson",
+      "kennung": "L-08dd0b",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T07:11:53+00:00",
+      "kind": "lesson",
+      "kennung": "L-36d092",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T07:11:53+00:00",
+      "kind": "lesson",
+      "kennung": "L-fbba58",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T07:11:53+00:00",
+      "kind": "lesson",
+      "kennung": "L-0e6d2d",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T07:34:32+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/faehigkeiten/wissen-wer-etwas-geschrieben-hat",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T07:34:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-ad7232",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T07:41:47+00:00",
+      "kind": "lesson",
+      "kennung": "L-d22263",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T08:14:40+00:00",
+      "kind": "node",
+      "kennung": "/plaene/plan-destille-2026-08-09/s1b-nachschlagewerke-sind-eine-eigene",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T08:14:40+00:00",
+      "kind": "lesson",
+      "kennung": "L-6a215a",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T09:18:23+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/keine-veroeffentlichung-von-brainlehr",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T09:18:23+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/was-der-journalismus-an-formaten-kennt",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T09:18:23+00:00",
+      "kind": "lesson",
+      "kennung": "L-402a51",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T09:18:23+00:00",
+      "kind": "lesson",
+      "kennung": "L-39574b",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T09:18:23+00:00",
+      "kind": "lesson",
+      "kennung": "L-91448c",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T10:12:24+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/dringend-arbeitsweise-ab-2026-08-12",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T10:12:24+00:00",
+      "kind": "lesson",
+      "kennung": "L-53eeda",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T10:33:18+00:00",
+      "kind": "lesson",
+      "kennung": "L-d8b32a",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T11:38:51+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/warum-der-bedeutungskanal-streut-er",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T11:38:51+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/blinde-nutzenmessung-die-auffindbarkeit",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T11:38:51+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/zu-tun-rangfolge-verschraenken-vier",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T11:57:08+00:00",
+      "kind": "node",
+      "kennung": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T11:57:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-c6e856",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T11:57:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-cde4e9",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T12:00:49+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/02b-miss-nicht-nur-die-daten",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:00:49+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/rot-vor-gruen-probe-traegt-actor-nach",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T12:00:49+00:00",
+      "kind": "lesson",
+      "kennung": "L-3f1dbb",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:00:49+00:00",
+      "kind": "lesson",
+      "kennung": "L-8a5813",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:00:49+00:00",
+      "kind": "lesson",
+      "kennung": "L-eff1e7",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:00:49+00:00",
+      "kind": "lesson",
+      "kennung": "L-401aeb",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:04:53+00:00",
+      "kind": "lesson",
+      "kennung": "L-a3cc7a",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:45:38+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/inference-control-zweiter-lauf-exakte",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:49:21+00:00",
+      "kind": "lesson",
+      "kennung": "L-ff8fff",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:49:21+00:00",
+      "kind": "lesson",
+      "kennung": "L-2837f3",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:49:21+00:00",
+      "kind": "lesson",
+      "kennung": "L-83782c",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:50:48+00:00",
+      "kind": "node",
+      "kennung": "/arch/token-economy/lazy-loading",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:50:48+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/dringend-betreibervorschlag-eine-lehre",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:50:48+00:00",
+      "kind": "node",
+      "kennung": "/simulation-akademie-messaufbau-kein/simulation-redaktion-freigabekette-wer",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:50:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-7fc31c",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "node",
+      "kennung": "/frontend/buckeberg-design-guide-apple-hig",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "node",
+      "kennung": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/rangmassstab-buckeberg-verbindlichkeit",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "node",
+      "kennung": "/ops/buckeberg-dokument-pipeline-2026-07-28",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "node",
+      "kennung": "/ops/buckeberg-teilungserklaerung-von-1982",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "node",
+      "kennung": "/ops/buckeberg-efbe-verwaltung-und-bausparte",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/fremde-anbieter-nach-aufgabe-getrennt",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-626782",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-3128c4",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-d7e998",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-b0fe05",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T12:58:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-dd0daf",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T13:05:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-0392e4",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T13:33:03+00:00",
+      "kind": "node",
+      "kennung": "/tools/repos-ausserhalb-begod2026-sind-fuer-die",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T13:33:03+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/wettbewerbscheck-2026-08-12-direkter",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T13:33:03+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/nullbefund-ueber-drei-unabhaengige",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T13:33:03+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/wettbewerbslage-2026-08-09-zwei-echte",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:26:39+00:00",
+      "kind": "node",
+      "kennung": "/plaene/plan-destille-2026-08-09/s14-die-fehlklasse-dieses-tages-hat",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T14:26:39+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/brainlehrs-zugriffsprotokoll-ist",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T14:26:39+00:00",
+      "kind": "lesson",
+      "kennung": "L-871c8a",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:26:39+00:00",
+      "kind": "lesson",
+      "kennung": "L-8bde89",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T14:33:11+00:00",
+      "kind": "node",
+      "kennung": "/methodik/zehn-verdachtsfaelle-geprueft-null",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T14:41:58+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/wie-ein-agentenauftrag-geschrieben-wird-systemweit",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T14:41:58+00:00",
+      "kind": "node",
+      "kennung": "/openlehr/steuer/ui/web-adapter-eingefrorener-rahmen-ki",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:41:58+00:00",
+      "kind": "node",
+      "kennung": "/simulation-akademie-messaufbau-kein/simulation-koeder-knoten-mit",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:41:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-312bd7",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T14:41:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-122b1c",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:41:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-df5c13",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:49:09+00:00",
+      "kind": "node",
+      "kennung": "/ops/buckeberg-rueckfragen-schreiben-v2-2026",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:49:09+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/niemand-misst-automatisch-ob",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:49:09+00:00",
+      "kind": "lesson",
+      "kennung": "L-8b377b",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T14:49:09+00:00",
+      "kind": "lesson",
+      "kennung": "L-476c1b",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:49:09+00:00",
+      "kind": "lesson",
+      "kennung": "L-defb1e",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T14:51:48+00:00",
+      "kind": "node",
+      "kennung": "/plaene/plan-destille-2026-08-09/s1c-rastersuche-was-abgesucht-wurde",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:51:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-e7ebf0",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:51:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-a823a5",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:51:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-4dce1f",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:51:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-a61849",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:51:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-a428e1",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T14:56:18+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/der-austauschstudent-der-fall-in-dem",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T14:56:18+00:00",
+      "kind": "lesson",
+      "kennung": "L-48e5d7",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T14:56:18+00:00",
+      "kind": "lesson",
+      "kennung": "L-c18c62",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T15:18:57+00:00",
+      "kind": "lesson",
+      "kennung": "L-c72944",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T15:38:43+00:00",
+      "kind": "lesson",
+      "kennung": "L-732ae9",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T15:40:44+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/openlehr-ist-der-steuerfall-wissen-ohne",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T15:40:44+00:00",
+      "kind": "lesson",
+      "kennung": "L-6ad279",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T15:40:44+00:00",
+      "kind": "lesson",
+      "kennung": "L-38bcb0",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T15:40:44+00:00",
+      "kind": "lesson",
+      "kennung": "L-7d72d2",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T15:51:58+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/01-nachsehen-schlaegt-erinnern",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T15:51:58+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/quellenschutz-und-herkunftsnachweis",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T15:51:58+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/zwei-zugriffsachsen-waren-nie-zusammen",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T15:51:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-7acc9c",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T15:51:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-712516",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T15:55:05+00:00",
+      "kind": "node",
+      "kennung": "/tools/stiftshütte-(begodapp-desktop):-audit-20",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T15:57:01+00:00",
+      "kind": "lesson",
+      "kennung": "L-ad3d6e",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T15:57:01+00:00",
+      "kind": "lesson",
+      "kennung": "L-358d83",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T15:59:55+00:00",
+      "kind": "node",
+      "kennung": "/simulation-akademie-messaufbau-kein/messlauf-2-2026-08-08-geltungstreue",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T15:59:55+00:00",
+      "kind": "lesson",
+      "kennung": "L-c20cfe",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/methodik/fertigkeiten/ux-walkthrough",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/zwei-sitzungen-arbeiten-parallel-an",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/lage-brainlehr-2026-08-09-abrufbefund",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/enigma-p1-v3-maschinenlesbarer-c0-c4",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/enigma-p1-v3-maschinenlesbarer-c0-c4/enigma-realer-knowledge-read-pfad",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/claude-obsidian-im-quelltext-geprueft",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/claude-checkpoint-2026-08-11-mittag",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/probelauf-2026-08-06-was-ein-fremder",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/richtig-in-brainlehr-ablegen-regeln",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "lesson",
+      "kennung": "L-9a45b7",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "lesson",
+      "kennung": "L-170ac3",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "lesson",
+      "kennung": "L-9e8832",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "lesson",
+      "kennung": "L-a88e34",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "lesson",
+      "kennung": "L-f0d97d",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "lesson",
+      "kennung": "L-48e414",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:34:28+00:00",
+      "kind": "lesson",
+      "kennung": "L-b9d1f3",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "node",
+      "kennung": "/methodik/fertigkeiten/abwesend",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/testumgebung-selbstaendig-handeln-bis",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "node",
+      "kennung": "/methodik/fertigkeiten/pause",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven-hub-claude-md/modellverhalten-opus-5-sonnet-5-seit",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "node",
+      "kennung": "/methodik/einstieg",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/kurze-zustimmung-ist-eine-entscheidung",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/zielvorgabe-brainlehr-arbeitet-den",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/erster-nutzungsbericht-von-aussen-der",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/schichtbetrieb-darf-kein-wissen-nur-im",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-4916d0",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-ad02b8",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-125f02",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-27ffc8",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-1056bb",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:38:48+00:00",
+      "kind": "lesson",
+      "kennung": "L-f1fcb9",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:47:08+00:00",
+      "kind": "node",
+      "kennung": "/methodik/das-agentenregister-liegt-in-hub",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:47:08+00:00",
+      "kind": "node",
+      "kennung": "/tools/wiring-check-py-erreichbarkeitspruefung",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:47:08+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/access-log-tokenspalten-kein-zeilen",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:47:08+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/zwei-abrufkanaele-sind-nur-dann-zwei",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:47:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-352afa",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:47:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-1c9dc8",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:47:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-aa6087",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:47:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-78e863",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "node",
+      "kennung": "/shared/arch/lokale-datenbank-verschluesseln-auf",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "node",
+      "kennung": "/ops/openlehr/openlehr-macos-ist-totes-skeleton",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "node",
+      "kennung": "/ops/openlehr/openlehr-mandantenmodell-nutzer",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "node",
+      "kennung": "/shared/arch/begod-fleet/cross-app-integration-begod-vertagt-bis-",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "node",
+      "kennung": "/apps/fahrtenbuch/café-international-konsil-einstellungseb",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "lesson",
+      "kennung": "L-f9031f",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "lesson",
+      "kennung": "L-b088ff",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "lesson",
+      "kennung": "L-a670d9",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "lesson",
+      "kennung": "L-ff4a53",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T16:52:19+00:00",
+      "kind": "lesson",
+      "kennung": "L-ca6ea5",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:19:26+00:00",
+      "kind": "node",
+      "kennung": "/methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:19:26+00:00",
+      "kind": "node",
+      "kennung": "/begod/neuen-app-worktree-bootstrappen",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:19:26+00:00",
+      "kind": "node",
+      "kennung": "/apps/fahrtenbuch/geraete-teststrategie-debug-variante",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:19:26+00:00",
+      "kind": "node",
+      "kennung": "/apps/openhood-beschlossener-ampel-scoring",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:19:26+00:00",
+      "kind": "lesson",
+      "kennung": "L-2326bd",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "node",
+      "kennung": "/shared/claude-code-integration/haken-ereignisse-in-claude-code-31-gibt",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "node",
+      "kennung": "/arch/knowledge-mgmt/auto-capture-recall-wissenssystem",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven-hub-claude-md/arbeitsweise",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven-hub-claude-md/hard-stops-immer-gueltig",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/brainlehr-id-hover-native-chats-ohne",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-c41320",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-0fa18e",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-1b6476",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-2febb5",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:25:08+00:00",
+      "kind": "lesson",
+      "kennung": "L-2a4cc5",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:41:24+00:00",
+      "kind": "node",
+      "kennung": "/methodik/adr-bestand-hub-docs-adr/adr-024-wissensschichten-und-portabler",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:41:24+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/brainlehr-braucht-ein-eigenes",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:41:24+00:00",
+      "kind": "lesson",
+      "kennung": "L-c9d2aa",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T17:41:24+00:00",
+      "kind": "lesson",
+      "kennung": "L-3cb7c3",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T17:41:24+00:00",
+      "kind": "lesson",
+      "kennung": "L-2b5f6f",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T17:41:24+00:00",
+      "kind": "lesson",
+      "kennung": "L-73dc51",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:41:24+00:00",
+      "kind": "lesson",
+      "kennung": "L-0f4036",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "node",
+      "kennung": "/shared/arch/offen-fuer-weitere-geraete-eine-tuer",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "node",
+      "kennung": "/methodik/fertigkeiten/synergien",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/plan-vor-umsetzung-systemweit",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "node",
+      "kennung": "/shared/arch/monorepo-arbeitsbaeume-dieselbe-app",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "node",
+      "kennung": "/apps/schnaeppvalid-konzeption-2026-07-28",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/die-entscheidungsverfassung-ist",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "lesson",
+      "kennung": "L-e9d409",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "lesson",
+      "kennung": "L-6e48a9",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "lesson",
+      "kennung": "L-c96e51",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T17:48:23+00:00",
+      "kind": "lesson",
+      "kennung": "L-43c65c",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "node",
+      "kennung": "/methodik/wildwuchsbremse-zaehlbare-obergrenzen",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "node",
+      "kennung": "/openlehr/openlehr-steuer-fallen-beim-testen-und",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/lehren-die-niemand-bilden-darf-die",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/szenario-bausteine-akademie-abteilungen",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "node",
+      "kennung": "/plaene/plan-destille-2026-08-09/s17-freigabe-als-vierte-achse-wer-darf",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-86e92d",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-324ed9",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-40d9a5",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-7b4857",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-121497",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T17:50:32+00:00",
+      "kind": "lesson",
+      "kennung": "L-ecc0af",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:00:39+00:00",
+      "kind": "node",
+      "kennung": "/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T18:00:39+00:00",
+      "kind": "node",
+      "kennung": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:00:39+00:00",
+      "kind": "lesson",
+      "kennung": "L-87532c",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:00:39+00:00",
+      "kind": "lesson",
+      "kennung": "L-d07097",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:01:29+00:00",
+      "kind": "node",
+      "kennung": "/methodik/fertigkeiten/design-waechter",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:01:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-720a22",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T18:04:18+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/15-wenn-du-unabhaengig-pruefen-willst",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:04:18+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/mehrere-chats-arbeiten-am-selben",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:04:18+00:00",
+      "kind": "lesson",
+      "kennung": "L-cb3f28",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:04:18+00:00",
+      "kind": "lesson",
+      "kennung": "L-c64f3b",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:04:18+00:00",
+      "kind": "lesson",
+      "kennung": "L-45cf8d",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:04:18+00:00",
+      "kind": "lesson",
+      "kennung": "L-2feee9",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:04:18+00:00",
+      "kind": "lesson",
+      "kennung": "L-af9ff0",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:04:18+00:00",
+      "kind": "lesson",
+      "kennung": "L-78aa75",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:08:09+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven-hub-claude-md/routing-subagents",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:08:09+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:08:09+00:00",
+      "kind": "node",
+      "kennung": "/testing/walkthrough-methode-(e2e-journey-als-tes",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:08:09+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven-hub-claude-md/caveman-token-kompression-default-an",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:08:09+00:00",
+      "kind": "lesson",
+      "kennung": "L-393df8",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:08:09+00:00",
+      "kind": "lesson",
+      "kennung": "L-f860ae",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:09:31+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:09:31+00:00",
+      "kind": "node",
+      "kennung": "/testing/naht-pruefung-vier-regeln-fuer-eine",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:09:31+00:00",
+      "kind": "lesson",
+      "kennung": "L-faae1e",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:09:31+00:00",
+      "kind": "lesson",
+      "kennung": "L-747223",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:09:31+00:00",
+      "kind": "lesson",
+      "kennung": "L-cd95a1",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:09:31+00:00",
+      "kind": "lesson",
+      "kennung": "L-c4289a",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:13:20+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven-hub-claude-md/fluss-karten-metroviz-trigger",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:13:20+00:00",
+      "kind": "lesson",
+      "kennung": "L-6fa963",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:13:20+00:00",
+      "kind": "lesson",
+      "kennung": "L-de8ee0",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:24:02+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/09-erst-messen",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:24:02+00:00",
+      "kind": "node",
+      "kennung": "/agents/entscheidung-kaskaden-regel-gewinnt",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:24:02+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/12-schreib-beschluesse-dorthin",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:24:02+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/auftraege-an-agenten-sind-schnappschuesse-systemweit",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:24:02+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/faehigkeiten/sagen-ob-etwas-noch-gilt",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:24:02+00:00",
+      "kind": "lesson",
+      "kennung": "L-a69129",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:24:02+00:00",
+      "kind": "lesson",
+      "kennung": "L-e2a8de",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:24:02+00:00",
+      "kind": "lesson",
+      "kennung": "L-9080a1",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:24:02+00:00",
+      "kind": "lesson",
+      "kennung": "L-9bd295",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "node",
+      "kennung": "/testing/virtueller-bildschirmabzug-personas-auf",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "node",
+      "kennung": "/apps/fahrtenbuch/vorschlag-offen-carplay-audio-route",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "node",
+      "kennung": "/apps/fahrtenbuch/adr-joker-trip-nicht-loeschen-sondern",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "node",
+      "kennung": "/openlehr/steuer/ui/offene-frage-2026-07-28-strangler-fig",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/kleines-lokales-modell-als-reranker-ja",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "node",
+      "kennung": "/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "lesson",
+      "kennung": "L-34e5f8",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "lesson",
+      "kennung": "L-33d3bd",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "lesson",
+      "kennung": "L-aed27a",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "lesson",
+      "kennung": "L-6a7883",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:26:13+00:00",
+      "kind": "lesson",
+      "kennung": "L-45b2f1",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:31:29+00:00",
+      "kind": "node",
+      "kennung": "/frontend/accessibility/barrierefreiheit-ist-voreinstellung",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:31:29+00:00",
+      "kind": "node",
+      "kennung": "/openlehr/steuer/cafe-international-abschlusskonsil",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:31:29+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:31:29+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/zwei-brainlehr-instanzen-einbuergerung",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:31:29+00:00",
+      "kind": "node",
+      "kennung": "/apps/fahrtenbuch/feature-idee-v5-poi-vorschlaege-fuer",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:31:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-e7236d",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:31:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-bb1c3b",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:31:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-5a6397",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:31:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-183517",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:53:57+00:00",
+      "kind": "node",
+      "kennung": "/shared/claude-code-integration/aufwand-effort-in-claude-code",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T18:53:57+00:00",
+      "kind": "lesson",
+      "kennung": "L-415124",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:53:57+00:00",
+      "kind": "lesson",
+      "kennung": "L-0accf4",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T18:53:57+00:00",
+      "kind": "lesson",
+      "kennung": "L-b79360",
+      "urteil": "woertlich"
+    },
+    {
+      "ts": "2026-08-12T19:03:46+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/der-plan-traegt-die-auftraege-selbst",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T19:48:40+00:00",
+      "kind": "node",
+      "kennung": "/arch/knowledge-mgmt/erreichbarkeitsbefund-2026-08-05-82",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T19:48:40+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/der-pruefkorpus-kann-nur-nachrichten",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T19:48:40+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/rrf-gewichtet-den-rang-im-kanal-nicht",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T19:48:40+00:00",
+      "kind": "lesson",
+      "kennung": "L-99f100",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T19:48:40+00:00",
+      "kind": "lesson",
+      "kennung": "L-80e002",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:00:57+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/es-gibt-keine-live-instanz-30",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:00:57+00:00",
+      "kind": "lesson",
+      "kennung": "L-96db3e",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:00:57+00:00",
+      "kind": "lesson",
+      "kennung": "L-0de1a9",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:00:57+00:00",
+      "kind": "lesson",
+      "kennung": "L-636a44",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:40:01+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/wie-ingenieursbranchen-aus-fehlern",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:40:01+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/brainlehr-zweck-umfang-und-was-es-nicht",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:40:01+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/was-brainlehr-fuer-b4-fehlt-liegt-in",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:40:01+00:00",
+      "kind": "lesson",
+      "kennung": "L-c43b1b",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:40:01+00:00",
+      "kind": "lesson",
+      "kennung": "L-4d07e5",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:40:01+00:00",
+      "kind": "lesson",
+      "kennung": "L-7a719d",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:44:31+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/loeschbarkeit-ist-ein-qualitaetsmass",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:44:31+00:00",
+      "kind": "lesson",
+      "kennung": "L-17b865",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:44:31+00:00",
+      "kind": "lesson",
+      "kennung": "L-2bdfea",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:48:53+00:00",
+      "kind": "node",
+      "kennung": "/lessons/reflexion-pattern",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:48:53+00:00",
+      "kind": "node",
+      "kennung": "/shared/psa-peugeot-citroen-vin-ueber",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:48:53+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/offene-faeden-aus-dem-ursprungsentwurf",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:48:53+00:00",
+      "kind": "node",
+      "kennung": "/apps/wohlairr/wohlair-android-play-console-stand-2026",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:48:53+00:00",
+      "kind": "lesson",
+      "kennung": "L-f61f86",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:48:53+00:00",
+      "kind": "lesson",
+      "kennung": "L-248867",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:48:53+00:00",
+      "kind": "lesson",
+      "kennung": "L-14a825",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:55:03+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:55:03+00:00",
+      "kind": "node",
+      "kennung": "/plaene/plan-destille-2026-08-09/s8-pruefer-die-urteilen-statt-zaehlen",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:55:03+00:00",
+      "kind": "lesson",
+      "kennung": "L-145cc7",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:55:03+00:00",
+      "kind": "lesson",
+      "kennung": "L-0bb2e5",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:55:03+00:00",
+      "kind": "lesson",
+      "kennung": "L-78a751",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:55:03+00:00",
+      "kind": "lesson",
+      "kennung": "L-c6a485",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:57:19+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/erste-nutzenmessung-mit-gegen-ohne",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:57:19+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/recall-fragt-den-prompt-nicht-das",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:57:19+00:00",
+      "kind": "lesson",
+      "kennung": "L-706807",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:57:19+00:00",
+      "kind": "lesson",
+      "kennung": "L-62b600",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:57:19+00:00",
+      "kind": "lesson",
+      "kennung": "L-ecb0e1",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T20:59:22+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/18-prozent-der-nachrichten-erreichen",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T20:59:22+00:00",
+      "kind": "lesson",
+      "kennung": "L-bd4e5f",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:03:12+00:00",
+      "kind": "node",
+      "kennung": "/simulation-akademie-messaufbau-kein/messlauf-4-die-schranke-hielt-und-der",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:03:12+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/kein-vektorindex-solange-der-massstab",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:03:12+00:00",
+      "kind": "lesson",
+      "kennung": "L-0090a1",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:03:12+00:00",
+      "kind": "lesson",
+      "kennung": "L-e0f383",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:03:12+00:00",
+      "kind": "lesson",
+      "kennung": "L-84869f",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:03:12+00:00",
+      "kind": "lesson",
+      "kennung": "L-f2858b",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:04:58+00:00",
+      "kind": "node",
+      "kennung": "/shared/arch/dspy-prompts-optimieren-statt-schreiben",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:04:58+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:04:58+00:00",
+      "kind": "node",
+      "kennung": "/shared/mac-kalender-zugriff-aus-claude-desktop",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:04:58+00:00",
+      "kind": "node",
+      "kennung": "/methodik/vier-wissenschaftliche-arbeitsregeln",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:04:58+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/02-eine-stichprobe-ist-keine-diagnose",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:04:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-b044fa",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:04:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-165986",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:04:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-200afa",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:17:28+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:17:28+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/nachsehen-bevor-gefragt-oder-delegiert-wird-systemweit",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:17:28+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/07-trenn-sichtbar-zwischen-gemessen",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:17:28+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:17:28+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/03-funktioniert-braucht-einen-beleg",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:17:28+00:00",
+      "kind": "lesson",
+      "kennung": "L-e96c87",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:17:28+00:00",
+      "kind": "lesson",
+      "kennung": "L-d236eb",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:19:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-4be9bf",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:19:58+00:00",
+      "kind": "lesson",
+      "kennung": "L-c75d56",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "node",
+      "kennung": "/shared/arch/parameter-zum-beobachtungszeitpunkt",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "node",
+      "kennung": "/shared/arch/k-anonymitaet-ohne-kopfzaehlung",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/unbedingtes-lebenszeichen-macht-stille",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "node",
+      "kennung": "/shared/flutter-test-tester-pump-duration",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/urheberangabe-einer-ki-gehoert-ins",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/08-widersprich-mir",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "lesson",
+      "kennung": "L-220f20",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "lesson",
+      "kennung": "L-81e9bf",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "lesson",
+      "kennung": "L-ec167a",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:25:01+00:00",
+      "kind": "lesson",
+      "kennung": "L-49c3f4",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:26:45+00:00",
+      "kind": "node",
+      "kennung": "/apps/fahrtenbuch/autonome-fahrtaufzeichnung:-verlorenes-c",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:26:45+00:00",
+      "kind": "node",
+      "kennung": "/apps/fahrtenbuch/blackscreen-2026-08-07-was-die",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:26:45+00:00",
+      "kind": "node",
+      "kennung": "/apps/setfunk-konsil-beschluss-2026-07-23t22",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:26:45+00:00",
+      "kind": "lesson",
+      "kennung": "L-eb4734",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:26:45+00:00",
+      "kind": "lesson",
+      "kennung": "L-b71bd9",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:26:45+00:00",
+      "kind": "lesson",
+      "kennung": "L-7177a7",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "node",
+      "kennung": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "node",
+      "kennung": "/ops/openlehr/openlehr-steuer-isolierte-sandbox",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "node",
+      "kennung": "/methodik/arbeitsweise/h6-bau-so",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "node",
+      "kennung": "/apps/fahrtenbuch/vin-lesepfad-psa-peugeot",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/der-mehrwert-entsteht-an-der-kante-zur",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-4048b7",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-8e3d18",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-7aad34",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-445b4b",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-5f4abd",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:28:29+00:00",
+      "kind": "lesson",
+      "kennung": "L-dc0f44",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T21:37:33+00:00",
+      "kind": "node",
+      "kennung": "/brainlehr/enigma-cafe-konsil-ergebnisoffener",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T22:29:55+00:00",
+      "kind": "node",
+      "kennung": "/methodik/direktiven/dringend-tagesauswertung-2026-08-12-57",
+      "urteil": "keins"
+    },
+    {
+      "ts": "2026-08-12T22:29:55+00:00",
+      "kind": "lesson",
+      "kennung": "L-7318ce",
+      "urteil": "begrifflich"
+    },
+    {
+      "ts": "2026-08-12T22:29:55+00:00",
+      "kind": "lesson",
+      "kennung": "L-9f8816",
+      "urteil": "begrifflich"
+    }
+  ],
+  "befund_text": "169 von 362 eingespielten Eintraegen (Nodes+Lehren) kamen in der jeweils naechsten Antwort woertlich oder begrifflich vor -- 0 Eintraege hatten keine Folgeantwort im 0:30:00-Fenster und wurden nicht gezaehlt."
+}
