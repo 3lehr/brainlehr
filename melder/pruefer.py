@@ -54,6 +54,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(_w / "haken"))  # diese Datei liegt IN der Wurzel: eine Ebene, nicht zwei
 import ort  # noqa: E402
+import ausweis  # noqa: E402 -- Auftrag 2026-08-12: Rollenkatalog gegen Lesetabellen
 
 # Woran ein KI-Entscheider erkennbar ist. Gleiche Liste wie in der
 # Herkunftsschranke (schema.sql) -- bewusst hier wiederholt und nicht
@@ -429,6 +430,52 @@ def platzhalterfuellung(conn: sqlite3.Connection, spalte: str, zweck: str,
     }
 
 
+def rollen_ohne_lesetabelle(conn: sqlite3.Connection) -> dict | None:
+    """Jede vergebbare Rolle mit einem Leserecht muss in einer der beiden
+    Lesetabellen von knowledge_mcp_server.py stehen (_KNOWLEDGE_READ_VOLLZUGRIFF
+    oder _KNOWLEDGE_READ_PROJEKTION) -- seit Commit ec3a443 gilt dort
+    Default-Deny: eine Rolle in keiner der beiden bekommt
+    {"error": "zugriff verweigert"}, auch wenn ROLLEN (kern/ausweis.py) ihr
+    ein Leserecht gibt.
+
+    QUELLE: kern.ausweis.ROLLEN (was ueberhaupt vergebbar ist), nicht die
+    tatsaechlich ausgestellten Ausweise. Die Ausweisdatei traegt heute nur
+    betreiber/fachkundig/schreiber, alle drei bereits eingetragen -- ein
+    Vergleich gegen die Ausweisdatei waere also JETZT immer still und faende
+    genau die Luecke nicht, die den Fehlerfall aus dem Auftrag ausmacht:
+    eine Rolle steht schon in ROLLEN, wird aber erst MORGEN eingebuergert,
+    und ihr Traeger sitzt dann vor der leeren Antwort. ROLLEN ist die Menge,
+    die diesen Fall vor der Einbuergerung sichtbar macht.
+
+    Gefiltert auf Rollen mit einem 'wissen:'-Recht oder '*' -- eine Rolle
+    ganz ohne Leserecht (z.B. 'meldeamt': nur 'ausweis:ausstellen') kann
+    _knowledge_read_projection nie mit Gewinn erreichen und gehoert nicht in
+    dessen Tabellen; sie mitzuzaehlen waere ein Fehlalarm, der nie verstummt.
+
+    FEHLKLASSE: vergessene Eintragung -- Rollenkatalog und Zugriffstabellen
+    pflegen sich unabhaengig voneinander, Default-Deny macht das Vergessen
+    zum Vollausfall statt zum (frueheren) Vollzugriff.
+
+    PREIS EINES FEHLALARMS: keiner -- der Befund verlangt nur einen Eintrag
+    in einer der beiden Tabellen, oder die begruendete Feststellung, dass
+    die Rolle nie ueber diesen Weg lesen soll."""
+    relevante = {name for name, rechte in ausweis.ROLLEN.items()
+                 if "*" in rechte or any(r.startswith("wissen:") for r in rechte)}
+    import knowledge_mcp_server as _server
+    eingetragen = set(_server._KNOWLEDGE_READ_VOLLZUGRIFF) | set(_server._KNOWLEDGE_READ_PROJEKTION)
+    fehlend = sorted(relevante - eingetragen)
+    if not fehlend:
+        return None
+    return {
+        "pruefung": "rollen_ohne_lesetabelle",
+        "befund": f"Rolle(n) mit Leserecht ohne Eintrag in "
+                  f"_KNOWLEDGE_READ_VOLLZUGRIFF/_KNOWLEDGE_READ_PROJEKTION: {', '.join(fehlend)}",
+        "fehlklasse": "vergessene Eintragung -- Default-Deny macht sie zum Vollausfall",
+        "fehlalarm_kostet": "keiner: der Befund verlangt nur einen Tabelleneintrag oder "
+                            "die begruendete Feststellung, dass die Rolle nie so lesen soll",
+    }
+
+
 def alle(conn: sqlite3.Connection) -> list[dict]:
     funde = [
         selbstzuschreibung(conn),
@@ -437,6 +484,7 @@ def alle(conn: sqlite3.Connection) -> list[dict]:
                             "wer die Aussage geschrieben hat -- traegt die ganze Herkunftskette"),
         platzhalterfuellung(conn, "model",
                             "welches Modell die Aussage geschrieben hat"),
+        rollen_ohne_lesetabelle(conn),
     ]
     return [f for f in funde if f] + stumme_spalten(conn)
 
@@ -601,6 +649,43 @@ def _selftest() -> None:
         seit, uebersprungen = _seit_untergrenze(protokoll)
         assert seit == 1, f"nur die Zeile nach der Untergrenze darf zaehlen, war {seit}"
         assert uebersprungen == 1, f"die Zeile ohne Zeitfeld muss ausgewiesen sein, war {uebersprungen}"
+
+    # rollen_ohne_lesetabelle: vollstaendig kontrollierte Wegwerf-Kulisse fuer
+    # beide Faelle -- ROLLEN und die beiden echten Lesetabellen werden per
+    # Monkeypatch auf erfundene Werte gesetzt und danach exakt
+    # wiederhergestellt. NICHT gegen den echten Bestand geprueft: der traegt
+    # heute die Rolle 'leser' (wissen:lesen) ohne Eintrag in einer der beiden
+    # Tabellen -- ein echter Befund (siehe Bericht), keine Testkulisse, und
+    # darum hier bewusst nicht als Negativfall verwendet.
+    import knowledge_mcp_server as _server
+    _alte_rollen = dict(ausweis.ROLLEN)
+    _alte_voll = frozenset(_server._KNOWLEDGE_READ_VOLLZUGRIFF)
+    _alte_proj = dict(_server._KNOWLEDGE_READ_PROJEKTION)
+    ausweis.ROLLEN.clear()
+    ausweis.ROLLEN.update({
+        "testbetreiber": ("*",),
+        "testleser": ("wissen:lesen",),
+        # kein Leserecht -- darf nie gemeldet werden, auch wenn sie fehlt.
+        "testmeldeamt": ("ausweis:ausstellen",),
+    })
+    try:
+        _server._KNOWLEDGE_READ_VOLLZUGRIFF = frozenset({"testbetreiber", "testleser"})
+        _server._KNOWLEDGE_READ_PROJEKTION = {}
+        assert rollen_ohne_lesetabelle(conn) is None, "vollstaendig eingetragen muss schweigen"
+
+        # Rote Kulisse: 'testleser' hat ein Leserecht, steht aber in keiner
+        # der beiden Tabellen -- das ist der Fall aus dem Auftrag.
+        _server._KNOWLEDGE_READ_VOLLZUGRIFF = frozenset({"testbetreiber"})
+        f = rollen_ohne_lesetabelle(conn)
+        assert f and "testleser" in f["befund"], f
+        assert f["fehlklasse"] and f["fehlalarm_kostet"], "Fehlklasse und Preis sind Pflicht"
+        assert "testmeldeamt" not in f["befund"], (
+            "Rolle ohne Leserecht darf nie gemeldet werden", f)
+    finally:
+        ausweis.ROLLEN.clear()
+        ausweis.ROLLEN.update(_alte_rollen)
+        _server._KNOWLEDGE_READ_VOLLZUGRIFF = _alte_voll
+        _server._KNOWLEDGE_READ_PROJEKTION = _alte_proj
 
     print("selftest ok (20 Faelle)")
 
