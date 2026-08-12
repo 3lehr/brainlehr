@@ -60,6 +60,50 @@ einer Datei beruht.
 4. **Der Datensatz trennt beides:** wer entschieden hat, wer geschrieben hat,
    womit belegt.
 
+## Wie oft die Authentisierung wirklich nötig ist — einstellbar, aber nicht beliebig
+
+Betreibereinwand vom 2026-08-12T21:20:00+0200, wörtlich: *„das ist dann aber
+seht stressig, jeden mal touchud/passwort. wir sollen das dann einschränken /
+per ui einschränken können wann man as machen muss"*.
+
+Berechtigt. Die Antwort ist Bündelung, nicht Absenkung — und sie folgt derselben
+Form wie die bestehende Direktive „Barrierefreiheit ist Voreinstellung, keine
+Zwangsjacke": Der Auslieferungszustand ist streng, der Betreiber darf lockern,
+und die Abweichung wird **getrennt ausgewiesen** statt stillschweigend
+mitgeführt.
+
+**1. Sammeln statt einzeln (wichtigster Hebel).** Die App zeigt die offenen
+Vorschläge als Liste. Der Betreiber hakt ab, was gelten soll, und authentisiert
+**einmal für die abgehakte Menge**. Besser als ein Zeitfenster, weil er den
+Inhalt sieht, bevor er bestätigt. Zehn Normen kosten eine Berührung.
+
+**2. Nach Rang staffeln, voreingestellt:**
+
+| Rang | Voreinstellung |
+|---|---|
+| 1 — globale Direktive | einzeln bestätigen |
+| 2 — Hub-Direktive | im Bündel |
+| 3 — ADR | ohne Authentisierung |
+| rangloses Wissen | ohne Authentisierung, wie heute |
+
+Begründung für die Trennlinie bei Rang 1: Das sind die Sätze, die alle anderen
+überstimmen; davon entstehen wenige pro Monat. Der Aufwand skaliert also mit
+der Tragweite, nicht mit der Menge.
+
+**3. Zeitfenster, wenn der Betreiber es will** — nach dem Muster des
+`sudo`-Merkers: nach einer Bestätigung sind die folgenden Minuten frei. **Der
+Preis wird benannt, nicht versteckt:** In diesem Fenster kann der Assistent
+eine Norm schreiben, die der Betreiber nie gesehen hat. Deshalb hält der
+Datensatz fest, ob **einzeln**, **im Bündel** oder **im Fenster** bestätigt
+wurde. Ohne dieses Feld sehen alle drei später gleich aus, und die strengste
+Aussage würde für die schwächste mithaften.
+
+**4. Die eine Schraube, die sich nicht verstellen lässt: die Einstellung
+selbst.** Jede Änderung an dieser Schwelle verlangt Authentisierung — ohne
+Ausnahme, ohne Fenster, ohne Bündel. Wer die Schwelle senken kann, ohne sich
+auszuweisen, hat keine Schwelle: der Assistent würde erst lockern und dann
+entscheiden. Das ist der Angriff, gegen den die ganze Konstruktion steht.
+
 ## Was der Beleg wirklich aussagt — ehrlich abgegrenzt
 
 Die Systemauthentisierung belegt: **an diesem Rechner war in diesem Moment ein
