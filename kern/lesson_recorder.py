@@ -51,6 +51,7 @@ RULE_THRESHOLD = 3  # Minimum occurrences to auto-generate a rule
 # Merkmal; die Nachbarprojekte liegen daneben.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
 import ort  # noqa: E402
+import speicher  # noqa: E402 -- nur verbinde_bestand() fuer get_db()
 
 PROJECTS = {
     "begod": ort.VERBUND / "hub",
@@ -64,7 +65,10 @@ def now_iso() -> str:
 
 
 def get_db() -> sqlite3.Connection:
-    conn = sqlite3.connect(str(DB_PATH))
+    # verbinde_bestand statt sqlite3.connect: erfasst Lehren in einem
+    # bestehenden Bestand, legt keinen an -- siehe
+    # kern/speicher.py::verbinde_bestand.
+    conn = speicher.verbinde_bestand(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")

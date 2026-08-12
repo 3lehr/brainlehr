@@ -49,6 +49,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(_w))
+import speicher  # noqa: E402 -- nur verbinde_bestand() gegen stilles Anlegen
 
 AST = "/brainlehr/faehigkeiten"
 QUELLE = ("erzeugt von selbstbeschreibung.py aus dem gebauten Stand -- "
@@ -271,7 +272,11 @@ def anlegen(db: Path | None = None) -> dict:
     # Freigeben: genau diese Knoten sollen in einem weitergebbaren Auszug
     # stehen. Der Rest von /brainlehr bleibt intern -- das ist
     # Arbeitsgeschichte, kein Handbuch.
-    conn = sqlite3.connect(str(kms.DB_PATH))
+    # verbinde_bestand statt sqlite3.connect: die Knoten sind gerade erst
+    # ueber kms.knowledge_add angelegt worden, der Bestand existiert also
+    # nachweislich -- der Schutz ist nur gegen einen extern gesetzten
+    # kms.DB_PATH, der auf nichts zeigt (siehe kern/speicher.py::verbinde_bestand).
+    conn = speicher.verbinde_bestand(kms.DB_PATH)
     try:
         n = conn.execute(
             "UPDATE knowledge_nodes SET freigabe='offen' "

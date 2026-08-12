@@ -15,7 +15,7 @@
       "name": "entscheidungen",
       "runtimeExecutable": "python3",
       "runtimeArgs": [
-        "/Volumes/daten/Begod2026/brainlehr/entscheidungen_server.py",
+        "/Volumes/daten/Begod2026/brainlehr/berichte/entscheidungen_server.py",
         "--port",
         "8799"
       ],

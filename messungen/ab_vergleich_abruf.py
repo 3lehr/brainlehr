@@ -46,6 +46,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import knowledge_recall_hook as hook  # noqa: E402
 import embeddings  # noqa: E402
 import pruefkorpus_v3 as pk3  # noqa: E402
+import speicher  # noqa: E402 -- nur verbinde_bestand() gegen stilles Anlegen
 
 OUT_PATH = SHARED_KNOWLEDGE / "runs" / "ab_vergleich_abruf_2026-08-07.json"
 KATEGORIEN = ["einzelwert", "kombiniert", "kombiniert3", "kombiniert_ablenker",
@@ -193,7 +194,9 @@ def unterschiede(rows: list[dict]) -> list[dict]:
 
 def main() -> None:
     model = pk3.CAL_MODEL
-    conn = sqlite3.connect(hook.DB)
+    # verbinde_bestand statt sqlite3.connect: misst gegen einen bestehenden
+    # Bestand, legt keinen an -- siehe kern/speicher.py::verbinde_bestand.
+    conn = speicher.verbinde_bestand(hook.DB)
     conn.row_factory = sqlite3.Row
 
     vorher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]

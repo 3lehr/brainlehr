@@ -67,6 +67,7 @@ import knowledge_lint  # noqa: E402       -- nur find_norm_conflicts() gelesen
 import meisterschaft  # noqa: E402        -- nur *_lesen() gelesen/Schluessel-Namen
 import nachtlaeufer  # noqa: E402         -- nur _DEFAULTS gelesen
 import raum_daten  # noqa: E402           -- nur sammle() aufgerufen, Datei unveraendert
+import speicher  # noqa: E402             -- nur verbinde_bestand() fuer _config_set()
 
 # Abschnitt 11 (Abrufweg): nur GELESEN/AUFGERUFEN, keine dieser Dateien wird
 # veraendert. embeddings/knowledge_recall_hook gehoeren einem anderen Agenten
@@ -266,7 +267,12 @@ def _config_get(keys: list[str]) -> dict[str, str]:
 
 
 def _config_set(pairs: dict[str, str]) -> None:
-    conn = sqlite3.connect(str(DB_PATH))
+    # verbinde_bestand statt sqlite3.connect: dieser Server laeuft dauerhaft
+    # und antwortet auch bei falschem DB_PATH mit HTTP 200 -- eine leere,
+    # stillschweigend angelegte Datenbank saehe in jeder Uebersicht gesund
+    # aus (siehe kern/speicher.py::verbinde_bestand). knowledge_config wird
+    # hier nur ERGAENZT, der Bestand muss schon da sein.
+    conn = speicher.verbinde_bestand(DB_PATH)
     conn.execute(
         "CREATE TABLE IF NOT EXISTS knowledge_config "
         "(key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)"

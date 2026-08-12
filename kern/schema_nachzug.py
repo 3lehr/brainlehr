@@ -33,6 +33,8 @@ SCHEMA = WURZEL / "schema.sql"
 
 sys.path.insert(0, str(WURZEL / "haken"))
 import ort  # noqa: E402 -- liefert DB, siehe haken/ort.py (L-6c6661)
+sys.path.insert(0, str(WURZEL / "kern"))
+import speicher  # noqa: E402 -- nur verbinde_bestand() fuer den CLI-Zweig
 
 # Tabellen, deren Spalten nachgezogen werden. Bewusst eine Aufzaehlung und
 # nicht "alle": FTS-Schattentabellen vertragen kein ALTER, und eine
@@ -180,5 +182,8 @@ if __name__ == "__main__":
     if "--selftest" in sys.argv:
         _selftest()
     else:
-        conn = sqlite3.connect(str(ort.DB))
+        # verbinde_bestand statt sqlite3.connect: prueft/zieht Spalten in
+        # einem bestehenden Bestand nach, legt keinen an -- siehe
+        # kern/speicher.py::verbinde_bestand.
+        conn = speicher.verbinde_bestand(ort.DB)
         print(fehlende(conn, SCHEMA.read_text(encoding="utf-8")) or "nichts offen")

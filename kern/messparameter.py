@@ -27,6 +27,8 @@ import sqlite3
 import sys
 from pathlib import Path
 
+import speicher  # noqa: E402 -- nur verbinde_bestand() fuer schnappschuss()
+
 SHARED_KNOWLEDGE = _w
 HUB = SHARED_KNOWLEDGE.parent
 DB = SHARED_KNOWLEDGE / "brainlehr.db"
@@ -56,7 +58,12 @@ def schnappschuss() -> dict:
     }
 
     try:
-        con = sqlite3.connect(str(DB))
+        # verbinde_bestand statt sqlite3.connect: DB ist hier ohnehin schon
+        # "optional" (siehe except unten) -- verbinde_bestand verhindert nur,
+        # dass ein falscher Pfad eine leere Datenbank stillschweigend anlegt,
+        # statt einfach die Bestandsfelder auszulassen (siehe
+        # kern/speicher.py::verbinde_bestand).
+        con = speicher.verbinde_bestand(DB)
         try:
             row = con.execute(
                 "SELECT value FROM knowledge_config WHERE key = 'embed_model'"
@@ -74,7 +81,7 @@ def schnappschuss() -> dict:
             ).fetchone()[0]
         finally:
             con.close()
-    except sqlite3.Error:
+    except (sqlite3.Error, FileNotFoundError):
         pass  # Stellschrauben (Modul-Import) sind das Wichtigere, DB optional
 
     return block

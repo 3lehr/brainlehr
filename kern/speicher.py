@@ -62,6 +62,30 @@ import ort  # noqa: E402
 BUSY_TIMEOUT_MS = 2000
 
 
+def verbinde_bestand(db: Path | str) -> sqlite3.Connection:
+    """sqlite3.connect fuer eine Stelle, die einen BESTEHENDEN Bestand
+    erwartet -- nicht Erstanlage, Migration oder Testkulisse (die legen
+    absichtlich an und bleiben bei sqlite3.connect(str(pfad))).
+
+    mode=rw (statt des Vorgabemodus rwc) verweigert die fehlende Datei, statt
+    sie leer anzulegen. ANLASS: hub/tools/knowledge-viz/server.py oeffnete
+    einen abgeschriebenen Dateinamen, sqlite3.connect legte die fehlende
+    Datei STILLSCHWEIGEND an, und der Dienst antwortete danach mit HTTP 200
+    auf eine leere Datenbank -- gesund in jeder Uebersicht, wirkungslos in
+    der Sache. Diese Tuer macht daraus einen Fehler beim Oeffnen statt einen
+    Befund erst beim naechsten leeren Ergebnis.
+    """
+    pfad = Path(db)
+    try:
+        return sqlite3.connect(f"file:{pfad}?mode=rw", uri=True)
+    except sqlite3.OperationalError as exc:
+        raise FileNotFoundError(
+            f"{pfad} existiert nicht. Pfad pruefen (BRAINLEHR_DB / "
+            "BEGOD_KNOWLEDGE_DB) oder erst die Datenbank anlegen -- hier "
+            "entsteht keine neue, leere Datenbank stillschweigend."
+        ) from exc
+
+
 @contextmanager
 def lesen(db: Path | None = None) -> Iterator[sqlite3.Connection]:
     """Nur-lesender Zugang. Ein Schreibversuch scheitert, statt zu gelingen.
@@ -160,7 +184,26 @@ def _selftest() -> None:
         pass
     assert not fehlt.exists(), "die Lesetuer hat eine leere Datenbank angelegt"
 
-    print("selftest ok (4 Faelle, Gegenprobe in beide Richtungen)", file=sys.stderr)
+    # 5) verbinde_bestand() gegen eine fehlende Datei: verstaendliche Meldung
+    #    statt stillschweigender Neuanlage -- und die Datei bleibt danach weg.
+    fehlt2 = tmp / "bestand_gibtsnicht.db"
+    try:
+        verbinde_bestand(fehlt2)
+        raise AssertionError("verbinde_bestand hat eine fehlende Datenbank klanglos angelegt")
+    except FileNotFoundError:
+        pass
+    assert not fehlt2.exists(), "verbinde_bestand hat eine leere Datenbank angelegt"
+
+    # Gegenprobe: gegen eine VORHANDENE Datei liefert sie eine echte,
+    # schreibfaehige Verbindung.
+    conn = verbinde_bestand(db)
+    conn.execute("INSERT INTO t (wert) VALUES ('bestand')")
+    conn.commit()
+    conn.close()
+    with lesen(db) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM t WHERE wert='bestand'").fetchone()[0] == 1
+
+    print("selftest ok (6 Faelle, Gegenprobe in beide Richtungen)", file=sys.stderr)
 
 
 if __name__ == "__main__":

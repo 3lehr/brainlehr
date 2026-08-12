@@ -70,6 +70,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import knowledge_recall_hook as hook  # noqa: E402 -- echter Abrufweg
 import messparameter  # noqa: E402 -- Parameterblock fuer jede Ergebnisdatei
 import schreiblauf as sl  # noqa: E402 -- _call_with_retry fuer die Eichung/Vollauf
+import speicher  # noqa: E402 -- nur verbinde_bestand() gegen stilles Anlegen
 
 PROJECT_ID = "pruefkorpus_v3"
 TAG = "pruefkorpus_v3_erfunden"
@@ -633,7 +634,7 @@ def eichung(conn: sqlite3.Connection, model: str = CAL_MODEL) -> dict:
 
 
 def run_all(model: str = CAL_MODEL, out_path: Path = OUT_JSON) -> dict:
-    conn = sqlite3.connect(hook.DB)
+    conn = speicher.verbinde_bestand(hook.DB)
     conn.row_factory = sqlite3.Row
     vorher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
     insert_nodes(conn)
@@ -771,7 +772,7 @@ def kalibriere_positivkontrolle(
     """Wie oft faellt CASES[0] bei unveraendertem Bestand/Einstellung durch --
     billig zu messen (n Aufrufe desselben Falls), entscheidet ueber die
     Bauform der Positivkontrolle (s. _positivkontrolle_pruefen-Docstring)."""
-    conn = sqlite3.connect(hook.DB)
+    conn = speicher.verbinde_bestand(hook.DB)
     conn.row_factory = sqlite3.Row
     vorher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
     insert_nodes(conn)
@@ -836,7 +837,7 @@ def run_repeated(model: str = CAL_MODEL, out_path: Path = OUT_JSON_ERWEITERT,
          ersten Laufs.
     Erfundene Knoten werden einmal eingespielt, alle n_runs Wiederholungen
     laufen darueber, danach einmal entfernt (Auflage 2: restlos)."""
-    conn = sqlite3.connect(hook.DB)
+    conn = speicher.verbinde_bestand(hook.DB)
     conn.row_factory = sqlite3.Row
     vorher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
     insert_nodes(conn)
@@ -1196,7 +1197,7 @@ def main() -> None:
         return
 
     if args.delete:
-        conn = sqlite3.connect(hook.DB)
+        conn = speicher.verbinde_bestand(hook.DB)
         vorher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
         n = delete_nodes(conn)
         nachher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
@@ -1205,7 +1206,7 @@ def main() -> None:
         return
 
     if args.eichung_only:
-        conn = sqlite3.connect(hook.DB)
+        conn = speicher.verbinde_bestand(hook.DB)
         vorher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
         insert_nodes(conn)
         eich = eichung(conn, model=args.model)

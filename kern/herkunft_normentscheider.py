@@ -60,6 +60,7 @@ from pathlib import Path
 WURZEL = _w
 sys.path.insert(0, str(WURZEL / "haken"))
 import ort  # noqa: E402
+import speicher  # noqa: E402 -- nur verbinde_bestand() fuer main()
 
 BETREIBER = "betreiber"
 
@@ -114,7 +115,10 @@ def anwenden(conn: sqlite3.Connection, ids: list[str]) -> int:
 
 
 def main(argv: list[str]) -> int:
-    conn = sqlite3.connect(ort.DB)
+    # verbinde_bestand statt sqlite3.connect: liest/korrigiert einen
+    # bestehenden Bestand, legt keinen an -- siehe
+    # kern/speicher.py::verbinde_bestand.
+    conn = speicher.verbinde_bestand(ort.DB)
     k = kandidaten(conn)
     print(f"Ziel: {ort.DB}")
     print(f"Rang-1/2-Knoten mit belegtem Urheber Betreiber: {len(k)}\n")

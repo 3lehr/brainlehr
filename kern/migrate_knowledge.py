@@ -279,6 +279,9 @@ REGEL: Opus nur für Architektur-Konsile und komplexe Debugging-Sessions.""",
 
 def main():
     print(f"Datenbank: {DB_PATH}")
+    # Bewusst sqlite3.connect (nicht speicher.verbinde_bestand): dieses
+    # Skript ist die Erstanlage selbst -- "Seeds the tree structure with
+    # root nodes" --, es SOLL eine fehlende Datei anlegen.
     conn = sqlite3.connect(str(DB_PATH))
     conn.execute("PRAGMA journal_mode=WAL")
 

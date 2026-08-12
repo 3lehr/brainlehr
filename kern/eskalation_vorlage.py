@@ -49,6 +49,8 @@ import sqlite3
 import sys
 from pathlib import Path
 
+import speicher  # noqa: E402 -- nur verbinde_bestand() fuer get_db()
+
 DB_PATH = _w / "brainlehr.db"
 CLAUDE_MD_PATH = _w.parent / "CLAUDE.md"
 
@@ -76,7 +78,10 @@ STATUS_PROMOTED = "in_claude_md"
 
 
 def get_db():
-    conn = sqlite3.connect(str(DB_PATH))
+    # verbinde_bestand statt sqlite3.connect: dieser Bestand muss schon
+    # existieren (Eskalation ergaenzt Zeilen, legt keinen an) -- siehe
+    # kern/speicher.py::verbinde_bestand.
+    conn = speicher.verbinde_bestand(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
