@@ -1505,8 +1505,16 @@ def _ist_gesperrt(freigabe: str) -> bool:
 # Credential-bound Serving policy.  The client cannot supply purpose, field,
 # or recipient: the role fixes the purpose/field and the credential fixes the
 # recipient.  The row may only narrow that server-side policy via tags.
-_KNOWLEDGE_READ_PROJEKTION = {
-    "raumplaner": ("raumplanung", "nutzinformation"),
+#
+# TABELLE STATT VERZWEIGUNG (Auftrag 2026-08-12, Enigma-Punkt 2): jede Zeile
+# ist ein Rolle/Zweck/Feld-Paar. Ein neues Paar ist eine Zeile hier -- eine
+# Rolle kann mehrere Paare tragen (Liste), _knowledge_read_projection selbst
+# aendert sich dabei nicht. Projektion statt Filterung (siehe
+# kern/fremdimport.py): ein Rolle/Zweck-Paar, das hier nicht steht, liefert
+# NICHTS -- das ist die Whitelist-Eigenschaft, kein Sonderfall.
+_KNOWLEDGE_READ_PROJEKTION: dict[str, list[tuple[str, str]]] = {
+    "raumplaner": [("raumplanung", "nutzinformation")],
+    "gast": [("wartung", "wartungshinweis")],
 }
 
 
@@ -1515,8 +1523,8 @@ def _knowledge_read_projection(row: sqlite3.Row) -> dict | None:
         return {"error": "zugriff verweigert"}
 
     ausw = ausweis.loese_auf()
-    policies = [_KNOWLEDGE_READ_PROJEKTION[r]
-                for r in ausw.rollen if r in _KNOWLEDGE_READ_PROJEKTION]
+    policies = [paar for r in ausw.rollen
+                for paar in _KNOWLEDGE_READ_PROJEKTION.get(r, [])]
     if not ausw.beglaubigt or not policies:
         return None
 
