@@ -1,15 +1,20 @@
 """Eine Aufzeichnung, die eine Zahl festhaelt, muss aus dem Code herleitbar sein.
 
-BEFUND 2026-08-12: runs/teilung_s12_2026-08-11.json hielt die Verteilung der
-S12-Teilung fest (Knoten 1008 behandelt / 1115 unbehandelt). Der im SELBEN
-Commit c69c7e4 festgeschriebene Code liefert 1070 / 1055. Der Bestand war
-seither um zwei Knoten gewachsen -- das erklaert keine 62. Aufzeichnung und
-Code widersprachen sich vom ersten Tag an, und niemand haette es bemerkt: die
-Datei erklaert sich selbst als unveraenderlich, also liest man sie als Wahrheit.
+ENTSTEHUNG, und sie ist selbst die Lehre: Diese Datei wurde am 2026-08-12
+angelegt, weil ein Befund behauptete, runs/teilung_s12_2026-08-11.json halte
+eine Verteilung fest (1008 / 1115), die aus dem Code nicht herleitbar sei --
+dieser liefere 1070 / 1055. Der Befund war FALSCH und ist widerrufen (Commit
+0cd159e). Der Code lieferte 1009 / 1116; die Aufzeichnung stimmte bis auf den
+Zuwachs von zwei Knoten.
 
-Die Zuordnungsfunktion war in Ordnung (alte gegen neue Fassung ueber 2888
-Eintraege: 0 Abweichungen). Falsch war nur die Zahl daneben -- und genau das
-ist die gefaehrlichere Sorte Fehler, weil die Zahl das ist, was gelesen wird.
+Der Irrtum entstand in der Gegenrechnung: sie baute teilung_s12.bestand() nach
+und nahm die id als Schluessel, waehrend der Code damals den path nahm. Ein
+Test, der die Rechnung des Codes NACHBAUT statt sie aufzurufen, prueft seine
+eigene Nachbildung -- und ist dann nicht bloss falsch, sondern ueberzeugend.
+
+Die Datei bleibt trotzdem, weil die Pruefung selbst richtig ist: eine
+Aufzeichnung, die eine aus Code ableitbare Zahl festhaelt, muss gegen den Code
+gehalten werden. Nur eben durch AUFRUF, siehe _gerechnet() unten.
 
 Dieser Test haelt die AUFGEZEICHNETE Verteilung gegen die GERECHNETE. Er
 prueft nicht die Teilung, sondern die Ehrlichkeit ihrer Aufzeichnung.
