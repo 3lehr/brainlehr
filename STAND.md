@@ -1,39 +1,40 @@
-# STAND brainlehr — 2026-08-12T00:15:00+0200
+# STAND brainlehr — 2026-08-12T07:00:00+0200
 
-## SCHREIBSPERRE auf den Bestand, solange die S12-Ausgangsmessung läuft
+Massgeblich ist die Aufgabenliste der Sitzung, nicht diese Datei. Beim Sitzungsstart zeigt `melder/offene_arbeit.py` den offenen Teil von `docs/SPRINTS.md` — in jedem Arbeitsbaum.
 
-Kein `knowledge_add`, kein `lesson_record`, kein Import in `brainlehr.db`, bis die Messung je Hälfte vorliegt. Wer während der Messung schreibt, misst einen anderen Speicher als den, auf dem die Teilung gezogen wurde — und die Teilung ist der ganze Sinn des Aufbaus. Betrifft besonders den vorbereiteten MAUDE-Import (Planpunkt 4), der sonst der naheliegende nächste Schritt wäre.
+## Sprints
 
-## Erledigt in dieser Nacht
+21 gesamt: 9 erledigt, 6 teilweise, 6 offen. Status mit Beleg je Zeile in `docs/SPRINTS.md`.
+
+## Erledigt seit 05:00
 
 | | Commit |
 |---|---|
-| Datenbank heißt `brainlehr.db`, Bestand unverändert 2125/775 | Umzug + `464ec3f` |
-| Freigabe wirkt in allen drei Lesewegen | `bb9bc7f` |
-| Prüffall-Sammler abgesichert, 78 Fälle mit Nenner | `d43fece` |
-| Testumgebung fragt den Auflöser — 14 stumme Tests sprechen wieder | `762293b` |
-| Erstanlage trägt `code_kanten` und `pruefsprueche` | `1d64458` |
-| Sechs Produktivdateien fragen den Auflöser | `349e738`, `cdaaafd`, `2c9890c` |
-| S12 neu geplant: Hebel liegt auf der Schreibseite | `3447ba1` |
-| Gesamtplan fortgeschrieben, zwei Punkte abgehakt | `02f2da5` |
+| Sprint-Register mit Beleg je Zeile | `ce2524e` |
+| Offene Arbeit beim Sitzungsstart, aus der Datei statt aus dem Sitzungsspeicher | `2daf68e` |
+| Vier Haken-Skripte im hub waren seit dem Umzug still tot | hub `469c147f8` |
+| Teilung fragt den Auflöser; Wache fängt jeden verdrahteten DB-Namen | `aa811ee` |
+| Eingefrorene Teilung berichtigt — die Zahl passte nie zum Code | `fa33bf0` |
+| Teilungstest prüft die Schranke statt der Zahl | `934e481` |
 
-Suite: 853 grün, 1 übersprungen, 7 xfail, **0 rot**.
+Suite: 857 grün, 1 übersprungen, 7 xfail, 0 rot.
 
-## Der Befund der Nacht
+## Der Befund der Nacht, in drei Gestalten
 
-`kern/normbezug.py` meldete seit dem Umzug **jedes** Normzitat als unbelegt — ohne Fehler, ohne Warnung. Ursache war nicht der Dateiname, sondern die Bauform: `if not pfad.exists(): return "unbelegt"` unterscheidet „geprüft und nichts gefunden" nicht von „gar nicht geprüft". Behoben durch einen dritten Zustand `ungeprueft`. Knoten `73ed942f` trägt das Unterscheidungskriterium und **zehn weitere Fundstellen derselben Form**, die absichtlich nicht pauschal geändert wurden — ob leer dort richtig ist, entscheidet die Rolle der jeweiligen Datei.
+Dieselbe Fehlerklasse, dreimal anders verkleidet:
 
-Die neun angeblich roten Umlauttests waren nie kaputt. Gegen den Suchcode von vor der Freigabe-Änderung und gegen die Datenbank-Sicherung von 21:26 einzeln nachgemessen, beide Male grün. Es gab nie einen Umlautfehler.
+1. **Ein Werkzeug, das still nichts tut.** `kern/normbezug.py` meldete jedes Normzitat als unbelegt, weil sein Pfad ins Leere zeigte. `if not pfad.exists(): return "unbelegt"` — „geprüft und nichts gefunden" war von „gar nicht geprüft" nicht zu unterscheiden. Kriterium und zehn weitere Fundstellen: Knoten `73ed942f`.
+2. **Ein Kanal, der still nicht zustellt.** Der Eilmeldungs-Haken war von 21:26 bis 06:00 tot, `exit 0`, kein Mucks — bei drei wartenden dringenden Meldungen. Vierter Fundort derselben Umbenennung, und der erste außerhalb von brainlehr: eine Wache endet an der Repo-Grenze, ein Dateiname nicht.
+3. **Eine Aufzeichnung, die still etwas Falsches behauptet.** Die eingefrorene Teilung nannte 1008/1115, der Code im selben Commit liefert 1070/1055. Weil die Datei sich als unverändert*lich* ausgibt, wird sie gelesen statt nachgerechnet. „Unveränderlich" und „geprüft" sind zwei Eigenschaften; wer nur die erste herstellt, hat einen fälschungssicheren Irrtum (`L-747b33`).
 
-## Offen
+## Offen, ohne Betreiber
 
-`migrationen/lauf_titelverteidiger_2026-08-08.py` trägt weiter den alten Dateinamen — gehört einer fremden Sitzung, nicht angefasst, nur gemeldet.
-Korpus-Zusammensetzung: 72 Aufträge gegen 6 Fragen. Ein Abruf, der an Aufträgen gut abschneidet, sagt wenig über Fragen.
-Wartet auf den Betreiber: `~/.claude.json` → actor · NIST-Teilbestand unbenannt · ASRS braucht Ausfuhrlauf statt Schnittstelle.
+Aufgaben 4 bis 11 der Liste. Nächste ohne Vorbedingung: #5 Korpus-Voreingenommenheit (72 Aufträge gegen 6 Fragen), #6 die zehn Fundstellen einzeln, #11 die 52 Selbsttests außerhalb jeder Suite (8 davon rot).
+
+## Wartet auf den Betreiber
+
+`BRAINLEHR_GEHEIMNIS` steht im Klartext in `~/.claude.json` und gilt als kompromittiert — **Rotation tippt er selbst**, Aufgabe #10 bereitet nur die Stelle vor. · Rang für die Arbeitsweise-Direktive `2c365d54` (Rang 1 und 2 verlangen einen menschlichen Entscheider, der Speicher hat mich zu Recht abgewiesen). · `actor` in `mcpServers.knowledge.env`. · NIST-Teilbestand unbenannt. · ASRS braucht einen Ausfuhrlauf. · Eine ältere dringende Meldung fragt nach openlehr.
 
 ## Nicht vergessen
 
-Code-Edits und Messläufe gehen an Sonnet (Norm 75ef2145). Aufträge mit Läufen über eine Minute: ausdrücklich **Vordergrund** verlangen — drei Agenten haben heute ihren Zug im Wartemodus beendet (`L-1056bb`).
-Bei gemeinsam benutztem Baum committen Agenten nur mit Pfadangabe (`L-73020e`).
-
-Pläne: `docs/PLAN_GESAMT_2026-08-11.md` · `docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md` · Enigma: `docs/ENIGMA_LANDKARTE_2026-08-11.md`
+Läufe über zehn Minuten gehören nicht in einen Subagenten — sie enden im Wartezustand (`L-1056bb`, dreimal). Agenten committen nur mit Pfadangabe (`L-73020e`). Tests gegen absolute Zahlen des Bestands sind rot, sobald jemand nebenan arbeitet — Eigenschaft prüfen, nicht Zahl.
