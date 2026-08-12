@@ -93,6 +93,13 @@
 
   .leiste { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
     background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .7rem; margin: .6rem 0; }
+  /* Befund beim Bauen dieses Auftrags: [hidden] und .leiste/.legende{display:flex}
+     haben gleiche Spezifitaet -- die spaeter im Stylesheet stehende Klasse
+     gewinnt, das [hidden]-Attribut wird ignoriert. Betraf schon abrufwegLeiste
+     und legendeAbrufweg vor diesem Auftrag (JS setzt .hidden=true, sichtbar
+     blieb es trotzdem). Eine !important-Regel behebt es fuer jede Klasse,
+     jetzt und kuenftig, statt Klasse fuer Klasse nachzuziehen. */
+  [hidden] { display: none !important; }
   .leiste button { font: inherit; font-size: .82rem; background: transparent; color: var(--muted);
     border: 1px solid var(--border); border-radius: 6px; padding: .35rem .75rem; cursor: pointer; min-height: 24px; }
   .leiste button:hover { color: var(--fg); border-color: var(--accent); }
@@ -240,6 +247,27 @@
       <button type="submit" class="primaer">Weg berechnen</button>
       <span class="stand" id="abrufwegStand" aria-live="polite"></span>
     </form>
+    <div class="leiste" id="abrufwegVorfuehrLeiste" hidden>
+      <button id="abrufwegVorfuehren" type="button" aria-pressed="false">Vorführen</button>
+      <label for="reglerTaktung">Taktung</label>
+      <input type="range" id="reglerTaktung" min="8" max="60" step="1" value="15">
+      <span class="stand" id="reglerTaktungStand">15 s</span>
+      <span class="stand" id="abrufwegVorfuehrStand" aria-live="polite"></span>
+    </div>
+    <div class="leiste" id="abrufwegReglerLeiste" hidden>
+      <label for="reglerHelligkeit">Helligkeit</label>
+      <input type="range" id="reglerHelligkeit" min="0.4" max="1" step="0.01" value="0.83">
+      <span class="stand" id="reglerHelligkeitStand">0.83</span>
+      <label for="reglerPulsstaerke">Pulsstärke</label>
+      <input type="range" id="reglerPulsstaerke" min="0" max="0.35" step="0.01" value="0.13">
+      <span class="stand" id="reglerPulsstaerkeStand">0.13</span>
+      <label for="reglerPulsdauer">Pulsdauer</label>
+      <input type="range" id="reglerPulsdauer" min="1000" max="6000" step="100" value="3200">
+      <span class="stand" id="reglerPulsdauerStand">3200 ms</span>
+      <label for="reglerNachleuchten">Nachleuchten</label>
+      <input type="range" id="reglerNachleuchten" min="1000" max="15000" step="500" value="4000">
+      <span class="stand" id="reglerNachleuchtenStand">4.0 s</span>
+    </div>
 
     <div class="legende" id="legende">
       <b><i class="pkt" style="background:var(--accent)"></i>Wissensknoten</b>
@@ -780,12 +808,15 @@ let abrufwegD = null;
 // abrufwegVerlauf haelt hoechstens zwei Eintraege: den aktuellen und den
 // unmittelbar davor. Ein Weg tiefer zurueck wird nie aufgehoben -- er wird
 // beim naechsten Wechsel einfach ueberschrieben (siehe abrufwegLaden unten).
-const ABRUFWEG_GLIMM_MS = 4000;         // Dauer, bis der vorherige Weg ganz weg ist
-const ABRUFWEG_PULS_PERIODE_MS = 3200;  // ~0.31 Hz -- weit unter der Blitzschwelle
+// let statt const: die Simulator-Regler (weiter unten) setzen diese vier zur
+// Laufzeit neu -- reagieren tun weiterhin nur abrufwegZeichnePuls/-Ueberlagerung,
+// dieselbe Funktionsgrenze wie zuvor, nur mit veraenderbaren Werten.
+let ABRUFWEG_GLIMM_MS = 4000;           // Dauer, bis der vorherige Weg ganz weg ist
+let ABRUFWEG_PULS_PERIODE_MS = 3200;    // ~0.31 Hz -- weit unter der Blitzschwelle
                                           // aus WCAG 2.3.1 (die erst ab ~3 Hz greift);
                                           // zudem eine weiche Sinuskurve, kein Ein/Aus.
-const ABRUFWEG_PULS_BASIS = 0.83;       // Grunddeckkraft
-const ABRUFWEG_PULS_AMPLITUDE = 0.13;   // gedaempfte Schwankung: Deckkraft bleibt in [0.70, 0.96]
+let ABRUFWEG_PULS_BASIS = 0.83;         // Grunddeckkraft
+let ABRUFWEG_PULS_AMPLITUDE = 0.13;     // gedaempfte Schwankung: Deckkraft bleibt in [0.70, 0.96]
 let abrufwegVerlauf = [];               // [{d, seit}], seit = Date.now() beim Eintreffen
 
 // Reine Funktion: welcher Weg ist aktuell, welcher verglimmt gerade, wie alt
@@ -826,6 +857,16 @@ function abrufwegStatusText(zustand) {
     text += ` Vorheriger Weg verglimmt (vor ${alterVS} s berechnet, noch ${sichtbarPct}% sichtbar).`;
   }
   return text;
+}
+
+// Reine Klemmfunktion, wiederverwendet fuer alle fuenf Simulator-Regler.
+// Die Pulsdauer-Untergrenze 1000 ms ist die eine Stelle, an der das hart
+// gilt: WCAG 2.3.1 verbietet mehr als drei Blitze je Sekunde, 1000 ms sind
+// 1 Hz. Kein Vorschlag, ein Anschlag -- darum hier erzwungen statt nur per
+// min-Attribut am Schieberegler, das ein eingebettetes Fenster (Mac-App)
+// umgehen koennte. Siehe tests/test_abrufweg_regler.py.
+function abrufwegReglerKlemmen(wert, min, max) {
+  return Math.max(min, Math.min(max, wert));
 }
 
 function abrufwegSpalte(art) { return art === 'lehre' ? 'Lehre' : 'Knoten'; }
@@ -945,6 +986,74 @@ document.getElementById('abrufwegLeiste').addEventListener('submit', e => {
   abrufwegLaden(document.getElementById('abrufwegText').value);
 });
 abrufwegLaden(document.getElementById('abrufwegText').value);
+
+// ---- Simulator: Regler + Vorfuehrmodus -------------------------------------
+// Verdrahtet einen Schieberegler mit Klemmung, sichtbarem Textstand (WCAG:
+// jeder Reglerstand ist Text, nicht nur Schieberposition) und einer
+// Anwenden-Funktion.
+function abrufwegReglerVerdrahten(id, standId, min, max, anwenden, formatieren) {
+  const eingabe = document.getElementById(id), stand = document.getElementById(standId);
+  const setze = wert => {
+    const geklemmt = abrufwegReglerKlemmen(wert, min, max);
+    eingabe.value = geklemmt;
+    stand.textContent = formatieren(geklemmt);
+    anwenden(geklemmt);
+  };
+  eingabe.addEventListener('input', () => setze(Number(eingabe.value)));
+  setze(Number(eingabe.value)); // Text stimmt schon vor der ersten Eingabe
+}
+
+// Vorfuehrmodus: setzt ECHTE Abrufe ab -- ruft abrufwegLaden(text) direkt,
+// denselben Weg, den auch das Absenden des Formulars von Hand geht. Keine
+// zweite fetch-Implementierung, kein erfundener Anfragetext: die Faelle
+// kommen aus dem Echtkorpus (runs/echtkorpus_2026-08-12T1000.json, 89 echte
+// Nachrichten), einmal geladen und danach der Reihe nach durchlaufen.
+let vorfuehrAktiv = false, vorfuehrTimer = null, vorfuehrIndex = 0, vorfuehrFaelle = null;
+let vorfuehrTaktungMs = 15000;
+
+async function vorfuehrFaelleLaden() {
+  if (vorfuehrFaelle) return vorfuehrFaelle;
+  const r = await fetch('/api/echtkorpus');
+  const d = await r.json();
+  vorfuehrFaelle = d.faelle || [];
+  return vorfuehrFaelle;
+}
+
+async function vorfuehrTick() {
+  if (document.visibilityState !== 'visible') return; // kein Abruf gegen ein verdecktes Fenster
+  const vorfuehrStand = document.getElementById('abrufwegVorfuehrStand');
+  const faelle = await vorfuehrFaelleLaden();
+  if (!faelle.length) { vorfuehrStand.textContent = 'Keine Beispielanfragen verfügbar.'; return; }
+  const text = faelle[vorfuehrIndex % faelle.length];
+  vorfuehrIndex++;
+  document.getElementById('abrufwegText').value = text; // Anfrage im Klartext sichtbar
+  vorfuehrStand.textContent = `Fall ${(vorfuehrIndex - 1) % faelle.length + 1} von ${faelle.length}`;
+  await abrufwegLaden(text);
+}
+
+function vorfuehrTimerNeuStarten() {
+  if (vorfuehrTimer) clearInterval(vorfuehrTimer);
+  vorfuehrTimer = setInterval(vorfuehrTick, vorfuehrTaktungMs);
+}
+
+document.getElementById('abrufwegVorfuehren').addEventListener('click', e => {
+  vorfuehrAktiv = !vorfuehrAktiv;
+  e.target.setAttribute('aria-pressed', vorfuehrAktiv ? 'true' : 'false');
+  if (vorfuehrTimer) { clearInterval(vorfuehrTimer); vorfuehrTimer = null; }
+  if (vorfuehrAktiv) { vorfuehrTick(); vorfuehrTimerNeuStarten(); }
+  else { document.getElementById('abrufwegVorfuehrStand').textContent = ''; }
+});
+
+abrufwegReglerVerdrahten('reglerHelligkeit', 'reglerHelligkeitStand', 0.4, 1.0,
+  w => { ABRUFWEG_PULS_BASIS = w; }, w => w.toFixed(2));
+abrufwegReglerVerdrahten('reglerPulsstaerke', 'reglerPulsstaerkeStand', 0, 0.35,
+  w => { ABRUFWEG_PULS_AMPLITUDE = w; }, w => w.toFixed(2));
+abrufwegReglerVerdrahten('reglerPulsdauer', 'reglerPulsdauerStand', 1000, 6000,
+  w => { ABRUFWEG_PULS_PERIODE_MS = w; }, w => Math.round(w) + ' ms');
+abrufwegReglerVerdrahten('reglerNachleuchten', 'reglerNachleuchtenStand', 1000, 15000,
+  w => { ABRUFWEG_GLIMM_MS = w; }, w => (w / 1000).toFixed(1) + ' s');
+abrufwegReglerVerdrahten('reglerTaktung', 'reglerTaktungStand', 8, 60,
+  w => { vorfuehrTaktungMs = w * 1000; if (vorfuehrAktiv) vorfuehrTimerNeuStarten(); }, w => w + ' s');
 
 // ---- Wissensraum-Zeichenflaeche (Ansichten 0-2) ----------------------------
 // Reine Anzeige: die folgenden Ereignisbehandlungen (pointerdown/up/move/
@@ -1449,12 +1558,15 @@ const legende = document.getElementById('legende'), fuss = document.getElementBy
 const legendeAbrufweg = document.getElementById('legendeAbrufweg');
 const zeitleiste = document.getElementById('zeitleiste'), vergleichBlock = document.getElementById('vergleichBlock');
 const abrufwegLeiste = document.getElementById('abrufwegLeiste'), abrufwegBlock = document.getElementById('abrufwegBlock');
+const abrufwegVorfuehrLeiste = document.getElementById('abrufwegVorfuehrLeiste');
+const abrufwegReglerLeiste = document.getElementById('abrufwegReglerLeiste');
 [0,1,2,3,4].forEach(k=>{
   document.getElementById('b'+k).addEventListener('click',()=>{
     ansicht=k; [0,1,2,3,4].forEach(j=>document.getElementById('b'+j).setAttribute('aria-pressed', j===k?'true':'false'));
     const istVergleich = ansicht===3, istAbrufweg = ansicht===4;
     vergleichBlock.hidden = !istVergleich;
     abrufwegBlock.hidden = !istAbrufweg; abrufwegLeiste.hidden = !istAbrufweg; legendeAbrufweg.hidden = !istAbrufweg;
+    abrufwegVorfuehrLeiste.hidden = !istAbrufweg; abrufwegReglerLeiste.hidden = !istAbrufweg;
     legende.hidden = istVergleich||istAbrufweg; fuss.hidden = istVergleich||istAbrufweg; zeitleiste.hidden = istVergleich||istAbrufweg;
     setzeStand(); zeichne();
     abrufwegSchleifeStart(); // startet in 0/1/2/4, stoppt sich in 3 selbst

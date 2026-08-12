@@ -58,6 +58,9 @@ HERE = Path(__file__).resolve().parent.parent  # eine Ebene tiefer seit dem Umzu
 HUB = HERE.parent
 DB_PATH = HERE / "brainlehr.db"
 HTML_PATH = HERE / "entscheidungen.html"
+# Simulator-Auftrag 2026-08-12: 89 ECHTE Anfragen (keine erfundenen Beispiele,
+# siehe docs/PLAN_SIMULATOR_2026-08-12.md, Alternative A verworfen).
+ECHTKORPUS_PATH = HERE / "runs" / "echtkorpus_2026-08-12T1000.json"
 ESKALATION_SCRIPT = HERE / "eskalation_vorlage.py"
 EILMELDUNG_SCRIPT = HUB / "scripts" / "eilmeldung_quittieren.py"
 
@@ -657,6 +660,16 @@ def abrufweg_berechnen(conn: sqlite3.Connection, text: str) -> dict:
     }
 
 
+def _echtkorpus_stand() -> dict:
+    """Anfragetexte fuer den Simulator -- reine Wortlaute, nichts erfunden.
+    Fehlt die Datei (z.B. auf einem anderen Rechner), liefert eine leere
+    Liste statt eines 500ers; der Simulator meldet das dann im Klartext."""
+    if not ECHTKORPUS_PATH.exists():
+        return {"faelle": []}
+    d = json.loads(ECHTKORPUS_PATH.read_text(encoding="utf-8"))
+    return {"faelle": [f["prompt"] for f in d.get("faelle", []) if f.get("prompt")]}
+
+
 def _abrufweg_stand(text: str) -> dict:
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
@@ -710,6 +723,12 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/vergleich":
             try:
                 self._json(_vergleich_stand())
+            except Exception as e:
+                self._json({"error": str(e)}, 500)
+            return
+        if self.path == "/api/echtkorpus":
+            try:
+                self._json(_echtkorpus_stand())
             except Exception as e:
                 self._json({"error": str(e)}, 500)
             return
@@ -777,6 +796,14 @@ def _selftest() -> int:
     assert stand["titelverteidiger"] is None or isinstance(stand["titelverteidiger"], dict)
     assert stand["herkunftsmodus"] == {"gefunden": False}
     assert DB_PATH.stat().st_mtime == real_db_mtime, "Gesamtstand hat die echte DB veraendert"
+
+    # 1b) Echtkorpus fuer den Simulator: reine Lesefunktion, muss auch ohne
+    # die Datei (anderer Rechner) ohne Ausnahme eine leere Liste liefern.
+    korpus = _echtkorpus_stand()
+    assert isinstance(korpus["faelle"], list)
+    if ECHTKORPUS_PATH.exists():
+        assert len(korpus["faelle"]) > 0
+        assert all(isinstance(f, str) and f for f in korpus["faelle"])
 
     # 2) Schreibpfade (Siegbedingung/Nachtschicht) gegen eine Kopie.
     with tempfile.TemporaryDirectory() as tmp:
