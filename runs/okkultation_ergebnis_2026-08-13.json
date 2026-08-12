@@ -1,0 +1,112 @@
+{
+  "ausgewertet_am": "2026-08-12T23:33:21+0200",
+  "m1": {
+    "faelle": 12,
+    "MIT": {
+      "treffer": 1,
+      "n": 12,
+      "anteil": 0.08333333333333333
+    },
+    "OHNE": {
+      "treffer": 0,
+      "n": 12,
+      "anteil": 0.0
+    },
+    "NEG": {
+      "treffer": 0,
+      "n": 12,
+      "anteil": 0.0
+    },
+    "fehlbestand": [],
+    "liefer_analyse": {
+      "geliefert_gesamt": 6,
+      "geliefert_und_benutzt": 1,
+      "anteil": 0.16666666666666666,
+      "hinweis": "unter den Faellen, wo der MIT-Block das Ziel enthielt (Retrieval-Treffer): wie oft taucht es dann auch in der Antwort auf? Trennt Retrieval-Fehlgriff von Nichtnutzung."
+    }
+  },
+  "m2": {
+    "faelle_mit_mit_bedingung": 8,
+    "unterschiedlich": 8,
+    "unterschiedlich_anteil": 1.0,
+    "ergebnisse": [
+      {
+        "case_id": "m2-00",
+        "hat_mit_bedingung": true,
+        "unterschiedlich": true,
+        "antwort_ohne": "Mir fehlt Kontext, was genau mit \"Apple Dings\" gemeint ist — App-Store-Einreichung, TestFlight, Developer-Zertifikat? Eine Einreichung bei Apple läuft über dein Developer-Konto und braucht deine Zugangsdaten und deine Bestätigung im App Store Connect — das kann ich nicht für dich übernehmen, das tippst du selbst. Ich kann dir aber die Vorbereitung abnehmen: Metadaten, Screenshots, Versionsnotizen, Build-Checks. Sag mir, welchen Teil du meinst, dann leg ich los. Ohne mehr Angaben rate ich nicht, welcher Schritt gerade ansteht.",
+        "antwort_mit": "Mir fehlt der Kontext, welche App und welcher Schritt gemeint ist – „Apple Dings“ lässt offen, ob es um TestFlight-Einreichung, App-Store-Review oder etwas anderes geht. Falls es um eine externe TestFlight-Beta-Einreichung geht: die scheitert oft mit 422 MISSING_REQUIRED_DATA, bis usesNonExemptEncryption gesetzt, eine Beschreibung je Locale hinterlegt und die Review-Kontaktdaten (Telefon im E.164-Format) vollständig sind. Sag mir, welche App und welcher Build gemeint ist, dann kann ich das per App-Store-Connect-API einreichen. Zugangsdaten oder Passwörter dafür musst du selbst eingeben, das mache ich nicht für dich."
+      },
+      {
+        "case_id": "m2-01",
+        "hat_mit_bedingung": true,
+        "unterschiedlich": true,
+        "antwort_ohne": "Notiert — in einer Testumgebung ohne Echtdaten kann ich mehr selbstständig entscheiden und muss nicht jeden Schritt vorlegen. Was genau \"das\" ist, sagt die Nachricht aber nicht, daher kann ich noch nicht loslegen. Unabhängig von der Freigabe bleiben vier Dinge tabu: Kennwörter/Zugangsdaten, alles mit Außenwirkung auf Dritte, unumkehrbare Aktionen und Geld — dort frage ich weiter nach. Sag mir, welche Aufgabe du meinst, dann setze ich sie um und berichte danach statt vorher zu fragen. Bei Unklarheit über den Umfang lieber kurz präzisieren als dass ich das Falsche autonom mache.",
+        "antwort_mit": "Verstanden – in der Testumgebung darf ich handeln statt vorzulegen, das gilt bis zum Wort „es wird ernst“. Nur: dein Satz gibt mir noch keine konkrete Aufgabe, nur die Erlaubnis dazu. Sag mir, was ich tun soll, dann lege ich los und melde danach, was ich gemacht habe, statt vorher zu fragen. Kennwörter, Nachrichten an Dritte und alles Unumkehrbare bleiben davon unberührt."
+      },
+      {
+        "case_id": "m2-02",
+        "hat_mit_bedingung": true,
+        "unterschiedlich": true,
+        "antwort_ohne": "Ja, Kurzbefehle (und ähnlich Sprachassistenten) haben grundsätzlich eine feste Obergrenze an Aktivierungsphrasen bzw. Befehlen, die nicht einfach durch \"KI-Fähigkeit\" umgangen werden kann — die Grenze liegt nicht an meiner Intelligenz, sondern an der Systemarchitektur von Siri/Shortcuts selbst. Ich kann dir nicht aus dem Stand sagen, wo genau die Zahl bei Siri aktuell liegt oder ob es dokumentierte Fehlermeldungen zu \"zu viele Phrasen\" gibt, ohne das nachzuschlagen. Bei Android (Google Assistant / App Actions) gelten andere, meist großzügigere, aber ebenfalls nicht unbegrenzte Mechanismen, und die Umsetzung unterscheidet sich technisch stark von Siri Shortcuts. Ob eine Erhöhung auf 2000 Phrasen realistisch ist, hängt vom konkreten Mechanismus ab (App Intents vs. klassische Shortcuts) — das würde ich vor einer Zusage recherchieren statt zu raten. Sag mir, in welchem Projekt/welcher App das eine Rolle spielt, dann schaue ich gezielt nach.",
+        "antwort_mit": "Mir fehlt der Kontext, um welche App/Funktion es geht, deshalb nur allgemein: mir liegt keine geprüfte Quelle vor, die eine feste Phrasenobergrenze bei Siri belegt oder erklärt, welche Phrasen ausgeschlossen sind – das müsste ich recherchieren statt zu raten. Die Grenze läge, falls es Siri-Kurzbefehle sind, eher an Apples Vorgaben als an meiner Fähigkeit, also nicht einfach durch mich auf 2000 anhebbar. Bei Android läuft die vergleichbare Mechanik über App Actions/Google Assistant und hat andere Regeln als iOS – auch dazu müsste ich erst nachsehen, bevor ich Zahlen nenne. Ich vermeide hier bewusst erfundene Grenzwerte, weil genau das schon einmal zu falschen Angaben geführt hat."
+      },
+      {
+        "case_id": "m2-03",
+        "hat_mit_bedingung": true,
+        "unterschiedlich": true,
+        "antwort_ohne": "Ohne Vorwissen zum Projekt gehe ich davon aus, dass \"Inference Control\" hier den Fachbegriff für Zugriffs-/Offenlegungsschutz bei Datenbankabfragen meint (verhindern, dass durch Kombination erlaubter Abfragen geheime Einzeldaten erschlossen werden). Angewandt wird das vor allem in Statistik/Datenschutz (Statistical Disclosure Control), Datenbanksicherheit, Differential Privacy und angrenzend in Zensus-/Amtsstatistik-Systemen. Eine gezielte Recherche würde helfen, wenn ihr eine konkrete Technik (z. B. Query-Restriction, Cell-Suppression, Noise Addition, k-Anonymität) für euer System auswählen wollt statt nur den Begriff zu kennen. Ich kann eine solche Literaturrecherche machen, aber nicht aus dem Stand ohne Websuche — sag mir, ob ich das jetzt anstoßen soll. Ohne mehr Kontext zum konkreten Anwendungsfall bleibt die Antwort auf der Begriffsebene.",
+        "antwort_mit": "Zu Inference Control liegt bereits eigene Recherche vor (Papernetz mit 29 Knoten, zwei unabhängige Rechercheläufe inkl. Dinur/Nissim-Schranke), eine weitere Recherche würde also am ehesten bei konkreten offenen Lücken helfen, nicht beim Grundstoff. Verwandte Techniken/Fächer: mehrstufig sichere Datenbanken (Polyinstantiation/Cover Stories), Statistical Disclosure Control, Differential Privacy, sowie – laut Modellwissen, ungeprüft – Hippocratic Databases/PBAC, l-Diversity/t-Closeness, simulatable auditing, Attribute-Based Encryption und Mixnets. Für natürlichsprachige, unbegrenzte Anfragen gilt das Problem als noch ungelöst, dazu existiert ein bewiesenes Unmöglichkeitsergebnis. Eine gezielte Research würde sich lohnen für die offene Frage zur Polyinstantiation, wo zwei eigene Rechercheläufe sich widersprechen."
+      },
+      {
+        "case_id": "m2-04",
+        "hat_mit_bedingung": true,
+        "unterschiedlich": true,
+        "antwort_ohne": "Der Nachricht fehlt der Kontext, worauf sich \"das\" oder die Reihenfolge bezieht — ich weiß nicht, welche Aufgabenliste hier gemeint ist. Dem reinen Wortlaut nach: Priorität auf das, was für Mutti ansteht, weil bei ihr als Nächstes die Steuer fällig wird — also eine terminlich getriebene Vorverlegung. Wenn es um eine gemeinsame Aufgabenliste geht, würde ich den Mutti-Punkt nach vorne ziehen und den Rest dahinter einordnen. Ich kann das aber nur wirklich richtig einsortieren, wenn ich weiß, welche Liste oder welches System gemeint ist. Bitte kurz nachreichen, worauf sich das bezieht.",
+        "antwort_mit": "Mir fehlt der Kontext, welche Warteschlange oder Reihenfolge gemeint ist – auf was genau soll „zuerst“ bezogen werden? Falls es um openlehr/steuer geht: dort ist die UStVA-Zahllastberechnung laut Stand bereits erledigt, offene Punkte lägen eher bei Vollständigkeit/Rechtssicherheit als bei der Kernrechnung. Sag mir kurz, welche Aufgabe oder welches Ticket für Mutti ansteht, dann setze ich das nach vorne. Ohne Bezugspunkt kann ich die Priorisierung nicht sauber vornehmen."
+      },
+      {
+        "case_id": "m2-05",
+        "hat_mit_bedingung": true,
+        "unterschiedlich": true,
+        "antwort_ohne": "Es fehlt der Kontext, was \"es\" hier ist — ein Dokument, ein Entwurf, ein Screenshot? Dem Wortlaut nach soll ich einen aktuellen (ggf. noch fehlerhaften) Zwischenstand zeigen, bevor eine korrigierte Fassung nachgereicht wird — also ist Vorläufigkeit ausdrücklich in Ordnung. Ich zeige daher gern den jetzigen Stand, auch wenn er noch nicht final ist. Ohne zu wissen, welches Artefakt gemeint ist, kann ich es aber nicht konkret liefern. Sag mir kurz, um welche Datei/welchen Entwurf es geht, dann zeige ich ihn direkt.",
+        "antwort_mit": "Mir fehlt der Kontext, welches Dokument oder welche Ansicht gemeint ist – sag mir, worum es geht, dann zeige ich den aktuellen Stand. Grundsätzlich zeige ich Zwischenstände gerne vorab, bevor eine finale/korrigierte Fassung verschickt wird – das passt zur Praxis, Nachvollziehbarkeit über die ganze Dokumentklasse zu wahren, nicht nur die zuletzt genannte Datei zu überschreiben. Versand an Dritte bleibt dabei ein eigener Freigabeschritt, den ich nicht ohne dein Okay auslöse. Nenn mir die Datei oder den Vorgang, dann lege ich los."
+      },
+      {
+        "case_id": "m2-06",
+        "hat_mit_bedingung": true,
+        "unterschiedlich": true,
+        "antwort_ohne": "Ob sich zwei KI-Agenten auf demselben Projekt und Wissensspeicher gegenseitig stören können, hängt davon ab, wie der Speicher und die Dateizugriffe abgesichert sind — parallele Schreibzugriffe auf dieselbe Datei oder denselben Datensatz sind der klassische Konfliktpunkt. Ohne Einsicht in die konkrete Systemarchitektur kann ich aus dieser Nachricht allein nicht sagen, ob das hier bereits abgesichert ist. Üblich wäre eine Nachverfolgung, welcher Agent welche Datei gerade hält, damit man vor dem Zugriff prüfen kann, ob sie frei ist. Ich würde das gezielt nachsehen, statt es zu vermuten, bevor ich eine Zusicherung gebe. Sag mir, welches Projekt gemeint ist, dann prüfe ich die tatsächliche Absicherung.",
+        "antwort_mit": "Teilweise ja, aber nicht vollständig: es gibt ein Freigabe-Gate für gesperrte Wissenseinträge, das inzwischen greift, aber laut letztem Stand filtern knowledge_browse und knowledge_search die Sperre noch nicht – ein gesperrter Knoten kann dort weiterhin mit Titel/Zusammenfassung auftauchen. Auf Datei-/Git-Ebene ist es riskanter: mehrere Sitzungen im selben geteilten Arbeitsbaum haben schon zu verlorenen Änderungen durch git stash/reset geführt, weil solche Befehle repoweit wirken, nicht nur auf die eigene Datei. Ein Agentenregister protokolliert zwar, wer welche Datei anfasst, schützt aber nicht automatisch vor gemeinsam genutzten Git-Operationen. Kurz: die Architektur ist auf Nebeneinanderarbeiten ausgelegt, aber es gibt bekannte, noch offene Lücken – kein vollständiger gegenseitiger Schutz."
+      },
+      {
+        "case_id": "m2-07",
+        "hat_mit_bedingung": true,
+        "unterschiedlich": true,
+        "antwort_ohne": "Mir fehlt der Kontext, welches Projekt und welcher Betatest hier gemeint sind — ohne das kann ich keinen echten Einladungslink zeigen, ich würde sonst etwas erfinden. \"Keine Nachfragen mehr\" kann ich bei einer konkreten, bereits klar umrissenen Aufgabe befolgen, aber hier fehlt die Aufgabe selbst, nicht nur ein Detail dazu. Falls es um TestFlight (iOS) oder einen Play-Store-geschlossenen Test (Android) geht, entsteht der Link erst, wenn der Build tatsächlich hochgeladen und der Test dort angelegt ist. Ich kann diesen Schritt vorbereiten oder ausführen, sobald klar ist, welche App und welcher Vertriebsweg gemeint sind. Einen Platzhalter-Link zu zeigen würde ich vermeiden, weil er dich in die Irre führen würde. Bitte kurz sagen, um welches Projekt es geht, dann lege ich los.",
+        "antwort_mit": "Mir fehlt der Kontext, welche App/welcher Build gemeint ist, deshalb kann ich jetzt keinen echten Link zeigen – ich beantworte das trotzdem so konkret wie möglich. Ein öffentlicher TestFlight-Link entsteht erst, nachdem eine externe Beta-Review durchgelaufen ist, und die scheitert ohne drei Dinge: usesNonExemptEncryption gesetzt, Beta-Beschreibung je Sprache, und Review-Kontakt inkl. Telefonnummer im E.164-Format. Sind diese Felder befüllt und die Prüfung durch, erscheint der Public Link in App Store Connect unter der externen Gruppe. Sag mir, welche App/welcher Build gemeint ist, dann kümmere ich mich um die Einreichung und melde den Link, sobald er da ist."
+      }
+    ],
+    "fehlbestand": [],
+    "hinweis": "Unterschied ist kein Nutzen -- kein Erfolgsurteil gefaellt."
+  },
+  "schiefe_gegenprobe": {
+    "einspielungen_gesamt": 318,
+    "drei_haeufigste_anteil": 0.03773584905660377,
+    "drei_haeufigste": [
+      [
+        "/methodik/direktiven/testumgebung-selbstaendig-handeln-bis",
+        4
+      ],
+      [
+        "/brainlehr/zwei-sitzungen-arbeiten-parallel-an",
+        4
+      ],
+      [
+        "/brainlehr/freigabe-kollision-lesepfad-dicht",
+        4
+      ]
+    ],
+    "hinweis": "> 0.5 heisst: die Kennzahl beschreibt die Suche, nicht den Nutzen"
+  }
+}

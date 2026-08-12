@@ -1,0 +1,593 @@
+#!/usr/bin/env python3
+"""Okkultation -- misst der Speicher ueberhaupt etwas, oder redet er nur mit.
+
+Auftrag: docs/PLAN_OKKULTATION_2026-08-12.md (VOLLSTAENDIG dort). Dieses
+Modul ist AUFTRAG D aus docs/PLAN_PARALLEL_2026-08-13.md: nur neue Dateien
+unter messungen/ und runs/, haken/ bleibt unangetastet. Das Abschalten der
+Einspielung geschieht HIER, indem query() direkt mit und ohne den daraus
+gebauten Block aufgerufen wird -- kein Eingriff am Haken.
+
+DER SELBSTBEZUG DES VORLAEUFERS (2026-08-07, Knoten 34ef6d8e), und wie er
+hier ausgeschlossen wird: Der MIT-Block enthielt damals die Loesung im
+Wortlaut (per lesson_query MIT Kenntnis der richtigen Lehre in den Suchtext
+geschrieben) -- gemessen wurde also "hilft es, dem Modell die Antwort in
+den Prompt zu schreiben", nicht ob der Speicher selbst etwas beitraegt.
+Zwei Gegenmassnahmen:
+  1. Der MIT-Block entsteht ausschliesslich ueber den echten Abrufweg
+     (knowledge_recall_hook.keywords()+query() auf dem unveraenderten
+     Aufgabentext) -- keine Handauswahl, keine Kenntnis des Ziels beim Abruf.
+  2. Aus dem M1-Pool (siehe unten) sind Faelle der Klasse 'kennung' bewusst
+     AUSGESCHLOSSEN: dort steht die Ziel-Kennung woertlich im Aufgabentext
+     (z.B. 'L-abc123' oder '/pfad/knoten'), ein Modell koennte sie einfach
+     abschreiben -- MIT und OHNE waeren dann ununterscheidbar aus einem
+     Grund, der mit dem Speicher nichts zu tun hat. Es bleiben die Klassen
+     'pfad' und 'lese': die Ziel-Kennung wird dort NIE im Text genannt,
+     nur ueber code_kanten (Datei->Wissen) bzw. ein Lese-Ereignis abgeleitet.
+
+DREI FALLMENGEN/BEDINGUNGEN je Fall:
+  MIT   echter Abruf (keywords+query auf brainlehr.db), als
+        <knowledge-recall>-Block angehaengt -- Format 1:1 wie der echte Haken.
+  OHNE  derselbe Prompt, kein Block.
+  NEG   derselbe Prompt + ein Block aus /nasa-llis/* (1641 absichtlich
+        fremde Knoten, siehe Modulkopf messlauf_abrufguete_v2 bzw. Knoten
+        /brainlehr/fremder-pruefkorpus-gefunden-1637-nasa) -- laengenangepasst
+        an den echten MIT-Block desselben Falls. Negativkontrolle: ist NEG
+        so gut wie MIT, misst der Versuch die LAENGE, nicht den Inhalt.
+
+M1 (Zielaufgaben, Erfolg mechanisch): aus dem bestehenden, von messungen/
+echtkorpus.py gesammelten Bestand runs/echtkorpus_2026-08-12T1000.json
+(89 Faelle, NUR GELESEN, keine Aenderung an echtkorpus.py). 'Ziel im
+Ergebnis' operationalisiert als: nennt/nutzt die Antwort den Zielknoten
+oder die Ziel-Lehre erkennbar (Pfad, Kennung oder unterscheidungskraeftiges
+Titelwort), wenn sie die Aufgabe angeht? Aufgabe fuer den Hauptfaden (siehe
+--auswerten): 'Was ist dein erster Handgriff, und worauf stuetzt du ihn? Nenne
+das gestuetzte Wissen (Pfad/Kennung), falls vorhanden.' -- eine kurze
+Antwort, kein voller Aufgabendurchlauf (der ist bei mehrseitigen
+Orchestrator-Prompts nicht in vertretbarer Zeit reproduzierbar).
+
+M2 (Fragen ohne Ziel, kein Erfolgsurteil): echte 'frage'-Nachrichten aus
+Sitzungstranskripten (messungen/echtkorpus.sitzungs_nachrichten(), nur
+gelesen), bei denen WEDER ein Pfad- noch ein Kennungs-Ziel aufloest -- also
+wirklich ziellos im Sinne des Sammlers. Bewertet wird nur, ob sich die
+Antwort MIT vs. OHNE inhaltlich unterscheidet (Textvergleich + Feld fuer
+einen blinden Vergleich durch einen Dritten, der die Bedingung nicht kennt).
+
+DREITEILUNG wie kern/wissensnutzen_blind.py (nur gelesen, nicht importiert
+-- eigene Kopie des Musters, weil kern/ fuer diese Sitzung tabu ist):
+  1. --aufgaben   Abruf + Promptbau, KEIN Modellaufruf (dieses Skript)
+  2. Hauptfaden   die Zellen tatsaechlich beantworten (Agent-Aufrufe, blind
+                  je Bedingung, aus dem Orchestrator dieser Sitzung -- ein
+                  Python-Skript kann keinen Subagenten starten, L-a69129)
+  3. --auswerten  Antworten gegen Ziel pruefen (dieses Skript), KEIN
+                  Modellaufruf
+
+Aufruf:
+    python3 okkultation.py --aufgaben runs/okkultation_aufgaben_<datum>.json
+    python3 okkultation.py --auswerten AUFGABEN ANTWORTEN --out runs/okkultation_<datum>.json
+    python3 okkultation.py --selftest
+"""
+from __future__ import annotations
+
+import sys as _sys
+from pathlib import Path as _Path
+
+# Repo-Wurzel an schema.sql festmachen (Muster aus messungen/echtkorpus.py
+# und kern/wissensnutzen_blind.py) -- eine feste Ebenenzahl bricht beim
+# naechsten Umzug lautlos.
+_w = _Path(__file__).resolve().parent
+while not (_w / "schema.sql").exists() and _w != _w.parent:
+    _w = _w.parent
+_sys.path[:0] = [str(_w)] + [str(_w / o) for o in ("kern", "haken", "messungen")]
+
+import argparse
+import hashlib
+import json
+import re
+import sqlite3
+import time
+from collections import Counter
+from pathlib import Path
+
+import codekanten as ck  # noqa: E402 -- nur gelesen (kandidaten/wissen_zu)
+import echtkorpus as ek  # noqa: E402 -- nur gelesen (satzart/_ist_echte_frage/sitzungs_nachrichten)
+import ort  # noqa: E402
+import speicher  # noqa: E402
+import knowledge_recall_hook as rh  # noqa: E402 -- der echte Abrufweg, unveraendert benutzt
+
+WURZEL = _w
+DB = str(ort.DB)
+M1_QUELLE = WURZEL / "runs" / "echtkorpus_2026-08-12T1000.json"
+OUT_DEFAULT = WURZEL / "runs" / "okkultation_aufgaben.json"
+
+# Klassen, die den Selbstbezug ausschliessen (s. Modulkopf).
+M1_ERLAUBTE_KLASSEN = ("pfad", "lese")
+
+M1_TASK_ANWEISUNG = (
+    "\n\n---\nAufgabe an dich: Was ist dein ERSTER Handgriff auf diese "
+    "Nachricht, in maximal 4 Saetzen? Nenne dabei, falls vorhanden, den "
+    "genauen Pfad oder die genaue Kennung des Wissens, auf das du dich "
+    "stuetzt. Kein voller Aufgabendurchlauf, nur der erste Schritt und "
+    "seine Begruendung.")
+M2_TASK_ANWEISUNG = (
+    "\n\n---\nAufgabe an dich: Beantworte diese Frage in maximal 6 Saetzen, "
+    "so wie du es in einer echten Sitzung taetest.")
+
+
+# --------------------------------------------------------------------- Block
+def format_block(nodes: list, lessons: list) -> str:
+    """1:1 dasselbe Ausgabeformat wie knowledge_recall_hook.main() baut (die
+    Frageform-Rahmung ausgenommen -- die ist Anrede, kein Inhalt), damit ein
+    Hauptfaden genau das sieht, was eine echte Sitzung ihm zeigen wuerde."""
+    lines = ["<knowledge-recall>",
+             "Aus dem Speicher, ungeprueft. Trifft das hier zu?"]
+    for n in nodes:
+        fremd = f" [anderes Projekt: {n['foreign_project']}]" if n.get("foreign_project") else ""
+        lines.append(f"- [{n['path']}]{rh.alter(n.get('updated_at'))}{fremd} "
+                     f"{rh.entschaerfe_fuer_ausgabe(n['title'])}: "
+                     f"{rh.entschaerfe_fuer_ausgabe(n['summary'])}")
+    for l in lessons:
+        tag = "LESSON" if l["severity"] in ("critical", "high") else "Lesson"
+        prev = f" -> {rh.entschaerfe_fuer_ausgabe(l['prevention'])}" if l.get("prevention") else ""
+        lines.append(f"- {tag} ({l['type']}, {l['occurrences']}x, {l['id']}): "
+                     f"{rh.entschaerfe_fuer_ausgabe(l['description'])}{prev}")
+    lines.append("</knowledge-recall>")
+    return "\n".join(lines)
+
+
+def retrieve(prompt: str, cwd: str | None = None) -> tuple[list, list]:
+    """Der echte Abrufweg, direkt aufgerufen -- KEIN log_recall() (das
+    schriebe in die Betriebsdatenbank und wuerde die echten Kennzahlen
+    anderer Sitzungen verunreinigen; query() selbst schreibt nichts)."""
+    kws = rh.keywords(prompt)
+    if len(kws) < rh.MIN_HITS:
+        return [], []
+    return rh.query(kws, cwd=cwd)
+
+
+def foreign_block(ziel_laenge: int, conn: sqlite3.Connection, seed: int) -> str:
+    """Negativkontrolle: laengenangepasster Block aus /nasa-llis/* -- real,
+    aus der DB, aber thematisch fremd zu jeder brainlehr-Aufgabe (1641
+    absichtlich fremde Knoten, s. Modulkopf). Deterministisch ueber seed
+    (kein random.random(), damit ein Lauf reproduzierbar bleibt)."""
+    rows = conn.execute(
+        "SELECT path, title, summary, updated_at FROM knowledge_nodes "
+        "WHERE path LIKE '/nasa-llis/%' AND zurueckgezogen = 0 "
+        "ORDER BY id LIMIT 200").fetchall()
+    if not rows:
+        return "<knowledge-recall>\n(keine Fremdknoten verfuegbar)\n</knowledge-recall>"
+    start = seed % len(rows)
+    gewaehlt = []
+    text = ""
+    i = start
+    # so lange Knoten anhaengen, bis die Ziellaenge erreicht oder der Pool
+    # erschoepft ist -- Laenge ist das Kriterium, nicht eine feste Anzahl.
+    for _ in range(len(rows)):
+        n = dict(rows[i % len(rows)])
+        gewaehlt.append(n)
+        text = format_block(gewaehlt, [])
+        i += 1
+        if len(text) >= ziel_laenge:
+            break
+    if len(text) > ziel_laenge:
+        # Auf Zeilengrenze kappen, damit kein Knoten mitten im Satz endet --
+        # sonst waere die Kappung selbst schon ein Signal (unvollstaendiger
+        # Eintrag sieht anders aus als ein echter).
+        zeilen = text.split("\n")
+        acc, laenge = [], 0
+        for z in zeilen:
+            if laenge + len(z) + 1 > ziel_laenge and acc[-1:] != ["</knowledge-recall>"]:
+                break
+            acc.append(z)
+            laenge += len(z) + 1
+        if acc[-1] != "</knowledge-recall>":
+            acc.append("</knowledge-recall>")
+        text = "\n".join(acc)
+    return text
+
+
+# ----------------------------------------------------------------------- M1
+def m1_pool() -> list[dict]:
+    daten = json.loads(M1_QUELLE.read_text(encoding="utf-8"))
+    return [f for f in daten["faelle"] if f["klasse"] in M1_ERLAUBTE_KLASSEN]
+
+
+def m1_sample(n: int, seed: int = 0) -> list[dict]:
+    """Deterministische, ueber satzart geschichtete Auswahl (stabile
+    Reihenfolge nach Hash statt random.shuffle -- reproduzierbar ohne
+    Zustand)."""
+    pool = m1_pool()
+    pool.sort(key=lambda f: hashlib.sha256(
+        (str(seed) + f["prompt"]).encode("utf-8")).hexdigest())
+    fragen = [f for f in pool if f["satzart"] == "frage"]
+    auftraege = [f for f in pool if f["satzart"] == "auftrag"]
+    # Anteil an fragen im Pool beibehalten, mindestens 1 falls vorhanden.
+    n_frage = max(1, round(n * len(fragen) / max(1, len(pool)))) if fragen else 0
+    n_frage = min(n_frage, len(fragen), n)
+    n_auftrag = min(n - n_frage, len(auftraege))
+    return (fragen[:n_frage] + auftraege[:n_auftrag])[:n]
+
+
+# ----------------------------------------------------------------------- M2
+def _hat_aufloesbares_ziel(text: str, conn: sqlite3.Connection, index: dict) -> bool:
+    pfade = sorted(k for k in ck.kandidaten(text) if "/" in k)
+    for k in pfade:
+        for w in ck.wissen_zu(k, conn):
+            if not w["mehrdeutig"]:
+                return True
+    for k in sorted(ek.kennungen(text)):
+        if ek.kennung_pruefen(k, conn):
+            return True
+    return False
+
+
+def m2_pool(conn: sqlite3.Connection, max_laenge: int = 600) -> list[str]:
+    """Echte Fragen ohne aufloesbares Ziel -- ziellos im Sinne von
+    echtkorpus.py, nicht erfunden. max_laenge begrenzt auf handhabbare
+    Fragen (keine mehrseitigen Auftraege, die satzart() ohnehin als
+    'auftrag' einstufen wuerde -- Deckel nur gegen Ausreisser)."""
+    nachrichten = ek._ohne_doppelte(ek.sitzungs_nachrichten())
+    m1_prompts = {f["prompt"] for f in json.loads(
+        M1_QUELLE.read_text(encoding="utf-8"))["faelle"]}
+    raus = []
+    for text in nachrichten:
+        if text in m1_prompts or len(text) > max_laenge:
+            continue
+        if ek.satzart(text) != "frage":
+            continue
+        if _hat_aufloesbares_ziel(text, conn, None):
+            continue
+        raus.append(text)
+    return raus
+
+
+def m2_sample(n: int, conn: sqlite3.Connection, seed: int = 0) -> list[str]:
+    pool = m2_pool(conn)
+    pool.sort(key=lambda t: hashlib.sha256((str(seed) + t).encode("utf-8")).hexdigest())
+    return pool[:n]
+
+
+# --------------------------------------------------------------- aufgaben()
+def aufgaben_erzeugen(m1_n: int, m2_n: int, seed: int = 0, cwd: str | None = None) -> dict:
+    """Schritt 1 der Dreiteilung: Abruf + Promptbau, KEIN Modellaufruf.
+    Gibt die vollstaendige Arbeitsliste fuer den Hauptfaden zurueck."""
+    cwd = cwd or str(WURZEL)
+    zellen: list[dict] = []
+    einspielungen: Counter = Counter()  # fuer die Schiefe-Gegenprobe
+    with speicher.lesen(DB) as conn:
+        m1 = m1_sample(m1_n, seed)
+        m2 = m2_sample(m2_n, conn, seed)
+
+        for i, fall in enumerate(m1):
+            nodes, lessons = retrieve(fall["prompt"], cwd=cwd)
+            for n in nodes:
+                einspielungen[n["path"]] += 1
+            for l in lessons:
+                einspielungen[l["id"]] += 1
+            block_mit = format_block(nodes, lessons) if (nodes or lessons) else None
+            case_id = f"m1-{i:02d}"
+            basis = fall["prompt"] + M1_TASK_ANWEISUNG
+            varianten = {"OHNE": basis}
+            if block_mit:
+                varianten["MIT"] = f"{fall['prompt']}\n\n{block_mit}{M1_TASK_ANWEISUNG}"
+                varianten["NEG"] = (f"{fall['prompt']}\n\n"
+                                     f"{foreign_block(len(block_mit), conn, seed + i)}"
+                                     f"{M1_TASK_ANWEISUNG}")
+            for cond, prompt in varianten.items():
+                zellen.append({
+                    "key": f"{case_id}|{cond}", "gruppe": "M1", "case_id": case_id,
+                    "condition": cond, "prompt": prompt,
+                    "ziele": fall["ziele"], "klasse": fall["klasse"], "satzart": fall["satzart"],
+                    "abruf_leer": not (nodes or lessons),
+                })
+
+        for i, text in enumerate(m2):
+            nodes, lessons = retrieve(text, cwd=cwd)
+            for n in nodes:
+                einspielungen[n["path"]] += 1
+            for l in lessons:
+                einspielungen[l["id"]] += 1
+            block_mit = format_block(nodes, lessons) if (nodes or lessons) else None
+            case_id = f"m2-{i:02d}"
+            varianten = {"OHNE": text + M2_TASK_ANWEISUNG}
+            if block_mit:
+                varianten["MIT"] = f"{text}\n\n{block_mit}{M2_TASK_ANWEISUNG}"
+            for cond, prompt in varianten.items():
+                zellen.append({
+                    "key": f"{case_id}|{cond}", "gruppe": "M2", "case_id": case_id,
+                    "condition": cond, "prompt": prompt, "ziele": None,
+                    "abruf_leer": not (nodes or lessons),
+                })
+
+    gesamt = sum(einspielungen.values())
+    drei_haeufigste = sum(c for _, c in einspielungen.most_common(3))
+    schiefe = (drei_haeufigste / gesamt) if gesamt else None
+
+    return {
+        "erzeugt_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "m1_angefragt": m1_n, "m1_geliefert": len(m1),
+        "m2_angefragt": m2_n, "m2_geliefert": len(m2),
+        "m1_pool_groesse": len(m1_pool()),
+        "zellen": zellen,
+        "schiefe_gegenprobe": {
+            "einspielungen_gesamt": gesamt,
+            "drei_haeufigste_anteil": schiefe,
+            "drei_haeufigste": einspielungen.most_common(3),
+            "hinweis": "> 0.5 heisst: die Kennzahl beschreibt die Suche, nicht den Nutzen",
+        },
+    }
+
+
+# -------------------------------------------------------------- auswerten()
+_WORT = re.compile(r"[A-Za-zÄÖÜäöüß0-9_/.\-]{4,}")
+
+
+def _ziel_treffer(antwort: str, ziele: list[dict]) -> bool:
+    """Mechanische Pruefung fuer M1: nennt die Antwort den Zielpfad/die
+    Zielkennung (voll oder als Pfad-Endstueck, z.B. nur den Dateinamen
+    bzw. den letzten Pfadabschnitt eines Knotens)?
+
+    Das Endstueck-Fallback gilt NICHT fuer Projektwurzeln wie '/brainlehr'
+    (genau ein '/'): deren 'letztes Stueck' ist der Projektname selbst, und
+    der taucht in praktisch jeder Antwort ueber dieses Projekt auf -- das
+    waere kein Beleg fuer Wissensnutzung, sondern ein Fehlalarm. Gemessen
+    2026-08-13: /brainlehr traf im NEG-Lauf ueber das blosse Wort
+    'brainlehr-interne Messaufgabe', ohne dass der Zielknoten gemeint war.
+    Erst ab zwei '/' (also einer echten Unterseite) ist das Endstueck
+    unterscheidungskraeftig genug."""
+    text = antwort or ""
+    for z in ziele:
+        zid = z["id"]
+        if zid in text:
+            return True
+        if zid.startswith("/") and zid.count("/") == 1:
+            continue  # Projektwurzel wie '/brainlehr', s. Docstring
+        letztes_stueck = zid.rsplit("/", 1)[-1]
+        if len(letztes_stueck) >= 4 and letztes_stueck in text:
+            return True
+    return False
+
+
+def auswerten(aufgaben: dict, antworten: dict) -> dict:
+    """Schritt 3: Antworten des Hauptfadens gegen die Ziele pruefen (M1) bzw.
+    nur auf Unterschied hin vergleichen (M2). KEIN Modellaufruf."""
+    gegeben = antworten.get("antworten", {})
+    m1_conditions: dict[str, list[bool]] = {}
+    m1_leer_conditions: dict[str, list[bool]] = {}
+    m1_faelle_ausgewertet = 0
+    m1_fehlbestand = []
+    m2_ergebnisse = []
+    m2_fehlbestand = []
+
+    # M1: je Fall alle vorhandenen Bedingungen einsammeln.
+    faelle_m1: dict[str, dict] = {}
+    for zelle in aufgaben["zellen"]:
+        if zelle["gruppe"] != "M1":
+            continue
+        faelle_m1.setdefault(zelle["case_id"], {"ziele": zelle["ziele"], "bedingungen": {}})
+        faelle_m1[zelle["case_id"]]["bedingungen"][zelle["condition"]] = zelle
+
+    # Liefer-Analyse (zusaetzlich zur reinen Trefferquote): unter den
+    # Faellen, wo der MIT-Block das Ziel tatsaechlich ENTHIELT (Retrieval-
+    # Treffer), wie oft taucht das Ziel dann auch in der MIT-Antwort auf?
+    # Trennt 'findet das Falsche' (Retrieval-Fehlgriff) von 'wird nicht
+    # benutzt' (geliefert, aber in der Antwort ignoriert) -- genau die
+    # Unterscheidung, um die es in diesem Versuch laut Auftrag geht.
+    geliefert_und_benutzt = 0
+    geliefert_gesamt = 0
+
+    for case_id, fall in faelle_m1.items():
+        m1_faelle_ausgewertet += 1
+        mit_zelle = fall["bedingungen"].get("MIT")
+        block_enthaelt_ziel = (
+            mit_zelle is not None and
+            any(z["id"] in mit_zelle.get("prompt", "") for z in fall["ziele"]))
+        for cond, zelle in fall["bedingungen"].items():
+            antwort = gegeben.get(zelle["key"])
+            if antwort is None:
+                m1_fehlbestand.append(zelle["key"])
+                continue
+            treffer = _ziel_treffer(antwort, fall["ziele"])
+            m1_conditions.setdefault(cond, []).append(treffer)
+            if cond == "MIT" and block_enthaelt_ziel:
+                geliefert_gesamt += 1
+                if treffer:
+                    geliefert_und_benutzt += 1
+
+    # M2: MIT vs OHNE, nur Unterschied feststellen -- kein Erfolgsurteil.
+    faelle_m2: dict[str, dict] = {}
+    for zelle in aufgaben["zellen"]:
+        if zelle["gruppe"] != "M2":
+            continue
+        faelle_m2.setdefault(zelle["case_id"], {})[zelle["condition"]] = zelle
+
+    for case_id, bedingungen in faelle_m2.items():
+        mit = bedingungen.get("MIT")
+        ohne = bedingungen.get("OHNE")
+        a_mit = gegeben.get(mit["key"]) if mit else None
+        a_ohne = gegeben.get(ohne["key"]) if ohne else None
+        if a_ohne is None or (mit and a_mit is None):
+            m2_fehlbestand.append(case_id)
+            continue
+        unterschiedlich = (mit is not None) and _wesentlich_unterschiedlich(a_mit, a_ohne)
+        m2_ergebnisse.append({
+            "case_id": case_id, "hat_mit_bedingung": mit is not None,
+            "unterschiedlich": unterschiedlich,
+            "antwort_ohne": a_ohne, "antwort_mit": a_mit,
+        })
+
+    def _quote(cond: str) -> dict:
+        werte = m1_conditions.get(cond, [])
+        n = len(werte)
+        return {"treffer": sum(werte), "n": n,
+                "anteil": (sum(werte) / n) if n else None}
+
+    m2_mit_bedingung = [e for e in m2_ergebnisse if e["hat_mit_bedingung"]]
+    unterschied_n = sum(1 for e in m2_mit_bedingung if e["unterschiedlich"])
+
+    return {
+        "ausgewertet_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "m1": {
+            "faelle": m1_faelle_ausgewertet,
+            "MIT": _quote("MIT"), "OHNE": _quote("OHNE"), "NEG": _quote("NEG"),
+            "fehlbestand": m1_fehlbestand,
+            "liefer_analyse": {
+                "geliefert_gesamt": geliefert_gesamt,
+                "geliefert_und_benutzt": geliefert_und_benutzt,
+                "anteil": (geliefert_und_benutzt / geliefert_gesamt) if geliefert_gesamt else None,
+                "hinweis": "unter den Faellen, wo der MIT-Block das Ziel enthielt "
+                           "(Retrieval-Treffer): wie oft taucht es dann auch in der "
+                           "Antwort auf? Trennt Retrieval-Fehlgriff von Nichtnutzung.",
+            },
+        },
+        "m2": {
+            "faelle_mit_mit_bedingung": len(m2_mit_bedingung),
+            "unterschiedlich": unterschied_n,
+            "unterschiedlich_anteil": (unterschied_n / len(m2_mit_bedingung)) if m2_mit_bedingung else None,
+            "ergebnisse": m2_ergebnisse,
+            "fehlbestand": m2_fehlbestand,
+            "hinweis": "Unterschied ist kein Nutzen -- kein Erfolgsurteil gefaellt.",
+        },
+        "schiefe_gegenprobe": aufgaben.get("schiefe_gegenprobe"),
+    }
+
+
+def _wesentlich_unterschiedlich(a: str, b: str) -> bool:
+    """Grober, aber mechanischer Unterschieds-Test: normalisierte
+    Wortmengen, Jaccard < 0.6 gilt als 'unterschiedlich'. Ersetzt keinen
+    blinden menschlichen/Dritten-Vergleich (der gehoert in die Antwortdatei
+    als eigenes Feld, hier nur die mechanische Voreinschaetzung)."""
+    wa = set(w.lower() for w in _WORT.findall(a or ""))
+    wb = set(w.lower() for w in _WORT.findall(b or ""))
+    if not wa and not wb:
+        return False
+    if not wa or not wb:
+        return True
+    jacc = len(wa & wb) / len(wa | wb)
+    return jacc < 0.6
+
+
+# ---------------------------------------------------------------------- CLI
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                  formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--aufgaben", metavar="DATEI",
+                     help="Schritt 1: Abruf + Promptbau schreiben, kein Modellaufruf")
+    ap.add_argument("--m1-n", type=int, default=12)
+    ap.add_argument("--m2-n", type=int, default=8)
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--cwd", default=None)
+    ap.add_argument("--auswerten", nargs=2, metavar=("AUFGABEN", "ANTWORTEN"),
+                     help="Schritt 3: Antworten pruefen, kein Modellaufruf")
+    ap.add_argument("--out", default=None)
+    ap.add_argument("--selftest", action="store_true")
+    args = ap.parse_args()
+
+    if args.selftest:
+        _selftest()
+        return
+
+    if args.aufgaben:
+        daten = aufgaben_erzeugen(args.m1_n, args.m2_n, args.seed, args.cwd)
+        ziel = Path(args.aufgaben)
+        ziel.parent.mkdir(parents=True, exist_ok=True)
+        ziel.write_text(json.dumps(daten, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"M1: {daten['m1_geliefert']}/{daten['m1_angefragt']} Faelle aus Pool "
+              f"{daten['m1_pool_groesse']} -- M2: {daten['m2_geliefert']}/{daten['m2_angefragt']}")
+        print(f"Zellen gesamt: {len(daten['zellen'])}")
+        print(f"Schiefe (3 haeufigste / gesamt): {daten['schiefe_gegenprobe']['drei_haeufigste_anteil']}")
+        print(f"Geschrieben: {ziel}")
+        return
+
+    if args.auswerten:
+        aufg = json.loads(Path(args.auswerten[0]).read_text(encoding="utf-8"))
+        antw = json.loads(Path(args.auswerten[1]).read_text(encoding="utf-8"))
+        ergebnis = auswerten(aufg, antw)
+        out = Path(args.out or (WURZEL / "runs" / "okkultation_ergebnis.json"))
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(ergebnis, ensure_ascii=False, indent=2), encoding="utf-8")
+        m1 = ergebnis["m1"]
+        for cond in ("MIT", "OHNE", "NEG"):
+            q = m1[cond]
+            print(f"M1 {cond:5s} {q['treffer']}/{q['n']} "
+                  f"({q['anteil']:.2f})" if q["anteil"] is not None else f"M1 {cond:5s} keine Zellen")
+        m2 = ergebnis["m2"]
+        print(f"M2 unterschiedlich: {m2['unterschiedlich']}/{m2['faelle_mit_mit_bedingung']}")
+        print(f"Geschrieben: {out}")
+        return
+
+    ap.print_help()
+
+
+# ------------------------------------------------------------------- Tests
+def _selftest() -> None:
+    """Rot-vor-gruen, ohne DB/Netz: Blockformat, Zieltreffer, Auswertung."""
+    block = format_block(
+        [{"path": "/a/b", "title": "T", "summary": "S", "updated_at": None}],
+        [{"id": "L-aaaaaa", "severity": "low", "type": "insight", "occurrences": 1,
+          "description": "D", "prevention": None}],
+    )
+    assert "<knowledge-recall>" in block and "/a/b" in block and "L-aaaaaa" in block
+
+    # Zieltreffer: voller Pfad, nur das letzte Stueck, und ein Fehlschlag.
+    assert _ziel_treffer("siehe /a/b/c fuer Details", [{"art": "knoten", "id": "/a/b/c"}])
+    assert _ziel_treffer("Datei heisst existenzpruefung.py", [{"art": "knoten", "id": "haken/existenzpruefung.py"}])
+    assert not _ziel_treffer("nichts Passendes hier", [{"art": "knoten", "id": "/x/y/z"}])
+    # Grenzfall: ein zu kurzes Endstueck (<4 Zeichen) darf nicht faelschlich treffen.
+    assert not _ziel_treffer("ab", [{"art": "knoten", "id": "/x/ab"}])
+    # Regression 2026-08-13: eine Projektwurzel ('/brainlehr', ein '/') darf
+    # nicht ueber ihr 'Endstueck' (der Projektname selbst) treffen -- der
+    # taucht in fast jeder Antwort ueber das Projekt auf, ganz ohne dass der
+    # Zielknoten gemeint war (echter Fehlalarm im NEG-Lauf).
+    assert not _ziel_treffer(
+        "Das ist eine brainlehr-interne Messaufgabe ohne Bezug.",
+        [{"art": "knoten", "id": "/brainlehr"}])
+    assert _ziel_treffer("siehe /brainlehr fuer Details", [{"art": "knoten", "id": "/brainlehr"}])
+
+    # auswerten(): synthetische Aufgaben+Antworten, alle drei Bedingungen.
+    aufgaben = {"schiefe_gegenprobe": {"drei_haeufigste_anteil": 0.1}, "zellen": [
+        {"key": "m1-00|MIT", "gruppe": "M1", "case_id": "m1-00", "condition": "MIT",
+         "ziele": [{"art": "knoten", "id": "/x/y"}],
+         "prompt": "Frage\n\n<knowledge-recall>\n- [/x/y] ...\n</knowledge-recall>"},
+        {"key": "m1-00|OHNE", "gruppe": "M1", "case_id": "m1-00", "condition": "OHNE",
+         "ziele": [{"art": "knoten", "id": "/x/y"}]},
+        {"key": "m1-00|NEG", "gruppe": "M1", "case_id": "m1-00", "condition": "NEG",
+         "ziele": [{"art": "knoten", "id": "/x/y"}]},
+        {"key": "m2-00|MIT", "gruppe": "M2", "case_id": "m2-00", "condition": "MIT", "ziele": None},
+        {"key": "m2-00|OHNE", "gruppe": "M2", "case_id": "m2-00", "condition": "OHNE", "ziele": None},
+    ]}
+    antworten = {"antworten": {
+        "m1-00|MIT": "Ich stuetze mich auf /x/y, das passt genau.",
+        "m1-00|OHNE": "Ich rate auf gut Glueck, kein Anhaltspunkt.",
+        "m1-00|NEG": "Der fremde Block handelt von etwas anderem, ich rate.",
+        "m2-00|MIT": "Ja, das ist moeglich, siehe die genannte Einschraenkung.",
+        "m2-00|OHNE": "Ja, das ist grundsaetzlich moeglich.",
+    }}
+    erg = auswerten(aufgaben, antworten)
+    assert erg["m1"]["MIT"]["treffer"] == 1 and erg["m1"]["MIT"]["n"] == 1
+    assert erg["m1"]["OHNE"]["treffer"] == 0
+    assert erg["m1"]["NEG"]["treffer"] == 0
+    assert erg["m2"]["faelle_mit_mit_bedingung"] == 1
+    # Liefer-Analyse: der MIT-Block enthielt /x/y (Retrieval-Treffer), und
+    # die Antwort nutzte es auch -> 1/1.
+    la = erg["m1"]["liefer_analyse"]
+    assert la["geliefert_gesamt"] == 1 and la["geliefert_und_benutzt"] == 1
+
+    # Fehlbestand: eine fehlende Antwort darf nicht stillschweigend uebergangen werden.
+    luecke = auswerten(aufgaben, {"antworten": {
+        "m1-00|MIT": "x", "m1-00|OHNE": "y",
+        "m2-00|MIT": "a", "m2-00|OHNE": "b"}})
+    assert "m1-00|NEG" in luecke["m1"]["fehlbestand"]
+
+    # M1-Pool schliesst 'kennung' aus (Selbstbezug-Ausschluss).
+    if M1_QUELLE.exists():
+        pool = m1_pool()
+        assert all(f["klasse"] in M1_ERLAUBTE_KLASSEN for f in pool)
+        assert not any(f["klasse"] == "kennung" for f in pool)
+
+    print("selftest ok: Blockformat, Zieltreffer (voll/Endstueck/Grenzfall/Fehlschlag), "
+          "auswerten() (M1 drei Bedingungen, M2, Fehlbestand), M1-Pool-Ausschluss",
+          file=_sys.stderr)
+
+
+if __name__ == "__main__":
+    main()
