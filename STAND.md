@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-13T02:35:00+0200
+# STAND brainlehr — 2026-08-13T03:20:00+0200
 
 ## Warum die Regeln nicht greifen — gemessen, nicht vermutet
 
@@ -35,6 +35,16 @@ Zum Abschließen fehlen: größere Fallmenge · echte statt Ersatzaufgabe · Neg
 Die Entscheidungsregel ergab **B**, nicht A. Etikettierte Abruffälle je Projekt: `shared` 12, `brainlehr` 8, `begod` 7, `fahrtenbuch` 4 — ADR-035 eichte den gemeinsamen Wert mit 24 Aufgaben und nannte das die Grenze zur Überanpassung. Ein Bruchteil davon je Projekt ist Raten mit Nachkommastellen.
 
 **Nebenfund:** Der xfail, der die Widersprüchlichkeit maskierte, verdeckte einen **zweiten**, unabhängigen Fehler. Ein xfail, der zwei Dinge verdeckt, ist die Bauform, in der ein Fehler jahrelang überlebt.
+
+## Jede Einbettung wird bei 8000 Zeichen gekappt — durch einen Vorgabewert (`0b1ab4c`)
+
+Gemessen: Ab **2048 Token** ist der Vektor exakt gleich, unabhängig vom Suffix. Das ist Ollamas `num_ctx`, **nicht** bge-m3s 8192-Token-Grenze; im Repo überschreibt nichts diesen Wert. Belegverfahren: gleicher Anfang, **verschiedenes Ende**, identischer Vektor — Ähnlichkeit wäre Konvergenz, Gleichheit ist Abschneiden.
+
+Bestand: **9 von 2163 Knoten** über der Grenze, längster 33908 Zeichen. **0 von 832 Lehren.** Entscheidung offen (Aufgabe 69): `num_ctx` anheben und alles neu rechnen · die neun teilen · die Grenze dokumentieren.
+
+**Zweiter Anfragevektor NICHT gebaut** (Aufgabe 39): Er findet überwiegend anderes (7,56 von 15 Treffern nur über ihn), aber belegt ist nur *anders*, nicht *richtig* — und **46,7 %** der Einspielungen tauchen in der Folgeantwort wieder auf. Bedingung zum Weiterbauen: blinde Relevanzbewertung plus Antwort auf die Rückkopplung.
+
+**Aufgabe 40, Prämisse widerlegt:** In der Ausgabe wird **nichts** gekürzt — Titel, Zusammenfassung, Beschreibung und Vorbeugung erscheinen vollständig. Begrenzt ist die **Anzahl** (10 Knoten, 7 Lehren) und die Feldwahl. Offen ist nur noch, ob der Betreiber die Blöcke in seinem Fenster überhaupt sieht.
 
 ## Betreiberanweisung 2026-08-12T20:00
 
