@@ -1,4 +1,38 @@
-# STAND brainlehr — 2026-08-13T07:55:00+0200
+# STAND brainlehr — 2026-08-13T08:55:00+0200
+
+## Die Regel gegen wirkungslose Mechanismen gab es schon — vor Monaten
+
+`spaghetti-monster` aus der Stiftshütte prüft nicht nur Code, sondern den
+**Prozess**, und trägt wörtlich die Regel *„Agent ohne Trigger in 5+ Sessions →
+Sunset-Kandidat"*. Kein Veto, nur Hinweisrecht, ausgelöst „proaktiv bei
+Gruppendenken und ‚das ist offensichtlich'-Momenten".
+
+Das ist genau der Melder, der in dieser Nacht **zwölfmal von Hand** gespielt
+wurde. Der Verlust ist kein Denkfehler, sondern eine Eigenschaft des
+Plattformwechsels: Bei einem Umzug wandern die **Artefakte**, die man sieht.
+Eine Rolle, deren einziger Wert ihr **Auslöser** war, hat keinen Gegenstand, den
+man mitnehmen könnte. Prüffrage für den nächsten Wechsel: nicht „welche Dateien
+nehmen wir mit", sondern **„was hat sich von selbst gemeldet, und wer tut das
+jetzt?"** (Knoten `e5b68f3a`, Aufgabe 85, `docs/AGENTENBESTAND_2026-08-13.md`.)
+
+Erhebung nachgeprüft, drei Angaben des Agenten waren falsch: 81 Rollendateien
+statt 58, das Feld `agent_count` existiert nicht, und `aufsaetze/agenten.py`
+vermisst nichts. Der alte Bestand nennt dabei **drei Zahlen für sich selbst** —
+81 Dateien, 75 Indexeinträge, 77 Routingzeilen. Ein gepflegter Index statt eines
+erzeugten; genau die Bauform, die hier abgeschafft wurde.
+
+## Der Speicher schlägt 55 Dinge vor, und niemand sieht sie
+
+`berichte/vorschlag.py` liefert **25 Prüfstein- und 30 Fähigkeit-Kandidaten**,
+je mit fertigem Auftragsentwurf aus der Lehre. Verdrahtung: **0** in beiden
+Regelablagen. Zwölfte Erscheinungsform.
+
+Es kennt **keine Agenten** — wann einer zu starten wäre, steht nirgends, obwohl
+der Bestand die Daten trägt. Ein Laden oder Entladen von Fähigkeiten wurde
+gesucht und **nicht gefunden**. Die eigene Sperre benennt das Werkzeug ehrlich:
+*„die Bedingung für automatisch starten ist die maschinelle Abnahme, und die
+fehlt noch."* Die Sperre ist richtig; sie steht nur an der falschen Stelle,
+solange der Bericht überhaupt niemanden erreicht. (Aufgabe 84.)
 
 ## Der Stop-Haltepunkt liefert — die Existenzprüfung hängt trotzdem im Leeren
 
