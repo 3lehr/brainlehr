@@ -1,0 +1,28 @@
+{
+  "_hinweis": "Katalog dessen, WAS in ein Feld des Vorschaumonitors (RasterAnsicht.swift) darf. Die FELDZAHL steht hier nie -- sie folgt aus der echten Bildschirmflaeche und dem Betrachtungsabstand (Anzeigeflaeche.felder in BrainlehrCore/Anzeigeform.swift, ADR-004). Fehlt eine gewaehlte id in dieser Liste, zeigt das Feld einen Hinweis statt abzustuerzen -- keine Ausnahme.",
+
+  "belegungen": [
+    {
+      "id": "leer",
+      "titel": "Leer",
+      "symbol": "square.dashed",
+      "_hinweis": "Voreinstellung fuer ein neues Feld. Ausdruecklich ein eigener Eintrag, nicht die Abwesenheit einer Auswahl -- sonst waere ein leeres Feld von einem defekten nicht zu unterscheiden."
+    },
+    {
+      "id": "quelle",
+      "titel": "Quelle",
+      "symbol": "doc.text.magnifyingglass",
+      "_hinweis": "Ein Dokument wie in QuellenAnsicht.swift -- Ausschnitt, ganze Seite oder markierte Stelle, je nach dem, was fuer DIESES Feld allein passt."
+    },
+    {
+      "id": "wissensraum",
+      "titel": "Wissensraum",
+      "symbol": "point.3.filled.connected.trianglepath.dotted"
+    },
+    {
+      "id": "ausweise",
+      "titel": "Ausweise und Einladungen",
+      "symbol": "person.text.rectangle"
+    }
+  ]
+}

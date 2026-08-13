@@ -6,6 +6,9 @@ import SwiftUI
 
 enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
     case quellen
+    case raster
+    case bearbeitung
+    case sitzung
     case wissensraum
     case ausweise
 
@@ -14,6 +17,9 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
     var titel: String {
         switch self {
         case .quellen: return "Quellen"
+        case .raster: return "Mehrfachansicht"
+        case .bearbeitung: return "Bearbeiten"
+        case .sitzung: return "Sitzung"
         case .wissensraum: return "Wissensraum"
         case .ausweise: return "Ausweise und Einladungen"
         }
@@ -22,6 +28,9 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .quellen: return "doc.text.magnifyingglass"
+        case .raster: return "square.grid.2x2"
+        case .bearbeitung: return "square.and.pencil"
+        case .sitzung: return "bubble.left.and.text.bubble.right"
         case .wissensraum: return "point.3.filled.connected.trianglepath.dotted"
         case .ausweise: return "person.text.rectangle"
         }
@@ -66,6 +75,12 @@ struct HauptFenster: View {
             VStack(spacing: 0) {
                 if auswahl == .quellen {
                     QuellenBereich()
+                } else if auswahl == .raster {
+                    RasterAnsicht()
+                } else if auswahl == .bearbeitung {
+                    BearbeitungsAnsicht()
+                } else if auswahl == .sitzung {
+                    SitzungsAnsicht()
                 } else if auswahl == .wissensraum {
                     // Banner nur hier: er meldet den Wissensraum-Dienst, mit
                     // dem der Ausweis-Ablauf (eigener Subprozess) nichts zu

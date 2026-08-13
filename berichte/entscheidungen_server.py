@@ -714,6 +714,39 @@ def _quellenbestand() -> dict:
     return fundstelle.bestand()
 
 
+def _quellenliste() -> dict:
+    """Die Quellen mit Gattung und Freigabe -- fuer den Browser der App.
+
+    Liest quellen.json direkt statt kern/fundstelle.py zu erweitern: Diese
+    Datei haelt gerade eine andere Sitzung, und ein neuer Endpunkt hier
+    kollidiert mit nichts.
+
+    FREIGABE: Das Quellenverzeichnis von buckeberg kennt keine solche Spalte.
+    Sie wird deshalb NICHT erfunden -- der Wert bleibt leer, und die
+    Sichtbarkeitspruefung der App liest daraus "gesperrt". Das ist die
+    sichere Richtung: Wer hier ersatzweise "offen" einsetzt, baut eine
+    Schranke, die sich durch eine fehlende Spalte oeffnet.
+    """
+    import fundstelle
+    w = fundstelle.korpus_wurzel()
+    pfad = w / "dossier" / "quellen.json"
+    if not pfad.is_file():
+        return {"zeilen": []}
+    roh = json.loads(pfad.read_text(encoding="utf-8"))
+    zeilen = []
+    for nr, q in sorted(((k, v) for k, v in roh.items() if k.isdigit()),
+                        key=lambda x: int(x[0])):
+        zeilen.append({
+            "nummer": nr,
+            "kurz": q.get("kurz", ""),
+            "art": q.get("art", ""),
+            "freigabe": q.get("freigabe"),
+            "markierbar": bool(q.get("suchtext")),
+            "rang": int(q.get("rang") or 0),
+        })
+    return {"zeilen": zeilen}
+
+
 def _abrufweg_stand(text: str) -> dict:
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
@@ -779,6 +812,12 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/quellenbestand":
             try:
                 self._json(_quellenbestand())
+            except Exception as e:
+                self._json({"error": str(e)}, 500)
+            return
+        if self.path == "/api/quellenliste":
+            try:
+                self._json(_quellenliste())
             except Exception as e:
                 self._json({"error": str(e)}, 500)
             return
@@ -985,6 +1024,17 @@ def _selftest() -> int:
         treffer = _fundstelle_stand(nr, "")
         assert treffer["belegt"] and treffer["markierbar"], f"Quelle {nr} muss aufloesen"
         assert Path(treffer["absolut"]).is_file(), "aufgeloeste Datei muss existieren"
+
+    # 3e) Quellenliste: Der Browser der App haengt daran.
+    ql = _quellenliste()["zeilen"]
+    if b["erreichbar"]:
+        assert ql, "Quellenliste darf bei erreichbarem Korpus nicht leer sein"
+        assert all(z["nummer"].isdigit() for z in ql), "Verwaltungszeile durchgerutscht"
+        # Die Freigabe wird NICHT erfunden -- fehlt sie im Verzeichnis, bleibt
+        # sie leer, und die App liest daraus "gesperrt". Sichere Richtung.
+        assert all("freigabe" in z for z in ql)
+        assert sum(1 for z in ql if z["markierbar"]) == b["mit_fundstelle"], \
+            "markierbar in der Liste muss zum gezaehlten Bestand passen"
 
     print("Selbsttest gruen: Gesamtstand read-only unveraendert, "
           "Siegbedingung/Nachtschicht-Rundlauf inkl. Negativfall bestanden, "

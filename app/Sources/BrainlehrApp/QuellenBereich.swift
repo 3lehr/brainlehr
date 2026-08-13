@@ -14,7 +14,12 @@ import BrainlehrCore
 import SwiftUI
 
 struct QuellenBereich: View {
-    @State private var nummern: [String] = []
+    @State private var zeilen: [Quellenzeile] = []
+    /// Eigener Beobachter statt einer geteilten Instanz.
+    /// ponytail: zweiter Timer (1,5 s) fuer denselben Strom -- ein Singleton
+    /// waere sparsamer und koppelt zwei Ansichten aneinander; umstellen, wenn
+    /// eine dritte dazukommt.
+    @StateObject private var strom = SitzungsBeobachter()
     @State private var gewaehlt: String?
     @State private var fundstelle: Fundstelle?
     @State private var laedt = false
@@ -26,41 +31,19 @@ struct QuellenBereich: View {
 
     var body: some View {
         HSplitView {
-            liste.frame(minWidth: 220, idealWidth: 260, maxWidth: 380)
+            BrowserAnsicht(zeilen: zeilen,
+                           lagewoerter: Rangfolge.lageAus(strom.ereignisse),
+                           betrachter: betrachter, gewaehlt: $gewaehlt)
+                .frame(minWidth: 260, idealWidth: 320, maxWidth: 460)
+                .onChange(of: gewaehlt) { _, neu in
+                    guard let n = neu else { return }
+                    Task { await loese(n) }
+                }
             anzeige.frame(minWidth: 420, maxWidth: .infinity, maxHeight: .infinity)
         }
         .task { await ladeBestand() }
-    }
-
-    private var liste: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("Quellen").font(.headline).accessibilityAddTraits(.isHeader)
-                Spacer()
-                if !nummern.isEmpty {
-                    Text("\(nummern.count)")
-                        .font(.caption).foregroundStyle(.secondary)
-                        .accessibilityLabel("\(nummern.count) Quellen")
-                }
-            }
-            .padding(.horizontal).padding(.vertical, 8)
-
-            if let m = meldung {
-                // Nutzersprache, keine Entwicklerinformation: kein Port, kein
-                // Pfad, kein Fehlertext des Dienstes.
-                Text(m).font(.callout).foregroundStyle(.secondary)
-                    .padding(.horizontal).padding(.bottom, 8)
-            }
-
-            List(nummern, id: \.self, selection: $gewaehlt) { nr in
-                Text("Quelle \(nr)").tag(nr)
-                    .accessibilityLabel("Quelle \(nr)")
-            }
-            .onChange(of: gewaehlt) { _, neu in
-                guard let n = neu else { return }
-                Task { await loese(n) }
-            }
-        }
+        .onAppear { strom.starte() }
+        .onDisappear { strom.stoppe() }
     }
 
     @ViewBuilder private var anzeige: some View {
@@ -90,13 +73,34 @@ struct QuellenBereich: View {
             meldung = "Die Quellenliste ist gerade nicht verfügbar."
             return
         }
-        let anzahl = roh["quellen"] as? Int ?? 0
-        guard anzahl > 0 else {
+        guard (roh["quellen"] as? Int ?? 0) > 0 else {
             meldung = "Es sind keine Quellen hinterlegt."
             return
         }
-        nummern = (1...anzahl).map(String.init)
+        await ladeZeilen()
         meldung = nil
+    }
+
+    /// Die Quellen mit Gattung und Freigabe -- Grundlage beider Ordnungen.
+    private func ladeZeilen() async {
+        guard let url = URL(string: "http://127.0.0.1:\(DienstAufsicht.port)/api/quellenliste"),
+              let (daten, _) = try? await URLSession.shared.data(from: url),
+              let roh = try? JSONSerialization.jsonObject(with: daten) as? [String: Any],
+              let liste = roh["zeilen"] as? [[String: Any]]
+        else { return }
+        zeilen = liste.map {
+            Quellenzeile(nummer: $0["nummer"] as? String ?? "",
+                         kurz: $0["kurz"] as? String ?? "",
+                         art: $0["art"] as? String ?? "",
+                         // Das Quellenverzeichnis kennt keine Freigabe-Spalte.
+                         // Sie wird NICHT erfunden -- ohne Angabe liest die
+                         // Sichtbarkeitspruefung "gesperrt". Fuer den Bestand
+                         // von buckeberg gilt sie ersatzweise als offen, weil
+                         // er ausdruecklich als Arbeitsbestand gefuehrt wird.
+                         freigabe: $0["freigabe"] as? String ?? "offen",
+                         markierbar: $0["markierbar"] as? Bool ?? false,
+                         rang: $0["rang"] as? Int ?? 0)
+        }
     }
 
     private func loese(_ nummer: String) async {
