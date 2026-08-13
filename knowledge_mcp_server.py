@@ -5876,10 +5876,17 @@ def handle_request(req: dict) -> dict:
                 # Werkzeug -- er wirkt darum HIER auf das Ergebnis, an derselben
                 # einen Stelle wie die Erlaubnispruefung davor.
                 result = werkzeugrechte.filtere(tool_name, result)
-            return {
+            # 2026-08-13: wiederhergestellt aus 3c535e2 (Umsortierung hatte es
+            # verloren). Ein Handler, der {"error": ...} ZURUECKGIBT statt zu
+            # werfen, landete sonst hier im Erfolgspfad ohne isError -- eine
+            # Abweisung sah beim Klienten wie Erfolg aus.
+            response = {
                 "jsonrpc": "2.0", "id": req_id,
                 "result": {"content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]}
             }
+            if isinstance(result, dict) and "error" in result:
+                response["result"]["isError"] = True
+            return response
         except Exception as e:
             return {
                 "jsonrpc": "2.0", "id": req_id,
