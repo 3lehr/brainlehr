@@ -94,6 +94,43 @@ Und der Stand gehört dazu, wo er zählt: *„brainlehr sagt, Stand 07.08."* hä
 die Nachfrage nach der heutigen Architektur überflüssig gemacht — sie hätte in
 der Aussage gestanden.
 
+### Zwei Sorten von „brainlehr sagt", und sie tragen verschieden
+
+Betreiberzusatz 2026-08-13: Es macht einen Unterschied, ob der Speicher eine
+**eigene Regel oder Selbsterfahrung** wiedergibt oder ein **fremdes Zitat** —
+Gesetz, DIN, ISO, BSI, WCAG. Beim fremden Zitat gehört gesagt, **von wem** es
+stammt, und seine **Geltung** geprüft: **bis wann** und **wo**.
+
+**Gemessen, wie weit der Bestand das heute kann:**
+
+| | |
+|---|---|
+| `norm_entscheidung` = **`offen`** | **1919** von 2166 — bei 89 % ist die Frage gar nicht entschieden |
+| `keine_norm` | 169 · `norm_unbefristet` 76 · `norm_befristet` **2** |
+| `norm_rang` (wie bindend) | 83 |
+| `gilt_ab` | 83 |
+| **`gilt_bis`** (Ablauf) | **2** |
+| **`norm_art`** (eigen oder fremd) | **0** |
+| **örtliche Geltung** | **kein Feld** |
+
+`kern/geltungsbereich.py` gibt es — es behandelt aber die **Projekt**-Zugehörigkeit,
+nicht den **Rechtsraum**. Der Fall, den der Betreiber genannt hat (jedes
+Bundesland, jeder Staat hat andere Gesetze), ist im Schema nicht abbildbar.
+
+Die **Prüfseite existiert bereits**: `normbezug.py` meldet, wenn eine Antwort
+ein Gesetz, eine Norm oder eine interne Kennung nennt, für die kein Beleg im
+Bestand liegt — bei internen Kennungen heißt ein Fehltreffer nicht „unbelegt",
+sondern „erfunden". **Es fehlt nicht der Prüfer, es fehlen die Daten.**
+
+**Die Reihenfolge, und sie folgt aus der 2:** `gilt_bis` steht bei 2 von 2166.
+Ein Feld, das niemand füllt, wird auch als örtliche Geltung niemand füllen.
+Deshalb **erst `norm_art`** — eigen oder fremd ist beim Schreiben ohne Recherche
+entscheidbar und trennt sofort die beiden Sorten. **Dann** Ablauf und Ort, und
+zwar **nur für fremde Normen**: Eine eigene Hausregel braucht kein Bundesland.
+Das reduziert die zu füllende Menge von 2166 auf die Handvoll fremder Zitate —
+und macht den Unterschied zwischen einer Spalte, die gefüllt wird, und der
+zwölften leeren.
+
 ## Die fünf Linien, in bindender Reihenfolge
 
 **Linie A — Wirksamkeit vor allem anderen.** Solange Mechanismen nicht feuern,
