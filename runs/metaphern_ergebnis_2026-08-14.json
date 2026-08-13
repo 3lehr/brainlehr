@@ -1,0 +1,324 @@
+{
+  "ausgewertet_am": "2026-08-14T01:02:22+0200",
+  "seed": 20260813,
+  "codestand_aufgaben": {
+    "commit": "386bbf2",
+    "zweig": "brainlehr/b4-ausweis",
+    "schmutzig": true,
+    "ermittelt": "2026-08-13T22:58:02+00:00"
+  },
+  "codestand_auswertung": {
+    "commit": "386bbf2",
+    "zweig": "brainlehr/b4-ausweis",
+    "schmutzig": true,
+    "ermittelt": "2026-08-13T23:02:22+00:00"
+  },
+  "n_items_gesamt": 72,
+  "n_fehlbestand": 0,
+  "fehlbestand": [],
+  "n_unlesbar": 0,
+  "unlesbar": [],
+  "paare": [
+    {
+      "paar_id": "commit_ohne_push",
+      "quelle": "CLAUDE.md, Abschnitt 'Committen ohne Aufforderung'",
+      "fassungen": {
+        "woertlich": {
+          "reichweite": {
+            "treffer": 2,
+            "n": 3,
+            "anteil": 0.6666666666666666,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 2,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 2,
+            "n": 2,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_soll": 2,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": true
+        },
+        "passend": {
+          "reichweite": {
+            "treffer": 3,
+            "n": 3,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 2,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 2,
+            "n": 2,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_soll": 2,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": true
+        },
+        "unpassend": {
+          "reichweite": {
+            "treffer": 0,
+            "n": 3,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 2,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 0,
+            "n": 2,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_soll": 2,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": false
+        }
+      }
+    },
+    {
+      "paar_id": "zweimal_ist_die_grenze",
+      "quelle": "CLAUDE.md, Abschnitt 'Zweimal ist die Grenze, nicht dreimal'",
+      "fassungen": {
+        "woertlich": {
+          "reichweite": {
+            "treffer": 1,
+            "n": 2,
+            "anteil": 0.5,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 2,
+            "n": 2,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 1,
+            "n": 1,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_soll": 1,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": true
+        },
+        "passend": {
+          "reichweite": {
+            "treffer": 2,
+            "n": 2,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 2,
+            "n": 2,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 1,
+            "n": 1,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_soll": 1,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": true
+        },
+        "unpassend": {
+          "reichweite": {
+            "treffer": 0,
+            "n": 2,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 2,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 0,
+            "n": 1,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_soll": 1,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": false
+        }
+      }
+    },
+    {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "quelle": "CLAUDE.md, Abschnitt 'Kurze Zustimmung ist eine Entscheidung'",
+      "fassungen": {
+        "woertlich": {
+          "reichweite": {
+            "treffer": 1,
+            "n": 1,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 2,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 4,
+            "n": 4,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_soll": 4,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": true
+        },
+        "passend": {
+          "reichweite": {
+            "treffer": 1,
+            "n": 1,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 2,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 4,
+            "n": 4,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_soll": 4,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": true
+        },
+        "unpassend": {
+          "reichweite": {
+            "treffer": 0,
+            "n": 1,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 2,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 0,
+            "n": 4,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_soll": 4,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": false
+        }
+      }
+    },
+    {
+      "paar_id": "nachsehen_vor_behauptung",
+      "quelle": "CLAUDE.md, Abschnitt 'Nachsehen, bevor gefragt oder delegiert wird'",
+      "fassungen": {
+        "woertlich": {
+          "reichweite": {
+            "treffer": 1,
+            "n": 1,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 1,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 3,
+            "n": 3,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_soll": 3,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": true
+        },
+        "passend": {
+          "reichweite": {
+            "treffer": 1,
+            "n": 1,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 1,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 3,
+            "n": 3,
+            "anteil": 1.0,
+            "hinweis": null
+          },
+          "genannt_soll": 3,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": true
+        },
+        "unpassend": {
+          "reichweite": {
+            "treffer": 0,
+            "n": 1,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "fehlanwendung": {
+            "treffer": 0,
+            "n": 1,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_getroffen": {
+            "treffer": 0,
+            "n": 3,
+            "anteil": 0.0,
+            "hinweis": null
+          },
+          "genannt_soll": 3,
+          "genannt_vollstaendig_beantwortet": true,
+          "gueltig_in_diesem_lauf": false
+        }
+      }
+    }
+  ],
+  "befund": "Blinder Urteiler: Sonnet 5 (dieser Orchestrator), 72 Items ohne Fehlbestand/Unlesbar. Reichweite (Menge gemeint) uebertrifft die woertliche Fassung bei commit_ohne_push (3/3 vs 2/3) und zweimal_ist_die_grenze (2/2 vs 1/2) -- bei kurze_zustimmung_ist_entscheidung und nachsehen_vor_behauptung kein Unterschied (je 1/1 in beiden Fassungen, Nullergebnis). Fehlanwendung (Menge nicht_gemeint) unterscheidet sich in KEINEM Paar zwischen woertlich und passend -- bei zweimal_ist_die_grenze liegt sie in BEIDEN Fassungen bei 2/2 (100%), weil die isolierte Regelformulierung (ohne die andernorts stehenden vier Stopp-Punkte) auch woertlich keine Ausnahme fuer Kennwort/Aussenwirkung kennt -- ein Fund ueber isolierte Regeltexte allgemein, nicht ueber Metaphern. Negativkontrolle (unpassend) trennt sauber: 0 Reichweite UND 0 Fehlanwendung in allen vier Paaren, und alle vier Paare sind in der unpassenden Fassung ungueltig (kein genannter Fall wird getroffen) -- die unpassende Metapher wird als Regel nicht erkannt, nicht einmal fuer die Faelle, die sie explizit nennen sollte. Das ist eine funktionierende Trennung, kein untauglicher Aufbau. Einschraenkung: EIN Urteiler (nicht mehrfach besetzt), Urteile sind Fliesstext-Einschaetzungen, kein mechanischer Test -- Wiederholung mit anderem Urteiler oder anderem Modell wuerde die Reproduzierbarkeit staerken."
+}

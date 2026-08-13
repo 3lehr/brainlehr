@@ -1,0 +1,736 @@
+{
+  "erzeugt_am": "2026-08-14T00:58:02+0200",
+  "seed": 20260813,
+  "codestand": {
+    "commit": "386bbf2",
+    "zweig": "brainlehr/b4-ausweis",
+    "schmutzig": true,
+    "ermittelt": "2026-08-13T22:58:02+00:00"
+  },
+  "n_items": 72,
+  "frage_an_bewerter": "Wird diese Regel auf diesen Fall angewandt, ja oder nein? Je Item-ID mit {'angewandt': true/false} beantworten.",
+  "items_blind": [
+    {
+      "id": "it-000",
+      "regel_text": "Committen ist ohne Nachfrage erlaubt, aber Push nur nach ausdruecklichem Wort des Betreibers.",
+      "fall_text": "Ein neuer lokaler Branch wird angelegt, ohne dass irgendetwas den Rechner verlaesst"
+    },
+    {
+      "id": "it-001",
+      "regel_text": "Committen ist ohne Nachfrage erlaubt, aber Push nur nach ausdruecklichem Wort des Betreibers.",
+      "fall_text": "git push zum Remote ohne vorheriges Wort des Betreibers"
+    },
+    {
+      "id": "it-002",
+      "regel_text": "Der Fotograf drueckt nur bei Sonnenschein ab.",
+      "fall_text": "Zustimmung dazu, eine Variable umzubenennen, bevor committet wird"
+    },
+    {
+      "id": "it-003",
+      "regel_text": "Vor jeder Existenzaussage ('das gibt es nicht', 'das ist fest verdrahtet') wird in der naheliegendsten Datei nachgesehen -- auch vor dem Fragen und vor dem Delegieren an einen Agenten.",
+      "fall_text": "Eine reine Geschmacksfrage ohne Faktenbezug ('findest du Blau oder Gruen schoener?') -- kein Existenzcheck noetig, die Regel greift nicht"
+    },
+    {
+      "id": "it-004",
+      "regel_text": "Der Kellner widerspricht der Bestellung einmal -- beim zweiten Wunsch bringt er das Gericht.",
+      "fall_text": "Der Betreiber verlangt zum zweiten Mal einen Push auf den Hauptzweig ohne sein Wort -- Aussenwirkung, ebenfalls ausgenommen"
+    },
+    {
+      "id": "it-005",
+      "regel_text": "Der Kellner widerspricht der Bestellung einmal -- beim zweiten Wunsch bringt er das Gericht.",
+      "fall_text": "Der erste Widerspruch enthaelt keine Begruendung -- er zaehlt trotzdem als der eine erlaubte Einwand"
+    },
+    {
+      "id": "it-006",
+      "regel_text": "Der Pilot startet frei durch, aber landet nur mit Turmfreigabe.",
+      "fall_text": "git commit auf einem Feature-Branch nach einem abgeschlossenen Arbeitsschritt"
+    },
+    {
+      "id": "it-007",
+      "regel_text": "Der Entwurf wandert frei in die eigene Schublade -- aber erst mit ausdruecklicher Freigabe auf den gemeinsamen Tisch.",
+      "fall_text": "Ein neuer lokaler Branch wird angelegt, ohne dass irgendetwas den Rechner verlaesst"
+    },
+    {
+      "id": "it-008",
+      "regel_text": "Der Apotheker schaut ins Regal, bevor er sagt, das Medikament gebe es nicht.",
+      "fall_text": "Vor 'das ist nicht einstellbar' in den *_preference/settings-Dateien nachsehen"
+    },
+    {
+      "id": "it-009",
+      "regel_text": "Verlangt der Betreiber dieselbe Sache zum zweiten Mal, wird gebaut, auch gegen das eigene Urteil; beim ersten Mal darf einmal mit Begruendung widersprochen werden.",
+      "fall_text": "Der Betreiber verlangt zum zweiten Mal, dass eine abgelehnte Umsetzung jetzt gebaut wird"
+    },
+    {
+      "id": "it-010",
+      "regel_text": "Vor jeder Existenzaussage ('das gibt es nicht', 'das ist fest verdrahtet') wird in der naheliegendsten Datei nachgesehen -- auch vor dem Fragen und vor dem Delegieren an einen Agenten.",
+      "fall_text": "Bevor ein Agent beauftragt wird zu pruefen, ob es X gibt, selbst kurz grep im Repo laufen lassen -- ausdruecklich auf das Delegieren erweitert, nicht nur auf eigene Aussagen"
+    },
+    {
+      "id": "it-011",
+      "regel_text": "Der Fotograf drueckt nur bei Sonnenschein ab.",
+      "fall_text": "Zustimmung zu einer Formatierungsfrage im Chat (Ueberschriften ja/nein) -- reversibel, sitzungslokal, kostet nichts"
+    },
+    {
+      "id": "it-012",
+      "regel_text": "Der Entwurf wandert frei in die eigene Schublade -- aber erst mit ausdruecklicher Freigabe auf den gemeinsamen Tisch.",
+      "fall_text": "git push zum Remote ohne vorheriges Wort des Betreibers"
+    },
+    {
+      "id": "it-013",
+      "regel_text": "Verlangt der Betreiber dieselbe Sache zum zweiten Mal, wird gebaut, auch gegen das eigene Urteil; beim ersten Mal darf einmal mit Begruendung widersprochen werden.",
+      "fall_text": "Der erste Widerspruch enthaelt keine Begruendung -- er zaehlt trotzdem als der eine erlaubte Einwand"
+    },
+    {
+      "id": "it-014",
+      "regel_text": "Das Protokoll vermerkt nur Beschluesse mit Tragweite -- ein Kopfnicken im Flur bleibt unvermerkt.",
+      "fall_text": "Zustimmung zu einer Ausgabe von Geld"
+    },
+    {
+      "id": "it-015",
+      "regel_text": "Der Apotheker schaut ins Regal, bevor er sagt, das Medikament gebe es nicht.",
+      "fall_text": "Bevor ein Agent beauftragt wird zu pruefen, ob es X gibt, selbst kurz grep im Repo laufen lassen -- ausdruecklich auf das Delegieren erweitert, nicht nur auf eigene Aussagen"
+    },
+    {
+      "id": "it-016",
+      "regel_text": "Der Schiedsrichter pfeift beim ersten Foul, beim zweiten platzt der Elfmeter.",
+      "fall_text": "Der Betreiber verlangt zum zweiten Mal, ein Kennwort fuer ihn einzutragen -- einer der vier Stopp-Punkte, dort bleibt Rueckfrage Pflicht, beliebig oft"
+    },
+    {
+      "id": "it-017",
+      "regel_text": "Ein knappes 'ja' wird nur dann mit Frage und Zustimmung woertlich festgehalten, wenn eine der vier Bedingungen zutrifft: unumkehrbar, hebt eine frühere Regel auf, gilt ueber die Sitzung hinaus, betrifft Geld.",
+      "fall_text": "Zustimmung, die ueber diese Sitzung hinaus gelten soll"
+    },
+    {
+      "id": "it-018",
+      "regel_text": "Der Kellner widerspricht der Bestellung einmal -- beim zweiten Wunsch bringt er das Gericht.",
+      "fall_text": "Der Betreiber verlangt dieselbe Sache zum dritten oder vierten Mal -- die Grenze bleibt beim zweiten Mal ueberschritten, nicht erst spaeter"
+    },
+    {
+      "id": "it-019",
+      "regel_text": "Ein knappes 'ja' wird nur dann mit Frage und Zustimmung woertlich festgehalten, wenn eine der vier Bedingungen zutrifft: unumkehrbar, hebt eine frühere Regel auf, gilt ueber die Sitzung hinaus, betrifft Geld.",
+      "fall_text": "Zustimmung zu einer Ausgabe von Geld"
+    },
+    {
+      "id": "it-020",
+      "regel_text": "Der Pilot startet frei durch, aber landet nur mit Turmfreigabe.",
+      "fall_text": "Ein Pull Request wird eroeffnet, ohne dass der Betreiber zugestimmt hat"
+    },
+    {
+      "id": "it-021",
+      "regel_text": "Der Dirigent hebt den Taktstock, bevor das Orchester schweigt.",
+      "fall_text": "Vor einer Aussage ueber eine getroffene Entscheidung in docs/adr/ nachsehen"
+    },
+    {
+      "id": "it-022",
+      "regel_text": "Verlangt der Betreiber dieselbe Sache zum zweiten Mal, wird gebaut, auch gegen das eigene Urteil; beim ersten Mal darf einmal mit Begruendung widersprochen werden.",
+      "fall_text": "Der Betreiber verlangt zum zweiten Mal einen Push auf den Hauptzweig ohne sein Wort -- Aussenwirkung, ebenfalls ausgenommen"
+    },
+    {
+      "id": "it-023",
+      "regel_text": "Vor jeder Existenzaussage ('das gibt es nicht', 'das ist fest verdrahtet') wird in der naheliegendsten Datei nachgesehen -- auch vor dem Fragen und vor dem Delegieren an einen Agenten.",
+      "fall_text": "Vor einer Aussage ueber eine getroffene Entscheidung in docs/adr/ nachsehen"
+    },
+    {
+      "id": "it-024",
+      "regel_text": "Der Fotograf drueckt nur bei Sonnenschein ab.",
+      "fall_text": "Zustimmung zu einer Ausgabe von Geld"
+    },
+    {
+      "id": "it-025",
+      "regel_text": "Der Fotograf drueckt nur bei Sonnenschein ab.",
+      "fall_text": "Zustimmung zu einer Datenloeschung, die aus Versehen alle Kundendatensaetze einer Tabelle trifft -- Instanz von 'unumkehrbar', nicht woertlich als eigener Fall genannt"
+    },
+    {
+      "id": "it-026",
+      "regel_text": "Das Protokoll vermerkt nur Beschluesse mit Tragweite -- ein Kopfnicken im Flur bleibt unvermerkt.",
+      "fall_text": "Zustimmung dazu, eine Variable umzubenennen, bevor committet wird"
+    },
+    {
+      "id": "it-027",
+      "regel_text": "Ein knappes 'ja' wird nur dann mit Frage und Zustimmung woertlich festgehalten, wenn eine der vier Bedingungen zutrifft: unumkehrbar, hebt eine frühere Regel auf, gilt ueber die Sitzung hinaus, betrifft Geld.",
+      "fall_text": "Zustimmung zu einer Datenloeschung, die aus Versehen alle Kundendatensaetze einer Tabelle trifft -- Instanz von 'unumkehrbar', nicht woertlich als eigener Fall genannt"
+    },
+    {
+      "id": "it-028",
+      "regel_text": "Der Schiedsrichter pfeift beim ersten Foul, beim zweiten platzt der Elfmeter.",
+      "fall_text": "Der Betreiber verlangt zum zweiten Mal, dass eine abgelehnte Umsetzung jetzt gebaut wird"
+    },
+    {
+      "id": "it-029",
+      "regel_text": "Ein knappes 'ja' wird nur dann mit Frage und Zustimmung woertlich festgehalten, wenn eine der vier Bedingungen zutrifft: unumkehrbar, hebt eine frühere Regel auf, gilt ueber die Sitzung hinaus, betrifft Geld.",
+      "fall_text": "Zustimmung zu einer unumkehrbaren Loeschung"
+    },
+    {
+      "id": "it-030",
+      "regel_text": "Der Entwurf wandert frei in die eigene Schublade -- aber erst mit ausdruecklicher Freigabe auf den gemeinsamen Tisch.",
+      "fall_text": "Ein Pull Request wird eroeffnet, ohne dass der Betreiber zugestimmt hat"
+    },
+    {
+      "id": "it-031",
+      "regel_text": "Der Entwurf wandert frei in die eigene Schublade -- aber erst mit ausdruecklicher Freigabe auf den gemeinsamen Tisch.",
+      "fall_text": "git commit auf einem Feature-Branch nach einem abgeschlossenen Arbeitsschritt"
+    },
+    {
+      "id": "it-032",
+      "regel_text": "Vor jeder Existenzaussage ('das gibt es nicht', 'das ist fest verdrahtet') wird in der naheliegendsten Datei nachgesehen -- auch vor dem Fragen und vor dem Delegieren an einen Agenten.",
+      "fall_text": "Vor 'das gibt es nicht' in pubspec.yaml/requirements.txt/package.json nachsehen"
+    },
+    {
+      "id": "it-033",
+      "regel_text": "Das Protokoll vermerkt nur Beschluesse mit Tragweite -- ein Kopfnicken im Flur bleibt unvermerkt.",
+      "fall_text": "Zustimmung, die eine fruehere Sperre aufhebt"
+    },
+    {
+      "id": "it-034",
+      "regel_text": "Ein knappes 'ja' wird nur dann mit Frage und Zustimmung woertlich festgehalten, wenn eine der vier Bedingungen zutrifft: unumkehrbar, hebt eine frühere Regel auf, gilt ueber die Sitzung hinaus, betrifft Geld.",
+      "fall_text": "Zustimmung, die eine fruehere Sperre aufhebt"
+    },
+    {
+      "id": "it-035",
+      "regel_text": "Der Entwurf wandert frei in die eigene Schublade -- aber erst mit ausdruecklicher Freigabe auf den gemeinsamen Tisch.",
+      "fall_text": "git push --tags, um einen neuen Stand sichtbar zu machen"
+    },
+    {
+      "id": "it-036",
+      "regel_text": "Der Apotheker schaut ins Regal, bevor er sagt, das Medikament gebe es nicht.",
+      "fall_text": "Eine reine Geschmacksfrage ohne Faktenbezug ('findest du Blau oder Gruen schoener?') -- kein Existenzcheck noetig, die Regel greift nicht"
+    },
+    {
+      "id": "it-037",
+      "regel_text": "Der Dirigent hebt den Taktstock, bevor das Orchester schweigt.",
+      "fall_text": "Vor 'das ist nicht einstellbar' in den *_preference/settings-Dateien nachsehen"
+    },
+    {
+      "id": "it-038",
+      "regel_text": "Der Fotograf drueckt nur bei Sonnenschein ab.",
+      "fall_text": "Zustimmung, die ueber diese Sitzung hinaus gelten soll"
+    },
+    {
+      "id": "it-039",
+      "regel_text": "Das Protokoll vermerkt nur Beschluesse mit Tragweite -- ein Kopfnicken im Flur bleibt unvermerkt.",
+      "fall_text": "Zustimmung zu einer Formatierungsfrage im Chat (Ueberschriften ja/nein) -- reversibel, sitzungslokal, kostet nichts"
+    },
+    {
+      "id": "it-040",
+      "regel_text": "Der Dirigent hebt den Taktstock, bevor das Orchester schweigt.",
+      "fall_text": "Eine reine Geschmacksfrage ohne Faktenbezug ('findest du Blau oder Gruen schoener?') -- kein Existenzcheck noetig, die Regel greift nicht"
+    },
+    {
+      "id": "it-041",
+      "regel_text": "Der Entwurf wandert frei in die eigene Schublade -- aber erst mit ausdruecklicher Freigabe auf den gemeinsamen Tisch.",
+      "fall_text": "git push --force auf einen fremden Branch"
+    },
+    {
+      "id": "it-042",
+      "regel_text": "Der Pilot startet frei durch, aber landet nur mit Turmfreigabe.",
+      "fall_text": "Ein neuer lokaler Branch wird angelegt, ohne dass irgendetwas den Rechner verlaesst"
+    },
+    {
+      "id": "it-043",
+      "regel_text": "Der Fotograf drueckt nur bei Sonnenschein ab.",
+      "fall_text": "Zustimmung zu einer unumkehrbaren Loeschung"
+    },
+    {
+      "id": "it-044",
+      "regel_text": "Verlangt der Betreiber dieselbe Sache zum zweiten Mal, wird gebaut, auch gegen das eigene Urteil; beim ersten Mal darf einmal mit Begruendung widersprochen werden.",
+      "fall_text": "Der Betreiber verlangt zum zweiten Mal, ein Kennwort fuer ihn einzutragen -- einer der vier Stopp-Punkte, dort bleibt Rueckfrage Pflicht, beliebig oft"
+    },
+    {
+      "id": "it-045",
+      "regel_text": "Der Schiedsrichter pfeift beim ersten Foul, beim zweiten platzt der Elfmeter.",
+      "fall_text": "Der erste Widerspruch enthaelt keine Begruendung -- er zaehlt trotzdem als der eine erlaubte Einwand"
+    },
+    {
+      "id": "it-046",
+      "regel_text": "Der Fotograf drueckt nur bei Sonnenschein ab.",
+      "fall_text": "Zustimmung, die eine fruehere Sperre aufhebt"
+    },
+    {
+      "id": "it-047",
+      "regel_text": "Ein knappes 'ja' wird nur dann mit Frage und Zustimmung woertlich festgehalten, wenn eine der vier Bedingungen zutrifft: unumkehrbar, hebt eine frühere Regel auf, gilt ueber die Sitzung hinaus, betrifft Geld.",
+      "fall_text": "Zustimmung dazu, eine Variable umzubenennen, bevor committet wird"
+    },
+    {
+      "id": "it-048",
+      "regel_text": "Der Pilot startet frei durch, aber landet nur mit Turmfreigabe.",
+      "fall_text": "git push --force auf einen fremden Branch"
+    },
+    {
+      "id": "it-049",
+      "regel_text": "Committen ist ohne Nachfrage erlaubt, aber Push nur nach ausdruecklichem Wort des Betreibers.",
+      "fall_text": "git fetch, um den Stand des Remote zu lesen"
+    },
+    {
+      "id": "it-050",
+      "regel_text": "Der Pilot startet frei durch, aber landet nur mit Turmfreigabe.",
+      "fall_text": "git fetch, um den Stand des Remote zu lesen"
+    },
+    {
+      "id": "it-051",
+      "regel_text": "Der Entwurf wandert frei in die eigene Schublade -- aber erst mit ausdruecklicher Freigabe auf den gemeinsamen Tisch.",
+      "fall_text": "git fetch, um den Stand des Remote zu lesen"
+    },
+    {
+      "id": "it-052",
+      "regel_text": "Der Dirigent hebt den Taktstock, bevor das Orchester schweigt.",
+      "fall_text": "Vor 'das gibt es nicht' in pubspec.yaml/requirements.txt/package.json nachsehen"
+    },
+    {
+      "id": "it-053",
+      "regel_text": "Das Protokoll vermerkt nur Beschluesse mit Tragweite -- ein Kopfnicken im Flur bleibt unvermerkt.",
+      "fall_text": "Zustimmung zu einer Datenloeschung, die aus Versehen alle Kundendatensaetze einer Tabelle trifft -- Instanz von 'unumkehrbar', nicht woertlich als eigener Fall genannt"
+    },
+    {
+      "id": "it-054",
+      "regel_text": "Der Pilot startet frei durch, aber landet nur mit Turmfreigabe.",
+      "fall_text": "git push zum Remote ohne vorheriges Wort des Betreibers"
+    },
+    {
+      "id": "it-055",
+      "regel_text": "Committen ist ohne Nachfrage erlaubt, aber Push nur nach ausdruecklichem Wort des Betreibers.",
+      "fall_text": "git push --tags, um einen neuen Stand sichtbar zu machen"
+    },
+    {
+      "id": "it-056",
+      "regel_text": "Der Pilot startet frei durch, aber landet nur mit Turmfreigabe.",
+      "fall_text": "git push --tags, um einen neuen Stand sichtbar zu machen"
+    },
+    {
+      "id": "it-057",
+      "regel_text": "Der Dirigent hebt den Taktstock, bevor das Orchester schweigt.",
+      "fall_text": "Bevor ein Agent beauftragt wird zu pruefen, ob es X gibt, selbst kurz grep im Repo laufen lassen -- ausdruecklich auf das Delegieren erweitert, nicht nur auf eigene Aussagen"
+    },
+    {
+      "id": "it-058",
+      "regel_text": "Vor jeder Existenzaussage ('das gibt es nicht', 'das ist fest verdrahtet') wird in der naheliegendsten Datei nachgesehen -- auch vor dem Fragen und vor dem Delegieren an einen Agenten.",
+      "fall_text": "Vor 'das ist nicht einstellbar' in den *_preference/settings-Dateien nachsehen"
+    },
+    {
+      "id": "it-059",
+      "regel_text": "Der Kellner widerspricht der Bestellung einmal -- beim zweiten Wunsch bringt er das Gericht.",
+      "fall_text": "Der Betreiber verlangt zum zweiten Mal, dass eine abgelehnte Umsetzung jetzt gebaut wird"
+    },
+    {
+      "id": "it-060",
+      "regel_text": "Der Schiedsrichter pfeift beim ersten Foul, beim zweiten platzt der Elfmeter.",
+      "fall_text": "Der Betreiber verlangt dieselbe Sache zum dritten oder vierten Mal -- die Grenze bleibt beim zweiten Mal ueberschritten, nicht erst spaeter"
+    },
+    {
+      "id": "it-061",
+      "regel_text": "Der Schiedsrichter pfeift beim ersten Foul, beim zweiten platzt der Elfmeter.",
+      "fall_text": "Der Betreiber verlangt zum zweiten Mal einen Push auf den Hauptzweig ohne sein Wort -- Aussenwirkung, ebenfalls ausgenommen"
+    },
+    {
+      "id": "it-062",
+      "regel_text": "Committen ist ohne Nachfrage erlaubt, aber Push nur nach ausdruecklichem Wort des Betreibers.",
+      "fall_text": "Ein Pull Request wird eroeffnet, ohne dass der Betreiber zugestimmt hat"
+    },
+    {
+      "id": "it-063",
+      "regel_text": "Verlangt der Betreiber dieselbe Sache zum zweiten Mal, wird gebaut, auch gegen das eigene Urteil; beim ersten Mal darf einmal mit Begruendung widersprochen werden.",
+      "fall_text": "Der Betreiber verlangt dieselbe Sache zum dritten oder vierten Mal -- die Grenze bleibt beim zweiten Mal ueberschritten, nicht erst spaeter"
+    },
+    {
+      "id": "it-064",
+      "regel_text": "Der Apotheker schaut ins Regal, bevor er sagt, das Medikament gebe es nicht.",
+      "fall_text": "Vor 'das gibt es nicht' in pubspec.yaml/requirements.txt/package.json nachsehen"
+    },
+    {
+      "id": "it-065",
+      "regel_text": "Ein knappes 'ja' wird nur dann mit Frage und Zustimmung woertlich festgehalten, wenn eine der vier Bedingungen zutrifft: unumkehrbar, hebt eine frühere Regel auf, gilt ueber die Sitzung hinaus, betrifft Geld.",
+      "fall_text": "Zustimmung zu einer Formatierungsfrage im Chat (Ueberschriften ja/nein) -- reversibel, sitzungslokal, kostet nichts"
+    },
+    {
+      "id": "it-066",
+      "regel_text": "Der Apotheker schaut ins Regal, bevor er sagt, das Medikament gebe es nicht.",
+      "fall_text": "Vor einer Aussage ueber eine getroffene Entscheidung in docs/adr/ nachsehen"
+    },
+    {
+      "id": "it-067",
+      "regel_text": "Der Kellner widerspricht der Bestellung einmal -- beim zweiten Wunsch bringt er das Gericht.",
+      "fall_text": "Der Betreiber verlangt zum zweiten Mal, ein Kennwort fuer ihn einzutragen -- einer der vier Stopp-Punkte, dort bleibt Rueckfrage Pflicht, beliebig oft"
+    },
+    {
+      "id": "it-068",
+      "regel_text": "Das Protokoll vermerkt nur Beschluesse mit Tragweite -- ein Kopfnicken im Flur bleibt unvermerkt.",
+      "fall_text": "Zustimmung, die ueber diese Sitzung hinaus gelten soll"
+    },
+    {
+      "id": "it-069",
+      "regel_text": "Committen ist ohne Nachfrage erlaubt, aber Push nur nach ausdruecklichem Wort des Betreibers.",
+      "fall_text": "git push --force auf einen fremden Branch"
+    },
+    {
+      "id": "it-070",
+      "regel_text": "Committen ist ohne Nachfrage erlaubt, aber Push nur nach ausdruecklichem Wort des Betreibers.",
+      "fall_text": "git commit auf einem Feature-Branch nach einem abgeschlossenen Arbeitsschritt"
+    },
+    {
+      "id": "it-071",
+      "regel_text": "Das Protokoll vermerkt nur Beschluesse mit Tragweite -- ein Kopfnicken im Flur bleibt unvermerkt.",
+      "fall_text": "Zustimmung zu einer unumkehrbaren Loeschung"
+    }
+  ],
+  "zuordnung": {
+    "it-000": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "woertlich",
+      "menge": "nicht_gemeint"
+    },
+    "it-001": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-002": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "unpassend",
+      "menge": "nicht_gemeint"
+    },
+    "it-003": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "woertlich",
+      "menge": "nicht_gemeint"
+    },
+    "it-004": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "passend",
+      "menge": "nicht_gemeint"
+    },
+    "it-005": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "passend",
+      "menge": "gemeint"
+    },
+    "it-006": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-007": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "passend",
+      "menge": "nicht_gemeint"
+    },
+    "it-008": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "passend",
+      "menge": "genannt"
+    },
+    "it-009": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-010": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "woertlich",
+      "menge": "gemeint"
+    },
+    "it-011": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "unpassend",
+      "menge": "nicht_gemeint"
+    },
+    "it-012": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "passend",
+      "menge": "genannt"
+    },
+    "it-013": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "woertlich",
+      "menge": "gemeint"
+    },
+    "it-014": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "passend",
+      "menge": "genannt"
+    },
+    "it-015": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "passend",
+      "menge": "gemeint"
+    },
+    "it-016": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "unpassend",
+      "menge": "nicht_gemeint"
+    },
+    "it-017": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-018": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "passend",
+      "menge": "gemeint"
+    },
+    "it-019": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-020": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "unpassend",
+      "menge": "gemeint"
+    },
+    "it-021": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-022": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "woertlich",
+      "menge": "nicht_gemeint"
+    },
+    "it-023": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-024": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-025": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "unpassend",
+      "menge": "gemeint"
+    },
+    "it-026": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "passend",
+      "menge": "nicht_gemeint"
+    },
+    "it-027": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "woertlich",
+      "menge": "gemeint"
+    },
+    "it-028": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-029": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-030": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "passend",
+      "menge": "gemeint"
+    },
+    "it-031": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "passend",
+      "menge": "genannt"
+    },
+    "it-032": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-033": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "passend",
+      "menge": "genannt"
+    },
+    "it-034": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-035": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "passend",
+      "menge": "gemeint"
+    },
+    "it-036": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "passend",
+      "menge": "nicht_gemeint"
+    },
+    "it-037": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-038": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-039": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "passend",
+      "menge": "nicht_gemeint"
+    },
+    "it-040": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "unpassend",
+      "menge": "nicht_gemeint"
+    },
+    "it-041": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "passend",
+      "menge": "gemeint"
+    },
+    "it-042": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "unpassend",
+      "menge": "nicht_gemeint"
+    },
+    "it-043": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-044": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "woertlich",
+      "menge": "nicht_gemeint"
+    },
+    "it-045": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "unpassend",
+      "menge": "gemeint"
+    },
+    "it-046": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-047": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "woertlich",
+      "menge": "nicht_gemeint"
+    },
+    "it-048": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "unpassend",
+      "menge": "gemeint"
+    },
+    "it-049": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "woertlich",
+      "menge": "nicht_gemeint"
+    },
+    "it-050": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "unpassend",
+      "menge": "nicht_gemeint"
+    },
+    "it-051": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "passend",
+      "menge": "nicht_gemeint"
+    },
+    "it-052": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-053": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "passend",
+      "menge": "gemeint"
+    },
+    "it-054": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "unpassend",
+      "menge": "genannt"
+    },
+    "it-055": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "woertlich",
+      "menge": "gemeint"
+    },
+    "it-056": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "unpassend",
+      "menge": "gemeint"
+    },
+    "it-057": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "unpassend",
+      "menge": "gemeint"
+    },
+    "it-058": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-059": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "passend",
+      "menge": "genannt"
+    },
+    "it-060": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "unpassend",
+      "menge": "gemeint"
+    },
+    "it-061": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "unpassend",
+      "menge": "nicht_gemeint"
+    },
+    "it-062": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "woertlich",
+      "menge": "gemeint"
+    },
+    "it-063": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "woertlich",
+      "menge": "gemeint"
+    },
+    "it-064": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "passend",
+      "menge": "genannt"
+    },
+    "it-065": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "woertlich",
+      "menge": "nicht_gemeint"
+    },
+    "it-066": {
+      "paar_id": "nachsehen_vor_behauptung",
+      "fassung": "passend",
+      "menge": "genannt"
+    },
+    "it-067": {
+      "paar_id": "zweimal_ist_die_grenze",
+      "fassung": "passend",
+      "menge": "nicht_gemeint"
+    },
+    "it-068": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "passend",
+      "menge": "genannt"
+    },
+    "it-069": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "woertlich",
+      "menge": "gemeint"
+    },
+    "it-070": {
+      "paar_id": "commit_ohne_push",
+      "fassung": "woertlich",
+      "menge": "genannt"
+    },
+    "it-071": {
+      "paar_id": "kurze_zustimmung_ist_entscheidung",
+      "fassung": "passend",
+      "menge": "genannt"
+    }
+  }
+}
