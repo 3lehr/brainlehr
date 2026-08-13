@@ -245,3 +245,68 @@ def _norm_entscheidung_test_default(monkeypatch):
         return original(*args, **kwargs)
 
     monkeypatch.setattr(kms, "knowledge_add", _mit_default)
+
+
+@pytest.fixture(autouse=True)
+def _embed_model_config_abgeglichen(monkeypatch):
+    """Auftrag 80: die Vektor-Identitaet (embeddings.DEFAULT_EMBED_MODEL)
+    traegt jetzt zusaetzlich zum Modellnamen die erzeugenden Parameter
+    ('bge-m3@ctx2048' statt nur 'bge-m3') -- schema.sql seedet
+    knowledge_config['embed_model'] weiterhin mit dem woertlichen Rohnamen
+    'bge-m3' (schema.sql bleibt in diesem Auftrag unangetastet). In echten
+    Laeufen gleicht build_embeddings.py das VOR dem Schreiben ab (INSERT ...
+    ON CONFLICT DO UPDATE); ~40 Testdateien bauen ihre eigene schema.sql-
+    Test-DB per `conn.executescript(schema)` und kennen diesen Abgleich
+    nicht -- ohne ihn weist der Modellsperre-Trigger (schema.sql,
+    knowledge_embeddings_model_check_bi/_bu) jede mit der aktuellen Identitaet
+    geschriebene Zeile ab.
+
+    sqlite3.Connection ist ein C-Erweiterungstyp -- seine Methoden lassen sich
+    NICHT direkt monkeypatchen ('cannot set executescript attribute of
+    immutable type'). Stattdessen wird sqlite3.connect() global auf eine
+    Connection-Unterklasse umgebogen (deren executescript() den Nachtrag
+    macht) -- das IST unterstuetzt (Standard-`factory`-Parameter), betrifft
+    jeden `sqlite3.connect(...)`-Aufruf in der Suite und ersetzt so das
+    Anfassen von ~40 Fixturen einzeln (gleiches Muster wie
+    _norm_entscheidung_test_default oben, dort fuer einen anderen Trigger):
+    ein Punkt statt vierzig. Nur Skripte, die 'knowledge_config' selbst
+    anlegen (also schema.sql, nicht z.B. ein reines ALTER TABLE), bekommen
+    den Nachtrag."""
+    import sqlite3 as _sqlite3
+
+    class _AbgeglicheneConnection(_sqlite3.Connection):
+        def executescript(self, script, *a, **kw):
+            # NUR bei der ERSTANLAGE nachziehen (kein 'embed_model'-Eintrag vor
+            # diesem Aufruf): knowledge_mcp_server.ensure_schema() fuehrt
+            # schema.sql idempotent bei JEDEM Schreibvorgang erneut aus (siehe
+            # dort, Zeile um 1241) -- ein bedingungsloses Ueberschreiben wuerde
+            # dort auch einen von einem Test ABSICHTLICH gesetzten
+            # abweichenden Wert (siehe test_embedding_model_lock.py,
+            # 'ein-anderes-modell') beim naechsten Schreibzugriff stillschweigend
+            # zuruecksetzen -- genau der Modellsperre-Mechanismus, den jener
+            # Test pruefen will.
+            vorher_vorhanden = False
+            if "knowledge_config" in script:
+                try:
+                    vorher_vorhanden = self.execute(
+                        "SELECT 1 FROM knowledge_config WHERE key = 'embed_model'"
+                    ).fetchone() is not None
+                except _sqlite3.OperationalError:
+                    vorher_vorhanden = False
+            result = super().executescript(script, *a, **kw)
+            if "knowledge_config" in script and not vorher_vorhanden:
+                self.execute(
+                    "UPDATE knowledge_config SET value = ?, updated_at = datetime('now') "
+                    "WHERE key = 'embed_model'",
+                    (kms.embeddings.DEFAULT_EMBED_MODEL,),
+                )
+                self.commit()
+            return result
+
+    original_connect = _sqlite3.connect
+
+    def _connect_mit_abgleich(*args, **kwargs):
+        kwargs.setdefault("factory", _AbgeglicheneConnection)
+        return original_connect(*args, **kwargs)
+
+    monkeypatch.setattr(_sqlite3, "connect", _connect_mit_abgleich)

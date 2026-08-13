@@ -848,6 +848,12 @@ CREATE TABLE IF NOT EXISTS knowledge_embeddings (
 -- knowledge_config: kleine Schluessel/Wert-Tabelle fuer Werte, die ein
 -- Trigger lesen muss, eine ENV-Variable aber nicht (Auftrag 2026-08-07,
 -- Modellsperre). Einziger Schluessel bisher: embed_model -- das Modell, mit
+-- SEIT 2026-08-13 traegt der Wert die volle VEKTOR-IDENTITAET, nicht nur den
+-- Modellnamen: 'bge-m3@ctx2048' statt 'bge-m3' (Aufgabe 80). Grund: num_ctx
+-- veraendert den Vektor, ohne den Modellnamen zu aendern -- wer die Grenze
+-- anhebt und nachrechnet, bekommt Vektoren gleichen Namens und anderer
+-- Abschneidung, und jeder Filter laesst sie durch. Die Identitaet gehoert
+-- deshalb in den Namen, nicht in eine zwoelfte Spalte.
 -- dem build_embeddings.py zuletzt ALLE Vektoren neu gerechnet hat. Seed unten
 -- haelt den Wert synchron zu embeddings.DEFAULT_EMBED_MODEL (Python-Default);
 -- ein Modellwechsel schreibt beide Stellen (build_embeddings.py macht das
@@ -858,7 +864,7 @@ CREATE TABLE IF NOT EXISTS knowledge_config (
     updated_at TEXT NOT NULL
 );
 INSERT OR IGNORE INTO knowledge_config (key, value, updated_at)
-    VALUES ('embed_model', 'bge-m3', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'));
+    VALUES ('embed_model', 'bge-m3@ctx2048', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'));
 
 -- Sperre Stufe 2 (ADR-028, Vorgang 2026-08-07): ein veralteter Prozess mit
 -- fremdem Modell im Speicher kann keinen Vektor mit diesem Modell mehr in

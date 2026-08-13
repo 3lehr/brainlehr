@@ -39,6 +39,7 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
 import json
 import math
 import os
+import re
 import struct
 import urllib.error
 import urllib.parse
@@ -50,8 +51,50 @@ DEFAULT_OLLAMA_URL = os.environ.get("KNOWLEDGE_OLLAMA_URL", "http://127.0.0.1:11
 # docs/PRUEFKORPORA_UND_SPRACHE_2026-08-07.md): nomic-embed-text trennt auf
 # deutschem Fachtext nicht (passend Median 0,531 vs. fachfremd 0,527,
 # Fachfremd-Minimum ueber Passend-Minimum) -- bge-m3 trennt (Median-Abstand
-# 0,106). KNOWLEDGE_OLLAMA_EMBED_MODEL ueberschreibt weiterhin.
-DEFAULT_EMBED_MODEL = os.environ.get("KNOWLEDGE_OLLAMA_EMBED_MODEL", "bge-m3")
+# 0,106). KNOWLEDGE_OLLAMA_EMBED_MODEL ueberschreibt weiterhin -- reiner
+# Ollama-Modellname, OHNE @ctx-Anhang (siehe DEFAULT_EMBED_MODEL unten).
+_EMBED_MODEL_NAME = os.environ.get("KNOWLEDGE_OLLAMA_EMBED_MODEL", "bge-m3")
+
+# Auftrag 80: die Identitaet eines Vektors ist nicht allein der Modellname.
+# num_ctx aendert das Ergebnis (kappt laengeren Text VOR dem Embedden), ohne
+# den Namen zu aendern -- heute 2048, ungesetzt in der Ollama-Anfrage und
+# damit Ollamas eigener Vorgabewert fuer bge-m3 (siehe kern/knowledge_lint.py
+# EMBED_CONTEXT_TOKENS-Kommentar und Aufgabe 69). KNOWLEDGE_OLLAMA_EMBED_NUM_CTX
+# ueberschreibt.
+EMBED_NUM_CTX = int(os.environ.get("KNOWLEDGE_OLLAMA_EMBED_NUM_CTX", "2048"))
+
+_IDENTITY_RE = re.compile(r"^(?P<model>.+)@ctx(?P<ctx>\d+)$")
+
+
+def model_identity(model: str | None = None, num_ctx: int | None = None) -> str:
+    """Baut die gespeicherte/verglichene Modell-Identitaet aus Rohname +
+    erzeugenden Parametern (Bauform (a), Auftrag 80: Parameter IM Namen statt
+    eigener Spalte -- die drei bestehenden Leser vergleichen ohnehin nur die
+    Spalte `model`, damit greifen sie unveraendert). Zwei Vektoren mit
+    gleichem Rueckgabewert sind vergleichbar; unterscheidet sich num_ctx,
+    unterscheidet sich der Rueckgabewert."""
+    base = model or _EMBED_MODEL_NAME
+    ctx = EMBED_NUM_CTX if num_ctx is None else num_ctx
+    return f"{base}@ctx{ctx}"
+
+
+def parse_model_identity(identity: str) -> tuple[str, int]:
+    """Kehrwert zu model_identity(): trennt den rohen Ollama-Modellnamen (fuer
+    den tatsaechlichen API-Aufruf -- Ollama kennt kein '@ctx...'-Suffix im
+    Modelltag) von num_ctx. Ohne erkennbares Suffix (Bestandswert vor diesem
+    Auftrag, oder ein Aufrufer, der einen rohen Namen uebergibt) gilt die
+    Zeichenkette selbst als Modellname und EMBED_NUM_CTX als num_ctx."""
+    match = _IDENTITY_RE.match(identity or "")
+    if not match:
+        return identity, EMBED_NUM_CTX
+    return match.group("model"), int(match.group("ctx"))
+
+
+# Identitaet statt Rohname: ALLE bestehenden Leser/Schreiber, die
+# embeddings.DEFAULT_EMBED_MODEL referenzieren, vergleichen/speichern damit
+# automatisch die volle Identitaet inklusive num_ctx -- ohne dass diese
+# Dateien selbst angefasst werden muessen (siehe Auftragsbericht).
+DEFAULT_EMBED_MODEL = model_identity()
 
 # Warmhaltung und Timeout gehoeren zusammen -- getrennt loest keines das
 # Problem. Gemessen 2026-08-11: Kaltstart von bge-m3 11,5 s, warmer Aufruf
@@ -97,8 +140,12 @@ def embed_text(text: str, *, base_url: str = "", model: str = "",
     parsed = urllib.parse.urlparse(url)
     if parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
         raise ValueError("Ollama-Embeddings duerfen nur Loopback-URLs nutzen")
-    payload = {"model": model or DEFAULT_EMBED_MODEL, "input": cleaned,
-               "keep_alive": DEFAULT_KEEP_ALIVE}
+    # model/DEFAULT_EMBED_MODEL traegt die volle Identitaet ('bge-m3@ctx2048')
+    # -- Ollama kennt dieses Tag nicht, darum hier in Rohname + num_ctx
+    # zerlegt (parse_model_identity ist der Kehrwert zu model_identity()).
+    raw_model, ctx = parse_model_identity(model or DEFAULT_EMBED_MODEL)
+    payload = {"model": raw_model, "input": cleaned,
+               "keep_alive": DEFAULT_KEEP_ALIVE, "options": {"num_ctx": ctx}}
     req = urllib.request.Request(
         f"{url}/api/embed",
         data=json.dumps(payload).encode("utf-8"),
@@ -226,7 +273,9 @@ __all__ = [
     "fuse_semantic_led",
     "hybrid_retrieval_weight",
     "keyword_floor_size",
+    "model_identity",
     "pack_embedding",
+    "parse_model_identity",
     "rrf_fuse",
     "unpack_embedding",
 ]

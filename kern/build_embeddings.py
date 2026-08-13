@@ -211,7 +211,11 @@ def _embed_batch(texts: list[str], *, timeout: float) -> list[list[float] | None
     parsed = urllib.parse.urlparse(url)
     if parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
         raise ValueError("Ollama-Embeddings duerfen nur Loopback-URLs nutzen")
-    payload = {"model": embeddings.DEFAULT_EMBED_MODEL, "input": [cleaned[i] for i in non_empty]}
+    # DEFAULT_EMBED_MODEL traegt die volle Identitaet ('bge-m3@ctx2048');
+    # Ollama kennt dieses Tag nicht -- in Rohname + num_ctx zerlegen (Auftrag 80).
+    raw_model, ctx = embeddings.parse_model_identity(embeddings.DEFAULT_EMBED_MODEL)
+    payload = {"model": raw_model, "input": [cleaned[i] for i in non_empty],
+               "options": {"num_ctx": ctx}}
     req = urllib.request.Request(
         f"{url}/api/embed",
         data=json.dumps(payload).encode("utf-8"),

@@ -66,6 +66,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(_w))
 from haken.ort import DB as DB_PATH  # noqa: E402
+import embeddings  # noqa: E402
 from embeddings import cosine_similarity, unpack_embedding  # noqa: E402
 
 try:
@@ -76,7 +77,10 @@ except ImportError:  # pragma: no cover -- siehe test_finde_kandidaten_numpy_und
 RELATION_TYPE = "aehnlich_bedeutung"
 SIMILARITY_THRESHOLD = 0.65
 K_NEIGHBORS = 5
-EMBED_MODEL = "bge-m3"
+# Auftrag 80: war hartkodiert 'bge-m3' -- fest verdrahtet UND ohne die
+# erzeugenden Parameter (num_ctx), die die Vektor-Identitaet mittragen.
+# embeddings.DEFAULT_EMBED_MODEL traegt beides und bleibt die einzige Quelle.
+EMBED_MODEL = embeddings.DEFAULT_EMBED_MODEL
 
 
 @dataclass

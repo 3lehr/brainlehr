@@ -98,15 +98,18 @@ def test_gruen_nach_fix_fremdes_modell_wird_abgewiesen(temp_db):
 
 def test_gueltiges_modell_gelingt(temp_db):
     conn = sqlite3.connect(str(temp_db))
-    _insert_embedding(conn, model="bge-m3")
+    # Auftrag 80: 'bge-m3' allein ist nicht mehr die aktuelle Identitaet
+    # (traegt jetzt num_ctx, siehe kms.embeddings.model_identity) -- der
+    # gueltige Wert ist DEFAULT_EMBED_MODEL, nicht mehr der Roh-Modellname.
+    _insert_embedding(conn, model=kms.embeddings.DEFAULT_EMBED_MODEL)
     row = conn.execute("SELECT model FROM knowledge_embeddings WHERE ref_id='n1'").fetchone()
     conn.close()
-    assert row == ("bge-m3",)
+    assert row == (kms.embeddings.DEFAULT_EMBED_MODEL,)
 
 
 def test_negativ_update_auf_fremdes_modell_abgewiesen(temp_db):
     conn = sqlite3.connect(str(temp_db))
-    _insert_embedding(conn, model="bge-m3")
+    _insert_embedding(conn, model=kms.embeddings.DEFAULT_EMBED_MODEL)
     with pytest.raises(sqlite3.IntegrityError, match="weicht vom gueltigen Modell"):
         conn.execute("UPDATE knowledge_embeddings SET model='nomic-embed-text' WHERE ref_id='n1'")
     conn.close()
