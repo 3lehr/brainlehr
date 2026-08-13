@@ -150,3 +150,66 @@ Sekunden. Datenbanknamen nie fest verdrahten, immer über `kern/speicher`.
 | **Tabu zusätzlich** | der Katalog aus Schritt 1 und der Abrufpfad aus Schritt 2 — Schritt 3 liest nur |
 | **Fakten** | 7649 protokollierte Suchen mit Text in `access_log.query`. Darin `impl` 2, `req` 1, `fn` 1, `res`/`msg`/`err`/`val`/`param` je 0. Häufig nur `db` 80, `repo` 74, `ctx` 15 — genau die, die im Bestand ohnehin stehen. |
 | **Abnahme** | Der Kanal meldet heute **null** Paare. Das ist der erwartete Wert und wird als Nullmessung festgehalten, nicht als Fehler behandelt. Rot vor grün gegen einen **nachgestellten** Protokolleintrag mit einer echten Kurzform: dort muss er anschlagen. |
+
+## Korrektur 2026-08-13T09:30 — der Bestand war der falsche Maßstab
+
+Der Plan oben zählt Vorkommen im **Rohtext** und leitet daraus ab, welche
+Abkürzung schadet. Nach dem Bau von Schritt 1 und 2 an der **echten Suche**
+nachgemessen — und drei der Urteile kippen.
+
+Die Volltextsuche benutzt `tokenize="trigram"` (`schema.sql`, zweimal). Das ist
+ein **Teilzeichenketten**-Verfahren, kein Wortverfahren. Gemessen gegen 2166
+Knoten:
+
+| Anfrage | Zeichen | Treffer |
+|---|---|---|
+| `db` | 2 | **0** |
+| `fn` | 2 | **0** |
+| `x` | 1 | **0** |
+| `abc` | 3 | 0 |
+| `der` | 3 | 1094 |
+| `ent` | 3 | **1851** |
+| `impl` | 4 | 280 |
+
+**Erstens: Unter drei Zeichen findet die Suche gar nichts.** Ein Trigramm
+braucht drei Zeichen; kürzere Anfragen können nicht indiziert werden. Der Plan
+stuft `db` als „harmlos, kommt selbst vor" ein und **schließt es aus**. Für den
+Bestand stimmt das — 187 eigene Vorkommen. Für die **Suche** ist es falsch: `db`
+findet null. Dasselbe für `fn`.
+
+**Zweitens, und das ist die eigentliche Einsicht: Für Präfix-Abkürzungen löst
+Trigramm das Problem bereits von selbst.** `impl` ist eine Teilzeichenkette von
+`implementation`, ebenso `config` von `configuration`, `req` von `request`,
+`res` von `result`. Deshalb 280 Treffer. Der Katalog wird dort **nicht**
+gebraucht.
+
+Er wird genau dann gebraucht, wenn die lange Form **keine** Verlängerung der
+kurzen ist — und das ist im deutschen Bestand der Normalfall: `impl` →
+*Umsetzung*, `req` → *Anfrage*, `res` → *Antwort*, `fn` → *Funktion*. Keine
+davon enthält die Kurzform.
+
+**Drittens: Drei Zeichen sind bereits Rauschen.** `ent` trifft 1851 von 2166
+Knoten, weil es in *Entscheidung*, *entstehen*, *Prozent* steckt. Eine
+Aufnahmeregel, die nur auf das Verhältnis kurz zu lang schaut, sieht das nicht.
+
+### Was daraus folgt
+
+Die Aufnahmeregel braucht **zwei** Kriterien statt einem:
+
+1. **Länge unter drei Zeichen → immer aufnehmen**, unabhängig vom Verhältnis.
+   Diese Anfragen finden sonst nichts. Betrifft `db` und `fn`.
+2. **Lange Form enthält die Kurzform nicht → aufnehmen.** Enthält sie sie,
+   erledigt Trigramm es. Das ist die Regel, die `impl → implementation` (nicht
+   nötig) von `impl → Umsetzung` (nötig) trennt.
+
+Die gemessene Schwelle aus Schritt 1 bleibt gültig — sie beantwortet nur eine
+andere Frage, nämlich welche Abkürzung im **Bestand** untergeht. Sie ist damit
+das dritte Kriterium, nicht das einzige.
+
+### Was das über die Messung sagt
+
+Der Plan hat den Rohtext gezählt, weil das billig war, und den **Suchweg** nicht
+gefahren. Beides heißt „wie oft kommt das vor", beantwortet aber verschiedene
+Fragen. Der Fehler ist derselbe wie bei einer Funktion, die einzeln geprüft und
+für das Merkmal gehalten wird: **gemessen wurde eine Ebene über der, auf der der
+Fehler lebt.**
