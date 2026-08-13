@@ -193,6 +193,43 @@ sonst wäre die Umbenennung ihre eigene Begründung.
 **Linie E — nur der Betreiber.** `20`, `23`, `29`, `31`. Nicht autonom, in
 keiner Reihenfolge erzwingbar.
 
+## Fortschreibung 2026-08-13T13:00 — Linie 0 und A stehen, die Reihenfolge kippt
+
+**Erledigt:** Linie 0 vollständig (`94` Zuschreibung maschinell, `95` `norm_art`),
+Linie A vollständig (`81` Kanten, `85` Melder gegen auslöserlose Mechanismen,
+`84` Vorschlagsbericht), dazu `83`, `87`, `82`, `23`.
+
+**Was die Reihenfolge kippt:** Gemessen gegen die Referenz sind **7 von 29**
+Haken-Ereignissen verdrahtet (`98`). Drei ungenutzte sind der **fehlende
+Mechanismus** dreier offener Aufgaben:
+
+| Ereignis | entsperrt | warum |
+|---|---|---|
+| `WorktreeCreate` | `92` Identität | bekommt `base_directory`, **blockiert bei Exit ≠ 0** — setzt die Datei, statt ihr Fehlen zu melden |
+| `PreToolUse` auf das Agent-Werkzeug | `97` Peer Review | sieht `tool_input`, kann per `updatedInput` den **Auftrag ändern** |
+| `FileChanged` | `96` Schemaabgleich | Matcher auf literale Dateinamen — `schema.sql` |
+
+Dazu `TaskCreated`/`TaskCompleted`, die **blockieren** können: dort wird „kein
+`completed` ohne Beleg, der vorher rot war" mechanisch statt appellativ.
+
+**`98` rückt damit vor `92`, `96` und `97`** — es ist deren Voraussetzung, nicht
+ihr Nachbar.
+
+### Der Engpass, der die Parallelität bestimmt
+
+`knowledge_mcp_server.py` wird von **`89`, `88` und `78`** gebraucht. Drei
+Agenten dort verlieren Arbeit. Also:
+
+| Welle | parallel | Dateien |
+|---|---|---|
+| **1** | `98` Haken · `71` Messbarkeit · `89` Kanalwahl | `haken/`+Ablage · `messungen/` · `knowledge_mcp_server.py` |
+| **2** | `78` Dubletten · `92` Identität · `68` Prüfkorpus | Server (nach 89) · Haken (nach 98) · `messungen/` |
+| **3** | `73` Herkunft · `88` Zeit · `96`+`97` Wächter | Server (nach 78) · Server (nach 88 frei) · Haken |
+
+**Auflage für alle Wellen:** Nur **einer** fährt die volle Suite — nämlich ich,
+zwischen den Wellen. Ein Testlauf neben fremder halbfertiger Arbeit misst
+Halbstände, rot wie grün (`L-243dde`).
+
 ## Die Sperren, die nicht verhandelbar sind
 
 - **`80` vor `69`.** Die Identität eines Vektors ist allein der Modellname;
