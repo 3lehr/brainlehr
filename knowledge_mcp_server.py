@@ -102,6 +102,7 @@ import sys
 import time
 import unicodedata
 import uuid
+from collections import Counter
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -2749,7 +2750,8 @@ def _erzeuge_source_aus_ableitung(conn: sqlite3.Connection, kennung: str) -> tup
 
 
 def _rebuild_node_embedding(conn: sqlite3.Connection, node_id: str, project_id: str,
-                            path: str, title: str, summary: str, content: str | None) -> None:
+                            path: str, title: str, summary: str, content: str | None,
+                            *, vec: list[float] | None = None) -> None:
     """Baut den Vektor eines Knotens SOFORT beim Schreiben (ADR-032 Gruppe 1)
     statt die Luecke bis zum naechsten build_embeddings.py-Lauf offenzulassen.
     Text-Formel identisch zu dessen Hauptschleife -- sonst zaehlt der Kurator
@@ -2765,9 +2767,16 @@ def _rebuild_node_embedding(conn: sqlite3.Connection, node_id: str, project_id: 
     knowledge_embeddings_model_check_bi scheitert (Auftrag 2026-08-07,
     veralteter Prozess mit fremdem Modell im Speicher): sqlite3.IntegrityError
     wird abgefangen, der Knoten bleibt geschrieben, nur die Einbettungs-Zeile
-    fehlt -- derselbe Vertrag wie beim vec is None-Fall oben."""
+    fehlt -- derselbe Vertrag wie beim vec is None-Fall oben.
+
+    vec (Auftrag 78/90): knowledge_add braucht denselben Vektor bereits VOR
+    dem INSERT fuer den Aehnlichkeits-Hinweis (_find_similar_knowledge_nodes)
+    -- wird er hier durchgereicht, spart das den zweiten embed_text()-Aufruf
+    (~190ms gemessen) fuer denselben Text. Ohne Angabe unveraendertes
+    Verhalten: der Text wird hier berechnet, wie bisher."""
     text = f"{path}\n{title}\n{summary}\n{content or ''}"
-    vec = embeddings.embed_text(text)
+    if vec is None:
+        vec = embeddings.embed_text(text)
     if vec is None:
         return
     try:
@@ -2839,6 +2848,146 @@ def _projekt_aus_pfad(parent_path: str, projekte: set[str]) -> str:
         if segment and segment in projekte:
             return segment
     return "shared"
+
+
+_KNOWLEDGE_HINT_FLOOR = 0.70       # Summe TF-IDF-Kosinus + Embedding-Kosinus, siehe Messung unten
+_KNOWLEDGE_HINT_SHORTLIST = 50      # Vorauswahl per TF-IDF, bevor Embeddings nachgeladen werden
+_KNOWLEDGE_HINT_CAP = 3              # mehr als 2-3 Hinweise ist Rauschen und wird ueberlesen
+_KNOWLEDGE_HINT_TTL_S = 300           # IDF-Index-Cache: Aufbau kostet ~150ms bei 2000+ Knoten
+
+_knowledge_hint_index_cache: dict = {"built_at": 0.0, "tok": {}, "idf": {}, "norm": {}}
+
+
+_KNOWLEDGE_HINT_INCREMENTAL_MIN = 200  # unter dieser Groesse: voller Neuaufbau statt Nachtrag, siehe unten
+
+
+def _knowledge_hint_index_add(node_id: str, title: str, summary: str, content: str | None) -> None:
+    """Traegt einen frisch geschriebenen Knoten SOFORT in den warmen Cache
+    nach, statt auf den naechsten TTL-Ablauf zu warten -- sonst saehe eine
+    Knotenfolge im selben Aufruf-Takt (z.B. drei knowledge_add() kurz
+    hintereinander) den jeweils letzten Vorgaenger nicht: der Cache waere ab
+    dem ersten Aufbau schon warm und wuerde bis zur TTL nicht neu aufgebaut.
+
+    Unter _KNOWLEDGE_HINT_INCREMENTAL_MIN Knoten wird stattdessen der ganze
+    Cache verworfen (built_at=0) statt nachgetragen -- ein Vollaufbau ist bei
+    so wenigen Knoten selbst billig (siehe Messung in der Testsuite), waehrend
+    ein reiner Nachtrag das IDF-Gewicht auf dem Stand des allerersten
+    (moeglicherweise winzigen) Aufbaus einfriert: bei N=1 hat JEDES Wort
+    idf=log(1/1)=0, und ein Nachtrag wuerde diese Nullgewichte fuer den Rest
+    der TTL fortschreiben, der TF-IDF-Kanal bliebe wirkungslos. Ab
+    _KNOWLEDGE_HINT_INCREMENTAL_MIN lohnt sich der billige Nachtrag: ein
+    einzelner Knoten mehr veraendert IDF-Gewichte ueber einen groesseren
+    Bestand nicht mehr spuerbar.
+
+    Kein Effekt, wenn der Cache noch nie aufgebaut wurde (built_at<=0) --
+    dann holt der naechste Aufruf ohnehin alles per Vollaufbau."""
+    cache = _knowledge_hint_index_cache
+    if cache["built_at"] <= 0.0:
+        return
+    if len(cache["tok"]) < _KNOWLEDGE_HINT_INCREMENTAL_MIN:
+        cache["built_at"] = 0.0
+        return
+    tok = _tokenize(f"{title} {summary} {content or ''}")
+    cache["tok"][node_id] = tok
+    cache["norm"][node_id] = math.sqrt(sum(cache["idf"].get(w, 0.0) ** 2 for w in tok)) or 1.0
+
+
+def _knowledge_hint_index(conn: sqlite3.Connection) -> dict:
+    """Wort-Index (Tokenmengen + IDF-Gewicht) ueber alle aktiven Knoten, mit
+    TTL gecacht -- Aufbau kostet ~150ms bei 2000+ Knoten (gemessen), das
+    teilen sich sonst nicht mehrere knowledge_add-Aufrufe. Knoten aus
+    knowledge_add() selbst tragen sich per _knowledge_hint_index_add() sofort
+    nach; nur ein Knoten, der auf einem ANDEREN Weg entsteht (Migration,
+    Batch-Import, zweiter Prozess), taucht im Index erst nach Ablauf der TTL
+    auf -- fuer einen Hinweis (kein Beleg, siehe _find_similar_knowledge_
+    nodes) hinnehmbar, anders als bei einer Kante."""
+    cache = _knowledge_hint_index_cache
+    if cache["built_at"] > 0.0 and (time.time() - cache["built_at"]) < _KNOWLEDGE_HINT_TTL_S:
+        return cache
+    rows = conn.execute(
+        "SELECT id, title, summary, content FROM knowledge_nodes WHERE zurueckgezogen = 0"
+    ).fetchall()
+    tok = {r["id"]: _tokenize(f"{r['title']} {r['summary']} {r['content'] or ''}") for r in rows}
+    df: Counter = Counter()
+    for t in tok.values():
+        df.update(t)
+    n = len(tok)
+    idf = {w: math.log(n / c) for w, c in df.items() if c}
+    norm = {i: math.sqrt(sum(idf.get(w, 0.0) ** 2 for w in t)) or 1.0 for i, t in tok.items()}
+    cache.update(built_at=time.time(), tok=tok, idf=idf, norm=norm)
+    return cache
+
+
+def _find_similar_knowledge_nodes(conn: sqlite3.Connection, title: str, summary: str,
+                                  content: str | None, new_vec: list[float] | None,
+                                  exclude_id: str | None = None) -> list[dict]:
+    """Reiner Hinweis auf inhaltlich nahe AKTIVE Knoten VOR dem Anlegen (Auftrag
+    78/90). Gemessen (2026-08-13) am belegten Fall dd367fd1/b6305304/6e0f0395
+    (dieselbe Kernaussage dreimal im Bestand): weder Wort-Jaccard noch der
+    Bedeutungskanal (Embedding-Kosinus) allein trennt ihn von Rauschen --
+    cos(dd367fd1,6e0f0395)=0,612 liegt UNTER der fuer KANTEN kalibrierten
+    Schwelle 0,65 (SIMILARITY_THRESHOLD in kern/, unveraendert), waere sie
+    aber fuer einen Hinweis abgesenkt, waeren es je Knoten im Schnitt >100
+    Treffer (25-Knoten-Stichprobe) -- der Bedeutungskanal ist in diesem
+    Bestand zu undifferenziert fuer eine niedrigere Schwelle allein.
+
+    Erst die SUMME aus TF-IDF-gewichtetem Wort-Kosinus (haeufige Baustein-
+    Woerter wie 'Anlass'/'gilt' zaehlen kaum, seltene wie 'Achse' schwer)
+    UND Embedding-Kosinus faengt den Fall bei Schwelle 0,70 (Zielwerte
+    0,709/0,743 -- beide klar darueber), waehrend eine echte Neuheit
+    (Stichprobe: Knoten 'nasa-llis-1594', bestes Kombi-Ergebnis 0,667) leer
+    bleibt. Gedeckelt auf _KNOWLEDGE_HINT_CAP Treffer -- ohne Deckel haetten
+    einzelne Knoten in derselben Stichprobe >60 Treffer ueber der Schwelle.
+
+    Zweistufig aus Zeitgruenden: TF-IDF (rein Python, gecachter Index, ~10ms)
+    waehlt eine Kurzliste von _KNOWLEDGE_HINT_SHORTLIST Kandidaten, NUR fuer
+    die wird der schon vorhandene Embedding-Vektor nachgeladen -- ein voller
+    Scan ueber alle Vektoren kostet bei 2000+ Knoten selbst >100ms (gemessen),
+    die Kurzliste <10ms. Kein automatisches Verschmelzen, kein Ablehnen --
+    wie similar_lesson_hint bei lesson_record, nur vor statt nach dem
+    Schreiben (L-183517: danach erzwingt einen dritten Aufruf)."""
+    idx = _knowledge_hint_index(conn)
+    new_tok = _tokenize(f"{title} {summary} {content or ''}")
+    if not new_tok or new_vec is None:
+        return []
+    new_norm = math.sqrt(sum(idx["idf"].get(w, 0.0) ** 2 for w in new_tok)) or 1.0
+    tfidf_scores = []
+    for oid, tok in idx["tok"].items():
+        if oid == exclude_id:
+            continue
+        shared = new_tok & tok
+        if not shared:
+            continue
+        num = sum(idx["idf"].get(w, 0.0) ** 2 for w in shared)
+        onorm = idx["norm"].get(oid) or 1.0
+        tfidf_scores.append((num / (new_norm * onorm), oid))
+    if not tfidf_scores:
+        return []
+    tfidf_scores.sort(reverse=True)
+    shortlist = tfidf_scores[:_KNOWLEDGE_HINT_SHORTLIST]
+    shortlist_ids = [oid for _, oid in shortlist]
+    placeholders = ",".join("?" * len(shortlist_ids))
+    vec_rows = conn.execute(
+        f"SELECT ref_id, vector FROM knowledge_embeddings WHERE kind='node' AND model=? "
+        f"AND ref_id IN ({placeholders})",
+        (embeddings.DEFAULT_EMBED_MODEL, *shortlist_ids),
+    ).fetchall()
+    emb = {r["ref_id"]: embeddings.unpack_embedding(r["vector"]) for r in vec_rows}
+    combined = []
+    for tscore, oid in shortlist:
+        ovec = emb.get(oid)
+        if ovec is None:
+            continue
+        score = tscore + embeddings.cosine_similarity(new_vec, ovec)
+        if score >= _KNOWLEDGE_HINT_FLOOR:
+            combined.append((score, oid))
+    combined.sort(reverse=True)
+    hits = []
+    for score, oid in combined[:_KNOWLEDGE_HINT_CAP]:
+        row = conn.execute("SELECT path, title FROM knowledge_nodes WHERE id = ?", (oid,)).fetchone()
+        if row:
+            hits.append({"id": oid, "path": row["path"], "title": row["title"], "score": round(score, 2)})
+    return hits
 
 
 def knowledge_add(parent_path: str, title: str, summary: str,
@@ -3079,6 +3228,13 @@ def knowledge_add(parent_path: str, title: str, summary: str,
         conn.close()
         return {"error": norm_art_fehler}
 
+    # Auftrag 78/90: Hinweis auf inhaltlich nahe Knoten VOR dem Schreiben --
+    # der Vektor wird hier einmal berechnet (embed_text, best-effort, siehe
+    # _rebuild_node_embedding) und unten fuer die eigentliche Einbettungszeile
+    # wiederverwendet, statt ihn zweimal beim selben Aufruf zu berechnen.
+    _hint_vec = embeddings.embed_text(f"{node_path}\n{title}\n{summary}\n{content or ''}")
+    similar_node_hint = _find_similar_knowledge_nodes(conn, title, summary, content, _hint_vec)
+
     conn.execute(
         """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -3109,12 +3265,16 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     # ADR-032: Vektor sofort mitbauen statt eine vector_gaps-Luecke bis zum
     # naechsten build_embeddings.py-Lauf offenzulassen.
-    _rebuild_node_embedding(conn, node_id, project_id, node_path, title, summary, content)
+    _rebuild_node_embedding(conn, node_id, project_id, node_path, title, summary, content, vec=_hint_vec)
+    _knowledge_hint_index_add(node_id, title, summary, content)
     conn.commit()
     conn.close()
     _check_injection_suspects("node", node_path, {"title": title, "summary": summary, "content": content})
     _check_norm_conflicts(node_id, node_path, norm_rang)
-    return {"id": node_id, "path": node_path, "status": "created", "source": source, **wikilinks}
+    result = {"id": node_id, "path": node_path, "status": "created", "source": source, **wikilinks}
+    if similar_node_hint:
+        result["similar_node_hint"] = similar_node_hint
+    return result
 
 
 def knowledge_update(node_id: str, summary: str | None = None,
@@ -5318,7 +5478,9 @@ TOOLS = {
                         "note the Stop-hook itself never calls this tool -- it only forces you to run /learn, "
                         "which then calls this normally, so 'hook' is still self-reported by that skill, not "
                         "verified by the server. Default 'unbekannt' if omitted. An unknown value is rejected "
-                        "with the allowed list, nothing is written.",
+                        "with the allowed list, nothing is written. "
+                        "If up to 3 active nodes look content-similar (checked BEFORE writing), the response "
+                        "includes similar_node_hint -- a hint only, never auto-merged, no rejection either.",
         "inputSchema": {
             "type": "object",
             "properties": {
