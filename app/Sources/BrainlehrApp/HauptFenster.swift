@@ -5,41 +5,32 @@
 import SwiftUI
 
 enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
+    case quellen
     case wissensraum
     case ausweise
-    case abrufmonitor
-    case einstellungen
-    case offeneArbeit
-    case eilmeldungen
 
     var id: String { rawValue }
 
     var titel: String {
         switch self {
+        case .quellen: return "Quellen"
         case .wissensraum: return "Wissensraum"
         case .ausweise: return "Ausweise und Einladungen"
-        case .abrufmonitor: return "Abrufmonitor"
-        case .einstellungen: return "Einstellungen"
-        case .offeneArbeit: return "Offene Arbeit"
-        case .eilmeldungen: return "Eilmeldungen"
         }
     }
 
     var symbol: String {
         switch self {
+        case .quellen: return "doc.text.magnifyingglass"
         case .wissensraum: return "point.3.filled.connected.trianglepath.dotted"
         case .ausweise: return "person.text.rectangle"
-        case .abrufmonitor: return "waveform.path.ecg"
-        case .einstellungen: return "gearshape"
-        case .offeneArbeit: return "checklist"
-        case .eilmeldungen: return "bell.badge"
         }
     }
 }
 
 struct HauptFenster: View {
     @Bindable var aufsicht: DienstAufsicht
-    @State private var auswahl: SeitenleistenEintrag? = .wissensraum
+    @State private var auswahl: SeitenleistenEintrag? = .quellen
     @State private var wissensraumBlick: WissensraumBlick = .baum
 
     var body: some View {
@@ -73,7 +64,9 @@ struct HauptFenster: View {
             .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             VStack(spacing: 0) {
-                if auswahl == .wissensraum {
+                if auswahl == .quellen {
+                    QuellenBereich()
+                } else if auswahl == .wissensraum {
                     // Banner nur hier: er meldet den Wissensraum-Dienst, mit
                     // dem der Ausweis-Ablauf (eigener Subprozess) nichts zu
                     // tun hat -- auf der Ausweise-Seite waere er irrefuehrend.
@@ -81,8 +74,6 @@ struct HauptFenster: View {
                     WissensraumAnsicht(aufsicht: aufsicht, blick: wissensraumBlick)
                 } else if auswahl == .ausweise {
                     AusweisAnsicht()
-                } else {
-                    PlatzhalterAnsicht(eintrag: auswahl)
                 }
             }
         }
@@ -112,23 +103,6 @@ private struct WissensraumAnsicht: View {
             // Fehlermeldung -- die steht schon im Banner darueber.
             Color.clear
         }
-    }
-}
-
-private struct PlatzhalterAnsicht: View {
-    let eintrag: SeitenleistenEintrag?
-
-    var body: some View {
-        VStack {
-            Spacer()
-            Text(eintrag?.titel ?? "Brainlehr")
-                .font(.title2)
-                .accessibilityAddTraits(.isHeader)
-            Text("Diese Ansicht wird als Naechstes gebaut.")
-                .foregroundStyle(.secondary)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
