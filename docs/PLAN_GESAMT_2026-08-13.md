@@ -34,6 +34,38 @@ Nachlässigkeit, sondern durch den **Plattformwechsel**: Bei einem Umzug wandern
 die Artefakte, die man sieht. Eine Rolle, deren einziger Wert ihr **Auslöser**
 war, hat keinen Gegenstand, den man mitnehmen könnte.
 
+## Der dritte Befund, und er fasst Linie B zusammen: die fehlende Hinsicht
+
+Auf Betreiberfrage *„wo taucht das noch auf?"* zusammengetragen (Knoten
+`012500e5`). **Eine Aussage trägt einen Wahrheitswert nur zusammen mit der
+Hinsicht, in der sie gilt.** Katze und Delfin sind beide Säugetiere, nur einer
+mag Wasser. Der Speicher legt Aussagen ohne ihre Hinsicht ab — dann ist jede
+Vergleichbarkeit geraten, und zwar **unsichtbar**, weil das Ergebnis plausibel
+bleibt.
+
+Dieselbe Form, heute an **sechs** Stellen gemessen und **sechsmal einzeln**
+behandelt:
+
+| Stelle | Die fehlende Hinsicht |
+|---|---|
+| 5814 Kanten `aehnlich_bedeutung` | ähnlich **worin**? Der Typ nennt die Art der Beziehung, nicht die Hinsicht |
+| Schwelle `0,65` | gilt für Rechtsfrage und Funktionsnamen gleich — ein falscher Rechtssatz kostet anders |
+| kein Rechtsraum | eine Norm gilt hier und nebenan nicht |
+| Zeit nicht im Vektor | 2026 und 2020 sind im Bedeutungsraum ununterscheidbar nah |
+| `trigram` | im Deutschen tauglich, im Japanischen blind |
+| zwei Ausgangszustände | frisch gegen gewachsen — dieselbe Software, zwei Wahrheiten |
+
+**Die Prüffrage, billig und vor dem Bau zu stellen:** *Gibt es einen Fall, in
+dem dieselbe Aussage hier wahr und dort falsch ist?* Lautet die Antwort ja,
+gehört die Hinsicht ins **Datenmodell** — nicht in den Fließtext, wo sie beim
+Vergleichen nicht mitgelesen wird.
+
+**Warum es sechsmal einzeln auftrat:** Jede Stelle hat ihre eigene Fachsprache
+(Kante, Schwelle, Geltung, Zeitstempel, Tokenizer, Migration). Die gemeinsame
+Form wurde erst sichtbar, als der **Betreiber** fragte, wo das noch auftaucht.
+Der Speicher hat die Frage nicht gestellt — genau die Lücke, die `78` und `90`
+schließen sollen.
+
 ## Der zweite große Befund: der Speicher hat nur eine Achse
 
 Gemessen am 13.08.:
