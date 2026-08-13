@@ -343,13 +343,19 @@ def _selftest() -> int:
         conn.execute("""CREATE TABLE knowledge_nodes_ohne_schranke AS
                         SELECT * FROM knowledge_nodes WHERE 0""")
 
-        def _insert(path, rang, von, source, grund="weil"):
+        def _insert(path, rang, von, source, grund="weil", art=None):
+            # norm_art wird seit 2026-08-13 verlangt, sobald die Quelle einen
+            # FREMDEN Satz nennt (Gesetz, DIN/ISO/BSI, Urteil) -- Trigger
+            # knowledge_nodes_norm_art_pflicht_bi. Die beiden WEG-Faelle unten
+            # sind genau das und geben ihn deshalb an; die uebrigen Faelle
+            # dieses Selbsttests sind eigene Saetze und lassen ihn NULL. Damit
+            # prueft dieser Test nebenbei beide Richtungen der neuen Schranke.
             conn.execute(
                 "INSERT INTO knowledge_nodes (id, path, title, summary, norm_rang, "
                 "norm_entscheidung, norm_entschieden_von, norm_entschieden_am, "
-                "norm_entschieden_grund, gilt_ab, source) "
-                "VALUES (?, ?, ?, ?, ?, 'norm_unbefristet', ?, '2026-08-09', ?, '2026-08-09', ?)",
-                (path, path, path, path, rang, von, grund, source),
+                "norm_entschieden_grund, gilt_ab, source, norm_art) "
+                "VALUES (?, ?, ?, ?, ?, 'norm_unbefristet', ?, '2026-08-09', ?, '2026-08-09', ?, ?)",
+                (path, path, path, path, rang, von, grund, source, art),
             )
 
         # Fall 1: maschineller Entscheider, Hausnorm, Rang 1 -- ABGEWIESEN.
@@ -378,7 +384,7 @@ def _selftest() -> int:
         # Fall 5: maschineller Entscheider, Fremdnorm, Rang 1 -- DURCHGELASSEN
         # (die Maschine zeichnet eine fremde Tatsache auf, entscheidet nichts).
         _insert("/t/fremd-maschine-rang1", 1, "claude-code/opus-5",
-                "§ 28 WEG über gesetze-im-internet.de")
+                "§ 28 WEG über gesetze-im-internet.de", art="sollen")
 
         # Fall 6 (Negativfall): Fakt ohne Rang bleibt unberuehrt, auch mit
         # maschinellem 'Entscheider' im Feld (das Feld ist hier bedeutungslos,
@@ -398,12 +404,14 @@ def _selftest() -> int:
             1, "claude-code/opus-5",
             "erzeugt aus buckeberg/recht/jahresabrechnung-beim-wechsel.md (§ 28 WEG "
             "über gesetze-im-internet.de, BGH V ZR 206/24 über dejure.org, Abrufdatum 2026-07-22)",
+            art="sollen",
         )
         _insert(
             "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/rechtslage-die-angebotenen",
             1, "claude-code/opus-5",
             "erzeugt aus buckeberg/recht/verwaltervertrag-pruefpunkte.md (§ 26 und § 9b WEG "
             "über gesetze-im-internet.de, Abrufdatum 2026-07-22)",
+            art="sollen",
         )
         conn.commit()
     finally:
