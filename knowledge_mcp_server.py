@@ -2749,6 +2749,19 @@ def _erzeuge_source_aus_ableitung(conn: sqlite3.Connection, kennung: str) -> tup
     )
 
 
+def _embedding_text(path: str, title: str, summary: str, content: str | None) -> str:
+    """Die Textformel des Knoten-Vektors -- EINE Stelle, weil zwei Leser sie
+    brauchen: _rebuild_node_embedding() zum Rechnen und knowledge_add() fuer
+    den Kappungshinweis (Aufgabe 69). Eine Kopie waere hier genau der Fehler
+    aus L-361755: Wer eine Formel dupliziert, laesst frueher oder spaeter die
+    eine Haelfte stehen, waehrend die andere sich aendert -- und dann meldet
+    der Hinweis eine Laenge, die gar nicht eingebettet wurde.
+
+    Identisch zur Hauptschleife von kern/build_embeddings.py (node_text) --
+    weicht sie ab, zaehlt der Kurator frische Zeilen weiter als veraltet."""
+    return f"{path}\n{title}\n{summary}\n{content or ''}"
+
+
 def _rebuild_node_embedding(conn: sqlite3.Connection, node_id: str, project_id: str,
                             path: str, title: str, summary: str, content: str | None,
                             *, vec: list[float] | None = None) -> None:
@@ -2774,7 +2787,7 @@ def _rebuild_node_embedding(conn: sqlite3.Connection, node_id: str, project_id: 
     -- wird er hier durchgereicht, spart das den zweiten embed_text()-Aufruf
     (~190ms gemessen) fuer denselben Text. Ohne Angabe unveraendertes
     Verhalten: der Text wird hier berechnet, wie bisher."""
-    text = f"{path}\n{title}\n{summary}\n{content or ''}"
+    text = _embedding_text(path, title, summary, content)
     if vec is None:
         vec = embeddings.embed_text(text)
     if vec is None:
@@ -3274,6 +3287,25 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     result = {"id": node_id, "path": node_path, "status": "created", "source": source, **wikilinks}
     if similar_node_hint:
         result["similar_node_hint"] = similar_node_hint
+    # Aufgabe 69: HINWEIS, keine Abweisung. Wer laenger schreibt als die
+    # Zeichengrenze, verliert den hinteren Teil im Bedeutungskanal -- still,
+    # und eine spaetere Abrufzahl kann daran scheitern, ohne dass jemand die
+    # Ursache sieht. Der Hinweis kommt beim SCHREIBEN, weil die Grenze da
+    # noch einhaltbar ist; hinterher ist sie nur noch beklagbar.
+    #
+    # Bewusst kein Trigger und keine Ablehnung: Eine harte Schranke wuerde
+    # laufende fremde Sitzungen blockieren (am 2026-08-13 mit norm_art
+    # genau so passiert), und die neun Bestandsknoten waeren damit nicht
+    # aenderbar. Ausserdem ist die Grenze eine Schaetzung aus einem
+    # Quotienten, kein exakter Schnitt -- darauf gehoert keine Sperre.
+    if embeddings.wird_gekappt(_embedding_text(node_path, title, summary, content)):
+        result["kappung"] = (
+            f"Der Text ist laenger als {embeddings.zeichengrenze()} Zeichen und wird "
+            f"beim Einbetten gekappt (num_ctx={embeddings.EMBED_NUM_CTX}). Sein hinterer "
+            "Teil bleibt ueber die Bedeutungssuche unauffindbar; ueber Stichwort "
+            "und Pfad bleibt er erreichbar. Traegt der Knoten seine Kernaussage "
+            "in Titel und Zusammenfassung, ist das folgenlos -- sonst besser teilen."
+        )
     return result
 
 

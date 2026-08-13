@@ -63,6 +63,42 @@ _EMBED_MODEL_NAME = os.environ.get("KNOWLEDGE_OLLAMA_EMBED_MODEL", "bge-m3")
 # ueberschreibt.
 EMBED_NUM_CTX = int(os.environ.get("KNOWLEDGE_OLLAMA_EMBED_NUM_CTX", "2048"))
 
+# Aufgabe 69. GEMESSEN, nicht geschaetzt: runs/abschneidegrenze_bge_m3_2026-08-13.json,
+# Commit 0b1ab4c. Verfahren war nicht der Konsekutiv-Kosinus (der zeigt nur
+# Konvergenz), sondern gleicher Praefix mit VERSCHIEDENEM Suffix -- ab 8000
+# Zeichen ist der Vektor EXAKT gleich, unabhaengig vom Suffix. Gleichheit
+# statt blosser Aehnlichkeit ist der Beweis fuers Abschneiden. Ollama meldete
+# fuer diese 8000 Zeichen 2048 Token (prompt_eval_count), also rund 3,9
+# Zeichen je Token auf deutschem Fachtext.
+#
+# Als QUOTIENT hinterlegt, nicht als Zahl 8000: Wer num_ctx anhebt, bekommt
+# die neue Grenze ohne Suchen-und-Ersetzen. Eine festgeschriebene 8000 waere
+# ab der ersten Aenderung falsch und wuerde trotzdem geglaubt.
+ZEICHEN_JE_TOKEN = 8000 / 2048
+
+
+def zeichengrenze(num_ctx: int | None = None) -> int:
+    """Ab wie vielen Zeichen ein Text VOR dem Einbetten gekappt wird.
+
+    Der Wert ist eine SCHAETZUNG aus einem gemessenen Quotienten, kein
+    harter Schnitt: Wie viele Zeichen in ein Token passen, haengt am Text.
+    Deutsche Komposita brauchen mehr Token je Zeichen als englische Prosa,
+    ein Text voller Kennungen und Pfade noch mehr. Wer knapp darunter liegt,
+    ist also nicht sicher -- nur wer deutlich darunter liegt."""
+    return int((EMBED_NUM_CTX if num_ctx is None else num_ctx) * ZEICHEN_JE_TOKEN)
+
+
+def wird_gekappt(text: str, num_ctx: int | None = None) -> bool:
+    """Verliert dieser Text beim Einbetten seinen hinteren Teil?
+
+    WOZU: Ein gekappter Knoten ist mit seinem hinteren Teil im
+    Bedeutungskanal unauffindbar, und zwar STILL -- eine Abrufzahl kann
+    daran scheitern, ohne dass jemand die Ursache sieht. Diese Funktion
+    macht die Grenze abfragbar, statt sie in einem Messprotokoll liegen zu
+    lassen."""
+    return len(text or "") > zeichengrenze(num_ctx)
+
+
 _IDENTITY_RE = re.compile(r"^(?P<model>.+)@ctx(?P<ctx>\d+)$")
 
 

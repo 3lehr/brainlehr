@@ -406,7 +406,24 @@ def main() -> int:
     checksum_after = _checksum(conn)
     conn.close()
 
+    # Aufgabe 69: Wer laenger ist als die Zeichengrenze, verliert seinen
+    # hinteren Teil VOR dem Rechnen -- und zwar still. Genau daran kann eine
+    # Abrufzahl scheitern, ohne dass jemand die Ursache sieht. Deshalb hier
+    # gezaehlt und mit Pfad genannt, nicht nur summiert: eine blosse Zahl
+    # sagt nicht, WORAUS sie besteht.
+    gekappt = [(n["path"], len(node_text(n))) for n in nodes
+               if embeddings.wird_gekappt(node_text(n))]
+    gekappt += [(f"Lehre {l['id']}", len(lesson_text(l))) for l in lessons
+                if embeddings.wird_gekappt(lesson_text(l))]
+
     print(f"Nodes: {len(nodes)}, Lessons: {len(lessons)}")
+    if gekappt:
+        grenze = embeddings.zeichengrenze()
+        print(f"GEKAPPT beim Einbetten: {len(gekappt)} von {len(nodes) + len(lessons)} "
+              f"Eintraegen ueberschreiten {grenze} Zeichen (num_ctx={embeddings.EMBED_NUM_CTX}) "
+              "-- ihr hinterer Teil ist im Bedeutungskanal unauffindbar:")
+        for pfad, laenge in sorted(gekappt, key=lambda x: -x[1]):
+            print(f"  {laenge:6} Zeichen  {pfad}")
     print(f"Neu gerechnet: {embedded}, uebersprungen (unveraendert): {skipped_unchanged}, "
           f"uebersprungen (Embedding-Fehler): {skipped_error}")
     print(f"Embedding-Zeilen geschrieben (mit Bereichs-Fanout bei Lessons): {rows_written}")
