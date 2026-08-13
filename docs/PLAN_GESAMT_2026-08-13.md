@@ -61,7 +61,14 @@ verdrahten, mit Neuheitsfilter).
 
 **Linie B — die fehlenden Achsen.** `88` (Zeit als Filter; Geltung erst nach der
 Vorfrage, wer `gilt_bis` setzt) · `89` (Kanalwahl an die Anfragelänge binden) ·
-`76` (jede Kante trägt ihre Hinsicht) · `75` (W-Fragen).
+`76` (jede Kante trägt ihre Hinsicht) · `75` (W-Fragen) · **`86` (trägt eine
+metaphorisch benannte Regel weiter als eine wörtliche?).**
+
+`86` steht hier und nicht in einer eigenen Ecke, weil es dieselbe Frage ist wie
+die übrigen vier: **woran hängt eine Aussage außer an ihrem Wortlaut?** Bei `88`
+ist es die Zeit, bei `89` die Sprache, bei `76` die Hinsicht — bei `86` das
+Bild. Die Sperre gilt auch dort: Vor der Messung wird keine Regel umbenannt,
+sonst wäre die Umbenennung ihre eigene Begründung.
 
 **Linie C — der Speicher schreibt mit.** `78` (Dublettenerkennung beim Anlegen)
 → `73` (Herkunftskette; **dieselbe Funktion**, deshalb streng danach) ·
@@ -86,12 +93,21 @@ keiner Reihenfolge erzwingbar.
 
 ## Was bewusst nicht getan wird, samt Preis
 
-- **Kein Nachbau des Rollen-Pantheons.** 81 Rollen sind selbst Bürokratie; das
-  alte System wusste es und hielt sich einen Widersacher dagegen. Übernommen
-  werden zwei **Bauformen**, nicht die Namen: die Bindung einer Regel an einen
-  **Schritt** (dagegen sind unsere 19 Hausregeln alle immer aktiv, und genau
-  deshalb haben elf keinen Aufhängepunkt) und die Trennung von
-  **Grenzwert-Setzen und Durchsetzen**.
+- **Kein Nachbau des Rollen-Pantheons in einem Zug** — 81 Rollen zu übernehmen,
+  bevor eine einzige gemessen ist. Das alte System wusste um diese Gefahr und
+  hielt sich einen Widersacher dagegen (*„Agentenkette länger als vier →
+  Vereinfachung prüfen"*).
+
+  **Das ist ausdrücklich keine Entscheidung gegen Metaphern.** Ob eine
+  metaphorisch benannte Regel weiter trägt als eine wörtliche, ist eine offene
+  Frage mit widersprüchlicher Fremdlage — und sie wird in **Linie B** gemessen
+  (`86`), nicht hier entschieden. Was hier abgelehnt wird, ist allein die
+  Reihenfolge: übernehmen, dann messen.
+
+  Zwei **Bauformen** sind davon unabhängig und werden übernommen, weil sie keine
+  Metaphern brauchen: die Bindung einer Regel an einen **Schritt** (dagegen sind
+  unsere 19 Hausregeln alle immer aktiv, und genau deshalb haben elf keinen
+  Aufhängepunkt) und die Trennung von **Grenzwert-Setzen und Durchsetzen**.
 - **Keine Metadaten im Einbettungstext.** Preis: Der Bedeutungskanal bleibt
   zeitblind. Gewinn: Ein Datum bekommt keine falsche semantische Nähe zu einem
   anderen Datum — es hat einen Abstand, keine Ähnlichkeit.
@@ -147,6 +163,15 @@ nie parallel zu einem Suitelauf. Datenbanknamen über `kern/speicher`.
 | **Tabu zusätzlich** | beide `settings.json` — der Melder **liest** sie, er ändert nichts |
 | **Fakten** | 8 von 15 Meldern und 3 von 12 Haken ohne Eintrag in einer Regelablage. `knowledge_recall_hook` ist nachweislich verdrahtet (53 Nennungen, Eintrag vorhanden) und dient als Negativfall. Vorbild ist die Stiftshütten-Regel „Agent ohne Trigger in 5+ Sessions → Sunset-Kandidat". |
 | **Abnahme** | Findet die bekannten Fälle. Meldet `knowledge_recall_hook` **nicht**. Grenzwert: ein Mechanismus, der nur über ein anderes verdrahtetes Skript läuft, gilt **nicht** als unverdrahtet — genau diese Unterscheidung fehlt meiner Vormessung, und ohne sie wird der Melder nach dem dritten Fehlalarm ignoriert. Kein Veto, nur Hinweis. „Abschaltkandidat" ist eine gleichwertige Antwort zu „verdrahten". |
+
+### Schritt B0 · Metaphernwirkung messen (Aufgabe 86)
+
+| | |
+|---|---|
+| **Darf ändern** | eine neue Datei unter `messungen/` für die Regelpaare und Fallmengen, das Messskript, die Ergebnisdatei unter `runs/`, dazu Tests |
+| **Tabu zusätzlich** | jede bestehende Regel, jeder Agentenauftrag, `~/.claude/` — **es wird nichts umbenannt**, es wird gemessen |
+| **Fakten** | Personas verbessern die Genauigkeit nicht (162 Rollen, 2410 Fragen, 4 Modellfamilien, EMNLP Findings 2024). Metaphern wirken kausal als Brücke zwischen Domänen (13,5 % → 45,0 % bei Lyrik im Vortraining; 47,1 % → 28,8 % beim Maskieren; Zufallsmaskierung als Kontrolle fast wirkungslos — Hu et al. 2026). **Die zweite Arbeit misst Trainingsdaten, nicht Prompts** — diese Lücke ist der Messgegenstand. Eigene Vorerfahrung `L-5c7f86`: Eine Persona-Runde lieferte Verdachtsmomente, keine Befunde — von den lautesten Meldungen hielt **keine einzige** in der gemeldeten Form; die vier echten Fehler kamen aus der Nachprüfung. |
+| **Abnahme** | Reichweite (Menge 2) **und** Fehlanwendung (Menge 3) stehen getrennt als Zahl mit Nenner. Die Negativkontrolle mit **unpassender** Metapher trennt messbar — sonst ist der Aufbau untauglich, unabhängig vom Ergebnis. Bewertung blind gegen die Fassung, nachweisbar. Zwischen Befund und Folgerung liegt eine **Prüfstufe**, die je Meldung zwei Ursachen zur Wahl stellt (echte Wirkung / Artefakt des Aufbaus) — ohne diese Alternative sucht der Prüfer nur Bestätigung. Ein Nullergebnis ist ein Ergebnis. |
 
 ### Schritt B1 · Zeit als Filter (Aufgabe 88)
 
