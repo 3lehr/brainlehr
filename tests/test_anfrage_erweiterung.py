@@ -21,18 +21,22 @@ import speicher  # noqa: E402
 
 
 def test_ergaenzt_nicht_ersetzt():
-    ergaenzt = ae.erweitere_anfrage("impl gesucht", katalog={"impl": "implementation"})
-    assert ergaenzt == ["impl", "gesucht", "implementation"]
+    """Nachbesserung Aufgabe 65: BEIDE langen Formen (englisch + deutsch)
+    werden ergaenzt, in der Reihenfolge der Katalogliste."""
+    ergaenzt = ae.erweitere_anfrage(
+        "impl gesucht", katalog={"impl": ["implementation", "Umsetzung"]}
+    )
+    assert ergaenzt == ["impl", "gesucht", "implementation", "Umsetzung"]
 
 
 def test_ohne_katalogtreffer_unveraendert():
-    assert ae.erweitere_anfrage("xyz123", katalog={"impl": "implementation"}) == ["xyz123"]
+    assert ae.erweitere_anfrage("xyz123", katalog={"impl": ["implementation"]}) == ["xyz123"]
 
 
 def test_kurzform_bleibt_teil_der_anfrage_auch_bei_treffer():
     """Die Kurzform wird nie entfernt -- eine Anfrage nach genau 'impl' im
     Sinn des Kuerzels selbst funktioniert weiter."""
-    ergaenzt = ae.erweitere_anfrage("impl", katalog={"impl": "implementation"})
+    ergaenzt = ae.erweitere_anfrage("impl", katalog={"impl": ["implementation"]})
     assert ergaenzt[0] == "impl"
 
 
@@ -51,13 +55,34 @@ def test_rot_vor_gruen_an_impl_gegen_echten_bestand():
     assert vorher <= nachher
 
 
-def test_negativfall_db_verschlechtert_sich_nicht():
-    """'db' ist im Katalog NICHT aufgenommen (Schritt 1, Negativfall) -- die
-    Erweiterung darf die Treffermenge fuer 'db' folglich nicht veraendern."""
+def test_db_findet_ueber_die_erweiterung_mehr_rot_vor_gruen():
+    """Nachbesserung Aufgabe 65 (Fehler 1): 'db' ist unter drei Zeichen
+    (Trigramm-Mindestlaenge) und darum IMMER im Katalog -- die Kurzform
+    findet auf dem Suchweg strukturell nichts, egal wie oft sie im Rohtext
+    vorkommt. Rot: ohne Erweiterung nur die woertliche Kurzform. Gruen: mit
+    Erweiterung zusaetzlich Dokumente mit 'database'/'Datenbank'."""
     katalog = ak.katalog()
-    assert "db" not in katalog, "Testannahme verletzt: 'db' waere aufgenommen"
+    assert "db" in katalog, "Testannahme verletzt: 'db' muesste aufgenommen sein (< 3 Zeichen)"
     vorher = ae.treffer("db", katalog={})
     nachher = ae.treffer("db")
+    assert len(nachher) > len(vorher), (
+        f"vorher {len(vorher)}, nachher {len(nachher)} -- Erweiterung hat nichts bewegt"
+    )
+    assert vorher <= nachher
+
+
+def test_negativfall_ausgeschlossene_kurzform_verschlechtert_sich_nicht():
+    """Eine Kurzform, die der Katalog NICHT aufnimmt (Verhaeltnis unter der
+    Schwelle), darf die Treffermenge nicht veraendern -- sonst waere die
+    Ausschlussregel aus Schritt 1 wirkungslos."""
+    katalog = ak.katalog()
+    ausgeschlossen = next(
+        (k for k in ("auth", "config", "req", "res") if k not in katalog), None
+    )
+    if ausgeschlossen is None:
+        return  # Bestand hat sich so verschoben, dass alle Saat-Paare aufgenommen sind
+    vorher = ae.treffer(ausgeschlossen, katalog={})
+    nachher = ae.treffer(ausgeschlossen)
     assert nachher == vorher
 
 

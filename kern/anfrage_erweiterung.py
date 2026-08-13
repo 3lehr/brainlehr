@@ -41,18 +41,21 @@ import speicher  # noqa: E402
 _WORT = re.compile(r"[A-Za-zÄÖÜäöüß0-9]+")
 
 
-def erweitere_anfrage(anfrage: str, katalog: dict[str, str] | None = None) -> list[str]:
-    """Anfrage-Woerter, ERGAENZT um die lange Form je Katalog-Kurzform --
-    nichts wird ersetzt oder entfernt. `katalog=None` liest den aktuellen
-    Vorschlag aus ausschreibekatalog.katalog() (Bestand, read-only)."""
+def erweitere_anfrage(
+    anfrage: str, katalog: dict[str, list[str]] | None = None
+) -> list[str]:
+    """Anfrage-Woerter, ERGAENZT um ALLE langen Formen je Katalog-Kurzform
+    (Aufgabe 65, Nachbesserung: englisch UND deutsch) -- nichts wird ersetzt
+    oder entfernt. `katalog=None` liest den aktuellen Vorschlag aus
+    ausschreibekatalog.katalog() (Bestand, read-only)."""
     if katalog is None:
         katalog = ak.katalog()
     begriffe = _WORT.findall(anfrage.lower())
     ergaenzt = list(begriffe)
     for wort in begriffe:
-        lang = katalog.get(wort)
-        if lang and lang not in ergaenzt:
-            ergaenzt.append(lang)
+        for lang in katalog.get(wort, []):
+            if lang not in ergaenzt:
+                ergaenzt.append(lang)
     return ergaenzt
 
 
@@ -85,12 +88,15 @@ def treffer(anfrage: str, db=None, katalog: dict[str, str] | None = None) -> set
 
 
 def _selftest() -> None:
-    # 1) Ergaenzt, ersetzt nicht: die Kurzform bleibt in der Wortliste.
-    ergaenzt = erweitere_anfrage("impl gesucht", katalog={"impl": "implementation"})
-    assert "impl" in ergaenzt and "implementation" in ergaenzt, ergaenzt
+    # 1) Ergaenzt, ersetzt nicht: die Kurzform bleibt in der Wortliste, und
+    #    BEIDE langen Formen (englisch + deutsch) werden ergaenzt.
+    ergaenzt = erweitere_anfrage(
+        "impl gesucht", katalog={"impl": ["implementation", "Umsetzung"]}
+    )
+    assert "impl" in ergaenzt and "implementation" in ergaenzt and "Umsetzung" in ergaenzt, ergaenzt
 
     # 2) Ohne Katalogtreffer bleibt die Anfrage unveraendert (bis auf Kleinschreibung).
-    unveraendert = erweitere_anfrage("xyz123", katalog={"impl": "implementation"})
+    unveraendert = erweitere_anfrage("xyz123", katalog={"impl": ["implementation"]})
     assert unveraendert == ["xyz123"], unveraendert
 
     # 3) Rot vor gruen an 'impl', gegen den echten Bestand: ohne Katalog
@@ -101,13 +107,31 @@ def _selftest() -> None:
     assert len(nachher) > len(vorher), (len(vorher), len(nachher))
     print(f"impl: vorher {len(vorher)} Dokumente, nachher {len(nachher)}")
 
-    # 4) Negativfall: 'db' verschlechtert sich nicht (Katalog nimmt 'db' laut
-    #    ausschreibekatalog nicht auf, also identische Treffermenge).
+    # 4) Rot vor gruen an 'db' -- Nachbesserung Aufgabe 65: 'db' ist unter
+    #    drei Zeichen (Trigramm-Mindestlaenge, schema.sql) und wird darum
+    #    IMMER aufgenommen, auch wenn das Rohverhaeltnis dagegen spricht.
+    #    Vorher findet die Suche nach 'db' nur die woertliche Kurzform,
+    #    nachher zusaetzlich Dokumente mit 'database'/'Datenbank'.
     vorher_db = treffer("db", katalog={})
     nachher_db = treffer("db")
-    assert nachher_db >= vorher_db, "db darf sich nie verschlechtern"
-    assert len(nachher_db) == len(vorher_db), "db sollte unveraendert bleiben (nicht im Katalog)"
+    assert len(nachher_db) > len(vorher_db), (
+        f"vorher {len(vorher_db)}, nachher {len(nachher_db)} -- 'db' muss erweitert werden"
+    )
+    assert vorher_db <= nachher_db
+    print(f"db: vorher {len(vorher_db)} Dokumente, nachher {len(nachher_db)}")
 
+    # 5) Negativfall auf einer Kurzform, die der Katalog NICHT aufnimmt (z. B.
+    #    'auth', wenn ihr Verhaeltnis unter der Schwelle liegt): die
+    #    Treffermenge bleibt identisch, keine Verschlechterung, keine
+    #    Verbesserung durch eine nie ergaenzte lange Form.
+    katalog_aktuell = ak.katalog()
+    ausgeschlossen = next((k for k in ("auth", "config", "req", "res") if k not in katalog_aktuell), None)
+    if ausgeschlossen:
+        vorher_neg = treffer(ausgeschlossen, katalog={})
+        nachher_neg = treffer(ausgeschlossen)
+        assert nachher_neg == vorher_neg, (
+            f"'{ausgeschlossen}' ist nicht im Katalog -- Treffermenge muss identisch bleiben"
+        )
     print("anfrage_erweiterung: alle Selbsttests gruen")
 
 
