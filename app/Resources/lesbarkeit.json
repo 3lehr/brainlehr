@@ -1,0 +1,29 @@
+{
+  "_hinweis": "Gemessene Werte fuer die Lesbarkeitsrechnung. EINE Quelle fuer zwei Verwender: app/werkzeuge/lesbarkeit.py (Nachrechnen am Terminal) und BrainlehrCore/Anzeigeform.swift (Entscheidung zur Laufzeit, wenn sich die Fensterflaeche aendert). Die Formel steht zweimal -- sie ist fuenf Zeilen und in beiden Sprachen trivial. Die ZAHLEN stehen einmal, denn sie sind das, was sich aendert: eine neue Messung ueber einen anderen Bestand liefert andere Werte, und dann darf nicht eine Seite alt bleiben.",
+
+  "_messung": {
+    "am": "2026-08-13T15:30:00+0200",
+    "womit": "PyMuPDF, zeichengewichtet haeufigste Schriftgroesse je Dokument; x-Hoehe an bei 900 dpi gerenderten Glyphen vermessen",
+    "worueber": "29 Quellen-PDFs in buckeberg/homepage/public/quellen",
+    "nachrechnen": "python3 app/werkzeuge/lesbarkeit.py --tabelle"
+  },
+
+  "fliesstext_pt": 10.9,
+  "fliesstext_pt_spanne": [6.8, 30.0],
+  "x_hoehe_anteil": 0.547,
+  "seite_breite_mm": 210.0,
+  "seite_hoehe_mm": 297.0,
+
+  "_schwellen_hinweis": "MODELLWISSEN, nicht gemessen: Fluessiges Lesen setzt eine x-Hoehe von etwa 0,2 Sehwinkelgrad voraus (kritische Schriftgroesse). Das ist der unsicherste Teil der ganzen Rechnung und steht deshalb als Parameter da, nicht als Konstante im Rechenweg. Bei der mittleren Stufe traegt ein 27-Zoll-Schirm drei Felder statt null -- die Wahl der Stufe entscheidet also mehr als jede Bauform.",
+  "schwelle_grad": {
+    "fluessig": 0.20,
+    "knapp": 0.14,
+    "entziffern": 0.10
+  },
+
+  "_abstand_hinweis": "Kein Geraet weiss, wie weit jemand wegsitzt. Diese Werte sind Voreinstellungen, die der Nutzer sichtbar aendern koennen muss -- kein Messwert und keine Annahme, die sich versteckt.",
+  "abstand_vorgabe_mm": {
+    "eingebaut": 700,
+    "zweitschirm_gross": 1500
+  }
+}
