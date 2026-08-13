@@ -30,6 +30,7 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
 import json
+import os
 import sqlite3
 import sys
 import time
@@ -353,39 +354,123 @@ def test_bleibt_hand_bausteine_sind_nicht_verdrahtet():
 
 
 # ─── Negativfall: sauberer Schreibvorgang wird nicht spuerbar verzoegert ────
+#
+# BEFUND (L-243dde, Aufgabe 82): dieselbe Suite wurde einmal "vier Stunden"
+# und einmal "vier Minuten" gemeldet -- Unterschied waren gleichzeitig
+# laufende Fremdprozesse, nicht die Suite. Eine Zeitmessung ohne genannte
+# Last kann "zu langsam" nicht von "Maschine war voll" unterscheiden. Darum:
+# die Last wird JEDES MAL gemessen und in Meldung/Skip-Grund genannt --
+# unabhaengig davon, ob der Test faellt.
 
-def test_schreibdauer_knowledge_add_nicht_spuerbar_verlangsamt(temp_db, monkeypatch):
-    """Misst knowledge_add() einmal MIT den ADR-034-Pruefungen (heutiger
-    Code) und einmal mit abgeschalteten Pruefungen (einschleusung.erkenne
-    und normrang.rang_fuer_source auf No-op gesetzt, simuliert den Stand
-    VOR dieser Verdrahtung) -- beide Zahlen werden genannt, nicht nur
-    behauptet."""
-    N = 30
+FREMDLAST_SCHWELLE_PRO_KERN = 1.0  # >=1 wartender Prozess je Kern, rechnerisch
 
-    def _lauf(i0: int) -> float:
+
+def _last_pro_kern() -> float:
+    """1-Minuten-Lastmittel, auf die Kernzahl normiert. os.getloadavg() ist
+    ein Syscall (Linux/macOS lesen ihn aus dem Kernel-Zustand), kein
+    Unterprozess -- die Messung kostet selbst nichts, was sie misst. Unter
+    Windows gibt es kein Lastmittel; dort liefert die Funktion 0.0, der
+    Skip-Zweig unten greift dann nie (Test verhaelt sich wie zuvor)."""
+    try:
+        kerne = os.cpu_count() or 1
+        return os.getloadavg()[0] / kerne
+    except (OSError, AttributeError):
+        return 0.0
+
+
+def _ist_fremdlast(last_pro_kern: float) -> bool:
+    """Trennt Last-Wert von Skip-Entscheidung, damit die Grenze (0.99/1.0/1.01)
+    isoliert pruefbar ist, ohne einen ganzen Schreibdauer-Lauf zu brauchen."""
+    return last_pro_kern >= FREMDLAST_SCHWELLE_PRO_KERN
+
+
+def _miss_schreibdauer(monkeypatch, N: int = 30, kuenstliche_verzoegerung_ms: float = 0.0):
+    """Kern der Vorher/Nachher-Zeitmessung, ohne Last-Entscheidung -- damit
+    Haupttest und die beiden Last-Grenzfaelle unten dieselbe Messung nutzen
+    statt sie zu duplizieren. kuenstliche_verzoegerung_ms haengt sich (nur
+    fuer den Grenzwert-Test) an den 'nachher'-Lauf, um eine ECHTE
+    Verlangsamung des Schreibpfads nachzustellen."""
+
+    def _lauf(i0: int, verzoegerung_ms: float = 0.0) -> float:
         start = time.perf_counter()
         for i in range(N):
             kms.knowledge_add(
                 "/", f"Zeitmessung {i0}-{i}", "Zusammenfassung fuer Zeitmessung.",
                 source=f"erzeugt aus Testfall (Stand 2026-08-07T00:00:0{i0}+02:00)",
             )
+            if verzoegerung_ms:
+                time.sleep(verzoegerung_ms / 1000)
         return (time.perf_counter() - start) / N * 1000  # ms/Aufruf
 
-    nachher_ms = _lauf(0)
+    nachher_ms = _lauf(0, kuenstliche_verzoegerung_ms)
 
     import einschleusung
     import normrang
     monkeypatch.setattr(einschleusung, "erkenne", lambda *a, **k: [])
     monkeypatch.setattr(normrang, "rang_fuer_source", lambda *a, **k: None)
     vorher_ms = _lauf(1)
+    return vorher_ms, nachher_ms
 
-    print(f"\nknowledge_add ms/Aufruf: vorher(ohne ADR-034-Pruefungen)={vorher_ms:.3f} "
-          f"nachher(mit)={nachher_ms:.3f}")
+
+def test_schreibdauer_knowledge_add_nicht_spuerbar_verlangsamt(temp_db, monkeypatch):
+    """Misst knowledge_add() einmal MIT den ADR-034-Pruefungen (heutiger
+    Code) und einmal mit abgeschalteten Pruefungen (einschleusung.erkenne
+    und normrang.rang_fuer_source auf No-op gesetzt, simuliert den Stand
+    VOR dieser Verdrahtung) -- beide Zahlen werden genannt, nicht nur
+    behauptet. Dazu die Last waehrend der Messung, damit ein Fehlschlag
+    zwischen 'zu langsam' und 'Maschine war voll' unterscheidbar ist."""
+    last_vor = _last_pro_kern()
+    vorher_ms, nachher_ms = _miss_schreibdauer(monkeypatch)
+    last_nach = _last_pro_kern()
+    last_max = max(last_vor, last_nach)
+
+    meldung = (
+        f"knowledge_add ms/Aufruf: vorher(ohne ADR-034-Pruefungen)={vorher_ms:.3f} "
+        f"nachher(mit)={nachher_ms:.3f} -- Last/Kern={last_max:.2f} "
+        f"(vor={last_vor:.2f}, nach={last_nach:.2f}, Schwelle={FREMDLAST_SCHWELLE_PRO_KERN})"
+    )
+    print("\n" + meldung)
+
+    if _ist_fremdlast(last_max):
+        pytest.skip(f"Fremdlast erkannt, Messung nicht aussagekraeftig -- {meldung}")
+
     # Nicht spuerbar verzoegert: grosszuegige absolute Toleranz (+15ms), weil
-    # ein Ein-DB-Roundtrip-Test unter Systemlast (z.B. voller Testlauf
-    # daneben) einige zehn ms Rauschen zeigt -- gemessen: isoliert 29.9 vs.
-    # 29.6ms, unter voller Suite einmal 27.6 vs. 47.7ms. Die Grenze soll eine
-    # ECHTE Verlangsamung fangen (die neuen Pruefungen sind ein Text-Scan +
-    # ein String-Praefix-Vergleich, beide O(Textlaenge), kein Netz/Millisekunden-
-    # Aufwand), nicht das Rauschen selbst.
-    assert nachher_ms < vorher_ms + 15.0, (vorher_ms, nachher_ms)
+    # ein Ein-DB-Roundtrip-Test schon durch Betriebssystem-Jitter einige ms
+    # Rauschen zeigt. Die Grenze soll eine ECHTE Verlangsamung fangen (die
+    # neuen Pruefungen sind ein Text-Scan + ein String-Praefix-Vergleich,
+    # beide O(Textlaenge), kein Netz/Millisekunden-Aufwand), nicht das
+    # Rauschen selbst -- und nur, wenn die Last-Messung oben eine ruhige
+    # Maschine bestaetigt hat.
+    assert nachher_ms < vorher_ms + 15.0, meldung
+
+
+def test_fremdlast_grenzwert_0_99_1_0_1_01():
+    """Grenzwert der Last-Schwelle selbst: knapp darunter kein Skip, genau
+    an der Schwelle Skip, knapp darueber Skip. Deterministisch, ohne
+    tatsaechliche Systemlast oder DB-Schreibvorgang noetig."""
+    assert not _ist_fremdlast(0.99)
+    assert _ist_fremdlast(1.00)
+    assert _ist_fremdlast(1.01)
+
+
+def test_last_erkennung_verschluckt_echte_verlangsamung_nicht(temp_db, monkeypatch):
+    """Grenzwert-Test (der wichtigste, s. Auftrag): auf einer erzwungen
+    ruhigen Maschine (Last/Kern unter der Schwelle, hier per Monkeypatch auf
+    0.1 erzwungen -- unabhaengig von der tatsaechlichen Last dieser Maschine)
+    muss eine ECHTE Verlangsamung des Schreibpfads weiterhin rot werden.
+    Ohne diesen Test waere der Last-Skip-Zweig ein Freifahrtschein fuer jede
+    Regression, die zufaellig neben einer ruhigen Messung landet."""
+    monkeypatch.setattr(sys.modules[__name__], "_last_pro_kern", lambda: 0.1)
+    last_max = max(_last_pro_kern(), _last_pro_kern())
+    assert not _ist_fremdlast(last_max)  # Vorbedingung: Skip-Zweig darf hier nicht greifen
+
+    # 500ms kuenstliche Verzoegerung je Aufruf im 'nachher'-Lauf -- nicht nur
+    # ueber der 15ms-Toleranz, sondern so gross, dass sie auch echtes
+    # Schreib-Rauschen dieser (tatsaechlich haeufig belasteten) Maschine
+    # dominiert: gemessen wurden Einzel-Auschlaege bis ~240ms bei Last/Kern>5
+    # (test_schreibdauer_..., derselbe Lauf). 500ms je Aufruf haengt jeden
+    # realistischen Ausschlag ab, N klein gehalten, damit der Test trotzdem
+    # kurz bleibt.
+    vorher_ms, nachher_ms = _miss_schreibdauer(monkeypatch, N=3, kuenstliche_verzoegerung_ms=500.0)
+    with pytest.raises(AssertionError):
+        assert nachher_ms < vorher_ms + 15.0, (vorher_ms, nachher_ms)
