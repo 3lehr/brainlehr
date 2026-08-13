@@ -56,6 +56,11 @@ sichtbarkeit_stand/
 *.nulllinie
 knowledge.db.vor-*
 
+# Neuheitsfilter des Vorschlagsmelders (Auftrag 84) -- aktueller
+# Kandidatenstand, kein Verlauf, geht bei Verlust hoechstens auf "alles
+# neu" zurueck, siehe melder/vorschlagsmelder.py.
+vorschlag_gezeigt.json
+
 # Koederliste fuer die Exportkontrolle: im Repo waere sie wirkungslos.
 koederwerte.txt
 

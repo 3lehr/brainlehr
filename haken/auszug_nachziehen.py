@@ -89,11 +89,29 @@ def kanten_nachziehen() -> None:
         pass
 
 
+def vorschlaege_nachziehen() -> None:
+    """Eigene try/except-Huelle, gleiche Bauform wie kanten_nachziehen()
+    (Auftrag 84): ein Ausloeser fuer berichte/vorschlag.py, der nur das seit
+    dem letzten Lauf NEU Hinzugekommene meldet -- sonst wird ein Bericht mit
+    55 Kandidaten nach dem zweiten Mal ueberblaettert. Kein eigener Eintrag
+    in settings.json (wirkt auf alle parallelen Sitzungen); haengt deshalb
+    hier an, wo beim Stop-Ereignis ohnehin schon nachgesehen wird."""
+    try:
+        import vorschlagsmelder  # noqa: E402 -- liegt in melder/, per Bootstrap im Suchpfad
+
+        meldung = vorschlagsmelder.melde()
+        if meldung:
+            print(meldung)
+    except Exception:
+        pass
+
+
 def main() -> None:
     # Unabhaengig von der Auszug-Pruefung unten: eigene Huelle, eigener
     # Rueckgabewert, immer zuerst -- ein fruehes return im Auszug-Teil darf
     # sie nicht ueberspringen.
     kanten_nachziehen()
+    vorschlaege_nachziehen()
 
     try:
         db = Path(ort.DB)

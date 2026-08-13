@@ -91,3 +91,45 @@ def test_kanten_nachziehen_faengt_fehler_ab(capsys, monkeypatch):
 
     an.kanten_nachziehen()  # darf nicht werfen
     assert capsys.readouterr().out == ""
+
+
+# ─── vorschlaege_nachziehen (Auftrag 84): Neuheitsfilter fuer berichte/vorschlag.py ──
+
+def test_vorschlaege_nachziehen_meldet_wenn_melde_etwas_liefert(capsys, monkeypatch):
+    """melde() liegt in melder/vorschlagsmelder.py und ist dort getestet --
+    hier nur, dass der Haken sie aufruft und die Meldung ausgibt."""
+    import types
+
+    fake = types.SimpleNamespace(melde=lambda: "NEU seit dem letzten Lauf: L-testid")
+    monkeypatch.setitem(sys.modules, "vorschlagsmelder", fake)
+
+    an.vorschlaege_nachziehen()
+    out = capsys.readouterr().out
+    assert "NEU seit dem letzten Lauf: L-testid" in out
+
+
+def test_vorschlaege_nachziehen_schweigt_wenn_nichts_neu_ist(capsys, monkeypatch):
+    """Negativfall: melde() liefert einen leeren String (kein neuer
+    Kandidat) -- der Haken gibt nichts aus, keine Leermeldung."""
+    import types
+
+    fake = types.SimpleNamespace(melde=lambda: "")
+    monkeypatch.setitem(sys.modules, "vorschlagsmelder", fake)
+
+    an.vorschlaege_nachziehen()
+    assert capsys.readouterr().out == ""
+
+
+def test_vorschlaege_nachziehen_faengt_fehler_ab(capsys, monkeypatch):
+    """Ein Fehler im Vorschlagsmelder darf den Haken nicht zum Absturz
+    bringen -- gleiche Haltung wie bei kanten_nachziehen()."""
+    import types
+
+    def _boom():
+        raise RuntimeError("kaputt")
+
+    fake = types.SimpleNamespace(melde=_boom)
+    monkeypatch.setitem(sys.modules, "vorschlagsmelder", fake)
+
+    an.vorschlaege_nachziehen()  # darf nicht werfen
+    assert capsys.readouterr().out == ""
