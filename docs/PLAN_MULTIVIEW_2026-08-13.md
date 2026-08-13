@@ -107,6 +107,35 @@ als Anzeigefrage baut, bekommt verlorene Änderungen — leise, ohne Fehlermeldu
 **Empfehlung, begründet:** Der zweite Weg. Er ist im Verbund erprobt, und das
 Henne-Ei-Problem entsteht gar nicht erst.
 
+## Die Schranke, die vor dem Termin steht (Aufgabe 101)
+
+Der Betreiber hat mitgeteilt, dass **alle Anwesenden WEG-Mitglieder** sind. Für
+die buckeberg-Dokumente ist die Datenschutzfrage damit entschärft — Mitglieder
+untereinander sind keine Dritten.
+
+**Das Risiko liegt woanders: im Bestand daneben.** Dort liegen `/openlehr`
+(Steuerdaten, 25 Knoten), `/apps` (75), `/shared` (50), `/ops` (41). Der Abruf
+entscheidet nach **Bedeutungsnähe, nicht nach Zuständigkeit** — ein Fenster
+„was brainlehr von sich aus einspielt" kann bei beliebiger Frage einen Knoten
+aus einer völlig anderen Domäne zeigen, vor drei Menschen.
+
+**Und die vorhandene Achse filtert nicht.** Gemessen: `offen` 1888, `intern`
+281, **`gesperrt` 0**. Es filtert nur `gesperrt` — die einzige Stufe, die
+niemand benutzt. **`intern` ist heute eine Absichtserklärung, keine Schranke.**
+
+**Für den Termin: Die App zeigt nur, was `offen` ist.** Eine Bedingung im
+Datenendpunkt, kein Eingriff in den Speicher, keine Wirkung auf laufende Arbeit,
+umkehrbar. Bei Menschen im Raum ist die engere Voreinstellung die richtige.
+
+`intern` zum echten Filter zu machen ist die eigentliche Entscheidung und gehört
+dem Betreiber — sie stand ihm heute offen und ist unbeantwortet geblieben.
+
+**Abnahme:** Ein Knoten mit `intern` erscheint vorher in der Ansicht und nachher
+nicht. Negativfall, der wichtigere: Ein Knoten mit `offen` erscheint weiterhin —
+sonst ist die App leer und der Termin hat nichts. Grenzwert: **auch der
+Einspiel-Kanal filtert**, nicht nur die Suche; das sind zwei Wege in dieselbe
+Anzeige.
+
 ## Was bewusst nicht getan wird, samt Preis
 
 - **Kein Multiview vor der Quellenanzeige.** Preis: Die Fensteraufteilung
