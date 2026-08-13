@@ -452,6 +452,26 @@ def _existenzpruefung_melden(antwort: str) -> None:
         pass
 
 
+def _speicherherkunft_melden(antwort: str, session_id: str | None) -> None:
+    """Ruft melder/speicherherkunft.py auf (Auftrag 94, docs/PLAN_GESAMT_
+    2026-08-13.md, Schritt 0): prueft, ob die Antwort eine Zahl oder
+    Kennung aus dem zuletzt eingespielten Speicherabruf traegt, ohne den
+    Speicher zu nennen ('brainlehr sagt'). Die Pruefung selbst bleibt in
+    speicherherkunft.py, wird hier nur AUFGERUFEN, nicht hineinkopiert --
+    gleiche Bauform wie _existenzpruefung_melden/_normbezug_melden.
+
+    Stiller Fehlschlag wie bei den anderen beiden: dieser Aufruf ist eine
+    Zugabe am Stop-Haltepunkt, ein Absturz darf den eigentlichen Abruf
+    nicht mitreissen."""
+    try:
+        import speicherherkunft as sh
+        meldung = sh.melde(antwort, session_id)
+        if meldung:
+            print(meldung)
+    except Exception:  # noqa: BLE001 -- siehe Docstring
+        pass
+
+
 def _normbezug_melden(antwort: str) -> None:
     """Meldet Normzitate ohne Beleg (normbezug.py, Betreiber-Auftrag
     2026-08-10). Schweigt, wenn alles belegt und frisch ist.
@@ -484,6 +504,7 @@ def modus_stop(payload: dict) -> None:
     # lesen und muesste in die Klientenkonfiguration eingetragen werden.
     _normbezug_melden(antwort)
     _existenzpruefung_melden(antwort)
+    _speicherherkunft_melden(antwort, payload.get("session_id"))
     # Zahlenbezug: gleicher Grund wie Normbezug oben -- Datei-Monolith-Bremse
     # (>1500 Zeilen) verbietet eine neue Top-Level-Funktion hier, darum inline
     # statt eines eigenen _zahlenbezug_melden. Gleiche Bauform (stilles

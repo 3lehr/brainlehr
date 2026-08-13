@@ -730,6 +730,40 @@ def _combine_channels(kw_signal: list[dict], emb_signal: list[dict], emb_availab
     return [by_id[i] for i in fused_ids if i in agree_ids]
 
 
+# Aufgabe 94 (docs/PLAN_GESAMT_2026-08-13.md, Schritt 0, "Linie 0"): das
+# Protokoll traegt seither auch die KENNZEICHNENDEN ZAHLEN aus dem, was
+# gerade eingespielt wurde -- damit ein Melder auf der Antwortseite
+# maschinell pruefen kann, ob eine Zahl aus der Antwort tatsaechlich aus
+# diesem Abruf stammt, ohne den ganzen Blocktext zu duplizieren (der steht
+# nirgends dauerhaft, nur kurz im additionalContext). Reine Zugabe zur
+# ohnehin bestehenden Protokollzeile -- WEDER die Blockausgabe an das Modell
+# NOCH die Kandidatenauswahl (query()) aendert sich dadurch, nur was log_
+# recall() zusaetzlich vermerkt (Auftrags-Grenze: "nur die Ausgabeform").
+#
+# MERKMALSWAHL, mit Messung (2026-08-13, gegen den echten Bestand):
+# Kommazahl mit >=2 Nachkommastellen (\d+,\d{2,}), NICHT jede Zahl mit
+# Trennzeichen. Der Anlassfall selbst ("0,531 gegen 0,527") hat genau diese
+# Form. Gegenprobe an allen Knoten/Lehren-Texten (418 Zahlen-Vorkommen bei
+# \d+[,.]\d+ ohne Einschraenkung): \d+[,.]\d+ faengt WCAG-Versionen ("2.2",
+# 9x) und deutsche Datumsangaben ("29.07", "04.08" -- Tag.Monat sieht wie
+# eine Dezimalzahl aus) mit ein, beides haeufig und beweist nichts ueber
+# Herkunft. Auf Komma-Dezimalzahlen mit >=2 Nachkommastellen eingeschraenkt
+# (wie im Bestand ueblich fuer Messwerte, nie fuer Daten/Versionen): 69
+# distinkte Formen im ganzen Bestand, nur 12 davon (17%) kommen mehrfach vor
+# (durchweg wiederkehrende Statistikwerte wie "0,001", nicht Datum/Version).
+# Node-Pfade sind BEWUSST kein Merkmal -- ein Pfad wie "/frontend" ist ein
+# haeufiges Wort mit vorangestelltem Schraegstrich, keine seltene Kennung
+# (anders als node_ids/Lehren-IDs unten, die schon jetzt geloggt werden).
+_ZAHL_RE = re.compile(r"\d+,\d{2,}")
+
+
+def _kennzeichnende_zahlen(*texte: str | None) -> list[str]:
+    gefunden: set[str] = set()
+    for t in texte:
+        gefunden.update(_ZAHL_RE.findall(t or ""))
+    return sorted(gefunden)
+
+
 def hits(text: str, kws: list[str]) -> int:
     """Wieviele verschiedene Keywords stecken im Text? Substring, nicht Wort ->
     faengt deutsche Komposita ('modell' in 'modelltraining'), die FTS5 mit dem
@@ -1245,6 +1279,18 @@ def log_recall(nodes: list, lessons: list, log_path: str | None = None,
         }
         if prompt is not None and _herkunftsmodus() != "aus":
             payload["prompt"] = prompt
+        # Kennzeichnende Zahlen aus GENAU diesem Abruf (Auftrag 94, s.
+        # _kennzeichnende_zahlen() oben) -- Schluessel nur bei Treffer
+        # gesetzt (wie 'prompt'/'erstverwendung_vorschlag'), damit alte
+        # Zeilen ohne den Schluessel ueber .get() unveraendert lesbar
+        # bleiben. node_ids/lessons oben sind selbst schon Kennungen und
+        # brauchen kein Duplikat hier.
+        zahlen = _kennzeichnende_zahlen(
+            *(f"{n.get('title', '')} {n.get('summary', '')}" for n in nodes),
+            *(f"{l.get('description', '')} {l.get('prevention', '')}" for l in lessons),
+        )
+        if zahlen:
+            payload["zahlen"] = zahlen
         # Erstverwendung (Auftrag 2026-08-12): welche Knoten-IDs GERADE einen
         # Vorschlag bekamen -- Schluessel nur bei Treffer gesetzt (wie
         # 'prompt' oben), damit _bereits_vorgeschlagen() alte Zeilen ohne den
