@@ -22,6 +22,7 @@
     "./kern/hebb_kanten.py",
     "./kern/kanten_aus_bedeutung.py",
     "./kern/kanten_aus_lehren.py",
+    "./kern/kanten_herkunft_rueckwirkend.py",
     "./kern/kettenerklaerung.py",
     "./kern/knowledge_lint.py",
     "./kern/konfidenz.py",
