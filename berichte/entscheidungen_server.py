@@ -548,6 +548,24 @@ def _bedeutung_staerke(conn: sqlite3.Connection, query_vec: list[float] | None,
     return out
 
 
+def _or_query_woerter(fts_query: str) -> list[str]:
+    """Zerlegt das von _or_query() gebaute FTS5-ODER-Muster zurueck in die
+    einzelnen Suchworte -- das sind exakt die Worte, die an den Stichwortkanal
+    gingen (keine zweite Berechnung derselben Sache, nur die Rueckrichtung
+    derselben Zeichenkette). Diese Liste weicht von schluesselwoerter/kws ab:
+    kws ist gefiltert (Stoppwoerter raus, Laenge>=4, max. 8) und dient nur der
+    MIN_HITS-Anzeige, nicht dem tatsaechlichen Kanal."""
+    if not fts_query:
+        return []
+    out = []
+    for teil in fts_query.split(" OR "):
+        teil = teil.strip()
+        if teil.startswith('"') and teil.endswith('"'):
+            teil = teil[1:-1].replace('""', '"')
+        out.append(teil)
+    return out
+
+
 def abrufweg_berechnen(conn: sqlite3.Connection, text: str) -> dict:
     text = (text or "").strip()
     if not text:
@@ -558,6 +576,8 @@ def abrufweg_berechnen(conn: sqlite3.Connection, text: str) -> dict:
         "text": text, "schluesselwoerter": kws, "min_hits_schwelle": knowledge_recall_hook.MIN_HITS,
         "min_hits_erfuellt": len(kws) >= knowledge_recall_hook.MIN_HITS,
         "min_hits_wirkt_im_aktiven_weg": not knowledge_recall_hook._suchpfad_aktiv(),
+        "stichwort_suchworte": _or_query_woerter(fts_query),
+        "eingebetteter_text": text,
     }
     if not fts_query:
         return {"leer": True, "anfrage": anfrage}

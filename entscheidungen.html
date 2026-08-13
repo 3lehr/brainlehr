@@ -100,6 +100,9 @@
      blieb es trotzdem). Eine !important-Regel behebt es fuer jede Klasse,
      jetzt und kuenftig, statt Klasse fuer Klasse nachzuziehen. */
   [hidden] { display: none !important; }
+  .anfragetext { max-height: 8rem; overflow-y: auto; margin: .3rem 0 .6rem; padding: .5rem .7rem;
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px;
+    white-space: pre-wrap; word-break: break-word; font-size: .85rem; }
   .leiste button { font: inherit; font-size: .82rem; background: transparent; color: var(--muted);
     border: 1px solid var(--border); border-radius: 6px; padding: .35rem .75rem; cursor: pointer; min-height: 24px; }
   .leiste button:hover { color: var(--fg); border-color: var(--accent); }
@@ -919,6 +922,9 @@ function renderAbrufweg(d) {
     return;
   }
   const a = d.anfrage;
+  kopf.appendChild(el('p', {}, `Stichwortkanal-Suche: ${a.stichwort_suchworte.join(', ') || '(keine)'}`));
+  kopf.appendChild(el('p', {}, 'Eingebetteter Text (Bedeutungskanal):'));
+  kopf.appendChild(el('div', { class: 'anfragetext', role: 'note', 'aria-label': 'Für den Bedeutungskanal eingebetteter Text' }, a.eingebetteter_text));
   kopf.appendChild(el('p', {}, `Schlüsselwörter: ${a.schluesselwoerter.join(', ') || '(keine)'} — `
     + `Mindesttrefferschwelle ${a.min_hits_schwelle}: ${a.min_hits_erfuellt ? 'erfüllt' : 'nicht erfüllt'}`
     + (a.min_hits_wirkt_im_aktiven_weg ? '.' : ' (wirkt im aktiven Abrufweg nicht — der prüft das nicht mehr).')));
