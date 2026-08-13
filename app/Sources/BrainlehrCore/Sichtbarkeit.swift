@@ -104,7 +104,50 @@ public struct Betrachter: Equatable, Sendable {
     }
 }
 
+/// Womit eine geschwaerzte Stelle ersetzt wird -- und was das kostet.
+///
+/// GEMESSEN am 2026-08-13 an einer echten Vertragstabelle (volksbank.pdf
+/// Seite 2, mit -layout ausgelesen): Die Zeile ist 78 Zeichen lang. Ersetzt
+/// man "50,00" durch "[geschwärzt]", wird sie 85 Zeichen lang -- alles rechts
+/// davon verrutscht, und in einer Spaltentabelle ist das Dokument damit
+/// unlesbar. Mit Blockzeichen bleibt sie bei 78.
+///
+/// DER ABWAEGUNGSPUNKT, offen benannt statt versteckt: Blockzeichen halten
+/// das Layout und verraten die LAENGE des Entfernten. Bei einem Namen ist
+/// das ein schwaches Leck, bei einem Betrag ein staerkeres ("███" ist
+/// dreistellig). Wer die Laenge verbergen muss, nimmt `.text` und nimmt in
+/// Kauf, dass sich die Zeile verschiebt.
+public enum Marke: Equatable, Sendable {
+    /// Blockzeichen in der Laenge des Entfernten. Layout bleibt, Laenge sichtbar.
+    case blockGleicherLaenge
+    /// Fester Text. Laenge verborgen, Zeile kann verrutschen.
+    case text(String)
+    /// Feste Zahl Blockzeichen -- verbirgt die Laenge UND haelt eine feste
+    /// Breite. Verschiebt, wo das Entfernte laenger oder kuerzer war.
+    case blockFesterLaenge(Int)
+
+    func fuer(_ wortlaut: String) -> String {
+        switch self {
+        case .blockGleicherLaenge: return String(repeating: "█", count: wortlaut.count)
+        case .text(let t): return t
+        case .blockFesterLaenge(let n): return String(repeating: "█", count: max(1, n))
+        }
+    }
+
+    /// Bleibt die Zeilenbreite erhalten?
+    public var haeltLayout: Bool {
+        if case .blockGleicherLaenge = self { return true }
+        return false
+    }
+}
+
 /// Eine Stelle im Text, die fuer bestimmte Betrachter verschwindet.
+///
+/// WICHTIG, und der Betreiber hat es praezisiert: Das ORIGINAL wird nie
+/// angefasst. Geschwaerzt wird die PROJEKTION -- das, was dieser eine
+/// Betrachter zu sehen bekommt. Die Quelldatei bleibt byte-gleich; war sie
+/// schon bei Anlieferung zensiert, ist das der Ausgangszustand und die App
+/// weiss nichts davon.
 public struct Schwaerzung: Equatable, Sendable {
     /// Der genaue Wortlaut, der entfernt wird.
     public let wortlaut: String
@@ -113,9 +156,10 @@ public struct Schwaerzung: Equatable, Sendable {
     /// Was stattdessen dasteht. Sichtbar, weil eine unsichtbare Schwaerzung
     /// den Text unbemerkt verfaelscht -- wer einen Vertrag liest, muss
     /// erkennen koennen, dass eine Stelle fehlt.
-    public let marke: String
+    public let marke: Marke
 
-    public init(wortlaut: String, sichtbarAb: Sichtstufe, marke: String = "[geschwärzt]") {
+    public init(wortlaut: String, sichtbarAb: Sichtstufe,
+                marke: Marke = .blockGleicherLaenge) {
         self.wortlaut = wortlaut; self.sichtbarAb = sichtbarAb; self.marke = marke
     }
 }
@@ -142,9 +186,19 @@ public enum Sichtbarkeit {
         var ergebnis = text
         for s in schwaerzungen where b.stufe < s.sichtbarAb {
             guard !s.wortlaut.isEmpty else { continue }
-            ergebnis = ergebnis.replacingOccurrences(of: s.wortlaut, with: s.marke)
+            ergebnis = ergebnis.replacingOccurrences(of: s.wortlaut,
+                                                     with: s.marke.fuer(s.wortlaut))
         }
         return ergebnis
+    }
+
+    /// Bleibt bei dieser Schwaerzung die Zeilenbreite erhalten?
+    ///
+    /// Fuer die Anzeige, damit sie warnen kann, statt eine zerrissene Tabelle
+    /// wortlos zu zeigen. Gemessen: "[geschwärzt]" statt "50,00" macht aus
+    /// einer 78 Zeichen langen Vertragszeile eine mit 85.
+    public static func haeltLayout(_ schwaerzungen: [Schwaerzung]) -> Bool {
+        schwaerzungen.allSatisfy { $0.marke.haeltLayout }
     }
 
     /// Filtert eine Menge VOR der Auswertung.

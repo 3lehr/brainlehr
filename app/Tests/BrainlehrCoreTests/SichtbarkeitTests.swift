@@ -92,7 +92,63 @@ final class SichtbarkeitTests: XCTestCase {
         // Wer einen Vertrag liest, muss erkennen, dass eine Stelle fehlt.
         let s = [Schwaerzung(wortlaut: "Diana Kunzmann", sichtbarAb: .intern)]
         let t = Sichtbarkeit.schwaerze(vertrag, s, fuer: gast)
-        XCTAssertTrue(t.contains("[geschwärzt]"))
+        XCTAssertTrue(t.contains("█"))
+    }
+
+    // MARK: - Layout: die Zeile darf nicht verrutschen
+
+    /// Gemessen an einer echten Vertragszeile (volksbank.pdf Seite 2, mit
+    /// -layout ausgelesen): 78 Zeichen. Mit "[geschwärzt]" statt "50,00"
+    /// werden daraus 85 -- in einer Spaltentabelle verrutscht damit alles
+    /// rechts davon, und das Dokument wird unlesbar.
+    func testBlockzeichenHaltenDieZeilenbreiteExakt() {
+        let zeile = "     Der Verwalter erhält eine Vergütung in Höhe von 50,00 EUR pro Wohneinheit"
+        let block = [Schwaerzung(wortlaut: "50,00", sichtbarAb: .intern)]
+        let ersetzt = [Schwaerzung(wortlaut: "50,00", sichtbarAb: .intern,
+                                   marke: .text("[geschwärzt]"))]
+
+        let mitBlock = Sichtbarkeit.schwaerze(zeile, block, fuer: gast)
+        XCTAssertEqual(mitBlock.count, zeile.count, "Blockzeichen muessen die Breite halten")
+        XCTAssertFalse(mitBlock.contains("50,00"))
+
+        let mitText = Sichtbarkeit.schwaerze(zeile, ersetzt, fuer: gast)
+        XCTAssertNotEqual(mitText.count, zeile.count,
+                          "Fester Text verschiebt -- das ist der bekannte Preis")
+    }
+
+    func testDieAnzeigeKannWarnenBevorSieZerreisst() {
+        XCTAssertTrue(Sichtbarkeit.haeltLayout(
+            [Schwaerzung(wortlaut: "x", sichtbarAb: .intern)]))
+        XCTAssertFalse(Sichtbarkeit.haeltLayout(
+            [Schwaerzung(wortlaut: "x", sichtbarAb: .intern, marke: .text("[weg]"))]))
+        // Eine einzige verschiebende Schwaerzung reicht, um zu warnen.
+        XCTAssertFalse(Sichtbarkeit.haeltLayout([
+            Schwaerzung(wortlaut: "a", sichtbarAb: .intern),
+            Schwaerzung(wortlaut: "b", sichtbarAb: .intern, marke: .text("[weg]"))]))
+    }
+
+    /// Wer die LAENGE verbergen muss, kann das -- und nimmt die Verschiebung
+    /// in Kauf. "███" verraet, dass es dreistellig war; bei einem Betrag ist
+    /// das ein staerkeres Leck als bei einem Namen.
+    func testFesteBlocklaengeVerbirgtDieLaenge() {
+        let s = [Schwaerzung(wortlaut: "Diana Kunzmann", sichtbarAb: .intern,
+                             marke: .blockFesterLaenge(5))]
+        let t = Sichtbarkeit.schwaerze(vertrag, s, fuer: gast)
+        XCTAssertTrue(t.contains("█████"))
+        XCTAssertFalse(t.contains("Kunzmann"))
+        XCTAssertFalse(t.contains(String(repeating: "█", count: 14)))
+    }
+
+    /// DER Punkt, den der Betreiber praezisiert hat: geschwaerzt wird die
+    /// PROJEKTION, nicht das Original.
+    func testDasOriginalBleibtUnveraendert() {
+        let original = vertrag
+        let s = [Schwaerzung(wortlaut: "Diana Kunzmann", sichtbarAb: .intern)]
+        _ = Sichtbarkeit.schwaerze(vertrag, s, fuer: gast)
+        _ = Sichtbarkeit.schwaerze(vertrag, s, fuer: betreiber)
+        XCTAssertEqual(vertrag, original, "die Vorlage darf sich nie aendern")
+        // Und zwei Betrachter beeinflussen einander nicht.
+        XCTAssertEqual(Sichtbarkeit.schwaerze(vertrag, s, fuer: betreiber), original)
     }
 
     func testWerDarfSiehtDenVollenText() {
