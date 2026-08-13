@@ -136,6 +136,32 @@ leer bleibt:
 `kern/fundstelle.py` und die beiden Datenendpunkte bleiben unverändert gültig:
 sie beantworten „wo steht das" oder sagen, dass sie es nicht wissen.
 
+## Nachtrag: die Referenz gelesen, nachdem gemessen war
+
+Die parallele Sitzung mahnte an, die Apple-Referenz zu lesen statt sich auf
+Modellwissen zu verlassen — mit einem eigenen Beleg: Sie hatte zehn
+Claude-Code-Haken-Ereignisse für vollständig gehalten, die Referenz nennt 29.
+
+Nachgelesen. **Sie bestätigt jede gemessene Aussage punktgenau**, auch die
+unbequeme: `QLPreviewView` kennt nur `previewItem`, `displayState` und
+`refreshPreviewItem` — kein Aufschlagen, kein Suchen, kein Hervorheben, und
+ausdrücklich kein Fehler-Delegate. Die Referenz empfiehlt selbst, das Format
+vorher zu prüfen. Eine gemessene Aussage ist damit nicht schwächer als die
+Referenz, sondern stärker: sie gilt für die Fassung, die auf dem Rechner liegt.
+
+**Und trotzdem hat die Mahnung getragen, an genau ihrer Stelle.** Die Referenz
+nennt `PDFMarkupType.redact` — danach hätte keine Messung gesucht, weil es in
+keinem Auftrag stand. Das ist die Lücke, die eine Messung strukturell nicht
+schließt: Sie prüft die Fälle, die der Messende schon kennt.
+
+**Die Falle darin, ungeprüft und deshalb hier als Warnung:** Eine
+Redaktions-Anmerkung ist bei PDF zunächst nur eine *Anmerkung* — ein schwarzes
+Rechteck über weiterhin vorhandenem Text. Für ein Repo mit WEG-Rechtsfällen und
+Namen Dritter ist das keine Randnotiz. Wird je eine Schwärzung gebaut, gilt sie
+erst als erfüllt, wenn `pdftotext` den Namen **nicht mehr** findet — vorher
+findet er ihn, nachher nicht. Alles andere ist Anstrich, der wie Schutz
+aussieht. Festgehalten als Knoten `201381b4`.
+
 ## Nachtrag zur Arbeitsweise
 
 Der erste Entwurf dieser ADR war **methodisch sauber und im Ergebnis falsch**.
