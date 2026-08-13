@@ -1,4 +1,6 @@
-# STAND brainlehr — 2026-08-13T18:10:00+0200
+# STAND brainlehr — 2026-08-13T18:35:00+0200
+
+**Haerteste Zahl des Tages:** Der Abruf liefert **nie**, was tatsaechlich gelesen wurde — 0 von 13 in der Klasse `lese`, gegen 16 von 52 in `pfad` (Vollerhebung ueber alle 45 Faelle, `90664e98`, `9d49fe1`). Nicht die Zielart entscheidet, sondern ob der Aufgabentext eine Bruecke zum Ziel enthaelt. Die guenstigere Klasse ist die selbsterfuellendere.
 
 **Offen:** Klarname in der geschwaerzten PDF · Aufgabe 101 (App zeigt nur `offen`) · Schritt 3 von `docs/PLAN_REGELDATEI_2026-08-13.md` (Aufteilung CLAUDE.md gegen `~/.claude/rules/*.md`).
 
