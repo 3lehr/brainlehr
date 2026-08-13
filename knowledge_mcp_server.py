@@ -1966,7 +1966,32 @@ def fold_de(text: str) -> str:
     return text.lower().translate(_FOLD_TABLE)
 
 
-_QUERY_WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüß0-9]+")
+# \w (Unicode, Python-Vorgabe) statt der alten ASCII+Umlaut-Klasse: die
+# alte Klasse [A-Za-zÄÖÜäöüß0-9]+ erkennt japanische/chinesische Zeichen
+# GAR NICHT als Wort -- eine reine CJK-Anfrage wie "知識" fand ueber
+# _QUERY_WORD_RE.findall() null Woerter, _or_query() gab "" zurueck, und
+# knowledge_search() brach dann VOR jedem Kanal (auch dem Bedeutungskanal)
+# mit count=0 ab (Zeile "if not fts_query: ... return"). Belegt in
+# tests/test_stichwortkanal_kurze_anfragen.py::test_cjk_wort_wird_erkannt.
+_QUERY_WORD_RE = re.compile(r"\w+", re.UNICODE)
+
+
+def _stichwortkanal_blind(query: str) -> bool:
+    """Auftrag 89: schema.sql bindet knowledge_fts/lessons_fts an
+    tokenize='trigram' -- ein Trigramm braucht mindestens drei Zeichen, ein
+    kuerzeres Wort erzeugt keins und kann darum NIE treffen (strukturell
+    blind, nicht bloss selten treffend; gemessen 2026-08-13: 'ベース' 3
+    Zeichen -> 2 Treffer, '知識'/'検索'/'日本' je 2 Zeichen -> 0). Im Deutschen
+    sind Woerter unter drei Zeichen selten und meist Fuellwoerter; im
+    Japanischen/Chinesischen ist die zweistellige Verbindung die HAEUFIGSTE
+    Form eines Substantivs -- der Kanal ist dort blind fuer den Normalfall,
+    nicht fuer einen Sonderfall.
+
+    True nur, wenn JEDES Wort der Anfrage kuerzer als drei Zeichen ist --
+    ein einziges laengeres Wort (auch gemischt mit kurzen) laesst den Kanal
+    unveraendert, siehe _fuse_with_keyword_floor-Aufrufer."""
+    words = _QUERY_WORD_RE.findall(query)
+    return bool(words) and all(len(w) < 3 for w in words)
 
 
 def _fts_phrase(word: str) -> str:
@@ -2178,6 +2203,14 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     reinen FTS5-Verhalten. Jedes Ergebnis traegt "kind": "node"|"lesson".
     Returns summaries (not full content) for token efficiency.
 
+    Kanalwahl nach Anfragelaenge (Auftrag 89, siehe _stichwortkanal_blind):
+    sind ALLE Woerter der Anfrage kuerzer als drei Zeichen, ist der
+    Stichwortkanal (Trigramm-Tokenizer, schema.sql) strukturell blind --
+    seine FTS-Abfragen werden dann gar nicht erst gestellt, er beansprucht
+    kein Ranggewicht in der Fusion, und allein der Bedeutungskanal
+    (mehrsprachiges bge-m3) entscheidet. Trifft die Bedingung nicht zu (auch
+    nur ein Wort ab drei Zeichen genuegt), unveraendertes Verhalten.
+
     Rangfolge ueber BEIDE Sorten (Auftrag Punkt 3): rohe bm25-Werte aus
     knowledge_fts (6 Spalten) und lessons_fts (3 Spalten) sind zwischen den
     Tabellen NICHT vergleichbar (bm25 normiert ueber tabelleneigene
@@ -2231,9 +2264,23 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     # "count" mit oder verdraengt in der RRF-Fusion einen sichtbaren Treffer
     # von einem Platz vor max_results. Nur Knoten: lessons_learned hat keine
     # tags-Spalte, siehe _zweckprojektion_sichtbar.
+    # Kanalwahl an die Anfragelaenge binden (Auftrag 89): ist der Stichwortkanal
+    # per Konstruktion blind (_stichwortkanal_blind), wird die FTS-MATCH-Abfrage
+    # erst gar nicht gestellt -- sie liefe ohnehin auf 0 Zeilen (Trigramm ohne
+    # Chance auf Treffer), aber NUR den leeren Aufruf zu unterlassen waere ein
+    # Performance-Detail, kein Beleg. Der eigentliche Punkt: fts_rows/
+    # fts_lesson_rows bleiben []  -- explizit erzwungen, nicht dem Zufall
+    # ueberlassen -- also traegt keyword_ordered_ids weiter unten GARANTIERT
+    # nichts zur RRF-Fusion bei (rrf_fuse addiert nur ueber tatsaechlich
+    # vorhandene Listenelemente), und _fuse_with_keyword_floor()s Sockel
+    # (floor = keyword_ordered_ids[:max_results]) ist ebenfalls leer -- der
+    # Bedeutungskanal entscheidet dann allein. allowed_node_ids/
+    # allowed_lesson_ids (Sichtbarkeits-Erlaubnisliste fuers Embedding-Ranking)
+    # werden UNVERAENDERT weiter berechnet, die betreffen den Bedeutungskanal.
+    blind = _stichwortkanal_blind(query)
     ausw = ausweis.loese_auf()
     if scope == "all":
-        fts_rows = [r for r in conn.execute(
+        fts_rows = [] if blind else [r for r in conn.execute(
             f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
@@ -2244,7 +2291,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         allowed_node_ids = {r["id"] for r in conn.execute(
             f"SELECT id, tags FROM knowledge_nodes WHERE {_NICHT_GESPERRT_SQL}"
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
-        fts_lesson_rows = conn.execute(
+        fts_lesson_rows = [] if blind else conn.execute(
             f"""SELECT l.id, l.description, l.type, l.severity, l.projects
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
@@ -2256,7 +2303,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             f"SELECT id FROM lessons_learned WHERE status = 'active' AND {_NICHT_GESPERRT_SQL}"
         )}
     else:
-        fts_rows = [r for r in conn.execute(
+        fts_rows = [] if blind else [r for r in conn.execute(
             f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
@@ -2268,7 +2315,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             f"SELECT id, tags FROM knowledge_nodes WHERE project_id IN ('shared', ?) AND {_NICHT_GESPERRT_SQL}", (scope,)
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         _proj_clause = geltungsbereich.sql_projects_exact("l.projects")
-        fts_lesson_rows = conn.execute(
+        fts_lesson_rows = [] if blind else conn.execute(
             f"""SELECT l.id, l.description, l.type, l.severity, l.projects
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
