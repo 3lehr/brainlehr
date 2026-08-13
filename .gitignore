@@ -71,3 +71,7 @@ sichtbarkeit.log
 # erzeugbar per `swift build`.
 app/.build/
 app/.swiftpm/
+
+# Uebersetztes OCR-Hilfsprogramm -- Quelle ist app/werkzeuge/ocr_stellen.swift,
+# gebaut wird es von app/bauen.sh. Ein Binaerbaustein gehoert nicht ins Repo.
+app/werkzeuge/ocr_stellen

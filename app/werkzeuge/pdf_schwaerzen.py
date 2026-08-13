@@ -148,23 +148,118 @@ def steckt_noch_drin(pfad: Path, wortlaut: str) -> dict:
             befund["text_pymupdf"] = sum(s.get_text().count(wortlaut) for s in d)
     befund["text_poppler"] = _text_unabhaengig(pfad).count(wortlaut)
 
+    # SECHSTE EBENE: Bildseiten. Alle fuenf Textpruefungen sind auf einem
+    # reinen Scan BLIND -- dort steht der Name als Pixel, nicht als Zeichen.
+    # Eine Pruefung, die das verschweigt, meldet Sicherheit, wo keine ist.
+    if fitz is not None:
+        with fitz.open(pfad) as d:
+            blind = [i + 1 for i, s in enumerate(d) if seitenart(s) == "scan_ohne_text"]
+        befund["bildseiten_ungeprueft"] = blind
+    else:
+        befund["bildseiten_ungeprueft"] = []
+
     befund["sauber"] = (befund["klartext"] == 0 and befund["streams"] == 0
                         and not befund["metadaten"] and not befund["xmp"]
                         and befund["text_pymupdf"] == 0
-                        and befund["text_poppler"] == 0)
+                        and befund["text_poppler"] == 0
+                        and not befund["bildseiten_ungeprueft"])
+    if befund["bildseiten_ungeprueft"]:
+        befund["hinweis"] = ("Bildseiten ohne Textebene -- der Wortlaut kann dort "
+                             "als Pixel stehen und ist so nicht pruefbar.")
     return befund
 
 
+def seitenart(seite) -> str:
+    """echt_text | scan_mit_text | scan_ohne_text | leer
+
+    GEMESSEN im echten Bestand (1067 Seiten aus buckeberg):
+      528 scan_mit_text · 508 echt_text · 27 scan_ohne_text · 4 leer
+
+    Die Unterscheidung ist keine Statistik, sondern entscheidet, ob eine
+    Schwaerzung ueberhaupt greifen KANN: Ohne Textebene findet search_for()
+    nichts, es wird nichts markiert, nichts entfernt -- und die Datei sieht
+    hinterher aus wie erfolgreich geschwaerzt.
+    """
+    text = seite.get_text().strip()
+    bilder = seite.get_images()
+    grossesBild = any((b[2] * b[3]) > 500_000 for b in bilder)
+    if len(text) < 50:
+        return "scan_ohne_text" if bilder else "leer"
+    return "scan_mit_text" if grossesBild else "echt_text"
+
+
+def _ocr_stellen(seite, wortlaute: list[str], dpi: int = 200) -> list:
+    """Rechtecke der gesuchten Woerter auf einer Seite OHNE Textebene.
+
+    Nutzt das macOS-Vision-Werkzeug daneben. Gemessen an einem echten reinen
+    Scan: Vision erkennt 70 Bloecke mit Konfidenz 1,00, tesseract liefert an
+    derselben Stelle "Fe a".
+
+    Y WIRD GESPIEGELT: Vision rechnet von UNTEN links, PDF von OBEN links.
+    Wer das vergisst, schwaerzt die falsche Zeile -- und das sieht plausibel
+    aus, weil ja etwas geschwaerzt wurde.
+    """
+    import json as _json
+    import subprocess
+    import tempfile
+
+    werkzeug = Path(__file__).resolve().parent / "ocr_stellen"
+    if not werkzeug.is_file():
+        return []
+    with tempfile.TemporaryDirectory() as tmp:
+        bild = Path(tmp) / "seite.png"
+        seite.get_pixmap(dpi=dpi).save(bild)
+        try:
+            lauf = subprocess.run([str(werkzeug), str(bild), *wortlaute],
+                                  capture_output=True, text=True, timeout=120)
+            aus = _json.loads(lauf.stdout or "{}")
+        except Exception:
+            return []
+
+    breite, hoehe = seite.rect.width, seite.rect.height
+    rechtecke = []
+    for s in aus.get("stellen", []):
+        x0 = s["x"] * breite
+        x1 = (s["x"] + s["breite"]) * breite
+        # Spiegelung: Vision-y ist der UNTERE Rand, gemessen von unten.
+        y1 = (1.0 - s["y"]) * hoehe
+        y0 = (1.0 - (s["y"] + s["hoehe"])) * hoehe
+        rechtecke.append(fitz.Rect(x0, y0, x1, y1))
+    return rechtecke
+
+
 def schwaerze(quelle: Path, ziel: Path, wortlaute: list[str],
-              metadaten_saeubern: bool = True) -> dict:
+              metadaten_saeubern: bool = True, ocr: bool = True) -> dict:
     """Schwaerzt jede Fundstelle jedes Wortlauts. Quelle bleibt unangetastet."""
     if fitz is None:
         raise RuntimeError("PyMuPDF fehlt -- ohne es gibt es keine echte Schwaerzung.")
 
     d = fitz.open(quelle)
     getroffen = {w: 0 for w in wortlaute}
+    arten: dict[str, int] = {}
+    ungeprueft: list[int] = []   # Seiten, auf denen nicht gesucht werden konnte
     try:
-        for seite in d:
+        for nr, seite in enumerate(d, start=1):
+            art = seitenart(seite)
+            arten[art] = arten.get(art, 0) + 1
+
+            # REINER SCAN: ohne OCR kann hier nichts gefunden werden, und
+            # das MUSS gemeldet werden statt still zu gelingen.
+            if art == "scan_ohne_text":
+                gefunden = _ocr_stellen(seite, [w for w in wortlaute if w.strip()]) if ocr else []
+                if not gefunden and any(w.strip() for w in wortlaute):
+                    ungeprueft.append(nr)
+                for r in gefunden:
+                    seite.add_redact_annot(r, fill=(0, 0, 0))
+                    # Welches Wort getroffen wurde, weiss die Bildsuche nicht
+                    # genauer als der Aufruf -- darum auf alle verteilt.
+                    for w in wortlaute:
+                        if w.strip():
+                            getroffen[w] += 1
+                            break
+                seite.apply_redactions(images=2, graphics=1, text=0)
+                continue
+
             for w in wortlaute:
                 if not w.strip():
                     continue
@@ -195,7 +290,12 @@ def schwaerze(quelle: Path, ziel: Path, wortlaute: list[str],
         d.close()
 
     return {"quelle": str(quelle), "ziel": str(ziel), "treffer": getroffen,
-            "gesamt": sum(getroffen.values())}
+            "gesamt": sum(getroffen.values()),
+            "seitenarten": arten,
+            # Seiten, auf denen NICHT gesucht werden konnte. Das ist kein
+            # Nebenwert: Wer sie ignoriert, haelt eine Datei fuer geschwaerzt,
+            # in der ein reiner Scan den Namen weiter zeigt.
+            "ungeprueft": ungeprueft}
 
 
 # ─── Selbsttest ───────────────────────────────────────────────────────────
@@ -251,6 +351,56 @@ def _selftest() -> int:
         with fitz.open(quelle) as a, fitz.open(ziel) as b:
             assert a.page_count == b.page_count
             assert tuple(a[0].rect) == tuple(b[0].rect)
+
+        # ─── Der Scan-Fall, und er ist der gefaehrliche ────────────────────
+        # Eine Seite, auf der der Name NUR als Bild steht. Alle fuenf
+        # Textpruefungen sind hier blind: pdftotext findet nichts, PyMuPDF
+        # findet nichts, die Streams enthalten keinen Klartext -- und der
+        # Name ist trotzdem lesbar auf dem Papier.
+        scan, scan_z = tmp / "scan.pdf", tmp / "scan_geschwaerzt.pdf"
+        d = fitz.open()
+        s = d.new_page()
+        s.insert_text((72, 100), f"Verwalterin: {geheim}", fontsize=14)
+        s.insert_text((72, 130), f"Gegenstand: {harmlos}", fontsize=14)
+        bild = d[0].get_pixmap(dpi=150)
+        d.close()
+        # Dieselbe Seite noch einmal, aber NUR als Bild -- so entsteht ein Scan.
+        d = fitz.open()
+        s = d.new_page(width=bild.width * 72 / 150, height=bild.height * 72 / 150)
+        s.insert_image(s.rect, pixmap=bild)
+        d.save(scan)
+        d.close()
+
+        with fitz.open(scan) as p:
+            assert seitenart(p[0]) == "scan_ohne_text", \
+                f"Probe ist kein reiner Scan: {seitenart(p[0])}"
+            assert not p[0].search_for(geheim), "Textsuche darf hier nichts finden"
+
+        # ROT: Die Textpruefung meldet den Scan NICHT als sauber, obwohl sie
+        # nichts findet -- genau darum geht es. Ein "sauber" waere hier eine
+        # Falschaussage ueber Namen Dritter.
+        vor_scan = steckt_noch_drin(scan, geheim)
+        assert vor_scan["text_poppler"] == 0 and vor_scan["streams"] == 0, \
+            "der Scan darf keinen Text tragen, sonst prueft dieser Test nichts"
+        assert not vor_scan["sauber"], \
+            "eine Bildseite darf NIE als sauber gelten -- sie ist nicht pruefbar"
+        assert vor_scan["bildseiten_ungeprueft"] == [1]
+
+        # GRUEN: Mit OCR wird die Stelle gefunden und im Bild geschwaerzt.
+        erg_scan = schwaerze(scan, scan_z, [geheim])
+        assert erg_scan["seitenarten"].get("scan_ohne_text") == 1
+        if erg_scan["gesamt"] > 0:
+            # Die Stelle muss im BILD dunkel sein -- Text gibt es nicht zu pruefen.
+            with fitz.open(scan) as a, fitz.open(scan_z) as b:
+                pa, pb = a[0].get_pixmap(dpi=100), b[0].get_pixmap(dpi=100)
+                assert pa.samples != pb.samples, "das Bild wurde gar nicht angefasst"
+            assert not erg_scan["ungeprueft"], \
+                f"Seiten ohne Befund muessen gemeldet werden: {erg_scan['ungeprueft']}"
+        else:
+            # Kein OCR-Treffer: DANN MUSS ES GEMELDET WERDEN. Stilles
+            # Gelingen waere hier der teure Fehler.
+            assert erg_scan["ungeprueft"] == [1], \
+                "ohne Treffer auf einer Bildseite muss die Seite als ungeprueft gelten"
 
         # Negativfaelle.
         leer = schwaerze(quelle, tmp / "leer.pdf", ["   "])
