@@ -126,6 +126,10 @@ import herkunft_normentscheider  # Auftrag 2026-08-09: norm_entschieden_von trae
                                   # 'betreiber' statt actor, wenn source einen belegten
                                   # Betreiber-Urheber zeigt (CLAUDE.md-Import). Kein
                                   # Zirkel -- das Modul importiert nichts von hier.
+import normachsen  # Auftrag 95 (Schritt 1, docs/PLAN_RECHTSRAUM_2026-08-13.md):
+                    # ARTEN (Werte fuer norm_art) und FREMDE_QUELLE (Erkennung
+                    # fremder Herkunft an source) -- wiederverwendet, nicht neu
+                    # erfunden. Kein Zirkel -- das Modul importiert nichts von hier.
 
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad (gleiche Bauform wie die drei
 # BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
@@ -428,6 +432,55 @@ BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.gilt_bis liegt vor gilt_ab');
 END;
 """
+# norm_art-Pflicht (Auftrag 95, Schritt 1, docs/PLAN_RECHTSRAUM_2026-08-13.md).
+# Identischer Text wie schema.sql (Zwei-Kopien-Muster wie NORM_ENTSCHEIDUNG_
+# TRIGGERS_SQL oben, gleicher Grund: fresh install liest schema.sql direkt,
+# eine gewachsene DB bekommt denselben Trigger per Nachzug -- siehe
+# _ensure_norm_art_trigger). ALLOWED_NORM_ART kommt aus normachsen.ARTEN
+# (Knoten dd367fd1), nicht neu benannt.
+ALLOWED_NORM_ART = set(normachsen.ARTEN)
+NORM_ART_TRIGGER_SQL = """
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_art_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_art IS NOT NULL AND NEW.norm_art NOT IN ('sein','sollen','duerfen')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_art unzulaessig: erlaubt sind sein, sollen, duerfen (oder NULL fuer eigenes Wissen)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_art_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_art IS NOT NULL AND NEW.norm_art NOT IN ('sein','sollen','duerfen')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_art unzulaessig: erlaubt sind sein, sollen, duerfen (oder NULL fuer eigenes Wissen)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_art_pflicht_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_art IS NULL
+    AND NEW.source IS NOT NULL AND (
+        NEW.source LIKE '%gesetz%' OR NEW.source LIKE '%verordnung%' OR NEW.source LIKE '%urteil%'
+        OR NEW.source LIKE '%az.%' OR NEW.source LIKE '%aktenzeichen%' OR NEW.source LIKE '%BGBl%'
+        OR NEW.source LIKE '%EU-Verordnung%' OR NEW.source LIKE '%Richtlinie%' OR NEW.source LIKE '%DIN %'
+        OR NEW.source LIKE '%ISO %' OR NEW.source LIKE '%IEC %'
+        OR NEW.source LIKE '%BSI %' OR NEW.source LIKE '%WCAG%' OR NEW.source LIKE '%RFC%'
+    )
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_art fehlt fuer einen Satz fremder Herkunft (source nennt Gesetz/Verordnung/Urteil/DIN/ISO/IEC/BSI/WCAG/RFC): norm_art setzen -- sein (Studie/Messung), sollen (Leitlinie/Direktive) oder duerfen (Gebuehrenordnung/Lizenz), siehe Knoten dd367fd1. Eigenes Wissen ohne fremdes Zitat braucht norm_art nicht.');
+END;
+"""
+# _FREMDE_QUELLE_MARKER: EXAKT dieselbe Liste wie im WHEN-Ausdruck von
+# knowledge_nodes_norm_art_pflicht_bi oben (und in schema.sql) -- '%EN %'
+# bewusst NICHT dabei, siehe Kommentar dort (False-Positive-Quelle bei jeder
+# neuen Zeile, anders als bei norm_rang_herkunft, das nur norm_rang IN (1,2)
+# trifft). NICHT normachsen.FREMDE_QUELLE (die hat \b-Wortgrenzen und ist
+# darum enger) -- die Vorab-Pruefung unten muss BYTE-IDENTISCH mit diesem
+# Trigger urteilen, sonst faengt der Trigger Faelle, die die Vorab-Pruefung
+# durchliess (genau das ist bei vier echten Bestandsquellen passiert, bevor
+# diese Liste hier eingefuehrt wurde -- IntegrityError statt Klartext-Fehler).
+_FREMDE_QUELLE_MARKER = (
+    "gesetz", "verordnung", "urteil", "az.", "aktenzeichen", "bgbl",
+    "eu-verordnung", "richtlinie", "din ", "iso ", "iec ", "bsi ", "wcag", "rfc",
+)
 # Belegart (SCHRITT 1, docs/PLAN_MENSCHLICHER_ENTSCHEID_2026-08-12.md).
 # Identischer Text wie schema.sql, gleiches Zwei-Kopien-Muster wie
 # NORM_ENTSCHEIDUNG_TRIGGERS_SQL oben -- siehe dortiger Kommentar und der
@@ -694,6 +747,46 @@ def _ensure_norm_art_column(conn: sqlite3.Connection) -> None:
         shutil.copy2(DB_PATH, backup_path)
 
     conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN norm_art TEXT")
+
+
+def _ensure_norm_art_trigger(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die drei norm_art-Trigger (Auftrag 95,
+    Schritt 1 aus docs/PLAN_RECHTSRAUM_2026-08-13.md). Gleiches Muster wie
+    _ensure_norm_entscheidung_triggers: die Spalte kommt zuerst
+    (_ensure_norm_art_column), hier nur die Trigger. KEIN Daten-Backfill
+    noetig -- die Pflicht-Trigger greifen nur bei NEUEN Zeilen mit fremd
+    aussehender source (BEFORE INSERT, siehe NORM_ART_TRIGGER_SQL-Kommentar),
+    Altbestand (0 von 2166 gefuellt) bleibt beim Nachziehen unberuehrt."""
+    if "knowledge_nodes" not in {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }:
+        return
+    if "norm_art" not in {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}:
+        return  # Spalte fehlt noch (sollte durch die Aufrufreihenfolge in ensure_schema nicht vorkommen)
+    existing_triggers = {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")
+    }
+    needed = {
+        "knowledge_nodes_norm_art_check_bi", "knowledge_nodes_norm_art_check_bu",
+        "knowledge_nodes_norm_art_pflicht_bi",
+    }
+    if needed <= existing_triggers:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"norm_art-Trigger an knowledge_nodes fehlen, aber die Sicherung vor dem "
+            f"automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
+            "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, nichts geaendert."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    conn.executescript(NORM_ART_TRIGGER_SQL)
 
 
 def _ensure_norm_entscheidung_column(conn: sqlite3.Connection) -> None:
@@ -1248,6 +1341,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_anlass_columns(conn)
     _ensure_abgeleitet_von_column(conn)
     _ensure_norm_art_column(conn)
+    _ensure_norm_art_trigger(conn)
     _ensure_norm_entscheidung_column(conn)
     _ensure_norm_entschieden_columns(conn)
     _ensure_norm_entscheidung_triggers(conn)
@@ -2465,6 +2559,30 @@ def _validate_norm_entscheidung(norm_entscheidung: str | None, norm_rang: int | 
     return None
 
 
+def _validate_norm_art(source: str, norm_art: str | None) -> str | None:
+    """Auftrag 95 (Schritt 1, docs/PLAN_RECHTSRAUM_2026-08-13.md): norm_art
+    ist NUR fuer Saetze FREMDER Herkunft Pflicht -- eigene Regeln und
+    Selbsterfahrung bleiben ohne Aufwand (NULL). Fremd-Erkennung ueber
+    _FREMDE_QUELLE_MARKER, BYTE-IDENTISCH mit dem WHEN-Ausdruck von
+    knowledge_nodes_norm_art_pflicht_bi (NICHT normachsen.FREMDE_QUELLE --
+    dessen \\b-Wortgrenzen kann eine SQL-LIKE-Kette nicht nachbilden, ein
+    Auseinanderlaufen hiesse: diese Vorab-Pruefung sagt 'ok', der Trigger
+    danach doch ab -- als rohe IntegrityError statt Klartext, siehe
+    _FREMDE_QUELLE_MARKER-Kommentar fuer den gemessenen Fall). Trigger bleibt
+    trotzdem die eigentliche Schranke, er faengt auch Wege, die hier
+    vorbeischreiben."""
+    if norm_art is not None and norm_art not in ALLOWED_NORM_ART:
+        return (f"norm_art unzulaessig: {norm_art!r}. Erlaubt sind "
+                f"{sorted(ALLOWED_NORM_ART)} (oder weglassen fuer eigenes Wissen).")
+    quelle = (source or "").casefold()
+    if norm_art is None and any(marker in quelle for marker in _FREMDE_QUELLE_MARKER):
+        return (f"norm_art fehlt: source ({source!r}) deutet auf eine Norm/Entscheidung "
+                f"FREMDER Herkunft hin (Gesetz/Verordnung/Urteil/DIN/ISO/IEC/BSI/WCAG/RFC). "
+                f"norm_art setzen: sein (Studie/Messung), sollen (Leitlinie/Direktive) oder "
+                f"duerfen (Gebuehrenordnung/Lizenz), siehe Knoten dd367fd1.")
+    return None
+
+
 def _validate_anlass(anlass: str) -> str | None:
     """Sprechende Ablehnung statt stillem Erfolg oder 500 bei unbekanntem
     anlass (Auftrag 2026-08-06). Gibt eine Fehlermeldung mit der erlaubten
@@ -2686,6 +2804,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                   norm_entschieden_grund: str | None = None,
                   abgeleitet_von: str | None = None,
                   gattung: str | None = None,
+                  norm_art: str | None = None,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
     """Add a new knowledge node to the tree. Rejects an unknown parent_path
@@ -2726,7 +2845,13 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     SYSTEM aus der Art des Quellknotens erzeugt, der Aufrufer darf source
     selbst nicht mitliefern -- "dem Schreiber die Feder nehmen", denn ein
     selbst formulierter Herkunftstext kann leaken, egal wie gut die
-    Zitat-Pruefung unten ist."""
+    Zitat-Pruefung unten ist.
+
+    norm_art (Auftrag 95, Knoten dd367fd1): sein/sollen/duerfen -- Pflicht
+    NUR, wenn source auf eine Norm/Entscheidung FREMDER Herkunft zeigt
+    (Gesetz/Verordnung/Urteil/DIN/ISO/IEC/BSI/WCAG/RFC). Eigenes Wissen
+    (Hausregel, Selbsterfahrung) bleibt NULL, ohne Aufwand -- siehe
+    _validate_norm_art."""
     if project_id is None:
         _pid_conn = get_db()
         project_id = _projekt_aus_pfad(parent_path, _bekannte_projekte(_pid_conn))
@@ -2900,12 +3025,19 @@ def knowledge_add(parent_path: str, title: str, summary: str,
         return {"error": f"gattung unzulaessig: {gattung!r}. Erlaubt sind "
                          f"{', '.join(ALLOWED_GATTUNG)}."}
 
+    norm_art_fehler = _validate_norm_art(source, norm_art)
+    if norm_art_fehler:
+        log_access(conn, node_path, "add", project_id=project_id, actor=actor, model=model,
+                   session=session, status="rejected", query="norm_art_ungueltig")
+        conn.close()
+        return {"error": norm_art_fehler}
+
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
-         norm_rang, gilt_ab, gilt_bis, norm_entscheidung, norm_entschieden_von, created_at, norm_entschieden_grund,
+         norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, created_at, norm_entschieden_grund,
          anlass, abgeleitet_von, actor, session, model, _KLIENT,
          # Vorgabe kommt aus dem Schema (arbeitsbestand) -- None laesst sie
          # stehen, statt sie hier ein zweites Mal zu behaupten.
@@ -2945,6 +3077,7 @@ def knowledge_update(node_id: str, summary: str | None = None,
                      gilt_bis: str | None = None, norm_entscheidung: str | None = None,
                      norm_entschieden_grund: str | None = None,
                      gattung: str | None = None,
+                     norm_art: str | None = None,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
     """Update an existing knowledge node. Like summary/content/tags, only
@@ -2952,6 +3085,11 @@ def knowledge_update(node_id: str, summary: str | None = None,
     at "no Normschicht values" until one is explicitly passed. title aendert
     nur den Titel -- path bleibt unveraendert stehen (path wird nur bei
     knowledge_add aus dem Titel abgeleitet, nie nachtraeglich).
+
+    norm_art (Auftrag 95): nachtraegliche Korrektur/Nachtrag EINES Knotens
+    erlaubt (wie gattung), Pflicht bei Neuanlage bleibt Sache von
+    knowledge_add -- source ist hier kein Parameter (unveraenderlich nach
+    dem Anlegen), darum keine erneute Fremd-Herkunfts-Pruefung noetig.
 
     norm_entscheidung (Auftrag 2026-08-08): nur noetig, wenn die Aenderung
     die BESTEHENDE Entscheidung widersprechen wuerde (z.B. einer bisher
@@ -2967,6 +3105,17 @@ def knowledge_update(node_id: str, summary: str | None = None,
                    status="rejected", query="knoten_nicht_gefunden")
         conn.close()
         return {"error": f"Node not found: {node_id}"}
+
+    if norm_art is not None and norm_art not in ALLOWED_NORM_ART:
+        # source ist hier kein Parameter (unveraenderlich nach dem Anlegen,
+        # siehe Docstring) -- die Fremd-Pflicht selbst greift nur bei
+        # knowledge_add, hier nur der Wertebereich (wie bei gattung).
+        log_access(conn, row["path"], "update", project_id=row["project_id"],
+                   actor=actor, model=model, session=session,
+                   status="rejected", query="norm_art_ungueltig")
+        conn.close()
+        return {"error": f"norm_art unzulaessig: {norm_art!r}. Erlaubt sind "
+                         f"{sorted(ALLOWED_NORM_ART)} (oder weglassen)."}
 
     # Grenzwertpruefung braucht beide Werte im Kontext: wer nur gilt_bis
     # aendert, wird trotzdem gegen das vorhandene gilt_ab geprueft (und
@@ -3078,6 +3227,12 @@ def knowledge_update(node_id: str, summary: str | None = None,
         # Gattung nicht stillschweigend auf die Vorgabe zuruecksetzen.
         updates.append("gattung = ?")
         params.append(gattung)
+
+    if norm_art is not None:
+        # Gleiche Bauform wie gattung direkt darueber: nur bei ausdruecklicher
+        # Angabe, kein Rueckfuell-Nebeneffekt anderer Feldaenderungen.
+        updates.append("norm_art = ?")
+        params.append(norm_art)
 
     updates.append("updated_at = ?")
     params.append(neuer_zeitpunkt)

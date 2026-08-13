@@ -1083,6 +1083,71 @@ BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang 1/2 verlangt fuer Hausnormen einen menschlichen Entscheider: norm_entschieden_von auf einen Menschen setzen -- ODER, falls dies eine Norm fremder Herkunft ist (Gesetz/Verordnung/Urteil/Normungsstelle), source entsprechend nennen (z.B. Gesetz, Urteil, DIN, ISO, BSI, WCAG) -- oder anlass=betreiber, wenn der Betreiber es angewiesen hat');
 END;
 
+-- norm_art-Wertebereich (Auftrag 95 = Schritt 1, docs/PLAN_RECHTSRAUM_2026-08-13.md).
+-- Werte aus Knoten dd367fd1 (Sein/Sollen/Duerfen), gleiche Bauform wie
+-- knowledge_nodes_norm_entschieden_belegart_check_bi/bu oben: NULL bleibt
+-- erlaubt (Altbestand, und jeder eigene Satz ohne fremdes Zitat), nur ein
+-- GESETZTER, aber unbekannter Wert wird abgewiesen. bi+bu, weil beide Wege
+-- (Anlegen, Nachtrag per knowledge_update) dieselbe Zusicherung umgehen
+-- koennten.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_art_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_art IS NOT NULL AND NEW.norm_art NOT IN ('sein','sollen','duerfen')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_art unzulaessig: erlaubt sind sein, sollen, duerfen (oder NULL fuer eigenes Wissen)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_art_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_art IS NOT NULL AND NEW.norm_art NOT IN ('sein','sollen','duerfen')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_art unzulaessig: erlaubt sind sein, sollen, duerfen (oder NULL fuer eigenes Wissen)');
+END;
+
+-- norm_art-Pflicht fuer fremde Herkunft. Knoten dd367fd1 legt die Werte fest
+-- (sein/sollen/duerfen) aber nicht, WANN sie Pflicht sind -- das war die
+-- offene Frage dieses Auftrags. Antwort: NULL bleibt der Normalfall fuer
+-- eigenes Wissen (Hausregel, Selbsterfahrung) und braucht KEINEN Aufwand;
+-- Pflicht wird norm_art nur, wenn source auf eine Norm FREMDER Herkunft
+-- zeigt -- fast dieselbe Worterkennung wie knowledge_nodes_normrang_herkunft_bi
+-- oben, mit EINER bewussten Abweichung: '%EN %' fehlt hier. Jener Trigger
+-- feuert nur bei norm_rang IN (1,2) (selten), diese Pflicht bei JEDER neuen
+-- Zeile -- dort erwies sich '%EN %' als False-Positive-Quelle auf ganz
+-- gewoehnlichem Deutsch (z.B. "Impressen (Abruf..." oder "Knoten unter"
+-- enthalten woertlich 'en ', gemessen an 4 echten Bestandsquellen aus
+-- test_knowledge_add_source.py/test_ableitung.py, die dadurch fälschlich als
+-- Fremdnorm griffen). kern/normachsen.py::FREMDE_QUELLE (Python-Fassung)
+-- umgeht das mit einer \b-Wortgrenze vor 'EN'/'DIN' -- SQLite kennt kein
+-- REGEXP (siehe Kommentar oben), LIKE kann diese Grenze nicht nachbilden,
+-- darum hier ausgelassen statt eine falsche Praezision vorzutaeuschen. 'az.'
+-- bleibt (braucht einen Punkt, in Fliesstext viel seltener falsch positiv).
+-- knowledge_mcp_server.py::_FREMDE_QUELLE_MARKER spiegelt EXAKT diese Liste
+-- (nicht normachsen.FREMDE_QUELLE), damit Vorab-Pruefung und Trigger nie
+-- auseinanderlaufen.
+--
+-- BEWUSST NUR BEFORE INSERT, nicht BEFORE UPDATE -- gleiche Abwaegung wie
+-- knowledge_nodes_norm_entscheidung_pflicht_bi (siehe dortiger Kommentar):
+-- eine BEFORE-UPDATE-Fassung wuerde jede spaetere Aenderung an einer
+-- Altzeile mit fremd aussehender source (Altbestand: norm_art bei 0 von
+-- 2166 gefuellt) erzwingen, ihre Art rueckwirkend zu beantworten, obwohl
+-- die Grenze des Auftrags genau das verbietet ("KEINE rueckwirkende
+-- Massenbefuellung"). Wer eine Altzeile per knowledge_update() aendert,
+-- kann source ohnehin nicht mitgeben (Server-Vertrag) -- die Herkunft ist
+-- nach dem Anlegen unveraenderlich, die Pflicht darum am Anlegen genug.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_art_pflicht_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_art IS NULL
+    AND NEW.source IS NOT NULL AND (
+        NEW.source LIKE '%gesetz%' OR NEW.source LIKE '%verordnung%' OR NEW.source LIKE '%urteil%'
+        OR NEW.source LIKE '%az.%' OR NEW.source LIKE '%aktenzeichen%' OR NEW.source LIKE '%BGBl%'
+        OR NEW.source LIKE '%EU-Verordnung%' OR NEW.source LIKE '%Richtlinie%' OR NEW.source LIKE '%DIN %'
+        OR NEW.source LIKE '%ISO %' OR NEW.source LIKE '%IEC %'
+        OR NEW.source LIKE '%BSI %' OR NEW.source LIKE '%WCAG%' OR NEW.source LIKE '%RFC%'
+    )
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_art fehlt fuer einen Satz fremder Herkunft (source nennt Gesetz/Verordnung/Urteil/DIN/ISO/IEC/BSI/WCAG/RFC): norm_art setzen -- sein (Studie/Messung), sollen (Leitlinie/Direktive) oder duerfen (Gebuehrenordnung/Lizenz), siehe Knoten dd367fd1. Eigenes Wissen ohne fremdes Zitat braucht norm_art nicht.');
+END;
+
 -- Belegart-Wertebereich (SCHRITT 1, docs/PLAN_MENSCHLICHER_ENTSCHEID_2026-08-12.md).
 -- Gleiches Muster wie die anlass/norm_entscheidung-Wertebereichstrigger oben:
 -- bi+bu, weil beide Wege dieselbe Zusicherung umgehen koennten. NULL bleibt

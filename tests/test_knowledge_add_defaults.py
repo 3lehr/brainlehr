@@ -132,6 +132,10 @@ def test_fremdnorm_traegt_weiterhin_den_actor(temp_db):
         source="erzeugt aus buckeberg/recht/jahresabrechnung-BGH-Urteil (Stand 2026-08-09)",
         norm_entscheidung="norm_unbefristet", norm_rang=1, gilt_ab="2026-08-09",
         norm_entschieden_grund="g", actor="claude-code/opus-5",
+        # norm_art (Auftrag 95, nachtraeglich Pflicht fuer fremde Herkunft --
+        # source nennt woertlich 'Urteil'): 'sollen', weil ein Urteil eine
+        # bindende Feststellung ist, keine reine Messung (Knoten dd367fd1).
+        norm_art="sollen",
     )
     assert "error" not in res, res
     # B4.1: der Name traegt seine Beglaubigung mit. Ohne Ausweis heisst der
