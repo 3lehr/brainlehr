@@ -111,3 +111,42 @@ Vorschlag ein, wie `norm_entscheidung` es bereits vormacht.
   angenommen.
 - **Der Protokollkanal meldet heute null Paare.** Das ist der erwartete Wert
   und wird als Nullmessung festgehalten, nicht als Fehler behandelt.
+
+## Aufträge, fertig zum Übergeben
+
+**Für alle Aufträge gleichermaßen gilt:** Arbeitsort
+`/Volumes/daten/Begod2026/brainlehr`, Zweig `brainlehr/b4-ausweis` — ein
+Startverzeichnis unter `.claude/worktrees/` ist ein alter Stand. Zuerst
+`CLAUDE.md` lesen, dann diesen Plan. „Sieht der Code anders aus als hier
+beschrieben, halte dich an den Code und melde die Abweichung." Kein `git add
+-A`, kein Push, kein `git stash`. Committen mit expliziter Pfadliste
+(`git commit -- pfad1 pfad2`), weil mehrere Agenten im selben Baum arbeiten.
+Volle Suite **im Vordergrund** mit `timeout=600000` — sie braucht rund 230
+Sekunden. Datenbanknamen nie fest verdrahten, immer über `kern/speicher`.
+
+### Schritt 1 · Saat und Bewertung aus dem Bestand
+
+| | |
+|---|---|
+| **Darf ändern** | eine neue Datei für den Katalog, dazu ihr Test unter `tests/` |
+| **Tabu zusätzlich** | `haken/antwort_abruf.py`, `kern/embeddings.py`, `knowledge_mcp_server.py`, `schema.sql`, alles unter `runs/` |
+| **Fakten** | Bestand 2969 Dokumente. `impl` 0 eigene Vorkommen gegen 133 lange, `fn` 1:269, `res` 1:264, `req` 4:134, `config` 25:242, `auth` 31:3, `db` 187:111. Die Kurzformenliste steht wörtlich in der Caveman-Fertigkeit und ist die einzige nicht geratene Quelle. |
+| **Abnahme** | Die Aufnahmeschwelle wird **gemessen**, nicht gesetzt: `db` (187:111) darf nicht denselben Rang bekommen wie `impl` (0:133). Negativfall: eine Abkürzung, die im Bestand häufig selbst vorkommt, wird **nicht** aufgenommen. |
+
+### Schritt 2 · Anwendung nur auf der Anfrage
+
+| | |
+|---|---|
+| **Darf ändern** | den Abrufpfad an der Stelle, an der die Anfrage zerlegt wird, dazu dessen Test |
+| **Tabu zusätzlich** | jede Stelle, die Text **speichert** oder **einbettet** — `kern/build_embeddings.py`, `kern/embeddings.py` |
+| **Fakten** | `L-d8c5fb`: „TG" wurde beim Einlesen still zu „Tiefgarage" aufgelöst und wanderte in sieben abgeleitete Fundstellen, zwei davon öffentlich erreichbar; das Objekt hat 9 Einzelgaragen und 7 Stellplätze. Gefunden hat es der Nutzer. |
+| **Abnahme** | Rot vor grün an `impl`: vorher 0 der 133 Dokumente, nachher mehr als 0. Negativfall: `db` verschlechtert sich nicht. Und der gespeicherte Text ist danach **byteweise unverändert** — gezählt, nicht angenommen. |
+
+### Schritt 3 · Der Protokollkanal, samt seiner Nullmessung
+
+| | |
+|---|---|
+| **Darf ändern** | ein Melder unter `melder/`, dazu sein Test |
+| **Tabu zusätzlich** | der Katalog aus Schritt 1 und der Abrufpfad aus Schritt 2 — Schritt 3 liest nur |
+| **Fakten** | 7649 protokollierte Suchen mit Text in `access_log.query`. Darin `impl` 2, `req` 1, `fn` 1, `res`/`msg`/`err`/`val`/`param` je 0. Häufig nur `db` 80, `repo` 74, `ctx` 15 — genau die, die im Bestand ohnehin stehen. |
+| **Abnahme** | Der Kanal meldet heute **null** Paare. Das ist der erwartete Wert und wird als Nullmessung festgehalten, nicht als Fehler behandelt. Rot vor grün gegen einen **nachgestellten** Protokolleintrag mit einer echten Kurzform: dort muss er anschlagen. |

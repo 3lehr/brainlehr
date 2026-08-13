@@ -421,6 +421,37 @@ def _verwendung_pruefen(statistik: dict, antwort: str, session: str | None) -> N
 
 # --- Betriebsart --stop -----------------------------------------------------
 
+def _existenzpruefung_melden(antwort: str) -> None:
+    """Ruft haken/existenzpruefung.py auf (Auftrag 2026-08-13): der Haken
+    haengt als Stop-Eintrag in .claude/settings.json, aber dieser Eintrag
+    lief in 0 von 949 gemessenen Stop-Ausloesungen -- nur dieser Weg
+    (antwort_abruf.py --stop) ist belegt gelaufen (719x). Die Pruefung
+    selbst bleibt in existenzpruefung.py, wird hier nur AUFGERUFEN, nicht
+    hineinkopiert -- eigenstaendig aufrufbar samt eigenem --selftest bleibt
+    erhalten.
+
+    Stiller Fehlschlag wie bei _normbezug_melden: dieser Aufruf ist eine
+    Zugabe am Stop-Haltepunkt, ein Absturz darf den eigentlichen Abruf nicht
+    mitreissen."""
+    try:
+        import existenzpruefung as ep
+        meldungen = []
+        for satz in ep.verneinungen(antwort)[:3]:
+            treffer = ep.bestand_fragen(ep.ort.DB, ep.suchbegriffe(satz))
+            if treffer:
+                kurz = satz if len(satz) <= 90 else satz[:87] + "..."
+                meldungen.append(f'  "{kurz}"')
+                meldungen += [f"    -> {p} · {t[:70]}" for p, t in treffer]
+        if meldungen:
+            print("NACHGEFRAGT (existenzpruefung): Zu diesen Verneinungen in "
+                  "deiner Antwort steht etwas im Bestand. Ein Treffer heisst "
+                  "nicht, dass die Aussage falsch war -- nur, dass sie "
+                  "ungeprueft war.")
+            print("\n".join(meldungen))
+    except Exception:  # noqa: BLE001 -- siehe Docstring
+        pass
+
+
 def _normbezug_melden(antwort: str) -> None:
     """Meldet Normzitate ohne Beleg (normbezug.py, Betreiber-Auftrag
     2026-08-10). Schweigt, wenn alles belegt und frisch ist.
@@ -452,6 +483,7 @@ def modus_stop(payload: dict) -> None:
     # gelesen ist -- ein zweiter Hook wuerde dieselbe Datei ein zweites Mal
     # lesen und muesste in die Klientenkonfiguration eingetragen werden.
     _normbezug_melden(antwort)
+    _existenzpruefung_melden(antwort)
     # Zahlenbezug: gleicher Grund wie Normbezug oben -- Datei-Monolith-Bremse
     # (>1500 Zeilen) verbietet eine neue Top-Level-Funktion hier, darum inline
     # statt eines eigenen _zahlenbezug_melden. Gleiche Bauform (stilles
