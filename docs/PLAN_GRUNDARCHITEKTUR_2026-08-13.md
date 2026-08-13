@@ -239,3 +239,50 @@ Steuerinstanz · ob buckeberg jetzt schon openWEG heißen soll.
 | 5 | Welche Plattformen? | **Offen**, und billiger geworden: Der Kern ist Python, die Plattformfrage betrifft nur die Oberfläche. |
 | 6 | Kleinste zweite Domäne? | **Hinfällig** — es gibt bereits zwei. |
 | 7 | Community-Gehirn: was fehlt? | **Kein Architekturthema.** Herkunft, Widerruf, Geltung sind Linie B und C des Gesamtplans, in bindender Reihenfolge. |
+
+---
+
+## §8 · Aufträge, fertig zum Übergeben
+
+**Für alle Aufträge gleichermaßen gilt:** Arbeitsort `/Volumes/daten/Begod2026/brainlehr`,
+Zweig `brainlehr/b4-ausweis` — ein Startverzeichnis unter `.claude/worktrees/` ist ein alter
+Stand. Zuerst `CLAUDE.md` lesen, dann diesen Plan. „Sieht der Code anders aus als hier
+beschrieben, halte dich an den Code und melde die Abweichung." Kein `git add -A`, kein Push,
+kein `git stash`. Committen mit expliziter Pfadliste. Volle Suite im Vordergrund mit
+`timeout=600000`. Datenbanknamen über `kern/speicher`.
+
+### Schritt 1 · Die Abruf-Kappung ehrlich machen
+
+| | |
+|---|---|
+| **Darf ändern** | `haken/knowledge_recall_hook.py` (nur die Ausgabeform und den Deckel des Blocks), dessen Tests |
+| **Tabu zusätzlich** | `kern/rangfolge.py`, `knowledge_mcp_server.py`, `schema.sql`, jede Änderung an `MIN_HITS` oder der Rangfolge — hier geht es allein um die AUSGABE, nicht um die Auswahl |
+| **Fakten** | Gemessen 2026-08-13T23:05 an einer laufenden Sitzung: 11 Einspielungen, 155 749 Byte erzeugt, 22 528 angekommen, Rest in Dateien unter `tool-results/` ausgelagert. Je Einspielung sichtbar: 2 von 14, 3 von 10, 6 von 15 Einträgen. Der Wortlaut der Fremdmeldung: „Output too large (16.3KB). Full output saved to: … Preview (first 2KB)". `MIN_HITS = 3` gattert davon unabhängig auf der Anfrageseite (im Hook dokumentiert: 282 von 1923 Prompts ohne Abruf). |
+| **Abnahme** | Rot vor grün an einer Anfrage, die mehr Treffer erzeugt, als in den Deckel passen: vorher wird der Block ausgelagert und die Zahl der weggelassenen Treffer steht nirgends, nachher bleibt der Block unter dem Deckel und nennt die Differenz („15 Treffer, 6 eingespielt, 9 weggelassen"). Negativfall: eine Anfrage, deren Treffer vollständig hineinpassen, bekommt **keine** Weglassmeldung — ein Melder, der immer anschlägt, wird überlesen. Grenzwert: genau ein Treffer mehr als hineinpasst, genau passend, einer weniger. Einheiten sind Treffer, nie Byte. |
+
+### Schritt 2 · Feldvertrag `Fundstelle` zu Ende bringen
+
+| | |
+|---|---|
+| **Darf ändern** | `tests/` (neue Datei für den Vertrag), `app/Resources/fundstelle_vertrag.json` neu erzeugen |
+| **Tabu zusätzlich** | `kern/fundstelle.py` **fachlich** (nur `--vertrag`/`vertragsmuster()` sind neu und bleiben, die Auflösungslogik wird nicht angefasst), `app/Sources/BrainlehrCore/Fundstelle.swift` über die bereits gesetzten `CaseIterable`/`bewusstNichtGelesen` hinaus |
+| **Fakten** | Halb gebaut in `aaec61b`, **nichts gelaufen**. `als_dict()` liefert 13 Schlüssel, `CodingKeys` kennt 12; `weitere` ist in `bewusstNichtGelesen` eingetragen. `FundstelleVertragTests.swift` prüft drei Richtungen. Swift-Bau nur über `xcrun swift test` — der blanke Name löst auf diesem Rechner Swift 4.2.4 auf (`L-faae1e`). |
+| **Abnahme** | Rot vor grün beidseitig: ein Feld in `kern/fundstelle.py` umbenennen lässt den Swift-Fall fallen und nennt den Namen; rückgängig macht ihn grün. Negativfall: ein Feld in `bewusstNichtGelesen` eintragen, das der Dienst nicht liefert, muss ebenfalls fallen (veraltete Ausnahme). Grenzwert: genau ein zusätzliches Feld, genau ein fehlendes, keines. Der Python-Fall vergleicht die Schlüsselmenge gegen die Vorlage, nicht gegen eine getippte Liste. |
+
+### Schritt 3 · Code-Raum vorbereiten — Schlüssel, kein Schema
+
+| | |
+|---|---|
+| **Darf ändern** | eine neue Datei unter `kern/`, dazu ihr Test |
+| **Tabu zusätzlich** | `schema.sql` — es wird **keine Spalte und keine Tabelle** angelegt; `kern/embeddings.py`, `kern/build_embeddings.py`; `kern/kanten_aus_bedeutung.py` |
+| **Fakten** | Alle drei Schlüsselteile werden heute schon erzeugt: `kern/codekanten.py` führt den Pfad (456 von 763 Lehren und 255 von 2102 Knoten nennen einen Dateinamen im Klartext), `hub/scripts/symbolindex.py` das Symbol, `kern/codestand.py` den Commit. `codekanten.py` begründet im Kopf, warum Code **nicht** in den Knotenpool gehört: „sobald eine grosse Gattung um dieselben Plaetze konkurriert, verschwindet die kleinere vollstaendig (Lehren fielen von 9 auf 0 Treffer)". Sperre `80` vor `69` gilt sinngemäß: die Identität eines Vektors ist der Modellname. |
+| **Abnahme** | Der Schlüssel ist für eine vorhandene Datei reproduzierbar und ändert sich bei einem neuen Commit — geprüft an zwei echten Ständen desselben Pfades. Negativfall: ein Pfad, den es nicht gibt, liefert keinen Schlüssel, sondern eine benannte Fehlmeldung. Grenzwert: Datei ohne Symbol, Symbol ohne Commit, Pfad mit Umbenennung in der Historie. **Und die harte Auflage: nach diesem Schritt existiert keine leere Spalte** — wer eine anlegt, hat den Auftrag verfehlt (`b6305304`). |
+
+### Schritt 4 · `zurueckziehen` darf den Beweis nicht vernichten
+
+| | |
+|---|---|
+| **Darf ändern** | `knowledge_mcp_server.py`, nur `knowledge_zurueckziehen`; `schema.sql` nur, falls eine Spalte für den bewahrten Wortlaut nötig ist; deren Tests |
+| **Tabu zusätzlich** | `knowledge_add`, `knowledge_update`, die Herkunfts- und Normtrigger, `haken/` |
+| **Fakten** | Der Docstring sagt es selbst: „Zieht einen Knoten zurueck: content und summary werden GELEERT". Gemessen: `zurueckziehen` wurde 8-mal benutzt, `zurueckgezogen_grund/_von/_am` sind zu 100 % leer. Befund des Konsils (`docs/KONSIL_ERGEBNIS_2026-08-13.md`, 3.1): das Korrigieren eines falschen Eintrags vernichtet den Beweis des falschen Eintrags — genau die Zeile, die man braucht, wenn er Schaden angerichtet hat. Ein nachträglicher Trigger trifft JEDEN rohen Schreibpfad, nicht nur den bequemen: vorher `grep -rn "INSERT INTO knowledge_nodes"` über das ganze Repo (`L-73dc51`, dort fielen 76 von 448 Tests). |
+| **Abnahme** | Rot vor grün: Ein Knoten wird zurückgezogen, danach ist sein ursprünglicher Wortlaut noch abrufbar — vorher war er weg. Negativfall, und er ist der wichtigere: der zurückgezogene Knoten erscheint weiterhin **nicht** in Suche und Abruf; der bewahrte Wortlaut ist nur auf gezielte Frage erreichbar. Grenzwert: Knoten ohne `content`, Knoten mit leerem `summary`, zweimaliges Zurückziehen desselben Knotens. |
