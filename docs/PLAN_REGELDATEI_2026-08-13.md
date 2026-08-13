@@ -101,3 +101,56 @@ wie sie könnte.
 
 **Erfolgsmaß:** Ein nachgestellter Verstoß gegen einen Abschnitt aus Topf A
 schlägt an. Vor dem Umbau rot, danach grün — sonst war es Textpflege.
+
+## Aufträge, fertig zum Übergeben
+
+**Tabu für alle Aufträge hier:** `~/.claude/CLAUDE.md` und
+`~/.claude/settings.json` werden **nur vom Orchestrator** angefasst, nie von
+einem Subagenten und nie von zweien gleichzeitig — sie wirken in alle
+parallelen Sitzungen des Betreibers. Ebenso tabu: `app/`, `berichte/`,
+`pflege/`.
+
+### Schritt A · Topf A: Zwei Ausgangszustände an einen Slot binden
+
+- **Darf ändern:** `melder/` (neue Datei), `tests/` (neue Datei)
+- **Fakten:** Der Abschnitt „Zwei Ausgangszustände" hat keinen greifenden
+  Mechanismus (Messung 2026-08-12). Belegt sind beide Richtungen: `L-8bde89`
+  (fahrtenbuch, nur frisch geprüft) und `L-96db3e` (brainlehr, nur gewachsen —
+  die Erstanlage trug 2 Trigger, 6 Tabellen und 2 Spalten weniger).
+- **Abnahme:** Ein Melder, der `schema.sql` gegen die **installierten**
+  Schemaobjekte hält (`select sql from sqlite_master`). Rot-Probe: gegen den
+  Stand vor `a33c8f4` muss er den fehlenden `norm_art`-Trigger nennen; gegen
+  heute schweigt er. Negativfall: eine gewachsene DB ohne Abweichung erzeugt
+  keine Meldung.
+- **Einsatz:** Diese Klasse hat zweimal einen halben Tag gekostet, in zwei
+  verschiedenen Projekten, in beide Richtungen.
+
+### Schritt B · Topf C: streichen, was dreifach dasteht
+
+- **Darf ändern:** `~/.claude/CLAUDE.md` — **nur der Orchestrator**, mit
+  Sicherungskopie davor.
+- **Fakten:** Der Abwesenheitsmodus steht dreimal (Fähigkeit `abwesend`,
+  Abschnitt in der Regeldatei, Wiederholung im Selbstlauf-Prompt). Geladen
+  wird beim Aufruf nur die Fähigkeit. „Zweimal ist die Grenze" belegt 18
+  Zeilen für einen Satz plus `L-dafc34`.
+- **Abnahme:** Zeichenzahl der Regeldatei vorher und nachher, und **je
+  gestrichenem Abschnitt** benannt, wo sein Inhalt jetzt steht. Ein
+  gestrichener Abschnitt ohne benannten neuen Ort ist ein Verlust, kein
+  Aufräumen.
+- **Einsatz:** Was dreifach dasteht, wird an keiner der drei Stellen gepflegt.
+
+### Schritt C · Die Aufteilung selbst
+
+- **Darf ändern:** `~/.claude/CLAUDE.md`, neu `~/.claude/rules/*.md` — **nur
+  der Orchestrator**.
+- **Fakten:** `InstructionsLoaded` erfasst laut Referenz `CLAUDE.md` **und**
+  `.claude/rules/*.md`. Die Aufteilung ist plattformseitig vorgesehen.
+  Vorbild ist die BSI-Sektion: Trigger im Prompt, Katalog im Agenten.
+- **Abnahme:** Ein nachgestellter Verstoß gegen einen Abschnitt aus Topf A
+  schlägt an — vorher rot, danach grün. Ohne diesen Beleg gilt der Umbau als
+  Textpflege und wird nicht als erledigt geführt.
+- **Einsatz:** Ohne Trigger und Slot ist eine Regel eine Absicht; 11 von 19
+  sind es heute.
+
+**Sieht der Code anders aus als hier beschrieben, halte dich an den Code und
+melde die Abweichung.**
