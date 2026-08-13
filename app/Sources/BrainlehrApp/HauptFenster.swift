@@ -39,12 +39,17 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
 
 struct HauptFenster: View {
     @Bindable var aufsicht: DienstAufsicht
-    @State private var auswahl: SeitenleistenEintrag? = .quellen
+    /// Die Ansichtswahl liegt AUSSERHALB des Fensters, damit die Menueleiste
+    /// sie umschalten kann -- sie ist der Rueckweg, wenn die Seitenleiste
+    /// eingeklappt ist.
+    @ObservedObject var wahl: Ansichtswahl
     @State private var wissensraumBlick: WissensraumBlick = .baum
 
     var body: some View {
         NavigationSplitView {
-            List(selection: $auswahl) {
+            List(selection: Binding(
+                get: { Optional(wahl.aktuell) },
+                set: { if let n = $0 { wahl.aktuell = n } })) {
                 ForEach(SeitenleistenEintrag.allCases) { eintrag in
                     Label(eintrag.titel, systemImage: eintrag.symbol)
                         .accessibilityLabel(eintrag.titel)
@@ -52,7 +57,7 @@ struct HauptFenster: View {
                     // Die Ansichtswahl des Wissensraums sitzt nativ direkt
                     // unter seinem Eintrag in derselben Seitenleiste --
                     // nicht als Knopfleiste im eingebetteten Web.
-                    if eintrag == .wissensraum && auswahl == .wissensraum {
+                    if eintrag == .wissensraum && wahl.aktuell == .wissensraum {
                         ForEach(WissensraumBlick.allCases) { blick in
                             Button {
                                 wissensraumBlick = blick
@@ -73,21 +78,21 @@ struct HauptFenster: View {
             .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             VStack(spacing: 0) {
-                if auswahl == .quellen {
+                if wahl.aktuell == .quellen {
                     QuellenBereich()
-                } else if auswahl == .raster {
+                } else if wahl.aktuell == .raster {
                     RasterAnsicht()
-                } else if auswahl == .bearbeitung {
+                } else if wahl.aktuell == .bearbeitung {
                     BearbeitungsAnsicht()
-                } else if auswahl == .sitzung {
+                } else if wahl.aktuell == .sitzung {
                     SitzungsAnsicht()
-                } else if auswahl == .wissensraum {
+                } else if wahl.aktuell == .wissensraum {
                     // Banner nur hier: er meldet den Wissensraum-Dienst, mit
                     // dem der Ausweis-Ablauf (eigener Subprozess) nichts zu
                     // tun hat -- auf der Ausweise-Seite waere er irrefuehrend.
                     DienstBanner(aufsicht: aufsicht)
                     WissensraumAnsicht(aufsicht: aufsicht, blick: wissensraumBlick)
-                } else if auswahl == .ausweise {
+                } else if wahl.aktuell == .ausweise {
                     AusweisAnsicht()
                 }
             }

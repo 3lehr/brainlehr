@@ -121,9 +121,16 @@ public enum Sitzungsstrom {
     /// in denselben Feldern wie echte Eingaben. Wer sie mitzeigt, laesst den
     /// Betreiber Saetze lesen, die er nie geschrieben hat -- und im Beisein
     /// anderer Menschen sieht das aus, als haette er sie geschrieben.
+    /// Am echten Strom nachgezogen (2026-08-13): `<task-notification>` und
+    /// `<cross-session-message>` fehlten und erschienen dadurch als Eingaben
+    /// des Betreibers -- eine davon wurde in der Chat-Auswahl sogar zur
+    /// Beschriftung einer Sitzung. Erkennungszeichen fuer die Luecke: eine
+    /// "Eingabe", die mit einer spitzen Klammer beginnt.
     static let systemMarken = ["<system-reminder>", "<knowledge-recall>",
                                "<persisted-output>", "Caveat: The messages below",
-                               "<command-name>", "<local-command-stdout>"]
+                               "<command-name>", "<local-command-stdout>",
+                               "<task-notification>", "<cross-session-message>",
+                               "<regelwechsel>", "<projekt-wahl>", "<modell-frage>"]
 
     public static func istSystemtext(_ text: String) -> Bool {
         systemMarken.contains { text.contains($0) }

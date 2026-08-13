@@ -15,6 +15,9 @@ import BrainlehrCore
 import SwiftUI
 
 struct SitzungsAnsicht: View {
+    @State private var sitzungen: [Sitzungskennung] = []
+    @State private var gewaehlt: String?
+
     @StateObject private var beobachter = SitzungsBeobachter()
     @State private var stufe: Ausfuehrlichkeit = .normal
 
@@ -22,8 +25,40 @@ struct SitzungsAnsicht: View {
         Sitzungsstrom.gefiltert(beobachter.ereignisse, stufe)
     }
 
+    /// Welcher Chat gerade der spannende ist -- das weiss nur der Mensch.
+    /// Darum ein Schalter und keine Heuristik: Gemessen schrieben in EINEM
+    /// Projektordner zwei Sitzungen gleichzeitig, "die zuletzt geaenderte"
+    /// haette zwischen beiden gesprungen.
+    private var sitzungswahl: some View {
+        HStack(spacing: 8) {
+            Text("Chat").font(.callout)
+            Picker("Chat", selection: $gewaehlt) {
+                Text("— bitte wählen —").tag(String?.none)
+                ForEach(sitzungen) { s in
+                    Text("\(s.beschriftung)   ·   \(s.lage())").tag(String?.some(s.pfad))
+                }
+            }
+            .labelsHidden()
+            .accessibilityLabel("Beobachteten Chat wählen")
+            Button {
+                sitzungen = Sitzungssucher.alle()
+            } label: {
+                Image(systemName: "arrow.clockwise")
+            }
+            .accessibilityLabel("Liste der Chats neu einlesen")
+            .frame(minWidth: 24, minHeight: 24)
+        }
+        .padding(.horizontal).padding(.top, 8)
+        .onAppear { if sitzungen.isEmpty { sitzungen = Sitzungssucher.alle() } }
+        .onChange(of: gewaehlt) { _, neu in
+            if let n = neu { beobachter.waehle(n) }
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
+            sitzungswahl
+            Divider()
             Picker("Ausführlichkeit", selection: $stufe) {
                 ForEach(Ausfuehrlichkeit.allCases, id: \.self) { s in
                     Text(s.titel).tag(s)
@@ -151,12 +186,27 @@ final class SitzungsBeobachter: ObservableObject {
     private var restZeile = Data()
     private var timer: Timer?
 
+    /// Welche Sitzung beobachtet wird. Gesetzt von aussen -- die App ist
+    /// selbst kein Chat und kann es nicht wissen.
+    private(set) var pfad: String?
+
+    func waehle(_ neuerPfad: String) {
+        guard neuerPfad != pfad else { return }
+        stoppe()
+        ereignisse = []
+        restZeile = Data()
+        meldung = nil
+        pfad = neuerPfad
+        starte()
+    }
+
     func starte() {
         guard timer == nil else { return }
-        guard let pfad = Self.neuesteStromdatei() else {
-            meldung = "Für diese Sitzung liegt noch kein Verlauf vor."
+        guard let pfad = pfad ?? Self.neuesteStromdatei() else {
+            meldung = "Es ist noch keine Sitzung gewählt."
             return
         }
+        self.pfad = pfad
         guard let h = FileHandle(forReadingAtPath: pfad) else {
             meldung = "Der Sitzungsverlauf lässt sich gerade nicht lesen."
             return
