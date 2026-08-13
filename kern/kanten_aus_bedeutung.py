@@ -139,14 +139,20 @@ def lade_knoten_vektoren(conn: sqlite3.Connection, *, model: str = EMBED_MODEL):
 
 
 def _paare_python(
-    vektoren: list[list[float]], schwelle: float, k: int
+    vektoren: list[list[float]], schwelle: float, k: int, nur_index: set[int] | None = None
 ) -> dict[frozenset, tuple[float, int, int]]:
     """Rueckfall ohne numpy: O(n^2) Doppelschleife in reinem Python. Bleibt
     erhalten, damit eine Frischinstallation ohne numpy funktionsfaehig ist
-    (nur langsamer) -- siehe Modulkopf-Kommentar in kern/embeddings.py."""
+    (nur langsamer) -- siehe Modulkopf-Kommentar in kern/embeddings.py.
+
+    nur_index (Auftrag 81): beschraenkt nur die Quellseite i -- als Nachbar j
+    bleibt jeder Knoten waehlbar, auch ein bereits verbundener. So findet ein
+    neuer, unverbundener Knoten seine Nachbarn im GESAMTEN Bestand, statt nur
+    unter anderen unverbundenen Knoten."""
     n = len(vektoren)
     paare: dict[frozenset, tuple[float, int, int]] = {}
-    for i in range(n):
+    quellen = range(n) if nur_index is None else sorted(nur_index)
+    for i in quellen:
         nachbarn = []
         vi = vektoren[i]
         for j in range(n):
@@ -165,13 +171,16 @@ def _paare_python(
 
 
 def _paare_numpy(
-    vektoren: list[list[float]], schwelle: float, k: int
+    vektoren: list[list[float]], schwelle: float, k: int, nur_index: set[int] | None = None
 ) -> dict[frozenset, tuple[float, int, int]]:
     """Vektorisierter Weg: eine Matrixmultiplikation zeilenweise normierter
     Vektoren statt 2,3 Millionen einzelner Python-Kosinus-Aufrufe (2166
     Knoten, Stand 2026-08-13). Liefert -- bis auf Gleitkommarundung -- dieselben
     Paare in derselben Reihenfolge wie _paare_python, siehe
-    test_finde_kandidaten_numpy_und_python_liefern_gleiches_ergebnis."""
+    test_finde_kandidaten_numpy_und_python_liefern_gleiches_ergebnis.
+
+    nur_index: siehe _paare_python -- gleiche Bedeutung, gleiche Beschraenkung
+    nur auf die Quellzeile i."""
     n = len(vektoren)
     arr = _np.asarray(vektoren, dtype=_np.float64)
     normen = _np.linalg.norm(arr, axis=1)
@@ -189,7 +198,8 @@ def _paare_numpy(
 
     paare: dict[frozenset, tuple[float, int, int]] = {}
     idx = _np.arange(n)
-    for i in range(n):
+    quellen = range(n) if nur_index is None else sorted(nur_index)
+    for i in quellen:
         row = sim[i]
         # sortiert nach Aehnlichkeit absteigend, bei Gleichstand nach
         # aufsteigendem Index -- entspricht dem stabilen sort() im
@@ -218,19 +228,24 @@ def finde_kandidaten(
     *,
     schwelle: float = SIMILARITY_THRESHOLD,
     k: int = K_NEIGHBORS,
+    nur_index: set[int] | None = None,
 ) -> list[Kandidat]:
     """Fuer jeden Knoten die besten bis zu k Nachbarn mit sim >= schwelle,
     danach als ungerichtete Paare dedupliziert. Keine Selbstkanten. Nutzt
     numpy (Matrixmultiplikation), wenn vorhanden -- sonst den reinen
-    Python-Rueckfall (siehe _paare_python)."""
+    Python-Rueckfall (siehe _paare_python).
+
+    nur_index (Auftrag 81, inkrementeller Lauf): beschraenkt, welche Knoten
+    als QUELLE i durchsucht werden -- z.B. nur Knoten ohne jede Kante. Als
+    Nachbar bleibt jeder Knoten waehlbar."""
     n = len(paths)
     if n < 2:
         return []
 
     if _np is not None:
-        paare = _paare_numpy(vektoren, schwelle, k)
+        paare = _paare_numpy(vektoren, schwelle, k, nur_index)
     else:
-        paare = _paare_python(vektoren, schwelle, k)
+        paare = _paare_python(vektoren, schwelle, k, nur_index)
 
     kandidaten = []
     for sim, i, j in paare.values():
@@ -238,6 +253,48 @@ def finde_kandidaten(
         kandidaten.append(Kandidat(paths[a], titles[a], paths[b], titles[b], sim))
     kandidaten.sort(key=lambda kd: -kd.similarity)
     return kandidaten
+
+
+def knoten_ohne_kanten(conn: sqlite3.Connection, paths: list[str]) -> set[str]:
+    """Pfade aus `paths`, die in KEINER Zeile von knowledge_relations als
+    Quelle oder Ziel vorkommen -- unabhaengig vom relation_type (eine von
+    Hand gezogene Kante zaehlt genauso wie eine hieraus entstandene). Fuer
+    den inkrementellen Lauf (Auftrag 81): nur diese Knoten muessen erneut
+    nach Nachbarn durchsucht werden, der Rest hat schon mindestens eine
+    Kante und wird nicht durch einen vollen Neulauf ersetzt."""
+    cur = conn.cursor()
+    cur.execute("SELECT DISTINCT source_path FROM knowledge_relations")
+    verbunden = {r[0] for r in cur.fetchall()}
+    cur.execute("SELECT DISTINCT target_path FROM knowledge_relations")
+    verbunden.update(r[0] for r in cur.fetchall())
+    return {p for p in paths if p not in verbunden}
+
+
+def automatischer_lauf(db_path: Path | None = None) -> str | None:
+    """Einstiegspunkt fuer einen Haken (Auftrag 81): inkrementeller Lauf nur
+    ueber Knoten ohne jede Kante, sofort geschrieben (kein Trockenlauf --
+    ein Haken kann niemanden fragen, ob er --apply meint). Liefert None,
+    wenn nichts zu tun war oder nichts Neues entstand -- ein Haken, der bei
+    jedem Stop eine Zeile ausgibt, wird nach drei Tagen ignoriert."""
+    conn = connect_db(db_path or DB_PATH)
+    try:
+        paths, titles, vektoren = lade_knoten_vektoren(conn)
+        unverbunden = knoten_ohne_kanten(conn, paths)
+        if not unverbunden:
+            return None
+        nur_index = {i for i, p in enumerate(paths) if p in unverbunden}
+        kandidaten = finde_kandidaten(paths, titles, vektoren, nur_index=nur_index)
+        if not kandidaten:
+            return None
+        created, skipped = schreibe_kanten(conn, kandidaten)
+        if created == 0:
+            return None
+        return (
+            f"Kanten nachgezogen: {created} neu, {skipped} bereits vorhanden "
+            f"({len(unverbunden)} Knoten ohne Kante geprueft)."
+        )
+    finally:
+        conn.close()
 
 
 def edge_exists(conn: sqlite3.Connection, a_path: str, b_path: str) -> bool:
@@ -318,11 +375,19 @@ def main() -> None:
     parser.add_argument("--schwelle", type=float, default=SIMILARITY_THRESHOLD)
     parser.add_argument("--k", type=int, default=K_NEIGHBORS)
     parser.add_argument("--db", type=Path, default=DB_PATH)
+    parser.add_argument(
+        "--nur-ohne-kanten", action="store_true",
+        help="Inkrementell: nur Knoten ohne jede Kante als Quelle durchsuchen (Auftrag 81)",
+    )
     args = parser.parse_args()
 
     conn = connect_db(args.db)
     paths, titles, vektoren = lade_knoten_vektoren(conn)
-    kandidaten = finde_kandidaten(paths, titles, vektoren, schwelle=args.schwelle, k=args.k)
+    nur_index = None
+    if args.nur_ohne_kanten:
+        unverbunden = knoten_ohne_kanten(conn, paths)
+        nur_index = {i for i, p in enumerate(paths) if p in unverbunden}
+    kandidaten = finde_kandidaten(paths, titles, vektoren, schwelle=args.schwelle, k=args.k, nur_index=nur_index)
 
     if not args.apply:
         dry_run(kandidaten, len(paths))

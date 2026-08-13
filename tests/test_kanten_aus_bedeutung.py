@@ -420,6 +420,104 @@ def test_grenzwert_null_ein_zwei_knoten():
         kab_mod._np = orig
 
 
+# ─── Inkrementeller Lauf: nur Knoten ohne jede Kante (Auftrag 81) ───────────
+
+def test_knoten_ohne_kanten_findet_nur_unverbundene(temp_db):
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    _knoten_mit_vektor(conn, "/a", "A", [1.0, 0.0])
+    _knoten_mit_vektor(conn, "/b", "B", [0.9, 0.436])
+    _knoten_mit_vektor(conn, "/c", "C", [0.0, 1.0])
+    now = datetime.now(timezone.utc).isoformat()
+    conn.execute(
+        """
+        INSERT INTO knowledge_relations
+        (id, source_path, target_path, relation_type, confidence, weight,
+         evidence, source, creator, model, session, created_at, updated_at)
+        VALUES (?, '/a', '/b', 'analogous_to', 0.9, 1.0, 'von Hand', 'betreiber',
+                'betreiber', NULL, NULL, ?, ?)
+        """,
+        (str(uuid.uuid4()), now, now),
+    )
+    conn.commit()
+
+    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    unverbunden = kab.knoten_ohne_kanten(conn, paths)
+    assert unverbunden == {"/c"}
+    conn.close()
+
+
+def test_nur_index_beschraenkt_quelle_nicht_nachbarn():
+    """/z ist die einzige erlaubte QUELLE (nur_index), findet aber trotzdem
+    einen Nachbarn, der selbst NICHT in nur_index steht -- ein bereits
+    verbundener Knoten bleibt als Nachbar waehlbar."""
+    paths = ["/z", "/n1", "/n2"]
+    titles = paths[:]
+    vektoren = [[1.0, 0.0], [0.999, 0.045], [0.0, 1.0]]
+
+    kandidaten = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.9, k=5, nur_index={0})
+    assert len(kandidaten) == 1
+    assert {kandidaten[0].a_path, kandidaten[0].b_path} == {"/z", "/n1"}
+
+    # /n1<->/n2 waeren nie Kandidat (nicht orthogonal genug bzw. /n1 nicht
+    # Quelle) -- kein Paar ohne /z darf entstehen.
+    for kd in kandidaten:
+        assert "/z" in (kd.a_path, kd.b_path)
+
+
+def test_automatischer_lauf_beruehrt_nur_unverbundene(temp_db):
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    _knoten_mit_vektor(conn, "/a", "A", [1.0, 0.0])
+    _knoten_mit_vektor(conn, "/b", "B", [0.999, 0.045])  # sehr aehnlich zu /a
+    _knoten_mit_vektor(conn, "/c", "C", [0.998, 0.063])  # ebenfalls unverbunden, aehnlich zu a/b
+    conn.commit()
+    conn.close()
+
+    meldung = kab.automatischer_lauf(temp_db)
+    assert meldung is not None and "3 Knoten ohne Kante geprueft" in meldung, meldung
+
+    conn = sqlite3.connect(str(temp_db))
+    kanten = conn.execute(
+        "SELECT COUNT(*) FROM knowledge_relations WHERE relation_type = ?", (kab.RELATION_TYPE,)
+    ).fetchone()[0]
+    assert kanten > 0
+    conn.close()
+
+    # Zweiter Lauf: kein unverbundener Knoten mehr uebrig -> None, kein
+    # Rauschen bei jedem Stop.
+    assert kab.automatischer_lauf(temp_db) is None
+
+
+def test_automatischer_lauf_laesst_bereits_verbundene_knoten_unberuehrt(temp_db):
+    """Ein Knoten mit BESTEHENDER Kante (gleich welcher Herkunft) wird vom
+    inkrementellen Lauf nicht neu durchsucht -- die Rueckmeldung nennt nur
+    den einen tatsaechlich unverbundenen Knoten, nicht alle drei."""
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    _knoten_mit_vektor(conn, "/a", "A", [1.0, 0.0])
+    _knoten_mit_vektor(conn, "/b", "B", [0.999, 0.045])
+    _knoten_mit_vektor(conn, "/c", "C", [0.0, 1.0])  # unaehnlich, bleibt ohne Kante
+    now = datetime.now(timezone.utc).isoformat()
+    conn.execute(
+        """
+        INSERT INTO knowledge_relations
+        (id, source_path, target_path, relation_type, confidence, weight,
+         evidence, source, creator, model, session, created_at, updated_at)
+        VALUES (?, '/a', '/b', 'analogous_to', 0.9, 1.0, 'von Hand', 'betreiber',
+                'betreiber', NULL, NULL, ?, ?)
+        """,
+        (str(uuid.uuid4()), now, now),
+    )
+    conn.commit()
+    conn.close()
+
+    meldung = kab.automatischer_lauf(temp_db)
+    # /c ist der einzige unverbundene Knoten, findet aber keinen Nachbarn
+    # ueber der Schwelle -> keine neue Kante, also None.
+    assert meldung is None
+
+
 def test_negativfall_echte_verschiedene_knoten_mit_hoher_aehnlichkeit_bleiben_paar(temp_db):
     """Der wichtige Gegenfall (Abnahme 2): ZWEI ECHT VERSCHIEDENE Knoten mit
     sehr hoher Aehnlichkeit (0.995, deutlich > 0.99) muessen weiterhin als

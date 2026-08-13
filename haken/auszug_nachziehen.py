@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Stop-Haken: den Auszug nachziehen, wenn der Bestand juenger ist.
+"""Stop-Haken: den Auszug nachziehen, wenn der Bestand juenger ist -- und
+seit Auftrag 81 zusaetzlich die Kantenberechnung fuer neue Knoten.
 
 `brainlehr.db` ist nicht versioniert (Dienst-Plan A1, L-84869f: git fuehrt
 eine Binaerdatei nicht zusammen, es ueberschreibt sie). Versioniert wird der
@@ -19,6 +20,16 @@ hingehoert.
 
 Der Melder ist der Punkt: ohne die Zeile am Sitzungsende faellt ein
 veralteter Auszug erst auf, wenn jemand ihn einliest.
+
+ZWEITE, UNABHAENGIGE PRUEFUNG (Auftrag 81, 2026-08-13): kanten_aus_bedeutung.py
+zieht `aehnlich_bedeutung`-Kanten aus vorhandenen Embeddings -- lief zuletzt
+am 09.08., seither haengt jeder neue Knoten unverbunden (Befund
+melder/kantenstillstand.py). Ein eigener Eintrag in ~/.claude/settings.json
+wuerde auf alle parallelen Sitzungen des Betreibers wirken; stattdessen haengt
+der Lauf hier an, wo ohnehin schon bei jedem Stop-Ereignis nachgesehen wird,
+ob am Bestand etwas nachzuziehen ist. `automatischer_lauf()` ist inkrementell
+(nur Knoten ohne jede Kante als Quelle, siehe kern/kanten_aus_bedeutung.py)
+und schreibt sofort -- ein Haken kann niemanden fragen, ob er --apply meint.
 """
 from __future__ import annotations
 
@@ -65,7 +76,25 @@ def nachziehen_noetig(db: Path, auszug: Path | None) -> bool:
     return db.stat().st_mtime > auszug.stat().st_mtime
 
 
+def kanten_nachziehen() -> None:
+    """Eigene try/except-Huelle, unabhaengig von der Auszug-Pruefung oben --
+    ein Fehler hier darf weder das Sitzungsende noch den Auszug stoeren."""
+    try:
+        import kanten_aus_bedeutung  # noqa: E402 -- liegt in kern/, per Bootstrap im Suchpfad
+
+        meldung = kanten_aus_bedeutung.automatischer_lauf(Path(ort.DB))
+        if meldung:
+            print(meldung)
+    except Exception:
+        pass
+
+
 def main() -> None:
+    # Unabhaengig von der Auszug-Pruefung unten: eigene Huelle, eigener
+    # Rueckgabewert, immer zuerst -- ein fruehes return im Auszug-Teil darf
+    # sie nicht ueberspringen.
+    kanten_nachziehen()
+
     try:
         db = Path(ort.DB)
         vorher = aktuellster_auszug()

@@ -48,3 +48,46 @@ def test_ein_auszug_je_tag(tmp_path, monkeypatch):
     monkeypatch.setattr(an, "AUSZUG_ORDNER", tmp_path)
     assert an.ziel_fuer_heute("2026-08-08").name == "bestand_2026-08-08.jsonl"
     assert an.ziel_fuer_heute("2026-08-08") == an.ziel_fuer_heute("2026-08-08")
+
+
+# ─── kanten_nachziehen (Auftrag 81): Kantenberechnung an diesen Haken gehaengt ──
+
+def test_kanten_nachziehen_meldet_wenn_automatischer_lauf_etwas_liefert(capsys, monkeypatch):
+    """automatischer_lauf() liegt in kern/kanten_aus_bedeutung.py und ist dort
+    getestet -- hier wird nur geprueft, dass der Haken sie aufruft und eine
+    Rueckmeldung ausgibt, ohne selbst eine echte DB zu brauchen."""
+    import types
+
+    fake = types.SimpleNamespace(automatischer_lauf=lambda db_path: "Kanten nachgezogen: 3 neu, 0 bereits vorhanden (3 Knoten ohne Kante geprueft).")
+    monkeypatch.setitem(sys.modules, "kanten_aus_bedeutung", fake)
+
+    an.kanten_nachziehen()
+    out = capsys.readouterr().out
+    assert "Kanten nachgezogen: 3 neu" in out
+
+
+def test_kanten_nachziehen_schweigt_wenn_nichts_zu_tun_war(capsys, monkeypatch):
+    """Negativfall: liefert automatischer_lauf None (nichts Neues), gibt der
+    Haken nichts aus -- kein Rauschen bei jedem Stop."""
+    import types
+
+    fake = types.SimpleNamespace(automatischer_lauf=lambda db_path: None)
+    monkeypatch.setitem(sys.modules, "kanten_aus_bedeutung", fake)
+
+    an.kanten_nachziehen()
+    assert capsys.readouterr().out == ""
+
+
+def test_kanten_nachziehen_faengt_fehler_ab(capsys, monkeypatch):
+    """Ein Fehler in der Kantenberechnung darf den Haken nicht zum Absturz
+    bringen -- gleiche Haltung wie bei der Auszug-Pruefung selbst."""
+    import types
+
+    def _boom(db_path):
+        raise RuntimeError("kaputt")
+
+    fake = types.SimpleNamespace(automatischer_lauf=_boom)
+    monkeypatch.setitem(sys.modules, "kanten_aus_bedeutung", fake)
+
+    an.kanten_nachziehen()  # darf nicht werfen
+    assert capsys.readouterr().out == ""
