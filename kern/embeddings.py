@@ -8,8 +8,12 @@ umbenannt (KNOWLEDGE_* statt OPENLEHR_*); Logik unveraendert.
 
 Ponytail: bei Einzelnutzer-Volumen (Grössenordnung Hunderte Nodes/Lessons)
 reicht Brute-Force-Cosine-Similarity in reinem Python -- kein sqlite-vec,
-keine neue Dependency (numpy ist nicht installiert und wird hierfuer nicht
-gebraucht).
+keine neue Dependency. Stand 2026-08-13 richtiggestellt: numpy (2.4.2) IST
+inzwischen installiert, wird aber HIER (cosine_similarity dieses Moduls)
+weiterhin nicht gebraucht -- das Volumen bleibt klein genug fuer reines
+Python. Bei groesserem Volumen (Kantenberechnung ueber alle Knoten-Paare,
+Groessenordnung Tausende) nutzt kern/kanten_aus_bedeutung.py numpy, wenn
+vorhanden, mit reinem Python als Rueckfall.
 
 Embedding-Erzeugung ist IMMER best-effort: `embed_text()` gibt bei jedem
 Fehler (Ollama nicht erreichbar, Modell fehlt, Timeout) `None` zurueck statt

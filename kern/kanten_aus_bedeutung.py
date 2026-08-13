@@ -68,6 +68,11 @@ sys.path.insert(0, str(_w))
 from haken.ort import DB as DB_PATH  # noqa: E402
 from embeddings import cosine_similarity, unpack_embedding  # noqa: E402
 
+try:
+    import numpy as _np  # weicher Import -- Frischinstallation ohne numpy
+except ImportError:  # pragma: no cover -- siehe test_finde_kandidaten_numpy_und_python_liefern_gleiches_ergebnis
+    _np = None
+
 RELATION_TYPE = "aehnlich_bedeutung"
 SIMILARITY_THRESHOLD = 0.65
 K_NEIGHBORS = 5
@@ -133,20 +138,14 @@ def lade_knoten_vektoren(conn: sqlite3.Connection, *, model: str = EMBED_MODEL):
     return paths, titles, vektoren
 
 
-def finde_kandidaten(
-    paths: list[str],
-    titles: list[str],
-    vektoren: list[list[float]],
-    *,
-    schwelle: float = SIMILARITY_THRESHOLD,
-    k: int = K_NEIGHBORS,
-) -> list[Kandidat]:
-    """Fuer jeden Knoten die besten bis zu k Nachbarn mit sim >= schwelle,
-    danach als ungerichtete Paare dedupliziert. Keine Selbstkanten (i==j wird
-    uebersprungen)."""
-    n = len(paths)
+def _paare_python(
+    vektoren: list[list[float]], schwelle: float, k: int
+) -> dict[frozenset, tuple[float, int, int]]:
+    """Rueckfall ohne numpy: O(n^2) Doppelschleife in reinem Python. Bleibt
+    erhalten, damit eine Frischinstallation ohne numpy funktionsfaehig ist
+    (nur langsamer) -- siehe Modulkopf-Kommentar in kern/embeddings.py."""
+    n = len(vektoren)
     paare: dict[frozenset, tuple[float, int, int]] = {}
-
     for i in range(n):
         nachbarn = []
         vi = vektoren[i]
@@ -162,6 +161,76 @@ def finde_kandidaten(
             bisher = paare.get(key)
             if bisher is None or sim > bisher[0]:
                 paare[key] = (sim, i, j)
+    return paare
+
+
+def _paare_numpy(
+    vektoren: list[list[float]], schwelle: float, k: int
+) -> dict[frozenset, tuple[float, int, int]]:
+    """Vektorisierter Weg: eine Matrixmultiplikation zeilenweise normierter
+    Vektoren statt 2,3 Millionen einzelner Python-Kosinus-Aufrufe (2166
+    Knoten, Stand 2026-08-13). Liefert -- bis auf Gleitkommarundung -- dieselben
+    Paare in derselben Reihenfolge wie _paare_python, siehe
+    test_finde_kandidaten_numpy_und_python_liefern_gleiches_ergebnis."""
+    n = len(vektoren)
+    arr = _np.asarray(vektoren, dtype=_np.float64)
+    normen = _np.linalg.norm(arr, axis=1)
+    sichere_normen = _np.where(normen == 0.0, 1.0, normen)
+    normiert = arr / sichere_normen[:, None]
+    sim = normiert @ normiert.T
+
+    # Nullvektoren: cosine_similarity() liefert 0.0 (nicht NaN) bei
+    # norm_a==0 oder norm_b==0 -- dieselbe Regel hier nachbilden.
+    null_norm = normen == 0.0
+    if null_norm.any():
+        sim[null_norm, :] = 0.0
+        sim[:, null_norm] = 0.0
+    _np.fill_diagonal(sim, -_np.inf)  # keine Selbstkanten, nach der Nullvektor-Regel
+
+    paare: dict[frozenset, tuple[float, int, int]] = {}
+    idx = _np.arange(n)
+    for i in range(n):
+        row = sim[i]
+        # sortiert nach Aehnlichkeit absteigend, bei Gleichstand nach
+        # aufsteigendem Index -- entspricht dem stabilen sort() im
+        # Python-Rueckfall ueber eine nach j aufsteigend aufgebaute Liste.
+        reihenfolge = idx[_np.lexsort((idx, -row))]
+        gefunden = 0
+        for j in reihenfolge:
+            j = int(j)
+            s = float(row[j])
+            if s < schwelle:
+                break
+            key = frozenset((i, j))
+            bisher = paare.get(key)
+            if bisher is None or s > bisher[0]:
+                paare[key] = (s, i, j)
+            gefunden += 1
+            if gefunden >= k:
+                break
+    return paare
+
+
+def finde_kandidaten(
+    paths: list[str],
+    titles: list[str],
+    vektoren: list[list[float]],
+    *,
+    schwelle: float = SIMILARITY_THRESHOLD,
+    k: int = K_NEIGHBORS,
+) -> list[Kandidat]:
+    """Fuer jeden Knoten die besten bis zu k Nachbarn mit sim >= schwelle,
+    danach als ungerichtete Paare dedupliziert. Keine Selbstkanten. Nutzt
+    numpy (Matrixmultiplikation), wenn vorhanden -- sonst den reinen
+    Python-Rueckfall (siehe _paare_python)."""
+    n = len(paths)
+    if n < 2:
+        return []
+
+    if _np is not None:
+        paare = _paare_numpy(vektoren, schwelle, k)
+    else:
+        paare = _paare_python(vektoren, schwelle, k)
 
     kandidaten = []
     for sim, i, j in paare.values():

@@ -325,6 +325,101 @@ def test_dublette_erzeugt_keine_selbstkante(temp_db):
     conn.close()
 
 
+# ─── numpy-Weg vs. Python-Rueckfall: identisches Ergebnis (Auftrag 87) ──────
+# Vor der Vektorisierung gab es nur den Python-Weg -- dieser Test kann also
+# erst gruen sein, seit finde_kandidaten zwei Wege hat, die verglichen
+# werden. Ohne die numpy-Implementierung schlaegt er fehl, weil kab._np
+# dann bereits None ist und beide Aufrufe denselben (einzigen) Weg nehmen --
+# das waere kein Beleg fuer Uebereinstimmung zweier unabhaengiger Wege.
+
+def _zufallsvektoren(n: int, dim: int, seed: int) -> list[list[float]]:
+    import random
+
+    rng = random.Random(seed)
+    return [[rng.uniform(-1.0, 1.0) for _ in range(dim)] for _ in range(n)]
+
+
+def test_finde_kandidaten_numpy_und_python_liefern_gleiches_ergebnis():
+    assert kab._np is not None, "numpy ist laut Auftrag 87 installiert -- Test setzt das voraus"
+
+    paths = [f"/n{i}" for i in range(40)]
+    titles = paths[:]
+    vektoren = _zufallsvektoren(40, 16, seed=42)
+    # ein paar Vektoren nahe beieinander erzwingen, damit ueberhaupt Kanten
+    # ueber der Schwelle entstehen (rein zufaellige Vektoren streuen sonst
+    # zu breit fuer schwelle=0.5)
+    vektoren[3] = list(vektoren[1])
+    vektoren[3][0] += 0.001
+    vektoren[10] = [x * 0.999 for x in vektoren[7]]
+
+    paare_numpy = kab._paare_numpy(vektoren, 0.5, 5)
+    paare_python = kab._paare_python(vektoren, 0.5, 5)
+
+    assert set(paare_numpy.keys()) == set(paare_python.keys())
+    for key in paare_numpy:
+        sim_np, i_np, j_np = paare_numpy[key]
+        sim_py, i_py, j_py = paare_python[key]
+        assert {i_np, j_np} == {i_py, j_py}
+        assert sim_np == pytest.approx(sim_py, abs=1e-9)
+
+    kandidaten_numpy = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.5, k=5)
+    kab._np, gesicherter_np = None, kab._np
+    try:
+        kandidaten_python = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.5, k=5)
+    finally:
+        kab._np = gesicherter_np
+
+    assert len(kandidaten_numpy) == len(kandidaten_python)
+    for a, b in zip(kandidaten_numpy, kandidaten_python):
+        assert a.a_path == b.a_path
+        assert a.b_path == b.b_path
+        assert a.similarity == pytest.approx(b.similarity, abs=1e-9)
+
+
+# ─── Negativfall: numpy kuenstlich unauffindbar -- Rueckfall liefert dasselbe ─
+
+def test_ohne_numpy_liefert_rueckfall_dasselbe_ergebnis(monkeypatch):
+    paths = ["/a", "/b", "/c", "/d"]
+    titles = paths[:]
+    vektoren = [[1.0, 0.0], [0.99, 0.14107], [0.0, 1.0], [-1.0, 0.0]]
+
+    mit_numpy = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.5, k=5)
+    monkeypatch.setattr(kab, "_np", None)
+    ohne_numpy = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.5, k=5)
+
+    assert len(mit_numpy) == len(ohne_numpy) > 0
+    for a, b in zip(mit_numpy, ohne_numpy):
+        assert (a.a_path, a.b_path) == (b.a_path, b.b_path)
+        assert a.similarity == pytest.approx(b.similarity, abs=1e-9)
+
+
+# ─── Grenzwert: null, ein, zwei Knoten (Auftrag 87) ─────────────────────────
+
+def test_grenzwert_null_ein_zwei_knoten():
+    assert kab.finde_kandidaten([], [], [], schwelle=0.5, k=5) == []
+    assert kab.finde_kandidaten(["/a"], ["A"], [[1.0, 0.0]], schwelle=0.5, k=5) == []
+
+    zwei_paths, zwei_titles = ["/a", "/b"], ["A", "B"]
+    zwei_vektoren = [[1.0, 0.0], [1.0, 0.0]]
+    zwei = kab.finde_kandidaten(zwei_paths, zwei_titles, zwei_vektoren, schwelle=0.5, k=5)
+    assert len(zwei) == 1
+    assert zwei[0].similarity == pytest.approx(1.0)
+
+    # dieselben Grenzwerte auch explizit ohne numpy
+    import kanten_aus_bedeutung as kab_mod
+
+    orig = kab_mod._np
+    kab_mod._np = None
+    try:
+        assert kab.finde_kandidaten([], [], [], schwelle=0.5, k=5) == []
+        assert kab.finde_kandidaten(["/a"], ["A"], [[1.0, 0.0]], schwelle=0.5, k=5) == []
+        zwei_ohne_np = kab.finde_kandidaten(zwei_paths, zwei_titles, zwei_vektoren, schwelle=0.5, k=5)
+        assert len(zwei_ohne_np) == 1
+        assert zwei_ohne_np[0].similarity == pytest.approx(1.0)
+    finally:
+        kab_mod._np = orig
+
+
 def test_negativfall_echte_verschiedene_knoten_mit_hoher_aehnlichkeit_bleiben_paar(temp_db):
     """Der wichtige Gegenfall (Abnahme 2): ZWEI ECHT VERSCHIEDENE Knoten mit
     sehr hoher Aehnlichkeit (0.995, deutlich > 0.99) muessen weiterhin als
