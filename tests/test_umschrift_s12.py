@@ -34,16 +34,32 @@ assert _ECHTER_KNOTEN["id"] == "012500e5"
 
 
 def _insert_node(conn: sqlite3.Connection, node_id: str, path: str,
-                  title: str, summary: str, content: str) -> None:
-    conn.execute(
-        """INSERT INTO knowledge_nodes
-           (id, path, parent_path, project_id, title, summary, content, level, tags, source,
-            created_at, updated_at, norm_entscheidung,
-            norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
-           VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, 'keine_norm', ?, ?, ?)""",
-        (node_id, path, title, summary, content, node_id, JETZT, JETZT,
-         "test:test_umschrift_s12.py", JETZT, "Testvorrichtung"),
-    )
+                  title: str, summary: str, content: str,
+                  norm_rang: int | None = None) -> None:
+    """norm_rang=None (Vorgabe) legt einen gewoehnlichen Wissensknoten an.
+    norm_rang=<Zahl> legt eine Norm an -- fuer den Grenzwerttest norm_rang=0
+    (0 ist ein gueltiger Rang, nicht "kein Rang")."""
+    if norm_rang is None:
+        conn.execute(
+            """INSERT INTO knowledge_nodes
+               (id, path, parent_path, project_id, title, summary, content, level, tags, source,
+                created_at, updated_at, norm_entscheidung,
+                norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
+               VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, 'keine_norm', ?, ?, ?)""",
+            (node_id, path, title, summary, content, node_id, JETZT, JETZT,
+             "test:test_umschrift_s12.py", JETZT, "Testvorrichtung"),
+        )
+    else:
+        conn.execute(
+            """INSERT INTO knowledge_nodes
+               (id, path, parent_path, project_id, title, summary, content, level, tags, source,
+                created_at, updated_at, norm_rang, gilt_ab, norm_entscheidung, anlass,
+                norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
+               VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, ?, ?, 'norm_unbefristet',
+                       'betreiber', ?, ?, ?)""",
+            (node_id, path, title, summary, content, node_id, JETZT, JETZT,
+             norm_rang, JETZT, "Betreiber", JETZT, "Testvorrichtung"),
+        )
 
 
 def _sichern(conn: sqlite3.Connection, node_id: str, path: str, title: str,
@@ -63,7 +79,8 @@ def db(tmp_path):
     kandidaten = [f"t-{i}" for i in range(80)]
     behandelt = [k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.BEHANDELT]
     unbehandelt = next(k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.UNBEHANDELT)
-    sauber, ohne_urfassung, defekt, voll = behandelt[0], behandelt[1], behandelt[2], behandelt[3]
+    sauber, ohne_urfassung, defekt, voll, norm = (
+        behandelt[0], behandelt[1], behandelt[2], behandelt[3], behandelt[4])
 
     echter_pfad = "/x/echter-knoten"
     echter_titel = _ECHTER_KNOTEN["title"]
@@ -81,16 +98,23 @@ def db(tmp_path):
         _insert_node(conn, unbehandelt, "/x/unbehandelt", "Titel D",
                      "Zusammenfassung D.", "Text D.")
         _insert_node(conn, voll, echter_pfad, echter_titel, echte_summary, echter_co)
+        # Grenzwert norm_rang=0: 0 ist ein gueltiger Rang (falsy in Python!),
+        # muss trotzdem wie jede andere Norm behandelt werden.
+        _insert_node(conn, norm, "/x/norm", "Bindende Regel E",
+                     "Zusammenfassung E, wortgleich mit der Norm.", "Volltext der Norm E.",
+                     norm_rang=0)
         _sichern(conn, sauber, "/x/sauber", "Alter Titel",
                  "Zusammenfassung mit 8,50 USD.", "Volltext 8,50 USD.")
         _sichern(conn, defekt, "/x/defekt", "Titel C",
                  "Zusammenfassung C mit 47 Prozent.", "Text C mit 47 Prozent.")
         _sichern(conn, voll, echter_pfad, echter_titel, echte_summary, echter_co)
+        _sichern(conn, norm, "/x/norm", "Bindende Regel E",
+                 "Zusammenfassung E, wortgleich mit der Norm.", "Volltext der Norm E.")
         # ohne_urfassung bekommt bewusst KEINE Zeile in s12_urfassungen.
 
     return {"pfad": pfad, "sauber": sauber, "ohne_urfassung": ohne_urfassung,
             "defekt": defekt, "unbehandelt": unbehandelt, "voll": voll,
-            "echter_co": echter_co}
+            "norm": norm, "echter_co": echter_co}
 
 
 def _alt_neu(db, id_):
@@ -219,6 +243,76 @@ def test_rot_probe_pruefstein_schranke_faellt_ohne_pruefung(db):
 def umschrift_pruefstein_ok(alt, neu):
     import umschrift_pruefstein as ps
     return ps.pruefe_knoten(alt, neu)["ok"]
+
+
+# ------------------------------------------------------- Schranke: Norm (norm_rang)
+def test_norm_wird_nicht_in_ein_los_aufgenommen(db):
+    """Fuenfte Schranke, Stelle 1: kandidaten_unbehandelt/lose_erzeugen duerfen
+    einen Knoten mit norm_rang IS NOT NULL gar nicht erst anbieten, obwohl er
+    behandelt, mit Urfassung und wortgleich ist -- Grenzwert norm_rang=0."""
+    with speicher.lesen(db["pfad"]) as conn:
+        kand = us.kandidaten_unbehandelt(conn)
+        los = us.lose_erzeugen(conn, 10, 0)
+    assert db["norm"] not in kand, kand
+    assert db["norm"] not in {e["id"] for e in los}, los
+
+
+def test_rot_probe_norm_schranke_faellt_in_kandidaten_ohne_pruefung(db):
+    """Rot-vor-gruen (e-1): ohne die norm_rang-Pruefung in
+    kandidaten_unbehandelt waere der Normknoten (norm_rang=0, wortgleich mit
+    seiner Urfassung) ein ganz normaler Kandidat."""
+    with speicher.lesen(db["pfad"]) as conn:
+        ids = teilung_s12.bestand(conn)["knoten"]
+        behandelt = sorted(i for i in ids if teilung_s12.haelfte("knoten", i) == teilung_s12.BEHANDELT)
+        raus = []
+        for node_id in behandelt:
+            row = conn.execute(
+                "SELECT title, summary FROM knowledge_nodes WHERE id = ?", (node_id,)).fetchone()
+            urf = conn.execute(
+                "SELECT title, summary FROM s12_urfassungen WHERE node_id = ?", (node_id,)).fetchone()
+            if row is None or urf is None:
+                continue
+            if row["title"] == urf["title"] and row["summary"] == urf["summary"]:
+                raus.append(node_id)
+    assert db["norm"] in raus, (
+        "Rot-Probe schlug fehl: ohne die norm_rang-Pruefung haette der "
+        "Normknoten als Kandidat erscheinen muessen, um zu zeigen, dass die "
+        "Schranke in kandidaten_unbehandelt wirklich etwas ausschliesst.")
+
+
+def test_norm_wird_von_zurueckschreiben_abgelehnt_und_namentlich_genannt(db):
+    """Fuenfte Schranke, Stelle 2: ein ALTES Los (vor dieser Schranke erzeugt,
+    hier per Hand nachgestellt) kann einen Normknoten trotzdem enthalten --
+    zurueckschreiben_alle muss ihn zusaetzlich ablehnen."""
+    alt = [_alt_neu(db, db["norm"])]
+    neu = [dict(alt[0], title="Umformulierte Regel E", summary="Neue Zusammenfassung E.",
+                co="Neuer Volltext E.")]
+    with speicher.schreiben(db["pfad"]) as conn:
+        e = us.zurueckschreiben_alle(conn, alt, neu, JETZT)
+    assert e["norm_abgelehnt"] == [db["norm"]], e["norm_abgelehnt"]
+    assert e["geschrieben"] == []
+    with speicher.lesen(db["pfad"]) as conn:
+        row = conn.execute("SELECT title FROM knowledge_nodes WHERE id=?", (db["norm"],)).fetchone()
+    assert row["title"] == "Bindende Regel E", "Norm wurde trotz Ablehnung geschrieben"
+
+
+def test_rot_probe_norm_schranke_faellt_in_zurueckschreiben_ohne_pruefung(db):
+    """Rot-vor-gruen (e-2): ein direktes UPDATE ohne die norm_rang-Pruefung
+    haette den Normknoten anstandslos umgeschrieben -- zeigt, dass die
+    Ablehnung in zurueckschreiben_alle der eigentliche Grund ist."""
+    alt = _alt_neu(db, db["norm"])
+    neu = dict(alt, title="Umformulierte Regel E", summary="Neue Zusammenfassung E.",
+               co="Neuer Volltext E.")
+    with speicher.schreiben(db["pfad"]) as conn:
+        conn.execute(
+            "UPDATE knowledge_nodes SET title=?, summary=?, content=?, updated_at=? WHERE id=?",
+            (neu["title"], neu["summary"], neu["co"], JETZT, db["norm"]))
+    with speicher.lesen(db["pfad"]) as conn:
+        row = conn.execute("SELECT title FROM knowledge_nodes WHERE id=?", (db["norm"],)).fetchone()
+    assert row["title"] == "Umformulierte Regel E", (
+        "Rot-Probe schlug fehl: ein direktes UPDATE ohne norm_rang-Schranke "
+        "haette durchgehen muessen, um zu belegen, dass die Schranke im "
+        "Produktivcode der eigentliche Grund fuer die Ablehnung ist.")
 
 
 # ------------------------------------------------------- Negativfall: sauber

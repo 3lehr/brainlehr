@@ -24,6 +24,16 @@ VOR JEDEM SCHREIBEN, ohne Ausnahme (kein stiller Fall):
       Vorfall 2026-08-13, Lehre L-a4f6dd -- siehe ist_blosse_verdopplung()).
       Der Pruefstein oben sieht das NICHT: die alte Fassung ist Teilmenge
       der neuen, also fehlt nichts, also 0 Beanstandungen.
+    - kein Knoten mit norm_rang IS NOT NULL (bindende Norm -- Vorfall
+      2026-08-13T18:48, Knoten 07fb68aa/modell-kaskade-v3-opus-hauptfaden
+      wurde umgeschrieben, obwohl er norm_rang=2 traegt. Bei einer Norm IST
+      der Wortlaut der Inhalt, nicht Verpackung -- anders als bei einem
+      gewoehnlichen Wissensknoten, wo Umschrift zur besseren Auffindbarkeit
+      gewollt ist. Diese Schranke steht an ZWEI Stellen: kandidaten_unbehandelt
+      nimmt Normen gar nicht erst in ein Los auf, UND zurueckschreiben_alle
+      lehnt sie zusaetzlich ab, falls ein altes Los (vor dieser Schranke
+      erzeugt) doch eine Norm enthaelt. norm_rang=0 ist ein gueltiger Rang
+      und zaehlt als Norm -- nur norm_rang IS NULL ist keine.)
 
 "Noch unbehandelt" (Auswahl fuer --lose) heisst: Titel UND Zusammenfassung
 stimmen noch mit der Urfassung ueberein. Ein bereits umgeschriebener Knoten
@@ -135,13 +145,15 @@ def kandidaten_unbehandelt(conn: sqlite3.Connection) -> list[str]:
     raus = []
     for node_id in behandelt:
         row = conn.execute(
-            "SELECT title, summary FROM knowledge_nodes WHERE id = ?", (node_id,)
+            "SELECT title, summary, norm_rang FROM knowledge_nodes WHERE id = ?", (node_id,)
         ).fetchone()
         urf = conn.execute(
             "SELECT title, summary FROM s12_urfassungen WHERE node_id = ?", (node_id,)
         ).fetchone()
         if row is None or urf is None:
             continue  # ohne Urfassung nicht anbietbar -- s12_urfassungen-Wache meldet das separat
+        if row["norm_rang"] is not None:
+            continue  # fuenfte Schranke: bindende Norm, Wortlaut ist der Inhalt -- nicht anbietbar
         if row["title"] == urf["title"] and row["summary"] == urf["summary"]:
             raus.append(node_id)
     return raus
@@ -167,19 +179,26 @@ def lose_erzeugen(conn: sqlite3.Connection, n: int, ab: int = 0) -> list[dict]:
 # --------------------------------------------------------------- Schritt 3
 def zurueckschreiben_alle(conn: sqlite3.Connection, alt_liste: list[dict],
                            neu_liste: list[dict], jetzt: str | None = None) -> dict:
-    """Prueft jeden Knoten aus alt_liste gegen die vier Schranken und schreibt
-    nur, was alle vier besteht. Meldet jede Ablehnung namentlich, in fuenf
+    """Prueft jeden Knoten aus alt_liste gegen die fuenf Schranken und schreibt
+    nur, was alle fuenf besteht. Meldet jede Ablehnung namentlich, in sechs
     getrennten Zaehlern -- keiner darf stillschweigend verschwinden."""
     jetzt = jetzt or now_iso()
     neu_je_id = {r["id"]: r for r in neu_liste}
     ergebnis = {"geschrieben": [], "ohne_urfassung": [], "falsche_haelfte": [],
-                "verdopplung_abgelehnt": [], "pruefstein_abgelehnt": []}
+                "verdopplung_abgelehnt": [], "pruefstein_abgelehnt": [], "norm_abgelehnt": []}
 
     for alt in alt_liste:
         node_id = alt["id"]
 
         if teilung_s12.haelfte("knoten", node_id) != teilung_s12.BEHANDELT:
             ergebnis["falsche_haelfte"].append(node_id)
+            continue
+
+        norm_row = conn.execute(
+            "SELECT norm_rang FROM knowledge_nodes WHERE id = ?", (node_id,)
+        ).fetchone()
+        if norm_row is not None and norm_row["norm_rang"] is not None:
+            ergebnis["norm_abgelehnt"].append(node_id)
             continue
 
         hat_urfassung = conn.execute(
@@ -249,6 +268,7 @@ def main() -> None:
         print(f"abgelehnt falsche Haelfte: {len(e['falsche_haelfte'])} {e['falsche_haelfte']}")
         print(f"abgelehnt Verdopplung: {len(e['verdopplung_abgelehnt'])} {e['verdopplung_abgelehnt']}")
         print(f"abgelehnt vom Pruefstein: {len(e['pruefstein_abgelehnt'])} {e['pruefstein_abgelehnt']}")
+        print(f"abgelehnt Norm: {len(e['norm_abgelehnt'])} {e['norm_abgelehnt']}")
         return
 
     p.print_help()
@@ -256,16 +276,33 @@ def main() -> None:
 
 # ------------------------------------------------------------------- Tests
 def _insert_node(conn: sqlite3.Connection, node_id: str, path: str,
-                  title: str, summary: str, content: str, jetzt: str) -> None:
-    conn.execute(
-        """INSERT INTO knowledge_nodes
-           (id, path, parent_path, project_id, title, summary, content, level, tags, source,
-            created_at, updated_at, norm_entscheidung,
-            norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
-           VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, 'keine_norm', ?, ?, ?)""",
-        (node_id, path, title, summary, content, node_id, jetzt, jetzt,
-         "skript:umschrift_s12.py", jetzt, "Testvorrichtung fuer die Umschrift"),
-    )
+                  title: str, summary: str, content: str, jetzt: str,
+                  norm_rang: int | None = None) -> None:
+    """norm_rang=None (Vorgabe) legt einen gewoehnlichen Wissensknoten an
+    (norm_entscheidung='keine_norm'). norm_rang=<Zahl> legt eine Norm an
+    (norm_entscheidung='norm_unbefristet', gilt_ab gesetzt) -- fuer den
+    Grenzwerttest norm_rang=0 (0 ist ein gueltiger Rang, nicht "kein Rang")."""
+    if norm_rang is None:
+        conn.execute(
+            """INSERT INTO knowledge_nodes
+               (id, path, parent_path, project_id, title, summary, content, level, tags, source,
+                created_at, updated_at, norm_entscheidung,
+                norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
+               VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, 'keine_norm', ?, ?, ?)""",
+            (node_id, path, title, summary, content, node_id, jetzt, jetzt,
+             "skript:umschrift_s12.py", jetzt, "Testvorrichtung fuer die Umschrift"),
+        )
+    else:
+        conn.execute(
+            """INSERT INTO knowledge_nodes
+               (id, path, parent_path, project_id, title, summary, content, level, tags, source,
+                created_at, updated_at, norm_rang, gilt_ab, norm_entscheidung, anlass,
+                norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
+               VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, ?, ?, 'norm_unbefristet',
+                       'betreiber', ?, ?, ?)""",
+            (node_id, path, title, summary, content, node_id, jetzt, jetzt,
+             norm_rang, jetzt, "Betreiber", jetzt, "Testvorrichtung fuer die Umschrift"),
+        )
 
 
 def _selftest() -> None:
@@ -281,7 +318,8 @@ def _selftest() -> None:
     kandidaten = [f"n-{i}" for i in range(60)]
     behandelt_ids = [k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.BEHANDELT]
     unbehandelt_id = next(k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.UNBEHANDELT)
-    sauber_id, ohne_urf_id, defekt_id = behandelt_ids[0], behandelt_ids[1], behandelt_ids[2]
+    sauber_id, ohne_urf_id, defekt_id, norm_id = (
+        behandelt_ids[0], behandelt_ids[1], behandelt_ids[2], behandelt_ids[3])
 
     with speicher.schreiben(db) as conn:
         conn.executescript(schema_sql)
@@ -293,11 +331,18 @@ def _selftest() -> None:
                      "Zusammenfassung C mit 47 Prozent.", "Text C mit 47 Prozent.", jetzt)
         _insert_node(conn, unbehandelt_id, "/x/unbehandelt", "Titel D",
                      "Zusammenfassung D.", "Text D.", jetzt)
-        # Urfassungen: sauber_id und defekt_id gesichert, ohne_urf_id absichtlich NICHT.
+        # Grenzwert norm_rang=0: 0 ist ein gueltiger Rang (falsy in Python!),
+        # muss trotzdem wie jede andere Norm behandelt werden.
+        _insert_node(conn, norm_id, "/x/norm", "Bindende Regel E",
+                     "Zusammenfassung E, wortgleich mit der Norm.", "Volltext der Norm E.",
+                     jetzt, norm_rang=0)
+        # Urfassungen: sauber_id, defekt_id und norm_id gesichert, ohne_urf_id absichtlich NICHT.
         conn.executescript(sicherung_s12.SCHEMA)
         for nid, path_, title, summary, content in (
             (sauber_id, "/x/sauber", "Alter Titel", "Alte Zusammenfassung mit 8,50 USD.", "Volltext 8,50 USD."),
             (defekt_id, "/x/defekt", "Titel C", "Zusammenfassung C mit 47 Prozent.", "Text C mit 47 Prozent."),
+            (norm_id, "/x/norm", "Bindende Regel E", "Zusammenfassung E, wortgleich mit der Norm.",
+             "Volltext der Norm E."),
         ):
             conn.execute(
                 "INSERT INTO s12_urfassungen (node_id, path, title, summary, content, gesichert_am) "
@@ -305,10 +350,21 @@ def _selftest() -> None:
 
     # --- Schritt 1: --lose findet nur behandelte Knoten mit Urfassung, die
     # noch wortgleich mit ihr sind. ohne_urf_id fehlt (keine Urfassung),
-    # unbehandelt_id fehlt (falsche Haelfte).
+    # unbehandelt_id fehlt (falsche Haelfte), norm_id fehlt (fuenfte
+    # Schranke: norm_rang IS NOT NULL, hier Grenzwert norm_rang=0).
     with speicher.lesen(db) as conn:
         kand = kandidaten_unbehandelt(conn)
     assert set(kand) == {sauber_id, defekt_id}, kand
+    assert norm_id not in kand, (
+        "ROT-PROBE fuenfte Schranke (kandidaten_unbehandelt): norm_id mit "
+        "norm_rang=0 wurde trotzdem als Kandidat angeboten")
+
+    with speicher.lesen(db) as conn:
+        los_alle = lose_erzeugen(conn, 10, 0)
+    los_ids = {e["id"] for e in los_alle}
+    assert norm_id not in los_ids, (
+        "ROT-PROBE fuenfte Schranke (lose_erzeugen): norm_id mit norm_rang=0 "
+        "wurde trotzdem in ein Los aufgenommen")
     with speicher.lesen(db) as conn:
         los_1 = lose_erzeugen(conn, 1, 0)
         los_0 = lose_erzeugen(conn, 0, 0)
@@ -337,9 +393,18 @@ def _selftest() -> None:
                         "summary": "Neue Zusammenfassung D.", "co": "Neuer Text D."}
     # 4) defekt_id: eine Zahl (47 Prozent) verschwindet -> Pruefstein lehnt ab.
     neu_defekt = dict(alt_je_id[defekt_id], summary="Zusammenfassung C.", co="Text C.")
+    # 5) norm_id: bindende Norm (norm_rang=0), landet hier nur, weil ein ALTES
+    # Los (vor der fuenften Schranke erzeugt) sie trotzdem enthaelt --
+    # simuliert per Hand, da lose_erzeugen sie oben schon ausschliesst.
+    alt_norm = {"id": norm_id, "path": "/x/norm", "title": "Bindende Regel E",
+                "summary": "Zusammenfassung E, wortgleich mit der Norm.",
+                "co": "Volltext der Norm E."}
+    neu_norm = {"id": norm_id, "title": "Umformulierte Regel E",
+                "summary": "Neue Zusammenfassung E.", "co": "Neuer Volltext E."}
 
-    alt_input = [alt_je_id[sauber_id], {"id": ohne_urf_id}, {"id": unbehandelt_id}, alt_je_id[defekt_id]]
-    neu_input = [neu_sauber, neu_ohne_urf, neu_unbehandelt, neu_defekt]
+    alt_input = [alt_je_id[sauber_id], {"id": ohne_urf_id}, {"id": unbehandelt_id},
+                 alt_je_id[defekt_id], alt_norm]
+    neu_input = [neu_sauber, neu_ohne_urf, neu_unbehandelt, neu_defekt, neu_norm]
 
     with speicher.schreiben(db) as conn:
         e = zurueckschreiben_alle(conn, alt_input, neu_input, jetzt)
@@ -348,6 +413,14 @@ def _selftest() -> None:
     assert e["ohne_urfassung"] == [ohne_urf_id], e["ohne_urfassung"]
     assert e["falsche_haelfte"] == [unbehandelt_id], e["falsche_haelfte"]
     assert e["pruefstein_abgelehnt"] == [defekt_id], e["pruefstein_abgelehnt"]
+    assert e["norm_abgelehnt"] == [norm_id], (
+        "ROT-PROBE fuenfte Schranke (zurueckschreiben_alle): Norm mit "
+        f"norm_rang=0 wurde nicht namentlich abgelehnt: {e['norm_abgelehnt']}")
+
+    with speicher.lesen(db) as conn:
+        row_e = conn.execute("SELECT title FROM knowledge_nodes WHERE id=?", (norm_id,)).fetchone()
+    assert row_e["title"] == "Bindende Regel E", (
+        "ROT-PROBE fuenfte Schranke: Norm wurde trotz Ablehnung in der DB umgeschrieben")
 
     # Negativfall gegen alle drei Schranken zugleich: nur der eine saubere
     # Knoten wurde tatsaechlich in der DB veraendert.
@@ -368,7 +441,7 @@ def _selftest() -> None:
     assert sauber_id not in kand_2, "umgeschriebener Knoten taucht erneut auf"
     assert defekt_id in kand_2, "abgelehnter (unveraenderter) Knoten fehlt zu Unrecht"
 
-    print("selftest ok (Grenzwerte, fuenf Ablehnungsklassen, Negativfall, "
+    print("selftest ok (Grenzwerte, sechs Ablehnungsklassen, Negativfall, "
           "Wiederaufnahme ohne Zusatzdatei)", file=_sys.stderr)
 
 
