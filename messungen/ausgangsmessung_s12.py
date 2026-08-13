@@ -41,6 +41,7 @@ import argparse
 import json
 from datetime import datetime, timezone, timedelta
 
+import codestand
 import teilung_s12
 from abrufguete import abrufen  # kern/abrufguete.py -- echter Abrufweg
 
@@ -169,6 +170,7 @@ def main() -> None:
                    "Abweichung vom Auftragstext 'je Fall ein Ziel', siehe Bericht.",
         "versuche": 1,
         "erzeugt_am": datetime.now(tz).strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "code_stand": codestand.ermitteln(WURZEL),
         "korpus": a.korpus.name,
         "faelle_im_korpus": len(faelle),
         "zellen": zellen,
