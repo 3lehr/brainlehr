@@ -183,6 +183,37 @@ import lesson_recorder  # type: ignore  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
+def _kein_echter_ausweis(tmp_path, monkeypatch):
+    """Isoliert JEDEN Test vom Ausweisordner des Heimatverzeichnisses (Vorgabe
+    ~/Desktop/brainlehr-ausweise, siehe kern/ausweis.py/kern/geheimnis.py).
+
+    ANLASS 2026-08-13: seit ~/Desktop/brainlehr-ausweise/mein-geheimnis.txt
+    auf diesem Rechner existiert, loeste ausweis.loese_auf() ohne expliziten
+    `pfad` denselben echten Ausweis auf (beglaubigt als 'claude-code') statt
+    des bis dahin zufaellig unbeglaubigten Rueckfalls -- 14 Tests, die
+    'unbekannt'/unbeglaubigt erwarten, wurden dadurch rot. Eine Testsuite, die
+    davon abhaengt, was im Heimatverzeichnis EINES Rechners liegt, ist auf
+    keinem anderen reproduzierbar.
+
+    BRAINLEHR_AUSWEISE zeigt hier auf ein leeres, frisches Verzeichnis (nicht
+    einmal angelegt -- geheimnis.py behandelt eine fehlende Datei als
+    Normalfall). BRAINLEHR_GEHEIMNIS wird zusaetzlich entfernt, damit auch der
+    Umgebungs-Ruecktritt (Schritt 2 der Aufloesungskette) nicht zufaellig
+    einen im Prozess gesetzten Wert trifft.
+
+    Tests, die den echten Aufloesungs-/Vorrangmechanismus PRUEFEN
+    (test_geheimnisdatei_vorrang.py, test_ausweis_helfer.py,
+    test_gefuehrt_von.py, test_probeinstanz.py), setzen BRAINLEHR_AUSWEISE in
+    ihren EIGENEN Fixtures/Tests erneut -- das ueberschreibt diesen Wert hier
+    (monkeypatch, letzter setenv-Aufruf gewinnt), sie bleiben also unberuehrt.
+    Kein Test im Bestand braucht den ECHTEN, in ~/Desktop liegenden Ausweis
+    selbst -- alle Ausweis-Vorrichtungen legen ihre eigene, temporaere Datei
+    an."""
+    monkeypatch.setenv("BRAINLEHR_AUSWEISE", str(tmp_path / "kein_ausweis_hier"))
+    monkeypatch.delenv("BRAINLEHR_GEHEIMNIS", raising=False)
+
+
+@pytest.fixture(autouse=True)
 def _keine_echten_seiteneffekt_dateien(tmp_path, monkeypatch):
     monkeypatch.setattr(kms, "INJECTION_SUSPECT_LOG", tmp_path / "injection_suspect_log.jsonl")
     monkeypatch.setattr(lesson_recorder, "PROJECTS", {"shared": tmp_path / "auto_rule_projects"})

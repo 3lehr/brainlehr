@@ -187,6 +187,35 @@ BRAUCHT_ISOLIERTE_DB = {
 assert BRAUCHT_ISOLIERTE_DB <= set(MODULE)
 
 
+# kern/anmeldung.py::_selftest() liest den ANGEMELDETEN Bestand
+# (ausweis.ausweisdatei()) und prueft daran die Doppelanmeldung -- es braucht
+# also mindestens EINEN vorhandenen Ausweis, sonst bricht die eigene Annahme
+# "kein Ausweis im Bestand -- Selbsttest nicht aussagekraeftig" (kern/
+# anmeldung.py) ab. Bis 2026-08-13 lief das nur zufaellig gruen, weil die
+# echte ~/Desktop/brainlehr-ausweise/ausweise.json dieses Rechners bereits
+# Eintraege trug -- derselbe Heimatverzeichnis-Fehler wie bei den 14 anderen
+# Tests dieses Auftrags, nur unbemerkt, weil er hier zufaellig gruen ausging.
+# Statt den Selbsttest von kern/anmeldung.py zu lockern (tabu, kern/ ist
+# Grenze dieses Auftrags): eine EIGENE, isolierte ausweise.json mit genau
+# einem Eintrag anlegen und nur fuer DIESEN Subprozess BRAINLEHR_AUSWEISE
+# darauf umbiegen -- exakt dasselbe Muster wie BRAINLEHR_DB oben.
+BRAUCHT_ISOLIERTEN_AUSWEIS = {"kern/anmeldung.py"}
+assert BRAUCHT_ISOLIERTEN_AUSWEIS <= set(MODULE)
+
+
+@pytest.fixture(scope="session")
+def ausweis_kopie_mit_einem_eintrag(tmp_path_factory) -> Path:
+    """Isolierter Ausweisordner mit genau einem beglaubigten Eintrag --
+    braucht kern/anmeldung.py::_selftest() (siehe BRAUCHT_ISOLIERTEN_AUSWEIS),
+    unabhaengig vom Bestand im Heimatverzeichnis des ausfuehrenden Rechners."""
+    import ausweis  # noqa: PLC0415  # gleicher Suchpfad wie conftest.py legt ihn an
+
+    ordner = tmp_path_factory.mktemp("selftest_ausweise")
+    pfad = ordner / "ausweise.json"
+    ausweis.anlegen("selftest-teilnehmer", ["leser"], pfad=pfad)
+    return pfad
+
+
 # kern/messlauf_abrufguete.py::demo() lief in dieser Sitzung IMMER ueber 90
 # Sekunden (45 echte Retrieval-Faelle gegen den vollen Bestand, unabhaengig
 # von Original oder Kopie -- geprueft, keine Kopie-Eigenart). Ein einzelnes
@@ -228,11 +257,15 @@ def brainlehr_db_kopie(tmp_path_factory) -> Path:
     return ziel
 
 
-def _lauf(relpath: str, db_kopie: Path) -> subprocess.CompletedProcess:
+def _lauf(relpath: str, db_kopie: Path, ausweis_kopie: Path | None = None) -> subprocess.CompletedProcess:
     env = dict(os.environ)
     env.pop("BEGOD_KNOWLEDGE_DB", None)
     if relpath in BRAUCHT_ISOLIERTE_DB:
         env["BRAINLEHR_DB"] = str(db_kopie)
+    if relpath in BRAUCHT_ISOLIERTEN_AUSWEIS:
+        assert ausweis_kopie is not None
+        env["BRAINLEHR_AUSWEISE"] = str(ausweis_kopie)
+        env.pop("BRAINLEHR_GEHEIMNIS", None)
     return subprocess.run(
         [sys.executable, str(ROOT / relpath), "--selftest"],
         # 30 s waren zu knapp: kern/liefermenge.py braucht auf dieser Maschine
@@ -283,6 +316,6 @@ def echte_db_unangetastet():
 
 
 @pytest.mark.parametrize("relpath", [_mit_marker(m) for m in MODULE])
-def test_modul_selftest(relpath, brainlehr_db_kopie):
-    p = _lauf(relpath, brainlehr_db_kopie)
+def test_modul_selftest(relpath, brainlehr_db_kopie, ausweis_kopie_mit_einem_eintrag):
+    p = _lauf(relpath, brainlehr_db_kopie, ausweis_kopie_mit_einem_eintrag)
     assert p.returncode == 0, (p.stdout + p.stderr)[-3000:]
