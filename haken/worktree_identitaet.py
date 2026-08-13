@@ -42,15 +42,21 @@ Ein Kommando-Haken auf WorktreeCreate hat KEIN JSON-Ausgabeformat -- Claude
 Code liest stdout direkt als den Pfad des Arbeitsbaums. Der Pfad wird darum
 gedruckt, auch wenn die eigene Kopierlogik scheitert.
 
-KORREKTUR 2026-08-13T22:05, nach einem Feldfehler: Hier stand "der Pfad wird
-IMMER gedruckt, in JEDEM Zweig". Das galt fuer den Fall, dass die KOPIERLOGIK
-scheitert, und wurde faelschlich auch auf eine fehlende EINGABE angewandt.
-Fehlte `worktree_name`, druckte der Haken `<base>/.claude/worktrees` -- das
-Sammelverzeichnis selbst. git wies die Anlage daraufhin ab: "already in use by
-worktree ...". Der Betreiber konnte keine neue Sitzung starten.
-Der Vertrag verlangt nicht, dass etwas gedruckt WIRD. Bleibt stdout leer,
-waehlt der Klient seinen Vorgabepfad. Ein leerer Name kann keinen gueltigen
-Pfad ergeben -- dann ist Schweigen die einzige richtige Antwort.
+ZWEI FEHLSCHLAEGE AM 2026-08-13, beide hier dokumentiert, weil der zweite aus
+der Korrektur des ersten entstand:
+  (1) Fehlte `worktree_name`, druckte der Haken `<base>/.claude/worktrees` --
+      das Sammelverzeichnis selbst. git lehnte ab: "already in use by worktree
+      ...". Keine neue Sitzung mehr moeglich.
+  (2) Daraufhin druckte er gar nichts mehr. Der Klient lehnte erneut ab, jetzt
+      mit "no output". Die Annahme, ein leeres stdout lasse ihn seinen
+      Vorgabepfad waehlen, war Modellwissen und falsch.
+RICHTIG IST DIE DRITTE ANTWORT: immer eine Zeile, aber nie ein belegter Pfad.
+Fehlt der Name, wird einer mit Zeitstempel und Prozesskennung erzeugt.
+
+DIE LEHRE UEBER BEIDE FEHLSCHLAEGE: Ein Vertrag mit genau zwei Zustaenden
+("Zeile" gegen "keine Zeile") verleitet dazu, den Fehlerfall in den zweiten zu
+schieben. Hier hat der Vertrag aber nur EINEN gueltigen Zustand -- und dann
+muss der Fehlerfall INNERHALB dessen geloest werden, nicht daneben.
 
 NIE BLOCKIEREND: WorktreeCreate lehnt bei jedem Exit-Code ungleich 0 die
 Anlage komplett ab (staerkster Exit-Vertrag aller Ereignisse). Ein Haken, der
@@ -72,6 +78,12 @@ import json
 import os
 import sys
 from pathlib import Path
+
+
+def _zeitmarke() -> str:
+    """Eindeutiger Namensteil, wenn der Klient keinen Namen mitgibt."""
+    import time
+    return time.strftime("%Y%m%dT%H%M%S") + f"-{os.getpid()}"
 
 
 def _zielpfad(base_directory: str, worktree_name: str) -> Path:
@@ -112,21 +124,23 @@ def main() -> None:
     base_directory = daten.get("base_directory") or os.getcwd()
     worktree_name = daten.get("worktree_name") or ""
 
-    # SCHWEIGEN IST BESSER ALS EIN FALSCHER PFAD (Befund 2026-08-13T22:05).
-    # Fehlt worktree_name, lieferte _zielpfad frueher das VERZEICHNIS
-    # `<base>/.claude/worktrees` selbst -- und git wies die Anlage ab mit
-    # "already in use by worktree ...", weil dieser Pfad bereits einem anderen
-    # Baum gehoert. Der Betreiber konnte keine neue Sitzung mehr starten.
+    # DREI ANTWORTEN WAREN MOEGLICH, ZWEI SIND FALSCH (Befund 2026-08-13).
     #
-    # Der stdout-Vertrag sagt, Claude Code liest stdout als den Pfad des
-    # Arbeitsbaums. Er sagt NICHT, dass etwas gedruckt werden muss: Bleibt
-    # stdout leer, waehlt der Klient seinen eigenen Vorgabepfad. Ein leerer
-    # Name kann keinen gueltigen Pfad ergeben -- dann ist Schweigen die einzige
-    # richtige Antwort. Der frueher hier stehende Satz "der Pfad wird IMMER
-    # gedruckt" galt fuer den Fall, dass die KOPIERLOGIK scheitert; er wurde
-    # faelschlich auch auf eine fehlende Eingabe angewandt.
+    # 1. Das Sammelverzeichnis drucken -- so war es, und git wies die Anlage ab
+    #    mit "already in use by worktree ...". Der Betreiber konnte keine neue
+    #    Sitzung starten.
+    # 2. Nichts drucken -- mein erster Fix. Der Klient meldete daraufhin
+    #    "no output" und lehnte ebenfalls ab. Ich hatte angenommen, er waehle
+    #    dann seinen Vorgabepfad; das war Modellwissen, nicht geprueft.
+    # 3. Einen GUELTIGEN, FREIEN Pfad drucken. Nur das erfuellt beide
+    #    Bedingungen: Der Vertrag verlangt eine Zeile, und die Zeile darf kein
+    #    belegtes Verzeichnis nennen.
+    #
+    # Fehlt der Name, wird einer erzeugt. Ein erfundener Name ist hier
+    # unbedenklich, weil er nur den ORT bestimmt -- der Zweig kommt vom
+    # Klienten. Und er kann nicht kollidieren, weil er den Zeitstempel traegt.
     if not worktree_name:
-        return
+        worktree_name = "baum-" + _zeitmarke()
 
     pfad = _zielpfad(base_directory, worktree_name)
 
@@ -221,10 +235,13 @@ def _selftest() -> None:
                 _mod.main()
             finally:
                 sys.stdin, sys.stdout = stdin_bak, stdout_bak
-            assert out.getvalue().strip() == "", (
-                "ohne worktree_name darf nichts auf stdout stehen, kam: "
-                + repr(out.getvalue()))
-        print("[FELDFEHLER] ohne worktree_name -> stdout bleibt LEER, kein Sammelverzeichnis")
+            zeile = out.getvalue().strip()
+            assert zeile, "ohne worktree_name muss trotzdem eine Zeile kommen"
+            sammel = str(_zielpfad(str(base), ""))
+            assert zeile.rstrip("/") != sammel.rstrip("/"), (
+                "gedruckt wurde das Sammelverzeichnis: " + zeile)
+            assert zeile.startswith(sammel.rstrip("/") + "/baum-"), zeile
+        print("[FELDFEHLER] ohne worktree_name -> gueltiger erzeugter Pfad, nie das Sammelverzeichnis")
 
         print("worktree_identitaet: alle Zusicherungen halten")
     finally:
