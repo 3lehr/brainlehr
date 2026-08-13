@@ -160,3 +160,44 @@ dem Dienst auf Port 8799 und seinen Datenendpunkten.
 - Commits ausschließlich mit expliziter Pfadliste.
 - Die volle Suite fährt **eine** Sitzung. Wer sie nebenher fährt, misst
   Halbstände.
+
+## Aufträge, fertig zum Übergeben
+
+**Für alle Aufträge gleichermaßen gilt:** Arbeitsort
+`/Volumes/daten/Begod2026/brainlehr`, Zweig `brainlehr/b4-ausweis`. Zuerst
+`CLAUDE.md` lesen, dann diesen Plan. „Sieht der Code anders aus als hier
+beschrieben, halte dich an den Code und melde die Abweichung." Kein `git add
+-A`, kein Push, kein `git stash`. Committen mit expliziter Pfadliste — eine
+zweite Sitzung arbeitet parallel am Python-Teil und teilt den Index. Nicht
+`swift build` tippen, sondern `app/bauen.sh`; es wählt die taugliche Kette nach
+Fähigkeit und zählt die Testfälle selbst nach. Sichtprüfung **Text vor Bild**
+über die Bedienungshilfen; wenn doch ein Bild nötig ist, ausschließlich über die
+**Fenster-Kennung** der Zielanwendung, nie nach Bildschirmbereich — am
+2026-08-12 wurden dabei zweimal private Inhalte des Betreibers miterfasst.
+
+### Schritt 1 · Der Viewer, an einem echten Dokument gemessen
+
+| | |
+|---|---|
+| **Darf ändern** | `app/` (gesamt) |
+| **Tabu zusätzlich** | `kern/`, `haken/`, `melder/`, `knowledge_mcp_server.py`, `schema.sql`, `tests/` — die gehören der parallelen Sitzung |
+| **Fakten** | Für buckeberg sind die meisten Dokumente maschinenlesbar gemacht, und die Homepage hat bereits Anker in die Dokumente hinein — **beides vor dem Bau prüfen, nicht annehmen**. Als Bausteine kommen Quick Look und PDFKit in Frage; das ist **Modellwissen, ungeprüft**. |
+| **Abnahme** | **Zuerst zählen**: welche Dateiformate liegen in buckeberg tatsächlich vor, mit Nenner. Dann je Format eine Probe an einem **echten** Dokument. Ein Format, das nicht geht, ist ein Befund mit Namen, kein Nebensatz. Negativfall: ein beschädigtes Dokument führt nicht zum Absturz der App, sondern zu einer Meldung. |
+
+### Schritt 2 · Die Markierung trifft die richtige Stelle
+
+| | |
+|---|---|
+| **Darf ändern** | `app/` (gesamt) |
+| **Tabu zusätzlich** | wie Schritt 1; zusätzlich der Viewer aus Schritt 1, sobald er steht |
+| **Fakten** | Seit 2026-08-13 trägt der Speicher 229 Kanten vom Typ `abgeleitet_von` auf 126 Quellknoten, und `kern/normbezug.py` unterscheidet **unbelegt** von **erfunden**. Eine Fundstelle ohne Beleg ist damit erkennbar, statt geraten zu werden. |
+| **Abnahme** | Rot vor grün an Fällen mit **bekannter** Fundstelle: vorher markiert nichts, nachher die richtige Stelle. Negativfall, der wichtigere: Wo die Fundstelle **unbelegt** ist, wird **nicht** markiert, sondern gesagt, dass sie fehlt. Eine falsch gesetzte Markierung ist schlimmer als keine — sie sieht aus wie ein Beleg. |
+
+### Schritt 3 · Das Raster, erst danach
+
+| | |
+|---|---|
+| **Darf ändern** | `app/` (gesamt), dazu eine Konfigurationsdatei für die Feldbelegung |
+| **Tabu zusätzlich** | wie oben; die Datenendpunkte des Dienstes werden **bestellt**, nicht selbst gebaut |
+| **Fakten** | Der Dienst liefert auf Port 8799 die Ansichten `/raum` und `/vergleich` samt neun Datenendpunkten. `DienstAufsicht.swift` startet und überwacht ihn. Die Seitenleiste hat sechs Platzhalter. |
+| **Abnahme** | Jede Aktion ist im Raster **zuordenbar und verschiebbar** — das ist zugleich die Probe, ob die Felder wirklich Behälter sind und nicht fest verdrahtete Plätze. Negativfall: Eine Feldbelegung, die es nicht gibt, führt zu einem leeren Feld mit Hinweis, nicht zu einem Absturz. |
