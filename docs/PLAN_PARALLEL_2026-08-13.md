@@ -15,7 +15,22 @@ Abrufs läuft, misst einen Zustand, den es danach nicht mehr gibt.
 
 ## Der gemessene Ist-Stand
 
-64 Aufgaben, 28 erledigt. Von den offenen sind **5 Entscheidungen des
+**VERALTET, korrigiert 2026-08-13T21:05.** Der Satz stand hier als
+Ist-Stand: 64 Aufgaben, 28 erledigt. Es sind inzwischen **107 Aufgaben, 71
+erledigt** — die Wellen unten stimmen inhaltlich weiter, der Nenner nicht.
+
+Und die tragende Erkenntnis kam nach diesem Plan: **Was seriell aussieht, ist
+es oft nur, weil das Werkzeug sich seine Arbeit selbst holt.** Die S12-Lose
+schienen eine Kette, weil `--lose` selbst greift, was noch unbehandelt ist —
+zwei Agenten haetten dieselben Knoten gefasst. Mit `--ab` sind sie
+ueberschneidungsfrei (nachgemessen: 100 Eintraege, 100 verschieden). Vorab
+erzeugte Lose machen aus 55 Schritten elf Runden zu je fuenf.
+
+Die Regel dahinter, allgemeiner als der Fall: Bevor eine Aufgabe als seriell
+gilt, pruefen, ob die Reihenfolge aus der SACHE stammt oder aus der
+Selbstbedienung des Werkzeugs. Nur die erste bindet.
+
+Alter Stand: 64 Aufgaben, 28 erledigt. Von den offenen sind **5 Entscheidungen des
 Betreibers** (7, 20, 23, 29, 31), **3 warten auf Wachstum oder einen Plan**
 (4, 8, 14) und **2 liegen im fremden Repo hub** (50, 60, 61 teilweise).
 
