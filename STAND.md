@@ -1,11 +1,12 @@
-# STAND brainlehr — 2026-08-13T15:53:48+0200
+# STAND brainlehr — 2026-08-13T16:08:18+0200
 
-**Offen:** Multiview-Bauform ist NICHT entschieden — ein Opus-Konsil aus fünf Rollen läuft
-(Interaktion, Plattform, Barrierefreiheit, Termin, Widersacher). Bis zum Ergebnis wird `app/` nicht angefasst.
+**Offen:** Drei Entscheidungen beim Betreiber, siehe `docs/adr/ADR-004-keine-multiview-app-fuer-den-termin.md`:
+Sitzabstand (2 m oder 1,2 m?), Schreibrecht in buckeberg, pdf.js nachladen (Download) oder Umweg streichen.
 
-**Nächstes:** Konsil auswerten, Bauform als ADR festhalten, dann erst Swift. Plan: `docs/PLAN_MULTIVIEW_GESAMT_2026-08-13.md`.
+**Nächstes:** Nach der Entscheidung Schritt A (Betrachter, ~10 min) und B (HTML-Fundstellen aus `kurz`, ~1 h). Aufträge in `docs/PLAN_MULTIVIEW_GESAMT_2026-08-13.md` §7.
 
-**Wartet auf:** Betreiber-Termin buckeberg heute/morgen Abend — einzige harte Priorität ist „zeig mir, wo das steht".
+**Wartet auf:** buckeberg-Termin heute/morgen Abend. Rückfalllinie ohne jeden Code: die vier PDFs in `dossier/` ausdrucken, 5 Minuten.
 
-**Nicht vergessen:** `kern/fundstelle.py` + `POST /api/fundstelle` stehen (14 von 49 buckeberg-Quellen markierbar, 1 nur aufschlagbar, 34 ohne Stelle).
-Betreiberdirektive 2026-08-13: Vorhandenes ist NICHT der Maßstab — findet das Konsil einen besseren Weg, fliegt die vorhandene App-Schale raus.
+**Nicht vergessen:** Der pdf.js-Betrachter der buckeberg-Homepage ist TOT (`vendor/pdfjs-viewer/build/` fehlt, `.gitignore` Zeile 21) — graue Fläche ohne Meldung, `quellen_check.py` grün. 14 exakte Fundstellen, keine sichtbar.
+Alle 14 markierbaren Quellen sind PDF; keine der 20 HTML-Quellen trägt eine Stelle, bei 19 steht sie im Feld `kurz`. Bestand: 48 Quellen, 14/1/33.
+`kern/fundstelle.py` + `tests/` liegen in der Dateimenge der parallelen Python-Sitzung — von mir angelegt, Grenze verletzt, dort gemeldet. Ab jetzt bestellen statt bauen.
