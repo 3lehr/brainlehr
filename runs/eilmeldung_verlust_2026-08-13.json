@@ -1,0 +1,90 @@
+{
+  "auftrag": "Messauftrag 2026-08-13: wo geht die Eilmeldung fuer Sitzung d695fd29 verloren",
+  "zeitpunkt": "2026-08-13T06:26:00+0200",
+  "sitzung": {
+    "voll": "d695fd29-c21d-485a-b4d0-f73757047a9d",
+    "sid_kurz_wie_vom_haken_berechnet": "d695fd29-c21d-48",
+    "zustandsdatei": "/tmp/claude-eilmeldung-d695fd29-c21d-48.json",
+    "beleg_agentregister": {
+      "datei": "/Volumes/daten/Begod2026/hub/laufzeit/agent-register.jsonl",
+      "ereignisse_fuer_session": 1095,
+      "bedeutung": "bestaetigt die Faktenlage 'hunderte Werkzeugaufrufe' -- es sind sogar ueber tausend"
+    }
+  },
+  "zustandsdatei_vor_test": {
+    "calls": 5739,
+    "n_messages": 10,
+    "alle_unquittiert": true,
+    "alle_escalated": true,
+    "delivered_spanne": [13, 59],
+    "next_due_call_spanne": [5747, 5833],
+    "aelteste_meldung": "dringend:/methodik/das-agentenregister-liegt-in-hub (created 2026-08-09), 59x zugestellt, nie quittiert",
+    "beleg": "python3 -c \"import json; d=json.load(open('/tmp/claude-eilmeldung-d695fd29-c21d-48.json')); print(d['calls'], len(d['messages']))\" -> 5739 10"
+  },
+  "tests": [
+    {
+      "id": "T1_haken_manuell_realer_payload",
+      "beschreibung": "eilmeldung_hook.py per Pipe mit echtem Sitzungs-Payload (session_id = volle Kennung) aufgerufen",
+      "befund": "exit 0, KEINE stdout-Ausgabe",
+      "erklaerung": "next_due_call der 10 Meldungen lag bei 5747-5833, calls stand bei 5742 -- Backoff korrekt noch nicht faellig. Kein Fehler, kein Beleg fuer (a)."
+    },
+    {
+      "id": "T2_haken_manuell_fabrizierte_sitzung",
+      "beschreibung": "eilmeldung_hook.py mit fabrizierter session_id 'testreplay-999' (frischer Zustand) aufgerufen",
+      "befund": "exit 0, 6 DRINGEND-Zeilen + Quittierhinweis auf stdout, sofort beim ersten Aufruf",
+      "erklaerung": "Haken funktioniert nachweislich korrekt und liefert bei faelligem Zustand sofort Text. Widerlegt (a): der Haken ist nicht kaputt."
+    },
+    {
+      "id": "T3_entscheidender_test_erzwungene_faelligkeit_ueber_harness",
+      "beschreibung": "Echte Zustandsdatei gesichert (Backup-Kopie), next_due_call aller 10 Meldungen testweise auf 0 gesetzt. Danach EIN normaler Werkzeugaufruf ueber den Harness (Bash 'echo probe-marker...'), NICHT manuell gepiped -- das ist der Kanal, den ein echter Klient benutzt.",
+      "befund_zustandsdatei_danach": "delivered fuer alle 10 Meldungen um genau 1 erhoeht (z.B. 59->60, 13->14) -- der Haken hat also gefeuert, den print()-Zweig durchlaufen und Text erzeugt.",
+      "befund_werkzeugergebnis": "Im sichtbaren Tool-Ergebnis dieses Aufrufs erschien NICHTS von den 10 DRINGEND-Zeilen -- nur die eigentliche Bash-Ausgabe 'probe-marker-fuer-eilmeldung-sichtbarkeitstest'.",
+      "wiederherstellung": "Zustandsdatei aus Backup zurueckgespielt (calls-Feld dadurch auf den Stand vor dem Test zurueckgesetzt, 5745 statt 5747), Backup-Datei geloescht.",
+      "bedeutung": "Direkter, wiederholbarer Beleg fuer (b): der Haken laeuft, druckt korrekt, aber seine stdout-Ausgabe wird von diesem Klientenkanal (PostToolUse, Sub-Agent-Sitzung ueber Task-Tool) NICHT in den sichtbaren Faden eingespielt."
+    },
+    {
+      "id": "T4_edit_write_hooks_gegenprobe",
+      "beschreibung": "Eigene Write-Aufrufe (Skript nach messungen/, dieses JSON nach runs/) loesen laut settings.json den zweiten PostToolUse-Eintrag aus (matcher Edit|Write: chronist.py, session_edit_tick.py, monolith_guard.py, entwurfsprobe_hook.py, agent_register_hook.py, arbeitsmelder.py).",
+      "befund": "Im Tool-Ergebnis der Write-Aufrufe erschien ausschliesslich die Standardmeldung 'File created successfully' -- keine Ausgabe irgendeines der sechs Skripte.",
+      "bedeutung": "Der Ausfall ist nicht auf eilmeldung_hook.py beschraenkt. Kein einziger der gepruefetn PostToolUse-Haken (matcher: alle Werkzeuge, Edit|Write) hat in dieser Sitzung sichtbare Ausgabe im Faden erzeugt -- passt zur Faktenlage 'hunderte Werkzeugaufrufe, keine Meldung im Faden'."
+    }
+  ],
+  "posttooluse_haken_zaehlung": {
+    "quelle": "~/.claude/settings.json, Abschnitt hooks.PostToolUse (gelesen, nicht veraendert)",
+    "vorhanden_config_eintraege": 7,
+    "vorhanden_skripte": 8,
+    "aufzaehlung": [
+      "matcher Edit|Write: chronist.py tick (+ session_edit_tick.py im selben Kommando)",
+      "matcher Edit|Write: monolith_guard.py",
+      "matcher Edit|Write: entwurfsprobe_hook.py",
+      "matcher Edit|Write: agent_register_hook.py",
+      "matcher Edit|Write: arbeitsmelder.py --melder",
+      "matcher (keiner, d.h. alle Werkzeuge): eilmeldung_hook.py",
+      "matcher mcp__knowledge__(...): sichtbarkeit.py --hook"
+    ],
+    "geprueft_in_dieser_teilsitzung": {
+      "eilmeldung_hook.py": "gefeuert (calls-Zaehler und delivered-Zaehler stiegen bei jedem Bash-Aufruf), stdout nachweislich erzeugt (T3), im Faden nicht erschienen",
+      "edit_write_gruppe_6_skripte": "gefeuert bei den beiden Write-Aufrufen dieser Messung (Datei existiert danach, kein Fehler), aber KEINE der sechs Ausgaben im Faden sichtbar -- nicht einzeln per Exit-Code verifiziert, ob sie ueberhaupt Text drucken wollten",
+      "sichtbarkeit_hook_mcp_knowledge": "nicht geprueft -- diese Teilsitzung hat kein mcp__knowledge__*-Werkzeug aufgerufen, Matcher hat also nie gegriffen"
+    },
+    "zahlen": {
+      "vorhanden": 7,
+      "geprueft": 2,
+      "beanstandet": 2
+    },
+    "beanstandet_bedeutet": "beide gepruefte Gruppen (eilmeldung_hook.py einzeln UND die Edit|Write-Sechsergruppe als Ganzes) zeigten in dieser Teilsitzung keine einzige sichtbare Ausgabe im Faden, obwohl der eilmeldung-Haken beweisbar Text erzeugt hat."
+  },
+  "antwort_auf_die_drei_hypothesen": {
+    "a_haken_laeuft_nicht": "WIDERLEGT. T2 und T3 zeigen exit 0 und (bei T3) tatsaechliches Feuern mit delivered-Zaehler-Erhoehung fuer die echte Sitzung.",
+    "b_haken_laeuft_aber_ausgabe_kommt_nicht_an": "BESTAETIGT. T3 ist der direkte Beleg: Ausgabe nachweislich erzeugt (delivered stieg), im Werkzeugergebnis nicht vorhanden. T4 zeigt denselben Ausfall fuer eine zweite, unabhaengige PostToolUse-Gruppe -- spricht dafuer, dass der Kanal selbst (PostToolUse-stdout in diesem Klienten/Sub-Agent-Kontext) nicht eingespielt wird, nicht nur dieser eine Haken.",
+    "c_haken_haelt_meldung_fuer_bereits_zugestellt": "NICHT BEOBACHTET. Alle 10 Meldungen stehen mit acked=False in der Zustandsdatei -- 'delivered' zaehlt Zustellversuche, nicht Quittierung, und das Feld verhaelt sich laut Code (main(), if due_keys: print(...)) korrekt: es wird bei jeder Faelligkeit neu gedruckt, gerade WEIL acked nie true wird."
+  },
+  "was_nicht_festgestellt_werden_konnte": [
+    "Ob der PRIMAERE Chat-Faden (der Faden, den der Betreiber tatsaechlich liest) dasselbe Verhalten zeigt wie dieser Sub-Agent-Kanal -- diese Messung laeuft als Task/Agent-Unterauftrag, nicht als Hauptsitzung. Die Kennungsuebereinstimmung (gleiche sid, gleiche wachsende Zustandsdatei, 1095 Registereintraege) spricht dafuer, dass Haupt- und Unterauftraege dieselbe Sitzungskennung und denselben Hook-Mechanismus teilen, ist aber kein direkter Beleg fuer das Verhalten der Hauptoberflaeche selbst.",
+    "Was der Klient mit PostToolUse-stdout INTERN macht (verwirft, loggt, filtert) -- von aussen ist nur beobachtbar, dass es nicht im sichtbaren Werkzeugergebnis auftaucht. Keine Dokumentation oder Konfigurationsdatei in diesem Repo oder in hub/ wurde geprueft, die das Klientenverhalten fuer PostToolUse-stdout festlegt -- das laege ausserhalb des Messauftrags (keine Klientenquelle im Zugriff).",
+    "Ob die sechs Edit|Write-Skripte in T4 ueberhaupt versucht haben, Text zu drucken (kein Exit-Code-Log pro Skript ausgewertet) -- nur, dass nichts im Faden ankam. Fuer eine vollstaendige Beanstandung dieser Gruppe fehlt der gleiche direkte Beleg wie bei eilmeldung_hook.py (T3)."
+  ],
+  "git_status_vorher_nachher": {
+    "hinweis": "siehe separate Textausgabe im Gespraech -- brainlehr: nur Aenderungen in runs/ und messungen/ durch diese Messung, hub: unveraendert (nur gelesen)"
+  }
+}
