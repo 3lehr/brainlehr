@@ -82,12 +82,21 @@ def _synthetische_aufgaben() -> dict:
 
 def test_auswerten_drei_bedingungen_und_lieferanalyse():
     aufgaben = _synthetische_aufgaben()
+    # Seit 2026-08-13 ist `werkzeuge_benutzt` Pflicht: eine Antwort ohne das
+    # Feld koennte ueber ein Suchwerkzeug doch an den Speicher gekommen sein,
+    # und die OHNE-Bedingung waere wertlos. Fail-closed, siehe den Test
+    # darunter.
     antworten = {"antworten": {
-        "m1-00|MIT": "Ich stuetze mich auf /x/y, das passt genau.",
-        "m1-00|OHNE": "Ich rate auf gut Glueck, kein Anhaltspunkt.",
-        "m1-00|NEG": "Der fremde Block handelt von etwas anderem, ich rate.",
-        "m2-00|MIT": "Ja, das ist moeglich, siehe die genannte Einschraenkung.",
-        "m2-00|OHNE": "Ja, das ist grundsaetzlich moeglich.",
+        "m1-00|MIT": {"antwort": "Ich stuetze mich auf /x/y, das passt genau.",
+                      "werkzeuge_benutzt": False},
+        "m1-00|OHNE": {"antwort": "Ich rate auf gut Glueck, kein Anhaltspunkt.",
+                       "werkzeuge_benutzt": False},
+        "m1-00|NEG": {"antwort": "Der fremde Block handelt von etwas anderem, ich rate.",
+                      "werkzeuge_benutzt": False},
+        "m2-00|MIT": {"antwort": "Ja, das ist moeglich, siehe die genannte Einschraenkung.",
+                      "werkzeuge_benutzt": False},
+        "m2-00|OHNE": {"antwort": "Ja, das ist grundsaetzlich moeglich.",
+                       "werkzeuge_benutzt": False},
     }}
     erg = ok.auswerten(aufgaben, antworten)
     assert erg["m1"]["MIT"]["treffer"] == 1 and erg["m1"]["MIT"]["n"] == 1
@@ -121,3 +130,45 @@ def test_m1_pool_schliesst_kennung_aus():
 
 def test_selftest_laeuft_durch():
     ok._selftest()
+
+
+def test_antwort_ohne_werkzeugfeld_geht_nicht_in_die_quote():
+    """Das Altformat -- ein nackter String ohne Angabe zur Werkzeugnutzung --
+    darf NICHT stillschweigend als "kein Werkzeug benutzt" gelesen werden.
+
+    Der Grund ist der Kern der ganzen Messung: Holt sich die antwortende
+    Instanz das Wissen waehrend der OHNE-Bedingung ueber ein Suchwerkzeug,
+    bekommt sie es auf einem zweiten Weg, und der Vergleich MIT gegen OHNE
+    misst nichts mehr. Fail-open waere hier also nicht bequem, sondern falsch.
+
+    Dieser Test ist zugleich die Ratsche dagegen, dass jemand die Pruefung
+    spaeter wieder aufweicht, weil alte Antwortdateien nicht mehr durchlaufen.
+    Sie sollen nicht durchlaufen -- ihre Werkzeugnutzung ist unbekannt.
+    """
+    aufgaben = _synthetische_aufgaben()
+    alt = {"antworten": {
+        "m1-00|MIT": "Ich stuetze mich auf /x/y, das passt genau.",
+        "m1-00|OHNE": "Ich rate auf gut Glueck.",
+        "m1-00|NEG": "Ich rate.",
+    }}
+    erg = ok.auswerten(aufgaben, alt)
+    assert erg["m1"]["MIT"]["n"] == 0
+    assert erg["m1"]["MIT"]["anteil"] is None
+    assert erg["m1"]["MIT"]["hinweis"] == "keine verwertbaren Zellen"
+    # Und die Zahl der ausgeschlossenen Zellen wird GENANNT, nicht verschwiegen
+    # -- eine stille Kuerzung sieht in der Auswertung aus wie Vollstaendigkeit.
+    assert len(erg["m1"]["werkzeug_ausgeschlossen"]) == 3
+
+
+def test_werkzeugnutzung_ausdruecklich_verneint_geht_normal_ein():
+    """Gegenrichtung, sonst wuerde der Test darueber auch bei einer Pruefung
+    bestehen, die schlicht ALLES ausschliesst."""
+    aufgaben = _synthetische_aufgaben()
+    sauber = {"antworten": {
+        "m1-00|MIT": {"antwort": "Ich stuetze mich auf /x/y.", "werkzeuge_benutzt": False},
+        "m1-00|OHNE": {"antwort": "Ich rate.", "werkzeuge_benutzt": False},
+        "m1-00|NEG": {"antwort": "Ich rate.", "werkzeuge_benutzt": False},
+    }}
+    erg = ok.auswerten(aufgaben, sauber)
+    assert erg["m1"]["MIT"]["n"] == 1 and erg["m1"]["MIT"]["treffer"] == 1
+    assert erg["m1"]["werkzeug_ausgeschlossen"] == []
