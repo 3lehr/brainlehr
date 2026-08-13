@@ -130,6 +130,20 @@ def _call_ollama(prompt: str, *, num_ctx: int, num_predict: int | None = None) -
     """Einmaliger Aufruf (kein Retry -- die Kalibrierung braucht keine
     Ausfalltoleranz, sie laeuft vor der eigentlichen Messung). Gibt das
     volle Antwortobjekt zurueck (response, prompt_eval_count, ...)."""
+    # Rolle 'messobjekt': das lokale Modell IST hier der Gegenstand der
+    # Messung (seine Fenstergroesse), nicht das Werkzeug -- deshalb ist der
+    # lokale Aufruf richtig und braucht keine BRAINLEHR_LOKAL-Freigabe.
+    #
+    # Der Aufruf des Pruefsteins ist trotzdem noetig, und genau das fehlte:
+    # Dieses Modul hat einen EIGENEN /api/generate-Weg (schreiblauf._call_ollama
+    # kennt kein options.num_ctx und liefert kein prompt_eval_count, siehe
+    # Modulkopf) und lief damit an schreiblauf.rolle_pruefen vorbei. Die
+    # Sperre gegen lokale ANTWORTLAEUFE (L-a69129, dreimal aufgetreten, zur
+    # Regel eskaliert) existierte also, war hier aber nicht erreichbar. Die
+    # Rolle steht jetzt ausdruecklich da, statt sich aus dem Dateinamen zu
+    # ergeben -- wer diesen Weg spaeter zum Beantworten umwidmet, laeuft in
+    # den Pruefstein statt an ihm vorbei.
+    sl.rolle_pruefen("messobjekt", MODEL, OLLAMA_URL)
     options = {"num_ctx": num_ctx}
     if num_predict is not None:
         options["num_predict"] = num_predict

@@ -130,6 +130,13 @@ def _call_ollama(prompt: str, *, model: str, base_url: str, timeout: float,
     """Wie schreiblauf._call_ollama, zusaetzlich optionales 'options'-Feld
     (fuer num_ctx in V1) -- Kopie statt Import, weil das Original kein
     options-Feld hat und schreiblauf.py laut Auftrag nicht geaendert wird."""
+    # Die Kopie hatte den Rollen-Pruefstein mitkopiert -- naemlich gar nicht:
+    # im Original sitzt er eine Ebene hoeher, in _call_with_retry(). Dieser
+    # Weg lief also an der Sperre gegen lokale ANTWORTLAEUFE vorbei
+    # (L-a69129, dreimal aufgetreten, zur Regel eskaliert). Rolle
+    # 'messobjekt': gemessen wird, was das lokale Modell an norm_rang/gilt_ab
+    # liefert -- es ist der Gegenstand, nicht das Werkzeug.
+    schreiblauf.rolle_pruefen("messobjekt", model, base_url)
     payload = {"model": model, "prompt": prompt, "stream": False, "keep_alive": schreiblauf.KEEP_ALIVE}
     if options:
         payload["options"] = options
