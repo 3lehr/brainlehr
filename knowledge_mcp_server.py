@@ -428,6 +428,34 @@ BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.gilt_bis liegt vor gilt_ab');
 END;
 """
+# Belegart (SCHRITT 1, docs/PLAN_MENSCHLICHER_ENTSCHEID_2026-08-12.md).
+# Identischer Text wie schema.sql, gleiches Zwei-Kopien-Muster wie
+# NORM_ENTSCHEIDUNG_TRIGGERS_SQL oben -- siehe dortiger Kommentar und der
+# Spaltenkommentar in schema.sql fuer die volle Begruendung. BEWUSST KEINE
+# Pflicht-Trigger: ein erster Versuch (Belegart bei jedem neuen Rang-1/2-
+# Knoten mit menschlichem Entscheider erzwingen) brach 20 bestehende Tests,
+# die norm_entschieden_von schon lange als Mensch schreiben, ohne dass
+# Belegart je verlangt war -- siehe Kommentar in schema.sql direkt vor der
+# Fassungshistorie. Nur der Wertebereich wird geprueft (bi+bu), Pflicht ist
+# Sache des schreibenden Werkzeugs in Schritt 3.
+ALLOWED_NORM_ENTSCHIEDEN_BELEGART = {"selbstauskunft", "systemauth", "kommandozeile"}
+BELEGART_TRIGGERS_SQL = """
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_belegart_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entschieden_belegart IS NOT NULL
+    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile (oder NULL)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_belegart_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entschieden_belegart IS NOT NULL
+    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile (oder NULL)');
+END;
+"""
 # Auditkette ueber access_log (Auftrag 2026-08-06). Gleiche Laenge/Form wie
 # ein SHA-256-Hexdigest, damit ein Genesis-Wert nicht wie ein "kaputter"
 # Hash aussieht. Fachtrennung zu einer gleichnamigen Konstante in einer
@@ -786,6 +814,47 @@ def _ensure_norm_entscheidung_triggers(conn: sqlite3.Connection) -> None:
         shutil.copy2(DB_PATH, backup_path)
 
     conn.executescript(NORM_ENTSCHEIDUNG_TRIGGERS_SQL)
+
+
+def _ensure_belegart_triggers(conn: sqlite3.Connection) -> None:
+    """Nachzug fuer Bestands-DBs ohne die 2 Belegart-Wertebereichstrigger
+    (SCHRITT 1, docs/PLAN_MENSCHLICHER_ENTSCHEID_2026-08-12.md). Gleiches
+    Muster wie _ensure_norm_entscheidung_triggers direkt darueber: additive
+    Spalte kommt zuerst (schema_nachzug.nachziehen(), generisch aus
+    schema.sql). Keine Pflicht-Trigger (siehe BELEGART_TRIGGERS_SQL-Kommentar
+    oben) -- Altbestand bleibt beim Nachziehen unberuehrt, weil nichts
+    verlangt wird, was er nicht schon erfuellt."""
+    if "knowledge_nodes" not in {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }:
+        return
+    node_columns = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}
+    if "norm_entschieden_belegart" not in node_columns:
+        return  # Spalte fehlt noch (sollte durch die Aufrufreihenfolge in ensure_schema nicht vorkommen)
+    existing_triggers = {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")
+    }
+    needed = {
+        "knowledge_nodes_norm_entschieden_belegart_check_bi",
+        "knowledge_nodes_norm_entschieden_belegart_check_bu",
+    }
+    if needed <= existing_triggers:
+        return
+
+    busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    if busy:
+        raise RuntimeError(
+            f"Belegart-Trigger an knowledge_nodes fehlen, aber die Sicherung vor dem "
+            f"automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
+            "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, nichts geaendert."
+        )
+    if DB_PATH.exists():
+        stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
+        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        shutil.copy2(DB_PATH, backup_path)
+
+    conn.executescript(BELEGART_TRIGGERS_SQL)
 
 
 _ZURUECKNAHME_COLUMNS = {
@@ -1182,6 +1251,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_norm_entscheidung_column(conn)
     _ensure_norm_entschieden_columns(conn)
     _ensure_norm_entscheidung_triggers(conn)
+    _ensure_belegart_triggers(conn)
     _ensure_zuruecknahme_columns(conn)
     _ensure_schreiber_columns(conn)
     _ensure_node_constraint_triggers(conn)

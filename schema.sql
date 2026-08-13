@@ -97,6 +97,29 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     norm_entschieden_von TEXT,
     norm_entschieden_am TEXT,
     norm_entschieden_grund TEXT,
+    -- Belegart (SCHRITT 1 aus docs/PLAN_MENSCHLICHER_ENTSCHEID_2026-08-12.md).
+    -- norm_entschieden_von sagt WER entschieden hat, diese Spalte sagt WOMIT
+    -- das belegt ist -- ohne die beiden zu vermischen. ENTSCHEIDER
+    -- (norm_entschieden_von) und SCHREIBER (actor, siehe unten) sind bereits
+    -- getrennte Spalten; was fehlte, war ein Feld fuer die Beweiskraft der
+    -- Entscheider-Angabe selbst, denn ein Name allein sagt nichts darueber,
+    -- wie er zustande kam.
+    -- Drei Werte, aus den Alternativen des Plans (Abschnitt "Die
+    -- Alternativen"):
+    --   'selbstauskunft' -- Behauptung des Schreibers, nicht geprueft. Der
+    --                       heutige einzige Weg (anlass='betreiber').
+    --   'systemauth'     -- lokale Systemauthentisierung (Touch ID/Kennwort,
+    --                       Plan-Alternative C) hat Anwesenheit belegt.
+    --   'kommandozeile'  -- der Mensch selbst hat direkt geschrieben, ohne
+    --                       Assistenten dazwischen (Plan-Alternative B).
+    -- Bewusst KEIN Wert, der "gelesen" oder "verstanden" behauptet: der Plan
+    -- grenzt ausdruecklich ab, dass jede Systemauthentisierung nur belegt,
+    -- dass ein Mensch ANWESEND war -- nicht, dass er den Inhalt gelesen hat
+    -- (Plan, Abschnitt "Was der Beleg wirklich aussagt"). Ein Wert wie
+    -- 'gelesen_bestaetigt' wuerde diese Grenze im Datenmodell selbst
+    -- verwischen. NULL = nicht erfasst (gesamter Altbestand, und jede Zeile
+    -- ohne norm_entschieden_von).
+    norm_entschieden_belegart TEXT,
     -- Quellhash (Auftrag 2026-08-06, Betreiber-Idee "Selbstentwertung statt
     -- Beleg"). Hash des ABSCHNITTS, aus dem der Knoten erzeugt wurde (siehe
     -- normbestand.py::parse_sections) -- NICHT der ganzen Quelldatei: eine
@@ -1059,6 +1082,43 @@ FOR EACH ROW WHEN NEW.norm_rang IN (1,2)
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.norm_rang 1/2 verlangt fuer Hausnormen einen menschlichen Entscheider: norm_entschieden_von auf einen Menschen setzen -- ODER, falls dies eine Norm fremder Herkunft ist (Gesetz/Verordnung/Urteil/Normungsstelle), source entsprechend nennen (z.B. Gesetz, Urteil, DIN, ISO, BSI, WCAG) -- oder anlass=betreiber, wenn der Betreiber es angewiesen hat');
 END;
+
+-- Belegart-Wertebereich (SCHRITT 1, docs/PLAN_MENSCHLICHER_ENTSCHEID_2026-08-12.md).
+-- Gleiches Muster wie die anlass/norm_entscheidung-Wertebereichstrigger oben:
+-- bi+bu, weil beide Wege dieselbe Zusicherung umgehen koennten. NULL bleibt
+-- erlaubt (Altbestand, und jede Zeile ohne norm_entschieden_von) -- nur ein
+-- GESETZTER, aber unbekannter Wert wird abgewiesen.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_belegart_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entschieden_belegart IS NOT NULL
+    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile (oder NULL)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_belegart_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entschieden_belegart IS NOT NULL
+    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile (oder NULL)');
+END;
+
+-- BEWUSST KEINE Belegart-PFLICHT hier (Befund beim Bau, 2026-08-13): ein
+-- erster Versuch verlangte Belegart bei jedem neuen Rang-1/2-Knoten mit
+-- menschlichem Entscheider und brach 20 bestehende, laengst gruene Tests
+-- (test_konfidenz.py, test_regelwechsel.py, test_norm_entscheidung.py,
+-- test_normschicht_mcp.py, mehrere kern/-Selbsttests, der Betreiber-Import
+-- in test_knowledge_add_defaults.py) -- alle schreiben norm_entschieden_von
+-- als Mensch (z.B. 'betreiber', 'test'), ohne dass Belegart bei ihrer
+-- Entstehung je gefordert war. SCHRITT 1 verlangt additiv/rueckwaertsvertraeglich
+-- ("ein alter Serverprozess ... darf nicht abbrechen"), und genau dieselbe
+-- Pflicht traf hier den eigenen, gerade erst entstandenen INSERT-Pfad.
+-- norm_entschieden_belegart bleibt also freiwillig: gesetzt und PLAUSIBEL
+-- (Wertebereichs-Trigger oben) oder NULL, wie jede andere additive Spalte.
+-- Die Pflicht durchzusetzen ist Sache des schreibenden Werkzeugs (Schritt 3:
+-- die App verlangt Systemauthentisierung, BEVOR sie ueberhaupt schreibt --
+-- an dieser Stelle, nicht rueckwirkend in der DB, gehoert die Durchsetzung).
 
 -- ---------------------------------------------------------------------------
 -- Fassungshistorie (2026-08-09)
