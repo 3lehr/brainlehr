@@ -486,6 +486,35 @@ def _selftest() -> int:
     return 0
 
 
+def vertragsmuster() -> dict:
+    """Eine Antwort, in der JEDES Feld vorkommt -- die Vorlage fuer beide Sprachen.
+
+    WOZU: Die Mac-App liest diese Antwort ueber ein eigenes Struct
+    (BrainlehrCore/Fundstelle.swift). Swift ueberliest unbekannte Schluessel
+    wortlos -- ein hier umbenanntes oder ergaenztes Feld kaeme dort also nie an,
+    ohne dass irgendwo ein Fehler entstuende. Das Dokument oeffnete unmarkiert
+    und saehe aus wie "fuer diese Quelle gibt es keine Stelle".
+
+    Deshalb nicht ein echter Korpusfall, sondern ein KONSTRUIERTER: Der Vertrag
+    darf nicht davon abhaengen, ob buckeberg auf diesem Rechner liegt, und er
+    muss alle Felder tragen -- ein echter Fall traegt immer nur die seinen.
+    """
+    m = Fundstelle(
+        belegt=True,
+        herkunft="gepflegt",
+        grund="Vertragsmuster -- keine echte Quelle",
+        datei="quellen/muster.pdf",
+        absolut="/Vertragsmuster/quellen/muster.pdf",
+        format="pdf",
+        seite=8,
+        seiten=[4, 5, 8],
+        suchtext="75,00",
+        kurz="§ 16 Abs. 2 Satz 2 WEG",
+        weitere=[{"seite": 4, "zeile": "Beispielzeile"}],
+    )
+    return m.als_dict()
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--quelle", default="", help="Nummer aus dossier/quellen.json")
@@ -493,10 +522,16 @@ def main() -> int:
     p.add_argument("--bestand", action="store_true", help="Nenner und Abdeckung zeigen")
     p.add_argument("--korpus", default=None, help=f"Korpuswurzel (sonst ${ENV_KORPUS})")
     p.add_argument("--selftest", action="store_true")
+    p.add_argument("--vertrag", action="store_true",
+                   help="Musterantwort mit ALLEN Feldern -- die Vorlage, gegen die "
+                        "beide Sprachen pruefen (app/Resources/fundstelle_vertrag.json)")
     a = p.parse_args()
 
     if a.selftest:
         return _selftest()
+    if a.vertrag:
+        print(json.dumps(vertragsmuster(), ensure_ascii=False, indent=2))
+        return 0
     w = korpus_wurzel(a.korpus)
     if a.bestand:
         print(json.dumps(bestand(w), ensure_ascii=False, indent=2))

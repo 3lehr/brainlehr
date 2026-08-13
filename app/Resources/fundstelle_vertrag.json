@@ -1,0 +1,24 @@
+{
+  "belegt": true,
+  "herkunft": "gepflegt",
+  "grund": "Vertragsmuster -- keine echte Quelle",
+  "datei": "quellen/muster.pdf",
+  "absolut": "/Vertragsmuster/quellen/muster.pdf",
+  "format": "pdf",
+  "seite": 8,
+  "seiten": [
+    4,
+    5,
+    8
+  ],
+  "suchtext": "75,00",
+  "kurz": "§ 16 Abs. 2 Satz 2 WEG",
+  "weitere": [
+    {
+      "seite": 4,
+      "zeile": "Beispielzeile"
+    }
+  ],
+  "markierbar": true,
+  "mehrdeutig": true
+}

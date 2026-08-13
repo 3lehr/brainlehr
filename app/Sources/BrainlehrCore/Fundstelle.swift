@@ -65,10 +65,25 @@ public struct Fundstelle: Decodable, Equatable, Sendable {
         mehrdeutig = try c.decodeIfPresent(Bool.self, forKey: .mehrdeutig)
     }
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case belegt, herkunft, grund, datei, absolut, format, seite, seiten
         case suchtext, kurz, markierbar, mehrdeutig
     }
+
+    /// Felder, die der Dienst liefert und die App BEWUSST nicht liest.
+    ///
+    /// Der Unterschied zu "vergessen" ist der ganze Zweck dieser Menge:
+    /// `Decodable` ueberliest unbekannte Schluessel wortlos, ein neues Feld auf
+    /// der Python-Seite kaeme hier also nie an und niemand merkte es. Der
+    /// Vertragstest vergleicht die Schluessel der echten Antwort gegen
+    /// `CodingKeys` PLUS diese Liste -- wer ein Feld ergaenzt, muss es also
+    /// entweder lesen oder hier mit Grund eintragen.
+    ///
+    /// `weitere`: weitere Treffer desselben Wortlauts, ungewichtet. Die Anzeige
+    /// zeigt heute genau eine Stelle; `seiten` und `mehrdeutig` sagen bereits,
+    /// dass es mehr gibt. Eine ungewichtete Liste waere eine Auswahl ohne
+    /// Rangfolge -- also geraten.
+    public static let bewusstNichtGelesen: Set<String> = ["weitere"]
 
     /// Was unter dem Dokument steht -- in der Sprache des Lesers.
     ///
