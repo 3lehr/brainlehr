@@ -19,6 +19,31 @@ dieser Form nicht, war es nie eine Grenze, sondern ein gescheiterter Versuch.
 das Auffangbecken für das, was dabei liegen bleibt — nicht die Begründung, ihn
 zu verlassen.
 
+## Die Warnung, die über allem steht
+
+**Diese Datei beschreibt nicht die Plattform. Sie beschreibt meinen
+Kenntnisstand von ihr — und der war am 2026-08-13 nachweislich zu einem Drittel
+vollständig.** Ich kannte zehn Haken-Ereignisse und hielt die Liste für
+abgeschlossen. Es sind **29**. Neunzehn fehlten, und **drei davon lösen
+Probleme, die ich schon abgeschrieben hatte**: `WorktreeCreate` blockiert und
+kann die Identitätsdatei setzen · `PreToolUse` kann per `updatedInput` einen
+Agentenauftrag umschreiben · `FileChanged` beobachtet eine Datei auf der Platte.
+
+Deshalb gilt für **jeden** Eintrag hier:
+
+1. **Vor der Verwendung als Argument neu prüfen**, gegen die Referenz, nicht
+   gegen diese Datei. Ein Eintrag ist ein Schnappschuss meines Wissens, kein
+   Befund über die Plattform.
+2. **Kein Eintrag ist je ein Grund, etwas nicht zu bauen.** Er ist ein Grund,
+   den Umweg zu suchen — und heute hat sich der Umweg dreimal als der bessere
+   Weg herausgestellt.
+3. **Findet sich doch ein Weg, wird der Eintrag gestrichen**, nicht ergänzt.
+   Eine Liste, die nur wächst, wird zur Ausrede.
+
+Der Auftrag, der die 29 zutage förderte, enthielt die Auflage, meinen Ist-Stand
+zu **widerlegen** statt ihn zu bestätigen. Ohne diesen einen Satz hätte ich eine
+Liste bestätigt bekommen, die zu zwei Dritteln fehlte.
+
 ## Gemessene Grenzen, Stand 2026-08-13
 
 ### 1 · Kein blockierender Haken vor einem Subagenten
