@@ -416,7 +416,14 @@ _vergleich_cache: dict = {"ergebnis": None, "pfad": None, "mtime": None}
 
 
 def _vergleich_neueste_datei() -> Path | None:
-    kandidaten = sorted(RUNS_DIR.glob("ab_vergleich_abruf_*.json"))
+    # ".json." schliesst die Vermerk-Beidateien aus, die andere Werkzeuge
+    # NEBEN den Lauf legen (ab_vergleich_abruf_X.json.rasterblick.json,
+    # ....gegenprobe.json). Sie matchen das Muster, sortieren sich hinter den
+    # echten Lauf und gewinnen dadurch das "neueste" -- seit dem ersten
+    # Rasterblick lieferte /api/vergleich also den Inhalt eines Vermerks.
+    # Aufgefallen am 2026-08-13, weil der Selbsttest an ["rows"] scheiterte.
+    kandidaten = sorted(p for p in RUNS_DIR.glob("ab_vergleich_abruf_*.json")
+                        if ".json." not in p.name)
     return kandidaten[-1] if kandidaten else None
 
 
@@ -690,6 +697,23 @@ def _echtkorpus_stand() -> dict:
     return {"faelle": [f["prompt"] for f in d.get("faelle", []) if f.get("prompt")]}
 
 
+def _fundstelle_stand(quelle: str, text: str) -> dict:
+    """Die Bestellung der App: "wo genau steht das".
+
+    Die Rechnung liegt bewusst hier und nicht in Swift -- der Volltext liegt
+    als .txt neben den PDFs, das ist Textarbeit, und sie ist ohne gebaute App
+    pruefbar (python3 kern/fundstelle.py --quelle 14). Die App bestellt.
+    """
+    import fundstelle  # liegt in kern/, per Suchpfad oben eingehaengt
+    return fundstelle.loese(quelle, text).als_dict()
+
+
+def _quellenbestand() -> dict:
+    """Der Nenner. Ohne ihn ist jede Aussage ueber Abdeckung eine Behauptung."""
+    import fundstelle
+    return fundstelle.bestand()
+
+
 def _abrufweg_stand(text: str) -> dict:
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
@@ -752,6 +776,12 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._json({"error": str(e)}, 500)
             return
+        if self.path == "/api/quellenbestand":
+            try:
+                self._json(_quellenbestand())
+            except Exception as e:
+                self._json({"error": str(e)}, 500)
+            return
         self._json({"error": "unbekannter Pfad"}, 404)
 
     def do_POST(self):
@@ -774,6 +804,9 @@ class Handler(BaseHTTPRequestHandler):
                                             payload.get("budget", ""))
             elif self.path == "/api/abrufweg":
                 out = _abrufweg_stand(payload.get("text", ""))
+            elif self.path == "/api/fundstelle":
+                out = _fundstelle_stand(str(payload.get("quelle", "")),
+                                        str(payload.get("text", "")))
             else:
                 self._json({"error": "unbekannter Pfad"}, 404)
                 return
@@ -935,8 +968,27 @@ def _selftest() -> int:
         for u in v["unterschiede"]:
             assert "A_antwort" in u and "B_antwort" in u
 
+    # 3d) Fundstelle: die Bestellung der App. Laeuft auch ohne buckeberg --
+    # dann ist der Bestand nicht erreichbar und JEDE Antwort lautet "weiss
+    # ich nicht", was genau richtig ist. Der Negativfall ist hier der
+    # eigentliche Test: nie eine Seite ohne Beleg.
+    b = _quellenbestand()
+    assert "quellen" in b and "mit_fundstelle" in b
+    leer_f = _fundstelle_stand("", "")
+    assert leer_f["belegt"] is False and leer_f["seite"] is None and leer_f["grund"], \
+        "Negativfall: ohne Angabe darf keine Fundstelle behauptet werden"
+    unfug = _fundstelle_stand("", "Kernfusionsreaktor im Kellergeschoss der Anlage")
+    assert unfug["belegt"] is False and unfug["seite"] is None, \
+        "Negativfall: ein Wortlaut ohne Beleg darf keine Seite bekommen"
+    if b["erreichbar"] and b["nummern_mit_fundstelle"]:
+        nr = b["nummern_mit_fundstelle"][0]
+        treffer = _fundstelle_stand(nr, "")
+        assert treffer["belegt"] and treffer["markierbar"], f"Quelle {nr} muss aufloesen"
+        assert Path(treffer["absolut"]).is_file(), "aufgeloeste Datei muss existieren"
+
     print("Selbsttest gruen: Gesamtstand read-only unveraendert, "
-          "Siegbedingung/Nachtschicht-Rundlauf inkl. Negativfall bestanden.")
+          "Siegbedingung/Nachtschicht-Rundlauf inkl. Negativfall bestanden, "
+          "Fundstelle schweigt ohne Beleg.")
     return 0
 
 
