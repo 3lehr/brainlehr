@@ -34,6 +34,15 @@ VOR JEDEM SCHREIBEN, ohne Ausnahme (kein stiller Fall):
       lehnt sie zusaetzlich ab, falls ein altes Los (vor dieser Schranke
       erzeugt) doch eine Norm enthaelt. norm_rang=0 ist ein gueltiger Rang
       und zaehlt als Norm -- nur norm_rang IS NULL ist keine.)
+    - kein Knoten mit gattung='nachschlagewerk' (fremde Aufzeichnung/
+      Rechtstext, wird vom Abruf ausgefiltert -- haken/suchpfad_abruf.py --
+      also wirkungslos umzuschreiben, UND traegt oft fremden Wortlaut als
+      Inhalt, genau wie eine Norm. Vorfaelle 2026-08-13: /shared/art-6-abs-1
+      -dsgvo-wortlaut-der-sechs und /shared/un-nachhaltigkeitsziele-17
+      -agenda-2030 wurden umgeschrieben und per kern/sicherung_s12.py
+      --zurueck wiederhergestellt. 829 weitere Nachschlagewerk-Knoten stehen
+      unbehandelt in der behandelten Haelfte. Gleiche Bauform, gleiche zwei
+      Stellen wie bei der Norm-Schranke -- siehe ist_nachschlagewerk().)
 
 "Noch unbehandelt" (Auswahl fuer --lose) heisst: Titel UND Zusammenfassung
 stimmen noch mit der Urfassung ueberein. Ein bereits umgeschriebener Knoten
@@ -124,6 +133,25 @@ def ist_blosse_verdopplung(alt_co: str, neu_co: str) -> bool:
     return alt_norm in neu_norm
 
 
+def ist_nachschlagewerk(gattung: str | None) -> bool:
+    """Sechste Schranke: gehoert die Gattung zu 'nachschlagewerk' (fremde
+    Aufzeichnung/Rechtstext -- der Wortlaut IST der Inhalt, wie bei einer
+    Norm, nur ohne norm_rang)?
+
+    GRENZWERT gattung IS NULL/leer: schema.sql erzwingt fuer
+    knowledge_nodes.gattung NOT NULL DEFAULT 'arbeitsbestand' plus einen
+    Werte-Trigger, der nur 'arbeitsbestand'/'nachschlagewerk' zulaesst --
+    ueber speicher.py kann also gar kein NULL/leer entstehen. Vorsicht und
+    Fortschritt widersprechen sich trotzdem im Prinzip, darum wird hier
+    defensiv BLOCKIERT statt durchgelassen: eine unbekannte Gattung ist
+    kein Beleg, dass der Knoten eigener Arbeitsbestand ist, und die Folgen
+    eines faelschlich durchgelassenen Fremdtexts (Wortlaut faelschlich der
+    NASA/dem europaeischen Gesetzgeber zugeschrieben, siehe Vorfaelle oben)
+    wiegen schwerer als ein zu Unrecht zurueckgestellter Arbeitsbestand-
+    Knoten, der beim naechsten Los erneut angeboten wird."""
+    return gattung in (None, "", "nachschlagewerk")
+
+
 def auftrag_text(node_id: str, path: str) -> str:
     return (
         f"Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten "
@@ -145,7 +173,7 @@ def kandidaten_unbehandelt(conn: sqlite3.Connection) -> list[str]:
     raus = []
     for node_id in behandelt:
         row = conn.execute(
-            "SELECT title, summary, norm_rang FROM knowledge_nodes WHERE id = ?", (node_id,)
+            "SELECT title, summary, norm_rang, gattung FROM knowledge_nodes WHERE id = ?", (node_id,)
         ).fetchone()
         urf = conn.execute(
             "SELECT title, summary FROM s12_urfassungen WHERE node_id = ?", (node_id,)
@@ -154,6 +182,8 @@ def kandidaten_unbehandelt(conn: sqlite3.Connection) -> list[str]:
             continue  # ohne Urfassung nicht anbietbar -- s12_urfassungen-Wache meldet das separat
         if row["norm_rang"] is not None:
             continue  # fuenfte Schranke: bindende Norm, Wortlaut ist der Inhalt -- nicht anbietbar
+        if ist_nachschlagewerk(row["gattung"]):
+            continue  # sechste Schranke: fremde Aufzeichnung/Rechtstext -- nicht anbietbar
         if row["title"] == urf["title"] and row["summary"] == urf["summary"]:
             raus.append(node_id)
     return raus
@@ -179,13 +209,14 @@ def lose_erzeugen(conn: sqlite3.Connection, n: int, ab: int = 0) -> list[dict]:
 # --------------------------------------------------------------- Schritt 3
 def zurueckschreiben_alle(conn: sqlite3.Connection, alt_liste: list[dict],
                            neu_liste: list[dict], jetzt: str | None = None) -> dict:
-    """Prueft jeden Knoten aus alt_liste gegen die fuenf Schranken und schreibt
-    nur, was alle fuenf besteht. Meldet jede Ablehnung namentlich, in sechs
+    """Prueft jeden Knoten aus alt_liste gegen die sechs Schranken und schreibt
+    nur, was alle sechs besteht. Meldet jede Ablehnung namentlich, in sieben
     getrennten Zaehlern -- keiner darf stillschweigend verschwinden."""
     jetzt = jetzt or now_iso()
     neu_je_id = {r["id"]: r for r in neu_liste}
     ergebnis = {"geschrieben": [], "ohne_urfassung": [], "falsche_haelfte": [],
-                "verdopplung_abgelehnt": [], "pruefstein_abgelehnt": [], "norm_abgelehnt": []}
+                "verdopplung_abgelehnt": [], "pruefstein_abgelehnt": [], "norm_abgelehnt": [],
+                "nachschlagewerk_abgelehnt": []}
 
     for alt in alt_liste:
         node_id = alt["id"]
@@ -194,11 +225,14 @@ def zurueckschreiben_alle(conn: sqlite3.Connection, alt_liste: list[dict],
             ergebnis["falsche_haelfte"].append(node_id)
             continue
 
-        norm_row = conn.execute(
-            "SELECT norm_rang FROM knowledge_nodes WHERE id = ?", (node_id,)
+        node_row = conn.execute(
+            "SELECT norm_rang, gattung FROM knowledge_nodes WHERE id = ?", (node_id,)
         ).fetchone()
-        if norm_row is not None and norm_row["norm_rang"] is not None:
+        if node_row is not None and node_row["norm_rang"] is not None:
             ergebnis["norm_abgelehnt"].append(node_id)
+            continue
+        if node_row is not None and ist_nachschlagewerk(node_row["gattung"]):
+            ergebnis["nachschlagewerk_abgelehnt"].append(node_id)
             continue
 
         hat_urfassung = conn.execute(
@@ -269,6 +303,7 @@ def main() -> None:
         print(f"abgelehnt Verdopplung: {len(e['verdopplung_abgelehnt'])} {e['verdopplung_abgelehnt']}")
         print(f"abgelehnt vom Pruefstein: {len(e['pruefstein_abgelehnt'])} {e['pruefstein_abgelehnt']}")
         print(f"abgelehnt Norm: {len(e['norm_abgelehnt'])} {e['norm_abgelehnt']}")
+        print(f"abgelehnt Nachschlagewerk: {len(e['nachschlagewerk_abgelehnt'])} {e['nachschlagewerk_abgelehnt']}")
         return
 
     p.print_help()
@@ -277,31 +312,34 @@ def main() -> None:
 # ------------------------------------------------------------------- Tests
 def _insert_node(conn: sqlite3.Connection, node_id: str, path: str,
                   title: str, summary: str, content: str, jetzt: str,
-                  norm_rang: int | None = None) -> None:
+                  norm_rang: int | None = None, gattung: str = "arbeitsbestand") -> None:
     """norm_rang=None (Vorgabe) legt einen gewoehnlichen Wissensknoten an
     (norm_entscheidung='keine_norm'). norm_rang=<Zahl> legt eine Norm an
     (norm_entscheidung='norm_unbefristet', gilt_ab gesetzt) -- fuer den
-    Grenzwerttest norm_rang=0 (0 ist ein gueltiger Rang, nicht "kein Rang")."""
+    Grenzwerttest norm_rang=0 (0 ist ein gueltiger Rang, nicht "kein Rang").
+    gattung='arbeitsbestand' (Vorgabe, Schema-Default) oder 'nachschlagewerk'
+    fuer die sechste Schranke -- NULL/leer ist per Schema-Trigger nicht
+    einfuegbar, siehe ist_nachschlagewerk()."""
     if norm_rang is None:
         conn.execute(
             """INSERT INTO knowledge_nodes
                (id, path, parent_path, project_id, title, summary, content, level, tags, source,
-                created_at, updated_at, norm_entscheidung,
+                created_at, updated_at, norm_entscheidung, gattung,
                 norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
-               VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, 'keine_norm', ?, ?, ?)""",
+               VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, 'keine_norm', ?, ?, ?, ?)""",
             (node_id, path, title, summary, content, node_id, jetzt, jetzt,
-             "skript:umschrift_s12.py", jetzt, "Testvorrichtung fuer die Umschrift"),
+             gattung, "skript:umschrift_s12.py", jetzt, "Testvorrichtung fuer die Umschrift"),
         )
     else:
         conn.execute(
             """INSERT INTO knowledge_nodes
                (id, path, parent_path, project_id, title, summary, content, level, tags, source,
-                created_at, updated_at, norm_rang, gilt_ab, norm_entscheidung, anlass,
+                created_at, updated_at, norm_rang, gilt_ab, norm_entscheidung, anlass, gattung,
                 norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
                VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, ?, ?, 'norm_unbefristet',
-                       'betreiber', ?, ?, ?)""",
+                       'betreiber', ?, ?, ?, ?)""",
             (node_id, path, title, summary, content, node_id, jetzt, jetzt,
-             norm_rang, jetzt, "Betreiber", jetzt, "Testvorrichtung fuer die Umschrift"),
+             norm_rang, jetzt, gattung, "Betreiber", jetzt, "Testvorrichtung fuer die Umschrift"),
         )
 
 
@@ -318,8 +356,8 @@ def _selftest() -> None:
     kandidaten = [f"n-{i}" for i in range(60)]
     behandelt_ids = [k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.BEHANDELT]
     unbehandelt_id = next(k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.UNBEHANDELT)
-    sauber_id, ohne_urf_id, defekt_id, norm_id = (
-        behandelt_ids[0], behandelt_ids[1], behandelt_ids[2], behandelt_ids[3])
+    sauber_id, ohne_urf_id, defekt_id, norm_id, nachschlag_id = (
+        behandelt_ids[0], behandelt_ids[1], behandelt_ids[2], behandelt_ids[3], behandelt_ids[4])
 
     with speicher.schreiben(db) as conn:
         conn.executescript(schema_sql)
@@ -336,13 +374,20 @@ def _selftest() -> None:
         _insert_node(conn, norm_id, "/x/norm", "Bindende Regel E",
                      "Zusammenfassung E, wortgleich mit der Norm.", "Volltext der Norm E.",
                      jetzt, norm_rang=0)
-        # Urfassungen: sauber_id, defekt_id und norm_id gesichert, ohne_urf_id absichtlich NICHT.
+        # Sechste Schranke: gattung='nachschlagewerk', kein norm_rang.
+        _insert_node(conn, nachschlag_id, "/x/nachschlagewerk", "Fremde Aufzeichnung F",
+                     "Zusammenfassung F, wortgleich mit der Aufzeichnung.",
+                     "Volltext der Aufzeichnung F.", jetzt, gattung="nachschlagewerk")
+        # Urfassungen: sauber_id, defekt_id, norm_id und nachschlag_id gesichert,
+        # ohne_urf_id absichtlich NICHT.
         conn.executescript(sicherung_s12.SCHEMA)
         for nid, path_, title, summary, content in (
             (sauber_id, "/x/sauber", "Alter Titel", "Alte Zusammenfassung mit 8,50 USD.", "Volltext 8,50 USD."),
             (defekt_id, "/x/defekt", "Titel C", "Zusammenfassung C mit 47 Prozent.", "Text C mit 47 Prozent."),
             (norm_id, "/x/norm", "Bindende Regel E", "Zusammenfassung E, wortgleich mit der Norm.",
              "Volltext der Norm E."),
+            (nachschlag_id, "/x/nachschlagewerk", "Fremde Aufzeichnung F",
+             "Zusammenfassung F, wortgleich mit der Aufzeichnung.", "Volltext der Aufzeichnung F."),
         ):
             conn.execute(
                 "INSERT INTO s12_urfassungen (node_id, path, title, summary, content, gesichert_am) "
@@ -351,13 +396,18 @@ def _selftest() -> None:
     # --- Schritt 1: --lose findet nur behandelte Knoten mit Urfassung, die
     # noch wortgleich mit ihr sind. ohne_urf_id fehlt (keine Urfassung),
     # unbehandelt_id fehlt (falsche Haelfte), norm_id fehlt (fuenfte
-    # Schranke: norm_rang IS NOT NULL, hier Grenzwert norm_rang=0).
+    # Schranke: norm_rang IS NOT NULL, hier Grenzwert norm_rang=0),
+    # nachschlag_id fehlt (sechste Schranke: gattung='nachschlagewerk').
     with speicher.lesen(db) as conn:
         kand = kandidaten_unbehandelt(conn)
     assert set(kand) == {sauber_id, defekt_id}, kand
     assert norm_id not in kand, (
         "ROT-PROBE fuenfte Schranke (kandidaten_unbehandelt): norm_id mit "
         "norm_rang=0 wurde trotzdem als Kandidat angeboten")
+    assert nachschlag_id not in kand, (
+        "ROT-PROBE sechste Schranke (kandidaten_unbehandelt): "
+        "nachschlag_id (gattung='nachschlagewerk') wurde trotzdem als "
+        "Kandidat angeboten")
 
     with speicher.lesen(db) as conn:
         los_alle = lose_erzeugen(conn, 10, 0)
@@ -365,6 +415,9 @@ def _selftest() -> None:
     assert norm_id not in los_ids, (
         "ROT-PROBE fuenfte Schranke (lose_erzeugen): norm_id mit norm_rang=0 "
         "wurde trotzdem in ein Los aufgenommen")
+    assert nachschlag_id not in los_ids, (
+        "ROT-PROBE sechste Schranke (lose_erzeugen): nachschlag_id "
+        "(gattung='nachschlagewerk') wurde trotzdem in ein Los aufgenommen")
     with speicher.lesen(db) as conn:
         los_1 = lose_erzeugen(conn, 1, 0)
         los_0 = lose_erzeugen(conn, 0, 0)
@@ -401,10 +454,19 @@ def _selftest() -> None:
                 "co": "Volltext der Norm E."}
     neu_norm = {"id": norm_id, "title": "Umformulierte Regel E",
                 "summary": "Neue Zusammenfassung E.", "co": "Neuer Volltext E."}
+    # 6) nachschlag_id: gattung='nachschlagewerk', landet hier nur, weil ein
+    # ALTES Los (vor der sechsten Schranke erzeugt) sie trotzdem enthaelt --
+    # simuliert per Hand, da lose_erzeugen sie oben schon ausschliesst.
+    alt_nachschlag = {"id": nachschlag_id, "path": "/x/nachschlagewerk",
+                       "title": "Fremde Aufzeichnung F",
+                       "summary": "Zusammenfassung F, wortgleich mit der Aufzeichnung.",
+                       "co": "Volltext der Aufzeichnung F."}
+    neu_nachschlag = {"id": nachschlag_id, "title": "Umformulierte Aufzeichnung F",
+                       "summary": "Neue Zusammenfassung F.", "co": "Neuer Volltext F."}
 
     alt_input = [alt_je_id[sauber_id], {"id": ohne_urf_id}, {"id": unbehandelt_id},
-                 alt_je_id[defekt_id], alt_norm]
-    neu_input = [neu_sauber, neu_ohne_urf, neu_unbehandelt, neu_defekt, neu_norm]
+                 alt_je_id[defekt_id], alt_norm, alt_nachschlag]
+    neu_input = [neu_sauber, neu_ohne_urf, neu_unbehandelt, neu_defekt, neu_norm, neu_nachschlag]
 
     with speicher.schreiben(db) as conn:
         e = zurueckschreiben_alle(conn, alt_input, neu_input, jetzt)
@@ -416,11 +478,18 @@ def _selftest() -> None:
     assert e["norm_abgelehnt"] == [norm_id], (
         "ROT-PROBE fuenfte Schranke (zurueckschreiben_alle): Norm mit "
         f"norm_rang=0 wurde nicht namentlich abgelehnt: {e['norm_abgelehnt']}")
+    assert e["nachschlagewerk_abgelehnt"] == [nachschlag_id], (
+        "ROT-PROBE sechste Schranke (zurueckschreiben_alle): "
+        "nachschlag_id wurde nicht namentlich abgelehnt: "
+        f"{e['nachschlagewerk_abgelehnt']}")
 
     with speicher.lesen(db) as conn:
         row_e = conn.execute("SELECT title FROM knowledge_nodes WHERE id=?", (norm_id,)).fetchone()
+        row_f = conn.execute("SELECT title FROM knowledge_nodes WHERE id=?", (nachschlag_id,)).fetchone()
     assert row_e["title"] == "Bindende Regel E", (
         "ROT-PROBE fuenfte Schranke: Norm wurde trotz Ablehnung in der DB umgeschrieben")
+    assert row_f["title"] == "Fremde Aufzeichnung F", (
+        "ROT-PROBE sechste Schranke: Nachschlagewerk wurde trotz Ablehnung in der DB umgeschrieben")
 
     # Negativfall gegen alle drei Schranken zugleich: nur der eine saubere
     # Knoten wurde tatsaechlich in der DB veraendert.
@@ -441,7 +510,7 @@ def _selftest() -> None:
     assert sauber_id not in kand_2, "umgeschriebener Knoten taucht erneut auf"
     assert defekt_id in kand_2, "abgelehnter (unveraenderter) Knoten fehlt zu Unrecht"
 
-    print("selftest ok (Grenzwerte, sechs Ablehnungsklassen, Negativfall, "
+    print("selftest ok (Grenzwerte, sieben Ablehnungsklassen, Negativfall, "
           "Wiederaufnahme ohne Zusatzdatei)", file=_sys.stderr)
 
 

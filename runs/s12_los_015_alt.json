@@ -1,0 +1,162 @@
+[
+  {
+    "id": "nasa-llis-1100",
+    "path": "/nasa-llis/1100",
+    "title": "Selection and Monitoring Supplier Quality",
+    "summary": "Selection and Monitoring Supplier Quality",
+    "co": "Datum: 1998-09-24\n\nOrganisation: JSC\n\nAbstract (Volltext):\n\n\nLesson:\nProcured space craft components must have their quality assured regardless of flight criticality",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1100 (/nasa-llis/1100) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1101",
+    "path": "/nasa-llis/1101",
+    "title": "Hardware losses during STS-88 Extravehicular Activities (EVAs, also known as space walks)",
+    "summary": "Hardware losses during STS-88 Extravehicular Activities (EVAs, also known as space walks)",
+    "co": "Datum: 2001-01-01\n\nOrganisation: JSC\n\nAbstract (Volltext):\n\n\nLesson:\nCareful planning from design through training, flight rules, and operations is required to prevent loss of equipment and tooling during space walk operations.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1101 (/nasa-llis/1101) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1103",
+    "path": "/nasa-llis/1103",
+    "title": "Space Shuttle Program/Operations-Processing/Training",
+    "summary": "Space Shuttle Program/Operations-Processing/Training",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nThe use of simulated Space Shuttle launch and flight operations for training and rehearsal has proven to be an effective technique for enhancing safety and efficiency and is especially valuable in the case of special or rarely performed procedures or after a long hiatus of effort.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1103 (/nasa-llis/1103) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1106",
+    "path": "/nasa-llis/1106",
+    "title": "International Space Station Program/Hardware-Software/Integration Testing",
+    "summary": "International Space Station Program/Hardware-Software/Integration Testing",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nAstronaut crew participation in testing improves fidelity of the test and better familiarizes the crew with systems and procedures.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1106 (/nasa-llis/1106) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1108",
+    "path": "/nasa-llis/1108",
+    "title": "International Space Station Program/Crew Return Vehicle (CRV)/X-38 Risk Assessment and Testing",
+    "summary": "International Space Station Program/Crew Return Vehicle (CRV)/X-38 Risk Assessment and Testing",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nPlans calling for availability on orbit in early 2003 of a U.S. CRV based on the X-38 technology demonstrator are highly ambitious. Although much of the X-38 technology is off the shelf, there are numerous features that rely on yet unproven approaches.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1108 (/nasa-llis/1108) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1109",
+    "path": "/nasa-llis/1109",
+    "title": "International Space Station Program/Crew/Radiation Exposure",
+    "summary": "International Space Station Program/Crew/Radiation Exposure",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nIn the ASAP Annual Report for 1997, the Panel expressed concern for the high doses of radiation recorded by the U.S. astronauts during extended Phase I missions in Mir. Subsequent and continuing review of this potential problem revalidates that unresolved concern. The current NASA limit for radiation exposure is 40 REM per year to the blood-forming organs, twice the limit for the U.S. airline pilots and four times the limit for Navy nuclear operators (see also Finding #23).",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1109 (/nasa-llis/1109) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-111",
+    "path": "/nasa-llis/111",
+    "title": "LH2 Quick Disconnects (QD)",
+    "summary": "LH2 Quick Disconnects (QD)",
+    "co": "Datum: 1992-08-27\n\nOrganisation: KSC\n\nAbstract (Volltext):\n\n\nLesson:\nQuick disconnects utilized for providing gasses to the space shuttle main engine (SSME) are identical to each other and can be cross-connected.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-111 (/nasa-llis/111) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1113",
+    "path": "/nasa-llis/1113",
+    "title": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Simplified Aid for EVA Rescue (SAFER)",
+    "summary": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Simplified Aid for EVA Rescue (SAFER)",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nThe EVA project lacks sufficient operational assets to meet unplanned contingencies. There are no spare Extravehicular Mobility Units (EMU's). Only five U.S. Simplified Aid for EVA Rescue (SAFER) flight units will be available to meet a requirement to maintain three units on orbit. In addition, only four Russian SAFER units are planned.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1113 (/nasa-llis/1113) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1114",
+    "path": "/nasa-llis/1114",
+    "title": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Extravehicular Mobility Unit (EMU) Planar Hard Upper Torso (HUT)",
+    "summary": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Extravehicular Mobility Unit (EMU) Planar Hard Upper Torso (HUT)",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nThe three available sizes of Extravehicular Mobility Unit (EMU) planar Hard Upper Torso (HUT) units will accommodate crewmembers from the 40th percentile female to the 95th percentile male. Assumptions were made regarding the ability of crewmembers to upsize or down-size to fit the three available HUT sizes and operate safely and effectively in them.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1114 (/nasa-llis/1114) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1115",
+    "path": "/nasa-llis/1115",
+    "title": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Research and Technology (R&T) Program",
+    "summary": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Research and Technology (R&T) Program",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nThe EVA Research and Technology (R&amp;T) program has been highly successful, and its products have led to the development of significant safety and operational improvements to EVA hardware and procedures. Current funding for advanced R&amp;T for EVA is extremely limited.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1115 (/nasa-llis/1115) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1116",
+    "path": "/nasa-llis/1116",
+    "title": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Training",
+    "summary": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Training",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nThe safety implications of EVA training for U.S. and international partner astronauts in the Russian Hydrolab are not well understood. In particular, the implications of higher suit pressures and Russian bends protocols have not been thoroughly analyzed.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1116 (/nasa-llis/1116) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1117",
+    "path": "/nasa-llis/1117",
+    "title": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Prereathe Protocol",
+    "summary": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Prereathe Protocol",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nThere is an initiative to modify the prebreathe protocol for EVA operations on the ISS. The target is a 2-hour prebreathe from any pressure with the same or better bends risk than the protocol currently used in Space Shuttle operations.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1117 (/nasa-llis/1117) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1118",
+    "path": "/nasa-llis/1118",
+    "title": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Radiation Exposure",
+    "summary": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/Radiation Exposure",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nThe greatest potential for overexposure of the crew to ionizing radiation exists during EVA operations. Furthermore, the magnitude of any overexposure cannot be predicted using current models.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1118 (/nasa-llis/1118) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1119",
+    "path": "/nasa-llis/1119",
+    "title": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/EMU-Orlan Suit",
+    "summary": "International Space Station (ISS) Program/Extravehicular Activity (EVA)/EMU-Orlan Suit",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nEVA ground rule 4.3.2.12, \"No Simultaneous EMU/Orlan ISS Extravehicular Activity,\" is constraining and reduces flexibility.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1119 (/nasa-llis/1119) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1121",
+    "path": "/nasa-llis/1121",
+    "title": "Aero-Space Technology/NASA's Three Pillars/Global Civil Aviation",
+    "summary": "Aero-Space Technology/NASA's Three Pillars/Global Civil Aviation",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nAchieving the objectives of the first of NASA's Three Pillars, Global Civil Aviation, requires greater involvement and support by the Federal Aviation Administration (FAA).",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1121 (/nasa-llis/1121) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1123",
+    "path": "/nasa-llis/1123",
+    "title": "Aero-Space Technology/X-Vehicle Range Safety/Authority",
+    "summary": "Aero-Space Technology/X-Vehicle Range Safety/Authority",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nBecause X-33 and X-34 flight range safety is the responsibility of another agency, NASA may have a tendency to pay less attention to that aspect of the programs.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1123 (/nasa-llis/1123) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1124",
+    "path": "/nasa-llis/1124",
+    "title": "Computer Hardware-Software/Space Shuttle/General Purpose Computer (GPC) Limitations",
+    "summary": "Computer Hardware-Software/Space Shuttle/General Purpose Computer (GPC) Limitations",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nOutmoded Design of Space Shuttle General Purpose Computer (GPC) Limit Software and Hardware Upgrades",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1124 (/nasa-llis/1124) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1129",
+    "path": "/nasa-llis/1129",
+    "title": "Computer Hardware-Software/International Space Station/Command and Data Handling (C&DH) Upgrades",
+    "summary": "Computer Hardware-Software/International Space Station/Command and Data Handling (C&DH) Upgrades",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nThe planning process for computer upgrades for the ISS has begun. Several possible upgrades are being discussed, such as replacing the Mass Memory Unit, upgrading the processor, upgrading the compiler used, and replacing the Portable Computer Systems (PCS).",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1129 (/nasa-llis/1129) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1132",
+    "path": "/nasa-llis/1132",
+    "title": "Computer Hardware-Software/International Space Station/Software Development",
+    "summary": "Computer Hardware-Software/International Space Station/Software Development",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nSeveral software developments are on the critical path for launch and operation of the ISS. While some software elements have had the early involvement of a multi-disciplinary team that includes users and operators, many have not. The lack of user involvement results in increased schedule and safety risk to the program.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1132 (/nasa-llis/1132) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  },
+  {
+    "id": "nasa-llis-1134",
+    "path": "/nasa-llis/1134",
+    "title": "Workforce/Downsizing/Critical Skills Deficit",
+    "summary": "Workforce/Downsizing/Critical Skills Deficit",
+    "co": "Datum: 1999-02-01\n\nOrganisation: HQ\n\nAbstract (Volltext):\n\n\nLesson:\nThe continuing downsizing at Office of Space Flight Field Centers, coupled with the effects of the prior hiring freeze and unplanned departures, has produced critical skills deficits in some areas, growing workload pressure and stress levels, and a serious shortfall of younger S&amp;Es.",
+    "auftrag": "Schreibe Titel, Zusammenfassung und Volltext (Feld 'co') von Knoten nasa-llis-1134 (/nasa-llis/1134) nach diesen drei Regeln neu:\n1. Der Titel benennt die Sache, nicht ihre Herkunft.\n2. Die Zusammenfassung traegt in ein bis drei Saetzen die Kernaussage, verstaendlich ohne Vorwissen. Keine Verwaltungsformeln, kein Verweis auf Dateien oder Sitzungen als Ersatz fuer Inhalt.\n3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich.\nErhalte dabei jede Zahl, jedes Datum, jede Kennung, jeden Pfad und jeden Eigennamen aus der Urfassung -- kern/umschrift_pruefstein.py prueft das maschinell und lehnt Verlust ab. Gib id unveraendert, title, summary und co zurueck."
+  }
+]

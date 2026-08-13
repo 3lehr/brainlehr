@@ -1,0 +1,122 @@
+[
+  {
+    "id": "nasa-llis-1100",
+    "title": "Supplier Quality Assurance Regardless of Flight Criticality",
+    "summary": "A lesson recorded by the Johnson Space Center (JSC) on 1998-09-24 states that every purchased spacecraft part needs verified quality, no matter whether its intended flight role is judged critical or not. Selecting and monitoring suppliers therefore cannot relax standards for components seen as less vital.",
+    "co": "Recorded 1998-09-24, Organisation JSC.\n\nLesson learned: quality assurance must cover every procured spacecraft component, independent of how critical that component is rated for the flight. Supplier selection and ongoing supplier monitoring are the mechanisms JSC relies on to keep this assurance in place -- dropping oversight for parts labeled non-critical undermines the same guarantee that flight-critical hardware receives. In short, criticality changes the consequence of a failure, not the duty to assure quality (JSC, 1998-09-24)."
+  },
+  {
+    "id": "nasa-llis-1101",
+    "title": "Preventing Equipment Loss During STS-88 Spacewalks",
+    "summary": "During the STS-88 mission's extravehicular activities (EVAs, i.e. spacewalks), hardware and tools were lost. JSC's lesson, dated 2001-01-01, concludes that avoiding such losses demands careful planning at every stage -- design, crew training, flight rules, and real-time operations.",
+    "co": "Filed by JSC on 2001-01-01, this entry documents hardware losses that occurred during the STS-88 extravehicular activities (EVAs -- spacewalks). The takeaway: preventing the loss of equipment and tooling during a spacewalk is not a single fix but a chain that must hold from the design phase through crew training, the flight rules that govern the walk, and the operations conducted on orbit. Skip careful planning at any link -- design, training, flight rules, or operations -- and STS-88-style hardware losses during EVA can recur."
+  },
+  {
+    "id": "nasa-llis-1103",
+    "title": "Simulated Launch and Flight Rehearsal Improves Shuttle Training",
+    "summary": "NASA Headquarters (HQ) recorded on 1999-02-01 that rehearsing Space Shuttle launch and flight operations through simulation measurably improves safety and efficiency. The technique proves especially useful for procedures that are rare or special, or when a team returns to a task after a long gap without practicing it.",
+    "co": "HQ logged this lesson on 1999-02-01: using simulated launches and simulated flight operations as training and rehearsal is an effective technique for the Space Shuttle Program. The benefit shows up twice -- once in the safety gained and once in the efficiency gained -- and shows up most clearly in two situations: procedures that are special or rarely performed, and any procedure resumed after a long hiatus. In both cases, rehearsal through simulation substitutes for the missing recent experience."
+  },
+  {
+    "id": "nasa-llis-1106",
+    "title": "Astronaut Involvement Strengthens ISS Integration Testing",
+    "summary": "HQ's 1999-02-01 lesson on International Space Station integration testing finds that having astronaut crew members take part in hardware-software tests makes the tests more realistic. The same participation also familiarizes the crew with the systems and procedures they will later operate.",
+    "co": "Recorded 1999-02-01 by HQ, covering integration testing of ISS hardware and software: when astronaut crew participate in the testing itself, two things improve together -- the fidelity of the test rises, and the crew becomes better acquainted with the systems and procedures under test. Test realism and crew familiarity turn out to be the same investment, not two separate ones."
+  },
+  {
+    "id": "nasa-llis-1108",
+    "title": "Schedule Risk in the X-38-Based Crew Return Vehicle Plan",
+    "summary": "HQ's lesson from 1999-02-01 judges the plan to have a U.S. Crew Return Vehicle (CRV), built on X-38 technology demonstrator work, ready on orbit by early 2003 as highly ambitious. Much of the X-38 technology is already off the shelf, but several features still depend on approaches that had not yet been proven.",
+    "co": "Filed 1999-02-01 by HQ: the schedule aiming for an on-orbit U.S. Crew Return Vehicle (CRV) in early 2003, based on the X-38 technology demonstrator, is assessed as highly ambitious. Off-the-shelf hardware covers much of the X-38 design, yet a number of its features still lean on approaches nobody had proven yet. Ambition here means the target date and the unproven approaches are pulling in opposite directions -- the 2003 date assumes the X-38's unproven features will mature on schedule."
+  },
+  {
+    "id": "nasa-llis-1109",
+    "title": "Unresolved Concern Over Astronaut Radiation Exposure on Mir",
+    "summary": "HQ's 1999-02-01 lesson revisits a concern the Aerospace Safety Advisory Panel (ASAP) raised in its 1997 Annual Report: U.S. astronauts on extended Phase I missions aboard Mir absorbed high radiation doses. Continued review had not resolved the concern, and NASA's own limit of 40 REM per year to the blood-forming organs is already twice the limit set for U.S. airline pilots and four times the limit for Navy nuclear operators (see Finding #23).",
+    "co": "Dated 1999-02-01, HQ. The ASAP Annual Report for 1997 first raised concern over the high radiation doses U.S. astronauts recorded during the extended Phase I missions on Mir; the review that followed kept that concern open rather than resolving it. For scale: NASA's current radiation-exposure limit is 40 REM per year to the blood-forming organs -- twice the limit U.S. airline pilots operate under and four times the limit Navy nuclear operators are held to. The comparison to airline pilots and Navy operators is what makes the 40 REM ceiling, and the doses that approached it on Mir, worth flagging (see also Finding #23)."
+  },
+  {
+    "id": "nasa-llis-111",
+    "title": "Interchangeable Quick Disconnects Risk Cross-Connection on the SSME",
+    "summary": "A Kennedy Space Center (KSC) lesson from 1992-08-27 notes that the quick disconnects (QDs) used to supply gases to the Space Shuttle Main Engine (SSME) are built identically to each other. Because they are interchangeable, they can be connected to the wrong line.",
+    "co": "KSC, 1992-08-27: the quick disconnects (QDs) that feed gases to the Space Shuttle Main Engine (SSME) -- including the liquid hydrogen (LH2) connections this lesson is filed under -- are made identical to one another. That sameness is the hazard: nothing about the disconnects themselves stops a technician from cross-connecting them, swapping one gas-supply QD for another where it does not belong."
+  },
+  {
+    "id": "nasa-llis-1113",
+    "title": "Thin Spares Margin for EMU Suits and SAFER Rescue Units",
+    "summary": "HQ's 1999-02-01 lesson warns that the EVA project does not have enough spare operational hardware to handle unplanned contingencies. There are no spare Extravehicular Mobility Units (EMUs), and only five U.S. Simplified Aid for EVA Rescue (SAFER) flight units exist to keep three on orbit at once; only four Russian SAFER units are planned on top of that.",
+    "co": "Recorded 1999-02-01 by HQ: the EVA project's operational assets fall short of what unplanned contingencies would require. Spare Extravehicular Mobility Units (EMUs) do not exist at all. The Simplified Aid for EVA Rescue (SAFER) units are similarly thin -- five U.S. SAFER flight units in total must cover a standing requirement to keep three on orbit, leaving almost no margin, and the planned Russian side adds only four more SAFER units. Zero EMU spares plus a five-unit SAFER pool against a three-unit requirement is the shortfall this lesson flags."
+  },
+  {
+    "id": "nasa-llis-1114",
+    "title": "Sizing Assumptions Behind the EMU Hard Upper Torso",
+    "summary": "HQ's 1999-02-01 lesson covers the Hard Upper Torso (HUT) of the Extravehicular Mobility Unit (EMU) spacesuit: only three planar sizes exist, meant to fit crewmembers ranging from the 40th percentile female to the 95th percentile male. Reaching that range depends on an assumption -- that crewmembers can safely and effectively up-size or down-size into whichever of the three HUTs is available.",
+    "co": "HQ, 1999-02-01. The planar Hard Upper Torso (HUT) of the Extravehicular Mobility Unit (EMU) comes in three available sizes, and those three are expected to accommodate the full crew population, from the 40th percentile female up to the 95th percentile male. Covering that range with only three sizes rests on an assumption rather than a measurement: that crewmembers who fall between sizes can up-size or down-size into one of the three HUTs and still operate safely and effectively. Three sizes, one assumption, and a percentile span from the 40th to the 95th is the combination this lesson questions."
+  },
+  {
+    "id": "nasa-llis-1115",
+    "title": "EVA Research Program's Success Outpaces Its Funding",
+    "summary": "HQ's 1999-02-01 lesson credits the EVA Research and Technology (R&T) program with strong success: its output drove significant safety and operational improvements to EVA hardware and procedures. Despite that record, current funding for advanced EVA R&T is extremely limited.",
+    "co": "Filed 1999-02-01 by HQ. The Extravehicular Activity (EVA) Research and Technology (R&T) program has been highly successful -- its products are the source of significant improvements to EVA hardware, EVA procedures, and the safety and operations built on top of them. That success sits awkwardly next to its budget: funding available today for advanced EVA R&T is extremely limited, a mismatch between what the program has delivered and what it is now given to work with."
+  },
+  {
+    "id": "nasa-llis-1116",
+    "title": "Unclear Safety Implications of Hydrolab EVA Training",
+    "summary": "HQ's 1999-02-01 lesson finds that the safety implications of training U.S. and international-partner astronauts for EVA in the Russian Hydrolab are not well understood. Specifically, nobody had thoroughly analyzed what the higher suit pressures used there, combined with Russian decompression-sickness (bends) protocols, mean for safety.",
+    "co": "HQ recorded this on 1999-02-01: EVA training conducted in the Russian Hydrolab, used by both U.S. and international-partner astronauts, carries safety implications that remain not well understood. Two specific gaps stand out -- the higher suit pressures used in that training and the Russian bends protocols paired with them -- and neither has been thoroughly analyzed. Suit pressure and bends protocol are exactly the two variables this lesson says need the missing analysis."
+  },
+  {
+    "id": "nasa-llis-1117",
+    "title": "Shortening the EVA Prebreathe Protocol for ISS",
+    "summary": "HQ's 1999-02-01 lesson describes an effort to change the prebreathe protocol used before EVAs on the International Space Station. The goal is a 2-hour prebreathe usable from any cabin pressure, without raising the risk of decompression sickness (bends) above what the current Space Shuttle protocol already carries.",
+    "co": "Dated 1999-02-01, HQ. An initiative is underway to modify the prebreathe protocol for extravehicular activity (EVA) operations on the ISS. The target is specific: a prebreathe of 2 hours, usable starting from any cabin pressure, that keeps the risk of bends the same as or better than the protocol Space Shuttle operations currently use. Two hours, any starting pressure, and bends risk no worse than today's Shuttle protocol -- those three conditions define what the new protocol has to achieve."
+  },
+  {
+    "id": "nasa-llis-1118",
+    "title": "EVA Is Where Radiation Overexposure Risk Peaks",
+    "summary": "HQ's 1999-02-01 lesson identifies extravehicular activity (EVA) as the point where crew are most at risk of ionizing-radiation overexposure. It adds that current models cannot predict how large such an overexposure would be if it happened.",
+    "co": "HQ, 1999-02-01: of all mission phases, EVA operations carry the greatest potential for crew overexposure to ionizing radiation. The models available today cannot say in advance how big any given overexposure during an EVA would turn out to be -- the risk is known to peak during EVA, but its magnitude, should it occur, stays unpredictable with current modeling."
+  },
+  {
+    "id": "nasa-llis-1119",
+    "title": "Ground Rule Against Mixed EMU/Orlan Spacewalks Limits Flexibility",
+    "summary": "HQ's 1999-02-01 lesson flags EVA ground rule 4.3.2.12 -- \"No Simultaneous EMU/Orlan ISS Extravehicular Activity\" -- as overly constraining. Forbidding American EMU and Russian Orlan suits from working outside the ISS at the same time reduces operational flexibility.",
+    "co": "Filed 1999-02-01 by HQ. EVA ground rule 4.3.2.12, titled \"No Simultaneous EMU/Orlan ISS Extravehicular Activity,\" bars American EMU-suited and Russian Orlan-suited crew from being outside the ISS on a spacewalk at the same time. The lesson's judgment: rule 4.3.2.12 is constraining and reduces flexibility, without spelling out a compensating benefit."
+  },
+  {
+    "id": "nasa-llis-1121",
+    "title": "FAA Support Needed for the Global Civil Aviation Pillar",
+    "summary": "HQ's 1999-02-01 lesson concludes that meeting the goals of Global Civil Aviation -- the first of NASA's Three Pillars -- needs greater involvement and support from the Federal Aviation Administration (FAA) than it was getting.",
+    "co": "HQ recorded this 1999-02-01 finding: NASA organizes its aerospace-technology goals under Three Pillars, and Global Civil Aviation is the first of them. Reaching that pillar's objectives depends on the Federal Aviation Administration (FAA) contributing more -- both greater involvement and greater support -- than the FAA was providing. Without a stronger FAA role, the first of the Three Pillars, Global Civil Aviation, falls short of what it needs."
+  },
+  {
+    "id": "nasa-llis-1123",
+    "title": "Divided Range-Safety Responsibility Risks NASA Inattention on X-33/X-34",
+    "summary": "HQ's 1999-02-01 lesson warns that because flight range safety for the X-33 and X-34 programs falls under another agency's responsibility, NASA risks paying less attention to that aspect of the programs than it should.",
+    "co": "Dated 1999-02-01, HQ. Range safety for the X-33 and X-34 flights is the responsibility of another agency, not NASA. That division of responsibility carries a risk: NASA may develop a tendency to pay less attention to range safety on these programs precisely because it is not NASA's own job to answer for it. The concern applies to both the X-33 and the X-34 alike."
+  },
+  {
+    "id": "nasa-llis-1124",
+    "title": "Outdated General Purpose Computer Design Limits Shuttle Upgrades",
+    "summary": "HQ's 1999-02-01 lesson states that the outmoded design of the Space Shuttle's General Purpose Computer (GPC) is itself what limits further software and hardware upgrades to it.",
+    "co": "HQ, 1999-02-01. The Space Shuttle's General Purpose Computer (GPC) carries an outmoded design, and that design is the limiting factor: it constrains how far both software upgrades and hardware upgrades to the GPC can go. The dated architecture, not a lack of will to upgrade, is named as the bottleneck."
+  },
+  {
+    "id": "nasa-llis-1129",
+    "title": "ISS Command and Data Handling Upgrade Options Under Discussion",
+    "summary": "HQ's 1999-02-01 lesson reports that planning for ISS computer upgrades -- the Command and Data Handling (C&DH) system -- had begun. Options on the table included replacing the Mass Memory Unit, upgrading the processor, upgrading the compiler in use, and replacing the Portable Computer Systems (PCS).",
+    "co": "Recorded 1999-02-01 by HQ. Planning for computer upgrades to the ISS's Command and Data Handling (C&DH) system was underway. Four options were being discussed at that stage: swapping out the Mass Memory Unit, moving to an upgraded processor, upgrading the compiler used to build the flight software, and replacing the Portable Computer Systems (PCS). None of the four had been settled yet -- the entry captures a planning process still in progress, not a final decision."
+  },
+  {
+    "id": "nasa-llis-1132",
+    "title": "Missing User Involvement Raises Risk in ISS Software Development",
+    "summary": "HQ's 1999-02-01 lesson notes that several software efforts sit on the critical path for launching and operating the ISS. Some of that software benefited from early involvement of a multi-disciplinary team that included users and operators, but many did not -- and skipping that involvement raises both schedule risk and safety risk.",
+    "co": "Filed 1999-02-01, HQ. Multiple software developments occupy the critical path for the ISS's launch and operation -- delay any of them and the program schedule feels it. Where a multi-disciplinary team, including the eventual users and operators, got involved early, the software fared better; a substantial share of the software elements, though, never had that early user and operator involvement. The absence of that involvement is what drives up both schedule risk and safety risk on the affected elements."
+  },
+  {
+    "id": "nasa-llis-1134",
+    "title": "Workforce Downsizing Leaves Critical Skills Gaps at Field Centers",
+    "summary": "HQ's 1999-02-01 lesson describes how ongoing downsizing at Office of Space Flight field centers, on top of an earlier hiring freeze and unplanned staff departures, has created critical skills deficits in some areas. The same combination is also driving up workload pressure and stress levels, and leaving a serious shortfall of younger scientists and engineers (S&Es).",
+    "co": "HQ, 1999-02-01. Three forces compound at the Office of Space Flight field centers: continuing workforce downsizing, the lingering effects of a prior hiring freeze, and unplanned employee departures. Together they have produced critical skills deficits in some areas, pushed workload pressure and stress levels higher for the staff who remain, and left a serious shortfall of younger scientists and engineers (S&Es) coming up behind the more experienced ones. Downsizing, the hiring freeze, and departures are named as the three compounding causes behind the skills gap."
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "nasa-llis-1135",
+    "title": "Downsizing Erodes the Pipeline of Experienced NASA Managers",
+    "summary": "Staff cuts, hiring restrictions, and the shift of NASA responsibilities to contractors such as USA are shrinking the chances for junior and mid-level managers to build the operational experience senior leadership requires.",
+    "co": "Recorded 2000-02-01 by HQ. NASA's workforce has been shrinking, hiring has been restricted, and duties once carried out inside NASA are moving to contractors, USA among them. Together these three forces keep squeezing the room junior and mid-level managers have to build real operational knowledge. Without that hands-on experience, the pipeline toward senior management leadership positions runs thin. The shrinkage in headcount, the freeze on hiring, and the outsourcing to contractors like USA reinforce one another rather than acting alone -- each closes off another avenue junior and mid-level NASA staff would otherwise use to grow into leadership."
+  },
+  {
+    "id": "nasa-llis-1137",
+    "title": "Space Shuttle Work Instructions Still Carry Too Many Unincorporated Changes",
+    "summary": "Orbiter processing paperwork has gotten more accurate and traceable, but the instructions are still not fully correct or unambiguous -- too many approved changes have not yet been folded into the documents crews rely on.",
+    "co": "Filed 2000-02-01, HQ. Work instructions -- the paperwork that guides Space Shuttle Orbiter processing -- have improved in quality, accuracy, and traceability over time. Even so, the procedures used to process the Orbiters are not yet fully correct or unambiguous, and a real gap remains before the documentation can be called complete. The core problem: changes get approved but are not folded into the paperwork fast enough, leaving too many unincorporated changes floating around outside the official instructions. Traceability has gotten better, accuracy has gotten better, but the backlog of unincorporated changes to the Orbiter work instructions is the piece still unresolved."
+  },
+  {
+    "id": "nasa-llis-1138",
+    "title": "No Systematic Plan Against Obsolescence in Shuttle Facilities and GSE",
+    "summary": "NASA has no coordinated plan to keep facilities, ground support equipment (GSE), and specialized test-and-checkout gear from becoming obsolete over the Space Shuttle's expected operating life.",
+    "co": "Logged 2000-02-01 by HQ. Facilities, GSE, and the specialized equipment used to test and check out Shuttle hardware all face the same long-term risk: obsolescence. No systematic plan currently exists to counter that obsolescence or to guarantee these facilities, this GSE, and this test-and-checkout equipment stay adequate for as long as the Space Shuttle keeps flying. Availability is the concern -- ground support equipment and specialized checkout gear that age without a coordinated obsolescence strategy may not remain usable throughout the Shuttle's expected lifetime."
+  },
+  {
+    "id": "nasa-llis-1141",
+    "title": "ISS Crew Return Vehicle Acquisition Falling Behind Schedule",
+    "summary": "Buying the International Space Station's Crew Return Vehicle (CRV) is behind schedule and likely to slip further, yet a full-crew CRV is required before the ISS can safely operate with more than three astronauts long-term.",
+    "co": "Noted 2000-02-01, HQ. The Crew Return Vehicle, the CRV meant to bring an ISS crew home in an emergency, is being acquired more slowly than planned, and further delay to that acquisition looks likely. What makes the schedule slip matter: a full-crew CRV is the piece that lets the International Space Station run safely over the long term with a crew of more than three astronauts. Until that full-crew CRV arrives, the ISS crew size stays capped near three, so the CRV schedule and the station's staffing ceiling are directly linked."
+  },
+  {
+    "id": "nasa-llis-1142",
+    "title": "Long-Range Plan Developed for Crew Radiation Protection",
+    "summary": "NASA staff working on space radiation problems have put together a strong long-range plan for defining how to protect crews from radiation exposure.",
+    "co": "Recorded 2000-02-01 by HQ. Personnel tasked with solving the radiation problems astronauts face in space have produced a plan that NASA regards as excellent, built for the long range. The plan lays out approaches for protecting crews -- radiation shielding, exposure limits, and related countermeasures -- across an extended planning horizon. Where earlier radiation work had been more ad hoc, this long-range plan gives NASA personnel a structured path toward crew protection against radiation for future missions."
+  },
+  {
+    "id": "nasa-llis-1144",
+    "title": "EVA Project Office Plans Initiatives to Secure EVA Resource Availability",
+    "summary": "The EVA Project Office has lined up several initiatives -- covering material acquisition, new procedures, and better training -- to keep enough extravehicular activity (EVA) resources available for both the ISS and the Space Shuttle.",
+    "co": "Dated 2000-02-01, HQ. The EVA Project Office has several initiatives planned to keep extravehicular activity resources adequate for supporting both the International Space Station and the Space Shuttle. Those initiatives span three areas: acquiring the necessary EVA material, developing improved EVA procedures, and strengthening the training that supports EVA work. Taken together, material acquisition, procedure development, and training improvement are how the EVA Project Office intends to secure the resource availability that ISS and Shuttle EVA operations depend on."
+  },
+  {
+    "id": "nasa-llis-1150",
+    "title": "Agency-Wide Computer Security System Needs Further Vulnerability Analysis",
+    "summary": "NASA's planned agency-wide computer security system still needs more analysis to identify its vulnerabilities and to clarify which programs and activities the system should actually cover.",
+    "co": "Logged 2000-02-01, HQ. NASA has planned an agency-wide computer security system, but the plan is not yet analyzed deeply enough. Two open questions remain: what vulnerabilities the security system carries, and which programs and activities across the agency the system should be applied to. Until that further analysis is done, both the system's weak points and its intended scope -- the programs and activities it should protect agency-wide -- stay unclear."
+  },
+  {
+    "id": "nasa-llis-1153",
+    "title": "Long-Term Source Code Support From International Partners Is Safety-Critical",
+    "summary": "Keeping the ISS running safely and being able to fix software anomalies depends on International Partners continuing to support their software source code over the long term.",
+    "co": "Noted 2000-02-01 by HQ. Long-term support from the International Partners for their software source code is essential -- not optional -- for two things: safe operation of the International Space Station, and the ability to resolve any software-related anomaly that comes up. If that source-code support from the International Partners lapses, both ISS safety and anomaly resolution are put at risk, since the source code itself is what any fix or investigation of a software anomaly has to draw on."
+  },
+  {
+    "id": "nasa-llis-1155",
+    "title": "Center Director Involvement in Aviation Flight Oversight Is Inconsistent",
+    "summary": "How much Center Directors engage with aviation flight readiness reviews, flight clearance decisions, and safety review boards varies -- and that involvement is not uniformly satisfactory across centers.",
+    "co": "Recorded 2000-02-01, HQ. Center Directors are supposed to be involved in aviation flight readiness, in granting flight clearance, and in the work of aviation safety review boards, but that involvement is not uniformly satisfactory. Some centers show stronger Center Director engagement in flight readiness and safety review board matters than others, and flight clearance oversight varies along with it. The unevenness itself -- not a total absence of involvement -- is what stands out: aviation safety review boards and flight readiness processes get inconsistent attention from Center Directors depending on where you look."
+  },
+  {
+    "id": "nasa-llis-1157",
+    "title": "Safety Responsibility Chain for the SOFIA Aircraft Is Unclear",
+    "summary": "Who answers for safety in operating the Stratospheric Observatory for Infrared Astronomy (SOFIA) aircraft is not clearly defined -- the chain of responsibility is complicated and hard to follow.",
+    "co": "Filed 2000-02-01, HQ. Operating the SOFIA aircraft -- the Stratospheric Observatory for Infrared Astronomy -- involves a safety responsibility chain that is both complex and unclear. It is not obvious, moving through that chain, who holds accountability at each step of SOFIA operations. This lack of clarity in the safety responsibility chain is itself the finding: complexity alone would not be a problem if the lines of responsibility for the Stratospheric Observatory for Infrared Astronomy were unambiguous, but here they are not."
+  },
+  {
+    "id": "nasa-llis-1158",
+    "title": "Aviation Safety and Flight Personnel Barely Involved in SOFIA Planning",
+    "summary": "Planning for SOFIA operations has gone forward with only minimal input from aviation safety and flight personnel.",
+    "co": "Noted 2000-02-01 by HQ. As SOFIA operations were being planned, aviation safety personnel and flight personnel had only minimal involvement in that planning. Their input into the SOFIA operational plan stayed limited rather than integrated from the start, meaning the planning process largely proceeded without the aviation safety and flight expertise that personnel in those roles would normally contribute to SOFIA."
+  },
+  {
+    "id": "nasa-llis-1159",
+    "title": "SOFIA's 747 Avionics Fall Short of International Best Practice",
+    "summary": "The SOFIA aircraft, built on a 747 airframe, does not currently carry avionics that meet the best practices expected for international flight operations.",
+    "co": "Logged 2000-02-01, HQ. As currently configured, the SOFIA aircraft -- built on a 747 airframe -- does not carry avionics consistent with the best practices that international operations call for. The gap sits specifically in the 747's avionics fit: what the aircraft currently has on board falls short of what international best-practice standards for avionics expect. Until the SOFIA 747's avionics configuration is brought into line with those best practices, its readiness for international operations remains limited by that avionics shortfall."
+  },
+  {
+    "id": "nasa-llis-1160",
+    "title": "Shuttle Planning Horizon Too Short to Fund Future Safety Improvements",
+    "summary": "The current Space Shuttle planning horizon does not leave room for the safety improvements that will be needed in the years past that horizon.",
+    "co": "Recorded 2001-02-01 by HQ. The Space Shuttle program's current planning horizon stops short of where it needs to reach: it does not afford the opportunity to plan for safety improvements that will become necessary in the years beyond that horizon. Safety improvements that the Shuttle will eventually need are not being planned for now, because the planning horizon itself ends too early to capture them. Extending that horizon is what would let future safety improvements for the Space Shuttle get planned in time rather than after the fact."
+  },
+  {
+    "id": "nasa-llis-1161",
+    "title": "Orbiter Has No In-Flight Crew Escape Above 20,000 Feet",
+    "summary": "The Space Shuttle Orbiter has no in-flight crew escape system except for an abort option available below 20,000 feet during a controlled glide.",
+    "co": "Dated 2001-02-01, HQ. The Orbiter carries no in-flight crew escape system in the general sense -- the sole exception is an abort capability usable below 20,000 feet, and only while the vehicle is in a controlled glide. Outside that narrow window -- above 20,000 feet, or without a controlled glide -- the crew escape option for the Orbiter simply does not exist. So the Orbiter's in-flight escape capability is bounded on both sides: by altitude, at 20,000 feet, and by flight condition, requiring a controlled glide."
+  },
+  {
+    "id": "nasa-llis-1164",
+    "title": "Aging KSC Infrastructure Lacks a Funded Plan to Stay Shuttle-Ready",
+    "summary": "The KSC facilities, ground support equipment, and test-and-checkout gear that support Space Shuttle processing and launch keep aging, and although their future readiness has been projected, there is no detailed, funded plan to keep this infrastructure safely supporting the Shuttle for its expected operational life.",
+    "co": "Logged 2001-02-01, HQ. Facilities at KSC, along with the ground support equipment and the test and checkout gear used for Space Shuttle processing and launch operations, keep getting older. Projections exist for how ready these essential assets are likely to remain, so their potential future status has at least been estimated. What is missing is the follow-through: no detailed, funded plan exists to make sure this aging KSC infrastructure can go on safely supporting the Space Shuttle for its likely operational life. Ground support equipment ages, test and checkout gear ages, KSC facilities age -- and the funded plan to keep that aging infrastructure Shuttle-ready has not been produced."
+  },
+  {
+    "id": "nasa-llis-1167",
+    "title": "X-38 Team's Safety Design Knowledge May Not Reach the CRV Contractor",
+    "summary": "Because the NASA X-38 team used innovative development processes, some of the safety-related design knowledge it built up may not fully transfer to the contractor chosen to build the operational Crew Return Vehicle (CRV).",
+    "co": "Noted 2001-02-01 by HQ. The NASA X-38 team relied on innovative processes to do its design work, and those same innovative processes create a risk: not all of the design knowledge the X-38 team acquired about safety issues is guaranteed to transfer to the contractor selected to build the operational CRV. In other words, some of what the X-38 team learned about safety, gained through methods that were themselves unconventional, could stay with the X-38 team instead of reaching the contractor responsible for the operational Crew Return Vehicle."
+  },
+  {
+    "id": "nasa-llis-1171",
+    "title": "New-Hire Integration and Workforce Stress Strain Shuttle/ISS Organizations",
+    "summary": "NASA's recent hiring of inexperienced staff, combined with an ongoing shortage of experienced, highly skilled workers, makes it hard to train and integrate new employees into organizations already under pressure from higher Space Shuttle flight rates tied to the ISS; there is no systematic way to capture departing experienced staff's knowledge, and workforce stress remains an ongoing concern.",
+    "co": "Filed 2001-02-01, HQ. NASA has recently been hiring personnel who are relatively inexperienced, at the same time as shortages of experienced, highly skilled workers continue. Those two trends combine into a real challenge: training and integrating new employees into organizations that are already under heavy pressure from the expanded Space Shuttle flight rates that come with supporting the ISS. On top of that, no systematic effort exists to capture the knowledge held by experienced personnel before they leave, so that expertise risks being lost rather than passed on. And running through all of it, stress levels within the workforce stay a continuing concern -- inexperienced hiring, expert shortages, expanded flight rates, and knowledge loss all feed the same pressure on NASA's people."
+  },
+  {
+    "id": "nasa-llis-1173",
+    "title": "Program Managers Still Don't Fully Understand IV&V Despite Its New Emphasis",
+    "summary": "NASA has made major changes to push the use of independent verification and validation (IV&V) on safety-critical projects, but program managers and other relevant NASA personnel still do not understand the technology well.",
+    "co": "Recorded 2001-02-01 by HQ as lesson 1173. NASA has pushed through major changes meant to emphasize using IV&V, independent verification and validation, on projects that are safety critical. Despite that emphasis, IV&V technology itself is not well understood by the program managers and other relevant NASA personnel who are supposed to apply it. So the gap sits between policy and comprehension: NASA has raised the profile of IV&V for safety-critical work, yet the people responsible for using it -- program managers among them -- have not caught up to what IV&V technology actually involves."
+  },
+  {
+    "id": "nasa-llis-1175",
+    "title": "Broad Computer Security Program Underway, but System-Level Plans and Officer Role Lag",
+    "summary": "NASA has launched a well-founded, wide-reaching computer security program to protect its computer systems from hostile attacks, yet writing security plans for individual systems is lagging behind, and the Computer Security Officer function has typically just been tacked onto systems administrators' existing duties rather than staffed separately.",
+    "co": "Dated 2001-02-01, HQ. NASA has initiated a computer security program that is both well-founded and broadly encompassing, aimed at making sure NASA's computer systems stay protected against hostile attacks. Even so, two things are lagging behind that broad initiative. First, development of security plans covering all of NASA's systems has not kept pace with the program's scope. Second, the role of Computer Security Officer has typically been added onto the existing responsibilities of systems administrators rather than treated as its own function. So while the computer security program itself is sound, the per-system security plans and the standalone Computer Security Officer role are the pieces still catching up."
+  },
+  {
+    "id": "nasa-llis-1176",
+    "title": "NASA Plans CMM Evaluation and Improvement for Critical Systems Processes",
+    "summary": "NASA has started planning to have its critical systems processes assessed against the Capability Maturity Model (CMM) from the Software Engineering Institute, with the goal of raising the CMM level those critical systems processes achieve.",
+    "co": "Noted 2001-02-01 by HQ as lesson 1176. NASA has initiated plans on two fronts: getting its critical systems processes evaluated according to the Capability Maturity Model, the CMM defined by the Software Engineering Institute, and then working to raise the CMM level that those same critical systems processes reach. Evaluation comes first -- measuring where critical systems processes currently sit on the Software Engineering Institute's CMM scale -- and improvement follows, with NASA aiming to move its critical systems processes up that CMM level over time."
+  }
+]

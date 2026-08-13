@@ -35,30 +35,33 @@ assert _ECHTER_KNOTEN["id"] == "012500e5"
 
 def _insert_node(conn: sqlite3.Connection, node_id: str, path: str,
                   title: str, summary: str, content: str,
-                  norm_rang: int | None = None) -> None:
+                  norm_rang: int | None = None, gattung: str = "arbeitsbestand") -> None:
     """norm_rang=None (Vorgabe) legt einen gewoehnlichen Wissensknoten an.
     norm_rang=<Zahl> legt eine Norm an -- fuer den Grenzwerttest norm_rang=0
-    (0 ist ein gueltiger Rang, nicht "kein Rang")."""
+    (0 ist ein gueltiger Rang, nicht "kein Rang"). gattung='arbeitsbestand'
+    (Vorgabe, Schema-Default) oder 'nachschlagewerk' fuer die sechste
+    Schranke -- NULL/leer ist per Schema-Trigger nicht einfuegbar, siehe
+    test_ist_nachschlagewerk_* unten fuer den Grenzwert."""
     if norm_rang is None:
         conn.execute(
             """INSERT INTO knowledge_nodes
                (id, path, parent_path, project_id, title, summary, content, level, tags, source,
-                created_at, updated_at, norm_entscheidung,
+                created_at, updated_at, norm_entscheidung, gattung,
                 norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
-               VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, 'keine_norm', ?, ?, ?)""",
+               VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, 'keine_norm', ?, ?, ?, ?)""",
             (node_id, path, title, summary, content, node_id, JETZT, JETZT,
-             "test:test_umschrift_s12.py", JETZT, "Testvorrichtung"),
+             gattung, "test:test_umschrift_s12.py", JETZT, "Testvorrichtung"),
         )
     else:
         conn.execute(
             """INSERT INTO knowledge_nodes
                (id, path, parent_path, project_id, title, summary, content, level, tags, source,
-                created_at, updated_at, norm_rang, gilt_ab, norm_entscheidung, anlass,
+                created_at, updated_at, norm_rang, gilt_ab, norm_entscheidung, anlass, gattung,
                 norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
                VALUES (?, ?, '/', 'shared', ?, ?, ?, 1, '[]', ?, ?, ?, ?, ?, 'norm_unbefristet',
-                       'betreiber', ?, ?, ?)""",
+                       'betreiber', ?, ?, ?, ?)""",
             (node_id, path, title, summary, content, node_id, JETZT, JETZT,
-             norm_rang, JETZT, "Betreiber", JETZT, "Testvorrichtung"),
+             norm_rang, JETZT, gattung, "Betreiber", JETZT, "Testvorrichtung"),
         )
 
 
@@ -79,8 +82,8 @@ def db(tmp_path):
     kandidaten = [f"t-{i}" for i in range(80)]
     behandelt = [k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.BEHANDELT]
     unbehandelt = next(k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.UNBEHANDELT)
-    sauber, ohne_urfassung, defekt, voll, norm = (
-        behandelt[0], behandelt[1], behandelt[2], behandelt[3], behandelt[4])
+    sauber, ohne_urfassung, defekt, voll, norm, nachschlagewerk = (
+        behandelt[0], behandelt[1], behandelt[2], behandelt[3], behandelt[4], behandelt[5])
 
     echter_pfad = "/x/echter-knoten"
     echter_titel = _ECHTER_KNOTEN["title"]
@@ -103,6 +106,10 @@ def db(tmp_path):
         _insert_node(conn, norm, "/x/norm", "Bindende Regel E",
                      "Zusammenfassung E, wortgleich mit der Norm.", "Volltext der Norm E.",
                      norm_rang=0)
+        # Sechste Schranke: gattung='nachschlagewerk', kein norm_rang.
+        _insert_node(conn, nachschlagewerk, "/x/nachschlagewerk", "Fremde Aufzeichnung F",
+                     "Zusammenfassung F, wortgleich mit der Aufzeichnung.",
+                     "Volltext der Aufzeichnung F.", gattung="nachschlagewerk")
         _sichern(conn, sauber, "/x/sauber", "Alter Titel",
                  "Zusammenfassung mit 8,50 USD.", "Volltext 8,50 USD.")
         _sichern(conn, defekt, "/x/defekt", "Titel C",
@@ -110,11 +117,13 @@ def db(tmp_path):
         _sichern(conn, voll, echter_pfad, echter_titel, echte_summary, echter_co)
         _sichern(conn, norm, "/x/norm", "Bindende Regel E",
                  "Zusammenfassung E, wortgleich mit der Norm.", "Volltext der Norm E.")
+        _sichern(conn, nachschlagewerk, "/x/nachschlagewerk", "Fremde Aufzeichnung F",
+                 "Zusammenfassung F, wortgleich mit der Aufzeichnung.", "Volltext der Aufzeichnung F.")
         # ohne_urfassung bekommt bewusst KEINE Zeile in s12_urfassungen.
 
     return {"pfad": pfad, "sauber": sauber, "ohne_urfassung": ohne_urfassung,
             "defekt": defekt, "unbehandelt": unbehandelt, "voll": voll,
-            "norm": norm, "echter_co": echter_co}
+            "norm": norm, "nachschlagewerk": nachschlagewerk, "echter_co": echter_co}
 
 
 def _alt_neu(db, id_):
@@ -313,6 +322,139 @@ def test_rot_probe_norm_schranke_faellt_in_zurueckschreiben_ohne_pruefung(db):
         "Rot-Probe schlug fehl: ein direktes UPDATE ohne norm_rang-Schranke "
         "haette durchgehen muessen, um zu belegen, dass die Schranke im "
         "Produktivcode der eigentliche Grund fuer die Ablehnung ist.")
+
+
+# ------------------------------------------------------- Schranke: Gattung (nachschlagewerk)
+def test_nachschlagewerk_wird_nicht_in_ein_los_aufgenommen(db):
+    """Sechste Schranke, Stelle 1: kandidaten_unbehandelt/lose_erzeugen duerfen
+    einen Knoten mit gattung='nachschlagewerk' gar nicht erst anbieten, obwohl
+    er behandelt, mit Urfassung und wortgleich ist."""
+    with speicher.lesen(db["pfad"]) as conn:
+        kand = us.kandidaten_unbehandelt(conn)
+        los = us.lose_erzeugen(conn, 10, 0)
+    assert db["nachschlagewerk"] not in kand, kand
+    assert db["nachschlagewerk"] not in {e["id"] for e in los}, los
+
+
+def test_rot_probe_nachschlagewerk_schranke_faellt_in_kandidaten_ohne_pruefung(db):
+    """Rot-vor-gruen (f-1): ohne die gattung-Pruefung in kandidaten_unbehandelt
+    waere der Nachschlagewerk-Knoten (wortgleich mit seiner Urfassung) ein
+    ganz normaler Kandidat."""
+    with speicher.lesen(db["pfad"]) as conn:
+        ids = teilung_s12.bestand(conn)["knoten"]
+        behandelt = sorted(i for i in ids if teilung_s12.haelfte("knoten", i) == teilung_s12.BEHANDELT)
+        raus = []
+        for node_id in behandelt:
+            row = conn.execute(
+                "SELECT title, summary FROM knowledge_nodes WHERE id = ?", (node_id,)).fetchone()
+            urf = conn.execute(
+                "SELECT title, summary FROM s12_urfassungen WHERE node_id = ?", (node_id,)).fetchone()
+            if row is None or urf is None:
+                continue
+            if row["title"] == urf["title"] and row["summary"] == urf["summary"]:
+                raus.append(node_id)
+    assert db["nachschlagewerk"] in raus, (
+        "Rot-Probe schlug fehl: ohne die gattung-Pruefung haette der "
+        "Nachschlagewerk-Knoten als Kandidat erscheinen muessen, um zu "
+        "zeigen, dass die Schranke in kandidaten_unbehandelt wirklich etwas "
+        "ausschliesst.")
+
+
+def test_nachschlagewerk_wird_von_zurueckschreiben_abgelehnt_und_namentlich_genannt(db):
+    """Sechste Schranke, Stelle 2: ein ALTES Los (vor dieser Schranke erzeugt,
+    hier per Hand nachgestellt) kann einen Nachschlagewerk-Knoten trotzdem
+    enthalten -- zurueckschreiben_alle muss ihn zusaetzlich ablehnen."""
+    alt = [_alt_neu(db, db["nachschlagewerk"])]
+    neu = [dict(alt[0], title="Umformulierte Aufzeichnung F", summary="Neue Zusammenfassung F.",
+                co="Neuer Volltext F.")]
+    with speicher.schreiben(db["pfad"]) as conn:
+        e = us.zurueckschreiben_alle(conn, alt, neu, JETZT)
+    assert e["nachschlagewerk_abgelehnt"] == [db["nachschlagewerk"]], e["nachschlagewerk_abgelehnt"]
+    assert e["geschrieben"] == []
+    with speicher.lesen(db["pfad"]) as conn:
+        row = conn.execute("SELECT title FROM knowledge_nodes WHERE id=?", (db["nachschlagewerk"],)).fetchone()
+    assert row["title"] == "Fremde Aufzeichnung F", "Nachschlagewerk wurde trotz Ablehnung geschrieben"
+
+
+def test_rot_probe_nachschlagewerk_schranke_faellt_in_zurueckschreiben_ohne_pruefung(db):
+    """Rot-vor-gruen (f-2): ein direktes UPDATE ohne die gattung-Pruefung
+    haette den Nachschlagewerk-Knoten anstandslos umgeschrieben -- zeigt,
+    dass die Ablehnung in zurueckschreiben_alle der eigentliche Grund ist."""
+    alt = _alt_neu(db, db["nachschlagewerk"])
+    neu = dict(alt, title="Umformulierte Aufzeichnung F", summary="Neue Zusammenfassung F.",
+               co="Neuer Volltext F.")
+    with speicher.schreiben(db["pfad"]) as conn:
+        conn.execute(
+            "UPDATE knowledge_nodes SET title=?, summary=?, content=?, updated_at=? WHERE id=?",
+            (neu["title"], neu["summary"], neu["co"], JETZT, db["nachschlagewerk"]))
+    with speicher.lesen(db["pfad"]) as conn:
+        row = conn.execute("SELECT title FROM knowledge_nodes WHERE id=?", (db["nachschlagewerk"],)).fetchone()
+    assert row["title"] == "Umformulierte Aufzeichnung F", (
+        "Rot-Probe schlug fehl: ein direktes UPDATE ohne gattung-Schranke "
+        "haette durchgehen muessen, um zu belegen, dass die Schranke im "
+        "Produktivcode der eigentliche Grund fuer die Ablehnung ist.")
+
+
+def test_negativfall_arbeitsbestand_geht_in_beiden_funktionen_normal_durch(db):
+    """Negativfall (Auflage der Aufgabe): ohne diesen Test wuerden auch die
+    drei obigen Nachschlagewerk-Tests bei einem Werkzeug bestehen, das
+    schlicht gar nichts mehr durchlaesst. sauber traegt gattung='arbeitsbestand'
+    (Vorgabe von _insert_node) und muss ganz normal angeboten und geschrieben
+    werden -- exakt der bestehende Negativfall unten, hier nur als Beleg
+    dafuer benannt, dass er auch die sechste Schranke ueberlebt."""
+    with speicher.lesen(db["pfad"]) as conn:
+        kand = us.kandidaten_unbehandelt(conn)
+    assert db["sauber"] in kand
+
+    alt = [_alt_neu(db, db["sauber"])]
+    neu = [dict(alt[0], title="Neu formulierter Titel",
+                summary="Neu formulierte Zusammenfassung mit 8,50 USD.",
+                co="Neu formulierter Volltext mit 8,50 USD.")]
+    with speicher.schreiben(db["pfad"]) as conn:
+        e = us.zurueckschreiben_alle(conn, alt, neu, JETZT)
+    assert e["geschrieben"] == [db["sauber"]]
+    assert e["nachschlagewerk_abgelehnt"] == []
+
+
+# --------------------------------------------------- Grenzwert: Gattung NULL/leer
+def test_ist_nachschlagewerk_grenzwert_none_wird_blockiert():
+    """GRENZWERT gattung IS NULL: schema.sql erzwingt NOT NULL DEFAULT
+    'arbeitsbestand' plus Werte-Trigger -- ueber speicher.py kann kein NULL
+    entstehen (siehe test_gattung_null_ist_ueber_schema_nicht_einfuegbar
+    unten). Der Praedikat-Code entscheidet trotzdem defensiv: unbekannt wird
+    wie 'nachschlagewerk' behandelt (blockiert), nicht wie 'arbeitsbestand'
+    (durchgelassen) -- Vorsicht schlaegt Fortschritt, siehe Docstring von
+    ist_nachschlagewerk()."""
+    assert us.ist_nachschlagewerk(None) is True
+
+
+def test_ist_nachschlagewerk_grenzwert_leerstring_wird_blockiert():
+    assert us.ist_nachschlagewerk("") is True
+
+
+def test_ist_nachschlagewerk_arbeitsbestand_geht_durch():
+    assert us.ist_nachschlagewerk("arbeitsbestand") is False
+
+
+def test_ist_nachschlagewerk_nachschlagewerk_wird_blockiert():
+    assert us.ist_nachschlagewerk("nachschlagewerk") is True
+
+
+def test_gattung_null_ist_ueber_schema_nicht_einfuegbar(db):
+    """Beleg fuer die Docstring-Behauptung in ist_nachschlagewerk(): ein
+    INSERT mit gattung=NULL wird vom Schema-Trigger abgelehnt, der GRENZWERT
+    ist also in der echten Datenbank unerreichbar -- die Vorsicht in
+    ist_nachschlagewerk() ist reine Verteidigung, kein toter Code."""
+    with speicher.schreiben(db["pfad"]) as conn:
+        with pytest.raises(sqlite3.IntegrityError):
+            conn.execute(
+                """INSERT INTO knowledge_nodes
+                   (id, path, parent_path, project_id, title, summary, content, level, tags,
+                    source, created_at, updated_at, gattung, norm_entscheidung,
+                    norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
+                   VALUES ('t-null-gattung', '/x/null-gattung', '/', 'shared', 'T', 'S', 'C', 1,
+                           '[]', 't-null-gattung', ?, ?, NULL, 'keine_norm', ?, ?, ?)""",
+                (JETZT, JETZT, "Testvorrichtung", JETZT, "Testvorrichtung"))
 
 
 # ------------------------------------------------------- Negativfall: sauber

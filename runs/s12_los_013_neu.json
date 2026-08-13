@@ -1,0 +1,122 @@
+[
+  {
+    "id": "nasa-llis-1025",
+    "title": "ISS Software Development: Process Improvement",
+    "summary": "A 1997-02-01 lesson report from NASA Headquarters (HQ) states that the International Space Station Program achieved a marked improvement in its software development process.",
+    "co": "Dated 1997-02-01, filed by HQ. Lesson: the software development process for the ISS Program showed a marked improvement, reflecting steady gains in how software for the International Space Station was engineered and delivered."
+  },
+  {
+    "id": "nasa-llis-1026",
+    "title": "Delay in Consolidating NASA Flight Research Aircraft at Dryden",
+    "summary": "A congressional mandate has stalled the planned consolidation of NASA's flight research aircraft at the Dryden Flight Research Center. The resulting uncertainty has lowered staff morale and driven skilled people away, raising the risk of flight safety problems.",
+    "co": "Filed 1997-02-01 by HQ. Congress halted a well-planned move to consolidate NASA's flight research aircraft at the Dryden Flight Research Center. That stall has left the effort in limbo, and the uncertainty has damaged morale among the workforce there. Good people have already left because of it, and losing them could in turn create flight safety problems down the line."
+  },
+  {
+    "id": "nasa-llis-1027",
+    "title": "Cracks in Ames Wind Tunnel Fan Blades After 2,000 Hours",
+    "summary": "Fan blades in the 40' x 80' x 120' wind tunnel at the Ames Research Center cracked after just 2,000 hours of operation. Because replacing them would have required a 1 year shutdown, technicians repaired the existing blades by wrapping their root sections -- a fix that also removes the ability to spot further crack growth through visual inspection.",
+    "co": "Dated 1997-02-01, filed by HQ. At the Ames Research Center, the fan blades inside the 40' x 80' x 120' wind tunnel began cracking after only 2,000 hours of running time. Procuring and installing a fresh set of blades would have meant taking the tunnel offline for 1 year, so engineers chose instead to repair the existing blades while the replacements were on order. That repair wraps the root section of each blade -- a step that, as a side effect, removes the option of catching further crack growth by eye."
+  },
+  {
+    "id": "nasa-llis-1028",
+    "title": "Aeronautics Safety Research Benefits Military and Civil Flight",
+    "summary": "NASA's aeronautics research aimed at aviation safety has made, and is expected to keep making, a significant positive impact on both military and civil flight operations. Several of the underlying programs were run jointly with other government agencies, including the Federal Aviation Administration.",
+    "co": "Recorded 1997-02-01 by HQ. NASA's research programs targeting aviation safety are already delivering a strong positive effect across both military and civil flying, and that impact is expected to continue. A number of these efforts were carried out jointly with other federal bodies, among them the Federal Aviation Administration."
+  },
+  {
+    "id": "nasa-llis-1031",
+    "title": "Jobsite Hazard from Insulation Impaling Pins",
+    "summary": "Impaling pins used to hold insulation in place are a hazard on construction jobsites. Working near them calls for extra caution and the right protective equipment, and the activity hazard analysis for all ongoing work needs to be reviewed daily with every trade on site.",
+    "co": "Logged 2001-07-20 at AFRC. Impaling pins pose a real danger on the jobsite. Anyone working around them needs extra care plus the proper equipment to stay safe. On top of that, the activity hazard analysis covering all ongoing work has to be gone over daily with every trade present."
+  },
+  {
+    "id": "nasa-llis-1032",
+    "title": "Windy-Day Hazard in Handling Sheet Metal Panels on the Flightline",
+    "summary": "Large materials should not be handled on the open, exposed flightline on windy days. Even ordinary material-handling work can turn hazardous if it is not properly planned in advance.",
+    "co": "Noted 2001-07-20 at AFRC. Large materials must stay off the open, exposed flightline whenever winds are up. The lesson here is that even routine handling of materials can become dangerous the moment the activity isn't planned well ahead of time."
+  },
+  {
+    "id": "nasa-llis-1035",
+    "title": "Unanticipated Reliability Risk from a New Pyrovalve in Mars 2001 Testing",
+    "summary": "During Mars 2001 risk reduction testing, switching from a high blow-by pyrovalve to a new low blow-by valve removed the risk of a pyrotechnically induced propellant explosion at ignition, but introduced a new reliability risk because the new valve lacked an extensive operational history. Thorough testing eventually caught this, and the necessary modifications were made.",
+    "co": "Filed 2001-08-17 by WSTF. The lesson: when a team fixes one hardware problem, it must stay alert for other problems the fix itself might create, and every hardware change needs full testing to qualify the system before anything is assumed missed. In this case, new hardware eliminated a known hazard but brought unanticipated risk along with it. Moving from the earlier high blow-by valve to a new low blow-by valve did cut the risk of a pyrotechnically induced propellant explosion at ignition. However, that same swap raised the operational reliability risk, since the new valve had no extensive track record in service. The risk went unnoticed at first, but thorough testing eventually surfaced it, and the modifications needed to address it were carried out."
+  },
+  {
+    "id": "nasa-llis-1039",
+    "title": "Gaps in Procurement Specs for PTFE Resin Selection",
+    "summary": "Choosing the right polytetrafluoroethylene (PTFE) resin requires understanding subtle differences between resins that available procurement specifications don't capture, so extra testing is needed to pick the right candidate and confirm properties the specs miss. Selection criteria must be re-evaluated for every new application, and switching from a free-flowing extrusion grade to a nonfree-flowing compression-molding grade allowed viable seals to be built for valve-level testing, partly compensating for a seal design that was not fully optimized.",
+    "co": "Filed 2001-08-22 by WSTF. Understanding the subtle differences between PTFE resins, and how those differences shape a resin's unique properties, cannot be overstated in importance. Additional testing is required to tell candidate resins apart and to confirm that properties left uncovered by the available specifications are actually met. Materials-selection criteria need constant re-evaluation to make sure every key property gets addressed in each new application. Choosing the right resin was also found to make up, in part, for a seal design that was not fully optimized. Given the nature of the hot-forming assembly process in use, the material most resistant to compressive fracturing should have been the first choice. Instead, the switch from a free-flowing extrusion grade to a nonfree-flowing compression-molding grade of PTFE is what ultimately made it possible to fabricate viable seals suitable for valve-level testing."
+  },
+  {
+    "id": "nasa-llis-1042",
+    "title": "Lingering Workforce Concerns in Shuttle Operations and Processing",
+    "summary": "Operations and processing under the Shuttle Processing Contract (SPC) have been running satisfactorily, but several concerns persist: keeping safety ahead of schedule and cost as the top priority, avoiding a success-oriented culture that discourages frank discussion, budget pressure eroding a well-trained NASA presence on the work floor, and the ongoing difficulty of agreeing on the most meaningful measures of operational effectiveness.",
+    "co": "Reported 1998-02-01 by HQ. Work carried out under the Shuttle Processing Contract (SPC) has been satisfactory overall. Even so, a set of concerns keeps lingering: the danger of letting the overarching priority -- safety before schedule, schedule before cost -- slip out of focus; the tendency, in an environment used to success, to overlook the need to keep fostering frank and open discussion; budget pressure making it harder to sustain a well-trained NASA presence on the work floor; and the continued difficulty of jointly searching for the most meaningful measures of how effective operations and processing really are."
+  },
+  {
+    "id": "nasa-llis-1043",
+    "title": "Hazard of Working on Energized Electrical Equipment",
+    "summary": "Work must never be carried out on electrical equipment that is still energized.",
+    "co": "Noted 2001-07-26 at AFRC. The rule is simple and non-negotiable: no one is to perform work on electrical equipment while it remains energized."
+  },
+  {
+    "id": "nasa-llis-1044",
+    "title": "Metrics Development Lags Structured Surveillance Rollout at KSC",
+    "summary": "The Kennedy Space Center (KSC) has for some time been successfully phasing in a structured surveillance process for safety and quality. Even so, turning the collected surveillance information into metrics has lagged well behind the pace of data collection itself.",
+    "co": "Filed 1998-02-01 by HQ. At the Kennedy Space Center (KSC), the phase-in of the structured surveillance process covering safety and quality has gone well over an extended period. Where things have fallen behind is metrics: building measures out of the structured surveillance information has not kept pace with how quickly that data gets collected."
+  },
+  {
+    "id": "nasa-llis-1045",
+    "title": "Uncertified S&amp;MA Auditors Overseeing SCAPE Operations at KSC",
+    "summary": "NASA Safety and Mission Assurance (S&amp;MA) auditors at KSC who oversee operations requiring Self-Contained Atmospheric Protective Ensemble (SCAPE) gear are not themselves certified for SCAPE.",
+    "co": "Reported 1998-02-01 by HQ. At KSC, auditors from NASA Safety and Mission Assurance (S&amp;MA) are responsible for overseeing operations that call for Self-Contained Atmospheric Protective Ensemble (SCAPE) equipment. The gap flagged here is that these S&amp;MA auditors lack SCAPE certification themselves, even though the operations they oversee require it."
+  },
+  {
+    "id": "nasa-llis-1046",
+    "title": "Cross-Training Compensates for KSC Staff Departures",
+    "summary": "To offset skills gaps caused by staff departures from KSC, both NASA and the SPC are relying heavily on cross-training technicians and engineers. The lesson adds that anyone who has been cross-trained should still have recent hands-on experience before taking on a cross-trained task.",
+    "co": "Filed 1998-02-01 by HQ. Staff departures from KSC have left skills gaps, and both NASA and the SPC are leaning heavily on cross-training -- of technicians and of engineers alike -- to make up for it. One caveat comes with that: people who went through cross-training still need recent, actual \"hands-on\" experience before they take on a task outside their original specialty."
+  },
+  {
+    "id": "nasa-llis-1047",
+    "title": "GMIP Reduction Lagging Behind Quality Staff Downsizing at KSC",
+    "summary": "The number of Government Mandatory Inspection Points (GMIPs) at KSC has fallen much more slowly than the NASA quality staff assigned to process them, leaving the remaining inspectors with a heavier workload and less time to analyze where further GMIP cuts could be made. NASA safety inspectors and engineers at KSC have shrunk in a similar way without a matching cut in oversight duties, even as new safety audit and insight responsibilities have been added.",
+    "co": "Reported 1998-02-01 by HQ. The reduction of Government Mandatory Inspection Points (GMIPs) at KSC has significantly lagged behind the downsizing of the NASA quality personnel who process them. That mismatch has expanded the workload carried by the remaining NASA quality inspectors and made it harder for them to run the analyses needed to spot further GMIP reductions. A similar pattern shows up on the safety side: NASA safety inspectors and engineers at KSC have shrunk without a matching drop in oversight requirements, and at the same time new safety audit or insight duties have been piled on."
+  },
+  {
+    "id": "nasa-llis-1048",
+    "title": "External Tank's Super Light Weight Tank (SLWT) Nears Certification",
+    "summary": "As part of the Space Shuttle Program's External Tank (ET) work, the Super Light Weight Tank (SLWT) has completed its design certification review and passed proof tests on its first tank. The only test left to finish certification is a cryogenic loading test that will run on the first production tank at the launch pad, and careful attention to quality control -- especially material inspection and weld integrity -- is credited with the program's success so far.",
+    "co": "Filed 1998-02-01 by HQ. The Super Light Weight Tank (SLWT), part of the Space Shuttle Program's External Tank (ET) work, has gotten through its design certification review, and the proof tests on the first tank came back satisfactory. What remains before certification is complete is a single cryogenic loading test, to be run on the first production tank once it is on the launch pad. Credit for the program's success so far goes to the diligent attention paid to quality control, particularly the inspection of materials and the integrity of welds."
+  },
+  {
+    "id": "nasa-llis-1050",
+    "title": "RSRM Obsolescence Changes Reshape Flight Support Motor (FSM) Firing Intervals",
+    "summary": "Because regulations and other issues affecting suppliers of the Reusable Solid Rocket Motor (RSRM) keep changing, obsolescence-driven changes to RSRM processes, materials, and hardware happen continuously, and it is essential to qualify every change through timely, large-scale Flight Support Motor (FSM) firings before anything is produced, shipped, or flown. NASA has recently moved back from its planned 12-month FSM firing interval to testing on 18-month intervals.",
+    "co": "Reported 1998-02-01 by HQ. Changes to RSRM (Reusable Solid Rocket Motor) processes, materials, and hardware driven by obsolescence never really stop, because the regulations and other issues affecting RSRM suppliers keep shifting. The prudent path -- and an extremely important one -- is to qualify every such change through timely, large-scale Flight Support Motor (FSM) firings before anything moves to produce, ship, or fly. On that front, NASA has recently reverted from its planned 12-month FSM firing interval back to tests on 18-month intervals."
+  },
+  {
+    "id": "nasa-llis-1051",
+    "title": "Spares Support for the Shuttle Fleet May Not Scale with Flight Rate",
+    "summary": "The logistics function has effectively kept the Space Shuttle fleet supplied with operational spares, and support has been adequate at the current flight rate. However, any increase in that flight rate might outstrip what spares support can handle.",
+    "co": "Filed 1998-02-01 by HQ. Keeping the Space Shuttle fleet stocked with operational spares has depended on the effective work of the logistics function, and so far that support has held up fine given today's flight rate. The concern raised here is forward-looking: should the flight rate go up, spares support might not be able to keep pace."
+  },
+  {
+    "id": "nasa-llis-1053",
+    "title": "Rising Cannibalization Rates Threaten Shuttle Logistics Support",
+    "summary": "Long-term projections continue to point toward rising cannibalization rates, longer component repair turnaround times, and a loss of repair capability across the Space Shuttle logistics programs, echoing what was reported the year before. If this trend is not stopped, support difficulties could show up within the next 3 or 4 years.",
+    "co": "Reported 1998-02-01 by HQ. Consistent with what was flagged the previous year, the long-term projections still point the same way: cannibalization rates keep climbing, component repair turnaround times keep stretching out, and repair capability keeps eroding across the Space Shuttle logistics programs. Left unchecked, this trend could produce support difficulties within the next 3 or 4 years."
+  },
+  {
+    "id": "nasa-llis-1055",
+    "title": "International Space Station (ISS) Program: Shuttle-Mir Reaffirms Skylab's Resilience Lesson",
+    "summary": "The International Space Station (ISS) Program's Phase I Shuttle-Mir effort has confirmed a lesson first learned on Skylab: a crewed space station can prove surprisingly resilient during emergencies. The program has already yielded much insight from operations on Mir, and continued analysis of the joint work there is expected to yield still more.",
+    "co": "Filed 1998-02-01 by HQ. What the ISS Phase I Shuttle-Mir program has shown reaffirms something first learned back on Skylab: a manned space station can hold up with surprising resilience when emergencies hit. A great deal has already come out of studying the operations conducted on Mir, and further analysis of the joint work carried out there is likely to teach even more."
+  },
+  {
+    "id": "nasa-llis-1056",
+    "title": "Convoy Discipline Lesson from the X-33 STA Tank Incident",
+    "summary": "After an incident involving the X-33 Structural Test Article (STA) tank, the lesson learned is that future trip planning must place stronger emphasis on following the lead vehicle -- particularly on the approach to the bridge where the incident took place.",
+    "co": "Filed 1999-07-28 by GRC. The lesson from the X-33 Structural Test Article (STA) tank incident is about convoy discipline: any future planning for trips of this kind needs to put real emphasis on staying behind the lead vehicle, especially in the stretch approaching the bridge where the incident actually occurred."
+  }
+]

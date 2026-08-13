@@ -1,0 +1,122 @@
+[
+  {
+    "id": "f54b7c9b",
+    "title": "DevOps, Deployment, Docker und CI/CD-Muster im Betrieb",
+    "summary": "Als Sammelpunkt buendelt dieser Knoten die Betriebsthemen DevOps, Deployment, Docker und CI/CD-Muster.",
+    "co": "Vier Stichworte gehoeren hierher und werden an dieser Stelle gebuendelt: DevOps, das Deployment, der Einsatz von Docker sowie die ueblichen CI/CD-Muster."
+  },
+  {
+    "id": "f581bd8f",
+    "title": "Wie neun Ingenieursbranchen aus Fehlern lernen — und was brainlehr davon fehlt",
+    "summary": "Ein Vergleich von NASA LLIS, ESA, FAA, ASRS, IAEA IRS, NRC LER, CROSS, NIST und FDA MAUDE zeigt: Ein Wissensspeicher wirkt nicht durch bessere Suche, sondern durch ADMINISTRATIVEN ZWANG. Bei NASA und ESA muss ein Ingenieur an jedem Meilenstein begruenden, warum eine historische Lehre auf sein Projekt NICHT zutrifft.",
+    "co": "Diesen Bericht brachte der Betreiber am 2026-08-09 ein, erstellt mit Hilfe eines zweiten Modells. Es handelt sich um einen Fremdbericht, noch nicht selbst nachgeprueft -- jede genannte Zahl und jeder geschilderte Vorgang gehoert vor der Uebernahme in eine Entscheidung an der Primaerquelle geprueft.\n\nDREI BEFUNDE MIT UNMITTELBARER WIRKUNG AUF BRAINLEHR\n\nERSTENS: NASA kaempfte mit genau unserem Abrufproblem, und die Ursache lag nicht in der Datenmenge. GAO und OIG stellten in ihren Untersuchungen fest, dass Projektmanager \"die richtigen Lektionen zur richtigen Zeit\" nicht fanden -- die Stichwortsuche spuckte ungeordnete Dokumentenlisten aus, die von Hand durchforstet werden mussten, weshalb das System nur gelegentlich zum Einsatz kam. Geloest wurde das durch den Umstieg auf Wissensgraphen (Neo4j) mit semantischer Clusterung. Der Bericht belegt das am Orion-Aufrichtsystem: eine konventionelle Suche brauchte acht Tage und fand DREI Dokumente, die Graph-Ansicht dagegen ueber DREISSIG einschlaegige Apollo-Dateien. Das ist dieselbe Bauform, die hier heute vermessen wurde (7 von 35 gegen 16 von 35 nach der Umschrift) -- und die Loesungsrichtung entspricht dem, was hier als Kanten und Bedeutungskanal bezeichnet wird.\n\nZWEITENS, der schwierigere Teil: Wirksam wird ein Speicher durch Zwang, nicht durch Auffindbarkeit. Beim Verfahren \"Closed-Loop Infusion\" reichen reine Veroeffentlichung und Rundschreiben nicht aus. NASA wie ESA erzwingen an festgelegten Meilensteinen formelle Pruefmatrizen: Ein Fachexperte prueft jede einschlaegige Lehre auf Anwendbarkeit, bewertet das Risiko einer Nichteinhaltung und dokumentiert den Status verbindlich. Beim JPL laeuft das bei Grossprojekten -- Mars Exploration Rover, Kepler, Juno -- an jedem Hauptmeilenstein so ab. Der entscheidende Kniff ist die umgekehrte Beweislast: nicht die Lehre muss ihre Relevanz beweisen, sondern der Ingenieur muss begruenden, warum sie auf sein Projekt NICHT zutrifft.\n\nDas bestaetigt unabhaengig, was hier am selben Tag entstand -- die Quittierung, nach der ein eingespielter Treffer erst dann als erledigt gilt, wenn er verwendet oder ausdruecklich abgehandelt wurde -- und geht noch weiter: bei uns eskaliert ein unquittierter Treffer nach drei Zustellungen, dort verfaellt er gar nicht erst, sondern blockiert direkt den Meilenstein.\n\nDRITTENS gibt es zwei Grundmodelle, und brainlehr passt bisher zu keinem von beiden. Das eine ist vertraulich-qualitativ (ASRS, CROSS): Anonymitaet und Straffreiheit als Preis fuer eine hohe Meldefrequenz, das Ziel ist das Verstehen der Fehlerkette -- ASRS deidentifiziert dabei jeden der ueber eine Million Berichte schon bei der Aufnahme. Das andere ist gesetzlich-quantitativ (NRC LER, FDA MAUDE): Meldepflicht und standardisierte Kodierung, mit dem Ziel, Ausfallwahrscheinlichkeiten in probabilistischen Risikoanalysen zu berechnen. brainlehr hat weder Anonymitaet noch Meldepflicht, dafuer eine Herkunftspflicht -- eine dritte Form, die in diesem Vergleich gar nicht vorkommt.\n\nWEITERE ANKNUEPFUNGSPUNKTE, BISHER NICHT AUSGEWERTET: ESA speist ihre Lehren direkt in MBSE-Werkzeuge der fruehen Entwurfsphase ein -- Wissen wirkt so aktiv im Entwurf statt passiv im Nachschlagen, verwandt mit dem hiesigen Melder auf entstehende Arbeit. Die FAA verknuepft jede Fallstudie mit der konkreten Verordnungsaenderung, die daraus folgte -- die Kante \"Lehre fuehrte zu Norm\", die hier bislang fehlt. Und die NRC fuehrt eine Common-Cause-Failure-Datenbank fuer Faelle, in denen redundante Systeme an DERSELBEN Ursache gleichzeitig scheiterten -- das entspricht der hiesigen Beobachtung, dass mehrere Melder dieselbe Bauform teilen und deshalb gemeinsam blind sind."
+  },
+  {
+    "id": "f68fc466",
+    "title": "MinimumOSVersion 15.0 wird ab Fruehjahr 2027 fuer App Store Connect Pflicht",
+    "summary": "Ab Fruehjahr 2027 nimmt App Store Connect nur noch iOS-Apps mit einer MinimumOSVersion von 15.0 oder hoeher an; wohlair steht aktuell bei 13.0 und bekam beim Hochladen von Build 19 am 2026-08-09 bereits die Warnung 90068 dafuer. Die Frist gilt fuer jede iOS-App im Verbund, wohlair ist nur das erste Beispiel.",
+    "co": "Beim Hochladen von Build 19 fuer wohlair mit `xcrun altool --upload-app` erschien am 2026-08-09T06:13:33+0200 folgender Warntext:\n\n    WARN 90068: MinimumOSVersion too low. This app has a MinimumOSVersion of\n    13.0. Starting in Spring 2027, all iOS apps must have a MinimumOSVersion\n    of 15.0 or later in order to be uploaded to App Store Connect or\n    submitted for distribution.\n\nFestgehalten wird dieser Punkt, obwohl aktuell nichts blockiert ist: aus der Warnung wird irgendwann kommentarlos ein harter Fehler -- vermutlich genau dann, wenn ein Upload unter Zeitdruck ansteht. Das Setzen der neuen MinimumOSVersion selbst ist eine Kleinigkeit im Deployment Target von Xcode/podfile. Teurer wird es an anderer Stelle: manche Abhaengigkeiten haengen noch an iOS 13, und wer ein Geraet unter iOS 15 nutzt, faellt danach aus der erreichbaren Zielgruppe.\n\nVor der Umstellung gehoert deshalb geprueft, welche Testgeraete noch mit iOS 15 laufen. Bei wohlair ist das nicht nebensaechlich: aeltere Mieterinnen und Mieter mit alten Geraeten sind ausdruecklich Teil des Produktgedankens, die Anhebung der MinimumOSVersion ist darum kein technischer Nebensatz, sondern eine Produktentscheidung mit Termin.\n\nDieselbe Frist trifft jede andere iOS-App im Verbund gleichermassen, nicht nur wohlair."
+  },
+  {
+    "id": "f910d6b3",
+    "title": "Namensraum /shared/ops/appstoreconnect traegt einen Kind-Knoten",
+    "summary": "Auch der Pfad /shared/ops/appstoreconnect ist reiner Namensraum ohne eigenen Sachinhalt; in der Tabelle knowledge_nodes haengt genau ein direktes Kind daran.",
+    "co": "Wie andere Namensraeume auch, hat /shared/ops/appstoreconnect selbst keinen Inhalt -- er sammelt lediglich. In knowledge_nodes ist ihm ein einziger direkter Kind-Knoten untergeordnet."
+  },
+  {
+    "id": "fa40bfea",
+    "title": "BSI-Grundschutz++-Dev-Profil: Fundort und Suchweg",
+    "summary": "Das Grundschutz++-Dev-Profil zaehlt 945 sicherheitsrelevante Controls, abgelegt als hub/shared-knowledge/bsi-dev-profile.json; gescannt wird per hub/scripts/bsi_code_review.py, synchronisiert woechentlich ueber bsi_sync.sh.",
+    "co": "Eingeteilt sind die Controls in acht Gruppen: DEV, TEST, KONF, BER, DET, ARCH, RISK und GC. Wer die scharfen Grenzen sucht, findet die Hard-Stops HS-U1..U9 in ~/.claude/CLAUDE.md. Das komplette Profil auf einen Schlag zu laden lohnt nicht -- gezielter ist das Grep nach Control-ID oder Gruppe, alternativ die Suche per FTS."
+  },
+  {
+    "id": "fb141f1d",
+    "title": "Warum die fruehere Nutzenmessung blind war — der Engpass liegt im Wiederfinden, nicht im Speicher",
+    "summary": "Am 2026-08-07 stellte sich heraus, dass die Abrufanfrage bislang aus der Aufgabenstellung statt aus der eigentlichen Loesung gebildet wurde. Die zunaechst gemeldete Trefferquote von 1 von 2 erwies sich als Artefakt einer Ergebnisbegrenzung; ohne diese Kappung sinkt sie auf 0 von 2. Verfehlt der Abruf sein Ziel, bleibt der Nutzen bei null.",
+    "co": "Diese Korrektur stammt vom 2026-08-07 und wiegt schwer: Urspruenglich wurde hier eine Trefferquote von 1 von 2 genannt, aus der gefolgert wurde, die Begriffsbildung sei der Engpass. Beide Aussagen sind inzwischen ueberholt.\n\nEine spaetere Entwurfsprobe deckte auf, woher die 1 tatsaechlich kam: `LIMIT 30` schnitt ohne vorherige Sortierung zufaellig 106 hoeher bewertete Konkurrenten weg. Wird stattdessen mit `LIMIT 2000` gearbeitet, landet das gesuchte Ziel bei Aufgabe A auf Rang 11 und bei Aufgabe B auf Rang 39 -- macht in Wahrheit 0 von 2 Treffer. Auch die Begriffsbildung traegt die Schuld nicht: selbst mit 21 statt acht Stichwoertern bleibt derselbe Fehlgriff bestehen. Der eigentliche Fehler steckte in der Reihenfolge -- gekappt wurde vor der Bewertung, wodurch alles juengst Geschriebene gar nicht erst in Reichweite kam.\n\nDass eine solche Korrektur ueberhaupt noetig wurde, ist selbst bemerkenswert: Am selben Tag las ein Agent noch die alte Fassung, hielt sie fuer gueltig und widersprach damit dem inzwischen richtiggestellten Stand. Ein Knoten mit veralteter Zahl wirkt so lange fort, wie ihn jemand liest, ohne dass die Korrektur nachgezogen wurde.\n\nZum Nachvollziehen bleibt der urspruengliche Inhalt vor der Korrektur hier stehen:\n\nAufbau des Versuchs: wissensnutzen_blind.py erzeugt die Suchbegriffe aus dem reinen Aufgabentext, ueber denselben Weg wie der passive Abruf-Hook -- also ohne die Abkuerzung ueber lesson_query, die die richtige Lehre schon kennen wuerde. Getrennt gemessen wurden Trefferquote und Nutzen, ergaenzt um eine Eichaufgabe C, zu der im Bestand nichts Passendes existiert.\n\nZur damals mit aktiver Kappung gemessenen Trefferquote: Bei Aufgabe A war L-c0e910 das Ziel, gefunden wurden L-c0e910 und L-a9ccd0 -- ein Treffer. Bei Aufgabe B war L-68ff10 das Ziel, stattdessen erschien L-c0e910 -- verfehlt. Bei der Eichaufgabe C gab es kein Ziel, gefunden wurde L-14a742 -- zu Recht kein Treffer.\n\nBeim Nutzen, gemessen ueber je drei Laeufe desselben Modells mit und ohne Abruf: Bei Aufgabe A stand gemma4:12b ohne Abruf bei 0.00, mit Abruf bei 0.33; bei Aufgabe B lagen beide Modelle sowohl ohne als auch mit Abruf bei 0.00. Bei Aufgabe A erreichte gemma4:e4b ohne wie mit Abruf 0.00, und bei der Eichaufgabe C lagen beide Modelle sowohl ohne als auch mit Abruf bei 1.00.\n\nWas davon Bestand hat: Dieselben zwei Aufgaben lieferten mit gefuehrtem Abruf Werte zwischen 0.33 und 1.00, blind dagegen nur zwischen 0.00 und 0.33 -- genau diese Differenz ist die Auffindbarkeit. Und die Eichaufgabe C zeigt, dass ein danebengreifender Abruf nicht schadet: dort steht beidesmal 1.00. Der Speicher richtet also keinen Schaden an, er findet nur zu selten.\n\nNicht mehr haltbar ist dagegen die Zuschreibung an die Begriffsbildung, ebenso jede Zahl, die auf der fruehen Quote von 1 von 2 aufbaut."
+  },
+  {
+    "id": "fddc8e93",
+    "title": "Arbeitsweise als Sammelpunkt nummerierter Regeln",
+    "summary": "Unter diesem Knoten laufen die Regeln zur Arbeitsweise zusammen, jede einzeln durchnummeriert.",
+    "co": "Als zentrale Anlaufstelle buendelt dieser Punkt das Thema Arbeitsweise; die eigentlichen Regeln liegen jeweils einzeln in eigenen Unterknoten, fortlaufend nummeriert."
+  },
+  {
+    "id": "fe9e7aff",
+    "title": "BGH-Zitat pruefen: Cross-Source-Abgleich und Reform-Fortbestand als Verifikationsweg",
+    "summary": "Ein Gerichtsurteil-Zitat, das als UNBELEGT und Rang-3-ohne-Link markiert war, laesst sich in zwei Schritten belastbar pruefen: zuerst Existenz und exakter Leitsatz ueber mindestens 2 unabhaengige Quellen -- etwa eine Urteilsdatenbank wie dejure.org oder NWB zusammen mit einer Fachverlag-Kommentierung wie Haufe --, danach, falls zwischen Urteilsdatum und heute eine Rechtsreform liegt, gezielt eine Post-Reform-Bestaetigung derselben Doktrin ueber aktuelle Kommentierung oder ein neueres Urteil zum selben Streitpunkt.",
+    "co": "Ausgangspunkt war ein Fall aus Buckeberg: plan-b-memo.md stuetzte den M0-Kernfund -- dass die Fortgeltung des Wirtschaftsplans einen eigenen Beschluss voraussetzt -- auf das Urteil BGH V ZR 2/18 (14.12.2018). Weil das Aktenzeichen sonst nirgends im Rechts-Korpus auftauchte und die WEMoG-Reform von 2020 zwischen Urteil und heute lag, war dieses Zitat als UNBELEGT markiert.\n\nZur Verifikation bestaetigte eine WebSearch Existenz und Leitsatz wortgleich ueber mehrere Quellen -- dejure.org, die NWB-Urteilsdatenbank, Haufe und mehrere Kanzlei-Blogs --, damals gestuetzt auf § 28 Abs. 5 WEG a.F.\n\nFuer den Fortbestand nach der Reform lieferte eine gezielte Suche nach „Haufe Wirtschaftsplan (WEMoG) 6.2 Fortgeltung\" den Beleg, dass dieselbe Doktrin unter der neuen Norm § 28 Abs. 1 WEG n.F. bestaetigt weitergilt. Ergaenzend fand sich ein frisches BGH-Urteil zum selben Streitpunkt nach der Reform, V ZB 9/23 vom 25.10.2023 -- das raeumt die Unsicherheit vollstaendig aus, ohne sich auf eine einzelne Sekundaerquelle verlassen zu muessen.\n\nDie blosse Frage, ob eine Regel nach der Reform noch gilt, liefert bei einer Einzelsuche oft nichts. Ergiebiger ist der zweigleisige Weg: aktuelle Fachkommentierung zum Thema lesen UND parallel nach neueren Urteilen zum selben Streitpunkt suchen, statt direkt nach dem Fortbestand zu fragen."
+  },
+  {
+    "id": "nasa-llis-1002",
+    "title": "Avioniknachruestung am Space Shuttle Orbiter",
+    "summary": "Der Eintrag im Space Shuttle Program beschreibt zwei grosse Avionik-Umbauten am Orbiter: ein dreifach redundantes GPS und das Multi-Function Electronic Display System (MEDS), beide mit erheblichen Folgen fuer Primary Flight Software (PFS) und Backup Flight Software (BFS).",
+    "co": "Eingetragen am 1997-02-01 durch die Organisation HQ, Programmzweig Space Shuttle Program/Orbiter/Avionics Modifications.\n\nDie Lehre: Dem Space Shuttle stehen zwei grosse Avionik-Umruestungen bevor -- der Einbau eines dreifach redundanten Global Positioning System (GPS) und die Einfuehrung des Multi-Function Electronic Display System (MEDS). Beide Vorhaben verlangen tiefgreifende Aenderungen sowohl an der Primary Flight Software (PFS) als auch an der Backup Flight Software (BFS)."
+  },
+  {
+    "id": "nasa-llis-1005",
+    "title": "Terminverschiebung beim Block-II-Haupttriebwerk (SSME) des Space Shuttle",
+    "summary": "Der Erstflug des Block II Space Shuttle Main Engine (SSME) verschob sich von September 1997 auf Dezember 1997; der neue Zeitplan gilt als zu optimistisch und braucht durchgehend drei Teststaende am Stennis Space Center (SSC).",
+    "co": "Eingetragen am 1997-02-01, Organisation HQ, im Zweig Space Shuttle Program/Block II Space Shuttle Main Engine (SSME)/Test Schedule.\n\nDie Lehre: Der Zeitplan fuer den Erstflug des Block-II-Triebwerks rutschte von September 1997 auf Dezember 1997. Dieser Plan ist optimistisch angesetzt und laesst keinerlei Spielraum fuer kuenftige Entwicklungsprobleme. Ausserdem setzt er voraus, dass drei Teststaende am Stennis Space Center (SSC) durchgehend verfuegbar bleiben."
+  },
+  {
+    "id": "nasa-llis-101",
+    "title": "Fehlender Sicherheitsschalter an der Proof Load Test Fixture",
+    "summary": "Weil an der Proof Load Test Fixture ein Not-Aus-Schalter fehlte, kam es zu einem knapp vermiedenen Zwischenfall: ein 'D'-Ring wurde beim Ueberziehen verformt.",
+    "co": "Eintrag vom 1992-08-10, Organisation KSC, Thema Proof Load Test Fixture.\n\nDie Lehre: Weil die Proof Load Test Fixture keinen Sicherheits-Abschaltschalter besass, kam es zu einem knappen Zwischenfall (\"close call\"): ein \"D\"-Ring wurde durch Ueberziehen (over pulled) verformt."
+  },
+  {
+    "id": "nasa-llis-1014",
+    "title": "Enge Zeitplaene beim Aufbau der ISS gefaehrden Vortests",
+    "summary": "Die Aufbauzeitplaene der International Space Station (ISS) lassen kaum Spielraum fuer verspaetete oder fehlende Hardware; Termin- oder Budgetdruck koennte dazu fuehren, Arbeiten in die Umlaufbahn zu verschieben oder Tests vor dem Start zu kuerzen.",
+    "co": "Eintrag vom 1997-02-01, Organisation HQ, Thema International Space Station (ISS) Program/Ground Processing Schedule/Test and Verification.\n\nDie Lehre: Die Zeitplaene fuer den Aufbau der ISS sind eng gesetzt, kaum bis gar kein Puffer bleibt fuer verspaetete oder nicht verfuegbare Hardware. Geraet der Zeitplan oder das Budget unter Druck, droht entweder Arbeit an Bord verschoben oder die Erprobung vor dem Start gekuerzt zu werden."
+  },
+  {
+    "id": "nasa-llis-1016",
+    "title": "Kollisionsvermeidung der ISS gegenueber Meteoroiden und Weltraumschrott noch unausgereift",
+    "summary": "Das Verfahren, mit dem die International Space Station (ISS) Meteoroiden und Orbitalschrott ausweicht, ist aufwendig und fuer viele denkbare Szenarien ueber die Lebensdauer des Programms noch nicht vollstaendig ausgearbeitet.",
+    "co": "Eintrag vom 1997-02-01, Organisation HQ, Thema International Space Station (ISS) Program/Real-Time Operations/Collision Avoidance Maneuvers.\n\nDie Lehre: Der Ablauf zur Kollisionsvermeidung und zu Ausweichmanoevern gegenueber Meteoroiden und Weltraumschrott ist kompliziert und fuer zahlreiche Szenarien, die waehrend der Laufzeit des ISS-Programms auftreten koennen, noch nicht vollstaendig durchdacht."
+  },
+  {
+    "id": "nasa-llis-1018",
+    "title": "ISS verlangt mehrfache statt sensorische Eindaemmung toxischer Stoffe in Payload-Racks",
+    "summary": "Fuer die International Space Station (ISS) gibt es keine Vorgabe, einen Austritt toxischer Substanzen in einem Payload-Rack sensorisch zu erkennen; verlangt wird stattdessen eine mehrfache Eindaemmung dieser Stoffe im Rack.",
+    "co": "Eintrag vom 1997-02-01, Organisation HQ, Thema International Space Station (ISS) Program/Hazardous Materials Containment/Payload Toxic Substance Sensing.\n\nDie Lehre: Fuer die ISS existiert keine Anforderung, das Austreten eines toxischen Stoffs innerhalb eines Payload-Racks sensorisch zu erfassen. Gefordert ist dagegen, dass toxische Substanzen in Payload-Racks mehrfach eingedaemmt werden."
+  },
+  {
+    "id": "nasa-llis-1019",
+    "title": "ISS-Entwurf sieht keine drahtlose Crew-Kommunikation vor",
+    "summary": "Das Design der International Space Station (ISS) enthaelt keine Anforderung an ein drahtloses Kommunikationssystem fuer durchgehenden Crew-Kontakt; aktuell muss ein Besatzungsmitglied dafuer zu einem Bedienfeld wechseln oder ein Headset anschliessen.",
+    "co": "Eintrag vom 1997-02-01, Organisation HQ, Thema International Space Station (ISS) Program/Communications System/Wireless Capability.\n\nDie Lehre: Der ISS-Entwurf verlangt kein drahtloses Kommunikationssystem, um den Kontakt zur Besatzung stationsweit aufrechtzuerhalten. Nach dem gegenwaertigen Entwurf muss sich ein Crewmitglied dafuer zu einem Panel begeben oder ein Headset verbinden."
+  },
+  {
+    "id": "nasa-llis-102",
+    "title": "Fehlende Wartung und ungeeignete Ventile bei Hochdruck-Absperrsystemen",
+    "summary": "Weil fuer zwei Absperrventile mit 6000 psi kein vorbeugendes Wartungsprogramm bestand, kam es zu einem knappen Zwischenfall durch Leckage; an anderer Stelle explodierte ein Ventil, das dem Systemdruck nicht gewachsen war.",
+    "co": "Eintrag vom 1992-08-11, Organisation KSC, Thema High Pressure Shutoff Valves; Vacuum Pump Isolation Valve.\n\nDie Lehre, in zwei Teilen: Erstens fehlte ein vorbeugendes Wartungsprogramm fuer zwei Absperrventile mit 6000 psi -- Folge war ein knapper Zwischenfall (\"close call\"), als sie zu lecken begannen. Zweitens fuehrte der Einsatz von Ventilen, die dem Systemdruck nicht gewachsen waren, zu einem weiteren knappen Zwischenfall, als ein Ventil explodierte."
+  },
+  {
+    "id": "nasa-llis-1020",
+    "title": "X-38-Forschungsprogramm als Ansatz fuer das ISS-Rettungsfahrzeug",
+    "summary": "Das X-38-Forschungsfahrzeugprogramm gilt als geeigneter Weg, um das Crew Return Vehicle (CRV) fuer die International Space Station (ISS) zu entwickeln.",
+    "co": "Eintrag vom 1997-02-01, Organisation HQ, Thema International Space Station (ISS) Program/X-38 Project/Crew Return Vehicle (CRV) Development.\n\nDie Lehre: Das Forschungsprogramm rund um das X-38-Fahrzeug ist ein guter Ansatz, um daraus ein Crew Return Vehicle (CRV) fuer die ISS zu entwickeln."
+  },
+  {
+    "id": "nasa-llis-1021",
+    "title": "Luecken in NASAs agenturweiter Software-Sicherheitsrichtlinie",
+    "summary": "NASAs agenturweite Software-Sicherheitsrichtlinie laesst Projekten Spielraum, ihren Software-Sicherheitsplan fuer sicherheitskritische Software selbst anzupassen, verlangt dafuer aber weder eine Freigabe durch Safety and Mission Assurance (S&MA) noch ausdruecklich Verification and Validation (V&V) -- und selbst wo der Software-Assurance-Standard V&V erwaehnt, fordert er keine Unabhaengigkeit dieser Pruefung.",
+    "co": "Eintrag vom 1997-02-01, Organisation HQ, Thema Computer Software/Software Safety Policy Requirements/Potential Inadequacies.\n\nDie Lehre: Die agenturweite Software-Sicherheitsrichtlinie der NASA raeumt Projekten Spielraum ein, ihren Software-Sicherheitsplan fuer sicherheitskritische Software zuzuschneiden. Sie verlangt dabei aber weder eine Freigabe der angepassten Plaene durch die zustaendige Safety and Mission Assurance (S&MA) noch grundsaetzlich Verification and Validation (V&V). Der Software-Assurance-Standard erwaehnt V&V zwar, schreibt dafuer bei sicherheitskritischer Software aber keine Unabhaengigkeit vor."
+  },
+  {
+    "id": "nasa-llis-1022",
+    "title": "NASAs Software-Reorganisation ohne klare Rollenverteilung",
+    "summary": "NASA hat erhebliche Anstrengungen in die Neuordnung ihrer Software-Aktivitaeten gesteckt und dabei deutliche Fortschritte erzielt, verfuegt aber noch nicht ueber ein umfassendes, klares Regelwerk zu Rollen und Zustaendigkeiten fuer Softwareentwicklung, -sicherheit, V&V und Prozessentwicklung.",
+    "co": "Eintrag vom 1997-02-01, Organisation HQ, Thema Computer Software/Software Safety Policy Requirements/Potential Inadequacies.\n\nDie Lehre: NASA hat betraechtlichen Aufwand in die Reorganisation ihrer Software-Aktivitaeten investiert und dabei erhebliche Fortschritte gemacht. Was jedoch weiterhin fehlt, ist ein umfassendes und klares Set an Rollen und Verantwortlichkeiten fuer die verschiedenen Gruppen innerhalb der Agentur -- bezogen auf Softwareentwicklung, Sicherheit, V&V und die Weiterentwicklung der Software-Prozesse."
+  },
+  {
+    "id": "nasa-llis-1024",
+    "title": "Fehlende Dokumentationsverfahren fuer Firmware in ISS-Komponenten",
+    "summary": "NASA verfuegt ueber keine Verfahren, um die Firmware in ISS-Komponenten zu dokumentieren -- besonders betroffen sind Geraete, die aus dem Vorgaengerprogramm Space Station Freedom uebernommen wurden.",
+    "co": "Eintrag vom 1997-02-01, Organisation HQ, Thema International Space Station (ISS) Program/Command and Data Handling/Firmware Documentation.\n\nDie Lehre: Es fehlen bei NASA Verfahren, mit denen die Firmware dokumentiert wird, die in ISS-Komponenten verbaut ist -- das gilt besonders fuer Geraete, die noch aus Space Station Freedom uebernommen wurden (grandfathered)."
+  }
+]
