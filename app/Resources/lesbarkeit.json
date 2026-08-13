@@ -21,6 +21,14 @@
     "entziffern": 0.10
   },
 
+  "_warum_keine_aufloesung_vorkommt": "In dieser ganzen Rechnung steht keine Pixelzahl, und das ist Absicht. Lesbarkeit haengt an FLAECHE und ABSTAND. Mehr Pixel machen Text schaerfer, nicht groesser -- ein 27-Zoll-Schirm mit 4K traegt exakt dieselbe Zahl Felder wie einer mit WQHD. Wer nativ statt skaliert faehrt, macht Text sogar KLEINER. Gemessen am 2026-08-13: der angeschlossene EIZO CG2700X hat 2560x1440 auf 599x340 mm (109 ppi), das eingebaute Display 1728x1117 auf 344x222 mm (128 ppi) -- die dichtere Anzeige traegt WENIGER, weil sie kleiner ist.",
+
+  "_gemessene_geraete": {
+    "_hinweis": "Physische Groesse aus dem EDID (CGDisplayScreenSize), nicht aus Punkten gerechnet. Die Punkt-Annahme 1/72 Zoll ist fuer Bildschirme falsch und lag hier um Faktor 1,50 bzw. 1,77 daneben.",
+    "CG2700X": {"mm": [599, 340], "zoll": 27.1, "punkte": [2560, 1440], "ppi": 109},
+    "Built-in Retina Display": {"mm": [344, 222], "zoll": 16.1, "punkte": [1728, 1117], "ppi": 128}
+  },
+
   "_abstand_hinweis": "Kein Geraet weiss, wie weit jemand wegsitzt. Diese Werte sind Voreinstellungen, die der Nutzer sichtbar aendern koennen muss -- kein Messwert und keine Annahme, die sich versteckt.",
   "abstand_vorgabe_mm": {
     "eingebaut": 700,
