@@ -41,6 +41,7 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
 import argparse
+import contextlib
 import json
 import sqlite3
 import sys
@@ -152,6 +153,30 @@ def _disable_embeddings() -> None:
     embeddings.embed_text = lambda *a, **k: None  # type: ignore
 
 
+@contextlib.contextmanager
+def gesicherte_globale():
+    """Stellt die drei Modulglobale zurueck, die ein Lauf umbiegt:
+    embeddings.embed_text, kms.DB_PATH, hook.DB.
+
+    Als Skript aufgerufen waere das entbehrlich -- der Prozess endet danach.
+    Im selben Prozess ist es Fernwirkung: tests/test_paretolauf.py importiert
+    paretolauf -> vergleichslauf -> messlauf und laesst Laeufe laufen; ohne
+    diese Sicherung sah jeder danach laufende Test ein embed_text, das None
+    liefert, und einen DB-Pfad in einem laengst geloeschten tempdir. Sichtbar
+    wurde es als zwei Proben in tests/test_vektor_identitaet.py, die allein
+    gruen sind und in der vollen Suite rot -- die Fehlermeldung zeigte also
+    aufs Opfer, nicht auf die Quelle.
+
+    Wird von messlauf.run() UND vergleichslauf.run_config() benutzt: beide
+    biegen dieselben drei Globale um, deshalb liegt die Sicherung hier bei
+    ihnen und nicht zweimal beim Aufrufer."""
+    sicherung = (embeddings.embed_text, kms.DB_PATH, hook.DB)
+    try:
+        yield
+    finally:
+        embeddings.embed_text, kms.DB_PATH, hook.DB = sicherung
+
+
 # --- Retrieval-Adapter: vorhandene Abruffunktionen, unveraendert ---------
 
 def _retrieve_recall_hook(q: dict, rand) -> list[str]:
@@ -243,6 +268,21 @@ def run(seed: int = korpus.DEFAULT_SEED, k: int = DEFAULT_K, timestamp: str | No
     queries = _combined_queries(corpus)
     total_docs = len(corpus["nodes"]) + len(corpus["lessons"])
 
+    # Der Lauf biegt drei Modulglobale um -- embeddings.embed_text (auf
+    # synthetische Vektoren bzw. auf None), kms.DB_PATH und hook.DB (auf die
+    # Wegwerf-DB). Als Skript war das folgenlos, weil der Prozess danach
+    # endet. Im SELBEN Prozess ist es Fernwirkung: tests/test_paretolauf.py
+    # importiert paretolauf -> messlauf und laesst run() laufen; jeder danach
+    # laufende Test sah ab da ein embed_text, das None liefert. Genau so fielen
+    # zwei Proben in tests/test_vektor_identitaet.py aus -- allein gruen, in der
+    # vollen Suite rot, und die Fehlermeldung zeigte auf das Opfer, nicht auf
+    # die Quelle. Wer globalen Zustand setzt, raeumt ihn auf.
+    with gesicherte_globale():
+        return _run_ungesichert(corpus, queries, total_docs, seed, k, timestamp)
+
+
+def _run_ungesichert(corpus: dict, queries: list[dict], total_docs: int,
+                     seed: int, k: int, timestamp: str | None) -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         db_path = Path(tmp) / "knowledge_pruefstand.db"
         _populate_db(db_path, corpus)

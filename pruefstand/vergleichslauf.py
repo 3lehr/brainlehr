@@ -134,7 +134,11 @@ def run_config(corpus: dict, queries: list[dict], total_docs: int, *,
     (Retrieval-Methode/Index). Jede Konfiguration bekommt ihre eigene
     temporaere DB -- klarer als Wiederverwendung, Korpus ist klein genug,
     dass das nicht ins Gewicht faellt."""
-    with tempfile.TemporaryDirectory() as tmp:
+    # Sicherung der drei umgebogenen Modulglobale -- Begruendung siehe
+    # messlauf.gesicherte_globale(). Ohne sie faerbt jeder Lauf auf alles ab,
+    # was im selben Prozess danach laeuft (tests/test_paretolauf.py fuhr genau
+    # hier durch und liess embed_text als None-Lambda stehen).
+    with ml.gesicherte_globale(), tempfile.TemporaryDirectory() as tmp:
         db_path = Path(tmp) / "knowledge_vergleich.db"
         if index_ablated:
             _populate_db_index_ablated(db_path, corpus)
