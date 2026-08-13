@@ -61,6 +61,13 @@ SEITENMARKE = re.compile(r"^--- Seite (\d+) ---$", re.MULTILINE)
 # Verzeichnisse mit Volltext-Beidateien, in Reihenfolge der Verlaesslichkeit.
 VOLLTEXT_ORTE = ("dokumente", "homepage/public/quellen")
 
+# Ab wie vielen Dokumenten ein Wortlaut als Vordruck gilt statt als Beleg.
+# Gemessen im Bestand: 29,6 % aller Textzeilen stehen in mehr als einem
+# Dokument, 7,7 % in mehr als fuenf. Bei mehr als fuenf ist die Trefferliste
+# keine Antwort mehr, sondern eine Suchanfrage -- und die erste davon als
+# "die Fundstelle" auszugeben, ist geraten.
+BRIEFKOPF_AB_DOKUMENTEN = 5
+
 # Was die Anzeige auseinanderhalten muss. Alles andere ist "unbekannt" und
 # geht an Quick Look -- das kann mehr Formate, als wir hier auflisten wollen.
 FORMATE = {".pdf": "pdf", ".html": "html", ".htm": "html", ".txt": "text",
@@ -78,9 +85,21 @@ class Fundstelle:
     absolut: str = ""
     format: str = "unbekannt"
     seite: int | None = None
+    seiten: list[int] = field(default_factory=list)  # ALLE Fundstellen, nicht nur die erste
     suchtext: str = ""
     kurz: str = ""         # Klartextbeschreibung der Quelle, falls vorhanden
     weitere: list[dict] = field(default_factory=list)  # weitere Treffer, ungewichtet
+
+    @property
+    def mehrdeutig(self) -> bool:
+        """Steht der Wortlaut auf mehr als einer Seite?
+
+        Die App MUSS das wissen: PDFKit findString markiert sonst den ersten
+        Treffer, und der ist bei 8 der 14 gepflegten Suchtexte eine blosse Zahl
+        ("50,00", "35,00", "75,00"). Bei Quelle 4 steht "75,00" auf den Seiten
+        4, 5, 6 und 8 -- gepflegt ist 8, markiert wuerde 4.
+        """
+        return len(self.seiten) > 1
 
     @property
     def markierbar(self) -> bool:
@@ -95,29 +114,74 @@ class Fundstelle:
     def als_dict(self) -> dict:
         d = asdict(self)
         d["markierbar"] = self.markierbar
+        d["mehrdeutig"] = self.mehrdeutig
         return d
 
 
 # ─── reine Funktionen (ohne Dateisystem, darum ohne Aufbau testbar) ────────
 
 def seite_aus_volltext(volltext: str, suchtext: str) -> int | None:
-    """Seitenzahl der ersten Fundstelle von `suchtext`, oder None.
+    """Seitenzahl der ERSTEN Fundstelle von `suchtext`, oder None.
 
     Zaehlt nicht die Marken, sondern nimmt die LETZTE Marke vor dem Treffer --
     ein Volltext kann bei 1 oder bei 0 beginnen, und ein Auszug kann mitten
     im Dokument anfangen. Wer Marken zaehlt, verschiebt sich in beiden Faellen.
+
+    ACHTUNG beim Aufrufen: "erste Fundstelle" ist nur dann "die Fundstelle",
+    wenn es genau eine gibt. Fuer alles Weitere seiten_aus_volltext() nehmen.
+    """
+    s = seiten_aus_volltext(volltext, suchtext)
+    return s[0] if s else None
+
+
+def seiten_aus_volltext(volltext: str, suchtext: str) -> list[int]:
+    """ALLE Seiten, auf denen `suchtext` steht -- aufsteigend, ohne Dubletten.
+
+    DER GRUND, WARUM ES DIESE FUNKTION GIBT (Konsil 2026-08-13): Die Suche nach
+    der ersten Fundstelle liefert bei einer Kopf- oder Fusszeile immer Seite 1.
+    Gemessen im Bestand: "Fax: 07231 58993150" steht auf 11 von 11 Seiten der
+    Jahresabrechnung 2024, und das Modul meldete belegt=True, Seite 1 -- genau
+    die Fehlerklasse, gegen die es gebaut wurde, nur eine Ebene tiefer.
+    116 von 367 Dokumenten tragen eine solche Zeile.
+
+    Wer wissen will, OB eine Stelle eindeutig ist, muss alle zaehlen. Die eine
+    Zahl kann das nicht sagen, und ihr Schweigen sieht aus wie Gewissheit.
     """
     if not suchtext:
-        return None
-    pos = _finde(volltext, suchtext)
-    if pos < 0:
-        return None
-    letzte = None
-    for m in SEITENMARKE.finditer(volltext):
-        if m.start() > pos:
-            break
-        letzte = int(m.group(1))
-    return letzte
+        return []
+    h, n = _glaetten(volltext), _glaetten(suchtext)
+    if not n:
+        return []
+
+    # Marken auf der GEGLAETTETEN Zeichenkette suchen, damit die Positionen
+    # zueinander passen -- _finde glaettet ebenfalls.
+    marken = [(m.start(), int(m.group(1)))
+              for m in re.finditer(r"--- seite (\d+) ---", h)]
+
+    treffer: list[int] = []
+    pos = h.find(n)
+    while pos >= 0:
+        seite = None
+        for start, nr in marken:
+            if start > pos:
+                break
+            seite = nr
+        if seite is not None and seite not in treffer:
+            treffer.append(seite)
+        pos = h.find(n, pos + 1)
+    return sorted(treffer)
+
+
+def ist_laufender_kopf(seiten: list[int], seiten_gesamt: int) -> bool:
+    """Steht der Text auf so vielen Seiten, dass er das Dokument nicht mehr eingrenzt?
+
+    Schwelle: mindestens 3 Seiten UND mindestens 60 % des Dokuments. Beides
+    zusammen, weil je eine allein danebenliegt -- 2 von 2 Seiten ist keine
+    Kopfzeile, und 3 von 40 ist eine echte Mehrfachnennung.
+    """
+    if seiten_gesamt <= 0 or len(seiten) < 3:
+        return False
+    return len(seiten) / seiten_gesamt >= 0.6
 
 
 def _finde(heuhaufen: str, nadel: str) -> int:
@@ -137,6 +201,12 @@ def _glaetten(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip().casefold()
 
 
+def _seitenzahl(volltext: str) -> int:
+    """Hoechste Seitenmarke -- der Nenner fuer die Kopfzeilen-Erkennung."""
+    nummern = [int(m.group(1)) for m in SEITENMARKE.finditer(volltext)]
+    return max(nummern) if nummern else 0
+
+
 def format_von(datei: str) -> str:
     return FORMATE.get(Path(datei).suffix.casefold(), "unbekannt")
 
@@ -148,12 +218,21 @@ def korpus_wurzel(pfad: str | os.PathLike | None = None) -> Path:
 
 
 def _quellenverzeichnis(wurzel: Path) -> dict:
-    """dossier/quellen.json ohne die Hinweiszeilen (Werte, die keine Objekte sind)."""
+    """dossier/quellen.json, nur die echten Quellen.
+
+    Die Verwaltungszeilen tragen einen fuehrenden Unterstrich (_hinweis, _rang,
+    _stand) und werden ueber die SCHLUESSELFORM ausgeschlossen -- nicht ueber
+    den Werttyp. Ein Filter auf isinstance(v, dict) sieht richtig aus und ist
+    falsch: _rang IST ein Objekt und wurde dadurch als 49. Quelle mitgezaehlt.
+    Gemessen und korrigiert am 2026-08-13; richtig sind 48 (Schluessel 1-48,
+    lueckenlos). Dieselbe Fehlerklasse wie L-16e428 -- nach der Form gefiltert
+    statt nach der Bedeutung.
+    """
     p = wurzel / "dossier" / "quellen.json"
     if not p.is_file():
         return {}
     roh = json.loads(p.read_text(encoding="utf-8"))
-    return {k: v for k, v in roh.items() if isinstance(v, dict)}
+    return {k: v for k, v in roh.items() if k.isdigit() and isinstance(v, dict)}
 
 
 def _dateiort(wurzel: Path, datei: str) -> Path | None:
@@ -224,33 +303,75 @@ def loese_text(text: str, wurzel: Path | None = None, grenze: int = 5) -> Fundst
         return Fundstelle(False, "keine",
                           grund="Der gesuchte Wortlaut ist zu kurz fuer eine belastbare Stelle.")
 
+    # Vollstaendig durchzaehlen statt nach `grenze` abzubrechen. Gemessen kostet
+    # der Volllauf ueber 367 Dateien 92 ms -- und der Abbruch war teuer erkauft:
+    # er verschwieg bis zu 48 weitere Vorkommen, ohne das kenntlich zu machen,
+    # und konnte einen Briefkopf nicht von einer Fundstelle unterscheiden.
+    # `grenze` begrenzt jetzt nur noch, wie viele Treffer BERICHTET werden.
     treffer: list[Fundstelle] = []
+    uebersprungen: list[str] = []   # als laufender Kopf verworfen
     for txt in volltext_dateien(w):
         try:
             inhalt = txt.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
-        if _finde(inhalt, text) < 0:
+        seiten = seiten_aus_volltext(inhalt, text)
+        if not seiten and _finde(inhalt, text) < 0:
             continue
         # Die Anzeige will das Original, nicht den Auszug: neben X.txt liegt X.pdf.
         anzeige = next((txt.with_suffix(s) for s in (".pdf", ".html", ".jpg", ".png")
                         if txt.with_suffix(s).is_file()), txt)
+        gesamt = _seitenzahl(inhalt)
+        if ist_laufender_kopf(seiten, gesamt):
+            # Eine Kopf- oder Fusszeile grenzt nichts ein. Sie als Fundstelle
+            # zu melden waere schlimmer als Schweigen -- sie sieht aus wie ein
+            # Beleg und zeigt auf Seite 1, weil dort der erste Treffer liegt.
+            uebersprungen.append(str(anzeige.relative_to(w)))
+            continue
         treffer.append(Fundstelle(
             True, "gerechnet",
             datei=str(anzeige.relative_to(w)), absolut=str(anzeige),
             format=format_von(anzeige.name),
-            seite=seite_aus_volltext(inhalt, text), suchtext=text,
+            seite=seiten[0] if seiten else None, seiten=seiten, suchtext=text,
             kurz=anzeige.stem,
         ))
-        if len(treffer) >= grenze:
-            break
 
     if not treffer:
+        if uebersprungen:
+            return Fundstelle(
+                False, "keine",
+                grund="Dieser Wortlaut steht auf fast jeder Seite und grenzt die Stelle nicht ein.",
+                suchtext=text, weitere=[{"datei": d} for d in uebersprungen[:grenze]])
         return Fundstelle(False, "keine",
                           grund="Dieser Wortlaut steht in keinem hinterlegten Dokument.",
                           suchtext=text)
+
+    # Briefkopf-Regel, die zweite Haelfte der Kopfzeilen-Frage: ein Wortlaut in
+    # sehr vielen Dokumenten ist Vordruck, nicht Beleg. Gemessen steht
+    # "Fax: 07231 58993150" in Dutzenden Abrechnungen desselben Verwalters --
+    # je Dokument auf zu wenigen Seiten fuer ist_laufender_kopf(), quer ueber
+    # den Bestand aber vollkommen nichtssagend. Ohne diese Regel meldete das
+    # Modul die Faxnummer als Fundstelle mit Seite 1.
+    # Die als laufender Kopf VERWORFENEN zaehlen mit. Sonst rettet sich ein
+    # Briefkopf ausgerechnet dadurch, dass er in den meisten Dokumenten zu
+    # eindeutig ein Briefkopf war: die fielen vorher raus, und die restlichen
+    # vier sahen aus wie eine schmale, saubere Trefferliste. Genau so ist die
+    # Faxnummer beim ersten Anlauf durchgerutscht.
+    dokumente = len(treffer) + len(uebersprungen)
+    if dokumente > BRIEFKOPF_AB_DOKUMENTEN:
+        return Fundstelle(
+            False, "keine",
+            grund=(f"Dieser Wortlaut steht in {dokumente} Dokumenten und "
+                   f"grenzt die Stelle nicht ein."),
+            suchtext=text, weitere=[{"datei": t.datei} for t in treffer[:grenze]])
+
     erste = treffer[0]
-    erste.weitere = [t.als_dict() for t in treffer[1:]]
+    # `grenze` schneidet nur den BERICHT, nicht mehr die Suche -- und wo sie
+    # schneidet, steht es da. Vorher fielen bis zu 48 Vorkommen still weg.
+    erste.weitere = [t.als_dict() for t in treffer[1:grenze]]
+    if len(treffer) > grenze:
+        erste.grund = (f"In {len(treffer)} Dokumenten gefunden, hier die ersten "
+                       f"{grenze} -- die Stelle ist nicht eindeutig.")
     return erste
 
 
@@ -290,6 +411,17 @@ def bestand(wurzel: Path | None = None) -> dict:
     formate: dict[str, int] = {}
     for v in e.values():
         formate[format_von(v.get("datei", ""))] = formate.get(format_von(v.get("datei", "")), 0) + 1
+
+    # Format GEGEN Fundstellenqualitaet -- die Randsummen allein verstecken den
+    # Befund, der den Zuschnitt entscheidet: gemessen 2026-08-13 ist jede
+    # markierbare Quelle ein PDF, und keine der 20 HTML-Quellen traegt eine
+    # Stelle. Fuer HTML ist die Fundstelle also kein Anzeige-, sondern ein
+    # Datenproblem, und die Volltextsuche der einzige Weg, der dort existiert.
+    kreuz: dict[str, dict[str, int]] = {}
+    for v in e.values():
+        f = format_von(v.get("datei", ""))
+        k = "markierbar" if v.get("suchtext") else ("nur_seite" if v.get("seite") else "keine_stelle")
+        kreuz.setdefault(f, {})[k] = kreuz.setdefault(f, {}).get(k, 0) + 1
     return {
         "wurzel": str(w),
         "erreichbar": w.is_dir(),
@@ -299,6 +431,7 @@ def bestand(wurzel: Path | None = None) -> dict:
         "ohne_stelle": len(e) - len(mit_stelle) - len(nur_seite),
         "nummern_mit_fundstelle": sorted(mit_stelle, key=lambda s: int(s) if s.isdigit() else 0),
         "formate": formate,
+        "format_gegen_stelle": kreuz,
         "volltexte": len(volltext_dateien(w)),
     }
 

@@ -60,6 +60,31 @@ def test_grossschreibung_ist_egal():
     assert F.seite_aus_volltext(VOLLTEXT, "GRUNDVERGUETUNG 50,00") == 2
 
 
+def test_alle_seiten_statt_nur_der_ersten():
+    vt = ("--- Seite 1 ---\nKopfzeile Musterfirma\nInhalt A\n"
+          "--- Seite 2 ---\nKopfzeile Musterfirma\nInhalt B\n"
+          "--- Seite 3 ---\nKopfzeile Musterfirma\nInhalt C\n")
+    assert F.seiten_aus_volltext(vt, "Kopfzeile Musterfirma") == [1, 2, 3]
+    assert F.seiten_aus_volltext(vt, "Inhalt B") == [2]
+    assert F.seiten_aus_volltext(vt, "gibt es nicht") == []
+    # seite_aus_volltext bleibt die erste -- aber sie ist jetzt nachweislich
+    # nur EINE von mehreren, und genau das war vorher nicht sichtbar.
+    assert F.seite_aus_volltext(vt, "Kopfzeile Musterfirma") == 1
+
+
+@pytest.mark.parametrize("seiten,gesamt,erwartet", [
+    ([1, 2, 3], 3, True),      # 3 von 3
+    ([1, 2, 3], 5, True),      # 3 von 5 = 60 %, genau auf der Schwelle
+    ([1, 2, 3], 6, False),     # 3 von 6 = 50 %, darunter
+    ([1, 2], 2, False),        # Grenzwert: 2 von 2 ist keine Kopfzeile
+    ([1], 10, False),
+    ([], 10, False),
+    ([1, 2, 3], 0, False),     # Negativfall: kein Nenner, keine Aussage
+])
+def test_laufender_kopf_grenzwerte(seiten, gesamt, erwartet):
+    assert F.ist_laufender_kopf(seiten, gesamt) is erwartet
+
+
 def test_format_erkennung():
     assert F.format_von("a.PDF") == "pdf"
     assert F.format_von("a.html") == "html" and F.format_von("a.htm") == "html"
@@ -102,6 +127,47 @@ def test_unbekannte_quelle_stuerzt_nicht_ab():
 
 
 # ─── am echten Korpus ─────────────────────────────────────────────────────
+
+@echt
+def test_verwaltungszeilen_sind_keine_quellen():
+    """Die Fehlerklasse, die diese Datei schon zweimal getroffen hat.
+
+    quellen.json traegt Verwaltungszeilen mit fuehrendem Unterstrich. `_hinweis`
+    ist eine Zeichenkette und faellt durch jeden Filter; `_rang` ist ein OBJEKT
+    und rutschte durch `isinstance(v, dict)` -- gezaehlt wurden dadurch 49 statt
+    48 Quellen, und die falsche Zahl stand bereits im Plandokument.
+    """
+    roh = json.loads((KORPUS / "dossier" / "quellen.json").read_text(encoding="utf-8"))
+    verwaltung = [k for k in roh if k.startswith("_")]
+    assert verwaltung, "kein Gegenbeispiel im Bestand -- dieser Test prueft dann nichts"
+    # Mindestens eine Verwaltungszeile MUSS ein Objekt sein, sonst waere ein
+    # Typfilter ausreichend und der Test bewacht die falsche Regel.
+    assert any(isinstance(roh[k], dict) for k in verwaltung), \
+        "keine objektwertige Verwaltungszeile mehr -- Test gegen die echte Falle neu bauen"
+
+    e = F._quellenverzeichnis(KORPUS)
+    assert all(k.isdigit() for k in e), f"Verwaltungszeile als Quelle gezaehlt: {sorted(set(e) - set(roh))}"
+    for k in verwaltung:
+        assert k not in e
+        assert F.loese_quelle(k).belegt is False
+
+    # Die Nummern laufen lueckenlos -- sonst stimmt der Nenner trotzdem nicht.
+    nummern = sorted(int(k) for k in e)
+    assert nummern == list(range(1, len(nummern) + 1)), f"Luecke in den Quellennummern: {nummern}"
+
+
+@echt
+def test_jede_markierbare_quelle_ist_ein_pdf():
+    """Der Befund, der den Zuschnitt entscheidet -- als Test, nicht als Satz im Plan.
+
+    Wird das eines Tages falsch, ist das keine Regression, sondern die
+    Nachricht, dass fuer HTML endlich Fundstellen gepflegt wurden.
+    """
+    kreuz = F.bestand()["format_gegen_stelle"]
+    markierbar = {f: z["markierbar"] for f, z in kreuz.items() if z.get("markierbar")}
+    assert set(markierbar) == {"pdf"}, f"markierbare Quellen ausserhalb PDF: {markierbar}"
+    assert kreuz.get("html", {}).get("markierbar", 0) == 0
+
 
 @echt
 def test_bestand_zaehlt_vollstaendig():
@@ -151,6 +217,31 @@ def test_volltextsuche_findet_und_rechnet_die_seite():
     # Die Anzeige bekommt das Original, nicht die Textbeidatei.
     assert not f.absolut.endswith(".txt")
     assert Path(f.absolut).is_file()
+
+
+@echt
+@pytest.mark.parametrize("vordruck", [
+    "Fax: 07231 58993150",          # Briefkopf, quer ueber 7 Dokumente
+    "Basisversion Mustervertrag",   # laufender Kopf, 12 von 15 Seiten
+])
+def test_vordruck_wird_nicht_als_fundstelle_ausgegeben(vordruck):
+    """Die Fehlerklasse, die das Konsil aufgedeckt hat.
+
+    Vorher: belegt=True, Seite 1 -- weil der erste Treffer auf Seite 1 lag.
+    Das ist woertlich das, wogegen dieses Modul gebaut wurde, nur eine Ebene
+    tiefer: nicht eine erfundene Stelle, sondern eine echte, die nichts sagt.
+    """
+    f = F.loese_text(vordruck)
+    assert f.belegt is False, f"{vordruck!r} als Fundstelle gemeldet: Seite {f.seite}"
+    assert f.seite is None
+    assert "grenzt die Stelle nicht ein" in f.grund
+
+
+@echt
+def test_eindeutige_stelle_ueberlebt_die_vordruck_regel():
+    """Gegenprobe: die Regel darf nicht alles wegfiltern."""
+    f = F.loese_text("Feuchtigkeit und Schadstoffe")
+    assert f.belegt and f.seite is not None and f.mehrdeutig is False
 
 
 @echt

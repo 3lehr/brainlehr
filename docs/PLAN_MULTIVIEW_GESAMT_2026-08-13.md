@@ -21,12 +21,25 @@ Annahmen waren falsch oder unvollständig**.
 
 | Menge | Zahl | Anmerkung |
 |---|---|---|
-| `dossier/quellen.json` | **49** Quellen | die Quelle der Wahrheit, von Hand gepflegt |
-| davon mit `datei` | 43 | 6 ohne hinterlegte Kopie |
-| davon `belegform: kopie` | 42 | 5 `fehlt`, 1 `schnappschuss`, 1 ohne |
+| `dossier/quellen.json` | **48** Quellen | Schlüssel 1–48, lückenlos; dazu 3 Verwaltungszeilen |
 | **davon markierbar** (`suchtext`) | **14** | ← die einzigen mit echter Fundstelle |
 | davon nur aufschlagbar (`seite` ohne `suchtext`) | 1 | Quelle 1 |
-| davon ohne jede Stelle | 34 | |
+| davon ohne jede Stelle | 33 | |
+
+**Format gegen Fundstellenqualität** — die Randsummen allein verstecken den
+Befund, der den Zuschnitt entscheidet:
+
+| Format | markierbar | nur Seite | keine Stelle | Σ |
+|---|---|---|---|---|
+| pdf | **14** | 1 | 6 | 21 |
+| html | 0 | 0 | **20** | 20 |
+| bild / text / ohne Datei | 0 | 0 | 7 | 7 |
+
+**Jede markierbare Quelle ist ein PDF. Keine einzige der 20 HTML-Quellen trägt
+eine Stelle** — das sind 42 % des Bestands, geschlossen im Regelfall. Für HTML
+ist die Fundstelle damit kein Anzeigeproblem, sondern ein Datenproblem, und die
+Volltextsuche ist dort der einzige Weg, der überhaupt existiert. Festgehalten
+als Test (`test_jede_markierbare_quelle_ist_ein_pdf`), nicht als Satz.
 | Dateiformate der Quellen | 21 pdf · 20 html · 1 jpg · 1 txt · 6 ohne | |
 | PDFs unter `homepage/public/quellen/` | 29 | |
 | **davon mit Textschicht** | **29 von 29** | `textutil`, > 200 Zeichen |
@@ -69,24 +82,39 @@ Annahmen waren falsch oder unvollständig**.
 
 ## §1 · Der Befund, der den ganzen Zuschnitt trägt
 
-> **14 von 49.** Nur vierzehn Quellen tragen eine markierbare Fundstelle. Für
-> 34 weiß heute niemand, *welche Zeile* gemeint ist.
+> **14 von 48.** Nur vierzehn Quellen tragen eine markierbare Fundstelle. Für
+> 33 weiß heute niemand, *welche Zeile* gemeint ist.
 
 Das ist die eigentliche Lücke, und sie ist **keine Anzeigefrage**. Ein Viewer,
-der 49 Dokumente öffnen kann, aber nur 14 aufschlagen, löst das Problem des
+der 48 Dokumente öffnen kann, aber nur 14 aufschlagen, löst das Problem des
 Termins zu einem Viertel.
 
 Der Vorgängerplan sagt es schon, ohne die Zahl zu kennen: *„Eine falsch
 gesetzte Markierung ist schlimmer als keine — sie sieht aus wie ein Beleg."*
-Mit 14 von 49 ist das keine theoretische Sorge, sondern der Regelfall.
+Mit 14 von 48 ist das keine theoretische Sorge, sondern der Regelfall.
 
-**Nachtrag, und er ist selbst ein Beleg für rot-vor-grün:** Diese Zahl hieß
-zuerst **13**, weil ich nach „`seite` UND `suchtext`" gezählt hatte. Quelle 48
-trägt einen Suchtext ohne Seite — die Seite findet PDFKit beim Anzeigen selbst,
-markierbar ist sie trotzdem. Aufgefallen ist das nicht beim Zählen, sondern
-weil der **Gegenprobe-Test** („alle übrigen müssen schweigen") rot wurde und
-Quelle 48 namentlich nannte. Eingeteilt wird seither nach dem, was die Anzeige
-damit tun kann, nicht nach gefüllten Feldern.
+**Nachtrag — dieselbe Zahl war zweimal falsch, und beide Male aus demselben
+Grund.** Er ist wichtiger als die Zahl:
+
+1. Zuerst hieß es **13 von 49**, weil ich nach „`seite` UND `suchtext`" gezählt
+   hatte. Quelle 48 trägt einen Suchtext ohne Seite — die Seite findet PDFKit
+   beim Anzeigen selbst, markierbar ist sie trotzdem. Der Gegenprobe-Test
+   („alle übrigen müssen schweigen") wurde rot und nannte sie namentlich.
+2. Dann hieß es **14 von 49**, und der Nenner war falsch. `_rang` ist eine
+   Verwaltungszeile, aber als **Objekt** notiert — mein Filter
+   `isinstance(v, dict)` ließ sie durch und machte sie zur 49. Quelle. Richtig
+   sind 48, Schlüssel 1–48 lückenlos. Gefunden hat das der Bauform-Prüfer des
+   Konsils, indem er nachzählte statt zu übernehmen.
+
+**Beide Male habe ich nach der FORM gefiltert statt nach der BEDEUTUNG** — erst
+nach gefüllten Feldern statt nach Verwendbarkeit, dann nach Werttyp statt nach
+Schlüsselform. Dass dieselbe Fehlerklasse zweimal in einer Sitzung durchkam,
+ist der eigentliche Befund; beide Fälle sind jetzt als Test festgenagelt.
+
+**Aufschlagen und Markieren sind zwei Aussagen**, und sie fallen auseinander.
+Quelle 1 ist der Gegenfall: Seite 4 ist gepflegt, ein Suchtext nicht. Das
+Dokument lässt sich richtig aufschlagen, hervorgehoben werden darf nichts.
+`Fundstelle.markierbar` trennt das; `belegt` allein würde beides vermischen.
 
 **Aufschlagen und Markieren sind zwei Aussagen**, und sie fallen auseinander.
 Quelle 1 ist der Gegenfall: Seite 4 ist gepflegt, ein Suchtext nicht. Das
