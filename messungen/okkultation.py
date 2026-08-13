@@ -48,9 +48,11 @@ Orchestrator-Prompts nicht in vertretbarer Zeit reproduzierbar).
 M2 (Fragen ohne Ziel, kein Erfolgsurteil): echte 'frage'-Nachrichten aus
 Sitzungstranskripten (messungen/echtkorpus.sitzungs_nachrichten(), nur
 gelesen), bei denen WEDER ein Pfad- noch ein Kennungs-Ziel aufloest -- also
-wirklich ziellos im Sinne des Sammlers. Bewertet wird nur, ob sich die
-Antwort MIT vs. OHNE inhaltlich unterscheidet (Textvergleich + Feld fuer
-einen blinden Vergleich durch einen Dritten, der die Bedingung nicht kennt).
+wirklich ziellos im Sinne des Sammlers. Bewertet wird, ob sich die Antwort
+MIT vs. OHNE inhaltlich unterscheidet UND ob sich NEG vs. OHNE unterscheidet
+(Negativkontrolle wie bei M1, s.u. -- ohne sie ist nicht unterscheidbar, ob
+ein Unterschied vom INHALT des Blocks kommt oder nur davon, dass ueberhaupt
+einer anhaengt). Beides Textvergleich, kein Erfolgsurteil.
 
 DREITEILUNG wie kern/wissensnutzen_blind.py (nur gelesen, nicht importiert
 -- eigene Kopie des Musters, weil kern/ fuer diese Sitzung tabu ist):
@@ -102,15 +104,23 @@ OUT_DEFAULT = WURZEL / "runs" / "okkultation_aufgaben.json"
 # Klassen, die den Selbstbezug ausschliessen (s. Modulkopf).
 M1_ERLAUBTE_KLASSEN = ("pfad", "lese")
 
+_WERKZEUG_HINWEIS = (
+    " Benutze dabei KEIN Suchwerkzeug (kein knowledge_search, kein read, "
+    "kein grep im Repo) -- die Antwort soll ausschliesslich aus diesem "
+    "Prompt schoepfen. Halte in deiner Antwortzelle das Pflichtfeld "
+    "'werkzeuge_benutzt' fest (true/false): ob du waehrenddessen doch ein "
+    "Werkzeug benutzt hast. Fehlt das Feld oder ist es true, faellt die "
+    "Zelle aus der Auswertung.")
+
 M1_TASK_ANWEISUNG = (
     "\n\n---\nAufgabe an dich: Was ist dein ERSTER Handgriff auf diese "
     "Nachricht, in maximal 4 Saetzen? Nenne dabei, falls vorhanden, den "
     "genauen Pfad oder die genaue Kennung des Wissens, auf das du dich "
     "stuetzt. Kein voller Aufgabendurchlauf, nur der erste Schritt und "
-    "seine Begruendung.")
+    "seine Begruendung." + _WERKZEUG_HINWEIS)
 M2_TASK_ANWEISUNG = (
     "\n\n---\nAufgabe an dich: Beantworte diese Frage in maximal 6 Saetzen, "
-    "so wie du es in einer echten Sitzung taetest.")
+    "so wie du es in einer echten Sitzung taetest." + _WERKZEUG_HINWEIS)
 
 
 # --------------------------------------------------------------------- Block
@@ -291,6 +301,9 @@ def aufgaben_erzeugen(m1_n: int, m2_n: int, seed: int = 0, cwd: str | None = Non
             varianten = {"OHNE": text + M2_TASK_ANWEISUNG}
             if block_mit:
                 varianten["MIT"] = f"{text}\n\n{block_mit}{M2_TASK_ANWEISUNG}"
+                varianten["NEG"] = (f"{text}\n\n"
+                                     f"{foreign_block(len(block_mit), conn, seed + i + 1000)}"
+                                     f"{M2_TASK_ANWEISUNG}")
             for cond, prompt in varianten.items():
                 zellen.append({
                     "key": f"{case_id}|{cond}", "gruppe": "M2", "case_id": case_id,
@@ -347,16 +360,45 @@ def _ziel_treffer(antwort: str, ziele: list[dict]) -> bool:
     return False
 
 
+def _antwort_lesen(eintrag) -> tuple[str | None, bool]:
+    """Liest eine Antwortzelle. Pflichtfeld 'werkzeuge_benutzt' (Teil 2 des
+    Auftrags): fehlt es, oder meldet es True, ist die Zelle fuer die Quoten
+    GESPERRT -- sonst koennte die OHNE-Bedingung heimlich ueber ein
+    Suchwerkzeug doch an den Speicher gekommen sein, und die Messung waere
+    wertlos. Altformat (nackter String ohne Feld) hat das Pflichtfeld nie
+    -> ebenfalls ausgeschlossen, nicht stillschweigend als 'kein Werkzeug'
+    gelesen (fail-closed statt fail-open)."""
+    if isinstance(eintrag, dict):
+        antwort = eintrag.get("antwort")
+        if "werkzeuge_benutzt" not in eintrag or eintrag["werkzeuge_benutzt"]:
+            return antwort, True
+        return antwort, False
+    return eintrag, True  # String ohne Feld -> ausgeschlossen
+
+
+def _quote(treffer: int, n: int) -> dict:
+    return {
+        "treffer": treffer, "n": n,
+        "anteil": (treffer / n) if n else None,
+        "hinweis": None if n else "keine verwertbaren Zellen",
+    }
+
+
 def auswerten(aufgaben: dict, antworten: dict) -> dict:
     """Schritt 3: Antworten des Hauptfadens gegen die Ziele pruefen (M1) bzw.
-    nur auf Unterschied hin vergleichen (M2). KEIN Modellaufruf."""
+    nur auf Unterschied hin vergleichen (M2). KEIN Modellaufruf.
+
+    Zellen, deren Pflichtfeld 'werkzeuge_benutzt' fehlt oder True meldet,
+    gehen NICHT in die Quoten ein (s. _antwort_lesen) -- sie werden separat
+    als ausgeschlossen gezaehlt."""
     gegeben = antworten.get("antworten", {})
     m1_conditions: dict[str, list[bool]] = {}
-    m1_leer_conditions: dict[str, list[bool]] = {}
     m1_faelle_ausgewertet = 0
     m1_fehlbestand = []
+    m1_werkzeug_ausgeschlossen = []
     m2_ergebnisse = []
     m2_fehlbestand = []
+    m2_werkzeug_ausgeschlossen = []
 
     # M1: je Fall alle vorhandenen Bedingungen einsammeln.
     faelle_m1: dict[str, dict] = {}
@@ -382,9 +424,13 @@ def auswerten(aufgaben: dict, antworten: dict) -> dict:
             mit_zelle is not None and
             any(z["id"] in mit_zelle.get("prompt", "") for z in fall["ziele"]))
         for cond, zelle in fall["bedingungen"].items():
-            antwort = gegeben.get(zelle["key"])
-            if antwort is None:
+            eintrag = gegeben.get(zelle["key"])
+            if eintrag is None:
                 m1_fehlbestand.append(zelle["key"])
+                continue
+            antwort, ausgeschlossen = _antwort_lesen(eintrag)
+            if ausgeschlossen:
+                m1_werkzeug_ausgeschlossen.append(zelle["key"])
                 continue
             treffer = _ziel_treffer(antwort, fall["ziele"])
             m1_conditions.setdefault(cond, []).append(treffer)
@@ -402,34 +448,58 @@ def auswerten(aufgaben: dict, antworten: dict) -> dict:
 
     for case_id, bedingungen in faelle_m2.items():
         mit = bedingungen.get("MIT")
+        neg = bedingungen.get("NEG")
         ohne = bedingungen.get("OHNE")
-        a_mit = gegeben.get(mit["key"]) if mit else None
-        a_ohne = gegeben.get(ohne["key"]) if ohne else None
-        if a_ohne is None or (mit and a_mit is None):
+
+        eintrag_ohne = gegeben.get(ohne["key"]) if ohne else None
+        eintrag_mit = gegeben.get(mit["key"]) if mit else None
+        eintrag_neg = gegeben.get(neg["key"]) if neg else None
+        if eintrag_ohne is None or (mit and eintrag_mit is None) or (neg and eintrag_neg is None):
             m2_fehlbestand.append(case_id)
             continue
-        unterschiedlich = (mit is not None) and _wesentlich_unterschiedlich(a_mit, a_ohne)
+
+        a_ohne, ausg_ohne = _antwort_lesen(eintrag_ohne)
+        a_mit, ausg_mit = (_antwort_lesen(eintrag_mit) if mit else (None, False))
+        a_neg, ausg_neg = (_antwort_lesen(eintrag_neg) if neg else (None, False))
+        if ausg_ohne:
+            m2_werkzeug_ausgeschlossen.append(ohne["key"])
+        if mit and ausg_mit:
+            m2_werkzeug_ausgeschlossen.append(mit["key"])
+        if neg and ausg_neg:
+            m2_werkzeug_ausgeschlossen.append(neg["key"])
+
+        # vergleichbar nur, wenn WEDER die OHNE- noch die Gegenzelle wegen
+        # Werkzeugnutzung gesperrt ist -- eine gesperrte Zelle darf keine
+        # Quote mehr fuellen (Auftrag Teil 2).
+        mit_vergleichbar = (mit is not None) and not ausg_ohne and not ausg_mit
+        neg_vergleichbar = (neg is not None) and not ausg_ohne and not ausg_neg
+
+        unterschiedlich = mit_vergleichbar and _wesentlich_unterschiedlich(a_mit, a_ohne)
+        unterschiedlich_neg = neg_vergleichbar and _wesentlich_unterschiedlich(a_neg, a_ohne)
         m2_ergebnisse.append({
             "case_id": case_id, "hat_mit_bedingung": mit is not None,
-            "unterschiedlich": unterschiedlich,
-            "antwort_ohne": a_ohne, "antwort_mit": a_mit,
+            "hat_neg_bedingung": neg is not None,
+            "mit_vergleichbar": mit_vergleichbar, "neg_vergleichbar": neg_vergleichbar,
+            "unterschiedlich": unterschiedlich, "unterschiedlich_neg": unterschiedlich_neg,
+            "antwort_ohne": a_ohne, "antwort_mit": a_mit, "antwort_neg": a_neg,
         })
 
-    def _quote(cond: str) -> dict:
-        werte = m1_conditions.get(cond, [])
-        n = len(werte)
-        return {"treffer": sum(werte), "n": n,
-                "anteil": (sum(werte) / n) if n else None}
+    m2_mit_vergleichbar = [e for e in m2_ergebnisse if e["mit_vergleichbar"]]
+    unterschied_n = sum(1 for e in m2_mit_vergleichbar if e["unterschiedlich"])
+    m2_neg_vergleichbar = [e for e in m2_ergebnisse if e["neg_vergleichbar"]]
+    unterschied_neg_n = sum(1 for e in m2_neg_vergleichbar if e["unterschiedlich_neg"])
 
-    m2_mit_bedingung = [e for e in m2_ergebnisse if e["hat_mit_bedingung"]]
-    unterschied_n = sum(1 for e in m2_mit_bedingung if e["unterschiedlich"])
+    def _m1_quote(cond: str) -> dict:
+        werte = m1_conditions.get(cond, [])
+        return _quote(sum(werte), len(werte))
 
     return {
         "ausgewertet_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "m1": {
             "faelle": m1_faelle_ausgewertet,
-            "MIT": _quote("MIT"), "OHNE": _quote("OHNE"), "NEG": _quote("NEG"),
+            "MIT": _m1_quote("MIT"), "OHNE": _m1_quote("OHNE"), "NEG": _m1_quote("NEG"),
             "fehlbestand": m1_fehlbestand,
+            "werkzeug_ausgeschlossen": m1_werkzeug_ausgeschlossen,
             "liefer_analyse": {
                 "geliefert_gesamt": geliefert_gesamt,
                 "geliefert_und_benutzt": geliefert_und_benutzt,
@@ -440,9 +510,19 @@ def auswerten(aufgaben: dict, antworten: dict) -> dict:
             },
         },
         "m2": {
-            "faelle_mit_mit_bedingung": len(m2_mit_bedingung),
+            # unveraendert in der Bedeutung ggue. vor der NEG-Erweiterung:
+            # MIT gegen OHNE, nur unter vergleichbaren (nicht werkzeug-
+            # ausgeschlossenen) Zellen.
+            "faelle_mit_mit_bedingung": len(m2_mit_vergleichbar),
             "unterschiedlich": unterschied_n,
-            "unterschiedlich_anteil": (unterschied_n / len(m2_mit_bedingung)) if m2_mit_bedingung else None,
+            "unterschiedlich_anteil": (unterschied_n / len(m2_mit_vergleichbar)) if m2_mit_vergleichbar else None,
+            # neu: NEG gegen OHNE -- Negativkontrolle. Ist dieser Anteil
+            # aehnlich hoch wie der MIT-Anteil, unterscheidet die Antwort
+            # nur "haengt ueberhaupt ein Block an", nicht dessen Inhalt.
+            "faelle_mit_neg_bedingung": len(m2_neg_vergleichbar),
+            "unterschiedlich_neg": unterschied_neg_n,
+            "unterschiedlich_neg_anteil": (unterschied_neg_n / len(m2_neg_vergleichbar)) if m2_neg_vergleichbar else None,
+            "werkzeug_ausgeschlossen": m2_werkzeug_ausgeschlossen,
             "ergebnisse": m2_ergebnisse,
             "fehlbestand": m2_fehlbestand,
             "hinweis": "Unterschied ist kein Nutzen -- kein Erfolgsurteil gefaellt.",
@@ -509,9 +589,12 @@ def main() -> None:
         for cond in ("MIT", "OHNE", "NEG"):
             q = m1[cond]
             print(f"M1 {cond:5s} {q['treffer']}/{q['n']} "
-                  f"({q['anteil']:.2f})" if q["anteil"] is not None else f"M1 {cond:5s} keine Zellen")
+                  f"({q['anteil']:.2f})" if q["anteil"] is not None else f"M1 {cond:5s} {q['hinweis']}")
+        print(f"M1 werkzeug-ausgeschlossen: {len(m1['werkzeug_ausgeschlossen'])}")
         m2 = ergebnis["m2"]
-        print(f"M2 unterschiedlich: {m2['unterschiedlich']}/{m2['faelle_mit_mit_bedingung']}")
+        print(f"M2 unterschiedlich (MIT/OHNE): {m2['unterschiedlich']}/{m2['faelle_mit_mit_bedingung']}")
+        print(f"M2 unterschiedlich (NEG/OHNE): {m2['unterschiedlich_neg']}/{m2['faelle_mit_neg_bedingung']}")
+        print(f"M2 werkzeug-ausgeschlossen: {len(m2['werkzeug_ausgeschlossen'])}")
         print(f"Geschrieben: {out}")
         return
 
@@ -543,7 +626,10 @@ def _selftest() -> None:
         [{"art": "knoten", "id": "/brainlehr"}])
     assert _ziel_treffer("siehe /brainlehr fuer Details", [{"art": "knoten", "id": "/brainlehr"}])
 
-    # auswerten(): synthetische Aufgaben+Antworten, alle drei Bedingungen.
+    # auswerten(): synthetische Aufgaben+Antworten, alle drei Bedingungen
+    # in M1 UND M2 (M2-NEG ist Teil 1 des Auftrags: Negativkontrolle auch
+    # dort, sonst nicht unterscheidbar ob der Unterschied vom INHALT oder
+    # nur davon kommt, dass ueberhaupt ein Block anhaengt).
     aufgaben = {"schiefe_gegenprobe": {"drei_haeufigste_anteil": 0.1}, "zellen": [
         {"key": "m1-00|MIT", "gruppe": "M1", "case_id": "m1-00", "condition": "MIT",
          "ziele": [{"art": "knoten", "id": "/x/y"}],
@@ -554,19 +640,35 @@ def _selftest() -> None:
          "ziele": [{"art": "knoten", "id": "/x/y"}]},
         {"key": "m2-00|MIT", "gruppe": "M2", "case_id": "m2-00", "condition": "MIT", "ziele": None},
         {"key": "m2-00|OHNE", "gruppe": "M2", "case_id": "m2-00", "condition": "OHNE", "ziele": None},
+        {"key": "m2-00|NEG", "gruppe": "M2", "case_id": "m2-00", "condition": "NEG", "ziele": None},
     ]}
+    # Pflichtfeld 'werkzeuge_benutzt' (Teil 2): je Zelle ein Objekt statt
+    # eines nackten Strings. m1-00|NEG verneint Werkzeugnutzung ausdruecklich
+    # -- muss NORMAL in die Quote eingehen (Negativfall der Abnahme).
     antworten = {"antworten": {
-        "m1-00|MIT": "Ich stuetze mich auf /x/y, das passt genau.",
-        "m1-00|OHNE": "Ich rate auf gut Glueck, kein Anhaltspunkt.",
-        "m1-00|NEG": "Der fremde Block handelt von etwas anderem, ich rate.",
-        "m2-00|MIT": "Ja, das ist moeglich, siehe die genannte Einschraenkung.",
-        "m2-00|OHNE": "Ja, das ist grundsaetzlich moeglich.",
+        "m1-00|MIT": {"antwort": "Ich stuetze mich auf /x/y, das passt genau.",
+                      "werkzeuge_benutzt": False},
+        "m1-00|OHNE": {"antwort": "Ich rate auf gut Glueck, kein Anhaltspunkt.",
+                       "werkzeuge_benutzt": False},
+        "m1-00|NEG": {"antwort": "Der fremde Block handelt von etwas anderem, ich rate.",
+                      "werkzeuge_benutzt": False},
+        "m2-00|MIT": {"antwort": "Ja, das ist moeglich, siehe die genannte Einschraenkung.",
+                      "werkzeuge_benutzt": False},
+        "m2-00|OHNE": {"antwort": "Ja, das ist grundsaetzlich moeglich.",
+                       "werkzeuge_benutzt": False},
+        "m2-00|NEG": {"antwort": "Ja, das ist grundsaetzlich moeglich.",
+                      "werkzeuge_benutzt": False},
     }}
     erg = auswerten(aufgaben, antworten)
     assert erg["m1"]["MIT"]["treffer"] == 1 and erg["m1"]["MIT"]["n"] == 1
     assert erg["m1"]["OHNE"]["treffer"] == 0
     assert erg["m1"]["NEG"]["treffer"] == 0
     assert erg["m2"]["faelle_mit_mit_bedingung"] == 1
+    # NEG-Vergleich fuer M2: gleicher Wortlaut wie OHNE -> nicht unterschiedlich.
+    assert erg["m2"]["faelle_mit_neg_bedingung"] == 1
+    assert erg["m2"]["unterschiedlich_neg"] == 0
+    assert erg["m1"]["werkzeug_ausgeschlossen"] == []
+    assert erg["m2"]["werkzeug_ausgeschlossen"] == []
     # Liefer-Analyse: der MIT-Block enthielt /x/y (Retrieval-Treffer), und
     # die Antwort nutzte es auch -> 1/1.
     la = erg["m1"]["liefer_analyse"]
@@ -574,9 +676,40 @@ def _selftest() -> None:
 
     # Fehlbestand: eine fehlende Antwort darf nicht stillschweigend uebergangen werden.
     luecke = auswerten(aufgaben, {"antworten": {
-        "m1-00|MIT": "x", "m1-00|OHNE": "y",
-        "m2-00|MIT": "a", "m2-00|OHNE": "b"}})
+        "m1-00|MIT": {"antwort": "x", "werkzeuge_benutzt": False},
+        "m1-00|OHNE": {"antwort": "y", "werkzeuge_benutzt": False},
+        "m2-00|MIT": {"antwort": "a", "werkzeuge_benutzt": False},
+        "m2-00|OHNE": {"antwort": "b", "werkzeuge_benutzt": False}}})
     assert "m1-00|NEG" in luecke["m1"]["fehlbestand"]
+    assert "m2-00" in luecke["m2"]["fehlbestand"]
+
+    # Teil 2, Abnahme (a): fehlt das Pflichtfeld, geht die Zelle NICHT in
+    # die Quote ein, sondern zaehlt getrennt als ausgeschlossen.
+    antw_ohne_feld = json.loads(json.dumps(antworten))
+    antw_ohne_feld["antworten"]["m1-00|MIT"] = "nackter String, kein Feld"
+    erg_o = auswerten(aufgaben, antw_ohne_feld)
+    assert erg_o["m1"]["MIT"]["n"] == 0  # nicht mehr in der Quote
+    assert erg_o["m1"]["MIT"]["anteil"] is None
+    assert erg_o["m1"]["MIT"]["hinweis"] == "keine verwertbaren Zellen"
+    assert "m1-00|MIT" in erg_o["m1"]["werkzeug_ausgeschlossen"]
+
+    # Teil 2, Abnahme: werkzeuge_benutzt=True sperrt die Zelle ebenso.
+    antw_mit_werkzeug = json.loads(json.dumps(antworten))
+    antw_mit_werkzeug["antworten"]["m2-00|MIT"]["werkzeuge_benutzt"] = True
+    erg_w = auswerten(aufgaben, antw_mit_werkzeug)
+    assert erg_w["m2"]["faelle_mit_mit_bedingung"] == 0
+    assert "m2-00|MIT" in erg_w["m2"]["werkzeug_ausgeschlossen"]
+
+    # Grenzwert: sind ALLE M1-Zellen ausgeschlossen, keine Quote als 0%
+    # ausweisen, sondern erkennbar als "keine verwertbaren Zellen".
+    alles_werkzeug = {"antworten": {
+        k: (v if k.startswith("m2") else {"antwort": v["antwort"], "werkzeuge_benutzt": True})
+        for k, v in antworten["antworten"].items()}}
+    erg_alles = auswerten(aufgaben, alles_werkzeug)
+    for cond in ("MIT", "OHNE", "NEG"):
+        assert erg_alles["m1"][cond]["n"] == 0
+        assert erg_alles["m1"][cond]["anteil"] is None
+        assert erg_alles["m1"][cond]["hinweis"] == "keine verwertbaren Zellen"
 
     # M1-Pool schliesst 'kennung' aus (Selbstbezug-Ausschluss).
     if M1_QUELLE.exists():
@@ -585,7 +718,8 @@ def _selftest() -> None:
         assert not any(f["klasse"] == "kennung" for f in pool)
 
     print("selftest ok: Blockformat, Zieltreffer (voll/Endstueck/Grenzfall/Fehlschlag), "
-          "auswerten() (M1 drei Bedingungen, M2, Fehlbestand), M1-Pool-Ausschluss",
+          "auswerten() (M1 drei Bedingungen, M2 MIT+NEG, Fehlbestand, "
+          "Werkzeug-Ausschluss, Grenzwert alle ausgeschlossen), M1-Pool-Ausschluss",
           file=_sys.stderr)
 
 
