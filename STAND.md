@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-13T03:20:00+0200
+# STAND brainlehr — 2026-08-13T04:30:00+0200
 
 ## Warum die Regeln nicht greifen — gemessen, nicht vermutet
 
@@ -45,6 +45,28 @@ Bestand: **9 von 2163 Knoten** über der Grenze, längster 33908 Zeichen. **0 vo
 **Zweiter Anfragevektor NICHT gebaut** (Aufgabe 39): Er findet überwiegend anderes (7,56 von 15 Treffern nur über ihn), aber belegt ist nur *anders*, nicht *richtig* — und **46,7 %** der Einspielungen tauchen in der Folgeantwort wieder auf. Bedingung zum Weiterbauen: blinde Relevanzbewertung plus Antwort auf die Rückkopplung.
 
 **Aufgabe 40, Prämisse widerlegt:** In der Ausgabe wird **nichts** gekürzt — Titel, Zusammenfassung, Beschreibung und Vorbeugung erscheinen vollständig. Begrenzt ist die **Anzahl** (10 Knoten, 7 Lehren) und die Feldwahl. Offen ist nur noch, ob der Betreiber die Blöcke in seinem Fenster überhaupt sieht.
+
+## Nachtschicht 2026-08-13: gemessen, entschieden, verdrahtet
+
+| | Commit |
+|---|---|
+| Widerspruch im Stichwortkanal aufgelöst — drei Unterschiede, kein Widerspruch | `546e1b8` |
+| Beide Ausgangszustände der Fremdinstallation gefahren, beide tragen | `e2ff82d` |
+| Okkultation: Instrument geliefert, Antwort noch nicht | `fec7684` |
+| Kalibrierbremse ausgebaut — Messung ergab B, nicht A | `008a223` |
+| Bauform des Nachbarn gelesen — mein eigener Auftrag war falsch | `97a5946` |
+| Drei Zahlen vor dem Antwortvektor, eine betrifft den Bestand | `0b1ab4c` |
+| Der Monitor zeigt die **Frage**, nicht nur die Antwort | `711a3e6` |
+| Existenzprüfung verdrahtet — projekteigen, Verdrahtung selbst geprüft | `24c2484` |
+| Zweite Oberfläche stillgelegt, samt Wache gegen ihre Wiederkehr | `28b5c05` |
+
+Suite: **1035 grün, 2 übersprungen, 10 xfail, 0 rot.**
+
+**Zwei Muster, die sich in dieser Nacht wiederholt haben und beide in meiner eigenen Arbeitsweise sitzen:**
+
+*Aufgabenbeschreibungen altern wie Aufträge.* Dreimal war die Prämisse überholt — der Abrufmonitor lieferte Rang je Kanal längst, in der Ausgabe wird nichts gekürzt, und Aufgabe 41 war größtenteils gebaut. **Die Aufgabenliste ist selbst ein Schnappschuss.** Vor dem Beauftragen gegen den Code messen, nicht die Beschreibung glauben.
+
+*Sieben Agenten endeten im Wartezustand*, weil mein Auftrag „Suite abwarten" verlangte und sie den Lauf in den Hintergrund legten — obwohl er mit `timeout=600000` bequem in den Vordergrund passt. Ursache im Auftrag, nicht in der Arbeit. Seit dem sechsten Fall steht die Auflage ausdrücklich drin.
 
 ## Betreiberanweisung 2026-08-12T20:00
 
