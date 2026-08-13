@@ -29,11 +29,20 @@ import knowledge_mcp_server as kms  # noqa: E402
 
 SCHEMA_SQL = (ROOT / "schema.sql").read_text(encoding="utf-8")
 
-# Die Schema-Fassung VOR diesem Auftrag (letzter Commit) -- reproduziert den
-# "gewachsenen Bestand" ohne die neue Spalte/Trigger, ohne sie von Hand
-# nachzubauen und garantiert synchron mit dem, was wirklich committet ist.
+# Die Schema-Fassung VOR diesem Auftrag -- reproduziert den "gewachsenen
+# Bestand" ohne die neue Spalte/Trigger, ohne sie von Hand nachzubauen.
+#
+# Bezugspunkt ist der BENANNTE Commit 0182b05^ (Elternteil des Commits, der
+# die Spalte einfuehrte), NICHT "HEAD" oder "der Stand vor meiner Aenderung".
+# Ein Rot-vor-Gruen-Beleg gegen ein bewegliches Ziel widerlegt sich selbst,
+# sobald die Aenderung festgeschrieben ist: HEAD enthielt die Spalte zum
+# Zeitpunkt, als dieser Test geschrieben wurde, noch nicht -- seit Commit
+# 0182b05 enthaelt HEAD sie, und der Test waere stillschweigend gruen
+# geworden, ohne dass er je wieder etwas belegt haette. Geprueft:
+# `git show 0182b05^:schema.sql | grep -c norm_entschieden_belegart` == 0,
+# `git show 0182b05:schema.sql | grep -c norm_entschieden_belegart` > 0.
 _ALTE_SCHEMA_SQL = subprocess.run(
-    ["git", "show", "HEAD:schema.sql"], cwd=ROOT, capture_output=True,
+    ["git", "show", "0182b05^:schema.sql"], cwd=ROOT, capture_output=True,
     text=True, check=True,
 ).stdout
 
