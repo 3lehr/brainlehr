@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+"""Prueft kern/fundstelle.py -- vor allem den Fall, in dem NICHTS behauptet wird.
+
+Die teure Fehlerklasse ist nicht "findet zu wenig", sondern "markiert die
+falsche Zeile": eine gesetzte Markierung sieht aus wie ein Beleg. Darum
+prueft jeder Positivtest hier einen Negativtest als Gegenprobe mit.
+
+Die Tests am ECHTEN Korpus werden uebersprungen, wenn buckeberg nicht liegt --
+die reinen Funktionen laufen immer, auch auf einem fremden Rechner.
+"""
+
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from kern import fundstelle as F  # noqa: E402
+
+KORPUS = F.korpus_wurzel()
+echt = pytest.mark.skipif(not KORPUS.is_dir(), reason=f"Korpus {KORPUS} liegt hier nicht")
+
+
+# ─── Seitenrechnung: reine Funktion, laeuft ueberall ──────────────────────
+
+VOLLTEXT = ("--- Seite 1 ---\nEinleitung ohne Zahlen\n"
+            "--- Seite 2 ---\nGrundverguetung 50,00 EUR je Wohneinheit\n"
+            "--- Seite 3 ---\nSchluss der Abrechnung\n")
+
+
+@pytest.mark.parametrize("nadel,erwartet", [
+    ("Einleitung ohne Zahlen", 1),
+    ("Grundverguetung 50,00", 2),
+    ("Schluss der Abrechnung", 3),
+])
+def test_seite_wird_getroffen(nadel, erwartet):
+    assert F.seite_aus_volltext(VOLLTEXT, nadel) == erwartet
+
+
+@pytest.mark.parametrize("nadel", ["Hausmeisterkosten", "", "   "])
+def test_kein_treffer_gibt_keine_seite_und_nicht_seite_eins(nadel):
+    # DER Test dieses Moduls. Seite 1 waere hier eine erfundene Fundstelle.
+    assert F.seite_aus_volltext(VOLLTEXT, nadel) is None
+
+
+def test_auszug_beginnt_nicht_bei_seite_eins():
+    # Grenzwert: wer Marken ZAEHLT statt die letzte zu NEHMEN, liefert hier 1.
+    assert F.seite_aus_volltext("--- Seite 7 ---\nnur hier\n", "nur hier") == 7
+
+
+def test_zeilenumbruch_im_wortlaut_trifft_trotzdem():
+    # Der Normalfall in PDF-Auszuegen -- eine wortgetreue Suche scheitert hier.
+    vt = "--- Seite 4 ---\nGrundver-\nguetung   50,00\n"
+    assert F.seite_aus_volltext(vt, "Grundver- guetung 50,00") == 4
+
+
+def test_grossschreibung_ist_egal():
+    assert F.seite_aus_volltext(VOLLTEXT, "GRUNDVERGUETUNG 50,00") == 2
+
+
+def test_format_erkennung():
+    assert F.format_von("a.PDF") == "pdf"
+    assert F.format_von("a.html") == "html" and F.format_von("a.htm") == "html"
+    assert F.format_von("a.jpg") == "bild"
+    # Was wir nicht kennen, geht an Quick Look -- und heisst darum "unbekannt",
+    # nicht "nicht unterstuetzt".
+    assert F.format_von("a.docx") == "unbekannt"
+    assert F.format_von("ohneendung") == "unbekannt"
+
+
+# ─── markierbar: aufschlagen und markieren sind zwei Aussagen ─────────────
+
+def test_markierbar_haengt_am_suchtext_nicht_an_belegt():
+    nur_seite = F.Fundstelle(True, "gepflegt", seite=4, datei="x.pdf")
+    assert nur_seite.belegt is True and nur_seite.markierbar is False
+    voll = F.Fundstelle(True, "gepflegt", seite=4, suchtext="50,00", datei="x.pdf")
+    assert voll.markierbar is True
+
+
+def test_als_dict_traegt_markierbar_mit():
+    d = F.Fundstelle(False, "keine").als_dict()
+    assert d["markierbar"] is False and d["belegt"] is False
+
+
+# ─── ohne Angabe wird nichts behauptet ────────────────────────────────────
+
+def test_ohne_angabe_keine_fundstelle():
+    f = F.loese()
+    assert f.belegt is False and f.seite is None and f.grund
+
+
+def test_zu_kurzer_wortlaut_gilt_nicht_als_treffer():
+    # Drei Zeichen finden ueberall etwas, und "ueberall" ist wie "nirgends".
+    assert F.loese_text("ab").belegt is False
+
+
+def test_unbekannte_quelle_stuerzt_nicht_ab():
+    f = F.loese_quelle("999999")
+    assert f.belegt is False and f.seite is None and "nicht verzeichnet" in f.grund
+
+
+# ─── am echten Korpus ─────────────────────────────────────────────────────
+
+@echt
+def test_bestand_zaehlt_vollstaendig():
+    b = F.bestand()
+    assert b["erreichbar"] is True
+    assert b["quellen"] > 0
+    # Der Nenner geht auf: jede Quelle faellt in genau einen der drei Toepfe.
+    assert b["mit_fundstelle"] + b["nur_seite"] + b["ohne_stelle"] == b["quellen"]
+    assert b["volltexte"] > 0
+
+
+@echt
+def test_jede_gepflegte_fundstelle_loest_auf():
+    """Rot vor gruen: ohne fundstelle.py loest keine einzige auf."""
+    b = F.bestand()
+    assert b["nummern_mit_fundstelle"], "keine gepflegte Fundstelle im Bestand"
+    for nr in b["nummern_mit_fundstelle"]:
+        f = F.loese_quelle(nr)
+        assert f.belegt, f"Quelle {nr}: {f.grund}"
+        assert f.markierbar, f"Quelle {nr} traegt Suchtext, ist aber nicht markierbar"
+        # Die Seite ist OPTIONAL: Quelle 48 traegt nur den Suchtext, und die
+        # Seite dazu findet PDFKit beim Anzeigen. Eine hier erfundene Seite
+        # waere schlechter als keine. Nur unbrauchbare Werte sind verboten.
+        assert f.seite is None or f.seite >= 1, f"Quelle {nr}: unbrauchbare Seite {f.seite}"
+        assert Path(f.absolut).is_file(), f"Quelle {nr}: Datei fehlt -- {f.absolut}"
+
+
+@echt
+def test_quellen_ohne_stelle_schweigen():
+    """Die Gegenprobe in die andere Richtung -- die wichtigere."""
+    b = F.bestand()
+    gepflegt = set(b["nummern_mit_fundstelle"])
+    roh = json.loads((KORPUS / "dossier" / "quellen.json").read_text(encoding="utf-8"))
+    andere = [k for k, v in roh.items() if isinstance(v, dict) and k not in gepflegt]
+    assert andere, "kein Gegenbeispiel im Bestand -- dann prueft dieser Test nichts"
+    for nr in andere:
+        f = F.loese_quelle(nr)
+        assert not f.markierbar, f"Quelle {nr} wird markiert, obwohl keine Stelle erfasst ist"
+        assert f.grund, f"Quelle {nr} schweigt ohne Begruendung"
+
+
+@echt
+def test_volltextsuche_findet_und_rechnet_die_seite():
+    f = F.loese_text("Feuchtigkeit und Schadstoffe")
+    assert f.belegt and f.herkunft == "gerechnet"
+    assert f.seite is not None and f.seite >= 1
+    # Die Anzeige bekommt das Original, nicht die Textbeidatei.
+    assert not f.absolut.endswith(".txt")
+    assert Path(f.absolut).is_file()
+
+
+@echt
+def test_volltextsuche_erfindet_nichts():
+    f = F.loese_text("Kernfusionsreaktor im Kellergeschoss der Anlage")
+    assert f.belegt is False and f.seite is None and f.grund
+
+
+@echt
+def test_korpus_wird_nur_gelesen(tmp_path):
+    """Die harte Grenze: buckeberg gehoert einem anderen Projekt."""
+    vorher = {p: p.stat().st_mtime for p in (KORPUS / "dossier").glob("*.json")}
+    F.loese_quelle("2")
+    F.loese_text("Feuchtigkeit und Schadstoffe")
+    nachher = {p: p.stat().st_mtime for p in (KORPUS / "dossier").glob("*.json")}
+    assert vorher == nachher
