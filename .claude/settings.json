@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Volumes/daten/Begod2026/brainlehr/haken/existenzpruefung.py 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

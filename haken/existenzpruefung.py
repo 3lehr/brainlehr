@@ -24,25 +24,17 @@ Unterscheidung ist wichtig, weil eine Verneinung oft richtig ist und ein
 Melder, der bei jeder richtigen Aussage anschlaegt, nach drei Tagen
 uebergangen wird.
 
-STAND 2026-08-08T15:35 — GEBAUT, GEPRUEFT, NICHT VERDRAHTET.
+STAND 2026-08-08T15:35 — erster Entwurf lieferte drei zufaellige Treffer
+(bestand_fragen nahm nur das erste, laengensortierte Wort). Seither auf
+`knowledge_search` (FTS, alle Begriffe) umgestellt und mit dem Fall aus
+`runs/pruefkorpus_v3.json` gegengeprueft.
 
-Der erste echte Lauf gegen dieses Gespraech zeigt, dass die Erkennung der
-Verneinung TRAEGT (sie fand "Der Hook, den du meinst, fehlt tatsaechlich"),
-die SUCHE danach aber unbrauchbar ist: `bestand_fragen` nimmt nur das erste
-Wort der Anfrage, und nach der Laengensortierung ist das oft ein Fuellwort
-wie "tatsaechlich". Ergebnis waren drei zufaellige Treffer aus fahrtenbuch,
-openlehr und der WEG-Verwalterwahl -- zu einer Frage ueber Hooks.
-
-Ein Melder mit dieser Trefferqualitaet wird nach drei Tagen ueberlesen, und
-dann schadet er mehr als er nutzt: er erzeugt das Gefuehl, geprueft zu haben.
-Deshalb steht er hier, ist getestet, und ist NICHT in settings.json
-eingetragen. Was fehlt, bevor er das wird:
-  * Suche ueber ALLE Begriffe statt nur des ersten (FTS statt LIKE auf Wort 1)
-  * Mindestguete: ein Treffer zaehlt erst ab einer Uebereinstimmung, die ueber
-    ein einzelnes Wort hinausgeht
-  * Gegenprobe an einem Fall, dessen richtige Antwort bekannt ist -- etwa der
-    Satz ueber die duennen Protokolldaten, zu dem `runs/pruefkorpus_v3.json`
-    die richtige Fundstelle waere
+STAND 2026-08-13: verdrahtet als `Stop`-Hook in `.claude/settings.json`
+(projekteigen, nicht in `~/.claude/settings.json` -- siehe
+`docs/PLAN_VERDRAHTUNG_2026-08-13.md`). Selbsttest per
+`python3 haken/existenzpruefung.py --selftest`, prueft beide Richtungen
+gegen main() selbst (Verneinung mit Bestandstreffer meldet, gewoehnliche
+Antwort schweigt).
 
 IMMER exit 0. Kein Transcript / keine DB / kein Treffer -> still.
 """
@@ -205,7 +197,81 @@ def main() -> None:
         print("\n".join(meldungen))
 
 
+def _selftest() -> int:
+    """Beide Richtungen gegen main() selbst, nicht nur gegen die Bausteine.
+
+    Zwingt main() ueber einen getauschten `bestand_fragen`-Namen auf eine
+    eigene Testdatenbank -- ein direktes ort.DB-Ueberschreiben wirkt nicht,
+    weil main() `bestand_fragen(ort.DB, ...)` aufruft und die Funktion selbst
+    `db == ort.DB` prueft: der Vergleich waere immer wahr und liefe live
+    gegen den Produktivserver statt gegen Testdaten."""
+    import contextlib
+    import io
+    import tempfile
+
+    global bestand_fragen
+    ok = True
+    with tempfile.TemporaryDirectory() as td:
+        tdp = Path(td)
+        db = Path(td) / "selftest.db"  # td: Wegwerfverzeichnis, kein Bestand
+        c = sqlite3.connect(db)
+        c.execute("CREATE TABLE knowledge_nodes (path TEXT, title TEXT, summary TEXT)")
+        c.execute("INSERT INTO knowledge_nodes VALUES "
+                  "('/mess/korpus','Pruefkorpus V3 fuer den Abrufvergleich','...')")
+        c.commit()
+        c.close()
+
+        # Richtung 1: Verneinung, zu der die Testdatenbank etwas hat -> muss melden.
+        t_treffer = tdp / "treffer.jsonl"
+        t_treffer.write_text(json.dumps({
+            "type": "assistant",
+            "message": {"content": [{"type": "text", "text":
+                "Fuer den Pruefkorpus Abrufvergleich haben wir noch keine Messdaten."}]},
+        }) + "\n", encoding="utf-8")
+
+        # Richtung 2: gewoehnliche Antwort ohne Verneinung -> muss schweigen.
+        t_still = tdp / "still.jsonl"
+        t_still.write_text(json.dumps({
+            "type": "assistant",
+            "message": {"content": [{"type": "text", "text":
+                "Der Testlauf ist gruen, alles wie erwartet."}]},
+        }) + "\n", encoding="utf-8")
+
+        orig_bestand_fragen = bestand_fragen
+        bestand_fragen = lambda _db, anfrage, grenze=3: orig_bestand_fragen(db, anfrage, grenze)
+        alt_stdin = sys.stdin
+        try:
+            buf1 = io.StringIO()
+            sys.stdin = io.StringIO(json.dumps({"transcript_path": str(t_treffer)}))
+            with contextlib.redirect_stdout(buf1):
+                main()
+            ausgabe1 = buf1.getvalue()
+
+            buf2 = io.StringIO()
+            sys.stdin = io.StringIO(json.dumps({"transcript_path": str(t_still)}))
+            with contextlib.redirect_stdout(buf2):
+                main()
+            ausgabe2 = buf2.getvalue()
+        finally:
+            bestand_fragen = orig_bestand_fragen
+            sys.stdin = alt_stdin
+
+    treffer_ok = "NACHGEFRAGT" in ausgabe1 and "Pruefkorpus" in ausgabe1
+    still_ok = ausgabe2 == ""
+    ok = treffer_ok and still_ok
+
+    print(f"Richtung 1 (Verneinung mit Bestandstreffer, muss melden): "
+          f"{'OK' if treffer_ok else 'FEHLER'}")
+    print(ausgabe1 or "  (keine Ausgabe -- FEHLER)")
+    print(f"Richtung 2 (gewoehnliche Antwort, muss schweigen): "
+          f"{'OK' if still_ok else 'FEHLER'}")
+    print(ausgabe2 or "  (keine Ausgabe -- korrekt)")
+    return 0 if ok else 1
+
+
 if __name__ == "__main__":
+    if "--selftest" in sys.argv:
+        sys.exit(_selftest())
     try:
         main()
     except Exception:
