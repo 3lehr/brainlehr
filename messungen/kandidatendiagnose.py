@@ -2,16 +2,40 @@
 
 Misst je Pruefkorpus-Fall, an WELCHER Stelle des aktiven Abrufwegs
 (haken/suchpfad_abruf.kandidaten, SUCHPFAD_ABRUF=True) das Ziel verloren geht.
-Keine These, nur Stationen -- jede Station ist ein Zwischenstand desselben
-Aufrufs, nicht ein nachgebauter zweiter Weg:
 
   S_FTS    Ziel in der FTS5-Ergebnismenge (Stichwortkanal, _or_query)?
-  S_EMB    Ziel in _embedding_ranking (Bedeutungskanal, ungekappt)?
+  S_EMB    Ziel in _embedding_ranking (Bedeutungskanal, ungekappt, gefiltert
+           ueber suchpfad_abruf._erlaubte_ids -- wie im echten Weg)?
   S_FUSE   Rang des Ziels in der ungekappten RRF-Verschmelzung
   S_CAP    steht das Ziel in den ersten max_results IDs (der Kandidatenliste)?
   S_FILT   wie viele der max_results Plaetze belegen IDs, die danach ohnehin
            wegfallen (Gattung nachschlagewerk / zurueckgezogen / resolved) --
            belegte Plaetze ohne Lieferung
+
+BEFUND (behoben 2026-08-13): S_CAP/in_kandidatenliste kam bis hierher NICHT
+aus haken/suchpfad_abruf.kandidaten() (dem aktiven Abrufweg), sondern aus
+einem eigenen Aufruf von knowledge_mcp_server._fuse_with_keyword_floor() --
+einer Formel, die suchpfad_abruf am 2026-08-09 ausdruecklich ABGESCHAFFT hat
+(dort Modulkopf: Sockel reservierte die ersten max_results Plaetze fuer den
+Stichwortkanal und liess den Bedeutungskanal wirkungslos). final_ids/
+in_kandidatenliste kommen jetzt aus einem echten Aufruf von
+suchpfad_abruf.kandidaten() -- derselben Funktion, die im Betrieb laeuft.
+Einzelfall 8dc84938 (/methodik/direktiven/keine-entwicklerinformation-in-
+der-oberflaeche-systemweit): rang_verschmolzen war schon vorher 1, aber
+in_kandidatenliste stand auf False, weil der Stichwort-Sockel diesen Platz
+nicht vergab -- der echte Weg liefert ihn auf Rang 1.
+
+Die Rang-Stationen (S_FTS/S_EMB/S_FUSE) kann suchpfad_abruf.kandidaten()
+selbst nicht liefern -- es gibt nach aussen nur die auf max_results gekappte
+Kandidatenliste zurueck, keine ungekappten Zwischenraenge. Sie werden hier
+mit genau den Bausteinen nachvollzogen, die kandidaten() selbst importiert
+und aufruft (_or_query, embeddings.rrf_fuse, _embedding_ranking, sowie
+suchpfad_abruf._erlaubte_ids fuer den Gattungsfilter im Bedeutungskanal) --
+keine eigene, abweichende Formel. Die FTS-Abfrage unten ist Text-fuer-Text
+identisch mit der in suchpfad_abruf.kandidaten(); Abweichung dort schlaegt
+NICHT automatisch hier durch, weil die Datei per Auftragsgrenze nicht
+importierbar-refaktoriert werden darf. Das ist eine bekannte Kopplungsluecke,
+kein zweiter Weg zur Kandidatenliste selbst -- die kommt aus dem echten Aufruf.
 
 Aufruf: python3 kandidatendiagnose.py [--json runs/datei.json]
 Selbsttest ohne Ollama: python3 kandidatendiagnose.py --selftest
@@ -49,8 +73,9 @@ sys.path.insert(0, str(WURZEL))
 
 import embeddings  # noqa: E402
 import ort  # noqa: E402
+import suchpfad_abruf  # noqa: E402 -- der aktive Abrufweg selbst, kein Nachbau
 from gattung_filter import SQL_ARBEITSBESTAND_NUR  # noqa: E402
-from knowledge_mcp_server import _embedding_ranking, _fuse_with_keyword_floor, _or_query  # noqa: E402
+from knowledge_mcp_server import _embedding_ranking, _or_query  # noqa: E402
 
 KORPUS = WURZEL / "runs" / "pruefkorpus.jsonl"
 MAX_RESULTS = 5  # MAX_NODES(3) + MAX_LESSONS(2) -- der Wert, den query() uebergibt
@@ -74,8 +99,13 @@ def _rang(ids: list, ref: str) -> int | None:
 
 def diagnose(conn: sqlite3.Connection, text: str, kind: str, ref: str,
              query_vec: list[float] | None, max_results: int = MAX_RESULTS) -> dict:
-    """Ein Fall, alle Stationen. Baugleich mit suchpfad_abruf.kandidaten() --
-    Abweichungen waeren ein Messfehler, darum steht die Gegenprobe in demo()."""
+    """Ein Fall, alle Stationen. final_ids/in_kandidatenliste kommen aus einem
+    ECHTEN Aufruf von suchpfad_abruf.kandidaten() -- dem aktiven Abrufweg,
+    nicht aus einem Nachbau. Die ungekappten Zwischenraenge (S_FTS/S_EMB/
+    S_FUSE) kann kandidaten() selbst nicht herausgeben (es liefert nur die
+    auf max_results gekappte Liste) -- sie werden hier mit denselben
+    Bausteinen nachvollzogen, die kandidaten() intern aufruft (s. Modulkopf
+    zur Kopplungsluecke bei der FTS-Abfrage)."""
     fts_query = _or_query(text)
     if not fts_query:
         return {"station": "LEERE_ANFRAGE"}
@@ -89,15 +119,18 @@ def diagnose(conn: sqlite3.Connection, text: str, kind: str, ref: str,
     keyword_ordered = embeddings.rrf_fuse(node_ids, lesson_ids, embedding_weight=1.0)
 
     if query_vec is not None:
-        emb_node_ids = _embedding_ranking(conn, "node", query_vec, None)
-        emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, None)
+        erl_nodes, erl_lessons = suchpfad_abruf._erlaubte_ids(conn)
+        emb_node_ids = _embedding_ranking(conn, "node", query_vec, erl_nodes)
+        emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, erl_lessons)
     else:
         emb_node_ids, emb_lesson_ids = [], []
     embedding_ordered = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
 
     fused_voll = embeddings.rrf_fuse(keyword_ordered, embedding_ordered,
                                      embedding_weight=embeddings.hybrid_retrieval_weight())
-    final_ids = _fuse_with_keyword_floor(keyword_ordered, embedding_ordered, max_results)
+
+    node_rows, lesson_rows = suchpfad_abruf.kandidaten(conn, text, query_vec, max_results)
+    final_ids = [r["id"] for r in node_rows] + [r["id"] for r in lesson_rows]
 
     return {
         "fts_treffer_knoten": len(node_ids),
@@ -181,10 +214,8 @@ def demo() -> None:
     """Netzlos (query_vec=None -> reiner Stichwortkanal). Belegt zweierlei:
     1) Gegenprobe in beide Richtungen: ein Knoten, dessen eigener Titel als
        Anfrage dient, steht in der Liste; Nonsenstext findet nichts.
-    2) Baugleichheit mit dem echten Weg: suchpfad_abruf.kandidaten() liefert
-       fuer dieselbe Anfrage dieselben IDs wie diagnose()['final_ids'] --
-       waere die Messung ein Nachbau, faellt genau das auf."""
-    import suchpfad_abruf  # noqa: E402
+    2) diagnose()['final_ids'] IST der Rueckgabewert von
+       suchpfad_abruf.kandidaten() fuer dieselbe Anfrage (kein Nachbau)."""
     conn = sqlite3.connect(f"file:{ort.DB}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     zeile = conn.execute(
