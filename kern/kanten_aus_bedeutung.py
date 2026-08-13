@@ -92,22 +92,44 @@ def connect_db(path: Path) -> sqlite3.Connection:
 def lade_knoten_vektoren(conn: sqlite3.Connection, *, model: str = EMBED_MODEL):
     """Liest vorhandene Knoten-Embeddings (kind='node') samt path/title.
     Zurueckgezogene Knoten (zurueckgezogen=1) werden ausgeschlossen -- gleiche
-    Sichtbarkeitsregel wie knowledge_search/Recall-Hook."""
+    Sichtbarkeitsregel wie knowledge_search/Recall-Hook.
+
+    Dedup je ref_id (Befund 2026-08-13, Auftrag 83): project_id ist Teil des
+    Primaerschluessels, damit eine mehrwertige LEHRE eine Zeile je Bereich
+    tragen kann (siehe migrationen/migrate_embeddings_projekt.py). Ein KNOTEN
+    ist dagegen einwertig -- seine project_id aendert sich per Neuzuordnung,
+    und der Schreiber (build_embeddings.py) legt dabei eine NEUE Zeile unter
+    der neuen project_id an, statt die alte zu ersetzen (PK-Tripel aendert
+    sich mit). Liegen gebliebene Zeilen alter Zuordnungen sind die Folge --
+    ohne Dedup liefert dieser JOIN denselben Knotenpfad mehrfach, und
+    finde_kandidaten faende darunter nur Selbstpaare mit Aehnlichkeit 1.0.
+    Diese Stelle ist bewusst genauso robust wie
+    knowledge_mcp_server._embedding_ranking (seen_ref_ids) -- unabhaengig
+    davon, ob der Bestand selbst noch bereinigt wird."""
     cur = conn.cursor()
     cur.execute(
         """
-        SELECT n.path AS path, n.title AS title, e.vector AS vector
+        SELECT n.path AS path, n.title AS title, e.vector AS vector, e.ref_id AS ref_id
         FROM knowledge_embeddings e
         JOIN knowledge_nodes n ON n.id = e.ref_id
         WHERE e.kind = 'node' AND e.model = ? AND n.zurueckgezogen = 0
-        ORDER BY n.path
+        ORDER BY n.path,
+                 CASE WHEN e.project_id = n.project_id THEN 0 ELSE 1 END,
+                 e.updated_at DESC
         """,
         (model,),
     )
-    rows = cur.fetchall()
-    paths = [r["path"] for r in rows]
-    titles = [r["title"] for r in rows]
-    vektoren = [unpack_embedding(r["vector"]) for r in rows]
+    paths: list[str] = []
+    titles: list[str] = []
+    vektoren: list[list[float]] = []
+    seen_ref_ids: set[str] = set()
+    for r in cur.fetchall():
+        if r["ref_id"] in seen_ref_ids:
+            continue
+        seen_ref_ids.add(r["ref_id"])
+        paths.append(r["path"])
+        titles.append(r["title"])
+        vektoren.append(unpack_embedding(r["vector"]))
     return paths, titles, vektoren
 
 

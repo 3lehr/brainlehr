@@ -83,6 +83,22 @@ def _knoten_mit_vektor(conn, path, title, vector):
     return node_id
 
 
+def _embedding_zeile(conn, node_id, project_id, vector, updated_at=None) -> None:
+    """Fuegt eine ZUSAETZLICHE knowledge_embeddings-Zeile fuer einen
+    bestehenden Knoten unter einer ANDEREN project_id ein -- bildet die
+    liegengebliebene Zeile einer frueheren Projektzuordnung nach (Befund
+    2026-08-13, Auftrag 83: 88 Knoten im echten Bestand mit genau diesem
+    Muster)."""
+    now = updated_at or datetime.now(timezone.utc).isoformat()
+    conn.execute(
+        """
+        INSERT INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at)
+        VALUES ('node', ?, ?, ?, ?, ?, ?)
+        """,
+        (node_id, project_id, kab.EMBED_MODEL, len(vector), pack_embedding(vector), now),
+    )
+
+
 # ─── Negativfall: unaehnliche Knoten bekommen KEINE Kante ───────────────────
 
 def test_unaehnliche_knoten_bekommen_keine_kante():
@@ -229,4 +245,102 @@ def test_bestehende_kante_anderer_herkunft_bleibt_unberuehrt(temp_db):
     relation_types = {r["relation_type"] for r in rows}
     assert relation_types == {"analogous_to", kab.RELATION_TYPE}
 
+    conn.close()
+
+
+# ─── Dedup liegengebliebener project_id-Zeilen (Auftrag 83, 2026-08-13) ─────
+# Befund am echten Bestand: 88 Knoten mit zwei knowledge_embeddings-Zeilen
+# (verschiedene project_id, gleicher ref_id) -- Folge einer spaeteren
+# Projekt-Neuzuordnung, bei der die alte Zeile nie geloescht wurde. Ohne
+# Dedup liefert lade_knoten_vektoren denselben Knotenpfad zweimal, und
+# finde_kandidaten faende ausschliesslich Selbstpaare mit Aehnlichkeit 1.0.
+
+def test_grenzwert_eine_zeile_bleibt_unveraendert(temp_db):
+    """Grenzwert 1 von 3: ein Knoten mit genau EINER Embedding-Zeile."""
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    _knoten_mit_vektor(conn, "/eine-zeile", "Eine Zeile", [1.0, 0.0])
+    conn.commit()
+
+    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    assert paths == ["/eine-zeile"]
+    conn.close()
+
+
+def test_grenzwert_zwei_zeilen_werden_zu_einer(temp_db):
+    """Grenzwert 2 von 3: zwei Zeilen (aktuelle project_id 'shared' + eine
+    liegengebliebene 'fahrtenbuch') duerfen nur EINMAL erscheinen, und zwar
+    mit dem Vektor der zur aktuellen knowledge_nodes.project_id passenden
+    Zeile."""
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    node_id = _knoten_mit_vektor(conn, "/zwei-zeilen", "Zwei Zeilen", [1.0, 0.0])
+    liegengeblieben = [0.0, 1.0]
+    _embedding_zeile(conn, node_id, "fahrtenbuch", liegengeblieben, updated_at="2020-01-01T00:00:00+00:00")
+    conn.commit()
+
+    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    assert paths == ["/zwei-zeilen"]
+    # der Vektor der ZUR AKTUELLEN project_id ('shared', siehe _insert_node)
+    # passenden Zeile wird geliefert, nicht der liegengebliebenen.
+    assert vektoren[0] == [1.0, 0.0]
+    conn.close()
+
+
+def test_grenzwert_drei_zeilen_werden_zu_einer(temp_db):
+    """Grenzwert 3 von 3: drei Zeilen -- eine aktuelle, zwei liegengebliebene."""
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    node_id = _knoten_mit_vektor(conn, "/drei-zeilen", "Drei Zeilen", [1.0, 0.0])
+    _embedding_zeile(conn, node_id, "fahrtenbuch", [0.0, 1.0], updated_at="2020-01-01T00:00:00+00:00")
+    _embedding_zeile(conn, node_id, "openlehr", [0.5, 0.5], updated_at="2021-01-01T00:00:00+00:00")
+    conn.commit()
+
+    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    assert paths == ["/drei-zeilen"]
+    assert vektoren[0] == [1.0, 0.0]
+    conn.close()
+
+
+def test_dublette_erzeugt_keine_selbstkante(temp_db):
+    """Rot vor der Implementierung: ein Knoten mit zwei Embedding-Zeilen
+    (gleicher Vektor, wie im echten Bestand bei 86 von 88 Faellen) lieferte
+    VOR dem Dedup ein Selbstpaar mit Aehnlichkeit 1.0 -- derselbe Pfad auf
+    beiden Seiten. finde_kandidaten schliesst i==j zwar aus, aber nur
+    INNERHALB einer einzigen Liste; zwei Listeneintraege fuer denselben
+    Knoten sind fuer finde_kandidaten zwei verschiedene Indizes und daher
+    KEIN i==j."""
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    node_id = _knoten_mit_vektor(conn, "/dublette", "Dublette", [1.0, 0.0])
+    _embedding_zeile(conn, node_id, "fahrtenbuch", [1.0, 0.0], updated_at="2020-01-01T00:00:00+00:00")
+    conn.commit()
+
+    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    kandidaten = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.5, k=5)
+    assert kandidaten == [], (
+        "ein einzelner Knoten mit zwei liegengebliebenen Zeilen darf nach "
+        "dem Dedup keine Kante (erst recht keine Selbstkante) erzeugen"
+    )
+    conn.close()
+
+
+def test_negativfall_echte_verschiedene_knoten_mit_hoher_aehnlichkeit_bleiben_paar(temp_db):
+    """Der wichtige Gegenfall (Abnahme 2): ZWEI ECHT VERSCHIEDENE Knoten mit
+    sehr hoher Aehnlichkeit (0.995, deutlich > 0.99) muessen weiterhin als
+    Kandidatenpaar erscheinen. Eine Loesung, die pauschal alles ueber einer
+    Schwelle wegwirft, wuerde dieses Paar mit dem Dedup-Fix verwechseln --
+    hier sind es zwei verschiedene ref_id/project_id-Kombinationen, kein
+    liegengebliebenes Duplikat desselben Knotens."""
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    _knoten_mit_vektor(conn, "/aehnlich-a", "Aehnlich A", [1.0, 0.0])
+    _knoten_mit_vektor(conn, "/aehnlich-b", "Aehnlich B", [0.995, 0.0998])  # cos ~= 0.995
+    conn.commit()
+
+    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    assert len(paths) == 2
+    kandidaten = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.99, k=5)
+    assert len(kandidaten) == 1
+    assert {kandidaten[0].a_path, kandidaten[0].b_path} == {"/aehnlich-a", "/aehnlich-b"}
     conn.close()
