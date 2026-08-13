@@ -122,18 +122,36 @@ def _db(tmp_path):
     return p
 
 
-def _norm(db, node_id, rang, titel, wann="2026-08-11T09:00:00+02:00"):
+def _norm(db, node_id, rang, titel, wann="2026-08-11T09:00:00+02:00",
+          actor=None, bedient_von=None, content=None):
     import sqlite3
     conn = sqlite3.connect(str(db))
     try:
         conn.execute(
             "INSERT INTO knowledge_nodes (id, path, parent_path, title, summary, "
-            "source, norm_rang, gilt_ab, norm_entscheidung, norm_entschieden_grund, "
-            "norm_entschieden_von, norm_entschieden_am, created_at, updated_at) "
-            "VALUES (?,?,'/',?,?,?,?,'2026-08-11','norm_unbefristet','Testnorm.',"
-            "'test','2026-08-11',?,?)",
-            (node_id, f"/probe/{node_id}", titel, "Zusammenfassung.",
-             "Test test_regelwechsel.py", rang, wann, wann))
+            "content, source, norm_rang, gilt_ab, norm_entscheidung, "
+            "norm_entschieden_grund, norm_entschieden_von, norm_entschieden_am, "
+            "actor, bedient_von, created_at, updated_at) "
+            "VALUES (?,?,'/',?,?,?,?,?,'2026-08-11','norm_unbefristet','Testnorm.',"
+            "'test','2026-08-11',?,?,?,?)",
+            (node_id, f"/probe/{node_id}", titel, "Zusammenfassung.", content,
+             "Test test_regelwechsel.py", rang, actor, bedient_von, wann, wann))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _update_norm(db, node_id, wann, actor=None, bedient_von=None, content=None,
+                  titel=None):
+    """Schreibt eine bestehende Norm um -- loest den Fassungs-Trigger aus wie
+    eine echte Aenderung, damit knowledge_fassungen die Vorfassung traegt."""
+    import sqlite3
+    conn = sqlite3.connect(str(db))
+    try:
+        conn.execute(
+            "UPDATE knowledge_nodes SET updated_at=?, actor=?, bedient_von=?, "
+            "content=?, title=COALESCE(?, title) WHERE id=?",
+            (wann, actor, bedient_von, content, titel, node_id))
         conn.commit()
     finally:
         conn.close()
@@ -175,3 +193,106 @@ def test_fehlende_datenbank_bricht_nicht(tmp_path, monkeypatch):
     monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
     monkeypatch.setattr(regelwechsel, "DB", tmp_path / "gibtsnicht.db")
     assert regelwechsel.pruefe("s1") == []
+
+
+# --- Urheber: Betreiber, Werkzeug, unbekannt (Auftrag 107, 2026-08-13) -----
+#
+# ANLASS: Das S12-Umschriftwerkzeug schrieb 07fb68aa um -- der Melder feuerte
+# "Das ist eine Weisung des Betreibers", obwohl der Betreiber nichts
+# geaendert hatte. Dieselbe falsche Behauptung ein zweites Mal, als
+# kern/sicherung_s12.py --zurueck den Knoten WORTGLEICH auf die Urfassung
+# zurücksetzte -- eine Reparatur, keine Weisung.
+
+def test_werkzeug_urheber_loest_keine_weisung_aus(tmp_path, monkeypatch):
+    """ROT VOR GRUEN: die alte Fassung des Melders meldete jede Aenderung,
+    unabhaengig vom actor -- dieser Test waere dort rot gewesen. Wird die
+    Unterscheidung in _urheber()/pruefe() entfernt, wird er wieder rot."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    _norm(db, "07fb68aa", 2, "Testnorm", actor="betreiber", content="Urtext")
+    regelwechsel.pruefe("s1")                       # erster Blick: still
+    _update_norm(db, "07fb68aa", "2026-08-13T09:00:00+02:00",
+                 actor="s12-umschriftwerkzeug", content="Umgeschriebener Text")
+    meldungen = regelwechsel.pruefe("s1")
+    assert meldungen == [], (
+        "ein Werkzeug-Urheber darf keine Weisungsmeldung ausloesen: " + repr(meldungen))
+
+
+def test_wiederherstellung_meldet_nicht_auch_bei_betreiber_actor(tmp_path, monkeypatch):
+    """Der robustere Griff: WORTGLEICH mit einer Vorfassung heisst Reparatur,
+    unabhaengig davon, wer sie ausgefuehrt hat. Der zweite S12-Vorfall --
+    kern/sicherung_s12.py --zurueck lief unter einem Werkzeug-actor, hier wird
+    zusaetzlich geprueft, dass selbst ein Betreiber-actor keine Meldung
+    ausloest, wenn der Text nur wiederhergestellt wurde."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    _norm(db, "07fb68aa", 2, "Testnorm", actor="betreiber", content="Urtext")
+    regelwechsel.pruefe("s1")                       # erster Blick: still
+    _update_norm(db, "07fb68aa", "2026-08-13T09:00:00+02:00",
+                 actor="s12-umschriftwerkzeug", content="Umgeschriebener Text")
+    regelwechsel.pruefe("s1")                       # Zwischenschritt konsumieren
+    _update_norm(db, "07fb68aa", "2026-08-13T09:05:00+02:00",
+                 actor="betreiber", content="Urtext")     # WORTGLEICH zur Urfassung
+    meldungen = regelwechsel.pruefe("s1")
+    assert meldungen == [], (
+        "wortgleiche Wiederherstellung ist keine Weisung, auch nicht mit "
+        "Betreiber-actor: " + repr(meldungen))
+
+
+def test_betreiber_urheber_loest_weisung_weiterhin_aus(tmp_path, monkeypatch):
+    """NEGATIVFALL zu den beiden Tests oben: ohne ihn koennte ein Melder, der
+    ueberhaupt nichts mehr meldet, dieselben Tests bestehen."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    _norm(db, "07fb68aa", 2, "Testnorm", actor="betreiber", content="Urtext")
+    regelwechsel.pruefe("s1")
+    _update_norm(db, "07fb68aa", "2026-08-13T09:00:00+02:00",
+                 actor="betreiber", content="Echte Aenderung durch den Betreiber")
+    meldungen = regelwechsel.pruefe("s1")
+    assert meldungen and "Weisung des Betreibers" in meldungen[0]
+    assert "07fb68aa" in meldungen[0]
+
+
+def test_bedient_von_zaehlt_als_betreiber(tmp_path, monkeypatch):
+    """bedient_von ist der beglaubigte Beleg, dass ein Mensch die Maschine
+    fuehrt (kern/ausweis.py) -- das zaehlt wie eine direkte Betreiberaenderung,
+    auch wenn actor der Name eines Agenten ist."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    # bedient_von ist ab dem Schreiben unveraenderlich (Trigger
+    # knowledge_nodes_bedient_von_unveraenderlich_bu) -- darum von Anfang an
+    # gesetzt, nur der Inhalt aendert sich.
+    _norm(db, "07fb68aa", 2, "Testnorm", actor="chatgpt", bedient_von="markus",
+          content="Urtext")
+    regelwechsel.pruefe("s1")
+    _update_norm(db, "07fb68aa", "2026-08-13T09:00:00+02:00",
+                 actor="chatgpt", bedient_von="markus", content="Neuer Text")
+    meldungen = regelwechsel.pruefe("s1")
+    assert meldungen and "Das ist eine Weisung des Betreibers" in meldungen[0]
+
+
+def test_actor_leer_meldet_offenen_urheber_statt_zu_schweigen(tmp_path, monkeypatch):
+    """GRENZWERT: actor NULL/leer darf weder als Betreiber behauptet noch
+    stillschweigend uebergangen werden -- der Meldetext muss die offene
+    Herkunft selbst benennen."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    _norm(db, "07fb68aa", 2, "Testnorm", actor="betreiber", content="Urtext")
+    regelwechsel.pruefe("s1")
+    _update_norm(db, "07fb68aa", "2026-08-13T09:00:00+02:00",
+                 actor=None, content="Text ohne erkennbaren Schreiber")
+    meldungen = regelwechsel.pruefe("s1")
+    assert meldungen, "actor leer darf nicht stillschweigend uebergangen werden"
+    assert "URHEBER OFFEN" in meldungen[0]
+    assert "Das ist eine Weisung des Betreibers" not in meldungen[0], (
+        "eine offene Herkunft ist keine Behauptung, wer es war")

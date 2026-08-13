@@ -121,6 +121,76 @@ def _normen() -> dict[str, tuple] | None:
         conn.close()
 
 
+# Werte, mit denen ein Schreiber sich selbst als Betreiber ausweist -- siehe
+# kern/ausweis.py: ein beglaubigter Mensch-Ausweis mit der Rolle 'betreiber'
+# protokolliert unter diesem Namen, ein unbeglaubigtes Argument "betreiber"
+# unter dem Praefix "unbeglaubigt:". Beides ist eine SELBSTAUSKUNFT des
+# Schreibers -- fuer den Zweck hier (Weisung ja/nein) reicht das, dieselbe
+# Guete wie der Rest des heutigen anlass='betreiber'-Wegs.
+_BETREIBER_ACTOR = ("betreiber", "unbeglaubigt:betreiber")
+
+
+def _urheber(actor: str | None, bedient_von: str | None) -> str:
+    """'betreiber' | 'werkzeug' | 'unbekannt'.
+
+    bedient_von kommt NIE aus einem Argument, sondern aus dem beglaubigten
+    Ausweis (siehe knowledge_mcp_server.py::_bedient_von) -- ist es gesetzt,
+    stand ein Mensch hinter der schreibenden Maschine, das zaehlt wie eine
+    direkte Aenderung durch den Betreiber. Fehlt jede Angabe (actor leer/NULL
+    oder der Vorgabewert 'unbekannt'), ist der Urheber offen -- das wird
+    gemeldet, nie stillschweigend als Werkzeug ODER als Betreiber behandelt."""
+    if bedient_von:
+        return "betreiber"
+    if not actor or actor == "unbekannt":
+        return "unbekannt"
+    if actor in _BETREIBER_ACTOR:
+        return "betreiber"
+    return "werkzeug"
+
+
+def _norm_herkunft(node_ids: list[str]) -> dict[str, dict] | None:
+    """actor/bedient_von der AKTUELLEN Fassung je Norm, plus ob der jetzige
+    Text WORTGLEICH in knowledge_fassungen (Vorfassungen desselben Knotens)
+    schon einmal stand -- dann ist es eine Wiederherstellung, keine
+    Aenderung, unabhaengig vom Urheber (der robustere der beiden Griffe,
+    siehe Auftrag: eine Reparatur darf nie wie eine neue Weisung wirken).
+
+    Eigene, kurzlebige Verbindung wie _normen() -- nur fuer die Kennungen
+    aufgerufen, die sich laut updated_at wirklich geaendert haben, nicht fuer
+    den gesamten Normbestand bei jedem Prompt."""
+    if not node_ids:
+        return {}
+    import sqlite3
+    try:
+        conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True, timeout=2.0)
+    except sqlite3.Error:
+        return None
+    try:
+        platz = ",".join("?" * len(node_ids))
+        aktuell = conn.execute(
+            f"SELECT id, actor, bedient_von, content FROM knowledge_nodes "
+            f"WHERE id IN ({platz})", node_ids).fetchall()
+        fassungen = conn.execute(
+            f"SELECT node_id, content FROM knowledge_fassungen "
+            f"WHERE node_id IN ({platz})", node_ids).fetchall()
+    except sqlite3.Error:
+        return None
+    finally:
+        conn.close()
+
+    fruehere_texte: dict[str, set] = {}
+    for node_id, content in fassungen:
+        fruehere_texte.setdefault(node_id, set()).add(content)
+
+    return {
+        kid: {
+            "urheber": _urheber(actor, bedient_von),
+            "wiederhergestellt": content in fruehere_texte.get(kid, set()),
+        }
+        for kid, actor, bedient_von, content in aktuell
+    }
+
+
 def pruefe(sitzung: str) -> list[str]:
     """Was hat sich seit dem letzten Aufruf DIESER Sitzung geaendert?
 
@@ -155,6 +225,9 @@ def pruefe(sitzung: str) -> list[str]:
         if not dazu and not weg:
             teile.append("Kein Abschnitt kam hinzu oder fiel weg -- ein "
                          "vorhandener wurde umgeschrieben.")
+        teile.append("Diese Datei steht auf der festen Liste des Betreibers "
+                     "(siehe Modulkopf) -- das ist eine Weisung des "
+                     "Betreibers, kein Hintergrundwissen.")
         teile.append("Dein Systemprompt traegt noch den alten Stand: er wird "
                      "beim Sitzungsstart und bei der Verdichtung gelesen, "
                      "nicht laufend. Lies die genannten Abschnitte nach, bevor "
@@ -172,15 +245,39 @@ def pruefe(sitzung: str) -> list[str]:
                 (kid, rang, titel) for kid, (rang, titel, stand) in jetzt.items()
                 if kid not in vorher or list(vorher[kid])[2] != stand
             ]
-            for kid, rang, titel in geaendert[:5]:
-                meldungen.append(
-                    f"Bindende Norm Rang {rang} neu oder geaendert: {kid} -- "
-                    f"{titel}. Sie gilt fuer diese Sitzung, unabhaengig davon, "
-                    f"ob sie im Systemprompt steht. Lies sie mit "
-                    f"knowledge_read, bevor du weiterarbeitest -- passiver "
-                    f"Recall ist kein Handoff (c14adcfe, Punkt 5).")
-            if len(geaendert) > 5:
-                meldungen.append(f"... und {len(geaendert) - 5} weitere.")
+            herkunft = _norm_herkunft([kid for kid, _, _ in geaendert])
+            # herkunft is None nur bei Lesefehler (fail-open) -- dann bleibt
+            # der Urheber offen fuer jede Kennung, statt die ganze Meldung
+            # zu verschlucken.
+            meldepflichtig = []
+            for kid, rang, titel in geaendert:
+                info = (herkunft or {}).get(kid, {})
+                if info.get("wiederhergestellt"):
+                    continue  # WORTGLEICHE Vorfassung -- Reparatur, keine Weisung
+                urheber = info.get("urheber", "unbekannt")
+                if urheber == "werkzeug":
+                    continue  # eigene Aenderung (Skript/Agent) -- keine Weisung
+                meldepflichtig.append((kid, rang, titel, urheber))
+
+            for kid, rang, titel, urheber in meldepflichtig[:5]:
+                if urheber == "unbekannt":
+                    meldungen.append(
+                        f"Norm Rang {rang} neu oder geaendert: {kid} -- {titel}. "
+                        f"URHEBER OFFEN -- actor ist leer oder nicht gesetzt, "
+                        f"das ist keine Weisung des Betreibers, sondern eine "
+                        f"ungeklaerte Herkunft. Lies sie mit knowledge_read, "
+                        f"bevor du weiterarbeitest -- passiver Recall ist kein "
+                        f"Handoff (c14adcfe, Punkt 5).")
+                else:
+                    meldungen.append(
+                        f"Bindende Norm Rang {rang} neu oder geaendert: {kid} -- "
+                        f"{titel}. Das ist eine Weisung des Betreibers, kein "
+                        f"Hintergrundwissen. Sie gilt fuer diese Sitzung, "
+                        f"unabhaengig davon, ob sie im Systemprompt steht. Lies "
+                        f"sie mit knowledge_read, bevor du weiterarbeitest -- "
+                        f"passiver Recall ist kein Handoff (c14adcfe, Punkt 5).")
+            if len(meldepflichtig) > 5:
+                meldungen.append(f"... und {len(meldepflichtig) - 5} weitere.")
         neu[schluessel] = neu_stand
 
     # Zustand nur fortschreiben, wenn auch gemeldet werden konnte -- sonst
@@ -209,9 +306,15 @@ def main() -> int:
     if not meldungen:
         return 0
 
-    block = ("<regelwechsel>\nEine Regeldatei wurde waehrend dieser Sitzung "
-             "geaendert. Das ist eine Weisung des Betreibers, kein "
-             "Hintergrundwissen:\n\n" + "\n\n".join(meldungen) + "\n</regelwechsel>")
+    # KEIN pauschales "Weisung des Betreibers" mehr im Rahmen -- die feste
+    # Dateiliste in BEOBACHTET gehoert zwar dem Betreiber, aber die Normen im
+    # Speicher koennen von einem Werkzeug oder Agenten stammen (dann werden
+    # sie oben gar nicht erst hierhin gereicht) oder einen offenen Urheber
+    # haben. Herkunft steht jetzt je Meldung selbst, nicht mehr im Rahmen.
+    block = ("<regelwechsel>\nWaehrend dieser Sitzung hat sich Folgendes "
+             "geaendert -- Dateien aus der festen Liste sind Weisungen des "
+             "Betreibers, siehe Herkunft je Eintrag unten:\n\n"
+             + "\n\n".join(meldungen) + "\n</regelwechsel>")
     print(json.dumps({
         "hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
                                "additionalContext": block},
