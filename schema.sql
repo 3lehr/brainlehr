@@ -1134,6 +1134,16 @@ END;
 -- Massenbefuellung"). Wer eine Altzeile per knowledge_update() aendert,
 -- kann source ohnehin nicht mitgeben (Server-Vertrag) -- die Herkunft ist
 -- nach dem Anlegen unveraenderlich, die Pflicht darum am Anlegen genug.
+-- WARNUNG, gemessen 2026-08-13 (L-55075a): Dieser Trigger wird mit
+-- CREATE IF NOT EXISTS angelegt. Eine KORREKTUR an seiner Definition
+-- erreicht damit ausschliesslich frisch angelegte Datenbanken -- ein
+-- gewachsener Bestand behaelt die alte Fassung, ohne dass es auffaellt.
+-- Am 2026-08-13 hat genau das fremde Sitzungen stundenlang blockiert: die
+-- Musterliste enthielt '%EN %' und traf damit jedes deutsche Wort auf -en
+-- ('gemessen ', 'Lehren ', 'Knoten '). Die Datei war korrigiert, die
+-- Datenbank nicht. Wer hier etwas aendert, zieht die installierte Fassung
+-- per DROP TRIGGER und Neuanlage nach und liest sie danach zurueck
+-- (select sql from sqlite_master), statt der Datei zu glauben.
 CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_art_pflicht_bi
 BEFORE INSERT ON knowledge_nodes
 FOR EACH ROW WHEN NEW.norm_art IS NULL
