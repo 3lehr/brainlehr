@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-13T04:30:00+0200
+# STAND brainlehr — 2026-08-13T06:45:00+0200
 
 ## Warum die Regeln nicht greifen — gemessen, nicht vermutet
 
@@ -67,6 +67,22 @@ Suite: **1035 grün, 2 übersprungen, 10 xfail, 0 rot.**
 *Aufgabenbeschreibungen altern wie Aufträge.* Dreimal war die Prämisse überholt — der Abrufmonitor lieferte Rang je Kanal längst, in der Ausgabe wird nichts gekürzt, und Aufgabe 41 war größtenteils gebaut. **Die Aufgabenliste ist selbst ein Schnappschuss.** Vor dem Beauftragen gegen den Code messen, nicht die Beschreibung glauben.
 
 *Sieben Agenten endeten im Wartezustand*, weil mein Auftrag „Suite abwarten" verlangte und sie den Lauf in den Hintergrund legten — obwohl er mit `timeout=600000` bequem in den Vordergrund passt. Ursache im Auftrag, nicht in der Arbeit. Seit dem sechsten Fall steht die Auflage ausdrücklich drin.
+
+## PostToolUse ist kein Ausgabekanal — 432 Zustellungen, null im Faden
+
+Im eigenen Faden nachgestellt (06:30): Zehn Meldungen auf fällig gesetzt, ein Werkzeugaufruf, der Zähler steht bei **432 Zustellungen** — und im Faden erschien nichts. Dasselbe für eine zweite Hakengruppe mit sechs Skripten. In `~/.claude/settings.json` hängen **7 Einträge mit 8 Skripten** an diesem Haltepunkt.
+
+**Nachweislich liefernde Kanäle:** `UserPromptSubmit` (die Wissens-Einspielungen erscheinen), `SessionStart`. `PreToolUse` mindestens über den Ablehnungsweg — die Kaskaden-Wache konnte damit sechs Tage lang Arbeit blockieren.
+
+**Offen und heute Nacht selbst verursacht (Aufgabe 74):** Die Existenzprüfung wurde an `Stop` verdrahtet, ohne zu prüfen, ob *dieser* Kanal liefert. Geprüft wurde der Eintrag, nicht die Wirkung. Das Muster von `haken/antwort_abruf.py` löst es bereits: **am toten Haltepunkt sammeln, am lebenden ausgeben.**
+
+**Fehler beim Nachprüfen, festgehalten:** Ich habe zuerst die Zustandsdatei einer *fremden* Sitzung verändert, bevor ich meine eigene suchte. Byte-gleich zurückgestellt — aber es war dieselbe Regel, die ich seit Stunden in jeden Agentenauftrag schreibe.
+
+## Das Datenmodell ist eine Liste von W-Fragen — und drei bleiben unbeantwortet
+
+Gemessen an 2163 Knoten: `source` **100 %**, `freigabe` **100 %**, `anlass` 85 % — alle drei **Pflichtangaben**. Alles Freiwillige liegt darunter: `norm_entschieden_von` 11 %, `gilt_ab` 3,8 %, **`gilt_bis` 0,1 %**, **`abgeleitet_von` 0,05 %**, **Belegart 0 %**.
+
+**Das ist der Beleg für die Bauregel:** Pflichtfelder werden gefüllt, freiwillige nicht. Wer eine W-Frage beantwortet haben will, stellt sie beim **Schreiben** — nicht in einer Erinnerung.
 
 ## Betreiberanweisung 2026-08-12T20:00
 
