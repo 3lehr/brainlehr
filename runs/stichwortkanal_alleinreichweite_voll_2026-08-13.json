@@ -1,0 +1,115 @@
+{
+  "frage": "In wie vielen Ziel-Instanzen ist der beste gelieferte Treffer NUR ueber den Stichwortkanal erreichbar (Vektor allein liefert ihn nicht innerhalb des Betriebsdeckels)?",
+  "verfahren": "kern/abrufguete.py::abrufen() zweimal je Fall: einmal unveraendert (Betrieb, rrf_fuse), einmal mit embeddings.rrf_fuse per Laufzeit-Monkeypatch auf leere fts-Liste -- kern/, haken/ unveraendert auf der Platte. Zaehlung je Ziel-Instanz wie messungen/ausgangsmessung_s12.py::messe().",
+  "korpus": "echtkorpus_2026-08-12T1000.json",
+  "korpus_limit": null,
+  "korpus_faelle_gesamt_in_datei": 89,
+  "code_stand": "51927d1 (Zweig brainlehr/b4-ausweis)",
+  "erzeugt_am": "2026-08-13T05:52:01+0200",
+  "ziel_instanzen_gesamt": 205,
+  "treffer_betrieb_rrf_fuse": 33,
+  "treffer_semantik_allein": 28,
+  "nur_ueber_stichwortkanal_erreichbar": 20,
+  "nur_ueber_stichwortkanal_erreichbar_faelle": [
+    {
+      "art": "knoten",
+      "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/brainlehr/enigma-phase-1-mcp-ist-keine",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/openlehr/imap-zugangsdaten-konten-in-der-db",
+      "satzart": "frage"
+    },
+    {
+      "art": "knoten",
+      "id": "/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-7b2c20",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-cafe-international-konsil-2026",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-statusbild-technische-grenzen",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-statusbild-technische-grenzen",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "knoten",
+      "id": "/fahrtenbuch/konsil-beschluss-keine-dritte",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-b79360",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-62b600",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-a3b39e",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-243dde",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-7b2c20",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-b9d1f3",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-747223",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-71fd3a",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-b9d1f3",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-424312",
+      "satzart": "auftrag"
+    },
+    {
+      "art": "lehre",
+      "id": "L-813c8f",
+      "satzart": "auftrag"
+    }
+  ]
+}
