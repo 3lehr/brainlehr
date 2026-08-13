@@ -42,7 +42,12 @@ WURZEL = Path(__file__).resolve().parents[1]
 BASIS = WURZEL / "tests" / "planform_basis.json"
 PLAN_ORDNER = WURZEL / "docs"
 
-_AUFTRAEGE_BLOCK = re.compile(r"^##\s+Auftr[äa]ge\b.*$", re.M)
+# Die Ueberschrift darf eine Abschnittskennung tragen -- in docs/ ist die
+# Form "## §7 · Auftraege, fertig zum Uebergeben" verbreitet. Das alte
+# Muster verlangte "Auftraege" unmittelbar nach den Rauten und beanstandete
+# damit vollstaendige Abschnitte (gemeldet 2026-08-13 von der App-Sitzung,
+# die ihre Ueberschrift umschrieb statt diese Datei anzufassen -- richtig).
+_AUFTRAEGE_BLOCK = re.compile(r"^##\s+(?:[^\n]*?[·:-]\s*)?Auftr[äa]ge\b.*$", re.M)
 _NAECHSTER_H2 = re.compile(r"^##\s+", re.M)
 _SCHRITT = re.compile(r"^###\s+.*$", re.M)
 
