@@ -2,16 +2,6 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "wissensgraph",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": [
-        "/Volumes/daten/Begod2026/hub/tools/knowledge-viz/server.py",
-        "--port",
-        "8766"
-      ],
-      "port": 8766
-    },
-    {
       "name": "entscheidungen",
       "runtimeExecutable": "python3",
       "runtimeArgs": [
