@@ -114,17 +114,59 @@ final class AnzeigeformTests: XCTestCase {
             "Die Schwelle entscheidet mehr als die Bauform -- das muss sichtbar bleiben")
     }
 
-    // MARK: - Einheiten
+    // MARK: - Einheiten: es gibt KEINE allgemeine Punkt-zu-Millimeter-Rechnung
 
-    func testPunkteWerdenZuMillimeter() {
-        // 72 Punkte sind ein Zoll.
-        XCTAssertEqual(Lesbarkeit.punkteInMm(72), 25.4, accuracy: 0.0001)
-        XCTAssertEqual(Lesbarkeit.punkteInMm(0), 0, accuracy: 0.0001)
+    /// Die Zahlen stammen aus einer Messung an zwei angeschlossenen Geraeten
+    /// am 2026-08-13 (CGDisplayScreenSize gegen NSScreen.frame). Vorher stand
+    /// hier ein Test, der die FALSCHE Annahme festschrieb, ein Punkt sei
+    /// 1/72 Zoll -- die schlimmste Sorte Test, weil sein Gruen einen Fehler
+    /// zementiert. Aufgefallen erst, als ein zweiter Schirm angeschlossen war.
+    func testMillimeterJePunktIstGeraeteabhaengig() {
+        let eizo = Lesbarkeit.mmJePunkt(physischMm: 599, punkte: 2560)
+        let intern = Lesbarkeit.mmJePunkt(physischMm: 344, punkte: 1728)
+        XCTAssertEqual(eizo!, 0.2341, accuracy: 0.001)
+        XCTAssertEqual(intern!, 0.1992, accuracy: 0.001)
+        XCTAssertNotEqual(eizo!, intern!, accuracy: 0.01,
+            "Zwei Geraete, zwei Werte -- es gibt nicht einmal eine konstante Korrektur")
+        // Die alte Annahme 1/72 Zoll = 0,3528 mm liegt bei BEIDEN daneben,
+        // und zwar unterschiedlich weit.
+        XCTAssertLessThan(eizo!, 0.3528)
+        XCTAssertLessThan(intern!, 0.3528)
     }
 
-    func testEinMacBookFensterIstKleinerAlsEinFernseher() {
-        // Gegenprobe zur Einheitenrechnung ueber die echte Fenstergroesse:
-        // 1440 x 810 Punkte sind rund 508 x 286 mm.
-        XCTAssertEqual(Lesbarkeit.punkteInMm(1440), 508, accuracy: 1.0)
+    func testOhneAngabeKeineUmrechnung() {
+        XCTAssertNil(Lesbarkeit.mmJePunkt(physischMm: 0, punkte: 2560))
+        XCTAssertNil(Lesbarkeit.mmJePunkt(physischMm: 599, punkte: 0))
+        XCTAssertNil(Lesbarkeit.mmJePunkt(physischMm: -1, punkte: 2560))
+    }
+
+    // MARK: - Die beiden echten Schirme des Betreibers
+
+    /// Rot vor gruen an echter Hardware: Mit der alten Punkt-Annahme meldete
+    /// der EIZO 40,8 Zoll statt 27,1 und der eingebaute 28,6 statt 16,1.
+    func testEchteSchirmeWerdenRichtigVermessen() {
+        let eizo = Anzeigeflaeche(schirmMm: (599, 340), schirmPunkte: (2560, 1440),
+                                  fensterPunkte: (2560, 1440))!
+        XCTAssertEqual(eizo.diagonaleZoll, 27.1, accuracy: 0.2)
+
+        let intern = Anzeigeflaeche(schirmMm: (344, 222), schirmPunkte: (1728, 1117),
+                                    fensterPunkte: (1728, 1117))!
+        XCTAssertEqual(intern.diagonaleZoll, 16.1, accuracy: 0.2)
+    }
+
+    func testEinFensterAufHalberBreiteTraegtWeniger() {
+        let voll = Anzeigeflaeche(schirmMm: (599, 340), schirmPunkte: (2560, 1440),
+                                  fensterPunkte: (2560, 1440))!
+        let halb = Anzeigeflaeche(schirmMm: (599, 340), schirmPunkte: (2560, 1440),
+                                  fensterPunkte: (1280, 1440))!
+        XCTAssertLessThanOrEqual(halb.felder(abstandMm: 700), voll.felder(abstandMm: 700))
+        XCTAssertEqual(halb.breiteMm, voll.breiteMm / 2, accuracy: 0.1)
+    }
+
+    func testUnbrauchbareSchirmangabenErgebenKeineFlaeche() {
+        XCTAssertNil(Anzeigeflaeche(schirmMm: (0, 340), schirmPunkte: (2560, 1440),
+                                    fensterPunkte: (2560, 1440)))
+        XCTAssertNil(Anzeigeflaeche(schirmMm: (599, 340), schirmPunkte: (2560, 1440),
+                                    fensterPunkte: (0, 1440)))
     }
 }

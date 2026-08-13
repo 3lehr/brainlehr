@@ -110,11 +110,71 @@ public enum Lesbarkeit {
         }
     }
 
-    /// Punkte einer Ansicht in Millimeter. macOS rechnet in Punkten zu
-    /// 1/72 Zoll -- unabhaengig davon, wie viele Bildpunkte darauf liegen.
-    /// Ein Netzhautschirm hat mehr Bildpunkte, aber keine groessere Flaeche,
-    /// und lesbar wird Text von Flaeche, nicht von Bildpunkten.
-    public static func punkteInMm(_ punkte: Double) -> Double {
-        punkte * ptInMm
+    /// Millimeter je Punkt auf EINEM bestimmten Schirm.
+    ///
+    /// ES GIBT KEINE ALLGEMEINE UMRECHNUNG, und das ist der ganze Punkt
+    /// dieser Funktion. Sie war hier zuerst als `punkteInMm(_:)` mit dem
+    /// Faktor 1/72 Zoll notiert -- die Annahme stimmt fuer PDF und ist fuer
+    /// Bildschirme falsch. Gemessen am 2026-08-13 an zwei angeschlossenen
+    /// Geraeten:
+    ///
+    ///   EIZO CG2700X          echt 27,1"  angenommen 40,8"  Faktor 1,50
+    ///   Built-in Retina       echt 16,1"  angenommen 28,6"  Faktor 1,77
+    ///
+    /// Die Fehlfaktoren sind VERSCHIEDEN -- es gibt also nicht einmal eine
+    /// konstante Korrektur. Ein Punkt misst hier 0,2341 mm, dort 0,1992 mm,
+    /// weil ein Punkt eine logische Einheit ist und seine physische Groesse
+    /// von der Dichte des Geraets abhaengt.
+    ///
+    /// Die physische Groesse muss deshalb von aussen kommen; auf macOS
+    /// liefert sie `CGDisplayScreenSize`. Diese Schicht rechnet nur.
+    public static func mmJePunkt(physischMm: Double, punkte: Double) -> Double? {
+        guard physischMm > 0, punkte > 0 else { return nil }
+        return physischMm / punkte
+    }
+}
+
+/// Ein Schirm oder ein Fenster darauf -- mit seiner ECHTEN Flaeche.
+///
+/// Traegt beides, weil beides gebraucht wird: Punkte fuer das Zeichnen,
+/// Millimeter fuer die Frage, ob ein Mensch das lesen kann. Wer nur Punkte
+/// hat, kann die zweite Frage nicht beantworten, egal wie er rechnet.
+public struct Anzeigeflaeche: Equatable, Sendable {
+    public let breiteMm: Double
+    public let hoeheMm: Double
+
+    public init(breiteMm: Double, hoeheMm: Double) {
+        self.breiteMm = breiteMm
+        self.hoeheMm = hoeheMm
+    }
+
+    /// Aus der physischen Schirmgroesse und dem Anteil, den ein Fenster davon
+    /// einnimmt. Ein Fenster auf halber Schirmbreite hat halb so viel Flaeche
+    /// -- und traegt darum weniger, was die Feldrechnung selbst merkt.
+    public init?(schirmMm: (breite: Double, hoehe: Double),
+                 schirmPunkte: (breite: Double, hoehe: Double),
+                 fensterPunkte: (breite: Double, hoehe: Double)) {
+        guard let mmProPunktB = Lesbarkeit.mmJePunkt(physischMm: schirmMm.breite,
+                                                     punkte: schirmPunkte.breite),
+              let mmProPunktH = Lesbarkeit.mmJePunkt(physischMm: schirmMm.hoehe,
+                                                     punkte: schirmPunkte.hoehe),
+              fensterPunkte.breite > 0, fensterPunkte.hoehe > 0
+        else { return nil }
+        self.breiteMm = fensterPunkte.breite * mmProPunktB
+        self.hoeheMm = fensterPunkte.hoehe * mmProPunktH
+    }
+
+    public var diagonaleZoll: Double {
+        (breiteMm * breiteMm + hoeheMm * hoeheMm).squareRoot() / 25.4
+    }
+
+    public func felder(abstandMm: Double, werte: Lesbarkeitswerte = .gemessen) -> Int {
+        Lesbarkeit.felder(breiteMm: breiteMm, hoeheMm: hoeheMm,
+                          abstandMm: abstandMm, werte: werte)
+    }
+
+    public func form(abstandMm: Double, werte: Lesbarkeitswerte = .gemessen) -> Anzeigeform {
+        Lesbarkeit.form(breiteMm: breiteMm, hoeheMm: hoeheMm,
+                        abstandMm: abstandMm, werte: werte)
     }
 }
