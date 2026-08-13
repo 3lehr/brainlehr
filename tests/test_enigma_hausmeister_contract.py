@@ -74,7 +74,10 @@ def test_z0_bis_z8_hausmeister_erhaelt_nur_nutzinformation(hausmeister_umgebung)
 
     # A's broad release does not add role, purpose, or recipient. B's narrow
     # release therefore yields only the allowed intersection. The secret has
-    # its independent provider/purpose gate. Current raw MCP exposes all three.
+    # its independent provider/purpose gate. Bis 2026-08-13 stand hier "Current
+    # raw MCP exposes all three" -- der Stand, als L-f67cd1 und L-645969
+    # aufgenommen wurden. Der Satz widersprach seither der Zusicherung drei
+    # Zeilen darunter; beide Lehren sind jetzt resolved.
     answers = {name: _public_read(node_id) for name, node_id in hausmeister_umgebung.items()}
     assert answers == {
         "person_a": {"error": "zugriff verweigert"},
