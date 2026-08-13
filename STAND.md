@@ -1,4 +1,52 @@
-# STAND brainlehr — 2026-08-13T08:55:00+0200
+# STAND brainlehr — 2026-08-13T13:15:00+0200
+
+## Die fehlende Hinsicht — sechs Stellen, eine Form (`012500e5`)
+
+Auf Betreiberfrage *„wo taucht das noch auf?"*: **Eine Aussage trägt einen
+Wahrheitswert nur zusammen mit der Hinsicht, in der sie gilt.** Katze und Delfin
+sind beide Säugetiere, nur einer mag Wasser.
+
+5814 Kanten ohne die Angabe **worin** ähnlich · Schwelle `0,65` für Rechtsfrage
+und Funktionsnamen gleich · kein Rechtsraum · Zeit nicht im Vektor (2026 und
+2020 ununterscheidbar nah) · `trigram` im Deutschen tauglich, im Japanischen
+blind · zwei Ausgangszustände frisch gegen gewachsen.
+
+**Prüffrage vor dem Bau:** *Gibt es einen Fall, in dem dieselbe Aussage hier wahr
+und dort falsch ist?* Wenn ja, gehört die Hinsicht ins **Datenmodell**, nicht in
+den Fließtext — dort wird sie beim Vergleichen nicht mitgelesen.
+
+Der unangenehme Teil: Sichtbar wurde die gemeinsame Form erst, als der
+**Betreiber** fragte. Alle sechs Befunde lagen im Speicher.
+
+## Zwei Sorten von „brainlehr sagt" — und die erste Hälfte ist gebaut
+
+Ab sofort gilt: Stammt eine Aussage aus dem eingespielten Block, wird sie
+zugeschrieben. Anlass war ein Befund samt Zahlen, den ich als eigene Aussage
+weitergegeben habe; er war sechs Tage alt und aus einem Codestand, den es nicht
+mehr gibt.
+
+Dazu die Unterscheidung **eigene Regel** gegen **fremdes Zitat**. Gemessen war
+`norm_art` bei **0** von 2166, `gilt_bis` bei **2**, örtliche Geltung **kein
+Feld**, und 1919 Knoten stehen auf `offen`.
+
+**Gebaut** (`ccc9afd`): `norm_art` ist Pflicht, sobald die Quelle einen fremden
+Satz nennt — Gesetz, DIN, ISO, BSI, Urteil. Eigenes Wissen läuft ohne durch.
+Wertemenge war bereits entschieden (`sein`/`sollen`/`dürfen`, Knoten `dd367fd1`)
+und wurde **übernommen, nicht neu erfunden**.
+
+Damit ist die Vorbedingung für den Rechtsraum erfüllt: Es ist jetzt
+entscheidbar, für welche Zeilen Ablauf und Ort überhaupt verlangt werden — die
+Handvoll fremder Zitate statt aller 2166. Der Rechtsraum kommt als
+**hierarchischer Pfad** (`/EU/DE/NI`), weil brainlehr dieses Idiom ohnehin
+benutzt und „gilt das hier?" damit ein Präfixvergleich ist
+(`docs/PLAN_RECHTSRAUM_2026-08-13.md`).
+
+**Nebenbefund aus dem Bau:** Die Markerliste des älteren
+`normrang_herkunft`-Triggers enthielt `%EN %` und traf damit gewöhnliches
+Deutsch („Impressen (", „Knoten unter"). Vorher unauffällig, weil dieser Trigger
+nur bei `norm_rang IN (1,2)` lief.
+
+## Stand 08:55 — die Befunde des Vormittags
 
 ## Die Regel gegen wirkungslose Mechanismen gab es schon — vor Monaten
 
