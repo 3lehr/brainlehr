@@ -249,6 +249,44 @@ Aus dem Vorgängerplan übernommen, weiterhin gültig:
 
 ---
 
-## §7 · Fortschreibung
+## Aufträge, fertig zum Übergeben (§7)
+
+**Für alle Aufträge gleichermaßen:** Arbeitsort `/Volumes/daten/Begod2026/brainlehr`,
+Zweig `brainlehr/b4-ausweis`. Zuerst `CLAUDE.md` lesen, dann diesen Plan.
+„Sieht der Code anders aus als hier beschrieben, halte dich an den Code und
+melde die Abweichung." Kein `git add -A`, kein Push, kein `git stash`. Commit
+mit expliziter Pfadliste. Nicht `swift build`, sondern `app/bauen.sh`.
+Sichtprüfung **Text vor Bild** über die Bedienungshilfen; wenn doch ein Bild
+nötig ist, ausschließlich über die **Fenster-Kennung** der Zielanwendung, nie
+nach Bildschirmbereich. buckeberg wird **nur gelesen**.
+
+### Schritt A · Der PDF-Betrachter der Homepage ist tot — das zuerst
+
+| | |
+|---|---|
+| **Darf ändern** | `buckeberg/.gitignore`, `buckeberg/homepage/src/lib/pdf-viewer-link.mjs`, `buckeberg/homepage/src/pages/quellen.astro` |
+| **Tabu zusätzlich** | alles in brainlehr; `buckeberg/dossier/`, `buckeberg/dokumente/`, `buckeberg/recht/` — Inhalte gehören dem Betreiber |
+| **Fakten** | `homepage/vendor/pdfjs-viewer/` enthält `LICENSE` und `web`, **kein `build/`**. `web/viewer.html` lädt `../build/pdf.mjs`; diese Datei existiert im ganzen Repo nicht. Ursache: `.gitignore` Zeile 21 `**/build/`. Der Betrachter zeigt eine graue Fläche **ohne Fehlermeldung**. `scripts/quellen_check.py` meldet „Keine Fehler" — er prüft die Daten, nicht die Anzeige. Zusätzlich: `quellen.astro` hat `ANZAHL_QUELLEN = 45` fest verdrahtet, das Dossier zitiert [47] und [48]. 22 der 43 hinterlegten Dateien sind gar keine PDFs und werden trotzdem durch pdf.js geleitet. |
+| **Abnahme** | Rot vor grün am **laufenden** `dist/`, nicht am Quelltext: vorher graue Fläche, nachher das Dokument. Je Format eine Probe (pdf, html, jpg, txt). Negativfall, der wichtigere: eine Quelle, deren Datei fehlt, führt zu einer **Meldung**, nicht zu einer grauen Fläche — der stille Fehlschlag ist der eigentliche Befund. Gegenprobe: `ANZAHL_QUELLEN` aus der Datei ableiten, dann müssen 46–48 erreichbar sein. |
+
+### Schritt B · HTML-Quellen bekommen eine Fundstelle
+
+| | |
+|---|---|
+| **Darf ändern** | `buckeberg/dossier/quellen.json` (nur die Felder `seite`/`suchtext`/`anker`), `buckeberg/scripts/quellen_check.py` |
+| **Tabu zusätzlich** | `kern/`, `haken/`, `melder/`, `tests/`, `runs/`, `schema.sql`, `knowledge_mcp_server.py` — die gehören der parallelen Python-Sitzung |
+| **Fakten** | Alle 14 markierbaren Quellen sind PDF. **Keine der 20 HTML-Quellen trägt eine Stelle** — 42 % des Bestands. Bei **19 von 20** steht die Stelle bereits im Klartext im Feld `kurz` („§ 16 Abs. 2 Satz 2 WEG — abweichende Kostenverteilung"). Die HTML-Dateien tragen 16 `id=`-Anker, alle Layout (`fTop`, `imgmap…`), keiner auf einen Absatz. |
+| **Abnahme** | **Zuerst zählen**, wie viele der 20 einen Paragraphen im `kurz`-Feld tragen (erwartet 19, mit Nenner belegen). Dann je Quelle prüfen, ob der Paragraph im HTML als Textstelle auffindbar ist. Rot vor grün: vorher 0 von 20 markierbar, nachher die gemessene Zahl. Negativfall: ein Paragraph, der im Dokument **nicht** vorkommt, wird als Befund gemeldet und **nicht** eingetragen — eine erfundene Stelle ist schlechter als keine. |
+
+### Schritt C · Die Anzeige, mit den gemessenen Werkzeugen
+
+| | |
+|---|---|
+| **Darf ändern** | `app/` (gesamt) |
+| **Tabu zusätzlich** | wie Schritt B; zusätzlich `berichte/entscheidungen_server.py` — neue Datenendpunkte werden **bestellt**, nicht dort gebaut |
+| **Fakten** | Gemessen am 2026-08-13 auf diesem Rechner (macOS 26.5.1, nicht 14 — `Package.swift` setzt `.macOS(.v14)`, das ist hier **nicht** prüfbar): PDFKit findet die Seite selbst über `doc.index(for: selection.pages.first)`, Suchdauer 12 ms. **Quick Look kann weder aufschlagen noch hervorheben noch einen Fehlschlag melden** — es nimmt sogar eine erfundene `.zzq` an und liefert ein Symbol, das von Erfolg nicht zu unterscheiden ist. Für txt/html kann NSTextView beides nativ, mit Tastatur und Bedienungshilfen. Ein **gesperrtes** PDF ist nicht `nil`: `pageCount` stimmt, eine Miniatur entsteht, die Suche liefert 0 Treffer — aus „Passwort nötig" wird stillschweigend „keine Fundstelle". 8 Dokumente gleichzeitig = 240 MB, Suche darüber +200 MB; Öffnen kostet 2–5 ms. `PDFView` liefert `isAccessibilityElement()=false` und `AXUnknown`. |
+| **Abnahme** | Rot vor grün je Format an einem **echten** buckeberg-Dokument. Vier Negativfälle, alle mit gebauten Gegenbeispielen: gesperrtes PDF → „Passwort nötig", **nicht** „keine Fundstelle" (`isLocked` **vor** der Suche abfragen); beschädigtes PDF → Meldung statt Absturz; unbekanntes Format → Meldung statt stillem Symbol; Quelle ohne Fundstelle → Dokument öffnet unmarkiert **mit Hinweis**. Gegenprobe zur harten Grenze: `shasum -a256` auf die Quelldatei vor und nach dem Markieren muss gleich sein — nie `write()`, sondern Anmerkung im Speicher oder `pageOverlayViewProvider`. |
+
+## §8 · Fortschreibung
 
 Wird nach der Umsetzung ergänzt: was anders kam als geplant, und warum.

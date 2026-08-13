@@ -97,6 +97,19 @@ def test_format_erkennung():
 
 # ─── markierbar: aufschlagen und markieren sind zwei Aussagen ─────────────
 
+def test_mehrdeutig_kennt_drei_werte():
+    """Ohne Seitenmarken ist die Antwort unbekannt, nicht 'eindeutig'.
+
+    9 von 367 Volltexten tragen keine Marken. Ein zweiwertiges Feld haette
+    dort 'eindeutig' gemeldet -- eine Aussage aus einer Nichtmessung.
+    """
+    assert F.Fundstelle(True, "gerechnet", seiten=[4], suchtext="x").mehrdeutig is False
+    assert F.Fundstelle(True, "gerechnet", seiten=[4, 9], suchtext="x").mehrdeutig is True
+    assert F.Fundstelle(True, "gerechnet", seiten=[], suchtext="x").mehrdeutig is None
+    # Wo nichts belegt ist, gibt es auch nichts Mehrdeutiges -- kein None.
+    assert F.Fundstelle(False, "keine").mehrdeutig is False
+
+
 def test_markierbar_haengt_am_suchtext_nicht_an_belegt():
     nur_seite = F.Fundstelle(True, "gepflegt", seite=4, datei="x.pdf")
     assert nur_seite.belegt is True and nur_seite.markierbar is False

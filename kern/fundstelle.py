@@ -91,14 +91,25 @@ class Fundstelle:
     weitere: list[dict] = field(default_factory=list)  # weitere Treffer, ungewichtet
 
     @property
-    def mehrdeutig(self) -> bool:
-        """Steht der Wortlaut auf mehr als einer Seite?
+    def mehrdeutig(self) -> bool | None:
+        """Steht der Wortlaut auf mehr als einer Seite? None heisst: unbekannt.
 
         Die App MUSS das wissen: PDFKit findString markiert sonst den ersten
         Treffer, und der ist bei 8 der 14 gepflegten Suchtexte eine blosse Zahl
         ("50,00", "35,00", "75,00"). Bei Quelle 4 steht "75,00" auf den Seiten
         4, 5, 6 und 8 -- gepflegt ist 8, markiert wuerde 4.
+
+        DREI Werte, nicht zwei, und der dritte ist der Grund fuer diese Zeilen:
+        9 der 367 Volltexte tragen KEINE Seitenmarken (gemessen 2026-08-13 vom
+        Plattformpruefer des Konsils). Dort ist `seiten` leer -- nicht weil der
+        Text einmal vorkommt, sondern weil wir es nicht ausrechnen koennen.
+        `len(seiten) > 1` haette daraus ein "eindeutig" gemacht: eine Aussage
+        aus einer Nichtmessung, also genau die Fehlerklasse, gegen die dieses
+        Modul gebaut ist. Ein Feld, das nur ja und nein kennt, muss luegen,
+        wenn es die Antwort nicht hat.
         """
+        if not self.seiten:
+            return None if self.belegt else False
         return len(self.seiten) > 1
 
     @property
