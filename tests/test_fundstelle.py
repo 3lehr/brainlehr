@@ -169,17 +169,41 @@ def test_verwaltungszeilen_sind_keine_quellen():
     assert nummern == list(range(1, len(nummern) + 1)), f"Luecke in den Quellennummern: {nummern}"
 
 
-@echt
-def test_jede_markierbare_quelle_ist_ein_pdf():
-    """Der Befund, der den Zuschnitt entscheidet -- als Test, nicht als Satz im Plan.
+# Stand der Abdeckung, gegen den die Ratsche laeuft. Erhoehen, wenn mehr
+# Fundstellen gepflegt sind -- nie senken, um einen roten Test gruen zu machen.
+# 2026-08-13: von 14 auf 30 gestiegen, nachdem kern/normfundstelle.py die
+# HTML-Quellen aufgeloest hat (vorher 0 von 20, jetzt 16 von 20).
+MINDESTENS_MARKIERBAR = 30
+MINDESTENS_HTML = 16
 
-    Wird das eines Tages falsch, ist das keine Regression, sondern die
-    Nachricht, dass fuer HTML endlich Fundstellen gepflegt wurden.
+
+@echt
+def test_abdeckung_faellt_nicht_zurueck():
+    """Ratsche auf die Zahl der markierbaren Quellen.
+
+    Der Vorgaenger dieses Tests behauptete "jede markierbare Quelle ist ein
+    PDF" -- richtig gemessen am 2026-08-13 vormittags, und noch am selben Tag
+    ueberholt. Er trug seine eigene Ausserdienststellung im Docstring ("wird
+    das falsch, ist es die Nachricht, dass HTML gepflegt wurde") und wurde
+    genau dadurch rot. Was bleibt, ist nicht die Momentaufnahme, sondern die
+    Richtung: die Abdeckung darf nicht sinken.
     """
-    kreuz = F.bestand()["format_gegen_stelle"]
-    markierbar = {f: z["markierbar"] for f, z in kreuz.items() if z.get("markierbar")}
-    assert set(markierbar) == {"pdf"}, f"markierbare Quellen ausserhalb PDF: {markierbar}"
-    assert kreuz.get("html", {}).get("markierbar", 0) == 0
+    b = F.bestand()
+    assert b["mit_fundstelle"] >= MINDESTENS_MARKIERBAR, (
+        f"Abdeckung gesunken: {b['mit_fundstelle']} von {b['quellen']}, "
+        f"erwartet mindestens {MINDESTENS_MARKIERBAR}")
+    html = b["format_gegen_stelle"].get("html", {}).get("markierbar", 0)
+    assert html >= MINDESTENS_HTML, f"HTML-Abdeckung gesunken: {html}"
+
+
+@echt
+def test_kein_format_bleibt_unbeachtet():
+    """Jedes Format im Bestand taucht in der Kreuztabelle auf -- sonst zaehlt
+    die Summenprobe zwar auf, verschweigt aber eine ganze Gattung."""
+    b = F.bestand()
+    assert set(b["formate"]) == set(b["format_gegen_stelle"])
+    for f, zeile in b["format_gegen_stelle"].items():
+        assert sum(zeile.values()) == b["formate"][f], f"{f}: {zeile} gegen {b['formate'][f]}"
 
 
 @echt
