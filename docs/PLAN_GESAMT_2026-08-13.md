@@ -51,6 +51,49 @@ keinen Weg. „Das gilt bis X" hat einen Weg und keine Daten. Und der
 Stichwortkanal ist **unter drei Zeichen strukturell blind** — im Deutschen ein
 Randfall, im Japanischen der Normalfall (nachgestellt: `知識` findet 0).
 
+## Linie 0 — „brainlehr sagt", und sie steht vor allem anderen
+
+Betreiberanweisung 2026-08-13, wörtlich: *„wen aus brainlehr sollte es in
+zukunft heißen: brainlehr sagt: …"* — und *„stell es voran, es hat gleich
+nutzen"*.
+
+**Anlass:** Ich hatte einen Befund samt Zahlen (0,531 gegen 0,527, Modellwahl
+`bge-m3`) als eigene Aussage weitergegeben. Er stammte vollständig aus dem
+eingespielten Knoten `/brainlehr/das-einbettungsmodell-trennt-auf`, war sechs
+Tage alt und aus einem Codestand, den es nicht mehr gibt. Aus der Formulierung
+war nichts davon erkennbar.
+
+**Warum sie vorangeht, obwohl sie klein ist:** Sie beantwortet nebenbei die
+Frage, an der die Okkultation seit Tagen hängt — *trägt der Abruf etwas bei?*
+Ist jede eingespielte Aussage gekennzeichnet, **sieht der Betreiber die
+Trefferquote im Gespräch mit**, ohne Messlauf, ohne Korpus, ohne Eingriff. Das
+ist billiger als jedes geplante Verfahren und liefert ab der ersten Antwort.
+
+**Die Gefahr, und sie ist dieselbe wie bei allen elf mechanismuslosen Regeln:**
+Eine Kennzeichnungsregel, die nur im Text steht, ist Disziplin — und Disziplin
+hat heute zwölfmal versagt. Deshalb hat Linie 0 einen **mechanischen** Teil:
+
+1. Der Abruf-Haken **markiert seinen eigenen Block** so, dass maschinell
+   feststellbar ist, welche Aussagen aus dem Speicher stammen.
+2. Ein Melder auf der Antwortseite prüft, ob **kennzeichnende Begriffe** aus dem
+   eingespielten Block in der Antwort auftauchen, **ohne** dass die Antwort den
+   Speicher als Quelle nennt. `haken/antwort_abruf.py` liest die letzte eigene
+   Antwort bereits — die Stelle existiert.
+
+**Zwei Grenzen, ohne die die Regel schadet:**
+
+- **Nicht jeder Satz bekommt ein Etikett.** Gekennzeichnet wird, was der Leser
+  sonst für meine eigene Aussage hielte: Zahlen, Existenzaussagen, Befunde,
+  Datumsangaben. Was in derselben Sitzung selbst gemessen wurde, bleibt eigen —
+  dort ist die Herkunft die Messung, nicht der Abruf.
+- **„brainlehr sagt" ist keine Bestätigung.** Ein eingespielter Treffer ist
+  Hintergrund, kein Beleg. Die Kennzeichnung sagt, **woher** etwas kommt, nicht
+  dass es stimmt. Wo es zählt, wird weiterhin gegen den echten Stand geprüft.
+
+Und der Stand gehört dazu, wo er zählt: *„brainlehr sagt, Stand 07.08."* hätte
+die Nachfrage nach der heutigen Architektur überflüssig gemacht — sie hätte in
+der Aussage gestanden.
+
 ## Die fünf Linien, in bindender Reihenfolge
 
 **Linie A — Wirksamkeit vor allem anderen.** Solange Mechanismen nicht feuern,
@@ -145,6 +188,15 @@ beschrieben, halte dich an den Code und melde die Abweichung." Kein `git add
 (`git commit -- pfad1 pfad2`), weil mehrere Agenten im selben Baum arbeiten.
 Volle Suite im Vordergrund mit `timeout=600000` (rund 280 s). Schreibende Läufe
 nie parallel zu einem Suitelauf. Datenbanknamen über `kern/speicher`.
+
+### Schritt 0 · „brainlehr sagt" maschinell prüfbar machen (Aufgabe 94)
+
+| | |
+|---|---|
+| **Darf ändern** | `haken/knowledge_recall_hook.py` (nur die Ausgabeform des Blocks), ein neuer Melder unter `melder/`, dazu Tests |
+| **Tabu zusätzlich** | `haken/antwort_abruf.py` **inhaltlich** — der Melder wird von dort nur **aufgerufen**, wie es die Existenzprüfung heute früh vorgemacht hat; `knowledge_mcp_server.py`, `schema.sql` |
+| **Fakten** | Der Abruf-Haken ist verdrahtet und liefert bei jedem Prompt (`knowledge_recall_hook`, 53 Nennungen, Eintrag vorhanden). `antwort_abruf.py --stop` läuft belegt 719-mal und liest die letzte eigene Antwort. Der Anlassfall: Knoten `/brainlehr/das-einbettungsmodell-trennt-auf`, Zahlen 0,531 gegen 0,527, ohne Zuschreibung weitergegeben. |
+| **Abnahme** | Rot vor grün an genau diesem Fall: Eine Antwort, die eine kennzeichnende Zahl aus dem eingespielten Block trägt und den Speicher **nicht** nennt, wird gemeldet — vorher nicht. Negativfall, und er ist der wichtigere: Eine Antwort, die den Speicher **nennt**, wird nicht gemeldet; und eine Antwort ohne jeden Bezug zum Block ebenfalls nicht. Ein Melder, der bei jeder Antwort anschlägt, wird nach dem dritten Mal überlesen. Grenzwert: ein Begriff, der **zufällig** in beiden vorkommt (etwa „Speicher"), darf nicht auslösen — gekennzeichnet wird an seltenen Begriffen, nicht an häufigen. |
 
 ### Schritt A1 · Kantenberechnung wieder auslösen (Aufgabe 81)
 
