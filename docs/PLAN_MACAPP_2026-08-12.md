@@ -86,8 +86,28 @@ das wurde jedes Mal von Hand nachgeliefert und war jedes Mal eine Fehlerquelle.
   statt starten.
 - Nicht `swift build` tippen, sondern `app/bauen.sh` — es wählt die taugliche
   Kette nach Fähigkeit und zählt die Testfälle selbst nach.
-- Volle Python-Suite abwarten und das Ergebnis berichten, nicht in den
-  Hintergrund legen.
+- Volle Python-Suite **im Vordergrund** mit `timeout=600000` fahren. Sie braucht
+  rund 200 Sekunden und passt damit hinein. Nicht in den Hintergrund legen und
+  nicht auf eine Monitor-Meldung warten — **acht Agenten sind am 2026-08-12/13
+  genau daran im Wartezustand geendet**, ohne ihr Ergebnis zu liefern. Die
+  Ursache stand jedes Mal im Auftrag, nicht in ihrer Arbeit.
+- **Sichtprüfung: Text vor Bild.** Ob ein Bedienelement da ist, richtig heißt
+  und erreichbar ist, wird über die Bedienungshilfen als **Text** ausgelesen —
+  das beantwortet die Frage vollständig und kann per Konstruktion nichts
+  Fremdes erfassen. Ein Bild braucht nur, wer Layout, Farbe oder Zeichnung
+  beurteilen muss.
+- **Wenn doch ein Bild nötig ist: ausschließlich über die Fenster-Kennung der
+  Zielanwendung**, und die Kennung unmittelbar vor der Aufnahme prüfen. Nicht
+  nach Bildschirmbereich, nicht Vollbild.
+  *Warum die Formulierung „kein Vollbild" nicht genügt:* Gefährlich ist nicht
+  die **Größe** der Aufnahme, sondern dass zwischen dem Bestimmen des Ziels und
+  dem Auslösen der Vordergrund wechselt. An diesem Rechner hängen zwei
+  Bildschirme und es arbeiten mehrere Sitzungen parallel — dort ist das der
+  Normalfall. Am 2026-08-12 wurden dabei **zweimal** private Inhalte des
+  Betreibers miterfasst, beim zweiten Mal aus einer anderen laufenden Sitzung,
+  **obwohl die Auflage „kein Vollbild" im Auftrag stand** (`L-bfe140`).
+- Jede Bildaufnahme auf diesem Rechner ist ein Datenschutzvorgang und wird dem
+  Betreiber gemeldet — auch wenn nichts übrig bleibt.
 - Dauerhaft tabu, weil fremde Sitzung: `messungen/messlauf_abrufguete_v2.py`,
   `migrationen/lauf_titelverteidiger_2026-08-08.py`, `NODE_INDEX.md`,
   `antwort_treffer.json`, `auszug/`, `bereinigung_log.jsonl`,
