@@ -37,7 +37,6 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 import sys
 from collections import Counter
 from datetime import datetime, timezone
@@ -47,6 +46,7 @@ WURZEL = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(WURZEL))
 sys.path.insert(0, str(WURZEL / "kern"))
 
+import codestand  # noqa: E402  -- AUFGABE 70: Commit/Zweig/schmutzig zur Laufzeit
 import pruefkorpus  # noqa: E402  -- tokenize/build_idf/load_bestand, wiederverwendet
 # DB-Zugriff hier bewusst NICHT ueber kern/speicher.py, sondern ueber
 # pruefkorpus.load_bestand() -- genau der Weg, den auch haken/antwort_abruf.py
@@ -220,12 +220,7 @@ def zaehle_abkuerzungen(nodes: list[dict], lessons: list[dict]) -> dict:
 
 
 def main() -> None:
-    codestand = subprocess.run(
-        ["git", "rev-parse", "--short", "HEAD"], cwd=WURZEL,
-        capture_output=True, text=True, check=True).stdout.strip()
-    zweig = subprocess.run(
-        ["git", "branch", "--show-current"], cwd=WURZEL,
-        capture_output=True, text=True, check=True).stdout.strip()
+    stand = codestand.ermitteln(WURZEL)
 
     antworten = lade_antworten(TRANSCRIPT)
     komprimiert = [komprimiere(a) for a in antworten]
@@ -321,8 +316,7 @@ def main() -> None:
     frage3 = zaehle_abkuerzungen(nodes, lessons)
 
     ergebnis = {
-        "codestand": {"commit": codestand, "zweig": zweig,
-                       "ermittelt": datetime.now(timezone.utc).isoformat(timespec="seconds")},
+        "codestand": stand,
         "transcript": str(TRANSCRIPT),
         "n_docs_bestand": n_docs,
         "frage1_schwelle": frage1,

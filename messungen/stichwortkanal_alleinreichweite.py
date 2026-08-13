@@ -47,6 +47,7 @@ import json
 from contextlib import contextmanager
 from datetime import datetime, timezone, timedelta
 
+import codestand
 import embeddings
 import speicher
 import ausgangsmessung_s12 as _s12mod
@@ -265,7 +266,7 @@ def main() -> None:
             "korpus": a.korpus.name,
             "korpus_limit": a.limit,
             "korpus_faelle_gesamt_in_datei": len(json.loads(a.korpus.read_text(encoding="utf-8"))["faelle"]),
-            "code_stand": "51927d1 (Zweig brainlehr/b4-ausweis)",
+            "code_stand": codestand.ermitteln(WURZEL),
             "erzeugt_am": datetime.now(TZ).strftime("%Y-%m-%dT%H:%M:%S%z"),
             **ergebnis,
         }
