@@ -136,12 +136,19 @@ Deshalb **kein** neues Feld für den Antwortmodus (Aufgabe 79): Der Prüfer meld
 bereits zehn Spalten mit 98–100 % Leerstand. Und die Reihenfolge ist bindend —
 solange Caveman nicht wirkt, zeichnet ein Modusfeld eine Konstante auf.
 
-## Der Lesepfad kennt die Herkunft seiner Vektoren nicht (Aufgabe 80)
+## Ein Vektor kennt nur seinen Modellnamen, nicht seine Parameter (Aufgabe 80)
 
-`knowledge_embeddings` trägt `model` und `dim`; der Bestand ist heute einheitlich
-(`bge-m3`, 1024, 3728 Zeilen), also entsteht heute kein Schaden. Beim
-**Schreiben** wird das Modell gelesen, beim **Lesen** nicht — `suchpfad_abruf.py`
-holt die Vektoren ohne jede Bedingung auf `model`.
+**KORRIGIERT 13:20.** Der frühere Absatz hier behauptete, der Lesepfad prüfe das
+Modell nicht. **Das war falsch, und der Fehler war meiner:** Ich hatte einen
+Agentenbefund mit einem `grep`-Treffer für geprüft gehalten, statt die Fundstelle
+zu lesen. Nachgelesen filtern **alle drei** Leser auf `model` —
+`_embedding_ranking` mit ausführlicher Begründung und zusätzlichem Dedup,
+`kanten_aus_bedeutung` ebenso, und die Zeile in `suchpfad_abruf.py` gehört zum
+**Selbsttest** und filtert auch. Die beschriebene Lücke gab es nicht (`L-bee002`).
+
+**Was übrig bleibt und weiterhin gilt:** Die Identität eines Vektors ist allein
+der **Modellname**. Parameter, die den Vektor verändern, ohne den Namen zu
+ändern, sind darin nicht enthalten — `num_ctx` ist genau so einer.
 
 **Das macht Aufgabe 80 zur Vorbedingung von Aufgabe 69, nicht umgekehrt.** Wird
 `num_ctx` angehoben und der Bestand neu gerechnet, entstehen Vektoren desselben
