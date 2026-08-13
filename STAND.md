@@ -1,4 +1,71 @@
-# STAND brainlehr — 2026-08-13T06:45:00+0200
+# STAND brainlehr — 2026-08-13T07:55:00+0200
+
+## Der Stop-Haltepunkt liefert — die Existenzprüfung hängt trotzdem im Leeren
+
+Aus 5642 Transcript-Datensätzen `system/stop_hook_summary` im ganzen Verbund:
+Der Stop-Kanal löst aus, in brainlehr allein **949-mal**, je acht Haken, zuletzt
+heute 05:27:55. **`haken/existenzpruefung.py` kommt in 0 von 949 vor.**
+
+Die acht laufenden Haken stehen alle mit absolutem Pfad in
+`~/.claude/settings.json`. Der Stop-Eintrag in der projekteigenen
+`brainlehr/.claude/settings.json` — gestern Nacht angelegt, um die globale Datei
+nicht anzufassen — hat nie gewirkt. Jedes Stop-Ereignis lief mit einem
+Arbeitsbaum unter `.claude/worktrees/` als Verzeichnis, nie im Hauptbaum.
+
+**Warum die Nachbardateien nichts beweisen:** `hookInfos` wird ausschließlich
+für `stop_hook_summary` protokolliert (5642 von 5650 Datensätzen). Die
+projekteigenen Einträge von fahrtenbuch (`UserPromptSubmit`) und buckeberg
+(`PostToolUse`) sind in diesem Datensatztyp gar nicht sichtbar — über sie ist
+damit **nichts** gesagt, weder in die eine noch in die andere Richtung.
+
+Zehnte Erscheinungsform derselben Bauform: gebaut, gemeldet, in null Fällen
+wirksam. Diesmal war die Ursache die **Vorsicht** — der Plan wählte die
+projekteigene Ablage ausdrücklich, um fremde Sitzungen nicht zu treffen, und
+genau diese Wahl ist der Grund, warum nichts ankam.
+
+## Vorsorge für einen Zustand, den es noch nicht gibt: der Ausschreibekatalog
+
+`impl` steht **0-mal** im Bestand, die lange Form **133-mal** (`339eaee`).
+Trotzdem tritt der Schaden heute nicht ein: über **7649** protokollierte Suchen
+kommt `impl` **zweimal** vor, `res`/`msg`/`err`/`val`/`param` je **null**.
+Grund — Caveman ist nicht verdrahtet, alle 7649 Suchen stammen aus
+unkomprimierten Antworten.
+
+Daraus die Bauform (`16453e8`): Gelernt wird aus dem **Bestand** (Zähler kurz
+gegen lang), nicht aus dem Protokoll — dort steht kein einziges Beispiel. Der
+Protokollkanal kommt als zweiter dazu, sein heutiger Nullwert ist die
+Nullmessung. Übersetzt wird nur die **Anfrage**, mit beiden Formen per ODER,
+nie der gespeicherte Text (`L-d8c5fb`: „TG" wurde still zu „Tiefgarage"
+aufgelöst und wanderte in sieben abgeleitete Fundstellen, zwei davon
+öffentlich).
+
+## Herkunft: das Feld ist da, die Werte sind es nicht
+
+`access_log.model` ist zu 86 % „gefüllt" — davon sagen **6395 von 10117**
+wörtlich `unbekannt`, weitere 1426 sind leer. Echt brauchbar: **22 %**. Bei den
+Knoten 12 %.
+
+Zwei Fehler verhindern jede Auswertung, bevor sie beginnt: **drei
+Schreibweisen für ein Modell** (`claude-opus-5`, `Anthropic/claude-opus-5`,
+`Anthropic/Opus 5`) und **zwei Arten von Nichtwissen** (`unbekannt` als Text
+neben NULL). Wer gruppiert, bekommt drei Gruppen und merkt es nicht.
+
+Deshalb **kein** neues Feld für den Antwortmodus (Aufgabe 79): Der Prüfer meldet
+bereits zehn Spalten mit 98–100 % Leerstand. Und die Reihenfolge ist bindend —
+solange Caveman nicht wirkt, zeichnet ein Modusfeld eine Konstante auf.
+
+## Der Lesepfad kennt die Herkunft seiner Vektoren nicht (Aufgabe 80)
+
+`knowledge_embeddings` trägt `model` und `dim`; der Bestand ist heute einheitlich
+(`bge-m3`, 1024, 3728 Zeilen), also entsteht heute kein Schaden. Beim
+**Schreiben** wird das Modell gelesen, beim **Lesen** nicht — `suchpfad_abruf.py`
+holt die Vektoren ohne jede Bedingung auf `model`.
+
+**Das macht Aufgabe 80 zur Vorbedingung von Aufgabe 69, nicht umgekehrt.** Wird
+`num_ctx` angehoben und der Bestand neu gerechnet, entstehen Vektoren desselben
+Modells mit derselben Dimension, aber anderer Abschneidegrenze. Die
+Längenprüfung greift dann nicht, weil die Länge stimmt — alte und neue Vektoren
+werden während des Laufs als vergleichbar behandelt, still.
 
 ## Warum die Regeln nicht greifen — gemessen, nicht vermutet
 
