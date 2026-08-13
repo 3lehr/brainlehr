@@ -1,0 +1,488 @@
+{
+  "erzeugt_am": "2026-08-14T01:46:47+0200",
+  "codestand": {
+    "commit": "2b7174b",
+    "zweig": "brainlehr/b4-ausweis",
+    "schmutzig": true,
+    "ermittelt": "2026-08-13T23:46:47+00:00"
+  },
+  "fallbestand": {
+    "datei": "runs/pruefkorpus_v2.json",
+    "etikettiert_n": 35,
+    "negativ_n": 10,
+    "quelle": "kern/pruefkorpus.py-Lauf 2026-08-07T14:02"
+  },
+  "kandidatenpool": "die 35 tatsaechlichen Ziele selbst (nicht der volle Bestand, s. Modulkopf)",
+  "pruefsumme_bestand_vorher": "6e0f928dd3c67d82cd6e6813dc7b12b75f2c24f06d230eec31c76752d4c209d8",
+  "pruefsumme_bestand_nachher": "6e0f928dd3c67d82cd6e6813dc7b12b75f2c24f06d230eec31c76752d4c209d8",
+  "bestand_unveraendert": true,
+  "laufzeit_deckel_540s_gekuerzt": false,
+  "modelle": [
+    {
+      "modell": "bge-m3",
+      "erreichbar": true,
+      "trefferquote": {
+        "treffer": 35,
+        "n": 35,
+        "anteil": 1.0
+      },
+      "embed_fehlgeschlagen": 0,
+      "gekappte_ziele": [],
+      "gekappte_anfragen": [],
+      "positivkontrolle": {
+        "passend_median": 0.6702328067612568,
+        "passend_n": 35,
+        "fachfremd_median": 0.33488244370897663,
+        "fachfremd_n": 350,
+        "median_abstand": 0.3353503630522802
+      },
+      "einzelfaelle": [
+        {
+          "kennung": "L-a9ccd0",
+          "ziel": "lesson:L-a9ccd0",
+          "gefunden": "lesson:L-a9ccd0",
+          "treffer": true
+        },
+        {
+          "kennung": "L-298823",
+          "ziel": "lesson:L-298823",
+          "gefunden": "lesson:L-298823",
+          "treffer": true
+        },
+        {
+          "kennung": "L-f9f654",
+          "ziel": "lesson:L-f9f654",
+          "gefunden": "lesson:L-f9f654",
+          "treffer": true
+        },
+        {
+          "kennung": "L-b4b443",
+          "ziel": "lesson:L-b4b443",
+          "gefunden": "lesson:L-b4b443",
+          "treffer": true
+        },
+        {
+          "kennung": "L-44a838",
+          "ziel": "lesson:L-44a838",
+          "gefunden": "lesson:L-44a838",
+          "treffer": true
+        },
+        {
+          "kennung": "L-cdac52",
+          "ziel": "lesson:L-cdac52",
+          "gefunden": "lesson:L-cdac52",
+          "treffer": true
+        },
+        {
+          "kennung": "L-e7bc5e",
+          "ziel": "lesson:L-e7bc5e",
+          "gefunden": "lesson:L-e7bc5e",
+          "treffer": true
+        },
+        {
+          "kennung": "L-e1a441",
+          "ziel": "lesson:L-e1a441",
+          "gefunden": "lesson:L-e1a441",
+          "treffer": true
+        },
+        {
+          "kennung": "L-b91ed6",
+          "ziel": "lesson:L-b91ed6",
+          "gefunden": "lesson:L-b91ed6",
+          "treffer": true
+        },
+        {
+          "kennung": "L-bbd7fb",
+          "ziel": "lesson:L-bbd7fb",
+          "gefunden": "lesson:L-bbd7fb",
+          "treffer": true
+        },
+        {
+          "kennung": "L-503687",
+          "ziel": "lesson:L-503687",
+          "gefunden": "lesson:L-503687",
+          "treffer": true
+        },
+        {
+          "kennung": "L-8c633e",
+          "ziel": "lesson:L-8c633e",
+          "gefunden": "lesson:L-8c633e",
+          "treffer": true
+        },
+        {
+          "kennung": "L-606b63",
+          "ziel": "lesson:L-606b63",
+          "gefunden": "lesson:L-606b63",
+          "treffer": true
+        },
+        {
+          "kennung": "L-0392e4",
+          "ziel": "lesson:L-0392e4",
+          "gefunden": "lesson:L-0392e4",
+          "treffer": true
+        },
+        {
+          "kennung": "L-476602",
+          "ziel": "lesson:L-476602",
+          "gefunden": "lesson:L-476602",
+          "treffer": true
+        },
+        {
+          "kennung": "/ops/buckeberg-konsil-2026-07-22-governance",
+          "ziel": "node:/ops/buckeberg-konsil-2026-07-22-governance",
+          "gefunden": "node:/ops/buckeberg-konsil-2026-07-22-governance",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+          "ziel": "node:/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+          "gefunden": "node:/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+          "ziel": "node:/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+          "gefunden": "node:/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+          "treffer": true
+        },
+        {
+          "kennung": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+          "ziel": "node:/openlehr/betriebszustand-openlehr-muss-bis-zum",
+          "gefunden": "node:/openlehr/betriebszustand-openlehr-muss-bis-zum",
+          "treffer": true
+        },
+        {
+          "kennung": "/apps/metahuman-podcast-one-command-pipeline",
+          "ziel": "node:/apps/metahuman-podcast-one-command-pipeline",
+          "gefunden": "node:/apps/metahuman-podcast-one-command-pipeline",
+          "treffer": true
+        },
+        {
+          "kennung": "/openlehr/volltextindex-wird-beim-einlesen",
+          "ziel": "node:/openlehr/volltextindex-wird-beim-einlesen",
+          "gefunden": "node:/openlehr/volltextindex-wird-beim-einlesen",
+          "treffer": true
+        },
+        {
+          "kennung": "/lessons/phase2-summary",
+          "ziel": "node:/lessons/phase2-summary",
+          "gefunden": "node:/lessons/phase2-summary",
+          "treffer": true
+        },
+        {
+          "kennung": "/testing/pytest",
+          "ziel": "node:/testing/pytest",
+          "gefunden": "node:/testing/pytest",
+          "treffer": true
+        },
+        {
+          "kennung": "/brainlehr/inference-control-was-andere-faecher",
+          "ziel": "node:/brainlehr/inference-control-was-andere-faecher",
+          "gefunden": "node:/brainlehr/inference-control-was-andere-faecher",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/einstieg",
+          "ziel": "node:/methodik/einstieg",
+          "gefunden": "node:/methodik/einstieg",
+          "treffer": true
+        },
+        {
+          "kennung": "/stadtwerke",
+          "ziel": "node:/stadtwerke",
+          "gefunden": "node:/stadtwerke",
+          "treffer": true
+        },
+        {
+          "kennung": "/openlehr/steuer/ui",
+          "ziel": "node:/openlehr/steuer/ui",
+          "gefunden": "node:/openlehr/steuer/ui",
+          "treffer": true
+        },
+        {
+          "kennung": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+          "ziel": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+          "gefunden": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+          "treffer": true
+        },
+        {
+          "kennung": "/ops/buckeberg-anbieterabend-2026-08-05",
+          "ziel": "node:/ops/buckeberg-anbieterabend-2026-08-05",
+          "gefunden": "node:/ops/buckeberg-anbieterabend-2026-08-05",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+          "ziel": "node:/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+          "gefunden": "node:/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+          "treffer": true
+        },
+        {
+          "kennung": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+          "ziel": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+          "gefunden": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+          "ziel": "node:/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+          "gefunden": "node:/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+          "treffer": true
+        },
+        {
+          "kennung": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+          "ziel": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+          "gefunden": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+          "ziel": "node:/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+          "gefunden": "node:/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+          "ziel": "node:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+          "gefunden": "node:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+          "treffer": true
+        }
+      ]
+    },
+    {
+      "modell": "nomic-embed-text",
+      "erreichbar": true,
+      "trefferquote": {
+        "treffer": 30,
+        "n": 35,
+        "anteil": 0.8571428571428571
+      },
+      "embed_fehlgeschlagen": 0,
+      "gekappte_ziele": [],
+      "gekappte_anfragen": [],
+      "positivkontrolle": {
+        "passend_median": 0.7745825272467609,
+        "passend_n": 35,
+        "fachfremd_median": 0.5710989902767951,
+        "fachfremd_n": 350,
+        "median_abstand": 0.2034835369699658
+      },
+      "einzelfaelle": [
+        {
+          "kennung": "L-a9ccd0",
+          "ziel": "lesson:L-a9ccd0",
+          "gefunden": "lesson:L-a9ccd0",
+          "treffer": true
+        },
+        {
+          "kennung": "L-298823",
+          "ziel": "lesson:L-298823",
+          "gefunden": "lesson:L-298823",
+          "treffer": true
+        },
+        {
+          "kennung": "L-f9f654",
+          "ziel": "lesson:L-f9f654",
+          "gefunden": "lesson:L-f9f654",
+          "treffer": true
+        },
+        {
+          "kennung": "L-b4b443",
+          "ziel": "lesson:L-b4b443",
+          "gefunden": "lesson:L-b4b443",
+          "treffer": true
+        },
+        {
+          "kennung": "L-44a838",
+          "ziel": "lesson:L-44a838",
+          "gefunden": "lesson:L-44a838",
+          "treffer": true
+        },
+        {
+          "kennung": "L-cdac52",
+          "ziel": "lesson:L-cdac52",
+          "gefunden": "lesson:L-cdac52",
+          "treffer": true
+        },
+        {
+          "kennung": "L-e7bc5e",
+          "ziel": "lesson:L-e7bc5e",
+          "gefunden": "lesson:L-e7bc5e",
+          "treffer": true
+        },
+        {
+          "kennung": "L-e1a441",
+          "ziel": "lesson:L-e1a441",
+          "gefunden": "lesson:L-e1a441",
+          "treffer": true
+        },
+        {
+          "kennung": "L-b91ed6",
+          "ziel": "lesson:L-b91ed6",
+          "gefunden": "lesson:L-b91ed6",
+          "treffer": true
+        },
+        {
+          "kennung": "L-bbd7fb",
+          "ziel": "lesson:L-bbd7fb",
+          "gefunden": "lesson:L-bbd7fb",
+          "treffer": true
+        },
+        {
+          "kennung": "L-503687",
+          "ziel": "lesson:L-503687",
+          "gefunden": "lesson:L-503687",
+          "treffer": true
+        },
+        {
+          "kennung": "L-8c633e",
+          "ziel": "lesson:L-8c633e",
+          "gefunden": "lesson:L-8c633e",
+          "treffer": true
+        },
+        {
+          "kennung": "L-606b63",
+          "ziel": "lesson:L-606b63",
+          "gefunden": "lesson:L-606b63",
+          "treffer": true
+        },
+        {
+          "kennung": "L-0392e4",
+          "ziel": "lesson:L-0392e4",
+          "gefunden": "lesson:L-0392e4",
+          "treffer": true
+        },
+        {
+          "kennung": "L-476602",
+          "ziel": "lesson:L-476602",
+          "gefunden": "lesson:L-476602",
+          "treffer": true
+        },
+        {
+          "kennung": "/ops/buckeberg-konsil-2026-07-22-governance",
+          "ziel": "node:/ops/buckeberg-konsil-2026-07-22-governance",
+          "gefunden": "lesson:L-476602",
+          "treffer": false
+        },
+        {
+          "kennung": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+          "ziel": "node:/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+          "gefunden": "node:/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+          "treffer": false
+        },
+        {
+          "kennung": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+          "ziel": "node:/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+          "gefunden": "node:/openlehr/betriebszustand-openlehr-muss-bis-zum",
+          "treffer": false
+        },
+        {
+          "kennung": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+          "ziel": "node:/openlehr/betriebszustand-openlehr-muss-bis-zum",
+          "gefunden": "node:/openlehr/betriebszustand-openlehr-muss-bis-zum",
+          "treffer": true
+        },
+        {
+          "kennung": "/apps/metahuman-podcast-one-command-pipeline",
+          "ziel": "node:/apps/metahuman-podcast-one-command-pipeline",
+          "gefunden": "node:/apps/metahuman-podcast-one-command-pipeline",
+          "treffer": true
+        },
+        {
+          "kennung": "/openlehr/volltextindex-wird-beim-einlesen",
+          "ziel": "node:/openlehr/volltextindex-wird-beim-einlesen",
+          "gefunden": "node:/openlehr/volltextindex-wird-beim-einlesen",
+          "treffer": true
+        },
+        {
+          "kennung": "/lessons/phase2-summary",
+          "ziel": "node:/lessons/phase2-summary",
+          "gefunden": "node:/lessons/phase2-summary",
+          "treffer": true
+        },
+        {
+          "kennung": "/testing/pytest",
+          "ziel": "node:/testing/pytest",
+          "gefunden": "node:/testing/pytest",
+          "treffer": true
+        },
+        {
+          "kennung": "/brainlehr/inference-control-was-andere-faecher",
+          "ziel": "node:/brainlehr/inference-control-was-andere-faecher",
+          "gefunden": "node:/brainlehr/inference-control-was-andere-faecher",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/einstieg",
+          "ziel": "node:/methodik/einstieg",
+          "gefunden": "lesson:L-476602",
+          "treffer": false
+        },
+        {
+          "kennung": "/stadtwerke",
+          "ziel": "node:/stadtwerke",
+          "gefunden": "node:/stadtwerke",
+          "treffer": true
+        },
+        {
+          "kennung": "/openlehr/steuer/ui",
+          "ziel": "node:/openlehr/steuer/ui",
+          "gefunden": "node:/openlehr/steuer/ui",
+          "treffer": true
+        },
+        {
+          "kennung": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+          "ziel": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+          "gefunden": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+          "treffer": true
+        },
+        {
+          "kennung": "/ops/buckeberg-anbieterabend-2026-08-05",
+          "ziel": "node:/ops/buckeberg-anbieterabend-2026-08-05",
+          "gefunden": "node:/ops/buckeberg-anbieterabend-2026-08-05",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+          "ziel": "node:/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+          "gefunden": "lesson:L-a9ccd0",
+          "treffer": false
+        },
+        {
+          "kennung": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+          "ziel": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+          "gefunden": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+          "ziel": "node:/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+          "gefunden": "node:/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+          "treffer": true
+        },
+        {
+          "kennung": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+          "ziel": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+          "gefunden": "node:/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+          "ziel": "node:/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+          "gefunden": "node:/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+          "treffer": true
+        },
+        {
+          "kennung": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+          "ziel": "node:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+          "gefunden": "node:/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+          "treffer": true
+        }
+      ]
+    }
+  ],
+  "positivkontrolle_bestanden": false,
+  "positivkontrolle_begruendung": "bge-m3 Median-Abstand 0.3353503630522802, nomic-embed-text Median-Abstand 0.2034835369699658 -- erwartet: bge-m3 trennt deutlich (>0.03), nomic praktisch nicht (<0.03 Betrag), wie am 2026-08-07 gemessen (0,106 gegen ~0,004).",
+  "gesamturteil": "WERKZEUG UNTAUGLICH -- Positivkontrolle nicht bestanden, Trefferquoten unten sind ohne Aussagekraft",
+  "gesamtlaufzeit_s": 17.1
+}

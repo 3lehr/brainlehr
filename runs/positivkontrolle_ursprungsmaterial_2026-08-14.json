@@ -1,0 +1,66 @@
+{
+ "gemessen_am": "2026-08-14T02:00:00+0200",
+ "zweck": "Positivkontrolle fuer messungen/modellvergleich.py: bildet die Messung vom 2026-08-07 auf DEREN Ursprungsmaterial nach.",
+ "codestand": {
+  "commit": "2b7174b",
+  "schmutzig": true
+ },
+ "knoten": [
+  "008175fd",
+  "00ee966c",
+  "01878a1a",
+  "0193bfaf",
+  "024810d2",
+  "02937ddb",
+  "02bb87a3",
+  "06c6fb97"
+ ],
+ "design": "passend = eigener Titel als Anfrage gegen Titel+Zusammenfassung aller acht (8x8=64 Paare); fachfremd = 8 Alltagssaetze gegen dieselben acht (64 Paare)",
+ "num_ctx": 2048,
+ "ergebnis": {
+  "bge-m3": {
+   "passend": {
+    "min": 0.27753170992754306,
+    "median": 0.36814266383241634,
+    "max": 0.9584033279131139,
+    "n": 64
+   },
+   "fachfremd": {
+    "min": 0.19108274691051763,
+    "median": 0.2753172015927241,
+    "max": 0.417411863245347,
+    "n": 64
+   },
+   "median_abstand": 0.09282546223969224
+  },
+  "nomic-embed-text": {
+   "passend": {
+    "min": 0.5245118379162416,
+    "median": 0.6235882617088399,
+    "max": 0.9758885586096719,
+    "n": 64
+   },
+   "fachfremd": {
+    "min": 0.4718949882918326,
+    "median": 0.5592201123275699,
+    "max": 0.6598027487795672,
+    "n": 64
+   },
+   "median_abstand": 0.06436814938127
+  }
+ },
+ "vorbefund_2026_08_07": {
+  "quelle": "hub/docs/PRUEFKORPORA_UND_SPRACHE_2026-08-07.md, Commit b9c8bf5c6",
+  "nomic-embed-text": {
+   "passend_median": 0.531,
+   "fachfremd_median": 0.527,
+   "median_abstand": 0.004,
+   "min_inversion": true
+  },
+  "bge-m3": {
+   "median_abstand": 0.106
+  }
+ },
+ "urteil": "NICHT REPRODUZIERT, und der Grund liegt nicht am Werkzeug. bge-m3 trifft den Vorbefund (0,093 gegen 0,106). nomic-embed-text nicht (0,064 gegen 0,004, keine Minimum-Inversion). Zwei benennbare Ursachen: (1) sieben der acht Knoten wurden seit dem 2026-08-07 geaendert, zuletzt drei am 2026-08-13 -- der gemessene Text existiert nicht mehr; (2) die fachfremden Saetze wurden nie woertlich festgehalten, nur als Stichworte in Klammern, und mussten rekonstruiert werden.",
+ "folge": "Ein Modellwechsel bleibt gesperrt. Was fehlt, ist kein besseres Vergleichswerkzeug, sondern ein EINGEFRORENER Kontrollsatz: Text UND Anfragen woertlich abgelegt, unabhaengig vom lebenden Bestand."
+}
