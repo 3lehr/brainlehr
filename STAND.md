@@ -1,4 +1,61 @@
-# STAND brainlehr — 2026-08-13T13:15:00+0200
+# STAND brainlehr — 2026-08-13T14:30:00+0200
+
+## Die älteste Sperre fiel — sie war ein Fehler in meiner eigenen Notiz
+
+„Nicht zuordenbare Differenz: 45 gegen 33 von **205**". An der Quelle gemessen:
+Die 33 ist **33 von 35**, aus `runs/messlauf_abrufguete_v2.json` über
+`pruefkorpus_v2.jsonl`. Die 45 ist 45 von 205 Ziel-Instanzen über 89 echte
+Fälle. **Zwei Korpora, zwei Nenner, zwei Einheiten** — ich hatte beim Verkürzen
+den Nenner der einen Zahl auf die andere übertragen.
+
+Die Werte widersprechen sich nicht nur nicht, sie **bestätigen** einen bekannten
+Befund: Der 35er-Korpus ist aus den Zieltexten erzeugt und misst den leichten
+Fall (34,1 % wörtliche Überschneidung gegen 10,7 %).
+
+**Auflage statt Sperre:** Jede Abrufzahl nennt **Nenner und Korpus**. `45`
+allein ist keine Aussage (`L-ee64d5`).
+
+## Die Suite hing am Heimatverzeichnis — aufgedeckt durch eine Nebenwirkung
+
+Die Geheimnis-Rotation erzeugte eine Datei, die es vorher nicht gab. Plötzlich
+hatten **14 Tests** eine Identität, wo sie „unbekannt" erwarteten. Der eigentliche
+Befund ist nicht die Rotation: **Die Suite war auf keinem anderen Rechner
+reproduzierbar**, und niemand hätte es je gemerkt. Ein Selbsttest lief sogar nur
+zufällig grün. Jetzt isoliert eine Vorrichtung jeden Test, ein eigener Test
+belegt die Isolierung.
+
+## Vier Ausprägungen einer Fehlerklasse an einem Tag
+
+`grep`-Treffer für Prüfung gehalten (`L-bee002`) · Wahrheitswert statt Wortlaut
+gelesen · Kodierung angenommen statt gelesen (base64 gegen hex, hätte alle
+Sitzungen ausgesperrt) · Ursache angenommen statt gemessen (Aufgabe 92: „reist
+nicht mit" — tatsächlich existierte die Datei schlicht nicht).
+
+**Gefangen hat sie jedes Mal jemand anderes** oder eine Gegenprobe in **beide**
+Richtungen. Daraus Aufgabe 97, Peer Review als Bauform — und der Einbauort ist
+`PreToolUse` auf das Agent-Werkzeug, weil `SubagentStart` nicht blockieren kann
+und dem Modell nicht sichtbar ist.
+
+## Was gebaut wurde
+
+| | |
+|---|---|
+| Dublettenerkennung beim Anlegen | `a0cd9d2` — zwei Signale zusammen; eine niedrigere Einbettungsschwelle hätte bei 0,60 **112** Treffer je Knoten erzeugt |
+| Herkunftskette | `462f527` — 1 Angabe wird zu **229 Kanten auf 126 Knoten**; die Differenz belegt, warum eine Spalte falsch gewesen wäre |
+| Kanalwahl an Anfragelänge | `a31f6f7` — die Zerlegung erkannte CJK **gar nicht**, eine japanische Anfrage war leer, `count=0` vor jedem Kanal |
+| `WorktreeCreate`-Haken | `aaf18b5` |
+| eigene `CLAUDE.md` | `67d8c56` — das einzige Repo ohne eine |
+| Freigabe | 145 Knoten geöffnet, `/ops` `/openlehr` `/apps` `/shared` **0** |
+
+## Offene Schemafrage (Aufgabe 100)
+
+`knowledge_relations` referenziert per Fremdschlüssel `knowledge_nodes.path` —
+eine **Lehre hat keinen Pfad**. Inzwischen umgehen **zwei** Werkzeuge deshalb den
+gekapselten Schreibpfad, und die Naht-Ratsche musste zweimal gelockert werden.
+Das ist kein Sorgfaltsproblem, sondern eine Annahme im Schema, die nicht mehr
+stimmt: dass alle Kantenenden Knoten sind. 229 Kanten sagen das Gegenteil.
+
+## Stand 13:15 — die Befunde des Mittags
 
 ## Die fehlende Hinsicht — sechs Stellen, eine Form (`012500e5`)
 
