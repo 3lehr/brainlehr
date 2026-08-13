@@ -19,6 +19,11 @@ VOR JEDEM SCHREIBEN, ohne Ausnahme (kein stiller Fall):
     - kein Knoten ohne Zeile in s12_urfassungen (kern/sicherung_s12.py sichert sie)
     - kein Knoten der UNBEHANDELTEN Haelfte (Kontrollgruppe, kern/teilung_s12.py)
     - kein Knoten, den kern/umschrift_pruefstein.py beanstandet (Sachverlust)
+    - kein Knoten, dessen neuer Volltext den alten Volltext WOERTLICH UND
+      VOLLSTAENDIG enthaelt (Kontrollarm-Verdopplung statt Umschrift,
+      Vorfall 2026-08-13, Lehre L-a4f6dd -- siehe ist_blosse_verdopplung()).
+      Der Pruefstein oben sieht das NICHT: die alte Fassung ist Teilmenge
+      der neuen, also fehlt nichts, also 0 Beanstandungen.
 
 "Noch unbehandelt" (Auswahl fuer --lose) heisst: Titel UND Zusammenfassung
 stimmen noch mit der Urfassung ueberein. Ein bereits umgeschriebener Knoten
@@ -64,6 +69,49 @@ REGELN = (
     "Dateien oder Sitzungen als Ersatz fuer Inhalt.\n"
     "3. Der Volltext nennt die Begriffe mehrfach und unterschiedlich."
 )
+
+
+def _normalisiert(text: str) -> str:
+    """Leerraum glaetten, damit reine Zeilenumbruch-/Einrueckungsunterschiede
+    keinen falschen Treffer noch verhindern -- nicht mehr."""
+    return " ".join((text or "").split())
+
+
+def ist_blosse_verdopplung(alt_co: str, neu_co: str) -> bool:
+    """Vierte Schranke: haengt der neue Volltext den KOMPLETTEN alten Volltext
+    unveraendert an (Kontrollarm statt Umschrift), statt ihn umzuschreiben?
+
+    VORFALL 2026-08-13 (L-a4f6dd): ein Agent sollte 20 Knoten umschreiben und
+    haengte je Knoten den vollstaendigen alten Text unveraendert an eine neue
+    Einleitung. Der Pruefstein (Sachverlust-Sieb) meldete 0 Beanstandungen --
+    er KANN das nicht sehen, weil die alte Fassung Teilmenge der neuen ist:
+    es fehlt ja nichts.
+
+    MASS, mit Begruendung: woertliche Teilmenge des VOLLSTAENDIGEN alten
+    Volltexts (nach Glaetten von Leerraum), nicht ein Anteilsmass (z.B. eine
+    Aehnlichkeitsquote ueber Woerter/Zeichen). Grund: die Regeln erlauben und
+    verlangen sogar, dass viele Saetze, Zitate, Zahlenreihen und Eigennamen
+    woertlich stehen bleiben (Regel 3, Pruefstein-Zweck) -- ein Anteilsmass
+    muesste dann eine Schwelle X% finden, die "viel woertlich uebernommen,
+    aber umgeschrieben" von "alles woertlich angehaengt" trennt, und jede
+    Schwelle < 100% laesst sich mit einem echten Umschreib-Los widerlegen,
+    das zufaellig druebersteht. Die Teilmengenpruefung braucht keine Schwelle:
+    sie fragt nur, ob der gesamte alte Text als zusammenhaengender Block noch
+    irgendwo im neuen steckt.
+
+    SCHWELLE = 100% des alten Volltexts, LUECKENLOS und AM STUECK.
+    DURCHGELASSEN wird ausdruecklich: jede Umschrift, die den alten Text an
+    irgendeiner Stelle unterbricht -- ein geloeschtes oder eingefuegtes Wort
+    mitten im uebernommenen Absatz, eine andere Reihenfolge der Absaetze,
+    ein einzelner veraenderter Traeger. Das ist gewollt: eine echte Umschrift,
+    die ganze Saetze/Traeger unveraendert laesst (siehe negativfall unten),
+    muss durchgehen -- nur die luecken- und ordnungslose Volltext-Kopie nicht.
+    """
+    alt_norm = _normalisiert(alt_co)
+    neu_norm = _normalisiert(neu_co)
+    if not alt_norm:
+        return False
+    return alt_norm in neu_norm
 
 
 def auftrag_text(node_id: str, path: str) -> str:
@@ -119,13 +167,13 @@ def lose_erzeugen(conn: sqlite3.Connection, n: int, ab: int = 0) -> list[dict]:
 # --------------------------------------------------------------- Schritt 3
 def zurueckschreiben_alle(conn: sqlite3.Connection, alt_liste: list[dict],
                            neu_liste: list[dict], jetzt: str | None = None) -> dict:
-    """Prueft jeden Knoten aus alt_liste gegen die drei Schranken und schreibt
-    nur, was alle drei besteht. Meldet jede Ablehnung namentlich, in vier
+    """Prueft jeden Knoten aus alt_liste gegen die vier Schranken und schreibt
+    nur, was alle vier besteht. Meldet jede Ablehnung namentlich, in fuenf
     getrennten Zaehlern -- keiner darf stillschweigend verschwinden."""
     jetzt = jetzt or now_iso()
     neu_je_id = {r["id"]: r for r in neu_liste}
     ergebnis = {"geschrieben": [], "ohne_urfassung": [], "falsche_haelfte": [],
-                "pruefstein_abgelehnt": []}
+                "verdopplung_abgelehnt": [], "pruefstein_abgelehnt": []}
 
     for alt in alt_liste:
         node_id = alt["id"]
@@ -144,6 +192,9 @@ def zurueckschreiben_alle(conn: sqlite3.Connection, alt_liste: list[dict],
         neu = neu_je_id.get(node_id)
         if neu is None:
             ergebnis["pruefstein_abgelehnt"].append(node_id)
+            continue
+        if ist_blosse_verdopplung(alt.get("co", ""), neu.get("co", "")):
+            ergebnis["verdopplung_abgelehnt"].append(node_id)
             continue
         befund = pruefstein.pruefe_knoten(alt, neu)
         if not befund["ok"]:
@@ -196,6 +247,7 @@ def main() -> None:
         print(f"geschrieben: {len(e['geschrieben'])}")
         print(f"abgelehnt ohne Urfassung: {len(e['ohne_urfassung'])} {e['ohne_urfassung']}")
         print(f"abgelehnt falsche Haelfte: {len(e['falsche_haelfte'])} {e['falsche_haelfte']}")
+        print(f"abgelehnt Verdopplung: {len(e['verdopplung_abgelehnt'])} {e['verdopplung_abgelehnt']}")
         print(f"abgelehnt vom Pruefstein: {len(e['pruefstein_abgelehnt'])} {e['pruefstein_abgelehnt']}")
         return
 
@@ -316,7 +368,7 @@ def _selftest() -> None:
     assert sauber_id not in kand_2, "umgeschriebener Knoten taucht erneut auf"
     assert defekt_id in kand_2, "abgelehnter (unveraenderter) Knoten fehlt zu Unrecht"
 
-    print("selftest ok (Grenzwerte, vier Ablehnungsklassen, Negativfall, "
+    print("selftest ok (Grenzwerte, fuenf Ablehnungsklassen, Negativfall, "
           "Wiederaufnahme ohne Zusatzdatei)", file=_sys.stderr)
 
 

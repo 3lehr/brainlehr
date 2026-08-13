@@ -13,6 +13,7 @@ from pathlib import Path as _Path
 _w = _Path(__file__).resolve().parent.parent
 _sys.path[:0] = [str(_w), str(_w / "kern"), str(_w / "haken")]
 
+import json
 import sqlite3
 import tempfile
 
@@ -24,6 +25,12 @@ import teilung_s12
 import umschrift_s12 as us
 
 JETZT = "2026-08-13T09:00:00+02:00"
+
+# Echter Knoten aus dem verworfenen Los (nicht Kunsttext) fuer den
+# Verdopplungs-Negativfall: der volle Volltext eines tatsaechlichen Fundes.
+_ECHTER_KNOTEN = json.loads(
+    (_w / "runs" / "s12_los_001_alt.json").read_text(encoding="utf-8"))[0]
+assert _ECHTER_KNOTEN["id"] == "012500e5"
 
 
 def _insert_node(conn: sqlite3.Connection, node_id: str, path: str,
@@ -56,7 +63,12 @@ def db(tmp_path):
     kandidaten = [f"t-{i}" for i in range(80)]
     behandelt = [k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.BEHANDELT]
     unbehandelt = next(k for k in kandidaten if teilung_s12.haelfte("knoten", k) == teilung_s12.UNBEHANDELT)
-    sauber, ohne_urfassung, defekt = behandelt[0], behandelt[1], behandelt[2]
+    sauber, ohne_urfassung, defekt, voll = behandelt[0], behandelt[1], behandelt[2], behandelt[3]
+
+    echter_pfad = "/x/echter-knoten"
+    echter_titel = _ECHTER_KNOTEN["title"]
+    echte_summary = _ECHTER_KNOTEN["summary"]
+    echter_co = _ECHTER_KNOTEN["co"]
 
     with speicher.schreiben(pfad) as conn:
         conn.executescript(schema_sql)
@@ -68,14 +80,17 @@ def db(tmp_path):
                      "Zusammenfassung C mit 47 Prozent.", "Text C mit 47 Prozent.")
         _insert_node(conn, unbehandelt, "/x/unbehandelt", "Titel D",
                      "Zusammenfassung D.", "Text D.")
+        _insert_node(conn, voll, echter_pfad, echter_titel, echte_summary, echter_co)
         _sichern(conn, sauber, "/x/sauber", "Alter Titel",
                  "Zusammenfassung mit 8,50 USD.", "Volltext 8,50 USD.")
         _sichern(conn, defekt, "/x/defekt", "Titel C",
                  "Zusammenfassung C mit 47 Prozent.", "Text C mit 47 Prozent.")
+        _sichern(conn, voll, echter_pfad, echter_titel, echte_summary, echter_co)
         # ohne_urfassung bekommt bewusst KEINE Zeile in s12_urfassungen.
 
     return {"pfad": pfad, "sauber": sauber, "ohne_urfassung": ohne_urfassung,
-            "defekt": defekt, "unbehandelt": unbehandelt}
+            "defekt": defekt, "unbehandelt": unbehandelt, "voll": voll,
+            "echter_co": echter_co}
 
 
 def _alt_neu(db, id_):
@@ -221,6 +236,77 @@ def test_sauberer_behandelter_knoten_mit_urfassung_wird_geschrieben(db):
     with speicher.lesen(db["pfad"]) as conn:
         row = conn.execute("SELECT title FROM knowledge_nodes WHERE id=?", (db["sauber"],)).fetchone()
     assert row["title"] == "Neu formulierter Titel"
+
+
+# ------------------------------------------------------- Schranke: Verdopplung
+def test_kompletter_alter_text_angehaengt_wird_abgelehnt_und_namentlich_genannt(db):
+    """Nachstellung des Vorfalls 2026-08-13 (L-a4f6dd): der 'neue' Volltext ist
+    eine neue Einleitung plus der KOMPLETTE alte Volltext, unveraendert."""
+    alt = [_alt_neu(db, db["voll"])]
+    neu = [dict(alt[0], title="Neuer Titel", summary="Neue Zusammenfassung.",
+                co="Neue Einleitung.\n\n" + db["echter_co"])]
+    with speicher.schreiben(db["pfad"]) as conn:
+        e = us.zurueckschreiben_alle(conn, alt, neu, JETZT)
+    assert e["verdopplung_abgelehnt"] == [db["voll"]]
+    assert e["geschrieben"] == []
+
+
+def test_rot_probe_verdopplung_schranke_faellt_ohne_pruefung(db):
+    """Rot-vor-gruen (d): ohne ist_blosse_verdopplung() haette der Pruefstein
+    diesen Fall NICHT gefangen -- er meldet 0 Beanstandungen, weil der alte
+    Text Teilmenge des neuen ist, also nichts fehlt."""
+    alt = _alt_neu(db, db["voll"])
+    neu = dict(alt, title="Neuer Titel", summary="Neue Zusammenfassung.",
+               co="Neue Einleitung.\n\n" + db["echter_co"])
+    import umschrift_pruefstein as ps
+    befund = ps.pruefe_knoten(alt, neu)
+    assert befund["ok"], (
+        "Rot-Probe schlug fehl: der Pruefstein haette diesen Verdopplungsfall "
+        "durchlassen muessen (0 Beanstandungen), um zu zeigen, dass die vierte "
+        "Schranke etwas faengt, was die anderen drei nicht fangen.")
+    assert us.ist_blosse_verdopplung(alt["co"], neu["co"]) is True
+
+
+def test_negativfall_echte_umschrift_mit_uebernommenen_saetzen_geht_durch(db):
+    """Ohne diesen Test waere die Schranke wertlos: sie darf eine ECHTE
+    Umschrift nicht treffen, die (regelkonform) einzelne Saetze und alle
+    Zahlen/Kennungen des alten Textes woertlich uebernimmt, aber den alten
+    Text an einer Stelle unterbricht statt ihn komplett anzuhaengen. Baut auf
+    dem echten Fund 012500e5 auf, nicht auf Kunsttext."""
+    echter_co = db["echter_co"]
+    mitte = len(echter_co) // 2
+    # Ein neuer Satz mitten im uebernommenen Text -- bricht die Zusammenhaeng-
+    # igkeit, laesst aber jeden Traeger (alle Zahlen/Kennungen) unangetastet.
+    neuer_co = echter_co[:mitte] + " Neu eingefuegter Uebergangssatz. " + echter_co[mitte:]
+    alt = [_alt_neu(db, db["voll"])]
+    neu = [dict(alt[0], title="Neu formulierter Titel " + alt[0]["title"],
+                summary="Neu eingeleitet: " + alt[0]["summary"], co=neuer_co)]
+    assert not us.ist_blosse_verdopplung(alt[0]["co"], neu[0]["co"])
+    with speicher.schreiben(db["pfad"]) as conn:
+        e = us.zurueckschreiben_alle(conn, alt, neu, JETZT)
+    assert e["geschrieben"] == [db["voll"]], e
+    assert e["verdopplung_abgelehnt"] == []
+
+
+# ------------------------------------------------------- Grenzwert: Verdopplung
+def test_grenzwert_ein_zeichen_fehlt_laesst_durch(db):
+    """Knapp UNTER der Schwelle (100% des alten Volltexts, luecken- und
+    ordnungslos am Stueck): fehlt ein einziges Zeichen des alten Textes im
+    angehaengten Block, ist es kein zusammenhaengender Volltreffer mehr."""
+    echter_co = db["echter_co"]
+    verstuemmelt = echter_co[:-1]  # ein Zeichen fehlt
+    assert us.ist_blosse_verdopplung(echter_co, "Einleitung. " + verstuemmelt) is False
+
+
+def test_grenzwert_vollstaendig_angehaengt_wird_erkannt(db):
+    """Genau AN der Schwelle: der komplette (100%) alte Text steckt
+    zusammenhaengend im neuen -- das ist der verbotene Fall."""
+    echter_co = db["echter_co"]
+    assert us.ist_blosse_verdopplung(echter_co, "Einleitung. " + echter_co) is True
+
+
+def test_grenzwert_leerer_alter_text_gilt_nie_als_verdopplung(db):
+    assert us.ist_blosse_verdopplung("", "irgendein neuer Text") is False
 
 
 # ------------------------------------------------------- Wiederaufnahme
