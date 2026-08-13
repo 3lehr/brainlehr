@@ -88,6 +88,19 @@ acht. Passend zum Knoten `/shared/arch/repo-aufteilung-2026-08-11-19-app-repos`:
 am 2026-08-11 wurden 20 Apps aus dem hub-Monorepo herausgelöst, und genau
 diese Herauslösung macht den Unterschied.
 
+**Nachtrag 2026-08-13T19:35, Betreiberentscheidung, wörtlich:** *„für
+buckeberg und fahrtenbuch wollten wir auch noch ein eigenes repo geben, machen
+wir aber noch nicht weil darin gearbeitet wird."* Die Überlappung ist also
+bekannt und beschlossen aufzulösen — nur nicht jetzt. Für diese Recherche
+heißt das: buckeberg und fahrtenbuch bleiben vorerst **eine** Quelle, nicht
+zwei, und diese Zahl ändert sich später ohne unser Zutun. Knoten `4dd88122`.
+
+Und der Grund, warum ausgerechnet hier nicht gedrängt wird: buckeberg ist laut
+Betreiberaussage vom 2026-08-11 „schon aktiv eingesetzt", alle übrigen Apps
+sind „noch im demo modus". Die Beta-Direktive — Ausfallzeit kostet nichts —
+gilt für buckeberg nicht mehr. Es ist das einzige Repo des Verbunds, bei dem
+eine Trennung während laufender Arbeit echten Schaden anrichten kann.
+
 Gemessene Commit-Zahlen (`git log --oneline | wc -l`):
 
 | Repo | Commits | ADR-Dateien (`find … ADR-*.md`) |
