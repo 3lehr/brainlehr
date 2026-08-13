@@ -62,6 +62,64 @@ import ort  # noqa: E402
 BUSY_TIMEOUT_MS = 2000
 
 
+# Kanonische Schreibweise je Modell -- EIN Eintrag pro Modell, nicht drei.
+# BEFUND 2026-08-13 (Aufgabe 79): 'claude-opus-5' (1256x), 'Anthropic/
+# claude-opus-5' (12x) und bei Knoten zusaetzlich 'Anthropic/Opus 5' (1x)
+# bezeichnen dasselbe Modell -- eine Gruppierung nach Modell zaehlt sie
+# bisher als drei. Gewaehlt wird die kurze, unpraefigierte Form, weil sie
+# in der Datenbank schon heute mit weitem Abstand ueberwiegt (1256 von 1269
+# Opus-5-Zeilen) und weil der Anbieter in einem reinen Anthropic-Projekt
+# keine Information traegt, die ein zweites Modell von Opus 5 unterscheiden
+# wuerde. Schluessel sind kleingeschrieben; der Vergleich ist es auch --
+# nur GENAU diese Aliase werden zusammengezogen, ein Fremdmodell (z.B.
+# 'gemma4:12b', 'bge-m3') ist hier nicht gelistet und laeuft unveraendert
+# durch.
+_MODELL_ALIASE: dict[str, str] = {
+    "claude-opus-5": "claude-opus-5",
+    "anthropic/claude-opus-5": "claude-opus-5",
+    "anthropic/opus 5": "claude-opus-5",
+}
+
+
+def _leer_zu_none(wert: str | None) -> str | None:
+    """Trimmt und bildet BEIDE Arten von Nichtwissen -- Leerstring/reine
+    Leerzeichen UND den woertlichen Text 'unbekannt' -- auf dieselbe NULL
+    ab. Ohne diese Zusammenfuehrung kennt jede Zaehlung zwei Sorten
+    Nichtwissen und unterschaetzt beide Haelften."""
+    if wert is None:
+        return None
+    s = wert.strip()
+    if not s or s.lower() == "unbekannt":
+        return None
+    return s
+
+
+def normiere_modell(wert: str | None) -> str | None:
+    """EINZIGE Stelle, die einen Modellnamen normiert, BEVOR er in
+    access_log.model oder ein Modellfeld von knowledge_nodes geschrieben
+    wird. Wer hier schreibt, ruft diese Funktion statt den Rohwert
+    durchzureichen -- keine Wiederholung der Alias-Liste je Aufrufer.
+
+    Bestehende Zeilen werden NICHT ruekwirkend geaendert (das waere ein
+    eigener Migrationsschritt); diese Funktion wirkt nur auf neue
+    Schreibungen."""
+    s = _leer_zu_none(wert)
+    if s is None:
+        return None
+    return _MODELL_ALIASE.get(s.lower(), s)
+
+
+def normiere_akteur(wert: str | None) -> str | None:
+    """Wie normiere_modell fuer das Akteursfeld, aber OHNE Alias-Tabelle:
+    'claude-code', 'claude-code/opus-5' und 'normbestand.py' sind
+    verschiedene KOERNUNGEN (Werkzeug, Werkzeug+Modell, Skriptname), nicht
+    nachgewiesen dieselbe Sache -- sie zu verschmelzen waere derselbe
+    Fehler wie ein Fremdmodell mit Opus 5 zusammenzuziehen. Hier wird nur
+    behandelt, was laut Auftrag fuer beide Felder gilt: 'unbekannt' und
+    Leerstring/Leerzeichen werden NULL."""
+    return _leer_zu_none(wert)
+
+
 def verbinde_bestand(db: Path | str) -> sqlite3.Connection:
     """sqlite3.connect fuer eine Stelle, die einen BESTEHENDEN Bestand
     erwartet -- nicht Erstanlage, Migration oder Testkulisse (die legen
