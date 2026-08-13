@@ -39,8 +39,18 @@ ENTWURFSFRAGE je Datei (nicht pauschal, Aufsatz laut Auftrag):
 
 STDOUT-VERTRAG (offizielle Referenz, code.claude.com/docs/en/hooks.md):
 Ein Kommando-Haken auf WorktreeCreate hat KEIN JSON-Ausgabeformat -- Claude
-Code liest stdout direkt als den Pfad des Arbeitsbaums. Deshalb wird der Pfad
-IMMER gedruckt, in JEDEM Zweig, auch wenn die eigene Kopierlogik scheitert.
+Code liest stdout direkt als den Pfad des Arbeitsbaums. Der Pfad wird darum
+gedruckt, auch wenn die eigene Kopierlogik scheitert.
+
+KORREKTUR 2026-08-13T22:05, nach einem Feldfehler: Hier stand "der Pfad wird
+IMMER gedruckt, in JEDEM Zweig". Das galt fuer den Fall, dass die KOPIERLOGIK
+scheitert, und wurde faelschlich auch auf eine fehlende EINGABE angewandt.
+Fehlte `worktree_name`, druckte der Haken `<base>/.claude/worktrees` -- das
+Sammelverzeichnis selbst. git wies die Anlage daraufhin ab: "already in use by
+worktree ...". Der Betreiber konnte keine neue Sitzung starten.
+Der Vertrag verlangt nicht, dass etwas gedruckt WIRD. Bleibt stdout leer,
+waehlt der Klient seinen Vorgabepfad. Ein leerer Name kann keinen gueltigen
+Pfad ergeben -- dann ist Schweigen die einzige richtige Antwort.
 
 NIE BLOCKIEREND: WorktreeCreate lehnt bei jedem Exit-Code ungleich 0 die
 Anlage komplett ab (staerkster Exit-Vertrag aller Ereignisse). Ein Haken, der
@@ -101,12 +111,34 @@ def main() -> None:
 
     base_directory = daten.get("base_directory") or os.getcwd()
     worktree_name = daten.get("worktree_name") or ""
+
+    # SCHWEIGEN IST BESSER ALS EIN FALSCHER PFAD (Befund 2026-08-13T22:05).
+    # Fehlt worktree_name, lieferte _zielpfad frueher das VERZEICHNIS
+    # `<base>/.claude/worktrees` selbst -- und git wies die Anlage ab mit
+    # "already in use by worktree ...", weil dieser Pfad bereits einem anderen
+    # Baum gehoert. Der Betreiber konnte keine neue Sitzung mehr starten.
+    #
+    # Der stdout-Vertrag sagt, Claude Code liest stdout als den Pfad des
+    # Arbeitsbaums. Er sagt NICHT, dass etwas gedruckt werden muss: Bleibt
+    # stdout leer, waehlt der Klient seinen eigenen Vorgabepfad. Ein leerer
+    # Name kann keinen gueltigen Pfad ergeben -- dann ist Schweigen die einzige
+    # richtige Antwort. Der frueher hier stehende Satz "der Pfad wird IMMER
+    # gedruckt" galt fuer den Fall, dass die KOPIERLOGIK scheitert; er wurde
+    # faelschlich auch auf eine fehlende Eingabe angewandt.
+    if not worktree_name:
+        return
+
     pfad = _zielpfad(base_directory, worktree_name)
 
-    # Ab hier: der Pfad MUSS gedruckt werden, egal was unten passiert.
+    # Zweite Schranke: Selbst mit Namen darf der Pfad nie das Sammelverzeichnis
+    # sein (etwa bei einem Namen aus Punkten oder Schraegstrichen).
+    sammel = Path(base_directory) / ".claude" / "worktrees"
+    if pfad.resolve() == sammel.resolve():
+        return
+
+    # Ab hier: der Pfad wird gedruckt, egal was die Kopierlogik unten macht.
     try:
-        if worktree_name:
-            _identitaet_nachziehen(base_directory, pfad)
+        _identitaet_nachziehen(base_directory, pfad)
     except Exception:
         pass  # Haken darf die Anlage nie verhindern (Exit bleibt 0).
 
@@ -173,6 +205,26 @@ def _selftest() -> None:
         erwartet = str(_zielpfad(str(base), "probe4"))
         assert out.getvalue().strip() == erwartet, out.getvalue()
         print("[NEGATIV] interner Fehler -> stdout traegt trotzdem den Pfad (Exit bleibt 0)")
+
+        # 5) DER FELDFEHLER vom 2026-08-13T22:05: Fehlt worktree_name, darf
+        # NICHTS gedruckt werden. Frueher kam hier `<base>/.claude/worktrees`
+        # heraus -- das Sammelverzeichnis selbst -- und git wies die Anlage ab
+        # mit "already in use by worktree ...". Der Betreiber konnte keine neue
+        # Sitzung mehr starten. Ohne diesen Fall waere der Selbsttest gruen
+        # geblieben, denn Fall 4 prueft nur den Weg MIT Namen.
+        for eingabe in ({"base_directory": str(base)},
+                        {"base_directory": str(base), "worktree_name": ""}):
+            stdin_bak, stdout_bak = sys.stdin, sys.stdout
+            sys.stdin = _io.StringIO(json.dumps(eingabe))
+            sys.stdout = out = _io.StringIO()
+            try:
+                _mod.main()
+            finally:
+                sys.stdin, sys.stdout = stdin_bak, stdout_bak
+            assert out.getvalue().strip() == "", (
+                "ohne worktree_name darf nichts auf stdout stehen, kam: "
+                + repr(out.getvalue()))
+        print("[FELDFEHLER] ohne worktree_name -> stdout bleibt LEER, kein Sammelverzeichnis")
 
         print("worktree_identitaet: alle Zusicherungen halten")
     finally:
