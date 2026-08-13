@@ -1,0 +1,46 @@
+{
+  "datum": "2026-08-13T03:31:32+0200",
+  "auftrag": "Messauftrag: fuer jede der 19 CLAUDE.md-Regeln, ob eine urteilsfreie Fehlschlagbedingung benennbar ist (A/B/C/D), nach Aufwand sortiert.",
+  "commit_bei_messung": "28b5c05",
+  "zweig": "brainlehr/b4-ausweis",
+  "bezugsmessung": "runs/regelgriff_2026-08-12.json (Commit ffc52b7)",
+  "aenderung_seit_bezugsmessung": "Existenzpruefung (Regel 16) verdrahtet: .claude/settings.json (projekteigen, Commit 24c2484) haengt haken/existenzpruefung.py an Stop; tests/test_existenzpruefung_verdrahtung.py prueft den Eintrag.",
+  "korrektur_zur_bezugsmessung": "Caveman mode (Regel 3) war dort als 'externes Plugin' (C-artig) eingeordnet. Diese Messung findet dafuer KEINEN Beleg: grep -i caveman ~/.claude/settings.json = 0 Treffer, keine caveman-Marketplace unter ~/.claude/plugins/marketplaces (nur ponytail, claude-plugins-official). Tatsaechlich als SubagentStart-Hook aktiv ist ponytail, nicht caveman -- im eigenen Systemreminder dieser Sitzung sichtbar. caveman liegt nur als manuell aufrufbarer Skill vor. Neu eingeordnet als A.",
+  "einteilung": [
+    {"nr": 16, "regel": "Nachsehen, bevor gefragt oder delegiert wird", "kategorie": "C", "aufwand": "keiner (laeuft)", "beleg": ".claude/settings.json Stop-Hook -> haken/existenzpruefung.py; tests/test_existenzpruefung_verdrahtung.py prueft Eintrag; tests/test_existenzpruefung.py (9 Faelle) prueft Verhalten."},
+    {"nr": 4, "regel": "BSI-Compliance Hard-Stops", "kategorie": "C", "aufwand": "keiner (laeuft)", "beleg": "hub/scripts/quality_gate_hook.py an globalem Stop-Hook; Zeile 53 Muster crypt|secret|password|database|sqlite|migration."},
+    {"nr": 10, "regel": "Wissen festhalten & abrufen", "kategorie": "C", "aufwand": "keiner (laeuft)", "beleg": "haken/knowledge_recall_hook.py (UserPromptSubmit) + haken/knowledge_capture_hook.py (Stop), beide in ~/.claude/settings.json, in dieser Sitzung sichtbar gefeuert."},
+    {"nr": 5, "regel": "WCAG 2.2 AA", "kategorie": "B", "aufwand": "sehr billig -- nur Hook-Eintrag fehlt", "beleg": "~/.claude/skills/design-waechter/ui_guard.py existiert, deterministisch laut eigener Doku; grep ui_guard ~/.claude/settings.json = 0 Treffer.", "fehlender_anhaengepunkt": "PostToolUse Edit|Write auf UI-Dateiendungen, analog hub/scripts/monolith_guard.py"},
+    {"nr": 9, "regel": "Keine Entwicklerinformation in der Oberflaeche", "kategorie": "B", "aufwand": "sehr billig -- teilt sich Mechanismus mit Regel 5", "beleg": "derselbe ui_guard.py, Regeln selbsterklaerung/maskierter-wert.", "fehlender_anhaengepunkt": "derselbe wie Regel 5"},
+    {"nr": 2, "regel": "Datumsangaben ISO 8601", "kategorie": "A", "aufwand": "billig", "bedingung": "in .md-Datei: Datum im Muster YYYY-MM-DD ohne unmittelbar folgendes THH:MM, ausserhalb Codeblock/Dateiname.", "ort": "PostToolUse Edit|Write auf *.md, oder eigener Test ueber geaenderte .md-Dateien"},
+    {"nr": 3, "regel": "Caveman mode: always on", "kategorie": "A", "aufwand": "billig", "bedingung": "SubagentStart-/Sitzungsbeginn-Kontext enthaelt keinen Caveman-Marker.", "ort": "SubagentStart-Hook nach Vorbild von ponytail (~/.claude/plugins/marketplaces/ponytail)"},
+    {"nr": 6, "regel": "Auftraege an Agenten sind Schnappschuesse (Punkt 1: keine Zeilennummern als Adresse)", "kategorie": "A", "aufwand": "billig", "bedingung": "tool_input.prompt eines Agent/Task-Aufrufs matcht Zeile\\s+\\d+ ohne vorangehendes etwa/ca./ungefaehr/rund im selben Satz.", "ort": "PreToolUse Matcher Agent|Task, gleicher Ort wie agent_model_guard.py/agent_reuse_guard_hook.py"},
+    {"nr": 18, "regel": "Es funktioniert braucht Beleg (rot vor gruen)", "kategorie": "A", "aufwand": "billig", "bedingung": "eigene letzte Antwort enthaelt funktioniert|behoben|jetzt klappt UND kein tests/*.py in dieser Sitzung geaendert (git diff --name-only seit Sitzungsbeginn).", "ort": "Stop-Hook, baugleich zu haken/existenzpruefung.py"},
+    {"nr": 1, "regel": "ALLES IST BETA / keine echten Daten", "kategorie": "A", "aufwand": "billig, mit Einschraenkung", "bedingung": "eigene Antwort enthaelt Rueckfrage-Muster (wirklich|sicher).{0,20}(echte?|produktiv).{0,10}daten vor Loesch-/Migrationsaktion.", "ort": "Stop-Hook, gleiche Technik wie Regel 18/16", "einschraenkung": "Teilaspekt 'Bestand ist nie ein Argument' bleibt D -- das ist eine Bewertung des WARUM, nicht des Textmusters."},
+    {"nr": 7, "regel": "Wie ein Agentenauftrag geschrieben wird", "kategorie": "A", "aufwand": "mittel, mit Einschraenkung", "bedingung": "tool_input.prompt fehlt eines der vier Woerter Fakten/Grenzen/Abnahme/Einsatz als Abschnittsueberschrift.", "ort": "PreToolUse Agent|Task, gleicher Ort wie Regel 6", "einschraenkung": "'keine eigene Hypothese' bleibt D -- inhaltliche Bewertung noetig."},
+    {"nr": 19, "regel": "Plan vor Umsetzung", "kategorie": "A", "aufwand": "mittel", "bedingung": "Agent/Task-Aufruf oder Edit/Write-Folge in einer Sitzung beruehrt >1 Datei UND kein docs/PLAN_*.md wurde in derselben Sitzung angelegt/geaendert.", "ort": "PreToolUse Agent|Task, Erweiterung von hub/scripts/agent_model_guard.py", "beleg_luecke": "Probe B aus regelgriff_2026-08-12.json zeigte bereits: beide bestehenden Hooks am Matcher geben exit 0 ohne Warnung."},
+    {"nr": 15, "regel": "Committen ohne Aufforderung", "kategorie": "A", "aufwand": "mittel, nur Teilaspekt", "bedingung": "am Stop-Hook sind >N Top-Level-Verzeichnisse gleichzeitig geaendert ohne Commit in dieser Sitzung (Naeherung an 'Sammelcommit').", "ort": "Stop-Hook, Erweiterung/Ergaenzung zu hub/scripts/commit_guard_hook.py", "einschraenkung": "Kernaussage 'nach JEDEM abgeschlossenen Schritt' bleibt D -- wann ein Schritt abgeschlossen ist, ist Urteil.", "beleg": "commit_guard_hook.py deckt nachweislich nur Index-Kollision bei aktiven Agenten ab (_blank_git_add, _blank_git_commit, _active_agents)."},
+    {"nr": 14, "regel": "Walkthrough-Doktrin", "kategorie": "A", "aufwand": "mittel, nur Punkte 1-3", "bedingung": "geaenderte Kern-Datei enthaelt datetime.now()/Date.now()/time.time() direkt im Funktionskoerper statt als Parameter, oder direkten HTTP/DB-Aufruf ohne Interface-Schicht.", "ort": "statische Grep-Pruefung, analog hub/scripts/monolith_guard.py", "einschraenkung": "Punkte 4-7 (ehrliche Statusfelder, sprechende Fehler, keine Aussenwirkung im Testmodus, Debug-API) bleiben D -- semantische Pruefung noetig."},
+    {"nr": 17, "regel": "Zwei Ausgangszustaende (frisch/gewachsen)", "kategorie": "A", "aufwand": "mittel, bruechig", "bedingung": "Commit aendert schema.sql oder migrationen/, UND tests/ enthaelt fuer diesen Commit keinen Testfall mit sowohl frisch- als auch migriert-Fixture (Namenskonvention-basiert).", "ort": "CI-/Pre-Release-Gate", "einschraenkung": "haengt von Namensdisziplin der Testdateien ab, brueckiger als reine Textmuster-Faelle."},
+    {"nr": 11, "regel": "Testumgebung handeln bis 'es wird ernst' (vier Ausnahmen)", "kategorie": "A", "aufwand": "teuer, Fehlalarmrisiko", "bedingung": "Tool-Aufruf trifft eine der vier Kategorien (Passworteingabe, Nachricht an Menschen, Push auf geschuetzten Branch, Zahlungs-API) ohne vorherige explizite Zustimmung im Transcript.", "ort": "PreToolUse-Hook mit Tool-Taxonomie, analog hub/scripts/push_guard.py + commit_guard_hook.py", "risiko": "unvollstaendige Tool-Liste wird falsch-negativ; Praezedenzfall im Auftrag genannt: zwei Werkzeuge mit 73% und 54% Fehlalarm."},
+    {"nr": 8, "regel": "Abwesenheitsmodus ist die Voreinstellung", "kategorie": "D", "begruendung": "verlangt Bewertung des INHALTS jeder Antwort (direkte Frage-Antwort vs. unaufgeforderte Prosa) -- kein Aufruf-Zeitpunkt wie bei Caveman, sondern ueber die ganze Sitzung verteiltes Verhalten."},
+    {"nr": 12, "regel": "Kurze Zustimmung ist eine Entscheidung", "kategorie": "D", "begruendung": "ob eine vorangegangene Frage eines der vier Kriterien erfuellt ist inhaltliche Einordnung, kein Textmuster; ohne diese Vorpruefung waere jede Automatik entweder Dauerfeuer oder wirkungslos."},
+    {"nr": 13, "regel": "Zweimal ist die Grenze, nicht dreimal", "kategorie": "D", "begruendung": "Erkennen von 'dieselbe Sache, anders formuliert' ueber den Sitzungsverlauf ist semantischer Abgleich -- per Definition der Trennlinie ausgeschlossen."}
+  ],
+  "zaehlung": {"A": 11, "B": 2, "C": 3, "D": 3, "summe": 19},
+  "nicht_eingeordnet": [],
+  "nicht_vertieft_ausserhalb_auftrag": [
+    "83 knowledge_nodes mit norm_rang (Einzelzuordnung) -- laut Vorlaufauftrag bereits als 'nicht vertieft' ausgewiesen, nicht Teil des heutigen Auftrags.",
+    "17 Abschnitte aus hub/CLAUDE.md -- Auftrag beschraenkt explizit auf ~/.claude/CLAUDE.md (19 Abschnitte)."
+  ],
+  "kontrolle": {
+    "git_status_vorher_nachher_identisch": true,
+    "testsuite": {
+      "erwartete_ausgangslage_laut_auftrag": "1035 passed, 2 skipped, 10 xfailed, 0 failed (Commit ffc52b7)",
+      "gemessen_bei_diesem_commit": "1080 passed, 2 skipped, 11 xfailed, 0 failed, 197.58s (Commit 28b5c05)",
+      "einordnung": "Differenz ist Zuwachs seit ffc52b7 (u.a. test_existenzpruefung_verdrahtung.py neu), keine Regression -- 0 failed in beiden Faellen."
+    },
+    "produktivcode_geaendert": false,
+    "geschrieben": ["docs/REGELMECHANIK_2026-08-13.md", "runs/regelmechanik_2026-08-13.json"]
+  }
+}
