@@ -126,20 +126,29 @@ def _normen() -> dict[str, tuple] | None:
 # protokolliert unter diesem Namen, ein unbeglaubigtes Argument "betreiber"
 # unter dem Praefix "unbeglaubigt:". Beides ist eine SELBSTAUSKUNFT des
 # Schreibers -- fuer den Zweck hier (Weisung ja/nein) reicht das, dieselbe
-# Guete wie der Rest des heutigen anlass='betreiber'-Wegs.
+# Guete wie der Rest des heutigen anlass='betreiber'-Wegs. norm_entschieden_von
+# gehoert in dieselbe Reihe: es ist bei knowledge_add ein PFLICHTFELD ohne
+# Vorgabewert, kann also nie durch Weglassen zu 'betreiber' werden -- damit
+# mindestens so belastbar wie actor='betreiber'.
 _BETREIBER_ACTOR = ("betreiber", "unbeglaubigt:betreiber")
 
 
-def _urheber(actor: str | None, bedient_von: str | None) -> str:
+def _urheber(actor: str | None, bedient_von: str | None,
+             norm_entschieden_von: str | None = None) -> str:
     """'betreiber' | 'werkzeug' | 'unbekannt'.
 
     bedient_von kommt NIE aus einem Argument, sondern aus dem beglaubigten
     Ausweis (siehe knowledge_mcp_server.py::_bedient_von) -- ist es gesetzt,
     stand ein Mensch hinter der schreibenden Maschine, das zaehlt wie eine
-    direkte Aenderung durch den Betreiber. Fehlt jede Angabe (actor leer/NULL
-    oder der Vorgabewert 'unbekannt'), ist der Urheber offen -- das wird
-    gemeldet, nie stillschweigend als Werkzeug ODER als Betreiber behandelt."""
+    direkte Aenderung durch den Betreiber und bleibt das staerkste Merkmal.
+    Fehlt bedient_von, aber norm_entschieden_von steht auf 'betreiber', gilt
+    dasselbe -- das Feld ist Pflicht ohne Vorgabewert (siehe oben). Fehlt auch
+    das (actor leer/NULL oder der Vorgabewert 'unbekannt'), ist der Urheber
+    offen -- das wird gemeldet, nie stillschweigend als Werkzeug ODER als
+    Betreiber behandelt."""
     if bedient_von:
+        return "betreiber"
+    if norm_entschieden_von == "betreiber":
         return "betreiber"
     if not actor or actor == "unbekannt":
         return "unbekannt"
@@ -168,8 +177,8 @@ def _norm_herkunft(node_ids: list[str]) -> dict[str, dict] | None:
     try:
         platz = ",".join("?" * len(node_ids))
         aktuell = conn.execute(
-            f"SELECT id, actor, bedient_von, content FROM knowledge_nodes "
-            f"WHERE id IN ({platz})", node_ids).fetchall()
+            f"SELECT id, actor, bedient_von, norm_entschieden_von, content "
+            f"FROM knowledge_nodes WHERE id IN ({platz})", node_ids).fetchall()
         fassungen = conn.execute(
             f"SELECT node_id, content FROM knowledge_fassungen "
             f"WHERE node_id IN ({platz})", node_ids).fetchall()
@@ -184,10 +193,10 @@ def _norm_herkunft(node_ids: list[str]) -> dict[str, dict] | None:
 
     return {
         kid: {
-            "urheber": _urheber(actor, bedient_von),
+            "urheber": _urheber(actor, bedient_von, norm_entschieden_von),
             "wiederhergestellt": content in fruehere_texte.get(kid, set()),
         }
-        for kid, actor, bedient_von, content in aktuell
+        for kid, actor, bedient_von, norm_entschieden_von, content in aktuell
     }
 
 

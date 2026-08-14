@@ -123,7 +123,8 @@ def _db(tmp_path):
 
 
 def _norm(db, node_id, rang, titel, wann="2026-08-11T09:00:00+02:00",
-          actor=None, bedient_von=None, content=None):
+          actor=None, bedient_von=None, content=None,
+          norm_entschieden_von="test"):
     import sqlite3
     conn = sqlite3.connect(str(db))
     try:
@@ -133,25 +134,31 @@ def _norm(db, node_id, rang, titel, wann="2026-08-11T09:00:00+02:00",
             "norm_entschieden_grund, norm_entschieden_von, norm_entschieden_am, "
             "actor, bedient_von, created_at, updated_at) "
             "VALUES (?,?,'/',?,?,?,?,?,'2026-08-11','norm_unbefristet','Testnorm.',"
-            "'test','2026-08-11',?,?,?,?)",
+            "?,'2026-08-11',?,?,?,?)",
             (node_id, f"/probe/{node_id}", titel, "Zusammenfassung.", content,
-             "Test test_regelwechsel.py", rang, actor, bedient_von, wann, wann))
+             "Test test_regelwechsel.py", rang, norm_entschieden_von, actor,
+             bedient_von, wann, wann))
         conn.commit()
     finally:
         conn.close()
 
 
 def _update_norm(db, node_id, wann, actor=None, bedient_von=None, content=None,
-                  titel=None):
+                  titel=None, norm_entschieden_von=None):
     """Schreibt eine bestehende Norm um -- loest den Fassungs-Trigger aus wie
-    eine echte Aenderung, damit knowledge_fassungen die Vorfassung traegt."""
+    eine echte Aenderung, damit knowledge_fassungen die Vorfassung traegt.
+
+    norm_entschieden_von bleibt standardmaessig unveraendert (COALESCE), nur
+    wer ihn ausdruecklich mitgibt, schreibt ihn um."""
     import sqlite3
     conn = sqlite3.connect(str(db))
     try:
         conn.execute(
             "UPDATE knowledge_nodes SET updated_at=?, actor=?, bedient_von=?, "
-            "content=?, title=COALESCE(?, title) WHERE id=?",
-            (wann, actor, bedient_von, content, titel, node_id))
+            "content=?, title=COALESCE(?, title), "
+            "norm_entschieden_von=COALESCE(?, norm_entschieden_von) WHERE id=?",
+            (wann, actor, bedient_von, content, titel, norm_entschieden_von,
+             node_id))
         conn.commit()
     finally:
         conn.close()
@@ -296,3 +303,60 @@ def test_actor_leer_meldet_offenen_urheber_statt_zu_schweigen(tmp_path, monkeypa
     assert "URHEBER OFFEN" in meldungen[0]
     assert "Das ist eine Weisung des Betreibers" not in meldungen[0], (
         "eine offene Herkunft ist keine Behauptung, wer es war")
+
+
+# --- norm_entschieden_von als zweitstaerkstes Merkmal (Auftrag: 15 von 23 --
+# Rang-1-Normen meldeten "URHEBER OFFEN", obwohl norm_entschieden_von='betreiber'
+# in der Datenbank steht -- der Melder fragte das Feld bislang gar nicht ab)
+
+def test_norm_entschieden_von_betreiber_gilt_als_betreiber(tmp_path, monkeypatch):
+    """ROT VOR GRUEN, stellt Knoten 222acfea nach: actor=None, bedient_von=None,
+    norm_entschieden_von='betreiber'. Vor dem Fix meldete das 'URHEBER OFFEN',
+    obwohl die Herkunft in der Datenbank eindeutig steht."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    _norm(db, "07fb68aa", 2, "Testnorm", actor="betreiber",
+          norm_entschieden_von="betreiber", content="Urtext")
+    regelwechsel.pruefe("s1")                       # erster Blick: still
+    _update_norm(db, "07fb68aa", "2026-08-14T09:00:00+02:00",
+                 actor=None, bedient_von=None, norm_entschieden_von="betreiber",
+                 content="Neuer Text ohne actor, mit norm_entschieden_von")
+    meldungen = regelwechsel.pruefe("s1")
+    assert meldungen, "eine echte Aenderung darf nicht stumm bleiben"
+    assert "Das ist eine Weisung des Betreibers" in meldungen[0], (
+        "norm_entschieden_von='betreiber' muss wie actor='betreiber' zaehlen: "
+        + repr(meldungen))
+    assert "URHEBER OFFEN" not in meldungen[0]
+
+
+def test_beides_leer_bleibt_unbekannt():
+    """NEGATIVFALL, auf Funktionsebene: fehlen actor UND norm_entschieden_von,
+    bleibt es 'unbekannt' -- der Fix darf nicht stillschweigend zu 'betreiber'
+    kippen. Ueber die DB laesst sich dieser Zustand nicht nachstellen, weil
+    das Schema norm_entschieden_von fuer jede entschiedene Norm erzwingt
+    (knowledge_nodes_norm_entscheidung_wer_bi/bu) -- das ist genau der Beleg
+    aus dem Auftrag, dass norm_entschieden_von bei ALLEN 23 Rang-1-Normen
+    gesetzt ist."""
+    assert regelwechsel._urheber(None, None, None) == "unbekannt"
+    assert regelwechsel._urheber(None, None, "") == "unbekannt"
+    assert regelwechsel._urheber("unbekannt", None, None) == "unbekannt"
+
+
+def test_norm_entschieden_von_anderer_wert_wird_nicht_zu_betreiber(tmp_path, monkeypatch):
+    """NEGATIVFALL: ein von 'betreiber' abweichender Wert (z.B. eine externe
+    Quelle wie 'Gesetz' oder ein Testwert) darf nicht zu 'betreiber' fuehren."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    _norm(db, "07fb68aa", 2, "Testnorm", actor="betreiber",
+          norm_entschieden_von="betreiber", content="Urtext")
+    regelwechsel.pruefe("s1")
+    _update_norm(db, "07fb68aa", "2026-08-14T09:00:00+02:00",
+                 actor=None, bedient_von=None, norm_entschieden_von="jemand-anders",
+                 content="Text mit fremdem norm_entschieden_von")
+    meldungen = regelwechsel.pruefe("s1")
+    assert meldungen and "URHEBER OFFEN" in meldungen[0], (
+        "ein abweichender Wert ist keine Betreiber-Selbstauskunft: " + repr(meldungen))
