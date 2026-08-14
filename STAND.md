@@ -8,6 +8,4 @@
 
 **Haken (98):** `worktree_identitaet.py` war gebaut, zweimal repariert, nie verdrahtet — jetzt an `WorktreeCreate`, vorher end-to-end geprueft. Ratsche gegen unverdrahtete Haken. Sie prueft **Existenz, nicht Tauglichkeit** — `mcp_veraltet.py` ist verdrahtet und trotzdem blind (`L-1228cf`, drei Stufen in `L-b3eb79`).
 
-**Erledigt heute:** 69 · 80 · 86 · 88/1 · 91 · 98 · 107 · 108 · 110 · beide Eilmeldungsdefekte. **Rot:** `test_zeitform_utc` (gewollt bis Schritt 3) · `kandidatendiagnose` (Bestandsdrift, vorbestehend).
-
-**Wartet auf dich:** Neustart · Push · #105 · #29 · #101 · #20.
+**Erledigt heute:** 69 · 80 · 86 · 88/1 · 91 · 98 · 107 · 108 · 110 · beide Eilmeldungsdefekte. **Rot:** `test_zeitform_utc` (gewollt bis Schritt 3) · `kandidatendiagnose` (Bestandsdrift, vorbestehend). **Wartet auf dich:** Neustart · Push · #105 · #29 · #101 · #20.
