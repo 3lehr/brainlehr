@@ -137,6 +137,35 @@ nach oben, nicht am Web-Gerüst.
 auf Port 4242. Die Grenze muss `127.0.0.1` plus Nachweis sein — vor dem Bau
 nachsehen, nicht annehmen.
 
+## Korrektur: es sind vier Sorten, nicht drei
+
+Der Betreiber fragte dreimal in dieselbe Richtung — *„was ist mit dem ganzen
+Code der rechnet, verbindet, darstellt?"*. Dass dieselbe Frage dreimal kam, ist
+der Befund: Die Sortierung oben hatte für einen Fall **kein Fach**.
+
+| | | |
+|---|---|---|
+| **Rechnen** | `aveuer.py`, `tax_estimate.py`, EÜR/UStVA | Fähigkeit. Angemeldet, Ergebnis durch den Torwächter (Summe nur mit Summanden) |
+| **Verbinden** | Bankabgleich, Matching, ELSTER-Übertragung | Fähigkeit — **mit Verschärfung**: Was nach außen geht, ist Außenwirkung. Der Mensch drückt, immer |
+| **Darstellen** | `pdf_templates.py` (488 Z., reportlab), `pdf_writer.py` (148 Z., PDF-Befehle von Hand) | **Kollision.** Weder anmelden noch installieren |
+
+**Die vierte Sorte: Code, für den brainlehr bereits eine gegenteilige
+Entscheidung hat.** Hier hilft keine Verpackung, hier muss gewählt werden — für
+die Dokumentausgabe steht ADR-009 (LuaLaTeX mit `verapdf -f ua1` als Schranke)
+gegen openlehrs reportlab-Weg. Zwei Dokumentwege sind zwei Wahrheiten, und
+welche gilt, entscheidet nicht die Reihenfolge des Bauens.
+
+**Die Wahl ist messbar, nicht meinungsabhängig.** Es gibt genau eine harte
+Anforderung, an der sie hängt: Eine Rechnung muss die E-Rechnung als Anhang
+tragen (PDF/A-3 mit eingebettetem `factur-x.xml`) **und** die
+Barrierefreiheitsschranke bestehen. Ob beide Kennzeichnungen in einem Dokument
+nebeneinander stehen können, ist eine Messung — sie läuft als **H11**
+(`spikes/pdf_a3_erechnung/`). Fällt sie gegen LaTeX aus, kippt sie ADR-009 für
+diesen einen Fall; fällt sie dafür aus, lösen 636 Zeilen PDF-Code in openlehr
+sich ersatzlos auf.
+
+**Bis das gemessen ist, wird an keiner der beiden Ausgaben etwas gebaut.**
+
 ## Folgen
 
 - Linie H, H8: Das Manifest bekommt einen zweiten Abschnitt `faehigkeiten` —
