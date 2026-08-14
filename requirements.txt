@@ -11,5 +11,10 @@ numpy>=1.26          # BSD-3-Clause
 scikit-learn>=1.4    # BSD-3-Clause  (PCA fuer die Wissensraum-Ansicht)
 cryptography>=42     # Apache-2.0 ODER BSD-3-Clause (Wahlrecht des Nutzers)
 
+# Dokumentfenster (ADR-010, seit 2026-08-14). Der Kern laeuft weiterhin ohne:
+# kern/teilnehmer.py setzt die Kennungsauflage auch ohne pycrdt durch und
+# ueberspringt im Selbsttest nur den Teil, der ein Dokument anlegt.
+pycrdt>=0.14         # MIT  (Yjs/yrs-Anbindung -- Gegenstueck zu yswift im atelier)
+
 # Nur fuer die Tests:
 pytest>=8.0          # MIT
