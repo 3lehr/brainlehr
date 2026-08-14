@@ -72,11 +72,13 @@ final class Steuerschnittstelle {
     }
 
     private let wahl: Ansichtswahl
+    private let dokument: Dokumentsitzung
     private let aufsicht: DienstAufsicht
     private var lauscher: NWListener?
 
-    init(wahl: Ansichtswahl, aufsicht: DienstAufsicht) {
+    init(wahl: Ansichtswahl, aufsicht: DienstAufsicht, dokument: Dokumentsitzung) {
         self.wahl = wahl
+        self.dokument = dokument
         self.aufsicht = aufsicht
     }
 
@@ -182,7 +184,9 @@ final class Steuerschnittstelle {
             fenster: Self.hauptfenster(),
             ansichten: ansichten,
             blick: wahl.blick.kennung,
-            blicke: WissensraumBlick.allCases.map(\.kennung)))
+            blicke: WissensraumBlick.allCases.map(\.kennung),
+            dokumentlage: dokument.lage.satz,
+            dokumenttext: dokument.text))
     }
 
     private func fuehreAus(_ befehl: Steuerbefehl, ansichten: [String]) -> Steuerantwort {
@@ -199,6 +203,27 @@ final class Steuerschnittstelle {
                     #"{"fehler":"Blick '\#(name)' ist erlaubt, aber unbekannt.","hinweis":"Kern und Oberflaeche laufen auseinander."}"#)
             }
             wahl.blick = blick
+            return zustandsantwort(ansichten: ansichten)
+
+        case .dokumentVerbinden(let adresse, let geheimnis):
+            guard let url = URL(string: adresse), url.scheme?.hasPrefix("ws") == true else {
+                return Steuerantwort(code: 400, koerper:
+                    #"{"fehler":"Adresse '\#(adresse)' ist keine ws://-Adresse.","hinweis":"Erwartet: ws://host:port"}"#)
+            }
+            dokument.verbinde(zu: url, geheimnis: geheimnis.isEmpty ? nil : geheimnis)
+            return zustandsantwort(ansichten: ansichten)
+
+        case .dokumentTrennen:
+            dokument.trenne()
+            return zustandsantwort(ansichten: ansichten)
+
+        case .dokumentEinfuegen(let text, let bei):
+            dokument.fuegeEin(text, bei: bei)
+            return zustandsantwort(ansichten: ansichten)
+
+        case .dokumentSchreiben(let text):
+            dokument.text = text
+            dokument.schreibe(text)
             return zustandsantwort(ansichten: ansichten)
 
         case .ansichtWaehlen(let name):

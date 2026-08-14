@@ -34,6 +34,10 @@ final class AtelierAppDelegate: NSObject, NSApplicationDelegate {
     /// erreicht -- sie muss die Ansicht umschalten koennen, und sie lebt so
     /// lange wie die Anwendung, nicht so lange wie ein Fenster.
     let wahl = Ansichtswahl()
+    /// Liegt hier statt in der Ansicht, damit die Steuerschnittstelle sie
+    /// erreicht -- ohne diesen Griff laesst sich die Abnahme des
+    /// Dokumentfensters nur von Hand fahren.
+    let dokument = Dokumentsitzung()
 
     #if DEBUG
     private var steuerung: Steuerschnittstelle?
@@ -44,7 +48,7 @@ final class AtelierAppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         aufsicht.start()
         #if DEBUG
-        let s = Steuerschnittstelle(wahl: wahl, aufsicht: aufsicht)
+        let s = Steuerschnittstelle(wahl: wahl, aufsicht: aufsicht, dokument: dokument)
         s.start()
         steuerung = s
         #endif
@@ -108,7 +112,7 @@ struct AtelierApp: App {
         // `Window` sagt das, stellt es beim Start wieder her und traegt einen
         // Eintrag im Fenstermenue, der der Rueckweg ist.
         Window("Brainlehr", id: "main") {
-            HauptFenster(aufsicht: appDelegate.aufsicht, wahl: appDelegate.wahl)
+            HauptFenster(dokument: appDelegate.dokument, aufsicht: appDelegate.aufsicht, wahl: appDelegate.wahl)
                 .frame(minWidth: 760, minHeight: 480)
                 // Der Rueckweg wird hier verdrahtet, nicht im Delegaten:
                 // `openWindow` gibt es nur in der SwiftUI-Umgebung.

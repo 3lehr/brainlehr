@@ -102,6 +102,19 @@ final class Dokumentsitzung: ObservableObject {
         sendeStand()
     }
 
+    /// Fuegt an einer Stelle ein -- genau das, was ein Tastendruck tut.
+    /// Anders als `schreibe` setzt es KEINEN Volltext und kann darum die
+    /// gleichzeitige Aenderung eines anderen nicht mitloeschen.
+    func fuegeEin(_ text: String, bei: Int) {
+        guard let doc, let ytext, !text.isEmpty else { return }
+        doc.transactSync { txn in
+            let laenge = UInt32(ytext.getString(in: txn).utf8.count)
+            ytext.insert(text, at: min(UInt32(max(0, bei)), laenge), in: txn)
+        }
+        zeigeAusDokument()
+        sendeStand()
+    }
+
     // MARK: Verbindung
 
     private func sende(_ text: String) {
@@ -209,7 +222,9 @@ final class Dokumentsitzung: ObservableObject {
 }
 
 struct DokumentAnsicht: View {
-    @StateObject private var sitzung = Dokumentsitzung()
+    /// Kommt von aussen (AtelierAppDelegate), damit die Steuerschnittstelle
+    /// dieselbe Sitzung erreicht -- zwei Sitzungen waeren zwei Wahrheiten.
+    @ObservedObject var sitzung: Dokumentsitzung
     @AppStorage("dokument.adresse") private var adresse = "ws://127.0.0.1:4610"
     @State private var geheimnis = ""
 

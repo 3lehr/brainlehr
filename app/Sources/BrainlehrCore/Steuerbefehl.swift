@@ -31,6 +31,22 @@ public enum Steuerbefehl: Equatable, Sendable {
     /// Blick ist NICHT die Ansicht -- er gilt nur innerhalb einer einzigen und
     /// bleibt beim Wechsel in eine andere bestehen.
     case blickWaehlen(String)
+    /// Das Dokumentfenster verbinden oder trennen. Nur im Debug-Bau erreichbar
+    /// wie die ganze Steuerschnittstelle. Ohne diesen Griff laesst sich die
+    /// Abnahme von F5 ("zwei tippen gleichzeitig") nur von Hand fahren -- und
+    /// eine Probe, die einen Menschen braucht, ist keine Probe (`L-db37c6`).
+    case dokumentVerbinden(adresse: String, geheimnis: String)
+    case dokumentTrennen
+    /// Text in das Dokumentfenster schreiben, als haette ihn jemand getippt.
+    case dokumentSchreiben(String)
+    /// An einer Stelle einfuegen -- das ist, was ein Tastendruck TUT.
+    ///
+    /// Der Unterschied zu `dokumentSchreiben` ist nicht Bequemlichkeit: wer
+    /// einen ganzen Text setzt, setzt ihn gegen einen Stand, den er vorher
+    /// gelesen hat. Trifft dazwischen die Aenderung eines anderen ein, loescht
+    /// der gesetzte Volltext sie mit -- und die Probe misst dann die
+    /// Reihenfolge der Aufrufe statt die Zusammenfuehrung (`L-235ab8`).
+    case dokumentEinfuegen(text: String, bei: Int)
 }
 
 public struct Steuerantwort: Equatable, Sendable, Error {
@@ -46,7 +62,7 @@ public struct Steuerantwort: Equatable, Sendable, Error {
 public enum Steuerdeutung {
     /// Ansichten, die es gibt. Wird von aussen gesetzt, damit der Kern die
     /// Oberflaechen-Aufzaehlung nicht kennen muss.
-    public static let bekanntePfade = ["/zustand", "/gesundheit", "/ansicht", "/blick"]
+    public static let bekanntePfade = ["/zustand", "/gesundheit", "/ansicht", "/blick", "/dokument"]
 
     /// Deutet eine Anfrage. `erlaubteAnsichten` kommt vom Aufrufer, damit
     /// diese Datei nicht gegen die Seitenleiste gebunden ist.
@@ -88,6 +104,25 @@ public enum Steuerdeutung {
                     hinweis: "Bekannt sind: \(erlaubteBlicke.joined(separator: ", "))")))
             }
             return .success(.blickWaehlen(name))
+        case ("POST", "/dokument"):
+            if let adresse = feldAusJSON(koerper, schluessel: "adresse") {
+                return .success(.dokumentVerbinden(
+                    adresse: adresse,
+                    geheimnis: feldAusJSON(koerper, schluessel: "geheimnis") ?? ""))
+            }
+            if let text = feldAusJSON(koerper, schluessel: "text") {
+                return .success(.dokumentSchreiben(text))
+            }
+            if let text = feldAusJSON(koerper, schluessel: "einfuegen") {
+                let bei = zahlAusJSON(koerper, schluessel: "bei") ?? 0
+                return .success(.dokumentEinfuegen(text: text, bei: bei))
+            }
+            if feldAusJSON(koerper, schluessel: "trennen") != nil {
+                return .success(.dokumentTrennen)
+            }
+            return .failure(Steuerantwort(code: 400, koerper: fehler(
+                "Feld 'adresse', 'text', 'einfuegen' oder 'trennen' fehlt im Rumpf.",
+                hinweis: "Verbinden: {\"adresse\":\"ws://…\"} · Tippen: {\"einfuegen\":\"…\",\"bei\":0} · Setzen: {\"text\":\"…\"} · Trennen: {\"trennen\":\"ja\"}")))
         case ("GET", "/blick"):
             return .failure(Steuerantwort(code: 405, koerper: fehler(
                 "/blick wird mit POST gesetzt, nicht mit GET.",
@@ -102,6 +137,15 @@ public enum Steuerdeutung {
                 "Unbekannter Pfad '\(reinerPfad)' fuer \(methode.uppercased()).",
                 hinweis: "Bekannt sind: \(bekanntePfade.joined(separator: ", "))")))
         }
+    }
+
+    /// Eine Zeichenkette als gueltiges JSON -- ueber JSONSerialization statt
+    /// ueber eine eigene Ersetzungsliste, die einen Fall vergisst.
+    static func alsJSON(_ text: String) -> String {
+        guard let daten = try? JSONSerialization.data(withJSONObject: [text]),
+              let roh = String(data: daten, encoding: .utf8), roh.count >= 2
+        else { return "\"\"" }
+        return String(roh.dropFirst().dropLast())
     }
 
     /// Erste Zeile einer HTTP-Anfrage zerlegen. `nil`, wenn sie nicht passt --
@@ -126,6 +170,14 @@ public enum Steuerdeutung {
         return wert
     }
 
+    static func zahlAusJSON(_ text: String, schluessel: String) -> Int? {
+        guard let daten = text.data(using: .utf8),
+              let objekt = try? JSONSerialization.jsonObject(with: daten) as? [String: Any],
+              let zahl = objekt[schluessel] as? NSNumber
+        else { return nil }
+        return zahl.intValue
+    }
+
     static func fehler(_ grund: String, hinweis: String) -> String {
         let g = grund.replacingOccurrences(of: "\"", with: "'")
         let h = hinweis.replacingOccurrences(of: "\"", with: "'")
@@ -145,17 +197,29 @@ public enum Steuerdeutung {
     public static func zustandJSON(ansicht: String, dienst: String, pid: Int32,
                                    fassung: String, fenster: Int,
                                    ansichten: [String], blick: String = "",
-                                   blicke: [String] = []) -> String {
+                                   blicke: [String] = [],
+                                   dokumentlage: String = "",
+                                   dokumenttext: String? = nil) -> String {
         let liste = ansichten.map { "\"\($0)\"" }.joined(separator: ",")
         let blickListe = blicke.map { "\"\($0)\"" }.joined(separator: ",")
         // Der Blick steht NUR dann im Zustand, wenn es ihn gibt -- ein leeres
         // Feld waere von "Blick unbekannt" nicht zu unterscheiden.
         let blickTeil = blick.isEmpty ? "" : "\"blick\":\"\(blick)\",\"blicke\":[\(blickListe)],"
+        // Der Dokumenttext wird als JSON-Zeichenkette eingebettet, nicht roh:
+        // er enthaelt Zeilenumbrueche und Anfuehrungszeichen, sobald jemand
+        // wirklich schreibt.
+        let dokTeil: String
+        if dokumentlage.isEmpty {
+            dokTeil = ""
+        } else {
+            let textTeil = dokumenttext.map { ",\"dokumenttext\":\(alsJSON($0))" } ?? ""
+            dokTeil = "\"dokumentlage\":\(alsJSON(dokumentlage))\(textTeil),"
+        }
         // Ein eigenes Feld statt eines Kommentars: ein Programm liest kein
         // "eigentlich sieht man gerade nichts".
         let sichtbar = fenster > 0
         return """
-        {"ansicht":"\(ansicht)",\(blickTeil)"sichtbar":\(sichtbar),"fenster":\(fenster),\
+        {"ansicht":"\(ansicht)",\(blickTeil)\(dokTeil)"sichtbar":\(sichtbar),"fenster":\(fenster),\
         "dienst":"\(dienst)","pid":\(pid),\
         "fassung":"\(fassung)","ansichten":[\(liste)]}
         """

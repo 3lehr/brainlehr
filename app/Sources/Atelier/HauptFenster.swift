@@ -41,6 +41,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
 }
 
 struct HauptFenster: View {
+    let dokument: Dokumentsitzung
     @Bindable var aufsicht: DienstAufsicht
     /// Die Ansichtswahl liegt AUSSERHALB des Fensters, damit die Menueleiste
     /// sie umschalten kann -- sie ist der Rueckweg, wenn die Seitenleiste
@@ -87,7 +88,7 @@ struct HauptFenster: View {
                 } else if wahl.aktuell == .bearbeitung {
                     BearbeitungsAnsicht()
                 } else if wahl.aktuell == .dokument {
-                    DokumentAnsicht()
+                    DokumentAnsicht(sitzung: dokument)
                 } else if wahl.aktuell == .sitzung {
                     SitzungsAnsicht()
                 } else if wahl.aktuell == .wissensraum {
