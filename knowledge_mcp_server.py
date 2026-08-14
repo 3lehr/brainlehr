@@ -131,6 +131,13 @@ import normachsen  # Auftrag 95 (Schritt 1, docs/PLAN_RECHTSRAUM_2026-08-13.md):
                     # ARTEN (Werte fuer norm_art) und FREMDE_QUELLE (Erkennung
                     # fremder Herkunft an source) -- wiederverwendet, nicht neu
                     # erfunden. Kein Zirkel -- das Modul importiert nichts von hier.
+import zeitfenster  # Auftrag 88 Schritt 1 (docs/PLAN_ZEITACHSE_2026-08-14.md):
+                     # im_zeitraum() fuer die ENTSTEHUNGSZEIT (created_at), eine
+                     # andere Frage als stichtag/nur_geltende (GELTUNG). Nur die
+                     # Funktion wird benutzt, treffer() bleibt hier unbenutzt --
+                     # der Aufruf sitzt in der final_ids-Schleife, nicht in der
+                     # FTS-WHERE-Klausel (Begruendung im Plan). Kein Zirkel --
+                     # zeitfenster importiert selbst nichts von hier.
 
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad (gleiche Bauform wie die drei
 # BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
@@ -2192,6 +2199,7 @@ def _geltung_status(norm_rang, gilt_ab: str | None, gilt_bis: str | None, sticht
 
 def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                      stichtag: str | None = None, nur_geltende: bool = False,
+                     erstellt_von: str | None = None, erstellt_bis: str | None = None,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None, cwd: str | None = None) -> dict:
     """Hybrid-Suche ueber Wissensknoten UND Lehren (Auftrag 2026-08-07 --
@@ -2241,7 +2249,22 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     Lehren-Filter: nur status='active' (gleiche Vorgabe wie lesson_query()'s
     Default) -- erledigte/eskalierte Lehren tauchen sonst in einer Suche auf,
     die lesson_query() bewusst verbirgt. lesson_query() selbst bleibt
-    UNVERAENDERT (andere Frage: Typ-/Projektfilter, keine Rangliste)."""
+    UNVERAENDERT (andere Frage: Typ-/Projektfilter, keine Rangliste).
+
+    Zeitfenster (Auftrag 88 Schritt 1, ENTSTEHUNGSZEIT -- eine andere Frage
+    als stichtag/nur_geltende, die die GELTUNG pruefen): erstellt_von/
+    erstellt_bis schraenken auf Knoten ein, deren created_at im Zeitraum
+    liegt (zeitfenster.im_zeitraum, Tagesgranularitaet, Grenzen inklusive,
+    None laesst die jeweilige Seite offen). Wirkt NACH der FTS/Embedding-
+    Fusion, in der Schleife, die final_ids zu Eintraegen macht -- nicht in
+    der SQL-WHERE-Klausel, weil der Bedeutungskanal seine Kandidaten getrennt
+    an der FTS vorbei liefert und ein WHERE dort nur die Stichworthaelfte
+    treffen wuerde. Lehren tragen kein entschiedenes "gemacht"-Feld
+    (first_seen und last_seen existieren beide, keins ist es) -- ist
+    erstellt_von oder erstellt_bis gesetzt, fallen ALLE Lehren aus dem
+    Ergebnis, und ihre Anzahl steht unter "lehren_uebersprungen_zeitfilter"
+    in der Antwort (nur wenn der Zeitraum ueberhaupt gesetzt ist, sonst
+    fehlt das Feld ganz, um ohne Filter kein Rauschen zu erzeugen)."""
     stichtag = stichtag or now_iso()
     conn = get_db()
     log_access(conn, None, "search", query=query, project_id=scope,
@@ -2282,7 +2305,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     ausw = ausweis.loese_auf()
     if scope == "all":
         fts_rows = [] if blind else [r for r in conn.execute(
-            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags
+            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.{_NICHT_GESPERRT_SQL}
@@ -2305,7 +2328,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         )}
     else:
         fts_rows = [] if blind else [r for r in conn.execute(
-            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags
+            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?) AND n.{_NICHT_GESPERRT_SQL}
@@ -2346,6 +2369,39 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, allowed_lesson_ids) if query_vec else []
     embedding_ordered_ids = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
 
+    # Zeitfenster (Entstehungszeit, Auftrag 88 Schritt 1) VOR der Fusion, und
+    # das ist keine Feinheit, sondern der Unterschied zwischen brauchbar und
+    # nutzlos: _fuse_with_keyword_floor() KAPPT auf max_results. Ein Filter
+    # danach zieht seine Teilmenge aus den ohnehin schon abgeschnittenen
+    # Top-10 -- liegt dort kein Knoten im Zeitraum, kommt nichts zurueck,
+    # obwohl Rang 11 gepasst haette. "Letzte Woche" waere damit meistens leer,
+    # und zwar ohne Hinweis. Deshalb: erst die Kandidatenlisten einschraenken,
+    # dann fusionieren und kappen.
+    zeitfilter_aktiv = erstellt_von is not None or erstellt_bis is not None
+    lehren_uebersprungen_zeitfilter = 0
+    if zeitfilter_aktiv:
+        kandidaten = [i for i in dict.fromkeys(keyword_ordered_ids + embedding_ordered_ids)]
+        knoten_im_fenster = set()
+        if kandidaten:
+            ph = ",".join("?" for _ in kandidaten)
+            for r in conn.execute(
+                f"SELECT id, created_at FROM knowledge_nodes WHERE id IN ({ph})",
+                kandidaten,
+            ):
+                # Ohne Zeitstempel ist im_zeitraum() nicht auswertbar -- so ein
+                # Knoten faellt heraus, statt stillschweigend als "im Zeitraum"
+                # durchzugehen.
+                if r["created_at"] is not None and zeitfenster.im_zeitraum(
+                        r["created_at"], erstellt_von, erstellt_bis):
+                    knoten_im_fenster.add(r["id"])
+        # Lehren ueber die VOLLE Kandidatenmenge zaehlen, nicht ueber die
+        # gekappte: eine Zahl, die selbst gekappt ist, waere genau die stille
+        # Kuerzung, gegen die sie steht.
+        lehren_uebersprungen_zeitfilter = sum(
+            1 for i in kandidaten if i not in knoten_im_fenster and i in allowed_lesson_ids)
+        keyword_ordered_ids = [i for i in keyword_ordered_ids if i in knoten_im_fenster]
+        embedding_ordered_ids = [i for i in embedding_ordered_ids if i in knoten_im_fenster]
+
     final_ids = _fuse_with_keyword_floor(keyword_ordered_ids, embedding_ordered_ids, max_results)
 
     missing = [i for i in final_ids if i not in by_id and i not in by_id_lessons]
@@ -2356,7 +2412,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         # beim Nachladen als Knoten missverstehen und stumm verlieren.
         placeholders = ",".join("?" for _ in missing)
         for r in conn.execute(
-            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von, tags FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 AND {_NICHT_GESPERRT_SQL}",
+            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von, tags, created_at FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 AND {_NICHT_GESPERRT_SQL}",
             missing
         ):
             if _zweckprojektion_sichtbar(ausw, r["tags"]):
@@ -2371,6 +2427,14 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     for i in final_ids:
         if i in by_id:
             row = by_id[i]
+            created_at = row["created_at"]
+            if zeitfilter_aktiv:
+                # Ein Knoten ohne created_at (schema.sql: NOT NULL, aber ein
+                # Row-Zugriff koennte trotzdem None liefern) darf NICHT
+                # stillschweigend als "im Zeitraum" durchgehen -- ohne
+                # Zeitstempel ist im_zeitraum() nicht auswertbar, also raus.
+                if created_at is None or not zeitfenster.im_zeitraum(created_at, erstellt_von, erstellt_bis):
+                    continue
             entry = {"kind": "node", "id": row["id"], "path": row["path"], "title": row["title"],
                       "summary": row["summary"], "project": row["project_id"],
                       # Kennung, NICHT aufgeloest -- siehe schema.sql-Kommentar an
@@ -2387,6 +2451,13 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             else:
                 vorrang.append(entry)
         elif i in by_id_lessons:
+            if zeitfilter_aktiv:
+                # Lehren tragen kein entschiedenes "gemacht"-Feld (first_seen
+                # UND last_seen existieren, keins ist es) -- raten waere
+                # schlimmer als ausschliessen. Gezaehlt wird oben ueber die
+                # volle Kandidatenmenge, nicht hier: an dieser Stelle waere die
+                # Zahl selbst schon auf max_results gekappt.
+                continue
             row = by_id_lessons[i]
             # Keine Geltungsdauer bei Lehren -- immer vorrangig (kein
             # nachrangig-Zweig, siehe Docstring).
@@ -2399,7 +2470,12 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     log_access(conn, results[0].get("path") if results else None, "search", query=query,
                project_id=scope, actor=actor, model=model, session=session)
     conn.close()
-    return {"query": query, "scope": scope, "results": results, "count": len(results)}
+    out = {"query": query, "scope": scope, "results": results, "count": len(results)}
+    if zeitfilter_aktiv:
+        # Nur bei gesetztem Zeitraum im Ergebnis -- ohne Filter darf das Feld
+        # die Antwort nicht mit Rauschen fuellen (Abnahme-Punkt 4).
+        out["lehren_uebersprungen_zeitfilter"] = lehren_uebersprungen_zeitfilter
+    return out
 
 
 SLUG_MAX_LEN = 40
@@ -5500,6 +5576,8 @@ TOOLS = {
                 "max_results": {"type": "integer", "description": "Max results (default 10)", "default": 10},
                 "stichtag": {"type": "string", "description": "ISO-8601 date/timestamp to check norm validity (gilt_ab/gilt_bis) against; default now. Expired or not-yet-effective norms rank last and are marked, never hidden (unless nur_geltende=True). Facts (norm_rang unset) are unaffected."},
                 "nur_geltende": {"type": "boolean", "description": "Drop expired/not-yet-effective norms instead of ranking them last. Default False.", "default": False},
+                "erstellt_von": {"type": "string", "description": "ISO-8601 date; only nodes CREATED (created_at) on or after this date are returned (inclusive, day granularity). Different question from stichtag/nur_geltende, which check legal validity, not creation time. Lessons have no decided 'created' field and are dropped entirely when this or erstellt_bis is set; the dropped count is reported as lehren_uebersprungen_zeitfilter."},
+                "erstellt_bis": {"type": "string", "description": "ISO-8601 date; only nodes created on or before this date are returned (inclusive, day granularity). See erstellt_von."},
                 "cwd": {"type": "string", "description": "Caller's working directory, for zero-hit-log provenance only; else null"},
                 **IDENTITY_PROPERTIES,
             },
@@ -5507,7 +5585,8 @@ TOOLS = {
         },
         "handler": lambda args: knowledge_search(
             _require(args, "query", "der Suchbegriff (FTS5-Syntax: Stichwort, Phrase, AND/OR/NOT)."),
-            args.get("scope", "all"), args.get("max_results", 10), stichtag=args.get("stichtag"), nur_geltende=args.get("nur_geltende", False), cwd=args.get("cwd"), **_identity_args(args))
+            args.get("scope", "all"), args.get("max_results", 10), stichtag=args.get("stichtag"), nur_geltende=args.get("nur_geltende", False),
+            erstellt_von=args.get("erstellt_von"), erstellt_bis=args.get("erstellt_bis"), cwd=args.get("cwd"), **_identity_args(args))
     },
     "knowledge_add": {
         "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy. "
