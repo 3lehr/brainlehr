@@ -142,4 +142,54 @@ final class WissensraumreglerTests: XCTestCase {
         XCTAssertTrue(skript.contains("'klapper'"),
                       "der Klappknopf blendet eine Leiste ein, die es nicht mehr gibt")
     }
+
+    // MARK: Eingabe und Aktionen
+
+    func testAblaufWirktUeberallVorfuehrenNurBeimAbrufweg() {
+        for blick in [0, 1, 2, 3, 4] {
+            XCTAssertTrue(Wissensraumregler.schalter(blick: blick).map(\.id).contains("lauf"),
+                          "Ablauf fehlt in Blick \(blick)")
+        }
+        XCTAssertTrue(Wissensraumregler.schalter(blick: Wissensraumregler.abrufweg)
+            .map(\.id).contains("abrufwegVorfuehren"))
+        for blick in [0, 1, 2, 3] {
+            XCTAssertFalse(Wissensraumregler.schalter(blick: blick).map(\.id).contains("abrufwegVorfuehren"),
+                           "Vorfuehren darf in Blick \(blick) nicht auftauchen -- die Seite blendet "
+                           + "seine Leiste dort aus")
+        }
+    }
+
+    func testAnfrageNurBeimAbrufweg() {
+        XCTAssertTrue(Wissensraumregler.hatAnfrage(blick: Wissensraumregler.abrufweg))
+        for blick in [0, 1, 2, 3] {
+            XCTAssertFalse(Wissensraumregler.hatAnfrage(blick: blick))
+        }
+    }
+
+    func testSchalterSkriptGibtDenErreichtenZustandZurueck() {
+        let skript = Wissensraumregler.skript(fuerSchalter: "lauf")
+        XCTAssertTrue(skript.contains("e.click()"))
+        XCTAssertTrue(skript.contains("aria-pressed"),
+                      "ohne den erreichten Zustand ist ein wirkungsloser Klick von einem "
+                      + "wirksamen nicht zu unterscheiden")
+        XCTAssertTrue(skript.contains("return 'fehlt'"))
+    }
+
+    func testAnfrageMitApostrophBleibtHeil() {
+        // Eine Anfrage mit Apostroph ist zulaessig. Wer sie stillschweigend
+        // verstuemmelt, erzeugt ein Ergebnis zur falschen Frage -- und wer sie
+        // roh einsetzt, baut eine Skriptluecke.
+        let skript = Wissensraumregler.skript(fuerAnfrage: "Dichtung's \"Leck\" \\ Ende")
+        XCTAssertTrue(skript.contains("requestSubmit"))
+        XCTAssertFalse(skript.contains("feld.value = 'Dichtung's"),
+                       "roh eingesetzter Apostroph bricht das Skript: \(skript)")
+        XCTAssertTrue(skript.contains("\\\"Leck\\\""), skript)
+    }
+
+    func testLeereAnfrageErzeugtGueltigesSkript() {
+        // Grenzwert: leerer Text. Muss ein gueltiges Skript ergeben, nicht
+        // eines, das im Browser mit einem Syntaxfehler stirbt.
+        let skript = Wissensraumregler.skript(fuerAnfrage: "")
+        XCTAssertTrue(skript.contains("feld.value = \"\""), skript)
+    }
 }

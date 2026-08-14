@@ -163,6 +163,83 @@ public enum Wissensraumregler {
     })();
     """
 
+    // MARK: Eingabe und Aktionen
+    //
+    // Der Unterschied zu einem Regler ist NICHT die Bauform, sondern die
+    // Umkehrbarkeit: einen Regler schiebt man zurueck, eine Aktion laeuft. Sie
+    // stehen deshalb ueber den Reglern und nicht zwischen ihnen -- wer eine
+    // Zeile weiterrutscht, soll nicht versehentlich eine Berechnung anstossen.
+
+    /// Ein Schalter, der in der Seite zwischen an und aus wechselt.
+    public struct Schalter: Equatable, Sendable, Identifiable {
+        public let id: String
+        public let name: String
+        /// Blicke, in denen er wirkt. Leer heisst: in allen.
+        public let nurBei: Set<Int>
+    }
+
+    /// "Ablauf" laeuft in jedem Blick, "Vorfuehren" nur beim Abrufweg -- die
+    /// Seite blendet seine Leiste sonst aus.
+    public static let schalter: [Schalter] = [
+        Schalter(id: "lauf", name: "Ablauf", nurBei: []),
+        Schalter(id: "abrufwegVorfuehren", name: "Vorführen", nurBei: [abrufweg]),
+    ]
+
+    public static func schalter(blick: Int) -> [Schalter] {
+        schalter.filter { $0.nurBei.isEmpty || $0.nurBei.contains(blick) }
+    }
+
+    /// Drueckt einen Web-Knopf und gibt seinen Zustand danach zurueck.
+    ///
+    /// Zurueckgegeben wird der ERREICHTE Zustand (aria-pressed), nie ein
+    /// blosses 'ok' -- sonst ist ein wirkungsloser Klick von einem wirksamen
+    /// nicht zu unterscheiden.
+    public static func skript(fuerSchalter id: String) -> String {
+        """
+        (function(){
+          var e = document.getElementById('\(id)');
+          if (!e) return 'fehlt';
+          e.click();
+          return e.getAttribute('aria-pressed') === 'true' ? 'an' : 'aus';
+        })();
+        """
+    }
+
+    /// Traegt der Blick ein Anfragefeld? Nur der Abrufweg rechnet einen Weg.
+    public static func hatAnfrage(blick: Int) -> Bool { blick == abrufweg }
+
+    /// Schreibt die Anfrage in das Feld und schickt das Formular ab.
+    ///
+    /// Der Text wird fuer JavaScript entschaerft, nicht gefiltert: eine Anfrage
+    /// mit Apostroph ist voellig zulaessig, und wer sie stillschweigend
+    /// verstuemmelt, erzeugt ein Ergebnis zur falschen Frage.
+    public static func skript(fuerAnfrage text: String) -> String {
+        """
+        (function(){
+          var feld = document.getElementById('abrufwegText');
+          var form = document.getElementById('abrufwegLeiste');
+          if (!feld || !form) return 'fehlt';
+          feld.value = \(alsJSZeichenkette(text));
+          feld.dispatchEvent(new Event('input', {bubbles: true}));
+          if (typeof form.requestSubmit === 'function') { form.requestSubmit(); }
+          else { form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); }
+          return 'ok';
+        })();
+        """
+    }
+
+    /// Eine JavaScript-Zeichenkette, die auch Anfuehrungszeichen, Schraegstriche
+    /// und Zeilenumbrueche vertraegt. JSONSerialization statt eigener
+    /// Ersetzungsliste -- eine handgeschriebene Liste vergisst einen Fall, und
+    /// der eine Fall ist dann eine Skriptluecke.
+    static func alsJSZeichenkette(_ text: String) -> String {
+        guard let daten = try? JSONSerialization.data(withJSONObject: [text]),
+              let roh = String(data: daten, encoding: .utf8),
+              roh.count >= 2
+        else { return "\"\"" }
+        return String(roh.dropFirst().dropLast())   // [ ... ] abstreifen
+    }
+
     /// Ohne Exponentialschreibweise und ohne Landeseinstellung -- `0,83` waere
     /// im DOM ungueltig und faellt dort stumm auf den alten Wert zurueck.
     static func zahl(_ wert: Double) -> String {

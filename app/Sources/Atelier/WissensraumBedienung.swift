@@ -67,6 +67,18 @@ final class Wissensraumwerte: ObservableObject {
         senden?(Wissensraumregler.skript(fuer: regler, wert: geklemmt))
     }
 
+    /// Drueckt einen Schalter in der Seite. Der Zustand wird NICHT hier
+    /// gespiegelt: er lebt in der Seite, und eine zweite Kopie davon waere die
+    /// naechste Stelle, an der beide auseinanderlaufen koennen.
+    func druecke(_ id: String) {
+        senden?(Wissensraumregler.skript(fuerSchalter: id))
+    }
+
+    /// Schickt eine Anfrage fuer den Abrufweg ab.
+    func frage(_ text: String) {
+        senden?(Wissensraumregler.skript(fuerAnfrage: text))
+    }
+
     /// Setzt eine Gruppe zurueck und schreibt sie sofort in die Seite.
     func aufVorgabe(_ zweck: Wissensraumregler.Zweck, blick: Int) {
         for regler in Wissensraumregler.fuer(blick: blick, zweck: zweck) {
@@ -120,6 +132,10 @@ struct WissensraumBedienung: View {
     /// nichts. Der Zustand bleibt erhalten, weil das Aufklappen sonst bei
     /// jedem Ansichtswechsel zurueckfaellt.
     @AppStorage("wissensraum.darstellungOffen") private var darstellungOffen = false
+    /// Die letzte Anfrage bleibt stehen. Sie ist Arbeit -- ein Feld, das bei
+    /// jedem Ansichtswechsel leer ist, kostet sie erneut.
+    @AppStorage("wissensraum.anfrage") private var anfrage =
+        "Dichtung Leckage Treibstofftank Fehleranalyse Startverzoegerung"
 
     private var gegenstand: [Wissensraumregler.Regler] {
         Wissensraumregler.fuer(blick: blick.rawValue, zweck: .gegenstand)
@@ -130,6 +146,40 @@ struct WissensraumBedienung: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            // Eingabe und Aktionen stehen OBEN, nicht zwischen den Reglern.
+            // Der Unterschied ist nicht die Bauform, sondern die
+            // Umkehrbarkeit: einen Regler schiebt man zurueck, eine Aktion
+            // laeuft. Wer eine Zeile weiterrutscht, soll nicht versehentlich
+            // eine Berechnung anstossen.
+            if Wissensraumregler.hatAnfrage(blick: blick.rawValue) {
+                HStack(spacing: 12) {
+                    Text("Anfrage")
+                        .frame(width: 96, alignment: .leading)
+                    TextField("Anfrage für den Abrufweg", text: $anfrage)
+                        .textFieldStyle(.roundedBorder)
+                        .onSubmit { werte.frage(anfrage) }
+                        .accessibilityLabel("Anfrage für den Abrufweg")
+                    Button("Weg berechnen") { werte.frage(anfrage) }
+                        .keyboardShortcut(.defaultAction)
+                        .disabled(anfrage.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+
+            let schalter = Wissensraumregler.schalter(blick: blick.rawValue)
+            if !schalter.isEmpty {
+                HStack(spacing: 12) {
+                    // Kein Zeilenname: einer der Knoepfe heisst selbst
+                    // "Ablauf", und ein Name daneben, der dasselbe Wort traegt,
+                    // liest sich wie eine Ueberschrift ueber genau einem Knopf.
+                    // Der leere Platz haelt nur das Raster der Zeilen darunter.
+                    Color.clear.frame(width: 96, height: 1)
+                    ForEach(schalter) { s in
+                        Button(s.name) { werte.druecke(s.id) }
+                    }
+                    Spacer()
+                }
+            }
+
             ForEach(gegenstand) { regler in
                 ReglerZeile(regler: regler, werte: werte)
             }
