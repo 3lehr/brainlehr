@@ -37,7 +37,7 @@ def test_paket_mit_belegter_regel_wird_angenommen(tmp_path):
 
     ergebnis = importiere(pfad)
 
-    assert ergebnis == {"angenommen": True, "anzahl_regeln": 1, "grund": None}
+    assert ergebnis == {"angenommen": True, "anzahl_regeln": 1, "bezeichnung": "Steuer und Belege", "grund": None}
 
 
 def test_regel_ohne_beleg_wird_abgelehnt_mit_grund(tmp_path):
@@ -98,4 +98,30 @@ def test_leere_regelmenge_wird_angenommen_mit_null_regeln(tmp_path):
 
     ergebnis = importiere(pfad)
 
-    assert ergebnis == {"angenommen": True, "anzahl_regeln": 0, "grund": None}
+    assert ergebnis == {"angenommen": True, "anzahl_regeln": 0, "bezeichnung": "Steuer und Belege", "grund": None}
+
+
+def test_vertrag_gegen_das_atelier_haelt():
+    """Die Naht, an der H8b geraten hat: das atelier liest genau diese drei
+    Schluessel aus der Antwort. Aendert einer seinen Namen, zeigt der
+    Bildschirm still nichts mehr an -- kein Fehler, nur ein leerer Satz.
+    Deshalb steht der Vertrag hier als Test und nicht als Kommentar."""
+    from kern import domaene
+
+    ergebnis = domaene.importiere("pakete/steuer.domaene.json")
+    assert set(ergebnis) == {"angenommen", "anzahl_regeln", "bezeichnung", "grund"}
+    assert ergebnis["angenommen"] is True
+    assert ergebnis["anzahl_regeln"] == 4
+    assert ergebnis["bezeichnung"]
+
+    # Derselbe Inhalt ueber den Weg, den das atelier wirklich nimmt: Datei
+    # ausgewaehlt, Inhalt geschickt -- der Dienst liest nichts selbst.
+    import json
+    with open("pakete/steuer.domaene.json", encoding="utf-8") as f:
+        gleich = domaene.pruefe(json.load(f))
+    assert gleich == ergebnis
+
+    abgelehnt = domaene.pruefe({"domaene": "x", "quellen": {}, "regeln": [{"id": "Bewirtung", "ziel_id": "fehlt", "fundstelle": "nichts"}]})
+    assert set(abgelehnt) == {"angenommen", "anzahl_regeln", "bezeichnung", "grund"}
+    assert abgelehnt["angenommen"] is False
+    assert "Bewirtung" in abgelehnt["grund"]

@@ -36,6 +36,13 @@ def importiere(pfad: str | Path) -> dict[str, Any]:
     except json.JSONDecodeError:
         return _abgelehnt("Die Paketdatei ist beschaedigt und laesst sich nicht lesen.")
 
+    return pruefe(paket)
+
+
+def pruefe(paket: Any) -> dict[str, Any]:
+    """Dieselbe Pruefung fuer ein bereits gelesenes Paket. Das atelier waehlt
+    die Datei aus und schickt ihren INHALT -- so muss der Dienst nie im
+    Dateisystem des Nutzers lesen. Gleiche Rueckgabe wie importiere()."""
     if not isinstance(paket, dict):
         return _abgelehnt("Die Paketdatei enthaelt kein gueltiges Paket.")
 
@@ -53,7 +60,15 @@ def importiere(pfad: str | Path) -> dict[str, Any]:
     except (ValueError, KeyError, TypeError):
         return _abgelehnt(_grund_fuer_ablehnung(regeln, quellen))
 
-    return {"angenommen": True, "anzahl_regeln": len(regeln), "grund": None}
+    # Die Bezeichnung steht im Paket und wird dem Menschen gezeigt ("... gilt
+    # jetzt"). Fehlt sie, traegt die Kennung -- nie ein leerer Name.
+    bezeichnung = paket.get("bezeichnung") or paket.get("domaene")
+    return {
+        "angenommen": True,
+        "anzahl_regeln": len(regeln),
+        "bezeichnung": bezeichnung,
+        "grund": None,
+    }
 
 
 def _grund_fuer_ablehnung(regeln: list[dict[str, Any]], quellen: dict[str, Any]) -> str:
@@ -71,7 +86,7 @@ def _grund_fuer_ablehnung(regeln: list[dict[str, Any]], quellen: dict[str, Any])
 
 
 def _abgelehnt(grund: str) -> dict[str, Any]:
-    return {"angenommen": False, "anzahl_regeln": None, "grund": grund}
+    return {"angenommen": False, "anzahl_regeln": None, "bezeichnung": None, "grund": grund}
 
 
-__all__ = ["importiere"]
+__all__ = ["importiere", "pruefe"]

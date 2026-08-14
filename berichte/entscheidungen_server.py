@@ -747,6 +747,25 @@ def _quellenliste() -> dict:
     return {"zeilen": zeilen}
 
 
+def _domaene_import(paket: dict) -> dict:
+    """H8b: das atelier schickt den kompletten Paketinhalt (siehe
+    docs/PLAN_OPENLEHR_2026-08-14.md §H8), die Pruefung selbst liegt in
+    kern/domaene.py (H8a, anderer Agent). Vertrag: domaene.pruefe(paket)
+    liefert bei Annahme {"angenommen": True, "bezeichnung": str, "anzahl_regeln": int},
+    bei Ablehnung {"angenommen": False, "grund": str} -- grund bereits in
+    Nutzersprache, wird unveraendert durchgereicht.
+
+    Fehlt kern/domaene.py noch (H8a nicht fertig), kommt hier "verfuegbar":
+    False zurueck statt eines Absturzes -- das atelier zeigt das als
+    "kann gerade nicht geprueft werden."
+    """
+    try:
+        import domaene  # liegt in kern/, per Suchpfad oben eingehaengt
+    except ImportError:
+        return {"verfuegbar": False}
+    return domaene.pruefe(paket)
+
+
 def _abrufweg_stand(text: str) -> dict:
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
@@ -846,6 +865,8 @@ class Handler(BaseHTTPRequestHandler):
             elif self.path == "/api/fundstelle":
                 out = _fundstelle_stand(str(payload.get("quelle", "")),
                                         str(payload.get("text", "")))
+            elif self.path == "/api/domaene-import":
+                out = _domaene_import(payload)
             else:
                 self._json({"error": "unbekannter Pfad"}, 404)
                 return

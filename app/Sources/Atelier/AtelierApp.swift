@@ -3,6 +3,7 @@
 
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Welche Ansicht gerade gezeigt wird -- getrennt vom Fenster gehalten, weil
 /// die MENUELEISTE sie umschalten koennen muss.
@@ -145,11 +146,44 @@ struct AtelierApp: App {
                 .keyboardShortcut("s", modifiers: [.command, .control])
                 Divider()
             }
+            // H8b (docs/PLAN_OPENLEHR_2026-08-14.md): eigener Menuepunkt statt
+            // versteckt im Toolbar-Block -- "Importieren" ist der Systemplatz
+            // dafuer (CommandGroupPlacement.importExport, landet im
+            // Ablage-Menue). Rueckweg ist der OK-Knopf des Ergebnisdialogs,
+            // nicht dieser Menuepunkt selbst.
+            CommandGroup(after: .importExport) {
+                Button("Domäne importieren …") { domaeneImportieren() }
+                    .keyboardShortcut("i", modifiers: [.command, .shift])
+            }
         }
 
         Settings {
             EinstellungenAnsicht()
                 .frame(minWidth: 460, minHeight: 300)
+        }
+    }
+
+    /// Dateiauswahl (nur die Paketdatei) + Ergebnis in Nutzersprache. Ergebnis
+    /// kommt als NSAlert -- der einzig zumutbare Weg fuer eine Rueckmeldung
+    /// aus einem Menuebefehl heraus, der zu keiner View gehoert. Der
+    /// OK-Knopf des Alerts ist der Rueckweg aus dem Zustand.
+    @MainActor
+    private func domaeneImportieren() {
+        let panel = NSOpenPanel()
+        panel.title = "Domäne importieren"
+        panel.prompt = "Importieren"
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        Task {
+            let ergebnis = await DomaeneImportDienst.importiere(dateiURL: url)
+            let alert = NSAlert()
+            alert.messageText = ergebnis.titel
+            alert.informativeText = ergebnis.text
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
         }
     }
 }

@@ -96,6 +96,47 @@ brainlehr selbst ausgeliefert wird.
   Paket importiert sind, gibt es zwei Wahrheiten. Aufgelöst wird das nur in
   eine Richtung: Das Paket wird aus dem Code **erzeugt**, nie von Hand gepflegt.
 
+## Nachtrag aus der unabhängigen Entwurfsprobe (2026-08-14, gleicher Tag)
+
+Ein zweiter Durchgang bekam dieselbe Aufgabe **ohne** diese Begründung. Er kam
+auf dieselbe Grenze — Prozessgrenze statt Python-Import — und fand zwei Löcher
+in der Fassung darüber. Beide sind übernommen.
+
+**Erstens: Eine Zusage ohne Prüfstelle ist eine Behauptung.** Oben stand, eine
+Fähigkeit müsse ihr Nichtwissen ausdrücken können. Das ist ein Versprechen, und
+Versprechen brechen still. **Also ein Torwächter in brainlehr:** Jede Antwort
+des Fachdienstes läuft durch eine Prüfung, bevor sie irgendwo erscheint. Eine
+Zahl ohne belegte Fundstelle wird **nicht durchgereicht**, mit einem Grund in
+Menschensprache. Das ist zugleich die sauberere Lesart von ADR-007 — die Stelle,
+die „nein" sagt, gehört nach unten, und mit dem Torwächter ist sie dort statt im
+Manifest.
+
+**Zweitens, und das ist der erste Bruch: abgeleitete Zahlen.** `belegt()` ist
+ein Teilstring-Test — die Fundstelle muss wörtlich in der Quelle stehen. **Eine
+EÜR-Summe steht in keinem Beleg wörtlich**, sie ist aus vielen gerechnet. Der
+Torwächter würde also ausgerechnet die Zahlen verweigern, um die es geht. Die
+naheliegende Rettung — eine Ausnahme `herkunft: "berechnet"` — ist genau das
+Loch, durch das eine unbelegte Zahl belegt aussieht.
+
+**Die Regel dagegen:** Eine berechnete Zahl wird nur durchgelassen, wenn sie
+**ihre Summanden mitliefert** und jeder Summand für sich besteht. Eine Summe
+ohne Summandenliste ist keine belegte Zahl, sondern eine Behauptung mit
+Kommastelle. Prüffall, vor dem Bau zu schreiben, in beide Richtungen: Summe ohne
+Summanden → verweigert; dieselbe Summe mit vollständiger, selbst belegter
+Summandenliste → durch. Fehlt eine der beiden Richtungen, ist der Torwächter ein
+Stempel.
+
+**Drittens, gemessen und hier nur festgehalten:** `steuer` hängt an 9
+Importstellen in 8 Dateien am übrigen Daemon (`bridge`, `executor`,
+`model_orchestrator`, `caveman_adapter` …) — das ist der harte Beleg, warum ein
+Python-Import die Altlast mitzöge. Nur 11 der 102 Module importieren `fastapi`;
+die Fachschicht wäre also transportfrei, ihr Umzug scheitert an der Kopplung
+nach oben, nicht am Web-Gerüst.
+
+**Offen und ausdrücklich nicht gemessen:** Bindung und Anmeldung des Dienstes
+auf Port 4242. Die Grenze muss `127.0.0.1` plus Nachweis sein — vor dem Bau
+nachsehen, nicht annehmen.
+
 ## Folgen
 
 - Linie H, H8: Das Manifest bekommt einen zweiten Abschnitt `faehigkeiten` —
