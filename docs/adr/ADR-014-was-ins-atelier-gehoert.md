@@ -1,0 +1,69 @@
+# ADR-014: Was ins atelier gehört — Gemeinsames und Unabtretbares, sonst nichts
+
+**Stand** 2026-08-14T21:36:26+0200
+**Status** Angenommen
+**Betrifft** `atelier` (`app/`), jede Domäne
+**Entscheider** Betreiber, 2026-08-14
+
+## Die Vorgabe, wörtlich
+
+> *„dann müssen wir eben atelier schlanker machen! atelier nur noch security und
+> darstellung (3dgraph usw.) + einstellungen die llm grundeinstellungen: apis
+> usw. sowie grundeinstellungen für das brainlehr.."*
+
+## Die Regel dahinter, und sie ist schärfer als die Liste
+
+Die drei genannten Dinge haben ein gemeinsames Merkmal, und daraus wird die
+Regel, die auch den vierten und fünften Fall entscheidet:
+
+> **Ins atelier gehört, was alle Domänen GEMEINSAM haben — oder was keine Domäne
+> über sich selbst entscheiden darf. Alles andere ist Domäne.**
+
+| Beispiel | Grund |
+|---|---|
+| **Sicherheit**, Ausweis, Freigabe | *unabtretbar* — eine Domäne, die ihre eigene Zulassung erteilt, ist keine Schranke |
+| **Darstellung**: Rahmen, Navigation, Wissensraum-Ansicht, **Dokumentfenster** | *gemeinsam* — nur so sieht jede Domäne aus wie ein Teil derselben Anwendung |
+| **Modellzugänge**: welches Modell, welche Schnittstelle, was das Haus verlassen darf | *unabtretbar* — sonst hätte jede Domäne ihre eigenen Zugangsdaten und ihre eigene Antwort auf die Frage, ob Daten hinausgehen |
+| **brainlehr-Grundeinstellungen** | *gemeinsam* — sie gelten für den Speicher unter allen Domänen |
+| Belegkategorien, Fristenrechnung, Steuerlogik, Korrekturregeln | **Domäne** |
+
+**Was das für F19 bedeutet, und es ist ein Gewinn:** Die Entscheidung *„lokale
+KI, Auswärtsgang nur mit Zustimmung in den Einstellungen"* liegt damit an
+**genau einer** Stelle. Keine Domäne kann sie umgehen, keine muss sie
+wiederholen. Eine Schranke, die an fünf Orten gepflegt wird, ist an vier davon
+irgendwann veraltet.
+
+## Was das für das Dokumentfenster heißt
+
+Das Dokumentfenster **ist Darstellung** und bleibt im atelier — es ist der Fall,
+in dem „gemeinsam" am meisten trägt: Rechnung und Behördenbrief sind das, was
+ein Mensch außerhalb zu sehen bekommt. Sähen sie je Domäne verschieden aus, wäre
+die Anwendung nach außen ein Flickenteppich. ADR-010 und ADR-013 (drei Klassen
+Oberfläche) bleiben unberührt.
+
+## Der ehrliche Befund zum Wort „schlanker"
+
+**Im atelier ist heute nichts Fachliches, das entfernt werden müsste.** Gemessen
+sind es 17 Swift-Dateien unter `Sources/Atelier`, alle tragen Rahmen,
+Navigation, Ausweis, Dienstaufsicht, Quellen- und Wissensraum-Ansichten,
+Dokumentfenster und den Domänen-Import. Keine einzige kennt Steuerrecht.
+
+**Die Regel wirkt also vorwärts, nicht rückwärts** — sie räumt nicht auf, sie
+verhindert. Und sie tut das an der Stelle, an der es sonst passiert wäre: beim
+ersten Domänen-Bildschirm, der „nur schnell" nativ gebaut wird, weil es gerade
+einfacher ist.
+
+**Was tatsächlich fehlt:** Der Einstellungsbildschirm trägt heute nur den
+Betrachtungsabstand. Modellzugänge und brainlehr-Grundeinstellungen sind **neu
+zu bauen**, nicht umzuräumen.
+
+## Der Preis
+
+Jedes Darstellungsbedürfnis einer Domäne, das das atelier nicht kennt, ist
+**Arbeit an der Trägerschicht** — und damit langsamer, als es die Domäne selbst
+hinschreiben könnte. Das ist der bewusst bezahlte Gegenwert dafür, dass keine
+Domäne die Anwendung beschädigen und keine aus der Reihe tanzen kann.
+
+Die Gegenprobe, wenn der Preis zu hoch wird: Braucht eine Domäne wirklich ein
+eigenes Bedienelement, oder braucht sie nur einen Fachbildschirm? Fachbildschirme
+sind Web (ADR-013) und kosten die Trägerschicht **nichts**.
