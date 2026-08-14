@@ -40,31 +40,35 @@ final class Steuerschnittstelle {
         FileManager.default.temporaryDirectory.appendingPathComponent("brainlehr-steuerport")
     }
 
-    /// Wie viele Fenster dieser Anwendung TATSAECHLICH auf dem Schirm liegen.
+    /// Hat die Anwendung ein Hauptfenster? Eine Eigenschaft der ANWENDUNG --
+    /// ausdruecklich keine Aussage darueber, ob gerade jemand hinsieht.
     ///
-    /// GEMESSEN 2026-08-14, und der Umweg ist bezahlt: Der erste Versuch nahm
-    /// `NSApp.windows.filter(\.isVisible).count` und meldete 1, waehrend zwei
-    /// unabhaengige Kanaele -- der Bedienungshilfen-Baum und CGWindowList --
-    /// uebereinstimmend 0 sagten. `isVisible` ist eine Aussage ueber den
-    /// AppKit-Zustand eines Fensterobjekts, nicht darueber, ob ein Mensch es
-    /// sieht. Ein Statusfeld, das gegen die Wirklichkeit 1 meldet, ist genau
-    /// die Unehrlichkeit, gegen die es eingebaut wurde.
+    /// DREI ANLAEUFE, drei Messfehler, und der dritte ist der lehrreiche:
     ///
-    /// CGWindowList mit `.optionOnScreenOnly` ist dieselbe Quelle, aus der das
-    /// System seine Fensterliste speist -- damit misst die Schnittstelle das,
-    /// was der Mensch sieht, und nicht das, was die App glaubt.
-    static func fensterAufDemSchirm() -> Int {
-        let eigen = ProcessInfo.processInfo.processIdentifier
-        guard let liste = CGWindowListCopyWindowInfo(
-            [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
-        else { return 0 }
-        return liste.filter {
-            ($0[kCGWindowOwnerPID as String] as? Int32) == eigen
-            // Schicht 0 ist die gewoehnliche Fensterschicht. Alles darueber
-            // sind Einblendungen des Systems, die niemand als "die App ist
-            // offen" verstehen wuerde.
-            && (($0[kCGWindowLayer as String] as? Int) ?? -1) == 0
-        }.count
+    /// 1. `NSApp.windows.filter(\.isVisible).count` meldete 1, waehrend nichts
+    ///    zu sehen war. SwiftUI haelt Hilfsfenster -- diese Anwendung hat stets
+    ///    FUENF Fenster, davon VIER ohne Namen. `isVisible` ist eine Aussage
+    ///    ueber ein AppKit-Objekt, nicht ueber ein Fenster im Wortsinn.
+    ///
+    /// 2. `CGWindowList` mit `.optionOnScreenOnly` meldete daraufhin mal 0, mal
+    ///    1, scheinbar unbestaendig -- und ich habe daraus zweimal einen Fehler
+    ///    in der App geschlossen, den es nicht gab.
+    ///
+    /// 3. Die Erklaerung kam vom Betreiber, fuer den ich blind war: er wechselte
+    ///    waehrend der Messung Fenster und Schreibtisch. `.optionOnScreenOnly`
+    ///    zaehlt nur, was auf dem gerade sichtbaren Schreibtisch liegt.
+    ///
+    /// DARAUS DIE REGEL, die den Ausschlag gibt: Ein Pruefkanal, dessen Wert
+    /// davon abhaengt, was der MENSCH gerade tut, ist kein Pruefkanal. Er ist
+    /// nicht wiederholbar, nicht vergleichbar, und er verwandelt einen
+    /// Schreibtischwechsel in einen Befund. Deshalb misst diese Schnittstelle
+    /// den Zustand der ANWENDUNG und nie den Zustand des Bildschirms -- das war
+    /// von Anfang an ihr Zweck, und ich hatte ihn selbst unterlaufen.
+    ///
+    /// `canBecomeMain` trennt die echten Fenster von SwiftUIs Hilfsfenstern:
+    /// nur ein Hauptfenster kann der Ort sein, an dem jemand arbeitet.
+    static func hauptfenster() -> Int {
+        NSApp.windows.filter { $0.canBecomeMain && $0.isVisible }.count
     }
 
     private let wahl: Ansichtswahl
@@ -77,6 +81,17 @@ final class Steuerschnittstelle {
     }
 
     func start() {
+        // Abschaltbar, und das ist keine Bequemlichkeit: Eine Schnittstelle,
+        // die sich nicht abschalten laesst, kann man nicht als Ursache
+        // ausschliessen. Am 2026-08-14 zeigte die App ein unbestaendiges
+        // Fensterverhalten (mal 0, mal 1 Fenster beim Start); ohne diesen
+        // Schalter ist nicht entscheidbar, ob die Schnittstelle daran beteiligt
+        // ist -- und ein Verdacht ohne Gegenprobe bleibt ein Verdacht.
+        guard ProcessInfo.processInfo.environment["BRAINLEHR_STEUERUNG"] != "aus" else {
+            FileHandle.standardError.write(Data("Steuerschnittstelle: per BRAINLEHR_STEUERUNG=aus abgeschaltet.\n".utf8))
+            return
+        }
+
         // Wunschport, aber kein Zwang: ist er belegt, waehlt das System einen
         // freien (Port 0). Lieber ein anderer Port als ein stiller Streit.
         let wunsch = ProcessInfo.processInfo.environment["BRAINLEHR_STEUERPORT"].flatMap { UInt16($0) } ?? 4599
@@ -165,7 +180,7 @@ final class Steuerschnittstelle {
                 dienst: String(describing: aufsicht.zustand),
                 pid: ProcessInfo.processInfo.processIdentifier,
                 fassung: (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "unbekannt",
-                fenster: Self.fensterAufDemSchirm(),
+                fenster: Self.hauptfenster(),
                 ansichten: ansichten))
 
         case .ansichtWaehlen(let name):
@@ -184,7 +199,7 @@ final class Steuerschnittstelle {
                 dienst: String(describing: aufsicht.zustand),
                 pid: ProcessInfo.processInfo.processIdentifier,
                 fassung: (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "unbekannt",
-                fenster: Self.fensterAufDemSchirm(),
+                fenster: Self.hauptfenster(),
                 ansichten: ansichten))
         }
     }

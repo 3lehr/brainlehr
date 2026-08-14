@@ -81,6 +81,37 @@ Weitere Kosten, benannt statt verschwiegen: Verzeichnis `app/`, Binärname, Bün
 selbst zweideutig — das ist der Preis dafür, die Umbenennung hinter die Fehlersuche zu
 stellen, und er ist der kleinere.
 
+## Nachtrag 2026-08-14T08:10 — die Sperre fällt, den Fehler gab es nie
+
+Der Abschnitt oben sperrt die Umbenennung, bis ein Fehler verstanden ist: *„direkt
+gestartet erscheint das Fenster, über `open` nicht."* **Diesen Fehler gibt es nicht.**
+
+Nachgemessen in mehreren Läufen: Das Fenster wird **jedes Mal** erzeugt. Was schwankte, war
+meine Messung. Drei Anläufe, drei eigene Fehler:
+
+1. `NSApp.windows.filter(\.isVisible).count` meldete 1, während nichts zu sehen war — SwiftUI
+   hält Hilfsfenster, die Anwendung hat stets **fünf** Fenster, davon **vier ohne Namen**.
+2. `CGWindowList` mit `.optionOnScreenOnly` meldete daraufhin mal 0, mal 1. Daraus habe ich
+   **zweimal** einen Fehler in der App geschlossen, den es nicht gab — einmal „`open` ist
+   schuld", einmal „direkter Start ist schuld", beide Male aus einem einzigen Lauf je Seite.
+3. Die Erklärung kam vom Betreiber: Er wechselte während der Messung Fenster und
+   Schreibtisch. `.optionOnScreenOnly` zählt nur, was auf dem **gerade sichtbaren**
+   Schreibtisch liegt.
+
+**Die Regel daraus, und sie ist größer als dieser Fall:** Ein Prüfkanal, dessen Wert davon
+abhängt, was der **Mensch** gerade tut, ist kein Prüfkanal. Er ist nicht wiederholbar, nicht
+vergleichbar, und er verwandelt einen Schreibtischwechsel in einen Befund. Die
+Steuerschnittstelle misst deshalb jetzt ausschließlich den Zustand der **Anwendung**
+(`hauptfenster()` über `canBecomeMain`) — fünf von fünf Läufen beständig.
+
+Der Betreiber hat den eigentlichen Punkt benannt: *„wollten wir den Weg, dass du meinen
+Bildschirm filmst, nicht genau umgehen?"* Genau dafür war die Schnittstelle gebaut, und ich
+hatte ihren Zweck selbst unterlaufen.
+
+**Damit ist die Umbenennung nicht mehr gesperrt.** Sie bleibt trotzdem ein eigener Schritt
+mit eigener Abnahme — gesicherte Fensterlage, Anwendungszustand und Registrierung bei den
+Startdiensten hängen an `de.brainlehr.app` und wandern nicht von selbst mit.
+
 ## Woran sich Erfolg misst
 
 - Kein Satz im Verbund ist mehr zweideutig zwischen Speicher und Werkbank.
