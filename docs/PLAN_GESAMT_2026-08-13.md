@@ -207,6 +207,17 @@ Klasse · `G3` Nullmessung mit dem Mini, **danach erst** Schwellen.
 Die Schranken selbst stehen bereits (`14b34f3`): Ausweispflicht außerhalb von
 `127.0.0.1`, Nachrichtengröße, Rate, geschlossenes Protokoll.
 
+**Linie H — openlehr als erste Instanz.** Nachgetragen 2026-08-14 auf
+Betreiberauftrag (*„zuerst openlehr integrieren"*), Ausführung in
+`docs/PLAN_OPENLEHR_2026-08-14.md`.
+`H1` Belegvertrag wird brainlehr-Kern · `H2` `classifier.py` an den Vertrag ·
+`H3` Naht `ingest.py`/`api.py` schließen · `H4` Prüfkorpus mit bekanntem
+Sollergebnis (Kriterium für „100 % richtig", F24 angenommen) · `H5`
+Bestandsaufnahme als E2E-Journey vor den Bildschirmen.
+Bindend: `H1` vor `H2` und `H3`. Gemessene Grundlage: 128 Dateien / 43 237
+Zeilen unter `apps/openlehr/daemon/steuer/`, **0 tote Module** — Altlast ist
+hier nicht als toter Code zu haben, die Trennung läuft über Belegbarkeit.
+
 ### Warum F und G — und nicht S1, S2, S3
 
 Am 2026-08-14 wurden beide Pläne zunächst **neben** diesen Gesamtplan gelegt,
