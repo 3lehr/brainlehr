@@ -7,5 +7,4 @@
 **Drei Fehler, die erst dadurch sichtbar wurden:** mein Tabellenneubau loeschte 52 von 96 Schemaobjekten (`DROP TABLE` nimmt Indizes und Trigger mit) — gefunden vom Schemamelder, wiederhergestellt aus einer Dateikopie, Skript repariert · `_REPEAT_MARKER_RE` kannte kein `Z`, die Deckelung von Wiederholungen lief still ins Leere · meine eigene Ratsche uebersah vier `now_iso()`-Klone, weil `isoformat(BERLIN)` weder `%z` noch fester Versatz ist — gefunden von einem Test mit **anderem** Massstab.
 
 **Ausserdem erledigt:** 110 (Erstinstallation brach an `lessons_learned.pruefstelle`) · 88 Schritt 1 (Zeitfenster im Abruf) · beide Defekte der Eilmeldung (Widerruf archiviert; Einspielung 20 KB auf 8 KB mit ehrlicher Restzahl).
-
 **Suite:** 1435 passed. Rot: `test_zeitform_utc` (bis Schritt 3, gewollt) · `kandidatendiagnose`, `sicherung_s12`, `vektorlage` (Bestandsdrift der Parallelsitzung, vorbestehend). **Wartet sonst auf dich:** Push · #105 Repo-Trennung · #29 oeffentliches Repo · #101 App zeigt nur Freigegebenes · #20 Ausweisordner.
