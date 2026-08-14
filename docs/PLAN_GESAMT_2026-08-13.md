@@ -200,6 +200,40 @@ keiner Reihenfolge erzwingbar.
 Dokument wie die Bausteine · `F5` Fenster im atelier.
 **F1–F4 sind erledigt** (`5266ca7`, `f00fff3`, `eb71e92`, `662748e`, `cf4cc28`).
 
+**Nachgetragen 2026-08-14T21:36:26+0200 — was F5 NICHT ist.** Gemessen statt aus
+dem Plan zitiert: Der Text lebt wirklich im CRDT (`yswift` fest auf 0.2.1,
+kleinste Änderung statt Vollersatz), belegt durch
+`test_zwei_teilnehmer_tippen_gleichzeitig`. **Zwei Lücken, beide im Code
+sichtbar:** die Anmerkungsspalte fehlt (ausdrücklich, Begründung im Dateikopf),
+und **das Modell hat noch nie danebengesessen** — „modell" kommt in
+`kern/dokument.py` nur als Wert in einem Selbsttest vor. Der grüne Test belegt
+„mehrere gleichzeitig", nicht „Mensch und Modell am selben Dokument".
+
+**Und die größere Lücke, vom Betreiber benannt:** Das Fenster zeigt **Text**,
+nicht das Erzeugnis. Das Ziel war von Anfang an *„links das fertige Dokument,
+live bearbeitet"*.
+
+`F6` **Zwei Geschwindigkeiten statt einer Wahl.** Gemessen: ein voller Satzlauf
+dauert **1,1 s** (kalt 1,20 s, warm 1,12 s, mit PDF/A-3 und UA). Zum Tippen ist
+das zu langsam, zum Nachziehen genau richtig. Also **beides**: eine schnelle
+eigene Darstellung, in der wirklich getippt wird, und rund eine Sekunde später
+das gesetzte Blatt als Wahrheit. Rechts der Baustein-Baum als zweite Ansicht —
+Rechnungspositionen, Gliederung, Sprungziele.
+**Der Einwand gegen eine eigene Darstellung (sie driftet vom Erzeugnis ab) ist
+zurückgezogen und in eine Auflage verwandelt:** Wir besitzen beide Seiten, beide
+entstehen aus demselben Baum — also prüft ein Wächter sie gegeneinander und
+fällt, sobald die Darstellung etwas zeigt, was im Blatt nicht steht. Drift wird
+damit messbar statt schleichend.
+`F6a` **Satzweg Baustein-Baum → LaTeX** (`kern/satz.py`). **Fehlte vollständig** —
+der Spike `spikes/pdf_a3_erechnung/` setzt eine handgeschriebene Datei. Ohne
+diesen Weg gibt es weder Darstellung noch Blatt noch Vergleich. Enthält die
+Maskierung fremden Texts: ein eingelesener Beleg trifft hier auf einen Satzlauf.
+`F7` Anmerkungen im Bild, verankert am **Baustein**, nicht an einer
+Bildschirmposition — deshalb überleben sie den Neusatz.
+`F8` Rückweg vom Blatt in den Text (SyncTeX). **Nicht gemessen:** ob SyncTeX mit
+`\DocumentMetadata` zusammenarbeitet — dieselbe Zutat hat heute schon tex4ht
+gebrochen.
+
 **Linie G — Sicherheit und Überwachung.** Nachgetragen 2026-08-14 auf
 Betreiberwunsch, Ausführung in `docs/PLAN_SICHERHEIT_2026-08-14.md`.
 `G1` Kennzahlen verlassen den Prozess · `G2` Melder, nur die schwellenfreie
