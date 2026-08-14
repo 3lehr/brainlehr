@@ -150,9 +150,41 @@ Format ist nicht erfunden, es ist der Vertrag in Dateiform.
 - **H8c** openlehr exportiert seine Steuerregeln als erstes echtes Paket. Erst
   damit ist der Weg belegt statt behauptet.
 
+**H10 — „Domäne exportieren", der Zwilling des Importknopfs.** Betreiber:
+*„und wie exportieren wir unser openlehr aus dem atelier wenn es fertig ist?"*
+
+**Was im atelier wächst, ist Wissen — also genau die Sorte, die nach ADR-012
+frei reisen darf.** Der Exportknopf erzeugt ein Wissenspaket, nie ein Werkzeug.
+
+Drei Schranken, und die erste ist der eigentliche Grund für diesen Schritt:
+
+1. **Ein Exportpaket enthält niemals Belege.** Beim Import ist die Trennung
+   zwischen Regel und Beleg gleichgültig — alles bleibt auf einem Rechner.
+   **Beim Export ist sie der ganze Unterschied.** „Betriebsausgaben" ist eine
+   allgemeine Fundstelle; „Rechnung Müller, 1234,56 €" sind die Daten des
+   Betreibers. Die Schranke läuft **vor** dem Schreiben und verweigert im
+   Zweifel — ein Paket, das versehentlich einen Betrag oder einen Namen trägt,
+   ist nach der Weitergabe nicht mehr einzufangen.
+2. **Vorschau, dann drückt der Mensch.** Export ist Außenwirkung im Sinne der
+   Antwort aus Runde 1 (*„dinge ohne menschen versenden"* — das darf nie
+   passieren). Er sieht, was im Paket steht, bevor es entsteht.
+3. **Erzeugt, nie von Hand gepflegt.** Dieselbe Regel wie in ADR-011: Das Paket
+   entsteht aus dem Bestand und trägt Stand und Herkunft, damit ein Empfänger
+   sieht, wie alt es ist. Ein handgepflegtes Paket ist die zweite Wahrheit.
+
+**Nicht jetzt zu bauen** — vier Regeln sind nichts zum Exportieren. Fällig wird
+H10, sobald H2 die Klassifikationsregeln belegt hat, also sobald es etwas gibt,
+das ein anderer brauchen kann.
+
+**Offen, und nicht von mir zu entscheiden:** Was im atelier gemeinsam mit dem
+Modell entsteht, wirft dieselbe Frage auf wie die Berufsschul-Idee — wem gehört
+das Ergebnis, und wozu darf es verwendet werden. Vor der ersten Weitergabe an
+einen Menschen zu klären, nicht danach.
+
 **Bindend:** H1 vor H2 und H3 (beide hängen am Vertrag). H4 vor jeder Aussage
 „läuft richtig". H5 vor jedem neuen Bildschirm. H6 vor H5s Sortierung — ohne
 Fristenrechnung ist „nach Wichtigkeit" nicht entscheidbar. H8a vor H8b und H8c.
+H2 vor H10 — vorher gibt es nichts zu exportieren.
 
 ## §3 Verworfene Wege
 
