@@ -90,8 +90,30 @@ selbst gemeldet. Bis dahin keine echten Daten.
 überhaupt vor. Die Journey wird rot geschrieben und bleibt rot, bis die Domäne
 läuft (Regel 1 aus `L-473ba2`).
 
+**Der Zuschnitt steht seit der Antwort zu F30** (*„noch nicht geöffnet, wir
+müssen auf alles vorbereitet sein"*): Die Journey deckt den **Fächer der
+Behördenpost** ab, nicht einen Musterfall — Schätzungsbescheid, Erinnerung,
+Zwangsgeldandrohung, Vollstreckungsankündigung, Bußgeldbescheid,
+Beitragsbescheid. Ein ungeöffneter Brief ist ein Brief mit **möglicherweise
+laufender Frist**.
+
+**H6 — Die Fristenrechnung ist die erste Fachfunktion, nicht die
+Steuerrechnung.** Folgt aus F27 (*„der Wichtigkeit nach abarbeiten"*) und F30:
+Wichtigkeit ist hier kein Geschmack, sondern eine Rechnung aus **Frist und
+Folge**. Was zuerst gebraucht wird, ist nicht „was schulde ich", sondern „was
+verfällt zuerst". Eine Frist ohne belegte Rechtsgrundlage darf dabei nicht
+entstehen — dieselbe Regel wie bei einer Zahl (§1).
+
+**H7 — Die Modellgrenze, aus F19.** Betreiber: *„gerne per lokaler KI,
+verlassen nur mit Zustimmung in den Einstellungen"*. Vorgabe ist damit
+**lokal**; ein Auswärtsgang ist ein Einstellungsschalter, der ab Werk **aus**
+steht. Eine Prüfung stellt sicher, dass kein Belegtext einen auswärtigen
+Empfänger erreicht, solange der Schalter aus ist — Gegenprobe in beide
+Richtungen, sonst ist der Schalter Zierde.
+
 **Bindend:** H1 vor H2 und H3 (beide hängen am Vertrag). H4 vor jeder Aussage
-„läuft richtig". H5 vor jedem neuen Bildschirm.
+„läuft richtig". H5 vor jedem neuen Bildschirm. H6 vor H5s Sortierung — ohne
+Fristenrechnung ist „nach Wichtigkeit" nicht entscheidbar.
 
 ## §3 Verworfene Wege
 
@@ -119,8 +141,44 @@ läuft (Regel 1 aus `L-473ba2`).
 2. „9 % MwSt" im OCR-Text erzeugt einen Klärungsfall, keine Zahl (H3).
 3. Der Prüfkorpus meldet alle eingebauten Fallen von selbst (H4).
 
-## §6 Offen — nur der Betreiber
+## §6 Beantwortet 2026-08-14T21:36:26+0200 (wörtlich) — und was daraus folgt
 
-F29 Steuerberater (gibt es einen, darf er die Sachen sehen) · F30 welche
-Finanzamtsbriefe schon vorliegen · F31 echter Testkorpus vorhanden oder erfinden
-· F19 dürfen Belege für eine Modellanfrage das Haus verlassen.
+> **F29** *„kei steuerberater"* · **F30** *„noch noch nicht geöffenet, wir müssen
+> auf alles vorbereitet sein!"* · **F31** *„finde einen!"* · **F19** *„gerne per
+> lokaler ki, verlassen nur mit zustimmung in den einstellungen"*
+
+**F29 — das System steht allein, und das ändert seine Aufgabe.** Ohne Berater
+gibt es niemanden, dem eine Frist zusätzlich auffällt. **Mein Widerspruch,
+einmal vorgebracht und danach nicht wiederholt:** Bei Steuerrückständen seit
+2024 entscheidet bei einer Selbstanzeige die Reihenfolge über Straffreiheit —
+das ist keine Software-Frage. Der Betreiber hat entschieden; gebaut wird
+entsprechend, mit **einer** Auflage in der Bauform: Das System **markiert die
+Stellen, an denen ein Berater nötig wäre**, statt sie stillschweigend zu
+überschreiten. Es berät nicht und erstattet keine Selbstanzeige.
+
+**F30 — „auf alles vorbereitet" ist eine Mengenaussage, keine Stimmung.** Der
+Zuschnitt von H5 folgt daraus (Fächer statt Musterfall), H6 entsteht daraus neu.
+
+**F31 — gesucht, ein Treffer, und drei Sorten leer.** Kandidaten in
+`openlehr/docs/openlehr/korpus_kandidaten_2026-08-14.md`:
+
+| gesucht | Ergebnis |
+|---|---|
+| Rechnungen | **KoSIT xrechnung-testsuite**, Apache-2.0 belegt, Sollergebnis belegt (Validator prüft Konformität) — brauchbar |
+| Steuerbescheide mit Werten | **leer.** Nur unausgefüllte BMF-Vordrucke |
+| Behördenpost mit Fristen | **leer** bei Originalbescheiden. Es gibt Musterbriefe der Verbraucherzentralen („Max Mustermann"), keine amtlichen Bescheide mit Sollergebnis |
+| Belegdatensätze für Texterkennung | **leer** für deutsch + Lizenz + PII-frei. `German_invoices_dataset` (97 Zeilen) trägt neben Platzhaltern einen echten Namen — untauglich |
+
+**Das ist der eigentliche Befund, nicht das Fehlen:** Genau die Dokumentsorte,
+um die es geht — der Bescheid mit Werten und laufender Frist — ist öffentlich
+nicht als Korpus zu haben. **H4 trägt damit die Hauptlast**, der echte Korpus
+deckt nur die Rechnungsseite ab. Ein Bescheid-Korpus muss erfunden werden, und
+zwar mit demselben Anspruch: bekanntes Sollergebnis, eingebaute Fallen.
+ZUGFeRD/Factur-X 2.4 ist ein offener Faden — Lizenz und PII stehen auf der
+Downloadseite nicht, also vor Gebrauch nachschlagen.
+
+**F19 — Vorgabe lokal, Auswärtsgang nur per Schalter**, ab Werk aus (H7).
+
+### Weiter offen
+Keine Frage an den Betreiber mehr offen. Nächste Entscheidung entsteht erst,
+wenn die Korpus-Kandidaten mit ihren Lizenzen vorliegen.
