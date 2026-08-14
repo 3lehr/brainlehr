@@ -160,3 +160,49 @@ if __name__ == "__main__":
     test_kaputtes_stdin_druckt_trotzdem_einen_pfad()
     print("[NEGATIV] kaputtes stdin -> Pfad trotzdem gedruckt")
     print("test_worktree_identitaet: alle Zusicherungen halten")
+
+
+def test_nachziehen_hier_seedet_den_baum_in_dem_man_steht():
+    """SessionStart-Betriebsart. Rot-Probe: nachziehen_hier existierte vor
+    dem 2026-08-14 nicht -- AttributeError.
+
+    Sie schliesst die Luecke, die 64dea18 aufgerissen hat: WorktreeCreate darf
+    nicht mehr befuellen (git worktree add scheitert am nicht-leeren
+    Verzeichnis), also muss das Seeden NACH der Anlage geschehen."""
+    with tempfile.TemporaryDirectory() as td:
+        basis = _basis(td)
+        baum = basis / ".claude" / "worktrees" / "probe-sessionstart"
+        baum.mkdir(parents=True)
+
+        ergebnis = hook.nachziehen_hier(str(baum))
+
+        assert ergebnis == str(baum.resolve()), ergebnis
+        assert (baum / "CLAUDE.md").is_symlink()
+        assert (baum / "CLAUDE.md").read_text(encoding="utf-8") == "# Hausregeln\n"
+        assert (baum / ".claude" / "settings.json").read_text(encoding="utf-8") == '{"hooks": {}}\n'
+
+
+def test_nachziehen_hier_ruehrt_fremde_verzeichnisse_nicht_an():
+    """NEGATIV, und das ist der wichtigere Fall: steht man im HAUPTBAUM oder
+    irgendwo sonst, darf nichts passieren. Ein Haken, der in jedem
+    Verzeichnis Dateien anlegt, waere schlimmer als die Luecke."""
+    with tempfile.TemporaryDirectory() as td:
+        basis = _basis(td)
+        assert hook.nachziehen_hier(str(basis)) is None, "Hauptbaum darf nicht geseedet werden"
+        assert not (basis / ".claude" / "worktrees").exists()
+
+        fremd = pathlib.Path(td) / "irgendwo"
+        fremd.mkdir()
+        assert hook.nachziehen_hier(str(fremd)) is None
+        assert not (fremd / "CLAUDE.md").exists()
+
+
+def test_nachziehen_hier_ist_wiederholbar_und_still():
+    """GRENZWERT: zweiter Aufruf zieht nichts mehr nach und meldet None --
+    sonst wuerde SessionStart bei jeder Sitzung erneut anschlagen."""
+    with tempfile.TemporaryDirectory() as td:
+        basis = _basis(td)
+        baum = basis / ".claude" / "worktrees" / "probe-zweimal"
+        baum.mkdir(parents=True)
+        assert hook.nachziehen_hier(str(baum)) == str(baum.resolve())
+        assert hook.nachziehen_hier(str(baum)) is None, "zweiter Lauf muss still bleiben"

@@ -305,7 +305,44 @@ def _selftest() -> None:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def nachziehen_hier(cwd: str) -> str | None:
+    """SessionStart-Betriebsart: seedet den Arbeitsbaum, in dem man STEHT.
+
+    Nachtrag 2026-08-14. WorktreeCreate darf seit dem Feldfehler desselben
+    Tages nicht mehr befuellen -- es legt das Zielverzeichnis an, und
+    `git worktree add` scheitert an einem nicht-leeren. Damit war die
+    Identitaetsluecke (Aufgabe 92) wieder offen. Der einzige Zeitpunkt, an
+    dem beides geht, liegt NACH der Anlage: die erste Sitzung im neuen Baum.
+
+    Erkennung ohne Argument und ohne Raten: ein Arbeitsbaum liegt immer unter
+    `<base>/.claude/worktrees/<name>`, also sind die drei Ebenen darueber die
+    Wurzel. Steht man woanders (Hauptbaum, fremdes Verzeichnis), passiert
+    nichts -- kein Fehler, keine Ausgabe.
+
+    Gibt den Pfad zurueck, wenn etwas nachgezogen wurde, sonst None. Still,
+    weil SessionStart-Ausgabe in JEDER Sitzung Kontext kostet.
+    """
+    hier = Path(cwd).resolve()
+    if hier.parent.name != "worktrees" or hier.parent.parent.name != ".claude":
+        return None
+    basis = hier.parent.parent.parent
+    fehlte = not (hier / "CLAUDE.md").exists() and not (hier / "CLAUDE.md").is_symlink()
+    try:
+        _identitaet_nachziehen(str(basis), hier)
+    except Exception:
+        return None
+    return str(hier) if fehlte and (hier / "CLAUDE.md").exists() else None
+
+
 if __name__ == "__main__":
+    if "--nachziehen" in sys.argv:
+        # Nie blockierend, nie laut: SessionStart darf durch diesen Haken
+        # weder scheitern noch Kontext verbrauchen.
+        try:
+            nachziehen_hier(os.getcwd())
+        except Exception:
+            pass
+        sys.exit(0)
     if "--selftest" in sys.argv:
         # Modul unter eigenem Namen importierbar machen (fuer Testfall 4).
         sys.path.insert(0, str(Path(__file__).resolve().parent))
