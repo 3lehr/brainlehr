@@ -13,6 +13,22 @@ alle vier auf Vorlage mit Empfehlung getroffen. Dieser Plan setzt sie um.
   vielleicht einen eigenen Klienten bauen. Außerdem, vielleicht kann Cloud das
   morgen doch — Hermes sollte dazu jetzt schon in der Lage sein."
 
+## Kennungen: NA1–NA3, und warum dieser Plan hier nicht bleiben darf
+
+Nachgetragen 2026-08-14 auf einen Befund der Grundarchitektur-Sitzung
+(`L-30be01`): Abschnittskennungen kollidieren quer über die Pläne. Gemessen
+mit deren Prüfgriff — `S1`, `S2`, `S3` bezeichnen je drei verschiedene Dinge,
+und **„Schritt N" steht in zwölf Plandateien**. Dieser Plan war einer davon:
+er kam mit eigener Zählung ab 1 neben `PLAN_GESAMT_2026-08-13.md` zu liegen,
+statt eine Linie darin zu werden — genau der Fehler, den die Lehre beschreibt.
+
+Bis zur Einhängung tragen die Schritte darum das Präfix `NA` (frei geprüft,
+0 Treffer über alle `docs/*.md`). Das ist eine Notlösung, keine Korrektur:
+**dieser Plan gehört als Linie in den Gesamtplan.** Getan wird das nicht
+jetzt — die Grundarchitektur-Sitzung hält `PLAN_GESAMT_2026-08-13.md` gerade
+und hängt dort Linie D und E ein; zwei Sitzungen in derselben Datei verlieren
+garantiert Arbeit.
+
 ## Der gemessene Ist-Stand
 
 | | Zahl | Quelle |
@@ -123,7 +139,7 @@ Code anders aus als hier beschrieben, halte dich an den Code und melde die
 Abweichung." Kein `git add -A`, kein Push, kein `git stash`. Committen mit
 expliziter Pfadliste. Datenbanknamen über `kern/speicher`.
 
-### Schritt 1 · A3, Herkunftswert für fremde Normen
+### NA1 · A3, Herkunftswert für fremde Normen — **erledigt** (`c9482c6`)
 
 | | |
 |---|---|
@@ -132,7 +148,7 @@ expliziter Pfadliste. Datenbanknamen über `kern/speicher`.
 | **Fakten** | `fremdnormen()` erkennt fremde Herkunft heute schon am `source`-Text (`FREMDE_QUELLE`, Treffer `gesetz`/`BGBl`) und findet 3 Knoten. Der Wert wird an derselben Stelle festgehalten, an der er erkannt wird — nicht neu geraten. |
 | **Abnahme** | Rot vor grün an einem der drei echten Knoten. Negativfall: eine Hausregel ohne Gesetzesbezug bekommt keinen Wert. Grenzwert: ein `source`, das das Wort „Gesetz" nur in der Prosa trägt, ohne Fundstelle — dieser Fall wird benannt, nicht stillschweigend mitgenommen. |
 
-### Schritt 2 · Altlast Gegenprobe abschließen
+### NA2 · Altlast Gegenprobe abschließen — **erledigt** (`1aedf27`, Korrektur folgt)
 
 | | |
 |---|---|
@@ -141,7 +157,7 @@ expliziter Pfadliste. Datenbanknamen über `kern/speicher`.
 | **Fakten** | 83 offene Fälle, davon 78 älter als heute. `melder/rasterblick.py` hat mit `verlust_vermerken` bereits den richtigen Mechanismus: er behauptet **keine** Zahl, sondern hält fest, dass der Blick nicht mehr befragbar ist. |
 | **Abnahme** | Nach dem Lauf nennt der Melder nur noch Läufe, deren Gegenprobe fahrbar ist. Kein Vermerk trägt eine erfundene Kennzahl — stichprobenweise geöffnet und nachgesehen, nicht am Exit-Code abgelesen. |
 
-### Schritt 3 · Token, nur festhalten
+### NA3 · Token, nur festhalten — **erledigt** (Knoten `e504b10c` ergänzt)
 
 | | |
 |---|---|
