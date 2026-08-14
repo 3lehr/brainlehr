@@ -164,7 +164,34 @@ nebeneinander stehen können, ist eine Messung — sie läuft als **H11**
 diesen einen Fall; fällt sie dafür aus, lösen 636 Zeilen PDF-Code in openlehr
 sich ersatzlos auf.
 
-**Bis das gemessen ist, wird an keiner der beiden Ausgaben etwas gebaut.**
+**H11 gemessen, 2026-08-14 — der LaTeX-Weg trägt beides.** Spike in
+`spikes/pdf_a3_erechnung/`, vom Orchestrator selbst nachgeprüft:
+
+- **Die beiden Kennzeichnungen schließen sich nicht aus.**
+  `\DocumentMetadata{pdfstandard={A-3U,UA-1}}` setzt beide Familien parallel.
+  Im XMP desselben Dokuments stehen `pdfaid:part=3`, `pdfaid:conformance=U`
+  **und** `pdfuaid:part=1`.
+- **Die E-Rechnung ist wirklich eingebettet**, nicht nur angemeldet:
+  `pdfdetach -saveall` holt sie zurück, SHA-256 identisch
+  (`b93afd4d…83a658a`), über `\embedfile` mit
+  `afrelationship=Alternative`.
+- **`verapdf -f ua1` → PASS** und **`verapdf -f 3u` → PASS**, beide auf
+  **derselben** Datei, nicht auf zwei Bauläufen.
+- **Negativkontrolle mitgeliefert:** Der erste Lauf mit nur `A-3u` erzeugte
+  **kein** `pdfuaid:part` — nachweisbar in `extracted_xmp.xml` gegen
+  `extracted_xmp2.xml`. Erst die kombinierte Liste setzt beide. Das ist die
+  Falle aus Knoten `66a4e633` in ihrer zweiten Ausprägung.
+
+**Entschieden:** ADR-009 gilt auch für Rechnungen. openlehrs Dokumentausgabe
+(`pdf_templates.py`, `pdf_writer.py`, zusammen 636 Zeilen) wird abgelöst statt
+angemeldet.
+
+**Das Tor davor, und es ist nicht formal:** Gemessen wurde mit einer
+Minimal-XML, nicht mit der echten Ausgabe von `zugferd_export.build_cii_xml`,
+und nicht gegen die Schematron-Prüfung einer echten E-Rechnung. **Abgelöst wird
+erst, wenn eine echte ZUGFeRD-XML aus openlehr denselben Lauf besteht.** Bis
+dahin bleibt der reportlab-Weg in Betrieb — der Weg ist belegt, die Ablösung
+nicht.
 
 ## Folgen
 
