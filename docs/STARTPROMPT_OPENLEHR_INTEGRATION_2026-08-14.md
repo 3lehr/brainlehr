@@ -81,6 +81,67 @@ Daraus vier Regeln für jede neue Domäne, alle mechanisch statt diszipliniert:
 4. Der Prüfstand wird aus der Auslieferung **abgeleitet**, nie parallel
    gepflegt.
 
+## Beantwortet vom Betreiber, 2026-08-14 (wörtlich)
+
+> 1. *„zum testen testdaten, erst wenn alles 100% richtig läuft echte daten!"*
+> 2. *„am ende soll das ganze leben und steuerchaos, inklusive krankenkasse,
+>    strafzettel wegen zu schnellen fahren usw abgearbeitet werden können"*
+> 3. *„so wie du sagst"* — auf die Frage, was brainlehr verweigern können muss
+> 4. *„dinge ohne menschen versenden"* — auf die Frage, was NIE passieren darf
+> 5. *„garnicht falsch liegen!"*
+
+**Was daraus folgt, und zwei Stellen brauchen einen Widerspruch:**
+
+**Zu 1 — Testdaten, und das ist eine Sperre, keine Vorsichtsmaßnahme.**
+Gearbeitet wird ausschließlich mit erfundenen Belegen, bis der Betreiber die
+Freigabe ausdrücklich erteilt. **Was fehlt, ist das Kriterium:** „100 % richtig"
+ist ohne Maßstab entweder nie erfüllt oder wird irgendwann gefühlt abgehakt.
+Das ist die dringlichste offene Frage (F24 unten).
+
+**Zu 2 — die Größenordnung ist eine andere geworden.** Nicht „Steuer", sondern
+Lebensverwaltung: Krankenkasse, Bußgeld, Fristen. Die Schichtung trägt das
+bereits (ADR-007 nennt als openlehr-Beispiele ausdrücklich Arbeitslose und
+Kita-Suche), aber die **erste Instanz muss klein anfangen** — sonst gibt es nie
+einen Fall, an dem sich etwas beweisen lässt. Welcher Ausschnitt zuerst, ist
+F25.
+
+**Zu 3 — die Trennlinie steht damit fest.** brainlehr verweigert: eine
+Rechtsauskunft ohne Beleg, einen Steuersatz ohne Fundstelle, einen Beleg ohne
+Herkunft. Alles, was etwas verweigern können muss, gehört nach unten.
+
+**Zu 4 — nichts verlässt das Haus ohne Menschen.** Kein Versand, keine Abgabe,
+keine Einspruchsfrist, kein Widerspruch — auch nicht „nach Bestätigung durch
+eine Regel". Der Mensch drückt, oder es passiert nicht. Das ist stärker als die
+Vorgabe aus ADR-010 (dort ist die Umsetzung einer Anmerkung *einstellbar*);
+für Außenwirkung gibt es diesen Schalter nicht.
+
+**Zu 5 — hier widerspreche ich, und der Widerspruch gehört in die Bauform.**
+„Gar nicht falsch liegen" ist nicht erreichbar; kein System schafft das, auch
+keins mit einem Menschen davor. Die erreichbare Form heißt **nie unbemerkt
+falsch**: jede Aussage trägt ihren Beleg, und wo keiner ist, wird gefragt statt
+geraten. Wer stattdessen Fehlerfreiheit verspricht, baut ein System, das im
+Grenzfall rät, weil Nachfragen wie Versagen aussieht. Genau dagegen ist die
+brainlehr-Schicht gebaut. **Praktische Folge:** jede Zahl und jeder Rechtssatz
+im Ergebnis nennt seine Quelle; eine Zahl ohne Quelle erscheint gar nicht
+erst, statt unbelegt dazustehen.
+
+### Die Fragen, die dadurch NEU entstanden sind
+
+24. **Woran misst sich „100 % richtig"?** Ohne Kriterium wird die Freigabe für
+    echte Daten entweder nie erteilt oder irgendwann aus dem Bauch. Vorschlag
+    zur Ablehnung oder Annahme: ein Satz erfundener Belege mit **bekanntem
+    Sollergebnis**, den das System vollständig und ohne Nachfrage richtig
+    verarbeitet — und bei dem es die absichtlich eingebauten Fallen (falscher
+    Steuersatz, fehlende Fundstelle, doppelter Beleg) **von sich aus meldet**.
+25. **Welcher Ausschnitt ist der erste?** Steuer, Bußgeld oder Krankenkasse —
+    an einem davon wird das Regelwerk bewiesen, die anderen folgen.
+26. **Woher kommen die Testdaten?** Erfunden, oder anonymisierte echte? Eine
+    anonymisierte echte Rechnung ist immer noch eine echte Rechnung.
+27. **Was heißt „abgearbeitet"** bei einem Strafzettel — bezahlt, Frist
+    notiert, Einspruch geprüft, oder nur einsortiert?
+28. **Krankenkasse: welche Lage?** Beitragsbescheid prüfen, Erstattung
+    verfolgen, Rückstand klären — das sind drei verschiedene Systeme.
+
 ## Die Fragen an den Betreiber
 
 Sie stehen bewusst **ohne Antwortvorschlag**. Nummeriert, damit er einzeln
@@ -88,10 +149,9 @@ antworten kann.
 
 ### Der Fall selbst
 
-1. **Wer ist der Fotograf?** Ein echter Mensch mit echten Belegen, ein
-   Bekannter, oder eine gedachte Person? Davon hängt ab, ob wir mit Testdaten
-   oder mit echten Daten Dritter arbeiten — und das ist die Grenze der
-   Beta-Direktive.
+1. ~~Wer ist der Fotograf?~~ **Beantwortet:** Testdaten, bis die Freigabe
+   ausdrücklich kommt. Offen bleibt, ob es später ein echter Mensch ist —
+   davon hängt ab, ob jemals Daten Dritter im Spiel sind.
 2. **Was genau ist „das Chaos"?** Schuhkarton mit Papierbelegen, ein volles
    Mailpostfach, Fotos auf dem Telefon, oder alles zusammen?
 3. **Was soll am Ende herauskommen?** Eine EÜR, eine UStVA, ein Ordner
@@ -130,15 +190,17 @@ antworten kann.
 
 ### Grenzen und Risiko
 
-16. **Was darf das System NIE tun?** Abgeben an ELSTER? Zahlen? Fristen
-    quittieren?
+16. ~~Was darf das System NIE tun?~~ **Beantwortet:** nichts ohne Menschen
+    versenden. Offen als Abgrenzung: zählt eine gespeicherte Frist, die von
+    selbst erinnert, schon als Außenwirkung? (Meine Lesart: nein — sie
+    verlässt das Haus nicht.)
 17. **Was passiert bei einer falschen Zahl** — merkst du es, oder fällt es erst
     beim Steuerberater auf?
 18. **Gibt es einen Steuerberater im Spiel**, und was macht er?
 19. **Sollen Belege das Haus verlassen** (Modellanfrage an einen Anbieter),
     oder bleibt alles lokal?
-20. **Was ist dir lieber: ein System, das oft nachfragt, oder eines, das
-    selten falsch liegt?** Beides zugleich gibt es nicht.
+20. ~~Oft nachfragen oder selten falsch liegen?~~ **Beantwortet:** gar nicht
+    falsch liegen — umgesetzt als *nie unbemerkt falsch*, siehe oben.
 
 ### Arbeitsweise
 
