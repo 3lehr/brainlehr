@@ -1,7 +1,7 @@
 // Reine Bruecke zu pflege/ausweis_helfer.py (Argumente bauen, Antwort-JSON
 // deuten) -- Schritt 3 des Plans (docs/PLAN_MACAPP_2026-08-12.md). Der
 // eigentliche Prozessaufruf und die Geheimnis-Uebergabe per Pipe leben in
-// BrainlehrApp/AusweisDienst.swift (braucht Foundation.Process); hier nur,
+// Atelier/AusweisDienst.swift (braucht Foundation.Process); hier nur,
 // was ohne Subprozess pruefbar ist.
 //
 // kern/ausweis.py und kern/geheimnis.py bleiben tabu -- diese Datei bildet

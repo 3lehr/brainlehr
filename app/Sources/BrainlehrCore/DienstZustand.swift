@@ -1,5 +1,5 @@
 // Reine Zustandslogik der Dienstaufsicht -- kein Foundation.Process, kein
-// Netzwerk, darum ohne Mock testbar. Die Aufsicht selbst (BrainlehrApp/
+// Netzwerk, darum ohne Mock testbar. Die Aufsicht selbst (Atelier/
 // DienstAufsicht.swift) treibt diese Funktion mit echten Beobachtungen.
 
 /// Zustand des ueberwachten Dienstes aus Sicht der Oberflaeche.

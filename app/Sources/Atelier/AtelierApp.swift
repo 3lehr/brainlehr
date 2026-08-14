@@ -23,7 +23,7 @@ final class Ansichtswahl: ObservableObject {
 }
 
 @MainActor
-final class BrainlehrAppDelegate: NSObject, NSApplicationDelegate {
+final class AtelierAppDelegate: NSObject, NSApplicationDelegate {
     let aufsicht = DienstAufsicht()
     /// Liegt hier und nicht im App-Rumpf, damit die Steuerschnittstelle sie
     /// erreicht -- sie muss die Ansicht umschalten koennen, und sie lebt so
@@ -80,8 +80,8 @@ final class BrainlehrAppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-struct BrainlehrApp: App {
-    @NSApplicationDelegateAdaptor(BrainlehrAppDelegate.self) private var appDelegate
+struct AtelierApp: App {
+    @NSApplicationDelegateAdaptor(AtelierAppDelegate.self) private var appDelegate
     @Environment(\.openWindow) private var oeffneFenster
 
     var body: some Scene {
