@@ -70,6 +70,7 @@ MODULE = [
     "kern/anmeldung.py",
     "kern/auditanker.py",
     "kern/ausweis.py",
+    "kern/baustein.py",
     "kern/bereinigung.py",
     "kern/build_node_index.py",
     "kern/codekanten.py",
@@ -77,8 +78,10 @@ MODULE = [
     "kern/endgueltig_entfernen.py",
     "kern/fenstergroesse.py",
     "kern/fremdimport.py",
+    "kern/fundstelle.py",
     "kern/hebb_kanten.py",
     "kern/herkunft_normentscheider.py",
+    "kern/kanten_herkunft_rueckwirkend.py",
     "kern/kettenerklaerung.py",
     "kern/knowledge_lint.py",
     "kern/konfidenz.py",
@@ -91,16 +94,19 @@ MODULE = [
     "kern/normachsen.py",
     "kern/normbestand.py",
     "kern/normbezug.py",
+    "kern/normfundstelle.py",
     "kern/normkraft.py",
     "kern/normrang.py",
     "kern/planbindung.py",
     "kern/planentscheidung.py",
     "kern/planordnung.py",
     "kern/pruefkorpus.py",
+    "kern/pruefkorpus_rivalen.py",
     "kern/pruefkorpus_v3.py",
     "kern/pruefspruch.py",
     "kern/rangfolge.py",
     "kern/raum_daten.py",
+    "kern/regelpaket.py",
     "kern/reifegrad.py",
     "kern/schema_nachzug.py",
     "kern/sicherung_s12.py",
@@ -108,36 +114,41 @@ MODULE = [
     "kern/speicher.py",
     "kern/suche_postgres.py",
     "kern/umschrift_pruefstein.py",
+    "kern/umschrift_s12.py",
     "kern/werkzeugrechte.py",
     "kern/wissensnutzen.py",
     "kern/wissensnutzen_blind.py",
     "kern/zahlenbezug.py",
     "melder/arbeitsmelder.py",
     "melder/auftragsregister.py",
+    "melder/ausloeserlos.py",
     "melder/eilmeldung_etikett.py",
     "melder/faehigkeiten.py",
     "melder/foederation.py",
+    "melder/kantenstillstand.py",
     "melder/messregeln.py",
     "melder/offene_arbeit.py",
     "melder/pruefer.py",
     "melder/rasterblick.py",
+    "melder/schemastand.py",
     "melder/selbstbeschreibung.py",
     "melder/sichtbarkeit.py",
+    "melder/speicherherkunft.py",
     "melder/vektorstand.py",
+    "melder/vier_nenner.py",
     "melder/vorschlagsmelder.py",
     "melder/wissensverlauf.py",
 ]
 
 # Rot, mit Grund -- je Fall geprueft am 2026-08-12, nicht geraten:
 XFAIL = {
-    "kern/abrufguete.py": (
-        "veralteter Selbsttest: der Selbsttest belegt einen NAMENTLICHEN "
-        "Fehlgriff aus dem echten Korpus (L-a9ccd0) -- der Abruf findet ihn "
-        "inzwischen. Das Modul sagt es selbst im Assertion-Text ('Bestand "
-        "oder Befund hat sich geaendert, neu pruefen'). Kein Codefehler, "
-        "aber auch keine billige Reparatur: ein neuer Fehlgriff-Fall muesste "
-        "erst wieder im echten Korpus nachgewiesen werden."
-    ),
+    # kern/abrufguete.py stand hier bis 2026-08-14 und ist RAUS, weil der Fall
+    # seither gruen laeuft (XPASS(strict), zweimal reproduziert). Der Selbsttest
+    # haengt am echten Bestand -- gegen die Suiten-Kopie besteht er, gegen eine
+    # frische leere DB nicht (dreimal exit=1 gemessen). Bewusst NICHT wieder als
+    # xfail eingetragen: wird er durch Bestandsdrift erneut rot, ist das ein
+    # echtes Rot und soll auffallen, statt unter einer veralteten Ausnahme zu
+    # verschwinden.
     "kern/knowledge_lint.py": (
         "kaputte Testfixtur: die Konfidenzverfall-Probe erwartet, dass ihre "
         "Quellenangabe (fixture_source) als beobachtbare Datei erkannt wird "
@@ -162,10 +173,21 @@ XFAIL = {
         "Reparatur, der Testaufbau selbst muss auf die gewachsene Datei "
         "umgestellt werden."
     ),
+    "kern/regelpaket.py": (
+        "vorbestehend rot, gefunden 2026-08-14 beim Nachtragen der 12 "
+        "durchgefallenen Module -- nicht durch diese Arbeit verursacht. "
+        "Der Selbsttest bricht mit sqlite3.IntegrityError ab: "
+        "'knowledge_nodes.norm_art fehlt fuer einen Satz fremder Herkunft'. "
+        "Ein Trigger verlangt norm_art, das Testfixture liefert es nicht -- "
+        "dieselbe Luecke, die der Startmelder als 'Normachse 2 ist stumm: "
+        "84 von 84 Normen ohne Art' meldet. Reparatur gehoert zur Normachse, "
+        "nicht in diese Datei: solange norm_art im ganzen Bestand leer ist, "
+        "wuerde ein hier gesetzter Wert nur den Test gruen faerben."
+    ),
 }
 
 assert set(XFAIL) <= set(MODULE)
-assert len(MODULE) == 64, len(MODULE)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13)
+assert len(MODULE) == 76, len(MODULE)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie)
 
 # Nur diese 3 legen -wal/-shm NEBEN der echten Datenbank an, wenn sie
 # BRAINLEHR_DB unbesetzt lassen -- gemessen 2026-08-12 per Datei-Snapshot
@@ -319,3 +341,35 @@ def echte_db_unangetastet():
 def test_modul_selftest(relpath, brainlehr_db_kopie, ausweis_kopie_mit_einem_eintrag):
     p = _lauf(relpath, brainlehr_db_kopie, ausweis_kopie_mit_einem_eintrag)
     assert p.returncode == 0, (p.stdout + p.stderr)[-3000:]
+
+
+def test_kein_modul_faellt_durch_die_liste():
+    """MODULE ist von Hand gepflegt -- also verrottet sie, sobald jemand baut.
+
+    Genau die Fehlerklasse, gegen die diese Datei gebaut wurde: ein Selbsttest,
+    den niemand aufruft, ist kein Selbsttest. Die Zaehlprobe oben (len(MODULE)
+    == 64) faellt nur, wenn jemand die LISTE aendert -- nicht, wenn ein neues
+    Modul entsteht. Belegt am 2026-08-14: kern/baustein.py wurde mit
+    --selftest angelegt und lief nirgends, die Suite blieb gruen.
+
+    Dieser Fall prueft die andere Richtung: jedes Modul unter kern/, haken/ und
+    melder/, das ein `--selftest`-Argument anmeldet, muss in MODULE stehen.
+    Erkannt wird die ANMELDUNG des Arguments, nicht das blosse Vorkommen des
+    Wortes -- ein Modul, das --selftest nur im Kommentar erwaehnt, zaehlt nicht
+    (haken/mehrstufiger_abruf.py, siehe Kopf dieser Datei).
+    """
+    gefunden = set()
+    for ordner in ("kern", "haken", "melder"):
+        for datei in sorted((ROOT / ordner).rglob("*.py")):
+            if "__pycache__" in datei.parts:
+                continue
+            quelle = datei.read_text(encoding="utf-8", errors="replace")
+            if 'add_argument("--selftest"' in quelle or "add_argument('--selftest'" in quelle:
+                gefunden.add(str(datei.relative_to(ROOT)))
+
+    fehlend = sorted(gefunden - set(MODULE))
+    assert not fehlend, (
+        "Modul(e) mit --selftest, die in MODULE fehlen und darum nie laufen: "
+        + ", ".join(fehlend)
+        + " -- eintragen und die Zaehlprobe oben nachziehen"
+    )
