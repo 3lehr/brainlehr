@@ -125,6 +125,32 @@ _AUSNAHMEN_KNOWLEDGE_NODES = {
                  "keine Luecke, sondern der Zweck der Spalte",
     "zurueckgezogen": "technisches Statusflag -- eine ueberwiegende Mehrheit auf "
                       "0 ist der gesunde Normalfall (wenige Zurueckziehungen)",
+    # Gemessen 2026-08-14, nicht angenommen -- und der SCHREIBER wurde
+    # nachgeschlagen, bevor die Spalte hier landete (knowledge_mcp_server.py,
+    # UPDATE ... access_count + 1 bei knowledge_read). Eine Spalte OHNE
+    # Schreiber gehoerte gemeldet, diese hat einen.
+    "access_count": "Nutzungszaehler. 2101 von 2195 auf 0 sind 96 Prozent und "
+                    "trotzdem kein Ausfall: die Spalte zaehlt laut "
+                    "kern/knowledge_lint.py AUSSCHLIESSLICH knowledge_read(), "
+                    "nie browse oder search -- und gezielt gelesen wird nur ein "
+                    "kleiner Teil eines Nachschlagebestands. Sie unterscheidet "
+                    "sehr wohl: 94 Knoten ueber 0, gestaffelt bis 23. Dass die "
+                    "Mehrheit nie GEZIELT geholt wurde, ist die Aussage der "
+                    "Spalte, nicht ihr Versagen",
+    # NUR HIER Ausnahme, NICHT bei lessons_learned und access_log -- die
+    # Unterscheidung ist der eigentliche Befund und wurde gemessen:
+    #   knowledge_nodes   78 von 2201 gesetzt  -> Schreiber arbeitet
+    #   lessons_learned    0 von  902 gesetzt  -> kein Schreiber
+    #   access_log         0 von 12972 gesetzt -> kein Schreiber
+    # Dreimal dieselbe leere Spalte, aber nur einmal aus demselben Grund.
+    "bedient_von": "beglaubigter Mensch hinter der schreibenden Maschine "
+                   "(knowledge_mcp_server.py::_bedient_von). Selten ist hier "
+                   "der Normalfall -- die meisten Schreibvorgaenge kommen von "
+                   "einem Werkzeug ohne Menschenausweis. Der Schreiber ARBEITET "
+                   "nachweislich: 78 von 2201 Zeilen tragen einen Wert. In "
+                   "lessons_learned und access_log dagegen steht die Spalte bei "
+                   "0 von 902 bzw. 0 von 12972 -- dort fehlt der Schreiber "
+                   "wirklich, und dort wird weiter gemeldet",
 }
 _AUSNAHMEN_LESSONS_LEARNED = {
     "id": "Schluesselspalte (PRIMARY KEY)",
