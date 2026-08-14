@@ -155,9 +155,14 @@ def main() -> int:
                 conn.execute(sql)
             zurueck = conn.execute(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger'").fetchone()[0]
-            assert zurueck == len(gesichert), (
-                f"{zurueck} von {len(gesichert)} Triggern zurueck -- Schranken fehlen, "
-                "Datenbank NICHT benutzen")
+            # Kein assert: python -O entfernt Zusicherungen global und
+            # stillschweigend, und dieses Skript entscheidet nicht, mit welchen
+            # Schaltern es aufgerufen wird. Eine Schranke, die an einem
+            # fremden Schalter haengt, ist keine.
+            if zurueck != len(gesichert):
+                raise RuntimeError(
+                    f"{zurueck} von {len(gesichert)} Triggern zurueck -- Schranken fehlen, "
+                    "Datenbank NICHT benutzen")
 
     print(f"{umgerechnet} von {gesamt} Zeitangaben auf UTC umgerechnet, "
           f"{len(gesichert)} Trigger wiederhergestellt")
