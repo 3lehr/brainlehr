@@ -48,7 +48,6 @@ import argparse
 import hashlib
 import sqlite3
 import sys
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent
@@ -56,8 +55,8 @@ sys.path.insert(0, str(WURZEL))
 sys.path.insert(0, str(WURZEL.parent / "haken"))
 
 import speicher  # noqa: E402
+import zeitmarke  # noqa: E402
 
-CET = timezone(timedelta(hours=2))
 GENESIS = "0" * 64
 
 SCHEMA = """
@@ -77,7 +76,7 @@ CREATE TABLE IF NOT EXISTS pruefsprueche (
 
 
 def _jetzt() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S%z")
+    return zeitmarke.jetzt()
 
 
 def kettenhash(vorher: str | None, *, frage: str, urteil: str, begruendung: str,

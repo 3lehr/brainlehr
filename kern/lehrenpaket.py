@@ -51,20 +51,19 @@ import json
 import re
 import sqlite3
 import sys
-from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 WURZEL = HERE
 while not (WURZEL / "schema.sql").exists() and WURZEL != WURZEL.parent:
     WURZEL = WURZEL.parent
+sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(WURZEL))
 sys.path.insert(0, str(WURZEL / "melder"))
 
 import einschleusung  # noqa: E402
 import foederation  # noqa: E402
-
-CET = timezone(timedelta(hours=1))
+import zeitmarke  # noqa: E402
 FORMAT_KENNUNG = "brainlehr-lehrenpaket-1"
 FREMD_PARENT = "/fremdwissen"
 LEHRE_PROJECT_ID = "fremdlehre-import"
@@ -79,7 +78,7 @@ _PFAD_RE = re.compile(
 
 
 def now_iso() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S+01:00")
+    return zeitmarke.jetzt()
 
 
 def _hat_lokalen_beleg(*texte: str | None) -> bool:

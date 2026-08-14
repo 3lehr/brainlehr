@@ -14,8 +14,8 @@ BAUFORM-PRUEFUNG (Auftrag verlangt SELECT DISTINCT vor jeder Vergleichslogik,
 siehe L-ec167a -- der Bestand mischt bei Datumsfeldern oft volle Zeitstempel
 mit reinen Datumsangaben): gemessen 2026-08-13 gegen den echten Bestand,
 2183 von 2183 Zeilen in knowledge_nodes.created_at UND .updated_at sind exakt
-25 Zeichen lang, Form 'YYYY-MM-DDTHH:MM:SS+ZZ:ZZ' (schema.sql-Vorgabe
-strftime('%Y-%m-%dT%H:%M:%S+01:00', ...)) -- keine Mischform in diesem Feld,
+25 Zeichen lang, Form 'YYYY-MM-DDTHH:MM:SS+ZZ:ZZ' (schema.sql-Vorgabewert
+nutzt SQL-strftime mit dem Format '%Y-%m-%dT%H:%M:%S+01:00') -- keine Mischform in diesem Feld,
 anders als bei gilt_ab/gilt_bis (Schritt 2, hier ausdruecklich nicht Teil des
 Auftrags). Trotzdem vergleicht dieses Modul bewusst nur die ersten 10 Zeichen
 (das Datum) und nicht den vollen Zeitstempel: von/bis kommen aus einer

@@ -39,10 +39,10 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
 
 import argparse
 import json
-from datetime import datetime, timezone, timedelta
 
 import codestand
 import teilung_s12
+import zeitmarke
 from abrufguete import abrufen  # kern/abrufguete.py -- echter Abrufweg
 
 WURZEL = _w
@@ -156,7 +156,6 @@ def main() -> None:
               f"  Quote={summe[h]['quote']}")
     print(f"\nVergleichbar (Faustregel +/-10 Punkte): {'JA' if ok else 'NEIN'} -- {begruendung}")
 
-    tz = timezone(timedelta(hours=2))
     ausgabe = {
         "zweck": "Ausgangsmessung VOR jeder Neuformulierung -- prueft Vergleichbarkeit "
                  "der Haelften, nicht die Abrufguete selbst.",
@@ -169,7 +168,7 @@ def main() -> None:
         "einheit": "Ziel-Instanz (Fall, Ziel) -- Begruendung im Modulkopf dieser Datei; "
                    "Abweichung vom Auftragstext 'je Fall ein Ziel', siehe Bericht.",
         "versuche": 1,
-        "erzeugt_am": datetime.now(tz).strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "erzeugt_am": zeitmarke.jetzt(),
         "code_stand": codestand.ermitteln(WURZEL),
         "korpus": a.korpus.name,
         "faelle_im_korpus": len(faelle),

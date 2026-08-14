@@ -94,6 +94,7 @@ import codekanten as ck  # noqa: E402 -- nur gelesen (kandidaten/wissen_zu)
 import echtkorpus as ek  # noqa: E402 -- nur gelesen (satzart/_ist_echte_frage/sitzungs_nachrichten)
 import ort  # noqa: E402
 import speicher  # noqa: E402
+import zeitmarke  # noqa: E402
 import knowledge_recall_hook as rh  # noqa: E402 -- der echte Abrufweg, unveraendert benutzt
 
 WURZEL = _w
@@ -316,7 +317,7 @@ def aufgaben_erzeugen(m1_n: int, m2_n: int, seed: int = 0, cwd: str | None = Non
     schiefe = (drei_haeufigste / gesamt) if gesamt else None
 
     return {
-        "erzeugt_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "erzeugt_am": zeitmarke.jetzt(),
         "m1_angefragt": m1_n, "m1_geliefert": len(m1),
         "m2_angefragt": m2_n, "m2_geliefert": len(m2),
         "m1_pool_groesse": len(m1_pool()),
@@ -494,7 +495,7 @@ def auswerten(aufgaben: dict, antworten: dict) -> dict:
         return _quote(sum(werte), len(werte))
 
     return {
-        "ausgewertet_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "ausgewertet_am": zeitmarke.jetzt(),
         "m1": {
             "faelle": m1_faelle_ausgewertet,
             "MIT": _m1_quote("MIT"), "OHNE": _m1_quote("OHNE"), "NEG": _m1_quote("NEG"),

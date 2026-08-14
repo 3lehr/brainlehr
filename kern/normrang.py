@@ -63,13 +63,14 @@ import argparse
 import shutil
 import sqlite3
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from pathlib import Path
+
+import zeitmarke
 
 HERE = _w
 HUB_ROOT = HERE.parent
 DB_PATH = HERE / "brainlehr.db"
-CET = timezone(timedelta(hours=1))
 
 # Gleiche Pfade wie normbestand.py (N1) beim Anlegen der Artefakte verwendet
 # hat -- die Ableitung hier ist bewusst nur ein Nachvollzug jener Quelle,
@@ -99,7 +100,7 @@ def _backup(db_path: Path) -> Path:
         conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     finally:
         conn.close()
-    stamp = datetime.now(CET).strftime("%Y%m%dT%H%M%S")
+    stamp = datetime.now(zeitmarke.BERLIN).strftime("%Y%m%dT%H%M%S")
     dest = db_path.parent / f"brainlehr.db.bak-{stamp}"
     shutil.copy2(db_path, dest)
     return dest
@@ -181,7 +182,7 @@ def anwenden(db_path: Path, apply: bool) -> dict:
     # (unbefristet in Kraft), norm_entscheidung deshalb immer
     # norm_unbefristet. norm_entschieden_grund verweist auf die
     # deterministische ADR-034-Ableitung, nicht auf eine Einzelpruefung.
-    jetzt = datetime.now(CET).isoformat(timespec="seconds")
+    jetzt = zeitmarke.jetzt()
     conn = sqlite3.connect(str(db_path))
     try:
         for c in result["aenderungen"]:

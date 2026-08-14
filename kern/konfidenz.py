@@ -83,7 +83,12 @@ from pathlib import Path
 HERE = _w
 sys.path.insert(0, str(HERE))
 
-from normkraft import Ablehnung, _backup, now_iso, CET  # noqa: E402
+from normkraft import Ablehnung, _backup, now_iso  # noqa: E402
+import zeitmarke  # noqa: E402
+
+# Rueckwaerts-kompatibler Name fuer bestehende Importeure (tests/test_konfidenz.py) --
+# zeigt auf dieselbe Ortszeit-Zone wie zeitmarke.BERLIN, kein eigener Versatz.
+CET = zeitmarke.BERLIN
 
 DB_PATH = HERE / "brainlehr.db"
 # Verbund-Wurzel: mehrere eigene Git-Repos nebeneinander (hub/, fahrtenbuch/,
@@ -161,7 +166,7 @@ def wissensart(path: str, source: str | None) -> str:
 def _parse_ts(ts: str) -> datetime:
     d = datetime.fromisoformat(ts)
     if d.tzinfo is None:
-        d = d.replace(tzinfo=CET)
+        d = d.replace(tzinfo=zeitmarke.BERLIN)
     return d
 
 
@@ -306,7 +311,7 @@ def plan_bestaetigen(db_path: Path, pfad: str, wegen: str, now: datetime | None 
     conn.row_factory = sqlite3.Row
     try:
         row = _lade_fakt(conn, pfad)
-        now = now or datetime.now(CET)
+        now = now or datetime.now(zeitmarke.BERLIN)
         vorher = gerechnete_konfidenz(
             row["confidence"], row["updated_at"], row["norm_rang"], row["path"], row["source"], now
         )
@@ -358,7 +363,7 @@ def bestaetigen(db_path: Path, pfad: str, wegen: str, apply: bool, now: datetime
 # ─── Verteilung gegen den Echtbestand (rein lesend) ────────────────────────
 
 def verteilung(db_path: Path, now: datetime | None = None) -> dict:
-    now = now or datetime.now(CET)
+    now = now or datetime.now(zeitmarke.BERLIN)
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=2.0)
     conn.row_factory = sqlite3.Row
     try:
@@ -417,7 +422,7 @@ def find_confidence_decay(conn: sqlite3.Connection, now: datetime | None = None,
     Schwelle also nie unter- oder ueberschreiten und taucht hier nie auf
     (siehe find_pruefung_ueberfaellig() fuer das Regime-3-Gegenstueck).
     conn darf read-only sein -- diese Funktion schreibt nichts."""
-    now = now or datetime.now(CET)
+    now = now or datetime.now(zeitmarke.BERLIN)
     rows = conn.execute(
         "SELECT path, title, confidence, norm_rang, updated_at, source "
         "FROM knowledge_nodes WHERE norm_rang IS NULL"
@@ -441,7 +446,7 @@ def find_pruefung_ueberfaellig(conn: sqlite3.Connection, now: datetime | None = 
     ist. Nicht in find_confidence_decay() gemischt -- 'ueberfaellig' und
     'gerechnet < Schwelle' sind verschiedene Aussagen (Auftrag 2026-08-06,
     Punkt 3: die drei Regime bleiben unterscheidbar, auch im Lint)."""
-    now = now or datetime.now(CET)
+    now = now or datetime.now(zeitmarke.BERLIN)
     rows = conn.execute(
         "SELECT path, title, confidence, norm_rang, updated_at, source "
         "FROM knowledge_nodes WHERE norm_rang IS NULL"
@@ -539,7 +544,7 @@ def main(argv: list[str] | None = None) -> int:
         if row is None:
             print(f"Pfad nicht gefunden: {args.pfad}")
             return 1
-        _print_aktuell(row, datetime.now(CET))
+        _print_aktuell(row, datetime.now(zeitmarke.BERLIN))
         return 0
 
     if args.cmd == "bestaetigen":

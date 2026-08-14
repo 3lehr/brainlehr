@@ -61,13 +61,12 @@ import argparse
 import json
 import sqlite3
 import sys
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import ort  # noqa: E402
 import speicher  # noqa: E402  -- eine Tuer zur Datenbank statt einer eigenen
+import zeitmarke  # noqa: E402
 
-CET = timezone(timedelta(hours=2))
 RUNS = ort.WURZEL / "runs"
 
 # Unter dieser Zahl ist die Meldung Rauschen -- ein einzelner Rueckstand
@@ -80,7 +79,7 @@ MELDESCHWELLE = 3
 
 
 def _jetzt() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S%z")
+    return zeitmarke.jetzt()
 
 
 # Nur-lesender Zugang ueber die Naht (speicher.py) statt eigener Verbindung.

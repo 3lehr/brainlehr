@@ -34,13 +34,14 @@ while not (_w / "schema.sql").exists() and _w != _w.parent:
     _w = _w.parent
 _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
-from datetime import datetime
 from pathlib import Path
 import json
 import sqlite3
 import sys
 import tempfile
 import os
+
+import zeitmarke
 
 sys.path.insert(0, str(_w))
 from haken.ort import DB as _DB, WURZEL  # noqa: E402
@@ -94,7 +95,7 @@ def render(nodes: list[tuple[str, str, str]],
         "",
         f"Quelle: `shared-knowledge/build_node_index.py`. Knoten: {len(nodes)} "
         f"in {len(aeste)} Aesten · Lehren: {len(lessons)} · erzeugt: "
-        f"{datetime.now().astimezone().strftime('%Y-%m-%dT%H:%M:%S%z')}",
+        f"{zeitmarke.als_ortszeit(zeitmarke.jetzt())}",
         "",
         INTRO,
         "",

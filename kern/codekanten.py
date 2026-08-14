@@ -278,7 +278,7 @@ def _selftest() -> None:
 
 
 def main() -> None:
-    from datetime import datetime, timedelta, timezone
+    import zeitmarke
 
     p = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -324,7 +324,7 @@ def main() -> None:
                                 key=lambda x: -len(x[1]))[:8]:
             print(f"    {kand:44s} genannt in {len(wo)}")
         if a.bauen:
-            jetzt = datetime.now(timezone(timedelta(hours=2))).strftime("%Y-%m-%dT%H:%M:%S%z")
+            jetzt = zeitmarke.jetzt()
             with speicher.schreiben() as conn:
                 n = ablegen(kanten, conn, jetzt)
             print(f"\nAbgelegt: {n} Kanten in code_kanten")

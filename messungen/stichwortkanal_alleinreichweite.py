@@ -45,16 +45,15 @@ _sys.path.insert(0, str(_w / "messungen"))
 import argparse
 import json
 from contextlib import contextmanager
-from datetime import datetime, timezone, timedelta
 
 import codestand
 import embeddings
 import speicher
+import zeitmarke
 import ausgangsmessung_s12 as _s12mod
 from ausgangsmessung_s12 import messe as s12_messe
 
 WURZEL = _w
-TZ = timezone(timedelta(hours=2))
 
 # BEFUND WAEHREND DES BAUS, nicht Teil der Fusionslogik, nur diesen
 # Beobachtungspunkt betreffend: seit SUCHPFAD_ABRUF=True (haken/
@@ -267,7 +266,7 @@ def main() -> None:
             "korpus_limit": a.limit,
             "korpus_faelle_gesamt_in_datei": len(json.loads(a.korpus.read_text(encoding="utf-8"))["faelle"]),
             "code_stand": codestand.ermitteln(WURZEL),
-            "erzeugt_am": datetime.now(TZ).strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "erzeugt_am": zeitmarke.jetzt(),
             **ergebnis,
         }
         a.out.write_text(json.dumps(ausgabe, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -45,10 +45,10 @@ import argparse
 import json
 import re
 import sys
-from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-CET = timezone(timedelta(hours=2))
+import zeitmarke
+
 PROTOKOLL = _w / "bereinigung_log.jsonl"
 PROTOKOLL_MAX_BYTES = 200_000  # gleiche Kappung wie zero_hit_log.jsonl
 
@@ -79,7 +79,7 @@ UNVERDAECHTIG = re.compile(
 
 
 def _jetzt() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S%z")
+    return zeitmarke.jetzt()
 
 
 def _maskiert(text: str) -> str:

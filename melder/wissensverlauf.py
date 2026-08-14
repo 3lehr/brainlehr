@@ -43,6 +43,7 @@ SHARED_KNOWLEDGE = _w
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import knowledge_lint  # noqa: E402
+import zeitmarke  # noqa: E402
 
 HISTORY_PATH = SHARED_KNOWLEDGE / "wissensverlauf.jsonl"
 
@@ -71,7 +72,7 @@ def build_record(result: dict, ts: datetime) -> dict:
     fil = result["structure_metrics"]["filaments"]
     conf = result["structure_metrics"]["confidence_default_age"]
     return {
-        "ts": ts.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "ts": zeitmarke.nach_utc(ts.isoformat()),
         "corpus_size": perc["nodes"],
         "orphans": len(result["orphans"]),
         "stale": len(result["stale"]),

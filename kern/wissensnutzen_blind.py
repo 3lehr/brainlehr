@@ -57,6 +57,8 @@ import sys
 import time
 from pathlib import Path
 
+import zeitmarke
+
 SHARED_KNOWLEDGE = _w
 sys.path.insert(0, str(SHARED_KNOWLEDGE / "schreibpruefstand"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
@@ -240,7 +242,7 @@ def auswerten(aufgaben: dict, antworten: dict, kontaminiert: set[str] | None = N
 
 
 def _jetzt() -> str:
-    return time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    return zeitmarke.jetzt()
 
 
 def main() -> None:

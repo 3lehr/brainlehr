@@ -33,12 +33,13 @@ import os
 import shutil
 import sqlite3
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from pathlib import Path
+
+import zeitmarke
 
 HERE = Path(__file__).parent
 DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (HERE / "brainlehr.db"))
-CET = timezone(timedelta(hours=1))
 
 NEW_COLUMNS = {
     "zurueckgezogen": "INTEGER NOT NULL DEFAULT 0",
@@ -60,7 +61,7 @@ def _backup(db_path: Path) -> Path:
             )
     finally:
         conn.close()
-    stamp = datetime.now(CET).strftime("%Y%m%dT%H%M%S")
+    stamp = datetime.now(zeitmarke.BERLIN).strftime("%Y%m%dT%H%M%S")
     dest = db_path.parent / f"{db_path.name}.bak-{stamp}"
     shutil.copy2(db_path, dest)
     return dest

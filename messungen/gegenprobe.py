@@ -49,15 +49,15 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
 import argparse
 import json
 import sys
-from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-CET = timezone(timedelta(hours=2))
+import zeitmarke
+
 RUNS = _w / "runs"
 
 
 def _jetzt() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S%z")
+    return zeitmarke.jetzt()
 
 
 def _paare(knoten, pfad="") -> list[tuple[str, int, int]]:

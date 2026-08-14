@@ -97,10 +97,11 @@ import json
 import re
 import sqlite3
 import sys
-from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import zeitmarke  # noqa: E402
 
 # Die Wurzel wird an schema.sql erkannt, nicht an einer Anzahl von Ebenen --
 # dieselbe Bauform wie in tests/ und melder/. Beim Uebertragen aus einem
@@ -109,7 +110,6 @@ HERE = Path(__file__).resolve().parent
 WURZEL = HERE
 while not (WURZEL / "schema.sql").exists() and WURZEL != WURZEL.parent:
     WURZEL = WURZEL.parent
-CET = timezone(timedelta(hours=1))
 FORMAT_KENNUNG = "brainlehr-regelpaket-1"
 PARENT_PATH = "/fremdregeln"
 PROJECT_ID = "fremdregel-import"
@@ -123,7 +123,7 @@ DEFAULT_HUB = Path("/Volumes/daten/Begod2026/hub/CLAUDE.md")
 
 
 def now_iso() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S+01:00")
+    return zeitmarke.jetzt()
 
 
 # ---------------------------------------------------------------------------

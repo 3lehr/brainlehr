@@ -54,10 +54,10 @@ _sys.path[:0] = [str(_w), str(_w / "kern")]
 import argparse  # noqa: E402
 import hashlib  # noqa: E402
 import json  # noqa: E402
-import time  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 import codestand  # noqa: E402
+import zeitmarke  # noqa: E402
 import metaphern_regelpaare as mr  # noqa: E402 -- nur gelesen (REGELPAARE/FASSUNGEN/MENGEN)
 
 WURZEL = _w
@@ -99,7 +99,7 @@ def _items_erzeugen(seed: int) -> tuple[list[dict], dict]:
 def aufgaben_erzeugen(seed: int = 0) -> dict:
     items_blind, zuordnung = _items_erzeugen(seed)
     return {
-        "erzeugt_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "erzeugt_am": zeitmarke.jetzt(),
         "seed": seed,
         "codestand": codestand.ermitteln(WURZEL),
         "n_items": len(items_blind),
@@ -185,7 +185,7 @@ def auswerten(aufgaben: dict, antworten: dict) -> dict:
         })
 
     return {
-        "ausgewertet_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "ausgewertet_am": zeitmarke.jetzt(),
         "seed": aufgaben.get("seed"),
         "codestand_aufgaben": aufgaben.get("codestand"),
         "codestand_auswertung": codestand.ermitteln(WURZEL),

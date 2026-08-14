@@ -89,6 +89,7 @@ os.environ["BEGOD_KNOWLEDGE_DB"] = str(DB_MIT)
 
 import embeddings  # noqa: E402
 import stadtwerke_korpus as korpus  # noqa: E402
+import zeitmarke  # noqa: E402
 
 sys.path.insert(0, str(HUB / "scripts"))
 import knowledge_recall_hook as rh  # noqa: E402
@@ -315,7 +316,7 @@ def run(out_path: Path = OUT_PATH, seed: int = SEED) -> dict:
     db_eich_ohne = baue_db(ohne_ziel, DEMO_DIR / "abrufpruefstand-eich-ohne.db", False, None)
 
     ergebnis = {
-        "zeitpunkt": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "zeitpunkt": zeitmarke.jetzt(),
         "seed": seed,
         "hub_head": os.popen(f"git -C {HUB} rev-parse HEAD").read().strip(),
         "hook_datei": str(HUB / "scripts" / "knowledge_recall_hook.py"),

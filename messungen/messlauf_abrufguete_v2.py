@@ -32,7 +32,14 @@ import json
 import sys
 from pathlib import Path
 
-SHARED_KNOWLEDGE = Path(__file__).resolve().parent
+# Die Repo-WURZEL, nicht der Ordner dieses Skripts. Bis zum
+# Wurzelordnungs-Umzug am 2026-08-10 lagen beide am selben Ort und
+# der Unterschied fiel nicht auf; seither zeigte der Pfad auf
+# messungen/ bzw. migrationen/ und die Datenablage runs/ war weg.
+# _w wird oben bereits an schema.sql ermittelt -- an einem Merkmal
+# der Wurzel statt an einer Ebenenzahl, damit der naechste Umzug
+# nicht dieselbe Stille erzeugt.
+SHARED_KNOWLEDGE = _w
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import messlauf_abrufguete as m  # noqa: E402  -- nur gelesen/aufgerufen
 from messparameter import schnappschuss  # noqa: E402

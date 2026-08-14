@@ -1524,7 +1524,7 @@ def selftest() -> None:
         log_path = tmp_path / "recall_log.jsonl"
         window_start_dt = _selftest_window_start(now)
         window_end_dt = now
-        log_fmt = "%Y-%m-%dT%H:%M:%S+00:00"
+        log_fmt = "%Y-%m-%dT%H:%M:%SZ"
         log_path.write_text(
             json.dumps({"ts": window_start_dt.strftime(log_fmt), "nodes": ["/shared/kind"], "lessons": []}) + "\n" +
             json.dumps({"ts": window_end_dt.strftime(log_fmt), "nodes": [], "lessons": []}) + "\n",
@@ -1545,7 +1545,7 @@ def selftest() -> None:
         stale_refs = {s["ref"] for s in result["stale"]}
         assert "/shared/alt" in stale_refs, "Schwelle+1 Tag haette gemeldet werden muessen"
         assert "/shared/neu" not in stale_refs, "Schwelle-1 Tag haette NICHT gemeldet werden duerfen"
-        assert _age_days(now.strftime("%Y-%m-%dT%H:%M:%S+00:00"), now) <= STALE_DAYS  # 0 Tage: kein Befund
+        assert _age_days(now.strftime("%Y-%m-%dT%H:%M:%SZ"), now) <= STALE_DAYS  # 0 Tage: kein Befund
 
         # 3. Nie gezogen: /shared/kind wurde im Log gezogen, alle anderen nicht.
         assert "/shared/kind" not in result["never_pulled_nodes"]

@@ -56,12 +56,13 @@ import argparse
 import shutil
 import sqlite3
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from pathlib import Path
+
+import zeitmarke
 
 HERE = _w
 DB_PATH = HERE / "brainlehr.db"
-CET = timezone(timedelta(hours=1))
 
 
 def _backup(db_path: Path) -> Path:
@@ -77,14 +78,14 @@ def _backup(db_path: Path) -> Path:
             )
     finally:
         conn.close()
-    stamp = datetime.now(CET).strftime("%Y%m%dT%H%M%S")
+    stamp = datetime.now(zeitmarke.BERLIN).strftime("%Y%m%dT%H%M%S")
     dest = db_path.parent / f"brainlehr.db.bak-{stamp}"
     shutil.copy2(db_path, dest)
     return dest
 
 
 def now_iso() -> str:
-    return datetime.now(CET).strftime("%Y-%m-%dT%H:%M:%S%z")
+    return zeitmarke.jetzt()
 
 
 class Ablehnung(Exception):

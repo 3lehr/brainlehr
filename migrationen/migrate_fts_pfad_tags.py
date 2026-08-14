@@ -34,7 +34,9 @@ import argparse
 import shutil
 import sqlite3
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
+
+import zeitmarke
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -50,7 +52,7 @@ FOLD_SQL = (
 
 
 def backup_db() -> Path:
-    ts = datetime.now(timezone(timedelta(hours=1))).strftime("%Y%m%dT%H%M%S")
+    ts = datetime.now(zeitmarke.BERLIN).strftime("%Y%m%dT%H%M%S")
     backup_path = DB_PATH.with_name(f"{DB_PATH.name}.bak-{ts}")
     shutil.copy2(DB_PATH, backup_path)
     if not backup_path.exists() or backup_path.stat().st_size == 0:

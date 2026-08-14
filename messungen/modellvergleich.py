@@ -90,6 +90,7 @@ import build_embeddings as be  # noqa: E402 -- nur node_text/lesson_text/_checks
 import codestand  # noqa: E402
 import embeddings  # noqa: E402
 import speicher  # noqa: E402
+import zeitmarke  # noqa: E402
 
 WURZEL = _w
 DB = None  # ort.DB via speicher-Vorgabe, kein fest verdrahteter Pfad
@@ -268,7 +269,7 @@ def lauf(out_pfad: str) -> dict:
         )
 
     ergebnis = {
-        "erzeugt_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "erzeugt_am": zeitmarke.jetzt(),
         "codestand": codestand.ermitteln(WURZEL),
         "fallbestand": {"datei": str(FALLBESTAND.relative_to(WURZEL)),
                          "etikettiert_n": len(etikettiert), "negativ_n": len(negativ),
