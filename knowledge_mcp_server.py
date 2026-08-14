@@ -2764,7 +2764,7 @@ def _embedding_text(path: str, title: str, summary: str, content: str | None) ->
 
 def _rebuild_node_embedding(conn: sqlite3.Connection, node_id: str, project_id: str,
                             path: str, title: str, summary: str, content: str | None,
-                            *, vec: list[float] | None = None) -> None:
+                            *, vec: list[float] | None = None) -> str | None:
     """Baut den Vektor eines Knotens SOFORT beim Schreiben (ADR-032 Gruppe 1)
     statt die Luecke bis zum naechsten build_embeddings.py-Lauf offenzulassen.
     Text-Formel identisch zu dessen Hauptschleife -- sonst zaehlt der Kurator
@@ -2786,25 +2786,50 @@ def _rebuild_node_embedding(conn: sqlite3.Connection, node_id: str, project_id: 
     dem INSERT fuer den Aehnlichkeits-Hinweis (_find_similar_knowledge_nodes)
     -- wird er hier durchgereicht, spart das den zweiten embed_text()-Aufruf
     (~190ms gemessen) fuer denselben Text. Ohne Angabe unveraendertes
-    Verhalten: der Text wird hier berechnet, wie bisher."""
+    Verhalten: der Text wird hier berechnet, wie bisher.
+
+    ADR-032 SCHWIEG, WO ES AM MEISTEN GEKOSTET HAETTE (gemessen 2026-08-14):
+    Ein `except sqlite3.IntegrityError: pass` verschluckte hier die
+    aussagekraeftigste Meldung des ganzen Systems. Der Trigger
+    knowledge_embeddings_model_check_bi sagt woertlich, was zu tun ist
+    ("Prozess laeuft vermutlich mit veraltetem Code ... Sitzung neu starten")
+    -- und niemand hat sie je gelesen. Nachgestellt: knowledge_add legte den
+    Knoten an und schrieb NULL Vektorzeilen, weil der laufende Serverprozess
+    (gestartet 21:44) aelter war als die Identitaetsaenderung von 23:51 und
+    deshalb den rohen Namen 'bge-m3' schrieb, waehrend knowledge_config schon
+    'bge-m3@ctx2048' fuehrte. Der naechste build_embeddings.py-Lauf flickte es
+    stillschweigend -- deshalb fiel es wochenlang nicht auf, sondern erst, als
+    ein Test dreimal hintereinander an derselben Stelle rot wurde.
+
+    DER GRUND WIRD JETZT ZURUECKGEGEBEN, nicht geworfen: Werfen wuerde den
+    Schreibvorgang scheitern lassen, obwohl der Eintrag selbst gueltig ist --
+    dieselbe Fehlklasse wie die norm_art-Sperre vom 2026-08-13, die laufende
+    fremde Sitzungen blockierte. Der Aufrufer haengt den Grund an sein
+    Ergebnis; wer schreibt, erfaehrt damit im selben Atemzug, dass sein
+    Prozess veraltet ist.
+
+    Rueckgabe: None bei Erfolg, sonst der Grund im Klartext."""
     text = _embedding_text(path, title, summary, content)
     if vec is None:
         vec = embeddings.embed_text(text)
     if vec is None:
-        return
+        return ("Kein Vektor geschrieben: der Einbettungsdienst antwortete nicht. "
+                "Der Eintrag ist gueltig, bleibt aber bis zum naechsten "
+                "build_embeddings.py-Lauf ueber die Bedeutungssuche unauffindbar.")
     try:
         conn.execute(
             "INSERT OR REPLACE INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at) "
             "VALUES ('node', ?, ?, ?, ?, ?, ?)",
             (node_id, project_id, embeddings.DEFAULT_EMBED_MODEL, len(vec), embeddings.pack_embedding(vec), now_iso()),
         )
-    except sqlite3.IntegrityError:
-        pass
+    except sqlite3.IntegrityError as fehler:
+        return f"Kein Vektor geschrieben: {fehler}"
+    return None
 
 
 def _rebuild_lesson_embedding(conn: sqlite3.Connection, lesson_id: str, node_path: str | None,
                               projects_json: str | None, description: str,
-                              root_cause: str | None, prevention: str | None) -> None:
+                              root_cause: str | None, prevention: str | None) -> str | None:
     """Wie _rebuild_node_embedding, fuer lessons_learned -- inkl. Bereichs-
     Fanout (eine Embedding-Zeile je Bereich, gleicher Vektor) ueber
     build_embeddings.resolve_lesson_projects(), nicht danebengebaut.
@@ -2816,9 +2841,12 @@ def _rebuild_lesson_embedding(conn: sqlite3.Connection, lesson_id: str, node_pat
     text = f"{zuordnung}\n{description}\n{root_cause or ''}\n{prevention or ''}"
     vec = embeddings.embed_text(text)
     if vec is None:
-        return
+        return ("Kein Vektor geschrieben: der Einbettungsdienst antwortete nicht. "
+                "Die Lehre ist gueltig, bleibt aber bis zum naechsten "
+                "build_embeddings.py-Lauf ueber die Bedeutungssuche unauffindbar.")
     packed = embeddings.pack_embedding(vec)
     ts = now_iso()
+    grund = None
     for proj in build_embeddings.resolve_lesson_projects(projects_json):
         try:
             conn.execute(
@@ -2826,8 +2854,9 @@ def _rebuild_lesson_embedding(conn: sqlite3.Connection, lesson_id: str, node_pat
                 "VALUES ('lesson', ?, ?, ?, ?, ?, ?)",
                 (lesson_id, proj, embeddings.DEFAULT_EMBED_MODEL, len(vec), packed, ts),
             )
-        except sqlite3.IntegrityError:
-            pass
+        except sqlite3.IntegrityError as fehler:
+            grund = f"Kein Vektor geschrieben: {fehler}"
+    return grund
 
 
 # Auftrag 2026-08-09: project_id-Default 'shared' verschluckte 26 von 384
@@ -3278,7 +3307,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     # ADR-032: Vektor sofort mitbauen statt eine vector_gaps-Luecke bis zum
     # naechsten build_embeddings.py-Lauf offenzulassen.
-    _rebuild_node_embedding(conn, node_id, project_id, node_path, title, summary, content, vec=_hint_vec)
+    _vektor_grund = _rebuild_node_embedding(conn, node_id, project_id, node_path, title, summary, content, vec=_hint_vec)
     _knowledge_hint_index_add(node_id, title, summary, content)
     conn.commit()
     conn.close()
@@ -3298,6 +3327,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     # genau so passiert), und die neun Bestandsknoten waeren damit nicht
     # aenderbar. Ausserdem ist die Grenze eine Schaetzung aus einem
     # Quotienten, kein exakter Schnitt -- darauf gehoert keine Sperre.
+    if _vektor_grund:
+        result["vektor"] = _vektor_grund
     if embeddings.wird_gekappt(_embedding_text(node_path, title, summary, content)):
         result["kappung"] = (
             f"Der Text ist laenger als {embeddings.zeichengrenze()} Zeichen und wird "
@@ -4467,7 +4498,7 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                })
     # ADR-032: Vektor sofort mitbauen statt eine vector_gaps-Luecke bis zum
     # naechsten build_embeddings.py-Lauf offenzulassen.
-    _rebuild_lesson_embedding(conn, lesson_id, node_path or None, json.dumps(projects or []),
+    _vektor_grund = _rebuild_lesson_embedding(conn, lesson_id, node_path or None, json.dumps(projects or []),
                               description, root_cause, prevention)
     conn.commit()
     conn.close()
@@ -4478,6 +4509,8 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     result = {"id": lesson_id, "status": "recorded", "occurrences": 1}
     if similar:
         result["similar_lesson_hint"] = similar
+    if _vektor_grund:
+        result["vektor"] = _vektor_grund
     return result
 
 
