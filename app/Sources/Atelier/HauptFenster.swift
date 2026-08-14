@@ -43,7 +43,6 @@ struct HauptFenster: View {
     /// sie umschalten kann -- sie ist der Rueckweg, wenn die Seitenleiste
     /// eingeklappt ist.
     @ObservedObject var wahl: Ansichtswahl
-    @State private var wissensraumBlick: WissensraumBlick = .baum
 
     var body: some View {
         NavigationSplitView {
@@ -60,15 +59,15 @@ struct HauptFenster: View {
                     if eintrag == .wissensraum && wahl.aktuell == .wissensraum {
                         ForEach(WissensraumBlick.allCases) { blick in
                             Button {
-                                wissensraumBlick = blick
+                                wahl.blick = blick
                             } label: {
                                 Text(blick.titel)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .buttonStyle(.plain)
                             .padding(.leading, 24)
-                            .foregroundStyle(blick == wissensraumBlick ? Color.accentColor : Color.primary)
-                            .accessibilityAddTraits(blick == wissensraumBlick ? [.isSelected] : [])
+                            .foregroundStyle(blick == wahl.blick ? Color.accentColor : Color.primary)
+                            .accessibilityAddTraits(blick == wahl.blick ? [.isSelected] : [])
                             .accessibilityHint("Zeigt die Ansicht \(blick.titel) im Wissensraum.")
                         }
                     }
@@ -91,7 +90,7 @@ struct HauptFenster: View {
                     // dem der Ausweis-Ablauf (eigener Subprozess) nichts zu
                     // tun hat -- auf der Ausweise-Seite waere er irrefuehrend.
                     DienstBanner(aufsicht: aufsicht)
-                    WissensraumAnsicht(aufsicht: aufsicht, blick: wissensraumBlick)
+                    WissensraumAnsicht(aufsicht: aufsicht, blick: wahl.blick)
                 } else if wahl.aktuell == .ausweise {
                     AusweisAnsicht()
                 }
@@ -106,11 +105,16 @@ struct HauptFenster: View {
 private struct WissensraumAnsicht: View {
     @Bindable var aufsicht: DienstAufsicht
     let blick: WissensraumBlick
+    /// Ueberlebt den Ansichtswechsel -- sonst faenge jede Rueckkehr in den
+    /// Wissensraum wieder bei den Vorgaben an.
+    @StateObject private var werte = Wissensraumwerte()
 
     var body: some View {
         switch aufsicht.zustand {
         case .laeuft:
-            WissensraumWebView(blick: blick)
+            WissensraumWebView(blick: blick, werte: werte)
+            Divider()
+            WissensraumBedienung(blick: blick, werte: werte)
         case .startetGerade:
             VStack {
                 Spacer()

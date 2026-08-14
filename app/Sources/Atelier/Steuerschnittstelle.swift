@@ -160,13 +160,29 @@ final class Steuerschnittstelle {
         }
 
         let ansichten = SeitenleistenEintrag.allCases.map(\.rawValue)
+        let blicke = WissensraumBlick.allCases.map(\.kennung)
         switch Steuerdeutung.deute(methode: zerlegt.methode, pfad: zerlegt.pfad,
-                                   koerper: koerper, erlaubteAnsichten: ansichten) {
+                                   koerper: koerper, erlaubteAnsichten: ansichten,
+                                   erlaubteBlicke: blicke) {
         case .failure(let ablehnung):
             return ablehnung
         case .success(let befehl):
             return fuehreAus(befehl, ansichten: ansichten)
         }
+    }
+
+    /// Der erreichte Zustand -- eine Stelle, damit /zustand, /ansicht und
+    /// /blick nicht dreimal dasselbe zusammenbauen und auseinanderlaufen.
+    private func zustandsantwort(ansichten: [String]) -> Steuerantwort {
+        Steuerantwort(code: 200, koerper: Steuerdeutung.zustandJSON(
+            ansicht: wahl.aktuell.rawValue,
+            dienst: String(describing: aufsicht.zustand),
+            pid: ProcessInfo.processInfo.processIdentifier,
+            fassung: (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "unbekannt",
+            fenster: Self.hauptfenster(),
+            ansichten: ansichten,
+            blick: wahl.blick.kennung,
+            blicke: WissensraumBlick.allCases.map(\.kennung)))
     }
 
     private func fuehreAus(_ befehl: Steuerbefehl, ansichten: [String]) -> Steuerantwort {
@@ -175,13 +191,15 @@ final class Steuerschnittstelle {
             return Steuerantwort(code: 200, koerper: #"{"lebt":true}"#)
 
         case .zustand:
-            return Steuerantwort(code: 200, koerper: Steuerdeutung.zustandJSON(
-                ansicht: wahl.aktuell.rawValue,
-                dienst: String(describing: aufsicht.zustand),
-                pid: ProcessInfo.processInfo.processIdentifier,
-                fassung: (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "unbekannt",
-                fenster: Self.hauptfenster(),
-                ansichten: ansichten))
+            return zustandsantwort(ansichten: ansichten)
+
+        case .blickWaehlen(let name):
+            guard let blick = WissensraumBlick.allCases.first(where: { $0.kennung == name }) else {
+                return Steuerantwort(code: 500, koerper:
+                    #"{"fehler":"Blick '\#(name)' ist erlaubt, aber unbekannt.","hinweis":"Kern und Oberflaeche laufen auseinander."}"#)
+            }
+            wahl.blick = blick
+            return zustandsantwort(ansichten: ansichten)
 
         case .ansichtWaehlen(let name):
             guard let eintrag = SeitenleistenEintrag(rawValue: name) else {
@@ -194,13 +212,7 @@ final class Steuerschnittstelle {
             // Den ERREICHTEN Zustand zurueckgeben, nie ein nacktes "ok":
             // sonst ist eine wirkungslose Aktion von einer wirksamen nicht zu
             // unterscheiden.
-            return Steuerantwort(code: 200, koerper: Steuerdeutung.zustandJSON(
-                ansicht: wahl.aktuell.rawValue,
-                dienst: String(describing: aufsicht.zustand),
-                pid: ProcessInfo.processInfo.processIdentifier,
-                fassung: (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "unbekannt",
-                fenster: Self.hauptfenster(),
-                ansichten: ansichten))
+            return zustandsantwort(ansichten: ansichten)
         }
     }
 

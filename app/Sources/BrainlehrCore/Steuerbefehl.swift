@@ -26,6 +26,11 @@ public enum Steuerbefehl: Equatable, Sendable {
     case gesundheit
     /// Ansicht umschalten. Der Wert ist bereits als gueltig erkannt.
     case ansichtWaehlen(String)
+    /// Blick im Wissensraum umschalten (Baum, Bedeutung, Spuren, Vergleich,
+    /// Abrufweg). Eigener Befehl statt eines zweiten Feldes an /ansicht: der
+    /// Blick ist NICHT die Ansicht -- er gilt nur innerhalb einer einzigen und
+    /// bleibt beim Wechsel in eine andere bestehen.
+    case blickWaehlen(String)
 }
 
 public struct Steuerantwort: Equatable, Sendable, Error {
@@ -41,7 +46,7 @@ public struct Steuerantwort: Equatable, Sendable, Error {
 public enum Steuerdeutung {
     /// Ansichten, die es gibt. Wird von aussen gesetzt, damit der Kern die
     /// Oberflaechen-Aufzaehlung nicht kennen muss.
-    public static let bekanntePfade = ["/zustand", "/gesundheit", "/ansicht"]
+    public static let bekanntePfade = ["/zustand", "/gesundheit", "/ansicht", "/blick"]
 
     /// Deutet eine Anfrage. `erlaubteAnsichten` kommt vom Aufrufer, damit
     /// diese Datei nicht gegen die Seitenleiste gebunden ist.
@@ -49,7 +54,8 @@ public enum Steuerdeutung {
     /// Gibt entweder einen Befehl oder eine fertige Ablehnung zurueck -- nie
     /// beides und nie keines von beidem.
     public static func deute(methode: String, pfad: String, koerper: String,
-                             erlaubteAnsichten: [String]) -> Result<Steuerbefehl, Steuerantwort> {
+                             erlaubteAnsichten: [String],
+                             erlaubteBlicke: [String] = []) -> Result<Steuerbefehl, Steuerantwort> {
         // Abfragezeichen abschneiden: /zustand?hübsch=1 ist derselbe Pfad.
         let reinerPfad = String(pfad.split(separator: "?").first ?? "")
 
@@ -70,6 +76,22 @@ public enum Steuerdeutung {
                     hinweis: "Bekannt sind: \(erlaubteAnsichten.joined(separator: ", "))")))
             }
             return .success(.ansichtWaehlen(name))
+        case ("POST", "/blick"):
+            guard let name = feldAusJSON(koerper, schluessel: "blick") else {
+                return .failure(Steuerantwort(code: 400, koerper: fehler(
+                    "Feld 'blick' fehlt im Rumpf.",
+                    hinweis: "Erwartet wird {\"blick\":\"…\"} mit einem aus \(erlaubteBlicke.joined(separator: ", "))")))
+            }
+            guard erlaubteBlicke.contains(name) else {
+                return .failure(Steuerantwort(code: 400, koerper: fehler(
+                    "Unbekannter Blick '\(name)'.",
+                    hinweis: "Bekannt sind: \(erlaubteBlicke.joined(separator: ", "))")))
+            }
+            return .success(.blickWaehlen(name))
+        case ("GET", "/blick"):
+            return .failure(Steuerantwort(code: 405, koerper: fehler(
+                "/blick wird mit POST gesetzt, nicht mit GET.",
+                hinweis: "Zum Lesen des aktuellen Blicks: GET /zustand")))
         case ("GET", "/ansicht"):
             // Haeufiger Irrtum, deshalb eigens beantwortet statt als 404.
             return .failure(Steuerantwort(code: 405, koerper: fehler(
@@ -122,13 +144,18 @@ public enum Steuerdeutung {
     /// sagen, nicht der Betrachter erraten.
     public static func zustandJSON(ansicht: String, dienst: String, pid: Int32,
                                    fassung: String, fenster: Int,
-                                   ansichten: [String]) -> String {
+                                   ansichten: [String], blick: String = "",
+                                   blicke: [String] = []) -> String {
         let liste = ansichten.map { "\"\($0)\"" }.joined(separator: ",")
+        let blickListe = blicke.map { "\"\($0)\"" }.joined(separator: ",")
+        // Der Blick steht NUR dann im Zustand, wenn es ihn gibt -- ein leeres
+        // Feld waere von "Blick unbekannt" nicht zu unterscheiden.
+        let blickTeil = blick.isEmpty ? "" : "\"blick\":\"\(blick)\",\"blicke\":[\(blickListe)],"
         // Ein eigenes Feld statt eines Kommentars: ein Programm liest kein
         // "eigentlich sieht man gerade nichts".
         let sichtbar = fenster > 0
         return """
-        {"ansicht":"\(ansicht)","sichtbar":\(sichtbar),"fenster":\(fenster),\
+        {"ansicht":"\(ansicht)",\(blickTeil)"sichtbar":\(sichtbar),"fenster":\(fenster),\
         "dienst":"\(dienst)","pid":\(pid),\
         "fassung":"\(fassung)","ansichten":[\(liste)]}
         """

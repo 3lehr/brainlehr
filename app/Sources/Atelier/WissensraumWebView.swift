@@ -6,6 +6,7 @@
 // aus per Klick angesteuert. Das ist derselbe Weg, den ein Mensch mit der
 // Maus ginge, nur ferngesteuert -- keine zweite Fassung der Ansichtslogik.
 
+import BrainlehrCore
 import SwiftUI
 @preconcurrency import WebKit
 
@@ -21,6 +22,11 @@ enum WissensraumBlick: Int, CaseIterable, Identifiable {
     case abrufweg = 4
 
     var id: Int { rawValue }
+
+    /// Kennung fuer die Steuerschnittstelle -- kleingeschrieben, stabil.
+    /// Der Titel darf sich aendern, diese Kennung nicht: an ihr haengen
+    /// Skripte und Proben.
+    var kennung: String { titel.lowercased() }
 
     var titel: String {
         switch self {
@@ -42,24 +48,20 @@ enum WissensraumBlick: Int, CaseIterable, Identifiable {
 /// Einbettung abhaengt.
 struct WissensraumWebView: NSViewRepresentable {
     var blick: WissensraumBlick
+    /// Nimmt die nativen Reglerwerte entgegen. Wird beim Erzeugen eingehaengt.
+    var werte: Wissensraumwerte
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> WKWebView {
         let konfiguration = WKWebViewConfiguration()
-        // Blendet die fuenf Web-Knoepfe (b0..b4) aus -- die Ansichtswahl
-        // sitzt nativ in der Seitenleiste, nicht doppelt im Bild. Zeit-
-        // Schieberegler und "Ablauf"-Knopf bleiben, die betrifft dieser
-        // Auftrag nicht.
+        // Blendet die GANZE Web-Bedienleiste aus: Ansichtswahl sitzt nativ in
+        // der Seitenleiste, die Regler seit 2026-08-14 nativ darunter
+        // (WissensraumBedienung). Vorher wurden nur die fuenf Knoepfe b0..b4
+        // versteckt und die Reglerleiste blieb stehen -- eine Web-Leiste in
+        // einer Mac-App, gebaut fuer ein Fenster, das alles zeigen muss.
         let skript = WKUserScript(
-            source: """
-            (function(){
-              ['b0','b1','b2','b3','b4'].forEach(function(id){
-                var e = document.getElementById(id);
-                if (e) e.style.display = 'none';
-              });
-            })();
-            """,
+            source: Wissensraumregler.webleisteAusblenden,
             injectionTime: .atDocumentEnd,
             forMainFrameOnly: true
         )
@@ -68,6 +70,7 @@ struct WissensraumWebView: NSViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: konfiguration)
         webView.navigationDelegate = context.coordinator
         context.coordinator.zielBlick = blick
+        context.coordinator.werte = werte
         webView.load(URLRequest(url: DienstAufsicht.basisURL))
         return webView
     }
@@ -84,9 +87,18 @@ struct WissensraumWebView: NSViewRepresentable {
         var seiteGeladen = false
         var zielBlick: WissensraumBlick = .baum
         var angezeigterBlick: WissensraumBlick = .baum
+        var werte: Wissensraumwerte?
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             seiteGeladen = true
+            // Erst jetzt einhaengen: vorher gibt es kein Dokument, in das
+            // geschrieben werden koennte. Das Einhaengen reicht die
+            // gespeicherten Werte selbst nach (siehe Wissensraumwerte.senden) --
+            // sonst zeigte die native Leiste einen Wert an, den die Seite nicht
+            // hat, und das ist schlimmer als gar keine Einstellung.
+            werte?.senden = { [weak webView] skript in
+                webView?.evaluateJavaScript(skript)
+            }
             // Die Seite startet immer bei "Baum" (b0, aria-pressed bereits
             // gesetzt) -- nur bei einer abweichenden Zielansicht muss
             // tatsaechlich geklickt werden.

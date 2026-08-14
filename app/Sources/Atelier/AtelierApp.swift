@@ -20,6 +20,11 @@ import SwiftUI
 @MainActor
 final class Ansichtswahl: ObservableObject {
     @Published var aktuell: SeitenleistenEintrag = .quellen
+    /// Der Blick INNERHALB des Wissensraums. Liegt hier statt als @State im
+    /// Fenster, damit die Steuerschnittstelle ihn erreicht -- ohne diesen Griff
+    /// laesst sich programmatisch nicht pruefen, dass die Regler je Blick
+    /// verschieden sind, und genau das ist ihre Fachlogik.
+    @Published var blick: WissensraumBlick = .baum
 }
 
 @MainActor
