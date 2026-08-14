@@ -13,10 +13,17 @@ let package = Package(
     products: [
         .executable(name: "Atelier", targets: ["Atelier"]),
     ],
+    // Erste Fremdabhaengigkeit ueberhaupt. Begruendung in ADR-010: yswift ist
+    // das Gegenstueck zu pycrdt im Dienst, gemessen ueber die Sprachgrenze.
+    // Version fest, nicht "from" -- eine Bibliothek mit ueber ein Jahr altem
+    // letztem PR soll sich nicht unbemerkt bewegen (Spike 2 in ADR-010).
+    dependencies: [
+        .package(url: "https://github.com/y-crdt/yswift.git", exact: "0.2.1"),
+    ],
     targets: [
         .executableTarget(
             name: "Atelier",
-            dependencies: ["BrainlehrCore"],
+            dependencies: ["BrainlehrCore", .product(name: "YSwift", package: "yswift")],
             path: "Sources/Atelier"
         ),
         .target(

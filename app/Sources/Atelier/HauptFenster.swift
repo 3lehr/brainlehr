@@ -8,6 +8,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
     case quellen
     case raster
     case bearbeitung
+    case dokument
     case sitzung
     case wissensraum
     case ausweise
@@ -19,6 +20,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
         case .quellen: return "Quellen"
         case .raster: return "Mehrfachansicht"
         case .bearbeitung: return "Bearbeiten"
+        case .dokument: return "Dokument"
         case .sitzung: return "Sitzung"
         case .wissensraum: return "Wissensraum"
         case .ausweise: return "Ausweise und Einladungen"
@@ -30,6 +32,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
         case .quellen: return "doc.text.magnifyingglass"
         case .raster: return "square.grid.2x2"
         case .bearbeitung: return "square.and.pencil"
+        case .dokument: return "person.2.badge.gearshape"
         case .sitzung: return "bubble.left.and.text.bubble.right"
         case .wissensraum: return "point.3.filled.connected.trianglepath.dotted"
         case .ausweise: return "person.text.rectangle"
@@ -83,6 +86,8 @@ struct HauptFenster: View {
                     RasterAnsicht()
                 } else if wahl.aktuell == .bearbeitung {
                     BearbeitungsAnsicht()
+                } else if wahl.aktuell == .dokument {
+                    DokumentAnsicht()
                 } else if wahl.aktuell == .sitzung {
                     SitzungsAnsicht()
                 } else if wahl.aktuell == .wissensraum {
