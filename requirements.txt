@@ -15,6 +15,8 @@ cryptography>=42     # Apache-2.0 ODER BSD-3-Clause (Wahlrecht des Nutzers)
 # kern/teilnehmer.py setzt die Kennungsauflage auch ohne pycrdt durch und
 # ueberspringt im Selbsttest nur den Teil, der ein Dokument anlegt.
 pycrdt>=0.14         # MIT  (Yjs/yrs-Anbindung -- Gegenstueck zu yswift im atelier)
+websockets>=15       # BSD-3-Clause  (Transport des Dokumentdienstes -- die
+                     # Standardbibliothek hat keinen WebSocket-Server, gemessen)
 
 # Nur fuer die Tests:
 pytest>=8.0          # MIT
