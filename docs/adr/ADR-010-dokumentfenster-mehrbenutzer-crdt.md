@@ -56,17 +56,34 @@ Was der Spike belegt:
 - Updates sind klein: 33 Byte für den Anfangsstand, 53 für die Rückgabe.
 - `YDocument.undoManager` existiert — Undo/Redo ist nicht zu bauen.
 
-## Was NICHT belegt ist, und darum ein Spike bleibt
+## Spike 1 — erledigt am 2026-08-14T11:5x, und der Befund wird zur Auflage
 
-**Spike 1 — die Rückrichtung.** Der in Swift geänderte Stand kommt in Python
-als **zweite Fassung** an statt zusammengeführt
-(`'[Swift] Hallo aus PythonHallo aus Python'`), und der Zustandsvektor
-filtert nichts: `diff` liefert gegen den Python-Vektor genau so viele Byte wie
-gegen einen leeren (53 gegen 53). Eine der beiden Seiten benennt die
-Wurzeltypen anders, oder `yswift` reicht den Vektor nicht durch. **Bis das
-geklärt ist, trägt die Paarung nur in einer Richtung.**
-Abnahme: derselbe Lauf endet mit `ok Rueckrichtung sauber`, und ein Update, das
-die andere Seite schon kennt, ist messbar kleiner als der Vollstand.
+Die Rückrichtung verdoppelte (`'[Swift] Hallo aus PythonHallo aus Python'`), und
+der Zustandsvektor filterte nichts (53 Byte gegen den Python-Vektor, 53 gegen
+einen leeren). **Beides war dieselbe Ursache, und es lag an keiner der beiden
+Vermutungen** (Wurzelbenennung, durchgereichter Vektor) — die Wurzeln passen,
+gemessen in beide Richtungen.
+
+**`yswift` schneidet die Teilnehmerkennung (client id) auf 32 Bit ab.**
+`pycrdt` vergibt sie standardmäßig zufällig bis etwa 2^53. Liegt sie darüber,
+kommt der eigene Beitrag als **fremder** zurück und wird pflichtgemäß daneben
+gestellt statt zusammengeführt. Die Schranke ist scharf gemessen, nicht
+geschätzt:
+
+| Kennung | Ergebnis |
+|---|---|
+| 42 · 2^31−1 · 2^32−2 · **2^32−1** | `'[Swift] Hallo aus Python'` — sauber |
+| **2^32** · 2^32+1 · 2^32+7 | `'[Swift] Hallo aus PythonHallo aus Python'` — verdoppelt |
+
+Mit tragbarer Kennung filtert auch der Zustandsvektor (25 gegen 53 Byte).
+
+**Auflage, die daraus wird:** Jeder Teilnehmer — Dienst, atelier, jeder weitere
+Klient — vergibt seine Kennung **unter 2^32** und niemals per Zufall aus dem
+Standardbereich. Das ist keine Kosmetik: der Fehler zeigt sich nicht als
+Absturz, sondern als still verdoppelter Absatz, und träfe genau die
+Zusammenarbeit, für die das Fenster gebaut wird. Festgehalten als Negativfall
+in `spikes/crdt_pyswift/probe.py` — eine Kennung über der Schranke **muss**
+verdoppeln, sonst misst die Probe nichts mehr.
 
 **Spike 2 — die Pflege von `yswift`.** Ein Jahr ohne zusammengeführten PR ist
 ein Risiko, kein Ausschluss. Rückfallweg, falls es kippt: `yrs` trägt eine
@@ -99,8 +116,9 @@ beiden Doppelungen aus ADR-006 und wird mit dem Dienst aufgelöst, nicht vorher.
 
 ## Reihenfolge, und wo sie bindet
 
-1. **Spike 1 klären.** Vor jeder Zeile Fensterbau. Trägt die Rückrichtung
-   nicht, ist die ganze Bauform eine andere — dann Rückfallweg dünner Klient.
+1. ~~Spike 1 klären.~~ **Erledigt** — Paarung trägt in beide Richtungen, unter
+   der Auflage zur Teilnehmerkennung. Rückfallweg dünner Klient bleibt für
+   Spike 2 (Pflege von `yswift`) reserviert.
 2. **Baustein-Vertrag festlegen** (Typen, Kennungen, Anker) — *bevor* das erste
    Dokument existiert. Ein Anker, der eine Änderung nicht überlebt, wandert
    still an die falsche Stelle; nachträglich ist nicht rekonstruierbar, worauf

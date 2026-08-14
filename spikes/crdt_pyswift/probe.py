@@ -8,9 +8,13 @@ auf BEIDEN Seiten des Hauses existiert: Python ist Grundsprache (ADR-006), die
 Oberflaeche soll nativ bleiben (Betreiber, 2026-08-14: "Ich will das zuerst
 schon nativ in der Mac App").
 
-Diese Datei ist die Rot-Probe zu ADR-010. Sie laeuft in beide Richtungen und
-prueft ausdruecklich auch den Negativfall (zweimal anwenden darf nichts
-verdoppeln).
+BEFUND, den diese Probe festhaelt: `yswift` schneidet die Teilnehmerkennung
+(client id) auf 32 Bit ab. `pycrdt` vergibt sie standardmaessig zufaellig bis
+etwa 2^53. Faellt sie darueber, kommt der eigene Beitrag als FREMDER zurueck --
+der Text verdoppelt sich still, statt zusammengefuehrt zu werden. Genau die
+Fehlerklasse, die ein Nutzer als "meine Aenderung war ploetzlich zweimal da"
+meldet und die kein Absturz begleitet. Die Schranke ist scharf gemessen:
+2^32-1 traegt, 2^32 nicht.
 
 Voraussetzung:  pip install pycrdt     · Swift-Teil: xcrun swift run
 Aufruf:         python3 spikes/crdt_pyswift/probe.py
@@ -24,9 +28,26 @@ from pathlib import Path
 
 HIER = Path(__file__).resolve().parent
 
+# Groesste Teilnehmerkennung, die yswift unbeschaedigt zurueckgibt. Kein
+# Schaetzwert -- an der Schwelle, darueber und darunter gemessen (2026-08-14).
+KENNUNG_GRENZE = 2**32 - 1
+
+
+def _swift_runde(quelle) -> str:
+    """Schreibt den Stand fuer die Swift-Seite, laesst sie laufen, liest zurueck."""
+    (HIER / "py_update.bin").write_bytes(quelle.get_update())
+    (HIER / "py_sv.bin").write_bytes(quelle.get_state())
+    lauf = subprocess.run(
+        ["xcrun", "swift", "run"], cwd=HIER, capture_output=True, text=True
+    )
+    if lauf.returncode != 0:
+        raise RuntimeError(f"Swift-Teil lief nicht: {lauf.stderr.strip()[-400:]}")
+    quelle.apply_update((HIER / "swift_update.bin").read_bytes())
+    return lauf.stdout
+
 
 def lauf() -> int:
-    from pycrdt import Doc, Text
+    from pycrdt import Array, Doc, Map, Text
 
     fehler = 0
 
@@ -48,9 +69,7 @@ def lauf() -> int:
         print(f"ok  gleichzeitig, konvergent: {str(a['t'])!r}")
 
     # --- 2. Baustein-Baum mit stabiler Kennung -- Schriftsatz und Formular in
-    #        derselben Struktur (Knoten `de9aba1a`, Punkt "Felder mitdenken").
-    from pycrdt import Array, Map
-
+    #        derselben Struktur (Knoten `de9aba1a`, "Felder mitdenken").
     d = Doc()
     d["bausteine"] = arr = Array()
     arr.append(Map({"kennung": "b1", "typ": "absatz", "text": Text("Erster Satz.")}))
@@ -62,37 +81,36 @@ def lauf() -> int:
     else:
         print("ok  Baum traegt Absatz und Feld nebeneinander")
 
-    # --- 3. Ueber die Sprachgrenze: Python schreibt, Swift liest.
-    quelle = Doc()
+    # --- 3. Ueber die Sprachgrenze, in beide Richtungen, mit tragbarer Kennung.
+    erwartet = "[Swift] Hallo aus Python"
+    quelle = Doc(client_id=KENNUNG_GRENZE)
     quelle["t"] = Text("Hallo aus Python")
-    (HIER / "py_update.bin").write_bytes(quelle.get_update())
-    (HIER / "py_sv.bin").write_bytes(quelle.get_state())
-
-    swift = subprocess.run(
-        ["xcrun", "swift", "run"], cwd=HIER, capture_output=True, text=True
-    )
-    if swift.returncode != 0:
-        print("FEHLT: Swift-Teil lief nicht --", swift.stderr.strip()[-400:])
-        return fehler + 1
-    print(swift.stdout.strip())
-    if "Swift liest aus Python-Update: Hallo aus Python" not in swift.stdout:
+    ausgabe = _swift_runde(quelle)
+    print(ausgabe.strip())
+    if "Swift liest aus Python-Update: Hallo aus Python" not in ausgabe:
         print("FEHLT: Swift hat den Python-Stand nicht gelesen")
         fehler += 1
+    if str(quelle["t"]) != erwartet:
+        print(f"FEHLT: Rueckrichtung -- {str(quelle['t'])!r} statt {erwartet!r}")
+        fehler += 1
+    else:
+        print(f"ok  Rueckrichtung sauber: {str(quelle['t'])!r}")
 
-    # --- 4. Rueckrichtung. OFFEN, und darum steht hier der gemessene Stand,
-    #        nicht eine Zusicherung: Am 2026-08-14 kam der Python-Stand als
-    #        ZWEITE Fassung zurueck statt zusammengefuehrt, und der
-    #        Zustandsvektor filterte nichts (30 Byte gegen den Vektor, 30 Byte
-    #        gegen leer). Solange das so ist, ist die Rueckrichtung ungeklaert.
-    zurueck = HIER / "swift_update.bin"
-    if zurueck.exists():
-        quelle.apply_update(zurueck.read_bytes())
-        stand = str(quelle["t"])
-        erwartet = "[Swift] Hallo aus Python"
-        if stand == erwartet:
-            print(f"ok  Rueckrichtung sauber: {stand!r}")
-        else:
-            print(f"OFFEN Rueckrichtung: {stand!r} statt {erwartet!r} -- Spike 1 in ADR-010")
+    # --- 4. Der Negativfall, und er ist der eigentliche Ertrag dieser Datei:
+    #        EINE Kennung ueber der Schranke muss verdoppeln. Bleibt das aus,
+    #        ist entweder yswift repariert (dann faellt KENNUNG_GRENZE weg) oder
+    #        die Probe misst nichts mehr.
+    darueber = Doc(client_id=KENNUNG_GRENZE + 1)
+    darueber["t"] = Text("Hallo aus Python")
+    _swift_runde(darueber)
+    if str(darueber["t"]) == erwartet:
+        print(
+            "FEHLT: Kennung ueber 2^32-1 verdoppelt NICHT mehr -- yswift repariert? "
+            "Dann KENNUNG_GRENZE und die Auflage in ADR-010 pruefen"
+        )
+        fehler += 1
+    else:
+        print(f"ok  Negativfall haelt: ueber der Schranke verdoppelt es ({str(darueber['t'])!r})")
 
     return fehler
 
