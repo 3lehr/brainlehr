@@ -37,7 +37,7 @@ final class Steuerschnittstelle {
     /// Wo der tatsaechlich gebundene Port steht. Bewusst im Temp-Verzeichnis:
     /// eine Laufzeitangabe, die einen Neustart nicht ueberleben SOLL.
     static var portDatei: URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("brainlehr-steuerport")
+        FileManager.default.temporaryDirectory.appendingPathComponent("atelier-steuerport")
     }
 
     /// Hat die Anwendung ein Hauptfenster? Eine Eigenschaft der ANWENDUNG --

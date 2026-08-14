@@ -9,17 +9,17 @@
 		<string>de</string>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>brainlehr</string>
+	<string>atelier</string>
 	<key>CFBundleName</key>
-	<string>brainlehr</string>
+	<string>atelier</string>
 	<key>CFBundleExecutable</key>
-	<string>brainlehr</string>
+	<string>atelier</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>de.brainlehr.app</string>
+	<string>de.brainlehr.atelier</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>

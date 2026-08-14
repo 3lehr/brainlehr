@@ -33,7 +33,7 @@ import Foundation
 import ApplicationServices
 import AppKit
 
-let STANDARD_BUNDLE = "de.brainlehr.app"
+let STANDARD_BUNDLE = "de.brainlehr.atelier"
 
 // Subrollen, die das System vergibt: sie IDENTIFIZIEREN das Element bereits,
 // ein zusaetzlicher Titel waere Doppelung. Bewusst als Liste und nicht als
@@ -112,7 +112,7 @@ guard AXIsProcessTrusted() else {
 // Vorbedingung 2 -- laeuft die App?
 guard let ziel = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == bundle }) else {
     print("NICHT MESSBAR: keine laufende Anwendung mit Bundle '\(bundle)'.")
-    print("Starten: bash app/bauen.sh && open app/Ausgabe/brainlehr.app")
+    print("Starten: bash app/bauen.sh && open app/Ausgabe/atelier.app")
     exit(2)
 }
 let app = AXUIElementCreateApplication(ziel.processIdentifier)

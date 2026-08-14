@@ -7,17 +7,17 @@
 import PackageDescription
 
 let package = Package(
-    name: "BrainlehrApp",
+    name: "Atelier",
     defaultLocalization: "de",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "BrainlehrApp", targets: ["BrainlehrApp"]),
+        .executable(name: "Atelier", targets: ["Atelier"]),
     ],
     targets: [
         .executableTarget(
-            name: "BrainlehrApp",
+            name: "Atelier",
             dependencies: ["BrainlehrCore"],
-            path: "Sources/BrainlehrApp"
+            path: "Sources/Atelier"
         ),
         .target(
             name: "BrainlehrCore",
