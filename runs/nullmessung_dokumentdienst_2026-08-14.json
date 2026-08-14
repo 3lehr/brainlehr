@@ -1,0 +1,52 @@
+{
+  "was": "Nullmessung Dokumentdienst (G3) -- Normalbetrieb, zwei Teilnehmer",
+  "erhoben": "2026-08-14T18:47:32Z",
+  "dauer_sekunden": 180,
+  "aufbau": {
+    "teilnehmer": [
+      "natives atelier-Fenster (ueber POST /dokument bedient)",
+      "Python-Klient am selben Dienst"
+    ],
+    "tempo": "rund 4 Zeichen je Sekunde, menschliches Schreibtempo",
+    "dienst": "kern/dokumentdienst.py --port 4611, loopback, ohne Ausweispflicht"
+  },
+  "GRENZE DIESER MESSUNG": "Der Mini des Betreibers war NICHT beteiligt -- beide Teilnehmer liefen auf demselben Rechner ueber 127.0.0.1. Damit fehlt genau die Groesse, fuer die die Herkunftspruefung gebaut ist (zweite Adresse), und die Netzlaufzeit ist null statt einige Millisekunden. Drei Minuten sind ausserdem keine Stunde. Diese Zahlen taugen als GROESSENORDNUNG, nicht als Schwellengrundlage.",
+  "gemessen": {
+    "stand": "2026-08-14T18:47:09Z",
+    "verbindungen": 2,
+    "abgewiesene_zugaenge": 0,
+    "abgelehnte_updates": 0,
+    "unbekannte_arten": 0,
+    "kennungsverstoesse": 0,
+    "gebremste_nachrichten": 0,
+    "updates": 927,
+    "bytes_empfangen": 1809932,
+    "herkunft": {
+      "127.0.0.1": 2
+    }
+  },
+  "abgeleitet": {
+    "updates_je_minute": 309.0,
+    "bytes_je_update": 1952,
+    "bytes_je_minute": 603311
+  },
+  "befund": "Alle vier schwellenfreien Zaehler stehen auf null -- der Normalbetrieb loest sie also nicht aus. Das ist der Negativbeleg, den G2 braucht: ein Melder, der im Normalfall schweigt.",
+  "auffaellig": "BEHOBEN am selben Tag: der Klient sendete den Vollstand statt des Zuwachses. Siehe gegenprobe_zuwachs_statt_vollstand.",
+  "keine_schwellen_gesetzt": "Bewusst. Der Plan verlangt Schwellen NACH einer Nullmessung im echten Betrieb; diese Messung erfuellt die Voraussetzung nicht (siehe GRENZE). Wer aus 180 Sekunden auf demselben Rechner eine Schwelle ableitet, hat sie geraten und nur anders begruendet.",
+  "gegenprobe_zuwachs_statt_vollstand": {
+    "erhoben": "2026-08-14T18:52:02Z",
+    "aufbau": "identisch, je 60 Sekunden, gleiches Tippmuster, gleicher Dienst",
+    "alt_vollstand": {
+      "updates": 304,
+      "bytes": 205170,
+      "je_update": 675
+    },
+    "neu_zuwachs": {
+      "updates": 304,
+      "bytes": 160170,
+      "je_update": 527
+    },
+    "ersparnis": "45 000 Byte in 60 s, rund 22 Prozent",
+    "einordnung": "Die Ersparnis betrifft NUR die Fensterseite -- der Python-Klient der Probe sendet weiterhin den Vollstand, er ist in beiden Laeufen gleich. Der Vorteil WAECHST mit dem Dokument: derselbe Aufbau ueber 180 s (also mit dreifach laengerem Text) ergab vorher 1952 Byte je Update gegen 675 nach 60 s -- der Vollstand waechst mit, der Zuwachs nicht."
+  }
+}

@@ -60,6 +60,9 @@ final class Dokumentsitzung: ObservableObject {
     /// fremde Einfuegung wuerde als eigene zurueckgesendet -- eine Schleife.
     private var zuletzt: String = ""
     private var sendetGerade = false
+    /// Der eigene Stand zum Zeitpunkt der letzten Sendung. Anfangs `[0]` --
+    /// der leere Zustandsvektor, also "ich habe noch nichts gesendet".
+    private var gesendeterVektor: [UInt8] = [0]
 
     func verbinde(zu url: URL, geheimnis: String?) {
         trenne()
@@ -81,6 +84,7 @@ final class Dokumentsitzung: ObservableObject {
         doc = nil
         ytext = nil
         zuletzt = ""
+        gesendeterVektor = [0]
         lage = .getrennt
     }
 
@@ -127,10 +131,25 @@ final class Dokumentsitzung: ObservableObject {
         }
     }
 
+    /// Sendet nur den ZUWACHS seit der letzten Sendung, nicht den Vollstand.
+    ///
+    /// GEMESSEN 2026-08-14 (runs/nullmessung_dokumentdienst_2026-08-14.json):
+    /// mit Vollstand kostete EIN getipptes Zeichen im Schnitt 1952 Byte, weil
+    /// jedes Mal das ganze Dokument ging. Bei 900 Zeichen waren das 1,8 MB fuer
+    /// einen Absatz -- ein Schriftsatz haette das Netz geflutet, ohne dass
+    /// irgendetwas kaputt gewesen waere.
+    ///
+    /// `transactionStateVector()` liefert den eigenen Stand; gegen den zuletzt
+    /// GESENDETEN Stand gerechnet bleibt genau der Zuwachs uebrig.
     private func sendeStand() {
         guard let doc else { return }
-        let aktualisierung = doc.transactSync { txn in doc.diff(txn: txn, from: [0]) }
-        sende(Dokumentprotokoll.update(Data(aktualisierung)))
+        let vorher = gesendeterVektor
+        let (zuwachs, neuerVektor) = doc.transactSync { txn -> ([UInt8], [UInt8]) in
+            (doc.diff(txn: txn, from: vorher), txn.transactionStateVector())
+        }
+        gesendeterVektor = neuerVektor
+        guard !zuwachs.isEmpty else { return }
+        sende(Dokumentprotokoll.update(Data(zuwachs)))
     }
 
     private func empfange() {
@@ -177,6 +196,8 @@ final class Dokumentsitzung: ObservableObject {
             }
             doc = neu
             ytext = t
+            // Der Anfangsstand kam vom Dienst -- er kennt ihn also schon.
+            gesendeterVektor = neu.transactSync { txn in txn.transactionStateVector() }
             lage = .verbunden(kennung: kennung)
             zeigeAusDokument()
 
