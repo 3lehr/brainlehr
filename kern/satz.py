@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Der Satzweg: aus einem Dokument (`kern/dokument.py`) wird LaTeX-Quelle.
+
+Vorspann ist WOERTLICH aus `spikes/pdf_a3_erechnung/rechnung.tex` uebernommen
+(dort gemessen: verapdf -f ua1 PASS und -f 3u PASS auf derselben Datei) --
+kein neuer Vorspann, um die belegten Eigenschaften (PDF/A-3, PDF/UA) nicht zu
+verlieren.
+
+KENNUNG IM BLATT: jeder Baustein bekommt eine \\label{bau:<kennung>} VOR
+seinem Inhalt. Alternative waere ein reiner Kommentar (%-Zeile) gewesen --
+verworfen, weil ein Kommentar im PDF selbst nicht mehr auffindbar ist,
+waehrend ein \\label spaeter per \\ref/\\pageref oder per PDF-Struktur
+(Tagging ist ohnehin an, s.o.) auf die Seite zurueckfuehrt. WAS DAS NICHT
+KANN: ein Label zeigt auf die SEITE, nicht auf die exakte Zeichenposition
+innerhalb eines Absatzes -- fuer "welcher Baustein ist das" reicht es, fuer
+"welches Zeichen im Baustein" nicht.
+
+MASKIERUNG: Nutzertext kann \\, {, }, $, &, %, # enthalten (z.B. aus einem
+eingelesenen Beleg) und darf den Satzlauf nicht brechen oder etwas
+ausfuehren lassen. `\\` muss zuerst maskiert werden, sonst maskiert die
+Maskierung selbst sich kaputt.
+
+Aufruf:  python3 kern/satz.py --selftest
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from dokument import bausteine  # noqa: E402
+
+VORSPANN = r"""\DocumentMetadata{
+  pdfversion=1.7,
+  pdfstandard={A-3U,UA-1},
+  lang=de-DE,
+  tagging=on,
+  testphase={phase-III,math,table,bookmarks}
+}
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage{hyperref}
+
+\begin{document}
+"""
+
+NACHSPANN = r"""\end{document}
+"""
+
+# EIN Durchlauf ueber die Zeichen, nicht sequentielles str.replace(): sonst
+# wuerde die Ersetzung von "\" (die selbst { und } einfuehrt) von der
+# nachfolgenden Ersetzung von "{"/"}" nochmal erwischt und kaputt-maskiert.
+_MASKEN = {
+    "\\": r"\textbackslash{}",
+    "{": r"\{",
+    "}": r"\}",
+    "$": r"\$",
+    "&": r"\&",
+    "%": r"\%",
+    "#": r"\#",
+    "_": r"\_",
+    "^": r"\^{}",
+    "~": r"\~{}",
+}
+
+
+def maskiere(text: str) -> str:
+    """Macht Nutzertext satzsicher -- kein Steuerzeichen kommt roh durch."""
+    return "".join(_MASKEN.get(ch, ch) for ch in text)
+
+
+def satz_quelle(doc) -> str:
+    """Baut die LaTeX-Quelle aus allen Bausteinen des Dokuments."""
+    teile = [VORSPANN]
+    for b in bausteine(doc):
+        teile.append(f"\\label{{bau:{b.kennung}}}\n")
+        text = maskiere(b.text)
+        if b.typ == "feld":
+            teile.append(f"\\textbf{{{maskiere(b.feldname or '')}}}: {text}\n\n")
+        else:
+            teile.append(f"{text}\n\n")
+    teile.append(NACHSPANN)
+    return "".join(teile)
+
+
+def _selftest() -> int:
+    # Maskierung: kein Steuerzeichen kommt roh durch.
+    boesartig = "\\newpage{}$x&y%z#"
+    sicher = maskiere(boesartig)
+    for roh in ("\\newpage", "{}", "$x", "&y", "%z", "#"):
+        assert roh not in sicher, f"{roh!r} kam unmaskiert durch: {sicher!r}"
+
+    # Grenzwert: leerer Text bleibt leer.
+    assert maskiere("") == ""
+
+    print("satz: Selbsttest bestanden")
+    return 0
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    p.add_argument("--selftest", action="store_true")
+    a = p.parse_args()
+    if a.selftest:
+        return _selftest()
+    p.print_help()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
