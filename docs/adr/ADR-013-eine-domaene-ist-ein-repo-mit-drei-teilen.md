@@ -57,6 +57,53 @@ Rechnung und ein Schriftsatz dieselbe Struktur benutzen"*. Ein Domänen-Bildschi
 ist derselbe Baum aus Bausteinen. Und es ist dieselbe Trennung wie beim
 Wissenspaket (ADR-011: ein Paket ist Daten) — hier auf den Bildschirm angewandt.
 
+## Nachtrag am selben Tag: es sind drei Klassen von Oberfläche, nicht eine
+
+Auf die Frage *„dann doch http nehmen und das atelier nur als
+startoberfläche?"* — und nachdem der Betreiber zu Recht darauf bestand, dass
+Swift Plugins laden **kann** (siehe unten):
+
+**Der Satz oben, „die Oberfläche ist Beschreibung", war zu grob.** Gemessen
+fährt das atelier den Hybrid längst: `WissensraumWebView.swift` (113 Z.) bettet
+eine Webseite über WebKit ein, während die Ansichtswahl nativ in der
+Seitenleiste liegt. Im Dateikopf steht der Grund wörtlich: *„Ansichtswahl nativ
+in der Seitenleiste statt als Knopfleiste im Web"*.
+
+Damit ist die Frage nicht „nativ oder Web", sondern **welche Teile nativ bleiben
+müssen**. Drei Klassen, scharf getrennt:
+
+| Klasse | wer zeichnet | warum |
+|---|---|---|
+| **Rahmen und Navigation** | nativ, das atelier | Damit jede Domäne am selben Ort dieselben Wege hat. Muster existiert |
+| **Fachbildschirme** (Listen, Formulare, Tabellen, Auswertungen) | **die Domäne, als Web über HTTP** | Nativ bringt hier wenig, und openlehrs Bildschirme existieren bereits |
+| **Dokumente** (Rechnung, Brief ans Finanzamt) | **Dokumentfenster, nativ, nie Web** | ADR-010: Mensch und Modell am selben Dokument, Zeichen für Zeichen. Das gibt es im Browser nicht |
+
+**Die Trennlinie in einem Satz:** *Wo ein Dokument entsteht, das ein Mensch
+außerhalb liest, zeichnet das atelier. Wo Daten verwaltet werden, zeichnet die
+Domäne.*
+
+**Warum nicht „nur Startoberfläche":** Dann wäre ADR-010 gegenstandslos — das
+Dokumentfenster ist der Grund, warum ein Brief ans Finanzamt hier besser
+entsteht als im Browser, und es ist gebaut (F1–F5). Und der Betreiberwunsch
+*„soll aussehen als wäre openlehr ein Teil davon"* wird genau von diesen zwei
+nativen Klassen getragen: Rahmen und Dokumente sehen überall gleich aus. Dass
+die Listen je Domäne verschieden aussehen, fällt am wenigsten auf — dort wird
+gearbeitet, nicht repräsentiert.
+
+**Was das für openlehr rettet:** Die bestehende Steuer-Oberfläche muss nicht neu
+gebaut werden, um im atelier zu erscheinen. Der Beschluss zum UI-Neubau bleibt
+gültig, beantwortet aber ab jetzt eine andere Frage — nicht *ob* Web, sondern
+wie die Fachbildschirme aussehen.
+
+**Zur Korrektur an der Plugin-Frage:** Swift **kann** Code nachladen (`dlopen`,
+`Bundle.load()`, XPC, ExtensionKit). Der frühere Satz, es ginge nur mit einem
+Neubau der App, war falsch. Die Gründe gegen geladenen Oberflächen-Code bleiben
+— Signaturbindung (Library Validation), Absturz im selben Prozess, und dass
+fremd gezeichnete Oberflächen fremd aussehen. **Nicht gemessen:** XPC und
+ExtensionKit lösen das Absturzproblem und wären die ernsthafte Alternative zum
+HTTP-Weg; sie binden die Domäne aber an macOS, und openlehr ist ein
+Python-Dienst.
+
 ## Der Preis, und er ist echt
 
 - **Eine Domäne kann nur so aussehen, wie das atelier zeichnen kann.** Braucht
