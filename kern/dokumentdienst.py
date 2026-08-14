@@ -137,7 +137,19 @@ async def _teilnehmer(verbindung, raum: Raum) -> None:
                 await verbindung.send(_rahmen("fehler", grund=f"unbekannte Art {nachricht.get('art')!r}"))
                 continue
             daten = _daten(nachricht)
-            raum.anwenden(daten)
+            try:
+                raum.anwenden(daten)
+            except Exception as e:
+                # Ein Update, das der Raum nicht integrieren kann, darf die
+                # VERBINDUNG nicht toeten -- sonst reisst ein einziger fehlerhafter
+                # Klient alle anderen mit, und das Symptom sieht wie ein Netzfehler
+                # aus. Haeufigste echte Ursache: der Klient benutzt seine
+                # Teilnehmerkennung fuer ein ZWEITES Dokument, dessen Zaehler wieder
+                # bei null anfaengt -- dann kollidieren zwei verschiedene Eintraege
+                # unter derselben (Kennung, Zaehler). Eine Kennung gehoert genau
+                # einem Dokument.
+                await verbindung.send(_rahmen("fehler", grund=f"Update nicht anwendbar: {e}"))
+                continue
             weiter = _rahmen("update", daten=daten)
             for andere in list(raum.verbindungen):
                 if andere is not verbindung:
@@ -214,10 +226,68 @@ async def _selftest_async() -> int:
             doc_c.apply_update(base64.b64decode(will_c["stand"]))
             assert str(doc_c["t"]) == str(doc_a["t"]), str(doc_c["t"])
 
-        # Negativfall: Unbekanntes wird benannt, nicht verschluckt.
-        await a.send(json.dumps({"art": "quatsch"}))
-        antwort = await _empfang(a, "Fehlermeldung auf Quatsch")
-        assert antwort["art"] == "fehler" and "quatsch" in antwort["grund"], antwort
+        # Ein Update, das der Raum nicht integrieren kann, darf die VERBINDUNG
+        # nicht toeten -- sonst reisst ein einziger fehlerhafter Klient alle
+        # anderen mit, und das Symptom sieht wie ein Netzfehler aus.
+        #
+        # Der Anlass war ein echter Fall aus dem Bau dieses Selbsttests: ein
+        # Klient legte mit SEINER Kennung ein zweites Dokument an, dessen
+        # Zaehler wieder bei null begann -- der Raum brach mit "block parent
+        # must be deleted or shared ref type" ab und riss den Verbindungs-
+        # Handler mit. Eine Kennung gehoert genau einem Dokument. Als PROBE
+        # taugt dieser Fall aber nicht: yrs verwirft ein Update, dessen
+        # Zaehlerbereich es schon kennt, meist stumm -- die Ablehnung haengt
+        # dann davon ab, was vorher lief. Deshalb hier ein Blob, der garantiert
+        # kein Update ist.
+        async with websockets.connect(url) as stoerer:
+            await _empfang(stoerer, "Willkommen Stoerer")
+            await stoerer.send(_rahmen("update", daten=b"kein CRDT, sondern Text"))
+            abgelehnt = await _empfang(stoerer, "Ablehnung des unbrauchbaren Updates")
+            assert abgelehnt["art"] == "fehler" and "nicht anwendbar" in abgelehnt["grund"], abgelehnt
+            # Und die Verbindung lebt weiter: derselbe Klient schickt danach
+            # etwas Gueltiges, und der Raum reicht es an B weiter.
+            gut = Doc(client_id=neue_kennung())
+            gut["nachher"] = Text("lebt")
+            await stoerer.send(_rahmen("update", daten=gut.get_update()))
+            assert (await _empfang(b, "Leben nach der Ablehnung"))["art"] == "update"
+
+        # Eine Anmerkung ueber denselben Kanal: ein Teilnehmer haengt einen
+        # Auftrag an einen Baustein, ein anderer sieht Baustein UND Anmerkung
+        # samt Zustand -- ohne dass es dafuer einen zweiten Weg gaebe
+        # (Auftrag 4 des Dienstplans). Eigene Verbindungen, also eigene
+        # Kennungen: siehe die Zeilen darueber.
+        import dokument as dok
+        from baustein import Anker
+
+        async with websockets.connect(url) as d, websockets.connect(url) as e:
+            will_d = await _empfang(d, "Willkommen D")
+            will_e = await _empfang(e, "Willkommen E")
+
+            schreiber = dok.leeres_dokument(will_d["kennung"])
+            stelle = dok.baustein_anhaengen(schreiber, "grafik", "Abbildung 1")
+            merk = dok.anmerkung_setzen(
+                schreiber, Anker(baustein=stelle, suchtext="Abbildung 1"),
+                "hier ist die legende unleserlich", "darstellung", "mensch")
+            assert dok.zustand_setzen(schreiber, merk, "umgesetzt") == "umgesetzt"
+            await d.send(_rahmen("update", daten=schreiber.get_update()))
+
+            leser = dok.leeres_dokument(will_e["kennung"])
+            leser.apply_update(_daten(await _empfang(e, "Baustein und Anmerkung")))
+            drueben = dok.anmerkungen(leser)
+            assert [x.kennung for x in drueben] == [merk], drueben
+            assert drueben[0].zustand == "umgesetzt"
+            assert drueben[0].anker.baustein == stelle
+            assert dok.verwaiste(leser) == [], "der Baustein kam mit, also nichts verwaist"
+
+        # Negativfall: Unbekanntes wird benannt, nicht verschluckt. Auf einer
+        # EIGENEN Verbindung -- eine, die schon im Raum sitzt, bekommt zwischen
+        # Frage und Antwort die Broadcasts der anderen, und dann prueft der Fall
+        # die Reihenfolge statt die Meldung.
+        async with websockets.connect(url) as f:
+            await _empfang(f, "Willkommen F")
+            await f.send(json.dumps({"art": "quatsch"}))
+            antwort = await _empfang(f, "Fehlermeldung auf Quatsch")
+            assert antwort["art"] == "fehler" and "quatsch" in antwort["grund"], antwort
 
     server.close()
     await server.wait_closed()
