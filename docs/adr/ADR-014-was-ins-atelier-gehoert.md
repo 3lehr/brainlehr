@@ -33,13 +33,41 @@ KI, Auswärtsgang nur mit Zustimmung in den Einstellungen"* liegt damit an
 wiederholen. Eine Schranke, die an fünf Orten gepflegt wird, ist an vier davon
 irgendwann veraltet.
 
-## Was das für das Dokumentfenster heißt
+## Nachtrag am selben Tag: „gemeinsam" ist nicht dasselbe wie „immer da"
 
-Das Dokumentfenster **ist Darstellung** und bleibt im atelier — es ist der Fall,
-in dem „gemeinsam" am meisten trägt: Rechnung und Behördenbrief sind das, was
-ein Mensch außerhalb zu sehen bekommt. Sähen sie je Domäne verschieden aus, wäre
-die Anwendung nach außen ein Flickenteppich. ADR-010 und ADR-013 (drei Klassen
-Oberfläche) bleiben unberührt.
+Betreiber, unmittelbar danach:
+
+> *„nein dokumentenfenster wird auch aus dem atelier rausgeschmießen! weill vll
+> gibt es in zukunft auch openlehr_projekX ohne dokumente"*
+
+**Die Fassung oben war zu grob**, und der Einwand trifft: Sie kannte nur
+*gemeinsam* und *fachlich*. Es fehlt die Sorte dazwischen — **gemeinsam gebaut,
+aber nicht immer gebraucht.** Eine Domäne ohne Dokumente soll kein
+Dokumentfenster tragen.
+
+Der Kern ist damit kleiner, und es sind drei Sorten statt zwei:
+
+| | | |
+|---|---|---|
+| **Kern** — immer da | Sicherheit, Rahmen und Navigation, Einstellungen (Modellzugänge, brainlehr-Grundeinstellungen) | ohne das gibt es keine Anwendung |
+| **Bestandteil** — gemeinsam gebaut, auf Anforderung geladen | **Dokumentfenster**, Raumdarstellung des Wissens, künftige | eine Domäne fordert an, was sie braucht |
+| **Domäne** | alles Fachliche | — |
+
+**Warum das Dokumentfenster ein Bestandteil wird und nicht in die Domäne
+wandert** — nach der Regel aus H12, nicht nach Geschmack: Beide bisher
+genannten Domänen erzeugen Dokumente (Steuerchaos: Rechnung und
+Behördenbrief · Korrekturator: das Korrekturblatt für die Berufsschullehrerin).
+In der Domäne läge es beim zweiten Kind kopiert. **Was beim zweiten Kind kopiert
+wird, wandert nach unten.**
+
+Damit ist beides erfüllt: `openlehr_projektX` ohne Dokumente lädt es schlicht
+nicht, und wo es geladen wird, sieht es überall gleich aus.
+
+**Was das kostet, und es ist neue Arbeit:** Das atelier braucht einen
+Mechanismus für anforderbare Bestandteile, den es heute nicht hat. Die
+Anforderung steht im Manifest der Domäne (ADR-013) — dieselbe Stelle, an der
+schon Wissen und Werkzeug deklariert werden. ADR-010 bleibt inhaltlich
+unberührt: Das Fenster ändert seinen Ort, nicht seine Bauform.
 
 ## Der ehrliche Befund zum Wort „schlanker"
 
