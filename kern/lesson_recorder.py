@@ -52,6 +52,7 @@ RULE_THRESHOLD = 3  # Minimum occurrences to auto-generate a rule
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "haken"))
 import ort  # noqa: E402
 import speicher  # noqa: E402 -- nur verbinde_bestand() fuer get_db()
+import zeitmarke  # Aufgabe 111: die eine Quelle fuer Zeitstempel
 
 PROJECTS = {
     "begod": ort.VERBUND / "hub",
@@ -61,7 +62,7 @@ PROJECTS = {
 
 
 def now_iso() -> str:
-    return datetime.now(BERLIN).isoformat(timespec="seconds")
+    return zeitmarke.jetzt()  # Aufgabe 111: UTC mit Z, eine Quelle
 
 
 def get_db() -> sqlite3.Connection:

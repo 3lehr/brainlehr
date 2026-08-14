@@ -16,6 +16,7 @@ Usage:
     .venv/bin/python shared-knowledge/fix_namensraum_knoten.py --apply    # schreibt
 """
 from __future__ import annotations
+import zeitmarke  # Aufgabe 111: die eine Quelle fuer Zeitstempel
 
 import sys as _sys
 from pathlib import Path as _Path
@@ -44,7 +45,7 @@ SOURCE = "fix_namensraum_knoten.py 2026-08-05"
 
 
 def now_iso() -> str:
-    return datetime.now(BERLIN).isoformat(timespec="seconds")
+    return zeitmarke.jetzt()  # Aufgabe 111: UTC mit Z, eine Quelle
 
 
 def _backup() -> Path:

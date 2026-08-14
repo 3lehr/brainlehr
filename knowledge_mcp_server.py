@@ -111,6 +111,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent / "kern"))
 import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
+import zeitmarke  # Aufgabe 111: die eine Quelle fuer Zeitstempel (UTC mit Z)
 import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-Fanout
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
                           # expliziten Batch-Lauf, nicht daneben nachgebaut.
@@ -526,9 +527,18 @@ GENESIS_KETTEN_HASH = "0" * 64
 
 
 def now_iso() -> str:
-    # echter Versatz statt fest "+01:00" -- isoformat() liefert bereits
-    # Doppelpunkt-Form ("+02:00"), DST-Wechsel automatisch via zoneinfo.
-    return datetime.now(BERLIN).isoformat(timespec="seconds")
+    """UTC mit 'Z' -- eine Weiterleitung, keine eigene Bauart.
+
+    Aufgabe 111 (Betreiberentscheidung 2026-08-14 "alles auf UTC"), und der
+    Beschluss dazu ist vom 2026-08-06: "Innen kuenftig UTC, aussen Ortszeit."
+    Er hielt acht Tage nicht, weil 104 Stellen im Baum ihren Zeitstempel
+    selbst bauten -- vier Bauarten, vier Schreibweisen. Diese Funktion baut
+    seitdem nichts mehr selbst; sie zeigt auf kern/zeitmarke.
+
+    Der Name bleibt: ueber zwei Dutzend Aufrufer nennen ihn, und ein
+    Umbenennen waere eine zweite Aenderung im selben Schritt.
+    """
+    return zeitmarke.jetzt()
 
 
 @contextmanager
@@ -4334,7 +4344,18 @@ def unmangle_knowledge_fields(fields: dict) -> dict:
 
 
 MAX_REPEAT_PARAGRAPHS = 5
-_REPEAT_MARKER_RE = re.compile(r"\n\n--- Wiederholung ([0-9T:+\-]+) ---\n")
+# 'Z' gehoert in die Zeichenmenge, seit Zeitstempel in UTC stehen (Aufgabe
+# 111). Ohne es traf das Muster keinen einzigen Marker mehr -- und die
+# Deckelung auf die fuenf juengsten Wiederholungen lief still ins Leere: jede
+# Wiederholung blieb stehen, der Eintrag waechst unbegrenzt. Kein Fehler, kein
+# leeres Ergebnis, nur eine Regel, die nicht mehr wirkt. Gefunden von
+# tests/test_knowledge_mcp_server.py::test_lesson_record_same_as_caps_
+# repetition_paragraphs, das die Umstellung sofort rot gemeldet hat.
+#
+# Die uebertragbare Form: wer das ALPHABET eines Zeitstempels in ein Muster
+# schreibt, bindet sich an dessen Schreibweise. Aendert sie sich, schweigt das
+# Muster, statt zu scheitern.
+_REPEAT_MARKER_RE = re.compile(r"\n\n--- Wiederholung ([0-9TZ:+\-]+) ---\n")
 
 
 def _append_repetition(base_description: str, new_text: str, when: str,

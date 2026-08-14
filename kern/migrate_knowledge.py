@@ -21,6 +21,7 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
 import json
+import zeitmarke  # Aufgabe 111: die eine Quelle fuer Zeitstempel
 import os
 import sqlite3
 import uuid
@@ -36,7 +37,7 @@ BERLIN = ZoneInfo("Europe/Berlin")
 
 
 def now_iso() -> str:
-    return datetime.now(BERLIN).isoformat(timespec="seconds")
+    return zeitmarke.jetzt()  # Aufgabe 111: UTC mit Z, eine Quelle
 
 
 def add_node(conn, path, parent_path, title, summary, content="",

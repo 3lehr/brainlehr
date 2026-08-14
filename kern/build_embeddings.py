@@ -16,6 +16,7 @@ Bestandsdaten angefasst).
 Usage: .venv/bin/python shared-knowledge/build_embeddings.py
 """
 from __future__ import annotations
+import zeitmarke  # Aufgabe 111: die eine Quelle fuer Zeitstempel
 
 import sys as _sys
 from pathlib import Path as _Path
@@ -148,7 +149,7 @@ def resolve_lesson_projects(raw: str | None) -> list[str]:
 
 
 def now_iso() -> str:
-    return datetime.now(BERLIN).isoformat(timespec="seconds")
+    return zeitmarke.jetzt()  # Aufgabe 111: UTC mit Z, eine Quelle
 
 
 def _text_checksum(text: str) -> str:

@@ -75,6 +75,7 @@ import json
 import math
 import shutil
 import sqlite3
+import zeitmarke  # Aufgabe 111: die eine Quelle fuer Zeitstempel
 import sys
 import tempfile
 from collections import defaultdict
@@ -352,7 +353,7 @@ def _selftest() -> int:
 
     conn = sqlite3.connect(str(db_path))
     conn.executescript(Path(HERE / "schema.sql").read_text(encoding="utf-8"))
-    now = datetime.now(BERLIN).isoformat(timespec="seconds")
+    now = zeitmarke.jetzt()  # Aufgabe 111: UTC mit Z, eine Quelle
     knoten = ["/a", "/b", "/c", "/d", "/e", "/f"]
     for i, p in enumerate(knoten):
         conn.execute(

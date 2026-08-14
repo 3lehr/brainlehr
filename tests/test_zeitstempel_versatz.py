@@ -1,11 +1,25 @@
-"""Tests fuer den echten Zeitzonen-Versatz statt fest "+01:00".
+"""Tests fuer den Zeitstempel: richtiger ZEITPUNKT, eindeutige SCHREIBWEISE.
 
-Befund 2026-08-06: now_iso() in sechs Dateien nutzte eine feste
-timezone(timedelta(hours=1)) und haengte den Text "+01:00" fest an --
-im Sommer (Europe/Berlin = +02:00) war der geschriebene Zeitstempel damit
-zwei Stunden falsch benannt (Wanduhrzeit = UTC+1, Label "+01:00", real
-waere UTC+2 richtig gewesen). Fix: zoneinfo Europe/Berlin +
-datetime.isoformat() (liefert bereits Doppelpunkt-Form).
+Befund 2026-08-06: now_iso() nutzte in sechs Dateien eine feste
+timezone(timedelta(hours=1)) und haengte den Text "+01:00" fest an -- im
+Sommer war der geschriebene Zeitstempel damit falsch benannt. Fix damals:
+zoneinfo Europe/Berlin + isoformat(), also Ortszeit mit echtem Versatz.
+
+NACHGESCHAERFT 2026-08-14 (Aufgabe 111, Betreiberentscheidung "alles auf
+UTC"): now_iso() liefert jetzt UTC mit 'Z'. Der Beschluss von 2026-08-06 hielt
+acht Tage nicht, weil 104 Stellen im Baum ihren Zeitstempel selbst bauten --
+und dabei wieder vier Schreibweisen entstanden, darunter '+0200' OHNE
+Doppelpunkt, genau die Form, an der der Fehler urspruenglich gefunden wurde.
+
+DIE ABSICHT DIESER DATEI HAT SICH NICHT GEAENDERT, nur ihr Massstab:
+  frueher   Wanduhrzeit == Berliner Wanduhrzeit, Versatz mit Doppelpunkt
+  jetzt     ZEITPUNKT == echter Zeitpunkt, Schreibweise eindeutig ('Z')
+
+Der neue Massstab ist der staerkere: er prueft, was der Zeitstempel BEDEUTET,
+nicht wie er aussieht. Ein Zeitpunktvergleich haette den Fehler von 2026-08-06
+uebrigens NICHT gefunden -- dort war der Instant intern selbstkonsistent und
+nur die Benennung falsch. Deshalb bleibt die Schreibweisenprobe daneben
+stehen, statt ersetzt zu werden.
 """
 from __future__ import annotations
 
@@ -42,25 +56,37 @@ BERLIN = ZoneInfo("Europe/Berlin")
 MODULE_NOW_ISO = [kms.now_iso, be.now_iso, lr.now_iso, fnk.now_iso, mk.now_iso]
 
 
-def test_rot_vor_gruen_now_iso_stimmt_mit_echter_berliner_zeit_ueberein():
-    """Wanduhrzeit (ohne Offset) muss der echten Europe/Berlin-Wanduhrzeit
-    entsprechen, Toleranz 5s. Der alte Fehler war intern selbstkonsistent
-    (Instant parst korrekt), aber die Wanduhrzeit stammte aus einer fest
-    verdrahteten +1h-Zone -- im Sommer 1h hinter der echten Berliner Zeit
-    (Befund 2026-08-06: DB 08:28:27+01:00 vs. echte Zeit 10:28:27+02:00)."""
-    referenz_naiv = datetime.now(BERLIN).replace(tzinfo=None)
+def test_now_iso_bezeichnet_den_echten_zeitpunkt():
+    """Der Zeitstempel muss denselben ZEITPUNKT bezeichnen wie die Uhr,
+    unabhaengig davon, in welcher Zone er geschrieben ist. Toleranz 5 s.
+
+    Das ist der Nachfolger der Wanduhr-Probe von 2026-08-06 und ihr staerkerer
+    Massstab: Ortszeit und UTC sind derselbe Zeitpunkt in zwei Schreibweisen;
+    eine falsche Zone faellt hier auf, eine blosse Schreibweise nicht."""
+    from datetime import timezone
+    referenz = datetime.now(timezone.utc)
     for now_iso in MODULE_NOW_ISO:
         geschrieben = now_iso()
-        geparst_naiv = datetime.fromisoformat(geschrieben).replace(tzinfo=None)
-        diff = abs((geparst_naiv - referenz_naiv).total_seconds())
-        assert diff < 5, f"{now_iso.__module__}.now_iso() Wanduhrzeit weicht {diff}s ab: {geschrieben}"
+        geparst = datetime.fromisoformat(geschrieben.replace("Z", "+00:00"))
+        diff = abs((geparst - referenz).total_seconds())
+        assert diff < 5, (
+            f"{now_iso.__module__}.now_iso() bezeichnet einen um {diff}s "
+            f"abweichenden Zeitpunkt: {geschrieben}")
 
 
-def test_now_iso_traegt_doppelpunkt_im_versatz():
+def test_now_iso_hat_genau_eine_schreibweise():
+    """Der Nachfolger der Doppelpunkt-Probe. Ihr Anlass bleibt gueltig: '+0200'
+    und '+02:00' bezeichnen denselben Zeitpunkt und sind als Text verschieden
+    -- ein Textvergleich scheitert dann still, kein Fehler, nur ein leeres
+    Ergebnis. Genau daran wurde der Fehler am 2026-08-06 gefunden.
+
+    Mit UTC gibt es diese Wahl nicht mehr: eine Schreibweise, und Sortieren
+    als Text ist dasselbe wie Sortieren als Zeitpunkt."""
+    import zeitmarke
     for now_iso in MODULE_NOW_ISO:
         geschrieben = now_iso()
-        versatz = geschrieben[-6:]
-        assert versatz[3] == ":", f"{now_iso.__module__}: Versatz ohne Doppelpunkt: {geschrieben}"
+        assert zeitmarke.UTC_MUSTER.match(geschrieben), (
+            f"{now_iso.__module__}: nicht die eine Zielform: {geschrieben}")
 
 
 def test_winter_gegenprobe_januar_traegt_plus_eins():
