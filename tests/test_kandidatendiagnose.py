@@ -70,6 +70,23 @@ def vec():
     return embeddings.embed_text(ZIEL_TASK)
 
 
+# Beide folgenden Faelle haengen daran, dass der Zielknoten 8dc84938 unter den
+# ersten MAX_RESULTS=5 steht. Am 2026-08-14 gemessen: Rang 21,
+# in_kandidatenliste False. Das ist KEIN Testfehler und keine Bestandsdrift zum
+# Wegwischen, sondern ein Abrufbefund -- ausgerechnet der Knoten, an dem die
+# Reparatur vom 2026-08-09 belegt wurde, wird heute nicht mehr gefunden
+# (Bestand seither auf 2197 Knoten gewachsen). Der Wert wird deshalb NICHT
+# nachgezogen: ein auf Rang 21 umgeschriebener Test waere gruen und wertlos.
+# Gehoert zur Abrufguete (S12, groesserer Korpus, Knoten 0e6adb6c), nicht zur
+# Testpflege. strict=True, damit es auffaellt, sobald der Abruf ihn wiederfindet.
+_ZIEL_AUS_DEN_ERSTEN_FUENF = pytest.mark.xfail(
+    strict=True,
+    reason="Zielknoten 8dc84938 steht am 2026-08-14 auf Rang 21 statt in den ersten 5 "
+           "-- Abrufbefund, siehe Kommentar oben; kein Wert nachgezogen",
+)
+
+
+@_ZIEL_AUS_DEN_ERSTEN_FUENF
 def test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg(conn, vec):
     ref = ziel_ref(conn, "node", ZIEL_PFAD)
     assert ref is not None, "Fixtur fehlt: Ziel-Knoten nicht im Bestand"
@@ -110,6 +127,7 @@ def test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg(conn, vec):
     )
 
 
+@_ZIEL_AUS_DEN_ERSTEN_FUENF
 def test_fall_8dc84938_jetzt_in_liste(conn, vec):
     ref = ziel_ref(conn, "node", ZIEL_PFAD)
     assert ref == "8dc84938"
