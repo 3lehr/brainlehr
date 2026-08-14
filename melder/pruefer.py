@@ -156,6 +156,24 @@ _NORMSCHICHT_SPALTEN = {
     "norm_entschieden_von", "norm_entschieden_am", "norm_entschieden_grund",
 }
 
+# Dieselbe Konstruktion, aber der Fehler war hier STRUKTURELL garantiert und
+# nicht bloss wahrscheinlich: Der Grundnenner dieser Tabelle ist
+# 'zurueckgezogen = 0'. Die drei Rueckzugsspalten werden also ausgerechnet
+# ueber den Zeilen gemessen, in denen sie definitionsgemaess leer sein
+# MUESSEN -- 100 Prozent leer war kein Befund, sondern die einzige moegliche
+# Antwort. Gemessen 2026-08-14: 2200 Knoten, 5 zurueckgezogen, und genau
+# diese 5 tragen die Felder. Die Spalten unterscheiden also perfekt; der
+# Melder meldete das Gegenteil.
+#
+# Nicht auf die Ausnahmeliste, sondern in den engeren Nenner: eine
+# Rueckziehung OHNE Grund waere ein echter Fund, und den soll der Melder
+# weiterhin sehen koennen. Solange es weniger als MINDESTZAHL Rueckziehungen
+# gibt, greift die uebliche Untergrenze und es wird schlicht nichts gesagt --
+# das ist richtig, aus fuenf Zeilen laesst sich nichts schliessen.
+_RUECKZUGS_SPALTEN = {
+    "zurueckgezogen_grund", "zurueckgezogen_von", "zurueckgezogen_am",
+}
+
 
 def _tabellenspalten(conn: sqlite3.Connection, tabelle: str) -> list[str]:
     return [r["name"] for r in conn.execute(f"PRAGMA table_info({tabelle})")]
@@ -229,6 +247,7 @@ def stumme_spalten(conn: sqlite3.Connection) -> list[dict]:
     die nur auf norm_art zeigte. Siehe _stille_spalten fuer Fehlklasse und
     Preis, hier nur die drei Nenner + Ausnahmelisten je Tabelle."""
     sonderwo = {s: "norm_rang IS NOT NULL AND zurueckgezogen = 0" for s in _NORMSCHICHT_SPALTEN}
+    sonderwo.update({s: "zurueckgezogen = 1" for s in _RUECKZUGS_SPALTEN})
     return (
         _stille_spalten(conn, "knowledge_nodes", "zurueckgezogen = 0",
                         _AUSNAHMEN_KNOWLEDGE_NODES, sonderwo)
@@ -590,6 +609,39 @@ def _selftest() -> None:
     # Ausnahmeliste und duerfen trotz Einwertigkeit nicht auftauchen.
     for spalte in ("id", "path", "created_at", "updated_at", "norm_rang", "zurueckgezogen"):
         assert not [f for f in funde if f["pruefung"] == f"stumme_spalte:knowledge_nodes.{spalte}"], spalte
+
+    # Rueckzugs-Sonderfall. Der Grundnenner der Tabelle ist
+    # 'zurueckgezogen = 0' -- ueber DIESEN Zeilen muessen die drei
+    # Rueckzugsspalten leer sein, "100 Prozent leer" war dort also die
+    # einzige moegliche Antwort und nie ein Befund. Geprueft wird deshalb
+    # innerhalb der zurueckgezogenen Zeilen.
+    n3 = sqlite3.connect(":memory:"); n3.row_factory = sqlite3.Row
+    n3.execute("""CREATE TABLE knowledge_nodes (id TEXT, path TEXT, norm_rang INTEGER,
+                 zurueckgezogen_grund TEXT, zurueckgezogen_von TEXT,
+                 zurueckgezogen_am TEXT, created_at TEXT, updated_at TEXT,
+                 zurueckgezogen INTEGER DEFAULT 0)""")
+    for i in range(25):  # sauber zurueckgezogen: Grund, Urheber, Zeitpunkt stehen
+        # Werte je Zeile verschieden: _stille_spalten kennt ZWEI Signaturen,
+        # leer UND einwertig. 25x derselbe Grund waere einwertig und damit zu
+        # Recht ein Fund -- er wuerde hier den Nenner-Fall verdecken.
+        n3.execute("INSERT INTO knowledge_nodes VALUES (?,?,NULL,?,?,?,'t','t',1)",
+                   (f"z{i}", f"z{i}", f"grund{i}", f"wer{i}", f"wann{i}"))
+    for i in range(500):  # lebende Zeilen -- hier MUESSEN die drei leer sein
+        n3.execute("INSERT INTO knowledge_nodes VALUES (?,?,NULL,NULL,NULL,NULL,'t','t',0)",
+                   (f"l{i}", f"l{i}"))
+    funde = stumme_spalten(n3)
+    for spalte in _RUECKZUGS_SPALTEN:
+        assert not [f for f in funde if f["pruefung"] == f"stumme_spalte:knowledge_nodes.{spalte}"], (
+            f"{spalte}: 500 lebende Zeilen duerfen den Nenner nicht stellen -- "
+            "dort ist leer die Bauart, nicht der Ausfall")
+
+    # Gegenprobe, damit der engere Nenner nicht einfach blind macht: wird
+    # zurueckgezogen OHNE Grund, ist das ein echter Fund und muss kommen.
+    n3.execute("UPDATE knowledge_nodes SET zurueckgezogen_grund = NULL WHERE zurueckgezogen = 1")
+    treffer = [f for f in stumme_spalten(n3)
+               if f["pruefung"] == "stumme_spalte:knowledge_nodes.zurueckgezogen_grund"]
+    assert treffer and "25 von 25" in treffer[0]["befund"], (
+        treffer, "Rueckziehung ohne Grund muss gemeldet werden, bezogen auf die 25")
 
     # Platzhalterfuellung. Eigene Tabelle, weil gattung dazukommt.
     c3 = sqlite3.connect(":memory:"); c3.row_factory = sqlite3.Row
