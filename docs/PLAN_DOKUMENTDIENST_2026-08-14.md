@@ -1,6 +1,8 @@
-# Plan: der Dokumentdienst — Schritt 4 aus ADR-010
+# Linie F: der Dokumentdienst — Abzweigung aus dem Gesamtplan
 
 **Stand** 2026-08-14T12:0x+0200 · **Zweig** `brainlehr/b4-ausweis`
+**Gesamtplan** `docs/PLAN_GESAMT_2026-08-13.md`, Linie F — dort steht die
+Reihenfolge, hier die Ausführung. Kennungen F1–F5 gelten repo-weit.
 **Rahmen** ADR-010 (Dokumentfenster: nativ, mehrbenutzerfähig Zeichen für Zeichen,
 erst LAN) · ADR-006 (Python ist Grundsprache) · ADR-007 (brainlehr trägt, openlehr wirkt)
 
@@ -17,7 +19,7 @@ und der Betreiber kann jede davon umstoßen.
 | **CRDT Python** | `pycrdt` 0.14.2 — gleichzeitige Änderungen konvergent, Bausteinbaum trägt `absatz` und `feld` |
 | **CRDT Swift** | `yswift` 0.2.1 — baut und läuft, `YDocument.undoManager` vorhanden, **Kennung unter 2^32** (ADR-010) |
 | **Baustein-Vertrag** | `kern/baustein.py` steht: Typen, Kennung, Anker, Anmerkung mit Zustand |
-| **Dienst** | **Es gibt keinen.** Kein `http.server`, kein `fastapi`, kein `uvicorn` irgendwo unter `kern/`, `haken/`, `melder/` — gemessen per grep |
+| **Dienst** | Bei Planbeginn: **es gab keinen** (kein `http.server`, `fastapi`, `uvicorn` unter `kern/`, `haken/`, `melder/` — per grep). Seit `f00fff3` steht `kern/dokumentdienst.py` |
 | **Nächste Naht** | `app/Sources/Atelier/Steuerschnittstelle.swift` bindet auf 4599 (Debug), Port 0 als Ausweichweg, tatsächlicher Port in einer Datei |
 | **Transport verfügbar** | `websockets` 17.0.1 (cp314-Wheel) und `pycrdt-websocket` 0.16.4 laden beide |
 
@@ -36,32 +38,32 @@ Kennungsauflage aus ADR-010 muss auf **jedem** Teilnehmer durchgesetzt werden,
 und eine Bibliothek, die Dokumente selbst anlegt, vergibt die Kennung selbst.
 Erst messen, ob sie sich vorschreiben lässt.
 
-**Bindung: `127.0.0.1` zuerst, LAN als ausdrücklicher Schalter.** Der Betreiber
-hat „erst LAN, Konten später" gewählt. Ein Dienst ohne Ausweis, der auf allen
-Schnittstellen lauscht, ist im selben Netz von jedem Gerät beschreibbar — das
-ist kein Testumgebungsproblem, sondern eine Bauform, die man später nicht mehr
-zurücknimmt. Deshalb: Vorgabe loopback, LAN nur über `BRAINLEHR_DIENST_HOST`,
-und der Ausweis (`kern/ausweis.py`) ist die vorgesehene Naht, sobald der Dienst
-das Haus verlässt. **Das ist meine Entscheidung, nicht seine** — er kann sie
-auf LAN-per-Vorgabe umstellen.
+**Bindung: loopback als Vorgabe, LAN mit Ausweispflicht.** Ursprünglich als
+meine Entscheidung notiert („Vorgabe loopback, LAN nur über einen Schalter") —
+**der Betreiber hat sie am 2026-08-14 gekippt**: LAN sofort, damit der Mini im
+selben Netz als Testfall dient. Umgesetzt als **Regel statt Schalter**: alles
+außer `127.0.0.1` verlangt einen beglaubigten Ausweis (`kern/ausweis.loese_auf`).
+Ein Schalter „LAN ohne Ausweis" wäre der, den man einmal für einen Test umlegt
+und nie zurück. Preis, der bleibt und in Linie G steht: keine
+Transportverschlüsselung, das Geheimnis wandert im Klartext.
 
 **Ein Dokument je Raum, Raum je Kennung.** Kein Mandantenmodell, keine
 Rechteverwaltung. Beides gehört zu „Konten später".
 
 ## 3 · Reihenfolge, und wo sie bindet
 
-1. **Kennungsvergabe zentral** (`kern/dokumentkennung.py` o. ä.): jeder
+**F1 · Kennungsvergabe zentral** (`kern/dokumentkennung.py` o. ä.): jeder
    Teilnehmer bekommt seine Kennung vom Dienst, nicht vom Zufall. **Bindend
    vor allem anderen** — sonst verdoppelt sich Text still, und der Fehler ist
    nachträglich nicht von einer echten Doppeleingabe zu unterscheiden.
-2. **Dienst mit einem Raum**: verbinden, Anfangsstand holen, Updates
+**F2 · Dienst mit einem Raum**: verbinden, Anfangsstand holen, Updates
    weiterreichen, Stand halten. Noch ohne Ablage.
-3. **Ablage**: der Stand überlebt einen Neustart des Dienstes.
-4. **Anmerkungen** über denselben Kanal (sie sind Teil des Dokuments, kein
+**F3 · Ablage**: der Stand überlebt einen Neustart des Dienstes.
+**F4 · Anmerkungen** über denselben Kanal (sie sind Teil des Dokuments, kein
    zweiter Weg — sonst driften Dokument und Anmerkung auseinander).
-5. **Fenster im atelier**: Klient, `yswift`, Kennung vom Dienst.
+**F5 · Fenster im atelier**: Klient, `yswift`, Kennung vom Dienst.
 
-Schritt 1 vor 2 ist bindend. 3 kann nach 4, wenn ein Neustart nichts kostet.
+F1 vor F2 ist bindend. F3 kann nach F4, wenn ein Neustart nichts kostet.
 
 ## 4 · Was bewusst NICHT gebaut wird
 
@@ -75,11 +77,11 @@ Schritt 1 vor 2 ist bindend. 3 kann nach 4, wenn ein Neustart nichts kostet.
 
 ## 5 · Aufträge, fertig zum Übergeben
 
-Schritt 1–3 sind gebaut (`kern/teilnehmer.py`, `kern/dokumentdienst.py`). Offen
-sind 4 und 5; sie stehen hier in der Form, in der ein Agent sie ohne Rückfrage
-abarbeiten kann.
+**F1–F4 sind gebaut** (`kern/teilnehmer.py`, `kern/dokumentdienst.py`,
+`kern/dokument.py`). Offen ist allein **F5**. Der erledigte F4 bleibt unten
+stehen, weil seine Abnahme beschreibt, woran F5 sich messen lassen muss.
 
-**Für beide Aufträge gleichermaßen:** Arbeitsort
+**Für die Aufträge gleichermaßen:** Arbeitsort
 `/Volumes/daten/Begod2026/brainlehr`, Zweig `brainlehr/b4-ausweis` — ein
 Startverzeichnis unter `.claude/worktrees/` ist ein alter Stand. Zuerst
 `CLAUDE.md` hier und in `~/.claude/` lesen, dann diesen Plan und ADR-010.
@@ -89,7 +91,7 @@ Committen mit expliziter Pfadliste. Volle Python-Suite **im Vordergrund** mit
 `timeout=600000` (rund 350 s). Neues Modul mit `--selftest` gehört in
 `MODULE` in `tests/test_alle_selftests.py`, sonst wird die Ratsche rot.
 
-### Auftrag 4 · Anmerkungen über denselben Kanal
+### F4 · Anmerkungen über denselben Kanal
 
 | | |
 |---|---|
@@ -98,7 +100,7 @@ Committen mit expliziter Pfadliste. Volle Python-Suite **im Vordergrund** mit
 | **Fakten** | Der Raum hält heute genau ein CRDT-Dokument und reicht Updates weiter (drei Nachrichtenarten: `willkommen`, `update`, `fehler`). `kern/baustein.py` kennt `Anmerkung` mit Zustand, Klasse, Anker und `wechsle()`, das den **erreichten** Zustand zurückgibt. Anmerkungen gehören **in dasselbe Dokument** wie die Bausteine — ein zweiter Kanal ließe Dokument und Anmerkung auseinanderdriften, und genau das ist der Grund, warum die KI hier kein Sonderfall ist. |
 | **Abnahme** | Rot vor grün: zwei Teilnehmer, einer setzt eine Anmerkung mit Anker, der andere sieht sie samt Zustand — vorher gibt es keinen Weg dafür. Negativfall, und er ist der wichtigere: wird der bezeichnete Baustein gelöscht, ist die Anmerkung **sichtbar verwaist** und wandert nicht über den Suchtext an eine ähnliche Stelle. Grenzwerte: Anmerkung auf den ersten Baustein, auf den letzten, auf einen, der nie existierte. Jeder Zustandswechsel gibt den erreichten Zustand zurück, nie `True`. |
 
-### Auftrag 5 · Das Fenster im atelier
+### F5 · Das Fenster im atelier
 
 | | |
 |---|---|

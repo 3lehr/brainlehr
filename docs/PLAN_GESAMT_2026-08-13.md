@@ -193,6 +193,55 @@ sonst wäre die Umbenennung ihre eigene Begründung.
 **Linie E — nur der Betreiber.** `20`, `23`, `29`, `31`. Nicht autonom, in
 keiner Reihenfolge erzwingbar.
 
+**Linie F — das Dokumentfenster.** Nachgetragen 2026-08-14. Ausführung in
+`docs/PLAN_DOKUMENTDIENST_2026-08-14.md`, Rahmen in `docs/adr/ADR-010`.
+`F1` Teilnehmerkennung (Auflage unter 2³²) · `F2` Dienst mit einem Raum ·
+`F3` Ablage, der Stand überlebt den Neustart · `F4` Anmerkungen im **selben**
+Dokument wie die Bausteine · `F5` Fenster im atelier.
+**F1–F4 sind erledigt** (`5266ca7`, `f00fff3`, `eb71e92`, `662748e`, `cf4cc28`).
+
+**Linie G — Sicherheit und Überwachung.** Nachgetragen 2026-08-14 auf
+Betreiberwunsch, Ausführung in `docs/PLAN_SICHERHEIT_2026-08-14.md`.
+`G1` Kennzahlen verlassen den Prozess · `G2` Melder, nur die schwellenfreie
+Klasse · `G3` Nullmessung mit dem Mini, **danach erst** Schwellen.
+Die Schranken selbst stehen bereits (`14b34f3`): Ausweispflicht außerhalb von
+`127.0.0.1`, Nachrichtengröße, Rate, geschlossenes Protokoll.
+
+### Warum F und G — und nicht S1, S2, S3
+
+Am 2026-08-14 wurden beide Pläne zunächst **neben** diesen Gesamtplan gelegt,
+mit eigener Zählung ab 1. Ergebnis: `S1`, `S2` und `S3` bezeichneten je drei
+verschiedene Dinge (`PLAN_DESTILLE`, `PLAN_DREITEILUNG`, `PLAN_SICHERHEIT`), und
+die Frage des Betreibers *„wieviele S haben wir insgesamt?"* war nicht mehr
+beantwortbar — 18 verschiedene S-Nummern über alle Dateien, 21 Sprints in
+`docs/SPRINTS.md`.
+
+**Eine Kennung braucht einen Raum, in dem sie eindeutig ist.** Fehlt er, ist der
+Raum stillschweigend „diese Datei" — und das fällt erst auf, wenn jemand über
+Dateien hinweg fragt, also genau beim Formulieren eines Auftrags. Der Prüfgriff
+kostet Sekunden und gehört vor jeden neuen Plan:
+
+```bash
+for k in $(grep -rhoE '^(#+ *|\*\*)[A-Z][0-9]{1,3}\b' docs/*.md | grep -oE '[A-Z][0-9]{1,3}' | sort -u); do
+  d=$(grep -rlE "^(#+ *|\*\*)$k\b" docs/*.md | wc -l); [ "$d" -gt 1 ] && echo "$k in $d Dateien definiert"
+done
+```
+
+**Nur DEFINIERENDE Stellen zählen** — Überschrift oder Zeilenanfang. Die erste
+Fassung dieses Griffs zählte jedes Vorkommen und meldete damit auch jeden
+Verweis als Kollision: `F1` stand danach „in 3 Dateien", obwohl es genau einmal
+definiert und zweimal zitiert ist. Ein Prüfgriff mit dieser Fehlalarmquote wird
+weggeklickt und meldet dann auch den echten Fall nicht (`L-528f0c`).
+
+Er hat sich beim Nachtragen dieser beiden Linien sofort bezahlt gemacht: `D` und
+`E` waren bereits vergeben, der naheliegende Griff hätte die nächste Kollision
+erzeugt. Lehre `L-30be01`.
+
+**Was danach noch steht, vorbestehend und nicht aus dieser Arbeit:** `S1`, `S2`
+und `S3` sind in `PLAN_DESTILLE_2026-08-09.md` **und** in
+`PLAN_DREITEILUNG_2026-08-11.md` definiert. Nicht angefasst, weil beide Pläne
+Historie tragen — aber wer dort etwas beauftragt, nennt die Datei mit.
+
 ## Fortschreibung 2026-08-13T13:00 — Linie 0 und A stehen, die Reihenfolge kippt
 
 **Erledigt:** Linie 0 vollständig (`94` Zuschreibung maschinell, `95` `norm_art`),

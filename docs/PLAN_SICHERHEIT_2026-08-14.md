@@ -1,6 +1,8 @@
-# Plan: Sicherheit und Überwachung des Dokumentdienstes
+# Linie G: Sicherheit und Überwachung — Abzweigung aus dem Gesamtplan
 
 **Stand** 2026-08-14T13:0x+0200 · **Zweig** `brainlehr/b4-ausweis`
+**Gesamtplan** `docs/PLAN_GESAMT_2026-08-13.md`, Linie G — dort steht die
+Reihenfolge, hier die Ausführung. Kennungen G1–G3 gelten repo-weit.
 **Anlass** Betreiber, 2026-08-14: LAN öffnen für den Mini im selben Netz, und
 *„der Security Aspekt ab jetzt noch mal deutlicher mitdenken und ein Monitoring
 mit vorbereiten"*.
@@ -69,7 +71,7 @@ Committen mit expliziter Pfadliste. Volle Python-Suite **im Vordergrund** mit
 `tests/test_alle_selftests.py`. **Kein Geheimnis in Protokoll, Meldung oder
 Testausgabe — auch nicht gekürzt.**
 
-### Auftrag S1 · Die Kennzahlen verlassen den Prozess
+### G1 · Die Kennzahlen verlassen den Prozess
 
 | | |
 |---|---|
@@ -78,16 +80,16 @@ Testausgabe — auch nicht gekürzt.**
 | **Fakten** | `Kennzahlen.als_dict()` liefert heute acht Zahlen plus `herkunft`. Der Dienst hält sie **nur im Speicher**; ein Neustart setzt sie auf null, und genau das macht sie als Beleg wertlos, sobald der Dienst länger läuft als eine Sitzung. Vorbild für die Ausgabeform: `runs/*.json` mit Zeitstempel aus `kern/zeitmarke.jetzt` (UTC, `Z`-Form — jede andere Form wirft, Aufgabe 111). |
 | **Abnahme** | Rot vor grün: der Dienst wird gestartet, ein Klient verbindet, die Zahlen stehen **nach einem Neustart** noch da — vorher waren sie weg. Negativfall: ein Lauf ohne jede Verbindung schreibt eine Zeile mit Nullen, keine leere Datei — Schweigen und „nichts passiert" müssen unterscheidbar bleiben. Grenzwert: erste Zeile überhaupt, Zeile nach genau einem Ereignis, Zeile nach einem Neustart. |
 
-### Auftrag S2 · Der Melder, aber nur die schwellenfreie Klasse
+### G2 · Der Melder, aber nur die schwellenfreie Klasse
 
 | | |
 |---|---|
-| **Darf ändern** | die Melder-Datei aus S1, deren Tests |
+| **Darf ändern** | die Melder-Datei aus G1, deren Tests |
 | **Tabu zusätzlich** | alles Mengenhafte — `updates`, `bytes_empfangen`, Verbindungen je Stunde bekommen in diesem Auftrag **keine** Schwelle |
 | **Fakten** | Vorbild für Bauform und Anschluss: die vorhandenen Melder unter `melder/` (jeder mit `--selftest`, Einbindung über `~/.claude/settings.json`). Achtung, gemessen am 2026-08-14: ein Eintrag dort kann **wieder verschwinden** — `WorktreeCreate` war nach 36 Minuten weg (`L-083b95`). Der Melder braucht deshalb eine Probe, die seine eigene Verdrahtung prüft, nicht nur seine Logik (`L-b3eb79`: gebaut ≠ verdrahtet ≠ wirksam). |
 | **Abnahme** | Rot vor grün je Fall: abgewiesener Zugang, unbekannte Art, Kennungsverstoß, zweite Herkunftsadresse — jeder schlägt an. Negativfall, und er ist der wichtigere: ein ganz normaler Lauf (eine Adresse, nur `update`) schlägt **nicht** an. Grenzwert bei der Herkunft: eine Adresse, zwei Adressen, dieselbe Adresse zweimal. |
 
-### Auftrag S3 · Nullmessung mit dem Mini, danach erst Schwellen
+### G3 · Nullmessung mit dem Mini, danach erst Schwellen
 
 | | |
 |---|---|
