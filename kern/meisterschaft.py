@@ -68,8 +68,9 @@ import json
 import sqlite3
 import statistics
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
+
+import zeitmarke
 
 SHARED_KNOWLEDGE = _w
 DEFAULT_DB = SHARED_KNOWLEDGE / "brainlehr.db"
@@ -90,7 +91,7 @@ CREATE TABLE IF NOT EXISTS knowledge_config (
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return zeitmarke.jetzt()
 
 
 def _key(bereich: str) -> str:

@@ -29,9 +29,10 @@ import sys
 import json
 import uuid
 from pathlib import Path
-from datetime import datetime, timezone
 from dataclasses import dataclass
 from typing import Set, Tuple, List
+
+import zeitmarke
 
 # Config
 sys.path.insert(0, str(_w))
@@ -149,7 +150,7 @@ def create_edges(conn: sqlite3.Connection, refs: List[FileReference]) -> Tuple[i
     created = 0
     skipped = 0
     cursor = conn.cursor()
-    now = datetime.now(timezone.utc).isoformat()
+    now = zeitmarke.jetzt()
 
     # Group by lesson
     by_lesson = {}

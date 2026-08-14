@@ -62,10 +62,10 @@ import re
 import sqlite3
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 
 import speicher  # noqa: E402 -- liefert den DB-Pfad (speicher.ort.DB), siehe Modulkopf
+import zeitmarke  # noqa: E402
 
 RELATION_TYPE = "abgeleitet_von"
 
@@ -142,7 +142,7 @@ def schreibe(conn: sqlite3.Connection, kandidaten: list[Kandidat]) -> int:
     """Legt Kanten an (INSERT OR IGNORE -- UNIQUE(source,target,typ) macht
     einen zweiten Lauf wirkungslos, nicht doppelt). Gibt die Zahl der neu
     angelegten Kanten zurueck."""
-    jetzt = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    jetzt = zeitmarke.jetzt()
     neu = 0
     for k in kandidaten:
         cur = conn.execute(
@@ -224,7 +224,7 @@ def _bauvorrichtung(conn: sqlite3.Connection) -> None:
 
 def _knoten(conn: sqlite3.Connection, id_: str, path: str, title: str,
             summary: str = "", content: str | None = None) -> None:
-    jetzt = datetime.now(timezone.utc).isoformat()
+    jetzt = zeitmarke.jetzt()
     conn.execute(
         """INSERT INTO knowledge_nodes
            (id, path, parent_path, project_id, title, summary, content, source,

@@ -85,6 +85,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
+import zeitmarke
+
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
@@ -436,7 +438,7 @@ MAX_VERSUCHE = 5
 
 
 def _jetzt_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return zeitmarke.jetzt()
 
 
 def _kategorisiere_fehler(exc: BaseException) -> tuple[str, str]:

@@ -61,8 +61,9 @@ import sqlite3
 import sys
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
+
+import zeitmarke
 
 sys.path.insert(0, str(_w))
 from haken.ort import DB as DB_PATH  # noqa: E402
@@ -323,7 +324,7 @@ def schreibe_kanten(conn: sqlite3.Connection, kandidaten: list[Kandidat]) -> tup
     created = 0
     skipped = 0
     cur = conn.cursor()
-    now = datetime.now(timezone.utc).isoformat()
+    now = zeitmarke.jetzt()
 
     for kd in kandidaten:
         if edge_exists(conn, kd.a_path, kd.b_path):

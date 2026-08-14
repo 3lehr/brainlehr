@@ -76,6 +76,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import zeitmarke
+
 sys.path.insert(0, str(_w.parent))
 import ausweis  # noqa: E402
 
@@ -140,7 +142,7 @@ def _erzeuge(pfad, *, grund: str, name: str | None = None) -> tuple[str, str]:
     try:
         alt = conn.execute("SELECT value FROM knowledge_config WHERE key=?",
                            (SCHLUESSEL_KENNUNG,)).fetchone()
-        jetzt = datetime.now(timezone.utc).isoformat()
+        jetzt = zeitmarke.jetzt()
         conn.execute(_EINFUEGEN, (SCHLUESSEL_KENNUNG, neu, jetzt))
         if name is not None:
             conn.execute(_EINFUEGEN, (SCHLUESSEL_NAME, name, jetzt))
@@ -214,7 +216,7 @@ def vertraue(fremde_kennung: str, *, name: str = "", hoechstens: str = "leser",
                  if e.get("kennung") != fremde_kennung]
     eintraege.append({"kennung": fremde_kennung, "name": name,
                       "hoechstens": hoechstens,
-                      "seit": datetime.now(timezone.utc).isoformat()})
+                      "seit": zeitmarke.jetzt()})
     pfad.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     fd = os.open(pfad, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as f:
