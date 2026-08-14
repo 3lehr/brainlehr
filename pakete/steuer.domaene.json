@@ -1,0 +1,46 @@
+{
+  "domaene": "steuer",
+  "bezeichnung": "Steuer und Belege",
+  "herkunft": "openlehr/apps/openlehr/daemon/steuer/euer_zuordnung.py",
+  "stand": "2026-08-14T21:55:16+0200",
+  "quellen": {
+    "euerBAusg": {
+      "bezeichnung": "Betriebsausgaben",
+      "hinweistext": "Betriebsausgaben sind grundsätzlich im Zeitpunkt des Abflusses zu erfassen. Ausnahmen ergeben sich insbesondere aus § 11 Absatz 2 EStG.Bei gemischten Aufwendungen ist ausschließlich der betrieblich/beruflich veranlasste Anteil anzusetzen (zum Beispiel Telekommunikationsaufwendungen). Die nachstehend aufgeführten Betriebsausgaben sind grundsätzlich mit dem Nettobetrag anzusetzen. Die abziehbaren Vorsteuerbeträge sind in Zeile 57 einzutragen. Kleinunternehmer geben den Bruttobetrag an. Gleiches gilt für Steuerpflichtige, die den Vorsteuerabzug nach den §§ 23, 23a und 24 Absatz 1 UStG pauschal vornehmen. Auch Aufwendungen, für die der Vorsteuerabzug nach § 15 UStG ausgeschlossen ist, sind mit dem Bruttobetrag einzutragen (vergleiche Ausführungen zu Zeile 57).Unterhält eine steuerbegünstigte Körperschaft ausschließlich steuerpflichtige wirtschaftliche Geschäftsbetriebe, bei denen der Gewinn mit dem branchenüblichen Reingewinn oder pauschal mit 15 % der Einnahmen angesetzt wird, sind hier die tatsächlichen Betriebsausgaben einzutragen (vergleiche Ausführungen in der Einleitung).Die Vorschriften des § 4h EStG und des § 8a KStG (Zinsschranke) sind zu beachten. Betriebsausgabenpauschalen für bestimmte Berufsgruppen (Zeile 24) Bei hauptberuflicher selbständiger schriftstellerischer oder journalistischer Tätigkeit können pauschal 30 % der Betriebseinnahmen, maximal 3.600 € jährlich, bei wissenschaftlicher, künstlerischer und schriftstellerischer Nebentätigkeit sowie bei nebenamtlicher Lehr- und Prüfungstätigkeit pauschal 25 % der Betriebseinnahmen, maximal 900 € jährlich, statt der tatsächlich angefallenen Betriebsausgaben geltend gemacht werden, vergleiche BMF-Schreiben vom 06.04.2023, BStBl I Seite 671 (weiter mit Zeile 75).Für Kindertagespflegepersonen besteht die Möglichkeit, pauschal 400 € je Kind und Monat als Betriebsausgaben abzuziehen. Die Pauschale bezieht sich auf eine wöchentliche Betreuungszeit von 40 Stunden und ist bei geringerer Betreuungszeit zeitanteilig zu kürzen. Je Freihalteplatz und Monat kann eine Betriebsausgabenpauschale von 50 € abgezogen werden. Weitere Erläuterungen zur Behandlung der Kindertagespflege finden Sie in dem BMF-Schreiben vom 06.04.2023, BStBl I Seite 669 (weiter mit Zeile 75)."
+    },
+    "HelpEUERUFA772024ErmittlungdesGewinnsZeilen76bis97": {
+      "bezeichnung": "Ermittlung des Gewinns",
+      "hinweistext": "Steuerfreie Einnahmen nach § 3 Nummer 26, 26a, 26b EStG (Zeile 78) Hier sind folgende bereits in den Betriebseinnahmen enthaltene steuerfreie Einnahmen abzuziehen:nach § 3 Nummer 26 EStG für bestimmte nebenberufliche Tätigkeiten maximal 3.000 € (Übungsleiterfreibetrag),nach § 3 Nummer 26a EStG für andere nebenberufliche Tätigkeiten zum Beispiel im gemeinnützigen Bereich maximal 840 € (Ehrenamtspauschale) undnach § 3 Nummer 26b EStG für Aufwandsentschädigungen an ehrenamtliche Betreuer maximal 3.000 €.Die nach § 3 Nummer 26 EStG und § 3 Nummer 26b EStG steuerfreien Einnahmen dürfen zusammen den Betrag von 3.000 € nicht überschreiten.Die Steuerbefreiung nach § 3 Nummer 26a EStG ist ausgeschlossen, wenn für die Einnahmen aus der Tätigkeit – ganz oder teilweise – eine Steuerbefreiung nach § 3 Nummer 12, 26 oder 26b EStG gewährt wird."
+    },
+    "euerBE": {
+      "bezeichnung": "Betriebseinnahmen",
+      "hinweistext": "Betriebseinnahmen sind grundsätzlich im Zeitpunkt des Zuflusses zu erfassen. Ausnahmen ergeben sich aus § 11 Absatz 1 EStG. Sofern Sie die Energiepreispauschale für sich erhalten haben, ist diese nicht in der Anlage EÜR als Betriebseinnahme zu erfassen. Umsatzsteuerlicher Kleinunternehmer (Zeile 12) Hier tragen umsatzsteuerliche Kleinunternehmer ihre vollständigen Betriebseinnahmen inkl. umsatzsteuerfreier und nicht umsatzsteuerbarer Umsätze etc. (ohne Beträge aus Zeilen 18 bis 22) mit dem Bruttobetrag ein. Sie sind Kleinunternehmer, wenn Ihr Gesamtumsatz (§ 19 Absatz 3 in Verbindung mit Absatz 1 UStG) im vorangegangenen Kalenderjahr 22.000 € nicht überstiegen hat und im laufenden Kalenderjahr voraussichtlich 50.000 € nicht übersteigen wird und Sie nicht auf die Anwendung der Kleinunternehmerregelung verzichtet haben. Kleinunternehmer dürfen für ihre Umsätze, zum Beispiel beim Verkauf von Waren oder der Erbringung von Dienstleistungen, keine Umsatzsteuer gesondert in Rechnung stellen.Soweit Sie vor Übergang zur Kleinunternehmerregelung der Regelbesteuerung unterlegen haben, sind die vor Übergang zur Kleinunternehmerregelung ausgeführten Umsätze, unabhängig von deren Vereinnahmung, der Regelbesteuerung zu unterwerfen und in Zeile 15 einzutragen."
+    }
+  },
+  "regeln": [
+    {
+      "id": "einnahmen_brutto_cent",
+      "ziel_id": "euerBE",
+      "fundstelle": "Betriebseinnahmen",
+      "wirkung": {}
+    },
+    {
+      "id": "ausgaben_brutto_cent",
+      "ziel_id": "euerBAusg",
+      "fundstelle": "Betriebsausgaben",
+      "wirkung": {}
+    },
+    {
+      "id": "ausgaben_netto_cent",
+      "ziel_id": "euerBAusg",
+      "fundstelle": "Betriebsausgaben",
+      "wirkung": {}
+    },
+    {
+      "id": "gewinn_cent_vereinfacht",
+      "ziel_id": "HelpEUERUFA772024ErmittlungdesGewinnsZeilen76bis97",
+      "fundstelle": "Ermittlung des Gewinns",
+      "wirkung": {}
+    }
+  ]
+}

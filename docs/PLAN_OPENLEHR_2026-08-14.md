@@ -111,9 +111,48 @@ steht. Eine Prüfung stellt sicher, dass kein Belegtext einen auswärtigen
 Empfänger erreicht, solange der Schalter aus ist — Gegenprobe in beide
 Richtungen, sonst ist der Schalter Zierde.
 
+**H8 — „Domäne importieren" im atelier.** Betreiber, 2026-08-14: *„ich will so
+haben das im atelir ein button oder menü punkt gibt domäne impoertieren!"*
+
+**Das ändert die Integrationsform, und zwar zum Kleineren.** Bis hierher stand
+im Plan ein Code-Import (openlehr importiert `belegvertrag.py`), und dafür fehlt
+brainlehr die Lieferform — kein `pyproject.toml`, kein `kern/__init__.py`.
+Der Menüpunkt löst das ersatzlos: **openlehr liefert kein Modul, sondern ein
+Paket aus Regeln und ihren Belegen.** Die `.pth`-Frage entfällt.
+
+**Der Importknopf ist zugleich die erste Stelle, an der ADR-007 sichtbar
+wirkt:** Eine Domäne, deren Regeln keine belegte Fundstelle tragen, wird
+**abgewiesen** — nicht mit einer Warnung, sondern gar nicht erst übernommen.
+`kern/belegvertrag.py` ist genau dafür gebaut.
+
+Das Paketformat, damit beide Seiten dagegen bauen können (eine JSON-Datei):
+
+```json
+{
+  "domaene": "steuer",
+  "bezeichnung": "Steuer und Belege",
+  "herkunft": "openlehr/apps/openlehr/daemon/steuer/euer_zuordnung.py",
+  "stand": "2026-08-14T21:36:26+0200",
+  "quellen": {"<ziel_id>": {"bezeichnung": "…", "hinweistext": "…"}},
+  "regeln": [{"id": "…", "ziel_id": "…", "fundstelle": "…", "wirkung": {}}]
+}
+```
+
+`quellen` und `regeln` sind genau die zwei Argumente von `pruefe_regeln` — das
+Format ist nicht erfunden, es ist der Vertrag in Dateiform.
+
+- **H8a** `kern/domaene.py`: lesen, gegen den Vertrag prüfen, annehmen oder mit
+  **Grund** ablehnen. Rot vor grün: eine Domäne mit unbelegter Regel muss
+  abgewiesen werden, und der Grund muss die Regel benennen.
+- **H8b** Menüpunkt „Domäne importieren…" im atelier, Dateiauswahl, Ergebnis in
+  Nutzersprache — *„Die Regel ‚Bewirtung' nennt keine Quelle"*, nicht ein
+  Fehlertext aus dem Inneren.
+- **H8c** openlehr exportiert seine Steuerregeln als erstes echtes Paket. Erst
+  damit ist der Weg belegt statt behauptet.
+
 **Bindend:** H1 vor H2 und H3 (beide hängen am Vertrag). H4 vor jeder Aussage
 „läuft richtig". H5 vor jedem neuen Bildschirm. H6 vor H5s Sortierung — ohne
-Fristenrechnung ist „nach Wichtigkeit" nicht entscheidbar.
+Fristenrechnung ist „nach Wichtigkeit" nicht entscheidbar. H8a vor H8b und H8c.
 
 ## §3 Verworfene Wege
 
