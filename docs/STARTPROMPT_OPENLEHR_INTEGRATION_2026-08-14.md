@@ -210,6 +210,97 @@ antworten kann.
 23. **Darf ich openlehr umbauen**, oder ist es produktiv genug, dass nur
     ergänzt wird?
 
+## Zweite Runde Antworten, 2026-08-14 (wörtlich) — und die Lage ändert sich damit
+
+> **F24** *„hört sich gut an"* — der Vorschlag für „100 % richtig" ist angenommen.
+> **F25** *„steuer, fertig ist aber erst wenn wir alles erfasst haben, alles hängt
+> ja auch mit allem zusammen"*
+> **F26** *„erfunden, oder echten testkorpus finden"*
+> **F27** *„einsortieren und der wichtigkeit nach abarbeiten / abarbeiten lassen /
+> dabei unterstützen"*
+> **F28** *„alles drei, und das was wir vergessen haben!"*
+>
+> **Und die eigentliche Lage:** *„valide auf briefe von finanzamt antworten
+> können, keine steuer seit 2024 gemacht, deswegen auch keine
+> krankenkassenbeiträge gezahlt, offene strafzettel (auto) usw. schufa versuchen
+> zu bereinigen usw. es hat sich viel aufgestaut, was genau weiss ich auch
+> nicht!"*
+
+**Das ist kein Fotograf mehr — das ist der Betreiber selbst.** Der Unterschied
+ist keine Formalie: die Zieldaten sind seine eigenen Steuer-, Kranken- und
+Bonitätsdaten. Die Testdaten-Sperre aus Runde 1 gilt unverändert; sie schützt
+jetzt aber nicht mehr einen Dritten, sondern ihn.
+
+**Drei Sätze, die in dieser Sitzung nicht untergehen dürfen:**
+
+1. **„Was genau weiß ich auch nicht" ist die eigentliche Aufgabe.** Nicht
+   „Steuer machen", sondern **erst Bestand aufnehmen**. Ein System, das rechnet,
+   bevor bekannt ist, was überhaupt vorliegt, rechnet über einer Lücke. Der
+   erste Ausschnitt (F25: Steuer) ist damit **Erfassung**, nicht Abgabe.
+2. **Rückstände haben Fristen und Folgen**, und das System darf darüber nicht
+   hinwegsortieren. Ein Beitragsrückstand wächst, eine Bußgeldfrist verfällt,
+   eine Schufa-Eintragung hat eine eigene Löschfrist. **Wichtigkeit ist hier
+   nicht Geschmack, sondern eine Rechnung aus Frist und Folge** — genau das
+   verlangt F27 („der Wichtigkeit nach").
+3. **Bei Steuerrückständen seit 2024 gehört ein Steuerberater dazu.** Das System
+   sortiert, bereitet vor, erinnert und formuliert Entwürfe — es ersetzt keine
+   Beratung und keine Selbstanzeige. Wer das offenlässt, baut ein Werkzeug, das
+   im ungünstigsten Fall eine Frist verstreichen lässt, weil sie niemandem
+   aufgefallen ist. **Frage F29 dazu unten.**
+
+**Auf Finanzamtspost „valide antworten können" ist der schärfste Punkt der
+ganzen Anforderung.** Ein Brief ans Finanzamt ist Außenwirkung; nach Antwort 4
+aus Runde 1 drückt der Mensch. Aber *valide* heißt mehr: jede Aussage im
+Entwurf braucht ihre Fundstelle, und wo keine ist, darf der Satz nicht
+entstehen. Das ist die brainlehr-Schicht, angewandt auf einen Briefentwurf.
+
+### Weitere Fragen
+
+29. **Steuerberater: gibt es einen, und darf er die Sachen sehen?** Wenn ja,
+    ist das System sein Zuarbeiter — eine ganz andere Bauform, als wenn es
+    allein steht.
+30. **Weißt du, welche Briefe vom Finanzamt schon da sind** (Schätzbescheide,
+    Erinnerungen, Vollstreckungsankündigungen), oder ist das Teil der
+    Bestandsaufnahme?
+31. **Gibt es bereits einen echten Testkorpus** (F26), oder soll ich einen
+    erfinden? Ein erfundener Korpus mit bekanntem Sollergebnis ist für F24
+    ohnehin nötig — ein echter kommt zusätzlich, nicht statt.
+
+## Der Plugin-Auftrag (Betreiber, 2026-08-14)
+
+> *„schau an was openlehr schon hat und wie wir es als ,plugin' in brainlehr und
+> atelier integriert bekommen ohne altlasten mitzuschleppen!"*
+
+**Gemessener Umfang, damit die Untersuchung nicht bei null anfängt:**
+
+- `apps/openlehr/daemon/steuer/`: **102 Python-Dateien, 40 651 Zeilen.**
+- Die vier größten: `router.py` **5841**, `api.py` **5662**, `db.py` **2526**,
+  `ingest.py` **2404**. Zusammen sind das 40 % des Moduls in vier Dateien —
+  dort steckt erfahrungsgemäß sowohl das Wertvolle als auch die Altlast.
+- Namentlich vielversprechend für den Chaos-Fall: `chaos.py` (988,
+  „Lokaler Chaos-Ordner-Workflow"), `ingest.py`, `beleg_seiten.py`,
+  `classifier.py` (692), `gemma4_ocr_bridge.py`.
+
+**Die Untersuchung, bevor irgendetwas übernommen wird** — und sie ist die erste
+Arbeit dieser Sitzung, nicht ihr Nebenprodukt:
+
+1. **Was löst openlehr heute wirklich?** Nicht nach Dateinamen urteilen. Für
+   jeden Kandidaten: gibt es einen Aufrufer, einen Test, einen echten Lauf?
+   `hub/scripts/wiring_check.py` findet deklarierten, aber nie erreichten Code.
+2. **Was davon ist Fachwissen und was ist Gerüst?** Ein Belegklassifikator ist
+   Fachwissen; eine FastAPI-Route ist Gerüst. Übernommen wird Fachwissen.
+3. **Was ist Altlast?** Erkennungszeichen: kein Aufrufer, kein Test, Bezug auf
+   eine Oberfläche, die neu gebaut wird, oder auf einen Beschluss, der
+   zurückgenommen wurde.
+4. **Die Naht:** Nach ADR-007 gehört alles, was **verweigern können muss**, nach
+   brainlehr — Belegherkunft, Fundstelle, Geltung. Was ein Mensch **tut**,
+   bleibt openlehr. Ein Belegklassifikator, der „das ist eine Rechnung" sagt,
+   muss auch „ich weiß es nicht" sagen können; damit hat er einen Fuß in
+   brainlehr.
+5. **Kein Umzug ohne Beleg:** Was übernommen wird, kommt mit seinem Test — und
+   wenn keiner existiert, wird er vor dem Umzug geschrieben. Sonst wandert die
+   Altlast nur den Ordner.
+
 ## Wie in dieser Sitzung gearbeitet werden soll
 
 - **Arbeitsort** `/Volumes/daten/Begod2026/openlehr`, für die brainlehr-Seite
