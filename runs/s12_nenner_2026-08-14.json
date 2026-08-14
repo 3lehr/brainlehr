@@ -1,0 +1,49 @@
+{
+ "zweck": "S12-Wirkung ueber die TATSAECHLICH behandelten Ziele (Aufgabe 108)",
+ "quelle_vorher": "runs/ausgangsmessung_s12_2026-08-13_heutiger_codestand.json",
+ "quelle_nachher": "runs/nachmessung_s12_2026-08-13_gleicher_korpus.json",
+ "vorher": {
+  "zellen": {
+   "behandelt": {
+    "treffer": 6,
+    "gesamt": 14,
+    "quote": 0.4286
+   },
+   "unbehandelt": {
+    "treffer": 10,
+    "gesamt": 20,
+    "quote": 0.5
+   }
+  },
+  "ausserhalb_der_teilmenge": 171,
+  "behandelte_knoten_im_bestand": 225,
+  "mindestzahl": 20,
+  "belastbar": false,
+  "zu_kleine_zellen": [
+   "behandelt"
+  ]
+ },
+ "nachher": {
+  "zellen": {
+   "behandelt": {
+    "treffer": 5,
+    "gesamt": 14,
+    "quote": 0.3571
+   },
+   "unbehandelt": {
+    "treffer": 11,
+    "gesamt": 20,
+    "quote": 0.55
+   }
+  },
+  "ausserhalb_der_teilmenge": 171,
+  "behandelte_knoten_im_bestand": 225,
+  "mindestzahl": 20,
+  "belastbar": false,
+  "zu_kleine_zellen": [
+   "behandelt"
+  ]
+ },
+ "differenz_der_differenzen_pp": null,
+ "urteil": "MIT DIESEM KORPUS NICHT ENTSCHEIDBAR -- die Teilmenge der behandelten Ziele ist zu klein (unter 20 je Zelle). Das ist kein Nullergebnis: eine Quote aus so wenigen Faellen sieht nur wie eine Antwort aus. Der naechste Schritt ist ein groesserer Korpus, keine feinere Rechnung."
+}
