@@ -1,10 +1,13 @@
-# STAND brainlehr — 2026-08-14T09:15:00+0200
+# STAND brainlehr — 2026-08-14T10:30:00+0200
 
-**EINE SACHE BLOCKIERT ALLES ANDERE: Sitzungen neu starten.** Die laufenden MCP-Prozesse tragen den Code von 21:44 im Speicher. Sie schreiben (a) keine Vektoren, (b) weiter Ortszeit statt UTC. Belegt: der juengste Knoten traegt `+02:00`, waehrend `access_log` schon `Z` bekommt — dessen Vorgabewert sitzt in der Datenbank, nicht im Prozess. **Solange sie laufen, ist Aufgabe 111 Schritt 3 gesperrt** (Umrechnen wuerde sofort wieder mischen).
+**BLOCKIERT ALLES ANDERE: Sitzungen neu starten.** Die laufenden MCP-Prozesse tragen den Code von 21:44. Sie schreiben (a) keine Vektoren, (b) Ortszeit statt UTC. Belegt: juengster Knoten `+02:00`, `access_log` schon `Z` (dessen Vorgabewert sitzt in der DB, nicht im Prozess). **Aufgabe 111 Schritt 3 ist dadurch gesperrt** — Umrechnen wuerde sofort wieder mischen.
 
-**UTC (111), dein Beschluss von heute — und er war schon vom 2026-08-06** (`8ea7b6c`, „innen UTC, aussen Ortszeit"). Er hielt acht Tage nicht, weil 104 Stellen in 74 Dateien ihren Zeitstempel selbst bauten. Jetzt: eine Quelle (`kern/zeitmarke.jetzt`), zwei Ratschen (Daten und Code), 46 Erzeuger umgestellt, Spalten-Vorgabewerte der DB migriert. Schritt 3 (38 000 Werte) ist geprueft und wartet auf den Neustart.
+**UTC (111), Schritt 1+2 fertig:** eine Quelle (`kern/zeitmarke.jetzt`), zwei Ratschen, 46 Erzeuger umgestellt, Spalten-Vorgabewerte migriert. Schritt 3 ist geschrieben und geprueft (13 Proben, beide Umstellungstermine), wartet auf den Neustart.
 
-**Drei Fehler, die erst dadurch sichtbar wurden:** mein Tabellenneubau loeschte 52 von 96 Schemaobjekten (`DROP TABLE` nimmt Indizes und Trigger mit) — gefunden vom Schemamelder, wiederhergestellt aus einer Dateikopie, Skript repariert · `_REPEAT_MARKER_RE` kannte kein `Z`, die Deckelung von Wiederholungen lief still ins Leere · meine eigene Ratsche uebersah vier `now_iso()`-Klone, weil `isoformat(BERLIN)` weder `%z` noch fester Versatz ist — gefunden von einem Test mit **anderem** Massstab.
+**S12 (108) — das Ergebnis ist ein Nicht-Ergebnis, und das ist der Ertrag:** Der Nenner war falsch. Ueber die tatsaechlich behandelten Ziele bleiben 34 von 205 Faellen, behandelte Zelle n=14. Urteil: **mit diesem Korpus nicht entscheidbar**, ausdruecklich nicht „keine Wirkung". Die Rohzahlen (5/14 gegen 11/20) deuten sogar auf Verschlechterung — reines Rauschen. Naechster Schritt: groesserer Korpus, keine feinere Rechnung. Knoten `0e6adb6c`.
 
-**Ausserdem erledigt:** 110 (Erstinstallation brach an `lessons_learned.pruefstelle`) · 88 Schritt 1 (Zeitfenster im Abruf) · beide Defekte der Eilmeldung (Widerruf archiviert; Einspielung 20 KB auf 8 KB mit ehrlicher Restzahl).
-**Suite:** 1435 passed. Rot: `test_zeitform_utc` (bis Schritt 3, gewollt) · `kandidatendiagnose`, `sicherung_s12`, `vektorlage` (Bestandsdrift der Parallelsitzung, vorbestehend). **Wartet sonst auf dich:** Push · #105 Repo-Trennung · #29 oeffentliches Repo · #101 App zeigt nur Freigegebenes · #20 Ausweisordner.
+**Haken (98):** `worktree_identitaet.py` war gebaut, zweimal repariert, nie verdrahtet — jetzt an `WorktreeCreate`, vorher end-to-end geprueft. Ratsche gegen unverdrahtete Haken. Sie prueft **Existenz, nicht Tauglichkeit** — `mcp_veraltet.py` ist verdrahtet und trotzdem blind (`L-1228cf`, drei Stufen in `L-b3eb79`).
+
+**Erledigt heute:** 69 · 80 · 86 · 88/1 · 91 · 98 · 107 · 108 · 110 · beide Eilmeldungsdefekte. **Rot:** `test_zeitform_utc` (gewollt bis Schritt 3) · `kandidatendiagnose` (Bestandsdrift, vorbestehend).
+
+**Wartet auf dich:** Neustart · Push · #105 · #29 · #101 · #20.
