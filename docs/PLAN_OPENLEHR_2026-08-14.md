@@ -193,7 +193,42 @@ Rohdaten in `openlehr/docs/openlehr/schnittgrenze_2026-08-14.md`:
 | Muss mit, liegt außen | `docs/openlehr` 12 MB · `tests/steuer` 2,1 MB / 44 Dateien (importiert `apps.openlehr.daemon.steuer.*` direkt) · Wurzel-`conftest.py` mit openlehr-eigener Vorrichtung · 2 CI-Dateien |
 | Geheimnisse / Personenbezug | keine gefunden — **ausdrücklich keine vollständige Suche**, Fixtures nicht durchsucht |
 
-**Die Reihenfolge ist bindend, und der Grund ist keine Mengenfrage:**
+### H12 neu gefasst 2026-08-14: Blaupause statt Herauslösung
+
+Betreiber: *„der vorhandene Code ist ja auch Wissen, es muss nicht alles neu
+gedacht werden"* — und auf die Frage nach einem neuen Repo: *„sollten wir dann
+gleich ein neues repo anlegen und das alte _legacy nennen?"*
+
+**Damit fällt die Herauslösung weg, und das ist eine Vereinfachung, keine
+Einschränkung.** Historie schneidet man mit, wenn man **Code** mitnimmt. Eine
+Blaupause wird am alten Ort gelesen. Die 698 Commits, davon 167 gemischte, und
+der ganze `filter-repo`-Aufwand entfallen ersatzlos.
+
+**Blaupause heißt gelesen, nicht kopiert und nicht weggeworfen.** Der Code ist
+die genaueste Beschreibung der Anforderung, die existiert — genauer als jedes
+Pflichtenheft, weil er unter Druck entstanden ist. `router.py` ist nicht
+wertvoll, weil es routet, sondern weil es die feldgeprüfte Liste dessen ist, was
+gebraucht wurde. Dazu die Historie: `git log -S` beantwortet „warum sieht diese
+Zeile so aus".
+
+**Kein `_legacy`.** In diesem Verbund ist dieses Muster zweimal schiefgegangen:
+`apps/fahrtenbuch_legacy` heißt so und **ist die einzige aktive Fahrtenbuch-App**
+(Umbenennung verworfen, 2005 Dateien nennen den Pfad); `apps/_legacy/` **und**
+`apps/_legacy_2/` liegen parallel, weil ein Neuanfang begonnen und das Alte nur
+danebengelegt wurde (`L-ad0dda`). Der Name ist ein **Versprechen über die
+Zukunft**, das nichts erzwingt — wird es nicht eingelöst, lügt er.
+
+**Stattdessen:** Das neue Repo entsteht **neu und leer**. Das alte bleibt
+unangetastet unter `3lehr-monorepo/apps/openlehr`. Keine Umbenennung, weil
+verschiedene Repos einander nicht in die Quere kommen. Das Alte ist nicht
+„legacy", es ist die Quelle.
+
+**Was von der Messung bestehen bleibt und wofür sie jetzt zählt:** Die 24
+absoluten Pfade, die 70 `begod/`-Bindungen und die zwei Verweise auf ein
+nicht existierendes Verzeichnis sind keine Umzugslast mehr — sie sind die
+**Liste dessen, was beim Neubau nicht wiederholt werden darf**.
+
+**Die Reihenfolge der alten Fassung galt für eine Herauslösung:**
 
 1. **Zuerst die Auswärtsbindungen lösen — im Monorepo, wo die Tests noch
    laufen.** Nach dem Schnitt ist die Gegenprobe weg: Ob eine gelöste Bindung
