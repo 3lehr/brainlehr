@@ -330,6 +330,61 @@ TRUST_WEIGHT = 0.35
 # Antwortqualitaet. Ob ein Modell mit 16470 Zeichen besser antwortet als mit
 # 4409, ist NICHT gemessen -- die Literatur zu 'lost in the middle' laesst das
 # Gegenteil fuer moeglich halten. Wer das misst, misst die eigentliche Groesse.
+# --- Einspielungsdeckel (Aufgabe: Defekt 2 der Eilmeldung bdaf8d65) --------
+#
+# GEMESSEN 2026-08-14 an drei echten Anfragen: dieser Haken erzeugte 16754,
+# 19701 und 20522 Byte je Einspielung. Der Weg dahinter kappt und legt den
+# Rest in eine Datei, die niemand oeffnet -- gemessen am 2026-08-13T23:05:
+# 11 Einspielungen erzeugten 155749 Byte, angekommen sind 22528. Der Abruf
+# arbeitet dabei fehlerfrei; verloren geht es DANACH.
+#
+# WARUM DAS SCHLIMMER IST ALS PLATZMANGEL: Die Meldung des kappenden Glieds
+# lautet "Output too large (16.3KB) ... Preview (first 2KB)". Sie nennt BYTE
+# und einen Dateipfad, aber keine Zahl des Gegenstands -- und wird deshalb
+# als Formatierungshinweis gelesen statt als Verlustmeldung. Elfmal gelesen,
+# elfmal nicht verstanden (L-e61d18).
+#
+# DIE REPARATUR IST NICHT MEHR PLATZ, SONDERN EHRLICHKEIT: Der Haken kennt
+# seine Trefferzahl. Er bleibt INNERHALB der Grenze und benennt, was er
+# weglaesst. Ein kurzer vollstaendiger Block schlaegt einen langen gekappten.
+#
+# ZUR ZAHL: 8000 ist ein gemessener Korridor, keine bekannte Konstante des
+# kappenden Glieds -- die kenne ich nicht. Belegt ist beides: ein Block von
+# rund 4,5 KB kam am 2026-08-14 vollstaendig an, und 16,3 KB wurden gekappt.
+# 8000 liegt mit Abstand unter der belegten Kappung und ueber der belegten
+# Zustellung. Ueber BRAINLEHR_RECALL_MAX_BYTES aenderbar, damit ein besserer
+# Messwert keine Codeaenderung braucht.
+EINSPIELUNG_MAX_BYTES = int(os.environ.get("BRAINLEHR_RECALL_MAX_BYTES", "8000"))
+
+
+def _auf_budget_kuerzen(lines: list[str]) -> tuple[str, int]:
+    """Kuerzt den Block auf EINSPIELUNG_MAX_BYTES und meldet die Restzahl.
+
+    Gekuerzt wird von HINTEN: die Reihenfolge ist bereits die Rangfolge des
+    Abrufs, hinten steht das Schwaechste. Kopfzeile und Schlusszeile bleiben
+    immer -- ein Block ohne Rahmen waere unlesbar.
+
+    Die Schlusszeile nennt IMMER beide Zahlen, auch wenn nichts weggelassen
+    wurde. Nur-bei-Verlust zu melden hiesse, dass die Vollstaendigkeit
+    unbelegt bleibt, und genau daran krankte der bisherige Zustand: Niemand
+    vermisst, was er nie gesehen hat.
+    """
+    kopf, rumpf, schluss = lines[:2], lines[2:-1], lines[-1:]
+    gesamt = len(rumpf)
+    fest = len("\n".join(kopf + schluss).encode("utf-8")) + 200  # 200 fuer die Schlusszeile
+    behalten: list[str] = []
+    verbraucht = 0
+    for zeile in rumpf:
+        kosten = len(zeile.encode("utf-8")) + 1
+        if fest + verbraucht + kosten > EINSPIELUNG_MAX_BYTES:
+            break
+        behalten.append(zeile)
+        verbraucht += kosten
+    weggelassen = gesamt - len(behalten)
+    bilanz = f"({gesamt} Treffer, {len(behalten)} eingespielt, {weggelassen} aus Platzgruenden weggelassen)"
+    return "\n".join(kopf + behalten + [bilanz] + schluss), weggelassen
+
+
 MAX_NODES = 10
 MAX_LESSONS = 7
 
@@ -1610,7 +1665,7 @@ def main() -> None:
     # ganze Zeit lief. Mit hookSpecificOutput.additionalContext geht der
     # Block weiter an das Modell, mit systemMessage zusaetzlich eine kurze
     # Zeile an den Menschen.
-    block = "\n".join(lines)
+    block, weggelassen = _auf_budget_kuerzen(lines)
     kennungen = [l["id"] for l in lessons if l.get("id")]
     pfade = [n["path"].rsplit("/", 1)[-1] for n in nodes if n.get("path")]
     teile = []

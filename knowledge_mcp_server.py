@@ -1900,6 +1900,37 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
         "updated_at": row["updated_at"],
         "children": [{"title": c["title"], "summary": c["summary"]} for c in children],
     }
+    # Widerrufsarchiv (Betreiberentscheidung 2026-08-14): der bewahrte
+    # Wortlaut erscheint NUR hier, auf gezielte Frage nach genau diesem
+    # Knoten -- nicht in knowledge_search, nicht im Abruf, nicht beim
+    # Blaettern. Das ist die Trennlinie zwischen Archiv und Wiederauferstehung:
+    # der Satz gilt nicht mehr, aber er ist noch nachweisbar. Ohne diese
+    # Trennung waere aus dem Widerruf ein blosses Verstecken geworden.
+    if row["zurueckgezogen"]:
+        archiv = conn.execute(
+            "SELECT summary, content, grund, zurueckgezogen_am, zurueckgezogen_von "
+            "FROM knowledge_widerruf_archiv WHERE node_id = ? "
+            # Nach id, nicht nach Zeitstempel: zwei Widerrufe in derselben
+            # Sekunde sind sonst nicht unterscheidbar.
+            "ORDER BY id DESC LIMIT 1",
+            (row["id"],),
+        ).fetchone()
+        if archiv:
+            result["widerruf_archiv"] = {
+                "summary": archiv["summary"],
+                "content": archiv["content"],
+                "grund": archiv["grund"],
+                "zurueckgezogen_am": archiv["zurueckgezogen_am"],
+                "zurueckgezogen_von": archiv["zurueckgezogen_von"],
+            }
+        else:
+            # Ehrlich benennen statt schweigen: vor dem 2026-08-14
+            # zurueckgezogene Knoten haben keinen bewahrten Wortlaut, und der
+            # ist auch nicht rekonstruierbar. Ein fehlendes Feld saehe aus wie
+            # "gab es nie", statt wie "damals wurde geloescht".
+            result["widerruf_archiv"] = (
+                "kein bewahrter Wortlaut -- vor dem 2026-08-14 hat das "
+                "Zurueckziehen den Text geloescht statt ihn zu archivieren")
     conn.close()
     return result
 
@@ -3779,9 +3810,13 @@ def freigabe_setzen(eintrag_id: str, stufe: str, *, actor: str | None = None,
 
 def knowledge_zurueckziehen(node_id: str, grund: str, *, actor: str | None = None,
                             model: str | None = None, session: str | None = None) -> dict:
-    """Zieht einen Knoten zurueck: content und summary werden GELEERT (kein
-    Backup -- danach ist der Inhalt weg, nur die Sichtbarkeit ist reversibel
-    ueber knowledge_freigeben), title und path bleiben stehen, die Zeile
+    """Zieht einen Knoten zurueck: content und summary werden in
+    knowledge_nodes geleert, ihr Wortlaut aber VORHER nach
+    knowledge_widerruf_archiv gesichert (Betreiberentscheidung 2026-08-14 --
+    das Korrigieren eines falschen Eintrags darf nicht den Beweis des
+    falschen Eintrags vernichten). Sichtbarkeit ist ueber knowledge_freigeben
+    reversibel, der Wortlaut ist ueber knowledge_read erreichbar; in Suche
+    und Abruf bleibt der Knoten draussen. title und path bleiben stehen, die Zeile
     bleibt in der Tabelle mit Grund/Zeitpunkt/Urheber (Z5: nichts aendert
     sich unbemerkt). knowledge_search und der Recall-Hook lassen den Knoten
     danach aus. Reversibel, im Unterschied zum endgueltigen Entfernen
@@ -3810,6 +3845,18 @@ def knowledge_zurueckziehen(node_id: str, grund: str, *, actor: str | None = Non
     timestamp = now_iso()
     log_access(conn, row["path"], "zurueckziehen", project_id=row["project_id"],
                actor=actor, model=model, session=session, status="started")
+    # ARCHIVIEREN VOR DEM LEEREN (Betreiberentscheidung 2026-08-14). Die
+    # Reihenfolge ist der ganze Punkt: nach dem UPDATE ist der Wortlaut weg
+    # und nicht mehr zu sichern. Wer einen falschen Eintrag korrigiert, soll
+    # den Beweis des falschen Eintrags behalten -- gerade dann, wenn er
+    # Schaden angerichtet hat.
+    conn.execute(
+        """INSERT INTO knowledge_widerruf_archiv
+           (node_id, path, title, summary, content, grund, zurueckgezogen_am, zurueckgezogen_von)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (row["id"], row["path"], row["title"], row["summary"], row["content"],
+         grund, timestamp, actor),
+    )
     conn.execute(
         """UPDATE knowledge_nodes
            SET zurueckgezogen = 1, zurueckgezogen_grund = ?, zurueckgezogen_am = ?,
@@ -3826,7 +3873,9 @@ def knowledge_zurueckziehen(node_id: str, grund: str, *, actor: str | None = Non
                affected_row=dict(updated_row) if updated_row else None)
     conn.commit()
     conn.close()
-    return {"id": row["id"], "path": row["path"], "status": "zurueckgezogen", "grund": grund}
+    return {"id": row["id"], "path": row["path"], "status": "zurueckgezogen", "grund": grund,
+            "archiviert": "Wortlaut im Widerrufsarchiv bewahrt -- aus Suche und Abruf "
+                          "draussen, auf gezielte Frage (knowledge_read) noch lesbar."}
 
 
 def knowledge_freigeben(node_id: str, *, actor: str | None = None,

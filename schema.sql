@@ -1295,6 +1295,41 @@ CREATE TABLE IF NOT EXISTS s12_urfassungen (
 );
 
 -- ---------------------------------------------------------------------------
+-- Widerrufsarchiv (Betreiberentscheidung 2026-08-14: "zu 1 ist archevieren
+-- schlecht? ich glaube nicht!")
+--
+-- knowledge_zurueckziehen leerte content und summary. Damit vernichtete das
+-- KORRIGIEREN eines falschen Eintrags den Beweis des falschen Eintrags --
+-- genau die Zeile, die man braucht, wenn er Schaden angerichtet hat.
+--
+-- Getrennt von s12_urfassungen, obwohl beide Wortlaute sichern: jene Tabelle
+-- gehoert zum S12-Versuch und hat node_id als PRIMARY KEY, also genau eine
+-- Fassung je Knoten. Ein Knoten kann mehrfach zurueckgezogen und wieder
+-- freigegeben werden, deshalb braucht es hier mehrere Zeilen je Knoten.
+--
+-- KEIN zusammengesetzter Schluessel aus (node_id, zurueckgezogen_am): now_iso()
+-- hat Sekundengranularitaet, zwei Widerrufe in derselben Sekunde teilen den
+-- Schluessel, und die erste -- also die interessante -- Fassung waere weg. Beim
+-- Bauen genau so passiert und von tests/test_widerruf_archiv.py gefangen. Ein
+-- Zeitstempel ist eine Angabe, kein Schluessel.
+--
+-- Was das NICHT aendert: der Knoten bleibt aus Suche und Abruf draussen. Der
+-- bewahrte Wortlaut ist nur auf gezielte Frage erreichbar -- Archiv, nicht
+-- Wiederauferstehung.
+CREATE TABLE IF NOT EXISTS knowledge_widerruf_archiv (
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+    node_id            TEXT NOT NULL,
+    path               TEXT NOT NULL,
+    title              TEXT NOT NULL,
+    summary            TEXT,
+    content            TEXT,
+    grund              TEXT NOT NULL,
+    zurueckgezogen_am  TEXT NOT NULL,
+    zurueckgezogen_von TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_widerruf_archiv_node ON knowledge_widerruf_archiv(node_id, id);
+
+-- ---------------------------------------------------------------------------
 -- Schemastand (ADR-003, 2026-08-10)
 --
 -- Die Marke muss stehen, BEVOR die erste Migration laeuft. Danach laesst sich
