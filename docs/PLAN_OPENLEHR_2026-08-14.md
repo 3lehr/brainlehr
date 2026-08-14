@@ -181,10 +181,39 @@ Modell entsteht, wirft dieselbe Frage auf wie die Berufsschul-Idee — wem gehö
 das Ergebnis, und wozu darf es verwendet werden. Vor der ersten Weitergabe an
 einen Menschen zu klären, nicht danach.
 
+**H12 — openlehr wird ein eigenes Repo** (ADR-013). Gemessen 2026-08-14,
+Rohdaten in `openlehr/docs/openlehr/schnittgrenze_2026-08-14.md`:
+
+| Messung | Wert |
+|---|---|
+| Umfang | 390 MB — davon **342 MB `macshell/.build`** (gitignored, 0 versioniert), 17 MB `__pycache__`, 15 MB `node_modules`. **Echter Inhalt ~16 MB** |
+| Historie | **698** Commits berühren `apps/openlehr`, davon **167 gemischt** (24 %) |
+| Auswärtsbindungen | **70** Treffer in 15 Dateien auf `begod/` über `ProjectPaths.root()`; **30+** `sys.path`-Griffe `parents[N]`; **14** Shell-Skripte mit `../../..` |
+| Absolute Pfade | **24** Dateien. Zwei zeigen auf `/Users/…/Documents/OpenLehr/…` — **existiert im Repo nicht**, also schon heute gebrochen |
+| Muss mit, liegt außen | `docs/openlehr` 12 MB · `tests/steuer` 2,1 MB / 44 Dateien (importiert `apps.openlehr.daemon.steuer.*` direkt) · Wurzel-`conftest.py` mit openlehr-eigener Vorrichtung · 2 CI-Dateien |
+| Geheimnisse / Personenbezug | keine gefunden — **ausdrücklich keine vollständige Suche**, Fixtures nicht durchsucht |
+
+**Die Reihenfolge ist bindend, und der Grund ist keine Mengenfrage:**
+
+1. **Zuerst die Auswärtsbindungen lösen — im Monorepo, wo die Tests noch
+   laufen.** Nach dem Schnitt ist die Gegenprobe weg: Ob eine gelöste Bindung
+   noch dasselbe tut, lässt sich nur dort messen, wo beide Seiten existieren.
+   Wer erst schneidet, repariert danach blind.
+2. **Dann schneiden**, mit Historie (`git filter-repo`), nicht kopieren.
+3. **Dann erst** Manifest, Dienststart, Oberflächenbeschreibung.
+
+**Die Entscheidung, die vor Schritt 1 steht** — und sie ist eine Sichtung, kein
+Umbau: Von den 15 Dateien mit `begod/`-Bindung gehören nicht alle ins neue Repo.
+`stiftshuette_parity_matrix.py` etwa liest `begod/desktop/lib/*.dart`, vergleicht
+also gegen eine **andere App** — das ist Monorepo-Werkzeug und bleibt zurück.
+Jede der 15 bekommt genau eine von drei Marken: *zieht um* · *bleibt* ·
+*wird ersetzt*.
+
 **Bindend:** H1 vor H2 und H3 (beide hängen am Vertrag). H4 vor jeder Aussage
 „läuft richtig". H5 vor jedem neuen Bildschirm. H6 vor H5s Sortierung — ohne
 Fristenrechnung ist „nach Wichtigkeit" nicht entscheidbar. H8a vor H8b und H8c.
-H2 vor H10 — vorher gibt es nichts zu exportieren.
+H2 vor H10 — vorher gibt es nichts zu exportieren. **H12 Schritt 1 vor
+Schritt 2**, siehe oben.
 
 ## §3 Verworfene Wege
 
