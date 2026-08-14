@@ -142,6 +142,21 @@ MODULE = [
     "melder/vier_nenner.py",
     "melder/vorschlagsmelder.py",
     "melder/wissensverlauf.py",
+    # 2026-08-14 nachgetragen: diese zehn melden --selftest ueber sys.argv
+    # statt ueber argparse und fielen deshalb durch die Ratsche unten --
+    # sie lief nur auf add_argument("--selftest"). Alle zehn liefen
+    # nirgends, alle zehn sind gruen. Darunter haken/worktree_identitaet.py,
+    # dessen Feldfehler-Fall am selben Tag gebaut wurde.
+    "haken/auftragshypothese_waechter.py",
+    "haken/existenzpruefung.py",
+    "haken/worktree_identitaet.py",
+    "kern/anfrage_erweiterung.py",
+    "kern/ausschreibekatalog.py",
+    "kern/kanarienvogel.py",
+    "kern/sicherungen.py",
+    "kern/zeitfenster.py",
+    "kern/zeitmarke.py",
+    "melder/eilmeldung_faellig.py",
 ]
 
 # Rot, mit Grund -- je Fall geprueft am 2026-08-12, nicht geraten:
@@ -191,7 +206,7 @@ XFAIL = {
 }
 
 assert set(XFAIL) <= set(MODULE)
-assert len(MODULE) == 80, len(MODULE)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie)
+assert len(MODULE) == 90, len(MODULE)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie)
 
 # Nur diese 3 legen -wal/-shm NEBEN der echten Datenbank an, wenn sie
 # BRAINLEHR_DB unbesetzt lassen -- gemessen 2026-08-12 per Datei-Snapshot
@@ -368,7 +383,15 @@ def test_kein_modul_faellt_durch_die_liste():
             if "__pycache__" in datei.parts:
                 continue
             quelle = datei.read_text(encoding="utf-8", errors="replace")
-            if 'add_argument("--selftest"' in quelle or "add_argument('--selftest'" in quelle:
+            # BEIDE Anmeldeformen. Bis 2026-08-14 stand hier nur die
+            # argparse-Form -- zehn Module melden --selftest ueber sys.argv
+            # und fielen damit durch die Ratsche, die genau das verhindern
+            # sollte. Eine Ratsche, die nur eine von zwei Schreibweisen
+            # kennt, ist bei der anderen blind, und blind sieht aus wie gruen.
+            if ('add_argument("--selftest"' in quelle
+                    or "add_argument('--selftest'" in quelle
+                    or '"--selftest" in sys.argv' in quelle
+                    or "'--selftest' in sys.argv" in quelle):
                 gefunden.add(str(datei.relative_to(ROOT)))
 
     fehlend = sorted(gefunden - set(MODULE))

@@ -116,6 +116,7 @@ import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
                           # expliziten Batch-Lauf, nicht daneben nachgebaut.
 import ausweis  # B4.1: actor wird beglaubigt, nicht behauptet (siehe _identity)
+import sicherungen  # Aufbewahrungsregel fuer die automatischen .bak-Kopien (2026-08-14)
 import werkzeugrechte  # B4.3: Durchsetzung an tools/call statt nur an tools/list
 import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # (knowledge_add/knowledge_update/lesson_record/lesson_update),
@@ -6321,6 +6322,12 @@ def handle_request(req: dict) -> dict:
 
 def main():
     """stdio MCP server — reads JSON-RPC from stdin, writes to stdout."""
+    # Alte automatische Datenbanksicherungen wegraeumen. Die Regel liegt in
+    # kern/sicherungen.py, nicht hier -- diese Datei hat 6364 Zeilen und
+    # bekommt keine neue Funktion (Monolith-Bremse). Warum ueberhaupt: 14
+    # Stellen legen vor Schemaeingriffen eine Vollkopie an, zehn davon in
+    # dieser Datei, und keine raeumte auf -- 312 Dateien, 22 GB in drei Tagen.
+    sicherungen.aufraeumen_still(DB_PATH)
     for line in sys.stdin:
         line = line.strip()
         if not line:
