@@ -85,14 +85,34 @@ def _verbindung(db: Path | None = None) -> sqlite3.Connection:
 
 
 def stumme_achse(conn: sqlite3.Connection) -> dict:
-    """Normen ohne Art. Nur NORMEN -- ein Fakt braucht keine Art, so wie er
-    keinen Rang braucht (Spaltenkommentar: 'ein Rang auf einem Fakt waere
-    eine Ordnung, die nichts ordnet')."""
-    zeilen = conn.execute(
-        "SELECT COUNT(*) n, SUM(norm_art IS NULL) ohne FROM knowledge_nodes "
+    """Normen ohne Art -- gezaehlt ueber die Normen, die eine BRAUCHEN.
+
+    Nur NORMEN, denn ein Fakt braucht keine Art, so wie er keinen Rang
+    braucht (Spaltenkommentar: 'ein Rang auf einem Fakt waere eine Ordnung,
+    die nichts ordnet').
+
+    NENNER KORRIGIERT 2026-08-14. Vorher lief die Zaehlung ueber ALLE Normen
+    und meldete "85 von 85 ohne Art (100%)" -- eine Zahl, die nach grossem
+    Rueckstand klingt und keiner war. schema.sql sagt beim Pflichttrigger
+    ausdruecklich: "NULL bleibt der Normalfall fuer eigenes Wissen
+    (Hausregel, Selbsterfahrung) und braucht KEINEN Aufwand; Pflicht wird
+    norm_art nur, wenn source auf eine Norm FREMDER Herkunft zeigt."
+    Gemessen an dem Tag: 3 der 85 Normen haben eine fremde Quelle, 82 nicht.
+    Ueber alle 85 gemessen konnte die Quote also gar nicht unter 96 Prozent
+    fallen, egal wie gepflegt der Bestand ist -- dieselbe Fehlerklasse wie
+    die vier Nennerfehler in melder/pruefer.py am selben Tag (L-1c081e).
+
+    Der Nenner ist damit dieselbe Menge, die auch der Trigger meint:
+    Normen mit fremder Quelle. Die Erkennung laeuft ueber FREMDE_QUELLE --
+    dieselbe Funktion, die fremdnormen() benutzt, statt einer zweiten Liste,
+    die auseinanderlaufen wuerde."""
+    alle = conn.execute(
+        "SELECT source, norm_art FROM knowledge_nodes "
         "WHERE norm_rang IS NOT NULL AND zurueckgezogen = 0"
-    ).fetchone()
-    n, ohne = zeilen["n"] or 0, zeilen["ohne"] or 0
+    ).fetchall()
+    pflichtig = [r for r in alle if FREMDE_QUELLE.search(r["source"] or "")]
+    n = len(pflichtig)
+    ohne = sum(1 for r in pflichtig if not r["norm_art"])
     return {
         "normen": n,
         "ohne_art": ohne,
@@ -175,18 +195,20 @@ def _selftest() -> None:
     einfuegen('/a', None, None, 'Messung')
     assert stumme_achse(conn)["normen"] == 0, "Fakten sind keine Normen"
 
+    # NENNER: nur Normen mit FREMDER Quelle zaehlen -- fuer eigenes Wissen ist
+    # norm_art NULL der Normalfall (schema.sql, Pflichttrigger). Beide hier
+    # tragen 'Chat' als Quelle, sind also nicht pflichtig.
     einfuegen('/n1', 1, None, 'Chat')
     einfuegen('/n2', 2, 'sollen', 'Chat')
     s = stumme_achse(conn)
-    assert s["normen"] == 2 and s["ohne_art"] == 1, s
-    assert "teilweise" in s["wirkung"]
-
-    # Zurueckgezogene zaehlen nicht mit -- sonst meldet der Melder Altlasten.
-    einfuegen('/alt', 1, None, 'Chat', zurueckgezogen=1)
-    assert stumme_achse(conn)["normen"] == 2, "zurueckgezogene Normen zaehlen nicht"
+    assert s["normen"] == 0, ("Hausnormen sind nicht pflichtig und duerfen den "
+                              "Nenner nicht stellen -- sonst konnte die Quote "
+                              "nie unter 96 Prozent fallen, egal wie gepflegt "
+                              "der Bestand ist", s)
 
     # Achse 3: solange alles aus dem Haus stammt, bleibt sie vertagt.
     assert not bericht(conn)["achse3_faellig"], "Hausnormen loesen nichts aus"
+
 
     # Grenzfall/Positivfall: eine fremde Quelle macht sie faellig, solange
     # norm_entschieden_von den Herkunftswert noch nicht traegt.
@@ -212,6 +234,23 @@ def _selftest() -> None:
         "ein Knoten mit HERKUNFT_FREMD darf nicht erneut als offen gemeldet werden"
     assert b2["achse3_faellig"], "/din ist weiterhin offen, Achse 3 bleibt faellig"
     assert b2["fremdnormen_gesamt"] == len(alle)
+
+    # NENNER der Art-Achse (korrigiert 2026-08-14). Bis hierher stehen drei
+    # Normen mit fremder Quelle im Testbestand: /din und /geklaert tragen eine
+    # Art, /f1 gleich nicht. Die beiden Hausnormen /n1 und /n2 duerfen NICHT
+    # mitzaehlen -- taeten sie es, koennte die Quote nie unter einen hohen
+    # Wert fallen, egal wie gepflegt der Bestand ist. Genau das war der Fehler
+    # der alten Fassung ("85 von 85 ohne Art (100%)" bei drei pflichtigen).
+    einfuegen('/f1', 1, None, 'BGBl I 2026 Nr. 226')
+    s2 = stumme_achse(conn)
+    assert s2["normen"] == 3, ("nur fremde Quellen sind pflichtig, Hausnormen "
+                               "duerfen den Nenner nicht stellen", s2)
+    assert s2["ohne_art"] == 1, s2
+    assert "teilweise" in s2["wirkung"]
+
+    # Zurueckgezogene zaehlen nicht mit -- sonst meldet der Melder Altlasten.
+    einfuegen('/alt', 1, None, 'BGBl I 2026 Nr. 999', zurueckgezogen=1)
+    assert stumme_achse(conn)["normen"] == 3, "zurueckgezogene Normen zaehlen nicht"
 
     # Negativfall zur Grenze: eine HAUSREGEL, die 'Gesetz' nur in der Prosa
     # traegt (keine Fundstelle, kein Zitat) -- FREMDE_QUELLE ist an der
