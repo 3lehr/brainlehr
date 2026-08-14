@@ -198,7 +198,18 @@ def melden(runs: Path = RUNS) -> dict | None:
     return {
         "pruefung": "rasterblick:fehlende_vermerke",
         "befund": f"{len(f)} Ergebnisdatei(en) unter runs/ ohne Rastervermerk: "
-                  + ", ".join(p.name for p in f[:5]) + (" ..." if len(f) > 5 else ""),
+                  # Juengste zuerst, und der Rest wird GEZAEHLT statt mit "..."
+                  # angedeutet. Zwei Gruende, beide am 2026-08-14 an
+                  # gegenprobe_faellig.py gefunden: nach Name sortiert stehen
+                  # ausgerechnet die aeltesten vorn -- und ein Lauf von heute
+                  # ist der einzige, dessen Raster ueberhaupt noch jemand
+                  # nachtragen KANN. Bei einem halbes Jahr alten weiss niemand
+                  # mehr, was abgesucht wurde. Und "..." laesst offen, ob zwei
+                  # oder achtzig folgen; die Zahl steht zwar vorn, aber der
+                  # Leser soll sie nicht zusammenrechnen muessen.
+                  + ", ".join(p.name for p in sorted(
+                      f, key=lambda p: p.stat().st_mtime, reverse=True)[:5])
+                  + (f" (und {len(f) - 5} aeltere, nicht aufgezaehlt)" if len(f) > 5 else ""),
         "fehlklasse": "Raster ohne Vermerk -- eine Suche ohne festgehaltenes WAS abgesucht wurde "
                       "ist nicht wiederholbar, nur wiederholbar von vorn",
         "fehlalarm_kostet": "gering: ein einzelner Ad-hoc-Lauf ohne Gitter-/Korpuscharakter zaehlt "
@@ -266,6 +277,23 @@ def _selftest() -> None:
         (runs / "e.json").write_text("{}")
         m = melden(runs)
         assert m and "3 Ergebnisdatei" in m["befund"] and m["fehlklasse"] and m["fehlalarm_kostet"]
+
+        # Deckel und Reihenfolge. Acht offene Faelle mit gestaffelter mtime:
+        # die juengsten fuenf muessen dastehen, die drei aelteren gezaehlt
+        # statt mit "..." angedeutet werden.
+        import os as _os
+        import time as _time
+        for i in range(8):
+            p = runs / f"z{i}.json"
+            p.write_text("{}")
+            _os.utime(p, (_time.time() - i * 3600, _time.time() - i * 3600))
+        m8 = melden(runs)
+        assert "und 6 aeltere, nicht aufgezaehlt" in m8["befund"], (
+            m8["befund"], "der Deckel muss gezaehlt werden, nicht mit ... angedeutet")
+        assert "z0.json" in m8["befund"], (m8["befund"], "die juengste muss genannt sein")
+        assert "z7.json" not in m8["befund"], (m8["befund"], "die aelteste darf nicht vorn stehen")
+        for i in range(8):
+            (runs / f"z{i}.json").unlink()
 
         # Verlustvermerk: bringt den Melder zum Schweigen, OHNE etwas zu erfinden.
         for name in ("b.json", "d.json", "e.json"):
