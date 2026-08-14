@@ -49,9 +49,16 @@ def _basis(td: str) -> pathlib.Path:
 
 
 def test_zielverzeichnis_bekommt_beide_dateien_wenn_es_schon_existiert():
-    """POSITIV: Nachbereitungsfall -- der neue Arbeitsbaum existiert bereits
-    (leer), der Haken zieht CLAUDE.md (Symlink) und settings.json (Kopie)
-    nach. Vorher hatte das Zielverzeichnis keine der beiden Dateien."""
+    """POSITIV: _identitaet_nachziehen zieht CLAUDE.md (Symlink) und
+    settings.json (Kopie) nach, wenn das Zielverzeichnis schon existiert.
+
+    GEAENDERT 2026-08-14: Geprueft wird jetzt die FUNKTION, nicht mehr main().
+    Der Haken darf beim Anlegen nicht mehr befuellen -- `git worktree add`
+    scheitert an einem nicht-leeren Zielverzeichnis, und der Klient verlangt
+    zugleich, dass der gedruckte Pfad existiert. Beides zusammen laesst nur
+    ein LEERES Verzeichnis zu. Die Funktion bleibt geprueft, weil sie an ein
+    Ereignis NACH der Anlage umziehen soll (SessionStart im neuen Baum) --
+    dann ist das eine Verdrahtung und keine Neuentwicklung."""
     with tempfile.TemporaryDirectory() as td:
         basis = _basis(td)
         ziel = basis / ".claude" / "worktrees" / "probe"
@@ -59,9 +66,8 @@ def test_zielverzeichnis_bekommt_beide_dateien_wenn_es_schon_existiert():
         assert not (ziel / "CLAUDE.md").exists()
         assert not (ziel / ".claude" / "settings.json").exists()
 
-        stdout = _run_main(json.dumps({"base_directory": str(basis), "worktree_name": "probe"}))
+        hook._identitaet_nachziehen(str(basis), ziel)
 
-        assert stdout.strip() == str(ziel)
         assert (ziel / "CLAUDE.md").is_symlink(), "CLAUDE.md soll ein Symlink sein"
         assert (ziel / "CLAUDE.md").read_text(encoding="utf-8") == "# Hausregeln\n"
         assert (ziel / ".claude" / "settings.json").read_text(encoding="utf-8") == '{"hooks": {}}\n'
@@ -83,12 +89,24 @@ def test_vorhandene_datei_im_zielbaum_wird_nicht_ueberschrieben():
         assert not (ziel / "CLAUDE.md").is_symlink()
 
 
-def test_fehlendes_zielverzeichnis_bleibt_folgenlos_und_druckt_trotzdem_den_pfad():
-    """NEGATIV: Laeuft der Haken VOR der eigentlichen Anlage (Zielverzeichnis
-    existiert noch nicht), legt er nichts an -- `git worktree add` verlangt
-    ein leeres oder fehlendes Zielverzeichnis, ein vorab befuellter Ordner
-    liesse die Anlage scheitern (empirisch geprueft, siehe Modulkopf).
-    stdout traegt trotzdem den erwarteten Pfad, exit bleibt 0."""
+def test_gedruckter_pfad_existiert_und_ist_leer():
+    """FELDFEHLER 2026-08-14. Dieser Test stand hier vorher GENAU ANDERSHERUM
+    ("Haken haette das Zielverzeichnis nicht anlegen duerfen") und war gruen,
+    waehrend der Betreiber keinen neuen Chat mehr starten konnte:
+
+        hook printed .../baum-20260814T121618-62360
+        but no directory exists there
+
+    Der Test hat den Feldfehler festgeschrieben, nicht gefunden. Der Klient
+    verlangt, dass der gedruckte Pfad EXISTIERT -- die alte Annahme, der Haken
+    sei ein reiner Nachbereiter, war falsch.
+
+    ZWEI Zusicherungen, und die zweite ist die schwierigere: das Verzeichnis
+    muss existieren UND leer sein. Gemessen an einem Wegwerf-Repo nimmt
+    `git worktree add` ein vorhandenes leeres Verzeichnis an (exit 0),
+    scheitert aber an einem befuellten ("fatal: ... already exists"). Ohne die
+    zweite Zusicherung kippt der naechste Fix den Fehler nur auf die andere
+    Seite -- und genau das ist an diesem Vertrag schon dreimal passiert."""
     with tempfile.TemporaryDirectory() as td:
         basis = _basis(td)
         erwartet = basis / ".claude" / "worktrees" / "probe-fehlt-noch"
@@ -96,7 +114,11 @@ def test_fehlendes_zielverzeichnis_bleibt_folgenlos_und_druckt_trotzdem_den_pfad
         stdout = _run_main(json.dumps({"base_directory": str(basis), "worktree_name": "probe-fehlt-noch"}))
 
         assert stdout.strip() == str(erwartet)
-        assert not erwartet.exists(), "Haken haette das Zielverzeichnis nicht anlegen duerfen"
+        assert erwartet.is_dir(), (
+            "gedruckter Pfad existiert nicht -- genau die vom Klienten gemeldete Ablehnung")
+        assert not any(erwartet.iterdir()), (
+            list(erwartet.iterdir()),
+            "gedrucktes Verzeichnis ist nicht leer -- git worktree add scheitert dann")
 
 
 def test_interner_fehler_blockiert_die_anlage_nicht():
@@ -131,8 +153,8 @@ if __name__ == "__main__":
     print("[POSITIV] existierendes Zielverzeichnis -> beide Dateien nachgezogen")
     test_vorhandene_datei_im_zielbaum_wird_nicht_ueberschrieben()
     print("[GRENZWERT] vorhandene Datei bleibt unangetastet")
-    test_fehlendes_zielverzeichnis_bleibt_folgenlos_und_druckt_trotzdem_den_pfad()
-    print("[NEGATIV] fehlendes Zielverzeichnis -> No-Op, Pfad trotzdem gedruckt")
+    test_gedruckter_pfad_existiert_und_ist_leer()
+    print("[FELDFEHLER] gedruckter Pfad existiert und ist leer")
     test_interner_fehler_blockiert_die_anlage_nicht()
     print("[NEGATIV] interner Fehler -> Pfad trotzdem gedruckt")
     test_kaputtes_stdin_druckt_trotzdem_einen_pfad()
