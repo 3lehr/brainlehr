@@ -68,6 +68,15 @@ FREMDE_QUELLE = re.compile(
     r"Richtlinie|DIN\s|EN\s|ISO\s|IEC\s|BSI\s|WCAG|RFC\s?\d)", re.I
 )
 
+# Betreiberentscheidung 2026-08-14, woertlich "Wert an der Herkunft": kein
+# Schemawechsel, kein eigenes Ja/Nein-Feld fuer Achse 3. Stattdessen traegt
+# knowledge_nodes.norm_entschieden_von bei einer Fremdnorm diesen Wert --
+# das Feld haelt ohnehin fest, WER die Norm verbindlich gemacht hat, und bei
+# einem Gesetz ist das der Gesetzgeber, nicht dieses Haus. Widerrufbarkeit
+# folgt daraus unmittelbar: was wir nicht entschieden haben, koennen wir
+# nicht zuruecknehmen.
+HERKUNFT_FREMD = "gesetzgeber"
+
 
 def _verbindung(db: Path | None = None) -> sqlite3.Connection:
     conn = sqlite3.connect(f"file:{db or ort.DB}?mode=ro", uri=True)
@@ -96,33 +105,56 @@ def stumme_achse(conn: sqlite3.Connection) -> dict:
 
 def fremdnormen(conn: sqlite3.Connection) -> list[dict]:
     """Normen, deren QUELLE auf eine Stelle ausserhalb dieses Hauses zeigt.
-    Trifft die Abbruchbedingung der Vertagung von Achse 3."""
+    Trifft die Abbruchbedingung der Vertagung von Achse 3.
+
+    Liefert ALLE Treffer, unabhaengig davon, ob norm_entschieden_von den Wert
+    HERKUNFT_FREMD schon traegt -- das ist Absicht: die Migration braucht die
+    vollstaendige Kandidatenliste (idempotent ueber die WHERE-Klausel dort),
+    der Melder (bericht()) filtert die bereits erledigten selbst heraus."""
     fund = []
     for r in conn.execute(
-        "SELECT path, norm_rang, source FROM knowledge_nodes "
+        "SELECT path, norm_rang, source, norm_entschieden_von FROM knowledge_nodes "
         "WHERE norm_rang IS NOT NULL AND zurueckgezogen = 0 AND source IS NOT NULL"
     ):
         treffer = FREMDE_QUELLE.search(r["source"] or "")
         if treffer:
             fund.append({"path": r["path"], "rang": r["norm_rang"],
-                         "merkmal": treffer.group(0).strip()})
+                         "merkmal": treffer.group(0).strip(),
+                         "entschieden_von": r["norm_entschieden_von"]})
     return fund
 
 
 def bericht(conn: sqlite3.Connection) -> dict:
     stumm = stumme_achse(conn)
     fremd = fremdnormen(conn)
-    return {
-        "achse2_art": stumm,
-        "achse3_faellig": bool(fremd),
-        "fremdnormen": fremd,
-        "hinweis": (
+    # Nur die NOCH NICHT nachgetragenen zaehlen als offener Punkt -- ein
+    # Knoten, der HERKUNFT_FREMD schon traegt, ist geklaert (Betreiber-
+    # entscheidung 2026-08-14: "Wert an der Herkunft") und darf nicht bei
+    # jedem Lauf erneut als faellig gemeldet werden.
+    offen = [f for f in fremd if f["entschieden_von"] != HERKUNFT_FREMD]
+    if offen:
+        hinweis = (
             "Achse 3 (Unabaenderlichkeit) ist FAELLIG -- eine Norm fremder Herkunft "
             "ist im Bestand, damit unterscheidet sich Widerrufbarkeit messbar. "
-            "Siehe Knoten b6305304." if fremd else
+            "Siehe Knoten b6305304."
+        )
+    elif fremd:
+        hinweis = (
+            f"Achse 3 (Unabaenderlichkeit) ist beantwortet -- alle {len(fremd)} "
+            f"Norm(en) fremder Herkunft im Bestand tragen norm_entschieden_von="
+            f"'{HERKUNFT_FREMD}'."
+        )
+    else:
+        hinweis = (
             "Achse 3 bleibt vertagt -- alle Normen stammen aus diesem Haus und sind "
             "damit gleich widerrufbar. Die Vertagung traegt ihre Abbruchbedingung."
-        ),
+        )
+    return {
+        "achse2_art": stumm,
+        "achse3_faellig": bool(offen),
+        "fremdnormen": offen,
+        "fremdnormen_gesamt": len(fremd),
+        "hinweis": hinweis,
     }
 
 
@@ -130,37 +162,73 @@ def _selftest() -> None:
     conn = sqlite3.connect(":memory:")
     conn.row_factory = sqlite3.Row
     conn.execute("""CREATE TABLE knowledge_nodes (path TEXT, norm_rang INTEGER,
-                    norm_art TEXT, source TEXT, zurueckgezogen INTEGER DEFAULT 0)""")
+                    norm_art TEXT, source TEXT, zurueckgezogen INTEGER DEFAULT 0,
+                    norm_entschieden_von TEXT)""")
+
+    def einfuegen(path, rang, art, source, zurueckgezogen=0, entschieden_von=None):
+        conn.execute(
+            "INSERT INTO knowledge_nodes (path, norm_rang, norm_art, source, "
+            "zurueckgezogen, norm_entschieden_von) VALUES (?,?,?,?,?,?)",
+            (path, rang, art, source, zurueckgezogen, entschieden_von))
 
     # Negativfall zuerst: ein FAKT ohne Art darf nicht als Luecke zaehlen.
-    conn.execute("INSERT INTO knowledge_nodes VALUES ('/a', NULL, NULL, 'Messung', 0)")
+    einfuegen('/a', None, None, 'Messung')
     assert stumme_achse(conn)["normen"] == 0, "Fakten sind keine Normen"
 
-    conn.execute("INSERT INTO knowledge_nodes VALUES ('/n1', 1, NULL, 'Chat', 0)")
-    conn.execute("INSERT INTO knowledge_nodes VALUES ('/n2', 2, 'sollen', 'Chat', 0)")
+    einfuegen('/n1', 1, None, 'Chat')
+    einfuegen('/n2', 2, 'sollen', 'Chat')
     s = stumme_achse(conn)
     assert s["normen"] == 2 and s["ohne_art"] == 1, s
     assert "teilweise" in s["wirkung"]
 
     # Zurueckgezogene zaehlen nicht mit -- sonst meldet der Melder Altlasten.
-    conn.execute("INSERT INTO knowledge_nodes VALUES ('/alt', 1, NULL, 'Chat', 1)")
+    einfuegen('/alt', 1, None, 'Chat', zurueckgezogen=1)
     assert stumme_achse(conn)["normen"] == 2, "zurueckgezogene Normen zaehlen nicht"
 
     # Achse 3: solange alles aus dem Haus stammt, bleibt sie vertagt.
     assert not bericht(conn)["achse3_faellig"], "Hausnormen loesen nichts aus"
 
-    # Grenzfall/Positivfall: eine fremde Quelle macht sie faellig.
-    conn.execute("INSERT INTO knowledge_nodes VALUES ('/din', 2, 'sollen', 'DIN 9241-210', 0)")
+    # Grenzfall/Positivfall: eine fremde Quelle macht sie faellig, solange
+    # norm_entschieden_von den Herkunftswert noch nicht traegt.
+    einfuegen('/din', 2, 'sollen', 'DIN 9241-210')
     b = bericht(conn)
     assert b["achse3_faellig"] and b["fremdnormen"][0]["merkmal"].startswith("DIN")
 
     # Gegenprobe, dass die Erkennung nicht alles durchlaesst: ein Chatverweis
     # mit dem Wort 'Richtlinie' im FLIESSTEXT der Quelle ist gewollt ein
     # Treffer -- aber ein gewoehnlicher Dateiverweis darf keiner sein.
-    conn.execute("INSERT INTO knowledge_nodes VALUES ('/x', 1, NULL, 'erzeugt aus docs/plan.md', 0)")
+    einfuegen('/x', 1, None, 'erzeugt aus docs/plan.md')
     assert len(bericht(conn)["fremdnormen"]) == 1, "Dateiverweis ist keine fremde Norm"
 
-    print("selftest ok (7 Faelle)")
+    # Herkunftswert (Betreiberentscheidung 2026-08-14): traegt der Knoten
+    # HERKUNFT_FREMD schon, ist Achse 3 fuer IHN geklaert -- fremdnormen()
+    # findet ihn trotzdem (Migration braucht die vollstaendige Liste), aber
+    # bericht() zaehlt ihn nicht mehr als offenen Punkt.
+    einfuegen('/geklaert', 1, 'sollen', 'BGBl I 2026 Nr. 226', entschieden_von=HERKUNFT_FREMD)
+    alle = fremdnormen(conn)
+    assert any(f["path"] == '/geklaert' for f in alle), "fremdnormen() muss auch Geklaertes finden"
+    b2 = bericht(conn)
+    assert not any(f["path"] == '/geklaert' for f in b2["fremdnormen"]), \
+        "ein Knoten mit HERKUNFT_FREMD darf nicht erneut als offen gemeldet werden"
+    assert b2["achse3_faellig"], "/din ist weiterhin offen, Achse 3 bleibt faellig"
+    assert b2["fremdnormen_gesamt"] == len(alle)
+
+    # Negativfall zur Grenze: eine HAUSREGEL, die 'Gesetz' nur in der Prosa
+    # traegt (keine Fundstelle, kein Zitat) -- FREMDE_QUELLE ist an der
+    # QUELLE orientiert, nicht am Inhalt, und kennt keinen Unterschied
+    # zwischen Zitat und Prosa. Diese Zeile trifft darum FAELSCHLICH zu.
+    # Bewusst nicht als Bug behandelt (Auftrag: Muster nicht auf eigene
+    # Faust aendern) -- hier nur belegt, damit der Befund nicht stillschweigend
+    # untergeht.
+    einfuegen('/hausregel', 3, 'sollen',
+              'Wir folgen hier keinem Gesetz, sondern der eigenen Erfahrung')
+    treffer_prosa = [f for f in fremdnormen(conn) if f["path"] == '/hausregel']
+    assert treffer_prosa, (
+        "BEFUND: FREMDE_QUELLE trifft auch bei einer Hausregel, die 'Gesetz' "
+        "nur in der Prosa nennt, ohne echte Fundstelle -- Grenzwert aus dem "
+        "Auftrag, siehe Docstring hier und Bericht des Agenten.")
+
+    print("selftest ok (10 Faelle, davon 1 dokumentierter Grenzwert-Befund)")
 
 
 def main() -> None:
@@ -199,7 +267,18 @@ def main() -> None:
     quote = "" if anteil is None else f" ({anteil:.0%})"
     print(f"Achse 2 (Art): {s['ohne_art']} von {s['normen']} Normen ohne Art{quote}")
     print(f"  Wirkung: {s['wirkung']}")
-    print(f"\nAchse 3 (Unabaenderlichkeit): {'FAELLIG' if b['achse3_faellig'] else 'vertagt'}")
+    # Drei Zustaende, nicht zwei -- die Kopfzeile ist das, was ueberflogen
+    # wird, und "vertagt" hiesse hier das Gegenteil des Zutreffenden:
+    #   FAELLIG      Fremdnormen da, Herkunft noch nicht ausgewiesen
+    #   beantwortet  Fremdnormen da UND ausgewiesen (der Zustand seit 2026-08-14)
+    #   vertagt      gar keine Fremdnorm im Bestand -- die Achse hatte nie Anlass
+    if b["achse3_faellig"]:
+        _stand = "FAELLIG"
+    elif b["fremdnormen_gesamt"]:
+        _stand = "beantwortet"
+    else:
+        _stand = "vertagt"
+    print(f"\nAchse 3 (Unabaenderlichkeit): {_stand}")
     print(f"  {b['hinweis']}")
     for f in b["fremdnormen"][:5]:
         print(f"  - {f['path']} (Rang {f['rang']}, erkannt an: {f['merkmal']})")

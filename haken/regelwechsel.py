@@ -133,23 +133,43 @@ def _normen() -> dict[str, tuple] | None:
 _BETREIBER_ACTOR = ("betreiber", "unbeglaubigt:betreiber")
 
 
+# Herkunftswert einer Fremdnorm (Betreiberentscheidung 2026-08-14, "Wert an
+# der Herkunft", siehe kern/normachsen.py::HERKUNFT_FREMD). Hier als eigene
+# Konstante statt Import: dieses Modul importiert bewusst nichts aus
+# normachsen.py (kein Laufzeit-Umweg ueber Regex bei jedem Prompt), die
+# Werte muessen darum wortgleich gehalten werden -- geprueft in
+# tests/test_regelwechsel.py::test_herkunftswert_steht_wortgleich_in_beiden_dateien
+# gegen kern.normachsen.HERKUNFT_FREMD.
+_HERKUNFT_FREMD = "gesetzgeber"
+
+
 def _urheber(actor: str | None, bedient_von: str | None,
              norm_entschieden_von: str | None = None) -> str:
-    """'betreiber' | 'werkzeug' | 'unbekannt'.
+    """'betreiber' | 'werkzeug' | 'fremd' | 'unbekannt'.
 
     bedient_von kommt NIE aus einem Argument, sondern aus dem beglaubigten
     Ausweis (siehe knowledge_mcp_server.py::_bedient_von) -- ist es gesetzt,
     stand ein Mensch hinter der schreibenden Maschine, das zaehlt wie eine
     direkte Aenderung durch den Betreiber und bleibt das staerkste Merkmal.
     Fehlt bedient_von, aber norm_entschieden_von steht auf 'betreiber', gilt
-    dasselbe -- das Feld ist Pflicht ohne Vorgabewert (siehe oben). Fehlt auch
-    das (actor leer/NULL oder der Vorgabewert 'unbekannt'), ist der Urheber
-    offen -- das wird gemeldet, nie stillschweigend als Werkzeug ODER als
-    Betreiber behandelt."""
+    dasselbe -- das Feld ist Pflicht ohne Vorgabewert (siehe oben).
+
+    'fremd' ist ein EIGENER Zweig, keine Untermenge von 'unbekannt': traegt
+    norm_entschieden_von den Herkunftswert einer Fremdnorm (Gesetz,
+    Verordnung, Urteil, Normungsstelle), ist die Herkunft GEKLAERT -- nur
+    eben nicht dieses Haus. Vor Auftrag 2026-08-14 gab es diesen Wert nicht,
+    und jede Fremdnorm fiel hier auf 'unbekannt' -- dieselbe Meldung wie ein
+    leeres actor-Feld ('URHEBER OFFEN'). Das waere nach dem Nachtragen der
+    drei Bestandsnormen FALSCH gewesen: ihre Herkunft ist geklaert, sie ist
+    nur nicht widerrufbar. Fehlt auch das (actor leer/NULL oder der
+    Vorgabewert 'unbekannt'), bleibt der Urheber offen -- das wird gemeldet,
+    nie stillschweigend als Werkzeug, Betreiber ODER Fremdnorm behandelt."""
     if bedient_von:
         return "betreiber"
     if norm_entschieden_von == "betreiber":
         return "betreiber"
+    if norm_entschieden_von == _HERKUNFT_FREMD:
+        return "fremd"
     if not actor or actor == "unbekannt":
         return "unbekannt"
     if actor in _BETREIBER_ACTOR:
@@ -277,6 +297,15 @@ def pruefe(sitzung: str) -> list[str]:
                         f"ungeklaerte Herkunft. Lies sie mit knowledge_read, "
                         f"bevor du weiterarbeitest -- passiver Recall ist kein "
                         f"Handoff (c14adcfe, Punkt 5).")
+                elif urheber == "fremd":
+                    meldungen.append(
+                        f"Norm Rang {rang} neu oder geaendert: {kid} -- {titel}. "
+                        f"Herkunft GEKLAERT, aber NICHT dieses Haus: diese Norm "
+                        f"stammt von aussen (Gesetz, Verordnung, Urteil oder "
+                        f"Normungsstelle) und ist darum NICHT widerrufbar -- "
+                        f"weder durch den Betreiber noch durch ein Werkzeug hier. "
+                        f"Lies sie mit knowledge_read, bevor du weiterarbeitest -- "
+                        f"passiver Recall ist kein Handoff (c14adcfe, Punkt 5).")
                 else:
                     meldungen.append(
                         f"Bindende Norm Rang {rang} neu oder geaendert: {kid} -- "

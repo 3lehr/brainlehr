@@ -344,6 +344,50 @@ def test_beides_leer_bleibt_unbekannt():
     assert regelwechsel._urheber("unbekannt", None, None) == "unbekannt"
 
 
+# --- Herkunftswert fuer Fremdnormen (Auftrag 2026-08-14, Normachse 3) ------
+#
+# ANLASS: Ohne eigenen Zweig fuer den neuen Wert norm_entschieden_von=
+# 'gesetzgeber' (kern/normachsen.py::HERKUNFT_FREMD) waeren die drei echten
+# Fremdnormen im Bestand auf 'unbekannt' gefallen und haetten ab dem naechsten
+# Sitzungsstart "URHEBER OFFEN -- ungeklaerte Herkunft" gemeldet, obwohl die
+# Herkunft geklaert ist: sie ist nur nicht der Betreiber.
+
+def test_urheber_fremd_direkt():
+    """ROT VOR GRUEN auf Funktionsebene: vor dem Fix kannte _urheber() nur
+    'betreiber'/'werkzeug'/'unbekannt' -- 'gesetzgeber' fiel mangels Treffer
+    auf 'unbekannt'."""
+    assert regelwechsel._urheber(None, None, "gesetzgeber") == "fremd"
+    # bedient_von schlaegt weiterhin alles -- auch eine Fremdnorm kann ein
+    # Mensch mit beglaubigtem Ausweis eintragen.
+    assert regelwechsel._urheber(None, "markus", "gesetzgeber") == "betreiber"
+
+
+def test_norm_entschieden_von_gesetzgeber_meldet_fremd_statt_offen(tmp_path, monkeypatch):
+    """ROT VOR GRUEN: stellt eine der drei echten Fremdnormen nach (source
+    nennt ein Gesetz, norm_entschieden_von='gesetzgeber' nach der Migration).
+    Vor dem Fix waere die Meldung 'URHEBER OFFEN -- ungeklaerte Herkunft'
+    gewesen -- falsch, denn die Herkunft ist geklaert."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    _norm(db, "07fb68aa", 1, "GEG heisst seit 29.07.2026 GMoDG",
+          norm_entschieden_von="gesetzgeber", content="Urtext")
+    regelwechsel.pruefe("s1")                       # erster Blick: still
+    _update_norm(db, "07fb68aa", "2026-08-14T09:00:00+02:00",
+                 actor=None, bedient_von=None, norm_entschieden_von="gesetzgeber",
+                 content="Text nach Aktualisierung durch das Gesetz")
+    meldungen = regelwechsel.pruefe("s1")
+    assert meldungen, "eine echte Aenderung darf nicht stumm bleiben"
+    assert "URHEBER OFFEN" not in meldungen[0], (
+        "eine Fremdnorm mit Herkunftswert ist keine ungeklaerte Herkunft: "
+        + repr(meldungen))
+    assert "Weisung des Betreibers" not in meldungen[0], (
+        "eine Fremdnorm ist keine Betreiberweisung: " + repr(meldungen))
+    assert "NICHT widerrufbar" in meldungen[0]
+    assert "07fb68aa" in meldungen[0]
+
+
 def test_norm_entschieden_von_anderer_wert_wird_nicht_zu_betreiber(tmp_path, monkeypatch):
     """NEGATIVFALL: ein von 'betreiber' abweichender Wert (z.B. eine externe
     Quelle wie 'Gesetz' oder ein Testwert) darf nicht zu 'betreiber' fuehren."""
@@ -360,3 +404,27 @@ def test_norm_entschieden_von_anderer_wert_wird_nicht_zu_betreiber(tmp_path, mon
     meldungen = regelwechsel.pruefe("s1")
     assert meldungen and "URHEBER OFFEN" in meldungen[0], (
         "ein abweichender Wert ist keine Betreiber-Selbstauskunft: " + repr(meldungen))
+
+
+def test_herkunftswert_steht_wortgleich_in_beiden_dateien():
+    """Der Wert 'gesetzgeber' steht doppelt: als _HERKUNFT_FREMD in
+    haken/regelwechsel.py und als HERKUNFT_FREMD in kern/normachsen.py.
+    Die Verdopplung ist Absicht -- regelwechsel laeuft bei JEDEM Prompt und
+    soll dafuer nicht normachsen samt Regex importieren muessen.
+
+    Der Preis der Verdopplung ist stilles Auseinanderlaufen: aendert jemand
+    einen der beiden Werte, meldet regelwechsel jede Fremdnorm wieder als
+    'URHEBER OFFEN', ohne dass irgendetwas rot wird. Genau das faengt dieser
+    Test -- er ist der Grund, warum die Verdopplung tragbar ist.
+
+    Rot-Probe: einen der beiden Werte aendern, dann faellt er."""
+    import sys as _s
+    from pathlib import Path as _P
+    _w = _P(__file__).resolve().parent.parent
+    _s.path[:0] = [str(_w / "kern"), str(_w / "haken")]
+    import normachsen
+    import regelwechsel
+    assert regelwechsel._HERKUNFT_FREMD == normachsen.HERKUNFT_FREMD, (
+        regelwechsel._HERKUNFT_FREMD, normachsen.HERKUNFT_FREMD,
+        "die beiden Fassungen des Herkunftswerts sind auseinandergelaufen -- "
+        "regelwechsel meldet ab jetzt jede Fremdnorm wieder als ungeklaert")
