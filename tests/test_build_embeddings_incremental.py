@@ -211,10 +211,19 @@ def test_batch_ausfall_verliert_keine_vektoren_faellt_auf_einzelpfad_zurueck(mon
 # --- Selbstheilung: text_checksum-Spalte fehlt vorher, existiert danach ---
 
 def test_text_checksum_spalte_wird_selbstheilend_angelegt(db_path):
+    # Vorbedingung SELBST herstellen statt sie von schema.sql zu erben:
+    # Seit dem 2026-08-14 (Aufgabe 110) fuehrt schema.sql text_checksum, weil
+    # eine unvollstaendige SOLL-Datei den Schemamelder mit einer Abweichung
+    # beschaeftigte, die keine war. Die Selbstheilung bleibt trotzdem noetig --
+    # sie gilt gewachsenen Bestaenden aus der Zeit davor, und genau die sind
+    # der Fall, den eine Erstinstallation NIE zeigt.
     conn = sqlite3.connect(str(db_path))
+    if "text_checksum" in {r[1] for r in conn.execute("PRAGMA table_info(knowledge_embeddings)")}:
+        conn.execute("ALTER TABLE knowledge_embeddings DROP COLUMN text_checksum")
+        conn.commit()
     cols_before = {r[1] for r in conn.execute("PRAGMA table_info(knowledge_embeddings)")}
     conn.close()
-    assert "text_checksum" not in cols_before, "Testaufbau: schema.sql soll die Spalte NICHT mitbringen"
+    assert "text_checksum" not in cols_before, "Testaufbau: alter Bestand ohne die Spalte"
 
     _run()
 

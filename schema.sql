@@ -609,7 +609,18 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     -- 'published') alle Lehren sah -- sie trugen kein Freigabemerkmal, und was
     -- keines tragen KANN, laesst der Filter seither pauschal weg. Mit dieser
     -- Spalte wird aus dem groben Schnitt ein feiner.
-    freigabe TEXT NOT NULL DEFAULT 'intern'
+    freigabe TEXT NOT NULL DEFAULT 'intern',
+    -- Nachgetragen 2026-08-14 (Aufgabe 110). Die Spalte existierte NUR im
+    -- gewachsenen Bestand, nie in schema.sql -- kern/raum_daten.py liest sie
+    -- (`SELECT ... l.pruefstelle ... FROM lessons_learned l`) und brach damit
+    -- auf jeder Erstinstallation mit "no such column: l.pruefstelle". Belegt
+    -- am 2026-08-14 in beide Richtungen: frische DB bricht, gewachsene laeuft.
+    --
+    -- Warum es niemandem auffiel: raum_daten.py::_selftest baut sich seine
+    -- EIGENE lessons_learned-Tabelle -- mit pruefstelle. Ein Test, der sein
+    -- Schema selbst definiert, kann eine Schemaluecke grundsaetzlich nicht
+    -- finden; er prueft seine eigene Annahme.
+    pruefstelle TEXT
 );
 
 -- Werte-Trigger fuer lessons_learned.freigabe, gleiche Bauform wie an
@@ -842,6 +853,14 @@ CREATE TABLE IF NOT EXISTS knowledge_embeddings (
                                        -- knowledge_mcp_server._embedding_ranking auf model)
     vector BLOB NOT NULL,
     updated_at TEXT NOT NULL,
+    -- Nachgetragen 2026-08-14 (Aufgabe 110). Anders als pruefstelle wird diese
+    -- Spalte zur Laufzeit ergaenzt (kern/build_embeddings.py rueste sie beim
+    -- ersten Lauf nach), eine Erstinstallation bricht daran also NICHT --
+    -- gemessen. Sie stand trotzdem nicht in schema.sql, und damit war die
+    -- Datei als SOLL unvollstaendig: der Schemamelder meldete eine Abweichung,
+    -- die keine war, und verbrauchte Aufmerksamkeit, die den echten Fall
+    -- (pruefstelle) daneben verdeckte.
+    text_checksum TEXT,
     PRIMARY KEY (kind, ref_id, project_id)
 );
 
