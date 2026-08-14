@@ -74,3 +74,28 @@ immer unsichtbar, weil niemand vermisst, was er nie gesehen hat.
 - Negativfall: ein Zeitraum, der alles umfasst, ändert nichts.
 - Grenzwert: je ein Knoten genau am Rand, einer davor, einer danach.
 - Die Zahl der aus Zeitgründen fallengelassenen Lehren steht in der Antwort.
+
+## Aufträge, fertig zum Übergeben
+
+**Für alle gleichermaßen:** Arbeitsort `/Volumes/daten/Begod2026/brainlehr`.
+Zuerst `CLAUDE.md` lesen, dann diesen Plan. „Sieht der Code anders aus als hier
+beschrieben, halte dich an den Code und melde die Abweichung." Kein `git add
+-A`, kein Push, kein `git stash`. Datenbanknamen über `kern/speicher`.
+
+### Schritt 1 · Zeitfenster an die Engstelle von knowledge_search
+
+| | |
+|---|---|
+| **Darf ändern** | `knowledge_mcp_server.py` (nur `knowledge_search`, die beiden Knoten-SELECTs darin und der `TOOLS`-Eintrag), dazu eine neue Testdatei unter `tests/` |
+| **Tabu zusätzlich** | `kern/zeitfenster.py` (wird nur importiert, nicht geändert), `schema.sql`, `haken/` gesamt, `pruefstand/` gesamt, `kern/embeddings.py`, `kern/build_embeddings.py` |
+| **Fakten** | `knowledge_search` kennt bereits `stichtag`/`nur_geltende` für die **Geltung**; neu ist die **Entstehungszeit**. Die Engstelle ist die Schleife, die `final_ids` zu Einträgen macht — dort wirkt `_geltung_status` schon. Beide Knoten-SELECTs liefern heute **kein** `created_at`; ohne es im SELECT filtert nichts. `kern/zeitfenster.im_zeitraum(zeitstempel, von, bis)` vergleicht in Tagesgranularität, Grenzen **inklusive**. Lehren tragen kein entschiedenes „gemacht"-Feld (`first_seen` und `last_seen` existieren beide) — sie fallen bei gesetztem Zeitraum heraus, und die Zahl der so verlorenen Lehren gehört als Feld in die Antwort. |
+| **Abnahme** | Rot vor grün. Inhalt **plus** Zeitraum liefert vorher dieselbe Menge wie ohne, nachher eine echte Teilmenge. Negativfall: ein alles umfassender Zeitraum ändert nichts. Grenzwert: je ein Knoten genau am Rand, einer davor, einer danach. Die Zahl der aus Zeitgründen fallengelassenen Lehren steht in der Antwort und wird geprüft. Volle Suite grün. |
+
+### Schritt 2 · Vorfrage zur Geltung beantworten, bevor gebaut wird
+
+| | |
+|---|---|
+| **Darf ändern** | nur diese Plandatei und eine ADR unter `docs/adr/` |
+| **Tabu zusätzlich** | jeder Produktivcode — dieser Schritt entscheidet, er baut nicht |
+| **Fakten** | `gilt_bis` ist bei 2 von 2184 Knoten gesetzt, `gilt_ab` bei 83. Ein Feld, das niemand füllt, wird auch als Kante niemand füllen. Zu entscheiden ist ausschließlich: **wer** setzt es und **wann** — beim Schreiben, beim Import, durch einen Melder? |
+| **Abnahme** | Eine ADR, die den Setzer benennt und den Auslöser. Ohne sie bleibt Schritt 3 gesperrt. Kein Code. |
