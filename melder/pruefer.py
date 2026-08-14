@@ -130,6 +130,17 @@ _AUSNAHMEN_LESSONS_LEARNED = {
     "id": "Schluesselspalte (PRIMARY KEY)",
     "first_seen": "Zeitstempel der Anlage, gleiche Begruendung wie bei knowledge_nodes",
     "last_seen": "Zeitstempel der letzten Beobachtung, gleiche Begruendung",
+    # Beide gemessen 2026-08-14, nicht angenommen -- die Einwertigkeit ist
+    # hier die gesunde Verteilung, nicht ihr Ausfall.
+    "status": "Lebenszyklus-Feld. 853 von 894 auf 'active' sind 95 Prozent und "
+              "trotzdem kein Ausfall: es gibt fuenf belegte Werte, und die "
+              "seltenen tragen die Aussage (13 escalated_to_rule, 25 resolved, "
+              "2 in_claude_md, 1 open). Dass die Mehrheit offen ist, IST der "
+              "Normalfall eines Lehrenbestands",
+    "auto_rule_generated": "Kennzeichen der automatischen Eskalation. 12 von 894 "
+                           "auf 1 sind 1 Prozent -- gemessen passt das zur "
+                           "Schwelle: 16 Lehren haben occurrences>=3. Die Spalte "
+                           "unterscheidet also, sie ist nur zu Recht selten",
 }
 _AUSNAHMEN_ACCESS_LOG = {
     "id": "Schluesselspalte (PRIMARY KEY AUTOINCREMENT)",
@@ -152,9 +163,24 @@ _AUSNAHMEN_ACCESS_LOG = {
 # anderen fuenf (gilt_ab, gilt_bis, norm_entschieden_*) wurden vorher nie
 # geprueft.
 _NORMSCHICHT_SPALTEN = {
-    "norm_art", "gilt_ab", "gilt_bis",
+    "norm_art", "gilt_ab",
     "norm_entschieden_von", "norm_entschieden_am", "norm_entschieden_grund",
+    # 2026-08-14 nachgetragen: wurde ueber alle 2195 Zeilen gemessen statt
+    # ueber die 85 Normen. Der Befund bleibt (85 von 85 leer), aber der
+    # Nenner war falsch -- und ein Befund mit falschem Nenner ist beim
+    # naechsten Lesen nicht nachpruefbar.
+    "norm_entschieden_belegart",
 }
+
+# gilt_bis braucht einen NOCH engeren Nenner als die uebrige Normschicht und
+# ist deshalb hier statt oben. knowledge_add verlangt bei 'norm_unbefristet'
+# ausdruecklich, dass gilt_bis LEER BLEIBT -- ueber alle Normen gemessen war
+# "98 Prozent leer" also wieder die Bauart und nicht der Ausfall. Gemessen
+# 2026-08-14: 2 befristete Normen, beide mit gilt_bis; 78 unbefristete, alle
+# 78 ohne; 5 mit noch offener Entscheidung, ebenfalls ohne. Der Nenner ist
+# damit die befristete Norm, und solange es davon weniger als MINDESTZAHL
+# gibt, schweigt die Pruefung -- richtig, aus zwei Zeilen folgt nichts.
+_BEFRISTUNGS_SPALTEN = {"gilt_bis"}
 
 # Dieselbe Konstruktion, aber der Fehler war hier STRUKTURELL garantiert und
 # nicht bloss wahrscheinlich: Der Grundnenner dieser Tabelle ist
@@ -248,6 +274,8 @@ def stumme_spalten(conn: sqlite3.Connection) -> list[dict]:
     Preis, hier nur die drei Nenner + Ausnahmelisten je Tabelle."""
     sonderwo = {s: "norm_rang IS NOT NULL AND zurueckgezogen = 0" for s in _NORMSCHICHT_SPALTEN}
     sonderwo.update({s: "zurueckgezogen = 1" for s in _RUECKZUGS_SPALTEN})
+    sonderwo.update({s: "norm_entscheidung = 'norm_befristet' AND zurueckgezogen = 0"
+                     for s in _BEFRISTUNGS_SPALTEN})
     return (
         _stille_spalten(conn, "knowledge_nodes", "zurueckgezogen = 0",
                         _AUSNAHMEN_KNOWLEDGE_NODES, sonderwo)
@@ -595,13 +623,22 @@ def _selftest() -> None:
     n2.execute("""CREATE TABLE knowledge_nodes (id TEXT, path TEXT, norm_rang INTEGER,
                  norm_art TEXT, gilt_ab TEXT, gilt_bis TEXT, norm_entschieden_von TEXT,
                  norm_entschieden_am TEXT, norm_entschieden_grund TEXT,
-                 created_at TEXT, updated_at TEXT, zurueckgezogen INTEGER DEFAULT 0)""")
+                 norm_entscheidung TEXT, created_at TEXT, updated_at TEXT,
+                 zurueckgezogen INTEGER DEFAULT 0)""")
     for i in range(25):
-        n2.execute("INSERT INTO knowledge_nodes VALUES (?,?,1,NULL,NULL,NULL,'x','x','x','t','t',0)",
+        n2.execute("INSERT INTO knowledge_nodes "
+                   "VALUES (?,?,1,NULL,NULL,NULL,'x','x','x','norm_unbefristet','t','t',0)",
                    (str(i), str(i)))
     for i in range(500):  # viele Fakt-Zeilen ohne norm_rang -- duerfen die Quote nicht verduennen
-        n2.execute("INSERT INTO knowledge_nodes VALUES (?,?,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'t','t',0)",
+        n2.execute("INSERT INTO knowledge_nodes "
+                   "VALUES (?,?,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'t','t',0)",
                    (f"f{i}", f"f{i}"))
+    # gilt_bis darf hier NICHT anschlagen: 25 unbefristete Normen muessen es
+    # leer lassen, befristete gibt es keine. Das ist der Nenner-Fall.
+    assert not [f for f in stumme_spalten(n2)
+                if f["pruefung"] == "stumme_spalte:knowledge_nodes.gilt_bis"], (
+        "gilt_bis: unbefristete Normen MUESSEN es leer lassen -- sie duerfen "
+        "nicht der Nenner sein")
     funde = stumme_spalten(n2)
     treffer = [f for f in funde if f["pruefung"] == "stumme_spalte:knowledge_nodes.norm_art"]
     assert treffer and "25 von 25" in treffer[0]["befund"], (treffer, "norm_art muss auf die Normen-Teilmenge bezogen sein, nicht auf 525 Zeilen")
@@ -618,16 +655,17 @@ def _selftest() -> None:
     n3 = sqlite3.connect(":memory:"); n3.row_factory = sqlite3.Row
     n3.execute("""CREATE TABLE knowledge_nodes (id TEXT, path TEXT, norm_rang INTEGER,
                  zurueckgezogen_grund TEXT, zurueckgezogen_von TEXT,
-                 zurueckgezogen_am TEXT, created_at TEXT, updated_at TEXT,
+                 zurueckgezogen_am TEXT, norm_entscheidung TEXT,
+                 created_at TEXT, updated_at TEXT,
                  zurueckgezogen INTEGER DEFAULT 0)""")
     for i in range(25):  # sauber zurueckgezogen: Grund, Urheber, Zeitpunkt stehen
         # Werte je Zeile verschieden: _stille_spalten kennt ZWEI Signaturen,
         # leer UND einwertig. 25x derselbe Grund waere einwertig und damit zu
         # Recht ein Fund -- er wuerde hier den Nenner-Fall verdecken.
-        n3.execute("INSERT INTO knowledge_nodes VALUES (?,?,NULL,?,?,?,'t','t',1)",
+        n3.execute("INSERT INTO knowledge_nodes VALUES (?,?,NULL,?,?,?,NULL,'t','t',1)",
                    (f"z{i}", f"z{i}", f"grund{i}", f"wer{i}", f"wann{i}"))
     for i in range(500):  # lebende Zeilen -- hier MUESSEN die drei leer sein
-        n3.execute("INSERT INTO knowledge_nodes VALUES (?,?,NULL,NULL,NULL,NULL,'t','t',0)",
+        n3.execute("INSERT INTO knowledge_nodes VALUES (?,?,NULL,NULL,NULL,NULL,NULL,'t','t',0)",
                    (f"l{i}", f"l{i}"))
     funde = stumme_spalten(n3)
     for spalte in _RUECKZUGS_SPALTEN:
