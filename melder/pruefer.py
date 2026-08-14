@@ -125,10 +125,22 @@ _AUSNAHMEN_KNOWLEDGE_NODES = {
                  "keine Luecke, sondern der Zweck der Spalte",
     "zurueckgezogen": "technisches Statusflag -- eine ueberwiegende Mehrheit auf "
                       "0 ist der gesunde Normalfall (wenige Zurueckziehungen)",
-    # Gemessen 2026-08-14, nicht angenommen -- und der SCHREIBER wurde
-    # nachgeschlagen, bevor die Spalte hier landete (knowledge_mcp_server.py,
-    # UPDATE ... access_count + 1 bei knowledge_read). Eine Spalte OHNE
-    # Schreiber gehoerte gemeldet, diese hat einen.
+    "norm_art": "zweite Normachse. Pflicht ist sie NUR bei fremder Quelle -- "
+                "gemessen 2026-08-14: 3 von 85 Normen, und alle drei tragen sie. "
+                "Ueber alle Normen gemessen (der Nenner, den dieser Pruefer "
+                "haette) konnte die Quote nie unter 96 Prozent fallen. Die "
+                "Frage stellt kern/normachsen.py mit dem richtigen Nenner und "
+                "schweigt dort zu Recht; sie hier ein zweites Mal und falsch "
+                "zu stellen, brauchte eine dritte Kopie der Fremdquellen-"
+                "Musterliste in LIKE-Form",
+    "quell_hash": "Pruefsumme der QUELLE eines abgeleiteten Knotens. Schreiber "
+                  "existieren (kern/normbestand.py, kern/knowledge_lint.py) und "
+                  "arbeiten: 49 von 2197 Zeilen tragen einen Wert. Gesetzt wird "
+                  "er nur, wo ein Knoten aus einer beobachtbaren Datei stammt -- "
+                  "bei einem selbst geschriebenen Satz gibt es nichts zu hashen",
+    # Gemessen 2026-08-14, nicht angenommen -- und bei allen dreien wurde der
+    # SCHREIBER nachgeschlagen, bevor sie hier landeten. Eine Spalte OHNE
+    # Schreiber gehoert gemeldet; diese haben einen.
     "access_count": "Nutzungszaehler. 2101 von 2195 auf 0 sind 96 Prozent und "
                     "trotzdem kein Ausfall: die Spalte zaehlt laut "
                     "kern/knowledge_lint.py AUSSCHLIESSLICH knowledge_read(), "
@@ -188,8 +200,16 @@ _AUSNAHMEN_ACCESS_LOG = {
 # was die alte Einzelpruefung schon fuer norm_art tat. Neu generisch: die
 # anderen fuenf (gilt_ab, gilt_bis, norm_entschieden_*) wurden vorher nie
 # geprueft.
+# norm_art steht hier BEWUSST NICHT MEHR (2026-08-14). Der Nenner der
+# Normschicht (norm_rang IS NOT NULL) ist fuer sie zu weit: Pflicht wird die
+# Art nur bei FREMDER Quelle, und das sind 3 von 85. Ueber alle Normen
+# gemessen konnte die Quote nie unter 96 Prozent fallen. Die Erkennung dafuer
+# braucht einen Regex (\b-Wortgrenze), den SQLite nicht kennt -- eine dritte
+# LIKE-Kopie der Musterliste neben schema.sql und knowledge_mcp_server.py
+# waere schlimmer als die Meldung. Zustaendig ist kern/normachsen.py, das mit
+# dem richtigen Nenner misst (dort 0 von 3, also still). Siehe Ausnahmeliste.
 _NORMSCHICHT_SPALTEN = {
-    "norm_art", "gilt_ab",
+    "gilt_ab",
     "norm_entschieden_von", "norm_entschieden_am", "norm_entschieden_grund",
     # 2026-08-14 nachgetragen: wurde ueber alle 2195 Zeilen gemessen statt
     # ueber die 85 Normen. Der Befund bleibt (85 von 85 leer), aber der
@@ -666,8 +686,16 @@ def _selftest() -> None:
         "gilt_bis: unbefristete Normen MUESSEN es leer lassen -- sie duerfen "
         "nicht der Nenner sein")
     funde = stumme_spalten(n2)
-    treffer = [f for f in funde if f["pruefung"] == "stumme_spalte:knowledge_nodes.norm_art"]
-    assert treffer and "25 von 25" in treffer[0]["befund"], (treffer, "norm_art muss auf die Normen-Teilmenge bezogen sein, nicht auf 525 Zeilen")
+    # norm_art steht seit 2026-08-14 auf der Ausnahmeliste: ihr Nenner ist
+    # NICHT die Normen-Teilmenge, sondern die Normen mit FREMDER Quelle (3 von
+    # 85 im echten Bestand). Das misst kern/normachsen.py; hier darf sie
+    # deshalb NICHT mehr auftauchen. Die Normschicht-Logik selbst bleibt
+    # geprueft -- an gilt_ab, das denselben Nenner hat wie frueher norm_art.
+    assert not [f for f in funde if f["pruefung"] == "stumme_spalte:knowledge_nodes.norm_art"], (
+        "norm_art gehoert hier nicht mehr gemeldet -- zustaendig ist normachsen.py")
+    treffer = [f for f in funde if f["pruefung"] == "stumme_spalte:knowledge_nodes.gilt_ab"]
+    assert treffer and "25 von 25" in treffer[0]["befund"], (
+        treffer, "die Normschicht muss auf die Normen-Teilmenge bezogen sein, nicht auf 525 Zeilen")
     # id/path/created_at/updated_at/norm_rang/zurueckgezogen stehen auf der
     # Ausnahmeliste und duerfen trotz Einwertigkeit nicht auftauchen.
     for spalte in ("id", "path", "created_at", "updated_at", "norm_rang", "zurueckgezogen"):
