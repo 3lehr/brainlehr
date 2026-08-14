@@ -55,6 +55,32 @@ DATUMSSPALTEN = {("knowledge_nodes", "gilt_ab"), ("knowledge_nodes", "gilt_bis")
 # gelogen ist -- '+02:00' kam immer aus einem echten Versatz.
 VERDAECHTIG = "+01:00"
 
+# SECHSTE FORM, im Plan nicht erfasst und erst beim Lauf am 2026-08-14
+# aufgetaucht: 'YYYY-MM-DD HH:MM:SS' -- Leerzeichen statt 'T', keine
+# Zonenangabe, keine Mikrosekunden. Betroffen: genau eine Zeile im ganzen
+# Bestand (knowledge_config, key='herkunftsmodus').
+#
+# Grund, warum das UTC ist und keine Ratefrage: Diese Form ist SQLites
+# Eigenschreibweise aus datetime('now'), und das liefert laut SQLite-
+# Dokumentation UTC. Gemessen -- kein Erzeuger im Repo (kern, haken, melder,
+# migrationen, schreibpruefstand, die .py-Dateien der Wurzel, schema.sql)
+# baut diese Form selbst (kein Treffer fuer str(datetime, sep=' ',
+# CURRENT_TIMESTAMP, datetime('now')/datetime("now")); knowledge_config hat
+# im Schema auch keinen Spalten-DEFAULT. Der Wert ist damit bereits UTC und
+# braucht nur die Zielschreibweise, KEINE Verschiebung.
+#
+# Verworfene Gegenhypothese: der Wert waere Ortszeit (dann waere die
+# richtige Umrechnung 18:19:11Z statt 20:19:11Z). Am access_log liess sich
+# das nicht entscheiden -- beide Lesarten haben Nachbaraktivitaet. Entschieden
+# wurde ueber die FORM (SQLite-Eigenformat = UTC), nicht ueber die Uhr.
+#
+# Historischer Einzelfall, keine stehende Rateregel: jede andere zonenlose
+# Form -- mit 'T', mit Mikrosekunden, oder sonst abweichend von genau diesem
+# Muster -- faellt weiterhin durch zu zeitmarke.nach_utc und wirft dort den
+# ValueError. Geraten wird hier nichts; erkannt wird nur eine einzige,
+# beweisbar UTC-eigene Schreibweise.
+SQLITE_EIGENFORM = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
+
 
 def _sommerzeit(wert: str) -> bool:
     """Lag die deutsche Uhr an diesem Datum auf Sommerzeit?
@@ -75,6 +101,10 @@ def umrechnen(wert: str) -> str:
     if wert.endswith(VERDAECHTIG) and _sommerzeit(wert):
         # Label gelogen: Wanduhr stand auf CEST, angehaengt wurde CET.
         return zeitmarke.falsch_benannte_ortszeit_nach_utc(wert)
+    if SQLITE_EIGENFORM.match(wert):
+        # Bereits UTC (siehe Kommentar bei SQLITE_EIGENFORM) -- nur die
+        # Schreibweise wechselt, keine Verschiebung der Uhrzeit.
+        return wert.replace(" ", "T") + "Z"
     return zeitmarke.nach_utc(wert)
 
 

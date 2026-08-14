@@ -101,3 +101,32 @@ def test_umstellungsregel_kommt_aus_zoneinfo_nicht_aus_handarbeit():
 def test_leeres_bleibt_leer():
     assert M.umrechnen("") == ""
     assert M.umrechnen(None) is None
+
+
+def test_sechste_form_sqlite_eigenform_ist_bereits_utc():
+    """Fall (a): Leerzeichen statt 'T', keine Zone, keine Mikrosekunden --
+    SQLites datetime('now') liefert UTC, also keine Verschiebung, nur die
+    Zielschreibweise. Gegen den Stand VOR dieser Aenderung war dieser Fall rot
+    (ValueError 'ohne Zonenangabe'), siehe Bericht."""
+    assert M.umrechnen("2026-08-07 20:19:11") == "2026-08-07T20:19:11Z"
+
+
+def test_zonenloser_wert_mit_t_wirft_weiterhin():
+    """Fall (b): Nur das Leerzeichen-Muster ist der belegte Einzelfall. Ein
+    zonenloser Wert MIT 'T' bleibt eine Ratefrage und muss weiterhin werfen --
+    die Weigerung in zeitmarke.nach_utc bleibt fuer alles andere in Kraft."""
+    with pytest.raises(ValueError, match="ohne Zonenangabe"):
+        M.umrechnen("2026-08-07T20:19:11")
+
+
+def test_echter_versatz_bleibt_unberuehrt_von_der_sechsten_form():
+    """Fall (c): Gegenprobe, dass die neue Erkennung die bestehenden fuenf
+    Formen nicht verdraengt -- ein Wert mit echtem Versatz wird weiterhin
+    korrekt verschoben."""
+    assert M.umrechnen("2026-08-14T09:31:52+02:00") == "2026-08-14T07:31:52Z"
+
+
+def test_zielform_bleibt_von_der_sechsten_form_unberuehrt():
+    """Fall (d): Ein Wert, der schon in der Zielform steht, bleibt
+    unveraendert."""
+    assert M.umrechnen("2026-08-13T07:31:06Z") == "2026-08-13T07:31:06Z"
