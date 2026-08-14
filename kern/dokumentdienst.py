@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Der Dokumentdienst -- ein Raum, ein Dokument, beliebig viele Teilnehmer.
 
-Schritt 2 aus `docs/PLAN_DOKUMENTDIENST_2026-08-14.md`, Rahmen ADR-010.
+Linie F (F2, F3, F4) aus `docs/PLAN_DOKUMENTDIENST_2026-08-14.md` und G1 aus
+`docs/PLAN_SICHERHEIT_2026-08-14.md`. Rahmen ADR-010.
 
 WAS ER IST: die Stelle, an der das gemeinsame Dokument WOHNT. Mensch und
 Modell sind hier dasselbe -- ein Teilnehmer, der Updates schickt und Updates
@@ -9,14 +10,14 @@ bekommt. Das ist keine Bequemlichkeit, sondern die Entscheidung des Betreibers
 vom 2026-08-14 ("Mehrere Menschen und die ki"): sobald die KI ein Sonderfall
 mit eigenem Weg waere, driften Dokument und Anmerkung auseinander.
 
-WAS ER NICHT IST: kein Mandant, kein Konto, kein Recht. "Erst LAN, Konten
-spaeter" -- und deshalb bindet er per Vorgabe auf 127.0.0.1. Wer ihn ins Netz
-stellt, tut das ueber BRAINLEHR_DIENST_HOST und weiss dann, dass jeder im
-selben Netz schreiben darf. Der Ausweis (kern/ausweis.py) ist die vorgesehene
-Naht, nicht ein spaeterer Einfall.
+WAS ER NICHT IST: kein Mandant, kein Konto, kein Recht. Wohl aber eine
+Zugangsschranke: auf 127.0.0.1 nicht, auf allem anderen ja -- eine REGEL statt
+eines Schalters (siehe zugang_noetig). Geprueft wird ueber kern/ausweis.py, es
+gibt keinen zweiten Anmeldeweg.
 
-DAS PROTOKOLL, absichtlich klein (drei Nachrichten):
+DAS PROTOKOLL, absichtlich klein (vier Nachrichten):
 
+    Klient -> Server  {"art": "anmelden", "geheimnis": <str>}   (nur wenn noetig)
     Server -> Klient  {"art": "willkommen", "kennung": <int>, "stand": <base64>}
     Klient -> Server  {"art": "update", "daten": <base64>}
     Server -> Klient  {"art": "update", "daten": <base64>}    (an alle anderen)
@@ -32,14 +33,14 @@ Binaerrahmen kostet dafuer ein Werkzeug. Der Preis ist ein Drittel mehr Bytes
 auf einer Verbindung, die im eigenen Netz laeuft. Wenn das je knapp wird, ist
 der Wechsel eine Zeile in `_sende`/`_lies`.
 
-BEWUSST NICHT DRIN: keine Ablage (Schritt 3 des Plans -- der Stand lebt bis zum
-Neustart), keine Raumverwaltung, kein `pycrdt-websocket`. Letzteres legt
+BEWUSST NICHT DRIN: keine Raumverwaltung, kein `pycrdt-websocket`. Letzteres legt
 Dokumente selbst an und vergibt damit die Kennung selbst; erst wenn dieser
 Rahmen zu duenn wird, lohnt die Pruefung, ob es sich die Auflage vorschreiben
 laesst.
 
 Aufruf:  python3 kern/dokumentdienst.py --selftest
-         python3 kern/dokumentdienst.py --starten [--port 4610]
+         python3 kern/dokumentdienst.py --starten [--lan] [--ablage DATEI]
+                                                  [--kennzahlen DATEI]
 """
 
 from __future__ import annotations
@@ -50,6 +51,7 @@ import base64
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -90,6 +92,17 @@ class Kennzahlen:
     davon eine WARNUNG ist, entscheidet ein Melder anhand einer Nullmessung --
     eine geratene Schwelle schlaegt entweder nie an oder staendig, und
     staendig heisst: weggeklickt.
+
+    ABLAGE (G1): Ohne sie sind die Zahlen beim naechsten Neustart weg und als
+    Beleg wertlos, sobald der Dienst laenger laeuft als eine Sitzung. Mit
+    `ablage` liest der Zaehler beim Anlegen und schreibt fort.
+
+    ZWEI SCHREIBANLAESSE, und die Unterscheidung ist der ganze Trick:
+    SELTENE Ereignisse (ein abgewiesener Zugang, eine unbekannte Art) werden
+    SOFORT geschrieben -- das sind genau die, die ein Melder sehen soll, und
+    einer davon kann der letzte vor einem Absturz sein. Haeufige (jedes Update,
+    jedes Byte) werden gedrosselt, sonst kostet Zeichen-fuer-Zeichen-Tippen eine
+    Schreiboperation je Tastendruck.
     """
 
     FELDER = (
@@ -98,20 +111,65 @@ class Kennzahlen:
         "updates", "bytes_empfangen",
     )
 
-    def __init__(self) -> None:
+    # Sofort schreiben. Alles andere wartet auf die Drosselung.
+    SOFORT = ("abgewiesene_zugaenge", "abgelehnte_updates", "unbekannte_arten",
+              "kennungsverstoesse", "gebremste_nachrichten")
+
+    DROSSEL_SEKUNDEN = 5.0
+
+    def __init__(self, ablage: Path | None = None, uhr=None) -> None:
         self.zahlen = dict.fromkeys(self.FELDER, 0)
         self.herkunft: dict[str, int] = {}
+        self.ablage = Path(ablage) if ablage else None
+        # Injizierbare Uhr: ohne sie laesst sich die Drosselung nicht pruefen,
+        # ohne fuenf Sekunden zu warten.
+        self.uhr = uhr or time.monotonic
+        self._zuletzt = 0.0
+        if self.ablage and self.ablage.exists():
+            try:
+                alt = json.loads(self.ablage.read_text(encoding="utf-8"))
+            except (ValueError, OSError):
+                alt = {}
+            for feld in self.FELDER:
+                self.zahlen[feld] = int(alt.get(feld, 0))
+            self.herkunft = {str(k): int(v) for k, v in (alt.get("herkunft") or {}).items()}
 
     def zaehle(self, feld: str, um: int = 1) -> None:
         if feld not in self.zahlen:
             raise KeyError(f"unbekannte Kennzahl {feld!r} -- Feld erst in FELDER aufnehmen")
         self.zahlen[feld] += um
+        self._vielleicht_sichern(sofort=feld in self.SOFORT)
 
     def sah(self, adresse: str) -> None:
+        neu = adresse not in self.herkunft
         self.herkunft[adresse] = self.herkunft.get(adresse, 0) + 1
+        # Eine NEUE Herkunftsadresse ist selten und bedeutsam -- das zweite
+        # Geraet im Netz ist genau der Fall, den ein Melder sehen soll.
+        self._vielleicht_sichern(sofort=neu)
 
     def als_dict(self) -> dict:
         return {**self.zahlen, "herkunft": dict(self.herkunft)}
+
+    def sichern(self) -> None:
+        """Schreibt den Stand. Erst daneben, dann umbenennen -- eine halbe
+        Zahlendatei ist schlimmer als eine alte."""
+        if not self.ablage:
+            return
+        import zeitmarke
+
+        self.ablage.parent.mkdir(parents=True, exist_ok=True)
+        inhalt = {"stand": zeitmarke.jetzt(), **self.als_dict()}
+        vorlaeufig = self.ablage.with_suffix(self.ablage.suffix + ".neu")
+        vorlaeufig.write_text(json.dumps(inhalt, ensure_ascii=False, indent=2) + "\n",
+                              encoding="utf-8")
+        vorlaeufig.replace(self.ablage)
+        self._zuletzt = self.uhr()
+
+    def _vielleicht_sichern(self, *, sofort: bool) -> None:
+        if not self.ablage:
+            return
+        if sofort or self.uhr() - self._zuletzt >= self.DROSSEL_SEKUNDEN:
+            self.sichern()
 
 
 class Raum:
@@ -491,6 +549,52 @@ async def _selftest_async() -> int:
     else:
         raise AssertionError("unbekannte Kennzahl haette fallen muessen")
 
+    # --- G1: die Zahlen ueberleben den Neustart ----------------------------
+    with tempfile.TemporaryDirectory() as tmp:
+        pfad = Path(tmp) / "kennzahlen.json"
+        takt = [0.0]                      # gestellte Uhr statt fuenf Sekunden warten
+
+        eins = Kennzahlen(ablage=pfad, uhr=lambda: takt[0])
+        eins.zaehle("abgewiesene_zugaenge")        # selten -> sofort auf Platte
+        assert pfad.exists(), "ein seltenes Ereignis muss sofort geschrieben werden"
+
+        zwei = Kennzahlen(ablage=pfad, uhr=lambda: takt[0])   # wie nach einem Neustart
+        assert zwei.zahlen["abgewiesene_zugaenge"] == 1, zwei.als_dict()
+
+        # Haeufiges wird gedrosselt: dieselbe Sekunde schreibt NICHT nach.
+        zwei.zaehle("updates")
+        drei = Kennzahlen(ablage=pfad, uhr=lambda: takt[0])
+        assert drei.zahlen["updates"] == 0, "gedrosseltes darf nicht sofort schreiben"
+        # Grenzwert: genau die Drosselzeit spaeter schreibt es doch.
+        takt[0] += Kennzahlen.DROSSEL_SEKUNDEN
+        zwei.zaehle("updates")
+        vier = Kennzahlen(ablage=pfad, uhr=lambda: takt[0])
+        assert vier.zahlen["updates"] == 2, vier.als_dict()
+
+        # Eine NEUE Herkunftsadresse ist selten und wird sofort geschrieben,
+        # dieselbe ein zweites Mal nicht.
+        zwei.sah("192.168.1.20")
+        assert Kennzahlen(ablage=pfad).herkunft == {"192.168.1.20": 1}
+        zwei.sah("192.168.1.20")
+        assert Kennzahlen(ablage=pfad).herkunft == {"192.168.1.20": 1}, "zweites Mal ist nicht selten"
+
+        # Negativfall: ein Lauf ohne jedes Ereignis schreibt eine Zeile mit
+        # NULLEN, keine leere Datei -- Schweigen und "nichts passiert" muessen
+        # unterscheidbar bleiben.
+        leerer = Path(tmp) / "leer.json"
+        Kennzahlen(ablage=leerer).sichern()
+        gelesen = json.loads(leerer.read_text(encoding="utf-8"))
+        assert gelesen["verbindungen"] == 0 and gelesen["herkunft"] == {}
+        assert gelesen["stand"].endswith("Z"), gelesen["stand"]
+
+        # Eine kaputte Datei setzt den Dienst nicht ausser Gefecht -- sie
+        # beginnt bei null, statt beim Start zu werfen.
+        kaputt = Path(tmp) / "kaputt.json"
+        kaputt.write_text("{das ist kein JSON", encoding="utf-8")
+        assert Kennzahlen(ablage=kaputt).zahlen["verbindungen"] == 0
+
+        assert not list(Path(tmp).glob("*.neu")), "vorlaeufige Datei blieb liegen"
+
     print("dokumentdienst: Selbsttest bestanden")
     return 0
 
@@ -513,6 +617,8 @@ def main() -> int:
     p.add_argument("--port", type=int, default=PORT)
     p.add_argument("--ablage", default=os.environ.get("BRAINLEHR_DOKUMENT"),
                    help="Datei, in der der Stand liegt (ueberlebt den Neustart)")
+    p.add_argument("--kennzahlen", default=os.environ.get("BRAINLEHR_KENNZAHLEN"),
+                   help="Datei, in der die Zaehler stehen (ueberleben den Neustart)")
     p.add_argument("--lan", action="store_true",
                    help="auf allen Schnittstellen lauschen (0.0.0.0). Setzt Anmeldung "
                         "mit beglaubigtem Ausweis voraus -- im Netz steht nicht nur "
@@ -524,7 +630,7 @@ def main() -> int:
         host = "0.0.0.0" if a.lan else a.host
 
         async def lauf():
-            zahlen = Kennzahlen()
+            zahlen = Kennzahlen(ablage=Path(a.kennzahlen) if a.kennzahlen else None)
             server = await starten(host, a.port,
                                    Raum(ablage=Path(a.ablage)) if a.ablage else None,
                                    zahlen)
