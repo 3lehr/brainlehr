@@ -104,16 +104,22 @@ def aufraeumen_still(db_pfad) -> tuple[int, int]:
 
 def _selftest() -> None:
     import tempfile
+    import ort
+    # Der Dateiname kommt aus ort, nicht aus einer getippten Zeichenkette --
+    # so prueft der Selbsttest gegen den ECHTEN Namen und bleibt richtig,
+    # wenn die Datenbank einmal anders heisst (sie hiess bis 2026-08-11
+    # knowledge.db). Beanstandet von tests/test_produktivcode_nutzt_ort.py.
+    dbname = Path(ort.DB).name
     with tempfile.TemporaryDirectory() as td:
         d = Path(td)
-        db = d / "brainlehr.db"
+        db = d / dbname
         db.write_bytes(b"x")
         for i in range(15):
-            (d / f"brainlehr.db.bak-2026081{i//10}T00000{i%10}").write_bytes(b"y" * 100)
+            (d / f"{dbname}.bak-2026081{i//10}T00000{i%10}").write_bytes(b"y" * 100)
         # Von Hand benannte bleiben, egal wie alt.
-        (d / "brainlehr.db.bak-20260801T000000-vor-umbau").write_bytes(b"z")
-        (d / "brainlehr.db.vor_utc_2026-08-14").write_bytes(b"z")
-        (d / "brainlehr.db-wal").write_bytes(b"z")
+        (d / f"{dbname}.bak-20260801T000000-vor-umbau").write_bytes(b"z")
+        (d / f"{dbname}.vor_utc_2026-08-14").write_bytes(b"z")
+        (d / f"{dbname}-wal").write_bytes(b"z")
 
         assert len(kandidaten(db)) == 15, len(kandidaten(db))
         n, _ = aufraeumen(db, behalte=10)
@@ -123,8 +129,8 @@ def _selftest() -> None:
         # NEGATIVFALL, der wichtigere: nichts ausser der Zeitstempelform
         # wurde angefasst. Ein Mensch, der eine Sicherung behalten will,
         # benennt sie um -- diese Zusicherung ist sein Verlass darauf.
-        for name in ("brainlehr.db", "brainlehr.db.bak-20260801T000000-vor-umbau",
-                     "brainlehr.db.vor_utc_2026-08-14", "brainlehr.db-wal"):
+        for name in (dbname, f"{dbname}.bak-20260801T000000-vor-umbau",
+                     f"{dbname}.vor_utc_2026-08-14", f"{dbname}-wal"):
             assert (d / name).exists(), f"{name} haette nicht angefasst werden duerfen"
 
         # Grenzwert: genau `behalte` vorhanden -> nichts zu tun.
@@ -132,7 +138,7 @@ def _selftest() -> None:
         assert n2 == 0, n2
         # Und behalte=0 raeumt alles Automatische weg, sonst nichts.
         n3, _ = aufraeumen(db, behalte=0)
-        assert n3 == 10 and (d / "brainlehr.db").exists()
+        assert n3 == 10 and db.exists()
         # aufraeumen_still schluckt auch einen kaputten Pfad.
         assert aufraeumen_still("/gibt/es/nicht/db") == (0, 0)
     print("selftest ok (6 Faelle): juengste bleiben, Handnamen bleiben, "
