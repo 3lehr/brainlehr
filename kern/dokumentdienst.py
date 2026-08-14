@@ -59,6 +59,60 @@ from teilnehmer import neue_kennung  # noqa: E402
 HOST = os.environ.get("BRAINLEHR_DIENST_HOST", "127.0.0.1")
 PORT = int(os.environ.get("BRAINLEHR_DIENST_PORT", "4610"))
 
+# Groesste Nachricht, die angenommen wird. Nicht selbst gezaehlt -- `websockets`
+# bricht groessere Rahmen selbst ab (max_size). Ein Klient, der ein Dokument
+# ueber diese Grenze schiebt, hat entweder ein Problem oder ist eines.
+GROESSTE_NACHRICHT = 1 * 1024 * 1024
+
+# Nachrichten je Verbindung und Fenster. Bewusst grosszuegig: Zeichen fuer
+# Zeichen tippen erzeugt viele kleine Updates, und eine zu enge Bremse macht
+# genau das kaputt, wofuer der Dienst gebaut ist. Der Zaehler dient zuerst dem
+# MESSEN -- die Schwelle wird aus einer Nullmessung nachgezogen, nicht geraten.
+FENSTER_SEKUNDEN = 10.0
+NACHRICHTEN_JE_FENSTER = 2000
+
+
+def zugang_noetig(host: str) -> bool:
+    """Auf 127.0.0.1 nicht, auf allem anderen ja.
+
+    EINE Regel statt eines Schalters: wer den Dienst aus dem eigenen Rechner
+    heraus oeffnet, oeffnet ihn fuer jedes Geraet im selben Netz -- und dort
+    steht nicht nur seines. Ein Schalter 'LAN ohne Ausweis' waere genau der
+    Schalter, den man einmal fuer einen Test umlegt und nie zurueck.
+    """
+    return host not in ("127.0.0.1", "localhost", "::1")
+
+
+class Kennzahlen:
+    """Was der Dienst ueber sich selbst weiss. Zaehlen, nicht urteilen.
+
+    Die Trennung ist Absicht: hier stehen nur Zahlen ohne Schwelle. Wann eine
+    davon eine WARNUNG ist, entscheidet ein Melder anhand einer Nullmessung --
+    eine geratene Schwelle schlaegt entweder nie an oder staendig, und
+    staendig heisst: weggeklickt.
+    """
+
+    FELDER = (
+        "verbindungen", "abgewiesene_zugaenge", "abgelehnte_updates",
+        "unbekannte_arten", "kennungsverstoesse", "gebremste_nachrichten",
+        "updates", "bytes_empfangen",
+    )
+
+    def __init__(self) -> None:
+        self.zahlen = dict.fromkeys(self.FELDER, 0)
+        self.herkunft: dict[str, int] = {}
+
+    def zaehle(self, feld: str, um: int = 1) -> None:
+        if feld not in self.zahlen:
+            raise KeyError(f"unbekannte Kennzahl {feld!r} -- Feld erst in FELDER aufnehmen")
+        self.zahlen[feld] += um
+
+    def sah(self, adresse: str) -> None:
+        self.herkunft[adresse] = self.herkunft.get(adresse, 0) + 1
+
+    def als_dict(self) -> dict:
+        return {**self.zahlen, "herkunft": dict(self.herkunft)}
+
 
 class Raum:
     """Ein Dokument und die Verbindungen, die daran haengen.
@@ -125,13 +179,71 @@ def _daten(nachricht: dict) -> bytes:
     return base64.b64decode(nachricht["daten"])
 
 
-async def _teilnehmer(verbindung, raum: Raum) -> None:
+async def _anmeldung(verbindung, kennzahlen: Kennzahlen) -> bool:
+    """Erste Nachricht muss `anmelden` mit einem beglaubigten Ausweis sein.
+
+    Geprueft wird ueber `kern/ausweis.loese_auf` -- also dieselbe Schicht, die
+    auch der Wissensspeicher benutzt: scrypt, zeitkonstanter Vergleich, kein
+    Klartext in einer Datei. Hier wird kein zweiter Anmeldeweg gebaut.
+
+    Das Geheimnis wird ausdruecklich NICHT protokolliert, auch nicht gekuerzt.
+    """
+    try:
+        roh = await asyncio.wait_for(verbindung.recv(), 10.0)
+        nachricht = json.loads(roh)
+    except (asyncio.TimeoutError, ValueError):
+        kennzahlen.zaehle("abgewiesene_zugaenge")
+        await verbindung.send(_rahmen("fehler", grund="Anmeldung erwartet"))
+        return False
+
+    if nachricht.get("art") != "anmelden":
+        kennzahlen.zaehle("abgewiesene_zugaenge")
+        await verbindung.send(_rahmen("fehler", grund="erste Nachricht muss 'anmelden' sein"))
+        return False
+
+    import ausweis
+
+    ausw = ausweis.loese_auf(geheimnis=nachricht.get("geheimnis") or None)
+    if not ausw.beglaubigt:
+        kennzahlen.zaehle("abgewiesene_zugaenge")
+        await verbindung.send(_rahmen("fehler", grund="kein beglaubigter Ausweis"))
+        return False
+    return True
+
+
+async def _teilnehmer(verbindung, raum: Raum, *, zugang: bool = False,
+                      kennzahlen: Kennzahlen | None = None) -> None:
+    k = kennzahlen if kennzahlen is not None else Kennzahlen()
+    k.zaehle("verbindungen")
+    try:
+        k.sah(str(verbindung.remote_address[0]))
+    except Exception:
+        pass
+
+    if zugang and not await _anmeldung(verbindung, k):
+        await verbindung.close()
+        return
+
     raum.verbindungen.add(verbindung)
+    fenster_start = asyncio.get_running_loop().time()
+    im_fenster = 0
     try:
         await verbindung.send(_rahmen("willkommen", kennung=neue_kennung(), stand=raum.stand()))
         async for roh in verbindung:
+            k.zaehle("bytes_empfangen", len(roh))
+            jetzt = asyncio.get_running_loop().time()
+            if jetzt - fenster_start > FENSTER_SEKUNDEN:
+                fenster_start, im_fenster = jetzt, 0
+            im_fenster += 1
+            if im_fenster > NACHRICHTEN_JE_FENSTER:
+                k.zaehle("gebremste_nachrichten")
+                await verbindung.send(_rahmen(
+                    "fehler", grund=f"zu viele Nachrichten ({NACHRICHTEN_JE_FENSTER} je "
+                                    f"{FENSTER_SEKUNDEN:.0f}s)"))
+                continue
             nachricht = json.loads(roh)
             if nachricht.get("art") != "update":
+                k.zaehle("unbekannte_arten")
                 # Unbekanntes wird BENANNT, nicht verschluckt -- ein Klient, der
                 # ins Leere spricht, soll das erfahren.
                 await verbindung.send(_rahmen("fehler", grund=f"unbekannte Art {nachricht.get('art')!r}"))
@@ -139,7 +251,9 @@ async def _teilnehmer(verbindung, raum: Raum) -> None:
             daten = _daten(nachricht)
             try:
                 raum.anwenden(daten)
+                k.zaehle("updates")
             except Exception as e:
+                k.zaehle("abgelehnte_updates")
                 # Ein Update, das der Raum nicht integrieren kann, darf die
                 # VERBINDUNG nicht toeten -- sonst reisst ein einziger fehlerhafter
                 # Klient alle anderen mit, und das Symptom sieht wie ein Netzfehler
@@ -158,12 +272,24 @@ async def _teilnehmer(verbindung, raum: Raum) -> None:
         raum.verbindungen.discard(verbindung)
 
 
-async def starten(host: str = HOST, port: int = PORT, raum: Raum | None = None):
-    """Startet den Dienst und gibt den laufenden Server zurueck."""
+async def starten(host: str = HOST, port: int = PORT, raum: Raum | None = None,
+                  kennzahlen: Kennzahlen | None = None, zugang: bool | None = None):
+    """Startet den Dienst und gibt den laufenden Server zurueck.
+
+    `max_size` kommt von `websockets` selbst -- eine zu grosse Nachricht wird
+    dort abgebrochen, bevor sie hier Speicher kostet. Selbst zaehlen waere
+    dieselbe Arbeit noch einmal, nur spaeter.
+    """
     import websockets
 
     r = raum or Raum()
-    return await websockets.serve(lambda v: _teilnehmer(v, r), host, port)
+    k = kennzahlen if kennzahlen is not None else Kennzahlen()
+    # `zugang` ausdruecklich setzbar, damit die Anmeldung auf 127.0.0.1
+    # pruefbar ist, ohne dafuer wirklich ins Netz zu lauschen.
+    noetig = zugang_noetig(host) if zugang is None else zugang
+    return await websockets.serve(
+        lambda v: _teilnehmer(v, r, zugang=noetig, kennzahlen=k),
+        host, port, max_size=GROESSTE_NACHRICHT)
 
 
 async def _empfang(verbindung, was: str, sekunden: float = 5.0) -> dict:
@@ -322,6 +448,49 @@ async def _selftest_async() -> int:
         # entweder ganz alt oder ganz neu, nie halb.
         assert not list(Path(tmp).glob("*.neu")), "vorlaeufige Datei blieb liegen"
 
+    # --- Zugang: die Regel, nicht der Schalter -----------------------------
+    assert zugang_noetig("0.0.0.0") is True
+    assert zugang_noetig("192.168.1.20") is True
+    for daheim in ("127.0.0.1", "localhost", "::1"):
+        assert zugang_noetig(daheim) is False, daheim
+
+    zahlen = Kennzahlen()
+    wache = await starten("127.0.0.1", 0, Raum(), zahlen, zugang=True)
+    wport = next(iter(wache.sockets)).getsockname()[1]
+    wurl = f"ws://127.0.0.1:{wport}"
+
+    # Ohne Anmeldung: abgewiesen, und die Verbindung wird geschlossen.
+    async with websockets.connect(wurl) as ohne:
+        await ohne.send(_rahmen("update", daten=b"egal"))
+        antwort = await _empfang(ohne, "Abweisung ohne Anmeldung")
+        assert antwort["art"] == "fehler" and "anmelden" in antwort["grund"], antwort
+
+    # Mit falschem Geheimnis: ebenfalls abgewiesen -- und der Grund nennt das
+    # Geheimnis NICHT, auch nicht gekuerzt.
+    async with websockets.connect(wurl) as falsch:
+        await falsch.send(json.dumps({"art": "anmelden", "geheimnis": "falsches-wort"}))
+        antwort = await _empfang(falsch, "Abweisung mit falschem Geheimnis")
+        assert antwort["art"] == "fehler" and "beglaubigt" in antwort["grund"], antwort
+        assert "falsches-wort" not in json.dumps(antwort), "Geheimnis darf nirgends auftauchen"
+
+    assert zahlen.zahlen["abgewiesene_zugaenge"] == 2, zahlen.als_dict()
+    assert zahlen.zahlen["verbindungen"] == 2
+    assert list(zahlen.herkunft) == ["127.0.0.1"], zahlen.herkunft
+    # Negativfall zu den Zaehlern: was nicht passiert ist, steht auf null --
+    # sonst zaehlt der Zaehler nur mit und unterscheidet nichts.
+    assert zahlen.zahlen["updates"] == 0 and zahlen.zahlen["abgelehnte_updates"] == 0
+
+    wache.close()
+    await wache.wait_closed()
+
+    # Eine unbekannte Kennzahl faellt laut auf, statt still ins Leere zu zaehlen.
+    try:
+        zahlen.zaehle("gibtsnicht")
+    except KeyError:
+        pass
+    else:
+        raise AssertionError("unbekannte Kennzahl haette fallen muessen")
+
     print("dokumentdienst: Selbsttest bestanden")
     return 0
 
@@ -344,14 +513,24 @@ def main() -> int:
     p.add_argument("--port", type=int, default=PORT)
     p.add_argument("--ablage", default=os.environ.get("BRAINLEHR_DOKUMENT"),
                    help="Datei, in der der Stand liegt (ueberlebt den Neustart)")
+    p.add_argument("--lan", action="store_true",
+                   help="auf allen Schnittstellen lauschen (0.0.0.0). Setzt Anmeldung "
+                        "mit beglaubigtem Ausweis voraus -- im Netz steht nicht nur "
+                        "der eigene Rechner")
     a = p.parse_args()
     if a.selftest:
         return _selftest()
     if a.starten:
+        host = "0.0.0.0" if a.lan else a.host
+
         async def lauf():
-            server = await starten(a.host, a.port,
-                                   Raum(ablage=Path(a.ablage)) if a.ablage else None)
-            print(f"Dokumentdienst laeuft auf ws://{a.host}:{a.port}")
+            zahlen = Kennzahlen()
+            server = await starten(host, a.port,
+                                   Raum(ablage=Path(a.ablage)) if a.ablage else None,
+                                   zahlen)
+            print(f"Dokumentdienst laeuft auf ws://{host}:{a.port}"
+                  + (" -- Anmeldung mit Ausweis noetig" if zugang_noetig(host)
+                     else " -- nur dieser Rechner, keine Anmeldung noetig"))
             await server.wait_closed()
         asyncio.run(lauf())
         return 0
