@@ -150,9 +150,34 @@ def main() -> None:
     if pfad.resolve() == sammel.resolve():
         return
 
-    # Ab hier: der Pfad wird gedruckt, egal was die Kopierlogik unten macht.
+    # VIERTER FEHLSCHLAG AM SELBEN VERTRAG, 2026-08-14, gemeldet vom Betreiber
+    # beim Start eines neuen Chats:
+    #   "hook printed .../baum-20260814T121618-62360 but no directory exists there"
+    #
+    # Der Klient verlangt inzwischen, dass der gedruckte Pfad EXISTIERT. Damit
+    # ist die bisherige Selbstbeschreibung hinfaellig: dieser Haken ist kein
+    # Nachbereiter, er ist ein VORBEREITER. Beides zugleich geht nicht, und
+    # daran haengt die ganze Schwierigkeit --
+    #
+    #   git worktree add akzeptiert ein bereits vorhandenes LEERES Verzeichnis
+    #   (gemessen 2026-08-14 an einem Wegwerf-Repo, beide Faelle gefahren:
+    #   leer vorhanden -> exit 0, gar nicht vorhanden -> exit 0),
+    #   aber es scheitert an einem BEFUELLTEN ("fatal: ... already exists").
+    #
+    # Also: Verzeichnis anlegen, ja. Es hier befuellen, nein -- das wuerde die
+    # Anlage zerstoeren, die der Haken ermoeglichen soll. Der Aufruf von
+    # _identitaet_nachziehen faellt an dieser Stelle deshalb weg; er stand vor
+    # dem mkdir und lief bislang ohnehin ins Leere (Zielverzeichnis existierte
+    # noch nicht), nach dem mkdir haette er aktiv geschadet.
+    #
+    # WAS DAMIT OFFEN IST, und es wird benannt statt verschwiegen: CLAUDE.md
+    # und .claude/settings.json reisen derzeit NICHT mehr mit. Der richtige Ort
+    # dafuer ist ein Ereignis NACH der Anlage (SessionStart im neuen Baum) --
+    # eine Verdrahtung in ~/.claude/settings.json, die dem Betreiber gehoert.
+    # _identitaet_nachziehen bleibt darum stehen und getestet, damit dieser
+    # Umzug nur eine Verdrahtung ist und keine Neuentwicklung.
     try:
-        _identitaet_nachziehen(base_directory, pfad)
+        pfad.mkdir(parents=True, exist_ok=True)
     except Exception:
         pass  # Haken darf die Anlage nie verhindern (Exit bleibt 0).
 
@@ -242,6 +267,38 @@ def _selftest() -> None:
                 "gedruckt wurde das Sammelverzeichnis: " + zeile)
             assert zeile.startswith(sammel.rstrip("/") + "/baum-"), zeile
         print("[FELDFEHLER] ohne worktree_name -> gueltiger erzeugter Pfad, nie das Sammelverzeichnis")
+
+        # 5) FELDFEHLER 2026-08-14, vierter am selben Vertrag: der Klient
+        # lehnt ab, wenn der gedruckte Pfad nicht existiert ("hook printed
+        # ... but no directory exists there"). Zwei Zusicherungen, und die
+        # zweite ist die schwierigere: das Verzeichnis muss existieren UND
+        # leer sein -- ein befuelltes laesst `git worktree add` scheitern
+        # ("fatal: ... already exists"), und dann haette der Haken die Anlage
+        # auf die andere Weise verhindert.
+        import contextlib as _ctx
+        import io as _io
+        base5 = tmp / "hauptbaum5"
+        (base5 / ".claude").mkdir(parents=True)
+        (base5 / "CLAUDE.md").write_text("# Hausregeln\n", encoding="utf-8")
+        (base5 / ".claude" / "settings.json").write_text('{"hooks": {}}\n', encoding="utf-8")
+        eingabe = json.dumps({"base_directory": str(base5), "worktree_name": "probe5"})
+        out5 = _io.StringIO()
+        alt_stdin = sys.stdin
+        sys.stdin = _io.StringIO(eingabe)
+        try:
+            with _ctx.redirect_stdout(out5):
+                main()
+        finally:
+            sys.stdin = alt_stdin
+        gedruckt = Path(out5.getvalue().strip())
+        assert gedruckt.is_dir(), (
+            f"gedruckter Pfad existiert nicht: {gedruckt} -- genau die vom "
+            "Betreiber gemeldete Ablehnung des Klienten")
+        assert not any(gedruckt.iterdir()), (
+            f"gedrucktes Verzeichnis ist nicht leer: {list(gedruckt.iterdir())} -- "
+            "git worktree add scheitert dann mit 'already exists'. Hier NICHT "
+            "befuellen; das gehoert an ein Ereignis NACH der Anlage.")
+        print("[FELDFEHLER] gedruckter Pfad existiert und ist leer -- beide Bedingungen")
 
         print("worktree_identitaet: alle Zusicherungen halten")
     finally:
