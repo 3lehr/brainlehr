@@ -8,6 +8,4 @@
 
 **110 auseinandergezogen** — die 19 waren zu grob: 6 nur Kommentare · 3 Zeitzone (oben) · 2 Trigger (der INSTALLIERTE ist strenger, ihm fehlt die Ausnahme fuer `anlass='betreiber'`) · 2 fehlende Spalten (behoben) · 7 nur installiert (`lost_and_found`, `mycel_*`, 3 Trigger) — noch offen.
 
-**Suite:** 1412 passed, 1 skipped, 11 xfailed, kein roter Test. 110 Aufgaben: 85 erledigt, 10 angefangen, 15 offen.
-
-**Fallen:** ein Test, der sein Schema selbst baut, kann keine Schemaluecke finden (`raum_daten._selftest`) · eine Vorrichtung kleiner als die Kappungsgrenze kann keinen Kappungsfehler sehen · ein Zeitstempel ist eine Angabe, kein Schluessel · zsh zerlegt unquotierte Variablen nicht (`L-103548`) · Melder an `UserPromptSubmit` sind im Selbstlauf blind (`L-1228cf`).
+**Suite:** 1412 passed, kein roter Test. 110 Aufgaben: 85 erledigt, 10 angefangen, 15 offen. **Fallen:** ein Test, der sein Schema selbst baut, kann keine Schemaluecke finden (`raum_daten._selftest`) · eine Vorrichtung kleiner als die Kappungsgrenze kann keinen Kappungsfehler sehen · ein Zeitstempel ist eine Angabe, kein Schluessel · zsh zerlegt unquotierte Variablen nicht (`L-103548`) · Melder an `UserPromptSubmit` sind im Selbstlauf blind (`L-1228cf`).
