@@ -43,6 +43,7 @@ VORSPANN = r"""\DocumentMetadata{
 \documentclass{article}
 \usepackage{fontspec}
 \usepackage{hyperref}
+\hypersetup{pdftitle={TITEL},pdflang={de-DE}}
 
 \begin{document}
 """
@@ -72,9 +73,16 @@ def maskiere(text: str) -> str:
     return "".join(_MASKEN.get(ch, ch) for ch in text)
 
 
-def satz_quelle(doc) -> str:
-    """Baut die LaTeX-Quelle aus allen Bausteinen des Dokuments."""
-    teile = [VORSPANN]
+def satz_quelle(doc, titel: str) -> str:
+    """Baut die LaTeX-Quelle aus allen Bausteinen des Dokuments.
+
+    `titel` ist PFLICHT und hat keinen Vorgabewert -- PDF/UA-1 verlangt einen
+    Dokumenttitel (dc:title, ISO 14289-1:2014 Klausel 7.1). Ein Vorgabewert
+    waere hier die schlechtere Wahl: er erzeugt ein formal bestehendes Blatt
+    mit einem nichtssagenden Titel, und genau den liest ein Screenreader vor.
+    Gefunden hat das die Satzwache beim ersten Lauf -- der Vorspann war aus
+    dem Spike uebernommen, wo der Titel im Rumpf stand statt im Vorspann."""
+    teile = [VORSPANN.replace("TITEL", maskiere(titel))]
     for b in bausteine(doc):
         teile.append(f"\\label{{bau:{b.kennung}}}\n")
         text = maskiere(b.text)

@@ -18,7 +18,7 @@ def test_positivfall_beide_texte_in_der_quelle():
     doc = leeres_dokument()
     baustein_anhaengen(doc, "absatz", "Erster Satz.")
     baustein_anhaengen(doc, "feld", "2026-0001", feldname="rechnungsnummer")
-    quelle = satz_quelle(doc)
+    quelle = satz_quelle(doc, "Pruefblatt")
     assert "Erster Satz." in quelle
     assert "2026-0001" in quelle
     assert "rechnungsnummer" in quelle
@@ -27,7 +27,7 @@ def test_positivfall_beide_texte_in_der_quelle():
 def test_kennung_im_blatt_wiederfindbar():
     doc = leeres_dokument()
     kennung = baustein_anhaengen(doc, "absatz", "Text.")
-    quelle = satz_quelle(doc)
+    quelle = satz_quelle(doc, "Pruefblatt")
     assert f"bau:{kennung}" in quelle
 
 
@@ -35,7 +35,7 @@ def test_sperrfall_boesartiger_text_bricht_den_satz_nicht():
     """Der wichtigste Fall: \\newpage{}$x&y%z# muss maskiert im Blatt landen."""
     doc = leeres_dokument()
     baustein_anhaengen(doc, "absatz", "\\newpage{}$x&y%z#")
-    quelle = satz_quelle(doc)
+    quelle = satz_quelle(doc, "Pruefblatt")
     # Ein unmaskiertes Steuerzeichen stuende NICHT hinter einem eigenen
     # Backslash -- die Pruefung muss also das Escape mitpruefen, sonst
     # findet ein Substring-Test "$x" auch im korrekt maskierten "\$x".
@@ -90,7 +90,7 @@ def test_echter_lualatex_lauf_erzeugt_lesbares_pdf(tmp_path):
     baustein_anhaengen(doc, "absatz", "Erster Satz.")
     baustein_anhaengen(doc, "absatz", "\\newpage{}$x&y%z#")
 
-    quelle = satz_quelle(doc)
+    quelle = satz_quelle(doc, "Pruefblatt")
     tex = tmp_path / "blatt.tex"
     tex.write_text(quelle, encoding="utf-8")
 
