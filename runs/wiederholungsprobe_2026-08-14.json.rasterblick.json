@@ -1,0 +1,9 @@
+{
+  "status": "vermerkt",
+  "abgesucht_am": "2026-08-14T19:27:05Z",
+  "raster": "alle 61 Lehren mit occurrences>=2; gewertet die 35 mit echtem Zeitabstand first_seen<last_seen",
+  "gegen": "lessons_fts (bm25-Arm), knowledge_recall_hook.keywords+query (brainlehr-Arm), Zufallsziehung aus dem Korpusstand (Nullband)",
+  "nicht_abgesucht": "Knoten (nur Lehren). Und die 26 Gleichtagsfaelle -- dort war die Lehre zum Zeitpunkt der Wiederholung noch keine Vorgeschichte. Fremdprodukte (mem0, Zep, Letta) gar nicht: sie sind hier nicht installiert, der Vergleich waere Modellwissen.",
+  "kontextfenster": null,
+  "bestand": 905
+}
