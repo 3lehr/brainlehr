@@ -1,0 +1,9 @@
+{
+  "status": "vermerkt",
+  "abgesucht_am": "2026-08-14T18:43:42Z",
+  "raster": "recall_log.jsonl vollstaendig, 277 Zeilen ab Nulllinie 2026-08-09T16:13:21+00:00",
+  "gegen": "access_log (action='read', node_path) und knowledge_nodes (path, project_id, Laenge von title+summary)",
+  "nicht_abgesucht": "Sitzungsprotokolle. Damit bleibt die eigentliche Frage -- wurde der eingespielte Text in der ANTWORT verwendet -- unmessbar. Der Lesezaehler kann Nutzen nur ausschliessen, nicht zeigen.",
+  "kontextfenster": null,
+  "bestand": 2196
+}

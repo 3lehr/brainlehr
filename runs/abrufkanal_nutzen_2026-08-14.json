@@ -1,0 +1,33 @@
+{
+  "messung": "Suchpfad im Abruf -- Nutzen oder Rauschen",
+  "erhoben_am": "2026-08-14T18:43:01Z",
+  "quelle": "recall_log.jsonl",
+  "nulllinie": "2026-08-09T16:13:21+00:00",
+  "faelle_gesamt": 277,
+  "leer_anteil_vor_umstellung": 0.378,
+  "knoten_eingespielt": 909,
+  "herkunft": {
+    "quer": 494,
+    "eigen": 214,
+    "fremd_app": 201
+  },
+  "abrufe_nur_fremd_app": 14,
+  "abrufe_nur_fremd_app_anteil": 0.068,
+  "zeichen_median_je_abruf": 1959,
+  "zeichen_summe": 467041,
+  "verschiedene_knoten": 374,
+  "nur_einmal_eingespielt": 155,
+  "haeufigster_knoten": [
+    "/ops/openlehr/kontakt-vorschlag-anlage-durch-ki",
+    11
+  ],
+  "knoten_binnen_2h_gezielt_gelesen": 2,
+  "einschraenkung": "Der Lesezaehler ist ein SCHWACHER Beleg: ein eingespielter Knoten kann genutzt worden sein, GERADE WEIL er nicht mehr nachgeschlagen werden musste. Er kann Nutzen also nicht zeigen, nur ausschliessen, dass Nachlesen der Kanal war.",
+  "leer_zwei_lesarten": {
+    "ohne_knoten": 71,
+    "ohne_knoten_anteil": 0.256,
+    "ganz_leer_weder_knoten_noch_lehren": 34,
+    "ganz_leer_anteil": 0.123,
+    "hinweis": "Zwei Lesarten, und sie unterscheiden sich um mehr als das Doppelte. Welche der Vergleichswert 37,8 Prozent meint, ist NICHT belegt -- er stammt aus einer frueheren Erhebung, deren Definition hier nicht vorliegt. Der Vergleich 'Schweigen verloren' ist damit nicht entscheidbar, nur die Richtung: nach beiden Lesarten wird heute weniger geschwiegen als 37,8 Prozent."
+  }
+}
