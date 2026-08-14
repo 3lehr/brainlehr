@@ -6,6 +6,4 @@
 
 **Offen mit Beleg:** 93 Modellwechsel bleibt **gesperrt** — die Positivkontrolle laesst sich nicht reproduzieren, weil sieben der acht Ursprungsknoten seither geaendert wurden und die Vergleichssaetze nie woertlich abgelegt waren (`L-1d31c2`). Was fehlt, ist ein eingefrorener Kontrollsatz, kein besseres Werkzeug.
 
-**Suite:** 1386 passed, 1 skipped, 11 xfailed. Kein roter Test.
-
-**Fallen:** zsh zerlegt unquotierte Variablen NICHT — `pytest $A` meldet „no tests ran" statt eines Fehlers (`L-103548`) · verschmutzten Wert nach seiner Herkunft fragen statt bisezieren, `__code__.co_filename` (`L-305730`) · wer eine Funktion kopiert, verliert die Schranke eine Ebene darueber (`L-361755`) · eine Kontrollmessung auf lebendem Bestand hat kein Datum (`L-1d31c2`). **Wartet auf den Betreiber:** Klarname geschwaerzte PDF · 101 · 105 · 77 (beruehrt hub) · Push.
+**Suite:** 1386 passed, 1 skipped, 11 xfailed, kein roter Test. **Fallen:** zsh zerlegt unquotierte Variablen NICHT — `pytest $A` meldet „no tests ran" statt eines Fehlers (`L-103548`) · verschmutzten Wert nach seiner Herkunft fragen statt bisezieren, `__code__.co_filename` (`L-305730`) · wer eine Funktion kopiert, verliert die Schranke eine Ebene darueber (`L-361755`) · eine Kontrollmessung auf lebendem Bestand hat kein Datum (`L-1d31c2`). **Wartet auf den Betreiber:** Klarname geschwaerzte PDF · 101 · 105 · 77 (beruehrt hub) · Push.
