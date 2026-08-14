@@ -6,6 +6,5 @@
 
 **S12 (108) — das Ergebnis ist ein Nicht-Ergebnis, und das ist der Ertrag:** Der Nenner war falsch. Ueber die tatsaechlich behandelten Ziele bleiben 34 von 205 Faellen, behandelte Zelle n=14. Urteil: **mit diesem Korpus nicht entscheidbar**, ausdruecklich nicht „keine Wirkung". Die Rohzahlen (5/14 gegen 11/20) deuten sogar auf Verschlechterung — reines Rauschen. Naechster Schritt: groesserer Korpus, keine feinere Rechnung. Knoten `0e6adb6c`.
 
-**Haken (98):** `worktree_identitaet.py` war gebaut, zweimal repariert, nie verdrahtet — jetzt an `WorktreeCreate`, vorher end-to-end geprueft. Ratsche gegen unverdrahtete Haken. Sie prueft **Existenz, nicht Tauglichkeit** — `mcp_veraltet.py` ist verdrahtet und trotzdem blind (`L-1228cf`, drei Stufen in `L-b3eb79`).
-
+**Haken (98):** `worktree_identitaet.py` war gebaut, zweimal repariert, nie verdrahtet — jetzt an `WorktreeCreate`, vorher end-to-end geprueft. Neue Ratsche prueft **Existenz, nicht Tauglichkeit** — `mcp_veraltet.py` ist verdrahtet und trotzdem blind (drei Stufen in `L-b3eb79`).
 **Erledigt heute:** 69 · 80 · 86 · 88/1 · 91 · 98 · 107 · 108 · 110 · beide Eilmeldungsdefekte. **Rot:** `test_zeitform_utc` (gewollt bis Schritt 3) · `kandidatendiagnose` (Bestandsdrift, vorbestehend). **Wartet auf dich:** Neustart · Push · #105 · #29 · #101 · #20.
