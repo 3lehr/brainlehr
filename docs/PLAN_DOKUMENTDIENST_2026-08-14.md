@@ -73,7 +73,41 @@ Schritt 1 vor 2 ist bindend. 3 kann nach 4, wenn ein Neustart nichts kostet.
 - **Keine Formularlogik.** `feld` ist ein Bausteintyp, mehr nicht — Rechnungen
   rechnen später.
 
-## 5 · Woran sich Erfolg misst
+## 5 · Aufträge, fertig zum Übergeben
+
+Schritt 1–3 sind gebaut (`kern/teilnehmer.py`, `kern/dokumentdienst.py`). Offen
+sind 4 und 5; sie stehen hier in der Form, in der ein Agent sie ohne Rückfrage
+abarbeiten kann.
+
+**Für beide Aufträge gleichermaßen:** Arbeitsort
+`/Volumes/daten/Begod2026/brainlehr`, Zweig `brainlehr/b4-ausweis` — ein
+Startverzeichnis unter `.claude/worktrees/` ist ein alter Stand. Zuerst
+`CLAUDE.md` hier und in `~/.claude/` lesen, dann diesen Plan und ADR-010.
+„Sieht der Code anders aus als hier beschrieben, halte dich an den Code und
+melde die Abweichung." Kein `git add -A`, kein Push, kein `git stash`.
+Committen mit expliziter Pfadliste. Volle Python-Suite **im Vordergrund** mit
+`timeout=600000` (rund 350 s). Neues Modul mit `--selftest` gehört in
+`MODULE` in `tests/test_alle_selftests.py`, sonst wird die Ratsche rot.
+
+### Auftrag 4 · Anmerkungen über denselben Kanal
+
+| | |
+|---|---|
+| **Darf ändern** | `kern/dokumentdienst.py`, `kern/baustein.py`, deren Selbsttests |
+| **Tabu zusätzlich** | `kern/teilnehmer.py` (die Kennungsauflage wird nicht angefasst), `schema.sql` — es wird **keine Spalte und keine Tabelle** angelegt, die Ablage bleibt eine Datei |
+| **Fakten** | Der Raum hält heute genau ein CRDT-Dokument und reicht Updates weiter (drei Nachrichtenarten: `willkommen`, `update`, `fehler`). `kern/baustein.py` kennt `Anmerkung` mit Zustand, Klasse, Anker und `wechsle()`, das den **erreichten** Zustand zurückgibt. Anmerkungen gehören **in dasselbe Dokument** wie die Bausteine — ein zweiter Kanal ließe Dokument und Anmerkung auseinanderdriften, und genau das ist der Grund, warum die KI hier kein Sonderfall ist. |
+| **Abnahme** | Rot vor grün: zwei Teilnehmer, einer setzt eine Anmerkung mit Anker, der andere sieht sie samt Zustand — vorher gibt es keinen Weg dafür. Negativfall, und er ist der wichtigere: wird der bezeichnete Baustein gelöscht, ist die Anmerkung **sichtbar verwaist** und wandert nicht über den Suchtext an eine ähnliche Stelle. Grenzwerte: Anmerkung auf den ersten Baustein, auf den letzten, auf einen, der nie existierte. Jeder Zustandswechsel gibt den erreichten Zustand zurück, nie `True`. |
+
+### Auftrag 5 · Das Fenster im atelier
+
+| | |
+|---|---|
+| **Darf ändern** | `app/Sources/Atelier/` (neue Ansicht), `app/Package.swift` für die `yswift`-Abhängigkeit |
+| **Tabu zusätzlich** | `app/Sources/BrainlehrCore/Verschmelzung.swift` — sie bleibt unangetastet, bis der Dienst trägt; `kern/` vollständig |
+| **Fakten** | `yswift` 0.2.1 baut auf diesem Rechner, `Package.resolved` liegt in `spikes/crdt_pyswift/`. `YDocument.undoManager` existiert — Undo/Redo ist **nicht** zu bauen. Die Kennung kommt aus der `willkommen`-Nachricht des Dienstes und wird **nie** selbst gewürfelt; `pycrdt`-Vorgabewerte liegen über der 32-Bit-Schranke und verdoppeln Text still (`L-44dc9f`). Der Empfang braucht eine Frist — ein Klient, der ewig wartet, sieht aus wie ein langsamer (`L-3d88e9`). |
+| **Abnahme** | Rot vor grün: zwei Fenster am selben Dienst, gleichzeitig in denselben Satz getippt, beide zeigen dasselbe — vorher gibt es kein Fenster. Negativfall: ein Fenster, das eine Kennung ≥ 2^32 anbietet, wird vom Dienst **abgewiesen** statt bedient. Grenzwert: Kennung 1, 2^32−1, 2^32. |
+
+## 6 · Woran sich Erfolg misst
 
 - Zwei Klienten, gleichzeitig in denselben Satz getippt → beide zeigen
   dasselbe. **Rot vorher:** es gibt keinen Dienst.
