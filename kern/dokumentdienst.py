@@ -66,21 +66,52 @@ class Raum:
     Der Raum haelt ein eigenes pycrdt-Dokument -- nicht, weil er mitreden
     wuerde, sondern weil ein Neuankoemmling den STAND braucht und nicht die
     Geschichte aller Updates seit dem Start.
+
+    ABLAGE (Schritt 3 des Plans): Wird ein `ablage`-Pfad uebergeben, liest der
+    Raum ihn beim Anlegen und schreibt nach jedem Update. Bewusst eine DATEI
+    und nicht die Wissensdatenbank: ein Dokument ist kein Wissensknoten, und
+    eine Tabelle anzulegen, deren Form noch niemand kennt, waere eine leere
+    Spalte auf Vorrat (`b6305304`). Wenn die Ablage je mehr koennen muss --
+    Fassungen, Suche, Rechte --, ist DAS der Moment fuer ein Schema, nicht
+    heute.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, ablage: Path | None = None) -> None:
         from pycrdt import Doc
 
         # Auch der Dienst selbst haelt sich an die Auflage: sein Dokument ist
         # ein Teilnehmer wie jeder andere.
         self.doc = Doc(client_id=neue_kennung())
         self.verbindungen: set = set()
+        self.ablage = Path(ablage) if ablage else None
+        if self.ablage and self.ablage.exists():
+            self.doc.apply_update(self.ablage.read_bytes())
 
     def stand(self) -> bytes:
         return self.doc.get_update()
 
     def anwenden(self, daten: bytes) -> None:
         self.doc.apply_update(daten)
+        self._sichern()
+
+    def _sichern(self) -> None:
+        """Vollstand nach jedem Update. Erst schreiben, dann umbenennen.
+
+        ponytail: schreibt den GANZEN Stand je Update statt nur den Zuwachs --
+        bei einem Schriftsatz sind das Kilobytes, das traegt lange. Wird es
+        knapp, ist der Umstieg auf angehaengte Updates plus gelegentliche
+        Verdichtung die naechste Stufe.
+
+        Das Umbenennen ist kein Zierat: ein Absturz mitten im Schreiben wuerde
+        sonst eine halbe Datei hinterlassen, und eine halbe CRDT-Ablage ist
+        nicht halb gut, sondern unlesbar.
+        """
+        if not self.ablage:
+            return
+        self.ablage.parent.mkdir(parents=True, exist_ok=True)
+        vorlaeufig = self.ablage.with_suffix(self.ablage.suffix + ".neu")
+        vorlaeufig.write_bytes(self.stand())
+        vorlaeufig.replace(self.ablage)
 
 
 def _rahmen(art: str, **felder) -> str:
@@ -190,6 +221,37 @@ async def _selftest_async() -> int:
 
     server.close()
     await server.wait_closed()
+
+    # Ablage: der Stand ueberlebt den Dienst. Rot davor -- ohne Ablagepfad
+    # startet ein Raum leer, und genau das prueft der Negativfall unten.
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        pfad = Path(tmp) / "raum.ycrdt"
+        eins = Raum(ablage=pfad)
+        d = Doc(client_id=neue_kennung())
+        d["t"] = Text("Ueberlebt einen Neustart")
+        eins.anwenden(d.get_update())
+        assert pfad.exists(), "nach dem ersten Update muss die Ablage liegen"
+
+        zwei = Raum(ablage=pfad)          # so, als waere der Dienst neu gestartet
+        gelesen = Doc(client_id=neue_kennung())
+        gelesen["t"] = Text()
+        gelesen.apply_update(zwei.stand())
+        assert str(gelesen["t"]) == "Ueberlebt einen Neustart", str(gelesen["t"])
+
+        # Negativfall: OHNE Ablage faengt ein Raum leer an -- sonst pruefte der
+        # Fall oben nur, dass irgendein Stand existiert.
+        ohne = Raum()
+        leer = Doc(client_id=neue_kennung())
+        leer["t"] = Text()
+        leer.apply_update(ohne.stand())
+        assert str(leer["t"]) == "", f"Raum ohne Ablage muss leer starten, war {str(leer['t'])!r}"
+
+        # Kein Halbstand: waehrend des Schreibens existiert die Zieldatei
+        # entweder ganz alt oder ganz neu, nie halb.
+        assert not list(Path(tmp).glob("*.neu")), "vorlaeufige Datei blieb liegen"
+
     print("dokumentdienst: Selbsttest bestanden")
     return 0
 
@@ -210,12 +272,15 @@ def main() -> int:
     p.add_argument("--starten", action="store_true")
     p.add_argument("--host", default=HOST)
     p.add_argument("--port", type=int, default=PORT)
+    p.add_argument("--ablage", default=os.environ.get("BRAINLEHR_DOKUMENT"),
+                   help="Datei, in der der Stand liegt (ueberlebt den Neustart)")
     a = p.parse_args()
     if a.selftest:
         return _selftest()
     if a.starten:
         async def lauf():
-            server = await starten(a.host, a.port)
+            server = await starten(a.host, a.port,
+                                   Raum(ablage=Path(a.ablage)) if a.ablage else None)
             print(f"Dokumentdienst laeuft auf ws://{a.host}:{a.port}")
             await server.wait_closed()
         asyncio.run(lauf())
