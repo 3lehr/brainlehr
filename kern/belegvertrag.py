@@ -18,7 +18,16 @@ from typing import Any, Callable
 def belegt(fundstelle: str, quellen: dict[str, str]) -> bool:
     """Fundstelle muss wortwoertlich in mindestens einem Quellentext stehen
     (Teilstring-Treffer zaehlt, wie im Vorbild -- ein Substring-Zitat ist
-    immer noch woertlich)."""
+    immer noch woertlich).
+
+    Die leere Fundstelle wird ABGEWIESEN. `"" in text` ist in Python immer
+    wahr -- ohne diese Zeile gilt jede Regel ohne Fundstelle als belegt, und
+    zwar ausgerechnet die, die gar keine angibt. Gefunden am 2026-08-14 von
+    einer unabhaengigen Pruefung, Stunden nach dem Bau; der Selbsttest hatte
+    nur echte Fundstellen probiert. Dasselbe gilt fuer eine Fundstelle, die
+    nur aus Leerraum besteht."""
+    if not fundstelle or not fundstelle.strip():
+        return False
     return any(fundstelle in text for text in quellen.values())
 
 

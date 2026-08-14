@@ -40,3 +40,25 @@ def test_widerspruechliche_tatsache_ergibt_none_nicht_false():
 
     assert tatsache(widerspruechlich) is None
     assert tatsache(widerspruechlich) is not False
+
+
+def test_leere_fundstelle_gilt_nicht_als_beleg():
+    """Fund einer unabhaengigen Pruefung am 2026-08-14, Stunden nach dem Bau.
+
+    `"" in text` ist in Python immer wahr. Ohne die Leerpruefung gilt damit
+    ausgerechnet die Regel als belegt, die KEINE Fundstelle angibt -- der
+    Vertrag haette genau seinen Zweck verfehlt. Der urspruengliche Selbsttest
+    fand es nicht, weil er nur echte Fundstellen probierte: er hat den
+    Positivfall und den Falschfall geprueft, nie den LEEREN Fall."""
+    from kern.belegvertrag import belegt, pruefe_regeln
+
+    assert belegt("", {"t": "beliebiger Text"}) is False
+    assert belegt("   ", {"t": "beliebiger Text"}) is False
+
+    for leer in ("", "   "):
+        with pytest.raises(ValueError) as fehler:
+            pruefe_regeln(
+                [{"id": "ohne_beleg", "ziel_id": "z1", "fundstelle": leer}],
+                {"z1": {"text": "beliebig"}},
+            )
+        assert "ohne_beleg" in str(fehler.value)
