@@ -28,6 +28,7 @@ test_kein_fester_versatz 16 Fundstellen mit '%z' und zwei mit festem Versatz.
 """
 from __future__ import annotations
 
+import ast
 import re
 import sys as _sys
 from pathlib import Path as _Path
@@ -46,12 +47,11 @@ ORDNER = ("kern", "haken", "melder", "migrationen", "messungen",
 # Bauart, die alle anderen benutzen.
 QUELLE = "kern/zeitmarke.py"
 
-# Zwei weitere Ausnahmen, beide namentlich und begruendet -- eine Ausnahme per
-# Muster waere eine Hintertuer:
-#   Die Umstellungsmigration MUSS den alten Vorgabewert im Klartext nennen; sie
-#   SUCHT ihn, statt ihn zu erzeugen. Ein Skript, das den alten Wert nicht
-#   nennen darf, kann ihn nicht ersetzen.
-AUSNAHMEN = {QUELLE, "migrationen/lauf_utc_vorgabewerte_2026-08-14.py"}
+# Nur EINE Ausnahme, und sie ist strukturell unvermeidbar: in zeitmarke.py
+# steht die Bauart selbst. Die Umstellungsmigrationen brauchen keine mehr --
+# sie nennen den alten Wert in ihrem Docstring, und ein Docstring ist im
+# Syntaxbaum kein Aufruf (siehe _fundstellen).
+AUSNAHMEN = {QUELLE}
 
 # GEMESSEN und danach verschaerft: Das erste Muster ('+01:00' irgendwo in
 # einer Zeichenkette) lieferte 143 Treffer, fast alle Fehlalarme -- feste
@@ -79,14 +79,32 @@ def _dateien():
 
 
 def _fundstellen(muster: re.Pattern) -> list[str]:
+    """Sucht in AUFRUFEN, nicht in Zeilen.
+
+    Zeilenweise Textsuche hat zweimal Prosa beanstandet: kern/zeitfenster.py:18
+    (eine Doku-Zeile) und den Kopf der Umstellungsmigration, die den alten
+    Vorgabewert nennen MUSS, um ihn zu suchen. Beide Male war die naheliegende
+    Antwort eine Ausnahmeliste -- und eine wachsende Ausnahmeliste ist das
+    Kennzeichen einer Wache, die am falschen Gegenstand misst.
+
+    Ueber den Syntaxbaum entfaellt die Frage: ein Docstring ist kein Aufruf,
+    ein Kommentar auch nicht. Was bleibt, ist genau das, was zur Laufzeit
+    einen Zeitstempel BAUT.
+    """
     treffer = []
     for f in _dateien():
-        for nr, zeile in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
-            if zeile.lstrip().startswith("#"):
+        quelle = f.read_text(encoding="utf-8")
+        try:
+            baum = ast.parse(quelle)
+        except SyntaxError:
+            continue
+        for knoten in ast.walk(baum):
+            if not isinstance(knoten, ast.Call):
                 continue
-            if muster.search(zeile):
-                treffer.append(f"{f.relative_to(WURZEL)}:{nr}")
-    return treffer
+            abschnitt = ast.get_source_segment(quelle, knoten) or ""
+            if muster.search(abschnitt):
+                treffer.append(f"{f.relative_to(WURZEL)}:{knoten.lineno}")
+    return sorted(set(treffer))
 
 
 def test_kein_prozent_z_in_zeitstempeln():
