@@ -1,0 +1,45 @@
+{
+  "was": "G3 -- Pruefung der Behauptung 'nicht machbar, braucht den echten Mini im Netz und eine Stunde Betrieb', samt Aufbau fuer die Dauermessung",
+  "erhoben": "2026-08-15T08:37:29Z",
+  "code": "spikes/g3_dauermessung/dauerlauf.py (Selbsttest gruen, unveraendert der echte Dienst kern/dokumentdienst.py, nur benutzt)",
+  "ausgangsbehauptung": "G3 sei nicht machbar, brauche den echten Mini im Netz und eine Stunde echten Tippbetriebs.",
+  "urteil": "TEILWEISE WIDERLEGT. Die DAUER-Huerde faellt vollstaendig: ein Tippmuster ohne Mensch laeuft beliebig lange, schreibt fortlaufend, kein Administratorpasswort noetig. Die NETZLAUFZEIT-Huerde faellt fuer 'kein Admin noetig' -- ein WS-Relais im eigenen Prozess erzeugt einstellbare Verzoegerung/Schwankung ohne pfctl/dnctl. Nicht widerlegt: eine ZWEITE HERKUNFTSADRESSE entsteht so nicht -- dafuer bleibt der Mini (oder zumindest ein zweiter Prozess mit eigener Netzwerkidentitaet) noetig. Siehe GRENZE.",
+  "aufbau": {
+    "ort": "spikes/g3_dauermessung/dauerlauf.py",
+    "verzoegerung": "asyncio-WS-Relais zwischen Teilnehmer 'mini' und dem echten Dienst -- kein OS-Werkzeug, kein Passwort. 5-40 ms Grundverzoegerung je Nachrichtenrichtung, 3% Ausreisser 100-300 ms (WLAN-Nachzuegler simuliert, nicht gemessen -- Annahme, im Code als solche benannt)",
+    "tippmuster": "Schuebe von 2-8 Einfuegungen, 60-220 ms je Zeichen, Denkpausen 1-8 s, ~5% laengere Ablenkung 10-60 s, ~8% der Schuebe loescht statt schreibt. Begruendung der 'Realistik': gaengige Tippgeschwindigkeit (40-90 Woerter/Minute) plus buendiges statt gleichfoermiges Muster -- explizit als Annahme markiert, keine eigene Studie",
+    "dienst": "kern/dokumentdienst.py, UNVERAENDERT importiert und benutzt (Raum, starten, Kennzahlen)",
+    "schreibt_fortlaufend_nach": "spikes/g3_dauermessung/lauf/status_fortlaufend.json, alle --intervall-sekunden (Vorgabe 15) atomar (erst .neu, dann umbenennen)"
+  },
+  "startbefehl_fuer_stundenlauf": "cd /Volumes/daten/Begod2026/brainlehr && python3 spikes/g3_dauermessung/dauerlauf.py --dauer-sekunden 3600 --intervall-sekunden 30 (oder ganz ohne --dauer-sekunden fuer endlos, Abbruch mit Strg-C) -- Ergebnisse laufend in spikes/g3_dauermessung/lauf/status_fortlaufend.json, danach dieselbe Ableitung wie unten auf den Endstand anwenden",
+  "probelauf_2026-08-15T08:37:25Z": {
+    "dauer_sekunden": 150,
+    "fehler_gesamt": 0,
+    "teilnehmer": {
+      "fenster": {
+        "updates_gesendet": 118, "bytes_gesendet": 9426, "zeichen_getippt": 3370,
+        "loeschungen": 10,
+        "abgeleitet": {"updates_je_minute": 47.2, "bytes_je_update": 79.9,
+                        "bytes_je_minute": 3770.3, "bytes_je_zeichen": 2.8}
+      },
+      "mini_ueber_relais": {
+        "updates_gesendet": 139, "bytes_gesendet": 11507, "zeichen_getippt": 4042,
+        "loeschungen": 9,
+        "abgeleitet": {"updates_je_minute": 55.6, "bytes_je_update": 82.8,
+                        "bytes_je_minute": 4602.7, "bytes_je_zeichen": 2.8}
+      }
+    },
+    "dienst_kennzahlen": {
+      "verbindungen": 4, "abgewiesene_zugaenge": 0, "abgelehnte_updates": 0,
+      "unbekannte_arten": 0, "kennungsverstoesse": 0, "gebremste_nachrichten": 0,
+      "updates": 268, "bytes_empfangen": 37038,
+      "herkunft": {"127.0.0.1": 4}
+    }
+  },
+  "gegenprobe_zuwachs_statt_vollstand": {
+    "befund": "GILT NICHT MEHR -- dieser Aufbau sendet von Anfang an den Zuwachs (doc.get_update(letzter_stand)), nicht den Vollstand. bytes_je_update liegt bei 77-83 Byte, weit unter den 1952 Byte/Update aus der Vormessung (dortiger Bug) und unter den 675/527 Byte der damaligen Gegenprobe. Selbsttest in dauerlauf.py haelt eine Grenze von 300 Byte/Update als Regressionswaechter fest.",
+    "einordnung": "Der Wert bleibt in diesem Aufbau ueber die Laufzeit stabil (77.9 bei 120s, 79.9 bei 150s fuer 'fenster') statt zu wachsen -- anders als beim Vollstand-Bug, wo der Wert mit der Dokumentlaenge mitwuchs. Genau das ist der Zweck des Zuwachs-Sendens."
+  },
+  "GRENZE": "Dieser Aufbau beantwortet NICHT: (1) eine zweite HERKUNFTSADRESSE -- Relais und beide Teilnehmer sind Prozesse auf demselben Rechner, `herkunft` zeigt weiterhin ausschliesslich 127.0.0.1. Die Ausweispflicht-Pruefung fuer Nicht-Loopback-Verbindungen (zugang_noetig) wird von diesem Aufbau NICHT durchlaufen. (2) echten Paketverlust, echte Wiederholungen und echtes TCP-Verhalten (Congestion Control, Reordering) einer realen WLAN/LAN-Strecke -- das Relais verzoegert, verwirft aber nichts und reiht nichts um. (3) reale Prozess-/Systemlast eines zweiten physischen Geraets (eigene CPU, eigener Speicherdruck, eigene Systemuhr mit eigenem Drift). (4) das, was NUR ein zweites Geraet zeigt: ob der Dienst unter einer WIRKLICH fremden IP-Adresse anders reagiert (z.B. ob die Ausweispflicht in der Praxis Nutzer aussperrt, ob NAT/Firewall am echten Router etwas veraendert). Diese vier Punkte bleiben offen und brauchen den Mini oder mindestens einen zweiten Prozess mit eigener Netzwerkschnittstelle -- der Dauerbetrieb und die Verzoegerungsschwankung dagegen sind hiermit nachgestellt, nicht mehr offen.",
+  "keine_schwellen_gesetzt": "Wie in der Vormessung bewusst nicht getan. Dieser Aufbau liefert die Voraussetzung fuer einen Stundenlauf, nicht die Schwelle selbst -- die entsteht erst NACH dem echten Stundenlauf des Betreibers."
+}
