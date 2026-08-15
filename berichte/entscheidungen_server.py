@@ -781,6 +781,20 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):  # ponytail: stdout-Stille, kein eigenes Log-Format
         pass
 
+    def _herkunft_ok(self) -> bool:
+        """Fund O2 (docs/SICHERHEITSFUNDE_2026-08-14.md): POST prueft weder
+        Herkunft noch Kennung -- 0 Treffer fuer ausweis|Authorization|token.
+        Jede fremde Seite im Browser des Betreibers konnte so schreiben, ohne
+        Rechnerzugang. Browser setzen bei POST-Anfragen IMMER einen
+        Origin-Kopf (Fetch-Standard), auch bei gleichem Ursprung -- das macht
+        ihn zur Schranke, OHNE entscheidungen.html anzufassen (tabu fuer
+        diesen Auftrag): ein Aufruf von der eigenen, hier ausgelieferten
+        Seite traegt automatisch den passenden Origin, ein fremder nicht."""
+        origin = self.headers.get("Origin")
+        if not origin:
+            return False
+        return origin == f"http://127.0.0.1:{self.server.server_port}"
+
     def _json(self, obj: dict, status: int = 200) -> None:
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
@@ -843,6 +857,9 @@ class Handler(BaseHTTPRequestHandler):
         self._json({"error": "unbekannter Pfad"}, 404)
 
     def do_POST(self):
+        if not self._herkunft_ok():
+            self._json({"error": "nicht erlaubt"}, 403)
+            return
         length = int(self.headers.get("Content-Length", 0))
         try:
             payload = json.loads(self.rfile.read(length) or b"{}")

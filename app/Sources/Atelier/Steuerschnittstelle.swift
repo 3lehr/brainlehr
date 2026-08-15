@@ -206,9 +206,13 @@ final class Steuerschnittstelle {
             return zustandsantwort(ansichten: ansichten)
 
         case .dokumentVerbinden(let adresse, let geheimnis):
-            guard let url = URL(string: adresse), url.scheme?.hasPrefix("ws") == true else {
+            // Geprueft ist die Adresse bereits in Steuerdeutung.deute (Fund O2:
+            // nur ws(s)://127.0.0.1|localhost|::1 kommt hier ueberhaupt an).
+            // `URL(string:)` kann trotzdem scheitern (z.B. bei IPv6-Literalen
+            // ohne eckige Klammern) -- dann ehrlich ablehnen statt zu erraten.
+            guard let url = URL(string: adresse) else {
                 return Steuerantwort(code: 400, koerper:
-                    #"{"fehler":"Adresse '\#(adresse)' ist keine ws://-Adresse.","hinweis":"Erwartet: ws://host:port"}"#)
+                    #"{"fehler":"Adresse laesst sich nicht als URL lesen.","hinweis":"Erwartet: ws://127.0.0.1:PORT"}"#)
             }
             dokument.verbinde(zu: url, geheimnis: geheimnis.isEmpty ? nil : geheimnis)
             return zustandsantwort(ansichten: ansichten)

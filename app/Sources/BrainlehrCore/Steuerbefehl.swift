@@ -106,6 +106,11 @@ public enum Steuerdeutung {
             return .success(.blickWaehlen(name))
         case ("POST", "/dokument"):
             if let adresse = feldAusJSON(koerper, schluessel: "adresse") {
+                guard istLoopbackWebsocketAdresse(adresse) else {
+                    return .failure(Steuerantwort(code: 400, koerper: fehler(
+                        "Adresse ist keine ws(s)://-Adresse auf 127.0.0.1/localhost.",
+                        hinweis: "Erwartet: ws://127.0.0.1:PORT oder ws://localhost:PORT")))
+                }
                 return .success(.dokumentVerbinden(
                     adresse: adresse,
                     geheimnis: feldAusJSON(koerper, schluessel: "geheimnis") ?? ""))
@@ -137,6 +142,22 @@ public enum Steuerdeutung {
                 "Unbekannter Pfad '\(reinerPfad)' fuer \(methode.uppercased()).",
                 hinweis: "Bekannt sind: \(bekanntePfade.joined(separator: ", "))")))
         }
+    }
+
+    /// Nur ws(s)://127.0.0.1|localhost|::1 gilt als Ziel fuer die
+    /// Dokumentsynchronisierung. Fund O2 (docs/SICHERHEITSFUNDE_2026-08-14.md):
+    /// ein blosses `scheme?.hasPrefix("ws")` nahm JEDE fremde Adresse an, und
+    /// die App synchronisierte das Dokument dorthin -- das einzige, was diese
+    /// Debug-Schnittstelle eigentlich schuetzen soll, ist die Bindung ans
+    /// eigene Geraet. Zeilenumbrueche vorab ausgeschlossen: `URL(string:)`
+    /// gibt manche solcher Zeichenketten sonst unbemerkt geglaettet zurueck.
+    public static func istLoopbackWebsocketAdresse(_ adresse: String) -> Bool {
+        guard !adresse.contains("\n"), !adresse.contains("\r"),
+              let url = URL(string: adresse),
+              let scheme = url.scheme?.lowercased(), scheme == "ws" || scheme == "wss",
+              let host = url.host?.lowercased()
+        else { return false }
+        return host == "127.0.0.1" || host == "localhost" || host == "::1"
     }
 
     /// Eine Zeichenkette als gueltiges JSON -- ueber JSONSerialization statt

@@ -126,6 +126,49 @@ final class SteuerbefehlTests: XCTestCase {
             "Die Zustandsantwort muss maschinell lesbar sein -- sonst prueft sie niemand")
     }
 
+    // ── Dokument verbinden: nur ws(s)://127.0.0.1|localhost|::1 (Fund O2) ──
+    //
+    // docs/SICHERHEITSFUNDE_2026-08-14.md, Fund O2: der Befehl zum Verbinden
+    // pruefte nur `scheme?.hasPrefix("ws")` -- jede fremde Adresse wurde
+    // angenommen, und die App synchronisierte das Dokument dorthin.
+
+    func testEigeneAdresseWirdAngenommen() {
+        let r = deute("POST", "/dokument", koerper: #"{"adresse":"ws://127.0.0.1:4599"}"#)
+        XCTAssertEqual(try? r.get(), .dokumentVerbinden(adresse: "ws://127.0.0.1:4599", geheimnis: ""))
+    }
+
+    func testLocalhostUndWssWerdenAngenommen() {
+        XCTAssertNoThrow(try deute("POST", "/dokument", koerper: #"{"adresse":"wss://localhost:4599"}"#).get())
+        XCTAssertNoThrow(try deute("POST", "/dokument", koerper: #"{"adresse":"ws://[::1]:4599"}"#).get())
+    }
+
+    func testFremdeAdresseWirdAbgelehnt() {
+        let antwort = ablehnung(deute("POST", "/dokument", koerper: #"{"adresse":"wss://boese.example/ws"}"#))
+        XCTAssertEqual(antwort.code, 400)
+    }
+
+    func testAdresseOhneSchemaWirdAbgelehnt() {
+        XCTAssertEqual(ablehnung(deute("POST", "/dokument", koerper: #"{"adresse":"127.0.0.1:4599"}"#)).code, 400)
+    }
+
+    func testAdresseMitEingebettetemZeilenumbruchWirdAbgelehnt() {
+        XCTAssertEqual(ablehnung(deute("POST", "/dokument",
+            koerper: #"{"adresse":"ws://127.0.0.1:4599\nHost: boese.example"}"#)).code, 400)
+    }
+
+    func testNichtWsSchemaWirdAbgelehnt() {
+        XCTAssertEqual(ablehnung(deute("POST", "/dokument", koerper: #"{"adresse":"http://127.0.0.1:4599"}"#)).code, 400)
+    }
+
+    func testIstLoopbackWebsocketAdresseGrenzwerte() {
+        XCTAssertTrue(Steuerdeutung.istLoopbackWebsocketAdresse("ws://127.0.0.1:4599"))
+        XCTAssertTrue(Steuerdeutung.istLoopbackWebsocketAdresse("wss://localhost:1"))
+        XCTAssertFalse(Steuerdeutung.istLoopbackWebsocketAdresse("wss://boese.example/ws"))
+        XCTAssertFalse(Steuerdeutung.istLoopbackWebsocketAdresse("127.0.0.1:4599"))
+        XCTAssertFalse(Steuerdeutung.istLoopbackWebsocketAdresse("ws://127.0.0.1:4599\nX-Evil: 1"))
+        XCTAssertFalse(Steuerdeutung.istLoopbackWebsocketAdresse(""))
+    }
+
     // ── Hilfen ───────────────────────────────────────────────────────────
 
     private func deute(_ methode: String, _ pfad: String,
