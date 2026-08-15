@@ -429,6 +429,10 @@ function el(tag, attrs, ...kinder) {
   return n;
 }
 
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function status(nodeId, text, art) {
   const n = document.getElementById(nodeId);
   n.textContent = text;
@@ -1424,7 +1428,7 @@ function abrufwegPunktZusatztext(i){
   }
   const treffer = abrufwegBedeutungFuer(d).zuordnung.gefunden.find(g => g.index === i);
   if (treffer && treffer.eintrag.staerke !== undefined && treffer.eintrag.staerke !== null) {
-    teile.push('Bedeutungskanal-Kosinus zur Anfrage „'+d.anfrage.text+'”: '+treffer.eintrag.staerke.toFixed(3)+' (Rang '+treffer.eintrag.rang+')');
+    teile.push('Bedeutungskanal-Kosinus zur Anfrage „'+escHtml(d.anfrage.text)+'”: '+treffer.eintrag.staerke.toFixed(3)+' (Rang '+treffer.eintrag.rang+')');
   }
   return teile.length ? '<br><span class="weg">'+teile.join(' · ')+'</span>' : '';
 }
@@ -1524,9 +1528,9 @@ c.addEventListener('pointermove',e=>{
     }
     if (!best) { fahne.style.opacity=0; return; }
     const ee=best.e;
-    fahne.innerHTML = (ee.art==='lehre'?'Lehre · ':(ee.art==='anfrage'?'':'Knoten · ')) + (ee.titel||ee.id).toString().replace(/</g,'&lt;') +
-      '<br>' + best.zusatz + (ee.ausgeschieden ? ' — ausgeschieden: '+(ABRUFWEG_GRUND_TEXT[ee.ausgeschieden]||ee.ausgeschieden) : '') +
-      (ee.pfad ? '<span class="weg">'+ee.pfad+'</span>' : '');
+    fahne.innerHTML = (ee.art==='lehre'?'Lehre · ':(ee.art==='anfrage'?'':'Knoten · ')) + escHtml((ee.titel||ee.id).toString()) +
+      '<br>' + escHtml(best.zusatz) + (ee.ausgeschieden ? ' — ausgeschieden: '+escHtml(ABRUFWEG_GRUND_TEXT[ee.ausgeschieden]||ee.ausgeschieden) : '') +
+      (ee.pfad ? '<span class="weg">'+escHtml(ee.pfad)+'</span>' : '');
     fahne.style.opacity=1;
     fahne.style.left = Math.min(rect.width-330, e.clientX-rect.left+14)+'px';
     fahne.style.top  = Math.max(4, e.clientY-rect.top-14)+'px';
@@ -1543,9 +1547,9 @@ c.addEventListener('pointermove',e=>{
   }
   if(best<0){ fahne.style.opacity=0; return; }
   const p=P[best];
-  fahne.innerHTML = (p.k==='l'?'Lehre · ':'Knoten · ') + (p.a) +
+  fahne.innerHTML = (p.k==='l'?'Lehre · ':'Knoten · ') + escHtml(p.a) +
     (p.h ? ' · '+p.h+'× ausgeliefert' : ' · noch nie ausgeliefert') +
-    '<br>' + p.t.replace(/</g,'&lt;') + '<span class="weg">' + (p.p||'') + (p.d? ' · '+p.d : '') + '</span>' +
+    '<br>' + escHtml(p.t) + '<span class="weg">' + escHtml(p.p||'') + (p.d? ' · '+escHtml(p.d) : '') + '</span>' +
     abrufwegPunktZusatztext(best);
   fahne.style.opacity=1;
   fahne.style.left = Math.min(rect.width-330, e.clientX-rect.left+14)+'px';
