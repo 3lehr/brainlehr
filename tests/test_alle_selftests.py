@@ -147,6 +147,7 @@ MODULE = [
     "melder/vier_nenner.py",
     "melder/vorschlagsmelder.py",
     "melder/wissensverlauf.py",
+    "melder/wirkkette.py",
     # 2026-08-14 nachgetragen: diese zehn melden --selftest ueber sys.argv
     # statt ueber argparse und fielen deshalb durch die Ratsche unten --
     # sie lief nur auf add_argument("--selftest"). Alle zehn liefen
@@ -211,7 +212,7 @@ XFAIL = {
 }
 
 assert set(XFAIL) <= set(MODULE)
-assert len(MODULE) == 95, len(MODULE)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie) + kern/satz.py (2026-08-15T06:20:00+0200, ebenfalls von diesem Test gefunden -- sein Selbsttest war seit dem Anlegen rot) + melder/spaltenabgleich.py (Linie J3, 2026-08-15) + melder/plan_bestandsabgleich.py (Soll/Wirklichkeit-Abgleich fuer Planzeilen, 2026-08-15) + kern/driftwaechter.py (F6, Drift-Waechter Darstellung/Blatt, schnelle Darstellung im selben Modul, 2026-08-15) + kern/designtokens_latex.py (LaTeX-Erzeuger fuer Gestaltungsvorrat, ADR-015, 2026-08-15)
+assert len(MODULE) == 96, len(MODULE)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie) + kern/satz.py (2026-08-15T06:20:00+0200, ebenfalls von diesem Test gefunden -- sein Selbsttest war seit dem Anlegen rot) + melder/spaltenabgleich.py (Linie J3, 2026-08-15) + melder/plan_bestandsabgleich.py (Soll/Wirklichkeit-Abgleich fuer Planzeilen, 2026-08-15) + kern/driftwaechter.py (F6, Drift-Waechter Darstellung/Blatt, schnelle Darstellung im selben Modul, 2026-08-15) + kern/designtokens_latex.py (LaTeX-Erzeuger fuer Gestaltungsvorrat, ADR-015, 2026-08-15) + melder/wirkkette.py (Linie J2, Haken- und Prozessabgleich, 2026-08-15)
 
 # Nur diese 3 legen -wal/-shm NEBEN der echten Datenbank an, wenn sie
 # BRAINLEHR_DB unbesetzt lassen -- gemessen 2026-08-12 per Datei-Snapshot
