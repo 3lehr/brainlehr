@@ -9,9 +9,8 @@ Abschnitt G5 und docs/SICHERHEITSFUNDE_2026-08-14.md Fund O4. Diese Probe
 existiert VOR der Aenderung und ist heute rot -- das ist ihr Zweck: der
 Beleg, dass sie wirklich etwas misst, statt nur einen Haken zu setzen.
 
-Geprueft werden zwei Dateien, beide aus kern/ausweis.py bzw. kern/auditanker.py
-uebernommen (Pfadermittlung dort, hier nur gelesen -- kein Import von kern/):
-  - brainlehr.db   (Repo-Wurzel, an schema.sql erkannt)
+Geprueft werden zwei Dateien:
+  - die Wissens-DB, ueber haken.ort.DB aufgeloest (kein eigener Pfadbau)
   - ausweise.json  (~/Desktop/brainlehr-ausweise, override BRAINLEHR_AUSWEISE)
 
 Kriterium "gehoert einer anderen Kennung": Dateieigner-UID != os.getuid().
@@ -31,12 +30,13 @@ import stat
 import sys
 from pathlib import Path
 
+_w = Path(__file__).resolve().parent
+while not (_w / "schema.sql").exists() and _w != _w.parent:
+    _w = _w.parent
+if str(_w) not in sys.path:
+    sys.path.insert(0, str(_w))
 
-def _repo_wurzel() -> Path:
-    w = Path(__file__).resolve().parent
-    while not (w / "schema.sql").exists() and w != w.parent:
-        w = w.parent
-    return w
+from haken.ort import DB as _DB  # noqa: E402
 
 
 def _ausweisordner() -> Path:
@@ -90,7 +90,7 @@ def _pruefe_datei(pfad: Path, verlangte_bits: int) -> dict:
 
 
 def pruefe() -> dict:
-    db = _pruefe_datei(_repo_wurzel() / "brainlehr.db", 0o600)
+    db = _pruefe_datei(_DB, 0o600)
     ordner = _pruefe_datei(_ausweisordner(), 0o700)
     gesamt = bool(db["gilt"]) and bool(ordner["gilt"])
     return {"g5_erfuellt": gesamt, "brainlehr_db": db, "ausweisordner": ordner}

@@ -124,12 +124,17 @@ def fehlende_kandidaten(conn: sqlite3.Connection) -> int:
     `automatischer_lauf()`. Ein unverbundener Knoten hat per Definition KEINE
     Kante, also ist jeder gefundene Kandidat zwangslaeufig noch nicht in der
     DB; ein `edge_exists`-Check danach waere ueberfluessige Arbeit."""
-    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    # lade_knoten_vektoren liefert seit kern/kanten_aus_bedeutung.py Auftrag
+    # 83 vier Werte (projekte dazwischen, project_id je Knoten fuer die
+    # Dedup-Regel) statt drei -- Aufruf hier nachgezogen, derselbe
+    # Vier-Werte-Vertrag wie tests/test_kanten_aus_bedeutung.py ihn nutzt.
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
     unverbunden = kab.knoten_ohne_kanten(conn, paths)
     if not unverbunden:
         return 0
     nur_index = {i for i, p in enumerate(paths) if p in unverbunden}
-    return len(kab.finde_kandidaten(paths, titles, vektoren, nur_index=nur_index))
+    return len(kab.finde_kandidaten(
+        paths, titles, vektoren, nur_index=nur_index, projekte=projekte))
 
 
 def pruefen(conn: sqlite3.Connection) -> str | None:

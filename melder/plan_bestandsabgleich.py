@@ -53,20 +53,40 @@ echten Commit-Historie:
   - Ein "frei" (Entsperr-Marker) in den 80 Zeichen NACH der Kennung zaehlt
     nicht als Beleg -- SO GEFUNDEN (2026-08-15): 4b5e8b1 nennt H10 als
     "... frei, an derselben Datei zu arbeiten" (eine Sperre fiel), nicht als
-    erledigt; H10 steht im Plan weiter unter "Offen".
+    erledigt; H10 steht im Plan weiter unter "Offen" (Stand caeda623,
+    05:11 -- spaeter, um 10:58, hat c0077fe8 domaene.exportiere() dann
+    tatsaechlich gebaut und selbst mit "(H10)" beschriftet; der Plan ist seit
+    dem nicht mehr aktuell. Der Melder hat damit RECHT, wenn er H10 heute
+    findet -- genau dafuer existiert er).
+  - Kennung und Dateipfad muessen NAH beieinander stehen (Fenster 300 Zeichen
+    in beide Richtungen um den Kennungstreffer) -- vorher zaehlte JEDER
+    Dateipfad irgendwo im ganzen Commit, auch drei Absaetze entfernt und ohne
+    inhaltlichen Bezug. SO GEFUNDEN (2026-08-15, Ratsche erweitert wegen
+    stash_guard_hook.py -- dieselbe Erweiterung liest jetzt auch die
+    repo-eigene .claude/settings.json mit, was die Falschtrefferrate an
+    diesem Tag zusaetzlich sichtbar machte): Commit 50518c5e ("G2 -- die
+    Dienstwache") nennt "G3" nur als Kontext ("ihre Schwelle entsteht erst
+    aus einer Nullmessung (G3)") und einen voellig unbezogenen Dateipfad
+    fast 900 Zeichen weiter unten (tests/test_melder_verdrahtung.py) --
+    matchte trotzdem, bis die Naehe verlangt wurde. 300 Zeichen ist kein
+    runder Wert, sondern gemessen: der ECHTE Beleg fuer `85` (b3dfc6f)
+    braucht 269 Zeichen zwischen Kennung und "melder/ausloeserlos.py", enger
+    haette die Positivkontrolle selbst zerstoert.
 
-GEMESSENE FALSCHTREFFERRATE (2026-08-15T11:00, docs/PLAN_GESAMT_2026-08-13.md,
-70 extrahierte Kennungen, nach den beiden Ausnahmen oben): 32 von 70 werden
-als Kandidat gemeldet (unter der Haelfte -- keine Fehlkonstruktion nach dem
-Massstab des Auftrags). Die Zahl verschiebt sich mit jedem neuen Commit (die
-Heuristik durchsucht die gesamte Historie neu) -- vor den beiden Ausnahmen
-oben lag sie bei 38/70, weil zwei spaeter gelandete Commits (0f450fb,
-4b5e8b1) sich selbst bzw. eine falsch gelesene Kennung trafen. Stichproben
-von Hand: G2/G3 (echter Fund, im Plan bisher nicht als erledigt vermerkt)
-und ein zurueckgenommener Fehlalarm F1 (traf urspruenglich auf "10 Proben
-F1-F10" -- eine Probenbenennung, keine Plankennung; durch die
-Bindestrich-Ausnahme oben entfernt). Keine erschoepfende Pruefung aller 32
--- das ist der Preis der Heuristik, deshalb Hinweisrecht statt Automatik.
+GEMESSENE FALSCHTREFFERRATE (2026-08-15T13:00, docs/PLAN_GESAMT_2026-08-13.md,
+70 extrahierte Kennungen, nach allen Ausnahmen oben inkl. Naehefenster): 27
+von 70 (39 %). Die Zahl verschiebt sich mit jedem neuen Commit (die Heuristik
+durchsucht die gesamte Historie neu) -- vor dem Naehefenster lag sie bei
+44/70 (63 %, ueber der Haelfte), nachdem am selben Tag mehrere neue Linien
+(G, I, J, S) reale Arbeit lieferten UND die Ratsche erstmals die repo-eigene
+.claude/settings.json mitlas. Bekannte verbleibende Fehltreffer, die auch das
+Naehefenster nicht faengt (Kennungskollision, kein Abstandsproblem): `G5`
+(Commit-Subjekt "G5-Vorbereitung", Plan fuehrt G5 weiter als "Groesster
+Hebel" unter offen) und `S1`/`S2` (der Plan selbst nennt diese Kollision:
+dieselben Kuerzel bezeichnen in PLAN_DESTILLE/PLAN_DREITEILUNG andere Dinge
+als in diesem Gesamtplan) -- beide sind der Heuristik bekannt zu teuer, um
+sie ohne eigene Namensraum-Erkennung aufzuloesen; das ist der Preis der
+Heuristik, deshalb Hinweisrecht statt Automatik.
 
 GRENZWERTE, geprueft: Plandatei ohne jede Kennung -> leere Kandidatenliste,
 kein Absturz. Kennung, deren Plantext keinen Dateinamen nennt (85) ->
@@ -171,6 +191,19 @@ _EIGENER_MELDER_MUSTER = re.compile(r"plan_bestandsabgleich")
 _ENTSPERR_FENSTER = 80
 _ENTSPERR_MUSTER = re.compile(r"\bfrei\b")
 
+# Kennung und Dateipfad muessen NAH beieinander stehen, nicht nur irgendwo im
+# selben (oft langen) Commit -- siehe Modulkopf, Abschnitt "Kennung und
+# Dateipfad muessen nah beieinander stehen". 300 Zeichen ist gemessen: der
+# reale Beleg fuer `85` (b3dfc6f) braucht 269 Zeichen zwischen Kennungstreffer
+# und "melder/ausloeserlos.py".
+_NAEHE_FENSTER = 300
+
+
+def _dateipfad_in_naehe(voll: str, treffer: re.Match) -> bool:
+    start = max(0, treffer.start() - _NAEHE_FENSTER)
+    ende = treffer.end() + _NAEHE_FENSTER
+    return bool(_DATEIPFAD_MUSTER.search(voll[start:ende]))
+
 
 def finde_kandidaten(plan_text: str, commits: list[tuple[str, str, str]]) -> list[Kandidat]:
     kandidaten: list[Kandidat] = []
@@ -194,7 +227,7 @@ def finde_kandidaten(plan_text: str, commits: list[tuple[str, str, str]]) -> lis
             fenster = voll[treffer.end():treffer.end() + _ENTSPERR_FENSTER]
             if _ENTSPERR_MUSTER.search(fenster):
                 continue
-            if not _DATEIPFAD_MUSTER.search(voll):
+            if not _dateipfad_in_naehe(voll, treffer):
                 continue
             kandidaten.append(Kandidat(kennung, h, betreff.strip()))
             break  # ein Beleg reicht, weiterer Lauf bringt nur Rauschen
@@ -245,6 +278,19 @@ def _selftest() -> None:
     assert not any(k.kennung == "85" and k.commit_hash == "ffff6666" for k in funde), \
         "Grenzwert: Commit ohne Dateibeleg darf nicht als Kandidat zaehlen"
     print("(3) Grenzwert -- Kennung ohne genannte Datei im Commit: verworfen, ok")
+
+    # SO GEFUNDEN (2026-08-15): ein Dateipfad weit entfernt von der Kennung,
+    # ohne inhaltlichen Bezug (Commit 50518c5e/G3), zaehlte frueher trotzdem.
+    fern = "x" * (_NAEHE_FENSTER + 50)
+    commits_fern = commits + [
+        ("hhhh8888", "feat(brainlehr): Aufgabe 96 weit weg",
+         f"feat(brainlehr): Aufgabe 96 weit weg\n{fern}\nberuehrt melder/fern.py"),
+    ]
+    plan_text3 = plan_text2 + " `96` fern."
+    kennungen_gefunden_fern = {k.kennung for k in finde_kandidaten(plan_text3, commits_fern)}
+    assert "96" not in kennungen_gefunden_fern, (
+        "Grenzwert: ein Dateipfad ausserhalb des Naehefensters darf nicht zaehlen")
+    print("(3b) Grenzwert -- Dateipfad ausserhalb des Naehefensters: verworfen, ok")
 
     assert "J1" in kennungen_gefunden, "Buchstaben-Kennung ohne 'Aufgabe'-Praefix muss trotzdem anschlagen"
     print("(4) Buchstaben-Kennung (J1) ohne 'Aufgabe'-Praefix: ok")
