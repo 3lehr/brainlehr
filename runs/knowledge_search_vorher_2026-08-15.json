@@ -1,0 +1,1240 @@
+{
+ "verfahren": "echter Weg knowledge_mcp_server.knowledge_search(prompt, max_results=10), Korpus runs/echtkorpus_2026-08-12T1000.json (89 Faelle, echte Nachrichten, Ziele ueber code_kanten -- messungen/echtkorpus.py). Einheit: Ziel-Instanz.",
+ "code_stand": "vorher (rrf_fuse/knowledge_mcp_server.py unveraendert)",
+ "treffer": 18,
+ "gesamt": 205,
+ "quote": 0.0878,
+ "dauer_s": 731.7,
+ "einzel": [
+  {
+   "fall": 0,
+   "art": "knoten",
+   "id": "/brainlehr",
+   "treffer": false
+  },
+  {
+   "fall": 1,
+   "art": "knoten",
+   "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+   "treffer": false
+  },
+  {
+   "fall": 1,
+   "art": "knoten",
+   "id": "/brainlehr/enigma-phase-1-mcp-ist-keine",
+   "treffer": false
+  },
+  {
+   "fall": 2,
+   "art": "knoten",
+   "id": "/apps/fahrtenbuch/build-77-phone-black-screen-gesicherter",
+   "treffer": false
+  },
+  {
+   "fall": 3,
+   "art": "knoten",
+   "id": "/brainlehr/zwei-sitzungen-arbeiten-parallel-an",
+   "treffer": false
+  },
+  {
+   "fall": 4,
+   "art": "knoten",
+   "id": "/brainlehr",
+   "treffer": false
+  },
+  {
+   "fall": 4,
+   "art": "lehre",
+   "id": "L-87532c",
+   "treffer": false
+  },
+  {
+   "fall": 5,
+   "art": "knoten",
+   "id": "/werkzeuge/stiftshuette-werkzeugbestand-stand-2026",
+   "treffer": false
+  },
+  {
+   "fall": 6,
+   "art": "lehre",
+   "id": "L-768569",
+   "treffer": false
+  },
+  {
+   "fall": 6,
+   "art": "lehre",
+   "id": "L-de8ee0",
+   "treffer": false
+  },
+  {
+   "fall": 7,
+   "art": "knoten",
+   "id": "/shared/claude-code-integration",
+   "treffer": true
+  },
+  {
+   "fall": 8,
+   "art": "lehre",
+   "id": "L-768569",
+   "treffer": false
+  },
+  {
+   "fall": 8,
+   "art": "lehre",
+   "id": "L-a3cc7a",
+   "treffer": false
+  },
+  {
+   "fall": 8,
+   "art": "lehre",
+   "id": "L-b63633",
+   "treffer": false
+  },
+  {
+   "fall": 9,
+   "art": "lehre",
+   "id": "L-29eaee",
+   "treffer": false
+  },
+  {
+   "fall": 10,
+   "art": "knoten",
+   "id": "/openlehr/imap-zugangsdaten-konten-in-der-db",
+   "treffer": false
+  },
+  {
+   "fall": 11,
+   "art": "lehre",
+   "id": "L-bf8007",
+   "treffer": false
+  },
+  {
+   "fall": 12,
+   "art": "lehre",
+   "id": "L-601c5c",
+   "treffer": false
+  },
+  {
+   "fall": 12,
+   "art": "lehre",
+   "id": "L-9f8816",
+   "treffer": false
+  },
+  {
+   "fall": 13,
+   "art": "knoten",
+   "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+   "treffer": false
+  },
+  {
+   "fall": 14,
+   "art": "knoten",
+   "id": "/ops/buckeberg-vortreffen-2026-07-29:-shortli",
+   "treffer": true
+  },
+  {
+   "fall": 14,
+   "art": "knoten",
+   "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/betreuungsschluessel-die-einzige",
+   "treffer": false
+  },
+  {
+   "fall": 14,
+   "art": "knoten",
+   "id": "/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit",
+   "treffer": false
+  },
+  {
+   "fall": 15,
+   "art": "lehre",
+   "id": "L-47e586",
+   "treffer": false
+  },
+  {
+   "fall": 16,
+   "art": "lehre",
+   "id": "L-29eaee",
+   "treffer": false
+  },
+  {
+   "fall": 16,
+   "art": "lehre",
+   "id": "L-2d79cc",
+   "treffer": false
+  },
+  {
+   "fall": 17,
+   "art": "knoten",
+   "id": "/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit",
+   "treffer": true
+  },
+  {
+   "fall": 18,
+   "art": "lehre",
+   "id": "L-29eaee",
+   "treffer": false
+  },
+  {
+   "fall": 18,
+   "art": "lehre",
+   "id": "L-7b2c20",
+   "treffer": true
+  },
+  {
+   "fall": 19,
+   "art": "lehre",
+   "id": "L-8c633e",
+   "treffer": false
+  },
+  {
+   "fall": 20,
+   "art": "knoten",
+   "id": "/apps/setfunk-cafe-international-konsil-2026",
+   "treffer": true
+  },
+  {
+   "fall": 20,
+   "art": "knoten",
+   "id": "/apps/setfunk-technik-konsil-td1-td12-plan-ap",
+   "treffer": true
+  },
+  {
+   "fall": 20,
+   "art": "lehre",
+   "id": "L-07c9d9",
+   "treffer": false
+  },
+  {
+   "fall": 21,
+   "art": "lehre",
+   "id": "L-8c633e",
+   "treffer": false
+  },
+  {
+   "fall": 22,
+   "art": "knoten",
+   "id": "/shared/psa-peugeot-citroen-vin-ueber",
+   "treffer": false
+  },
+  {
+   "fall": 23,
+   "art": "knoten",
+   "id": "/apps/setfunk-statusbild-technische-grenzen",
+   "treffer": true
+  },
+  {
+   "fall": 24,
+   "art": "knoten",
+   "id": "/apps/setfunk-statusbild-technische-grenzen",
+   "treffer": true
+  },
+  {
+   "fall": 25,
+   "art": "knoten",
+   "id": "/apps/setfunk-statusbild-technische-grenzen",
+   "treffer": false
+  },
+  {
+   "fall": 26,
+   "art": "knoten",
+   "id": "/apps/fahrtenbuch/adr-korrektur-festgeschriebener-fahrten",
+   "treffer": false
+  },
+  {
+   "fall": 26,
+   "art": "lehre",
+   "id": "L-d3c6a4",
+   "treffer": false
+  },
+  {
+   "fall": 27,
+   "art": "lehre",
+   "id": "L-4ab9b0",
+   "treffer": false
+  },
+  {
+   "fall": 28,
+   "art": "lehre",
+   "id": "L-bf8007",
+   "treffer": false
+  },
+  {
+   "fall": 29,
+   "art": "knoten",
+   "id": "/apps/fahrtenbuch/adr-korrektur-festgeschriebener-fahrten",
+   "treffer": false
+  },
+  {
+   "fall": 29,
+   "art": "lehre",
+   "id": "L-d3c6a4",
+   "treffer": false
+  },
+  {
+   "fall": 30,
+   "art": "knoten",
+   "id": "/apps/fahrtenbuch/adr-korrektur-festgeschriebener-fahrten",
+   "treffer": false
+  },
+  {
+   "fall": 30,
+   "art": "lehre",
+   "id": "L-d3c6a4",
+   "treffer": false
+  },
+  {
+   "fall": 31,
+   "art": "knoten",
+   "id": "/apps/fahrtenbuch/zweckwechsel-waehrend-der-fahrt-zaesur",
+   "treffer": false
+  },
+  {
+   "fall": 32,
+   "art": "knoten",
+   "id": "/apps/fahrtenbuch/zweckwechsel-waehrend-der-fahrt-zaesur",
+   "treffer": false
+  },
+  {
+   "fall": 32,
+   "art": "lehre",
+   "id": "L-4ab9b0",
+   "treffer": false
+  },
+  {
+   "fall": 33,
+   "art": "knoten",
+   "id": "/fahrtenbuch/konsil-beschluss-keine-dritte",
+   "treffer": true
+  },
+  {
+   "fall": 33,
+   "art": "lehre",
+   "id": "L-e2bb41",
+   "treffer": false
+  },
+  {
+   "fall": 34,
+   "art": "knoten",
+   "id": "/apps/setfunk-statusbild-technische-grenzen",
+   "treffer": true
+  },
+  {
+   "fall": 35,
+   "art": "knoten",
+   "id": "/ops/buckeberg-anbieterabend-2026-08-05",
+   "treffer": false
+  },
+  {
+   "fall": 36,
+   "art": "lehre",
+   "id": "L-ebbd22",
+   "treffer": true
+  },
+  {
+   "fall": 37,
+   "art": "lehre",
+   "id": "L-ebbd22",
+   "treffer": true
+  },
+  {
+   "fall": 38,
+   "art": "lehre",
+   "id": "L-48e414",
+   "treffer": false
+  },
+  {
+   "fall": 38,
+   "art": "lehre",
+   "id": "L-a69129",
+   "treffer": false
+  },
+  {
+   "fall": 38,
+   "art": "lehre",
+   "id": "L-b79360",
+   "treffer": false
+  },
+  {
+   "fall": 39,
+   "art": "lehre",
+   "id": "L-dc0f44",
+   "treffer": false
+  },
+  {
+   "fall": 40,
+   "art": "lehre",
+   "id": "L-d500c2",
+   "treffer": false
+  },
+  {
+   "fall": 41,
+   "art": "lehre",
+   "id": "L-2e23e5",
+   "treffer": false
+  },
+  {
+   "fall": 42,
+   "art": "lehre",
+   "id": "L-8e3d18",
+   "treffer": false
+  },
+  {
+   "fall": 43,
+   "art": "lehre",
+   "id": "L-424312",
+   "treffer": false
+  },
+  {
+   "fall": 44,
+   "art": "lehre",
+   "id": "L-1056bb",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-352afa",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-636a44",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-9f5e60",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-9f8816",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-a69129",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-adfb33",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-bd4e5f",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-cb3f28",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-ebbd22",
+   "treffer": false
+  },
+  {
+   "fall": 45,
+   "art": "lehre",
+   "id": "L-ff8fff",
+   "treffer": false
+  },
+  {
+   "fall": 46,
+   "art": "lehre",
+   "id": "L-62b600",
+   "treffer": false
+  },
+  {
+   "fall": 47,
+   "art": "lehre",
+   "id": "L-2bdfea",
+   "treffer": false
+  },
+  {
+   "fall": 47,
+   "art": "lehre",
+   "id": "L-6903d2",
+   "treffer": false
+  },
+  {
+   "fall": 47,
+   "art": "lehre",
+   "id": "L-f1fcb9",
+   "treffer": false
+  },
+  {
+   "fall": 48,
+   "art": "lehre",
+   "id": "L-7a4a7a",
+   "treffer": false
+  },
+  {
+   "fall": 49,
+   "art": "lehre",
+   "id": "L-36d092",
+   "treffer": false
+  },
+  {
+   "fall": 49,
+   "art": "lehre",
+   "id": "L-3d72a5",
+   "treffer": false
+  },
+  {
+   "fall": 49,
+   "art": "lehre",
+   "id": "L-502be0",
+   "treffer": false
+  },
+  {
+   "fall": 50,
+   "art": "lehre",
+   "id": "L-47e586",
+   "treffer": false
+  },
+  {
+   "fall": 50,
+   "art": "lehre",
+   "id": "L-9dc0db",
+   "treffer": false
+  },
+  {
+   "fall": 50,
+   "art": "lehre",
+   "id": "L-a1b276",
+   "treffer": false
+  },
+  {
+   "fall": 50,
+   "art": "lehre",
+   "id": "L-a3b39e",
+   "treffer": false
+  },
+  {
+   "fall": 50,
+   "art": "lehre",
+   "id": "L-a7043b",
+   "treffer": false
+  },
+  {
+   "fall": 50,
+   "art": "lehre",
+   "id": "L-e7bc5e",
+   "treffer": false
+  },
+  {
+   "fall": 51,
+   "art": "lehre",
+   "id": "L-163051",
+   "treffer": true
+  },
+  {
+   "fall": 51,
+   "art": "lehre",
+   "id": "L-4c224c",
+   "treffer": false
+  },
+  {
+   "fall": 52,
+   "art": "lehre",
+   "id": "L-243dde",
+   "treffer": false
+  },
+  {
+   "fall": 52,
+   "art": "lehre",
+   "id": "L-39b018",
+   "treffer": false
+  },
+  {
+   "fall": 52,
+   "art": "lehre",
+   "id": "L-ad3d6e",
+   "treffer": false
+  },
+  {
+   "fall": 52,
+   "art": "lehre",
+   "id": "L-f8926c",
+   "treffer": true
+  },
+  {
+   "fall": 53,
+   "art": "lehre",
+   "id": "L-353192",
+   "treffer": false
+  },
+  {
+   "fall": 54,
+   "art": "lehre",
+   "id": "L-895b9a",
+   "treffer": false
+  },
+  {
+   "fall": 54,
+   "art": "lehre",
+   "id": "L-9e1d80",
+   "treffer": false
+  },
+  {
+   "fall": 54,
+   "art": "lehre",
+   "id": "L-affae1",
+   "treffer": false
+  },
+  {
+   "fall": 55,
+   "art": "lehre",
+   "id": "L-3cad13",
+   "treffer": false
+  },
+  {
+   "fall": 55,
+   "art": "lehre",
+   "id": "L-a54e84",
+   "treffer": false
+  },
+  {
+   "fall": 55,
+   "art": "lehre",
+   "id": "L-eb4734",
+   "treffer": false
+  },
+  {
+   "fall": 56,
+   "art": "lehre",
+   "id": "L-2fea20",
+   "treffer": false
+  },
+  {
+   "fall": 56,
+   "art": "lehre",
+   "id": "L-c46550",
+   "treffer": false
+  },
+  {
+   "fall": 57,
+   "art": "lehre",
+   "id": "L-69217d",
+   "treffer": true
+  },
+  {
+   "fall": 57,
+   "art": "lehre",
+   "id": "L-7b2c20",
+   "treffer": true
+  },
+  {
+   "fall": 58,
+   "art": "lehre",
+   "id": "L-09fbcd",
+   "treffer": false
+  },
+  {
+   "fall": 59,
+   "art": "lehre",
+   "id": "L-093dc4",
+   "treffer": false
+  },
+  {
+   "fall": 59,
+   "art": "lehre",
+   "id": "L-3a77da",
+   "treffer": false
+  },
+  {
+   "fall": 59,
+   "art": "lehre",
+   "id": "L-5b08a7",
+   "treffer": false
+  },
+  {
+   "fall": 59,
+   "art": "lehre",
+   "id": "L-884098",
+   "treffer": false
+  },
+  {
+   "fall": 60,
+   "art": "lehre",
+   "id": "L-121497",
+   "treffer": false
+  },
+  {
+   "fall": 60,
+   "art": "lehre",
+   "id": "L-2a4cc5",
+   "treffer": false
+  },
+  {
+   "fall": 60,
+   "art": "lehre",
+   "id": "L-a50ceb",
+   "treffer": false
+  },
+  {
+   "fall": 61,
+   "art": "lehre",
+   "id": "L-95e9ab",
+   "treffer": false
+  },
+  {
+   "fall": 61,
+   "art": "lehre",
+   "id": "L-b9d1f3",
+   "treffer": false
+  },
+  {
+   "fall": 62,
+   "art": "lehre",
+   "id": "L-747223",
+   "treffer": false
+  },
+  {
+   "fall": 62,
+   "art": "lehre",
+   "id": "L-7985e4",
+   "treffer": false
+  },
+  {
+   "fall": 62,
+   "art": "lehre",
+   "id": "L-d8cfc8",
+   "treffer": false
+  },
+  {
+   "fall": 63,
+   "art": "lehre",
+   "id": "L-71fd3a",
+   "treffer": false
+  },
+  {
+   "fall": 64,
+   "art": "lehre",
+   "id": "L-d3c6a4",
+   "treffer": false
+  },
+  {
+   "fall": 64,
+   "art": "lehre",
+   "id": "L-ed0379",
+   "treffer": false
+  },
+  {
+   "fall": 64,
+   "art": "lehre",
+   "id": "L-f019e7",
+   "treffer": false
+  },
+  {
+   "fall": 65,
+   "art": "lehre",
+   "id": "L-044353",
+   "treffer": false
+  },
+  {
+   "fall": 65,
+   "art": "lehre",
+   "id": "L-8fbfd4",
+   "treffer": false
+  },
+  {
+   "fall": 65,
+   "art": "lehre",
+   "id": "L-f4c75d",
+   "treffer": false
+  },
+  {
+   "fall": 66,
+   "art": "lehre",
+   "id": "L-2837f3",
+   "treffer": false
+  },
+  {
+   "fall": 66,
+   "art": "lehre",
+   "id": "L-2feee9",
+   "treffer": false
+  },
+  {
+   "fall": 66,
+   "art": "lehre",
+   "id": "L-6edb15",
+   "treffer": false
+  },
+  {
+   "fall": 66,
+   "art": "lehre",
+   "id": "L-d07097",
+   "treffer": false
+  },
+  {
+   "fall": 67,
+   "art": "lehre",
+   "id": "L-0dec26",
+   "treffer": false
+  },
+  {
+   "fall": 67,
+   "art": "lehre",
+   "id": "L-468a04",
+   "treffer": false
+  },
+  {
+   "fall": 67,
+   "art": "lehre",
+   "id": "L-48e414",
+   "treffer": false
+  },
+  {
+   "fall": 67,
+   "art": "lehre",
+   "id": "L-c46550",
+   "treffer": false
+  },
+  {
+   "fall": 68,
+   "art": "lehre",
+   "id": "L-218f1e",
+   "treffer": false
+  },
+  {
+   "fall": 68,
+   "art": "lehre",
+   "id": "L-312bd7",
+   "treffer": false
+  },
+  {
+   "fall": 68,
+   "art": "lehre",
+   "id": "L-636a44",
+   "treffer": false
+  },
+  {
+   "fall": 68,
+   "art": "lehre",
+   "id": "L-b9d1f3",
+   "treffer": false
+  },
+  {
+   "fall": 68,
+   "art": "lehre",
+   "id": "L-c64f3b",
+   "treffer": false
+  },
+  {
+   "fall": 68,
+   "art": "lehre",
+   "id": "L-d5c56d",
+   "treffer": false
+  },
+  {
+   "fall": 68,
+   "art": "lehre",
+   "id": "L-d72a77",
+   "treffer": false
+  },
+  {
+   "fall": 69,
+   "art": "lehre",
+   "id": "L-881592",
+   "treffer": false
+  },
+  {
+   "fall": 69,
+   "art": "lehre",
+   "id": "L-baaa61",
+   "treffer": false
+  },
+  {
+   "fall": 69,
+   "art": "lehre",
+   "id": "L-cfee1c",
+   "treffer": false
+  },
+  {
+   "fall": 69,
+   "art": "lehre",
+   "id": "L-fd1221",
+   "treffer": false
+  },
+  {
+   "fall": 70,
+   "art": "lehre",
+   "id": "L-1cf1ac",
+   "treffer": false
+  },
+  {
+   "fall": 70,
+   "art": "lehre",
+   "id": "L-3b45fc",
+   "treffer": false
+  },
+  {
+   "fall": 70,
+   "art": "lehre",
+   "id": "L-424312",
+   "treffer": false
+  },
+  {
+   "fall": 70,
+   "art": "lehre",
+   "id": "L-d33850",
+   "treffer": false
+  },
+  {
+   "fall": 70,
+   "art": "lehre",
+   "id": "L-e2bb41",
+   "treffer": false
+  },
+  {
+   "fall": 71,
+   "art": "lehre",
+   "id": "L-01783a",
+   "treffer": false
+  },
+  {
+   "fall": 71,
+   "art": "lehre",
+   "id": "L-352afa",
+   "treffer": false
+  },
+  {
+   "fall": 71,
+   "art": "lehre",
+   "id": "L-40d9a5",
+   "treffer": false
+  },
+  {
+   "fall": 71,
+   "art": "lehre",
+   "id": "L-48e414",
+   "treffer": false
+  },
+  {
+   "fall": 71,
+   "art": "lehre",
+   "id": "L-6a215a",
+   "treffer": false
+  },
+  {
+   "fall": 71,
+   "art": "lehre",
+   "id": "L-bed14a",
+   "treffer": false
+  },
+  {
+   "fall": 71,
+   "art": "lehre",
+   "id": "L-d339ab",
+   "treffer": false
+  },
+  {
+   "fall": 71,
+   "art": "lehre",
+   "id": "L-e3456a",
+   "treffer": false
+  },
+  {
+   "fall": 71,
+   "art": "lehre",
+   "id": "L-fc8474",
+   "treffer": false
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-352afa",
+   "treffer": false
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-40d9a5",
+   "treffer": false
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-48e414",
+   "treffer": false
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-67a9c9",
+   "treffer": false
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-80e002",
+   "treffer": false
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-84869f",
+   "treffer": false
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-86e92d",
+   "treffer": true
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-ad02b8",
+   "treffer": false
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-affae1",
+   "treffer": false
+  },
+  {
+   "fall": 72,
+   "art": "lehre",
+   "id": "L-e3456a",
+   "treffer": false
+  },
+  {
+   "fall": 73,
+   "art": "lehre",
+   "id": "L-aa4995",
+   "treffer": false
+  },
+  {
+   "fall": 73,
+   "art": "lehre",
+   "id": "L-c46550",
+   "treffer": false
+  },
+  {
+   "fall": 74,
+   "art": "lehre",
+   "id": "L-3d03bd",
+   "treffer": false
+  },
+  {
+   "fall": 74,
+   "art": "lehre",
+   "id": "L-4e9fab",
+   "treffer": false
+  },
+  {
+   "fall": 74,
+   "art": "lehre",
+   "id": "L-5615d2",
+   "treffer": false
+  },
+  {
+   "fall": 74,
+   "art": "lehre",
+   "id": "L-813c8f",
+   "treffer": false
+  },
+  {
+   "fall": 75,
+   "art": "lehre",
+   "id": "L-1b46fe",
+   "treffer": false
+  },
+  {
+   "fall": 76,
+   "art": "lehre",
+   "id": "L-0f4036",
+   "treffer": false
+  },
+  {
+   "fall": 76,
+   "art": "lehre",
+   "id": "L-17b865",
+   "treffer": false
+  },
+  {
+   "fall": 76,
+   "art": "lehre",
+   "id": "L-358e31",
+   "treffer": false
+  },
+  {
+   "fall": 76,
+   "art": "lehre",
+   "id": "L-3ba807",
+   "treffer": false
+  },
+  {
+   "fall": 76,
+   "art": "lehre",
+   "id": "L-53eeda",
+   "treffer": false
+  },
+  {
+   "fall": 76,
+   "art": "lehre",
+   "id": "L-6c6661",
+   "treffer": false
+  },
+  {
+   "fall": 76,
+   "art": "lehre",
+   "id": "L-b2f96b",
+   "treffer": false
+  },
+  {
+   "fall": 77,
+   "art": "lehre",
+   "id": "L-712516",
+   "treffer": false
+  },
+  {
+   "fall": 78,
+   "art": "lehre",
+   "id": "L-0accf4",
+   "treffer": false
+  },
+  {
+   "fall": 78,
+   "art": "lehre",
+   "id": "L-0b606e",
+   "treffer": false
+  },
+  {
+   "fall": 78,
+   "art": "lehre",
+   "id": "L-36d092",
+   "treffer": false
+  },
+  {
+   "fall": 78,
+   "art": "lehre",
+   "id": "L-45aadb",
+   "treffer": false
+  },
+  {
+   "fall": 78,
+   "art": "lehre",
+   "id": "L-502be0",
+   "treffer": false
+  },
+  {
+   "fall": 78,
+   "art": "lehre",
+   "id": "L-706807",
+   "treffer": false
+  },
+  {
+   "fall": 78,
+   "art": "lehre",
+   "id": "L-7a719d",
+   "treffer": false
+  },
+  {
+   "fall": 78,
+   "art": "lehre",
+   "id": "L-86e92d",
+   "treffer": true
+  },
+  {
+   "fall": 78,
+   "art": "lehre",
+   "id": "L-8b377b",
+   "treffer": false
+  },
+  {
+   "fall": 79,
+   "art": "knoten",
+   "id": "/methodik/direktiven/dringend-arbeitsweise-ab-2026-08-12",
+   "treffer": false
+  },
+  {
+   "fall": 79,
+   "art": "knoten",
+   "id": "/openlehr/steuer/envelope-beschluss-formular-file-und",
+   "treffer": false
+  },
+  {
+   "fall": 80,
+   "art": "knoten",
+   "id": "/apps/buckeberg-lebt-seit-2026-08-11-im",
+   "treffer": false
+  },
+  {
+   "fall": 81,
+   "art": "knoten",
+   "id": "/agents/entscheidung-kaskaden-regel-gewinnt",
+   "treffer": false
+  },
+  {
+   "fall": 82,
+   "art": "knoten",
+   "id": "/brainlehr/faehigkeiten",
+   "treffer": false
+  },
+  {
+   "fall": 83,
+   "art": "knoten",
+   "id": "/brainlehr/keine-veroeffentlichung-von-brainlehr",
+   "treffer": false
+  },
+  {
+   "fall": 84,
+   "art": "knoten",
+   "id": "/brainlehr/der-melder-war-nie-kaputt-die-anzeige",
+   "treffer": false
+  },
+  {
+   "fall": 85,
+   "art": "knoten",
+   "id": "/brainlehr/fremder-pruefkorpus-gefunden-1637-nasa",
+   "treffer": false
+  },
+  {
+   "fall": 86,
+   "art": "knoten",
+   "id": "/brainlehr/schichtbetrieb-darf-kein-wissen-nur-im",
+   "treffer": false
+  },
+  {
+   "fall": 86,
+   "art": "knoten",
+   "id": "/brainlehr/zwei-sitzungen-arbeiten-parallel-an",
+   "treffer": false
+  },
+  {
+   "fall": 87,
+   "art": "knoten",
+   "id": "/brainlehr/der-mehrwert-entsteht-an-der-kante-zur",
+   "treffer": false
+  },
+  {
+   "fall": 87,
+   "art": "knoten",
+   "id": "/brainlehr/wie-ingenieursbranchen-aus-fehlern",
+   "treffer": false
+  },
+  {
+   "fall": 88,
+   "art": "knoten",
+   "id": "/agents/entscheidung-kaskaden-regel-gewinnt",
+   "treffer": false
+  }
+ ]
+}
