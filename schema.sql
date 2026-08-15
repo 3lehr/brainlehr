@@ -1303,6 +1303,104 @@ CREATE TABLE IF NOT EXISTS pruefsprueche (
     ketten_hash   TEXT NOT NULL
 );
 
+-- ---------------------------------------------------------------------------
+-- Planstatus (Auftrag 2026-08-15, "dem Plan eine Ablage fuer ERLEDIGUNG
+-- geben -- getrennt von der Ablage fuer ENTSCHEIDUNG").
+--
+-- kern/planentscheidung.py legt Knoten aus ENTSCHEIDENDEN Planabschnitten an
+-- und schreibt eine Kennung zurueck -- aber es gibt kein Feld fuer den
+-- FORTSCHRITT dieser Entscheidung. Gemessen am 2026-08-15: der Fortschritt
+-- wurde aus dem Fliesstext von docs/PLAN_GESAMT_2026-08-13.md gelesen und aus
+-- `git log` geraten, Ergebnis fuenf Agenten auf bereits Gebautes und drei
+-- Phantomzeilen (`82`/`83`/`87`) faelschlich als offene Aufgaben gefuehrt.
+--
+-- KEINE neue Spalte an knowledge_nodes: `abgeleitet_von` (1/2217, 0,0%) und
+-- `norm_entschieden_belegart` (0/2217, 0,0%) sind schon heute faktisch leere
+-- Spalten -- eine vierte waere derselbe Fehler. Eine eigene Tabelle traegt
+-- die Aussage klarer: eine Statuszeile ist keine Eigenschaft des Knotens
+-- selbst (der Wortlaut der Entscheidung aendert sich nicht durch ihren
+-- Baufortschritt), sondern eine eigene, mit Beleg versehene BEHAUPTUNG
+-- darueber -- dieselbe Form wie knowledge_nodes.norm_entscheidung (Aussage)
+-- + norm_entschieden_von/_grund/_belegart (Beleg dazu), nur an einer eigenen
+-- Tabelle statt an der Knotenzeile selbst, weil node_path hier nicht der
+-- Primaerschluessel ist, sondern eine 1:1-Referenz auf einen bereits von
+-- planentscheidung.py angelegten Planknoten.
+--
+-- SECHS ZUSTAENDE, jeder an einem tatsaechlich am 2026-08-15 beobachteten
+-- Fall in docs/PLAN_GESAMT_2026-08-13.md gemessen (dort nur gelesen, siehe
+-- Auftrag):
+--   'offen'              -- noch nicht begonnen (Linie E: "wartet auf den
+--                           Betreiber", `H2`-`H7`: "echt offen, kein
+--                           Commit-Beleg gefunden").
+--   'teilweise'          -- begonnen, nicht abgeschlossen ("`73` bleibt
+--                           teilweise, nicht erledigt").
+--   'gebaut_wirkungslos' -- eigene Kategorie im Plan vom 2026-08-15 ("Die
+--                           neue Kategorie: gebaut, aber wirkungslos") --
+--                           ohne sie waere `73`/`79` nicht von echtem
+--                           `teilweise` (Code fehlt noch) zu unterscheiden.
+--   'nicht_nachgemessen' -- "Zeitgrenze dieses Laufs, nicht als offen zu
+--                           lesen" (`G3`, `G6`, `F8`) -- ANDERS als 'offen':
+--                           die Arbeit koennte fertig sein, nur ungeprueft.
+--   'phantom'             -- Kennung im Plantext genannt, aber "keine eigene
+--                           Definition gefunden" (`82`, `83`, `87`, `23`) --
+--                           keine Aufgabe, kein Fortschritt moeglich.
+--   'erledigt'            -- rot-vor-gruen belegt (`42`,`67`,`68`,`70`,`71`
+--                           je mit Commit zitiert).
+--
+-- SIEBTER WERT 'unbelegt' UND DER ERZWUNGENE TRIGGER darunter sind die
+-- Antwort auf Frage 3 des Auftrags ("wer setzt den Status, woher weiss man,
+-- dass er stimmt"): eine Heuristik ueber den Plantext kann "erledigt"
+-- lesen, ohne dass ein Commit/Test/Messdatei danebensteht (derselbe
+-- Praezision-vs-Trefferquote-Zielkonflikt wie bei `planentscheidung.
+-- ist_entscheidend()`, siehe dortiger Modulkopf). NEGATIVFALL DES AUFTRAGS:
+-- "ein Status ohne Beleg wird als unbelegt gefuehrt, nicht als erledigt" --
+-- der Trigger unten erzwingt das AN DER DATENBANK, nicht nur in
+-- kern/planstatus.py, damit auch ein direkter SQL-Schreiber (wie
+-- planordnung.py es fuer knowledge_relations bereits tut) den Negativfall
+-- nicht umgehen kann.
+CREATE TABLE IF NOT EXISTS plan_status (
+    id            TEXT PRIMARY KEY,
+    node_path     TEXT NOT NULL UNIQUE,   -- Planknoten aus planentscheidung.py; ein Knoten
+                                           -- traegt genau einen AKTUELLEN Status (kein Verlauf --
+                                           -- vom Auftrag nicht verlangt, siehe Modulkopf oben).
+    quelle_datei  TEXT NOT NULL,          -- Plandatei, aus der der Status gelesen/gesetzt wurde.
+    quelle_kennung TEXT NOT NULL,         -- Abschnittskennung dort (S12, B4.1, ...), nur zur
+                                           -- Lesbarkeit -- node_path bleibt die Wahrheit ueber
+                                           -- WELCHER Knoten gemeint ist (siehe Grenzwert "zwei
+                                           -- Abschnitte mit derselben Kennung" in kern/planstatus.py).
+    status        TEXT NOT NULL CHECK(status IN (
+                      'offen', 'teilweise', 'gebaut_wirkungslos',
+                      'nicht_nachgemessen', 'phantom', 'erledigt', 'unbelegt')),
+    beleg_art     TEXT CHECK(beleg_art IN ('commit', 'test', 'messdatei') OR beleg_art IS NULL),
+    beleg         TEXT,                   -- Commit-Hash / Testname / Pfad unter runs/ -- woertlich,
+                                           -- damit der Leser in Sekunden selbst nachschlagen kann
+                                           -- (gleiche Haltung wie planbindung.py's Phantom-Kennung).
+    gesetzt_von   TEXT NOT NULL,
+    gesetzt_am    TEXT NOT NULL,
+    FOREIGN KEY(node_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_plan_status_datei ON plan_status(quelle_datei);
+
+-- Negativfall des Auftrags, an der DB erzwungen: 'erledigt' und
+-- 'gebaut_wirkungslos' behaupten beide eine geprueft abgeschlossene Arbeit
+-- (der Unterschied ist nur, ob sie wirkt) -- fuer beide ist ein Beleg
+-- PFLICHT, sonst ist die Zeile 'unbelegt' zu setzen, nicht 'erledigt'.
+CREATE TRIGGER IF NOT EXISTS plan_status_beleg_pflicht_bi
+BEFORE INSERT ON plan_status
+FOR EACH ROW WHEN NEW.status IN ('erledigt', 'gebaut_wirkungslos')
+    AND (NEW.beleg_art IS NULL OR TRIM(IFNULL(NEW.beleg, '')) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'plan_status: erledigt/gebaut_wirkungslos ohne Beleg -- Status ist unbelegt, nicht erledigt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS plan_status_beleg_pflicht_bu
+BEFORE UPDATE ON plan_status
+FOR EACH ROW WHEN NEW.status IN ('erledigt', 'gebaut_wirkungslos')
+    AND (NEW.beleg_art IS NULL OR TRIM(IFNULL(NEW.beleg, '')) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'plan_status: erledigt/gebaut_wirkungslos ohne Beleg -- Status ist unbelegt, nicht erledigt');
+END;
+
 -- Urfassungen der S12-Neuformulierung (docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md,
 -- Nachtrag 2026-08-12T07:20, kern/sicherung_s12.py). node_id ist PRIMARY KEY,
 -- damit ein Knoten nur EINMAL gesichert werden kann -- ein zweiter Lauf nach
