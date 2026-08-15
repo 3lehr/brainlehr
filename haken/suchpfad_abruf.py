@@ -20,7 +20,15 @@ gattung_filter/geltend-Filter) bleibt unveraendert in
 knowledge_recall_hook.query() -- die Strenge wandert an den AUSGANG, nicht
 an den EINGANG (Auftrag).
 
-knowledge_mcp_server.py wird NICHT geaendert, nur importiert."""
+knowledge_mcp_server.py wird NICHT geaendert, nur importiert.
+
+SELBSTLAUF-VERMERK (Aufgabe wirkkette-6, 2026-08-15): Dieses Modul ist reine
+Bibliothek -- kein eigener stdin-Haken, `__main__` startet nur den Selbsttest.
+Der einzige Aufrufer ist haken/knowledge_recall_hook.py (Import), darum
+erbt es dessen Ereignisse 1:1 -- eine eigene Verdrahtung waere Attrappe, das
+Ereignis haengt am Aufrufer, nicht an dieser Datei. Der Blindfleck ist damit
+identisch mit dem von knowledge_recall_hook.py (siehe Vermerk dort, 6,0s
+Kosten) und nicht separat zu loesen."""
 from __future__ import annotations
 
 import sys as _sys

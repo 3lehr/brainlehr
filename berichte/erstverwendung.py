@@ -10,6 +10,17 @@ ableiten, was muss ein Mensch setzen. Es SCHREIBT NICHTS -- reiner Vorschlag,
 lesend gegen die DB (SQLite-URI mode=ro erzwingt das zusaetzlich zur reinen
 Programmlogik).
 
+SELBSTLAUF-VERMERK (Aufgabe wirkkette-6, 2026-08-15): Zwei getrennte
+Rollen, beide ohne eigene Ereignis-Verdrahtung noetig. (1) Als CLI
+(--bericht/--vorschlag) ist es ein von Hand aufgerufenes Berichtswerkzeug --
+sein Ergebnis ist eine Terminal-Ausgabe zum Lesen, kein Abruf, der irgendwo
+im Hintergrund haengt; ein Selbstlauf ruft kein Berichtswerkzeug von sich aus
+auf, das waere Vortaeuschung einer Automatisierung, die niemand verlangt hat.
+(2) Als Bibliothek (`norm_ableiten` importiert von
+haken/knowledge_recall_hook.py) gilt derselbe Befund wie bei
+haken/suchpfad_abruf.py: die Ereignisse erbt es vom Aufrufer, eine eigene
+Verdrahtung waere doppelt gemoppelt.
+
 ZWEI ABLEITUNGEN, BEIDE DETERMINISTISCH AUS EINEM MERKMAL:
 
 1. gattung <- source (Herkunft, nicht Inhalt). Eine externe URL in source

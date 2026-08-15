@@ -18,6 +18,20 @@ Selbsttest: python3 knowledge_recall_hook.py --selftest
 
 Gegenstück zum Capture: was der /learn-Reflex via lesson_record/knowledge_add
 schreibt, findet dieser Hook beim nächsten passenden Prompt wieder.
+
+SELBSTLAUF-VERMERK (Aufgabe wirkkette-6, gemessen 2026-08-15): Dieser Hook
+haengt bewusst NICHT zusaetzlich an SubagentStart, obwohl SubagentStart
+additionalContext technisch traegt (Beleg: ponytail-subagent.js injiziert
+darueber sein Regelwerk in jeden Subagenten -- derselbe Kanal, den dieser
+Haken schon fuer UserPromptSubmit nutzt). Gemessener Grund, kein Verdacht:
+ein Lauf mit echtem Prompt kostet 6,0s Realzeit (`time` ueber stdin mit
+Testprompt, 2026-08-15) -- Embeddings + FTS + RRF-Fusion (siehe
+suchpfad_abruf.py). An SubagentStart gehaengt wuerde JEDE Delegation um 6s
+verzoegert, ob der Abruf traf oder nicht -- das ist die Bremse, vor der die
+HARTE AUFLAGE des Auftrags warnt, nicht ein Fortschritt. Der Subagenten-
+Blindfleck bleibt damit STEHEN und ist kein Uebersehen: eine kuenftige
+schnelle Vorstufe (reiner Stichwortkanal ohne Embeddings) koennte ihn
+schliessen, ist hier aber nicht gebaut, um den Auftrag nicht auszuweiten.
 """
 
 import sys as _sys

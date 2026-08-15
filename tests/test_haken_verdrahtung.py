@@ -26,6 +26,7 @@ naechsten Haken.
 """
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import sys as _sys
@@ -138,6 +139,130 @@ def test_die_erkennung_unterscheidet_haken_von_bibliothek():
     erkannt = {f.name for f in _haken_dateien()}
     assert len(erkannt) >= 5, f"zu wenige Haken erkannt ({len(erkannt)}) -- Erkennung pruefen"
     assert "knowledge_recall_hook.py" in erkannt
+
+
+def _blind_ohne_beleg(pfad: _Path, quellen, event_map, memo: dict) -> bool:
+    """Ein Kandidat ist ein Fund, wenn er NUR an Ereignissen haengt, die im
+    Selbstlauf nie feuern (melder/wirkkette.py, Stufe 2), UND kein
+    SELBSTLAUF-VERMERK im Modultext eine bewusste Entscheidung belegt. Als
+    eigene Funktion, damit real und synthetisch dieselbe Regel pruefen."""
+    import wirkkette
+
+    events = wirkkette.ereignisse_von(pfad, quellen, event_map, memo=memo)
+    blind = wirkkette.blind_im_selbstlauf(events)
+    vermerkt = "SELBSTLAUF-VERMERK" in pfad.read_text(encoding="utf-8")
+    return blind and not vermerkt
+
+
+def test_blindfleck_im_selbstlauf_sechs_kandidaten():
+    """Erweiterung Aufgabe wirkkette-6 (2026-08-15). Die Ratsche oben (siehe
+    Modulkopf) prueft nur, OB ein Ereignis dranhaengt -- nicht, ob dieses
+    Ereignis im Selbstlauf (Subagent, Cron, autonome Sitzung ohne Mensch)
+    ueberhaupt feuert. Sechs Mechanismen hingen bis 2026-08-15 AUSSCHLIESSLICH
+    an UserPromptSubmit (melder/wirkkette.py, Stufe 2, Commit 40fd47eb):
+    haken/auftrag_recall_hook.py, haken/knowledge_recall_hook.py,
+    haken/mcp_veraltet.py, haken/regelwechsel.py, haken/suchpfad_abruf.py,
+    berichte/erstverwendung.py. Fuer jeden gilt jetzt GENAU EINE von zwei
+    Antworten: ein zusaetzliches, im Selbstlauf feuerndes Ereignis -- oder ein
+    SELBSTLAUF-VERMERK im Modultext, der die Blindheit begruendet statt sie
+    zu verschweigen. VOR dieser Erweiterung (und vor dem zugehoerigen
+    Verdrahtungscommit) war dieser Test an genau diesen sechs Dateien rot --
+    siehe die synthetische Gegenprobe unten, die dasselbe Ausgangsbild
+    nachstellt."""
+    import ausloeserlos
+    import ort
+    import wirkkette
+
+    kandidaten = (
+        "haken/auftrag_recall_hook.py",
+        "haken/knowledge_recall_hook.py",
+        "haken/mcp_veraltet.py",
+        "haken/regelwechsel.py",
+        "haken/suchpfad_abruf.py",
+        "berichte/erstverwendung.py",
+    )
+    quellen = ausloeserlos.alle_quellen(ort.WURZEL)
+    event_map = wirkkette._event_map(wirkkette._settings_pfade())
+    memo: dict = {}
+
+    ohne_beleg = []
+    for rel in kandidaten:
+        pfad = ort.WURZEL / rel
+        assert pfad.exists(), (
+            f"{rel} nicht gefunden -- Auftrag gegen anderen Codestand pruefen, "
+            "siehe Kopf dieser Datei")
+        if _blind_ohne_beleg(pfad, quellen, event_map, memo):
+            events = wirkkette.ereignisse_von(pfad, quellen, event_map, memo=memo)
+            ohne_beleg.append(f"{rel} (Ereignisse: {sorted(events)})")
+
+    assert not ohne_beleg, (
+        f"{len(ohne_beleg)} Kandidaten blind im Selbstlauf, ohne zusaetzliches "
+        "Ereignis und ohne SELBSTLAUF-VERMERK: " + ", ".join(ohne_beleg)
+        + " -- entweder zusaetzlich verdrahten (welches Ereignis feuert im "
+        "Selbstlauf tatsaechlich?) oder begruendet vermerken.")
+
+
+def test_blindfleck_gegenprobe_beide_richtungen(tmp_path):
+    """Gegenprobe zu _blind_ohne_beleg: ein Vermerk rettet, eine zusaetzliche
+    UserPromptSubmit-Doppelung nicht, ein zusaetzliches echtes Ereignis schon.
+    Nachgebaut wie wirkkette._selftest() -- synthetischer Root statt echter
+    Dateien, damit die Probe nicht mit der Zeit wegdriftet."""
+    import ausloeserlos
+    import wirkkette
+
+    root = tmp_path
+    (root / "schema.sql").write_text("-- Attrappe\n")
+    for ordner in ("melder", "haken", "berichte"):
+        (root / ordner).mkdir()
+
+    # (a) ROT: nur UserPromptSubmit, kein Vermerk -- exakt der Zustand der
+    # sechs echten Kandidaten vor Aufgabe wirkkette-6.
+    (root / "haken" / "nur_prompt_kein_vermerk.py").write_text(
+        '"""tut etwas, ohne Begruendung fuer den Blindfleck."""\nprint("x")\n'
+    )
+
+    # (b) GRUEN: nur UserPromptSubmit, aber mit Vermerk -- die begruendete
+    # Faulheit aus Ausgang (b)/(c) der Entscheidungsregel.
+    (root / "haken" / "nur_prompt_mit_vermerk.py").write_text(
+        '"""tut etwas.\n\n'
+        "SELBSTLAUF-VERMERK: bewusst nicht zusaetzlich verdrahtet, weil im "
+        'Selbstlauf niemand liest -- Begruendung hier."""\n'
+        "print(\"x\")\n"
+    )
+
+    # (c) GRUEN: zusaetzlich an einem echten Selbstlauf-Ereignis (Stop) --
+    # kein Vermerk noetig, das Ereignis traegt den Beleg selbst.
+    (root / "haken" / "prompt_und_stop.py").write_text(
+        '"""tut etwas, zusaetzlich verdrahtet."""\nprint("x")\n'
+    )
+
+    settings_pfad = root / "settings.json"
+    settings_pfad.write_text(json.dumps({
+        "hooks": {
+            "UserPromptSubmit": [{"hooks": [
+                {"type": "command", "command": "python3 haken/nur_prompt_kein_vermerk.py"},
+                {"type": "command", "command": "python3 haken/nur_prompt_mit_vermerk.py"},
+                {"type": "command", "command": "python3 haken/prompt_und_stop.py"},
+            ]}],
+            "Stop": [{"hooks": [
+                {"type": "command", "command": "python3 haken/prompt_und_stop.py"},
+            ]}],
+        }
+    }))
+
+    quellen = ausloeserlos.alle_quellen(root)
+    event_map = wirkkette._event_map([settings_pfad, None])
+    memo: dict = {}
+
+    assert _blind_ohne_beleg(root / "haken" / "nur_prompt_kein_vermerk.py",
+                              quellen, event_map, memo) is True, (
+        "(a) nur UserPromptSubmit, kein Vermerk -- muss als Fund gelten")
+    assert _blind_ohne_beleg(root / "haken" / "nur_prompt_mit_vermerk.py",
+                              quellen, event_map, memo) is False, (
+        "(b) Vermerk vorhanden -- darf NICHT als Fund gelten")
+    assert _blind_ohne_beleg(root / "haken" / "prompt_und_stop.py",
+                              quellen, event_map, memo) is False, (
+        "(c) zusaetzliches Selbstlauf-Ereignis -- darf NICHT als Fund gelten")
 
 
 def test_worktree_haken_liefert_immer_genau_eine_zeile():

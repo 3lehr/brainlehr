@@ -336,6 +336,15 @@ def main() -> int:
     except (ValueError, OSError):
         return 0                                   # fail-open, spurlos
     sitzung = str(eingabe.get("session_id") or "unbekannt")
+    # SELBSTLAUF-VERMERK (Aufgabe wirkkette-6, 2026-08-15): dieser Haken
+    # haengt seither auch an SubagentStart (billig, 0,03s gemessen) -- der
+    # ausgegebene hookEventName MUSS zum tatsaechlich feuernden Ereignis
+    # passen, sonst verwirft der Klient den additionalContext-Block (Beleg:
+    # ponytail-runtime.js schreibt `hookEventName: event` aus dem echten
+    # Ereignisnamen, nie fest verdrahtet). Vorher stand hier fest
+    # "UserPromptSubmit" -- unter SubagentStart waere das ein zweiter,
+    # stilleren Blindgaenger gewesen: verdrahtet, aber mit falschem Etikett.
+    ereignis = str(eingabe.get("hook_event_name") or "UserPromptSubmit")
 
     try:
         meldungen = pruefe(sitzung)
@@ -354,7 +363,7 @@ def main() -> int:
              "Betreibers, siehe Herkunft je Eintrag unten:\n\n"
              + "\n\n".join(meldungen) + "\n</regelwechsel>")
     print(json.dumps({
-        "hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+        "hookSpecificOutput": {"hookEventName": ereignis,
                                "additionalContext": block},
         "systemMessage": "Regeldatei geaendert — Abschnitte im Kontext",
         "continue": True,
