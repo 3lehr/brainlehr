@@ -93,16 +93,17 @@ die Abweichung."*
 
 ### Offene Fragen, die dem Betreiber gehören
 
-- Der Name der Steuerdomäne. Vorschlag des Betreibers:
-  `openchaos_einzelunternehmer`. Ein Einwand wurde vorgebracht („chaos" als
-  Selbstwitz auf einer Anwendung, die Steuerdaten führt) und vom Betreiber
-  **entkräftet**: *„doch er ordnet das chaos!"* — der Name beschreibt nicht das
-  Erzeugnis, sondern das, was hereinkommt, und verspricht dessen Ordnung. Damit
-  benennt er zugleich das Problem eines Einzelunternehmers: Belege ohne Ordnung,
-  Fristen im Kopf, niemand dazwischen.
-  **Offen bleibt allein die Länge** und dass es ein deutsches Kompositum ist — das
-  ist dieselbe Abwägung, die bei „atelier" zugunsten der englischsprachigen
-  Lesbarkeit ausfiel. Sie gehört dem Betreiber, nicht der nächsten Sitzung.
+- **Der Name der Steuerdomäne ist entschieden, nicht offen:**
+  `openchaos_einzelunternehmer`. Zwei Einwände wurden vorgebracht und beide vom
+  Betreiber entkräftet — *„doch er ordnet das chaos!"* (der Name beschreibt, was
+  hereinkommt, und verspricht dessen Ordnung) und *„du hast unrecht, weil es für
+  deutsches steuerrecht gemacht ist"*. **Nicht neu aufrollen.** Die Regel dahinter
+  gilt für jede künftige Domäne und steht als Knoten `bab2dd96`: Die Sprache eines
+  Namens folgt der **Reichweite** des Benannten. Kern und Bestandteil sind
+  international lesbar, weil sie jede Domäne tragen; eine Domäne, die an eine
+  Rechtsordnung gebunden ist, darf und soll das im Namen sagen. Ein englischer
+  Name wäre dort nicht neutraler, sondern unehrlicher — er verspräche eine
+  Portabilität, die es nicht gibt.
 - Ob `3lehr/openlehr` (das mit dem falschen Inhalt) aufgeräumt wird.
 
 ## ENDE DES PROMPTS
