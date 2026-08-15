@@ -1,0 +1,51 @@
+{
+  "zweck": "Aufgabe 71 (Linie D) -- prueft ob 45 und 33 dasselbe zaehlen, bevor eine Differenz behauptet wird",
+  "befund_kurz": "45 und 33 zaehlen NICHT dasselbe. 45 ist die Groesse des ganzen V2-Pruefkorpus. 33 ist die Trefferzahl innerhalb einer 35er-Teilmenge dieses Korpus. Keine Differenz zu klaeren -- die Fragestellung im Plan vergleicht Zaehler gegen Nenner-fremde Grundgesamtheit.",
+
+  "frage_1_herkunft": {
+    "45": {
+      "fundstelle": "runs/pruefkorpus_v2.jsonl, wc -l = 45",
+      "code_assert": "kern/messlauf_abrufguete.py:57 und messungen/messlauf_abrufguete_v2.py:53 -- beide: assert len(cases) == 45",
+      "git": "Datei seit Commit 797257f (2026-08-07T15:26:28+0200) bei 45 Zeilen, unveraendert bis heute"
+    },
+    "33": {
+      "fundstelle": "runs/messlauf_abrufguete_v2.json (Arbeitsbaum, UNCOMMITTED -- git status zeigt 'M', letzter Commit dazu ist dc66380 vom 2026-08-07T19:33:45+0200 mit ANDEREM Inhalt)",
+      "feld": "messlauf.A_beide_aus.trefferguete = [33, 35] -- identisch auch in B_2Kanal_an_Pflicht_aus und C_beide_an",
+      "mtime_datei": "2026-08-14 10:24 (laut ls -la), Inhalt aber nicht committet -- Codestand des Laufs damit NICHT aus Git rekonstruierbar, nur aus Dateizeit"
+    }
+  },
+
+  "frage_2_nenner": {
+    "45": "Gesamtzahl aller Faelle im V2-Pruefkorpus (runs/pruefkorpus_v2.jsonl), gemessen per wc -l und per Code-Assert. Kategorien darin (python3-Zaehlung ueber die Datei): lesson=15, fact=12, norm=8, negative=10 -- macht 45.",
+    "33": "Trefferzahl (treffer) aus kern/messlauf_abrufguete.py::messe(), Zeile 78-103. messe() spaltet die 45 Faelle VOR jeder Zaehlung in solvable = [c for c in cases if c['category'] != 'negative'] (=35, assert Zeile 81) und negative = [... == 'negative'] (=10). trefferguete = [treffer_unter_35, 35]. 33 ist also 'Treffer von 35 loesbaren Faellen', NICHT 'Treffer von 45'.",
+    "rechnerische_bruecke": "35 (solvable) + 10 (negative) = 45 (Gesamtkorpus). Die 45 ist die Summe zweier getrennt gezaehlter Teilmengen, 33 ist ein Zaehler INNERHALB der einen Teilmenge (35). Ein Vergleich '45 gegen 33' vermischt Gesamtmenge und Teilzaehler -- Kategorienfehler, keine Messdifferenz."
+  },
+
+  "frage_3_zaehlen_sie_dasselbe": {
+    "antwort": "Nein.",
+    "begruendung": "45 ist eine Mengengroesse (Bestand des Korpus). 33 ist ein Ergebniswert (wie viele der 35 loesbaren Faelle einen Treffer erzielten). Es gibt kein gemeinsames Merkmal, gegen das beide Zahlen dieselbe Grundgesamtheit zaehlen -- 45 misst 'wie viele Testfaelle gibt es', 33 misst 'wie viele davon (aus der loesbaren Haelfte) hat der Abruf gefunden'."
+  },
+
+  "frage_4_falls_dasselbe": {
+    "status": "entfaellt -- Antwort auf Frage 3 ist nein"
+  },
+
+  "zusatzbefund_waehrend_der_pruefung": {
+    "hinweis": "Nicht Teil der gestellten Frage, aber beim Rueckwaertsgehen entdeckt und mit Fundstelle belegt, weil sonst verschwiegen: im letzten (uncommitteten) Lauf sind trefferguete=[33,35], falsches_schweigen=[0,35], richtiges_schweigen=[0,10], falsches_sprechen=[10,10] in ALLEN DREI Zustaenden A/B/C IDENTISCH. Der Commit dc66380 vom 2026-08-07 zeigt dagegen unterschiedliche Werte je Zustand (A:10/35, B:23/35, C:10/35 Treffer; richtiges_schweigen A:7/10, B:0/10, C:9/10). Die drei STATES aus kern/messlauf_abrufguete.py:48-52 schalten KNOWLEDGE_ZWEITER_KANAL/KNOWLEDGE_ENSEMBLE_PFLICHT per Env-Variable um -- dass alle drei im aktuellen Arbeitsbaum dasselbe Ergebnis liefern und ausserdem JEDER negative Fall als Treffer durchgeht (falsches_sprechen=10/10 durchgehend), ist ein eigener moeglicher Befund (Umschaltung wirkungslos ODER Messlauf lief nie fertig durch alle drei Zustaende ODER Zustand wird beim Prozessstart schon anders gebunden). NICHT weiter verfolgt -- ausserhalb dieses Auftrags, nur benannt, damit es nicht untergeht."
+  },
+
+  "frage_5_kuenftiges_feld": {
+    "vorschlag": "Jede messlauf_*.json bekommt zusaetzlich zum bestehenden 'konfiguration'-Block ein Feld 'korpus_teilung': {\"gesamt\": 45, \"solvable\": 35, \"negative\": 10, \"korpus_datei\": \"runs/pruefkorpus_v2.jsonl\", \"korpus_hash\": \"<sha256 der Datei zum Laufzeitpunkt>\"}. Dazu ein Pflichtfeld 'lauf_committet': bool + 'commit_hash_zur_laufzeit', damit eine spaeter aufgefundene Zahl in Sekunden auf Codestand und Korpusversion zurueckgefuehrt werden kann, statt -- wie hier -- ueber Dateizeiten und git-diff rekonstruiert werden zu muessen."
+  },
+
+  "grenze": "Diese Messung beantwortet NICHT, ob der Abrufweg besser oder schlechter geworden ist, und NICHT, warum alle drei Zustaende im aktuellen Lauf identisch aussehen (siehe zusatzbefund). Sie beantwortet ausschliesslich die gestellte Frage: ob 45 und 33 vergleichbare Groessen sind. Sind sie nicht.",
+
+  "quellen": [
+    "runs/pruefkorpus_v2.jsonl (45 Zeilen, Kategorien lesson=15/fact=12/norm=8/negative=10)",
+    "kern/messlauf_abrufguete.py Zeilen 45-103 (nur gelesen, kern/ ist laut Auftrag tabu fuer Schreibzugriff)",
+    "messungen/messlauf_abrufguete_v2.py Zeilen 47-81",
+    "runs/messlauf_abrufguete_v2.json (Arbeitsbaum, uncommitted)",
+    "git show dc66380:runs/messlauf_abrufguete_v2.json (letzter Commit-Stand)",
+    "docs/PLAN_GESAMT_2026-08-13.md Zeile 189-191 (Aufgabe 71 benannt), Zeile 421 (messungen/ als Ort)"
+  ]
+}
