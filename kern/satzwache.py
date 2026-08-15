@@ -57,6 +57,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from baustein import baumreihenfolge  # noqa: E402
 from dokument import bausteine  # noqa: E402
 from satz import satz_quelle  # noqa: E402
 
@@ -86,8 +87,17 @@ def _normalisiere(text: str) -> str:
 
 
 def pruefe_vollstaendigkeit(doc, quelle: str) -> list[str]:
-    """Kennungen aus dem Dokument, deren Label in der Quelle fehlt."""
-    return [b.kennung for b in bausteine(doc) if f"bau:{b.kennung}" not in quelle]
+    """Kennungen aus dem Dokument, deren Label in der Quelle fehlt.
+
+    Nutzt `baumreihenfolge` statt der rohen Liste -- dieselbe Quelle wie
+    `satz.satz_quelle` (ADR-019, Auflage der Entwurfsprobe zu diesem
+    Fundstelle). EHRLICH BENANNT: bei der hier gewaehlten Speicherform
+    (Elternfeld, kein Kind-Array) liegt jeder Baustein ohnehin flach im
+    selben Array -- `dokument.bausteine(doc)` haette dieselbe MENGE
+    geliefert, denn diese Pruefung fragt nur Zugehoerigkeit ab, keine
+    Reihenfolge. Die Rekursion aendert das Ergebnis hier nicht, macht die
+    Quelle aber einheitlich mit `satz_quelle`."""
+    return [b.kennung for b in baumreihenfolge(bausteine(doc)) if f"bau:{b.kennung}" not in quelle]
 
 
 def pruefe_treue(doc, pdf_text: str) -> list[str]:
@@ -96,7 +106,7 @@ def pruefe_treue(doc, pdf_text: str) -> list[str]:
     uebersprungen -- ein leerer Text ist trivial "enthalten" und keine Aussage."""
     norm_pdf = _normalisiere(pdf_text)
     abweichend = []
-    for b in bausteine(doc):
+    for b in baumreihenfolge(bausteine(doc)):
         erwartet = _normalisiere(b.text)
         if erwartet and erwartet not in norm_pdf:
             abweichend.append(b.kennung)

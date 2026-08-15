@@ -31,19 +31,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from dokument import bausteine  # noqa: E402
+from dokument import bausteine_baum, sprache  # noqa: E402
 
 VORSPANN = r"""\DocumentMetadata{
   pdfversion=1.7,
   pdfstandard={A-3U,UA-1},
-  lang=de-DE,
+  lang=SPRACHE,
   tagging=on,
   testphase={phase-III,math,table,bookmarks}
 }
 \documentclass{article}
 \usepackage{fontspec}
 \usepackage{hyperref}
-\hypersetup{pdftitle={TITEL},pdflang={de-DE}}
+\hypersetup{pdftitle={TITEL},pdflang={SPRACHE}}
 
 \begin{document}
 """
@@ -82,8 +82,14 @@ def satz_quelle(doc, titel: str) -> str:
     mit einem nichtssagenden Titel, und genau den liest ein Screenreader vor.
     Gefunden hat das die Satzwache beim ersten Lauf -- der Vorspann war aus
     dem Spike uebernommen, wo der Titel im Rumpf stand statt im Vorspann."""
-    teile = [VORSPANN.replace("TITEL", maskiere(titel))]
-    for b in bausteine(doc):
+    vorspann = (VORSPANN
+               .replace("TITEL", maskiere(titel))
+               .replace("SPRACHE", maskiere(sprache(doc))))
+    teile = [vorspann]
+    # `bausteine_baum` statt der rohen Ablage: Kinder erscheinen in
+    # Lesereihenfolge direkt hinter ihrem Elternteil (ADR-019, Auflage der
+    # Entwurfsprobe zu kern/satz.py:86 -- siehe baustein.baumreihenfolge).
+    for b in bausteine_baum(doc):
         teile.append(f"\\label{{bau:{b.kennung}}}\n")
         text = maskiere(b.text)
         if b.typ == "feld":
@@ -119,6 +125,40 @@ def _selftest() -> int:
     # Grenzwerte: leerer Text bleibt leer, harmloser Text bleibt unveraendert.
     assert maskiere("") == ""
     assert maskiere("Rechnung 2026, Position 3") == "Rechnung 2026, Position 3"
+
+    try:
+        import pycrdt  # noqa: F401
+    except ImportError:
+        print("satz: Baumreihenfolge-Probe uebersprungen -- pycrdt fehlt")
+        print("satz: Selbsttest bestanden")
+        return 0
+
+    from dokument import baustein_anhaengen, leeres_dokument, sprache_setzen
+
+    # ROT vor ADR-019: `satz_quelle` lief flach ueber die Ablagereihenfolge,
+    # ein spaeter angehaengtes Kind stand hinter jedem spaeteren Geschwister
+    # der Wurzelebene statt direkt hinter seinem Elternteil. GRUEN jetzt:
+    # `bausteine_baum` liefert die Lesereihenfolge. Wird `satz_quelle` auf
+    # `dokument.bausteine` (flach) zurueckgestellt, faellt genau diese
+    # Reihenfolge um -- das ist die Mutationsprobe fuer kern/satz.py:86.
+    doc = leeres_dokument()
+    wurzel = baustein_anhaengen(doc, "ueberschrift", "Abschnitt 1")
+    spaetere_wurzel = baustein_anhaengen(doc, "absatz", "Abschnitt 2")
+    kind = baustein_anhaengen(doc, "absatz", "Unterpunkt von 1", eltern=wurzel)
+    quelle = satz_quelle(doc, "Baumprobe")
+    pos_kind = quelle.index(f"bau:{kind}")
+    pos_spaetere_wurzel = quelle.index(f"bau:{spaetere_wurzel}")
+    assert pos_kind < pos_spaetere_wurzel, (
+        "das Kind muss vor dem spaeter angelegten Geschwister der Wurzelebene "
+        "stehen -- sonst laeuft satz_quelle flach statt in Baumreihenfolge"
+    )
+
+    # Sprache wandert in den Vorspann, statt fest "de-DE" zu sein.
+    assert "lang=de-DE" in satz_quelle(doc, "Titel")
+    sprache_setzen(doc, "en-US")
+    quelle_en = satz_quelle(doc, "Titel")
+    assert "lang=en-US" in quelle_en and "pdflang={en-US}" in quelle_en
+    assert "lang=de-DE" not in quelle_en
 
     print("satz: Selbsttest bestanden")
     return 0

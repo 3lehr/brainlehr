@@ -181,3 +181,30 @@ def test_pruefe_meldet_fehlendes_werkzeug_statt_stillschweigend_zu_bestehen(monk
     assert bericht.treue_grund.startswith("nicht geprueft:")
     assert all(v.startswith("nicht geprueft:") for v in bericht.konformitaet.values())
     assert bericht.bestanden() is False
+
+
+# ---------------------------------------------------------------- Verschachtelung
+#
+# ADR-019, Auflage der Entwurfsprobe zu kern/satzwache.py:90,99: ein Kind-
+# Baustein darf weder aus der Vollstaendigkeits- noch aus der Treue-Pruefung
+# herausfallen. Bei der gewaehlten Speicherform (Elternfeld statt Kind-Array)
+# liegt jeder Baustein ohnehin flach im selben Array -- diese beiden Tests
+# sind trotzdem hier festgehalten, weil sie die Mengenaussage ("kein Kind
+# fehlt") direkt gegen ein Dokument mit Verschachtelung pruefen, statt sie nur
+# aus der Bauform zu behaupten.
+
+def test_vollstaendigkeit_findet_ein_kind_baustein():
+    doc = leeres_dokument()
+    wurzel = baustein_anhaengen(doc, "ueberschrift", "Abschnitt")
+    baustein_anhaengen(doc, "absatz", "Unterpunkt", eltern=wurzel)
+    quelle = satz_quelle(doc, "Pruefblatt")
+    assert pruefe_vollstaendigkeit(doc, quelle) == []
+
+
+def test_vollstaendigkeit_sabotiertes_kind_wird_gemeldet():
+    doc = leeres_dokument()
+    wurzel = baustein_anhaengen(doc, "ueberschrift", "Abschnitt")
+    kind = baustein_anhaengen(doc, "absatz", "Unterpunkt", eltern=wurzel)
+    quelle = satz_quelle(doc, "Pruefblatt")
+    sabotiert = quelle.replace(f"\\label{{bau:{kind}}}\n", "")
+    assert pruefe_vollstaendigkeit(doc, sabotiert) == [kind]

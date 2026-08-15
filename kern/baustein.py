@@ -91,6 +91,21 @@ class Baustein:
     # Nur bei typ == "feld" belegt: der Name, unter dem ein Formular den Wert
     # kennt. Ein Feld ohne Namen ist ein Absatz mit Kasten drumherum.
     feldname: str | None = None
+    # ADR-019 Entscheidung 1: Verschachtelung ueber ein ELTERNFELD, nicht ueber
+    # Kind-Arrays -- Yjs kennt kein konfliktfreies Verschieben eines Knotens
+    # zwischen Eltern (Kleppmann 2020). Die Liste bleibt flach, der Baum
+    # entsteht beim Lesen ueber `baumreihenfolge()`. None heisst: Wurzel.
+    eltern: str | None = None
+    # Geschwister-Reihenfolge ist mit dem Elternfeld nicht mehr implizit ueber
+    # die Array-Position gegeben und braucht ein eigenes Feld. Ein Gleitkomma-
+    # Rang statt einer Ganzzahl: Umsortieren bleibt eine einzelne Feldaenderung
+    # (neuer Wert zwischen zwei Nachbarn), ohne alle Geschwister neu zu
+    # nummerieren.
+    rang: float = 0.0
+    # ADR-019 Entscheidung 2, korrigiert durch die Entwurfsprobe: Alternativtext
+    # ist ein Feld an JEDEM Baustein (WCAG 2.2 verlangt ihn auch bei Tabellen),
+    # nicht nur an grafik.
+    alt: str = ""
 
     def __post_init__(self) -> None:
         if self.typ not in TYPEN:
@@ -185,6 +200,51 @@ def loese_anker(anker: Anker, bausteine: list[Baustein]) -> Baustein | None:
         if b.kennung == anker.baustein:
             return b
     return None
+
+
+def baumreihenfolge(bausteine: list[Baustein]) -> list[Baustein]:
+    """Baut die Lesereihenfolge aus der flachen Liste -- Vorordnung, Eltern vor
+    Kindern, Geschwister nach `rang` sortiert.
+
+    WURZEL ist jeder Baustein ohne `eltern` UND jeder, dessen `eltern` auf eine
+    nicht (mehr) vorhandene Kennung zeigt (Grenzwert aus ADR-019) -- er wird
+    nicht stillschweigend verschluckt, nur weil sein Elternteil fehlt.
+
+    ZYKLUS: ein Elternfeld erlaubt Ringe (A zeigt auf B, B auf A, oder ein
+    Baustein zeigt auf sich selbst) -- ein Kind-Array haette das strukturell
+    verhindert, das ist der Preis dieser Bauform. Ein besuchtes Kennung wird
+    nie ein zweites Mal betreten, das bricht jeden Ring ohne Endlosrekursion.
+    Kein Baustein aus einem Ring geht verloren: was nach dem Wurzel-Durchlauf
+    noch fehlt, wird als eigene Wurzel nachgetragen.
+    """
+    nach_kennung = {b.kennung: b for b in bausteine}
+    kinder_von: dict[str | None, list[Baustein]] = {}
+    for b in bausteine:
+        kinder_von.setdefault(b.eltern, []).append(b)
+    for geschwister in kinder_von.values():
+        geschwister.sort(key=lambda b: b.rang)
+
+    ergebnis: list[Baustein] = []
+    besucht: set[str] = set()
+
+    def besuche(b: Baustein) -> None:
+        if b.kennung in besucht:
+            return
+        besucht.add(b.kennung)
+        ergebnis.append(b)
+        for kind in kinder_von.get(b.kennung, ()):
+            besuche(kind)
+
+    wurzeln = [b for b in bausteine if b.eltern is None or b.eltern not in nach_kennung]
+    wurzeln.sort(key=lambda b: b.rang)
+    for w in wurzeln:
+        besuche(w)
+
+    for b in bausteine:
+        if b.kennung not in besucht:
+            besuche(b)
+
+    return ergebnis
 
 
 def vertragsmuster() -> dict:
@@ -294,8 +354,42 @@ def _selftest() -> int:
         "kennung", "anker", "text", "klasse", "von_wem", "zustand",
         "selbstaendig_umgesetzt", "verlauf", "darf_automatisch",
     }
-    assert set(m["bausteine"][0]) == {"kennung", "typ", "text", "feldname"}
+    assert set(m["bausteine"][0]) == {"kennung", "typ", "text", "feldname", "eltern", "rang", "alt"}
     assert set(m["anmerkung"]["anker"]) == {"baustein", "suchtext", "von", "bis"}
+
+    # baumreihenfolge: leeres Dokument -> leere Reihenfolge.
+    assert baumreihenfolge([]) == []
+
+    # Zwei Ebenen tief, Geschwister nach rang: P vor seinem Kind C, C vor S
+    # (S ist Wurzel-Geschwister mit hoeherem rang als P).
+    p = Baustein(kennung="p" * 12, typ="absatz", text="P", rang=0.0)
+    s = Baustein(kennung="s" * 12, typ="absatz", text="S", rang=1.0)
+    c = Baustein(kennung="c" * 12, typ="absatz", text="C", eltern=p.kennung, rang=0.0)
+    enkel = Baustein(kennung="e" * 12, typ="absatz", text="E", eltern=c.kennung, rang=0.0)
+    geordnet = baumreihenfolge([s, p, enkel, c])   # absichtlich nicht in Baumreihenfolge uebergeben
+    assert [b.kennung for b in geordnet] == [p.kennung, c.kennung, enkel.kennung, s.kennung]
+
+    # Baustein ohne Eltern ist Wurzel (Grenzwert 1) -- oben bereits mitgeprueft
+    # (p, s haben eltern=None und stehen beide im Ergebnis).
+
+    # Eltern zeigt auf eine nicht existierende Kennung -> wird als Wurzel
+    # behandelt, geht nicht verloren (Grenzwert).
+    verwaister_elter = Baustein(kennung="v" * 12, typ="absatz", text="V",
+                                eltern="9" * 12)
+    ohne_eltern_bekannt = baumreihenfolge([verwaister_elter])
+    assert [b.kennung for b in ohne_eltern_bekannt] == [verwaister_elter.kennung]
+
+    # Zyklus 1: Baustein ist sein eigener Elternteil -- kein Endlosrekursion,
+    # taucht genau einmal auf.
+    selbst = Baustein(kennung="z" * 12, typ="absatz", text="Z", eltern="z" * 12)
+    assert [b.kennung for b in baumreihenfolge([selbst])] == [selbst.kennung]
+
+    # Zyklus 2: A -> B -> A, zwei Bausteine, keiner geht verloren, keine
+    # Endlosschleife.
+    a_ring = Baustein(kennung="a" * 12, typ="absatz", text="A", eltern="b" * 12)
+    b_ring = Baustein(kennung="b" * 12, typ="absatz", text="B", eltern="a" * 12)
+    im_ring = {b.kennung for b in baumreihenfolge([a_ring, b_ring])}
+    assert im_ring == {a_ring.kennung, b_ring.kennung}
 
     print("baustein: Selbsttest bestanden")
     return 0
