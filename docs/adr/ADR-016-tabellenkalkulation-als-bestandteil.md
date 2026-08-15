@@ -88,3 +88,42 @@ Deshalb, verbindlich ab dem ersten Bauschritt:
 4. Restrisiko aus der Recherche, ausdrücklich offen: In einem Sammelrepo können
    **einzelne Pakete** eine andere Lizenz tragen als die Wurzel. Vor dem
    Einbinden die tatsächlich eingebundenen Pakete einzeln nachlesen.
+
+## Gemessen 2026-08-15T10:31:55+0200 — trägt mit drei Auflagen
+
+Ergebnisdatei `runs/spike_univer_i3_2026-08-15T103155+0200.json`, Spike
+`spikes/univer_i3_min/`.
+
+**Frage 1, ohne Netz: belegt.** macOS-Seatbelt mit `deny network-outbound`,
+nur `localhost` erlaubt. Gegenprobe in beide Richtungen: `curl` nach draußen
+scheitert (exit 7), auf `127.0.0.1` antwortet es (200). Das Blatt rendert
+vollständig (Bildschirmfoto im Spike). **Grenze:** nur Start und Rendern
+geprüft, kein Dauerbetrieb — Chrome beendet sich unter dieser Sandbox nicht
+sauber.
+
+**Frage 2, Gewicht:** 2,74 MB gzip mit React, 896 KB als reine UMD-Datei ohne.
+
+**Frage 4 hat getroffen, und sie ist die teuerste.** Der dokumentierte Weg
+(`npm install @univerjs/presets`, nötig für die `createUniver()`-API) zieht
+**27 Pakete `@univerjs-pro/*` ohne Lizenzfeld und ohne Lizenzdatei** — nicht
+eine abweichende Lizenz, sondern **keine**. Die übrigen 140–199 Pakete sind
+durchweg MIT, Apache-2.0, BSD-3-Clause oder ISC. Im ausgelieferten Bündel
+selbst: **0 Treffer** für `univerjs-pro`.
+
+> **Auflage 1:** Importe strikt auf Wurzelexport und `preset-sheets-core`
+> begrenzen. Sonst wandern die 27 unlizenzierten Pakete mit — und selbst bei
+> sauberem Bündel liegen sie auf der Bauplatte und im Sperrverzeichnis.
+
+**Und der Fund, der die Sicherheitsauflagen oben bestätigt:** Das Grundpaket
+enthält bereits die Formel `WEBSERVICE` (netzfähig) und einen
+`new Function()`-Pfad für benutzerdefinierte Formeln.
+
+> **Auflage 2:** Beide werden gesperrt, **bevor** die erste fremde Datei
+> eingelesen wird. Das ist keine Vorsichtsmaßnahme, sondern dieselbe Bauform,
+> die am 2026-08-15 auf einer fremden Anlage als Schadcode gefunden wurde:
+> Code aus einer Datenquelle per `new Function` ausführen.
+>
+> **Auflage 3, offen:** Ungeklärt ist, ob der `new Function`-Zeichenkette auch
+> aus einer **importierten Datei** stammen kann. Solange das nicht gemessen
+> ist, gilt der Import fremder Tabellendateien als gesperrt — nicht als
+> riskant, als gesperrt.
