@@ -40,7 +40,7 @@ import sqlite3
 
 import embeddings
 from gattung_filter import SQL_ARBEITSBESTAND_NUR
-from knowledge_mcp_server import _embedding_ranking, _or_query
+from knowledge_mcp_server import _embedding_ranking, _or_query, _stichwortkanal_blind
 
 
 def _erlaubte_ids(conn: sqlite3.Connection) -> tuple[set, set]:
@@ -68,18 +68,53 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
     Liefert (node_rows, lesson_rows), je in Rangfolge, ungekappt bis auf den
     gemeinsamen max_results-Deckel von _fuse_with_keyword_floor (Empfehlung:
     MAX_NODES+MAX_LESSONS des Aufrufers, s. Moduldoc zur Messung mit
-    max_results=5)."""
+    max_results=5).
+
+    Auftrag 89 (Kanalwahl an die Anfragelaenge binden), gemessen statt
+    geplant: DIESER Pfad (kein _fuse_with_keyword_floor-Sockel, reine
+    RRF-Fusion embeddings.rrf_fuse(keyword_ordered_ids, embedding_ordered_ids))
+    war schon VOR diesem Auftrag laengenblind sicher -- ein Stichwortkanal,
+    der bei kurzen Woertern (tokenize='trigram', schema.sql, min. 3 Zeichen
+    je Trigramm) leer bleibt, traegt zu rrf_fuse() nachweislich nichts bei
+    (addiert nur ueber tatsaechlich vorhandene Listenelemente), der
+    Bedeutungskanal entscheidet dann allein -- WORTWEISE, nicht als
+    Alles-oder-Nichts-Schalter ueber die ganze Anfrage: ein einzelnes langes
+    Wort neben zwei kurzen laesst den Kanal weiterhin (mit-)wirken. Belegt
+    2026-08-15 an echtem Bestand (2210 Knoten): 'KI' (2 Zeichen, Node
+    91c3f181) und '知識' (2 Zeichen, Node 5f85be35) 0 FTS-Treffer, aber
+    beide Knoten ueber den Bedeutungskanal unter den Top 3 der vollen
+    hook.query()-Kette. Rot-vor-gruen war an DIESEM Pfad nicht herstellbar
+    -- kein Fall gefunden, der heute den falschen Kanal nimmt und dadurch
+    nichts findet (anders als bei der frueheren MIN_HITS-Schwelle in
+    knowledge_recall_hook.query(), die _suchpfad_aktiv()=True seit 2026-08-09
+    umgeht, und anders als knowledge_search() vor a31f6f7, das denselben
+    Bestand traf).
+    _stichwortkanal_blind() unten ist deshalb KEIN Korrekturmechanismus,
+    sondern Parity/Performance: erspart zwei SQL-Anfragen, deren Ergebnis
+    (leer) beim blinden Fall ohnehin feststeht -- explizit erzwungen statt
+    dem Zufall ueberlassen, gleiche Begruendung wie in knowledge_search()."""
     fts_query = _or_query(text)
     if not fts_query:
+        # Kein Wort ueberhaupt (leer/Interpunktion) -- fehlt der Rohtext,
+        # den Kanaele auswerten koennten. WICHTIG: nur dieser Fall darf die
+        # ganze Funktion abbrechen, der naechste (blind) NICHT -- sonst
+        # verliert eine kurze/CJK-Anfrage auch ihren Bedeutungskanal, den
+        # query_vec vom Aufrufer unabhaengig vom Stichwortkanal mitbringt.
         return [], []
-    node_rows = conn.execute(
+    # Auftrag 89: alle Woerter < 3 Zeichen -> der Trigramm-Tokenizer kann
+    # NIE treffen (schema.sql), die zwei MATCH-Abfragen unten liefern in
+    # diesem Fall nachweislich 0 Zeilen (gemessen, s. Funktionsdoc). Nur die
+    # SQL-Anfragen werden uebersprungen -- query_vec/embedding-Kanal bleibt
+    # unveraendert unten aktiv.
+    blind = _stichwortkanal_blind(text)
+    node_rows = [] if blind else conn.execute(
         "SELECT n.id, n.path, n.title, n.summary, n.updated_at, n.gilt_ab, n.gilt_bis "
         "FROM knowledge_fts f JOIN knowledge_nodes n ON n.rowid = f.rowid "
         f"WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 {SQL_ARBEITSBESTAND_NUR} "
         "ORDER BY rank",
         (fts_query,),
     ).fetchall()
-    lesson_rows = conn.execute(
+    lesson_rows = [] if blind else conn.execute(
         "SELECT l.id, l.description, l.root_cause, l.prevention, l.severity, "
         "l.occurrences, l.type, l.last_seen, l.first_seen, l.session, l.projects "
         "FROM lessons_fts f JOIN lessons_learned l ON l.rowid = f.rowid "
