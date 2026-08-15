@@ -95,14 +95,30 @@ def satz_quelle(doc, titel: str) -> str:
 
 
 def _selftest() -> int:
-    # Maskierung: kein Steuerzeichen kommt roh durch.
-    boesartig = "\\newpage{}$x&y%z#"
-    sicher = maskiere(boesartig)
-    for roh in ("\\newpage", "{}", "$x", "&y", "%z", "#"):
-        assert roh not in sicher, f"{roh!r} kam unmaskiert durch: {sicher!r}"
+    # Maskierung, wortwoertlich erwartet. Die fruehere Fassung fragte
+    # `roh not in sicher` fuer jedes Sonderzeichen einzeln -- das KANN nicht
+    # halten: die Ersetzung enthaelt das Zeichen selbst ("#" steckt in "\#",
+    # "{}" in "\textbackslash{}"). Die Probe schlug damit gegen die korrekte
+    # Maskierung an und lief nie, weil das Modul nicht in der Selbsttestliste
+    # stand (gefunden 2026-08-15T06:20:00+0200 beim ersten Aufruf).
+    assert maskiere("\\newpage{}$x&y%z#") == (
+        r"\textbackslash{}newpage\{\}\$x\&y\%z\#"
+    ), maskiere("\\newpage{}$x&y%z#")
 
-    # Grenzwert: leerer Text bleibt leer.
+    # Jedes gefuehrte Zeichen wird wirklich ersetzt, keines faellt aus der
+    # Tabelle -- die Gegenprobe zur Zeile darueber, die nur eine Auswahl traf.
+    for ch, ersatz in _MASKEN.items():
+        assert maskiere(ch) == ersatz, (ch, maskiere(ch))
+
+    # Der eigentliche Zweck: kein Steuerbefehl ueberlebt. Ein roher Backslash
+    # vor einem Wort waere einer -- nach der Maskierung darf es keinen geben.
+    sicher = maskiere("\\newpage \\input{/etc/passwd}")
+    assert "\\newpage" not in sicher, sicher
+    assert "\\input" not in sicher, sicher
+
+    # Grenzwerte: leerer Text bleibt leer, harmloser Text bleibt unveraendert.
     assert maskiere("") == ""
+    assert maskiere("Rechnung 2026, Position 3") == "Rechnung 2026, Position 3"
 
     print("satz: Selbsttest bestanden")
     return 0
