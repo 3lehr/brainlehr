@@ -1,0 +1,66 @@
+{
+  "auftrag": "F8 (docs/PLAN_GESAMT_2026-08-13.md) -- SyncTeX-Rueckweg, MESSEN NICHT BAUEN",
+  "zeitstempel": "2026-08-15T10:22:53+0200",
+  "aufbau": {
+    "verzeichnis": "spikes/f8_synctex/",
+    "quelle": "Kopie aus spikes/pdf_a3_erechnung/rechnung.tex (unveraendert dort)",
+    "varianten": {
+      "mit": "spikes/f8_synctex/mit/rechnung.tex -- \\DocumentMetadata-Block wie im Original (pdfstandard={A-3U,UA-1}, tagging=on)",
+      "ohne": "spikes/f8_synctex/ohne/rechnung.tex -- identisch, \\DocumentMetadata-Block (Zeilen 5-11) entfernt"
+    },
+    "marke_positivkontrolle": {
+      "text": "MARKE-SYNCTEX-7331",
+      "mit_zeile": 36,
+      "ohne_zeile": 29,
+      "begruendung": "Differenz 7 = genau die 7 entfernten \\DocumentMetadata-Zeilen -- Kontrollrechnung fuer die interne Konsistenz"
+    },
+    "kommando": "lualatex -interaction=nonstopmode -synctex=1 -halt-on-error rechnung.tex  (2x, wg. Querverweisen)"
+  },
+  "frage_1_entsteht_datei": {
+    "mit": { "exit_code": 0, "datei": "rechnung.synctex.gz vorhanden, 2384 Bytes", "log_ausschnitt": "SyncTeX written on rechnung.synctex.gz." },
+    "ohne": { "exit_code": 0, "datei": "rechnung.synctex.gz vorhanden, 1872 Bytes", "log_ausschnitt": "SyncTeX written on rechnung.synctex.gz." },
+    "antwort": "Ja, in beiden Varianten. Kein Schalter fehlt -- -synctex=1 reicht mit lualatex auch zusammen mit \\DocumentMetadata."
+  },
+  "frage_2_und_3_zuordnung_mit_vs_ohne": {
+    "methode": "Kein synctex-Kommandozeilenwerkzeug in dieser TinyTeX-Installation vorhanden (which synctex -> exit 127, kein Python-Modul synctex, kein texworks). synctex.gz per gunzip entpackt und nach dem dokumentierten ASCII-Format (SyncTeX Version:1) direkt gelesen -- Glyph-Datensaetze der Form 'g<inputtag>,<zeile>:<h>,<v>'.",
+    "mit_treffer_zeile_36": [
+      "g1,36:31409438,11742936",
+      "g1,36:31409438,11742936",
+      "g1,36:8799518,13053656",
+      "g1,36:9600368,13053656",
+      "g1,36:10437918,13053656"
+    ],
+    "ohne_treffer_zeile_29": [
+      "g1,29:31409438,11742936",
+      "g1,29:31409438,11742936",
+      "g1,29:10437918,13053656",
+      "g1,29:9127198,13053656",
+      "g1,29:8799518,13053656",
+      "g1,29:10110238,13053656",
+      "g1,29:9600368,13053656",
+      "g1,29:10437918,13053656"
+    ],
+    "kontrollrechnung_bestanden": "Zeilenliste 'mit' (30,32,33,35,36,37,40,41,42,43,44,45) minus 7 ergibt exakt Zeilenliste 'ohne' (23,25,26,28,29,30,33,34,35,36,37,38) -- Verschiebung um genau die entfernten Zeilen, keine Verzerrung durch \\DocumentMetadata.",
+    "antwort": "Beide Varianten liefern eine an der Marke korrekt lokalisierte Zuordnung. Kein Bruch, weder hart noch still -- die Datensaetze sind vorhanden UND inhaltlich richtig (Positivkontrolle bestanden)."
+  },
+  "frage_3_bruchart": {
+    "hart_geprueft": "exit_code beider Baeufe (2x je Variante) = 0, keine Fehlermeldung zu synctex im Log.",
+    "still_geprueft": "Positivkontrolle an bekannter Zeile (36 bzw. 29) zeigt korrekte, nicht-leere, nicht-verschobene Eintraege -- eine leere oder falsch-verschobene Datei waere hier aufgefallen.",
+    "antwort": "Kein Bruch in keiner der beiden Formen. tex4ht-Befund ('DocumentMetadata bricht tex4ht') ueberträgt sich NICHT auf SyncTeX/lualatex."
+  },
+  "frage_4_genauigkeit": {
+    "granularitaet": "Zeile, mit Position (h,v-Koordinaten je Glyphen-Lauf) -- feiner als Absatz oder Seite. Kein Spalten-/Zeichenindex im Format, aber mehrere g-Eintraege pro Zeile je nach Zeilenumbruch im Blatt.",
+    "beleg": "siehe frage_2_und_3 -- g1,36 mehrfach mit verschiedenen (h,v), alle auf derselben Quellzeile.",
+    "folge_fuer_F7": "Reicht fuer F7 (Anmerkungen am Baustein), sofern ein Baustein mindestens eine ganze Zeile Text traegt -- was bei kern/satz.py der Fall ist (ein Baustein erzeugt i.d.R. mehrere Zeilen)."
+  },
+  "frage_5_zweiter_weg_ueber_label": {
+    "test": "In mit/rechnung_label_test.tex wurde \\label{bau:testbaustein} direkt hinter die Marke gesetzt (wie kern/satz.py es laut eigenem Kommentar fuer jeden Baustein tut) und 2x gebaut.",
+    "aux_eintrag": "\\newlabel{bau:testbaustein}{{1}{1}{Rechnung Nr. 2026-0001}{*.2}{}}",
+    "befund": "Der \\newlabel-Eintrag traegt NUR die Seitenzahl (hier '1') und einen Abschnittszaehler -- KEINE Zeilenangabe, KEINE Koordinate.",
+    "pdf_ziel_geprueft": "PDF nach dem String 'bau:testbaustein' und nach /Dest-Eintraegen durchsucht: 0 Treffer -- \\label allein (ohne \\phantomsection/\\hypertarget in diesem itemize-Kontext) erzeugt HIER kein anspringbares PDF-Ziel.",
+    "gegenbeleg_bookmarks_funktioniert": "\\section{...} (Zeile 30 in 'mit') erzeugt sehr wohl einen Aux-Eintrag mit Zeilenbezug: \\BKM@entry{...}{srcline={30},srcfile={./rechnung.tex}}{...} -- das ist die testphase=bookmarks-Funktion von \\DocumentMetadata, keine allgemeine Eigenschaft von \\label.",
+    "antwort": "Der im Auftrag genannte Kandidat (\\label{bau:...} traegt Seiten-/Positionsangaben) haelt NICHT, wie er in kern/satz.py heute gesetzt wird. Er liefert nur die Seitenzahl, keinen PDF-Sprungpunkt und keine Zeile. Ein zweiter Weg waere nur mit Zusatzaufwand herstellbar (\\phantomsection vor jedem \\label plus Auswertung von srcline/srcfile nach Vorbild der Bookmark-Funktion) -- ist NICHT im Auftrag gebaut worden (Auftrag: messen, nicht bauen)."
+  },
+  "grenze": "Diese Messung beantwortet NICHT: (a) ob SyncTeX bei echten, aus kern/satz.py erzeugten Bausteindokumenten (mehrseitig, mit Tabellen/Bildern/Fussnoten) genauso sauber bleibt -- getestet wurde nur das eine vorhandene Ein-Seiten-Beispiel; (b) wie der Rueckweg im Dokumentfenster der App technisch angebunden wuerde (kein synctex-Kommandozeilenwerkzeug in dieser Installation vorhanden, nur das Rohformat gelesen -- eine Einbindung braucht entweder das Nachinstallieren eines synctex-Parsers/CLI oder eine eigene kleine Leseroutine fuer das dokumentierte Format); (c) Performance/Dateigroesse bei groesseren Dokumenten.",
+  "fazit": "F8 machbar mit Auflage: SyncTeX selbst arbeitet nachweislich unveraendert mit \\DocumentMetadata zusammen (kein Bruch, weder hart noch still) -- die vom Plan befuerchtete tex4ht-Wiederholung tritt nicht ein. Die Auflage betrifft den zweiten Weg: der im Auftrag genannte \\label-Kandidat traegt entgegen der Annahme HEUTE keine Positionsangabe und kein PDF-Ziel, muesste also (falls als Rueckfallebene gewollt) erst um \\phantomsection und eine srcline-Auswertung nach Vorbild von testphase=bookmarks ergaenzt werden."
+}

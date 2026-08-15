@@ -1,0 +1,45 @@
+% Spike: PDF/A-3 + eingebettete factur-x.xml + PDF/UA-1 gleichzeitig?
+% ADR-009: pdfstandard=UA-1 schaltet Tagging NICHT allein ein, braucht tagging=on.
+% Hier: pdfstandard=A-3u (E-Rechnungs-Konvention: A-3, PDFA/A oder /A-3u je nach Text)
+% zusammen mit tagging=on, um zu sehen ob beide Kennungen gleichzeitig entstehen.
+\DocumentMetadata{
+  pdfversion=1.7,
+  pdfstandard={A-3U,UA-1},
+  lang=de-DE,
+  tagging=on,
+  testphase={phase-III,math,table,bookmarks}
+}
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage{embedfile}
+\usepackage{hyperref}
+
+\title{Testrechnung Spike}
+\author{brainlehr Spike}
+\date{2026-08-14}
+
+\hypersetup{pdfauthor={brainlehr Spike},pdftitle={Testrechnung Spike},pdflang={de-DE}}
+
+\begin{document}
+\embedfile[
+  desc={Elektronische Rechnung (factur-x XML)},
+  mimetype={text/xml},
+  afrelationship={Alternative}
+]{factur-x.xml}
+
+\section{Rechnung Nr. 2026-0001}
+
+\noindent Betrag: 119,00 EUR (100,00 EUR netto zzgl. 19,00 EUR USt.)
+
+\begin{itemize}
+  \item Position 1: Testleistung
+  \item MARKE-SYNCTEX-7331\label{bau:testbaustein}
+\end{itemize}
+
+\begin{tabular}{ll}
+  \textbf{Feld} & \textbf{Wert} \\
+  Rechnungsnummer & 2026-0001 \\
+  Datum & 2026-08-14 \\
+\end{tabular}
+
+\end{document}
