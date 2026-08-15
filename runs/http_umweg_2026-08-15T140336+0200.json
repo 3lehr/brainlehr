@@ -1,0 +1,68 @@
+{
+  "auftrag": "ADR-020 Abschnitt 4, unbezifferte Zeitmessung des HTTP-Umwegs -- Vorbedingung fuer I6 (13 lesende MCP-Werkzeuge auf Endpunkte umziehen). Diese Datei liefert die Zahl, entscheidet nichts.",
+  "zeitpunkt": "2026-08-15T14:03:36+0200",
+  "messverfahren": {
+    "aufbau": "Zwei Vergleiche. (A) apples-to-apples: ein Mini-HTTP-Server im Scratchpad (nicht im Repo) fuehrt PRO ANFRAGE dieselbe kern/speicher.lesen()-Abfrage aus wie der Direktweg -- isoliert Transport+Serialisierung, ohne Fremdrechnung (z.B. PCA in _raum_stand) mitzumessen. (B) realer Bestand: die echten GET-Endpunkte von berichte/entscheidungen_server.py, gestartet auf eigenem Port 8899 (Datei nicht veraendert), belegt realistische Nutzlastgroessen des tatsaechlichen Dienstes.",
+    "direktweg_heute": "kern/speicher.lesen() -- Nur-Lese-Verbindung (mode=ro), Pfad NICHT fest verdrahtet, ueber haken/ort.py wie in der ganzen Codebasis.",
+    "httpweg_danach": "urllib.request gegen http://127.0.0.1:<port>, Loopback.",
+    "fall_klein": "1 Knoten per id aus knowledge_nodes (id, path, title, summary) -- Analog zu knowledge_read.",
+    "fall_gross": "50 Knoten (ORDER BY updated_at DESC LIMIT 50, inkl. content/tags) -- Analog zu knowledge_search mit vielen Treffern.",
+    "wiederholungen_je_messreihe": 200,
+    "prozessstart_wiederholungen": 30,
+    "warum_kein_direkter_umbau_von_entscheidungen_server.py": "Die Datei ist tabu (nur lesen/starten). Sie kennt ausserdem heute keinen einzigen Endpunkt fuer die generischen Wissens-Operationen (ADR-020 Abschnitt 2) -- ein 1:1-Vergleich am Zielendpunkt existiert also gar nicht. Der Mini-Server hier misst deshalb den TRANSPORT-Anteil isoliert; Vergleich B liefert dazu die real gemessenen Nutzlastgroessen desselben Dienstes."
+  },
+  "bedingungen": {
+    "parallellast": "Mehrere Agenten liefen zum Messzeitpunkt gleichzeitig auf demselben Rechner (load average zum Messzeitpunkt: 9.7 / 15.7 / 16.6 bei mutmasslich 8-10 Kernen -- deutlich ueberlastet). Lokale Werkzeuglast war NICHT ausschliessbar. Deshalb: Median UND p95 je Reihe, UND jede Reihe zweimal unabhaengig gefahren (Gegenprobe).",
+    "gegenprobe_ergebnis": "lauf1 und lauf2 weichen bei allen vier apples-to-apples-Faellen um unter 0,3ms im Median voneinander ab (siehe Rohdaten unten) -- die Messung ist trotz Parallellast stabil genug fuer die hier gezogenen Schluesse. EINE Ausnahme: raum_gross/lauf2 hat einen p95-nahen Ausreisser bei max_ms=360ms (ein einzelner von 200 Aufrufen) -- fremde Prozesslast schlaegt dort einmalig durch. Median/p95 bleiben davon unberuehrt."
+  },
+  "ergebnis_a_apples_to_apples_ms": {
+    "lauf1": {
+      "direkt_klein":        {"n": 200, "median_ms": 0.588, "p95_ms": 0.642, "bytes": 561},
+      "http_klein":          {"n": 200, "median_ms": 0.965, "p95_ms": 1.138, "bytes": 561},
+      "direkt_gross_50zeilen": {"n": 200, "median_ms": 2.679, "p95_ms": 3.710, "bytes": 140129},
+      "http_gross_50zeilen":   {"n": 200, "median_ms": 3.516, "p95_ms": 4.577, "bytes": 140129}
+    },
+    "lauf2": {
+      "direkt_klein":        {"n": 200, "median_ms": 0.656, "p95_ms": 2.185, "bytes": 561},
+      "http_klein":          {"n": 200, "median_ms": 0.907, "p95_ms": 1.037, "bytes": 561},
+      "direkt_gross_50zeilen": {"n": 200, "median_ms": 2.365, "p95_ms": 3.414, "bytes": 140129},
+      "http_gross_50zeilen":   {"n": 200, "median_ms": 3.445, "p95_ms": 4.501, "bytes": 140129}
+    },
+    "mehraufwand_http_ueber_direkt_median": {
+      "klein_561_bytes": "≈0,3-0,4 ms zusaetzlich",
+      "gross_140129_bytes_50_zeilen": "≈0,8-1,1 ms zusaetzlich"
+    }
+  },
+  "ergebnis_b_realer_bestand_ms": {
+    "hinweis": "Endpunkte des laufenden berichte/entscheidungen_server.py (eigener Port 8899, Datei unveraendert). Beide Faelle brauchen keinen Ausweis (GET, kein POST) -- gemessen, ohne ein Geheimnis zu beschaffen.",
+    "lauf1": {
+      "quellenbestand_klein": {"n": 200, "median_ms": 2.934, "p95_ms": 3.165, "bytes": 665},
+      "raum_gross_1mb":       {"n": 200, "median_ms": 7.921, "p95_ms": 8.281, "bytes": 1029517}
+    },
+    "lauf2": {
+      "quellenbestand_klein": {"n": 200, "median_ms": 2.954, "p95_ms": 3.200, "bytes": 665},
+      "raum_gross_1mb":       {"n": 200, "median_ms": 7.876, "p95_ms": 8.394, "bytes": 1029517, "hinweis": "max_ms in diesem Lauf 360ms, ein Ausreisser von 200 -- s. Parallellast oben"}
+    },
+    "einordnung": "Der reale Dienst braucht fuer eine 1MB-Antwort (/api/raum, PCA-Ergebnis vorgewaermt/gecacht) im Median unter 8ms End-zu-Ende ueber Loopback. Auch der kleine reale Fall (665 Byte) liegt bei knapp 3ms -- das ist der volle BaseHTTPRequestHandler-Weg des echten Servers, nicht der schlanke Mini-Server aus Vergleich A."
+  },
+  "prozessstart_ms": {
+    "wiederholungen": 30,
+    "baseline_leerer_python3_prozess": {"median_ms": 17.49, "p95_ms": 18.45, "hinweis": "separat gemessen, python3 -c pass, zum Einordnen"},
+    "direkt_frischer_prozess_inkl_sqlite_import_und_1_abfrage": {"n": 30, "median_ms": 24.652, "p95_ms": 25.554},
+    "http_klient_frischer_prozess_inkl_urllib_import_und_1_abruf": {"n": 30, "median_ms": 48.725, "p95_ms": 51.050},
+    "einordnung": "MCP laeuft ueber stdio: JEDER Klient (jede Sitzung) startet seinen EIGENEN Prozess, unabhaengig vom Direkt- oder HTTP-Weg -- das ist keine neue Kosten des Umbaus. Was sich unterscheidet: der Direktweg braucht zum Prozessstart nur sqlite3+kern/speicher (+7ms ueber der leeren Baseline), der HTTP-Weg zusaetzlich urllib+Socket-Verbindungsaufbau (+31ms ueber der Baseline, gut das Vierfache). Dieser Unterschied entsteht EINMAL pro Sitzung, nicht pro Werkzeugaufruf -- bei mehreren Aufrufen je Sitzung faellt er kaum ins Gewicht, bei einer Sitzung mit genau einem Aufruf betraegt der Mehraufwand rund 24ms."
+  },
+  "dienst_nicht_erreichbar": {
+    "getesteter_port_ohne_listener": 19999,
+    "wiederholungen": 10,
+    "zeiten_ms": {"n": 10, "median_ms": 0.079, "p95_ms": 0.261},
+    "fehlerart": "URLError (Connection refused)",
+    "einordnung": "Faellt der Dienst, scheitert der Aufruf SOFORT (unter 1ms) und LAUT -- keine Haenge-Wartezeit bis zu einem Timeout. Das ist die gute Nachricht fuer die Fehlerklasse selbst: kein steckenbleibender Werkzeugaufruf. Die eigentliche Frage bleibt aber unbeantwortet und ist NICHT Teil dieser Zeitmessung: WER startet den Dienst, wenn er fehlt? Heute existiert dafuer kein Mechanismus im MCP-Server -- ein still gescheiterter lesender Aufruf traefe ohne Vorwarnung auf einen Dienst, den niemand automatisch wieder hochfaehrt (vgl. ADR-020 Abschnitt 4, 'Ohne laufenden Dienst kein Wissenszugriff mehr')."
+  },
+  "einordnung_gesamt": {
+    "latenz": "Der reine Transport/Serialisierungs-Mehraufwand des HTTP-Umwegs liegt gemessen bei rund 0,3-1 ms je Aufruf fuer typische Antwortgroessen (561 Byte bis 140 KB, 50 Treffer) und bleibt am echten Dienst mit 1MB-Nutzlast unter 8ms End-zu-Ende. Das ist innerhalb eines Modell-Turns (typischerweise mehrere hundert Millisekunden bis Sekunden) nicht wahrnehmbar.",
+    "prozessstart": "Der Prozessstart-Mehraufwand (~24ms je Sitzung fuer urllib+Socket gegenueber sqlite3+kern/speicher) faellt EINMAL pro MCP-Sitzung an, nicht pro Aufruf -- bei wiederholten Werkzeugaufrufen in derselben Sitzung amortisiert er sich.",
+    "verfuegbarkeit_ist_die_eigentliche_frage": "Latenz ist NICHT der Grund, der gegen I6 sprechen wuerde. Der in ADR-020 Abschnitt 4 genannte Verlust (\"Ohne laufenden Dienst kein Wissenszugriff mehr\") ist ein Verfuegbarkeits-, kein Zeitproblem, und diese Messung bestaetigt das: der Fehlschlag bei totem Dienst ist schnell (<1ms), aber es gibt noch keinen Mechanismus, der den Dienst bei Bedarf selbst hochfaehrt.",
+    "schwellenwert_fuer_vertretbarkeit": "Ich halte einen medianen Mehraufwand von bis zu rund 20-30 ms je Aufruf gegenueber dem Direktweg fuer vertretbar -- Begruendung: das liegt in derselben Groessenordnung wie ein einzelner LLM-Werkzeugaufruf-Overhead insgesamt und ist gegenueber der Antwortzeit eines Sprachmodell-Turns nicht spuerbar. Gemessen liegt der tatsaechliche Mehraufwand PRO AUFRUF (0,3-1ms im Idealfall, unter 8ms am echten 1MB-Endpunkt) weit unterhalb dieser Schwelle -- selbst der Prozessstart-Mehraufwand von ~24ms je SITZUNG liegt noch innerhalb. Diese Zahl bewertet AUSSCHLIESSLICH Latenz, nicht die oben benannte Verfuegbarkeitsfrage -- die ist ein separater Befund, den diese Zahl nicht abdeckt und nicht abdecken soll."
+  }
+}

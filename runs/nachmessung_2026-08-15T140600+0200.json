@@ -1,0 +1,106 @@
+{
+  "was": "Nachmessung der sieben als 'nicht nachgemessen' gefuehrten Plan-Kennungen (82,83,87,23,G3,G6,F8) plus Verdrahtungs-Nachpruefung 98/92/96 gegen BEIDE settings.json (Anlass: 97 war faelschlich als wirkungslos gemessen worden, weil nur die repo-eigene Datei gelesen wurde)",
+  "erhoben": "2026-08-15T14:06:00+0200",
+  "arbeitsort": "/Volumes/daten/Begod2026/brainlehr",
+  "zweig": "brainlehr/b4-ausweis",
+  "verfahren": {
+    "quelle_kennungsliste": "docs/PLAN_GESAMT_2026-08-13.md, Zeilen 212-217 (7 nicht nachgemessen) und 274-278 (98/92/96 Nachpruefauftrag)",
+    "schritte": [
+      "1. Volltext von docs/PLAN_GESAMT_2026-08-13.md gelesen (831 Zeilen, zwei Read-Aufrufe), um jede Kennung im Kontext ihrer Linie zu finden.",
+      "2. Fuer 82/83/87/23: grep -rn ueber docs/*.md nach woertlichen Kennungs-Belegen ('Aufgabe N', Definitionszeilen) UND nach den Zahlen als Statistikwerten in Nachbardokumenten (docs/PLAN_ZEITACHSE_2026-08-14.md, docs/PLAN_NORMACHSEN_2026-08-14.md).",
+      "3. Fuer G3/G6/F8: git log --oneline -- runs/ docs/PLAN_SICHERHEIT_2026-08-14.md kern/ spikes/ seit 2026-08-14T21:00 nach spaeteren Messcommits durchsucht, Commit-Volltexte mit git show/git log -1 --format=%B gelesen, referenzierte Lauf- und Spike-Verzeichnisse mit ls gegengeprueft.",
+      "4. Fuer 98/92/96: beide settings.json (.claude/settings.json im Arbeitsbaum-Repo und ~/.claude/settings.json) mit python3 json.load geparst, Hook-Schluessel (SessionStart/PreToolUse/PostToolUse/WorktreeCreate/...) und deren Matcher/Kommandos ausgegeben, gegen Kommandozeilen-Substrings gefiltert. 'FileChanged' als Schluessel explizit in beiden Dateien gesucht (fehlt in beiden). Ergaenzend git log auf die betroffenen Haken-Dateien und tests/test_worktree_identitaet.py per pytest laufen lassen.",
+      "5. Fuer den Wirkungsnachweis ('gefeuert') je Mechanismus: nach Lauf-/Belegdateien unter runs/ und nach Commit-Texten gesucht, die einen rot-vor-gruen-Beleg am echten Zustand nennen -- nicht nur Testgruen."
+    ]
+  },
+  "zahl_mit_nenner": {
+    "gesamt_geprueft": 10,
+    "erledigt": 2,
+    "teilweise": 5,
+    "offen": 3,
+    "hinweis": "82 und 83 und 87 zaehlen unten als 'offen' im Sinn von 'kein bewertbarer Gegenstand' -- siehe Einzelbefund, das ist eine staerkere Aussage als 'nicht nachgemessen'."
+  },
+  "gegenprobe": {
+    "erfuellt": true,
+    "abweichungen_vom_plan": [
+      "82, 83, 87: Der Plan selbst hatte sie an einer Stelle (Zeile 638, Fortschreibung 13:00) als 'erledigt' gefuehrt und an anderer Stelle (Zeile 213) als 'keine eigene Definition gefunden, nicht nachgemessen'. Beide Einordnungen sind zu verwerfen: es handelt sich nicht um Aufgaben-Kennungen, sondern um wiederverwendete Statistikzahlen (z.B. 83 = Anzahl Knoten mit gilt_ab, an drei verschiedenen Stellen im Bestand mit je eigener Bedeutung). Es gibt keine Zeile 'Aufgabe 82/83/87' in keinem docs/*.md. Verdikt: nicht 'offen', nicht 'erledigt' -- kein Gegenstand.",
+      "23: Der Plan fuehrt 23 unter 'nicht nachgemessen, keine Definition gefunden' (Zeile 213), obwohl 23 an anderer Stelle (Zeile 417) sehr wohl definiert ist: Linie E, 'nur der Betreiber', gemeinsam mit 20/29/31. Genau diese drei Geschwister klassifiziert der Plan selbst zwei Fortschreibungen weiter unten (Zeile 216-217) als 'echt offen, wartet auf den Betreiber'. 23 gehoert in dieselbe Klasse, wurde aber uebersehen. Verdikt hier: offen (wartet auf Betreiber), abweichend von der Plan-Einordnung 'nicht nachgemessen'.",
+      "G3, G6, F8: Der Plan zitiert fuer alle drei den Stand vom 2026-08-13/14 ('Nullmessung unzureichend', 'Pruefstein ungemessen', 'Nicht gemessen'). Seither existieren datierte Commits vom 2026-08-15 (2fc11fc6 fuer G3, 30ed7737 fuer G6, b4a12fc6->b4c9a5c2 fuer F8), die genau die im Plantext genannte offene Frage beantworten. Die Kennungen sind also NICHT laenger 'nicht nachgemessen' -- sie wurden gemessen, nur eben nach dem Textstand von PLAN_GESAMT_2026-08-13.md und ohne dass der Plan das nachzieht. Alle drei bleiben aber 'teilweise', weil die Kernaufgabe (Widerruf bauen bei G6-Nachbarfrage I4 exkl., volle Stundenmessung mit Mini bei G3, Ruecksprung selbst bei F8) noch aussteht."
+    ]
+  },
+  "kennungen": {
+    "82": {
+      "stand": "offen",
+      "beleg": "Keine Fundstelle 'Aufgabe 82' oder aequivalente Definition in docs/*.md (grep -rn ueber alle docs/*.md, keine Treffer ausser der Sammelnennung selbst in PLAN_GESAMT_2026-08-13.md Zeile 638). Kein Knoten, kein Commit, kein Skript mit erkennbarem Bezug gefunden.",
+      "einordnung": "Kennung ohne definierten Gegenstand -- weder Aufgabe noch Messwert einer Aufgabe. Kann nicht 'erledigt' sein, weil unklar ist, was erledigt sein muesste; wird hier defensiv als offen gefuehrt, mit dem Zusatz, dass die naechste Fortschreibung entscheiden sollte, ob die Kennung ueberhaupt weitergefuehrt wird."
+    },
+    "83": {
+      "stand": "offen",
+      "beleg": "Wie 82. Einzige Fundstellen der Ziffernfolge '83' im Bestand sind Statistikwerte: 'Knoten mit gilt_ab: 83' (docs/PLAN_ZEITACHSE_2026-08-14.md Zeile 12+100, PLAN_GESAMT_2026-08-13.md Zeile 143), '83 echte Auftraege' (Zeile 239/280 desselben Plans), '83 offene Faelle' (docs/PLAN_NORMACHSEN_2026-08-14.md Zeile 39/157) -- drei unterschiedliche Bedeutungen derselben Zahl, keine davon eine Aufgaben-Kennung.",
+      "einordnung": "Kein Gegenstand. Gleiche Einordnung wie 82."
+    },
+    "87": {
+      "stand": "offen",
+      "beleg": "Wie 82/83. Keine Fundstelle 'Aufgabe 87' in docs/*.md ausser der Sammelnennung selbst.",
+      "einordnung": "Kein Gegenstand. Gleiche Einordnung wie 82/83."
+    },
+    "23": {
+      "stand": "offen",
+      "beleg": "docs/PLAN_GESAMT_2026-08-13.md Zeile 417: 'Linie E -- nur der Betreiber. 20, 23, 29, 31. Nicht autonom, in keiner Reihenfolge erzwingbar.' Keine Commit- oder Codespur zu 23 gefunden (git log --all durchsucht auf '23' im Zusammenhang mit Linie E, keine Treffer). 20/29/31 werden vom Plan selbst als 'echt offen, wartet auf den Betreiber' gefuehrt (Zeile 216-217) -- 23 gehoert erkennbar in dieselbe Gruppe.",
+      "einordnung": "Offen, wartet auf Betreiber-Entscheidung -- wie seine drei Geschwister 20/29/31. Nicht 'nicht nachgemessen': der Grund fuer den fehlenden Fortschritt ist bekannt und dokumentiert (Linie E ist nicht autonom bearbeitbar), es fehlt keine Messung."
+    },
+    "G3": {
+      "stand": "teilweise",
+      "existiert": "ja -- spikes/g3_dauermessung/dauerlauf.py (endloser Tipplauf mit Schueben/Pausen/Loeschungen, atomares Schreiben alle 15s nach status_fortlaufend.json) und ein WS-Relais im eigenen Prozess, das 5-40ms Netzlaufzeit mit 3% WLAN-Ausreissern fuer einen zweiten simulierten Teilnehmer 'mini' erzeugt (Commit 2fc11fc6, 2026-08-15T10:38:23+0200).",
+      "verdrahtet": "n/a -- G3 ist ein Messaufbau, kein automatisch ausgeloester Mechanismus.",
+      "gefeuert": "Probelauf 150s durchgefuehrt, 0 Fehler, bytes_je_update stabil bei 77-83 (gegen den fruehen Vollstand-Bug mit 1952 Byte). Regressionswaechter per --selftest ergaenzt.",
+      "beleg": "runs/g3_dauermessung_aufbau_2026-08-15.json, Commit-Volltext 2fc11fc6.",
+      "fehlt_noch": "Der eigentliche Stundenlauf mit dem simulierten 'mini' und die zweite echte Herkunftsadresse (beide Teilnehmer laufen weiterhin auf 127.0.0.1 -- die Ausweispflicht fuer Nicht-Loopback-Adressen wird dadurch nie durchlaufen, ausdruecklich als GRENZE im Commit vermerkt). Damit bleibt die eigentliche G3-Schwellenmessung offen, nur der Aufbau dafuer steht."
+    },
+    "G6": {
+      "stand": "teilweise",
+      "existiert": "ja -- Spike-Kontrolllauf mit signiertem .app-Buendel und Vergleichsprogramm (reines print-Programm), Commit 30ed7737 (2026-08-15T08:16:52+0200), Knoten fef0cb9d, Lehre L-d34412.",
+      "verdrahtet": "n/a -- G6 ist eine einmalige Machbarkeitspruefung, kein automatischer Mechanismus.",
+      "gefeuert": "Der im Plan (Zeile 552) offen gestellte Pruefstein ('laedt das CRDT-Rahmenwerk in einer Sandbox?') ist beantwortet: yswift laeuft in der App-Sandbox, aber NUR im gebauten .app-Buendel -- der fruehere Absturz einer nackten signierten Binaerdatei war KEIN yswift-Fehler (identischer Absturz bei einem reinen print-Programm ohne yswift). Ein Kontrollversuch belegt zusaetzlich, dass die Sandbox wirklich aktiv war: ein Schreibversuch nach $HOME landete im Sandbox-Container statt im echten Home-Verzeichnis.",
+      "beleg": "Commit-Volltext 30ed7737, Knoten fef0cb9d.",
+      "fehlt_noch": "Hardened Runtime und Beglaubigung (Notarization) am echten Zielsystem bleiben laut Commit selbst 'ungemessen'. Die eigentliche G6-Aufgabe (Signatur, Hardened Runtime, Sandbox insgesamt) ist damit nur zu einem Drittel (Sandbox-Ladefaehigkeit) belegt."
+    },
+    "F8": {
+      "stand": "teilweise",
+      "existiert": "ja -- spikes/f8_synctex/mit/ und spikes/f8_synctex/ohne/ (zwei LaTeX-Testlaeufe mit/ohne \\DocumentMetadata), Commit b4c9a5c2 (2026-08-15T10:23:47+0200).",
+      "verdrahtet": "n/a -- F8 ist eine Machbarkeitsmessung plus (noch ausstehende) Funktionsimplementierung, kein automatischer Mechanismus.",
+      "gefeuert": "Die im Plan (Zeile 462-464) offen gestellte Frage ('arbeitet SyncTeX mit \\DocumentMetadata zusammen?') ist positiv beantwortet: synctex.gz entsteht in beiden Varianten, Positivkontrolle an einer bekannten Marke (MARKE-SYNCTEX-7331) bestanden, Zeilenverschiebung exakt um die entfernten \\DocumentMetadata-Zeilen erklaerbar -- kein stiller Bruch wie bei tex4ht. Ein zweiter, im urspruenglichen Auftrag genannter Weg ueber \\label haelt dagegen NICHT: der erzeugte \\newlabel-Eintrag traegt nur die Seitenzahl, kein PDF-Ziel ohne \\phantomsection.",
+      "beleg": "runs/f8_synctex_2026-08-15T102253+0200.json, Commit-Volltext b4c9a5c2.",
+      "fehlt_noch": "Der eigentliche Rueckweg vom Blatt in den Text (SyncTeX-Klick im PDF-Betrachter fuehrt zur Textstelle) ist NICHT implementiert -- 0 Treffer fuer 'synctex' in kern/ (grep -rni gegen den gesamten kern/-Baum). Nur die Vorbedingung ist geklaert, der Baustein selbst fehlt."
+    },
+    "98": {
+      "stand": "teilweise",
+      "existiert": "ja -- die Referenzmessung selbst (7 von 29 Haken-Ereignissen verdrahtet, PLAN_GESAMT Zeile 640) ist dokumentiert; als Aufgabe zaehlt das Nachziehen der drei genannten Ereignisse WorktreeCreate/PreToolUse-Agent/FileChanged.",
+      "verdrahtet": "2 von 3 abhaengigen Ereignissen sind inzwischen verdrahtet (siehe 92, 97 -- 97 nicht Teil dieses Auftrags, aber als Kontext bestaetigt), das dritte (FileChanged, siehe 96) in KEINER der beiden settings.json ueberhaupt als Ereignistyp vorhanden.",
+      "gefeuert": "Fuer die zwei verdrahteten Faelle ja (siehe 92), fuer den dritten (96) nein.",
+      "beleg": "python3-json-Auslesung beider Hook-Konfigurationen (siehe 92/96), Commit-Historie haken/worktree_identitaet.py und haken/auftragshypothese_waechter.py.",
+      "fehlt_noch": "FileChanged/96 bleibt unverdrahtet -- siehe eigener Eintrag."
+    },
+    "92": {
+      "stand": "erledigt",
+      "existiert": "ja -- haken/worktree_identitaet.py (351 Zeilen), Funktion nachziehen_hier() fuer den Einsatz bei SessionStart.",
+      "verdrahtet": "ja, in ~/.claude/settings.json: SessionStart-Hook ohne Matcher (laeuft bei jeder Sitzung), Kommando 'python3 .../haken/worktree_identitaet.py --nachziehen'. Zusaetzlich ein aelterer WorktreeCreate-Eintrag in derselben Datei (ruft dasselbe Skript ohne --nachziehen auf). In der repo-eigenen .claude/settings.json ist WEDER SessionStart NOCH WorktreeCreate fuer dieses Skript vorhanden -- die Verdrahtung liegt ausschliesslich in ~/.claude/settings.json.",
+      "gefeuert": "ja, belegt am echten Arbeitsbaum: Commit b7d11727 (2026-08-14T12:43:12+0200) beschreibt einen rot-vor-gruen-Beleg -- vor dem Lauf 'No such file or directory' fuer CLAUDE.md im neuen Arbeitsbaum, nach dem Lauf ein Symlink auf ../../../CLAUDE.md. Drei Tests vorhanden (tests/test_worktree_identitaet.py), 8/8 gruen bei eigenem Nachlauf (python3 -m pytest tests/test_worktree_identitaet.py -q).",
+      "beleg": "Commit-Volltext b7d11727, ~/.claude/settings.json (SessionStart-Eintrag), Testlauf 8 passed.",
+      "abweichung_vom_ursprungsplan": "Der urspruengliche Auftragstext (PLAN_GESAMT Zeile 646) beschreibt WorktreeCreate als den vorgesehenen Aufhaengepunkt ('bekommt base_directory, blockiert bei Exit != 0'). Das wurde am 2026-08-14 tatsaechlich gebaut, brach aber denselben Tag: WorktreeCreate legt das Zielverzeichnis an, wodurch 'git worktree add' an einem nicht-leeren Verzeichnis scheiterte. Die Loesung (Commit b7d11727) verlegte den Anschluss auf SessionStart -- funktional dasselbe Ziel (Identitaetsdateien erreichen neue Arbeitsbaeume), anderer Ausloeser. Als erledigt gewertet, weil das Ziel (nicht der urspruenglich genannte Ausloeser) erreicht und belegt ist."
+    },
+    "96": {
+      "stand": "offen",
+      "existiert": "teilweise -- melder/schemastand.py existiert (Commit 88aaf738) und vergleicht schema.sql (SOLL, per executescript in eine Wegwerf-DB materialisiert) gegen die installierten Schemaobjekte (IST, sqlite_master) einer echten Datenbank. Das ist der fachliche Kern der Aufgabe 96, aber kein automatischer Ausloeser bei Dateiaenderung.",
+      "verdrahtet": "nein -- in KEINER der beiden settings.json existiert ueberhaupt ein Hook-Schluessel 'FileChanged' (repo-eigene Datei hat nur PreToolUse/Stop, ~/.claude/settings.json hat SubagentStart/SubagentStop/SessionStart/UserPromptSubmit/PreToolUse/PostToolUse/Stop/WorktreeCreate -- vollstaendige Liste beider Hook-Konfigurationen ausgelesen). Auch kein Ersatzweg gefunden: der vorhandene PostToolUse-Block fuer Edit|Write ist ungefiltert und ruft schemastand.py nicht auf.",
+      "gefeuert": "nein -- keine Laufprotokolle unter runs/ mit Bezug zu schemastand gefunden, kein Commit belegt einen automatischen Lauf.",
+      "beleg": "python3-json-Auslesung beider Hook-Konfigurationen, grep -rn 'schemastand' gegen beide settings.json (0 Treffer), find runs/ (0 Treffer).",
+      "einordnung": "Diesmal KEIN blinder Fleck der Ausgangsmessung (die nur die repo-eigene Datei las) -- die Nachpruefung gegen BEIDE Dateien bestaetigt den offenen Zustand unabhaengig davon, welche Datei man liest. 96 bleibt echt offen."
+    }
+  },
+  "grenzen_dieser_messung": [
+    "97 wurde NICHT erneut vollstaendig nachgemessen -- der Plan hat den Fehler bereits selbst korrigiert (Nachtrag 2026-08-15T14:05, Commit d786be7a) und ich habe die Verdrahtung (PreToolUse-Matcher 'Agent' in ~/.claude/settings.json) nur als Nebenbefund bei der 92/96-Pruefung bestaetigt, ohne den 83-Auftraege-Testbeleg selbst nachzufahren.",
+    "Fuer G3/G6/F8 wurden nur die referenzierten Commits und Lauf-/Spike-Dateien gelesen, keine eigenen neuen Laeufe gestartet -- die Aussagen stuetzen sich auf die Selbstbeschreibung dieser Commits, nicht auf einen eigenen rot-vor-gruen-Nachvollzug.",
+    "Bei 82/83/87 zusaetzlich per mcp__knowledge__knowledge_search ('Aufgabe 82 83 87') in der Wissens-Datenbank gesucht (Lesezugriff, keine Aenderung, Tabu betrifft nur schema.sql/knowledge_mcp_server.py als Dateien): kein Treffer mit erkennbarem Bezug unter den 8 besten Ergebnissen. Ein exakter Nichttreffer per Volltext-/Bedeutungssuche ist trotzdem kein vollstaendiger Ausschlussbeweis."
+  ]
+}
