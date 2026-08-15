@@ -1,0 +1,57 @@
+{
+  "frage": "Wirkt die Umschaltung A/B/C im Pruefstand kern/messlauf_abrufguete.py noch, oder misst er seit einer Weile dreimal denselben Zustand?",
+  "antwort": "wirkt teilweise -- der Schalter KNOWLEDGE_ENSEMBLE_PFLICHT (B gegen C) ist seit 2026-08-09T09:18:47+0200 tot, der Schalter KNOWLEDGE_ZWEITER_KANAL (A gegen B/C) wirkt weiterhin auf Kandidatenebene, nur nicht mehr in Summe ueber die 35 Faelle.",
+
+  "1_wie_wird_umgeschaltet": {
+    "schalter": ["KNOWLEDGE_ZWEITER_KANAL", "KNOWLEDGE_ENSEMBLE_PFLICHT"],
+    "gesetzt_von": "kern/messlauf_abrufguete.py, STATES-Dict Zeile 48-52 (vor Fix), ueber _with_state()/os.environ.update im selben Prozess",
+    "gelesen_von": "haken/knowledge_recall_hook.py: _zweiter_kanal_aktiv() Zeile 536-540, _ensemble_pflicht_aktiv() Zeile 546-550 -- beide lesen os.environ.get() bei JEDEM Aufruf, kein Modul-Cache",
+    "dritter_schalter_uebersehen": "KNOWLEDGE_SUCHPFAD_ABRUF, gelesen von _suchpfad_aktiv() Zeile 577-581, Modulkonstante SUCHPFAD_ABRUF=True Zeile 574 (Vorgabe). kern/messlauf_abrufguete.py STATES hat diesen Schalter (vor Fix) NIE gesetzt."
+  },
+
+  "2_kommt_er_an": {
+    "befund": "KNOWLEDGE_ZWEITER_KANAL und KNOWLEDGE_ENSEMBLE_PFLICHT kommen technisch an (in-process os.environ, kein Subprozess, keine Zwischenspeicherung -- geprueft per Direktaufruf hook._zweiter_kanal_aktiv()/_ensemble_pflicht_aktiv() nach _with_state()). ABER: haken/knowledge_recall_hook.py query() Zeile 1106 prueft ZUERST _suchpfad_aktiv(). Ist der wahr (Vorgabe, seit b52856b immer wahr, weil messlauf_abrufguete.py ihn nie ueberschrieb), nimmt query() den Suchpfad-Zweig (mehrstufiger_abruf.kandidaten_geschaltet -> Vorgabe faellt byte-gleich auf suchpfad_abruf.kandidaten() zurueck) und gibt bei Zeile 1142 zurueck -- VOR dem einzigen Aufruf von _ensemble_pflicht_aktiv() im Modul (der liegt im Zweig darunter, der dadurch nie erreicht wird). ENSEMBLE_PFLICHT ist damit strukturell tot, unabhaengig vom env-Wert.",
+    "zweiter_kanal_bleibt_wirksam": "haken/suchpfad_abruf.py kandidaten() Zeile 96 prueft 'if query_vec is not None', und query_vec wird in query() nur berechnet wenn _zweiter_kanal_aktiv() True ist -- ZWEITER_KANAL wirkt also weiterhin, nur ueber einen anderen Codepfad als vor dem 2026-08-09-Umbau."
+  },
+
+  "3_seit_wann_welcher_commit": {
+    "commit": "b52856b",
+    "titel": "feat(brainlehr): Suchpfad EIN, Faelligkeit nach Faellen statt nach Tagen, S11 aufgenommen",
+    "datum": "2026-08-09T09:18:47+0200",
+    "beleg": "git show -s --format=... b52856b; SUCHPFAD_ABRUF-Default davor False (s. Vorgaenger-Kommentar in knowledge_recall_hook.py 'EIN seit 2026-08-09'), letzter guter committeter Lauf dc66380 (2026-08-07T19:33:45+0200) zeigt noch die per-Zustand echte Streuung A10/35 B23/35 C10/35 -- exakt geprueft per 'git show dc66380:runs/messlauf_abrufguete_v2.json'.",
+    "kern_messlauf_abrufguete_py_seither": "unveraendert seit Commit 162d1ec (git log -- kern/messlauf_abrufguete.py), hat den neuen dritten Schalter nie nachgezogen -- das ist die Ursache im Pruefstand, nicht in knowledge_recall_hook.py."
+  },
+
+  "4_positivkontrolle": {
+    "methode": "Einzelfall solvable[0] (Ziel: Lehre L-a9ccd0), Schalter von Hand per os.environ gesetzt, EIN Aufruf hook.query() je Zustand -- kein Gesamtlauf.",
+    "vor_fix_rot": {
+      "B_ZK1_EP0": "10 nodes, 6 lessons, target_hit -- Kandidatenliste beginnt /shared/arch/offen-fuer-weitere-geraete-eine-tuer, /methodik/fertigkeiten/design-waechter, ...",
+      "C_ZK1_EP1": "10 nodes, 6 lessons, target_hit -- Kandidatenliste BYTE-IDENTISCH zu B",
+      "schluss": "B und C unterscheiden sich in ENSEMBLE_PFLICHT, liefern aber ein identisches Ergebnis -- Schalter wirkt nicht (rot)."
+    },
+    "nach_fix_gruen": {
+      "aenderung": "kern/messlauf_abrufguete.py STATES: KNOWLEDGE_SUCHPFAD_ABRUF: '0' in allen drei Zustaenden ergaenzt (erzwingt den alten, von ENSEMBLE_PFLICHT tatsaechlich gesteuerten Zweig)",
+      "A_ZK0_EP0_SP0": "1 node, 0 lessons, target_hit=False",
+      "B_ZK1_EP0_SP0": "10 nodes, 7 lessons, target_hit=True",
+      "C_ZK1_EP1_SP0": "0 nodes, 0 lessons, target_hit=False",
+      "schluss": "A, B, C liefern jetzt drei verschiedene Ergebnisse fuer denselben Fall -- Umschaltung wirkt wieder (gruen)."
+    },
+    "abnahme": "rot vor gruen erfuellt: derselbe Fall, derselbe Prozess, nur der eine Fix-Schalter unterscheidet rot von gruen."
+  },
+
+  "5_falsches_sprechen_10_von_10": {
+    "befund": "Im uncommitteten v2-Lauf steht falsches_sprechen bei 10/10 in ALLEN drei Zustaenden -- das ist derselbe strukturelle Fehler, kein unabhaengiger Zweitbefund: der Suchpfad-Zweig hat laut eigenem Moduldocstring (haken/suchpfad_abruf.py Zeile 3-4, 65-67, 104-112) BEWUSST kein MIN_HITS/ENSEMBLE_PFLICHT-Vorfilter -- die FTS-OR-Anfrage auf den vollen Prompt zieht praktisch den ganzen Bestand (dortiger Kommentar: Median 348 von 383 Knoten, 674 von 674 Lehren angezogen). Da A, B UND C seit b52856b denselben Suchpfad-Zweig nehmen, liefert er bei allen drei auf jeden der 10 negativen Faelle etwas -- unabhaengig vom Schalterstand.",
+    "plausibilitaetsprobe_vorher": "Im letzten guten Lauf (dc66380, vor dem Bruch) schwankte falsches_sprechen noch deutlich: A 3/10, B 10/10, C 1/10 -- damals liess C (ENSEMBLE_PFLICHT) das Rauschen tatsaechlich sinken. Dass der Wert seit dem Bruch bei 10/10 einfriert, ist folgerichtig aus 2, nicht plausibel als eigenstaendiges Messergebnis."
+  },
+
+  "grenze": "Diese Datei dokumentiert nur den Befund und die Positivkontrolle an EINEM Fall. Kein voller 45-Faelle-Lauf ueber alle drei reparierten Zustaende gefahren (Kosten/Zeit: mehrere Ollama-Embedding-Aufrufe je Fall in zwei von drei Zustaenden, ca. 0,2s je Aufruf plus DB-Zugriffe -- bei 35 loesbaren + 10 negativen Faellen mal 3 Zustaenden ist ein sauberer Vollrun ein separater, laenger laufender Auftrag). runs/messlauf_abrufguete_v2.json (Beweisstueck fuer den Bruch) wurde NICHT ueberschrieben. Ob KNOWLEDGE_SUCHPFAD_ABRUF=0 die inhaltlich richtige Reparatur ist (statt den Suchpfad als vierte Dimension mitzumessen) ist eine Produktentscheidung, keine Pruefstand-Frage -- hier nur der kleinste Fix, der die Umschaltbarkeit wiederherstellt, ohne den Suchpfad-Zweig (haken/, tabu fuer diesen Auftrag) anzufassen.",
+
+  "geaenderte_dateien": [
+    "kern/messlauf_abrufguete.py (STATES-Dict um KNOWLEDGE_SUCHPFAD_ABRUF: '0' ergaenzt, Kommentar mit Datum/Begruendung)"
+  ],
+  "nicht_veraendert": [
+    "runs/messlauf_abrufguete_v2.json (Beweisstueck, wie angeordnet)",
+    "haken/knowledge_recall_hook.py (tabu laut Moduldocstring, ein anderer Agent arbeitet daran)",
+    "haken/suchpfad_abruf.py, haken/mehrstufiger_abruf.py (nur gelesen)"
+  ]
+}

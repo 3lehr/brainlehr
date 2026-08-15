@@ -45,10 +45,19 @@ import knowledge_recall_hook as hook  # noqa: E402
 CORPUS = SHARED_KNOWLEDGE / "runs/pruefkorpus.jsonl"
 RESULT = SHARED_KNOWLEDGE / "runs/messlauf_abrufguete.json"
 
+# KNOWLEDGE_SUCHPFAD_ABRUF: "0" in jedem Zustand seit 2026-08-15 (Befund
+# Aufgabe 71/Messung messung_aufgabe71_45_gegen_33). Seit Commit b52856b
+# (2026-08-09, "Suchpfad EIN") ist SUCHPFAD_ABRUF modulweit Vorgabe True --
+# knowledge_recall_hook.query() nimmt dann den Suchpfad-Zweig und kehrt VOR
+# der ENSEMBLE_PFLICHT-Abfrage zurueck (haken/knowledge_recall_hook.py, Zeile
+# ~1106-1142). Ohne diese Zeile hier vergleichen B und C denselben Zweig --
+# ENSEMBLE_PFLICHT wirkt nie, B und C werden bit-identisch. Erzwingt hier den
+# alten, von ENSEMBLE_PFLICHT tatsaechlich gesteuerten Zweig, damit die drei
+# Zustaende wieder das messen, was ihr Name verspricht.
 STATES = {
-    "A_beide_aus":              {"KNOWLEDGE_ZWEITER_KANAL": "0", "KNOWLEDGE_ENSEMBLE_PFLICHT": "0"},
-    "B_2Kanal_an_Pflicht_aus":  {"KNOWLEDGE_ZWEITER_KANAL": "1", "KNOWLEDGE_ENSEMBLE_PFLICHT": "0"},
-    "C_beide_an":               {"KNOWLEDGE_ZWEITER_KANAL": "1", "KNOWLEDGE_ENSEMBLE_PFLICHT": "1"},
+    "A_beide_aus":              {"KNOWLEDGE_ZWEITER_KANAL": "0", "KNOWLEDGE_ENSEMBLE_PFLICHT": "0", "KNOWLEDGE_SUCHPFAD_ABRUF": "0"},
+    "B_2Kanal_an_Pflicht_aus":  {"KNOWLEDGE_ZWEITER_KANAL": "1", "KNOWLEDGE_ENSEMBLE_PFLICHT": "0", "KNOWLEDGE_SUCHPFAD_ABRUF": "0"},
+    "C_beide_an":               {"KNOWLEDGE_ZWEITER_KANAL": "1", "KNOWLEDGE_ENSEMBLE_PFLICHT": "1", "KNOWLEDGE_SUCHPFAD_ABRUF": "0"},
 }
 
 
