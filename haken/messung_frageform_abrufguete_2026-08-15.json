@@ -1,0 +1,32 @@
+{
+  "ts": "2026-08-15T09:51:21.525861+00:00",
+  "aufgabe": 75,
+  "struktur_auftraege_jsonl": {
+    "gesamt_zeilen": 1986,
+    "eindeutige_texte": 1730,
+    "frage": {
+      "n": 609,
+      "anteil_an_eindeutigen": 0.352,
+      "pfad_prozent": 8.7,
+      "kennung_prozent": 0.2
+    },
+    "auftrag": {
+      "n": 1121,
+      "anteil_an_eindeutigen": 0.648,
+      "pfad_prozent": 14.2,
+      "kennung_prozent": 2.1
+    }
+  },
+  "trefferguete_pruefkorpus_zustand_C": {
+    "frage": {
+      "n": 0,
+      "treffer": 0,
+      "trefferguete_prozent": null
+    },
+    "auftrag": {
+      "n": 35,
+      "treffer": 1,
+      "trefferguete_prozent": 2.9
+    }
+  }
+}
