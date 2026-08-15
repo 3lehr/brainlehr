@@ -1,0 +1,203 @@
+{
+ "verfahren_hinweis": "Diese Datei traegt das Verfahren, nicht nur das Ergebnis -- siehe Felder *_verfahren.",
+ "ausgangsbasis": {
+  "referenz_facts_datei": "runs/regelbefolgung_2026-08-15T134547+0200.json",
+  "referenz_zahl_kein_abschnitt": 490,
+  "live_nachmessung": {
+   "zeitpunkt": "2026-08-15T14:16:00+0200",
+   "quelle": "mcp__knowledge__lesson_query type=error/antipattern status=active, max_results=1000",
+   "gefunden_error_plus_antipattern_aktiv": 575,
+   "abweichung_zur_facts_datei_572": "+3 -- vermutlich seit 13:45 neu erfasste Lehren, nicht geprueft welche einzeln (waere ein eigener Agenten-Lauf)"
+  },
+  "ABWEICHUNG_METHODE": "Die facts-Datei speichert keine ID-Liste der 490 \"kein_abschnitt_zustaendig\" -- nur Zaehlwerte je Abschnitt und die Stichwortlisten. Der genaue Textbereich, den die Original-Messung durchsucht hat (nur description? description+root_cause+resolution+prevention?), ist NICHT dokumentiert. Eigene Nachbildung mit demselben Stichwortverfahren (aus den gespeicherten stichwortlisten) auf VOLLTEXT (description+root_cause+resolution+prevention, lowercase, Teilstring) ergab 117 eindeutig / 15 unsicher / 443 kein_abschnitt_zustaendig -- nicht 77/5/490. Bei Beschraenkung auf nur description: 59/4/512. Das zeigt: die Stichwortzuordnung ist stark textbereich-abhaengig, und der Nenner der Originalmessung ist im Nachhinein nicht exakt reproduzierbar. Fuer Messung 1-3 unten wurde die Volltext-Variante (443, naeher an 490 als 512) als Arbeitsmenge verwendet, mit dieser Abweichung ausdruecklich benannt statt verschwiegen.",
+  "verwendete_arbeitsmenge_n": 443
+ },
+ "messung_1_verdeckte_wiederholungen": {
+  "verfahren": "Fuer alle 443 Arbeitsmenge-IDs Vektor aus knowledge_embeddings (kind=lesson, Modell bge-m3@ctx2048, erste passende Zeile je ref_id -- Projektmehrfachzeilen tragen denselben Vektor) gelesen ueber kern/speicher.lesen() (read-only) + kern/embeddings.cosine_similarity. Alle 443 hatten einen Vektor (0 fehlend). Paarweise Kosinus-Aehnlichkeit ueber alle 97903 Paare berechnet, dann Single-Linkage-Clustering (Union-Find) bei zwei Schwellen.",
+  "schwellenwahl": "0,65 ist der im Projekt gemessene und dokumentierte Wert fuer \"relevanter Treffer\" (CLAUDE.md: \"heute gilt die Schwelle 0,65 fuer beides\", Erhebung 2026-08-08). Bei dieser Schwelle kollabiert das Single-Linkage-Clustering jedoch zu EINEM Riesencluster aus 298 der 443 IDs (Kettenbildung: A-B ueber 0,65, B-C ueber 0,65, aber A-C weit darunter -- die Kette verbindet trotzdem). Das ist ein Artefakt des Verfahrens (Single-Linkage), keine Aussage ueber 298 tatsaechliche Wiederholungen -- deshalb NICHT als Ergebnis verwendet. Bei 0,75 (99.-Perzentil-Bereich der gemessenen Verteilung: p99=0,643, p99.5=0,662, p99.9=0,705 -- 0,75 liegt darueber) bleiben die Cluster klein und bei Stichprobe inhaltlich plausibel als Wiederholung/Naehe. 0,75 ist die berichtete Zahl unten; 0,65 wird als Nebenbefund (Kettenbildung) genannt.",
+  "schwelle_075": {
+   "n_paare_ueber_schwelle": 21,
+   "n_cluster_groesse_gt_1": 13,
+   "ids_in_clustern": 31,
+   "singletons": 412,
+   "groesste_cluster": [
+    {
+     "groesse": 4,
+     "ids": [
+      "L-47e586",
+      "L-a7043b",
+      "L-26308d",
+      "L-3b7506"
+     ],
+     "beispiele": {
+      "L-47e586": "TestFlight-Upload von WohlAir gemeldet als \"UPLOAD SUCCEEDED with no errors\" samt Delivery-UUID — der Build tauchte in App Store Connect NIE auf. Ursache: Die B",
+      "L-a7043b": "KORREKTUR ZU L-47e586 — die dortige Diagnose war falsch. Behauptet wurde: Ein WohlAir-Upload sei wegen doppelter Build-Nummer lautlos verworfen worden. Tatsaech",
+      "L-26308d": "wohlair lieferte über Monate das Flutter-Standardlogo als App-Icon nach TestFlight aus, obwohl ein eigenes Icon existierte. Ursache: In `pubspec.yaml` stand unt",
+      "L-3b7506": "TestFlight-Upload via fastlane `upload_to_testflight` meldete \"Successfully uploaded the new binary to App Store Connect\", aber der Build erschien danach 25+ Mi"
+     }
+    },
+    {
+     "groesse": 4,
+     "ids": [
+      "L-32740b",
+      "L-7de10a",
+      "L-bdf569",
+      "L-b94891"
+     ],
+     "beispiele": {
+      "L-32740b": "Normkonflikt ungeloest: /methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context-in-der (Rang 3) <-> /methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-kn",
+      "L-7de10a": "Normkonflikt ungeloest: /methodik/adr-bestand-hub-docs-adr/adr-015-multi-app-knowledge (Rang 3) <-> /methodik/adr-bestand-hub-docs-adr/adr-016-multi-app-context",
+      "L-bdf569": "Normkonflikt ungeloest: /methodik/direktiven-hub-claude-md/den-betreiber-korrigieren-seit-2026-08 (Rang 2) <-> /methodik/direktiven-hub-claude-md/modellverhalte",
+      "L-b94891": "Normkonflikt ungeloest: /methodik/direktiven-hub-claude-md/modellverhalten-opus-5-sonnet-5-seit (Rang 2) <-> /methodik/direktiven-hub-claude-md/den-betreiber-ko"
+     }
+    },
+    {
+     "groesse": 3,
+     "ids": [
+      "L-47a196",
+      "L-87532c",
+      "L-40b5ab"
+     ],
+     "beispiele": {
+      "L-47a196": "Ein Melder nannte den richtigen Befund und schickte trotzdem zur falschen Abhilfe, weil er den EIGENTUEMER des Fundes nicht nennt. brainlehr, 2026-08-14: `haken",
+      "L-87532c": "Ein Melder fuer parallele Sitzungen gab Entwarnung, waehrend eine fremde Sitzung dieselbe Datei umbaute -- weil seine Datenquelle an EINEN Klienten gebunden ist",
+      "L-40b5ab": "Ein Melder sollte warnen, wenn zwei Sitzungen sich in die Quere kommen, und verglich dafuer das Arbeitsverzeichnis (cwd) beider Sitzungen. Er beantwortet damit "
+     }
+    },
+    {
+     "groesse": 2,
+     "ids": [
+      "L-517314",
+      "L-2fea20"
+     ],
+     "beispiele": {
+      "L-517314": "`pod install` bricht unter CocoaPods 1.16.2 mit Ruby 4.0 mit `Encoding::CompatibilityError` ab, wenn die Umgebung keine UTF-8-Locale setzt -- was in einer nicht",
+      "L-2fea20": "fahrtenbuch iOS: fastlane `sh`-Aufrufe vererben LANG/LC_ALL nicht an den intern gestarteten `flutter build ipa`-Unterprozess, obwohl beim `fastlane`-Aufruf selb"
+     }
+    },
+    {
+     "groesse": 2,
+     "ids": [
+      "L-3cb7c3",
+      "L-96db3e"
+     ],
+     "beispiele": {
+      "L-3cb7c3": "brainlehr kann sich nicht selbst in Betrieb nehmen. Erstmals an einem fremden Ort gefahren (2026-08-06, /tmp/brainlehr-fremdort, leere Datenbank, fremdes Harnes",
+      "L-96db3e": "brainlehr war nicht installierbar, ohne dass es irgendwo aufgefallen waere: eine Erstanlage an einem leeren Ort trug 2 Trigger, 6 Tabellen und 2 Spalten weniger"
+     }
+    },
+    {
+     "groesse": 2,
+     "ids": [
+      "L-83fa36",
+      "L-37c783"
+     ],
+     "beispiele": {
+      "L-83fa36": "`git stash push -- <pfad> -m \"nachricht\"` in falscher Reihenfolge (Nachricht NACH `--`) macht `-m \"...\"` selbst zu einem Pathspec -- Git meldet \"did not match a",
+      "L-37c783": "`git stash` / `git stash pop` in einem Monorepo mit vielen Worktrees (hub/shared-knowledge) stashte und verlor kurzzeitig eigene UND fremde uncommittete Aenderu"
+     }
+    }
+   ]
+  },
+  "schwelle_065_nebenbefund_kettenbildung": {
+   "n_paare_ueber_schwelle": 750,
+   "groesster_cluster_groesse": 298,
+   "einordnung": "Kettenbildungsartefakt des Single-Linkage-Verfahrens bei dieser Schwelle -- nicht als 298 Wiederholungen zu lesen."
+  },
+  "zweifelsfall": {
+   "fall": "L-47e586 <-> L-a7043b, Kosinus 0,8305 (ueber Schwelle).",
+   "befund": "L-a7043b beginnt woertlich \"KORREKTUR ZU L-47e586 -- die dortige Diagnose war falsch.\" Beide beschreiben denselben TestFlight-Upload-Vorfall, aber NICHT denselben Fehler: L-47e586 behauptet einen lautlos verworfenen Upload wegen doppelter Build-Nummer, L-a7043b widerlegt genau das (Upload kam an, war beim Nachsehen nur noch nicht sichtbar).",
+   "entscheidung": "KEINE verdeckte Wiederholung im Sinne von \"gleicher Fehler, dreimal erfasst\" -- eine Korrektur-Relation ist etwas anderes als eine same_as-Wiederholung, auch wenn die Embedding-Aehnlichkeit hoch ist (beide Texte teilen Thema/Vokabular). Das Verfahren (reine Vektor-Aehnlichkeit) unterscheidet Wiederholung von Korrektur NICHT -- das ist eine Grenze der Methode, keine Grenze des Einzelfalls. Beide IDs bleiben in der Clustergroesse gezaehlt (Methodentreue), aber diese Einordnung zeigt: nicht jedes Clustermitglied ist eine echte Wiederholung."
+  },
+  "echtes_beispiel_bestaetigt": {
+   "fall": "L-32740b <-> L-7de10a, Kosinus im Cluster.",
+   "befund": "Beide melden denselben Normkonflikt (ADR-016 vs ADR-015), einmal von jeder Seite aus benannt -- inhaltlich derselbe Fund, zweimal erfasst.",
+   "entscheidung": "Verdeckte Wiederholung im Sinn der Frage -- same_as haette hier gegriffen, wurde aber nicht gesetzt (kein Eingriff in dieser Messung)."
+  }
+ },
+ "messung_2_vorgang_statt_regelabschnitt": {
+  "schrittliste_woertlich_vor_zuordnung_definiert": [
+   "vor_dem_committen",
+   "beim_verfassen_eines_auftrags",
+   "vor_dem_delegieren_an_einen_agenten",
+   "vor_einer_messung",
+   "beim_auswerten_einer_messung",
+   "vor_einer_veroeffentlichung",
+   "beim_schreiben_eines_statusdokuments",
+   "beim_anlegen_eines_tests",
+   "beim_aendern_eines_schemas",
+   "kein_schritt_zuordenbar"
+  ],
+  "verfahren": "Fuer jede der 443 Arbeitsmenge-Lehren Volltext (description+root_cause+resolution+prevention, lowercase) gegen Stichwortlisten je Schritt geprueft, in der oben festgelegten Reihenfolge (erster Treffer gewinnt). Kein Treffer in irgendeiner Liste -> kein_schritt_zuordenbar.",
+  "verteilung": {
+   "vor_dem_committen": 31,
+   "beim_verfassen_eines_auftrags": 6,
+   "vor_dem_delegieren_an_einen_agenten": 54,
+   "vor_einer_messung": 6,
+   "beim_auswerten_einer_messung": 36,
+   "vor_einer_veroeffentlichung": 30,
+   "beim_schreiben_eines_statusdokuments": 8,
+   "beim_anlegen_eines_tests": 18,
+   "beim_aendern_eines_schemas": 11,
+   "kein_schritt_zuordenbar": 243
+  },
+  "zuordnungsquote": 0.4515,
+  "zweifelsfall": {
+   "faelle": [
+    "L-108c3d",
+    "L-324ed9"
+   ],
+   "befund": "Beide beschreiben denselben Mechanismus: parallel arbeitende Agenten committen waehrend eines laufenden Messlaufs in denselben Code und entwerten ihn dadurch. Das traegt gleichzeitig Merkmale von \"vor dem Committen\" (Ursache: unkoordiniertes Commit), \"vor dem Delegieren an einen Agenten\" (Ursache: keine Dateitrennung/Isolation zugewiesen) und \"beim Auswerten einer Messung\" (Wirkung: Messreihe entwertet).",
+   "entscheidung": "Nach der festgelegten Prioritaetsreihenfolge (committen vor delegieren vor messen) faellt beides unter \"vor_dem_committen\" -- eine andere, gleichermassen vertretbare Reihenfolge haette sie unter \"beim_auswerten_einer_messung\" gezaehlt. Das ist eine Eigenschaft der Zuordnungsregel, nicht der Lehre: Lehren, die einen VORGANG uebergreifend beschreiben (Ursache in Schritt A, Wirkung in Schritt B), werden durch ein Prioritaetsverfahren notwendig einem einzigen Schritt zugeschlagen und unterzaehlen die anderen."
+  }
+ },
+ "messung_3_mechanismus_an_den_groessten_schritten": {
+  "geprueft_gegen": [
+   "/Users/lehrmacbook/.claude/settings.json (User, vollstaendig gelesen)",
+   "/Volumes/daten/Begod2026/brainlehr/.claude/settings.json (Repo, vollstaendig gelesen)"
+  ],
+  "ergebnis_je_schritt": {
+   "vor_dem_delegieren_an_einen_agenten": {
+    "anzahl_lehren": 54,
+    "mechanismus_vorhanden": true,
+    "fundstellen": [
+     "User settings.json PreToolUse matcher=Agent|Task -> hub/scripts/agent_model_guard.py, hub/scripts/agent_reuse_guard_hook.py",
+     "User settings.json PreToolUse matcher=Agent -> brainlehr/haken/auftragshypothese_waechter.py (prueft explizit auf \"eigene Hypothese im Auftragstext\")",
+     "User settings.json SubagentStart -> brainlehr/haken/auftrag_recall_hook.py, mcp_veraltet.py, regelwechsel.py"
+    ]
+   },
+   "beim_auswerten_einer_messung": {
+    "anzahl_lehren": 36,
+    "mechanismus_vorhanden": false,
+    "fundstellen": [
+     "Kein Hook/Matcher in einer der beiden settings.json, der auf Messlauf-Auswertung, Harness/Mock/Fixture-Verzerrung oder Guetezahlen zielt."
+    ]
+   },
+   "vor_dem_committen": {
+    "anzahl_lehren": 31,
+    "mechanismus_vorhanden": true,
+    "fundstellen": [
+     "User settings.json PreToolUse matcher=Bash -> hub/scripts/commit_guard_hook.py (weist blankes git add/commit ab, wenn >1 Agent aktiv -- Docstring nennt exakt die Fehlerklasse \"fremde Datei im eigenen Commit\")",
+     "Repo settings.json PreToolUse matcher=Bash -> brainlehr/haken/stash_guard_hook.py (anderer Fokus: git stash)"
+    ]
+   },
+   "vor_einer_veroeffentlichung": {
+    "anzahl_lehren": 30,
+    "mechanismus_vorhanden": false,
+    "fundstellen": [
+     "hub/scripts/push_guard.py EXISTIERT als Datei, ist aber in KEINER der beiden settings.json als Hook eingetragen (kein PreToolUse-Matcher auf \"git push\").",
+     ".git/hooks/ in diesem Repo enthaelt keinen pre-push-Hook (nur *.sample-Dateien)."
+    ]
+   },
+   "beim_anlegen_eines_tests": {
+    "anzahl_lehren": 18,
+    "mechanismus_vorhanden": false,
+    "fundstellen": [
+     "Kein Hook/Matcher in einer der beiden settings.json, der spezifisch beim Anlegen/Aendern einer Testdatei greift."
+    ]
+   }
+  }
+ },
+ "verzerrung": "Diese 490 (bzw. hier 443 nachgemessene) Lehren sind SELBSTGESCHRIEBEN -- von Agenten und Orchestrator in frueheren Sitzungen erfasst, wenn ihnen ein Fehler AUFGEFALLEN ist. Eine Fehlerklasse, die nie auffiel (weil sie nie beobachtet, nie vom Betreiber gemeldet, oder vom beobachtenden Agenten nicht als lohnend eingestuft wurde), hat null Lehren zu diesem Thema und ist in JEDER Auswertung dieser Datei unsichtbar -- nicht weil sie geloest waere, sondern weil sie nie gemessen wurde. Das gilt fuer alle drei Messungen hier: Cluster, Schrittzuordnung und Mechanismus-Check sagen etwas ueber das, was von den 443 SICHTBAR IST, nichts ueber das, was fehlt. Ein Schritt mit wenigen zugeordneten Lehren kann heissen \"hier laeuft es gut\" oder \"hier faellt niemandem auf, wenn es schiefgeht\" -- die Messung selbst unterscheidet diese beiden nicht.",
+ "keine_aenderung_am_bestand": "Es wurden keine same_as-Verknuepfungen gesetzt, keine Lehre geaendert, kein Mechanismus gebaut."
+}
