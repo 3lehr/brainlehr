@@ -224,7 +224,12 @@ zurückgezogen und in eine Auflage verwandelt:** Wir besitzen beide Seiten, beid
 entstehen aus demselben Baum — also prüft ein Wächter sie gegeneinander und
 fällt, sobald die Darstellung etwas zeigt, was im Blatt nicht steht. Drift wird
 damit messbar statt schleichend.
-`F6a` **Satzweg Baustein-Baum → LaTeX** (`kern/satz.py`). **Fehlte vollständig** —
+`F6a` **Satzweg Baustein-Baum → LaTeX** (`kern/satz.py`). **Gebaut; seine Probe
+lief bis 2026-08-15T06:20:00+0200 nie und war rot** — das Modul stand nicht in
+der Selbsttestliste, und die Maskierungsprobe fragte je Sonderzeichen
+„kommt roh nicht vor", was nach dem Maskieren nicht halten kann (`\#` enthält
+`#`). Beides behoben (`a864845`), Zählprobe 90 → 91. Der Satzweg selbst war
+korrekt; ungeprüft war er trotzdem. Ursprünglich: **Fehlte vollständig** —
 der Spike `spikes/pdf_a3_erechnung/` setzt eine handgeschriebene Datei. Ohne
 diesen Weg gibt es weder Darstellung noch Blatt noch Vergleich. Enthält die
 Maskierung fremden Texts: ein eingelesener Beleg trifft hier auf einen Satzlauf.
