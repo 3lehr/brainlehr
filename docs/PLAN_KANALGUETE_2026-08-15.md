@@ -115,3 +115,58 @@ Nicht „die Trefferquote steigt". Sondern:
 3. Einsprachige Anfragen werden **nicht** schlechter. Werden sie es und es lässt
    sich nicht vermeiden: melden, nicht wegkalibrieren.
 4. Jede Zahl trägt die Knotenzahl mit, gegen die sie erhoben wurde.
+
+---
+
+## Fortschreibung 2026-08-15T21:45:00+0200 — beide Schritte widerlegt
+
+Gemessen gegen **4930 Knoten**, 40 Fälle mit Antwort im Bestand, 40 ohne, 35
+einsprachig (`runs/kanalguete_vorher_schritt1_schritt2_2026-08-15.json`,
+Commit `8508dc46`):
+
+| Stufe | Trefferquote | Falschmeldequote | Einsprachig | Leitfall |
+|---|---|---|---|---|
+| vorher | 39/40 | 40/40 | 4/35 | trifft |
+| Schritt 1 | 39/40 | 40/40 | 4/35 | trifft |
+| Schritt 2 | 37/40 | 40/40 | 2/35 | **trifft nicht** |
+
+**Schritt 1** — kein messbarer Effekt, weder Nutzen noch Schaden.
+**Schritt 2** — verschlechtert alle drei beweglichen Zahlen und verfehlt genau den
+belegten Leitfall, den er beheben sollte. **Nicht aktiviert.** Der Code bleibt
+rückwärtskompatibel und in keinem Aufrufer verdrahtet; die Vorgabe `None` ist
+byte-identisch zur alten Formel.
+
+### Der eigentliche Ertrag war ein Nebenbefund
+
+**Die Falschmeldequote steht bei 40/40 — in jeder Stufe.** Das ist keine
+Eigenschaft der Formel: Das System hat **keine Relevanzschwelle**. Jede Anfrage mit
+mindestens einem Kandidaten gilt als beantwortet; der Zustand *„dazu habe ich
+nichts"* ist nicht ausdrückbar. Keine Umordnung behebt das — dafür braucht es einen
+Abschneidepunkt, und der Plan vom 2026-08-12 hat einen solchen bereits einmal
+verworfen, weil er mit der Spezifität korreliert.
+
+**Das ist die Frage des Betreibers von heute Abend in ihrer schärfsten Form:**
+*„vielleicht gibt es aber auch noch gar nichts zu finden."* Das System kann diese
+Antwort nicht geben.
+
+### Zwei Fehler im Auftrag, beide meine
+
+**Die Tabu-Liste schloss die Stelle ein, an der der Fehler vermutlich sitzt.**
+`knowledge_mcp_server.py` und der Abrufhaken waren gesperrt — in einem davon liegt
+`_fuse_with_keyword_floor()`, ein sättigender Sockel, der dafür sorgt, dass der
+**echte** Suchweg eine Änderung an `rrf_fuse` strukturell gar nicht sieht. Der
+bauende Agent hat das gemeldet statt es zu umgehen und einen eigenen Messpfad
+gebaut; ohne diese Meldung wäre die Messung als Aussage über den Produktivweg
+gelesen worden, den sie nie erreicht hat.
+
+**Und der Entwurf kam aus dem Einzelfall statt aus der Verteilung.** Die Rechnung
+für den belegten deutschen Fall war korrekt — im Mittel schadet sie. Dieselbe
+Klasse wie `L-518fcc`: mit der Zahl angefangen statt mit der Verteilung.
+
+### Was daraus für den nächsten Anlauf folgt
+
+1. **Der Sockel gehört gemessen, nicht die Formel.** Solange `_fuse_with_keyword_floor()`
+   sättigt, ist jede Arbeit an `rrf_fuse` folgenlos für den Produktivweg.
+2. **Die Relevanzschwelle ist die größere Frage.** Ein System, das nie „nichts"
+   sagt, kann seine eigene Trefferquote nicht deuten.
+3. **Vor dem nächsten Entwurf die Verteilung**, nicht die Rechnung eines Falls.
