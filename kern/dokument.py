@@ -165,6 +165,30 @@ def anmerkungen(doc) -> list[Anmerkung]:
     return aus
 
 
+def mitwirkende(doc) -> dict[str, list[str]]:
+    """Wer hat hier gearbeitet -- Anmerkungskennungen je 'mensch' und 'modell'.
+
+    Gesamtplan F5, woertlich: "'modell' kommt in kern/dokument.py nur als Wert
+    in einem Selbsttest vor... das Modell hat dort noch nie gesessen." Diese
+    Funktion ist die Antwort auf genau die Frage, die dort fehlte: nicht "gibt
+    es das Feld", sondern "kann irgendjemand am Dokument selbst nachlesen, wer
+    beigetragen hat".
+
+    DIE UNTERSCHEIDUNG SITZT AN DER ANMERKUNG (`Anmerkung.von_wem`), NICHT AN
+    EINER EIGENEN TEILNEHMERKENNUNG UND NICHT AN EINEM AUSWEIS. Eine CRDT-
+    Teilnehmerkennung (`kern/teilnehmer.py`) ist nur eine Zahl ohne Bedeutung --
+    jeder Klient bekommt irgendeine, ein Modell-Klient ist darin nicht von
+    einem Menschen zu unterscheiden. Ein Ausweis fuer die KI ist laut ADR-010
+    ausdruecklich NICHT gebaut ("die Naht fuer spaeter, wird heute nicht
+    gebaut"). Der Anker ist also nicht die zweitbeste Wahl, sondern die
+    einzige, die heute etwas trägt.
+    """
+    aus: dict[str, list[str]] = {"mensch": [], "modell": []}
+    for a in anmerkungen(doc):
+        aus[a.von_wem].append(a.kennung)
+    return aus
+
+
 def _finde(doc, kennung: str):
     liste = _liste(doc, ANMERKUNGEN)
     for i, eintrag in enumerate(liste.to_py()):
@@ -361,13 +385,50 @@ def _selftest() -> int:
     assert a1 in verwaist_jetzt, "Anmerkung muss verwaisen statt auf den gleichen Text zu springen"
     assert a2 not in verwaist_jetzt
 
-    # Die Teilnehmerkennung bleibt unter der Schranke -- auch hier.
+    # Die Teilnehmerkennung bleibt unter der Schranke -- auch hier. Grenzwert
+    # BEIDSEITIG: 2**32-1 traegt (Swift-Seite schneidet erst DAHINTER ab),
+    # 2**32 faellt -- unsere Vergabe LAESST das Verdoppeln also gar nicht zu,
+    # statt es nur zu melden (ADR-010, L-44dc9f).
+    assert leeres_dokument(2**32 - 1).client_id == 2**32 - 1
     try:
         leeres_dokument(2**32)
     except KennungsFehler:
         pass
     else:
         raise AssertionError("Kennung ueber 2^32-1 haette fallen muessen")
+
+    # --- Mensch UND Modell am selben Dokument, gleichzeitig, unterscheidbar --
+    # (Gesamtplan F5: "das Modell hat dort noch nie gesessen" -- ROT war vor
+    # `mitwirkende()`: es gab keine Stelle im Code, die diese Frage
+    # beantwortete, nur der freie Blick in jede einzelne Anmerkung.)
+    von_mensch = leeres_dokument()
+    an_stelle = baustein_anhaengen(von_mensch, "absatz", "Ein Satz mit einem Fehler drin.")
+    von_modell = leeres_dokument(neue_teilnehmerkennung())
+    von_modell.apply_update(von_mensch.get_update())   # beide sehen denselben Baustein
+
+    a_mensch = anmerkung_setzen(von_mensch, Anker(baustein=an_stelle, suchtext="Fehler"),
+                                "das muss anders klingen", "inhalt", "mensch")
+    a_modell = anmerkung_setzen(von_modell, Anker(baustein=an_stelle, suchtext="Fehler"),
+                                "Tippfehler: 'drin' -> 'darin'.", "tippfehler", "modell")
+
+    zusammen = leeres_dokument()
+    zusammen.apply_update(von_mensch.get_update())
+    zusammen.apply_update(von_modell.get_update())
+
+    wer = mitwirkende(zusammen)
+    assert wer["mensch"] == [a_mensch], wer
+    assert wer["modell"] == [a_modell], wer
+    nach_kennung = {a.kennung: a for a in anmerkungen(zusammen)}
+    assert nach_kennung[a_modell].darf_automatisch is True    # tippfehler
+    assert nach_kennung[a_mensch].darf_automatisch is False   # inhalt
+
+    # Gegenprobe: eine Anmerkung des Modells, die der Mensch VERWIRFT, bleibt
+    # im Verlauf sichtbar -- kein spurloses Verschwinden.
+    zustand_setzen(zusammen, a_modell, "abgelehnt")
+    nach_ablehnung = {a.kennung: a for a in anmerkungen(zusammen)}[a_modell]
+    assert nach_ablehnung.zustand == "abgelehnt"
+    assert nach_ablehnung.verlauf == ["offen->abgelehnt"]
+    assert a_modell in mitwirkende(zusammen)["modell"], "verworfen ist nicht verschwunden"
 
     # --- Verschachtelung (ADR-019 Entscheidung 1) ---------------------------
     # ROT vor dieser Aenderung: es gab kein `eltern`-Feld, ein Kind-Baustein

@@ -463,6 +463,30 @@ async def _selftest_async() -> int:
             assert drueben[0].anker.baustein == stelle
             assert dok.verwaiste(leser) == [], "der Baustein kam mit, also nichts verwaist"
 
+            # Und jetzt sitzt das MODELL hier wirklich zum ersten Mal -- ueber
+            # denselben Dienst, nicht nur als Wert in einem Selbsttest
+            # (Gesamtplan F5). Verbindung E haengt eine EIGENE Anmerkung an,
+            # von_wem='modell', und schickt sie ueber den Dienst zurueck an D.
+            modell_merk = dok.anmerkung_setzen(
+                leser, Anker(baustein=stelle, suchtext="Abbildung 1"),
+                "Alternativtext fehlt fuer die Sprachausgabe.", "darstellung", "modell")
+            await e.send(_rahmen("update", daten=leser.get_update()))
+
+            schreiber.apply_update(_daten(await _empfang(d, "Anmerkung des Modells")))
+            wer = dok.mitwirkende(schreiber)
+            assert wer["mensch"] == [merk], wer
+            assert wer["modell"] == [modell_merk], wer
+
+            # Gegenprobe: der Mensch verwirft den Vorschlag des Modells -- der
+            # verworfene Zustand bleibt sichtbar, verschwindet nicht spurlos.
+            assert dok.zustand_setzen(schreiber, modell_merk, "abgelehnt") == "abgelehnt"
+            await d.send(_rahmen("update", daten=schreiber.get_update()))
+            leser.apply_update(_daten(await _empfang(e, "Ablehnung durch den Menschen")))
+            nach_ablehnung = {x.kennung: x for x in dok.anmerkungen(leser)}[modell_merk]
+            assert nach_ablehnung.zustand == "abgelehnt"
+            assert nach_ablehnung.verlauf == ["offen->abgelehnt"]
+            assert modell_merk in dok.mitwirkende(leser)["modell"], "verworfen ist nicht verschwunden"
+
         # Negativfall: Unbekanntes wird benannt, nicht verschluckt. Auf einer
         # EIGENEN Verbindung -- eine, die schon im Raum sitzt, bekommt zwischen
         # Frage und Antwort die Broadcasts der anderen, und dann prueft der Fall

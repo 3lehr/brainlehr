@@ -18,19 +18,24 @@ from dokument import (  # noqa: E402
     Anker,
     _liste,
     anmerkung_setzen,
+    anmerkungen,
     baustein_anhaengen,
     bausteine,
     bausteine_baum,
     fassungen,
     ist_veroeffentlicht,
     leeres_dokument,
+    mitwirkende,
     neue_kennung,
     sprache,
     sprache_setzen,
     verwaiste,
     veroeffentlichen,
     veroeffentlichungsstand,
+    zustand_setzen,
 )
+from teilnehmer import KennungsFehler
+from teilnehmer import neue_kennung as neue_teilnehmerkennung
 
 
 # --------------------------------------------------------------- Verschachtelung
@@ -177,3 +182,70 @@ def test_zweite_veroeffentlichung_haengt_an_ueberschreibt_nicht():
     veroeffentlichen(doc, "gamlehr", jetzt="2026-08-15T10:00:00Z")
     veroeffentlichen(doc, "gamlehr", jetzt="2026-08-15T11:00:00Z")
     assert len(fassungen(doc)) == 2
+
+
+# --------------------------------------------------------------- Mensch UND Modell
+#
+# Gesamtplan F5, woertlich: "'modell' kommt in kern/dokument.py nur als Wert
+# in einem Selbsttest vor... das Modell hat dort noch nie gesessen." Der
+# gruene `test_zwei_teilnehmer_tippen_gleichzeitig` (test_walkthrough_
+# dokumentfenster.py) belegt "mehrere Teilnehmer gleichzeitig" -- NICHT
+# "Mensch und Modell am selben Dokument, distinguishable". Die drei Tests
+# unten pruefen genau das und waren ROT, bevor `mitwirkende()` existierte:
+# `ImportError: cannot import name 'mitwirkende'` -- es gab schlicht keine
+# Stelle im Code, die diese Frage beantwortete.
+
+def test_mensch_und_modell_gleichzeitig_am_dokument_unterscheidbar():
+    """Der Kern der Sache: zwei Teilnehmer -- einer 'mensch', einer 'modell' --
+    setzen GLEICHZEITIG eine Anmerkung auf denselben Baustein, jeder ohne den
+    Stand des anderen zu kennen. Nach dem Zusammenfuehren sind beide Beitraege
+    da UND ihrem Urheber eindeutig zuzuordnen -- nicht nur "zwei Anmerkungen
+    liegen im Array", sondern "WER hat WAS beigetragen"."""
+    von_mensch = leeres_dokument()
+    stelle = baustein_anhaengen(von_mensch, "absatz", "Ein Satz mit einem Fehler drin.")
+    von_modell = leeres_dokument(neue_teilnehmerkennung())
+    von_modell.apply_update(von_mensch.get_update())   # beide sehen denselben Baustein
+
+    a_mensch = anmerkung_setzen(von_mensch, Anker(baustein=stelle, suchtext="Fehler"),
+                                "das muss anders klingen", "inhalt", "mensch")
+    a_modell = anmerkung_setzen(von_modell, Anker(baustein=stelle, suchtext="Fehler"),
+                                "Tippfehler: 'drin' -> 'darin'.", "tippfehler", "modell")
+
+    zusammen = leeres_dokument()
+    zusammen.apply_update(von_mensch.get_update())
+    zusammen.apply_update(von_modell.get_update())
+
+    wer = mitwirkende(zusammen)
+    assert wer["mensch"] == [a_mensch], wer
+    assert wer["modell"] == [a_modell], wer
+
+    # Und die Klasse zeigt, was das Modell selbstaendig duerfte -- der Mensch
+    # hat hier keinen Schalter, weil "inhalt" eine schwere Klasse ist.
+    nach_kennung = {a.kennung: a for a in anmerkungen(zusammen)}
+    assert nach_kennung[a_modell].darf_automatisch is True    # tippfehler
+    assert nach_kennung[a_mensch].darf_automatisch is False   # inhalt
+
+
+def test_verworfene_anmerkung_des_modells_bleibt_im_verlauf():
+    """Gegenprobe: eine Anmerkung des Modells, die der Mensch VERWIRFT,
+    verschwindet nicht spurlos -- sie bleibt sichtbar, im Zustand 'abgelehnt',
+    mit dem Uebergang im Verlauf."""
+    doc = leeres_dokument()
+    stelle = baustein_anhaengen(doc, "absatz", "Text.")
+    a = anmerkung_setzen(doc, Anker(baustein=stelle), "Vorschlag des Modells.",
+                         "inhalt", "modell")
+    assert zustand_setzen(doc, a, "abgelehnt") == "abgelehnt"
+
+    eintrag = {x.kennung: x for x in anmerkungen(doc)}[a]
+    assert eintrag.zustand == "abgelehnt"
+    assert eintrag.verlauf == ["offen->abgelehnt"]
+    assert a in mitwirkende(doc)["modell"], "verworfen ist nicht verschwunden"
+
+
+def test_teilnehmerkennung_ueber_der_schranke_ist_ausgeschlossen():
+    """Grenzwert (ADR-010, L-44dc9f): 2**32-1 traegt (Swift schneidet erst
+    DAHINTER ab), 2**32 nicht. Statt das Verdoppeln nur zu MELDEN, laesst
+    unsere Vergabe es gar nicht erst zu -- das ist der bessere Beleg."""
+    assert leeres_dokument(2**32 - 1).client_id == 2**32 - 1
+    with pytest.raises(KennungsFehler):
+        leeres_dokument(2**32)
