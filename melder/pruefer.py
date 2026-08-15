@@ -55,6 +55,7 @@ from pathlib import Path
 sys.path.insert(0, str(_w / "haken"))  # diese Datei liegt IN der Wurzel: eine Ebene, nicht zwei
 import ort  # noqa: E402
 import ausweis  # noqa: E402 -- Auftrag 2026-08-12: Rollenkatalog gegen Lesetabellen
+import vektorstand  # noqa: E402 -- Auftrag 2026-08-15: haengt sonst an keinem Ereignis
 
 # Woran ein KI-Entscheider erkennbar ist. Gleiche Liste wie in der
 # Herkunftsschranke (schema.sql) -- bewusst hier wiederholt und nicht
@@ -578,6 +579,7 @@ def alle(conn: sqlite3.Connection) -> list[dict]:
         platzhalterfuellung(conn, "model",
                             "welches Modell die Aussage geschrieben hat"),
         rollen_ohne_lesetabelle(conn),
+        vektorstand.melden(conn),
     ]
     return [f for f in funde if f] + stumme_spalten(conn)
 
