@@ -791,10 +791,106 @@ def _pruefe_mandat(mandat: dict, eintraege: list[dict]) -> dict:
         raise ValueError(
             f"{von!r} hat selbst nicht: {zuviel}. Ein Mandat kann nur eine "
             "Teilmenge weitergeben, nie mehr als der Mandant hat.")
+    if mandant.get("widerrufen_am"):
+        raise ValueError(f"{von!r} ist widerrufen -- kein neues Mandat auf "
+                         "einen widerrufenen Ausweis.")
     _pruefe_datum(mandat.get("gilt_bis"), "mandat.gilt_bis")
     return {"von": von, "rollen": sorted(gewollt),
             "gegenstand": sorted(gegenstand),
             **({"gilt_bis": mandat["gilt_bis"]} if mandat.get("gilt_bis") else {})}
+
+
+# --- Widerruf ----------------------------------------------------------------
+# ADR-017 verlangt bedingte Ausweise statt Verbote im Code -- ein eingeraeumtes
+# Recht ohne Ruecknahmeweg ist ein Recht auf Dauer. Gemessen (2026-08-15,
+# Knoten 5124a160): es gab weder Sperrfeld noch Sperrliste noch Versionszaehler.
+#
+# BAUFORM: ein Feld AM EINTRAG (`widerrufen_am`), kein Zaehler, keine eigene
+# Sperrliste. Begruendung: Ausweise liegen bereits als Liste von Eintraegen in
+# EINER Datei -- eine zweite Liste ("Sperrliste") waere ein zweiter Ort, an dem
+# derselbe Name stehen kann, und die beiden koennten auseinanderlaufen (die
+# Fehlklasse, gegen die J1/J2 im Plan gerade erst antritt). Ein Feld direkt am
+# Eintrag kann das nicht: es lebt und stirbt mit dem Eintrag selbst.
+#
+# WO GEPRUEFT: an GENAU DEN ZWEI STELLEN, die den Ausweis schon heute
+# auswerten (siehe Modul-Docstring loese_auf(): _abgelaufen(), _mandatsrollen()).
+# 1) loese_auf() -- ein widerrufener Ausweis faellt in denselben unbeglaubigten
+#    Zweig wie ein abgelaufener, KEIN Fehler, KEIN Abbruch (dieselbe Bauform).
+#    Damit ist jede Stelle, die ueber loese_auf() geht (auch anlegen() via
+#    _pruefe_einbuergerung, auch einladen()), automatisch mitgezogen -- ein
+#    Widerrufener kann folglich auch nicht mehr einbuergern oder einladen.
+# 2) _mandatsrollen() -- ein widerrufener MANDANT verliert die geliehene
+#    Vollmacht sofort, weil der Schnitt bei jedem Aufruf neu gebildet wird
+#    (Frage 2: bereits erteilte Mandate eines Widerrufenen wirken nicht mehr).
+#    _pruefe_mandat() haelt zusaetzlich beim ANLEGEN eines neuen Mandats dagegen.
+#
+# UMKEHRBAR (Frage 3): ja, ueber entwiderrufen(). Unumkehrbar waere strenger,
+# aber ein Tippfehler im Namen oder eine verfruehte Entscheidung waere sonst
+# ein Ausfall ohne Rueckweg -- genau das Muster, das die Direktive
+# "Es funktioniert braucht einen Beleg" fuer JEDE Aenderung verlangt: ein Fehler
+# beim Widerrufen selbst muesste sonst korrigiert werden, indem der Ausweis neu
+# angelegt wird (anderes Geheimnis, andere Herkunftskette) statt den einen
+# falschen Schritt zurueckzunehmen.
+def widerrufen(name: str, *, aussteller: str | None = None,
+              pfad: Path | None = None, jetzt: datetime | None = None) -> None:
+    """Zieht einen Ausweis sofort zurueck. Wirkt an beiden Pruefstellen oben,
+    weil beide dasselbe Feld lesen -- keine dritte Stelle noetig.
+
+    WER DARF: dasselbe Recht wie beim Einbuergern ('ausweis:ausstellen') --
+    wer Rechte einraeumen darf, darf sie auch zuruecknehmen. Anders als
+    _pruefe_einbuergerung gibt es HIER keinen Gruendungsakt-Sonderfall: ein
+    Widerruf setzt einen bestehenden Ausweis voraus, die Datei ist also nie
+    leer, wenn diese Funktion sinnvoll aufgerufen wird.
+
+    SELBSTWIDERRUF ist erlaubt und nicht gesondert geprueft -- wie im echten
+    Betrieb kann sich ein Verwalter selbst aussperren. Das Risiko (niemand
+    kann dann mehr entwiderrufen) ist real und bewusst nicht extra
+    verhindert: eine Sperre dagegen wuerfe nur die naechste Frage auf (wer
+    darf DIE uebersteuern?), ohne dass der Auftrag sie verlangt.
+
+    DOPPELTER WIDERRUF ist kein Fehler, sondern wirkungslos (idempotent) --
+    wie ein zweites Mal eine schon verschlossene Tuer abzuschliessen."""
+    pfad = pfad or ausweisdatei()
+    jetzt = jetzt or _jetzt()
+    eintraege = _lies_datei(pfad)
+    ziel = _finde(eintraege, name)
+    if ziel is None:
+        raise ValueError(f"kein Ausweis namens {name!r} vorhanden")
+
+    ausw = loese_auf(geheimnis=aussteller, pfad=pfad, jetzt=jetzt)
+    if not ausw.beglaubigt or bezug_fuer(ausw, "ausweis:ausstellen") is None:
+        raise PermissionError(
+            "Widerruf verlangt einen Ausweis mit 'ausweis:ausstellen' -- "
+            "betreiber oder meldeamt.")
+
+    if ziel.get("widerrufen_am"):
+        return                                    # schon widerrufen
+    ziel["widerrufen_am"] = jetzt.isoformat()
+    ziel["widerrufen_von"] = ausw.protokollname
+    _schreibe_datei(pfad, eintraege)
+
+
+def entwiderrufen(name: str, *, aussteller: str | None = None,
+                  pfad: Path | None = None) -> None:
+    """Macht widerrufen() rueckgaengig. Dieselbe Pruefung, dasselbe Recht --
+    sonst waere die Umkehrung der Umweg um den Widerruf selbst."""
+    pfad = pfad or ausweisdatei()
+    eintraege = _lies_datei(pfad)
+    ziel = _finde(eintraege, name)
+    if ziel is None:
+        raise ValueError(f"kein Ausweis namens {name!r} vorhanden")
+
+    ausw = loese_auf(geheimnis=aussteller, pfad=pfad)
+    if not ausw.beglaubigt or bezug_fuer(ausw, "ausweis:ausstellen") is None:
+        raise PermissionError(
+            "Entwiderruf verlangt einen Ausweis mit 'ausweis:ausstellen' -- "
+            "betreiber oder meldeamt.")
+
+    if not ziel.get("widerrufen_am"):
+        return                                    # war gar nicht widerrufen
+    ziel.pop("widerrufen_am", None)
+    ziel.pop("widerrufen_von", None)
+    _schreibe_datei(pfad, eintraege)
 
 
 # --- Aufloesung ------------------------------------------------------------
@@ -914,7 +1010,8 @@ def _mandatsrollen(eintrag: dict, eintraege: list[dict],
         return (), None
 
     mandant = _finde(eintraege, mandat.get("von", ""))
-    if mandant is None or _abgelaufen(mandant.get("gilt_bis"), jetzt):
+    if (mandant is None or _abgelaufen(mandant.get("gilt_bis"), jetzt)
+            or mandant.get("widerrufen_am")):
         return (), None
     # Keine Weiterdelegation: ein Mandat aus einem Mandat waere nicht mehr
     # pruefbar. anlegen() weist es bereits ab; hier steht die zweite Schranke,
@@ -996,7 +1093,9 @@ def loese_auf(argument: str | None = None, *,
             # auch keinen Fehler, sondern faellt in den unbeglaubigten Zweig.
             # Dieselbe Bauform wie beim falschen Geheimnis: nie mehr Rechte
             # als gar keiner, nie ein Abbruch, der Arbeit unmoeglich macht.
-            if eintrag is not None and not _abgelaufen(eintrag.get("gilt_bis"), jetzt):
+            if (eintrag is not None
+                    and not _abgelaufen(eintrag.get("gilt_bis"), jetzt)
+                    and not eintrag.get("widerrufen_am")):
                 geliehen, von = _mandatsrollen(eintrag, eintraege, jetzt, gegenstand)
                 return Ausweis(
                     name=name,
@@ -1227,7 +1326,97 @@ def _selftest() -> None:
     _selftest_mandat()
     _selftest_einbuergerung()
     _selftest_einladung()
+    _selftest_widerruf()
     print("ausweis.py: Selbsttest gruen")
+
+
+def _selftest_widerruf() -> None:
+    """Belegt ADR-017 / Linie I4: ein Widerruf wirkt sofort, an beiden
+    Pruefstellen, und ist umkehrbar."""
+    import tempfile
+
+    T0 = datetime(2026, 8, 15, 12, 0, 0, tzinfo=timezone.utc)
+    with tempfile.TemporaryDirectory() as tmp:
+        pfad = Path(tmp) / "ausweise.json"
+        G = anlegen("gruender", ["betreiber"], art="mensch", pfad=pfad)
+        _a = lambda *ar, **kw: anlegen(*ar, aussteller=G, **kw)  # noqa: E731
+
+        # --- Gegenprobe 1: unwiderrufen geht durch --------------------------
+        g_h = _a("hausmeister", ["leser"], pfad=pfad)
+        assert loese_auf(geheimnis=g_h, pfad=pfad, jetzt=T0).beglaubigt
+
+        # --- Widerruf: sofort wirksam ----------------------------------------
+        widerrufen("hausmeister", aussteller=G, pfad=pfad, jetzt=T0)
+        a = loese_auf("hausmeister", geheimnis=g_h, pfad=pfad, jetzt=T0)
+        assert not a.beglaubigt and a.rollen == (), \
+            "widerrufener Ausweis beglaubigt weiter"
+        assert a.protokollname == "unbeglaubigt:hausmeister"
+
+        # --- Grenzwert: nicht existierender Ausweis ---------------------------
+        try:
+            widerrufen("gibtsnicht", aussteller=G, pfad=pfad, jetzt=T0)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Widerruf eines Phantoms haette scheitern muessen")
+
+        # --- Grenzwert: doppelter Widerruf ist kein Fehler ---------------------
+        widerrufen("hausmeister", aussteller=G, pfad=pfad, jetzt=T0)
+
+        # --- Grenzwert: Widerruf ohne 'ausweis:ausstellen' schlaegt fehl -------
+        g_l = _a("leser2", ["leser"], pfad=pfad)
+        try:
+            widerrufen("hausmeister", aussteller=g_l, pfad=pfad, jetzt=T0)
+        except PermissionError:
+            pass
+        else:
+            raise AssertionError("ein Leser konnte widerrufen")
+
+        # --- Umkehrbar: entwiderrufen stellt die Beglaubigung wieder her -------
+        entwiderrufen("hausmeister", aussteller=G, pfad=pfad)
+        assert loese_auf(geheimnis=g_h, pfad=pfad, jetzt=T0).beglaubigt, \
+            "entwiderrufen stellte die Beglaubigung nicht wieder her"
+
+        # --- Frage 2: bereits erteilte MANDATE eines Widerrufenen -------------
+        g_chef = _a("chefin", ["schreiber"], art="mensch", pfad=pfad)
+        g_bote = _a("bote", ["leser"], pfad=pfad,
+                        mandat={"von": "chefin", "rollen": ["schreiber"],
+                                "gegenstand": ["abfallwirtschaft"]})
+        a = loese_auf(geheimnis=g_bote, pfad=pfad, jetzt=T0,
+                      gegenstand="abfallwirtschaft")
+        assert set(a.rollen) == {"leser", "schreiber"}, a.rollen  # Gegenprobe
+
+        widerrufen("chefin", aussteller=G, pfad=pfad, jetzt=T0)
+        a = loese_auf(geheimnis=g_bote, pfad=pfad, jetzt=T0,
+                      gegenstand="abfallwirtschaft")
+        assert a.rollen == ("leser",), \
+            f"widerrufener Mandant liess das Mandat weitergelten: {a.rollen}"
+        assert a.beglaubigt, "der Bote selbst ist nicht widerrufen"
+
+        # ein NEUES Mandat auf die widerrufene Chefin scheitert beim Anlegen
+        try:
+            _a("bote2", ["leser"], pfad=pfad,
+                    mandat={"von": "chefin", "rollen": ["schreiber"],
+                            "gegenstand": ["abfallwirtschaft"]})
+        except ValueError as f:
+            assert "widerrufen" in str(f), f
+        else:
+            raise AssertionError("Mandat auf Widerrufene liess sich neu anlegen")
+
+        # --- Frage 3 / Grenzwert: Selbstwiderruf ist erlaubt -------------------
+        g_amt = _a("amtsleiter", ["betreiber"], art="mensch", pfad=pfad)
+        widerrufen("amtsleiter", aussteller=g_amt, pfad=pfad, jetzt=T0)
+        assert not loese_auf(geheimnis=g_amt, pfad=pfad, jetzt=T0).beglaubigt, \
+            "Selbstwiderruf haette wirken muessen"
+
+        # --- Grenzwert: gleichzeitig gesetztes gilt_bis + Widerruf -------------
+        ende = T0 + timedelta(hours=1)
+        g_frist = _a("befristet", ["leser"], pfad=pfad, gilt_bis=ende.isoformat())
+        assert loese_auf(geheimnis=g_frist, pfad=pfad, jetzt=T0).beglaubigt
+        widerrufen("befristet", aussteller=G, pfad=pfad, jetzt=T0)
+        # widerrufen zieht VOR dem Ablauf -- der Ausweis ist schon jetzt tot,
+        # nicht erst bei ende
+        assert not loese_auf(geheimnis=g_frist, pfad=pfad, jetzt=T0).beglaubigt
 
 
 def _selftest_einladung() -> None:
@@ -1592,6 +1781,11 @@ def main() -> int:
                    help="PIN fuer eine Anmeldung erzeugen (einmalig, befristet)")
     p.add_argument("--fuer", metavar="MENSCH",
                    help="wer diese Einladung verantwortet")
+    p.add_argument("--widerrufen", metavar="NAME",
+                   help="Ausweis sofort zurueckziehen -- wirkt auch auf "
+                        "laufende Mandate, die auf ihm stehen")
+    p.add_argument("--entwiderrufen", metavar="NAME",
+                   help="einen Widerruf rueckgaengig machen")
     p.add_argument("--liste", action="store_true")
     p.add_argument("--selftest", action="store_true")
     p.add_argument("--datei", type=Path, default=None)
@@ -1641,6 +1835,17 @@ def main() -> int:
         print("Diese PIN weitergeben (Chat, E-Mail, Zuruf) — der Empfaenger "
               "loest sie mit dem Werkzeug knowledge_anmelden ein und erhaelt\n"
               "dabei sein Geheimnis. Danach ist die PIN verbraucht.")
+        return 0
+
+    if args.widerrufen:
+        widerrufen(args.widerrufen, pfad=pfad)
+        print(f"Ausweis '{args.widerrufen}' widerrufen. Wirkt sofort -- auch "
+              f"auf Mandate, die auf ihm standen.")
+        return 0
+
+    if args.entwiderrufen:
+        entwiderrufen(args.entwiderrufen, pfad=pfad)
+        print(f"Widerruf von '{args.entwiderrufen}' aufgehoben.")
         return 0
 
     if args.liste:
