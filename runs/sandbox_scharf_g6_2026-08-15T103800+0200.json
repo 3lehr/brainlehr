@@ -1,0 +1,49 @@
+{
+  "zeitstempel": "2026-08-15T10:38:00+0200",
+  "auftrag": "O5/Linie G: App-Sandbox am echten Bauweg (app/bauen.sh) scharf schalten, ad-hoc signiert, und messen was dadurch bricht.",
+
+  "rot_vorher": "codesign -dv --entitlements - app/Ausgabe/atelier.app (vor der Aenderung): Signature=adhoc, TeamIdentifier=not set, KEIN Entitlement-Block (keine [Dict]-Ausgabe).",
+  "gruen_nachher": "codesign -dv --entitlements - app/Ausgabe/atelier.app (nach der Aenderung): [Dict] com.apple.security.app-sandbox=true, com.apple.security.network.client=true.",
+
+  "aenderung": [
+    "app/Resources/atelier.entitlements neu: app-sandbox=true, network.client=true. Bewusst KEIN network.server, KEIN files.*.",
+    "app/bauen.sh: codesign-Zeile signiert jetzt mit --entitlements app/Resources/atelier.entitlements statt ohne."
+  ],
+
+  "vier_fragen": {
+    "1_bestand_brainlehr_db": {
+      "antwort": "GEHT, ohne jedes Datei-Entitlement. Die App fasst brainlehr.db nie direkt an -- Quellen/Sitzungen kommen ueber HTTP von berichte/entscheidungen_server.py (127.0.0.1:8799), der als eigener launchd-Dienst AUSSERHALB der Sandbox laeuft (dienst/de.brainlehr.dienst.plist, seit G4/648432e startet die App ihn nicht mehr selbst). Beleg: Quellenliste (Rechtsfaelle) im laufenden, sandbox-signierten Bundle vollstaendig geladen -- Screenshot/AX-Baum nach Start, 209 XCTest-Faelle weiterhin gruen."
+    },
+    "2_ausweisdatei": {
+      "antwort": "GEHT NICHT mit dem gewaehlten Minimalsatz. AusweisDienst.swift ruft pflege/ausweis_start.sh (ausserhalb des Bundles) per Process() auf -- unter aktiver Sandbox blockiert, der Kindprozess erbt die Restriktion. Oberflaeche zeigt ehrlich 'Der Ausweis-Helfer wurde nicht gefunden.' (kein Absturz, kein Rohfehler -- die vorhandene Fehlerbehandlung in AusweisDienst.swift faengt das ab). repoWurzel() selbst findet die Repo-Wurzel weiterhin (reine Existenzpruefungen/Metadaten sind unter der Sandbox nicht blockiert), nur isExecutableFile()/der Start des Skripts scheitert.",
+      "geht_mit_welchem_entitlement": "Nur mit einem Recht, das die Sandbox an dieser Stelle wieder grossteils aufhebt: com.apple.security.temporary-exception.files.absolute-path.read-write auf den Repo-Pfad (deprecated, App-Store-untauglich, de facto Vollzugriff unter diesem Pfad -- die Grenze waere fuer genau die Datei, die sie schuetzen soll, wieder offen). Alternative ohne Entitlement: Helfer+Python-Interpreter-Suche in Contents/Resources buendeln, damit der Aufruf innerhalb des eigenen Containers/Bundles bleibt -- das ist eine Bauform-Aenderung an pflege/ausweis_start.sh-Aufrufkette, nicht am Entitlement, und liegt ausserhalb dieses Auftrags (pflege/ nicht angefasst).",
+      "nicht_hinzugefuegt_weil": "Beides wurde bewusst NICHT eingebaut -- das temporary-exception-Recht waere die teuerste Form von Sicherheitstheater (Entitlement-Block vorhanden, Wirkung an der Stelle null), die Buendelung ist ein eigener Umbau ausserhalb der erlaubten Dateien (app/ + Ergebnisdatei)."
+    },
+    "3_bindung_127_0_0_1": {
+      "ausgehend_network_client": {
+        "antwort": "GEHT, mit com.apple.security.network.client (gesetzt). Ohne dieses Recht waere DienstAufsicht.istErreichbar() blockiert (URLSession-GET nach 127.0.0.1:8799) -- nicht separat gegengemessen, weil die App ohne jedes Netzrecht offensichtlich keine Quellen laden koennte; das positive Ergebnis mit dem Recht ist der Beleg."
+      },
+      "eingehend_network_server": {
+        "frage": "Bindet die App selbst auf 127.0.0.1? Nur im DEBUG-Build: app/Sources/Atelier/Steuerschnittstelle.swift (#if DEBUG) bindet NWListener auf 127.0.0.1:4599 -- die debug-only Kontrollschnittstelle nach Hausregel H6, nicht der produktive Wissensraum-Dienst (der laeuft unsandboxed, siehe Frage 1).",
+        "rot": "Mit dem finalen Entitlement-Satz (kein network.server): curl http://127.0.0.1:4599/gesundheit -> exit 7 (connection refused), kein lsof-Eintrag auf Port 4599 -- kein Bind.",
+        "gruen": "Testweise mit com.apple.security.network.server zusaetzlich signiert (NICHT committet, nur zur Messung): curl http://127.0.0.1:4599/gesundheit -> {\"lebt\":true}, lsof zeigt atelier als LISTEN auf 4599.",
+        "geht_mit_welchem_entitlement": "com.apple.security.network.server -- NICHT in die committete Entitlements-Datei aufgenommen, weil die Schnittstelle nur im Debug-Build existiert (#if DEBUG, im Auslieferungsbau nicht vorhanden) und ein Server-Recht in der ausgelieferten App eine staerkere Grenze waere als noetig. Kosten benannt statt verschwiegen: Wer app/bauen.sh im Debug-Modus fuer eigene Pruefzwecke nutzt, verliert damit testweise die H6-Kontrollschnittstelle unter aktiver Sandbox, bis das Recht bei Bedarf lokal (nicht committet) ergaenzt wird.",
+        "nebenfund": "Steuerschnittstelle.start() meldet einen gescheiterten Bind NICHT: der Fehlerpfad haengt an NWListener.stateUpdateHandler, das nur den .ready-Fall behandelt -- ein .failed-Zustand (wie hier durch die Sandbox) wird still ignoriert, keine Meldung auf stderr, keine Portdatei. Nicht behoben (Steuerschnittstelle.swift nicht in den erlaubten Dateien dieses Auftrags), nur gemessen und hier benannt."
+      }
+    },
+    "4_dienststart": {
+      "antwort": "Betrifft die Sandbox nicht mehr. Seit G4 (648432e, Kommentar in DienstAufsicht.swift) startet die App den Dienst nicht mehr selbst -- DienstAufsicht.start() prueft nur noch Erreichbarkeit per HTTP-GET. Der Dienst laeuft eigenstaendig unter launchd (dienst/de.brainlehr.dienst.plist), ausserhalb jeder App-Sandbox. Kein Entitlement noetig, keins moeglich, das etwas daran aendern wuerde -- die Frage aus dem Auftrag war fuer den Stand VOR G4 gestellt."
+    }
+  },
+
+  "gesamtaussage": "Die Sandbox wirkt nachweislich (nicht nur formal signiert): Quellenzugriff bleibt voll funktionsfaehig ueber den entkoppelten Dienst (Punkt 1+4 durch G4 bereits entschaerft), ausgehendes Netz braucht genau ein Recht (Punkt 3a), die einzige echte Bruchstelle am aktuellen Code ist der externe Ausweis-Helfer-Aufruf (Punkt 2) -- fuer den es keinen Entitlement-Weg gibt, der die Sandbox nicht wieder grossteils aufhebt. Das deckt sich mit der Vorabeinschaetzung in docs/SICHERHEITSFUNDE_2026-08-14.md (O5-Abschnitt 'Kosten'), praezisiert sie aber: nicht der Python-Dienst-START bricht (der ist laengst entkoppelt, G4), sondern der punktuelle Aufruf des Ausweis-Helfers.",
+
+  "bauprobe": "app/bauen.sh: 209 XCTest-Faelle, 0 Fehlschlaege, Bau erfolgreich signiert -- unveraendert gegenueber dem Stand vor dieser Aenderung.",
+
+  "geschriebene_dateien": [
+    "app/Resources/atelier.entitlements (neu)",
+    "app/bauen.sh (Signierzeile geaendert)",
+    "runs/sandbox_scharf_g6_2026-08-15T103800+0200.json (diese Datei)"
+  ],
+  "nicht_veraendert": "kern/, melder/, berichte/, docs/, pflege/, spikes/crdt_sandbox_probe -- alle tabu, nicht angefasst. Kein git add -A, kein git stash, kein Push."
+}

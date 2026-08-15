@@ -104,7 +104,7 @@ $SWIFT "$HIER/Resources/erzeuge_icon.swift" "$ICONSET"
 iconutil -c icns "$ICONSET" -o "$BUENDEL/Contents/Resources/AppIcon.icns"
 rm -rf "$ICONSET"
 
-echo "-- Ad-hoc-Signatur --"
-codesign --force --deep --sign - "$BUENDEL"
+echo "-- Ad-hoc-Signatur (mit Sandbox-Entitlements, O5) --"
+codesign --force --deep --sign - --entitlements "$HIER/Resources/atelier.entitlements" "$BUENDEL"
 
 echo "BUENDEL: $BUENDEL (Fassung $FASSUNG, Bau $BAUNUMMER)"
