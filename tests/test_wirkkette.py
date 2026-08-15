@@ -62,26 +62,28 @@ def test_negativfall_sauber_verdrahteter_mechanismus_bleibt_unerwaehnt(tmp_path)
     assert "melder/sauber.py" not in {f["name"] for f in funde["stufe3"]}
 
 
-def test_stufe2_reales_beispiel_haken_mcp_veraltet():
-    """haken/mcp_veraltet.py haengt seit L-b3eb79 ausschliesslich an
-    UserPromptSubmit -- der belegte Blindgaenger-Fall dieser Aufgabe. Nur
-    LESEND geprueft (haken/ ist fuer diesen Auftrag tabu). Existiert die
-    Datei nicht oder ist ~/.claude/settings.json nicht vorhanden (fremde
-    Maschine), wird der Test uebersprungen statt falsch rot zu laufen."""
-    import pytest
+def test_stufe2_faehigkeit_konstruierter_blindgaenger():
+    """Faehigkeitstest statt Ankerung an einem realen Fall (Ersatz fuer die
+    vormalige Positivkontrolle gegen haken/mcp_veraltet.py -- die brach genau
+    dann, als der reale Blindgaenger in Commit d6ab2505 erfolgreich
+    zusaetzlich an SubagentStart verdrahtet wurde: der Erfolgsfall, nicht der
+    Fehlerfall dieses Tests). ereignisse_von() nimmt pfad/quellen/event_map
+    als reine Parameter entgegen -- ein konstruierter Eingabestand genuegt,
+    kein Griff ins Dateisystem, kein Bruch bei der naechsten Reparatur eines
+    echten Mechanismus."""
+    kandidat = Path("/nicht/vorhanden/blindgaenger.py")
+    event_map = {"UserPromptSubmit": kandidat.name}
+    events = wirkkette.ereignisse_von(kandidat, {}, event_map)
+    assert wirkkette.blind_im_selbstlauf(events)
 
-    einstellungen = Path.home() / ".claude" / "settings.json"
-    ziel = wirkkette.ort.WURZEL / "haken" / "mcp_veraltet.py"
-    if not einstellungen.exists() or not ziel.exists():
-        pytest.skip("fremde Maschine ohne Klient-Einstellungen oder Datei fehlt")
 
-    quellen = wirkkette.ausloeserlos.alle_quellen(wirkkette.ort.WURZEL)
-    event_map = wirkkette._event_map(wirkkette._settings_pfade())
-    events = wirkkette.ereignisse_von(ziel, quellen, event_map)
-    assert wirkkette.blind_im_selbstlauf(events), (
-        f"erwartet: nur UserPromptSubmit, gemessen: {events} -- entweder "
-        "inzwischen zusaetzlich verdrahtet (Befund, kein Testfehler) oder "
-        "die Einstufung ist kaputt")
+def test_stufe2_faehigkeit_zusaetzliches_ereignis_rettet():
+    """Gegenprobe: haengt derselbe konstruierte Kandidat zusaetzlich an einem
+    Ereignis, das auch im Selbstlauf feuert, gilt er nicht mehr als blind."""
+    kandidat = Path("/nicht/vorhanden/blindgaenger.py")
+    event_map = {"UserPromptSubmit": kandidat.name, "PreToolUse": kandidat.name}
+    events = wirkkette.ereignisse_von(kandidat, {}, event_map)
+    assert not wirkkette.blind_im_selbstlauf(events)
 
 
 def test_stufe3_spezifischer_fehlertyp_mit_pass_wird_gefunden(tmp_path):
@@ -99,6 +101,54 @@ def test_stufe3_spezifischer_fehlertyp_mit_pass_wird_gefunden(tmp_path):
         "        pass\n"
     )
     assert wirkkette.meldung_verschluckt(datei)
+
+
+def test_selbstlauf_vermerkt_gegenprobe_beide_richtungen(tmp_path):
+    """Widerspruch aufgeloest (2026-08-15): tests/test_haken_verdrahtung.py
+    liess einen begruendeten SELBSTLAUF-VERMERK schon als Entlastung gelten,
+    melder/wirkkette.py meldete die drei betroffenen Dateien (u.a.
+    haken/knowledge_recall_hook.py) trotzdem weiter als Stufe-2-Blindfleck.
+    Gegenprobe in beide Richtungen, wie von der Aufgabe verlangt: ein
+    tragfaehig begruendeter Vermerk rettet (a), ein leerer/fehlender Vermerk
+    faellt weiterhin durch (b)+(c)."""
+    lang = "SELBSTLAUF-VERMERK: " + ("Begruendung " * 10)  # deutlich ueber Mindestlaenge
+    (tmp_path / "mit_begruendung.py").write_text(f'"""{lang}"""\n')
+    (tmp_path / "nur_stichwort.py").write_text('"""SELBSTLAUF-VERMERK"""\n')
+    (tmp_path / "ohne_vermerk.py").write_text('"""tut etwas."""\n')
+
+    assert wirkkette.selbstlauf_vermerkt(tmp_path / "mit_begruendung.py") is True
+    assert wirkkette.selbstlauf_vermerkt(tmp_path / "nur_stichwort.py") is False, (
+        "das nackte Stichwort ohne Begruendung ist ein Freibrief -- muss "
+        "weiterhin als unbelegt gelten")
+    assert wirkkette.selbstlauf_vermerkt(tmp_path / "ohne_vermerk.py") is False
+
+
+def test_stufe2_vermerkt_wechselt_rubrik_statt_zu_verschwinden(tmp_path):
+    """Ein begruendeter Vermerk darf den Fund nicht aus dem Bericht tilgen
+    (das waere ein Abschaltknopf, L-ed0b73) -- er wechselt nur die Rubrik.
+    Direkt gegen bericht() geprueft, synthetischer Root wie in _selftest()."""
+    import json
+
+    root = tmp_path
+    (root / "schema.sql").write_text("--\n")
+    for ordner in ("melder", "haken", "berichte"):
+        (root / ordner).mkdir()
+
+    (root / "haken" / "begruendet.py").write_text(
+        '"""tut etwas.\n\nSELBSTLAUF-VERMERK: ' + ("Begruendung " * 10) + '"""\n'
+        "print(\"x\")\n"
+    )
+    settings_pfad = root / "settings.json"
+    settings_pfad.write_text(json.dumps({"hooks": {"UserPromptSubmit": [{"hooks": [
+        {"type": "command", "command": "python3 haken/begruendet.py"}]}]}}))
+
+    funde = wirkkette.bericht(root, [settings_pfad, None])
+    assert "haken/begruendet.py" not in {f["name"] for f in funde["stufe2"]}
+    assert "haken/begruendet.py" in {f["name"] for f in funde["stufe2_vermerkt"]}
+
+    text = wirkkette.render(funde)
+    assert "bewusst nur fuer Menschen" in text
+    assert "haken/begruendet.py" in text
 
 
 def test_stufe3_testidiom_erwarteter_wurf_wird_nicht_gemeldet(tmp_path):

@@ -26,6 +26,15 @@ nie. Haengt ein Mechanismus AUSSCHLIESSLICH an diesem Ereignis (kein
 zusaetzliches, kein Cron), ist er im Selbstlauf blind, obwohl "verdrahtet"
 technisch stimmt.
 
+STUFE 2, RUBRIK "bewusst nur fuer Menschen" (Aufgabe wirkkette-6-widerspruch,
+2026-08-15): ein blinder Mechanismus, dessen Modultext einen tragfaehig
+BEGRUENDETEN `SELBSTLAUF-VERMERK` traegt (siehe selbstlauf_vermerkt()),
+zaehlt nicht als Blindfleck, sondern wird in dieser eigenen Rubrik separat
+ausgewiesen -- er verschwindet NICHT aus dem Bericht (das waere ein
+Abschaltknopf), er wechselt nur die Spalte. Ein Vermerk ohne tragfaehige
+Begruendung (blosses Stichwort) rettet NICHT: `tests/test_haken_verdrahtung.py`
+prueft dieselbe Unterscheidung unabhaengig (`_blind_ohne_beleg`).
+
 STUFE 3, bewusst schmal geschnitten: eine `except Exception:`/bare-except
 Huelle um die ganze Ausfuehrung ist HIER SYSTEMWEITE ABSICHT (siehe
 ausloeserlos.py-Kopf: "IMMER exit 0", dasselbe Muster in praktisch jedem
@@ -152,6 +161,52 @@ def blind_im_selbstlauf(events: set[str]) -> bool:
     return bool(events) and events <= EVENTS_BLIND_IM_SELBSTLAUF
 
 
+# Widerspruch aufgeloest (Aufgabe wirkkette-6-widerspruch, 2026-08-15):
+# tests/test_haken_verdrahtung.py laesst einen im Modultext begruendeten
+# SELBSTLAUF-VERMERK als Entlastung gelten (siehe dortige
+# test_blindfleck_gegenprobe_beide_richtungen). Diese Datei tat das bisher
+# NICHT -- sie meldete die drei begruendeten Faelle (haken/suchpfad_abruf.py,
+# berichte/erstverwendung.py, haken/knowledge_recall_hook.py) weiter als
+# Stufe-2-Blindflecke, obwohl der Test sie schon als erledigt behandelte.
+# Einzeln geprueft (nicht als Gruppe uebernommen): alle drei Vermerke tragen
+# eine GEMESSENE oder strukturelle Begruendung (6,0s Realzeitkosten pro
+# Delegation; reine Bibliothek ohne eigenen Aufrufer ausserhalb der
+# Kette; von Hand aufgerufenes Berichtswerkzeug) -- der TEST hatte recht,
+# der MELDER nicht. Der Vermerk verschwindet deshalb NICHT aus dem Bericht
+# (das waere ein Abschaltknopf, L-ed0b73), er wandert in eine eigene Rubrik.
+#
+# Ein Vermerk ist aber kein Freibrief: das nackte Stichwort ohne Begruendung
+# muss weiterhin als Blindfleck durchfallen (siehe SELBSTLAUF_VERMERK_MINDESTLAENGE
+# unten) -- sonst haette dieser Fix dem System beigebracht, wie es seinen
+# eigenen Melder stillstellt.
+SELBSTLAUF_VERMERK_MARKER = "SELBSTLAUF-VERMERK"
+SELBSTLAUF_VERMERK_MINDESTLAENGE = 80  # Zeichen Begruendungstext, nicht nur das Stichwort
+
+
+def selbstlauf_vermerkt(pfad: Path) -> bool:
+    """True, wenn der Modultext einen SELBSTLAUF-VERMERK mit tragfaehiger
+    Begruendung traegt -- nicht nur das blosse Stichwort. Ohne die
+    Mindestlaenge waere jeder Blindfleck durch ein einziges eingestreutes
+    Wort unsichtbar zu machen, ohne dass irgendetwas begruendet wurde."""
+    try:
+        text = pfad.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    idx = text.find(SELBSTLAUF_VERMERK_MARKER)
+    if idx < 0:
+        return False
+    nach_marker = text[idx + len(SELBSTLAUF_VERMERK_MARKER):]
+    # Die Begruendung endet am naechsten Absatzumbruch oder am Ende des
+    # Docstrings -- was zuerst kommt.
+    ende = len(nach_marker)
+    for marke in ("\n\n", '"""'):
+        pos = nach_marker.find(marke)
+        if pos != -1:
+            ende = min(ende, pos)
+    begruendung = nach_marker[:ende].strip(" :\n")
+    return len(begruendung) >= SELBSTLAUF_VERMERK_MINDESTLAENGE
+
+
 def _ist_breiter_fangtyp(typ_knoten: ast.expr) -> bool:
     """Ein Tupel zaehlt als breit, sobald JEDES Element darin breit ist
     (z.B. `except (OSError, json.JSONDecodeError):`) -- ein einzelner
@@ -218,7 +273,7 @@ def bericht(repo_root: Path, settings_pfade: list[Path | None]) -> dict[str, lis
 
     stufe1 = ausloeserlos.bericht(repo_root, settings_pfade)
 
-    stufe2, stufe3 = [], []
+    stufe2, stufe2_vermerkt, stufe3 = [], [], []
     ereignis_memo: dict[Path, set[str]] = {}
     for p in ausloeserlos.kandidaten(repo_root):
         if p.resolve() == DIESE_DATEI:
@@ -228,14 +283,23 @@ def bericht(repo_root: Path, settings_pfade: list[Path | None]) -> dict[str, lis
             continue  # Stufe 1 hat das schon gemeldet
         events = ereignisse_von(p, quellen, event_map, memo=ereignis_memo)
         if blind_im_selbstlauf(events):
-            stufe2.append({
+            eintrag = {
                 "name": str(p.relative_to(repo_root)),
                 "ereignisse": sorted(events),
-            })
+            }
+            # Ein begruendeter SELBSTLAUF-VERMERK ist kein Freibrief, der den
+            # Fund verschwinden laesst -- er verschiebt ihn nur in eine
+            # eigene Rubrik (siehe selbstlauf_vermerkt()-Kopf). Ein leerer
+            # oder fehlender Vermerk faellt weiterhin unter Stufe 2.
+            if selbstlauf_vermerkt(p):
+                stufe2_vermerkt.append(eintrag)
+            else:
+                stufe2.append(eintrag)
         for zeile in meldung_verschluckt(p):
             stufe3.append({"name": str(p.relative_to(repo_root)), "fund": zeile})
 
-    return {"stufe1": stufe1, "stufe2": stufe2, "stufe3": stufe3}
+    return {"stufe1": stufe1, "stufe2": stufe2, "stufe2_vermerkt": stufe2_vermerkt,
+            "stufe3": stufe3}
 
 
 def render(funde: dict[str, list]) -> str:
@@ -254,6 +318,11 @@ def render(funde: dict[str, list]) -> str:
         zeilen.append(f"  Stufe 2 -- verdrahtet, aber blind im Selbstlauf ({len(funde['stufe2'])}):")
         for f in funde["stufe2"]:
             zeilen.append(f"    - {f['name']} (nur {', '.join(f['ereignisse'])})")
+    if funde.get("stufe2_vermerkt"):
+        zeilen.append(f"  Stufe 2, bewusst nur fuer Menschen ({len(funde['stufe2_vermerkt'])}):")
+        for f in funde["stufe2_vermerkt"]:
+            zeilen.append(f"    - {f['name']} (nur {', '.join(f['ereignisse'])}, "
+                          "begruendeter SELBSTLAUF-VERMERK im Modultext)")
     if funde["stufe3"]:
         zeilen.append(f"  Stufe 3 -- Meldung moeglicherweise verschluckt ({len(funde['stufe3'])}):")
         for f in funde["stufe3"]:
@@ -280,22 +349,22 @@ def _selftest() -> None:
     assert blind_im_selbstlauf(set()) is False, "kein Ereignis ist Stufe 1, nicht Stufe 2"
     print("  Stufe-2-Einstufung: Grenzwerte (nur blind / plus ein Ereignis / kein Ereignis): ok")
 
-    # -- Stufe 2 REAL, am tatsaechlichen Bestand (Positivkontrolle):
-    # haken/mcp_veraltet.py haengt seit L-b3eb79 ausschliesslich an
-    # UserPromptSubmit. Nur LESEN (haken/ ist tabu fuer diesen Auftrag).
-    quellen = ausloeserlos.alle_quellen(ort.WURZEL)
-    event_map = _event_map(_settings_pfade())
-    ziel = ort.WURZEL / "haken" / "mcp_veraltet.py"
-    if ziel.exists() and "UserPromptSubmit" in event_map:
-        events = ereignisse_von(ziel, quellen, event_map)
-        assert blind_im_selbstlauf(events), (
-            f"haken/mcp_veraltet.py sollte als blind im Selbstlauf gelten, "
-            f"gemessene Ereignisse: {events} -- entweder wurde es inzwischen "
-            "zusaetzlich verdrahtet (Befund, kein Fehler dieses Tests) oder "
-            "die Einstufung ist kaputt")
-        print("  Stufe 2 am echten Bestand (haken/mcp_veraltet.py, nur gelesen): ok")
-    else:
-        print("  Stufe 2 am echten Bestand: uebersprungen (Datei oder Ereignis fehlt)")
+    # -- Stufe 2 FAEHIGKEIT, nicht an einem realen Fall verankert (Auftrag
+    # 2026-08-15, Nachfolger der Positivkontrolle gegen haken/mcp_veraltet.py
+    # -- die brach genau dann, als der reale Blindgaenger in Commit d6ab2505
+    # erfolgreich zusaetzlich an SubagentStart verdrahtet wurde: der
+    # Erfolgsfall, nicht der Fehlerfall dieses Tests). ereignisse_von() nimmt
+    # pfad/quellen/event_map als reine Parameter entgegen -- kein Griff ins
+    # Dateisystem noetig, ein konstruierter Eingabestand prueft die IDENTISCHE
+    # Logik (Namensabgleich in event_map, Stufe-2-Einstufung), ohne dass die
+    # naechste Reparatur eines echten Mechanismus die Kontrolle wieder reisst.
+    konstruierter_kandidat = Path("/nicht/vorhanden/wirkkette_selftest_blindgaenger.py")
+    event_map_konstruiert = {"UserPromptSubmit": konstruierter_kandidat.name}
+    events = ereignisse_von(konstruierter_kandidat, {}, event_map_konstruiert)
+    assert blind_im_selbstlauf(events), (
+        f"konstruierter Blindgaenger haette als blind im Selbstlauf gelten "
+        f"muessen, gemessene Ereignisse: {events} -- Einstufung kaputt")
+    print("  Stufe 2, Faehigkeit (konstruierter Blindgaenger, kein realer Fall): ok")
 
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
@@ -361,12 +430,35 @@ def _selftest() -> None:
             '"""tut etwas, meldet alles."""\nprint("ok")\n'
         )
 
+        # (h) Widerspruch-Aufloesung, GRUEN: nur UserPromptSubmit, aber ein
+        # SELBSTLAUF-VERMERK mit tragfaehiger Begruendung (>= Mindestlaenge)
+        # -- muss als Stufe-2-Fund verschwinden und stattdessen unter
+        # "bewusst nur fuer Menschen" auftauchen.
+        (root / "haken" / "nur_prompt_mit_vermerk.py").write_text(
+            '"""tut etwas.\n\n'
+            "SELBSTLAUF-VERMERK (Test): bewusst nicht zusaetzlich verdrahtet, "
+            "weil im Selbstlauf ohnehin niemand die Ausgabe liest und die "
+            "Kosten eines zusaetzlichen Laufs den Nutzen uebersteigen -- "
+            'gemessen, kein Verdacht.\n"""\n'
+            "print(\"x\")\n"
+        )
+
+        # (i) Widerspruch-Aufloesung, ROT bleibt ROT: nur UserPromptSubmit,
+        # das Stichwort steht im Text, aber ohne tragfaehige Begruendung
+        # dahinter -- kein Freibrief, siehe HARTE AUFLAGE im Modulkopf.
+        (root / "haken" / "nur_prompt_leerer_vermerk.py").write_text(
+            '"""tut etwas.\n\nSELBSTLAUF-VERMERK: siehe Ticket.\n"""\n'
+            "print(\"x\")\n"
+        )
+
         settings_pfad = root / "settings.json"
         settings_pfad.write_text(json.dumps({
             "hooks": {
                 "UserPromptSubmit": [{"hooks": [
                     {"type": "command", "command": "python3 haken/nur_prompt.py"},
                     {"type": "command", "command": "python3 haken/prompt_und_pretooluse.py"},
+                    {"type": "command", "command": "python3 haken/nur_prompt_mit_vermerk.py"},
+                    {"type": "command", "command": "python3 haken/nur_prompt_leerer_vermerk.py"},
                 ]}],
                 "PreToolUse": [{"hooks": [
                     {"type": "command", "command": "python3 haken/prompt_und_pretooluse.py"},
@@ -388,6 +480,7 @@ def _selftest() -> None:
 
         namen_s1 = {f["name"] for f in funde["stufe1"]}
         namen_s2 = {f["name"] for f in funde["stufe2"]}
+        namen_s2v = {f["name"] for f in funde["stufe2_vermerkt"]}
         namen_s3 = {f["name"] for f in funde["stufe3"]}
 
         assert "melder/vektorstand_vor_reparatur.py" in namen_s1, (
@@ -417,6 +510,20 @@ def _selftest() -> None:
         assert "melder/sauber_verdrahtet.py" not in namen_s2
         assert "melder/sauber_verdrahtet.py" not in namen_s3
         print("  (g) sauber verdrahteter Mechanismus -> auf keiner Stufe gemeldet: ok")
+
+        assert "haken/nur_prompt_mit_vermerk.py" in namen_s2v, (
+            "begruendeter SELBSTLAUF-VERMERK haette die Rubrik wechseln muessen")
+        assert "haken/nur_prompt_mit_vermerk.py" not in namen_s2, (
+            "ein begruendeter Vermerk darf nicht mehr als Blindfleck (Stufe 2) gelten")
+        print("  (h) begruendeter SELBSTLAUF-VERMERK -> Rubrik 'bewusst nur fuer "
+              "Menschen', kein Stufe-2-Fund mehr: ok")
+
+        assert "haken/nur_prompt_leerer_vermerk.py" in namen_s2, (
+            "ein Vermerk ohne tragfaehige Begruendung ist ein Freibrief und "
+            "MUSS weiterhin als Stufe-2-Fund durchfallen")
+        assert "haken/nur_prompt_leerer_vermerk.py" not in namen_s2v
+        print("  (i) Gegenprobe: SELBSTLAUF-VERMERK ohne Begruendung faellt "
+              "weiterhin durch (kein Freibrief): ok")
 
         # Sanity gegen Fehlkonstruktion (L-528f0c): keine Stufe darf die
         # Mehrheit der verdrahteten Kandidaten treffen.
