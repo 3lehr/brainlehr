@@ -1,0 +1,41 @@
+{
+  "erzeugt_am": "2026-08-15T16:30:00+0200",
+  "zweck": "Pruefung, ob Linie D Aufgabe 67 und 42 (docs/PLAN_GESAMT_2026-08-13.md Zeile 191) bereits erledigt sind, bevor nachgebaut wird.",
+  "methode": "melder/plan_bestandsabgleich.py als Vorfilter, danach je Fund: git merge-base --is-ancestor <commit> HEAD, dazugehoerige Testdatei gefahren (rot-vor-gruen entfaellt, da vorbestehende Arbeit, kein eigener Fix).",
+  "ergebnis": {
+    "67": {
+      "status": "war_erledigt",
+      "beleg_commit": "51f1912e172de45e7217ae744f5d27d88fe8428c",
+      "commit_betreff": "fix(brainlehr): Kandidatendiagnose mass den STILLGELEGTEN Abrufweg — 29 von 35 war falsch, 22 sind es",
+      "commit_datum": "2026-08-13T19:54:29+0200",
+      "ist_ancestor_von_head": true,
+      "inhalt": "messungen/kandidatendiagnose.py rief die Verschmelzung selbst nach (mit einer 2026-08-09 stillgelegten Formel) statt haken/suchpfad_abruf.kandidaten aufzurufen. 11 von 35 in_kandidatenliste-Werten waren dadurch falsch (9x false statt true, 2x umgekehrt). Fix laesst die Diagnose den echten Abrufweg aufrufen.",
+      "test_nachgefahren": "python3 -m pytest -q tests/test_kandidatendiagnose.py",
+      "test_ergebnis": "1 passed, 2 xfailed",
+      "geaendert_seit_fix": "keine neuere Aenderung an messungen/kandidatendiagnose.py; heutige Zustands-Reparatur (3bf54fe) betraf kern/messlauf_abrufguete.py, eine andere Datei -- Test bleibt gruen"
+    },
+    "42": {
+      "status": "war_erledigt",
+      "beleg_commit": "f318479f6f6b75de10c4c296f552abeadba745d8",
+      "commit_betreff": "feat(brainlehr): Okkultation ueber die ganze Grundgesamtheit — und die Klasse 'lese' liefert null",
+      "commit_datum": "2026-08-13T17:47:48+0200",
+      "ist_ancestor_von_head": true,
+      "folgecommit": "5c7cb63f (test: Okkultationstests auf das Pflichtfeld umgestellt, plus Ratsche gegen Fail-open) -- ebenfalls Ancestor von HEAD",
+      "inhalt": "Aufgabe 42 = groessere Fallmenge fuer die Okkultation aus docs/PLAN_OKKULTATION_2026-08-12.md: M1 vom Pilotlauf (12 von 45 moeglichen Faellen) auf den VOLLEN Pool (45/45, Vollerhebung statt Stichprobe), M2 auf 20 Faelle, 195 Zellen gesamt. Belegdatei: runs/okkultation_aufgaben_2026-08-13_voll.json (m1_angefragt=45, m1_geliefert=45, m2_angefragt=20, m2_geliefert=20).",
+      "test_nachgefahren": "python3 -m pytest -q tests/test_okkultation.py",
+      "test_ergebnis": "13 passed",
+      "kernbefund_aus_42": "Lieferquote 15/45 gesamt, aber je Klasse extrem ungleich: lese/knoten 0/13 (0,0%), pfad/knoten 10/27 (37,0%), pfad/lehre 6/25 (24,0%). Waere 'lese' gleich wie 'pfad' (30,8%), liegt P(0 von 13)=0,69^13≈0,84% -- kein Zufall. Klasse 'lese' (Ziel wurde in der Sitzung tatsaechlich gelesen) wird vom Abruf NIE geliefert."
+    }
+  },
+  "zielkonflikt_aus_dem_auftrag": {
+    "frage": "Gibt es fuer die A/B/C-Zustaende (A_beide_aus, B_2Kanal_an_Pflicht_aus, C_beide_an) einen Zustand, der sowohl Trefferquote (B: 27/35) als auch Schweigen im Negativfall (C: 0/10 falsches_sprechen) zugleich erreicht?",
+    "bezug_zu_42": "NICHT dieselbe Messachse. Aufgabe 42 (Okkultation) misst MIT/OHNE <knowledge-recall>-Block bei fester Abrufkonfiguration -- eine Ja/Nein-Frage zum Speicher als Ganzes. Der A/B/C-Zielkonflikt misst DREI Kanalschalter-Kombinationen derselben Abrufpipeline (kern/messlauf_abrufguete.py, Grundlage: Aufgabe 68). Das sind zwei verschiedene, orthogonale Versuchsanordnungen -- 42 beantwortet den Zielkonflikt nicht und wurde dafuer auch nicht beauftragt.",
+    "warum_keine_neue_messung_gefahren": "Aufgabe 42 selbst ist als abgeschlossen befundet (siehe oben) und der Auftrag verbietet einen vollen Messlauf in dieser Sitzung (ueber 20 Minuten, faehrt der Betreiber selbst). Der A/B/C-Zielkonflikt ist keine Teilfrage von 42, sondern gehoert -- falls ueberhaupt in Linie D -- zu einer eigenen, im Plan noch nicht vergebenen Aufgabe. Ihn hier ungeplant nachzumessen waere Arbeit ohne Plan-Eintrag (verstoesst gegen 'Plan vor Umsetzung')."
+  },
+  "abnahme": {
+    "67": "war erledigt -- Commit 51f1912e, Test gruen (1 passed, 2 xfailed)",
+    "42": "war erledigt -- Commit f318479f + 5c7cb63f, Test gruen (13 passed), Belegdatei runs/okkultation_aufgaben_2026-08-13_voll.json vorhanden",
+    "zielkonflikt_ab_c": "nicht Teil von 42 -- andere Messachse, keine eigene Plan-Zeile gefunden, deshalb nicht bearbeitet ohne neuen Planeintrag"
+  },
+  "grenze": "Kein Code geaendert. Nur gelesen: docs/PLAN_GESAMT_2026-08-13.md, docs/PLAN_OKKULTATION_2026-08-12.md, docs/PLAN_PARALLEL_2026-08-13.md, git log/show, tests/test_kandidatendiagnose.py, tests/test_okkultation.py (nur ausgefuehrt, nicht editiert). Kein voller Messlauf gefahren. Keine Schwelle gesetzt."
+}
