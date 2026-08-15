@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd-Beschreibung fuer den Wissensraum-Dienst (berichte/entscheidungen_server.py).
+  Ersetzt den bisherigen Weg, bei dem die App den Dienst selbst als
+  Kindprozess startete: der Dienst laeuft jetzt eigenstaendig.
+
+  __REPO_PFAD__ ist ein Platzhalter fuer den absoluten Pfad zur Repo-Wurzel
+  (der Ordner mit VERSION und berichte/). Vor dem Laden ersetzen, siehe
+  dienst/LIESMICH.md fuer die genauen Schritte: dort steht auch, welcher
+  Schritt Verwalterrechte braucht (hier: keiner, solange als LaunchAgent
+  im eigenen Benutzerkonto geladen wird).
+
+  Die Python-Wahl testet mehrere Kandidaten auf die Faehigkeit, "cryptography"
+  zu importieren, kein fest verdrahteter Pfad, gleiches Muster wie
+  pflege/wissensraum_start.sh.
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>de.brainlehr.dienst</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/sh</string>
+		<string>-c</string>
+		<string>for p in /opt/homebrew/bin/python3 /usr/local/bin/python3 /usr/bin/python3; do [ -x "$p" ] &amp;&amp; "$p" -c "import cryptography" 2&gt;/dev/null &amp;&amp; exec "$p" "__REPO_PFAD__/berichte/entscheidungen_server.py" --port 8799; done; echo "Kein Python mit den noetigen Paketen gefunden." >&amp;2; exit 1</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>__REPO_PFAD__</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>StandardOutPath</key>
+	<string>__REPO_PFAD__/dienst/log/dienst.log</string>
+	<key>StandardErrorPath</key>
+	<string>__REPO_PFAD__/dienst/log/dienst.err</string>
+</dict>
+</plist>

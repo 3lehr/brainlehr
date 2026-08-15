@@ -153,7 +153,12 @@ private struct DienstBanner: View {
                 Button("Erneut versuchen") {
                     aufsicht.erneutVersuchen()
                 }
-                .accessibilityHint("Startet den Wissensraum neu.")
+                // Der Knopf startet nichts mehr, seit der Wissensraum
+                // eigenstaendig laeuft -- er sieht nur erneut nach. Ein
+                // Hinweis, der etwas anderes verspricht als der Knopf tut,
+                // ist fuer jemanden, der ihn VORGELESEN bekommt, die einzige
+                // Beschreibung der Schaltflaeche.
+                .accessibilityHint("Sieht erneut nach, ob der Wissensraum bereit ist.")
             }
             .padding()
             .background(.red.opacity(0.12))

@@ -48,3 +48,22 @@ public enum DienstUebergang {
         }
     }
 }
+
+/// Der Satz fuer die Oberflaeche je Zustand -- in Nutzersprache, niemals
+/// Pfad, Port, Prozessname oder Programmiersprache. Seit die App den Dienst
+/// nicht mehr selbst startet (siehe Atelier/DienstAufsicht.swift), heisst der
+/// Weg fuer den Menschen: den Dienst starten (ausserhalb der App), dann
+/// erneut nachsehen.
+public enum DienstMeldung {
+    public static let nichtErreichbar =
+        "Der Wissensraum ist gerade nicht gestartet. Bitte starte ihn, dann kann hier mit \u{201E}Erneut versuchen\u{201C} nachgesehen werden."
+
+    public static func fuer(_ zustand: DienstZustand) -> String? {
+        switch zustand {
+        case .unerwartetBeendet:
+            return nichtErreichbar
+        case .startetGerade, .laeuft, .angehalten:
+            return nil
+        }
+    }
+}
