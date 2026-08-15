@@ -37,6 +37,7 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
 import json
+import logging
 import math
 import os
 import re
@@ -212,7 +213,23 @@ def unpack_embedding(blob: bytes) -> list[float]:
     return list(struct.unpack(f"<{count}f", blob))
 
 
+_logger = logging.getLogger(__name__)
+
+
 def cosine_similarity(a: list[float], b: list[float]) -> float:
+    """0.0 heisst hier zweierlei: "unaehnlich" (Regelfall) oder "nicht
+    vergleichbar" (leerer Vektor, ungleiche Dimension). Der Rueckgabewert
+    bleibt bewusst 0.0 fuer beide Faelle -- die Aufrufer (u.a.
+    knowledge_mcp_server.py, haken/knowledge_recall_hook.py) sortieren und
+    schwellenvergleichen den Rueckgabewert direkt; ein NaN oder eine
+    Ausnahme wuerde das Sortierverhalten bzw. den ganzen Abruf aendern, ohne
+    dass ein Aufrufer das erwartet. Der Dimensions-Sonderfall wird stattdessen
+    ins Log geschrieben, damit er auffindbar bleibt statt lautlos im Ranking
+    zu verschwinden (siehe runs/vektorstand_2026-08-15T111334+0200.json)."""
+    if a and b and len(a) != len(b):
+        _logger.warning(
+            "cosine_similarity: Dimension ungleich (%d != %d) -- 0.0 bedeutet hier "
+            "'nicht vergleichbar', nicht 'unaehnlich'", len(a), len(b))
     if not a or not b or len(a) != len(b):
         return 0.0
     dot = sum(x * y for x, y in zip(a, b))
