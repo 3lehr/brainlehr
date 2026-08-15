@@ -1,10 +1,10 @@
-# STAND brainlehr — 2026-08-14T21:36:26+0200
+# STAND brainlehr — 2026-08-15T05:57:52+0200
 
-**Offen:** Linie H (openlehr als erste Instanz, `docs/PLAN_OPENLEHR_2026-08-14.md`): H2 `classifier.py` an den Belegvertrag, H3 Naht `ingest.py`/`api.py`, H4 Prüfkorpus mit Fallen, H5 Bestandsaufnahme als E2E-Journey. Bindend: H1 war Voraussetzung von H2 und H3.
-Die Lieferform brainlehr → openlehr ist ungeklärt: keine Paketform (kein `pyproject.toml`, kein `kern/__init__.py`, Laden über `sys.path`). Bewusst nicht erfunden.
+**Offen:** H2, H3 und **O1** sind erledigt (H2/H3 in openlehr committet, nichts gepusht). O1: `escHtml()` in `entscheidungen.html`, Test `tests/test_entscheidungen_tooltip_escaping.py` (16/16, vorher 15/16 rot); der volle `pytest`-Lauf über brainlehr stand beim Abschluss noch aus — nachziehen. Vier weitere Funde aus `docs/SICHERHEITSFUNDE_2026-08-14.md` sind unangetastet.
+**I4 entschieden durch Messung:** Ausweise kennen nur `gilt_bis`, keinen Widerruf — er ist zu bauen (Knoten `5124a160`). **G6 teilbelegt:** yswift läuft in der App-Sandbox, aber nur im `.app`-Bündel; gehärtete Laufzeit und Beglaubigung ungemessen (Knoten `fef0cb9d`).
 
-**Nächstes:** H2 — zuerst der Test, der gegen den heutigen Stand rot ist (Regelmenge ohne Fundstelle lädt in `classifier.py` klaglos), dann die 12 Regeln an `kern/belegvertrag.py`.
+**Nächstes:** H4 Prüfkorpus mit Fallen, H5 Bestandsaufnahme als E2E-Journey (H2 vor H10, H6 vor H5s Sortierung). Lieferform brainlehr → openlehr weiterhin ungeklärt: keine Paketform, Laden über `sys.path` — bewusst nicht erfunden.
 
-**Wartet auf dich:** F29 Steuerberater (gibt es einen, darf er die Sachen sehen) · F30 welche Finanzamtsbriefe liegen vor · F31 echter Testkorpus oder erfinden · F19 dürfen Belege fürs Modell das Haus verlassen · dürfen die 22 GB in `../brainlehr-archiv/db-sicherungen-2026-08-14/` weg (unumkehrbar) · #105 · #29 · #101 · #20.
+**Wartet auf dich:** G5 Befehl mit deinem Passwort (eigener Systembenutzer, Bestand und Ausweisdatei auf `0600`) · Name der Steuerdomäne · Domänen-Repo bei GitHub? · Urheberschaft der atelier-Ergebnisse vor der ersten Weitergabe · F29/F30/F31/F19 · dürfen die 22 GB in `../brainlehr-archiv/db-sicherungen-2026-08-14/` weg (unumkehrbar).
 
-**Nicht vergessen:** Startprompt nannte `wiring_check.py` (Dart-only) und 102/40 651 Zeilen — gemessen 128/43 237, im Plan §0 korrigiert (`L-cd1ef0`). Messrohdaten im Zielrepo: `openlehr/docs/openlehr/messung_steuer_{verdrahtung,fachwissen}_2026-08-14.json`, nicht neu messen.
+**Nicht vergessen:** **`kern/domaene.py` bleibt gesperrt** — Wirkung Null muss stehen, bevor dort das erste Mal geschrieben wird (heute 0 Treffer für INSERT/UPDATE/commit, Vorbild `kern/regelpaket.py`). Der Haltepunkt-Haken verlangt die Fähigkeit `/learn`, die es hier nicht gibt — Pflicht direkt über `lesson_record`/`knowledge_add` erfüllen (`L-48ca4d`). Kein Bau an den beiden Dokumentausgaben, solange die Ablösung unbelegt ist.

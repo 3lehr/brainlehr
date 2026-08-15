@@ -1,0 +1,68 @@
+{
+  "zeitstempel": "2026-08-15T05:53:26+0200",
+  "auftrag": "Zwei Messungen fuer Linie I4 (Ausweis-Widerruf) und Linie G6 (CRDT-Rahmenwerk in Sandbox), kein Bau am Bestandscode",
+
+  "frage_1_widerruf": {
+    "frage": "Gibt es fuer kern/ausweis.py einen Weg, einen ausgestellten Ausweis zurueckzunehmen (Sperrliste, Ablaufdatum, Widerrufsfeld, Versionszaehler)? Wird er beim Pruefen tatsaechlich ausgewertet, oder existiert nur das Feld?",
+    "antwort": "Es gibt genau EIN Feld mit Widerrufswirkung: gilt_bis (Ablaufdatum je Ausweis-Eintrag). Es wird tatsaechlich ausgewertet, nicht nur gespeichert -- kern/ausweis.py:loese_auf() prueft bei jeder Aufloesung _abgelaufen(eintrag.get('gilt_bis'), jetzt) (Zeile 999) und faellt bei Ablauf auf den unbeglaubigten Zweig zurueck, ohne Fehler. _abgelaufen() (Zeile 858) behandelt ein kaputtes/unlesbares Datum ebenfalls als abgelaufen, nicht als unbefristet -- also sicher in die falsche Richtung. Dasselbe Feld wird bei Mandaten zweimal geprueft (_mandatsrollen(), Zeile 907 und 917) und bei Einladungs-PINs (einloesen(), Zeile 638). Das Feld ist also kein totes Merkmal.\n\nABER: es gibt KEIN dediziertes Widerrufsfeld, keine Sperrliste, keinen Versionszaehler. Sucht (grep -n 'gilt_bis|sperr|widerruf|Sperr|Widerruf|revoke|version' kern/ausweis.py) findet ausser gilt_bis nur den JSON-Dateiformat-Schluessel 'version': 1 (kein Ausweis-Feld, nur das Dateiformat) und Kommentar-Erwaehnungen von 'gesperrt' im Kontext anderer Module (Werkzeugrechte, Foederation), nicht in ausweis.py selbst.\n\nEIN AUSGESTELLTER AUSWEIS OHNE gilt_bis (der Normalfall -- anlegen() setzt es nur, wenn explizit uebergeben) ist damit HEUTE NICHT WIDERRUFBAR ueber ein Feld. Die CLI (main(), Zeile 1583ff) exponiert --anlegen, --einladen, --liste, --selftest -- kein --sperren, --entziehen oder --widerrufen, und auch kein --gilt-bis-Flag; gilt_bis ist nur programmatisch ueber anlegen(name, rollen, gilt_bis=...) erreichbar, nicht per Kommandozeile.\n\nDe-facto-Widerruf existiert trotzdem auf zwei Wegen, beide ohne eigenen Mechanismus: (a) den Eintrag manuell aus der JSON-Datei entfernen (_lies_datei() liefert nur, was in der Datei steht, Zeile 370-393); (b) erneut anlegen(name, ...) mit demselben Namen aufrufen -- _anlegen_ohne_pruefung() (Zeile 462) filtert den alten Eintrag per Name heraus (Zeile 475: eintraege = [e for e in _lies_datei(pfad) if e.get('name') != name]) und erzeugt einen NEUEN Eintrag mit neuem Zufallsgeheimnis und neuem Hash -- das alte Geheimnis passt danach zu keinem Hash mehr und faellt beim naechsten loese_auf() auf unbeglaubigt zurueck. Das ist aber Ueberschreiben, keine ausgewiesene Widerrufsfunktion, und setzt voraus, dass der Widerrufende 'ausweis:ausstellen' traegt (_pruefe_einbuergerung, Zeile 514).\n\nEinzige echte, physische Sperre bleibt unveraendert das Dateisystem selbst (chown/chmod), wie im Modul-Kommentar bei selbstbedienung_moeglich() (Zeile 330) explizit beschrieben.",
+
+  "fundstellen": [
+    "kern/ausweis.py:999 loese_auf() -- prueft _abgelaufen(eintrag.get('gilt_bis'), jetzt), Rueckfall auf unbeglaubigt bei Ablauf",
+    "kern/ausweis.py:858 _abgelaufen() -- Auswertung des Feldes, unlesbares Datum = abgelaufen",
+    "kern/ausweis.py:907,917 _mandatsrollen() -- gilt_bis auch fuer Mandat und Mandant geprueft",
+    "kern/ausweis.py:638 einloesen() -- gilt_bis fuer Einladungs-PINs",
+    "kern/ausweis.py:416-445 anlegen() -- gilt_bis Parameter, nur programmatisch, keine CLI-Option",
+    "kern/ausweis.py:475 _anlegen_ohne_pruefung() -- Ueberschreiben-per-Name als de-facto Widerruf",
+    "kern/ausweis.py:1583-1663 main()/CLI -- kein --sperren/--entziehen/--widerrufen/--gilt-bis",
+    "kern/ausweis.py:330-367 selbstbedienung_moeglich() -- einzige physische Sperre ist Dateisystemrechte, nicht das Ausweisformat"
+  ],
+
+  "belegkommando": "grep -n \"gilt_bis\\|sperr\\|widerruf\\|Sperr\\|Widerruf\\|revoke\\|version\" kern/ausweis.py; grep -n \"add_argument\\|def main\" kern/ausweis.py",
+
+  "rohausgabe_belegkommando": [
+    "277:`I4` **Bedingte Ausweise statt Verbote** (ADR-017): Rechte an die Identitaet,",
+    "279:pruefen:** ob es fuer Ausweise ueberhaupt einen Widerruf gibt.",
+    "kern/ausweis.py: 858 def _abgelaufen(gilt_bis: str | None, jetzt: datetime) -> bool:",
+    "kern/ausweis.py: 999 if eintrag is not None and not _abgelaufen(eintrag.get(\"gilt_bis\"), jetzt):",
+    "kern/ausweis.py CLI-Flags: --anlegen, --art, --rollen, --einladen, --fuer, --liste, --selftest, --datei -- kein Widerrufs-Flag"
+  ],
+
+  "abweichung_zum_auftrag": "Der Auftrag nennt 'kern/ausweis.py und was daran haengt' -- gemessen wurde ausschliesslich ausweis.py selbst (1663 Zeilen, vollstaendig gelesen bzw. per grep durchsucht). Abhaengige Aufrufer (haken/, melder/) wurden nur auf das Vorkommen von 'widerruf/sperr/revoke' durchsucht, nicht einzeln gelesen -- keiner davon fuegt dem Ausweisformat ein Widerrufsfeld hinzu, alle lesen nur ueber loese_auf()/bezug_fuer()."
+  },
+
+  "frage_2_crdt_sandbox": {
+    "frage": "Laedt das CRDT-Rahmenwerk (Yjs-Familie, yswift/pycrdt gemaess ADR-010) in einer macOS-App-Sandbox tatsaechlich? Bezug: Linie G6 verlangt eine Messung vor Signatur/Hardened-Runtime/Sandbox-Umbau der echten App.",
+    "vorbefund_nachgelesen_nicht_wiederholt": "ADR-010 (docs/adr/ADR-010-dokumentfenster-mehrbenutzer-crdt.md) haelt bereits fest, dass pycrdt (Python) und yswift (Swift, Rust-FFI) UNSIGNIERT laden und rechnen, inkl. bidirektionaler Konvergenz Python<->Swift. Automerge-Python ist dort separat als unbrauchbar gemessen (Doc kennt nur json/merge/obj, kein save/load, merge(Doc) wirft TypeError) -- diese Messung wurde NICHT wiederholt, nur gelesen.",
+    "eigener_aufbau": "Neuer Wegwerf-Spike spikes/crdt_sandbox_probe/ (Package.swift + Sources/Probe/main.swift, API 1:1 aus dem bereits funktionierenden spikes/crdt_pyswift/Sources/Probe/main.swift uebernommen: YDocument(), getOrCreateText, transactSync, insert, getString). Abhaengigkeit yswift ist spike-lokal (SwiftPM-Checkout unter .build/), keine neue Abhaengigkeit im Projekt (app/ bzw. kern/ unveraendert).",
+    "messschritte": [
+      "1. xcrun swift build -c release -> Build complete (8.81s), yswift-Checkout aus Cache, kein Netzfehler.",
+      "2. .build/release/SandboxProbe UNSIGNIERT ausgefuehrt -> stdout 'OK:Hallo Sandbox', Exit 0. Bestaetigt: laedt und rechnet ausserhalb der Sandbox, deckt sich mit ADR-010.",
+      "3. codesign --force -s - --entitlements sandbox.entitlements (com.apple.security.app-sandbox=true) auf das BLANKE CLI-Binary, dann ausgefuehrt -> Exit 133 (SIGTRAP), kein stdout, kein stderr. Diagnose per .ips-Crashlog (~/Library/Logs/DiagnosticReports/SandboxProbe-2026-08-15-055220.ips): EXC_BREAKPOINT in _libsecinit_appsandbox, VOR main(), als dyld-Initialisierer -- also vor jeder Zeile eigenen oder yswift-Codes.",
+      "4. Gegenprobe mit einem trivialen 'print(\"OK:hello\")'-Binary OHNE yswift, identisch signiert -> derselbe Absturz (Exit 133, gleiche Stelle). Damit ist der Absturz in Schritt 3 KEINE Eigenschaft von yswift/CRDT, sondern eine generische macOS-Anforderung: ein blankes CLI-Executable ausserhalb eines .app-Bundles kann die Sandbox-Initialisierung nicht abschliessen, unabhaengig vom Programminhalt.",
+      "5. Minimales .app-Bundle um dasselbe SandboxProbe-Binary gebaut (Info.plist mit CFBundleIdentifier, LSUIElement=true), mit demselben Entitlement signiert, per 'open -W -a ... --stdout ... --stderr ...' (LaunchServices-Start, wie ein echtes App-Icon) gestartet -> stdout 'OK:Hallo Sandbox', Exit 0. yswift laedt und rechnet AUCH gebuendelt und sandbox-signiert.",
+      "6. Gegenprobe, ob die Sandbox dabei wirklich griff (nicht nur formal signiert wurde): Zusatzcode versucht, ausserhalb des Containers direkt unter $HOME zu schreiben. Ergebnis: 'SANDBOX_INAKTIV: ...' wurde zwar geloggt (der API-Aufruf selbst warf keinen Fehler), aber die Datei landete NICHT unter /Users/lehrmacbook/, sondern transparent umgeleitet unter ~/Library/Containers/de.brainlehr.spike.sandboxprobe/Data/ -- die Sandbox war aktiv und hat den Pfad umgeschrieben, nicht nur akzeptiert."
+    ],
+    "antwort": "JA, gemessen: yswift (Yjs-Familie, Rust-FFI, dieselbe Bibliothek wie in ADR-010 fuer das atelier vorgesehen) laedt und rechnet innerhalb einer macOS-App-Sandbox (com.apple.security.app-sandbox=true, adhoc signiert), WENN es als .app-Bundle per LaunchServices gestartet wird. Ein blankes, sandbox-signiertes CLI-Binary ausserhalb eines Bundles stuerzt zwar ab -- das ist aber nachgewiesen eine allgemeine macOS-Eigenschaft (Gegenprobe mit trivialem Hello-World-Binary reproduziert denselben Absturz) und keine Einschraenkung des CRDT-Rahmenwerks. Sandbox-Enforcement selbst ist bestaetigt (Umleitung des Home-Verzeichnis-Zugriffs in den Container), das Ergebnis ist also kein Blindflug mit deaktivierter Sandbox.",
+    "meine_grenze": "Nicht gemessen: das eigentliche atelier-App-Ziel (app/Sources/Atelier/) selbst mit yswift verlinkt, Hardened Runtime (nicht nur App-Sandbox), Notarisierung, oder ein Team-signiertes (nicht adhoc) Bundle. Mein Aufbau bestand aus einem minimalen synthetischen .app-Bundle, nicht aus dem echten Xcode/SwiftPM-Ziel der Anwendung -- geprueft habe ich die Sandbox-Ladefaehigkeit von yswift isoliert, nicht die vollstaendige G6-Kette (Signatur+Hardened Runtime+Sandbox am echten Produkt).",
+    "belegkommando": "cd spikes/crdt_sandbox_probe && xcrun swift build -c release && codesign --force -s - --entitlements sandbox.entitlements SandboxProbeApp.app && open -W -a \"$PWD/SandboxProbeApp.app\" --stdout \"$PWD/app_stdout.log\" --stderr \"$PWD/app_stderr.log\"",
+    "rohausgabe": {
+      "unsigniert_cli": "OK:Hallo Sandbox / EXIT:0",
+      "signiert_blankes_cli": "EXIT:133 (SIGTRAP), stdout leer, stderr leer; Crashlog: EXC_BREAKPOINT in _libsecinit_appsandbox.cold.6, Thread 0, vor main()",
+      "signiert_blankes_cli_ohne_yswift_gegenprobe": "identisch: EXIT:133, gleiche Absturzstelle -- reproduziert mit reinem print()-Binary ohne yswift-Abhaengigkeit",
+      "signiertes_app_bundle_via_open": "app_stdout.log: 'OK:Hallo Sandbox' / EXIT 0",
+      "sandbox_enforcement_gegenprobe": "app_stdout.log zweite Zeile: 'SANDBOX_INAKTIV: Schreiben ausserhalb Container gelang' (API meldet keinen Fehler) -- aber Datei tatsaechlich unter ~/Library/Containers/de.brainlehr.spike.sandboxprobe/Data/brainlehr_sandbox_probe_verboten.txt, NICHT unter /Users/lehrmacbook/ -- Sandbox hat den Pfad umgeleitet, war also aktiv"
+    }
+  },
+
+  "geschriebene_dateien": [
+    "spikes/crdt_sandbox_probe/Package.swift",
+    "spikes/crdt_sandbox_probe/Sources/Probe/main.swift",
+    "spikes/crdt_sandbox_probe/sandbox.entitlements",
+    "spikes/crdt_sandbox_probe/hello/Package.swift",
+    "spikes/crdt_sandbox_probe/hello/Sources/Hello/main.swift",
+    "spikes/crdt_sandbox_probe/SandboxProbeApp.app/ (synthetisches Test-Bundle)",
+    "spikes/crdt_sandbox_probe/*.log (Build-/Signier-/Laufprotokolle)",
+    "runs/messung_i4_g6_2026-08-15T055326+0200.json (diese Datei)"
+  ],
+  "nicht_veraendert": "kern/domaene.py, entscheidungen.html, openlehr-Dateien -- tabu, nicht angefasst. Kein bestehender Code veraendert, kein git add -A, kein git stash."
+}

@@ -1,0 +1,5 @@
+# Erzeugnisse des Spike-Laufs: Bauverzeichnis, gebautes Buendel, Binaerdatei.
+# Die Quelle und die Protokolle sind der Befund, nicht das Kompilat.
+.build/
+SandboxProbeApp.app/
+hello
