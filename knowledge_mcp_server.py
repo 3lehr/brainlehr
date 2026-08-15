@@ -2643,11 +2643,21 @@ def _sync_wikilinks(conn: sqlite3.Connection, source_path: str, content: str, *,
 
 
 def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
-                      project_id: str) -> None:
+                      project_id: str, actor: str | None = None,
+                      model: str | None = None, session: str | None = None) -> None:
     """Legt jede fehlende Zwischenstufe von der Wurzel bis missing_path an
     (wie mkdir -p). Idempotent: vorhandene Stufen bleiben unangetastet.
     Titel = Pfadsegment, source kennzeichnet die automatische Herkunft samt
-    dem Kind, das die Anlage ausgeloest hat."""
+    dem Kind, das die Anlage ausgeloest hat.
+
+    actor/model/session (Befund 2026-08-15, Knoten 3e6fdd55 /woanders): dieser
+    Pfad legte Astknoten bisher OHNE Identitaet an -- actor/session/model/
+    client/bedient_von blieben NULL, obwohl knowledge_add() sie fuer den
+    ausloesenden Kindknoten laengst aufgeloest hatte (_identity() lief bereits
+    VOR diesem Aufruf). Es fehlte nur die Weitergabe. Ohne sie ist ein
+    automatisch erzeugter Astknoten von einem untergeschobenen nicht zu
+    unterscheiden -- genau die Eigenschaft, die dieses System ausmacht."""
+    actor, model, session = _identity(actor, model, session)
     current = ""
     for seg in [p for p in missing_path.split("/") if p]:
         current = f"{current}/{seg}"
@@ -2656,8 +2666,8 @@ def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
         parent = current.rsplit("/", 1)[0] or "/"
         created_at = now_iso()
         conn.execute(
-            """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, actor, session, model, client, bedient_von)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (str(uuid.uuid4())[:8], current, parent, project_id, seg,
              f"Automatisch erzeugter Astknoten fuer {seg}", "",
              current.count("/") - 1, json.dumps([]),
@@ -2669,7 +2679,12 @@ def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
              # (Nachtrag 2026-08-08): Entscheider ist der Server-Mechanismus
              # selbst, kein Aufrufer-Identitaetsargument vorhanden hier.
              "keine_norm", "system:_ensure_ast_chain", created_at,
-             "automatisch erzeugter Astknoten -- kann keine Norm sein"),
+             "automatisch erzeugter Astknoten -- kann keine Norm sein",
+             actor, session, model, _KLIENT,
+             # bedient_von NIE aus einem Argument (Betreiberweisung
+             # 2026-08-11) -- dieselbe Aufloesung wie im Haupt-INSERT von
+             # knowledge_add.
+             _bedient_von(actor)),
         )
 
 
@@ -2861,24 +2876,30 @@ def _validate_source_provenance(source: str, title: str, summary: str, content: 
     )
 
 
-def _erzeuge_source_aus_ableitung(conn: sqlite3.Connection, kennung: str) -> tuple[str | None, str | None]:
+def _erzeuge_source_aus_ableitung(conn: sqlite3.Connection, kennung: str) -> tuple[str | None, str | None, str | None]:
     """Baut den Herkunftstext fuer abgeleitet_von aus der ART des
     Quellknotens -- NIE aus dessen title/summary/content, denn genau die
     tragen den Inhalt, der nicht durchsickern soll (ADR-027 Nachtrag 4).
     'Art' = parent_path (Kategorie/Ast), norm_rang (Norm oder Fakt), tags.
-    Gibt (source_text, None) oder (None, fehlertext) zurueck."""
+    Gibt (source_text, quell_pfad, None) oder (None, None, fehlertext) zurueck
+    -- quell_pfad zusaetzlich seit Aufgabe 73 Schritt 2 (Herkunftskette
+    vorwaerts, docs/PLAN_HERKUNFTSKETTE_2026-08-13.md): der Aufrufer braucht
+    ihn, um NEBEN dem Text auch die Kante source_path->quell_pfad vom Typ
+    'abgeleitet_von' anzulegen (Entscheidung B des Plans -- Kante statt
+    Spalte, beliebig viele Vorgaenger moeglich)."""
     row = conn.execute(
         "SELECT path, parent_path, norm_rang, tags FROM knowledge_nodes WHERE id = ? OR path = ?",
         (kennung, kennung)
     ).fetchone()
     if not row:
-        return None, (f"abgeleitet_von zeigt auf keinen vorhandenen Knoten: {kennung!r}")
+        return None, None, (f"abgeleitet_von zeigt auf keinen vorhandenen Knoten: {kennung!r}")
     kategorie = row["parent_path"] or "/"
     art = "Norm" if row["norm_rang"] is not None else "Fakt"
     tags = json.loads(row["tags"]) if row["tags"] else []
     tag_teil = f", Tags {tags}" if tags else ""
     return (
         f"abgeleitet von Knoten unter {kategorie} (Art: {art}{tag_teil})",
+        row["path"],
         None,
     )
 
@@ -3311,6 +3332,12 @@ def knowledge_add(parent_path: str, title: str, summary: str,
 
     conn = get_db()
 
+    # Aufgabe 73 Schritt 2: der Quellpfad wird -- falls abgeleitet_von gesetzt
+    # ist -- gleich mit aufgeloest, damit unten (nach dem Anlegen des neuen
+    # Knotens) die Kante 'abgeleitet_von' entstehen kann. None bleibt None,
+    # wenn der Aufrufer keine Herkunft nennt -- kein Raten, keine Kante.
+    abgeleitung_quellpfad: str | None = None
+
     if abgeleitet_von is not None:
         if source.strip():
             log_access(conn, parent_path, "add", project_id=project_id, actor=actor, model=model,
@@ -3321,7 +3348,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                          "gesetzt, erzeugt das System den Herkunftstext selbst -- kein eigenes "
                          "source mitgeben.",
             }
-        erzeugte_source, ableitung_fehler = _erzeuge_source_aus_ableitung(conn, abgeleitet_von)
+        erzeugte_source, abgeleitung_quellpfad, ableitung_fehler = _erzeuge_source_aus_ableitung(conn, abgeleitet_von)
         if ableitung_fehler:
             log_access(conn, parent_path, "add", project_id=project_id, actor=actor, model=model,
                        session=session, status="rejected", query="abgeleitet_von_ungueltig")
@@ -3387,7 +3414,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
             # parent_path berechnet.
             parent_path = _normalize_path(parent_path)
             node_path = f"{parent_path}/{slug}" if parent_path != "/" else f"/{slug}"
-            _ensure_ast_chain(conn, parent_path, node_path, project_id)
+            _ensure_ast_chain(conn, parent_path, node_path, project_id,
+                              actor=actor, model=model, session=session)
 
     # Check for duplicates
     existing = conn.execute("SELECT id FROM knowledge_nodes WHERE path = ?", (node_path,)).fetchone()
@@ -3503,6 +3531,27 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                    "anlass": anlass, "abgeleitet_von": abgeleitet_von,
                    "actor": actor, "session": session, "model": model,
                })
+    if abgeleitung_quellpfad is not None:
+        # Aufgabe 73 Schritt 2 (docs/PLAN_HERKUNFTSKETTE_2026-08-13.md,
+        # Entscheidung B): die Herkunft lebt als KANTE in knowledge_relations,
+        # nicht (mehr nur) als Spalte -- ein Knoten hat oft mehrere
+        # Vorgaenger, eine Spalte traegt genau einen. relation_type
+        # 'abgeleitet_von' ist bewusst NICHT in RELATION_TYPES (dieselbe
+        # Randlage wie 'aehnlich_bedeutung'/kanten_herkunft_rueckwirkend.py:
+        # ein intern/automatisch erzeugter Kantentyp, kein vom Aufrufer frei
+        # waehlbarer -- knowledge_relation_add() bleibt fuer ihn zustaendig,
+        # nicht dieser Weg). INSERT OR IGNORE, weil UNIQUE(source_path,
+        # target_path, relation_type) einen Doppelschreiber wirkungslos
+        # macht, nicht als Fehler behandelt.
+        conn.execute(
+            "INSERT OR IGNORE INTO knowledge_relations "
+            "(id, source_path, target_path, relation_type, confidence, weight, "
+            " evidence, source, creator, model, session, created_at, updated_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (str(uuid.uuid4()), node_path, abgeleitung_quellpfad, "abgeleitet_von",
+             1.0, 1.0, f"abgeleitet_von={abgeleitet_von!r} beim Anlegen angegeben",
+             "knowledge_add", actor, model, session, created_at, created_at),
+        )
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     # ADR-032: Vektor sofort mitbauen statt eine vector_gaps-Luecke bis zum
     # naechsten build_embeddings.py-Lauf offenzulassen.
