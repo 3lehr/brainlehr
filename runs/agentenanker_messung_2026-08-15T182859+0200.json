@@ -1,0 +1,87 @@
+{
+  "titel": "Verengter Wissensabruf am Agentenstart -- Messung vor der Verdrahtung (ADR-022, Entscheidung 1+3)",
+  "zeitpunkt": "2026-08-15T18:28:59+0200",
+  "auftrag": "Verengten Abruf + Existenzprobe an Subagenten haengen, VOR dem Verdrahten messen -- Kosten, Feuern, Fehlalarmquote, Positivkontrolle.",
+
+  "abweichung_vom_auftragstext": {
+    "verlangt": "Ein Haken an SubagentStart, der aus dem Auftragstext Anker zieht.",
+    "befund": "SubagentStart traegt den Auftragstext NICHT. Geprueft am gebauten Client (~/.local/share/claude/versions/2.1.207, Funktion jzr im gebuendelten JS): sein hookInput ist ausschliesslich {session_id, transcript_path, cwd, prompt_id, permission_mode, agent_id, agent_type, effort}. Dieselbe Luecke steht bereits dokumentiert in hub/scripts/agent_model_guard.py ('SubagentStart liefert weder model noch task verlaesslich').",
+    "loesung": "Zwei Haken statt einem, dieselbe Bruecke wie beim Vorbild (agent_model_guard.py -> agent_register_hook.py::_pop_pending, FIFO je Sitzung ueber eine Pending-Datei): haken/agentenanker_abruf.py (PreToolUse, Matcher Agent) liest tool_input.prompt -- DORT ist der Text vorhanden, einen Schritt vor dem Subagentenstart -- rechnet Anker, Existenzprobe und Wissensabruf und legt das Ergebnis in einer eigenen Pending-Datei ab; haken/agentenanker_einspielung.py (SubagentStart) spielt es fuer dieselbe session_id per additionalContext ein."
+  },
+
+  "kostenschwelle_vorher_festgelegt": {
+    "schwelle": "Als vertretbar gilt eine Verzoegerung deutlich unter den gemessenen 6,0s des vollen Abrufs (ADR-022) -- das ist die Bremse, vor der der Auftrag warnt. Konkret als Grenze angesetzt: ~2s, gebildet aus fruehen Einzelmessungen der Bausteine (git log --grep ~10-20ms, symbolindex-Abfrage ~30-40ms je Anker) VOR der zusammengesetzten Endmessung.",
+    "ehrlichkeitshinweis": "Diese Schwelle stand nicht vor Sitzungsbeginn schriftlich im Chat, sondern wurde waehrend des Entwurfs aus den fruehen Einzelmessungen der Bausteine gebildet, bevor die zusammengesetzte Laufzeit (unten) gemessen wurde -- offengelegt, weil der Auftrag ausdruecklich Vorab-Festlegung vor der eigenen Zahl verlangt."
+  },
+
+  "laufzeit_verengter_abruf": {
+    "methode": "8 Läufe von haken/agentenanker_abruf.py als echter Unterprozess (subprocess.run, kein In-Prozess-Import), realer Auftragstext mit 6 Ankern, PreToolUse:Agent-Payload wie vom Client geliefert.",
+    "einzelwerte_s": [0.959, 0.964, 0.98, 0.987, 0.987, 0.987, 0.988, 0.988],
+    "median_s": 0.987,
+    "oberes_ende_max_s": 0.988,
+    "kostentreiber": {
+      "git_log_je_anker": "~0.16s / 6 Anker (subprocess je Anker)",
+      "symbolindex_je_anker": "~0.22s / 6 Anker (subprocess je Anker)",
+      "wissen_treffer_einmalig": "~0.55s (ein Unterprozess, importiert knowledge_mcp_server -- dominanter Anteil)"
+    },
+    "vergleich_voller_abruf": "6,0s (ADR-022, knowledge_recall_hook.py: Embeddings + FTS + RRF-Fusion ueber den GANZEN Prompt). Verengter Abruf: ~1,0s median -- Faktor 6 guenstiger, unter der vorab gesetzten ~2s-Schwelle, damit vertretbar."
+  },
+
+  "beleg_feuert": {
+    "methode": "Echte Zwei-Haken-Kette per Unterprozess: PreToolUse:Agent-Payload mit realem Bau-Auftragstext, danach SubagentStart-Payload mit derselben session_id -- kein In-Prozess-Aufruf, exakt der Weg, den der Client geht.",
+    "pretooluse_stdout": "leer (reine Nebenwirkung, kein permissionDecision -- blockiert nie)",
+    "subagentstart_stdout": "{\"hookSpecificOutput\": {\"hookEventName\": \"SubagentStart\", \"additionalContext\": \"<agentenanker-abruf>...haken/auftragshypothese_waechter.py: abd06928 docs(brainlehr): Zeile 97 faelschlich als wirkungslos gemessen...</agentenanker-abruf>\"}, \"systemMessage\": \"Existenzprobe zu diesem Auftrag im Kontext\", \"continue\": true, \"suppressOutput\": true}",
+    "einordnung": "hookEventName passt zum tatsaechlich feuernden Ereignis (SubagentStart) -- ohne diese Uebereinstimmung verwirft der Client additionalContext lautlos (Vermerk aus regelwechsel.py, bereits einmal so aufgetreten)."
+  },
+
+  "gegenprobe_ohne_anker": {
+    "auftrag": "Lies die Datei und fasse zusammen, was drinsteht.",
+    "pretooluse_stdout": "leer",
+    "subagentstart_stdout": "leer",
+    "ergebnis": "Kein Anker, kein Bausignal -> nichts gerechnet, nichts eingespielt, kein Fehler."
+  },
+
+  "positivkontrolle": {
+    "fall": "'97' aus L-229bb2 (Aufgabe 97, Teil 2): haken/auftragshypothese_waechter.py wurde am 2026-08-14 gebaut (Commit 028bd9796a6838563decc620564487f8604afdc2), spaeter erneut angesetzt, weil ein Melder es nicht fand.",
+    "rekonstruierter_auftragstext": "Baue einen PreToolUse-Waechter (Matcher Agent), der einen Agentenauftrag meldet, wenn er zugleich eine Messung/Pruefung verlangt UND das erwartete Ergebnis schon als Hypothese des Auftraggebers nennt ('der Verdacht liegt auf X'). Lege die Datei etwa unter haken/auftragshypothese_waechter.py an, mit Selbsttest.",
+    "gezogene_anker": ["haken/auftragshypothese_waechter.py", "auftragshypothese_waechter.py"],
+    "treffer": "git log --all --grep=haken/auftragshypothese_waechter.py -i findet Commit abd06928 ('Zeile 97 faelschlich als wirkungslos gemessen'), aus dem die Existenz der Datei hervorgeht.",
+    "ergebnis": "POSITIVKONTROLLE OK -- die Existenzprobe haette den Doppelbau-Anlass sichtbar gemacht, VOR der Delegation."
+  },
+
+  "fehlalarmquote": {
+    "korpus": "120 echte, deduplizierte Task-/Agent-Auftragstexte aus allen Sitzungsprotokollen des 2026-08-15 unter /Users/lehrmacbook/.claude/projects/ (zeilenweise per Python ausgewertet, kein Volltext-Read).",
+    "ohne_bausignal_gate_erster_messlauf": {
+      "kein_anker_haken_bleibt_still": "7/120",
+      "anker_aber_kein_bestandstreffer_still": "11/120",
+      "anker_mit_bestandstreffer_spielt_ein": "102/120 (85%)",
+      "befund": "Ohne Eingrenzung feuert der Haken bei fast jedem Auftrag -- auch bei reinen Lese-, Review- und Persona-Auftraegen, die nichts bauen sollen. Ein Anker ist dort fast immer die Datei, ueber die gesprochen wird -- git/symbolindex finden sie trivial (es ist ja ihre eigene Datei), das ist KEIN Existenzbeleg, sondern Rauschen."
+    },
+    "mit_bausignal_gate_ausgeliefert": {
+      "beschreibung": "Nachgeschaerft: der Haken rechnet nur noch, wenn der Auftragstext ein Bau-Signal traegt (baue/erstelle/implementiere/schreibe/anlege/entwickle/erzeuge/verdrahte/programmiere/... -- ADR-022 Entscheidung 1 spricht ausdruecklich nur von Auftraegen, 'der etwas BAUEN soll').",
+      "kein_bausignal_gate_haelt_dicht": "18/120",
+      "bausignal_aber_kein_anker": "6/120",
+      "bausignal_und_anker_kein_treffer": "5/120",
+      "bausignal_und_anker_und_treffer_spielt_ein": "91/120 (75,8%)",
+      "einordnung_ehrlich": "Das Gate senkt die Fehlalarmquote nur teilweise (85% -> 76%), weil die Mehrzahl der echten Auftraege dieses Tages tatsaechlich Bau-Auftraege sind UND weil ein Anker haeufig die Datei ist, die ohnehin bearbeitet werden soll -- ihr blosses Vorhandensein in git log ist fast immer wahr und darum wenig ueberraschend. Das ist kein geloester, sondern ein gemessener und offen ausgewiesener Rest-Befund: ein Treffer 'diese Datei existiert' ist nicht dasselbe wie 'das Vorhaben existiert schon', und diese beiden werden vom jetzigen Aufbau NICHT unterschieden. Eine Verfeinerung (z.B. nur Commits werten, deren Nachricht auf ABSCHLUSS des im Auftrag beschriebenen Vorhabens hindeutet, nicht nur auf die Datei) ist NICHT gebaut -- Zeitrahmen des Auftrags liess das nicht zu, hier ausdruecklich als offener Rest benannt statt verschwiegen."
+    }
+  },
+
+  "grenzwerte": {
+    "leerer_auftragstext": "kein Anker, kein Bausignal -> still, kein Fehler (Selbsttest agentenanker_abruf.py)",
+    "50_dateinamen_im_auftrag": "Deckel MAX_ANKER=8 greift, keine Ueberlast (Selbsttest)",
+    "kennung_die_es_nicht_gibt": "git+symbolindex liefern leer, kein Absturz (Selbsttest)",
+    "datenbank_nicht_erreichbar": "wissen_treffer() faengt jede Ausnahme (Unterprozess mit hartem Timeout statt In-Prozess-Import) -> leere Liste, kein Haenger (Selbsttest)"
+  },
+
+  "selbsttest_ergebnis": "python3 haken/agentenanker_abruf.py --selftest -> exit 0; python3 haken/agentenanker_einspielung.py --selftest -> exit 0 (beide assert-basiert, siehe Dateien).",
+
+  "verdrahtung": {
+    "geaenderte_datei": "/Users/lehrmacbook/.claude/settings.json (global, NICHT repo-eigen -- die globale Datei wird pro $HOME live gelesen, betrifft also alle Worktrees gleich, unabhaengig vom Erstellungszeitpunkt; die repo-eigene .claude/settings.json ist dagegen ein Worktree-Schnappschuss, siehe runs/haken_bei_agenten_2026-08-15T142000+0200.json).",
+    "pretooluse_agent_matcher": "agentenanker_abruf.py als zweiter Eintrag NEBEN auftragshypothese_waechter.py ergaenzt, dieser bleibt unveraendert.",
+    "subagentstart": "agentenanker_einspielung.py als VIERTE Gruppe ergaenzt, die drei bestehenden Gruppen (agent_register_hook.py; auftrag_recall_hook.py+mcp_veraltet.py+regelwechsel.py aus d6ab2505) bleiben unveraendert -- nach dem Schreiben mit json.load nachgeprueft.",
+    "repo_eigene_settings_json": "nicht angefasst -- PreToolUse Bash->stash_guard_hook.py und Stop->existenzpruefung.py stehen unveraendert (gegengeprueft nach der Aenderung)."
+  },
+
+  "einsatz": "Der Wissensspeicher begruendet seinen Nutzen mit dem Abruf, und der erreichte bislang nur den Orchestrator, nie die Agenten, die die Arbeit machen -- ein Viertel der Agentenlaeufe eines Tages war deshalb Ausschuss (L-229bb2). Der verengte Abruf schliesst genau diese Luecke, misst ihre Kosten UND ihre Grenzen ehrlich (Faktor 6 guenstiger als der volle Abruf, aber mit einer gemessenen Restquote an wenig aussagekraeftigen Treffern, die hier offen ausgewiesen bleibt statt wegoptimiert zu werden)."
+}
