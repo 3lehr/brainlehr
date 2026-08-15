@@ -470,6 +470,27 @@ nie parallel zu einem Suitelauf. Datenbanknamen über `kern/speicher`.
 | **Fakten** | Jüngste Kante 2026-08-09T12:54:59. Am 12.08. 0 von 36 neuen Knoten mit Kante, am 13.08. 0 von 2. 307 von 2166 ohne jede Kante. Voller Trockenlauf mit numpy 0,234 s. Schwelle 0,65 stammt aus der Messung vom 2026-08-08 und bleibt unangetastet. |
 | **Abnahme** | Der Melder schlägt **gegen den heutigen Bestand** an (jüngste Kante älter als jüngster Knoten) und schweigt nach dem Nachlauf. Negativfall: vollständig verbundener Bestand meldet nichts. Und die drei Achsen-Knoten (`dd367fd1`, `b6305304`, `6e0f0395`) sind danach untereinander verbunden — eine Berechnung, die diesen belegten Fall nicht findet, ist nicht gebaut. |
 
+**Fortschreibung 2026-08-15 — A1 war bereits gebaut, ein Fund darin behoben:**
+Auslöser (`haken/auszug_nachziehen.py` → `kern/kanten_aus_bedeutung.automatischer_lauf()`),
+Wiring (`~/.claude/settings.json`, `Stop`-Hook, Zeile 352) und Melder
+(`melder/kantenstillstand.py`) lagen bereits aus `5a4d65b` u.a. vor — der
+Plan hier war nicht nachgezogen. Rot-vor-grün am echten Bestand (2026-08-15,
+2202 Knoten): der Melder schlug an (jüngste Kante 2026-08-14T21:04:29Z <
+jüngster Knoten 2026-08-15T03:57:45Z), der Nachlauf lief manuell fehlerfrei,
+schrieb aber 0 Kanten — und der Melder blieb **trotzdem** rot. Ursache: reiner
+Zeitvergleich kann „nie gelaufen" nicht von „gelaufen, kein Kandidat über der
+Schwelle" unterscheiden. Fix in `melder/kantenstillstand.py`
+(`fehlende_kandidaten()`): Zeitvergleich bleibt billiger Vorfilter, bei
+Verdacht folgt ein Trockenlauf von `finde_kandidaten` nur über die
+unverbundenen Knoten — meldet nur, wenn dabei wirklich ein Kandidat fehlt.
+Selftest erweitert um genau diesen Gegenfall (A2). Die drei Achsen-Knoten
+(`dd367fd1`, `b6305304`, `6e0f0395`) aus der ursprünglichen Abnahme sind am
+heutigen Bestand **nicht** vollständig paarweise verbunden — gemessen:
+dd367fd1↔b6305304 0,739 (verbunden), dd367fd1↔6e0f0395 0,621, b6305304↔6e0f0395
+0,602, beide unter der unantastbaren Schwelle 0,65. Das ist kein Fehler des
+Mechanismus, sondern eine Abnahme-Vorgabe, die die feste Schwelle bei diesem
+Tripel nicht erfüllen kann — hier offen vermerkt statt verschwiegen.
+
 ### Schritt A2 · Melder gegen auslöserlose Mechanismen (Aufgabe 85)
 
 | | |

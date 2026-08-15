@@ -10,9 +10,23 @@ bleiben liegen, und das faellt nicht auf, weil eine veraltete Kantenmenge
 genauso aussieht wie eine aktuelle.
 
 Was dieser Melder prueft: die JUENGSTE `aehnlich_bedeutung`-Kante gegen den
-JUENGSTEN sichtbaren Knoten. Ist die Kante aelter, ist die Berechnung seit
-mindestens einem neuen Knoten nicht mehr gelaufen -- das Symptom, nicht eine
-Vermutung darueber.
+JUENGSTEN sichtbaren Knoten -- als billiger VORFILTER. Ist die Kante aelter,
+folgt eine zweite, echte Probe (Befund 2026-08-15, am gewachsenen Bestand
+gemessen): der Zeitvergleich allein meldet naemlich AUCH dann, wenn der
+Nachlauf (`haken/auszug_nachziehen.py` -> `automatischer_lauf()`) laengst
+korrekt lief und schlicht nichts zu tun hatte, weil der neueste Knoten
+keinen Nachbarn ueber der Schwelle 0.65 hat -- ein normaler, gewollter Fall
+laut Modulkopf von `kern/kanten_aus_bedeutung.py`, keiner, den der Nachlauf
+je heilen koennte. Am 2026-08-15 dreimal in Folge beobachtet: Nachlauf
+manuell ausgefuehrt, 0 neue Kanten (korrekt, keine Kandidaten ueber der
+Schwelle), Melder blieb trotzdem rot.
+
+Die echte Probe ruft darum `kern/kanten_aus_bedeutung.knoten_ohne_kanten` und
+`.finde_kandidaten` (Trockenlauf, kein Schreiben) NUR ueber die bereits
+unverbundenen Knoten auf -- dieselbe Eingrenzung wie `automatischer_lauf()`.
+Liefert das mindestens einen Kandidaten, haette der Nachlauf ihn anlegen
+muessen und hat es nicht -- das ist Stillstand. Liefert es keinen, ist die
+Kante zurecht aelter als der juengste Knoten, und der Melder schweigt.
 
 Was er NICHT prueft: ob JEDER Knoten eine Kante hat (das waere ein anderer,
 staerkerer Massstab und traefe fast immer zu -- Einzelknoten unter der
@@ -48,6 +62,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(_w))
 import speicher  # noqa: E402 -- Tuer statt einer eigenen DB-Verbindung (Grenze Auftrag 81)
+import kanten_aus_bedeutung as kab  # noqa: E402 -- fuer die echte Probe, siehe Modulkopf
 
 RELATION_TYPE = "aehnlich_bedeutung"
 
@@ -103,9 +118,24 @@ def unverbundene_knoten(conn: sqlite3.Connection) -> int:
     ).fetchone()[0]
 
 
+def fehlende_kandidaten(conn: sqlite3.Connection) -> int:
+    """Echte Probe (siehe Modulkopf): Trockenlauf von `finde_kandidaten` nur
+    ueber die schon unverbundenen Knoten -- dieselbe Eingrenzung wie
+    `automatischer_lauf()`. Ein unverbundener Knoten hat per Definition KEINE
+    Kante, also ist jeder gefundene Kandidat zwangslaeufig noch nicht in der
+    DB; ein `edge_exists`-Check danach waere ueberfluessige Arbeit."""
+    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    unverbunden = kab.knoten_ohne_kanten(conn, paths)
+    if not unverbunden:
+        return 0
+    nur_index = {i for i, p in enumerate(paths) if p in unverbunden}
+    return len(kab.finde_kandidaten(paths, titles, vektoren, nur_index=nur_index))
+
+
 def pruefen(conn: sqlite3.Connection) -> str | None:
     """None = kein Befund (Kante mindestens so neu wie der juengste Knoten,
-    oder kein Bestand). Sonst der Meldetext mit Zahlen."""
+    kein Bestand, oder -- nach der echten Probe -- schlicht kein Kandidat
+    ueber der Schwelle uebrig). Sonst der Meldetext mit Zahlen."""
     kn_roh = juengster_knoten(conn)
     if kn_roh is None:
         return None
@@ -116,10 +146,15 @@ def pruefen(conn: sqlite3.Connection) -> str | None:
     if kn is not None and ka is not None and ka >= kn:
         return None
 
+    fehlend = fehlende_kandidaten(conn)
+    if fehlend == 0:
+        return None
+
     return (
         "Kantenberechnung steht still: juengste "
         f"{RELATION_TYPE}-Kante {ka_roh or 'nie'}, juengster Knoten {kn_roh}. "
-        f"{unverbundene_knoten(conn)} von {gesamt_knoten(conn)} Knoten ohne jede Kante."
+        f"{unverbundene_knoten(conn)} von {gesamt_knoten(conn)} Knoten ohne jede Kante, "
+        f"davon {fehlend} mit einem fehlenden Kandidaten ueber der Schwelle."
     )
 
 
@@ -150,6 +185,7 @@ def main() -> None:
 def _fixture_db() -> sqlite3.Connection:
     schema = (_w / "schema.sql").read_text(encoding="utf-8")
     conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row  # kab.lade_knoten_vektoren liest per Spaltenname
     conn.executescript(schema)
     return conn
 
@@ -181,23 +217,70 @@ def _insert_edge(conn: sqlite3.Connection, a: str, b: str, created_at: str,
     )
 
 
+def _insert_embedding(conn: sqlite3.Connection, path: str, vector: list[float]) -> None:
+    """Fuer die echte Probe (`fehlende_kandidaten`) braucht ein Knoten ein
+    Embedding -- ohne eins liefert `lade_knoten_vektoren` ihn gar nicht erst,
+    und er kann nie als Kandidat auftauchen. `ref_id` = der Knoten selbst
+    (per path aufgeloest), gleiche Form wie tests/test_kanten_aus_bedeutung.py."""
+    from embeddings import pack_embedding  # noqa: E402 -- nur hier im Selftest gebraucht
+
+    node_id = conn.execute(
+        "SELECT id FROM knowledge_nodes WHERE path = ?", (path,)
+    ).fetchone()[0]
+    now = "2026-08-15T00:00:00+00:00"
+    conn.execute(
+        """
+        INSERT INTO knowledge_embeddings (kind, ref_id, project_id, model, dim, vector, updated_at)
+        VALUES ('node', ?, 'shared', ?, ?, ?, ?)
+        """,
+        (node_id, kab.EMBED_MODEL, len(vector), pack_embedding(vector), now),
+    )
+
+
 def _selftest() -> None:
     alt = "2026-08-09T12:54:59.995480+00:00"
     neu = "2026-08-13T08:27:35+02:00"  # lokaler Offset wie echte Knoten
 
     # A) Abnahme 1 -- heutiger Bestand: juengste Kante aelter als juengster
-    #    Knoten -> Melder schlaegt an und nennt beide Zeitpunkte plus Zahlen.
+    #    Knoten, UND der unverbundene Knoten hat einen echten Kandidaten
+    #    ueber der Schwelle (/c identisch zu /a) -> Melder schlaegt an.
     conn = _fixture_db()
     _insert_node(conn, "/a", alt)
     _insert_node(conn, "/b", neu)  # neuer als jede Kante
     _insert_node(conn, "/c", alt)  # ohne jede Kante
     _insert_edge(conn, "/a", "/b", alt)
+    _insert_embedding(conn, "/a", [1.0, 0.0, 0.0])
+    _insert_embedding(conn, "/b", [0.0, 1.0, 0.0])
+    _insert_embedding(conn, "/c", [1.0, 0.0, 0.0])  # identisch zu /a, sim=1.0
     conn.commit()
 
     befund = pruefen(conn)
-    assert befund is not None, "muss anschlagen: Kante aelter als juengster Knoten"
+    assert befund is not None, "muss anschlagen: echter Kandidat (/c<->/a) fehlt"
     assert alt in befund and neu in befund, befund
     assert "1 von 3 Knoten ohne jede Kante" in befund, befund
+    assert "1 mit einem fehlenden Kandidaten" in befund, befund
+    conn.close()
+
+    # A2) Gegenprobe zu A, der eigentliche Fund vom 2026-08-15: gleiche
+    #     Zeitlage (Kante aelter als juengster Knoten), aber der unverbundene
+    #     Knoten hat KEINEN Nachbarn ueber der Schwelle -- der Nachlauf lief
+    #     korrekt und hatte nichts zu tun. Ein reiner Zeitvergleich haette
+    #     hier faelschlich gemeldet (Befund am echten Bestand, 200 Knoten
+    #     betroffen, 2026-08-15).
+    conn = _fixture_db()
+    _insert_node(conn, "/a", alt)
+    _insert_node(conn, "/b", alt)
+    _insert_node(conn, "/c", neu)  # neuer als jede Kante, aber ohne Nachbarn
+    _insert_edge(conn, "/a", "/b", alt)
+    _insert_embedding(conn, "/a", [1.0, 0.0, 0.0])
+    _insert_embedding(conn, "/b", [0.0, 1.0, 0.0])
+    _insert_embedding(conn, "/c", [0.0, 0.0, 1.0])  # orthogonal zu beiden, sim=0.0
+    conn.commit()
+
+    assert pruefen(conn) is None, (
+        "darf NICHT anschlagen: /c ist unverbunden, aber ohne Kandidaten ueber "
+        "der Schwelle -- kein Stillstand, nur eine korrekt leere Runde"
+    )
     conn.close()
 
     # B) Abnahme 2, Negativfall -- vollstaendig verbundener/aktueller Bestand:
