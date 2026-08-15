@@ -64,8 +64,16 @@ KATALOG: dict[str, BestandteilEintrag] = {
         grund="ADR-010, gebaut (F1-F5), keine offene Auflage.",
     ),
     "tabellenkalkulation": BestandteilEintrag(
-        auflagen_erfuellt=False,
-        grund="ADR-016 Auflage 3 offen: Fremddatei-Import bis auf weiteres gesperrt.",
+        auflagen_erfuellt=True,
+        grund=(
+            "ADR-016 Auflage 3 gemessen+aufgehoben (2026-08-15T14:10:23+0200) "
+            "und Auflage 1/2 (Positivliste) im Spike gebaut und belegt "
+            "(spikes/univer_i3_min/probe4, tests/test_univer_positivliste.py: "
+            "verfuegbare Funktionsmenge == erlaubte Menge, WEBSERVICE und eine "
+            "abgemeldete echte Funktion ergeben #NAME?). Auflage 4 (benannte "
+            "Bereiche) ist eine Bauvorschrift fuer den kommenden Bildschirm, "
+            "keine Ladebedingung -- sie steht unveraendert in ADR-016."
+        ),
     ),
 }
 

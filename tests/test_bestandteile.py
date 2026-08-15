@@ -32,20 +32,27 @@ def test_zweimal_derselbe_angefordert_wird_dedupliziert():
     assert gewaehrt(["dokumentfenster", "dokumentfenster"]) == ["dokumentfenster"]
 
 
-def test_bestandteil_mit_unerfuellter_auflage_wird_verweigert():
-    # Grenzwert: bekannt, aber ADR-016 Auflage 3 offen -> nicht gewaehrt.
-    assert KATALOG["tabellenkalkulation"].auflagen_erfuellt is False
-    assert gewaehrt(["tabellenkalkulation"]) == []
+def test_tabellenkalkulation_alle_adr016_ladebedingungen_erfuellt():
+    # PLAN_I3_TABELLE_2026-08-15.md, Schritt 1+2: Auflage 3 gemessen+
+    # aufgehoben (2026-08-15T14:10:23+0200), Auflage 1/2 (Positivliste) im
+    # Spike gebaut und ueber tests/test_univer_positivliste.py belegt --
+    # also jetzt gewaehrt, nicht mehr verweigert wie vor diesem Auftrag.
+    assert KATALOG["tabellenkalkulation"].auflagen_erfuellt is True
+    assert gewaehrt(["tabellenkalkulation"]) == ["tabellenkalkulation"]
 
 
 def test_domaene_ohne_angabe_bekommt_nichts():
     # Grenzwert: leere Anforderung -> leere Gewaehrung, kein Vorgabewert.
+    # Gegenprobe zur Anforderung oben: eine Domaene OHNE Anforderung bekommt
+    # die Tabelle nicht, obwohl deren Auflagen erfuellt sind -- Anfordern
+    # bleibt Pflicht, kein Vorgabewert schaltet still mit frei.
     assert gewaehrt([]) == []
+    assert "tabellenkalkulation" not in gewaehrt(["dokumentfenster"])
 
 
-def test_gemischte_anforderung_nur_der_gueltige_teil_laedt():
+def test_gemischte_anforderung_beide_bekannten_teile_laden():
     ergebnis = gewaehrt(["dokumentfenster", "tabellenkalkulation", "unbekannt"])
-    assert ergebnis == ["dokumentfenster"]
+    assert ergebnis == ["dokumentfenster", "tabellenkalkulation"]
 
 
 def test_namen_stimmen_mit_swift_ueberein():
