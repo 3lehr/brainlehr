@@ -132,3 +132,76 @@ def test_env_off_schaltet_die_wache_dauerhaft_ab():
 
     env = dict(os.environ, STASH_GUARD="off")
     assert not _denied(_run("git stash", env=env))
+
+
+# --- Nachtrag 2026-08-15: Heredoc-Rumpf ist Text, kein Befehl -----------
+#
+# ANLASS: Ein `git commit -F - <<'EOF' ... EOF`, dessen Nachrichtenrumpf den
+# Ausdruck "git stash" nur BESCHREIBT (Prosa ueber die Wache, kein Aufruf),
+# wurde von der alten Zeilen-fuer-Zeilen-Abtastung faelschlich abgelehnt.
+
+
+def test_commit_nachricht_beschreibt_stash_wird_erlaubt():
+    """Der genaue Vorfall: Heredoc-Rumpf an `git commit -F -`, der den
+    Ausdruck als Prosa nennt -- kein Aufruf, reine Nachricht."""
+    cmd = (
+        "git commit -F - <<'EOF'\n"
+        "fix(haken): stash guard blockte eine Nachricht ueber git stash\n"
+        "\n"
+        "Die Wache erkannte den Ausdruck als Prosa faelschlich als Aufruf.\n"
+        "EOF\n"
+    )
+    assert not _denied(_run(cmd))
+
+
+def test_heredoc_body_deckt_beide_anfuehrungsformen_ab():
+    for delim in ("'EOF'", '"EOF"', r"\EOF", "EOF"):
+        cmd = f"cat <<{delim}\nirgendwas mit git stash drin\nEOF\n"
+        assert not _denied(_run(cmd)), delim
+
+
+def test_heredoc_an_echte_shell_bleibt_gesperrt():
+    """Grenzfall aus der Aufgabenstellung: ein Heredoc, der an eine Shell
+    geht, wird DORT als Befehl gelesen und muss weiter abgelehnt werden."""
+    cmd = "sh <<'EOF'\ngit stash\nEOF\n"
+    assert _denied(_run(cmd))
+
+
+def test_heredoc_an_bash_c_platzhalter_bleibt_gesperrt():
+    cmd = "bash <<EOF\ngit stash\nEOF\n"
+    assert _denied(_run(cmd))
+
+
+def test_sh_dash_c_mit_stash_wird_erkannt():
+    """`sh -c "git stash"` ist ein echter Aufruf trotz Anfuehrungszeichen --
+    die alte Tokenisierung hielt die Zeichenkette fuer EIN Token und uebersah
+    ihn."""
+    assert _denied(_run('sh -c "git stash"'))
+
+
+def test_bash_dash_c_mit_stash_wird_erkannt():
+    assert _denied(_run("bash -c 'git stash pop'"))
+
+
+def test_eval_mit_stash_wird_erkannt():
+    assert _denied(_run('eval "git stash"'))
+
+
+def test_sh_dash_c_ohne_stash_wird_erlaubt():
+    assert not _denied(_run('sh -c "git status"'))
+
+
+def test_unquotierter_heredoc_mit_befehlssubstitution_bleibt_gesperrt():
+    """Unquotierter Delimiter -> die AEUSSERE Shell fuehrt `$(...)` im
+    Rumpf trotzdem aus, auch wenn der Empfaenger kein Shell-Interpreter
+    ist."""
+    cmd = "cat <<EOF\ntext $(git stash) mehr text\nEOF\n"
+    assert _denied(_run(cmd))
+
+
+def test_quotierter_heredoc_mit_befehlssubstitution_bleibt_erlaubt():
+    """Bei quotiertem Delimiter findet KEINE Substitution statt -- der
+    Text bleibt fuer den Empfaenger reine Daten, `$(git stash)` wird nie
+    ausgefuehrt."""
+    cmd = "cat <<'EOF'\ntext $(git stash) mehr text\nEOF\n"
+    assert not _denied(_run(cmd))
