@@ -160,6 +160,69 @@ def test_antwort_ohne_werkzeugfeld_geht_nicht_in_die_quote():
     assert len(erg["m1"]["werkzeug_ausgeschlossen"]) == 3
 
 
+def test_leck_pruefung_findet_woertliche_kennung():
+    """Auftrag Risiko 1: ein Text, der die Ziel-Kennung woertlich enthaelt,
+    muss als Leck erkannt werden -- Beleg fuer die Nachpruefbarkeit, nicht
+    nur eine Ermahnung im Docstring."""
+    leckt, betroffen = ok.leck_pruefung(
+        "Kriterium: die Antwort sollte /x/y nennen.", [{"id": "/x/y"}])
+    assert leckt is True
+    assert betroffen == ["/x/y"]
+
+
+def test_leck_pruefung_sauberer_text_gibt_kein_leck():
+    leckt, betroffen = ok.leck_pruefung(
+        "Kriterium: die Antwort sollte die Reihenfolge begruenden.", [{"id": "/x/y"}])
+    assert leckt is False
+    assert betroffen == []
+
+
+def _synthetische_aufgaben_dreiteilung() -> dict:
+    def zellen(case_id, ziel_id):
+        return [
+            {"key": f"{case_id}|MIT", "gruppe": "M1", "case_id": case_id, "condition": "MIT",
+             "ziele": [{"art": "knoten", "id": ziel_id}]},
+            {"key": f"{case_id}|WERKZEUG", "gruppe": "M1", "case_id": case_id, "condition": "WERKZEUG",
+             "ziele": [{"art": "knoten", "id": ziel_id}]},
+        ]
+    return {"zellen": (zellen("m1-00", "/a/eins") + zellen("m1-01", "/a/zwei")
+                        + zellen("m1-02", "/a/drei") + zellen("m1-03", "/a/vier"))}
+
+
+def test_dreiteilung_erreichbarkeit_vier_klassen():
+    aufgaben = _synthetische_aufgaben_dreiteilung()
+    antworten = {"antworten": {
+        "m1-00|MIT": {"antwort": "siehe /a/eins", "werkzeuge_benutzt": False},
+        "m1-00|WERKZEUG": {"antwort": "nichts gefunden", "werkzeuge_benutzt": True},
+        "m1-01|MIT": {"antwort": "keine Ahnung", "werkzeuge_benutzt": False},
+        "m1-01|WERKZEUG": {"antwort": "siehe /a/zwei via grep", "werkzeuge_benutzt": True},
+        "m1-02|MIT": {"antwort": "keine Ahnung", "werkzeuge_benutzt": False},
+        "m1-02|WERKZEUG": {"antwort": "auch nichts gefunden", "werkzeuge_benutzt": False},
+        "m1-03|MIT": {"antwort": "keine Ahnung", "werkzeuge_benutzt": False},
+        "m1-03|WERKZEUG": "nackter String ohne Pflichtfeld",
+    }}
+    dt = ok.dreiteilung_erreichbarkeit(aufgaben, antworten)
+    assert dt["gefunden_mit_einspielung"] == 1
+    assert dt["selbst_gefunden"] == 1
+    assert dt["gar_nicht_gefunden"] == 1
+    assert dt["unbestimmt"] == 1
+    assert dt["gesamt"] == 3
+
+
+def test_dreiteilung_erreichbarkeit_fehlende_werkzeug_zelle_ist_unbestimmt():
+    """Grenzfall: eine Aufgabendatei ohne m1_werkzeug=True hat gar keine
+    WERKZEUG-Zellen -- alle Faelle muessen als 'unbestimmt' zaehlen, nicht
+    als 'gar_nicht_gefunden' (das waere eine falsche Tatsachenbehauptung)."""
+    aufgaben = {"zellen": [
+        {"key": "m1-00|MIT", "gruppe": "M1", "case_id": "m1-00", "condition": "MIT",
+         "ziele": [{"art": "knoten", "id": "/a/eins"}]},
+    ]}
+    dt = ok.dreiteilung_erreichbarkeit(aufgaben, {"antworten": {
+        "m1-00|MIT": {"antwort": "siehe /a/eins", "werkzeuge_benutzt": False}}})
+    assert dt["unbestimmt"] == 1
+    assert dt["gesamt"] == 0
+
+
 def test_werkzeugnutzung_ausdruecklich_verneint_geht_normal_ein():
     """Gegenrichtung, sonst wuerde der Test darueber auch bei einer Pruefung
     bestehen, die schlicht ALLES ausschliesst."""

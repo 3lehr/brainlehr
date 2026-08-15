@@ -123,6 +123,25 @@ M2_TASK_ANWEISUNG = (
     "\n\n---\nAufgabe an dich: Beantworte diese Frage in maximal 6 Saetzen, "
     "so wie du es in einer echten Sitzung taetest." + _WERKZEUG_HINWEIS)
 
+# WERKZEUG -- vierte Bedingung, nur fuer M1 (Betreiberidee 2026-08-15): wie
+# OHNE, aber Suchwerkzeuge sind ausdruecklich ERLAUBT. Miss nicht "hilft der
+# Speicher", sondern "ist das Ziel ohne Einspielung ERREICHBAR" -- die
+# Dreiteilung aus dreiteilung_erreichbarkeit() unten braucht dafuer eine
+# eigene Zelle je Fall, keine Wiederverwendung von OHNE (die verbietet
+# Werkzeuge ausdruecklich, die Frage hier ist eine andere).
+M1_WERKZEUG_ANWEISUNG = (
+    "\n\n---\nAufgabe an dich: Was ist dein ERSTER Handgriff auf diese "
+    "Nachricht, in maximal 4 Saetzen? Nenne dabei, falls vorhanden, den "
+    "genauen Pfad oder die genaue Kennung des Wissens, auf das du dich "
+    "stuetzt. Kein voller Aufgabendurchlauf, nur der erste Schritt und "
+    "seine Begruendung. ANDERS ALS SONST darfst du hier Suchwerkzeuge "
+    "benutzen (knowledge_search, read, grep im Repo, git log) -- das ist "
+    "ausdruecklich Teil dieser Bedingung: gemessen wird, ob du das Wissen "
+    "SELBST findest, ohne dass es dir vorgelegt wurde. Halte in deiner "
+    "Antwortzelle das Pflichtfeld 'werkzeuge_benutzt' fest (true/false) "
+    "und, falls true, zusaetzlich 'werkzeug_pfad' (welches Werkzeug, "
+    "welcher Fund).")
+
 
 # --------------------------------------------------------------------- Block
 def format_block(nodes: list, lessons: list) -> str:
@@ -258,9 +277,15 @@ def m2_sample(n: int, conn: sqlite3.Connection, seed: int = 0) -> list[str]:
 
 
 # --------------------------------------------------------------- aufgaben()
-def aufgaben_erzeugen(m1_n: int, m2_n: int, seed: int = 0, cwd: str | None = None) -> dict:
+def aufgaben_erzeugen(m1_n: int, m2_n: int, seed: int = 0, cwd: str | None = None,
+                       m1_werkzeug: bool = False) -> dict:
     """Schritt 1 der Dreiteilung: Abruf + Promptbau, KEIN Modellaufruf.
-    Gibt die vollstaendige Arbeitsliste fuer den Hauptfaden zurueck."""
+    Gibt die vollstaendige Arbeitsliste fuer den Hauptfaden zurueck.
+
+    m1_werkzeug: zusaetzliche WERKZEUG-Zelle je M1-Fall bauen (s.
+    M1_WERKZEUG_ANWEISUNG). Vorgabe False, damit bestehende Aufrufe
+    (CLI-Default, alte Aufgabendateien) unveraendert bleiben -- die
+    Dreiteilung ist eine Erweiterung, kein Ersatz."""
     cwd = cwd or str(WURZEL)
     zellen: list[dict] = []
     einspielungen: Counter = Counter()  # fuer die Schiefe-Gegenprobe
@@ -283,6 +308,10 @@ def aufgaben_erzeugen(m1_n: int, m2_n: int, seed: int = 0, cwd: str | None = Non
                 varianten["NEG"] = (f"{fall['prompt']}\n\n"
                                      f"{foreign_block(len(block_mit), conn, seed + i)}"
                                      f"{M1_TASK_ANWEISUNG}")
+            if m1_werkzeug:
+                # Keine Wiederverwendung von 'basis' -- die enthaelt die
+                # Werkzeug-Verbots-Anweisung woertlich, die hier falsch waere.
+                varianten["WERKZEUG"] = fall["prompt"] + M1_WERKZEUG_ANWEISUNG
             for cond, prompt in varianten.items():
                 zellen.append({
                     "key": f"{case_id}|{cond}", "gruppe": "M1", "case_id": case_id,
@@ -375,6 +404,91 @@ def _antwort_lesen(eintrag) -> tuple[str | None, bool]:
             return antwort, True
         return antwort, False
     return eintrag, True  # String ohne Feld -> ausgeschlossen
+
+
+def leck_pruefung(text: str, ziele: list[dict]) -> tuple[bool, list[str]]:
+    """Auftrag Risiko 1 (Leck): nachpruefbarer Guard, kein Ermahnungssatz.
+    Prueft, ob ein Text (z.B. ein von einem informierten Agenten formulierter
+    Kriterientext fuer den Richter, siehe okkultation_richter.py) eine
+    Ziel-Kennung woertlich enthaelt -- dieselbe Logik wie _ziel_treffer,
+    hier VOR dem Einsatz als Schranke statt hinterher als Erfolgsmass.
+    Rueckgabe: (leck_gefunden, betroffene_ziel_ids)."""
+    treffer = [z["id"] for z in (ziele or []) if _ziel_treffer(text, [z])]
+    return (bool(treffer), treffer)
+
+
+def dreiteilung_erreichbarkeit(aufgaben: dict, antworten: dict) -> dict:
+    """Auftragserweiterung (Betreiberidee 2026-08-15): braucht die vierte
+    Zelle WERKZEUG je M1-Fall (aufgaben_erzeugen(..., m1_werkzeug=True)).
+    Klassifiziert jeden Fall mechanisch in genau eine von drei Klassen --
+    die Dreiteilung, die laut Auftrag allen bisherigen Zahlen des Hauses
+    fehlt -- plus 'unbestimmt' fuer Faelle ohne verwertbare Datenlage:
+      gefunden_mit_einspielung  MIT trifft das Ziel
+      selbst_gefunden           MIT trifft NICHT, aber WERKZEUG trifft
+      gar_nicht_gefunden        weder MIT noch WERKZEUG trifft
+      unbestimmt                Zelle/Antwort fehlt, oder WERKZEUG-Zelle
+                                 ohne das Pflichtfeld 'werkzeuge_benutzt'
+    KEIN Modellaufruf, reine Nachauswertung wie auswerten()."""
+    faelle: dict[str, dict] = {}
+    for zelle in aufgaben["zellen"]:
+        if zelle["gruppe"] != "M1":
+            continue
+        faelle.setdefault(zelle["case_id"], {"ziele": zelle["ziele"], "bedingungen": {}})
+        faelle[zelle["case_id"]]["bedingungen"][zelle["condition"]] = zelle
+
+    gegeben = antworten.get("antworten", {})
+    klassen: Counter = Counter()
+    einzelheiten = []
+    for case_id, fall in faelle.items():
+        mit_zelle = fall["bedingungen"].get("MIT")
+        werkzeug_zelle = fall["bedingungen"].get("WERKZEUG")
+        if mit_zelle is None or werkzeug_zelle is None:
+            klassen["unbestimmt"] += 1
+            einzelheiten.append({"case_id": case_id, "klasse": "unbestimmt",
+                                  "grund": "MIT- oder WERKZEUG-Zelle fehlt im Aufgabensatz"})
+            continue
+        mit_eintrag = gegeben.get(mit_zelle["key"])
+        werkzeug_eintrag = gegeben.get(werkzeug_zelle["key"])
+        if mit_eintrag is None or werkzeug_eintrag is None:
+            klassen["unbestimmt"] += 1
+            einzelheiten.append({"case_id": case_id, "klasse": "unbestimmt",
+                                  "grund": "Antwort fehlt"})
+            continue
+        mit_antwort, mit_ausg = _antwort_lesen(mit_eintrag)
+        # WERKZEUG erwartet ausdruecklich eine Angabe zur Werkzeugnutzung --
+        # anders als bei OHNE ist True hier KEIN Ausschlussgrund (Werkzeuge
+        # sind erlaubt), das FEHLEN des Feldes aber schon (fail-closed: ohne
+        # das Feld ist unbekannt, ob und wie das Ziel gefunden wurde).
+        if isinstance(werkzeug_eintrag, dict) and "werkzeuge_benutzt" in werkzeug_eintrag:
+            werkzeug_antwort, werkzeug_ausg = werkzeug_eintrag.get("antwort"), False
+        else:
+            werkzeug_antwort, werkzeug_ausg = None, True
+        if mit_ausg or werkzeug_ausg:
+            klassen["unbestimmt"] += 1
+            einzelheiten.append({"case_id": case_id, "klasse": "unbestimmt",
+                                  "grund": "Pflichtfeld 'werkzeuge_benutzt' fehlt/verletzt"})
+            continue
+        mit_treffer = _ziel_treffer(mit_antwort, fall["ziele"])
+        werkzeug_treffer = _ziel_treffer(werkzeug_antwort, fall["ziele"])
+        klasse = ("gefunden_mit_einspielung" if mit_treffer else
+                   "selbst_gefunden" if werkzeug_treffer else "gar_nicht_gefunden")
+        klassen[klasse] += 1
+        einzelheiten.append({"case_id": case_id, "klasse": klasse,
+                              "mit_treffer": mit_treffer, "werkzeug_treffer": werkzeug_treffer})
+
+    gesamt = (klassen["gefunden_mit_einspielung"] + klassen["selbst_gefunden"]
+              + klassen["gar_nicht_gefunden"])  # unbestimmt zaehlt NICHT mit
+    return {
+        "gesamt": gesamt,
+        "gefunden_mit_einspielung": klassen["gefunden_mit_einspielung"],
+        "selbst_gefunden": klassen["selbst_gefunden"],
+        "gar_nicht_gefunden": klassen["gar_nicht_gefunden"],
+        "unbestimmt": klassen["unbestimmt"],
+        "einzelheiten": einzelheiten,
+        "hinweis": "misst, ob das Ziel OHNE Einspielung ueber Werkzeuge "
+                   "erreichbar war -- trennt 'der Speicher lieferte es' von "
+                   "'der Agent haette es auch so gefunden'.",
+    }
 
 
 def _quote(treffer: int, n: int) -> dict:
@@ -557,8 +671,12 @@ def main() -> None:
     ap.add_argument("--m2-n", type=int, default=8)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--cwd", default=None)
+    ap.add_argument("--m1-werkzeug", action="store_true",
+                     help="vierte M1-Zelle WERKZEUG mitbauen (Dreiteilung Erreichbarkeit)")
     ap.add_argument("--auswerten", nargs=2, metavar=("AUFGABEN", "ANTWORTEN"),
                      help="Schritt 3: Antworten pruefen, kein Modellaufruf")
+    ap.add_argument("--dreiteilung", nargs=2, metavar=("AUFGABEN", "ANTWORTEN"),
+                     help="Dreiteilung Erreichbarkeit (braucht WERKZEUG-Zellen), kein Modellaufruf")
     ap.add_argument("--out", default=None)
     ap.add_argument("--selftest", action="store_true")
     args = ap.parse_args()
@@ -568,7 +686,8 @@ def main() -> None:
         return
 
     if args.aufgaben:
-        daten = aufgaben_erzeugen(args.m1_n, args.m2_n, args.seed, args.cwd)
+        daten = aufgaben_erzeugen(args.m1_n, args.m2_n, args.seed, args.cwd,
+                                   m1_werkzeug=args.m1_werkzeug)
         ziel = Path(args.aufgaben)
         ziel.parent.mkdir(parents=True, exist_ok=True)
         ziel.write_text(json.dumps(daten, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -596,6 +715,20 @@ def main() -> None:
         print(f"M2 unterschiedlich (MIT/OHNE): {m2['unterschiedlich']}/{m2['faelle_mit_mit_bedingung']}")
         print(f"M2 unterschiedlich (NEG/OHNE): {m2['unterschiedlich_neg']}/{m2['faelle_mit_neg_bedingung']}")
         print(f"M2 werkzeug-ausgeschlossen: {len(m2['werkzeug_ausgeschlossen'])}")
+        print(f"Geschrieben: {out}")
+        return
+
+    if args.dreiteilung:
+        aufg = json.loads(Path(args.dreiteilung[0]).read_text(encoding="utf-8"))
+        antw = json.loads(Path(args.dreiteilung[1]).read_text(encoding="utf-8"))
+        ergebnis = dreiteilung_erreichbarkeit(aufg, antw)
+        out = Path(args.out or (WURZEL / "runs" / "okkultation_dreiteilung.json"))
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(ergebnis, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"gefunden_mit_einspielung: {ergebnis['gefunden_mit_einspielung']}/{ergebnis['gesamt']}")
+        print(f"selbst_gefunden: {ergebnis['selbst_gefunden']}/{ergebnis['gesamt']}")
+        print(f"gar_nicht_gefunden: {ergebnis['gar_nicht_gefunden']}/{ergebnis['gesamt']}")
+        print(f"unbestimmt: {ergebnis['unbestimmt']}")
         print(f"Geschrieben: {out}")
         return
 
@@ -712,6 +845,55 @@ def _selftest() -> None:
         assert erg_alles["m1"][cond]["anteil"] is None
         assert erg_alles["m1"][cond]["hinweis"] == "keine verwertbaren Zellen"
 
+    # leck_pruefung(): findet eine woertlich enthaltene Ziel-Kennung
+    # (Auftrag Risiko 1) -- und der Negativfall, ein sauberer Text.
+    leckt, betroffen = leck_pruefung(
+        "Kriterium: die Antwort sollte /x/y nennen.", [{"id": "/x/y"}])
+    assert leckt and betroffen == ["/x/y"]
+    sauber, betroffen2 = leck_pruefung(
+        "Kriterium: die Antwort sollte die Reihenfolge begruenden.", [{"id": "/x/y"}])
+    assert not sauber and betroffen2 == []
+
+    # dreiteilung_erreichbarkeit(): vier Klassen mechanisch aus MIT+WERKZEUG.
+    aufg_dt = {"zellen": [
+        {"key": "m1-00|MIT", "gruppe": "M1", "case_id": "m1-00", "condition": "MIT",
+         "ziele": [{"art": "knoten", "id": "/a/eins"}]},
+        {"key": "m1-00|WERKZEUG", "gruppe": "M1", "case_id": "m1-00", "condition": "WERKZEUG",
+         "ziele": [{"art": "knoten", "id": "/a/eins"}]},
+        {"key": "m1-01|MIT", "gruppe": "M1", "case_id": "m1-01", "condition": "MIT",
+         "ziele": [{"art": "knoten", "id": "/a/zwei"}]},
+        {"key": "m1-01|WERKZEUG", "gruppe": "M1", "case_id": "m1-01", "condition": "WERKZEUG",
+         "ziele": [{"art": "knoten", "id": "/a/zwei"}]},
+        {"key": "m1-02|MIT", "gruppe": "M1", "case_id": "m1-02", "condition": "MIT",
+         "ziele": [{"art": "knoten", "id": "/a/drei"}]},
+        {"key": "m1-02|WERKZEUG", "gruppe": "M1", "case_id": "m1-02", "condition": "WERKZEUG",
+         "ziele": [{"art": "knoten", "id": "/a/drei"}]},
+        {"key": "m1-03|MIT", "gruppe": "M1", "case_id": "m1-03", "condition": "MIT",
+         "ziele": [{"art": "knoten", "id": "/a/vier"}]},
+        {"key": "m1-03|WERKZEUG", "gruppe": "M1", "case_id": "m1-03", "condition": "WERKZEUG",
+         "ziele": [{"art": "knoten", "id": "/a/vier"}]},
+    ]}
+    antw_dt = {"antworten": {
+        # Fall 1: MIT trifft -> gefunden_mit_einspielung.
+        "m1-00|MIT": {"antwort": "siehe /a/eins", "werkzeuge_benutzt": False},
+        "m1-00|WERKZEUG": {"antwort": "nichts gefunden", "werkzeuge_benutzt": True, "werkzeug_pfad": "grep"},
+        # Fall 2: MIT verfehlt, WERKZEUG trifft -> selbst_gefunden.
+        "m1-01|MIT": {"antwort": "keine Ahnung", "werkzeuge_benutzt": False},
+        "m1-01|WERKZEUG": {"antwort": "siehe /a/zwei via grep", "werkzeuge_benutzt": True, "werkzeug_pfad": "grep"},
+        # Fall 3: beide verfehlen -> gar_nicht_gefunden.
+        "m1-02|MIT": {"antwort": "keine Ahnung", "werkzeuge_benutzt": False},
+        "m1-02|WERKZEUG": {"antwort": "auch nichts gefunden", "werkzeuge_benutzt": False},
+        # Fall 4: WERKZEUG-Zelle ohne Pflichtfeld -> unbestimmt (fail-closed).
+        "m1-03|MIT": {"antwort": "keine Ahnung", "werkzeuge_benutzt": False},
+        "m1-03|WERKZEUG": "nackter String ohne Feld",
+    }}
+    dt = dreiteilung_erreichbarkeit(aufg_dt, antw_dt)
+    assert dt["gefunden_mit_einspielung"] == 1
+    assert dt["selbst_gefunden"] == 1
+    assert dt["gar_nicht_gefunden"] == 1
+    assert dt["unbestimmt"] == 1
+    assert dt["gesamt"] == 3  # unbestimmt zaehlt NICHT in die drei Klassen
+
     # M1-Pool schliesst 'kennung' aus (Selbstbezug-Ausschluss).
     if M1_QUELLE.exists():
         pool = m1_pool()
@@ -720,7 +902,8 @@ def _selftest() -> None:
 
     print("selftest ok: Blockformat, Zieltreffer (voll/Endstueck/Grenzfall/Fehlschlag), "
           "auswerten() (M1 drei Bedingungen, M2 MIT+NEG, Fehlbestand, "
-          "Werkzeug-Ausschluss, Grenzwert alle ausgeschlossen), M1-Pool-Ausschluss",
+          "Werkzeug-Ausschluss, Grenzwert alle ausgeschlossen), M1-Pool-Ausschluss, "
+          "leck_pruefung(), dreiteilung_erreichbarkeit() (vier Klassen)",
           file=_sys.stderr)
 
 

@@ -1,0 +1,183 @@
+{
+  "hinweis": "Live-Demonstration mit echten Subagenten, 2026-08-15, 5 Agentenlaeufe (m1-04: MIT+WERKZEUG; m2-00: informierter Kriterien-Agent + OHNE+MIT). Kein hochgerechneter Wert, ein Fall je Gruppe. WICHTIGER NEBENBEFUND: das dritte, live erzeugte Kriterium leckte tatsaechlich die Ziel-Kennung woertlich (Muster: der volle Knotenpfad) -- kein konstruierter Testfall, sondern von leck_pruefung_kriterien() im echten Lauf erkannt und in richter_m2_00_bereinigt entfernt. Das ist der Beleg, dass die Leckpruefung wirkt, staerker als jeder synthetische Test.",
+  "dreiteilung_m1_04": {
+    "gesamt": 1,
+    "gefunden_mit_einspielung": 0,
+    "selbst_gefunden": 0,
+    "gar_nicht_gefunden": 1,
+    "unbestimmt": 0,
+    "einzelheiten": [
+      {
+        "case_id": "m1-04",
+        "klasse": "gar_nicht_gefunden",
+        "mit_treffer": false,
+        "werkzeug_treffer": false
+      }
+    ],
+    "hinweis": "misst, ob das Ziel OHNE Einspielung ueber Werkzeuge erreichbar war -- trennt 'der Speicher lieferte es' von 'der Agent haette es auch so gefunden'."
+  },
+  "leckpruefung_kriterien": {
+    "leckt": true,
+    "befunde": [
+      {
+        "kriterium": {
+          "text": "Knoten-Pfad zur Belegform-Regel",
+          "muster": [
+            "/shared/arch/zwei-belegformen-vollstaendige-kopie"
+          ]
+        },
+        "betroffene_ziele": [
+          "/shared/arch/zwei-belegformen-vollstaendige-kopie"
+        ]
+      }
+    ]
+  },
+  "richter_m2_00": {
+    "kriterien": [
+      {
+        "text": "Veröffentlichungssperre für brainlehr am 2026-08-10 widerrufen",
+        "muster": [
+          "Veroeffentlichung",
+          "2026-08-10",
+          "widerrufen"
+        ]
+      },
+      {
+        "text": "Zwei Belegformen: vollständige Kopie vs. Zitat mit Schnappschuss+Prüfsumme",
+        "muster": [
+          "vollstaendige Kopie",
+          "Zitat",
+          "Schnappschuss",
+          "Pruefsumme"
+        ]
+      },
+      {
+        "text": "Knoten-Pfad zur Belegform-Regel",
+        "muster": [
+          "/shared/arch/zwei-belegformen-vollstaendige-kopie"
+        ]
+      }
+    ],
+    "urteile": {
+      "OHNE": {
+        "kriterien": [
+          {
+            "text": "Veröffentlichungssperre für brainlehr am 2026-08-10 widerrufen",
+            "erfuellt": false,
+            "treffer_muster": []
+          },
+          {
+            "text": "Zwei Belegformen: vollständige Kopie vs. Zitat mit Schnappschuss+Prüfsumme",
+            "erfuellt": false,
+            "treffer_muster": []
+          },
+          {
+            "text": "Knoten-Pfad zur Belegform-Regel",
+            "erfuellt": false,
+            "treffer_muster": []
+          }
+        ],
+        "erfuellt": 0,
+        "n": 3,
+        "anteil": 0.0
+      },
+      "MIT": {
+        "kriterien": [
+          {
+            "text": "Veröffentlichungssperre für brainlehr am 2026-08-10 widerrufen",
+            "erfuellt": false,
+            "treffer_muster": []
+          },
+          {
+            "text": "Zwei Belegformen: vollständige Kopie vs. Zitat mit Schnappschuss+Prüfsumme",
+            "erfuellt": true,
+            "treffer_muster": [
+              "Zitat",
+              "Schnappschuss"
+            ]
+          },
+          {
+            "text": "Knoten-Pfad zur Belegform-Regel",
+            "erfuellt": false,
+            "treffer_muster": []
+          }
+        ],
+        "erfuellt": 1,
+        "n": 3,
+        "anteil": 0.3333333333333333
+      }
+    },
+    "werkzeug_ausgeschlossen": [],
+    "blindheitsnachweis": {
+      "stimmt_ueberein": true,
+      "abweichungen": [],
+      "hinweis": "identische Quote mit und ohne Label -- der mechanische Richter kann Labels nicht sehen, also auch nicht bevorzugen. Was das NICHT prueft: Bestaetigungsfehler bei der KRITERIEN-Erstellung durch den informierten Agenten selbst (s. Modulkopf)."
+    }
+  },
+  "richter_m2_00_bereinigt": {
+    "kriterien": [
+      {
+        "text": "Veröffentlichungssperre für brainlehr am 2026-08-10 widerrufen",
+        "muster": [
+          "Veroeffentlichung",
+          "2026-08-10",
+          "widerrufen"
+        ]
+      },
+      {
+        "text": "Zwei Belegformen: vollständige Kopie vs. Zitat mit Schnappschuss+Prüfsumme",
+        "muster": [
+          "vollstaendige Kopie",
+          "Zitat",
+          "Schnappschuss",
+          "Pruefsumme"
+        ]
+      }
+    ],
+    "urteile": {
+      "OHNE": {
+        "kriterien": [
+          {
+            "text": "Veröffentlichungssperre für brainlehr am 2026-08-10 widerrufen",
+            "erfuellt": false,
+            "treffer_muster": []
+          },
+          {
+            "text": "Zwei Belegformen: vollständige Kopie vs. Zitat mit Schnappschuss+Prüfsumme",
+            "erfuellt": false,
+            "treffer_muster": []
+          }
+        ],
+        "erfuellt": 0,
+        "n": 2,
+        "anteil": 0.0
+      },
+      "MIT": {
+        "kriterien": [
+          {
+            "text": "Veröffentlichungssperre für brainlehr am 2026-08-10 widerrufen",
+            "erfuellt": false,
+            "treffer_muster": []
+          },
+          {
+            "text": "Zwei Belegformen: vollständige Kopie vs. Zitat mit Schnappschuss+Prüfsumme",
+            "erfuellt": true,
+            "treffer_muster": [
+              "Zitat",
+              "Schnappschuss"
+            ]
+          }
+        ],
+        "erfuellt": 1,
+        "n": 2,
+        "anteil": 0.5
+      }
+    },
+    "werkzeug_ausgeschlossen": [],
+    "blindheitsnachweis": {
+      "stimmt_ueberein": true,
+      "abweichungen": [],
+      "hinweis": "identische Quote mit und ohne Label -- der mechanische Richter kann Labels nicht sehen, also auch nicht bevorzugen. Was das NICHT prueft: Bestaetigungsfehler bei der KRITERIEN-Erstellung durch den informierten Agenten selbst (s. Modulkopf)."
+    }
+  }
+}
