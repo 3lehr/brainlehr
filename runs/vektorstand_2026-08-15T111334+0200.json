@@ -1,0 +1,63 @@
+{
+  "frage": "Brauchen wir einen Melder, der sagt, wann wir den Vektorraum neu bauen muessen? (Betreiber, 2026-08-15)",
+  "zeitpunkt": "2026-08-15T11:13:34+0200",
+  "befund_vor_dieser_sitzung": {
+    "existiert": "melder/vektorstand.py existierte bereits (Anlass 2026-08-11), deckte aber nur zwei der fuenf Teilfragen ab (a, b).",
+    "ausloeser": "KEINER. Gemessen: kein Treffer fuer 'vektorstand' in ~/.claude/settings.json (grep, 0 Treffer), kein Import in melder/pruefer.py (der zentrale Melder-Runner, an SessionStart gehaengt und in tests/test_melder_verdrahtung.py:SOLLEN_LAUFEN eingetragen), kein Eintrag in SOLLEN_LAUFEN selbst, keine crontab/launchd-Zeile. Muss von Hand mit 'python3 melder/vektorstand.py --melder' aufgerufen werden. Nach Hausregel zaehlt das als NICHT VORHANDEN.",
+    "meldung_vor_der_erweiterung": "Knoten: 2210 gesamt, 0 ohne Einbettung, 9 mit veralteter Pruefsumme. Lehren: 920 gesamt, 0 ohne Einbettung, 30 mit veralteter Pruefsumme. (python3 melder/vektorstand.py --pruefen, Stand vor dieser Sitzung)"
+  },
+  "teilfragen": [
+    {
+      "frage": "a) Knoten OHNE Vektor",
+      "heute_beantwortbar": true,
+      "kommando": "python3 melder/vektorstand.py --pruefen",
+      "zahl": "0 von 2210 Knoten, 0 von 920 Lehren ohne jede Einbettungszeile",
+      "war_schon_vorhanden": true
+    },
+    {
+      "frage": "b) Vektor VERALTET (Text hat sich seit dem Embedden geaendert)",
+      "heute_beantwortbar": true,
+      "beleg": "text_checksum je Zeile in knowledge_embeddings (sha256 ueber genau den eingebetteten Text, gesetzt beim Schreiben in kern/build_embeddings.py). Kein separater Zeitstempel-Vergleich noetig oder vorhanden -- die Pruefsumme ist der robustere Test, ein reiner updated_at-Vergleich waere strukturell schwaecher (knowledge_nodes hat keine eigene updated_at-Spalte, die sich zuverlaessig mit knowledge_embeddings.updated_at vergleichen liesse).",
+      "kommando": "python3 melder/vektorstand.py --pruefen",
+      "zahl": "9 von 2210 Knoten, 30 von 920 Lehren mit veralteter Pruefsumme",
+      "war_schon_vorhanden": true
+    },
+    {
+      "frage": "c) MODELLWECHSEL -- Vektor stammt von einem anderen Einbettungsmodell als heute eingestellt",
+      "heute_beantwortbar": true,
+      "abweichung_von_der_auftragsannahme": "Die Annahme im Auftrag ('wenn das Modell nicht je Vektor gespeichert ist, ist ein Wechsel im Nachhinein nicht erkennbar') ist WIDERLEGT. Die Spalte 'model' existiert in knowledge_embeddings (Originalschema, keine Nachziehung), und _zeilenstatus() in vektorstand.py vergleicht sie bereits gegen embeddings.DEFAULT_EMBED_MODEL (z[0] != model -> 'veraltet'). Der historische Wechsel nomic-embed-text -> bge-m3 (2026-08-07) ist genau ueber diese Spalte gelaufen (Kommentar in kern/build_embeddings.py Zeile 86: 'Auftrag 2026-08-07, Modellwechsel bge-m3').",
+      "kommando": "SELECT model, count(*) FROM knowledge_embeddings GROUP BY model",
+      "zahl": "1 Modell im Bestand: bge-m3@ctx2048, 3876 von 3876 Zeilen -- keine Fremdmodell-Zeile vorhanden, aktuelles DEFAULT_EMBED_MODEL passt zu allen",
+      "war_schon_vorhanden": true
+    },
+    {
+      "frage": "d) ABSCHNEIDEN -- Text wird vor dem Einbetten bei rund 8000 Zeichen (num_ctx=2048) gekappt",
+      "heute_beantwortbar_vorher": false,
+      "heute_beantwortbar_jetzt": true,
+      "grund_der_luecke": "MELDER-Luecke, keine Datenluecke. embeddings.wird_gekappt() und embeddings.zeichengrenze() existierten schon (Aufgabe 69) und werden von node_text()/lesson_text() gespeisten Texten korrekt ausgewertet -- die Funktion wurde bisher aber nur als Nebenprodukt eines echten, Ollama-aufrufenden Baulaufs in kern/build_embeddings.py (Zeilen 413-426) ausgegeben, nie als eigenstaendige, billige Lesepruefung ohne Modellaufruf.",
+      "aenderung_in_dieser_sitzung": "melder/vektorstand.py: pruefen()/melden() rufen embeddings.wird_gekappt(node_text(n)) / (lesson_text(l)) fuer den gesamten Bestand rein lesend auf (kein Ollama-Aufruf, keine Schreiboperation).",
+      "kommando": "python3 melder/vektorstand.py --pruefen",
+      "zahl": "9 von 2210 Knoten wuerden beim naechsten Bau gekappt, 0 von 920 Lehren"
+    },
+    {
+      "frage": "e) DIMENSION passt nicht mehr zu Modell/Bestand",
+      "heute_beantwortbar_vorher": false,
+      "heute_beantwortbar_jetzt": true,
+      "grund_der_luecke": "MELDER-Luecke, keine Datenluecke. Die Spalte 'dim' existiert bereits je Zeile (additive Nachfuehrung, Kommentar kern/build_embeddings.py Zeile 86-89), wurde aber nirgends gegen etwas geprueft. embeddings.unpack_embedding() zieht die Vektorlaenge aus der tatsaechlichen Byteslaenge (len(blob)//4), NICHT aus der dim-Spalte -- ein Korruptionsfall waere also beim Lesen still (kein struct.error), waere aber unauffaellig, WEIL niemand dim gegen die Byteslaenge prueft. Ein zweiter, unabhaengiger Risikofall: embeddings.cosine_similarity() liefert bei ungleicher Vektorlaenge STILL 0.0 zurueck (kein Fehler, keine Exception) -- ein Modell, das plötzlich eine andere Dimension liefert, wuerde also nicht crashen, sondern nur lautlos schlechtere Trefferwerte erzeugen.",
+      "aenderung_in_dieser_sitzung": "melder/vektorstand.py: pruefen()/melden() vergleichen je Zeile des aktuellen Modells 'dim' gegen length(vector)//4 (Korruption) und pruefen, ob im aktuellen Modell mehr als eine Vektorlaenge vorkommt (Mehrdeutigkeit).",
+      "kommando": "python3 melder/vektorstand.py --pruefen",
+      "zahl": "0 von 3876 Zeilen mit dim != Byteslaenge/4; genau 1 Dimension im Bestand ([1024]) -- kein Mehrdeutigkeitsfall heute"
+    }
+  ],
+  "was_nicht_gebaut_wurde": [
+    "Verdrahtung an ein Ereignis (SessionStart/pruefer.py/SOLLEN_LAUFEN) -- ausserhalb der erlaubten Schreibpfade dieser Sitzung (nur melder/vektorstand.py, tests/, runs/). Befund gemeldet, nicht gefixt.",
+    "Ein eigener updated_at-Zeitstempel je Knoten/Lehre fuer eine reine Zeit-basierte Veraltungspruefung -- waere eine neue Spalte (kern/schema_nachzug.py, TABU in dieser Sitzung) und ist ohnehin schwaecher als die vorhandene Pruefsummenpruefung."
+  ],
+  "abnahme": {
+    "rot_vor_gruen": "git show HEAD:melder/vektorstand.py als /tmp/vektorstand_alt.py geladen und pruefen() gegen den echten Bestand gerechnet: alte Version hatte weder 'knoten_gekappt' noch 'dim_korrupt' im Rueckgabewert -- die neuen Selftest-Faelle 6/7/8 waeren an der alten Version mit KeyError gescheitert.",
+    "negativfall": "melden(sauber) mit genau einem sauberen Knoten (passende Pruefsumme, kurzer Text, korrekte Dimension) liefert None -- ein gesunder Bestand loest nichts aus.",
+    "gegenprobe_dimension": "melden(mehrdeutig) mit zwei technisch korrekten, aber UNGLEICH langen Vektoren im selben Modell loest trotzdem aus (Mehrdeutigkeitsfall, kein Einzeldefekt).",
+    "gegen_echten_bestand": "python3 melder/vektorstand.py --pruefen lief gegen die echte kern/speicher-Datenbank, nicht nur gegen eine Fixture (Zahlen oben).",
+    "selftest": "python3 melder/vektorstand.py --selftest -> 'selftest ok (8 Faelle inkl. Kappung/Dimension, Gegenprobe in beide Richtungen)', exit 0"
+  }
+}
