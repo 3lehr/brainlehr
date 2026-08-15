@@ -58,7 +58,7 @@ def temp_db(tmp_path, monkeypatch):
     # jeder Test startet mit einem leeren IDF-Index -- sonst faerbt der
     # zuletzt gelaufene Test (anderer temp_db, andere Knoten-IDs) in den
     # naechsten hinein.
-    kms._knowledge_hint_index_cache.update(built_at=0.0, tok={}, idf={}, norm={})
+    kms._knowledge_hint_index_cache.update(built_at=0.0, tok={}, idf={}, norm={}, gat={})
     return db_path
 
 
@@ -146,6 +146,13 @@ def _make_embed_mock():
     return _mock
 
 
+@pytest.mark.xfail(strict=True, reason=(
+    "Preis der Nachkalibrierung 2026-08-15: der belegte Fall liegt bei 0,709/"
+    "0,743 und damit unter der neuen Schwelle 0,95 fuer den Arbeitsbestand. "
+    "Ihn zu fangen kostete gemessen 87 % Fehlalarm im eigenen Bestand (150er-"
+    "Stichprobe) -- mit diesem Mass ist er nicht von Rauschen zu trennen. "
+    "Bleibt stehen statt geloescht: er ist der Massstab, an dem ein besseres "
+    "Mass sich messen lassen muss."))
 def test_belegter_fall_dd_b6_e6_erzeugt_hinweis(temp_db, monkeypatch):
     """Positivfall (Kriterium 1): dd- und b6-analoge Knoten zuerst anlegen,
     dann den e6-analogen -- VORHER (nach den ersten beiden) gibt es keinen
@@ -317,6 +324,106 @@ def test_identischer_titel_anderer_inhalt_gibt_hinweis_kein_fehler(temp_db, monk
     # Titelgleichheit allein treibt TF-IDF stark genug fuer einen Hinweis,
     # obwohl Zusammenfassung/Inhalt fremd sind.
     assert res.get("similar_node_hint", []) != []
+
+
+# ─── Nachkalibrierung 2026-08-15 (Messung gegen 2204 aktive Knoten) ────────
+#
+# ROT VOR GRUEN, gegen den Stand VOR dieser Aenderung (Schwelle 0,70 flach,
+# keine Gattungstrennung) laufen die drei Tests unten so:
+#   test_gattung_trennt_...   ROT -- ein Nachschlagewerk-Knoten kam als
+#                             Hinweis auf einen Arbeitsbestand-Knoten zurueck.
+#   test_nachschlagewerk_...  ROT im Gegenfall (knapper Treffer 1,4 kam durch,
+#                             heute nicht mehr); der Volltreffer war schon
+#                             gruen und bleibt es -- er ist die Positivkontrolle.
+#   test_schwelle_...         ROT -- ein Paar im Fenster 0,70-0,95 erzeugte
+#                             einen Hinweis. Genau dieses Fenster trug in der
+#                             Stichprobe 0 von 12 echten Dopplungen.
+
+def _score_ohne_schwelle(monkeypatch, conn, title, summary, content, vec, gattung):
+    """Rohwert des besten Treffers, Schwelle voruebergehend auf 0 -- damit ein
+    Grenzwerttest sagen kann WO das Paar liegt, statt nur DASS nichts kam."""
+    monkeypatch.setattr(kms, "_KNOWLEDGE_HINT_FLOOR", {"arbeitsbestand": 0.0, "nachschlagewerk": 0.0})
+    hits = kms._find_similar_knowledge_nodes(conn, title, summary, content, vec, gattung=gattung)
+    monkeypatch.undo()
+    return max((h["score"] for h in hits), default=0.0)
+
+
+def test_gattung_trennt_nachschlagewerk_von_arbeitsbestand(temp_db, monkeypatch):
+    """Ursache (1) der Messung: 1638 von 2204 Knoten sind der NASA-Import mit
+    dichtem gemeinsamem Fachvokabular. Hier der schaerfste denkbare Fall --
+    WORTGLEICHER Text und Kosinus 1,0 -- und trotzdem kein Hinweis, weil die
+    Gattungen verschieden sind. In beide Richtungen geprueft."""
+    monkeypatch.setattr(kms.embeddings, "embed_text", lambda text, **kw: list(VEC_DD))
+
+    res_nw = kms.knowledge_add("/", DD_TITLE, DD_SUMMARY, content=DD_CONTENT,
+                               source="test", gattung="nachschlagewerk")
+    assert "error" not in res_nw, res_nw
+
+    res_ab = kms.knowledge_add("/andere-ecke", DD_TITLE, DD_SUMMARY, content=DD_CONTENT,
+                               source="test", gattung="arbeitsbestand", neuer_ast=True)
+    assert "error" not in res_ab, res_ab
+    assert res_ab.get("similar_node_hint", []) == [], res_ab
+
+    # Gegenrichtung: neuer Nachschlagewerk-Knoten sieht den Arbeitsbestand nicht.
+    res_nw2 = kms.knowledge_add("/dritte-ecke", DD_TITLE, DD_SUMMARY, content=DD_CONTENT,
+                                source="test", gattung="nachschlagewerk", neuer_ast=True)
+    assert {h["id"] for h in res_nw2.get("similar_node_hint", [])} == {res_nw["id"]}, res_nw2
+
+
+def test_nachschlagewerk_nur_bei_echter_doublette(temp_db, monkeypatch):
+    """Ursache (2), Seite Nachschlagewerk: gemessen sind 9 von 9 Paaren ab
+    1,77 echte Doubletten desselben LLIS-Berichts, waehrend zwischen 1,45 und
+    1,60 die Fehltreffer ueberwiegen. Positivkontrolle (wortgleich, Kosinus
+    1,0 -- muss treffen) UND Negativfall (verwandt, aber unter der Schwelle --
+    darf nicht treffen), sonst misst der Test nur sich selbst."""
+    monkeypatch.setattr(kms.embeddings, "embed_text", _make_embed_mock())
+
+    res_a = kms.knowledge_add("/", DD_TITLE, DD_SUMMARY, content=DD_CONTENT,
+                              source="test", gattung="nachschlagewerk")
+    res_b = kms.knowledge_add("/zweitfassung", DD_TITLE, DD_SUMMARY, content=DD_CONTENT,
+                              source="test", gattung="nachschlagewerk", neuer_ast=True)
+    assert res_a["id"] in {h["id"] for h in res_b.get("similar_node_hint", [])}, res_b
+
+    # Negativfall: b6 ist inhaltlich nah (Kosinus 0,7654), aber keine Doublette.
+    res_c = kms.knowledge_add("/verwandt", B6_TITLE, B6_SUMMARY, content=B6_CONTENT,
+                              source="test", gattung="nachschlagewerk", neuer_ast=True)
+    assert res_c.get("similar_node_hint", []) == [], res_c
+
+
+def test_schwelle_arbeitsbestand_faengt_erst_ab_095(temp_db, monkeypatch):
+    """Grenzwert der neuen Zahl: ein Paar, dessen Rohwert nachweislich im
+    Fenster 0,70-0,95 liegt (also unter der alten Schwelle durchgekommen
+    waere), erzeugt keinen Hinweis mehr. Der Rohwert wird MITGEMESSEN, sonst
+    belegt ein leeres Ergebnis nur, dass irgendetwas nicht gefunden wurde."""
+    # Eigener Kosinus (0,50 statt der 0,612 des belegten Falls): der belegte
+    # Fall landet mit dem TF-IDF-Anteil dieses kleinen Aufbaus GENAU auf 0,95
+    # und wuerde den Test vom Rundungsverhalten abhaengig machen. Der Wert
+    # steuert hier die Lage im Fenster, nicht die Aussage -- die Aussage ist
+    # 'zwischen alter und neuer Schwelle kommt nichts mehr durch'.
+    _win = (0.50, math.sqrt(1 - 0.50 ** 2), 0.0, 0.0)
+    monkeypatch.setattr(kms.embeddings, "embed_text", lambda text, **kw: (
+        list(VEC_DD) if "Warum die Rangordnung" in text else
+        list(_win) if "Mehrere Einteilungen sind gleichzeitig" in text else list(VEC_NEG)))
+    kms.knowledge_add("/", DD_TITLE, DD_SUMMARY, content=DD_CONTENT, source="test")
+    # Fuellknoten, sonst misst der Pruefstand nicht die Sache: bei N=1 ist
+    # idf=log(1/1)=0 fuer JEDES Wort, der TF-IDF-Kanal liegt still und der
+    # Rohwert ist blanker Kosinus -- ein Fenstertest waere dann eine Aussage
+    # ueber den Aufbau statt ueber die Schwelle.
+    for i in range(8):
+        kms.knowledge_add("/", f"Fuellknoten {i} ueber Plattenplatz und Sicherungsband",
+                          f"Beliebiger Fuelltext {i} ohne Bezug zu Normen oder Achsen.",
+                          source="test")
+
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    roh = _score_ohne_schwelle(monkeypatch, conn, E6_TITLE, E6_SUMMARY, E6_CONTENT,
+                               list(_win), "arbeitsbestand")
+    conn.close()
+    assert 0.70 <= roh < 0.95, f"Fixture liegt nicht mehr im gemessenen Fenster: {roh:.3f}"
+
+    res = kms.knowledge_add("/woanders", E6_TITLE, E6_SUMMARY, content=E6_CONTENT,
+                            source="test", neuer_ast=True)
+    assert res.get("similar_node_hint", []) == [], res
 
 
 def test_gleicher_inhalt_anderer_pfad_gibt_hinweis(temp_db, monkeypatch):

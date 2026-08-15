@@ -3026,18 +3026,24 @@ def _projekt_aus_pfad(parent_path: str, projekte: set[str]) -> str:
     return "shared"
 
 
-_KNOWLEDGE_HINT_FLOOR = 0.70       # Summe TF-IDF-Kosinus + Embedding-Kosinus, siehe Messung unten
+# Schwelle der Summe TF-IDF-Kosinus + Embedding-Kosinus, JE GATTUNG -- die
+# Messung vom 2026-08-15 (siehe _find_similar_knowledge_nodes) hat sie
+# getrennt erhoben, weil echte Dopplungen in den beiden Bestaenden an ganz
+# verschiedenen Stellen liegen. Verglichen wird ohnehin nur innerhalb einer
+# Gattung, ein Paar hat also immer genau eine Schwelle.
+_KNOWLEDGE_HINT_FLOOR = {"arbeitsbestand": 0.95, "nachschlagewerk": 1.75}
 _KNOWLEDGE_HINT_SHORTLIST = 50      # Vorauswahl per TF-IDF, bevor Embeddings nachgeladen werden
 _KNOWLEDGE_HINT_CAP = 3              # mehr als 2-3 Hinweise ist Rauschen und wird ueberlesen
 _KNOWLEDGE_HINT_TTL_S = 300           # IDF-Index-Cache: Aufbau kostet ~150ms bei 2000+ Knoten
 
-_knowledge_hint_index_cache: dict = {"built_at": 0.0, "tok": {}, "idf": {}, "norm": {}}
+_knowledge_hint_index_cache: dict = {"built_at": 0.0, "tok": {}, "idf": {}, "norm": {}, "gat": {}}
 
 
 _KNOWLEDGE_HINT_INCREMENTAL_MIN = 200  # unter dieser Groesse: voller Neuaufbau statt Nachtrag, siehe unten
 
 
-def _knowledge_hint_index_add(node_id: str, title: str, summary: str, content: str | None) -> None:
+def _knowledge_hint_index_add(node_id: str, title: str, summary: str, content: str | None,
+                              gattung: str = "arbeitsbestand") -> None:
     """Traegt einen frisch geschriebenen Knoten SOFORT in den warmen Cache
     nach, statt auf den naechsten TTL-Ablauf zu warten -- sonst saehe eine
     Knotenfolge im selben Aufruf-Takt (z.B. drei knowledge_add() kurz
@@ -3066,6 +3072,7 @@ def _knowledge_hint_index_add(node_id: str, title: str, summary: str, content: s
     tok = _tokenize(f"{title} {summary} {content or ''}")
     cache["tok"][node_id] = tok
     cache["norm"][node_id] = math.sqrt(sum(cache["idf"].get(w, 0.0) ** 2 for w in tok)) or 1.0
+    cache["gat"][node_id] = gattung
 
 
 def _knowledge_hint_index(conn: sqlite3.Connection) -> dict:
@@ -3081,22 +3088,24 @@ def _knowledge_hint_index(conn: sqlite3.Connection) -> dict:
     if cache["built_at"] > 0.0 and (time.time() - cache["built_at"]) < _KNOWLEDGE_HINT_TTL_S:
         return cache
     rows = conn.execute(
-        "SELECT id, title, summary, content FROM knowledge_nodes WHERE zurueckgezogen = 0"
+        "SELECT id, title, summary, content, gattung FROM knowledge_nodes WHERE zurueckgezogen = 0"
     ).fetchall()
     tok = {r["id"]: _tokenize(f"{r['title']} {r['summary']} {r['content'] or ''}") for r in rows}
+    gat = {r["id"]: r["gattung"] for r in rows}
     df: Counter = Counter()
     for t in tok.values():
         df.update(t)
     n = len(tok)
     idf = {w: math.log(n / c) for w, c in df.items() if c}
     norm = {i: math.sqrt(sum(idf.get(w, 0.0) ** 2 for w in t)) or 1.0 for i, t in tok.items()}
-    cache.update(built_at=time.time(), tok=tok, idf=idf, norm=norm)
+    cache.update(built_at=time.time(), tok=tok, idf=idf, norm=norm, gat=gat)
     return cache
 
 
 def _find_similar_knowledge_nodes(conn: sqlite3.Connection, title: str, summary: str,
                                   content: str | None, new_vec: list[float] | None,
-                                  exclude_id: str | None = None) -> list[dict]:
+                                  exclude_id: str | None = None,
+                                  gattung: str = "arbeitsbestand") -> list[dict]:
     """Reiner Hinweis auf inhaltlich nahe AKTIVE Knoten VOR dem Anlegen (Auftrag
     78/90). Gemessen (2026-08-13) am belegten Fall dd367fd1/b6305304/6e0f0395
     (dieselbe Kernaussage dreimal im Bestand): weder Wort-Jaccard noch der
@@ -3115,6 +3124,44 @@ def _find_similar_knowledge_nodes(conn: sqlite3.Connection, title: str, summary:
     bleibt. Gedeckelt auf _KNOWLEDGE_HINT_CAP Treffer -- ohne Deckel haetten
     einzelne Knoten in derselben Stichprobe >60 Treffer ueber der Schwelle.
 
+    NACHGEMESSEN 2026-08-15 gegen den vollen Bestand (2204 aktive Knoten), und
+    die Schwelle 0,70 hielt nicht: 2110 von 2204 Knoten (95,7 %) bekamen
+    mindestens einen Hinweis -- ein Signal, das fast immer anschlaegt, wird
+    weggeklickt (L-528f0c). Zwei getrennte Ursachen, zwei getrennte Antworten:
+
+    (1) DIE MISCHUNG. 1638 der 2204 Knoten sind der NASA-LLIS-Import
+    (gattung='nachschlagewerk'), ein thematisch enger Bestand mit dichtem
+    gemeinsamem Fachvokabular. Er zog jeden eigenen Knoten ueber die Schwelle.
+    Verglichen wird deshalb nur noch INNERHALB einer Gattung -- ein
+    Nachschlagewerk ist nie Pruefpaar zu eigener Arbeit und umgekehrt.
+
+    (2) DIE HOEHE. Auch danach blieben im eigenen Bestand 88,7 % (Stichprobe
+    150). Verteilung der besten Treffer je Knoten, Stichprobe 200 je Korpus:
+    Median 0,80 (eigen) bzw. 0,87 (Nachschlagewerk) -- die beiden Korpora sind
+    sich in der VERTEILUNG so aehnlich, dass eine Rang-/Perzentil-Normierung
+    praktisch dieselbe Zahl liefert; sie wurde daraufhin verworfen. Verschieden
+    ist, wo die ECHTEN Dopplungen sitzen, und das sieht kein Perzentil:
+
+      eigener Bestand   Baender 0,70-0,90: 0 von 12 beurteilten Paaren waren
+                        eine Dopplung (z.B. 'Keine Entwicklerinformation in
+                        der Oberflaeche' gegen 'design-waechter: neun Fragen',
+                        0,82 -- verwandt, aber nichts doppelt). Ab 0,95 traegt
+                        es: 'Was als Beleg fuer funktioniert zaehlt' gegen
+                        '"Es funktioniert" braucht einen Beleg' (1,14),
+                        derselbe Abwesenheitsmodus zweimal (1,07), 'ALLES IST
+                        BETA' gegen 'Grundsatz H1' (1,02).
+      Nachschlagewerk   Dopplungen liegen fast am Anschlag (Maximum 2,0):
+                        9 von 9 Paaren ab 1,77 sind echte Doubletten desselben
+                        LLIS-Berichts, zwischen 1,45 und 1,60 ueberwiegen
+                        Fehltreffer ('Electrical Shielding' gegen 'Power Line
+                        Filters', 1,45).
+
+    WAS DIESE SCHWELLE KOSTET, und das ist keine Nebenwirkung, sondern der
+    Preis: Der oben belegte Fall dd367fd1/b6305304/6e0f0395 liegt bei 0,709/
+    0,743 und faellt damit heraus. Er ist mit diesem Mass nicht von Rauschen
+    zu trennen -- ihn zu fangen kostete 87 % Fehlalarm. Die zugehoerigen
+    Testfaelle stehen als strict-xfail, nicht geloescht.
+
     Zweistufig aus Zeitgruenden: TF-IDF (rein Python, gecachter Index, ~10ms)
     waehlt eine Kurzliste von _KNOWLEDGE_HINT_SHORTLIST Kandidaten, NUR fuer
     die wird der schon vorhandene Embedding-Vektor nachgeladen -- ein voller
@@ -3123,6 +3170,7 @@ def _find_similar_knowledge_nodes(conn: sqlite3.Connection, title: str, summary:
     wie similar_lesson_hint bei lesson_record, nur vor statt nach dem
     Schreiben (L-183517: danach erzwingt einen dritten Aufruf)."""
     idx = _knowledge_hint_index(conn)
+    floor = _KNOWLEDGE_HINT_FLOOR.get(gattung, _KNOWLEDGE_HINT_FLOOR["arbeitsbestand"])
     new_tok = _tokenize(f"{title} {summary} {content or ''}")
     if not new_tok or new_vec is None:
         return []
@@ -3130,6 +3178,9 @@ def _find_similar_knowledge_nodes(conn: sqlite3.Connection, title: str, summary:
     tfidf_scores = []
     for oid, tok in idx["tok"].items():
         if oid == exclude_id:
+            continue
+        # Nur innerhalb einer Gattung vergleichen -- siehe Ursache (1) oben.
+        if idx["gat"].get(oid, "arbeitsbestand") != gattung:
             continue
         shared = new_tok & tok
         if not shared:
@@ -3155,7 +3206,7 @@ def _find_similar_knowledge_nodes(conn: sqlite3.Connection, title: str, summary:
         if ovec is None:
             continue
         score = tscore + embeddings.cosine_similarity(new_vec, ovec)
-        if score >= _KNOWLEDGE_HINT_FLOOR:
+        if score >= floor:
             combined.append((score, oid))
     combined.sort(reverse=True)
     hits = []
@@ -3421,7 +3472,9 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     # _rebuild_node_embedding) und unten fuer die eigentliche Einbettungszeile
     # wiederverwendet, statt ihn zweimal beim selben Aufruf zu berechnen.
     _hint_vec = embeddings.embed_text(f"{node_path}\n{title}\n{summary}\n{content or ''}")
-    similar_node_hint = _find_similar_knowledge_nodes(conn, title, summary, content, _hint_vec)
+    similar_node_hint = _find_similar_knowledge_nodes(
+        conn, title, summary, content, _hint_vec,
+        gattung=gattung if gattung is not None else "arbeitsbestand")
 
     conn.execute(
         """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von)
@@ -3454,7 +3507,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     # ADR-032: Vektor sofort mitbauen statt eine vector_gaps-Luecke bis zum
     # naechsten build_embeddings.py-Lauf offenzulassen.
     _vektor_grund = _rebuild_node_embedding(conn, node_id, project_id, node_path, title, summary, content, vec=_hint_vec)
-    _knowledge_hint_index_add(node_id, title, summary, content)
+    _knowledge_hint_index_add(node_id, title, summary, content,
+                              gattung=gattung if gattung is not None else "arbeitsbestand")
     conn.commit()
     conn.close()
     _check_injection_suspects("node", node_path, {"title": title, "summary": summary, "content": content})
