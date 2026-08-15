@@ -1,0 +1,20 @@
+{
+  "name": "univer_i3_min",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@esbuild/darwin-arm64": "^0.24.2",
+    "@univerjs/preset-sheets-core": "^0.25.1",
+    "@univerjs/presets": "^0.25.1",
+    "esbuild": "^0.24.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  }
+}

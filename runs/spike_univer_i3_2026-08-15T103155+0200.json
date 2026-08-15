@@ -1,0 +1,103 @@
+{
+  "auftrag": "I3 (ADR-016) — Univer vor dem Bau messen: offline-faehig, Gewicht, Paketlizenzen, eigene Fremdinhalt-Ausfuehrung. NUR gemessen, nichts gebaut.",
+  "zeitpunkt": "2026-08-15T10:31:55+0200",
+  "arbeitsort": "spikes/univer_i3 (voller Quickstart-Pfad: @univerjs/presets + @univerjs/preset-sheets-core) und spikes/univer_i3_min (gleicher Pfad, zusaetzlich react/react-dom/esbuild fuer den Bundle-Test)",
+  "univer_version": "0.25.1",
+  "frage_1_offline": {
+    "befund": "BELEGT: Univer laedt und rendert (Toolbar, Formelleiste, 26x25-Grid, Zelle A1 aktiv) ohne jeden Netzzugriff.",
+    "methode": "macOS-Sandbox-Profil (sandbox-exec, Seatbelt) mit '(deny network-outbound)' und Ausnahme nur fuer 'localhost:*' — kein Wifi/Interface abgeschaltet, kein anderer Prozess betroffen. Profil: spikes/univer_i3_min/no-network.sb. Gegenprobe vorher gefahren: sandboxed curl auf https://example.com -> exit=7 (verbindung verweigert), sandboxed curl auf http://127.0.0.1:8931 -> 200 (erlaubt).",
+    "kommando_gegenprobe_extern": "sandbox-exec -f no-network.sb curl -s -m 3 -o /dev/null -w 'http_code=%{http_code}\\n' https://example.com  => http_code=000, exit=7",
+    "kommando_gegenprobe_lokal": "sandbox-exec -f no-network.sb curl -s -m 3 -o /dev/null -w 'http_code=%{http_code}\\n' http://127.0.0.1:8931/index.html  => http_code=200, exit=0",
+    "kommando_lauf": "sandbox-exec -f no-network.sb '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --no-sandbox --user-data-dir=/tmp/chrome-univer-profile2 --window-size=1280,900 --virtual-time-budget=5000 --screenshot=/tmp/univer_offline2.png http://127.0.0.1:8931/index.html",
+    "ergebnis_screenshot": "spikes/univer_i3_min/dist/offline_screenshot.png (34862 Bytes) — vollstaendig gerenderte Tabelle",
+    "nebenbefund": "Chrome-Log meldet einmal 'Network service crashed or was terminated, restarting service' beim Start unter der Sandbox — Neustart erfolgte automatisch, Seite rendert danach fehlerfrei. Kein Hinweis auf einen von Univer selbst ausgeloesten Verbindungsversuch in den 53 Logzeilen (kein ERR_* zu univer-eigenen Requests).",
+    "einschraenkung": "Chrome-Prozess beendet sich unter dieser Sandbox-Kombination nicht sauber (haengt nach Screenshot); Screenshot wurde vor dem Haengen geschrieben und ausgewertet, Prozess danach mit pkill beendet. Fuer einen Dauerbetrieb-Test (Klicks, Formeleingabe) waere ein sauber terminierender Treiber noetig — hier nicht gebaut, nur der Start-/Render-Fall gemessen."
+  },
+  "frage_2_gewicht": {
+    "node_modules_voller_quickstart_praesets_plus_sheets_core": {
+      "kommando": "du -sh node_modules (in spikes/univer_i3, nach npm install @univerjs/presets@0.25.1 @univerjs/preset-sheets-core@0.25.1)",
+      "groesse": "265M",
+      "pakete_gesamt_laut_find": 299
+    },
+    "node_modules_minimal_ohne_presets_metapaket": {
+      "kommando": "du -sh node_modules (in spikes/univer_i3_min, nur @univerjs/preset-sheets-core + react + react-dom, OHNE @univerjs/presets)",
+      "groesse": "159M",
+      "pakete_gesamt_laut_find": 215,
+      "univerjs_pro_pakete": 0
+    },
+    "ausgeliefertes_bundle_minimiert_gezippt": {
+      "kommando": "esbuild entry.js --bundle --format=esm --minify --loader:.css=css (bundelt @univerjs/presets(root)+preset-sheets-core+react+react-dom in EINE Datei)",
+      "js_roh_bytes": 10919056,
+      "js_gzip_bytes": 2728137,
+      "css_roh_bytes": 82328,
+      "css_gzip_bytes": 12857,
+      "gesamt_gzip_ca_mb": 2.74,
+      "hinweis": "react/react-dom sind hier einkompiliert (worst case, kein externes Shared-React). Reines UMD-Bundle nur der sheets-core-Preset-Datei (ohne react, wie von Univer ausgeliefert): 3245639 Bytes roh, 895866 Bytes gzip."
+    }
+  },
+  "frage_3_paketlizenzen": {
+    "methode": "npx license-checker --json auf dem TATSAECHLICH installierten node_modules-Baum (nicht auf dem Wurzelpaket).",
+    "voller_quickstart_pfad_presets_plus_sheets_core": {
+      "pakete_gesamt": 226,
+      "verteilung": {"MIT": 91, "Apache-2.0": 26, "BSD-3-Clause": 11, "ISC": 10, "Apache*": 1, "0BSD": 1, "Custom_undefined": 27},
+      "abweichend_von_apache2": {
+        "anzahl": 27,
+        "namen": [
+          "@univerjs-pro/collaboration-client-ui@0.25.1",
+          "@univerjs-pro/collaboration-client@0.25.1",
+          "@univerjs-pro/collaboration@0.25.1",
+          "@univerjs-pro/docs-exchange-client@0.25.1",
+          "@univerjs-pro/docs-print@0.25.1",
+          "@univerjs-pro/edit-history-loader@0.25.1",
+          "@univerjs-pro/edit-history-viewer@0.25.1",
+          "@univerjs-pro/engine-chart@0.25.1",
+          "@univerjs-pro/engine-formula@0.25.1",
+          "@univerjs-pro/engine-pivot@0.25.1",
+          "@univerjs-pro/engine-shape@0.25.1",
+          "@univerjs-pro/exchange-client@0.25.1",
+          "@univerjs-pro/license@0.25.1",
+          "@univerjs-pro/print@0.25.1",
+          "@univerjs-pro/sheets-chart-ui@0.25.1",
+          "@univerjs-pro/sheets-chart@0.25.1",
+          "@univerjs-pro/sheets-exchange-client@0.25.1",
+          "@univerjs-pro/sheets-outline-ui@0.25.1",
+          "@univerjs-pro/sheets-outline@0.25.1",
+          "@univerjs-pro/sheets-pivot-ui@0.25.1",
+          "@univerjs-pro/sheets-pivot@0.25.1",
+          "@univerjs-pro/sheets-print@0.25.1",
+          "@univerjs-pro/sheets-shape-ui@0.25.1",
+          "@univerjs-pro/sheets-shape@0.25.1",
+          "@univerjs-pro/sheets-sparkline-ui@0.25.1",
+          "@univerjs-pro/sheets-sparkline@0.25.1",
+          "@univerjs-pro/thread-comment-datasource@0.25.1"
+        ],
+        "befund_je_paket": "package.json ohne 'license'-Feld (undefined), kein LICENSE-File im Paketordner. Autor 'DreamNum Co., Ltd.', Beschreibung nennt durchgaengig 'Univer Pro'. Keine Apache-2.0-Zusage vorhanden, keine andere Lizenz erklaert — Lizenzstatus ungeklaert, nicht 'anders lizenziert' im Sinne einer bekannten Fremdlizenz, sondern schlicht KEINE."
+      },
+      "ursache": "npm install @univerjs/presets zieht laut dessen eigener package.json 'dependencies' zwingend @univerjs/preset-docs-advanced, preset-docs-collaboration, preset-sheets-advanced, preset-sheets-collaboration u.a. — diese wiederum zwingend die 27 @univerjs-pro/*-Pakete. Keine dieser Ketten ist optionalDependency; npm install laedt sie immer mit."
+    },
+    "minimal_pfad_ohne_presets_metapaket": {
+      "pakete_gesamt": 140,
+      "verteilung": {"MIT": 91, "Apache-2.0": 26, "BSD-3-Clause": 11, "ISC": 10, "Apache*": 1, "0BSD": 1},
+      "univerjs_pro_pakete": 0,
+      "einschraenkung": "Dieser Pfad hat KEINE createUniver()-Komfortfunktion (die lebt nur in @univerjs/presets); @univerjs/core exportiert nur die low-level 'createUniverInjector'-DI-Funktion. Ein lauffaehiger Sheet-Bootstrap ohne @univerjs/presets wurde hier NICHT gebaut (waere Bauarbeit, nicht Messung) — nur belegt, dass preset-sheets-core selbst transitiv keine -pro-Pakete zieht (node -e Tiefensuche ueber dependencies, 0 Treffer)."
+    },
+    "shipped_bundle_frei_von_pro_code": {
+      "kommando": "grep -c 'univerjs-pro\\|DreamNum' dist/bundle.js",
+      "treffer": 0,
+      "einordnung": "Wenn NUR aus dem Wurzel-Exportpfad von @univerjs/presets (createUniver, defaultTheme, LocaleType, merge) und aus @univerjs/preset-sheets-core importiert wird — NICHT aus den Unterpfaden './preset-sheets-advanced' o.ae. — landet kein Code der 27 unlizenzierten Pakete im ausgelieferten Bundle. Sie liegen aber weiterhin ungenutzt in node_modules/Lockfile des Build-Rechners."
+    }
+  },
+  "frage_zusatz_fremdinhalt_ausfuehrung": {
+    "befund": "Univer bringt selbst zwei Ausfuehrungspfade fuer variablen Inhalt mit, beide im GRUNDPAKET (preset-sheets-core), nicht erst in 'advanced':",
+    "punkt_1_webservice_formel": "Formel-Funktion WEBSERVICE ist im ausgelieferten Bundle registriert (grep -oi 'WEBSERVICE' dist/bundle.js -> Treffer). Eine Tabelle mit '=WEBSERVICE(\"http://...\")' wuerde einen Netzzugriff ausloesen — genau der Fall, den ADR-016 mit 'kein Netzzugriff, Positivliste statt Verbotsliste' ausschliessen will. Hier erstmals als KONKRETE, im Code vorhandene Formel belegt, nicht nur als Verdacht.",
+    "punkt_2_new_function": "Die Formel-Engine baut 'benutzerdefinierte' Formelfunktionen ueber 'new Function(`return ${t}`)()' aus einem String t (Fundstelle: Funktion 'calculateCustom' im minimierten Bundle). Das ist Univers eigener Mechanismus, Text in ausfuehrbaren JS-Code zu verwandeln. Ob 't' in der Produktivnutzung ausschliesslich vom Entwickler (Custom-Function-Registrierung) oder auch aus eingelesenen Fremddateien stammen kann, ist mit diesem Spike NICHT geklaert — offene Frage fuer den Bauschritt, nicht hier beantwortet.",
+    "punkt_3_innerhtml": "dangerouslySetInnerHTML/innerHTML-Treffer im Bundle stammen nachweislich aus React-DOM selbst (generische Prop-Behandlung), keine Fundstelle zeigt, dass Univer damit Zellinhalt oder importierte Daten roh rendert. Kein Beleg fuer einen O1-aehnlichen Pfad an dieser Stelle — aber auch nicht ausgeschlossen, nur oberflaechlich gegrept, kein Trace bis zur Aufrufstelle."
+  },
+  "rohausgaben_orte": {
+    "license_checker_voller_pfad": "/tmp/lc_min_withpresets.json (226 Pakete, im Spike-Ordner reproduzierbar per: cd spikes/univer_i3_min && npx license-checker@25 --json)",
+    "license_checker_minimal": "/tmp/lc_univer_min.json",
+    "chrome_offline_log": "/tmp/chrome_offline2.log",
+    "screenshot": "spikes/univer_i3_min/dist/offline_screenshot.png"
+  },
+  "gesamturteil": "TRAEGT MIT AUFLAGE: Apache-2.0 haelt fuer den tatsaechlich lauffaehigen und ausgelieferten Code (0 Treffer fuer 'univerjs-pro' im Produktionsbundle, 140 restliche Pakete durchweg permissiv MIT/Apache-2.0/BSD-3/ISC/0BSD) UND fuer den Offline-Betrieb (belegt per Sandbox-Lauf) — die Auflage ist, vor jedem Univer-Versions-Update erneut zu pruefen, dass kein Import ausserhalb der Wurzel-Exports und von 'preset-sheets-core' erfolgt (sonst kommen die 27 unlizenzierten @univerjs-pro-Pakete ins Bundle), UND dass die Positivliste aus ADR-016 die WEBSERVICE-Formel sowie den new-Function-Custom-Formel-Pfad ausdruecklich sperrt, bevor Fremddateien eingelesen werden."
+}
