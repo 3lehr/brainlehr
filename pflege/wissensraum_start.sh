@@ -10,14 +10,16 @@
 # /usr/bin:/bin, darum wird hier wie dort nach der FAEHIGKEIT gesucht,
 # nicht nach einem festen Pfad.
 #
-# Aufruf: wissensraum_start.sh   (keine Argumente, kein Geheimnis noetig)
+# Aufruf: wissensraum_start.sh [PORT]   (Vorgabe 8799, kein Geheimnis noetig)
+# Der optionale Port ist nur fuer Tests gedacht (eigener Port statt des
+# echten 8799) -- ohne Argument unveraendertes Verhalten.
 
 set -eu
 
 HIER=$(cd "$(dirname "$0")" && pwd)
 WURZEL=$(cd "$HIER/.." && pwd)
 SERVER="$WURZEL/berichte/entscheidungen_server.py"
-PORT=8799
+PORT="${1:-8799}"
 URL="http://127.0.0.1:$PORT/"
 
 # Laeuft schon jemand auf dem Port -- egal wer, dann ist nichts zu tun.

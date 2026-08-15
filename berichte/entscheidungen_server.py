@@ -1096,7 +1096,21 @@ def main() -> int:
     if args.selftest:
         return _selftest()
 
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    try:
+        server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    except OSError:
+        # ADR-020, Weg 3 (kein Klient startet den Dienst mit -- ADR-020
+        # begruendet, warum das architektonisch ausscheidet): scheitert der
+        # Start, weil der Port belegt ist, muss das lesbar sein statt einer
+        # rohen Stapelspur. pflege/wissensraum_start.sh faengt den
+        # Normalfall (Dienst laeuft schon) vorher per curl-Probe ab; dieser
+        # Zweig greift, wenn trotzdem direkt gestartet wird und dort etwas
+        # anderes sitzt.
+        print(
+            "An dieser Stelle laeuft bereits etwas -- moeglicherweise der "
+            "Dienst schon. Bitte pruefen, bevor erneut gestartet wird."
+        )
+        return 1
     print(f"Entscheidungsoberflaeche: http://127.0.0.1:{args.port}/  (nur lokal, Strg+C zum Beenden)")
     try:
         server.serve_forever()
