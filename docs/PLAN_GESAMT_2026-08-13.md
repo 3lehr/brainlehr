@@ -303,6 +303,46 @@ Schwerster: fremder Text aus der Datenbank landet roh per `innerHTML` in einer
 Ansicht, die **gleichursprünglich mit der schreibenden Schnittstelle** läuft —
 und genau dorthin soll `I3`.
 
+**Linie J — Abgleich zwischen Soll und Wirklichkeit.** Nachgetragen
+2026-08-15T10:05:00+0200. Entstanden nicht aus einem Plan, sondern aus einem
+Fund: Auf der laufenden Homepage des Betreibers lag untergeschobener Schadcode
+(`site-helper-793a1a8ec754`, angezeigt als „Debug Log Viewer Lite"), der
+JavaScript aus einem Smart Contract nachlädt und per `new Function` ausführt.
+**Gefunden wurde er als Nebenprodukt der Frage „läuft online derselbe Stand wie
+im Repo?"** — die Bundle-Hashes wichen ab. Lehren `L-600726`, `L-ed0b73`.
+
+**Der Befund für uns ist nicht der Schadcode, sondern die Blickrichtung:** Alle
+16 Melder prüfen den Bestand gegen sich selbst — Datenbank gegen Schema, Code
+gegen Code, Dokument gegen Dokument. **Keiner prüft das wirksame Artefakt gegen
+seine Quelle.** Und brainlehr kennt diese Form bereits an drei Stellen, ohne sie
+je als eine benannt zu haben: die installierte Triggerfassung gegen `schema.sql`
+(steht wörtlich in `CLAUDE.md`), der verschwundene Haken-Eintrag (`L-083b95`),
+die Arbeitsbaum-Kopien mit eigenem Stand (`L-c9d2aa`).
+
+`J1` **Triggerabgleich.** `select sql from sqlite_master` gegen `schema.sql`.
+Gemessen: 51 Trigger auf 30 Tabellen. Die vorhandenen Ratschen prüfen, dass die
+gewollten da sind — **keine prüft, dass keine zusätzlichen da sind.**
+`J2` **Haken- und Prozessabgleich.** Was ist in `settings.json` wirklich
+verdrahtet, welcher Code läuft in den Prozessen — gegen das, was Commit und Plan
+behaupten. Vorarbeit steht: `melder/ausloeserlos.py` (14 echte Funde),
+`haken/mcp_veraltet.py`.
+`J3` **Vollständigkeit statt Anwesenheit.** Jede Prüfung, die heute fragt „ist X
+da?", bekommt die Gegenrichtung „ist etwas da, das nicht auf der Liste steht?".
+Am 2026-08-15 hat genau diese Umkehrung `kern/satz.py` gefunden — mit
+`--selftest` angelegt, nirgends aufgerufen, Probe seit Anlage rot.
+`J4` **Herkunft als Pflichtfeld.** `abgeleitet_von` ist bei 2199 von 2200 Zeilen
+leer, `bedient_von` bei allen 909 Lehren. Ein Eintrag ohne Herkunft ist von einem
+untergeschobenen nicht unterscheidbar — nicht wegen eines Angreifers, sondern
+weil die Unterscheidung im Datenmodell nicht existiert. **Vor `J4` steht die
+Vorfrage, wer Herkunft setzen darf** — sonst wiederholt sich `L-34e5f8` (eine
+Identitätsprüfung entwertete eine bestehende Sperre).
+
+**Die Prüffrage, die aus demselben Fund kommt und in jeden Melder gehört:**
+*Verhält sich das anders, wenn niemand zusieht?* Der Schadcode sparte `wp-admin`
+aus — er versteckte sich vor dem Betreiber. `L-b3eb79` Stufe 2 beschreibt den
+Spiegelfall: ein Haken an `UserPromptSubmit` ist im Selbstlauf blind, also genau
+dann, wenn niemand zusieht. Dieselbe Achse, entgegengesetzte Richtung.
+
 ### Warum F und G — und nicht S1, S2, S3
 
 Am 2026-08-14 wurden beide Pläne zunächst **neben** diesen Gesamtplan gelegt,
