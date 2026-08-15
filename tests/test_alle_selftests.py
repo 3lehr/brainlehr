@@ -133,6 +133,7 @@ MODULE = [
     "melder/kantenstillstand.py",
     "melder/messregeln.py",
     "melder/offene_arbeit.py",
+    "melder/plan_bestandsabgleich.py",
     "melder/pruefer.py",
     "melder/rasterblick.py",
     "melder/schemastand.py",
@@ -208,7 +209,7 @@ XFAIL = {
 }
 
 assert set(XFAIL) <= set(MODULE)
-assert len(MODULE) == 92, len(MODULE)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie) + kern/satz.py (2026-08-15T06:20:00+0200, ebenfalls von diesem Test gefunden -- sein Selbsttest war seit dem Anlegen rot) + melder/spaltenabgleich.py (Linie J3, 2026-08-15)
+assert len(MODULE) == 93, len(MODULE)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie) + kern/satz.py (2026-08-15T06:20:00+0200, ebenfalls von diesem Test gefunden -- sein Selbsttest war seit dem Anlegen rot) + melder/spaltenabgleich.py (Linie J3, 2026-08-15) + melder/plan_bestandsabgleich.py (Soll/Wirklichkeit-Abgleich fuer Planzeilen, 2026-08-15)
 
 # Nur diese 3 legen -wal/-shm NEBEN der echten Datenbank an, wenn sie
 # BRAINLEHR_DB unbesetzt lassen -- gemessen 2026-08-12 per Datei-Snapshot
