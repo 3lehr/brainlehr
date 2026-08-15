@@ -63,6 +63,7 @@ HTML_PATH = HERE / "entscheidungen.html"
 ECHTKORPUS_PATH = HERE / "runs" / "echtkorpus_2026-08-12T1000.json"
 ESKALATION_SCRIPT = HERE / "eskalation_vorlage.py"
 EILMELDUNG_SCRIPT = HUB / "scripts" / "eilmeldung_quittieren.py"
+AUSWEIS_START_SCRIPT = HERE / "pflege" / "ausweis_start.sh"
 
 sys.path.insert(0, str(HERE))
 import eskalation_vorlage  # noqa: E402  -- nur Funktionen aufgerufen, Datei unveraendert
@@ -361,6 +362,88 @@ def _eilmeldung_quittieren(sid: str, key: str) -> dict:
         capture_output=True, text=True, timeout=10,
     )
     return {"ok": result.returncode == 0, "ausgabe": result.stdout.strip()}
+
+
+# ─── Abschnitt 5b: Ausweis (Auftrag 2026-08-15, Nachtrag zu G6) ─────────────
+#
+# BEFUND: Seit die App-Sandbox scharf ist (app-sandbox, network.client,
+# runs/sandbox_scharf_g6_*.json), startet AusweisDienst.swift kein
+# Unterprozess mehr -- Foundation.Process() auf ein Skript ausserhalb des
+# Bundles ist unter der Sandbox blockiert, egal wie es aufgerufen wird. Der
+# Ausweis-Weg folgt darum demselben Muster wie /api/fundstelle und
+# /api/domaene-import: die App BESTELLT bei diesem (unsandboxed, per launchd
+# laufenden) Dienst, der Dienst ruft pflege/ausweis_start.sh weiter --
+# dasselbe Skript, dieselbe Python-Suche, nur eine Netzhuelle statt eines
+# App-Unterprozesses.
+#
+# GEHEIMNIS-WEITERGABE: bleibt STDIN, nie argv -- wie zuvor beim
+# Process()-Aufruf aus der App. Der HTTP-Body traegt es vom Klienten zum
+# Dienst (Loopback, 127.0.0.1, dieselbe Origin-Schranke wie jeder andere
+# schreibende Endpunkt hier); der Dienst reicht es unveraendert per STDIN an
+# das Skript weiter. Es landet nirgends in argv, nirgends in der URL/Query
+# (deshalb POST mit JSON-Body, nicht GET mit Parametern) und nirgends in
+# einem Log dieses Servers -- log_message() ist fuer den ganzen Handler
+# stillgelegt (siehe oben), es gibt hier kein Zugriffsprotokoll, das einen
+# Anfrage- oder Antwortkoerper festhaelt.
+#
+# EIN FRISCH ERZEUGTES GEHEIMNIS (Befehl "anlegen") STEHT TROTZDEM EINMAL IN
+# DER ANTWORT -- das ist keine neue Undichtigkeit dieses Endpunkts, sondern
+# der Zweck des Befehls: ausweis.anlegen() gibt das Geheimnis GENAU EINMAL
+# zurueck (kern/ausweis.py, Docstring), die Oberflaeche legt es in die
+# Zwischenablage und zeigt es dem Nutzer zum Sichern -- exakt dieselbe
+# Offenlegung, die vorher schon ueber STDOUT/Process() lief. Ein Weg, der
+# das GAR NICHT preisgibt, gaebe es nur, wenn ausweis.anlegen() selbst anders
+# arbeitete (tabu, kern/ausweis.py). Gemessen: kein Bestandteil dieses
+# Servers schreibt den Antwortkoerper in eine Datei oder ein Log.
+#
+# WER DARF AUFRUFEN: dieselbe Schranke wie jeder andere POST hier
+# (_herkunft_ok(), Fund O2) -- kein eigener Mechanismus fuer diesen
+# Endpunkt. "liste" bleibt GET und ungeprueft, weil ausweis_helfer.py
+# "liste" schon heute ohne Geheimnis beantwortet (kein STDIN gelesen) und
+# keine Geheimnisse listet (nur Name/Art/Rollen).
+
+def _ausweis_aufrufen(argumente: list[str], geheimnis: str | None) -> dict:
+    """Ruft pflege/ausweis_start.sh -- derselbe Helfer, den vorher
+    Foundation.Process() aus der App heraus startete. `geheimnis` immer als
+    STDIN-Text uebergeben (auch leer), nie ueber argv."""
+    if not AUSWEIS_START_SCRIPT.is_file():
+        return {"fehler": "Der Ausweis-Helfer wurde auf diesem Rechner nicht gefunden."}
+    try:
+        result = subprocess.run(
+            [str(AUSWEIS_START_SCRIPT), *argumente],
+            input=(geheimnis or ""), capture_output=True, text=True, timeout=20,
+        )
+    except subprocess.TimeoutExpired:
+        return {"fehler": "Der Ausweis-Helfer antwortet gerade nicht. Bitte in Kürze erneut versuchen."}
+    except OSError:
+        return {"fehler": "Der Ausweis-Helfer konnte nicht gestartet werden."}
+    try:
+        out = json.loads(result.stdout or "{}")
+    except json.JSONDecodeError:
+        return {"fehler": "Der Ausweis-Helfer hat mit einem unerwarteten Fehler abgebrochen."}
+    if not isinstance(out, dict) or ("fehler" not in out and result.returncode != 0):
+        return {"fehler": "Der Ausweis-Helfer hat mit einem unerwarteten Fehler abgebrochen."}
+    return out
+
+
+def _ausweis_liste() -> dict:
+    return _ausweis_aufrufen(["liste"], None)
+
+
+def _ausweis_anlegen(payload: dict) -> dict:
+    name = str(payload.get("name", ""))
+    art = str(payload.get("art", "maschine"))
+    rollen = str(payload.get("rollen", ""))
+    geheimnis = payload.get("geheimnis")
+    return _ausweis_aufrufen(["anlegen", name, art, rollen], geheimnis)
+
+
+def _ausweis_einladen(payload: dict) -> dict:
+    name = str(payload.get("name", ""))
+    fuer = str(payload.get("fuer", ""))
+    rollen = str(payload.get("rollen", ""))
+    geheimnis = payload.get("geheimnis")
+    return _ausweis_aufrufen(["einladen", name, fuer, rollen], geheimnis)
 
 
 # ─── Abschnitt 6-8: nur anzeigen ─────────────────────────────────────────────
@@ -854,6 +937,12 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._json({"error": str(e)}, 500)
             return
+        if self.path == "/api/ausweisliste":
+            try:
+                self._json(_ausweis_liste())
+            except Exception as e:
+                self._json({"error": str(e)}, 500)
+            return
         self._json({"error": "unbekannter Pfad"}, 404)
 
     def do_POST(self):
@@ -884,6 +973,10 @@ class Handler(BaseHTTPRequestHandler):
                                         str(payload.get("text", "")))
             elif self.path == "/api/domaene-import":
                 out = _domaene_import(payload)
+            elif self.path == "/api/ausweis-anlegen":
+                out = _ausweis_anlegen(payload)
+            elif self.path == "/api/ausweis-einladen":
+                out = _ausweis_einladen(payload)
             else:
                 self._json({"error": "unbekannter Pfad"}, 404)
                 return
@@ -917,7 +1010,7 @@ def _selftest() -> int:
     import shutil
     import tempfile
 
-    global DB_PATH
+    global DB_PATH, AUSWEIS_START_SCRIPT
     real_db_mtime = DB_PATH.stat().st_mtime
 
     # 1) Gesamtstand gegen die echte DB muss ohne Ausnahme durchlaufen.
@@ -1014,6 +1107,66 @@ def _selftest() -> int:
 
     # 3) Eilmeldungen: leerer/kaputter Zustand darf nicht crashen (Negativfall).
     assert isinstance(_eilmeldungen_stand(), list)
+
+    # 3a) Ausweis: der neue Bruecken-Endpunkt zum Ausweis-Helfer (Abschnitt
+    # 5b). Rot-vor-gruen fuer die Grenzwerte aus dem Auftrag 2026-08-15:
+    # Skript fehlt, Dienst haengt (Timeout), Geheimnis nur ueber STDIN, nie
+    # argv. widerrufen/abgelaufen sind Eigenschaften von kern/ausweis.py
+    # (eigener Selbsttest dort, _selftest_widerruf) -- hier nur geprueft,
+    # dass eine solche {"fehler": ...}-Antwort UNVERAENDERT durchgereicht
+    # wird, ohne kern/ausweis.py's Logik zu duplizieren.
+    echtes_skript = AUSWEIS_START_SCRIPT
+
+    # Grenzwert: Skript fehlt (Dienst nicht eingerichtet) -- verstaendliche
+    # Meldung statt Absturz.
+    AUSWEIS_START_SCRIPT = Path(tempfile.mkdtemp()) / "fehlt.sh"
+    fehlend = _ausweis_liste()
+    assert fehlend == {"fehler": "Der Ausweis-Helfer wurde auf diesem Rechner nicht gefunden."}
+
+    with tempfile.TemporaryDirectory() as tmp:
+        fake = Path(tmp) / "fake_ausweis_start.py"
+        fake.write_text(
+            "#!/usr/bin/env python3\n"
+            "import sys, json\n"
+            "g = sys.stdin.read()\n"
+            "if sys.argv[1] == 'widerrufen':\n"
+            "    print(json.dumps({'fehler': \"'x' ist widerrufen -- kein neues Mandat.\"}))\n"
+            "else:\n"
+            "    print(json.dumps({'stdin_laenge': len(g), 'argv': ' '.join(sys.argv[1:])}))\n",
+            encoding="utf-8")
+        fake.chmod(0o755)
+        AUSWEIS_START_SCRIPT = fake
+
+        # Geheimnis nur ueber STDIN -- argv traegt hier nur Name/Art/Rollen,
+        # nie das Geheimnis selbst.
+        r = _ausweis_aufrufen(["echo-check", "name"], "g3h31m")
+        assert r.get("stdin_laenge") == len("g3h31m"), "Geheimnis muss auf STDIN ankommen"
+        assert "g3h31m" not in r.get("argv", ""), "Geheimnis darf nie in argv stehen"
+
+        # Widerrufen/abgelaufen: {"fehler": ...} kommt unveraendert durch.
+        r2 = _ausweis_aufrufen(["widerrufen"], None)
+        assert r2 == {"fehler": "'x' ist widerrufen -- kein neues Mandat."}
+
+    AUSWEIS_START_SCRIPT = echtes_skript
+
+    # Grenzwert: Dienst antwortet langsam -- derselbe Codepfad (Timeout-
+    # Behandlung), ohne 20 Sekunden real zu warten.
+    _echt_run = subprocess.run
+
+    def _haengt(*a, **k):
+        raise subprocess.TimeoutExpired(cmd="ausweis_start.sh", timeout=k.get("timeout", 20))
+    subprocess.run = _haengt
+    try:
+        langsam = _ausweis_liste()
+    finally:
+        subprocess.run = _echt_run
+    assert langsam == {"fehler": "Der Ausweis-Helfer antwortet gerade nicht. Bitte in Kürze erneut versuchen."}
+
+    # Am echten Skript: liste() muss ohne Ausnahme antworten (auch wenn die
+    # Ausweisdatei fehlt -- kern/ausweis.py gibt dann eine leere Liste
+    # zurueck, keinen Fehler).
+    echt = _ausweis_liste()
+    assert "fehler" in echt or "ausweise" in echt, "liste() muss entweder Fehler oder Bestand liefern, nie crashen"
 
     # 3b) Abrufweg: Negativfall (leere Anfrage), und der Fall aus Knoten
     # d84b6b64 -- verliert seinen Rang-1-Treffer aus dem Bedeutungskanal an
