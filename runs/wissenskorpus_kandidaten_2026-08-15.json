@@ -1,0 +1,89 @@
+{
+  "erstellt": "2026-08-15T19:23:38+0200",
+  "auftrag": "Kandidaten fuer zusaetzlichen frei lizenzierten Wissensbestand pruefen (Anlass: Trefferquote 8,78% zweideutig ohne Wissen ueber Bestandsabdeckung)",
+  "existenzprobe_vorher": {
+    "kern/pruefkorpus.py": "gelesen -- baut 45 Faelle aus dem EIGENEN Bestand (Sorten lesson/fact/norm mit bekanntem target_id + negative mit target_id=None als Eichung). Traegt je Fall die Kategorie mit, emittiert aber keine daraus abgeleitete gesplittete Trefferquote -- siehe Abschnitt 'kann_pruefkorpus_das_heute'.",
+    "/nasa-llis Bestand": "gepruefte 1637 Eintraege aus pflege/nasa_llis_import.py, gattung=nachschlagewerk, PARENT_PATH=/nasa-llis, Lizenz laut NOTICE/quellen/fremdquellen.json: US-Bundeswerk 17 U.S.C. §105, ausdruecklich als 'NICHT an der Primaerquelle geprueft' markiert.",
+    "quellen/fremdquellen.json": "bereits vorhandene Lizenzampel mit 10 Quellen. 9 von 10 englischsprachig/Luft-und-Raumfahrt-Sicherheit (esa-lessons, asrs, faa, nrc-ler, cross, nist, fda-maude, iaea-irs unbekannt/nicht importiert). Keine deutschsprachige Quelle mit Q&A-Struktur darunter -- die Luecke aus dem Auftrag ist damit auch im vorhandenen Register sichtbar."
+  },
+  "kandidaten": [
+    {
+      "name": "GermanQuAD (deepset)",
+      "lizenz": "CC BY 4.0",
+      "lizenz_fundstelle": "https://huggingface.co/datasets/deepset/germanquad -- Lizenzfeld 'CC-BY-4.0' im Dataset-Card-Metadatenblock, per WebFetch 2026-08-15 gelesen",
+      "sprache": "Deutsch",
+      "umfang": "Training 2.540 Passagen / 11.518 Fragen; Test 474 Passagen / 2.204 Fragen mit je 3-facher Antwort-Annotation (6.536 Antworten)",
+      "bezugsweg": "huggingface.co/datasets/deepset/germanquad, per HF-Datasets-Bibliothek oder Parquet-Export ladbar",
+      "kriterium1_antwort": "JA, unmittelbar erfuellt -- jedes Element traegt Frage + Kontext-Passage + Antworttext + Zeichenposition (answer_start). Die Antwort steht damit nicht nur 'im Bestand', sie ist maschinenlesbar an der Stelle markiert, wo sie steht. Das ist die staerkste Form von Kriterium 1 unter allen geprueften Kandidaten.",
+      "einbett_kosten_grobschaetzung": "11.518+2.204 = ~13.700 Texteinheiten (Frage- oder Passageebene, je nach Granularitaet der Einbettung 2.540-13.700 Vektoren) -- gegen heutige 3.885 Vektoren des Bestands eine Verdoppelung bis Vervierfachung, deutlich unter NASA-LLIS-Groessenordnung"
+    },
+    {
+      "name": "GermanDPR (deepset)",
+      "lizenz": "CC BY 4.0",
+      "lizenz_fundstelle": "https://huggingface.co/datasets/deepset/germandpr -- Lizenzfeld 'cc-by-4.0' im Dataset-Card-Metadatenblock, per WebFetch 2026-08-15 gelesen",
+      "sprache": "Deutsch",
+      "umfang": "Training 9.275 Frage-Antwort-Paare, Test 1.025 Frage-Antwort-Paare",
+      "bezugsweg": "huggingface.co/datasets/deepset/germandpr",
+      "kriterium1_antwort": "JA -- jedes Element hat Frage + Antwortliste + positive Kontexte (Titel/Text/Passage-ID) + Hard-Negative-Kontexte. Die Hard-Negatives sind fuer diesen Auftrag ein zusaetzlicher Gewinn: sie sind Passagen, die THEMATISCH NAH aber NICHT die richtige Antwort sind -- exakt das Material, um 'Suche findet Aehnliches statt Richtiges' von 'Suche findet nichts' zu unterscheiden (siehe Verfahrensabschnitt).",
+      "einbett_kosten_grobschaetzung": "~10.300 Frage-Antwort-Paare, je mit mehreren Kontext-Passagen -- vergleichbare Groessenordnung wie GermanQuAD, in Summe beider Datensaetze ca. 3-6x heutiger Vektorbestand"
+    },
+    {
+      "name": "Gesetze im Internet (BMJ, technisch bereitgestellt durch juris GmbH)",
+      "lizenz": "Amtliches Werk, gemeinfrei nach §5 Abs. 1 UrhG (Gesetze, Verordnungen genießen keinen urheberrechtlichen Schutz)",
+      "lizenz_fundstelle": "GESETZESTEXT SELBST (§5 Abs. 1 UrhG), NICHT die Webseite -- www.gesetze-im-internet.de/impressum.html und /hinweise.html wurden per WebFetch 2026-08-15 gepruewft und enthalten KEINE explizite Lizenzangabe, nur einen Deep-Link-Erlaubnishinweis. Die Gemeinfreiheit folgt hier aus dem Gesetz ueber den Inhalt (amtliches Werk), nicht aus einer Website-Erklaerung -- das ist ein anderer Beleg-Typ als bei den CC-lizenzierten Kandidaten und wird deshalb ausdruecklich als solcher ausgewiesen, keine 'vermutliche' Freigabe.",
+      "sprache": "Deutsch",
+      "umfang": "gesamtes konsolidiertes Bundesrecht (mehrere tausend Gesetze/Verordnungen), XML-Schnittstelle mit taegesaktuellem Inhaltsverzeichnis (gii-toc.xml)",
+      "bezugsweg": "www.gesetze-im-internet.de/gii-toc.xml (Verzeichnis) + XML-Einzeldokumente je Gesetz, DTD unter /dtd/1.01/gii-norm.dtd",
+      "kriterium1_antwort": "TEILWEISE -- keine originaeren Frage-Antwort-Paare, aber jede Vorschrift traegt eine eindeutige Kennung (Gesetz + Paragraph), die Kriterium 1 in der zweiten zulaessigen Form erfuellt ('eindeutige Sachaussagen mit Kennung'). Fragen muessten synthetisch erzeugt werden (wie kern/pruefkorpus.py es fuer den eigenen Bestand bereits tut), aber das Ziel je Frage waere durch die Paragraphen-Kennung so eindeutig wie ein Knowledge-Node-Pfad.",
+      "einbett_kosten_grobschaetzung": "gross (gesamtes Bundesrecht) -- fuer einen Testkorpus reicht eine Teilmenge (z.B. BGB, HGB, AO fuer Steuer-/Rechtsnaehe), volle Einbettung waere ein eigenes Projekt"
+    },
+    {
+      "name": "Open Legal Data -- German Court Decisions",
+      "lizenz": "Doppellizenz: Entscheidungstexte selbst amtliches Werk gemeinfrei nach §5 UrhG (im Datensatz woertlich zitiert), die AGGREGIERTE Sammlung/Datenbankstruktur unter Open Database License (ODbL) v1.0",
+      "lizenz_fundstelle": "https://huggingface.co/datasets/openlegaldata/court-decisions-germany -- Dataset Card zitiert woertlich §5 UrhG und nennt ODbL v1.0 fuer die Sammlung, per WebFetch 2026-08-15 gelesen",
+      "sprache": "Deutsch",
+      "umfang": "100.000 bis 1.000.000 Entscheidungen (HF-Groessenkategorie), Stand des Dumps 20.05.2026",
+      "bezugsweg": "huggingface.co/datasets/openlegaldata/court-decisions-germany, alternativ REST-API unter openlegaldata.io",
+      "kriterium1_antwort": "TEILWEISE, wie bei Gesetze im Internet -- jede Entscheidung traegt Aktenzeichen + ECLI-Nummer als eindeutige Kennung, dazu einen Leitsatz (Kurzfassung, ebenfalls amtlich und ungeschuetzt). Der Leitsatz ist eine Sachaussage, deren Quelle eindeutig ist -- naeher an 'Fakt mit Kennung' als an freier Frage-Antwort-Form.",
+      "einbett_kosten_grobschaetzung": "bei voller Groesse zu gross fuer einen Testkorpus -- Teilmenge noetig (z.B. nur BGH/BVerfG, oder nur Entscheidungen mit Leitsatz)"
+    },
+    {
+      "name": "Wikipedia Deutsch (dewiki, Volltextdump)",
+      "lizenz": "CC BY-SA 4.0 (wahlweise auch GFDL, Nutzer darf sich nach einer der beiden oder beiden richten)",
+      "lizenz_fundstelle": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use/de, Abschnitt Lizenzierung von Inhalten, per WebFetch 2026-08-15 gelesen (woertlich zitiert: 'stimmst du zu, ihn unter der Creative-Commons-Lizenz Namensnennung – Weitergabe unter gleichen Bedingungen 4.0 International (CC BY-SA 4.0) sowie der GNU-Lizenz fuer freie Dokumentation (GFDL) zu lizenzieren')",
+      "sprache": "Deutsch",
+      "umfang": "ueber 2,9 Mio Artikel (Groessenordnung, nicht an der Quelle fuer diesen Auftrag frisch gezaehlt)",
+      "bezugsweg": "dumps.wikimedia.org/dewiki/ (XML-Dumps) oder Wikipedia-API",
+      "kriterium1_antwort": "SCHWACH als eigenstaendiger Kandidat -- ein Artikel ist eine Sachaussage mit Kennung (Lemma/URL), aber KEIN Frage-Antwort-Paar; genau deshalb ist GermanQuAD (das exakt aus dewiki-Passagen samt annotierten Fragen gebaut ist) hier die bessere Wahl. Wikipedia wird deshalb nur als Hintergrundkandidat gefuehrt, nicht als primaere Empfehlung -- siehe Verworfen-Abschnitt fuer die Abwaegung.",
+      "einbett_kosten_grobschaetzung": "sehr gross, fuer Testzwecke nur als kleine Themen-Teilmenge sinnvoll"
+    }
+  ],
+  "verworfen": [
+    {
+      "name": "Robert Koch-Institut (RKI) -- Webinhalte/FAQ zu Infektionsschutz",
+      "grund": "Explizite eigene Lizenzangabe gepruewft (rki.de/DE/Service/Impressum), sie erlaubt NUR Zitat und Bildnutzung mit Quellenangabe. Woertlich: 'Eine daruewberhinausgehende Nutzung ... sowie die Bearbeitung, Umgestaltung oder Manipulation der Inhalte sind nicht erlaubt' ohne vorherige schriftliche Genehmigung. Ein Einlesen in eine Wissensdatenbank ist Bearbeitung/Umgestaltung -- durch die eigene Lizenzangabe der Quelle ausdruecklich ausgeschlossen. Kein Fall von 'keine Angabe gefunden', sondern von 'Angabe gefunden und sie verbietet es' -- die haertere Ablehnung.",
+      "fundstelle": "https://www.rki.de/DE/Service/Impressum/impressum_node.html, per WebFetch 2026-08-15 gelesen"
+    }
+  ],
+  "verfahren_suche_vs_bestand": {
+    "frage": "Wie stellt man fest, ob eine gemessene Trefferquote die Suche oder den Bestand bewertet?",
+    "kernidee": "Eine Trefferquote ist erst interpretierbar, wenn zu jeder Testfrage VOR der Messung bekannt ist, ob eine richtige Antwort im Bestand existiert. Ohne dieses Vorwissen zerfaellt eine niedrige Quote in zwei nicht unterscheidbare Erklaerungen -- 'Suche versagt' und 'nichts zu finden' -- und keine Interpretation der Zahl ist gerechtfertigt.",
+    "ablauf": [
+      "1. Testkorpus so bauen, dass JEDE Frage ein Label 'antwort_im_bestand' in {ja, nein} traegt, VOR dem eigentlichen Suchlauf festgelegt -- nicht rueckwirkend aus dem Sucherergebnis abgeleitet (sonst zirkulaer).",
+      "2. Positivfaelle (Label 'ja'): Frage aus einem Eintrag erzeugen, der NACHWEISLICH im Bestand liegt (Zielkennung/target_id bekannt) -- so wie kern/pruefkorpus.py es fuer lesson/fact/norm bereits tut.",
+      "3. Negativfaelle (Label 'nein'): entweder Themen ausserhalb jeder Bestandsdomaene (wie die 12 Eichthemen in kern/pruefkorpus.py._NEGATIVE_TOPICS), ODER -- staerker -- echte Fragen aus einem Fremdkorpus mit bekannten Hard-Negatives (z.B. GermanDPR: eine Frage, deren richtige Antwort NICHT im eigenen Bestand liegt, aber ein thematisch verwandter Treffer existiert. Das prueft den schwereren Fall: 'Suche findet etwas Aehnliches, aber Falsches' statt nur 'Suche findet ueberhaupt nichts').",
+      "4. Suchlauf faehrt UNVERAENDERT ueber beide Gruppen -- keine Vorabkenntnis des Labels fliesst in den Suchpfad ein.",
+      "5. Auswertung TRENNT die Quote: Trefferquote_A = Treffer / Faelle mit Label='ja' (misst die SUCHE -- ein Fehlschlag hier ist ein Sucheversagen, das Ziel existierte). Fehlalarmquote_B = faelschliche Treffer / Faelle mit Label='nein' (misst FALSCH-POSITIV-Neigung -- kein Ziel existierte, die Suche behauptete trotzdem eins). Die ROHE Gesamtquote (heute: 8,78% ueber 205 Faelle unbekannten Labels) wird NICHT mehr berichtet, sobald diese beiden Zahlen vorliegen -- sie ist die Zahl, die die Zweideutigkeit ueberhaupt erst erzeugt.",
+      "6. Nur mit dieser Trennung ist die Aussage 'Suchguete X%' von 'Bestandsabdeckung Y%' unterscheidbar, und nur dann rechtfertigt eine niedrige Zahl die Aussage 'die Suche ist schlecht' statt 'es gab nichts zu finden'."
+    ]
+  },
+  "kann_pruefkorpus_das_heute": {
+    "antwort": "TEILWEISE -- Mechanismus fuer Schritt 1-3 existiert bereits, Schritt 5 (die eigentliche Trennrechnung) fehlt.",
+    "beleg": [
+      "kern/pruefkorpus.py::run() erzeugt bereits zwei disjunkte Fallarten mit eingebautem Wahrheitswert: lesson/fact/norm-Faelle tragen ein bekanntes target_id (Label 'ja' im Sinn des Verfahrens oben), negative-Faelle tragen target_id=None (Label 'nein', aus themenfremden Fragen in _NEGATIVE_TOPICS, Zeile 216-229).",
+      "Jeder Fall in der Ausgabedatei (runs/pruefkorpus.json / .jsonl) traegt 'category' und 'target_id' -- die Information fuer die Trennung ist also bereits in der Ausgabe vorhanden.",
+      "ABER: run() selbst berechnet keine Trefferquote -- es erzeugt nur die Testfaelle. Die Trefferquote wird an anderer Stelle im Bestand gemessen (das ist ausserhalb dieses Auftrags Datei, Grenzen verbieten kern/-Aenderung ohnehin). Ob JENER Messlauf, der die 8,78%/18-von-205-Zahl erzeugt hat, die category/target_id-Information mitgefuehrt und stratifiziert hat, wurde in diesem Auftrag NICHT geprueft (Grenze: kern/ nur lesend, Suchpfad ist tabu -- an anderem Agenten).",
+      "Die negative-Faelle in pruefkorpus.py sind ausserdem SCHWAECHER als das im Verfahren vorgeschlagene Hard-Negative-Verfahren (Schritt 3): sie sind themenfremd (kubectl, Rosenschnitt, Bechamel), pruefen also nur 'kompletter Themenausfall', nicht den haerteren Fall 'Suche findet etwas thematisch Aehnliches, aber Falsches'. GermanDPR liefert genau diesen haerteren Fall serienmaessig mit."
+    ]
+  }
+}
