@@ -1,0 +1,88 @@
+{
+  "auftrag": "ADR-016, Auflage 3 messen: kann eine IMPORTIERTE Tabellendatei (.xlsx oder Univer-JSON) eine Zeichenkette in einen `new Function`-Aufruf oder einen anderen Ausfuehrungspfad einschleusen? Zusatz: traegt Univer eine Positivliste oder nur eine Verbotsliste fuer Formeln?",
+  "zeitpunkt": "2026-08-15T14:10:23+0200",
+  "arbeitsort": "spikes/univer_i3_min (bestehender Spike, Univer 0.25.1, nur @univerjs/presets(root)+preset-sheets-core, KEIN @univerjs/preset-sheets-advanced, KEINE xlsx-exchange-Pakete installiert -- die ADR nennt den xlsx-Rundlauf ausdruecklich als noch offen, deshalb hier NICHT gebaut)",
+  "ergebnis_kurz": {
+    "sperrfrage": "AUFGEHOBEN fuer den IMPORT-Weg, mit klarer Bedingung -- siehe 'woran_es_haengt'.",
+    "ausfuehrungspfade_new_function_gezaehlt": {
+      "gefunden_im_bundle": 2,
+      "davon_aus_dokumentmodell_erreichbar": 0,
+      "fundstelle": "node_modules/@univerjs/sheets-formula/lib/es/index.js:16529 und :16534, Funktionen createFunction()/createAsyncFunction() in 'src/services/remote/remote-register-function.service.ts'"
+    },
+    "positivliste_oder_verbotsliste": "VERBOTSLISTE, technisch erzwungen -- keine Positivliste moeglich. Beleg unten."
+  },
+  "schritt_1_codelese": {
+    "methode": "grep 'new Function' 'eval(' 'Function(' 'setTimeout(...String' über dist/bundle.js und alle node_modules/@univerjs/*/lib/es/index.js (unminifiziert lesbar). Dynamische Imports (import()) gesondert gesucht -- keine gefunden.",
+    "treffer_new_function": [
+      {
+        "datei": "node_modules/@univerjs/sheets-formula/lib/es/index.js, Zeile 16527-16536",
+        "code": "function createFunction(functionString, functionName) { const instance = new CustomFunction(functionName); instance.calculateCustom = new Function(`return ${functionString}`)(); return instance; } function createAsyncFunction(functionString, functionName) { ... new Function(`return ${functionString}`)() ... }",
+        "umgebung": "RemoteRegisterFunctionService.registerFunctions()/registerAsyncFunctions() -- Zeile 16502-16526",
+        "eingabe_herkunft": "functionString == func.toString() eines echten JS-Function-Objekts, das AUSSCHLIESSLICH aus dem Aufruf der oeffentlichen API RegisterFunctionService.registerFunction({name, func, ...}) bzw. .registerFunctions({calculate:[[func,name]]}) stammt (Zeile 16576-16620, Feld 'func' kommt direkt aus den params des Host-Codes). Kein Aufrufpfad liest 'functionString' aus IWorkbookData, cellData, resources oder sonst einem Feld, das ein Import befuellen wuerde -- Belegkette per grep verfolgt: 'new Function' -> createFunction/createAsyncFunction -> nur aufgerufen von RemoteRegisterFunctionService.registerFunctions/registerAsyncFunctions -> nur aufgerufen von RegisterFunctionService._registerRemoteExecutors -> nur aufgerufen von _registerSingleFunction/registerFunctions -> nur aufgerufen von der oeffentlichen registerFunction-API (univerAPI.registerFunction bzw. univerAPI.getFormula().registerFunction), die vom EINBETTENDEN PROGRAMMCODE aufgerufen wird, nie von einer Ladefunktion fuer Dateien."
+      }
+    ],
+    "treffer_eval": {"anzahl": 0, "hinweis": "kein 'eval(' Aufruf mit Fremddaten gefunden, weder im Bundle noch in den einzelnen @univerjs-Paketen"},
+    "treffer_dynamischer_import": {"anzahl": 0},
+    "resources_feld_geprueft": "IWorkbookData.resources ist der generische Erweiterungspunkt fuer Plugin-Daten in einem Snapshot (Kommentar im Typ: 'It is used to store the data of other plugins'). In node_modules/@univerjs/sheets-formula/lib/es/index.js kommt der String 'resources' KEIN einziges Mal vor (grep, 0 Treffer) -- das Formel-Plugin liest also aus dem Snapshot-Feld 'resources' nichts, was in eine Funktionsregistrierung münden könnte.",
+    "webservice_gegenbefund": "Die vorherige Messung (ADR-016, 'Punkt 1') hatte NUR den String 'WEBSERVICE' im Bundle gegrept und daraus auf einen funktionierenden Netzzugriffspfad geschlossen. Hier gegengeprueft: in node_modules/@univerjs/sheets-formula/lib/es/index.js existiert fuer WEBSERVICE NUR ein Eintrag in der Beschreibungs-/Autovervollstaendigungs-Liste (Zeile 15695-15707, IFunctionInfo fuer Menue und Formel-Hilfe) -- KEINE Executor-Klasse mit einer calculate()-Methode. In node_modules/@univerjs/engine-formula/lib/es/index.js kommt WEBSERVICE nur als Enum-Namenskonstante vor (Zeile 2996), ebenfalls ohne Executor. Empirisch bestaetigt in Schritt 2: eine Zelle mit '=WEBSERVICE(\"http://...\")' ergibt #NAME? -- die Formel ist im installierten Paketbaum unausfuehrbar, weil kein Executor registriert ist. Das ist eine KORREKTUR der vorherigen Messung, kein Widerspruch zur Sperre: Auflage 2 bleibt richtig, weil ein spaeterer Paketwechsel (z.B. preset-sheets-advanced) den Executor nachliefern koennte -- aber der aktuell gebaute Spike-Bundle-Inhalt fuehrt WEBSERVICE nicht aus."
+  },
+  "schritt_2_herstellungsversuch": {
+    "aufbau": "spikes/univer_i3_min/probe3/entry_import.js: Univer wird VOR jedem Import instrumentiert -- window.Function wird durch einen Proxy ersetzt, der jeden 'new Function(...)'- und 'Function(...)'-Aufruf mitschneidet (Quelltext-Argument, nicht nur Existenz). Danach wird ein Workbook-Snapshot im NATIVEN Univer-JSON-Format geladen (univerAPI.createWorkbook(snapshot)) -- das entspricht dem Laden einer importierten Tabellendatei, weil createWorkbook() exakt die IWorkbookData-Struktur nimmt, die auch ein xlsx-Importer erzeugen wuerde.",
+    "eingeschleuste_nutzlast": [
+      "Zelle A1, Formel: '=WEBSERVICE(\"http://127.0.0.1:8933/getroffen-webservice\")'",
+      "Zelle B1, Formel: '=SUM(fetch(\"http://127.0.0.1:8933/getroffen-sum\"),1)' (Versuch, einen JS-Aufruf ALS Formelausdruck einzuschleusen)",
+      "Zelle C1, reiner Wert (kein Formelfeld 'f', nur 'v'): 'fetch(\"http://127.0.0.1:8933/getroffen-plain-value\")' (Versuch, ob ein Zellwert je als Code interpretiert wird)",
+      "Snapshot-Feld 'resources': [{name:'SHEET_FORMULA_PLUGIN', data: JSON mit einer vorgetaeuschten Funktionsregistrierung ['function(){return fetch(...)}','BOESE']}] -- Versuch, eine Custom-Function ueber den generischen Plugin-Datenkanal einzuschleusen, wie es eine praeparierte Fremddatei versuchen wuerde"
+    ],
+    "sandbox": "macOS Seatbelt (sandbox-exec -f spikes/univer_i3_min/no-network.sb), '(deny network-outbound)' mit Ausnahme nur fuer localhost -- identisch zum bereits gemessenen Aufbau aus ADR-016 Frage 1. Zwei lokale Server auf 127.0.0.1: :8934 liefert den Testfall aus, :8933 protokolliert jeden eingehenden Aufruf in eine Datei.",
+    "ablauf_kommando": "sandbox-exec -f no-network.sb '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --no-sandbox --user-data-dir=<tmp> --virtual-time-budget=10000 --screenshot=<png> http://127.0.0.1:8934/index.html",
+    "positivkontrolle_der_instrumentierung": {
+      "test_a_eigenaufruf": "Direkt nach dem Patchen von window.Function ruft das Testskript selbst 'new Function(\"return 1\")()' auf -- MUSS mitgeschnitten werden, sonst ist die gesamte Messung wertlos.",
+      "ergebnis_a": "BESTANDEN: __funcCalls enthaelt genau 1 Eintrag mit Inhalt 'return 1'. Die Instrumentierung faengt echte Aufrufe nachweislich ab.",
+      "test_b_host_registerfunction": "Nach dem Laden des Snapshots ruft das Testskript (als HOST-CODE, nicht als importierte Datei) univerAPI.registerFunction({calculate:[[function(){return 42;}, 'HOSTPROBE', 'Positivkontrolle']]}) auf -- der laut Quelltext EINZIGE Weg, der ueberhaupt zu new Function fuehren KANN.",
+      "ergebnis_b": "registerFunction warf keinen Fehler (registerFunctionError: null), loeste aber KEINEN new-Function-Aufruf aus. Grund im Quelltext bestaetigt: RegisterFunctionService._registerSingleFunction() ruft den new-Function-Pfad nur auf, wenn '_remoteRegisterFunctionService' per Dependency Injection gebunden ist (Zeile 16596: 'if (this._remoteRegisterFunctionService) {...}'). Dieser Dienst gehoert zur Web-Worker-Nebenlaeufigkeit der Formel-Berechnung (Remote-Berechnungsprozess) und ist in preset-sheets-core OHNE separate Worker-Konfiguration nicht gebunden. In DIESEM Bundle ist der new-Function-Pfad also selbst fuer legitimen Host-Code strukturell unerreichbar -- nicht nur fuer Importe."
+    },
+    "ergebnis_messung": {
+      "gesamtzahl_function_aufrufe": 1,
+      "davon_aus_der_nutzlast_oben": 0,
+      "rohdaten": "{\"funcCalls\":[\"return 1\"],\"registerFunctionError\":null}",
+      "zellenwerte_laut_screenshot": {
+        "A1": "#NAME? (WEBSERVICE hat keinen Executor -> Formel bleibt unausgefuehrt)",
+        "B1": "#NAME? (fetch(...) als Formelausdruck wird als unbekannter Funktionsname behandelt, nicht als JS ausgefuehrt)",
+        "C1": "zeigt den rohen Text 'fetch(\"http://127.0.0.1:8933/getroffen-pla...' unveraendert an -- ein reiner Zellwert wird nie interpretiert"
+      },
+      "netzwerk_treffer_auf_dem_lauschenden_server_8933": 0,
+      "einordnung": "Der Herstellungsversuch ist GESCHEITERT im Sinne des Angriffs (kein einziger Function-Aufruf, kein einziger Netzzugriff aus der Nutzlast) und GELUNGEN im Sinne der Messung (Instrumentierung nachweislich funktionsfaehig, Negativergebnis also aussagekraeftig, nicht nur 'nichts gefunden weil nicht hingeschaut')."
+    }
+  },
+  "schritt_3_beide_richtungen": {
+    "univer_natives_json": "Gemessen in Schritt 2, ueber univerAPI.createWorkbook(snapshot) -- das ist der Ladeweg, den auch ein spaeterer xlsx-Importer am Ende bedienen wuerde (xlsx wird typischerweise zuerst in genau diese IWorkbookData-Struktur uebersetzt, dann geladen).",
+    "xlsx_ueber_sheetjs": {
+      "status": "NICHT gemessen -- SheetJS/eine xlsx-Exchange-Bibliothek ist in diesem Spike nicht installiert (ADR-016 nennt den xlsx-Rundlauf ausdruecklich als eigene, noch offene Frage, 'faellig wenn die erste echte Tabellendatei ins Haus kommt'). Ein xlsx-Parser ist fremder Code ausserhalb von Univer -- er kann grundsaetzlich JEDEN String in JEDES Feld von IWorkbookData schreiben, auch in 'resources' oder 'f'. Die hier gemessene Kette (Dokumentmodell -> new Function) bleibt aber dieselbe, unabhaengig davon, wer die IWorkbookData befuellt hat: die Formel-Engine selbst liest 'f' nie in new Function ein (Schritt 1), und 'resources' wird vom Formel-Plugin nicht gelesen (Schritt 1). Ein SheetJS-Parser selbst muesste eine EIGENE new-Function/eval-Stelle enthalten, um gefaehrlich zu sein -- das ist eine Frage an SheetJS, nicht an Univer, und bleibt fuer den Bauschritt zu pruefen, SOBALD dieses Paket gewaehlt wird.",
+      "einschraenkung_woertlich": "Ich habe es nicht mit echtem SheetJS-Code gemessen; geprueft habe ich nur den nachgelagerten Weg ab dem fertigen IWorkbookData-Objekt (das jeder xlsx-Importer am Ende erzeugen muss, um mit Univer zu arbeiten)."
+    }
+  },
+  "schritt_4_positivliste_gegen_verbotsliste": {
+    "befund": "VERBOTSLISTE, technisch erzwungen -- eine Positivliste ist mit der oeffentlichen Konfiguration nicht moeglich.",
+    "fundstelle": "node_modules/@univerjs/engine-formula/lib/es/index.js, Zeile 40564: 'const functions = ALL_IMPLEMENTED_FUNCTIONS.concat(config?.function ?? []).map(...)'",
+    "typdefinition": "node_modules/@univerjs/engine-formula/lib/types/config/config.d.ts: 'function?: Array<[Ctor<BaseFunction>, IFunctionNames]>' -- das einzige Konfigurationsfeld fuer Formeln beim Start.",
+    "begruendung": "Das Konfigurationsfeld 'function' wird beim Plugin-Start per '.concat()' an die feste, mitgelieferte Liste ALL_IMPLEMENTED_FUNCTIONS angehaengt -- es ERSETZT sie nie. Der gesamte eingebaute Funktionskatalog (inklusive WEBSERVICE-Beschreibung) wird also IMMER vollstaendig registriert. Der einzige verfuegbare Hebel danach ist die Laufzeit-API 'unregisterExecutors(name)'/'unregisterDescriptions(name)' (sheets-formula, RemoteRegisterFunctionService.unregisterFunctions) -- einzelne Namen nachtraeglich ENTFERNEN. Das ist per Definition eine Verbotsliste: jede Funktion, die man vergisst zu entfernen, bleibt aktiv.",
+    "folge_fuer_auflage_2": "Bestaetigt und verschaerft die bestehende Auflage 2 (WEBSERVICE + new-Function-Pfad sperren, BEVOR die erste Datei geladen wird): das muss als aktiver Entzug (unregisterExecutors/unregisterDescriptions fuer jede unerwuenschte Funktion) beim Bootstrap geschehen, es gibt keinen Schalter 'nur diese N Funktionen'. Jede kuenftig neu hinzukommende Univer-Funktion (z.B. bei einem Versions-Update) ist bis zur naechsten manuellen Pruefung automatisch AKTIV -- die Verbotsliste muss bei jedem Univer-Update erneut gegen die dann aktuelle ALL_IMPLEMENTED_FUNCTIONS-Liste abgeglichen werden."
+  },
+  "gesamturteil": {
+    "sperrfrage_beantwortet": "Der Import fremder Tabellendateien darf aus Sicht von Auflage 3 ENTSPERRT werden -- unter der Bedingung, dass ausschliesslich der gemessene Weg genutzt wird: eine Importbibliothek (z.B. spaeter SheetJS) erzeugt ein IWorkbookData-Objekt, das per univerAPI.createWorkbook() geladen wird, OHNE dass Programmcode aus dem Import selbst univerAPI.registerFunction()/getFormula().registerFunction() aufruft. Diese Bedingung ist eine Bauvorschrift fuer den kommenden xlsx-Importer, keine Automatik -- sie MUSS beim Bau des Importers eingehalten und mit einer eigenen Ratsche/einem Test abgesichert werden (kein Aufruf von registerFunction* mit Daten aus der importierten Datei).",
+    "woran_es_haengt": "Drei Bedingungen, alle in diesem Spike erfuellt, alle bei jedem Univer-Versionswechsel neu zu pruefen: (1) die Formel-Engine liest 'f'/'v' aus cellData nie in new Function ein -- durch Quelltext belegt; (2) das Snapshot-Feld 'resources' wird vom Formel-Plugin nicht gelesen -- durch Quelltext belegt (0 Treffer fuer 'resources' in sheets-formula); (3) der einzige new-Function-Pfad ist in der aktuell gewaehlten Paketkombination (preset-sheets-core ohne separate Worker-Konfiguration) strukturell tot, weil die dafuer noetige DI-Bindung fehlt -- durch die gescheiterte Positivkontrolle b belegt. Sollte ein spaeterer Bauschritt die Worker-Berechnung (den fehlenden Dienst) hinzufuegen, lebt Bedingung (3) nicht mehr automatisch -- dann muss NUR der new-Function-Pfad erneut geprueft werden, waehrend (1) und (2) unabhaengig davon weiter Bestand haben, weil sie architektonisch sind (welche Felder die Formel-Engine ueberhaupt liest), nicht konfigurationsabhaengig.",
+    "auflage_2_bleibt_unveraendert_in_kraft": "WEBSERVICE und der new-Function-Pfad werden weiterhin vor dem ersten Import gesperrt (per unregisterExecutors/unregisterDescriptions) -- diese Messung aendert nichts daran, sie zeigt nur zusaetzlich, dass WEBSERVICE im aktuellen Bundle ohnehin technisch inaktiv ist (Executor fehlt) und dass die Sperre wegen der Verbotslisten-Bauform bei jedem Versions-Update neu zu pruefen ist."
+  },
+  "rohausgaben_orte": {
+    "testskript": "spikes/univer_i3_min/probe3/entry_import.js",
+    "bundle": "spikes/univer_i3_min/probe3/bundle.js (esbuild --bundle --minify aus entry_import.js)",
+    "index_html": "spikes/univer_i3_min/probe3/index.html",
+    "screenshots": [
+      "/tmp/probe3_screenshot.png (erster Lauf, nur WEBSERVICE-Zelle, ohne Instrumentierung)",
+      "/tmp/probe3b_screenshot.png (mit Nutzlast B1/C1/resources, ohne Positivkontrolle)",
+      "/tmp/probe3d_screenshot.png (finaler Lauf mit beiden Positivkontrollen)"
+    ],
+    "hinweis_screenshots": "liegen unter /tmp (Session-Scratch), nicht im Repo -- reproduzierbar durch erneutes Ausfuehren des Ablauf-Kommandos oben, keine dauerhaften Belegdateien noetig weil die Zahlen (funcCalls, Netzwerktreffer) im Log-Server-Mitschnitt lagen und hier woertlich uebernommen sind."
+  }
+}

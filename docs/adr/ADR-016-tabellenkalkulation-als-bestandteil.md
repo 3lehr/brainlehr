@@ -127,3 +127,63 @@ enthält bereits die Formel `WEBSERVICE` (netzfähig) und einen
 > aus einer **importierten Datei** stammen kann. Solange das nicht gemessen
 > ist, gilt der Import fremder Tabellendateien als gesperrt — nicht als
 > riskant, als gesperrt.
+
+## Gemessen 2026-08-15T14:10:23+0200 — Auflage 3, Sperre für den Importweg aufgehoben
+
+Ergebnisdatei
+`runs/spike_univer_i3_auflage3_2026-08-15T141023+0200.json`, Testskript
+`spikes/univer_i3_min/probe3/entry_import.js`.
+
+**Codelese:** Beide `new Function`-Fundstellen im Bundle (0 mehr, 0 weniger —
+`sheets-formula/lib/es/index.js:16529` und `:16534`, Funktionen
+`createFunction`/`createAsyncFunction`) liegen ausschließlich hinter der
+öffentlichen API `registerFunction`/`registerFunctions` — die Eingabe ist
+`func.toString()` eines JS-Funktionsobjekts, das nur **Host-Code** übergeben
+kann. Kein Aufrufpfad liest die Zeichenkette aus `cellData` (Feld `f`/`v`)
+oder aus dem generischen Snapshot-Erweiterungsfeld `resources` — für Letzteres
+belegt durch 0 Treffer für `"resources"` im gesamten `sheets-formula`-Paket.
+
+**Herstellungsversuch:** Ein Univer-JSON-Snapshot (nativer Ladeweg,
+`univerAPI.createWorkbook()`) wurde mit vier Angriffsversuchen bestückt —
+WEBSERVICE-Formel, `fetch(...)` als Formelausdruck, `fetch(...)` als reiner
+Zellwert, eine vorgetäuschte Funktionsregistrierung im `resources`-Feld.
+`window.Function` wurde vorher durch einen mitschneidenden Proxy ersetzt.
+**Ergebnis: 0 Treffer aus der Nutzlast, 0 Netzzugriffe.** Die Instrumentierung
+selbst wurde doppelt positiv kontrolliert: ein eigener `new Function(...)`-Aufruf
+wurde zuverlässig mitgeschnitten (Instrumentierung funktioniert), ein
+legitimer Host-Aufruf von `univerAPI.registerFunction(...)` löste dagegen
+**ebenfalls keinen** `new Function`-Aufruf aus — weil der dafür nötige
+Remote-/Worker-Dienst in der aktuellen Paketkombination (`preset-sheets-core`
+ohne separate Worker-Konfiguration) gar nicht gebunden ist. Der Pfad ist in
+diesem Bundle strukturell tot, nicht nur unerreicht.
+
+**Gegenbefund zur vorherigen Messung:** `WEBSERVICE` ist im installierten
+Paketbaum nur als Beschreibungseintrag (Menü/Autovervollständigung)
+vorhanden, ohne Executor — eine Zelle mit `=WEBSERVICE(...)` ergibt `#NAME?`.
+Die frühere Aussage „WEBSERVICE ist im Bundle" stützte sich nur auf einen
+Text-Grep, nicht auf eine Ausführungsprobe. Auflage 2 bleibt davon
+unberührt: WEBSERVICE und der `new Function`-Pfad werden weiterhin vor dem
+ersten Import gesperrt, weil ein künftiges Paket (z. B. eine Worker- oder
+Advanced-Erweiterung) den fehlenden Executor bzw. Dienst nachliefern kann.
+
+**Positivliste vs. Verbotsliste, entschieden:** Univer erzwingt technisch eine
+**Verbotsliste**. Der Formel-Engine-Start hängt die Konfiguration `function`
+nur per `.concat()` an die feste Liste `ALL_IMPLEMENTED_FUNCTIONS` an
+(`engine-formula/lib/es/index.js:40564`) — sie ersetzt sie nie. Einzelne
+Funktionen lassen sich nur nachträglich per `unregisterExecutors`/
+`unregisterDescriptions` entfernen. Eine Positivliste („nur diese N
+Funktionen") ist mit der öffentlichen Konfiguration nicht baubar.
+
+**Ergebnis:** Auflage 3 gilt als gemessen. **Der Import fremder
+Tabellendateien wird entsperrt**, gebunden an eine Bauvorschrift für den
+kommenden Importer: Importcode darf `registerFunction`/`registerFunctions`
+nie mit Daten aus der importierten Datei aufrufen — dafür ist beim Bau des
+Importers eine eigene Ratsche vorzusehen. Auflage 2 (Verbotsliste vor dem
+ersten Import ausführen, bei jedem Univer-Versionswechsel erneut gegen
+`ALL_IMPLEMENTED_FUNCTIONS` abgleichen) bleibt unverändert in Kraft. Der
+xlsx-Weg über SheetJS wurde **nicht** mitgemessen (Paket nicht installiert,
+ADR nennt den xlsx-Rundlauf als eigene offene Frage) — die hier belegte
+Kette (Dokumentmodell → `new Function`) ist aber unabhängig davon, wer das
+`IWorkbookData`-Objekt befüllt hat; ein SheetJS-Parser selbst müsste eine
+eigene Ausführungsstelle enthalten, was bei dessen Auswahl gesondert zu
+prüfen ist.
