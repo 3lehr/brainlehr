@@ -75,3 +75,17 @@ app/.swiftpm/
 # Uebersetztes OCR-Hilfsprogramm -- Quelle ist app/werkzeuge/ocr_stellen.swift,
 # gebaut wird es von app/bauen.sh. Ein Binaerbaustein gehoert nicht ins Repo.
 app/werkzeuge/ocr_stellen
+
+# Vollauszuege des Bestands (auszug/bestand_*.jsonl) sind UNGEFILTERT und
+# enthalten auch Knoten mit freigabe='intern'. Gemessen 2026-08-15: der
+# Auszug dieses Tages traegt drei Fundstellen zu einem Sicherheitsvorfall auf
+# einer fremden Anlage. Kein Leck -- die Datei war nie eingecheckt -- aber sie
+# war auch nie ausgeschlossen, und ein einziges `git add -A` haette gereicht.
+# Am 2026-08-11 hat genau diese Bauform einen privaten Schluessel in ein Repo
+# gebracht (L-cc6a15). Die drei aelteren, bereits eingecheckten Auszuege
+# (08-08 bis 08-10) tragen den Vorfall nicht (nachgezaehlt) und bleiben, wo sie
+# sind; NEUE kommen nicht dazu. Der oeffentliche Weg ist auszug-offen/.
+auszug/bestand_*.jsonl
+!auszug/bestand_2026-08-08.jsonl
+!auszug/bestand_2026-08-09.jsonl
+!auszug/bestand_2026-08-10.jsonl
