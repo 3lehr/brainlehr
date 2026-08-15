@@ -187,3 +187,38 @@ Kette (Dokumentmodell → `new Function`) ist aber unabhängig davon, wer das
 `IWorkbookData`-Objekt befüllt hat; ein SheetJS-Parser selbst müsste eine
 eigene Ausführungsstelle enthalten, was bei dessen Auswahl gesondert zu
 prüfen ist.
+
+## Auflage 4 — benannte Bereiche sind Pflicht, nicht Komfort
+
+Betreiberentscheidung 2026-08-15 (Knoten `00e74420`). Grund: Ein Zellbezug
+(`B2:B47`) ist eine Adresse ohne Bedeutung — ein Mensch liest die Bedeutung
+aus der Nachbarschaft, ein Modell muss sie raten, und Raten ist genau das,
+was der Belegvertrag ausschließt (siehe oben: „keine Zahl ohne Herkunft").
+Mit Namen (`=SUMME(erloese)*ust_satz`) ist dieselbe Tabelle für beide Seiten
+lesbar. Jetzt, vor dem ersten Blatt, kostet die Regel nichts; nachträglich
+ist sie dieselbe Migrationsarbeit wie ein fehlendes Feld am Baustein.
+
+**Gemessen: Univer trägt benannte Bereiche.** Das Paket `@univerjs/sheets`
+(transitive Abhängigkeit von `preset-sheets-core`, im Spike installiert)
+liefert die Facade-Klassen `FWorkbook`/`FDefinedName`/`FDefinedNameBuilder`
+(`node_modules/@univerjs/sheets/lib/types/facade/f-defined-name.d.ts`,
+`f-workbook.d.ts`) mit `insertDefinedName(name, formulaOrRefString)`,
+`getDefinedNames()`, `getDefinedName(name)`, `deleteDefinedName(name)` sowie
+Gültigkeitsbereich je Blatt oder Arbeitsmappe (`setScopeToWorksheet`/
+`setScopeToWorkbook`). Die Funktion ist kein totes Typskript: `grep -c
+insertDefinedName` findet die Zeichenkette je zweimal im tatsächlich
+gebauten Anwendungsbündel (`spikes/univer_i3_min/dist/bundle.js` und
+`spikes/univer_i3_min/probe3/bundle.js`) — sie ist im ausgelieferten Code
+vorhanden, nicht nur in der Bibliotheksquelle.
+
+> **Auflage 4:** Jedes Tabellenblatt, das dieses System erzeugt oder dem
+> Nutzer zur Eingabe vorlegt, legt für jeden Wertebereich, der in einer
+> Formel wiederverwendet wird, einen benannten Bereich über
+> `insertDefinedName` an, bevor die erste Formel ihn referenziert. Ein
+> Zellbezug ohne Namen in einer erzeugten Formel gilt als Verstoß gegen
+> diese Auflage, keine Ausnahme aus Bequemlichkeit.
+
+**Nicht gemessen, weil hier nicht nötig:** ob benannte Bereiche den
+xlsx-Rundlauf (SheetJS/`openpyxl`, ADR nennt ihn als eigene offene Frage)
+verlustfrei überstehen. Das ist bei der Auswahl des xlsx-Wegs gesondert zu
+prüfen, sobald die erste echte Tabellendatei ins Haus kommt.

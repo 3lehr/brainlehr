@@ -10,7 +10,7 @@
 **Status:** angenommen
 **Datum:** 2026-08-15T10:07:20+0200
 **Entschieden von:** Betreiber, auf Vorlage mit je drei Wahlmöglichkeiten
-**Betrifft:** `kern/baustein.py`, `kern/dokument.py`, alle künftigen Gattungen
+**Betrifft:** `kern/baustein.py`, `kern/dokument.py`, alle künftigen Dokumentarten
 **Verwandt:** ADR-010 (Dokumentfenster), ADR-014 (Kern/Bestandteil/Domäne),
 ADR-018 (Wirkungsvorrat und Wirkung Null), Linie F und Linie I des Gesamtplans
 
@@ -86,7 +86,7 @@ es öffentlich war.
 den Übergang hängen. Eine kommunale Seite dürfte dann ohne Alternativtext nicht
 veröffentlichen; bei einer privaten Seite bliebe derselbe Prüfschritt ein
 Hinweis. **Gleicher Baustein, anderer Maßstab** — und genau das ist der Grund,
-warum „Homepage" eine Gattung mit mehreren Domänen ist und nicht eine Domäne.
+warum „Homepage" eine Dokumentart mit mehreren Domänen ist und nicht eine Domäne.
 
 ## Was ausdrücklich NICHT entschieden ist
 
@@ -102,7 +102,7 @@ Alles Folgende bleibt offen, weil es später **nichts kostet**:
 
 **Eine Auflage gilt trotzdem:** Das Baustein-Modell wird **nicht** nach Gutenberg
 oder einer anderen Ausgabeform geformt. Rollen beschreiben, was ein Bestandteil
-**ist**, nicht wie er dargestellt wird. Sonst erbt jede spätere Gattung die
+**ist**, nicht wie er dargestellt wird. Sonst erbt jede spätere Dokumentart die
 Eigenheiten der ersten.
 
 ## Folgen
@@ -112,7 +112,7 @@ Eigenheiten der ersten.
   Schreibvorgang. Danach ist es eine Migration.
 - Der Satzweg (`kern/satz.py`) muss mit Verschachtelung umgehen können; gemessen
   sind dort ~63 von 138 Zeilen hart LaTeX, der generische Kern ist klein.
-- Der Prüfstand für Gattungen bekommt damit einen Fall, den er heute nicht hat:
+- Der Prüfstand für Dokumentarten bekommt damit einen Fall, den er heute nicht hat:
   ein Bild ohne Alternativtext muss sichtbar brechen, nicht still durchlaufen.
 
 ## Entwurfsprobe, unabhängig gefahren (2026-08-15T10:20:00+0200)

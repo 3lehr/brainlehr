@@ -1,0 +1,150 @@
+{
+  "erhoben_am": "2026-08-15T14:54:03+0200",
+  "erhoben_von": "Messagent (Sonnet), Auftrag: Namensbestand rund um brainlehr",
+  "definition_name": "Ein NAME im Sinn dieser Erhebung ist ein Eigenname fuer ein Ding DIESES Systems -- ein Repo, eine Anwendung, ein Dienst, ein Bestandteil, eine Rolle, ein Fachbegriff mit FESTGELEGTER Bedeutung (per ADR oder Betreiberentscheidung, oder mit konsistenter Verwendung im Code als Typ/Kategorie). AUSGESCHLOSSEN: gewoehnliche Datei- oder Funktionsnamen (z.B. kern/speicher.py, kern/ausweis.py als Dateipfade selbst), generische deutsche/englische Woerter ohne festgelegte Sonderbedeutung, und Namen aus importierten Fremddaten (Benchmarks, gescannte Fremddokumente), die keine Aussage ueber DIESES System treffen.",
+  "abgesuchte_quellen": [
+    "1. Verzeichnisse/Repos unter /Volumes/daten/Begod2026, oberste zwei Ebenen (ls -la, 73 Eintraege oberste Ebene)",
+    "2. Wissensspeicher via mcp__knowledge__knowledge_search / knowledge_browse (live MCP, NICHT die 0-Byte-Datei brainlehr/knowledge.db -- die ist leer, echter Pfad geht ueber kern/speicher.py; Browse von /brainlehr ergab 89KB/1167 Zeilen, zu gross fuer Volltext-Lesen, daher gezielte Suchen statt Vollbrowse)",
+    "3. ADRs unter brainlehr/docs/adr/ (21 Stueck, ADR-001 bis ADR-021), davon ADR-007, 008, 013, 014, 015, 016, 017 vollstaendig gelesen",
+    "4. grep nach Bundle-Kennungen, Dienstnamen, Datenbanknamen, Ports in app/, dienst/, kern/, berichte/"
+  ],
+  "ausdruecklich_ausgeschlossen": "Alle Pfade unter */.claude/worktrees/ (gefunden in: brainlehr, hub, openlehr, sigmaforge, wohlair) -- Schnappschuesse mit fremden Altdaten, nicht Teil des Bestands. Ebenso ausgeschlossen: reine Datei-/Ordnernamen ohne Begriffscharakter (z.B. _ANALYSE, _LEGACY_QUARANTINE -- Arbeitsordner, keine Eigennamen fuer System-Dinge).",
+  "trainer_befund": {
+    "frage": "Existiert 'Trainer' als Name im Sinn der Definition?",
+    "antwort": "WIDERLEGT. 'Trainer' existiert NICHT als Eigenname fuer irgendein Ding in brainlehr/openlehr/hub.",
+    "fundstellen_geprueft": [
+      "openlehr/begod/knowledge/benchmarks/gaia2_*/hf/scenario_universe_23_*.json -- fremde GAIA2-Benchmarkdaten (HuggingFace), Feld 'trainer' als generischer Rollenname IN einem importierten Testszenario, keine Aussage ueber dieses System",
+      "openlehr/docs/openlehr/adr/ADR_OPENLEHR_LERNDATEN_DSPY_LORA_2026-08-02.md Zeile 103/105 -- Links zu 'TRL DPO Trainer' / 'TRL SFT Trainer', das sind Klassennamen der FREMDEN HuggingFace-TRL-Bibliothek in einer Literaturliste, kein Name eines eigenen Dings",
+      "openlehr/apps/openlehr/daemon/assist_profile.py Zeile 65 -- String 'trainer' in einer Liste (Kontext nicht als System-Eigenname identifiziert, generischer Listeneintrag)",
+      "openlehr/postausgang/worktree_design-lab.md, worktree_phoenix.md, worktree_stiftshuette.md -- importierte Fremddokumente (Fortbildungsprogramm-PDFs fuer Zahnaerzte), 'Trainerteam' als gewoehnliches deutsches Wort im Fremdtext",
+      "Wissensspeicher-Suche 'Trainer': 9 Treffer, davon 6 aus fremdem Projekt 'nasa-llis' (NASA Lessons Learned, Workforce/Training-Themen, fremder importierter Datenbestand), 3 eigene Lehren (L-0090a1, L-b79360, L-aa35ca) OHNE Bezug zu einem Ding namens 'Trainer' -- reiner Zufallstreffer auf das Wort 'trainieren'/'Training' im Text"
+    ],
+    "fazit": "Bestaetigt: die einzigen Treffer liegen in fremden/importierten Daten oder sind Zufallstreffer auf das Wortfeld, keiner definiert ein System-Ding namens Trainer."
+  },
+  "namen": [
+    {
+      "name": "brainlehr",
+      "bezeichnet": "Der Speicher mit seiner Aufsicht -- was gilt und ob es belegt ist (Ausweis, Freigabe, Norm, Herkunft, Widerruf, Abruf)",
+      "fundstelle": "Repo-Wurzel /Volumes/daten/Begod2026/brainlehr; Knoten 96ec15cb (/brainlehr/der-dreiklang-brainlehr-atelier); ADR-008",
+      "seit": "Projektbeginn, Metapher 'Universitaet' seit 2026-08-14",
+      "status": "festgelegt (Betreiberentscheidung, Knoten 96ec15cb, ADR-007/ADR-008)"
+    },
+    {
+      "name": "atelier",
+      "bezeichnet": "Die Werkbank/native Mac-Anwendung -- wo Domaenen entstehen, Mensch und Modell nebeneinander arbeiten. Metapher 'Betriebssystem'.",
+      "fundstelle": "brainlehr/docs/adr/ADR-008-die-werkbank-heisst-atelier.md; app/Sources/Atelier/; app/Resources/Info.plist (CFBundleIdentifier de.brainlehr.atelier); app/werkzeuge/ax_baum.swift Zeile 36",
+      "seit": "2026-08-14T07:42:03+0200 (ADR-008), Umbenennung im Code Commit c6c82863 (2026-08-14T08:35:23+0200)",
+      "status": "festgelegt (ADR-008)"
+    },
+    {
+      "name": "open*",
+      "bezeichnet": "Der Namensraum aller Instanzen (Werkzeug + Wissen fuer EINE Lage): openlehr (Steuer), kuenftig openWEG (WEG-Recht, bei Veroeffentlichung)",
+      "fundstelle": "ADR-008, Abschnitt 'Entscheidung'",
+      "seit": "2026-08-14",
+      "status": "festgelegt als Namensmuster (ADR-008); openlehr existiert als Repo, openWEG existiert NUR als Name in ADR-008 und docs/PLAN_GRUNDARCHITEKTUR_2026-08-13.md -- kein Verzeichnis, keine Datei dieses Namens gefunden"
+    },
+    {
+      "name": "openlehr",
+      "bezeichnet": "Erste Instanz: Steuerchaos fuer Selbstaendige",
+      "fundstelle": "Repo /Volumes/daten/Begod2026/openlehr",
+      "seit": "vor 2026-08-13 (ADR-007 nennt sie 'seit Monaten' existierend, Umdeutung als 'erste Instanz' erst am 2026-08-13)",
+      "status": "gewachsen als Repo, festgelegt als 'Instanz-Kategorie-Beispiel' seit ADR-007"
+    },
+    {
+      "name": "buckeberg",
+      "bezeichnet": "Instanz: WEG-Verwaltersuche",
+      "fundstelle": "Repo /Volumes/daten/Begod2026/buckeberg; als Beispiel genannt in ADR-007",
+      "seit": "vor 2026-08-13",
+      "status": "gewachsen als Repo, in ADR-007 als Instanz-Beispiel genannt, aber (noch) nicht unter dem 'open*'-Namensraum umbenannt -- Repo heisst weiterhin buckeberg, nicht z.B. openWEG"
+    },
+    {
+      "name": "Kern / Bestandteil / Domaene",
+      "bezeichnet": "Dreistufige Klassifikation dessen, was im atelier laufen darf: Kern = immer da (Sicherheit, Rahmen, Einstellungen); Bestandteil = gemeinsam gebaut, auf Anforderung geladen (z.B. Dokumentfenster); Domaene = alles Fachliche",
+      "fundstelle": "brainlehr/docs/adr/ADR-014-was-ins-atelier-gehoert.md",
+      "seit": "2026-08-14T21:36:26+0200",
+      "status": "festgelegt (ADR-014)"
+    },
+    {
+      "name": "Dienst",
+      "bezeichnet": "Der Fachcode einer Domaene (rechnen, verbinden), laeuft als eigener Prozess, nie im atelier",
+      "fundstelle": "brainlehr/docs/adr/ADR-013-eine-domaene-ist-ein-repo-mit-drei-teilen.md (Tabelle Wissen/Dienst/Oberflaeche); brainlehr/dienst/de.brainlehr.dienst.plist (launchd-Label 'de.brainlehr.dienst')",
+      "seit": "2026-08-14",
+      "status": "festgelegt (ADR-013) als Kategoriebegriff; konkrete Umsetzung als eigenstaendiger launchd-Dienst dokumentiert in dienst/LIESMICH.md, abgeloest die alte Bauform 'App startet Dienst als Kindprozess' (siehe Commit 648432e 'die App gebiert den Dienst nicht mehr')"
+    },
+    {
+      "name": "Baustein",
+      "bezeichnet": "Struktureinheit fuer Dokumentinhalt (Typen u.a. 'feld', 'absatz'), traegt seit ADR-021 ein Herkunftsfeld (Baustein.herkunft)",
+      "fundstelle": "brainlehr/kern/baustein.py; ADR-013 ('Rechnung und Schriftsatz benutzen dieselbe Struktur'); Knoten 62ed1a2a",
+      "seit": "vor 2026-08-14, Herkunftsfeld seit Commit 93944370 (2026-08-15)",
+      "status": "festgelegt als Fachbegriff (mehrfach in ADRs referenziert)"
+    },
+    {
+      "name": "Dokumentfenster",
+      "bezeichnet": "Fenster im atelier, in dem Mensch und Modell gemeinsam an einem Dokument arbeiten (CRDT-basiert, yswift/pycrdt)",
+      "fundstelle": "brainlehr/docs/adr/ADR-010-dokumentfenster-mehrbenutzer-crdt.md; ADR-014 (Einordnung als Bestandteil, nicht Kern); ADR-021; Knoten de9aba1a, 99f23638",
+      "seit": "2026-08-14",
+      "status": "festgelegt (ADR-010, Einordnung praezisiert in ADR-014-Nachtrag am selben Tag)"
+    },
+    {
+      "name": "Ausweis",
+      "bezeichnet": "Beantwortet 'Wer fragt hier' -- Rollen, Mandat (von/rollen/gegenstand), bedingte Rechte statt Verbote",
+      "fundstelle": "brainlehr/kern/ausweis.py; brainlehr/CLAUDE.md ('Die vier Fragen'); ADR-002; ADR-017",
+      "seit": "vor 2026-08-13 (ADR-002), erweitert um Bedingungen ADR-017 (2026-08-14)",
+      "status": "festgelegt"
+    },
+    {
+      "name": "Gattung (Wissensknoten)",
+      "bezeichnet": "Spalte knowledge_nodes.gattung -- erlaubte Werte NUR 'arbeitsbestand' oder 'nachschlagewerk', per DB-Trigger erzwungen",
+      "fundstelle": "brainlehr/schema.sql Zeilen 220-406 (Trigger knowledge_nodes_gattung_check_bi/bu)",
+      "seit": "vor 2026-08-08 (Datei migrate_gattung.py referenziert)",
+      "status": "festgelegt (DB-Schema mit Trigger-Zwang)"
+    },
+    {
+      "name": "Gattung (Dokument)",
+      "bezeichnet": "Dokumentgattung -- Rechnung, Brief, Korrekturblatt, Kapitelübersicht. Jede Gattung hat einen eigenen Designvorrat (Schriftgroessen, Farben, zulaessige Bausteinrollen), gleich welche Domaene sie erzeugt.",
+      "fundstelle": "brainlehr/docs/adr/ADR-015-designvorrat-als-daten-und-der-editor-kann-nur-was-der-satz-kann.md, Abschnitt 'Drei Festlegungen', Punkt 2",
+      "seit": "2026-08-14T21:36:26+0200",
+      "status": "festgelegt (ADR-015) -- SIEHE DOPPELUNGSFRAGE 2 UNTEN: derselbe Wortstamm wie 'Gattung (Wissensknoten)', andere Bedeutung"
+    }
+  ],
+  "gezaehlt": {
+    "namen_gesamt": 12,
+    "davon_festgelegt": 12,
+    "davon_nur_gewachsen": 0,
+    "anmerkung_zaehlung": "Alle 12 aufgenommenen Namen sind per ADR oder ausdruecklicher Betreiberentscheidung festgelegt -- das ist eine Auswahlverzerrung der Methode, nicht ein Befund ueber den Bestand: ADRs sind die ergiebigste durchsuchte Quelle, und wer dort auftaucht, ist per Definition entschieden. Rein gewachsene, nie entschiedene Begriffe (Kandidaten: 'Torwaechter' als Metapher in ADR-011/016 ohne eigene Definition, 'Wissensraum' als Bezeichnung fuer den Dienst in dienst/LIESMICH.md ohne ADR) wurden GESICHTET, aber nicht in die Liste aufgenommen, weil ihre Bedeutung beim Nachlesen nicht trennscharf genug war, um sie von gewoehnlicher Beschreibung zu unterscheiden -- das ist der methodische Grund, warum der Nenner 'nur gewachsen' bei 0 steht, nicht ein Beleg dafuer, dass es sie nicht gibt."
+  },
+  "gegenprobe_verworfene_kandidaten": [
+    {
+      "kandidat": "Speicher (kern/speicher.py)",
+      "verworfen_weil": "Reiner Dateiname/Modulname fuer den Datenbankzugriff, keine Eigenbedeutung ueber 'Speicherzugriffsschicht' hinaus -- faellt unter den ausdruecklichen Ausschluss 'gewoehnliche Datei- oder Funktionsnamen' der Aufgabenstellung."
+    },
+    {
+      "kandidat": "Torwaechter",
+      "verworfen_weil": "Nur als Metapher in ADR-011/ADR-016 verwendet ('was der Torwaechter erzwingen soll'), ohne eigene Definition oder festen Bezug auf EIN konkretes Ding -- unklar, ob Trigger, Funktion oder Konzept gemeint ist. Kein ADR legt 'Torwaechter' als Namen eines Bauteils fest."
+    },
+    {
+      "kandidat": "Wissensraum",
+      "verworfen_weil": "Taucht in 'Wissensraum-Dienst' (dienst/LIESMICH.md) und 'Wissensraum-Ansicht' (ADR-014) auf, wirkt an beiden Stellen wie eine Beschreibung ('Raum fuer Wissen') statt wie ein festgelegter Eigenname mit eigener ADR-Definition -- naeher an einem Kompositum aus zwei gewoehnlichen Woertern als an einem Fachbegriff wie 'atelier' oder 'Baustein'."
+    },
+    {
+      "kandidat": "Dokument",
+      "verworfen_weil": "Gewoehnliches Wort ohne systemspezifische Sonderbedeutung -- jede Instanz benutzt es im Alltagssinn."
+    }
+  ],
+  "doppelungsfrage_1_zwei_namen_ein_ding": {
+    "frage": "Wo bezeichnen ZWEI Namen dasselbe Ding?",
+    "geprueft": "Schwerpunkt: 'atelier' vs. 'die brainlehr-App' (vom Auftrag als Beispiel genannt); dazu Bundle-Kennungen und Preferences-Dateien im gesamten app/-Baum und ~/Library/Preferences",
+    "befund": "EIN Fall gefunden, historisch, im Quelltext bereits bereinigt, aber in Alt-Artefakten auf der Platte noch vorhanden: Die Anwendung hiess im Code bis 2026-08-14T08:35 'BrainlehrApp' mit Bundle-Kennung 'de.brainlehr.app'. Seit Commit c6c82863 heisst sie 'Atelier'/'atelier' mit Kennung 'de.brainlehr.atelier' (bestaetigt in app/Resources/Info.plist: CFBundleName=atelier, CFBundleIdentifier=de.brainlehr.atelier). Im laufenden Quelltext ist die Umbenennung vollstaendig -- keine Fundstelle 'brainlehr-App' ausserhalb des ADR-008-Zitats selbst, das die alte Bezeichnung ausdruecklich als ueberholt benennt. ABER: Auf der Platte liegen noch Alt-Artefakte unter der frueheren Kennung: ~/Library/Preferences/BrainlehrApp.plist und ~/Library/Preferences/de.brainlehr.app.plist (Datum vor der Umbenennung), sowie Build-Cache-Reste app/.build/.../BrainlehrApp.dSYM und app/.build/.../BrainlehrAppPackageTests.xctest. Diese sind NICHT Quelltext, sondern Laufzeit-/Build-Rueckstaende der alten Kennung.",
+    "hinweis_zur_sperre": "ADR-008 selbst sperrte am 2026-08-14 morgens die Umbenennung der Bundle-Kennung wegen eines vermuteten Fensterfehlers -- derselbe ADR-Text haelt im Nachtrag 'Nachtrag 2026-08-14T08:10' fest, dass der Fehler ein Messartefakt war (Schreibtischwechsel waehrend der Messung) und die Sperre damit noch am selben Tag AUFGEHOBEN wurde, bevor die Kennung tatsaechlich geaendert wurde (Commit-Zeitstempel c6c82863 = 08:35, nach dem Nachtrag). Der Auftrag zu dieser Erhebung nennt die Kennung weiterhin als 'ausdruecklich GESPERRT (Betreiberentscheidung 2026-08-14, bis ein offener Fensterfehler verstanden ist)' -- das ist nach dem im Repo dokumentierten Stand VERALTET: der Fehler wurde am selben Tag als Messfehler erklaert, die Sperre aufgehoben, die Kennung bereits geaendert. Diese Erhebung aendert nichts an der Kennung (reiner Lese-Auftrag), meldet aber die Abweichung zwischen Auftragstext und Repo-Stand ausdruecklich, wie vom systemweiten Grundsatz verlangt ('halte dich an den Code, melde die Abweichung').",
+    "weitere_gepruefte_stelle_ohne_befund": "app/Sources/BrainlehrCore (Swift-Modul) traegt weiterhin den Namen 'Brainlehr', nicht 'Atelier' -- das ist bei Pruefung KEIN Duplikat-Befund: BrainlehrCore ist die Klientschicht, die mit dem brainlehr-Speicher spricht (siehe Commit 648432e 'die App gebiert den Dienst nicht mehr -- sie ist sein Klient'), waehrend 'Atelier' die UI-Schicht ist. Zwei verschiedene Schichten, zwei passende Namen -- keine Doppelung, aber der Modulname ist eine Stelle, an der ein fluechtiger Leser 'Brainlehr' faelschlich fuer die App-Bezeichnung halten koennte."
+  },
+  "doppelungsfrage_2_ein_name_zwei_dinge": {
+    "frage": "Wo bezeichnet EIN Name zwei verschiedene Dinge?",
+    "geprueft": "Schwerpunkt: 'gattung' (vom Auftrag als Beispiel genannt); zusaetzlich stichprobenartig 'Dienst', 'Kern', 'Bestandteil', 'Ausweis' auf Doppelbedeutung geprueft (4 weitere Kandidaten, keine Doppelbedeutung gefunden)",
+    "befund": "BESTAETIGT, EIN Fall: 'Gattung' bedeutet an zwei Stellen zwei verschiedene Dinge. (1) In schema.sql / knowledge_nodes.gattung ist es die Art eines Wissensknotens, erzwungen auf genau zwei Werte 'arbeitsbestand' oder 'nachschlagewerk' (DB-Trigger). (2) In ADR-015 ist es die Dokumentgattung -- Rechnung, Brief, Korrekturblatt, Kapitelübersicht -- mit je eigenem Designvorrat. Beide Bedeutungen sind aktiv in Gebrauch, beide sind per Schema bzw. ADR festgelegt, keine ist veraltet. Wer 'Gattung' liest, muss aus dem Kontext (Wissensknoten vs. Dokument/Satz) erschliessen, welche gemeint ist -- der Auftrag hatte diesen Fall bereits vermutet, hier ist er am Text bestaetigt."
+  },
+  "offene_luecken_dieser_erhebung": [
+    "knowledge_browse('/brainlehr') lieferte 89.518 Zeichen / 1167 Zeilen -- zu gross fuer vollstaendiges Lesen im Rahmen dieser Erhebung, daher wurden stattdessen gezielte Volltextsuchen (knowledge_search) zu Einzelbegriffen gefahren. Das deckt Begriffe ab, die in ADRs/Doku vorkommen, kann aber Namen im Wissensspeicher UEBERSEHEN haben, die nur in Knotentiteln stehen und bei keiner der gestellten Suchanfragen anschlagen.",
+    "Repo-Ebene 2 (Unterordner innerhalb der ~70 Top-Level-Verzeichnisse) wurde NICHT vollstaendig durchsucht -- nur brainlehr, openlehr, hub, buckeberg wurden gezielt gegrept. Andere Top-Level-Repos (z.B. fahrtenbuch, wohlair, sigmaforge) wurden nur in der Verzeichnisliste erfasst, nicht auf eigene System-Namen durchsucht, da der Auftrag den Namensbestand 'rund um brainlehr' verlangt, nicht den gesamten Verbund."
+  ]
+}

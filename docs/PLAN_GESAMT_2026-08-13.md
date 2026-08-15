@@ -506,7 +506,7 @@ Domänen gemeinsam haben oder was keine über sich selbst entscheiden darf.
 Dokumentfenster und Tabellenkalkulation sind **Bestandteile**, keine
 Kernbauteile — eine Domäne ohne Dokumente lädt keines. **Der Mechanismus für
 anforderbare Bestandteile fehlt und ist zu bauen.**
-`I2` **Designvorrat als Daten** (ADR-015), nach **Gattung** einstellbar, nicht
+`I2` **Designvorrat als Daten** (ADR-015), nach **Dokumentart** einstellbar, nicht
 nach Domäne — und der Editor bietet nur an, was der Satz kann. Anschlussstelle
 gemessen: der AKA-Design-Konsil hat Tokens bereits als Daten mit Erzeugern für
 CSS/SCSS/Dart; uns fehlt ein vierter für LaTeX. **Sperre davor:** über zehn

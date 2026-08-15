@@ -2,7 +2,7 @@
 
 **Stand** 2026-08-14T21:36:26+0200
 **Status** Angenommen
-**Betrifft** `atelier` (Dokumentfenster), `kern/satz.py`, jede Gattung, jede Domäne
+**Betrifft** `atelier` (Dokumentfenster), `kern/satz.py`, jede Dokumentart, jede Domäne
 **Entscheider** Betreiber, 2026-08-14
 
 ## Die Frage
@@ -33,8 +33,8 @@ Guide **für alle Medien** — Typografie, Farben, Layout, Ton, Medien-Umsetzung
 Er ist **reine Prosa**; im Verzeichnis liegt keine Token-Datei. Genau der Schritt
 fehlt dort und wird hier zuerst gemacht.
 
-**2. Konfigurierbar nach GATTUNG, nicht nach Domäne.** Rechnung, Brief,
-Korrekturblatt, Kapitelübersicht — jede Gattung hat ihren Vorrat. Eine Rechnung
+**2. Konfigurierbar nach DOKUMENTART, nicht nach Domäne.** Rechnung, Brief,
+Korrekturblatt, Kapitelübersicht — jede Dokumentart hat ihren Vorrat. Eine Rechnung
 sieht überall gleich aus, **gleich welche Domäne sie erzeugt**. Wäre der Vorrat
 je Domäne einstellbar, zerfiele genau das einheitliche Aussehen, das ADR-014
 gerade sichert, und der Satz *„soll aussehen, als wäre es ein Teil davon"* wäre
@@ -42,7 +42,7 @@ wieder offen.
 
 Anschluss an den bestehenden Baustein-Vertrag: Die Rollen heißen **Behälter,
 Überschrift, Liste, Tabelle, Abbildung, Feld** — nicht Drucksachen wie
-„Abschnitt" oder „Seite". Nur so passt eine andere Gattung später hinein.
+„Abschnitt" oder „Seite". Nur so passt eine andere Dokumentart später hinein.
 
 **3. Der Editor bietet nur an, was der Satz kann.** Das ist der eigentliche
 Gewinn und der Grund, warum die Einschränkung keine ist: **Der Formenvorrat ist
@@ -64,7 +64,7 @@ durch alle Dokumente.
 - **Was der Vorrat nicht kennt, geht nicht.** Wer eine Form braucht, die es nicht
   gibt, ändert den Vorrat — das ist Arbeit an der Trägerschicht und langsamer,
   als es „nur schnell" hinzuschreiben. Genau das ist beabsichtigt.
-- **Der Vorrat wird zur Engstelle.** Jede neue Gattung geht durch ihn hindurch.
+- **Der Vorrat wird zur Engstelle.** Jede neue Dokumentart geht durch ihn hindurch.
   Solange die Rollen stimmen (Punkt 2), ist das billig; heißen sie nach
   Drucksachen, wird es teuer.
 - **Zwei Leser einer Datei bleiben zwei Leser.** Der Vorrat verhindert die grobe
