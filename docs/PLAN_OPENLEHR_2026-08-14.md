@@ -61,23 +61,15 @@ sie fachlich hingehören — sie hängen sich an ihn.
 
 ## §2 Die Schritte, in bindender Reihenfolge
 
-**H1 — Der Belegvertrag wird brainlehr-Kern.** `_belegt` / `_selbsttest_regeln`
-aus `euer_zuordnung.py` als allgemeine Form nach `brainlehr/kern/` (Arbeitsname
-`belegvertrag.py`): eine Regelmenge lädt nur, wenn jede Regel ihre Fundstelle
-wörtlich in einer benannten Quelle wiederfindet; ein Widerspruch ergibt
-„unbekannt", nie den bequemen Wert. `euer_zuordnung.py` benutzt danach den Kern
-und behält sein Verhalten — Gegenprobe: Fundstelle in einer Regel verfälschen →
-Import muss weiter `ValueError` werfen.
+**H1 — erledigt.** `kern/belegvertrag.py` (brainlehr-Commit `0c2457c`, Nachbesserung
+`3bc7cef`). `_belegt`/`_selbsttest_regeln` aus `euer_zuordnung.py` sind als
+allgemeine Form im Kern, Import wirft `ValueError` bei verfälschter Fundstelle.
 
-**H2 — `classifier.py` an den Vertrag.** Jede der 12 Regeln bekommt entweder
-eine Fundstelle oder den Ausgang `unklar`. **Rot vor grün:** zuerst ein Test, der
-gegen den heutigen Stand rot ist (Regelmenge ohne Fundstelle lädt heute
-klaglos). *Hängt an H1.*
+**H2 — erledigt.** openlehr-Commit `46e7fbd8` (`classifier.py`-Regeln tragen
+`fundstelle`), Test `apps/openlehr/tests/test_classifier.py`.
 
-**H3 — Die Naht schließen.** Ein Steuersatz entsteht in `ingest.py` nur noch als
-gültiger Wert oder als Klärungsfall; die Menge {0, 7, 19} steht an **einer**
-Stelle und wird von beiden Seiten gelesen. Gegenprobe: OCR-Text mit „9 % MwSt"
-→ Klärungsfall, nicht stille Übernahme. *Hängt an H1.*
+**H3 — erledigt.** openlehr-Commit `a070b562`. `GUELTIGE_UST_SAETZE` in
+`ingest.py`, Naht zu `api.py::_ocr_rate` geschlossen.
 
 **H4 — Der Prüfkorpus mit bekanntem Sollergebnis** (F24, vom Betreiber
 angenommen): erfundene Belege, deren Ergebnis feststeht, mit absichtlichen
@@ -141,14 +133,12 @@ Das Paketformat, damit beide Seiten dagegen bauen können (eine JSON-Datei):
 `quellen` und `regeln` sind genau die zwei Argumente von `pruefe_regeln` — das
 Format ist nicht erfunden, es ist der Vertrag in Dateiform.
 
-- **H8a** `kern/domaene.py`: lesen, gegen den Vertrag prüfen, annehmen oder mit
-  **Grund** ablehnen. Rot vor grün: eine Domäne mit unbelegter Regel muss
-  abgewiesen werden, und der Grund muss die Regel benennen.
-- **H8b** Menüpunkt „Domäne importieren…" im atelier, Dateiauswahl, Ergebnis in
-  Nutzersprache — *„Die Regel ‚Bewirtung' nennt keine Quelle"*, nicht ein
-  Fehlertext aus dem Inneren.
-- **H8c** openlehr exportiert seine Steuerregeln als erstes echtes Paket. Erst
-  damit ist der Weg belegt statt behauptet.
+- **H8a — erledigt.** `kern/domaene.py` (brainlehr-Commit `ec476f2`), Test
+  `tests/test_domaene.py`.
+- **H8b — erledigt.** Menüpunkt „Domäne importieren…" im atelier
+  (brainlehr-Commit `6dba281`), `app/Sources/Atelier/DomaeneImportDienst.swift`.
+- **H8c — erledigt.** `pakete/steuer.domaene.json` (brainlehr-Commit `ec476f2`)
+  trägt vier Regeln als erstes echtes Paket.
 
 **H10 — „Domäne exportieren", der Zwilling des Importknopfs.** Betreiber:
 *„und wie exportieren wir unser openlehr aus dem atelier wenn es fertig ist?"*
@@ -249,6 +239,70 @@ Jede der 15 bekommt genau eine von drei Marken: *zieht um* · *bleibt* ·
 Fristenrechnung ist „nach Wichtigkeit" nicht entscheidbar. H8a vor H8b und H8c.
 H2 vor H10 — vorher gibt es nichts zu exportieren. **H12 Schritt 1 vor
 Schritt 2**, siehe oben.
+
+## §2a · Aufträge, fertig zum Übergeben
+
+Ergänzt 2026-08-15, weil `tests/test_planform_ratsche.py` neue Plandateien auf
+die vierzeilige Auftragsform prüft (Vorbild `docs/PLAN_MACAPP_2026-08-12.md`).
+Nur die noch **offenen** Schritte (H4, H5, H6, H7, H10) bekommen einen
+Auftrag — H1–H3, H8a–H8c sind erledigt und tragen oben ihre Commit-Kennung
+statt eines Auftrags.
+
+**Für alle Aufträge gleichermaßen gilt:**
+
+- Arbeitsort `/Volumes/daten/Begod2026/brainlehr`, Zweig `brainlehr/b4-ausweis`.
+- Zuerst `CLAUDE.md` (brainlehr und global) lesen, dann diesen Plan.
+- „Sieht der Code anders aus als hier beschrieben, halte dich an den Code und
+  melde die Abweichung."
+- Kein `git add -A`, kein Push, kein `git stash`.
+- `/Volumes/daten/Begod2026/openlehr` ist ein **eigenes Repo** — Änderungen dort
+  laufen als eigener Auftrag in diesem Repo, nicht nebenbei aus brainlehr.
+- Rot vor grün: der neue Test läuft vor der Änderung fehl, danach besteht er.
+
+### Schritt H4 — Prüfkorpus mit bekanntem Sollergebnis
+
+| | |
+|---|---|
+| **Darf ändern** | `/Volumes/daten/Begod2026/openlehr/apps/openlehr/scripts/`, neue Tests unter `/Volumes/daten/Begod2026/openlehr/tests/steuer/` |
+| **Tabu zusätzlich** | `router.py`, `api.py`, `db.py` — kein Umbau des Gerüsts für diesen Schritt |
+| **Fakten** | `docs/openlehr/korpus_kandidaten_2026-08-14.md`: von vier gesuchten Korpus-Sorten ist genau eine brauchbar (KoSIT xrechnung-testsuite, Apache-2.0), drei sind leer (Steuerbescheide mit Werten, Behördenpost mit Fristen, Belegdatensätze für Texterkennung). `apps/openlehr/scripts/steuer_goldkorpus_aoschu_materialize.py` und `apps/openlehr/tests/test_steuer_goldkorpus_aoschu_materialize.py` existieren bereits als Vorbild für „Korpus materialisieren + prüfen". Für Bescheide mit Frist gibt es noch keinen erfundenen Korpus — er muss neu entstehen (§6, Antwort zu F31). |
+| **Abnahme** | Ein Lauf über den Korpus meldet **100 % richtig** nur, wenn alle absichtlich eingebauten Fallen (falscher Steuersatz, fehlende Fundstelle, doppelter Beleg) einzeln als gemeldet erscheinen — nicht nur die Endsumme. Negativfall: eine Falle, die stillschweigend durchläuft, lässt den Test rot bleiben. |
+
+### Schritt H5 — Bestandsaufnahme als E2E-Journey
+
+| | |
+|---|---|
+| **Darf ändern** | `/Volumes/daten/Begod2026/openlehr/apps/openlehr/tests/`, `/Volumes/daten/Begod2026/openlehr/apps/openlehr/daemon/steuer/` (nur additiv) |
+| **Tabu zusätzlich** | Bestehende WP4-Tests (`test_wp4_behoerdenpost.py`) nicht umschreiben, nur erweitern |
+| **Fakten** | `apps/openlehr/tests/test_wp4_behoerdenpost.py` (426 Zeilen) deckt heute **eine** Postsorte ab — Mahnung (Intake, `vendor_match`, `frist_plausibel`, Entwurf mit LLM-Fallback, `output_scan`). Der laut §6/F30 geforderte Fächer hat sechs Sorten: Schätzungsbescheid, Erinnerung, Zwangsgeldandrohung, Vollstreckungsankündigung, Bußgeldbescheid, Beitragsbescheid — fünf fehlen. |
+| **Abnahme** | Ein Journey-Test pro fehlender Postsorte, rot geschrieben (Regel 1 aus `L-473ba2`: rot bleibt, bis die Domäne läuft) und mit `xfail` markiert, nie stillschweigend übersprungen. Rot-Probe: Test vor jeder Fachimplementierung ausführen, muss fehlschlagen. |
+
+### Schritt H6 — Fristenrechnung als erste Fachfunktion
+
+| | |
+|---|---|
+| **Darf ändern** | `/Volumes/daten/Begod2026/openlehr/apps/openlehr/daemon/steuer/kalender/`, zugehörige Tests |
+| **Tabu zusätzlich** | `kern/belegvertrag.py` — die Fundstelle-Pflicht für eine Rechtsgrundlage wird wiederverwendet, nicht neu erfunden |
+| **Fakten** | `apps/openlehr/daemon/steuer/kalender/fristen.py` (76 Zeilen) schreibt heute nur iCal-Termine (`write_deadline_event`) — keine Wichtigkeits- oder Fristrechnung aus Frist×Folge. `tests/steuer/test_kalender_fristen.py` existiert und deckt nur diesen iCal-Teil ab. |
+| **Abnahme** | Eine Frist ohne belegte Rechtsgrundlage (keine Fundstelle) muss die Berechnung mit „unbekannt" verweigern, nicht mit einem Rateergebnis — Gegenprobe: Testfall ohne Fundstelle liefert `None`/Fehler, nicht eine Zahl. Grenzwertprobe: Frist heute, morgen, in der Vergangenheit. |
+
+### Schritt H7 — Die Modellgrenze (F19: lokal, Auswärtsgang nur per Schalter)
+
+| | |
+|---|---|
+| **Darf ändern** | `/Volumes/daten/Begod2026/openlehr/apps/openlehr/daemon/steuer/llm_runtime.py`, zugehörige Tests |
+| **Tabu zusätzlich** | `gemma4_ocr_bridge.py` nur lesend zur Orientierung, keine Änderung in diesem Schritt |
+| **Fakten** | Gemessen: `apps/openlehr/daemon/steuer/llm_runtime.py` und die Aufrufer (`api.py`, `gemma4_ocr_bridge.py`, `db.py`) sprechen ausschließlich `ollama` — kein Treffer für `gemini`, `openai`, `remote` oder einen Einstellungsschalter (`grep -rn "erlaubt_extern\|remote_erlaubt\|auswaerts\|external_allowed\|allow_remote"` liefert 0 Treffer). Die Vorgabe „lokal" ist heute Zufall der Implementierung, nicht ein geprüfter Schalter. |
+| **Abnahme** | Ein neuer Schalter (Vorgabe **aus**) und ein Test, der bei ausgeschaltetem Schalter jeden Versuch, einen Belegtext an ein nicht-`ollama`-Backend zu schicken, ablehnt. Gegenprobe in beide Richtungen: Schalter aus → Versuch schlägt fehl; Schalter an → derselbe Versuch geht durch. Ohne diese Gegenprobe ist der Schalter Zierde (§0-Formulierung). |
+
+### Schritt H10 — Domäne exportieren
+
+| | |
+|---|---|
+| **Darf ändern** | `kern/domaene.py`, neue Datei `kern/domaene_export.py`, `tests/test_domaene.py` oder neue Testdatei dafür |
+| **Tabu zusätzlich** | `pakete/steuer.domaene.json` nicht von Hand nachbessern — es ist bereits das erzeugte Beispiel (H8c) |
+| **Fakten** | `kern/domaene.py` hat heute `importiere()` und `pruefe()` (`kern/domaene.py:26`, `:42`), aber **keine** Export-Funktion — `grep -n "export" kern/domaene.py` liefert 0 Treffer. Voraussetzung laut §2 „H2 vor H10" ist erfüllt (H2 erledigt). |
+| **Abnahme** | Export erzeugt ein Paket im selben Format wie `pakete/steuer.domaene.json` (`domaene`/`bezeichnung`/`herkunft`/`stand`/`quellen`/`regeln`). Negativfall: eine Regel mit Beleg-Rohdaten statt einer allgemeinen Fundstelle (z. B. ein Betrag oder Name im `fundstelle`-Feld) muss den Export verweigern, nicht stillschweigend mitnehmen — das ist die Schranke aus §2, Punkt 1 „Ein Exportpaket enthält niemals Belege". |
 
 ## §3 Verworfene Wege
 
