@@ -213,6 +213,125 @@ gemessen bzw. ungemessen, hier nicht erneut angefasst). **Echt offen, kein
 Commit-Beleg gefunden:** `H2`–`H7`, `H12`, `I2`–`I4`, sowie `20`/`29`/`31`
 (Linie E, wartet auf den Betreiber).
 
+## Fortschreibung 2026-08-15T13:50:00+0200 — neun Wissenszeilen eingearbeitet, eine neue Kategorie
+
+Auftrag des Betreibers: den Plan „wegen unserem neuen Wissen aktualisieren", VOR der
+Abarbeitung. Diese Fortschreibung baut nichts, sie ordnet neun seit 13:30 Uhr entstandene
+Befunde ein. Beleg je Zeile am Repo nachgesehen, nicht aus dem Auftrag übernommen — Ergebnis
+in `runs/planfortschreibung_2026-08-15T1350+0200.json`.
+
+**Zahl mit Nenner, unverändert gegenüber 13:30 (keine neue Zeile, nur Umsortierung):** 65
+geführte Kennungen — 35 erledigt, 10 teilweise (davon 3 jetzt als „gebaut, aber wirkungslos"
+gekennzeichnet, siehe unten), 13 offen, 7 nicht nachgemessen.
+
+### Die neue Kategorie: gebaut, aber wirkungslos
+
+Das ist die Fehlerklasse, die schon den ganzen Plan vom 13.08. trägt (zwölf Fälle, siehe oben)
+— und sie trat seit 13:30 Uhr ein drittes Mal in dieser Fortschreibung selbst auf. Sie bekommt
+deshalb einen eigenen Platz statt eine Fußnote unter „teilweise" zu bleiben:
+
+| Kennung | Gebaut | Wirkungslos, weil |
+|---|---|---|
+| `73` | Vorwärts- und Rückwärtsmechanismus (`46d96bc3`, `kern/kanten_herkunft_rueckwirkend.py`), isoliert grün | am echten Bestand (2214 Knoten) **0** Kanten `abgeleitet_von` statt der geforderten ≥125; Spalte steht weiter in `schema.sql:151` |
+| `79` | `speicher.normiere_modell()`/`normiere_akteur()` (`88aaf738`) | im Schreibpfad `knowledge_mcp_server.py` **0 Aufrufe** — jeder neue Knoten trägt weiter beliebige Modellschreibweisen |
+| `97` | Peer-Review-Wächter + Tests (`028bd979`, 0/72 Fehlalarme) | `.claude/settings.json` `PreToolUse` hat nur einen Matcher für `Bash`, keinen für das Agent-Werkzeug — feuert in keiner echten Sitzung |
+
+Alle drei bleiben **teilweise**, nicht offen — der Code existiert und ist geprüft, nur die
+Wirkung fehlt. Die Unterscheidung ist nicht kosmetisch: „offen" heißt „noch zu bauen", diese
+drei sind fertig gebaut und brauchen nur den fehlenden Anschluss (Rückwärtslauf am echten
+Bestand fahren, Aufrufstelle ergänzen, `PreToolUse`-Matcher erweitern) — der billigere
+nächste Schritt als ein Neubau.
+
+### Die neun Wissenszeilen, einzeln geprüft
+
+1. **„Gebaut, wirkungslos" als eigene Kategorie** — eingearbeitet, siehe Tabelle oben.
+2. **Sechs unbemerkt erledigte Zeilen (`42`,`68`,`71`,`76`,`89`,`86` Schritt 2)** — **nicht
+   zutreffend als neue Arbeit**: Die Fortschreibung von 13:30 Uhr (Zeilen 166–214 dieser Datei)
+   führt alle sechs bereits im Wortlaut als erledigt, mit Commit-Beleg. Nachgesehen statt
+   übernommen: stimmt. Einzige Ergänzung hier — Linie D (`42`,`67`,`68`,`70`,`71`) unten in der
+   Linienübersicht als **vollständig** markiert, was der Fließtext dort noch nicht tat.
+3. **ADR-019 entschieden, ADR-020 Schritt 1 gebaut, ADR-021 vorbereitet** — geprüft, mit einer
+   Abweichung vom Auftragstext: `docs/adr/ADR-019-drei-entscheidungen-vor-dem-ersten-dokument.md`
+   trägt laut eigenem Korrekturvermerk **fünf**, nicht drei Entscheidungen (Dateiname bewusst
+   unverändert als Adresse). `docs/adr/ADR-020-mcp-server-klient-des-dienstes.md` steht im Kopf
+   weiter als „Status: Vorschlag — Entscheidung offen, nicht getroffen"; Schritt 1 (`03cce992`,
+   echte Ausweisprüfung statt Origin-Header auf 7 von 9 POST-Pfaden) ist ein vorgezogener
+   Härtungsschritt, **unabhängig davon**, ob die Grundsatzfrage je entschieden wird — Abschnitt 5
+   der ADR selbst nennt ihn Voraussetzung, bevor überhaupt ein Werkzeug umzieht. Schritt 2 (12
+   schreibende MCP-Werkzeuge auf Endpunkte) offen, Schritt 3 (13 lesende) hängt an einer nicht
+   vorliegenden Zeitmessung des HTTP-Umwegs (ADR-020 Abschnitt 4). `docs/adr/ADR-021-eingabeweg-dokumentfenster.md`
+   existiert. **Neue Kennungen `I5`/`I6` für ADR-020-Schritt-2/3 und `I7` für ADR-021 unten in
+   Linie I ergänzt**, da sie bisher in keiner Linie geführt waren.
+4. **Urheberschaft entschieden (`62ed1a2a`)** — geprüft, zutreffend. Der Knoten trägt genau den
+   Titel „Urheberschaft ist das Herkunftsfeld am Baustein — und dasselbe Feld entscheidet die
+   Trainingsfrage". Das Feld selbst ist noch nicht gebaut (`schema.sql` kennt keine Tabelle
+   `bausteine` — konsistent mit ADR-019: „Tabellen `dokumente`/`bausteine` existieren nicht"),
+   die **Sperre** ist trotzdem weg, weil die Entscheidung vor dem ersten Schreibvorgang fiel statt
+   danach nachgezogen zu werden müssen. `I2` (Designvorrat, bisher „Sperre davor: kanonische
+   Guide-Quelle ungeprüft") bleibt unverändert offen — das ist eine andere Sperre (Tokendatei), von
+   dieser Entscheidung nicht berührt.
+5. **Homepage nach hinten verschoben (`9a27a332`)** — geprüft, zutreffend, Knotentitel bestätigt.
+   Die rund 51 Zeilen `register_post_meta` stehen nicht in dieser Plandatei (keine Fundstelle
+   hier), sie fallen also nirgends aus **dieser** Reihenfolge heraus — nur zur Kenntnis, falls ein
+   anderer Plan sie führt.
+6. **Textregeln als Domänenpaket 0, Bilderzeugung existiert längst (`cbd79aaa`)** — geprüft,
+   zutreffend, Knoteninhalt vollständig gelesen: 0 Treffer bei 13563 Dateien für
+   Domänenpaket-Textregeln, `voice_und_tone`/`zielgruppen` tot in `aka-design-guide.json`,
+   `ai_image_forge.py` (1322 Zeilen, `openlehr/begod/scripts/`) ruft Gemini/Imagen mit befülltem
+   Profil. Trennlinie Diagramm (Tokens als `fundstelle` belegbar, Belegvertrag passt unverändert)
+   gegen Foto (Bildsprache, `image_style_anchor`-Muster passt, hat mit Tokens nichts zu tun) steht
+   **im selben Knoten**, nicht gesondert entschieden. **Neue Zeile `I8`** unten ergänzt: Diagramm-
+   Erzeugung über den Belegvertrag, getrennt vom Foto-Pfad.
+7. **Abruf wirkt in 11,1 % (`f4ebc128`), zwei neue Melder nicht verdrahtet** — geprüft,
+   zutreffend. `melder/abrufwirkung.py` und `melder/agentendauer.py` existieren, kein Treffer in
+   `.claude/settings.json` für beide Namen. Reiht sich in dieselbe Kategorie wie Punkt 1 ein —
+   hier nicht als eigene Zeile geführt, weil noch nicht einmal am eigenen Bestand geprüft, nur als
+   „gebaut, ungeprüft ob wirksam".
+8. **Sechs Selbstlauf-Blindgänger entschieden (`d6ab2505`)** — Knoten-ID selbst nicht per
+   Präfixsuche in der DB gefunden (könnte eine andere Kennung tragen), die **Wirkung** aber am
+   Code bestätigt: `melder/wirkkette.py` führt wörtlich eine „STUFE 2, RUBRIK ‚bewusst nur für
+   Menschen'" mit Verweis auf „Aufgabe wirkkette-6-widerspruch, 2026-08-15". Als eingearbeitet
+   gewertet, mit dieser Einschränkung offen benannt statt verschwiegen.
+9. **Prüfer gegen nackte Zahlen (Bauform wie `normbezug.py`/`existenzpruefung.py`)** —
+   **als offene Frage aufgenommen, NICHT als Zeile**, siehe unten. Weder Datei noch Knoten dazu
+   gefunden — passt zum Auftragstext „Entscheidung steht aus".
+
+### Neue offene Frage, keine Zeile, keine Entscheidung
+
+**Soll ein Prüfer am Haltepunkt nackte Zahlen über zählbare Dinge in der eigenen Antwort
+beanstanden** (Bauform wie `normbezug.py`/`existenzpruefung.py` — Regel gegen unbelegte
+Existenzaussagen, hier gegen unbelegte Zahlen)? Der Betreiber hat das angeregt, nicht
+entschieden. Bewusst **nicht** als Zeile `Kxx` eingetragen, weil eine Zeile „geplant, zu bauen"
+bedeutet — diese Frage ist noch nicht einmal das.
+
+### Wo die Reihenfolge bindend ist — ein konkreter Fall aus dem neuen Wissen
+
+**ADR-020 Schritt 1 vor Schritt 2, wörtlich in Abschnitt 5 der ADR selbst begründet:** Die
+Ausweisprüfung (`03cce992`) musste vor jedem Umzug eines MCP-Werkzeugs auf einen Dienst-Endpunkt
+stehen, weil die bisherige Origin-Prüfung ausschließlich Browser bindet — ein MCP-Klient (reiner
+Python-Aufruf) kann jeden Origin-Header selbst setzen. Würde `I5` (Schritt 2, Werkzeuge
+umziehen) vor dieser Härtung gebaut, öffnete der Umbau selbst die Lücke, die G5 schließen sollte,
+nur an einer neuen Stelle — derselbe Fehler wie bei `78` vor `73` (beide ändern
+`knowledge_add`) oder `98` vor `92`/`96`/`97`. Schritt 1 ist bereits erledigt; **`I5` darf jetzt
+erst beauftragt werden, `I6` (13 lesende Werkzeuge) erst nach einer Zeitmessung des
+HTTP-Umwegs (ADR-020 Abschnitt 4) — diese Messung ist die Vorbedingung von `I6`, nicht von
+`I5`.**
+
+### Was bewusst nicht in diese Fortschreibung aufgenommen wird, samt Preis
+
+- **Punkt 8 (Selbstlauf-Blindgänger) nicht mit eigener Knoten-ID zitiert**, obwohl der Auftrag
+  sie nennt — die Suche in der Datenbank fand `d6ab2505` nicht. Preis: eine Zeile bleibt am
+  Code statt am Wissenseintrag belegt. Vorzug vor der Alternative (Zahl ungeprüft übernehmen):
+  eine falsche Kennung wäre eine neue unbelegte Existenzaussage, genau die Fehlerklasse, die
+  dieser Plan selbst mehrfach kritisiert.
+- **`I5`/`I6`/`I7`/`I8` als reine Kennungen ergänzt, nicht als vollständig ausformulierte
+  Aufträge.** Die „Aufträge, fertig zum Übergeben" weiter unten bleiben unverändert — ein
+  Auftrag zu `I5` bräuchte eine eigene Dateiliste (welche der 12 Werkzeuge zuerst) und ist damit
+  mehr als eine Fortschreibung leisten soll. Preis: Wer `I5` als nächstes bauen will, formuliert
+  den Auftrag noch selbst.
+- **Keine neue Schätzung für `H2`–`H7`.** Das neue Wissen berührt Linie H nicht; sie bleibt mit
+  dem Stand aus der 13:30-Fortschreibung offen.
+
 ## Die fünf Linien, in bindender Reihenfolge
 
 **Linie A — Wirksamkeit vor allem anderen.** Solange Mechanismen nicht feuern,
@@ -244,11 +363,16 @@ sonst wäre die Umbenennung ihre eigene Begründung.
 
 **Linie C — der Speicher schreibt mit.** `78` (Dublettenerkennung beim Anlegen)
 → `73` (Herkunftskette; **dieselbe Funktion**, deshalb streng danach) ·
-`79` (Herkunftsfelder normalisieren, kein neues Feld).
+`79` (Herkunftsfelder normalisieren, kein neues Feld). **Stand 2026-08-15T13:50:
+beide gebaut, beide wirkungslos** (siehe Fortschreibung oben) — `73` schreibt 0
+Kanten am echten Bestand statt ≥125, `79` wird im Schreibpfad nie aufgerufen.
+Bleiben **teilweise**, nächster Schritt ist der fehlende Anschluss, kein Neubau.
 
-**Linie D — Messbarkeit wiederherstellen.** `71` (die nicht zuordenbare Differenz
-45 gegen 33; `70` ist erledigt, damit möglich) · `68` (Prüfkorpus deterministisch)
-→ `67` → `42` (Okkultation mit größerer Fallmenge).
+**Linie D — Messbarkeit wiederherstellen — vollständig erledigt (Stand
+2026-08-15T13:30).** `71` (die nicht zuordenbare Differenz 45 gegen 33, gelöst
+als Kategorienfehler, `06169cee`) · `68` (Prüfkorpus deterministisch, `c37e8161`)
+→ `67` (`51f1912e`) → `42` (Okkultation mit Vollerhebung, `f318479f`). Alle vier
+mit rot-vor-grün belegt, siehe Fortschreibung 13:30 oben.
 
 **Linie E — nur der Betreiber.** `20`, `23`, `29`, `31`. Nicht autonom, in
 keiner Reihenfolge erzwingbar.
@@ -353,6 +477,24 @@ welches Gewicht, tragen die einzelnen Pakete dieselbe Lizenz wie die Wurzel.
 `I4` **Bedingte Ausweise statt Verbote** (ADR-017): Rechte an die Identität,
 nicht Verbote in den Code. **Offen und vor dem ersten eingeräumten Recht zu
 prüfen:** ob es für Ausweise überhaupt einen Widerruf gibt.
+
+**Ergänzt 2026-08-15T13:50:00+0200, aus ADR-019/020/021 (siehe Fortschreibung
+oben) — bisher in keiner Linie geführt:**
+`I5` **ADR-020 Schritt 2:** die 12 schreibenden MCP-Werkzeuge auf Endpunkte von
+`berichte/entscheidungen_server.py` ziehen. **Bindend nach Schritt 1** (Ausweisprüfung,
+bereits erledigt, `03cce992`) — Begründung siehe Reihenfolge-Abschnitt oben.
+Grundsatzfrage der ADR selbst weiterhin „Vorschlag, nicht entschieden".
+`I6` **ADR-020 Schritt 3:** die 13 lesenden Werkzeuge, **erst nach** einer
+Zeitmessung des HTTP-Umwegs (ADR-020 Abschnitt 4, heute unbeziffert) — nicht vor,
+nicht gleichzeitig mit `I5`.
+`I7` **ADR-021** (Eingabeweg Dokumentfenster) — Rahmen steht, Ausführung nicht
+geprüft in dieser Fortschreibung, keine eigene Aussage.
+`I8` **Diagramm-Bilderzeugung über den Belegvertrag** (Knoten `cbd79aaa`):
+Tokens sind als `fundstelle` belegbar wie ein Gesetzeszitat — der Belegvertrag
+passt unverändert. **Ausdrücklich getrennt vom Foto-Pfad** (`ai_image_forge.py`,
+bereits vorhanden in `openlehr/begod/scripts/`, Bildsprache statt Zahlenvergleich)
+— beide „konsistente Bilder" zu nennen wäre der Denkfehler, den der Knoten
+benennt.
 
 **Linie G, fortgeschrieben 2026-08-15 — die Anwendung ist kein Betriebssystem.**
 `codesign -dv` auf das gebaute Bündel: `adhoc`, kein `TeamIdentifier`, **kein
