@@ -64,3 +64,28 @@ def test_namen_stimmen_mit_swift_ueberein():
     assert enum_block, "Bestandteil-Enum in der Swift-Datei nicht gefunden."
     swift_namen = set(re.findall(r"case\s+(\w+)", enum_block.group(1)))
     assert swift_namen == set(KATALOG.keys())
+
+
+def test_auflagenstand_stimmt_mit_swift_ueberein():
+    """Die Namensratsche darueber hat eine Luecke, die am 2026-08-15 gemessen
+    wurde: sie vergleicht, WELCHE Bestandteile es gibt, nicht ob beide Seiten
+    sie gleich BEURTEILEN. Genau dadurch stand `tabellenkalkulation` in Python
+    auf erfuellt und in Swift auf nicht erfuellt, ohne dass ein Test anschlug --
+    die App haette den Bestandteil verweigert, waehrend der Katalog ihn
+    gewaehrt. Ein Test, der nur Namen prueft, faengt keinen Zustand.
+
+    Gegenprobe in beide Richtungen: verschiebt sich EIN Wert auf einer Seite,
+    faellt dieser Test; bleiben beide gleich, geht er durch."""
+    text = SWIFT_KATALOG.read_text(encoding="utf-8")
+    swift_stand = {
+        name: wert == "true"
+        for name, wert in re.findall(
+            r"\.(\w+):\s*BestandteilEintrag\(auflagenErfuellt:\s*(true|false)\)", text
+        )
+    }
+    assert swift_stand, "Keine BestandteilEintrag-Zeile in der Swift-Datei gefunden."
+    python_stand = {name: e.auflagen_erfuellt for name, e in KATALOG.items()}
+    assert swift_stand == python_stand, (
+        f"Python und Swift beurteilen dieselben Bestandteile verschieden: "
+        f"python={python_stand} swift={swift_stand}"
+    )

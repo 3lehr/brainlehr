@@ -31,7 +31,12 @@ enum BestandteilKatalog {
         // ADR-016 Auflage 3 offen: Fremddatei-Import bis auf weiteres
         // gesperrt -- deshalb hier als nicht erfuellt gefuehrt, nicht erst
         // an der Ladestelle.
-        .tabellenkalkulation: BestandteilEintrag(auflagenErfuellt: false),
+        // Auflagen aus ADR-016 seit 2026-08-15 erfuellt: Auflage 3 (kann eine
+        // importierte Datei in `new Function` landen?) wurde gemessen und
+        // aufgehoben, Auflage 1 (Positivliste) ist gebaut und gegen die
+        // laufende Rechenmaschine belegt -- 37 von 511 Funktionen, geprueft
+        // als Mengengleichheit statt als "die verbotenen sind weg".
+        .tabellenkalkulation: BestandteilEintrag(auflagenErfuellt: true),
     ]
 }
 
