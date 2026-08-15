@@ -81,6 +81,12 @@ import gattung_filter  # noqa: E402
 import knowledge_recall_hook  # noqa: E402  -- nur MAX_NODES/MAX_LESSONS/MIN_HITS/keywords/_ist_geltend gelesen
 from knowledge_mcp_server import _embedding_ranking, _or_query  # noqa: E402
 
+# Schritt 1 der ADR-020-Reihenfolge (Abschnitt 5): die Origin-Pruefung allein
+# ersetzt hier eine echte Ausweispruefung. kern/ausweis.py bleibt tabu fuer
+# diesen Auftrag -- nur loese_auf()/darf() werden aufgerufen, keine Zeile
+# dort veraendert.
+import ausweis as ausweis_kern  # noqa: E402
+
 RUNS_DIR = HERE / "runs"
 # raum.html/vergleich.html sind aufgegangen in entscheidungen.html (Betreiber-
 # Weisung 2026-08-08: eine Adresse statt drei). /raum und /vergleich bleiben
@@ -858,6 +864,82 @@ def _abrufweg_stand(text: str) -> dict:
         conn.close()
 
 
+# ─── Ausweispruefung (ADR-020 Abschnitt 5, Schritt 1) ──────────────────────
+#
+# BEFUND, DER DIES ERZWINGT: _herkunft_ok() prueft nur den Origin-Kopf. Ein
+# Browser setzt ihn selbst und kann ihn nicht faelschen -- ein Programm
+# (Python-`requests`, ein MCP-Server, jeder HTTP-Klient) setzt jeden
+# Origin-Kopf, den der Code will. Solange der Dienst an 127.0.0.1 gebunden
+# bleibt, traegt die Origin-Pruefung trotzdem etwas (fremde Webseiten im
+# Browser des Betreibers). Faellt die Bindung (Voraussetzung fuer ADR-020
+# Abschnitt 5, spaeter), ist sie NICHT schwaecher, sondern wirkungslos --
+# genau das schliesst diese Pruefung, bevor irgendein Werkzeug umzieht.
+#
+# WIE SICH EIN KLIENT AUSWEIST: ein Geheimnis je Aufruf, im Kopf
+# 'Authorization: Bearer <Geheimnis>' -- dem in kern/ausweis.py bereits
+# angekuendigten Weg (Docstring dort: "spaeter aus dem Bearer-Token
+# (ADR-001)"). Kein eigenes Session-Token: ein zusaetzlicher Ausstellungs-
+# /Ablaufmechanismus fuer Sitzungen waere ein zweites Geheimnis-System neben
+# kern/ausweis.py, das dort bereits Ablauf UND Widerruf kennt (widerrufen(),
+# entwiderrufen(), gilt_bis) -- ein Kopf mit dem Ausweis-Geheimnis selbst
+# nutzt das, ohne es zu duplizieren.
+#
+# WIRD DAS GEHEIMNIS PROTOKOLLIERT? Handler.log_message() ist fuer den ganzen
+# Server stillgelegt (Zeile oben), also gibt es hier kein Zugriffslog, das
+# Kopfzeilen mitschriebe. sqlite3.connect()/Query-Logging dieses Moduls
+# beruehrt keine HTTP-Kopfzeilen. Gemessen per Grep auf 'log' in dieser
+# Datei: ausser log_message() (leer) kein Treffer.
+#
+# WELCHE RECHT WIRD VERLANGT: 'verwaltung:schreiben' -- laut ROLLEN in
+# kern/ausweis.py traegt nur 'betreiber' (per '*') dieses Recht, und es steht
+# in NICHT_DELEGIERBAR. Passt zum Docstring dieser Datei: eine Oberflaeche
+# fuer "liegen gebliebene BETREIBER-Entscheidungen", kein Mehrbenutzerdienst.
+_SCHREIBRECHT = "verwaltung:schreiben"
+
+# ZWISCHENSTAND, BENANNT STATT VERSCHWIEGEN: /api/ausweis-anlegen und
+# /api/ausweis-einladen pruefen ihre Beglaubigung bereits SELBST, eine Ebene
+# tiefer -- das mitgeschickte Geheimnis geht unveraendert an
+# kern/ausweis.py::anlegen()/einladen(), und die pruefen dort die
+# Einbuergerung (_pruefe_einbuergerung/_aussteller_name) gegen denselben
+# Bestand. Eine zweite, gleichlautende Kopf-Pruefung HIER waere kein
+# zweiter Schutz, sondern ein zweiter Weg zum selben Fehler -- und sie
+# bricht den einzigen Weg, den die App fuer einen Ausweis-Wechsel hat:
+# app/Sources/Atelier/AusweisDienst.swift (tabu fuer diesen Auftrag) traegt
+# das Geheimnis im JSON-Body, nicht im Authorization-Kopf. Bekommt die App
+# eine eigene Kopf-Uebertragung, ziehen auch diese zwei Pfade auf die
+# einheitliche Pruefung um -- bis dahin bleibt es bei der tieferliegenden.
+_OHNE_KOPFPRUEFUNG = frozenset({"/api/ausweis-anlegen", "/api/ausweis-einladen"})
+
+# ABWEICHUNG, GEMESSEN, NICHT REPARIERT (app/ ist tabu fuer diesen Auftrag):
+# app/Sources/Atelier/DomaeneImportDienst.swift und QuellenBereich.swift
+# setzen bei ihren POSTs an /api/domaene-import bzw. /api/fundstelle GAR
+# KEINEN Origin-Kopf (grep 'Origin' in beiden Dateien: 0 Treffer). Diese
+# beiden App-Wege scheitern also schon HEUTE, vor dieser Aenderung, an
+# _herkunft_ok() mit 403 -- die Ausweispruefung hier bricht dort nichts
+# zusaetzlich Funktionierendes.
+
+
+def _ausweis_kopf(headers) -> str | None:
+    wert = headers.get("Authorization", "")
+    if not wert.startswith("Bearer "):
+        return None
+    geheimnis = wert[len("Bearer "):].strip()
+    return geheimnis or None
+
+
+def _beglaubigt_fuer_schreiben(headers) -> bool:
+    """Loest den Authorization-Kopf ueber kern/ausweis.py auf. Kein Fehler,
+    kein Zustand hier gehalten -- nur True/False, wie kern/ausweis.py es
+    selbst schon fuer jeden anderen Aufrufer entscheidet (widerrufen,
+    abgelaufen, falsches Geheimnis, kein Geheimnis: alle vier fallen dort
+    gleich auf 'unbeglaubigt' zurueck, keine Sonderbehandlung noetig)."""
+    geheimnis = _ausweis_kopf(headers)
+    if not geheimnis:
+        return False
+    a = ausweis_kern.loese_auf(geheimnis=geheimnis)
+    return a.beglaubigt and ausweis_kern.darf(a, _SCHREIBRECHT)
+
+
 # ─── HTTP ─────────────────────────────────────────────────────────────────
 
 class Handler(BaseHTTPRequestHandler):
@@ -948,6 +1030,12 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self._herkunft_ok():
             self._json({"error": "nicht erlaubt"}, 403)
+            return
+        if (self.path not in _OHNE_KOPFPRUEFUNG
+                and not _beglaubigt_fuer_schreiben(self.headers)):
+            self._json({"error": "Diese Aktion braucht einen gültigen "
+                                  "Ausweis (Kopf 'Authorization: Bearer "
+                                  "<Geheimnis>')."}, 403)
             return
         length = int(self.headers.get("Content-Length", 0))
         try:

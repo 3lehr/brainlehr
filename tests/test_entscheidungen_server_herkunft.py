@@ -26,8 +26,10 @@ import pytest
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "berichte"))
+sys.path.insert(0, str(REPO / "kern"))
 
 import entscheidungen_server as es  # noqa: E402
+import ausweis  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -38,6 +40,19 @@ def server():
     time.sleep(0.1)
     yield srv
     srv.shutdown()
+
+
+@pytest.fixture()
+def berechtigter_kopf(tmp_path, monkeypatch):
+    """Seit ADR-020 Schritt 1 (tests/test_entscheidungen_server_ausweis.py)
+    verlangt jeder schreibende Pfad zusaetzlich zum Origin einen gueltigen
+    Ausweis-Kopf. Diese Datei prueft weiterhin NUR die Origin-Schranke --
+    darum hier ein minimaler, berechtigter Ausweis, der die Origin-Tests
+    unveraendert isoliert haelt."""
+    pfad = tmp_path / "ausweise.json"
+    monkeypatch.setenv("BRAINLEHR_AUSWEISE", str(pfad))
+    monkeypatch.delenv("BRAINLEHR_GEHEIMNIS", raising=False)
+    return {"Authorization": f"Bearer {ausweis.anlegen('gruender', ['betreiber'], art='mensch', pfad=pfad)}"}
 
 
 def _post(server, headers: dict, body: bytes = b'{"text": ""}') -> int:
@@ -67,9 +82,11 @@ def test_post_mit_falschem_port_wird_abgelehnt(server):
     assert _post(server, {"Origin": f"http://127.0.0.1:{server.server_port + 1}"}) == 403
 
 
-def test_post_mit_eigenem_origin_wird_angenommen(server):
-    # Gegenprobe: der legitime Weg (eigene Oberflaeche, 127.0.0.1) funktioniert
-    # unveraendert -- eine Sperre, die auch den Eigenbetrieb bricht, ist keine
-    # Loesung.
-    status = _post(server, {"Origin": f"http://127.0.0.1:{server.server_port}"})
+def test_post_mit_eigenem_origin_wird_angenommen(server, berechtigter_kopf):
+    # Gegenprobe: der legitime Weg (eigene Oberflaeche, 127.0.0.1, PLUS seit
+    # ADR-020 Schritt 1 ein gueltiger Ausweis) funktioniert unveraendert --
+    # eine Sperre, die auch den Eigenbetrieb bricht, ist keine Loesung.
+    headers = {"Origin": f"http://127.0.0.1:{server.server_port}"}
+    headers.update(berechtigter_kopf)
+    status = _post(server, headers)
     assert status == 200
