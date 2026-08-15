@@ -29,10 +29,13 @@ while not (_w / "schema.sql").exists() and _w != _w.parent:
 _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
+import hashlib
 import json
 import os
+import random
 import shutil
 import sqlite3
+import subprocess
 import sys
 from pathlib import Path
 
@@ -67,13 +70,58 @@ def load_cases() -> list[dict]:
     return cases
 
 
+def _seeded_rand(task: str):
+    """Determinismus-Fix Aufgabe 68: hook.query() reicht `rand` an
+    hook._maybe_explore() durch, das ohne dieses Argument auf das
+    ungeseedete random.random() zurueckfaellt (EXPLORE_RATE=0.15 ersetzt
+    dann bei ~15% der Aufrufe den schwaechsten Treffer durch einen anderen
+    -- zwei Laeufe desselben Standes koennen seither auseinandergehen,
+    siehe tests/test_messlauf_deterministisch.py::test_maybe_explore_ohne_seed_kann_abweichen
+    fuer den Rot-Beleg). Seed haengt NUR am Fall-Text, nicht an Uhrzeit/
+    Prozess -- zwei Laeufe desselben Korpus wuerfeln deshalb identisch,
+    verschiedene Faelle weiterhin unabhaengig voneinander."""
+    seed = int(hashlib.sha256(task.encode("utf-8")).hexdigest()[:8], 16)
+    return random.Random(seed).random
+
+
 def run_case(c: dict) -> tuple[list, list]:
     """main()-Gatter nachgebildet (len(kws) < MIN_HITS -> sofortige Stille,
     genau wie main() vor dem ersten query()-Aufruf), sonst reiner query()."""
     kws = hook.keywords(c["task"])
     if len(kws) < hook.MIN_HITS:
         return [], []
-    return hook.query(kws, cwd=None, prompt=c["task"])
+    return hook.query(kws, rand=_seeded_rand(c["task"]), cwd=None, prompt=c["task"])
+
+
+def laufmetadaten(cases: list, corpus_path: Path) -> dict:
+    """Rueckverfolgbarkeit fuer den Vergleich zweier Laeufe (Aufgabe 68,
+    Vorschlag aus messung_aufgabe71_45_gegen_33 Frage 5): Commit-Kennung zur
+    Laufzeit + Korpusteilung + Korpus-Hash. Ohne diese drei ist eine spaeter
+    gefundene Zahl nicht auf Codestand und Korpusversion zurueckfuehrbar --
+    genau das musste bei Aufgabe 71 ueber Dateizeiten/git-diff rekonstruiert
+    werden, weil es fehlte. Bestandsgroesse und gesetzte Schalter liefert
+    bereits messparameter.schnappschuss() (nur importiert, nicht veraendert)."""
+    solvable = sum(1 for c in cases if c["category"] != "negative")
+    negative = sum(1 for c in cases if c["category"] == "negative")
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=SHARED_KNOWLEDGE, text=True,
+            stderr=subprocess.DEVNULL).strip()
+        schmutzig = bool(subprocess.check_output(
+            ["git", "status", "--porcelain"], cwd=SHARED_KNOWLEDGE, text=True,
+            stderr=subprocess.DEVNULL).strip())
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
+        commit = None
+        schmutzig = None
+    return {
+        "commit": commit,
+        "arbeitsbaum_schmutzig": schmutzig,
+        "korpus_datei": str(corpus_path.relative_to(SHARED_KNOWLEDGE)),
+        "korpus_hash_sha256": hashlib.sha256(corpus_path.read_bytes()).hexdigest(),
+        "korpus_gesamt": len(cases),
+        "korpus_solvable": solvable,
+        "korpus_negative": negative,
+    }
 
 
 def target_hit(c: dict, nodes: list, lessons: list) -> bool:
@@ -205,6 +253,9 @@ def demo() -> None:
     assert set(r) == {"trefferguete", "falsches_schweigen", "richtiges_schweigen", "falsches_sprechen"}
     for n, d in r.values():
         assert 0 <= n <= d
+    meta = laufmetadaten(cases, CORPUS)
+    assert meta["korpus_gesamt"] == 45 and meta["korpus_solvable"] == 35 and meta["korpus_negative"] == 10
+    assert len(meta["korpus_hash_sha256"]) == 64
     print("demo ok")
 
 
@@ -216,6 +267,12 @@ if __name__ == "__main__":
     ergebnis = {"messlauf": messlauf(cases)}
     if "--eichung-only" not in sys.argv:
         ergebnis["eichung"] = eichung(cases)
+    ergebnis["laufmetadaten"] = laufmetadaten(cases, CORPUS)
+    try:
+        import messparameter  # noqa: E402 -- nur gelesen (bestand/schalter), kern/ liegt schon im Suchpfad
+        ergebnis["konfiguration"] = messparameter.schnappschuss()
+    except ImportError:
+        pass
     RESULT.parent.mkdir(exist_ok=True)
     RESULT.write_text(json.dumps(ergebnis, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\ngeschrieben: {RESULT}")

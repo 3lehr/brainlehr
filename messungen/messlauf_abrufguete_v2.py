@@ -74,6 +74,7 @@ if __name__ == "__main__":
     ergebnis = {"messlauf": m.messlauf(cases)}
     if "--eichung-only" not in sys.argv:
         ergebnis["eichung"] = m.eichung(cases)
+    ergebnis["laufmetadaten"] = m.laufmetadaten(cases, CORPUS)
     ergebnis["konfiguration"] = schnappschuss()
     RESULT.parent.mkdir(exist_ok=True)
     RESULT.write_text(json.dumps(ergebnis, indent=2, ensure_ascii=False), encoding="utf-8")

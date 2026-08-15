@@ -1,0 +1,699 @@
+{
+  "zweck": "Aufgabe 68 -- Doppellauf-Beleg auf 5-Fall-Teilmenge (3 solvable + 2 negative)",
+  "identisch": true,
+  "abweichungen": [],
+  "dauer_lauf1_s": 63.79,
+  "dauer_lauf2_s": 70.94,
+  "faelle_je_zustand": 5,
+  "zustaende": [
+    "A_beide_aus",
+    "B_2Kanal_an_Pflicht_aus",
+    "C_beide_an"
+  ],
+  "laufmetadaten": {
+    "commit": "591149effd7d54e1f7f7210a9773f6983764ee12",
+    "arbeitsbaum_schmutzig": true,
+    "korpus_datei": "runs/pruefkorpus.jsonl",
+    "korpus_hash_sha256": "e0c60e96310e9b1f1ff4ac4191e794d00d91f5e946742f2a348fc4b098e191d4",
+    "korpus_gesamt": 45,
+    "korpus_solvable": 35,
+    "korpus_negative": 10
+  },
+  "grenze": "Nur 5 von 45 Faellen (kein voller Korpuslauf, Zeitlimit). Belegt Determinismus des _maybe_explore-Mechanismus im echten query()-Pfad, NICHT die Trefferguete-Zahlen des vollen Korpus -- dafuer ist ein separater, laenger laufender Vollrun noetig. laufmetadaten.commit ist fuer beide Teil-Laeufe gleich (selber Prozess, kein Commit dazwischen) -- das ist beabsichtigt, kein Fehler im Vergleich.",
+  "lauf1": {
+    "A_beide_aus": [
+      {
+        "task": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereits erfassten Daten ohne explizite Bestätigung gelöscht oder zurückgesetzt werden.",
+        "nodes": [
+          [
+            "/shared/arch/testdaten-kennzeichnen-sperre-ist",
+            false
+          ]
+        ],
+        "lessons": []
+      },
+      {
+        "task": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine Warnung anzuzeigen, bleibt der Fehler im laufenden Betrieb unbemerkt. Die Logik zur Identifizierung funktioniert fehlerfrei, führt aber zu keiner sichtbaren Reaktion für den Anwender.",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicherheitsnetz nicht und führt zu unkontrollierten Abstürzen. Er muss nun entscheiden, ob er den Vorgang erst nach Abschluss prüft oder die Fehlerprüfung direkt in die Hilfsfunktion integriert.",
+        "nodes": [],
+        "lessons": [
+          "L-65d33e",
+          "L-9ed380",
+          "L-8e768f"
+        ]
+      },
+      {
+        "task": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "nodes": [
+          [
+            "/ops/openlehr/openlehr-macos-ist-totes-skeleton",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-352afa",
+          "L-e2a8de",
+          "L-528f0c",
+          "L-0bb2e5",
+          "L-dbdb28",
+          "L-175459",
+          "L-0a063b"
+        ]
+      }
+    ],
+    "B_2Kanal_an_Pflicht_aus": [
+      {
+        "task": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereits erfassten Daten ohne explizite Bestätigung gelöscht oder zurückgesetzt werden.",
+        "nodes": [
+          [
+            "/shared/arch/testdaten-kennzeichnen-sperre-ist",
+            false
+          ],
+          [
+            "/methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf",
+            false
+          ],
+          [
+            "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            false
+          ],
+          [
+            "/methodik/direktiven/kurze-zustimmung-ist-eine-entscheidung",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/pause",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/04b-ein-erzwinger",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/04-eine-regel-ohne-erzwinger-aendert-nichts",
+            false
+          ],
+          [
+            "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            false
+          ],
+          [
+            "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-a9ccd0",
+          "L-476c1b",
+          "L-06940c",
+          "L-e7bc5e",
+          "L-20275a",
+          "L-b3eb79",
+          "L-48e414"
+        ]
+      },
+      {
+        "task": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine Warnung anzuzeigen, bleibt der Fehler im laufenden Betrieb unbemerkt. Die Logik zur Identifizierung funktioniert fehlerfrei, führt aber zu keiner sichtbaren Reaktion für den Anwender.",
+        "nodes": [
+          [
+            "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/synergien",
+            false
+          ],
+          [
+            "/brainlehr/niemand-misst-automatisch-ob",
+            false
+          ],
+          [
+            "/brainlehr/faehigkeiten/melden-wenn-ein-zitat-keinen-beleg-hat",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/design-waechter",
+            false
+          ],
+          [
+            "/methodik/direktiven/wissen-festhalten-abrufen-systemweit-automatisch",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-706807",
+          "L-476c1b",
+          "L-ec9cf2",
+          "L-1228cf",
+          "L-9e8832",
+          "L-c9f9e9",
+          "L-05e18b"
+        ]
+      },
+      {
+        "task": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicherheitsnetz nicht und führt zu unkontrollierten Abstürzen. Er muss nun entscheiden, ob er den Vorgang erst nach Abschluss prüft oder die Fehlerprüfung direkt in die Hilfsfunktion integriert.",
+        "nodes": [
+          [
+            "/methodik/direktiven/testumgebung-selbstaendig-handeln-bis",
+            false
+          ],
+          [
+            "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            false
+          ],
+          [
+            "/methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit",
+            false
+          ],
+          [
+            "/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+            false
+          ],
+          [
+            "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/h6-bau-so",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/03-funktioniert-braucht-einen-beleg",
+            false
+          ],
+          [
+            "/methodik/direktiven/plan-vor-umsetzung-systemweit",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/pause",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-65d33e",
+          "L-ad02b8",
+          "L-706807",
+          "L-9ed380",
+          "L-b3eb79",
+          "L-e7bc5e",
+          "L-0a063b"
+        ]
+      },
+      {
+        "task": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "nodes": [
+          [
+            "/shared/mac-kalender-zugriff-aus-claude-desktop",
+            false
+          ],
+          [
+            "/frontend/buckeberg-design-guide-apple-hig",
+            false
+          ],
+          [
+            "/shared/arch/lokale-datenbank-verschluesseln-auf",
+            false
+          ],
+          [
+            "/apps/fahrtenbuch/erklaerungsswipe-scope-erweitert-2026",
+            false
+          ],
+          [
+            "/frontend/accessibility/barrierefreiheit-ist-voreinstellung",
+            false
+          ],
+          [
+            "/apps/fahrtenbuch/café-international-konsil-einstellungseb",
+            false
+          ],
+          [
+            "/ops/openlehr/openlehr-macos-ist-totes-skeleton",
+            false
+          ],
+          [
+            "/shared/arch/offen-fuer-weitere-geraete-eine-tuer",
+            false
+          ],
+          [
+            "/brainlehr/widerlegt-der-bedienungshilfen-baum-der",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/ux-walkthrough",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-919a81",
+          "L-3d738e",
+          "L-5f0f83",
+          "L-db37c6",
+          "L-bfe140",
+          "L-38bcb0",
+          "L-7d69ee"
+        ]
+      },
+      {
+        "task": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "nodes": [
+          [
+            "/ops/openlehr/openlehr-macos-ist-totes-skeleton",
+            false
+          ],
+          [
+            "/methodik",
+            false
+          ],
+          [
+            "/methodik/direktiven-hub-claude-md",
+            false
+          ],
+          [
+            "/brainlehr/der-beziehungsgraph-ist-dicht-in-der",
+            false
+          ],
+          [
+            "/brainlehr/das-einbettungsmodell-trennt-auf",
+            false
+          ],
+          [
+            "/brainlehr",
+            false
+          ],
+          [
+            "/brainlehr/entscheidung-2026-08-12-s12-wird-nicht",
+            false
+          ],
+          [
+            "/plaene/plan-destille-2026-08-09",
+            false
+          ],
+          [
+            "/brainlehr/rrf-gewichtet-den-rang-im-kanal-nicht",
+            false
+          ],
+          [
+            "/methodik/einstieg",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-352afa",
+          "L-e2a8de",
+          "L-528f0c",
+          "L-c43b1b",
+          "L-083b95",
+          "L-a4f6dd",
+          "L-0bb2e5"
+        ]
+      }
+    ],
+    "C_beide_an": [
+      {
+        "task": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereits erfassten Daten ohne explizite Bestätigung gelöscht oder zurückgesetzt werden.",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine Warnung anzuzeigen, bleibt der Fehler im laufenden Betrieb unbemerkt. Die Logik zur Identifizierung funktioniert fehlerfrei, führt aber zu keiner sichtbaren Reaktion für den Anwender.",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicherheitsnetz nicht und führt zu unkontrollierten Abstürzen. Er muss nun entscheiden, ob er den Vorgang erst nach Abschluss prüft oder die Fehlerprüfung direkt in die Hilfsfunktion integriert.",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "nodes": [],
+        "lessons": []
+      }
+    ]
+  },
+  "lauf2": {
+    "A_beide_aus": [
+      {
+        "task": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereits erfassten Daten ohne explizite Bestätigung gelöscht oder zurückgesetzt werden.",
+        "nodes": [
+          [
+            "/shared/arch/testdaten-kennzeichnen-sperre-ist",
+            false
+          ]
+        ],
+        "lessons": []
+      },
+      {
+        "task": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine Warnung anzuzeigen, bleibt der Fehler im laufenden Betrieb unbemerkt. Die Logik zur Identifizierung funktioniert fehlerfrei, führt aber zu keiner sichtbaren Reaktion für den Anwender.",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicherheitsnetz nicht und führt zu unkontrollierten Abstürzen. Er muss nun entscheiden, ob er den Vorgang erst nach Abschluss prüft oder die Fehlerprüfung direkt in die Hilfsfunktion integriert.",
+        "nodes": [],
+        "lessons": [
+          "L-65d33e",
+          "L-9ed380",
+          "L-8e768f"
+        ]
+      },
+      {
+        "task": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "nodes": [
+          [
+            "/ops/openlehr/openlehr-macos-ist-totes-skeleton",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-352afa",
+          "L-e2a8de",
+          "L-528f0c",
+          "L-0bb2e5",
+          "L-dbdb28",
+          "L-175459",
+          "L-0a063b"
+        ]
+      }
+    ],
+    "B_2Kanal_an_Pflicht_aus": [
+      {
+        "task": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereits erfassten Daten ohne explizite Bestätigung gelöscht oder zurückgesetzt werden.",
+        "nodes": [
+          [
+            "/shared/arch/testdaten-kennzeichnen-sperre-ist",
+            false
+          ],
+          [
+            "/methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf",
+            false
+          ],
+          [
+            "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            false
+          ],
+          [
+            "/methodik/direktiven/kurze-zustimmung-ist-eine-entscheidung",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/pause",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/04b-ein-erzwinger",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/04-eine-regel-ohne-erzwinger-aendert-nichts",
+            false
+          ],
+          [
+            "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            false
+          ],
+          [
+            "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-a9ccd0",
+          "L-476c1b",
+          "L-06940c",
+          "L-e7bc5e",
+          "L-20275a",
+          "L-b3eb79",
+          "L-48e414"
+        ]
+      },
+      {
+        "task": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine Warnung anzuzeigen, bleibt der Fehler im laufenden Betrieb unbemerkt. Die Logik zur Identifizierung funktioniert fehlerfrei, führt aber zu keiner sichtbaren Reaktion für den Anwender.",
+        "nodes": [
+          [
+            "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/synergien",
+            false
+          ],
+          [
+            "/brainlehr/niemand-misst-automatisch-ob",
+            false
+          ],
+          [
+            "/brainlehr/faehigkeiten/melden-wenn-ein-zitat-keinen-beleg-hat",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/design-waechter",
+            false
+          ],
+          [
+            "/methodik/direktiven/wissen-festhalten-abrufen-systemweit-automatisch",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-706807",
+          "L-476c1b",
+          "L-ec9cf2",
+          "L-1228cf",
+          "L-9e8832",
+          "L-c9f9e9",
+          "L-05e18b"
+        ]
+      },
+      {
+        "task": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicherheitsnetz nicht und führt zu unkontrollierten Abstürzen. Er muss nun entscheiden, ob er den Vorgang erst nach Abschluss prüft oder die Fehlerprüfung direkt in die Hilfsfunktion integriert.",
+        "nodes": [
+          [
+            "/methodik/direktiven/testumgebung-selbstaendig-handeln-bis",
+            false
+          ],
+          [
+            "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            false
+          ],
+          [
+            "/methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit",
+            false
+          ],
+          [
+            "/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+            false
+          ],
+          [
+            "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/h6-bau-so",
+            false
+          ],
+          [
+            "/methodik/arbeitsweise/03-funktioniert-braucht-einen-beleg",
+            false
+          ],
+          [
+            "/methodik/direktiven/plan-vor-umsetzung-systemweit",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/pause",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-65d33e",
+          "L-ad02b8",
+          "L-706807",
+          "L-9ed380",
+          "L-b3eb79",
+          "L-e7bc5e",
+          "L-0a063b"
+        ]
+      },
+      {
+        "task": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "nodes": [
+          [
+            "/shared/mac-kalender-zugriff-aus-claude-desktop",
+            false
+          ],
+          [
+            "/frontend/buckeberg-design-guide-apple-hig",
+            false
+          ],
+          [
+            "/shared/arch/lokale-datenbank-verschluesseln-auf",
+            false
+          ],
+          [
+            "/apps/fahrtenbuch/erklaerungsswipe-scope-erweitert-2026",
+            false
+          ],
+          [
+            "/frontend/accessibility/barrierefreiheit-ist-voreinstellung",
+            false
+          ],
+          [
+            "/apps/fahrtenbuch/café-international-konsil-einstellungseb",
+            false
+          ],
+          [
+            "/ops/openlehr/openlehr-macos-ist-totes-skeleton",
+            false
+          ],
+          [
+            "/shared/arch/offen-fuer-weitere-geraete-eine-tuer",
+            false
+          ],
+          [
+            "/brainlehr/widerlegt-der-bedienungshilfen-baum-der",
+            false
+          ],
+          [
+            "/methodik/fertigkeiten/ux-walkthrough",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-919a81",
+          "L-3d738e",
+          "L-5f0f83",
+          "L-db37c6",
+          "L-bfe140",
+          "L-38bcb0",
+          "L-7d69ee"
+        ]
+      },
+      {
+        "task": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "nodes": [
+          [
+            "/ops/openlehr/openlehr-macos-ist-totes-skeleton",
+            false
+          ],
+          [
+            "/methodik",
+            false
+          ],
+          [
+            "/methodik/direktiven-hub-claude-md",
+            false
+          ],
+          [
+            "/brainlehr/der-beziehungsgraph-ist-dicht-in-der",
+            false
+          ],
+          [
+            "/brainlehr/das-einbettungsmodell-trennt-auf",
+            false
+          ],
+          [
+            "/brainlehr",
+            false
+          ],
+          [
+            "/brainlehr/entscheidung-2026-08-12-s12-wird-nicht",
+            false
+          ],
+          [
+            "/plaene/plan-destille-2026-08-09",
+            false
+          ],
+          [
+            "/brainlehr/rrf-gewichtet-den-rang-im-kanal-nicht",
+            false
+          ],
+          [
+            "/methodik/einstieg",
+            false
+          ]
+        ],
+        "lessons": [
+          "L-352afa",
+          "L-e2a8de",
+          "L-528f0c",
+          "L-c43b1b",
+          "L-083b95",
+          "L-a4f6dd",
+          "L-0bb2e5"
+        ]
+      }
+    ],
+    "C_beide_an": [
+      {
+        "task": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereits erfassten Daten ohne explizite Bestätigung gelöscht oder zurückgesetzt werden.",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine Warnung anzuzeigen, bleibt der Fehler im laufenden Betrieb unbemerkt. Die Logik zur Identifizierung funktioniert fehlerfrei, führt aber zu keiner sichtbaren Reaktion für den Anwender.",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicherheitsnetz nicht und führt zu unkontrollierten Abstürzen. Er muss nun entscheiden, ob er den Vorgang erst nach Abschluss prüft oder die Fehlerprüfung direkt in die Hilfsfunktion integriert.",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "nodes": [],
+        "lessons": []
+      },
+      {
+        "task": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "nodes": [],
+        "lessons": []
+      }
+    ]
+  }
+}
