@@ -116,6 +116,8 @@ import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
                           # expliziten Batch-Lauf, nicht daneben nachgebaut.
 import ausweis  # B4.1: actor wird beglaubigt, nicht behauptet (siehe _identity)
+import speicher  # Aufgabe 79 Schritt 2: normiere_modell()/normiere_akteur() im
+                  # Schreibpfad selbst, nicht nur im Meldewerkzeug (siehe _identity)
 import sicherungen  # Aufbewahrungsregel fuer die automatischen .bak-Kopien (2026-08-14)
 import werkzeugrechte  # B4.3: Durchsetzung an tools/call statt nur an tools/list
 import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
@@ -1572,11 +1574,23 @@ def _identity(actor: str | None = None, model: str | None = None,
 
     model und session bleiben absichtlich unberuehrt: sie beschreiben den
     VORGANG, nicht die Identitaet -- ein falscher Modellname erschleicht keine
-    Rechte."""
-    aufgeloest = ausweis.loese_auf(actor)
+    Rechte.
+
+    Aufgabe 79 Schritt 2: speicher.normiere_akteur()/normiere_modell() laufen
+    HIER, auf dem rohen Aufrufer-Wert, VOR ausweis.loese_auf() bzw.
+    modell_normalisieren(). Beleg fuer die Luecke: ausweis.loese_auf() kennt
+    den literalen Text 'unbekannt' als Sentinel (protokollname-Sonderfall,
+    siehe dortiger Docstring), aber keine seiner Varianten -- 'Unbekannt' oder
+    '  unbekannt  ' fielen bisher NICHT auf den unbeglaubigten Nichtwissen-Fall
+    zurueck, sondern wurden woertlich als (angeblich behaupteter) Name
+    gespeichert, Praefix 'unbeglaubigt:' inklusive. normiere_akteur() bildet
+    genau diese Varianten auf None ab, wonach dieselbe Argument-dann-Umgebung-
+    dann-UNBEKANNTER_SCHREIBER-Kette wie bisher greift -- ein echter Name geht
+    unveraendert durch (siehe test_akteur_koernungen_bleiben_getrennt)."""
+    aufgeloest = ausweis.loese_auf(speicher.normiere_akteur(actor))
     return (
         aufgeloest.protokollname,
-        modell_normalisieren(model or os.environ.get("BEGOD_KNOWLEDGE_MODEL")) or UNBEKANNTER_SCHREIBER,
+        modell_normalisieren(speicher.normiere_modell(model) or os.environ.get("BEGOD_KNOWLEDGE_MODEL")) or UNBEKANNTER_SCHREIBER,
         session or os.environ.get("BEGOD_KNOWLEDGE_SESSION") or _PROZESS_SITZUNG or UNBEKANNTER_SCHREIBER,
     )
 
