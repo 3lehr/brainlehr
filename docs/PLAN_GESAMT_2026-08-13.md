@@ -252,6 +252,52 @@ Bindend: `H1` vor `H2` und `H3`. Gemessene Grundlage: 128 Dateien / 43 237
 Zeilen unter `apps/openlehr/daemon/steuer/`, **0 tote Module** — Altlast ist
 hier nicht als toter Code zu haben, die Trennung läuft über Belegbarkeit.
 
+**Stand 2026-08-15T00:20:00+0200 — erledigt:** `H1` (`kern/belegvertrag.py`) ·
+`H8a`/`H8b`/`H8c` (Domänen-Import, Menüpunkt im atelier, erstes echtes Paket) ·
+`H11` (PDF/A-3 und PDF/UA gehen zusammen, selbst nachgemessen). `H12` neu
+gefasst: **Blaupause statt Herauslösung**, kein `git filter-repo`, kein
+`_legacy`. **Offen:** `H2` bis `H7`, `H10`.
+
+**Linie I — die Anwendung selbst.** Nachgetragen 2026-08-15, entstanden aus
+Betreiberfragen an einem Abend. Ausführung in den ADRs, nicht in einer eigenen
+Plandatei.
+`I1` **Kern / Bestandteil / Domäne** (ADR-014): Ins atelier gehört, was alle
+Domänen gemeinsam haben oder was keine über sich selbst entscheiden darf.
+Dokumentfenster und Tabellenkalkulation sind **Bestandteile**, keine
+Kernbauteile — eine Domäne ohne Dokumente lädt keines. **Der Mechanismus für
+anforderbare Bestandteile fehlt und ist zu bauen.**
+`I2` **Designvorrat als Daten** (ADR-015), nach **Gattung** einstellbar, nicht
+nach Domäne — und der Editor bietet nur an, was der Satz kann. Anschlussstelle
+gemessen: der AKA-Design-Konsil hat Tokens bereits als Daten mit Erzeugern für
+CSS/SCSS/Dart; uns fehlt ein vierter für LaTeX. **Sperre davor:** über zehn
+Kopien der Guide-Datei, kanonische Quelle ungeprüft.
+`I3` **Tabellenkalkulation** (ADR-016), Univer, Apache-2.0 an der Lizenzdatei
+selbst nachgelesen. Vor dem Bau zu messen: läuft es eingebettet **ohne Netz**,
+welches Gewicht, tragen die einzelnen Pakete dieselbe Lizenz wie die Wurzel.
+`I4` **Bedingte Ausweise statt Verbote** (ADR-017): Rechte an die Identität,
+nicht Verbote in den Code. **Offen und vor dem ersten eingeräumten Recht zu
+prüfen:** ob es für Ausweise überhaupt einen Widerruf gibt.
+
+**Linie G, fortgeschrieben 2026-08-15 — die Anwendung ist kein Betriebssystem.**
+`codesign -dv` auf das gebaute Bündel: `adhoc`, kein `TeamIdentifier`, **kein
+Entitlement-Block — die Sandbox ist nicht aktiv**. Damit sind Ausweis, Mandat
+und Widerruf heute **Merkmale, keine Sperren**: sie liegen in Dateien, die
+derselbe Benutzer schreiben darf, den sie einschränken sollen. Einzige wirksame
+Grenze ist die kernel-erzwungene Bindung auf `127.0.0.1`.
+`G4` **Die App gebiert den Dienst nicht mehr** — erledigt (`648432e`),
+Prozessstart entfernt, `launchd`-Beschreibung in `dienst/`.
+`G5` **Eigener Systembenutzer** für Bestand und Ausweisdatei (`0600`). Größter
+Hebel, weil nicht der Ausweis das größte Merkmal ist, sondern **der Bestand**:
+solange die Datenbank dem angemeldeten Benutzer gehört, überschreibt ein
+einziger `sqlite3`-Aufruf jede Rolle und jeden Widerruf. **Braucht das Passwort
+des Betreibers — ein Befehl, den er selbst ausführt.**
+`G6` Signatur, Hardened Runtime, Sandbox. **Prüfstein vorher, ungemessen:** lädt
+das CRDT-Rahmenwerk in einer Sandbox?
+Fünf offene Sicherheitsfunde mit Fundstelle: `docs/SICHERHEITSFUNDE_2026-08-14.md`.
+Schwerster: fremder Text aus der Datenbank landet roh per `innerHTML` in einer
+Ansicht, die **gleichursprünglich mit der schreibenden Schnittstelle** läuft —
+und genau dorthin soll `I3`.
+
 ### Warum F und G — und nicht S1, S2, S3
 
 Am 2026-08-14 wurden beide Pläne zunächst **neben** diesen Gesamtplan gelegt,
@@ -333,6 +379,18 @@ Halbstände, rot wie grün (`L-243dde`).
 - **`89` vor jeder weiteren Abrufmessung.** Ein blinder Kanal, der Ranggewicht
   beansprucht, verfälscht jede Zahl, die danach entsteht.
 - **Keine Abrufzahl nach außen, solange `71` offen ist.**
+- **Wirkung Null steht, BEVOR `kern/domaene.py` das erste Mal speichert**
+  (ADR-018, Konsil vom 2026-08-14). Ein Domänenpaket muss wirkungslos ankommen
+  und erst durch einen Willensakt eines Menschen wirksam werden — so wie
+  `kern/regelpaket.py` es beim Import bereits tut (`norm_rang = NULL`). Der
+  Grund ist die **Reihenfolge, nicht die Menge**: danach existiert Bestand ohne
+  Rangdisziplin, und das gilt bei null Zeilen wie bei einer Million. Heute
+  speichert `domaene.py` nichts — das Fenster schließt sich mit dem ersten
+  Schreibvorgang.
+- **Kein Bau an den beiden Dokumentausgaben, solange `H11`s Ablösung nicht
+  belegt ist.** Der Weg ist gemessen, die Ablösung nicht: geprüft wurde mit
+  einer Minimal-XML, nicht mit der echten Ausgabe aus openlehr. Wer vorher
+  baut, schreibt die Wahrheit fest, die zufällig zuerst dran war.
 
 ## Was bewusst nicht getan wird, samt Preis
 
