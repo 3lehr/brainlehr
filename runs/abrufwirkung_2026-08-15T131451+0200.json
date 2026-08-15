@@ -1,0 +1,143 @@
+{
+  "messung": "Abrufwirkung des Wissensspeichers in der laufenden Sitzung",
+  "erstellt": "2026-08-15T13:14:51+0200",
+  "quelle_protokoll": "/Users/lehrmacbook/.claude/projects/-Volumes-daten-Begod2026-brainlehr--claude-worktrees-baum-20260815T054407-65075/01c01c7f-2c38-4eff-96e5-2e3d8e4d9677.jsonl",
+  "protokoll_nur_gelesen": true,
+  "frage_des_betreibers": "Wird festgehalten, was aus dem Wissensspeicher in den Chat eingespielt wurde -- und ob es dort etwas bewirkt hat? (Analog zu kern/baustein.py::herkunftsverlauf fuer Dokumente, jetzt fuer das Gespraech.)",
+
+  "erkennungsverfahren": {
+    "schritt_1_transkript": "JSONL zeilenweise geparst (python3, scratchpad/analyze.py + analyze2.py). Jede nicht-leere Zeile bekommt eine fortlaufende Sitzungs-Sequenznummer (seq) und, wo vorhanden, den JSONL-Zeitstempel (UTC). Bloecke mit '<knowledge-recall>' liefern die eingespielten Kennungen ueber zwei Regex: L-[0-9a-f]{6} fuer Lehren, [/pfad/mit-bindestrichen] fuer Knoten.",
+    "schritt_2_verwendung_im_transkript": "Fuer jede Kennung wird NACH ihrer ersten Einspielung (nach seq) gesucht, ob sie mit Wortgrenzen -- bei Pfad-Kennungen zusaetzlich NICHT von '/', Buchstabe, Ziffer, '-' oder '_' umgeben (Korrektur, siehe unten) -- in (a) einem spaeteren Agent()-Werkzeugaufruf (Auftragstext) oder (b) einem spaeteren mcp__knowledge__knowledge_add/lesson_record-Aufruf dieser Sitzung wieder auftaucht. Reines Wiedervorkommen im Assistententext (ohne Werkzeugaufruf) wird GETRENNT gezaehlt, nicht als Verwendung. Da Transkript-seq streng chronologisch ist, ist die Reihenfolge hier automatisch korrekt.",
+    "schritt_3_git_zeitstempelgeprueft": "git log --since '2026-08-15 00:00' -- . im Repo brainlehr: erst Commit-NACHRICHTEN (git log --format=%B) auf L-Kennungen durchsucht, dann die vollen Commit-DIFFS (git show je Commit, also auch geaenderte Dateien wie STAND.md, docs/, Code-Kommentare -- 74 Commits gescannt). WICHTIG: anders als im ersten Durchlauf wurde hier NICHT nur auf Praesenz geprueft, sondern je Fund der exakte Commit-Zeitstempel (git log --format=%aI) gegen den exakten Transkript-Zeitstempel der fruehesten Einspielung dieser Kennung verglichen (beide in ISO-8601 mit Zeitzone, direkt vergleichbar). Nur wenn der Commit NACH der Einspielung liegt, zaehlt der Fund. Diese Praezisierung war noetig: eine naive Presenzpruefung haette 6 Kennungen (u.a. L-d34412, L-600726, L-e7bc5e) faelschlich als 'benutzt' gezaehlt, obwohl ihr Commit VOR der zugehoerigen Einspielung lag -- die Kennung stand schon in der Datei, BEVOR sie ueberhaupt eingespielt wurde (z.B. weil derselbe Commit den Wissenseintrag erst erzeugt hat).",
+    "schritt_4_gegenrichtung": "Alle mcp__knowledge__knowledge_add/lesson_record-Aufrufe dieser Sitzung ueber tool_use/tool_result-Paarung ausgewertet. lesson_record liefert im Ergebnis status='recorded' (echt neu) vs. status='incremented' (Vorkommen einer VOR dieser Sitzung schon existierenden Lehre) -- nur 'recorded'/'created' zaehlt als in dieser Sitzung neu geschrieben. Fuer jede so neu geschriebene Kennung wurde geprueft, ob sie SPAETER (nach seq) in einem eigenen <knowledge-recall>-Block derselben Sitzung wieder auftaucht.",
+    "korrektur_waehrend_der_messung_1": "Erster Durchlauf ohne Wortgrenzen zaehlte Kennung '/brainlehr' (Pfad des automatisch erzeugten Astknotens) als vielfach 'verwendet', weil sie als Substring in praktisch jedem knowledge_add-Aufruf im Feld parent_path='/brainlehr' steckt -- das ist der Standard-Ablageort neuer Knoten, kein Zitat des Recall-Inhalts. Nach Wortgrenzenpruefung: 0 echte Treffer.",
+    "korrektur_waehrend_der_messung_2": "Zweiter Durchlauf (git-Diff-Suche ohne Zeitvergleich) fand 19 zusaetzliche Kennungen. Nachtraeglicher Zeitstempelvergleich verwarf 6 davon, weil ihr einziger Fundort zeitlich VOR der Einspielung lag (Selbstzitat im eigenen Erzeugungscommit, nicht Wirkung eines spaeteren Abrufs). Ohne diesen zweiten Pruefschritt waere die Zahl 43 statt der belegten 37 gemeldet worden -- 6 falsche Positive, 14 % des Zaehlers."
+  },
+
+  "1_nenner": {
+    "knowledge_recall_bloecke_eingespielt": 76,
+    "verschiedene_kennungen_insgesamt": 334,
+    "einzeltreffer_summe_ueber_alle_bloecke": 344,
+    "anmerkung": "344 > 334, weil 8 Kennungen mehrfach eingespielt wurden (siehe Abschnitt 3)."
+  },
+
+  "2_zaehler_nachgewiesene_verwendung": {
+    "definition": "Zaehlt nur: Kennung oder woertliches Textstueck taucht NACH ihrer Einspielung (zeitlich belegt, nicht nur textlich gefunden) in einem Agentenauftrag, einem spaeter neu geschriebenen Wissenseintrag dieser Sitzung, ODER einem Commit/einer geaenderten Datei dieser Sitzung auf. Blosses Wiederauftauchen im Assistenten-Fliesstext zaehlt NICHT.",
+    "kennungen_mit_nachgewiesener_verwendung": 37,
+    "von_verschiedenen_kennungen": 334,
+    "anteil_prozent": 11.1,
+    "aufschluesselung_nach_kanal": {
+      "in_spaeterem_agentenauftrag_oder_kb_schreibvorgang_transkript": 24,
+      "zusaetzlich_erst_ueber_git_zeitstempelgeprueft_gefunden": 13,
+      "hinweis": "13 Kennungen wurden NUR ueber git (Commit-Nachricht oder geaenderte Datei, jeweils zeitlich nach der Einspielung) gefunden, nicht schon im Transkript selbst -- Beleg, dass Schritt 3 notwendig war, nicht optional. Von den urspruenglich 19 git-Funden wurden 6 wegen falscher Zeitreihenfolge verworfen (siehe Erkennungsverfahren)."
+    },
+    "liste_verwendete_kennungen": [
+      "L-d07097", "L-083b95", "L-1056bb", "L-44dc9f", "/backend/wordpress",
+      "L-528f0c", "L-b3eb79", "L-352afa", "L-8bde89", "L-0e0ab6", "L-3d03bd",
+      "L-bfe140", "L-c9d2aa", "L-34e5f8", "L-30be01", "L-ec167a", "L-235ab8",
+      "L-ea10ec", "L-0a05b2", "L-183517", "L-ed0b73", "L-abf434", "/woanders",
+      "L-c9f9e9",
+      "L-081329", "L-813c8f", "L-a9ccd0", "L-c3536a", "L-c48942",
+      "L-06940c", "L-0a063b", "L-20275a", "L-48e414", "L-706807", "L-ad02b8", "L-c43b1b", "L-dbdb28"
+    ],
+    "abgelehnte_scheintreffer_falsche_zeitreihenfolge": [
+      {"kennung": "L-d34412", "grund": "Commit 30ed7737 (08:16:52+0200) liegt VOR der ersten Einspielung@seq1382 (10:41:51+0200 CEST); der Commit hat den Eintrag selbst erst erzeugt und dabei zitiert."},
+      {"kennung": "L-600726", "grund": "Commit 7d386d8a (09:57:12+0200) liegt 5 Minuten VOR der Einspielung@seq1051 (10:02:02+0200 CEST)."},
+      {"kennung": "L-243dde", "grund": "einziger Fundort in Diffs liegt zeitlich vor Einspielung@seq1828."},
+      {"kennung": "L-53eeda", "grund": "einziger Fundort in Diffs liegt zeitlich vor Einspielung@seq1638."},
+      {"kennung": "L-65d33e", "grund": "einziger Fundort in Diffs liegt zeitlich vor Einspielung@seq2414."},
+      {"kennung": "L-e7bc5e", "grund": "einziger Fundort in Diffs liegt zeitlich vor Einspielung@seq1812."}
+    ],
+    "nur_im_assistententext_wiederholt_keine_verwendung": {
+      "anzahl": 1,
+      "beispiel": "L-125f02",
+      "anmerkung": "Bei Ersteinschaetzung galten auch L-813c8f und L-c3536a als reine Wiederholung; die zeitstempelgeprueften Commit-Funde zeigten danach doch eine echte, spaetere Verwendung -- sie stehen jetzt in der Verwendungsliste. Diese Kennzahl (reine Wiederholung) wurde NICHT systematisch fuer alle 334 Kennungen erhoben, sondern nur fuer die zunaechst unbenutzt erscheinenden -- sie ist also eine Untergrenze, nicht die vollstaendige Zahl."
+    }
+  },
+
+  "3_zeitachse_mehrfacheinspielung_und_spaetwirkung": {
+    "mehrfach_eingespielte_kennungen": {
+      "anzahl": 8,
+      "liste": [
+        {"kennung": "L-d07097", "einspielungen_seq": [211, 724, 2211], "verwendung_seq": [1988]},
+        {"kennung": "L-48e414", "einspielungen_seq": [275, 2085], "verwendung_seq_git_zeitgeprueft": "nach seq275 (11:25:31+0200)"},
+        {"kennung": "L-083b95", "einspielungen_seq": [362, 1051], "verwendung_seq": [956, 1618, 1722, 1799, 1956, 2110]},
+        {"kennung": "L-b3eb79", "einspielungen_seq": [494, 1051], "verwendung_seq": [956, 1956]},
+        {"kennung": "L-352afa", "einspielungen_seq": [528, 2085], "verwendung_seq": [1215]},
+        {"kennung": "L-06940c", "einspielungen_seq": [885, 1438], "verwendung_seq_git_zeitgeprueft": "nach seq885 (11:25:31+0200)"},
+        {"kennung": "L-c9d2aa", "einspielungen_seq": [953, 1051], "verwendung_seq": [956, 1587]},
+        {"kennung": "L-c9f9e9", "einspielungen_seq": [2482, 2551, 2552], "verwendung_seq": [2528], "hinweis": "Positivkontrolle, siehe unten -- Nutzung liegt bereits nach der ERSTEN Einspielung, ist also keine Spaetwirkung im engeren Sinn."}
+      ]
+    },
+    "spaetwirkung_gefunden": {
+      "anzahl": 1,
+      "kennung": "L-d07097",
+      "beleg": "Eingespielt bei seq 211 und seq 724 (zwei Sitzungsanfaenge frueh), OHNE erkennbare Wirkung dazwischen. Erst bei seq 1988 (NACH beiden fruehen Einspielungen, VOR der dritten bei seq2211) entsteht ein lesson_record-Aufruf mit explizitem Feld \"same_as\": \"L-d07097\": ein Orchestrator erkennt einen 'fremde Arbeit mitcommittet'-Vorfall als Wiederholung dieser bereits gespeicherten Lehre und dedupliziert statt einen Doppeleintrag anzulegen. Die Verwendung liegt also NACH zwei vorherigen, wirkungslosen Einspielungen -- genau der im Auftrag gesuchte Fall: wirkte erst spaet, nicht beim ersten Antreffen.",
+      "belegstelle_transkript_seq": 1988
+    },
+    "sonst_keine_spaetwirkung": "Bei den uebrigen 7 mehrfach eingespielten Kennungen liegt jede nachgewiesene Verwendung entweder nach der ersten Einspielung schon vor (kein zweites Antreffen noetig) oder es gibt gar keine Verwendung -- kein zweiter Fall von 'wirkte erst beim N-ten Mal' unter den mehrfach eingespielten gefunden."
+  },
+
+  "4_gegenrichtung_neu_geschriebenes_wissen": {
+    "definition_neu": "Nur lesson_record-Aufrufe mit Ergebnis status='recorded' (nicht 'incremented' -- das waere eine VOR dieser Sitzung bereits bestehende Lehre) und knowledge_add-Aufrufe mit Ergebnis status='created' zaehlen als in dieser Sitzung NEU geschrieben.",
+    "neu_geschriebene_lehren": 11,
+    "neu_geschriebene_knoten": 6,
+    "neu_geschrieben_insgesamt": 17,
+    "davon_spaeter_in_dieser_sitzung_zurueckgespielt": {
+      "anzahl": 8,
+      "anteil_prozent": 47.1,
+      "lehren": ["L-d34412", "L-600726", "L-ed0b73", "L-9c73b4"],
+      "knoten": [
+        "/brainlehr/ausweise-sind-heute-nur-ueber-ein",
+        "/brainlehr/yswift-laeuft-in-der-app-sandbox-die",
+        "/brainlehr/betreiberentscheidung-adr-020",
+        "/brainlehr/urheberschaft-ist-das-herkunftsfeld-am"
+      ],
+      "hinweis": "L-d34412 und L-600726 stehen HIER richtig (reine Rueckspielung, im Transkript belegt), fielen aber in Abschnitt 2 aus der WEITEREN-Verwendungs-Liste, weil ihr scheinbarer Git-Beleg zeitlich vor der Rueckspielung lag."
+    },
+    "davon_nach_rueckspielung_nochmals_verwendet": {
+      "anzahl": 1,
+      "kennung": "L-ed0b73",
+      "beleg": "Geschrieben bei seq 976 (status='recorded'), zurueckgespielt bei seq 1318, danach in einem Agentenauftrag bei seq 2528 zitiert ('Abschaltknopf, L-ed0b73') UND -- zeitlich spaeter, 13:11:35+0200, also nach seq2528 -- in der Commit-Nachricht 2c2f3e35 wortgleich uebernommen ('darf den Fund nicht aus dem Bericht tilgen (Abschaltknopf, L-ed0b73)').",
+      "einordnung": "Einziger vollstaendiger Kreis in dieser Sitzung: neu erfasst -> vom eigenen Speicher zurueckgeliefert -> tatsaechlich in einer Entscheidung verwendet -> in einem Commit dokumentiert."
+    },
+    "befund": "Der Speicher liefert eigenes frisches Wissen durchaus zurueck (47 % der 17 neuen Eintraege kamen mindestens einmal wieder). Nur einer davon (L-ed0b73) zeigt danach eine WEITERE, unabhaengig belegte Wirkung in dieser Sitzung. Kein systematisches 'liefert nicht zurueck'-Problem, aber bei n=1 auch keine belastbare Basis fuer eine allgemeine Nutzenaussage ueber neu geschriebenes Wissen."
+  },
+
+  "positivkontrolle": {
+    "kennung": "L-c9f9e9",
+    "erwarteter_fall": "Lehre ueber wiederkehrende Hakenmeldungen, die zu Grundrauschen werden -- eingespielt und woertlich in einen Agentenauftrag uebernommen ('drei ewig gleiche Meldungen sind ab morgen Rauschen').",
+    "ergebnis": "BESTAETIGT.",
+    "einspielungen_seq": [2482, 2551, 2552],
+    "verwendung_seq": 2528,
+    "beleg_woertlich": "Agentenauftrag bei seq 2528 enthaelt: '(`L-c9f9e9`: eine wiederkehrende Hakenmeldung wurde ueber eine ganze Sitzung als fremde Angelegenheit abgehakt)' im Kontext 'Ein Melder, der ab jetzt bei jedem Lauf dieselben drei Zeilen ausgibt, ... wird zu Grundrauschen' -- inhaltlich deckungsgleich mit der im Auftrag genannten Paraphrase.",
+    "anmerkung_erkennung": "Diese Kennung waere OHNE die Wortgrenzenpruefung genauso gefunden worden (L-Kennungen sind 6-stellige Hex-Werte, praktisch kollisionsfrei) -- die Korrektur betraf ausschliesslich die kurzen Pfad-Kennungen wie '/brainlehr'."
+  },
+
+  "zweifelsfaelle": [
+    {
+      "kennung": "/brainlehr",
+      "problem": "Erster Durchlauf zaehlte diese Kennung als vielfach 'verwendet' (in fast jedem knowledge_add-Aufruf dieser Sitzung), weil '/brainlehr' als Substring in den Feldern 'parent_path': '/brainlehr' JEDES neuen Knotens steckt -- unabhaengig davon, ob der urspruengliche Astknoten '/brainlehr' je gelesen oder gebraucht wurde. Das ist der Standard-Ablageort, kein Zitat des Recall-Inhalts.",
+      "entscheidung": "Als Nicht-Verwendung gewertet (Wortgrenzenpruefung eingebaut: eine Pfad-Kennung zaehlt nur, wenn sie NICHT unmittelbar von einem weiteren '/', Buchstaben, Ziffer, '-' oder '_' umgeben ist). Nach der Korrektur bleiben 0 echte Verwendungstreffer fuer diese Kennung uebrig -- plausibel, denn der Inhalt des Astknotens ('zeigt, was GEBAUT ist, nicht was WIRKT') taucht nirgends woertlich in einem Auftrag oder Commit auf.",
+      "restrisiko": "Die gleiche Grosszuegigkeitsfrage stellt sich bei kurzen, generischen Pfaden allgemein und wurde nur fuer diesen einen konkreten Fall geprueft, nicht systematisch fuer alle 334 Kennungen einzeln von Hand nachgesehen."
+    },
+    {
+      "kennung": "L-d34412 (und 5 weitere, siehe abgelehnte_scheintreffer)",
+      "problem": "Eine reine Textpraesenz-Suche in Git-Diffs (ohne Zeitvergleich) haette diese Kennung als 'verwendet' gezaehlt, weil sie in einer Commit-Nachricht vorkommt, die zeitlich NACH der ersten Einspielung im Transkript liegt -- so schien es zunaechst, bis der exakte Zeitstempelvergleich zeigte: der Commit (08:16:52+0200) liegt VOR der Einspielung (seq1382, 10:41:51+0200). Der Commit hat den Wissenseintrag ueberhaupt erst erzeugt und in derselben Nachricht zitiert -- die spaetere Einspielung liefert also nur zurueck, was der Commit selbst schon enthielt.",
+      "entscheidung": "Als Nicht-Verwendung gewertet -- die Kausalitaet zeigt in die falsche Richtung (Datei zuerst, Abruf danach, statt Abruf zuerst, Wirkung danach). Aufgenommen unter 'davon_spaeter_in_dieser_sitzung_zurueckgespielt' (das stimmt, die Rueckspielung fand statt), aber NICHT unter 'nachgewiesene Verwendung'.",
+      "restrisiko": "Ohne den Zeitstempelvergleich waere dieser Fehler in 6 von 43 vorlaeufigen Treffern (14 %) unbemerkt geblieben -- der teuerste Einzelbefund dieser Messung, weil er zeigt, dass reine Textsuche in Git-Historie systematisch die falsche Richtung belegen kann."
+    }
+  ],
+
+  "einordnung_gegen_bestehende_befunde": {
+    "knoten_03792e0a": "Der Abruf findet die Lehre in 20 von 35 Wiederholungsfaellen -- und hat trotzdem keine einzige verhindert. Diese Messung ist eine ANDERE Frage (nicht: findet der Abruf die richtige Lehre bei einem Fehler, sondern: wird ein eingespielter Treffer irgendwo objektiv weiterverwendet) und bestaetigt denselben Grundbefund aus einer zweiten Richtung: die Trefferquote beim Einspielen ist hoch (76 Bloecke, 334 Kennungen), die zeitstempelgeprueft nachweisbare Wirkung danach klein (37 von 334, 11 %).",
+    "knoten_96f1f90a": "Abrufkanal gemessen: kein Rauschen, aber der Nutzen ist mit diesem Protokoll nicht zeigbar. Diese Messung liefert erstmals einen ZAEHLER fuer genau diese Luecke -- nicht ueber 'spaeteres gezieltes Nachlesen' (das Nutzen prinzipiell nicht zeigen kann, siehe dortiger Befund), sondern ueber objektive, zeitlich geordnete Spuren (Agentenauftrag, Commit, Datei, neuer Wissenseintrag). Die 11 % sind der erste konkrete Zaehlwert zu dieser bisher unentschiedenen Frage -- nicht mehr 'nicht zeigbar', sondern 'niedrig, aber gemessen und gegen Falschzuordnung geprueft'."
+  },
+
+  "grenzen_der_messung": [
+    "Wortgrenzenpruefung schuetzt vor Substring-Zufallstreffern, aber nicht vor inhaltlicher Zufallsuebereinstimmung (z.B. wenn ein Agentenauftrag zufaellig dieselbe Kennung aus anderem Anlass nennt, ohne dass der Abruf ursaechlich war). Nicht gepruft -- die 37 sind ein Kennungs-Nachweis, kein Kausalitaetsbeweis im engsten Sinn.",
+    "Der Zeitstempelvergleich nutzt Commit-Zeit (git --format=%aI) gegen Transkript-Zeit (JSONL 'timestamp'-Feld, UTC) -- beide stammen aus unterschiedlichen Uhren (lokale Maschine vs. Client-Prozess) und koennten um Sekunden auseinanderliegen. Bei einem Fund, dessen Abstand unter einer Minute liegt, waere das Ergebnis nicht mehr belastbar; kein solcher Grenzfall trat in den 37 Treffern auf (kleinster Abstand: mehrere Minuten).",
+    "Assistenten-Fliesstext-Wiederholungen wurden nicht systematisch fuer alle 334 Kennungen erhoben, nur fuer die ohne sonstige Verwendung -- die genannte Zahl (1) ist eine Untergrenze.",
+    "docs/, STAND.md und berichte/ waren laut Auftrag nur LESBAR, nicht beschreibbar -- sie wurden ueber die Commit-Diffs MIT erfasst (git show zeigt den vollen Dateiinhalt der Aenderung), nicht separat nochmal durchsucht. Unveraenderte Altbestaende dieser Dateien (Text, der schon vor der Sitzung dort stand und nicht angefasst wurde) sind NICHT erfasst."
+  ]
+}
