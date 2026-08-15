@@ -1,0 +1,520 @@
+{
+ "datum": "2026-08-15T13:45:00+0200",
+ "auftrag": "Messauftrag des Betreibers: 'Kann es sein, dass dies nicht an den Regeln an sich liegt, sondern wie die Regeln formuliert sind?' -- reine Messung, keine Bewertung, kein Bau. Eine Hypothese wurde dem messenden Agenten bewusst nicht genannt.",
+ "einstufung_vor_der_messung": {
+  "abschnittsgrenze": "Jede Zeile, die mit '## ' beginnt, oeffnet einen neuen Abschnitt (Top-Level). '### '-Unterabschnitte zaehlen NICHT separat, sondern gehoeren zum zuletzt offenen '## '-Abschnitt.",
+  "hat_datiertes_fehlbeispiel_2026": "Regex \\b2026\\b irgendwo im Abschnittstext (Fliesstext oder Zitat).",
+  "hat_pruef_oder_kontrollfrage": "Fragezeichen irgendwo im Abschnittstext ODER eine Zeile, die (nach Entfernen von '**' und Leerraum) mit Test/Kontrollfrage/Selbstprobe/Faustregel beginnt.",
+  "hat_woertliches_zitat_ueber_5_woerter": "Ein Anfuehrungszeichen-Paar („...“ oder \"...\") mit mehr als 5 Woertern im eingeschlossenen Text.",
+  "befehlsquote": "Abschnitt wird an Satzenden (. ! ?) gesplittet. Ein Satz zaehlt als Befehlssatz, wenn er eines der Woerter muss/muessen/darf/duerfen/nie/immer/verboten/wird/soll/sollen/niemals/ausschliesslich/nur enthaelt (Gross-/Kleinschreibung ignoriert). Quote = Befehlssaetze / Gesamtsaetze.",
+  "mechanismus_gefunden": "Ein in ~/.claude/settings.json ODER brainlehr/.claude/settings.json referenziertes Skript, dessen Titel/Docstring/Zweck erkennbar zum Abschnittsthema passt -- geprueft gegen alle 46 (global) + 2 (repo) dort verdrahteten Skriptpfade. Kein Treffer heisst 'unter diesem Namen/dieser Beschreibung nicht gefunden', nicht 'beweisbar nicht vorhanden'.",
+  "lehre_ist_verstoss_gegen_abschnitt_x": "Stichwort-Regex (Wortgrenzen \\b) aus einer VOR dem Zaehlen fest geschriebenen Liste je Abschnitt (siehe 'stichwortlisten') gegen description+root_cause+prevention+resolution der Lehre, klein geschrieben. Erster Fund einer Lehre in genau einer Abschnittsliste = 'zugeordnet'; Fund in mehreren = 'unsicher_mehrfachtreffer'; kein Fund = 'kein_abschnitt_zustaendig'.",
+  "korrektur_waehrend_der_messung": "Eine erste Fassung suchte Stichworte als rohen Teilstring ('bsi' in text) statt mit Wortgrenzen. Stichprobe zeigte 35 von 38 BSI-Treffern als Fehltreffer (Teilstring von 'Absicherung', 'Absicht' etc.). Auf Wortgrenzen-Regex umgestellt, BEVOR die Endzahlen gebildet wurden -- die Zaehlung selbst wurde nach diesem Fund kein zweites Mal an das Ergebnis angepasst."
+ },
+ "messgegenstand_a_regeln": {
+  "pfad": "/Users/lehrmacbook/.claude/CLAUDE.md",
+  "anzahl_abschnitte": 20,
+  "hinweis_vorherige_messung": "runs/regelgriff_2026-08-12.json zaehlte am 2026-08-12 19 Abschnitte in derselben Datei; heute (2026-08-15) sind es 20 -- ein Abschnitt ('Beim Testaufbau gibt es keine Grenzen') kam nach dem 2026-08-12 dazu.",
+  "tabelle": [
+   {
+    "index": 1,
+    "titel": "ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)",
+    "zeichen": 2499,
+    "zeilen": 20,
+    "position_von_20": 1,
+    "hat_datiertes_fehlbeispiel_2026": false,
+    "hat_pruef_oder_kontrollfrage": true,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.304,
+    "mechanismus": "keiner gefunden (geprueft: 46 globale + 2 repo-eigene Hook-Skripte)",
+    "verstoesse_eindeutig_zugeordnet": 7,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 13
+   },
+   {
+    "index": 2,
+    "titel": "Datumsangaben (immer zuerst beachten)",
+    "zeichen": 551,
+    "zeilen": 5,
+    "position_von_20": 2,
+    "hat_datiertes_fehlbeispiel_2026": false,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.6,
+    "mechanismus": "keiner gefunden",
+    "verstoesse_eindeutig_zugeordnet": 2,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 4
+   },
+   {
+    "index": 3,
+    "titel": "Caveman mode: always on",
+    "zeichen": 444,
+    "zeilen": 4,
+    "position_von_20": 3,
+    "hat_datiertes_fehlbeispiel_2026": false,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.0,
+    "mechanismus": "keiner gefunden (aeltere Messung 2026-08-12 nennt eine Plugin-Kontextinjektion ausserhalb der settings.json-Hooks -- hier nicht erneut nachgewiesen)",
+    "verstoesse_eindeutig_zugeordnet": 0,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 1
+   },
+   {
+    "index": 4,
+    "titel": "BSI-Compliance (systemweit, lazy) — nur Trigger, kein Katalog im Kontext",
+    "zeichen": 727,
+    "zeilen": 11,
+    "position_von_20": 4,
+    "hat_datiertes_fehlbeispiel_2026": false,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.5,
+    "mechanismus": "JA, verdrahtet: quality_gate_hook.py (Stop-Event, ~/.claude/settings.json)",
+    "verstoesse_eindeutig_zugeordnet": 3,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 6
+   },
+   {
+    "index": 5,
+    "titel": "WCAG 2.2 AA — verbindlich bei jeder Oberfläche (systemweit)",
+    "zeichen": 3324,
+    "zeilen": 22,
+    "position_von_20": 5,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.409,
+    "mechanismus": "JA, verdrahtet aber NICHT blockierend: ui_guard_hook.py (PostToolUse Edit|Write, ~/.claude/settings.json) ruft ui_guard.py auf, exit-Code immer 0, Befund nur als additionalContext -- Aenderung seit 2026-08-12/13 (damals 0 Treffer fuer ui_guard, siehe runs/regelgriff_2026-08-12.json)",
+    "verstoesse_eindeutig_zugeordnet": 2,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 7
+   },
+   {
+    "index": 6,
+    "titel": "Aufträge an Agenten sind Schnappschüsse (systemweit)",
+    "zeichen": 1576,
+    "zeilen": 13,
+    "position_von_20": 6,
+    "hat_datiertes_fehlbeispiel_2026": false,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.188,
+    "mechanismus": "keiner gefunden",
+    "verstoesse_eindeutig_zugeordnet": 10,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 18
+   },
+   {
+    "index": 7,
+    "titel": "Wie ein Agentenauftrag geschrieben wird (systemweit)",
+    "zeichen": 1764,
+    "zeilen": 19,
+    "position_von_20": 7,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.455,
+    "mechanismus": "TEILWEISE: agent_reuse_guard_hook.py (PreToolUse, hub/scripts) deckt nur den Wiederverwendungs-Grenzwert (~300k Token) ab, nicht die vier Auftragsteile Fakten/Grenzen/Abnahme/Einsatz",
+    "verstoesse_eindeutig_zugeordnet": 1,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 1
+   },
+   {
+    "index": 8,
+    "titel": "Abwesenheitsmodus ist die Voreinstellung (systemweit)",
+    "zeichen": 1504,
+    "zeilen": 14,
+    "position_von_20": 8,
+    "hat_datiertes_fehlbeispiel_2026": false,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.462,
+    "mechanismus": "keiner gefunden",
+    "verstoesse_eindeutig_zugeordnet": 0,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 2
+   },
+   {
+    "index": 9,
+    "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+    "zeichen": 2744,
+    "zeilen": 21,
+    "position_von_20": 9,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": true,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.5,
+    "mechanismus": "JA, verdrahtet aber NICHT blockierend: derselbe ui_guard_hook.py wie Abschnitt 5 (design-waechter prueft laut Projektbeschreibung auch 'keine Entwicklerinformation im Text')",
+    "verstoesse_eindeutig_zugeordnet": 11,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 14
+   },
+   {
+    "index": 10,
+    "titel": "Wissen festhalten & abrufen (systemweit, automatisch)",
+    "zeichen": 2584,
+    "zeilen": 15,
+    "position_von_20": 10,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.0,
+    "mechanismus": "JA, verdrahtet: knowledge_recall_hook.py (UserPromptSubmit) + knowledge_capture_hook.py (Stop, decision:block)",
+    "verstoesse_eindeutig_zugeordnet": 13,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 20
+   },
+   {
+    "index": 11,
+    "titel": "Testumgebung: handeln statt vorlegen, bis „es wird ernst\" (systemweit)",
+    "zeichen": 3126,
+    "zeilen": 57,
+    "position_von_20": 11,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.28,
+    "mechanismus": "keiner gefunden (Freigabe-Direktive, kein technisch definierbarer Verstoss)",
+    "verstoesse_eindeutig_zugeordnet": 3,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 4
+   },
+   {
+    "index": 12,
+    "titel": "Kurze Zustimmung ist eine Entscheidung (systemweit)",
+    "zeichen": 1443,
+    "zeilen": 26,
+    "position_von_20": 12,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.182,
+    "mechanismus": "keiner gefunden",
+    "verstoesse_eindeutig_zugeordnet": 0,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 0
+   },
+   {
+    "index": 13,
+    "titel": "Zweimal ist die Grenze, nicht dreimal (systemweit)",
+    "zeichen": 2109,
+    "zeilen": 31,
+    "position_von_20": 13,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": true,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.15,
+    "mechanismus": "keiner gefunden",
+    "verstoesse_eindeutig_zugeordnet": 1,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 1
+   },
+   {
+    "index": 14,
+    "titel": "Walkthrough-Doktrin (alle Coding-Aufgaben, ohne Aufruf)",
+    "zeichen": 2084,
+    "zeilen": 24,
+    "position_von_20": 14,
+    "hat_datiertes_fehlbeispiel_2026": false,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.211,
+    "mechanismus": "keiner gefunden im PreToolUse/PostToolUse-Sinn -- Tests (tests/*.py, 119 Dateien It. Messung 2026-08-12) pruefen indirekt, ob Code getestet ist, nicht ob die Doktrin beim Bauen befolgt wurde",
+    "verstoesse_eindeutig_zugeordnet": 7,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 14
+   },
+   {
+    "index": 15,
+    "titel": "Committen ohne Aufforderung (systemweit)",
+    "zeichen": 2594,
+    "zeilen": 20,
+    "position_von_20": 15,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.25,
+    "mechanismus": "TEILWEISE: commit_guard_hook.py (PreToolUse Bash, blankes git add/commit ohne Pfad) deckt nur einen Teilaspekt; push_guard.py (Hauptzweig-Schutz) existiert als Skript, ist aber in brainlehr NICHT als .git/hooks/pre-push installiert (geprueft: Datei fehlt)",
+    "verstoesse_eindeutig_zugeordnet": 10,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 14
+   },
+   {
+    "index": 16,
+    "titel": "Nachsehen, bevor gefragt oder delegiert wird (systemweit)",
+    "zeichen": 1295,
+    "zeilen": 16,
+    "position_von_20": 16,
+    "hat_datiertes_fehlbeispiel_2026": false,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.375,
+    "mechanismus": "keiner gefunden",
+    "verstoesse_eindeutig_zugeordnet": 1,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 1
+   },
+   {
+    "index": 17,
+    "titel": "Zwei Ausgangszustände, und geprüft wird meist der falsche (systemweit)",
+    "zeichen": 1849,
+    "zeilen": 34,
+    "position_von_20": 17,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": false,
+    "befehlsquote": 0.4,
+    "mechanismus": "keiner gefunden",
+    "verstoesse_eindeutig_zugeordnet": 2,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 2
+   },
+   {
+    "index": 18,
+    "titel": "Beim Testaufbau gibt es keine Grenzen (systemweit)",
+    "zeichen": 3078,
+    "zeilen": 54,
+    "position_von_20": 18,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": false,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.238,
+    "mechanismus": "keiner gefunden",
+    "verstoesse_eindeutig_zugeordnet": 1,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 3
+   },
+   {
+    "index": 19,
+    "titel": "„Es funktioniert\" braucht einen Beleg, der vorher rot war (systemweit)",
+    "zeichen": 5393,
+    "zeilen": 36,
+    "position_von_20": 19,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": true,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.289,
+    "mechanismus": "keiner gefunden (Belegpflicht ist Berichtspflicht, kein automatisches Gate)",
+    "verstoesse_eindeutig_zugeordnet": 3,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 4
+   },
+   {
+    "index": 20,
+    "titel": "Plan vor Umsetzung (systemweit)",
+    "zeichen": 3347,
+    "zeilen": 29,
+    "position_von_20": 20,
+    "hat_datiertes_fehlbeispiel_2026": true,
+    "hat_pruef_oder_kontrollfrage": true,
+    "hat_woertliches_zitat_ueber_5_woerter": true,
+    "befehlsquote": 0.32,
+    "mechanismus": "keiner gefunden (agent_model_guard.py und agent_reuse_guard_hook.py, die einzigen PreToolUse-Hooks mit Agent-Bezug, pruefen laut Docstring auf Modell-Angabe bzw. Wiederverwendungs-Schwelle -- nicht auf eine Plandatei oder Dateizahl-Schwelle)",
+    "verstoesse_eindeutig_zugeordnet": 0,
+    "themenhaeufigkeit_alle_884_aktiven_lehren": 1
+   }
+  ]
+ },
+ "messgegenstand_b_verstoesse": {
+  "gesamtbestand_lessons_learned": "884 aktive Lehren (Quelle: mcp__knowledge__knowledge_stats, 2026-08-15T11:39:53Z) -- WEICHT vom Auftragstext ('923 Lehren') ab; gepruefter Wert ist 927 total / 884 active / 15 escalated_to_rule / 28 resolved.",
+  "gesichtete_typen": "type=error (134) + type=antipattern (438) = 572 Lehren einzeln per Stichwort geprueft. type=insight (166) + type=pattern (146) = 312 Lehren NICHT einzeln geprueft -- Begruendung: per Typdefinition beschreiben insight/pattern Erkenntnisse bzw. wiederkehrende Verfahren, nicht per se ein Fehlverhalten; ob darunter dennoch Verstoesse liegen, ist NICHT gemessen.",
+  "gesichtet": 572,
+  "zugeordnet_eindeutig": 77,
+  "unsicher_mehrfachtreffer": 5,
+  "kein_abschnitt_zustaendig": 490,
+  "nenner_pruefung_572": true,
+  "anteil_kein_abschnitt_zustaendig": 0.857,
+  "stichwortlisten": {
+   "ALLES IST BETA / keine echten Daten": [
+    "echte daten",
+    "testdaten",
+    "echtdaten",
+    "livebetrieb",
+    "produktivdaten",
+    "echten nutzer",
+    "echtbetrieb"
+   ],
+   "Datumsangaben": [
+    "iso 8601",
+    "datumsformat",
+    "yyyy-mm-dd",
+    "datum ohne uhrzeit",
+    "uhrzeit fehlt",
+    "reines datum"
+   ],
+   "Caveman mode": [
+    "caveman"
+   ],
+   "BSI-Compliance": [
+    "bsi",
+    "hard-stop",
+    "eval(",
+    "default-credential",
+    "owasp",
+    "secrets im quellcode",
+    "grundschutz"
+   ],
+   "WCAG 2.2 AA": [
+    "wcag",
+    "kontrast",
+    "fokusring",
+    "barrierefrei",
+    "zielgröße",
+    "tastaturerreichbar",
+    "outline: none"
+   ],
+   "Aufträge sind Schnappschüsse": [
+    "schnappschuss",
+    "veralteter auftrag",
+    "auftrag war veraltet",
+    "zeitpunkt des schreibens",
+    "auftrag inzwischen geändert"
+   ],
+   "Wie ein Agentenauftrag geschrieben wird": [
+    "zeilennummer als anweisung",
+    "fakten grenzen abnahme einsatz",
+    "eigene hypothese des auftraggebers",
+    "auftrag nach themen statt dateien"
+   ],
+   "Abwesenheitsmodus": [
+    "abwesenheitsmodus",
+    "abwesend"
+   ],
+   "Keine Entwicklerinformation in der Oberfläche": [
+    "entwicklerinformation",
+    "interne artefakt",
+    "modellname in der oberfläche",
+    "workaround in der meldung",
+    "bekannte server-lücke",
+    "maskierter wert",
+    "maskierung"
+   ],
+   "Wissen festhalten & abrufen": [
+    "knowledge_add",
+    "lesson_record",
+    "wissen nicht festgehalten",
+    "recall hook",
+    "wissensspeicher nicht genutzt",
+    "capture-hook"
+   ],
+   "Testumgebung bis es wird ernst": [
+    "es wird ernst",
+    "testumgebung",
+    "rotieren",
+    "geheimnis rotieren"
+   ],
+   "Kurze Zustimmung ist eine Entscheidung": [
+    "kurze zustimmung",
+    "'ja' als zustimmung",
+    "zustimmung nicht festgehalten",
+    "zustimmung ist eine entscheidung"
+   ],
+   "Zweimal ist die Grenze": [
+    "zweimal ist die grenze",
+    "dritten mal verlangt",
+    "wiederholt verlangt",
+    "latex"
+   ],
+   "Walkthrough-Doktrin": [
+    "walkthrough",
+    "injizierbare zeit",
+    "mockbare außenwelt",
+    "seedbarer zustand"
+   ],
+   "Committen ohne Aufforderung": [
+    "commit vergessen",
+    "kein commit",
+    "git add -a",
+    "fremde arbeit committet",
+    "fremde arbeit mitcommittet",
+    "auf main committet",
+    "auf dem hauptzweig"
+   ],
+   "Nachsehen vor Fragen/Delegieren": [
+    "nicht nachgesehen",
+    "ungeprüfte behauptung",
+    "existenzfrage ungeprüft",
+    "vermutet statt geprüft",
+    "ohne nachzusehen"
+   ],
+   "Zwei Ausgangszustände": [
+    "frisch installiert",
+    "migration ungetestet",
+    "upgrade-pfad",
+    "gewachsene datenbank",
+    "upgrade-fall",
+    "zwei ausgangszustände"
+   ],
+   "Beim Testaufbau gibt es keine Grenzen": [
+    "lässt sich nicht simulieren",
+    "nicht reproduzierbar",
+    "kann die plattform nicht",
+    "mein aufbau kann das nicht",
+    "beim testaufbau"
+   ],
+   "'Es funktioniert' braucht Beleg": [
+    "funktioniert ohne beleg",
+    "kein rot-vor-grün",
+    "rot vor grün",
+    "grüner test aber",
+    "test deckte den fehler nicht",
+    "grüne tests"
+   ],
+   "Plan vor Umsetzung": [
+    "ohne plan gebaut",
+    "kein plan vorgelegt",
+    "plan fehlte",
+    "plan vor umsetzung"
+   ]
+  },
+  "verstoesse_je_abschnitt_eindeutig": {
+   "ALLES IST BETA / keine echten Daten": 7,
+   "Datumsangaben": 2,
+   "Caveman mode": 0,
+   "BSI-Compliance": 3,
+   "WCAG 2.2 AA": 2,
+   "Aufträge sind Schnappschüsse": 10,
+   "Wie ein Agentenauftrag geschrieben wird": 1,
+   "Abwesenheitsmodus": 0,
+   "Keine Entwicklerinformation in der Oberfläche": 11,
+   "Wissen festhalten & abrufen": 13,
+   "Testumgebung bis es wird ernst": 3,
+   "Kurze Zustimmung ist eine Entscheidung": 0,
+   "Zweimal ist die Grenze": 1,
+   "Walkthrough-Doktrin": 7,
+   "Committen ohne Aufforderung": 10,
+   "Nachsehen vor Fragen/Delegieren": 1,
+   "Zwei Ausgangszustände": 2,
+   "Beim Testaufbau gibt es keine Grenzen": 1,
+   "'Es funktioniert' braucht Beleg": 3,
+   "Plan vor Umsetzung": 0
+  }
+ },
+ "gelegenheit_normierung": {
+  "verfahren": "Themenhaeufigkeit derselben Stichwortlisten ueber ALLE 884 aktiven Lehren (nicht nur error/antipattern) als grobe Naeherung, wie oft ein Thema im Bestand ueberhaupt vorkommt.",
+  "unsicherheit_ausdruecklich": "Diese Naeherung ist NICHT unabhaengig vom Zaehler (Messgegenstand B nutzt dieselben Stichwortlisten) -- ein Thema, das die Listen gut treffen, erscheint in BEIDEN Zahlen hoeher, ohne dass das etwas ueber echte Gelegenheit aussagt. Eine tragfaehige, von der Verstoss-Erkennung UNABHAENGIGE Gelegenheitsgroesse (z.B. wie oft eine Regel pro Sitzung ueberhaupt einschlaegig sein KOENNTE) war in der verfuegbaren Zeit nicht herstellbar: Sitzungs-/Werkzeugaufruf-Logs, aus denen sich das messen liesse, standen nicht im Scope dieses Auftrags (Tabu: app/, berichte/, keine Session-Log-Auswertung beauftragt).",
+  "befund_daher": "Keine tragfaehige, von der Verstoss-Zaehlung unabhaengige Normierung gefunden. Die Themenhaeufigkeits-Spalte in der Tabelle ist eine schwache, zirkulaere Naeherung und wird als solche ausgewiesen -- nicht als Nenner fuer eine 'Verstossquote' verwendet.",
+  "themenhaeufigkeit_ueber_884_aktive_lehren": {
+   "ALLES IST BETA / keine echten Daten": 13,
+   "Datumsangaben": 4,
+   "Caveman mode": 1,
+   "BSI-Compliance": 6,
+   "WCAG 2.2 AA": 7,
+   "Aufträge sind Schnappschüsse": 18,
+   "Wie ein Agentenauftrag geschrieben wird": 1,
+   "Abwesenheitsmodus": 2,
+   "Keine Entwicklerinformation in der Oberfläche": 14,
+   "Wissen festhalten & abrufen": 20,
+   "Testumgebung bis es wird ernst": 4,
+   "Kurze Zustimmung ist eine Entscheidung": 0,
+   "Zweimal ist die Grenze": 1,
+   "Walkthrough-Doktrin": 14,
+   "Committen ohne Aufforderung": 14,
+   "Nachsehen vor Fragen/Delegieren": 1,
+   "Zwei Ausgangszustände": 2,
+   "Beim Testaufbau gibt es keine Grenzen": 3,
+   "'Es funktioniert' braucht Beleg": 4,
+   "Plan vor Umsetzung": 1
+  }
+ },
+ "gegenprobe_und_unterscheidungskraft": {
+  "vorab_festgelegt": "Wenn die vier mechanischen Merkmale aus Messgegenstand A (Datum-Beispiel, Pruef-Frage, Zitat, Befehlsquote) die 20 Abschnitte in ZWEI sauber getrennte Verstoss-Bereiche teilen wuerden (alle Abschnitte MIT Merkmal niedrig, alle OHNE Merkmal hoch, oder umgekehrt), waere das ein Befund, der zu einer Formulierungs-Erklaerung passt. Zeigt sich stattdessen, dass Abschnitte mit UND ohne jedes einzelne Merkmal sowohl hohe als auch niedrige Verstosszahlen tragen, kann eine reine Formulierungs-Erklaerung durch dieses Verfahren NICHT gestuetzt werden -- unabhaengig davon, ob sie trotzdem zutrifft.",
+  "beobachtung_mechanismus": "Die vier Abschnitte mit nachgewiesenem verdrahtetem Mechanismus (4 BSI, 5 WCAG, 9 Entwicklerinfo, 10 Wissen festhalten) zeigen 3, 2, 11, 13 zugeordnete Verstoesse -- zwei der vier hoechsten Werte ueberhaupt liegen bei Abschnitten MIT Mechanismus. Ein einfaches 'Mechanismus da -> wenig Verstoesse' Muster zeigt sich in dieser Zaehlung NICHT.",
+  "beobachtung_pruef_frage": "5 von 20 Abschnitten haben eine Pruef-/Kontrollfrage (1,9,13,19,20) mit Verstoesse 7,11,1,3,0 -- Spannweite 0-11. Die 15 Abschnitte ohne Pruef-Frage haben Verstoesse zwischen 0 und 13 (Abschnitt 10). Beide Gruppen ueberdecken denselben Wertebereich.",
+  "beobachtung_zitat": "10 von 20 Abschnitten haben ein langes woertliches Zitat, mit Verstoessen von 0 bis 11; die 10 ohne Zitat mit Verstoessen von 0 bis 13. Auch hier keine saubere Trennung -- als Merkmal NICHT unterscheidungskraeftig in dieser Zaehlung, ausdruecklich benannt wie gefordert.",
+  "beobachtung_position": "Abschnitte 1-10 tragen zusammen 49 der 77 eindeutig zugeordneten Verstoesse, Abschnitte 11-20 tragen 28 -- ein Geflaelle nach Position. Konfundiert mit dem Alter der Abschnitte: 11, 18 und der Unterabschnitt in 19 sind erst 2026-08-11 bis -15 hinzugekommen und hatten dadurch strukturell weniger Zeit, in eine Lehre einzufliessen. Diese Messung kann Position und Alter NICHT auseinanderhalten.",
+  "einschraenkung_gesamt": "Kein einzelnes gemessenes Formulierungsmerkmal trennt die Abschnitte in dieser Zaehlung sauber nach Verstosszahl. Ob das an fehlender Formulierungswirkung liegt oder an der Grobheit der Stichwort-Methode (86% aller gesichteten Lehren blieben ohne Abschnittszuordnung), ist mit diesem Verfahren nicht zu unterscheiden."
+ },
+ "abnahme_zahlen_mit_nenner": {
+  "abschnitte_gesamt": 20,
+  "lehren_gesichtet": 572,
+  "lehren_zugeordnet_eindeutig": 77,
+  "lehren_unsicher": 5,
+  "lehren_ohne_abschnitt": 490,
+  "lehren_nicht_gesichtet_typbedingt": 312,
+  "nenner_check_572": true
+ }
+}
