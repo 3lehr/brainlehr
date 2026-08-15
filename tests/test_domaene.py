@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from kern.domaene import herkunft_uebersicht, importiere, pruefe, setze_in_kraft, speichere
+from kern.domaene import exportiere, herkunft_uebersicht, importiere, pruefe, setze_in_kraft, speichere
 from kern import rangfolge
 
 _QUELLEN = {"z1": {"bezeichnung": "Betriebsausgaben (netto)"}}
@@ -514,6 +514,175 @@ def test_mutationsprobe_bestandspruefung_von_hand_gefahren(tmp_path, frische_db)
 
     ergebnis_original = pruefe(paket, db=frische_db)
     assert ergebnis_original["angenommen"] is False
+
+
+# ---------------------------------------------------------------------------
+# H10 -- exportiere() ist der Zwilling von importiere()/pruefe(). Gate ist
+# freigabe='offen' je Knoten (schema.sql-Default 'intern' -- ein importierter
+# Knoten reist nie von selbst weiter).
+
+def _freigeben(db, *node_ids):
+    conn = sqlite3.connect(str(db))
+    conn.executemany(
+        "UPDATE knowledge_nodes SET freigabe='offen' WHERE id=?",
+        [(i,) for i in node_ids],
+    )
+    conn.commit()
+    conn.close()
+
+
+def test_export_domaene_die_es_nicht_gibt_liefert_none(frische_db):
+    """Grenzwert: eine Kennung, fuer die nie importiert wurde."""
+    assert exportiere("nie-existiert", db=frische_db) is None
+
+
+def test_export_leere_domaene_liefert_leeres_paket(frische_db):
+    """Grenzwert: Wurzel existiert (leeres Paket importiert), aber es gibt
+    nichts, das exportiert werden koennte -- kein Fehler, leeres Paket."""
+    speichere(_paket([], quellen={}), db=frische_db)
+
+    paket = exportiere("steuer", db=frische_db)
+
+    assert paket["domaene"] == "steuer"
+    assert paket["quellen"] == {}
+    assert paket["regeln"] == []
+
+
+def test_export_nur_gesperrte_knoten_liefert_leeres_paket(frische_db):
+    """Grenzwert: Domaene mit Regeln, aber KEINE davon ist freigegeben --
+    Vorgabewert nach dem Import ist ueberall 'intern' (schema.sql-Default),
+    kein einziger Aufruf in speichere() setzt freigabe='offen'."""
+    regeln = [{"id": "r1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"}]
+    speichere(_paket(regeln), db=frische_db)
+
+    paket = exportiere("steuer", db=frische_db)
+
+    assert paket["quellen"] == {}
+    assert paket["regeln"] == []
+
+
+def test_gegenprobe_freigabe_interner_knoten_landet_nicht_im_export(frische_db):
+    """ROT-VOR-GRUEN fuer die Freigabe-Schranke: zwei Regeln, nur EINE
+    Quelle+Regel wird auf 'offen' gesetzt. Die interne muss draussen bleiben
+    -- kein 'wahrscheinlich', ein konkreter Fall."""
+    regeln = [
+        {"id": "offen1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"},
+        {"id": "intern1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"},
+    ]
+    speichere(_paket(regeln), db=frische_db)
+    _freigeben(frische_db, "domaenenquelle-steuer-z1", "domaenenregel-steuer-offen1")
+    # domaenenregel-steuer-intern1 bleibt bewusst 'intern'.
+
+    paket = exportiere("steuer", db=frische_db)
+
+    ids = {r["id"] for r in paket["regeln"]}
+    assert ids == {"offen1"}, "die intern gebliebene Regel ist mit exportiert worden"
+    assert "z1" in paket["quellen"]
+
+
+def test_offene_regel_ohne_offene_quelle_bleibt_draussen(frische_db):
+    """Eine Regel kann nicht ohne ihre Quelle reisen -- sonst waere das
+    Paket am Zielort kein gueltiger Belegvertrag mehr (pruefe_regeln findet
+    das ziel_id nicht)."""
+    regeln = [{"id": "r1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"}]
+    speichere(_paket(regeln), db=frische_db)
+    _freigeben(frische_db, "domaenenregel-steuer-r1")  # Quelle bleibt intern
+
+    paket = exportiere("steuer", db=frische_db)
+
+    assert paket["regeln"] == []
+    assert paket["quellen"] == {}
+
+
+def test_gegenprobe_rang_norm_rang_feld_reist_nie_mit(frische_db):
+    """Meine Vermutung (norm_rang gilt nicht am Zielort) geprueft an zwei
+    Stellen: (1) ein Paket, das absichtlich ein 'norm_rang'-Feld IM CONTENT
+    einer Regel mitschickt (wie test_paket_norm_rang_feld_wird_nie_gelesen),
+    darf es nicht ungefiltert in den Export tragen. (2) setze_in_kraft()
+    setzt den echten DB-Rang -- der lebt NUR als Spalte, nie im 'content',
+    das exportiere() liest, also kann er gar nicht mitreisen."""
+    regeln = [{
+        "id": "r1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben",
+        "norm_rang": 1, "norm_entscheidung": "norm_unbefristet",
+    }]
+    speichere(_paket(regeln), db=frische_db)
+    setze_in_kraft("steuer", "Betreiber", "von Hand geprueft", norm_rang=3, db=frische_db)
+    _freigeben(frische_db, "domaenenquelle-steuer-z1", "domaenenregel-steuer-r1")
+
+    paket = exportiere("steuer", db=frische_db)
+
+    regel = paket["regeln"][0]
+    assert "norm_rang" not in regel, "das Paket-Feld norm_rang ist in den Export durchgesickert"
+
+
+def test_rundlauf_export_import_auf_leerer_instanz_ergibt_dasselbe(tmp_path, frische_db):
+    """Hauptbeleg (Abnahme): Export -> Import in eine FRISCHE, leere
+    Datenbank -> derselbe Belegvertrag gilt dort. Vorbedingung: die Regel
+    wurde am Quellort bereits in Kraft gesetzt (Rang 3) -- am Zielort greift
+    trotzdem wieder Wirkung Null, weil setze_in_kraft() dort nie lief."""
+    regeln = [{"id": "r1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"}]
+    speichere(_paket(regeln), db=frische_db)
+    setze_in_kraft("steuer", "Betreiber", "von Hand geprueft", norm_rang=3, db=frische_db)
+    _freigeben(frische_db, "domaenenquelle-steuer-z1", "domaenenregel-steuer-r1")
+
+    paket = exportiere("steuer", db=frische_db)
+    assert paket["regeln"] and paket["quellen"], "Export war leer -- Rundlauf gegenstandslos"
+
+    # Zielort: eine zweite, frische, LEERE Datenbank (nicht dieselbe Datei).
+    ziel_db = tmp_path / "ziel.db"
+    zconn = sqlite3.connect(str(ziel_db))
+    zconn.executescript((_WURZEL / "schema.sql").read_text(encoding="utf-8"))
+    zconn.close()
+
+    ergebnis = speichere(paket, db=ziel_db)
+
+    assert ergebnis["angenommen"] is True
+    assert ergebnis["anzahl_regeln"] == 1
+    assert ergebnis["gespeichert"] == 3  # Wurzel + 1 Quelle + 1 Regel
+
+    zconn = sqlite3.connect(str(ziel_db))
+    zconn.row_factory = sqlite3.Row
+    regel = zconn.execute(
+        "SELECT norm_rang, norm_entscheidung FROM knowledge_nodes WHERE id='domaenenregel-steuer-r1'"
+    ).fetchone()
+    zconn.close()
+
+    # Gegenprobe Rang: NICHT 3 (der Wert am Quellort), sondern wieder NULL --
+    # Wirkung Null gilt am Zielort neu, unabhaengig vom Quellort.
+    assert regel["norm_rang"] is None
+    assert regel["norm_entscheidung"] == "keine_norm"
+
+
+def test_export_zweimal_hintereinander_ist_bis_auf_stand_identisch(frische_db):
+    """Grenzwert: zwei Exporte ohne Bestandsaenderung dazwischen liefern
+    dieselben Regeln/Quellen -- nur 'stand' (Erzeugungszeitpunkt) darf, muss
+    aber nicht, sich unterscheiden."""
+    regeln = [{"id": "r1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"}]
+    speichere(_paket(regeln), db=frische_db)
+    _freigeben(frische_db, "domaenenquelle-steuer-z1", "domaenenregel-steuer-r1")
+
+    erster = exportiere("steuer", db=frische_db)
+    zweiter = exportiere("steuer", db=frische_db)
+
+    assert erster["quellen"] == zweiter["quellen"]
+    assert erster["regeln"] == zweiter["regeln"]
+    assert erster["domaene"] == zweiter["domaene"] == "steuer"
+
+
+def test_export_gibt_paket_zurueck_das_pruefe_akzeptiert(frische_db):
+    """Positivkontrolle gegen den echten Bestand (Pruefstand-Regel): das von
+    exportiere() gebaute Paket ist kein Fantasie-Objekt, sondern besteht die
+    ECHTE Pruefung aus pruefe() -- derselbe Belegvertrag, den auch das
+    atelier beim Import durchlaeuft."""
+    regeln = [{"id": "r1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"}]
+    speichere(_paket(regeln), db=frische_db)
+    _freigeben(frische_db, "domaenenquelle-steuer-z1", "domaenenregel-steuer-r1")
+
+    paket = exportiere("steuer", db=frische_db)
+
+    ergebnis = pruefe(paket)
+    assert ergebnis["angenommen"] is True
+    assert ergebnis["anzahl_regeln"] == 1
 
 
 def _paket_roh(domaene, quellen, regeln, **zusatz):

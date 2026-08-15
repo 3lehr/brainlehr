@@ -43,6 +43,18 @@ Quellen (Belegtexte) bekommen NIE einen Rang -- ein Beleg ist keine Norm.
 setze_in_kraft() ist der einzige Weg aus der Wirkung Null heraus: ein
 ausdruecklicher, protokollierter Aufruf mit Menschenname und Grund, nie ein
 Nebeneffekt von speichere() oder einem zweiten Import desselben Pakets.
+
+EXPORT (H10, PLAN_OPENLEHR_2026-08-14.md): exportiere() ist der Zwilling von
+importiere()/pruefe() -- baut aus dem Bestand wieder ein Paket im selben
+Format. Gate ist freigabe='offen' je Quell-/Regelknoten, exakt der
+Mechanismus, den kern/lehrenpaket.py fuer Lehren/Wissensknoten bereits nutzt
+(schema.sql-Default ist 'intern' -- ein importierter Knoten reist NIE von
+selbst weiter, das Oeffnen ist ein ausdruecklicher menschlicher Akt ausserhalb
+dieser Datei, siehe knowledge_freigeben). norm_rang reist NIE mit: er steht
+nur in der DB-Spalte der Zeile (gesetzt von setze_in_kraft()), nie im
+JSON-'content', das exportiere() wieder ausliest -- dieselbe Wirkung-Null-
+Grenze wie beim Import, nur von der anderen Seite betrachtet, und ohne dass
+diese Datei dafuer etwas herausfiltern muss (das Feld war nie dort).
 """
 
 from __future__ import annotations
@@ -303,6 +315,64 @@ def herkunft_uebersicht(domaene_id: str, db: str | Path | None = None) -> dict[s
     return ergebnis
 
 
+def exportiere(domaene_id: str, db: str | Path | None = None) -> dict[str, Any] | None:
+    """Baut aus dem Bestand wieder ein Domaenenpaket -- der Zwilling von
+    importiere()/pruefe(). Gate ist freigabe='offen' JE KNOTEN: eine Quelle
+    oder Regel, die noch (Vorgabe) 'intern' oder 'gesperrt' traegt, wird
+    NICHT exportiert -- sie muss vorher ausdruecklich geoeffnet werden. Eine
+    Regel ohne ihre (ebenfalls offene) Quelle wird ebenfalls ausgelassen --
+    sonst waere das Paket kein gueltiger Belegvertrag mehr am Zielort
+    (pruefe_regeln braucht die genannte ziel_id in 'quellen').
+
+    Gibt None zurueck, wenn die Domaene nicht existiert (kein Wurzelknoten).
+    Eine existierende, aber leere oder vollstaendig ungeoeffnete Domaene
+    liefert ein Paket mit quellen={} und regeln=[] -- das ist kein Fehler,
+    dieselbe Haltung wie bei importiere()/setze_in_kraft()."""
+    wurzel_id = f"domaene-{domaene_id}"
+    parent = f"{PARENT_PREFIX}/{domaene_id}"
+    praefix_quelle = f"domaenenquelle-{domaene_id}-"
+
+    with speicher.lesen(db) as conn:
+        wurzel = conn.execute(
+            "SELECT title FROM knowledge_nodes WHERE id=?", (wurzel_id,)
+        ).fetchone()
+        if wurzel is None:
+            return None
+
+        quellen: dict[str, Any] = {}
+        for row in conn.execute(
+            "SELECT id, content FROM knowledge_nodes WHERE parent_path=? "
+            "AND tags LIKE '%\"art:quelle\"%' AND freigabe='offen'",
+            (parent,),
+        ):
+            qid = row["id"][len(praefix_quelle):]
+            quellen[qid] = json.loads(row["content"] or "{}")
+
+        regeln: list[dict[str, Any]] = []
+        for row in conn.execute(
+            "SELECT content FROM knowledge_nodes WHERE parent_path=? "
+            "AND tags LIKE '%\"art:regel\"%' AND freigabe='offen'",
+            (parent,),
+        ):
+            regel = json.loads(row["content"] or "{}")
+            # norm_rang steckt nie in 'content' (siehe Moduldocstring EXPORT)
+            # -- diese Zeile filtert nichts heraus, sie stellt nur sicher,
+            # dass eine kuenftige Aenderung an speichere()/_regel_zeile()
+            # nicht still ein Feld einschleust, das hier ungeprueft mitreist.
+            regel.pop("norm_rang", None)
+            if regel.get("ziel_id") in quellen:
+                regeln.append(regel)
+
+    return {
+        "domaene": domaene_id,
+        "bezeichnung": wurzel["title"],
+        "herkunft": f"export:{domaene_id}",
+        "stand": zeitmarke.jetzt(),
+        "quellen": quellen,
+        "regeln": regeln,
+    }
+
+
 def _kuerzen(text: str) -> str:
     text = text or ""
     return text if len(text) <= _SUMMARY_MAXLEN else text[:_SUMMARY_MAXLEN].rstrip() + " [...]"
@@ -401,4 +471,4 @@ def _abgelehnt(grund: str) -> dict[str, Any]:
     return {"angenommen": False, "anzahl_regeln": None, "bezeichnung": None, "grund": grund}
 
 
-__all__ = ["importiere", "pruefe", "speichere", "setze_in_kraft", "herkunft_uebersicht"]
+__all__ = ["importiere", "pruefe", "speichere", "setze_in_kraft", "herkunft_uebersicht", "exportiere"]
