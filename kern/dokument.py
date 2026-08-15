@@ -136,6 +136,74 @@ def bausteine_baum(doc) -> list[Baustein]:
     return baumreihenfolge(bausteine(doc))
 
 
+def _finde_baustein(doc, kennung: str):
+    liste = _liste(doc, BAUSTEINE)
+    for i, eintrag in enumerate(liste.to_py()):
+        if eintrag["kennung"] == kennung:
+            return i, eintrag
+    return None, None
+
+
+def baustein_loeschen(doc, kennung: str) -> str:
+    """Entfernt einen Baustein und gibt seine Kennung zurueck.
+
+    Anmerkungen, die daran haengen, werden NICHT geloescht und NICHT
+    umgehaengt -- der Anker haelt die Kennung fest (baustein.py Entscheidung
+    2), also wird eine solche Anmerkung ab jetzt von `verwaiste()` gemeldet.
+    Kinder des geloeschten Bausteins bleiben liegen und werden beim naechsten
+    Lesen ueber `baumreihenfolge` als eigene Wurzel behandelt (derselbe
+    Grenzwert wie bei einem von Anfang an fehlenden Elternteil)."""
+    i, eintrag = _finde_baustein(doc, kennung)
+    if eintrag is None:
+        raise VertragsFehler(f"kein Baustein mit Kennung {kennung!r}")
+    del _liste(doc, BAUSTEINE)[i]
+    return kennung
+
+
+def baustein_verschieben(doc, kennung: str, eltern: str | None) -> str:
+    """Haengt einen Baustein unter ein neues Elternfeld um (oder an die Wurzel,
+    `eltern=None`). Gibt den gesetzten Elternwert zurueck.
+
+    Die Kennung des verschobenen Bausteins aendert sich NICHT -- ein Anker,
+    der darauf zeigt, ueberlebt die Verschiebung unveraendert. Genau das ist
+    der Zweck von "Kennung wird vergeben, nie abgeleitet" (baustein.py
+    Entscheidung 1): eine Anmerkung haengt an einer Kennung, nicht an einer
+    Position im Baum.
+
+    `eltern` wird NICHT gegen den Bestand geprueft, dieselbe Haltung wie bei
+    `baustein_anhaengen`. Ein Baustein als sein eigener Elternteil wird
+    dagegen abgelehnt -- das waere kein Nebeneffekt gleichzeitiger Bearbeitung
+    (den Fall laesst `baumreihenfolge` bewusst zu), sondern ein einzelner
+    lokaler Aufruf, der sich ohne Grund selbst einen Ring baut."""
+    i, eintrag = _finde_baustein(doc, kennung)
+    if eintrag is None:
+        raise VertragsFehler(f"kein Baustein mit Kennung {kennung!r}")
+    if eltern == kennung:
+        raise VertragsFehler("ein Baustein kann nicht sein eigener Elternteil werden")
+    eintrag_map = _liste(doc, BAUSTEINE)[i]
+    eintrag_map["eltern"] = eltern
+    return eltern
+
+
+def baustein_text_setzen(doc, kennung: str, text: str) -> str:
+    """Setzt den Text eines Bausteins und gibt ihn zurueck.
+
+    Der Anker einer Anmerkung zeigt danach unveraendert auf denselben
+    Baustein -- ob sie inhaltlich noch gilt, ist eine Entscheidung eines
+    Menschen oder Modells (`zustand_setzen`), keine, die diese Funktion
+    trifft: eine Aenderung kann einen Auftrag erledigen oder gegenstandslos
+    machen, beides sieht von hier aus gleich aus. Was sich automatisch
+    aendert: ein Anker mit `von`/`bis` kann nach einer Kuerzung ueber das neue
+    Textende hinauszeigen -- das faengt `bereichsfehler()`, nicht diese
+    Funktion."""
+    i, eintrag = _finde_baustein(doc, kennung)
+    if eintrag is None:
+        raise VertragsFehler(f"kein Baustein mit Kennung {kennung!r}")
+    eintrag_map = _liste(doc, BAUSTEINE)[i]
+    eintrag_map["text"] = text
+    return text
+
+
 def anmerkung_setzen(doc, anker: Anker, text: str, klasse: str, von_wem: str) -> str:
     """Haengt einen Auftrag an eine Stelle. Gibt die Kennung der Anmerkung zurueck.
 
@@ -231,6 +299,26 @@ def verwaiste(doc) -> list[Anmerkung]:
     vergisst."""
     vorhanden = {b.kennung for b in bausteine_baum(doc)}
     return [a for a in anmerkungen(doc) if a.anker.baustein not in vorhanden]
+
+
+def bereichsfehler(doc) -> list[Anmerkung]:
+    """Anmerkungen, deren Baustein noch existiert, deren Zeichenbereich
+    (`Anker.von`/`bis`) aber nicht mehr in den AKTUELLEN Text des Bausteins
+    passt -- unterscheidet sich von `verwaiste()`: dort fehlt der Baustein
+    ganz, hier ist er da, nur kuerzer geworden als der Bereich, auf den die
+    Anmerkung zeigt. Wie bei `verwaiste()` wird nichts automatisch
+    umgehaengt, nur sichtbar gemacht -- eine Anmerkung ohne Bereichsangabe
+    (`bis=None`) kann per Definition nicht in diesen Fehler laufen, ihr
+    genuegt der Baustein."""
+    nach_kennung = {b.kennung: b for b in bausteine(doc)}
+    treffer = []
+    for a in anmerkungen(doc):
+        b = nach_kennung.get(a.anker.baustein)
+        if b is None:
+            continue   # das ist verwaist, nicht bereichsfehler -- siehe verwaiste()
+        if a.anker.bis is not None and a.anker.bis > len(b.text):
+            treffer.append(a)
+    return treffer
 
 
 # --- Sprache (ADR-019 Entscheidung 5) ---------------------------------------
@@ -376,14 +464,81 @@ def _selftest() -> int:
     # eigener geloescht wird.
     doppelter_text = baustein_anhaengen(doc, "absatz", "Erster Satz.")
     assert doppelter_text != erster
-    liste = _liste(doc, BAUSTEINE)
-    for i, b in enumerate(liste.to_py()):
-        if b["kennung"] == erster:
-            del liste[i]
-            break
+    assert baustein_loeschen(doc, erster) == erster
     verwaist_jetzt = {a.kennung for a in verwaiste(doc)}
     assert a1 in verwaist_jetzt, "Anmerkung muss verwaisen statt auf den gleichen Text zu springen"
     assert a2 not in verwaist_jetzt
+    try:
+        baustein_loeschen(doc, "999999999999")
+    except VertragsFehler:
+        pass
+    else:
+        raise AssertionError("Loeschen eines nie vorhandenen Bausteins haette fallen muessen")
+
+    # --- Verschieben (F7: der Anker haelt die Kennung, keine Position) ------
+    # ROT waere hier: eine Anmerkung, die nach dem Umhaengen am falschen
+    # Baustein haengt oder verwaist. GRUEN: sie bleibt exakt am Ziel, auch
+    # wenn der Baum sich unter ihr umbaut.
+    verschiebedoc = leeres_dokument()
+    alter_platz = baustein_anhaengen(verschiebedoc, "ueberschrift", "Alt")
+    neuer_platz = baustein_anhaengen(verschiebedoc, "ueberschrift", "Neu")
+    ziel = baustein_anhaengen(verschiebedoc, "absatz", "Zieltext.", eltern=alter_platz)
+    verankert = anmerkung_setzen(verschiebedoc, Anker(baustein=ziel, suchtext="Ziel"),
+                                 "haengt am Ziel", "inhalt", "mensch")
+    assert [b.kennung for b in bausteine_baum(verschiebedoc)] == [alter_platz, ziel, neuer_platz]
+    assert baustein_verschieben(verschiebedoc, ziel, neuer_platz) == neuer_platz
+    assert [b.kennung for b in bausteine_baum(verschiebedoc)] == [alter_platz, neuer_platz, ziel]
+    assert verwaiste(verschiebedoc) == [], "eine Verschiebung darf nicht verwaisen lassen"
+    assert {a.kennung: a.anker.baustein for a in anmerkungen(verschiebedoc)}[verankert] == ziel, \
+        "der Anker muss die Kennung halten, unabhaengig vom neuen Elternfeld"
+    try:
+        baustein_verschieben(verschiebedoc, ziel, ziel)
+    except VertragsFehler:
+        pass
+    else:
+        raise AssertionError("ein Baustein als sein eigener Elternteil haette fallen muessen")
+    try:
+        baustein_verschieben(verschiebedoc, "999999999999", None)
+    except VertragsFehler:
+        pass
+    else:
+        raise AssertionError("Verschieben eines nie vorhandenen Bausteins haette fallen muessen")
+
+    # --- Textaenderung und Bereichsfehler (F7 Frage 2+3) --------------------
+    # Der Anker bleibt gueltig, solange der Baustein existiert -- eine
+    # Textaenderung loescht die Anmerkung nicht. Ein Bereich (von/bis), der
+    # nach einer Kuerzung ueber das neue Textende hinauszeigt, wird trotzdem
+    # sichtbar gemeldet, getrennt von "verwaist".
+    textdoc = leeres_dokument()
+    mit_bereich = baustein_anhaengen(textdoc, "absatz", "Ein langer Satz mit vielen Worten.")
+    ohne_bereich = baustein_anhaengen(textdoc, "absatz", "Kurz.")
+    a_bereich = anmerkung_setzen(textdoc, Anker(baustein=mit_bereich, suchtext="langer", von=4, bis=10),
+                                 "hier ist das Wort falsch", "inhalt", "mensch")
+    a_ohne = anmerkung_setzen(textdoc, Anker(baustein=ohne_bereich), "generell pruefen",
+                              "darstellung", "mensch")
+    assert bereichsfehler(textdoc) == [], "beide Bereiche passen noch in den jeweiligen Text"
+    assert baustein_text_setzen(textdoc, mit_bereich, "Kurz.") == "Kurz."
+    fehlerhaft = {a.kennung for a in bereichsfehler(textdoc)}
+    assert fehlerhaft == {a_bereich}, "nur der gekuerzte Baustein mit Bereichsangabe faellt auf"
+    assert a_ohne not in fehlerhaft, "ein Anker ohne Bereich kann nicht in einen Bereichsfehler laufen"
+    assert {a.kennung for a in verwaiste(textdoc)} == set(), "der Baustein existiert weiterhin, das ist kein Verwaisen"
+    # Gegenprobe: eine unveraenderte Anmerkung an einem unveraenderten
+    # Baustein bleibt unveraendert.
+    unveraendert = anmerkungen(textdoc)
+    assert baustein_text_setzen(textdoc, ohne_bereich, "Kurz.") == "Kurz."   # gleicher Text zurueckgeschrieben
+    assert anmerkungen(textdoc) == unveraendert
+    try:
+        baustein_text_setzen(textdoc, "999999999999", "x")
+    except VertragsFehler:
+        pass
+    else:
+        raise AssertionError("Textaenderung an einem nie vorhandenen Baustein haette fallen muessen")
+
+    # Grenzwert: Dokument ganz ohne Anmerkungen -- beide Meldefunktionen bleiben leer.
+    leer = leeres_dokument()
+    baustein_anhaengen(leer, "absatz", "Text ohne jede Anmerkung.")
+    assert verwaiste(leer) == []
+    assert bereichsfehler(leer) == []
 
     # Die Teilnehmerkennung bleibt unter der Schranke -- auch hier. Grenzwert
     # BEIDSEITIG: 2**32-1 traegt (Swift-Seite schneidet erst DAHINTER ab),

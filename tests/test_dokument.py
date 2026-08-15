@@ -20,8 +20,12 @@ from dokument import (  # noqa: E402
     anmerkung_setzen,
     anmerkungen,
     baustein_anhaengen,
+    baustein_loeschen,
+    baustein_text_setzen,
+    baustein_verschieben,
     bausteine,
     bausteine_baum,
+    bereichsfehler,
     fassungen,
     ist_veroeffentlicht,
     leeres_dokument,
@@ -240,6 +244,91 @@ def test_verworfene_anmerkung_des_modells_bleibt_im_verlauf():
     assert eintrag.zustand == "abgelehnt"
     assert eintrag.verlauf == ["offen->abgelehnt"]
     assert a in mitwirkende(doc)["modell"], "verworfen ist nicht verschwunden"
+
+
+# --------------------------------------------------------------- F7: Anker ueberlebt den Neusatz
+
+def test_geloeschter_baustein_macht_seine_anmerkung_verwaist():
+    """ROT waere: die Anmerkung springt auf den zweiten Baustein mit gleichem
+    Text. GRUEN: sie verwaist sichtbar, springt nirgends hin."""
+    doc = leeres_dokument()
+    ziel = baustein_anhaengen(doc, "absatz", "Erster Satz.")
+    zwilling = baustein_anhaengen(doc, "absatz", "Erster Satz.")
+    a = anmerkung_setzen(doc, Anker(baustein=ziel, suchtext="Erster Satz."),
+                         "hier korrigieren", "inhalt", "mensch")
+    assert verwaiste(doc) == []
+    assert baustein_loeschen(doc, ziel) == ziel
+    assert [x.kennung for x in verwaiste(doc)] == [a]
+    assert zwilling in {b.kennung for b in bausteine(doc)}
+
+
+def test_baustein_loeschen_unbekannte_kennung_faellt():
+    doc = leeres_dokument()
+    with pytest.raises(Exception):
+        baustein_loeschen(doc, "999999999999")
+
+
+def test_verschobener_baustein_behaelt_seinen_anker():
+    """ROT waere: nach dem Umhaengen zeigt der Anker ins Leere oder auf den
+    falschen Baustein. GRUEN: die Kennung, nicht die Baumposition, traegt den
+    Anker -- das ist der ganze Sinn von F7."""
+    doc = leeres_dokument()
+    alt = baustein_anhaengen(doc, "ueberschrift", "Alt")
+    neu = baustein_anhaengen(doc, "ueberschrift", "Neu")
+    ziel = baustein_anhaengen(doc, "absatz", "Zieltext.", eltern=alt)
+    a = anmerkung_setzen(doc, Anker(baustein=ziel), "haengt am Ziel", "inhalt", "mensch")
+    assert baustein_verschieben(doc, ziel, neu) == neu
+    assert verwaiste(doc) == []
+    nach_kennung = {x.kennung: x for x in anmerkungen(doc)}
+    assert nach_kennung[a].anker.baustein == ziel
+
+
+def test_baustein_kann_nicht_sein_eigener_elternteil_werden():
+    doc = leeres_dokument()
+    b = baustein_anhaengen(doc, "absatz", "X")
+    with pytest.raises(Exception):
+        baustein_verschieben(doc, b, b)
+
+
+def test_unveraenderter_baustein_laesst_seine_anmerkung_unveraendert():
+    """Gegenprobe: ohne Aenderung am Baustein bleibt die Anmerkung exakt gleich."""
+    doc = leeres_dokument()
+    b = baustein_anhaengen(doc, "absatz", "Ein Satz.")
+    anmerkung_setzen(doc, Anker(baustein=b), "pruefen", "darstellung", "mensch")
+    vorher = anmerkungen(doc)
+    assert anmerkungen(doc) == vorher
+
+
+def test_gekuerzter_text_meldet_bereichsfehler_statt_zu_verwaisen():
+    doc = leeres_dokument()
+    b = baustein_anhaengen(doc, "absatz", "Ein langer Satz mit vielen Worten.")
+    a = anmerkung_setzen(doc, Anker(baustein=b, suchtext="langer", von=4, bis=10),
+                         "Wort falsch", "inhalt", "mensch")
+    assert bereichsfehler(doc) == []
+    baustein_text_setzen(doc, b, "Kurz.")
+    assert verwaiste(doc) == [], "der Baustein existiert weiterhin"
+    assert [x.kennung for x in bereichsfehler(doc)] == [a]
+
+
+def test_anker_ohne_bereich_kann_nicht_in_bereichsfehler_laufen():
+    doc = leeres_dokument()
+    b = baustein_anhaengen(doc, "absatz", "Ein langer Satz.")
+    anmerkung_setzen(doc, Anker(baustein=b), "generell", "darstellung", "mensch")
+    baustein_text_setzen(doc, b, "x")
+    assert bereichsfehler(doc) == []
+
+
+def test_leeres_dokument_ohne_anmerkungen_meldet_nichts():
+    doc = leeres_dokument()
+    baustein_anhaengen(doc, "absatz", "Text.")
+    assert verwaiste(doc) == []
+    assert bereichsfehler(doc) == []
+
+
+def test_baustein_text_setzen_unbekannte_kennung_faellt():
+    doc = leeres_dokument()
+    with pytest.raises(Exception):
+        baustein_text_setzen(doc, "999999999999", "x")
 
 
 def test_teilnehmerkennung_ueber_der_schranke_ist_ausgeschlossen():
