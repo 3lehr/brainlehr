@@ -45,16 +45,28 @@ echten Commit-Historie:
     haetten die "docs(brainlehr): PLAN_OPENLEHR auf Auftragsform gebracht"-
     Commits H4/H5/H6/H7/H10 faelschlich als Kandidaten gemeldet, weil sie
     diese Kennungen woertlich als "noch offen" auffuehren.
+  - Ein Commit, der den Melder selbst betrifft (Modulname "plan_bestandsabgleich"
+    irgendwo im Commit-Text), zaehlt nie als Beleg -- SO GEFUNDEN (2026-08-15):
+    der eigene Bau-Commit 0f450fb (Typ feat) nennt H4/H5/H6/H7/H10 woertlich
+    als Beispiel fuer einen ausgeschlossenen Fehlalarm und matchte damit seine
+    eigene Heuristik.
+  - Ein "frei" (Entsperr-Marker) in den 80 Zeichen NACH der Kennung zaehlt
+    nicht als Beleg -- SO GEFUNDEN (2026-08-15): 4b5e8b1 nennt H10 als
+    "... frei, an derselben Datei zu arbeiten" (eine Sperre fiel), nicht als
+    erledigt; H10 steht im Plan weiter unter "Offen".
 
-GEMESSENE FALSCHTREFFERRATE (2026-08-15, docs/PLAN_GESAMT_2026-08-13.md, 70
-extrahierte Kennungen): 31 von 70 werden als Kandidat gemeldet (unter der
-Haelfte -- keine Fehlkonstruktion nach dem Massstab des Auftrags). Von den
-31 wurden zwei Vollstichproben von Hand geprueft: G2/G3 (echter Fund, im
-Plan bisher nicht als erledigt vermerkt) und ein zurueckgenommener
-Fehlalarm F1 (traf urspruenglich auf "10 Proben F1-F10" -- eine
-Probenbenennung, keine Plankennung; durch die Bindestrich-Ausnahme oben
-entfernt). Keine erschoepfende Pruefung aller 31 -- das ist der Preis der
-Heuristik, deshalb Hinweisrecht statt Automatik.
+GEMESSENE FALSCHTREFFERRATE (2026-08-15T11:00, docs/PLAN_GESAMT_2026-08-13.md,
+70 extrahierte Kennungen, nach den beiden Ausnahmen oben): 32 von 70 werden
+als Kandidat gemeldet (unter der Haelfte -- keine Fehlkonstruktion nach dem
+Massstab des Auftrags). Die Zahl verschiebt sich mit jedem neuen Commit (die
+Heuristik durchsucht die gesamte Historie neu) -- vor den beiden Ausnahmen
+oben lag sie bei 38/70, weil zwei spaeter gelandete Commits (0f450fb,
+4b5e8b1) sich selbst bzw. eine falsch gelesene Kennung trafen. Stichproben
+von Hand: G2/G3 (echter Fund, im Plan bisher nicht als erledigt vermerkt)
+und ein zurueckgenommener Fehlalarm F1 (traf urspruenglich auf "10 Proben
+F1-F10" -- eine Probenbenennung, keine Plankennung; durch die
+Bindestrich-Ausnahme oben entfernt). Keine erschoepfende Pruefung aller 32
+-- das ist der Preis der Heuristik, deshalb Hinweisrecht statt Automatik.
 
 GRENZWERTE, geprueft: Plandatei ohne jede Kennung -> leere Kandidatenliste,
 kein Absturz. Kennung, deren Plantext keinen Dateinamen nennt (85) ->
@@ -146,6 +158,20 @@ class Kandidat:
         return f"Kandidat({self.kennung!r}, {self.commit_hash[:8]!r})"
 
 
+_EIGENER_MELDER_MUSTER = re.compile(r"plan_bestandsabgleich")
+
+# SO GEFUNDEN (2026-08-15): 4b5e8b1 nennt H10 woertlich ("... und H10
+# (Export-Gegenstueck) frei, an derselben Datei zu arbeiten"), nachdem eine
+# Sperre in kern/domaene.py fiel -- H10 wurde damit ENTSPERRT, nicht
+# ERLEDIGT (steht im Plan weiterhin unter "Offen"). "frei" unmittelbar nach
+# der Kennung ist ein Entsperr-Marker, kein Erledigt-Beleg -- anders als
+# "war bereits durch" oder ein Auftrag/Aufgabe-Praefix mit beschriebener
+# Lieferung. Fenstergroesse 80 Zeichen: deckt "frei, an derselben Datei zu
+# arbeiten" ab, ohne auf einen ganzen Absatz auszugreifen.
+_ENTSPERR_FENSTER = 80
+_ENTSPERR_MUSTER = re.compile(r"\bfrei\b")
+
+
 def finde_kandidaten(plan_text: str, commits: list[tuple[str, str, str]]) -> list[Kandidat]:
     kandidaten: list[Kandidat] = []
     for kennung in kennungen_im_plan(plan_text):
@@ -153,7 +179,20 @@ def finde_kandidaten(plan_text: str, commits: list[tuple[str, str, str]]) -> lis
         for h, betreff, voll in commits:
             if _commit_typ(betreff) not in ("feat", "fix"):
                 continue
-            if not muster.search(voll):
+            # Ein Commit, der den Melder selbst betrifft (dieses Modul baut
+            # oder dokumentiert), zaehlt nie als Beleg fuer eine Planzeile --
+            # SO GEFUNDEN (2026-08-15): 0f450fb baute den Melder, nennt dabei
+            # im Fliesstext woertlich H4/H5/H6/H7/H10 als Beispiel fuer einen
+            # ausgeschlossenen docs(...)-Fehlalarm und traegt selbst den Typ
+            # feat -- der Melder mass sich damit an seinem eigenen
+            # Dokumentations-Commit und meldete sich selbst als Beleg.
+            if _EIGENER_MELDER_MUSTER.search(voll):
+                continue
+            treffer = muster.search(voll)
+            if not treffer:
+                continue
+            fenster = voll[treffer.end():treffer.end() + _ENTSPERR_FENSTER]
+            if _ENTSPERR_MUSTER.search(fenster):
                 continue
             if not _DATEIPFAD_MUSTER.search(voll):
                 continue

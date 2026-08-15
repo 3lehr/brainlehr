@@ -344,10 +344,33 @@ def test_auto_rule_fehler_bricht_die_eskalation_nicht(temp_db, monkeypatch):
 def test_bleibt_hand_bausteine_sind_nicht_verdrahtet():
     """ADR-034: auditanker, normkraft, kanonymitaet, wiederherstellung,
     neuschreibungen bleiben ausdruecklich Handentscheidungen -- kein
-    Top-Level-Import in knowledge_mcp_server.py, kein MCP-Werkzeug dafuer."""
+    MCP-Werkzeug dafuer.
+
+    ENTSCHEIDUNG 2026-08-15 (gepruefte Abweichung, Variante c -- die Ratsche
+    mass etwas anderes als ihren Namen): Commit cf01e3c1 fuegte
+    `import normkraft` in knowledge_mcp_server.py ein, damit
+    _geltung_status() dieselbe Datums-Normalisierung nutzt wie
+    normkraft.py::in_kraft (L-ec167a, Formatdrift-Fix). Geprueft (git blame,
+    grep aller `normkraft.`-Stellen in knowledge_mcp_server.py): benutzt wird
+    ausschliesslich geltungszeitpunkt() -- eine reine Datumsparse-Funktion
+    ohne Ermessen. Die von ADR-034 tatsaechlich geschuetzte Handentscheidung
+    ist WELCHE Norm ausser Kraft gesetzt wird (normkraft.py::ausser_kraft/
+    plan_ausser_kraft, siehe deren Docstring: "Kein Ermessen ... das
+    entscheidet der Betreiber") -- diese werden in knowledge_mcp_server.py
+    nirgends aufgerufen; Zeile ~2117/2153 verweisen den Betreiber explizit
+    auf das Hand-Kommando. Ein blankes "kein Import des Moduls" verwechselte
+    Wiederverwendung einer reinen Hilfsfunktion mit der automatischen
+    Ausloesung der Entscheidung. Die Pruefung ist deshalb auf die
+    Entscheidungsfunktionen selbst verschaerft, statt auf jeden Import des
+    Moduls; fuer die anderen vier Bausteine (keine bekannte Aufteilung in
+    reine Hilfsfunktion vs. Entscheidung) bleibt die Ratsche wie zuvor."""
     quelltext = (SHARED_KNOWLEDGE / "knowledge_mcp_server.py").read_text(encoding="utf-8")
-    for modul in ("auditanker", "normkraft", "kanonymitaet", "wiederherstellung", "neuschreibungen"):
+    for modul in ("auditanker", "kanonymitaet", "wiederherstellung", "neuschreibungen"):
         assert f"import {modul}" not in quelltext, f"{modul} ist entgegen ADR-034 doch importiert"
+    for funktion in ("normkraft.ausser_kraft(", "normkraft.plan_ausser_kraft("):
+        assert funktion not in quelltext, (
+            f"{funktion} entgegen ADR-034 automatisch aufgerufen -- das ist die Handentscheidung"
+        )
     for werkzeugname in kms.TOOLS:
         for modul in ("auditanker", "kanonymitaet", "wiederherstellung", "neuschreibungen"):
             assert modul not in werkzeugname

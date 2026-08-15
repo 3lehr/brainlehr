@@ -46,8 +46,11 @@ def test_grenzwert_plandatei_ohne_kennungen():
 
 def test_falschtrefferrate_am_echten_plan_unter_der_haelfte():
     """Schlaegt der Melder bei der Mehrheit der Planzeilen an, ist er eine
-    Fehlkonstruktion (L-528f0c), keine Heuristik. Gemessen 2026-08-15:
-    31 von 70 Kennungen (44 %)."""
+    Fehlkonstruktion (L-528f0c), keine Heuristik. Gemessen 2026-08-15T11:00
+    (nach den beiden Ausnahmen "Melder-Selbstbezug" und "Entsperr-Marker
+    'frei'", siehe melder/plan_bestandsabgleich.py-Docstring): 32 von 70
+    Kennungen (46 %). Verschiebt sich mit jedem neuen Commit -- die Grenze
+    ist unter der Haelfte, keine feste Zahl."""
     plan_text = pba.STANDARD_PLAN.read_text(encoding="utf-8")
     commits = pba._git_commits(pba._W)
     alle = pba.kennungen_im_plan(plan_text)
