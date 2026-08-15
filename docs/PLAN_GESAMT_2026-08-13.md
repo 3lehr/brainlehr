@@ -442,6 +442,25 @@ Halbstände, rot wie grün (`L-243dde`).
 
 ## Aufträge, fertig zum Übergeben
 
+> **ACHTUNG, 2026-08-15T09:30:00+0200 — dieser Abschnitt ist NICHT der Stand.**
+> Die Aufträge zu `81`, `85` und `84` stehen hier im vollen Wortlaut, obwohl die
+> Fortschreibung weiter oben (2026-08-13T13:00, „Linie A vollständig") sie als
+> erledigt führt und beide Male recht hat: gebaut waren sie, nachgezogen war der
+> Auftragstext nicht. Heute haben **zwei** Agenten je einen halben Arbeitszug
+> darauf verwendet, das nachzumessen — und ich selbst habe dem Betreiber „Linie A
+> ist offen" gesagt, weil ich diese Liste gelesen habe und die Fortschreibung 170
+> Zeilen weiter oben nicht (dieselbe Form wie `L-813c8f`).
+>
+> **Regel daraus, für jeden künftigen Auftragsabschnitt:** Ein Auftrag verliert
+> seinen Wortlaut, sobald er erledigt ist — er wird gestrichen oder trägt in
+> Zeile 1 seinen Status. Ein vollständig ausformulierter Auftrag ist die
+> stärkste Behauptung „hier ist noch etwas zu tun", die ein Dokument abgeben
+> kann; steht sie neben einer Erledigt-Meldung, gewinnt sie beim Lesen.
+>
+> **Status der drei:** `81` erledigt (`1d55a42`, Melder-Fund darin behoben) ·
+> `85` erledigt (`b3dfc6f`) · `84` erledigt (`38bebd9`). Die Auftragstexte bleiben
+> als Beleg dessen stehen, was verlangt war — nicht als Arbeitsvorrat.
+
 **Für alle Aufträge gleichermaßen gilt:** Arbeitsort
 `/Volumes/daten/Begod2026/brainlehr`, Zweig `brainlehr/b4-ausweis` — ein
 Startverzeichnis unter `.claude/worktrees/` ist ein alter Stand. Zuerst
