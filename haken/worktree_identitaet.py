@@ -90,27 +90,70 @@ def _zielpfad(base_directory: str, worktree_name: str) -> Path:
     return Path(base_directory) / ".claude" / "worktrees" / worktree_name
 
 
+def _hooks_zusammenfuehren(basis_hooks: dict, ziel_hooks: dict) -> tuple:
+    """Additiver Merge zweier `hooks`-Objekte aus settings.json.
+
+    NACHTRAG 2026-08-15 (Befund `runs/haken_bei_agenten_2026-08-15T142000+0200.json`):
+    Die alte Regel ("Kopie NUR wenn im Ziel noch keine settings.json liegt")
+    seedet einen Arbeitsbaum genau EINMAL. Jede Wache, die der Hauptbaum
+    DANACH bekommt -- wie `stash_guard_hook.py`, verdrahtet um 11:26:54, waehrend
+    dieser Baum bereits um 05:44:08 stand -- erreicht ihn nie wieder. Deshalb
+    merged diese Funktion jetzt bei JEDEM Lauf: Ereignisse und Eintraege, die
+    im Hauptbaum existieren und im Ziel fehlen (Vergleich per Gleichheit),
+    kommen additiv hinzu. Nichts wird geloescht oder ersetzt -- ein Eintrag,
+    den nur der Arbeitsbaum selbst hat (z.B. eine lokale Testverdrahtung),
+    bleibt stehen. Gibt (neue_hooks, geaendert) zurueck."""
+    geaendert = False
+    ergebnis = json.loads(json.dumps(ziel_hooks)) if ziel_hooks else {}
+    for ereignis, eintraege in (basis_hooks or {}).items():
+        vorhandene = ergebnis.setdefault(ereignis, [])
+        for eintrag in eintraege:
+            if eintrag not in vorhandene:
+                vorhandene.append(eintrag)
+                geaendert = True
+    return ergebnis, geaendert
+
+
 def _identitaet_nachziehen(base_directory: str, worktree_ziel: Path) -> None:
-    """Kopiert/verlinkt die zwei bekannten Regeldateien, falls das
-    Zielverzeichnis schon existiert (Nachbereitung) und dort noch fehlen."""
+    """Kopiert/verlinkt/merged die zwei bekannten Regeldateien, falls das
+    Zielverzeichnis schon existiert (Nachbereitung)."""
     if not worktree_ziel.is_dir():
         return  # Anlage laeuft noch / dieser Aufruf kommt vor ihr -- nichts tun.
 
     basis = Path(base_directory)
 
-    # CLAUDE.md: Symlink, siehe Modulkopf.
+    # CLAUDE.md: Symlink, siehe Modulkopf. Nur beim Erstanlegen -- eine
+    # bereits vorhandene Datei (Symlink oder eigene Fassung) bleibt stehen.
     quelle = basis / "CLAUDE.md"
     ziel = worktree_ziel / "CLAUDE.md"
     if quelle.exists() and not ziel.exists() and not ziel.is_symlink():
         relativ = os.path.relpath(quelle, ziel.parent)
         ziel.symlink_to(relativ)
 
-    # .claude/settings.json: Kopie, siehe Modulkopf.
+    # .claude/settings.json: Kopie beim Erstanlegen (siehe Modulkopf, Gefahr
+    # der Fernwirkung -> kein Symlink); JEDER weitere Lauf merged die
+    # `hooks` additiv nach, damit eine spaeter im Hauptbaum verdrahtete Wache
+    # einen laengst angelegten Arbeitsbaum trotzdem noch erreicht.
     quelle = basis / ".claude" / "settings.json"
     ziel = worktree_ziel / ".claude" / "settings.json"
     if quelle.exists() and not ziel.exists():
         ziel.parent.mkdir(parents=True, exist_ok=True)
         ziel.write_text(quelle.read_text(encoding="utf-8"), encoding="utf-8")
+    elif quelle.exists() and ziel.exists():
+        try:
+            quelle_daten = json.loads(quelle.read_text(encoding="utf-8"))
+            ziel_daten = json.loads(ziel.read_text(encoding="utf-8"))
+        except Exception:
+            return  # kaputtes JSON auf einer der beiden Seiten -- nicht anfassen.
+        if not isinstance(quelle_daten, dict) or not isinstance(ziel_daten, dict):
+            return
+        neue_hooks, geaendert = _hooks_zusammenfuehren(
+            quelle_daten.get("hooks", {}), ziel_daten.get("hooks", {}))
+        if geaendert:
+            ziel_daten["hooks"] = neue_hooks
+            ziel.write_text(
+                json.dumps(ziel_daten, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8")
 
 
 def main() -> None:
