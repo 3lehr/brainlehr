@@ -536,6 +536,26 @@ bereits vorhanden in `openlehr/begod/scripts/`, Bildsprache statt Zahlenvergleic
 — beide „konsistente Bilder" zu nennen wäre der Denkfehler, den der Knoten
 benennt.
 
+**Ergänzt 2026-08-15T20:30:00+0200 — der Befund, den der Betreiber als Fehler eingestuft hat.**
+`K1` **Die Verschmelzung gewichtet Rang statt Güte** (Knoten `d84b6b64`,
+Ausführung in `docs/PLAN_KANALGUETE_2026-08-15.md`). Gemessen: eine deutsche
+Anfrage findet 0 von 5 im englischsprachigen Bestand, dieselbe auf Englisch 5 von
+5 — nicht wegen des Einbettungsmodells (das trifft Rang 1 von 2151) und nicht
+wegen der Textmenge, sondern weil ein Kanal mit acht Trigramm-Zufallstreffern
+seinem besten dasselbe Ranggewicht verleiht wie einer mit 773 guten.
+**Der Betreiber dazu:** *„dann haben wir aber ein Fehler in unserem System!"* —
+die erste Reaktion, weniger Daten zu laden, war der Umweg um einen Defekt.
+**Zwei Schritte, getrennt messbar:** der Stichwortkanal trägt nur ganze Treffer
+bei (nicht Wortfragmente) · ein Kanal ohne eigene Trennschärfe trägt kein volles
+Ranggewicht.
+**Erstmals messbar seit 2026-08-15T20:08:** GermanQuAD liegt im Bestand, 13.722
+Fälle mit vorher bekanntem Label, davon 1.375 mit der Antwort nachweislich NICHT
+im Bestand. Damit zerfällt die Trefferquote in drei Zahlen — gefunden, falsch
+gemeldet, einsprachiger Normalfall. Die **Falschmeldequote hat dieses Haus noch
+nie erhoben.**
+**Bestandsstand:** 2217 → 4930 Knoten. Alle Zahlen vom Nachmittag (18 von 205,
+8,78 %) gelten für 2217 und sind nicht vergleichbar.
+
 **Linie G, fortgeschrieben 2026-08-15 — die Anwendung ist kein Betriebssystem.**
 `codesign -dv` auf das gebaute Bündel: `adhoc`, kein `TeamIdentifier`, **kein
 Entitlement-Block — die Sandbox ist nicht aktiv**. Damit sind Ausweis, Mandat
