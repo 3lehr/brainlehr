@@ -60,11 +60,37 @@ ist, genauer als jedes Pflichtenheft, weil unter Druck entstanden.
 
 ## Was das frische Fenster zuerst tun sollte
 
-**1. Erheben, was openlehr kann — in drei Stufen, streng getrennt.**
+**1. Erheben, was openlehr kann — in VIER Stufen, streng getrennt.**
 Fachlogik vorhanden · über einen Endpunkt erreichbar · von einem Bildschirm aus
-bedienbar. **Von den Routen ausgehen, nicht von einer Liste aus dem Gedächtnis.**
-Eine Fähigkeit auf Stufe 1 ohne Stufe 2 ist keine Fähigkeit, sondern eine
-Bibliothek — das hat hier schon zweimal Geld gekostet (`L-b38d85`).
+bedienbar · **nachweislich richtig**. **Von den Routen ausgehen, nicht von einer
+Liste aus dem Gedächtnis.** Eine Fähigkeit auf Stufe 1 ohne Stufe 2 ist keine
+Fähigkeit, sondern eine Bibliothek — das hat hier schon zweimal Geld gekostet
+(`L-b38d85`).
+
+**Die vierte Stufe ist der Einwand des Betreibers, und sie ist die wichtigste:**
+*„wobei wir nicht wissen, ob dort alles schon richtig funktioniert hat."* Er hat
+recht, und die Belege liegen im eigenen Bestand:
+
+- **`L-473ba2`, 2026-08-08/09:** Ein Tag Prüfarbeit in openlehr förderte **acht
+  Fehler** zutage, **sechs davon an derselben Stelle** — der Naht zwischen
+  Oberfläche und Fachlogik. Das Rechnungschreiben, der Kern der App, war aus der
+  Oberfläche heraus **tot**: Der Server verlangt zwei Felder, für die der
+  Bildschirm nie Eingaben bekam. Währenddessen waren 386 jsdom-Tests und über 300
+  pytest-Tests grün. Der erste E2E-Durchlauf fand in **einem** Lauf mehr echte
+  Fehler als beide Testbäume zusammen.
+- **2026-08-15, heute:** elf Tests in openlehr waren **drei Tage rot**, weil eine
+  bewusste Änderung am Brieftext die Testerwartungen nicht mitzog. Niemand hatte
+  sie sich zu eigen gemacht — „war schon vorher rot" ist eine Beobachtung, keine
+  Zuständigkeitsabgabe (`L-e5fd27`).
+- **Ebenfalls heute:** Der Wochenend-Verschiebungspfad der Fristenrechnung hatte
+  **null** Testtreffer — bei einer Funktion, an der Fristen hängen.
+
+**Daraus folgt für die Erhebung, mechanisch statt diszipliniert:** Zuerst den
+Testlauf fahren und die Zahl mit Nenner festhalten, **bevor** irgendeine Fähigkeit
+als „vorhanden" gilt. Grün ist dabei kein Beleg — die drei Fälle oben waren grün.
+Der Beleg ist eine E2E-Journey, die den Weg von der Eingabe bis zum Erzeugnis
+fährt. Wo es keine gibt, lautet der Stand **„nicht nachgemessen"**, nicht
+„funktioniert".
 
 **2. Je Fähigkeit die Trennlinie ziehen (ADR-014), nicht den Aufwand schätzen.**
 Gehört sie ins atelier, bleibt sie in openlehr, oder ist sie ein Bestandteil, den
