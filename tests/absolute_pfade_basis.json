@@ -22,20 +22,6 @@
   },
   {
     "tabelle": "knowledge_nodes",
-    "id": "da662b05",
-    "feld": "summary",
-    "klasse": "C",
-    "begruendung": "FREIGEGEBEN (offen). Nennt /Volumes/daten/be_old -- fremdes Repo (WohlAir/schimmel_guard_app) ausserhalb Begod2026. Sinn der Freigabe fuer diesen Verweis ist zu klaeren, nicht nur die Schreibweise."
-  },
-  {
-    "tabelle": "knowledge_nodes",
-    "id": "da662b05",
-    "feld": "content",
-    "klasse": "C",
-    "begruendung": "FREIGEGEBEN (offen). Nennt /Volumes/daten/be_old -- fremdes Repo (WohlAir/schimmel_guard_app) ausserhalb Begod2026. Sinn der Freigabe fuer diesen Verweis ist zu klaeren, nicht nur die Schreibweise."
-  },
-  {
-    "tabelle": "knowledge_nodes",
     "id": "483acb56",
     "feld": "content",
     "klasse": "C",
@@ -61,13 +47,6 @@
     "feld": "summary",
     "klasse": "B",
     "begruendung": "Agentenregister -- Ort ist bewusst absolut genannt (nicht raten, erfragen); alter /tmp-Ort besteht weiter und wird nicht mehr gelesen."
-  },
-  {
-    "tabelle": "knowledge_nodes",
-    "id": "a13cd3f4",
-    "feld": "content",
-    "klasse": "C",
-    "begruendung": "FREIGEGEBEN (offen). Nennt /Users/lehrmacbook/.codex/... -- ausserhalb Begod2026, per Auftrag Klasse-C-Praefix."
   },
   {
     "tabelle": "lessons_learned",
