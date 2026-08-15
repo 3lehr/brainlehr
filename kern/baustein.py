@@ -150,6 +150,19 @@ class Baustein:
     # kern/belegvertrag.py::herkunftsart -- die Existenzpruefung waere der
     # Schreibweg, den dieser Auftrag ausdruecklich nicht baut).
     herkunftsquelle: str | None = None
+    # Betreiber-Entscheidung 2026-08-15: ein einzelner aktueller Wert kann
+    # weder sagen, ob eine Handaenderung die BESSERE war, noch eine
+    # Ruecknahme ueberleben. NUR HERKUNFTSWECHSEL werden festgehalten, nicht
+    # jede Textaenderung -- der Baustein liegt in einem CRDT, dessen
+    # Bytebedarf je Zeichen im Dauerbetrieb von 2,8 auf 15,1 waechst
+    # (L-55b830). Ein Verlauf ohne Obergrenze waere keine Gratisleistung; ein
+    # Verlauf, der nur an Herkunftswechseln waechst, ist durch die Anzahl
+    # ueberschriebener Ableitungen/Vorschlaege begrenzt, nicht durch jeden
+    # Tastendruck. Jeder Eintrag: zeitpunkt, herkunft_vorher,
+    # herkunftsquelle_vorher, text_vorher, zurueckgenommen_am (None, solange
+    # offen). Siehe `herkunft_nach_textaenderung()` unten fuer die Logik, die
+    # ihn fuellt, und `praeferenzpaare()` fuer das daraus GERECHNETE Urteil.
+    herkunftsverlauf: list[dict] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.typ not in TYPEN:
@@ -167,6 +180,112 @@ class Baustein:
 
     def als_dict(self) -> dict:
         return asdict(self)
+
+
+def herkunft_nach_textaenderung(
+    herkunft: str,
+    herkunftsquelle: str | None,
+    text_alt: str,
+    text_neu: str,
+    verlauf: list[dict],
+    jetzt: str | None,
+) -> tuple[str, str | None, list[dict]]:
+    """Reine Funktion: aus dem bisherigen Herkunftszustand und dem neuen Text
+    wird der Zustand NACH der Aenderung berechnet. Kein Seiteneffekt, kein
+    DB-Zugriff, kein Zeitstempel-Erzeuger -- `jetzt` wird injiziert
+    (Walkthrough-Doktrin), `kern/dokument.py` schreibt das Ergebnis in seinen
+    Speicher (CRDT-Map) zurueck.
+
+    ZWEI EREIGNISSE, EIN VERLAUF:
+
+    1. WIDERSPRUCH -- der Baustein trug eine Herkunft != "eingegeben" (eine
+       Ableitung, ein angenommener Vorschlag, ein Import) und der Text
+       aendert sich. Die Handaenderung GEWINNT (unveraendert gegenueber dem
+       bisherigen Verhalten), aber jetzt haelt ein Eintrag fest, WAS
+       ueberschrieben wurde: Zeitpunkt, vorherige Herkunft, vorherige Quelle,
+       vorheriger Text.
+
+    2. RUECKNAHME -- der neue Text ist EXAKT der Text, der beim letzten noch
+       offenen Widerspruch ueberschrieben wurde. Der Mensch hat seine eigene
+       Aenderung zurueckgenommen, weil er erkennt, dass die Ableitung/der
+       Vorschlag doch recht hatte (Betreiber, woertlich). Die Herkunft
+       springt zurueck auf den vorherigen Wert -- der aktuelle Text IST
+       wieder exakt das, was damals abgeleitet/vorgeschlagen wurde, das
+       Feld beantwortet also wieder wahrheitsgemaess "woher kommt der
+       aktuelle Inhalt". Der Eintrag wird nicht ersetzt, nur um
+       `zurueckgenommen_am` ERGAENZT -- die Kette bleibt lesbar.
+
+    GRENZWERT, ENTSCHIEDEN: nur EXAKTE Textgleichheit zaehlt als Ruecknahme,
+    keine Aehnlichkeit. Ein Aehnlichkeitsmass braeuchte eine Schwelle, und
+    Schwellen sind in diesem Projekt gemessen, nicht gesetzt (CLAUDE.md) --
+    fuer Textaehnlichkeit existiert keine Messung. Ein zu weiches Mass wuerde
+    ausserdem unabhaengige Zufallstreffer als Ruecknahme fehletikettieren,
+    genau der Fehler, den die ganze Aenderung vermeiden soll.
+
+    Nur der JUENGSTE offene Eintrag wird geprueft (nicht die ganze Liste) --
+    "die letzte Aenderung entscheidet, nicht die erste".
+    """
+    verlauf = [dict(e) for e in verlauf]  # Kopie, kein Aliasing des Aufrufers
+
+    if text_neu == text_alt:
+        return herkunft, herkunftsquelle, verlauf  # kein Ereignis
+
+    if verlauf and verlauf[-1].get("zurueckgenommen_am") is None \
+            and verlauf[-1]["text_vorher"] == text_neu:
+        eintrag = verlauf[-1]
+        eintrag["zurueckgenommen_am"] = jetzt
+        return eintrag["herkunft_vorher"], eintrag["herkunftsquelle_vorher"], verlauf
+
+    if herkunft != "eingegeben":
+        verlauf.append({
+            "zeitpunkt": jetzt,
+            "herkunft_vorher": herkunft,
+            "herkunftsquelle_vorher": herkunftsquelle,
+            "text_vorher": text_alt,
+            "zurueckgenommen_am": None,
+        })
+        return "eingegeben", None, verlauf
+
+    return herkunft, herkunftsquelle, verlauf
+
+
+def praeferenzpaare(baustein: Baustein) -> list[dict]:
+    """Rechnet aus dem Verlauf, welche Herkunftswechsel ein Praeferenzpaar
+    fuers Training sind -- der Verlauf PROTOKOLLIERT nur Ereignisse, das
+    Urteil ("wessen Fassung war besser") steht nirgends gespeichert, es wird
+    HIER bei jedem Aufruf neu berechnet. Grund: ein gespeichertes Urteil
+    muesste bei jeder Ruecknahme nachtraeglich UMGESCHRIEBEN werden -- ein
+    Feld, das sich nachtraeglich als falsch herausstellen kann, ist die
+    gleiche Fehlerklasse wie der Ein-Wert-Zustand, den diese Aenderung
+    behebt. Berechnung ist immer aktuell, ein Feld waere es nur, solange
+    niemand vergisst, es zu pflegen.
+
+    JE EINTRAG EIN PAAR: `bevorzugt` ist "abgeleitet", wenn der Eintrag
+    zurueckgenommen wurde (der Mensch hat der Ableitung/dem Vorschlag am
+    Ende recht gegeben), sonst "mensch" (bislang nicht zurueckgenommen --
+    der aktuelle Stand des Bausteins ist aktuell nicht der Vorschlagstext).
+    Kein Eintrag im Verlauf -> keine Paare: ein nur einmal getippter oder
+    nur wiederholt von Hand geaenderter Baustein (ohne je eine Ableitung zu
+    tragen) erzeugt nie ein Ereignis.
+
+    WAS DIESE FUNKTION AUSDRUECKLICH NICHT TUT: die eigentliche Auswahl von
+    Trainingsmaterial ueber den ganzen Bestand. Das braeuchte einen
+    Datenbankzugriff (welche Bausteine, welche Domaene, welche Freigabe),
+    den diese Datei bewusst nicht hat (siehe Modulkopf). Diese Funktion
+    liefert nur die Kandidaten EINES Bausteins.
+    """
+    aus = []
+    for eintrag in baustein.herkunftsverlauf:
+        zurueckgenommen = eintrag.get("zurueckgenommen_am") is not None
+        aus.append({
+            "herkunft_bewertet": eintrag["herkunft_vorher"],
+            "herkunftsquelle": eintrag["herkunftsquelle_vorher"],
+            "text_abgeleitet": eintrag["text_vorher"],
+            "bevorzugt": "abgeleitet" if zurueckgenommen else "mensch",
+            "zeitpunkt_widerspruch": eintrag["zeitpunkt"],
+            "zeitpunkt_ruecknahme": eintrag.get("zurueckgenommen_am"),
+        })
+    return aus
 
 
 @dataclass
@@ -309,6 +428,18 @@ def vertragsmuster() -> dict:
     f = Baustein(kennung="ba9876543210", typ="feld", text="", feldname="rechnungsnummer")
     d = Baustein(kennung="fedcba987654", typ="absatz", text="42,00",
                 herkunft="abgeleitet", herkunftsquelle="knoten:9f14c5f2")
+    # Ein Baustein MIT Verlauf -- ein Vorschlag wurde ueberschrieben, dann
+    # zurueckgenommen. Konstruiert, damit die native Seite auch dieses Feld
+    # sieht, keine echte Historie.
+    g = Baustein(kennung="112233445566", typ="absatz", text="der richtige Satz",
+                herkunft="vorschlag_angenommen", herkunftsquelle="anmerkung:aa11bb22cc33",
+                herkunftsverlauf=[{
+                    "zeitpunkt": "2026-08-15T10:00:00+0200",
+                    "herkunft_vorher": "vorschlag_angenommen",
+                    "herkunftsquelle_vorher": "anmerkung:aa11bb22cc33",
+                    "text_vorher": "der richtige Satz",
+                    "zurueckgenommen_am": "2026-08-15T11:00:00+0200",
+                }])
     a = Anmerkung(
         kennung="ffeeddccbbaa",
         anker=Anker(baustein=b.kennung, suchtext="Erster Satz.", von=0, bis=12),
@@ -322,7 +453,7 @@ def vertragsmuster() -> dict:
         "uebergaenge": {k: list(v) for k, v in UEBERGAENGE.items()},
         "klassen_leicht": list(KLASSEN_LEICHT),
         "klassen_schwer": list(KLASSEN_SCHWER),
-        "bausteine": [b.als_dict(), f.als_dict(), d.als_dict()],
+        "bausteine": [b.als_dict(), f.als_dict(), d.als_dict(), g.als_dict()],
         "anmerkung": a.als_dict(),
     }
 
@@ -408,7 +539,7 @@ def _selftest() -> int:
     }
     assert set(m["bausteine"][0]) == {
         "kennung", "typ", "text", "feldname", "eltern", "rang", "alt",
-        "herkunft", "herkunftsquelle",
+        "herkunft", "herkunftsquelle", "herkunftsverlauf",
     }
     assert set(m["anmerkung"]["anker"]) == {"baustein", "suchtext", "von", "bis"}
 
@@ -503,6 +634,114 @@ def _selftest() -> int:
     nach_kennung_gemischt = {b.kennung: b for b in gemischt}
     assert nach_kennung_gemischt[mp.kennung].herkunft == "abgeleitet"
     assert nach_kennung_gemischt[mk.kennung].herkunft == "eingegeben"
+
+    # --- Herkunftsverlauf: der Dreischritt (Betreiber, 2026-08-15) -----------
+    # Vorschlag angenommen -> Mensch aendert von Hand -> Mensch nimmt zurueck.
+    # ROT vor dieser Aenderung: es gab kein Feld, das den Widerspruch und die
+    # Ruecknahme getrennt haelt -- ein einzelner Wert kannte nur den letzten
+    # Zustand.
+    herkunft1, quelle1, verlauf1 = herkunft_nach_textaenderung(
+        herkunft="vorschlag_angenommen", herkunftsquelle="anmerkung:aa11bb22cc33",
+        text_alt="der richtige Satz", text_neu="mein Satz", verlauf=[], jetzt="t1",
+    )
+    assert (herkunft1, quelle1) == ("eingegeben", None), "Handaenderung gewinnt, wie bisher"
+    assert verlauf1 == [{
+        "zeitpunkt": "t1", "herkunft_vorher": "vorschlag_angenommen",
+        "herkunftsquelle_vorher": "anmerkung:aa11bb22cc33",
+        "text_vorher": "der richtige Satz", "zurueckgenommen_am": None,
+    }], "der Widerspruch muss den vorherigen Zustand festhalten"
+
+    herkunft2, quelle2, verlauf2 = herkunft_nach_textaenderung(
+        herkunft=herkunft1, herkunftsquelle=quelle1,
+        text_alt="mein Satz", text_neu="der richtige Satz", verlauf=verlauf1, jetzt="t2",
+    )
+    assert (herkunft2, quelle2) == ("vorschlag_angenommen", "anmerkung:aa11bb22cc33"), \
+        "Ruecknahme muss die vorherige Herkunft wiederherstellen"
+    assert verlauf2 == [{
+        "zeitpunkt": "t1", "herkunft_vorher": "vorschlag_angenommen",
+        "herkunftsquelle_vorher": "anmerkung:aa11bb22cc33",
+        "text_vorher": "der richtige Satz", "zurueckgenommen_am": "t2",
+    }], "derselbe Eintrag wird ERGAENZT, nicht ersetzt -- die Kette bleibt lesbar"
+
+    # Ablesbar: erst Widerspruch, dann Nachgeben -- beides steht im selben Eintrag.
+    paare = praeferenzpaare(Baustein(kennung="q" * 12, typ="absatz",
+                                     text="der richtige Satz",
+                                     herkunft=herkunft2, herkunftsquelle=quelle2,
+                                     herkunftsverlauf=verlauf2))
+    assert paare == [{
+        "herkunft_bewertet": "vorschlag_angenommen", "herkunftsquelle": "anmerkung:aa11bb22cc33",
+        "text_abgeleitet": "der richtige Satz", "bevorzugt": "abgeleitet",
+        "zeitpunkt_widerspruch": "t1", "zeitpunkt_ruecknahme": "t2",
+    }], "eine zurueckgenommene Handaenderung ist ein Paar zugunsten der Ableitung"
+
+    # Negativfall 1: nur einmal getippt, nie geaendert -- kein Ereignis.
+    frei2 = Baustein(kennung="r" * 12, typ="absatz", text="Nie angefasst.")
+    assert praeferenzpaare(frei2) == []
+
+    # Negativfall 2: zwei Handaenderungen hintereinander OHNE Vorschlag
+    # dazwischen -- beide Male ist herkunft schon "eingegeben", kein Eintrag.
+    h3, q3, v3 = herkunft_nach_textaenderung(
+        herkunft="eingegeben", herkunftsquelle=None,
+        text_alt="A", text_neu="B", verlauf=[], jetzt="t1",
+    )
+    assert (h3, q3, v3) == ("eingegeben", None, [])
+    h4, q4, v4 = herkunft_nach_textaenderung(
+        herkunft=h3, herkunftsquelle=q3, text_alt="B", text_neu="C", verlauf=v3, jetzt="t2",
+    )
+    assert (h4, q4, v4) == ("eingegeben", None, [])
+    assert praeferenzpaare(Baustein(kennung="s" * 12, typ="absatz", text="C",
+                                    herkunft=h4, herkunftsquelle=q4,
+                                    herkunftsverlauf=v4)) == []
+
+    # Grenzwert: Ruecknahme auf einen Text, der dem urspruenglichen nur
+    # AEHNLICH ist (nicht identisch) -- zaehlt NICHT als Ruecknahme (s. o.
+    # Begruendung in herkunft_nach_textaenderung), bleibt "eingegeben",
+    # der offene Eintrag bleibt offen fuer die naechste Pruefung.
+    h5, q5, v5 = herkunft_nach_textaenderung(
+        herkunft="eingegeben", herkunftsquelle=None,
+        text_alt="mein Satz", text_neu="der richtige Satz, fast",
+        verlauf=verlauf1, jetzt="t3",
+    )
+    assert (h5, q5) == ("eingegeben", None), "aehnlich ist keine Ruecknahme"
+    assert v5[-1]["zurueckgenommen_am"] is None, "der Eintrag bleibt offen"
+
+    # Grenzwert: leerer Text als Ziel einer Ruecknahme -- funktioniert wie
+    # jeder andere Text auch, kein Sonderfall.
+    h6, q6, v6 = herkunft_nach_textaenderung(
+        herkunft="abgeleitet", herkunftsquelle="knoten:x",
+        text_alt="", text_neu="von Hand", verlauf=[], jetzt="t1",
+    )
+    assert v6 == [{
+        "zeitpunkt": "t1", "herkunft_vorher": "abgeleitet",
+        "herkunftsquelle_vorher": "knoten:x", "text_vorher": "",
+        "zurueckgenommen_am": None,
+    }]
+    h7, q7, v7 = herkunft_nach_textaenderung(
+        herkunft=h6, herkunftsquelle=q6, text_alt="von Hand", text_neu="",
+        verlauf=v6, jetzt="t2",
+    )
+    assert (h7, q7) == ("abgeleitet", "knoten:x"), "Ruecknahme auf leeren Text funktioniert"
+    assert v7[-1]["zurueckgenommen_am"] == "t2"
+
+    # Grenzwert: Verlauf mit genau einem Eintrag, der noch offen ist -- ein
+    # Text, der WEDER dem alten noch dem urspruenglich abgeleiteten gleicht,
+    # loest keine Ruecknahme aus und haengt keinen zweiten Eintrag an, weil
+    # die Herkunft bereits "eingegeben" ist.
+    h8, q8, v8 = herkunft_nach_textaenderung(
+        herkunft="eingegeben", herkunftsquelle=None,
+        text_alt="mein Satz", text_neu="noch ein anderer Satz",
+        verlauf=verlauf1, jetzt="t4",
+    )
+    assert len(v8) == 1, "keine neue Ableitung wurde ueberschrieben, kein neuer Eintrag"
+    assert v8[0]["zurueckgenommen_am"] is None
+
+    # Mutationsprobe (von Hand, hier dokumentiert): wird die Bedingung
+    # `verlauf[-1]["text_vorher"] == text_neu` durch `text_neu in
+    # verlauf[-1]["text_vorher"]` ersetzt (Teilstring statt Gleichheit),
+    # muss Grenzwert 5 (aehnlich != identisch) rot werden. Wird die
+    # Ruecknahme-Ergaenzung durch ein `verlauf.append(...)` ersetzt (neuer
+    # Eintrag statt Ergaenzung des bestehenden), muss die Assertion
+    # `verlauf2 == [...]` (ein einzelner Eintrag) rot werden.
 
     print("baustein: Selbsttest bestanden")
     return 0

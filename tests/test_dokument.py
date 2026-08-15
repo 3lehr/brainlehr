@@ -31,6 +31,7 @@ from dokument import (  # noqa: E402
     leeres_dokument,
     mitwirkende,
     neue_kennung,
+    praeferenzpaare,
     sprache,
     sprache_setzen,
     verwaiste,
@@ -338,3 +339,76 @@ def test_teilnehmerkennung_ueber_der_schranke_ist_ausgeschlossen():
     assert leeres_dokument(2**32 - 1).client_id == 2**32 - 1
     with pytest.raises(KennungsFehler):
         leeres_dokument(2**32)
+
+
+# ------------------------------------------------------------ Herkunftsverlauf
+# Rot-vor-Gruen fuer den Betreiberauftrag 2026-08-15: ein einzelner
+# Herkunftswert konnte weder eine BESSERE Handeingabe von einer schlechteren
+# unterscheiden noch eine Ruecknahme ueberleben. ROT vor dieser Aenderung:
+# `baustein_text_setzen` loeschte die Quellenkennung still, `praeferenzpaare`
+# gab es nicht.
+
+
+def test_dreischritt_vorschlag_widerspruch_ruecknahme_auf_dokumentebene():
+    doc = leeres_dokument()
+    b = baustein_anhaengen(doc, "absatz", "der richtige Satz",
+                           herkunft="vorschlag_angenommen",
+                           herkunftsquelle="anmerkung:aa11bb22cc33")
+
+    baustein_text_setzen(doc, b, "mein Satz", jetzt="t1")
+    nach_widerspruch = [x for x in bausteine(doc) if x.kennung == b][0]
+    assert nach_widerspruch.herkunft == "eingegeben"
+    assert len(nach_widerspruch.herkunftsverlauf) == 1
+    assert nach_widerspruch.herkunftsverlauf[0]["zurueckgenommen_am"] is None
+
+    baustein_text_setzen(doc, b, "der richtige Satz", jetzt="t2")
+    nach_ruecknahme = [x for x in bausteine(doc) if x.kennung == b][0]
+    assert nach_ruecknahme.herkunft == "vorschlag_angenommen", \
+        "die Ruecknahme muss die vorherige Herkunft wiederherstellen"
+    assert nach_ruecknahme.herkunftsquelle == "anmerkung:aa11bb22cc33"
+    assert len(nach_ruecknahme.herkunftsverlauf) == 1, "ergaenzt, kein zweiter Eintrag"
+
+    assert praeferenzpaare(doc) == [{
+        "baustein": b,
+        "herkunft_bewertet": "vorschlag_angenommen", "herkunftsquelle": "anmerkung:aa11bb22cc33",
+        "text_abgeleitet": "der richtige Satz", "bevorzugt": "abgeleitet",
+        "zeitpunkt_widerspruch": "t1", "zeitpunkt_ruecknahme": "t2",
+    }]
+
+
+def test_praeferenzpaar_offener_widerspruch_ohne_ruecknahme_zaehlt_zugunsten_mensch():
+    doc = leeres_dokument()
+    b = baustein_anhaengen(doc, "absatz", "abgeleiteter Text",
+                           herkunft="abgeleitet", herkunftsquelle="knoten:x")
+    baustein_text_setzen(doc, b, "menschlicher Text", jetzt="t1")
+    paare = praeferenzpaare(doc)
+    assert len(paare) == 1
+    assert paare[0]["bevorzugt"] == "mensch"
+    assert paare[0]["zeitpunkt_ruecknahme"] is None
+
+
+def test_negativfall_nie_geaendert_erzeugt_kein_praeferenzpaar():
+    doc = leeres_dokument()
+    baustein_anhaengen(doc, "absatz", "Nie angefasst.")
+    assert praeferenzpaare(doc) == []
+
+
+def test_negativfall_zwei_handaenderungen_ohne_vorschlag_erzeugt_kein_paar():
+    doc = leeres_dokument()
+    b = baustein_anhaengen(doc, "absatz", "A")
+    baustein_text_setzen(doc, b, "B", jetzt="t1")
+    baustein_text_setzen(doc, b, "C", jetzt="t2")
+    assert praeferenzpaare(doc) == []
+
+
+def test_zweiter_teilnehmer_sieht_denselben_herkunftsverlauf():
+    doc = leeres_dokument()
+    b = baustein_anhaengen(doc, "absatz", "der richtige Satz",
+                           herkunft="vorschlag_angenommen",
+                           herkunftsquelle="anmerkung:aa")
+    baustein_text_setzen(doc, b, "mein Satz", jetzt="t1")
+    baustein_text_setzen(doc, b, "der richtige Satz", jetzt="t2")
+
+    zweiter = leeres_dokument(neue_teilnehmerkennung())
+    zweiter.apply_update(doc.get_update())
+    assert praeferenzpaare(zweiter) == praeferenzpaare(doc)

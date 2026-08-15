@@ -45,7 +45,9 @@ from baustein import (  # noqa: E402
     Baustein,
     VertragsFehler,
     baumreihenfolge,
+    herkunft_nach_textaenderung,
     neue_kennung,
+    praeferenzpaare as _praeferenzpaare_baustein,
 )
 
 BAUSTEINE = "bausteine"
@@ -194,7 +196,7 @@ def baustein_verschieben(doc, kennung: str, eltern: str | None) -> str:
     return eltern
 
 
-def baustein_text_setzen(doc, kennung: str, text: str) -> str:
+def baustein_text_setzen(doc, kennung: str, text: str, jetzt: str | None = None) -> str:
     """Setzt den Text eines Bausteins und gibt ihn zurueck.
 
     Der Anker einer Anmerkung zeigt danach unveraendert auf denselben
@@ -206,29 +208,56 @@ def baustein_text_setzen(doc, kennung: str, text: str) -> str:
     Textende hinauszeigen -- das faengt `bereichsfehler()`, nicht diese
     Funktion.
 
-    ADR-021 FRAGE 2: Diese Funktion ist der einzige heute gebaute Weg, mit dem
-    ein Mensch einen Bausteintext im Dokumentfenster ueberschreibt -- sie IST
-    die "Handaenderung" aus dem Anlass. Trug der Baustein bisher eine Herkunft
-    ungleich "eingegeben" (also "abgeleitet"/"vorschlag_angenommen"/
-    "importiert"), GEWINNT die Handaenderung: die Herkunft wird auf
-    "eingegeben" zurueckgesetzt, die Quellenkennung geloescht. Begruendung,
-    nicht nur Entscheidung: von den drei Moeglichkeiten (gewinnt+loest,
-    abgelehnt, angenommen+Konflikt) passt nur diese zur bestehenden Haltung
-    dieser Datei -- `eltern`/`Anker.baustein` werden ebenfalls nie gegen den
-    Bestand geprueft oder blockiert, ein Ablehnen waere hier der einzige Ort,
-    der das Muster bricht. Eine Konfliktmarkierung wuerde einen Verlauf am
-    Baustein voraussetzen, den es (anders als bei `Anmerkung.verlauf`) nicht
-    gibt -- ihn nur fuer diesen Fall einzuziehen, waere die Bauform einer
-    kuenftigen Entscheidung, nicht dieser."""
+    ADR-021 FRAGE 2, NEU ENTSCHIEDEN (Betreiber 2026-08-15): Diese Funktion
+    ist der einzige heute gebaute Weg, mit dem ein Mensch einen Bausteintext
+    im Dokumentfenster ueberschreibt -- sie IST die "Handaenderung" aus dem
+    Anlass. Trug der Baustein bisher eine Herkunft ungleich "eingegeben"
+    (also "abgeleitet"/"vorschlag_angenommen"/"importiert"), GEWINNT die
+    Handaenderung weiterhin: die Herkunft wird auf "eingegeben"
+    zurueckgesetzt, die Quellenkennung geloescht -- unveraendert gegenueber
+    vorher. NEU: das wird nicht mehr STILL geloescht, sondern in
+    `Baustein.herkunftsverlauf` festgehalten (Zeitpunkt, vorherige Herkunft,
+    vorherige Quelle, vorheriger Text), und eine spaetere Ruecknahme -- der
+    Text kehrt exakt zum ueberschriebenen Stand zurueck -- stellt die
+    vorherige Herkunft wieder her, statt die Quelle nach dem verlorenen
+    Widerspruch fuer immer als "eingegeben" stehen zu lassen. Die ganze
+    Logik liegt in `baustein.herkunft_nach_textaenderung()` (pure Funktion,
+    kein CRDT-Wissen); diese Funktion schreibt nur deren Ergebnis in die
+    Map. `jetzt` ist injizierbar (Walkthrough-Doktrin), Vorgabe
+    `zeitmarke.jetzt()`, dieselbe Quelle wie bei `veroeffentlichen`."""
     i, eintrag = _finde_baustein(doc, kennung)
     if eintrag is None:
         raise VertragsFehler(f"kein Baustein mit Kennung {kennung!r}")
+    if jetzt is None:
+        import zeitmarke
+        jetzt = zeitmarke.jetzt()
     eintrag_map = _liste(doc, BAUSTEINE)[i]
+    herkunft_neu, quelle_neu, verlauf_neu = herkunft_nach_textaenderung(
+        herkunft=eintrag.get("herkunft", "eingegeben"),
+        herkunftsquelle=eintrag.get("herkunftsquelle"),
+        text_alt=eintrag.get("text", ""),
+        text_neu=text,
+        verlauf=eintrag.get("herkunftsverlauf") or [],
+        jetzt=jetzt,
+    )
     eintrag_map["text"] = text
-    if eintrag.get("herkunft", "eingegeben") != "eingegeben":
-        eintrag_map["herkunft"] = "eingegeben"
-        eintrag_map["herkunftsquelle"] = None
+    eintrag_map["herkunft"] = herkunft_neu
+    eintrag_map["herkunftsquelle"] = quelle_neu
+    eintrag_map["herkunftsverlauf"] = verlauf_neu
     return text
+
+
+def praeferenzpaare(doc) -> list[dict]:
+    """Alle Praeferenzpaar-Kandidaten ueber JEDEN Baustein des Dokuments --
+    gerechnet aus `Baustein.herkunftsverlauf`, siehe
+    `baustein.praeferenzpaare()` fuer die Begruendung, warum das GERECHNET
+    statt gespeichert wird. Jeder Eintrag traegt zusaetzlich `baustein`, die
+    Kennung, sonst waere ein Treffer nicht einem Baustein zuzuordnen."""
+    aus = []
+    for b in bausteine(doc):
+        for paar in _praeferenzpaare_baustein(b):
+            aus.append({"baustein": b.kennung, **paar})
+    return aus
 
 
 def anmerkung_setzen(doc, anker: Anker, text: str, klasse: str, von_wem: str) -> str:
@@ -730,6 +759,13 @@ def _selftest() -> int:
     umgestellt = [b for b in bausteine(herkdoc) if b.kennung == abgeleitet][0]
     assert umgestellt.herkunft == "eingegeben", "eine Handaenderung muss die Ableitung loesen"
     assert umgestellt.herkunftsquelle is None, "die geloeste Quelle darf nicht stehen bleiben"
+    # NEU (Betreiber 2026-08-15): der Widerspruch wird festgehalten, nicht
+    # still ueberschrieben.
+    assert len(umgestellt.herkunftsverlauf) == 1
+    assert umgestellt.herkunftsverlauf[0]["herkunft_vorher"] == "abgeleitet"
+    assert umgestellt.herkunftsverlauf[0]["herkunftsquelle_vorher"] == "knoten:9f14c5f2"
+    assert umgestellt.herkunftsverlauf[0]["text_vorher"] == "42,00"
+    assert umgestellt.herkunftsverlauf[0]["zurueckgenommen_am"] is None
 
     # Gegenprobe: ein bereits "eingegeben"er Baustein bleibt beim Ueberschreiben
     # unberuehrt -- kein wiederholtes Zuruecksetzen von etwas, das nicht
@@ -745,6 +781,58 @@ def _selftest() -> int:
     baum = {b.kennung: b for b in bausteine_baum(herkdoc)}
     assert baum[mutter].herkunft == "abgeleitet"
     assert baum[kind_eingegeben].herkunft == "eingegeben"
+
+    # --- Herkunftsverlauf: der Dreischritt auf Dokumentebene -----------------
+    # Vorschlag angenommen -> Mensch aendert von Hand -> Mensch nimmt zurueck.
+    # ROT vor dieser Aenderung: `baustein_text_setzen` loeschte die
+    # Quellenkennung STILL, `praeferenzpaare(doc)` gab es nicht -- Widerspruch
+    # und Nachgeben waren aus dem Dokument nicht ablesbar.
+    dreidoc = leeres_dokument()
+    vorschlag = baustein_anhaengen(dreidoc, "absatz", "der richtige Satz",
+                                   herkunft="vorschlag_angenommen",
+                                   herkunftsquelle="anmerkung:aa11bb22cc33")
+    baustein_text_setzen(dreidoc, vorschlag, "mein Satz", jetzt="2026-08-15T10:00:00+0200")
+    nach_widerspruch = [b for b in bausteine(dreidoc) if b.kennung == vorschlag][0]
+    assert nach_widerspruch.herkunft == "eingegeben"
+    assert len(nach_widerspruch.herkunftsverlauf) == 1
+    assert nach_widerspruch.herkunftsverlauf[0]["zurueckgenommen_am"] is None
+
+    baustein_text_setzen(dreidoc, vorschlag, "der richtige Satz", jetzt="2026-08-15T11:00:00+0200")
+    nach_ruecknahme = [b for b in bausteine(dreidoc) if b.kennung == vorschlag][0]
+    assert nach_ruecknahme.herkunft == "vorschlag_angenommen", \
+        "Ruecknahme muss die vorherige Herkunft wiederherstellen"
+    assert nach_ruecknahme.herkunftsquelle == "anmerkung:aa11bb22cc33"
+    assert len(nach_ruecknahme.herkunftsverlauf) == 1, "ERGAENZT, kein zweiter Eintrag"
+    assert nach_ruecknahme.herkunftsverlauf[0]["zurueckgenommen_am"] == "2026-08-15T11:00:00+0200"
+
+    # Ablesbar aus dem Dokument: erst Widerspruch, dann Nachgeben.
+    paare_dreidoc = praeferenzpaare(dreidoc)
+    assert paare_dreidoc == [{
+        "baustein": vorschlag,
+        "herkunft_bewertet": "vorschlag_angenommen", "herkunftsquelle": "anmerkung:aa11bb22cc33",
+        "text_abgeleitet": "der richtige Satz", "bevorzugt": "abgeleitet",
+        "zeitpunkt_widerspruch": "2026-08-15T10:00:00+0200",
+        "zeitpunkt_ruecknahme": "2026-08-15T11:00:00+0200",
+    }]
+
+    # Negativfall 1: nur einmal getippt, nie geaendert -- kein Paar.
+    einmaldoc = leeres_dokument()
+    baustein_anhaengen(einmaldoc, "absatz", "Nie angefasst.")
+    assert praeferenzpaare(einmaldoc) == []
+
+    # Negativfall 2: zwei Handaenderungen hintereinander ohne Vorschlag
+    # dazwischen -- kein Paar, keine Herkunft wechselt je von "eingegeben" weg.
+    zweidoc = leeres_dokument()
+    nur_hand = baustein_anhaengen(zweidoc, "absatz", "A")
+    baustein_text_setzen(zweidoc, nur_hand, "B", jetzt="t1")
+    baustein_text_setzen(zweidoc, nur_hand, "C", jetzt="t2")
+    assert praeferenzpaare(zweidoc) == []
+
+    # Zwei Teilnehmer sehen denselben Verlauf, in derselben Uebertragung --
+    # dieselbe Garantie wie bei Zustand und Anker weiter oben.
+    zweiter_dreidoc = leeres_dokument(neue_teilnehmerkennung())
+    zweiter_dreidoc.apply_update(dreidoc.get_update())
+    assert praeferenzpaare(zweiter_dreidoc) == paare_dreidoc
 
     print("dokument: Selbsttest bestanden")
     return 0
