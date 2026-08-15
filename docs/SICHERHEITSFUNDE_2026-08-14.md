@@ -75,3 +75,25 @@ Ein Sandbox-Entitlement wäre die andere naheliegende Grenze — es würde aber 
 Start des Python-Dienstes durch die App und die freie Suche über
 `BRAINLEHR_REPO_ROOT` sofort brechen. Eine Grenze mit Preis, keine
 Gratisleistung. *Nicht gemessen: ob es den Ladepfad des CRDT-Rahmenwerks bricht.*
+
+## Stand 2026-08-15T11:05:00+0200 — vier von fünf bearbeitet
+
+Und zur oben genannten Kostenfrage die Auflösung: **beide Befürchtungen sind
+überholt.** Der Dienststart durch die App ist seit `648432e` weg (die App ist
+sein Klient), und der Ladepfad des CRDT-Rahmenwerks ist gemessen — er trägt in
+der Sandbox, sobald ein `.app`-Bündel vorliegt (Knoten `fef0cb9d`).
+
+| Fund | Stand | Beleg |
+|---|---|---|
+| **O1** roher `innerHTML` | **behoben** | `ee4645a` — `escHtml()`, dazu dieselbe Fehlerklasse ein zweites Mal im Abrufweg-Tooltip gefunden und mitbehoben. 15 von 16 Tests rot gegen den Stand davor |
+| **O2** kein Absender-Schutz | **behoben** | `91f096a` — Herkunftsprüfung auf 8799; auf 4599 Beschränkung auf Loopback statt `hasPrefix("ws")`. Vorher gemessen, dass der Fund scharf ist: `bauen.sh` baut ohne `-c release`, `#if DEBUG` ist also aktiv |
+| **O3** Herkunft statt Selbstkonsistenz | **sichtbar gemacht, nicht verhindert** | `447b7b5` — eine Quelle, die einen unabhängigen Bestandsknoten behauptet, wird gegen die Datenbank geprüft. **Mitgeliefert bleibt angenommen, weil es von erfunden automatisch nicht unterscheidbar ist** — der ursprüngliche Angriffsfall steht als Test mit genau diesem Vermerk. `setze_in_kraft()` wurde bewusst NICHT zugesperrt: alle echten Pakete sind mitgeliefert, ein Zwang hätte sie unbrauchbar gemacht |
+| **O4** Bestand gehört dem Benutzer | **halb** | `brainlehr.db` von `0644` auf `0600`, Ausweisverzeichnis auf `0700`. **Wirkt gegen andere lokale Benutzer, nicht gegen den eigenen** — der eigene Systembenutzer bleibt der Hebel und braucht das Passwort des Betreibers (G5) |
+| **O5** Sandbox nicht aktiv | **scharf** | `app-sandbox` + `network.client`, am echten Bündel über LaunchServices belegt, nicht nur signiert. `bauen.sh` weiter 209 grün |
+
+**Was O5 gekostet hat, und es ist kein Nebensatz:** Der Ausweis-Helfer startet
+ein Skript außerhalb des Bündels und ist unter der Sandbox blockiert. Die
+naheliegende Datei-Ausnahme wurde **nicht** gesetzt — sie hätte die Sandbox
+genau dort aufgehoben, wo sie schützt. Der Weg ist stattdessen derselbe wie bei
+den Quellen: über den eigenständigen Dienst, dessen Herkunftsprüfung seit O2
+steht.
