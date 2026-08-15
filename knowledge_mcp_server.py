@@ -123,6 +123,9 @@ import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
 import normrang  # ADR-034: norm_rang faellt bei knowledge_add() deterministisch aus
                  # source, wenn der Aufrufer keinen eigenen mitgibt. Kein Zirkel.
+import normkraft  # 2026-08-15: geltungszeitpunkt() fuer _geltung_status -- kanonischer
+                  # Datums-/Zeitstempel-Vergleich, kein Zirkel (importiert selbst nichts
+                  # von hier).
 import geltungsbereich  # exakter Projektfilter fuer Lehren (sql_projects_exact), statt LIKE
 import schema_nachzug  # 2026-08-10: fehlende Spalten generisch aus schema.sql
 import herkunft_normentscheider  # Auftrag 2026-08-09: norm_entschieden_von traegt
@@ -2224,17 +2227,30 @@ def _log_zero_hit(query: str, cwd: str | None = None, session: str | None = None
 
 def _geltung_status(norm_rang, gilt_ab: str | None, gilt_bis: str | None, stichtag: str) -> str | None:
     """Geltung einer Norm zum Stichtag, nach dem Vorbild von normkraft.py::in_kraft
-    (gilt_ab <= stichtag AND (gilt_bis IS NULL OR ...)) -- reiner ISO-Stringvergleich,
-    keine datetime-Parsung, wie dort. Kanonische Bedeutung von gilt_bis
-    (inklusiv, letzter Geltungstag) ist dort an EINER Stelle festgehalten,
-    nicht hier wiederholt: normkraft.py::in_kraft.
+    (gilt_ab <= stichtag AND (gilt_bis IS NULL OR ...)). Kanonische Bedeutung
+    von gilt_bis (inklusiv, letzter Geltungstag) ist dort an EINER Stelle
+    festgehalten, nicht hier wiederholt: normkraft.py::in_kraft.
+
+    Seit 2026-08-15 ueber normkraft.geltungszeitpunkt() statt rohem
+    ISO-Stringvergleich (L-ec167a): 26 von 85 gilt_ab-Werten im Bestand sind
+    reines Datum ohne Offset, 59 volle Zeitstempel -- ein Textvergleich
+    scheitert genau am inklusiven Rand von gilt_bis, sobald der Stichtag eine
+    Uhrzeit traegt (siehe normkraft.py::in_kraft-Docstring, derselbe Fehler
+    dort vor diesem Auftrag). Dieselbe Normalisierung wie in_kraft(), damit
+    beide Auswerter fuer denselben Bestand dasselbe Ergebnis liefern.
+
     norm_rang IS NULL (Fakt) oder gilt_ab nicht gesetzt (Norm ohne Geltungsangabe)
     -> None, unveraendert wie vor diesem Auftrag."""
     if norm_rang is None or gilt_ab is None:
         return None
-    if stichtag < gilt_ab:
+    stichtag_zp = normkraft.geltungszeitpunkt(stichtag, ende_des_tages=False)
+    ab_zp = normkraft.geltungszeitpunkt(gilt_ab, ende_des_tages=False)
+    if ab_zp is None or stichtag_zp is None:
+        return None
+    if stichtag_zp < ab_zp:
         return "noch_nicht_in_kraft"
-    if gilt_bis is not None and stichtag > gilt_bis:
+    bis_zp = normkraft.geltungszeitpunkt(gilt_bis, ende_des_tages=True)
+    if bis_zp is not None and stichtag_zp > bis_zp:
         return "abgelaufen"
     return "in_kraft"
 

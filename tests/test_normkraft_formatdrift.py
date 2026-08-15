@@ -19,12 +19,14 @@ Seit diesem Auftrag normalisiert geltungszeitpunkt() beide Seiten auf einen
 echten, tz-bewussten Zeitpunkt (reines Datum -> Tagesanfang bzw. -ende UTC)
 und in_kraft() vergleicht damit statt per SQL-Text.
 
-GRENZE DIESES AUFTRAGS: knowledge_mcp_server.py::_geltung_status (der Pfad,
-den knowledge_search() beim Abruf tatsaechlich nimmt) tut denselben
-Stringvergleich und traegt denselben Fehler -- liegt aber ausserhalb des
-Schreibbereichs dieses Auftrags (nur kern/ und tests/, s. Auftragsgrenzen).
-test_geltung_status_bleibt_am_formatdrift_falsch haelt das als xfail fest,
-statt es zu verschweigen.
+NACHTRAG 2026-08-15: knowledge_mcp_server.py::_geltung_status (der Pfad, den
+knowledge_search() beim Abruf tatsaechlich nimmt) trug bis dahin denselben
+Stringvergleich und denselben Fehler -- war zunaechst als xfail
+(test_geltung_status_bleibt_am_formatdrift_falsch) festgehalten, weil
+ausserhalb des Schreibbereichs jenes Auftrags. Jetzt auf denselben
+kanonischen Vergleich umgestellt (test_geltung_status_folgt_geltungszeitpunkt).
+Wirkt erst nach Neustart eines MCP-Serverprozesses -- stdio kennt keinen
+zentralen Neustart, laufende Sitzungen tragen den alten Codestand weiter.
 """
 from __future__ import annotations
 
@@ -40,8 +42,6 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
 import sqlite3
 import sys
 from pathlib import Path
-
-import pytest
 
 SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
@@ -148,18 +148,22 @@ def test_negativfall_ohne_gilt_bis_unveraendert():
             db_path_tmp.unlink()
 
 
-@pytest.mark.xfail(
-    reason=(
-        "knowledge_mcp_server.py::_geltung_status (der tatsaechliche Abrufpfad "
-        "von knowledge_search) vergleicht weiterhin roh als String und traegt "
-        "denselben Formatdrift-Fehler wie in_kraft() vor diesem Auftrag. Fix "
-        "liegt ausserhalb des Schreibbereichs (nur kern/ und tests/ erlaubt) -- "
-        "offener Folgeauftrag, nicht verschwiegen."
-    ),
-    strict=True,
-)
-def test_geltung_status_bleibt_am_formatdrift_falsch():
+def test_geltung_status_folgt_geltungszeitpunkt():
+    """War xfail bis 2026-08-15: knowledge_mcp_server.py::_geltung_status (der
+    tatsaechliche Abrufpfad von knowledge_search) verglich roh als String und
+    trug denselben Formatdrift-Fehler wie in_kraft() vor dessen Korrektur.
+    Seit diesem Auftrag nutzt _geltung_status denselben kanonischen Vergleich
+    (normkraft.geltungszeitpunkt) -- Fix wirkt erst nach Neustart des
+    MCP-Servers (stdio, kein zentraler Neustart), nicht in bereits laufenden
+    Sitzungen."""
     # identischer Fall wie test_in_kraft_gegen_echten_bestand_reines_datum_gilt_bis,
     # Grenzwert 'letzter Geltungstag, kurz nach Mitternacht'.
     status = kms._geltung_status(6, "2026-08-05", "2026-08-06", "2026-08-06T00:00:01Z")
     assert status == "in_kraft"
+    # Gegenprobe: unbefristete Norm bleibt in_kraft (gilt_bis None), auch mit
+    # Uhrzeit im Stichtag.
+    assert kms._geltung_status(6, "2026-08-05", None, "2099-01-01T00:00:01Z") == "in_kraft"
+    # Gegenprobe: voller Zeitstempel auf beiden Seiten, ein Tag nach gilt_bis -> abgelaufen.
+    assert kms._geltung_status(
+        6, "2026-08-05T00:00:00+01:00", "2026-08-06T23:59:59+01:00", "2026-08-08T00:00:00Z"
+    ) == "abgelaufen"
