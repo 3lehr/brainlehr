@@ -111,6 +111,9 @@ struct QuellenBereich: View {
         var anfrage = URLRequest(url: url)
         anfrage.httpMethod = "POST"
         anfrage.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        // Fund O2 (2026-08-15): _herkunft_ok() im Dienst verlangt bei jedem
+        // POST den eigenen Origin -- ohne ihn kam bisher ein stilles 403.
+        anfrage.setValue("http://127.0.0.1:\(DienstAufsicht.port)", forHTTPHeaderField: "Origin")
         anfrage.httpBody = try? JSONSerialization.data(withJSONObject: ["quelle": nummer])
 
         guard let (daten, _) = try? await URLSession.shared.data(for: anfrage),

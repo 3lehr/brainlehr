@@ -908,15 +908,29 @@ _SCHREIBRECHT = "verwaltung:schreiben"
 # das Geheimnis im JSON-Body, nicht im Authorization-Kopf. Bekommt die App
 # eine eigene Kopf-Uebertragung, ziehen auch diese zwei Pfade auf die
 # einheitliche Pruefung um -- bis dahin bleibt es bei der tieferliegenden.
-_OHNE_KOPFPRUEFUNG = frozenset({"/api/ausweis-anlegen", "/api/ausweis-einladen"})
-
-# ABWEICHUNG, GEMESSEN, NICHT REPARIERT (app/ ist tabu fuer diesen Auftrag):
-# app/Sources/Atelier/DomaeneImportDienst.swift und QuellenBereich.swift
-# setzen bei ihren POSTs an /api/domaene-import bzw. /api/fundstelle GAR
-# KEINEN Origin-Kopf (grep 'Origin' in beiden Dateien: 0 Treffer). Diese
-# beiden App-Wege scheitern also schon HEUTE, vor dieser Aenderung, an
-# _herkunft_ok() mit 403 -- die Ausweispruefung hier bricht dort nichts
-# zusaetzlich Funktionierendes.
+#
+# NACHTRAG 2026-08-15 (Regression aus Commit 03cce992, Fund im selben
+# Auftrag wie die Origin-Nachruestung in DomaeneImportDienst.swift/
+# QuellenBereich.swift): /api/fundstelle und /api/domaene-import wurden von
+# "7 von 9 POST-Pfaden" ohne eigene Pruefung mitgezogen, obwohl der Commit-
+# Titel ausdruecklich nur "schreibende Dienst-Endpunkte" meint. Gemessen,
+# nicht vermutet: _fundstelle_stand() ruft fundstelle.loese() -- eine reine
+# Textstellen-Aufloesung, kein INSERT/UPDATE/write_text in kern/fundstelle.py
+# (grep bestaetigt). _domaene_import() ruft domaene.pruefe(), NICHT
+# domaene.speichere() -- pruefe() oeffnet die Datenbank nur ueber
+# speicher.lesen() (read-only, siehe kern/domaene.py::_pruefe_bestandsquellen)
+# und schreibt nichts; speichere() waere der schreibende Zwilling und bleibt
+# unerreicht von diesem Endpunkt. Beide Pfade haben also nichts
+# Schuetzenswertes zu schreiben, und das Recht 'verwaltung:schreiben' passt
+# der Sache nach nicht auf eine Leseoperation. Deshalb hier aufgenommen --
+# nicht weil die App sonst nicht laeuft, sondern weil die Pruefung sonst vor
+# der eigenen Zweckangabe scheitert. Kommt in domaene.py je ein Aufruf von
+# speichere() an diesen Endpunkt, gehoert /api/domaene-import sofort wieder
+# heraus.
+_OHNE_KOPFPRUEFUNG = frozenset({
+    "/api/ausweis-anlegen", "/api/ausweis-einladen",
+    "/api/fundstelle", "/api/domaene-import",
+})
 
 
 def _ausweis_kopf(headers) -> str | None:
