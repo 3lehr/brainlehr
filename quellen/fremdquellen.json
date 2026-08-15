@@ -144,9 +144,12 @@
       "ampel": "gruen",
       "geprueft_am": "2026-08-15",
       "geprueft_wie": "Lizenzfeld 'license:cc-by-4.0' im HF-API-Metadatenblock (per curl gelesen) UND im Dataset-Card-Metadatenblock (per WebFetch, siehe runs/wissenskorpus_kandidaten_2026-08-15.json). Umfang 13.722 Fragen laut HF-API-description bestaetigt (11.518 train + 2.204 test).",
-      "importiert": false,
+      "importiert": true,
+      "eintraege": 2713,
+      "held_out": 301,
       "rolle": "PRUEFKORPUS (Betreiberkorrektur 2026-08-15) -- gattung=nachschlagewerk, nie Ziel eines Prueffalls, siehe pflege/wissenskorpus_einlesweg.py",
-      "bezugsweg": "Datensatz-Rohdaten via S3-Bucket (germanquad.s3.amazonaws.com/GermanQuAD.zip aus der HF-Loading-Script-Referenz) am 2026-08-15 mit HTTP 404 GESCHEITERT -- gemessener Befund, nicht vermutet. HF-Datasets-Viewer verweigert direkten Parquet-Zugriff ('runs arbitrary Python code'). Bezugsweg fuer den echten Import bleibt offen.",
+      "bezugsweg": "Datensatz-Rohdaten via S3-Bucket (germanquad.s3.amazonaws.com/GermanQuAD.zip aus der HF-Loading-Script-Referenz) am 2026-08-15 mit HTTP 404 GESCHEITERT. HF-Datasets-Viewer verweigert direkten Parquet-Zugriff ('runs arbitrary Python code'). FUNKTIONIERENDER Bezugsweg gefunden (2026-08-15, spaeter am selben Tag): Hugging Face erzeugt fuer jedes Dataset automatisch eine Parquet-Konvertierung auf dem Git-Branch 'refs/convert/parquet', unabhaengig vom (kaputten) Loading-Script -- abrufbar ohne 'datasets'-Bibliothek und ohne Anmeldung ueber https://huggingface.co/datasets/deepset/germanquad/resolve/refs%2Fconvert%2Fparquet/plain_text/{test,train}/0000.parquet. 13.722 Fragen (2.204+11.518) bestaetigt, 3.014 eindeutige Kontext-Passagen (474+2.540, ueberschneidungsfrei zwischen den Splits). 2.713 Passagen importiert, 301 (10 %, seed 20260815) bewusst NICHT eingelesen als Gegenprobe fuer eine Falschmeldequote -- siehe pflege/wissenskorpus_einlesweg.py::importiere_lauf() und runs/wissenskorpus_import_germanquad_voll.json.",
+      "importskript": "pflege/wissenskorpus_einlesweg.py --importiere",
       "auflage": "Namensnennung Pflicht (CC BY 4.0) -- je Knoten in source, siehe pflege/wissenskorpus_einlesweg.py::attribution()"
     },
     {

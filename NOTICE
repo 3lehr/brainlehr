@@ -18,7 +18,7 @@ auszug-offen/bestand.jsonl
     17 U.S.C. §105 gemeinfrei -- NICHT an der Primaerquelle geprueft, siehe
     quellen/fremdquellen.json.
 
-GermanQuAD (Pruefkorpus-Kandidat, noch nicht importiert)
+GermanQuAD (Pruefkorpus, importiert 2026-08-15)
     Timo Moeller, Julian Risch, Malte Pietsch (deepset), 2021.
     "GermanQuAD and GermanDPR: Improving Non-English Question Answering
     and Passage Retrieval" (arXiv:2104.12741).
@@ -26,7 +26,16 @@ GermanQuAD (Pruefkorpus-Kandidat, noch nicht importiert)
     Lizenz: Creative Commons Attribution 4.0 International (CC BY 4.0) --
     Namensnennung Pflicht. Wird je Knoten in der source-Spalte gefuehrt
     (pflege/wissenskorpus_einlesweg.py::attribution()), nicht nur hier
-    gesammelt. Geprueft am 2026-08-15 am HF-API-Metadatenblock.
+    gesammelt. Geprueft am 2026-08-15 am HF-API-Metadatenblock UND am
+    Lizenzfeld der Parquet-Konvertierungsbranche (refs/convert/parquet),
+    ueber die der tatsaechliche Bezug lief (S3-Rohdatenpfad aus dem
+    HF-Loading-Script antwortete 404, der Datasets-Server verweigert das
+    Dataset wegen mitgelieferten Python-Codes -- die von Hugging Face
+    automatisch erzeugte Parquet-Branche umgeht beides und traegt
+    dieselbe Datasets-Card-Lizenz). 2.713 von 3.014 eindeutigen
+    Antwort-Passagen importiert (gattung=nachschlagewerk, norm_rang NULL);
+    301 Passagen bewusst NICHT eingelesen als Gegenprobe fuer die
+    Falschmeldequote, siehe runs/wissenskorpus_import_germanquad_voll.json.
 
 GermanDPR (Pruefkorpus-Kandidat, noch nicht importiert)
     Dieselben Autoren/Lizenz wie GermanQuAD, siehe oben.

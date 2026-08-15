@@ -182,6 +182,18 @@ def fachbestand_zu_knoten(quelle_kennung: str, herkunfts_id: str, titel: str,
     return k
 
 
+def entferne_quelle(conn: sqlite3.Connection, quelle_kennung: str) -> int:
+    """Rueckweg: loescht alle ueber diese Quelle importierten Knoten anhand
+    ihres Pfadpraefixes (/quelle_kennung/...). knowledge_embeddings haengt
+    per FK(node_path) ON DELETE CASCADE an knowledge_nodes.path (schema.sql)
+    -- die Loeschung hier nimmt die Einbettungen automatisch mit, solange
+    PRAGMA foreign_keys=ON gesetzt ist (kern/speicher.schreiben() tut das).
+    Gibt die Zahl geloeschter Knoten zurueck."""
+    cur = conn.execute(
+        "DELETE FROM knowledge_nodes WHERE path LIKE ?", (f"/{quelle_kennung}/%",))
+    return cur.rowcount
+
+
 def importiere_knoten(conn: sqlite3.Connection, knoten: list[dict]) -> int:
     """Schreibt eine Liste von passage_zu_knoten()-Datensaetzen. INSERT OR
     IGNORE auf UNIQUE(path) -- ein zweiter Lauf ueber dieselbe Stichprobe
@@ -275,11 +287,11 @@ def _apply_schema(conn: sqlite3.Connection) -> None:
 
 
 def _selftest() -> None:
-    import tempfile
-
-    tmpdir = Path(tempfile.mkdtemp(prefix="wissenskorpus_einlesweg_selftest_"))
-    db_path = tmpdir / "wegwerf.db"
-    conn = sqlite3.connect(str(db_path))
+    # ':memory:' statt einer Tempdatei -- reine Testkulisse, keine Tuer zum
+    # Bestand, deshalb von der Naht-Ratsche (tests/test_naht_ratsche.py)
+    # ausdruecklich ausgenommen, ohne dass diese Datei in tests/naht_basis.json
+    # eingetragen werden muesste.
+    conn = sqlite3.connect(":memory:")
     try:
         _apply_schema(conn)
 
@@ -397,12 +409,74 @@ def _selftest() -> None:
 
     finally:
         conn.close()
-        db_path.unlink(missing_ok=True)
-        for p in tmpdir.glob("*"):
-            p.unlink(missing_ok=True)
-        tmpdir.rmdir()
 
-    print("selftest ok (Wegwerf-DB, kein Zugriff auf brainlehr.db)", file=sys.stderr)
+    print("selftest ok (Wegwerf-DB im Speicher, kein Zugriff auf brainlehr.db)", file=sys.stderr)
+
+
+# --- echter Lauf gegen eine uebergebene DB (nie ein Vorgabepfad) -----------
+
+def _lade_paare(pfad: Path) -> dict:
+    """paare-Datei: {"paare": [...wie importiere_qa_stichprobe erwartet...],
+    "negativfaelle": [frage, ...]} -- erzeugt von der Einmal-Konvertierung
+    der Rohdaten (parquet -> JSON, siehe Bericht 2026-08-15 Abschnitt
+    Bezugsweg). Reines JSON, Standardbibliothek reicht zum Lesen."""
+    with open(pfad, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def importiere_lauf(db_pfad: Path, paare_pfad: Path, quelle_kennung: str,
+                     stichprobe: int | None, runs_dir: Path) -> dict:
+    """Fuehrt den echten Import gegen db_pfad aus (ueber kern/speicher.schreiben
+    -- Pfad kommt vom Aufrufer, nie fest verdrahtet). stichprobe begrenzt
+    Anzahl Paare fuer einen Probelauf. Schreibt einen Ergebnisbericht nach
+    runs_dir und gibt ihn zusaetzlich zurueck."""
+    import time
+    from kern import speicher
+
+    daten = _lade_paare(paare_pfad)
+    paare = daten["paare"][:stichprobe] if stichprobe else daten["paare"]
+    negativfragen = daten["negativfaelle"]
+    if stichprobe:
+        # Negativfaelle proportional mitziehen, sonst ist ein Probelauf
+        # unausgewogen (nur Positive, keine Gegenprobe).
+        anteil = max(1, stichprobe // 9)
+        negativfragen = negativfragen[:anteil]
+
+    t0 = time.monotonic()
+    with speicher.lesen(db_pfad) as conn:
+        vorher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
+        vorher_emb = conn.execute("SELECT COUNT(*) FROM knowledge_embeddings").fetchone()[0]
+
+    with speicher.schreiben(db_pfad) as conn:
+        ergebnis = importiere_qa_stichprobe(conn, quelle_kennung, paare)
+
+    dauer_s = time.monotonic() - t0
+
+    with speicher.lesen(db_pfad) as conn:
+        nachher = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
+        nachher_emb = conn.execute("SELECT COUNT(*) FROM knowledge_embeddings").fetchone()[0]
+
+    faelle = ergebnis["faelle"] + [negativfall(f) for f in negativfragen]
+    bericht = {
+        "quelle": quelle_kennung,
+        "db": str(db_pfad),
+        "stichprobe": stichprobe,
+        "paare_eingelesen": len(paare),
+        "negativfaelle_eingelesen": len(negativfragen),
+        "knoten_vorher": vorher,
+        "knoten_nachher": nachher,
+        "knoten_importiert": ergebnis["knoten_importiert"],
+        "embeddings_vorher": vorher_emb,
+        "embeddings_nachher_vor_build_embeddings": nachher_emb,
+        "dauer_s": round(dauer_s, 3),
+        "pruefkorpus_faelle": faelle,
+    }
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    ziel = runs_dir / f"wissenskorpus_import_{quelle_kennung}_{'probe' if stichprobe else 'voll'}.json"
+    with open(ziel, "w", encoding="utf-8") as fh:
+        json.dump(bericht, fh, ensure_ascii=False, indent=2)
+    bericht["bericht_datei"] = str(ziel)
+    return bericht
 
 
 def main() -> None:
@@ -410,9 +484,38 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                   formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--importiere", action="store_true",
+                     help="echter Lauf gegen --db, liest --paare")
+    ap.add_argument("--entferne", metavar="QUELLE",
+                     help="Rueckweg: loescht alle Knoten von /QUELLE/* aus --db")
+    ap.add_argument("--db", type=Path, help="Zieldatenbank -- NIE ein Vorgabewert")
+    ap.add_argument("--paare", type=Path,
+                     default=WURZEL / "rohdaten/wissenskorpus/germanquad_paare.json")
+    ap.add_argument("--quelle", default="germanquad")
+    ap.add_argument("--stichprobe", type=int, default=None,
+                     help="nur die ersten N Paare (Probelauf)")
+    ap.add_argument("--runs-dir", type=Path, default=WURZEL / "runs")
     args = ap.parse_args()
+
     if args.selftest:
         _selftest()
+        return
+    if args.entferne:
+        if not args.db:
+            ap.error("--entferne braucht --db")
+        from kern import speicher
+        with speicher.schreiben(args.db) as conn:
+            n = entferne_quelle(conn, args.entferne)
+        print(f"entfernt: {n} Knoten mit Praefix /{args.entferne}/ aus {args.db}")
+        return
+    if args.importiere:
+        if not args.db:
+            ap.error("--importiere braucht --db")
+        bericht = importiere_lauf(args.db, args.paare, args.quelle,
+                                   args.stichprobe, args.runs_dir)
+        print(json.dumps({k: v for k, v in bericht.items() if k != "pruefkorpus_faelle"},
+                          ensure_ascii=False, indent=2))
+        print(f"Pruefkorpus-Faelle ({len(bericht['pruefkorpus_faelle'])}) in {bericht['bericht_datei']}")
         return
     ap.print_help()
 
