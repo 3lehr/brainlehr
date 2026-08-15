@@ -77,6 +77,51 @@ def test_gegen_kanonische_datei_wenn_vorhanden():
     assert len(warnungen) > 0  # der Guide traegt garantiert Bloecke ohne Entsprechung
 
 
+def test_seitengeometrie_wird_uebersetzt():
+    """I2-Nachtrag: pdf_masszahlen.seitenformat/margins/content_breite sind
+    echte LaTeX-Entsprechungen (\\geometry{}) und wurden bislang NICHT
+    uebersetzt, obwohl der Top-Level-Schluessel 'pdf_masszahlen' schon als
+    UEBERSETZT galt -- ein Teilschluessel kann trotzdem klanglos durchfallen.
+    Rot vor diesem Auftrag: seitenformat/margins tauchten weder im LaTeX noch
+    in den Warnungen auf (stumm verschluckt statt gemeldet oder gesetzt)."""
+    guide = {
+        "meta": {},
+        "farben": {},
+        "pdf_masszahlen": {
+            "seitenformat": {"breite_pt": 595, "hoehe_pt": 842},
+            "margins": {"links_pt": 62, "rechts_pt": 55, "oben_pt": 68},
+            "content_breite": {"pt": 478},
+        },
+    }
+    latex, warnungen = dtl.generate_latex(guide)
+    assert "\\usepackage{geometry}" in latex
+    assert "\\geometry{" in latex
+    assert "paperwidth=595pt" in latex
+    assert "paperheight=842pt" in latex
+    assert "left=62pt" in latex
+    assert "right=55pt" in latex
+    assert "top=68pt" in latex
+    assert not any("seitenformat" in w for w in warnungen)
+    assert not any("margins" in w and "UEBERSPRUNGEN" in w for w in warnungen)
+
+
+def test_seitengeometrie_fehlende_masszahl_wird_gemeldet():
+    """Grenzwert: margins ohne 'oben_pt' (unerwarteter/fehlender Typ) darf
+    nicht zu einem kaputten \\geometry{top=Nonept} fuehren -- muss gemeldet
+    und uebersprungen werden."""
+    guide = {
+        "meta": {},
+        "farben": {},
+        "pdf_masszahlen": {
+            "seitenformat": {"breite_pt": 595, "hoehe_pt": 842},
+            "margins": {"links_pt": 62},  # rechts_pt/oben_pt fehlen
+        },
+    }
+    latex, warnungen = dtl.generate_latex(guide)
+    assert "None" not in latex
+    assert any("margins" in w for w in warnungen)
+
+
 def test_erzeugtes_latex_ist_wirklich_setzbar(tmp_path):
     """Rot-vor-gruen fuer die Satzprobe: eine erfundene, garantiert
     fehlerfreie Guide-Struktur wird durch tectonic gejagt. Bricht der Satz,

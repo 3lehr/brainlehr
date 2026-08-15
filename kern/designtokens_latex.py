@@ -170,6 +170,42 @@ def generate_latex(guide: dict) -> tuple[str, list[str]]:
         zeilen.append(f"\\definecolor{{{name}}}{{HTML}}{{{hex_val.lstrip('#').upper()}}}")
     zeilen.append("")
 
+    # -- Seitengeometrie (pt, siehe Modul-Docstring Punkt 2) -----------
+    # Nachtrag I2 (runs/messung_i2_designvorrat_*): seitenformat/margins
+    # sind echte LaTeX-Entsprechungen (geometry-Paket), fielen aber trotz
+    # UEBERSETZTE_SCHLUESSEL={"pdf_masszahlen", ...} bislang klanglos durch,
+    # weil nur zwei von acht Teilschluesseln des Blocks gelesen wurden.
+    masszahlen = guide.get("pdf_masszahlen", {})
+    seitenformat = masszahlen.get("seitenformat", {})
+    margins = masszahlen.get("margins", {})
+    breite = seitenformat.get("breite_pt")
+    hoehe = seitenformat.get("hoehe_pt")
+    links = margins.get("links_pt")
+    rechts = margins.get("rechts_pt")
+    oben = margins.get("oben_pt")
+    geo_werte = {"breite_pt": breite, "hoehe_pt": hoehe, "links_pt": links,
+                 "rechts_pt": rechts, "oben_pt": oben}
+    fehlend = [k for k, v in geo_werte.items() if v is None]
+    if seitenformat or margins:
+        if fehlend:
+            warnungen.append(
+                f"UEBERSPRUNGEN: Seitengeometrie (seitenformat/margins) "
+                f"unvollstaendig -- fehlende Werte: {fehlend}. Kein "
+                f"\\geometry{{}} erzeugt, um keine falsche Seite zu setzen."
+            )
+        else:
+            zeilen += [
+                "% -- Seitengeometrie (pt, Original-Druckmass aus der Quelle) --",
+                "\\usepackage{geometry}",
+                f"\\geometry{{paperwidth={breite}pt,paperheight={hoehe}pt,"
+                f"left={links}pt,right={rechts}pt,top={oben}pt}}",
+                "",
+            ]
+    content_breite = masszahlen.get("content_breite", {}).get("pt")
+    if content_breite is not None:
+        zeilen.append(f"\\def\\akaContentBreite{{{content_breite}pt}}")
+        zeilen.append("")
+
     # -- Laengen: Border-Radius (pt, siehe Modul-Docstring Punkt 2) ----
     radius_sys = guide.get("pdf_masszahlen", {}).get("border_radius_system", {})
     if radius_sys:
