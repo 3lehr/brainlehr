@@ -190,6 +190,9 @@ gegen die eigene Hypothese im Agentenauftrag) — `haken/auftragshypothese_waech
 und Tests existieren, `.claude/settings.json` traegt im `PreToolUse`-Block aber
 nur einen Matcher fuer `Bash`, keinen fuer das Agent-Werkzeug. Der Waechter
 feuert in keiner echten Sitzung. Bleibt **teilweise**.
+> **Widerlegt, siehe Fortschreibung 2026-08-15T14:05 unten:** Diese Aussage prüfte nur die
+> repo-eigene `.claude/settings.json`. In `~/.claude/settings.json` steht der Matcher `Agent`
+> bereits seit 2026-08-14T09:30 — `97` gilt als **erledigt** (`d786be7a`), nicht als wirkungslos.
 
 **Schritt-2-Funde (erledigt, ohne dass Melder oder Plantext das bisher
 auswiesen):** `42`, `68`, `71` (Linie D — im Plantext bislang nur als offene
@@ -220,27 +223,64 @@ Abarbeitung. Diese Fortschreibung baut nichts, sie ordnet neun seit 13:30 Uhr en
 Befunde ein. Beleg je Zeile am Repo nachgesehen, nicht aus dem Auftrag übernommen — Ergebnis
 in `runs/planfortschreibung_2026-08-15T1350+0200.json`.
 
-**Zahl mit Nenner, unverändert gegenüber 13:30 (keine neue Zeile, nur Umsortierung):** 65
-geführte Kennungen — 35 erledigt, 10 teilweise (davon 3 jetzt als „gebaut, aber wirkungslos"
+**Zahl mit Nenner, gegenüber 13:30 um einen Fall korrigiert (siehe Nachtrag unten):** 65
+geführte Kennungen — **36** erledigt, **9** teilweise (davon 2 als „gebaut, aber wirkungslos"
 gekennzeichnet, siehe unten), 13 offen, 7 nicht nachgemessen.
+
+> **Nachtrag 2026-08-15T14:05:00+0200 — die Ausgangsmessung hatte einen belegten blinden
+> Fleck, hier nicht stillschweigend korrigiert.** `97` galt unten ursprünglich als „gebaut,
+> wirkungslos", weil `.claude/settings.json` (die **repo-eigene**) keinen `PreToolUse`-Matcher
+> für das Agent-Werkzeug trägt. Das ist richtig gemessen — aber unvollständig: Es gibt **zwei**
+> Einstellungsdateien, und der Eintrag steht in `~/.claude/settings.json` (Matcher `Agent`,
+> Zeile 278), seit einer Sicherung vom 2026-08-14T09:30 (Diff gegen `bak-2026-08-14T0010`
+> bestätigt: dort fehlt er noch). Jetzt am Verhalten belegt, nicht nur an der Datei: Commit
+> `d786be7a`, ein neuer Test führt den **exakten Kommandostring** aus `settings.json` aus (nicht
+> nur das Modul direkt), rot-vor-grün am historischen Artefakt (die alte Sicherung ohne Eintrag
+> hätte den Haken nie ausgelöst), Laufzeit 23,3 ms je Aufruf, 0 Fehlalarme bei 83 echten
+> Aufträgen der heutigen Sitzung. **`97` gilt damit als erledigt**, nicht als wirkungslos —
+> Korrektur unten in der Tabelle und in Linie A/Wellen-Übersicht (dort war `97` noch als offen
+> geführt) nachvollzogen.
+>
+> **Der eigentliche Befund ist die Messmethode, nicht der Einzelfall.** `runs/planabgleich_
+> 2026-08-15T133000+0200.json` — die Grundlage des gesamten Ausgangsstands dieser Datei — hat nur
+> die repo-eigene `.claude/settings.json` gelesen. Dieselbe Verwechslung hat am selben Tag schon
+> einmal einen roten Test erzeugt, nur umgekehrt (`b854d9c5`: eine Ratsche las nur
+> `~/.claude/settings.json`, während die stash-Wache bewusst nur in der repo-eigenen steht). Jede
+> **weitere** Verdrahtungsaussage in dieser Datei, die sich nur auf eine der beiden Dateien
+> stützt, ist damit **verdächtig, nicht widerlegt** — das ist eine Prüfaufgabe, keine Korrektur,
+> und steht deshalb als eigene Zeile unten, nicht als stiller Fix an jeder Fundstelle.
 
 ### Die neue Kategorie: gebaut, aber wirkungslos
 
 Das ist die Fehlerklasse, die schon den ganzen Plan vom 13.08. trägt (zwölf Fälle, siehe oben)
-— und sie trat seit 13:30 Uhr ein drittes Mal in dieser Fortschreibung selbst auf. Sie bekommt
-deshalb einen eigenen Platz statt eine Fußnote unter „teilweise" zu bleiben:
+— und sie trat seit 13:30 Uhr in dieser Fortschreibung selbst noch zweimal auf (ein dritter,
+vermuteter Fall — `97` — hat sich laut Nachtrag oben als Messfehler herausgestellt, nicht als
+Befund). Die verbleibenden zwei bekommen einen eigenen Platz statt eine Fußnote unter
+„teilweise" zu bleiben:
 
 | Kennung | Gebaut | Wirkungslos, weil |
 |---|---|---|
 | `73` | Vorwärts- und Rückwärtsmechanismus (`46d96bc3`, `kern/kanten_herkunft_rueckwirkend.py`), isoliert grün | am echten Bestand (2214 Knoten) **0** Kanten `abgeleitet_von` statt der geforderten ≥125; Spalte steht weiter in `schema.sql:151` |
 | `79` | `speicher.normiere_modell()`/`normiere_akteur()` (`88aaf738`) | im Schreibpfad `knowledge_mcp_server.py` **0 Aufrufe** — jeder neue Knoten trägt weiter beliebige Modellschreibweisen |
-| `97` | Peer-Review-Wächter + Tests (`028bd979`, 0/72 Fehlalarme) | `.claude/settings.json` `PreToolUse` hat nur einen Matcher für `Bash`, keinen für das Agent-Werkzeug — feuert in keiner echten Sitzung |
+| ~~`97`~~ | ~~Peer-Review-Wächter + Tests~~ | **entfällt, siehe Nachtrag oben — erledigt, nicht wirkungslos** (`d786be7a`) |
 
-Alle drei bleiben **teilweise**, nicht offen — der Code existiert und ist geprüft, nur die
-Wirkung fehlt. Die Unterscheidung ist nicht kosmetisch: „offen" heißt „noch zu bauen", diese
-drei sind fertig gebaut und brauchen nur den fehlenden Anschluss (Rückwärtslauf am echten
-Bestand fahren, Aufrufstelle ergänzen, `PreToolUse`-Matcher erweitern) — der billigere
-nächste Schritt als ein Neubau.
+Beide verbleibenden bleiben **teilweise**, nicht offen — der Code existiert und ist geprüft, nur
+die Wirkung fehlt. Die Unterscheidung ist nicht kosmetisch: „offen" heißt „noch zu bauen", diese
+zwei sind fertig gebaut und brauchen nur den fehlenden Anschluss (Rückwärtslauf am echten
+Bestand fahren, Aufrufstelle ergänzen) — der billigere nächste Schritt als ein Neubau.
+
+### Neue Messaufgabe aus dem Nachtrag, kein Bau
+
+`97` galt gemessen fälschlich als wirkungslos, weil nur eine von zwei Einstellungsdateien
+gelesen wurde. **Jede Aussage in diesem Plan, die Verdrahtung behauptet oder verneint, ist gegen
+BEIDE Dateien (`~/.claude/settings.json` und die repo-eigene `.claude/settings.json`) erneut zu
+prüfen** — namentlich `98`, `92`, `96` und die Wellen-Tabelle unten, die alle von derselben
+Ausgangsmessung abhängen. Das ist eine Messaufgabe, kein Bau, und wird hier nicht miterledigt.
+
+**Offene Frage, kein Beschluss:** Der Wächter aus `97` hat bei 83 echten Aufträgen **null** Mal
+gemeldet — und traf laut eigenem Testbefund einen Auftrag mit „Verdacht auf X" ohne das Wort
+„liegt" nicht. Ist eine Regel ohne einen einzigen Treffer über 83 Fälle gut kalibriert oder zu
+eng gefasst? Ungeklärt, nicht Gegenstand dieser Fortschreibung.
 
 ### Die neun Wissenszeilen, einzeln geprüft
 
