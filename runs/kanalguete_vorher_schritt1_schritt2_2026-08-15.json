@@ -1,0 +1,51 @@
+{
+  "erzeugt_am": "2026-08-15T20:43:26+0200",
+  "knoten_bestand": 4931,
+  "modell": "bge-m3@ctx2048",
+  "n_ja": 40,
+  "n_nein": 40,
+  "n_einsprachig": 35,
+  "max_results": 5,
+  "seed": 20260815,
+  "stufen": {
+    "vorher": {
+      "trefferquote": 0.975,
+      "trefferquote_zaehler_nenner": "39/40",
+      "falschmeldequote": 1.0,
+      "falschmeldequote_zaehler_nenner": "40/40",
+      "einsprachig_trefferquote": 0.11428571428571428,
+      "einsprachig_zaehler_nenner": "4/35",
+      "leitfall_deutsch_trifft": true,
+      "leitfall_sinnlos_bleibt_leer_oder_verworfen": true,
+      "dauer_s_gesamt": 24.3,
+      "dauer_s_je_anfrage": 0.211,
+      "anfragen_gemessen": 115
+    },
+    "schritt1": {
+      "trefferquote": 0.975,
+      "trefferquote_zaehler_nenner": "39/40",
+      "falschmeldequote": 1.0,
+      "falschmeldequote_zaehler_nenner": "40/40",
+      "einsprachig_trefferquote": 0.11428571428571428,
+      "einsprachig_zaehler_nenner": "4/35",
+      "leitfall_deutsch_trifft": true,
+      "leitfall_sinnlos_bleibt_leer_oder_verworfen": true,
+      "dauer_s_gesamt": 71.22,
+      "dauer_s_je_anfrage": 0.619,
+      "anfragen_gemessen": 115
+    },
+    "schritt2": {
+      "trefferquote": 0.925,
+      "trefferquote_zaehler_nenner": "37/40",
+      "falschmeldequote": 1.0,
+      "falschmeldequote_zaehler_nenner": "40/40",
+      "einsprachig_trefferquote": 0.05714285714285714,
+      "einsprachig_zaehler_nenner": "2/35",
+      "leitfall_deutsch_trifft": false,
+      "leitfall_sinnlos_bleibt_leer_oder_verworfen": true,
+      "dauer_s_gesamt": 71.96,
+      "dauer_s_je_anfrage": 0.626,
+      "anfragen_gemessen": 115
+    }
+  }
+}

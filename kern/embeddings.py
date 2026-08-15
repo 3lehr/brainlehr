@@ -240,23 +240,103 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
     return dot / (norm_a * norm_b)
 
 
+def channel_discrimination(scores) -> float:
+    """Schritt 2 (Auftrag 2026-08-15, Fortsetzung Knoten d84b6b64): misst,
+    ob EIN Kanal seinen besten Treffer von seinem mittleren unterscheidet --
+    0.0 heisst 'kein Unterschied' (identische Punktwerte, der Kanal hat
+    nichts sortiert), 1.0 heisst 'voller Abstand' (bester Treffer liegt am
+    oberen Rand der im Kanal beobachteten Spannweite). Wirkt NUR innerhalb
+    eines Kanals -- die Rohscores zweier Kanaele (bm25 vs. Kosinus) bleiben
+    unvergleichbar, dafuer existiert RRF ueberhaupt erst.
+
+    ANDERS als der am 2026-08-12 GEPRUEFTE UND VERWORFENE Ansatz (siehe
+    fuse_semantic_led-Docstring): dort war es ein harter SCHWELLWERT, unter
+    dem ein Kanal GANZ STUMM blieb -- das traf die treffsichere
+    Einwort-Anfrage ('reachability', 1 Treffer) genauso wie den
+    Trigramm-Zufall. Hier gibt es keinen Schwellwert und keine volle
+    Stummschaltung: bei weniger als zwei Punktwerten (ein einzelner
+    Treffer -- exakt der 'reachability'-Fall) ist NICHTS zu vergleichen,
+    also 1.0 -- der Kanal wird nicht bestraft, nur weil er wenig, aber
+    praezise liefert."""
+    vals = list(scores)
+    if len(vals) < 2:
+        return 1.0
+    top = max(vals)
+    lo = min(vals)
+    spread = top - lo
+    if spread <= 1e-12:
+        return 0.0
+    vals_sorted = sorted(vals)
+    n = len(vals_sorted)
+    median = (vals_sorted[n // 2] if n % 2
+              else (vals_sorted[n // 2 - 1] + vals_sorted[n // 2]) / 2)
+    return max(0.0, min(1.0, (top - median) / spread))
+
+
+_WORT_RE = re.compile(r"\w+", re.UNICODE)
+
+
+def filter_whole_word_hits(query: str, ordered_ids: list[Any],
+                            id_to_text: dict[Any, str]) -> list[Any]:
+    """Schritt 1 (Auftrag 2026-08-15, Fortsetzung Knoten d84b6b64): der
+    Stichwortkanal ist trigram-tokenisiert (schema.sql, tokenize='trigram')
+    -- ein Treffer kann allein aus einem gemeinsamen DREI-Zeichen-Fragment
+    entstehen (belegter Fall: 'ver' aus 'Startverzoegerung' trifft
+    'Verdichtung'), ohne dass ein Wort der Anfrage GANZ im Text steht.
+    Behaelt nur IDs, bei denen mindestens ein Anfragewort (>=3 Zeichen --
+    kuerzere erzeugen im Trigramm-Index ohnehin kein Fragment, siehe
+    _stichwortkanal_blind in knowledge_mcp_server.py) als GANZES Wort
+    (Wortgrenze beidseitig) im Text vorkommt.
+
+    id_to_text ohne Eintrag fuer eine ID (Text nicht geladen): die ID
+    bleibt drin -- ein fehlender Text ist ein Werkzeugmangel, kein Beleg
+    fuer ein Fragment, und blindes Verwerfen waere teurer als ein zu
+    grosszuegiges Behalten. Ergebnisreihenfolge bleibt erhalten (Filter,
+    kein Sortieren)."""
+    words = [w for w in _WORT_RE.findall(query) if len(w) >= 3]
+    if not words:
+        return list(ordered_ids)
+    patterns = [re.compile(r"(?<!\w)" + re.escape(w) + r"(?!\w)", re.IGNORECASE)
+                for w in words]
+    kept = []
+    for doc_id in ordered_ids:
+        text = id_to_text.get(doc_id)
+        if text is None or any(p.search(text) for p in patterns):
+            kept.append(doc_id)
+    return kept
+
+
 def rrf_fuse(
     fts_ordered_ids: list[Any],
     embedding_ordered_ids: list[Any],
     *,
     embedding_weight: float = 1.0,
     k: int = 60,
+    fts_scores: dict[Any, float] | None = None,
+    embedding_scores: dict[Any, float] | None = None,
 ) -> list[Any]:
     """Reciprocal-Rank-Fusion: kombiniert zwei bereits sortierte ID-Listen zu
     einer, ohne die (unterschiedlich skalierten) Rohscores normalisieren zu
     muessen. embedding_weight=0 reproduziert exakt die Stichwort-Reihenfolge
-    (Rollback)."""
+    (Rollback).
+
+    fts_scores/embedding_scores sind OPTIONAL (Schritt 2, Auftrag
+    2026-08-15): {doc_id: Rohscore} je Kanal, NUR fuer die
+    channel_discrimination()-Gewichtung dieses einen Kanals verwendet --
+    nie kanaluebergreifend verglichen. Ohne Angabe (Vorgabe: None) ist die
+    Wirkung 1.0, also BYTE-IDENTISCH zur bisherigen Formel -- jeder
+    bestehende Aufrufer (u.a. knowledge_mcp_server.py,
+    haken/knowledge_recall_hook.py), der keine Scores uebergibt, bleibt
+    unveraendert."""
+    fts_disc = channel_discrimination(fts_scores.values()) if fts_scores else 1.0
     scores: dict[Any, float] = {}
     for position, doc_id in enumerate(fts_ordered_ids):
-        scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (k + position + 1)
+        scores[doc_id] = scores.get(doc_id, 0.0) + fts_disc / (k + position + 1)
     if embedding_weight > 0.0:
+        emb_disc = channel_discrimination(embedding_scores.values()) if embedding_scores else 1.0
+        eff_weight = embedding_weight * emb_disc
         for position, doc_id in enumerate(embedding_ordered_ids):
-            scores[doc_id] = scores.get(doc_id, 0.0) + embedding_weight / (k + position + 1)
+            scores[doc_id] = scores.get(doc_id, 0.0) + eff_weight / (k + position + 1)
     return sorted(scores.keys(), key=lambda doc_id: scores[doc_id], reverse=True)
 
 
@@ -321,8 +401,10 @@ def fuse_semantic_led(
 
 
 __all__ = [
+    "channel_discrimination",
     "cosine_similarity",
     "embed_text",
+    "filter_whole_word_hits",
     "fuse_semantic_led",
     "hybrid_retrieval_weight",
     "keyword_floor_size",
