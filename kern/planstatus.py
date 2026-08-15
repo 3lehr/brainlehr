@@ -51,17 +51,36 @@ Frage 3 des Auftrags ("wer setzt ihn") hat also zwei Antworten: die
 Heuristik SCHLAEGT VOR (nur bis --schreiben), der Mensch UEBERSCHREIBT dort,
 wo die Heuristik falsch liegt.
 
-REICHWEITE, gemessen statt angenommen: von den 39 Knoten mit `source LIKE
-'%PLAN_%'` wurden nur 12 tatsaechlich von planentscheidung.py angelegt (die
-uebrigen 27 stammen aus anderen Erzeugungswegen -- hub/, setfunk/,
-buckeberg/, Simulationslaeufe -- ohne die `*Kennung: ...*`-Zeile, die dieses
-Skript braucht, um einen Abschnitt einem Knoten zuzuordnen). Nur diese 12
-sind ueber die Batch-Erkennung erreichbar; der Rest braucht den manuellen Weg
-mit einer selbst ermittelten node_path, oder bleibt ohne Status.
+REICHWEITE, NACHTRAG 2026-08-15 (Betreiber: "erzaehl mir nichts von
+Einschraenkungen sondern loese diese auf"): Erste Fassung dieses Moduls
+erreichte nur die 12 von 39 `source LIKE '%PLAN_%'`-Knoten, die
+planentscheidung.py selbst angelegt hatte -- der Batch-Weg brauchte die
+`*Kennung: ...*`-Zeile in der Plandatei, um von dort zum Knoten zu finden.
+Unnoetige Voraussetzung: **jeder Knoten hat schon eine eigene id und einen
+path** -- der Status haengt am Knoten, nicht am Plantext, und die
+Kennungszeile existiert nur, damit `planbindung.py` die GEGENRICHTUNG
+(Datei -> Knoten) pruefen kann. `verarbeiten_knoten()` unten dreht die
+Richtung um: SELECT direkt auf `knowledge_nodes` (`source LIKE '%PLAN_%'`,
+ohne planentscheidung.py-Herkunft, ohne Astknoten), Status/Beleg aus
+Titel+Summary+Content des KNOTENS SELBST erkannt (dieselben Muster wie
+oben -- die Abschnittsprosa ist bei diesen 27 identisch mit dem
+Knoteninhalt, es gibt keine zweite Kopie in einer Datei). Woran man erkennt,
+WELCHER Abschnitt ein Knoten ist, wenn keine Kennungszeile existiert: der
+freie `source`-Text nennt fast immer die Plandatei und haeufig einen
+Abschnitts-/Schritt-/Paragraph-/Zeilenverweis (`_quelle_aus_source()`,
+gegen alle 27 gemessen: 13 mit Feinverweis, Rest faellt ehrlich auf die
+eigene 8-stellige id zurueck -- keine erfundene Praezision). Gemessen am
+2026-08-15: von den 39 Knoten werden so 37 vom Batch-Weg erreicht (12 ueber
+Abschnitte + 25 ueber Knoten direkt), 2 bleiben aussen vor -- `/plaene` und
+`/plaene/plan-destille-2026-08-09`, reine Astknoten ohne eigenen Volltext
+(`content=''` bzw. woertlich "ein eigener Volltext liegt nicht vor"), also
+strukturell ohne jede Entscheidungsprosa, an der ein Status haengen koennte.
 
 Aufruf:
-    python3 planstatus.py --vorschlag DATEI   # Batch-Trockenlauf ueber alle gebundenen Abschnitte
-    python3 planstatus.py --schreiben DATEI   # Batch-Schreiblauf
+    python3 planstatus.py --vorschlag DATEI   # Batch-Trockenlauf ueber alle gebundenen Abschnitte EINER Datei
+    python3 planstatus.py --schreiben DATEI   # Batch-Schreiblauf, dieselbe Datei
+    python3 planstatus.py --vorschlag-bestand   # Batch-Trockenlauf ueber ALLE PLAN_-Knoten der DB (kein Dateizugriff)
+    python3 planstatus.py --schreiben-bestand   # Batch-Schreiblauf, DB-weit
     python3 planstatus.py --vorschlag DATEI --kennung S2 --status erledigt \\
         --beleg-art commit --beleg 46d96bc3   # gezielter Trockenlauf auf EINEM Abschnitt
     python3 planstatus.py --schreiben DATEI --kennung S2 --status erledigt \\
@@ -157,6 +176,27 @@ def _node_path(conn, kennung: str) -> str | None:
         "SELECT path FROM knowledge_nodes WHERE id LIKE ?", (f"{kennung}%",)
     ).fetchone()
     return row[0] if row else None
+
+
+# Feinverweis innerhalb einer Plandatei, WENN source ihn nennt -- "Abschnitt
+# 6", "Schritt 6", "§10", "Zeile 76". Bestmoeglich, nicht erzwungen: fehlt er,
+# faellt _quelle_aus_source() auf die Knoten-id zurueck (siehe dort).
+_ABSCHNITT_REF_RE = re.compile(
+    r"(Abschnitt\s+\S+|Schritt\s+\d+[a-z]?|§\s?\d+[a-z]?|Zeile\s+\d+)", re.IGNORECASE)
+_MD_DATEI_RE = re.compile(r"[\w./-]+\.md")
+
+
+def _quelle_aus_source(source: str, node_id: str) -> tuple[str, str]:
+    """(datei, kennung) aus dem freien `source`-Text eines Knotens ohne
+    Kennungszeile -- siehe Modulkopf "REICHWEITE, NACHTRAG 2026-08-15". Kein
+    Abgleich gegen eine Plandatei (die bleibt tabu/ungelesen fuer diesen
+    Pfad) -- nur Text, den der Knoten selbst schon traegt."""
+    source = source or ""
+    dateien = _MD_DATEI_RE.findall(source)
+    datei = next((d for d in dateien if "plan" in d.lower()), dateien[0] if dateien else "unbekannt")
+    treffer = _ABSCHNITT_REF_RE.search(source)
+    kennung = treffer.group(1) if treffer else node_id[:8]
+    return datei, kennung
 
 
 def _bestehende_kennung(zeilen: list[str], start: int, ende: int, ab_text: str, ids: list[str]) -> str | None:
@@ -269,6 +309,49 @@ def verarbeiten(kms, conn, datei: Path, schreiben: bool) -> list[Bericht]:
 
 
 # ---------------------------------------------------------------------------
+# Batch, DB-weit: Knoten OHNE Kennungszeile -- siehe Modulkopf "REICHWEITE,
+# NACHTRAG 2026-08-15". Kein Dateizugriff, docs/ bleibt unberuehrt.
+# ---------------------------------------------------------------------------
+
+# planentscheidung.py-Knoten laufen bereits ueber verarbeiten() (Datei- statt
+# DB-Weg) -- ausgeschlossen, damit ein Knoten nicht ueber zwei Wege
+# gleichzeitig, mit potenziell widerspruechlicher quelle_kennung, beschrieben
+# wird. Astknoten (kms.knowledge_add(neuer_ast=True) erzeugt Platzhalter mit
+# der woertlichen Signatur "neuer_ast=True, automatisch erzeugt durch ..." in
+# source, siehe knowledge_mcp_server.py) tragen keinen eigenen Volltext --
+# generisch ausgeschlossen statt an den zwei heute betroffenen Pfaden
+# festgemacht, damit ein spaeterer dritter Astknoten nicht erneut lautlos in
+# "kein_status_erkannt" laeuft.
+_KNOTEN_BESTAND_SQL = """
+    SELECT id, path, title, summary, content, source FROM knowledge_nodes
+    WHERE source LIKE :muster
+      AND source NOT LIKE '%planentscheidung.py%'
+      AND source NOT LIKE 'neuer_ast=True%'
+"""
+
+
+def verarbeiten_knoten(kms, conn, schreiben: bool, muster: str = "%PLAN_%") -> list[Bericht]:
+    zeilen = conn.execute(_KNOTEN_BESTAND_SQL, {"muster": muster}).fetchall()
+    berichte: list[Bericht] = []
+    for row in zeilen:
+        text = " ".join(t for t in (row["title"], row["summary"], row["content"]) if t)
+        status = _erkenne_status(text)
+        datei, kennung = _quelle_aus_source(row["source"], row["id"])
+        if status is None:
+            berichte.append(Bericht(kennung, row["title"], None, None, None, "kein_status_erkannt"))
+            continue
+        beleg_art, beleg = _erkenne_beleg(text)
+        status = _abgesichert(status, beleg_art, beleg)
+
+        if not schreiben:
+            berichte.append(Bericht(kennung, row["title"], status, beleg_art, beleg, "wuerde_setzen"))
+            continue
+        aktion = _setzen(conn, kms, row["path"], datei, kennung, status, beleg_art, beleg)
+        berichte.append(Bericht(kennung, row["title"], status, beleg_art, beleg, aktion))
+    return berichte
+
+
+# ---------------------------------------------------------------------------
 # Manuell: EIN Abschnitt, vom Menschen benannt -- fuer die Faelle, die die
 # Heuristik nicht (mehr korrekt) lesen kann, siehe Modulkopf ("H5").
 # ---------------------------------------------------------------------------
@@ -311,9 +394,9 @@ def setzen_manuell(kms, conn, datei: Path, kennung_ziel: str, status: str,
     return Bericht(kennung, titel, status, beleg_art, beleg, aktion)
 
 
-def _drucken(datei: Path, berichte: list[Bericht], schreiben: bool) -> None:
+def _drucken(kopf_name: str, berichte: list[Bericht], schreiben: bool) -> None:
     kopf = "SCHREIBLAUF" if schreiben else "TROCKENLAUF (--vorschlag, nichts geschrieben)"
-    print(f"\n== {datei.name} -- {kopf} ==")
+    print(f"\n== {kopf_name} -- {kopf} ==")
     for b in berichte:
         status = b.status or "-"
         beleg = f" beleg={b.beleg_art}:{b.beleg}" if b.beleg_art else (f" ziel={b.beleg}" if b.beleg else "")
@@ -336,7 +419,18 @@ def _lauf(datei: Path, schreiben: bool, kennung: str | None, status: str | None,
             berichte = verarbeiten(kms, conn, datei, schreiben)
     finally:
         conn.close()
-    _drucken(datei, berichte, schreiben)
+    _drucken(datei.name, berichte, schreiben)
+    return berichte
+
+
+def _lauf_bestand(schreiben: bool) -> list[Bericht]:
+    import knowledge_mcp_server as kms
+    conn = kms.get_db()
+    try:
+        berichte = verarbeiten_knoten(kms, conn, schreiben)
+    finally:
+        conn.close()
+    _drucken("DB-Bestand (source LIKE '%PLAN_%', ohne planentscheidung.py/Astknoten)", berichte, schreiben)
     return berichte
 
 
@@ -501,6 +595,65 @@ def _selftest() -> None:
             assert "noch keine Kennung" in str(exc)
         print("Grenzwert (Abschnitt ohne Kennung): bestanden")
 
+        # --- verarbeiten_knoten(): DB-Weg fuer Knoten OHNE Kennungszeile (Nachtrag 2026-08-15) ---
+        # (a) Knoten mit Abschnittsverweis im source-Text -> Feinkennung erkannt, Status samt
+        #     Beleg aus dem KNOTENINHALT selbst (nicht aus einer Datei).
+        erg_fein = kms.knowledge_add(
+            parent_path="/bestand", title="Mit Abschnittsverweis",
+            summary="Ein Mechanismus ist gebaut, aber wirkungslos, siehe Beleg.",
+            content="Commit `abc1234` zeigt: gebaut, aber wirkungslos, weil die Wirkung am echten Bestand fehlt.",
+            neuer_ast=True, tags=["bestand-test"],
+            source="erzeugt aus docs/PLAN_BESTANDSWEG_TEST.md Abschnitt 6 (Testfixture)",
+            anlass="skript", norm_entscheidung="keine_norm", norm_entschieden_grund="Testfixture.",
+        )
+        # (b) Knoten OHNE Abschnittsverweis -> Kennung faellt auf die eigene id zurueck.
+        erg_grob = kms.knowledge_add(
+            parent_path="/bestand", title="Ohne Abschnittsverweis",
+            summary="Nur Titel und Datei, kein Feinverweis.",
+            content="Beschlossen: dieser Punkt ist erledigt. Beleg test_bestandsweg_beispiel.",
+            neuer_ast=True, tags=["bestand-test"],
+            source="docs/PLAN_BESTANDSWEG_TEST.md",
+            anlass="skript", norm_entscheidung="keine_norm", norm_entschieden_grund="Testfixture.",
+        )
+        # (c) Astknoten-Platzhalter -- generisch an der source-Signatur erkannt, die
+        # kms.knowledge_add(neuer_ast=True) selbst vergibt (siehe _KNOTEN_BESTAND_SQL), NICHT an
+        # einem hartcodierten Pfad wie /plaene -- ein dritter, spaeterer Astknoten faellt so
+        # automatisch mit heraus, nicht erst nach einer weiteren Fundstelle.
+        # "plan-astknoten" statt nur "astknoten" im Pfad -- sonst faellt die Zeile schon am
+        # `source LIKE '%PLAN_%'`-Muster heraus, bevor die eigentlich zu pruefende
+        # Astknoten-Ausschlussklausel je gebraucht wird (wie die zwei echten Astknoten
+        # /plaene/plan-destille-2026-08-09 -- "plan" steckt im Pfadnamen, nicht nur im Astwort).
+        kms.knowledge_add(
+            parent_path="/bestand/plan-astknoten-test", title="Astknoten",
+            summary="Automatisch erzeugter Astknoten.", content="", neuer_ast=True,
+            tags=["bestand-test"],
+            source="neuer_ast=True, automatisch erzeugt durch /bestand/plan-astknoten-test/irgendwas",
+            anlass="skript", norm_entscheidung="keine_norm", norm_entschieden_grund="Testfixture.",
+        )
+
+        berichte_bestand = verarbeiten_knoten(kms, conn, schreiben=False)
+        kennungen = {b.kennung for b in berichte_bestand}
+        assert "Abschnitt 6" in kennungen, f"Feinverweis nicht erkannt: {kennungen}"
+        assert erg_grob["id"][:8] in kennungen, f"Fallback auf die eigene id fehlt: {kennungen}"
+        assert not any(b.titel == "Astknoten" for b in berichte_bestand), \
+            "Astknoten-Platzhalter (/plaene) haette ausgeschlossen bleiben muessen"
+        fein_bericht = next(b for b in berichte_bestand if b.kennung == "Abschnitt 6")
+        assert fein_bericht.status == "gebaut_wirkungslos" and fein_bericht.beleg == "abc1234", \
+            f"Statuserkennung aus dem Knoteninhalt selbst fehlgeschlagen: {fein_bericht}"
+        grob_bericht = next(b for b in berichte_bestand if b.kennung == erg_grob["id"][:8])
+        assert grob_bericht.status == "erledigt" and grob_bericht.beleg_art == "test", \
+            f"Statuserkennung (Fallback-Kennung) fehlgeschlagen: {grob_bericht}"
+        print("Nachtrag (verarbeiten_knoten: Feinverweis, id-Fallback, Astknoten ausgeschlossen): bestanden")
+
+        # Schreiblauf + Idempotenz, derselbe Nachweis wie bei verarbeiten() oben.
+        verarbeiten_knoten(kms, conn, schreiben=True)
+        anzahl_bestand1 = conn.execute("SELECT COUNT(*) FROM plan_status WHERE quelle_datei LIKE 'docs/PLAN_BESTANDSWEG%'").fetchone()[0]
+        assert anzahl_bestand1 == 2, f"erwartet 2 Statuszeilen aus dem Bestandsweg, bekommen {anzahl_bestand1}"
+        berichte_bestand2 = verarbeiten_knoten(kms, conn, schreiben=True)
+        assert all(b.aktion == "unveraendert" for b in berichte_bestand2 if b.status is not None), \
+            f"zweiter Bestandslauf haette unveraendert bleiben muessen: {[(b.kennung, b.aktion) for b in berichte_bestand2]}"
+        print("Nachtrag (Bestandsweg schreibt, dann idempotent): bestanden")
+
         conn.close()
         del os.environ["BEGOD_KNOWLEDGE_DB"]
         sys.modules.pop("knowledge_mcp_server", None)
@@ -511,8 +664,12 @@ def _selftest() -> None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     gruppe = ap.add_mutually_exclusive_group()
-    gruppe.add_argument("--vorschlag", type=Path, help="Trockenlauf auf EINER Plandatei")
-    gruppe.add_argument("--schreiben", type=Path, help="Statuszeilen anlegen/fortschreiben")
+    gruppe.add_argument("--vorschlag", type=Path, help="Trockenlauf auf EINER Plandatei (Abschnitts-Weg)")
+    gruppe.add_argument("--schreiben", type=Path, help="Statuszeilen anlegen/fortschreiben (Abschnitts-Weg)")
+    gruppe.add_argument("--vorschlag-bestand", action="store_true",
+                         help="Trockenlauf ueber ALLE PLAN_-Knoten der DB, ohne Dateizugriff")
+    gruppe.add_argument("--schreiben-bestand", action="store_true",
+                         help="Schreiblauf ueber ALLE PLAN_-Knoten der DB, ohne Dateizugriff")
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--kennung", help="gezielter Weg: EINE Abschnittskennung statt der ganzen Datei")
     ap.add_argument("--status", choices=STATUS_WERTE, help="nur mit --kennung")
@@ -522,6 +679,10 @@ def main() -> int:
 
     if args.selftest:
         _selftest()
+        return 0
+
+    if args.vorschlag_bestand or args.schreiben_bestand:
+        _lauf_bestand(schreiben=args.schreiben_bestand)
         return 0
 
     datei = args.schreiben or args.vorschlag
