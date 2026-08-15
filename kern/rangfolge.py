@@ -60,6 +60,17 @@ import sqlite3
 RELATION_TYPE = "analogous_to"
 RELATION_SOURCE = "hebb_kanten.py"
 
+# Auftrag 76: drittes Signal neben norm_rang/Hebb -- Kanten
+# 'aehnlich_bedeutung' (kanten_aus_bedeutung.py), aber NUR die, deren
+# hinsicht denselben Projektbereich traegt (siehe dortiges
+# hinsicht_projektbereich()). Eine bereichsuebergreifende Kante
+# ('projektbereich:uebergreifend') ist laut Modul-Docstring dort oft nur
+# "irgendein NASA-Verfahren" -- ohne die Hinsicht waeren beide Kantenarten
+# im Score ununterscheidbar (das ist die Rot-Probe, siehe
+# tests/test_rangfolge.py::test_aehnlich_ohne_hinsicht_ist_blind).
+AEHNLICH_RELATION_TYPE = "aehnlich_bedeutung"
+AEHNLICH_SOURCE = "kanten_aus_bedeutung.py"
+
 # --- Schalter (Muster: ZWEITER_KANAL/ENSEMBLE_PFLICHT in knowledge_recall_hook.py) ---
 # VORGABE AUS, und das ist eine Entscheidung, keine Vorsicht.
 #
@@ -76,6 +87,11 @@ RELATION_SOURCE = "hebb_kanten.py"
 # und die Zahl entscheidet, nicht die Erwartung.
 NORMRANG_AKTIV = False
 HEBB_AKTIV = False
+# Wie HEBB_AKTIV: unmessbar, solange kein Pruefkorpus-Ziel unter den
+# aehnlich_bedeutung-verbundenen Knoten liegt (gleicher Befund wie beim
+# Hebb-Signal oben). AUS bis zur Messung, nicht wirkungslos -- die Bauform
+# selbst ist unten getestet (test_aehnlich_ohne_hinsicht_ist_blind).
+AEHNLICH_AKTIV = False
 
 
 def _normrang_aktiv() -> bool:
@@ -92,6 +108,13 @@ def _hebb_aktiv() -> bool:
     return HEBB_AKTIV
 
 
+def _aehnlich_aktiv() -> bool:
+    override = os.environ.get("KNOWLEDGE_AEHNLICH_AKTIV")
+    if override is not None:
+        return override == "1"
+    return AEHNLICH_AKTIV
+
+
 # Gewichte (gemessen, siehe Modul-Docstring/Auftragsbericht -- nicht geraten):
 # klein gehalten, weil beide Signale additiv auf rank_score (0..1) draufkommen
 # und die bestehende Relevanzordnung fuehrend bleiben soll (gleiches Prinzip
@@ -99,6 +122,7 @@ def _hebb_aktiv() -> bool:
 # nicht von einem Nebensignal verdraengt werden).
 NORMRANG_WEIGHT = 0.15
 HEBB_WEIGHT = 0.15
+AEHNLICH_WEIGHT = 0.15
 
 
 def norm_score(norm_rang: int | None) -> float:
@@ -131,6 +155,41 @@ def hebb_gewichte(conn: sqlite3.Connection, paths: list[str]) -> dict[str, float
     return summe
 
 
+def aehnlich_gewichte(
+    conn: sqlite3.Connection, paths: list[str], *, nur_gleiche_hinsicht: bool = True
+) -> dict[str, float]:
+    """Wie hebb_gewichte, aber ueber aehnlich_bedeutung-Kanten. Die Kosinus-
+    Aehnlichkeit steht dort in `confidence`, nicht in `weight`
+    (kanten_aus_bedeutung.py::schreibe_kanten schreibt weight konstant 1.0) --
+    darum wird hier confidence summiert. nur_gleiche_hinsicht=True (Vorgabe) zaehlt nur
+    Kanten, deren hinsicht denselben Projektbereich traegt -- eine
+    bereichsuebergreifende Kante (hinsicht IS NULL oder 'projektbereich:
+    uebergreifend') geht NICHT in die Summe ein.
+
+    nur_gleiche_hinsicht=False ignoriert die Hinsicht komplett (zaehlt jede
+    aehnlich_bedeutung-Kante gleich) -- existiert nur fuer die Gegenprobe in
+    tests/test_rangfolge.py, dass die Hinsicht das Ergebnis tatsaechlich
+    aendert und nicht nur mitgefuehrt wird."""
+    if not paths:
+        return {}
+    platzhalter = ",".join("?" * len(paths))
+    rows = conn.execute(
+        f"SELECT source_path, target_path, confidence, hinsicht FROM knowledge_relations "
+        f"WHERE relation_type = ? AND source = ? "
+        f"AND (source_path IN ({platzhalter}) OR target_path IN ({platzhalter}))",
+        (AEHNLICH_RELATION_TYPE, AEHNLICH_SOURCE, *paths, *paths),
+    ).fetchall()
+    summe: dict[str, float] = {p: 0.0 for p in paths}
+    for src, tgt, gewicht, hinsicht in rows:
+        if nur_gleiche_hinsicht and (hinsicht is None or hinsicht == "projektbereich:uebergreifend"):
+            continue
+        if src in summe:
+            summe[src] += gewicht
+        if tgt in summe:
+            summe[tgt] += gewicht
+    return summe
+
+
 def hebb_score(gewicht: float, max_gewicht: float) -> float:
     """Normiert auf die Kandidatenliste (wie _apply_trust_score im Hook auf
     Rang statt Rohscore geht): 0 ohne Kante, 1.0 fuer den staerksten
@@ -142,12 +201,14 @@ def hebb_score(gewicht: float, max_gewicht: float) -> float:
 
 def anwenden(candidates: list[dict], conn: sqlite3.Connection) -> list[dict]:
     """Reiht `candidates` (bereits relevanzgeordnete Liste von Node-Dicts mit
-    Schluessel 'path') anhand von norm_rang + Hebb-Kantengewicht um.
-    Wirkungslos (Reihenfolge unveraendert), wenn BEIDE Schalter aus sind --
-    Gegenprobe fuer die Abschaltbarkeit."""
+    Schluessel 'path') anhand von norm_rang + Hebb-Kantengewicht + hinsicht-
+    gleiche aehnlich_bedeutung-Kanten um. Wirkungslos (Reihenfolge
+    unveraendert), wenn ALLE DREI Schalter aus sind -- Gegenprobe fuer die
+    Abschaltbarkeit."""
     normrang_an = _normrang_aktiv()
     hebb_an = _hebb_aktiv()
-    if not normrang_an and not hebb_an:
+    aehnlich_an = _aehnlich_aktiv()
+    if not normrang_an and not hebb_an and not aehnlich_an:
         return candidates
     n = len(candidates)
     if n <= 1:
@@ -170,6 +231,12 @@ def anwenden(candidates: list[dict], conn: sqlite3.Connection) -> list[dict]:
         gewichte = hebb_gewichte(conn, paths)
         max_gewicht = max(gewichte.values(), default=0.0)
 
+    aehnlich_gewichte_by_path: dict[str, float] = {}
+    max_aehnlich = 0.0
+    if aehnlich_an:
+        aehnlich_gewichte_by_path = aehnlich_gewichte(conn, paths)
+        max_aehnlich = max(aehnlich_gewichte_by_path.values(), default=0.0)
+
     def combined(idx_item: tuple[int, dict]) -> float:
         idx, item = idx_item
         rank_score = 1 - idx / n
@@ -178,6 +245,10 @@ def anwenden(candidates: list[dict], conn: sqlite3.Connection) -> list[dict]:
             zusatz += NORMRANG_WEIGHT * norm_score(norm_rang_by_path.get(item["path"]))
         if hebb_an:
             zusatz += HEBB_WEIGHT * hebb_score(gewichte.get(item["path"], 0.0), max_gewicht)
+        if aehnlich_an:
+            zusatz += AEHNLICH_WEIGHT * hebb_score(
+                aehnlich_gewichte_by_path.get(item["path"], 0.0), max_aehnlich
+            )
         return rank_score + zusatz
 
     geordnet = sorted(enumerate(candidates), key=combined, reverse=True)
@@ -219,18 +290,18 @@ def _selftest() -> int:
         conn.executescript(schema_sql)
         now = "2026-08-08T00:00:00+02:00"
 
-        def insert_node(path: str, rang: int | None) -> None:
+        def insert_node(path: str, rang: int | None, projekt: str = "shared") -> None:
             entscheidung = "keine_norm" if rang is None else "norm_unbefristet"
             gilt_ab = None if rang is None else now
             conn.execute(
-                "INSERT INTO knowledge_nodes (id,path,title,summary,source,created_at,updated_at,"
+                "INSERT INTO knowledge_nodes (id,path,project_id,title,summary,source,created_at,updated_at,"
                 "norm_rang,gilt_ab,norm_entscheidung,norm_entschieden_von,norm_entschieden_am,norm_entschieden_grund) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (path, path, path, "Test", "selftest", now, now, rang, gilt_ab, entscheidung,
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (path, path, projekt, path, "Test", "selftest", now, now, rang, gilt_ab, entscheidung,
                  "skript:rangfolge.py", now, "Testvorrichtung, keine echte Norm-Pruefung"),
             )
 
-        # 8 Kandidaten, damit der Rangabstand (1/8=0.125) unter den vollen
+        # 8+ Kandidaten, damit der Rangabstand (1/n) unter den vollen
         # Gewichten (je 0.15) liegt -- nur SO kann ein Signal einen NACHBARN
         # ueberholen, ohne die Relevanzfuehrung (/a bleibt immer vorn, Abstand
         # zu jedem Boost-Kandidaten viel zu gross) zu brechen.
@@ -238,29 +309,49 @@ def _selftest() -> int:
         # /p1..p3  : Fuellkandidaten, kein Signal
         # /nB, /b  : Nachbarpaar fuer den Normrang-Test (/b hat Rang 1)
         # /nG, /g  : Nachbarpaar fuer den Hebb-Test (/g haengt an /aussen)
+        # /nH, /h  : Nachbarpaar fuer den Aehnlich+Hinsicht-Test (/h haengt an
+        #            /partner MIT gleichem Projektbereich; /nH haengt an
+        #            /woanders mit ANDEREM Projektbereich -- beide Kanten
+        #            gleich stark (confidence 0.9), nur die Hinsicht trennt sie)
         for p, r in (("/a", None), ("/p1", None), ("/p2", None), ("/p3", None),
-                     ("/nB", None), ("/b", 1), ("/nG", None), ("/g", None), ("/aussen", None)):
+                     ("/nB", None), ("/b", 1), ("/nG", None), ("/g", None), ("/aussen", None),
+                     ("/nH", None), ("/h", None)):
             insert_node(p, r)
+        insert_node("/partner", None, projekt="shared")     # gleicher Bereich wie /h
+        insert_node("/woanders", None, projekt="fremd")     # anderer Bereich als /nH
         conn.execute(
             "INSERT INTO knowledge_relations (id,source_path,target_path,relation_type,weight,source) "
             "VALUES ('R-1','/g','/aussen','analogous_to',5.0,'hebb_kanten.py')"
         )
+        conn.execute(
+            "INSERT INTO knowledge_relations "
+            "(id,source_path,target_path,relation_type,confidence,source,hinsicht) "
+            "VALUES ('R-2','/h','/partner','aehnlich_bedeutung',0.9,'kanten_aus_bedeutung.py',"
+            "'projektbereich:shared')"
+        )
+        conn.execute(
+            "INSERT INTO knowledge_relations "
+            "(id,source_path,target_path,relation_type,confidence,source,hinsicht) "
+            "VALUES ('R-3','/nH','/woanders','aehnlich_bedeutung',0.9,'kanten_aus_bedeutung.py',"
+            "'projektbereich:uebergreifend')"
+        )
         conn.commit()
 
-        namen = ["/a", "/p1", "/p2", "/p3", "/nB", "/b", "/nG", "/g"]
+        namen = ["/a", "/p1", "/p2", "/p3", "/nB", "/b", "/nG", "/g", "/nH", "/h"]
         candidates = [{"path": p} for p in namen]
 
-        def order(env_norm: str, env_hebb: str) -> list[str]:
+        def order(env_norm: str, env_hebb: str, env_aehnlich: str = "0") -> list[str]:
             os.environ["KNOWLEDGE_NORMRANG_AKTIV"] = env_norm
             os.environ["KNOWLEDGE_HEBB_AKTIV"] = env_hebb
+            os.environ["KNOWLEDGE_AEHNLICH_AKTIV"] = env_aehnlich
             return [c["path"] for c in anwenden(list(candidates), conn)]
 
-        # Beide Schalter aus -> wirkungslos, identische Reihenfolge (Gegenprobe Richtung 1)
+        # Alle Schalter aus -> wirkungslos, identische Reihenfolge (Gegenprobe Richtung 1)
         aus = order("0", "0")
-        check(aus == namen, f"beide Schalter aus -> Reihenfolge unveraendert, war {aus}")
+        check(aus == namen, f"alle Schalter aus -> Reihenfolge unveraendert, war {aus}")
 
         # Nur NORMRANG an -> /b (Rang 1) ueberholt seinen unmittelbaren Nachbarn /nB.
-        # Nur diesen -- die Fuellkandidaten und der Hebb-Nachbar bleiben unberuehrt.
+        # Nur diesen -- die Fuellkandidaten und die anderen Nachbarpaare bleiben unberuehrt.
         nur_norm = order("1", "0")
         check(nur_norm.index("/b") < nur_norm.index("/nB"),
               f"NORMRANG an: /b (Rang 1) ueberholt /nB (kein Rang), war {nur_norm}")
@@ -278,17 +369,45 @@ def _selftest() -> int:
               f"HEBB an, NORMRANG aus: /b (Rang 1) bleibt WIRKUNGSLOS hinter /nB, war {nur_hebb}")
         check(nur_hebb[0] == "/a", f"/a bleibt vorn, war {nur_hebb}")
 
-        # Beide an -> beide Ueberholungen gleichzeitig; /a (Negativfall: weder
-        # Rang noch Kante) bleibt trotzdem GANZ VORN -- fuer den Kontroll-
-        # kandidaten aendert sich gegenueber "heute" (beide aus) nichts.
-        beide = order("1", "1")
-        check(beide.index("/b") < beide.index("/nB"), f"beide an: /b vor /nB, war {beide}")
-        check(beide.index("/g") < beide.index("/nG"), f"beide an: /g vor /nG, war {beide}")
-        check(beide[0] == "/a",
-              f"Negativfall: /a (kein Rang, keine Kante) faellt gegenueber heute nicht zurueck "
-              f"(bleibt vorn), war {beide}")
+        # Nur AEHNLICH an -> /h (Kante MIT gleicher Hinsicht) ueberholt seinen
+        # Nachbarn /nH, obwohl dessen Kante (nach /woanders) genau dieselbe
+        # Konfidenz traegt -- einziger Unterschied ist die Hinsicht. Das ist
+        # die Kernprobe des Auftrags: ohne Hinsicht waeren beide Kanten
+        # gleichwertig und /nH/​/h liefen gleichauf (siehe aehnlich_gewichte-
+        # Direktprobe unten).
+        nur_aehnlich = order("0", "0", "1")
+        check(nur_aehnlich.index("/h") < nur_aehnlich.index("/nH"),
+              f"AEHNLICH an: /h (Kante MIT gleicher Hinsicht) ueberholt /nH "
+              f"(Kante, aber ANDERE Hinsicht), war {nur_aehnlich}")
+        check(nur_aehnlich[0] == "/a", f"/a bleibt vorn, war {nur_aehnlich}")
 
-        for k in ("KNOWLEDGE_NORMRANG_AKTIV", "KNOWLEDGE_HEBB_AKTIV"):
+        # Alle drei an -> alle Ueberholungen gleichzeitig; /a (Negativfall: kein
+        # Signal) bleibt trotzdem GANZ VORN -- fuer den Kontrollkandidaten
+        # aendert sich gegenueber "heute" (alle aus) nichts.
+        alle = order("1", "1", "1")
+        check(alle.index("/b") < alle.index("/nB"), f"alle an: /b vor /nB, war {alle}")
+        check(alle.index("/g") < alle.index("/nG"), f"alle an: /g vor /nG, war {alle}")
+        check(alle.index("/h") < alle.index("/nH"), f"alle an: /h vor /nH, war {alle}")
+        check(alle[0] == "/a",
+              f"Negativfall: /a (kein Signal) faellt gegenueber heute nicht zurueck "
+              f"(bleibt vorn), war {alle}")
+
+        # Rot-Probe / Gegenprobe (Auftrag 76, ABNAHME): OHNE die Hinsicht
+        # mitzulesen sind eine gleich-projektbereichige und eine
+        # projektuebergreifende Kante bei gleicher Konfidenz UNUNTERSCHEIDBAR
+        # -- beide addieren sich gleichermassen. Erst mit Hinsicht trennt sich
+        # /h (bekommt Gewicht) von /nH (bekommt keins).
+        mit_hinsicht = aehnlich_gewichte(conn, ["/h", "/nH"], nur_gleiche_hinsicht=True)
+        ohne_hinsicht = aehnlich_gewichte(conn, ["/h", "/nH"], nur_gleiche_hinsicht=False)
+        check(mit_hinsicht["/h"] > 0.0 and mit_hinsicht["/nH"] == 0.0,
+              f"MIT Hinsicht: /h bekommt Gewicht, /nH (andere Hinsicht) nicht, war {mit_hinsicht}")
+        check(ohne_hinsicht["/h"] == ohne_hinsicht["/nH"] > 0.0,
+              f"OHNE Hinsicht (Gegenprobe): beide Kanten gleich stark, /h und /nH "
+              f"ununterscheidbar, war {ohne_hinsicht}")
+        check(mit_hinsicht != ohne_hinsicht,
+              "Hinsicht aendert das Ergebnis der Auswertung tatsaechlich (sonst waere sie Zierrat)")
+
+        for k in ("KNOWLEDGE_NORMRANG_AKTIV", "KNOWLEDGE_HEBB_AKTIV", "KNOWLEDGE_AEHNLICH_AKTIV"):
             os.environ.pop(k, None)
         conn.close()
 

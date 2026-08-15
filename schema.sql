@@ -821,6 +821,10 @@ CREATE TABLE IF NOT EXISTS knowledge_relations (
     session TEXT,
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    hinsicht TEXT,                            -- Auftrag 76: WORIN aehnlich (bisher nur die ART).
+                                               -- Kein CHECK/Whitelist -- verschiedene Erzeuger
+                                               -- (Bedeutungskanten, spaeter evtl. weitere) tragen
+                                               -- verschiedene Hinsichten, siehe kanten_aus_bedeutung.py.
     UNIQUE(source_path, target_path, relation_type),
     FOREIGN KEY(source_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY(target_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE

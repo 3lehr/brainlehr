@@ -78,6 +78,32 @@ except ImportError:  # pragma: no cover -- siehe test_finde_kandidaten_numpy_und
 RELATION_TYPE = "aehnlich_bedeutung"
 SIMILARITY_THRESHOLD = 0.65
 K_NEIGHBORS = 5
+
+# Auftrag 76: die Hinsicht der Kante -- WORIN aehnlich, nicht nur DASS.
+# Geprueft am echten Bestand (2026-08-15, 6234 Kanten aehnlich_bedeutung):
+# Feld (Titel/Zusammenfassung/Inhalt) faellt aus -- build_embeddings.node_text
+# baut EINEN Vektor aus path+title+summary+content zusammen, das Feld ist im
+# Vektor selbst nicht mehr unterscheidbar. Zeitraum faellt aus -- 5627/6234
+# Paare (90 %) liegen auf demselben Tag (Einlesestichtag eines Konvoluts,
+# nicht Aussagezeitpunkt), das Signal ist auf diesem Bestand entartet.
+# project_id (Gegenstand/Projektbereich) bleibt: fuer 6234/6234 Kanten gesetzt
+# (kein Knoten ohne project_id), und teilt real in zwei ungleiche, sachlich
+# begruendete Gruppen (5911 gleicher Bereich, 323 bereichsuebergreifend --
+# genau die Faelle, die das Modul-Docstring als "nur irgendein NASA-Verfahren"
+# beschreibt).
+HINSICHT_UEBERGREIFEND = "projektbereich:uebergreifend"
+
+
+def hinsicht_projektbereich(a_projekt: str | None, b_projekt: str | None) -> str | None:
+    """Hinsicht einer aehnlich_bedeutung-Kante aus dem Projektbereich (project_id)
+    beider Knoten. None nur, wenn einer der beiden Bereiche unbekannt ist
+    (heute am Bestand nicht der Fall, siehe Docstring oben) -- ein leeres
+    Feld ist ehrlicher als eine geratene Hinsicht."""
+    if a_projekt is None or b_projekt is None:
+        return None
+    if a_projekt == b_projekt:
+        return f"projektbereich:{a_projekt}"
+    return HINSICHT_UEBERGREIFEND
 # Auftrag 80: war hartkodiert 'bge-m3' -- fest verdrahtet UND ohne die
 # erzeugenden Parameter (num_ctx), die die Vektor-Identitaet mittragen.
 # embeddings.DEFAULT_EMBED_MODEL traegt beides und bleibt die einzige Quelle.
@@ -91,6 +117,7 @@ class Kandidat:
     b_path: str
     b_title: str
     similarity: float
+    hinsicht: str | None = None
 
 
 def connect_db(path: Path) -> sqlite3.Connection:
@@ -119,7 +146,8 @@ def lade_knoten_vektoren(conn: sqlite3.Connection, *, model: str = EMBED_MODEL):
     cur = conn.cursor()
     cur.execute(
         """
-        SELECT n.path AS path, n.title AS title, e.vector AS vector, e.ref_id AS ref_id
+        SELECT n.path AS path, n.title AS title, n.project_id AS projekt,
+               e.vector AS vector, e.ref_id AS ref_id
         FROM knowledge_embeddings e
         JOIN knowledge_nodes n ON n.id = e.ref_id
         WHERE e.kind = 'node' AND e.model = ? AND n.zurueckgezogen = 0
@@ -131,6 +159,7 @@ def lade_knoten_vektoren(conn: sqlite3.Connection, *, model: str = EMBED_MODEL):
     )
     paths: list[str] = []
     titles: list[str] = []
+    projekte: list[str | None] = []
     vektoren: list[list[float]] = []
     seen_ref_ids: set[str] = set()
     for r in cur.fetchall():
@@ -139,8 +168,9 @@ def lade_knoten_vektoren(conn: sqlite3.Connection, *, model: str = EMBED_MODEL):
         seen_ref_ids.add(r["ref_id"])
         paths.append(r["path"])
         titles.append(r["title"])
+        projekte.append(r["projekt"])
         vektoren.append(unpack_embedding(r["vector"]))
-    return paths, titles, vektoren
+    return paths, titles, projekte, vektoren
 
 
 def _paare_python(
@@ -234,6 +264,7 @@ def finde_kandidaten(
     schwelle: float = SIMILARITY_THRESHOLD,
     k: int = K_NEIGHBORS,
     nur_index: set[int] | None = None,
+    projekte: list[str | None] | None = None,
 ) -> list[Kandidat]:
     """Fuer jeden Knoten die besten bis zu k Nachbarn mit sim >= schwelle,
     danach als ungerichtete Paare dedupliziert. Keine Selbstkanten. Nutzt
@@ -242,7 +273,11 @@ def finde_kandidaten(
 
     nur_index (Auftrag 81, inkrementeller Lauf): beschraenkt, welche Knoten
     als QUELLE i durchsucht werden -- z.B. nur Knoten ohne jede Kante. Als
-    Nachbar bleibt jeder Knoten waehlbar."""
+    Nachbar bleibt jeder Knoten waehlbar.
+
+    projekte (Auftrag 76): project_id je Knoten, parallel zu paths/titles.
+    Fehlt es (alte Aufrufer, reine Similaritaets-Tests), bleibt kd.hinsicht
+    None -- kein Raten, siehe hinsicht_projektbereich()."""
     n = len(paths)
     if n < 2:
         return []
@@ -255,7 +290,11 @@ def finde_kandidaten(
     kandidaten = []
     for sim, i, j in paare.values():
         a, b = sorted((i, j), key=lambda x: paths[x])
-        kandidaten.append(Kandidat(paths[a], titles[a], paths[b], titles[b], sim))
+        hinsicht = (
+            hinsicht_projektbereich(projekte[a], projekte[b])
+            if projekte is not None else None
+        )
+        kandidaten.append(Kandidat(paths[a], titles[a], paths[b], titles[b], sim, hinsicht))
     kandidaten.sort(key=lambda kd: -kd.similarity)
     return kandidaten
 
@@ -283,12 +322,12 @@ def automatischer_lauf(db_path: Path | None = None) -> str | None:
     jedem Stop eine Zeile ausgibt, wird nach drei Tagen ignoriert."""
     conn = connect_db(db_path or DB_PATH)
     try:
-        paths, titles, vektoren = lade_knoten_vektoren(conn)
+        paths, titles, projekte, vektoren = lade_knoten_vektoren(conn)
         unverbunden = knoten_ohne_kanten(conn, paths)
         if not unverbunden:
             return None
         nur_index = {i for i, p in enumerate(paths) if p in unverbunden}
-        kandidaten = finde_kandidaten(paths, titles, vektoren, nur_index=nur_index)
+        kandidaten = finde_kandidaten(paths, titles, vektoren, nur_index=nur_index, projekte=projekte)
         if not kandidaten:
             return None
         created, skipped = schreibe_kanten(conn, kandidaten)
@@ -334,8 +373,8 @@ def schreibe_kanten(conn: sqlite3.Connection, kandidaten: list[Kandidat]) -> tup
             """
             INSERT INTO knowledge_relations
             (id, source_path, target_path, relation_type, confidence, weight,
-             evidence, source, creator, model, session, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             evidence, source, creator, model, session, created_at, updated_at, hinsicht)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 str(uuid.uuid4()),
@@ -351,12 +390,43 @@ def schreibe_kanten(conn: sqlite3.Connection, kandidaten: list[Kandidat]) -> tup
                 None,
                 now,
                 now,
+                kd.hinsicht,
             ),
         )
         created += 1
 
     conn.commit()
     return created, skipped
+
+
+def hinsicht_nachtragen(conn: sqlite3.Connection) -> int:
+    """Backfill fuer Bestandskanten (Auftrag 76): traegt die Hinsicht bei
+    allen aehnlich_bedeutung-Kanten nach, deren hinsicht-Feld noch leer ist --
+    berechnet aus project_id der beiden beteiligten Knoten, keine neue
+    Aehnlichkeitsmessung noetig. Idempotent (WHERE hinsicht IS NULL). Gibt die
+    Zahl der aktualisierten Zeilen zurueck."""
+    cur = conn.cursor()
+    zeilen = cur.execute(
+        """
+        SELECT r.id, na.project_id AS a_projekt, nb.project_id AS b_projekt
+        FROM knowledge_relations r
+        JOIN knowledge_nodes na ON na.path = r.source_path
+        JOIN knowledge_nodes nb ON nb.path = r.target_path
+        WHERE r.relation_type = ? AND r.hinsicht IS NULL
+        """,
+        (RELATION_TYPE,),
+    ).fetchall()
+    aktualisiert = 0
+    for rid, a_projekt, b_projekt in zeilen:
+        hinsicht = hinsicht_projektbereich(a_projekt, b_projekt)
+        if hinsicht is None:
+            continue
+        cur.execute(
+            "UPDATE knowledge_relations SET hinsicht = ? WHERE id = ?", (hinsicht, rid)
+        )
+        aktualisiert += 1
+    conn.commit()
+    return aktualisiert
 
 
 def ist_nasa(path: str) -> bool:
@@ -384,15 +454,30 @@ def main() -> None:
         "--nur-ohne-kanten", action="store_true",
         help="Inkrementell: nur Knoten ohne jede Kante als Quelle durchsuchen (Auftrag 81)",
     )
+    parser.add_argument(
+        "--hinsicht-nachtragen", action="store_true",
+        help="Nur Backfill: Hinsicht (Projektbereich) bei Bestandskanten ohne "
+             "hinsicht nachtragen, keine neue Aehnlichkeitssuche (Auftrag 76)",
+    )
     args = parser.parse_args()
 
     conn = connect_db(args.db)
-    paths, titles, vektoren = lade_knoten_vektoren(conn)
+
+    if args.hinsicht_nachtragen:
+        n = hinsicht_nachtragen(conn)
+        print(f"Hinsicht nachgetragen bei {n} Kante(n).")
+        conn.close()
+        return
+
+    paths, titles, projekte, vektoren = lade_knoten_vektoren(conn)
     nur_index = None
     if args.nur_ohne_kanten:
         unverbunden = knoten_ohne_kanten(conn, paths)
         nur_index = {i for i, p in enumerate(paths) if p in unverbunden}
-    kandidaten = finde_kandidaten(paths, titles, vektoren, schwelle=args.schwelle, k=args.k, nur_index=nur_index)
+    kandidaten = finde_kandidaten(
+        paths, titles, vektoren, schwelle=args.schwelle, k=args.k,
+        nur_index=nur_index, projekte=projekte,
+    )
 
     if not args.apply:
         dry_run(kandidaten, len(paths))

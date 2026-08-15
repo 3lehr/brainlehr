@@ -88,7 +88,8 @@ def test_kanten_aus_bedeutung_schreibe_kanten():
     conn.execute("""CREATE TABLE knowledge_relations (
         id TEXT, source_path TEXT, target_path TEXT, relation_type TEXT,
         confidence REAL, weight REAL, evidence TEXT, source TEXT,
-        creator TEXT, model TEXT, session TEXT, created_at TEXT, updated_at TEXT)""")
+        creator TEXT, model TEXT, session TEXT, created_at TEXT, updated_at TEXT,
+        hinsicht TEXT)""")
     kd = m.Kandidat(a_path="knoten/a", a_title="A", b_path="knoten/b",
                      b_title="B", similarity=0.9)
     created, skipped = m.schreibe_kanten(conn, [kd])

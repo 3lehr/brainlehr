@@ -46,7 +46,7 @@ def temp_db(tmp_path):
     return db_path
 
 
-def _insert_node(conn: sqlite3.Connection, path: str, title: str) -> str:
+def _insert_node(conn: sqlite3.Connection, path: str, title: str, project_id: str = "shared") -> str:
     """Minimaler, den schema.sql-Triggern genuegender Knoten (Testvorrichtung,
     keine echte Normfrage)."""
     node_id = str(uuid.uuid4())
@@ -57,11 +57,11 @@ def _insert_node(conn: sqlite3.Connection, path: str, title: str) -> str:
         (id, path, parent_path, project_id, title, summary, source, anlass,
          norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund,
          created_at, updated_at)
-        VALUES (?, ?, NULL, 'shared', ?, ?, 'test', 'skript',
+        VALUES (?, ?, NULL, ?, ?, ?, 'test', 'skript',
                 'keine_norm', 'test', ?, 'Testvorrichtung, keine echte Norm-Pruefung',
                 ?, ?)
         """,
-        (node_id, path, title, f"Testknoten {title}", now, now, now),
+        (node_id, path, project_id, title, f"Testknoten {title}", now, now, now),
     )
     return node_id
 
@@ -77,8 +77,8 @@ def _insert_embedding(conn: sqlite3.Connection, node_id: str, vector: list[float
     )
 
 
-def _knoten_mit_vektor(conn, path, title, vector):
-    node_id = _insert_node(conn, path, title)
+def _knoten_mit_vektor(conn, path, title, vector, project_id="shared"):
+    node_id = _insert_node(conn, path, title, project_id=project_id)
     _insert_embedding(conn, node_id, vector)
     return node_id
 
@@ -188,7 +188,7 @@ def test_idempotenz_zweiter_lauf_erzeugt_nichts_neues(temp_db):
     _knoten_mit_vektor(conn, "/b", "B", [0.9, 0.436])
     conn.commit()
 
-    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
     kandidaten = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.5, k=5)
     assert len(kandidaten) == 1
 
@@ -234,7 +234,7 @@ def test_bestehende_kante_anderer_herkunft_bleibt_unberuehrt(temp_db):
     )
     conn.commit()
 
-    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
     kandidaten = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.5, k=5)
     created, skipped = kab.schreibe_kanten(conn, kandidaten)
     assert created == 1  # unsere eigene Kante (anderer relation_type) entsteht zusaetzlich
@@ -262,7 +262,7 @@ def test_grenzwert_eine_zeile_bleibt_unveraendert(temp_db):
     _knoten_mit_vektor(conn, "/eine-zeile", "Eine Zeile", [1.0, 0.0])
     conn.commit()
 
-    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
     assert paths == ["/eine-zeile"]
     conn.close()
 
@@ -279,7 +279,7 @@ def test_grenzwert_zwei_zeilen_werden_zu_einer(temp_db):
     _embedding_zeile(conn, node_id, "fahrtenbuch", liegengeblieben, updated_at="2020-01-01T00:00:00+00:00")
     conn.commit()
 
-    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
     assert paths == ["/zwei-zeilen"]
     # der Vektor der ZUR AKTUELLEN project_id ('shared', siehe _insert_node)
     # passenden Zeile wird geliefert, nicht der liegengebliebenen.
@@ -296,7 +296,7 @@ def test_grenzwert_drei_zeilen_werden_zu_einer(temp_db):
     _embedding_zeile(conn, node_id, "openlehr", [0.5, 0.5], updated_at="2021-01-01T00:00:00+00:00")
     conn.commit()
 
-    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
     assert paths == ["/drei-zeilen"]
     assert vektoren[0] == [1.0, 0.0]
     conn.close()
@@ -316,7 +316,7 @@ def test_dublette_erzeugt_keine_selbstkante(temp_db):
     _embedding_zeile(conn, node_id, "fahrtenbuch", [1.0, 0.0], updated_at="2020-01-01T00:00:00+00:00")
     conn.commit()
 
-    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
     kandidaten = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.5, k=5)
     assert kandidaten == [], (
         "ein einzelner Knoten mit zwei liegengebliebenen Zeilen darf nach "
@@ -441,7 +441,7 @@ def test_knoten_ohne_kanten_findet_nur_unverbundene(temp_db):
     )
     conn.commit()
 
-    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
     unverbunden = kab.knoten_ohne_kanten(conn, paths)
     assert unverbunden == {"/c"}
     conn.close()
@@ -531,9 +531,110 @@ def test_negativfall_echte_verschiedene_knoten_mit_hoher_aehnlichkeit_bleiben_pa
     _knoten_mit_vektor(conn, "/aehnlich-b", "Aehnlich B", [0.995, 0.0998])  # cos ~= 0.995
     conn.commit()
 
-    paths, titles, vektoren = kab.lade_knoten_vektoren(conn)
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
     assert len(paths) == 2
     kandidaten = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.99, k=5)
     assert len(kandidaten) == 1
     assert {kandidaten[0].a_path, kandidaten[0].b_path} == {"/aehnlich-a", "/aehnlich-b"}
+    conn.close()
+
+
+# ─── Hinsicht (Auftrag 76) ───────────────────────────────────────────────────
+#
+# Rot-vor-Gruen fuer die Kernbehauptung des Auftrags: HEUTE (relation_type
+# aehnlich_bedeutung ohne hinsicht) sind eine gleich-projektbereichige und
+# eine projektuebergreifende Kante am reinen Datensatz nicht zu unterscheiden
+# -- beide tragen denselben relation_type und dieselbe Aehnlichkeit. Erst mit
+# hinsicht_projektbereich() trennt sich das.
+
+def test_rot_zwei_kanten_ohne_hinsicht_sind_ununterscheidbar():
+    """Zwei Kanten mit VOELLIG VERSCHIEDENER Hinsicht (eine verbindet zwei
+    Knoten desselben Projektbereichs, die andere zwei Knoten verschiedener
+    Bereiche) sehen als reine (relation_type, confidence)-Paare IDENTISCH
+    aus -- das ist der Zustand vor diesem Auftrag und der Grund, warum die
+    Spalte noetig ist."""
+    kante_gleicher_bereich = ("aehnlich_bedeutung", 0.9)
+    kante_uebergreifend = ("aehnlich_bedeutung", 0.9)
+    assert kante_gleicher_bereich == kante_uebergreifend, (
+        "ohne hinsicht sind beide Kantenarten identisch -- genau der Befund, "
+        "den Auftrag 76 behebt"
+    )
+
+
+def test_hinsicht_projektbereich_gleich_und_uebergreifend():
+    assert kab.hinsicht_projektbereich("brainlehr", "brainlehr") == "projektbereich:brainlehr"
+    assert kab.hinsicht_projektbereich("brainlehr", "buckeberg") == kab.HINSICHT_UEBERGREIFEND
+    # Grenzwert: unbekannter Bereich auf einer oder beiden Seiten -> kein Raten
+    assert kab.hinsicht_projektbereich(None, "brainlehr") is None
+    assert kab.hinsicht_projektbereich("brainlehr", None) is None
+    assert kab.hinsicht_projektbereich(None, None) is None
+    # Grenzwert: Kante auf sich selbst -- gleicher Pfad hat gleichen Bereich
+    assert kab.hinsicht_projektbereich("brainlehr", "brainlehr") == "projektbereich:brainlehr"
+
+
+def test_schreibe_kanten_traegt_hinsicht_ein(temp_db):
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    _knoten_mit_vektor(conn, "/x", "X", [1.0, 0.0], project_id="brainlehr")
+    _knoten_mit_vektor(conn, "/y", "Y", [0.99, 0.14107], project_id="brainlehr")
+    _knoten_mit_vektor(conn, "/z", "Z", [0.98, 0.2], project_id="buckeberg")
+    conn.commit()
+
+    paths, titles, projekte, vektoren = kab.lade_knoten_vektoren(conn)
+    kandidaten = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.9, k=5, projekte=projekte)
+    kab.schreibe_kanten(conn, kandidaten)
+
+    zeilen = {
+        (r["source_path"], r["target_path"]): r["hinsicht"]
+        for r in conn.execute(
+            "SELECT source_path, target_path, hinsicht FROM knowledge_relations "
+            "WHERE relation_type = 'aehnlich_bedeutung'"
+        )
+    }
+    assert zeilen[("/x", "/y")] == "projektbereich:brainlehr"
+    assert zeilen[("/x", "/z")] == kab.HINSICHT_UEBERGREIFEND
+    conn.close()
+
+
+def test_finde_kandidaten_ohne_projekte_bleibt_hinsicht_leer():
+    """Alte Aufrufer (kein projekte-Argument) bekommen weiterhin kandidaten
+    zurueck -- nur die Hinsicht bleibt None statt geraten."""
+    paths, titles = ["/a", "/b"], ["A", "B"]
+    vektoren = [[1.0, 0.0], [1.0, 0.0]]
+    kandidaten = kab.finde_kandidaten(paths, titles, vektoren, schwelle=0.5, k=5)
+    assert len(kandidaten) == 1
+    assert kandidaten[0].hinsicht is None
+
+
+def test_hinsicht_nachtragen_am_bestand_ohne_hinsicht(temp_db):
+    """Rot-vor-Gruen fuer den Backfill: eine Kante, direkt (wie ein alter
+    Lauf vor diesem Auftrag) OHNE hinsicht eingefuegt, bekommt sie durch
+    hinsicht_nachtragen() nachgetragen -- ohne neue Aehnlichkeitsmessung,
+    ohne bestehende Felder zu veraendern."""
+    conn = sqlite3.connect(str(temp_db))
+    conn.row_factory = sqlite3.Row
+    _insert_node(conn, "/alt-a", "Alt A", project_id="brainlehr")
+    _insert_node(conn, "/alt-b", "Alt B", project_id="fahrtenbuch")
+    conn.execute(
+        "INSERT INTO knowledge_relations (id, source_path, target_path, relation_type, confidence) "
+        "VALUES (?, '/alt-a', '/alt-b', 'aehnlich_bedeutung', 0.7)",
+        (str(uuid.uuid4()),),
+    )
+    conn.commit()
+
+    vorher = conn.execute(
+        "SELECT hinsicht FROM knowledge_relations WHERE source_path='/alt-a'"
+    ).fetchone()["hinsicht"]
+    assert vorher is None, "rot: vor dem Nachzug ist hinsicht leer"
+
+    aktualisiert = kab.hinsicht_nachtragen(conn)
+    assert aktualisiert == 1
+
+    nachher = conn.execute(
+        "SELECT hinsicht FROM knowledge_relations WHERE source_path='/alt-a'"
+    ).fetchone()["hinsicht"]
+    assert nachher == kab.HINSICHT_UEBERGREIFEND, "gruen: nachgetragen, verschiedene Projektbereiche"
+
+    # Idempotent: zweiter Lauf findet nichts mehr (WHERE hinsicht IS NULL)
+    assert kab.hinsicht_nachtragen(conn) == 0
     conn.close()
