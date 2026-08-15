@@ -163,6 +163,56 @@ Das reduziert die zu füllende Menge von 2166 auf die Handvoll fremder Zitate �
 und macht den Unterschied zwischen einer Spalte, die gefüllt wird, und der
 zwölften leeren.
 
+## Fortschreibung 2026-08-15T13:30:00+0200 — Abgleich Melder gegen Bestand, mit Gegenrichtung
+
+Vollstaendiges Ergebnis: `runs/planabgleich_2026-08-15T133000+0200.json`. Verfahren:
+jeder Melder-Kandidat (`python3 melder/plan_bestandsabgleich.py`, 27 Treffer) am
+genannten Commit gegen sein eigenes im Plan formulierte Erfolgskriterium
+geprueft (Test, DB-Abfrage) — dazu die Gegenrichtung: jede Plan-Zeile OHNE
+Melder-Treffer geprueft, ob sie trotzdem erledigt ist. **35 von 58 geprueften
+Zeilen erledigt, 10 teilweise, 13 offen.**
+
+**Gegenprobe (zwei von 27 Melder-Kandidaten bestehen NICHT):**
+- **`73` bleibt teilweise, nicht erledigt.** Vorwaerts- und Rueckwaertsmechanismus
+  (`46d96bc3`, `kern/kanten_herkunft_rueckwirkend.py`) sind gebaut und isoliert
+  getestet — am ECHTEN Bestand (2214 Knoten) aber **0 Kanten** vom Typ
+  `abgeleitet_von`, Soll war laut `PLAN_HERKUNFTSKETTE_2026-08-13.md` mindestens
+  125. Die Spalte `abgeleitet_von` sollte danach **weg** sein — steht weiterhin
+  in `schema.sql:151` und wird in `kern/herkunft_belegung.py` aktiv gelesen.
+- **`79` bleibt teilweise, nicht erledigt.** `speicher.normiere_modell()`/
+  `normiere_akteur()` existieren (`88aaf738`) — werden aber **nirgends im
+  Schreibpfad** aufgerufen (`knowledge_mcp_server.py`: 0 Treffer). Einziger
+  Aufrufer ist `herkunft_belegung.py`, dort nur zur Leer-Erkennung. Jeder neue
+  Knoten traegt weiter beliebige Modellschreibweisen.
+
+**Ein dritter Fall, den der Melder gar nicht fand:** `97` (PreToolUse-Wache
+gegen die eigene Hypothese im Agentenauftrag) — `haken/auftragshypothese_waechter.py`
+und Tests existieren, `.claude/settings.json` traegt im `PreToolUse`-Block aber
+nur einen Matcher fuer `Bash`, keinen fuer das Agent-Werkzeug. Der Waechter
+feuert in keiner echten Sitzung. Bleibt **teilweise**.
+
+**Schritt-2-Funde (erledigt, ohne dass Melder oder Plantext das bisher
+auswiesen):** `42`, `68`, `71` (Linie D — im Plantext bislang nur als offene
+Liste gefuehrt, tatsaechlich alle drei mit rot-vor-gruen belegt) · `76`, `89`
+(Linie B — keine erledigt-Markierung im Text, kein Melder-Treffer, beide mit
+Tests am echten Bestand belegt) · `86` Schritt 2 (Melder fand nur die Vorarbeit
+`386bbf2b`, nicht die eigentliche Abnahme-Messung `c2752801` mit getrennter
+Reichweite/Fehlanwendung und Negativkontrolle).
+
+**Damit fuer Linie C, D, B der aktualisierte Stand:** Linie C `73`/`79`
+**bleiben offen** wie in `STAND.md` behauptet — die Melder-Vermutung war hier
+falsch. Linie D ist **vollstaendig erledigt** (`42`, `67`, `68`, `70`, `71`).
+Linie B ist bis auf die weiter oben beschriebenen offenen Punkte (`77`/`78`
+nicht Teil dieser Linie) ebenfalls durch — `75`, `76`, `86`, `88`, `89` alle
+erledigt.
+
+**Nicht nachgemessen** (Zeitgrenze dieses Laufs, nicht als offen zu lesen):
+`82`, `83`, `87`, `23` (nur als Sammelnennung im Plan, keine eigene Definition
+gefunden) · `G3`, `G6`, `F8` (Plan selbst erklaert sie als unzureichend
+gemessen bzw. ungemessen, hier nicht erneut angefasst). **Echt offen, kein
+Commit-Beleg gefunden:** `H2`–`H7`, `H12`, `I2`–`I4`, sowie `20`/`29`/`31`
+(Linie E, wartet auf den Betreiber).
+
 ## Die fünf Linien, in bindender Reihenfolge
 
 **Linie A — Wirksamkeit vor allem anderen.** Solange Mechanismen nicht feuern,
