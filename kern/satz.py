@@ -26,12 +26,14 @@ Aufruf:  python3 kern/satz.py --selftest
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from dokument import bausteine_baum, sprache  # noqa: E402
+from designtokens_latex import KANONISCHER_PFAD, generate_latex, lade_guide  # noqa: E402
 
 VORSPANN = r"""\DocumentMetadata{
   pdfversion=1.7,
@@ -45,6 +47,7 @@ VORSPANN = r"""\DocumentMetadata{
 \usepackage{hyperref}
 \hypersetup{pdftitle={TITEL},pdflang={SPRACHE}}
 
+GESTALTUNGSVORRAT
 \begin{document}
 """
 
@@ -73,7 +76,7 @@ def maskiere(text: str) -> str:
     return "".join(_MASKEN.get(ch, ch) for ch in text)
 
 
-def satz_quelle(doc, titel: str) -> str:
+def satz_quelle(doc, titel: str, tokens_pfad: str = KANONISCHER_PFAD) -> str:
     """Baut die LaTeX-Quelle aus allen Bausteinen des Dokuments.
 
     `titel` ist PFLICHT und hat keinen Vorgabewert -- PDF/UA-1 verlangt einen
@@ -81,8 +84,21 @@ def satz_quelle(doc, titel: str) -> str:
     waere hier die schlechtere Wahl: er erzeugt ein formal bestehendes Blatt
     mit einem nichtssagenden Titel, und genau den liest ein Screenreader vor.
     Gefunden hat das die Satzwache beim ersten Lauf -- der Vorspann war aus
-    dem Spike uebernommen, wo der Titel im Rumpf stand statt im Vorspann."""
+    dem Spike uebernommen, wo der Titel im Rumpf stand statt im Vorspann.
+
+    `tokens_pfad` ist der Designvorrat (ADR-015, kern/designtokens_latex.py).
+    Er wird JEDEM Lauf frisch gelesen und in den Vorspann eingebettet --
+    keine Kopie, keine Zwischendatei. Fehlt die Datei oder ist sie leer/
+    kaputt, bricht dieser Aufruf SICHTBAR (FileNotFoundError/ValueError/
+    JSONDecodeError laufen durch) statt still auf einen alten, hart
+    verdrahteten Wert zurueckzufallen -- genau diese stille Doppelquelle war
+    der gemessene Fehler."""
+    guide = lade_guide(tokens_pfad)
+    tokens_latex, warnungen = generate_latex(guide)
+    for w in warnungen:
+        print(f"WARNUNG (Gestaltungsvorrat): {w}", file=sys.stderr)
     vorspann = (VORSPANN
+               .replace("GESTALTUNGSVORRAT", tokens_latex)
                .replace("TITEL", maskiere(titel))
                .replace("SPRACHE", maskiere(sprache(doc))))
     teile = [vorspann]
@@ -129,36 +145,69 @@ def _selftest() -> int:
     try:
         import pycrdt  # noqa: F401
     except ImportError:
-        print("satz: Baumreihenfolge-Probe uebersprungen -- pycrdt fehlt")
+        print("satz: Baumreihenfolge-Probe + Gestaltungsvorrat-Probe uebersprungen -- pycrdt fehlt")
         print("satz: Selbsttest bestanden")
         return 0
 
-    from dokument import baustein_anhaengen, leeres_dokument, sprache_setzen
+    import json
+    import tempfile
 
-    # ROT vor ADR-019: `satz_quelle` lief flach ueber die Ablagereihenfolge,
-    # ein spaeter angehaengtes Kind stand hinter jedem spaeteren Geschwister
-    # der Wurzelebene statt direkt hinter seinem Elternteil. GRUEN jetzt:
-    # `bausteine_baum` liefert die Lesereihenfolge. Wird `satz_quelle` auf
-    # `dokument.bausteine` (flach) zurueckgestellt, faellt genau diese
-    # Reihenfolge um -- das ist die Mutationsprobe fuer kern/satz.py:86.
-    doc = leeres_dokument()
-    wurzel = baustein_anhaengen(doc, "ueberschrift", "Abschnitt 1")
-    spaetere_wurzel = baustein_anhaengen(doc, "absatz", "Abschnitt 2")
-    kind = baustein_anhaengen(doc, "absatz", "Unterpunkt von 1", eltern=wurzel)
-    quelle = satz_quelle(doc, "Baumprobe")
-    pos_kind = quelle.index(f"bau:{kind}")
-    pos_spaetere_wurzel = quelle.index(f"bau:{spaetere_wurzel}")
-    assert pos_kind < pos_spaetere_wurzel, (
-        "das Kind muss vor dem spaeter angelegten Geschwister der Wurzelebene "
-        "stehen -- sonst laeuft satz_quelle flach statt in Baumreihenfolge"
-    )
+    from dokument import baustein_anhaengen, leeres_dokument as neues_dok, sprache_setzen
 
-    # Sprache wandert in den Vorspann, statt fest "de-DE" zu sein.
-    assert "lang=de-DE" in satz_quelle(doc, "Titel")
-    sprache_setzen(doc, "en-US")
-    quelle_en = satz_quelle(doc, "Titel")
-    assert "lang=en-US" in quelle_en and "pdflang={en-US}" in quelle_en
-    assert "lang=de-DE" not in quelle_en
+    with tempfile.TemporaryDirectory() as tmp:
+        # Gestaltungsvorrat-Anschluss: eigene Arbeitskopie, NICHT der Kanon --
+        # macht den Selbsttest unabhaengig vom fremden design-lab-Repo und
+        # belegt zugleich, dass ein GEAENDERTER Tokenwert im Ergebnis ankommt.
+        tokens_pfad = os.path.join(tmp, "arbeitskopie.json")
+        guide = {"meta": {"version": "0.0.1"}, "farben": {"primary": {"hex": "#112233"}}}
+        with open(tokens_pfad, "w", encoding="utf-8") as f:
+            json.dump(guide, f)
+
+        # ROT: fehlende Token-Datei bricht SICHTBAR, faellt nicht still auf
+        # einen alten hart verdrahteten Wert zurueck.
+        try:
+            satz_quelle(neues_dok(), "Titel", tokens_pfad=os.path.join(tmp, "fehlt.json"))
+            raise AssertionError("FileNotFoundError erwartet bei fehlender Token-Datei")
+        except FileNotFoundError:
+            pass
+
+        # GRUEN: der Tokenwert landet im gesetzten Ergebnis.
+        quelle = satz_quelle(neues_dok(), "Titel", tokens_pfad=tokens_pfad)
+        assert "\\definecolor{akaPrimary}{HTML}{112233}" in quelle, quelle
+
+        # Wert geaendert -> Ergebnis aendert sich mit (Beleg gegen die
+        # Doppelquelle: keine zweite, hart verdrahtete Kopie im Vorspann).
+        guide["farben"]["primary"]["hex"] = "#ABCDEF"
+        with open(tokens_pfad, "w", encoding="utf-8") as f:
+            json.dump(guide, f)
+        quelle2 = satz_quelle(neues_dok(), "Titel", tokens_pfad=tokens_pfad)
+        assert "\\definecolor{akaPrimary}{HTML}{ABCDEF}" in quelle2, quelle2
+        assert "112233" not in quelle2
+
+        # ROT vor ADR-019: `satz_quelle` lief flach ueber die Ablagereihenfolge,
+        # ein spaeter angehaengtes Kind stand hinter jedem spaeteren Geschwister
+        # der Wurzelebene statt direkt hinter seinem Elternteil. GRUEN jetzt:
+        # `bausteine_baum` liefert die Lesereihenfolge. Wird `satz_quelle` auf
+        # `dokument.bausteine` (flach) zurueckgestellt, faellt genau diese
+        # Reihenfolge um -- das ist die Mutationsprobe fuer kern/satz.py:86.
+        doc = neues_dok()
+        wurzel = baustein_anhaengen(doc, "ueberschrift", "Abschnitt 1")
+        spaetere_wurzel = baustein_anhaengen(doc, "absatz", "Abschnitt 2")
+        kind = baustein_anhaengen(doc, "absatz", "Unterpunkt von 1", eltern=wurzel)
+        quelle = satz_quelle(doc, "Baumprobe", tokens_pfad=tokens_pfad)
+        pos_kind = quelle.index(f"bau:{kind}")
+        pos_spaetere_wurzel = quelle.index(f"bau:{spaetere_wurzel}")
+        assert pos_kind < pos_spaetere_wurzel, (
+            "das Kind muss vor dem spaeter angelegten Geschwister der Wurzelebene "
+            "stehen -- sonst laeuft satz_quelle flach statt in Baumreihenfolge"
+        )
+
+        # Sprache wandert in den Vorspann, statt fest "de-DE" zu sein.
+        assert "lang=de-DE" in satz_quelle(doc, "Titel", tokens_pfad=tokens_pfad)
+        sprache_setzen(doc, "en-US")
+        quelle_en = satz_quelle(doc, "Titel", tokens_pfad=tokens_pfad)
+        assert "lang=en-US" in quelle_en and "pdflang={en-US}" in quelle_en
+        assert "lang=de-DE" not in quelle_en
 
     print("satz: Selbsttest bestanden")
     return 0

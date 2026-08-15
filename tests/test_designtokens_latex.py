@@ -122,6 +122,27 @@ def test_seitengeometrie_fehlende_masszahl_wird_gemeldet():
     assert any("margins" in w for w in warnungen)
 
 
+def test_schriftname_mit_backslash_und_prozent_wird_maskiert():
+    """Grenzwert: Farben/Masszahlen sind bereits sicher (Hex-Regex, Zahl) --
+    der Schriftname ist der einzige ROHE String, der direkt in \\def{...}
+    landet. Ein Backslash oder % darin waere sonst ein stiller Satzfehler
+    (bricht \\def bzw. oeffnet einen LaTeX-Kommentar mitten im Vorspann)."""
+    guide = {
+        "meta": {},
+        "farben": {},
+        "typografie": {
+            "font_family_primary": "Bad\\Font%Name",
+            "font_family_digital_fallback": "Also\\Bad%",
+        },
+    }
+    latex, warnungen = dtl.generate_latex(guide)
+    assert "\\def\\akaFontPrimary{Bad\\textbackslash{}Font\\%Name}" in latex, latex
+    assert "\\def\\akaFontFallback{Also\\textbackslash{}Bad\\%}" in latex, latex
+    # Der rohe Wert (unmaskierter Backslash direkt vor "Font") darf nicht
+    # mehr im Ergebnis stehen -- sonst waere die Maskierung wirkungslos.
+    assert "{Bad\\Font%Name}" not in latex
+
+
 def test_erzeugtes_latex_ist_wirklich_setzbar(tmp_path):
     """Rot-vor-gruen fuer die Satzprobe: eine erfundene, garantiert
     fehlerfreie Guide-Struktur wird durch tectonic gejagt. Bricht der Satz,

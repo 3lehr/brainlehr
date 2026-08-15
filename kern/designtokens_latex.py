@@ -57,6 +57,26 @@ KANONISCHER_PFAD = (
 
 HEX_MUSTER = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
+# Farben/Masszahlen sind bereits sicher (Hex-Regex bzw. Zahl). Schriftnamen
+# sind die einzigen ROHEN Strings, die aus der Quelle direkt in \def{...}
+# landen -- ein Backslash oder % darin waere sonst ein stiller Satzfehler
+# (bricht \def oder oeffnet einen LaTeX-Kommentar mitten im Vorspann).
+_TOKEN_ESCAPE = {
+    "\\": r"\textbackslash{}",
+    "{": r"\{",
+    "}": r"\}",
+    "$": r"\$",
+    "&": r"\&",
+    "%": r"\%",
+    "#": r"\#",
+    "_": r"\_",
+}
+
+
+def _escape_tokenwert(text: str) -> str:
+    """Maskiert einen rohen Tokenwert (z.B. Schriftname) fuer \\def{...}."""
+    return "".join(_TOKEN_ESCAPE.get(ch, ch) for ch in text)
+
 # Diese Top-Level-Schluessel werden uebersetzt. Alles andere im Guide ist
 # eine Wissenslueke fuer LaTeX (Farbschema fuer Flutter, SCSS-Overrides,
 # Komponenten-Elevation/Schatten, dark_mode, ...) und wird als UEBERSPRUNGEN
@@ -258,9 +278,9 @@ def generate_latex(guide: dict) -> tuple[str, list[str]]:
         pruef_zeile = _pruefe_schrift(primaer)
         warnungen.append(pruef_zeile)
         zeilen.append(f"% SCHRIFTPRUEFUNG: {pruef_zeile}")
-        zeilen.append(f"\\def\\akaFontPrimary{{{primaer}}}")
+        zeilen.append(f"\\def\\akaFontPrimary{{{_escape_tokenwert(primaer)}}}")
     if fallback:
-        zeilen.append(f"\\def\\akaFontFallback{{{fallback}}}")
+        zeilen.append(f"\\def\\akaFontFallback{{{_escape_tokenwert(fallback)}}}")
     zeilen.append("")
 
     # -- Uebersprungene Bloecke (Auflage 4) -----------------------------

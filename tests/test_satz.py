@@ -112,3 +112,66 @@ def test_echter_lualatex_lauf_erzeugt_lesbares_pdf(tmp_path):
 
 def test_maskiere_leerer_text():
     assert maskiere("") == ""
+
+
+def _arbeitskopie(tmp_path, guide: dict) -> str:
+    import json
+
+    pfad = tmp_path / "arbeitskopie.json"
+    pfad.write_text(json.dumps(guide), encoding="utf-8")
+    return str(pfad)
+
+
+def test_geaenderter_tokenwert_kommt_im_gesetzten_ergebnis_an(tmp_path):
+    """Der eigentliche Beleg fuer diesen Auftrag: satz_quelle liest den
+    Gestaltungsvorrat nicht nur, sie gibt einen GEAENDERTEN Wert auch
+    wirklich weiter -- Arbeitskopie, NICHT die kanonische Datei aus
+    design-lab (die bleibt unberuehrt)."""
+    doc = leeres_dokument()
+    guide = {"meta": {"version": "0.0.1"}, "farben": {"primary": {"hex": "#112233"}}}
+    pfad = _arbeitskopie(tmp_path, guide)
+
+    quelle = satz_quelle(doc, "Pruefblatt", tokens_pfad=pfad)
+    assert "\\definecolor{akaPrimary}{HTML}{112233}" in quelle
+
+    guide["farben"]["primary"]["hex"] = "#ABCDEF"
+    pfad2 = _arbeitskopie(tmp_path, guide)
+    quelle2 = satz_quelle(doc, "Pruefblatt", tokens_pfad=pfad2)
+    assert "\\definecolor{akaPrimary}{HTML}{ABCDEF}" in quelle2
+    assert "112233" not in quelle2
+
+
+def test_fehlende_token_datei_bricht_sichtbar(tmp_path):
+    """Negativfall: keine stille Ruecknahme auf einen hart verdrahteten
+    Wert -- der Aufruf bricht erkennbar."""
+    doc = leeres_dokument()
+    with pytest.raises(FileNotFoundError):
+        satz_quelle(doc, "Pruefblatt", tokens_pfad=str(tmp_path / "fehlt.json"))
+
+
+def test_leere_token_datei_bricht_sichtbar(tmp_path):
+    doc = leeres_dokument()
+    pfad = tmp_path / "leer.json"
+    pfad.write_text("", encoding="utf-8")
+    with pytest.raises(ValueError):
+        satz_quelle(doc, "Pruefblatt", tokens_pfad=str(pfad))
+
+
+def test_token_grenzwerte_leer_backslash_prozent_fehlender_schluessel_unbekannt(tmp_path):
+    """Grenzwerte in einem Aufwasch: leerer Tokenwert, Backslash/Prozent im
+    Schriftnamen, fehlender Schluessel (kein 'typografie'-Block), Token-
+    Datei mit unbekanntem Zusatzschluessel -- keines davon darf den Satzlauf
+    zum Absturz bringen oder den Wert unmaskiert durchlassen."""
+    doc = leeres_dokument()
+    guide = {
+        "meta": {},
+        "farben": {"primary": {"hex": ""}},  # leerer Tokenwert
+        "typografie": {"font_family_primary": "Bad\\Font%Name"},
+        "irgendwas_unbekanntes": {"x": 1},  # unbekannter Zusatzschluessel
+        # 'pdf_masszahlen' fehlt komplett -- fehlender Schluessel
+    }
+    pfad = _arbeitskopie(tmp_path, guide)
+    quelle = satz_quelle(doc, "Pruefblatt", tokens_pfad=pfad)
+    assert "\\definecolor{akaPrimary}" not in quelle  # leerer Hex: uebersprungen, nicht geraten
+    assert "\\def\\akaFontPrimary{Bad\\textbackslash{}Font\\%Name}" in quelle
+    assert "% irgendwas_unbekanntes: keine Entsprechung, nicht uebersetzt" in quelle
