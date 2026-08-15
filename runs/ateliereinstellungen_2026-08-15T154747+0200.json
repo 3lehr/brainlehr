@@ -1,0 +1,179 @@
+{
+  "verfahren": {
+    "auftrag": "Pruefung der Betreiberbehauptung 'im atelier fehlen noch die ganzen security einstellungen, und die einstellungen die sonst noch in die ui gehoeren' -- Messauftrag, keine UI gebaut.",
+    "stand": "2026-08-15T15:47:47+0200",
+    "zweig": "brainlehr/b4-ausweis",
+    "methode": "Bestand in kern/*.py nach os.environ/getenv durchsucht, app/Sources (34 Swift-Dateien) auf Einstellungs-/Sicherheitsbildschirm gelesen, ADR-017 und STAND.md gelesen. Je Fund: Ort, Wirkung, heutiger Aenderungsweg, Schranken-Frage (wer darf umlegen). Keine Datei ausser dieser Ergebnisdatei geschrieben; kein Ausweis, keine Freigabe, kein Geheimnis geaendert.",
+    "belegte_dateien": [
+      "kern/ausweis.py", "kern/werkzeugrechte.py", "kern/domaene.py",
+      "app/Sources/Atelier/AusweisAnsicht.swift", "app/Sources/Atelier/AusweisDienst.swift",
+      "app/Sources/Atelier/HauptFenster.swift", "app/Sources/Atelier/DienstAufsicht.swift",
+      "app/Sources/Atelier/QuellenBereich.swift", "app/Sources/BrainlehrCore/Sichtbarkeit.swift",
+      "app/Resources/atelier.entitlements", "dienst/de.brainlehr.dienst.plist",
+      "docs/adr/ADR-017-bedingte-ausweise-rechte-statt-verbote.md"
+    ]
+  },
+  "befund_kurz": "Die Behauptung trifft nur zur Haelfte. Es EXISTIERT eine Ausweise-Seite (7. Eintrag der Seitenleiste, app/Sources/Atelier/AusweisAnsicht.swift, 355 Zeilen) mit Anlegen und Einladen -- das ist die 'ganzen security einstellungen'-Erwartung teilweise schon erfuellt. Es fehlt aber ein allgemeiner Einstellungsbildschirm vollstaendig (0 von 7 Seitenleisten-Eintraegen), und die schaerfste Sicherheitsschranke im System (BRAINLEHR_DURCHSETZUNG) ist nirgends sichtbar -- weder in der UI noch als Zeile, die der Betreiber je gesehen haette.",
+
+  "liste_1_einstellbar_ohne_oberflaeche": {
+    "nenner_kandidaten_gesamt_gepueft": 9,
+    "davon_ui_wuerdig": 2,
+    "funde": [
+      {
+        "name": "BRAINLEHR_DURCHSETZUNG",
+        "ort": "kern/werkzeugrechte.py:69,114-123",
+        "wirkung": "Schaltet die Rechtepruefung fuer MCP-Werkzeugaufrufe zwischen 'weich' (Vorgabe -- unbeglaubigter Aufrufer darf ALLES, wie ohne Ausweiswesen) und 'streng' (ohne Ausweis geht nichts Schreibendes mehr).",
+        "heute_aenderbar_ueber": "Umgebungsvariable, gesetzt im Environment des jeweiligen MCP-Client-Prozesses (jeder stdio-Klient startet seinen eigenen Prozess, siehe CLAUDE.md-Hinweis 'kein zentraler Neustart'). Kein zentraler Ort, kein Persistenzort im Repo -- dienst/de.brainlehr.dienst.plist setzt sie NICHT.",
+        "mensch_wuerde_es_aendern": true,
+        "begruendung": "Genau der Schalter, der laut Quelltextkommentar selbst 'der Betreiber, weil er den Betrieb betrifft' entscheiden soll -- Zitat im Code: 'dieser Schritt gehoert dem Betreiber'.",
+        "gehoert_in_ui": true
+      },
+      {
+        "name": "freigabe (offen/intern/gesperrt) je Wissensknoten",
+        "ort": "Spalte 'freigabe' im Speicher, gelesen in app/Sources/BrainlehrCore/Sichtbarkeit.swift und app/Sources/Atelier/QuellenBereich.swift; geschrieben ueber MCP-Werkzeug knowledge_freigeben/freigabe_setzen",
+        "wirkung": "Bestimmt, ob ein Knoten oeffentlich, intern oder gar nicht sichtbar ist -- wird in QuellenBereich zum FILTERN benutzt, aber NICHT als Text angezeigt und in KEINER Atelier-Ansicht editierbar.",
+        "heute_aenderbar_ueber": "MCP-Werkzeugaufruf knowledge_freigeben/freigabe_setzen (Rolle verwaltung:schreiben) -- kein Bildschirm im Atelier.",
+        "mensch_wuerde_es_aendern": true,
+        "begruendung": "CLAUDE.md nennt die Freigabe ausdruecklich als Kern-Frage 4 ('was darf nach aussen') mit Vorgabewert intern -- 'oeffentlich ist der bewusste Akt'. Ein bewusster Akt ohne Bildschirm ist ein CLI-Kommando, das niemand zufaellig findet.",
+        "gehoert_in_ui": true
+      },
+      {
+        "name": "KNOWLEDGE_OLLAMA_URL / _EMBED_MODEL / _NUM_CTX / _TIMEOUT / _KEEP_ALIVE",
+        "ort": "kern/embeddings.py:50-151",
+        "wirkung": "Adresse und Modellwahl fuer lokale Embeddings.",
+        "heute_aenderbar_ueber": "Umgebungsvariable",
+        "mensch_wuerde_es_aendern": false,
+        "begruendung": "VERWORFEN -- Betriebsparameter fuer ein lokales Ollama-Setup, nicht etwas, das ein normaler Nutzer im laufenden Betrieb umstellt. Aendert sich einmal beim Aufsetzen, nicht danach.",
+        "gehoert_in_ui": false
+      },
+      {
+        "name": "BRAINLEHR_DIENST_HOST / _PORT",
+        "ort": "kern/dokumentdienst.py:61-62",
+        "wirkung": "Bindeadresse/Port des lokalen Dokumentdienstes.",
+        "heute_aenderbar_ueber": "Umgebungsvariable",
+        "mensch_wuerde_es_aendern": false,
+        "begruendung": "VERWORFEN -- Deployment-Parameter. Aendern ohne gleichzeitige Anpassung von DienstAufsicht.port (Swift, fest 8799) und dienst/de.brainlehr.dienst.plist bricht die App sofort. Kein Wert, den man im Betrieb sinnvoll umstellt.",
+        "gehoert_in_ui": false
+      },
+      {
+        "name": "Schwelle 0,65 (Trefferwert)",
+        "ort": "genannt in CLAUDE.md, Herkunft messparameter.py/konfidenz.py",
+        "wirkung": "Ab wann ein Suchtreffer als Treffer zaehlt.",
+        "heute_aenderbar_ueber": "Quelltextkonstante",
+        "mensch_wuerde_es_aendern": false,
+        "begruendung": "VERWORFEN -- ausdruecklich in CLAUDE.md als GEMESSEN, nicht gesetzt markiert: 'wer eine Zahl aendert, entwertet die Messung, die sie begruendet'. Eine UI-Einstellung wuerde die eigene Bauregel brechen.",
+        "gehoert_in_ui": false
+      },
+      {
+        "name": "BEGOD_KNOWLEDGE_ACTOR",
+        "ort": "kern/ausweis.py:9,1124,1219-1230",
+        "wirkung": "Ueberschreibt den protokollierten Namen des Schreibers, wenn kein Ausweis vorliegt.",
+        "heute_aenderbar_ueber": "Umgebungsvariable, vom selben Prozess setzbar, der damit protokolliert wird",
+        "mensch_wuerde_es_aendern": false,
+        "begruendung": "VERWORFEN als Oberflaechen-Einstellung -- richtig geloest ist das ueber den Ausweis (Anmeldung), nicht ueber einen Namen, den der Schreiber sich selbst gibt. Gehoert nicht in eine 'Einstellungen'-Seite, sondern bleibt das, wofuer die Ausweis-Anmeldung schon da ist.",
+        "gehoert_in_ui": false
+      },
+      {
+        "name": "ABRUFGUETE_MIT_PROMPT / KNOWLEDGE_NORMRANG_AKTIV / _HEBB_AKTIV / _AEHNLICH_AKTIV",
+        "ort": "kern/abrufguete.py, kern/rangfolge.py",
+        "wirkung": "Schalter fuer Messlaeufe/Ranking-Experimente.",
+        "heute_aenderbar_ueber": "Umgebungsvariable, nur innerhalb von Testlaeufen gesetzt (_selftest-Muster)",
+        "mensch_wuerde_es_aendern": false,
+        "begruendung": "VERWORFEN -- Messwerkzeug fuer den Entwickler, kein Betriebsparameter.",
+        "gehoert_in_ui": false
+      }
+    ]
+  },
+
+  "liste_2_oberflaeche_heute": {
+    "seitenleisten_eintraege_gesamt": 7,
+    "davon_einstellungen": 0,
+    "eintraege": ["Quellen", "Mehrfachansicht", "Bearbeiten", "Dokument", "Sitzung", "Wissensraum", "Ausweise und Einladungen"],
+    "einziger_sicherheitsnaher_bildschirm": "Ausweise und Einladungen (app/Sources/Atelier/AusweisAnsicht.swift)",
+    "was_er_zeigt": "Liste bestehender Ausweise (Name, Rollen, Art Mensch/Programm), Datei-Pfad. Zwei Formulare: 'Ausweis anlegen' (Name, Art, Rollen-Mehrfachauswahl, eigenes Geheimnis) und 'Einladung erzeugen' (Name, Verantwortlich, Rollen, eigenes Geheimnis).",
+    "was_er_nicht_zeigt": [
+      "Kein Widerruf/Entwiderruf eines Ausweises (kern/ausweis.py::widerrufen()/entwiderrufen() existieren, keine UI-Anbindung)",
+      "Keine Mandate (wer hat wem was auf welchen Gegenstand geliehen)",
+      "Keine Durchsetzungsstufe (weich/streng)",
+      "Keine Freigabe-Anzeige/-Aenderung je Quelle/Wissen",
+      "Kein allgemeiner Einstellungsbildschirm ausserhalb der Ausweis-Seite"
+    ],
+    "befund": "0 von 7 Seitenleisten-Eintraegen ist ein Einstellungsbildschirm. 1 von 7 ist ein Sicherheitsbildschirm, aber nur fuer Anlegen/Einladen -- Lesen und Aendern des BESTEHENDEN Sicherheitszustands (Widerruf, Mandate, Durchsetzungsstufe, Freigabe) fehlt vollstaendig."
+  },
+
+  "liste_3_sicherheitssachen": [
+    {
+      "sache": "Ausweise mit Rollen",
+      "sehen": true,
+      "aendern": "teilweise (nur Neuanlegen, kein Bearbeiten bestehender Rollen)",
+      "beleg": "app/Sources/Atelier/AusweisAnsicht.swift:57-73 (Liste), 176-264 (Anlegen)"
+    },
+    {
+      "sache": "Widerruf eines Ausweises",
+      "sehen": false,
+      "aendern": false,
+      "beleg": "kern/ausweis.py:834-871 widerrufen()/entwiderrufen() existieren serverseitig, keine Zeile in app/Sources/Atelier/AusweisAnsicht.swift ruft sie auf. Der schlimmere Fall aus dem Auftrag: ein Ausweis kann widerrufen SEIN, ohne dass die Liste das anders darstellt als 'aktiv' -- eintrag.rollen/eintrag.art werden gezeigt, widerrufen_am nicht."
+    },
+    {
+      "sache": "Mandate (von/rollen/gegenstand, Weiterverleihen)",
+      "sehen": false,
+      "aendern": false,
+      "beleg": "kern/ausweis.py:416-424,768-808 -- nur ueber kern/ausweis.py-CLI, kein API-Pfad im Dienst (berichte/entscheidungen_server.py), keine Swift-Anbindung gefunden."
+    },
+    {
+      "sache": "Freigabe offen/intern/gesperrt",
+      "sehen": "teilweise (nur als stiller Filter, kein Anzeigetext)",
+      "aendern": false,
+      "beleg": "app/Sources/Atelier/QuellenBereich.swift:100 liest freigabe, zeigt sie nirgends als Wert an; kein Bearbeitungspfad im Atelier."
+    },
+    {
+      "sache": "Herkunftspruefung des Dienstes (Origin-Header)",
+      "sehen": false,
+      "aendern": false,
+      "beleg": "berichte/entscheidungen_server.py::_herkunft_ok (per Kommentar in app/Sources/Atelier/AusweisDienst.swift:26-29 referenziert). Fest verdrahtete Selbstschutz-Logik, kein Nutzer-Schalter -- gehoert NICHT in eine Einstellungsseite, siehe Einschaetzung unten."
+    },
+    {
+      "sache": "Ausweispflicht auf schreibenden Endpunkten (BRAINLEHR_DURCHSETZUNG weich/streng)",
+      "sehen": false,
+      "aendern": false,
+      "beleg": "kern/werkzeugrechte.py:69,114-151. Weder in AusweisAnsicht.swift noch sonstwo im Atelier referenziert. dienst/de.brainlehr.dienst.plist setzt die Variable nicht -- der Dienst laeuft also faktisch dauerhaft auf 'weich', ohne dass irgendwo im Atelier sichtbar waere, dass 'weich' bedeutet: unbeglaubigt darf ALLES."
+    },
+    {
+      "sache": "App-Sandbox (com.apple.security.app-sandbox)",
+      "sehen": false,
+      "aendern": false,
+      "beleg": "app/Resources/atelier.entitlements:5-8 -- zur Build-Zeit fest, kein Laufzeitzustand, keine Laufzeit-UI moeglich oder noetig."
+    },
+    {
+      "sache": "Ausweisgeheimnis (ENV_GEHEIMNIS/BRAINLEHR_GEHEIMNIS)",
+      "sehen": "n/a (darf nicht angezeigt werden)",
+      "aendern": "ja, indirekt (jedes Sheet verlangt Eingabe des eigenen Geheimnisses als SecureField)",
+      "beleg": "app/Sources/Atelier/AusweisAnsicht.swift:216,305 SecureField; Uebergabe im JSON-Body laut AusweisDienst.swift:16-24, nie in URL/Query/Protokoll."
+    }
+  ],
+
+  "anzeige_keine_schranke": [
+    {
+      "fall": "BRAINLEHR_DURCHSETZUNG (weich/streng)",
+      "warum": "Die Umgebungsvariable wird von genau dem Prozess gelesen, der eingeschraenkt werden soll (jeder MCP-Klient startet seinen eigenen Prozess mit eigenem Environment, kein zentraler Ort). Wuerde man daraus eine Oberflaechen-Einstellung im Atelier bauen, die z. B. eine Konfigurationsdatei schreibt, koennte jeder Akteur, der Schreibzugriff auf diese Datei hat -- eingeschlossen ein Modell, das im selben Konto laeuft --, sich selbst wieder auf 'weich' zuruecksetzen. Exakt dieselbe Fehlklasse wie L-33d3bd (art=mensch|maschine): eine Pruefung, die im selben Raum laeuft wie das Geprueft, ist ein Merkmal, keine Sperre. Eine echte Sperre muesste die Stufe an einer Stelle verankern, die der zu pruefende Prozess selbst nicht schreiben kann (z. B. signiert in der Ausweisdatei, geprueft beim Laden, nicht per Environment beim Start)."
+    }
+  ],
+
+  "verworfene_kandidaten": [
+    "KNOWLEDGE_OLLAMA_* (Modellwahl/Timeouts) -- einmaliger Aufsetz-Parameter, kein Betriebsschalter.",
+    "BRAINLEHR_DIENST_HOST/_PORT -- Deployment-Konstante, an drei Stellen synchron zu halten (Swift-Konstante 8799, Umgebungsvariable, launchd-plist); eine UI-Einstellung wuerde diese Kopplung nicht loesen, nur eine vierte Stelle hinzufuegen.",
+    "Schwelle 0,65 -- ausdruecklich als gemessen statt gesetzt markiert (CLAUDE.md), eine UI-Einstellung widerspraeche der eigenen Bauregel.",
+    "BEGOD_KNOWLEDGE_ACTOR -- richtig geloest ueber Ausweis-Anmeldung, nicht ueber Selbstauskunft.",
+    "ABRUFGUETE_MIT_PROMPT/KNOWLEDGE_*_AKTIV -- Messwerkzeuge fuer Entwicklung, keine Nutzereinstellung."
+  ],
+
+  "empfehlung_fuer_ui": [
+    {"empfehlung": "BRAINLEHR_DURCHSETZUNG als sichtbarer Zustand (weich/streng) auf der Ausweise-Seite anzeigen -- mindestens SEHEN. Vor dem AENDERN ueber UI erst die Verankerung ausserhalb des eigenen Prozesses klaeren (siehe 'Anzeige, keine Schranke' oben), sonst entsteht ein zweites L-33d3bd.", "prioritaet": "hoch"},
+    {"empfehlung": "Ausweise-Liste um Widerruf/Entwiderruf erweitern -- Funktion existiert serverseitig vollstaendig (kern/ausweis.py), es fehlt nur der Knopf.", "prioritaet": "hoch"},
+    {"empfehlung": "Freigabe je Quelle/Wissensknoten als Text sichtbar machen (aktuell nur stiller Filter) -- mindestens SEHEN, bevor ueber AENDERN nachgedacht wird.", "prioritaet": "mittel"},
+    {"empfehlung": "Mandate NICHT in einer ersten Fassung -- Datenmodell existiert, aber kein API-Pfad im Dienst; das ist ein eigener Bauauftrag, kein UI-Anbau.", "prioritaet": "niedrig, eigener Auftrag"},
+    {"empfehlung": "Herkunftspruefung und App-Sandbox NICHT in die UI -- beides ist fest verdrahteter Selbstschutz ohne Laufzeitzustand, den ein Mensch sinnvoll aendern wuerde.", "prioritaet": "keine (Ablehnung begruendet)"}
+  ],
+
+  "sprachregel_hinweis": "Jede der vier empfohlenen UI-Ergaenzungen ist in Nutzersprache darstellbar, ohne Dateinamen oder Variablennamen zu nennen (z. B. 'Wer ohne Ausweis anfragt, darf zur Zeit alles/nur lesen' statt 'BRAINLEHR_DURCHSETZUNG=weich') -- entspricht der Hausregel 'Keine Entwicklerinformation in der Oberflaeche'. Noch nicht in Text gegossen, weil dieser Auftrag ein Messauftrag ist und keine Oberflaeche baut."
+}
