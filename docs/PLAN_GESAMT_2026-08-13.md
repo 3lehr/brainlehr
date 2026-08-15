@@ -173,7 +173,17 @@ verdrahten, mit Neuheitsfilter).
 
 **Linie B — die fehlenden Achsen.** `88` (Zeit als Filter; Geltung erst nach der
 Vorfrage, wer `gilt_bis` setzt) · `89` (Kanalwahl an die Anfragelänge binden) ·
-`76` (jede Kante trägt ihre Hinsicht) · `75` (W-Fragen) · **`86` (trägt eine
+`76` (jede Kante trägt ihre Hinsicht) · `75` (W-Fragen — **Achtung, das Kürzel
+war zweideutig und hat am 2026-08-15 einen Agentenlauf gekostet:** gemeint ist
+ADR-005 *„vier W-Fragen, nur eine bekommt ein Feld"*, also die
+**Qualitätsfragen am Knoten** (woran erkennt man falsch, wie sicher, …) samt
+Spalte `herkunftsart` — **nicht** Fragewörter in Nutzernachrichten. Diese
+zweite Lesart wurde gemessen und ist ein Nullbefund: von 35 lösbaren
+Korpusfällen steht **keiner** in Frageform, alle 5 Fragefälle liegen in der
+negativen Klasse. Struktur über 1730 echte Nutzertexte: 609 Fragen, 1121
+Aufträge; Fragen nennen seltener einen Pfad (8,7 % gegen 14,2 %) und seltener
+eine Kennung (0,2 % gegen 2,1 %) — die Kandidatenbildung hängt an der
+fehlenden **Adresse**, nicht an der Frageform) · **`86` (trägt eine
 metaphorisch benannte Regel weiter als eine wörtliche?).**
 
 `86` steht hier und nicht in einer eigenen Ecke, weil es dieselbe Frage ist wie
