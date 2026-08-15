@@ -246,6 +246,17 @@ Klasse · `G3` Nullmessung mit dem Mini, **danach erst** Schwellen.
 Die Schranken selbst stehen bereits (`14b34f3`): Ausweispflicht außerhalb von
 `127.0.0.1`, Nachrichtengröße, Rate, geschlossenes Protokoll.
 
+**Stand 2026-08-15 — erledigt und geprüft:** `G1` (`72f2b2b`, Kennzahlen
+überleben den Neustart, `kern/dokumentdienst.Kennzahlen`) · `G2`
+(`50518c5`, `melder/dienstwache.py`, in `~/.claude/settings.json` als
+SessionStart-Hook verdrahtet, in `MODULE`/`tests/test_alle_selftests.py`).
+**Offen:** `G3`. Eine Vormessung liegt vor (`5b86ee4`,
+`runs/nullmessung_dokumentdienst_2026-08-14.json`), erklärt darin aber
+selbst als unzureichend — 180 s statt einer Stunde, ohne den Mini, nur
+loopback. Ohne diesen Aufbau bleibt eine Schwelle geraten; die eigentliche
+Messung braucht den Mini im LAN und eine Stunde echten Tippbetriebs und
+konnte in dieser Sitzung nicht nachgeholt werden.
+
 **Linie H — openlehr als erste Instanz.** Nachgetragen 2026-08-14 auf
 Betreiberauftrag (*„zuerst openlehr integrieren"*), Ausführung in
 `docs/PLAN_OPENLEHR_2026-08-14.md`.
