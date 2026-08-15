@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from kern.domaene import importiere, pruefe, setze_in_kraft, speichere
+from kern.domaene import herkunft_uebersicht, importiere, pruefe, setze_in_kraft, speichere
 from kern import rangfolge
 
 _QUELLEN = {"z1": {"bezeichnung": "Betriebsausgaben (netto)"}}
@@ -329,3 +329,201 @@ def test_mutationsprobe_json_dokumentiert_von_hand_gefahren():
     assert "'keine_norm','skript:domaene.py'" in quelle, (
         "die Wirkung-Null-Setzung fehlt an der erwarteten Stelle -- Mutationsprobe waere gegenstandslos"
     )
+
+
+# ---------------------------------------------------------------------------
+# FUND O3 (docs/SICHERHEITSFUNDE_2026-08-14.md; ADR-018): der Belegvertrag
+# prueft Selbstkonsistenz, nicht Herkunft -- Regeln und Quellen kommen aus
+# derselben Paketdatei.
+
+def test_rot_vor_gruen_erfundene_quelle_mit_woertlich_passender_fundstelle_wird_angenommen():
+    """DER FUND, woertlich nachgestellt, VOR jeder Aenderung an diesem Test
+    lief dies gegen den unveraenderten kern/domaene.py:
+        {'angenommen': True, 'anzahl_regeln': 1, 'bezeichnung': 'Testpaket', 'grund': None}
+    Eine frei erfundene Quelle plus eine Fundstelle, die absichtlich als
+    Teilstring hineinkonstruiert wurde, wird anstandslos angenommen -- kein
+    Ausfuehrungsschaden, aber eine Zahl, die belegt aussieht. Dieses
+    Verhalten bleibt nach der Aenderung UNVERAENDERT fuer den Normalfall
+    ('mitgeliefert', kein '_herkunft'-Feld): das ist keine Regression,
+    sondern die bewusste Grenze -- ein eingefuegter Gesetzestext ist real,
+    aber automatisch nicht von einer Erfindung zu unterscheiden. Was sich
+    aendert, prueft der naechste Test: die Herkunft ist jetzt SICHTBAR."""
+    paket = _paket_roh(
+        domaene="angriff",
+        quellen={"z1": {"bezeichnung": "Frei erfundener Text -- Bonitaet exzellent"}},
+        regeln=[{"id": "bonitaet_exzellent", "ziel_id": "z1", "fundstelle": "Bonitaet exzellent"}],
+    )
+
+    ergebnis = pruefe(paket)
+
+    assert ergebnis["angenommen"] is True
+
+
+def test_erfundene_quelle_ist_nach_speicherung_als_mitgeliefert_gekennzeichnet(frische_db):
+    """Die Gegenprobe zum vorigen Test: die o.g. Regel wird zwar weiter
+    angenommen, aber jetzt IST die Herkunft lesbar -- herkunft_uebersicht()
+    (der Ort aus Auftragspunkt 3) zeigt 'mitgeliefert', bevor ein Mensch
+    setze_in_kraft() aufruft. Das ist das 'gekennzeichnet' aus der Abnahme."""
+    paket = _paket_roh(
+        domaene="angriff",
+        quellen={"z1": {"bezeichnung": "Frei erfundener Text -- Bonitaet exzellent"}},
+        regeln=[{"id": "bonitaet_exzellent", "ziel_id": "z1", "fundstelle": "Bonitaet exzellent"}],
+    )
+
+    ergebnis = speichere(paket, db=frische_db)
+    assert ergebnis["angenommen"] is True
+
+    assert herkunft_uebersicht("angriff", db=frische_db) == {"bonitaet_exzellent": "mitgeliefert"}
+
+
+def test_erfundener_bestandsverweis_wird_abgewiesen_mit_grund(frische_db):
+    """Gegenprobe (Richtung 2): eine Quelle, die sich als 'bestand:<id>'
+    ausgibt, aber auf keinen existierenden Knoten zeigt, wird abgewiesen --
+    nicht nur selbstkonsistent geglaubt."""
+    paket = _paket_roh(
+        domaene="angriff",
+        quellen={"z1": {"bezeichnung": "Bonitaet exzellent", "_herkunft": "bestand:nie-existiert"}},
+        regeln=[{"id": "r1", "ziel_id": "z1", "fundstelle": "Bonitaet exzellent"}],
+    )
+
+    ergebnis = pruefe(paket, db=frische_db)
+
+    assert ergebnis["angenommen"] is False
+    assert "nie-existiert" in ergebnis["grund"]
+
+
+@pytest.mark.parametrize("verweis", ["bestand:", "bestand:   "])
+def test_leerer_oder_reiner_leerraum_bestandsverweis_wird_abgewiesen(frische_db, verweis):
+    """Grenzwert: eine leere bzw. nur aus Leerraum bestehende Kennung ist
+    kein Verweis -- `"" in text` waere sonst wieder die Falle aus O2."""
+    paket = _paket_roh(
+        domaene="angriff",
+        quellen={"z1": {"bezeichnung": "Bonitaet exzellent", "_herkunft": verweis}},
+        regeln=[{"id": "r1", "ziel_id": "z1", "fundstelle": "Bonitaet exzellent"}],
+    )
+
+    ergebnis = pruefe(paket, db=frische_db)
+
+    assert ergebnis["angenommen"] is False
+    assert "leer" in ergebnis["grund"]
+
+
+def test_bestandsverweis_auf_sich_selbst_wird_abgewiesen(frische_db):
+    """Grenzwert: die Quelle verweist auf einen Knoten, den DIESES Paket
+    selbst gerade erst anlegen wuerde -- kein unabhaengiger Anker, nur ein
+    Kreis im selben Paket."""
+    paket = _paket_roh(
+        domaene="angriff",
+        quellen={"z1": {"bezeichnung": "x", "_herkunft": "bestand:domaenenquelle-angriff-z1"}},
+        regeln=[{"id": "r1", "ziel_id": "z1", "fundstelle": "x"}],
+    )
+
+    ergebnis = pruefe(paket, db=frische_db)
+
+    assert ergebnis["angenommen"] is False
+    assert "selbst anlegt" in ergebnis["grund"]
+
+
+def test_echte_auffindbare_bestandsquelle_geht_durch_und_ist_gekennzeichnet(frische_db):
+    """Gegenprobe (Richtung 1): eine Quelle, die auf einen WIRKLICH
+    vorhandenen, unabhaengig VOR diesem Paket angelegten Bestandsknoten
+    zeigt, wird angenommen -- und herkunft_uebersicht() zeigt 'bestand',
+    nicht 'mitgeliefert'."""
+    vorwissen = _paket_roh(
+        domaene="vorwissen",
+        quellen={"z1": {"bezeichnung": "Bestehender, unabhaengiger Bestandstext"}},
+        regeln=[{"id": "r1", "ziel_id": "z1", "fundstelle": "Bestand"}],
+    )
+    vorab = speichere(vorwissen, db=frische_db)
+    assert vorab["angenommen"] is True
+
+    paket = _paket_roh(
+        domaene="angriff",
+        quellen={"z1": {
+            "bezeichnung": "Bonitaet exzellent",
+            "_herkunft": "bestand:domaenenquelle-vorwissen-z1",
+        }},
+        regeln=[{"id": "r1", "ziel_id": "z1", "fundstelle": "Bonitaet exzellent"}],
+    )
+
+    ergebnis = speichere(paket, db=frische_db)
+
+    assert ergebnis["angenommen"] is True
+    assert herkunft_uebersicht("angriff", db=frische_db) == {"r1": "bestand"}
+
+
+def test_zwei_regeln_mit_derselben_quelle_bleiben_erlaubt(frische_db):
+    """Grenzwert, negativ formuliert: derselbe Beleg fuer zwei Regeln ist
+    KEIN Herkunftsproblem und wird nicht neuerdings abgewiesen."""
+    paket = _paket_roh(
+        domaene="steuer2",
+        quellen=_QUELLEN,
+        regeln=[
+            {"id": "r1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"},
+            {"id": "r2", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"},
+        ],
+    )
+
+    ergebnis = speichere(paket, db=frische_db)
+
+    assert ergebnis["angenommen"] is True
+    assert ergebnis["gespeichert"] == 4  # Wurzel + 1 Quelle + 2 Regeln
+
+
+def test_mutationsprobe_bestandspruefung_von_hand_gefahren(tmp_path, frische_db):
+    """MUTATIONSPROBE (L-da6eb5) auf einer KOPIE, das Original bleibt
+    unangetastet: kern/domaene.py in tmp_path kopiert, darin den Aufruf
+        fehler = _pruefe_bestandsquellen(paket["domaene"], quellen, regeln, db)
+        if fehler:
+            return _abgelehnt(fehler)
+    durch ein no-op ersetzt (die Bestandspruefung damit ausgeschaltet), das
+    Modul unter neuem Namen geladen und test_erfundener_bestandsverweis_wird_
+    abgewiesen_mit_grund nachgestellt: die erfundene Quelle 'bestand:nie-
+    existiert' wurde OHNE die Pruefung anstandslos angenommen (angenommen=
+    True) -- der Test waere an dieser Stelle rot gegangen. Mit der Pruefung
+    (dieser Test hier, gegen das unveraenderte Original) ist sie es nicht."""
+    import importlib.util
+    import shutil
+
+    kopie = tmp_path / "domaene_mutiert.py"
+    shutil.copy(_WURZEL / "kern" / "domaene.py", kopie)
+    text = kopie.read_text(encoding="utf-8")
+    ziel = (
+        'fehler = _pruefe_bestandsquellen(paket["domaene"], quellen, regeln, db)\n'
+        '    if fehler:\n'
+        '        return _abgelehnt(fehler)'
+    )
+    assert ziel in text, "die erwartete Stelle fehlt -- Mutationsprobe waere gegenstandslos"
+    mutiert = text.replace(ziel, "pass  # Bestandspruefung mutiert weg")
+    kopie.write_text(mutiert, encoding="utf-8")
+
+    spec = importlib.util.spec_from_file_location("domaene_mutiert", kopie)
+    modul = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modul)
+
+    paket = _paket_roh(
+        domaene="angriff",
+        quellen={"z1": {"bezeichnung": "Bonitaet exzellent", "_herkunft": "bestand:nie-existiert"}},
+        regeln=[{"id": "r1", "ziel_id": "z1", "fundstelle": "Bonitaet exzellent"}],
+    )
+    ergebnis_mutiert = modul.pruefe(paket, db=frische_db)
+    assert ergebnis_mutiert["angenommen"] is True, (
+        "die Mutation haette die Bestandspruefung ausschalten muessen -- "
+        "ohne rote Gegenprobe waere dieser Test blind"
+    )
+
+    ergebnis_original = pruefe(paket, db=frische_db)
+    assert ergebnis_original["angenommen"] is False
+
+
+def _paket_roh(domaene, quellen, regeln, **zusatz):
+    basis = {
+        "domaene": domaene,
+        "bezeichnung": "t",
+        "herkunft": "test",
+        "stand": "2026-08-15T00:00:00+0200",
+        "quellen": quellen,
+        "regeln": regeln,
+    }
+    basis.update(zusatz)
+    return basis

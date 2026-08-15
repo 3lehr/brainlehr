@@ -11,6 +11,23 @@ Eine Regel ohne belegte Fundstelle wird abgewiesen, nicht stillschweigend
 uebernommen (ADR-007). Der Grund ist ein Satz fuer den Menschen, der das
 Paket ausgewaehlt hat -- keine Ausnahme, kein Dateiname, keine Zeilennummer.
 
+HERKUNFT (Fund O3, docs/SICHERHEITSFUNDE_2026-08-14.md; ADR-018): der
+Belegvertrag allein prueft nur Selbstkonsistenz -- Regel und Quelle kommen
+aus demselben Paket. Eine Quelle, die sich per kern.belegvertrag.herkunftsart
+als 'bestand:<id>' ausweist, behauptet, ein bereits VORHANDENER, von diesem
+Paket unabhaengiger Knoten zu sein -- pruefe() sieht hier tatsaechlich in der
+Datenbank nach (_pruefe_bestandsquellen unten): leer, nur Leerraum, ein
+Selbstverweis auf einen Knoten, den DIESES Paket selbst erst anlegt, oder ein
+Knoten, den es gar nicht gibt, werden abgewiesen. Der ueberwiegende, heutige
+Fall ('mitgeliefert', kein '_herkunft'-Feld -- siehe pakete/steuer.domaene.json)
+bleibt Selbstkonsistenz: ein eingefuegter Gesetzestext ist real, aber nicht
+automatisch von einer erfundenen Behauptung zu unterscheiden. speichere()
+schreibt die Art als Tag ("beleg:mitgeliefert"/"beleg:bestand") auf jeden
+Quellknoten; herkunft_uebersicht() unten liest genau dieses Tag wieder, damit
+ein Mensch VOR setze_in_kraft() sehen kann, ob eine Regel nur selbstkonsistent
+oder unabhaengig verankert ist -- ohne diesen Leser waere die Art ein weiteres
+blindes Feld wie abgeleitet_von/bedient_von im Bestand.
+
 WIRKUNG NULL (ADR-018, Sperre in docs/PLAN_GESAMT_2026-08-13.md): speichere()
 ist die erste Stelle in dieser Datei, die tatsaechlich in den Bestand
 schreibt. Vorbild ist kern/regelpaket.py TEIL 3 -- genau dieselben zwei
@@ -35,7 +52,7 @@ from pathlib import Path
 from typing import Any
 
 from kern import speicher, zeitmarke
-from kern.belegvertrag import pruefe_regeln
+from kern.belegvertrag import herkunftsart, pruefe_regeln
 
 _PFLICHTSCHLUESSEL = ("domaene", "quellen", "regeln")
 
@@ -56,9 +73,11 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'keine_norm','skript:domaene.py',
 """
 
 
-def importiere(pfad: str | Path) -> dict[str, Any]:
+def importiere(pfad: str | Path, db: str | Path | None = None) -> dict[str, Any]:
     """Liest und prueft ein Domaenenpaket. Liefert immer ein Ergebnis, wirft
-    nie: {"angenommen": bool, "anzahl_regeln": int | None, "grund": str | None}."""
+    nie: {"angenommen": bool, "anzahl_regeln": int | None, "grund": str | None}.
+    `db`: gegen welchen Bestand '_herkunft':'bestand:<id>'-Quellen geprueft
+    werden (siehe pruefe()) -- Vorgabe ort.DB wie ueberall in diesem Haus."""
     try:
         rohtext = Path(pfad).read_text(encoding="utf-8")
     except OSError:
@@ -69,13 +88,16 @@ def importiere(pfad: str | Path) -> dict[str, Any]:
     except json.JSONDecodeError:
         return _abgelehnt("Die Paketdatei ist beschaedigt und laesst sich nicht lesen.")
 
-    return pruefe(paket)
+    return pruefe(paket, db=db)
 
 
-def pruefe(paket: Any) -> dict[str, Any]:
+def pruefe(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     """Dieselbe Pruefung fuer ein bereits gelesenes Paket. Das atelier waehlt
     die Datei aus und schickt ihren INHALT -- so muss der Dienst nie im
-    Dateisystem des Nutzers lesen. Gleiche Rueckgabe wie importiere()."""
+    Dateisystem des Nutzers lesen. Gleiche Rueckgabe wie importiere() -- die
+    exakte Schluesselmenge ist ein gepruefter Vertrag mit dem atelier
+    (test_vertrag_gegen_das_atelier_haelt), darum kommt hier KEIN neues
+    Ergebnisfeld dazu; die Herkunftspruefung wirkt ueber 'angenommen'/'grund'."""
     if not isinstance(paket, dict):
         return _abgelehnt("Die Paketdatei enthaelt kein gueltiges Paket.")
 
@@ -93,6 +115,10 @@ def pruefe(paket: Any) -> dict[str, Any]:
     except (ValueError, KeyError, TypeError):
         return _abgelehnt(_grund_fuer_ablehnung(regeln, quellen))
 
+    fehler = _pruefe_bestandsquellen(paket["domaene"], quellen, regeln, db)
+    if fehler:
+        return _abgelehnt(fehler)
+
     # Die Bezeichnung steht im Paket und wird dem Menschen gezeigt ("... gilt
     # jetzt"). Fehlt sie, traegt die Kennung -- nie ein leerer Name.
     bezeichnung = paket.get("bezeichnung") or paket.get("domaene")
@@ -102,6 +128,56 @@ def pruefe(paket: Any) -> dict[str, Any]:
         "bezeichnung": bezeichnung,
         "grund": None,
     }
+
+
+def _pruefe_bestandsquellen(
+    domaene_id: str, quellen: dict[str, Any], regeln: list[dict[str, Any]],
+    db: str | Path | None,
+) -> str | None:
+    """Fund O3: eine Quelle, die sich als '_herkunft':'bestand:<id>' ausgibt,
+    behauptet einen von diesem Paket UNABHAENGIGEN Beleg -- das wird hier
+    tatsaechlich geprueft, nicht nur geglaubt. Drei Faelle scheitern schon
+    ohne DB-Zugriff (billig zuerst): leere/nur-Leerraum-Kennung, und eine
+    Kennung, die auf einen Knoten zeigt, den DIESES Paket selbst gerade erst
+    anlegen wuerde (Selbstverweis -- der 'unabhaengige' Anker waere das Paket
+    selbst). Erst danach, nur falls noch etwas zu pruefen ist, wird die
+    Datenbank einmal nur-lesend geoeffnet. Gibt None zurueck, wenn alles in
+    Ordnung ist (auch wenn keine einzige Quelle 'bestand' behauptet)."""
+    eigene_ids = {f"domaene-{domaene_id}"}
+    eigene_ids.update(f"domaenenquelle-{domaene_id}-{qid}" for qid in quellen)
+    eigene_ids.update(
+        f"domaenenregel-{domaene_id}-{r['id']}" for r in regeln
+        if isinstance(r, dict) and "id" in r
+    )
+
+    zu_pruefen: list[tuple[str, str]] = []
+    for qid, quelle in quellen.items():
+        art, bestand_id = herkunftsart(quelle)
+        if art != "bestand":
+            continue
+        if not bestand_id:
+            return f"Die Quelle '{qid}' nennt einen leeren Bestandsverweis."
+        if bestand_id in eigene_ids:
+            return (
+                f"Die Quelle '{qid}' verweist auf einen Knoten, den dieses "
+                "Paket selbst anlegt -- kein unabhaengiger Beleg."
+            )
+        zu_pruefen.append((qid, bestand_id))
+
+    if not zu_pruefen:
+        return None
+
+    with speicher.lesen(db) as conn:
+        for qid, bestand_id in zu_pruefen:
+            treffer = conn.execute(
+                "SELECT 1 FROM knowledge_nodes WHERE id = ?", (bestand_id,)
+            ).fetchone()
+            if treffer is None:
+                return (
+                    f"Die Quelle '{qid}' verweist auf den Bestandsknoten "
+                    f"'{bestand_id}', der nicht existiert."
+                )
+    return None
 
 
 def speichere(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
@@ -119,7 +195,11 @@ def speichere(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     Rueckgabe: das Ergebnis von pruefe(), erweitert um 'gespeichert' (Anzahl
     neu angelegter Zeilen) und 'uebersprungen' (schon vorhanden). Bei
     Ablehnung sind beide 0 -- ein abgelehntes Paket schreibt nichts."""
-    ergebnis = pruefe(paket)
+    # db durchreichen: die Bestandspruefung in pruefe() muss gegen DENSELBEN
+    # Bestand laufen, in den gleich geschrieben wird -- sonst pruefte diese
+    # Zeile (bei einer abweichenden Test- oder Zweit-DB) am falschen Ort und
+    # ein 'bestand:'-Verweis waere blind bestanden oder blind durchgefallen.
+    ergebnis = pruefe(paket, db=db)
     if not ergebnis["angenommen"]:
         return {**ergebnis, "gespeichert": 0, "uebersprungen": 0}
 
@@ -190,6 +270,39 @@ def setze_in_kraft(
     return cur.rowcount
 
 
+def herkunft_uebersicht(domaene_id: str, db: str | Path | None = None) -> dict[str, str]:
+    """Fuer den Menschen, der VOR setze_in_kraft() entscheidet (ADR-018,
+    Fund O3): je Regel-id die Herkunftsart ihrer Quelle -- 'mitgeliefert'
+    (Selbstkonsistenz, siehe kern/belegvertrag.herkunftsart) oder 'bestand'
+    (bei pruefe() gegen die echte Datenbank verankert). Liest das 'beleg:'-
+    Tag, das speichere() beim Schreiben der Quellknoten setzt -- der zweite,
+    tatsaechliche Leser dieser Herkunftsangabe (der erste ist die
+    Bestandspruefung in pruefe() selbst); ohne diesen hier waere die Art nur
+    geschrieben, nie wieder gelesen. Leeres Ergebnis fuer eine unbekannte
+    oder regellose Domaene -- kein Fehler, dieselbe Haltung wie
+    setze_in_kraft()."""
+    parent = f"{PARENT_PREFIX}/{domaene_id}"
+    with speicher.lesen(db) as conn:
+        quellen_art: dict[str, str] = {}
+        for row in conn.execute(
+            "SELECT id, tags FROM knowledge_nodes WHERE parent_path=? AND tags LIKE '%\"art:quelle\"%'",
+            (parent,),
+        ):
+            for tag in json.loads(row["tags"] or "[]"):
+                if tag.startswith("beleg:"):
+                    quellen_art[row["id"]] = tag[len("beleg:"):]
+
+        ergebnis: dict[str, str] = {}
+        for row in conn.execute(
+            "SELECT id, content FROM knowledge_nodes WHERE parent_path=? AND tags LIKE '%\"art:regel\"%'",
+            (parent,),
+        ):
+            regel = json.loads(row["content"] or "{}")
+            quelle_id = f"domaenenquelle-{domaene_id}-{regel.get('ziel_id')}"
+            ergebnis[regel.get("id", row["id"])] = quellen_art.get(quelle_id, "mitgeliefert")
+    return ergebnis
+
+
 def _kuerzen(text: str) -> str:
     text = text or ""
     return text if len(text) <= _SUMMARY_MAXLEN else text[:_SUMMARY_MAXLEN].rstrip() + " [...]"
@@ -234,6 +347,11 @@ def _quelle_zeile(domaene_id: str, herkunft: str, quelle_id: str, quelle: Any, t
     # Quelle/Regel traegt bereits das Tag "art:quelle"/"art:regel" (siehe
     # setze_in_kraft(), das genau danach filtert).
     bezeichnung = (quelle.get("bezeichnung") if isinstance(quelle, dict) else None) or quelle_id
+    # "beleg:<art>" (Fund O3): haelt fest, ob diese Quelle selbstkonsistent
+    # ("mitgeliefert") oder gegen den Bestand verankert ("bestand") in
+    # pruefe() angenommen wurde -- gelesen von herkunft_uebersicht() unten,
+    # NICHT nur geschrieben (sonst dasselbe blinde Feld wie abgeleitet_von).
+    art, _ = herkunftsart(quelle)
     return _zeile(
         id_=f"domaenenquelle-{domaene_id}-{quelle_id}",
         path=f"{PARENT_PREFIX}/{domaene_id}/quellen/{quelle_id}",
@@ -242,7 +360,7 @@ def _quelle_zeile(domaene_id: str, herkunft: str, quelle_id: str, quelle: Any, t
         summary=_kuerzen(bezeichnung),
         content=json.dumps(quelle, ensure_ascii=False, sort_keys=True),
         level=1,
-        tags=["domaenenpaket-import", f"domaene:{domaene_id}", "art:quelle"],
+        tags=["domaenenpaket-import", f"domaene:{domaene_id}", "art:quelle", f"beleg:{art}"],
         source=f"domaenenpaket:{herkunft}/{domaene_id}/quellen/{quelle_id}",
         ts=ts,
     )
@@ -283,4 +401,4 @@ def _abgelehnt(grund: str) -> dict[str, Any]:
     return {"angenommen": False, "anzahl_regeln": None, "bezeichnung": None, "grund": grund}
 
 
-__all__ = ["importiere", "pruefe", "speichere", "setze_in_kraft"]
+__all__ = ["importiere", "pruefe", "speichere", "setze_in_kraft", "herkunft_uebersicht"]

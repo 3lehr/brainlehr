@@ -4,7 +4,7 @@ _selbsttest_regeln."""
 
 import pytest
 
-from kern.belegvertrag import pruefe_regeln, tatsache
+from kern.belegvertrag import herkunftsart, pruefe_regeln, tatsache
 
 
 def test_regel_mit_belegter_fundstelle_laedt():
@@ -62,3 +62,30 @@ def test_leere_fundstelle_gilt_nicht_als_beleg():
                 {"z1": {"text": "beliebig"}},
             )
         assert "ohne_beleg" in str(fehler.value)
+
+
+# ---------------------------------------------------------------------------
+# FUND O3 (docs/SICHERHEITSFUNDE_2026-08-14.md): Herkunftsart der Quelle.
+
+def test_herkunftsart_ohne_feld_ist_mitgeliefert():
+    assert herkunftsart({"bezeichnung": "x"}) == ("mitgeliefert", None)
+
+
+def test_herkunftsart_erkennt_bestandsverweis():
+    assert herkunftsart({"bezeichnung": "x", "_herkunft": "bestand:abc123"}) == ("bestand", "abc123")
+
+
+def test_herkunftsart_leerer_bestandsverweis_hat_keine_id():
+    assert herkunftsart({"_herkunft": "bestand:   "}) == ("bestand", None)
+
+
+def test_herkunft_schluessel_selbst_zaehlt_nicht_als_belegtext():
+    """Rot-Probe des naiven Entwurfs: OHNE den Ausschluss in belegt() koennte
+    eine Fundstelle wie 'bestand' durch das eigene Steuerfeld '_herkunft'
+    belegt werden -- ein Beleg ueber Verwaltungsdaten statt Inhalt. Von Hand
+    geprueft: `"bestand" in "bestand:abc"` ist True, ohne den Feldausschluss
+    haette diese Regel geladen."""
+    from kern.belegvertrag import belegt
+
+    quelle = {"bezeichnung": "voellig anderer Text", "_herkunft": "bestand:abc123"}
+    assert belegt("bestand", quelle) is False
