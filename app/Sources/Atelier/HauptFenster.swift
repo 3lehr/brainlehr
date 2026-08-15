@@ -2,6 +2,7 @@
 // 2 und 3 des Plans fuellen sie mit dem eingebetteten Wissensraum bzw. den
 // Ausweisformularen. Hier zaehlt der Rahmen und die Dienstaufsicht.
 
+import BrainlehrCore
 import SwiftUI
 
 enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
@@ -14,6 +15,15 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
     case ausweise
 
     var id: String { rawValue }
+
+    /// I1 (ADR-014): nil == Kern, immer da. Ein Wert == Bestandteil, nur da
+    /// wenn die aktive Domaene ihn angefordert bekam (AtelierApp.swift
+    /// filtert Seitenleiste UND Menue danach, HauptFenster.body sperrt
+    /// zusaetzlich die Darstellung selbst -- doppelt, weil `aktuell` auch
+    /// programmatisch gesetzt werden kann, siehe Steuerschnittstelle).
+    var bestandteil: Bestandteil? {
+        self == .dokument ? .dokumentfenster : nil
+    }
 
     var titel: String {
         switch self {
@@ -48,12 +58,21 @@ struct HauptFenster: View {
     /// eingeklappt ist.
     @ObservedObject var wahl: Ansichtswahl
 
+    /// I1: Kern-Eintraege immer, Bestandteil-Eintraege nur wenn angefordert
+    /// UND gewaehrt (Ansichtswahl.bestandteile). Dieselbe Filterung wie im
+    /// Menue (AtelierApp.swift) -- zwei Bedienwege zur selben Seitenleiste.
+    private var sichtbareEintraege: [SeitenleistenEintrag] {
+        SeitenleistenEintrag.allCases.filter {
+            $0.bestandteil == nil || wahl.bestandteile.contains($0.bestandteil!)
+        }
+    }
+
     var body: some View {
         NavigationSplitView {
             List(selection: Binding(
                 get: { Optional(wahl.aktuell) },
                 set: { if let n = $0 { wahl.aktuell = n } })) {
-                ForEach(SeitenleistenEintrag.allCases) { eintrag in
+                ForEach(sichtbareEintraege) { eintrag in
                     Label(eintrag.titel, systemImage: eintrag.symbol)
                         .accessibilityLabel(eintrag.titel)
                         .tag(eintrag)
@@ -87,7 +106,11 @@ struct HauptFenster: View {
                     RasterAnsicht()
                 } else if wahl.aktuell == .bearbeitung {
                     BearbeitungsAnsicht()
-                } else if wahl.aktuell == .dokument {
+                } else if wahl.aktuell == .dokument && wahl.bestandteile.contains(.dokumentfenster) {
+                    // I1: zweite Sperre, nicht nur die Seitenleiste oben --
+                    // `aktuell` laesst sich auch programmatisch setzen
+                    // (Steuerschnittstelle), das darf den Bestandteil nicht
+                    // umgehen.
                     DokumentAnsicht(sitzung: dokument)
                 } else if wahl.aktuell == .sitzung {
                     SitzungsAnsicht()

@@ -7,21 +7,35 @@
 // Die Pruefung (annehmen/ablehnen mit Grund) liegt in kern/domaene.py
 // (H8a) und in BrainlehrCore.DomaeneImportUebersetzung (Uebersetzung der
 // Antwort in Nutzersprache).
+//
+// I1: das optionale Feld "bestandteile" im selben Paket wird HIER lokal
+// gelesen, nicht vom Dienst -- kern/domaene.py kennt es nicht und muss es
+// nicht kennen (Bestandteile sind eine Darstellungsfrage, kein
+// Wissensvertrag, siehe kern/bestandteile.py). Gewaehrt wird nur, was der
+// Katalog in BrainlehrCore.BestandteilAnforderung zulaesst -- und nur, wenn
+// der Dienst das Paket selbst angenommen hat. WIRKUNG NULL (wie
+// kern/domaene.py bei einem abgelehnten Paket): `bestandteile == nil`
+// bedeutet "nichts geaendert", nicht "nichts gewaehrt" -- eine abgelehnte
+// oder unlesbare Datei loescht keine bereits geltende Anforderung einer
+// frueher angenommenen Domaene.
 
 import BrainlehrCore
 import Foundation
 
 enum DomaeneImportDienst {
-    static func importiere(dateiURL: URL) async -> DomaeneImportErgebnis {
+    static func importiere(dateiURL: URL) async -> (ergebnis: DomaeneImportErgebnis, bestandteile: Set<Bestandteil>?) {
         guard let daten = try? Data(contentsOf: dateiURL),
               let paket = try? JSONSerialization.jsonObject(with: daten) as? [String: Any]
         else {
-            return DomaeneImportErgebnis(
+            let e = DomaeneImportErgebnis(
                 titel: "Nicht gelesen",
                 text: "Diese Datei lässt sich nicht als Paket lesen.")
+            return (e, nil)
         }
+        let angefordert = paket["bestandteile"] as? [String] ?? []
+
         guard let url = URL(string: "http://127.0.0.1:\(DienstAufsicht.port)/api/domaene-import") else {
-            return unerreichbar
+            return (unerreichbar, nil)
         }
         var anfrage = URLRequest(url: url)
         anfrage.httpMethod = "POST"
@@ -31,9 +45,11 @@ enum DomaeneImportDienst {
         guard let (antwortDaten, _) = try? await URLSession.shared.data(for: anfrage),
               let roh = try? JSONSerialization.jsonObject(with: antwortDaten) as? [String: Any]
         else {
-            return unerreichbar
+            return (unerreichbar, nil)
         }
-        return DomaeneImportUebersetzung.uebersetze(roh)
+        let angenommen = (roh["angenommen"] as? Bool) == true
+        let bestandteile = angenommen ? BestandteilAnforderung.gewaehrt(angefordert: angefordert) : nil
+        return (DomaeneImportUebersetzung.uebersetze(roh), bestandteile)
     }
 
     private static var unerreichbar: DomaeneImportErgebnis {

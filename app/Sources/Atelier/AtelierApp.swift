@@ -2,6 +2,7 @@
 // MenuBarExtra und ohne KeyboardShortcuts-Fremdpaket.
 
 import AppKit
+import BrainlehrCore
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -26,6 +27,26 @@ final class Ansichtswahl: ObservableObject {
     /// laesst sich programmatisch nicht pruefen, dass die Regler je Blick
     /// verschieden sind, und genau das ist ihre Fachlogik.
     @Published var blick: WissensraumBlick = .baum
+    /// I1 (ADR-014): welche Bestandteile die zuletzt angenommene Domaene
+    /// angefordert UND gewaehrt bekommen hat. Leer bei frischer Installation
+    /// (zwei Ausgangszustaende, Hausregel) -- ohne importierte Domaene laedt
+    /// keiner. UserDefaults statt eigener Datei: ueberlebt einen Neustart,
+    /// braucht kein Entitlement, ist eingebautes Systemmittel.
+    @Published private(set) var bestandteile: Set<Bestandteil>
+
+    private static let bestandteileSchluessel = "gewaehrteBestandteile"
+
+    init() {
+        let namen = UserDefaults.standard.stringArray(forKey: Self.bestandteileSchluessel) ?? []
+        bestandteile = Set(namen.compactMap(Bestandteil.init(rawValue:)))
+    }
+
+    /// Ersetzt die Menge -- eine neu importierte Domaene erklaert, was SIE
+    /// braucht, sie ergaenzt keine Reste einer frueheren.
+    func setzeBestandteile(_ neu: Set<Bestandteil>) {
+        bestandteile = neu
+        UserDefaults.standard.set(neu.map(\.rawValue), forKey: Self.bestandteileSchluessel)
+    }
 }
 
 @MainActor
@@ -130,7 +151,11 @@ struct AtelierApp: App {
             // zusaetzlich mit Zifferntasten, damit der Wechsel auch ohne Maus
             // geht. Beides zusammen ist der Rueckweg aus jedem Zustand.
             CommandGroup(before: .toolbar) {
-                ForEach(Array(SeitenleistenEintrag.allCases.enumerated()), id: \.element) { nr, e in
+                // I1: dieselbe Filterung wie in der Seitenleiste
+                // (HauptFenster.swift) -- sonst waere die Menueleiste ein
+                // zweiter, ungeprueften Weg zu einem nicht angeforderten
+                // Bestandteil.
+                ForEach(Array(sichtbareEintraege.enumerated()), id: \.element) { nr, e in
                     Button {
                         appDelegate.wahl.aktuell = e
                     } label: {
@@ -163,6 +188,14 @@ struct AtelierApp: App {
         }
     }
 
+    /// I1: Kern-Eintraege immer, Bestandteil-Eintraege (aktuell nur
+    /// "Dokument") nur wenn die aktive Domaene sie angefordert bekam.
+    private var sichtbareEintraege: [SeitenleistenEintrag] {
+        SeitenleistenEintrag.allCases.filter {
+            $0.bestandteil == nil || appDelegate.wahl.bestandteile.contains($0.bestandteil!)
+        }
+    }
+
     /// Dateiauswahl (nur die Paketdatei) + Ergebnis in Nutzersprache. Ergebnis
     /// kommt als NSAlert -- der einzig zumutbare Weg fuer eine Rueckmeldung
     /// aus einem Menuebefehl heraus, der zu keiner View gehoert. Der
@@ -178,7 +211,10 @@ struct AtelierApp: App {
         panel.canChooseFiles = true
         guard panel.runModal() == .OK, let url = panel.url else { return }
         Task {
-            let ergebnis = await DomaeneImportDienst.importiere(dateiURL: url)
+            let (ergebnis, bestandteile) = await DomaeneImportDienst.importiere(dateiURL: url)
+            // nil == Wirkung Null: eine abgelehnte oder unlesbare Datei
+            // aendert nichts an einer bereits geltenden Anforderung.
+            if let bestandteile { appDelegate.wahl.setzeBestandteile(bestandteile) }
             let alert = NSAlert()
             alert.messageText = ergebnis.titel
             alert.informativeText = ergebnis.text
