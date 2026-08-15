@@ -1,0 +1,72 @@
+{
+  "titel": "Feuert PreToolUse bei Subagenten? Messung zum Stash-Vorfall vom 2026-08-15",
+  "zeitpunkt": "2026-08-15T14:20:00+0200",
+  "auftrag": "Klaeren, warum haken/stash_guard_hook.py (repo-PreToolUse auf Bash) einen echten `git stash` in einem Subagenten dieser Sitzung nicht verhindert hat.",
+  "antwort": "(c)",
+  "antwort_text": "Es feuert grundsaetzlich (Beleg unten), aber der Arbeitsbaum des Subagenten ist ein anderer -- und die repo-eigene .claude/settings.json liegt dort in einer VERALTETEN Fassung, die den PreToolUse-Bash-Eintrag fuer stash_guard_hook.py noch gar nicht enthaelt.",
+
+  "befund_1_root_cause": {
+    "mechanismus": "EnterWorktree/Agent-Worktrees unter .claude/worktrees/<name>/ sind Kopien des Repos, die BEIM ANLEGEN einen Schnappschuss von .claude/ mitbekommen (inkl. settings.json). Spaetere Aenderungen an der Repo-eigenen .claude/settings.json des Hauptbaums erreichen bereits existierende Schnappschuss-Worktrees NICHT.",
+    "beleg_commit": "be1946edc9873d26bd3405c26dee69ea4737ef48, 2026-08-15T11:26:54+0200 -- fuegt in /Volumes/daten/Begod2026/brainlehr/.claude/settings.json den Block PreToolUse->matcher Bash->haken/stash_guard_hook.py ERSTMALS hinzu. Vorher gab es dort UEBERHAUPT KEIN PreToolUse.",
+    "eigener_arbeitsbaum": {
+      "pfad": "/Volumes/daten/Begod2026/brainlehr/.claude/worktrees/baum-20260815T054407-65075/.claude/settings.json",
+      "mtime": "2026-08-15T05:44:08+0200 (vor dem Fix-Commit)",
+      "inhalt_pruefung": "enthaelt NUR den Stop-Hook (existenzpruefung.py). Kein PreToolUse-Block ueberhaupt. grep stash_guard_hook -> 0 Treffer.",
+      "diff_gegen_hauptbaum": "Zeilen 3-13 der Hauptbaum-Datei (der komplette PreToolUse-Block) fehlen in der Worktree-Kopie vollstaendig."
+    },
+    "stichprobe_weitere_worktrees": [
+      {"worktree": "baum-20260815T110822-33231", "mtime_settings": "2026-08-15T11:08:22+0200", "vor_fix": true, "stash_guard_treffer": 0},
+      {"worktree": "hallo-01e380", "mtime_settings": "2026-08-14T20:40:43+0200", "vor_fix": true, "stash_guard_treffer": 0},
+      {"worktree": "weiter-88f06c", "mtime_settings": "2026-08-14T12:44:07+0200", "vor_fix": true, "stash_guard_treffer": 0}
+    ],
+    "ergebnis_stichprobe": "4 von 4 geprueften Worktree-Schnappschuessen mit vorhandener settings.json sind aelter als der Fix-Commit und haben dadurch KEINEN stash_guard_hook-Eintrag. 0 von 4 sind aktuell. Viele weitere Worktree-Verzeichnisse (ueber 100, Praefix baum-*) haben ueberhaupt keine .claude/settings.json (leere/transiente Verzeichnisse)."
+  },
+
+  "befund_2_experiment_rot_vor_gruen": {
+    "beschreibung": "Echter git-stash-Versuch in einem selbst angelegten Wegwerf-Arbeitsbaum (git worktree add, NICHT im echten /Volumes/daten/Begod2026/brainlehr), ausgefuehrt per Bash-Werkzeug durch mich selbst als Subagent dieser Sitzung.",
+    "befehl": "git -C /Volumes/daten/Begod2026/brainlehr worktree add --detach <wegwerfpfad> HEAD; dort: echo x > probe.txt; git add probe.txt; git stash",
+    "ergebnis": "Saved working directory and index state ... -- EXIT=0. Die Wache griff NICHT. Nach dem Test: git stash pop (Wiederherstellung) und git worktree remove --force <wegwerfpfad> -- Wegwerf-Arbeitsbaum vollstaendig entfernt.",
+    "einordnung": "Bestaetigt (c) empirisch: der Aufruf lief ueber mein aktives Regelwerk (die veraltete Worktree-settings.json ohne PreToolUse), nicht ueber die aktuelle Hauptbaum-Datei -- unabhaengig vom cwd des einzelnen Bash-Befehls (`cd` im Bash-Tool aendert die fuer die Sitzung geltende Hook-Konfiguration nicht)."
+  },
+
+  "befund_3_feuert_pretooluse_bei_subagenten_grundsaetzlich": {
+    "frage": "Ist (a) -- PreToolUse feuert bei Subagenten prinzipiell NICHT -- damit auch ausgeschlossen, oder bleibt sie offen?",
+    "beleg_gegen_a": "hub/laufzeit/agent-register.jsonl (Pfad ermittelt ueber agent_register_ort.pfad(), NICHT aus dem Gedaechtnis) enthaelt fuer diese Sitzung (session 01c01c7f) mehrere Zeilen der Form {\"ev\": \"file\", ..., \"rolle\": \"subagent\", \"file\": ...} -- geschrieben von hub/scripts/agent_register_hook.py, registriert als PostToolUse (Matcher Edit|Write) in der GLOBALEN ~/.claude/settings.json. Diese Eintraege beweisen: der Harness-Hook-Mechanismus wird fuer Werkzeugaufrufe VON SUBAGENTEN aufgerufen und kann sie sogar explizit als 'subagent' markieren (SubagentStart/SubagentStop liefern die agent_id). Ausserdem: 19 Zeilen im Register tragen die aktuelle sessionId.",
+    "einschraenkung": "Direkt fuer PreToolUse (statt PostToolUse) liess sich in der verfuegbaren Zeit kein Analogon zum Register-Beleg finden, weil alle in dieser Sitzung aktiven PreToolUse-Bash-Waechter entweder (a) ueber die veraltete Worktree-settings.json unerreichbar waren (stash_guard) oder (b) bedingt sind auf einen Zustand, der sich ohne Seiteneffekt auf laufende Agenten nicht sauber erzwingen liess (commit_guard_hook.py: nur bei >1 aktivem Agent im Register). Die SubagentStart/SubagentStop/PostToolUse-Beweise zusammen mit dem Fakt, dass alle Ereignistypen ueber denselben Hook-Dispatch der Sitzung laufen, sind ein STARKES, aber kein VOLLSTAENDIGES Indiz -- 'PreToolUse feuert bei Subagenten NICHT' gilt hiermit als WIDERLEGT (mind. ein anderer Event-Typ desselben Dispatch-Mechanismus feuert nachweislich fuer Subagenten), 'exakt PreToolUse tut es ebenfalls' ist die naheliegende, aber nicht separat directbelegte Folgerung."
+  },
+
+  "zahl_mit_nenner": {
+    "frage": "Wie oft hat der Haken in dieser Sitzung gefeuert, bei wieviel Bash-Aufrufen insgesamt, getrennt Hauptfaden/Agent?",
+    "antwort": "NICHT ERMITTELBAR aus dem Sitzungsprotokoll -- mit Begruendung.",
+    "begruendung": "haken/stash_guard_hook.py (wie die meisten hier verwendeten Waechter) ist als 'fail-open, lautlos durchlassend' gebaut: bei Erlaubnis wird exit(0) OHNE stdout aufgerufen (Funktion allow()). Nur eine ABLEHNUNG erzeugt ein hookSpecificOutput-JSON, das der Harness als sichtbaren 'hook_success'-Eintrag im Transcript protokolliert. Im ausgewerteten Protokoll dieser Sitzung (/Users/lehrmacbook/.claude/projects/.../01c01c7f-....jsonl, 2904 Zeilen, 146 Bash-tool_use-Eintraege, zeilenweise mit grep/jq geprueft) gibt es GENAU 6 hookSpecificOutput-Treffer -- alle sechs sind PostToolUse:Edit/PostToolUse:Write (design-waechter u.ae.), KEIN einziger ist PreToolUse. Das ist aber NICHT gleichbedeutend mit 'PreToolUse:Bash lief 0-mal' -- ein lautlos durchgelassener Aufruf sieht im Protokoll IDENTISCH aus wie ein Aufruf, bei dem der Hook gar nicht registriert war. Die beiden Faelle sind aus dem Transcript allein nicht unterscheidbar. Ausserdem legt dieselbe sessionId 01c01c7f ueber den ganzen Tag (09:27 bis 14:14 Uhr) hinweg Eintraege an und enthaelt Task-Notifications mehrerer Hintergrund-Agenten, aber alle Werkzeugaufruf-Eintraege tragen einheitlich 'caller':{'type':'direct'} und 'isSidechain':false -- eine Trennung 'dieser Aufruf kam vom Hauptfaden' vs. 'dieser Aufruf kam von Agent X' ist anhand dieser Felder in diesem Transcript NICHT moeglich. Der tatsaechliche Vorfall (der reale, blockierte/nicht-blockierte git-stash-Aufruf des meldenden Subagenten) taucht in DIESER Protokolldatei ueberhaupt nicht auf -- er lief vermutlich in einer eigenen Subagenten-Sitzung mit eigener Protokolldatei (bestaetigt durch den Fund, dass jedes Worktree-Verzeichnis unter .claude/worktrees/<name>/ einen eigenen Projekt-Ordner unter ~/.claude/projects/ mit eigener sessionId hat); eine vollstaendige Tageszaehlung ueber alle betroffenen Sitzungsdateien war im Auftragsrahmen (kein Aendern fremder/laufender Sitzungen, Zeitbudget) nicht leistbar."
+  },
+
+  "schadensmeldung_andere_betroffene_haken": {
+    "frage": "Wenn PreToolUse bei Agenten wegen veralteter Worktree-Schnappschuesse nicht wirkt -- welche ANDEREN Haken sind ebenso betroffen?",
+    "mechanismus_gilt_fuer": "JEDE Aenderung an einer REPO-EIGENEN .claude/settings.json (nicht an der globalen ~/.claude/settings.json -- die ist kein Schnappschuss und wird pro Pfad $HOME live gelesen, betrifft also grundsaetzlich alle Worktrees gleich, unabhaengig vom Anlagezeitpunkt). Betroffen sind nur Hooks, die NACH dem Anlegen eines Worktree-Schnappschusses in die repo-eigene Datei eingetragen wurden.",
+    "repo_brainlehr_settings_json_aktuell": [
+      {"event": "PreToolUse", "matcher": "Bash", "hook": "haken/stash_guard_hook.py", "status": "BETROFFEN -- eingefuehrt 2026-08-15T11:26:54, in allen 4 geprueften Worktree-Schnappschuessen (alle vor diesem Zeitpunkt angelegt) nicht vorhanden."},
+      {"event": "Stop", "matcher": "-", "hook": "haken/existenzpruefung.py", "status": "NICHT betroffen -- war bereits im 05:44-Schnappschuss vorhanden, also aelter als der Cutoff."}
+    ],
+    "global_home_settings_json_pretooluse": [
+      "matcher Agent|Task -> hub/scripts/agent_model_guard.py, hub/scripts/agent_reuse_guard_hook.py",
+      "matcher Edit|Write|NotebookEdit -> hub/scripts/cascade_guard_hook.py",
+      "matcher Bash -> hub/scripts/commit_guard_hook.py",
+      "matcher Agent -> brainlehr/haken/auftragshypothese_waechter.py"
+    ],
+    "einordnung_global": "Diese fuenf Hooks liegen NICHT in einer Worktree-Schnappschussdatei, sondern in ~/.claude/settings.json direkt -- das Staleness-Problem dieses Berichts trifft sie NICHT. Sie haben aber ein ANDERES, bereits in CLAUDE.md dokumentiertes Risiko (die Datei 'verschwand am 2026-08-14 binnen 36 Minuten wieder', L-083b95) -- das ist ein separater Befund und wurde hier nicht erneut vermessen.",
+    "kernsatz": "Aktuell ist GENAU EIN Hook (stash_guard_hook.py) tatsaechlich durch die Worktree-Staleness lahmgelegt, weil es der bislang EINZIGE PreToolUse-Eintrag in der repo-eigenen settings.json ist. Das Risiko ist aber strukturell, nicht auf diesen einen Hook beschraenkt: JEDER kuenftige Guard, der in .claude/settings.json (repo-eigen) eingetragen wird, erreicht ausschliesslich NEU angelegte Worktrees ab dem Eintragungszeitpunkt -- alle zu diesem Zeitpunkt bereits bestehenden Worktree-Schnappschuesse (zum Messzeitpunkt: ueber 100 Verzeichnisse unter .claude/worktrees/, davon mindestens 4 mit vollstaendiger .claude/settings.json und alle 4 veraltet) bleiben bis zu ihrer eigenen Entfernung ungeschuetzt."
+  },
+
+  "ausgeschlossene_erklaerungen": {
+    "a_pretooluse_feuert_bei_subagenten_nie": "WIDERLEGT als generelle Aussage -- PostToolUse (gleicher Dispatch-Mechanismus) feuert nachweislich fuer Subagenten (agent-register.jsonl, rolle:subagent-Eintraege dieser Sitzung).",
+    "b_repo_settings_gilt_fuer_subagenten_grundsaetzlich_nicht_nur_home_datei": "NICHT die Ursache -- die repo-eigene Datei WIRD gelesen (der Stop-Hook aus derselben Datei ist im Schnappschuss vorhanden und aktiv), nur eben in veralteter Fassung.",
+    "c_anderer_arbeitsbaum_datei_fehlt_dort": "BESTAETIGT -- siehe Befund 1 und 2.",
+    "d_befehlsform_umgeht_das_muster": "NICHT GEPRUEFT NOTWENDIG, weil (c) das beobachtete Verhalten bereits vollstaendig erklaert (kein PreToolUse-Eintrag vorhanden -> Musterpruefung findet nie statt, unabhaengig von der Befehlsform). Eine Musterluecke in stash_guard_hook.py selbst (Statement-Segmentierung, siehe Docstring 'mehrzeilige Heredocs koennen zeilenweise falsch geschnitten werden') bleibt ein bekanntes, im Code selbst dokumentiertes Fail-open-Verhalten, ist hier aber NICHT der Vorfallsgrund."
+  },
+
+  "einsatz": "Wenn ein neu eingezogener Guard nur die zum Eintragungszeitpunkt EXISTIERENDEN Arbeitsbaeume je erreicht und jeder danach oder VORHER bereits angelegte Worktree-Schnappschuss dauerhaft ungeschuetzt bleibt, dann ist jede kuenftige 'wir haben den Verstoss jetzt technisch verhindert'-Aussage in diesem System falsch, solange laengerlebige Worktrees existieren -- das ist kein einmaliger Vorfall, sondern eine strukturelle Lebensdauer-Lucke jedes einzelnen repo-lokalen Hooks.",
+
+  "geaenderte_dateien": [],
+  "hinweis_keine_codeaenderung": "haken/stash_guard_hook.py wurde NICHT geaendert. Die Ursache liegt nicht im Skript, sondern in der Verteilung/Aktualisierung von .claude/settings.json auf bereits bestehende Worktree-Schnappschuesse -- eine Aenderung waere eine Verdrahtungsaenderung ausserhalb des freigegebenen Schreibrahmens (Einstellungsdateien sind laut Auftrag tabu) und haette waehrend dreier parallel laufender Agenten den falschen Zeitpunkt getroffen."
+}
