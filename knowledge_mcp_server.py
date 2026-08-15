@@ -3298,6 +3298,18 @@ def knowledge_add(parent_path: str, title: str, summary: str,
 
     # Derive path from parent + slugified title
     slug = _slugify(title)
+    if not slug:
+        # Leerer oder rein aus Sonderzeichen bestehender Titel (z.B. "" oder
+        # "???") slugifiziert zu "" -- node_path waere dann identisch mit
+        # parent_path (bei parent_path="/": "/" selbst, der Wurzelpfad).
+        # Gemessen: das legte bisher klaglos eine Zeile mit path="/" an,
+        # neben jedem anderen Knoten, der "/" als parent_path traegt.
+        log_access(conn, None, "add", project_id=project_id, actor=actor, model=model,
+                   session=session, status="rejected", query="titel_ergibt_leeren_pfad")
+        conn.close()
+        return {"error": f"title ergibt keinen brauchbaren Pfad-Slug: {title!r}. "
+                         f"Titel braucht mindestens ein Buchstaben-/Ziffernzeichen."}
+
     node_path = f"{parent_path}/{slug}" if parent_path != "/" else f"/{slug}"
 
     if parent_path != "/":

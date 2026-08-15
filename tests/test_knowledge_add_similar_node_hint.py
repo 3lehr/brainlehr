@@ -253,3 +253,80 @@ def test_schreibdauer_hint_pruefung_nicht_spuerbar(temp_db, monkeypatch):
     assert "error" not in res, res
     print(f"\nknowledge_add mit Hinweispruefung (Cache warm): {dauer_ms:.1f}ms")
     assert dauer_ms < 200.0, f"{dauer_ms:.1f}ms -- Hinweispruefung koennte spuerbar verlangsamen"
+
+
+# ─── Grenzwerte (nachgetragen bei der Nachmessung dieses Auftrags) ─────────
+#
+# Rot vor gruen fuer den Titel-Fall: VOR der zugehoerigen Aenderung in
+# knowledge_add() (Zeile um "if not slug:") legte ein leerer oder rein aus
+# Sonderzeichen bestehender Titel eine Zeile mit path="/" an -- identisch mit
+# dem Wurzelpfad, den jeder Aufruf mit parent_path="/" traegt. Nachgestellt:
+# knowledge_add("/", "", ...) lieferte {"status": "created", ...} statt eines
+# Fehlers, und knowledge_nodes enthielt danach eine Zeile mit path="/".
+
+def test_leerer_titel_wird_abgelehnt(temp_db, monkeypatch):
+    monkeypatch.setattr(kms.embeddings, "embed_text", _make_embed_mock())
+    res = kms.knowledge_add("/", "", "leerer titel", source="test",
+                            norm_entscheidung="keine_norm", norm_entschieden_grund="test")
+    assert "error" in res, res
+
+    conn = sqlite3.connect(str(temp_db))
+    n = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
+    conn.close()
+    assert n == 0, "abgelehnter leerer Titel haette keine Zeile schreiben duerfen"
+
+
+def test_titel_nur_sonderzeichen_wird_abgelehnt(temp_db, monkeypatch):
+    """Wie oben, aber ueber einen NICHT-leeren Titel, der trotzdem zu einem
+    leeren Slug faltet ('???' -> '') -- derselbe Fehlerpfad, ein anderer
+    Ausloeser."""
+    monkeypatch.setattr(kms.embeddings, "embed_text", _make_embed_mock())
+    res = kms.knowledge_add("/", "???", "titel ohne brauchbare zeichen", source="test",
+                            norm_entscheidung="keine_norm", norm_entschieden_grund="test")
+    assert "error" in res, res
+
+    conn = sqlite3.connect(str(temp_db))
+    n = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
+    conn.close()
+    assert n == 0
+
+
+def test_sehr_kurzer_titel_wird_angelegt(temp_db, monkeypatch):
+    """Ein einzelnes brauchbares Zeichen ist ein gueltiger Titel (Grenzwert
+    knapp UEBER der Ablehnung) -- kein Fehler, normaler Pfad."""
+    monkeypatch.setattr(kms.embeddings, "embed_text", _make_embed_mock())
+    res = kms.knowledge_add("/", "A", "kurzer titel", source="test",
+                            norm_entscheidung="keine_norm", norm_entschieden_grund="test")
+    assert "error" not in res, res
+    assert res["path"] == "/a"
+
+
+def test_identischer_titel_anderer_inhalt_gibt_hinweis_kein_fehler(temp_db, monkeypatch):
+    """Gleicher Titel unter VERSCHIEDENEM Elternpfad (also verschiedener
+    node_path, kein Pfad-Kollisionsfehler) mit abweichendem Inhalt: erwartet
+    ist ein Hinweis, keine Ablehnung -- der Aufrufer entscheidet."""
+    monkeypatch.setattr(kms.embeddings, "embed_text", _make_embed_mock())
+    kms.knowledge_add("/", DD_TITLE, DD_SUMMARY, content=DD_CONTENT, source="test")
+    res = kms.knowledge_add(
+        "/andere-ecke", DD_TITLE,  # identischer Titel, ANDERER Elternpfad -> kein Pfadkonflikt
+        "Voellig andere Zusammenfassung ueber Backuprotation und Plattenplatz.",
+        content="Nichts mit Rangordnung, Sein/Sollen/Duerfen oder Achsen zu tun.",
+        source="test", neuer_ast=True,
+    )
+    assert "error" not in res, res
+    # Titelgleichheit allein treibt TF-IDF stark genug fuer einen Hinweis,
+    # obwohl Zusammenfassung/Inhalt fremd sind.
+    assert res.get("similar_node_hint", []) != []
+
+
+def test_gleicher_inhalt_anderer_pfad_gibt_hinweis(temp_db, monkeypatch):
+    """Wortgleicher Inhalt unter voellig anderem Titel/Pfad: der Hinweis
+    haengt am Text, nicht am Pfad."""
+    monkeypatch.setattr(kms.embeddings, "embed_text", _make_embed_mock())
+    kms.knowledge_add("/", DD_TITLE, DD_SUMMARY, content=DD_CONTENT, source="test")
+    res = kms.knowledge_add(
+        "/woanders", "Ein komplett anderer Titel fuer denselben Gedanken",
+        DD_SUMMARY, content=DD_CONTENT, source="test", neuer_ast=True,
+    )
+    assert "error" not in res, res
+    assert res.get("similar_node_hint", []) != []
