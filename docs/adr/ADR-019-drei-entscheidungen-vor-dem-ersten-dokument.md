@@ -1,4 +1,11 @@
-# ADR-019 — Drei Entscheidungen vor dem ersten gespeicherten Dokument
+# ADR-019 — Fünf Entscheidungen vor dem ersten gespeicherten Dokument
+
+> **Titel korrigiert 2026-08-15T12:55:00+0200.** Vorgelegt waren drei
+> Entscheidungen; die unabhängige Entwurfsprobe fand zwei weitere Lücken
+> derselben Art (Fassungen, Sprache), beide wurden entschieden. **Der Dateiname
+> bleibt bei „drei"** — er ist die Adresse, auf die andere Dokumente und Commits
+> zeigen, und Adressen werden nicht nachträglich geändert. Wer die Datei über
+> ihren Namen sucht, findet fünf Entscheidungen darin.
 
 **Status:** angenommen
 **Datum:** 2026-08-15T10:07:20+0200
