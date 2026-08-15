@@ -50,6 +50,7 @@ import geltungsbereich  # noqa: E402
 import kettenerklaerung  # noqa: E402  (explanations_by_id()/explains() -- Auftrag 2026-08-06)
 import konfidenz  # noqa: E402  (find_confidence_decay() -- Auftrag 2026-08-06, ADR-026 Z3)
 import normbestand  # noqa: E402  (quellstatus() -- Auftrag 2026-08-06)
+import normkraft  # noqa: E402  (geltungszeitpunkt() -- kanonischer Vergleich, Auftrag 2026-08-15)
 from knowledge_mcp_server import fold_de, SLUG_MAX_LEN, compute_ketten_hash  # noqa: E402
 
 DB_PATH = SHARED_KNOWLEDGE / "brainlehr.db"
@@ -630,24 +631,25 @@ def _normen_in_kraft(conn: sqlite3.Connection, now: datetime | None = None) -> l
 
     gilt_bis kommt real auch als reines Datum vor (normkraft.py erlaubt
     --ab ohne Uhrzeit, Bestand 2026-08-07: '/ops/buckeberg-anbieterabend-
-    2026-08-05' traegt gilt_bis='2026-08-06') -- datetime.fromisoformat()
-    liefert dafuer ein tz-naives Objekt, ein Vergleich mit dem tz-bewussten
-    `now` waere ein TypeError. Beide Seiten deshalb auf tz-naives UTC
-    normalisiert; ein naives gilt_bis zaehlt als UTC-Mitternacht dieses
-    Tages -- die ISO-Konvention fuer ein reines Datum."""
+    2026-08-05' traegt gilt_bis='2026-08-06'). Frueher wurde ein naives
+    gilt_bis als UTC-Mitternacht dieses Tages gewertet und mit `<=`
+    ausgeschlossen -- das schnitt den GESAMTEN letzten Geltungstag ab und
+    widersprach der kanonischen, an EINER Stelle festgelegten Bedeutung
+    (normkraft.py::in_kraft: gilt_bis ist INKLUSIV, letzter Geltungstag).
+    Seit 2026-08-15 daher ueber normkraft.geltungszeitpunkt(): ein reines
+    Datum wird bei gilt_bis auf Tagesende gelegt, nicht Tagesanfang."""
     if now is None:
         now = datetime.now(timezone.utc)
-    now_naive = now.astimezone(timezone.utc).replace(tzinfo=None) if now.tzinfo else now
+    now_zp = now.astimezone(timezone.utc) if now.tzinfo else now.replace(tzinfo=timezone.utc)
     rows = conn.execute(
         "SELECT id, path, title, project_id, norm_rang, norm_art, gilt_ab, gilt_bis "
         "FROM knowledge_nodes WHERE norm_rang IS NOT NULL"
     ).fetchall()
     out = []
     for r in rows:
-        bis = _parse_gilt_ab(r["gilt_bis"])
+        bis = normkraft.geltungszeitpunkt(r["gilt_bis"], ende_des_tages=True)
         if bis is not None:
-            bis_naive = bis.astimezone(timezone.utc).replace(tzinfo=None) if bis.tzinfo else bis
-            if bis_naive <= now_naive:
+            if bis < now_zp:
                 continue
         out.append({
             "id": r["id"], "path": r["path"], "norm_rang": r["norm_rang"],

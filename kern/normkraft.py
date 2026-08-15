@@ -56,7 +56,7 @@ import argparse
 import shutil
 import sqlite3
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import zeitmarke
@@ -197,6 +197,37 @@ def ausser_kraft(db_path: Path, pfad: str, ab: str, wegen: str,
     return result
 
 
+def geltungszeitpunkt(wert: str | None, ende_des_tages: bool) -> datetime | None:
+    """Parst gilt_ab/gilt_bis nach einem echten, vergleichbaren Zeitpunkt.
+
+    Formatdrift im Bestand (L-ec167a, gemessen 2026-08-15: 26 von 85
+    gilt_ab-Werten sind reines Datum 'YYYY-MM-DD' ohne Offset, 59 volle
+    Zeitstempel mit '+01:00'): ein roher Stringvergleich zwischen einem
+    Stichtag mit Uhrzeit und einem reinen Datum bricht GENAU am Rand --
+    'gilt_bis' inklusiv (siehe in_kraft-Docstring) heisst, der ganze Tag
+    zaehlt noch, aber 'YYYY-MM-DDT12:00:00Z' > 'YYYY-MM-DD' als String,
+    obwohl derselbe Tag. Deshalb: reines Datum wird explizit auf
+    Tagesanfang (gilt_ab) bzw. Tagesende 23:59:59 (gilt_bis) gelegt, beides
+    als UTC gewertet -- die ISO-Konvention fuer eine Datumsangabe ohne
+    Uhrzeit. Ein voller Zeitstempel wird direkt geparst und nach UTC
+    umgerechnet, damit +01:00 und +02:00 (Sommerzeit-Fehler des alten
+    DB-Vorgabewerts, siehe kern/zeitmarke.py) vergleichbar werden."""
+    if not wert:
+        return None
+    text = wert.strip()
+    try:
+        zeitpunkt = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if zeitpunkt.tzinfo is None:
+        zeitpunkt = zeitpunkt.replace(tzinfo=timezone.utc)
+        if ende_des_tages:
+            zeitpunkt += timedelta(hours=23, minutes=59, seconds=59)
+    else:
+        zeitpunkt = zeitpunkt.astimezone(timezone.utc)
+    return zeitpunkt
+
+
 def in_kraft(db_path: Path, stichtag: str | None = None) -> list[dict]:
     """Normen, die zum Stichtag (Vorgabe: jetzt) in Kraft waren.
 
@@ -207,22 +238,33 @@ def in_kraft(db_path: Path, stichtag: str | None = None) -> list[dict]:
     2026-08-06 (Auftrag): das Feld traegt in der Praxis Datumsangaben, und
     "gilt bis 31.12." heisst umgangssprachlich wie juristisch einschliesslich
     des 31.12. Formel: gilt_ab <= stichtag AND (gilt_bis IS NULL OR gilt_bis
-    >= stichtag)."""
-    stichtag = stichtag or now_iso()
+    >= stichtag).
+
+    Vergleich seit 2026-08-15 ueber geltungszeitpunkt() statt roher
+    SQL-WHERE-Stringvergleich (siehe dort) -- ein reiner Textvergleich
+    scheitert still am Formatdrift zwischen 'YYYY-MM-DD' und vollem
+    Zeitstempel, genau am inklusiven Rand von gilt_bis."""
+    stichtag_zp = geltungszeitpunkt(stichtag or now_iso(), ende_des_tages=False)
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
     try:
         rows = conn.execute(
             """SELECT path, title, norm_rang, gilt_ab, gilt_bis FROM knowledge_nodes
-               WHERE norm_rang IS NOT NULL
-                 AND gilt_ab IS NOT NULL AND gilt_ab <= ?
-                 AND (gilt_bis IS NULL OR gilt_bis >= ?)
+               WHERE norm_rang IS NOT NULL AND gilt_ab IS NOT NULL
                ORDER BY norm_rang, path""",
-            (stichtag, stichtag),
         ).fetchall()
     finally:
         conn.close()
-    return [dict(r) for r in rows]
+    result = []
+    for r in rows:
+        ab = geltungszeitpunkt(r["gilt_ab"], ende_des_tages=False)
+        if ab is None or ab > stichtag_zp:
+            continue
+        bis = geltungszeitpunkt(r["gilt_bis"], ende_des_tages=True)
+        if bis is not None and bis < stichtag_zp:
+            continue
+        result.append(dict(r))
+    return result
 
 
 # --- CLI ---------------------------------------------------------------
