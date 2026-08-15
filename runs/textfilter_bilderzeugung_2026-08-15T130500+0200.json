@@ -1,0 +1,128 @@
+{
+  "auftrag": "Messauftrag 2026-08-15, korrigiert waehrend der Laufzeit: 'Filter' -> 'Regeln' im Sinn von kern/domaene.py (Wirkungsvorrat, Beleg, Freigabe). Nur lesen, ein Ergebnis.",
+  "arbeitsorte": ["brainlehr", "openlehr", "design-lab", "hub", "buckeberg"],
+  "ausgeschlossen_aus_der_zaehlung": [".claude/worktrees/* (Duplikate anderer Sitzungen)", "node_modules", ".git", ".build", "DerivedData", "__pycache__"],
+
+  "regelbegriff_kern_domaene": {
+    "gelesen": ["brainlehr/kern/domaene.py (474 Zeilen)", "brainlehr/kern/belegvertrag.py (99 Zeilen)"],
+    "befund": "Eine Regel in diesem Sinn ist ein JSON-Eintrag {id, ziel_id, fundstelle} in einem 'Domaenenpaket' ({domaene, quellen, regeln}). Sie wird nur geladen, wenn ihre 'fundstelle' woertlich (Teilstring) in einem Quellentext steht (belegvertrag.belegt()). Sie traegt norm_rang=NULL bis ein Mensch setze_in_kraft() aufruft (ADR-018, Wirkung Null). Freigabe ('offen'/'intern'/'gesperrt') gilt je Knoten.",
+    "vorhandene_pakete": ["brainlehr/pakete/steuer.domaene.json (1 Paket, 4 Regeln, alle Steuer-Berechnungsregeln -- keine Textstil-Regel darunter)"],
+    "textstil_regeln_in_dieser_form": "keine gefunden -- 0 von 1 existierenden Domaenenpaketen betrifft Textstil/Tonalitaet/Zielgruppe."
+  },
+
+  "frage_1_text_regeln": {
+    "suchbegriffe": ["tonalitaet/tonalität", "zielgruppe", "anrede", "empfaenger/empfänger", "stil", "foermlich/förmlich", "lesbarkeit", "tone", "audience", "persona", "register"],
+    "durchsuchte_dateien_py_swift": 13563,
+    "vorgehen": "grep -rniE je Begriff ueber *.py/*.swift in den 5 Repos (worktree-Duplikate ausgeschlossen), Treffer einzeln gegen den echten Code gelesen -- Rohtreffer je Begriff liegen im dreistelligen bis fuenfstelligen Bereich, weit ueberwiegend falsch-positiv (z.B. 'register' als CPU-/DB-Begriff, 'persona' in Wissensbestand-Dateinamen fremder Domaenen).",
+
+    "befunde_als_daten_im_sinn_von_domaene.py": {
+      "anzahl": 0,
+      "begruendung": "Keine der gefundenen Text-Stellschrauben liegt als Domaenenpaket-Regel (mit fundstelle/Beleg/Rang) vor. Kein pakete/*.domaene.json ausser steuer.domaene.json existiert."
+    },
+
+    "befunde_als_daten_ohne_domaene_vertrag": [
+      {
+        "fundstelle": "design-lab/begod/knowledge/apps/akademia/aka-design-guide.json, Schluessel 'voice_und_tone' und 'zielgruppen'",
+        "inhalt": "voice_und_tone: {motto, tonalitaet:'professionell, warm, nicht akademisch-kalt', ansprache:'Sie-Form (nicht du)', beispiele:[...], verboten:[...]}. zielgruppen: {zae:{...}, zfa:{...}}",
+        "existiert": true,
+        "wird_gelesen": "NUR von brainlehr/kern/designtokens_latex.py -- und dort ausdruecklich NICHT verarbeitet: 'voice_und_tone' und 'zielgruppen' stehen nicht in UEBERSETZTE_SCHLUESSEL={'farben','typografie','pdf_masszahlen','meta'} und werden als UEBERSPRUNGEN-Warnung ausgegeben (Zeile 64, 231-243). Kein anderer Python- oder Swift-Code in den 5 Repos liest diese zwei Schluessel (grep -rn 'voice_und_tone|zielgruppen' --include=*.py --include=*.swift: 0 Treffer).",
+        "wirkt": false,
+        "einordnung": "Existiert als Daten, kein Belegvertrag/Rang, keine Freigabe -- weder Domaenen-Regel noch Code-Verzweigung. Toter Datensatz fuer Text; wurde offensichtlich fuer den Design-Guide erfasst, nie an eine Texterzeugung angeschlossen."
+      },
+      {
+        "fundstelle": "hub/begod/knowledge/konsil/konsil-oh-021-externe-kommunikation-wording.json, konsil-oh-022-zielgruppen-narrative-trennung-2026-02-27.json (identische Kopien auch in design-lab/, buckeberg/, openlehr/ -- begod/knowledge wird zwischen Repos gespiegelt)",
+        "inhalt": "Konsil-Entscheidungsdokumente mit 'evidenzstufe':'Rang 5: Konsil', Regeln wie 'NGO-Framing = technische Befaehigung', klare Zielgruppentrennung je Dokumenttyp.",
+        "existiert": true,
+        "gilt_fuer": "app 'openhood' (Auto-Diagnose), NICHT fuer brainlehr/akademia -- ausserhalb des vom Betreiber gemeinten Gegenstands, aber strukturell die naechste Verwandtschaft zu einer 'Regel mit Rang'.",
+        "wird_gelesen": "Kein Treffer fuer einen Codeaufruf, der dieses Konsil-Dokument zur Laufzeit einliest und in eine Texterzeugung einspeist -- es ist ein abgelegtes Entscheidungsprotokoll, kein wirkendes Regelwerk.",
+        "wirkt": false,
+        "einordnung": "Eigenes Rang-System ('evidenzstufe', Konsil-Mechanik), NICHT dasselbe wie norm_rang/domaene.py -- zwei verschiedene Bauformen fuer 'Regel mit Rang' im selben Verbund, keine Bruecke zwischen beiden gefunden."
+      },
+      {
+        "fundstelle": "openlehr/begod/scripts/ai_image_forge.py, Funktion default_control_profile() Zeile 99-111 und load_control_profile()",
+        "inhalt": "Profil-Schema (v2) je app_id: image_system_prompt, image_style_anchor, image_audience_prompt, image_tonality_prompt, image_negative_prompt, text_system_prompt.",
+        "existiert": true,
+        "wird_gelesen": "compose_prompt_with_control() (Zeile 124-152) liest system/anchor/audience/tonality/negative und baut daraus tatsaechlich den Prompt fuer die Bilderzeugung zusammen -- WIRKT fuer Bilder. 'text_system_prompt' dagegen wird nur ins Bild-Sidecar (*.meta.json, Zeile 497) durchgereicht, aber von KEINEM Text-Erzeugungsaufruf in den 5 Repos gelesen (grep -rn 'text_system_prompt' ausserhalb dieser Datei: 1 Treffer, apps/openlehr/daemon/steuer/ingest.py Zeile 1480 -- falsch-positiv, dort heisst eine lokale Variable 'ocr_text_system_prompt', kein Bezug zum control_profile).",
+        "wirkt_fuer_bild": true,
+        "wirkt_fuer_text": false,
+        "einordnung": "Kein Domaenenpaket-Vertrag (kein Beleg, kein Rang, keine Freigabe) -- eine reine Laufzeit-Konfigurationsdatei je App. Das einzige tatsaechlich wirkende Zielgruppen/Tonalitaets-Feld im ganzen Suchraum, aber fuer BILDER, nicht fuer Text."
+      }
+    ],
+
+    "befunde_im_code_verdrahtet": [
+      {
+        "fundstelle": "openlehr/apps/openlehr/daemon/steuer/finanzamt/letters.py, Funktion draft_letter()/_body_for()",
+        "befund": "Kein Tonalitaets-/Zielgruppen-/Anrede-Parameter vorhanden. Anrede ist fest 'Sehr geehrte Damen und Herren' (Zeile 91), Textbaustein wird ueber den Parameter 'typ' (fristverlaengerung/zahlungsaufschub/sachstand) per if-Kette gewaehlt (_body_for, Zeile 53-70) -- das ist eine Inhaltsauswahl, keine Stil-/Tonalitaetssteuerung. Kein Du/Sie-Schalter, keine Foermlichkeitsstufe.",
+        "wirkt": "ja, aber steuert WAS gesagt wird, nicht WIE (kein Stilparameter existiert ueberhaupt)."
+      },
+      {
+        "fundstelle": "brainlehr/kern/satz.py, Funktion satz_quelle()/dokument.sprache()",
+        "befund": "Einziger tatsaechlich wirkender Text-Parameter im ganzen Suchraum ist die SPRACHE (dokument.sprache()/sprache_setzen(), gelesen in satz_quelle() Zeile 87, wirkt nachweislich -- Selbsttest Zeile 156-161 zeigt lang=de-DE vs lang=en-US im erzeugten LaTeX). Keine Tonalitaet/Zielgruppe/Anrede/Foermlichkeit in kern/dokument.py oder kern/baustein.py (grep auf alle 11 Suchbegriffe: 0 Treffer in beiden Dateien)."
+      }
+    ],
+
+    "nicht_gefunden": "Kein Empfaenger-/Foermlichkeits-/Anrede(Du-Sie)-/Fachlichkeitsgrad-Parameter irgendwo im Suchraum, weder als Daten noch im Code. 'Lesbarkeit' kommt in app/Sources/BrainlehrCore/Anzeigeform.swift vor, betrifft aber Bildschirm-Anzeigegroesse (Sehschaerfe/Abstand), nicht Textkomplexitaet -- falscher Treffer fuer diese Frage, wird trotzdem genannt weil er beim Suchbegriff anschlug."
+  },
+
+  "frage_2_bilder": {
+    "vorfrage_erzeugt_das_system_bilder": {
+      "antwort": "JA -- widerlegt die Annahme aus dem urspruenglichen Auftragstext.",
+      "beleg": "openlehr/begod/scripts/ai_image_forge.py (1322 Zeilen): ruft Gemini/Imagen-Bildmodelle per HTTP auf, erzeugt Dateien unter begod/local/generated/media, schreibt Sidecar-Metadaten und einen Katalog. Aktiv genutztes Profil gefunden: openlehr/begod/knowledge/media/control_prompts/openhood.json (Stand 2026-02-28) plus 4 Presets (documentary-automotive, minimal-wireframe, photo-realistic, technical-schematic) unter demselben Verzeichnis.",
+      "einschraenkung": "Dieser Fund liegt in openlehr (im Suchraum enthalten), nicht in brainlehr/atelier. Im atelier selbst (brainlehr/kern, brainlehr/app/Sources) wurde KEIN Bilderzeugungscode gefunden -- 0 Treffer fuer dall-e/stable diffusion/midjourney/imagen/comfyui in brainlehr."
+    },
+    "kern_baustein_grafik_pruefung": {
+      "behauptung_im_auftrag": "Der 'grafik'-Baustein in brainlehr/kern/baustein.py VERWEIST auf ein Bild, erzeugt keines.",
+      "geprueft": true,
+      "ergebnis": "Bestaetigt. TYPEN=('absatz','ueberschrift','tabelle','grafik','feld') (Zeile 52); kein Aufruf einer Bilderzeugungs-API, keine der elf Suchbegriffe (dall-e usw.) kommt in kern/baustein.py vor. Der Baustein traegt (Zeile ~140) Verweisfelder -- keine Pixel, keine Generierungslogik."
+    },
+    "regeln_im_sinn_domaene.py_fuer_bilder": {
+      "existiert_die_regelmaschinerie_fuer_bilder_bereits": "Ja, tragfaehig, aber ungenutzt -- siehe Frage 3.",
+      "existierende_bildregeln_als_domaenenpaket": 0,
+      "existierende_bildregeln_als_control_profile_openlehr": "1 reales, populiertes Profil (openhood.json) plus 4 Presets -- siehe frage_1_text_regeln.befunde_als_daten_ohne_domaene_vertrag, dritter Eintrag. WIRKT nachweislich (compose_prompt_with_control), aber ist kein Domaenenpaket (kein Beleg, kein Rang)."
+    }
+  },
+
+  "frage_3_design_tokens_und_bildkonsistenz": {
+    "kanonische_tokendatei_pruefung": {
+      "im_auftrag_genannter_pfad": "design-lab/X-postfach/eingang/aka-design-guide.json",
+      "tatsaechlich_kanonisch_laut_code": "design-lab/begod/knowledge/apps/akademia/aka-design-guide.json (KANONISCHER_PFAD in brainlehr/kern/designtokens_latex.py Zeile 53-56, gestuetzt auf runs/messung_i2_designvorrat_2026-08-15T111743.md)",
+      "abweichung_vom_auftrag": "Die im Auftrag genannte X-postfach-Datei ist eine AELTERE/KLEINERE Fassung (262 Zeilen, Schluessel: meta/farben/typografie/logos/ikonografie/komponenten/flutter_color_scheme/pretix_scss_variablen -- KEIN voice_und_tone, KEIN zielgruppen). Die kanonische Datei hat 18 Schluessel, u.a. zusaetzlich dark_mode/breakpoints/i18n/pdf_masszahlen/print/kursarten_semantik/zielgruppen/voice_und_tone/akademie_meta/app_destinations. Halte dich an den Code (designtokens_latex.py), nicht an den Auftragstext -- gemeldete Abweichung."
+    },
+    "designtokens_latex.py_gelesen": true,
+    "welche_schluessel_werden_tatsaechlich_uebersetzt": "Nur 'farben', 'typografie', 'pdf_masszahlen', 'meta' (UEBERSETZTE_SCHLUESSEL, Zeile 64). Alle anderen 14 Schluessel der kanonischen Datei -- inkl. zielgruppen und voice_und_tone -- werden als UEBERSPRUNGEN gemeldet, nie verarbeitet.",
+
+    "auf_bilder_anwendbare_tokens": [
+      "farben (Hex-Werte) -- direkt uebertragbar auf Diagramm-/Chart-Fuellfarben, Rahmen, Icon-Farben.",
+      "typografie.stile (Groessen/Gewichte je Rolle) -- anwendbar, wenn ein erzeugtes Bild Text enthaelt (z.B. Beschriftung in einem Diagramm).",
+      "komponenten.*.border_radius -- anwendbar auf UI-Mockup-artige Bilder (Card-Ecken, Button-Radien).",
+      "ikonografie (icon_set:'Material Symbols', stil:'Rounded') -- anwendbar, wenn Icons Teil eines generierten Bildes sind."
+    ],
+    "auf_bilder_nicht_anwendbare_tokens": [
+      "logos (Bilddateien selbst, keine Zahl/Regel)",
+      "flutter_color_scheme/pretix_scss_variablen (Zielplattform-Code, keine visuelle Eigenschaft eines Bildes)",
+      "voice_und_tone/zielgruppen (Text-Register, keine visuelle Groesse)"
+    ],
+
+    "kernfrage_was_heisst_konsistent_bei_einem_bild": {
+      "fall_diagramm_schema_ui_mockup": "Tokens sind BUCHSTAEBLICH pruefbar: eine erzeugte SVG/Vektorgrafik oder ein programmatisch gebautes Diagramm kann exakte Hex-Werte, pt-Groessen und Radien einhalten -- 1:1 dieselbe Bauform wie designtokens_latex.py fuer LaTeX, nur mit einem SVG/Zeichen-Backend statt eines Satzsystems. Ein Belegvertrag im Sinn von kern/belegvertrag.py waere hier SINNVOLL anwendbar: 'fundstelle' = der Tokenwert selbst (z.B. '#003366'), Substring-Pruefung gegen den Tokendatei-Text als Quelle funktioniert technisch (der Hexwert steht woertlich in der JSON-Datei).",
+      "fall_foto_freie_illustration": "Tokens sind NICHT pruefbar. Ein von einem Bildmodell erzeugtes Foto oder eine freie Illustration hat keine Pixel-Adresse, an der 'Farbe X' oder 'Radius Y' als Zahl steht -- 'konsistent' ist hier eine Aussage ueber Bildsprache (Look, Perspektive, Lichtstimmung), belegt durch das bereits gefundene ai_image_forge.py-Muster: ein Freitext-'image_style_anchor', der bei jeder Erzeugung erneut in den Prompt eingespeist wird (compose_prompt_with_control). Ein Belegvertrag im Sinn von kern/belegvertrag.py ist hier NICHT direkt anwendbar: 'fundstelle' waere eine Substring-Pruefung auf FREITEXT-BEHAUPTUNGEN ('dokumentarischer Look'), nicht auf einen pruefbaren Zahlenwert -- der Vertrag kann nur pruefen, dass die Regel woertlich aus einer benannten Quelle zitiert, nicht, dass ein erzeugtes Bild die Regel tatsaechlich einhaelt. Die Einhaltung selbst braucht eine andere Pruefinstanz (menschliche Abnahme oder ein Bild-Klassifikator), die in keinem der 5 Repos existiert (0 Treffer fuer eine automatisierte Stilpruefung nach Bildgenerierung)."
+    },
+    "denkfehler_den_die_korrektur_treffen_wollte": "Bestaetigt gefunden: eine einzelne Mechanik fuer 'konsistente Bilderzeugung ueber Design-Tokens' wuerde die beiden Faelle vermengen. Fuer Diagramme ist der Belegvertrag/Domaenenpaket-Mechanismus (kern/domaene.py) direkt wiederverwendbar (numerischer Beleg). Fuer Foto/Illustration braucht es stattdessen das bereits in openlehr vorhandene control_profile-Muster (Freitext-Stilanker je App), das mit Tokens NICHTS zu tun hat und auch nicht sollte."
+  },
+
+  "gesamteinschaetzung_regelmaschinerie_vertragsannahmen": {
+    "frage_der_korrektur": "Traegt kern/domaene.py + kern/belegvertrag.py die Bildregel-Idee, ohne veraendert zu werden?",
+    "antwort": "Fuer TOKEN-BASIERTE Bildregeln (Diagramm/Schema): ja, unveraendert -- pruefe_regeln()/belegt() sind formatagnostisch, sie pruefen nur Text-Teilstring-Zugehoerigkeit; eine 'fundstelle' wie '#003366' oder '25pt' ist so ein Text wie jeder andere. Fuer FREITEXT-Stilregeln (Foto/Illustration/Tonalitaet): nein -- der Vertrag kann nur belegen, DASS eine Regel zitiert, nicht DASS ein erzeugtes Werk sie einhaelt; genau diese zweite Pruefung (Werk gegen Regel) existiert in domaene.py/belegvertrag.py nicht und wird auch nicht vorausgesetzt. Diese Grenze ist keine fehlende Funktion, sondern eine andere Aufgabe (Abnahme statt Beleg)."
+  },
+
+  "zusammenfassung_kurz": [
+    "Textregeln im Sinn Domaenenpaket (Rang/Beleg/Freigabe): 0 von 1 existierendem Paket betrifft Text-Stil -- es gibt sie schlicht nicht.",
+    "Textregeln als blosse Daten ohne Vertrag: gefunden (voice_und_tone/zielgruppen in aka-design-guide.json), aber tot -- 0 Code-Stellen lesen sie.",
+    "Textregeln im Code verdrahtet: 1 wirkender Parameter gefunden (Sprache, kern/satz.py) -- kein Tonalitaets-/Zielgruppen-/Anrede-Schalter irgendwo aktiv.",
+    "Bilderzeugung existiert (openlehr/ai_image_forge.py), Atelier selbst erzeugt keine Bilder (bestaetigt: grafik-Baustein verweist nur).",
+    "Bild-Stilsteuerung existiert UND WIRKT (control_profile mit audience/tonality/style_anchor), aber unabhaengig von Design-Tokens und unabhaengig von kern/domaene.py.",
+    "Design-Tokens sind nur fuer den zahlenwertigen Bildfall (Diagramm/Schema) direkt brauchbar; fuer Foto/Illustration ist das vorhandene control_profile-Freitext-Muster der naeherliegende, bereits gebaute Weg -- keine neue Mechanik noetig, nur eine Uebertragung des Musters von openlehr nach brainlehr/atelier."
+  ],
+
+  "explizit_nicht_geleistet": "Keine Bewertung, ob/wie eine Uebertragung aussehen sollte -- Messauftrag, kein Bauauftrag."
+}
