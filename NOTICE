@@ -18,6 +18,37 @@ auszug-offen/bestand.jsonl
     17 U.S.C. §105 gemeinfrei -- NICHT an der Primaerquelle geprueft, siehe
     quellen/fremdquellen.json.
 
+GermanQuAD (Pruefkorpus-Kandidat, noch nicht importiert)
+    Timo Moeller, Julian Risch, Malte Pietsch (deepset), 2021.
+    "GermanQuAD and GermanDPR: Improving Non-English Question Answering
+    and Passage Retrieval" (arXiv:2104.12741).
+    https://huggingface.co/datasets/deepset/germanquad
+    Lizenz: Creative Commons Attribution 4.0 International (CC BY 4.0) --
+    Namensnennung Pflicht. Wird je Knoten in der source-Spalte gefuehrt
+    (pflege/wissenskorpus_einlesweg.py::attribution()), nicht nur hier
+    gesammelt. Geprueft am 2026-08-15 am HF-API-Metadatenblock.
+
+GermanDPR (Pruefkorpus-Kandidat, noch nicht importiert)
+    Dieselben Autoren/Lizenz wie GermanQuAD, siehe oben.
+    https://huggingface.co/datasets/deepset/germandpr
+    Traegt zusaetzlich Hard-Negative-Kontexte (Betreiberentscheidung
+    2026-08-15: "nimm alles!").
+
+Gesetze im Internet (Fachbestand-Kandidat, noch nicht importiert)
+    Bundesministerium der Justiz, technisch bereitgestellt durch
+    juris GmbH. https://www.gesetze-im-internet.de/
+    Amtliches Werk, gemeinfrei nach §5 Abs. 1 UrhG -- kein Website-
+    Lizenzvermerk, die Gemeinfreiheit folgt aus dem Gesetz selbst.
+
+Open Legal Data -- German Court Decisions (Fachbestand-Kandidat, noch
+nicht importiert)
+    https://huggingface.co/datasets/openlegaldata/court-decisions-germany
+    Entscheidungstexte: amtliches Werk, gemeinfrei nach §5 UrhG (im
+    Datensatz woertlich zitiert). Aggregierte Sammlung/Datenbankstruktur:
+    Open Database License (ODbL) v1.0 -- bei Weitergabe der SAMMLUNG
+    (nicht der Einzeltexte) ist Namensnennung und Share-Alike zu pruefen,
+    bevor eine Weitergabe stattfindet.
+
 Beitraege
     Fuer beigetragenen Quelltext gilt neben der AGPLv3 eine zusaetzliche
     Vereinbarung: CONTRIBUTING.md, Abschnitt 3, Fassung 2026-08-10.

@@ -134,6 +134,60 @@
       "folge": "GELB: interne Nutzung und Bearbeitung des abgeleiteten Profils gedeckt, WEITERGABE nicht. bsi-dev-profile.json wurde am 2026-08-10 aus dem weitergebbaren Repo entfernt und dort gitignored. Fuer eine Veroeffentlichung oder kommerzielle Nutzung braucht es eine Vereinbarung mit dem BSI (it-grundschutz@bsi.bund.de).",
       "auflage": "Namensnennung UND Share-Alike: das abgeleitete Profil steht ebenfalls unter CC BY-SA 4.0, unabhaengig von der Lizenz des uebrigen Quelltextes. Vermerkt in NOTICE.",
       "korrektur": "Am 2026-08-10 zunaechst faelschlich GELB gesetzt: geprueft wurden die Nutzungsbedingungen von bsi.bund.de (IT-Grundschutz-Kompendium, kommerziell lizenzpflichtig). Die tatsaechliche Quelle stand aber IN DER DATEI selbst (meta.source, meta.license) und ist eine andere. Erst am Artefakt nachsehen, dann die Website suchen."
+    },
+    {
+      "kennung": "germanquad",
+      "name": "GermanQuAD",
+      "betreiber": "deepset (Moeller/Risch/Pietsch, arXiv:2104.12741)",
+      "url": "https://huggingface.co/datasets/deepset/germanquad",
+      "lizenz_vermutet": "CC BY 4.0",
+      "ampel": "gruen",
+      "geprueft_am": "2026-08-15",
+      "geprueft_wie": "Lizenzfeld 'license:cc-by-4.0' im HF-API-Metadatenblock (per curl gelesen) UND im Dataset-Card-Metadatenblock (per WebFetch, siehe runs/wissenskorpus_kandidaten_2026-08-15.json). Umfang 13.722 Fragen laut HF-API-description bestaetigt (11.518 train + 2.204 test).",
+      "importiert": false,
+      "rolle": "PRUEFKORPUS (Betreiberkorrektur 2026-08-15) -- gattung=nachschlagewerk, nie Ziel eines Prueffalls, siehe pflege/wissenskorpus_einlesweg.py",
+      "bezugsweg": "Datensatz-Rohdaten via S3-Bucket (germanquad.s3.amazonaws.com/GermanQuAD.zip aus der HF-Loading-Script-Referenz) am 2026-08-15 mit HTTP 404 GESCHEITERT -- gemessener Befund, nicht vermutet. HF-Datasets-Viewer verweigert direkten Parquet-Zugriff ('runs arbitrary Python code'). Bezugsweg fuer den echten Import bleibt offen.",
+      "auflage": "Namensnennung Pflicht (CC BY 4.0) -- je Knoten in source, siehe pflege/wissenskorpus_einlesweg.py::attribution()"
+    },
+    {
+      "kennung": "germandpr",
+      "name": "GermanDPR",
+      "betreiber": "deepset (Moeller/Risch/Pietsch, arXiv:2104.12741)",
+      "url": "https://huggingface.co/datasets/deepset/germandpr",
+      "lizenz_vermutet": "CC BY 4.0",
+      "ampel": "gruen",
+      "geprueft_am": "2026-08-15",
+      "geprueft_wie": "Lizenzfeld 'cc-by-4.0' im Dataset-Card-Metadatenblock (WebFetch, siehe runs/wissenskorpus_kandidaten_2026-08-15.json). Umfang 10.300 Frage-Antwort-Paare (9.275 train + 1.025 test) laut Dataset Card.",
+      "importiert": false,
+      "rolle": "PRUEFKORPUS -- traegt zusaetzlich Hard-Negative-Kontexte fuer die Bruecke (Auftrag Punkt 4), gattung=nachschlagewerk fuer Antwort- UND Hard-Negative-Passagen",
+      "bezugsweg": "Rohdaten-Download am 2026-08-15 nicht verifiziert (gleicher deepset-S3-Vertriebsweg wie GermanQuAD, nicht einzeln geprueft). Anzahl Kontext-Passagen je Frage NICHT gemessen -- Kostenschaetzung in runs/wissenskorpus_einlesweg_2026-08-15_bericht.md traegt deshalb hohe Unsicherheit.",
+      "auflage": "Namensnennung Pflicht (CC BY 4.0) -- je Knoten in source"
+    },
+    {
+      "kennung": "gesetze-im-internet",
+      "name": "Gesetze im Internet",
+      "betreiber": "Bundesministerium der Justiz, technisch bereitgestellt durch juris GmbH",
+      "url": "https://www.gesetze-im-internet.de/gii-toc.xml",
+      "lizenz_vermutet": "Amtliches Werk, gemeinfrei nach §5 Abs. 1 UrhG",
+      "ampel": "gruen",
+      "geprueft_am": "2026-08-15",
+      "geprueft_wie": "gii-toc.xml erfolgreich geladen (1.286.559 Bytes) und ausgezaehlt: 6.127 <link>-Eintraege = 6.127 Gesetze/Verordnungen im gesamten konsolidierten Bundesrecht -- das ist 'alles' bei dieser Quelle auf Gesetzesebene. Paragraphen-Ebene (die eigentliche Einheit fuer einen Pruefkorpus) NICHT ausgezaehlt -- deutlich groesser, ungemessen. Gemeinfreiheit folgt aus dem Gesetz ueber den Inhalt (§5 UrhG), nicht aus einer Website-Erklaerung.",
+      "importiert": false,
+      "rolle": "FACHBESTAND FUER DEN REALBETRIEB (Betreiberkorrektur 2026-08-15: buckeberg/openlehr sollen ihn FINDEN, nicht als Heuhaufen davon ablenken) -- BLOCKIERT: gattung kennt nur 'arbeitsbestand'/'nachschlagewerk' per DB-Trigger, beide sind fuer Fachbestand falsch (siehe pflege/wissenskorpus_einlesweg.py Moduldoku). Ein dritter Wert braucht eine Aenderung an schema.sql UND an den drei Lesestellen in haken/ (SQL_ARBEITSBESTAND_NUR) -- beide Dateiarten sind in diesem Auftrag tabu (schema.sql heute von anderem Agenten geaendert, haken/ gerade in Arbeit an der Rangfolge-Reparatur d84b6b64).",
+      "bezugsweg": "gii-toc.xml (Verzeichnis) + XML-Einzeldokumente je Gesetz (DTD /dtd/1.01/gii-norm.dtd) -- funktionierender, gemessener Bezugsweg."
+    },
+    {
+      "kennung": "open-legal-data",
+      "name": "Open Legal Data -- German Court Decisions",
+      "betreiber": "Open Legal Data (Entscheidungstexte: die jeweiligen Gerichte, amtliches Werk)",
+      "url": "https://huggingface.co/datasets/openlegaldata/court-decisions-germany",
+      "lizenz_vermutet": "§5 UrhG (Text, im Datensatz woertlich zitiert) + ODbL v1.0 (Sammlung)",
+      "ampel": "gruen",
+      "geprueft_am": "2026-08-15",
+      "geprueft_wie": "HF-API dataset_info gemessen (nicht die Grobschaetzung '100k-1M' aus dem Vormittagsbericht): voller Dump 'dump-20221018' = 251.038 Entscheidungen, 12.675.871.374 Bytes (11,8 GB) unkomprimiert, 5.606.739.471 Bytes (5,2 GB) Downloadgroesse. Kleine Stichprobenkonfigurationen vorhanden: 'dump-20221018-1k' (1.000 Zeilen, 68.786.169 Bytes -> ~68,8 KB/Entscheidung im Schnitt) und 'dump-20221018-10k'. Schema-Felder: id, slug, court{...}, file_number, date, type, ecli, content, markdown_content, reference_markers -- KEIN eigenes 'Leitsatz'-Feld (Abweichung zum Vormittagsbericht, der ein Leitsatz-Feld annahm -- hier korrigiert).",
+      "importiert": false,
+      "rolle": "FACHBESTAND FUER DEN REALBETRIEB, gleicher Blocker wie gesetze-im-internet (gattung-Wert fehlt) -- ZUSAETZLICH Groessenfrage ausdruecklich NICHT allein entschieden (Betreiberweisung 2026-08-15: 'du entscheidest sie NICHT allein'), siehe runs/wissenskorpus_einlesweg_2026-08-15_bericht.md fuer den vorgelegten Vorschlag samt Ratio-Rechnung.",
+      "bezugsweg": "Parquet-Dateien direkt im Repo (dump-20221018-1k/10k/voll), aber Downloadversuch der kleinen 1k-Konfiguration am 2026-08-15 scheiterte mit HTTP 401 (Unauthorized) OHNE Anmeldeversuch (Grenze: keine Zugangsdaten) -- gemessener Blocker, kein Kontozugriff unternommen."
     }
   ]
 }

@@ -30,6 +30,10 @@ backups/
 snapshots/
 fremdclient/knowledge.db
 
+# Heruntergeladene Rohdaten von Fremdquellen (Auftrag Wissenskorpus
+# 2026-08-15) -- gross, jederzeit neu ladbar, gehoert nicht ins Repo.
+rohdaten/wissenskorpus/
+
 # Abgeleitet, jederzeit neu erzeugbar
 symbols.db
 __pycache__/
