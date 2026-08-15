@@ -1,0 +1,682 @@
+[
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "b4e5dfe9",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/openlehr/docs/PLAN_PERSONALISIERUNG_LOKALE_KI_2026-07-22.md.",
+    "kontext": "Nachzulesen ist der zugehoerige Plan unter /Volumes/daten/Begod2026/openlehr/docs/PLAN_PERSONALISIERUNG_LOKALE_KI_2026-07-22.md.  Der Merksatz dazu lautet: \"Gewichte lernen WIE, Retrieval weiß WAS, "
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "30e1e9ea",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "buckeberg\" (2026-07-22): Die sichtbaren Top-Level-Verzeichnisse unter /Volumes/daten/Begod2026/ (hub, fahrtenbuch, drg, openhood, ...) sind kein eigenes Repository j"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "30e1e9ea",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/hub/CLAUDE.md",
+    "kontext": "ht eine lokale `CLAUDE.md`: `# <app> — Claude Code` plus ein Import `@/Volumes/daten/Begod2026/hub/CLAUDE.md` plus ein \"Lokaler Fokus\"-Block (aktive App, Projekt-Kontext, Einschr"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "ab4f443e",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/wohlair,",
+    "kontext": " seit 2026-07-28T02:55:00+0200: Die vollstaendige App liegt nun unter /Volumes/daten/Begod2026/wohlair, einem eigenstaendigen Repo mit eigenem Remote (Lehrmeister/schimmel-g"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "ab4f443e",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/be_old/schwarze",
+    "kontext": "ne Hub-Worktree. Drei Symlinks binden die Hooks an. Der fruehere Ort '/Volumes/daten/be_old/schwarze Poren/schimmel_guard_app' traegt seit der Umbenennung auf .UMGEZOGEN_"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "ab4f443e",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "Code fuehrte — existiert nicht mehr.  STAND JETZT: Als kanonisch gilt /Volumes/daten/Begod2026/wohlair, mit 219 Dart-Dateien auf dem Branch release/testflight-intern"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "ab4f443e",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/.",
+    "kontext": " warum der Umzug noetig war: Der alte Pfad befand sich ausserhalb von /Volumes/daten/Begod2026/. Fuer die gesamte Hook-Infrastruktur war das Repo dadurch unsichtbar —"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "ab4f443e",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/wohlair,",
+    "kontext": "Code fuehrte — existiert nicht mehr.  STAND JETZT: Als kanonisch gilt /Volumes/daten/Begod2026/wohlair, mit 219 Dart-Dateien auf dem Branch release/testflight-internal-2026-"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "ab4f443e",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/be_old/schwarze",
+    "kontext": " ergaenzt um eine eigene CLAUDE.md mit @-Import.  Ausser Betrieb ist '/Volumes/daten/be_old/schwarze Poren/schimmel_guard_app.UMGEZOGEN_2026-07-28', markiert durch UMGEZO"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "da662b05",
+    "feld": "summary",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": " beziehungsweise gegen den Monorepo-Baum. Ein App-Repo ausserhalb von /Volumes/daten/Begod2026 bekommt deshalb nie eine CODEMAP, keine Flowmap, kein Papernetz und k"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "da662b05",
+    "feld": "summary",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/be_old/.",
+    "kontext": "en wurde das am Beispiel WohlAir mit der App schimmel_guard_app unter /Volumes/daten/be_old/."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "da662b05",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026?",
+    "kontext": "s Pruefroutine vor der Arbeit an einer App gilt: liegt das Repo unter /Volumes/daten/Begod2026? Wenn nein, ist mit fehlenden Karten zu rechnen, und das gehoert als E"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "da662b05",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/be_old/schwarze",
+    "kontext": "ft WohlAir/schimmel_guard_app (214 Dart-Files), das Repo liegt unter \"/Volumes/daten/be_old/schwarze Poren/\".  Was dabei still ausfaellt: Erstens die CODEMAP -- codemap_a"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "297260d3",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/hub/scripts/wiring_check.py",
+    "kontext": "neu ausgefuehrt statt erinnert wird.  Aufgerufen wird es mit: python3 /Volumes/daten/Begod2026/hub/scripts/wiring_check.py <app-root> [--baseline <datei>] [--update-baseline] [--selftest]  War"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "483acb56",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/videoki",
+    "kontext": "nd dürfen nicht geraten werden.  ### Evidenz und Quellen  Video-Code: /Volumes/daten/videoki studio/projects/metahuman-podcast/scripts/run_episode.sh, Content/Pyt"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "ae9288eb",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/fahrtenbuch.",
+    "kontext": "Die Messung erfolgte am 2026-08-05T07:2x+0200 im Arbeitsbaum /Volumes/daten/Begod2026/fahrtenbuch.  Ausgeloest wurde die Frage dadurch, dass der Betreiber ueber „legacy"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "55524b09",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "/settings.json` und in allen 15 `<repo>/.claude/settings.json` unter `/Volumes/daten/Begod2026`. Sonnet und Haiku bleiben als Subagenten. Der `architekt`-Agent blei"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "23a093d6",
+    "feld": "summary",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/brainlehr,",
+    "kontext": "inlehr ist seit 2026-08-08T11:45:00+0200 ein eigenes Repository unter /Volumes/daten/Begod2026/brainlehr, mitsamt seiner vollstaendigen Historie von 132 Commits (per git subtr"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "1f81a8eb",
+    "feld": "summary",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/phoenix",
+    "kontext": "rifft begod_recommend_model: das Werkzeug loest den Projektpfad ueber /Volumes/daten/Begod2026/phoenix auf und arbeitet dabei mit einer Skriptkopie vom 1. Maerz. Der Staats"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "1f81a8eb",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/phoenix",
+    "kontext": "1. Das Werkzeug begod_recommend_model loest den Projektpfad ueber /Volumes/daten/Begod2026/phoenix auf und benutzt dabei eine Skriptkopie vom 1. Maerz — nicht den aktue"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "0beacbfa",
+    "feld": "summary",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/hub/laufzeit/agent-register.jsonl",
+    "kontext": "rhin beschrieben, aber kein Werkzeug liest sie mehr. Massgeblich ist `/Volumes/daten/Begod2026/hub/laufzeit/agent-register.jsonl`. Die globale ~/.claude/CLAUDE.md nennt weiterhin den alten Pfad und "
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "51f3695e",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "e bereits als project_id in der Spalte stehen. Das Verbundverzeichnis /Volumes/daten/Begod2026 fuehrt dagegen 41 Eintraege, darunter buckeberg, afrika, setfunk, ope"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "a13cd3f4",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Users/lehrmacbook/.codex/AGENTS.md",
+    "kontext": "Umgesetzt in /Users/lehrmacbook/.codex/AGENTS.md unter `Brainlehr default knowledge`; der MCP `brainlehr` ist in /User"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "a13cd3f4",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Users/lehrmacbook/.codex/config.toml",
+    "kontext": "TS.md unter `Brainlehr default knowledge`; der MCP `brainlehr` ist in /Users/lehrmacbook/.codex/config.toml konfiguriert. Lokal am 2026-08-10 verifiziert: `codex debug prompt-in"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "61cbb841",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/brainlehr/tests/test_enigma_crypto_shredding_spike.py.",
+    "kontext": "ject×data_class×purpose×epoch-Tupel, keine Produktivdaten. Testdatei: /Volumes/daten/Begod2026/brainlehr/tests/test_enigma_crypto_shredding_spike.py. Verifikation: `python3 -m pytest -q tests/test_enigma_crypto_shreddin"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "662e7e69",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/brainlehr/tests/test_enigma_two_process_spike.py,",
+    "kontext": "Primärartefakt ist die Datei /Volumes/daten/Begod2026/brainlehr/tests/test_enigma_two_process_spike.py, mit der Commitfolge 5bcdcae, 38992e0, 4dbc2d2 und cfea586. Am 2026-08"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "dc206458",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/brainlehr/tests/test_enigma_two_process_spike.py.",
+    "kontext": "Primärartefakt: /Volumes/daten/Begod2026/brainlehr/tests/test_enigma_two_process_spike.py. Commit f6f9e39711e7982fe77ff8edf0affb5392b327b7 repariert den in 662e"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "92ba5326",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/brainlehr.",
+    "kontext": "Gemessen 2026-08-11 in /Volumes/daten/Begod2026/brainlehr.  ROT vor ceaa49a: `python3 -m pytest -q --runxfail tests/test_enigma_"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "7e0930b6",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "in seinem eigenen privaten Repo 3lehr/openhood; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle fahrtenbuch/apps/openhood) dient als Werkbank, nicht als Arch"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "7e0930b6",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "CHT an openhood_obd_core -- das tut ausschliesslich das Fahrtenbuch.  /Volumes/daten/Begod2026 bildet insgesamt EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nic"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "2493bf1c",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "eigenen privaten Repo 3lehr/fahrtenbuch_legacy; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: fahrtenbuch/apps/fahrtenbuch_legacy) ist die Werkbank, nicht"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "2493bf1c",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "openhood_obd_core weicht ab (lib/core vs lib/src).  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "18563937",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "en privaten Repo 3lehr/wohlairr liegt wohlairr; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: hub/apps/wohlairr) dient als Werkbank, nicht als Archiv. Wer"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "18563937",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "chluessel gilt seither als kompromittiert.  Der gesamte Verbund unter /Volumes/daten/Begod2026 bildet EIN Repository (hub/.git) mit 24 Arbeitsbaeumen -- nicht 24 ei"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "80d4375f",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "n privaten Repo 3lehr/afrika-desktop-protokoll; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle hub/apps/afrika-desktop-protokoll) dient als Werkbank, nicht "
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "80d4375f",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "op-protokoll, 166 Dateien. Technologie: .NET, dotnet restore laeuft.  /Volumes/daten/Begod2026 ist insgesamt EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, keine "
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "2c6363fb",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "eigenen privaten Repo 3lehr/einprozent_rechner; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: hub/apps/einprozent_rechner) ist die Werkbank, nicht das Arc"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "2c6363fb",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "eichnis: hub/apps/einprozent_rechner. Dateien: 78.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "1fae7edb",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "nem eigenen privaten Repo 3lehr/begod-homepage; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: hub/apps/begod-homepage) ist die Werkbank, nicht das Archiv."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "1fae7edb",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "verzeichnis: hub/apps/begod-homepage. Dateien: 54.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "75fd73c7",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "n seinem eigenen privaten Repo 3lehr/drobo-nas; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: hub/apps/drobo-nas) ist die Werkbank, nicht das Archiv. Wer "
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "75fd73c7",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": " weil nur auf pubspec/package.json geprueft wurde.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "72857624",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "armwacht das massgebliche, eigene private Repo. Der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle schwarmwacht/apps/schwarmwacht) dient nur als Werkbank, nicht"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "72857624",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "d-Ausgabe unter .nosync und damit ausserhalb des Repos.  Zu beachten: /Volumes/daten/Begod2026 ist insgesamt EIN einziges Repository (hub/.git) mit 24 Arbeitsbaeume"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "95c5f295",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "nem eigenen privaten Repo 3lehr/usbkabeltester; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: UsbKabelTester/apps/usbkabeltester) ist die Werkbank, nicht "
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "95c5f295",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": " UsbKabelTester/apps/usbkabeltester. Dateien: 129.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "3cd199f0",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "t in seinem eigenen privaten Repo 3lehr/wpdrop; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: wpdrop/apps/wpdrop) ist die Werkbank, nicht das Archiv. Wer "
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "3cd199f0",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "pdrop-content/ (lokale WP-Testinstallation) nicht.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "e097c099",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "ository 3lehr/aka-homepage seit dem 2026-08-11; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (design-lab/apps/aka-homepage) ist nur die Werkbank, nicht das Archiv"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "e097c099",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "gn-lab/apps/aka-homepage, mit 138 Dateien.  Der gesamte Verbund unter /Volumes/daten/Begod2026 ist EIN einziges Repository (hub/.git) mit 24 Arbeitsbäumen — nicht 2"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "a34c297a",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "seinem eigenen privaten Repo 3lehr/aka-scanner; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: design-lab/apps/aka-scanner) ist die Werkbank, nicht das Arc"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "a34c297a",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "eichnis: design-lab/apps/aka-scanner. Dateien: 69.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "a88f60fb",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "bt in seinem eigenen privaten Repo 3lehr/akapp; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: design-lab/apps/akapp) ist die Werkbank, nicht das Archiv. W"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "a88f60fb",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "st nicht auf — Bestandsfehler, kein Schnittfehler.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "95a7e0a0",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": " seinem eigenen privaten Repo 3lehr/aka-pretix; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: design-lab/apps/aka-pretix) ist die Werkbank, nicht das Arch"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "95a7e0a0",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "urationen mit Platzhaltern, keine echten Zugaenge.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "50b0f5d5",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "n seinem eigenen privaten Repo 3lehr/buckeberg; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: buckeberg/, Arbeitsbaum-WURZEL, kein apps/-Unterordner) ist "
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "50b0f5d5",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "ewusst AUSGESCHLOSSEN (vollstaendige Kontonummer).  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "8f7b350d",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "in seinem eigenen privaten Repo 3lehr/openlehr; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: openlehr/, Arbeitsbaum-WURZEL) ist die Werkbank, nicht das A"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "8f7b350d",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "sgeschlossen — erzeugte Daten und Laufzeitzustand.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "0fc37d04",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "ist 3lehr/drg das eigene, private Repo von drg; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle fahrtenbuch/apps/drg) bleibt nur Werkbank, kein Archiv -- wer"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "0fc37d04",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "nterschied besteht sonst nur aus Build-Artefakten.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 einzeln"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "e7e19924",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "in eigenes, privates Repo unter 3lehr/pflegelotse; der Arbeitsbaum in /Volumes/daten/Begod2026/ (Quelle: pflegelotse/apps/pflegelotse) dient nur als Werkbank, nicht "
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "e7e19924",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": ".dart, status_announcer.dart und error_retry.dart.  Der Verbund unter /Volumes/daten/Begod2026 besteht aus EINEM Repository (hub/.git), aus dem 24 Arbeitsbäume abzw"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "18440a63",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "vaten Repo 3lehr/phoenix_gui liegt phoenix_gui; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: phoenix/apps/phoenix_gui) dient als Werkbank, nicht als Arch"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "18440a63",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "ib/core/services/phoenix_cli_service.dart.  Der gesamte Verbund unter /Volumes/daten/Begod2026 bildet EIN Repository (hub/.git) mit 24 Arbeitsbaeumen -- nicht 24 ei"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "1f91ac96",
+    "feld": "summary",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/",
+    "kontext": "en privaten Repo 3lehr/phoenix-recovery-engine; der Arbeitsbaum unter /Volumes/daten/Begod2026/ (Quelle: phoenix/apps/phoenix-recovery-engine) ist die Werkbank, nich"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "1f91ac96",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "and-2026-08-11 daneben, main NICHT ueberschrieben.  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "a5c98fe8",
+    "feld": "content",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026",
+    "kontext": "als Submodul (Lehrmeister/markusx25-theme-plugins)  Der Verbund unter /Volumes/daten/Begod2026 ist EIN Repository (hub/.git) mit 24 Arbeitsbaeumen, nicht 24 Reposit"
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "e5b68f3a",
+    "feld": "content",
+    "freigabe": "offen",
+    "pfad": "/Volumes/daten/Begod2026/stiftshuette/begod/agents/spaghetti-monster.agent.md,",
+    "kontext": "BELEG: /Volumes/daten/Begod2026/stiftshuette/begod/agents/spaghetti-monster.agent.md, erhoben und in den Kernzahlen nachgeprueft am 2026-08-13 (docs/AGENTE"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-720a22",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/fahrtenbuch",
+    "kontext": "as Destruktives ausführte. Ursache: git-Reflog des Monorepo-Worktrees /Volumes/daten/Begod2026/fahrtenbuch zeigt 7× \"reset: moving to HEAD\" zwischen 2026-07-25T07:31 und 07:52 "
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-bce00d",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/openlehr/.git;",
+    "kontext": "egt. Konkret 2026-07-28: hub/.git/worktrees/openlehr/gitdir zeigt auf /Volumes/daten/Begod2026/openlehr/.git; dieser Pfad ist längst ein selbstständiges Repo (eigenes .git-Verzeic"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-18bc8d",
+    "feld": "pruefstelle",
+    "freigabe": "intern",
+    "pfad": "/Users/lehrmacbook/.claude/skills/design-waechter/ui_guard.py",
+    "kontext": "/Users/lehrmacbook/.claude/skills/design-waechter/ui_guard.py"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-e3456a",
+    "feld": "root_cause",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/wohlair",
+    "kontext": "Gemessen 2026-08-07 in wohlair: `/Volumes/daten/Begod2026/wohlair` (Paket wohlair, 1.0.0+18, 249 Dart-Dateien, 39 Routen, Remote schimm"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-86e92d",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/hub/.github/instructions/lessons-learned.instructions.md,",
+    "kontext": "ions.md und \"diese Datei existiert nicht\". Gemessen: sie existiert -- /Volumes/daten/Begod2026/hub/.github/instructions/lessons-learned.instructions.md, 583 Byte, 8 Zeilen, untracked. Und sie wird auch beschrieben: lesson_"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-80fa5c",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/.",
+    "kontext": "n, die in 610 Lehren genannt werden, existieren nur 43 wirklich unter /Volumes/daten/Begod2026/. 346 zeigen ins Leere -- 89 Prozent. Betroffen sind vor allem Pfade au"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-752ce6",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/sigmaforge",
+    "kontext": " an einem Fall, den ich in derselben Sitzung selbst erzeugt hatte. In /Volumes/daten/Begod2026/sigmaforge steht data/comiset/ in .gitignore. Ich habe dort combined_optc_benign"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-7a719d",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/brainlehr",
+    "kontext": " claude/hallo-3b3c8d), aber alle Edits gingen per ABSOLUTEM Pfad nach /Volumes/daten/Begod2026/brainlehr -- also in den Hauptcheckout auf main, genau den Zweig, auf dem nicht"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-76395d",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/hub/laufzeit/agent-register.jsonl",
+    "kontext": "Das Agentenregister liegt in `/Volumes/daten/Begod2026/hub/laufzeit/agent-register.jsonl`, NICHT in `/tmp/claude-agent-register.jsonl`. Die globale ~/.claude/"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-8c2c2a",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026,",
+    "kontext": " hub. In konfidenz.py stand BEGOD_ROOT = HERE.parent.parent -- vorher /Volumes/daten/Begod2026, nachher /Volumes/daten. Folge: beobachtbare_datei() loeste jeden rela"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-9f8816",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/hub",
+    "kontext": "Ein Auftrag nannte als Ort nur \"Repo: /Volumes/daten/Begod2026/hub — Datei: tools/flowmaps/fahrtenbuch_flows.json\". Der Agent lief mit e"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-02fb6a",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026/fahrtenbuch",
+    "kontext": "zeichnis (\"Plan `docs/PLAN_FAHRTZUSTAND_2026-08-09.md`\"). Im Monorepo /Volumes/daten/Begod2026/fahrtenbuch existiert `docs/` aber ZWEIMAL: einmal im Repo-Root (30+ Dateien, eig"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-b3793c",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Users/lehrmacbook/Desktop/",
+    "kontext": "ich Stunden zuvor selbst gemeldet hatte, dass der Ausweisordner unter /Users/lehrmacbook/Desktop/ liegt -- der Hinweis lag vor und wurde nicht verwendet."
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-b3793c",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Volumes/daten/Begod2026,",
+    "kontext": "eigener Plan. Zweiter, gleichzeitiger Fehler: gesucht wurde nur unter /Volumes/daten/Begod2026, obwohl ich Stunden zuvor selbst gemeldet hatte, dass der Ausweisordne"
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-faae1e",
+    "feld": "description",
+    "freigabe": "intern",
+    "pfad": "/Users/lehrmacbook/.swiftly/bin/swift",
+    "kontext": "ehrend der Agent gruen gemeldet hatte. Ursache: `which swift` liefert /Users/lehrmacbook/.swiftly/bin/swift -- Apple Swift 4.2.4, x86_64, Target darwin. Die Xcode-Kette unter /u"
+  }
+]

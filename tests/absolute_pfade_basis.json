@@ -1,0 +1,121 @@
+[
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "30e1e9ea",
+    "feld": "content",
+    "klasse": "B",
+    "begruendung": "Enthaelt den woertlichen @-Import-Schnipsel @/Volumes/daten/Begod2026/hub/CLAUDE.md als Kopiervorlage; Praefix-Streichen macht den Import syntaktisch falsch."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "ab4f443e",
+    "feld": "summary",
+    "klasse": "C",
+    "begruendung": "Nennt den fruaheren Ort unter /Volumes/daten/be_old -- fremdes/abgeschriebenes Repo ausserhalb Begod2026."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "ab4f443e",
+    "feld": "content",
+    "klasse": "C",
+    "begruendung": "Nennt den fruaheren Ort unter /Volumes/daten/be_old -- fremdes/abgeschriebenes Repo ausserhalb Begod2026."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "da662b05",
+    "feld": "summary",
+    "klasse": "C",
+    "begruendung": "FREIGEGEBEN (offen). Nennt /Volumes/daten/be_old -- fremdes Repo (WohlAir/schimmel_guard_app) ausserhalb Begod2026. Sinn der Freigabe fuer diesen Verweis ist zu klaeren, nicht nur die Schreibweise."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "da662b05",
+    "feld": "content",
+    "klasse": "C",
+    "begruendung": "FREIGEGEBEN (offen). Nennt /Volumes/daten/be_old -- fremdes Repo (WohlAir/schimmel_guard_app) ausserhalb Begod2026. Sinn der Freigabe fuer diesen Verweis ist zu klaeren, nicht nur die Schreibweise."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "483acb56",
+    "feld": "content",
+    "klasse": "C",
+    "begruendung": "Nennt /Volumes/daten/videoki -- fremdes Projekt ausserhalb Begod2026."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "1f81a8eb",
+    "feld": "summary",
+    "klasse": "B",
+    "begruendung": "Beschreibt eine Pfadaufloesung als Teil des Bugs (veraltete Skriptkopie), nicht nur den Fundort."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "1f81a8eb",
+    "feld": "content",
+    "klasse": "B",
+    "begruendung": "Beschreibt eine Pfadaufloesung als Teil des Bugs (veraltete Skriptkopie), nicht nur den Fundort."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "0beacbfa",
+    "feld": "summary",
+    "klasse": "B",
+    "begruendung": "Agentenregister -- Ort ist bewusst absolut genannt (nicht raten, erfragen); alter /tmp-Ort besteht weiter und wird nicht mehr gelesen."
+  },
+  {
+    "tabelle": "knowledge_nodes",
+    "id": "a13cd3f4",
+    "feld": "content",
+    "klasse": "C",
+    "begruendung": "FREIGEGEBEN (offen). Nennt /Users/lehrmacbook/.codex/... -- ausserhalb Begod2026, per Auftrag Klasse-C-Praefix."
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-18bc8d",
+    "feld": "pruefstelle",
+    "klasse": "C",
+    "begruendung": "pruefstelle zeigt auf ~/.claude/skills/design-waechter/ui_guard.py -- globaler Claude-Ort ausserhalb Begod2026, per Auftrag Klasse-C-Praefix /Users/lehrmacbook."
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-7a719d",
+    "feld": "description",
+    "klasse": "B",
+    "begruendung": "Lehre handelt woertlich vom Effekt eines ABSOLUTEN Pfads im Arbeitsbaum; das ist der beschriebene Fehler, nicht nur der Fundort."
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-76395d",
+    "feld": "description",
+    "klasse": "B",
+    "begruendung": "Agentenregister -- Ort ist bewusst absolut genannt (nicht raten, erfragen); alter /tmp-Ort besteht weiter und wird nicht mehr gelesen."
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-8c2c2a",
+    "feld": "description",
+    "klasse": "B",
+    "begruendung": "Vorher/Nachher-Wert einer abgeleiteten Wurzelkonstante ist der Beleg des beschriebenen Bugs, kein beilaeufiger Fundort."
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-9f8816",
+    "feld": "description",
+    "klasse": "B",
+    "begruendung": "Woertliches Zitat eines Auftragstexts, dessen fehlende Eindeutigkeit der Kern der Lehre ist."
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-b3793c",
+    "feld": "description",
+    "klasse": "C",
+    "begruendung": "Nennt /Users/lehrmacbook/Desktop/ -- ausserhalb Begod2026, per Auftrag Klasse-C-Praefix."
+  },
+  {
+    "tabelle": "lessons_learned",
+    "id": "L-faae1e",
+    "feld": "description",
+    "klasse": "C",
+    "begruendung": "Nennt /Users/lehrmacbook/.swiftly/bin/swift -- ausserhalb Begod2026, per Auftrag Klasse-C-Praefix."
+  }
+]
