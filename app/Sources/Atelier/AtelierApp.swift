@@ -210,8 +210,15 @@ struct AtelierApp: App {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         guard panel.runModal() == .OK, let url = panel.url else { return }
+        // NACHTRAG 2026-08-15: der Import schreibt jetzt tatsaechlich in den
+        // Bestand (siehe DomaeneImportDienst.swift) und braucht darum einen
+        // Ausweis, wie /api/ausweis-anlegen ihn schon abfragt (AusweisAnsicht.swift,
+        // "Dein Geheimnis" per SecureField) -- hier als NSAlert, weil dieser
+        // Befehl zu keinem Fenster/View gehoert. Nichts wird gespeichert:
+        // das Geheimnis lebt nur fuer diesen einen Aufruf im Arbeitsspeicher.
+        guard let geheimnis = Self.ausweisAbfragen() else { return }
         Task {
-            let (ergebnis, bestandteile) = await DomaeneImportDienst.importiere(dateiURL: url)
+            let (ergebnis, bestandteile) = await DomaeneImportDienst.importiere(dateiURL: url, geheimnis: geheimnis)
             // nil == Wirkung Null: eine abgelehnte oder unlesbare Datei
             // aendert nichts an einer bereits geltenden Anforderung.
             if let bestandteile { appDelegate.wahl.setzeBestandteile(bestandteile) }
@@ -221,6 +228,25 @@ struct AtelierApp: App {
             alert.addButton(withTitle: "OK")
             alert.runModal()
         }
+    }
+
+    /// `nil` heisst: Nutzer hat abgebrochen oder nichts eingegeben -- dann
+    /// unterbleibt der ganze Aufruf, ohne eine weitere Meldung (Abbrechen
+    /// braucht keine Erklaerung).
+    @MainActor
+    private static func ausweisAbfragen() -> String? {
+        let alert = NSAlert()
+        alert.messageText = "Ausweis für den Import"
+        alert.informativeText = "Der Import schreibt in den Bestand und braucht deinen Ausweis."
+        alert.addButton(withTitle: "Importieren")
+        alert.addButton(withTitle: "Abbrechen")
+        let feld = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        feld.setAccessibilityLabel("Dein Ausweis-Geheimnis")
+        alert.accessoryView = feld
+        alert.window.initialFirstResponder = feld
+        guard alert.runModal() == .alertFirstButtonReturn else { return nil }
+        let wert = feld.stringValue.trimmingCharacters(in: .whitespaces)
+        return wert.isEmpty ? nil : wert
     }
 }
 

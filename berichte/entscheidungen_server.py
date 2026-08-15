@@ -838,21 +838,29 @@ def _quellenliste() -> dict:
 
 def _domaene_import(paket: dict) -> dict:
     """H8b: das atelier schickt den kompletten Paketinhalt (siehe
-    docs/PLAN_OPENLEHR_2026-08-14.md §H8), die Pruefung selbst liegt in
-    kern/domaene.py (H8a, anderer Agent). Vertrag: domaene.pruefe(paket)
-    liefert bei Annahme {"angenommen": True, "bezeichnung": str, "anzahl_regeln": int},
-    bei Ablehnung {"angenommen": False, "grund": str} -- grund bereits in
-    Nutzersprache, wird unveraendert durchgereicht.
+    docs/PLAN_OPENLEHR_2026-08-14.md §H8), die Pruefung UND das Schreiben
+    liegen in kern/domaene.py. Vertrag: domaene.speichere(paket) prueft wie
+    pruefe() und liefert bei Annahme zusaetzlich {"gespeichert": int,
+    "uebersprungen": int} (Wirkung Null, ADR-018 -- jede geschriebene Zeile
+    traegt norm_rang=NULL, wirkt also noch nicht). Bei Ablehnung
+    {"angenommen": False, "grund": str} -- grund bereits in Nutzersprache,
+    wird unveraendert durchgereicht.
 
-    Fehlt kern/domaene.py noch (H8a nicht fertig), kommt hier "verfuegbar":
-    False zurueck statt eines Absturzes -- das atelier zeigt das als
-    "kann gerade nicht geprueft werden."
+    NACHTRAG 2026-08-15: vorher rief diese Funktion domaene.pruefe() --
+    reine Pruefung, ohne Schreibung. Die App meldete daraufhin "gilt jetzt",
+    obwohl der Bestand unveraendert blieb (Befund vom selben Tag). Jetzt
+    schreibt der Aufruf tatsaechlich, deshalb steht dieser Pfad seit diesem
+    Commit NICHT mehr in _OHNE_KOPFPRUEFUNG -- siehe Kommentar dort.
+
+    Fehlt kern/domaene.py noch, kommt hier "verfuegbar": False zurueck statt
+    eines Absturzes -- das atelier zeigt das als "kann gerade nicht geprueft
+    werden."
     """
     try:
         import domaene  # liegt in kern/, per Suchpfad oben eingehaengt
     except ImportError:
         return {"verfuegbar": False}
-    return domaene.pruefe(paket)
+    return domaene.speichere(paket)
 
 
 def _abrufweg_stand(text: str) -> dict:
@@ -916,20 +924,20 @@ _SCHREIBRECHT = "verwaltung:schreiben"
 # Titel ausdruecklich nur "schreibende Dienst-Endpunkte" meint. Gemessen,
 # nicht vermutet: _fundstelle_stand() ruft fundstelle.loese() -- eine reine
 # Textstellen-Aufloesung, kein INSERT/UPDATE/write_text in kern/fundstelle.py
-# (grep bestaetigt). _domaene_import() ruft domaene.pruefe(), NICHT
-# domaene.speichere() -- pruefe() oeffnet die Datenbank nur ueber
-# speicher.lesen() (read-only, siehe kern/domaene.py::_pruefe_bestandsquellen)
-# und schreibt nichts; speichere() waere der schreibende Zwilling und bleibt
-# unerreicht von diesem Endpunkt. Beide Pfade haben also nichts
-# Schuetzenswertes zu schreiben, und das Recht 'verwaltung:schreiben' passt
-# der Sache nach nicht auf eine Leseoperation. Deshalb hier aufgenommen --
-# nicht weil die App sonst nicht laeuft, sondern weil die Pruefung sonst vor
-# der eigenen Zweckangabe scheitert. Kommt in domaene.py je ein Aufruf von
-# speichere() an diesen Endpunkt, gehoert /api/domaene-import sofort wieder
-# heraus.
+# (grep bestaetigt). /api/domaene-import blieb hier so lange richtig
+# gerechnet, wie _domaene_import() domaene.pruefe() rief (read-only ueber
+# speicher.lesen(), kein Schreibpfad erreicht).
+#
+# NACHTRAG 2026-08-15, zweite Aenderung, GENAU DER FALL, DEN DER ERSTE
+# NACHTRAG SELBST ANGEKUENDIGT HAT: _domaene_import() ruft jetzt
+# domaene.speichere() (Befund vom selben Tag -- die App meldete "gilt
+# jetzt", der Bestand blieb unveraendert, weil nur geprueft, nie
+# geschrieben wurde). Ab hier gilt fuer /api/domaene-import wieder dieselbe
+# Begruendung wie fuer jeden anderen schreibenden Pfad: 'verwaltung:schreiben'
+# ist die Sache nach richtig, also raus aus dieser Liste.
 _OHNE_KOPFPRUEFUNG = frozenset({
     "/api/ausweis-anlegen", "/api/ausweis-einladen",
-    "/api/fundstelle", "/api/domaene-import",
+    "/api/fundstelle",
 })
 
 
