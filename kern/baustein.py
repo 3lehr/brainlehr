@@ -51,6 +51,39 @@ from dataclasses import asdict, dataclass, field
 # zweite (Betreiber, 2026-08-14: "felder gleich mitdenken").
 TYPEN = ("absatz", "ueberschrift", "tabelle", "grafik", "feld")
 
+# --- Herkunft eines Bausteins (ADR-021) -------------------------------------
+# ANLASS: ADR-021 misst, dass kein Baustein heute sagen kann, ob sein Inhalt
+# von Hand kommt oder aus dem Bestand abgeleitet wurde. Ohne dieses Merkmal
+# ist der Fall des Betreibers (er ueberschreibt eine abgeleitete Zahl) gar
+# nicht entscheidbar. Diese Datei baut NUR die Voraussetzung -- keinen
+# Schreibweg in den Bestand (der ist der naechste, hier bewusst nicht
+# gebaute Auftrag).
+#
+# VIER KANDIDATEN GEPRUEFT, ALLE VIER BLEIBEN:
+#   eingegeben          -- von Hand getippt. VORGABE, deckungsgleich mit dem
+#                           heutigen (einzigen) Verhalten.
+#   abgeleitet           -- aus dem Wissensbestand uebernommen. Der einzige
+#                           Fall aus dem Anlass des Betreibers.
+#   vorschlag_angenommen -- ein Modellvorschlag (Anmerkung von_wem="modell"),
+#                           den ein Mensch angenommen hat. Keine Ableitung aus
+#                           dem Bestand, trotzdem nicht "von Hand" im Sinn von
+#                           selbst formuliert -- eine dritte, eigene Herkunft.
+#   importiert           -- aus einer fremden Quelle (z.B. WordPress, ADR-019
+#                           offene Frage). Weder Handeingabe noch Bestand.
+#
+# HERKUNFT UND URHEBERSCHAFT SIND ZWEI VERSCHIEDENE ACHSEN, NICHT DIESELBE --
+# die Vermutung aus dem Auftrag ist am Code bestaetigt, nicht widerlegt:
+# `Anmerkung.von_wem` (unten) beantwortet "wer hat diesen AUFTRAG/Kommentar
+# geschrieben" (mensch/modell) -- eine Aussage ueber eine Anmerkung am Rand.
+# `Baustein.herkunft` beantwortet "woher kommt der BAUSTEIN-INHALT selbst" --
+# eine Aussage ueber den Baustein. Ein Mensch kann einen abgeleiteten Wert
+# von Hand tippen (dann Achse 1 = "mensch" an der Anmerkung, die ihn aendert,
+# Achse 2 = vorher "abgeleitet", nachher "eingegeben" am Baustein, siehe
+# `dokument.baustein_text_setzen`). Beide Achsen beantworten verschiedene
+# Fragen, keine ersetzt die andere.
+HERKUNFTSARTEN = ("eingegeben", "abgeleitet", "vorschlag_angenommen", "importiert")
+HERKUNFT_VORGABE = "eingegeben"
+
 # --- Zustaende einer Anmerkung ---------------------------------------------
 ZUSTAENDE = ("offen", "umgesetzt", "abgenommen", "abgelehnt")
 
@@ -106,6 +139,17 @@ class Baustein:
     # ist ein Feld an JEDEM Baustein (WCAG 2.2 verlangt ihn auch bei Tabellen),
     # nicht nur an grafik.
     alt: str = ""
+    # ADR-021: woher der INHALT kommt -- siehe HERKUNFTSARTEN oben. Eigene
+    # Achse, getrennt von Anmerkung.von_wem (Urheberschaft einer Anmerkung).
+    herkunft: str = HERKUNFT_VORGABE
+    # Nur bei herkunft != "eingegeben" belegt: die Kennung der Quelle (z.B.
+    # ein Wissensknoten). Selbe Bauform wie feldname bei typ=="feld" -- ein
+    # Pflichtfeld, das nur in EINEM Fall erlaubt ist. Diese Datei prueft NICHT,
+    # ob die Kennung wirklich existiert (kein DB-Zugriff hier, dieselbe
+    # Haltung wie bei `eltern` in dokument.py und wie bei "bestand:<id>" in
+    # kern/belegvertrag.py::herkunftsart -- die Existenzpruefung waere der
+    # Schreibweg, den dieser Auftrag ausdruecklich nicht baut).
+    herkunftsquelle: str | None = None
 
     def __post_init__(self) -> None:
         if self.typ not in TYPEN:
@@ -114,6 +158,12 @@ class Baustein:
             raise VertragsFehler("ein Baustein vom Typ 'feld' braucht einen feldname")
         if self.typ != "feld" and self.feldname:
             raise VertragsFehler(f"feldname ist nur bei typ 'feld' erlaubt, nicht bei {self.typ!r}")
+        if self.herkunft not in HERKUNFTSARTEN:
+            raise VertragsFehler(f"unbekannte Herkunft {self.herkunft!r}, erlaubt: {HERKUNFTSARTEN}")
+        if self.herkunft == "eingegeben" and self.herkunftsquelle:
+            raise VertragsFehler("herkunftsquelle ist nur bei abgeleiteter/importierter Herkunft erlaubt, nicht bei 'eingegeben'")
+        if self.herkunft != "eingegeben" and not self.herkunftsquelle:
+            raise VertragsFehler(f"herkunft {self.herkunft!r} braucht eine herkunftsquelle -- sonst ist 'abgeleitet' nur eine Behauptung")
 
     def als_dict(self) -> dict:
         return asdict(self)
@@ -257,6 +307,8 @@ def vertragsmuster() -> dict:
     """
     b = Baustein(kennung="0123456789ab", typ="absatz", text="Erster Satz.")
     f = Baustein(kennung="ba9876543210", typ="feld", text="", feldname="rechnungsnummer")
+    d = Baustein(kennung="fedcba987654", typ="absatz", text="42,00",
+                herkunft="abgeleitet", herkunftsquelle="knoten:9f14c5f2")
     a = Anmerkung(
         kennung="ffeeddccbbaa",
         anker=Anker(baustein=b.kennung, suchtext="Erster Satz.", von=0, bis=12),
@@ -270,7 +322,7 @@ def vertragsmuster() -> dict:
         "uebergaenge": {k: list(v) for k, v in UEBERGAENGE.items()},
         "klassen_leicht": list(KLASSEN_LEICHT),
         "klassen_schwer": list(KLASSEN_SCHWER),
-        "bausteine": [b.als_dict(), f.als_dict()],
+        "bausteine": [b.als_dict(), f.als_dict(), d.als_dict()],
         "anmerkung": a.als_dict(),
     }
 
@@ -354,8 +406,56 @@ def _selftest() -> int:
         "kennung", "anker", "text", "klasse", "von_wem", "zustand",
         "selbstaendig_umgesetzt", "verlauf", "darf_automatisch",
     }
-    assert set(m["bausteine"][0]) == {"kennung", "typ", "text", "feldname", "eltern", "rang", "alt"}
+    assert set(m["bausteine"][0]) == {
+        "kennung", "typ", "text", "feldname", "eltern", "rang", "alt",
+        "herkunft", "herkunftsquelle",
+    }
     assert set(m["anmerkung"]["anker"]) == {"baustein", "suchtext", "von", "bis"}
+
+    # --- Herkunft (ADR-021) --------------------------------------------------
+    # Vorgabe: unveraendertes Verhalten -- ein Baustein ohne Angabe ist
+    # "eingegeben", genau wie vor dieser Aenderung.
+    frei = Baustein(kennung="f" * 12, typ="absatz", text="Frei getippt.")
+    assert frei.herkunft == "eingegeben"
+    assert frei.herkunftsquelle is None
+
+    # Gegenprobe Richtung 1: von Hand eingegeben bleibt wie bisher zulaessig,
+    # auch OHNE Quellenkennung.
+    Baustein(kennung="1" * 12, typ="absatz", text="x", herkunft="eingegeben")
+
+    # Gegenprobe Richtung 2: abgeleitet wird UNTERSCHIEDEN -- braucht eine
+    # Quellenkennung und traegt sie.
+    abgeleitet = Baustein(kennung="2" * 12, typ="absatz", text="42,00",
+                          herkunft="abgeleitet", herkunftsquelle="knoten:9f14c5f2")
+    assert abgeleitet.herkunft == "abgeleitet"
+    assert abgeleitet.herkunftsquelle == "knoten:9f14c5f2"
+
+    # Die anderen beiden geprueften Kandidaten tragen dieselbe Pflicht.
+    Baustein(kennung="3" * 12, typ="absatz", text="x",
+            herkunft="vorschlag_angenommen", herkunftsquelle="anmerkung:aa11bb22cc33")
+    Baustein(kennung="4" * 12, typ="absatz", text="x",
+            herkunft="importiert", herkunftsquelle="wordpress:post-17")
+
+    # Grenzwert: Quellenkennung leer bei nicht-eingegebener Herkunft faellt.
+    for kaputt in (
+        dict(herkunft="abgeleitet", herkunftsquelle=None),
+        dict(herkunft="abgeleitet", herkunftsquelle=""),
+        dict(herkunft="eingegeben", herkunftsquelle="knoten:9f14c5f2"),  # Quelle ohne Ableitung
+        dict(herkunft="erfunden", herkunftsquelle=None),                 # Herkunft gibt es nicht
+    ):
+        try:
+            Baustein(kennung="a" * 12, typ="absatz", text="x", **kaputt)
+        except VertragsFehler:
+            pass
+        else:
+            raise AssertionError(f"haette fallen muessen: {kaputt}")
+
+    # Grenzwert: Quelle zeigt auf etwas Nichtexistierendes -- diese Datei hat
+    # keinen DB-Zugriff und prueft das bewusst NICHT (dieselbe Haltung wie bei
+    # `eltern`/`Anker.baustein`). Strukturell zulaessig, auch wenn "knoten:xxx"
+    # nie vergeben wurde.
+    Baustein(kennung="5" * 12, typ="absatz", text="x",
+            herkunft="abgeleitet", herkunftsquelle="knoten:existiert-nicht")
 
     # baumreihenfolge: leeres Dokument -> leere Reihenfolge.
     assert baumreihenfolge([]) == []
@@ -390,6 +490,19 @@ def _selftest() -> int:
     b_ring = Baustein(kennung="b" * 12, typ="absatz", text="B", eltern="a" * 12)
     im_ring = {b.kennung for b in baumreihenfolge([a_ring, b_ring])}
     assert im_ring == {a_ring.kennung, b_ring.kennung}
+
+    # Grenzwert: verschachtelte Bausteine mit GEMISCHTER Herkunft -- die
+    # Baumbildung kennt kein "herkunft" und darf davon unbeeinflusst bleiben;
+    # jeder Knoten traegt seine eigene, unabhaengig vom Elternteil.
+    mp = Baustein(kennung="m" * 12, typ="absatz", text="Mutter", rang=0.0,
+                 herkunft="abgeleitet", herkunftsquelle="knoten:mutter")
+    mk = Baustein(kennung="n" * 12, typ="absatz", text="Kind", eltern=mp.kennung, rang=0.0,
+                 herkunft="eingegeben")
+    gemischt = baumreihenfolge([mp, mk])
+    assert [b.kennung for b in gemischt] == [mp.kennung, mk.kennung]
+    nach_kennung_gemischt = {b.kennung: b for b in gemischt}
+    assert nach_kennung_gemischt[mp.kennung].herkunft == "abgeleitet"
+    assert nach_kennung_gemischt[mk.kennung].herkunft == "eingegeben"
 
     print("baustein: Selbsttest bestanden")
     return 0

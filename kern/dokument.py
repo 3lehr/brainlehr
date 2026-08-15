@@ -98,7 +98,8 @@ def _liste_map(doc, name):
 
 
 def baustein_anhaengen(doc, typ: str, text: str = "", feldname: str | None = None,
-                       eltern: str | None = None, alt: str = "") -> str:
+                       eltern: str | None = None, alt: str = "",
+                       herkunft: str = "eingegeben", herkunftsquelle: str | None = None) -> str:
     """Legt einen Baustein an und gibt seine Kennung zurueck -- nicht True.
 
     `eltern` wird NICHT gegen den Bestand geprueft -- dieselbe Haltung wie bei
@@ -107,13 +108,21 @@ def baustein_anhaengen(doc, typ: str, text: str = "", feldname: str | None = Non
     `baustein.baumreihenfolge`). `rang` wird automatisch ans Ende der
     bestehenden Geschwister gehaengt -- wer umsortieren will, setzt den
     zurueckgegebenen Baustein-`rang` gezielt neu.
+
+    `herkunft`/`herkunftsquelle` (ADR-021): woher der INHALT stammt, siehe
+    `baustein.HERKUNFTSARTEN`. Vorgabe "eingegeben" -- ein Aufruf ohne diese
+    Parameter verhaelt sich exakt wie vor dieser Erweiterung. Wer hier
+    "abgeleitet" setzt, macht das VOR dieser Funktion aus, sie schreibt nur,
+    was uebergeben wird -- den Schreibweg aus dem Wissensbestand baut diese
+    Datei ausdruecklich nicht.
     """
     from pycrdt import Map
 
     geschwister_raenge = [b.rang for b in bausteine(doc) if b.eltern == eltern]
     rang = max(geschwister_raenge, default=-1.0) + 1.0
     b = Baustein(kennung=neue_kennung(), typ=typ, text=text, feldname=feldname,
-                eltern=eltern, rang=rang, alt=alt)
+                eltern=eltern, rang=rang, alt=alt,
+                herkunft=herkunft, herkunftsquelle=herkunftsquelle)
     _liste(doc, BAUSTEINE).append(Map(b.als_dict()))
     return b.kennung
 
@@ -195,12 +204,30 @@ def baustein_text_setzen(doc, kennung: str, text: str) -> str:
     machen, beides sieht von hier aus gleich aus. Was sich automatisch
     aendert: ein Anker mit `von`/`bis` kann nach einer Kuerzung ueber das neue
     Textende hinauszeigen -- das faengt `bereichsfehler()`, nicht diese
-    Funktion."""
+    Funktion.
+
+    ADR-021 FRAGE 2: Diese Funktion ist der einzige heute gebaute Weg, mit dem
+    ein Mensch einen Bausteintext im Dokumentfenster ueberschreibt -- sie IST
+    die "Handaenderung" aus dem Anlass. Trug der Baustein bisher eine Herkunft
+    ungleich "eingegeben" (also "abgeleitet"/"vorschlag_angenommen"/
+    "importiert"), GEWINNT die Handaenderung: die Herkunft wird auf
+    "eingegeben" zurueckgesetzt, die Quellenkennung geloescht. Begruendung,
+    nicht nur Entscheidung: von den drei Moeglichkeiten (gewinnt+loest,
+    abgelehnt, angenommen+Konflikt) passt nur diese zur bestehenden Haltung
+    dieser Datei -- `eltern`/`Anker.baustein` werden ebenfalls nie gegen den
+    Bestand geprueft oder blockiert, ein Ablehnen waere hier der einzige Ort,
+    der das Muster bricht. Eine Konfliktmarkierung wuerde einen Verlauf am
+    Baustein voraussetzen, den es (anders als bei `Anmerkung.verlauf`) nicht
+    gibt -- ihn nur fuer diesen Fall einzuziehen, waere die Bauform einer
+    kuenftigen Entscheidung, nicht dieser."""
     i, eintrag = _finde_baustein(doc, kennung)
     if eintrag is None:
         raise VertragsFehler(f"kein Baustein mit Kennung {kennung!r}")
     eintrag_map = _liste(doc, BAUSTEINE)[i]
     eintrag_map["text"] = text
+    if eintrag.get("herkunft", "eingegeben") != "eingegeben":
+        eintrag_map["herkunft"] = "eingegeben"
+        eintrag_map["herkunftsquelle"] = None
     return text
 
 
@@ -678,6 +705,46 @@ def _selftest() -> int:
     # erste nicht -- das ist der ganze Witz von Entscheidung 4.
     veroeffentlichen(vdoc, "gamlehr", jetzt="2026-08-15T11:00:00Z")
     assert len(fassungen(vdoc)) == 2
+
+    # --- Herkunft (ADR-021) ---------------------------------------------------
+    # ROT vor dieser Aenderung: `baustein_anhaengen` kannte keine Herkunft,
+    # jeder Baustein sah gleich aus, egal ob getippt oder abgeleitet.
+    herkdoc = leeres_dokument()
+
+    # Gegenprobe Richtung 1: von Hand eingegeben verhaelt sich WIE BISHER --
+    # ein Aufruf ohne die neuen Parameter aendert nichts am alten Verhalten.
+    getippt = baustein_anhaengen(herkdoc, "absatz", "Frei getippt.")
+    assert [b for b in bausteine(herkdoc) if b.kennung == getippt][0].herkunft == "eingegeben"
+
+    # Gegenprobe Richtung 2: abgeleitet wird UNTERSCHIEDEN und traegt die Quelle.
+    abgeleitet = baustein_anhaengen(herkdoc, "feld", "42,00", feldname="betrag",
+                                    herkunft="abgeleitet", herkunftsquelle="knoten:9f14c5f2")
+    ab_baustein = [b for b in bausteine(herkdoc) if b.kennung == abgeleitet][0]
+    assert ab_baustein.herkunft == "abgeleitet"
+    assert ab_baustein.herkunftsquelle == "knoten:9f14c5f2"
+
+    # Der eigentliche Fall aus dem Anlass des Betreibers: der Mensch
+    # ueberschreibt den abgeleiteten Wert im Dokumentfenster von Hand -- die
+    # Handaenderung GEWINNT, die Ableitung wird geloest (Frage 2).
+    assert baustein_text_setzen(herkdoc, abgeleitet, "drei haben zugestimmt") == "drei haben zugestimmt"
+    umgestellt = [b for b in bausteine(herkdoc) if b.kennung == abgeleitet][0]
+    assert umgestellt.herkunft == "eingegeben", "eine Handaenderung muss die Ableitung loesen"
+    assert umgestellt.herkunftsquelle is None, "die geloeste Quelle darf nicht stehen bleiben"
+
+    # Gegenprobe: ein bereits "eingegeben"er Baustein bleibt beim Ueberschreiben
+    # unberuehrt -- kein wiederholtes Zuruecksetzen von etwas, das nicht
+    # abgeleitet war.
+    assert baustein_text_setzen(herkdoc, getippt, "Nochmal getippt.") == "Nochmal getippt."
+    weiterhin = [b for b in bausteine(herkdoc) if b.kennung == getippt][0]
+    assert weiterhin.herkunft == "eingegeben"
+
+    # Verschachtelte Bausteine mit gemischter Herkunft ueberleben die Baumbildung.
+    mutter = baustein_anhaengen(herkdoc, "absatz", "Mutter", herkunft="abgeleitet",
+                                herkunftsquelle="knoten:mutter")
+    kind_eingegeben = baustein_anhaengen(herkdoc, "absatz", "Kind", eltern=mutter)
+    baum = {b.kennung: b for b in bausteine_baum(herkdoc)}
+    assert baum[mutter].herkunft == "abgeleitet"
+    assert baum[kind_eingegeben].herkunft == "eingegeben"
 
     print("dokument: Selbsttest bestanden")
     return 0
