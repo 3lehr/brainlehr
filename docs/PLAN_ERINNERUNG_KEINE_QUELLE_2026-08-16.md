@@ -138,3 +138,62 @@ stummen (3779) — kurze Aufträge tragen den Vorbehalt seltener. Das passt zur 
 ist der Grund, ihn nicht der Sorgfalt zu überlassen.
 
 **Damit ist §7 erfüllt** — beide Richtungen gemessen, nicht behauptet.
+
+## Nachtrag 2026-08-16T14:45:00+0200 — Rollout: die Lage war anders als der Knoten sagte
+
+Der Knoten `/brainlehr/der-deklarierte-ablauf-gilt-in-1-von-14` nannte **1 von 14 Repos**.
+Gemessen sind es **28 Repos**, und **21 davon hatten den Melder bereits** — die
+fahrtenbuch-Sitzung hatte ihn in `hub/tools/hooks/pre-push` eingetragen, und der wird
+über `core.hooksPath` von der Mehrheit geteilt. Der Knoten war zum Zeitpunkt seiner
+Entstehung richtig und ist es seit heute Mittag nicht mehr. Genau die Klasse, für die die
+Rang-1-Direktive steht: die Erinnerung an eine Messung ist keine Messung.
+
+**Nachgezogen wurden die verbliebenen fünf:** `openlehr_legacy`, `setfunk`, `wpdrop`
+(hatten einen eigenen pre-push ohne diesen Aufruf), `sigmaforge` und
+`openlehr_einzelunternehmer` (hatten gar keinen). Die Sicherungskopie des vorherigen
+Hooks liegt jeweils als `pre-push.vor-ablaufpflicht` daneben.
+
+### Drei Rückschläge, in dieser Reihenfolge
+
+**1. Erste Zählung unvollständig.** Eine Shell-Schleife über `*/` fand nur 11 Repos statt
+28 — buckeberg und fahrtenbuch fehlten darin, ohne dass es auffiel. Erst der zweite
+Durchgang über `find -name .git` war vollständig. Eine Liste, die plausibel aussieht, ist
+kein Beleg dafür, dass sie vollständig ist.
+
+**2. Fünf Repos meldeten „Jeder Commit nennt Plan und Belegweg" — nach null geprüften
+Commits.** Der Vorgabebereich ist `@{u}..HEAD`; wo alles gepusht ist, liegt nichts darin.
+Bei `openlehr_legacy` mit 1566 Commits war die Meldung unglaubwürdig genug zum Nachsehen.
+Behoben: die Meldung nennt jetzt die Zahl und sagt bei null ausdrücklich „Nichts zu
+prüfen". Dieselbe Fehlerklasse wie der Stichtag in der Zukunft — nichts geprüft, grün
+gemeldet.
+
+**3. Die Rot-Probe schlug zweimal fehl, und beide Male lag es an der Probe.** Ein
+Wegwerf-Repo im Scratchpad und eines eine Verzeichnisebene zu tief: der Hook sucht
+`brainlehr/melder/ablaufpflicht.py` relativ zum Elternverzeichnis des Repos, fand nichts
+und lief still durch. Erst der dritte Aufbau — Repo direkt unter `Begod2026` — war
+gültig. Zwei Fehlschläge, die wie ein defekter Wächter aussahen und einer falschen
+Messung entsprangen.
+
+**Nebenbefund daraus, der bleibt:** Ein Repo außerhalb von `Begod2026/` bekommt den
+Wächter nicht und **merkt es nicht** — die Existenzprüfung `-f` lässt ihn still
+übergehen. Das ist gewollt (kein Sperren ohne Skript), heißt aber: die Verdrahtung ist
+ortsabhängig und muss je Repo geprüft, nicht angenommen werden.
+
+### Die Abnahme, die einen Fehlschlag verlangte
+
+Im Wegwerf-Repo mit echtem Upstream, drei geänderte `.py`-Dateien, Nachricht ohne Plan und
+ohne Belegaussage:
+
+- **Rot:** `git push` bricht ab, zwei Befunde genannt, `failed to push some refs`.
+- **Grün:** derselbe Inhalt, Nachricht um Plan und Beleg ergänzt → `Jeder Commit nennt
+  Plan und Belegweg (1 geprüft)`, Push geht durch.
+
+Erst damit ist der Rollout belegt statt behauptet. Das Wegwerf-Repo ist gelöscht.
+
+### Was offen bleibt
+
+`buckeberg` steht auf rot — **ein** echter Befund von heute (`0c1df3cf`: drei
+Quelldateien, kein Plan, keine Belegaussage). Der bleibt stehen und gehört der dortigen
+Sitzung; ihn per Stichtag wegzuräumen wäre genau der Freispruch, gegen den dieser Wächter
+gebaut ist. Das befürchtete Dauerrot trat nirgends ein: von 28 Repos ist genau dieses eine
+rot, weshalb `.ablaufpflicht-seit` zwar gebaut, aber bisher nirgends angewandt wurde.
