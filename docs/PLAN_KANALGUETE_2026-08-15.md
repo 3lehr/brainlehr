@@ -170,3 +170,63 @@ Klasse wie `L-518fcc`: mit der Zahl angefangen statt mit der Verteilung.
 2. **Die Relevanzschwelle ist die größere Frage.** Ein System, das nie „nichts"
    sagt, kann seine eigene Trefferquote nicht deuten.
 3. **Vor dem nächsten Entwurf die Verteilung**, nicht die Rechnung eines Falls.
+
+---
+
+## Fortschreibung 2026-08-16T04:48:08+0200 — der Sockel ist gemessen, und er sättigt fast immer
+
+Schritt 1 der Reihenfolge oben ist erledigt. `kern/kanalguete_messung.py` trägt jetzt
+eine vierte Stufe `echt`, die den Produktivweg **einschließlich** Sockel rechnet
+(`knowledge_mcp_server._fuse_with_keyword_floor()` wird importiert, nicht nachgebaut).
+Lauf: `runs/kanalguete_sockel_2026-08-16.json`, gegen **4933 Knoten**, 117 Anfragen.
+
+### Die Verteilung
+
+| | |
+|---|---|
+| Sockel gesättigt | **116 von 117** (99,1 %) |
+| Endergebnis identisch mit reiner Stichwortreihenfolge | **116 von 117** |
+| Endplätze, die der Bedeutungskanal beisteuert | **4 von 585** (0,7 %) |
+| Stichwortkanal, Median | **4740 Kandidaten** — bei `max_results=5` |
+
+**Der Bedeutungskanal ist im Produktivweg praktisch abgeschaltet.** Nicht schwach
+gewichtet: abgeschaltet. Der Median sagt auch, warum — die Trigramm-FTS mit
+OR-Verknüpfung trifft *4740 von 4933 Knoten*. Der „Stichwortkanal" ist an dieser
+Stelle kein Filter mehr, sondern beinahe der Gesamtbestand, und der Sockel gibt ihm
+trotzdem unbedingt alle fünf Plätze.
+
+**Damit hat auch die Falschmeldequote 40/40 eine Ursache statt nur einen Namen:** Bei
+im Median 4740 Kandidaten je Anfrage *kann* „dazu habe ich nichts" nicht entstehen.
+Die Relevanzschwelle (Punkt 2) ist kein zweites, unabhängiges Thema — sie hängt an
+derselben Stelle.
+
+### Was das für jede bisher berichtete Zahl bedeutet
+
+Der bisherige Messpfad ließ den Sockel weg. Nebeneinander, **derselbe Lauf**:
+
+| | echt (mit Sockel) | vorher (ohne Sockel) |
+|---|---|---|
+| Trefferquote | 34/40 | 39/40 |
+| einsprachig | **0/35** | 4/35 |
+| Leitfall deutsch | **trifft nicht** | trifft |
+| Falschmeldequote | 40/40 | 40/40 |
+
+Der echte Weg ist in jeder beweglichen Zahl schlechter, und beim einsprachigen
+Normalfall **auf null**. Die Tabelle der Fortschreibung von gestern gilt für einen
+Pfad, den das System nie ausführt — das ist keine Nachlässigkeit des Agenten,
+sondern die Folge der Tabu-Liste, und genau der Fall, für den die Hausregel
+„der Prüfstand ist nie die Wirklichkeit" steht.
+
+### Was daraus folgt — und was ausdrücklich noch NICHT getan ist
+
+1. **Der Sockel ist der Fehler, nicht die Formel.** `kern/embeddings.py::fuse_semantic_led()`
+   liegt seit dem 2026-08-12 fertig und unverdrahtet genau dafür da. **Verdrahtet ist
+   sie nicht** — das ist der nächste Schritt und braucht eine eigene Messung, weil
+   `fusion_echt` heute belegt, dass am Produktivweg gemessen werden muss.
+2. **Der Stichwortkanal selbst gehört gemessen.** 4740 von 4933 ist kein Rangproblem.
+   Ob ein Kanal, der fast alles trifft, überhaupt Rangbeiträge liefern sollte, ist eine
+   andere Frage als die, wie man ihn mit dem Bedeutungskanal verschmilzt.
+3. **Nicht gemessen:** Der Prüfstand filtert nicht nach `project_id`/Freigabe, der
+   Produktivweg schon. Das kann den Stichwortkanal nur *kleiner* machen; bei einem
+   Median von 4740 gegen `max_results=5` ändert es an der Sättigung mit hoher
+   Wahrscheinlichkeit nichts, gemessen ist es aber nicht.

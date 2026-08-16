@@ -1,0 +1,74 @@
+{
+  "erzeugt_am": "2026-08-16T04:48:08+0200",
+  "knoten_bestand": 4933,
+  "modell": "bge-m3@ctx2048",
+  "n_ja": 40,
+  "n_nein": 40,
+  "n_einsprachig": 35,
+  "max_results": 5,
+  "seed": 20260815,
+  "stufen": {
+    "echt": {
+      "trefferquote": 0.85,
+      "trefferquote_zaehler_nenner": "34/40",
+      "falschmeldequote": 1.0,
+      "falschmeldequote_zaehler_nenner": "40/40",
+      "einsprachig_trefferquote": 0.0,
+      "einsprachig_zaehler_nenner": "0/35",
+      "leitfall_deutsch_trifft": false,
+      "leitfall_sinnlos_bleibt_leer_oder_verworfen": true,
+      "dauer_s_gesamt": 24.19,
+      "dauer_s_je_anfrage": 0.21,
+      "anfragen_gemessen": 115
+    },
+    "vorher": {
+      "trefferquote": 0.975,
+      "trefferquote_zaehler_nenner": "39/40",
+      "falschmeldequote": 1.0,
+      "falschmeldequote_zaehler_nenner": "40/40",
+      "einsprachig_trefferquote": 0.11428571428571428,
+      "einsprachig_zaehler_nenner": "4/35",
+      "leitfall_deutsch_trifft": true,
+      "leitfall_sinnlos_bleibt_leer_oder_verworfen": true,
+      "dauer_s_gesamt": 24.06,
+      "dauer_s_je_anfrage": 0.209,
+      "anfragen_gemessen": 115
+    },
+    "schritt1": {
+      "trefferquote": 0.975,
+      "trefferquote_zaehler_nenner": "39/40",
+      "falschmeldequote": 1.0,
+      "falschmeldequote_zaehler_nenner": "40/40",
+      "einsprachig_trefferquote": 0.11428571428571428,
+      "einsprachig_zaehler_nenner": "4/35",
+      "leitfall_deutsch_trifft": true,
+      "leitfall_sinnlos_bleibt_leer_oder_verworfen": true,
+      "dauer_s_gesamt": 71.95,
+      "dauer_s_je_anfrage": 0.626,
+      "anfragen_gemessen": 115
+    },
+    "schritt2": {
+      "trefferquote": 0.925,
+      "trefferquote_zaehler_nenner": "37/40",
+      "falschmeldequote": 1.0,
+      "falschmeldequote_zaehler_nenner": "40/40",
+      "einsprachig_trefferquote": 0.05714285714285714,
+      "einsprachig_zaehler_nenner": "2/35",
+      "leitfall_deutsch_trifft": false,
+      "leitfall_sinnlos_bleibt_leer_oder_verworfen": true,
+      "dauer_s_gesamt": 72.08,
+      "dauer_s_je_anfrage": 0.627,
+      "anfragen_gemessen": 115
+    }
+  },
+  "sockel": {
+    "anfragen": 117,
+    "gesaettigt": 116,
+    "gesaettigt_anteil": 0.9914529914529915,
+    "identisch_mit_stichwortreihenfolge": 116,
+    "endplaetze_nur_bedeutung_summe": 4,
+    "endplaetze_summe": 585,
+    "n_stichwortkanal_median": 4740,
+    "erlaeuterung": "gesaettigt = Stichwortkanal allein fuellt alle max_results Plaetze; dort ist jede Aenderung an rrf_fuse strukturell folgenlos (tests/test_kanalguete_flooranalyse.py)."
+  }
+}

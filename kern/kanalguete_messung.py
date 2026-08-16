@@ -175,6 +175,45 @@ def fusion_vorher(k: Kanaele, max_results: int) -> list:
     return embeddings.rrf_fuse(kw, emb, embedding_weight=1.0)[:max_results]
 
 
+def fusion_echt(k: Kanaele, max_results: int) -> list:
+    """Der PRODUKTIVE Weg, einschliesslich des Stichwort-Sockels: ruft
+    knowledge_mcp_server._fuse_with_keyword_floor() selbst auf (importiert,
+    nicht nachgebaut -- zwei Implementierungen desselben Sockels waeren
+    genau die Prueffstand-Abweichung, die dieses Modul messen soll).
+
+    Der Unterschied zu fusion_vorher() ist der ganze Punkt: fusion_vorher()
+    laesst den Sockel weg (Modul-Docstring), misst also eine Formel, die
+    der echte Suchweg an dieser Stelle gar nicht ausfuehrt. Jede Zahl aus
+    runs/kanalguete_vorher_schritt1_schritt2_2026-08-15.json gilt darum fuer
+    den sockellosen Pfad, nicht fuer den Produktivweg."""
+    kw = embeddings.rrf_fuse(k.kw_node_ids, k.kw_lesson_ids, embedding_weight=1.0)
+    emb = embeddings.rrf_fuse(k.emb_node_ids, k.emb_lesson_ids, embedding_weight=1.0)
+    return kms._fuse_with_keyword_floor(kw, emb, max_results)
+
+
+def sockel_kennzahl(k: Kanaele, max_results: int) -> dict:
+    """Die Verteilungsmessung, die der Plan vor jedem weiteren Formelentwurf
+    verlangt: WIE OFT saettigt der Sockel, und wie viele Endplaetze bleiben
+    dem Bedeutungskanal ueberhaupt?
+
+    `gesaettigt` bedeutet: der Stichwortkanal allein fuellt alle
+    max_results Plaetze -- dann ist das Ergebnis byte-identisch mit der
+    reinen Stichwortreihenfolge, und keine Aenderung an rrf_fuse() kann es
+    bewegen (strukturell belegt in tests/test_kanalguete_flooranalyse.py)."""
+    kw = embeddings.rrf_fuse(k.kw_node_ids, k.kw_lesson_ids, embedding_weight=1.0)
+    emb = embeddings.rrf_fuse(k.emb_node_ids, k.emb_lesson_ids, embedding_weight=1.0)
+    final = kms._fuse_with_keyword_floor(kw, emb, max_results)
+    kw_menge = set(kw)
+    return {
+        "gesaettigt": len(kw) >= max_results,
+        "n_stichwortkanal": len(kw),
+        "n_bedeutungskanal": len(emb),
+        "endplaetze": len(final),
+        "endplaetze_nur_bedeutung": sum(1 for i in final if i not in kw_menge),
+        "identisch_mit_stichwortreihenfolge": final == kw[:len(final)],
+    }
+
+
 def fusion_schritt1(k: Kanaele, query: str, max_results: int) -> list:
     """+ nur GANZE Stichworttreffer (embeddings.filter_whole_word_hits)."""
     kw_node = embeddings.filter_whole_word_hits(query, k.kw_node_ids, k.kw_node_text)
@@ -256,7 +295,11 @@ def messlauf(*, n_ja: int, n_nein: int, max_results: int = 5, seed: int = 202608
     node_ids, node_mat = _lade_embeddings(conn, "node", id_zu_pfad)
     lesson_ids, lesson_mat = _lade_embeddings(conn, "lesson")
 
-    stufen = {"vorher": fusion_vorher, "schritt1": fusion_schritt1, "schritt2": fusion_schritt2}
+    # "echt" zuerst: die Stufe mit dem Sockel, also der einzige Zustand, den
+    # der Produktivweg tatsaechlich rechnet. Die drei anderen sind der
+    # sockellose Vergleichspfad des Auftrags vom 2026-08-15.
+    stufen = {"echt": fusion_echt, "vorher": fusion_vorher,
+              "schritt1": fusion_schritt1, "schritt2": fusion_schritt2}
     ergebnis = {
         "erzeugt_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "knoten_bestand": conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0],
@@ -266,7 +309,14 @@ def messlauf(*, n_ja: int, n_nein: int, max_results: int = 5, seed: int = 202608
         "stufen": {},
     }
 
+    sockel_proben: list = []
+
     def _fusionieren(query: str, stufe_name: str, k: Kanaele) -> list:
+        if stufe_name == "echt":
+            # Die Sockelverteilung faellt hier gratis ab: die Kanaele sind
+            # bereits gebaut (der teure Teil, ein Ollama-Aufruf je Anfrage).
+            sockel_proben.append(sockel_kennzahl(k, max_results))
+            return fusion_echt(k, max_results)
         if stufe_name == "vorher":
             return fusion_vorher(k, max_results)
         if stufe_name == "schritt1":
@@ -315,6 +365,22 @@ def messlauf(*, n_ja: int, n_nein: int, max_results: int = 5, seed: int = 202608
             "anfragen_gemessen": n_gesamt,
         }
     conn.close()
+    if sockel_proben:
+        n = len(sockel_proben)
+        ergebnis["sockel"] = {
+            "anfragen": n,
+            "gesaettigt": sum(1 for p in sockel_proben if p["gesaettigt"]),
+            "gesaettigt_anteil": sum(1 for p in sockel_proben if p["gesaettigt"]) / n,
+            "identisch_mit_stichwortreihenfolge": sum(
+                1 for p in sockel_proben if p["identisch_mit_stichwortreihenfolge"]),
+            "endplaetze_nur_bedeutung_summe": sum(p["endplaetze_nur_bedeutung"] for p in sockel_proben),
+            "endplaetze_summe": sum(p["endplaetze"] for p in sockel_proben),
+            "n_stichwortkanal_median": sorted(p["n_stichwortkanal"] for p in sockel_proben)[n // 2],
+            "erlaeuterung": (
+                "gesaettigt = Stichwortkanal allein fuellt alle max_results Plaetze; "
+                "dort ist jede Aenderung an rrf_fuse strukturell folgenlos "
+                "(tests/test_kanalguete_flooranalyse.py)."),
+        }
     return ergebnis
 
 
@@ -346,6 +412,18 @@ def demo() -> None:
     assert "noise-1" in v and "noise-1" not in s1, (
         "Schritt 1 haette den reinen Fragmenttreffer 'noise-1' (kein GANZES "
         "Anfragewort im Text) aus dem Stichwortkanal entfernen muessen")
+
+    # Der Sockel, mit max_results=2 saettigend (Stichwortkanal hat 2 Treffer):
+    # fusion_vorher SIEHT den Bedeutungstreffer, fusion_echt nicht. Genau
+    # dieser Unterschied macht jede sockellos erhobene Zahl unvergleichbar
+    # mit dem Produktivweg.
+    kennzahl = sockel_kennzahl(k, 2)
+    assert kennzahl["gesaettigt"], "Stichwortkanal hat 2 Treffer, max_results=2 -- muss saettigen"
+    assert "target" in fusion_vorher(k, 2), "ohne Sockel traegt der Bedeutungskanal bei"
+    assert "target" not in fusion_echt(k, 2), (
+        "gesaettigter Sockel muss den reinen Bedeutungstreffer verdraengen -- "
+        "ist er drin, misst diese Datei den Sockel nicht mehr")
+    assert kennzahl["endplaetze_nur_bedeutung"] == 0
     print("demo: ok")
 
 
