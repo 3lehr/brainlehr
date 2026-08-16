@@ -126,6 +126,8 @@ graph LR
   ev_WorktreeCreate(["WorktreeCreate"])
   werkzeug -.->|loest aus| ev_WorktreeCreate
   ev_WorktreeCreate -->|global| s_worktree_identitaet_py
+  s_kontextstand_py["kontextstand.py"]
+  ev_PostToolUse -->|repo| s_kontextstand_py
   s_stash_guard_hook_py["stash_guard_hook.py"]
   class s_stash_guard_hook_py entscheidet
   ev_PreToolUse -->|repo| s_stash_guard_hook_py
@@ -136,4 +138,4 @@ graph LR
   classDef entscheidet stroke-width:4px
 ```
 
-51 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 1 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.
+52 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 1 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.

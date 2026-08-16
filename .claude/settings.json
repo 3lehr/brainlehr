@@ -20,6 +20,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Volumes/daten/Begod2026/brainlehr/haken/kontextstand.py --transcript \"$CLAUDE_TRANSCRIPT_PATH\" 2>/dev/null || true"
+          }
+        ]
+      }
     ]
   }
 }

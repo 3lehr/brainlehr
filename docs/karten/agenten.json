@@ -267,6 +267,15 @@
    "quelle": "brainlehr/haken/knowledge_recall_hook.py"
   },
   {
+   "id": "s_kontextstand_py",
+   "text": "kontextstand.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Meldet, wenn das Kontextfenster voll laeuft -- bevor die Verdichtung einsetzt.",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/kontextstand.py"
+  },
+  {
    "id": "s_mcp_veraltet_py",
    "text": "mcp_veraltet.py",
    "form": "kasten",
@@ -818,6 +827,12 @@
    "von": "ev_WorktreeCreate",
    "nach": "s_worktree_identitaet_py",
    "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_kontextstand_py",
+   "text": "repo",
    "art": "gerichtet"
   },
   {
