@@ -94,7 +94,12 @@ die Abweichung."*
 ### Offene Fragen, die dem Betreiber gehören
 
 - **Der Name der Steuerdomäne ist entschieden, nicht offen:**
-  `openchaos_einzelunternehmer`. Zwei Einwände wurden vorgebracht und beide vom
+  `openlehr_einzelunternehmer` — **geändert vom Betreiber am 2026-08-16T07:50:00+0200,
+  wörtlich: *„änderung: lass es uns openlehr_einzelunternehmer nennen ohne chaos!"***
+  Vorher hieß sie `openchaos_einzelunternehmer`; der neue Name ist zugleich näher an
+  ADR-007, wo `openlehr` die Schicht benennt und die Instanz ihre Lage. Die Begründung
+  unten gilt unverändert, sie betraf nie das Wort „chaos", sondern die Sprache.
+  Zwei Einwände wurden vorgebracht und beide vom
   Betreiber entkräftet — *„doch er ordnet das chaos!"* (der Name beschreibt, was
   hereinkommt, und verspricht dessen Ordnung) und *„du hast unrecht, weil es für
   deutsches steuerrecht gemacht ist"*. **Nicht neu aufrollen.** Die Regel dahinter

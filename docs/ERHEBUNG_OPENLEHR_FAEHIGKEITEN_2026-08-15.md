@@ -223,7 +223,7 @@ das ist die Folge einer bereits getroffenen.
 er mit dem Schnitt weg?**
 
 Das ist keine Zuordnungsfrage — ADR-014 sagt bereits, wohin er gehört, falls es
-ihn gibt: eine eigene Domäne neben `openchaos_einzelunternehmer`, nicht Kern.
+ihn gibt: eine eigene Domäne neben `openlehr_einzelunternehmer`, nicht Kern.
 Offen ist der **Umfang**, und Umfang ist keine Regelfrage. Dahinter stehen
 `/v1/ide/**` (Dateibaum lesen, schreiben, Vorschau), `/v1/plan_coach`,
 `/v1/plan_autonomy`, `/v1/orchestrator/**` samt Tuner und Arbeiter-Messung,
