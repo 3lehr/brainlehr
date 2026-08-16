@@ -8,11 +8,9 @@ graph LR
   class auftrag waise
   existenzprobe["Existenzprobe"]
   plan["Plan"]
-  class plan waise
   bauen["Bauen"]
   gate(["Quality Gate"])
   beleg["Rot vor Grün"]
-  class beleg waise
   ablegen["Ablegen"]
   commit["Commit"]
   aussen>"Nach außen"]
@@ -31,4 +29,4 @@ graph LR
   classDef waise stroke-dasharray: 5 5
 ```
 
-Gestrichelt = **kein Mechanismus setzt diesen Schritt durch**. 3 von 9 Schritten sind heute blosse Absicht: Auftrag, Plan, Rot vor Grün.
+Gestrichelt = **kein Mechanismus setzt diesen Schritt durch**. 1 von 9 Schritten sind heute blosse Absicht: Auftrag.

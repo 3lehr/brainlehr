@@ -15,7 +15,6 @@
     "gepflegt": "von Hand. Der Graph ist eine ENTSCHEIDUNG, kein Messwert — er wird nicht erzeugt.",
     "gezeichnet_von": "melder/landkarten.py (Karte 'ablauf')"
   },
-
   "schritte": [
     {
       "kennung": "auftrag",
@@ -29,7 +28,9 @@
       "name": "Existenzprobe",
       "art": "modell",
       "beschreibung": "Gibt es das schon? Gesucht wird nach der SACHE, nicht nach der Kennung — im Repo, nicht im Plan.",
-      "belegt_durch": ["haken/existenzpruefung.py"],
+      "belegt_durch": [
+        "haken/existenzpruefung.py"
+      ],
       "anlass": "L-229bb2: fünfmal an einem Tag ein Agent auf bereits Gebautes angesetzt."
     },
     {
@@ -37,16 +38,20 @@
       "name": "Plan",
       "art": "modell",
       "beschreibung": "Ab mehr als einer Datei, echten Alternativen oder Delegation: gemessener Ist-Stand, verworfene Wege, bindende Reihenfolge, was NICHT getan wird, Erfolgsmaß.",
-      "belegt_durch": [],
+      "belegt_durch": [
+        "melder/ablaufpflicht.py"
+      ],
       "anlass": "Betreiberanweisung 2026-08-12: „es darf nie wieder passieren, dass wir sowas ohne plan bauen!\"",
-      "luecke": "Kein Mechanismus. Am 2026-08-12 gemessen: ein Agentenauftrag über drei Dateien ohne Plan lief durch beide Wächter, beide exit 0."
+      "luecke": "Geschlossen am 2026-08-16: geprueft wird, ob ein Plan GENANNT ist, nicht ob er passt -- das kann kein Skript, und eine Scheinpruefung waere schlimmer als keine."
     },
     {
       "kennung": "bauen",
       "name": "Bauen",
       "art": "modell",
       "beschreibung": "Kleinste Fassung, die trägt. Neuer Code walkthrough-fähig.",
-      "belegt_durch": ["hub/scripts/monolith_guard.py"]
+      "belegt_durch": [
+        "hub/scripts/monolith_guard.py"
+      ]
     },
     {
       "kennung": "gate",
@@ -65,47 +70,102 @@
       "name": "Rot vor Grün",
       "art": "modell",
       "beschreibung": "Eine Prüfung, die VOR der Änderung fehlschlug und danach besteht — auf der Ebene, auf der der Fehler lebte.",
-      "belegt_durch": [],
-      "luecke": "Kein Mechanismus. Die Rot-Probe ist heute Disziplin; niemand prüft, ob sie gefahren wurde."
+      "belegt_durch": [
+        "melder/ablaufpflicht.py"
+      ],
+      "luecke": "Teilweise geschlossen am 2026-08-16: die Rot-Probe selbst ist maschinell nicht verifizierbar. Geprueft wird die AUSSAGE -- wie belegt wurde, oder ehrlich, dass nicht belegt ist. Was verschwindet, ist das Schweigen."
     },
     {
       "kennung": "ablegen",
       "name": "Ablegen",
       "art": "modell",
       "beschreibung": "Was dauerhaft gilt, kommt in den Speicher — nicht nur in eine Datei.",
-      "belegt_durch": ["haken/knowledge_capture_hook.py", "melder/dokumentzugang.py"]
+      "belegt_durch": [
+        "haken/knowledge_capture_hook.py",
+        "melder/dokumentzugang.py"
+      ]
     },
     {
       "kennung": "commit",
       "name": "Commit",
       "art": "modell",
       "beschreibung": "Eine Sache je Commit. Die Nachricht nennt das WARUM.",
-      "belegt_durch": ["hub/scripts/commit_guard_hook.py"]
+      "belegt_durch": [
+        "hub/scripts/commit_guard_hook.py"
+      ]
     },
     {
       "kennung": "aussen",
       "name": "Nach außen",
       "art": "mensch",
       "beschreibung": "Push. Braucht das ausdrückliche Wort des Betreibers.",
-      "belegt_durch": ["hub/scripts/push_guard.py"]
+      "belegt_durch": [
+        "hub/scripts/push_guard.py"
+      ]
     }
   ],
-
   "kanten": [
-    { "von": "auftrag",       "nach": "existenzprobe", "bedingung": "" },
-    { "von": "existenzprobe", "nach": "plan",          "bedingung": "gibt es nicht" },
-    { "von": "existenzprobe", "nach": "commit",        "bedingung": "gibt es schon" },
-    { "von": "plan",          "nach": "bauen",         "bedingung": "" },
-    { "von": "bauen",         "nach": "gate",          "bedingung": "" },
-    { "von": "gate",          "nach": "bauen",         "bedingung": "ROT — zurück, ohne Prüfer" },
-    { "von": "gate",          "nach": "beleg",         "bedingung": "grün" },
-    { "von": "beleg",         "nach": "bauen",         "bedingung": "kein Beleg möglich" },
-    { "von": "beleg",         "nach": "ablegen",       "bedingung": "belegt" },
-    { "von": "ablegen",       "nach": "commit",        "bedingung": "" },
-    { "von": "commit",        "nach": "auftrag",       "bedingung": "nächster Schritt" },
-    { "von": "commit",        "nach": "aussen",        "bedingung": "auf ausdrückliches Wort" }
+    {
+      "von": "auftrag",
+      "nach": "existenzprobe",
+      "bedingung": ""
+    },
+    {
+      "von": "existenzprobe",
+      "nach": "plan",
+      "bedingung": "gibt es nicht"
+    },
+    {
+      "von": "existenzprobe",
+      "nach": "commit",
+      "bedingung": "gibt es schon"
+    },
+    {
+      "von": "plan",
+      "nach": "bauen",
+      "bedingung": ""
+    },
+    {
+      "von": "bauen",
+      "nach": "gate",
+      "bedingung": ""
+    },
+    {
+      "von": "gate",
+      "nach": "bauen",
+      "bedingung": "ROT — zurück, ohne Prüfer"
+    },
+    {
+      "von": "gate",
+      "nach": "beleg",
+      "bedingung": "grün"
+    },
+    {
+      "von": "beleg",
+      "nach": "bauen",
+      "bedingung": "kein Beleg möglich"
+    },
+    {
+      "von": "beleg",
+      "nach": "ablegen",
+      "bedingung": "belegt"
+    },
+    {
+      "von": "ablegen",
+      "nach": "commit",
+      "bedingung": ""
+    },
+    {
+      "von": "commit",
+      "nach": "auftrag",
+      "bedingung": "nächster Schritt"
+    },
+    {
+      "von": "commit",
+      "nach": "aussen",
+      "bedingung": "auf ausdrückliches Wort"
+    }
   ],
-
   "_noch_nicht": {
     "parallele_pruefer": [
       "Im Morpheus-Video laufen mehrere Prüfer-Agenten GLEICHZEITIG und melden gesammelt zurück,",

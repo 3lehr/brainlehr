@@ -42,10 +42,10 @@
    "id": "beleg",
    "text": "Rot vor Grün",
    "form": "kasten",
-   "waise": true,
+   "waise": false,
    "zweck": "Eine Prüfung, die VOR der Änderung fehlschlug und danach besteht — auf der Ebene, auf der der Fehler lebte.",
    "entscheidet": false,
-   "quelle": "kein Mechanismus"
+   "quelle": "melder/ablaufpflicht.py"
   },
   {
    "id": "commit",
@@ -78,10 +78,10 @@
    "id": "plan",
    "text": "Plan",
    "form": "kasten",
-   "waise": true,
+   "waise": false,
    "zweck": "Ab mehr als einer Datei, echten Alternativen oder Delegation: gemessener Ist-Stand, verworfene Wege, bindende Reihenfolge, was NICHT getan wird, Erfolgsmaß.",
    "entscheidet": false,
-   "quelle": "kein Mechanismus"
+   "quelle": "melder/ablaufpflicht.py"
   }
  ],
  "kanten": [
