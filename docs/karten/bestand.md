@@ -6,7 +6,7 @@
 graph LR
   germanquad["germanquad<br/>2713"]
   nasa_llis["nasa-llis<br/>1638"]
-  brainlehr["brainlehr<br/>228"]
+  brainlehr["brainlehr<br/>229"]
   methodik["methodik<br/>131"]
   apps["apps<br/>81"]
   shared["shared<br/>55"]
