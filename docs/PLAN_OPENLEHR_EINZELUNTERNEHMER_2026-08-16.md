@@ -1,11 +1,12 @@
 # Plan: `openlehr_einzelunternehmer` — die erste benannte Domäneninstanz
 
-**Stand** 2026-08-16T12:08:13+0200 (Erstfassung 10:27:56, fortgeschrieben nach
+**Stand** 2026-08-16T12:59:23+0200 (Erstfassung 10:27:56, fortgeschrieben nach
 der Betreiberentscheidung „Mit Historie.", Knoten `3c524455`)
 **Zweig** `brainlehr/b4-ausweis`
 **Grundlage** `docs/STARTPROMPT_OPENLEHR_EINZELUNTERNEHMER_2026-08-16.md`
 **Bindend** ADR-007 (zwei Schichten) · ADR-013 (Domäne = Repo mit drei Teilen) ·
-ADR-023 (Mitstart ist eine Einstellung im Kern) · Knoten `806132da` (Namensregel) ·
+ADR-023 (Mitstart ist eine Einstellung im Kern) · **ADR-024 (V1 nativ,
+Beschreibung plattformblind)** · Knoten `806132da` (Namensregel) ·
 Knoten `73f8a1c0` (Rang 1: Bestand gilt als ungeprüft)
 
 ---
@@ -71,6 +72,12 @@ niemand verrechnet.
 aus ADR-013: *Wissen* (Manifest, reine Daten), *Dienst* (eigener Python-Prozess,
 Steuerfachlichkeit), *Oberfläche* (Beschreibung — das atelier zeichnet).
 
+**V1 ist nativ** (ADR-024, Betreiber 2026-08-16). Das atelier zeichnet mit seinen
+eigenen Swift-Bausteinen; eine Weboberfläche ist ein späterer, zusätzlicher
+Zeichner derselben Beschreibung. Damit sind openlehrs vorhandene Webbildschirme
+endgültig nur noch Blaupause — sie zeigen, was ein Bildschirm können muss, und
+werden nicht ausgeliefert.
+
 **Nicht gebaut wird, mit Preis:**
 
 | nicht getan | Preis |
@@ -87,10 +94,16 @@ Steuerfachlichkeit), *Oberfläche* (Beschreibung — das atelier zeichnet).
 *Bindend, und zwar als Erstes.* Begründung steht wörtlich in ADR-013 §„Was daraus
 sofort folgt": ein Format nachträglich um ein Pflichtfeld zu erweitern **macht jedes
 verteilte Repo ungültig**. Das Argument hängt nicht daran, wie viele Manifeste es
-heute gibt (es ist eines) — es hängt an der Reihenfolge. Inhalt: was gestartet wird,
-worauf es hört, woran man erkennt, dass es lebt; Pfade **nur** als Platzhalter
-(ADR-023 §3), absolute Pfade werden vom Prüfer abgewiesen. Der Oberflächen-Teil
-bekommt sein Feld, auch wenn er zunächst leer bleibt.
+heute gibt (es ist eines) — es hängt an der Reihenfolge.
+
+- **Dienst:** was gestartet wird, worauf es hört, woran man erkennt, dass es lebt.
+  Pfade **nur** als Platzhalter (ADR-023 §3), absolute Pfade weist der Prüfer ab.
+- **Oberfläche:** das Feld entsteht jetzt, seine Inhaltsform erst bei B4 am ersten
+  echten Bildschirm (ADR-024). Was jetzt schon feststeht, ist die **Schranke**: der
+  Prüfer lehnt jede Beschreibung ab, die eine Bauform oder Plattform nennt
+  (`NSTableView`, `popover`, `sidebar`, `modal`, Pixel, Farben, Schriftgrößen).
+  Ohne diese Regel ist der Test rot. Das ist der Preis dafür, dass ein zweiter
+  Zeichner (Web) später ein Schritt bleibt und kein zweiter Bau wird.
 
 **B2 — Herkunftsregister, bevor die erste Regel übernommen wird.**
 *Bindend gegenüber B4.* Nach `73f8a1c0` trägt jede aus dem Bestand übernommene
@@ -122,8 +135,13 @@ Werkbank trennt. Es markiert die geerbte Fläche geschlossen als
 Schnitt-Commit und Register-Commit liegt kein dritter Commit.**
 
 **B4 — Erster senkrechter Schnitt: ein Beleg wird einer EÜR-Zeile zugeordnet.**
-Ein einziger Fachweg von der Eingabe bis zur Zuordnung, mit eigenem Test, der gegen
-eine **bewusst falsche** Fassung ROT war. Übernommen werden aus dem Bestand nur
+Ein einziger Fachweg von der Eingabe bis zur Zuordnung, **nativ gezeichnet**
+(ADR-024), mit eigenem Test, der gegen eine **bewusst falsche** Fassung ROT war.
+Hier — und erst hier — wird die Inhaltsform der Oberflächen-Beschreibung
+entschieden, am echten Bildschirm statt an der Vermutung. `kern/baustein.py`
+(`absatz`, `ueberschrift`, `tabelle`, `grafik`, `feld`) ist Kandidat, aber
+ungemessen: er ist der Dokument-Vertrag aus ADR-010, nicht als Bildschirmsprache
+erprobt. Übernommen werden aus dem Bestand nur
 **Daten** (Beispielbelege, Grenzwerte, das ELSTER-Feldverzeichnis
 `elster_feldkatalog_2024.json`) — **nie Testlogik**, sonst wandert der blinde Fleck
 mit. Fachliche Blaupause: `euer_zuordnung.py`, gelesen, nicht kopiert.

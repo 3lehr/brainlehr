@@ -75,7 +75,7 @@ müssen**. Drei Klassen, scharf getrennt:
 | Klasse | wer zeichnet | warum |
 |---|---|---|
 | **Rahmen und Navigation** | nativ, das atelier | Damit jede Domäne am selben Ort dieselben Wege hat. Muster existiert |
-| **Fachbildschirme** (Listen, Formulare, Tabellen, Auswertungen) | **die Domäne, als Web über HTTP** | Nativ bringt hier wenig, und openlehrs Bildschirme existieren bereits |
+| ~~**Fachbildschirme** (Listen, Formulare, Tabellen, Auswertungen)~~ | ~~die Domäne, als Web über HTTP~~ | **ÜBERHOLT durch ADR-024 (2026-08-16).** Die Begründung war ein Bestandsargument (`L-747223`), und der einzige gemessene Grund gegen nativ ist widerlegt (`0b0913f6`). Es gilt wieder die Hauptentscheidung dieser ADR: die Domäne beschreibt, das atelier zeichnet — nativ |
 | **Dokumente** (Rechnung, Brief ans Finanzamt) | **Dokumentfenster, nativ, nie Web** | ADR-010: Mensch und Modell am selben Dokument, Zeichen für Zeichen. Das gibt es im Browser nicht |
 
 **Die Trennlinie in einem Satz:** *Wo ein Dokument entsteht, das ein Mensch
