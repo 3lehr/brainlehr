@@ -1,0 +1,21 @@
+{
+  "korpus": "runs/pruefkorpus.jsonl",
+  "status": "abgebrochen -- nicht gemessen",
+  "grund": "kein Anthropic-API-Zugang in dieser Umgebung: ANTHROPIC_API_KEY ist nicht gesetzt, Python-Paket 'anthropic' ist nicht installiert. L-a69129 (dreimal verletzt) verbietet das Ausweichen auf ein lokales Modell fuers Umschreiben -- deshalb Abbruch statt Ersatzloesung.",
+  "modell": "bge-m3@ctx2048",
+  "umschreibungsmodell_geplant": "claude-haiku-4-5-20251001 (Anthropic API)",
+  "kandidaten_im_kanal": 5964,
+  "gegenprobe": {
+    "beschreibung": "Aufbau mit Originaltext statt situativer Umschreibung gegengeprueft -- misst der Aufbau ueberhaupt, was er zu messen behauptet?",
+    "befehl": "python3 messungen/variante_zweiteinbettung.py --korpus runs/pruefkorpus.jsonl --gegenprobe",
+    "top5": "4/35",
+    "erwartet_stufe_0": "4/35",
+    "ergebnis": "reproduziert -- top5 stimmt mit Stufe 0 ueberein, Aufbau ist vertrauenswuerdig",
+    "abweichung_top50_median": "top50=16 (statt 13), median=56 (statt 79) -- weil die Gegenprobe den Zieltext aus title/summary/content bzw. description/root_cause/resolution/prevention frisch einbettet, nicht den bereits gespeicherten Vektor uebernimmt; die Textzusammensetzung weicht damit leicht vom Original-Einbettungspfad ab. Fuer die geforderte Gegenprobe (top5) ist das ohne Belang."
+  },
+  "grenze": [
+    "V1 wurde NICHT gemessen -- weder Nullergebnis noch positiver Befund, sondern fehlende Infrastruktur in dieser Umgebung",
+    "sobald ANTHROPIC_API_KEY gesetzt und 'pip install anthropic' erfolgt ist, liefert derselbe Aufruf ohne --gegenprobe die echte Messung",
+    "die Rangrechnung selbst ist durch demo() und die Gegenprobe belegt -- offen ist ausschliesslich die Haiku-Umschreibung"
+  ]
+}
