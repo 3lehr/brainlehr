@@ -198,7 +198,9 @@ Entwicklungsassistenten in den Kern und damit ins atelier (`bf4c87c9`). Es sind
 4. **Kein stilles Erben:** Zwischen Schnitt-Commit und Register-Commit liegt kein
    dritter Commit (B3a), und nach dem Schnitt trägt keine Datei mehr einen absoluten
    Pfad oder einen Verweis nach `begod/`. Ein `git log` einer beliebigen geerbten
-   Datei reicht bis 2026-02 zurück — das ist der Gegenwert der Entscheidung und
+   Datei reicht bis **2026-04-29** zurück (openlehrs erster eigener Commit; die
+   Erstfassung nannte hier 2026-02 — das war der erste Commit des MONOREPOS und
+   damit der falsche Gegenstand) — das ist der Gegenwert der Entscheidung und
    zugleich ihr Nachweis.
 
 ## §6 Offene Fragen
@@ -239,7 +241,7 @@ halte dich an den Code und melde die Abweichung."*
 |---|---|
 | **Darf ändern** | nur das NEUE Repo `openlehr_einzelunternehmer`; `openlehr_legacy` bleibt unangetastet |
 | **Fakten** | Quelle ist das 3lehr-Monorepo `openlehr_legacy` (13 Apps, 1566 Commits, 318 MB `.git`), openlehr liegt darin als `apps/openlehr`. Werkzeug `git-filter-repo` unter `/opt/homebrew/bin/`. Mit hinein: `apps/openlehr`, `docs/openlehr`, `tests/steuer`, Wurzel-`conftest.py`. Die Wegweiser stehen gemessen in `openlehr_legacy/docs/openlehr/schnittgrenze_2026-08-14.md`: 698 berührende Commits, davon 167 gemischt; 24 Dateien mit absoluten Pfaden; 70 Fundstellen `begod/` in 15 Dateien. |
-| **Abnahme** | Im neuen Repo reicht `git log` einer beliebigen geerbten Datei bis 2026-02 zurück. Keine der zwölf fremden Apps ist im Baum **oder in der Historie**. Kein absoluter Pfad, kein Verweis nach `begod/`. |
+| **Abnahme** | Im neuen Repo reicht `git log` einer beliebigen geerbten Datei bis 2026-04-29 zurück (openlehrs erster eigener Commit). Keine der zwölf fremden Apps ist im Baum **oder in der Historie**. Kein absoluter Pfad, kein Verweis nach `begod/`. |
 | **Tabu, zusätzlich** | `openlehr_stale_2026-07-22/` · löschen im Quellrepo · alles in brainlehr |
 
 ### B3a — Register setzen, unmittelbar danach
