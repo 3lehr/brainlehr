@@ -46,6 +46,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 import embeddings
+import relevanzlage
 import knowledge_mcp_server as kms  # noqa: E402 -- nur gelesen: fold_de, _or_query, _stichwortkanal_blind
 
 DB = _w / "brainlehr.db"
@@ -336,11 +337,21 @@ def messlauf(*, n_ja: int, n_nein: int, max_results: int = 5, seed: int = 202608
             if fall["target_id"] in final:
                 treffer_ja += 1
         gemeldet_nein = 0
+        unerkannt_nein = 0   # geliefert UND als passend ausgegeben
         for fall in nein_stichprobe:
             k = kanaele_bauen(conn, node_ids, node_mat, lesson_ids, lesson_mat, fall["prompt"], id_zu_pfad)
             final = _fusionieren(fall["prompt"], stufe_name, k)
             if final:
                 gemeldet_nein += 1
+                # Seit dem 2026-08-16 liefert der Suchweg eine Einschaetzung mit
+                # (kern/relevanzlage.py). Damit zerfaellt "gemeldet" in zwei sehr
+                # verschiedene Faelle: geliefert UND als passend ausgegeben ist
+                # eine Falschmeldung; geliefert MIT Hinweis ist eine ehrliche
+                # Auskunft. Ohne diese Trennung bliebe die Zahl bei 40/40 und
+                # die Kennzeichnung waere in der Messung unsichtbar.
+                werte = sorted(k.emb_node_scores.values(), reverse=True)
+                if relevanzlage.beurteile(werte)["lage"] == "passend":
+                    unerkannt_nein += 1
         treffer_einsprachig = 0
         for fall in einsprachig:
             k = kanaele_bauen(conn, node_ids, node_mat, lesson_ids, lesson_mat, fall["task"], id_zu_pfad)
@@ -360,6 +371,7 @@ def messlauf(*, n_ja: int, n_nein: int, max_results: int = 5, seed: int = 202608
             "trefferquote_zaehler_nenner": f"{treffer_ja}/{len(ja_stichprobe)}",
             "falschmeldequote": gemeldet_nein / len(nein_stichprobe) if nein_stichprobe else None,
             "falschmeldequote_zaehler_nenner": f"{gemeldet_nein}/{len(nein_stichprobe)}",
+            "als_passend_ausgegeben": f"{unerkannt_nein}/{len(nein_stichprobe)}",
             "einsprachig_trefferquote": treffer_einsprachig / len(einsprachig) if einsprachig else None,
             "einsprachig_zaehler_nenner": f"{treffer_einsprachig}/{len(einsprachig)}",
             "leitfall_deutsch_trifft": leitfall_ok,

@@ -111,6 +111,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent / "kern"))
 import embeddings  # lokale Embeddings + RRF-Fusion, siehe embeddings.py
+import relevanzlage  # sagt, wie belastbar ein Ergebnis ist -- reine Rechnung, keine DB
 import zeitmarke  # Aufgabe 111: die eine Quelle fuer Zeitstempel (UTC mit Z)
 import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-Fanout
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
@@ -1964,7 +1965,7 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
 
 
 def _embedding_ranking(conn: sqlite3.Connection, kind: str, query_vec: list[float],
-                        allowed_ids: set | None) -> list[str]:
+                        allowed_ids: set | None, werte: list | None = None) -> list[str]:
     """Cosine-Ranking ueber die additive knowledge_embeddings-Tabelle. Fehlt die
     Tabelle (aeltere DB-Kopie ohne AP "Wissenssuche nach Bedeutung"), liefert
     leere Liste statt zu werfen -- Aufrufer faellt dann automatisch auf reines
@@ -1998,6 +1999,12 @@ def _embedding_ranking(conn: sqlite3.Connection, kind: str, query_vec: list[floa
         vec = embeddings.unpack_embedding(r["vector"])
         scored.append((embeddings.cosine_similarity(query_vec, vec), r["ref_id"]))
     scored.sort(key=lambda t: t[0], reverse=True)
+    if werte is not None:
+        # Die Werte werden gebraucht, um zu SAGEN, wie belastbar das Ergebnis
+        # ist (kern/relevanzlage.py). Bis zum 2026-08-16 wurden sie hier
+        # verworfen -- deshalb konnte das System nie "dazu habe ich nichts"
+        # sagen und meldete bei 40 von 40 Anfragen ohne Antwort einen Treffer.
+        werte.extend(s for s, _ in scored)
     return [ref_id for _, ref_id in scored]
 
 
@@ -2452,7 +2459,9 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     keyword_ordered_ids = embeddings.rrf_fuse(fts_ordered_ids, fts_lesson_ids, embedding_weight=1.0)
 
     query_vec = embeddings.embed_text(query)
-    emb_node_ids = _embedding_ranking(conn, "node", query_vec, allowed_node_ids) if query_vec else []
+    bedeutungswerte: list = []
+    emb_node_ids = _embedding_ranking(conn, "node", query_vec, allowed_node_ids,
+                                      bedeutungswerte) if query_vec else []
     emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, allowed_lesson_ids) if query_vec else []
     embedding_ordered_ids = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
 
@@ -2558,6 +2567,13 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                project_id=scope, actor=actor, model=model, session=session)
     conn.close()
     out = {"query": query, "scope": scope, "results": results, "count": len(results)}
+    # Wie belastbar ist das Ergebnis? Bis zum 2026-08-16 konnte das System den
+    # Zustand "dazu habe ich nichts" nicht ausdruecken und meldete bei 40 von
+    # 40 Anfragen ohne Antwort im Bestand einen Treffer (Knoten cc458fb3).
+    # Gekennzeichnet wird, NICHT gefiltert: dieselbe Messung zeigt, dass jeder
+    # Schwellwert weniger Falschmeldungen mit verlorenen Treffern bezahlt.
+    if results:
+        out["bestandslage"] = relevanzlage.beurteile(bedeutungswerte)
     if zeitfilter_aktiv:
         # Nur bei gesetztem Zeitraum im Ergebnis -- ohne Filter darf das Feld
         # die Antwort nicht mit Rauschen fuellen (Abnahme-Punkt 4).
