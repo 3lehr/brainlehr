@@ -32,7 +32,7 @@ mit Eigennamen).
 
 ## §2 Was Vergleichbarkeit hier konkret heißt
 
- ist der Grund für diesen Abschnitt: Dort liefen Vorher- und Nachher-Messung
+`L-3bf6c7` ist der Grund für diesen Abschnitt: Dort liefen Vorher- und Nachher-Messung
 über **verschiedene Korpora**, und beide Zahlen sahen plausibel aus. Deshalb bindend:
 
 1. **Ein Korpus, alle Varianten:** `runs/pruefkorpus.jsonl`, dieselben 35 Fälle, dieselbe
@@ -48,6 +48,8 @@ mit Eigennamen).
    heute früh. Sie läuft im selben Lauf mit.
 
 ## §3 Die Grenze dieser Messung — was sie NICHT beantwortet
+
+*Pflichtteil nach `L-0a05b2`: jede Messung benennt, welche Frage sie nicht beantwortet.*
 
 - Sie misst den **Bedeutungskanal**, nicht den vollen Suchweg. Eine Variante, die dort
   gewinnt, muss danach noch am echten Weg gemessen werden.
