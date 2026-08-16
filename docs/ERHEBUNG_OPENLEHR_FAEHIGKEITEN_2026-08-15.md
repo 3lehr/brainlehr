@@ -194,21 +194,46 @@ Rechnung** — und deren ELSTER-Arbeitsblatt ist heute einer der fünf echten
 Fachbefunde (`assert 2 == 1`). Wer die Tabelle baut, hat damit eine Gegenprobe
 geschenkt bekommen: Beide Wege müssen dieselbe Zahl liefern.
 
-### Wo die Linie strittig bleibt
+### Nachtrag 2026-08-16T07:12:00+0200 — vier angebliche Streitfälle, keiner davon offen
 
-Vier Zuordnungen habe ich getroffen, ohne dass die Regel sie erzwingt — sie
-gehören dem Betreiber, nicht mir:
+Die erste Fassung dieses Abschnitts legte vier Zuordnungen dem Betreiber vor.
+**Sein Einwand traf:** *„aber was gibt es zu entscheiden? wir wollten einen harten
+Schnitt machen und das legacy nur als Blaupause benutzen!"* Der harte Schnitt ist
+beschlossen (H12), und keiner der vier Fälle fragt danach — sie fragen, auf
+welcher Seite der ADR-014-Linie eine Fähigkeit **beim Neubau** steht. Diese Frage
+beantworten die vorhandenen Regeln, wenn man sie anwendet statt sie
+weiterzureichen.
 
-- **Kontakte** (`backoffice`, 6 Endpunkte): als Adressbuch ein Bestandteil, als
-  Rechnungsempfänger mit Steuernummer Domäne. Ich habe Bestandteil gesetzt.
-- **Mail und Kalender** (22 Endpunkte): gemeinsam gebaut, aber eine Domäne ohne
-  Posteingang lädt es nie. Bestandteil nach der Dokumentfenster-Logik.
-- **Wissen und Gedächtnis** (`/v1/knowledge`, `/v1/memory`, 6 Endpunkte): openlehr
-  hat einen **eigenen** Speicher neben brainlehr. Als Bestandteil geführt, aber
-  hier steht eine echte Entscheidung an — zwei Speicher unter einer Anwendung
-  sind einer zu viel.
-- **`golden-set`** (4 Endpunkte): Prüfkorpus der Zuordnungsgüte. Fachlich Steuer,
-  der Sache nach das, was brainlehr Messung nennt.
+| angeblich strittig | die Regel, die es entscheidet | Ergebnis |
+|---|---|---|
+| **Kontakte** (`backoffice`, 6) | H12: *was beim zweiten Kind kopiert wird, wandert nach unten.* Der Korrekturator hat Schülerinnen und Eltern als Gegenüber | **Bestandteil** — das Adressbuch. Die steuerlichen Felder (Steuernummer, Rechnungsempfänger) sind Domäne und sitzen darauf, nicht darin |
+| **Mail und Kalender** (22) | ADR-014 Nachtrag: *gemeinsam gebaut, nicht immer gebraucht* — wörtlich der Dokumentfenster-Fall | **Bestandteil**, auf Anforderung geladen. Eine Domäne ohne Posteingang lädt es nie |
+| **Wissen und Gedächtnis** (`/v1/knowledge`, `/v1/memory`, 6) | ADR-007: brainlehr ist die Schicht, die trägt | **Wird nicht neu gebaut.** Beim harten Schnitt entsteht kein zweiter Speicher — brainlehr *ist* der Speicher. Es war nie eine Zuordnungsfrage, sondern eine, die sich mit dem Schnitt erledigt |
+| **`golden-set`** (4) | brainlehr ist die Instanz, die prüft und Belege verlangt | **brainlehr**, nicht Domäne. Ein Prüfkorpus misst die Güte einer Zuordnung — das ist Aufsicht, nicht Steuerrecht |
+
+**Und noch eine Zuordnung fällt damit weg, die gar nicht auf der Liste stand:**
+Nach ADR-013 ist die Oberfläche einer Domäne **Beschreibung, nicht Code**. Die 20
+HTML-Bildschirme und 13 859 Zeilen JavaScript wandern also nirgendwohin — sie
+werden gelesen und als Beschreibung neu gezeichnet. Das ist keine Entscheidung,
+das ist die Folge einer bereits getroffenen.
+
+### Was tatsächlich offen ist — eine Frage, nicht vier
+
+**Wird der Entwicklungsassistent (56 Endpunkte) als Domäne neu gebaut, oder fällt
+er mit dem Schnitt weg?**
+
+Das ist keine Zuordnungsfrage — ADR-014 sagt bereits, wohin er gehört, falls es
+ihn gibt: eine eigene Domäne neben `openchaos_einzelunternehmer`, nicht Kern.
+Offen ist der **Umfang**, und Umfang ist keine Regelfrage. Dahinter stehen
+`/v1/ide/**` (Dateibaum lesen, schreiben, Vorschau), `/v1/plan_coach`,
+`/v1/plan_autonomy`, `/v1/orchestrator/**` samt Tuner und Arbeiter-Messung,
+`/v1/goals`, `/v1/roadmap`, `/v1/konsile`, `/v1/tools/**` (`shell_exec`,
+`file_read`, `confirm_token`) und `/v1/ask`.
+
+Der Grund, warum diese eine Frage nicht von selbst zerfällt: Sie entscheidet
+nicht, wo etwas hinkommt, sondern **ob überhaupt jemand dafür arbeitet.** Fällt
+er weg, ist der Rest der Erhebung um 56 Endpunkte kleiner und die Blaupause um
+ein Kapitel kürzer.
 
 ## 7. Was diese Erhebung ausdrücklich nicht sagt
 
