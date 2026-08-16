@@ -20,7 +20,6 @@ enum WissensraumBlick: Int, CaseIterable, Identifiable {
     case spuren = 2
     case vergleich = 3
     case abrufweg = 4
-    case verbund = 5
 
     var id: Int { rawValue }
 
@@ -36,7 +35,6 @@ enum WissensraumBlick: Int, CaseIterable, Identifiable {
         case .spuren: return "Spuren"
         case .vergleich: return "Vergleich"
         case .abrufweg: return "Abrufweg"
-        case .verbund: return "Verbund"
         }
     }
 }

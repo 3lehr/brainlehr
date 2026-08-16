@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>brainlehr — Landkarten</title>
+<!--
+  Eigene Seite statt eines Blocks in entscheidungen.html (Betreiberentscheidung
+  2026-08-16): Die Landkarten beschreiben das SYSTEM, der Wissensraum den
+  BESTAND. Sie teilen keine Bedienung, keine Regler und keine Zeichenflaeche --
+  ein gemeinsames Dokument haette beide aneinandergekettet, und die laufende
+  Punktwolke des Wissensraums schob die Karte aus dem sichtbaren Bereich.
+-->
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff; --fg: #1a1c1e; --muted: #5a5f66; --border: #d0d4d9;
+    --akzent: #0a5c9c; --akzent-fg: #ffffff; --fokus: #0a5c9c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181a; --fg: #e6e8ea; --muted: #a4a9b0; --border: #6a6f76;
+      --akzent: #6cb2ef; --akzent-fg: #0a1420; --fokus: #6cb2ef;
+    }
+  }
+  body { margin: 0; padding: 1.2rem 1.4rem 2rem; background: var(--bg); color: var(--fg);
+         font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
+  h1 { font-size: 1.35rem; margin: 0 0 .3rem; }
+  h2 { font-size: 1.05rem; margin: 1.2rem 0 .4rem; }
+  .unterzeile { color: var(--muted); margin: 0 0 1rem; max-width: 62ch; }
+  .leiste { display: flex; flex-wrap: wrap; gap: .4rem; }
+  /* 2.5.8: Zielgroesse mindestens 24x24 CSS-px -- hier deutlich darueber. */
+  .leiste button { min-height: 32px; padding: .35rem .8rem; border-radius: 6px;
+                   border: 1px solid var(--border); background: transparent;
+                   color: var(--fg); font: inherit; cursor: pointer; }
+  .leiste button[aria-pressed="true"] { background: var(--akzent); color: var(--akzent-fg);
+                                        border-color: var(--akzent); }
+  :focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
+  .leer { color: var(--muted); font-style: italic; }
+  /* Breite Diagramme scrollen IN ihrem Kasten -- die Seite selbst bekommt nie
+     einen waagerechten Balken (WCAG 1.4.10). Und mermaid setzt width="100%"
+     aufs SVG, was ein grosses Diagramm auf Spaltenbreite staucht; die
+     natuerliche Breite wird darum unten aus der viewBox zurueckgesetzt. */
+  #bild { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border);
+          border-radius: 8px; padding: .8rem; }
+  #bild svg { max-width: none !important; height: auto; }
+  #text { color: var(--muted); margin-top: .8rem; max-width: 78ch; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+</style>
+</head>
+<body>
+<h1>Landkarten</h1>
+<p class="unterzeile">Sichten auf das brainlehr-Universum. Alle werden aus Quelltext,
+  Dateibestand und Datenbank <em>erzeugt</em> — keine gepflegte Zeichnung. Sie zeigen
+  den Stand, mit dem <code>melder/landkarten.py</code> zuletzt gelaufen ist.</p>
+
+<div class="leiste" role="group" aria-label="Kartenwahl" id="wahl"></div>
+
+<h2 id="titel">wird geladen …</h2>
+<p id="stand" class="leer">wird geladen …</p>
+<div id="bild" role="img" aria-label="Diagramm der gewählten Landkarte"></div>
+<div id="text"></div>
+
+<script>
+const wahl = document.getElementById('wahl'), titel = document.getElementById('titel');
+const stand = document.getElementById('stand'), bild = document.getElementById('bild');
+const zusatz = document.getElementById('text');
+let karten = [], geladen = false;
+
+async function mermaidBereit() {
+  // 3,4 MB werden EINMAL geladen, beim ersten Bild -- nicht beim Seitenaufbau.
+  if (window.mermaid) return;
+  await new Promise((fertig, fehler) => {
+    const s = document.createElement('script');
+    s.src = '/statisch/mermaid.min.js'; s.onload = fertig; s.onerror = fehler;
+    document.head.appendChild(s);
+  });
+  window.mermaid.initialize({ startOnLoad: false, securityLevel: 'strict',
+    theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default' });
+}
+
+async function zeige(kennung) {
+  const karte = karten.find(k => k.kennung === kennung);
+  if (!karte) return;
+  for (const b of wahl.children) b.setAttribute('aria-pressed', b.dataset.k === kennung ? 'true' : 'false');
+  titel.textContent = karte.titel;
+  stand.hidden = false; stand.textContent = 'wird gezeichnet …';
+  bild.innerHTML = ''; zusatz.textContent = '';
+  try {
+    const antwort = await fetch('/api/landkarte?k=' + encodeURIComponent(kennung));
+    const daten = await antwort.json();
+    if (!antwort.ok || !daten.mermaid) {
+      // Keine Entwicklerinformation auf dem Bildschirm: der Nutzer erfaehrt,
+      // was ER tun kann, nicht was intern fehlt.
+      stand.textContent = 'Diese Karte wurde noch nicht erzeugt.';
+      return;
+    }
+    await mermaidBereit();
+    const { svg } = await window.mermaid.render('karte_' + kennung.replace(/\W/g, '_'), daten.mermaid);
+    bild.innerHTML = svg;
+    const gezeichnet = bild.querySelector('svg');
+    const feld = gezeichnet && gezeichnet.getAttribute('viewBox');
+    if (feld) {
+      const [, , breite, hoehe] = feld.split(/[\s,]+/).map(Number);
+      gezeichnet.setAttribute('width', breite);
+      gezeichnet.setAttribute('height', hoehe);
+    }
+    zusatz.textContent = daten.hinweis || '';
+    stand.hidden = true;
+  } catch (e) {
+    stand.textContent = 'Diese Karte lässt sich gerade nicht anzeigen.';
+  }
+}
+
+(async () => {
+  try {
+    const antwort = await fetch('/api/landkarten');
+    karten = (await antwort.json()).karten || [];
+  } catch (e) { karten = []; }
+  if (!karten.length) {
+    titel.textContent = 'Noch keine Karten';
+    stand.textContent = 'Es wurde noch keine Landkarte erzeugt.';
+    return;
+  }
+  for (const k of karten) {
+    const b = document.createElement('button');
+    b.textContent = k.titel.split(' — ')[0];
+    b.dataset.k = k.kennung;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => zeige(k.kennung));
+    wahl.appendChild(b);
+  }
+  zeige(karten[0].kennung);
+})();
+</script>
+</body>
+</html>

@@ -175,13 +175,6 @@
   .radio-zeile { display: flex; gap: 1rem; flex-wrap: wrap; }
   .radio-zeile label { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 1rem; margin: 0; }
   .leer { color: var(--muted); font-style: italic; }
-  /* Die Verbundkarte traegt 67 Knoten und 297 Kanten (gemessen 2026-08-16).
-     Mermaid setzt von sich aus `max-width: 100%` und staucht sie damit auf
-     Spaltenbreite -- lesbar ist das nicht. Deshalb natuerliche Groesse plus
-     eigener Scrollbereich: breiter Inhalt scrollt IN seinem Kasten, die Seite
-     selbst bekommt nie einen waagerechten Balken (WCAG 1.4.10). */
-  #verbundBild { overflow-x: auto; overflow-y: hidden; }
-  #verbundBild svg { max-width: none !important; height: auto; }
   details.kontrast summary { cursor: pointer; color: var(--muted); font-size: 0.85rem; }
   table.kontrast-tabelle { border-collapse: collapse; margin-top: 0.5rem; font-size: 0.85rem; width: 100%; }
   table.kontrast-tabelle th, table.kontrast-tabelle td { text-align: left; padding: 0.25rem 0.5rem; border-bottom: 1px solid var(--border); }
@@ -242,7 +235,6 @@
       <button id="b2" aria-pressed="false">Spuren</button>
       <button id="b3" aria-pressed="false">Vergleich</button>
       <button id="b4" aria-pressed="false">Abrufweg</button>
-      <button id="b5" aria-pressed="false">Verbund</button>
       <span class="trenn"></span>
       <button id="lauf" aria-pressed="false">Ablauf</button>
     </div>
@@ -308,14 +300,6 @@
       <div id="abrufwegTabellen"></div>
     </section>
 
-    <section id="verbundBlock" hidden aria-labelledby="verbundTitel">
-      <h3 id="verbundTitel">Verbund — wer redet mit wem</h3>
-      <p id="verbundStand" class="leer">wird geladen …</p>
-      <div id="verbundBild" role="img"
-           aria-label="Abhängigkeitsdiagramm des Verbunds: Repos, Datenspeicher, Dienste und Startwege"></div>
-      <p class="fuss">Gestrichelt umrandet = im Verbund gebaut, von niemandem gerufen.
-        Erzeugt aus dem Quelltext — nicht von Hand gepflegt.</p>
-    </section>
 
     <details class="einstellungen" id="einstellungen">
       <summary>Einstellungen — acht offene Punkte</summary>
@@ -1587,67 +1571,21 @@ const zeitleiste = document.getElementById('zeitleiste'), vergleichBlock = docum
 const abrufwegLeiste = document.getElementById('abrufwegLeiste'), abrufwegBlock = document.getElementById('abrufwegBlock');
 const abrufwegVorfuehrLeiste = document.getElementById('abrufwegVorfuehrLeiste');
 const abrufwegReglerLeiste = document.getElementById('abrufwegReglerLeiste');
-const verbundBlock = document.getElementById('verbundBlock');
-[0,1,2,3,4,5].forEach(k=>{
+[0,1,2,3,4].forEach(k=>{
   document.getElementById('b'+k).addEventListener('click',()=>{
-    ansicht=k; [0,1,2,3,4,5].forEach(j=>document.getElementById('b'+j).setAttribute('aria-pressed', j===k?'true':'false'));
-    const istVergleich = ansicht===3, istAbrufweg = ansicht===4, istVerbund = ansicht===5;
+    ansicht=k; [0,1,2,3,4].forEach(j=>document.getElementById('b'+j).setAttribute('aria-pressed', j===k?'true':'false'));
+    const istVergleich = ansicht===3, istAbrufweg = ansicht===4;
     vergleichBlock.hidden = !istVergleich;
     abrufwegBlock.hidden = !istAbrufweg; abrufwegLeiste.hidden = !istAbrufweg; legendeAbrufweg.hidden = !istAbrufweg;
     abrufwegVorfuehrLeiste.hidden = !istAbrufweg; abrufwegReglerLeiste.hidden = !istAbrufweg;
-    verbundBlock.hidden = !istVerbund;
-    legende.hidden = istVergleich||istAbrufweg||istVerbund;
-    fuss.hidden = istVergleich||istAbrufweg||istVerbund;
-    zeitleiste.hidden = istVergleich||istAbrufweg||istVerbund;
+    legende.hidden = istVergleich||istAbrufweg;
+    fuss.hidden = istVergleich||istAbrufweg;
+    zeitleiste.hidden = istVergleich||istAbrufweg;
     setzeStand(); zeichne();
-    if (istVerbund) verbundLaden();
     abrufwegSchleifeStart(); // startet in 0/1/2/4, stoppt sich in 3 selbst
   });
 });
 
-// Verbundkarte (docs/PLAN_DIAGRAMME_2026-08-16.md, Schritt 2). Beim ERSTEN
-// Umschalten geladen, nicht beim Seitenaufbau: mermaid.min.js ist 3,4 MB und
-// wuerde jeden anderen Blick verzoegern, den es nichts angeht.
-let verbundGeladen = false;
-async function verbundLaden(){
-  if (verbundGeladen) return;
-  const stand = document.getElementById('verbundStand'), bild = document.getElementById('verbundBild');
-  try {
-    const antwort = await fetch('/api/verbundkarte');
-    const daten = await antwort.json();
-    if (!antwort.ok || !daten.mermaid) {
-      // Kein Entwicklertext auf dem Bildschirm: der Nutzer erfaehrt, was ER
-      // tun kann, nicht was intern fehlt.
-      stand.textContent = 'Die Karte wurde noch nicht erzeugt.';
-      return;
-    }
-    if (!window.mermaid) {
-      await new Promise((fertig, fehler) => {
-        const s = document.createElement('script');
-        s.src = '/statisch/mermaid.min.js'; s.onload = fertig; s.onerror = fehler;
-        document.head.appendChild(s);
-      });
-    }
-    window.mermaid.initialize({ startOnLoad: false, securityLevel: 'strict',
-      theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default' });
-    const { svg } = await window.mermaid.render('verbundSvg', daten.mermaid);
-    bild.innerHTML = svg;
-    // Mermaid setzt width="100%" aufs SVG und staucht die Karte damit auf
-    // Spaltenbreite -- bei 67 Knoten unlesbar. Natuerliche Breite aus der
-    // viewBox, gescrollt wird IM Kasten (CSS #verbundBild), nie in der Seite.
-    const gezeichnet = bild.querySelector('svg');
-    const feld = gezeichnet && gezeichnet.getAttribute('viewBox');
-    if (feld) {
-      const [, , breite, hoehe] = feld.split(/[\s,]+/).map(Number);
-      gezeichnet.setAttribute('width', breite);
-      gezeichnet.setAttribute('height', hoehe);
-    }
-    stand.hidden = true;
-    verbundGeladen = true;
-  } catch (e) {
-    stand.textContent = 'Die Karte lässt sich gerade nicht anzeigen.';
-  }
-}
 let timer=null;
 document.getElementById('lauf').addEventListener('click',e=>{
   spielt=!spielt; e.target.setAttribute('aria-pressed',spielt?'true':'false');

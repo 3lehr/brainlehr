@@ -119,3 +119,40 @@ braucht, nimmt `--nur brainlehr hub`.
 
 **Offen, Schritt 2:** die Anzeige im atelier. Das Erzeugnis liegt vor, die sechste
 Ansicht ist noch nicht gebaut.
+
+---
+
+## Fortschreibung 2026-08-16T07:05:00+0200 — Einordnung korrigiert, Betreiberentscheidung
+
+**Der Betreiber hat die Verbundkarte an der falschen Stelle gefunden**, wörtlich:
+*„davon abgesehen gehört es nicht unter wissensraum! du verstehst? es steht ja eine
+stufe darüber, ist info über die app, das gesamte brainlehr universum und nicht über
+den wissensraum der datenbank!"*
+
+Er hat recht, und der Fehler ist eine Ebenenverwechslung: der **Wissensraum** ist die
+Sicht auf den Datenbestand (Knoten, Bedeutung, Spuren). Die Landkarten beschreiben das
+**System, das diesen Bestand hält** — eine Ebene darüber. Ein sechster Blick neben
+„Baum" und „Bedeutung" behauptet eine Gleichrangigkeit, die es nicht gibt.
+
+**Entschieden am 2026-08-16 (AskUserQuestion, beide Fragen):**
+
+- **Inhalt: alle vier.** Verbund-Infrastruktur · Aufbau der Anwendung · Code-Struktur
+  je Repo · der Wissensbestand selbst.
+- **Ort: eigener Punkt in der Seitenleiste**, eine Ebene über dem Wissensraum.
+
+### Was daraus folgt
+
+1. **Neuer Seitenleisteneintrag `landkarten`** in `SeitenleistenEintrag` — Kern, kein
+   Bestandteil.
+2. **Rückbau im Wissensraum:** `WissensraumBlick.verbund`, der Knopf `b5` und
+   `verbundBlock` in `entscheidungen.html` verschwinden wieder. Sie waren die falsche
+   Ebene, nicht bloß ein unglücklicher Platz.
+3. **Eigene Seite `/landkarten`** vom Dienst statt eines Blocks in
+   `entscheidungen.html`: die Landkarten teilen mit dem Wissensraum keine Bedienung,
+   keine Regler und keine Zeichenfläche. Das löst nebenbei den Befund von heute früh,
+   dass die laufende Punktwolke die Karte aus dem Fenster schob.
+4. **Vier Erzeuger, ein Ablageort** (`docs/karten/`), damit die Auswahl in der Ansicht
+   sich aus dem Vorhandenen ergibt statt aus einer gepflegten Liste.
+
+**Unverändert gilt:** erzeugt statt gepflegt, null Modellaufrufe, kein Zeitstempel im
+Erzeugnis, committet für den Diff.

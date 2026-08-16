@@ -47,6 +47,7 @@ import argparse
 import datetime
 import glob
 import json
+import re
 import sqlite3
 import subprocess
 import sys
@@ -1011,19 +1012,38 @@ class Handler(BaseHTTPRequestHandler):
         # 27 Repos dauert gemessen 22 s und gehoert nicht in eine Anfrage.
         # Aktuell gehalten wird beim ERZEUGEN (melder/verbundkarte.py), nicht
         # beim Anzeigen.
-        if self.path == "/api/verbundkarte":
-            pfad = HERE / "docs" / "VERBUNDKARTE.md"
+        if self.path == "/landkarten" or self.path.startswith("/landkarten."):
+            self._datei(HERE / "landkarten.html", "text/html; charset=utf-8")
+            return
+        # Die Auswahl ergibt sich aus dem, was TATSAECHLICH erzeugt wurde --
+        # keine gepflegte Liste im Quelltext, die neben dem Ablageort her
+        # altert. Fehlt eine Karte, taucht sie schlicht nicht auf.
+        if self.path == "/api/landkarten":
+            ordner = HERE / "docs" / "karten"
+            karten = []
+            for p in sorted(ordner.glob("*.md")) if ordner.exists() else []:
+                kopf = p.read_text(encoding="utf-8").split("\n", 1)[0]
+                karten.append({"kennung": p.stem, "titel": kopf.lstrip("# ").strip() or p.stem})
+            self._json({"karten": karten})
+            return
+        if self.path.startswith("/api/landkarte?"):
+            from urllib.parse import parse_qs, urlparse
+            gewuenscht = (parse_qs(urlparse(self.path).query).get("k") or [""])[0]
+            # Der Klient nennt eine KENNUNG, nie einen Pfad: alles andere waere
+            # mit '..' der Schluessel zu jeder Datei dieses Rechners.
+            if not re.fullmatch(r"[a-z0-9_-]{1,64}", gewuenscht or ""):
+                self._json({"error": "unbekannte Karte"}, 400)
+                return
+            pfad = HERE / "docs" / "karten" / f"{gewuenscht}.md"
             if not pfad.exists():
-                self._json({"error": "docs/VERBUNDKARTE.md fehlt -- erzeugen mit: "
-                                     "python3 melder/verbundkarte.py --out docs/VERBUNDKARTE.md"}, 404)
+                self._json({"error": "noch nicht erzeugt -- python3 melder/landkarten.py"}, 404)
                 return
             text = pfad.read_text(encoding="utf-8")
             anfang = text.find("```mermaid")
             ende = text.find("```", anfang + 10) if anfang >= 0 else -1
-            self._json({
-                "mermaid": text[anfang + len("```mermaid"):ende].strip() if ende > 0 else "",
-                "markdown": text,
-            })
+            mermaid = text[anfang + len("```mermaid"):ende].strip() if ende > 0 else ""
+            hinweis = text[ende + 3:].strip() if ende > 0 else ""
+            self._json({"mermaid": mermaid, "hinweis": hinweis, "markdown": text})
             return
         if self.path == "/statisch/mermaid.min.js":
             self._datei(HERE / "berichte" / "statisch" / "mermaid.min.js",

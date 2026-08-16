@@ -290,6 +290,7 @@ graph LR
   design_lab -->|ruft| port_35000
   drg -->|ruft| port_35000
   drobo_nas -->|ruft| port_35000
+  fahrtenbuch_nativ -->|ruft| port_35000
   hub -->|ruft| port_35000
   legacylink -->|ruft| port_35000
   markusx25 -->|ruft| port_35000
@@ -443,7 +444,7 @@ Im Bild weggelassen (47), weil nur EIN Repo daran haengt und damit keine Verbund
 | 19999 | **niemand** | buckeberg, design-lab, drobo-nas, fahrtenbuch, hub, openlehr_legacy, openlehr_stale_2026-07-22, schwarmwacht, snake, steueroase-asien, stiftshuette, wpdrop |
 | 29100 | **niemand** | legacylink |
 | 29876 | **niemand** | openlehr_stale_2026-07-22 |
-| 35000 | `fahrtenbuch/apps/fahrtenbuch_legacy/test/integration/obd2_emulator_integration_test.dart`, `fahrtenbuch/apps/fahrtenbuch_legacy/test/simulators/elm327_simulator.py`, `fahrtenbuch/apps/fahrtenbuch_legacy/test/simulators/gps_synced_obd_simulator.py`, `fahrtenbuch/apps/fahrtenbuch_legacy/tool/obd_wifi_odometer_probe.py`, `fahrtenbuch/scripts/obd_simulator_headless.py` | UsbKabelTester, afrika, buckeberg, design-lab, drg, drobo-nas, fahrtenbuch, hub, legacylink, markusx25, openhood, openlehr_legacy, openlehr_stale_2026-07-22, pflegelotse, phoenix, schwarmwacht, snake, steueroase-asien, stiftshuette, wpdrop |
+| 35000 | `fahrtenbuch/apps/fahrtenbuch_legacy/test/integration/obd2_emulator_integration_test.dart`, `fahrtenbuch/apps/fahrtenbuch_legacy/test/simulators/elm327_simulator.py`, `fahrtenbuch/apps/fahrtenbuch_legacy/test/simulators/gps_synced_obd_simulator.py`, `fahrtenbuch/apps/fahrtenbuch_legacy/tool/obd_wifi_odometer_probe.py`, `fahrtenbuch/scripts/obd_simulator_headless.py` | UsbKabelTester, afrika, buckeberg, design-lab, drg, drobo-nas, fahrtenbuch, fahrtenbuch_nativ, hub, legacylink, markusx25, openhood, openlehr_legacy, openlehr_stale_2026-07-22, pflegelotse, phoenix, schwarmwacht, snake, steueroase-asien, stiftshuette, wpdrop |
 | 35002 | `fahrtenbuch/scripts/run_obd2_tests.sh` | **niemand** |
 | 36802 | `legacylink/apps/legacylink/scripts/diagnose_tangent_davinci.py` | **niemand** |
 | 40000 | `buckeberg/apps/einprozent_rechner/test/widget_test.dart`, `design-lab/apps/einprozent_rechner/test/widget_test.dart`, `fahrtenbuch/apps/fahrtenbuch_legacy/test/features/comparison/one_percent_calculator_test.dart`, `fahrtenbuch/apps/fahrtenbuch_legacy/test/features/comparison/one_percent_test.dart`, `hub/apps/einprozent_rechner/test/widget_test.dart`, `openlehr_legacy/apps/einprozent_rechner/test/widget_test.dart`, `openlehr_stale_2026-07-22/apps/einprozent_rechner/test/widget_test.dart`, `snake/apps/einprozent_rechner/test/widget_test.dart`, `steueroase-asien/apps/einprozent_rechner/test/widget_test.dart`, `wpdrop/apps/einprozent_rechner/test/widget_test.dart` | **niemand** |
@@ -473,5 +474,5 @@ Weder im Quelltext noch in einer Codesuche sichtbar -- deshalb hier.
 
 ## Repos
 
-`UsbKabelTester`, `_brainlehr_open`, `_probe_head`, `afrika`, `brainlehr`, `buckeberg`, `design-lab`, `drg`, `drobo-nas`, `fahrtenbuch`, `hub`, `legacylink`, `markusx25`, `openhood`, `openlehr_legacy`, `openlehr_stale_2026-07-22`, `pflegelotse`, `phoenix`, `schnaeppvalid`, `schwarmwacht`, `setfunk`, `sigmaforge`, `snake`, `steueroase-asien`, `stiftshuette`, `wohlair`, `wpdrop`
+`UsbKabelTester`, `_brainlehr_open`, `_probe_head`, `afrika`, `brainlehr`, `buckeberg`, `design-lab`, `drg`, `drobo-nas`, `fahrtenbuch`, `fahrtenbuch_nativ`, `hub`, `legacylink`, `markusx25`, `openhood`, `openlehr_legacy`, `openlehr_stale_2026-07-22`, `pflegelotse`, `phoenix`, `schnaeppvalid`, `schwarmwacht`, `setfunk`, `sigmaforge`, `snake`, `steueroase-asien`, `stiftshuette`, `wohlair`, `wpdrop`
 

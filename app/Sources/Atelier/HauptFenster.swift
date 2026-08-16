@@ -12,6 +12,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
     case dokument
     case sitzung
     case wissensraum
+    case landkarten
     case ausweise
 
     var id: String { rawValue }
@@ -33,6 +34,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
         case .dokument: return "Dokument"
         case .sitzung: return "Sitzung"
         case .wissensraum: return "Wissensraum"
+        case .landkarten: return "Landkarten"
         case .ausweise: return "Ausweise und Einladungen"
         }
     }
@@ -45,6 +47,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
         case .dokument: return "person.2.badge.gearshape"
         case .sitzung: return "bubble.left.and.text.bubble.right"
         case .wissensraum: return "point.3.filled.connected.trianglepath.dotted"
+        case .landkarten: return "map"
         case .ausweise: return "person.text.rectangle"
         }
     }
@@ -134,6 +137,15 @@ struct HauptFenster: View {
                     // tun hat -- auf der Ausweise-Seite waere er irrefuehrend.
                     DienstBanner(aufsicht: aufsicht)
                     WissensraumAnsicht(aufsicht: aufsicht, blick: wahl.blick)
+                } else if wahl.aktuell == .landkarten {
+                    // Eigener Punkt, NICHT ein Blick des Wissensraums
+                    // (Betreiberentscheidung 2026-08-16): die Karten
+                    // beschreiben das System, der Wissensraum den Bestand --
+                    // eine Ebene darueber. Derselbe Dienst, eigene Seite,
+                    // keine gemeinsame Bedienung und keine mitlaufende
+                    // Zeichenflaeche.
+                    DienstBanner(aufsicht: aufsicht)
+                    LandkartenAnsicht(aufsicht: aufsicht)
                 } else if wahl.aktuell == .ausweise {
                     AusweisAnsicht()
                 }
