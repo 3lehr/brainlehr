@@ -164,3 +164,47 @@ weil sie beide Varianten gleichermaßen hebt.
 **Verzerrung, die zu benennen ist:** Die Kandidatenzahl wuchs während der Läufe von 5972
 auf 5976, weil parallele Sitzungen Knoten anlegten. Vier Kandidaten auf sechstausend
 ändern keine dieser Aussagen, aber die Läufe sind dadurch nicht bit-identisch vergleichbar.
+
+## Fortschreibung 2026-08-16T14:45:00+0200 — meine eigene Empfehlung gemessen und widerlegt
+
+Der Entscheid oben empfahl „zuerst Einbettungshygiene, sie hebt beide Varianten". **Gemessen,
+und die Empfehlung trägt nicht.**
+
+`kern/build_embeddings.py` gefahren: 128 Einträge neu gerechnet, danach meldet
+`melder/vektorstand.py` **0** veraltete Prüfsummen (vorher 101 Knoten und 27 Lehren).
+Stufe 0 danach neu gemessen: **top5 4/35, top50 13, Median 79** — Zeichen für Zeichen
+dieselbe Zahl wie vorher. Die veralteten Prüfsummen betrafen die Korpusziele nicht.
+
+### Drei Ursachen geprüft, drei ausgeschieden
+
+| Vermutung | Messung | Ergebnis |
+|---|---|---|
+| Pfad im eingebetteten Text stört | 35 Ziele mit/ohne Pfad | 9 besser, 10 schlechter — kein Hebel |
+| Veraltete Prüfsummen | 128 neu gerechnet, Stufe 0 wiederholt | unverändert 4/35, 13, 79 |
+| `resolution` fehlt in `lesson_text` | 15 Lehren mit/ohne dieses Feld | 6 besser, 7 schlechter, Median 62→59 |
+
+Der dritte Punkt bleibt trotzdem ein **Bestandsbefund**: `lesson_text()` setzt sich aus
+Zuordnung, `description`, `root_cause` und `prevention` zusammen — `resolution` fehlt,
+bei 925 von 954 Lehren gefüllt, im Schnitt 362 Zeichen. Das Feld ist im Bedeutungskanal
+nicht auffindbar. Messbar besser wird die Suche dadurch aber nicht.
+
+Außerdem geprüft und ausgeschieden: gespeicherte gegen frisch gerechnete Vektoren bei
+identischem Text (12 Knoten, Kosinus **1,0000** durchgehend — der Bestand ist nicht
+verrechnet), und die Fanout-Zeilen mehrwertiger Lehren (585 Lehren mit mehreren Zeilen,
+Vektoren identisch, die Auswahl macht keinen Unterschied).
+
+### Was bleibt: ein reproduzierter Effekt ohne erklärte Ursache
+
+Ein frisch aus dem Volltext gerechneter Zielvektor rankt im Median besser als der
+gespeicherte — **57 gegen 79**, in zwei unabhängigen Läufen reproduziert, bei
+unverändertem top5 (4/35). Der Unterschied liegt also **nicht** an einer der drei
+geprüften Stellen und ist bislang unerklärt.
+
+**Damit ist auch die V1-Zahl weiter zu relativieren, nicht zu verbessern:** Ihr Zuwachs
+gegenüber der eigenen Gegenprobe bleibt +2/+2, und der Sockel darunter stammt aus diesem
+unerklärten Effekt, nicht aus dem Verfahren.
+
+**Nächster Schritt ist deshalb nicht Hygiene und nicht Einbau, sondern die Ursachensuche
+an diesem einen Effekt** — solange sie offen ist, trägt jede Variantenzahl einen Anteil,
+den niemand zuordnen kann. Die Empfehlung „erst Hygiene" aus der Fortschreibung von 14:30
+ist hiermit zurückgezogen.
