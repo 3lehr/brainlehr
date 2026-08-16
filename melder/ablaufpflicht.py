@@ -92,6 +92,28 @@ PLANSCHWELLE = 3
 # abgeschalteter Waechter mit gutem Gewissen.
 STICHTAG = "2026-08-16T08:55:00+02:00"
 
+# Wo ein Repo seinen EIGENEN Einfuehrungstag hinterlegt. Ohne diese Datei gilt
+# brainlehrs Stichtag ueberall -- und in einem Repo mit vielen Commits von
+# heute heisst das Dauerrot ab der ersten Minute.
+#
+# GEMESSEN am 2026-08-16, nachdem der geteilte pre-push den Melder in 21 Repos
+# trug: buckeberg stand auf exit 1 und war fuer eine fremde Sitzung nicht mehr
+# pushbar, ohne dass dort etwas falsch gemacht worden waere. Die Datei liegt im
+# GEPRUEFTEN Repo, nicht hier -- so braucht der geteilte Hook keine Aenderung,
+# und jedes Repo entscheidet fuer sich. Die Altfaelle sind nicht vergessen,
+# sondern ausgewiesen: --alle zeigt sie weiterhin.
+SEIT_DATEI = ".ablaufpflicht-seit"
+
+
+def _stichtag_des_repos(wurzel: Path) -> str:
+    """Eigener Stichtag des geprueften Repos, sonst die Vorgabe."""
+    try:
+        wert = (wurzel / SEIT_DATEI).read_text(encoding="utf-8").strip().splitlines()[0]
+        return wert.strip() or STICHTAG
+    except (OSError, IndexError):
+        return STICHTAG
+
+
 QUELLE = re.compile(r"\.(py|swift|js|dart|sh|sql)$")
 NUR_ERZEUGT = re.compile(r"^(docs/karten/|docs/VERBUNDKARTE\.md|NODE_INDEX\.md|runs/)")
 
@@ -179,6 +201,18 @@ def demo() -> None:
         "ohne Angabe gilt das Repo des aktuellen Verzeichnisses -- sonst prueft "
         "der Waechter aus jedem fremden Repo heraus brainlehr und meldet gruen")
 
+    # Eigener Stichtag je Repo: vorhandene Datei gewinnt, fehlende faellt auf
+    # die Vorgabe zurueck, leere Datei ebenso. Ohne die letzten beiden Faelle
+    # wuerde ein Tippfehler den Waechter lautlos abschalten.
+    with tempfile.TemporaryDirectory() as d:
+        w = Path(d)
+        assert _stichtag_des_repos(w) == STICHTAG, "ohne Datei gilt die Vorgabe"
+        (w / SEIT_DATEI).write_text("2026-08-16T14:00:00+02:00\n", encoding="utf-8")
+        assert _stichtag_des_repos(w) == "2026-08-16T14:00:00+02:00"
+        (w / SEIT_DATEI).write_text("   \n", encoding="utf-8")
+        assert _stichtag_des_repos(w) == STICHTAG, (
+            "leere Datei darf den Waechter nicht abschalten, sondern faellt zurueck")
+
     assert NUR_ERZEUGT.match("docs/karten/verbund.md"), (
         "erzeugte Karten sind kein Produktivcode -- sonst verlangt der Waechter "
         "einen Beleg fuer eine Datei, die ein Skript geschrieben hat")
@@ -194,21 +228,35 @@ def main() -> int:
     p.add_argument("--still", action="store_true")
     p.add_argument("--alle", action="store_true",
                    help="auch Commits vor dem Stichtag (zeigt die Altfaelle)")
-    p.add_argument("--seit", default=STICHTAG,
-                   help=f"eigener Stichtag des Repos (Vorgabe: {STICHTAG}) -- "
-                        f"jedes Repo hat seinen eigenen Einfuehrungstag")
+    p.add_argument("--seit", default=None,
+                   help=f"Stichtag ausdruecklich setzen. Ohne Angabe gilt {SEIT_DATEI} "
+                        f"im geprueften Repo, sonst {STICHTAG}")
     a = p.parse_args()
     global _w
     _w = _wurzel(a.wurzel)
+    seit = a.seit or _stichtag_des_repos(_w)
     try:
-        befunde = pruefe(a.bereich, None if a.alle else a.seit)
+        befunde = pruefe(a.bereich, None if a.alle else seit)
     except Exception as e:  # kein Upstream, frisches Repo -- kein Grund zu sperren
         if not a.still:
             print(f"Ablaufpflicht nicht prüfbar ({e}) — übersprungen.", file=sys.stderr)
         return 0
     if not befunde:
         if not a.still:
-            print("Jeder Commit nennt Plan und Belegweg.")
+            # WIE VIELE Commits geprueft wurden, gehoert in die Meldung. Ohne
+            # die Zahl klingt "Jeder Commit nennt Plan und Belegweg" nach einem
+            # Freispruch, auch wenn KEIN einziger Commit im Bereich lag --
+            # gemessen am 2026-08-16 beim Rollout: fuenf Repos meldeten diesen
+            # Satz, geprueft hatte der Melder in allen fuenf null Commits (alles
+            # gepusht, der Vorgabebereich @{u}..HEAD war leer). Dieselbe
+            # Fehlerklasse wie der Stichtag in der Zukunft: nichts geprueft,
+            # gruen gemeldet.
+            n = len(commits(a.bereich, None if a.alle else seit))
+            if n == 0:
+                print(f"Nichts zu prüfen: 0 Commits im Bereich {a.bereich}"
+                      + ("" if a.alle else f" seit {seit}") + ".")
+            else:
+                print(f"Jeder Commit nennt Plan und Belegweg ({n} geprüft).")
         return 0
     if not a.still:
         print(f"{len(befunde)} Befund(e) zur Ablaufpflicht (docs/ablauf.json):", file=sys.stderr)
