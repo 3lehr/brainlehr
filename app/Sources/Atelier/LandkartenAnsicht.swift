@@ -43,7 +43,23 @@ struct LandkartenAnsicht: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        case .unerwartetBeendet, .angehalten:
+        case .aus:
+            // ADR-023: der Schalter steht aus -- das ist eine Entscheidung des
+            // Nutzers, kein Defekt. Ohne diesen Zweig saehe er eine leere
+            // Flaeche und koennte beides nicht unterscheiden; genau dafuer
+            // wurde die ADR geschrieben. Der Satz kommt aus DienstMeldung,
+            // damit er an einer Stelle steht und keine Entwicklerinformation
+            // traegt.
+            VStack(spacing: 8) {
+                Spacer()
+                Text(DienstMeldung.ausgeschaltet)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 32)
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .unerwartetBeendet, .angehalten, .kommtNichtHoch:
             // Kein leeres weisses Rechteck, aber auch keine zweite
             // Fehlermeldung -- die steht schon im Banner darueber.
             Color.clear

@@ -56,26 +56,6 @@ final class DienstZustandTests: XCTestCase {
         let z = DienstUebergang.naechsterZustand(aktuell: .angehalten, erreichbar: true, wurdeAngehalten: false)
         XCTAssertEqual(z, .angehalten)
     }
-}
-
-final class PythonAuswahlTests: XCTestCase {
-    func testErsterFaehigerGewinnt() {
-        let ergebnis = PythonAuswahl.waehle(
-            kandidaten: ["/a/python3", "/b/python3", "/c/python3"],
-            faehig: { $0 == "/b/python3" || $0 == "/c/python3" }
-        )
-        XCTAssertEqual(ergebnis, "/b/python3")
-    }
-
-    func testKeinerFaehigGibtNil() {
-        let ergebnis = PythonAuswahl.waehle(kandidaten: ["/a/python3"], faehig: { _ in false })
-        XCTAssertNil(ergebnis)
-    }
-
-    func testLeereListeGibtNil() {
-        let ergebnis = PythonAuswahl.waehle(kandidaten: [], faehig: { _ in true })
-        XCTAssertNil(ergebnis)
-    }
 
     // ----------------------------------------------------------------------
     // B5 / ADR-023: der Mensch entscheidet per Schalter, ob eine Domaene
@@ -153,9 +133,13 @@ final class PythonAuswahlTests: XCTestCase {
     // nichts zu erklaeren haben. "aus" MUSS einen haben, sonst steht der
     // Mensch wieder vor einem stummen Bildschirm.
     func testAusHatEinenSatzUndErKlingtNichtNachDefekt() {
+        // Kein `satz!` -- ein erzwungenes Auspacken nach einer Zusicherung, die
+        // fehlschlagen DARF, laesst den ganzen Lauf abstuerzen statt nur diesen
+        // Test scheitern. Ein Rotlauf, der beim ersten Fehler stirbt, zeigt die
+        // uebrigen Luecken nicht (gemessen 2026-08-16: 3 von 21 Tests gelaufen).
         let satz = DienstMeldung.fuer(.aus)
-        XCTAssertNotNil(satz)
-        XCTAssertFalse(satz!.isEmpty)
+        XCTAssertNotNil(satz, "aus braucht einen Satz, sonst steht der Mensch vor einer leeren Flaeche")
+        XCTAssertFalse(satz?.isEmpty ?? true)
     }
 
     func testKommtNichtHochSagtWasZuTunIst() {
@@ -168,10 +152,31 @@ final class PythonAuswahlTests: XCTestCase {
     func testKeineEntwicklerinformationInDenSaetzen() {
         let verboten = ["8799", "127.0.0.1", "http", "Port", "Prozess", "Swift", "Python", "PID"]
         for zustand: DienstZustand in [.aus, .startetGerade, .laeuft, .unerwartetBeendet, .kommtNichtHoch, .angehalten] {
-            guard let satz = DienstMeldung.fuer(zustand) else { continue }
+            guard let satz = DienstMeldung.fuer(zustand) else { continue }  // nil = nichts zu zeigen, zulaessig
             for wort in verboten {
                 XCTAssertFalse(satz.contains(wort), "\(zustand): Satz nennt \(wort)")
             }
         }
     }
+}
+
+final class PythonAuswahlTests: XCTestCase {
+    func testErsterFaehigerGewinnt() {
+        let ergebnis = PythonAuswahl.waehle(
+            kandidaten: ["/a/python3", "/b/python3", "/c/python3"],
+            faehig: { $0 == "/b/python3" || $0 == "/c/python3" }
+        )
+        XCTAssertEqual(ergebnis, "/b/python3")
+    }
+
+    func testKeinerFaehigGibtNil() {
+        let ergebnis = PythonAuswahl.waehle(kandidaten: ["/a/python3"], faehig: { _ in false })
+        XCTAssertNil(ergebnis)
+    }
+
+    func testLeereListeGibtNil() {
+        let ergebnis = PythonAuswahl.waehle(kandidaten: [], faehig: { _ in true })
+        XCTAssertNil(ergebnis)
+    }
+
 }

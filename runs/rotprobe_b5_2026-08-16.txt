@@ -30,3 +30,35 @@ beide ohne uncommittete Aenderungen. Angefragt, nicht angefasst.
 Der Kern selbst baut: `xcrun swift build --target BrainlehrCore` -> exit 0.
 Der Beleg ist damit HALB: die Typen sind belegt, die Regeln nicht.
 "Geaendert, nicht verifiziert" ist der richtige Satz fuer diesen Stand.
+
+*** NACHGETRAGEN: der Verhaltens-Rotlauf ist gefahren, nach zwei eigenen Fehlern ***
+
+Sitzung 1d718e1f hat die beiden switch-Stellen freigegeben (Weg 2, ausdrueckliches
+Ja). Damit war der Lauf moeglich -- und lieferte zunaechst zweimal ein falsches Bild:
+
+FEHLER 1: "Executed 9 tests, 0 failures" gegen die ARGLOSE Fassung. Gruen, obwohl
+nichts umgesetzt war. Ursache: die Testdatei enthaelt ZWEI Klassen
+(DienstZustandTests ab Zeile 4, PythonAuswahlTests ab 61). Mein Einfuege-Skript
+ersetzte die LETZTE schliessende Klammer der Datei -- meine 12 Tests landeten in
+PythonAuswahlTests, und --filter DienstZustandTests lief an ihnen vorbei.
+Aufgefallen an der ZAHL: 9 statt 22. Ohne die Zahl waere es ein bestandener
+Rotlauf gewesen, der nichts geprueft hat.
+
+FEHLER 2: Nach dem Verschieben brach der Lauf nach 3 Tests ab. Ursache: mein
+eigener Test machte `satz!` direkt nach `XCTAssertNotNil(satz)` -- ein erzwungenes
+Auspacken nach einer Zusicherung, die fehlschlagen DARF. Bei nil stirbt der ganze
+Lauf statt nur dieser Test. Ein Rotlauf, der beim ersten Fehler abstuerzt, zeigt
+die uebrigen Luecken nicht.
+
+ENDSTAND, beide behoben:
+  ROT  gegen die arglose Fassung: Executed 19 tests, with 12 failures
+       (testSchalterAusErgibtAusUnabhaengigVonErreichbarkeit,
+        testAusschaltenWirktAusJedemZustand,
+        testStartetOhneErfolgWirdNachGeduldsspanneKommtNichtHoch,
+        testAusHatEinenSatzUndErKlingtNichtNachDefekt,
+        testKommtNichtHochSagtWasZuTunIst)
+  GRUEN gegen die echte Fassung: Executed 19 tests, with 0 failures
+  Ganzes app-Ziel: `xcrun swift build` exit 0
+  Alle Tests: 225 ausgefuehrt, 2 Fehlschlaege -- BestandteilAnforderungTests,
+  VORBESTEHEND (die Dateien sind in meinem Diff nicht enthalten, letzter Commit
+  dort be74c1c1 vom 2026-08-15).
