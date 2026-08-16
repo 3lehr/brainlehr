@@ -156,3 +156,61 @@ Sicht auf den Datenbestand (Knoten, Bedeutung, Spuren). Die Landkarten beschreib
 
 **Unverändert gilt:** erzeugt statt gepflegt, null Modellaufrufe, kein Zeitstempel im
 Erzeugnis, committet für den Diff.
+
+---
+
+## Fortschreibung 2026-08-16T07:20:00+0200 — drei Anforderungen des Betreibers
+
+Wörtlich: *„1 filterbar machen · 2 interaktiv, damit meine zoomen, pfade visuell
+nachzeichnen lassen, also wenn weg an A startet welches sind die möglichen wege zum
+ziel, wo läuft er ins leere usw! · 3 wie bekommen wir das hin, dass die graphen auch
+bei neuem code usw noch aktuell sind?"*
+
+### Was Punkt 2 an der Bauform ändert
+
+**Mermaid rendert, es rechnet nicht.** Ein Bild kennt keine Wege. Für „welche Wege
+führen von A zum Ziel" und „wo läuft es ins Leere" braucht die Seite den Graphen als
+**Daten** neben dem Bild — dieselbe Erhebung, zweite Ausgabe:
+
+```
+docs/karten/<name>.md     Mermaid, für Auge, GitHub und Diff
+docs/karten/<name>.json   Knoten und Kanten, für Filter und Wegsuche
+```
+
+Beides aus **einem** Lauf, sonst laufen sie auseinander. Die Seite färbt danach die
+SVG-Knoten, die Mermaid ohnehin mit Kennungen versieht — kein zweites Zeichenwerk.
+
+- *Verworfen: eine Graph-Bibliothek (cytoscape, d3).* Sie brächte Layout und
+  Interaktion mit, aber ein zweites Zeichenverfahren neben Mermaid — und die
+  `.md`-Dateien, die GitHub rendert, wären dann nicht mehr dasselbe Bild wie in der
+  App. **Preis:** Zoomen und Ziehen schreibe ich selbst (wenige Zeilen auf einem
+  SVG-`transform`), und das Layout bleibt, was Mermaid daraus macht.
+- *Verworfen: Wegsuche auf dem Server.* Ein Klick soll sofort antworten; die Daten
+  liegen ohnehin schon im Browser.
+
+### Punkt 3 ist der eigentliche — und er ist derselbe Fehler wie überall hier
+
+Eine erzeugte Karte veraltet nicht *im Erzeugnis*, sondern **zwischen zwei Läufen**.
+Wenn niemand läuft, ist sie so falsch wie eine handgezeichnete — nur mit der
+Behauptung von Genauigkeit. Die Frage ist also nicht „wie erzeugen wir", sondern
+**„woran hängt der Lauf?"**
+
+Drei Kandidaten, gemessen an der Hausregel *„an welcher Stelle würde die Regel
+gebrochen, und was steht dort?"*:
+
+1. **Prüfer statt Erzeuger** — die Karten werden beim Prüflauf **neu erzeugt und mit
+   den abgelegten verglichen**. Weicht etwas ab, ist die Karte veraltet, und das ist
+   ein Befund mit Dateinamen. Kein Zeitplan, keine Verabredung. **Gewählt.**
+2. Automatisch mitschreiben bei jedem Commit — verlockend, aber es schreibt Dateien
+   in fremde Commits und verschiebt die Frage nur: wer prüft, dass der Haken hängt?
+3. Zeitgesteuert — ein Lauf, der niemandem auffällt, wenn er ausbleibt. Genau die
+   Bauform, die dieses Haus zwölfmal als „gebaut, laufend, wirkungslos" gemessen hat.
+
+**Verdrahtet wird Kandidat 1 dort, wo es weh tut, bevor es nach außen geht:** als
+`pre-push`-Prüfung neben `push_guard.py`. Der Befund lautet dann nicht „Karte alt",
+sondern „`docs/karten/verbund.md` weicht vom Quelltext ab — `python3
+melder/landkarten.py`".
+
+**Die Abnahme dazu, sonst ist es wieder nur eine Absicht:** eine Datei ändern, die in
+eine Karte eingeht, `git push` versuchen, und sehen, dass die Prüfung anschlägt. Ohne
+diese Gegenprobe existiert die Durchsetzung nicht.

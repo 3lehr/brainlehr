@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vier Landkarten des brainlehr-Universums, erzeugt statt gepflegt.
+"""Fuenf Landkarten des brainlehr-Universums, erzeugt statt gepflegt.
 
 Betreiberentscheidung 2026-08-16 (docs/PLAN_DIAGRAMME_2026-08-16.md,
 Fortschreibung 07:05): Die Karten beschreiben das SYSTEM, nicht den
@@ -11,6 +11,7 @@ Bedeutung behauptete eine Gleichrangigkeit, die es nicht gibt.
   anwendung     Bildschirme und Bedienwege des atelier   (Swift-Quelltext)
   code/<repo>   Modul-Abhaengigkeiten eines Python-Repos (ast, echte Importe)
   bestand       Aeste und Kanten des Wissensbestands     (Datenbank)
+  agenten       Ereignis -> Haken -> Skript              (beide settings.json)
 
 NULL MODELLAUFRUFE, pruefbar an den Importen: nur Standardbibliothek plus
 verbundkarte. Kein Klient, kein embeddings. Eine erzeugte Karte ist bei jedem
@@ -108,6 +109,69 @@ def karte_anwendung() -> tuple[str, str, str]:
     if pfade:
         text += "\n\nWege der Steuerschnittstelle: " + ", ".join(f"`{p}`" for p in pfade) + "\n"
     return ("anwendung", "Aufbau der Anwendung — Bildschirme und Bedienwege", text)
+
+
+# ── Karte 5: Agenten und ihre Auslöser ────────────────────────────────────
+
+def karte_agenten() -> tuple[str, str, str]:
+    """Wer laeuft hier eigentlich los, und woran haengt er?
+
+    Betreiberwunsch 2026-08-16 nach dem Morpheus-Video ueber Agenten-Workflows:
+    "wir sollten unsere agenten workflows auch zeichnen!" Gezeichnet wird
+    nicht, was ein Ablaufplan VORSIEHT, sondern was tatsaechlich verdrahtet
+    ist: Ereignis -> Haken -> Skript, dazu die Agententypen.
+
+    ZWEI Einstellungsdateien werden gelesen, und das ist der Punkt: die
+    globale (~/.claude/settings.json) UND die repo-eigene. Wer nur eine
+    liest, misst falsch -- an einem Tag in beide Richtungen passiert
+    (L-ca836f). Die Karte zeigt deshalb je Haken, aus WELCHER Datei er
+    stammt.
+
+    Ein Haken ohne Ereignis kann nicht feuern -- solche Skripte erscheinen
+    als Waise (`melder/ausloeserlos.py` prueft dieselbe Frage in Textform)."""
+    quellen = [(Path.home() / ".claude" / "settings.json", "global"),
+               (_w / ".claude" / "settings.json", "repo")]
+    z = ["```mermaid", "graph LR"]
+    gesehen: set[str] = set()
+    zahl = 0
+    for pfad, herkunft in quellen:
+        if not pfad.exists():
+            continue
+        try:
+            daten = json.loads(pfad.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        for ereignis, eintraege in sorted((daten.get("hooks") or {}).items()):
+            eid = f"ev_{_id(ereignis)}"
+            if eid not in gesehen:
+                z.append(f'  {eid}(["{ereignis}"])')
+                gesehen.add(eid)
+            for eintrag in eintraege:
+                for haken in eintrag.get("hooks", []):
+                    befehl = str(haken.get("command", ""))
+                    # Nur der Skriptname, nicht die ganze Befehlszeile: die
+                    # traegt Pfade, Umleitungen und Argumente und macht jeden
+                    # Kasten unlesbar.
+                    treffer = re.findall(r"([\w./-]+\.(?:py|sh))", befehl)
+                    name = Path(treffer[0]).name if treffer else (befehl.split()[0] if befehl else "?")
+                    sid = f"s_{_id(name)}"
+                    if sid not in gesehen:
+                        z.append(f'  {sid}["{name}"]')
+                        gesehen.add(sid)
+                    z.append(f"  {eid} -->|{herkunft}| {sid}")
+                    zahl += 1
+    agenten = sorted((Path.home() / ".claude" / "agents").glob("*.md")) if \
+        (Path.home() / ".claude" / "agents").exists() else []
+    for a in agenten:
+        aid = f"ag_{_id(a.stem)}"
+        z.append(f'  {aid}>"Agent {a.stem}"]')
+    z.append("  classDef waise stroke-dasharray: 5 5")
+    z.append("```")
+    return ("agenten", "Agenten und ihre Auslöser — was wirklich verdrahtet ist",
+            "\n".join(z) + f"\n\n{zahl} Verdrahtungen aus zwei Einstellungsdateien "
+                           f"(global und repo-eigen — wer nur eine liest, misst falsch), "
+                           f"{len(agenten)} Agententypen. Ein Ereignis, an dem nichts "
+                           f"hängt, kann nichts auslösen.\n")
 
 
 # ── Karte 3: Code-Struktur je Repo ────────────────────────────────────────
@@ -240,12 +304,60 @@ def karte_bestand() -> tuple[str, str, str]:
 # ── Ablage ────────────────────────────────────────────────────────────────
 
 def alle(repos_fuer_code: list[str]) -> list[tuple[str, str, str]]:
-    karten = [karte_verbund(), karte_anwendung(), karte_bestand()]
+    karten = [karte_verbund(), karte_anwendung(), karte_agenten(), karte_bestand()]
     karten += [karte_code(r) for r in repos_fuer_code]
     return karten
 
 
+# Knotenformen, die die Karten benutzen -- die Klammern tragen Bedeutung:
+# [] Repo/Modul, ([]) Port, [()] Datenspeicher, >] Startweg von aussen, () Blick.
+_KNOTEN = re.compile(r'^\s{2}(\w+)(\[\(|\(\[|\[|\(|>)"?([^"\]\)]*)"?')
+_KANTE = re.compile(r"^\s{2}(\w+)\s+(-{2,3}>|-\.->|-{3})(?:\|([^|]*)\|)?\s+(\w+)")
+_KLASSE = re.compile(r"^\s{2}class (\w+) (\w+)")
+
+
+def graph_aus_mermaid(mermaid: str) -> dict:
+    """Knoten und Kanten AUS dem erzeugten Bild lesen, statt sie ein zweites
+    Mal zu erheben.
+
+    Der Umweg ist Absicht: Filter und Wegsuche brauchen den Graphen als Daten
+    (ein Bild kennt keine Wege), und zwei getrennte Erhebungen desselben
+    Sachverhalts laufen frueher oder spaeter auseinander -- eine Fehlerklasse,
+    die dieses Haus zur Genuege kennt. Kommen die Daten aus dem Bild, koennen
+    sie ihm per Konstruktion nicht widersprechen. Die Kennungen sind dieselben,
+    die Mermaid in das SVG schreibt; darum laesst sich ein gefundener Weg
+    danach direkt im Bild einfaerben."""
+    knoten: dict[str, dict] = {}
+    kanten: list[dict] = []
+    formen = {"[": "kasten", "([": "port", "[(": "speicher", ">": "startweg", "(": "blick"}
+    for zeile in mermaid.splitlines():
+        m = _KANTE.match(zeile)
+        if m:
+            von, pfeil, text, nach = m.groups()
+            kanten.append({"von": von, "nach": nach, "text": (text or "").strip(),
+                           "art": "gestrichelt" if pfeil == "-.->" else
+                                  ("ungerichtet" if pfeil == "---" else "gerichtet")})
+            for i in (von, nach):
+                knoten.setdefault(i, {"id": i, "text": i, "form": "kasten", "waise": False})
+            continue
+        m = _KNOTEN.match(zeile)
+        if m:
+            kennung, klammer, text = m.groups()
+            eintrag = knoten.setdefault(kennung, {"id": kennung, "text": text or kennung,
+                                                  "form": "kasten", "waise": False})
+            eintrag["text"] = (text or kennung).replace("<br/>", " · ")
+            eintrag["form"] = formen.get(klammer, "kasten")
+            continue
+        m = _KLASSE.match(zeile)
+        if m and m.group(2) == "waise":
+            knoten.setdefault(m.group(1), {"id": m.group(1), "text": m.group(1),
+                                           "form": "kasten", "waise": False})["waise"] = True
+    return {"knoten": sorted(knoten.values(), key=lambda k: k["id"]), "kanten": kanten}
+
+
 def schreiben(karten: list[tuple[str, str, str]]) -> list[Path]:
+    """Je Karte ZWEI Dateien aus EINEM Lauf: das Bild fuer Auge, GitHub und
+    Diff, die Daten fuer Filter und Wegsuche."""
     ZIEL.mkdir(parents=True, exist_ok=True)
     geschrieben = []
     for kennung, titel, inhalt in karten:
@@ -253,6 +365,14 @@ def schreiben(karten: list[tuple[str, str, str]]) -> list[Path]:
         p.write_text(f"# {titel}\n\n**Erzeugt von `melder/landkarten.py` — nicht von Hand "
                      f"ändern.**\n\n{inhalt}", encoding="utf-8")
         geschrieben.append(p)
+
+        anfang, ende = inhalt.find("```mermaid"), inhalt.find("```", inhalt.find("```mermaid") + 10)
+        mermaid = inhalt[anfang + len("```mermaid"):ende] if ende > anfang >= 0 else ""
+        d = ZIEL / f"{kennung}.json"
+        d.write_text(json.dumps({"kennung": kennung, "titel": titel,
+                                 **graph_aus_mermaid(mermaid)},
+                                indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        geschrieben.append(d)
     return geschrieben
 
 
@@ -272,6 +392,26 @@ def demo() -> None:
     # Gleichrangigkeit mit Baum und Bedeutung.
     assert 'blick_Verbund("Verbund")' not in inhalt, (
         "Verbund ist kein Blick des Wissensraums mehr, sondern eine eigene Sicht")
+    # Der Graph muss aus dem Bild lesbar sein -- sonst haben Filter und
+    # Wegsuche eine andere Wahrheit als die Zeichnung.
+    probe = """
+  hub["hub"]
+  port_8799(["Port 8799"])
+  db_x[("x.db")]
+  mcp_k>"MCP k"]
+  hub -->|lauscht| port_8799
+  hub -.->|liest| db_x
+  mcp_k -->|startet| hub
+  class db_x waise
+"""
+    g = graph_aus_mermaid(probe)
+    formen = {k["id"]: k["form"] for k in g["knoten"]}
+    assert formen == {"hub": "kasten", "port_8799": "port", "db_x": "speicher",
+                      "mcp_k": "startweg"}, formen
+    assert [k["waise"] for k in g["knoten"] if k["id"] == "db_x"] == [True]
+    assert len(g["kanten"]) == 3, g["kanten"]
+    assert {"von": "hub", "nach": "db_x", "text": "liest", "art": "gestrichelt"} in g["kanten"]
+    assert next(k for k in g["knoten"] if k["id"] == "port_8799")["text"] == "Port 8799"
     print("demo: ok")
 
 

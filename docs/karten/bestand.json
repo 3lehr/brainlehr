@@ -1,0 +1,170 @@
+{
+ "kennung": "bestand",
+ "titel": "Der Wissensbestand — Äste und ihre Verbindungen",
+ "knoten": [
+  {
+   "id": "agents",
+   "text": "agents · 6",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "aka",
+   "text": "aka · 1",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "apps",
+   "text": "apps · 78",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "arch",
+   "text": "arch · 16",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "backend",
+   "text": "backend · 4",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "bebetter",
+   "text": "bebetter · 1",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "begod",
+   "text": "begod · 2",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "brainlehr",
+   "text": "brainlehr · 152",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fahrtenbuch",
+   "text": "fahrtenbuch · 5",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "frontend",
+   "text": "frontend · 7",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "germanquad",
+   "text": "germanquad · 2713",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "lessons",
+   "text": "lessons · 3",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "methodik",
+   "text": "methodik · 120",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "nasa_llis",
+   "text": "nasa-llis · 1638",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "openlehr",
+   "text": "openlehr · 28",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ops",
+   "text": "ops · 43",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "plaene",
+   "text": "plaene · 17",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "shared",
+   "text": "shared · 55",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "simulation_akademie_messaufbau_kein",
+   "text": "simulation-akademie-messaufbau-kein · 15",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "stadtwerke",
+   "text": "stadtwerke · 2",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "testdatenknoten_schreibrechtepruefung",
+   "text": "testdatenknoten-schreibrechtepruefung · 1",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "testing",
+   "text": "testing · 8",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "tools",
+   "text": "tools · 8",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "werkzeuge",
+   "text": "werkzeuge · 8",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "woanders",
+   "text": "woanders · 1",
+   "form": "kasten",
+   "waise": false
+  }
+ ],
+ "kanten": [
+  {
+   "von": "brainlehr",
+   "nach": "methodik",
+   "text": "40",
+   "art": "ungerichtet"
+  },
+  {
+   "von": "apps",
+   "nach": "shared",
+   "text": "24",
+   "art": "ungerichtet"
+  }
+ ]
+}

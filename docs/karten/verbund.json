@@ -1,0 +1,2204 @@
+{
+ "kennung": "verbund",
+ "titel": "Der Verbund — wer redet mit wem",
+ "knoten": [
+  {
+   "id": "UsbKabelTester",
+   "text": "UsbKabelTester",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "_brainlehr_open",
+   "text": "_brainlehr_open",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "_probe_head",
+   "text": "_probe_head",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "afrika",
+   "text": "afrika",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "brainlehr",
+   "text": "brainlehr",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "buckeberg",
+   "text": "buckeberg",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "db_brainlehr_db",
+   "text": "brainlehr.db",
+   "form": "speicher",
+   "waise": false
+  },
+  {
+   "id": "db_knowledge_db",
+   "text": "knowledge.db",
+   "form": "speicher",
+   "waise": false
+  },
+  {
+   "id": "db_steuer_db",
+   "text": "steuer.db",
+   "form": "speicher",
+   "waise": false
+  },
+  {
+   "id": "db_symbols_db",
+   "text": "symbols.db",
+   "form": "speicher",
+   "waise": false
+  },
+  {
+   "id": "design_lab",
+   "text": "design_lab",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "drg",
+   "text": "drg",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "drobo_nas",
+   "text": "drobo_nas",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fahrtenbuch",
+   "text": "fahrtenbuch",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fahrtenbuch_nativ",
+   "text": "fahrtenbuch_nativ",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "hub",
+   "text": "hub",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "la_de_brainlehr_dienst",
+   "text": "launchd de.brainlehr.dienst",
+   "form": "startweg",
+   "waise": false
+  },
+  {
+   "id": "legacylink",
+   "text": "legacylink",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "markusx25",
+   "text": "markusx25",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "mcp_knowledge",
+   "text": "MCP knowledge",
+   "form": "startweg",
+   "waise": false
+  },
+  {
+   "id": "mcp_knowledge_probe",
+   "text": "MCP knowledge-probe",
+   "form": "startweg",
+   "waise": false
+  },
+  {
+   "id": "openhood",
+   "text": "openhood",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "openlehr_legacy",
+   "text": "openlehr_legacy",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "openlehr_stale_2026_07_22",
+   "text": "openlehr_stale_2026_07_22",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "pflegelotse",
+   "text": "pflegelotse",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix",
+   "text": "phoenix",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "port_11434",
+   "text": "Port 11434 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_11435",
+   "text": "Port 11435 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_11520",
+   "text": "Port 11520",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_1234",
+   "text": "Port 1234 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_17788",
+   "text": "Port 17788 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_19999",
+   "text": "Port 19999 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_2026",
+   "text": "Port 2026",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_35000",
+   "text": "Port 35000",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_35002",
+   "text": "Port 35002",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_36802",
+   "text": "Port 36802",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_40000",
+   "text": "Port 40000",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_4141",
+   "text": "Port 4141 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_4242",
+   "text": "Port 4242",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_4243",
+   "text": "Port 4243 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_49168",
+   "text": "Port 49168",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_50000",
+   "text": "Port 50000",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_5005",
+   "text": "Port 5005 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_5601",
+   "text": "Port 5601 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_7331",
+   "text": "Port 7331",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_7340",
+   "text": "Port 7340",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_7788",
+   "text": "Port 7788 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8000",
+   "text": "Port 8000 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8080",
+   "text": "Port 8080 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8088",
+   "text": "Port 8088 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8090",
+   "text": "Port 8090 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8091",
+   "text": "Port 8091",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_8095",
+   "text": "Port 8095 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8744",
+   "text": "Port 8744 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8765",
+   "text": "Port 8765",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_8787",
+   "text": "Port 8787 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8799",
+   "text": "Port 8799",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_9000",
+   "text": "Port 9000",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_9100",
+   "text": "Port 9100",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_9200",
+   "text": "Port 9200 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_9323",
+   "text": "Port 9323",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_9977",
+   "text": "Port 9977",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "schwarmwacht",
+   "text": "schwarmwacht",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "setfunk",
+   "text": "setfunk",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "snake",
+   "text": "snake",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "steueroase_asien",
+   "text": "steueroase_asien",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "stiftshuette",
+   "text": "stiftshuette",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "wpdrop",
+   "text": "wpdrop",
+   "form": "kasten",
+   "waise": false
+  }
+ ],
+ "kanten": [
+  {
+   "von": "_brainlehr_open",
+   "nach": "port_1234",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_probe_head",
+   "nach": "port_1234",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "port_1234",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_1234",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_1234",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_1234",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_2026",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_4141",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_4141",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_4141",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_4242",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_4242",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_4242",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_4242",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_4243",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_4243",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_4243",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_5005",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_5005",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_5005",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "UsbKabelTester",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "afrika",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drg",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openhood",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pflegelotse",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_5601",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_7331",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "afrika",
+   "nach": "port_7340",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "UsbKabelTester",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "afrika",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drg",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openhood",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pflegelotse",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "setfunk",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_8080",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix",
+   "nach": "port_8088",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_8088",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_8090",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_8090",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_8091",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix",
+   "nach": "port_8095",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_8095",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_8744",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_8744",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_8765",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "UsbKabelTester",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "afrika",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drg",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openhood",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pflegelotse",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_8787",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_brainlehr_open",
+   "nach": "port_8799",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_probe_head",
+   "nach": "port_8799",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "port_8799",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "afrika",
+   "nach": "port_9000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_9100",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_9100",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "UsbKabelTester",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "afrika",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drg",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openhood",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pflegelotse",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_9200",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_9323",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "setfunk",
+   "nach": "port_9977",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "UsbKabelTester",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_brainlehr_open",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_probe_head",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "afrika",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drg",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openhood",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pflegelotse",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_11435",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_11435",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "UsbKabelTester",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "afrika",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drg",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openhood",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pflegelotse",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_17788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_17788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_17788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_17788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_17788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_17788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_17788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_19999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_35000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "UsbKabelTester",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "afrika",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drg",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "drobo_nas",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch_nativ",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "markusx25",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openhood",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pflegelotse",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schwarmwacht",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "stiftshuette",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_35000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_35002",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_36802",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch",
+   "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "legacylink",
+   "nach": "port_49168",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "port_50000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_50000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "port_50000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_50000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "port_50000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "snake",
+   "nach": "port_50000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "port_50000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "port_50000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "db_brainlehr_db",
+   "text": "liegt",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "db_brainlehr_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "db_knowledge_db",
+   "text": "liegt",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_brainlehr_open",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "_probe_head",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "buckeberg",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "hub",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "snake",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "steueroase_asien",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "wpdrop",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "openlehr_stale_2026_07_22",
+   "nach": "db_steuer_db",
+   "text": "liegt",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "db_steuer_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "db_symbols_db",
+   "text": "liegt",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hub",
+   "nach": "db_symbols_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "mcp_knowledge",
+   "nach": "brainlehr",
+   "text": "startet",
+   "art": "gerichtet"
+  },
+  {
+   "von": "mcp_knowledge_probe",
+   "nach": "brainlehr",
+   "text": "startet",
+   "art": "gerichtet"
+  },
+  {
+   "von": "la_de_brainlehr_dienst",
+   "nach": "brainlehr",
+   "text": "startet",
+   "art": "gerichtet"
+  }
+ ]
+}

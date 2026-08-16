@@ -1043,7 +1043,20 @@ class Handler(BaseHTTPRequestHandler):
             ende = text.find("```", anfang + 10) if anfang >= 0 else -1
             mermaid = text[anfang + len("```mermaid"):ende].strip() if ende > 0 else ""
             hinweis = text[ende + 3:].strip() if ende > 0 else ""
-            self._json({"mermaid": mermaid, "hinweis": hinweis, "markdown": text})
+            # Der Graph liegt als Beistelldatei aus DEMSELBEN Lauf daneben
+            # (melder/landkarten.py schreibt .md und .json zusammen). Fehlt
+            # sie, faellt nur die Wegsuche aus und das Bild bleibt -- kein
+            # Grund, die ganze Karte zu verweigern.
+            graph = {}
+            gpfad = pfad.with_suffix(".json")
+            if gpfad.exists():
+                try:
+                    graph = json.loads(gpfad.read_text(encoding="utf-8"))
+                except ValueError:
+                    graph = {}
+            self._json({"mermaid": mermaid, "hinweis": hinweis, "markdown": text,
+                        "graph": {"knoten": graph.get("knoten", []),
+                                  "kanten": graph.get("kanten", [])}})
             return
         if self.path == "/statisch/mermaid.min.js":
             self._datei(HERE / "berichte" / "statisch" / "mermaid.min.js",

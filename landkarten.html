@@ -41,9 +41,33 @@
      einen waagerechten Balken (WCAG 1.4.10). Und mermaid setzt width="100%"
      aufs SVG, was ein grosses Diagramm auf Spaltenbreite staucht; die
      natuerliche Breite wird darum unten aus der viewBox zurueckgesetzt. */
-  #bild { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border);
-          border-radius: 8px; padding: .8rem; }
-  #bild svg { max-width: none !important; height: auto; }
+  #bild { overflow: hidden; border: 1px solid var(--border); border-radius: 8px;
+          padding: .8rem; cursor: grab; touch-action: none; }
+  #bild.zieht { cursor: grabbing; }
+  #bild svg { max-width: none !important; height: auto; transform-origin: 0 0; }
+  .werkzeuge { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+               margin: .8rem 0 .3rem; }
+  .werkzeuge label { color: var(--muted); }
+  .werkzeuge input, .werkzeuge select { min-height: 32px; padding: .3rem .5rem;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--bg);
+    color: var(--fg); font: inherit; }
+  .werkzeuge input { min-width: 20ch; }
+  .werkzeuge button { min-height: 32px; padding: .35rem .8rem; border-radius: 6px;
+    border: 1px solid var(--border); background: transparent; color: var(--fg);
+    font: inherit; cursor: pointer; }
+  .werkzeuge button[aria-pressed="true"] { background: var(--akzent); color: var(--akzent-fg);
+                                           border-color: var(--akzent); }
+  .hinweis { color: var(--muted); margin: 0 0 .6rem; font-size: .88rem; }
+  kbd { border: 1px solid var(--border); border-radius: 4px; padding: 0 .25em; }
+  #befund { margin: .2rem 0 .6rem; }
+  /* Hervorhebung NIE allein ueber Farbe (WCAG 1.4.1): Getroffenes wird
+     zusaetzlich dicker umrandet, Weggeblendetes zusaetzlich blasser UND
+     duenner. Wer keine Farben unterscheidet, sieht denselben Unterschied. */
+  #bild svg .aus { opacity: .12; }
+  #bild svg .aus rect, #bild svg .aus polygon, #bild svg .aus path { stroke-width: .5px; }
+  #bild svg .treffer rect, #bild svg .treffer polygon,
+  #bild svg .treffer circle, #bild svg .treffer path { stroke-width: 3px !important; }
+  #bild svg .wegkante path, #bild svg .wegkante line { stroke-width: 3px !important; }
   #text { color: var(--muted); margin-top: .8rem; max-width: 78ch; }
   code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
 </style>
@@ -57,7 +81,23 @@
 <div class="leiste" role="group" aria-label="Kartenwahl" id="wahl"></div>
 
 <h2 id="titel">wird geladen …</h2>
+
+<div class="werkzeuge">
+  <label for="suche">Filter</label>
+  <input id="suche" type="search" placeholder="Name, z. B. brainlehr oder Port 8799"
+         autocomplete="off" aria-describedby="filterhilfe">
+  <label for="vonWahl">Weg von</label>
+  <select id="vonWahl"><option value="">—</option></select>
+  <label for="nachWahl">nach</label>
+  <select id="nachWahl"><option value="">alle erreichbaren</option></select>
+  <button id="sackgassen" type="button" aria-pressed="false">Sackgassen zeigen</button>
+  <button id="zurueck" type="button">Alles zeigen</button>
+</div>
+<p id="filterhilfe" class="hinweis">Ziehen verschiebt, Mausrad mit <kbd>⌘</kbd> zoomt.
+  Ein Klick auf einen Kasten wählt ihn als Startpunkt.</p>
+
 <p id="stand" class="leer">wird geladen …</p>
+<p id="befund" role="status" aria-live="polite"></p>
 <div id="bild" role="img" aria-label="Diagramm der gewählten Landkarte"></div>
 <div id="text"></div>
 
@@ -79,13 +119,198 @@ async function mermaidBereit() {
     theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default' });
 }
 
+// ── Der Graph als Daten, neben dem Bild ───────────────────────────────────
+// Ein Bild kennt keine Wege. Knoten und Kanten kommen aus derselben Erhebung
+// wie die Zeichnung (melder/landkarten.py liest sie aus dem erzeugten Mermaid),
+// koennen ihr also nicht widersprechen.
+let graph = { knoten: [], kanten: [] }, nachbarn = new Map(), sackgassenAn = false;
+const befund = document.getElementById('befund');
+const suche = document.getElementById('suche'), vonWahl = document.getElementById('vonWahl');
+const nachWahl = document.getElementById('nachWahl');
+
+function graphAufbauen(g) {
+  graph = g;
+  nachbarn = new Map();
+  for (const k of g.knoten) nachbarn.set(k.id, []);
+  for (const e of g.kanten) {
+    (nachbarn.get(e.von) || nachbarn.set(e.von, []).get(e.von)).push(e.nach);
+    // Ungerichtete Kanten (Bestandskarte) zaehlen in beide Richtungen --
+    // sonst behauptet die Wegsuche dort Sackgassen, die keine sind.
+    if (e.art === 'ungerichtet') (nachbarn.get(e.nach) || []).push(e.von);
+  }
+  const namen = [...g.knoten].sort((a, b) => a.text.localeCompare(b.text, 'de'));
+  for (const feld of [vonWahl, nachWahl]) {
+    const erste = feld.firstElementChild.cloneNode(true);
+    feld.innerHTML = ''; feld.appendChild(erste);
+    for (const k of namen) {
+      const o = document.createElement('option');
+      o.value = k.id; o.textContent = k.text;
+      feld.appendChild(o);
+    }
+  }
+}
+
+/** Alle von `start` erreichbaren Knoten (Breitensuche), mit Vorgaenger je
+ *  Knoten -- daraus laesst sich jeder Weg zurueckverfolgen. */
+function erreichbar(start) {
+  const vorher = new Map([[start, null]]);
+  const schlange = [start];
+  while (schlange.length) {
+    const jetzt = schlange.shift();
+    for (const n of nachbarn.get(jetzt) || []) {
+      if (!vorher.has(n)) { vorher.set(n, jetzt); schlange.push(n); }
+    }
+  }
+  return vorher;
+}
+
+function wegZu(vorher, ziel) {
+  if (!vorher.has(ziel)) return null;
+  const weg = [];
+  for (let k = ziel; k !== null; k = vorher.get(k)) weg.unshift(k);
+  return weg;
+}
+
+/** Wo laeuft es ins Leere: erreichbare Knoten ohne eigenen Ausgang. */
+function sackgassen(vorher) {
+  return [...vorher.keys()].filter(k => (nachbarn.get(k) || []).length === 0);
+}
+
+// ── Hervorheben im gezeichneten SVG ───────────────────────────────────────
+// Mermaid schreibt die Kennungen aus dem Diagramm in die SVG-Elemente -- die
+// Wegsuche kann ihr Ergebnis deshalb direkt einfaerben, ohne zweites Bild.
+function svgKnoten(id) {
+  const s = bild.querySelector('svg');
+  return s && (s.querySelector(`[id="flowchart-${id}-0"]`) ||
+               s.querySelector(`[id^="flowchart-${id}-"]`) ||
+               s.querySelector(`g.node[id*="-${id}-"]`) ||
+               s.querySelector(`[id="${id}"]`));
+}
+
+function hervorheben(ids, kantenIds) {
+  const s = bild.querySelector('svg');
+  if (!s) return;
+  for (const g of s.querySelectorAll('g.node, g.edgePath, .edgePaths > g')) {
+    g.classList.remove('treffer', 'aus', 'wegkante');
+  }
+  if (!ids) return;                       // null = alles zeigen
+  const menge = new Set(ids);
+  for (const k of graph.knoten) {
+    const el = svgKnoten(k.id);
+    if (!el) continue;
+    el.classList.add(menge.has(k.id) ? 'treffer' : 'aus');
+  }
+  const kantenMenge = new Set(kantenIds || []);
+  for (const g of s.querySelectorAll('g.edgePath, .edgePaths > g')) {
+    const kennung = g.id || '';
+    const treffer = [...kantenMenge].some(p => kennung.includes(p));
+    g.classList.add(treffer ? 'wegkante' : 'aus');
+  }
+}
+
+function alleszeigen() {
+  hervorheben(null);
+  befund.textContent = '';
+  suche.value = ''; vonWahl.value = ''; nachWahl.value = '';
+  sackgassenAn = false;
+  document.getElementById('sackgassen').setAttribute('aria-pressed', 'false');
+}
+
+function filtern() {
+  const wort = suche.value.trim().toLowerCase();
+  if (!wort) { hervorheben(null); befund.textContent = ''; return; }
+  const treffer = graph.knoten.filter(k => k.text.toLowerCase().includes(wort) ||
+                                           k.id.toLowerCase().includes(wort));
+  // Ein Treffer allein sagt wenig -- seine Nachbarn sind die Antwort auf
+  // "was haengt daran".
+  const menge = new Set(treffer.map(k => k.id));
+  for (const t of treffer) for (const n of nachbarn.get(t.id) || []) menge.add(n);
+  for (const e of graph.kanten) if (menge.has(e.nach)) menge.add(e.von);
+  hervorheben([...menge], graph.kanten.filter(e => menge.has(e.von) && menge.has(e.nach))
+                                      .map(e => `${e.von}-${e.nach}`));
+  befund.textContent = treffer.length
+    ? `${treffer.length} Treffer, mit direkten Nachbarn ${menge.size} Kästen.`
+    : 'Kein Kasten trägt diesen Namen.';
+}
+
+function wegSuchen() {
+  const von = vonWahl.value, nach = nachWahl.value;
+  if (!von) { befund.textContent = ''; hervorheben(null); return; }
+  const vorher = erreichbar(von);
+  const nameVon = graph.knoten.find(k => k.id === von)?.text || von;
+  if (nach) {
+    const weg = wegZu(vorher, nach);
+    const nameNach = graph.knoten.find(k => k.id === nach)?.text || nach;
+    if (!weg) {
+      hervorheben([von, nach], []);
+      befund.textContent = `Von „${nameVon}" führt kein Weg zu „${nameNach}".`;
+      return;
+    }
+    const kanten = weg.slice(1).map((k, i) => `${weg[i]}-${k}`);
+    hervorheben(weg, kanten);
+    befund.textContent = `Kürzester Weg über ${weg.length} Stationen: ` +
+      weg.map(k => graph.knoten.find(n => n.id === k)?.text || k).join(' → ');
+    return;
+  }
+  const ids = [...vorher.keys()];
+  const tot = sackgassen(vorher);
+  hervorheben(ids, graph.kanten.filter(e => vorher.has(e.von) && vorher.has(e.nach))
+                               .map(e => `${e.von}-${e.nach}`));
+  befund.textContent = `Von „${nameVon}" sind ${ids.length - 1} Kästen erreichbar` +
+    (tot.length ? `; ins Leere läuft es bei: ${tot.map(k =>
+      graph.knoten.find(n => n.id === k)?.text || k).join(', ')}.` : '.');
+}
+
+function sackgassenZeigen() {
+  sackgassenAn = !sackgassenAn;
+  document.getElementById('sackgassen').setAttribute('aria-pressed', String(sackgassenAn));
+  if (!sackgassenAn) { hervorheben(null); befund.textContent = ''; return; }
+  // Ohne Startpunkt: alles, was im Bild als Waise erzeugt wurde, plus jeder
+  // Kasten ohne ausgehende Kante.
+  const tot = graph.knoten.filter(k => k.waise || (nachbarn.get(k.id) || []).length === 0);
+  hervorheben(tot.map(k => k.id), []);
+  befund.textContent = tot.length
+    ? `${tot.length} Endpunkte ohne Weiterweg: ${tot.map(k => k.text).join(', ')}.`
+    : 'Kein Kasten läuft ins Leere.';
+}
+
+// ── Zoomen und Ziehen ─────────────────────────────────────────────────────
+// Wenige Zeilen auf einem SVG-`transform` statt einer Bibliothek: das Bild
+// bleibt dasselbe, das GitHub aus der .md rendert.
+let massstab = 1, versatzX = 0, versatzY = 0, zieht = false, letzteX = 0, letzteY = 0;
+function anwenden() {
+  const s = bild.querySelector('svg');
+  if (s) s.style.transform = `translate(${versatzX}px, ${versatzY}px) scale(${massstab})`;
+}
+bild.addEventListener('wheel', e => {
+  // Nur mit Zusatztaste, sonst frisst die Karte das Seitenscrollen.
+  if (!e.metaKey && !e.ctrlKey) return;
+  e.preventDefault();
+  massstab = Math.min(6, Math.max(0.15, massstab * (e.deltaY < 0 ? 1.12 : 0.89)));
+  anwenden();
+}, { passive: false });
+bild.addEventListener('pointerdown', e => {
+  zieht = true; letzteX = e.clientX; letzteY = e.clientY;
+  bild.classList.add('zieht'); bild.setPointerCapture(e.pointerId);
+});
+bild.addEventListener('pointermove', e => {
+  if (!zieht) return;
+  versatzX += e.clientX - letzteX; versatzY += e.clientY - letzteY;
+  letzteX = e.clientX; letzteY = e.clientY;
+  anwenden();
+});
+for (const ereignis of ['pointerup', 'pointercancel']) {
+  bild.addEventListener(ereignis, () => { zieht = false; bild.classList.remove('zieht'); });
+}
+
 async function zeige(kennung) {
   const karte = karten.find(k => k.kennung === kennung);
   if (!karte) return;
   for (const b of wahl.children) b.setAttribute('aria-pressed', b.dataset.k === kennung ? 'true' : 'false');
   titel.textContent = karte.titel;
   stand.hidden = false; stand.textContent = 'wird gezeichnet …';
-  bild.innerHTML = ''; zusatz.textContent = '';
+  bild.innerHTML = ''; zusatz.textContent = ''; befund.textContent = '';
+  massstab = 1; versatzX = 0; versatzY = 0;
   try {
     const antwort = await fetch('/api/landkarte?k=' + encodeURIComponent(kennung));
     const daten = await antwort.json();
@@ -105,12 +330,27 @@ async function zeige(kennung) {
       gezeichnet.setAttribute('width', breite);
       gezeichnet.setAttribute('height', hoehe);
     }
+    graphAufbauen(daten.graph || { knoten: [], kanten: [] });
+    // Ein Klick auf einen Kasten waehlt ihn als Startpunkt -- der kuerzeste
+    // Weg zur Frage "was haengt hier dran".
+    for (const k of graph.knoten) {
+      const el = svgKnoten(k.id);
+      if (!el) continue;
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', ev => { ev.stopPropagation(); vonWahl.value = k.id; wegSuchen(); });
+    }
     zusatz.textContent = daten.hinweis || '';
     stand.hidden = true;
   } catch (e) {
     stand.textContent = 'Diese Karte lässt sich gerade nicht anzeigen.';
   }
 }
+
+suche.addEventListener('input', filtern);
+vonWahl.addEventListener('change', wegSuchen);
+nachWahl.addEventListener('change', wegSuchen);
+document.getElementById('sackgassen').addEventListener('click', sackgassenZeigen);
+document.getElementById('zurueck').addEventListener('click', alleszeigen);
 
 (async () => {
   try {

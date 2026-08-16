@@ -1,0 +1,112 @@
+# Agenten und ihre Auslöser — was wirklich verdrahtet ist
+
+**Erzeugt von `melder/landkarten.py` — nicht von Hand ändern.**
+
+```mermaid
+graph LR
+  ev_PostToolUse(["PostToolUse"])
+  s_chronist_py["chronist.py"]
+  ev_PostToolUse -->|global| s_chronist_py
+  s_monolith_guard_py["monolith_guard.py"]
+  ev_PostToolUse -->|global| s_monolith_guard_py
+  s_entwurfsprobe_hook_py["entwurfsprobe_hook.py"]
+  ev_PostToolUse -->|global| s_entwurfsprobe_hook_py
+  s_agent_register_hook_py["agent_register_hook.py"]
+  ev_PostToolUse -->|global| s_agent_register_hook_py
+  s_arbeitsmelder_py["arbeitsmelder.py"]
+  ev_PostToolUse -->|global| s_arbeitsmelder_py
+  s_ui_guard_hook_py["ui_guard_hook.py"]
+  ev_PostToolUse -->|global| s_ui_guard_hook_py
+  s_stand_format_waechter_hook_py["stand_format_waechter_hook.py"]
+  ev_PostToolUse -->|global| s_stand_format_waechter_hook_py
+  s_eilmeldung_hook_py["eilmeldung_hook.py"]
+  ev_PostToolUse -->|global| s_eilmeldung_hook_py
+  s_sichtbarkeit_py["sichtbarkeit.py"]
+  ev_PostToolUse -->|global| s_sichtbarkeit_py
+  ev_PreToolUse(["PreToolUse"])
+  s_agent_model_guard_py["agent_model_guard.py"]
+  ev_PreToolUse -->|global| s_agent_model_guard_py
+  s_agent_reuse_guard_hook_py["agent_reuse_guard_hook.py"]
+  ev_PreToolUse -->|global| s_agent_reuse_guard_hook_py
+  s_cascade_guard_hook_py["cascade_guard_hook.py"]
+  ev_PreToolUse -->|global| s_cascade_guard_hook_py
+  s_commit_guard_hook_py["commit_guard_hook.py"]
+  ev_PreToolUse -->|global| s_commit_guard_hook_py
+  s_auftragshypothese_waechter_py["auftragshypothese_waechter.py"]
+  ev_PreToolUse -->|global| s_auftragshypothese_waechter_py
+  ev_SessionStart(["SessionStart"])
+  s_bsi_session_hint_py["bsi_session_hint.py"]
+  ev_SessionStart -->|global| s_bsi_session_hint_py
+  s_build_node_index_py["build_node_index.py"]
+  ev_SessionStart -->|global| s_build_node_index_py
+  s_metroviz_autostart_sh["metroviz_autostart.sh"]
+  ev_SessionStart -->|global| s_metroviz_autostart_sh
+  s_wissensverlauf_py["wissensverlauf.py"]
+  ev_SessionStart -->|global| s_wissensverlauf_py
+  ev_SessionStart -->|global| s_sichtbarkeit_py
+  s_wiedereinstieg_py["wiedereinstieg.py"]
+  ev_SessionStart -->|global| s_wiedereinstieg_py
+  s_modell_abfrage_hook_py["modell_abfrage_hook.py"]
+  ev_SessionStart -->|global| s_modell_abfrage_hook_py
+  s_settings_guard_py["settings_guard.py"]
+  ev_SessionStart -->|global| s_settings_guard_py
+  s_gegenprobe_faellig_py["gegenprobe_faellig.py"]
+  ev_SessionStart -->|global| s_gegenprobe_faellig_py
+  s_normachsen_py["normachsen.py"]
+  ev_SessionStart -->|global| s_normachsen_py
+  s_pruefer_py["pruefer.py"]
+  ev_SessionStart -->|global| s_pruefer_py
+  s_rasterblick_py["rasterblick.py"]
+  ev_SessionStart -->|global| s_rasterblick_py
+  s_planbindung_py["planbindung.py"]
+  ev_SessionStart -->|global| s_planbindung_py
+  s_offene_arbeit_py["offene_arbeit.py"]
+  ev_SessionStart -->|global| s_offene_arbeit_py
+  s_eilmeldung_faellig_py["eilmeldung_faellig.py"]
+  ev_SessionStart -->|global| s_eilmeldung_faellig_py
+  s_worktree_identitaet_py["worktree_identitaet.py"]
+  ev_SessionStart -->|global| s_worktree_identitaet_py
+  s_dienstwache_py["dienstwache.py"]
+  ev_SessionStart -->|global| s_dienstwache_py
+  ev_Stop(["Stop"])
+  s_codemap_active_py["codemap_active.py"]
+  ev_Stop -->|global| s_codemap_active_py
+  s_quality_gate_hook_py["quality_gate_hook.py"]
+  ev_Stop -->|global| s_quality_gate_hook_py
+  s_knowledge_capture_hook_py["knowledge_capture_hook.py"]
+  ev_Stop -->|global| s_knowledge_capture_hook_py
+  ev_Stop -->|global| s_wissensverlauf_py
+  s_auszug_nachziehen_py["auszug_nachziehen.py"]
+  ev_Stop -->|global| s_auszug_nachziehen_py
+  s_antwort_abruf_py["antwort_abruf.py"]
+  ev_Stop -->|global| s_antwort_abruf_py
+  ev_SubagentStart(["SubagentStart"])
+  ev_SubagentStart -->|global| s_agent_register_hook_py
+  s_auftrag_recall_hook_py["auftrag_recall_hook.py"]
+  ev_SubagentStart -->|global| s_auftrag_recall_hook_py
+  s_mcp_veraltet_py["mcp_veraltet.py"]
+  ev_SubagentStart -->|global| s_mcp_veraltet_py
+  s_regelwechsel_py["regelwechsel.py"]
+  ev_SubagentStart -->|global| s_regelwechsel_py
+  ev_SubagentStop(["SubagentStop"])
+  ev_SubagentStop -->|global| s_agent_register_hook_py
+  ev_UserPromptSubmit(["UserPromptSubmit"])
+  s_knowledge_recall_hook_py["knowledge_recall_hook.py"]
+  ev_UserPromptSubmit -->|global| s_knowledge_recall_hook_py
+  s_stand_recall_hook_py["stand_recall_hook.py"]
+  ev_UserPromptSubmit -->|global| s_stand_recall_hook_py
+  ev_UserPromptSubmit -->|global| s_auftrag_recall_hook_py
+  ev_UserPromptSubmit -->|global| s_mcp_veraltet_py
+  ev_UserPromptSubmit -->|global| s_antwort_abruf_py
+  ev_UserPromptSubmit -->|global| s_regelwechsel_py
+  ev_WorktreeCreate(["WorktreeCreate"])
+  ev_WorktreeCreate -->|global| s_worktree_identitaet_py
+  s_stash_guard_hook_py["stash_guard_hook.py"]
+  ev_PreToolUse -->|repo| s_stash_guard_hook_py
+  s_existenzpruefung_py["existenzpruefung.py"]
+  ev_Stop -->|repo| s_existenzpruefung_py
+  ag_compliance>"Agent compliance"]
+  classDef waise stroke-dasharray: 5 5
+```
+
+51 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 1 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.

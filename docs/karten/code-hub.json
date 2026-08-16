@@ -1,0 +1,2012 @@
+{
+ "kennung": "code-hub",
+ "titel": "Code-Struktur: hub",
+ "knoten": [
+  {
+   "id": "__init__",
+   "text": "__init__",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "_find_missing2",
+   "text": "_find_missing2",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "_import_manual_sources",
+   "text": "_import_manual_sources",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "_obd_merge_tmp",
+   "text": "_obd_merge_tmp",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "_read_dr",
+   "text": "_read_dr",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "_verify_obd_positions",
+   "text": "_verify_obd_positions",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "agent_live_log",
+   "text": "agent_live_log",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "agent_model_guard",
+   "text": "agent_model_guard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "agent_register_hook",
+   "text": "agent_register_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "agent_register_ort",
+   "text": "agent_register_ort",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "agent_reuse_guard_hook",
+   "text": "agent_reuse_guard_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "agent_router",
+   "text": "agent_router",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "agent_validator",
+   "text": "agent_validator",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ai_export",
+   "text": "ai_export",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ai_image_forge",
+   "text": "ai_image_forge",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ai_image_forge_native_ui",
+   "text": "ai_image_forge_native_ui",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ai_image_forge_ui_server",
+   "text": "ai_image_forge_ui_server",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "analyze_agent_gaps",
+   "text": "analyze_agent_gaps",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "analyze_comments",
+   "text": "analyze_comments",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "analyze_crm",
+   "text": "analyze_crm",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "analyze_demo_log",
+   "text": "analyze_demo_log",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "analyze_large_files",
+   "text": "analyze_large_files",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "analyze_tracks",
+   "text": "analyze_tracks",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "architecture",
+   "text": "architecture",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "audit_p28_konsil",
+   "text": "audit_p28_konsil",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "audit_paper_fulltext",
+   "text": "audit_paper_fulltext",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "audit_profiles",
+   "text": "audit_profiles",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "audit_rating_index",
+   "text": "audit_rating_index",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "auto_commit",
+   "text": "auto_commit",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "begod_doctor",
+   "text": "begod_doctor",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "begod_livetest",
+   "text": "begod_livetest",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "begod_test",
+   "text": "begod_test",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "begod_time",
+   "text": "begod_time",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "behauptete_pruefung",
+   "text": "behauptete_pruefung",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "benchmark_download",
+   "text": "benchmark_download",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "benchmark_drbench",
+   "text": "benchmark_drbench",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "benchmark_gaia2",
+   "text": "benchmark_gaia2",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "benchmark_xbench",
+   "text": "benchmark_xbench",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "beta_personas",
+   "text": "beta_personas",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ble_server",
+   "text": "ble_server",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ble_server_bless",
+   "text": "ble_server_bless",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "bsi_catalog_parser",
+   "text": "bsi_catalog_parser",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "bsi_code_review",
+   "text": "bsi_code_review",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "bsi_cross_repo_sync",
+   "text": "bsi_cross_repo_sync",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "bsi_session_hint",
+   "text": "bsi_session_hint",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "bsi_sync_checker",
+   "text": "bsi_sync_checker",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "calc_personas",
+   "text": "calc_personas",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "cascade_guard_hook",
+   "text": "cascade_guard_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "caveman_bulk",
+   "text": "caveman_bulk",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "caveman_compress",
+   "text": "caveman_compress",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "checkpoint_state",
+   "text": "checkpoint_state",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "chronist",
+   "text": "chronist",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "chronist_bridge",
+   "text": "chronist_bridge",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "citation_graph",
+   "text": "citation_graph",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "citation_network",
+   "text": "citation_network",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "click_screenshotter",
+   "text": "click_screenshotter",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "code_quality_report",
+   "text": "code_quality_report",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "code_watcher",
+   "text": "code_watcher",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "codemap",
+   "text": "codemap",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "codemap_active",
+   "text": "codemap_active",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "codex_guard",
+   "text": "codex_guard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "commit_guard_hook",
+   "text": "commit_guard_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "compare_recovery",
+   "text": "compare_recovery",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "cost_tracker",
+   "text": "cost_tracker",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "coverage_gap",
+   "text": "coverage_gap",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "crm_consilium",
+   "text": "crm_consilium",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "crm_consilium_phase2",
+   "text": "crm_consilium_phase2",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "crm_consilium_phase3",
+   "text": "crm_consilium_phase3",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "cross_app_compliance",
+   "text": "cross_app_compliance",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "cspell_sync",
+   "text": "cspell_sync",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "deep_analyze_crm",
+   "text": "deep_analyze_crm",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "deep_research",
+   "text": "deep_research",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "deploy_to_worktrees",
+   "text": "deploy_to_worktrees",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "design_eval",
+   "text": "design_eval",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "diagnose_mic_onsets",
+   "text": "diagnose_mic_onsets",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "doc_qa",
+   "text": "doc_qa",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "domaenen_startauftrag",
+   "text": "domaenen_startauftrag",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "eilmeldung_hook",
+   "text": "eilmeldung_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "eilmeldung_quittieren",
+   "text": "eilmeldung_quittieren",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "elevate_design",
+   "text": "elevate_design",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "elm327_handler",
+   "text": "elm327_handler",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "entropy_profiler",
+   "text": "entropy_profiler",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "entwurfsprobe_hook",
+   "text": "entwurfsprobe_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "error_injector",
+   "text": "error_injector",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "export_afrika_knowledge",
+   "text": "export_afrika_knowledge",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "export_notebooklm",
+   "text": "export_notebooklm",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "extract_aka_pdfs",
+   "text": "extract_aka_pdfs",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "extract_cached_fulltexts",
+   "text": "extract_cached_fulltexts",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "extract_crossrefs",
+   "text": "extract_crossrefs",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "extract_local_pdfs",
+   "text": "extract_local_pdfs",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "extract_screen_text",
+   "text": "extract_screen_text",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "extract_semantics",
+   "text": "extract_semantics",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fetch_papers",
+   "text": "fetch_papers",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fetch_sgbv",
+   "text": "fetch_sgbv",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fix_agent_categories",
+   "text": "fix_agent_categories",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fix_css",
+   "text": "fix_css",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "flowmap_stale_check",
+   "text": "flowmap_stale_check",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "flutter_lldb_helper",
+   "text": "flutter_lldb_helper",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "focus_guardian",
+   "text": "focus_guardian",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "forensics",
+   "text": "forensics",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "gegenprobe_faellig",
+   "text": "gegenprobe_faellig",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "generate_code_md",
+   "text": "generate_code_md",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "generate_design_tokens",
+   "text": "generate_design_tokens",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "generate_icons",
+   "text": "generate_icons",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "generate_jpeg_corpus",
+   "text": "generate_jpeg_corpus",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "generate_realistic_wav",
+   "text": "generate_realistic_wav",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "generate_stamo_fleet",
+   "text": "generate_stamo_fleet",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "guard_audit",
+   "text": "guard_audit",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "hash_compare_tool",
+   "text": "hash_compare_tool",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "hausregeln_check",
+   "text": "hausregeln_check",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "heartbeat_manager",
+   "text": "heartbeat_manager",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "help_server",
+   "text": "help_server",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "idml_bridge",
+   "text": "idml_bridge",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "implementation",
+   "text": "implementation",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "init_worktree",
+   "text": "init_worktree",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "install_pre_push_smoke_hook",
+   "text": "install_pre_push_smoke_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "install_push_guard",
+   "text": "install_push_guard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "json_minify",
+   "text": "json_minify",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "knowledge_index",
+   "text": "knowledge_index",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "knowledge_scout",
+   "text": "knowledge_scout",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "knowledge_usage_report",
+   "text": "knowledge_usage_report",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "knowledge_watcher",
+   "text": "knowledge_watcher",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "konsil",
+   "text": "konsil",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "kontinent_filter",
+   "text": "kontinent_filter",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "license_audit",
+   "text": "license_audit",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "lineage_tracker",
+   "text": "lineage_tracker",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "m2_ble_dongle",
+   "text": "m2_ble_dongle",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "manual_harvester",
+   "text": "manual_harvester",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "methodik_export",
+   "text": "methodik_export",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "mir_pdf_fetch",
+   "text": "mir_pdf_fetch",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "model_advisor",
+   "text": "model_advisor",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "model_auto_router",
+   "text": "model_auto_router",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "modell_abfrage_hook",
+   "text": "modell_abfrage_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "monolith_guard",
+   "text": "monolith_guard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "multi_agent_walkthrough",
+   "text": "multi_agent_walkthrough",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "multi_agent_walkthrough_v2",
+   "text": "multi_agent_walkthrough_v2",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "mutation_review",
+   "text": "mutation_review",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "mycel",
+   "text": "mycel",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "nav_human",
+   "text": "nav_human",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "nav_lookup",
+   "text": "nav_lookup",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "nie_geschriebene_werte",
+   "text": "nie_geschriebene_werte",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ollama_healthcheck",
+   "text": "ollama_healthcheck",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "optuna_cascade",
+   "text": "optuna_cascade",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "optuna_crm_grouping",
+   "text": "optuna_crm_grouping",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "optuna_dbscan",
+   "text": "optuna_dbscan",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "optuna_fuzzy_signatures",
+   "text": "optuna_fuzzy_signatures",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "optuna_harness",
+   "text": "optuna_harness",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "orchestrate",
+   "text": "orchestrate",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "paper_network",
+   "text": "paper_network",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "param_sweep",
+   "text": "param_sweep",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "parse_bri_to_json",
+   "text": "parse_bri_to_json",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "patch_autorunner",
+   "text": "patch_autorunner",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "pdf_design_audit",
+   "text": "pdf_design_audit",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "pdf_to_knowledge",
+   "text": "pdf_to_knowledge",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_compare",
+   "text": "phoenix_compare",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_crm_recovery",
+   "text": "phoenix_crm_recovery",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_crm_v2",
+   "text": "phoenix_crm_v2",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_deep_check",
+   "text": "phoenix_deep_check",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_deep_scan",
+   "text": "phoenix_deep_scan",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_diag",
+   "text": "phoenix_diag",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_forensic",
+   "text": "phoenix_forensic",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_probe",
+   "text": "phoenix_probe",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_probe2",
+   "text": "phoenix_probe2",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_probe3",
+   "text": "phoenix_probe3",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_validate",
+   "text": "phoenix_validate",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "phoenix_verify",
+   "text": "phoenix_verify",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "play_test_patterns",
+   "text": "play_test_patterns",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "postfach_manager",
+   "text": "postfach_manager",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "postfach_router",
+   "text": "postfach_router",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "print_watcher",
+   "text": "print_watcher",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "profile_generator",
+   "text": "profile_generator",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "projekt_waehler_hook",
+   "text": "projekt_waehler_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "prompt_budget_guard",
+   "text": "prompt_budget_guard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "prompt_bundle_builder",
+   "text": "prompt_bundle_builder",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "push_guard",
+   "text": "push_guard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "quality_baseline",
+   "text": "quality_baseline",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "quality_gate_hook",
+   "text": "quality_gate_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "quellen_faelligkeit",
+   "text": "quellen_faelligkeit",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "quellenbeleg",
+   "text": "quellenbeleg",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "quick_fix",
+   "text": "quick_fix",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "quick_scan_canon",
+   "text": "quick_scan_canon",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ram_stem_calibration",
+   "text": "ram_stem_calibration",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "rank_evals",
+   "text": "rank_evals",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "refactor_renderer",
+   "text": "refactor_renderer",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "remove_redundant_comments",
+   "text": "remove_redundant_comments",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "retrofit_hint",
+   "text": "retrofit_hint",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "revert_design",
+   "text": "revert_design",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "review_gate",
+   "text": "review_gate",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "run_p2c_pipeline",
+   "text": "run_p2c_pipeline",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "safe_long_job",
+   "text": "safe_long_job",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "scan_canon",
+   "text": "scan_canon",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "scan_codebase",
+   "text": "scan_codebase",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "scrape_100jahre_website",
+   "text": "scrape_100jahre_website",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "scrape_aka_100jahre",
+   "text": "scrape_aka_100jahre",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "scrape_aka_website",
+   "text": "scrape_aka_website",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "security_audit",
+   "text": "security_audit",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "serve_metroviz",
+   "text": "serve_metroviz",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "server",
+   "text": "server",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "session_compact",
+   "text": "session_compact",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "session_dashboard",
+   "text": "session_dashboard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "session_edit_tick",
+   "text": "session_edit_tick",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "session_preflight",
+   "text": "session_preflight",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "session_start",
+   "text": "session_start",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "settings_guard",
+   "text": "settings_guard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "settings_sync",
+   "text": "settings_sync",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "setup_companion_buttons",
+   "text": "setup_companion_buttons",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "simulator",
+   "text": "simulator",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "simulator_gui",
+   "text": "simulator_gui",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "smoke_begod_rollout",
+   "text": "smoke_begod_rollout",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "sprint_runner",
+   "text": "sprint_runner",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "stand_index_hook",
+   "text": "stand_index_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "stand_recall_hook",
+   "text": "stand_recall_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "stem_server",
+   "text": "stem_server",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "strip_comments",
+   "text": "strip_comments",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "strip_python",
+   "text": "strip_python",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "sweep_1000",
+   "text": "sweep_1000",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "sweep_2group",
+   "text": "sweep_2group",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "sweep_subbands",
+   "text": "sweep_subbands",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "symbolindex",
+   "text": "symbolindex",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "sync_begod_policy",
+   "text": "sync_begod_policy",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "sync_citations_to_xrefs",
+   "text": "sync_citations_to_xrefs",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "sync_dag_status",
+   "text": "sync_dag_status",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "system_health",
+   "text": "system_health",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "system_specs",
+   "text": "system_specs",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "systemabgleich_hinweis",
+   "text": "systemabgleich_hinweis",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "telegram_bridge",
+   "text": "telegram_bridge",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_agent_register_hook",
+   "text": "test_agent_register_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_agent_reuse_guard_hook",
+   "text": "test_agent_reuse_guard_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_agent_system",
+   "text": "test_agent_system",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_ai_image_forge_queue_reset",
+   "text": "test_ai_image_forge_queue_reset",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_codemap_flow_skeleton",
+   "text": "test_codemap_flow_skeleton",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_codex_guards",
+   "text": "test_codex_guards",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_commit_guard",
+   "text": "test_commit_guard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_e2e_ble",
+   "text": "test_e2e_ble",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_eilmeldung_hook",
+   "text": "test_eilmeldung_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_flowmap_stale_check",
+   "text": "test_flowmap_stale_check",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_methodik_export",
+   "text": "test_methodik_export",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_model_routing",
+   "text": "test_model_routing",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_profiles",
+   "text": "test_profiles",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_push_guard",
+   "text": "test_push_guard",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_quality_gate_hook",
+   "text": "test_quality_gate_hook",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_server",
+   "text": "test_server",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_walkthrough_agents",
+   "text": "test_walkthrough_agents",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_walkthrough_v2",
+   "text": "test_walkthrough_v2",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "test_wiedereinstieg",
+   "text": "test_wiedereinstieg",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "tote_bausteine",
+   "text": "tote_bausteine",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "trust_factor",
+   "text": "trust_factor",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "ui_dump",
+   "text": "ui_dump",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "unverdrahtet",
+   "text": "unverdrahtet",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "update_vis",
+   "text": "update_vis",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "validate_agent_system",
+   "text": "validate_agent_system",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "validate_konsil_json",
+   "text": "validate_konsil_json",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "validate_nba_algorithm",
+   "text": "validate_nba_algorithm",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "vehicle_profiles",
+   "text": "vehicle_profiles",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "verify_ema_fix",
+   "text": "verify_ema_fix",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "version_bump",
+   "text": "version_bump",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "walkthrough_agents",
+   "text": "walkthrough_agents",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "walkthrough_analyzer",
+   "text": "walkthrough_analyzer",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "watch_agent",
+   "text": "watch_agent",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "wiedereinstieg",
+   "text": "wiedereinstieg",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "wiring_check",
+   "text": "wiring_check",
+   "form": "kasten",
+   "waise": false
+  }
+ ],
+ "kanten": [
+  {
+   "von": "agent_live_log",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "agent_register_hook",
+   "nach": "agent_register_ort",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "agent_reuse_guard_hook",
+   "nach": "agent_register_ort",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ai_export",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ai_image_forge_ui_server",
+   "nach": "ai_image_forge",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "beta_personas",
+   "nach": "test_profiles",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "bsi_sync_checker",
+   "nach": "bsi_catalog_parser",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "calc_personas",
+   "nach": "beta_personas",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "caveman_bulk",
+   "nach": "caveman_compress",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "chronist",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "chronist_bridge",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "commit_guard_hook",
+   "nach": "agent_register_ort",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "cross_app_compliance",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "diagnose_mic_onsets",
+   "nach": "ram_stem_calibration",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "diagnose_mic_onsets",
+   "nach": "stem_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "doc_qa",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "elm327_handler",
+   "nach": "vehicle_profiles",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "focus_guardian",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "focus_guardian",
+   "nach": "kontinent_filter",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "guard_audit",
+   "nach": "agent_register_ort",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "json_minify",
+   "nach": "caveman_compress",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "knowledge_scout",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "m2_ble_dongle",
+   "nach": "ble_server_bless",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "m2_ble_dongle",
+   "nach": "elm327_handler",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "m2_ble_dongle",
+   "nach": "error_injector",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "m2_ble_dongle",
+   "nach": "simulator",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "m2_ble_dongle",
+   "nach": "vehicle_profiles",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "multi_agent_walkthrough",
+   "nach": "walkthrough_agents",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "multi_agent_walkthrough_v2",
+   "nach": "walkthrough_agents",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "param_sweep",
+   "nach": "ram_stem_calibration",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "param_sweep",
+   "nach": "stem_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix_crm_v2",
+   "nach": "phoenix_crm_recovery",
+   "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "phoenix_validate",
+   "nach": "phoenix_crm_recovery",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "play_test_patterns",
+   "nach": "ram_stem_calibration",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "projekt_waehler_hook",
+   "nach": "agent_register_ort",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "push_guard",
+   "nach": "agent_register_ort",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "push_guard",
+   "nach": "agent_reuse_guard_hook",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "quality_gate_hook",
+   "nach": "agent_register_ort",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ram_stem_calibration",
+   "nach": "stem_server",
+   "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "scan_codebase",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "session_dashboard",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "session_dashboard",
+   "nach": "kontinent_filter",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "session_preflight",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "session_preflight",
+   "nach": "model_auto_router",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "session_start",
+   "nach": "begod_time",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "simulator",
+   "nach": "ble_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "simulator",
+   "nach": "ble_server_bless",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "simulator",
+   "nach": "elm327_handler",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "simulator",
+   "nach": "error_injector",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "simulator",
+   "nach": "vehicle_profiles",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "simulator_gui",
+   "nach": "ble_server_bless",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "simulator_gui",
+   "nach": "elm327_handler",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "simulator_gui",
+   "nach": "error_injector",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "simulator_gui",
+   "nach": "vehicle_profiles",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "sweep_1000",
+   "nach": "ram_stem_calibration",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "sweep_1000",
+   "nach": "stem_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "sweep_2group",
+   "nach": "ram_stem_calibration",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "sweep_2group",
+   "nach": "stem_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "sweep_subbands",
+   "nach": "ram_stem_calibration",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "sweep_subbands",
+   "nach": "stem_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "sweep_subbands",
+   "nach": "sweep_2group",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_agent_register_hook",
+   "nach": "agent_register_hook",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_agent_reuse_guard_hook",
+   "nach": "agent_reuse_guard_hook",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_codemap_flow_skeleton",
+   "nach": "codemap",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_e2e_ble",
+   "nach": "elm327_handler",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_e2e_ble",
+   "nach": "error_injector",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_e2e_ble",
+   "nach": "vehicle_profiles",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_flowmap_stale_check",
+   "nach": "flowmap_stale_check",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_profiles",
+   "nach": "beta_personas",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_push_guard",
+   "nach": "push_guard",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "test_wiedereinstieg",
+   "nach": "wiedereinstieg",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "unverdrahtet",
+   "nach": "tote_bausteine",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "verify_ema_fix",
+   "nach": "stem_server",
+   "text": "1",
+   "art": "gerichtet"
+  }
+ ]
+}

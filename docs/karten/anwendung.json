@@ -1,0 +1,170 @@
+{
+ "kennung": "anwendung",
+ "titel": "Aufbau der Anwendung — Bildschirme und Bedienwege",
+ "knoten": [
+  {
+   "id": "Ausweise_und_Einladungen",
+   "text": "Ausweise und Einladungen",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "Bearbeiten",
+   "text": "Bearbeiten",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "Dokument",
+   "text": "Dokument",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "Landkarten",
+   "text": "Landkarten",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "Mehrfachansicht",
+   "text": "Mehrfachansicht",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "Quellen",
+   "text": "Quellen",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "Sitzung",
+   "text": "Sitzung",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "Wissensraum",
+   "text": "Wissensraum",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "app",
+   "text": "atelier",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "blick_Abrufweg",
+   "text": "Abrufweg",
+   "form": "blick",
+   "waise": false
+  },
+  {
+   "id": "blick_Baum",
+   "text": "Baum",
+   "form": "blick",
+   "waise": false
+  },
+  {
+   "id": "blick_Bedeutung",
+   "text": "Bedeutung",
+   "form": "blick",
+   "waise": false
+  },
+  {
+   "id": "blick_Spuren",
+   "text": "Spuren",
+   "form": "blick",
+   "waise": false
+  },
+  {
+   "id": "blick_Vergleich",
+   "text": "Vergleich",
+   "form": "blick",
+   "waise": false
+  }
+ ],
+ "kanten": [
+  {
+   "von": "app",
+   "nach": "Quellen",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "app",
+   "nach": "Mehrfachansicht",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "app",
+   "nach": "Bearbeiten",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "app",
+   "nach": "Dokument",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "app",
+   "nach": "Sitzung",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "app",
+   "nach": "Wissensraum",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "app",
+   "nach": "Landkarten",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "app",
+   "nach": "Ausweise_und_Einladungen",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "Wissensraum",
+   "nach": "blick_Baum",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "Wissensraum",
+   "nach": "blick_Bedeutung",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "Wissensraum",
+   "nach": "blick_Spuren",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "Wissensraum",
+   "nach": "blick_Vergleich",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "Wissensraum",
+   "nach": "blick_Abrufweg",
+   "text": "",
+   "art": "gerichtet"
+  }
+ ]
+}

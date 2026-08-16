@@ -1,0 +1,248 @@
+{
+ "kennung": "code-brainlehr",
+ "titel": "Code-Struktur: brainlehr",
+ "knoten": [
+  {
+   "id": "app",
+   "text": "app",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "aufsaetze",
+   "text": "aufsaetze",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "berichte",
+   "text": "berichte",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "brainlehr",
+   "text": "brainlehr",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fremdclient",
+   "text": "fremdclient",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "haken",
+   "text": "haken",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "kern",
+   "text": "kern",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "knowledge_mcp_server",
+   "text": "knowledge_mcp_server",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "melder",
+   "text": "melder",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "messungen",
+   "text": "messungen",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "migrationen",
+   "text": "migrationen",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "pflege",
+   "text": "pflege",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "pruefstand",
+   "text": "pruefstand",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "runs",
+   "text": "runs",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "schnellstart",
+   "text": "schnellstart",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "schreibpruefstand",
+   "text": "schreibpruefstand",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "spikes",
+   "text": "spikes",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "tests",
+   "text": "tests",
+   "form": "kasten",
+   "waise": false
+  }
+ ],
+ "kanten": [
+  {
+   "von": "berichte",
+   "nach": "haken",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "berichte",
+   "nach": "knowledge_mcp_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "knowledge_mcp_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "haken",
+   "nach": "knowledge_mcp_server",
+   "text": "7",
+   "art": "gerichtet"
+  },
+  {
+   "von": "haken",
+   "nach": "melder",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "kern",
+   "nach": "haken",
+   "text": "6",
+   "art": "gerichtet"
+  },
+  {
+   "von": "kern",
+   "nach": "knowledge_mcp_server",
+   "text": "24",
+   "art": "gerichtet"
+  },
+  {
+   "von": "melder",
+   "nach": "haken",
+   "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "melder",
+   "nach": "knowledge_mcp_server",
+   "text": "6",
+   "art": "gerichtet"
+  },
+  {
+   "von": "messungen",
+   "nach": "kern",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "messungen",
+   "nach": "knowledge_mcp_server",
+   "text": "5",
+   "art": "gerichtet"
+  },
+  {
+   "von": "migrationen",
+   "nach": "knowledge_mcp_server",
+   "text": "7",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pflege",
+   "nach": "kern",
+   "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pflege",
+   "nach": "knowledge_mcp_server",
+   "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "pruefstand",
+   "nach": "knowledge_mcp_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "runs",
+   "nach": "kern",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schnellstart",
+   "nach": "knowledge_mcp_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "schreibpruefstand",
+   "nach": "knowledge_mcp_server",
+   "text": "4",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tests",
+   "nach": "brainlehr",
+   "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tests",
+   "nach": "haken",
+   "text": "4",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tests",
+   "nach": "kern",
+   "text": "12",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tests",
+   "nach": "knowledge_mcp_server",
+   "text": "79",
+   "art": "gerichtet"
+  }
+ ]
+}

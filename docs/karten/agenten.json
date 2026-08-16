@@ -1,0 +1,620 @@
+{
+ "kennung": "agenten",
+ "titel": "Agenten und ihre Auslöser — was wirklich verdrahtet ist",
+ "knoten": [
+  {
+   "id": "ag_compliance",
+   "text": "Agent compliance",
+   "form": "startweg",
+   "waise": false
+  },
+  {
+   "id": "ev_PostToolUse",
+   "text": "PostToolUse",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "ev_PreToolUse",
+   "text": "PreToolUse",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "ev_SessionStart",
+   "text": "SessionStart",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "ev_Stop",
+   "text": "Stop",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "ev_SubagentStart",
+   "text": "SubagentStart",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "ev_SubagentStop",
+   "text": "SubagentStop",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "ev_UserPromptSubmit",
+   "text": "UserPromptSubmit",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "ev_WorktreeCreate",
+   "text": "WorktreeCreate",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "s_agent_model_guard_py",
+   "text": "agent_model_guard.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_agent_register_hook_py",
+   "text": "agent_register_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_agent_reuse_guard_hook_py",
+   "text": "agent_reuse_guard_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_antwort_abruf_py",
+   "text": "antwort_abruf.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_arbeitsmelder_py",
+   "text": "arbeitsmelder.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_auftrag_recall_hook_py",
+   "text": "auftrag_recall_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_auftragshypothese_waechter_py",
+   "text": "auftragshypothese_waechter.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_auszug_nachziehen_py",
+   "text": "auszug_nachziehen.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_bsi_session_hint_py",
+   "text": "bsi_session_hint.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_build_node_index_py",
+   "text": "build_node_index.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_cascade_guard_hook_py",
+   "text": "cascade_guard_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_chronist_py",
+   "text": "chronist.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_codemap_active_py",
+   "text": "codemap_active.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_commit_guard_hook_py",
+   "text": "commit_guard_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_dienstwache_py",
+   "text": "dienstwache.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_eilmeldung_faellig_py",
+   "text": "eilmeldung_faellig.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_eilmeldung_hook_py",
+   "text": "eilmeldung_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_entwurfsprobe_hook_py",
+   "text": "entwurfsprobe_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_existenzpruefung_py",
+   "text": "existenzpruefung.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_gegenprobe_faellig_py",
+   "text": "gegenprobe_faellig.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_knowledge_capture_hook_py",
+   "text": "knowledge_capture_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_knowledge_recall_hook_py",
+   "text": "knowledge_recall_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_mcp_veraltet_py",
+   "text": "mcp_veraltet.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_metroviz_autostart_sh",
+   "text": "metroviz_autostart.sh",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_modell_abfrage_hook_py",
+   "text": "modell_abfrage_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_monolith_guard_py",
+   "text": "monolith_guard.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_normachsen_py",
+   "text": "normachsen.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_offene_arbeit_py",
+   "text": "offene_arbeit.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_planbindung_py",
+   "text": "planbindung.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_pruefer_py",
+   "text": "pruefer.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_quality_gate_hook_py",
+   "text": "quality_gate_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_rasterblick_py",
+   "text": "rasterblick.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_regelwechsel_py",
+   "text": "regelwechsel.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_settings_guard_py",
+   "text": "settings_guard.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_sichtbarkeit_py",
+   "text": "sichtbarkeit.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_stand_format_waechter_hook_py",
+   "text": "stand_format_waechter_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_stand_recall_hook_py",
+   "text": "stand_recall_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_stash_guard_hook_py",
+   "text": "stash_guard_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_ui_guard_hook_py",
+   "text": "ui_guard_hook.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_wiedereinstieg_py",
+   "text": "wiedereinstieg.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_wissensverlauf_py",
+   "text": "wissensverlauf.py",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "s_worktree_identitaet_py",
+   "text": "worktree_identitaet.py",
+   "form": "kasten",
+   "waise": false
+  }
+ ],
+ "kanten": [
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_chronist_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_monolith_guard_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_entwurfsprobe_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_agent_register_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_arbeitsmelder_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_ui_guard_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_stand_format_waechter_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_eilmeldung_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_sichtbarkeit_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PreToolUse",
+   "nach": "s_agent_model_guard_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PreToolUse",
+   "nach": "s_agent_reuse_guard_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PreToolUse",
+   "nach": "s_cascade_guard_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PreToolUse",
+   "nach": "s_commit_guard_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PreToolUse",
+   "nach": "s_auftragshypothese_waechter_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_bsi_session_hint_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_build_node_index_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_metroviz_autostart_sh",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_wissensverlauf_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_sichtbarkeit_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_wiedereinstieg_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_modell_abfrage_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_settings_guard_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_gegenprobe_faellig_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_normachsen_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_pruefer_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_rasterblick_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_planbindung_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_offene_arbeit_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_eilmeldung_faellig_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_worktree_identitaet_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_dienstwache_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_codemap_active_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_quality_gate_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_knowledge_capture_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_wissensverlauf_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_auszug_nachziehen_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_antwort_abruf_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SubagentStart",
+   "nach": "s_agent_register_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SubagentStart",
+   "nach": "s_auftrag_recall_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SubagentStart",
+   "nach": "s_mcp_veraltet_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SubagentStart",
+   "nach": "s_regelwechsel_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SubagentStop",
+   "nach": "s_agent_register_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_UserPromptSubmit",
+   "nach": "s_knowledge_recall_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_UserPromptSubmit",
+   "nach": "s_stand_recall_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_UserPromptSubmit",
+   "nach": "s_auftrag_recall_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_UserPromptSubmit",
+   "nach": "s_mcp_veraltet_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_UserPromptSubmit",
+   "nach": "s_antwort_abruf_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_UserPromptSubmit",
+   "nach": "s_regelwechsel_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_WorktreeCreate",
+   "nach": "s_worktree_identitaet_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PreToolUse",
+   "nach": "s_stash_guard_hook_py",
+   "text": "repo",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_existenzpruefung_py",
+   "text": "repo",
+   "art": "gerichtet"
+  }
+ ]
+}
