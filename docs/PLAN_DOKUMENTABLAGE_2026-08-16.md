@@ -1,4 +1,4 @@
-# Plan: Dokumente in den Speicher, und ein deklarierter Ablauf — 2026-08-16T09:15:00+0200
+# Plan: Dokumente in den Speicher, und ein deklarierter Ablauf — 2026-08-16T08:25:00+0200
 
 **Verhältnis zum geltenden Plan:** unabhängig neben `docs/PLAN_GESAMT_2026-08-13.md`
 und `docs/PLAN_DIAGRAMME_2026-08-16.md`. Löst nichts ab.

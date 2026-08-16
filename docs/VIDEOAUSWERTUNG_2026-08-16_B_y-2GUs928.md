@@ -1,4 +1,4 @@
-# Videoauswertung — 2026-08-16T09:00:00+0200
+# Videoauswertung — 2026-08-16T08:15:00+0200
 
 Video: `https://www.youtube.com/watch?v=B_y-2GUs928`
 Titel: „Die AI Bubble findet gerade Graphentheorie für sich"
