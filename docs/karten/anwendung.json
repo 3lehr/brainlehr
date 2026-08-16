@@ -45,6 +45,12 @@
    "waise": false
   },
   {
+   "id": "Steuer_für_Einzelunternehmer",
+   "text": "Steuer für Einzelunternehmer",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "Wissensraum",
    "text": "Wissensraum",
    "form": "kasten",
@@ -127,6 +133,12 @@
   {
    "von": "app",
    "nach": "Landkarten",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "app",
+   "nach": "Steuer_für_Einzelunternehmer",
    "text": "",
    "art": "gerichtet"
   },

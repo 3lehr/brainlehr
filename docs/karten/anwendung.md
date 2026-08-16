@@ -19,6 +19,8 @@ graph LR
   app --> Wissensraum
   Landkarten["Landkarten"]
   app --> Landkarten
+  Steuer_für_Einzelunternehmer["Steuer für Einzelunternehmer"]
+  app --> Steuer_für_Einzelunternehmer
   Ausweise_und_Einladungen["Ausweise und Einladungen"]
   app --> Ausweise_und_Einladungen
   blick_Baum("Baum")
