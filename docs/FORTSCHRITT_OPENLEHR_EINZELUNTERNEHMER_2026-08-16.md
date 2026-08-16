@@ -225,10 +225,16 @@ Genau dafür war der erste Lauf im neuen Repo Pflicht und nicht Kür.
 der Goldkorpus-Test bleibt **ungelaufen**. Ungelaufen heißt ungeprüft, nicht
 bestanden.
 
-**Die drei Fehlschläge:** einer ist eine Schnittfolge
-(`test_ascii_umschrift_scan` ratscht gegen eine Grundlinie von *Dateien*, und
-die Dateimenge hat sich geändert), zwei sind Fachbefunde. Keiner nennt einen
-absoluten Pfad oder `begod/`.
+**Die drei Fehlschläge — meine erste Einordnung war falsch und ist berichtigt.**
+Ich hatte `test_ascii_umschrift_scan` als Schnittfolge bezeichnet; das war
+geraten. Gemessen überschreiten **drei Dateien ihre eigene Grundlinie**:
+`classifier.py` (8 statt 6 Umlaute), `finanzamt/typenkatalog.py` (2 Umlaute und
+7 Bindestriche statt 0/0), `finanzamt_intake.py` (2 statt 1). **Vorbestehend,
+nicht vom Schnitt.** Alle drei Fehlschläge sind damit Fachbefunde, keiner nennt
+einen absoluten Pfad oder `begod/`.
+
+Die Grundlinie wird **nicht** angehoben — das wäre genau der Freispruch, gegen
+den eine Ratsche gebaut ist. Der Befund gehört zur unbelegten Fläche.
 
 **Und was die Zahl nicht bedeutet:** 347 grüne geerbte Tests machen nichts
 `belegt`. Der Registerstand bleibt 1 belegt, 1 unbelegt.
@@ -279,3 +285,12 @@ B4 sie vorführt), nicht in einen Sammellauf.
 **Was der Betreiber entscheiden muss:** B5 (fremd gehaltene Datei) · der native
 Zeichner · ob das Domänen-Repo nach GitHub geht (Außenwirkung, nicht meine
 Entscheidung) · der Rang von `3c524455` und `460725f0`.
+
+
+---
+
+## Ablage
+
+Zustand des Domänen-Repos als Wissensknoten `378587c6`. Lehren: `L-4f01fb`
+(Teilbaum-Schnitt aus einem Teilklon), `L-31fce7` (Fremdprobe maß den
+Wirtsrechner), `L-1c5e26` (Identität der Quelle nicht gemessen).
