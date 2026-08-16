@@ -1,0 +1,22 @@
+graph TB
+    subgraph kreis[" Der Anspruch: eine Regel wirkt erst mit Mechanismus "]
+        direction LR
+        R["Regel"] --> M["Mechanismus<br/>an der Bruchstelle"]
+        M --> P["Messung<br/>rot vor grün"]
+        P --> B["Befund<br/>statt Absicht"]
+        B -.->|schärft| R
+    end
+
+    subgraph schichten[" Die drei Schichten "]
+        direction LR
+        BL["<b>brainlehr</b><br/>trägt · kann nein sagen"] --- AT["<b>atelier</b><br/>zeichnet"] --- OL["<b>openlehr_X</b><br/>wirkt je Domäne"]
+    end
+
+    kreis -.->|"prüft sich selbst an"| schichten
+
+    classDef a fill:#eef4fb,stroke:#3b6ea5,stroke-width:1.5px,color:#16324f
+    classDef s fill:#f6f2ea,stroke:#a08a5b,stroke-width:1.5px,color:#4a3c23
+    class R,M,P,B a
+    class BL,AT,OL s
+    style kreis fill:#ffffff,stroke:#c9d6e4,stroke-width:1px,color:#16324f
+    style schichten fill:#ffffff,stroke:#ddd0b4,stroke-width:1px,color:#4a3c23

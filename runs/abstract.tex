@@ -1,0 +1,134 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[ngerman]{babel}
+\usepackage[a4paper,top=27mm,bottom=27mm,left=30mm,right=30mm]{geometry}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+
+\definecolor{tiefblau}{HTML}{16324F}
+\definecolor{stahl}{HTML}{3B6EA5}
+\definecolor{sand}{HTML}{F6F2EA}
+\definecolor{grau}{HTML}{5A6673}
+\definecolor{rostrot}{HTML}{9C4221}
+
+\setmainfont{Palatino}[
+  Numbers = OldStyle,
+  Ligatures = TeX
+]
+\newfontfamily\displayfont{Helvetica Neue}[Ligatures=TeX]
+
+\titleformat{\section}{\displayfont\large\bfseries\color{tiefblau}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{18pt}{6pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\displayfont\footnotesize\color{grau}\thepage}
+
+\newtcolorbox{befund}{
+  colback=sand, colframe=rostrot, boxrule=0.8pt, arc=2pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt
+}
+
+\begin{document}
+
+\begin{center}
+  {\displayfont\Huge\bfseries\color{tiefblau} brainlehr\par}
+  \vspace{4pt}
+  {\displayfont\large\color{stahl} Was es sein möchte, und was es schon ist\par}
+  \vspace{6pt}
+  {\displayfont\footnotesize\color{grau} Gemessen am 2026-08-16 · Zweig \texttt{brainlehr/b4-ausweis}\par}
+\end{center}
+
+\vspace{10pt}
+\hrule height 0.6pt
+\vspace{14pt}
+
+\section{Was brainlehr sein möchte}
+
+brainlehr versteht sich nicht in erster Linie als Wissensspeicher, sondern als
+\textbf{Aufsicht über die eigene Arbeitsweise}: eine Instanz, die prüft, ob das,
+was man sich vornimmt, tatsächlich wirkt --- nicht nur gebaut und gemeldet wird.
+Der Anlass dafür war ein Befund von brainlehr über brainlehr: zwölf Fälle
+„gebaut, laufend, meldend, wirkungslos“ an einem einzigen Tag.
+
+Architektonisch trägt brainlehr die untere von zwei Schichten im Verbund:
+\emph{was gilt, und ob es belegt ist} --- Ausweis, Freigabe, Norm mit Rang und
+Geltung, Herkunft, Widerruf. Das Unterscheidungskriterium zur oberen Schicht ist
+bewusst schmal: \textbf{brainlehr kann nein sagen.} Eine Freigabe wird verweigert,
+eine Norm greift, ein Trigger blockiert, ein Melder schlägt an. Die fachlichen
+Instanzen können das nicht --- sie stellen bereit.
+
+Vier Fragen soll jede Instanz beantworten: Wer fragt hier? Worüber wird Wissen
+geführt? Was ist ein Treffer wert? Und was darf nach außen?
+
+\vspace{6pt}
+\begin{center}
+  \includegraphics[width=\textwidth]{graph.png}
+\end{center}
+\vspace{2pt}
+
+\section{Was es schon ist --- gemessen}
+
+\textbf{Bestand} (\texttt{brainlehr.db}, 32 Tabellen): 5034 Knoten, 963 Lehren,
+9936 Kanten, 16\,144 protokollierte Zugriffe, 55 Datenbank-Trigger.
+
+Diese Zahlen liegen deutlich über den in der eigenen Projektbeschreibung
+genannten (2166 Knoten, 833 Lehren). Die Beschreibung veraltet also schneller,
+als sie fortgeschrieben wird --- ein Beispiel für genau das Muster, das das
+System an anderer Stelle sucht.
+
+\textbf{Gebaut:} 33 Melder-Skripte, 95 Dateien unter \texttt{kern/},
+224 Testdateien, 24 Architekturentscheidungen, 99 Dokumente, davon 48 Pläne.
+
+\begin{befund}
+\textbf{Der zentrale Befund --- und er hat sich beim Aufschreiben selbst
+korrigiert.}
+
+Der Melder meldete zunächst \textbf{29 von 33} Mechanismen ohne Auslöser. Beim
+Gegenlesen fiel auf, dass darunter sechs standen, die im \texttt{pre-push}
+hängen und an diesem Tag mehrfach einen Push \emph{tatsächlich} gestoppt haben.
+Ursache: Der Melder kannte Einstellungen, geplante Läufe und die Aufruferkette
+--- aber keine Git-Hooks. Ein Eintrag in den Einstellungen \emph{löst aus}, ein
+Git-Hook \emph{blockiert}; wer den zweiten nicht kennt, meldet ausgerechnet die
+wirksamsten Mechanismen als wirkungslos.
+
+Nach der Korrektur: \textbf{21 von 33 ohne Auslöser, 12 verdrahtet.} Das bleibt
+der harte Teil des Befunds --- aber die Zahl stimmt jetzt.
+\end{befund}
+
+\textbf{Was nachweislich wirkt:} Der \texttt{pre-push}-Wächter prüft
+Messauswertungen gegen die Messregeln und vergleicht die Landkarten gegen eine
+Neuerzeugung. Er blockiert bei einem Verstoß tatsächlich --- an einem
+Rollout wurde er zweimal falsch positiv grün gemessen; erst der dritte, korrekte
+Aufbau zeigte, dass er greift.
+
+\textbf{Offene Stellen:} Die Relevanzschwelle ist für einen Funktionsnamen und
+einen Rechtssatz identisch, obwohl der Unterschied als Lücke benannt ist. Der
+Bedeutungskanal der Suche steuert nach eigener Messung nur 4 von 585 Endplätzen
+bei; der Stichwortkanal dominiert. Eine gebaute Fusionsfunktion lag seit dem
+2026-08-12 unverdrahtet im Code.
+
+\vspace{10pt}
+\hrule height 0.4pt
+\vspace{10pt}
+
+{\displayfont\normalsize\color{tiefblau}\textbf{Fazit in einem Satz}}
+
+Der Anspruch --- Aufsicht statt Speicher --- trägt: Die Selbstprüfung hat beim
+Schreiben dieses Papiers einen Fehler in sich selbst gefunden und korrigiert. An
+21 von 33 eigenen Mechanismen ist er trotzdem noch Absicht ohne Auslöser.
+
+\vspace{16pt}
+{\displayfont\footnotesize\color{grau}
+Jede Zahl in diesem Papier wurde für dieses Papier gemessen, nicht übernommen.
+Die Zählweise steht im Erhebungsprotokoll.\par}
+
+\end{document}
