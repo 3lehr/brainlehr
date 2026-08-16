@@ -6143,7 +6143,8 @@ TOOLS = {
                         "norm_entschieden_grund is REQUIRED whenever norm_entscheidung is given (like grund on "
                         "knowledge_zurueckziehen) -- a free-text reason for the decision. Who decided "
                         "(norm_entschieden_von) is resolved automatically from your caller identity, not a "
-                        "separate input. "
+                        "separate input. For a rank-1/2 operator instruction, betreiber_weisung carries the "
+                        "exact quote and records the operator as decision-maker. "
                         "anlass records what triggered this entry: 'selbst' (you wrote it unprompted) or "
                         "'betreiber' (an explicit human instruction, e.g. \"merk dir das\") are SELF-REPORTED -- "
                         "only as reliable as the caller. 'hook' (the enforcing Stop-hook made you call this) and "
@@ -6175,6 +6176,8 @@ TOOLS = {
                                                        "norm_unbefristet=norm without one. See tool description."},
                 "norm_entschieden_grund": {"type": "string",
                                             "description": "REQUIRED alongside norm_entscheidung: free-text reason for the decision (see tool description)."},
+                "betreiber_weisung": {"type": "string",
+                                        "description": "Exact operator quote for a rank-1/2 instruction; at least 10 characters inside German opening and straight closing quotes."},
                 "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
                            "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."},
                 "gattung": {"type": "string", "enum": list(ALLOWED_GATTUNG),
@@ -6193,6 +6196,7 @@ TOOLS = {
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
             norm_entscheidung=_require(args, "norm_entscheidung", "keine_norm/norm_befristet/norm_unbefristet -- ist dieser Knoten eine Norm?"),
             norm_entschieden_grund=_require(args, "norm_entschieden_grund", "Begruendung fuer die Norm-Entscheidung -- wer entscheidet und warum?"),
+            betreiber_weisung=args.get("betreiber_weisung"),
             anlass=args.get("anlass", "unbekannt"), abgeleitet_von=args.get("abgeleitet_von"),
             gattung=args.get("gattung"),
             **_identity_args(args)
@@ -6204,7 +6208,8 @@ TOOLS = {
                         "Only given fields change; norm_entscheidung is optional here (unlike knowledge_add) and "
                         "only needed when the change would otherwise contradict the node's existing decision "
                         "(e.g. giving a norm_unbefristet norm a gilt_bis) -- if given, norm_entschieden_grund "
-                        "is then REQUIRED too.",
+                        "is then REQUIRED too. For a rank-1/2 operator instruction, betreiber_weisung carries "
+                        "the exact quote and records the operator as decision-maker.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -6220,6 +6225,8 @@ TOOLS = {
                                        "description": "Optional: change the norm/fact decision (see knowledge_add). Requires norm_entschieden_grund if given."},
                 "norm_entschieden_grund": {"type": "string",
                                             "description": "Required if norm_entscheidung is given: free-text reason."},
+                "betreiber_weisung": {"type": "string",
+                                        "description": "Exact operator quote for a rank-1/2 instruction; at least 10 characters inside German opening and straight closing quotes."},
                 "gattung": {"type": "string", "enum": list(ALLOWED_GATTUNG),
                             "description": "Reclassify. Only changed when given -- omitting it leaves the current kind untouched."},
                 **IDENTITY_PROPERTIES,
@@ -6232,6 +6239,7 @@ TOOLS = {
             norm_rang=args.get("norm_rang"), gilt_ab=args.get("gilt_ab"), gilt_bis=args.get("gilt_bis"),
             norm_entscheidung=args.get("norm_entscheidung"),
             norm_entschieden_grund=args.get("norm_entschieden_grund"),
+            betreiber_weisung=args.get("betreiber_weisung"),
             gattung=args.get("gattung"),
             **_identity_args(args)
         )

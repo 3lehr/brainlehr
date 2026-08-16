@@ -256,6 +256,30 @@ def test_knowledge_update_hebt_keine_norm_auf_rang1_mit_beleg(temp_db):
     assert row == (1, "betreiber", "weisungszitat", WORTLAUT_LANG)
 
 
+def test_mcp_vertrag_reicht_betreiber_weisung_an_beide_werkzeuge(monkeypatch):
+    gesehen = {}
+
+    monkeypatch.setattr(kms, "knowledge_add",
+                        lambda *args, **kwargs: gesehen.setdefault("add", kwargs))
+    monkeypatch.setattr(kms, "knowledge_update",
+                        lambda *args, **kwargs: gesehen.setdefault("update", kwargs))
+
+    for name in ("knowledge_add", "knowledge_update"):
+        assert "betreiber_weisung" in kms.TOOLS[name]["inputSchema"]["properties"]
+
+    kms.TOOLS["knowledge_add"]["handler"]({
+        "parent_path": "/", "title": "t", "summary": "s",
+        "norm_entscheidung": "keine_norm", "norm_entschieden_grund": "Test",
+        "betreiber_weisung": WORTLAUT_LANG,
+    })
+    kms.TOOLS["knowledge_update"]["handler"]({
+        "node_id": "n1", "norm_entscheidung": "norm_unbefristet",
+        "betreiber_weisung": WORTLAUT_LANG,
+    })
+    assert gesehen["add"]["betreiber_weisung"] == WORTLAUT_LANG
+    assert gesehen["update"]["betreiber_weisung"] == WORTLAUT_LANG
+
+
 def demo() -> None:
     """Kleinstes lauffaehiges Selbstcheck ohne pytest -- gegen ein frisches
     tmp-Verzeichnis, kein Bestand angefasst."""

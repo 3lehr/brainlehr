@@ -1,5 +1,14 @@
 # AI handoff
 
+## 2026-08-16T21:20:06+02:00 — fix(mcp): expose operator instruction contract
+
+- Files: `knowledge_mcp_server.py`, `tests/test_weisungszitat_beleg.py`, `AI_HANDOFF.md`.
+- Why: `knowledge_add()` and `knowledge_update()` accepted `betreiber_weisung`, but the public `TOOLS` schemas omitted it and both MCP handlers discarded it. No client restart could expose or use the field.
+- Red: `python3 -m pytest -q tests/test_weisungszitat_beleg.py::test_mcp_vertrag_reicht_betreiber_weisung_an_beide_werkzeuge` — 1 failed because the property was absent.
+- Verified: `python3 -m pytest -q tests/test_weisungszitat_beleg.py tests/test_version.py tests/test_project_id_enum_stale.py` — 25 passed; a fresh `handle_request(tools/list)` reports `betreiber_weisung` for both tools and the test proves both handlers forward it.
+- Remaining risk: Already-running MCP processes keep their imported `TOOLS` table; clients need one more restart to load this server change. The missing `begod/knowledge/` tree prevented the BeGood JSON sync path, so the reusable finding is recorded as Brainlehr lesson `L-9d668e` instead.
+- Next test: Restart Codex and inspect the actually loaded `knowledge_add` and `knowledge_update` tool metadata for `betreiber_weisung`.
+
 ## 2026-08-16T21:07:47+02:00 — test(brainlehr): pin Weisungszitat red fixture
 
 - Files: `tests/test_weisungszitat_beleg.py`, `AI_HANDOFF.md`; additionally updated the non-repository Codex instruction file `~/.codex/AGENTS.md` with the verified client contracts.
