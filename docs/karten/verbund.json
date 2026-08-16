@@ -135,6 +135,12 @@
    "waise": false
   },
   {
+   "id": "openlehr_einzelunternehmer",
+   "text": "openlehr_einzelunternehmer",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "openlehr_legacy",
    "text": "openlehr_legacy",
    "form": "kasten",
@@ -239,6 +245,12 @@
   {
    "id": "port_4243",
    "text": "Port 4243 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_4343",
+   "text": "Port 4343 (fremd",
    "form": "port",
    "waise": false
   },
@@ -437,6 +449,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_1234",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
    "von": "openlehr_legacy",
    "nach": "port_1234",
    "text": "ruft",
@@ -452,6 +470,12 @@
    "von": "fahrtenbuch",
    "nach": "port_2026",
    "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_4141",
+   "text": "ruft",
    "art": "gerichtet"
   },
   {
@@ -479,6 +503,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_4242",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
    "von": "openlehr_legacy",
    "nach": "port_4242",
    "text": "lauscht",
@@ -497,6 +527,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_4243",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
    "von": "openlehr_legacy",
    "nach": "port_4243",
    "text": "ruft",
@@ -511,6 +547,24 @@
   {
    "von": "snake",
    "nach": "port_4243",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_4343",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_legacy",
+   "nach": "port_4343",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_5005",
    "text": "ruft",
    "art": "gerichtet"
   },
@@ -738,6 +792,12 @@
   },
   {
    "von": "hub",
+   "nach": "port_7788",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_einzelunternehmer",
    "nach": "port_7788",
    "text": "ruft",
    "art": "gerichtet"
@@ -1541,6 +1601,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
    "von": "openlehr_legacy",
    "nach": "port_11434",
    "text": "ruft",
@@ -1591,6 +1657,12 @@
   {
    "von": "wpdrop",
    "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_11435",
    "text": "ruft",
    "art": "gerichtet"
   },
@@ -2129,6 +2201,12 @@
    "art": "gestrichelt"
   },
   {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
    "von": "openlehr_legacy",
    "nach": "db_knowledge_db",
    "text": "liest",
@@ -2163,6 +2241,12 @@
    "nach": "db_steuer_db",
    "text": "liegt",
    "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "db_steuer_db",
+   "text": "liest",
+   "art": "gestrichelt"
   },
   {
    "von": "openlehr_legacy",
