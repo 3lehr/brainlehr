@@ -990,7 +990,45 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _datei(self, pfad: Path, typ: str) -> None:
+        """Eine Datei vom Datentraeger ausliefern. NUR fuer die fest benannten
+        Pfade unten -- keine allgemeine Dateiauslieferung. Der Aufrufer nennt
+        den Pfad, nie der Klient: ein Pfad aus der Anfrage waere mit '..' der
+        Schluessel zu jeder Datei dieses Rechners."""
+        if not pfad.exists():
+            self._json({"error": f"nicht vorhanden: {pfad.name}"}, 404)
+            return
+        body = pfad.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", typ)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
+        # Verbundkarte (Schritt 2, docs/PLAN_DIAGRAMME_2026-08-16.md): das
+        # ERZEUGNIS wird ausgeliefert, nicht neu berechnet -- ein Lauf ueber
+        # 27 Repos dauert gemessen 22 s und gehoert nicht in eine Anfrage.
+        # Aktuell gehalten wird beim ERZEUGEN (melder/verbundkarte.py), nicht
+        # beim Anzeigen.
+        if self.path == "/api/verbundkarte":
+            pfad = HERE / "docs" / "VERBUNDKARTE.md"
+            if not pfad.exists():
+                self._json({"error": "docs/VERBUNDKARTE.md fehlt -- erzeugen mit: "
+                                     "python3 melder/verbundkarte.py --out docs/VERBUNDKARTE.md"}, 404)
+                return
+            text = pfad.read_text(encoding="utf-8")
+            anfang = text.find("```mermaid")
+            ende = text.find("```", anfang + 10) if anfang >= 0 else -1
+            self._json({
+                "mermaid": text[anfang + len("```mermaid"):ende].strip() if ende > 0 else "",
+                "markdown": text,
+            })
+            return
+        if self.path == "/statisch/mermaid.min.js":
+            self._datei(HERE / "berichte" / "statisch" / "mermaid.min.js",
+                        "application/javascript; charset=utf-8")
+            return
         if self.path in ("/", "/entscheidungen.html"):
             body = HTML_PATH.read_text(encoding="utf-8").encode("utf-8")
             self.send_response(200)
