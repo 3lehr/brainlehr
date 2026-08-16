@@ -79,14 +79,26 @@ def vec():
 # nachgezogen: ein auf Rang 21 umgeschriebener Test waere gruen und wertlos.
 # Gehoert zur Abrufguete (S12, groesserer Korpus, Knoten 0e6adb6c), nicht zur
 # Testpflege. strict=True, damit es auffaellt, sobald der Abruf ihn wiederfindet.
+# NACHTRAG 2026-08-16, nach der Umstellung von _fuse_with_keyword_floor() auf
+# embeddings.fuse_semantic_led(): Der Zielknoten steht jetzt auf Rang 23 (vorher
+# 21), in_kandidatenliste weiterhin False -- dieser Einzelfall ist NICHT geheilt.
+# Im Mittel wirkt die Umstellung dagegen deutlich: 37/40 statt 34/40, einsprachig
+# 5/35 statt 0/35, Leitfall trifft wieder
+# (runs/kanalguete_nach_verdrahtung_2026-08-16.json). Der Marker bleibt deshalb
+# an test_fall_8dc84938_jetzt_in_liste. Er faellt nur bei
+# test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg weg: dieser Test
+# hing an der falschen Bedingung -- er prueft, ob Diagnose und echter Abrufweg
+# DIESELBE Liste liefern, nicht ob das Ziel darin steht. Seit der Umstellung tun
+# sie das, und weil der Marker strict war, ist es aufgefallen statt still zu
+# bleiben.
 _ZIEL_AUS_DEN_ERSTEN_FUENF = pytest.mark.xfail(
     strict=True,
-    reason="Zielknoten 8dc84938 steht am 2026-08-14 auf Rang 21 statt in den ersten 5 "
-           "-- Abrufbefund, siehe Kommentar oben; kein Wert nachgezogen",
+    reason="Zielknoten 8dc84938 steht am 2026-08-16 auf Rang 23 statt in den ersten 5 "
+           "(am 2026-08-14: Rang 21) -- Abrufbefund, siehe Kommentar oben; kein Wert "
+           "nachgezogen, und die Sockel-Behebung hat ihn nicht geheilt",
 )
 
 
-@_ZIEL_AUS_DEN_ERSTEN_FUENF
 def test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg(conn, vec):
     ref = ziel_ref(conn, "node", ZIEL_PFAD)
     assert ref is not None, "Fixtur fehlt: Ziel-Knoten nicht im Bestand"

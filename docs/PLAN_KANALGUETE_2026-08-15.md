@@ -230,3 +230,57 @@ sondern die Folge der Tabu-Liste, und genau der Fall, für den die Hausregel
    Produktivweg schon. Das kann den Stichwortkanal nur *kleiner* machen; bei einem
    Median von 4740 gegen `max_results=5` ändert es an der Sättigung mit hoher
    Wahrscheinlichkeit nichts, gemessen ist es aber nicht.
+
+---
+
+## Fortschreibung 2026-08-16T05:45:00+0200 — verdrahtet und gemessen: alle drei Kriterien erfüllt
+
+`_fuse_with_keyword_floor()` ruft seit Commit dieser Fortschreibung
+`embeddings.fuse_semantic_led()`. Geändert wurde die **geteilte Funktion**, nicht die
+Aufrufer — damit erfasst die Umstellung beide Suchwerkzeuge und den Abrufhaken auf
+einmal. Gemessen über die Stufe `echt` (4933 → 4935 Knoten, dieselben 117 Anfragen,
+`runs/kanalguete_nach_verdrahtung_2026-08-16.json`):
+
+| | vorher | nachher |
+|---|---|---|
+| Trefferquote | 34/40 | **37/40** |
+| einsprachig | 0/35 | **5/35** |
+| Leitfall deutsch | trifft nicht | **trifft** |
+| sinnloser Fall bleibt draußen | ja | ja |
+| Falschmeldequote | 40/40 | 40/40 |
+| Endplätze aus dem Bedeutungskanal | 4/585 (0,7 %) | **68/585 (11,6 %)** |
+| Ergebnis == reine Stichwortreihenfolge | 116/117 | **0/117** |
+
+Die drei Erfolgskriterien des Plans sind erfüllt: der belegte deutsche Fall trifft,
+der sinnlose weiterhin nicht, einsprachig wird **besser** statt schlechter (5/35 liegt
+auch über den 4/35 des sockellosen Vergleichspfads), und die Falschmeldequote steigt
+nicht. Laufzeit unverändert (0,213 s je Anfrage).
+
+**Was die Umstellung NICHT geheilt hat, und das gehört danebengestellt:** Knoten
+`8dc84938` — der Fall, an dem am 2026-08-09 eine frühere Reparatur belegt wurde —
+steht weiterhin außerhalb der ersten fünf, jetzt auf **Rang 23** statt 21. Der
+`xfail`-Marker in `tests/test_kandidatendiagnose.py` bleibt deshalb stehen, mit
+aktualisierter Zahl. Ein Mittelwert, der sich verbessert, ist keine Aussage über den
+Einzelfall.
+
+**Ein zweiter Beleg fiel nebenbei an:** `test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg`
+war `xfail(strict=True)` und ist jetzt **XPASS** — Diagnosewerkzeug und echter
+Abrufweg liefern seit der Umstellung dieselbe Liste. Genau dafür war `strict` gesetzt
+(„damit es auffällt, sobald der Abruf ihn wiederfindet"), und es hat funktioniert.
+
+**Vor der Umstellung rot, danach grün** —
+`tests/test_kanalguete_flooranalyse.py::test_bedeutungstreffer_ueberlebt_gesaettigten_stichwortkanal`.
+Die alte Formel bleibt als historischer Beleg in derselben Datei, ausgeschrieben statt
+aufgerufen.
+
+### Damit ist Punkt 2 dran: die Relevanzschwelle
+
+Und sie ist erst **jetzt** formulierbar. Solange die Reihenfolge aus FTS-Rangplätzen
+kam, gab es keine Zahl, an der sich abschneiden ließe; die Bedeutungsrangliste trägt
+Kosinuswerte. Die Falschmeldequote steht unverändert bei 40/40 — erwartet, sie hing
+nie an der Verschmelzung.
+
+**Nicht getan:** Der Stichwortkanal selbst bleibt, wie er ist — im Median 4744 von
+4935 Knoten. Ob ein Kanal, der 96 % des Bestands trifft, überhaupt Rangbeiträge
+liefern sollte, ist die Frage hinter der Frage; sie braucht eine eigene Messung und
+keine dritte Formeländerung aus dem Bauch.

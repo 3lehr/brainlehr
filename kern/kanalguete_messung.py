@@ -196,10 +196,14 @@ def sockel_kennzahl(k: Kanaele, max_results: int) -> dict:
     verlangt: WIE OFT saettigt der Sockel, und wie viele Endplaetze bleiben
     dem Bedeutungskanal ueberhaupt?
 
-    `gesaettigt` bedeutet: der Stichwortkanal allein fuellt alle
-    max_results Plaetze -- dann ist das Ergebnis byte-identisch mit der
-    reinen Stichwortreihenfolge, und keine Aenderung an rrf_fuse() kann es
-    bewegen (strukturell belegt in tests/test_kanalguete_flooranalyse.py)."""
+    `gesaettigt` bedeutet: der Stichwortkanal allein koennte alle
+    max_results Plaetze fuellen. Bis zum 2026-08-16 tat er das auch -- dann
+    war das Ergebnis byte-identisch mit der reinen Stichwortreihenfolge und
+    keine Aenderung an rrf_fuse() konnte es bewegen. Seit der Umstellung von
+    _fuse_with_keyword_floor() auf embeddings.fuse_semantic_led() ist
+    `gesaettigt` nur noch die Gelegenheit zur Verdraengung, nicht mehr ihr
+    Beleg: die aussagekraeftige Zahl ist seither
+    `endplaetze_nur_bedeutung` (vorher 4 von 585)."""
     kw = embeddings.rrf_fuse(k.kw_node_ids, k.kw_lesson_ids, embedding_weight=1.0)
     emb = embeddings.rrf_fuse(k.emb_node_ids, k.emb_lesson_ids, embedding_weight=1.0)
     final = kms._fuse_with_keyword_floor(kw, emb, max_results)
@@ -377,9 +381,12 @@ def messlauf(*, n_ja: int, n_nein: int, max_results: int = 5, seed: int = 202608
             "endplaetze_summe": sum(p["endplaetze"] for p in sockel_proben),
             "n_stichwortkanal_median": sorted(p["n_stichwortkanal"] for p in sockel_proben)[n // 2],
             "erlaeuterung": (
-                "gesaettigt = Stichwortkanal allein fuellt alle max_results Plaetze; "
-                "dort ist jede Aenderung an rrf_fuse strukturell folgenlos "
-                "(tests/test_kanalguete_flooranalyse.py)."),
+                "gesaettigt = Stichwortkanal koennte allein alle max_results Plaetze "
+                "fuellen. Bis zur Umstellung auf embeddings.fuse_semantic_led() "
+                "(2026-08-16) tat er das auch, dann war das Ergebnis identisch mit der "
+                "Stichwortreihenfolge und jede Aenderung an rrf_fuse folgenlos. "
+                "Seither ist die aussagekraeftige Zahl endplaetze_nur_bedeutung "
+                "(vor der Umstellung 4 von 585)."),
         }
     return ergebnis
 
@@ -413,17 +420,22 @@ def demo() -> None:
         "Schritt 1 haette den reinen Fragmenttreffer 'noise-1' (kein GANZES "
         "Anfragewort im Text) aus dem Stichwortkanal entfernen muessen")
 
-    # Der Sockel, mit max_results=2 saettigend (Stichwortkanal hat 2 Treffer):
-    # fusion_vorher SIEHT den Bedeutungstreffer, fusion_echt nicht. Genau
-    # dieser Unterschied macht jede sockellos erhobene Zahl unvergleichbar
-    # mit dem Produktivweg.
+    # Stichwortkanal saettigt (2 Treffer bei max_results=2). Bis zum
+    # 2026-08-16 verdraengte das den reinen Bedeutungstreffer vollstaendig;
+    # seit der Umstellung von _fuse_with_keyword_floor() auf
+    # embeddings.fuse_semantic_led() kommt er durch, waehrend der BESTE
+    # Stichworttreffer garantiert bleibt.
     kennzahl = sockel_kennzahl(k, 2)
     assert kennzahl["gesaettigt"], "Stichwortkanal hat 2 Treffer, max_results=2 -- muss saettigen"
     assert "target" in fusion_vorher(k, 2), "ohne Sockel traegt der Bedeutungskanal bei"
-    assert "target" not in fusion_echt(k, 2), (
-        "gesaettigter Sockel muss den reinen Bedeutungstreffer verdraengen -- "
-        "ist er drin, misst diese Datei den Sockel nicht mehr")
-    assert kennzahl["endplaetze_nur_bedeutung"] == 0
+    assert "target" in fusion_echt(k, 2), (
+        "der Produktivweg muss den besten Bedeutungstreffer auch bei "
+        "gesaettigtem Stichwortkanal durchlassen -- faellt er heraus, ist "
+        "die Umstellung auf fuse_semantic_led() zurueckgenommen worden")
+    assert "noise-1" in fusion_echt(k, 2), (
+        "und der beste Stichworttreffer bleibt garantiert (keyword_floor_size)")
+    assert kennzahl["endplaetze_nur_bedeutung"] == 1, (
+        "genau ein Endplatz stammt allein aus dem Bedeutungskanal ('target')")
     print("demo: ok")
 
 

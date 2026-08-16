@@ -1,4 +1,16 @@
-"""Beweis, WARUM eine Aenderung an kern/embeddings.py::rrf_fuse() die
+"""BEHOBEN AM 2026-08-16 -- diese Datei bewacht jetzt die Behebung.
+
+_fuse_with_keyword_floor() ruft seither embeddings.fuse_semantic_led():
+die Bedeutungsrangliste fuehrt, garantiert ist nur noch der EINE beste
+Stichworttreffer. Anlass war die Verteilungsmessung
+(runs/kanalguete_sockel_2026-08-16.json, 4933 Knoten): der Sockel saettigte
+in 116 von 117 Anfragen, der Bedeutungskanal steuerte 4 von 585 Endplaetzen
+bei. Der unten beschriebene Zustand ist damit Vergangenheit -- er steht
+hier, weil er die Begruendung ist.
+
+--- Stand bis 2026-08-16, historisch ---
+
+Beweis, WARUM eine Aenderung an kern/embeddings.py::rrf_fuse() die
 deutsch/englisch-Asymmetrie aus Knoten d84b6b64 NICHT beheben kann.
 
 AUFTRAG 2026-08-15: rrf_fuse() gewichte den Rang im Kanal statt seine Guete
@@ -63,30 +75,61 @@ _sys.path[:0] = [str(_w), str(_w / "kern")]
 import knowledge_mcp_server as kms  # noqa: E402
 
 
-def test_floor_gesaettigt_verdraengt_embedding_treffer(monkeypatch):
-    """Leitfall nachgebaut, synthetisch: 5 reine Stichworttreffer (kein
-    Bezug zum Ziel), das Ziel liegt NUR im Bedeutungskanal, dort auf Rang 0
-    (bestmoeglich). max_results=5 -- wie der Leitfall (0 von 5)."""
+def test_alte_sockelformel_haette_verdraengt():
+    """HISTORISCH seit dem 2026-08-16: haelt fest, WAS behoben wurde.
+
+    Die alte Formel steht hier ausgeschrieben statt aufgerufen -- im
+    Produktivcode existiert sie nicht mehr. Bewiesen wird, dass sie den
+    besten Bedeutungstreffer selbst dann verworfen haette, wenn die Fusion
+    ihn auf Rang 0 legt: der Sockel schnitt VOR jeder Fusion.
+
+    Der Test bleibt, weil dieser Befund die Begruendung der Umstellung ist
+    -- ohne ihn steht in einem Jahr eine Formel im Code, deren Vorgaengerin
+    niemand mehr kennt."""
+    kw_ids = ["noise-1", "noise-2", "noise-3", "noise-4", "noise-5"]
+    emb_ids = ["target", "noise-1", "noise-3", "noise-5", "noise-2"]
+    max_results = 5
+
+    # Staerkstmoegliche Bedeutungs-fuehrt-Fusion: Stichwortkanal
+    # vollstaendig ignoriert. Staerker geht nicht.
+    fused = list(emb_ids)
+    floor = kw_ids[:max_results]
+    alt = list(dict.fromkeys(floor + fused))[:max(max_results, len(floor))]
+
+    assert "target" not in alt, (
+        "Die alte Sockelformel haette 'target' selbst bei staerkster "
+        "Bedeutungs-Gewichtung verworfen -- ist das hier nicht mehr so, "
+        "wurde die historische Formel falsch nachgeschrieben."
+    )
+    assert alt == kw_ids, "alte Formel war bei Saettigung 1:1 die Stichwortliste"
+
+
+def test_bedeutungstreffer_ueberlebt_gesaettigten_stichwortkanal():
+    """Die ABNAHME der Sockel-Behebung (2026-08-16), rot vor der Aenderung.
+
+    Derselbe Aufbau wie test_floor_gesaettigt_verdraengt_embedding_treffer,
+    aber OHNE monkeypatch: echtes rrf_fuse, echter Aufrufweg. Gemessen am
+    2026-08-16 saettigt der Stichwortkanal in 116 von 117 Anfragen
+    (runs/kanalguete_sockel_2026-08-16.json) -- dieser Fall ist damit nicht
+    der Sonderfall, sondern der Normalfall des Betriebs.
+
+    Ein Bedeutungstreffer auf Rang 0 MUSS ins Ergebnis, sonst ist der
+    zweite Suchkanal abgeschaltet."""
     kw_ids = ["noise-1", "noise-2", "noise-3", "noise-4", "noise-5"]
     emb_ids = ["target", "noise-1", "noise-3", "noise-5", "noise-2"]
 
-    # Extremstmoegliche Bedeutungs-fuehrt-Variante: rrf_fuse() ignoriert den
-    # Stichwortkanal komplett und liefert reine Embedding-Reihenfolge --
-    # staerker als jede in kern/embeddings.py denkbare Gewichtung.
-    monkeypatch.setattr(kms.embeddings, "rrf_fuse", lambda kw, emb, **_: list(emb))
-
     ergebnis = kms._fuse_with_keyword_floor(kw_ids, emb_ids, max_results=5)
 
-    assert "target" not in ergebnis, (
-        "Der Sockel (floor = keyword_ordered_ids[:max_results]) haette bei "
-        "5 Stichworttreffern und max_results=5 ALLE Plaetze aus dem "
-        "Stichwortkanal gefuellt, bevor rrf_fuse() ueberhaupt gefragt wird -- "
-        "'target' haette draussen bleiben MUESSEN, selbst mit der "
-        "staerksten denkbaren Bedeutungs-Gewichtung. Ist es doch drin, hat "
-        "sich die Sockel-Logik in _fuse_with_keyword_floor() geaendert und "
-        "dieser Befund ist zu pruefen."
+    assert "target" in ergebnis, (
+        "Der beste Bedeutungstreffer faellt bei gesaettigtem Stichwortkanal "
+        "heraus -- genau der Zustand, den die Umstellung auf "
+        "embeddings.fuse_semantic_led() beheben sollte."
     )
-    assert ergebnis == kw_ids, "Sockel haette bei Saettigung 1:1 die Stichwortliste sein muessen"
+    assert kw_ids[0] in ergebnis, (
+        "Der beste Stichworttreffer muss weiterhin garantiert sein "
+        "(keyword_floor_size(), Vorgabe 1) -- sonst ist der Stichwortkanal "
+        "statt des Bedeutungskanals abgeschaltet, derselbe Fehler gespiegelt."
+    )
 
 
 def test_floor_nicht_gesaettigt_laesst_embedding_treffer_durch():
@@ -107,14 +150,9 @@ def test_floor_nicht_gesaettigt_laesst_embedding_treffer_durch():
 
 
 if __name__ == "__main__":
-    test_floor_gesaettigt_verdraengt_embedding_treffer_ctx = None
-    import types
-
-    class _Ctx:
-        def setattr(self, obj, name, value):
-            setattr(obj, name, value)
-
-    test_floor_gesaettigt_verdraengt_embedding_treffer(_Ctx())
-    print("test_floor_gesaettigt_verdraengt_embedding_treffer: ok")
+    test_alte_sockelformel_haette_verdraengt()
+    print("test_alte_sockelformel_haette_verdraengt: ok")
+    test_bedeutungstreffer_ueberlebt_gesaettigten_stichwortkanal()
+    print("test_bedeutungstreffer_ueberlebt_gesaettigten_stichwortkanal: ok")
     test_floor_nicht_gesaettigt_laesst_embedding_treffer_durch()
     print("test_floor_nicht_gesaettigt_laesst_embedding_treffer_durch: ok")

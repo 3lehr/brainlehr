@@ -2003,18 +2003,33 @@ def _embedding_ranking(conn: sqlite3.Connection, kind: str, query_vec: list[floa
 
 def _fuse_with_keyword_floor(keyword_ordered_ids: list, embedding_ordered_ids: list,
                               max_results: int) -> list:
-    """RRF-Fusion, aber mit garantiertem Stichwort-Sockel: jede der Top-
-    max_results Stichworttreffer-IDs bleibt im Ergebnis, egal wie das
-    Embedding-Ranking ausfaellt (Abnahme-Kriterium "kein Stichworttreffer geht
-    verloren"). Ohne Embedding-Treffer (leere Liste, z.B. Ollama nicht
-    erreichbar oder Tabelle fehlt) reproduziert das exakt die bisherige
-    Stichwort-Reihenfolge, da dict.fromkeys() den Sockel unveraendert vorn
-    haelt und `fused` in diesem Fall ohnehin identisch mit
-    keyword_ordered_ids ist."""
+    """Verschmilzt Stichwort- und Bedeutungskanal. Der Name ist historisch:
+    bis zum 2026-08-16 reservierte diese Funktion die Top-max_results
+    Stichworttreffer unbedingt (der "Sockel"), danach erst kam die Fusion.
+
+    UMGESTELLT 2026-08-16 auf embeddings.fuse_semantic_led(), weil der
+    Sockel gemessen NICHT der Ausnahmefall war, fuer den er gebaut wurde:
+    er saettigte in 116 von 117 Anfragen, das Endergebnis war in 116 Faellen
+    byte-identisch mit der reinen Stichwortreihenfolge, und der
+    Bedeutungskanal steuerte 4 von 585 Endplaetzen bei -- 0,7 %
+    (runs/kanalguete_sockel_2026-08-16.json, 4933 Knoten). Ursache ist der
+    Stichwortkanal selbst: die Trigramm-FTS mit OR-Verknuepfung liefert im
+    Median 4740 von 4933 Knoten, ist an dieser Stelle also kein Filter mehr
+    -- und der Sockel gab ihm trotzdem unbedingt alle Plaetze.
+
+    Das Abnahme-Kriterium von damals ("kein Stichworttreffer geht verloren")
+    bleibt in abgeschwaechter, gemessen tragfaehiger Form: der BESTE
+    Stichworttreffer ist weiter garantiert (embeddings.keyword_floor_size(),
+    Vorgabe 1, per KNOWLEDGE_KEYWORD_FLOOR uebersteuerbar), die uebrigen
+    fuellen auf, was die Bedeutungsrangliste frei laesst. Nichts geht
+    verloren, nur die Reihenfolge fuehrt jetzt der andere Kanal.
+
+    Ohne Embedding-Treffer (leere Liste, z.B. Ollama nicht erreichbar oder
+    Tabelle fehlt) liefert fuse_semantic_led() die reine
+    Stichwort-Reihenfolge -- der Rueckweg ist unveraendert."""
     weight = embeddings.hybrid_retrieval_weight()
-    fused = embeddings.rrf_fuse(keyword_ordered_ids, embedding_ordered_ids, embedding_weight=weight)
-    floor = keyword_ordered_ids[:max_results]
-    return list(dict.fromkeys(floor + fused))[:max(max_results, len(floor))]
+    return embeddings.fuse_semantic_led(keyword_ordered_ids, embedding_ordered_ids,
+                                         max_results, embedding_weight=weight)
 
 
 # Deutsche Umlaut-Faltung: ae/oe/ue/ss-Schreibung UND ä/ö/ü/ß treffen sich.
