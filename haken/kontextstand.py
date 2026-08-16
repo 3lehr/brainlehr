@@ -13,8 +13,15 @@ Assistenten, und zwar nach sechzehn Stunden.
 WARUM DAS ZAEHLT: Laeuft das Fenster ueber, wird verdichtet. Die Verdichtung
 ist verlustbehaftet und trifft zuerst die Belege -- gemessene Zahlen,
 Fundstellen, verworfene Wege. Was bleibt, ist die Zusammenfassung, und die
-liest sich genauso sicher wie das Original. Wer rechtzeitig uebergibt,
-entscheidet SELBST, was in die Uebergabe kommt.
+liest sich genauso sicher wie das Original.
+
+WAS DIE MELDUNG DESHALB VERLANGT -- und was NICHT: Sie verlangt, den
+dauerhaften Ertrag der Sitzung ABZULEGEN, nicht die Sitzung zu beenden.
+Betreiberregel vom 2026-08-16, woertlich: "uebergabe nur bei themenwechsel
+haben wir gesagt, ansonsten nur wissen in brainlehr festhalten, was im
+normalfall ja waehrend des chates schon passieren sollte". Die erste Fassung
+dieses Melders forderte "JETZT uebergeben" und war damit falsch: ein volles
+Fenster ist ein Grund zu SICHERN, kein Grund aufzuhoeren.
 
 DIE ZAHL IST EIN ZUSTAND, KEINE SUMME. `input_tokens + cache_read +
 cache_creation` der LETZTEN Anfrage ist der Fuellstand; die Summe ueber alle
@@ -80,12 +87,13 @@ def satz(stand: int, fenster: int) -> str | None:
     anteil = stand / fenster
     if anteil >= DRINGEND:
         return (f"Kontextfenster zu {anteil:.0%} voll ({stand:,} von {fenster:,}). "
-                f"JETZT uebergeben: Startprompt schreiben, offene Belege sichern, "
-                f"dann neue Sitzung. Nach der Verdichtung sind die Zahlen weg.")
+                f"Pruefen, ob JEDER dauerhafte Fund dieser Sitzung im Speicher steht -- "
+                f"nach der Verdichtung sind die Zahlen weg. Ein Startprompt nur bei "
+                f"Themenwechsel; sonst weiterarbeiten.")
     if anteil >= WARNUNG:
         return (f"Kontextfenster zu {anteil:.0%} voll ({stand:,} von {fenster:,}). "
-                f"Guter Zeitpunkt, die Uebergabe zu schreiben, solange die Belege "
-                f"noch vollstaendig im Kontext stehen.")
+                f"Guter Zeitpunkt, offene Funde abzulegen, solange die Belege noch "
+                f"vollstaendig im Kontext stehen.")
     return None
 
 
@@ -95,12 +103,16 @@ def demo() -> None:
     assert satz(500_000, 1_000_000) is None, "die Haelfte ist kein Anlass"
     assert satz(740_000, 1_000_000) is None, "knapp unter der Schwelle: still"
     w = satz(760_000, 1_000_000)
-    assert w and "Uebergabe zu schreiben" in w, w
+    assert w and "abzulegen" in w, w
     d = satz(920_000, 1_000_000)
-    assert d and "JETZT uebergeben" in d, d
-    # Der Satz nennt die Handlung, nicht nur die Zahl.
+    assert d and "im Speicher steht" in d, d
+    # Der Satz nennt die Handlung, nicht nur die Zahl -- und die Handlung ist
+    # SICHERN, nicht aufhoeren. Ein Melder, der bei vollem Fenster zum Abbruch
+    # raet, widerspricht der Betreiberregel (Uebergabe nur bei Themenwechsel).
     for m in (w, d):
-        assert "uebergeben" in m.lower() or "uebergabe" in m.lower(), m
+        assert "ablegen" in m.lower() or "abzulegen" in m.lower() or "speicher" in m.lower(), m
+    assert "JETZT uebergeben" not in d, (
+        "ein volles Fenster ist ein Grund zu sichern, kein Grund aufzuhoeren")
     print("demo: ok", file=sys.stderr)
 
 
