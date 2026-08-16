@@ -98,6 +98,59 @@ def pruefe(prompt: str) -> str | None:
     return None
 
 
+# ---------------------------------------------------------------------------
+# ZWEITE REGEL, seit 2026-08-16: Bestandsangabe ohne Widerspruchsrecht.
+# Bindende Quelle: Knoten b5604a62 (Rang 1) -- "Wissen aus dem Kontextfenster
+# ist eine Erinnerung, keine Quelle". Plan:
+# docs/PLAN_ERINNERUNG_KEINE_QUELLE_2026-08-16.md
+#
+# WARUM GERADE HIER: Ein Subagent liest ausschliesslich seinen Auftrag. Was der
+# Orchestrator aus seinem Kontext hineinschreibt, wird dort zur PRAEMISSE und
+# kommt als "Ergebnis" zurueck -- mit der Autoritaet eines fremden Befunds.
+#
+# WAS NICHT GEPRUEFT WIRD, und das ist die Entscheidung des Plans (§3): ob eine
+# Angabe stimmt, und ob sie Erinnerung oder Ableitung ist. Beides ist
+# maschinell nicht trennbar, und jeder Versuch haelt jede zweite Aussage an.
+# Geprueft wird stattdessen, ob der Empfaenger ERMAECHTIGT ist, ihr zu
+# widersprechen. Der Vorbehalt verwandelt eine veraltete Beschreibung von einer
+# Fehlerquelle in einen BEFUND -- unabhaengig davon, woher sie kam.
+_BESTANDSANGABE = re.compile(
+    r"\b[\w./-]+\.(?:py|swift|js|ts|dart|sh|sql|json|md|yaml|yml|toml)\b"   # Dateipfad
+    r"|\bcommit\s+[0-9a-f]{7,40}\b"                                         # Commit
+    r"|\bzeile\s+\d+|§\s*\d+|\bparagraph\s+\d+"                             # Fundstelle
+    r"|\b\d+\s*(?:von|/)\s*\d+\b",                                          # "23 von 35"
+    re.IGNORECASE,
+)
+
+# Der Vorbehalt in seinen gaengigen Formen. Wortlaut aus b5604a62, dazu die
+# Varianten, die im Bestand tatsaechlich vorkommen ("Sieht der Code anders aus
+# als hier beschrieben, halte dich an den Code und melde die Abweichung." --
+# Hausregel "Auftraege an Agenten sind Schnappschuesse").
+_VORBEHALT = re.compile(
+    r"anders\s+aus\s+als\s+(hier\s+)?beschrieben"
+    r"|halte\s+dich\s+an\s+(den|das|die)\s+(code|bestand|vorgefundene|lage)"
+    r"|melde\s+die\s+abweichung"
+    r"|gilt\s+der\s+code"
+    r"|was\s+du\s+vorfindest",
+    re.IGNORECASE,
+)
+
+
+def pruefe_vorbehalt(prompt: str) -> str | None:
+    """Liefert die erste ungeschuetzte Bestandsangabe -- sonst None.
+
+    Reine Funktion wie `pruefe`, damit beide Regeln einzeln pruefbar bleiben und
+    der Haken ein duenner Wrapper darum bleibt (Walkthrough-Doktrin)."""
+    if not prompt:
+        return None
+    treffer = _BESTANDSANGABE.search(prompt)
+    if not treffer:
+        return None  # keine Behauptung ueber den Bestand -- nichts zu schuetzen
+    if _VORBEHALT.search(prompt):
+        return None
+    return treffer.group(0)
+
+
 def main() -> int:
     try:
         daten = json.load(sys.stdin)
@@ -108,21 +161,33 @@ def main() -> int:
     prompt = ((daten.get("tool_input") or {}).get("prompt")) or ""
     try:
         fund = pruefe(prompt)
+        fund_vorbehalt = None if fund else pruefe_vorbehalt(prompt)
     except Exception:
         return 0
-    if not fund:
+    if fund:
+        grund = (
+            "Auftragshypothese-Waechter: Der Auftrag verlangt eine Messung/Pruefung "
+            f"und nennt zugleich ein vorweggenommenes Ergebnis ('{fund.strip()}'). "
+            "Fakten als Ausgangslage sind erlaubt, die eigene Hypothese des "
+            "Auftraggebers nicht -- es sei denn, sie ist ausdruecklich als zu "
+            "widerlegen markiert."
+        )
+    elif fund_vorbehalt:
+        grund = (
+            f"Erinnerung-keine-Quelle (Rang 1, Knoten b5604a62): Der Auftrag setzt eine "
+            f"Bestandsangabe ('{fund_vorbehalt.strip()}'), ohne dem Agenten das Recht zu "
+            "geben, ihr zu widersprechen. Er liest nur diesen Text -- was hier steht, wird "
+            "seine Praemisse und kommt als 'Ergebnis' zurueck. Ergaenze den Satz: 'Sieht "
+            "der Bestand anders aus als hier beschrieben, halte dich an den Bestand und "
+            "melde die Abweichung.'"
+        )
+    else:
         return 0
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "ask",
-            "permissionDecisionReason": (
-                "Auftragshypothese-Waechter: Der Auftrag verlangt eine Messung/Pruefung "
-                f"und nennt zugleich ein vorweggenommenes Ergebnis ('{fund.strip()}'). "
-                "Fakten als Ausgangslage sind erlaubt, die eigene Hypothese des "
-                "Auftraggebers nicht -- es sei denn, sie ist ausdruecklich als zu "
-                "widerlegen markiert."
-            ),
+            "permissionDecisionReason": grund,
         }
     }))
     return 0
@@ -227,6 +292,60 @@ def selftest() -> None:
     assert hso["permissionDecision"] == "ask"
     assert "vermutlich liegt es an" in hso["permissionDecisionReason"].lower()
     print("  echte Hakeneingabe ueber stdin -> gueltiges PreToolUse-JSON, permissionDecision=ask ok")
+
+    # ---- Zweite Regel: Bestandsangabe ohne Widerspruchsrecht (b5604a62) ----
+
+    # 7) POSITIV: Auftrag nennt eine Datei, gibt aber kein Widerspruchsrecht.
+    ohne_vorbehalt = (
+        "Erweitere kern/embeddings.py um eine zweite Einbettung je Knoten. "
+        "Die Funktion fuse_semantic_led() ist der Aufrufer."
+    )
+    f7 = pruefe_vorbehalt(ohne_vorbehalt)
+    assert f7 is not None, "Bestandsangabe ohne Vorbehalt muss gemeldet werden"
+    assert f7.endswith(".py"), f7
+    print("  Vorbehalt fehlt bei genannter Datei -> gemeldet ok, Fund:", repr(f7))
+
+    # 8) NEGATIVFALL, derselbe Auftrag MIT Vorbehalt -> nicht gemeldet. Das ist
+    # die Gegenprobe in die andere Richtung: ohne sie wuerde die Regel auch
+    # dann gruen aussehen, wenn sie einfach alles meldet.
+    mit_vorbehalt = ohne_vorbehalt + (
+        " Sieht der Bestand anders aus als hier beschrieben, halte dich an den "
+        "Bestand und melde die Abweichung."
+    )
+    assert pruefe_vorbehalt(mit_vorbehalt) is None, \
+        "mit Vorbehalt darf derselbe Auftrag nicht mehr gemeldet werden"
+    print("  derselbe Auftrag mit Vorbehalt -> nicht gemeldet ok")
+
+    # 9) Grenzwert: Auftrag OHNE jede Bestandsangabe braucht keinen Vorbehalt.
+    # Ohne diese Grenze meldet die Regel jeden zweiten Auftrag und wird
+    # abgeschaltet -- die Fehlerklasse, an der Wachen sterben.
+    ohne_angabe = "Schreibe eine kurze Zusammenfassung dieser drei Absaetze."
+    assert pruefe_vorbehalt(ohne_angabe) is None, \
+        "ein Auftrag ohne Bestandsangabe traegt keine Praemisse, die veralten kann"
+    print("  Grenzwert: keine Bestandsangabe -> nicht gemeldet ok")
+
+    # 10) Die Hausregel-Form ("Sieht der Code anders aus ... gilt der Code")
+    # muss ebenfalls schuetzen -- sonst meldet die Regel ausgerechnet die
+    # Auftraege, die es richtig machen.
+    hausregel_form = (
+        "Pruefe melder/ablaufpflicht.py. Sieht der Code anders aus als hier "
+        "beschrieben, gilt der Code."
+    )
+    assert pruefe_vorbehalt(hausregel_form) is None, hausregel_form
+    print("  Hausregel-Wortlaut schuetzt ebenfalls ok")
+
+    # 11) Beide Regeln zusammen: Hypothese hat Vorrang in der Meldung, damit
+    # nicht zwei Gruende fuer denselben Auftrag erscheinen.
+    beides = "Pruefe kern/speicher.py. Vermutlich liegt es an der Pfadaufloesung."
+    assert pruefe(beides) is not None and pruefe_vorbehalt(beides) is not None
+    lauf3 = subprocess.run(
+        [sys.executable, __file__],
+        input=json.dumps({"tool_name": "Agent", "tool_input": {"prompt": beides}}),
+        capture_output=True, text=True, timeout=30,
+    )
+    grund3 = json.loads(lauf3.stdout)["hookSpecificOutput"]["permissionDecisionReason"]
+    assert "vorweggenommenes Ergebnis" in grund3 and "b5604a62" not in grund3, grund3
+    print("  beide Regeln treffen -> genau EIN Grund, Hypothese zuerst ok")
 
     print("selftest ok")
 
