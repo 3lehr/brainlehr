@@ -1,0 +1,116 @@
+{
+  "_kopf": {
+    "was": "Der Ablauf, den dieses Haus beim Bauen tatsächlich fährt — deklariert statt implizit.",
+    "warum": [
+      "Linie B aus docs/PLAN_DOKUMENTABLAGE_2026-08-16.md. Der Abgleich mit dem Morpheus-Video",
+      "(Knoten ad37ff12) ergab: ein Quality Gate existiert, ein deklarierter Ablaufgraph nicht.",
+      "Unsere Abläufe lagen verteilt über Hausregeln, Haken und Gewohnheit — deshalb konnte keine",
+      "Karte sie zeigen. Wer einen Ablauf zeichnen will, muss ihn zuerst haben."
+    ],
+    "die_entscheidende_spalte": [
+      "`belegt_durch` nennt den Mechanismus, der den Schritt DURCHSETZT — nicht die Regel, die ihn",
+      "fordert. Ein Schritt ohne Beleg ist eine Absicht: er passiert, wenn jemand daran denkt.",
+      "Genau diese Unterscheidung ist der Grund für die Datei. Sie wird nicht geschönt."
+    ],
+    "gepflegt": "von Hand. Der Graph ist eine ENTSCHEIDUNG, kein Messwert — er wird nicht erzeugt.",
+    "gezeichnet_von": "melder/landkarten.py (Karte 'ablauf')"
+  },
+
+  "schritte": [
+    {
+      "kennung": "auftrag",
+      "name": "Auftrag",
+      "art": "mensch",
+      "beschreibung": "Der Betreiber sagt, was gebraucht wird.",
+      "belegt_durch": []
+    },
+    {
+      "kennung": "existenzprobe",
+      "name": "Existenzprobe",
+      "art": "modell",
+      "beschreibung": "Gibt es das schon? Gesucht wird nach der SACHE, nicht nach der Kennung — im Repo, nicht im Plan.",
+      "belegt_durch": ["haken/existenzpruefung.py"],
+      "anlass": "L-229bb2: fünfmal an einem Tag ein Agent auf bereits Gebautes angesetzt."
+    },
+    {
+      "kennung": "plan",
+      "name": "Plan",
+      "art": "modell",
+      "beschreibung": "Ab mehr als einer Datei, echten Alternativen oder Delegation: gemessener Ist-Stand, verworfene Wege, bindende Reihenfolge, was NICHT getan wird, Erfolgsmaß.",
+      "belegt_durch": [],
+      "anlass": "Betreiberanweisung 2026-08-12: „es darf nie wieder passieren, dass wir sowas ohne plan bauen!\"",
+      "luecke": "Kein Mechanismus. Am 2026-08-12 gemessen: ein Agentenauftrag über drei Dateien ohne Plan lief durch beide Wächter, beide exit 0."
+    },
+    {
+      "kennung": "bauen",
+      "name": "Bauen",
+      "art": "modell",
+      "beschreibung": "Kleinste Fassung, die trägt. Neuer Code walkthrough-fähig.",
+      "belegt_durch": ["hub/scripts/monolith_guard.py"]
+    },
+    {
+      "kennung": "gate",
+      "name": "Quality Gate",
+      "art": "mechanik",
+      "beschreibung": "Tests, Selbsttests, Wächter. KEIN Modell — deshalb billig und deshalb VOR den teuren Prüfern.",
+      "belegt_durch": [
+        "hub/scripts/quality_gate_hook.py",
+        "melder/kartenstand.py",
+        "melder/dokumentzugang.py",
+        "hub/scripts/push_guard.py"
+      ]
+    },
+    {
+      "kennung": "beleg",
+      "name": "Rot vor Grün",
+      "art": "modell",
+      "beschreibung": "Eine Prüfung, die VOR der Änderung fehlschlug und danach besteht — auf der Ebene, auf der der Fehler lebte.",
+      "belegt_durch": [],
+      "luecke": "Kein Mechanismus. Die Rot-Probe ist heute Disziplin; niemand prüft, ob sie gefahren wurde."
+    },
+    {
+      "kennung": "ablegen",
+      "name": "Ablegen",
+      "art": "modell",
+      "beschreibung": "Was dauerhaft gilt, kommt in den Speicher — nicht nur in eine Datei.",
+      "belegt_durch": ["haken/knowledge_capture_hook.py", "melder/dokumentzugang.py"]
+    },
+    {
+      "kennung": "commit",
+      "name": "Commit",
+      "art": "modell",
+      "beschreibung": "Eine Sache je Commit. Die Nachricht nennt das WARUM.",
+      "belegt_durch": ["hub/scripts/commit_guard_hook.py"]
+    },
+    {
+      "kennung": "aussen",
+      "name": "Nach außen",
+      "art": "mensch",
+      "beschreibung": "Push. Braucht das ausdrückliche Wort des Betreibers.",
+      "belegt_durch": ["hub/scripts/push_guard.py"]
+    }
+  ],
+
+  "kanten": [
+    { "von": "auftrag",       "nach": "existenzprobe", "bedingung": "" },
+    { "von": "existenzprobe", "nach": "plan",          "bedingung": "gibt es nicht" },
+    { "von": "existenzprobe", "nach": "commit",        "bedingung": "gibt es schon" },
+    { "von": "plan",          "nach": "bauen",         "bedingung": "" },
+    { "von": "bauen",         "nach": "gate",          "bedingung": "" },
+    { "von": "gate",          "nach": "bauen",         "bedingung": "ROT — zurück, ohne Prüfer" },
+    { "von": "gate",          "nach": "beleg",         "bedingung": "grün" },
+    { "von": "beleg",         "nach": "bauen",         "bedingung": "kein Beleg möglich" },
+    { "von": "beleg",         "nach": "ablegen",       "bedingung": "belegt" },
+    { "von": "ablegen",       "nach": "commit",        "bedingung": "" },
+    { "von": "commit",        "nach": "auftrag",       "bedingung": "nächster Schritt" },
+    { "von": "commit",        "nach": "aussen",        "bedingung": "auf ausdrückliches Wort" }
+  ],
+
+  "_noch_nicht": {
+    "parallele_pruefer": [
+      "Im Morpheus-Video laufen mehrere Prüfer-Agenten GLEICHZEITIG und melden gesammelt zurück,",
+      "statt in einer Kette von Runden (dort: Faktor 4, seine Messung an seinem Aufbau).",
+      "Hier nicht gebaut — der Ablauf muss erst stehen und geprüft sein."
+    ]
+  }
+}

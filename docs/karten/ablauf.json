@@ -1,0 +1,161 @@
+{
+ "kennung": "ablauf",
+ "titel": "Der eigene Ablauf — und wo er nur Absicht ist",
+ "knoten": [
+  {
+   "id": "ablegen",
+   "text": "Ablegen",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Was dauerhaft gilt, kommt in den Speicher — nicht nur in eine Datei.",
+   "entscheidet": false,
+   "quelle": "haken/knowledge_capture_hook.py, melder/dokumentzugang.py"
+  },
+  {
+   "id": "auftrag",
+   "text": "Auftrag",
+   "form": "startweg",
+   "waise": true,
+   "zweck": "Der Betreiber sagt, was gebraucht wird.",
+   "entscheidet": false,
+   "quelle": "kein Mechanismus"
+  },
+  {
+   "id": "aussen",
+   "text": "Nach außen",
+   "form": "startweg",
+   "waise": false,
+   "zweck": "Push. Braucht das ausdrückliche Wort des Betreibers.",
+   "entscheidet": false,
+   "quelle": "hub/scripts/push_guard.py"
+  },
+  {
+   "id": "bauen",
+   "text": "Bauen",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Kleinste Fassung, die trägt. Neuer Code walkthrough-fähig.",
+   "entscheidet": false,
+   "quelle": "hub/scripts/monolith_guard.py"
+  },
+  {
+   "id": "beleg",
+   "text": "Rot vor Grün",
+   "form": "kasten",
+   "waise": true,
+   "zweck": "Eine Prüfung, die VOR der Änderung fehlschlug und danach besteht — auf der Ebene, auf der der Fehler lebte.",
+   "entscheidet": false,
+   "quelle": "kein Mechanismus"
+  },
+  {
+   "id": "commit",
+   "text": "Commit",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Eine Sache je Commit. Die Nachricht nennt das WARUM.",
+   "entscheidet": false,
+   "quelle": "hub/scripts/commit_guard_hook.py"
+  },
+  {
+   "id": "existenzprobe",
+   "text": "Existenzprobe",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Gibt es das schon? Gesucht wird nach der SACHE, nicht nach der Kennung — im Repo, nicht im Plan.",
+   "entscheidet": false,
+   "quelle": "haken/existenzpruefung.py"
+  },
+  {
+   "id": "gate",
+   "text": "Quality Gate",
+   "form": "port",
+   "waise": false,
+   "zweck": "Tests, Selbsttests, Wächter. KEIN Modell — deshalb billig und deshalb VOR den teuren Prüfern.",
+   "entscheidet": true,
+   "quelle": "hub/scripts/quality_gate_hook.py, melder/kartenstand.py, melder/dokumentzugang.py, hub/scripts/push_guard.py"
+  },
+  {
+   "id": "plan",
+   "text": "Plan",
+   "form": "kasten",
+   "waise": true,
+   "zweck": "Ab mehr als einer Datei, echten Alternativen oder Delegation: gemessener Ist-Stand, verworfene Wege, bindende Reihenfolge, was NICHT getan wird, Erfolgsmaß.",
+   "entscheidet": false,
+   "quelle": "kein Mechanismus"
+  }
+ ],
+ "kanten": [
+  {
+   "von": "auftrag",
+   "nach": "existenzprobe",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "existenzprobe",
+   "nach": "plan",
+   "text": "gibt es nicht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "existenzprobe",
+   "nach": "commit",
+   "text": "gibt es schon",
+   "art": "gerichtet"
+  },
+  {
+   "von": "plan",
+   "nach": "bauen",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "bauen",
+   "nach": "gate",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "gate",
+   "nach": "bauen",
+   "text": "ROT — zurück, ohne Prüfer",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "gate",
+   "nach": "beleg",
+   "text": "grün",
+   "art": "gerichtet"
+  },
+  {
+   "von": "beleg",
+   "nach": "bauen",
+   "text": "kein Beleg möglich",
+   "art": "gerichtet"
+  },
+  {
+   "von": "beleg",
+   "nach": "ablegen",
+   "text": "belegt",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ablegen",
+   "nach": "commit",
+   "text": "",
+   "art": "gerichtet"
+  },
+  {
+   "von": "commit",
+   "nach": "auftrag",
+   "text": "nächster Schritt",
+   "art": "gerichtet"
+  },
+  {
+   "von": "commit",
+   "nach": "aussen",
+   "text": "auf ausdrückliches Wort",
+   "art": "gerichtet"
+  }
+ ]
+}

@@ -274,6 +274,54 @@ def karte_agenten() -> tuple[str, str, str]:
                            f"hängt, kann nichts auslösen.\n")
 
 
+# ── Karte 6: der eigene Ablauf ────────────────────────────────────────────
+
+def karte_ablauf() -> tuple[str, str, str]:
+    """Der deklarierte Ablauf aus docs/ablauf.json.
+
+    Die EINZIGE Karte, deren Quelle von Hand gepflegt wird -- und das ist
+    Absicht: ein Ablauf ist eine ENTSCHEIDUNG, kein Messwert. Man kann ihn
+    nicht aus dem Quelltext ableiten, sonst zeichnet man ab, was passiert,
+    statt was gelten soll.
+
+    Was die Karte dafuer zeigt und keine andere kann: welcher Schritt einen
+    MECHANISMUS hat und welcher blosse Absicht ist. Ein Schritt ohne Beleg
+    passiert, wenn jemand daran denkt -- gestrichelt gezeichnet, damit die
+    Luecke im Bild steht und nicht in einer Fussnote."""
+    quelle = _w / "docs" / "ablauf.json"
+    if not quelle.exists():
+        return ("ablauf", "Der eigene Ablauf", "_docs/ablauf.json fehlt._\n")
+    d = json.loads(quelle.read_text(encoding="utf-8"))
+    form = {"mensch": ('>"', '"]'), "mechanik": ('(["', '"])'), "modell": ('["', '"]')}
+    z = ["```mermaid", "graph LR"]
+    ohne_beleg = []
+    for s in d["schritte"]:
+        auf, zu = form.get(s["art"], ('["', '"]'))
+        z.append(f'  {s["kennung"]}{auf}{s["name"]}{zu}')
+        if not s.get("belegt_durch"):
+            z.append(f'  class {s["kennung"]} waise')
+            ohne_beleg.append(s["name"])
+    for k in d["kanten"]:
+        strich = "-.->" if k["bedingung"].startswith("ROT") else "-->"
+        beschriftung = f'|{k["bedingung"]}|' if k["bedingung"] else ""
+        z.append(f'  {k["von"]} {strich}{beschriftung} {k["nach"]}')
+    z.append("  classDef waise stroke-dasharray: 5 5")
+    z.append("```")
+
+    for s in d["schritte"]:
+        ERKLAERUNGEN[s["kennung"]] = {
+            "zweck": s["beschreibung"],
+            "entscheidet": s["art"] == "mechanik",
+            "quelle": ", ".join(s.get("belegt_durch") or []) or "kein Mechanismus",
+        }
+
+    text = "\n".join(z) + (
+        f"\n\nGestrichelt = **kein Mechanismus setzt diesen Schritt durch**. "
+        f"{len(ohne_beleg)} von {len(d['schritte'])} Schritten sind heute blosse Absicht: "
+        + ", ".join(ohne_beleg) + ".\n")
+    return ("ablauf", "Der eigene Ablauf — und wo er nur Absicht ist", text)
+
+
 # ── Karte 3: Code-Struktur je Repo ────────────────────────────────────────
 
 def _modul(pfad: Path, wurzel: Path) -> str:
@@ -404,7 +452,7 @@ def karte_bestand() -> tuple[str, str, str]:
 # ── Ablage ────────────────────────────────────────────────────────────────
 
 def alle(repos_fuer_code: list[str]) -> list[tuple[str, str, str]]:
-    karten = [karte_verbund(), karte_anwendung(), karte_agenten(), karte_bestand()]
+    karten = [karte_verbund(), karte_ablauf(), karte_anwendung(), karte_agenten(), karte_bestand()]
     karten += [karte_code(r) for r in repos_fuer_code]
     return karten
 
