@@ -176,7 +176,7 @@ def test_gespeicherte_regel_traegt_wirkung_null(frische_db):
     ergebnis = speichere(paket, db=frische_db)
 
     assert ergebnis["angenommen"] is True
-    assert ergebnis["gespeichert"] == 3  # Wurzel + 1 Quelle + 1 Regel
+    assert ergebnis["gespeichert"] == 4  # Wurzel + 1 Quelle + 1 Regel + Oberflaeche
     assert ergebnis["uebersprungen"] == 0
 
     conn = sqlite3.connect(str(frische_db))
@@ -209,7 +209,7 @@ def test_paket_norm_rang_feld_wird_nie_gelesen(frische_db):
     paket = _paket(regeln)
 
     ergebnis = speichere(paket, db=frische_db)
-    assert ergebnis["gespeichert"] == 3
+    assert ergebnis["gespeichert"] == 4  # +Oberflaeche
 
     conn = sqlite3.connect(str(frische_db))
     row = conn.execute(
@@ -240,7 +240,7 @@ def test_leeres_paket_wird_ohne_regeln_gespeichert(frische_db):
     ergebnis = speichere(paket, db=frische_db)
 
     assert ergebnis["angenommen"] is True
-    assert ergebnis["gespeichert"] == 1  # nur die Wurzel der Domaene
+    assert ergebnis["gespeichert"] == 2  # Wurzel + Oberflaeche (leer, aber vorhanden)
     assert ergebnis["uebersprungen"] == 0
 
 
@@ -249,14 +249,14 @@ def test_doppelter_import_ist_idempotent_und_ueberschreibt_inkraftgesetzte_regel
     paket = _paket(regeln)
 
     erster = speichere(paket, db=frische_db)
-    assert erster["gespeichert"] == 3 and erster["uebersprungen"] == 0
+    assert erster["gespeichert"] == 4 and erster["uebersprungen"] == 0
 
     geaendert = setze_in_kraft("steuer", "Betreiber", "von Hand geprueft", norm_rang=3, db=frische_db)
     assert geaendert == 1
 
     zweiter = speichere(paket, db=frische_db)
     assert zweiter["gespeichert"] == 0
-    assert zweiter["uebersprungen"] == 3
+    assert zweiter["uebersprungen"] == 4  # + Oberflaeche, ebenfalls idempotent
 
     conn = sqlite3.connect(str(frische_db))
     row = conn.execute(
@@ -472,7 +472,7 @@ def test_zwei_regeln_mit_derselben_quelle_bleiben_erlaubt(frische_db):
     ergebnis = speichere(paket, db=frische_db)
 
     assert ergebnis["angenommen"] is True
-    assert ergebnis["gespeichert"] == 4  # Wurzel + 1 Quelle + 2 Regeln
+    assert ergebnis["gespeichert"] == 5  # Wurzel + 1 Quelle + 2 Regeln + Oberflaeche
 
 
 def test_mutationsprobe_bestandspruefung_von_hand_gefahren(tmp_path, frische_db):
@@ -643,7 +643,7 @@ def test_rundlauf_export_import_auf_leerer_instanz_ergibt_dasselbe(tmp_path, fri
 
     assert ergebnis["angenommen"] is True
     assert ergebnis["anzahl_regeln"] == 1
-    assert ergebnis["gespeichert"] == 3  # Wurzel + 1 Quelle + 1 Regel
+    assert ergebnis["gespeichert"] == 4  # Wurzel + 1 Quelle + 1 Regel + Oberflaeche
 
     zconn = sqlite3.connect(str(ziel_db))
     zconn.row_factory = sqlite3.Row

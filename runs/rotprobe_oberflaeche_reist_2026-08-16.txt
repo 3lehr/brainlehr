@@ -1,0 +1,34 @@
+Rot-Probe: Oberflaeche ueberlebt den Import nicht, 2026-08-16T17:49:39+0200
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_domaene_oberflaeche_reist.py:25: in <module>
+    from kern.domaene import lies_oberflaeche, speichere
+E   ImportError: cannot import name 'lies_oberflaeche' from 'kern.domaene' (/Volumes/daten/Begod2026/brainlehr/kern/domaene.py)
+=========================== short test summary info ============================
+ERROR tests/test_domaene_oberflaeche_reist.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.08s
+tests/test_domaene_oberflaeche_reist.py:134: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_domaene_oberflaeche_reist.py::test_oberflaeche_ueberlebt_den_import
+FAILED tests/test_domaene_oberflaeche_reist.py::test_domaene_ohne_bildschirme_ist_kein_fehler
+FAILED tests/test_domaene_oberflaeche_reist.py::test_zwei_domaenen_stoeren_einander_nicht
+FAILED tests/test_domaene_oberflaeche_reist.py::test_zweiter_import_ueberschreibt_nicht_still
+FAILED tests/test_domaene_oberflaeche_reist.py::test_die_beschreibung_wird_unveraendert_zurueckgegeben
+5 failed, 1 passed in 1.73s
+
+ROT gegen eine ARGLOSE Fassung (lies_oberflaeche gibt None zurueck, speichere
+legt nichts ab): 5 failed, 1 passed. Der eine gruene ist die Gegenprobe
+"unbekannte Domaene liefert nichts" -- sie war gruen, WEIL nichts gespeichert
+wurde, also aus demselben Grund wie die anderen rot.
+
+GRUEN nach der Umsetzung: 6 von 6, und 60 von 60 ueber alle Domaenentests.
+
+ECHTER WEG, nicht nur Testvorlage: das Manifest von openlehr_einzelunternehmer
+durch speichere() und wieder heraus --
+  speichere: angenommen True, gespeichert 4
+  gelesen:   "Übertragung in die Anlage EÜR", 5 Spalten
+
+NACHGEZOGEN: Sechs Erwartungen in tests/test_domaene.py zaehlten die
+gespeicherten Knoten (3 -> 4, 1 -> 2, 4 -> 5, uebersprungen 3 -> 4). Die
+Aenderung ist gewollt -- ein Knoten mehr, die Oberflaeche -- und die
+Erwartungen tragen den Grund jetzt im Kommentar.

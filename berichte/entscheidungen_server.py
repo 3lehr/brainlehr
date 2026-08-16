@@ -864,6 +864,35 @@ def _domaene_import(paket: dict) -> dict:
     return domaene.speichere(paket)
 
 
+def _domaene_oberflaeche(domaene_id: str) -> dict:
+    """Die Bildschirm-Beschreibung einer IMPORTIERTEN Domaene.
+
+    Gegenstueck zu /api/domaene-import: dort reist die Beschreibung herein,
+    hier wird sie gelesen. Ohne diesen Weg muesste das atelier die
+    Manifest-DATEI im Dateisystem suchen -- genau das tat `DomaenenSeite` als
+    ausdrueckliche Bruecke, und damit waere der Importweg fuer die Oberflaeche
+    wirkungslos gewesen (ADR-012: das Wissenspaket reist, das Werkzeug wird
+    installiert).
+
+    Drei Antworten, weil der Aufrufer drei Lagen unterscheiden muss:
+      {"importiert": False}                     hier nicht importiert
+      {"importiert": True, "bildschirme": []}   importiert, ohne Bildschirm
+      {"importiert": True, "bildschirme": [..]} importiert, mit Beschreibung
+    Der mittlere Fall ist nach ADR-013 zulaessig -- eine Domaene darf nur
+    Wissen mitbringen. Ein leeres Ergebnis und "gar nicht da" sind fuer den
+    Menschen zwei verschiedene Saetze, deshalb hier zwei verschiedene
+    Antworten und nicht eine leere Liste fuer beides."""
+    try:
+        import domaene
+    except ImportError:
+        return {"verfuegbar": False}
+    ob = domaene.lies_oberflaeche(domaene_id)
+    if ob is None:
+        return {"importiert": False}
+    return {"importiert": True, "fassung": ob.get("fassung"),
+            "bildschirme": ob.get("bildschirme") or []}
+
+
 def _abrufweg_stand(text: str) -> dict:
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
@@ -1025,6 +1054,11 @@ class Handler(BaseHTTPRequestHandler):
                 kopf = p.read_text(encoding="utf-8").split("\n", 1)[0]
                 karten.append({"kennung": p.stem, "titel": kopf.lstrip("# ").strip() or p.stem})
             self._json({"karten": karten})
+            return
+        if self.path.startswith("/api/domaene-oberflaeche?"):
+            from urllib.parse import parse_qs, urlparse
+            kennung = (parse_qs(urlparse(self.path).query).get("domaene") or [""])[0]
+            self._json(_domaene_oberflaeche(kennung))
             return
         if self.path.startswith("/api/landkarte?"):
             from urllib.parse import parse_qs, urlparse

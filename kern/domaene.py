@@ -176,6 +176,40 @@ def pruefe(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     }
 
 
+def lies_oberflaeche(domaene_id: str, db: str | Path | None = None) -> dict[str, Any] | None:
+    """Die Bildschirm-Beschreibung einer importierten Domaene -- oder None.
+
+    WARUM DIESE FUNKTION EXISTIERT: Ohne sie ueberlebt die Oberflaeche den
+    Import nicht, und das atelier muesste die Manifest-DATEI im Dateisystem
+    suchen. Genau das tat `DomaenenSeite` als ausdrueckliche Bruecke. Damit
+    waere der Importweg fuer die Oberflaeche wirkungslos gewesen: Ein Fremder,
+    der nur das Paket bekommt (ADR-012: das Wissenspaket reist frei), haette
+    das Wissen gehabt und keinen Bildschirm.
+
+    DREI RUECKGABEN, und die Unterscheidung ist der Zweck:
+      None            die Domaene ist hier nicht importiert
+      bildschirme=[]  importiert, bringt aber keinen Bildschirm mit -- nach
+                      ADR-013 ausdruecklich zulaessig (der Teil *Wissen*
+                      "laeuft nirgends, es wird gelesen")
+      bildschirme=[…] importiert, mit Beschreibung
+
+    Zurueckgegeben wird, was die Domaene beschrieben hat -- unveraendert, ohne
+    Vorgabewerte, ohne Ergaenzung. Sonst entschiede der Speicher ueber das
+    Aussehen, und ADR-024 (die Domaene sagt WAS, das atelier entscheidet WIE)
+    waere von der falschen Seite ausgehebelt."""
+    with speicher.lesen(db) as conn:
+        zeile = conn.execute(
+            "SELECT content FROM knowledge_nodes WHERE id=?",
+            (f"domaeneoberflaeche-{domaene_id}",),
+        ).fetchone()
+    if zeile is None:
+        return None
+    try:
+        return json.loads(zeile["content"] or "{}")
+    except json.JSONDecodeError:
+        return None
+
+
 def _texte(wert: Any) -> Iterator[str]:
     """Jede Zeichenkette im Baum -- SCHLUESSEL UND WERTE gleichermassen.
     Die Unterscheidung waere hier eine Falle: die Bauform steht meist im Wert
@@ -314,6 +348,9 @@ def speichere(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     zeilen = [_wurzel_zeile(domaene_id, bezeichnung, ts)]
     zeilen += [_quelle_zeile(domaene_id, herkunft, qid, q, ts) for qid, q in paket["quellen"].items()]
     zeilen += [_regel_zeile(domaene_id, herkunft, r, ts) for r in paket["regeln"]]
+    # Die Oberflaeche reist mit -- sonst kommt beim Empfaenger das Wissen an
+    # und kein Bildschirm (ADR-012/ADR-013).
+    zeilen.append(_oberflaeche_zeile(domaene_id, herkunft, paket.get("oberflaeche"), ts))
 
     gespeichert = uebersprungen = 0
     with speicher.schreiben(db) as conn:
@@ -508,6 +545,32 @@ def _wurzel_zeile(domaene_id: str, bezeichnung: str, ts: str) -> tuple:
     )
 
 
+def _oberflaeche_zeile(domaene_id: str, herkunft: str, oberflaeche: Any, ts: str) -> tuple:
+    """Die Bildschirm-Beschreibung als EIN Knoten, nicht als viele.
+
+    Bewusst nicht je Bildschirm ein Knoten: Die Beschreibung ist ein
+    zusammenhaengendes Ganzes mit einer Fassungsnummer, und sie wird immer
+    komplett gelesen. Einzelknoten waeren nur Hierarchie ohne Leser -- derselbe
+    Grund, aus dem _wurzel_zeile keinen Ordnerknoten anlegt.
+
+    Sie traegt KEINEN Rang und keine Norm (Wirkung Null, ADR-018): eine
+    Bildschirmbeschreibung ist Darstellung, nie eine Regel."""
+    return _zeile(
+        id_=f"domaeneoberflaeche-{domaene_id}",
+        path=f"{PARENT_PREFIX}/{domaene_id}/oberflaeche",
+        parent_path=f"{PARENT_PREFIX}/{domaene_id}",
+        title=f"Bildschirme der Domaene '{domaene_id}'",
+        summary=_kuerzen(
+            f"Beschreibung von {len((oberflaeche or {}).get('bildschirme') or [])} "
+            f"Bildschirm(en). Die Domaene sagt WAS, das atelier zeichnet."),
+        content=json.dumps(oberflaeche or {}, ensure_ascii=False),
+        level=1,
+        tags=["domaenenpaket-import", f"domaene:{domaene_id}", "oberflaeche"],
+        source=f"domaenenpaket:{domaene_id}",
+        ts=ts,
+    )
+
+
 def _quelle_zeile(domaene_id: str, herkunft: str, quelle_id: str, quelle: Any, ts: str) -> tuple:
     # parent_path zeigt auf die Domaenen-Wurzel selbst, nicht auf einen
     # eigenen "quellen"-Ordnerknoten -- schema.sql verlangt (Trigger
@@ -571,4 +634,4 @@ def _abgelehnt(grund: str) -> dict[str, Any]:
     return {"angenommen": False, "anzahl_regeln": None, "bezeichnung": None, "grund": grund}
 
 
-__all__ = ["importiere", "pruefe", "speichere", "setze_in_kraft", "herkunft_uebersicht", "exportiere"]
+__all__ = ["importiere", "pruefe", "speichere", "lies_oberflaeche", "setze_in_kraft", "herkunft_uebersicht", "exportiere"]
