@@ -76,28 +76,42 @@ struct HauptFenster: View {
                     Label(eintrag.titel, systemImage: eintrag.symbol)
                         .accessibilityLabel(eintrag.titel)
                         .tag(eintrag)
-                    // Die Ansichtswahl des Wissensraums sitzt nativ direkt
-                    // unter seinem Eintrag in derselben Seitenleiste --
-                    // nicht als Knopfleiste im eingebetteten Web.
-                    if eintrag == .wissensraum && wahl.aktuell == .wissensraum {
+                }
+            }
+            .navigationTitle("Brainlehr")
+            .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+            // Die Blickwahl des Wissensraums steht UNTER der Liste, nicht
+            // darin. Bis zum 2026-08-16 lag sie im ForEach der
+            // List(selection:) und wurde dadurch selbst zur Auswahlzeile:
+            // gemessen ueber die Steuerschnittstelle warf ein Setzen des
+            // Blicks die ANSICHT auf einen fremden Eintrag ("ausweise",
+            // nach einem ersten Reparaturversuch "bearbeitung") -- die beiden
+            // Zustaende rissen einander um, und die Verbund-Ansicht war weder
+            // per Maus noch per Schnittstelle erreichbar. `selectionDisabled()`
+            // allein genuegte nicht; die Knoepfe duerfen gar nicht erst
+            // Zeilen einer auswaehlbaren Liste sein.
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if wahl.aktuell == .wissensraum {
+                    VStack(alignment: .leading, spacing: 2) {
                         ForEach(WissensraumBlick.allCases) { blick in
                             Button {
                                 wahl.blick = blick
                             } label: {
                                 Text(blick.titel)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
+                            .padding(.vertical, 4)
                             .padding(.leading, 24)
                             .foregroundStyle(blick == wahl.blick ? Color.accentColor : Color.primary)
                             .accessibilityAddTraits(blick == wahl.blick ? [.isSelected] : [])
                             .accessibilityHint("Zeigt die Ansicht \(blick.titel) im Wissensraum.")
                         }
                     }
+                    .padding(.vertical, 8)
                 }
             }
-            .navigationTitle("Brainlehr")
-            .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             VStack(spacing: 0) {
                 if wahl.aktuell == .quellen {
