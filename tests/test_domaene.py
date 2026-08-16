@@ -51,6 +51,10 @@ def _paket(regeln, quellen=None, **zusatz):
         "stand": "2026-08-14T00:00:00+0200",
         "quellen": quellen if quellen is not None else _QUELLEN,
         "regeln": regeln,
+        # Pflicht seit B1 (ADR-013: drei Teile). Leer, aber da --
+        # Anwesenheit ist der Vertrag, nicht Inhalt.
+        "dienst": {},
+        "oberflaeche": {"fassung": 1, "bildschirme": []},
     }
     basis.update(zusatz)
     return basis
@@ -155,7 +159,8 @@ def test_vertrag_gegen_das_atelier_haelt():
         gleich = domaene.pruefe(json.load(f))
     assert gleich == ergebnis
 
-    abgelehnt = domaene.pruefe({"domaene": "x", "quellen": {}, "regeln": [{"id": "Bewirtung", "ziel_id": "fehlt", "fundstelle": "nichts"}]})
+    abgelehnt = domaene.pruefe({"domaene": "x", "quellen": {}, "regeln": [{"id": "Bewirtung", "ziel_id": "fehlt", "fundstelle": "nichts"}],
+                                "dienst": {}, "oberflaeche": {"fassung": 1, "bildschirme": []}})
     assert set(abgelehnt) == {"angenommen", "anzahl_regeln", "bezeichnung", "grund"}
     assert abgelehnt["angenommen"] is False
     assert "Bewirtung" in abgelehnt["grund"]
@@ -693,6 +698,10 @@ def _paket_roh(domaene, quellen, regeln, **zusatz):
         "stand": "2026-08-15T00:00:00+0200",
         "quellen": quellen,
         "regeln": regeln,
+        # Pflicht seit B1 (ADR-013: drei Teile). Leer, aber da --
+        # Anwesenheit ist der Vertrag, nicht Inhalt.
+        "dienst": {},
+        "oberflaeche": {"fassung": 1, "bildschirme": []},
     }
     basis.update(zusatz)
     return basis

@@ -60,13 +60,43 @@ diese Datei dafuer etwas herausfiltern muss (das Feld war nie dort).
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
 from kern import speicher, zeitmarke
 from kern.belegvertrag import herkunftsart, pruefe_regeln
 
-_PFLICHTSCHLUESSEL = ("domaene", "quellen", "regeln")
+_PFLICHTSCHLUESSEL = ("domaene", "quellen", "regeln", "dienst", "oberflaeche")
+
+# -- Die drei Teile einer Domaene (ADR-013) ------------------------------
+# Das Format deckte bis zum 2026-08-16 nur *Wissen* ab. 'dienst' und
+# 'oberflaeche' stehen hier, WEIL sie Pflicht sind: ein Format nachtraeglich um
+# ein Pflichtfeld zu erweitern macht jedes bereits verteilte Repo ungueltig
+# (ADR-013). Die Reihenfolge ist das Argument, nicht die Zahl der Pakete.
+
+# Ein Startbefehl mit festem Pfad laeuft auf genau einem Rechner. Verglichen
+# wurden die beiden Startbeschreibungen im Haus: de.brainlehr.dienst benutzt
+# __REPO_PFAD__, die openlehr-Legacy-Fassung verdrahtet /Volumes/... fest
+# (ADR-023 §3). Ein Pfad wie '/gesundheit' ist KEIN Dateipfad und bleibt frei.
+_FREMDE_WURZELN = ("/Volumes/", "/Users/", "/home/", "/opt/", "/private/", "/Applications/")
+
+# Die Oberflaeche sagt WAS, nie WIE (ADR-024). Ohne diese Schranke nimmt die
+# Beschreibung die Form ihres ersten Lesers an -- und ein zweiter Zeichner
+# (Web) muesste sie nachbauen statt lesen.
+# ponytail: naive Wortsuche ueber den JSON-Text. Deckt die Bauformen ab, die
+# heute vorkommen; eine Beschreibung, die eine Bauform UMSCHREIBT statt sie zu
+# benennen, faellt nicht auf. Aufruesten, sobald der erste echte Bildschirm
+# steht (B4) -- dann gegen eine Positivliste erlaubter Rollen statt gegen eine
+# Sperrliste verbotener Bauformen.
+_BAUFORMEN = (
+    "nstableview", "nsoutlineview", "nsview", "uiview", "uikit", "appkit", "swiftui",
+    "popover", "sidebar", "modal", "toolbar", "vstack", "hstack", "zstack",
+    "scrollview", "navigationsplitview", "sheet", "div", "iframe", "css",
+)
+# Aussehen ist Sache des Zeichners, nie der Domaene -- geprueft an den
+# SCHLUESSELN, weil ein Farbwert als reine Zeichenkette sonst durchrutscht.
+_AUSSEHEN = ("farbe", "color", "font", "schrift", "_px", "pixel", "margin", "padding", "style")
 
 # -- Wirkung Null: Ort und Kennung importierter Domaenenknoten -----------
 PARENT_PREFIX = "/domaenen"
@@ -131,6 +161,10 @@ def pruefe(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     if fehler:
         return _abgelehnt(fehler)
 
+    for pruefung in (_pruefe_dienst(paket["dienst"]), _pruefe_oberflaeche(paket["oberflaeche"])):
+        if pruefung:
+            return _abgelehnt(pruefung)
+
     # Die Bezeichnung steht im Paket und wird dem Menschen gezeigt ("... gilt
     # jetzt"). Fehlt sie, traegt die Kennung -- nie ein leerer Name.
     bezeichnung = paket.get("bezeichnung") or paket.get("domaene")
@@ -140,6 +174,64 @@ def pruefe(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
         "bezeichnung": bezeichnung,
         "grund": None,
     }
+
+
+def _texte(wert: Any) -> Iterator[str]:
+    """Jede Zeichenkette im Baum -- SCHLUESSEL UND WERTE gleichermassen.
+    Die Unterscheidung waere hier eine Falle: die Bauform steht meist im Wert
+    ('popover'), das Aussehen dagegen im Schluessel ('breite_px', 'farbe'), und
+    ein Farbwert wie '#2b7de9' ist fuer sich genommen nicht von einer
+    Beschriftung zu unterscheiden. Wer nur eine Seite liest, uebersieht die
+    andere Haelfte -- ein erster Anlauf tat das und liess zwei von fuenf
+    Bauform-Faellen durch."""
+    if isinstance(wert, dict):
+        for schluessel, unterwert in wert.items():
+            yield str(schluessel)
+            yield from _texte(unterwert)
+    elif isinstance(wert, (list, tuple)):
+        for eintrag in wert:
+            yield from _texte(eintrag)
+    elif isinstance(wert, str):
+        yield wert
+
+
+def _pruefe_dienst(dienst: Any) -> str | None:
+    """Kein fester Pfad im Startbefehl (ADR-023 §3). Der Grund nennt den
+    gefundenen Pfad -- ein Mensch soll nicht suchen muessen, welcher gemeint
+    ist."""
+    if not isinstance(dienst, dict):
+        return "Der Teil 'dienst' der Paketdatei ist falsch aufgebaut."
+
+    for text in _texte(dienst):
+        if text.startswith("~") or any(wurzel in text for wurzel in _FREMDE_WURZELN):
+            return (
+                f"Der Startbefehl enthaelt einen festen Pfad ({text}). "
+                "Er wuerde nur auf diesem Rechner funktionieren -- setze dafuer "
+                "den Platzhalter __REPO_PFAD__ ein."
+            )
+    return None
+
+
+def _pruefe_oberflaeche(oberflaeche: Any) -> str | None:
+    """Die Beschreibung sagt WAS, nie WIE (ADR-024)."""
+    if not isinstance(oberflaeche, dict):
+        return "Der Teil 'oberflaeche' der Paketdatei ist falsch aufgebaut."
+
+    for text in _texte(oberflaeche):
+        klein = text.lower()
+        if any(bauform in klein for bauform in _BAUFORMEN):
+            return (
+                f"Die Oberflaechen-Beschreibung nennt eine Bauform ({text}). "
+                "Beschrieben wird, WAS zu sehen sein soll -- wie es gezeichnet "
+                "wird, entscheidet die Anwendung."
+            )
+        if any(wort in klein for wort in _AUSSEHEN):
+            return (
+                f"Die Oberflaechen-Beschreibung legt das Aussehen fest ({text}). "
+                "Beschrieben wird, WAS zu sehen sein soll -- Farben, Groessen und "
+                "Abstaende entscheidet die Anwendung."
+            )
+    return None
 
 
 def _pruefe_bestandsquellen(
@@ -370,6 +462,14 @@ def exportiere(domaene_id: str, db: str | Path | None = None) -> dict[str, Any] 
         "stand": zeitmarke.jetzt(),
         "quellen": quellen,
         "regeln": regeln,
+        # Der Bestand haelt nur den Teil *Wissen* (die Knoten). Dienst und
+        # Oberflaeche stehen deshalb LEER, aber DA -- Anwesenheit ist der
+        # Vertrag, nicht Inhalt: ADR-013 verlangt die Felder "von Anfang an
+        # ins Manifest, auch wenn sie zunaechst leer bleiben". Eine Domaene,
+        # die nur Wissen mitbringt, ist ausdruecklich zulaessig (in ADR-013
+        # laeuft der Teil Wissen "nirgends -- es wird gelesen").
+        "dienst": {},
+        "oberflaeche": {"fassung": 1, "bildschirme": []},
     }
 
 

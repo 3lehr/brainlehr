@@ -217,7 +217,68 @@ Entwicklungsassistenten in den Kern und damit ins atelier (`bf4c87c9`). Es sind
    ablegen; `3c524455` steht deshalb als `keine_norm` und untertreibt seinen Rang.
    Zu beheben ist entweder der fehlende Eingang oder der Rang von Hand.
 
-## §7 Fortschreibung
+## §7 · Aufträge, fertig zum Übergeben
+
+Ein Auftrag pro Schritt, in der Form, die dieses Haus verlangt. **B1 ist am
+2026-08-16 erledigt** und steht hier als Muster für die übrigen. In jeden
+Auftrag gehört wörtlich: *„Sieht der Code anders aus als hier beschrieben,
+halte dich an den Code und melde die Abweichung."*
+
+### B2 — Herkunftsregister
+
+| | |
+|---|---|
+| **Darf ändern** | neues Modul im Zielrepo (`herkunft.py` o. ä.), `STAND.md` |
+| **Fakten** | `73f8a1c0`: jede übernommene Regel trägt `herkunft: legacy\|neu` und `status: unbelegt\|belegt`, **ohne Vorgabewert** — fehlt eines, wird die Datei abgewiesen. Ein Skript zählt die unbelegten Übernahmen und schreibt die Zahl nach `STAND.md`. |
+| **Abnahme** | Rot vor grün: ein Testvektor ohne `status` wird abgewiesen (vorher angenommen). Gegenprobe: vollständiger Vektor läuft durch. Grenzwert: `status: belegt` ohne zugehörigen Test ist ebenfalls Ablehnung. |
+| **Tabu, zusätzlich** | `kern/domaene.py` (gehört B1, ist fertig) · alles unter `app/Sources/` (gehört B5) · `kern/embeddings.py` und der Suchpfad (fremde Linie, Kanalgüte) |
+
+### B3 — Schnitt mit Historie
+
+| | |
+|---|---|
+| **Darf ändern** | nur das NEUE Repo `openlehr_einzelunternehmer`; `openlehr_legacy` bleibt unangetastet |
+| **Fakten** | Quelle ist das 3lehr-Monorepo `openlehr_legacy` (13 Apps, 1566 Commits, 318 MB `.git`), openlehr liegt darin als `apps/openlehr`. Werkzeug `git-filter-repo` unter `/opt/homebrew/bin/`. Mit hinein: `apps/openlehr`, `docs/openlehr`, `tests/steuer`, Wurzel-`conftest.py`. Die Wegweiser stehen gemessen in `openlehr_legacy/docs/openlehr/schnittgrenze_2026-08-14.md`: 698 berührende Commits, davon 167 gemischt; 24 Dateien mit absoluten Pfaden; 70 Fundstellen `begod/` in 15 Dateien. |
+| **Abnahme** | Im neuen Repo reicht `git log` einer beliebigen geerbten Datei bis 2026-02 zurück. Keine der zwölf fremden Apps ist im Baum **oder in der Historie**. Kein absoluter Pfad, kein Verweis nach `begod/`. |
+| **Tabu, zusätzlich** | `openlehr_stale_2026-07-22/` · löschen im Quellrepo · alles in brainlehr |
+
+### B3a — Register setzen, unmittelbar danach
+
+| | |
+|---|---|
+| **Darf ändern** | nur das neue Repo |
+| **Fakten** | Die geerbte Fläche wird geschlossen als `herkunft: legacy`, `status: unbelegt` markiert. Grund: der Code liegt nach B3 physisch da und sieht dadurch vertrauenswürdig aus — 4 575 grüne Tests belegen nur, dass er tut, was jemand aufschrieb (`73f8a1c0`). |
+| **Abnahme** | Zwischen Schnitt-Commit und Register-Commit liegt **kein dritter Commit** (`git log --oneline` zeigt sie benachbart). Die Zahl der unbelegten Übernahmen steht in `STAND.md`. |
+| **Tabu, zusätzlich** | irgendeinen Vektor auf `belegt` setzen, bevor B4 seine Rot-Probe gefahren hat |
+
+### B4 — Erster senkrechter Schnitt (Beleg → EÜR-Zeile), nativ
+
+| | |
+|---|---|
+| **Darf ändern** | neues Repo (Dienst + Manifest-Oberflächenteil), `app/Sources/Atelier/` für den Zeichner |
+| **Fakten** | Fachliche Blaupause ist `euer_zuordnung.py` — **gelesen, nicht kopiert** (H12). Übernommen werden nur DATEN (Beispielbelege, Grenzwerte, `elster_feldkatalog_2024.json`), **nie Testlogik**. Gezeichnet wird nativ (ADR-024). Hier wird die Inhaltsform der Oberflächen-Beschreibung entschieden; `kern/baustein.py` (`absatz`, `ueberschrift`, `tabelle`, `grafik`, `feld`) ist Kandidat, aber ungemessen. |
+| **Abnahme** | Ein Test, der gegen eine **bewusst falsche** Fassung der Zuordnung ROT war und danach grün ist — die Rot-Ausgabe wird mitgeliefert. Mindestens eine Regel wandert dadurch von `unbelegt` auf `belegt`. Grenzwert: eine Buchung genau auf der Zuordnungsschwelle und je eine darunter/darüber. |
+| **Tabu, zusätzlich** | Testdateien aus `openlehr_legacy` übernehmen · ELSTER-Übertragung, Bank-Import, OCR · die Sperrliste in `kern/domaene.py` aufweichen, damit eine Beschreibung durchkommt (Harness-Abweichung ist ein Befund, nicht selbst umgehen) |
+
+### B5 — Der Schalter (ADR-023)
+
+| | |
+|---|---|
+| **Darf ändern** | `app/Sources/Atelier/DienstAufsicht.swift`, Einstellungen im atelier |
+| **Fakten** | Vier sichtbare Zustände: **aus** · **startet** · **läuft** · **kommt nicht hoch**. Voreinstellung **aus**. `DienstAufsicht.swift` kennt heute genau einen Dienst — den eigenen; daraus wird eine Aufsicht über *n*. Der Schalter liegt im Kern, nie in der Domäne (ADR-014). |
+| **Abnahme** | Wer den Schalter nicht umlegt, sieht *aus* und einen Satz, was zu tun ist — an keiner Stelle den Eindruck eines Defekts. Umlegen führt über *startet* nach *läuft*. Ein Dienst, der nicht hochkommt, endet sichtbar in *kommt nicht hoch*, nicht in *startet*. |
+| **Tabu, zusätzlich** | `kern/domaene.py` · das neue Repo · Entwicklerbegriffe im sichtbaren Text (keine Prozess-, Datei- oder Fehlernamen) |
+
+### B6 — Fremdprobe
+
+| | |
+|---|---|
+| **Darf ändern** | nichts — reine Messung; Funde werden gemeldet, nicht behoben |
+| **Fakten** | Das Repo wird an einen anderen Pfad kopiert und dort gestartet. Absolute Pfade fallen genau hier auf und nirgends sonst. |
+| **Abnahme** | Start gelingt am fremden Pfad; das Manifest enthält keinen absoluten Pfad. Schlägt es fehl, ist das Ergebnis ein Befund mit genannter Fundstelle, kein stiller Fix. |
+| **Tabu, zusätzlich** | den Fehler unterwegs reparieren, statt ihn zu melden — sonst misst der Lauf sich selbst |
+
+## §8 Fortschreibung
 
 Nach der Umsetzung wird hier nachgetragen, was anders kam als geplant und warum.
 Getroffene Entscheidungen wandern zusätzlich als ADR nach `docs/adr/`.

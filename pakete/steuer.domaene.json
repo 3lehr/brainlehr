@@ -42,5 +42,10 @@
       "fundstelle": "Ermittlung des Gewinns",
       "wirkung": {}
     }
-  ]
+  ],
+  "dienst": {},
+  "oberflaeche": {
+    "fassung": 1,
+    "bildschirme": []
+  }
 }

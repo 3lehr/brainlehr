@@ -48,6 +48,11 @@ _ABGELEHNTES_PAKET = {
     "stand": "2026-08-15T00:00:00+0200",
     "quellen": {"z1": {"bezeichnung": "Betriebsausgaben (netto)"}},
     "regeln": [{"id": "r1", "ziel_id": "z1", "fundstelle": "passt zu nichts hier"}],
+    # Pflicht seit B1 (ADR-013: drei Teile). Sie stehen hier, damit dieses
+    # Paket weiterhin am BELEGVERTRAG scheitert und nicht schon an der
+    # Vollstaendigkeit -- sonst pruefte der Test etwas anderes als frueher.
+    "dienst": {},
+    "oberflaeche": {"fassung": 1, "bildschirme": []},
 }
 
 

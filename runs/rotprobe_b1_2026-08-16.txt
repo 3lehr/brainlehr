@@ -1,0 +1,26 @@
+Rot-Probe B1 -- gefahren 2026-08-16T13:1x+0200, VOR der Umsetzung in kern/domaene.py.
+Befehl: python3 -m pytest tests/test_domaene_dienst_oberflaeche.py -q
+Ergebnis: 11 failed, 2 passed. Die zwei gruenen sind die Positivkontrollen
+(vollstaendiges Paket / Beschreibung ohne Bauform) -- sie waren gruen, WEIL der
+damalige pruefe() jedes Paket annahm. Genau das belegt die Rot-Probe.
+
+        )
+    
+>       assert "popover" in ergebnis["grund"]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: argument of type 'NoneType' is not a container or iterable
+
+tests/test_domaene_dienst_oberflaeche.py:132: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_paket_ohne_neuen_pflichtteil_wird_abgewiesen[dienst]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_paket_ohne_neuen_pflichtteil_wird_abgewiesen[oberflaeche]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_absoluter_pfad_im_dienst_wird_abgewiesen[start0]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_absoluter_pfad_im_dienst_wird_abgewiesen[start1]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_absoluter_pfad_im_dienst_wird_abgewiesen[start2]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_bauform_in_der_oberflaeche_wird_abgewiesen[bildschirm0]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_bauform_in_der_oberflaeche_wird_abgewiesen[bildschirm1]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_bauform_in_der_oberflaeche_wird_abgewiesen[bildschirm2]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_bauform_in_der_oberflaeche_wird_abgewiesen[bildschirm3]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_bauform_in_der_oberflaeche_wird_abgewiesen[bildschirm4]
+FAILED tests/test_domaene_dienst_oberflaeche.py::test_grund_nennt_das_wort_das_gestolpert_ist
+11 failed, 2 passed in 0.06s
