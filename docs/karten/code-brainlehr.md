@@ -42,7 +42,7 @@ graph LR
   schreibpruefstand -->|4| knowledge_mcp_server
   tests -->|2| brainlehr
   tests -->|4| haken
-  tests -->|13| kern
+  tests -->|14| kern
   tests -->|80| knowledge_mcp_server
 ```
 
