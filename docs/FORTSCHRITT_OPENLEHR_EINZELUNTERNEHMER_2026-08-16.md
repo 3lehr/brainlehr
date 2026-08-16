@@ -204,3 +204,78 @@ Grund, kein absoluter Pfad mehr, Dienst `exit 0`.
 **Was ausdrücklich nicht erledigt ist:** die Auswärtsbindungen im geerbten Code
 (24 Dateien mit absoluten Pfaden, 70 Fundstellen `begod/`), `pyproject.toml`
 und CI, ein Testlauf über den geerbten Bestand, und der native Zeichner.
+
+---
+
+## Nachtrag: die offenen Punkte aus dem Gesamtstand, abgearbeitet
+
+### Testkonfiguration und erster Lauf über den geerbten Bestand · **fertig**
+
+Commit `6a66179` (Domänen-Repo). Der Stand war „geerbt, nicht ausgeführt" —
+jetzt ist er gemessen: **347 grün, 3 rot.**
+
+**Vier Läufe bis dahin, jeder an einem anderen Hindernis** — und das Hindernis
+selbst ist der Befund: **Fünf Pakete, die der Code importiert, stehen in keiner
+der beiden `requirements`-Dateien** — `cryptography`, `caldav`, `icalendar`,
+`python-multipart`, `keyring`. Ohne sie sammelt pytest **42 von 45** Dateien
+nicht einmal ein. Jeder, der diese Domäne importiert, steht vor demselben Wall.
+Genau dafür war der erste Lauf im neuen Repo Pflicht und nicht Kür.
+
+**Lücke, nicht überspielt:** `pyarrow` baut auf Python 3.14 nicht (kein Wheel),
+der Goldkorpus-Test bleibt **ungelaufen**. Ungelaufen heißt ungeprüft, nicht
+bestanden.
+
+**Die drei Fehlschläge:** einer ist eine Schnittfolge
+(`test_ascii_umschrift_scan` ratscht gegen eine Grundlinie von *Dateien*, und
+die Dateimenge hat sich geändert), zwei sind Fachbefunde. Keiner nennt einen
+absoluten Pfad oder `begod/`.
+
+**Und was die Zahl nicht bedeutet:** 347 grüne geerbte Tests machen nichts
+`belegt`. Der Registerstand bleibt 1 belegt, 1 unbelegt.
+
+### Auswärtsbindungen · **gemessen, bewusst nicht behoben**
+
+Im neuen Repo gezählt, statt die Zahl aus der Schnittgrenzen-Messung
+weiterzutragen — und sie stimmt dort nicht mehr:
+
+| | Schnittgrenze 2026-08-14 (Monorepo) | gemessen im neuen Repo |
+|---|---|---|
+| Dateien mit absoluten Pfaden | 24 | **12** |
+| Verweise nach `begod/` | 70 Fundstellen in 15 Dateien | **144 Zeilen in 50 Dateien** |
+
+Beide Zahlen weichen ab, in **beide** Richtungen: Die absoluten Pfade sind
+weniger, weil ein Teil der gezählten Dateien gar nicht mitkam. Die
+`begod/`-Verweise sind mehr, weil die alte Zahl nur `daemon/` erfasste, nicht
+`tests/` und `scripts/`. Eine übernommene Zahl hätte hier in beide Richtungen
+falsch geführt.
+
+**Bewusst nicht behoben, mit Grund:** 50 Dateien umzubauen heißt zu
+entscheiden, was `begod/` ersetzt — ein Zustandsverzeichnis, ein Ort für
+Zugangsdaten, ein Wissensordner. Das ist eine Entwurfsentscheidung an Code, der
+**vollständig `unbelegt`** ist und dessen Tests den Umbau nicht decken würden.
+Ihn im Schnelldurchgang zu machen, erzeugt genau den stillen Schaden, gegen den
+das Register gebaut ist. **Der Umbau gehört an die einzelne Übernahme** (wie
+B4 sie vorführt), nicht in einen Sammellauf.
+
+### B5 · **weiterhin blockiert, erneut geprüft**
+
+`DienstAufsicht.swift`: Agent `a8eab9c98545a8272`, letzter Eintrag
+2026-08-15T04:58, **weiterhin kein Stopp-Ereignis**. Unverändert Finger weg.
+
+## Endstand
+
+| Schritt | Stand |
+|---|---|
+| B1 Manifestformat | fertig |
+| B2 Übernahmeregister | fertig |
+| B3 Schnitt mit Historie | fertig |
+| B3a Register danach | fertig |
+| B4 Senkrechter Schnitt | fachlich fertig, Zeichner offen |
+| B5 Schalter | **blockiert — fremd gehalten** |
+| B6 Fremdprobe | fertig |
+| Testlauf geerbter Bestand | fertig — 347 grün, 3 rot |
+| Auswärtsbindungen | gemessen, Umbau bewusst vertagt |
+
+**Was der Betreiber entscheiden muss:** B5 (fremd gehaltene Datei) · der native
+Zeichner · ob das Domänen-Repo nach GitHub geht (Außenwirkung, nicht meine
+Entscheidung) · der Rang von `3c524455` und `460725f0`.
