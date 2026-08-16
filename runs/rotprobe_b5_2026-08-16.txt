@@ -1,0 +1,32 @@
+Rot-Probe B5 (ADR-023, vier Zustaende), gefahren 2026-08-16T16:14:06+0200, VOR der Umsetzung.
+Befehl: xcrun swift test --filter DienstZustandTests
+/Volumes/daten/Begod2026/brainlehr/app/Tests/BrainlehrCoreTests/DienstZustandTests.swift:94:95: error: extra argument 'eingeschaltet' in call
+    |                                                                                               `- error: extra argument 'eingeschaltet' in call
+/Volumes/daten/Begod2026/brainlehr/app/Tests/BrainlehrCoreTests/DienstZustandTests.swift:94:27: error: type 'DienstZustand' has no member 'aus'
+    |                           `- error: type 'DienstZustand' has no member 'aus'
+/Volumes/daten/Begod2026/brainlehr/app/Tests/BrainlehrCoreTests/DienstZustandTests.swift:95:32: error: type 'Equatable' has no member 'aus'
+    |                                `- error: type 'Equatable' has no member 'aus'
+/Volumes/daten/Begod2026/brainlehr/app/Tests/BrainlehrCoreTests/DienstZustandTests.swift:102:86: error: type 'DienstZustand' has no member 'kommtNichtHoch'
+    |                                                                                      `- error: type 'DienstZustand' has no member 'kommtNichtHoch'
+
+ZWEI ROTE LAEUFE, und nur der erste ist ein Beleg fuer FEHLENDE TYPEN:
+  1. Gegen den Stand vor B5: 51 Compilerfehler ("type 'DienstZustand' has no
+     member 'aus'", "extra argument 'eingeschaltet'"). Das belegt, dass die
+     Faelle fehlten -- nicht, dass eine Regel fehlte.
+  2. Gegen eine ARGLOSE Fassung (Faelle und Parameter vorhanden, aber ohne
+     Wirkung: eingeschaltet und versucheSeit werden nicht gelesen, .aus und
+     .kommtNichtHoch geben sich selbst zurueck, DienstMeldung liefert nil):
+     NICHT AUSFUEHRBAR, siehe unten.
+
+*** OFFENE STELLE IM BELEG, ausdruecklich benannt ***
+Der Verhaltens-Rotlauf (2.) konnte nicht gefahren werden. Grund: `swift test`
+baut das gesamte Paket, und zwei switch-Anweisungen in Dateien einer ANDEREN
+Sitzung sind durch die neuen Enum-Faelle unvollstaendig:
+    app/Sources/Atelier/HauptFenster.swift:168
+    app/Sources/Atelier/LandkartenAnsicht.swift:28
+Beide gehoeren Sitzung 1d718e1f (Register, letzter Eintrag 2026-08-16T07:11),
+beide ohne uncommittete Aenderungen. Angefragt, nicht angefasst.
+
+Der Kern selbst baut: `xcrun swift build --target BrainlehrCore` -> exit 0.
+Der Beleg ist damit HALB: die Typen sind belegt, die Regeln nicht.
+"Geaendert, nicht verifiziert" ist der richtige Satz fuer diesen Stand.

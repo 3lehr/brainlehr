@@ -76,4 +76,102 @@ final class PythonAuswahlTests: XCTestCase {
         let ergebnis = PythonAuswahl.waehle(kandidaten: [], faehig: { _ in true })
         XCTAssertNil(ergebnis)
     }
+
+    // ----------------------------------------------------------------------
+    // B5 / ADR-023: der Mensch entscheidet per Schalter, ob eine Domaene
+    // mitstartet -- und er muss VIER Zustaende unterscheiden koennen, nicht
+    // zwei. Die ADR nennt den Grund woertlich: "aus" (Schalter steht aus --
+    // kein Defekt, eine Entscheidung) und "startet" sind heute nicht
+    // unterscheidbar, und genau diese Verwechslung hat sie ausgeloest.
+    // ----------------------------------------------------------------------
+
+    // Schalter aus: kein Defekt, eine Entscheidung. Unabhaengig davon, ob
+    // zufaellig etwas auf dem Port antwortet -- sonst wuerde ein fremder
+    // Prozess den Zustand der eigenen Domaene bestimmen.
+    func testSchalterAusErgibtAusUnabhaengigVonErreichbarkeit() {
+        for erreichbar in [true, false] {
+            let z = DienstUebergang.naechsterZustand(
+                aktuell: .aus, erreichbar: erreichbar, wurdeAngehalten: false, eingeschaltet: false)
+            XCTAssertEqual(z, .aus)
+            XCTAssertFalse(z.istFehler, "aus ist kein Fehler, sondern eine Entscheidung")
+        }
+    }
+
+    // Aus jedem Zustand heraus schaltet der Mensch ab -- auch mitten im Lauf.
+    func testAusschaltenWirktAusJedemZustand() {
+        for aktuell: DienstZustand in [.startetGerade, .laeuft, .unerwartetBeendet, .kommtNichtHoch, .angehalten] {
+            let z = DienstUebergang.naechsterZustand(
+                aktuell: aktuell, erreichbar: true, wurdeAngehalten: false, eingeschaltet: false)
+            XCTAssertEqual(z, .aus, "aus \(aktuell) muss Ausschalten nach .aus fuehren")
+        }
+    }
+
+    func testEinschaltenAusDemAusZustandBeginntDenStart() {
+        let z = DienstUebergang.naechsterZustand(
+            aktuell: .aus, erreichbar: false, wurdeAngehalten: false, eingeschaltet: true)
+        XCTAssertEqual(z, .startetGerade)
+    }
+
+    // DER Fall, den ADR-023 verlangt und den es bisher nicht gab: eingeschaltet,
+    // aber kommt nach der Geduldsspanne nicht hoch. Ohne ihn bleibt der Dienst
+    // ewig in "startet" -- und "startet fuer immer" liest sich wie ein Defekt,
+    // ohne einen zu benennen.
+    func testStartetOhneErfolgWirdNachGeduldsspanneKommtNichtHoch() {
+        let z = DienstUebergang.naechsterZustand(
+            aktuell: .startetGerade, erreichbar: false, wurdeAngehalten: false,
+            eingeschaltet: true, versucheSeit: DienstUebergang.geduldsspanne)
+        XCTAssertEqual(z, .kommtNichtHoch)
+        XCTAssertTrue(z.istFehler)
+    }
+
+    // Grenzwert, beide Seiten: eine Sekunde vor Ablauf noch startend.
+    func testEineSekundeVorAblaufNochStartend() {
+        let z = DienstUebergang.naechsterZustand(
+            aktuell: .startetGerade, erreichbar: false, wurdeAngehalten: false,
+            eingeschaltet: true, versucheSeit: DienstUebergang.geduldsspanne - 1)
+        XCTAssertEqual(z, .startetGerade)
+    }
+
+    // Ein spaeter Erfolg schlaegt die Geduldsspanne -- wer hochkommt, laeuft,
+    // auch wenn er lange gebraucht hat.
+    func testSpaeterErfolgSchlaegtDieGeduldsspanne() {
+        let z = DienstUebergang.naechsterZustand(
+            aktuell: .startetGerade, erreichbar: true, wurdeAngehalten: false,
+            eingeschaltet: true, versucheSeit: DienstUebergang.geduldsspanne * 10)
+        XCTAssertEqual(z, .laeuft)
+    }
+
+    // Erholt sich der Dienst doch noch, verschwindet der Fehler von selbst --
+    // dieselbe Haltung wie bei unerwartetBeendet.
+    func testKommtNichtHochErholtSich() {
+        let z = DienstUebergang.naechsterZustand(
+            aktuell: .kommtNichtHoch, erreichbar: true, wurdeAngehalten: false, eingeschaltet: true)
+        XCTAssertEqual(z, .laeuft)
+    }
+
+    // Jeder Zustand hat einen Satz fuer den Menschen -- ausser denen, die
+    // nichts zu erklaeren haben. "aus" MUSS einen haben, sonst steht der
+    // Mensch wieder vor einem stummen Bildschirm.
+    func testAusHatEinenSatzUndErKlingtNichtNachDefekt() {
+        let satz = DienstMeldung.fuer(.aus)
+        XCTAssertNotNil(satz)
+        XCTAssertFalse(satz!.isEmpty)
+    }
+
+    func testKommtNichtHochSagtWasZuTunIst() {
+        let satz = DienstMeldung.fuer(.kommtNichtHoch)
+        XCTAssertNotNil(satz)
+    }
+
+    // Kein sichtbarer Satz nennt Port, Pfad, Prozess oder Programmiersprache
+    // (Hausregel: keine Entwicklerinformation in der Oberflaeche).
+    func testKeineEntwicklerinformationInDenSaetzen() {
+        let verboten = ["8799", "127.0.0.1", "http", "Port", "Prozess", "Swift", "Python", "PID"]
+        for zustand: DienstZustand in [.aus, .startetGerade, .laeuft, .unerwartetBeendet, .kommtNichtHoch, .angehalten] {
+            guard let satz = DienstMeldung.fuer(zustand) else { continue }
+            for wort in verboten {
+                XCTAssertFalse(satz.contains(wort), "\(zustand): Satz nennt \(wort)")
+            }
+        }
+    }
 }
