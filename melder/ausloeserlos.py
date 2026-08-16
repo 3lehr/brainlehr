@@ -269,7 +269,7 @@ def render(funde: list[dict]) -> str:
         return "ausloeserlos: keine Funde -- jeder Kandidat unter melder/, haken/, berichte/ hat einen Ausloeser."
     zeilen = [
         f"ausloeserlos: {len(funde)} Mechanismus/Mechanismen ohne Ausloeser "
-        "(kein settings.json-Eintrag, kein geplanter Lauf, kein Aufruf durch "
+        "(kein settings.json-Eintrag, kein geplanter Lauf, kein Git-Hook, kein Aufruf durch "
         "etwas, das selbst einen davon hat):",
     ]
     for f in funde:
