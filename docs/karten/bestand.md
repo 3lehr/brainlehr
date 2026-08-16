@@ -31,6 +31,7 @@ graph LR
   aka["aka<br/>1"]
   brainlehr ---|51| methodik
   apps ---|25| shared
+  brainlehr ---|20| plaene
 ```
 
-Zahl im Kasten = Knoten im Ast, Zahl an der Kante = Verbindungen zwischen zwei Ästen (ab 20, hoechstens 40 staerkste; 2 gezeigt).
+Zahl im Kasten = Knoten im Ast, Zahl an der Kante = Verbindungen zwischen zwei Ästen (ab 20, hoechstens 40 staerkste; 3 gezeigt).

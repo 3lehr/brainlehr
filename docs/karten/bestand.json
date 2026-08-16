@@ -165,6 +165,12 @@
    "nach": "shared",
    "text": "25",
    "art": "ungerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "plaene",
+   "text": "20",
+   "art": "ungerichtet"
   }
  ]
 }
