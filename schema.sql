@@ -1230,21 +1230,86 @@ END;
 -- Gleiches Muster wie die anlass/norm_entscheidung-Wertebereichstrigger oben:
 -- bi+bu, weil beide Wege dieselbe Zusicherung umgehen koennten. NULL bleibt
 -- erlaubt (Altbestand, und jede Zeile ohne norm_entschieden_von) -- nur ein
--- GESETZTER, aber unbekannter Wert wird abgewiesen.
+-- GESETZTER, aber unbekannter Wert wird abgewiesen. 'weisungszitat' kam am
+-- 2026-08-16 dazu (docs/PLAN_VERTRAUENSREGLER_2026-08-16.md Schritt 1,
+-- Knoten a6991a6b): der Eingang, ueber den knowledge_add/knowledge_update
+-- explizit einen menschlichen Entscheider eintragen -- siehe die
+-- Weisungszitat-Pflicht-Trigger direkt darunter.
 CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_belegart_check_bi
 BEFORE INSERT ON knowledge_nodes
 FOR EACH ROW WHEN NEW.norm_entschieden_belegart IS NOT NULL
-    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile')
+    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile', 'weisungszitat')
 BEGIN
-    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile (oder NULL)');
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile, weisungszitat (oder NULL)');
 END;
 
 CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_belegart_check_bu
 BEFORE UPDATE ON knowledge_nodes
 FOR EACH ROW WHEN NEW.norm_entschieden_belegart IS NOT NULL
-    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile')
+    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile', 'weisungszitat')
 BEGIN
-    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile (oder NULL)');
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile, weisungszitat (oder NULL)');
+END;
+
+-- Weisungszitat-Pflicht (Auftrag 2026-08-16, docs/PLAN_VERTRAUENSREGLER_2026-08-16.md
+-- Schritt 1, Knoten a6991a6b). DER FEHLENDE EINGANG: der Herkunfts-Trigger
+-- oben (knowledge_nodes_normrang_herkunft_bi/_bu) verlangt fuer Rang 1/2
+-- einen menschlichen Entscheider, aber weder knowledge_add() noch
+-- knowledge_update() boten einen Weg, ihn absichtlich einzutragen (die
+-- Reflexion 2026-08-16, fuenf betroffene Knoten). 'weisungszitat' ist dieser
+-- Weg: wer norm_entschieden_belegart='weisungszitat' setzt, behauptet eine
+-- woertliche Betreiberweisung -- der Beleg wird hier erzwungen, nicht nur
+-- behauptet. Verlangt in norm_entschieden_grund: ein oeffnendes deutsches
+-- Anfuehrungszeichen „, gefolgt von mindestens 10 Zeichen, gefolgt von einem
+-- schliessenden " -- die Form, die im ganzen Haus fuer woertliche Zitate
+-- verwendet wird (z.B. Knoten a6991a6b selbst). INSTR(...)+SUBSTR(...) statt
+-- REGEXP: SQLite kennt kein eingebautes REGEXP (siehe Kommentar am
+-- Herkunfts-Trigger oben), diese beiden Funktionen reichen fuer "Zeichen X,
+-- danach Zeichen Y, Mindestabstand dazwischen".
+--
+-- MERKMAL, KEINE SPERRE (dieselbe Einordnung wie art=mensch in
+-- kern/ausweis.py, L-33d3bd): der Trigger prueft FORM (Anfuehrungszeichen,
+-- Mindestlaenge), nicht WAHRHEIT. Derselbe Prozess, der diesen Beleg liefern
+-- muss, koennte ebenso gut ein erfundenes, aber foermlich korrektes Zitat
+-- schreiben. Die Pruefung macht eine Falschbehauptung TEURER (lang genug,
+-- foermlich zitiert), nicht UNMOEGLICH -- sie ist Reibung, kein Schutz, und
+-- darf in keinem Bericht als Schutz auftauchen.
+--
+-- BEWUSST NICHT an norm_rang IN (1,2) gebunden: die Pflicht gilt fuer JEDE
+-- Zeile, die 'weisungszitat' behauptet, unabhaengig vom Rang -- eine
+-- unbelegte Behauptung ist bei Rang 3 nicht weniger falsch.
+--
+-- BEWUSST NICHT an bereits bestehende Zeilen gebunden: kern/herkunft_
+-- normentscheider.py setzt norm_entschieden_von='betreiber' fuer Altzeilen
+-- per rohem UPDATE OHNE Belegart (siehe dortiger Kommentar, tabu fuer diesen
+-- Auftrag) -- diese Trigger greifen nur, wenn norm_entschieden_belegart
+-- SELBST auf 'weisungszitat' gesetzt wird, was jenes Werkzeug nie tut.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_weisungszitat_pflicht_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entschieden_belegart = 'weisungszitat'
+    AND (
+        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') = 0
+        OR INSTR(SUBSTR(COALESCE(NEW.norm_entschieden_grund, ''),
+                        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') + 1), '"') = 0
+        OR INSTR(SUBSTR(COALESCE(NEW.norm_entschieden_grund, ''),
+                        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') + 1), '"') - 1 < 10
+    )
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart=weisungszitat verlangt ein woertliches Zitat in norm_entschieden_grund: „...." mit mindestens 10 Zeichen zwischen den Anfuehrungszeichen -- kein Zitat umformulieren, woertlich uebernehmen');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_weisungszitat_pflicht_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entschieden_belegart = 'weisungszitat'
+    AND (
+        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') = 0
+        OR INSTR(SUBSTR(COALESCE(NEW.norm_entschieden_grund, ''),
+                        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') + 1), '"') = 0
+        OR INSTR(SUBSTR(COALESCE(NEW.norm_entschieden_grund, ''),
+                        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') + 1), '"') - 1 < 10
+    )
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart=weisungszitat verlangt ein woertliches Zitat in norm_entschieden_grund: „...." mit mindestens 10 Zeichen zwischen den Anfuehrungszeichen -- kein Zitat umformulieren, woertlich uebernehmen');
 END;
 
 -- BEWUSST KEINE Belegart-PFLICHT hier (Befund beim Bau, 2026-08-13): ein

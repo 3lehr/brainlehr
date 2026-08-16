@@ -540,22 +540,69 @@ _FREMDE_QUELLE_MARKER = (
 # Belegart je verlangt war -- siehe Kommentar in schema.sql direkt vor der
 # Fassungshistorie. Nur der Wertebereich wird geprueft (bi+bu), Pflicht ist
 # Sache des schreibenden Werkzeugs in Schritt 3.
-ALLOWED_NORM_ENTSCHIEDEN_BELEGART = {"selbstauskunft", "systemauth", "kommandozeile"}
+#
+# 'weisungszitat' kam am 2026-08-16 dazu (Auftrag Plan Vertrauensregler
+# Schritt 1, Knoten a6991a6b): DER FEHLENDE EINGANG, ein menschlicher
+# Entscheider war bisher nur ueber source-Heuristiken (herkunft_
+# normentscheider.ist_urheber_betreiber) oder gar nicht eintragbar.
+# 'weisungszitat' ist der Wert, den knowledge_add(betreiber_weisung=...) und
+# knowledge_update(betreiber_weisung=...) setzen -- und der die Weisungszitat-
+# Pflicht-Trigger unten scharf schaltet: FUER DIESEN Wert (und nur fuer ihn)
+# ist ein woertliches Zitat in norm_entschieden_grund Pflicht.
+#
+# MERKMAL, KEINE SPERRE (wie art=mensch in kern/ausweis.py, L-33d3bd): die
+# Pflicht-Trigger pruefen FORM (Anfuehrungszeichen + Mindestlaenge), nicht
+# WAHRHEIT -- derselbe Prozess koennte ein erfundenes, aber foermlich
+# korrektes Zitat schreiben. Reibung, kein Schutz; nie als Schutz berichten.
+ALLOWED_NORM_ENTSCHIEDEN_BELEGART = {"selbstauskunft", "systemauth", "kommandozeile", "weisungszitat"}
+# Mindestlaenge zwischen „ und " in norm_entschieden_grund, wenn
+# norm_entschieden_belegart='weisungszitat' -- muss mit der Zahl in
+# BELEGART_TRIGGERS_SQL unten (Python-seitige Vorab-Pruefung vs. DB-Trigger)
+# und mit schema.sql WORTGLEICH uebereinstimmen.
+WEISUNGSZITAT_MINDESTLAENGE = 10
 BELEGART_TRIGGERS_SQL = """
 CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_belegart_check_bi
 BEFORE INSERT ON knowledge_nodes
 FOR EACH ROW WHEN NEW.norm_entschieden_belegart IS NOT NULL
-    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile')
+    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile', 'weisungszitat')
 BEGIN
-    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile (oder NULL)');
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile, weisungszitat (oder NULL)');
 END;
 
 CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_belegart_check_bu
 BEFORE UPDATE ON knowledge_nodes
 FOR EACH ROW WHEN NEW.norm_entschieden_belegart IS NOT NULL
-    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile')
+    AND NEW.norm_entschieden_belegart NOT IN ('selbstauskunft', 'systemauth', 'kommandozeile', 'weisungszitat')
 BEGIN
-    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile (oder NULL)');
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart unzulaessig: erlaubt sind selbstauskunft, systemauth, kommandozeile, weisungszitat (oder NULL)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_weisungszitat_pflicht_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entschieden_belegart = 'weisungszitat'
+    AND (
+        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') = 0
+        OR INSTR(SUBSTR(COALESCE(NEW.norm_entschieden_grund, ''),
+                        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') + 1), '"') = 0
+        OR INSTR(SUBSTR(COALESCE(NEW.norm_entschieden_grund, ''),
+                        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') + 1), '"') - 1 < 10
+    )
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart=weisungszitat verlangt ein woertliches Zitat in norm_entschieden_grund: „...." mit mindestens 10 Zeichen zwischen den Anfuehrungszeichen -- kein Zitat umformulieren, woertlich uebernehmen');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_norm_entschieden_weisungszitat_pflicht_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.norm_entschieden_belegart = 'weisungszitat'
+    AND (
+        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') = 0
+        OR INSTR(SUBSTR(COALESCE(NEW.norm_entschieden_grund, ''),
+                        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') + 1), '"') = 0
+        OR INSTR(SUBSTR(COALESCE(NEW.norm_entschieden_grund, ''),
+                        INSTR(COALESCE(NEW.norm_entschieden_grund, ''), '„') + 1), '"') - 1 < 10
+    )
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.norm_entschieden_belegart=weisungszitat verlangt ein woertliches Zitat in norm_entschieden_grund: „...." mit mindestens 10 Zeichen zwischen den Anfuehrungszeichen -- kein Zitat umformulieren, woertlich uebernehmen');
 END;
 """
 # Auditkette ueber access_log (Auftrag 2026-08-06). Gleiche Laenge/Form wie
@@ -968,13 +1015,21 @@ def _ensure_norm_entscheidung_triggers(conn: sqlite3.Connection) -> None:
 
 
 def _ensure_belegart_triggers(conn: sqlite3.Connection) -> None:
-    """Nachzug fuer Bestands-DBs ohne die 2 Belegart-Wertebereichstrigger
-    (SCHRITT 1, docs/PLAN_MENSCHLICHER_ENTSCHEID_2026-08-12.md). Gleiches
-    Muster wie _ensure_norm_entscheidung_triggers direkt darueber: additive
-    Spalte kommt zuerst (schema_nachzug.nachziehen(), generisch aus
-    schema.sql). Keine Pflicht-Trigger (siehe BELEGART_TRIGGERS_SQL-Kommentar
-    oben) -- Altbestand bleibt beim Nachziehen unberuehrt, weil nichts
-    verlangt wird, was er nicht schon erfuellt."""
+    """Nachzug fuer Bestands-DBs ohne die aktuelle Fassung der Belegart-Trigger
+    (SCHRITT 1, docs/PLAN_MENSCHLICHER_ENTSCHEID_2026-08-12.md; erweitert
+    2026-08-16 um 'weisungszitat' und die zwei Pflicht-Trigger, Plan
+    Vertrauensregler Schritt 1). Gleiches Muster wie
+    _ensure_norm_entscheidung_triggers direkt darueber: additive Spalte kommt
+    zuerst (schema_nachzug.nachziehen(), generisch aus schema.sql).
+
+    ANDERS als beim reinen Namens-Check der Nachbarfunktionen: 'CREATE TRIGGER
+    IF NOT EXISTS' erreicht eine gewachsene DB nur, wenn der Triggername NEU
+    ist -- die zwei CHECK-Trigger hiessen schon vor 2026-08-16 so und wuerden
+    von einem reinen Namens-Check als "vorhanden" durchgewunken, obwohl ihre
+    installierte Fassung 'weisungszitat' noch nicht kennt (L-55075a: eine
+    Korrektur an der Datei erreicht eine gewachsene Datenbank nicht von
+    selbst). Darum wird hier der INSTALLIERTE SQL-Text gelesen (sqlite_master.
+    sql), nicht nur der Name."""
     if "knowledge_nodes" not in {
         row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
     }:
@@ -982,21 +1037,38 @@ def _ensure_belegart_triggers(conn: sqlite3.Connection) -> None:
     node_columns = {row[1] for row in conn.execute("PRAGMA table_info(knowledge_nodes)")}
     if "norm_entschieden_belegart" not in node_columns:
         return  # Spalte fehlt noch (sollte durch die Aufrufreihenfolge in ensure_schema nicht vorkommen)
-    existing_triggers = {
-        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")
+    installiert = {
+        row[0]: (row[1] or "") for row in conn.execute(
+            "SELECT name, sql FROM sqlite_master WHERE type='trigger' AND name LIKE "
+            "'knowledge_nodes_norm_entschieden_%'")
     }
-    needed = {
+    check_namen = (
         "knowledge_nodes_norm_entschieden_belegart_check_bi",
         "knowledge_nodes_norm_entschieden_belegart_check_bu",
-    }
-    if needed <= existing_triggers:
+    )
+    pflicht_namen = (
+        "knowledge_nodes_norm_entschieden_weisungszitat_pflicht_bi",
+        "knowledge_nodes_norm_entschieden_weisungszitat_pflicht_bu",
+    )
+    # Marker, an dem die installierte Fassung ihre eigene Mindestlaenge
+    # verraet -- ")  - 1 < <Zahl>" steht WORTGLEICH in BELEGART_TRIGGERS_SQL.
+    # Ohne diesen Vergleich wuerde eine spaetere Aenderung an
+    # WEISUNGSZITAT_MINDESTLAENGE (wie am 2026-08-16 selbst geschehen: 15 auf
+    # 10 korrigiert, weil ein echtes Zitat -- Knoten 3c524455, „Mit
+    # Historie." -- 15 nicht erreichte) jede schon einmal nachgezogene DB
+    # NIE wieder erreichen (derselbe L-55075a-Fehler, nur an dieser Stelle).
+    _marker = f") - 1 < {WEISUNGSZITAT_MINDESTLAENGE}"
+    veraltet = any("weisungszitat" not in installiert.get(n, "") for n in check_namen)
+    pflicht_veraltet = any(_marker not in installiert.get(n, "") for n in pflicht_namen)
+    fehlt = any(n not in installiert for n in pflicht_namen)
+    if not veraltet and not pflicht_veraltet and not fehlt:
         return
 
     busy, log_frames, checkpointed = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
     if busy:
         raise RuntimeError(
-            f"Belegart-Trigger an knowledge_nodes fehlen, aber die Sicherung vor dem "
-            f"automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
+            f"Belegart-Trigger an knowledge_nodes fehlen oder sind veraltet, aber die Sicherung "
+            f"vor dem automatischen Nachzug ist blockiert (WAL-Checkpoint busy={busy}, "
             f"{log_frames} Frames, {checkpointed} checkpointed) -- vermutlich schreibt "
             "gerade ein anderer Prozess auf dieselbe Datenbank. Nachzug abgebrochen, nichts geaendert."
         )
@@ -1005,6 +1077,16 @@ def _ensure_belegart_triggers(conn: sqlite3.Connection) -> None:
         backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
         shutil.copy2(DB_PATH, backup_path)
 
+    if veraltet:
+        # Die CHECK-Trigger haben denselben Namen wie vor 2026-08-16, aber
+        # eine engere Erlaubnisliste -- CREATE ... IF NOT EXISTS wuerde die
+        # alte Fassung stehen lassen. Explizit droppen, damit die neue
+        # gilt (siehe Funktions-Docstring).
+        for name in check_namen:
+            conn.execute(f"DROP TRIGGER IF EXISTS {name}")
+    if pflicht_veraltet:
+        for name in pflicht_namen:
+            conn.execute(f"DROP TRIGGER IF EXISTS {name}")
     conn.executescript(BELEGART_TRIGGERS_SQL)
 
 
@@ -2862,6 +2944,29 @@ def _validate_norm_art(source: str, norm_art: str | None) -> str | None:
     return None
 
 
+def _validate_weisungszitat(text: str | None) -> str | None:
+    """Vorab-Pruefung fuer betreiber_weisung (Auftrag 2026-08-16, Plan
+    Vertrauensregler Schritt 1, Knoten a6991a6b): spiegelt WORTGLEICH die
+    DB-Trigger knowledge_nodes_norm_entschieden_weisungszitat_pflicht_bi/_bu
+    (BELEGART_TRIGGERS_SQL), damit der Aufrufer hier einen Klartext-Fehler
+    sieht statt der rohen sqlite3.IntegrityError. Der Trigger bleibt die
+    eigentliche Schranke, er faengt auch Wege, die hier vorbeischreiben.
+
+    MERKMAL, KEINE SPERRE (wie art=mensch in kern/ausweis.py, L-33d3bd):
+    geprueft wird FORM (deutsches Anfuehrungszeichen „..." mit Mindestlaenge),
+    nicht WAHRHEIT. Wer luegen will, kann eine hinreichend lange, foermlich
+    zitierte Falschbehauptung schreiben -- diese Pruefung macht das teurer,
+    nicht unmoeglich."""
+    zitat = re.search(r'„([^"]{%d,})"' % WEISUNGSZITAT_MINDESTLAENGE, text or "")
+    if not zitat:
+        return (
+            f"betreiber_weisung fehlt oder zu kurz: eine woertliche Betreiberweisung wird in "
+            f"der Form „...\" mit mindestens {WEISUNGSZITAT_MINDESTLAENGE} Zeichen zwischen den "
+            "Anfuehrungszeichen erwartet -- kein Zitat umformulieren, woertlich uebernehmen."
+        )
+    return None
+
+
 def _validate_anlass(anlass: str) -> str | None:
     """Sprechende Ablehnung statt stillem Erfolg oder 500 bei unbekanntem
     anlass (Auftrag 2026-08-06). Gibt eine Fehlermeldung mit der erlaubten
@@ -3355,11 +3460,33 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                   abgeleitet_von: str | None = None,
                   gattung: str | None = None,
                   norm_art: str | None = None,
+                  betreiber_weisung: str | None = None,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
     """Add a new knowledge node to the tree. Rejects an unknown parent_path
     unless neuer_ast=True (see U1 im Plan 2026-08-05, P1: erfundene Aeste
     streuten Wissen an Stellen, die nie wieder abgerufen wurden).
+
+    betreiber_weisung (Auftrag 2026-08-16, Plan Vertrauensregler Schritt 1,
+    Knoten a6991a6b): DER FEHLENDE EINGANG -- bislang gab es keinen Weg, beim
+    Anlegen ausdruecklich einen MENSCHLICHEN Entscheider einzutragen (norm_
+    entschieden_von wurde immer aus actor oder einer source-Heuristik
+    abgeleitet, siehe norm_entschieden_grund unten). Wird betreiber_weisung
+    gesetzt, ueberschreibt es diese Ableitung: norm_entschieden_von wird
+    'betreiber', norm_entschieden_belegart wird 'weisungszitat', und der
+    WORTLAUT wird zum norm_entschieden_grund dieser Zeile (ein separat
+    uebergebenes norm_entschieden_grund wird dann NICHT verwendet -- eine
+    woertliche Weisung braucht keine zusaetzliche Begruendung, sie IST die
+    Begruendung). Pflicht-Form, vorab hier UND als DB-Trigger erzwungen
+    (_validate_weisungszitat/knowledge_nodes_norm_entschieden_weisungszitat_
+    pflicht_bi): „...." mit mindestens 10 Zeichen zwischen den Anfuehrungs-
+    zeichen -- WOERTLICH, keine Paraphrase.
+
+    MERKMAL, KEINE SPERRE (wie art=mensch in kern/ausweis.py, L-33d3bd):
+    dieselbe Sitzung, die diesen Beleg liefern muss, koennte auch ein
+    erfundenes, aber foermlich korrektes Zitat schreiben -- geprueft wird
+    Form, nicht Wahrheit. Das macht eine Falschbehauptung teurer, nicht
+    unmoeglich, und darf nirgends als Schutz berichtet werden.
 
     anlass: was hat den Eintrag ausgeloest -- siehe ALLOWED_ANLASS oben.
     'selbst'/'betreiber' sind selbstberichtet vom Aufrufer, nicht geprueft;
@@ -3414,6 +3541,19 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                    session=session, status="rejected", query="anlass_ungueltig")
         conn.close()
         return {"error": anlass_fehler}
+
+    # betreiber_weisung (Auftrag 2026-08-16): Vorab-Pruefung UND Uebernahme
+    # als norm_entschieden_grund, VOR der Entscheidungspruefung weiter unten
+    # (die genau dieses Feld auf "nicht leer" prueft) -- siehe Docstring.
+    if betreiber_weisung is not None:
+        weisungszitat_fehler = _validate_weisungszitat(betreiber_weisung)
+        if weisungszitat_fehler:
+            conn = get_db()
+            log_access(conn, None, "add", project_id=project_id, actor=actor, model=model,
+                       session=session, status="rejected", query="betreiber_weisung_ungueltig")
+            conn.close()
+            return {"error": weisungszitat_fehler}
+        norm_entschieden_grund = betreiber_weisung
 
     # Schreiber gehoert an den Datensatz, nicht nur ins Protokoll (Auftrag
     # 2026-08-06, Mangel: kein Feld fuer den Schreiber auf knowledge_nodes).
@@ -3582,9 +3722,18 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     # Verhalten). herkunft_normentscheider.ist_urheber_betreiber() sticht
     # explizit auf Fremdnorm (Gesetz/Urteil/WEG-Recht/...) nicht an, siehe
     # dortiger Selbsttest.
-    norm_entschieden_von = (herkunft_normentscheider.BETREIBER
-                             if herkunft_normentscheider.ist_urheber_betreiber(source)
-                             else actor)
+    #
+    # betreiber_weisung (Auftrag 2026-08-16) STICHT diese Ableitung: ein
+    # ausdruecklich mitgegebenes, gepruefes Zitat (siehe oben) ist ein
+    # staerkerer Beleg als eine source-Heuristik.
+    if betreiber_weisung is not None:
+        norm_entschieden_von = herkunft_normentscheider.BETREIBER
+        norm_entschieden_belegart = "weisungszitat"
+    else:
+        norm_entschieden_von = (herkunft_normentscheider.BETREIBER
+                                 if herkunft_normentscheider.ist_urheber_betreiber(source)
+                                 else actor)
+        norm_entschieden_belegart = None
 
     if gattung is not None and gattung not in ALLOWED_GATTUNG:
         # Vorab und mit Klartext statt roher IntegrityError aus RAISE(ABORT) --
@@ -3611,11 +3760,12 @@ def knowledge_add(parent_path: str, title: str, summary: str,
         gattung=gattung if gattung is not None else "arbeitsbestand")
 
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, norm_entschieden_belegart, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
          norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, created_at, norm_entschieden_grund,
+         norm_entschieden_belegart,
          anlass, abgeleitet_von, actor, session, model, _KLIENT,
          # Vorgabe kommt aus dem Schema (arbeitsbestand) -- None laesst sie
          # stehen, statt sie hier ein zweites Mal zu behaupten.
@@ -3703,6 +3853,7 @@ def knowledge_update(node_id: str, summary: str | None = None,
                      norm_entschieden_grund: str | None = None,
                      gattung: str | None = None,
                      norm_art: str | None = None,
+                     betreiber_weisung: str | None = None,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
     """Update an existing knowledge node. Like summary/content/tags, only
@@ -3710,6 +3861,21 @@ def knowledge_update(node_id: str, summary: str | None = None,
     at "no Normschicht values" until one is explicitly passed. title aendert
     nur den Titel -- path bleibt unveraendert stehen (path wird nur bei
     knowledge_add aus dem Titel abgeleitet, nie nachtraeglich).
+
+    betreiber_weisung (Auftrag 2026-08-16, Plan Vertrauensregler Schritt 1,
+    Knoten a6991a6b): derselbe Eingang wie bei knowledge_add -- nur mit
+    diesem Werkzeug liess sich bisher ein 'keine_norm' abgelegter Knoten
+    NICHT auf einen menschlich entschiedenen Rang 1/2 heben, weil
+    norm_entschieden_von hier IMMER actor war (Maschine). Gesetzt, nur
+    zusammen mit norm_entscheidung: norm_entschieden_von wird 'betreiber',
+    norm_entschieden_belegart wird 'weisungszitat', der Wortlaut wird zum
+    norm_entschieden_grund (ein separat uebergebenes norm_entschieden_grund
+    wird dann nicht verwendet). Form-Pflicht wie bei knowledge_add: „...."
+    mit mindestens 10 Zeichen, WOERTLICH -- siehe _validate_weisungszitat.
+
+    MERKMAL, KEINE SPERRE (wie art=mensch, L-33d3bd): der Beleg wird auf
+    FORM geprueft, nicht auf Wahrheit -- Reibung gegen Missbrauch, kein
+    Schutz davor. Nie als Schutz berichten.
 
     norm_art (Auftrag 95): nachtraegliche Korrektur/Nachtrag EINES Knotens
     erlaubt (wie gattung), Pflicht bei Neuanlage bleibt Sache von
@@ -3755,6 +3921,30 @@ def knowledge_update(node_id: str, summary: str | None = None,
                    status="rejected", query="geltung_ungueltig")
         conn.close()
         return {"error": geltung_fehler}
+
+    # betreiber_weisung (Auftrag 2026-08-16): Vorab-Pruefung UND Uebernahme
+    # als norm_entschieden_grund, VOR der Entscheidungspruefung unten (die
+    # genau dieses Feld auf "nicht leer" prueft) -- gleiches Muster wie
+    # knowledge_add. Nur sinnvoll zusammen mit norm_entscheidung (eine
+    # Weisung ohne gleichzeitige Entscheidung haette nichts, dem sie den
+    # Entscheider zuordnen koennte).
+    if betreiber_weisung is not None:
+        if norm_entscheidung is None:
+            log_access(conn, row["path"], "update", project_id=row["project_id"],
+                       actor=actor, model=model, session=session,
+                       status="rejected", query="betreiber_weisung_ohne_entscheidung")
+            conn.close()
+            return {"error": "betreiber_weisung ohne norm_entscheidung: eine Weisung braucht die "
+                             "gleichzeitige Entscheidung (norm_befristet/norm_unbefristet/keine_norm), "
+                             "der sie den Entscheider zuordnet."}
+        weisungszitat_fehler = _validate_weisungszitat(betreiber_weisung)
+        if weisungszitat_fehler:
+            log_access(conn, row["path"], "update", project_id=row["project_id"],
+                       actor=actor, model=model, session=session,
+                       status="rejected", query="betreiber_weisung_ungueltig")
+            conn.close()
+            return {"error": weisungszitat_fehler}
+        norm_entschieden_grund = betreiber_weisung
 
     # norm_entscheidung-Konsistenz. Drei Faelle (Auftrag 2026-08-08, zwei
     # davon Loecher aus dem unabhaengigen Review, Agent acf807ee8e6756f27,
@@ -3844,8 +4034,21 @@ def knowledge_update(node_id: str, summary: str | None = None,
         # Entscheider (Nachtrag 2026-08-08): diese UPDATE-Anweisung IST der
         # Moment der Entscheidung -- actor/Zeitpunkt/Begruendung gehoeren
         # zusammen mit der Entscheidung selbst, nicht nachtraeglich getrennt.
-        updates.append("norm_entschieden_von = ?, norm_entschieden_am = ?, norm_entschieden_grund = ?")
-        params.extend([actor, neuer_zeitpunkt, norm_entschieden_grund])
+        #
+        # betreiber_weisung (Auftrag 2026-08-16) STICHT actor: ein gepruefes
+        # Zitat ist ein staerkerer Beleg als der Schreiber dieser Zeile.
+        # norm_entschieden_belegart wird NUR bei betreiber_weisung mit-
+        # geschrieben -- ohne sie bleibt die Spalte unangetastet (wie vor
+        # diesem Auftrag), statt einen an der Zeile evtl. schon stehenden
+        # Belegart-Wert stillschweigend auf NULL zurueckzusetzen.
+        if betreiber_weisung is not None:
+            entscheider = herkunft_normentscheider.BETREIBER
+            updates.append("norm_entschieden_von = ?, norm_entschieden_am = ?, "
+                            "norm_entschieden_grund = ?, norm_entschieden_belegart = ?")
+            params.extend([entscheider, neuer_zeitpunkt, norm_entschieden_grund, "weisungszitat"])
+        else:
+            updates.append("norm_entschieden_von = ?, norm_entschieden_am = ?, norm_entschieden_grund = ?")
+            params.extend([actor, neuer_zeitpunkt, norm_entschieden_grund])
 
     if gattung is not None:
         # Nur bei ausdruecklicher Angabe -- ein Update anderer Felder darf die
