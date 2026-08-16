@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Meldet Mechanismen unter melder/, haken/, berichte/, die NIE von selbst
-laufen -- kein Eintrag in einer settings.json, kein geplanter Lauf, und kein
+laufen -- kein Eintrag in einer settings.json, kein geplanter Lauf, kein
+Git-Hook, und kein
 Aufruf durch etwas, das selbst einen dieser beiden hat.
 
 Auftrag 85 (docs/PLAN_GESAMT_2026-08-13.md, Schritt A2). Vorbild ist eine
@@ -171,6 +172,37 @@ def geplanter_lauf(basename: str, geplante_texte: list[str]) -> bool:
     return any(basename in t for t in geplante_texte)
 
 
+def hook_texte(repo_root: Path) -> list[str]:
+    """Die Git-Hooks des Repos als Ausloeserquelle.
+
+    ANLASS, gemessen 2026-08-16: Dieser Melder meldete 29 Mechanismen ohne
+    Ausloeser -- darunter SECHS, die im `.git/hooks/pre-push` haengen und an
+    diesem Tag mehrfach einen Push tatsaechlich gestoppt haben (ablaufpflicht,
+    kartenstand, dokumentzugang, messregeln, unverdrahtet_swift,
+    messauswertung_waechter). Er kannte nur settings.json, geplante Laeufe und
+    die Aufruferkette. Ein Git-Hook ist aber genau das, was dieses Haus unter
+    "verdrahtet" versteht -- er blockiert.
+
+    Die Zahl 29 war damit falsch und wurde in dieser Form bereits nach aussen
+    gegeben. Ein Melder, der die staerkste Ausloeserform des eigenen Repos
+    nicht kennt, produziert Fehlalarme -- und Fehlalarme sind der Weg, auf dem
+    ein Melder weggeklickt statt gelesen wird.
+
+    Hooks sind nicht versioniert; fehlt der Ordner, ist das der Normalfall
+    (frischer Klon) und kein Fehler."""
+    texte = []
+    hooks = repo_root / ".git" / "hooks"
+    if not hooks.is_dir():
+        return texte
+    for h in hooks.iterdir():
+        if h.is_file() and not h.name.endswith(".sample"):
+            try:
+                texte.append(h.read_text(errors="replace"))
+            except OSError:
+                continue
+    return texte
+
+
 def hole_geplante_texte() -> list[str]:
     """Best-Effort-Blick auf crontab/launchd. Im ganzen Verbund bisher kein
     einziger Treffer gemessen (siehe haken/kurator_taeglich.py) -- deshalb
@@ -195,9 +227,9 @@ def hole_geplante_texte() -> list[str]:
 
 
 def hat_ausloeser(pfad: Path, quellen: dict[Path, str], settings_txt: list[str],
-                   geplante_txt: list[str],
+                   geplante_txt: list[str], hook_txt: list[str] | None = None,
                    besucht: frozenset[Path] = frozenset()) -> tuple[bool, str]:
-    """True + Weg, sobald EINER der drei Wege zutrifft. Rekursiv ueber
+    """True + Weg, sobald EINER der vier Wege zutrifft. Rekursiv ueber
     Rufer, die selbst einen Ausloeser haben -- transitiv, nicht nur eine
     Ebene. `besucht` verhindert Ringe (A ruft B, B importiert A zurueck)."""
     if pfad in besucht:
@@ -208,22 +240,25 @@ def hat_ausloeser(pfad: Path, quellen: dict[Path, str], settings_txt: list[str],
         return True, "settings.json"
     if geplanter_lauf(pfad.name, geplante_txt):
         return True, "geplanter Lauf"
+    if hook_txt and hat_settings_eintrag(pfad.name, hook_txt):
+        return True, "Git-Hook"
     for rufer in rufer_von(pfad, quellen):
-        ok, weg = hat_ausloeser(rufer, quellen, settings_txt, geplante_txt, besucht)
+        ok, weg = hat_ausloeser(rufer, quellen, settings_txt, geplante_txt, hook_txt, besucht)
         if ok:
             return True, f"gerufen von {rufer.name} ({weg})"
     return False, ""
 
 
 def bericht(repo_root: Path, settings_pfade: list[Path]) -> list[dict]:
-    """Jeder Kandidat ohne einen der drei Ausloeserwege -- mit Pfad, damit
+    """Jeder Kandidat ohne einen der vier Ausloeserwege -- mit Pfad, damit
     der Leser die Datei findet, ohne dass hier eine Zeilennummer stuende."""
     quellen = alle_quellen(repo_root)
     stxt = settings_texte(settings_pfade)
     gtxt = hole_geplante_texte()
+    htxt = hook_texte(repo_root)
     funde = []
     for p in kandidaten(repo_root):
-        ok, _weg = hat_ausloeser(p, quellen, stxt, gtxt)
+        ok, _weg = hat_ausloeser(p, quellen, stxt, gtxt, htxt)
         if not ok:
             funde.append({"pfad": p, "name": str(p.relative_to(repo_root))})
     return funde
@@ -258,6 +293,14 @@ def _selftest() -> None:
 
         # (a) direkt verdrahtet: Eintrag in settings.json -- kein Fund.
         (root / "melder" / "verdrahtet.py").write_text('"""tut etwas."""\n')
+
+        # (f) im Git-Hook verdrahtet -- kein Fund (siehe Zusicherung unten).
+        (root / "melder" / "im_hook.py").write_text("# im pre-push\n", encoding="utf-8")
+        hooks = root / ".git" / "hooks"
+        hooks.mkdir(parents=True, exist_ok=True)
+        (hooks / "pre-push").write_text(
+            '#!/bin/bash\npython3 "$repo_root/melder/im_hook.py" || exit 1\n', encoding="utf-8")
+        (hooks / "pre-commit.sample").write_text("nur ein Muster, zaehlt nicht\n", encoding="utf-8")
 
         # (b) blosser Textmention (Hilfezeile) ist KEIN Ausloeser -- Fund.
         (root / "haken" / "nur_erwaehnt.py").write_text('"""tut etwas."""\n')
@@ -330,6 +373,13 @@ def _selftest() -> None:
             "Grenzwert: eine Ebene tief transitiv verdrahtet, darf nicht gemeldet werden"
         print("  (d) Grenzwert -- Ausloeser ueber zwei Importebenen erkannt (nicht nur eine): ok")
 
+        # (f) Git-Hook als Ausloeser. Der Fall, der bis 2026-08-16 fehlte und
+        # sechs Fehlalarme erzeugt hat: ein Melder, der im pre-push haengt und
+        # dort Pushes tatsaechlich stoppt, galt als "ohne Ausloeser".
+        # Gegenprobe gleich mit: derselbe Aufbau OHNE Hook-Datei meldet ihn.
+        assert "melder/im_hook.py" not in namen, \
+            "im pre-push verdrahtet, darf nicht gemeldet werden"
+
         assert "kern/kern_mechanismus.py" not in namen, \
             "kern/ ist kein Kandidatenordner, darf nie im Bericht stehen"
         assert "haken/importiert_kern.py" not in namen
@@ -344,7 +394,7 @@ def _selftest() -> None:
         assert "keine Funde" in leer_text
         print("  render() ohne Funde: eindeutiger Text statt leerer Ausgabe: ok")
 
-    print("selftest ok (5 Faelle, je mit Gegenprobe)")
+    print("selftest ok (6 Faelle, je mit Gegenprobe)")
 
 
 def main() -> None:

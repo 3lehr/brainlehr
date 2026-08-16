@@ -1,0 +1,27 @@
+Rot-Probe: ausloeserlos.py kennt Git-Hooks nicht, 2026-08-16T17:17:36+0200
+
+VORHER (Stand vor der Aenderung):
+ausloeserlos: 29 Mechanismus/Mechanismen ohne Ausloeser (kein settings.json-Eintrag, kein geplanter Lauf, kein Aufruf durch etwas, das selbst einen davon hat):
+
+Darunter SECHS Melder, die im pre-push haengen und heute mehrfach einen Push
+tatsaechlich gestoppt haben:
+  haken/messauswertung_waechter.py
+  melder/ablaufpflicht.py
+  melder/dokumentzugang.py
+  melder/kartenstand.py
+  melder/messregeln.py
+  melder/unverdrahtet_swift.py
+
+NACHHER: 21 statt 29. Acht Fehlalarme verschwunden -- sechs direkt aus dem
+pre-push, zwei ueber die Aufruferkette.
+
+ROT-PROBE des neuen Zweigs (Selbsttest-Fall f, Git-Hook als Ausloeser):
+  mit abgeschalteter Hook-Erkennung: AssertionError
+    "im pre-push verdrahtet, darf nicht gemeldet werden"  -> exit 1
+  echte Fassung: selftest ok (6 Faelle, je mit Gegenprobe)
+
+DIE IRONIE, und sie gehoert protokolliert: Der Melder, der wirkungslose
+Mechanismen findet, war selbst blind fuer die Ausloeserform, die in diesem
+Repo am haertesten wirkt -- ein Git-Hook BLOCKIERT, waehrend ein
+settings.json-Eintrag nur ausloest. Die Zahl 29 stand bereits in einem PDF
+an den Betreiber. Sie wird dort berichtigt.
