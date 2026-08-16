@@ -21,12 +21,13 @@ public enum Bestandteil: String, CaseIterable, Sendable {
     case tabellenkalkulation
 }
 
-struct BestandteilEintrag {
-    let auflagenErfuellt: Bool
+public struct BestandteilEintrag {
+    public let auflagenErfuellt: Bool
+    public init(auflagenErfuellt: Bool) { self.auflagenErfuellt = auflagenErfuellt }
 }
 
-enum BestandteilKatalog {
-    static let eintraege: [Bestandteil: BestandteilEintrag] = [
+public enum BestandteilKatalog {
+    public static let eintraege: [Bestandteil: BestandteilEintrag] = [
         .dokumentfenster: BestandteilEintrag(auflagenErfuellt: true),
         // ADR-016 Auflage 3 offen: Fremddatei-Import bis auf weiteres
         // gesperrt -- deshalb hier als nicht erfuellt gefuehrt, nicht erst
@@ -44,11 +45,18 @@ enum BestandteilKatalog {
 /// Funktion ohne Zustand: unbekannte Namen und Eintraege mit unerfuellter
 /// Auflage werden verworfen -- ohne Fehlermeldung an den Nutzer.
 public enum BestandteilAnforderung {
-    public static func gewaehrt(angefordert: [String]) -> Set<Bestandteil> {
+    /// `katalog` ist einsetzbar, und das ist kein Testkomfort, sondern der
+    /// Grund, warum die Verweigerungsregel ueberhaupt pruefbar BLEIBT:
+    /// Gemessen 2026-08-16 steht im echten Katalog kein einziger Eintrag mehr
+    /// mit unerfuellter Auflage (be74c1c1 hob die letzte auf). Ein Negativfall
+    /// gegen den Produktivkatalog verschwindet damit lautlos -- die Regel
+    /// stuende weiter im Code, geprueft wuerde sie von niemandem mehr.
+    public static func gewaehrt(angefordert: [String],
+                                katalog: [Bestandteil: BestandteilEintrag] = BestandteilKatalog.eintraege) -> Set<Bestandteil> {
         var ergebnis = Set<Bestandteil>()
         for name in angefordert {
             guard let b = Bestandteil(rawValue: name),
-                  let eintrag = BestandteilKatalog.eintraege[b],
+                  let eintrag = katalog[b],
                   eintrag.auflagenErfuellt
             else { continue }
             ergebnis.insert(b)
