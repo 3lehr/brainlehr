@@ -1,6 +1,7 @@
 # Plan: `openlehr_einzelunternehmer` — die erste benannte Domäneninstanz
 
-**Stand** 2026-08-16T10:27:56+0200
+**Stand** 2026-08-16T12:08:13+0200 (Erstfassung 10:27:56, fortgeschrieben nach
+der Betreiberentscheidung „Mit Historie.", Knoten `3c524455`)
 **Zweig** `brainlehr/b4-ausweis`
 **Grundlage** `docs/STARTPROMPT_OPENLEHR_EINZELUNTERNEHMER_2026-08-16.md`
 **Bindend** ADR-007 (zwei Schichten) · ADR-013 (Domäne = Repo mit drei Teilen) ·
@@ -40,6 +41,12 @@ festgestellt; hier ist es der erste Schritt, weil ohne ihn nichts anderes gebaut
 werden kann (§3).
 
 ### Was in `openlehr_legacy` liegt (Blaupause, nicht Vorlage)
+
+**Zuerst die Berichtigung, weil sie den ganzen Schnitt bestimmt:**
+`openlehr_legacy` ist **nicht** das openlehr-Repo, sondern das ganze
+3lehr-Monorepo — 13 Apps unter `apps/`, **1566 Commits**, 318 MB `.git`, erster
+Commit 2026-02-16 (gemessen 2026-08-16T10:40+0200). openlehr liegt darin als
+`apps/openlehr`. „Mit Historie" heißt deshalb **Teilbaum-Schnitt**, nicht Klon.
 
 Erhebung 2026-08-15 an Commit `21b00d8f`, Knoten `bf4c87c9`, per `create_app()`
 gezählt. Heutiger Kopf des Zweigs `merge/daten-features`: `d5c24182`
@@ -92,8 +99,27 @@ fehlt eines, wird abgewiesen. Nachträglich lässt sich nicht rekonstruieren, we
 Regel damals geprüft war und welche nur mitgeschrieben wurde. Dazu ein Skript, das
 die unbelegten Übernahmen zählt und die Zahl nach `STAND.md` schreibt.
 
-**B3 — Repo anlegen, leer, mit Gerüst.** `git init`, drei Verzeichnisse nach
-ADR-013, Manifest nach B1, `.venv`, Prüflauf. Kein Code aus dem Bestand.
+**B3 — Der Schnitt: `apps/openlehr` mit Historie herauslösen.** Entschieden am
+2026-08-16T10:40+0200 (`3c524455`), damit ADR-013 unverändert.
+
+- Werkzeug: `git-filter-repo` (liegt unter `/opt/homebrew/bin/`, gemessen). Es
+  rechnet die 167 gemischten Commits (24 % von 698) auf die behaltenen Pfade um
+  — das ist genau der Fall, für den es gebaut ist.
+- Mit hinein, laut `schnittgrenze_2026-08-14.md`: `apps/openlehr`,
+  `docs/openlehr` (12 MB), `tests/steuer` (2,1 MB, 44 Dateien), die
+  Wurzel-`conftest.py`.
+- **Nicht** hinein: die zwölf fremden Apps, `macshell/.build` (342 MB, ohnehin
+  ungetrackt), `__pycache__`, `node_modules`.
+- Danach die 24 Dateien mit absoluten Pfaden und die Auswärtsbindungen nach
+  `begod/` (70 Fundstellen in 15 Dateien) auflösen — sie zeigen nach dem Schnitt
+  ins Leere und sind in der Schnittgrenzen-Messung einzeln benannt.
+
+**B3a — Register setzen, unmittelbar danach.** *Bindend, und die Reihenfolge ist
+hier das Ganze.* Weil der Code jetzt physisch daliegt, sieht er
+vertrauenswürdig aus; das Register aus B2 ist das einzige, was Blaupause von
+Werkbank trennt. Es markiert die geerbte Fläche geschlossen als
+`herkunft: legacy`, `status: unbelegt`. **Prüfbar als Satz: zwischen
+Schnitt-Commit und Register-Commit liegt kein dritter Commit.**
 
 **B4 — Erster senkrechter Schnitt: ein Beleg wird einer EÜR-Zeile zugeordnet.**
 Ein einziger Fachweg von der Eingabe bis zur Zuordnung, mit eigenem Test, der gegen
@@ -113,18 +139,18 @@ irgendwo ein absoluter Pfad, fällt er genau hier auf und nirgends sonst.
 
 ## §4 Verworfene Wege
 
-**`openlehr_legacy` umbenennen und weiterbauen** (Historie per `subtree split`
-mitnehmen). *Verworfen* — aber nicht leichtfertig: **ADR-013 hat genau diesen Weg
-ausdrücklich gewählt** und „Neues Repo ohne Historie" verworfen, mit dem guten
-Argument, `git log` sei für 43 237 Zeilen das Wertvollste, was mitkommen kann. Dem
-steht die **spätere** Rang-1-Weisung `73f8a1c0` vom 2026-08-16 entgegen: der Bestand
-gilt als ungeprüft, 4 575 grüne Tests belegen nur, dass der Code tut, was jemand
-aufgeschrieben hat. Auflösung: Die Historie bleibt **lesbar** — `openlehr_legacy`
-liegt nebenan und wird nicht gelöscht —, sie wandert nur nicht als Ausgangszustand
-mit. Sie ist damit *Begründung*, nicht *Beweis*, exakt die Abgrenzung, die
-`73f8a1c0` selbst zieht.
-→ **Das ist eine Abweichung von einer angenommenen ADR und gehört dem Betreiber
-vorgelegt** (§6, offene Frage 1). Bis zur Entscheidung wird B3 nicht ausgeführt.
+**Neues Repo ohne Historie anlegen.** *Verworfen durch den Betreiber,
+2026-08-16T10:40+0200, wörtlich „Mit Historie."* (`3c524455`). Die Erstfassung
+dieses Plans hatte den umgekehrten Weg vorgeschlagen und den Konflikt vorgelegt:
+ADR-013 wählt ausdrücklich die Herauslösung **mit** `git log`, die spätere
+Rang-1-Weisung `73f8a1c0` erklärt den Bestand für ungeprüft.
+
+**Die Auflösung ist die Unterscheidung zweier Gegenstände, nicht ein Vorrang.**
+ADR-013 redet über die *Lesbarkeit der Herkunft* — warum sieht eine Zeile so aus,
+wer hat sie wann geändert. `73f8a1c0` redet über den *Belegstatus einer Regel* —
+ist ihr Verhalten durch einen Test gedeckt, der gegen eine falsche Fassung rot war.
+Eine mitgewanderte Historie beweist keine Regel, und ein fehlender Beleg entwertet
+keine Historie. Beide gelten unverändert nebeneinander; die Last trägt B3a.
 
 **Innerhalb von brainlehr bauen, ohne eigenes Repo.** *Verworfen*: Der Betreiber hat
 das Repo als Verteilungseinheit entschieden (ADR-013, wörtlich). Ohne eigenes Repo
@@ -151,19 +177,27 @@ Entwicklungsassistenten in den Kern und damit ins atelier (`bf4c87c9`). Es sind
    `STAND.md` und ist zu jedem Zeitpunkt abrufbar. Der erste senkrechte Schnitt hat
    mindestens eine Regel von `unbelegt` auf `belegt` gebracht — mit protokollierter
    Rot-Probe.
-4. **Kein Abschreiben:** `git log` des neuen Repos enthält keinen Commit, der Code
-   aus `openlehr_legacy` einträgt. Übernommene Daten tragen ihre Herkunft im
-   Manifest.
+4. **Kein stilles Erben:** Zwischen Schnitt-Commit und Register-Commit liegt kein
+   dritter Commit (B3a), und nach dem Schnitt trägt keine Datei mehr einen absoluten
+   Pfad oder einen Verweis nach `begod/`. Ein `git log` einer beliebigen geerbten
+   Datei reicht bis 2026-02 zurück — das ist der Gegenwert der Entscheidung und
+   zugleich ihr Nachweis.
 
-## §6 Offene Fragen — beide gehören dem Betreiber
+## §6 Offene Fragen
 
-1. **Historie mitnehmen oder nicht?** ADR-013 sagt ja, `73f8a1c0` legt nein nahe
-   (§4). Der Plan geht von *nein* aus und hält B3 an, bis das entschieden ist.
-   Fällt die Entscheidung auf *ja*, ändert sich §4 und B3, nicht der Rest.
+1. ~~**Historie mitnehmen oder nicht?**~~ **Entschieden 2026-08-16T10:40+0200:
+   mit Historie** (`3c524455`). B3 ist frei.
 2. **Reicht der senkrechte Schnitt B4 als erster Fachfall**, oder soll ein anderer
    den Anfang machen? Die EÜR-Zuordnung ist gewählt, weil sie den kürzesten Weg von
    Eingabe zu Ergebnis hat und das einzige Fachmodul ist, das im heutigen Manifest
    schon als `herkunft` steht.
+3. **Neu, entstanden beim Ablegen der Entscheidung:** Der Wächter
+   `knowledge_nodes_normrang_herkunft_bi` verlangt für Rang 1 einen menschlichen
+   Entscheider — `knowledge_add` setzt `norm_entschieden_von` aber automatisch aus
+   der Modellkennung und bietet keinen Eingang für den Menschen. Eine vom
+   Assistenten geführte Sitzung kann eine Betreiberweisung damit nicht als solche
+   ablegen; `3c524455` steht deshalb als `keine_norm` und untertreibt seinen Rang.
+   Zu beheben ist entweder der fehlende Eingang oder der Rang von Hand.
 
 ## §7 Fortschreibung
 
