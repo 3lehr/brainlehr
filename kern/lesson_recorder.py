@@ -124,10 +124,25 @@ def cmd_record(args):
         print(f"⚠  Ähnliches Lesson gefunden: [{similar['id']}] {similar['description_first_line'][:80]} (Score {similar['score']})")
         print(f"   Occurrences: {similar['occurrences']} → Wiederholung? lesson_recorder.py record ... --same-as {similar['id']}")
 
+    # Beinahefehler: dieselbe Pruefung wie im Werkzeugpfad, damit der CLI-Weg
+    # die Kennzeichnung ohne 'woran' nicht durchlaesst. Der Trigger in der
+    # Datenbank haelt es ohnehin -- diese Meldung ist nur die sprechendere.
+    # getattr statt args.beinahe: cmd_record wird auch aus Tests und Skripten
+    # mit einem selbstgebauten Namensraum aufgerufen, der die neuen Felder
+    # nicht kennt -- ohne Vorgabe bricht dort der bestehende Weg.
+    beinahe = bool(getattr(args, "beinahe", False))
+    bemerkt = getattr(args, "bemerkt", "") or ""
+    beinahe_fehler = kms._validate_beinahefehler(beinahe, bemerkt)
+    if beinahe_fehler:
+        print(f"✗ {beinahe_fehler}")
+        conn.close()
+        sys.exit(1)
+
     conn.execute("""
-        INSERT INTO lessons_learned (id, type, severity, description, root_cause, resolution, prevention, projects, status, first_seen, last_seen)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)
-    """, (lesson_id, args.type, args.severity, args.desc, args.cause, args.fix, args.prevent, projects_json, now_iso(), now_iso()))
+        INSERT INTO lessons_learned (id, type, severity, description, root_cause, resolution, prevention, projects, status, first_seen, last_seen, beinahefehler, bemerkt_woran)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?)
+    """, (lesson_id, args.type, args.severity, args.desc, args.cause, args.fix, args.prevent, projects_json, now_iso(), now_iso(),
+          1 if beinahe else 0, bemerkt.strip() if beinahe else None))
     conn.commit()
 
     print(f"✓ Lesson [{lesson_id}] erfasst: {args.type}/{args.severity}")
@@ -333,6 +348,11 @@ def main():
     p_record.add_argument("--severity", default="medium", choices=["critical", "high", "medium", "low"])
     p_record.add_argument("--projects", default="shared", help="Projekte (kommagetrennt)")
     p_record.add_argument("--same-as", dest="same_as", default="", help="ID einer bestehenden Lesson, falls dies eine Wiederholung ist")
+    p_record.add_argument("--beinahe", action="store_true",
+                          help="Beinahefehler: bemerkt und behoben, BEVOR Schaden entstand (verlangt --bemerkt)")
+    p_record.add_argument("--bemerkt", dest="bemerkt", default="",
+                          choices=sorted(kms.ALLOWED_BEMERKT_WORAN) + [""],
+                          help="woran der Beinahefehler bemerkt wurde -- Pflicht bei --beinahe")
 
     # bump
     p_bump = subparsers.add_parser("bump", help="Occurrence-Zähler erhöhen")

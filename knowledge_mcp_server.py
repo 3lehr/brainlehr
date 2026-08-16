@@ -212,6 +212,39 @@ ALLOWED_ANLASS = {"selbst", "betreiber", "hook", "skript", "unbekannt"}
 # lesson_record.type nahm bisher JEDEN String klaglos an (nur im JSON-Schema
 # als enum dokumentiert, nie serverseitig geprueft) -- Auftrag 2026-08-07.
 ALLOWED_LESSON_TYPES = {"error", "insight", "pattern", "antipattern"}
+# Beinahefehler (Plan docs/PLAN_BEINAHEFEHLER_2026-08-16.md): WORAN wurde er
+# bemerkt. Feste Wortliste, weil §6 sie auszaehlt -- Freitext zaehlt nicht.
+# 'zahl'       eine Zahl/Ausgabe passte nicht zur Erwartung (kein Mechanismus)
+# 'test'       ein Test oder Selbsttest schlug an
+# 'waechter'   Hook, Trigger, Lint, Guard
+# 'gegenprobe' bewusste Gegenprobe / Rot-Probe
+# 'wissen'     eingespielte Lehre oder Knoten, Recall
+# 'betreiber'  ein Mensch hat es gesagt
+# 'zufall'     beim Lesen von etwas anderem aufgefallen -- der teure Fall
+ALLOWED_BEMERKT_WORAN = {"zahl", "test", "waechter", "gegenprobe", "wissen",
+                         "betreiber", "zufall"}
+# Wortlaut identisch zu schema.sql (dort fuer Erstanlagen, hier als Nachzug
+# fuer gewachsene Bestaende) -- dieselben zwei Kopien wie bei den
+# freigabe-Triggern darunter.
+LESSON_BEINAHE_TRIGGERS_SQL = """
+CREATE TRIGGER IF NOT EXISTS lessons_learned_beinahe_check_bi
+BEFORE INSERT ON lessons_learned
+FOR EACH ROW WHEN NEW.beinahefehler NOT IN (0, 1)
+     OR (NEW.beinahefehler = 1 AND (NEW.bemerkt_woran IS NULL
+         OR TRIM(NEW.bemerkt_woran) NOT IN ('zahl','test','waechter','gegenprobe','wissen','betreiber','zufall')))
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.beinahefehler ist 0 oder 1; bei 1 muss bemerkt_woran einen dieser Werte tragen: betreiber, gegenprobe, test, waechter, wissen, zahl, zufall');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lessons_learned_beinahe_check_bu
+BEFORE UPDATE ON lessons_learned
+FOR EACH ROW WHEN NEW.beinahefehler NOT IN (0, 1)
+     OR (NEW.beinahefehler = 1 AND (NEW.bemerkt_woran IS NULL
+         OR TRIM(NEW.bemerkt_woran) NOT IN ('zahl','test','waechter','gegenprobe','wissen','betreiber','zufall')))
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.beinahefehler ist 0 oder 1; bei 1 muss bemerkt_woran einen dieser Werte tragen: betreiber, gegenprobe, test, waechter, wissen, zahl, zufall');
+END;
+"""
 # Rueckfuellwert fuer Bestandszeilen ohne source (Auftrag 2026-08-06, siehe
 # _ensure_node_constraint_triggers/migrate_source_constraints.py). Testdaten,
 # Umschreiben erlaubt -- deshalb Nachtrag statt "Regel gilt nur fuer Neues".
@@ -1376,6 +1409,10 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     _ensure_node_constraint_triggers(conn)
     _ensure_lessons_fts_backfill(conn)
     _ensure_lessons_freigabe_column(conn)
+    # Nach schema_nachzug (der die beiden Spalten bringt) und nicht davor: ein
+    # Trigger, der eine noch fehlende Spalte liest, laesst jeden spaeteren
+    # Schreibvorgang mit 'no such column: NEW.x' auffliegen.
+    conn.executescript(LESSON_BEINAHE_TRIGGERS_SQL)
     columns = {row[1] for row in conn.execute("PRAGMA table_info(access_log)")}
     for name, declaration in {
         "actor": "TEXT", "model": "TEXT", "session": "TEXT", "client": "TEXT",
@@ -2841,6 +2878,30 @@ def _validate_lesson_type(type_: str) -> str | None:
     zurueck, oder None wenn gueltig."""
     if type_ not in ALLOWED_LESSON_TYPES:
         return (f"type unbekannt: {type_!r}. Erlaubt: {sorted(ALLOWED_LESSON_TYPES)}.")
+    return None
+
+
+def _validate_beinahefehler(beinahefehler: bool, bemerkt_woran: str) -> str | None:
+    """Wer als Beinahefehler kennzeichnet, muss sagen WORAN er es bemerkt hat.
+
+    Das ist der eigentliche Ertrag der Erfassung (Plan §2): erst diese Angabe
+    unterscheidet "durch eine Zahl aufgefallen" von "durch Zufall" und ist
+    damit die einzige Spur zu der Frage, welche Schutzform traegt. Ein Feld,
+    das leer bleiben darf, bleibt leer -- lessons_learned.bedient_von ist bei
+    958 von 958 Zeilen leer, access_log.tokens_input bei 15872 von 15872.
+
+    Leerer String, nur Leerzeichen und fehlender Wert laufen bewusst in
+    dieselbe Meldung: fuer den Aufrufer ist es derselbe Fehler.
+
+    Zweite Kopie derselben Regel als Trigger (LESSON_BEINAHE_TRIGGERS_SQL) --
+    diese hier antwortet sprechend im Werkzeug, der Trigger gilt auch fuer
+    Schreiber, die nie durch diese Funktion kommen."""
+    if not beinahefehler:
+        return None
+    if bemerkt_woran.strip() not in ALLOWED_BEMERKT_WORAN:
+        return ("bemerkt_woran fehlt oder ist unbekannt: "
+                f"{bemerkt_woran!r}. Bei beinahefehler=true ist die Angabe Pflicht. "
+                f"Erlaubt: {sorted(ALLOWED_BEMERKT_WORAN)}.")
     return None
 
 
@@ -4698,7 +4759,8 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                   resolution: str = "", prevention: str = "",
                   severity: str = "medium", projects: list | None = None,
                   node_path: str = "", same_as: str = "",
-                  anlass: str = "unbekannt", *,
+                  anlass: str = "unbekannt",
+                  beinahefehler: bool = False, bemerkt_woran: str = "", *,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
     """Record a lesson learned.
@@ -4729,6 +4791,12 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     uebergeben, unabhaengig davon, ob ein Aufrufer es versucht haette). Wie
     bei knowledge_add: aufgeloest ueber _identity() (nie None), actor/session
     landen zusaetzlich auf der Zeile selbst (lessons_learned.actor/.session).
+
+    beinahefehler/bemerkt_woran (Plan docs/PLAN_BEINAHEFEHLER_2026-08-16.md):
+    bemerkt und behoben, BEVOR Schaden entstand. Beides gehoert zusammen --
+    Kennzeichnen ohne bemerkt_woran wird abgewiesen, nichts wird geschrieben.
+    Wirkt nur beim NEUEN Eintrag; ein Bump (Dublette/same_as) laesst die
+    Kennzeichnung der bestehenden Zeile unveraendert, wie anlass auch.
     """
     anlass_fehler = _validate_anlass(anlass)
     if anlass_fehler:
@@ -4737,6 +4805,14 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                    status="rejected", query="anlass_ungueltig")
         conn.close()
         return {"status": "rejected", "error": anlass_fehler}
+
+    beinahe_fehler = _validate_beinahefehler(bool(beinahefehler), bemerkt_woran or "")
+    if beinahe_fehler:
+        conn = get_db()
+        log_access(conn, node_path or None, "lesson", actor=actor, model=model, session=session,
+                   status="rejected", query="bemerkt_woran_fehlt")
+        conn.close()
+        return {"status": "rejected", "error": beinahe_fehler}
 
     actor, model, session = _identity(actor, model, session)
 
@@ -4804,10 +4880,11 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     lesson_id = f"L-{str(uuid.uuid4())[:6]}"
     seen_at = now_iso()
     conn.execute(
-        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen, anlass, actor, session, model, client)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen, anlass, actor, session, model, client, beinahefehler, bemerkt_woran)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (lesson_id, node_path or None, type_, severity, description, root_cause,
-         resolution, prevention, json.dumps(projects or []), seen_at, seen_at, anlass, actor, session, model, _KLIENT)
+         resolution, prevention, json.dumps(projects or []), seen_at, seen_at, anlass, actor, session, model, _KLIENT,
+         1 if beinahefehler else 0, bemerkt_woran.strip() if beinahefehler else None)
     )
     log_access(conn, node_path or None, "lesson", query=description,
                actor=actor, model=model, session=session,
@@ -4818,6 +4895,8 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                    "prevention": prevention, "occurrences": 1,
                    "projects": projects or [], "first_seen": seen_at, "last_seen": seen_at,
                    "anlass": anlass, "actor": actor, "session": session, "model": model,
+                   "beinahefehler": 1 if beinahefehler else 0,
+                   "bemerkt_woran": bemerkt_woran.strip() if beinahefehler else None,
                })
     # ADR-032: Vektor sofort mitbauen statt eine vector_gaps-Luecke bis zum
     # naechsten build_embeddings.py-Lauf offenzulassen.
@@ -6214,7 +6293,15 @@ TOOLS = {
             "/learn, which then calls this normally, so 'hook' is still self-reported by that skill, "
             "not verified by the server. Default 'unbekannt' if omitted; an unknown value is rejected "
             "with the allowed list, nothing is written (applies even on a duplicate/same_as bump, where "
-            "the existing row's anlass is left untouched anyway)."
+            "the existing row's anlass is left untouched anyway). "
+            "SET beinahefehler=true FOR A NEAR MISS: something you caught and corrected BEFORE it did "
+            "damage -- a wrong number you almost reported as evidence, a command you almost ran on the "
+            "wrong file, a claim you almost made without checking. Record it in the same flow, do not "
+            "wait for the end of the session: this class is the cheapest to learn from and the one that "
+            "goes unrecorded, because a correction in the same breath feels like a work step, not a "
+            "mistake. It is counted, not judged -- what gets counted is the error class and what caught "
+            "it, never who made it. bemerkt_woran is then MANDATORY (what caught it); without it "
+            "nothing is written."
         ),
         "inputSchema": {
             "type": "object",
@@ -6230,6 +6317,10 @@ TOOLS = {
                 "same_as": {"type": "string", "description": "ID of an existing lesson this is a repeat of, e.g. 'L-6e48a9'"},
                 "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
                            "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."},
+                "beinahefehler": {"type": "boolean", "default": False,
+                                  "description": "Near miss: caught and corrected before any damage. Requires bemerkt_woran."},
+                "bemerkt_woran": {"type": "string", "enum": sorted(ALLOWED_BEMERKT_WORAN),
+                                  "description": "What caught the near miss -- zahl (a number/output did not match expectation, no mechanism involved), test, waechter (hook/trigger/lint), gegenprobe (deliberate counter-check), wissen (a recalled lesson/node), betreiber (a human said so), zufall (noticed by chance while reading something else). Mandatory when beinahefehler=true."},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["type", "description"]
@@ -6240,7 +6331,9 @@ TOOLS = {
             args.get("root_cause", ""),
             args.get("resolution", ""), args.get("prevention", ""),
             args.get("severity", "medium"), args.get("projects"), args.get("node_path", ""),
-            args.get("same_as", ""), args.get("anlass", "unbekannt"), **_identity_args(args)
+            args.get("same_as", ""), args.get("anlass", "unbekannt"),
+            bool(args.get("beinahefehler", False)), args.get("bemerkt_woran", "") or "",
+            **_identity_args(args)
         )
     },
     "lesson_update": {

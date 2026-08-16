@@ -620,8 +620,47 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     -- EIGENE lessons_learned-Tabelle -- mit pruefstelle. Ein Test, der sein
     -- Schema selbst definiert, kann eine Schemaluecke grundsaetzlich nicht
     -- finden; er prueft seine eigene Annahme.
-    pruefstelle TEXT
+    pruefstelle TEXT,
+    -- Beinahefehler (Plan docs/PLAN_BEINAHEFEHLER_2026-08-16.md, 2026-08-16):
+    -- bemerkt und behoben, BEVOR Schaden entstand. Eigene Spalte statt eines
+    -- eigenen type-Wertes, weil type die Fehlerklasse traegt (error|insight|
+    -- pattern|antipattern) und der Bericht nach §6 genau diese Klasse noch
+    -- braucht -- gefragt ist "welche KLASSE trat als Beinahefehler auf", nicht
+    -- nur "wie viele". Ein type-Wert 'beinahefehler' haette die Klasse
+    -- ueberschrieben.
+    beinahefehler INTEGER NOT NULL DEFAULT 0,
+    -- WORAN er bemerkt wurde -- der eigentliche Ertrag (Plan §2). Feste
+    -- Wortliste statt Freitext, weil §6 sie AUSZAEHLEN will; Freitext zaehlt
+    -- nicht. Erzwungen wird sie vom Trigger darunter, denn ein Feld, das leer
+    -- bleiben darf, bleibt leer -- Beleg im eigenen Bestand:
+    -- lessons_learned.bedient_von ist bei 958 von 958 Zeilen leer.
+    -- 'zufall' ist ausdruecklich vorgesehen: wird er der haeufigste Wert,
+    -- fehlt an dieser Stelle ein Mechanismus (Plan §6).
+    bemerkt_woran TEXT
 );
+
+-- Schranke fuer beinahefehler/bemerkt_woran, gleiche Bauform wie die
+-- freigabe-Trigger darunter: in der Datenbank, nicht im Aufrufer. MCP laeuft
+-- ueber stdio, jeder Klient haelt seinen eigenen Prozess mit eigenem
+-- Codestand -- eine Pruefung in Python gilt nur fuer neu gestartete Prozesse,
+-- ein Trigger ab seiner Anlage fuer alle.
+CREATE TRIGGER IF NOT EXISTS lessons_learned_beinahe_check_bi
+BEFORE INSERT ON lessons_learned
+FOR EACH ROW WHEN NEW.beinahefehler NOT IN (0, 1)
+     OR (NEW.beinahefehler = 1 AND (NEW.bemerkt_woran IS NULL
+         OR TRIM(NEW.bemerkt_woran) NOT IN ('zahl','test','waechter','gegenprobe','wissen','betreiber','zufall')))
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.beinahefehler ist 0 oder 1; bei 1 muss bemerkt_woran einen dieser Werte tragen: betreiber, gegenprobe, test, waechter, wissen, zahl, zufall');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lessons_learned_beinahe_check_bu
+BEFORE UPDATE ON lessons_learned
+FOR EACH ROW WHEN NEW.beinahefehler NOT IN (0, 1)
+     OR (NEW.beinahefehler = 1 AND (NEW.bemerkt_woran IS NULL
+         OR TRIM(NEW.bemerkt_woran) NOT IN ('zahl','test','waechter','gegenprobe','wissen','betreiber','zufall')))
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.beinahefehler ist 0 oder 1; bei 1 muss bemerkt_woran einen dieser Werte tragen: betreiber, gegenprobe, test, waechter, wissen, zahl, zufall');
+END;
 
 -- Werte-Trigger fuer lessons_learned.freigabe, gleiche Bauform wie an
 -- knowledge_nodes darunter (B4.5-Nachtrag hatte die SPALTE gebracht, die
