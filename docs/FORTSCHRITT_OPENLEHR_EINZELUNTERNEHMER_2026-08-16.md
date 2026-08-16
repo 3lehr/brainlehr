@@ -129,3 +129,78 @@ ihren eigenen Eintrag mit Test und Rot-Probe hat.
   geteilt. Das neue Repo hat keine Testkonfiguration.
 - **Ein Testlauf im neuen Repo hat nie stattgefunden.** Der Stand ist „geerbt,
   nicht ausgeführt", nicht „läuft".
+
+## B4 — Erster senkrechter Schnitt · **fachlich fertig, Zeichner offen**
+
+Commit `cd95578` (Domänen-Repo). Rot 7/3 gegen eine arglose Fassung, danach 10 grün.
+
+**Der Fachweg:** eine gerechnete Größe bekommt eine amtliche EÜR-Zeile
+vorgeschlagen, samt Fundstelle. **Die Regel, die den Schnitt trägt:** Die
+Fundstelle muss *wörtlich* im amtlichen Text stehen — sonst ist sie kein Zitat,
+sondern eine Behauptung, und es gibt keinen Vorschlag.
+
+**Blaupause eingehalten:** `euer_zuordnung.py` (410 Zeilen, DB-gebunden) wurde
+gelesen, nicht kopiert; die neue Fassung hängt an einer anderen Schnittstelle.
+Übernommen wurden **nur Daten** — der amtliche Feldkatalog mit 61 Feldern.
+
+**Die Beschreibungsform ist damit entschieden, nicht mehr vermutet** (das war
+B4s Auftrag): Rollen tragen (`tabelle`, `spalten`, `art: betrag|zitat|text`),
+Bauformen braucht die Beschreibung nicht. Das Manifest besteht brainlehrs
+Prüfer aus B1 einschließlich der Plattformblindheit nach ADR-024 — geprüft
+gegen den **echten** Prüfer, nicht gegen eine Nachbildung.
+
+**Erste Regel von `unbelegt` auf `belegt`**, mit Test *und* Rot-Probe.
+Registerstand: 2 Übernahmen, 1 unbelegt, 1 belegt.
+
+**Offen:** der native Zeichner. Der Bildschirm ist beschrieben und nirgends zu
+sehen.
+
+## B5 — Der Schalter (ADR-023) · **nicht angefasst, fremd gehalten**
+
+`DienstAufsicht.swift` steht im Agentenregister auf Sitzung `13451282`, Agent
+`a8eab9c98545a8272`, **ohne Stopp-Ereignis** — letzter Eintrag
+2026-08-15T04:58, also vor 33 Stunden. `HauptFenster.swift` hält Sitzung
+`1d718e1f`, letzter Eintrag vor 7 Stunden.
+
+Die Hausregel ist eindeutig: *Agent ohne Stopp-Ereignis → läuft noch → Finger
+weg.* 33 Stunden sehen nach einer Sitzung aus, die ohne Stopp-Eintrag endete —
+aber das ist eine Vermutung, und die Regel kennt diese Ausnahme nicht. **B5
+bleibt liegen und gehört dem Betreiber.**
+
+## B6 — Fremdprobe · **fertig, mit dem lehrreichsten Befund des Tages**
+
+**Erster Lauf: 10 Tests grün am fremden Pfad. Das war ein Fehlbefund.**
+
+Grün waren sie, weil mein eigener Test `brainlehr` unter
+`/Volumes/daten/Begod2026/brainlehr` fest verdrahtet hatte — und dieser Pfad
+existiert auf *dieser* Maschine weiterhin. Die Fremdprobe hat nicht das Repo
+gemessen, sondern die Maschine, auf der sie lief. Auf einem fremden Rechner
+wäre sie rot gewesen, ohne dass die Probe es gemerkt hätte.
+
+Das ist genau die Fehlerklasse „der Prüfstand misst mit": Ein Aufbau, der
+schmaler ist als die Wirklichkeit, liefert eine Zahl statt eines Fehlschlags.
+
+**Behoben** (Commit `91fc942`): Der Prüfer der Trägerschicht wird über
+`BRAINLEHR_PFAD` gesucht, ersatzweise als Nachbarverzeichnis. Fehlt er, wird
+der Test **übersprungen** — mit dem Satz *„ÜBERSPRUNGEN heißt UNGEPRÜFT, nicht
+in Ordnung"* im Grund. Ein stiller Durchlauf wäre hier schlimmer als ein
+Fehlschlag.
+
+**Abnahme wiederholt:** am fremden Pfad 9 grün, 1 übersprungen mit sichtbarem
+Grund, kein absoluter Pfad mehr, Dienst `exit 0`.
+
+## Gesamtstand
+
+| Schritt | Stand |
+|---|---|
+| B1 Manifestformat | fertig (`37a938e3`) |
+| B2 Übernahmeregister | fertig (`05f249e8`) |
+| B3 Schnitt mit Historie | fertig, drei Rückschläge |
+| B3a Register nach dem Schnitt | fertig (`021d4f8`) |
+| B4 Senkrechter Schnitt | fachlich fertig (`cd95578`), Zeichner offen |
+| B5 Schalter | **blockiert** — fremd gehaltene Dateien |
+| B6 Fremdprobe | fertig (`91fc942`) |
+
+**Was ausdrücklich nicht erledigt ist:** die Auswärtsbindungen im geerbten Code
+(24 Dateien mit absoluten Pfaden, 70 Fundstellen `begod/`), `pyproject.toml`
+und CI, ein Testlauf über den geerbten Bestand, und der native Zeichner.
