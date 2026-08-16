@@ -74,6 +74,7 @@ graph LR
   crm_consilium_phase3["crm_consilium_phase3"]
   cross_app_compliance["cross_app_compliance"]
   cspell_sync["cspell_sync"]
+  dateilink_waechter["dateilink_waechter"]
   deep_analyze_crm["deep_analyze_crm"]
   deep_research["deep_research"]
   deploy_to_worktrees["deploy_to_worktrees"]
@@ -340,4 +341,4 @@ graph LR
   verify_ema_fix -->|1| stem_server
 ```
 
-Ein Kasten ist eine Datei, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 261 Module, 73 Verbindungen.
+Ein Kasten ist eine Datei, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 262 Module, 73 Verbindungen.

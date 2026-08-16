@@ -195,6 +195,15 @@
    "quelle": "hub/scripts/commit_guard_hook.py"
   },
   {
+   "id": "s_dateilink_waechter_py",
+   "text": "dateilink_waechter.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Wächter gegen Dateilinks, die ins Leere zeigen.",
+   "entscheidet": true,
+   "quelle": "hub/scripts/dateilink_waechter.py"
+  },
+  {
    "id": "s_dienstwache_py",
    "text": "dienstwache.py",
    "form": "kasten",
@@ -730,6 +739,12 @@
   {
    "von": "ev_Stop",
    "nach": "s_antwort_abruf_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_dateilink_waechter_py",
    "text": "global",
    "art": "gerichtet"
   },

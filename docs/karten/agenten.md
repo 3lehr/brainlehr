@@ -101,6 +101,9 @@ graph LR
   ev_Stop -->|global| s_auszug_nachziehen_py
   s_antwort_abruf_py["antwort_abruf.py"]
   ev_Stop -->|global| s_antwort_abruf_py
+  s_dateilink_waechter_py["dateilink_waechter.py"]
+  class s_dateilink_waechter_py entscheidet
+  ev_Stop -->|global| s_dateilink_waechter_py
   ev_SubagentStart(["SubagentStart"])
   modell -.->|loest aus| ev_SubagentStart
   ev_SubagentStart -->|global| s_agent_register_hook_py
@@ -138,4 +141,4 @@ graph LR
   classDef entscheidet stroke-width:4px
 ```
 
-52 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 1 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.
+53 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 1 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.
