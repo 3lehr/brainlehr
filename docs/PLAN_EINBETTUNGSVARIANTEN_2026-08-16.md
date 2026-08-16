@@ -85,3 +85,39 @@ Nicht „eine Variante ist besser". Sondern: **der Median-Rang der heute 23 verl
 Fälle**, je Variante, mit Angabe der Kandidatenzahl. Und ausdrücklich auch das
 Nullergebnis — eine Richtung, die nichts bringt, wird als solche festgehalten statt
 stillschweigend fallengelassen.
+
+## Fortschreibung 2026-08-16T14:15:00+0200 — V2 gemessen, und sie wirkt
+
+Der Plan hielt die Messung für blockiert („kein Modellzugang"). Das war eine Aussage
+über den eigenen Aufbau, nicht über die Lage: Ollama lief die ganze Zeit, und Haiku
+ist über einen Subagenten erreichbar. Gebaut wurde deshalb `--umschriften` — ein
+Haiku-Subagent schreibt die 35 Texte, das Modul rechnet sie. L-a69129 bleibt gewahrt,
+sie verlangt das Modell, nicht den Abrechnungsweg.
+
+| Lauf | top5 | top50 | Median-Rang |
+|---|---|---|---|
+| Stufe 0 (Ausgangslage) | 4/35 | 13 | 79 |
+| **V2 Anfrageumschrift** | **11/35** | **19** | **35** |
+| Gegenprobe (Identität) | 4/35 | 13 | 79 |
+
+Von 5973 Kandidaten. Die Gegenprobe reproduziert Stufe 0 **exakt** — der Unterschied
+kommt aus der Umschrift, nicht aus dem Messweg. Das ist der Beleg, den der Plan als
+Bedingung genannt hat.
+
+**Was die Zahl NICHT sagt:** Sie misst den reinen Bedeutungskanal, nicht den vollen
+Suchweg; 35 Fälle sind klein; und die Betriebskosten je Anfrage sind hier nicht
+gemessen, weil das Umschreiben vorher im Subagenten geschah. Ein Verfahren, das jede
+Anfrage durch ein zweites Modell schickt, kostet Zeit und Geld — das gehört gemessen,
+bevor es in den Produktivweg geht.
+
+### Der Befund am Prüfstand, der die Zahl fast wertlos gemacht hätte
+
+Der erste Subagentenlauf lieferte alle 35 Umschriften auf **Englisch**, gegen einen
+durchweg deutschen Bestand. Die Messung wäre gelaufen, hätte eine plausible Zahl
+geliefert — und eine Sprachdifferenz gemessen statt der Variante. Aufgefallen ist es
+beim Lesen der Ausgabe, nicht durch eine Prüfung; die Abnahme des Auftrags verlangte
+Vollständigkeit und Format, aber nichts über die Sprache.
+
+Nachgefordert wurde mit einer Abnahme, die eine **Null** verlangt: Zahl der
+Umschriften ohne deutsches Funktionswort. Das ist die Form, die trägt — eine
+Zusicherung, die einen Fehlschlag verlangt, statt einer, die Erfolg beschreibt.

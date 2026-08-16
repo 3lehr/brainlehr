@@ -1,0 +1,241 @@
+{
+  "korpus": "runs/pruefkorpus.jsonl",
+  "faelle": 35,
+  "modell": "bge-m3@ctx2048",
+  "umschreibe_modell": "claude-haiku-4-5-20251001 (Subagent ueber Abo, vorbereitete Datei v2_umschriften_2026-08-16.json)",
+  "kandidaten_im_kanal": 5973,
+  "grenze": [
+    "misst nicht den vollen Suchweg, nur den reinen Bedeutungskanal",
+    "35 Faelle sind klein -- ein knapper Unterschied ist kein Ergebnis",
+    "Dauer ist je-Anfrage-Overhead dieses Laufs, keine Lastmessung im Betrieb"
+  ],
+  "stufe": {
+    "name": "2-anfrageumschrift",
+    "faelle": 35,
+    "nicht_im_kanal": 0,
+    "median_rang": 35,
+    "bester_rang": 1,
+    "schlechtester_rang": 2089,
+    "in_top5": 11,
+    "in_top50": 19,
+    "kandidaten": 5973
+  },
+  "dauer_je_umschrift_sekunden": {
+    "median": null,
+    "min": null,
+    "max": null,
+    "summe": null
+  },
+  "roh": [
+    {
+      "ziel": "L-a9ccd0",
+      "art": "lesson",
+      "rang": 4,
+      "umschrift": "Mobilanwendung – Nutzer wechselt während Vorgang zu anderer App, System setzt Daten beim Timeout ohne explizite Bestätigung zurück"
+    },
+    {
+      "ziel": "L-298823",
+      "art": "lesson",
+      "rang": 297,
+      "umschrift": "Ablaufdatum-Markierung für Gutscheine hinzugefügt, aber niemals ausgewertet – Nutzer bekommt keine Warnung"
+    },
+    {
+      "ziel": "L-f9f654",
+      "art": "lesson",
+      "rang": 1,
+      "umschrift": "Hintergrund-Task-Fehler – asynchroner Fehler nicht gefangen, weil Wrapper nur synchronen Pfad abdeckt"
+    },
+    {
+      "ziel": "L-b4b443",
+      "art": "lesson",
+      "rang": 197,
+      "umschrift": "Hardware-Verbindung wird als aktiv angezeigt obwohl Modul nicht angeschlossen – veralteter Status wird nicht validiert"
+    },
+    {
+      "ziel": "L-44a838",
+      "art": "lesson",
+      "rang": 8,
+      "umschrift": "Auto-Reply-System speichert von Modell generierte Texte ungefiltert – können PII und Kontodaten enthalten"
+    },
+    {
+      "ziel": "L-cdac52",
+      "art": "lesson",
+      "rang": 1093,
+      "umschrift": "Bestätigungs-Overlay schlägt fehl wegen unsicherer UI-Baum-Position – braucht feste Referenz und geordnete Statusänderungen"
+    },
+    {
+      "ziel": "L-e7bc5e",
+      "art": "lesson",
+      "rang": 1,
+      "umschrift": "Techniker umgeht Freigabeprozess und verwechselt deaktivierten Pfad mit reinem Infrastruktur-Problem"
+    },
+    {
+      "ziel": "L-e1a441",
+      "art": "lesson",
+      "rang": 1,
+      "umschrift": "Testdaten sind identisch mit Produktionsdaten – Löschen nach Name riskiert Verlust echter Nutzerdaten"
+    },
+    {
+      "ziel": "L-b91ed6",
+      "art": "lesson",
+      "rang": 1165,
+      "umschrift": "Rollout-Logs attributieren Fehler pauschal der Infrastruktur – Detailprotokolle zeigen tatsächliche Programmfehler"
+    },
+    {
+      "ziel": "L-bbd7fb",
+      "art": "lesson",
+      "rang": 35,
+      "umschrift": "Defekte Sensoren werden nicht gemeldet – System fällt bei fehlenden Daten auf Standardwert zurück"
+    },
+    {
+      "ziel": "L-503687",
+      "art": "lesson",
+      "rang": 162,
+      "umschrift": "Falsch-Positive bei Link-Analyse – organisatorische und echte Datenverbindungen nicht unterscheidbar"
+    },
+    {
+      "ziel": "L-8c633e",
+      "art": "lesson",
+      "rang": 8,
+      "umschrift": "Fehler im Hauptbereich behoben, aber identische Stelle in ähnlicher View übersehen"
+    },
+    {
+      "ziel": "L-606b63",
+      "art": "lesson",
+      "rang": 161,
+      "umschrift": "Bluetooth-Disconnect – verspäteter Befehl aus erstem Versuch killt neue Verbindung, keine Instanz-ID-Verfolgung"
+    },
+    {
+      "ziel": "L-0392e4",
+      "art": "lesson",
+      "rang": 146,
+      "umschrift": "Sort-Fehler – identische Prioritätswerte über Kategorien hinweg verhindern Precedence-Bestimmung"
+    },
+    {
+      "ziel": "L-476602",
+      "art": "lesson",
+      "rang": 3,
+      "umschrift": "KI-Startup-Latenz durch Verarbeitung großer Optionsliste – braucht Filterung beim Verbinden ohne Security-Einbußen"
+    },
+    {
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "art": "node",
+      "rang": 93,
+      "umschrift": "Besprechung fixiert sich auf technische Details während rechtliche Freigabe zeitkritisch ist"
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "art": "node",
+      "rang": 142,
+      "umschrift": "Kabeluntergrund-Entscheidung zwischen minimalem aktuellem Bedarf und zukunftssicherer Kapazität"
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "art": "node",
+      "rang": 1,
+      "umschrift": "Unbekannte Spezifikation berichten statt plausible Zahl zu schätzen"
+    },
+    {
+      "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "art": "node",
+      "rang": 7,
+      "umschrift": "Unklar ob Entfernung veralteter Funktionen jetzt notwendig ist"
+    },
+    {
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "art": "node",
+      "rang": 71,
+      "umschrift": "Bestimmen welche Mimik-Funktionen produktionsreif sind"
+    },
+    {
+      "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+      "art": "node",
+      "rang": 7,
+      "umschrift": "Neu hochgeladene Dateien fehlen in Trefferliste – Import oder Indexierung fehlgeschlagen"
+    },
+    {
+      "ziel": "/lessons/phase2-summary",
+      "art": "node",
+      "rang": 2089,
+      "umschrift": "Auto-generierte Skripte unzuverlässig durch zu vage Anleitungen"
+    },
+    {
+      "ziel": "/testing/pytest",
+      "art": "node",
+      "rang": 1,
+      "umschrift": "Test-Struktur: Fixtures, Szenario-Kategorisierung und Abdeckungsmessung"
+    },
+    {
+      "ziel": "/brainlehr/inference-control-was-andere-faecher",
+      "art": "node",
+      "rang": 46,
+      "umschrift": "Gesperrte Zonen zeigen plausible Fiktion nicht Fehlen um Rückschlüsse zu verhindern"
+    },
+    {
+      "ziel": "/methodik/einstieg",
+      "art": "node",
+      "rang": 53,
+      "umschrift": "Einarbeitung – kritische Dokumentation identifizieren um elementare Fehler zu vermeiden"
+    },
+    {
+      "ziel": "/stadtwerke",
+      "art": "node",
+      "rang": 8,
+      "umschrift": "Multi-Org-Berechtigungen mit simuliertem Szenario testen"
+    },
+    {
+      "ziel": "/openlehr/steuer/ui",
+      "art": "node",
+      "rang": 782,
+      "umschrift": "Finanz-Portal-Modernisierung – Submodul-Anzahl zählen für korrekte Verlinkung"
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "art": "node",
+      "rang": 1,
+      "umschrift": "Vertrag hat keine Regeln für Eigen-Vergaben – Fairness des Angebots von Eigenverwaltung unklar"
+    },
+    {
+      "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "art": "node",
+      "rang": 906,
+      "umschrift": "Unübersichtliches Protokoll absichtlich erhalten als Prozess-Gedächtnis nicht als Fehler"
+    },
+    {
+      "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "art": "node",
+      "rang": 1,
+      "umschrift": "Fehler beim Profil-Update – Nutzer sieht nur Wiederhole-Aufforderung ohne technische Ursache"
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "art": "node",
+      "rang": 33,
+      "umschrift": "Unterschriften-Anzahl bereits intern festgelegt – nicht mit Lieferanten verhandelbar"
+    },
+    {
+      "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "art": "node",
+      "rang": 410,
+      "umschrift": "Verifizierungs-Ebene nur hinzufügen wenn unabhängige Zweitmeinung gebraucht wird"
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "art": "node",
+      "rang": 1,
+      "umschrift": "Modernisierungs-Beleg widerspricht der Sicherheitsprüfung – Handwerker um aktuelle Bestandsauskunft fragen"
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "art": "node",
+      "rang": 3,
+      "umschrift": "Externe Datenquellen werden in Sandbox isoliert um System-Sicherheit zu gewährleisten"
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "art": "node",
+      "rang": 64,
+      "umschrift": "KI unzuverlässig bei komplexen Projekten wegen übergroßer Anweisungskontexte – braucht Kompression für Durchsatz"
+    }
+  ]
+}
