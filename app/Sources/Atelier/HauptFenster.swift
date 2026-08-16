@@ -13,6 +13,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
     case sitzung
     case wissensraum
     case landkarten
+    case domaene
     case ausweise
 
     var id: String { rawValue }
@@ -35,6 +36,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
         case .sitzung: return "Sitzung"
         case .wissensraum: return "Wissensraum"
         case .landkarten: return "Landkarten"
+        case .domaene: return "Steuer für Einzelunternehmer"
         case .ausweise: return "Ausweise und Einladungen"
         }
     }
@@ -48,6 +50,7 @@ enum SeitenleistenEintrag: String, CaseIterable, Identifiable {
         case .sitzung: return "bubble.left.and.text.bubble.right"
         case .wissensraum: return "point.3.filled.connected.trianglepath.dotted"
         case .landkarten: return "map"
+        case .domaene: return "eurosign.square"
         case .ausweise: return "person.text.rectangle"
         }
     }
@@ -146,6 +149,14 @@ struct HauptFenster: View {
                     // Zeichenflaeche.
                     DienstBanner(aufsicht: aufsicht)
                     LandkartenAnsicht(aufsicht: aufsicht)
+                } else if wahl.aktuell == .domaene {
+                    // ADR-024: Die Domaene BESCHREIBT ihren Bildschirm, das
+                    // atelier zeichnet ihn. Hier wird die Beschreibung aus dem
+                    // Manifest geholt und an DomaenenAnsicht gegeben -- ohne
+                    // diesen Aufruf waere der Zeichner gebaut und wirkungslos,
+                    // also genau die Fehlerklasse, die dieses Haus jagt.
+                    DienstBanner(aufsicht: aufsicht)
+                    DomaenenSeite()
                 } else if wahl.aktuell == .ausweise {
                     AusweisAnsicht()
                 }

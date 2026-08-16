@@ -1,0 +1,28 @@
+Melder unverdrahtet_swift.py -- Rot-Probe am ECHTEN Fall, nicht an einem gebastelten.
+gefahren 2026-08-16T16:52:00+0200
+
+VORGEHEN: Den Stand VOR der Verdrahtung wiederhergestellt (HauptFenster.swift
+aus HEAD, DomaenenSeite.swift entfernt) und den Melder darauf laufen lassen.
+Das ist der Fall, der heute tatsaechlich passiert ist -- kein nachgestellter.
+
+  ROT:   1 Typ(en) gebaut, aber von nirgends gerufen:
+           DomaenenAnsicht  (app/Sources/Atelier/DomaenenAnsicht.swift)
+         exit 1
+  GRUEN: Kein unverdrahteter Typ (40 Swift-Dateien geprueft). exit 0
+
+ZWEI EIGENE FEHLER am Melder selbst, beide vor dem Einhaengen behoben:
+
+1. Der Selbsttest scheiterte am NEGATIVFALL. Ursache war der Testaufbau, nicht
+   der Melder: mein "Rufer" wurde selbst von niemandem gerufen, also konnte die
+   Liste nie leer werden. Behoben durch einen @main-Einstieg, der ihn braucht.
+   Der Negativfall ist der wichtigere Teil des Selbsttests -- ein Melder, der
+   immer anschlaegt, wird weggeklickt statt gelesen.
+
+2. Der erste Anlauf meldete 31 Typen. Das Kriterium war falsch: es verlangte
+   ein Vorkommen AUSSERHALB der eigenen Datei und traf damit jede private
+   Hilfsansicht, die innerhalb ihrer Datei voellig richtig benutzt wird.
+   Verschaerft auf: gemeldet wird, was NIRGENDS vorkommt ausser in seiner
+   eigenen Deklaration. Danach 0 Fehlalarme bei 40 Dateien.
+
+SELBSTTEST: 3 Pruefungen gruen (Fund, Nichtfund, Negativfall).
+EINGEHAENGT: .git/hooks/pre-push, vor der Ablaufpflicht.
