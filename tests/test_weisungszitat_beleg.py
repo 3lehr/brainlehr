@@ -33,12 +33,12 @@ _sys.path[:0] = [str(ROOT)] + [str(ROOT / o) for o in
 import knowledge_mcp_server as kms  # noqa: E402
 
 SCHEMA_SQL = (ROOT / "schema.sql").read_text(encoding="utf-8")
-# Schema-Fassung VOR diesem Auftrag, ueber den benannten Elter-Commit (git
+# Schema-Fassung VOR diesem Auftrag, ueber den Elter des Feature-Commits (git
 # show) -- kein selbst nachgebauter Text, der beim naechsten Schema-Umbau
 # stillschweigend veraltet (gleiches Muster wie
 # tests/test_norm_entschieden_belegart.py::_ALTE_SCHEMA_SQL).
 _ALTE_SCHEMA_SQL = subprocess.run(
-    ["git", "show", "HEAD:schema.sql"], cwd=ROOT, capture_output=True, text=True, check=True,
+    ["git", "show", "787ac08e^:schema.sql"], cwd=ROOT, capture_output=True, text=True, check=True,
 ).stdout
 
 
@@ -74,7 +74,7 @@ def _insert(conn: sqlite3.Connection, **overrides) -> None:
 # --- ROT vor GRUEN ----------------------------------------------------
 
 def test_rot_alter_stand_kennt_weisungszitat_nicht(tmp_path):
-    """ROT: auf der Schema-Fassung von VOR diesem Auftrag (git HEAD) lehnt
+    """ROT: auf der Schema-Fassung von VOR diesem Auftrag lehnt
     schon der Wertebereichs-Trigger jeden Versuch ab, norm_entschieden_
     belegart='weisungszitat' zu setzen -- der Eingang existierte nicht."""
     db_path = _frisch(tmp_path, schema=_ALTE_SCHEMA_SQL, name="alt.db")

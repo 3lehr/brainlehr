@@ -1,5 +1,14 @@
 # AI handoff
 
+## 2026-08-16T21:07:47+02:00 — test(brainlehr): pin Weisungszitat red fixture
+
+- Files: `tests/test_weisungszitat_beleg.py`, `AI_HANDOFF.md`; additionally updated the non-repository Codex instruction file `~/.codex/AGENTS.md` with the verified client contracts.
+- Why: The historical red test loaded moving `HEAD:schema.sql`; after the feature commit, that schema already accepted `weisungszitat`, so the test no longer represented the pre-feature state. It now reads the parent of the feature commit that introduced the contract.
+- Red: `python3 -m pytest -q tests/test_beinahefehler.py tests/test_weisungszitat_beleg.py tests/test_relevanzlage.py` — 1 failed, 41 passed; `test_rot_alter_stand_kennt_weisungszitat_nicht` did not raise.
+- Verified: the same command — 42 passed; installed near-miss and Weisungszitat triggers were read from `sqlite_master`; Codex `knowledge_read(7b02ef68)` succeeded; configuration contains two current Brainlehr paths and no obsolete `hub/shared-knowledge` path.
+- Remaining risk: The current Codex process still exposes the pre-update `knowledge_add` schema without `betreiber_weisung`; the app must restart to reload MCP tool metadata. The duplicate `knowledge` and `brainlehr` server entries were left intact because their intended compatibility boundary is not documented.
+- Next test: After restarting Codex, inspect the loaded `knowledge_add` schema for `betreiber_weisung`, then perform no write unless a real rank-1/2 operator instruction needs recording.
+
 ## 2026-08-11T11:40:45+02:00 — fix(enigma): block projected reads when locked
 
 - Files: `knowledge_mcp_server.py`, `kern/werkzeugrechte.py`, `tests/test_enigma_hausmeister_contract.py`, `docs/AI_DECISIONS.md`, `AI_HANDOFF.md`
