@@ -34,21 +34,42 @@ melde die Abweichung."*
 
 ### Die offenen Linien, nach Wert geordnet
 
-**K1 — die Verschmelzung.** `docs/PLAN_KANALGUETE_2026-08-15.md` samt
-Fortschreibung. Zwei Schritte wurden gebaut, gemessen und **verworfen**: Schritt 1
-ohne Effekt, Schritt 2 verschlechtert alles und verfehlt den Leitfall. Der Code
-liegt unverdrahtet in `kern/embeddings.py`, Vorgabe `None` ist byte-identisch zur
-alten Formel.
-**Was stattdessen dran ist, in dieser Reihenfolge:**
-1. **Den Sockel messen.** In `_fuse_with_keyword_floor()` sättigt etwas, wodurch
-   der **echte** Suchweg eine Änderung an `rrf_fuse` strukturell nicht sieht. Diese
-   Datei stand auf der Tabu-Liste des letzten Auftrags — der Fehler wohnt
-   vermutlich genau dort.
-2. **Die Relevanzschwelle.** Die Falschmeldequote steht bei **40/40 in jeder
-   Stufe**: Das System hat keinen Abschneidepunkt und kann *„dazu habe ich nichts"*
-   nicht ausdrücken. Deshalb ist jede Trefferquote dieses Hauses zweideutig.
-3. **Die Formel zuletzt**, und erst nach einer Verteilungsmessung — nicht aus der
-   Rechnung eines Einzelfalls (`L-9e4ce3`).
+**K1 — die Verschmelzung. Der Sockel ist seit dem 2026-08-16T04:48 GEMESSEN**
+(`7e3933ae`, Knoten `5c6dd28d`, `runs/kanalguete_sockel_2026-08-16.json`).
+**Nicht noch einmal messen.** Das Ergebnis, gegen 4933 Knoten:
+
+- `_fuse_with_keyword_floor()` **sättigt in 116 von 117 Anfragen** — das Endergebnis
+  ist in 116 Fällen byte-identisch mit der reinen Stichwortreihenfolge.
+- Der **Bedeutungskanal steuert 4 von 585 Endplätzen bei (0,7 %)** — er ist im
+  Produktivweg faktisch abgeschaltet.
+- Ursache ist der Stichwortkanal selbst: Trigramm-FTS mit ODER-Verknüpfung liefert
+  im Median **4740 von 4933** Knoten, ist dort also kein Filter mehr — und der
+  Sockel gibt ihm trotzdem unbedingt alle fünf Plätze.
+
+**Zwei bisher getrennt geführte Befunde hängen damit an derselben Stelle:**
+Die **Falschmeldequote 40/40** hat hier ihre Ursache statt nur ihren Namen — bei im
+Median 4740 Kandidaten je Anfrage *kann* kein Leerergebnis entstehen. Relevanz­schwelle
+und Sockel sind **nicht zwei Themen**.
+
+**Und: jede Suchgütezahl vor dem 2026-08-16 galt einem Pfad, den das System nie
+ausführt.** Derselbe Lauf, echt gegen sockellos: Trefferquote **34/40 gegen 39/40**,
+einsprachig **0/35 gegen 4/35**, Leitfall **trifft nicht** gegen trifft. Der echte
+Weg ist in jeder beweglichen Zahl schlechter — beim einsprachigen Normalfall auf
+null. Die im Plan `docs/PLAN_KANALGUETE_2026-08-15.md` berichteten Schritte 1 und 2
+wurden über den sockellosen Pfad gemessen und sind damit **gegenstandslos**.
+
+**Was jetzt dran ist:**
+1. **`kern/embeddings.py::fuse_semantic_led()` verdrahten.** Liegt seit dem
+   2026-08-12 fertig und unverdrahtet bereit: Die Bedeutungsrangliste führt, der
+   Stichwortkanal bekommt garantiert nur seinen **einen** besten Treffer.
+   **Nur über die Messstufe `echt` messen, nie wieder über den sockellosen
+   Vergleichspfad.**
+2. **Die Relevanzschwelle** — sie hängt an derselben Stelle und wird mit erledigt
+   oder gar nicht.
+3. **Nicht gemessen und ehrlich offen:** Der Prüfstand filtert nicht nach
+   `project_id` und Freigabe, der Produktivweg schon. Das kann den Stichwortkanal
+   nur kleiner machen; bei Median 4740 gegen fünf Plätze ändert es an der Sättigung
+   mit hoher Wahrscheinlichkeit nichts — gemessen ist es aber nicht.
 
 **I5/I6 — ADR-020 Schritt 2 und 3.** Die 12 schreibenden, dann die 13 lesenden
 MCP-Werkzeuge werden Klienten des Dienstes. Vorbedingung erfüllt: Der HTTP-Umweg
