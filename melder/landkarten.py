@@ -46,6 +46,51 @@ def _id(text: str) -> str:
     return re.sub(r"\W", "_", text)
 
 
+# Erklaerungen je Knoten, von den Erzeugern gefuellt und in die .json
+# gelegt. Ohne sie ist die Karte ein Bild: "chronist.py" sagt niemandem
+# etwas, der ihn nicht ohnehin kennt.
+ERKLAERUNGEN: dict = {}
+
+
+# Woran man erkennt, dass ein Haken ENTSCHEIDET statt nur zu melden: er gibt
+# eine Entscheidung an den Aufrufer zurueck (`permissionDecision`/`decision`)
+# oder bricht mit dem Code ab, der die Handlung blockiert (2). Alles andere
+# schreibt bestenfalls eine Zeile, die niemand liest -- der Unterschied ist
+# die Frage des Betreibers "wo werden Entscheidungen getroffen".
+_ENTSCHEIDET = re.compile(r"permissionDecision|[\"']decision[\"']|exit\(2\)|sys\.exit\(2\)")
+
+
+def _kurz(pfad: Path) -> str:
+    """Pfad relativ zum Verbund, sonst relativ zum Benutzerverzeichnis mit ~.
+    Ein Haken aus ~/.claude/skills/ gehoert NICHT zu diesem Verbund und wird
+    von hier aus nicht mitgepflegt -- das soll man an der Angabe sehen."""
+    for wurzel, praefix in ((VERBUND, ""), (Path.home(), "~/")):
+        try:
+            return praefix + str(pfad.relative_to(wurzel))
+        except ValueError:
+            continue
+    return str(pfad)
+
+
+def _zweck(pfad: Path) -> str:
+    """Die erste Zeile des Docstrings -- die einzige Beschreibung, die mit dem
+    Code zusammen gepflegt wird. Fehlt sie, wird das GESAGT statt geraten:
+    ein Baustein ohne ein Wort zu seinem Zweck ist selbst ein Befund."""
+    try:
+        baum = ast.parse(pfad.read_text(encoding="utf-8", errors="ignore"))
+    except (OSError, SyntaxError, ValueError):
+        return ""
+    d = ast.get_docstring(baum)
+    return (d or "").strip().split("\n")[0][:160]
+
+
+def _entscheidet(pfad: Path) -> bool:
+    try:
+        return bool(_ENTSCHEIDET.search(pfad.read_text(encoding="utf-8", errors="ignore")))
+    except OSError:
+        return False
+
+
 # ── Karte 1: der Verbund ──────────────────────────────────────────────────
 
 def karte_verbund() -> tuple[str, str, str]:
@@ -132,6 +177,37 @@ def karte_agenten() -> tuple[str, str, str]:
     quellen = [(Path.home() / ".claude" / "settings.json", "global"),
                (_w / ".claude" / "settings.json", "repo")]
     z = ["```mermaid", "graph LR"]
+
+    # DER LAUF SELBST, als Rueckgrat. Ohne ihn zeigt die Karte nur
+    # "Ereignis -> Skript" und damit NIE einen Kreis -- der Betreiber hat
+    # genau das bemerkt ("ich sehe nirgends loops!"). Der Kreis ist aber echt
+    # und belegt:
+    #
+    #   * Nach jedem Werkzeugaufruf geht es zurueck zum Modell, das den
+    #     naechsten waehlt (PostToolUse -> Modell -> PreToolUse -> ...).
+    #   * Und der Haltepunkt ist kein Ende: haken/knowledge_capture_hook.py
+    #     gibt in Zeile 121 `{"decision": "block"}` zurueck und schickt den
+    #     Lauf zurueck in die Schleife. Ein Stop, der nicht stoppt.
+    #
+    # Beides steht im Quelltext, nicht in einer Vorstellung davon, wie
+    # Agenten arbeiten.
+    z += [
+        '  subgraph lauf["Der Lauf eines Agenten"]',
+        '    modell(["Modell entscheidet"])',
+        '    werkzeug["Werkzeug laeuft"]',
+        '    halt(["Haltepunkt"])',
+        '    modell -->|waehlt| werkzeug',
+        '    werkzeug -->|Ergebnis| modell',
+        '    modell -->|fertig?| halt',
+        '    halt -->|decision: block| modell',
+        "  end",
+    ]
+    # Die Ereignisse haengen an ihren Stationen des Laufs -- damit sieht man,
+    # WO ein Haken in die Schleife greift, nicht nur DASS er existiert.
+    station = {"UserPromptSubmit": "modell", "PreToolUse": "werkzeug",
+               "PostToolUse": "werkzeug", "Stop": "halt",
+               "SubagentStart": "modell", "SubagentStop": "halt",
+               "SessionStart": "modell", "WorktreeCreate": "werkzeug"}
     gesehen: set[str] = set()
     zahl = 0
     for pfad, herkunft in quellen:
@@ -145,6 +221,8 @@ def karte_agenten() -> tuple[str, str, str]:
             eid = f"ev_{_id(ereignis)}"
             if eid not in gesehen:
                 z.append(f'  {eid}(["{ereignis}"])')
+                if ereignis in station:
+                    z.append(f"  {station[ereignis]} -.->|loest aus| {eid}")
                 gesehen.add(eid)
             for eintrag in eintraege:
                 for haken in eintrag.get("hooks", []):
@@ -158,6 +236,25 @@ def karte_agenten() -> tuple[str, str, str]:
                     if sid not in gesehen:
                         z.append(f'  {sid}["{name}"]')
                         gesehen.add(sid)
+                        # Der Pfad steht in der Befehlszeile -- daraus Zweck
+                        # und Entscheidungsbefugnis lesen.
+                        kandidat = Path(treffer[0]) if treffer else None
+                        if kandidat and not kandidat.is_absolute():
+                            kandidat = VERBUND / kandidat
+                        zweck = _zweck(kandidat) if kandidat and kandidat.exists() else ""
+                        trifft = _entscheidet(kandidat) if kandidat and kandidat.exists() else False
+                        ERKLAERUNGEN[sid] = {
+                            "zweck": zweck or "Keine Beschreibung im Quelltext.",
+                            "entscheidet": trifft,
+                            # Haken liegen nicht alle im Verbund -- einige stammen aus
+                            # ~/.claude/skills/. Ein relative_to() darauf wirft, und
+                            # die Herkunft AUSSERHALB ist gerade die interessante
+                            # Information: dieser Baustein wird von hier aus nicht
+                            # mitgepflegt.
+                            "quelle": _kurz(kandidat) if kandidat and kandidat.exists() else "",
+                        }
+                        if trifft:
+                            z.append(f"  class {sid} entscheidet")
                     z.append(f"  {eid} -->|{herkunft}| {sid}")
                     zahl += 1
     agenten = sorted((Path.home() / ".claude" / "agents").glob("*.md")) if \
@@ -166,6 +263,9 @@ def karte_agenten() -> tuple[str, str, str]:
         aid = f"ag_{_id(a.stem)}"
         z.append(f'  {aid}>"Agent {a.stem}"]')
     z.append("  classDef waise stroke-dasharray: 5 5")
+    # Entscheider werden im Bild dicker umrandet -- die Antwort auf "wo
+    # werden Entscheidungen getroffen" soll man sehen, nicht nachschlagen.
+    z.append("  classDef entscheidet stroke-width:4px")
     z.append("```")
     return ("agenten", "Agenten und ihre Auslöser — was wirklich verdrahtet ist",
             "\n".join(z) + f"\n\n{zahl} Verdrahtungen aus zwei Einstellungsdateien "
@@ -311,9 +411,13 @@ def alle(repos_fuer_code: list[str]) -> list[tuple[str, str, str]]:
 
 # Knotenformen, die die Karten benutzen -- die Klammern tragen Bedeutung:
 # [] Repo/Modul, ([]) Port, [()] Datenspeicher, >] Startweg von aussen, () Blick.
-_KNOTEN = re.compile(r'^\s{2}(\w+)(\[\(|\(\[|\[|\(|>)"?([^"\]\)]*)"?')
-_KANTE = re.compile(r"^\s{2}(\w+)\s+(-{2,3}>|-\.->|-{3})(?:\|([^|]*)\|)?\s+(\w+)")
-_KLASSE = re.compile(r"^\s{2}class (\w+) (\w+)")
+# Einrueckung ist BELIEBIG, nicht genau zwei: in einem `subgraph` sind es
+# vier, und mit `^\s{2}` fielen genau die Kanten des Agenten-Laufs heraus --
+# die Karte meldete dann "0 Kreise" fuer einen Graphen, der sichtbar einen
+# enthielt.
+_KNOTEN = re.compile(r'^\s+(\w+)(\[\(|\(\[|\[|\(|>)"?([^"\]\)]*)"?')
+_KANTE = re.compile(r"^\s+(\w+)\s+(-{2,3}>|-\.->|-{3})(?:\|([^|]*)\|)?\s+(\w+)")
+_KLASSE = re.compile(r"^\s+class (\w+) (\w+)")
 
 
 def graph_aus_mermaid(mermaid: str) -> dict:
@@ -369,8 +473,11 @@ def schreiben(karten: list[tuple[str, str, str]]) -> list[Path]:
         anfang, ende = inhalt.find("```mermaid"), inhalt.find("```", inhalt.find("```mermaid") + 10)
         mermaid = inhalt[anfang + len("```mermaid"):ende] if ende > anfang >= 0 else ""
         d = ZIEL / f"{kennung}.json"
-        d.write_text(json.dumps({"kennung": kennung, "titel": titel,
-                                 **graph_aus_mermaid(mermaid)},
+        graph = graph_aus_mermaid(mermaid)
+        for k in graph["knoten"]:
+            if k["id"] in ERKLAERUNGEN:
+                k.update(ERKLAERUNGEN[k["id"]])
+        d.write_text(json.dumps({"kennung": kennung, "titel": titel, **graph},
                                 indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         geschrieben.append(d)
     return geschrieben

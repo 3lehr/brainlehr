@@ -4,12 +4,23 @@
 
 ```mermaid
 graph LR
+  subgraph lauf["Der Lauf eines Agenten"]
+    modell(["Modell entscheidet"])
+    werkzeug["Werkzeug laeuft"]
+    halt(["Haltepunkt"])
+    modell -->|waehlt| werkzeug
+    werkzeug -->|Ergebnis| modell
+    modell -->|fertig?| halt
+    halt -->|decision: block| modell
+  end
   ev_PostToolUse(["PostToolUse"])
+  werkzeug -.->|loest aus| ev_PostToolUse
   s_chronist_py["chronist.py"]
   ev_PostToolUse -->|global| s_chronist_py
   s_monolith_guard_py["monolith_guard.py"]
   ev_PostToolUse -->|global| s_monolith_guard_py
   s_entwurfsprobe_hook_py["entwurfsprobe_hook.py"]
+  class s_entwurfsprobe_hook_py entscheidet
   ev_PostToolUse -->|global| s_entwurfsprobe_hook_py
   s_agent_register_hook_py["agent_register_hook.py"]
   ev_PostToolUse -->|global| s_agent_register_hook_py
@@ -24,17 +35,24 @@ graph LR
   s_sichtbarkeit_py["sichtbarkeit.py"]
   ev_PostToolUse -->|global| s_sichtbarkeit_py
   ev_PreToolUse(["PreToolUse"])
+  werkzeug -.->|loest aus| ev_PreToolUse
   s_agent_model_guard_py["agent_model_guard.py"]
+  class s_agent_model_guard_py entscheidet
   ev_PreToolUse -->|global| s_agent_model_guard_py
   s_agent_reuse_guard_hook_py["agent_reuse_guard_hook.py"]
+  class s_agent_reuse_guard_hook_py entscheidet
   ev_PreToolUse -->|global| s_agent_reuse_guard_hook_py
   s_cascade_guard_hook_py["cascade_guard_hook.py"]
+  class s_cascade_guard_hook_py entscheidet
   ev_PreToolUse -->|global| s_cascade_guard_hook_py
   s_commit_guard_hook_py["commit_guard_hook.py"]
+  class s_commit_guard_hook_py entscheidet
   ev_PreToolUse -->|global| s_commit_guard_hook_py
   s_auftragshypothese_waechter_py["auftragshypothese_waechter.py"]
+  class s_auftragshypothese_waechter_py entscheidet
   ev_PreToolUse -->|global| s_auftragshypothese_waechter_py
   ev_SessionStart(["SessionStart"])
+  modell -.->|loest aus| ev_SessionStart
   s_bsi_session_hint_py["bsi_session_hint.py"]
   ev_SessionStart -->|global| s_bsi_session_hint_py
   s_build_node_index_py["build_node_index.py"]
@@ -69,11 +87,14 @@ graph LR
   s_dienstwache_py["dienstwache.py"]
   ev_SessionStart -->|global| s_dienstwache_py
   ev_Stop(["Stop"])
+  halt -.->|loest aus| ev_Stop
   s_codemap_active_py["codemap_active.py"]
   ev_Stop -->|global| s_codemap_active_py
   s_quality_gate_hook_py["quality_gate_hook.py"]
+  class s_quality_gate_hook_py entscheidet
   ev_Stop -->|global| s_quality_gate_hook_py
   s_knowledge_capture_hook_py["knowledge_capture_hook.py"]
+  class s_knowledge_capture_hook_py entscheidet
   ev_Stop -->|global| s_knowledge_capture_hook_py
   ev_Stop -->|global| s_wissensverlauf_py
   s_auszug_nachziehen_py["auszug_nachziehen.py"]
@@ -81,6 +102,7 @@ graph LR
   s_antwort_abruf_py["antwort_abruf.py"]
   ev_Stop -->|global| s_antwort_abruf_py
   ev_SubagentStart(["SubagentStart"])
+  modell -.->|loest aus| ev_SubagentStart
   ev_SubagentStart -->|global| s_agent_register_hook_py
   s_auftrag_recall_hook_py["auftrag_recall_hook.py"]
   ev_SubagentStart -->|global| s_auftrag_recall_hook_py
@@ -89,8 +111,10 @@ graph LR
   s_regelwechsel_py["regelwechsel.py"]
   ev_SubagentStart -->|global| s_regelwechsel_py
   ev_SubagentStop(["SubagentStop"])
+  halt -.->|loest aus| ev_SubagentStop
   ev_SubagentStop -->|global| s_agent_register_hook_py
   ev_UserPromptSubmit(["UserPromptSubmit"])
+  modell -.->|loest aus| ev_UserPromptSubmit
   s_knowledge_recall_hook_py["knowledge_recall_hook.py"]
   ev_UserPromptSubmit -->|global| s_knowledge_recall_hook_py
   s_stand_recall_hook_py["stand_recall_hook.py"]
@@ -100,13 +124,16 @@ graph LR
   ev_UserPromptSubmit -->|global| s_antwort_abruf_py
   ev_UserPromptSubmit -->|global| s_regelwechsel_py
   ev_WorktreeCreate(["WorktreeCreate"])
+  werkzeug -.->|loest aus| ev_WorktreeCreate
   ev_WorktreeCreate -->|global| s_worktree_identitaet_py
   s_stash_guard_hook_py["stash_guard_hook.py"]
+  class s_stash_guard_hook_py entscheidet
   ev_PreToolUse -->|repo| s_stash_guard_hook_py
   s_existenzpruefung_py["existenzpruefung.py"]
   ev_Stop -->|repo| s_existenzpruefung_py
   ag_compliance>"Agent compliance"]
   classDef waise stroke-dasharray: 5 5
+  classDef entscheidet stroke-width:4px
 ```
 
 51 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 1 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.

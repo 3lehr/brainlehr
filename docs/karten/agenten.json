@@ -57,259 +57,433 @@
    "waise": false
   },
   {
+   "id": "halt",
+   "text": "Haltepunkt",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "modell",
+   "text": "Modell entscheidet",
+   "form": "port",
+   "waise": false
+  },
+  {
    "id": "s_agent_model_guard_py",
    "text": "agent_model_guard.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PreToolUse-Guard: Agent-Aufrufe ohne explizites `model` blocken (Token-Regel).",
+   "entscheidet": true,
+   "quelle": "hub/scripts/agent_model_guard.py"
   },
   {
    "id": "s_agent_register_hook_py",
    "text": "agent_register_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Agenten-Register: SubagentStart/Stop + Datei-Spuren je Agent loggen.",
+   "entscheidet": false,
+   "quelle": "hub/scripts/agent_register_hook.py"
   },
   {
    "id": "s_agent_reuse_guard_hook_py",
    "text": "agent_reuse_guard_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PreToolUse-Guard: Neuen Agent-Spawn blocken, wenn ein Agent dieser Session",
+   "entscheidet": true,
+   "quelle": "hub/scripts/agent_reuse_guard_hook.py"
   },
   {
    "id": "s_antwort_abruf_py",
    "text": "antwort_abruf.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "antwort_abruf.py -- Wissensabruf aus der eigenen ANTWORT, nicht nur aus",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/antwort_abruf.py"
   },
   {
    "id": "s_arbeitsmelder_py",
    "text": "arbeitsmelder.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Ein Melder auf die ARBEIT, nicht auf den Bestand -- S11 (docs/PLAN_DESTILLE_2026-08-09.md).",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/arbeitsmelder.py"
   },
   {
    "id": "s_auftrag_recall_hook_py",
    "text": "auftrag_recall_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "auftrag_recall_hook.py — Anweisungsregister-Recall (UserPromptSubmit-Hook).",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/auftrag_recall_hook.py"
   },
   {
    "id": "s_auftragshypothese_waechter_py",
    "text": "auftragshypothese_waechter.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PreToolUse-Haken (Matcher: Agent) -- Aufgabe 97, Teil 2 (der mechanische Teil).",
+   "entscheidet": true,
+   "quelle": "brainlehr/haken/auftragshypothese_waechter.py"
   },
   {
    "id": "s_auszug_nachziehen_py",
    "text": "auszug_nachziehen.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Stop-Haken: den Auszug nachziehen, wenn der Bestand juenger ist -- und",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/auszug_nachziehen.py"
   },
   {
    "id": "s_bsi_session_hint_py",
    "text": "bsi_session_hint.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "BSI Session-Hint — stiller SessionStart-Advisory.",
+   "entscheidet": false,
+   "quelle": "hub/scripts/bsi_session_hint.py"
   },
   {
    "id": "s_build_node_index_py",
    "text": "build_node_index.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "build_node_index.py — Landkarte aller Knoten in brainlehr.db.",
+   "entscheidet": false,
+   "quelle": "brainlehr/kern/build_node_index.py"
   },
   {
    "id": "s_cascade_guard_hook_py",
    "text": "cascade_guard_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PreToolUse-Guard: Code-Edits im MAIN-Kontext blocken (Kaskaden-Regel).",
+   "entscheidet": true,
+   "quelle": "hub/scripts/cascade_guard_hook.py"
   },
   {
    "id": "s_chronist_py",
    "text": "chronist.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Chronist (Matthäus 📖) — Protokolliert JEDES Ereignis in die Chronik-DB.",
+   "entscheidet": false,
+   "quelle": "hub/begod/scripts/chronist.py"
   },
   {
    "id": "s_codemap_active_py",
    "text": "codemap_active.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "codemap_active.py <start_dir> [--changed-only] | --selftest",
+   "entscheidet": false,
+   "quelle": "hub/scripts/codemap_active.py"
   },
   {
    "id": "s_commit_guard_hook_py",
    "text": "commit_guard_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PreToolUse-Guard (Bash): blankes `git add`/`git commit` ohne Pfadangabe",
+   "entscheidet": true,
+   "quelle": "hub/scripts/commit_guard_hook.py"
   },
   {
    "id": "s_dienstwache_py",
    "text": "dienstwache.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Wacht ueber den Dokumentdienst -- aber nur ueber das, was keinen Normalfall hat.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/dienstwache.py"
   },
   {
    "id": "s_eilmeldung_faellig_py",
    "text": "eilmeldung_faellig.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Zeigt beim Sitzungsstart, welche Eilmeldungen verfallen sind, statt in",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/eilmeldung_faellig.py"
   },
   {
    "id": "s_eilmeldung_hook_py",
    "text": "eilmeldung_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "eilmeldung_hook.py — erreicht eine ARBEITENDE Sitzung (PostToolUse-Hook,",
+   "entscheidet": false,
+   "quelle": "hub/scripts/eilmeldung_hook.py"
   },
   {
    "id": "s_entwurfsprobe_hook_py",
    "text": "entwurfsprobe_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PostToolUse-Hook (Edit|Write): erinnert an die Entwurfsprobe",
+   "entscheidet": true,
+   "quelle": "hub/scripts/entwurfsprobe_hook.py"
   },
   {
    "id": "s_existenzpruefung_py",
    "text": "existenzpruefung.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "existenzpruefung.py — sucht nach, wenn die ANTWORT eine Existenz verneint.",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/existenzpruefung.py"
   },
   {
    "id": "s_gegenprobe_faellig_py",
    "text": "gegenprobe_faellig.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "gegenprobe_faellig.py — stiller SessionStart-Melder (Auftrag 2026-08-07,",
+   "entscheidet": false,
+   "quelle": "hub/scripts/gegenprobe_faellig.py"
   },
   {
    "id": "s_knowledge_capture_hook_py",
    "text": "knowledge_capture_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "knowledge_capture_hook.py — Auto-Capture-Trigger (Stop-Hook, systemweit).",
+   "entscheidet": true,
+   "quelle": "brainlehr/haken/knowledge_capture_hook.py"
   },
   {
    "id": "s_knowledge_recall_hook_py",
    "text": "knowledge_recall_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "knowledge_recall_hook.py — Auto-Recall (UserPromptSubmit-Hook, systemweit).",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/knowledge_recall_hook.py"
   },
   {
    "id": "s_mcp_veraltet_py",
    "text": "mcp_veraltet.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "mcp_veraltet.py — meldet veraltete knowledge_mcp_server.py-Prozesse (UserPromptSubmit-Hook).",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/mcp_veraltet.py"
   },
   {
    "id": "s_metroviz_autostart_sh",
    "text": "metroviz_autostart.sh",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Keine Beschreibung im Quelltext.",
+   "entscheidet": false,
+   "quelle": "hub/scripts/metroviz_autostart.sh"
   },
   {
    "id": "s_modell_abfrage_hook_py",
    "text": "modell_abfrage_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "modell_abfrage_hook.py — Modell einmalig je Sitzung erfragen (SessionStart-Hook).",
+   "entscheidet": false,
+   "quelle": "hub/scripts/modell_abfrage_hook.py"
   },
   {
    "id": "s_monolith_guard_py",
    "text": "monolith_guard.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PostToolUse-Guard (Edit|Write): Monolith-Bremse.",
+   "entscheidet": false,
+   "quelle": "hub/scripts/monolith_guard.py"
   },
   {
    "id": "s_normachsen_py",
    "text": "normachsen.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Die drei Achsen der Normordnung — und zwei Melder, damit sie nicht still ausfallen.",
+   "entscheidet": false,
+   "quelle": "brainlehr/kern/normachsen.py"
   },
   {
    "id": "s_offene_arbeit_py",
    "text": "offene_arbeit.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Zeigt beim Sitzungsstart, was offen ist -- aus der Datei, nicht aus dem Kopf.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/offene_arbeit.py"
   },
   {
    "id": "s_planbindung_py",
    "text": "planbindung.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Ein Melder auf die BINDUNG zwischen Plan und Speicher -- S: Plandateien",
+   "entscheidet": false,
+   "quelle": "brainlehr/kern/planbindung.py"
   },
   {
    "id": "s_pruefer_py",
    "text": "pruefer.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Der erste Melder, der URTEILT statt zaehlt.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/pruefer.py"
   },
   {
    "id": "s_quality_gate_hook_py",
    "text": "quality_gate_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "quality_gate_hook.py — Stop-Hook: sicherheits-/qualitätsrelevante Änderungen",
+   "entscheidet": true,
+   "quelle": "hub/scripts/quality_gate_hook.py"
   },
   {
    "id": "s_rasterblick_py",
    "text": "rasterblick.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Ein Rastervermerk je Ergebnisdatei -- WAS abgesucht wurde, nicht nur was gefunden wurde.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/rasterblick.py"
   },
   {
    "id": "s_regelwechsel_py",
    "text": "regelwechsel.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Meldet mitten in der Sitzung, wenn sich eine Regeldatei geaendert hat.",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/regelwechsel.py"
   },
   {
    "id": "s_settings_guard_py",
    "text": "settings_guard.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Waechter: meldet Schrumpfung der Hook-Eintraege je Ereignistyp und",
+   "entscheidet": false,
+   "quelle": "hub/scripts/settings_guard.py"
   },
   {
    "id": "s_sichtbarkeit_py",
    "text": "sichtbarkeit.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Jeder Lese- und Schreibvorgang am Speicher wird eine Zeile im Gespraech.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/sichtbarkeit.py"
   },
   {
    "id": "s_stand_format_waechter_hook_py",
    "text": "stand_format_waechter_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PostToolUse-Haken: STAND.md gegen ihr Pflichtformat pruefen.",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/stand_format_waechter_hook.py"
   },
   {
    "id": "s_stand_recall_hook_py",
    "text": "stand_recall_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "stand_recall_hook.py — STAND-Übergabe bei App-Nennung (UserPromptSubmit-Hook).",
+   "entscheidet": false,
+   "quelle": "hub/scripts/stand_recall_hook.py"
   },
   {
    "id": "s_stash_guard_hook_py",
    "text": "stash_guard_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PreToolUse-Guard (Bash): `git stash` in JEDER schreibenden Form verhindern.",
+   "entscheidet": true,
+   "quelle": "brainlehr/haken/stash_guard_hook.py"
   },
   {
    "id": "s_ui_guard_hook_py",
    "text": "ui_guard_hook.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "PostToolUse-Haken fuer ui_guard.py.",
+   "entscheidet": false,
+   "quelle": "~/.claude/skills/design-waechter/ui_guard_hook.py"
   },
   {
    "id": "s_wiedereinstieg_py",
    "text": "wiedereinstieg.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Wiedereinstieg nach Verdichtung: spielt zurueck, was in DIESER Sitzung",
+   "entscheidet": false,
+   "quelle": "hub/scripts/wiedereinstieg.py"
   },
   {
    "id": "s_wissensverlauf_py",
    "text": "wissensverlauf.py",
    "form": "kasten",
-   "waise": false
+   "waise": false,
+   "zweck": "Wissensverlauf -- Zeitreihe der Knowledge-Lint-Kennzahlen.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/wissensverlauf.py"
   },
   {
    "id": "s_worktree_identitaet_py",
    "text": "worktree_identitaet.py",
    "form": "kasten",
+   "waise": false,
+   "zweck": "WorktreeCreate-Haken: Identitaets- und Regeldateien reisen mit.",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/worktree_identitaet.py"
+  },
+  {
+   "id": "werkzeug",
+   "text": "Werkzeug laeuft",
+   "form": "kasten",
    "waise": false
   }
  ],
  "kanten": [
+  {
+   "von": "modell",
+   "nach": "werkzeug",
+   "text": "waehlt",
+   "art": "gerichtet"
+  },
+  {
+   "von": "werkzeug",
+   "nach": "modell",
+   "text": "Ergebnis",
+   "art": "gerichtet"
+  },
+  {
+   "von": "modell",
+   "nach": "halt",
+   "text": "fertig?",
+   "art": "gerichtet"
+  },
+  {
+   "von": "halt",
+   "nach": "modell",
+   "text": "decision: block",
+   "art": "gerichtet"
+  },
+  {
+   "von": "werkzeug",
+   "nach": "ev_PostToolUse",
+   "text": "loest aus",
+   "art": "gestrichelt"
+  },
   {
    "von": "ev_PostToolUse",
    "nach": "s_chronist_py",
@@ -365,6 +539,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "werkzeug",
+   "nach": "ev_PreToolUse",
+   "text": "loest aus",
+   "art": "gestrichelt"
+  },
+  {
    "von": "ev_PreToolUse",
    "nach": "s_agent_model_guard_py",
    "text": "global",
@@ -393,6 +573,12 @@
    "nach": "s_auftragshypothese_waechter_py",
    "text": "global",
    "art": "gerichtet"
+  },
+  {
+   "von": "modell",
+   "nach": "ev_SessionStart",
+   "text": "loest aus",
+   "art": "gestrichelt"
   },
   {
    "von": "ev_SessionStart",
@@ -497,6 +683,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "halt",
+   "nach": "ev_Stop",
+   "text": "loest aus",
+   "art": "gestrichelt"
+  },
+  {
    "von": "ev_Stop",
    "nach": "s_codemap_active_py",
    "text": "global",
@@ -533,6 +725,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "modell",
+   "nach": "ev_SubagentStart",
+   "text": "loest aus",
+   "art": "gestrichelt"
+  },
+  {
    "von": "ev_SubagentStart",
    "nach": "s_agent_register_hook_py",
    "text": "global",
@@ -557,10 +755,22 @@
    "art": "gerichtet"
   },
   {
+   "von": "halt",
+   "nach": "ev_SubagentStop",
+   "text": "loest aus",
+   "art": "gestrichelt"
+  },
+  {
    "von": "ev_SubagentStop",
    "nach": "s_agent_register_hook_py",
    "text": "global",
    "art": "gerichtet"
+  },
+  {
+   "von": "modell",
+   "nach": "ev_UserPromptSubmit",
+   "text": "loest aus",
+   "art": "gestrichelt"
   },
   {
    "von": "ev_UserPromptSubmit",
@@ -597,6 +807,12 @@
    "nach": "s_regelwechsel_py",
    "text": "global",
    "art": "gerichtet"
+  },
+  {
+   "von": "werkzeug",
+   "nach": "ev_WorktreeCreate",
+   "text": "loest aus",
+   "art": "gestrichelt"
   },
   {
    "von": "ev_WorktreeCreate",

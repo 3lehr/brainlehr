@@ -60,6 +60,20 @@
   .hinweis { color: var(--muted); margin: 0 0 .6rem; font-size: .88rem; }
   kbd { border: 1px solid var(--border); border-radius: 4px; padding: 0 .25em; }
   #befund { margin: .2rem 0 .6rem; }
+  .legende { margin: .4rem 0 .8rem; padding-left: 1.2rem; color: var(--muted);
+             max-width: 78ch; }
+  .legende li { margin: .2rem 0; }
+  #legendeBlock summary { cursor: pointer; color: var(--fg); }
+  /* Die Knotenkarte erscheint beim Zeigen auf einen Kasten. Sie steht IM
+     Fluss (nicht schwebend): ein Tooltip, der am Zeiger klebt, ist per
+     Tastatur nicht erreichbar und bei 200 % Zoom oft abgeschnitten. */
+  #knotenkarte { border: 1px solid var(--border); border-radius: 8px;
+                 padding: .6rem .8rem; margin: .2rem 0 .6rem; max-width: 78ch; }
+  #knotenkarte .quelle { color: var(--muted); font-size: .88rem; }
+  #knotenkarte .entscheidet { font-weight: 600; }
+  #bild svg .kreis rect, #bild svg .kreis polygon { stroke-width: 4px !important; }
+  #bild svg g.node { cursor: grab; }
+  #bild svg g.node.faehrt { cursor: grabbing; }
   /* Hervorhebung NIE allein ueber Farbe (WCAG 1.4.1): Getroffenes wird
      zusaetzlich dicker umrandet, Weggeblendetes zusaetzlich blasser UND
      duenner. Wer keine Farben unterscheidet, sieht denselben Unterschied. */
@@ -91,8 +105,35 @@
   <label for="nachWahl">nach</label>
   <select id="nachWahl"><option value="">alle erreichbaren</option></select>
   <button id="sackgassen" type="button" aria-pressed="false">Sackgassen zeigen</button>
+  <button id="kreise" type="button" aria-pressed="false">Kreise zeigen</button>
   <button id="zurueck" type="button">Alles zeigen</button>
 </div>
+
+<details id="legendeBlock">
+  <summary>Legende — was Formen und Linien bedeuten</summary>
+  <ul class="legende">
+    <li><b>Rechteck</b> — ein Repo, Modul oder Bildschirm.</li>
+    <li><b>Abgerundet</b> — ein Port, also ein Dienst, der auf Anfragen wartet.
+      „(fremd)" heißt: im Verbund lauscht niemand darauf, es ist ein Programm von außen
+      (Ollama, MySQL, LM Studio).</li>
+    <li><b>Zylinder</b> — eine Datenbankdatei.</li>
+    <li><b>Fahne</b> — ein Startweg von außerhalb: launchd oder ein MCP-Server. Diese
+      stehen in keinem Repo und tauchen in keiner Codesuche auf.</li>
+    <li><b>Durchgezogene Linie</b> — eine gerichtete Beziehung; die Beschriftung sagt
+      welche: <code>lauscht</code>, <code>ruft</code>, <code>startet</code>,
+      <code>liegt</code>.</li>
+    <li><b>Gestrichelte Linie</b> — eine schwächere Beziehung, etwa <code>liest</code>.</li>
+    <li><b>Gestrichelter Rahmen</b> — im Verbund gebaut und von niemandem gerufen.</li>
+    <li><b>Dicker Rahmen</b> — dieser Haken <b>entscheidet</b>: er kann eine Handlung
+      verhindern (gibt <code>decision</code> zurück oder bricht mit Code 2 ab). Alle
+      anderen melden bestenfalls.</li>
+    <li><b>Zahl an der Linie</b> — wie viele Dateien diesen Weg gehen; bei der
+      Agentenkarte steht dort stattdessen, aus welcher Einstellungsdatei die
+      Verdrahtung stammt (<code>global</code> oder <code>repo</code>).</li>
+  </ul>
+</details>
+
+<div id="knotenkarte" hidden role="status" aria-live="polite"></div>
 <p id="filterhilfe" class="hinweis">Ziehen verschiebt, Mausrad mit <kbd>⌘</kbd> zoomt.
   Ein Klick auf einen Kasten wählt ihn als Startpunkt.</p>
 
@@ -333,11 +374,20 @@ async function zeige(kennung) {
     graphAufbauen(daten.graph || { knoten: [], kanten: [] });
     // Ein Klick auf einen Kasten waehlt ihn als Startpunkt -- der kuerzeste
     // Weg zur Frage "was haengt hier dran".
+    verschoben.clear();
+    ziehbarMachen();
     for (const k of graph.knoten) {
       const el = svgKnoten(k.id);
       if (!el) continue;
-      el.style.cursor = 'pointer';
-      el.addEventListener('click', ev => { ev.stopPropagation(); vonWahl.value = k.id; wegSuchen(); });
+      // Klick waehlt den Startpunkt -- aber nur, wenn nicht gezogen wurde.
+      let bewegt = false;
+      el.addEventListener('pointerdown', () => { bewegt = false; });
+      el.addEventListener('pointermove', () => { bewegt = true; });
+      el.addEventListener('click', ev => {
+        ev.stopPropagation();
+        if (bewegt) return;
+        vonWahl.value = k.id; wegSuchen(); erklaere(k);
+      });
     }
     zusatz.textContent = daten.hinweis || '';
     stand.hidden = true;
@@ -346,6 +396,122 @@ async function zeige(kennung) {
   }
 }
 
+// ── Erklärung je Kasten, am Quelltext belegt ──────────────────────────────
+// Nicht als schwebender Tooltip: der klebt am Zeiger, ist per Tastatur nicht
+// erreichbar und bei starkem Zoom halb abgeschnitten. Die Karte steht im
+// Fluss und bleibt stehen, bis der nächste Kasten dran ist.
+const knotenkarte = document.getElementById('knotenkarte');
+function erklaere(k) {
+  if (!k) { knotenkarte.hidden = true; return; }
+  const teile = [`<b>${k.text}</b>`];
+  if (k.entscheidet) teile.push('<span class="entscheidet">entscheidet — kann eine Handlung verhindern</span>');
+  if (k.waise) teile.push('im Verbund gebaut, von niemandem gerufen');
+  if (k.zweck) teile.push(k.zweck);
+  const ein = graph.kanten.filter(e => e.nach === k.id).length;
+  const aus = (nachbarn.get(k.id) || []).length;
+  teile.push(`${ein} eingehend, ${aus} ausgehend`);
+  if (k.quelle) teile.push(`<span class="quelle">Beleg: <code>${k.quelle}</code></span>`);
+  knotenkarte.innerHTML = teile.join('<br>');
+  knotenkarte.hidden = false;
+}
+
+// ── Kreise (Rückkopplungen) ───────────────────────────────────────────────
+function kreiseFinden() {
+  const gefunden = [], stapel = [], imStapel = new Set(), besucht = new Set();
+  const geh = k => {
+    besucht.add(k); stapel.push(k); imStapel.add(k);
+    for (const n of nachbarn.get(k) || []) {
+      if (imStapel.has(n)) gefunden.push([...stapel.slice(stapel.indexOf(n)), n]);
+      else if (!besucht.has(n)) geh(n);
+    }
+    stapel.pop(); imStapel.delete(k);
+  };
+  for (const k of nachbarn.keys()) if (!besucht.has(k)) geh(k);
+  return gefunden;
+}
+
+let kreiseAn = false;
+function kreiseZeigen() {
+  kreiseAn = !kreiseAn;
+  document.getElementById('kreise').setAttribute('aria-pressed', String(kreiseAn));
+  if (!kreiseAn) { hervorheben(null); befund.textContent = ''; return; }
+  const kreise = kreiseFinden();
+  if (!kreise.length) {
+    hervorheben([], []);
+    // Ehrlich statt beruhigend: eine Karte, die nur EINE Richtung abbildet,
+    // KANN keine Rückkopplung zeigen -- das ist kein Beweis, dass es keine gibt.
+    befund.textContent = 'Kein Kreis in dieser Karte. Achtung: sie bildet nur eine ' +
+      'Richtung ab — eine Rückwirkung (etwas wird geschrieben und löst wieder etwas aus) ' +
+      'kann sie strukturell nicht zeigen.';
+    return;
+  }
+  const ids = [...new Set(kreise.flat())];
+  const kanten = kreise.flatMap(k => k.slice(1).map((n, i) => `${k[i]}-${n}`));
+  hervorheben(ids, kanten);
+  for (const id of ids) svgKnoten(id)?.classList.add('kreis');
+  befund.textContent = `${kreise.length} Kreis${kreise.length === 1 ? '' : 'e'}: ` +
+    kreise.map(k => k.map(x => graph.knoten.find(n => n.id === x)?.text || x).join(' → ')).join(' | ');
+}
+
+// ── Kästen von Hand verschieben ───────────────────────────────────────────
+// Mermaid legt das Layout fest; wer Übersicht braucht, will einzelne Kästen
+// beiseiteschieben. Die anliegenden Linien werden dabei als GERADE nachgezogen
+// -- Mermaids Kurven lassen sich nicht mitbiegen, ohne das Layout selbst zu
+// übernehmen. Der Stilbruch ist gewollt und sichtbar: eine verschobene Kante
+// sieht anders aus als eine gewachsene.
+const verschoben = new Map();
+function knotenMitte(id) {
+  const el = svgKnoten(id);
+  if (!el) return null;
+  const k = el.getBBox ? el.getBBox() : null;
+  const v = verschoben.get(id) || { x: 0, y: 0 };
+  return k ? { x: k.x + k.width / 2 + v.x, y: k.y + k.height / 2 + v.y } : null;
+}
+function kantenNachziehen(id) {
+  const s = bild.querySelector('svg');
+  if (!s) return;
+  for (const e of graph.kanten) {
+    if (e.von !== id && e.nach !== id) continue;
+    const a = knotenMitte(e.von), b = knotenMitte(e.nach);
+    if (!a || !b) continue;
+    for (const g of s.querySelectorAll('g.edgePath, .edgePaths > g')) {
+      if (!(g.id || '').includes(`${e.von}-`) || !(g.id || '').includes(`-${e.nach}`)) continue;
+      const pfad = g.querySelector('path');
+      if (pfad) pfad.setAttribute('d', `M${a.x},${a.y} L${b.x},${b.y}`);
+    }
+  }
+}
+function ziehbarMachen() {
+  const s = bild.querySelector('svg');
+  if (!s) return;
+  for (const k of graph.knoten) {
+    const el = svgKnoten(k.id);
+    if (!el) continue;
+    let faehrt = false, startX = 0, startY = 0, anfang = { x: 0, y: 0 };
+    el.addEventListener('pointerdown', e => {
+      e.stopPropagation();            // nicht die ganze Karte mitziehen
+      faehrt = true; startX = e.clientX; startY = e.clientY;
+      anfang = verschoben.get(k.id) || { x: 0, y: 0 };
+      el.classList.add('faehrt'); el.setPointerCapture(e.pointerId);
+    });
+    el.addEventListener('pointermove', e => {
+      if (!faehrt) return;
+      e.stopPropagation();
+      const v = { x: anfang.x + (e.clientX - startX) / massstab,
+                  y: anfang.y + (e.clientY - startY) / massstab };
+      verschoben.set(k.id, v);
+      el.setAttribute('transform', `translate(${v.x},${v.y})`);
+      kantenNachziehen(k.id);
+    });
+    for (const ereignis of ['pointerup', 'pointercancel']) {
+      el.addEventListener(ereignis, () => { faehrt = false; el.classList.remove('faehrt'); });
+    }
+    el.addEventListener('mouseenter', () => erklaere(k));
+    el.addEventListener('focus', () => erklaere(k));
+  }
+}
+
+document.getElementById('kreise').addEventListener('click', kreiseZeigen);
 suche.addEventListener('input', filtern);
 vonWahl.addEventListener('change', wegSuchen);
 nachWahl.addEventListener('change', wegSuchen);
