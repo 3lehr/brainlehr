@@ -54,8 +54,26 @@ struct LandkartenAnsicht: View {
 private struct LandkartenWebView: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        webView.navigationDelegate = context.coordinator
         webView.load(URLRequest(url: DienstAufsicht.basisURL.appendingPathComponent("landkarten")))
         return webView
+    }
+
+    func makeCoordinator() -> Melder { Melder() }
+
+    /// Meldet Ladefehler. Bleibt, obwohl die Sonde weg ist: ohne
+    /// navigationDelegate ist "die Flaeche ist leer" nicht von "die Seite
+    /// kam nicht" zu unterscheiden -- drei verschiedene Ursachen, ein
+    /// identisches Bild. Genau daran hat die Fehlersuche am 2026-08-16
+    /// zwei Anlaeufe verloren.
+    @MainActor
+    final class Melder: NSObject, WKNavigationDelegate {
+        func webView(_ w: WKWebView, didFail n: WKNavigation!, withError e: Error) {
+            FileHandle.standardError.write(Data("Landkarten: \(e.localizedDescription)\n".utf8))
+        }
+        func webView(_ w: WKWebView, didFailProvisionalNavigation n: WKNavigation!, withError e: Error) {
+            FileHandle.standardError.write(Data("Landkarten: \(e.localizedDescription)\n".utf8))
+        }
     }
 
     /// Nichts nachzufuehren: die Seite waehlt ihre Karte selbst, es gibt
