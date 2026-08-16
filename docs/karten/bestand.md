@@ -11,7 +11,7 @@ graph LR
   apps["apps<br/>81"]
   shared["shared<br/>55"]
   ops["ops<br/>46"]
-  openlehr["openlehr<br/>28"]
+  openlehr["openlehr<br/>29"]
   plaene["plaene<br/>17"]
   arch["arch<br/>16"]
   simulation_akademie_messaufbau_kein["simulation-akademie-messaufbau-kein<br/>15"]
