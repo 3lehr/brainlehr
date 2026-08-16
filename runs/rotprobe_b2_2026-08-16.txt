@@ -1,0 +1,20 @@
+Rot-Probe B2, gefahren 2026-08-16T13:54:30+0200, VOR der Umsetzung.
+Befehl: python3 -m pytest tests/test_uebernahmeregister.py -q
+Gefahren gegen eine ARGLOSE Fassung von kern/uebernahmeregister.py, die jeden
+Vektor annimmt. Ein ImportError (erster Anlauf) waere kein Beleg gewesen -- er
+zeigt nur, dass eine Datei fehlt, nicht dass eine Regel fehlt.
+
+=========================== short test summary info ============================
+FAILED tests/test_uebernahmeregister.py::test_fehlendes_pflichtfeld_wird_abgelehnt[herkunft]
+FAILED tests/test_uebernahmeregister.py::test_fehlendes_pflichtfeld_wird_abgelehnt[status]
+FAILED tests/test_uebernahmeregister.py::test_unbekannter_wert_wird_abgelehnt[herkunft-irgendwoher]
+FAILED tests/test_uebernahmeregister.py::test_unbekannter_wert_wird_abgelehnt[status-geprueft]
+FAILED tests/test_uebernahmeregister.py::test_unbekannter_wert_wird_abgelehnt[status-]
+FAILED tests/test_uebernahmeregister.py::test_belegt_ohne_beleg_wird_abgelehnt
+FAILED tests/test_uebernahmeregister.py::test_belegt_mit_halbem_beleg_wird_abgelehnt[test]
+FAILED tests/test_uebernahmeregister.py::test_belegt_mit_halbem_beleg_wird_abgelehnt[rotprobe]
+FAILED tests/test_uebernahmeregister.py::test_unbelegt_mit_beleg_ist_ein_widerspruch
+FAILED tests/test_uebernahmeregister.py::test_verzeichnis_meldet_die_datei_beim_namen
+FAILED tests/test_uebernahmeregister.py::test_beschaedigte_datei_ist_ein_befund_kein_absturz
+FAILED tests/test_uebernahmeregister.py::test_zaehlung_trennt_unbelegt_von_belegt
+12 failed, 3 passed in 0.06s
