@@ -256,6 +256,12 @@ struct AtelierApp: App {
 /// Das ist Entwicklerinformation im sichtbaren Text und sagt dem Nutzer
 /// nichts ueber seine Lage. Jetzt steht da, was tatsaechlich gilt.
 private struct EinstellungenAnsicht: View {
+    /// Der Schluessel kommt aus BrainlehrCore.Mitstart, damit er an EINER
+    /// Stelle steht -- ein zweiter, hier getippter Name waere genau die stille
+    /// Abweichung, die niemand bemerkt (der Schalter stellt dann nichts).
+    @AppStorage(Mitstart.schluessel(fuer: "einzelunternehmer"))
+    private var mitstartEinzelunternehmer = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Einstellungen")
@@ -267,6 +273,22 @@ private struct EinstellungenAnsicht: View {
                      + "unten in der Quellenansicht. Er entscheidet, ob ein "
                      + "Dokument ganz, als Ausschnitt oder mehrfach nebeneinander "
                      + "gezeigt wird.")
+                    .font(.callout).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            // ADR-023: Ob eine Domaene mitstartet, entscheidet der Mensch --
+            // hier, im Kern, nicht in der Domaene. Voreinstellung AUS: eine
+            // frisch importierte Domaene startet nichts von selbst. Der
+            // Unterschied zu vorher ist trotzdem gross, denn das Aus ist jetzt
+            // sichtbar und umlegbar statt unsichtbar und raetselhaft.
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Anwendungen").font(.headline)
+                Toggle("Steuer für Einzelunternehmer beim Anmelden mitstarten",
+                       isOn: $mitstartEinzelunternehmer)
+                    .toggleStyle(.switch)
+                Text("Ist der Schalter aus, bleibt die Anwendung ausgeschaltet — "
+                     + "sie ist dann nicht defekt, sondern nicht eingeschaltet.")
                     .font(.callout).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

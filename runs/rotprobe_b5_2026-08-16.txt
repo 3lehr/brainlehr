@@ -62,3 +62,28 @@ ENDSTAND, beide behoben:
   Alle Tests: 225 ausgefuehrt, 2 Fehlschlaege -- BestandteilAnforderungTests,
   VORBESTEHEND (die Dateien sind in meinem Diff nicht enthalten, letzter Commit
   dort be74c1c1 vom 2026-08-15).
+
+*** B5, zweiter Teil: Schalter und Verdrahtung (2026-08-16 nachmittags) ***
+
+Mitstart (der Schalter selbst): Die Tests waren beim ersten Lauf GRUEN -- kein
+Beleg, weil Code und Test zusammen entstanden. Deshalb MUTATIONSPROBE statt
+Selbstzufriedenheit: Voreinstellung von `?? false` auf `?? true` geaendert
+(also bewusst falsch), Lauf wiederholt.
+  mutiert: Executed 5 tests, with 3 failures
+  echt:    Executed 5 tests, with 0 failures
+Gegengeprueft, dass ueberhaupt alle liefen: 5 ausgefuehrt, 5 `func test` in der
+Datei.
+
+Ganzes app-Ziel nach der Verdrahtung: `xcrun swift build` exit 0,
+`xcrun swift test` 231 Tests, 0 Fehlschlaege.
+
+BERICHTIGUNG zu einer frueheren Angabe in dieser Datei: Die zwei Fehlschlaege
+in BestandteilAnforderungTests sind seit b2c1329d (2026-08-16T16:26, andere
+Sitzung) behoben -- "die Erwartung war veraltet, nicht der Code". Meine
+Einordnung "vorbestehend" stimmte, der Stand ist inzwischen ueberholt.
+
+WAS AN DER VERDRAHTUNG NICHT BELEGT IST, ausdruecklich: DienstAufsicht.start()
+und pruefeUndAktualisiere() haengen an Timer, UserDefaults und Netz. Fuer sie
+gibt es keinen Test -- "geaendert, nicht verifiziert". Belegt sind die beiden
+reinen Einheiten darunter (DienstZustand, Mitstart), an denen die Entscheidung
+tatsaechlich faellt.

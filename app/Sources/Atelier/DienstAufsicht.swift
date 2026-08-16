@@ -24,9 +24,43 @@ final class DienstAufsicht {
     private var pollTimer: Timer?
     private var wurdeAngehalten = false
 
+    /// ADR-023: der Schalter des Menschen. Wird bei jeder Pruefung frisch
+    /// gelesen, nicht einmal beim Start gemerkt -- sonst wirkt ein Umlegen
+    /// erst beim naechsten App-Start, und der Mensch haelt den Schalter fuer
+    /// kaputt.
+    private var istEingeschaltet: Bool {
+        Mitstart.istEingeschaltet(
+            Self.domaene,
+            speicher: [Mitstart.schluessel(fuer: Self.domaene):
+                        UserDefaults.standard.bool(forKey: Mitstart.schluessel(fuer: Self.domaene))])
+    }
+
+    /// Seit wann eingeschaltet -- Grundlage fuer den Uebergang nach
+    /// `kommtNichtHoch`. Nil heisst: laeuft gerade kein Startversuch.
+    private var startVersuchSeit: Date?
+
+    private var versucheSeit: Int {
+        guard let seit = startVersuchSeit else { return 0 }
+        return Int(Date().timeIntervalSince(seit))
+    }
+
+    /// Vorerst EINE Domaene. Die Aufsicht ueber n ist damit noch nicht gebaut
+    /// -- ADR-023 nennt sie ausdruecklich als Preis, und sie steht im Plan als
+    /// eigener Schritt. Diese Konstante ist die Stelle, an der es aufgeht.
+    static let domaene = "einzelunternehmer"
+
     func start() {
         wurdeAngehalten = false
+        guard istEingeschaltet else {
+            // Kein Startversuch, kein Timer, keine Netzanfrage. Der Zustand
+            // sagt dem Menschen, dass er selbst abgeschaltet hat.
+            zustand = .aus
+            meldung = DienstMeldung.fuer(.aus)
+            startVersuchSeit = nil
+            return
+        }
         zustand = .startetGerade
+        startVersuchSeit = Date()
         meldung = nil
         Task { await pruefeBeimStart() }
         startPolling()
