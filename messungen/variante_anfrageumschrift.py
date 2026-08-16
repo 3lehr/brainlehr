@@ -110,7 +110,74 @@ def demo() -> None:
     probe = {"name": "probe", "raenge": [{"rang": 1}, {"rang": 7}, {"rang": 200}, {"rang": None}]}
     a = basis.auswertung(probe, kandidaten=999)
     assert a["median_rang"] == 7 and a["in_top5"] == 1
+
+    # Der Dateiweg: beide Ausfaelle muessen ABBRECHEN, nicht ausweichen. Eine
+    # fehlende Umschrift, die still zur Originalfrage wird, ist die
+    # Gegenprobe -- als Messung ausgegeben, und das faellt an der Zahl nicht auf.
+    import json as _j, tempfile as _t
+    faelle = [{"target_id": "X", "task": "wie geht das"},
+              {"target_id": "Y", "task": "und das"}]
+    with _t.TemporaryDirectory() as d:
+        p = Path(d) / "u.json"
+        p.write_text(_j.dumps({"X": "Eintrag X", "Y": "Eintrag Y"}), encoding="utf-8")
+        z = umschriften_laden(p, faelle)
+        assert z["wie geht das"] == "Eintrag X", z
+        text, _ = umschreiben("wie geht das", client=DateiClient(z))
+        assert text == "Eintrag X", text
+        try:
+            umschreiben("nie vorbereitet", client=DateiClient(z))
+            raise AssertionError("fehlende Umschrift muss abbrechen, nicht ausweichen")
+        except KeyError:
+            pass
+        p.write_text(_j.dumps({"X": "nur einer"}), encoding="utf-8")
+        try:
+            umschriften_laden(p, faelle)
+            raise AssertionError("unvollstaendige Datei muss abbrechen")
+        except SystemExit:
+            pass
     print("demo: ok", file=sys.stderr)
+
+
+class DateiClient:
+    """Vorbereitete Umschriften statt eines API-Aufrufs -- gefuellt von einem
+    Haiku-SUBAGENTEN ueber das Abo, nicht von einem lokalen Modell.
+
+    L-a69129 verlangt Haiku fuer Umschreibungen dieser Art. Die Lehre verlangt
+    das MODELL, nicht den Abrechnungsweg; ein Schluessel ist hier nicht
+    vorhanden (Betreiber am 2026-08-16: "momentan hier alles lokal oder und
+    ueber abo und clients der anbieter"). Deshalb dieser Weg -- und deshalb
+    traegt die Ergebnisdatei ihn im Feld `umschreibe_modell` mit, statt ihn
+    wie einen API-Lauf aussehen zu lassen.
+
+    Ein FEHLENDER Schluessel bricht ab, statt still die Originalfrage zu
+    nehmen: das waere die Gegenprobe, als Messung ausgegeben."""
+
+    def __init__(self, zuordnung: dict[str, str]):
+        self._z = zuordnung
+        self.messages = self
+
+    def create(self, **kw):
+        frage = kw["messages"][0]["content"]
+        text = self._z.get(frage)
+        if not text:
+            raise KeyError(f"keine vorbereitete Umschrift zu: {frage[:60]}…")
+        class B:
+            type = "text"
+        B.text = text
+        class R:
+            content = [B()]
+        return R()
+
+
+def umschriften_laden(pfad: Path, faelle: list[dict]) -> dict[str, str]:
+    """Datei ist nach Ziel-ID geschluesselt, der Client sieht aber den
+    Fragetext -- hier wird ueber den Korpus verbunden. Fehlt eine ID, faellt
+    das SOFORT auf, nicht erst als schlechter Rang."""
+    roh = json.loads(pfad.read_text(encoding="utf-8"))
+    fehlend = [f["target_id"] for f in faelle if f["target_id"] not in roh]
+    if fehlend:
+        raise SystemExit(f"ABBRUCH: {len(fehlend)} Faelle ohne Umschrift, u.a. {fehlend[:3]}")
+    return {f["task"]: roh[f["target_id"]] for f in faelle}
 
 
 def main() -> None:
@@ -119,12 +186,16 @@ def main() -> None:
     p.add_argument("--out", default=None)
     p.add_argument("--gegenprobe", action="store_true",
                     help="Umschrift durch die Originalfrage ersetzen -- muss Stufe 0 treffen")
+    p.add_argument("--umschriften", default=None,
+                   help="JSON {ziel_id: umschrift} aus einem Haiku-Subagenten, "
+                        "statt eines API-Laufs (kein lokales Modell)")
     a = p.parse_args()
 
-    if not a.gegenprobe:
+    if not a.gegenprobe and not a.umschriften:
         grund = api_verfuegbar()
         if grund:
-            print(f"ABBRUCH: {grund} -- kein Ausweichen auf ein lokales Modell (L-a69129).",
+            print(f"ABBRUCH: {grund} -- kein Ausweichen auf ein lokales Modell (L-a69129). "
+                  f"Weg ohne Schluessel: --umschriften aus einem Haiku-Subagenten.",
                   file=sys.stderr)
             sys.exit(1)
 
@@ -146,6 +217,13 @@ def main() -> None:
                     return R()
         stufe, dauern = stufe_v2(faelle, ids, mat, client=IdentitaetsClient())
         stufe["name"] = "gegenprobe-identitaet"
+    elif a.umschriften:
+        stufe, dauern = stufe_v2(faelle, ids, mat,
+                                 client=DateiClient(umschriften_laden(Path(a.umschriften), faelle)))
+        # Die Dauer misst hier NUR die Einbettung, nicht das Umschreiben --
+        # das geschah vorher im Subagenten. Als Betriebskosten unbrauchbar,
+        # deshalb ausgenullt statt als kleine Zahl ausgewiesen.
+        dauern = []
     else:
         stufe, dauern = stufe_v2(faelle, ids, mat)
 
@@ -154,7 +232,12 @@ def main() -> None:
         "korpus": str(Path(a.korpus).resolve()).replace(str(_w) + "/", ""),
         "faelle": len(faelle),
         "modell": embeddings.DEFAULT_EMBED_MODEL,
-        "umschreibe_modell": HAIKU_MODELL if not a.gegenprobe else "identitaet(gegenprobe)",
+        # Der WEG gehoert zur Zahl. "16 von 16 ueber den vollen Weg" und
+        # "16 von 16, davon 10 am Klassifikator vorbei" sind zwei Aussagen.
+        "umschreibe_modell": ("identitaet(gegenprobe)" if a.gegenprobe
+                              else f"{HAIKU_MODELL} (Subagent ueber Abo, vorbereitete Datei "
+                                   f"{Path(a.umschriften).name})" if a.umschriften
+                              else f"{HAIKU_MODELL} (API)"),
         "kandidaten_im_kanal": len(ids),
         "grenze": ["misst nicht den vollen Suchweg, nur den reinen Bedeutungskanal",
                    "35 Faelle sind klein -- ein knapper Unterschied ist kein Ergebnis",
