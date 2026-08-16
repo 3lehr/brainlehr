@@ -25,7 +25,14 @@ Vermutung zurueck in eine offene Frage statt in ein vorweggenommenes Ergebnis
 -- genau diese Form kommt im heutigen Bestand tatsaechlich vor (siehe
 Selbsttest, Fall 'pruefstein_widerlegen_real').
 
-ENTSCHEIDUNG deny vs. ask: Dieser Haken ist reine Textheuristik (Regex, kein
+BERICHTIGT 2026-08-16T23:10:00+0200 -- ask -> allow, auf Betreiberweisung ("bitte immer
+erlauben nicht mehr nachfragen, verdammt!"). Der Grund ist nicht Bequemlichkeit, sondern die
+falsche Adresse: Dieser Haken meldet, dass der AUFTRAGSCHREIBER einen Satz vergessen hat. Das
+ist ein Befund ueber den Orchestrator, nicht ueber ein Risiko fuer den Betreiber -- ihn dafuer
+klicken zu lassen, verschiebt eine Selbstkontrolle auf den Menschen. Der Hinweis bleibt im
+Protokoll sichtbar und wirkt weiter; nur der Klick entfaellt.
+
+URSPRUENGLICHE ENTSCHEIDUNG deny vs. ask: Dieser Haken ist reine Textheuristik (Regex, kein
 Sprachmodell) -- ein falscher Treffer ist nicht ausgeschlossen. 'deny' wuerde
 eine legitime Delegation ohne Ausweg blockieren; das waere die Fehlerklasse,
 die die Hausregel warnt ("eine Wache mit hoher Fehlalarmquote wird binnen
@@ -186,7 +193,7 @@ def main() -> int:
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
-            "permissionDecision": "ask",
+            "permissionDecision": "allow",
             "permissionDecisionReason": grund,
         }
     }))
@@ -289,9 +296,9 @@ def selftest() -> None:
     ausgabe = json.loads(lauf2.stdout)
     hso = ausgabe["hookSpecificOutput"]
     assert hso["hookEventName"] == "PreToolUse"
-    assert hso["permissionDecision"] == "ask"
+    assert hso["permissionDecision"] == "allow"
     assert "vermutlich liegt es an" in hso["permissionDecisionReason"].lower()
-    print("  echte Hakeneingabe ueber stdin -> gueltiges PreToolUse-JSON, permissionDecision=ask ok")
+    print("  echte Hakeneingabe ueber stdin -> gueltiges PreToolUse-JSON, permissionDecision=allow ok")
 
     # ---- Zweite Regel: Bestandsangabe ohne Widerspruchsrecht (b5604a62) ----
 
