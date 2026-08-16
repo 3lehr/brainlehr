@@ -117,3 +117,29 @@ gefundenen L-55075a-Fall (Mindestlängen-Korrektur erreichte eine schon migriert
 selbst, bis `_ensure_belegart_triggers()` den installierten SQL-Text statt nur den Namen prüft).
 
 Schritt 2 (Reglerdatei) noch offen.
+
+## Fortschreibung: Schritt 2 und 3 (2026-08-16T19:05:00+0200)
+
+`kern/vertrauen.py` steht. Reglerdatei `~/.brainlehr/vertrauensstufe`, ein Wort im Klartext —
+`echo raeumen > ~/.brainlehr/vertrauensstufe` und fertig, ohne Werkzeug.
+
+**Vorgabe ist `handeln`, nicht die neue Stufe.** Ein Regler, der beim Einbau schon hochgedreht
+ist, hat nie eine Ausgangslage — und die braucht §7, um überhaupt messen zu können, was er
+beiträgt.
+
+**Zwei Rückfälle, beide belegt:** Ein unbekannter Wert in der Datei fällt auf die Vorgabe zurück
+und wirft *nicht*. Ein Tippfehler darf die Arbeit nicht anhalten — aber er darf erst recht nicht
+zufällig hochstufen. Dasselbe für die leere Datei.
+
+**Protokolliert wird nur oberhalb der Vorgabe.** Ein Protokoll, das jede gewöhnliche Handlung
+aufnimmt, ist nach einem Tag unlesbar und wird dann von niemandem gelesen — dieselbe Todesart wie
+beim Wächter, der bei jedem Commit anschlägt.
+
+Die vier Stopp-Punkte stehen als eigene Konstante *neben* der Stufenlogik, nicht darin, mit einer
+Zusicherung im Selbsttest. Sie fällt auf, sobald jemand versucht, sie in die Stufen
+hineinzuziehen.
+
+**Offen bleibt Schritt 4:** Wächter, die den Regler abfragen. Bewusst noch nicht gebaut — erst
+muss sich zeigen, an welchen Stellen `raeumen` tatsächlich gebraucht wird. Wer den Regler jetzt
+schon überall abfragt, verteilt eine Einstellung über zwanzig Dateien, bevor gemessen ist, ob sie
+an dreien reicht.
