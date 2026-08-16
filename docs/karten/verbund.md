@@ -282,13 +282,13 @@ graph LR
   wpdrop -->|ruft| port_19999
   port_35000(["Port 35000"])
   fahrtenbuch -->|lauscht| port_35000
+  fahrtenbuch_nativ -->|lauscht| port_35000
   UsbKabelTester -->|ruft| port_35000
   afrika -->|ruft| port_35000
   buckeberg -->|ruft| port_35000
   design_lab -->|ruft| port_35000
   drg -->|ruft| port_35000
   drobo_nas -->|ruft| port_35000
-  fahrtenbuch_nativ -->|ruft| port_35000
   hub -->|ruft| port_35000
   legacylink -->|ruft| port_35000
   markusx25 -->|ruft| port_35000

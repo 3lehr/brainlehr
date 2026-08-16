@@ -6,9 +6,9 @@
 graph LR
   germanquad["germanquad<br/>2713"]
   nasa_llis["nasa-llis<br/>1638"]
-  brainlehr["brainlehr<br/>221"]
-  methodik["methodik<br/>123"]
-  apps["apps<br/>78"]
+  brainlehr["brainlehr<br/>222"]
+  methodik["methodik<br/>124"]
+  apps["apps<br/>81"]
   shared["shared<br/>55"]
   ops["ops<br/>44"]
   openlehr["openlehr<br/>28"]
@@ -29,8 +29,8 @@ graph LR
   testdatenknoten_schreibrechtepruefung["testdatenknoten-schreibrechtepruefung<br/>1"]
   bebetter["bebetter<br/>1"]
   aka["aka<br/>1"]
-  brainlehr ---|40| methodik
-  apps ---|24| shared
+  brainlehr ---|41| methodik
+  apps ---|25| shared
 ```
 
 Zahl im Kasten = Knoten im Ast, Zahl an der Kante = Verbindungen zwischen zwei Ästen (ab 20, hoechstens 40 staerkste; 2 gezeigt).

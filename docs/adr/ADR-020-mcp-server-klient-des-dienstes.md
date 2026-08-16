@@ -1,7 +1,15 @@
 # ADR-020: Sollen die MCP-Server Klienten des Dienstes werden, statt selbst zu schreiben?
 
 **Stand** 2026-08-15T00:00:00+0200
-**Status** Vorschlag — Entscheidung offen, nicht getroffen
+**Status** ANGENOMMEN — Betreiberfreigabe 2026-08-15T12:40:00+0200, wörtlich:
+„ADR-020 - Mach das wie oben beschrieben, Freigabe erteilt" (Knoten `b6b5a483`).
+**Nicht gebaut.** Bindende Reihenfolge: erst echte Ausweisprüfung auf jedem schreibenden
+Endpunkt, dann die 12 schreibenden Werkzeuge, dann erst die 13 lesenden.
+
+*Bis zum 2026-08-16T12:10 stand hier weiterhin „Vorschlag — Entscheidung offen". Die
+Freigabe lag seit einem Tag im Speicher, die Datei war nicht nachgezogen — und eine
+brainlehr-Sitzung baute daraus die Warnung „nicht bauen, Entscheidung offen". Laufen
+Datei und Speicher auseinander, gilt der jüngere Stand.*
 **Betrifft** `knowledge_mcp_server.py`, `berichte/entscheidungen_server.py`, `kern/ausweis.py`,
 `docs/G5_SYSTEMBENUTZER.md`, Linie G (`PLAN_GESAMT_2026-08-13.md`)
 **Entscheider** Betreiber — diese ADR entscheidet nichts, sie legt die Rechnung vor
