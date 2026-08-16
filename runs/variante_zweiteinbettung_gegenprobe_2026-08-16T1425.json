@@ -1,0 +1,209 @@
+{
+  "korpus": "runs/pruefkorpus.jsonl",
+  "faelle": 35,
+  "modell": "bge-m3@ctx2048",
+  "umschreibungsmodell": "keins (Gegenprobe: Originaltext)",
+  "ziele_mit_zusatzeinbettung": 35,
+  "ziele_gesamt": 35,
+  "knoten_bestand": 5025,
+  "kandidaten_im_kanal": 5976,
+  "gemessen_wird": "Rang des Ziels im REINEN Bedeutungskanal, besserer Rang aus Basis-Einbettung ODER situativer Zusatz-Einbettung -- nicht der volle Suchweg",
+  "grenze": [
+    "misst nicht den vollen Suchweg (nur den Bedeutungskanal)",
+    "35 Faelle sind klein -- ein knapper Unterschied ist kein Ergebnis",
+    "misst nicht die Betriebskosten der Zweiteinbettung (Haiku je Ziel, einmalig)",
+    "prueft nur die Vorprobe (35 Faelle als Kandidaten UND Ziele je nach Korpus) -- keine Aussage ueber den vollen Bestand von 5964 Knoten/Lehren"
+  ],
+  "stufen": [
+    {
+      "name": "1-zweiteinbettung",
+      "faelle": 35,
+      "nicht_im_kanal": 0,
+      "median_rang": 56,
+      "bester_rang": 1,
+      "schlechtester_rang": 2252,
+      "in_top5": 4,
+      "in_top50": 16,
+      "kandidaten": 5976
+    }
+  ],
+  "roh": {
+    "1-zweiteinbettung": [
+      {
+        "ziel": "L-a9ccd0",
+        "art": "lesson",
+        "rang": 9
+      },
+      {
+        "ziel": "L-298823",
+        "art": "lesson",
+        "rang": 41
+      },
+      {
+        "ziel": "L-f9f654",
+        "art": "lesson",
+        "rang": 10
+      },
+      {
+        "ziel": "L-b4b443",
+        "art": "lesson",
+        "rang": 44
+      },
+      {
+        "ziel": "L-44a838",
+        "art": "lesson",
+        "rang": 40
+      },
+      {
+        "ziel": "L-cdac52",
+        "art": "lesson",
+        "rang": 2252
+      },
+      {
+        "ziel": "L-e7bc5e",
+        "art": "lesson",
+        "rang": 2
+      },
+      {
+        "ziel": "L-e1a441",
+        "art": "lesson",
+        "rang": 1
+      },
+      {
+        "ziel": "L-b91ed6",
+        "art": "lesson",
+        "rang": 325
+      },
+      {
+        "ziel": "L-bbd7fb",
+        "art": "lesson",
+        "rang": 620
+      },
+      {
+        "ziel": "L-503687",
+        "art": "lesson",
+        "rang": 347
+      },
+      {
+        "ziel": "L-8c633e",
+        "art": "lesson",
+        "rang": 95
+      },
+      {
+        "ziel": "L-606b63",
+        "art": "lesson",
+        "rang": 103
+      },
+      {
+        "ziel": "L-0392e4",
+        "art": "lesson",
+        "rang": 9
+      },
+      {
+        "ziel": "L-476602",
+        "art": "lesson",
+        "rang": 7
+      },
+      {
+        "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+        "art": "node",
+        "rang": 150
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+        "art": "node",
+        "rang": 56
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+        "art": "node",
+        "rang": 6
+      },
+      {
+        "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+        "art": "node",
+        "rang": 28
+      },
+      {
+        "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+        "art": "node",
+        "rang": 63
+      },
+      {
+        "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+        "art": "node",
+        "rang": 9
+      },
+      {
+        "ziel": "/lessons/phase2-summary",
+        "art": "node",
+        "rang": 1132
+      },
+      {
+        "ziel": "/testing/pytest",
+        "art": "node",
+        "rang": 98
+      },
+      {
+        "ziel": "/brainlehr/inference-control-was-andere-faecher",
+        "art": "node",
+        "rang": 66
+      },
+      {
+        "ziel": "/methodik/einstieg",
+        "art": "node",
+        "rang": 79
+      },
+      {
+        "ziel": "/stadtwerke",
+        "art": "node",
+        "rang": 13
+      },
+      {
+        "ziel": "/openlehr/steuer/ui",
+        "art": "node",
+        "rang": 846
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+        "art": "node",
+        "rang": 1
+      },
+      {
+        "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+        "art": "node",
+        "rang": 737
+      },
+      {
+        "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "art": "node",
+        "rang": 1
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "art": "node",
+        "rang": 18
+      },
+      {
+        "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "art": "node",
+        "rang": 1184
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+        "art": "node",
+        "rang": 88
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+        "art": "node",
+        "rang": 56
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+        "art": "node",
+        "rang": 226
+      }
+    ]
+  }
+}

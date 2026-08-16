@@ -121,3 +121,46 @@ Vollständigkeit und Format, aber nichts über die Sprache.
 Nachgefordert wurde mit einer Abnahme, die eine **Null** verlangt: Zahl der
 Umschriften ohne deutsches Funktionswort. Das ist die Form, die trägt — eine
 Zusicherung, die einen Fehlschlag verlangt, statt einer, die Erfolg beschreibt.
+
+## Fortschreibung 2026-08-16T14:30:00+0200 — V1 gemessen, und ihre Gegenprobe korrigiert die eigene Zahl
+
+| Lauf | top5 | top50 | Median-Rang |
+|---|---|---|---|
+| Stufe 0 (Ausgangslage) | 4/35 | 13 | 79 |
+| **V1-Gegenprobe** (Volltext neu eingebettet) | 4/35 | **16** | **56** |
+| **V1 situative Zweiteinbettung** | 6/35 | 18 | 42 |
+| **V2 Anfrageumschrift** | **11/35** | **19** | **35** |
+
+**Die Gegenprobe von V1 reproduziert Stufe 0 nicht.** Sie trifft die 4/35 in den Top-5,
+aber top50 steigt von 13 auf 16 und der Median fällt von 79 auf 56 — **ohne dass eine
+Variante wirkt**. Die Gegenprobe bettet nur den Originaltext des Ziels ein zweites Mal
+ein; dass das allein schon Ränge verbessert, heißt: die gespeicherte Einbettung eines
+Knotens ist schlechter als eine frisch aus seinem Volltext gerechnete.
+
+**Das ändert, woran V1 zu messen ist.** Gegen Stufe 0 sieht V1 nach +2 Top-5 und +5
+Top-50 aus. Gegen ihre **eigene Gegenprobe** — den ehrlichen Maßstab — bleiben +2 Top-5
+und +2 Top-50. Der Rest war kein Variantenerfolg, sondern ein Nebeneffekt des
+Neu-Einbettens.
+
+**Der Nebenbefund ist wertvoller als die Variante:** Ein Teil des Rückstands liegt in
+veralteten oder gekappten Einbettungen des Bestands, nicht im Verfahren. Der
+Prüfer-Melder meldet unabhängig davon 94 Knoten mit veralteter Prüfsumme und 13 beim
+Einbetten gekappte. Das ist billiger zu beheben als jede Variante und gehört zuerst
+gemessen.
+
+### Entscheid
+
+**V2 (Anfrageumschrift) gewinnt** — 11/35 gegen 6/35, und ihre Gegenprobe reproduziert
+Stufe 0 exakt, ihre Zahl ist also unverfälscht. V1 wirkt, aber schwächer als es zunächst
+aussah. V3 (Zweitmodell) war bereits ausgeschieden.
+
+**Nicht empfohlen wird der sofortige Produktiveinsatz von V2.** Sie schickt jede Anfrage
+durch ein zweites Modell; die Betriebskosten sind in keinem der Läufe gemessen, weil das
+Umschreiben vorher im Subagenten geschah. Bei 35 Fällen und einem Unterschied, der bei
+7 Treffern liegt, wäre eine Umstellung des Produktivwegs eine Wette. Nächster Schritt ist
+deshalb nicht der Einbau, sondern die Kostenmessung — und davor die Einbettungshygiene,
+weil sie beide Varianten gleichermaßen hebt.
+
+**Verzerrung, die zu benennen ist:** Die Kandidatenzahl wuchs während der Läufe von 5972
+auf 5976, weil parallele Sitzungen Knoten anlegten. Vier Kandidaten auf sechstausend
+ändern keine dieser Aussagen, aber die Läufe sind dadurch nicht bit-identisch vergleichbar.

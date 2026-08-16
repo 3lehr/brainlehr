@@ -184,31 +184,64 @@ def main() -> None:
     p.add_argument("--gegenprobe", action="store_true",
                     help="Situative Umschreibung durch den Originaltext ersetzen -- "
                          "muss Stufe 0 reproduzieren (top5=4/35)")
+    # Weg ohne API-Schluessel, wie bei V2: ein Haiku-SUBAGENT schreibt die
+    # Umschreibungen ueber das Abo, dieses Werkzeug rechnet sie. L-a69129
+    # verlangt das MODELL, nicht den Abrechnungsweg -- auf ein lokales Modell
+    # wird weiterhin nicht ausgewichen.
+    p.add_argument("--auftrag", default=None,
+                   help="nur die Zieltexte als JSON herausschreiben (fuer den Subagenten), "
+                        "nichts messen")
+    p.add_argument("--umschreibungen", default=None,
+                   help="JSON {ziel_id: situative Umschreibung} aus einem Haiku-Subagenten")
     a = p.parse_args()
 
     fehlgrund = api_verfuegbar()
-    if fehlgrund and not a.gegenprobe:
+    if fehlgrund and not a.gegenprobe and not a.auftrag and not a.umschreibungen:
         print(f"Abbruch: kein Anthropic-API-Zugang ({fehlgrund}). "
-              "L-a69129 verbietet das Ausweichen auf ein lokales Modell.", file=sys.stderr)
+              "L-a69129 verbietet das Ausweichen auf ein lokales Modell. "
+              "Weg ohne Schluessel: --auftrag, dann --umschreibungen.", file=sys.stderr)
         sys.exit(1)
 
     faelle = basis.lade_faelle(Path(a.korpus))
     conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
     ids, mat = basis.lade_kandidaten(conn)
 
+    if a.auftrag:
+        texte = {z: lade_zieltext(conn, art, z) for art, z in sorted(
+            {(f["target_kind"], f["target_id"]) for f in faelle})}
+        leer = [z for z, t in texte.items() if not t.strip()]
+        Path(a.auftrag).write_text(json.dumps(texte, indent=1, ensure_ascii=False),
+                                   encoding="utf-8")
+        conn.close()
+        print(f"geschrieben: {a.auftrag} ({len(texte)} Ziele, davon {len(leer)} ohne Text)",
+              file=sys.stderr)
+        return
+
     # Zusatz-Einbettung je EINDEUTIGES Ziel im Korpus -- nicht je Fall (mehrere
     # Faelle koennen dasselbe Ziel haben, Doppelarbeit waere nur Kosten ohne Nutzen).
     ziel_arten = {(f["target_kind"], f["target_id"]) for f in faelle}
     zusatz_id_zu_vec: dict[str, list[float]] = {}
     client = None
-    if not fehlgrund:
+    if not fehlgrund and not a.umschreibungen and not a.gegenprobe:
         import anthropic
         client = anthropic.Anthropic()
+
+    vorbereitet: dict[str, str] = {}
+    if a.umschreibungen:
+        vorbereitet = json.loads(Path(a.umschreibungen).read_text(encoding="utf-8"))
+        fehlend = [z for _, z in ziel_arten if z not in vorbereitet]
+        if fehlend:
+            # Abbrechen statt still auf den Originaltext auszuweichen -- das
+            # waere die Gegenprobe, als Messung ausgegeben.
+            raise SystemExit(f"Abbruch: {len(fehlend)} Ziele ohne Umschreibung, "
+                             f"u.a. {fehlend[:3]}")
 
     for art, ziel_id in sorted(ziel_arten):
         zieltext = lade_zieltext(conn, art, ziel_id)
         if a.gegenprobe:
             umschreibung = zieltext  # Gegenprobe: Original statt Umschreibung
+        elif a.umschreibungen:
+            umschreibung = vorbereitet.get(ziel_id) or None
         else:
             umschreibung = situative_umschreibung(client, zieltext)
         if not umschreibung:
@@ -225,7 +258,12 @@ def main() -> None:
         "korpus": str(Path(a.korpus).resolve()).replace(str(_w) + "/", ""),
         "faelle": len(faelle),
         "modell": embeddings.DEFAULT_EMBED_MODEL,
-        "umschreibungsmodell": HAIKU_MODELL if not a.gegenprobe else "keins (Gegenprobe: Originaltext)",
+        # Der WEG gehoert zur Zahl -- "ueber die API" und "aus vorbereiteter
+        # Datei" sind zwei verschiedene Aussagen ueber dieselbe Ziffer.
+        "umschreibungsmodell": ("keins (Gegenprobe: Originaltext)" if a.gegenprobe
+                                else f"{HAIKU_MODELL} (Subagent ueber Abo, Datei "
+                                     f"{Path(a.umschreibungen).name})" if a.umschreibungen
+                                else f"{HAIKU_MODELL} (API)"),
         "ziele_mit_zusatzeinbettung": len(zusatz_id_zu_vec),
         "ziele_gesamt": len(ziel_arten),
         "knoten_bestand": bestand,
