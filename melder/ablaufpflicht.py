@@ -42,12 +42,41 @@ import subprocess
 import sys
 from pathlib import Path
 
-_w = Path(__file__).resolve().parents[1]
+def _wurzel(vorgabe: str | None = None) -> Path:
+    """Das zu pruefende Repo -- des AUFRUFERS, nicht das eigene.
+
+    Die erste Fassung nahm `Path(__file__).parents[1]`, also immer brainlehr.
+    Gemeldet von der fahrtenbuch-Sitzung am 2026-08-16, die den Waechter
+    ausrollen sollte: aus fahrtenbuch_nativ heraus aufgerufen meldete er
+    brainlehrs Commits und keinen einzigen von dort. Ein Waechter, der das
+    FALSCHE Repo prueft und dabei gruen meldet, ist schlimmer als keiner --
+    er haette jedes fremde Repo freigesprochen.
+
+    Reihenfolge: ausdrueckliche Angabe, sonst das Repo des aktuellen
+    Verzeichnisses, sonst das eigene."""
+    if vorgabe:
+        return Path(vorgabe).resolve()
+    r = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+                       capture_output=True, text=True, check=False)
+    if r.returncode == 0 and r.stdout.strip():
+        return Path(r.stdout.strip())
+    return Path(__file__).resolve().parents[1]
+
+
+_w = _wurzel()
 
 # Ab wie vielen geaenderten Quelldateien ein Plan genannt sein muss.
 PLANSCHWELLE = 3
 
-# Ab wann geprueft wird. Ein Waechter, der beim ersten Lauf die eigene
+# Ab wann geprueft wird -- die VORGABE, je Repo per `--seit` zu uebersteuern.
+# Gemeldet von der fahrtenbuch-Sitzung am 2026-08-16, nachdem die
+# Wurzelkorrektur die Datei ueberhaupt erst fremdtauglich gemacht hatte: der
+# Stichtag ist brainlehrs Einfuehrungstag und galt seither fuer jedes
+# aufrufende Repo. Bei ihr war das nuetzlich (fing einen Altfall), in einem
+# Repo mit vielen Commits von heute waere es sofort Dauerrot -- und Dauerrot
+# heisst abgeschaltet.
+#
+# Ein Waechter, der beim ersten Lauf die eigene
 # Vergangenheit blockiert, wird abgeschaltet -- und dann wirkt er nie.
 # Deshalb ein Stichtag: sein eigener Einfuehrungstag. Die Altfaelle sind damit
 # nicht vergessen, sondern ausgewiesen (--alle zeigt sie).
@@ -140,6 +169,16 @@ def demo() -> None:
     assert not BELEG_GENANNT.search("Aufraeumen und Umbenennen von zwei Funktionen")
 
     assert QUELLE.search("kern/embeddings.py") and not QUELLE.search("docs/PLAN_X.md")
+    # Die Wurzel muss aus dem AUFRUFER kommen, nicht aus dem Dateipfad.
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        assert _wurzel(d) == Path(d).resolve(), "ausdrueckliche Angabe hat Vorrang"
+    assert _wurzel() == Path(subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True,
+        check=False).stdout.strip() or Path(__file__).resolve().parents[1]), (
+        "ohne Angabe gilt das Repo des aktuellen Verzeichnisses -- sonst prueft "
+        "der Waechter aus jedem fremden Repo heraus brainlehr und meldet gruen")
+
     assert NUR_ERZEUGT.match("docs/karten/verbund.md"), (
         "erzeugte Karten sind kein Produktivcode -- sonst verlangt der Waechter "
         "einen Beleg fuer eine Datei, die ein Skript geschrieben hat")
@@ -150,12 +189,19 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("bereich", nargs="?", default="@{u}..HEAD",
                    help="git-Bereich, Vorgabe: alles Ungepushte")
+    p.add_argument("--wurzel", default=None,
+                   help="zu pruefendes Repo (Vorgabe: das des aktuellen Verzeichnisses)")
     p.add_argument("--still", action="store_true")
     p.add_argument("--alle", action="store_true",
                    help="auch Commits vor dem Stichtag (zeigt die Altfaelle)")
+    p.add_argument("--seit", default=STICHTAG,
+                   help=f"eigener Stichtag des Repos (Vorgabe: {STICHTAG}) -- "
+                        f"jedes Repo hat seinen eigenen Einfuehrungstag")
     a = p.parse_args()
+    global _w
+    _w = _wurzel(a.wurzel)
     try:
-        befunde = pruefe(a.bereich, None if a.alle else STICHTAG)
+        befunde = pruefe(a.bereich, None if a.alle else a.seit)
     except Exception as e:  # kein Upstream, frisches Repo -- kein Grund zu sperren
         if not a.still:
             print(f"Ablaufpflicht nicht prüfbar ({e}) — übersprungen.", file=sys.stderr)
