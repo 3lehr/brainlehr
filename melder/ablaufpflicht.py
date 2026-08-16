@@ -138,8 +138,28 @@ def _lauf(*args: str) -> str:
                           text=True, check=False).stdout
 
 
+def _bereich_aufloesen(bereich: str) -> str:
+    """`@{u}..HEAD` ohne Upstream ist die LEERE MENGE, nicht "alles sauber".
+
+    Gemeldet von der fahrtenbuch-Sitzung am 2026-08-16: In fahrtenbuch_nativ
+    gibt es keinen Upstream. `git rev-list @{u}..HEAD` schlug dort still fehl,
+    die Liste blieb leer, und der Melder meldete Erfolg -- bei jedem Lauf, ohne
+    je einen Commit gesehen zu haben. Nach dieser Korrektur prueft er dort zum
+    ERSTEN Mal etwas und findet auf Anhieb neun Befunde.
+
+    Die Aufloesung gehoert hierher und nicht in den Hook: sonst bekommt jedes
+    der 28 Repos seine eigene Bereichslogik, und die Unterschiede merkt
+    niemand. Ohne Upstream gilt HEAD -- die Menge wird dann durch den Stichtag
+    begrenzt, nicht durch das Ungepushte."""
+    if "@{u}" not in bereich:
+        return bereich
+    r = subprocess.run(["git", "rev-parse", "--abbrev-ref", "@{u}"], cwd=_w,
+                       capture_output=True, text=True, check=False)
+    return bereich if r.returncode == 0 else "HEAD"
+
+
 def commits(bereich: str, ab: str | None = STICHTAG) -> list[str]:
-    args = ["rev-list", bereich] + ([f"--since={ab}"] if ab else [])
+    args = ["rev-list", _bereich_aufloesen(bereich)] + ([f"--since={ab}"] if ab else [])
     return [z for z in _lauf(*args).splitlines() if z.strip()]
 
 
@@ -201,6 +221,27 @@ def demo() -> None:
         "ohne Angabe gilt das Repo des aktuellen Verzeichnisses -- sonst prueft "
         "der Waechter aus jedem fremden Repo heraus brainlehr und meldet gruen")
 
+    # Ohne Upstream faellt der Bereich auf HEAD zurueck. Rot war genau dieser
+    # Fall: `@{u}..HEAD` lieferte still die leere Menge, und der Melder meldete
+    # Erfolg, ohne je einen Commit gesehen zu haben.
+    global _w
+    _merk = _w
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            _w = Path(d)
+            subprocess.run(["git", "init", "-q"], cwd=d, check=False)
+            subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=T",
+                            "commit", "-q", "--allow-empty", "-m", "leer"],
+                           cwd=d, check=False)
+            assert _bereich_aufloesen("@{u}..HEAD") == "HEAD", (
+                "ohne Upstream muss der Bereich auf HEAD fallen -- sonst prueft "
+                "der Melder die leere Menge und meldet Erfolg")
+            assert len(commits("@{u}..HEAD", None)) == 1, "der eine Commit muss gefunden werden"
+            assert _bereich_aufloesen("HEAD~3..HEAD") == "HEAD~3..HEAD", (
+                "ein ausdruecklich genannter Bereich wird nie umgeschrieben")
+    finally:
+        _w = _merk
+
     # Eigener Stichtag je Repo: vorhandene Datei gewinnt, fehlende faellt auf
     # die Vorgabe zurueck, leere Datei ebenso. Ohne die letzten beiden Faelle
     # wuerde ein Tippfehler den Waechter lautlos abschalten.
@@ -251,9 +292,12 @@ def main() -> int:
             # gepusht, der Vorgabebereich @{u}..HEAD war leer). Dieselbe
             # Fehlerklasse wie der Stichtag in der Zukunft: nichts geprueft,
             # gruen gemeldet.
+            aufgeloest = _bereich_aufloesen(a.bereich)
             n = len(commits(a.bereich, None if a.alle else seit))
             if n == 0:
-                print(f"Nichts zu prüfen: 0 Commits im Bereich {a.bereich}"
+                print(f"Nichts zu prüfen: 0 Commits im Bereich {aufgeloest}"
+                      + (f" (kein Upstream, statt {a.bereich})"
+                         if aufgeloest != a.bereich else "")
                       + ("" if a.alle else f" seit {seit}") + ".")
             else:
                 print(f"Jeder Commit nennt Plan und Belegweg ({n} geprüft).")
