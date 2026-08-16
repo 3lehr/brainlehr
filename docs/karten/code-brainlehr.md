@@ -43,7 +43,7 @@ graph LR
   tests -->|2| brainlehr
   tests -->|4| haken
   tests -->|16| kern
-  tests -->|81| knowledge_mcp_server
+  tests -->|82| knowledge_mcp_server
 ```
 
 Ein Kasten ist ein Verzeichnis, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 18 Module, 22 Verbindungen.

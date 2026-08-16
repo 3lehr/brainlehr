@@ -46,7 +46,7 @@
   },
   {
    "id": "brainlehr",
-   "text": "brainlehr · 229",
+   "text": "brainlehr · 230",
    "form": "kasten",
    "waise": false
   },
@@ -76,7 +76,7 @@
   },
   {
    "id": "methodik",
-   "text": "methodik · 133",
+   "text": "methodik · 137",
    "form": "kasten",
    "waise": false
   },
@@ -157,7 +157,7 @@
   {
    "von": "brainlehr",
    "nach": "methodik",
-   "text": "56",
+   "text": "63",
    "art": "ungerichtet"
   },
   {
