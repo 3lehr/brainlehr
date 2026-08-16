@@ -87,3 +87,19 @@ und pruefeUndAktualisiere() haengen an Timer, UserDefaults und Netz. Fuer sie
 gibt es keinen Test -- "geaendert, nicht verifiziert". Belegt sind die beiden
 reinen Einheiten darunter (DienstZustand, Mitstart), an denen die Entscheidung
 tatsaechlich faellt.
+
+*** Nativer Zeichner (DomaenenBildschirm + DomaenenAnsicht) ***
+
+Auch hier war der erste Lauf GRUEN (9/9) und damit kein Beleg -- Code und Test
+entstanden zusammen. MUTATIONSPROBE mit zwei Mutationen an genau den beiden
+Regeln, die den Bildschirm ehrlich halten:
+  1. fehlender Wert -> 0 statt Strich
+  2. unbekannte Spaltenart -> verwerfen statt Text
+  mutiert: Executed 9 tests, with 3 failures
+           (testFehlenderBetragIstKeineNull, testUnbekannteSpaltenartWirdText)
+  echt:    Executed 9 tests, with 0 failures
+Gegengeprueft: 9 ausgefuehrt, 9 `func test` in der Datei.
+
+NICHT GEPRUEFT, ausdruecklich: DomaenenAnsicht.swift selbst (SwiftUI). Sie ist
+bewusst duenn gehalten -- sie zeichnet, sie entscheidet nichts. Alle
+Entscheidungen liegen im geprueften Modell darunter.
