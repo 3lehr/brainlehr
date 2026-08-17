@@ -281,3 +281,11 @@
 - Remaining risk: already-running MCP processes must restart before their advertised tool list includes `session_checkpoint_setzen`, `session_checkpoint_lesen`, and `session_checkpoint_schliessen`. Brainlehr recommends but cannot itself open a new host thread.
 - Known unrelated failure: the wider schema subset has one pre-existing `kanalguete_messung.py:rowid` assertion failure in `tests/test_erstinstallation_spalten.py`; 98 other tests passed.
 - Next test: after MCP restart, call the three tools from Claude, Codex/ChatGPT, and Hermes and compare their recommendation payloads.
+
+# 2026-08-17T21:06:50+02:00 — fix(search): stop claiming an empty knowledge base
+
+- Files: `docs/PLAN_KANALGUETE_2026-08-15.md`, `kern/relevanzlage.py`, `tests/test_relevanzlage.py`, and this handoff.
+- Why: the visible result is fused from FTS, nodes, and lessons, but `bestandslage` receives only node-embedding scores. The Q2 operator case returned the relevant `cd571222` at FTS rank 1 while claiming `nichts_passendes`; the classifier now reports the honest `uneindeutig` boundary without mixing uncalibrated BM25 and cosine values.
+- Verified: the MUST-LAGE-001 regression was red first; focused search/scope/channel suite — 54 passed; `python3 kern/relevanzlage.py` — `demo: ok`; direct Q1/Q2/Q3 path retained the same scores and top IDs while Q2 changed to `uneindeutig`.
+- Remaining risk: already-running MCP processes may keep the old imported Python module until restart. `schwach` remains the existing calibrated intermediate label and was not redefined.
+- Next test: restart the Brainlehr MCP server and repeat Q2 through the external MCP boundary; then rerun the 40/40 calibration before any future score or threshold change.

@@ -8,9 +8,10 @@ Diese Datei prueft die Behebung auf beiden Ebenen: die reine Rechnung
 (kern/relevanzlage.py, ohne Aufbau) und den echten Suchweg
 (knowledge_search, mit Datenbank und Bedeutungskanal).
 
-ROT VOR GRUEN: gegen den Stand vor dem 2026-08-16 schlaegt
-test_suchweg_meldet_nichts_passendes fehl -- `bestandslage` existierte nicht,
-der Zugriff liefe ins Leere.
+ROT VOR GRUEN: gegen den Stand vor dem 2026-08-16 schlägt der echte Suchweg
+fehl -- `bestandslage` existierte nicht, der Zugriff liefe ins Leere. Seit
+MUST-LAGE-001 heißt eine niedrige, nicht trennscharfe Lage `uneindeutig`, weil
+der Klassifikator die FTS-/Fusionsbelege nicht sieht.
 """
 from __future__ import annotations
 
@@ -35,7 +36,19 @@ def test_zwei_zeichen_muessen_zusammenkommen():
     einen guten Treffer -- der Abstand zum Zweitbesten entlarvt es."""
     assert relevanzlage.beurteile([0.70, 0.60, 0.55])["lage"] == "passend"
     assert relevanzlage.beurteile([0.70, 0.699, 0.698])["lage"] == "schwach"
-    assert relevanzlage.beurteile([0.45, 0.44, 0.43])["lage"] == "nichts_passendes"
+    assert relevanzlage.beurteile([0.45, 0.44, 0.43])["lage"] == "uneindeutig"
+
+
+def test_uneindeutiger_bedeutungskanal_behauptet_keinen_leeren_bestand():
+    """MUST-LAGE-001: Der Klassifikator sieht nur den Bedeutungskanal.
+
+    Niedrige, eng beieinanderliegende Kosinuswerte belegen deshalb keine
+    Abwesenheit in FTS/Fusion. Der echte Q2-Fall liefert trotz dieser Werte
+    ``cd571222`` als FTS-Rang 1.
+    """
+    lage = relevanzlage.beurteile([0.5372, 0.5356])
+    assert lage["lage"] == "uneindeutig"
+    assert "nichts Passendes" not in lage["satz"]
 
 
 def test_kein_entwicklertext_im_satz():
@@ -60,7 +73,7 @@ def _ollama_da() -> bool:
 
 
 @pytest.mark.skipif(not (_w / "brainlehr.db").exists(), reason="keine Datenbank")
-def test_suchweg_meldet_nichts_passendes():
+def test_suchweg_meldet_uneindeutige_lage():
     """Der ECHTE Weg, beide Richtungen -- die Abnahme dieser Aenderung.
 
     Wichtig ist der zweite Teil der Zusicherung: die Treffer bleiben. Es wird
@@ -73,7 +86,7 @@ def test_suchweg_meldet_nichts_passendes():
 
     unsinn = kms.knowledge_search("Kaffeemaschine Bueroklammer Regenschirm Wochenendausflug",
                                   max_results=5)
-    assert unsinn["bestandslage"]["lage"] == "nichts_passendes", unsinn["bestandslage"]
+    assert unsinn["bestandslage"]["lage"] == "uneindeutig", unsinn["bestandslage"]
     assert unsinn["bestandslage"]["satz"], "der Nutzer bekommt einen Satz, keine Zahl"
     assert unsinn["count"] > 0, (
         "gekennzeichnet, NICHT gefiltert -- die Treffer bleiben erhalten")

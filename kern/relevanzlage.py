@@ -3,8 +3,8 @@
 
 DAS PROBLEM, gemessen am 2026-08-16 (Knoten cc458fb3): Bei 40 Anfragen, deren
 Antwort nachweislich NICHT im Bestand liegt, meldete das System 40 Mal einen
-Treffer. Der Zustand "dazu habe ich nichts" war nicht ausdrueckbar -- und
-damit ist jede Trefferquote dieses Hauses zweideutig.
+Treffer. Eine belastbare negative Lage war nicht ausdrueckbar -- und damit ist
+jede Trefferquote dieses Hauses zweideutig.
 
 WARUM HIER NICHT GEFILTERT WIRD, und das ist die eigentliche Entscheidung:
 Dieselbe Messung hat drei Schwellwerte geprueft (bester Kosinuswert, Abstand
@@ -58,8 +58,15 @@ def beurteile(werte: list[float]) -> dict:
         lage = "schwach"
         satz = "Dazu steht wenig Passendes im Bestand — die Treffer sind eher verwandt als einschlägig."
     else:
-        lage = "nichts_passendes"
-        satz = "Zu dieser Frage steht vermutlich nichts Passendes im Bestand."
+        # MUST-LAGE-001: Diese Funktion sieht ausschliesslich die Werte des
+        # Bedeutungskanals. Ein sichtbarer Treffer kann zugleich aus FTS oder
+        # der Fusion stammen; niedrige Kosinuswerte belegen daher keine
+        # Abwesenheit im gesamten Bestand (belegter Q2-Fall: cd571222 ist
+        # FTS-Rang 1). Die Kennzeichnung benennt nur die echte Aussagegrenze.
+        lage = "uneindeutig"
+        satz = (
+            "Die angezeigten Treffer sind nicht eindeutig einzuordnen — "
+            "einzelne können trotzdem einschlägig sein.")
     return {"lage": lage, "bester": round(bester, 4), "abstand": round(abstand, 4),
             "satz": satz}
 
@@ -80,8 +87,8 @@ def demo() -> None:
     assert knapp["lage"] == "schwach", knapp
 
     nichts = beurteile([0.45, 0.44, 0.43])
-    assert nichts["lage"] == "nichts_passendes", nichts
-    assert "Bestand" in nichts["satz"]
+    assert nichts["lage"] == "uneindeutig", nichts
+    assert "nicht eindeutig" in nichts["satz"]
 
     # Keine Entwicklerinformation im Satz an den Nutzer (Hausregel).
     for lage in (stark, breit, knapp, nichts):

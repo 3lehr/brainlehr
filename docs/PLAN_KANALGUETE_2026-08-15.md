@@ -284,3 +284,27 @@ nie an der Verschmelzung.
 4935 Knoten. Ob ein Kanal, der 96 % des Bestands trifft, überhaupt Rangbeiträge
 liefern sollte, ist die Frage hinter der Frage; sie braucht eine eigene Messung und
 keine dritte Formeländerung aus dem Bauch.
+
+---
+
+## Kanonischer Requirement-Eintrag 2026-08-17 — Aussagegrenze der Relevanzlage
+
+| ID | Typ | Anforderung | Gate | Status |
+|---|---|---|---|---|
+| MUST-LAGE-001 | MUSS | `bestandslage` darf aus den Kosinuswerten des Bedeutungskanals keine Aussage über das Fehlen passender Treffer im gesamten fusionierten Bestand ableiten. Unterschreiten die Werte die bisherigen Schwellen, muss die Lage als **uneindeutig** bezeichnet werden; eine positive Lage bleibt nur bei den kalibrierten zwei Zeichen (`bester` und `abstand`) zulässig. | `tests/test_relevanzlage.py::test_uneindeutiger_bedeutungskanal_behauptet_keinen_leeren_bestand` und echter Q2-Suchweg | PASS |
+
+**Belegter Konflikt:** Die Anfrage `kanonisch Lage Brainlehr offene Aufgaben Tests`
+liefert im Scope `brainlehr` den einschlägigen Knoten `cd571222` auf FTS-Rang 1,
+während die nur aus Node-Embeddings berechnete Lage `nichts_passendes` ausgibt
+(`bester=0,5372`, `abstand=0,0016`). Projektfilter und FTS-Parser sind damit als
+Ursache widerlegt; die Kennzeichnung überschreitet die Aussagekraft ihres
+Eingangs. BM25- und Kosinuswerte werden nicht unkalibriert vermischt.
+
+**Verifikation:** Der neue Regressionstest war vor der Änderung rot
+(`nichts_passendes != uneindeutig`). Danach bestanden 54 fokussierte Tests aus
+`test_relevanzlage.py`, `test_scope_in_query.py`,
+`test_knowledge_hybrid_search.py`, `test_stichwortkanal_kurze_anfragen.py`,
+`test_kanalguete_schritte.py` und `test_kanalguete_flooranalyse.py`; der reine
+Modul-Selbsttest bestand ebenfalls. Der direkte echte Q2-Suchweg liefert weiterhin
+`cd571222` auf Rang 1 und jetzt `lage=uneindeutig` bei unveränderten Messwerten
+`0,5372/0,0016`; Q1 bleibt `schwach`, Q3 bleibt `passend`.
