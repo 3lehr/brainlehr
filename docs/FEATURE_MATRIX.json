@@ -28,8 +28,8 @@
     {"entry":"knowledge_trust_score","status":"public-after-generalization","reason":"generic audit score"},
     {"entry":"kurator_lauf","status":"public-after-generalization","reason":"generic consistency pass"},
     {"entry":"Claude MCP stdio lifecycle","status":"public-after-generalization","reason":"primary client lifecycle with neutral configuration"},
-    {"entry":"Claude recall hook","status":"public-after-generalization","reason":"generic local prompt recall without logs or project routing"},
-    {"entry":"Claude capture hook","status":"public-after-generalization","reason":"generic reminder template without operator or application instructions"},
+    {"entry":"Claude recall hook","status":"public-as-is","reason":"generic local prompt recall without logs or project routing"},
+    {"entry":"Claude capture hook","status":"public-as-is","reason":"generic local capture of a caller-supplied generalized lesson"},
     {"entry":"brainlehr.py export/import/hooks","status":"data-only-excluded","reason":"moves database contents or local hook configuration"},
     {"entry":"runtime database, logs, backups, exports","status":"data-only-excluded","reason":"stored private context"},
     {"entry":"private client settings and instructions","status":"data-only-excluded","reason":"operator and application context"}
