@@ -90,6 +90,8 @@ RECHTE: dict[str, str] = {
     "lesson_query": "lehre:lesen",
     "knowledge_relation_list": "kante:lesen",
     "annahme_liste": "annahme:lesen",
+    "prompt_invarianz_planen": "wissen:lesen",
+    "prompt_invarianz_pruefen": "wissen:lesen",
     # schreiben
     "knowledge_add": "wissen:schreiben",
     "knowledge_update": "wissen:schreiben",

@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-17T13:26:46+02:00 — feat(mcp): gate prompt-invariance profile
+
+- Files: `kern/prompt_invarianz.py`, `knowledge_mcp_server.py`, `kern/werkzeugrechte.py`, focused tests, `docs/AI_DECISIONS.md`, this handoff.
+- Why: Claude keeps the complete default MCP, while ChatGPT Secure MCP Tunnel and Hermes can expose exactly two provider-neutral prompt-invariance tools. The profile is enforced at `tools/call`, not merely hidden from `tools/list`.
+- Verified: focused pytest set → 17 passed; `kern/werkzeugrechte.py --selftest` green; real stdio probe listed/called both prompt tools and rejected `knowledge_search` with `profil:prompt-invariance`; Python compile green.
+- Remaining risk: The OpenAI-hosted endpoint still requires the operator's Platform login, `tunnel_id`, Runtime-API-Key and ChatGPT Developer Mode. No secret was read or stored.
+- Next test: run `tunnel-client doctor`, confirm managed runtime is healthy/ready, then list and call exactly the two tools from ChatGPT.
+
 ## 2026-08-16T21:20:06+02:00 — fix(mcp): expose operator instruction contract
 
 - Files: `knowledge_mcp_server.py`, `tests/test_weisungszitat_beleg.py`, `AI_HANDOFF.md`.

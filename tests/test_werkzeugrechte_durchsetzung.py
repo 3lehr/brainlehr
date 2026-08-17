@@ -155,3 +155,13 @@ def test_jedes_werkzeug_hat_eine_zuordnung():
     import werkzeugrechte
     fehlt = werkzeugrechte.fehlende_zuordnung(kms.TOOLS)
     assert not fehlt, f"Werkzeuge ohne Rechtezuordnung: {fehlt}"
+
+
+def test_prompt_profil_ist_auch_am_aufruf_default_deny(umgebung, monkeypatch):
+    monkeypatch.setenv("BEGOD_KNOWLEDGE_PROFIL", "prompt-invariance")
+    listed = kms.handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+    assert [tool["name"] for tool in listed["result"]["tools"]] == list(kms.PROMPT_INVARIANZ_TOOLS)
+    assert _abgewiesen(_call("knowledge_search", {"query": "privat"})) == "profil:prompt-invariance"
+    result = _call("prompt_invarianz_planen", {"task_type": "rangfolge", "security": True})
+    assert _abgewiesen(result) is None
+    assert json.loads(result["content"][0]["text"])["profile"] == "strong"

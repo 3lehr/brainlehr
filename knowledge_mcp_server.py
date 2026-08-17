@@ -146,6 +146,7 @@ import zeitfenster  # Auftrag 88 Schritt 1 (docs/PLAN_ZEITACHSE_2026-08-14.md):
                      # der Aufruf sitzt in der final_ids-Schleife, nicht in der
                      # FTS-WHERE-Klausel (Begruendung im Plan). Kein Zirkel --
                      # zeitfenster importiert selbst nichts von hier.
+import prompt_invarianz  # agentneutraler Entscheidungstest; keine Modell- oder DB-Abhaengigkeit
 
 # BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad (gleiche Bauform wie die drei
 # BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
@@ -6646,6 +6647,39 @@ TOOLS = {
             _require(args, "kind", "'node' oder 'lesson'."),
             _require(args, "ref", "die Node-ID/der Pfad (kind='node') bzw. die Lehr-ID (kind='lesson')."))
     },
+    "prompt_invarianz_planen": {
+        "description": "Waehlt off, light oder strong fuer eine Bewertung, Rangfolge oder Entscheidung.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "task_type": {"type": "string"},
+                "risk": {"type": "string", "enum": ["low", "high"]},
+                "shared": {"type": "boolean"},
+                "irreversible": {"type": "boolean"},
+                "security": {"type": "boolean"},
+                "data_model": {"type": "boolean"},
+                "automatic_mutation": {"type": "boolean"},
+                "vendor_lock_in": {"type": "boolean"},
+            },
+            "required": ["task_type"],
+            "additionalProperties": False,
+        },
+        "handler": lambda args: prompt_invarianz.planen(**args),
+    },
+    "prompt_invarianz_pruefen": {
+        "description": "Prueft evidenzbelegte Vergleichslaeufe auf Stabilitaet und Reihenfolgeeffekte.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "runs": {"type": "array", "items": {"type": "object", "properties": {"winner": {}, "evidence": {}}, "required": ["winner", "evidence"]}},
+                "threshold": {"type": "number", "minimum": 0, "maximum": 1},
+                "high_risk": {"type": "boolean"},
+            },
+            "required": ["runs"],
+            "additionalProperties": False,
+        },
+        "handler": lambda args: prompt_invarianz.pruefen(**args),
+    },
     "kurator_lauf": {
         "description": "Background cleanup agent (Hermes curator.py comparison) that ACTS, not just reports "
                         "like knowledge_lint.py -- but only within the safe boundary: knowledge_zurueckziehen() "
@@ -6666,6 +6700,8 @@ TOOLS = {
         "handler": lambda args: kurator_lauf(scharf=bool(args.get("scharf")), **_identity_args(args))
     }
 }
+
+PROMPT_INVARIANZ_TOOLS = ("prompt_invarianz_planen", "prompt_invarianz_pruefen")
 
 
 def handle_request(req: dict) -> dict:
@@ -6716,6 +6752,8 @@ def handle_request(req: dict) -> dict:
         names = TOOLS.keys()
         if profil == "klein":
             names = ["knowledge_search", "knowledge_read", "knowledge_add"]
+        elif profil == "prompt-invariance":
+            names = PROMPT_INVARIANZ_TOOLS
         elif profil:
             print(f"BEGOD_KNOWLEDGE_PROFIL unbekannt: {profil!r} — zeige alle Werkzeuge", file=sys.stderr)
 
@@ -6732,6 +6770,15 @@ def handle_request(req: dict) -> dict:
     if method == "tools/call":
         tool_name = req.get("params", {}).get("name", "")
         arguments = req.get("params", {}).get("arguments", {})
+
+        if (os.environ.get("BEGOD_KNOWLEDGE_PROFIL") == "prompt-invariance"
+                and tool_name not in PROMPT_INVARIANZ_TOOLS):
+            return {
+                "jsonrpc": "2.0", "id": req_id,
+                "result": {"content": [{"type": "text", "text": json.dumps(
+                    {"error": "nicht erlaubt", "grund": "profil:prompt-invariance"},
+                    ensure_ascii=False)}], "isError": True}
+            }
 
         if tool_name not in TOOLS:
             return {
