@@ -1,5 +1,10 @@
 # AI architecture decisions
 
+## 2026-08-17 — Canonical ID-based requirements gate
+
+- Decision: Complex artifact and model work uses one canonical, stable-ID requirements catalog; changes enter it before implementation, conflicts remain visible, and delivery requires every MUST/MUST-NOT gate.
+- Verification: installed global instruction checked by exact assertions.
+
 ## 2026-08-17 — Keep required delegated batches behind a completion gate
 
 - Context: Background reviewers can finish after the parent has already ended its turn. Their finals remain available, but a queued completion does not by itself guarantee a new parent turn; a later user prompt can accidentally become the discovery mechanism.

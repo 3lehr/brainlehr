@@ -1,5 +1,12 @@
 # AI handoff
 
+## 2026-08-17 — fix(orchestrator): require completion gates
+
+- Files: `docs/AI_DECISIONS.md`, this handoff; global `~/.codex/AGENTS.md`.
+- Why: require a single ID-based catalog and visible conflict gates for complex artifacts.
+- Verified: exact global-text assertions and `git diff --check`.
+- Next test: use one catalog ID in an implementation, test, and acceptance gate.
+
 ## 2026-08-17T17:13:07+02:00 — fix(orchestrator): require completion gates
 
 - Files: `docs/AI_DECISIONS.md`, this handoff; additionally the non-repository `~/.codex/AGENTS.md`.
