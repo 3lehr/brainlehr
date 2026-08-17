@@ -1,5 +1,10 @@
 # AI handoff
 
+## 2026-08-17 — test(prompt): add invariance gates
+
+- Files: prompt core, public agent templates, requirements catalog and focused tests.
+- Verified: focused pytest gates.
+
 ## 2026-08-17 — fix(orchestrator): require completion gates
 
 - Files: `docs/AI_DECISIONS.md`, this handoff; global `~/.codex/AGENTS.md`.

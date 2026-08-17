@@ -1,5 +1,9 @@
 # AI architecture decisions
 
+## 2026-08-17 — Deterministic prompt-invariance evidence gate
+
+- Decision: Only measured deterministic runs can recommend a winner; preference and role framing are never evidence.
+
 ## 2026-08-17 — Canonical ID-based requirements gate
 
 - Decision: Complex artifact and model work uses one canonical, stable-ID requirements catalog; changes enter it before implementation, conflicts remain visible, and delivery requires every MUST/MUST-NOT gate.

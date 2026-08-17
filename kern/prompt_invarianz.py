@@ -29,4 +29,4 @@ def pruefen(runs, threshold=.8, high_risk=False):
         status, winner = ("human_review" if high_risk or len(runs) >= 6 else "continue"), None
     else:
         status, winner = ("accept" if stability >= threshold and not (high_risk and len(runs) < 2) else "human_review" if high_risk or len(runs) >= 6 else "continue"), best[0]
-    return {"status": status, "winner": winner, "stability": stability, "order_sensitive": len(counts) > 1}
+    return {"status": status, "winner": winner, "stability": stability, "order_sensitive": len(counts) > 1, "recommendation": status == "accept"}
