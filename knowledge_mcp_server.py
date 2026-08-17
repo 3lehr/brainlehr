@@ -121,6 +121,7 @@ import speicher  # Aufgabe 79 Schritt 2: normiere_modell()/normiere_akteur() im
                   # Schreibpfad selbst, nicht nur im Meldewerkzeug (siehe _identity)
 import sicherungen  # Aufbewahrungsregel fuer die automatischen .bak-Kopien (2026-08-14)
 import werkzeugrechte  # B4.3: Durchsetzung an tools/call statt nur an tools/list
+import session_checkpoint
 import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # (knowledge_add/knowledge_update/lesson_record/lesson_update),
                        # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
@@ -6056,7 +6057,48 @@ def _tool_anmelden(args: dict) -> dict:
     }
 
 
+def session_checkpoint_save(session: str, summary: str, open_tasks: str = "",
+                            decisions: str = "", *, actor: str | None = None,
+                            model: str | None = None) -> dict:
+    conn = get_db()
+    try:
+        result = session_checkpoint.save(conn, session=session, summary=summary,
+                                         open_tasks=open_tasks, decisions=decisions,
+                                         actor=actor, model=model)
+        conn.commit()
+        return result
+    finally:
+        conn.close()
+
+
+def session_checkpoint_latest(session: str) -> dict:
+    conn = get_db()
+    try:
+        return {"session": session, "checkpoint": session_checkpoint.latest(conn, session)}
+    finally:
+        conn.close()
+
+
 TOOLS = {
+    "session_checkpoint_save": {
+        "description": "Save an append-only resume checkpoint for a session.",
+        "inputSchema": {"type": "object", "properties": {
+            "session": {"type": "string"}, "summary": {"type": "string"},
+            "open_tasks": {"type": "string", "default": ""},
+            "decisions": {"type": "string", "default": ""}, **IDENTITY_PROPERTIES},
+            "required": ["session", "summary"]},
+        "handler": lambda args: session_checkpoint_save(
+            _require(args, "session", "die Sitzungskennung"),
+            _require(args, "summary", "die Zusammenfassung"), args.get("open_tasks", ""),
+            args.get("decisions", ""), actor=args.get("actor"), model=args.get("model")),
+    },
+    "session_checkpoint_latest": {
+        "description": "Read the latest resume checkpoint for a session.",
+        "inputSchema": {"type": "object", "properties": {
+            "session": {"type": "string"}, **IDENTITY_PROPERTIES}, "required": ["session"]},
+        "handler": lambda args: session_checkpoint_latest(
+            _require(args, "session", "die Sitzungskennung")),
+    },
     "knowledge_anmelden": {
         "description": "Redeem a one-time invitation PIN and receive your own credential. "
                        "The PIN is issued by a human who is allowed to naturalise (ausweis.einladen); "

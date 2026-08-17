@@ -265,3 +265,10 @@
 - Remaining risk: the templates are intentionally short and do not replace the
   full client documentation.
 - Next test: run the public-export test subset before publishing an export.
+# 2026-08-17 — feat(mcp): persist session checkpoints
+
+- Files: `schema.sql`, `kern/session_checkpoint.py`, `knowledge_mcp_server.py`, `tests/test_session_checkpoint.py`
+- Why: preserve a compact, ordered resume point without misclassifying in-progress work as durable knowledge.
+- Verified: `python3 -m pytest -q tests/test_session_checkpoint.py` — 2 passed.
+- Remaining risk: existing long-running MCP processes need restart to advertise the new tools.
+- Next test: invoke both checkpoint tools through a fresh MCP process.

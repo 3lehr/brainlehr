@@ -1562,6 +1562,23 @@ CREATE INDEX IF NOT EXISTS idx_widerruf_archiv_node ON knowledge_widerruf_archiv
 -- Betriebsbestand am 2026-08-08 passiert, wo die einzige Zeile dieser Tabelle
 -- sich selbst als nachtraeglich gesetzt ausweist. Der Grund ist die
 -- Reihenfolge, nicht die Menge: er gilt bei null Zeilen wie bei einer Million.
+-- Compact, append-only resume records. A checkpoint describes work-in-progress,
+-- not a durable knowledge claim.
+CREATE TABLE IF NOT EXISTS session_checkpoints (
+    id          TEXT PRIMARY KEY,
+    session     TEXT NOT NULL,
+    sequence    INTEGER NOT NULL CHECK(sequence > 0),
+    summary     TEXT NOT NULL CHECK(length(trim(summary)) > 0),
+    open_tasks  TEXT NOT NULL DEFAULT '',
+    decisions   TEXT NOT NULL DEFAULT '',
+    actor       TEXT,
+    model       TEXT,
+    created_at  TEXT NOT NULL,
+    UNIQUE(session, sequence)
+);
+CREATE INDEX IF NOT EXISTS idx_session_checkpoints_latest
+    ON session_checkpoints(session, sequence DESC);
+
 CREATE TABLE IF NOT EXISTS schema_migrations (
     version INTEGER PRIMARY KEY,
     angewandt_am TEXT NOT NULL,
