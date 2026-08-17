@@ -306,3 +306,12 @@
 - Verified: the catalog contains one contiguous `RQ-001`–`RQ-018` scale, explicit source/status rules, and gates for all requested research and wizard deliverables; `git diff --check` passed.
 - Remaining risk: all RQ rows begin open by design. They are research identifiers, not binding product requirements and must later be transferred rather than copied into a second requirements scale.
 - Next test: populate each RQ with primary evidence, then reject any wizard question lacking an RQ or binding internal source.
+
+# 2026-08-17T21:55:00+02:00 — docs(research): complete Brainlehr target-picture evidence
+
+- Files: `docs/RESEARCH_ZIELBILD_2026-08-17.md` and this handoff. The derived interactive wizard is an external conversation artifact under `/Users/lehrmacbook/.codex/visualizations/2026/08/17/01a010f0-d6a0-73c0-a545-bea4fc2f1316/` and is intentionally not committed.
+- Why: the product purpose was distributed across accepted ADRs, missing ADR references, implementation, plans and untrusted recall. Current agent-memory research and enterprise controls also needed to become explicit evidence before asking the operator to decide a root Lastenkatalog.
+- Verified: all `RQ-001`–`RQ-018` gates pass; primary-source URLs and the local BSI Grundschutz++ commit/control IDs are recorded; the Wizard contains 53 unique questions in six categories, no preselection, one inline data source and no network access. `node --check`, responsive browser checks at 736 × 900 and 360 × 900, native keyboard interaction, persistence and summary counters passed. Focused relevance/deployment suite: 25 passed. The known vector-inventory gate remains 1 failed, 3 passed because one node and one lesson have no vector.
+- Decision: recommend target picture A, a layered governed local-first memory core, while keeping B as a separately gated enterprise profile and C as research until convergence/revocation/rights tests pass. ADR-025/026 are absent and therefore are not treated as accepted primary decisions.
+- Remaining risk: this research does not bind a product scope. The operator must choose among the stable `BDW-*` options; selected results then move into one future root Lastenkatalog without copying the `RQ-*` scale.
+- Next test: use the Wizard once, create the root Lastenkatalog from the returned ID/value set, and close the two-vector inventory defect separately.
