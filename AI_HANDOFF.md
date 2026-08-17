@@ -272,3 +272,12 @@
 - Verified: `python3 -m pytest -q tests/test_session_checkpoint.py` — 2 passed.
 - Remaining risk: existing long-running MCP processes need restart to advertise the new tools.
 - Next test: invoke both checkpoint tools through a fresh MCP process.
+
+# 2026-08-17T20:07:46+02:00 — fix(session): make checkpoints temporary and typed
+
+- Files: `schema.sql`, `kern/session_checkpoint.py`, `kern/werkzeugrechte.py`, `knowledge_mcp_server.py`, `haken/kontextstand.py`, `tests/test_session_checkpoint.py`, `docs/REQUIREMENTS_SESSION_CHECKPOINT.md`, `docs/AI_DECISIONS.md`, `README.md`, three public agent templates, and this handoff.
+- Why: the preceding append-only free-text checkpoint contradicted the approved privacy and token boundary. The replacement stores one TTL-limited technical row and returns a deterministic save/integrate/rollover recommendation.
+- Verified: focused checkpoint, MCP-rights, and agent-template suite — 19 passed; fresh JSON-RPC set/reject path passed; installed schema and all 57 trigger SQL definitions were read from `sqlite_master`.
+- Remaining risk: already-running MCP processes must restart before their advertised tool list includes `session_checkpoint_setzen`, `session_checkpoint_lesen`, and `session_checkpoint_schliessen`. Brainlehr recommends but cannot itself open a new host thread.
+- Known unrelated failure: the wider schema subset has one pre-existing `kanalguete_messung.py:rowid` assertion failure in `tests/test_erstinstallation_spalten.py`; 98 other tests passed.
+- Next test: after MCP restart, call the three tools from Claude, Codex/ChatGPT, and Hermes and compare their recommendation payloads.

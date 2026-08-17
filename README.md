@@ -84,6 +84,14 @@ python3 kern/schema_nachzug.py --selftest # schema back-fill
 The script prints the MCP configuration entry when it finishes. The text a
 language model should read first is in [`START_HIER.md`](./START_HIER.md).
 
+Temporary session state uses three MCP tools:
+`session_checkpoint_setzen`, `session_checkpoint_lesen`, and
+`session_checkpoint_schliessen`. A checkpoint contains technical IDs only; it
+is not searched or injected on every prompt. Reading it with a current topic
+fingerprint returns a deterministic recommendation: save at 75/88% context,
+integrate pending agents first, and recommend a new chat only after a real topic
+change with a complete handoff.
+
 Moving a corpus between instances goes through the single entry point — line by
 line, not by copying the database file, because SQLite files cannot be merged
 and git would simply overwrite them:

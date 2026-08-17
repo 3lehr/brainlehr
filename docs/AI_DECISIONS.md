@@ -1,5 +1,14 @@
 # AI architecture decisions
 
+## 2026-08-17T20:07:46+02:00 — Keep session checkpoints technical and temporary
+
+- Context: Durable project files already carry requirements and evidence, but hosts need a small recoverable state for context warnings, delegated-child completion, and topic-change recommendations.
+- Decision: Reuse the existing Brainlehr SQLite/MCP boundary for one TTL-limited row per session. Persist only validated technical IDs and state; compute the rollover recommendation deterministically. Brainlehr never opens a thread and the checkpoint is never indexed or injected automatically.
+- Reason: Disk writes and deterministic checks consume no model tokens, while a raw summary log would duplicate knowledge, retain private conversation text, and create a second source of truth.
+- Rejected alternatives: append-only free-text handoff records, full transcript storage, a second memory service, per-prompt checkpoint injection, and automatic host thread creation.
+- Verification: `python3 -m pytest -q tests/test_session_checkpoint.py tests/test_werkzeugrechte_durchsetzung.py tests/test_public_prompt_templates.py` passed 19 tests; the installed database exposes the expected 12 checkpoint columns and 57 non-empty trigger definitions in `sqlite_master`.
+- Boundary: The MCP result is a recommendation. Claude, Codex/ChatGPT, or Hermes remains responsible for acting on it.
+
 ## 2026-08-17 — Deterministic prompt-invariance evidence gate
 
 - Decision: Only measured deterministic runs can recommend a winner; preference and role framing are never evidence.

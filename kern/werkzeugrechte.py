@@ -92,6 +92,7 @@ RECHTE: dict[str, str] = {
     "annahme_liste": "annahme:lesen",
     "prompt_invarianz_planen": "wissen:lesen",
     "prompt_invarianz_pruefen": "wissen:lesen",
+    "session_checkpoint_lesen": "wissen:lesen",
     # schreiben
     "knowledge_add": "wissen:schreiben",
     "knowledge_update": "wissen:schreiben",
@@ -104,6 +105,8 @@ RECHTE: dict[str, str] = {
     "knowledge_relation_remove": "kante:schreiben",
     "annahme_erfassen": "annahme:schreiben",
     "annahme_entscheiden": "annahme:schreiben",
+    "session_checkpoint_setzen": "wissen:schreiben",
+    "session_checkpoint_schliessen": "wissen:schreiben",
     # verwaltend -- laeuft ueber den ganzen Bestand, darum eigene Aktion
     "freigabe_setzen": "verwaltung:schreiben",
     "kurator_lauf": "verwaltung:schreiben",

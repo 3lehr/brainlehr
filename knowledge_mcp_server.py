@@ -1471,6 +1471,7 @@ def _ensure_nachgezogene_spalten(conn: sqlite3.Connection) -> None:
 def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old brainlehr.db copies."""
     _ensure_core_schema(conn)
+    session_checkpoint.ensure_schema(conn)
     # Generischer Nachzug VOR allen Trigger-Anlegern: ein Trigger, der eine
     # noch fehlende Spalte liest, laesst jeden spaeteren Schreibvorgang mit
     # 'no such column: NEW.x' auffliegen. Genau so lag es am 2026-08-10 bei
@@ -6057,47 +6058,71 @@ def _tool_anmelden(args: dict) -> dict:
     }
 
 
-def session_checkpoint_save(session: str, summary: str, open_tasks: str = "",
-                            decisions: str = "", *, actor: str | None = None,
-                            model: str | None = None) -> dict:
+def session_checkpoint_setzen(data: dict) -> dict:
     conn = get_db()
     try:
-        result = session_checkpoint.save(conn, session=session, summary=summary,
-                                         open_tasks=open_tasks, decisions=decisions,
-                                         actor=actor, model=model)
-        conn.commit()
+        return {"checkpoint": session_checkpoint.setzen(conn, data)}
+    finally:
+        conn.close()
+
+
+def session_checkpoint_lesen(session_id: str, current_topic_fingerprint: str | None = None) -> dict:
+    conn = get_db()
+    try:
+        checkpoint = session_checkpoint.lesen(conn, session_id)
+        result = {"session_id": session_id, "checkpoint": checkpoint}
+        if checkpoint and current_topic_fingerprint:
+            result["recommendation"] = session_checkpoint.empfehlen(
+                checkpoint, current_topic_fingerprint)
         return result
     finally:
         conn.close()
 
 
-def session_checkpoint_latest(session: str) -> dict:
+def session_checkpoint_schliessen(session_id: str) -> dict:
     conn = get_db()
     try:
-        return {"session": session, "checkpoint": session_checkpoint.latest(conn, session)}
+        return {"session_id": session_id,
+                "closed": session_checkpoint.schliessen(conn, session_id)}
     finally:
         conn.close()
 
 
 TOOLS = {
-    "session_checkpoint_save": {
-        "description": "Save an append-only resume checkpoint for a session.",
+    "session_checkpoint_setzen": {
+        "description": "Setzt einen temporären technischen Sitzungscheckpoint ohne Freitext, Recall oder Modellaufruf.",
         "inputSchema": {"type": "object", "properties": {
-            "session": {"type": "string"}, "summary": {"type": "string"},
-            "open_tasks": {"type": "string", "default": ""},
-            "decisions": {"type": "string", "default": ""}, **IDENTITY_PROPERTIES},
-            "required": ["session", "summary"]},
-        "handler": lambda args: session_checkpoint_save(
-            _require(args, "session", "die Sitzungskennung"),
-            _require(args, "summary", "die Zusammenfassung"), args.get("open_tasks", ""),
-            args.get("decisions", ""), actor=args.get("actor"), model=args.get("model")),
+            "session_id": {"type": "string"},
+            "project": {"type": "string"},
+            "context_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+            "topic_fingerprint": {"type": "string"},
+            "active_requirement_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 64},
+            "expected_child_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 64},
+            "terminal_child_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 64},
+            "unresolved_evidence_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 64},
+            "next_authorized_action": {"type": "string"}},
+            "required": ["session_id", "project", "context_fraction", "topic_fingerprint",
+                         "next_authorized_action"],
+            "additionalProperties": False},
+        "handler": session_checkpoint_setzen,
     },
-    "session_checkpoint_latest": {
-        "description": "Read the latest resume checkpoint for a session.",
+    "session_checkpoint_lesen": {
+        "description": "Liest einen Checkpoint und gibt optional eine deterministische Chatwechsel-Empfehlung.",
         "inputSchema": {"type": "object", "properties": {
-            "session": {"type": "string"}, **IDENTITY_PROPERTIES}, "required": ["session"]},
-        "handler": lambda args: session_checkpoint_latest(
-            _require(args, "session", "die Sitzungskennung")),
+            "session_id": {"type": "string"},
+            "current_topic_fingerprint": {"type": "string"}},
+            "required": ["session_id"], "additionalProperties": False},
+        "handler": lambda args: session_checkpoint_lesen(
+            _require(args, "session_id", "die technische Sitzungs-ID"),
+            args.get("current_topic_fingerprint")),
+    },
+    "session_checkpoint_schliessen": {
+        "description": "Löscht den temporären Checkpoint einer beendeten Sitzung idempotent.",
+        "inputSchema": {"type": "object", "properties": {
+            "session_id": {"type": "string"}}, "required": ["session_id"],
+            "additionalProperties": False},
+        "handler": lambda args: session_checkpoint_schliessen(
+            _require(args, "session_id", "die technische Sitzungs-ID")),
     },
     "knowledge_anmelden": {
         "description": "Redeem a one-time invitation PIN and receive your own credential. "

@@ -88,12 +88,14 @@ def satz(stand: int, fenster: int) -> str | None:
     if anteil >= DRINGEND:
         return (f"Kontextfenster zu {anteil:.0%} voll ({stand:,} von {fenster:,}). "
                 f"Pruefen, ob JEDER dauerhafte Fund dieser Sitzung im Speicher steht -- "
-                f"nach der Verdichtung sind die Zahlen weg. Ein Startprompt nur bei "
+                f"technischen Sitzungscheckpoint aktualisieren. Nach der Verdichtung "
+                f"sind die Zahlen weg. Ein Startprompt nur bei "
                 f"Themenwechsel; sonst weiterarbeiten.")
     if anteil >= WARNUNG:
         return (f"Kontextfenster zu {anteil:.0%} voll ({stand:,} von {fenster:,}). "
                 f"Guter Zeitpunkt, offene Funde abzulegen, solange die Belege noch "
-                f"vollstaendig im Kontext stehen.")
+                f"vollstaendig im Kontext stehen, und den technischen "
+                f"Sitzungscheckpoint zu aktualisieren.")
     return None
 
 
@@ -106,6 +108,7 @@ def demo() -> None:
     assert w and "abzulegen" in w, w
     d = satz(920_000, 1_000_000)
     assert d and "im Speicher steht" in d, d
+    assert "Sitzungscheckpoint" in w and "Sitzungscheckpoint" in d
     # Der Satz nennt die Handlung, nicht nur die Zahl -- und die Handlung ist
     # SICHERN, nicht aufhoeren. Ein Melder, der bei vollem Fenster zum Abbruch
     # raet, widerspricht der Betreiberregel (Uebergabe nur bei Themenwechsel).

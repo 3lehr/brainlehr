@@ -1562,22 +1562,23 @@ CREATE INDEX IF NOT EXISTS idx_widerruf_archiv_node ON knowledge_widerruf_archiv
 -- Betriebsbestand am 2026-08-08 passiert, wo die einzige Zeile dieser Tabelle
 -- sich selbst als nachtraeglich gesetzt ausweist. Der Grund ist die
 -- Reihenfolge, nicht die Menge: er gilt bei null Zeilen wie bei einer Million.
--- Compact, append-only resume records. A checkpoint describes work-in-progress,
--- not a durable knowledge claim.
+-- Temporärer technischer Sitzungszustand. Keine Freitexte, kein FTS/Recall.
 CREATE TABLE IF NOT EXISTS session_checkpoints (
-    id          TEXT PRIMARY KEY,
-    session     TEXT NOT NULL,
-    sequence    INTEGER NOT NULL CHECK(sequence > 0),
-    summary     TEXT NOT NULL CHECK(length(trim(summary)) > 0),
-    open_tasks  TEXT NOT NULL DEFAULT '',
-    decisions   TEXT NOT NULL DEFAULT '',
-    actor       TEXT,
-    model       TEXT,
-    created_at  TEXT NOT NULL,
-    UNIQUE(session, sequence)
+    session_id                 TEXT PRIMARY KEY,
+    project                    TEXT NOT NULL,
+    context_fraction           REAL NOT NULL CHECK(context_fraction BETWEEN 0 AND 1),
+    topic_fingerprint          TEXT NOT NULL,
+    active_requirement_ids     TEXT NOT NULL DEFAULT '[]',
+    expected_child_ids         TEXT NOT NULL DEFAULT '[]',
+    terminal_child_ids         TEXT NOT NULL DEFAULT '[]',
+    unresolved_evidence_ids    TEXT NOT NULL DEFAULT '[]',
+    next_authorized_action     TEXT NOT NULL,
+    status                     TEXT NOT NULL DEFAULT 'active' CHECK(status = 'active'),
+    updated_at                 TEXT NOT NULL,
+    expires_at                 TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_session_checkpoints_latest
-    ON session_checkpoints(session, sequence DESC);
+CREATE INDEX IF NOT EXISTS idx_session_checkpoints_expiry
+    ON session_checkpoints(expires_at);
 
 CREATE TABLE IF NOT EXISTS schema_migrations (
     version INTEGER PRIMARY KEY,
