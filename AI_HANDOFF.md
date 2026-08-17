@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-17T13:47:39+02:00 — feat(ui): link Brainlehr references locally
+
+- Files: `berichte/entscheidungen_server.py`, `tests/test_eintrag_detailseite.py`, this handoff.
+- Why: Codex does not render Markdown or HTML hover titles, but normal links open the browser. The existing loopback-only Brainlehr service now resolves `/eintrag/<kennung>` for knowledge nodes and lessons without adding a public data surface.
+- Verified: `python3 -m pytest -q tests/test_eintrag_detailseite.py tests/test_entscheidungen_server_herkunft.py tests/test_entscheidungen_server_ausweis.py` → 19 passed; production DB rendering for `L-186d02` and `922d64e9` succeeded; restarted `de.brainlehr.dienst`; live GET returned 200 and a forged Host returned 403.
+- Remaining risk: Links work only on the machine running the loopback service. The OpenAI Secure MCP Tunnel remains separate and still needs the operator-owned runtime credential before any authenticated remote detail view can exist.
+- Next test: click `http://127.0.0.1:8799/eintrag/L-186d02` from Codex and confirm Chrome displays the lesson.
+
 ## 2026-08-17T13:26:46+02:00 — feat(mcp): gate prompt-invariance profile
 
 - Files: `kern/prompt_invarianz.py`, `knowledge_mcp_server.py`, `kern/werkzeugrechte.py`, focused tests, `docs/AI_DECISIONS.md`, this handoff.

@@ -46,6 +46,7 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
 import argparse
 import datetime
 import glob
+import html
 import json
 import re
 import sqlite3
@@ -902,6 +903,59 @@ def _abrufweg_stand(text: str) -> dict:
         conn.close()
 
 
+def _eintrag_html(kennung: str) -> str | None:
+    """Kleine lokale Leseseite fuer anklickbare Brainlehr-Kennungen."""
+    if not re.fullmatch(r"(?:L-[0-9a-f]{6}|[0-9a-f]{8,64})", kennung):
+        return None
+    conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    try:
+        if kennung.startswith("L-"):
+            row = conn.execute(
+                "SELECT id, type, severity, description, root_cause, resolution, "
+                "prevention, status, freigabe FROM lessons_learned WHERE id = ?",
+                (kennung,),
+            ).fetchone()
+            if not row:
+                return None
+            titel = f"{row['id']} — {row['type']}"
+            meta = (f"Schweregrad: {row['severity']} · Status: {row['status']} · "
+                    f"Freigabe: {row['freigabe']}")
+            felder = (("Lehre", row["description"]),
+                      ("Ursache", row["root_cause"]),
+                      ("Lösung", row["resolution"]),
+                      ("Vorbeugung", row["prevention"]))
+        else:
+            row = conn.execute(
+                "SELECT id, path, title, summary, content, source, freigabe "
+                "FROM knowledge_nodes WHERE id = ? AND zurueckgezogen = 0",
+                (kennung,),
+            ).fetchone()
+            if not row:
+                return None
+            titel = f"{row['id']} — {row['title']}"
+            meta = f"Pfad: {row['path']} · Freigabe: {row['freigabe']}"
+            felder = (("Kurzfassung", row["summary"]),
+                      ("Inhalt", row["content"]),
+                      ("Quelle", row["source"]))
+    finally:
+        conn.close()
+
+    abschnitte = "".join(
+        f"<section><h2>{html.escape(name)}</h2><p>{html.escape(str(wert))}</p></section>"
+        for name, wert in felder if wert
+    )
+    return (
+        "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\">"
+        "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+        f"<title>{html.escape(titel)}</title></head>"
+        "<body><main style=\"max-width:48rem;margin:3rem auto;padding:0 1rem;"
+        "font:17px/1.55 system-ui,sans-serif\"><a href=\"/\">← Brainlehr</a>"
+        f"<h1>{html.escape(titel)}</h1><p>{html.escape(meta)}</p>{abschnitte}"
+        "</main></body></html>"
+    )
+
+
 # ─── Ausweispruefung (ADR-020 Abschnitt 5, Schritt 1) ──────────────────────
 #
 # BEFUND, DER DIES ERZWINGT: _herkunft_ok() prueft nur den Origin-Kopf. Ein
@@ -1020,6 +1074,25 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _html(self, text: str) -> None:
+        body = text.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Content-Security-Policy",
+                         "default-src 'none'; style-src 'unsafe-inline'; "
+                         "base-uri 'none'; frame-ancestors 'none'")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _lokaler_host(self) -> bool:
+        port = self.server.server_port
+        return self.headers.get("Host") in {f"127.0.0.1:{port}", f"localhost:{port}"}
+
     def _datei(self, pfad: Path, typ: str) -> None:
         """Eine Datei vom Datentraeger ausliefern. NUR fuer die fest benannten
         Pfade unten -- keine allgemeine Dateiauslieferung. Der Aufrufer nennt
@@ -1036,6 +1109,16 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        if self.path.startswith("/eintrag/"):
+            if not self._lokaler_host():
+                self._json({"error": "nicht erlaubt"}, 403)
+                return
+            body = _eintrag_html(self.path.removeprefix("/eintrag/"))
+            if body is None:
+                self._json({"error": "Eintrag nicht gefunden"}, 404)
+                return
+            self._html(body)
+            return
         # Verbundkarte (Schritt 2, docs/PLAN_DIAGRAMME_2026-08-16.md): das
         # ERZEUGNIS wird ausgeliefert, nicht neu berechnet -- ein Lauf ueber
         # 27 Repos dauert gemessen 22 s und gehoert nicht in eine Anfrage.
