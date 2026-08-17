@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-17T17:13:07+02:00 — fix(orchestrator): require completion gates
+
+- Files: `docs/AI_DECISIONS.md`, this handoff; additionally the non-repository `~/.codex/AGENTS.md`.
+- Why: background child finals were available before the next parent turn, but were integrated only after a user status prompt. Brainlehr cannot wake an idle Codex turn, and an escalated readability lesson was not automatically present in Codex governance.
+- Verified: primary thread timing showed child completion 592/844 seconds before the user-triggered parent turn; exact assertions confirm the global completion and human-readable artifact gates; the receiving task read Brainlehr node `38f0ca59` and acknowledged the handoff.
+- Remaining risk: a behavioral instruction is not a host callback. The Codex orchestrator still needs an idempotent last-child-terminal → parent-continuation gate for a mechanical guarantee.
+- Next test: spawn three synthetic children with staggered finals and no user input; require exactly one parent continuation containing all finals, one PASS/FAIL decision, and the next authorized action.
+
 ## 2026-08-17T13:47:39+02:00 — feat(ui): link Brainlehr references locally
 
 - Files: `berichte/entscheidungen_server.py`, `tests/test_eintrag_detailseite.py`, this handoff.

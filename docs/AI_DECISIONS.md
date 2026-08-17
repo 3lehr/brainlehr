@@ -1,5 +1,14 @@
 # AI architecture decisions
 
+## 2026-08-17 — Keep required delegated batches behind a completion gate
+
+- Context: Background reviewers can finish after the parent has already ended its turn. Their finals remain available, but a queued completion does not by itself guarantee a new parent turn; a later user prompt can accidentally become the discovery mechanism.
+- Decision: One live coordinator owns every required batch, including expected child IDs, terminal state, result integration, and the next already-authorized action. The parent may not treat “agents are running” as a terminal state. Escalated human-readability lessons also enter the Codex instruction plane: automated artifact checks supplement, but never replace, operator comprehension and an approved pre-render wireframe after rejection.
+- Reason: Brainlehr can preserve and recall the rule only inside a running turn. Scheduling a parent continuation is an orchestrator responsibility, while artifact comprehensibility is an acceptance criterion rather than a renderer property.
+- Rejected alternatives: passive child messages (no guaranteed idle-parent wake), repeated progress polling (noise without a completion contract), and a Brainlehr hook pretending to schedule Codex (wrong system boundary).
+- Verification: two completed child finals were available 592 and 844 seconds before the next user-triggered parent turn; the global Codex instruction file now contains both gates and was checked by exact assertions. Brainlehr node `38f0ca59` records the full evidence; lesson `L-dafc34` is escalated after three occurrences.
+- Boundary: The instruction rule prevents the model from deliberately ending an owned batch early. A hard guarantee still requires the Codex host to enqueue exactly one idempotent parent continuation when the last expected child becomes terminal.
+
 ## 2026-08-17 — Keep Claude complete; gate ChatGPT at one MCP choke point
 
 - Context: Brainlehr remains Claude-first, but ChatGPT and Hermes need the same prompt-invariance decision check. A ChatGPT tunnel must not accidentally expose the full private knowledge surface when only those checks are needed.
