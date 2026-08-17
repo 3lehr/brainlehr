@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-mcp_veraltet.py — meldet veraltete knowledge_mcp_server.py-Prozesse (UserPromptSubmit-Hook).
+mcp_veraltet.py — meldet veraltete Brainlehr-MCP-Prozesse (UserPromptSubmit-Hook).
 
 Ein laufender MCP-Server haelt beim Start geladenen Code im Speicher. Wird die
 Quelldatei danach repariert, schreiben alle noch laufenden Prozesse weiter mit
 dem alten (falschen) Code in die gemeinsame brainlehr.db — kein Melder bisher.
 
 Erkennung ohne Servereingriff: Prozessstart (ps lstart) je Prozess mit der
-mtime von knowledge_mcp_server.py vergleichen. Datei neuer als Prozessstart
--> Prozess veraltet.
+mtime der beim Start geladenen relevanten Laufzeitdateien vergleichen. Eine
+Datei neuer als Prozessstart -> Prozess veraltet.
 
 Nur melden, nichts toeten/neu starten. Hoechstens 1x pro Session (Marker in
 /tmp). ps/Datei nicht lesbar -> still bleiben. IMMER exit 0.
@@ -38,6 +38,9 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent))
 import ort  # Ein Ort fuer den Pfad, siehe haken/ort.py (L-6c6661)
 SERVER_FILE = str(ort.SERVER)
+# Python lädt beide Module einmal beim Prozessstart. Der Scorer beeinflusst die
+# sichtbare ``bestandslage`` direkt, ohne dass sich der Server-Wrapper ändert.
+RUNTIME_FILES = (_Path(SERVER_FILE), _w / "kern" / "relevanzlage.py")
 STATE_DIR = "/tmp"
 LSTART_FMT = "%a %b %d %H:%M:%S %Y"
 
@@ -57,6 +60,11 @@ def humanize(seconds: float) -> str:
     return f"{hours // 24}d"
 
 
+def latest_runtime_mtime() -> float:
+    """Änderungsgrenze des Codes, den der MCP-Prozess beim Start lädt."""
+    return max(os.path.getmtime(path) for path in RUNTIME_FILES)
+
+
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
@@ -68,7 +76,7 @@ def main() -> None:
         return
 
     try:
-        mtime = os.path.getmtime(SERVER_FILE)
+        mtime = latest_runtime_mtime()
     except OSError:
         return
 
@@ -111,7 +119,7 @@ def main() -> None:
         pass
 
     print(
-        f"knowledge_mcp_server.py: {len(stale_ages)} laufende Prozess(e) veraltet "
+        f"Brainlehr MCP: {len(stale_ages)} laufende Prozess(e) veraltet "
         f"(Reparatur vor {humanize(max(stale_ages))} noch nicht geladen) — Sitzung neu starten."
     )
 

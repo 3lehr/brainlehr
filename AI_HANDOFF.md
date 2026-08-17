@@ -289,3 +289,12 @@
 - Verified: the MUST-LAGE-001 regression was red first; focused search/scope/channel suite — 54 passed; `python3 kern/relevanzlage.py` — `demo: ok`; direct Q1/Q2/Q3 path retained the same scores and top IDs while Q2 changed to `uneindeutig`.
 - Remaining risk: already-running MCP processes may keep the old imported Python module until restart. `schwach` remains the existing calibrated intermediate label and was not redefined.
 - Next test: restart the Brainlehr MCP server and repeat Q2 through the external MCP boundary; then rerun the 40/40 calibration before any future score or threshold change.
+
+# 2026-08-17T21:30:00+02:00 — fix(mcp): detect stale imported relevance code
+
+- Files: `haken/mcp_veraltet.py`, `tests/test_mcp_veraltet_laufzeitmodule.py`, `docs/PLAN_KANALGUETE_2026-08-15.md`, and this handoff; additionally the non-repository `~/.codex/config.toml` (backup beside it).
+- Why: two Codex registrations of the same stdio server held different process generations. In one task the documented `brainlehr` alias still returned `nichts_passendes`, while the legacy `knowledge` alias and a fresh process returned `uneindeutig` for the same Q2 results and scores. The stale-process hook watched only the wrapper mtime and therefore missed the later change to imported `kern/relevanzlage.py`.
+- Red: `python3 -m pytest -q tests/test_mcp_veraltet_laufzeitmodule.py` failed because no runtime-file set or latest-runtime-mtime boundary existed.
+- Verified: focused relevance/hook/version suite — 12 passed; Python compile and `git diff --check` passed; the exact fresh stdio command from the parseable Codex TOML returned `uneindeutig` in both `brainlehr` and `buckeberg`; `codex mcp list` now contains exactly the README-canonical `brainlehr` registration for this server.
+- Remaining risk: already-running task processes retain both their old code and the removed alias until that task/client is restarted. There is no local `codex mcp reload/restart` command; no global process kill was attempted. The hook is a Claude `UserPromptSubmit` integration, not a Codex hot-reload mechanism.
+- Next test: restart one affected Codex task/client and call Q2 through `mcp__brainlehr__knowledge_search`; require `uneindeutig`, then repeat the client-specific restart gate for Claude and Hermes without touching unrelated owners.

@@ -287,11 +287,13 @@ keine dritte Formeländerung aus dem Bauch.
 
 ---
 
-## Kanonischer Requirement-Eintrag 2026-08-17 — Aussagegrenze der Relevanzlage
+## Kanonischer Requirement-Eintrag 2026-08-17 — Relevanzlage und MCP-Auslieferung
 
 | ID | Typ | Anforderung | Gate | Status |
 |---|---|---|---|---|
 | MUST-LAGE-001 | MUSS | `bestandslage` darf aus den Kosinuswerten des Bedeutungskanals keine Aussage über das Fehlen passender Treffer im gesamten fusionierten Bestand ableiten. Unterschreiten die Werte die bisherigen Schwellen, muss die Lage als **uneindeutig** bezeichnet werden; eine positive Lage bleibt nur bei den kalibrierten zwei Zeichen (`bester` und `abstand`) zulässig. | `tests/test_relevanzlage.py::test_uneindeutiger_bedeutungskanal_behauptet_keinen_leeren_bestand` und echter Q2-Suchweg | PASS |
+| MUST-LAGE-002 | MUSS | Der Veraltungswächter muss einen laufenden MCP-Prozess auch dann als veraltet melden, wenn nach dessen Start ein für `bestandslage` geladenes Laufzeitmodul geändert wurde. Die Abnahme umfasst einen frisch gestarteten Server über den konfigurierten stdio-JSON-RPC-Weg und dieselbe bekannte Suche in den Scopes `brainlehr` und `buckeberg`. | Regressionstest für `haken/mcp_veraltet.py`; frischer MCP-E2E liefert in beiden Scopes nicht `lage=nichts_passendes` | PASS |
+| MUST-LAGE-003 | MUSS | Codex darf den produktiven Brainlehr-Server nur einmal unter dem in der README dokumentierten Namen `brainlehr` registrieren; ein zweiter Alias auf dieselbe Serverdatei darf keine getrennte Prozessgeneration mit abweichendem Codezustand erzeugen. | TOML parsebar; `codex mcp list` enthält genau einen Eintrag für `knowledge_mcp_server.py`, Name `brainlehr` | PASS |
 
 **Belegter Konflikt:** Die Anfrage `kanonisch Lage Brainlehr offene Aufgaben Tests`
 liefert im Scope `brainlehr` den einschlägigen Knoten `cd571222` auf FTS-Rang 1,
@@ -308,3 +310,18 @@ Eingangs. BM25- und Kosinuswerte werden nicht unkalibriert vermischt.
 Modul-Selbsttest bestand ebenfalls. Der direkte echte Q2-Suchweg liefert weiterhin
 `cd571222` auf Rang 1 und jetzt `lage=uneindeutig` bei unveränderten Messwerten
 `0,5372/0,0016`; Q1 bleibt `schwach`, Q3 bleibt `passend`.
+
+**Auslieferungsbefund:** Im selben Codex-Task lieferten die zwei zuvor parallel
+registrierten Aliase beim identischen Q2-Aufruf gegensätzliche Lagen:
+`brainlehr` meldete noch `nichts_passendes`, `knowledge` bereits `uneindeutig`.
+Beide zeigten dieselben Treffer und Messwerte; damit ist ein langlebiger alter
+Prozess als Ursache direkt belegt. `haken/mcp_veraltet.py` verglich bisher nur
+die mtime des Server-Wrappers und übersah die spätere Änderung des beim Start
+geladenen Moduls `kern/relevanzlage.py`. Der Regressionstest war vor der
+Änderung rot und ist danach grün. Ein frisch aus der bereinigten Codex-
+Konfiguration gestarteter stdio-Server liefert Q2 in den Scopes `brainlehr`
+und `buckeberg` jeweils als `uneindeutig`. Die TOML-Konfiguration ist parsebar;
+`codex mcp list` weist nur noch den in `README.md` dokumentierten Namen
+`brainlehr` für `knowledge_mcp_server.py` aus. Bestehende Clientprozesse werden
+nicht pauschal beendet; sie übernehmen beides erst nach gezieltem Task- bzw.
+Clientneustart.
