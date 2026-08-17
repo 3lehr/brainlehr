@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Erzeugt eine lokale Beispieldatenbank und prüft die Suchfunktion."""
 
-from knowledge_mcp_server import add_node, open_db, search
+from knowledge_mcp_server import add_node, call, open_db
 
 
 def main():
     db = open_db()
-    if not search(db, "Beispiel"):
+    if not call(db, "knowledge_search", {"query": "Beispiel"}):
         add_node(db, "Beispielwissen", "Synthetischer Eintrag für den lokalen Schnellstart.")
-    assert search(db, "Beispiel"), "Schnellstart konnte keinen Eintrag finden"
+    assert call(db, "knowledge_search", {"query": "Beispiel"}), "Schnellstart konnte keinen Eintrag finden"
     print("Schnellstart erfolgreich.")
 
 

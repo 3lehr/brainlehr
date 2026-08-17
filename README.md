@@ -1,6 +1,6 @@
 # Brainlehr
 
-Kleiner, lokaler Wissensspeicher mit einer JSON-RPC-Schnittstelle über Standard-Ein-/Ausgabe.
+Lokaler Wissensspeicher mit einer JSON-RPC-Schnittstelle über Standard-Ein-/Ausgabe. Er unterstützt Knoten, Suche, Beziehungen, zurückziehbare Einträge, Lehren und Statistik.
 
 ## Schnellstart
 

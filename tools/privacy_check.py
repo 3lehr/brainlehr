@@ -16,6 +16,7 @@ PATTERNS = {
     "key-material": re.compile("-----BEGIN (?:[A-Z ]+" + "KEY)-----"),
     "internal-id": re.compile("(?:L" + "-|A-)[0-9a-f]{6,}"),
     "operator-text": re.compile("betreiber" + "_weisung|operator" + " instruction", re.I),
+    "private-context": re.compile("brain" + "lehr-privat|beg" + "od2026|cla" + "ude" + chr(92) + ".md", re.I),
 }
 
 

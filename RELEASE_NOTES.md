@@ -1,5 +1,5 @@
 # Release Notes
 
-## 0.1.0-public-export
+## 0.2.0-public-export
 
-Frische öffentliche Historie mit dem minimalen, lokal ausführbaren Wissensspeicher. Die Ausgabe enthält keine Datenbank, keine Betriebsprotokolle und keine internen Arbeitsnotizen.
+Frische öffentliche Historie mit dem lokal ausführbaren Wissensspeicher für Knoten, Suche, Beziehungen und Lehren. Die Ausgabe enthält keine Datenbank, keine Betriebsprotokolle und keine internen Arbeitsnotizen.
