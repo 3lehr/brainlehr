@@ -298,3 +298,11 @@
 - Verified: focused relevance/hook/version suite — 12 passed; Python compile and `git diff --check` passed; the exact fresh stdio command from the parseable Codex TOML returned `uneindeutig` in both `brainlehr` and `buckeberg`; `codex mcp list` now contains exactly the README-canonical `brainlehr` registration for this server.
 - Remaining risk: already-running task processes retain both their old code and the removed alias until that task/client is restarted. There is no local `codex mcp reload/restart` command; no global process kill was attempted. The hook is a Claude `UserPromptSubmit` integration, not a Codex hot-reload mechanism.
 - Next test: restart one affected Codex task/client and call Q2 through `mcp__brainlehr__knowledge_search`; require `uneindeutig`, then repeat the client-specific restart gate for Claude and Hermes without touching unrelated owners.
+
+# 2026-08-17T21:40:00+02:00 — docs(research): establish one target-picture catalog
+
+- Files: `docs/RESEARCH_ZIELBILD_2026-08-17.md` and this handoff.
+- Why: product genealogy, 2025/2026 memory research, enterprise security, product boundaries, gap analysis, target alternatives, and the decision wizard need one stable evidence map before any new synthesis or UI question is produced.
+- Verified: the catalog contains one contiguous `RQ-001`–`RQ-018` scale, explicit source/status rules, and gates for all requested research and wizard deliverables; `git diff --check` passed.
+- Remaining risk: all RQ rows begin open by design. They are research identifiers, not binding product requirements and must later be transferred rather than copied into a second requirements scale.
+- Next test: populate each RQ with primary evidence, then reject any wizard question lacking an RQ or binding internal source.
