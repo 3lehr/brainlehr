@@ -1,6 +1,6 @@
 # Brainlehr
 
-> **Öffentliche Preview (Alpha).** Dieser Branch ist eine frische, datenfreie Vorschau; er ersetzt weder den privaten Betrieb noch behauptet er vollständige Funktionsparität.
+> **Public Alpha.** Dieser Main-Stand ist eine frische, datenfreie Veröffentlichung; er ersetzt weder den privaten Betrieb noch behauptet er vollständige Funktionsparität.
 
 Lokaler Wissensspeicher mit einer JSON-RPC-Schnittstelle über Standard-Ein-/Ausgabe, primär für Claude MCP. Implementiert sind Knoten, Suche, Beziehungen, Annahmen, Freigabe/Rücknahme, Lehren, Statistik sowie neutrale Claude Recall-/Capture-Hooks. Die maschinenlesbare [Funktionsmatrix](docs/FEATURE_MATRIX.json) nennt weitere noch zu generalisierende Engine-Funktionen.
 
