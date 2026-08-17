@@ -12,7 +12,7 @@ DB_PATH = Path(os.environ.get("BRAINLEHR_DB", "knowledge.db"))
 
 def open_db(path=DB_PATH):
     db = sqlite3.connect(path); db.row_factory = sqlite3.Row
-    db.executescript("""CREATE TABLE IF NOT EXISTS nodes (id TEXT PRIMARY KEY, path TEXT UNIQUE, title TEXT, summary TEXT, content TEXT, withdrawn INTEGER DEFAULT 0, created_at TEXT); CREATE TABLE IF NOT EXISTS relations (id INTEGER PRIMARY KEY, source_id TEXT, target_id TEXT, relation_type TEXT, UNIQUE(source_id,target_id,relation_type)); CREATE TABLE IF NOT EXISTS lessons (id TEXT PRIMARY KEY, type TEXT, description TEXT, projects TEXT, created_at TEXT); CREATE TABLE IF NOT EXISTS assumptions (id TEXT PRIMARY KEY, statement TEXT, cost TEXT, evidence TEXT, status TEXT, created_at TEXT);""")
+    db.executescript("""CREATE TABLE IF NOT EXISTS nodes (id TEXT PRIMARY KEY, path TEXT UNIQUE, title TEXT, summary TEXT, content TEXT, withdrawn INTEGER DEFAULT 0, created_at TEXT); CREATE TABLE IF NOT EXISTS relations (id INTEGER PRIMARY KEY, source_id TEXT, target_id TEXT, relation_type TEXT, UNIQUE(source_id,target_id,relation_type)); CREATE TABLE IF NOT EXISTS lessons (id TEXT PRIMARY KEY, type TEXT, description TEXT, projects TEXT, created_at TEXT); CREATE TABLE IF NOT EXISTS assumptions (id TEXT PRIMARY KEY, statement TEXT, cost TEXT, evidence TEXT, status TEXT, created_at TEXT); CREATE TABLE IF NOT EXISTS approvals (node_id TEXT PRIMARY KEY, level TEXT, note TEXT);""")
     return db
 def stamp(): return datetime.now(timezone.utc).isoformat()
 def rows(cursor): return [dict(row) for row in cursor]
@@ -27,6 +27,9 @@ def call(db, name, args):
     if name == "knowledge_browse": return rows(db.execute("SELECT id,path,title,summary FROM nodes WHERE NOT withdrawn AND path LIKE ?",(args.get("path","/")+"%",)))
     if name == "knowledge_update": db.execute("UPDATE nodes SET summary=COALESCE(?,summary),content=COALESCE(?,content) WHERE id=?",(args.get("summary"),args.get("content"),args["node_id"])); db.commit(); return {"status":"updated"}
     if name in {"knowledge_zurueckziehen","knowledge_freigeben"}: db.execute("UPDATE nodes SET withdrawn=? WHERE id=?",(name=="knowledge_zurueckziehen",args["node_id"])); db.commit(); return {"status":name}
+    if name == "freigabe_setzen": db.execute("INSERT OR REPLACE INTO approvals VALUES (?,?,?)",(args["node_id"],args["stufe"],args.get("note",""))); db.commit(); return {"status":"approved"}
+    if name == "kettenerklaerung_erklaeren": return {"status":"recorded","reason":args["grund"]}
+    if name == "kurator_lauf": return {"withdrawn":db.execute("SELECT count(*) FROM nodes WHERE withdrawn").fetchone()[0],"empty":db.execute("SELECT count(*) FROM nodes WHERE trim(summary)='' ").fetchone()[0]}
     if name == "knowledge_relation_add": db.execute("INSERT OR IGNORE INTO relations(source_id,target_id,relation_type) VALUES (?,?,?)",(args["source_id"],args["target_id"],args["relation_type"])); db.commit(); return {"id":db.execute("SELECT id FROM relations WHERE source_id=? AND target_id=? AND relation_type=?",(args["source_id"],args["target_id"],args["relation_type"])).fetchone()[0],"status":"created"}
     if name == "knowledge_relation_list": return rows(db.execute("SELECT * FROM relations WHERE source_id=? OR target_id=?",(args["node_id"],args["node_id"])))
     if name == "knowledge_relation_update": db.execute("UPDATE relations SET relation_type=? WHERE id=?",(args["relation_type"],args["relation_id"])); db.commit(); return {"status":"updated"}
@@ -40,7 +43,7 @@ def call(db, name, args):
     if name == "lesson_query": return rows(db.execute("SELECT * FROM lessons"))
     if name == "knowledge_stats": return {table:db.execute(f"SELECT count(*) FROM {table}").fetchone()[0] for table in ("nodes","relations","lessons")}
     raise ValueError("unknown tool")
-TOOLS=("knowledge_add","knowledge_search","knowledge_read","knowledge_browse","knowledge_update","knowledge_zurueckziehen","knowledge_freigeben","knowledge_relation_add","knowledge_relation_list","knowledge_relation_update","knowledge_relation_remove","annahme_erfassen","annahme_entscheiden","annahme_liste","lesson_record","lesson_query","knowledge_stats")
+TOOLS=("knowledge_add","knowledge_search","knowledge_read","knowledge_browse","knowledge_update","freigabe_setzen","knowledge_zurueckziehen","knowledge_freigeben","kettenerklaerung_erklaeren","kurator_lauf","knowledge_relation_add","knowledge_relation_list","knowledge_relation_update","knowledge_relation_remove","annahme_erfassen","annahme_entscheiden","annahme_liste","lesson_record","lesson_query","knowledge_stats")
 def main():
     db=open_db()
     for line in sys.stdin:
