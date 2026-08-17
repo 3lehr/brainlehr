@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "brainlehr": {
+      "command": "python3",
+      "args": ["/absolute/path/to/brainlehr/knowledge_mcp_server.py"],
+      "env": {"BRAINLEHR_DB": "/absolute/path/to/local/knowledge.db"}
+    }
+  }
+}

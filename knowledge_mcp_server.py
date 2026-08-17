@@ -42,7 +42,7 @@ def main():
         try:
             method=request.get("method")
             if method=="initialize": result={"protocolVersion":"2024-11-05","serverInfo":{"name":"brainlehr","version":"0.2.0"}}
-            elif method=="tools/list": result={"tools":[{"name":tool} for tool in TOOLS]}
+            elif method=="tools/list": result={"tools":[{"name":tool,"inputSchema":{"type":"object","additionalProperties":True}} for tool in TOOLS]}
             elif method=="tools/call": result={"content":[{"type":"text","text":json.dumps(call(db,request["params"]["name"],request["params"].get("arguments",{})))}]}
             else: raise ValueError("unknown method")
             response={"jsonrpc":"2.0","id":ident,"result":result}
