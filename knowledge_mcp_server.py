@@ -8,6 +8,9 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from kern.prompt_invarianz import planen as prompt_invarianz_planen
+from kern.prompt_invarianz import pruefen as prompt_invarianz_pruefen
+
 DB_PATH = Path(os.environ.get("BRAINLEHR_DB", "knowledge.db"))
 
 def open_db(path=DB_PATH):
@@ -20,6 +23,8 @@ def add_node(db, title, summary, content="", path=None):
     ident = f"n-{db.execute('SELECT count(*) FROM nodes').fetchone()[0]+1:04d}"; path = path or "/" + "-".join(title.lower().split())
     db.execute("INSERT INTO nodes VALUES (?,?,?,?,?,?,?)", (ident,path,title,summary,content,0,stamp())); db.commit(); return {"id":ident,"path":path,"status":"created"}
 def call(db, name, args):
+    if name == "prompt_invarianz_planen": return prompt_invarianz_planen(**args)
+    if name == "prompt_invarianz_pruefen": return prompt_invarianz_pruefen(**args)
     if name == "knowledge_add": return add_node(db,args["title"],args["summary"],args.get("content",""),args.get("path"))
     if name == "knowledge_search":
         q="%"+args.get("query","")+"%"; return rows(db.execute("SELECT id,path,title,summary FROM nodes WHERE NOT withdrawn AND (title LIKE ? OR summary LIKE ? OR content LIKE ?)",(q,q,q)))
@@ -43,16 +48,27 @@ def call(db, name, args):
     if name == "lesson_query": return rows(db.execute("SELECT * FROM lessons"))
     if name == "knowledge_stats": return {table:db.execute(f"SELECT count(*) FROM {table}").fetchone()[0] for table in ("nodes","relations","lessons")}
     raise ValueError("unknown tool")
-TOOLS=("knowledge_add","knowledge_search","knowledge_read","knowledge_browse","knowledge_update","freigabe_setzen","knowledge_zurueckziehen","knowledge_freigeben","kettenerklaerung_erklaeren","kurator_lauf","knowledge_relation_add","knowledge_relation_list","knowledge_relation_update","knowledge_relation_remove","annahme_erfassen","annahme_entscheiden","annahme_liste","lesson_record","lesson_query","knowledge_stats")
+PROMPT_TOOLS=("prompt_invarianz_planen","prompt_invarianz_pruefen")
+TOOLS=("knowledge_add","knowledge_search","knowledge_read","knowledge_browse","knowledge_update","freigabe_setzen","knowledge_zurueckziehen","knowledge_freigeben","kettenerklaerung_erklaeren","kurator_lauf","knowledge_relation_add","knowledge_relation_list","knowledge_relation_update","knowledge_relation_remove","annahme_erfassen","annahme_entscheiden","annahme_liste","lesson_record","lesson_query","knowledge_stats") + PROMPT_TOOLS
+TOOL_META={
+    "prompt_invarianz_planen": {"description":"Waehlt off, light oder strong fuer eine Bewertung, Rangfolge oder Entscheidung.","inputSchema":{"type":"object","properties":{"task_type":{"type":"string"},"risk":{"type":"string","enum":["low","high"]},"shared":{"type":"boolean"},"irreversible":{"type":"boolean"},"security":{"type":"boolean"},"data_model":{"type":"boolean"},"automatic_mutation":{"type":"boolean"},"vendor_lock_in":{"type":"boolean"}},"required":["task_type"],"additionalProperties":False}},
+    "prompt_invarianz_pruefen": {"description":"Prueft evidenzbelegte Vergleichslaeufe auf Stabilitaet und Reihenfolgeeffekte.","inputSchema":{"type":"object","properties":{"runs":{"type":"array","items":{"type":"object","properties":{"winner":{},"evidence":{}},"required":["winner","evidence"]}},"threshold":{"type":"number","minimum":0,"maximum":1},"high_risk":{"type":"boolean"}},"required":["runs"],"additionalProperties":False}},
+}
+def exposed_tools(): return PROMPT_TOOLS if os.environ.get("BRAINLEHR_TOOL_PROFILE") == "prompt-invariance" else TOOLS
+def tool_spec(name): return {"name":name,**TOOL_META.get(name,{"description":"Lokales Brainlehr-Werkzeug.","inputSchema":{"type":"object","additionalProperties":True}})}
 def main():
     db=open_db()
     for line in sys.stdin:
         request=json.loads(line); ident=request.get("id")
         try:
             method=request.get("method")
-            if method=="initialize": result={"protocolVersion":"2024-11-05","serverInfo":{"name":"brainlehr","version":"0.2.0"}}
-            elif method=="tools/list": result={"tools":[{"name":tool,"inputSchema":{"type":"object","additionalProperties":True}} for tool in TOOLS]}
-            elif method=="tools/call": result={"content":[{"type":"text","text":json.dumps(call(db,request["params"]["name"],request["params"].get("arguments",{})))}]}
+            if method=="initialize": result={"protocolVersion":"2024-11-05","capabilities":{"tools":{}},"serverInfo":{"name":"brainlehr","version":"0.3.0"}}
+            elif method=="notifications/initialized": continue
+            elif method=="tools/list": result={"tools":[tool_spec(tool) for tool in exposed_tools()]}
+            elif method=="tools/call":
+                name=request["params"]["name"]
+                if name not in exposed_tools(): raise ValueError("tool not allowed by active profile")
+                result={"content":[{"type":"text","text":json.dumps(call(db,name,request["params"].get("arguments",{})))}]}
             else: raise ValueError("unknown method")
             response={"jsonrpc":"2.0","id":ident,"result":result}
         except (KeyError,ValueError,sqlite3.Error) as error: response={"jsonrpc":"2.0","id":ident,"error":{"code":-32602,"message":str(error)}}

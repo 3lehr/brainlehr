@@ -30,6 +30,9 @@
     {"entry":"Claude MCP stdio lifecycle","status":"public-after-generalization","reason":"primary client lifecycle with neutral configuration"},
     {"entry":"Claude recall hook","status":"public-as-is","reason":"generic local prompt recall without logs or project routing"},
     {"entry":"Claude capture hook","status":"public-as-is","reason":"generic local capture of a caller-supplied generalized lesson"},
+    {"entry":"prompt_invarianz_planen/pruefen","status":"public-as-is","reason":"deterministic provider-neutral decision routing and evidence gate"},
+    {"entry":"ChatGPT Secure MCP Tunnel","status":"public-as-is","reason":"official authenticated HTTPS transport; runtime credentials remain local"},
+    {"entry":"Hermes MCP stdio configuration","status":"public-as-is","reason":"provider-neutral stdio integration with tool allowlist"},
     {"entry":"brainlehr.py export/import/hooks","status":"data-only-excluded","reason":"moves database contents or local hook configuration"},
     {"entry":"runtime database, logs, backups, exports","status":"data-only-excluded","reason":"stored private context"},
     {"entry":"private client settings and instructions","status":"data-only-excluded","reason":"operator and application context"}
