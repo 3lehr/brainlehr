@@ -217,3 +217,15 @@
 - Verified: `python3 -m pytest -q tests/test_version.py` — 5 passed.
 - Remaining risk: MCP clients may ignore the optional `initialize.instructions` field; clients without Brainlehr MCP cannot receive it.
 - Next test: Start fresh ChatGPT/Codex, Claude Code, and LM Studio chats and confirm each client surfaces the four-type explanation once.
+# 2026-08-17 — public Claude/Hermes prompt templates
+
+- Change: added `auszug-offen/prompts/CLAUDE.md` and `HERMES.md` with one shared
+  prompt contract plus client-specific anchors; added a drift/leak regression
+  test in `tests/test_public_prompt_templates.py`.
+- Why: the public export needs reusable client templates without copying local
+  paths or credentials, while shared instructions must remain invariant.
+- Verified: `python3 -m pytest -q -p no:cacheprovider tests/test_public_prompt_templates.py`
+  — 2 passed.
+- Remaining risk: the templates are intentionally short and do not replace the
+  full client documentation.
+- Next test: run the public-export test subset before publishing an export.
