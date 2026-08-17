@@ -1,5 +1,14 @@
 # AI architecture decisions
 
+## 2026-08-17T22:08:09+02:00 — One BDW root catalog governs Brainlehr
+
+- Context: Accepted ADRs, plans, two local requirements catalogs and the target-picture research described overlapping parts of Brainlehr, while ADR-025/026 were referenced but absent. The operator supplied a complete 53-value Wizard matrix and selected a new Root purpose decision, a governed core, clear profiles and target picture A.
+- Decision: `docs/REQUIREMENTS_BRAINLEHR.md` is the single normative product catalog. Its 53 existing `BDW-*` decision IDs become stable Requirement/Decision IDs; deterministic `-AC1` acceptance IDs are subordinate. Existing local requirement IDs remain implementation gates under the Root. Catalog status and product-test status are separate.
+- Reason: Reusing the operator's IDs preserves traceability from question through decision, implementation and acceptance without introducing another numbering system. It also keeps resolved conflicts, pilots and the deferred deployment-profile choice visible.
+- Rejected alternatives: promote Research `RQ-*` IDs to product requirements; merge all local test IDs into a new global scale; treat missing ADR-025/026 as accepted; or maintain several independently canonical catalogs.
+- Verification: `python3 -m pytest -q tests/test_requirements_brainlehr.py` — 2 passed after the expected red missing-catalog run; the test verifies exactly 53 unique selections, their decoded labels, norm/status fields, `AC1`, `NOT RUN`, overview consistency and both subordinate catalog links.
+- Boundary: “Agil und ohne Dogma” permits versioned updates to the same IDs, never removal of evidence, security, conflict or test gates. The catalog binds scope but does not claim implementation acceptance.
+
 ## 2026-08-17T20:07:46+02:00 — Keep session checkpoints technical and temporary
 
 - Context: Durable project files already carry requirements and evidence, but hosts need a small recoverable state for context warnings, delegated-child completion, and topic-change recommendations.

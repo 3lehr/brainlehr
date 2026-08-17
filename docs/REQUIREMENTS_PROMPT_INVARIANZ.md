@@ -1,4 +1,6 @@
-# Kanonischer Lastenkatalog: Prompt-Invarianz
+# Teilkatalog: Prompt-Invarianz
+
+Untergeordnet zu `docs/REQUIREMENTS_BRAINLEHR.md`; lokale IDs sind nur Umsetzungsgates.
 
 | ID | Anforderung | Gate |
 |---|---|---|

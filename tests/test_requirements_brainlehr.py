@@ -1,0 +1,92 @@
+from pathlib import Path
+import re
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CATALOG = ROOT / "docs" / "REQUIREMENTS_BRAINLEHR.md"
+
+EXPECTED = {
+    **{f"BDW-R{i:02d}": "keep" for i in range(1, 6)},
+    "BDW-C01": "new-decision", "BDW-C02": "governed-core", "BDW-C03": "pilot",
+    "BDW-P01": "regulated", "BDW-P02": "root-index", "BDW-P03": "profiles",
+    "BDW-P04": "eval-suite", "BDW-P05": "A",
+    "BDW-E01": "external", "BDW-E02": "base", "BDW-E03": "intersection",
+    "BDW-E04": "first-pilot", "BDW-E05": "pilot", "BDW-E06": "tested",
+    "BDW-E07": "sensitive", "BDW-E08": "operator", "BDW-E09": "customer",
+    "BDW-E10": "tamper", "BDW-E11": "stream-export", "BDW-E12": "class-policy",
+    "BDW-E13": "verified", "BDW-E14": "policy", "BDW-E15": "managed",
+    "BDW-E16": "regular", "BDW-E17": "later", "BDW-E18": "risk",
+    "BDW-E19": "tenant-region", "BDW-E20": "default-deny", "BDW-E21": "profile",
+    **{f"BDW-F{i:02d}": "must" for i in range(1, 11)},
+    "BDW-F11": "should",
+    "BDW-U01": "org-ceiling", "BDW-U02": "receipt", "BDW-U03": "separate",
+    "BDW-U04": "allowlist", "BDW-U05": "policy", "BDW-U06": "risk",
+    "BDW-U07": "approved", "BDW-U08": "org-wins",
+}
+
+EXPECTED_LABELS = {
+    **{f"BDW-R{i:02d}": "Beibehalten" for i in range(1, 6)},
+    "BDW-C01": "Neuen Root-Zweckbeschluss aus Research ableiten",
+    "BDW-C02": "Governierter Kern mit optionalem Enterprise-Profil",
+    "BDW-C03": "Mit erstem realen Mehrbenutzer-Piloten",
+    "BDW-P01": "Regulierte Großunternehmen",
+    "BDW-P02": "Ein Root-Katalog mit referenzierten Abschnitten",
+    "BDW-P03": "Ein Kern mit klaren Profilen",
+    "BDW-P04": "Treffer-, Falschmelde-, Abstention- und Aktionsgates",
+    "BDW-P05": "A · governierter Local-first-Memory-Kern",
+    "BDW-E01": "Externer zentraler IdP", "BDW-E02": "RBAC als Basisschicht",
+    "BDW-E03": "Rolle ∩ Objekt ∩ Zweck", "BDW-E04": "Ab erstem Mehrbenutzer-Pilot",
+    "BDW-E05": "Ab erstem Enterprise-Pilot",
+    "BDW-E06": "Technisch erzwungen und negativ getestet",
+    "BDW-E07": "Alle sensiblen Daten und Ableitungen",
+    "BDW-E08": "Betreiber entscheidet", "BDW-E09": "Kundenseitig kontrollierbar",
+    "BDW-E10": "Manipulationsgeschützt und versioniert",
+    "BDW-E11": "Standardexport plus Streaming",
+    "BDW-E12": "Zentrale Policy je Datenklasse",
+    "BDW-E13": "Automatisch, protokolliert und prüfbar",
+    "BDW-E14": "Explizite Policy mit Freigabe und Audit",
+    "BDW-E15": "Automatisch, getrennt, offline-fähig",
+    "BDW-E16": "Regelmäßiger isolierter Restore-Test",
+    "BDW-E17": "Später entscheiden",
+    "BDW-E18": "Risikobasierte Matrix; Vier-Augen selektiv",
+    "BDW-E19": "Zulässige Regionen je Mandant",
+    "BDW-E20": "Klassifiziert, minimiert, default-deny",
+    "BDW-E21": "SLI/SLO je Betriebsprofil",
+    **{f"BDW-F{i:02d}": "MUSS erste Version" for i in range(1, 11)},
+    "BDW-F11": "SOLL später",
+    "BDW-U01": "Org setzt Maximalstufe, Nutzer darf absenken",
+    "BDW-U02": "Kompakter Quellen-/Policy-Beleg je Antwort",
+    "BDW-U03": "Getrennte Sichten mit expliziter Freigabe",
+    "BDW-U04": "Org-Allowlist, Nutzer wählt daraus",
+    "BDW-U05": "Policy plus risikobasierte Genehmigung",
+    "BDW-U06": "Risikobasiert mit Nutzerkanälen",
+    "BDW-U07": "Org-Allowlist, Nutzer wählt",
+    "BDW-U08": "Org-Grenze gewinnt sichtbar",
+}
+
+
+def test_root_catalog_decodes_all_operator_selections():
+    text = CATALOG.read_text()
+    rows = re.findall(r"^\| (BDW-[RCPU EF]\d{2}) \| `([^`]+)` \| ([^|]+) \| ([^|]+) \|", text, re.M)
+    decoded = {requirement_id: selection for requirement_id, selection, _, _ in rows}
+    assert len(rows) == len(decoded) == 53
+    assert decoded == EXPECTED
+    catalog_rows = {line.split("|")[1].strip(): line for line in text.splitlines() if line.startswith("| BDW-")}
+    assert set(catalog_rows) == set(EXPECTED_LABELS)
+    for requirement_id, label in EXPECTED_LABELS.items():
+        assert label in catalog_rows[requirement_id]
+        assert f"`{requirement_id}-AC1`" in catalog_rows[requirement_id]
+        assert "NOT RUN" in catalog_rows[requirement_id]
+    assert all(norm.strip() in {"MUSS", "SOLL", "MUSS-NICHT", "Profil", "Pilot", "Deferred"} for _, _, norm, _ in rows)
+    assert all(status.strip() in {"DECIDED", "OPEN", "CONFLICT", "DEFERRED", "PILOT"} for _, _, _, status in rows)
+
+
+def test_root_is_the_only_normative_catalog():
+    text = CATALOG.read_text()
+    assert "Offene IDs: **keine**" in text
+    assert "Offene Konflikte: **keine**" in text
+    assert "BDW-E17" in text and "Später entscheiden" in text
+    assert "Produkt-Teststatus" in text and "NOT RUN" in text
+    marker = "Untergeordnet zu `docs/REQUIREMENTS_BRAINLEHR.md`; lokale IDs sind nur Umsetzungsgates."
+    for name in ("REQUIREMENTS_PROMPT_INVARIANZ.md", "REQUIREMENTS_SESSION_CHECKPOINT.md"):
+        assert marker in (ROOT / "docs" / name).read_text()

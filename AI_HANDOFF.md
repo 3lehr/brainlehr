@@ -315,3 +315,13 @@
 - Decision: recommend target picture A, a layered governed local-first memory core, while keeping B as a separately gated enterprise profile and C as research until convergence/revocation/rights tests pass. ADR-025/026 are absent and therefore are not treated as accepted primary decisions.
 - Remaining risk: this research does not bind a product scope. The operator must choose among the stable `BDW-*` options; selected results then move into one future root Lastenkatalog without copying the `RQ-*` scale.
 - Next test: use the Wizard once, create the root Lastenkatalog from the returned ID/value set, and close the two-vector inventory defect separately.
+
+# 2026-08-17T22:08:09+02:00 — docs(requirements): establish one Brainlehr root catalog
+
+- Files: `docs/REQUIREMENTS_BRAINLEHR.md`, the two subordinate `docs/REQUIREMENTS_*.md` catalogs, `tests/test_requirements_brainlehr.py`, `docs/AI_DECISIONS.md`, and this handoff.
+- Why: the operator completed all 53 Wizard choices. The product needed one normative, self-contained catalog that decodes those exact values without making Research, plans or local test IDs compete as a second source of truth.
+- Red: `python3 -m pytest -q tests/test_requirements_brainlehr.py` — 2 failed because the Root did not exist.
+- Verified: the same command — 2 passed. It checks 53 unique `BDW-*` IDs, the exact supplied key and decoded option text, allowed norm/status, deterministic `AC1`, conservative `NOT RUN`, overview text and both subordinate links. `BDW-E17=later` was counter-checked against the global Wizard option and correctly remains `DEFERRED: Später entscheiden`.
+- Decision: target picture A is the local-first governed core; Enterprise is a profile, SSO/SCIM/roles are pilot-gated, and federation is `SOLL später`. The catalog is versionable, but evidence, security, conflict and test gates are not optional.
+- Remaining risk: all product gates start `NOT RUN`; this commit is a requirements decision, not an implementation release. The single interpretation review may revise existing IDs, never fork them.
+- Next test: derive the first implementation tranche from MUST/PILOT dependencies and record each product-gate result on its existing BDW ID.

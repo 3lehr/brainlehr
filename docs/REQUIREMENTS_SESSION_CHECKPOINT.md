@@ -1,5 +1,7 @@
 # Lastenkatalog: temporärer Sitzungscheckpoint
 
+Untergeordnet zu `docs/REQUIREMENTS_BRAINLEHR.md`; lokale IDs sind nur Umsetzungsgates.
+
 Stand: 2026-08-17T19:59:51+02:00
 
 Quelle: Betreiberentscheidung `19724255`
