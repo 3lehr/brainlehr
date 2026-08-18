@@ -29,6 +29,7 @@ while not (_w / "schema.sql").exists() and _w != _w.parent:
 _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
+import contextlib
 import hashlib
 import json
 import os
@@ -37,6 +38,7 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 SHARED_KNOWLEDGE = _w
@@ -44,6 +46,7 @@ HUB = SHARED_KNOWLEDGE.parent
 sys.path.insert(0, str(HUB / "scripts"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import knowledge_recall_hook as hook  # noqa: E402
+import schnappschuss  # noqa: E402 -- kern/ liegt schon im Suchpfad (s.o.), nur benutzen (INT-SNAP-001)
 
 CORPUS = SHARED_KNOWLEDGE / "runs/pruefkorpus.jsonl"
 RESULT = SHARED_KNOWLEDGE / "runs/messlauf_abrufguete.json"
@@ -160,6 +163,33 @@ def messe(cases: list) -> dict:
     }
 
 
+@contextlib.contextmanager
+def _gegen_schnappschuss(quelle: Path | None = None, verzeichnis: Path | None = None):
+    """Pinnt hook.DB auf einen frisch gezogenen Schnappschuss (INT-SNAP-001,
+    kern/schnappschuss.py) statt auf den lebendigen, wachsenden Bestand.
+
+    ANLASS: bisher lief messe() direkt gegen hook.DB == ort.DB -- ein Lauf
+    ueber mehrere Minuten (45 Faelle x 3 Zustaende) sah damit am Ende einen
+    anderen Stand als am Anfang, sobald eine parallele Sitzung dazwischen
+    schrieb. Gemessen am echten Bestand (2026-08-18): festhalten() dauert
+    0.089s bei 117.93 MiB -- billiger als ein einzelner run_case()-Aufruf,
+    darum JEDEN Lauf neu ziehen statt einen Schalter fuer Wiederverwendung
+    zu bauen (es gibt nichts Teures zu sparen). Wird nach dem Lauf entfernt
+    (Punkt 4 des Auftrags) -- kein Schnappschuss bleibt liegen.
+
+    `quelle`/`verzeichnis` sind nur fuer Tests gedacht (eigene Wegwerf-DB
+    statt des echten Bestands); der Produktivaufruf laesst beide auf
+    Vorgabe (ort.DB / runs/schnappschuesse)."""
+    stand = schnappschuss.festhalten(quelle, verzeichnis)
+    orig_db = hook.DB
+    hook.DB = str(stand.pfad)
+    try:
+        yield stand
+    finally:
+        hook.DB = orig_db
+        shutil.rmtree(stand.pfad.parent, ignore_errors=True)
+
+
 def _with_state(env: dict):
     class _Ctx:
         def __enter__(self):
@@ -211,8 +241,16 @@ def eichung(cases: list) -> dict:
         vor = target_hit(case, nodes, lessons)
         assert vor
 
-        copy_path = "/tmp/knowledge_eichung_copy.db"
-        shutil.copyfile(hook.DB, copy_path)
+        # hook.DB zeigt hier bereits auf einen gepinnten Schnappschuss (siehe
+        # __main__/_gegen_schnappschuss) -- diese zweite festhalten()-Kopie
+        # ist die Arbeitskopie, die gleich mit DELETE veraendert wird, damit
+        # der gepinnte Stand selbst unangetastet bleibt. Ersetzt die alte
+        # shutil.copyfile(hook.DB, ...): eine Dateikopie waehrend laufender
+        # Schreibvorgaenge kann WAL-inkonsistent sein, Connection.backup()
+        # (in festhalten()) ist es nicht -- siehe kern/schnappschuss.py.
+        eichung_tmp = tempfile.mkdtemp(prefix="eichung_")
+        kopie = schnappschuss.festhalten(Path(hook.DB), Path(eichung_tmp))
+        copy_path = str(kopie.pfad)
         conn = sqlite3.connect(copy_path)
         if case["target_kind"] == "lesson":
             conn.execute("DELETE FROM lessons_learned WHERE id = ?", (case["target_id"],))
@@ -235,7 +273,7 @@ def eichung(cases: list) -> dict:
             nodes, lessons = run_case(case)
         finally:
             hook.DB = orig_db
-        os.remove(copy_path)
+        shutil.rmtree(eichung_tmp, ignore_errors=True)
 
     nach = target_hit(case, nodes, lessons)
     assert not nach, "Ziel darf nach Entfernung aus der Kopie nicht mehr gefunden werden -- Aufbau misst nichts"
@@ -264,9 +302,14 @@ if __name__ == "__main__":
         demo()
         sys.exit(0)
     cases = load_cases()
-    ergebnis = {"messlauf": messlauf(cases)}
-    if "--eichung-only" not in sys.argv:
-        ergebnis["eichung"] = eichung(cases)
+    # INT-SNAP-001: der ganze Lauf (messlauf + eichung) liest gegen EINEN
+    # gepinnten Stand, nicht bei jedem der ~135 run_case()-Aufrufe erneut
+    # gegen den waechst-waehrend-wir-messen-Bestand.
+    with _gegen_schnappschuss() as stand:
+        ergebnis = {"messlauf": messlauf(cases)}
+        if "--eichung-only" not in sys.argv:
+            ergebnis["eichung"] = eichung(cases)
+    ergebnis["stand"] = {"kennung": stand.kennung, "aufgenommen": stand.aufgenommen}
     ergebnis["laufmetadaten"] = laufmetadaten(cases, CORPUS)
     try:
         import messparameter  # noqa: E402 -- nur gelesen (bestand/schalter), kern/ liegt schon im Suchpfad
