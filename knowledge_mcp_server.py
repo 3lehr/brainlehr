@@ -1617,6 +1617,79 @@ _PROZESS_SITZUNG = (os.environ.get("CLAUDE_CODE_SESSION_ID") or "")[:8] or None
 _KLIENT = "claude-code" if (os.environ.get("CLAUDECODE") or os.environ.get("CLAUDE_CODE_SESSION_ID")) else "skript"
 
 
+def _sitzungsprotokoll_pfad() -> _Path | None:
+    """Pfad zur .jsonl-Sitzungsdatei des Claude-Code-Hosts, der diesen
+    Serverprozess gestartet hat -- selbe Herleitung wie melder/agentendauer.py
+    (dort: Sitzungen einlesen und auszaehlen; hier: EINEN Wert live
+    nachschlagen). Kein Import von dort, um TABU nicht zu beruehren -- die
+    Herleitung ist neun Zeilen, ein Import waere teurer als der Code."""
+    sid = os.environ.get("CLAUDE_CODE_SESSION_ID")
+    if not sid:
+        return None
+    slug = re.sub(r"[/.]", "-", os.getcwd())
+    pfad = _Path.home() / ".claude" / "projects" / slug / f"{sid}.jsonl"
+    return pfad if pfad.exists() else None
+
+
+def _letzte_token_nutzung() -> tuple[int, int, int, int] | None:
+    """Token-Verbrauch (input, output, cache_creation, cache_read) des
+    juengsten Modellaufrufs in der aktuellen Sitzung -- gelesen aus dem
+    Sitzungsprotokoll des Host-Prozesses, NICHT aus dem MCP-Aufruf: die
+    tools/call-Anfrage (siehe handle_request) traegt nur {name, arguments},
+    das JSON-RPC-Protokoll kennt keine Tokenfelder (gepr. 2026-08-18 am
+    Handler). Server und Client sind getrennte Prozesse; Tokenzahlen
+    entstehen beim Modellaufruf und landen ausschliesslich im
+    Sitzungsprotokoll (message.usage), das erst NACH dem Modellaufruf und
+    VOR der Werkzeugausfuehrung geschrieben wird (CLAUDE_CODE_EAGER_FLUSH) --
+    darum ist der letzte usage-Eintrag zum Zeitpunkt dieses log_access()-Laufs
+    der richtige.
+
+    Naeherung, benannt statt verschwiegen: Ruft ein Modellzug mehrere
+    Werkzeuge in einem Zug auf (Batch), teilen sich alle denselben
+    usage-Wert -- der Zug hat nur EINEN Tokenpreis, keine Aufteilung pro
+    Werkzeug ist im Protokoll vorhanden. Kein erfundener Naeherungswert,
+    sondern der echte, nur nicht feiner aufloesbar.
+
+    Liefert None, wenn nichts gefunden wird (kein Sitzungsprotokoll, kein
+    usage-Eintrag, Parsefehler) -- log_access() schreibt dann NULL, nicht 0."""
+    pfad = _sitzungsprotokoll_pfad()
+    if pfad is None:
+        return None
+    try:
+        groesse = pfad.stat().st_size
+        fenster = 65536
+        with pfad.open("rb") as f:
+            while fenster <= groesse + 65536:
+                f.seek(max(0, groesse - fenster))
+                rohtext = f.read().decode("utf-8", errors="ignore")
+                zeilen = rohtext.splitlines()
+                for zeile in reversed(zeilen):
+                    zeile = zeile.strip()
+                    if not zeile or '"usage"' not in zeile:
+                        continue
+                    try:
+                        eintrag = json.loads(zeile)
+                    except (json.JSONDecodeError, ValueError):
+                        continue
+                    if eintrag.get("type") != "assistant":
+                        continue
+                    usage = (eintrag.get("message") or {}).get("usage")
+                    if not usage:
+                        continue
+                    return (
+                        int(usage.get("input_tokens") or 0),
+                        int(usage.get("output_tokens") or 0),
+                        int(usage.get("cache_creation_input_tokens") or 0),
+                        int(usage.get("cache_read_input_tokens") or 0),
+                    )
+                if fenster >= groesse:
+                    break
+                fenster *= 4
+    except OSError:
+        return None
+    return None
+
+
 # Ein Modell, fuenf Schreibweisen -- gemessen 2026-08-08 am Bestand:
 # "Anthropic/claude-opus-5" (27), "anthropic/claude-opus-5" (8),
 # "claude-opus-5" (3), "Anthropic/Opus 5" (2), "claude-sonnet-5" (22).
@@ -1797,13 +1870,19 @@ def log_access(conn: sqlite3.Connection, node_path: str | None, action: str,
         project_id=project_id, actor=actor, model=model, session=session,
         status=status, timestamp=timestamp, zeilen_hash=zeilen_hash,
     )
+    # Tokenzahlen NICHT Teil von compute_ketten_hash (Vertrag/Feldreihenfolge
+    # dort unangetastet) -- reine Beobachtungsdaten, kein Teil der Aktion, die
+    # die Kette bezeugt. tokens_nutzung ist None (-> vier NULL-Spalten), wenn
+    # kein Sitzungsprotokoll mit usage gefunden wird, siehe _letzte_token_nutzung().
+    tokens_nutzung = _letzte_token_nutzung()
+    tok_in, tok_out, tok_cache_neu, tok_cache_gelesen = tokens_nutzung or (None, None, None, None)
     cursor = conn.execute(
         """INSERT INTO access_log
            (node_path, action, query, project_id, actor, model, session, client, status, timestamp,
-            zeilen_hash, ketten_hash)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+            zeilen_hash, ketten_hash, tokens_input, tokens_output, tokens_cache_creation, tokens_cache_read)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (node_path, action, query, project_id, actor, model, session, _KLIENT, status, timestamp,
-         zeilen_hash, ketten_hash)
+         zeilen_hash, ketten_hash, tok_in, tok_out, tok_cache_neu, tok_cache_gelesen)
     )
     conn.commit()
     return int(cursor.lastrowid)
