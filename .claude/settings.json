@@ -9,6 +9,15 @@
             "command": "python3 /Volumes/daten/Begod2026/brainlehr/haken/stash_guard_hook.py 2>/dev/null || true"
           }
         ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Volumes/daten/Begod2026/brainlehr/haken/agentenanker_abruf.py 2>/dev/null"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -28,6 +37,16 @@
           {
             "type": "command",
             "command": "python3 /Volumes/daten/Begod2026/brainlehr/haken/kontextstand.py --transcript \"$CLAUDE_TRANSCRIPT_PATH\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Volumes/daten/Begod2026/brainlehr/haken/agentenanker_einspielung.py 2>/dev/null"
           }
         ]
       }
