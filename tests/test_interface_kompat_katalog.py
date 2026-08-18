@@ -23,7 +23,7 @@ OPENLEHR = Path("/Volumes/daten/Begod2026/openlehr_einzelunternehmer")
 INTERFACES = (
     "INT-PKG-001", "INT-VER-001", "INT-VER-002", "INT-API-001", "INT-API-002",
     "INT-REG-001", "INT-DNST-001", "INT-UPD-001", "INT-UPD-002", "INT-SNAP-001",
-    "INT-GATE-001",
+    "INT-ACT-001", "INT-GATE-001",
 )
 
 
@@ -192,3 +192,20 @@ def test_int_upd_002_import_ist_ruecknehmbar(frische_db):
     with sqlite3.connect(str(frische_db)) as conn:
         (n,) = conn.execute("select count(*) from knowledge_nodes").fetchone()
     assert n == 0
+
+
+@pytest.mark.xfail(strict=True, reason="INT-ACT-001 nicht gebaut: kein Ausloeser handelt ohne laufende Sitzung")
+def test_int_act_001_ausloeser_ohne_sitzung(tmp_path):
+    """Gemessen 2026-08-18: crontab leer, ein LaunchAgent (de.brainlehr.dienst),
+    und der antwortet nur. Dieses Gate wird gruen, sobald eine erklaerte Aktion
+    ohne Sitzung laeuft -- mit Ausweis, Protokoll und Ausschalter.
+
+    ERSTE FASSUNG WAR FALSCH: sie pruefte `from kern import wirkung` -- dieses
+    Modul gibt es laengst, es berichtet ueber die Wirkung des ABRUFS und hat
+    mit Ausloesern nichts zu tun. Der Marker meldete XPASS(strict); ein
+    gewoehnliches xfail haette den Fehlgriff verschluckt (L-234e85, heute zum
+    zweiten Mal)."""
+    from kern import ausloeser  # noqa: F401  -- Modulname bewusst frei geprueft
+
+    plan = ausloeser.plane(name="probe", takt="taeglich 06:30", aktion="bericht")
+    assert plan["ausweis"] and plan["protokoll"] and plan["ausschalter"]
