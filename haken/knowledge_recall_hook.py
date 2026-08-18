@@ -954,6 +954,60 @@ def alter(stempel: str | None) -> str:
     return f" [{tage} Tage alt]"
 
 
+def _geltung_tag(norm_rang: int | None, gilt_bis: str | None, jetzt: datetime | None = None) -> str:
+    """Geltung als eigene Achse sichtbar machen (S1d): Rang und Ablaufdatum,
+    NUR wenn gesetzt -- ein Eintrag ohne beides bleibt zeichengleich zum
+    bisherigen Stand (kein Platzhalter, keine leere Klammer). EIN Klammerpaar
+    statt zwei ([Rang 1][bis ...]), weil der Block bei JEDEM Prompt neu
+    bezahlt wird -- ein zweites Klammerpaar waere reine Zeichenlast ohne
+    zusaetzliche Information. jetzt injizierbar (Walkthrough-Doktrin, wie
+    _ist_geltend()).
+
+    'bald'-Zusatz (Ablauf binnen 30 Tagen): Kalendertag-Differenz, nicht
+    Zeitdifferenz -- ein Vergleich der vollen datetime-Werte verschiebt sich
+    um einen Tag, je nachdem wieviel Uhr es gerade ist (gilt_bis liegt auf
+    23:59:59 des Tages, s. _parse_iso_grenze), Kalendertage nicht."""
+    if not norm_rang and not gilt_bis:
+        return ""
+    teile = []
+    if norm_rang:
+        teile.append(f"Rang {norm_rang}")
+    if gilt_bis:
+        datum = str(gilt_bis)[:10]
+        bis = _parse_iso_grenze(gilt_bis, ende_des_tages=True)
+        bald = ""
+        if bis is not None:
+            heute = (jetzt if jetzt is not None else datetime.now(timezone.utc))
+            if (bis.date() - heute.date()).days <= 30:
+                bald = " bald"
+        teile.append(f"bis {datum}{bald}")
+    return " [" + ", ".join(teile) + "]"
+
+
+def _attach_norm_rang(conn: sqlite3.Connection, nodes: list) -> None:
+    """Haengt norm_rang an die bereits ausgewaehlten (<= MAX_NODES) Knoten an
+    -- fuer _geltung_tag() in main(). Weder query()/suchpfad_abruf.py noch
+    mehrstufiger_abruf.py selektieren die Spalte (Auftragsgrenze: nur diese
+    Datei anfassen), deshalb derselbe Nachschlag-Zuschnitt wie bei
+    _attach_norm_offen() -- eigener Query auf dem Primaerschluessel NACH der
+    Auswahl, still nichts anhaengen bei fehlender Spalte/Fehler."""
+    ids = [n["id"] for n in nodes if n.get("id")]
+    if not ids:
+        return
+    try:
+        platzhalter = ",".join("?" * len(ids))
+        rows = conn.execute(
+            f"SELECT id, norm_rang FROM knowledge_nodes WHERE id IN ({platzhalter})",
+            ids,
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return
+    lookup = {r["id"]: r["norm_rang"] for r in rows}
+    for n in nodes:
+        if n.get("id") in lookup:
+            n["norm_rang"] = lookup[n["id"]]
+
+
 def _node_hit_counts(log_path: str | None = None) -> Counter | None:
     """Ziehungs-Zaehlung je Node-Pfad aus dem Abrufprotokoll, nur fuers
     Erkunden. None bei JEDEM Problem (Datei fehlt, kaputte Zeile) -- der
@@ -1152,6 +1206,7 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
         except sqlite3.Error:
             pass
         _attach_norm_offen(conn, nodes)
+        _attach_norm_rang(conn, nodes)
         conn.close()
         return nodes, lessons
     try:
@@ -1241,6 +1296,7 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
     except sqlite3.Error:
         pass
     _attach_norm_offen(conn, nodes)
+    _attach_norm_rang(conn, nodes)
     conn.close()
     return nodes, lessons
 
@@ -1640,7 +1696,8 @@ def main() -> None:
     for n in nodes:
         tag = " (Erkundung -- selten gezogen)" if n.get("explore") else ""
         fremd = f" [anderes Projekt: {n['foreign_project']}]" if n.get("foreign_project") else ""
-        lines.append(f"- [{n['path']}]{alter(n.get('updated_at'))}{tag}{fremd} "
+        geltung = _geltung_tag(n.get("norm_rang"), n.get("gilt_bis"))
+        lines.append(f"- [{n['path']}]{alter(n.get('updated_at'))}{tag}{fremd}{geltung} "
                      f"{entschaerfe_fuer_ausgabe(n['title'])}: {entschaerfe_fuer_ausgabe(n['summary'])}")
     for l in lessons:
         tag = "⚠ LESSON" if l["severity"] in ("critical", "high") else "Lesson"
