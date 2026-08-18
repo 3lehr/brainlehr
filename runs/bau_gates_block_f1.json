@@ -1,0 +1,70 @@
+{
+  "block": "F01-F12",
+  "abweichung": "BDW-F12 existiert nicht im Katalog (docs/REQUIREMENTS_BRAINLEHR.md hat nur BDW-F01..BDW-F11, geprueft mit grep -n 'BDW-F' docs/REQUIREMENTS_BRAINLEHR.md, letzte Zeile 117 = BDW-F11). Eintrag unten trotzdem aufgenommen (Vollstaendigkeitsprobe = 8), als LUECKE mit Existenzbefund statt Testbefund.",
+  "gates": [
+    {
+      "id": "BDW-F01",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": false,
+      "begruendung": "AC1 verlangt Episoden mit Schreib-, Zeit-, Quellen-, Recall-, Korrektur- und Loeschtest. Gesucht: grep -rli 'episod' tests/ kern/ -> keine Treffer. Kein episodisches Gedaechtnis-Modul im Repo."
+    },
+    {
+      "id": "BDW-F02",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": false,
+      "begruendung": "AC1 verlangt je Claim Quelle/Ableitung/Status/Korrekturpfad. Gesucht: grep -rli 'claim' tests/ kern/ -> nur enigma-Spikes und project_id_enum_stale, keiner behandelt semantische Claims mit Ableitung/Status/Korrekturpfad. Kein Claims-Modul."
+    },
+    {
+      "id": "BDW-F03",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": false,
+      "begruendung": "AC1 verlangt Prozeduren getrennt von Fakten/Episoden mit eigenem Freigabe-/Widerrufstest. Gesucht: grep -rli 'prozedural' tests/ kern/ -> keine Treffer. Kein prozedurales Gedaechtnis im Repo."
+    },
+    {
+      "id": "BDW-F05",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": false,
+      "begruendung": "AC1 verlangt Benchmark: korrekte Toolwahl/-parameter UND bessere Wirkung ggue. No-Memory-Baseline. tests/test_abrufwirkung.py und melder/abrufwirkung.py messen Ruecklaeufe/Signalwirkung im Transkript, aber keine No-Memory-Baseline und keine Toolwahl/-parameter-Pruefung. Gesucht: grep -rli 'baseline|no-memory' tests/ kern/ melder/ -> keine passenden Treffer. Anderes AC geprueft, nicht dieses."
+    },
+    {
+      "id": "BDW-F08",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": false,
+      "begruendung": "AC1 verlangt Connector, der Referenz+Pruefsumme+Provenienz+Claims statt Dokumentkopie speichert. Gesucht: grep -rli 'connector' tests/ kern/ -> keine Treffer (einziger Fund war Fehlmatch im requirements-Test-Katalog selbst, nicht am Merkmal). Kein Dokumentconnector im Repo."
+    },
+    {
+      "id": "BDW-F10",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": false,
+      "begruendung": "AC1 verlangt geschlossenen E2E-Pfad ueber Subjekte, Gruppen, Rechte, Deprovisioning, Audit. Vorhandene Rollen-/Ausweistests (test_leser_rolle_vollzugriff.py, test_ausweis_widerruf.py, test_rollenpruefstein_erreichbar.py, test_werkzeugrechte_durchsetzung.py) decken je einzelne Rollen-/Widerrufsaspekte, aber kein Gruppenkonzept und kein Deprovisioning-E2E. Gesucht: grep -rli 'mehrbenutzer|deprovisio' tests/ kern/ -> nur test_requirements_brainlehr.py (Katalog-Labeltest, kein AC-Test) und kern/baustein.py (kein E2E)."
+    },
+    {
+      "id": "BDW-F11",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": false,
+      "begruendung": "AC1 verlangt deterministische Konvergenz-, Widerrufs-, Rechte- und Offline-Replikationstests fuer Foederation/Multi-Agent-Sync. Gesucht: grep -rli 'föderation|foederation|federation' tests/ kern/ -> Treffer sind Regelpaket/Planbindung fuer fremde Instanzen (Textverteilung), nicht Multi-Agent-Synchronisation mit Konvergenz-/Offline-Replikationstests. Kein passender Mechanismus."
+    },
+    {
+      "id": "BDW-F12",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": false,
+      "begruendung": "Existiert nicht in docs/REQUIREMENTS_BRAINLEHR.md (grep -n 'BDW-F12' liefert keinen Treffer, letzte F-Zeile ist BDW-F11 in Zeile 117). Keine Katalogzeile, kein AC1, folglich kein Test moeglich. Abweichung vom Auftrag gemeldet."
+    }
+  ]
+}
