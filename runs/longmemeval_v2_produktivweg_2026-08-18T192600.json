@@ -1,0 +1,274 @@
+{
+  "weg": "knowledge_mcp_server.knowledge_search() liefert die Evidenz-Rangliste je Frage (echter Produktivweg, project_id/scope=Domaene repliziert den gemeinsamen 100-Trajektorien-Heuhaufen). ANTWORT + BEWERTUNG (Reader/Richter) liegen in DIESEM Agentenlauf, siehe Docstring messungen/longmemeval_v2_produktivweg.py Abschnitt 'ABWEICHUNG VOM OFFIZIELLEN AUFBAU' -- kein Qwen3.5-9B/gpt-5.2-Endpunkt vorhanden. Nur Text-Evidenz aus Top-15 der Rangliste je Frage verwendet, KEIN Rueckgriff auf eigenes Domänenwissen -- unbelegte Fragen sind 'is_unknown', nicht geraten.",
+  "kriterium": "LongMemEval-V2 (github.com/xiaowu0162/LongMemEval-V2, evaluation/harness.py::aggregate_metrics()::breakdown(), gelesen 2026-08-18): pct_correct = correct_count/n, correct_count = Zeilen mit score_bool==True UND is_unknown==False. Kategorien ueber CATEGORY_MAP: 'errors-gotchas' -> 'gotchas' (== Umgebungs-Fallstricke), 'static-environment' -> 'static', 'dynamic-environment' -> 'dynamic', 'procedure' -> 'procedure'. KEIN R@k/MRR bei V2 (kein Ziel-Trajektorien-Feld in questions.jsonl, bestaetigt gegen SCHEMA.md -- anders als V1/S).",
+  "grenze": "Stichprobe n=18 (4 static, 4 dynamic, 4 procedure, 6 gotchas) von 451 Fragen gesamt. Reader/Richter = dieser Agentenlauf statt Qwen3.5-9B/gpt-5.2 (kein eigener Endpunkt/Key). Alle 6 gotchas-Fragen der Stichprobe sind bildabhaengig (Fragetext 'The screenshot shows...') -- der Produktivweg (knowledge_search) liefert NUR Text-Trajektorien-Kontext, das Bildsignal fehlt in der Evidenz, die hier zur Bewertung herangezogen wurde (bewusst NICHT durch eigenes Bildlesen ersetzt, um den Weg nicht zu verlassen) -- das druecht die gotchas-Zahl strukturell nach unten. 15 von 18 Fragen sind 'is_unknown' (Evidenz reichte nicht), NICHT geraten -- diese Zahl ist damit eine UNTERGRENZE dessen, was ein System mit echtem Reader/Bildkanal erreichen wuerde, keine obere Schaetzung. Isolierte Test-DB (korpora/longmemeval_v2/messstand.db, gegen BEGOD_KNOWLEDGE_DB+BRAINLEHR_DB abgesichert, Produktions-brainlehr.db nicht beruehrt).",
+  "stichprobe": {
+    "n": 18,
+    "n_gesamt": 451,
+    "seed": 42
+  },
+  "pct_correct_overall": {
+    "count": 18,
+    "pct_correct": 0.16666666666666666,
+    "pct_answered_wrong": 0.0,
+    "pct_unknown": 0.8333333333333334
+  },
+  "pct_correct_by_category": {
+    "static": {
+      "count": 4,
+      "pct_correct": 0.0,
+      "pct_answered_wrong": 0.0,
+      "pct_unknown": 1.0
+    },
+    "dynamic": {
+      "count": 4,
+      "pct_correct": 0.25,
+      "pct_answered_wrong": 0.0,
+      "pct_unknown": 0.75
+    },
+    "procedure": {
+      "count": 4,
+      "pct_correct": 0.25,
+      "pct_answered_wrong": 0.0,
+      "pct_unknown": 0.75
+    },
+    "gotchas": {
+      "count": 6,
+      "pct_correct": 0.16666666666666666,
+      "pct_answered_wrong": 0.0,
+      "pct_unknown": 0.8333333333333334
+    }
+  },
+  "pct_correct_gotchas_umgebungs_fallstricke": {
+    "count": 6,
+    "pct_correct": 0.16666666666666666,
+    "pct_answered_wrong": 0.0,
+    "pct_unknown": 0.8333333333333334
+  },
+  "je_frage": [
+    {
+      "frage_id": "68107cba",
+      "typ": "static-environment",
+      "kategorie": "static",
+      "referenz_antwort": "false",
+      "eval_function": "norm_phrase_set_match|lower=true|normalize_hyphen=true|strip_punct=true|separators=,;|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Navbar-Avatar zeigt Bild+Initialen (StaticText 'ES' neben Bildsymbol), aber das ist NICHT die gefragte Nutzerlisten-Spalte 'Avatar' -- keine Evidenz zur Listenspalte gefunden.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "17a03f9b",
+      "typ": "static-environment",
+      "kategorie": "static",
+      "referenz_antwort": "Run business rules and engines",
+      "eval_function": "norm_phrase_set_match|lower=true|normalize_hyphen=true|strip_punct=true|separators=,;|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Formulartext nennt 'Run at' und ein 'Active'-Kontrollkaestchen, aber keine Evidenz zur direkten Nachbarschaft/Reihenfolge der Felder auf dem konkreten Formular.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "f3496ca5",
+      "typ": "static-environment",
+      "kategorie": "static",
+      "referenz_antwort": "two",
+      "eval_function": "norm_phrase_set_match|lower=true|normalize_hyphen=true|strip_punct=true|separators=,;|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Nur Software-Liste einer Standard-Laptop-Bestellung gefunden (Salesforce, MS 365, Asana, HubSpot), kein direkter Vergleich Sales Laptop vs. Macbook Pro.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "cf62efad",
+      "typ": "static-environment",
+      "kategorie": "static",
+      "referenz_antwort": "Amount",
+      "eval_function": "norm_phrase_set_match|lower=true|normalize_hyphen=true|strip_punct=true|separators=,;|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Kein Treffer zu einem Stift-Symbol auf der Expense-Line-Seite.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "bdb825a3",
+      "typ": "dynamic-environment",
+      "kategorie": "dynamic",
+      "referenz_antwort": "B",
+      "eval_function": "mc_choice_match|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Generische Filter-Dropdown-Optionen (starts with/contains/is/...) gefunden, aber kein Beleg fuer den STANDARD-Komparator speziell des Feldes 'Assigned to'.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "82cdfcc3",
+      "typ": "dynamic-environment",
+      "kategorie": "dynamic",
+      "referenz_antwort": "recent selections",
+      "eval_function": "norm_phrase_set_match|lower=true|normalize_hyphen=true|strip_punct=true|separators=,;|require_non_empty=true",
+      "eigene_antwort": "recent selections",
+      "begruendung_aus_evidenz": "Trajektorie 96131e7b zeigt woertlich 'LayoutTableCell \\'Recent selections\\'' direkt im Assigned-to-Suchfeld-Kontext.",
+      "score_bool": true,
+      "is_unknown": false,
+      "korrekt_pct_correct_definition": true
+    },
+    {
+      "frage_id": "658fa827",
+      "typ": "dynamic-environment",
+      "kategorie": "dynamic",
+      "referenz_antwort": "Eclipse IDE",
+      "eval_function": "norm_phrase_set_match|lower=true|normalize_hyphen=true|strip_punct=true|separators=,;|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Nur Standard-Laptop-Softwareliste gefunden, keine Developer-Laptop(Mac)-Seite mit 'Eclipse IDE' in der Evidenz.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "c738b934",
+      "typ": "dynamic-environment",
+      "kategorie": "dynamic",
+      "referenz_antwort": "B",
+      "eval_function": "mc_choice_match|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Auf Suchergebnisseiten erscheint 'Category' im Sidebar-Block, 'Price' nur als Sortieroption -- aber keine Evidenz zur Kategorie-Listenseite zum Vergleich, Unterscheidung B vs. C nicht sicher.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "58c34839",
+      "typ": "procedure",
+      "kategorie": "procedure",
+      "referenz_antwort": "A",
+      "eval_function": "mc_choice_match|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Onboarding/Offboarding-KB-Artikel angerissen, aber die konkrete Anzahl 'major work surfaces' nicht in der Evidenz.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "674a6972",
+      "typ": "procedure",
+      "kategorie": "procedure",
+      "referenz_antwort": "C",
+      "eval_function": "mc_choice_match|require_non_empty=true",
+      "eigene_antwort": "C",
+      "begruendung_aus_evidenz": "'Items 1 to 10 of 37 total' bei 10/Seite ergibt 4 Seiten (ceil(37/10)); Seite 4 ist damit die letzte/ap-aelteste Seite -- rechnerisch aus der Evidenz ableitbar.",
+      "score_bool": true,
+      "is_unknown": false,
+      "korrekt_pct_correct_definition": true
+    },
+    {
+      "frage_id": "1cf04706",
+      "typ": "procedure",
+      "kategorie": "procedure",
+      "referenz_antwort": "F",
+      "eval_function": "mc_choice_match|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "KB-Text zu Problem List Cleanup angerissen, konkrete Beschreibungsfeld-Regel nicht in der Evidenz sichtbar.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "100ff132",
+      "typ": "procedure",
+      "kategorie": "procedure",
+      "referenz_antwort": "D",
+      "eval_function": "mc_choice_match|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Reports/Dashboards-Navigation in der Evidenz vorhanden, aber kein Text, der eine der acht Optionen A-H eindeutig auszeichnet.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "2f6a21cd",
+      "typ": "errors-gotchas",
+      "kategorie": "gotchas",
+      "referenz_antwort": "1) the crash is expected, and 2) to avoid it, keep the default \"for text\" search when querying Hardware list entries for the user or directly open the user's record instead of switching the dropdown to \"Assigned to\".",
+      "eval_function": "llm_gotchas_checker|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Kein Treffer zu 'crash'/Abbruchverhalten beim Dropdown-Wechsel in der Evidenz.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "50d92f55",
+      "typ": "errors-gotchas",
+      "kategorie": "gotchas",
+      "referenz_antwort": "1) the page you are looking at is not wrong; 2) inside the record, clearing the \"Assigned to\" field is not enough, you need to click into that field and then click elsewhere so the cleared value is actually applied before updating.",
+      "eval_function": "llm_gotchas_checker|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Kein Treffer, der die Ursache (Feld verlassen vor Speichern) belegt.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "7586cf7c",
+      "typ": "errors-gotchas",
+      "kategorie": "gotchas",
+      "referenz_antwort": "the list header search requires a left-side wildcard; use `*#tag` so the left-side `*` is applied for contains-style matching.",
+      "eval_function": "llm_gotchas_checker|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Kein einziger Treffer in Top-15 fuer irgendeinen Suchbegriff.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "1d864942",
+      "typ": "errors-gotchas",
+      "kategorie": "gotchas",
+      "referenz_antwort": "Correct answers must explicitly say that clicking `Back` will not return you to `Pending Reviews`; it takes you to `All Reviews`. Answers that tell the user to click `Back`, or that claim `Back` returns to `Pending Reviews`, are wrong.",
+      "eval_function": "llm_gotchas_checker|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "'Pending Reviews' und 'All Reviews' als getrennte Menuepunkte belegt, aber kein direkter Beleg, wohin der 'Back'-Button aus dem Review-Editor tatsaechlich fuehrt.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "42d13006",
+      "typ": "errors-gotchas",
+      "kategorie": "gotchas",
+      "referenz_antwort": "There is no such functionality or dedicated module for finding items on sale from this storefront.",
+      "eval_function": "llm_gotchas_checker|require_non_empty=true",
+      "eigene_antwort": null,
+      "begruendung_aus_evidenz": "Gefundene Evidenz zeigt das ADMIN-Dashboard-Menue (DASHBOARD/SALES/CATALOG), nicht die Kunden-Landingpage, die die Frage meint -- falscher Kontext, keine verwertbare Evidenz.",
+      "score_bool": false,
+      "is_unknown": true,
+      "korrekt_pct_correct_definition": false
+    },
+    {
+      "frage_id": "18b91103",
+      "typ": "errors-gotchas",
+      "kategorie": "gotchas",
+      "referenz_antwort": "you should not order the Adobe Creative Cloud bundle here. instead, you should proceed ordering the hardware and in the configuration page, select the Adobe Photoshop there to add to the hardware.",
+      "eval_function": "llm_gotchas_checker|require_non_empty=true",
+      "eigene_antwort": "Nicht das Adobe-Creative-Cloud-Katalogelement bestellen; stattdessen die Hardware bestellen und auf der Konfigurationsseite die Checkbox 'Adobe Photoshop' aktivieren.",
+      "begruendung_aus_evidenz": "Trajektorien 4919aae9 und 787ceaeb zeigen woertlich eine Checkbox 'Adobe Photoshop' auf einer Hardware-Konfigurationsseite, getrennt vom Katalogeintrag 'Adobe Creative Cloud' -- deckt die Kerneinsicht der Referenzantwort.",
+      "score_bool": true,
+      "is_unknown": false,
+      "korrekt_pct_correct_definition": true
+    }
+  ],
+  "positivkontrolle": {
+    "ziel_trajektorie": "2f191311",
+    "domaene": "enterprise",
+    "anfrage_ausschnitt": "Create a filter for the list to extract all entries where:\n    - \"Number\" is \"INC0013558\" and \n    -",
+    "rang": 1,
+    "bestanden": true,
+    "anmerkung": "Erster Versuch mit einem generischen Accessibility-Tree-Fragment (Formatierungszeichen, keine Woerter) schlug fehl (Rang nicht 1) -- Befund: generischer ServiceNow-UI-Text dominiert viele Trajektorien gleichermassen und ist als Anfrage nicht diskriminierend. Mit einem inhaltlich eindeutigen Ausschnitt (Ziel-Nummer INC0013558 aus dem goal-Feld) bestanden."
+  }
+}
