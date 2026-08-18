@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-18T20:24:50+0200
+# STAND brainlehr — 2026-08-18T21:00:01+0200
 **Vertragsnaht (2026-08-18):** alle INT-Gates zu. `INT-SNAP-001` gebaut UND verdrahtet — der Messlauf las bis heute direkt gegen den wachsenden Bestand; jetzt pinnt er den ganzen Lauf (`beb14580`, festhalten 0,09 s bei 118 MiB, Aufräumen im finally). `INT-ACT-001` gebaut, NICHT eingeschaltet.
 **Nächstes:** `INT-UPD-002` bauen — Importkennung auf jeder geschriebenen Zeile, `nimm_import_zurueck(kennung)` entfernt genau diesen Import und lässt in Kraft gesetzte Regeln stehen oder verweigert.
 **Falle:** Wer einen Rückgabewert erweitert, muss die Konsumenten in den *tabuisierten* Schichten prüfen — das Atelier hätte einen Aktualisierungs-Import als „enthielt nichts Neues" gemeldet (`L-51e6d8`). Und ein rotes Gate braucht einen Positivfall, sonst misst sein Rot den Prüfstand (`L-234e85`).
@@ -20,6 +20,12 @@
 **Damit ist Buendel B ueberhaupt erst entscheidbar.** Die Bestandsaufnahme (`f1ba7ba7`) fand dort einen Widerspruch: `knowledge_widerruf_archiv` behaelt Inhalte fuer immer, eine Loeschfrist verlangt das Gegenteil. Crypto-Shredding loest das, ohne dass eine Seite nachgibt -- der Schluessel geht, die Tatsache bleibt. Naechster Schritt: Fristen je Datenklasse auf dieser Grundlage, nicht auf Loeschung im Archiv.
 
 **Aufwand der drei uebrigen Buendel, gemessen statt geschaetzt** (`runs/bestandsaufnahme_vier_buendel.json`): Gedaechtnisarten gross (gattung kennt zwei Werte, prozedural gibt es nicht -- das Repo hat die Luecke in `docs/RESEARCH_ZIELBILD_2026-08-17.md:147` selbst diagnostiziert), Aufbewahrung gross, Connectoren gross (weder Pruefsumme noch Provenienz noch Registry).
+
+**24/56 belegt, 10 offen, 22 vertagt.** Buendel B und C gebaut, beide auf ADR-029: Eine Frist vernichtet den SCHLUESSEL, nicht die Zeile. Das loest den Widerspruch zwischen `knowledge_widerruf_archiv` (behaelt fuer immer) und der Loeschpflicht, ohne dass eine Seite nachgibt -- und ein Backup ist damit automatisch mitgeloescht, ohne angefasst zu werden.
+
+  `BDW-E09` PASS (Rotation, Widerruf, Restore) · `BDW-E14` PASS (Legal Hold wirft, statt still durchzulaufen) · `BDW-E12` PASS (Zweck, Frist, Ablaufverhalten je Datenklasse) · `BDW-E07` und `BDW-E13` nur TEILWEISE -- beide, weil Index, Caches und Kopien des echten Bestands nicht erreicht werden. Das ist die naechste Baustelle in diesem Buendel.
+
+  Drei Mutationsproben gefahren: Sperrpruefung entfernt -> rot · Widerruf als No-op -> rot · Klartext in den Loeschnachweis gelegt -> rot. Der Nachweis traegt Kennung, Datenklasse, Zeitpunkt und Ablaufverhalten und NICHTS aus dem Inhalt: ein Loeschprotokoll, das den geloeschten Inhalt beschreibt, hebt die Loeschung auf.
 
 **Katalog neu zugeschnitten** (Betreiberentscheidung `9d77ad16`, Rang 1): **19/56 belegt, 15 offen, 22 vertagt.** Die 22 gehen auf `DEFERRED` und werden mit dem ersten realen Mehrbenutzer-Piloten aktiviert (`BDW-C03`) - Mandanten, IdP/SSO/SCIM, zwei Fassungen, DLP/SIEM, Foederation. Zu bauen bleiben vier Buendel, alle local-first: Gedaechtnisarten (F01-F03), Aufbewahrung (E12-E16), eigene Schluessel (E07/E09), Connectoren (F08/U04).
 
