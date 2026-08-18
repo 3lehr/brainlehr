@@ -241,3 +241,28 @@ reinen Bedeutungskanal über 35 Fälle, nicht über den vollen Suchweg und nicht
 über den ganzen Bestand. Wer das bauen will, misst es zuerst über den vollen Weg.
 
 Belege: Knoten `99f00e91`, Lehre `L-0e0ab6` (neuntes Vorkommen).
+
+## ZWEITER NACHTRAG — 2026-08-18T13:30:00+0200: der Hebel trägt über den vollen Weg NICHT
+
+Der erste Nachtrag nannte die abweichende Feldzusammensetzung als offenen Hebel
+(Lehren Median 43 statt 65). Gemessen über den **vollen** Suchweg
+(`knowledge_search`-Fusion inkl. Stichwort-Sockel, n=35, `MAX_RESULTS=300`,
+5122 Knoten + 1057 Lehren, alle Varianten im selben Prozess, keine Schreibung):
+
+| Zusammensetzung | top5 | top50 | Median | jenseits Rang 300 |
+|---|---|---|---|---|
+| heute | 4/35 | 12/35 | 115 | 7 |
+| (a) nur Lehren geändert | 4/35 | 13/35 | **90** | 8 |
+| (b) nur Knoten ohne Pfadzeile | 4/35 | 11/35 | 136 | 8 |
+| (c) beides | 4/35 | 12/35 | 136 | 9 |
+
+**top5 ist in allen vier Varianten identisch.** Der Stichwort-Sockel bestimmt
+genau die Plätze, auf die es ankommt; die Textzusammensetzung wirkt erst
+dahinter. Die Zahlen aus dem reinen Bedeutungskanal waren ein Artefakt dieses
+Kanals — dieselbe Klasse wie im ersten Nachtrag, nur eine Ebene höher.
+
+**Der Umbau unterbleibt.** Preis wäre gewesen: 6179 Vektoren, gemessen 453,5 s.
+Positivkontrolle bestanden (Leitfall auf Rang 2). Ungemessen: Falschmeldeseite,
+anderes `max_results`, Wirkung eines veränderten Sockels.
+
+**Was daraus folgt:** Der Engpass ist der Sockel, nicht der Text. Knoten `99f00e91`.
