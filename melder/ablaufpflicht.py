@@ -125,11 +125,22 @@ PLAN_GENANNT = re.compile(r"docs/PLAN_[\w.-]+|PLAN_[A-Z][\w-]*\.md|ADR-\d+", re.
 # Die Belegfrage gilt als beantwortet, wenn der Text sagt WIE belegt wurde --
 # oder ehrlich sagt, dass nicht belegt wurde. Beides zaehlt; nur Schweigen
 # zaehlt nicht.
+# NACHGETRAGEN 2026-08-18: Der Ausdruck war rein deutsch und kannte nur die
+# VERBform "belegt". Gemessen an den 14 Beanstandungen des ersten scharfen
+# Laufs: 11 davon beantworteten die Belegfrage sehr wohl -- neun auf Englisch
+# ("Verified:", "Red:", aus den Codex-Sitzungen) und zwei mit dem Substantiv
+# ("Beleg: pytest ... 76 passed"). Das ist kein Aufweichen der Regel, sondern
+# das Schliessen einer Luecke im WORTSCHATZ: der Waechter meldete Schweigen,
+# wo eine Antwort stand. Sein eigener Docstring nennt den Preis dafuer --
+# "Dauerrot heisst abgeschaltet". Die Negativkontrolle bleibt scharf: zwei
+# Commits desselben Laufs (2bf4a418, 4460ce22) sagen wirklich nichts und
+# werden weiterhin beanstandet.
 BELEG_GENANNT = re.compile(
     r"rot vor gr[uü]n|rot-probe|rot vor|war (vorher )?rot|vorher rot"
-    r"|gegenprobe|abnahme|gemessen|belegt"
+    r"|gegenprobe|abnahme|gemessen|beleg"
     r"|nicht verifiziert|nicht gepr[uü]ft|ungepr[uü]ft"
-    r"|deckten den fehler nicht|am ger[aä]t nicht|handprobe",
+    r"|deckten den fehler nicht|am ger[aä]t nicht|handprobe"
+    r"|verified|measured|proven|(^|\n)\s*-?\s*red:",
     re.I)
 
 
@@ -205,10 +216,17 @@ def demo() -> None:
                  "gemessen ueber 117 Anfragen",
                  "geaendert, nicht verifiziert",
                  "Tests gruen, aber sie deckten den Fehler nicht ab",
-                 "im Kopflauf belegt, am Geraet nicht"):
+                 "im Kopflauf belegt, am Geraet nicht",
+                 # englisch und als Substantiv -- beides stand in echten
+                 # Commits dieses Repos und wurde vorher als Schweigen gezaehlt
+                 "Verified: focused pytest set -- 17 passed",
+                 "Beleg: pytest ueber die Domaenenmenge, 76 passed",
+                 "- Red: 1 failed because the property was absent"):
         assert BELEG_GENANNT.search(satz), satz
     # Schweigen zaehlt nicht
     assert not BELEG_GENANNT.search("Aufraeumen und Umbenennen von zwei Funktionen")
+    # ... auch nicht, wenn das Wort zufaellig im Fliesstext vorkommt
+    assert not BELEG_GENANNT.search("Farbe von red auf blau geaendert")
 
     assert QUELLE.search("kern/embeddings.py") and not QUELLE.search("docs/PLAN_X.md")
     # Die Wurzel muss aus dem AUFRUFER kommen, nicht aus dem Dateipfad.
