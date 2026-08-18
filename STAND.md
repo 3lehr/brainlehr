@@ -1,5 +1,4 @@
-# STAND brainlehr — 2026-08-18T05:05:00+0200
-**Erledigt (Linie Vertragsnaht):** `docs/REQUIREMENTS_INTERFACE_KOMPAT.md` steht als einziger Teilkatalog zu `BDW-F07` (zehn `INT-*`-IDs). Vier Gates grün: `contract_version` v1 fail-closed, Reimport aktualisiert statt zu ignorieren, `dienst` wird abgelegt (nie gestartet), Cross-Repo-Gate skippt nicht mehr. 94 passed/1 xfailed, swift 241, openlehr 21.
+# STAND brainlehr — 2026-08-18T12:11:19+0200
 **Vertragsnaht (2026-08-18):** kein rotes Gate mehr — `INT-ACT-001` (Auslöser, gebaut, NICHT eingeschaltet), `INT-REG-001` + `INT-API-003` (Registry, Rest 8799 in `DienstAufsicht`), `INT-UPD-002` (Rücknahme) sind zu. Ohne Laufzeitgate weiterhin: `INT-SNAP-001`, `INT-API-001/002`, `INT-VER-002`.
 **Nächstes:** `INT-UPD-002` bauen — Importkennung auf jeder geschriebenen Zeile, `nimm_import_zurueck(kennung)` entfernt genau diesen Import und lässt in Kraft gesetzte Regeln stehen oder verweigert.
 **Falle:** Wer einen Rückgabewert erweitert, muss die Konsumenten in den *tabuisierten* Schichten prüfen — das Atelier hätte einen Aktualisierungs-Import als „enthielt nichts Neues" gemeldet (`L-51e6d8`). Und ein rotes Gate braucht einen Positivfall, sonst misst sein Rot den Prüfstand (`L-234e85`).
