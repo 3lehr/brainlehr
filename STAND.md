@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-18T19:40:00+0200
+# STAND brainlehr — 2026-08-18T20:12:30+0200
 **Vertragsnaht (2026-08-18):** alle INT-Gates zu. `INT-SNAP-001` gebaut UND verdrahtet — der Messlauf las bis heute direkt gegen den wachsenden Bestand; jetzt pinnt er den ganzen Lauf (`beb14580`, festhalten 0,09 s bei 118 MiB, Aufräumen im finally). `INT-ACT-001` gebaut, NICHT eingeschaltet.
 **Nächstes:** `INT-UPD-002` bauen — Importkennung auf jeder geschriebenen Zeile, `nimm_import_zurueck(kennung)` entfernt genau diesen Import und lässt in Kraft gesetzte Regeln stehen oder verweigert.
 **Falle:** Wer einen Rückgabewert erweitert, muss die Konsumenten in den *tabuisierten* Schichten prüfen — das Atelier hätte einen Aktualisierungs-Import als „enthielt nichts Neues" gemeldet (`L-51e6d8`). Und ein rotes Gate braucht einen Positivfall, sonst misst sein Rot den Prüfstand (`L-234e85`).
@@ -14,6 +14,12 @@
 **PUSH weiterhin blockiert, zweiter Versuch abgewiesen:** Der Weg über einen History-Rewrite der fünf Commit-Nachrichten wurde vom Berechtigungsfilter gestoppt — mit zutreffender Begründung: 51 Commits neu, Hashes in Wissensknoten und STAND werden ungültig, und ich hatte diese Kosten selbst dokumentiert und mich dagegen entschieden. `--no-verify` wird NICHT benutzt. Der Befund bleibt: fünf Commits vom 18.08. vormittags nennen keinen Plan. 51 Commits warten.
 
 **Gates 14/56** (`melder/gatestand.py`). Neu belegt: `BDW-R04` — Vertrauensregler tastet die vier Stopp-Punkte auf keiner Stufe an, Mutationsprobe gefahren. Stichprobe über 24 der 42 offenen: **0 belegbar**, alle sind Baulücken (Knoten `f0619359`).
+
+**Katalog neu zugeschnitten** (Betreiberentscheidung `9d77ad16`, Rang 1): **19/56 belegt, 15 offen, 22 vertagt.** Die 22 gehen auf `DEFERRED` und werden mit dem ersten realen Mehrbenutzer-Piloten aktiviert (`BDW-C03`) - Mandanten, IdP/SSO/SCIM, zwei Fassungen, DLP/SIEM, Foederation. Zu bauen bleiben vier Buendel, alle local-first: Gedaechtnisarten (F01-F03), Aufbewahrung (E12-E16), eigene Schluessel (E07/E09), Connectoren (F08/U04).
+
+**Falle beim Vertagen, behoben:** `melder/gatestand.py` meldete danach 41/56 belegt statt 19/56 - er kannte nur zwei Lagen (offen oder belegt) und zaehlte jede vertagte Zeile als Beleg. Eine Vertagung haette die Quote um 22 Punkte gehoben, ohne dass etwas gemessen wurde. `DEFERRED` ist jetzt eine dritte Kategorie, und der Test verlangt bei jeder vertagten Zeile eine Wiedervorlagebedingung - sonst waere Vertagen eine stille Streichung.
+
+**Push ist raus** (`d67feb5c`, 66 Commits, `--no-verify` auf Anordnung). Der Waechterbefund bleibt gueltig: fuenf Commits ohne Planbezug. Der Widerruf des Betreibers traf ein, nachdem der Push durchgelaufen war; nicht zurueckgenommen, weil ein Force-Push der schwerere Eingriff waere (`c5445ece`).
 
 **Zum ersten Mal gemessen — und es ist die beste Zahl des Tages:** Falschmeldequote **0,0 (0/10)**, Abstentionsquote **1,0 (10/10)** über den echten Weg. Zehn Anfragen aus fremden Sachgebieten (macOS, Seemannschaft, Kubernetes, Gaststättenrecht …), kein einziges Mal etwas erfunden, zehnmal korrekt geschwiegen. Damit sind die 20 % Trefferquote anders zu lesen als bisher: sie stehen neben einer Falschmeldequote von null. Ein System, das auf jede Frage irgendetwas ausgibt, hätte eine bessere Trefferquote und wäre schlechter. Knoten `8c6096e2`, Werkzeug `messungen/vier_gatearten.py`.
 
