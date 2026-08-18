@@ -182,7 +182,6 @@ def test_int_gate_001_cross_repo_gate_skippt_nicht():
     assert "pytest.skip" not in quelle.read_text(encoding="utf-8")
 
 
-@pytest.mark.xfail(strict=True, reason="INT-UPD-002 nicht gebaut: ein Import traegt keine Kennung, ueber die er zurueckgenommen wird")
 def test_int_upd_002_import_ist_ruecknehmbar(frische_db):
     """Ohne Ruecknahme ist ein falsches Paket nur von Hand aus dem Bestand zu
     schneiden -- und niemand weiss danach, was dazugehoerte."""

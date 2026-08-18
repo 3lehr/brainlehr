@@ -60,6 +60,7 @@ diese Datei dafuer etwas herausfiltern muss (das Feld war nie dort).
 from __future__ import annotations
 
 import json
+import uuid
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -112,6 +113,19 @@ _AUSSEHEN = ("farbe", "color", "font", "schrift", "_px", "pixel", "margin", "pad
 PARENT_PREFIX = "/domaenen"
 PROJECT_ID = "domaenenpaket-import"
 _SUMMARY_MAXLEN = 400
+
+# INT-UPD-002: Ort der Importkennung. schema.sql darf hierfuer nicht geaendert
+# werden (Auftrag), also kein eigenes Feld -- stattdessen EIN eigener Knoten
+# je Aufruf von speichere(), im selben knowledge_nodes wie alles andere hier.
+# Er traegt content={"domaene", "ids"}: genau die id's, die DIESER Aufruf
+# tatsaechlich angelegt oder inhaltlich geaendert hat (gespeichert+aktualisiert,
+# nicht uebersprungen). Damit nimmt die Ruecknahme eines zweiten Imports
+# derselben Domaene nie Zeilen mit, die nur der ERSTE Import beruehrt und der
+# zweite unveraendert liess -- die Liste ist die Buchfuehrung, nicht ein Tag
+# auf jeder Zeile (ein Tag haette die Tags-Spalte bei JEDEM Reimport veraendert
+# und damit _aktualisiere_falls_geaendert() ueber den Tag-Vergleich in
+# 'aktualisiert' verwandelt, obwohl der Inhalt gleich blieb -- falsche Zahl).
+_IMPORTPROTOKOLL_PREFIX = "domaenenimport-"
 
 # Identisches Muster wie kern/regelpaket.py INSERT_SQL (TEIL 3 dort): kein
 # Rang-Feld in der Spaltenliste, kein Weg, ihn ueber ein Paket zu setzen.
@@ -388,16 +402,19 @@ def speichere(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
 
     Rueckgabe: das Ergebnis von pruefe(), erweitert um 'gespeichert' (Anzahl
     neu angelegter Zeilen), 'aktualisiert' (Anzahl inhaltlich geaenderter,
-    noch nicht in Kraft gesetzter Zeilen) und 'uebersprungen' (unveraendert
-    oder bereits in Kraft, also nicht angefasst). Bei Ablehnung sind alle
-    drei 0 -- ein abgelehntes Paket schreibt nichts."""
+    noch nicht in Kraft gesetzter Zeilen), 'uebersprungen' (unveraendert
+    oder bereits in Kraft, also nicht angefasst) und 'importkennung'
+    (INT-UPD-002: bezeichnet genau diesen Importvorgang, siehe
+    nimm_import_zurueck()). Bei Ablehnung sind gespeichert/aktualisiert/
+    uebersprungen 0 und importkennung None -- ein abgelehntes Paket schreibt
+    nichts, also gibt es auch nichts zurueckzunehmen."""
     # db durchreichen: die Bestandspruefung in pruefe() muss gegen DENSELBEN
     # Bestand laufen, in den gleich geschrieben wird -- sonst pruefte diese
     # Zeile (bei einer abweichenden Test- oder Zweit-DB) am falschen Ort und
     # ein 'bestand:'-Verweis waere blind bestanden oder blind durchgefallen.
     ergebnis = pruefe(paket, db=db)
     if not ergebnis["angenommen"]:
-        return {**ergebnis, "gespeichert": 0, "aktualisiert": 0, "uebersprungen": 0}
+        return {**ergebnis, "gespeichert": 0, "aktualisiert": 0, "uebersprungen": 0, "importkennung": None}
 
     domaene_id = paket["domaene"]
     herkunft = paket.get("herkunft") or domaene_id
@@ -418,17 +435,25 @@ def speichere(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     if paket["dienst"]:
         zeilen.append(_dienst_zeile(domaene_id, herkunft, paket["dienst"], ts))
 
+    kennung = f"{domaene_id}-{uuid.uuid4().hex[:12]}"
     gespeichert = aktualisiert = uebersprungen = 0
+    beruehrte_ids: list[str] = []
     with speicher.schreiben(db) as conn:
         for z in zeilen:
             cur = conn.execute(_INSERT_SQL, z)
             if cur.rowcount:
                 gespeichert += 1
+                beruehrte_ids.append(z[0])
             elif _aktualisiere_falls_geaendert(conn, z):
                 aktualisiert += 1
+                beruehrte_ids.append(z[0])
             else:
                 uebersprungen += 1
-    return {**ergebnis, "gespeichert": gespeichert, "aktualisiert": aktualisiert, "uebersprungen": uebersprungen}
+        conn.execute(_INSERT_SQL, _importprotokoll_zeile(kennung, domaene_id, beruehrte_ids, ts))
+    return {
+        **ergebnis, "gespeichert": gespeichert, "aktualisiert": aktualisiert,
+        "uebersprungen": uebersprungen, "importkennung": kennung,
+    }
 
 
 def _aktualisiere_falls_geaendert(conn, zeile: tuple) -> bool:
@@ -505,6 +530,65 @@ def setze_in_kraft(
              f"{PARENT_PREFIX}/{domaene_id}"),
         )
     return cur.rowcount
+
+
+def nimm_import_zurueck(kennung: str, db: str | Path | None = None) -> dict[str, int]:
+    """INT-UPD-002: nimmt genau den Importvorgang zurueck, der `kennung`
+    traegt (das 'importkennung'-Feld aus speichere()) -- nicht die ganze
+    Domaene, nicht einen zweiten, spaeteren Reimport derselben Domaene, weil
+    dessen unveraenderte Zeilen nie in DIESES Protokoll aufgenommen wurden
+    (siehe _importprotokoll_zeile).
+
+    HARTE REGEL (Auftrag, in Kraft gesetzte Zeilen ueberleben eine
+    Ruecknahme): fuer jede beruehrte Zeile wird VOR dem Loeschen
+    norm_entscheidung geprueft. Traegt sie nicht mehr 'keine_norm' (ein
+    Mensch hat sie via setze_in_kraft() in Kraft gesetzt), bleibt sie stehen.
+    GEWAEHLT wurde die teilweise Ruecknahme mit Bericht, nicht die
+    Totalverweigerung: ein einziger in Kraft gesetzter Datensatz haette sonst
+    jede Ruecknahme blockiert, auch wenn hundert andere Zeilen harmlos
+    waeren. Die stehen gebliebenen Zeilen bleiben im Protokoll vermerkt, damit
+    ein spaeterer Aufruf (nachdem die Norm zurueckgenommen wurde) sie noch
+    findet -- das Protokoll wird nur geloescht, wenn nichts mehr uebrig ist.
+
+    Rueckgabe: {'entfernt': int, 'stehen_geblieben': int} -- Zahlen, keine
+    Prosa (Auftrag). Wirft ValueError bei unbekannter Kennung -- eine leise
+    Null waere von einer erfolgreichen Ruecknahme ohne Zeilen nicht zu
+    unterscheiden."""
+    protokoll_id = f"{_IMPORTPROTOKOLL_PREFIX}{kennung}"
+    with speicher.schreiben(db) as conn:
+        zeile = conn.execute(
+            "SELECT content FROM knowledge_nodes WHERE id=?", (protokoll_id,)
+        ).fetchone()
+        if zeile is None:
+            raise ValueError(f"Es gibt keinen Importvorgang mit der Kennung '{kennung}'.")
+
+        protokoll = json.loads(zeile["content"] or "{}")
+        domaene_id = protokoll.get("domaene")
+        ids = protokoll.get("ids") or []
+
+        entfernt = 0
+        verbleibend: list[str] = []
+        for id_ in ids:
+            row = conn.execute(
+                "SELECT norm_entscheidung FROM knowledge_nodes WHERE id=?", (id_,)
+            ).fetchone()
+            if row is None:
+                continue  # bereits anderweitig entfernt -- nichts zu tun
+            if row["norm_entscheidung"] != "keine_norm":
+                verbleibend.append(id_)
+                continue
+            conn.execute("DELETE FROM knowledge_nodes WHERE id=? AND norm_entscheidung='keine_norm'", (id_,))
+            entfernt += 1
+
+        if verbleibend:
+            conn.execute(
+                "UPDATE knowledge_nodes SET content=? WHERE id=?",
+                (json.dumps({"domaene": domaene_id, "ids": verbleibend}, ensure_ascii=False), protokoll_id),
+            )
+        else:
+            conn.execute("DELETE FROM knowledge_nodes WHERE id=?", (protokoll_id,))
+
+    return {"entfernt": entfernt, "stehen_geblieben": len(verbleibend)}
 
 
 def herkunft_uebersicht(domaene_id: str, db: str | Path | None = None) -> dict[str, str]:
@@ -612,6 +696,29 @@ def exportiere(domaene_id: str, db: str | Path | None = None) -> dict[str, Any] 
 def _kuerzen(text: str) -> str:
     text = text or ""
     return text if len(text) <= _SUMMARY_MAXLEN else text[:_SUMMARY_MAXLEN].rstrip() + " [...]"
+
+
+def _importprotokoll_zeile(kennung: str, domaene_id: str, ids: list[str], ts: str) -> tuple:
+    """INT-UPD-002: die Buchfuehrung eines einzelnen speichere()-Aufrufs, als
+    eigener Knoten (siehe Konstante _IMPORTPROTOKOLL_PREFIX oben). parent_path
+    bewusst None, aus demselben Grund wie bei _wurzel_zeile: ein globaler
+    Ordnerknoten fuer nichts als Hierarchie waere ein weiterer Schreibvorgang
+    ohne Leser. Traegt norm_entscheidung='keine_norm' wie jede andere Zeile
+    hier (_INSERT_SQL) -- ein Protokollknoten ist ebenfalls kein
+    Wirkung-Null-Sonderfall, er wird nur nie in Kraft gesetzt (keine
+    'art:regel'-Tag, also von setze_in_kraft() ohnehin nie erfasst)."""
+    return _zeile(
+        id_=f"{_IMPORTPROTOKOLL_PREFIX}{kennung}",
+        path=f"/domaenenimporte/{kennung}",
+        parent_path=None,
+        title=f"Import {kennung}",
+        summary=_kuerzen(f"Importvorgang fuer Domaene '{domaene_id}', {len(ids)} beruehrte Zeile(n)."),
+        content=json.dumps({"domaene": domaene_id, "ids": ids}, ensure_ascii=False),
+        level=0,
+        tags=["domaenenpaket-import", f"domaene:{domaene_id}", "art:importprotokoll"],
+        source=f"domaenenpaket:{domaene_id}",
+        ts=ts,
+    )
 
 
 def _zeile(
@@ -752,4 +859,7 @@ def _abgelehnt(grund: str) -> dict[str, Any]:
     return {"angenommen": False, "anzahl_regeln": None, "bezeichnung": None, "grund": grund}
 
 
-__all__ = ["importiere", "pruefe", "speichere", "lies_oberflaeche", "setze_in_kraft", "herkunft_uebersicht", "exportiere"]
+__all__ = [
+    "importiere", "pruefe", "speichere", "lies_oberflaeche", "setze_in_kraft",
+    "nimm_import_zurueck", "herkunft_uebersicht", "exportiere",
+]
