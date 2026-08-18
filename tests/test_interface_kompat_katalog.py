@@ -24,6 +24,12 @@ INTERFACES = (
     "INT-PKG-001", "INT-VER-001", "INT-VER-002", "INT-API-001", "INT-API-002", "INT-API-003",
     "INT-REG-001", "INT-DNST-001", "INT-UPD-001", "INT-UPD-002", "INT-SNAP-001",
     "INT-ACT-001", "INT-GATE-001",
+    # 2026-08-18 nachgetragen, NICHT von dieser Sitzung erzeugt: die vier
+    # Bausteinzeilen stammen aus der openlehr_einzelunternehmer-Sitzung
+    # (ADR-026, zwei Sorten Paket). Dieser Test hat ihr Fehlen gemeldet -- er
+    # tut damit genau, wofuer er gebaut ist: eine Kennung kommt nicht still in
+    # den Katalog. Wer hier ergaenzt, hat den Katalog gelesen.
+    "INT-BST-001", "INT-BST-002", "INT-BST-003", "INT-BST-004",
 )
 
 

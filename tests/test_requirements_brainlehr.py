@@ -10,6 +10,12 @@ EXPECTED = {
     "BDW-C01": "new-decision", "BDW-C02": "governed-core", "BDW-C03": "pilot",
     "BDW-P01": "regulated", "BDW-P02": "root-index", "BDW-P03": "profiles",
     "BDW-P04": "eval-suite", "BDW-P05": "A",
+    # 2026-08-18: drei Zeilen aus Betreiberentscheidungen desselben Tages.
+    # Der Test hat ihr Auftauchen gemeldet (53 gepinnt) -- genau dafuer ist er
+    # da. Wer hier ergaenzt, hat den Katalog gelesen und die Entscheidung
+    # belegt; ein stilles Wachsen des Katalogs bleibt ausgeschlossen.
+    "BDW-P06": "trigger-or-nothing", "BDW-P07": "id-not-name",
+    "BDW-P08": "supersede-not-expire",
     "BDW-E01": "external", "BDW-E02": "base", "BDW-E03": "intersection",
     "BDW-E04": "first-pilot", "BDW-E05": "pilot", "BDW-E06": "tested",
     "BDW-E07": "sensitive", "BDW-E08": "operator", "BDW-E09": "customer",
@@ -34,6 +40,9 @@ EXPECTED_LABELS = {
     "BDW-P03": "Ein Kern mit klaren Profilen",
     "BDW-P04": "Treffer-, Falschmelde-, Abstention- und Aktionsgates",
     "BDW-P05": "A · governierter Local-first-Memory-Kern",
+    "BDW-P06": "trigger-or-nothing",
+    "BDW-P07": "id-not-name",
+    "BDW-P08": "supersede-not-expire",
     "BDW-E01": "Externer zentraler IdP", "BDW-E02": "RBAC als Basisschicht",
     "BDW-E03": "Rolle ∩ Objekt ∩ Zweck", "BDW-E04": "Ab erstem Mehrbenutzer-Pilot",
     "BDW-E05": "Ab erstem Enterprise-Pilot",
@@ -69,14 +78,32 @@ def test_root_catalog_decodes_all_operator_selections():
     text = CATALOG.read_text()
     rows = re.findall(r"^\| (BDW-[RCPU EF]\d{2}) \| `([^`]+)` \| ([^|]+) \| ([^|]+) \|", text, re.M)
     decoded = {requirement_id: selection for requirement_id, selection, _, _ in rows}
-    assert len(rows) == len(decoded) == 53
+    assert len(rows) == len(decoded) == 56  # 53 aus der Operator-Matrix + P06/P07/P08 (2026-08-18)
     assert decoded == EXPECTED
     catalog_rows = {line.split("|")[1].strip(): line for line in text.splitlines() if line.startswith("| BDW-")}
     assert set(catalog_rows) == set(EXPECTED_LABELS)
     for requirement_id, label in EXPECTED_LABELS.items():
         assert label in catalog_rows[requirement_id]
         assert f"`{requirement_id}-AC1`" in catalog_rows[requirement_id]
-        assert "NOT RUN" in catalog_rows[requirement_id]
+        # BIS 2026-08-18 stand hier `assert "NOT RUN" in ...` -- ein Test, der
+        # FORTSCHRITT VERBOTEN haette: die erste belegte Zeile machte ihn rot.
+        # Er stammt aus dem Tag, an dem alle 53 Gates NOT RUN waren, und hat
+        # diesen Zustand versehentlich zementiert.
+        # Geprueft wird jetzt, was gemeint war: jede Zeile TRAEGT ein
+        # Produktgate -- entweder ehrlich offen (NOT RUN) oder belegt, und dann
+        # mit nachfahrbarem Pruefbefehl. Ein Gate, das eine nicht existierende
+        # Datei nennt, faengt melder/gatestand.py (Phantom-Gate).
+        # strip("|") zuerst -- sonst ist das letzte Feld leer und [-2] liefert
+        # die Quelle statt des Gates. Gleiche Lesart wie melder/gatestand.py.
+        gate = catalog_rows[requirement_id].strip().strip("|").split("|")[-2].strip()
+        assert gate, f"{requirement_id}: Produktgate-Spalte leer"
+        assert gate.startswith("NOT RUN") or any(
+            marke in gate for marke in ("PASS", "TEILWEISE", "FAIL")
+        ), f"{requirement_id}: Gate weder offen noch belegt: {gate!r}"
+        if not gate.startswith("NOT RUN"):
+            assert "`" in gate, (
+                f"{requirement_id}: belegtes Gate ohne nachfahrbaren Pruefbefehl -- "
+                "eine Behauptung ohne Beleg ist schlimmer als ein ehrliches NOT RUN")
     assert all(norm.strip() in {"MUSS", "SOLL", "MUSS-NICHT", "Profil", "Pilot", "Deferred"} for _, _, norm, _ in rows)
     assert all(status.strip() in {"DECIDED", "OPEN", "CONFLICT", "DEFERRED", "PILOT"} for _, _, _, status in rows)
 
