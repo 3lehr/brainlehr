@@ -1,5 +1,30 @@
 # AI handoff
 
+## 2026-08-18T05:20:00+0200 — test(vertrag): pin BDW-F07 interface gates red
+
+- Files: `docs/REQUIREMENTS_INTERFACE_KOMPAT.md` (neu), `docs/REQUIREMENTS_BRAINLEHR.md`,
+  `tests/test_interface_kompat_katalog.py` (neu), `tests/test_requirements_brainlehr.py`.
+  Kein Produktcode, kein fremder Dirty-Pfad, kein Push. Commit `82665929`.
+- Why: Der Interface-/Compatibility-Katalog aus der Übergabe existiert jetzt als
+  genau ein untergeordneter Teilkatalog zu `BDW-F07` — zehn `INT-*`-IDs mit
+  Producer/Consumer-Matrix, `contract_version` v1, Kompatibilitätsmatrix,
+  additiv/brechend, Update/Migration/Rollback, Dienst-Lifecycle, Snapshotgrenze
+  und nicht-skippendem Cross-Repo-Gate. Wissensknoten `7733f71b`.
+- Red: Vier `xfail(strict=True)`-Gates halten die gemessenen Lücken fest —
+  `INT-VER-001` (kein `contract_version` in `kern/domaene._PFLICHTSCHLUESSEL`),
+  `INT-UPD-001` (`INSERT OR IGNORE`), `INT-DNST-001` (`dienst` geprüft, nie
+  persistiert), `INT-GATE-001` (`pytest.skip` im OpenLehr-Gegentest).
+- Verified: `python3 -m pytest -q` über die Reproduktionsmenge der Übergabe plus
+  die neuen Gates — vorher 80 passed, danach 81 passed, 4 xfailed.
+  Beinahefehler: Die erste Fassung von `INT-VER-001` war XPASS(strict), weil das
+  Probepaket schon an der Regelform scheiterte; korrigiert, seither echtes Rot.
+- Remaining risk: Die Lücken 1–9 der vorigen Übergabe bleiben offen; dieser
+  Commit misst sie, er behebt keine. Swift- und OpenLehr-Suiten wurden nicht neu
+  gefahren, weil ihr Code unberührt blieb.
+- Next test: `INT-VER-001` grün machen — `contract_version` als Pflichtschlüssel
+  in `kern/domaene.py`, unbekannte Major fail-closed, beide realen Pakete
+  (`pakete/steuer.domaene.json`, `openlehr_einzelunternehmer/wissen/…`) auf `1`.
+
 ## 2026-08-18 — Claude: kanonischer Produktstand und nächste Integrationsnaht
 
 ### Ziel und belastbarer Stand
