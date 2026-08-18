@@ -64,7 +64,19 @@ from haken.ort import DB as _DB, WURZEL  # noqa: E402
 
 DB = str(_DB)
 MAX_JE_KATEGORIE = 3
-_AUSGENOMMEN = {"tests", "__pycache__", ".git", ".claude", "node_modules"}
+# KORRIGIERT 2026-08-18: "tests" stand hier und machte dieses Werkzeug blind
+# fuer genau die Artefaktklasse, die es vorschlaegt -- ein Pruefstein IST in
+# diesem Repo ein Test (tests/test_modellsperre.py nennt sich im Docstring
+# selbst so). Gemessen an der eigenen Arbeit desselben Tages: der frisch
+# gebaute Pruefstein zu L-0e0ab6 lag in tests/, und die Lehre stand danach
+# unveraendert als unbehandelter Kandidat im Bericht.
+# PREIS, gemessen statt geschaetzt: 30 Lehrkennungen werden ausschliesslich in
+# tests/ genannt; davon sind zwei aktive Kandidaten (L-0392e4, L-f3edbf), die
+# jetzt als "behandelt" gelten, obwohl der Test sie moeglicherweise nur
+# erwaehnt. Das ist derselbe Vorbehalt, den der Modul-Docstring fuer alle
+# anderen Verzeichnisse ohnehin schon nennt: geprueft wird Erwaehnung, nicht
+# Wirksamkeit.
+_AUSGENOMMEN = {"__pycache__", ".git", ".claude", "node_modules"}
 _ID_MUSTER = re.compile(r"^L-[0-9a-f]{6}$")
 
 
@@ -257,8 +269,21 @@ def selftest() -> None:
             '"""Prueft gegen L-bbbbbb."""\nassert True\n'
         )
 
+        # (b2) Ein Pruefstein liegt in tests/ -- genau dort, wo Pruefsteine in
+        # diesem Repo leben. Rot vor gruen: mit "tests" in _AUSGENOMMEN blieb
+        # L-ffffff hier Kandidat, obwohl der Pruefstein existierte.
+        (repo / "tests").mkdir()
+        (repo / "tests" / "test_pruefstein_im_testordner.py").write_text(
+            '"""Pruefstein zu L-ffffff."""\nassert True\n'
+        )
+        conn.execute("INSERT INTO lessons_learned VALUES (?,?,?,?,?,?)",
+                     ("L-ffffff", "antipattern", 3, "Fehler F dreimal.", "Ursache F.", "Vermeide F."))
+
         pruefstein, faehigkeit = erhebe(conn, repo)
         pids = {k["id"] for k in pruefstein}
+        assert "L-ffffff" not in pids, (
+            "(b2) ein Pruefstein in tests/ muss zaehlen -- sonst ist dieses "
+            "Werkzeug blind fuer die Artefaktklasse, die es selbst vorschlaegt")
         assert "L-aaaaaa" in pids, "(a) zwei Vorkommen ohne Zitat muss Kandidat sein"
         assert "L-bbbbbb" not in pids, "(zitierte Kennung darf nicht erscheinen)"
         assert "L-cccccc" not in pids, "(c) Grenzwert: ein Vorkommen darf kein Kandidat sein"
