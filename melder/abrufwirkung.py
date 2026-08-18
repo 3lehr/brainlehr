@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ausloeser: auf-abruf -- beantwortet 'wie gut wird eingespieltes Wissen tatsaechlich benutzt', wenn jemand einen Transkriptlauf dafuer vorlegt
 """Abrufwirkung -- dauerhafter Verlauf statt einmaliger Messung.
 
 ANLASS (Betreiber 2026-08-15, woertlich): "Bitte, ich hoffe du hast es

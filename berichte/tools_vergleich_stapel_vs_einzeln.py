@@ -5,6 +5,7 @@ gleiche ref_id/kind/project_id, Kosinus. Stichprobe gemischt kurz/lang ueber
 Textlaenge (len(coalesce(content,''))+len(summary) fuer Knoten, len(description)
 fuer Lehren).
 """
+# ausloeser: auf-abruf -- ein Mensch fragt einmalig: stimmen stapelweise berechnete Vektoren mit einzeln berechneten ueberein?
 
 import sys as _sys
 from pathlib import Path as _Path

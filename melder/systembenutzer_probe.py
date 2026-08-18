@@ -21,6 +21,7 @@ IMMER exit 0 als Skript (Melder-Konvention) -- der Zustand steht im JSON auf
 stdout, nicht im Exit-Code. Fuer die Ratsche (tests/) gibt es die Funktion
 pruefe(), die eine klare Antwort liefert statt einen Prozess zu starten.
 """
+# ausloeser: auf-abruf -- ein Mensch prueft vor der Umstellung: gehoert der Bestand einer anderen Kennung, und kann er nicht mehr schreiben?
 
 from __future__ import annotations
 

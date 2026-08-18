@@ -25,6 +25,7 @@ Aufruf:
     python3 melder/spaltenabgleich.py --pruefen
     python3 melder/spaltenabgleich.py --selftest
 """
+# ausloeser: auf-abruf -- ein Mensch fragt gezielt: welche Spalte fehlt, welche ist zusaetzlich da?
 from __future__ import annotations
 
 import argparse

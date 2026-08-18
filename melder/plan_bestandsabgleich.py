@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ausloeser: auf-abruf -- beantwortet vor dem Formulieren eines Planauftrags, ob die Planzeile in Wahrheit schon erledigt ist
 """Haelt Planzeilen aus docs/PLAN_GESAMT_2026-08-13.md gegen den Code und
 meldet Kandidaten, die vermutlich schon erledigt sind, obwohl der Plan sie
 (noch) nicht so fuehrt.

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ausloeser: auf-abruf -- ein Mensch fragt gezielt: weicht schema.sql von der installierten Datenbank ab?
 """Soll gegen Ist: haelt schema.sql gegen die INSTALLIERTEN Schemaobjekte.
 
 ANLASS. Zweimal in einer Woche hat genau diese Luecke zugeschlagen, beide

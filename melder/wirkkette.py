@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ausloeser: auf-abruf -- ein Mensch fragt: ist ein Mechanismus wirklich verdrahtet, am richtigen Ereignis, und meldet er auch wirklich?
 """J2 -- Haken- und Prozessabgleich: was ist WIRKLICH verdrahtet, nicht was
 Commit oder Plan behaupten (docs/PLAN_GESAMT_2026-08-13.md, Linie J).
 

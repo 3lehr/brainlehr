@@ -21,6 +21,7 @@ Usage:
     .venv/bin/python shared-knowledge/nachschlagewerk_suche.py <stichworte...> [--limit N]
     .venv/bin/python shared-knowledge/nachschlagewerk_suche.py --selftest
 """
+# ausloeser: auf-abruf -- ein Mensch fragt gezielt: hat schon jemand vor uns diese Regel bezahlt?
 from __future__ import annotations
 
 import sys as _sys

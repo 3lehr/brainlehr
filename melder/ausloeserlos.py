@@ -226,6 +226,29 @@ def hole_geplante_texte() -> list[str]:
     return texte
 
 
+# DRITTE KATEGORIE, nachgetragen 2026-08-18. Bis dahin kannte dieser Melder
+# genau zwei Lagen: verdrahtet oder Abschaltkandidat. Gemessen an den 22
+# Funden dieses Tages passte auf 20 davon keine der beiden: sie lesen kein
+# stdin, tragen eine Kommandozeile (--bericht/--selftest) und sind Werkzeuge,
+# die ein MENSCH aufruft, wenn er die Frage hat. Sie brauchen keinen
+# Ausloeser -- sie als "gebaut, laufend, wirkungslos" zu fuehren, verwaessert
+# genau den Befund, fuer den dieser Melder existiert.
+#
+# Die Kennzeichnung steht IM Modul, nicht in einer Liste hier: eine Liste
+# altert getrennt von den Dateien, die sie beschreibt. Verlangt wird ein
+# GRUND -- ohne ihn ist die Zeile eine Ausrede, mit ihm eine Entscheidung.
+# Format (in den ersten 40 Zeilen der Datei):
+#     # ausloeser: auf-abruf -- <ein Satz, warum kein Ausloeser noetig ist>
+AUF_ABRUF = re.compile(r"^#\s*ausloeser:\s*auf-abruf\s*--\s*(\S.*)$", re.M)
+
+
+def auf_abruf_grund(quelltext: str) -> str | None:
+    """Der Grund aus der Marke, oder None. Nur die ersten 40 Zeilen gelten --
+    weiter unten waere sie ein Kommentar im Code, keine Erklaerung der Datei."""
+    treffer = AUF_ABRUF.search("\n".join(quelltext.splitlines()[:40]))
+    return treffer.group(1).strip() if treffer else None
+
+
 def hat_ausloeser(pfad: Path, quellen: dict[Path, str], settings_txt: list[str],
                    geplante_txt: list[str], hook_txt: list[str] | None = None,
                    besucht: frozenset[Path] = frozenset()) -> tuple[bool, str]:
@@ -259,8 +282,11 @@ def bericht(repo_root: Path, settings_pfade: list[Path]) -> list[dict]:
     funde = []
     for p in kandidaten(repo_root):
         ok, _weg = hat_ausloeser(p, quellen, stxt, gtxt, htxt)
-        if not ok:
-            funde.append({"pfad": p, "name": str(p.relative_to(repo_root))})
+        if ok:
+            continue
+        if auf_abruf_grund(quellen.get(p, "")) is not None:
+            continue  # ausdruecklich auf Abruf, mit Grund an Ort und Stelle
+        funde.append({"pfad": p, "name": str(p.relative_to(repo_root))})
     return funde
 
 

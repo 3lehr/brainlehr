@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ausloeser: auf-abruf -- beantwortet 'wer ist diese Instanz und wem traut sie', wenn ein Mensch Vertrauen eintraegt oder abfragt
 """foederation.py -- B5: wer ist DIESE Instanz, und welcher fremden traut sie?
 
 Plan: docs/PLAN_B5_FOEDERATION_2026-08-10.md · Entwurf: Knoten 7c8df4e7

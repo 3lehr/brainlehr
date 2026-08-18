@@ -28,6 +28,7 @@ Aufruf:
     python3 selbstbeschreibung.py --zeigen      # nur ausgeben
     python3 selbstbeschreibung.py --selftest
 """
+# ausloeser: auf-abruf -- ein Mensch fragt: was kann brainlehr, und wo liegt seine Grenze?
 from __future__ import annotations
 
 import sys as _sys

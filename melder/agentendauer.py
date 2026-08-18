@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ausloeser: auf-abruf -- beantwortet 'wie lange und wie teuer war ein Subagentenlauf', wenn jemand die Frage stellt
 """agentendauer.py -- Dauer und Kosten je Subagentenlauf, aus den
 Sitzungsprotokollen unter ~/.claude/projects/ ausgezaehlt statt geschaetzt.
 

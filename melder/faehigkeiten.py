@@ -33,6 +33,7 @@ Usage:
                                        # haengt nicht an
   python3 faehigkeiten.py --selftest
 """
+# ausloeser: auf-abruf -- beantwortet 'was kann brainlehr', erzeugt beim Zugriff, nicht auf Vorrat gepflegt
 from __future__ import annotations
 
 import sys as _sys

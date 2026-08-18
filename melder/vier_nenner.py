@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ausloeser: auf-abruf -- ein Mensch fragt: wie viele Abrufe liefen in dieser Sitzung, und wie viele trafen?
 """vier_nenner.py -- Aufgabe 62 (docs/PLAN_PARALLEL_2026-08-13.md): vier
 Zahlen mit Nenner statt einer Zahl ohne Kontext.
 
