@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd-Beschreibung fuer den taeglichen Kennzahlenbericht (kern/ausloeser.py
+  --fuehre-aus taeglicher_kennzahlenbericht, Aktionstyp 'bericht'). NICHT nach
+  ~/Library/LaunchAgents kopiert und NICHT geladen -- das Einschalten ist die
+  Entscheidung des Betreibers, siehe dienst/LIESMICH.md fuer den Ablauf.
+
+  Der Plan fuer den Namen 'taeglicher_kennzahlenbericht' ist bereits erklaert
+  (kern.ausloeser.plane(), einmalig ausgefuehrt) -- dieser Dienst muss nur noch
+  fuehre_aus() anstossen, nichts mehr planen.
+
+  Anders als de.brainlehr.dienst.plist: kein KeepAlive (das Skript liest einmal
+  und beendet sich, es ist kein Server), kein RunAtLoad (kein Nachholbedarf bei
+  jedem An-/Abmelden), stattdessen StartCalendarInterval fuer genau einen Lauf
+  taeglich. __REPO_PFAD__ wie im Vorbild: absoluter Pfad zur Repo-Wurzel, vor
+  dem Laden ersetzen.
+
+  Kein Python-Paket-Test noetig (anders als beim Vorbild): kern/ausloeser.py
+  und alles, was es importiert (ausweis, speicher, geheimnis), ist reine
+  Standardbibliothek -- gemessen per ast-Importliste am 2026-08-18, keine
+  Fremdabhaengigkeit.
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>de.brainlehr.dienst-kennzahlen</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/sh</string>
+		<string>-c</string>
+		<string>for p in /opt/homebrew/bin/python3 /usr/local/bin/python3 /usr/bin/python3; do [ -x "$p" ] &amp;&amp; exec "$p" "__REPO_PFAD__/kern/ausloeser.py" --fuehre-aus taeglicher_kennzahlenbericht; done; echo "Kein Python3 gefunden." >&amp;2; exit 1</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>__REPO_PFAD__</string>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>6</integer>
+		<key>Minute</key>
+		<integer>30</integer>
+	</dict>
+	<key>StandardOutPath</key>
+	<string>__REPO_PFAD__/dienst/log/dienst-kennzahlen.log</string>
+	<key>StandardErrorPath</key>
+	<string>__REPO_PFAD__/dienst/log/dienst-kennzahlen.err</string>
+</dict>
+</plist>

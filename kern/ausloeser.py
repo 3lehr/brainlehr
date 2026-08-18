@@ -82,14 +82,22 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import ausweis  # noqa: E402
+import ort  # noqa: E402  -- WURZEL/runs, gleiches Muster wie melder/rasterblick.py
+import speicher  # noqa: E402  -- Naht zur DB, nur speicher.lesen() (mode=ro)
 
 ENV_AUSSCHALTER = "BRAINLEHR_AUSLOESER_AUS"
 ENV_PROTOKOLL = "BRAINLEHR_AUSLOESER_PROTOKOLL"
 ENV_PLAENE = "BRAINLEHR_AUSLOESER_PLAENE"
+ENV_KENNZAHLEN = "BRAINLEHR_AUSLOESER_KENNZAHLEN"
 
 _DATEINAME_AUSSCHALTER = "ausloeser-aus"
 _DATEINAME_PROTOKOLL = "ausloeser-protokoll.jsonl"
 _DATEINAME_PLAENE = "ausloeser-plaene.json"
+# Unter runs/, nicht neben Ausweis/Protokoll: die anderen drei sind
+# Betriebszustand des Auslösers selbst (Ausweisordner, oft 0700, nicht zum
+# Ansehen gedacht). Diese Datei ist eine Zeitreihe zum Nachsehen -- runs/ ist
+# genau dafuer da (siehe runs/messlauf_*.json, runs/ausgangsmessung_*.json).
+_DATEINAME_KENNZAHLEN = "ausloeser_kennzahlen.jsonl"
 
 
 def _basisordner() -> Path:
@@ -114,6 +122,11 @@ def plaenedatei() -> Path:
     return Path(roh) if roh else _basisordner() / _DATEINAME_PLAENE
 
 
+def kennzahlendatei() -> Path:
+    roh = os.environ.get(ENV_KENNZAHLEN)
+    return Path(roh) if roh else ort.WURZEL / "runs" / _DATEINAME_KENNZAHLEN
+
+
 def ausgeschaltet(pfad: Path | None = None) -> bool:
     return (pfad or ausschalterdatei()).exists()
 
@@ -123,12 +136,54 @@ def ausgeschaltet(pfad: Path | None = None) -> bool:
 # hier ist gesperrt, nicht frei. Jede Funktion bekommt nur den Namen -- keine
 # Aktion braucht mehr, solange 'lesend und lokal' die Grenze ist.
 
+def _kennzahlen(db: Path | None = None) -> dict:
+    """Fuenf billige COUNT-Abfragen ueber speicher.lesen() (mode=ro) -- rein
+    lesend, kein Schreibversuch moeglich. Bewusst NICHT dabei, aus S22-Vorschlag:
+      - 'Melder ohne Ausloeser' (melder/ausloeserlos.py): gemessen ueber 2s fuer
+        einen vollstaendigen Dateibaum-Scan -- allein schon ueber dem Budget
+        dieses Berichts.
+      - 'Pruefstein-Kandidaten' (kern/umschrift_pruefstein.py): vergleicht
+        Textpaare, keine billige Zaehlung, kein Kandidat ohne teuren Lauf.
+    Beide sind aus dem Bericht gestrichen, nicht vergessen."""
+    with speicher.lesen(db) as conn:
+        return {
+            "knoten_gesamt": conn.execute(
+                "SELECT COUNT(*) n FROM knowledge_nodes WHERE zurueckgezogen = 0"
+            ).fetchone()["n"],
+            "knoten_arbeitsbestand": conn.execute(
+                "SELECT COUNT(*) n FROM knowledge_nodes "
+                "WHERE zurueckgezogen = 0 AND gattung = 'arbeitsbestand'"
+            ).fetchone()["n"],
+            "lehren_aktiv": conn.execute(
+                "SELECT COUNT(*) n FROM lessons_learned WHERE status = 'active'"
+            ).fetchone()["n"],
+            "access_log_zeilen": conn.execute(
+                "SELECT COUNT(*) n FROM access_log"
+            ).fetchone()["n"],
+            "access_log_mit_tokens": conn.execute(
+                "SELECT COUNT(*) n FROM access_log WHERE tokens_input IS NOT NULL"
+            ).fetchone()["n"],
+        }
+
+
+def _zeile_anhaengen(pfad: Path, zeile: dict) -> None:
+    """Haengt an -- ueberschreibt nie. Zwei Ausfuehrungen erzeugen zwei
+    Zeilen, das ist der ganze Punkt einer Zeitreihe (S22)."""
+    pfad.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    with open(pfad, "a", encoding="utf-8") as f:
+        f.write(json.dumps(zeile, ensure_ascii=False) + "\n")
+
+
 def _aktion_bericht(name: str) -> dict:
-    """Der einzige heute zugelassene Aktionstyp: liest nichts Fremdes, schreibt
-    nichts außer der eigenen Rückgabe, hat keine Außenwirkung."""
-    return {"typ": "bericht", "name": name,
-            "hinweis": "Platzhalter -- erzeugt keinen Bericht, nur den Beleg, "
-                       "dass ein lesender lokaler Aktionstyp ausgeführt wurde."}
+    """Der einzige heute zugelassene Aktionstyp: liest nur lesend (mode=ro)
+    aus dem Bestand, schreibt ausschließlich eine Zeile an die eigene
+    Zeitreihe (kennzahlendatei()) an -- keine andere Datei, kein Netz, kein
+    Modellaufruf."""
+    kennzahlen = _kennzahlen()
+    zeile = {"zeit": _jetzt().isoformat(), "name": name, **kennzahlen}
+    ziel = kennzahlendatei()
+    _zeile_anhaengen(ziel, zeile)
+    return {"typ": "bericht", "name": name, "datei": str(ziel), "kennzahlen": kennzahlen}
 
 
 ERLAUBTE_AKTIONEN = {"bericht": _aktion_bericht}
@@ -271,58 +326,82 @@ def _selftest() -> None:
         plaene_pfad = Path(tmp) / "plaene.json"
         protokoll_pfad = Path(tmp) / "protokoll.jsonl"
         ausschalter_pfad = Path(tmp) / "aus"
+        kennzahlen_pfad = Path(tmp) / "kennzahlen.jsonl"
+        # _aktion_bericht() liest kennzahlendatei() ohne Parameter (feste
+        # ERLAUBTE_AKTIONEN-Signatur ausfuehren(name)) -- Umleitung nur ueber
+        # die Umgebungsvariable moeglich, sonst schriebe der Selbsttest in
+        # die echte runs/-Datei.
+        _alter_kennzahlen_env = os.environ.get(ENV_KENNZAHLEN)
+        os.environ[ENV_KENNZAHLEN] = str(kennzahlen_pfad)
 
-        beglaubigt = ausweis.Ausweis(name="probe", rollen=("leser",), beglaubigt=True)
-        unbeglaubigt = ausweis.Ausweis(name="wer", rollen=(), beglaubigt=False)
-
-        # --- plane() fuehrt nichts aus: kein Protokolleintrag ---------------
-        plan = plane("t1", "taeglich 06:30", "bericht", plaene_pfad=plaene_pfad)
-        assert plan["ausweis"] and plan["protokoll"] and plan["ausschalter"]
-        assert not protokoll_pfad.exists()
-
-        # --- Aktionstyp mit Aussenwirkung wird beim Erklaeren abgewiesen ----
         try:
-            plane("t2", "taeglich", "versand", plaene_pfad=plaene_pfad)
-            raise AssertionError("Aktionstyp 'versand' haette abgewiesen werden muessen")
-        except ValueError:
-            pass
+            beglaubigt = ausweis.Ausweis(name="probe", rollen=("leser",), beglaubigt=True)
+            unbeglaubigt = ausweis.Ausweis(name="wer", rollen=(), beglaubigt=False)
 
-        # --- fehlender Ausweis verhindert die Ausfuehrung, protokolliert ----
-        try:
-            fuehre_aus("t1", ausw=unbeglaubigt, plaene_pfad=plaene_pfad,
-                      protokoll_pfad=protokoll_pfad, ausschalter_pfad=ausschalter_pfad)
-            raise AssertionError("unbeglaubigt haette abgewiesen werden muessen")
-        except PermissionError:
-            pass
-        zeilen = protokoll_pfad.read_text(encoding="utf-8").splitlines()
-        assert len(zeilen) == 1 and "abgewiesen:kein_ausweis" in zeilen[0]
+            # --- plane() fuehrt nichts aus: kein Protokolleintrag -----------
+            plan = plane("t1", "taeglich 06:30", "bericht", plaene_pfad=plaene_pfad)
+            assert plan["ausweis"] and plan["protokoll"] and plan["ausschalter"]
+            assert not protokoll_pfad.exists()
 
-        # --- gesetzter Ausschalter verhindert die Ausfuehrung ---------------
-        ausschalter_pfad.touch()
-        try:
+            # --- Aktionstyp mit Aussenwirkung wird beim Erklaeren abgewiesen -
+            try:
+                plane("t2", "taeglich", "versand", plaene_pfad=plaene_pfad)
+                raise AssertionError("Aktionstyp 'versand' haette abgewiesen werden muessen")
+            except ValueError:
+                pass
+
+            # --- fehlender Ausweis verhindert die Ausfuehrung, protokolliert -
+            try:
+                fuehre_aus("t1", ausw=unbeglaubigt, plaene_pfad=plaene_pfad,
+                          protokoll_pfad=protokoll_pfad, ausschalter_pfad=ausschalter_pfad)
+                raise AssertionError("unbeglaubigt haette abgewiesen werden muessen")
+            except PermissionError:
+                pass
+            zeilen = protokoll_pfad.read_text(encoding="utf-8").splitlines()
+            assert len(zeilen) == 1 and "abgewiesen:kein_ausweis" in zeilen[0]
+
+            # --- gesetzter Ausschalter verhindert die Ausfuehrung ------------
+            ausschalter_pfad.touch()
+            try:
+                fuehre_aus("t1", ausw=beglaubigt, plaene_pfad=plaene_pfad,
+                          protokoll_pfad=protokoll_pfad, ausschalter_pfad=ausschalter_pfad)
+                raise AssertionError("gesetzter Ausschalter haette abgewiesen werden muessen")
+            except PermissionError:
+                pass
+            zeilen = protokoll_pfad.read_text(encoding="utf-8").splitlines()
+            assert len(zeilen) == 2 and "abgewiesen:ausschalter_gesetzt" in zeilen[1]
+            assert not kennzahlen_pfad.exists()
+            ausschalter_pfad.unlink()
+
+            # --- unerklaerter Name wird abgewiesen ---------------------------
+            try:
+                fuehre_aus("unbekannt-x", ausw=beglaubigt, plaene_pfad=plaene_pfad,
+                          protokoll_pfad=protokoll_pfad, ausschalter_pfad=ausschalter_pfad)
+                raise AssertionError("unerklaerter Name haette abgewiesen werden muessen")
+            except ValueError:
+                pass
+
+            # --- gueltiger Lauf: erlaubt, protokolliert, EINE Kennzahlzeile --
+            ergebnis = fuehre_aus("t1", ausw=beglaubigt, plaene_pfad=plaene_pfad,
+                                  protokoll_pfad=protokoll_pfad, ausschalter_pfad=ausschalter_pfad)
+            assert ergebnis["ausgefuehrt"]
+            zeilen = protokoll_pfad.read_text(encoding="utf-8").splitlines()
+            assert len(zeilen) == 4 and "ausgefuehrt" in zeilen[-1]
+            k_zeilen = kennzahlen_pfad.read_text(encoding="utf-8").splitlines()
+            assert len(k_zeilen) == 1
+            eintrag = json.loads(k_zeilen[0])
+            assert eintrag["name"] == "t1" and "knoten_gesamt" in eintrag
+
+            # --- zweiter gueltiger Lauf: ZWEITE Zeile, keine Ueberschreibung -
             fuehre_aus("t1", ausw=beglaubigt, plaene_pfad=plaene_pfad,
                       protokoll_pfad=protokoll_pfad, ausschalter_pfad=ausschalter_pfad)
-            raise AssertionError("gesetzter Ausschalter haette abgewiesen werden muessen")
-        except PermissionError:
-            pass
-        zeilen = protokoll_pfad.read_text(encoding="utf-8").splitlines()
-        assert len(zeilen) == 2 and "abgewiesen:ausschalter_gesetzt" in zeilen[1]
-        ausschalter_pfad.unlink()
-
-        # --- unerklaerter Name wird abgewiesen -------------------------------
-        try:
-            fuehre_aus("unbekannt-x", ausw=beglaubigt, plaene_pfad=plaene_pfad,
-                      protokoll_pfad=protokoll_pfad, ausschalter_pfad=ausschalter_pfad)
-            raise AssertionError("unerklaerter Name haette abgewiesen werden muessen")
-        except ValueError:
-            pass
-
-        # --- gueltiger Lauf: erlaubt, protokolliert --------------------------
-        ergebnis = fuehre_aus("t1", ausw=beglaubigt, plaene_pfad=plaene_pfad,
-                              protokoll_pfad=protokoll_pfad, ausschalter_pfad=ausschalter_pfad)
-        assert ergebnis["ausgefuehrt"]
-        zeilen = protokoll_pfad.read_text(encoding="utf-8").splitlines()
-        assert len(zeilen) == 4 and "ausgefuehrt" in zeilen[-1]
+            k_zeilen = kennzahlen_pfad.read_text(encoding="utf-8").splitlines()
+            assert len(k_zeilen) == 2
+        finally:
+            if _alter_kennzahlen_env is None:
+                os.environ.pop(ENV_KENNZAHLEN, None)
+            else:
+                os.environ[ENV_KENNZAHLEN] = _alter_kennzahlen_env
 
     print("ausloeser.py: Selbsttest gruen")
 
@@ -333,6 +412,9 @@ def main() -> int:
     p.add_argument("--selftest", action="store_true")
     p.add_argument("--liste", action="store_true",
                    help="zeigt erklaerte Auslöser aus der Plandatei")
+    p.add_argument("--fuehre-aus", metavar="NAME",
+                   help="fuehrt einen erklaerten Auslöser aus -- fuer launchd/cron, "
+                        "siehe dienst/de.brainlehr.dienst-kennzahlen.plist")
     a = p.parse_args()
 
     if a.selftest:
@@ -342,6 +424,13 @@ def main() -> int:
         for name, plan in _lies_plaene(plaenedatei()).items():
             print(f"{name}: takt={plan.get('takt')!r} aktion={plan.get('aktion')!r} "
                   f"erklaert_am={plan.get('erklaert_am')!r}")
+        return 0
+    if a.fuehre_aus:
+        try:
+            fuehre_aus(a.fuehre_aus)
+        except (PermissionError, ValueError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
         return 0
     p.print_help()
     return 1
