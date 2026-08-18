@@ -1,0 +1,364 @@
+{
+  "weg": "knowledge_mcp_server.knowledge_search() -- echter Produktivweg, kein Nachbau (identischer Aufruf wie messungen/anfrageumschrift_produktivweg.py)",
+  "korpus": {
+    "datei": "runs/pruefkorpus.jsonl",
+    "n_treffer": 35,
+    "n_falschmeldung": 10,
+    "n_abstention": 10,
+    "n_aktion": 0
+  },
+  "positivkontrolle": {
+    "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+    "art": "node",
+    "anfrage_ausschnitt": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+    "rang": 1,
+    "lage": "passend",
+    "bestanden": true
+  },
+  "gatearten": {
+    "treffer": {
+      "wert": 0.2,
+      "k": 5,
+      "schwelle": null,
+      "schwelle_begruendung": "offen -- kein dokumentierter Zielwert fuer Trefferquote im Bestand (siehe brainlehr/CLAUDE.md, Frage 3: 'Was ist ein Treffer wert? -- offen'). Heutiger Wert wird ausgewiesen, nicht geschoent bestanden.",
+      "bestanden": null,
+      "top5": 7,
+      "top50": 20,
+      "n": 35,
+      "median_rang_gefunden": 8,
+      "totalausfaelle": 15,
+      "quelle_faelle": "runs/pruefkorpus.jsonl, category in (lesson,fact,norm), accepted=true, target_kind gesetzt -- 35 Faelle",
+      "je_frage": [
+        {
+          "ziel": "L-a9ccd0",
+          "art": "lesson",
+          "rang": 7
+        },
+        {
+          "ziel": "L-298823",
+          "art": "lesson",
+          "rang": null
+        },
+        {
+          "ziel": "L-f9f654",
+          "art": "lesson",
+          "rang": null
+        },
+        {
+          "ziel": "L-b4b443",
+          "art": "lesson",
+          "rang": null
+        },
+        {
+          "ziel": "L-44a838",
+          "art": "lesson",
+          "rang": 43
+        },
+        {
+          "ziel": "L-cdac52",
+          "art": "lesson",
+          "rang": null
+        },
+        {
+          "ziel": "L-e7bc5e",
+          "art": "lesson",
+          "rang": 5
+        },
+        {
+          "ziel": "L-e1a441",
+          "art": "lesson",
+          "rang": 3
+        },
+        {
+          "ziel": "L-b91ed6",
+          "art": "lesson",
+          "rang": null
+        },
+        {
+          "ziel": "L-bbd7fb",
+          "art": "lesson",
+          "rang": null
+        },
+        {
+          "ziel": "L-503687",
+          "art": "lesson",
+          "rang": null
+        },
+        {
+          "ziel": "L-8c633e",
+          "art": "lesson",
+          "rang": null
+        },
+        {
+          "ziel": "L-606b63",
+          "art": "lesson",
+          "rang": null
+        },
+        {
+          "ziel": "L-0392e4",
+          "art": "lesson",
+          "rang": 15
+        },
+        {
+          "ziel": "L-476602",
+          "art": "lesson",
+          "rang": 7
+        },
+        {
+          "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+          "art": "node",
+          "rang": 1
+        },
+        {
+          "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+          "art": "node",
+          "rang": null
+        },
+        {
+          "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+          "art": "node",
+          "rang": 8
+        },
+        {
+          "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+          "art": "node",
+          "rang": 10
+        },
+        {
+          "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+          "art": "node",
+          "rang": 18
+        },
+        {
+          "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+          "art": "node",
+          "rang": 5
+        },
+        {
+          "ziel": "/lessons/phase2-summary",
+          "art": "node",
+          "rang": null
+        },
+        {
+          "ziel": "/testing/pytest",
+          "art": "node",
+          "rang": 50
+        },
+        {
+          "ziel": "/brainlehr/inference-control-was-andere-faecher",
+          "art": "node",
+          "rang": 34
+        },
+        {
+          "ziel": "/methodik/einstieg",
+          "art": "node",
+          "rang": 8
+        },
+        {
+          "ziel": "/stadtwerke",
+          "art": "node",
+          "rang": 4
+        },
+        {
+          "ziel": "/openlehr/steuer/ui",
+          "art": "node",
+          "rang": null
+        },
+        {
+          "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+          "art": "node",
+          "rang": 2
+        },
+        {
+          "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+          "art": "node",
+          "rang": null
+        },
+        {
+          "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+          "art": "node",
+          "rang": 2
+        },
+        {
+          "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+          "art": "node",
+          "rang": 14
+        },
+        {
+          "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+          "art": "node",
+          "rang": null
+        },
+        {
+          "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+          "art": "node",
+          "rang": null
+        },
+        {
+          "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+          "art": "node",
+          "rang": 10
+        },
+        {
+          "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+          "art": "node",
+          "rang": 22
+        }
+      ]
+    },
+    "falschmeldung": {
+      "n": 10,
+      "wert": 0.0,
+      "schwelle": 0.2,
+      "bestanden": true,
+      "quelle_faelle": "runs/pruefkorpus.jsonl, category=negative, 10 Faelle aus fremden Sachgebieten (macOS, Seemannschaft, Kubernetes, Gaststaettenrecht, Kochen, Astronomie, Gartenbau, Netzwerktechnik, Git) -- vor diesem Auftrag bereits im Korpus vorbereitet, nicht neu angelegt",
+      "je_frage": [
+        {
+          "frage": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten.",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungsamt?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Beschreibe in 2 Saetzen, wie man einen Hefeteig fuer Pizza ansetzt.",
+          "anzahl_treffer": 9,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Wie berechnet man die Umlaufbahnperiode eines Satelliten aus der Bahnhoehe?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Nenne die Zutaten fuer einen klassischen Bechamel.",
+          "anzahl_treffer": 9,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Nenne drei Faustregeln fuer Rosenschnitt im Fruehjahr.",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Erklaere kurz den Unterschied zwischen TCP und UDP.",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Wie lautet der Befehl, um in git einen Branch umzubenennen (lokal + remote)?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        }
+      ]
+    },
+    "abstention": {
+      "n": 10,
+      "wert": 1.0,
+      "schwelle": 0.8,
+      "bestanden": true,
+      "quelle_faelle": "runs/pruefkorpus.jsonl, category=negative, 10 Faelle aus fremden Sachgebieten (macOS, Seemannschaft, Kubernetes, Gaststaettenrecht, Kochen, Astronomie, Gartenbau, Netzwerktechnik, Git) -- vor diesem Auftrag bereits im Korpus vorbereitet, nicht neu angelegt",
+      "je_frage": [
+        {
+          "frage": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten.",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungsamt?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Beschreibe in 2 Saetzen, wie man einen Hefeteig fuer Pizza ansetzt.",
+          "anzahl_treffer": 9,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Wie berechnet man die Umlaufbahnperiode eines Satelliten aus der Bahnhoehe?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Nenne die Zutaten fuer einen klassischen Bechamel.",
+          "anzahl_treffer": 9,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Nenne drei Faustregeln fuer Rosenschnitt im Fruehjahr.",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Erklaere kurz den Unterschied zwischen TCP und UDP.",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        },
+        {
+          "frage": "Wie lautet der Befehl, um in git einen Branch umzubenennen (lokal + remote)?",
+          "anzahl_treffer": 10,
+          "lage": "uneindeutig",
+          "falschmeldung": false
+        }
+      ]
+    },
+    "aktion": {
+      "gemessen": false,
+      "grund": "AKTION verlangt: (a) je Fall die HANDLUNG, die ohne Treffer erfolgen wuerde, (b) die Handlung, die MIT Treffer erfolgen soll, (c) einen Beobachtungspunkt, der beide unterscheidet. runs/pruefkorpus.jsonl traegt 'task' (eine Szenariobeschreibung) und 'target_*', aber KEIN Handlungsfeld -- es ist ein Retrieval-, kein Verhaltenskorpus. Eine Handlungsaenderung liesse sich nur an echten Agentenlaeufen (mit vs. ohne Recall-Treffer, gleicher Prompt, gleicher Stichtag) beobachten, nicht an der Suchfunktion allein. Eine erfundene vierte Zahl waere schlimmer als eine fehlende Gateart (Auftrag, woertlich).",
+      "was_fehlen_wuerde": [
+        "ein Korpus mit Vorher/Nachher-Handlung je Fall (nicht nur Zieltext)",
+        "ein reproduzierbarer Agentenlauf, der die Handlung protokolliert (z.B. haken/knowledge_recall_hook.py-Pfad, injizierbare Zeit/Prompt)",
+        "ein Abgleichskriterium: WELCHE Handlungsaenderung zaehlt als 'richtig reagiert' vs. 'Treffer ignoriert' -- heute nicht definiert"
+      ]
+    }
+  },
+  "grenze": [
+    "Gate 1 (Treffer) hat keinen dokumentierten Zielwert -- nur der heutige Wert wird gemeldet, kein Bestanden/Nicht-bestanden.",
+    "Gate 2/3-Schwellen (0.20 / 0.80) stammen aus einer FRUEHEREN Messung (kern/relevanzlage.py, 40 Faelle, 2026-08-16) -- hier gegen 10 Faelle desselben Pruefkorpus geprueft, andere Stichprobe, kein Beleg fuer Uebereinstimmung der Grundgesamtheit.",
+    "Gate 4 (Aktion) ist nicht gemessen, siehe gatearten.aktion.grund.",
+    "Alle Zahlen gelten fuer EINEN Zeitpunkt (heutiger Bestand) -- wachsen Bestand oder Embeddings, ist der Lauf zu wiederholen.",
+    "Falschmeldung/Abstention-Schwelle beruht auf relevanzlage.beurteile(), die selbst NICHT filtert (Docstring dort) -- 'passend' ist eine Kennzeichnung, kein Ausschluss; ein System ohne diese Kennzeichnung waere hier nicht messbar gewesen."
+  ]
+}
