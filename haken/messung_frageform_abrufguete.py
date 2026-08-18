@@ -23,6 +23,10 @@ haken/ und tests/ veraendert:
 Ausfuehren: python3 haken/messung_frageform_abrufguete.py
 Ergebnis: haken/messung_frageform_abrufguete_<datum>.json
 """
+# ausloeser: auf-abruf -- pruefte Aufgabe 75 einmalig (Ergebnis liegt bereits
+# als messung_frageform_abrufguete_2026-08-15.json vor); ein Hypothesentest
+# wird von Hand erneut gerufen, wenn die Frage neu gestellt wird, nicht bei
+# jeder Session wiederholt.
 from __future__ import annotations
 
 import json

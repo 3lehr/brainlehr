@@ -50,7 +50,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SHARED_KNOWLEDGE = HERE.parent / "shared-knowledge"
+# Bis 2026-08-08 lag der Speicher unter hub/shared-knowledge (siehe haken/
+# ort.py); seither liegt knowledge_mcp_server.py direkt in der Repo-Wurzel.
+# SHARED_KNOWLEDGE zeigte bis 2026-08-18 noch auf den alten, nicht mehr
+# existierenden Unterordner -- main() schrieb den Marker deshalb nie
+# (FileNotFoundError, unbemerkt weil main() das nur beim allerletzten
+# Schritt tut, nach dem teuren kurator_lauf()). Befund, hier korrigiert.
+SHARED_KNOWLEDGE = HERE.parent
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
 

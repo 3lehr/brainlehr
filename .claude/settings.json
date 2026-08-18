@@ -50,6 +50,24 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Volumes/daten/Begod2026/brainlehr/melder/eilmeldung_etikett.py --melder 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "python3 /Volumes/daten/Begod2026/brainlehr/melder/kantenstillstand.py 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "python3 /Volumes/daten/Begod2026/brainlehr/haken/kurator_taeglich.py 2>/dev/null || true"
+          }
+        ]
+      }
     ]
   }
 }

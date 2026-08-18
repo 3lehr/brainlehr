@@ -16,6 +16,11 @@ siehe get_user_text()):
   (<task-notification>, <command-name>, <command-message>, <local-command-stdout>,
   "[Request interrupted by user").
 """
+# ausloeser: auf-abruf -- Subcommands brauchen eine Menschenfrage (pruefe TEXT)
+# oder eine Menschenentscheidung (status ID abgelehnt/angenommen); extract/
+# triage/offen sind Aufbereitung fuer genau diese Entscheidung, kein
+# Dauerlauf. auftrag_recall_hook.py deckt die automatische Haelfte bereits
+# ab (eigene, bewusst duplizierte Leselogik, siehe dessen Modulkopf).
 from __future__ import annotations
 
 import sys as _sys

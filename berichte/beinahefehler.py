@@ -15,6 +15,9 @@ Aufruf:
     python3 berichte/beinahefehler.py
     python3 berichte/beinahefehler.py --selftest
 """
+# ausloeser: auf-abruf -- Lesebericht fuer die Frage aus Plan §6 ("welche
+# Schutzform faengt die meisten"); ein Mensch ruft ihn, wenn er die Zahl
+# braucht, kein Wert im Dauerlauf ohne Leser.
 from __future__ import annotations
 
 import sys
