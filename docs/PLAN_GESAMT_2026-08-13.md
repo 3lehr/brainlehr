@@ -849,3 +849,77 @@ Tripel nicht erfüllen kann — hier offen vermerkt statt verschwiegen.
 | **Tabu zusätzlich** | `kern/build_embeddings.py`, `kern/embeddings.py` — der Einbettungstext wird **nicht** angefasst |
 | **Fakten** | `created_at`/`updated_at` bei 2166 von 2166. `gilt_ab` 83, `gilt_bis` 2. Der Vektor enthält keine Metadaten (`node_text` = path+title+summary+content). |
 | **Abnahme** | Anfrage mit Zeitraum liefert vorher dieselbe Menge wie ohne, nachher eine echte Teilmenge — an einem Fall, bei dem die Zeit den Ausschlag gibt. Negativfall: ein alles umfassender Zeitraum ändert nichts. Grenzwert: je ein Knoten genau am Rand, davor, danach. |
+
+---
+
+## Fortschreibung 2026-08-18T21:45:00+0200 — Linie K: was nach dem Katalogtag offen bleibt
+
+**Warum eine Linie und keine eigene Datei.** Der Abschnitt „Warum F und G — und
+nicht S1, S2, S3" weiter oben verbietet genau das, und der dort mitgelieferte
+Prüfgriff wurde vor dieser Fortschreibung gefahren. Ergebnis: **12 Kennungen
+sind heute in mehreren Dateien definiert** (`B1`–`B6`, `F1`, `H12`, `S1`, `S2`,
+`S3`, `S12`). Die Lehre hat sich also nicht durchgesetzt — das ist Aufgabe `110`
+und der Grund, warum diese Fortschreibung Linie **K** heißt und bei Aufgabe
+**99** beginnt: Linien A–J und Nummern bis 98 sind vergeben.
+
+**Ausgangslage, gemessen am 2026-08-18T21:40.** Katalog: 24/56 belegt,
+10 offen, 22 vertagt (`melder/gatestand.py`). Bestand: 5170 Knoten,
+1095 Lehren, 9976 Ähnlichkeitskanten, **3** Ablösungskanten, 450
+Ergebnisdateien unter `runs/`.
+
+### K1 — die Messungen zu Ende bringen (blockiert alles Weitere an der Güte)
+
+| Nr. | Aufgabe | Warum jetzt |
+|---|---|---|
+| `99` | **Bewertungskriterium der Wirkungsmessung schärfen.** Die Negativkontrolle scheiterte: 2 von 4 ziellosen Fällen galten als „vom Speicher verbessert". Der Wortabgleich mit Schwelle 0,4 schlägt bei allgemeinem Vokabular an. | Solange das Kriterium nicht trägt, ist **jede** Wirkungszahl ungültig — auch eine gute. |
+| `100` | **Wirkungsmessung neu fahren**, mit `MAX_TOKENS=3000` (gemessen, `6f8fea8d`) und geschärftem Kriterium. Schließt `BDW-F05` und die Gateart *Aktion* aus `BDW-P04`. | Beide Gates hängen an genau diesem Lauf, an nichts sonst. |
+| `101` | **LongMemEval-V2 mit fremdem Reader.** Der bisherige Lauf (16,7 %, n=18) war Reader *und* Richter in einem — nicht vergleichbar mit dem Weltstand 48,3 %. | Ohne fremden Reader misst jede Wiederholung dieselbe Vermischung. |
+
+**Bindend:** `99` vor `100`. Ein neuer Lauf mit altem Kriterium erzeugt eine Zahl,
+die niemand verwenden darf, und kostet 14 Minuten Modelllaufzeit.
+
+### K2 — die zwei halben Gates ganz machen
+
+| Nr. | Aufgabe | Stand |
+|---|---|---|
+| `102` | `BDW-E07`: Verschlüsselung erreicht **Index und Backup**, nicht nur die Daten. | TEILWEISE. Der Preis steht in ADR-029: verschlüsselte Inhalte sind nicht durchsuchbar — entweder ist ein Eintrag unter Frist nur über Metadaten auffindbar, oder der Index führt Klartext und ist selbst löschpflichtig. **Diese Frage ist zu entscheiden, bevor gebaut wird.** |
+| `103` | `BDW-E13`: Fristlauf erreicht **Indizes, Caches und Kopien** des echten Bestands, nicht nur den Schlüsselspeicher. | TEILWEISE. Hängt an `102`. |
+
+### K3 — die zwei großen Bündel
+
+| Nr. | Aufgabe | Aufwand (gemessen, `runs/bestandsaufnahme_vier_buendel.json`) |
+|---|---|---|
+| `104` | **Gedächtnisarten** episodisch/semantisch/prozedural (`BDW-F01`–`F03`). | **groß.** `gattung` kennt zwei Werte, prozedural existiert nicht. Das Repo hat die Lücke selbst diagnostiziert (`docs/RESEARCH_ZIELBILD_2026-08-17.md:147`). Wie die Mandantenachse eine **Ablagefrage** — später teurer. |
+| `105` | **Connectoren** mit Allowlist (`BDW-F08`, `U04`). | **groß.** Weder Prüfsumme noch Provenienz noch Registry; `kern/fremdimport.py` löst ein engeres Problem. |
+| `106` | `BDW-E18`, `U01`, `U06` — Risikomatrix, Org-Grenze, Benachrichtigungsrouting. | `U01` ist in einem Ein-Nutzer-System **konzeptionell nicht baubar**; `kern/vertrauen.py` benennt das selbst. Kandidat für DEFERRED statt Bau. |
+
+### K4 — der Bestand selbst, und hier steht die unangenehmste Zahl
+
+| Nr. | Aufgabe | Zahl |
+|---|---|---|
+| `107` | **Gerichtete Kanten.** 9976 Ähnlichkeitskanten gegen **3** Ablösungskanten. Ähnlichkeit ist symmetrisch und hilft beim Finden; Abhängigkeit ist gerichtet und entscheidet über Gültigkeit. | 3 von 9979 |
+| `108` | **144 Knoten und 158 Lehren mit veralteter Prüfsumme** — ihr Vektor beschreibt einen Text, den es so nicht mehr gibt. Die Suche liefert falsch, ohne dass ein Fehler auftaucht. | 302 Einträge |
+| `109` | **Vier `access_log`-Spalten zu 98 % leer**, `abgeleitet_von` und `bedient_von` zu 100 %. Gebaute Regeln ohne Wirkung — eine Spalte, die nichts unterscheidet, ist kein Feld, sondern eine Absicht. | 6 Spalten |
+| `110` | **12 Kennungskollisionen** in `docs/` (siehe oben). Die Lehre steht seit 2026-08-14 in diesem Plan und hat nichts bewirkt. | 12 |
+| `111` | **450 Ergebnisdateien**, davon 73 ohne Gegenprobe- und 74 ohne Rastervermerk. Eine Messung ohne festgehaltenes *was abgesucht wurde* ist nicht wiederholbar, nur wiederholbar von vorn. | 73 / 74 |
+
+### Was bewusst NICHT in diese Linie kommt, samt Preis
+
+**Die 22 vertagten Katalogzeilen.** Sie sind an den ersten Mehrbenutzer-Piloten
+gebunden (`9d77ad16`, Rang 1). Sie hier aufzunehmen würde die Vertagung
+unterlaufen. **Preis:** Wird Mandantenfähigkeit später bejaht, ist die
+Mandantenachse ein Schema-Umbau in einem dann größeren Bestand — der einzige
+der neun Punkte, bei dem Warten wirklich teurer wird.
+
+**Die 9976 Ähnlichkeitskanten neu berechnen.** Sie sind dicht in der falschen
+Dimension, aber sie schaden nicht. **Preis:** Der Graph bleibt symmetrisch.
+
+**Ein weiterer Melder.** Es gibt genug; was fehlt, ist Wirkung. Aufgabe `109`
+misst genau das an sechs Spalten, die keine Unterscheidung tragen.
+
+### Woran sich Erfolg misst — drei Zahlen, keine davon „gebaute Module"
+
+1. **Verhinderte Korrekturen** beim nächsten Rundruf. Heute 0 in vier Sitzungen.
+2. **Gerichtete Kanten im Bestand.** Heute 3 gegen 9976 symmetrische.
+3. **Belegte Katalogzeilen mit nachfahrbarem Prüfbefehl.** Heute 24 von 56,
+   davon 22 vertagt — der ehrliche Nenner ist also 24 von 34.
