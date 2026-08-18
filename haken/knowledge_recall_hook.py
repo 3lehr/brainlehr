@@ -120,6 +120,10 @@ import suchpfad_abruf  # noqa: E402
 # 1:1 (kandidaten_geschaltet() faellt bei AUS byte-gleich auf
 # suchpfad_abruf.kandidaten() zurueck).
 import mehrstufiger_abruf  # noqa: E402
+# relevanzlage.py liegt in kern/ (bereits im Suchpfad, s.o.) -- reine Rechnung
+# ohne DB/Netz/Modell (s. dortiger Moduldoc), TABU fuer diese Aufgabe: nur
+# benutzt, nie geaendert (ihre Schwellen sind eine Messung vom 2026-08-16).
+import relevanzlage  # noqa: E402
 
 # Protokoll, WAS gezogen wurde -- neben der DB, eigene Datei (kein Tabelle in
 # brainlehr.db: sonst schreibt JEDE Sitzung bei JEDEM Prompt in dieselbe DB,
@@ -1129,7 +1133,8 @@ def _erstverwendungs_vorschlaege(nodes: list, log_path: str | None = None) -> tu
 
 
 def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | None = None,
-          prompt: str | None = None, embed_fn=None) -> tuple[list, list]:
+          prompt: str | None = None, embed_fn=None,
+          bedeutungswerte: list | None = None) -> tuple[list, list]:
     """ADR-033 Schritt 2: erst BEWERTEN (bm25 ueber knowledge_fts/lessons_fts,
     kein LIMIT vor der Bewertung mehr -- FULL_SCAN_ROW_CAP ist nur noch ein
     Sicherheitsdeckel), dann per _radar_select() kappen (Median+MAD-Rausch-
@@ -1141,7 +1146,14 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
     aktive Suchweg) mit dem Stichwort-Kanal fusioniert -- VOR trust_score/
     Scope/Explore, damit beide Kanaele dieselbe Nachbehandlung durchlaufen.
     embed_fn injizierbar (Default embeddings.embed_text) -- Walkthrough-
-    Doktrin: mockbare Aussenwelt, kein echter Ollama-Aufruf im Test noetig."""
+    Doktrin: mockbare Aussenwelt, kein echter Ollama-Aufruf im Test noetig.
+
+    bedeutungswerte (Auftrag 2026-08-18): optionale Ausgabeliste, wie
+    werte= bei knowledge_mcp_server.py::_embedding_ranking(). Der aktive
+    Weg (_suchpfad_aktiv()) verwirft die rohen Kosinuswerte vor der
+    Rueckgabe (suchpfad_abruf.kandidaten() fusioniert nur noch Rangpositionen)
+    -- ohne diesen Parameter haette der Aufrufer sie nicht. Wird NUR gefuellt,
+    NIE fuer Auswahl/Sortierung gelesen (reines Kennzeichnungs-Beiwerk)."""
     own = _cwd_project(cwd)
     conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True, timeout=2.0)
     conn.row_factory = sqlite3.Row
@@ -1168,6 +1180,21 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
                 print("knowledge_recall_hook: Embedding-Kanal nicht verfuegbar "
                       "(Ollama nicht erreichbar oder kein Modell) -- Abruf faellt "
                       "auf Stichwort-Kanal zurueck.", file=sys.stderr)
+    # s. bedeutungswerte-Absatz im Docstring oben: unabhaengig vom gewaehlten
+    # Ast unten (_suchpfad_aktiv() True/False) berechnet, weil beide Aeste
+    # denselben query_vec teilen und der aktive Ast (S9) die Rohwerte sonst
+    # nirgends durchreicht. _embedding_scores() ist bereits vorhandener Code
+    # dieser Datei (Teil 1, Auftrag 2026-08-07) -- nur der NODE-Kanal, wie
+    # knowledge_mcp_server.py::knowledge_search() ihn fuer 'bestandslage'
+    # verwendet. Ueber ALLE lebenden Knoten (nicht nur die Kandidaten dieser
+    # Anfrage) -- Naeherung, dieselbe wie beim MCP-Werkzeug.
+    if bedeutungswerte is not None and query_vec is not None:
+        try:
+            _scores = _embedding_scores(conn, "node", query_vec)
+        except sqlite3.Error:
+            _scores = None
+        if _scores:
+            bedeutungswerte.extend(sorted(_scores.values(), reverse=True))
     # Projektstufungs-Bremse ausgebaut (Auftrag 2026-08-13, s.o. Kommentar
     # bei PROJECT_CALIBRATION_MIN_SAMPLES) -- gemeinsamer Wert fuer alle.
     mad_mult = NOISE_FLOOR_MAD_MULT
@@ -1615,8 +1642,9 @@ def main() -> None:
     if len(kws) < MIN_HITS:  # kann die Schwelle gar nicht reissen -> gar nicht fragen
         return
     cwd = payload.get("cwd") or os.getcwd()
+    bedeutungswerte: list = []
     try:
-        nodes, lessons = query(kws, cwd=cwd, prompt=prompt)
+        nodes, lessons = query(kws, cwd=cwd, prompt=prompt, bedeutungswerte=bedeutungswerte)
     except Exception:
         return
     session_id = payload.get("session_id")
@@ -1693,6 +1721,15 @@ def main() -> None:
              "als Frage: Trifft das hier zu? Wenn NEIN — woran liegt es? "
              "(Ein Eintrag, der nicht passt, ist eine Antwort; ein übergangener "
              "ist keine.)"]
+    # Lage EINMAL je Block, nicht je Zeile (Auftrag 2026-08-18) -- sie ist
+    # eine Aussage ueber die ANFRAGE (relevanzlage.py-Moduldoc), nicht ueber
+    # den einzelnen Treffer. Kein Treffer verschwindet dadurch: beurteile()
+    # liefert bei starker Lage einen leeren Satz (Kennzeichnen, nicht
+    # Filtern), dann bleibt die Zeile schlicht weg.
+    if bedeutungswerte:
+        lage = relevanzlage.beurteile(bedeutungswerte)
+        if lage["satz"]:
+            lines.append(lage["satz"])
     for n in nodes:
         tag = " (Erkundung -- selten gezogen)" if n.get("explore") else ""
         fremd = f" [anderes Projekt: {n['foreign_project']}]" if n.get("foreign_project") else ""
