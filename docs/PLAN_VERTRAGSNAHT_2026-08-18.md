@@ -56,3 +56,37 @@ Nicht an grünen Tests, sondern an einer Frage: Kann eine korrigierte Fachregel
 aus `openlehr_X` beim Empfänger ankommen und dort sichtbar werden? Vor dieser
 Arbeit war die Antwort dreimal nein — kein Versionsfeld, kein Update, und die
 Oberfläche hätte „enthielt nichts Neues" gemeldet.
+
+## Nachtrag 2026-08-18T17:15:00+0200 — zwei Sorten Paket (ADR-026, INT-BST-001..004)
+
+**Anlass.** Betreiberfrage nach Wiederverwendung: der Dokumentenscanner mit OCR
+aus dem geerbten Bestand soll über das Atelier jeder weiteren Domäne
+zurverfügung stehen, und eine Domäne soll ihre Pakete anfordern („bitte neuste
+stable version"). Die Frage warf zwei verschiedene Dinge zusammen; die Trennung
+steht jetzt in ADR-026.
+
+**Was sich am Plan ändert.** Nichts an der Reihenfolge der Interface-IDs — die
+neuen `INT-BST-*` hängen an derselben Naht und ändern keine bestehende Zusage.
+Sie schließen aber eine Lücke, die dieser Plan offen ließ: er beschrieb, wie ein
+Domänenpaket geprüft, versioniert und importiert wird, aber nicht, was ein Paket
+an **Fähigkeiten** anfordern darf und woher die kommen.
+
+**Gemessen für den Nachtrag** (nicht geschätzt):
+
+| Gegenstand | Zahl | Quelle |
+|---|---|---|
+| Bausteine im geschlossenen Katalog | 2 (`dokumentfenster`, `tabellenkalkulation`) | `app/Sources/BrainlehrCore/BestandteilRegistry.swift` |
+| Bildschirmarten, die der Zeichner kennt | 1 (Tabelle) | `app/Sources/BrainlehrCore/DomaenenBildschirm.swift` |
+| Spaltenrollen | 3 (`text`, `betrag`, `zitat`) | ebenda |
+| Scanner, Umfang | 2420 + 386 Zeilen | `openlehr_einzelunternehmer/apps/openlehr/daemon/steuer/{ingest,gemma4_ocr_bridge}.py` |
+| davon fachgebunden (Steuer/Beleg/USt/EUR) | 273 Zeilen | `grep -c` über `ingest.py` |
+
+**Die Reihenfolge, die daraus bindend wird.** Der Scanner kann **nicht** als
+Fachpaket herausgelöst werden, bevor die Trennlinie steht — sonst entsteht ein
+Paket, das nebenbei Darstellung mitbringt, und INT-BST-003 ist danach nur noch
+nachträglich durchsetzbar. Deshalb: erst ADR-026 (steht), dann der Schnitt.
+
+**Was bewusst offen bleibt, samt Preis.** Wo geteilte Fachpakete liegen sollen
+(eigenes Repo, Unterverzeichnis, Paketregister) ist nicht entschieden. Preis:
+Das erste herausgelöste Paket wird diese Frage erzwingen und damit vorentscheiden
+— wer sie später anders beantwortet, zahlt einen Umzug.
