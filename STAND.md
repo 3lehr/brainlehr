@@ -1,4 +1,4 @@
-# STAND brainlehr — 2026-08-18T19:22:51+0200
+# STAND brainlehr — 2026-08-18T19:30:57+0200
 **Vertragsnaht (2026-08-18):** alle INT-Gates zu. `INT-SNAP-001` gebaut UND verdrahtet — der Messlauf las bis heute direkt gegen den wachsenden Bestand; jetzt pinnt er den ganzen Lauf (`beb14580`, festhalten 0,09 s bei 118 MiB, Aufräumen im finally). `INT-ACT-001` gebaut, NICHT eingeschaltet.
 **Nächstes:** `INT-UPD-002` bauen — Importkennung auf jeder geschriebenen Zeile, `nimm_import_zurueck(kennung)` entfernt genau diesen Import und lässt in Kraft gesetzte Regeln stehen oder verweigert.
 **Falle:** Wer einen Rückgabewert erweitert, muss die Konsumenten in den *tabuisierten* Schichten prüfen — das Atelier hätte einen Aktualisierungs-Import als „enthielt nichts Neues" gemeldet (`L-51e6d8`). Und ein rotes Gate braucht einen Positivfall, sonst misst sein Rot den Prüfstand (`L-234e85`).
@@ -14,6 +14,10 @@
 **PUSH weiterhin blockiert, zweiter Versuch abgewiesen:** Der Weg über einen History-Rewrite der fünf Commit-Nachrichten wurde vom Berechtigungsfilter gestoppt — mit zutreffender Begründung: 51 Commits neu, Hashes in Wissensknoten und STAND werden ungültig, und ich hatte diese Kosten selbst dokumentiert und mich dagegen entschieden. `--no-verify` wird NICHT benutzt. Der Befund bleibt: fünf Commits vom 18.08. vormittags nennen keinen Plan. 51 Commits warten.
 
 **Gates 14/56** (`melder/gatestand.py`). Neu belegt: `BDW-R04` — Vertrauensregler tastet die vier Stopp-Punkte auf keiner Stufe an, Mutationsprobe gefahren. Stichprobe über 24 der 42 offenen: **0 belegbar**, alle sind Baulücken (Knoten `f0619359`).
+
+**ROT und gemessen: Antworten des Kerns sind herkunftslos.** `knowledge_search` liefert kind, id, path, title, summary, project, abgeleitet_von — **weder `norm_rang` noch `gilt_ab` noch `source`**. Der Kern kennt die Felder (Trigger erzwingt die Normentscheidung beim Anlegen, der Recall-Haken hängt sie sich selbst an); sie kommen nur nicht bis zum Abrufenden. `BDW-R05` steht deshalb auf **FAIL** — erstes FAIL im Katalog. Belegt in `tests/test_kern_modellneutral.py` (`f7c5ffd9`), Behebung gehört in `knowledge_mcp_server.py` (fremd gehalten), gemeldet als Knoten `5e424e2c`. Die Asymmetrie ist der Kern des Befunds: beim SCHREIBEN ist die Schranke scharf, beim LESEN fällt dieselbe Information weg.
+
+**Entscheidungsvorlage liegt** (`docs/ENTSCHEIDUNGSVORLAGE_KATALOG_2026-08-18.md`, `9fc39532`): 44 Lücken → 9 Ja/Nein-Fragen an den Betreiber + 5 Punkte, die keine Entscheidung brauchen. Davon erledigt: `BDW-R01` (Schichtgrenze, `3bad1461`, Mutationsprobe gefahren), `BDW-R04` (Vertrauensregler, `69773a82`), `BDW-R05` (gemessen, FAIL). Offen ohne Rückfrage: `BDW-P04` (Abstention- und Aktionsgates), `BDW-P05` (95-%-Schwelle), `BDW-F05` (No-Memory-Baseline).
 
 **KATALOG VOLLSTÄNDIG VERMESSEN, und das Ergebnis ordnet alles andere:** 44 Kennungen von vier Agenten geprüft, **0 belegbar**. Die 42 offenen Gates sind nicht offen, weil Tests fehlen — der geprüfte GEGENSTAND fehlt: Mandantenachse, IdP, Connector, Gedächtnisarten, Org-Ceiling, Backup, Legal Hold, DLP, SIEM. Das sind Produktentscheidungen des Betreibers, keine Testschulden (Knoten `f0619359`, Läufe `runs/bau_gates_block_*.json`).
 
