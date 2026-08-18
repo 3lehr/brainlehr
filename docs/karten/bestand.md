@@ -6,11 +6,11 @@
 graph LR
   germanquad["germanquad<br/>2713"]
   nasa_llis["nasa-llis<br/>1638"]
-  brainlehr["brainlehr<br/>230"]
-  methodik["methodik<br/>137"]
-  apps["apps<br/>81"]
+  brainlehr["brainlehr<br/>256"]
+  methodik["methodik<br/>142"]
+  ops["ops<br/>84"]
+  apps["apps<br/>84"]
   shared["shared<br/>55"]
-  ops["ops<br/>46"]
   openlehr["openlehr<br/>29"]
   plaene["plaene<br/>17"]
   arch["arch<br/>16"]
@@ -29,7 +29,7 @@ graph LR
   testdatenknoten_schreibrechtepruefung["testdatenknoten-schreibrechtepruefung<br/>1"]
   bebetter["bebetter<br/>1"]
   aka["aka<br/>1"]
-  brainlehr ---|63| methodik
+  brainlehr ---|74| methodik
   apps ---|25| shared
   brainlehr ---|20| plaene
 ```

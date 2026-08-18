@@ -48,6 +48,9 @@ graph LR
   s_commit_guard_hook_py["commit_guard_hook.py"]
   class s_commit_guard_hook_py entscheidet
   ev_PreToolUse -->|global| s_commit_guard_hook_py
+  s_stash_guard_hook_py["stash_guard_hook.py"]
+  class s_stash_guard_hook_py entscheidet
+  ev_PreToolUse -->|global| s_stash_guard_hook_py
   s_auftragshypothese_waechter_py["auftragshypothese_waechter.py"]
   class s_auftragshypothese_waechter_py entscheidet
   ev_PreToolUse -->|global| s_auftragshypothese_waechter_py
@@ -131,8 +134,6 @@ graph LR
   ev_WorktreeCreate -->|global| s_worktree_identitaet_py
   s_kontextstand_py["kontextstand.py"]
   ev_PostToolUse -->|repo| s_kontextstand_py
-  s_stash_guard_hook_py["stash_guard_hook.py"]
-  class s_stash_guard_hook_py entscheidet
   ev_PreToolUse -->|repo| s_stash_guard_hook_py
   s_existenzpruefung_py["existenzpruefung.py"]
   ev_Stop -->|repo| s_existenzpruefung_py
@@ -141,4 +142,4 @@ graph LR
   classDef entscheidet stroke-width:4px
 ```
 
-53 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 1 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.
+54 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 1 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.

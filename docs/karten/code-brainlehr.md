@@ -41,9 +41,9 @@ graph LR
   schnellstart -->|1| knowledge_mcp_server
   schreibpruefstand -->|4| knowledge_mcp_server
   tests -->|2| brainlehr
-  tests -->|4| haken
-  tests -->|16| kern
-  tests -->|82| knowledge_mcp_server
+  tests -->|5| haken
+  tests -->|20| kern
+  tests -->|83| knowledge_mcp_server
 ```
 
 Ein Kasten ist ein Verzeichnis, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 18 Module, 22 Verbindungen.

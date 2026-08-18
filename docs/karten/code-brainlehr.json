@@ -229,19 +229,19 @@
   {
    "von": "tests",
    "nach": "haken",
-   "text": "4",
+   "text": "5",
    "art": "gerichtet"
   },
   {
    "von": "tests",
    "nach": "kern",
-   "text": "16",
+   "text": "20",
    "art": "gerichtet"
   },
   {
    "von": "tests",
    "nach": "knowledge_mcp_server",
-   "text": "82",
+   "text": "83",
    "art": "gerichtet"
   }
  ]

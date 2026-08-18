@@ -289,7 +289,7 @@
    "text": "mcp_veraltet.py",
    "form": "kasten",
    "waise": false,
-   "zweck": "mcp_veraltet.py — meldet veraltete knowledge_mcp_server.py-Prozesse (UserPromptSubmit-Hook).",
+   "zweck": "mcp_veraltet.py — meldet veraltete Brainlehr-MCP-Prozesse (UserPromptSubmit-Hook).",
    "entscheidet": false,
    "quelle": "brainlehr/haken/mcp_veraltet.py"
   },
@@ -583,6 +583,12 @@
   {
    "von": "ev_PreToolUse",
    "nach": "s_commit_guard_hook_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PreToolUse",
+   "nach": "s_stash_guard_hook_py",
    "text": "global",
    "art": "gerichtet"
   },

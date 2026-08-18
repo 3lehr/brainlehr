@@ -7,6 +7,7 @@ graph LR
   port_1234(["Port 1234 (fremd)"])
   _brainlehr_open -->|ruft| port_1234
   _probe_head -->|ruft| port_1234
+  atelier -->|ruft| port_1234
   brainlehr -->|ruft| port_1234
   hub -->|ruft| port_1234
   openlehr_einzelunternehmer -->|ruft| port_1234
@@ -34,6 +35,15 @@ graph LR
   port_4343(["Port 4343 (fremd)"])
   openlehr_einzelunternehmer -->|ruft| port_4343
   openlehr_legacy -->|ruft| port_4343
+  port_4599(["Port 4599 (fremd)"])
+  atelier -->|ruft| port_4599
+  brainlehr -->|ruft| port_4599
+  port_4610(["Port 4610 (fremd)"])
+  atelier -->|ruft| port_4610
+  brainlehr -->|ruft| port_4610
+  port_4611(["Port 4611"])
+  atelier -->|lauscht| port_4611
+  brainlehr -->|lauscht| port_4611
   port_5005(["Port 5005 (fremd)"])
   openlehr_einzelunternehmer -->|ruft| port_5005
   openlehr_legacy -->|ruft| port_5005
@@ -175,7 +185,14 @@ graph LR
   port_8799(["Port 8799"])
   _brainlehr_open -->|lauscht| port_8799
   _probe_head -->|lauscht| port_8799
+  atelier -->|lauscht| port_8799
   brainlehr -->|lauscht| port_8799
+  port_8933(["Port 8933 (fremd)"])
+  atelier -->|ruft| port_8933
+  brainlehr -->|ruft| port_8933
+  port_8934(["Port 8934 (fremd)"])
+  atelier -->|ruft| port_8934
+  brainlehr -->|ruft| port_8934
   port_9000(["Port 9000"])
   afrika -->|lauscht| port_9000
   class port_9000 waise
@@ -224,6 +241,7 @@ graph LR
   _brainlehr_open -->|ruft| port_11434
   _probe_head -->|ruft| port_11434
   afrika -->|ruft| port_11434
+  atelier -->|ruft| port_11434
   brainlehr -->|ruft| port_11434
   buckeberg -->|ruft| port_11434
   design_lab -->|ruft| port_11434
@@ -345,11 +363,13 @@ graph LR
   class port_50000 waise
   db_brainlehr_db[("brainlehr.db")]
   brainlehr -->|liegt| db_brainlehr_db
+  atelier -.->|liest| db_brainlehr_db
   hub -.->|liest| db_brainlehr_db
   db_knowledge_db[("knowledge.db")]
   brainlehr -->|liegt| db_knowledge_db
   _brainlehr_open -.->|liest| db_knowledge_db
   _probe_head -.->|liest| db_knowledge_db
+  atelier -.->|liest| db_knowledge_db
   buckeberg -.->|liest| db_knowledge_db
   hub -.->|liest| db_knowledge_db
   openlehr_einzelunternehmer -.->|liest| db_knowledge_db
@@ -374,4 +394,4 @@ graph LR
   classDef waise stroke-dasharray: 5 5
 ```
 
-46 Verbindungen sind im Bild weggelassen, weil nur EIN Repo daran haengt und sie damit keine Verbundaussage sind: Port 3001 (nur fahrtenbuch); Port 3307 (nur markusx25); Port 4568 (nur fahrtenbuch); Port 4599 (nur brainlehr); Port 4610 (nur brainlehr); Port 4611 (nur brainlehr); Port 4873 (nur openlehr_stale_2026-07-22); Port 6402 (nur fahrtenbuch); Port 7339 (nur afrika); Port 7880 (nur setfunk); Port 8025 (nur design-lab); Port 8081 (nur markusx25); Port 8082 (nur setfunk); Port 8084 (nur setfunk); Port 8099 (nur design-lab); Port 8443 (nur design-lab); Port 8554 (nur setfunk); Port 8742 (nur wohlair); Port 8766 (nur hub); Port 8788 (nur legacylink); Port 8800 (nur afrika); Port 8889 (nur setfunk); Port 8933 (nur brainlehr); Port 8934 (nur brainlehr); Port 9191 (nur setfunk); Port 9997 (nur setfunk); Port 9999 (nur fahrtenbuch); Port 18789 (nur openlehr_stale_2026-07-22); Port 18791 (nur openlehr_stale_2026-07-22); Port 29100 (nur legacylink); Port 29876 (nur openlehr_stale_2026-07-22); Port 44081 (nur openlehr_stale_2026-07-22); Port 50082 (nur legacylink); Port 50605 (nur legacylink); Port 55171 (nur legacylink); Port 55172 (nur legacylink); Port 57757 (nur legacylink); Port 58320 (nur legacylink); Port 59912 (nur legacylink); Port 59923 (nur legacylink); Port 60657 (nur legacylink); Port 61569 (nur legacylink); Port 64246 (nur legacylink); Port 65054 (nur legacylink); code_index.db (nur openlehr_legacy); optuna_sprints.db (nur afrika).
+41 Verbindungen sind im Bild weggelassen, weil nur EIN Repo daran haengt und sie damit keine Verbundaussage sind: Port 3001 (nur fahrtenbuch); Port 3307 (nur markusx25); Port 4568 (nur fahrtenbuch); Port 4873 (nur openlehr_stale_2026-07-22); Port 6402 (nur fahrtenbuch); Port 7339 (nur afrika); Port 7880 (nur setfunk); Port 8025 (nur design-lab); Port 8081 (nur markusx25); Port 8082 (nur setfunk); Port 8084 (nur setfunk); Port 8099 (nur design-lab); Port 8443 (nur design-lab); Port 8554 (nur setfunk); Port 8742 (nur wohlair); Port 8766 (nur hub); Port 8788 (nur legacylink); Port 8800 (nur afrika); Port 8889 (nur setfunk); Port 9191 (nur setfunk); Port 9997 (nur setfunk); Port 9999 (nur fahrtenbuch); Port 18789 (nur openlehr_stale_2026-07-22); Port 18791 (nur openlehr_stale_2026-07-22); Port 29100 (nur legacylink); Port 29876 (nur openlehr_stale_2026-07-22); Port 44081 (nur openlehr_stale_2026-07-22); Port 50082 (nur legacylink); Port 50605 (nur legacylink); Port 55171 (nur legacylink); Port 55172 (nur legacylink); Port 57757 (nur legacylink); Port 58320 (nur legacylink); Port 59912 (nur legacylink); Port 59923 (nur legacylink); Port 60657 (nur legacylink); Port 61569 (nur legacylink); Port 64246 (nur legacylink); Port 65054 (nur legacylink); code_index.db (nur openlehr_legacy); optuna_sprints.db (nur afrika).

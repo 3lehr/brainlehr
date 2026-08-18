@@ -27,6 +27,12 @@
    "waise": false
   },
   {
+   "id": "atelier",
+   "text": "atelier",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "brainlehr",
    "text": "brainlehr",
    "form": "kasten",
@@ -255,6 +261,24 @@
    "waise": false
   },
   {
+   "id": "port_4599",
+   "text": "Port 4599 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_4610",
+   "text": "Port 4610 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_4611",
+   "text": "Port 4611",
+   "form": "port",
+   "waise": false
+  },
+  {
    "id": "port_49168",
    "text": "Port 49168",
    "form": "port",
@@ -357,6 +381,18 @@
    "waise": false
   },
   {
+   "id": "port_8933",
+   "text": "Port 8933 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8934",
+   "text": "Port 8934 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
    "id": "port_9000",
    "text": "Port 9000",
    "form": "port",
@@ -432,6 +468,12 @@
   },
   {
    "von": "_probe_head",
+   "nach": "port_1234",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "atelier",
    "nach": "port_1234",
    "text": "ruft",
    "art": "gerichtet"
@@ -560,6 +602,42 @@
    "von": "openlehr_legacy",
    "nach": "port_4343",
    "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "atelier",
+   "nach": "port_4599",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "port_4599",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "atelier",
+   "nach": "port_4610",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "port_4610",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "atelier",
+   "nach": "port_4611",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "port_4611",
+   "text": "lauscht",
    "art": "gerichtet"
   },
   {
@@ -1301,9 +1379,39 @@
    "art": "gerichtet"
   },
   {
+   "von": "atelier",
+   "nach": "port_8799",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
    "von": "brainlehr",
    "nach": "port_8799",
    "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "atelier",
+   "nach": "port_8933",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "port_8933",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "atelier",
+   "nach": "port_8934",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "port_8934",
+   "text": "ruft",
    "art": "gerichtet"
   },
   {
@@ -1536,6 +1644,12 @@
   },
   {
    "von": "afrika",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "atelier",
    "nach": "port_11434",
    "text": "ruft",
    "art": "gerichtet"
@@ -2165,6 +2279,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "atelier",
+   "nach": "db_brainlehr_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
    "von": "hub",
    "nach": "db_brainlehr_db",
    "text": "liest",
@@ -2184,6 +2304,12 @@
   },
   {
    "von": "_probe_head",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "atelier",
    "nach": "db_knowledge_db",
    "text": "liest",
    "art": "gestrichelt"
