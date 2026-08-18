@@ -155,6 +155,37 @@ misst fünf Gedächtnisfähigkeiten an echten Agenten-Verläufen; die Kategorie
 **48,3 %** (bestes System gesamt 74,9 %; naives RAG 40,1 %). Eigene Vergleichszahl:
 **0 von 13** in der Klasse `lese`.
 
+> **NACHTRAG 2026-08-18T17:20:00+0200 — gemessen wurde der FALSCHE Benchmark.**
+> Anlass war ein Konkurrenzprodukt (`rohitg00/agentmemory`, 27.140 Sterne), das
+> auf seiner Startseite „R@5 95,2 %" auf **LongMemEval-S** nennt. Dagegen wurde
+> gemessen (`runs/longmemeval_produktivweg_2026-08-18T163937.json`, Weg:
+> `knowledge_mcp_server.knowledge_search()`, Stichprobe n=25 von 500,
+> Positivkontrolle Rang 1): **R@5 0,96 · R@10 1,0 · MRR 0,937 · Median-Rang 1 ·
+> 0 Totalausfälle.**
+>
+> Das ist **nicht** der Maßstab dieses Plans. Hier steht V2, dort lief S — und
+> der Abstand zwischen Weltstand 48,3 % (V2) und 95 % (S) misst, wie viel
+> leichter S ist. Die Zahl belegt also nur: gegenüber agentmemory auf dessen
+> eigenem Maßstab liegen wir gleichauf. Über die Frage dieses Plans sagt sie
+> nichts. Der Plan war der Sitzung voraus, und die Sitzung hat ihn nicht
+> gelesen (`L-712516`).
+>
+> **Zwei Befunde aus dem Lauf, die unabhängig von der Zahl gelten:**
+> 1. LongMemEval definiert **weder R@5 noch R@10 noch MRR**. Sein
+>    Auswertungscode kennt nur `recall_any@k`, `recall_all@k`, `ndcg_any@k`;
+>    `grep -i mrr` findet null Treffer. Die Zahlen, gegen die verglichen wurde,
+>    sind aus dem eigenen Maßstab des Benchmarks **nicht ableitbar**. Unser
+>    `R@k` übernimmt `recall_any@k` wörtlich, unser MRR ist die generische
+>    IR-Definition und im Ergebnis als Abweichung markiert.
+> 2. Ein importierter Fremdkorpus ist über den Standardweg **unsichtbar**: mit
+>    `gattung='nachschlagewerk'` liefert `knowledge_search` 0 Treffer, bis
+>    `nachschlagewerk=True` gesetzt wird. Bauform-Befund, kein Fehler.
+>
+> **Fällig:** V2 nachmessen, mit `recall_any@k` als wörtlichem Kriterium und
+> voller Fallzahl statt Stichprobe. Die Auflage weiter unten („erst nach `71`
+> und `89`, und nicht nach außen davor") gilt unverändert — sie ist der Grund,
+> warum die S-Zahl hier als Nachtrag steht und nicht als Ergebnis.
+
 **Schreiben ist billig geworden, Belegen nicht.** Microsoft, Anfang 2026, Zehntausende
 Ingenieure, vier Monate: Adoptierende mergen **~24 %** mehr Pull Requests (arXiv 2607.01418).
 METR musste sein Messverfahren einstellen — Entwickler weigern sich, ohne KI zu arbeiten,
