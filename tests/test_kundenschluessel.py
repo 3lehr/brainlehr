@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from kern.kundenschluessel import KeinSchluessel, Kundenschluesselspeicher
+from kern.kundenschluessel import KeinSchluessel, Kundenschluesselspeicher, Rechtssperre
 
 TS0 = 1_700_000_000.0
 
@@ -120,3 +120,61 @@ def test_lesen_ohne_schluessel_je_angelegt():
     with pytest.raises(KeinSchluessel):
         speicher.lesen("nie-angelegt")
     assert not speicher.hat_bestanden("nie-angelegt")
+
+
+# --- Legal Hold (BDW-E14, ADR-029) -------------------------------------
+# Nachgetragen 2026-08-18. ADR-029 macht den Hold zu einer Sperre AUF DER
+# SCHLUESSELVERNICHTUNG statt zu einem Sonderweg an den Daten vorbei -- und
+# nennt als dritte Erfolgsprobe ausdruecklich: "Ein Legal Hold verhindert die
+# Schluesselvernichtung -- und das schlaegt fehl, wenn jemand den Hold umgeht,
+# statt still durchzulaufen."
+
+def test_rechtssperre_verhindert_schluesselvernichtung():
+    """DAS AC. Ein Hold macht widerrufen() laut, nicht wirkungslos."""
+    s = Kundenschluesselspeicher()
+    s.neuer_schluessel("r1", ts=1.0)
+    s.ablegen("r1", "geheim", ts=1.0)
+    s.rechtssperre_setzen("r1", grund="Betriebspruefung 2026", ts=2.0)
+
+    with pytest.raises(Rechtssperre) as fehler:
+        s.widerrufen("r1")
+    assert "Betriebspruefung" in str(fehler.value), "Grund fehlt in der Meldung"
+
+    # Und der eigentliche Punkt: der Inhalt ist danach WEITER lesbar.
+    assert s.lesen("r1") == "geheim"
+
+
+def test_aufgehobene_sperre_loescht_nicht_von_selbst():
+    """Das Aufheben eines Holds darf keine Loeschung ausloesen -- sonst wird
+    aus einer Schutzmassnahme ein Ausloeser. Die Frist muss danach erneut
+    greifen."""
+    s = Kundenschluesselspeicher()
+    s.neuer_schluessel("r2", ts=1.0)
+    s.ablegen("r2", "geheim", ts=1.0)
+    s.rechtssperre_setzen("r2", grund="Rechtsstreit", ts=2.0)
+    s.rechtssperre_aufheben("r2")
+    assert s.rechtssperre("r2") is None
+    assert s.lesen("r2") == "geheim", "Aufheben hat den Inhalt vernichtet"
+    # Erst der ausdrueckliche Widerruf wirkt.
+    s.widerrufen("r2")
+    with pytest.raises(KeinSchluessel):
+        s.lesen("r2")
+
+
+def test_sperre_wirkt_auch_vor_dem_anlegen():
+    """Eine Sperre, die erst nach dem Anlegen gesetzt werden koennte, kaeme im
+    Ernstfall zu spaet."""
+    s = Kundenschluesselspeicher()
+    s.rechtssperre_setzen("r3", grund="vorsorglich", ts=1.0)
+    s.neuer_schluessel("r3", ts=2.0)
+    s.ablegen("r3", "geheim", ts=2.0)
+    with pytest.raises(Rechtssperre):
+        s.widerrufen("r3")
+
+
+def test_sperre_ohne_grund_wird_abgewiesen():
+    """Ein Hold ohne Grund ist spaeter weder pruefbar noch aufhebbar."""
+    s = Kundenschluesselspeicher()
+    for schlecht in ("", "   "):
+        with pytest.raises(ValueError):
+            s.rechtssperre_setzen("r4", grund=schlecht, ts=1.0)

@@ -34,6 +34,15 @@ class KeinSchluessel(Exception):
     """Kein Schluessel vorhanden (nie angelegt, widerrufen oder falsch)."""
 
 
+class Rechtssperre(Exception):
+    """Die Schluesselvernichtung ist durch einen Legal Hold gesperrt.
+
+    ADR-029: Ein Legal Hold ist eine Sperre AUF DER SCHLUESSELVERNICHTUNG,
+    kein Sonderweg an den Daten vorbei. Genau deshalb ist er pruefbar -- er
+    muss laut werden, wenn jemand ihn umgeht, statt still durchzulaufen.
+    Deshalb eine Ausnahme und kein stilles Ueberspringen."""
+
+
 @dataclass
 class _Eintrag:
     angelegt_ts: float
@@ -48,6 +57,11 @@ class Kundenschluesselspeicher:
     _schluessel: dict[str, bytes] = field(default_factory=dict)
     _inhalte: dict[str, _Eintrag] = field(default_factory=dict)
     _metadaten: dict[str, float] = field(default_factory=dict)  # ref -> angelegt_ts, NIE geloescht
+    # ref -> (grund, gesetzt_ts). Solange ein Eintrag hier steht, ist
+    # widerrufen() gesperrt. Der GRUND ist Pflicht: ein Hold ohne Grund laesst
+    # sich spaeter weder pruefen noch aufheben, weil niemand mehr weiss, wofuer
+    # er stand.
+    _rechtssperren: dict[str, tuple[str, float]] = field(default_factory=dict)
 
     def neuer_schluessel(self, ref: str, ts: float) -> None:
         """Legt ref an bzw. rotiert: neuer Schluessel ersetzt einen etwaigen
@@ -100,8 +114,35 @@ class Kundenschluesselspeicher:
     def widerrufen(self, ref: str) -> None:
         """Vernichtet NUR den Schluessel. Chiffretext und Metadaten (Kennung,
         Anlage-Zeitpunkt) bleiben unangetastet -- das ist Crypto-Shredding,
-        kein Loeschen des Datensatzes."""
+        kein Loeschen des Datensatzes.
+
+        Steht eine Rechtssperre auf ref, wird NICHT vernichtet, sondern
+        `Rechtssperre` geworfen. Ein Hold, der still uebergangen wird, ist
+        keiner -- und die Fristautomatik soll an dieser Stelle anhalten und
+        auffallen, nicht weiterlaufen (ADR-029)."""
+        if ref in self._rechtssperren:
+            grund, _ = self._rechtssperren[ref]
+            raise Rechtssperre(f"{ref}: {grund}")
         self._schluessel.pop(ref, None)
+
+    def rechtssperre_setzen(self, ref: str, grund: str, ts: float) -> None:
+        """Legal Hold: verhindert die Schluesselvernichtung, bis er aufgehoben
+        wird. Wirkt auch auf Eintraege, die es noch gar nicht gibt -- eine
+        Sperre, die erst nach dem Anlegen gesetzt werden koennte, kaeme im
+        Ernstfall zu spaet."""
+        if not grund or not grund.strip():
+            raise ValueError("grund ist Pflicht -- ein Hold ohne Grund ist spaeter weder "
+                             "pruefbar noch aufhebbar")
+        self._rechtssperren[ref] = (grund.strip(), ts)
+
+    def rechtssperre_aufheben(self, ref: str) -> None:
+        """Hebt den Hold auf. Vernichtet NICHTS -- die Frist muss danach
+        erneut greifen, damit das Aufheben nicht zur Loeschung wird."""
+        self._rechtssperren.pop(ref, None)
+
+    def rechtssperre(self, ref: str) -> tuple[str, float] | None:
+        """(grund, gesetzt_ts) oder None. Fuer Pruefer und Berichte."""
+        return self._rechtssperren.get(ref)
 
     def sichern(self, ref: str) -> bytes:
         """Liefert den aktuellen Schluessel als Bytes an den Aufrufer, damit
