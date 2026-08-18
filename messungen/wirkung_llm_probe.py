@@ -84,7 +84,22 @@ from wirkung_ohne_gedaechtnis import (  # noqa: E402 -- Vorlage, wiederverwendet
 
 OLLAMA_URL = "http://127.0.0.1:11434/v1/chat/completions"
 MODELL = "gemma4:12b"
-MAX_TOKENS = 800  # gemessen: <400 liefert bei Reasoning-Modell leeren content
+MAX_TOKENS = 3000
+# GEMESSEN 2026-08-18, zwei Laeufe mit DEMSELBEN Prompt (Positivkontrolle,
+# 3213 Zeichen mit Speicher):
+#   max_tokens=800  -> finish_reason "length", content 0 Zeichen
+#   max_tokens=3000 -> finish_reason "stop",   content 4161 Zeichen
+#
+# gemma4 ist ein Reasoning-Modell: die Denkschritte skalieren mit der
+# Prompt-Laenge, und ein Speicher-Prompt ist rund dreimal so lang wie der
+# nackte. Bei 800 war das Budget verbraucht, BEVOR eine Antwort begann --
+# deshalb kamen im Lauf 2026-08-18T210154 alle vier leeren Antworten
+# ausschliesslich MIT Speicher und keine einzige ohne.
+#
+# Das ist die teuerste Sorte Messfehler, weil sie wie ein ERGEBNIS aussieht:
+# "mit Speicher keine Antwort" liest sich als Wirkungslosigkeit, war aber
+# eine Grenze des Aufbaus. Wer hier den Wert senkt, misst wieder das Budget
+# statt die Wirkung.
 N_ZIEL = 10
 N_NEGATIV = 4
 SCHWELLE = 0.4
