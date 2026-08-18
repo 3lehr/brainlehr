@@ -1,5 +1,117 @@
 # AI handoff
 
+## 2026-08-18 — Claude: kanonischer Produktstand und nächste Integrationsnaht
+
+### Ziel und belastbarer Stand
+
+- Einzige normative Produktquelle ist `docs/REQUIREMENTS_BRAINLEHR.md`: 53
+  eindeutige `BDW-*`-IDs. Zielbild A ist ein governierter Local-first-Kern;
+  Enterprise ist ein Profil desselben Kerns, Föderation folgt später.
+- `DECIDED` bezeichnet nur den Katalogstatus. Alle Produktgates stehen weiterhin
+  auf `NOT RUN`; aus dem Katalog folgt keine Implementierungsabnahme.
+- Relevante Historie: `0ff92e5b` (ehrliche Relevanzlage), `4460ce22`
+  (stale Module/Reload und kanonische MCP-Konfiguration), `64667778` +
+  `494a57f3` (Research-Katalog und Zielbild-Research), `7fcce636`
+  (kanonischer Root-Lastenkatalog).
+- Codex konfiguriert nur noch den kanonischen MCP-Namen `brainlehr` über
+  `/Volumes/daten/Begod2026/brainlehr/knowledge_mcp_server.py`. Bereits laufende
+  Tasks können weiterhin alte importierte Module oder alte Prozessgenerationen
+  verwenden und müssen einzeln neu gestartet werden. Kein globaler Prozess-Kill.
+
+### Heute belegte Brainlehr–Atelier–OpenLehr-Naht
+
+- Rollenmodell: Brainlehr trägt Geltung, Beleg und Governance; `openlehr_X`
+  liefert Fachwissen und Fachwerkzeuge; Atelier trägt gemeinsame Darstellung,
+  Einstellungen und unabtretbare Sicherheitsgrenzen.
+- Atelier ist kein separates Repo, sondern die Swift-App unter `app/` in diesem
+  Brainlehr-Repo.
+- Reale Strecke:
+
+  ```text
+  openlehr_X/wissen/*.domaene.json
+    -> kern.domaene.pruefe
+    -> POST /api/domaene-import
+    -> Speicherung mit Wirkung Null
+    -> GET /api/domaene-oberflaeche
+    -> Atelier zeichnet die plattformblinde Beschreibung nativ
+  ```
+
+- Fokussierter Integrationslauf vom 2026-08-17: Brainlehr 78 + OpenLehr 21 +
+  Atelier 240 = **339 PASS, 0 FAIL**.
+
+### Kritische Lücken — nicht als gebaut behandeln
+
+1. Es gibt keinen versionierten repoübergreifenden Vertrag.
+2. `contract_version` und Compatibility-Matrix fehlen.
+3. Reimport nutzt `INSERT OR IGNORE`; gleiche IDs werden nicht aktualisiert.
+4. `dienst` ist Pflicht und wird validiert, aber weder persistiert noch gestartet.
+5. Eine allgemeine Domänenregistry fehlt; Atelier ist noch auf
+   `einzelunternehmer` festgelegt.
+6. `faehigkeiten` ist in ADR-011 geplant, aber nicht im realen Domänenmanifest.
+7. Der OpenLehr→Brainlehr-Vertragstest darf bei fehlendem Brainlehr-Pfad skippen.
+8. Snapshot-Ziel `cb24f119` ist nicht normativ und nicht implementiert; die
+   aktuelle Suche liest bei jedem Aufruf die gegenwärtige DB.
+9. Der Root-Lastenkatalog ist kein Interfacevertrag und reicht allein nicht aus.
+
+### Nächste sichere Aktion
+
+1. Zuerst `docs/REQUIREMENTS_BRAINLEHR.md`, ADR-007, ADR-011, ADR-012,
+   ADR-013, ADR-014, ADR-024 und den OpenLehr-Vertrag
+   `/Volumes/daten/Begod2026/openlehr_einzelunternehmer/docs/openlehr/OPENLEHR_KERNEL_UND_APP_VERTRAG_V1.md`
+   lesen. Alte `STAND`-/`PLAN`-Dateien sind Evidenz, nicht kanonische Quelle.
+2. Unterhalb von `BDW-F07` genau einen Interface-/Compatibility-Katalog anlegen;
+   keinen zweiten Root-Lastenkatalog. Er braucht stabile Interface-IDs,
+   Producer/Consumer-Matrix, `contract_version` v1, Regeln für additive und
+   brechende Änderungen, Update/Migration/Rollback, Dienst-/Capability-Lifecycle,
+   Snapshotgrenze und verpflichtende nicht-skippende Cross-Repo-Gates.
+3. Nur wirklich offene Entscheidungen an den Betreiber geben; die 53 bereits
+   entschiedenen BDW-Auswahlen nicht erneut erfragen. Vor Produktcode zuerst rote
+   Vertragstests schreiben.
+
+Erste Reproduktion:
+
+```sh
+cd /Volumes/daten/Begod2026/brainlehr
+python3 -m pytest -q tests/test_domaene.py tests/test_domaene_dienst_oberflaeche.py tests/test_domaene_oberflaeche_reist.py tests/test_entscheidungen_server_domaene_import.py tests/test_bestandteile.py tests/test_app_schichtregel.py tests/test_werkzeugrechte_durchsetzung.py
+
+cd /Volumes/daten/Begod2026/openlehr_einzelunternehmer
+.venv/bin/python -m pytest -q apps/openlehr/tests/test_skill_manifest.py apps/openlehr/tests/test_view_types_manifest_sync.py dienst/tests/test_euer_vorschlag.py
+
+cd /Volumes/daten/Begod2026/brainlehr/app
+/usr/bin/xcrun swift test --quiet
+```
+
+### Arbeitsbaum, Checkpoint und Referenzen
+
+- Der Arbeitsbaum war vor dieser Übergabe bereits fremd verschmutzt:
+  `NODE_INDEX.md`, `antwort_treffer.json`, `auszug/bestand_2026-08-10.jsonl`,
+  `bereinigung_log.jsonl`, `runs/messlauf_abrufguete_v2.json`,
+  `spikes/univer_i3_min/probe4/{bundle.js,ergebnis.json}` und
+  `tests/test_alle_selftests.py` sowie vorhandene ungetrackte Lauf-, PDF-, Log-
+  und `node_modules`-Artefakte. Nicht bereinigen, nicht stagen.
+- Exakte Commitgrenze dieser Übergabe: ausschließlich `AI_HANDOFF.md`; keine
+  Produktdatei, kein fremder Dirty-Pfad, kein Push.
+- Temporärer technischer Checkpoint:
+  `codex-brainlehr-20260818-claude-handoff`, Ablauf
+  `2026-08-19T02:32:44.288933Z` (24 h). Aktive Anforderung `BDW-F07`, offener
+  Evidenzbezug `cb24f119`, nächste Aktion `CREATE-INTERFACE-COMPAT-CATALOG`.
+- Brainlehr-Referenzen: `868ea08e` kanonischer Root, `34ddffa9` Katalogtest,
+  `cd571222` Lastenkatalog-Regel, `cb24f119` Snapshot-Ziel, `L-53f886`
+  Relevanz/Reload, `L-da2ebc` Decoder-Beinahefehler.
+
+### Commit-Metadaten
+
+- Subject: `docs(handoff): brief Claude on integration boundary`
+- Files: ausschließlich `AI_HANDOFF.md`.
+- Why: Claude braucht einen kurzen, belegten Einstieg vom kanonischen Produktziel
+  bis zur nächsten roten repoübergreifenden Vertragsprobe.
+- Verified: Pfade und Commits vorhanden; Markdown-Struktur geprüft;
+  `git diff --check`; staged Numstat vor Commit.
+- Remaining risk: Die neun Integrationslücken oben bleiben offen; insbesondere
+  erzwingt noch kein Gate Versionskompatibilität oder Snapshot-Isolation.
+- Next test: Ein v1-Domänenpaket muss in einem nicht-skippenden Cross-Repo-Test
+  gegen genau einen gemeinsamen Vertrag bestehen; unbekannte Major-Version rot.
+
 ## 2026-08-17 — test(prompt): add invariance gates
 
 - Files: prompt core, public agent templates, requirements catalog and focused tests.
