@@ -1,0 +1,460 @@
+{
+  "weg": "knowledge_mcp_server.knowledge_search() -- der echte MCP-Produktivweg (Gattungsfilter kern/gattung_filter.SQL_ARBEITSBESTAND_NUR, Zweckprojektion, FTS+Embedding-RRF-Fusion), NICHT der reine Bedeutungskanal aus messungen/variante_anfrageumschrift.py",
+  "korpus": "runs/pruefkorpus.jsonl",
+  "umschriften_quelle": "runs/v2_umschriften_2026-08-16.json (Haiku-Subagent ueber Abo, vorbereitet -- kein API-Aufruf in diesem Lauf, Paket 'anthropic' fehlt und ANTHROPIC_API_KEY ist nicht gesetzt)",
+  "faelle": 35,
+  "max_results": 50,
+  "festverdrahtet": {
+    "scope": "all -- knowledge_search() waehlt darueber die WHERE-Klausel (project_id IN ('shared', scope) vs. kein Projektfilter)",
+    "max_results": "50 -- _fuse_with_keyword_floor() kappt darauf VOR der Rueckgabe; ein Rang jenseits davon ist nicht von einem echten Ausfall unterscheidbar",
+    "stichtag/actor/model/session/cwd": "None -- Vorgabewerte von knowledge_search(), wirken nur auf Normen-Geltung bzw. Protokollierung, nicht auf die Rangfolge selbst"
+  },
+  "grenze": [
+    "misst nur EINEN Zeitpunkt (2026-08-18) gegen den aktuell laufenden Bestand -- wachsen Bestand oder Embeddings, ist der Lauf zu wiederholen",
+    "35 Faelle sind klein -- ein knapper Unterschied ist kein Ergebnis",
+    "Umschrift-Stufe nutzt eine vorbereitete Datei, keinen Live-API-Aufruf -- Umschreibedauer/Betriebskosten sind hier NICHT gemessen",
+    "Rang jenseits max_results=50 wird als Totalausfall gezaehlt, auch wenn das Ziel z.B. auf Rang 51 gelandet waere -- keine Unterscheidung zwischen 'nicht im Kanal' und 'knapp ausserhalb des Fensters'"
+  ],
+  "stufe_0_ausgangslage": {
+    "name": "0-ausgangslage",
+    "faelle": 35,
+    "totalausfaelle": 15,
+    "median_rang": 8,
+    "top5": 7,
+    "top50": 20
+  },
+  "stufe_2_anfrageumschrift": {
+    "name": "2-anfrageumschrift",
+    "faelle": 35,
+    "totalausfaelle": 14,
+    "median_rang": 3,
+    "top5": 14,
+    "top50": 21
+  },
+  "roh": {
+    "stufe_0": [
+      {
+        "ziel": "L-a9ccd0",
+        "art": "lesson",
+        "rang": 7,
+        "query": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereits erfassten Daten ohne explizite Bestätigung gelöscht oder zurückgesetzt werden."
+      },
+      {
+        "ziel": "L-298823",
+        "art": "lesson",
+        "rang": null,
+        "query": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine Warnung anzuzeigen, bleibt der Fehler im laufenden Betrieb unbemerkt. Die Logik zur Identifizierung funktioniert fehlerfrei, führt aber zu keiner sichtbaren Reaktion für den Anwender."
+      },
+      {
+        "ziel": "L-f9f654",
+        "art": "lesson",
+        "rang": null,
+        "query": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicherheitsnetz nicht und führt zu unkontrollierten Abstürzen. Er muss nun entscheiden, ob er den Vorgang erst nach Abschluss prüft oder die Fehlerprüfung direkt in die Hilfsfunktion integriert."
+      },
+      {
+        "ziel": "L-b4b443",
+        "art": "lesson",
+        "rang": null,
+        "query": "Ein Nutzer meldet, dass die Anwendung fälschlicherweise eine aktive Hardwareverbindung anzeigt, obwohl das entsprechende Modul nicht angeschlossen ist. Da veraltete Statusmeldungen aus dem Speicher ohne Validierung übernommen werden, erscheint diese Information als aktuell, obwohl sie längst nicht mehr gültig ist."
+      },
+      {
+        "ziel": "L-44a838",
+        "art": "lesson",
+        "rang": 43,
+        "query": "Bei der Implementierung eines Systems zur automatischen Erstellung von Antwortentwürfen für Kundenanfragen muss sichergestellt werden, dass kein sensibler Inhalt aus der ursprünglichen Anfrage ungeschützt in die Datenbank geschrieben wird. Obwohl der Eingangsprozess kontrolliert ist, darf der durch das Modell generierte Text nicht ungefiltert gespeichert werden, da er Persönlichkeiten oder Kontodaten enthalten könnte."
+      },
+      {
+        "ziel": "L-cdac52",
+        "art": "lesson",
+        "rang": null,
+        "query": "In der Fehleranalyse stellte ich fest, dass die Einblendung von Bestätigungsfenstern oft fehlschlägt oder Daten verliert, weil sie auf eine unsichere Standortbestimmung im UI-Baum angewiesen ist. Ich muss diese Overlays auf eine feste Referenz umstellen und die Reihenfolge der internen Statusänderungen so festschreiben, dass sie nicht durch das Timingergebnis beeinflusst werden."
+      },
+      {
+        "ziel": "L-e7bc5e",
+        "art": "lesson",
+        "rang": 5,
+        "query": "Ein Techniker stellt fest, dass der automatisierte Datenabgleich abgebrochen wird, und wechselt stattdessen auf eine direkte Übertragungsanbindung. Er geht davon aus, dass lediglich die Serververbindung instabil ist, übersieht dabei jedoch, dass dieser Weg absichtlich unterbunden wurde, um einen manuellen Abnahmevorgang zu erzwingen. Da beide Szenarien für ihn gleich wirken, lässt er den erforderlichen Genehmigungsschritt aus."
+      },
+      {
+        "ziel": "L-e1a441",
+        "art": "lesson",
+        "rang": 3,
+        "query": "Ein Administrator muss die Testdatensätze aus dem System löschen, bevor das Produkt live geht. Da sowohl die Übungsdatensätze als auch die echten Kundeninformationen exakt dieselben Bezeichnungen tragen, führt eine Bereinigung allein nach Namen dazu, dass versehentlich echte Nutzerdaten gelöscht werden. Er benötigt daher ein Verfahren, das jeden Datensatz bereits beim Import eindeutig kennzeichnet, um sie im Nachhinein sicher voneinander zu trennen."
+      },
+      {
+        "ziel": "L-b91ed6",
+        "art": "lesson",
+        "rang": null,
+        "query": "Nach dem Rollout zeigen die automatisierten Prüfprotokolle eine lange Liste an Fehlermeldungen. Bevor du alle Probleme auf eine instabile Infrastruktur schiebst, solltest du dir bei einigen Fällen die detaillierten Protokolle genau durchlesen. Nur so stellst du sicher, dass tatsächliche Programmierfehler nicht übersehen werden."
+      },
+      {
+        "ziel": "L-bbd7fb",
+        "art": "lesson",
+        "rang": null,
+        "query": "Die Überwachungssoftware für die Lagerhalle meldet einen sicheren Zustand, obwohl kritische Sensoren an den Außenwänden defekt sind. Da das System bei fehlenden Daten einfach auf die Standardeinstellungen zurückgreift, erhalten die Techniker eine trügerische Bestätigung über die Sicherheit der Konstruktion."
+      },
+      {
+        "ziel": "L-503687",
+        "art": "lesson",
+        "rang": null,
+        "query": "Ein Tool zur automatischen Fehlerprüfung in einer Software meldet ständig Fehlalarme, weil es nicht zwischen organisatorischen Verknüpfungen und echtem Datentransport unterscheiden kann. Da beide Arten von Verbindungen im Systemplan identisch aussehen, hilft eine bloße Begrenzung der Komplexität nicht, um die Qualität der Analyse zu verbessern. Die Untersuchung scheitert daran, dass die äußere Form einer Verbindung keine Rückschlüsse auf ihre tatsächliche Funktion zulässt."
+      },
+      {
+        "ziel": "L-8c633e",
+        "art": "lesson",
+        "rang": null,
+        "query": "Ein Nutzer beschwert sich über eine fehlerhafte Anzeige auf einer speziellen Unterseite. Der Entwickler korrigiert das Problem im Hauptbereich, übersieht jedoch einen Hinweis im Code, der darauf hindeutet, dass auch eine fast identische Ansicht derselben Anpassung bedarf."
+      },
+      {
+        "ziel": "L-606b63",
+        "art": "lesson",
+        "rang": null,
+        "query": "Wenn ein Nutzer eine Bluetooth-Verbindung kurz hintereinander neu aufbaut, kann ein verspätet eintreffender Trennbefehl aus dem ersten Versuch die gerade erst gestartete zweite Sitzung unterbrechen. Ohne eine eindeutige Zuordnung zwischen dem Signal und der spezifischen Instanz führt dieser Timingfehler dazu, dass die neue Verbindung fälschlicherweise gekappt wird. Das System muss sicherstellen, dass ein Beendungsbefehl nur dann wirksam ist, wenn er gezielt auf den aktuell laufenden Vorgang abzielt."
+      },
+      {
+        "ziel": "L-0392e4",
+        "art": "lesson",
+        "rang": 15,
+        "query": "Bei der Fehlerbehebung einer Sortierfunktion stellst du fest, dass Informationen aus unterschiedlichen Bereichen unkorrekt nebeneinander stehen. Da die hinterlegten Zahlenwerte für die Wichtigkeit über verschiedene Kategorien hinweg identisch sind, kann das System nicht unterscheiden, welche Vorgabe tatsächlich Vorrang hat. Eine automatische Auswahl des relevantesten Dokuments ist ohne zusätzliche Angaben zum Ursprung der Daten unmöglich."
+      },
+      {
+        "ziel": "L-476602",
+        "art": "lesson",
+        "rang": 7,
+        "query": "Die KI reagiert träge, weil sie zu Beginn jeder Interaktion eine riesige Liste an Möglichkeiten verarbeiten muss, obwohl der Nutzer meist nur einen kleinen Teil davon nutzt. Um den Prozess effizienter zu gestalten, sollte die Darstellung der verfügbaren Handlungsoptionen bereits bei der ersten Verbindung eingeschränkt werden, ohne dabei die grundlegenden Sicherheitsvorgaben für den eigentlichen Zugriff zu beeinträchtigen."
+      },
+      {
+        "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+        "art": "node",
+        "rang": 1,
+        "query": "Während einer Besprechung zur Neuausrichtung der Organisationsstruktur verlieren die Beteiligten sich in Diskussionen über Detailzahlen und zukünftige Software-Anpassungen. Sie vernachlässigen dabei, dass die rechtliche Genehmigung des Hauptprojekts zeitkritisch ist und nicht durch technische Feinheiten verzögert werden darf. Zudem sorgt das Fehlen von analogen Ausgleichsmöglichkeiten für Widerstand bei den traditionell orientierten Mitgliedern."
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+        "art": "node",
+        "rang": null,
+        "query": "Ein Hausbesitzer lässt seine Werkstatt umbauen und muss entscheiden, wie viele Kabel nun direkt in die Wände verlegt werden sollen. Er muss abwägen, ob er nur den aktuellen Bedarf deckt oder eine breitere Basis schafft, damit spätere Erweiterungen keinen kompletten Rückbau der Wandkonstruktion nötig machen."
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+        "art": "node",
+        "rang": 8,
+        "query": "Ein Verkäufer möchte in einer Präsentation die maximale Belastbarkeit eines Bauteils nennen. Da ihm keine aktuellen Testergebnisse vorliegen, muss er entscheiden, ob er eine plausibel klingende Zahl nennt oder offen gibt, dass diese Information momentan nicht zur Verfügung steht."
+      },
+      {
+        "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+        "art": "node",
+        "rang": 10,
+        "query": "Die Entwickler diskutieren gerade, ob veraltete Funktionen aus dem System entfernt werden können. Es besteht die Sorge, dass dadurch die Bedienbarkeit für andere Personen eingeschränkt würde. In dieser Phase muss geklärt werden, ob eine sofortige Verfügbarkeit aktuell überhaupt notwendig ist."
+      },
+      {
+        "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+        "art": "node",
+        "rang": 18,
+        "query": "Die Produktion muss entscheiden, welche digitale Figur für das neue Video genutzt werden kann. Ein Techniker prüft dabei, ob die aktuelle Software bereits vollständige Bewegungsabläufe unterstützt oder nur bestimmte Bereiche der Mimik einsatzbereit hat."
+      },
+      {
+        "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+        "art": "node",
+        "rang": 5,
+        "query": "Ein Kunde beschwert sich, dass neu hochgeladene Rechnungen und Nachrichten in der Trefferliste fehlen. Ich muss prüfen, ob die automatischen Importprozesse die Daten korrekt erfassen oder ob diese aufgrund fehlender Textinhalte beim Aufbau des Suchverzeichnisses aussortiert wurden."
+      },
+      {
+        "ziel": "/lessons/phase2-summary",
+        "art": "node",
+        "rang": null,
+        "query": "Das Entwicklungsteam stellt fest, dass die automatisch generierten Skripte unzuverlässig sind, da die internen Anleitungen nicht präzise genug definiert wurden. Um die Qualität zu sichern, müssen nun alle verfügbaren Werkzeuge neu strukturiert und feste Regeln für die Bausterstellung etabliert werden."
+      },
+      {
+        "ziel": "/testing/pytest",
+        "art": "node",
+        "rang": 50,
+        "query": "Bei der Entwicklung einer neuen Anwendung müssen die automatischen Prüfzyklen strukturiert werden. Dabei sollen immer verfügbare Vorbereitungen für Testdaten erstellt und verschiedene Szenarien in Kategorien unterteilt werden. Zudem soll am Ende präzise ermittelt werden, welche Teile des Quellcodes während der Durchläufe nicht erreicht wurden."
+      },
+      {
+        "ziel": "/brainlehr/inference-control-was-andere-faecher",
+        "art": "node",
+        "rang": 34,
+        "query": "Ein Mitarbeiter im Empfangsbereich prüft die Belegung der Büroräume auf dem Gelände. Würde das System bei gesperrten Zonen gar keine Daten liefern, könnte er durch das Fehlen von Einträgen Rückschlüsse auf geheime Anlagen ziehen. Stattdessen sollte ihm eine glaubwürdige Fiktion präsentiert werden, damit seine Abfrage keinen Hinweis auf den Schutzstatus gibt."
+      },
+      {
+        "ziel": "/methodik/einstieg",
+        "art": "node",
+        "rang": 8,
+        "query": "Ein neuer Kollege beginnt seine Einarbeitung in einem komplexen Umfeld und erhält ein umfangreiches Handbuch zur Orientierung. Er muss vor dem Start identifizieren, welche Teile dieser Dokumentation zwingend studiert werden müssen, um keine elementaren Fehler bei der späteren Umsetzung zu machen."
+      },
+      {
+        "ziel": "/stadtwerke",
+        "art": "node",
+        "rang": 4,
+        "query": "Ein Administrator prüft die Zugriffsberechtigungen für einen Kollegen, der für zwei Organisationen tätig ist. Er verwendet dazu ein Übungsszenario mit simulierten Profilen, um sicherzustellen, dass die spezifische Aufgabenfunktion korrekt im System hinterlegt ist."
+      },
+      {
+        "ziel": "/openlehr/steuer/ui",
+        "art": "node",
+        "rang": null,
+        "query": "Während der Modernisierung des Finanzportals müssen wir die Struktur der Benutzeroberfläche prüfen. Dabei ist es entscheidend zu wissen, wie viele Untermodule in diesem Bereich abgelegt sind, um die Verlinkungen korrekt abzubilden."
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+        "art": "node",
+        "rang": 2,
+        "query": "Die Eigentümergemeinschaft möchte die Abrechnung der Dachsanierung prüfen, da das Handwerksunternehmen und die Hausverwaltung unter gleicher Leitung stehen. Da im Vertrag keine speziellen Regeln für solche internen Beauftragungen enthalten sind, ist unklar, ob auch andere Firmen angefragt wurden oder wie die Kosten kalkuliert wurden. Ohne eine klare Vorgabe fehlt ein objektiver Maßstab, um die Fairness der Entscheidung zu beurteilen."
+      },
+      {
+        "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+        "art": "node",
+        "rang": null,
+        "query": "Ein neuer Kollege stößt bei der Recherche auf ein unübersichtlich formatiertes Protokoll und ist unsicher, ob es sich um einen Fehler handelt oder ob die Daten noch gültig sind. Es muss geklärt werden, dass dieser Text bewusst als Beleg für den Entstehungsprozess einer Entscheidung erhalten bleibt, auch wenn die eigentlichen Arbeitsschritte heute in einer saubereren Struktur abgelegt sind."
+      },
+      {
+        "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "art": "node",
+        "rang": 2,
+        "query": "Ein Kunde möchte seine persönlichen Informationen im Profil aktualisieren, doch der Vorgang wird abgebrochen. Die Meldung auf dem Display darf keine Details zu den technischen Hintergründen preisgeben und sollte den Nutzer stattdessen lediglich dazu anweisen, die Eingabe in einigen Minuten erneut zu versuchen."
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "art": "node",
+        "rang": 14,
+        "query": "Bei der Besprechung mit potenziellen Partnern wird immer wieder so getan, als müsse die Anzahl der benötigten Unterschriften noch mit den externen Firmen geklärt werden. Hier muss jemand intervenieren und deutlich machen, dass diese prozessuale Vorgabe bereits intern feststeht und kein Punkt für eine weitere externe Rücksprache darstellt."
+      },
+      {
+        "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "art": "node",
+        "rang": null,
+        "query": "Bei der Ausarbeitung einer komplexen Systemarchitektur muss ich entscheiden, ob eine zusätzliche Überprüfungsinstanz sinnvoll ist. Da die primäre Logik bereits über die nötige Kapazität für tiefgreifende Entscheidungen verfügt, würde ich nur dann ein separates Kontrollfenster öffnen, wenn gezielt eine unabhängige Zweitmeinung oder eine kritische Gegenposition eingeholt werden soll."
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+        "art": "node",
+        "rang": null,
+        "query": "Ein Sachbearbeiter prüft die Unterlagen zu einer Anlage und stellt fest, dass der Beleg für eine Modernisierung im Widerspruch zu den aktuellen Sicherheitsprüfungen steht. Da beide Dokumente gleichwertig sind, muss nun beim zuständigen Dienstleister nachgefragt werden, um die tatsächlichen Bestände zu klären."
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+        "art": "node",
+        "rang": 10,
+        "query": "Die Entwickler müssen eine technische Barriere einrichten, damit Informationen von externen Anbietern die Integrität der eigenen Software nicht gefährden. Dies ist notwendig, um sicherzustellen, dass fremde Datenströme wie Nachrichten oder Terminkalender keine Sicherheitslücken im internen System öffnen."
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+        "art": "node",
+        "rang": 22,
+        "query": "Die Entwickler bemerken, dass die KI-Assistenten bei komplexeren Projekten zunehmend unzuverlässig reagieren und wichtige Vorgaben vernachlässigen. Da die Menge an hinterlegten Informationen für jede Teilaufgabe zu groß geworden ist, müssen diese Anweisungen effizienter verdichtet werden, um die Verarbeitungsgeschwindigkeit zu verbessern."
+      }
+    ],
+    "stufe_2": [
+      {
+        "ziel": "L-a9ccd0",
+        "art": "lesson",
+        "rang": 7,
+        "query": "Mobilanwendung – Nutzer wechselt während Vorgang zu anderer App, System setzt Daten beim Timeout ohne explizite Bestätigung zurück"
+      },
+      {
+        "ziel": "L-298823",
+        "art": "lesson",
+        "rang": null,
+        "query": "Ablaufdatum-Markierung für Gutscheine hinzugefügt, aber niemals ausgewertet – Nutzer bekommt keine Warnung"
+      },
+      {
+        "ziel": "L-f9f654",
+        "art": "lesson",
+        "rang": 3,
+        "query": "Hintergrund-Task-Fehler – asynchroner Fehler nicht gefangen, weil Wrapper nur synchronen Pfad abdeckt"
+      },
+      {
+        "ziel": "L-b4b443",
+        "art": "lesson",
+        "rang": null,
+        "query": "Hardware-Verbindung wird als aktiv angezeigt obwohl Modul nicht angeschlossen – veralteter Status wird nicht validiert"
+      },
+      {
+        "ziel": "L-44a838",
+        "art": "lesson",
+        "rang": 15,
+        "query": "Auto-Reply-System speichert von Modell generierte Texte ungefiltert – können PII und Kontodaten enthalten"
+      },
+      {
+        "ziel": "L-cdac52",
+        "art": "lesson",
+        "rang": null,
+        "query": "Bestätigungs-Overlay schlägt fehl wegen unsicherer UI-Baum-Position – braucht feste Referenz und geordnete Statusänderungen"
+      },
+      {
+        "ziel": "L-e7bc5e",
+        "art": "lesson",
+        "rang": 3,
+        "query": "Techniker umgeht Freigabeprozess und verwechselt deaktivierten Pfad mit reinem Infrastruktur-Problem"
+      },
+      {
+        "ziel": "L-e1a441",
+        "art": "lesson",
+        "rang": 3,
+        "query": "Testdaten sind identisch mit Produktionsdaten – Löschen nach Name riskiert Verlust echter Nutzerdaten"
+      },
+      {
+        "ziel": "L-b91ed6",
+        "art": "lesson",
+        "rang": null,
+        "query": "Rollout-Logs attributieren Fehler pauschal der Infrastruktur – Detailprotokolle zeigen tatsächliche Programmfehler"
+      },
+      {
+        "ziel": "L-bbd7fb",
+        "art": "lesson",
+        "rang": null,
+        "query": "Defekte Sensoren werden nicht gemeldet – System fällt bei fehlenden Daten auf Standardwert zurück"
+      },
+      {
+        "ziel": "L-503687",
+        "art": "lesson",
+        "rang": null,
+        "query": "Falsch-Positive bei Link-Analyse – organisatorische und echte Datenverbindungen nicht unterscheidbar"
+      },
+      {
+        "ziel": "L-8c633e",
+        "art": "lesson",
+        "rang": 17,
+        "query": "Fehler im Hauptbereich behoben, aber identische Stelle in ähnlicher View übersehen"
+      },
+      {
+        "ziel": "L-606b63",
+        "art": "lesson",
+        "rang": null,
+        "query": "Bluetooth-Disconnect – verspäteter Befehl aus erstem Versuch killt neue Verbindung, keine Instanz-ID-Verfolgung"
+      },
+      {
+        "ziel": "L-0392e4",
+        "art": "lesson",
+        "rang": null,
+        "query": "Sort-Fehler – identische Prioritätswerte über Kategorien hinweg verhindern Precedence-Bestimmung"
+      },
+      {
+        "ziel": "L-476602",
+        "art": "lesson",
+        "rang": 3,
+        "query": "KI-Startup-Latenz durch Verarbeitung großer Optionsliste – braucht Filterung beim Verbinden ohne Security-Einbußen"
+      },
+      {
+        "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+        "art": "node",
+        "rang": 1,
+        "query": "Besprechung fixiert sich auf technische Details während rechtliche Freigabe zeitkritisch ist"
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+        "art": "node",
+        "rang": null,
+        "query": "Kabeluntergrund-Entscheidung zwischen minimalem aktuellem Bedarf und zukunftssicherer Kapazität"
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+        "art": "node",
+        "rang": 2,
+        "query": "Unbekannte Spezifikation berichten statt plausible Zahl zu schätzen"
+      },
+      {
+        "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+        "art": "node",
+        "rang": 8,
+        "query": "Unklar ob Entfernung veralteter Funktionen jetzt notwendig ist"
+      },
+      {
+        "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+        "art": "node",
+        "rang": null,
+        "query": "Bestimmen welche Mimik-Funktionen produktionsreif sind"
+      },
+      {
+        "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+        "art": "node",
+        "rang": 2,
+        "query": "Neu hochgeladene Dateien fehlen in Trefferliste – Import oder Indexierung fehlgeschlagen"
+      },
+      {
+        "ziel": "/lessons/phase2-summary",
+        "art": "node",
+        "rang": null,
+        "query": "Auto-generierte Skripte unzuverlässig durch zu vage Anleitungen"
+      },
+      {
+        "ziel": "/testing/pytest",
+        "art": "node",
+        "rang": 1,
+        "query": "Test-Struktur: Fixtures, Szenario-Kategorisierung und Abdeckungsmessung"
+      },
+      {
+        "ziel": "/brainlehr/inference-control-was-andere-faecher",
+        "art": "node",
+        "rang": 24,
+        "query": "Gesperrte Zonen zeigen plausible Fiktion nicht Fehlen um Rückschlüsse zu verhindern"
+      },
+      {
+        "ziel": "/methodik/einstieg",
+        "art": "node",
+        "rang": 12,
+        "query": "Einarbeitung – kritische Dokumentation identifizieren um elementare Fehler zu vermeiden"
+      },
+      {
+        "ziel": "/stadtwerke",
+        "art": "node",
+        "rang": 4,
+        "query": "Multi-Org-Berechtigungen mit simuliertem Szenario testen"
+      },
+      {
+        "ziel": "/openlehr/steuer/ui",
+        "art": "node",
+        "rang": null,
+        "query": "Finanz-Portal-Modernisierung – Submodul-Anzahl zählen für korrekte Verlinkung"
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+        "art": "node",
+        "rang": 2,
+        "query": "Vertrag hat keine Regeln für Eigen-Vergaben – Fairness des Angebots von Eigenverwaltung unklar"
+      },
+      {
+        "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+        "art": "node",
+        "rang": null,
+        "query": "Unübersichtliches Protokoll absichtlich erhalten als Prozess-Gedächtnis nicht als Fehler"
+      },
+      {
+        "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "art": "node",
+        "rang": 2,
+        "query": "Fehler beim Profil-Update – Nutzer sieht nur Wiederhole-Aufforderung ohne technische Ursache"
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "art": "node",
+        "rang": 47,
+        "query": "Unterschriften-Anzahl bereits intern festgelegt – nicht mit Lieferanten verhandelbar"
+      },
+      {
+        "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "art": "node",
+        "rang": null,
+        "query": "Verifizierungs-Ebene nur hinzufügen wenn unabhängige Zweitmeinung gebraucht wird"
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+        "art": "node",
+        "rang": 2,
+        "query": "Modernisierungs-Beleg widerspricht der Sicherheitsprüfung – Handwerker um aktuelle Bestandsauskunft fragen"
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+        "art": "node",
+        "rang": 4,
+        "query": "Externe Datenquellen werden in Sandbox isoliert um System-Sicherheit zu gewährleisten"
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+        "art": "node",
+        "rang": 4,
+        "query": "KI unzuverlässig bei komplexen Projekten wegen übergroßer Anweisungskontexte – braucht Kompression für Durchsatz"
+      }
+    ]
+  }
+}
