@@ -21,7 +21,7 @@ ROOT = WURZEL / "docs" / "REQUIREMENTS_BRAINLEHR.md"
 OPENLEHR = Path("/Volumes/daten/Begod2026/openlehr_einzelunternehmer")
 
 INTERFACES = (
-    "INT-PKG-001", "INT-VER-001", "INT-VER-002", "INT-API-001", "INT-API-002",
+    "INT-PKG-001", "INT-VER-001", "INT-VER-002", "INT-API-001", "INT-API-002", "INT-API-003",
     "INT-REG-001", "INT-DNST-001", "INT-UPD-001", "INT-UPD-002", "INT-SNAP-001",
     "INT-ACT-001", "INT-GATE-001",
 )
