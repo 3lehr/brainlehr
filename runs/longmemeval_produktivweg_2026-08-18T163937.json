@@ -1,0 +1,290 @@
+{
+  "weg": "knowledge_mcp_server.knowledge_search() -- echter Produktivweg, kein Nachbau (scope=<question_id> je Frage repliziert den LongMemEval-Heuhaufen, nachschlagewerk=True siehe gattungsfilter_default unten)",
+  "kriterium": "LongMemEval (github.com/xiaowu0162/LongMemEval, src/retrieval/eval_utils.py + src/evaluation/print_retrieval_metrics.py, gelesen 2026-08-18) definiert weder 'R@5'/'R@10' noch 'MRR' -- nur recall_any@k, recall_all@k, ndcg_any@k (session- und turn-level). R@k hier = recall_any@k (offizielle, woertliche Definition: mind. eine Ziel-Sitzung unter Top-k) -- die grosszuegigere der beiden offiziellen Varianten. MRR ist KEINE LongMemEval-Kennzahl, sondern die generische IR-Definition (reziproker Rang der ersten Ziel-Sitzung, 0 falls nicht unter max_results). Sitzungstext = nur user-Turns, leerzeichenverkettet (process_item_flat_index, granularity='session', woertlich uebernommen).",
+  "grenze": "Nur Produktivweg auf englischem Text, isolierte Test-DB (BRAINLEHR_DB), Stichprobe statt aller 500 Fragen (siehe n), MRR/R@k-Definition ist NICHT die der Gegenseite (unbekannt) sondern die naeheste belegbare (siehe kriterium). Gattungsfilter schliesst den gesamten Korpus per Vorgabe aus (siehe gattungsfilter_default) -- Hauptmessung nutzt bewusst nachschlagewerk=True.",
+  "quelle_datensatz": "https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned (longmemeval_s_cleaned.json), 500 Fragen gesamt",
+  "stichprobe": {
+    "n": 25,
+    "n_gesamt": 500,
+    "seed": 42,
+    "ist_stichprobe": true
+  },
+  "festverdrahtet": {
+    "scope": "je Frage = question_id (isoliert Heuhaufen)",
+    "max_results": 70,
+    "nachschlagewerk": true,
+    "stichtag": null,
+    "actor/model/session": null,
+    "sprache_korpus": "englisch (LongMemEval), FTS5 deutsch gefaltet, Einbettung bge-m3 mehrsprachig"
+  },
+  "gattungsfilter_default": {
+    "beispiel_frage": "gpt4_4edbafa2",
+    "treffer_ohne_nachschlagewerk_true": 0,
+    "treffer_mit_nachschlagewerk_true": 41,
+    "schliesst_alles_aus": true
+  },
+  "positivkontrolle": {
+    "frage_id": "gpt4_4edbafa2",
+    "ziel_sitzung": "answer_0a00c163_1",
+    "anfrage_ausschnitt": "hat would pair well with Korean-style BBQ? I've been thinkin",
+    "rang": 1,
+    "bestanden": true
+  },
+  "R@5": 0.96,
+  "R@10": 1.0,
+  "MRR": 0.9367,
+  "median_rang_gefunden": 1,
+  "totalausfaelle": 0,
+  "je_frage": [
+    {
+      "frage_id": "gpt4_4edbafa2",
+      "typ": "temporal-reasoning",
+      "n_ziel_sitzungen": 2,
+      "n_heuhaufen": 41,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "1faac195",
+      "typ": "single-session-user",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 45,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "c960da58",
+      "typ": "single-session-user",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 46,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "031748ae",
+      "typ": "knowledge-update",
+      "n_ziel_sitzungen": 2,
+      "n_heuhaufen": 46,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "caf03d32",
+      "typ": "single-session-preference",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 51,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "81507db6",
+      "typ": "multi-session",
+      "n_ziel_sitzungen": 5,
+      "n_heuhaufen": 50,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "gpt4_e05b82a6",
+      "typ": "multi-session",
+      "n_ziel_sitzungen": 4,
+      "n_heuhaufen": 46,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "6d550036",
+      "typ": "multi-session",
+      "n_ziel_sitzungen": 4,
+      "n_heuhaufen": 47,
+      "rang_erste_zielsitzung": 4,
+      "reziproker_rang": 0.25,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "a1eacc2a",
+      "typ": "knowledge-update",
+      "n_ziel_sitzungen": 2,
+      "n_heuhaufen": 44,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "8e9d538c",
+      "typ": "single-session-user",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 48,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "gpt4_4cd9eba1",
+      "typ": "temporal-reasoning",
+      "n_ziel_sitzungen": 2,
+      "n_heuhaufen": 45,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "cc539528",
+      "typ": "single-session-assistant",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 48,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "gpt4_a2d1d1f6",
+      "typ": "temporal-reasoning",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 44,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "001be529",
+      "typ": "single-session-user",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 51,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "6e984302",
+      "typ": "temporal-reasoning",
+      "n_ziel_sitzungen": 2,
+      "n_heuhaufen": 43,
+      "rang_erste_zielsitzung": 6,
+      "reziproker_rang": 0.16666666666666666,
+      "recall_any_at_5": 0.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "a08a253f",
+      "typ": "multi-session",
+      "n_ziel_sitzungen": 2,
+      "n_heuhaufen": 53,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "66f24dbb",
+      "typ": "single-session-user",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 50,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "94f70d80",
+      "typ": "single-session-user",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 49,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "4fd1909e",
+      "typ": "single-session-user",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 55,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "d851d5ba",
+      "typ": "multi-session",
+      "n_ziel_sitzungen": 4,
+      "n_heuhaufen": 46,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "2b8f3739",
+      "typ": "multi-session",
+      "n_ziel_sitzungen": 3,
+      "n_heuhaufen": 47,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "4dfccbf7",
+      "typ": "temporal-reasoning",
+      "n_ziel_sitzungen": 2,
+      "n_heuhaufen": 47,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "gpt4_76048e76",
+      "typ": "temporal-reasoning",
+      "n_ziel_sitzungen": 2,
+      "n_heuhaufen": 44,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "3b6f954b",
+      "typ": "single-session-user",
+      "n_ziel_sitzungen": 1,
+      "n_heuhaufen": 50,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    },
+    {
+      "frage_id": "gpt4_e061b84g",
+      "typ": "temporal-reasoning",
+      "n_ziel_sitzungen": 3,
+      "n_heuhaufen": 58,
+      "rang_erste_zielsitzung": 1,
+      "reziproker_rang": 1.0,
+      "recall_any_at_5": 1.0,
+      "recall_any_at_10": 1.0
+    }
+  ]
+}

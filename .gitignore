@@ -93,3 +93,10 @@ auszug/bestand_*.jsonl
 !auszug/bestand_2026-08-08.jsonl
 !auszug/bestand_2026-08-09.jsonl
 !auszug/bestand_2026-08-10.jsonl
+
+# Fremdkorpus LongMemEval-S (Auftrag 2026-08-18, R@5/R@10/MRR-Nachmessung
+# gegen agentmemory-Werbezahlen) -- gross (277 MB), jederzeit neu ladbar
+# (huggingface.co/datasets/xiaowu0162/longmemeval-cleaned), gehoert nicht
+# ins Repo. Enthaelt auch die isolierte Mess-DB (messstand*.db), NIE die
+# Produktions-brainlehr.db.
+korpora/longmemeval/
