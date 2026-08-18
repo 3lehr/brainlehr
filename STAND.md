@@ -1,5 +1,5 @@
-# STAND brainlehr — 2026-08-18T13:25:58+0200
-**Vertragsnaht (2026-08-18):** kein rotes Gate mehr — `INT-ACT-001` (Auslöser, gebaut, NICHT eingeschaltet), `INT-REG-001` + `INT-API-003` (Registry, Rest 8799 in `DienstAufsicht`), `INT-UPD-002` (Rücknahme) sind zu. Ohne Laufzeitgate weiterhin: `INT-SNAP-001`, `INT-API-001/002`, `INT-VER-002`.
+# STAND brainlehr — 2026-08-18T13:46:28+0200
+**Vertragsnaht (2026-08-18):** alle INT-Gates zu. `INT-SNAP-001` gebaut UND verdrahtet — der Messlauf las bis heute direkt gegen den wachsenden Bestand; jetzt pinnt er den ganzen Lauf (`beb14580`, festhalten 0,09 s bei 118 MiB, Aufräumen im finally). `INT-ACT-001` gebaut, NICHT eingeschaltet.
 **Nächstes:** `INT-UPD-002` bauen — Importkennung auf jeder geschriebenen Zeile, `nimm_import_zurueck(kennung)` entfernt genau diesen Import und lässt in Kraft gesetzte Regeln stehen oder verweigert.
 **Falle:** Wer einen Rückgabewert erweitert, muss die Konsumenten in den *tabuisierten* Schichten prüfen — das Atelier hätte einen Aktualisierungs-Import als „enthielt nichts Neues" gemeldet (`L-51e6d8`). Und ein rotes Gate braucht einen Positivfall, sonst misst sein Rot den Prüfstand (`L-234e85`).
 **Kanalgüte (2026-08-18):** Vektor-Anomalie war ein Messartefakt (`99f00e91`); der Textumbau traegt ueber den vollen Weg nicht; der Stichwort-Sockel ist auf BEIDEN Seiten wirkungslos und ab floor 2 schaedlich — bleibt bei 1 (`8859c52a`). **Der echte Befund:** bei 35 von 35 Nein-Faellen liefert der Abruf etwas, 10 davon „passend" — das System sagt nie „dazu habe ich nichts".
