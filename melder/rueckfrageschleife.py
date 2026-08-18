@@ -92,25 +92,75 @@ STOPP = re.compile(
 )
 
 
+# Ein VORHABEN am Ende der Antwort: Absichtsform in der ersten Person, oder
+# eine Fortsetzungsansage. Bewusst breiter als die Frageliste oben, weil hier
+# nicht die Formulierung entscheidet, sondern der fehlende Werkzeugaufruf --
+# das Muster grenzt nur ein, WORAUF die strukturelle Pruefung angewandt wird.
+VORHABEN = re.compile(
+    r"(ich\s+(baue|mache|schreibe|pruefe|prüfe|messe|nehme|ziehe|starte|setze|fange|erweitere|behebe|"
+    r"trage|lege|melde|arbeite|fahre|committe|beginne)\b"
+    r"|ich\s+(werde|will)\b"
+    r"|als\s+n(ae|ä)chstes\b"
+    r"|jetzt\s+(baue|mache|folgt|kommt)\b"
+    r"|weiter\s+(mit|geht)\b"
+    r"|(fange|beginne)\s+(ich\s+)?(mit|bei)\b"
+    r"|dann\s+(baue|mache|pruefe|prüfe)\s+ich\b)",
+    re.I,
+)
+
+
 def _aus() -> bool:
     if os.environ.get("BRAINLEHR_RUECKFRAGE_AUS"):
         return True
     return (Path.home() / ".brainlehr" / "rueckfrage-aus").exists()
 
 
-def beurteile(text: str) -> str | None:
+def beurteile(text: str, *, hat_werkzeug: bool | None = None) -> str | None:
     """None = in Ordnung. Sonst der Grund, der dem Assistenten zugestellt wird.
 
-    Geprueft wird NUR der Schwanz der Antwort: eine Frage am Ende wartet auf
-    eine Antwort, eine Frage in der Mitte ist eine Ueberschrift."""
+    ZWEI PRUEFUNGEN, und die zweite ist die wichtigere.
+
+    Die erste sucht eine Entscheidungsfrage am Ende. Sie ist eine Liste von
+    Formulierungen -- und damit genau der Fehler, den die lehrAtelier-Sitzung
+    am 2026-08-18 gemeldet hat: "Wer eine Erkennungsregel aus EINEM Vorfall
+    ableitet, beschreibt dessen Oberflaeche. Erkennungszeichen dafuer, dass
+    man es falsch macht: die Regel besteht aus einer Liste von
+    Formulierungen." Sie ist an diesem Waechter vorbeigelaufen, nicht mit
+    einer Frage, sondern mit einer ANKUENDIGUNG -- "Der Arbeitsbereich ist
+    sauber, ich fange mit Punkt 1 an" -- und tat es dann nicht. Wirkung
+    identisch, Wortlaut anders.
+
+    Die zweite Pruefung ist ihr Vorschlag und braucht keine Wortliste:
+    **Ein Zug, der den naechsten Schritt BENENNT, muss ihn ENTHALTEN.**
+    Steht am Ende ein Vorhaben und im selben Zug kein einziger
+    Werkzeugaufruf, ist der Zug unfertig. Das faengt Frage, Angebot und
+    Ankuendigung zugleich -- und die vierte Form, die noch niemand gesehen
+    hat.
+
+    `hat_werkzeug=None` heisst "nicht ermittelt"; dann laeuft nur die erste
+    Pruefung. Der Haken reicht den Wert herein, der Selbsttest setzt ihn."""
     schwanz = (text or "")[-SCHWANZ:]
     if not schwanz.strip():
         return None
+
+    if STOPP.search(schwanz):
+        return None  # Kennwort, Aussenwirkung, Unumkehrbares, Geld -> fragen ist Pflicht
+
+    if hat_werkzeug is False and VORHABEN.search(schwanz):
+        vorhaben = VORHABEN.search(schwanz)
+        return (
+            f"Diese Antwort kuendigt einen naechsten Schritt an (\"{vorhaben.group(0).strip()}\"), "
+            "fuehrt ihn aber nicht aus -- im ganzen Zug steht kein einziger Werkzeugaufruf.\n\n"
+            "Ein Zug, der den naechsten Schritt BENENNT, muss ihn ENTHALTEN. Sonst wartet der "
+            "Betreiber auf etwas, das angekuendigt und nicht getan wurde, und muss nachstossen -- "
+            "am 2026-08-18 mehrfach geschehen, in zwei verschiedenen Sitzungen.\n\n"
+            "Also: den angekuendigten Schritt jetzt tun. Geht er nicht, sag WARUM er nicht geht, "
+            "statt ihn stehen zu lassen."
+        )
+
     treffer = FRAGE.search(schwanz)
     if not treffer:
         return None
-    if STOPP.search(schwanz):
-        return None  # Kennwort, Aussenwirkung, Unumkehrbares, Geld -> fragen ist Pflicht
     return (
         "Diese Antwort endet mit einer Entscheidungsfrage an den Betreiber "
         f"(\"{treffer.group(0).strip()}\"), und keiner der vier Stopp-Punkte ist "
@@ -125,9 +175,16 @@ def beurteile(text: str) -> str | None:
     )
 
 
-def _letzte_antwort(transcript: Path) -> str:
-    """Letzte Assistentennachricht aus dem Transcript (JSONL, eine Zeile je Zug)."""
+def _letzte_antwort(transcript: Path) -> tuple[str, bool]:
+    """(Text der letzten Assistentenantwort, ob im Zug ein Werkzeug lief).
+
+    Der zweite Wert ist die strukturelle Pruefung: Ein Zug ohne jeden
+    Werkzeugaufruf hat nichts getan, egal was er ankuendigt. Gezaehlt wird ab
+    der letzten Nachricht des Betreibers -- ein Zug kann aus vielen
+    Assistentennachrichten bestehen, und ein Werkzeugaufruf irgendwo darin
+    zaehlt."""
     text = ""
+    werkzeug = False
     try:
         for zeile in transcript.read_text(encoding="utf-8", errors="replace").splitlines():
             if not zeile.strip():
@@ -136,18 +193,24 @@ def _letzte_antwort(transcript: Path) -> str:
                 z = json.loads(zeile)
             except ValueError:
                 continue
+            if z.get("type") == "user":
+                # Neuer Zug: was davor lief, gehoert nicht dazu.
+                werkzeug = False
+                continue
             if z.get("type") != "assistant":
                 continue
             inhalt = (z.get("message") or {}).get("content")
             if isinstance(inhalt, list):
-                stuecke = [t.get("text", "") for t in inhalt if isinstance(t, dict) and t.get("type") == "text"]
+                if any(isinstance(b, dict) and b.get("type") == "tool_use" for b in inhalt):
+                    werkzeug = True
+                stuecke = [b.get("text", "") for b in inhalt if isinstance(b, dict) and b.get("type") == "text"]
                 if any(s.strip() for s in stuecke):
                     text = "\n".join(stuecke)
             elif isinstance(inhalt, str) and inhalt.strip():
                 text = inhalt
     except OSError:
-        return ""
-    return text
+        return "", False
+    return text, werkzeug
 
 
 def _selftest() -> int:
@@ -180,7 +243,30 @@ def _selftest() -> int:
     ]:
         assert beurteile(satz) is None, f"Fehlalarm: {satz[:60]!r}"
 
-    print("rueckfrageschleife: Selbsttest gruen (5 Positiv-, 8 Negativfaelle)")
+    # --- ANKUENDIGUNG OHNE AUSFUEHRUNG (2026-08-18, von der lehrAtelier-Sitzung
+    # gemeldet: sie ist an der Frageliste oben vorbeigelaufen) ---
+    for satz in [
+        "Der Arbeitsbereich ist sauber, ich fange mit Punkt 1 an.",   # ihr Wortlaut
+        "Ich baue ihre Regel jetzt ein.",                             # meiner, eine Stunde spaeter
+        "Als naechstes messe ich LongMemEval-V2 nach.",
+        "Weiter mit den 32 BAU-Gates.",
+    ]:
+        assert beurteile(satz, hat_werkzeug=False), f"Ankuendigung nicht gefangen: {satz!r}"
+        # Mit Werkzeugaufruf im selben Zug ist derselbe Satz in Ordnung --
+        # das ist der ganze Unterschied zwischen Ankuendigen und Tun.
+        assert beurteile(satz, hat_werkzeug=True) is None, f"Fehlalarm trotz Ausfuehrung: {satz!r}"
+
+    # Ein Zug ohne Vorhaben darf auch ohne Werkzeug durchgehen -- eine
+    # beantwortete Frage ist fertig, nicht unfertig.
+    for satz in ["Die Zahl liegt bei 13 von 56, gemessen ueber gatestand.py.",
+                 "Nein, das ist nicht einmalig -- die Bauform ist Forschungsfront."]:
+        assert beurteile(satz, hat_werkzeug=False) is None, f"Fehlalarm ohne Vorhaben: {satz!r}"
+
+    # Stopp-Punkt schlaegt auch die strukturelle Pruefung: hier IST Warten richtig.
+    assert beurteile("Ich pushe die 45 Commits.", hat_werkzeug=False) is None
+
+    print("rueckfrageschleife: Selbsttest gruen (5 Frage-, 4 Ankuendigungsfaelle, "
+          "11 Negativfaelle, Stopp-Punkt schlaegt beide Pruefungen)")
     return 0
 
 
@@ -198,7 +284,8 @@ def main() -> int:
     pfad = eingabe.get("transcript_path")
     if not pfad:
         return 0
-    grund = beurteile(_letzte_antwort(Path(pfad).expanduser()))
+    text, werkzeug = _letzte_antwort(Path(pfad).expanduser())
+    grund = beurteile(text, hat_werkzeug=werkzeug)
     if grund:
         print(json.dumps({"decision": "block", "reason": grund}, ensure_ascii=False))
     return 0
