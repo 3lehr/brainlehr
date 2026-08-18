@@ -1012,6 +1012,53 @@ def _attach_norm_rang(conn: sqlite3.Connection, nodes: list) -> None:
             n["norm_rang"] = lookup[n["id"]]
 
 
+def _attach_abgeloest(conn: sqlite3.Connection, nodes: list) -> None:
+    """Haengt an jeden Treffer, ob ihn ein NACHFOLGER abgeloest hat -- und
+    welcher.
+
+    ANLASS, 2026-08-18: Der Betreiber entschied, dass Abgeloestes nicht
+    weggeworfen wird ("das abgeloeste nicht komplett wegschmeissen, weil ...
+    Kann daraus auch wieder Neues wissen oder leeren entstehen?!", BDW-P08,
+    kern/abloesung.py). Der Eintrag bleibt also im Bestand und wird weiter
+    gefunden -- und genau das ist ohne diese Kennzeichnung gefaehrlicher als
+    vorher: Ein Leser bekommt einen ueberholten Satz ohne Hinweis, dass es
+    einen neueren gibt.
+
+    Unauffindbar waere Vergessen, ungekennzeichnet ist eine Falschaussage.
+    Diese Funktion ist die Kennzeichnung; ohne sie waere die Abloesung
+    gebaut und wirkungslos -- der Befund des Tages (BDW-P06).
+
+    Zuschnitt wie _attach_norm_rang: eigener Nachschlag NACH der Auswahl, bei
+    fehlender Tabelle still nichts anhaengen (eine aeltere Datenbankkopie
+    kennt knowledge_relations, aber keine Abloesungskante -- das ist kein
+    Fehler, sondern ein Bestand ohne Abloesungen)."""
+    pfade = [n["path"] for n in nodes if n.get("path")]
+    if not pfade:
+        return
+    try:
+        platzhalter = ",".join("?" * len(pfade))
+        rows = conn.execute(
+            f"SELECT target_path, source_path, evidence FROM knowledge_relations"
+            f" WHERE relation_type = 'loest_ab' AND target_path IN ({platzhalter})",
+            pfade,
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return
+    lookup = {r["target_path"]: (r["source_path"], r["evidence"]) for r in rows}
+    for n in nodes:
+        treffer = lookup.get(n.get("path"))
+        if treffer:
+            n["abgeloest_durch"], n["abgeloest_grund"] = treffer
+
+
+def _abloesung_tag(n: dict) -> str:
+    """Der sichtbare Teil. Kurz, weil er in JEDER Trefferzeile stehen kann --
+    der Grund selbst wird nicht mitgedruckt (er steht am Nachfolger), nur der
+    Verweis darauf."""
+    ziel = n.get("abgeloest_durch")
+    return f" [ABGELÖST durch {ziel}]" if ziel else ""
+
+
 def _node_hit_counts(log_path: str | None = None) -> Counter | None:
     """Ziehungs-Zaehlung je Node-Pfad aus dem Abrufprotokoll, nur fuers
     Erkunden. None bei JEDEM Problem (Datei fehlt, kaputte Zeile) -- der
@@ -1234,6 +1281,7 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
             pass
         _attach_norm_offen(conn, nodes)
         _attach_norm_rang(conn, nodes)
+        _attach_abgeloest(conn, nodes)
         conn.close()
         return nodes, lessons
     try:
@@ -1324,6 +1372,7 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
         pass
     _attach_norm_offen(conn, nodes)
     _attach_norm_rang(conn, nodes)
+    _attach_abgeloest(conn, nodes)
     conn.close()
     return nodes, lessons
 
@@ -1734,7 +1783,8 @@ def main() -> None:
         tag = " (Erkundung -- selten gezogen)" if n.get("explore") else ""
         fremd = f" [anderes Projekt: {n['foreign_project']}]" if n.get("foreign_project") else ""
         geltung = _geltung_tag(n.get("norm_rang"), n.get("gilt_bis"))
-        lines.append(f"- [{n['path']}]{alter(n.get('updated_at'))}{tag}{fremd}{geltung} "
+        abgeloest = _abloesung_tag(n)
+        lines.append(f"- [{n['path']}]{alter(n.get('updated_at'))}{tag}{fremd}{geltung}{abgeloest} "
                      f"{entschaerfe_fuer_ausgabe(n['title'])}: {entschaerfe_fuer_ausgabe(n['summary'])}")
     for l in lessons:
         tag = "⚠ LESSON" if l["severity"] in ("critical", "high") else "Lesson"
