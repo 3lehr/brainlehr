@@ -186,7 +186,53 @@ def _aktion_bericht(name: str) -> dict:
     return {"typ": "bericht", "name": name, "datei": str(ziel), "kennzahlen": kennzahlen}
 
 
-ERLAUBTE_AKTIONEN = {"bericht": _aktion_bericht}
+def _aktion_rundruf(name: str) -> dict:
+    """Fragt die laufenden Sitzungen, wo der Betreiber sie zuletzt korrigieren
+    musste -- und legt die Frage als Datei ab, statt sie selbst zu verschicken.
+
+    ANLASS, gemessen: Am 2026-08-18 wurden sieben laufende Sitzungen dieses
+    Rechners von Hand befragt. Vier antworteten, fuenf Befunde kamen zurueck,
+    KEIN EINZIGER stammte aus eigener Arbeit; drei waren am selben Tag baubar
+    (Knoten 58da4895). Drei Zuege nach ihrer Antwort begann eine Sitzung eine
+    neue Abhaengigkeitsaenderung, die niemand gemeldet haette -- weil niemand
+    mehr fragte. Genau das macht den Rundruf zu einem Takt und nicht zu einem
+    Ereignis.
+
+    WARUM DIESE AKTION NICHT SELBST VERSCHICKT: Ein Auslaeser laeuft ohne
+    Sitzung; er hat kein SendMessage und darf keins bekommen. Eine Aktion, die
+    von sich aus andere Sitzungen anschreibt, waere Aussenwirkung aus einem
+    Hintergrundlauf heraus -- der dritte der vier Stopp-Punkte. Sie legt
+    deshalb nur den AUFTRAG ab; die naechste Sitzung, die ihn liest,
+    verschickt ihn. Das ist derselbe Bau wie beim Bericht: schreiben, nicht
+    handeln.
+
+    DIE FRAGE IST DIE BERICHTIGTE FASSUNG des Betreibers, woertlich:
+    "ich meinte eher welche entscheidung musste den betreiber wiedersprechen,
+    wo musst er dich korregieren". Nicht die Selbsteinschaetzung ("was
+    braeuchte Widerspruch") -- die ist nach L-79ec88 in beide Richtungen
+    unzuverlaessig. Gefragt wird nach dem, was im Verlauf nachlesbar ist."""
+    frage = (
+        "RUNDRUF (Auslöser {name}, {zeit}). Drei Fragen, je höchstens zwei Sätze. "
+        "Kein Auftrag — laufende Arbeit nicht unterbrechen.\n"
+        "1. Wer bist du (Repo, Zweig, woran gerade) und welche Dateien hältst du?\n"
+        "2. Wo hat der Betreiber dich seit dem letzten Rundruf tatsächlich korrigiert "
+        "oder zurückgepfiffen? Je Vorfall: was du getan hattest, was er WÖRTLICH sagte, "
+        "und was in brainlehr hätte anschlagen müssen, damit er es nicht selbst sagen musste. "
+        "Der dritte Punkt ist der Ertrag.\n"
+        "3. Hast du eine Abhängigkeit geändert, auf die eine andere Sitzung baut "
+        "(Pfad, Name, Feld, Format, Schema)? Oder brauchst du eine unverändert?"
+    ).format(name=name, zeit=_jetzt().isoformat())
+
+    zeile = {"zeit": _jetzt().isoformat(), "name": name, "typ": "rundruf",
+             "zustellung": "offen", "frage": frage}
+    ziel = kennzahlendatei().with_name("rundruf-auftraege.jsonl")
+    _zeile_anhaengen(ziel, zeile)
+    return {"typ": "rundruf", "name": name, "datei": str(ziel),
+            "hinweis": "Auftrag abgelegt. Verschickt wird er von der naechsten Sitzung, "
+                       "die ihn liest -- ein Hintergrundlauf schreibt keine Nachrichten."}
+
+
+ERLAUBTE_AKTIONEN = {"bericht": _aktion_bericht, "rundruf": _aktion_rundruf}
 
 
 _MENSCHTEXT = {
