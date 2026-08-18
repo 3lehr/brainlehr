@@ -117,6 +117,7 @@ import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
                           # expliziten Batch-Lauf, nicht daneben nachgebaut.
 import ausweis  # B4.1: actor wird beglaubigt, nicht behauptet (siehe _identity)
+import gattung_filter  # S1b: Nachschlagewerk (germanquad/nasa-llis) aus der Trefferliste halten
 import speicher  # Aufgabe 79 Schritt 2: normiere_modell()/normiere_akteur() im
                   # Schreibpfad selbst, nicht nur im Meldewerkzeug (siehe _identity)
 import sicherungen  # Aufbewahrungsregel fuer die automatischen .bak-Kopien (2026-08-14)
@@ -2417,7 +2418,8 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                      stichtag: str | None = None, nur_geltende: bool = False,
                      erstellt_von: str | None = None, erstellt_bis: str | None = None,
                      actor: str | None = None, model: str | None = None,
-                     session: str | None = None, cwd: str | None = None) -> dict:
+                     session: str | None = None, cwd: str | None = None,
+                     nachschlagewerk: bool = False) -> dict:
     """Hybrid-Suche ueber Wissensknoten UND Lehren (Auftrag 2026-08-07 --
     vorher nur Knoten; Lehren sind mit 64% des Bestands die groessere
     Haelfte, hatten aber keinen Volltextindex, siehe lessons_fts in
@@ -2466,6 +2468,17 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     Default) -- erledigte/eskalierte Lehren tauchen sonst in einer Suche auf,
     die lesson_query() bewusst verbirgt. lesson_query() selbst bleibt
     UNVERAENDERT (andere Frage: Typ-/Projektfilter, keine Rangliste).
+
+    Gattung-Filter (Auftrag S1b, gemessen 2026-08-18): 4354 von 5115 Knoten
+    tragen gattung='nachschlagewerk' (germanquad, nasa-llis) -- Material zum
+    Nachschlagen, das sich nie von selbst aufdraengt. Ohne Filter lieferte
+    dieselbe Suche ueber 5 Stichproben-Anfragen 5 Nachschlagewerk-Treffer
+    unter 28 Knotentreffern. Vorgabe hier deshalb wie in den Haken
+    (kern/gattung_filter.py, SQL_ARBEITSBESTAND_NUR): nur Arbeitsbestand.
+    nachschlagewerk=True hebt den Filter fuer diesen einen Aufruf auf, statt
+    ein zweites Werkzeug zu pflegen -- wer wirklich in germanquad/nasa-llis
+    nachschlagen will, sagt es explizit. Lehren kennen kein gattung-Feld und
+    sind vom Filter unberuehrt.
 
     Zeitfenster (Auftrag 88 Schritt 1, ENTSTEHUNGSZEIT -- eine andere Frage
     als stichtag/nur_geltende, die die GELTUNG pruefen): erstellt_von/
@@ -2519,17 +2532,21 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     # werden UNVERAENDERT weiter berechnet, die betreffen den Bedeutungskanal.
     blind = _stichwortkanal_blind(query)
     ausw = ausweis.loese_auf()
+    # S1b: gleicher Filter wie in den Haken (kern/gattung_filter.py), nicht
+    # neu erfunden -- leer, wenn der Aufrufer Nachschlagewerk ausdruecklich
+    # anfordert.
+    _gattung_sql = "" if nachschlagewerk else gattung_filter.SQL_ARBEITSBESTAND_NUR
     if scope == "all":
         fts_rows = [] if blind else [r for r in conn.execute(
             f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
-               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.{_NICHT_GESPERRT_SQL}
+               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.{_NICHT_GESPERRT_SQL} {_gattung_sql}
                ORDER BY rank""",
             (fts_query,)
         ).fetchall() if _zweckprojektion_sichtbar(ausw, r["tags"])]
         allowed_node_ids = {r["id"] for r in conn.execute(
-            f"SELECT id, tags FROM knowledge_nodes WHERE {_NICHT_GESPERRT_SQL}"
+            f"SELECT id, tags FROM knowledge_nodes n WHERE {_NICHT_GESPERRT_SQL} {_gattung_sql}"
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         fts_lesson_rows = [] if blind else conn.execute(
             f"""SELECT l.id, l.description, l.type, l.severity, l.projects
@@ -2547,12 +2564,12 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
-               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?) AND n.{_NICHT_GESPERRT_SQL}
+               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?) AND n.{_NICHT_GESPERRT_SQL} {_gattung_sql}
                ORDER BY rank""",
             (fts_query, scope)
         ).fetchall() if _zweckprojektion_sichtbar(ausw, r["tags"])]
         allowed_node_ids = {r["id"] for r in conn.execute(
-            f"SELECT id, tags FROM knowledge_nodes WHERE project_id IN ('shared', ?) AND {_NICHT_GESPERRT_SQL}", (scope,)
+            f"SELECT id, tags FROM knowledge_nodes n WHERE project_id IN ('shared', ?) AND {_NICHT_GESPERRT_SQL} {_gattung_sql}", (scope,)
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         _proj_clause = geltungsbereich.sql_projects_exact("l.projects")
         fts_lesson_rows = [] if blind else conn.execute(
@@ -6164,7 +6181,7 @@ TOOLS = {
             **_identity_args(args))
     },
     "knowledge_search": {
-        "description": "Full-text search across knowledge. Returns summaries (not full content) for token efficiency.",
+        "description": "Full-text search across knowledge. Returns summaries (not full content) for token efficiency. Searches Arbeitsbestand only by default; set nachschlagewerk=True to include reference material (germanquad/nasa-llis).",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -6176,6 +6193,7 @@ TOOLS = {
                 "erstellt_von": {"type": "string", "description": "ISO-8601 date; only nodes CREATED (created_at) on or after this date are returned (inclusive, day granularity). Different question from stichtag/nur_geltende, which check legal validity, not creation time. Lessons have no decided 'created' field and are dropped entirely when this or erstellt_bis is set; the dropped count is reported as lehren_uebersprungen_zeitfilter."},
                 "erstellt_bis": {"type": "string", "description": "ISO-8601 date; only nodes created on or before this date are returned (inclusive, day granularity). See erstellt_von."},
                 "cwd": {"type": "string", "description": "Caller's working directory, for zero-hit-log provenance only; else null"},
+                "nachschlagewerk": {"type": "boolean", "description": "Default False: only Arbeitsbestand nodes (gattung != 'nachschlagewerk') are searched -- reference material like germanquad/nasa-llis (85% of all nodes) is excluded by default because it is never the target of a question, only looked up. Set True to explicitly search reference material too.", "default": False},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["query"]
@@ -6183,7 +6201,8 @@ TOOLS = {
         "handler": lambda args: knowledge_search(
             _require(args, "query", "der Suchbegriff (FTS5-Syntax: Stichwort, Phrase, AND/OR/NOT)."),
             args.get("scope", "all"), args.get("max_results", 10), stichtag=args.get("stichtag"), nur_geltende=args.get("nur_geltende", False),
-            erstellt_von=args.get("erstellt_von"), erstellt_bis=args.get("erstellt_bis"), cwd=args.get("cwd"), **_identity_args(args))
+            erstellt_von=args.get("erstellt_von"), erstellt_bis=args.get("erstellt_bis"), cwd=args.get("cwd"),
+            nachschlagewerk=args.get("nachschlagewerk", False), **_identity_args(args))
     },
     "knowledge_add": {
         "description": "Add a new knowledge node to the tree. Specify parent_path to place it in the hierarchy. "

@@ -203,7 +203,15 @@ def _retrieve_hybrid(q: dict, k: int) -> list[str]:
     ls bleibt der separate lesson_query()-Weg (andere Frage, siehe dortiger
     Docstring) -- dict.fromkeys() dedupliziert, falls dieselbe Lehre ueber
     beide Wege auftaucht."""
-    ns = kms.knowledge_search(q["text"], max_results=k)["results"]
+    # S1b/2026-08-18: knowledge_search filtert seit heute Nachschlagewerk
+    # per Vorgabe aus. HIER ausdruecklich NICHT -- der Heuhaufen ist der
+    # Zweck dieser Messung (Knoten 096669de: germanquad/nasa-llis sind
+    # realistische Ablenkung, gegen die der Abruf seine Nadeln finden
+    # muss, nie Ziel). Ohne diese Zeile wuerden alle kuenftigen Zahlen
+    # ueber einen kleineren Bestand erhoben und waeren mit keiner
+    # frueheren Messung mehr vergleichbar -- eine stille Verbesserung,
+    # die nichts verbessert hat.
+    ns = kms.knowledge_search(q["text"], max_results=k, nachschlagewerk=True)["results"]
     ls = kms.lesson_query(query=q["text"], max_results=k)["results"]
     hybrid_ids = [
         f"lesson:{r['id']}" if r.get("kind") == "lesson" else f"node:{r['path']}"
