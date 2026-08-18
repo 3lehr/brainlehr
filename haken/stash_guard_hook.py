@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """PreToolUse-Guard (Bash): `git stash` in JEDER schreibenden Form verhindern.
 
+Dies ist der Mechanismus zu L-3d03bd (5 Vorkommen, zur Regel eskaliert) und
+zu dessen Vorfall L-d07097. Die Kennungen stehen hier, weil
+berichte/vorschlag.py eine behandelte Lehre genau daran erkennt: ohne sie
+blieb L-3d03bd im Bericht als unbehandelter Kandidat stehen, obwohl dieser
+Waechter seit dem 2026-08-15 global verdrahtet ist und nachweislich sperrt.
+Nachgetragen 2026-08-18, nachdem genau das gemessen wurde.
+
 Anlass (2026-08-15): `git stash` wirkt auf den GANZEN Arbeitsbaum -- in
 einer Sitzung mit mehreren gleichzeitig schreibenden Agenten kann ein
 Stapelvorgang fremde Arbeit einspielen oder wegnehmen (2026-07-31: fuenf
