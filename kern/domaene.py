@@ -192,6 +192,42 @@ def pruefe(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     }
 
 
+def lies_dienst(domaene_id: str, db: str | Path | None = None) -> dict[str, Any] | None:
+    """Die Startbeschreibung einer importierten Domaene -- oder None.
+
+    Gegenstueck zu lies_oberflaeche(), gleiche Unterscheidung: None heisst
+    "hier nicht importiert", ein leeres dict heisst "importiert, bringt aber
+    keinen eigenen Dienst mit" (nach ADR-013 zulaessig -- eine Domaene darf
+    reines Wissen sein). Zwei verschiedene Lagen, zwei verschiedene
+    Antworten.
+
+    WARUM (INT-REG-001): Ohne diesen Weg kennt das atelier Port und
+    Lebenszeichen einer Domaene nicht und muss sie fest verdrahten -- genau
+    das war der Zustand bis zum 2026-08-18 (port = 8799, Domaene
+    'einzelunternehmer' im Quelltext). Der erste Anlauf las die Angaben aus
+    der HTML-Seite /eintrag/<kennung> zurueck; das haengt am Format einer
+    Anzeigefunktion und ist kein Vertrag. Deshalb hier eine eigene Quelle."""
+    zeile = None
+    with speicher.lesen(db) as conn:
+        zeile = conn.execute(
+            "SELECT content FROM knowledge_nodes WHERE id = ? AND zurueckgezogen = 0",
+            (f"domaenendienst-{domaene_id}",),
+        ).fetchone()
+    if zeile is None:
+        # Kein Dienst-Knoten: entweder gar nicht importiert oder ohne Dienst.
+        # Die Wurzel entscheidet, welche der beiden Lagen vorliegt.
+        with speicher.lesen(db) as conn:
+            wurzel = conn.execute(
+                "SELECT 1 FROM knowledge_nodes WHERE id = ? AND zurueckgezogen = 0",
+                (f"domaene-{domaene_id}",),
+            ).fetchone()
+        return {} if wurzel is not None else None
+    try:
+        return json.loads(zeile["content"] or "{}")
+    except json.JSONDecodeError:
+        return {}
+
+
 def lies_oberflaeche(domaene_id: str, db: str | Path | None = None) -> dict[str, Any] | None:
     """Die Bildschirm-Beschreibung einer importierten Domaene -- oder None.
 

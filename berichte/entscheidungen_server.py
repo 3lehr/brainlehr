@@ -865,6 +865,27 @@ def _domaene_import(paket: dict) -> dict:
     return domaene.speichere(paket)
 
 
+def _domaene_dienst(domaene_id: str) -> dict:
+    """Port und Lebenszeichen einer importierten Domaene (INT-REG-001).
+
+    Gegenstueck zu /api/domaene-oberflaeche, gleiche drei Antworten:
+      {"importiert": False}                    hier nicht importiert
+      {"importiert": True, "dienst": {}}       importiert, ohne eigenen Dienst
+      {"importiert": True, "dienst": {...}}    importiert, mit Startangaben
+    Ohne diesen Weg muesste das atelier Port und Domaenenname fest verdrahten
+    (Zustand bis 2026-08-18) oder sie aus einer Anzeige-HTML zurueckrechnen --
+    Letzteres haengt am Format einer Darstellungsfunktion und ist kein
+    Vertrag."""
+    try:
+        import domaene
+    except ImportError:
+        return {"verfuegbar": False}
+    dienst = domaene.lies_dienst(domaene_id)
+    if dienst is None:
+        return {"importiert": False}
+    return {"importiert": True, "dienst": dienst}
+
+
 def _domaene_oberflaeche(domaene_id: str) -> dict:
     """Die Bildschirm-Beschreibung einer IMPORTIERTEN Domaene.
 
@@ -1137,6 +1158,11 @@ class Handler(BaseHTTPRequestHandler):
                 kopf = p.read_text(encoding="utf-8").split("\n", 1)[0]
                 karten.append({"kennung": p.stem, "titel": kopf.lstrip("# ").strip() or p.stem})
             self._json({"karten": karten})
+            return
+        if self.path.startswith("/api/domaene-dienst?"):
+            from urllib.parse import parse_qs, urlparse
+            kennung = (parse_qs(urlparse(self.path).query).get("domaene") or [""])[0]
+            self._json(_domaene_dienst(kennung))
             return
         if self.path.startswith("/api/domaene-oberflaeche?"):
             from urllib.parse import parse_qs, urlparse
