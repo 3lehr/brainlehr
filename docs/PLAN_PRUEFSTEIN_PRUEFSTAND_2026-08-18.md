@@ -17,6 +17,17 @@ Sprintbezug S8 (Prüfer, die urteilen statt zählen). Kein Ablösen.
 - Bestand gemessen: 19 `xfail`-Fundstellen in `tests/`, davon **13 ohne
   `strict=True`**.
 
+> **BERICHTIGT 2026-08-18T06:20:00+0200.** Diese beiden Zahlen sind falsch. Sie
+> stammen aus `grep` über das *Wort* `xfail` und zählten Kommentare, Docstrings
+> und Erwähnungen mit. Über den Syntaxbaum gemessen gibt es **7 echte Marker**,
+> davon **einen ohne `strict=True`** — und der ist im eigenen Docstring
+> ausdrücklich als gewollt begründet. Gemeldet hat das der ausführende Agent
+> gegen meine Vorgabe; genau dafür steht der Satz „halte dich an den Code und
+> melde die Abweichung" in jedem Auftrag. Der Plan behält seine Richtung: die
+> Zahl war das Argument für die Dringlichkeit, nicht für die Engstelle. Aber sie
+> war ein Messfehler derselben Klasse, gegen die dieser Prüfstein gebaut wird —
+> ein Zählwerkzeug, das etwas anderes zählt als die Sache.
+
 ## Die Engstelle, und warum dort
 
 Die sieben Vorkommen haben verschiedene Symptome (Harness strenger, großzügiger,
