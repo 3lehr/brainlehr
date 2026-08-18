@@ -88,5 +88,5 @@ def test_root_is_the_only_normative_catalog():
     assert "BDW-E17" in text and "Später entscheiden" in text
     assert "Produkt-Teststatus" in text and "NOT RUN" in text
     marker = "Untergeordnet zu `docs/REQUIREMENTS_BRAINLEHR.md`; lokale IDs sind nur Umsetzungsgates."
-    for name in ("REQUIREMENTS_PROMPT_INVARIANZ.md", "REQUIREMENTS_SESSION_CHECKPOINT.md"):
+    for name in ("REQUIREMENTS_PROMPT_INVARIANZ.md", "REQUIREMENTS_SESSION_CHECKPOINT.md", "REQUIREMENTS_INTERFACE_KOMPAT.md"):
         assert marker in (ROOT / "docs" / name).read_text()

@@ -130,6 +130,7 @@ BSI-Punkte sind Sicherheitsbaseline/Guidance, keine Compliancebehauptung.
 
 - `docs/REQUIREMENTS_PROMPT_INVARIANZ.md`
 - `docs/REQUIREMENTS_SESSION_CHECKPOINT.md`
+- `docs/REQUIREMENTS_INTERFACE_KOMPAT.md` (Interface- und Kompatibilitätsvertrag zu `BDW-F07`)
 
 Ihre lokalen IDs bleiben für Umsetzung und Regression erhalten. Bei
 Widerspruch gilt dieser Root; der Konflikt wird hier an der betroffenen
