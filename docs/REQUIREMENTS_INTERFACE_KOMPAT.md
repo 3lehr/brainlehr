@@ -35,6 +35,7 @@ atomar). Hier stehen nur die Interface-IDs, mit denen dieses AC prüfbar wird.
 | INT-REG-001 | Domänenregistry | Brainlehr | Atelier | Mehrere Domänen sind adressierbar; `einzelunternehmer` ist kein fester Wert im Klienten. | TEST-INT-REG-001 |
 | INT-DNST-001 | Dienst-/Capability-Lifecycle | Paket | Brainlehr | Ein validierter `dienst` wird persistiert, hat Zustand (angemeldet/aktiv/stillgelegt) und wird nie implizit gestartet. | TEST-INT-DNST-001 |
 | INT-UPD-001 | Reimport, Migration, Rollback | Paketautor | Brainlehr | Gleiche ID mit neuem Inhalt aktualisiert sichtbar und rücknehmbar; `INSERT OR IGNORE` genügt nicht. | TEST-INT-UPD-001 |
+| INT-UPD-002 | Importkennung und Rücknahme | Brainlehr | Betrieb | Jeder Import trägt eine Kennung, über die genau dieser Import zurückgenommen wird. **Offen** — Update ist gebaut, Rücknahme nicht. | TEST-INT-UPD-002 |
 | INT-SNAP-001 | Snapshotgrenze (`cb24f119`) | Brainlehr | Abruf/Prüfkorpus | Ein Lauf liest einen festgehaltenen Stand, nicht bei jedem Aufruf die gegenwärtige DB. | TEST-INT-SNAP-001 |
 | INT-GATE-001 | Cross-Repo-Gate | beide Repos | CI/Abnahme | Der repoübergreifende Vertragstest darf nicht `skip`en; fehlender Gegenpfad ist rot. | TEST-INT-GATE-001 |
 
@@ -62,7 +63,8 @@ atomar). Hier stehen nur die Interface-IDs, mit denen dieses AC prüfbar wird.
    Zeilen und protokolliert die Vorfassung; in Kraft gesetzte Regeln behalten
    ihren Rang nur bei ausdrücklicher Entscheidung (ADR-018).
 2. Jeder Import trägt eine Importkennung, über die genau dieser Import
-   zurückgenommen werden kann.
+   zurückgenommen werden kann (`INT-UPD-002`, **noch offen**: Schritt 1 ist
+   seit 2026-08-18 gebaut, die Rücknahme nicht).
 3. Ein abgelehntes Paket verändert nichts — auch nicht teilweise.
 
 ## Was hier bewusst nicht steht

@@ -22,7 +22,8 @@ OPENLEHR = Path("/Volumes/daten/Begod2026/openlehr_einzelunternehmer")
 
 INTERFACES = (
     "INT-PKG-001", "INT-VER-001", "INT-VER-002", "INT-API-001", "INT-API-002",
-    "INT-REG-001", "INT-DNST-001", "INT-UPD-001", "INT-SNAP-001", "INT-GATE-001",
+    "INT-REG-001", "INT-DNST-001", "INT-UPD-001", "INT-UPD-002", "INT-SNAP-001",
+    "INT-GATE-001",
 )
 
 
@@ -93,28 +94,101 @@ def test_int_ver_002_alle_echten_pakete_tragen_die_version():
         assert json.loads(pfad.read_text(encoding="utf-8"))["contract_version"] == 1
 
 
-@pytest.mark.xfail(strict=True, reason="INT-UPD-001 nicht gebaut: speichere() nutzt INSERT OR IGNORE")
 def test_int_upd_001_reimport_aktualisiert_gleiche_kennung(frische_db):
+    """Rot vor gruen (2026-08-18, vor dieser Aenderung): xfail(strict=True)
+    schlug fehl, weil speichere() nur INSERT OR IGNORE nutzte -- ein zweiter
+    Import mit geaendertem Inhalt aenderte am Bestand nichts, 'neue Fassung'
+    kam im Bestand nie an."""
     domaene.speichere(_paket(), db=frische_db)
     neu = _paket(quellen={"z1": {"bezeichnung": "Betriebsausgaben, neue Fassung"}})
-    domaene.speichere(neu, db=frische_db)
+    zweiter = domaene.speichere(neu, db=frische_db)
     with sqlite3.connect(str(frische_db)) as conn:
         inhalt = " ".join(r[0] or "" for r in conn.execute("select summary from knowledge_nodes"))
     assert "neue Fassung" in inhalt
+    assert zweiter["aktualisiert"] == 1
+    assert zweiter["gespeichert"] == 0
 
 
-@pytest.mark.xfail(strict=True, reason="INT-DNST-001 nicht gebaut: dienst wird geprueft, aber nie persistiert")
+def test_int_upd_001_dritter_import_aktualisiert_wieder_identischer_nicht(frische_db):
+    """Grenzwert: ein dritter Import mit erneut geaendertem Inhalt
+    aktualisiert wieder; ein identischer Reimport zaehlt als 'uebersprungen',
+    nicht als 'aktualisiert'."""
+    domaene.speichere(_paket(), db=frische_db)
+    zweites = _paket(quellen={"z1": {"bezeichnung": "Betriebsausgaben, neue Fassung"}})
+    domaene.speichere(zweites, db=frische_db)
+
+    identisch = domaene.speichere(zweites, db=frische_db)
+    assert identisch["aktualisiert"] == 0
+    assert identisch["uebersprungen"] == 4  # Wurzel + Quelle + Regel + Oberflaeche, unveraendert
+
+    drittes = _paket(quellen={"z1": {"bezeichnung": "Betriebsausgaben, dritte Fassung"}})
+    dritter = domaene.speichere(drittes, db=frische_db)
+    assert dritter["aktualisiert"] == 1
+    with sqlite3.connect(str(frische_db)) as conn:
+        inhalt = " ".join(r[0] or "" for r in conn.execute("select summary from knowledge_nodes"))
+    assert "dritte Fassung" in inhalt
+
+
+def test_int_upd_001_inkraftgesetzte_regel_wird_von_reimport_nicht_veraendert(frische_db):
+    """Negativfall: eine bereits in Kraft gesetzte Regel wird von einem
+    Reimport mit geaendertem Inhalt NICHT angefasst -- setze_in_kraft()
+    bleibt der einzige Weg aus der Wirkung Null heraus (ADR-018)."""
+    domaene.speichere(_paket(), db=frische_db)
+    domaene.setze_in_kraft("vertragsprobe", "Betreiber", "Testprobe", norm_rang=3, db=frische_db)
+
+    neu = _paket(regeln=[{"id": "r1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben, geaendert"}])
+    ergebnis = domaene.speichere(neu, db=frische_db)
+
+    with sqlite3.connect(str(frische_db)) as conn:
+        row = conn.execute(
+            "select content, norm_rang, norm_entscheidung from knowledge_nodes "
+            "where id='domaenenregel-vertragsprobe-r1'"
+        ).fetchone()
+    assert "geaendert" not in (row[0] or "")
+    assert row[1] == 3 and row[2] == "norm_unbefristet"
+    # Die Regel-Zeile ist in Kraft und bleibt 'uebersprungen', nicht 'aktualisiert'.
+    assert ergebnis["aktualisiert"] == 0
+
+
 def test_int_dnst_001_dienst_wird_persistiert(frische_db):
-    domaene.speichere(_paket(dienst={"kennung": "de.vertragsprobe.dienst", "start": "manuell"}), db=frische_db)
+    """Rot vor gruen (2026-08-18, vor dieser Aenderung): xfail(strict=True)
+    schlug fehl, weil 'dienst' zwar in pruefe() geprueft, aber in speichere()
+    nie in eine Zeile gebaut wurde -- 'art:dienst' kam im Bestand nie vor."""
+    ergebnis = domaene.speichere(
+        _paket(dienst={"kennung": "de.vertragsprobe.dienst", "start": "manuell"}), db=frische_db
+    )
     with sqlite3.connect(str(frische_db)) as conn:
         treffer = conn.execute(
             "select count(*) from knowledge_nodes where tags like '%art:dienst%'"
         ).fetchone()[0]
     assert treffer == 1
+    assert ergebnis["gespeichert"] == 5  # Wurzel + Quelle + Regel + Oberflaeche + Dienst
 
 
-@pytest.mark.xfail(strict=True, reason="INT-GATE-001 nicht gebaut: der Cross-Repo-Test darf noch skippen")
+def test_int_dnst_001_leerer_dienst_legt_keine_zeile_an(frische_db):
+    """Grenzwert der Gegenrichtung: dienst={} (Vorgabewert der meisten
+    Wissens-Pakete) erzeugt keinen leeren Knoten."""
+    domaene.speichere(_paket(dienst={}), db=frische_db)
+    with sqlite3.connect(str(frische_db)) as conn:
+        treffer = conn.execute(
+            "select count(*) from knowledge_nodes where tags like '%art:dienst%'"
+        ).fetchone()[0]
+    assert treffer == 0
+
+
 def test_int_gate_001_cross_repo_gate_skippt_nicht():
     quelle = OPENLEHR / "dienst" / "tests" / "test_euer_vorschlag.py"
     assert quelle.exists(), "Gegenpfad fehlt -- das ist rot, nicht uebersprungen"
     assert "pytest.skip" not in quelle.read_text(encoding="utf-8")
+
+
+@pytest.mark.xfail(strict=True, reason="INT-UPD-002 nicht gebaut: ein Import traegt keine Kennung, ueber die er zurueckgenommen wird")
+def test_int_upd_002_import_ist_ruecknehmbar(frische_db):
+    """Ohne Ruecknahme ist ein falsches Paket nur von Hand aus dem Bestand zu
+    schneiden -- und niemand weiss danach, was dazugehoerte."""
+    ergebnis = domaene.speichere(_paket(), db=frische_db)
+    kennung = ergebnis["importkennung"]
+    domaene.nimm_import_zurueck(kennung, db=frische_db)
+    with sqlite3.connect(str(frische_db)) as conn:
+        (n,) = conn.execute("select count(*) from knowledge_nodes").fetchone()
+    assert n == 0

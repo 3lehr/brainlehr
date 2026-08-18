@@ -19,6 +19,17 @@ final class DomaeneImportUebersetzungTests: XCTestCase {
         XCTAssertEqual(e.text, "„Steuer“ gilt jetzt. Eine Regel wurde übernommen.")
     }
 
+    // INT-UPD-001: rot vor gruen -- vor dieser Unterscheidung sah der
+    // Bildschirm nur 'gespeichert' und meldete bei einem reinen
+    // Aktualisierungs-Import "enthielt nichts Neues".
+    func testAktualisierungIstNichtNichtsNeues() {
+        XCTAssertEqual(DomaeneImportUebersetzung.wirkung(["gespeichert": 0, "aktualisiert": 3]), .aktualisiert)
+        XCTAssertEqual(DomaeneImportUebersetzung.wirkung(["gespeichert": 2, "aktualisiert": 0]), .angelegt)
+        XCTAssertEqual(DomaeneImportUebersetzung.wirkung(["gespeichert": 0, "aktualisiert": 0]), .unveraendert)
+        // Alte Antwort ohne den neuen Schluessel darf nicht als Aenderung gelten.
+        XCTAssertEqual(DomaeneImportUebersetzung.wirkung(["gespeichert": 0]), .unveraendert)
+    }
+
     // Negativfall: der fachliche Grund aus kern/domaene.py wird woertlich
     // gezeigt -- kein Rohfehler, kein Dateiname, keine Zeilennummer.
     func testAbgelehntZeigtFachlichenGrund() {

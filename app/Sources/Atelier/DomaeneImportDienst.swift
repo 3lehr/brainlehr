@@ -87,11 +87,21 @@ enum DomaeneImportDienst {
         }
         let name = (roh["bezeichnung"] as? String) ?? "Die Domäne"
         let anzahl = roh["anzahl_regeln"] as? Int
-        let neuGespeichert = ((roh["gespeichert"] as? Int) ?? 0) > 0
-        guard neuGespeichert else {
+        switch DomaeneImportUebersetzung.wirkung(roh) {
+        case .unveraendert:
             return DomaeneImportErgebnis(
                 titel: "Bereits vorhanden",
                 text: "„\(name)“ war schon gespeichert. Diese Datei enthielt nichts Neues.")
+        case .aktualisiert:
+            // INT-UPD-001: ein Reimport mit geaendertem Inhalt legt nichts an
+            // und ist trotzdem nicht folgenlos -- der alte Satz haette hier
+            // "nichts Neues" gemeldet, waehrend eine korrigierte Regel gerade
+            // eingespielt wurde.
+            return DomaeneImportErgebnis(
+                titel: "Aktualisiert",
+                text: "„\(name)“ war schon gespeichert und wurde aufgefrischt. Was bereits gilt, bleibt unverändert.")
+        case .angelegt:
+            break
         }
         let satz: String
         switch anzahl {

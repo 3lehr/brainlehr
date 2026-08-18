@@ -45,4 +45,24 @@ public enum DomaeneImportUebersetzung {
         let grund = (antwort["grund"] as? String) ?? "Aus dem Paket ließ sich keine Regel übernehmen."
         return DomaeneImportErgebnis(titel: "Nicht übernommen", text: grund)
     }
+
+    /// INT-UPD-001: seit dem Reimport-Update ist "nichts angelegt" nicht mehr
+    /// dasselbe wie "nichts geaendert". Wer nur auf 'gespeichert' schaut,
+    /// meldet einem Menschen "enthielt nichts Neues", waehrend die Datei
+    /// gerade eine korrigierte Fachregel eingespielt hat.
+    /// Reine Funktion, damit die Unterscheidung pruefbar bleibt -- der
+    /// Bildschirm (Atelier) baut daraus nur noch den Satz.
+    public static func wirkung(_ antwort: [String: Any]) -> DomaeneImportWirkung {
+        let neu = (antwort["gespeichert"] as? Int) ?? 0
+        let geaendert = (antwort["aktualisiert"] as? Int) ?? 0
+        if neu > 0 { return .angelegt }
+        if geaendert > 0 { return .aktualisiert }
+        return .unveraendert
+    }
+}
+
+public enum DomaeneImportWirkung: Equatable, Sendable {
+    case angelegt
+    case aktualisiert
+    case unveraendert
 }

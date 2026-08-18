@@ -342,20 +342,26 @@ def speichere(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     kern/regelpaket.py: das Format traegt kein Rang-Feld, damit nichts zu
     ignorieren ist. Erst setze_in_kraft() macht eine Regel wirksam.
 
-    Idempotent ueber die Primaerschluessel-id (INSERT OR IGNORE): ein
-    zweiter Import desselben Pakets legt nichts doppelt an und veraendert
-    eine bereits in Kraft gesetzte Regel nicht.
+    Idempotent ueber die Primaerschluessel-id (INSERT OR IGNORE), und
+    AKTUALISIEREND bei geaendertem Inhalt (INT-UPD-001): existiert die id
+    schon, wird title/summary/content/tags/source/updated_at ueberschrieben
+    -- aber NUR, wenn die Zeile noch 'keine_norm' traegt UND sich der Inhalt
+    tatsaechlich unterscheidet. Eine bereits in Kraft gesetzte Regel
+    (setze_in_kraft()) wird von einem Reimport nie angefasst, unveraenderter
+    Inhalt zaehlt als 'uebersprungen', nicht als 'aktualisiert'.
 
     Rueckgabe: das Ergebnis von pruefe(), erweitert um 'gespeichert' (Anzahl
-    neu angelegter Zeilen) und 'uebersprungen' (schon vorhanden). Bei
-    Ablehnung sind beide 0 -- ein abgelehntes Paket schreibt nichts."""
+    neu angelegter Zeilen), 'aktualisiert' (Anzahl inhaltlich geaenderter,
+    noch nicht in Kraft gesetzter Zeilen) und 'uebersprungen' (unveraendert
+    oder bereits in Kraft, also nicht angefasst). Bei Ablehnung sind alle
+    drei 0 -- ein abgelehntes Paket schreibt nichts."""
     # db durchreichen: die Bestandspruefung in pruefe() muss gegen DENSELBEN
     # Bestand laufen, in den gleich geschrieben wird -- sonst pruefte diese
     # Zeile (bei einer abweichenden Test- oder Zweit-DB) am falschen Ort und
     # ein 'bestand:'-Verweis waere blind bestanden oder blind durchgefallen.
     ergebnis = pruefe(paket, db=db)
     if not ergebnis["angenommen"]:
-        return {**ergebnis, "gespeichert": 0, "uebersprungen": 0}
+        return {**ergebnis, "gespeichert": 0, "aktualisiert": 0, "uebersprungen": 0}
 
     domaene_id = paket["domaene"]
     herkunft = paket.get("herkunft") or domaene_id
@@ -367,16 +373,54 @@ def speichere(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     # Die Oberflaeche reist mit -- sonst kommt beim Empfaenger das Wissen an
     # und kein Bildschirm (ADR-012/ADR-013).
     zeilen.append(_oberflaeche_zeile(domaene_id, herkunft, paket.get("oberflaeche"), ts))
+    # INT-DNST-001: der Startbefehl reist mit -- ein leerer 'dienst' ({})
+    # legt bewusst KEINE Zeile an, damit ein Paket ohne eigenen Dienst (die
+    # heutigen Wissens-Pakete) keinen leeren Knoten erzeugt (analog dazu,
+    # dass exportiere() 'dienst': {} liefert, ohne dass hier je etwas
+    # geschrieben wurde). Wirkung Null wie jede andere Zeile -- der Dienst
+    # wird dabei NIE gestartet, nur abgelegt.
+    if paket["dienst"]:
+        zeilen.append(_dienst_zeile(domaene_id, herkunft, paket["dienst"], ts))
 
-    gespeichert = uebersprungen = 0
+    gespeichert = aktualisiert = uebersprungen = 0
     with speicher.schreiben(db) as conn:
         for z in zeilen:
             cur = conn.execute(_INSERT_SQL, z)
             if cur.rowcount:
                 gespeichert += 1
+            elif _aktualisiere_falls_geaendert(conn, z):
+                aktualisiert += 1
             else:
                 uebersprungen += 1
-    return {**ergebnis, "gespeichert": gespeichert, "uebersprungen": uebersprungen}
+    return {**ergebnis, "gespeichert": gespeichert, "aktualisiert": aktualisiert, "uebersprungen": uebersprungen}
+
+
+def _aktualisiere_falls_geaendert(conn, zeile: tuple) -> bool:
+    """INT-UPD-001: die id existiert schon (INSERT OR IGNORE hat nichts
+    angelegt) -- prueft, ob sie noch 'keine_norm' traegt und sich der
+    Inhalt unterscheidet, und schreibt nur dann. Eine bereits in Kraft
+    gesetzte Zeile (setze_in_kraft()) wird hier nie angefasst -- dieselbe
+    Schranke wie in setze_in_kraft() selbst, nur von der anderen Seite."""
+    id_, title, summary, content, tags, source, ts = (
+        zeile[0], zeile[4], zeile[5], zeile[6], zeile[8], zeile[9], zeile[12],
+    )
+    bestand = conn.execute(
+        "SELECT title, summary, content, tags, source, norm_entscheidung "
+        "FROM knowledge_nodes WHERE id=?",
+        (id_,),
+    ).fetchone()
+    if bestand is None or bestand["norm_entscheidung"] != "keine_norm":
+        return False
+    if (bestand["title"], bestand["summary"], bestand["content"], bestand["tags"], bestand["source"]) == (
+        title, summary, content, tags, source,
+    ):
+        return False
+    conn.execute(
+        "UPDATE knowledge_nodes SET title=?, summary=?, content=?, tags=?, source=?, updated_at=? "
+        "WHERE id=? AND norm_entscheidung='keine_norm'",
+        (title, summary, content, tags, source, ts, id_),
+    )
+    return True
 
 
 def setze_in_kraft(
@@ -585,6 +629,25 @@ def _oberflaeche_zeile(domaene_id: str, herkunft: str, oberflaeche: Any, ts: str
         content=json.dumps(oberflaeche or {}, ensure_ascii=False),
         level=1,
         tags=["domaenenpaket-import", f"domaene:{domaene_id}", "oberflaeche"],
+        source=f"domaenenpaket:{domaene_id}",
+        ts=ts,
+    )
+
+
+def _dienst_zeile(domaene_id: str, herkunft: str, dienst: dict[str, Any], ts: str) -> tuple:
+    """INT-DNST-001: der Startbefehl als EIN Knoten, analog _oberflaeche_zeile.
+    Nur fuer nicht-leeren 'dienst' aufgerufen (siehe speichere()) -- ein
+    leeres Paket legt keine Zeile an. Traegt KEINEN Rang (Wirkung Null,
+    ADR-018): der Dienst wird hier abgelegt, nie gestartet."""
+    return _zeile(
+        id_=f"domaenendienst-{domaene_id}",
+        path=f"{PARENT_PREFIX}/{domaene_id}/dienst",
+        parent_path=f"{PARENT_PREFIX}/{domaene_id}",
+        title=f"Dienst der Domaene '{domaene_id}'",
+        summary=_kuerzen(f"Startbeschreibung fuer den Dienst von '{domaene_id}'. Wird abgelegt, nie gestartet."),
+        content=json.dumps(dienst, ensure_ascii=False),
+        level=1,
+        tags=["domaenenpaket-import", f"domaene:{domaene_id}", "art:dienst"],
         source=f"domaenenpaket:{domaene_id}",
         ts=ts,
     )
