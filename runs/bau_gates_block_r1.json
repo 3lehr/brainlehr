@@ -1,0 +1,69 @@
+{
+  "block": "R01-U05",
+  "gates": [
+    {
+      "id": "BDW-R01",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": null,
+      "begruendung": "AC1 verlangt eine Boundary-Pruefung, die Governance Brainlehr und Fachlogik Openlehr zuordnet. Gesucht: grep -rl 'Boundary\\|Openlehr' tests/*.py kern/*.py melder/*.py; grep -rl ADR-007 . Treffer sind Domaenenpaket-Import (kern/domaene.py, test_domaene_*.py) und Belegvertrag (kern/belegvertrag.py) -- beide pruefen Regel-Quelle-Konsistenz beim Import, nicht die Schicht-Zuordnung Governance/Fachlogik. Kein Test deckt AC1."
+    },
+    {
+      "id": "BDW-R04",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": null,
+      "begruendung": "AC1 verlangt: fuer jede Reglerstufe bleiben Beleggate und harte Stopps identisch wirksam. Gesucht: grep -rl 'vertrauensregler\\|Vertrauensregler' . und grep 'kern.vertrauen' tests/*.py. kern/vertrauen.py existiert mit demo()-Selbsttest (import als __main__), aber kein tests/test_*.py importiert ihn. demo() prueft nur Ruecksprung auf Vorgabe, mindestens()/darf_raeumen() und dass IMMER_FRAGEN 4 Eintraege inkl. 'geld' hat -- das ist eine Struktur-Zusicherung, kein Nachweis dass Beleggate/harte Stopps bei JEDER Stufe unveraendert wirken. Andere Treffer (tests/test_abrufweg_regler.py) pruefen einen UI-Simulatorregler in entscheidungen.html, thematisch ein anderer 'Regler'."
+    },
+    {
+      "id": "BDW-R05",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": null,
+      "begruendung": "AC1 verlangt: derselbe Kern besteht einen lokalen MCP-Lauf mit austauschbarem Modellpfad und ausgewiesener Quelle/Geltung. Gepruefte Datei: tests/test_knowledge_mcp_server.py. test_access_identity_env_and_update_logging setzt BEGOD_KNOWLEDGE_MODEL per monkeypatch und prueft, dass Modellname+Session im access_log landen -- das ist Audit-Logging von Metadaten, kein Nachweis eines lokalen MCP-Laufs mit austauschbarem Modellpfad und ausgewiesener Quelle/Geltung je Antwort. Kein Treffer fuer 'austauschbar' oder 'Modellpfad' im Repo ausserhalb des Katalogs."
+    },
+    {
+      "id": "BDW-U01",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": null,
+      "begruendung": "AC1: Nutzer kann keine hoehere Stufe als die Org-Grenze setzen, Absenkung wirkt sofort. Gesucht: grep -rln 'org.setzt|Org-Grenze|Maximalstufe|org_ceiling|orgceiling|absenk' --include=*.py . -- einziger Treffer ist tests/test_requirements_brainlehr.py (Katalog-Metatest, prueft nur Tabellenformat). Kein Org-Ceiling-Mechanismus im Code, keine Deckung."
+    },
+    {
+      "id": "BDW-U02",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": null,
+      "begruendung": "AC1: Beleg nennt verwendete/abgelehnte Quellen und Policywirkung ohne geschuetzten Inhalt. Gesucht: grep -rln 'Quellen-.*Beleg|Policywirkung|abgelehnte Quellen' --include=*.py . -- einziger Treffer tests/test_requirements_brainlehr.py (Katalog-Metatest). Kein Antwort-Beleg-Mechanismus im Code gefunden."
+    },
+    {
+      "id": "BDW-U03",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": null,
+      "begruendung": "AC1: privater Testinhalt erscheint ohne Freigabe nie in Firmenabruf/-export. Gesucht: grep -rln 'private.*firma|Firmenabruf|Firmen-Sicht|Firmenexport' --include=*.py . -- kein Treffer im Repo (auch nicht im Katalog-Metatest). Keine getrennten Sichten (privat/Firma) im Code identifiziert."
+    },
+    {
+      "id": "BDW-U04",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": null,
+      "begruendung": "AC1: nicht gelisteter Connector kann weder aktiviert noch per Direktaufruf genutzt werden. Gesucht: grep -rln 'Connector|connector' --include=*.py . -- Treffer nur in haken/antwort_abruf.py, dort ist '/connector' ein Wissensknoten-Pfad in einer Test-Fixture (Melder-Feuerzaehler-Test), thematisch unabhaengig von einer Connector-Allowlist. Kein Allowlist-Mechanismus im Code."
+    },
+    {
+      "id": "BDW-U05",
+      "urteil": "LUECKE",
+      "pruefbefehl": null,
+      "testdatei": null,
+      "gruen": null,
+      "begruendung": "AC1: Zweck, Ziel, Klassifikation und ggf. Genehmigung werden vor Export geprueft und auditiert. Gesucht: grep -rln 'risikobasiert|Genehmigung|Vier-Augen' --include=*.py . -- Treffer in schreibpruefstand/stadtwerke_korpus.py betreffen ein unabhaengiges Test-Korpus-Thema (Ueberstunden-Genehmigung als Beispielinhalt), keine Export-Policy-Pruefung. Einziger Katalog-bezogener Treffer ist der Metatest. Kein Export-Policy-Mechanismus im Code."
+    }
+  ]
+}
