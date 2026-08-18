@@ -120,6 +120,17 @@ $ap_output"
   fi
 fi
 
+fremdrollen="$repo_root/melder/fremdrollen.py"
+if [[ -f "$fremdrollen" ]]; then
+  # Erfundene Agentennamen in Fertigkeiten und Rollennamen fremder Haeuser.
+  # --streng: hier soll es halten, im Normalbetrieb bleibt es Hinweisrecht.
+  if ! fr_output="$(python3 "$fremdrollen" --streng 2>&1)"; then
+    output="$output
+$fr_output"
+    status=1
+  fi
+fi
+
 planberuehrung="$repo_root/melder/planberuehrung.py"
 if [[ -f "$planberuehrung" ]]; then
   # Meldet Commits, die Code aendern, waehrend der zugehoerige Plan
