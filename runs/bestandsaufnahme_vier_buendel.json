@@ -1,0 +1,106 @@
+{
+  "erzeugt_am": "2026-08-18T00:00:00+0200",
+  "auftrag": "Bestandsaufnahme, kein Bau -- wiederverwendbare Bausteine je Buendel/Einzelgate aus Betreiberentscheidung 2026-08-18 (Knoten 9d77ad16)",
+  "vorbefund": "Katalog docs/REQUIREMENTS_BRAINLEHR.md fuehrt BDW-E02 (Zeile 82) und BDW-E10 (Zeile 90) bereits mit Status PASS -- beide Tests existieren und laufen (tests/test_enigma_zweckprojektion_unbekannte_rolle_default_deny.py, tests/test_auditkette.py, per ls bestaetigt). Sie sind damit keine Luecke im engeren Sinn; der Auftrag nennt sie trotzdem als 'offen, keinem Buendel zugeordnet' -- Diskrepanz wird hier gemeldet, nicht stillschweigend uebernommen.",
+  "buendel": [
+    {
+      "name": "A Gedaechtnisarten getrennt",
+      "gates": ["BDW-F01", "BDW-F02", "BDW-F03"],
+      "vorhanden": [
+        {"pfad": "schema.sql:15 CREATE TABLE knowledge_nodes", "traegt": "title/summary/content/tags/source/confidence + norm_rang/norm_art/norm_entscheidung (Fakt-vs-Norm-Achse)", "verwendbar_fuer": "F02 semantische Claims -- Quelle (source) und Status (norm_entscheidung) sind bereits Spalten, Ableitung nicht"},
+        {"pfad": "schema.sql:1350 CREATE TABLE knowledge_fassungen", "traegt": "Vorfassungen eines Knotens", "verwendbar_fuer": "F02-AC1 Korrekturpfad -- eine Versionshistorie existiert bereits, ungeprueft ob sie fuer Claims genutzt wird"},
+        {"pfad": "schema.sql:584 CREATE TABLE lessons_learned", "traegt": "type(error|insight|pattern|antipattern), root_cause, resolution, occurrences, first_seen/last_seen, bemerkt_woran", "verwendbar_fuer": "F01 episodisch-nah -- Erfahrungsereignis mit Zeitstempel, aber keine Situationsbindung im Sinn von Ort/Kontext/Akteur-zur-Tatzeit"},
+        {"pfad": "kern/zeitmarke.py", "traegt": "eine zentrale UTC-Zeitstempelfunktion, Ratsche gegen Eigenbau an 104 Stellen", "verwendbar_fuer": "F01 Zeitbindung von Episoden -- Baustein fuer 'wann', kein Gedaechtnistyp selbst"},
+        {"pfad": "kern/zeitfenster.py", "traegt": "Anfragen auf einen Zeitraum einschraenken (created_at-basiert)", "verwendbar_fuer": "F01 Recall-Test 'was geschah letzte Woche'"},
+        {"pfad": "docs/RESEARCH_ZIELBILD_2026-08-17.md:28 (RQ-003) und :147", "traegt": "Eigene Literaturrecherche PASS zu episodisch/semantisch/prozedural (Huang et al. 2026, Pink et al. 2025) UND die Selbstdiagnose: 'Knoten und Lessons trennen zwei Gattungen, aber keine vollstaendige Memory-Funktionsmatrix'", "verwendbar_fuer": "F01-F03 -- der Zielbild-Fund bestaetigt woertlich die Luecke, die hier gesucht wird; Recherche muss nicht wiederholt werden"}
+      ],
+      "fehlt": [
+        "Keine Kennzeichnung je Knoten/Lesson als episodisch/semantisch/prozedural -- knowledge_nodes.gattung hat nur zwei Werte (arbeitsbestand/nachschlagewerk, schema.sql:223+395), keine dritte Achse",
+        "Kein Baustein fuer prozedurales Gedaechtnis (Verfahren/Skills) gefunden -- weder Tabelle noch Modul; grep nach 'prozedural' traf ausschliesslich Doku, keinen Code",
+        "Eigene Schreib-/Zeit-/Quellen-/Recall-/Korrektur-/Loeschtests je Gedaechtnisart (AC1-Wortlaut) existieren fuer keinen der drei Typen als solcher"
+      ],
+      "einschaetzung_aufwand": "gross",
+      "abhaengig_von": "Schema-Entscheidung zuerst (neue Spalte oder neue Tabelle) -- Vorbild kern/gattung_filter.py zeigt, dass schon eine zusaetzliche Zwei-Werte-Spalte zwei Aufrufstellen im Recall-Hook aendert; eine dritte Achse mit drei Werten trifft vermutlich mehr Stellen"
+    },
+    {
+      "name": "B Aufbewahrung und Loeschung",
+      "gates": ["BDW-E12", "BDW-E13", "BDW-E14", "BDW-E15", "BDW-E16"],
+      "vorhanden": [
+        {"pfad": "kern/sicherungen.py", "traegt": "Aufbewahrungsregel NACH ALTER/ANZAHL fuer .bak-Dateien, laeuft am Start ueber das Verzeichnis, nicht an 14 Schreibstellen", "verwendbar_fuer": "Teilbaustein fuer E15 (automatisch) -- deckt aber weder 'getrennt' noch 'offline-faehig' (nur lokales Verzeichnis, keine zweite Lokation)"},
+        {"pfad": "kern/bereinigung.py + bereinigung_log.jsonl", "traegt": "meldet Verdachtsfaelle beim Abruf, loescht/schwaerzt nichts (Ausfallrichtung 'melden, nicht entfernen', Betreiberentscheidung 2026-08-08)", "verwendbar_fuer": "Kein direkter Loeschmechanismus -- Muster fuer Protokollierung vor Wirkung ist uebertragbar auf E13 (Nachweis vor/statt Aktion)"},
+        {"pfad": "kern/schnappschuss.py", "traegt": "konsistenter Lesestand ueber Prozessgrenzen (monoton wachsende Grenze statt offener Transaktion)", "verwendbar_fuer": "Kein Retention-Baustein, aber Muster fuer E16 Restore-Konsistenzpruefung"},
+        {"pfad": "tests/test_backup_wal_checkpoint.py", "traegt": "prueft WAL-Konsistenz von vier _backup()-Fassungen (build_embeddings, fix_namensraum_knoten, hebb_kanten, migrate_normfelder)", "verwendbar_fuer": "E15-Teilaspekt Korrektheit der Kopie, NICHT Trennung/Offline-Faehigkeit"},
+        {"pfad": "tests/test_bestand_schnappschuss.py, tests/test_messlauf_abrufguete_schnappschuss.py", "traegt": "Schnappschuss-Konsistenztests", "verwendbar_fuer": "kein Restore-Test im Sinn von E16 (RPO/RTO/Rechte/Suchfaehigkeit) -- pruefen Lesestand, nicht Wiederherstellung nach Ausfall"},
+        {"pfad": "kern/abloesung.py", "traegt": "Gegenmuster: Abgeloestes wird gekennzeichnet statt geloescht, ausdruecklich 'kein Verfall nach Zeit'", "verwendbar_fuer": "Konzeptioneller Gegenpol zu E13 -- als Vorbild fuer E14 Legal-Hold-Kennzeichnung geeignet (Kennzeichnen statt Entfernen ist dieselbe Bauform), widerspricht aber der Grundidee einer Loeschfrist"},
+        {"pfad": "schema.sql:1544 CREATE TABLE knowledge_widerruf_archiv", "traegt": "Vollarchiv zurueckgezogener Knoten (Grund, Zeitpunkt, Akteur) -- id/node_id/path/title/summary/content", "verwendbar_fuer": "Muster fuer E13 Nachweis (wer/wann/warum), ABER: die Tabelle behaelt den vollen Inhalt fuer immer -- das ist der Gegensatz zu 'automatisch entfernt', selbst ein eigener Loeschfall waere noetig"}
+      ],
+      "fehlt": [
+        "Keine zentrale Policy je Datenklasse (E12) -- kein Modul, keine Tabelle mit Zweck/Frist/Ablaufverhalten je Klasse gefunden",
+        "Kein automatischer Fristlauf, der Primaerdaten, Index (knowledge_embeddings), Caches und Kopien (.bak, knowledge_widerruf_archiv) gemeinsam abraeumt (E13)",
+        "Keine Legal-Hold-Policy mit Freigabe/Audit, die eine Loeschung sichtbar blockiert (E14)",
+        "Keine getrennte/offline-faehige Sicherung -- nur lokale .bak-Dateien im selben Dateisystem (E15)",
+        "Kein isolierter, regelmaessiger Restore-Test mit RPO/RTO/Rechte-/Suchfaehigkeitspruefung (E16)"
+      ],
+      "einschaetzung_aufwand": "gross",
+      "abhaengig_von": "E12 (Policy je Datenklasse) ist Voraussetzung fuer E13 und E14 -- ohne definierte Frist/Zweck kein Fristlauf und keine Hold-Ausnahme davon"
+    },
+    {
+      "name": "C Eigene Schluessel",
+      "gates": ["BDW-E07", "BDW-E09"],
+      "vorhanden": [
+        {"pfad": "kern/ausweis.py", "traegt": "scrypt als Passwort-/PIN-Ableitung fuer Authentisierung (BSI TR-02102-1)", "verwendbar_fuer": "Nur Authentisierung, nicht Verschluesselung ruhender Nutzdaten -- falscher Zweck fuer E07/E09"},
+        {"pfad": "kern/geheimnis.py", "traegt": "Verwaltung des EIGENEN Systemgeheimnisses: Datei mit 0600-Rechten, Vorrang Datei>Umgebungsvariable, Warnung bei Widerspruch", "verwendbar_fuer": "Muster fuer 'wo liegt ein Geheimnis, wer darf es lesen, was passiert bei zu weiten Rechten' -- uebertragbar auf die Ablage eines kundenseitigen Schluessels, deckt aber keine Nutzdatenverschluesselung ab"},
+        {"pfad": "tests/test_enigma_crypto_shredding_spike.py", "traegt": "Synthetische Falsifikationsstudie (AESGCM aus dem Paket cryptography, Schluesselableitung per Subjekt via SHA-256, Loeschgate prueft KEY_NOT_DESTROYED/KEY_COPY/SHARED_BLOB/DETERMINISTIC_MASTER_DERIVATION/PLAINTEXT_CACHE_LOG_EMBEDDING)", "verwendbar_fuer": "E09 Widerruf-Verfahren (Crypto-Shredding) ist bereits durchdacht und gegen Falltueren geprueft -- ausdruecklich 'no production storage involved', also Entwurf, kein Produktivcode"},
+        {"pfad": "tests/test_enigma_two_process_spike.py", "traegt": "verwandter Spike (Inhalt nicht im Detail gelesen)", "verwendbar_fuer": "vermutlich Zwei-Prozess-Schluesselszenario, vor Nutzung pruefen"},
+        {"pfad": "requirements.txt:12", "traegt": "cryptography>=42 ist bereits Abhaengigkeit (Apache-2.0/BSD-3)", "verwendbar_fuer": "Kein neues Paket noetig fuer AES-GCM-basierte Verschluesselung"}
+      ],
+      "fehlt": [
+        "Keine produktive Verschluesselung ruhender Daten (Feld, Datei, Index, Backup) -- nur der Spike-Beweis existiert",
+        "Keine Schluesselverwaltung fuer Nutzdaten (Erzeugung, Ablage, Rotation, Widerruf, Restore) im Produktivpfad -- kern/geheimnis.py verwaltet ein SYSTEM-, kein Kundenschluessel"
+      ],
+      "einschaetzung_aufwand": "mittel",
+      "abhaengig_von": "E07 (Verschluesselung selbst) muss vor E09 (Rotation/Widerruf/Restore auf dieser Verschluesselung) stehen"
+    },
+    {
+      "name": "D Connectoren",
+      "gates": ["BDW-F08", "BDW-U04"],
+      "vorhanden": [
+        {"pfad": "kern/domaene.py", "traegt": "Domaenenpaket-Importer fuer Rechtsregeln: Herkunfts-/Quellenpruefung (_pruefe_bestandsquellen), Tag 'beleg:mitgeliefert'/'beleg:bestand', Wirkung Null bis setze_in_kraft()", "verwendbar_fuer": "Muster fuer Provenienz-Nachweis vor Wirksamkeit -- naeher an Regelwerk-Import als an generischem Dokument-Connector; kein Pruefsummenfeld gefunden (grep negativ)"},
+        {"pfad": "kern/fremdimport.py", "traegt": "Whitelist-Projektion (3 Stufen: Projektion/Gegenprobe/Gattung) fuer EINEN konkreten Fremdbestand (FDA MAUDE), landet als gattung='nachschlagewerk'", "verwendbar_fuer": "Muster fuer 'nur erlaubte Felder kommen herein' -- kein Pruefsummen-/Provenienzfeld (grep 'pruefsumme|checksum|sha256|provenien' negativ), keine generische Connector-Abstraktion"},
+        {"pfad": "kern/dokument.py, kern/dokumentdienst.py", "traegt": "CRDT-Dokumentdienst fuer gemeinsames Bearbeiten (Mensch+KI), Ankerung ueber Kennung statt Text", "verwendbar_fuer": "Kein Quellenconnector im Sinn F08 (Referenz+Pruefsumme+Provenienz+Claims statt Kopie) -- anderer Zweck (gemeinsame Bearbeitung, nicht Import externer Dokumente)"}
+      ],
+      "fehlt": [
+        "Kein generischer Connector-Begriff/Registry im Repo gefunden",
+        "Keine Pruefsummen-/Provenienzspeicherung fuer importierte Dokumente (nur fuer domaene.py-Regelpakete ansatzweise ueber Tags, nicht ueber Hashes)",
+        "Keine Allowlist-Struktur fuer Connectoren -- grep 'allowlist/whitelist' traf nur kern/fremdimport.py (Feld-Ebene, ein einzelner Importfall) und kern/planordnung.py (kein Treffer bei genauerer Pruefung)"
+      ],
+      "einschaetzung_aufwand": "gross",
+      "abhaengig_von": "F08 (Connector-Mechanik: Referenz/Pruefsumme/Provenienz/Claims) muss vor U04 (Allowlist darueber) stehen -- eine Allowlist ohne Connector-Konzept regelt nichts"
+    }
+  ],
+  "einzelgates": [
+    {
+      "gate": "BDW-E02",
+      "befund": "Bereits PASS im Katalog (docs/REQUIREMENTS_BRAINLEHR.md:82). tests/test_enigma_zweckprojektion_unbekannte_rolle_default_deny.py existiert (per ls bestaetigt). Kein Neubau -- Diskrepanz zum Auftrag melden, dieses Gate ist keine der 15 Luecken."
+    },
+    {
+      "gate": "BDW-E10",
+      "befund": "Bereits PASS im Katalog (docs/REQUIREMENTS_BRAINLEHR.md:90). tests/test_auditkette.py existiert (per ls bestaetigt). Zusaetzlich kern/auditanker.py liefert einen Merkle-Baum ueber die Hashkette fuer externe Anker -- staerker als AC1 verlangt. Kein Neubau -- Diskrepanz zum Auftrag melden."
+    },
+    {
+      "gate": "BDW-E18",
+      "befund": "Kein Baustein gefunden (grep 'risikomatrix|risikobasiert|vier.augen|four.eyes|vieraugen' ueber kern/ und melder/ negativ). Regelrang existiert als norm_rang (schema.sql:34), Export/Connector/Providerwechsel/Ausnahme/Hold als Konzepte fehlen komplett.",
+      "einschaetzung_aufwand": "gross"
+    },
+    {
+      "gate": "BDW-U01",
+      "befund": "kern/vertrauen.py liefert die Stufe-Mechanik (Klartextdatei, stufe()/mindestens()/vermerke()) -- aber KEIN Org-Ceiling-Konzept. Das Modul benennt selbst als Grenze: 'Der Assistent laeuft als derselbe Benutzer, dem die Reglerdatei gehoert. Er koennte sie selbst hochsetzen' (kern/vertrauen.py Docstring) -- das ist genau der Gegensatz zu einer Organisationsgrenze, die ein Nutzer NICHT ueberschreiten darf. tests/test_vertrauensregler_grenzen.py existiert und prueft die vier Stopp-Punkte, nicht eine Org-Grenze.",
+      "einschaetzung_aufwand": "mittel -- Stufe-Datei-Muster wiederverwendbar, Kernanforderung (zweite, hoehere Instanz die der Nutzer nicht selbst besitzt) fehlt konzeptionell komplett in einem Ein-Nutzer-System"
+    },
+    {
+      "gate": "BDW-U06",
+      "befund": "melder/eilmeldung_faellig.py + melder/eilmeldung_etikett.py liefern Session-Start-Zustellung fuer verfallene 'dringend'-Knoten (ein Kanal, ein Ablaufbegriff VERFALL_TAGE) -- Teilbaustein fuer 'Ablauf' und einen Zustellkanal. Kein Konzept fuer Konflikt/Quellenluecke/Policy-Denial als Ereignisklassen, keine Risikoeinstufung, kein konfigurierbarer Mehrkanal je Nutzer.",
+      "einschaetzung_aufwand": "mittel"
+    }
+  ]
+}
