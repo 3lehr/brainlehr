@@ -1,0 +1,254 @@
+{
+  "weg": "gemma4:12b ueber Ollama OpenAI-kompatible API (http://127.0.0.1:11434/v1/chat/completions), Speicher-Zufuhr ueber knowledge_mcp_server.knowledge_search() (echter Produktivweg, max_results=5)",
+  "modell": "gemma4:12b",
+  "kriterium": "'besser' = mindestens 40% der inhaltstragenden Woerter (Laenge>=4, Stoppwortliste ausgefiltert) aus target_label kommen woertlich in der Antwort vor. Automatische Funktion bewertung(antwort, target_label) -- kein LLM-als-Richter, keine Handbewertung.",
+  "n": 10,
+  "n_negativ": 4,
+  "hinweis_stichprobe": "STICHPROBE, kein Volllauf ueber alle 35 Faelle: 10 Zielfaelle + 4 Negativfaelle x 2 Laeufe = 28 Modellaufrufe, 845.9s Gesamtlaufzeit.",
+  "mit_speicher": 1,
+  "ohne_speicher": 0,
+  "differenz": 1,
+  "kein_ergebnis": {
+    "mit_speicher": 4,
+    "ohne_speicher": 0,
+    "hinweis": "finish_reason=='length' mit leerem content -- zaehlt NICHT als Fehlantwort, separat ausgewiesen."
+  },
+  "blindbewertung": "bewertung() erhaelt ausschliesslich (Antworttext, target_label) als Parameter -- welcher Lauf (mit/ohne Speicher) die Antwort erzeugt hat, ist an dieser Stelle im Code nicht vorhanden und kann daher nicht einfliessen. Dieselbe deterministische Wortabgleichsfunktion laeuft fuer beide Bedingungen im selben Codepfad. Kein LLM-als-Richter (koennte ueber Bedingungsnamen im Prompt stolpern), keine Handbewertung durch den Messenden (der wusste beim Schreiben von bewertung() nicht, welche konkrete Antwort er je Fall erhalten wuerde).",
+  "positivkontrolle_retrieval": {
+    "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+    "anfrage_ausschnitt": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+    "rang": 1,
+    "bestanden": true
+  },
+  "positivkontrolle_llm": {
+    "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+    "art": "node",
+    "target_label": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+    "ohne_speicher": {
+      "antwort": "Das Hauptproblem ist ein **Verlust des strategischen Fokus**: Die Beteiligten lassen sich von nebensächlichen Detailfragen (Software, Zahlen) ablenken und gefährden dadurch den kritischen Zeitplan",
+      "finish_reason": "length",
+      "trifft_ziel": false
+    },
+    "mit_speicher": {
+      "antwort": "",
+      "finish_reason": "length",
+      "trifft_ziel": null
+    }
+  },
+  "negativkontrolle": {
+    "n": 4,
+    "kontaminiert": 2,
+    "bestanden": false,
+    "kriterium": "kontamination(): mind. 2 inhaltstragende Woerter aus dem eingespielten Hintergrundwissen (abzueglich Woerter, die schon in der Aufgabe stehen), die NUR in der Speicher-Antwort vorkommen, nicht in der speicherlosen -- Indiz, dass fachfremdes Material aus dem Speicher durchschlaegt.",
+    "je_frage": [
+      {
+        "frage": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "ohne_speicher": {
+          "antwort": "Es gibt **keinen direkten, systemeigenen Terminal-Befehl** von Apple, um die Bildschirmauflösung zu ändern.\n\nDie gängigste Lösung über das Terminal ist die Verwendung des Open-Source-Tools **displayplacer**.\n\n### Schritt-für-Schritt:\n1. **Erforderliche Software installieren** (via Homebrew):\n   ```bash\n   brew install displayplacer\n   ```\n2. **Auflösung setzen:**\n   Nach der Installation kannst du die Auflösung mit einem Befehl festlegen:\n   ```bash\n   displayplacer \"res:1920x1080\"\n   ```\n\n*Hinweis: Wenn du mehrere Mon",
+          "finish_reason": "length"
+        },
+        "mit_speicher": {
+          "antwort": "",
+          "finish_reason": "length"
+        },
+        "kontaminiert": false
+      },
+      {
+        "frage": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "ohne_speicher": {
+          "antwort": "",
+          "finish_reason": "length"
+        },
+        "mit_speicher": {
+          "antwort": "Der Knoten **Kaliblerbremse** eignet sich dafür. Er ist als „Kurzer Plan“ konzipiert, da eine Entscheidung mit echten Alternativen ansteht und delegiert wird (Aufgabe 35).",
+          "finish_reason": "stop"
+        },
+        "kontaminiert": true
+      },
+      {
+        "frage": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten.",
+        "ohne_speicher": {
+          "antwort": "Der Befehl lautet:\n\n`kubectl get pods -n default`",
+          "finish_reason": "stop"
+        },
+        "mit_speicher": {
+          "antwort": "Der Befehl lautet:\n\n`kubectl get pods -n default` (oder einfach `kubectl get pods`, da `default` der Standard-Namespace ist).",
+          "finish_reason": "stop"
+        },
+        "kontaminiert": false
+      },
+      {
+        "frage": "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungsamt?",
+        "ohne_speicher": {
+          "antwort": "",
+          "finish_reason": "length"
+        },
+        "mit_speicher": {
+          "antwort": "Das bereitgestellte Hintergrundwissen enthält keine Informationen über die Anmeldung von Restaurants beim Ordnungsamt.",
+          "finish_reason": "stop"
+        },
+        "kontaminiert": true
+      }
+    ]
+  },
+  "grenze": [
+    "Stichprobe (14 von 35 Zielfaellen bzw. 4 von 10 Negativfaellen), keine Vollmessung -- siehe hinweis_stichprobe.",
+    "Ein Modelllauf ist nicht deterministisch (Temperatur nicht auf 0 gesetzt) -- ein zweiter Lauf koennte andere Einzelwerte liefern, insbesondere bei knappen Faellen.",
+    "bewertung() ist eine grobe Wortabgleichsfunktion, kein semantisches Verstehen -- eine sinngemaess richtige Antwort mit anderen Worten wird als 'trifft nicht' gewertet.",
+    "kontamination() ist ein Indiz, kein Beweis: Ueberschneidungen koennen auch aus allgemeinem Vokabular stammen, das zufaellig in Aufgabe UND Hintergrundwissen fehlt.",
+    "Der echte Recall-Hook (haken/knowledge_recall_hook.py) laeuft hier nicht mit -- memory_text() ist eine eigene, einfachere Formatierung der Top-5-Treffer.",
+    "Gilt fuer einen Zeitpunkt (2026-08-18) gegen den aktuell laufenden Bestand und das aktuell installierte gemma4:12b."
+  ],
+  "je_fall": [
+    {
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "art": "node",
+      "target_label": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+      "ohne_speicher": {
+        "antwort": "Das Hauptproblem ist ein **Verlust des strategischen Fokus**: Die Beteiligten lassen sich von nebensächlichen Detailfragen (Software, Zahlen) ablenken und gefährden dadurch den kritischen Zeitplan",
+        "finish_reason": "length",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "",
+        "finish_reason": "length",
+        "trifft_ziel": null
+      }
+    },
+    {
+      "ziel": "L-e7bc5e",
+      "art": "lesson",
+      "target_label": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern a",
+      "ohne_speicher": {
+        "antwort": "Der Techniker **missinterpretiert eine gezielte Kontrollmaßnahme** als technisches Problem. Er ignoriert den notwendigen manuellen Abnahmevorgang, weil er die Ursache des Abbruchs falsch einschätzt.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Der Techniker übersieht dabei eine bewusste strukturelle Sperre und interpretiert sie als bloßes technisches Problem. Gemäß der Anweisung vom 2026-08-12 („Ohne Plan wird nicht gebaut“) ist das System so konzipiert, dass Maschinen keine Entscheidungen treffen dürfen. Die Blockierung des automatisierten Weges dient dazu, den **manuellen Ab",
+        "finish_reason": "length",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "L-e1a441",
+      "art": "lesson",
+      "target_label": "wohlair: Herkunfts-Trennung zweier gleich aussehender Datenbestände (importierte",
+      "ohne_speicher": {
+        "antwort": "Implementieren Sie ein **Kennzeichnungs-Flag** (z. B. `is_test` oder `source_type`) in der Datenbankstruktur. Jeder Datensatz wird bereits beim Import mit einem entsprechenden Attribut versehen, sodass die Identifizierung und Bereinigung unabhängig von den Namen über diesen technischen Status erfolgt.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Die Identifizierung muss über ein **individuelles Merkmal am Datensatz selbst** erfolgen, das bereits zum Zeitpunkt des Imports oder Anlegens gesetzt wird (z. B. durch ein Feld wie `isLegacyImport`).\n\nDa Namen und Zeiträume nicht eindeutig sind, führen Bereinigungen allein auf Basis dieser Bezeichnungen zu Fehlern (Löschung von Echt-Daten). Eine globale Einstellung ist hierfür ungeeignet; nur ein Merkmal am Einzelsatz ermöglicht eine sichere Trennung und gezielte Löschung der Test",
+        "finish_reason": "length",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+      "art": "node",
+      "target_label": "Der Volltextindex füllt sich beim Einlesen, doch niemand liest ihn für Belege und Mails",
+      "ohne_speicher": {
+        "antwort": "Um die Ursache zu finden, solltest du folgende zwei Punkte prüfen:\n\n1.  **Import-Log:** Prüfe, ob die automatischen Importprozesse für die neuen Dateien erfolgreich abgeschlossen wurden oder ob Fehlermeldungen vorliegen.\n2.  **Indizierungsprüfung:** Überprüfe, ob die Dokumente zwar in der Datenbank anliegen, aber aufgrund fehlender Textinhalte (z. B. leere Felder) beim Aufbau des Suchverzeichnisses übersprungen wurden.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Prüfe die Urs",
+        "finish_reason": "length",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "/stadtwerke",
+      "art": "node",
+      "target_label": "Stadtwerke: fiktiver Verbundpartner fuer den fuenfte-Rolle-Testlauf",
+      "ohne_speicher": {
+        "antwort": "Das beschreibt eine **Berechtigungsprüfung** im Rahmen des Identity and Access Management (IAM), konkret die Validierung der rollenbasierten Zugriffskontrolle (RBAC).",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Dieses Szenario entspricht dem **„Stadtwerke“-Testlauf** (Plan vom 2026-08-07), bei dem ein fiktiver Verbundpartner mit einem IT-Mitarbeiter und einer Doppelzugehörigkeit simuliert wird, um die Verarbeitung der fünften Rolle zu prüfen.\n\nWichtig für die Überprüfung: Die Zugriffsberechtigung basiert nicht allein auf der Rolle, sondern fungiert als **Filter aus elf",
+        "finish_reason": "length",
+        "trifft_ziel": true
+      }
+    },
+    {
+      "ziel": "L-a9ccd0",
+      "art": "lesson",
+      "target_label": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in j",
+      "ohne_speicher": {
+        "antwort": "Verstanden. Die Anforderung lautet: Das System muss eine **Zwischenspeicherung** derer erfassten Daten vorsehen, sodass diese bei einer automatischen Zeitüberschreitung erhalten bleiben. Ein Löschen oder Zurücksetzen darf nur auf Basis einer **expliziten Bestätigung** durch den Nutzer erfolgen.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "",
+        "finish_reason": "length",
+        "trifft_ziel": null
+      }
+    },
+    {
+      "ziel": "L-298823",
+      "art": "lesson",
+      "target_label": "openlehr/steuer: vierter Fall am selben Tag (2026-07-31), in dem ein Feld/eine K",
+      "ohne_speicher": {
+        "antwort": "Dies ist eine **unvollständige Implementierung** (oder ein Fehler in der",
+        "finish_reason": "length",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Dies ist ein klassisches Beispiel für fehlende **Synergien**: Ein Datenpunkt (die Datenbank-Kennzeichnung) existiert zwar technisch korrekt, aber er „weiß“ nichts von der notwendigen Auswertung durch das Frontend.\n\nDer Fehler liegt im Mangel an Wissen zwischen Schnittstellen: Die Datenbasis hat die Information, aber die UI-Logik ignoriert sie. In diesem Fall müsste die Frage lauten: **„Wer müsste das wissen und weiß es aktuell nicht?“** Hier fehlt die Verknüpfung, die den technischen Status (Datenbankeintrag) in einen Mehrwert für den Nutzer (Warnmeldung) übersetzt.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "L-f9f654",
+      "art": "lesson",
+      "target_label": "try/catch um einen nicht awaiteten (unawaited) async-Aufruf faengt dessen Fehler",
+      "ohne_speicher": {
+        "antwort": "Er sollte die **Fehlerprüfung direkt in die Hilfsfunktion integrieren**.\n\n**Begründung:**\nDa die Aufgabe unabhängig vom aktuellen Ablauf läuft (Asynchronität), kann ein äußeres Sicherheitsnetz den Fehler nicht abfangen. Eine interne Fehlerbehandlung stellt sicher, dass der Prozess stabil bleibt, Fehler sofort lokal geloggt werden und ggf. automatisierte Retries innerhalb der Hilfsfunktion durchgeführt werden können.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "",
+        "finish_reason": "length",
+        "trifft_ziel": null
+      }
+    },
+    {
+      "ziel": "L-b4b443",
+      "art": "lesson",
+      "target_label": "fahrtenbuch Build 59 (2026-08-01, 06:21 UTC): JokerTripPromptRequest.source (Jok",
+      "ohne_speicher": {
+        "antwort": "**Ursache:** Die Anwendung verwendet unvalidierte **Cache-Daten**. \n\nDa der Hardwarestatus nicht in Echtzeit abgeglichen oder überprüft wird, führen veraltete Daten im Speicher zu einer fehlerhaften Anzeige (ein sogenannter „Stale Data“-Fehler).",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "",
+        "finish_reason": "length",
+        "trifft_ziel": null
+      }
+    },
+    {
+      "ziel": "L-44a838",
+      "art": "lesson",
+      "target_label": "LLM-Output als neuer ungeschützter Schreibpfad: Neue KI-Features (mail_classify,",
+      "ohne_speicher": {
+        "antwort": "Um dies zu gewährleisten, sollte ein **Anonymisierungsfilter** (z. B. basierend auf *Named Entity Recognition* - NER) direkt vor dem Speichervorgang implementiert werden. Dieser Filter erkennt und maskiert automatisch sensible Daten wie Namen, E-Mail-Adressen oder Kontodaten im generierten Text, bevor dieser in die Datenbank geschrieben wird.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Ja, das ist zwingend erforderlich. Um",
+        "finish_reason": "length",
+        "trifft_ziel": false
+      }
+    }
+  ]
+}
