@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+# VERSIONIERTE FASSUNG dieses Hooks. Angelegt 2026-08-18, weil der
+# tatsaechlich laufende .git/hooks/pre-push NICHT im Repo lag: er trug neun
+# Verweise auf kartenstand/dokumentzugang/ablaufpflicht, der geteilte
+# Installer hub/scripts/install_push_guard.py kannte davon KEINEN. Ein
+# `install_push_guard.py --force`, ein frischer Klon oder ein neuer
+# Arbeitsbaum haette alle drei Waechter still entfernt -- dieselbe Klasse
+# wie L-083b95 (Verdrahtung verschwindet, Commit behauptet sie weiter).
+#
+# Installieren: cp haken/git/pre-push .git/hooks/pre-push && chmod +x
+# Abgleich Quelle gegen Betrieb: tests/test_pre_push_versioniert.py
+# Ruft den kanonischen push_guard.py aus hub/scripts (siehe
+# hub/scripts/install_push_guard.py, dort dieselbe HOOK_CONTENT).
+#
+# Zusatz gegenueber der Kanonform: die Kategorie "remote-ziel" wird zum
+# HINWEIS abgestuft statt zu sperren, WENN sie die einzige Beanstandung ist.
+# Grund, gemessen 2026-08-15 (brainlehr, Zweig brainlehr/b4-ausweis):
+# hub/scripts/push_guard.py ALLOWED_REMOTE_URL_FRAGMENTS enthaelt
+# "Lehrmeister/3lehr-monorepo" und "Lehrmeister/schimmel-guard-app", NICHT
+# aber diesen Origin (github.com/3lehr/brainlehr-privat.git) -- brainlehr
+# wurde beim Aufnehmen der Liste nie auf Sichtbarkeit geprueft (ADR-028
+# verlangt genau das je Eintrag). Direkt gemessen: Fehlalarmquote ueber
+# remote-ziel = 100% (1/1, deterministisch -- jeder Push von diesem Repo
+# an seinen echten Origin traefe die Regel). Alle anderen Kategorien
+# (Zugangsdaten, verdaechtige Pfade, Grossdateien, Hauptzweig, erzwungenes
+# Ueberschreiben, fremde Sitzung) hatten dagegen 0/90 Fehlalarme gegen die
+# echten Commits des Tages (Messskript, nicht Teil dieses Hooks) und bleiben
+# HART gesperrt -- SECRET_CATEGORIES sind ohnehin nie per Marker uebergehbar.
+# Reparatur der Allowlist selbst liegt in hub/scripts/push_guard.py -- fremde
+# Datei, hier nicht angefasst, siehe Bericht.
+
+repo_root="$(git rev-parse --show-toplevel)"
+workspace_root="$(dirname "$repo_root")"
+guard_script="$workspace_root/hub/scripts/push_guard.py"
+messauswertung_guard="$repo_root/haken/messauswertung_waechter.py"
+
+if [[ ! -f "$guard_script" ]]; then
+  echo "[pre-push] push_guard.py nicht gefunden: $guard_script"
+  echo "[pre-push] Push wird abgebrochen."
+  exit 1
+fi
+
+stdin_data="$(cat)"
+output="$(printf '%s' "$stdin_data" | python3 "$guard_script" "$@" 2>&1)"
+status=$?
+
+# Teil B: Messauswertung -- runs/*.json, die dieser Push NEU/GEAENDERT
+# mitbringt, gegen melder/messregeln.py pruefen (Vergleich ohne Haltemenge).
+# Nur der neue/geaenderte Ausschnitt zaehlt, nicht der ganze runs/-Bestand --
+# sonst blockiert Altlast jeden kuenftigen Push (siehe Docstring der Datei).
+if [[ -f "$messauswertung_guard" ]]; then
+  while read -r local_ref local_sha remote_ref remote_sha; do
+    [[ -z "$local_ref" ]] && continue
+    [[ "$local_sha" =~ ^0+$ ]] && continue
+    mb_output="$(python3 "$messauswertung_guard" "$remote_sha" "$local_sha" 2>&1)"
+    mb_status=$?
+    output="$output
+$mb_output"
+    if [[ $mb_status -ne 0 ]]; then
+      status=$mb_status
+    fi
+  done <<< "$stdin_data"
+fi
+
+# Landkarten (docs/karten/): erzeugte Karten veralten nicht im Erzeugnis,
+# sondern ZWISCHEN zwei Laeufen -- laeuft niemand, sind sie so falsch wie eine
+# handgezeichnete, nur mit der Behauptung von Genauigkeit. Deshalb hier: neu
+# erzeugen, mit dem Abgelegten vergleichen, bei Abweichung sperren. Im
+# Arbeitsbereich darf die Karte hinterherhinken, nach aussen geht nichts
+# Veraltetes. Vorbedingung ist, dass die Erzeugung deterministisch ist (kein
+# Zeitstempel im Erzeugnis) -- sonst meldete jeder Lauf eine Abweichung und
+# der Waechter waere binnen einer Woche abgeschaltet.
+kartenstand="$repo_root/melder/kartenstand.py"
+if [[ -f "$kartenstand" ]]; then
+  ks_output="$(python3 "$kartenstand" 2>&1)"
+  if [[ $? -ne 0 ]]; then
+    output="$output
+$ks_output"
+    status=1
+  fi
+fi
+
+# Dokumentzugang: ein Dokument mit Erkenntnis (ADR, Konsil, Recherche,
+# Auswertung, Plan) ohne Knoten im Speicher ist ueber den Abruf unauffindbar --
+# gemessen am 2026-08-16 traf das 67 von 121 Dokumenten, darunter 17 ADRs. Die
+# Lehre dazu stand seit dem 2026-08-06 im Speicher (L-c43b1b) und hat nichts
+# verhindert; ein Appell ohne Mechanismus ist eine Absicht.
+dokumentzugang="$repo_root/melder/dokumentzugang.py"
+if [[ -f "$dokumentzugang" ]]; then
+  if ! dz_output="$(python3 "$dokumentzugang" 2>&1)"; then
+    output="$output
+$dz_output"
+    status=1
+  fi
+fi
+
+# Ablaufpflicht: die zwei Schritte aus docs/ablauf.json, die bis zum
+# 2026-08-16 keinen Mechanismus hatten -- Plan und Rot vor Gruen. Geprueft
+# wird nicht die Rot-Probe selbst (das kann kein Skript), sondern dass der
+# Commit zur Belegfrage etwas SAGT: wie belegt wurde, oder ehrlich, dass
+# nicht belegt ist. Was verschwindet, ist das Schweigen.
+# Swift-Typen, die gebaut und von nirgends gerufen werden -- die Fehlerklasse
+# "gebaut, laufend, wirkungslos" am eigenen Oberflaechencode. Eingehaengt am
+# 2026-08-16, nachdem sie genau hier passiert war (DomaenenAnsicht).
+unverdrahtet_swift="$repo_root/melder/unverdrahtet_swift.py"
+if [[ -f "$unverdrahtet_swift" ]]; then
+  if ! us_output="$(python3 "$unverdrahtet_swift" "$repo_root" 2>&1)"; then
+    echo "$us_output" >&2
+    echo "Push abgebrochen: unverdrahteter Swift-Typ." >&2
+    exit 1
+  fi
+fi
+
+ablaufpflicht="$repo_root/melder/ablaufpflicht.py"
+if [[ -f "$ablaufpflicht" ]]; then
+  if ! ap_output="$(python3 "$ablaufpflicht" 2>&1)"; then
+    output="$output
+$ap_output"
+    status=1
+  fi
+fi
+
+planberuehrung="$repo_root/melder/planberuehrung.py"
+if [[ -f "$planberuehrung" ]]; then
+  # Meldet Commits, die Code aendern, waehrend der zugehoerige Plan
+  # unveraendert bleibt. Hier und nicht auf Zuruf: der Befund ist nur etwas
+  # wert, wenn er von selbst kommt -- ein Mensch, der nachsieht, weiss es
+  # schon. Hinweisrecht, kein Veto: die Ausgabe wandert in den Bericht,
+  # der Push wird davon nicht angehalten.
+  if ! pb_output="$(python3 "$planberuehrung" 2>&1)"; then
+    output="$output
+$pb_output"
+  fi
+fi
+
+if [[ $status -eq 0 ]]; then
+  printf '%s\n' "$output"
+  exit 0
+fi
+
+# Die Abstufung der Kategorie "remote-ziel" zum blossen Hinweis ist am
+# 2026-08-15 entfallen: 3lehr/brainlehr-privat steht seit hub-Commit
+# d0df11617 in ALLOWED_REMOTE_URL_FRAGMENTS (Sichtbarkeit vorher geprueft,
+# gh meldet PRIVATE). Damit ist die Fehlalarmquote dieser Kategorie von
+# 1/1 auf 0/1 gefallen und die Sperre traegt wieder -- ein Fernziel, das
+# nicht freigegeben ist, MUSS blockieren, sonst ist genau der Fall
+# ungeschuetzt, fuer den diese Pruefung existiert.
+printf '%s\n' "$output"
+exit 1
