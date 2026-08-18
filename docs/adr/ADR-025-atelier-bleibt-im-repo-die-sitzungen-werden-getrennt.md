@@ -62,3 +62,43 @@ Der Befund von heute fiel nur, weil beide Seiten in einem Commit lagen. Getrennt
 Sitzungen verschieben ihn auf den nächsten gemeinsamen Testlauf. Die Gegenmaßnahme ist
 kein zweites Repo, sondern der Satz aus `L-51e6d8`: Wer einen Rückgabewert oder ein
 Schema ändert, nennt die Konsumenten — auch in Dateien, die er nicht anfassen darf.
+
+---
+
+## NACHTRAG 2026-08-18T17:37:02+0200 — die Werkbank heißt jetzt lehrAtelier
+
+Diese ADR ist am 2026-08-18 geschrieben worden, als die Werkbank `atelier` hieß.
+Am selben Tag wurde sie in **`lehrAtelier`** umbenannt (ADR-027, Commit `7db10b10`,
+286 Swift-Tests grün). Betreiberbegründung: die Vorsilbe passt, weil die Werkbank
+den Domänen beibringt, die Werkzeuge zu benutzen, die sie bereitstellt.
+
+**Der Text oben wird nicht umgeschrieben.** Er war zu seinem Zeitpunkt richtig, und
+eine Entscheidung nachträglich auf den heutigen Namen zu bringen, macht aus einem
+Beleg eine Behauptung. Das ist dieselbe Regel, die seit heute als `BDW-P08` im
+Katalog steht: das Abgelöste bleibt lesbar, es wird gekennzeichnet.
+
+**Was umbenannt wurde:** Swift-Ziel, Quellverzeichnis `app/Sources/LehrAtelier`,
+Bündel `lehrAtelier.app`, Bundle-Kennung `de.brainlehr.lehratelier`, Signaturprofil,
+Anzeigename.
+
+**Was ausdrücklich NICHT umbenannt wurde** — und deshalb gilt jede Ortsangabe oben
+unverändert weiter:
+
+| bleibt | Wert |
+|---|---|
+| Arbeitsbaumpfad | `/Volumes/daten/Begod2026/atelier` |
+| Zweig | `brainlehr/atelier` |
+| Steuerung | `BRAINLEHR_STEUERUNG`, Port 4599 |
+| Historie | Commits, ADRs, Messläufe, Wissensknoten |
+
+Der Arbeitsbaumpfad blieb, weil ein LaunchAgent darauf zeigt — eine getrennte
+Entscheidung, die beim Betreiber liegt.
+
+**Die Umbenennung hat sich selbst eine Falle gestellt**, und sie gehört hierher,
+weil sie die nächste Umbenennung betrifft: Der alte Prozess `atelier` lief weiter
+und hielt Port 4599; der Aufräumbefehl `pkill -f "Ausgabe/lehrAtelier"` traf ihn
+nicht, weil sein Pfad noch den alten Namen trug. Der neue Prozess scheiterte still
+am Binden, und jeder Steuerbefehl ging danach an eine Anwendung, die niemand ansah.
+Daraus entstand ein Defektbericht über einen Fehler, den es nie gab (`L-542a28`,
+zweites Vorkommen). **Nach jeder Umbenennung eines laufenden Programms einmal nach
+dem ALTEN Namen suchen — der Aufräumbefehl kennt nur den neuen.**
