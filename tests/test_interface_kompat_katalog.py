@@ -194,8 +194,7 @@ def test_int_upd_002_import_ist_ruecknehmbar(frische_db):
     assert n == 0
 
 
-@pytest.mark.xfail(strict=True, reason="INT-ACT-001 nicht gebaut: kein Ausloeser handelt ohne laufende Sitzung")
-def test_int_act_001_ausloeser_ohne_sitzung(tmp_path):
+def test_int_act_001_ausloeser_ohne_sitzung(tmp_path, monkeypatch):
     """Gemessen 2026-08-18: crontab leer, ein LaunchAgent (de.brainlehr.dienst),
     und der antwortet nur. Dieses Gate wird gruen, sobald eine erklaerte Aktion
     ohne Sitzung laeuft -- mit Ausweis, Protokoll und Ausschalter.
@@ -205,7 +204,17 @@ def test_int_act_001_ausloeser_ohne_sitzung(tmp_path):
     mit Ausloesern nichts zu tun. Der Marker meldete XPASS(strict); ein
     gewoehnliches xfail haette den Fehlgriff verschluckt (L-234e85, heute zum
     zweiten Mal)."""
-    from kern import ausloeser  # noqa: F401  -- Modulname bewusst frei geprueft
+    from kern import ausloeser
+
+    # Eigener Ort, damit die Probe nichts in den echten Bestand des Betreibers
+    # schreibt -- am 2026-08-18 genau einmal passiert und von Hand geraeumt.
+    monkeypatch.setenv("BRAINLEHR_AUSLOESER_PLAENE", str(tmp_path / "plaene.json"))
+    monkeypatch.setenv("BRAINLEHR_AUSLOESER_PROTOKOLL", str(tmp_path / "protokoll.jsonl"))
+    monkeypatch.setenv("BRAINLEHR_AUSLOESER_AUS", str(tmp_path / "aus"))
 
     plan = ausloeser.plane(name="probe", takt="taeglich 06:30", aktion="bericht")
     assert plan["ausweis"] and plan["protokoll"] and plan["ausschalter"]
+
+    # Die Schranke ist der Teil, der zaehlt: Aussenwirkung wird abgewiesen.
+    with pytest.raises(ValueError):
+        ausloeser.plane(name="verboten", takt="stuendlich", aktion="versand")

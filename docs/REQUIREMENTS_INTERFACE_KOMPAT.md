@@ -37,7 +37,7 @@ atomar). Hier stehen nur die Interface-IDs, mit denen dieses AC prüfbar wird.
 | INT-UPD-001 | Reimport, Migration, Rollback | Paketautor | Brainlehr | Gleiche ID mit neuem Inhalt aktualisiert sichtbar und rücknehmbar; `INSERT OR IGNORE` genügt nicht. | TEST-INT-UPD-001 |
 | INT-UPD-002 | Importkennung und Rücknahme | Brainlehr | Betrieb | Jeder Import trägt eine Kennung, über die genau dieser Import zurückgenommen wird. **Offen** — Update ist gebaut, Rücknahme nicht. | TEST-INT-UPD-002 |
 | INT-SNAP-001 | Snapshotgrenze (`cb24f119`) | Brainlehr | Abruf/Prüfkorpus | Ein Lauf liest einen festgehaltenen Stand, nicht bei jedem Aufruf die gegenwärtige DB. | TEST-INT-SNAP-001 |
-| INT-ACT-001 | Auslöser ohne Sitzung | Brainlehr/Domäne | Betrieb | Ein erklärter Auslöser (Zeit oder Ereignis) führt eine erklärte Aktion aus, ohne dass eine Assistentensitzung läuft — mit Ausweis, Protokoll und Abschaltung. **Offen.** | TEST-INT-ACT-001 |
+| INT-ACT-001 | Auslöser ohne Sitzung | Brainlehr/Domäne | Betrieb | Ein erklärter Auslöser (Zeit oder Ereignis) führt eine erklärte Aktion aus, ohne dass eine Assistentensitzung läuft — mit Ausweis, Protokoll und Abschaltung. **Mechanismus gebaut** (`kern/ausloeser.py`), **nicht eingeschaltet**: kein LaunchAgent, kein crontab. Zugelassen ist genau ein Aktionstyp (`bericht`, lesend und lokal). | TEST-INT-ACT-001 |
 | INT-GATE-001 | Cross-Repo-Gate | beide Repos | CI/Abnahme | Der repoübergreifende Vertragstest darf nicht `skip`en; fehlender Gegenpfad ist rot. | TEST-INT-GATE-001 |
 
 ## Versionsregeln
@@ -76,10 +76,19 @@ Körper verschiebt keine Brille: ADR-013 gibt jeder Domäne dafür den **Dienst*
 Schalter fürs Mitstarten. Beides ist die richtige Bauform und teilweise gebaut —
 seit `INT-DNST-001` wird der Dienst beim Import abgelegt.
 
-**Was fehlt, ist nicht der Dienst, sondern der Auslöser** (`INT-ACT-001`).
+**Was fehlte, war nicht der Dienst, sondern der Auslöser** (`INT-ACT-001`).
 Gemessen 2026-08-18: `crontab` leer, genau ein LaunchAgent
-(`de.brainlehr.dienst`) — und der antwortet, er handelt nicht. Es gibt keine
-Stelle, die zu einer Zeit oder auf ein Ereignis hin etwas tut.
+(`de.brainlehr.dienst`) — und der antwortet, er handelt nicht.
+
+**Stand seit 2026-08-18:** `kern/ausloeser.py` erklärt Auslöser (`plane`) und
+führt sie aus (`fuehre_aus`), beides nur mit gültigem Ausweis, mit Protokoll je
+Ausführung und mit einem Ausschalter als **Datei** — bewusst nicht als
+Umgebungsvariable, weil die Umgebung eines launchd-Prozesses im Plist steckt und
+ohne Neuladen nicht erreichbar wäre. Zugelassen ist eine Vorgabe-deny-Liste mit
+genau einem Aktionstyp (`bericht`); Versand, Netzaufruf, Push, Veröffentlichung,
+Geld und Kennwortzugriff werden mit einem Satz für den Menschen abgewiesen.
+**Eingeschaltet ist nichts** — kein LaunchAgent, kein crontab-Eintrag. Das
+Einschalten ist eine Entscheidung des Betreibers, nicht des Assistenten.
 
 Die Grenze dazu gehört in denselben Satz: Ein Auslöser ohne Sitzung handelt
 ohne Zuschauer. Er braucht deshalb dieselben vier Stopp-Punkte wie ein Mensch
