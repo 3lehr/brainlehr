@@ -65,6 +65,12 @@ def lies(pfad: Path) -> list[dict]:
             "id": s[0],
             "gate": gate,
             "offen": gate.upper().startswith("NOT RUN") or not gate,
+            # DEFERRED ist WEDER offen NOCH belegt. Ohne diese dritte
+            # Kategorie haette die Vertagung von 22 Zeilen am 2026-08-18 die
+            # Quote von 19/56 auf 41/56 gehoben, ohne dass irgendetwas
+            # gemessen worden waere -- eine Schoenung durch Umetikettierung,
+            # und genau die Sorte Zahl, gegen die dieser Melder gebaut ist.
+            "vertagt": gate.upper().startswith("DEFERRED"),
             "dateien": [d for d in DATEI.findall(gate)],
         })
     return zeilen
@@ -77,11 +83,14 @@ def beurteile(zeilen: list[dict], wurzel: Path = WURZEL) -> dict:
             if not (wurzel / d).exists() and not list(wurzel.glob(f"**/{Path(d).name}")):
                 fehlend.append((z["id"], d))
     offen = [z["id"] for z in zeilen if z["offen"]]
+    vertagt = [z["id"] for z in zeilen if z.get("vertagt")]
     return {
         "gesamt": len(zeilen),
         "offen": len(offen),
-        "belegt": len(zeilen) - len(offen),
+        "vertagt": len(vertagt),
+        "belegt": len(zeilen) - len(offen) - len(vertagt),
         "offene_ids": offen,
+        "vertagte_ids": vertagt,
         "phantom": fehlend,
     }
 
@@ -97,19 +106,25 @@ def _selftest() -> int:
             "| ID | x | Produktgate | Quelle |\n|---|---|---|---|\n"
             "| BDW-X01 | y | NOT RUN | q |\n"
             "| BDW-X02 | y | PASS: `echt.py --selftest` gruen | q |\n"
-            "| BDW-X03 | y | PASS: `gibtsnicht.py --selftest` | q |\n",
+            "| BDW-X03 | y | PASS: `gibtsnicht.py --selftest` | q |\n"
+            "| BDW-X04 | y | DEFERRED: aktiviert mit dem ersten Piloten (`BDW-C03`) | q |\n",
             encoding="utf-8")
         z = lies(k)
-        assert len(z) == 3, z
+        assert len(z) == 4, z
         e = beurteile(z, wurzel=w)
-        assert e["gesamt"] == 3 and e["offen"] == 1 and e["belegt"] == 2, e
+        # DIE DRITTE KATEGORIE, ergaenzt 2026-08-18: vertagt zaehlt WEDER als
+        # offen NOCH als belegt. Ohne diese Zeile haette die Vertagung von 22
+        # Katalogzeilen die Quote von 19/56 auf 41/56 gehoben, ohne dass
+        # irgendetwas gemessen worden waere.
+        assert e["gesamt"] == 4 and e["offen"] == 1 and e["belegt"] == 2 and e["vertagt"] == 1, e
         assert e["offene_ids"] == ["BDW-X01"], e
+        assert e["vertagte_ids"] == ["BDW-X04"], e
         # Der eigentliche Fund: ein Gate, das eine nicht existierende Datei nennt.
         assert e["phantom"] == [("BDW-X03", "gibtsnicht.py")], e
         # Gegenprobe: die existierende Datei wird NICHT gemeldet.
         assert all(p[0] != "BDW-X02" for p in e["phantom"]), e
-    print("gatestand: Selbsttest gruen (Quote 2/3, ein Phantom-Gate gefunden, "
-          "echtes Gate nicht gemeldet)")
+    print("gatestand: Selbsttest gruen (Quote 2/4 belegt, 1 offen, 1 vertagt, "
+          "ein Phantom-Gate gefunden, echtes Gate nicht gemeldet)")
     return 0
 
 
@@ -123,7 +138,8 @@ def main() -> int:
             continue
         e = beurteile(zeilen)
         quote = f"{e['belegt']}/{e['gesamt']}"
-        print(f"{pfad.name}: {quote} belegt, {e['offen']} ohne Gate-Lauf")
+        vertagt = f", {e['vertagt']} vertagt" if e.get("vertagt") else ""
+        print(f"{pfad.name}: {quote} belegt, {e['offen']} ohne Gate-Lauf{vertagt}")
         for kennung, datei in e["phantom"]:
             print(f"  PHANTOM-GATE {kennung}: nennt {datei} -- existiert nicht")
         if bericht and e["offene_ids"]:

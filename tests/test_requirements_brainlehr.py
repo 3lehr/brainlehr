@@ -97,10 +97,18 @@ def test_root_catalog_decodes_all_operator_selections():
         # die Quelle statt des Gates. Gleiche Lesart wie melder/gatestand.py.
         gate = catalog_rows[requirement_id].strip().strip("|").split("|")[-2].strip()
         assert gate, f"{requirement_id}: Produktgate-Spalte leer"
-        assert gate.startswith("NOT RUN") or any(
+        # DEFERRED ist seit 2026-08-18 eine DRITTE Lage neben offen und belegt:
+        # die Betreiberentscheidung 9d77ad16 hat 22 Zeilen an den ersten
+        # Mehrbenutzer-Piloten gebunden. Ein vertagtes Gate ist weder offen
+        # (niemand arbeitet daran) noch belegt (nichts ist gemessen) -- es
+        # als eines von beiden zu fuehren, waere in beide Richtungen falsch.
+        assert gate.startswith(("NOT RUN", "DEFERRED")) or any(
             marke in gate for marke in ("PASS", "TEILWEISE", "FAIL")
-        ), f"{requirement_id}: Gate weder offen noch belegt: {gate!r}"
-        if not gate.startswith("NOT RUN"):
+        ), f"{requirement_id}: Gate weder offen noch vertagt noch belegt: {gate!r}"
+        if gate.startswith("DEFERRED"):
+            assert "BDW-C03" in gate or "Pilot" in gate, (
+                f"{requirement_id}: vertagt ohne Bedingung -- wann wird es wieder faellig?")
+        if not gate.startswith(("NOT RUN", "DEFERRED")):
             assert "`" in gate, (
                 f"{requirement_id}: belegtes Gate ohne nachfahrbaren Pruefbefehl -- "
                 "eine Behauptung ohne Beleg ist schlimmer als ein ehrliches NOT RUN")
