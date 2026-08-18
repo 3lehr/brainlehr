@@ -1,4 +1,5 @@
 {
+  "contract_version": 1,
   "domaene": "steuer",
   "bezeichnung": "Steuer und Belege",
   "herkunft": "openlehr/apps/openlehr/daemon/steuer/euer_zuordnung.py",

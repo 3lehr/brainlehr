@@ -34,6 +34,7 @@ def _paket(**zusatz):
         "stand": "2026-08-18T05:00:00+0200",
         "quellen": {"z1": {"bezeichnung": "Betriebsausgaben"}},
         "regeln": [{"id": "r1", "ziel_id": "z1", "fundstelle": "Betriebsausgaben"}],
+        "contract_version": 1,
         "dienst": {},
         "oberflaeche": {"fassung": 1, "bildschirme": []},
     }
@@ -67,11 +68,29 @@ def test_katalog_ist_untergeordnet_und_vollstaendig():
 
 # --- rot: die Naht, die es noch nicht gibt --------------------------------
 
-@pytest.mark.xfail(strict=True, reason="INT-VER-001 nicht gebaut: das Paketformat kennt kein contract_version")
 def test_int_ver_001_unbekannte_major_wird_abgewiesen():
-    """Fail-closed statt raten -- OPENLEHR_KERNEL_UND_APP_VERTRAG_V1 §2 Nr. 1."""
-    assert domaene.pruefe(_paket())["angenommen"] is False, "Paket ohne contract_version muss rot sein"
-    assert domaene.pruefe(_paket(contract_version=2))["angenommen"] is False
+    """Fail-closed statt raten -- OPENLEHR_KERNEL_UND_APP_VERTRAG_V1 §2 Nr. 1.
+    Rot vor gruen: vor kern/domaene._VERTRAG_VERSION nahm pruefe() beide
+    Faelle an (XPASS(strict) am 2026-08-18)."""
+    assert domaene.pruefe(_paket())["angenommen"] is True, "contract_version 1 ist die gueltige Fassung"
+
+    ohne = _paket()
+    del ohne["contract_version"]
+    assert domaene.pruefe(ohne)["angenommen"] is False
+    assert "contract_version" in domaene.pruefe(ohne)["grund"]
+
+    kuenftig = domaene.pruefe(_paket(contract_version=2))
+    assert kuenftig["angenommen"] is False
+    assert "Fassung" in kuenftig["grund"]
+
+
+def test_int_ver_002_alle_echten_pakete_tragen_die_version():
+    """Ein Vertrag, den die realen Pakete nicht erfuellen, ist keiner."""
+    pakete = [WURZEL / "pakete" / "steuer.domaene.json",
+              OPENLEHR / "wissen" / "einzelunternehmer.domaene.json"]
+    for pfad in pakete:
+        assert pfad.exists(), f"{pfad} fehlt -- rot, nicht uebersprungen"
+        assert json.loads(pfad.read_text(encoding="utf-8"))["contract_version"] == 1
 
 
 @pytest.mark.xfail(strict=True, reason="INT-UPD-001 nicht gebaut: speichere() nutzt INSERT OR IGNORE")

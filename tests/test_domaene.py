@@ -53,6 +53,7 @@ def _paket(regeln, quellen=None, **zusatz):
         "regeln": regeln,
         # Pflicht seit B1 (ADR-013: drei Teile). Leer, aber da --
         # Anwesenheit ist der Vertrag, nicht Inhalt.
+        "contract_version": 1,
         "dienst": {},
         "oberflaeche": {"fassung": 1, "bildschirme": []},
     }
@@ -160,7 +161,8 @@ def test_vertrag_gegen_das_atelier_haelt():
     assert gleich == ergebnis
 
     abgelehnt = domaene.pruefe({"domaene": "x", "quellen": {}, "regeln": [{"id": "Bewirtung", "ziel_id": "fehlt", "fundstelle": "nichts"}],
-                                "dienst": {}, "oberflaeche": {"fassung": 1, "bildschirme": []}})
+                                "contract_version": 1,
+        "contract_version": 1, "dienst": {}, "oberflaeche": {"fassung": 1, "bildschirme": []}})
     assert set(abgelehnt) == {"angenommen", "anzahl_regeln", "bezeichnung", "grund"}
     assert abgelehnt["angenommen"] is False
     assert "Bewirtung" in abgelehnt["grund"]
@@ -700,6 +702,7 @@ def _paket_roh(domaene, quellen, regeln, **zusatz):
         "regeln": regeln,
         # Pflicht seit B1 (ADR-013: drei Teile). Leer, aber da --
         # Anwesenheit ist der Vertrag, nicht Inhalt.
+        "contract_version": 1,
         "dienst": {},
         "oberflaeche": {"fassung": 1, "bildschirme": []},
     }

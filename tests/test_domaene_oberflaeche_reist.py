@@ -33,6 +33,7 @@ def _paket(**zusatz):
         "stand": "2026-08-16T18:00:00+0200",
         "quellen": {"q1": {"bezeichnung": "Q", "hinweistext": "Belegtext"}},
         "regeln": [{"id": "r1", "ziel_id": "q1", "fundstelle": "Belegtext"}],
+        "contract_version": 1,
         "dienst": {},
         "oberflaeche": {
             "fassung": 1,

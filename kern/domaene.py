@@ -67,7 +67,17 @@ from typing import Any
 from kern import speicher, zeitmarke
 from kern.belegvertrag import herkunftsart, pruefe_regeln
 
-_PFLICHTSCHLUESSEL = ("domaene", "quellen", "regeln", "dienst", "oberflaeche")
+_PFLICHTSCHLUESSEL = ("contract_version", "domaene", "quellen", "regeln", "dienst", "oberflaeche")
+
+# INT-VER-001 (docs/REQUIREMENTS_INTERFACE_KOMPAT.md, Teilkatalog zu BDW-F07):
+# Die einzige heute unterstuetzte Major-Version des Paketformats. Fehlt sie
+# oder ist sie unbekannt, wird abgewiesen -- nie geraten und nie teilweise
+# importiert. Dieselbe Fail-closed-Regel wie die Contract Registry in
+# OPENLEHR_KERNEL_UND_APP_VERTRAG_V1 §2 Nr. 1: der OpenLehr-Envelope traegt
+# contract_version laengst, das Domaenenpaket war das letzte Stueck der
+# Strecke ohne Version. Additive Aenderungen (neue optionale Felder) lassen
+# die 1 stehen; ein entferntes oder umgedeutetes Pflichtfeld erhoeht sie.
+_VERTRAG_VERSION = 1
 
 # -- Die drei Teile einer Domaene (ADR-013) ------------------------------
 # Das Format deckte bis zum 2026-08-16 nur *Wissen* ab. 'dienst' und
@@ -146,6 +156,12 @@ def pruefe(paket: Any, db: str | Path | None = None) -> dict[str, Any]:
     fehlend = [schluessel for schluessel in _PFLICHTSCHLUESSEL if schluessel not in paket]
     if fehlend:
         return _abgelehnt(f"Der Paketdatei fehlen Angaben: {', '.join(fehlend)}.")
+
+    if paket["contract_version"] != _VERTRAG_VERSION:
+        return _abgelehnt(
+            f"Die Paketdatei gehoert zu einer anderen Fassung des Formats "
+            f"(erwartet {_VERTRAG_VERSION}, gefunden {paket['contract_version']!r})."
+        )
 
     regeln = paket["regeln"]
     quellen = paket["quellen"]
@@ -493,6 +509,9 @@ def exportiere(domaene_id: str, db: str | Path | None = None) -> dict[str, Any] 
                 regeln.append(regel)
 
     return {
+        # INT-VER-001: der Rundlauf export -> pruefe muss halten, sonst
+        # erzeugt das Haus selbst Pakete, die sein eigener Pruefer abweist.
+        "contract_version": _VERTRAG_VERSION,
         "domaene": domaene_id,
         "bezeichnung": wurzel["title"],
         "herkunft": f"export:{domaene_id}",

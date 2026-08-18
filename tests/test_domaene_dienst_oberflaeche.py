@@ -44,6 +44,7 @@ def _paket(**zusatz):
         "stand": "2026-08-16T13:00:00+0200",
         "quellen": {"q1": {"bezeichnung": "Q", "hinweistext": "Belegtext"}},
         "regeln": [{"id": "r1", "ziel_id": "q1", "fundstelle": "Belegtext"}],
+        "contract_version": 1,
         "dienst": {
             "start": ["__REPO_PFAD__/.venv/bin/python", "-m", "dienst"],
             "horcht_auf": 8811,

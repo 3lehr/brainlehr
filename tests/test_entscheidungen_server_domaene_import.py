@@ -51,6 +51,7 @@ _ABGELEHNTES_PAKET = {
     # Pflicht seit B1 (ADR-013: drei Teile). Sie stehen hier, damit dieses
     # Paket weiterhin am BELEGVERTRAG scheitert und nicht schon an der
     # Vollstaendigkeit -- sonst pruefte der Test etwas anderes als frueher.
+    "contract_version": 1,
     "dienst": {},
     "oberflaeche": {"fassung": 1, "bildschirme": []},
 }
