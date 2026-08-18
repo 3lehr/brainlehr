@@ -208,3 +208,36 @@ unerklärten Effekt, nicht aus dem Verfahren.
 an diesem einen Effekt** — solange sie offen ist, trägt jede Variantenzahl einen Anteil,
 den niemand zuordnen kann. Die Empfehlung „erst Hygiene" aus der Fortschreibung von 14:30
 ist hiermit zurückgezogen.
+
+---
+
+## NACHTRAG 2026-08-18T12:10:00+0200 — der unerklärte Effekt war ein Messartefakt
+
+Dieser Plan trägt die Warnung, ein frisch gerechneter Zielvektor rankte im
+Median 57 statt 79 und die Ursache sei offen. **Sie ist es nicht mehr, und der
+Effekt existiert nicht.** Gemessen über dieselben 35 Fälle
+(`runs/pruefkorpus.jsonl`, bge-m3@ctx2048, heute 6164 Kandidaten):
+
+| Weg | Median | top5 | top50 |
+|---|---|---|---|
+| gespeicherter Vektor (Stufe 0) | 80 | 4/35 | 13 |
+| frisch, **kanonischer** Text (`build_embeddings.node_text`/`lesson_text` importiert) | 80 | 4/35 | 13 |
+| frisch, Ad-hoc-Text (`variante_zweiteinbettung.lade_zieltext`) | 59 | 4/35 | 16 |
+
+Bei gleichem Text ist der Rang in **35 von 35** Zeilen identisch. Der Unterschied
+kam aus der Feldzusammensetzung: der Gegenprobe fehlt bei Knoten die
+**Pfadzeile**, bei Lehren die **Zuordnung**, dafür trägt sie zusätzlich
+**`resolution`**. Verglichen wurden also zwei verschiedene Texte unter dem Namen
+„gespeichert gegen frisch".
+
+**Folge für diesen Plan:** V1s Vergleichsbasis („V1-Gegenprobe", Median 56/57)
+ist kein sauberer Nullpunkt — sie war selbst schon durch den Textunterschied
+begünstigt. Der ehrliche Nullpunkt ist der kanonische Frisch-Wert (Median 80).
+**V2 (Anfrageumschrift) ist nicht betroffen**: sie ändert nur die Anfrageseite.
+
+**Offener Hebel, hier nur notiert:** Die abweichende Zusammensetzung rankt
+*besser* — Lehren Median 43 statt 65, Knoten 71 statt 82. Gemessen allein im
+reinen Bedeutungskanal über 35 Fälle, nicht über den vollen Suchweg und nicht
+über den ganzen Bestand. Wer das bauen will, misst es zuerst über den vollen Weg.
+
+Belege: Knoten `99f00e91`, Lehre `L-0e0ab6` (neuntes Vorkommen).
