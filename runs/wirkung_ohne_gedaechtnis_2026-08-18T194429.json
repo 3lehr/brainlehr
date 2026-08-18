@@ -1,0 +1,327 @@
+{
+  "weg": "knowledge_mcp_server.knowledge_search() -- echter Produktivweg (identisch zu messungen/vier_gatearten.py), kein Modellaufruf in dieser Messung",
+  "modell_verfuegbar": false,
+  "befund_modell": "Modellvergleich (Haiku ueber Anthropic-API, L-a69129) nicht durchfuehrbar: Paket 'anthropic' installiert=False, ANTHROPIC_API_KEY gesetzt=False. Gemessen wird deshalb NICHT die Antwortguete/Wirkung, sondern nur die ZUFUHR (was dem Modell mit vs. ohne Speicher vorlaege).",
+  "kriterium": "'besser' = die Zufuhr enthaelt die Kernaussage des Ziels, BEVOR ein Modell antwortet. Ohne Speicher: der Aufgabentext (task) selbst enthaelt bereits woertlich den Zielausschnitt (target_label/Knotentitel). Mit Speicher: das Ziel liegt unter den top5 von knowledge_search(task) -- dieselbe Grenze wie Gate 1 in vier_gatearten.py, keine neu erfundene Schwelle. Der im Auftrag vorgeschlagene Massstab ('nennt die Antwort target_label/accepted') ist ohne Modellaufruf nicht pruefbar und wurde deshalb auf die Stufe VOR der Antwort zurueckgezogen.",
+  "n": 35,
+  "mit_speicher": 8,
+  "ohne_speicher": 0,
+  "differenz": 8,
+  "grenze": [
+    "Gemessen ist die Zufuhr, nicht die Wirkung -- kein Modell hat je eine Antwort erzeugt, siehe befund_modell.",
+    "Ohne-Speicher-Kriterium ist eine Substring-Pruefung (task enthaelt Zielausschnitt woertlich) -- unterschaetzt moegliches Weltwissen des Modells (z.B. wenn es die Kernaussage OHNE Speicher und OHNE woertliche Erwaehnung im Prompt selbst wuesste).",
+    "Mit-Speicher-Kriterium unterstellt, dass ein unter top5 gelisteter Treffer auch tatsaechlich in den Prompt injiziert wuerde -- das haengt vom echten Recall-Hook ab (haken/knowledge_recall_hook.py), der hier nicht mitlaeuft.",
+    "35 Faelle sind klein, ein knapper Unterschied ist kein Ergebnis.",
+    "Gilt fuer einen Zeitpunkt (2026-08-18) gegen den aktuell laufenden Bestand."
+  ],
+  "positivkontrolle": {
+    "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+    "anfrage_ausschnitt": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+    "rang": 1,
+    "bestanden": true
+  },
+  "negativkontrolle": {
+    "n": 10,
+    "faelschlich_passend": 0,
+    "bestanden": true,
+    "je_frage": [
+      {
+        "frage": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      },
+      {
+        "frage": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      },
+      {
+        "frage": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten.",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      },
+      {
+        "frage": "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungsamt?",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      },
+      {
+        "frage": "Beschreibe in 2 Saetzen, wie man einen Hefeteig fuer Pizza ansetzt.",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      },
+      {
+        "frage": "Wie berechnet man die Umlaufbahnperiode eines Satelliten aus der Bahnhoehe?",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      },
+      {
+        "frage": "Nenne die Zutaten fuer einen klassischen Bechamel.",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      },
+      {
+        "frage": "Nenne drei Faustregeln fuer Rosenschnitt im Fruehjahr.",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      },
+      {
+        "frage": "Erklaere kurz den Unterschied zwischen TCP und UDP.",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      },
+      {
+        "frage": "Wie lautet der Befehl, um in git einen Branch umzubenennen (lokal + remote)?",
+        "lage": "uneindeutig",
+        "faelschlich_passend": false
+      }
+    ]
+  },
+  "je_fall": [
+    {
+      "ziel": "L-a9ccd0",
+      "art": "lesson",
+      "rang_mit_speicher": 7,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-298823",
+      "art": "lesson",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-f9f654",
+      "art": "lesson",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-b4b443",
+      "art": "lesson",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-44a838",
+      "art": "lesson",
+      "rang_mit_speicher": 43,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-cdac52",
+      "art": "lesson",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-e7bc5e",
+      "art": "lesson",
+      "rang_mit_speicher": 5,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": true
+    },
+    {
+      "ziel": "L-e1a441",
+      "art": "lesson",
+      "rang_mit_speicher": 3,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": true
+    },
+    {
+      "ziel": "L-b91ed6",
+      "art": "lesson",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-bbd7fb",
+      "art": "lesson",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-503687",
+      "art": "lesson",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-8c633e",
+      "art": "lesson",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-606b63",
+      "art": "lesson",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-0392e4",
+      "art": "lesson",
+      "rang_mit_speicher": 15,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "L-476602",
+      "art": "lesson",
+      "rang_mit_speicher": 7,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "art": "node",
+      "rang_mit_speicher": 1,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": true
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "art": "node",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "art": "node",
+      "rang_mit_speicher": 8,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "art": "node",
+      "rang_mit_speicher": 10,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "art": "node",
+      "rang_mit_speicher": 18,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+      "art": "node",
+      "rang_mit_speicher": 5,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": true
+    },
+    {
+      "ziel": "/lessons/phase2-summary",
+      "art": "node",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/testing/pytest",
+      "art": "node",
+      "rang_mit_speicher": 50,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/brainlehr/inference-control-was-andere-faecher",
+      "art": "node",
+      "rang_mit_speicher": 36,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/methodik/einstieg",
+      "art": "node",
+      "rang_mit_speicher": 8,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/stadtwerke",
+      "art": "node",
+      "rang_mit_speicher": 4,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": true
+    },
+    {
+      "ziel": "/openlehr/steuer/ui",
+      "art": "node",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "art": "node",
+      "rang_mit_speicher": 1,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": true
+    },
+    {
+      "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "art": "node",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "art": "node",
+      "rang_mit_speicher": 2,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": true
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "art": "node",
+      "rang_mit_speicher": 14,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "art": "node",
+      "rang_mit_speicher": null,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "art": "node",
+      "rang_mit_speicher": 1,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": true
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "art": "node",
+      "rang_mit_speicher": 10,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "art": "node",
+      "rang_mit_speicher": 22,
+      "zufuhr_ohne_speicher_enthaelt_ziel": false,
+      "zufuhr_mit_speicher_enthaelt_ziel": false
+    }
+  ]
+}
