@@ -118,13 +118,19 @@ def _db(tmp_path):
     p = tmp_path / "knowledge.db"
     conn = sqlite3.connect(str(p))
     conn.executescript((_w / "schema.sql").read_text(encoding="utf-8"))
+    # KEIN ALTER TABLE: schema.sql traegt `project_id` bereits. Der erste
+    # Anlauf legte hier eine eigene Spalte `project` an -- gemessen am
+    # 2026-08-18 gegen brainlehr.db gibt es die dort NICHT, und der Melder
+    # waere gegen die echte Datenbank in seinen fail-open-Zweig gelaufen:
+    # der ganze Normwechsel-Zweig still leer, nicht nur der Zusatz. Ein
+    # Testschema, das mehr kann als das echte, prueft sich selbst.
     conn.commit(); conn.close()
     return p
 
 
 def _norm(db, node_id, rang, titel, wann="2026-08-11T09:00:00+02:00",
           actor=None, bedient_von=None, content=None,
-          norm_entschieden_von="test"):
+          norm_entschieden_von="test", project="shared"):
     import sqlite3
     conn = sqlite3.connect(str(db))
     try:
@@ -132,12 +138,12 @@ def _norm(db, node_id, rang, titel, wann="2026-08-11T09:00:00+02:00",
             "INSERT INTO knowledge_nodes (id, path, parent_path, title, summary, "
             "content, source, norm_rang, gilt_ab, norm_entscheidung, "
             "norm_entschieden_grund, norm_entschieden_von, norm_entschieden_am, "
-            "actor, bedient_von, created_at, updated_at) "
+            "actor, bedient_von, project_id, created_at, updated_at) "
             "VALUES (?,?,'/',?,?,?,?,?,'2026-08-11','norm_unbefristet','Testnorm.',"
-            "?,'2026-08-11',?,?,?,?)",
+            "?,'2026-08-11',?,?,?,?,?)",
             (node_id, f"/probe/{node_id}", titel, "Zusammenfassung.", content,
              "Test test_regelwechsel.py", rang, norm_entschieden_von, actor,
-             bedient_von, wann, wann))
+             bedient_von, project, wann, wann))
         conn.commit()
     finally:
         conn.close()
@@ -428,3 +434,85 @@ def test_herkunftswert_steht_wortgleich_in_beiden_dateien():
         regelwechsel._HERKUNFT_FREMD, normachsen.HERKUNFT_FREMD,
         "die beiden Fassungen des Herkunftswerts sind auseinandergelaufen -- "
         "regelwechsel meldet ab jetzt jede Fremdnorm wieder als ungeklaert")
+
+
+# ---------------------------------------------------------------------------
+# ROT VOR GRUEN, gemessen am 2026-08-18: Waehrend einer Sitzung am Fahrtenbuch
+# spielte der Melder die Norm f6db5670 ein -- "Der Python-Rechenkern ist die
+# Quelle, der JavaScript-Kern zieht nach". Die gehoert zu buckeberg und hat mit
+# dem Fahrtenbuch nichts zu tun; sie kam trotzdem als "gilt fuer diese Sitzung".
+#
+# Der Melder ist damit nicht falsch verdrahtet, sondern zu weit: Rang 1 heisst
+# "global", aber der Knoten trug zugleich project='buckeberg'. Beides zusammen
+# ist ein Widerspruch, den nur der Leser aufloesen kann -- und genau das kann er
+# nur, wenn er ihn SIEHT.
+#
+# Nicht unterdrueckt wird die Meldung: Eine Weisung wegzufiltern, weil ein Feld
+# nicht passt, waere der teurere Fehler. Gekennzeichnet wird sie.
+
+def test_norm_mit_fremdem_projekt_wird_als_solche_gekennzeichnet(tmp_path, monkeypatch):
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    regelwechsel.pruefe("s1", projekt="fahrtenbuch")
+    _norm(db, "fremd001", 1, "Der Python-Rechenkern ist die Quelle",
+          norm_entschieden_von="betreiber", project="buckeberg")
+    meldungen = regelwechsel.pruefe("s1", projekt="fahrtenbuch")
+    assert meldungen, "die Norm blieb stumm -- sie soll gemeldet, nicht verschluckt werden"
+    text = " ".join(meldungen)
+    assert "buckeberg" in text, (
+        "das fremde Projekt fehlt in der Meldung -- ohne es liest der Leser sie "
+        "als Weisung fuer seine eigene Arbeit, genau wie am 2026-08-18 geschehen")
+    assert "gilt fuer diese Sitzung" not in text, (
+        "der Satz widerspricht dem Zusatz, und der Leser glaubt dem ersten")
+
+
+def test_norm_mit_projekt_shared_bleibt_unveraendert(tmp_path, monkeypatch):
+    """GEGENPROBE. Eine echte globale Norm darf keinen Projekt-Zusatz bekommen
+    -- sonst wirkt jede Direktive wie eine fremde.
+
+    `project_id` ist im echten Schema NOT NULL: Es gibt keine Norm OHNE
+    Projekt. Der Wert fuer "gilt ueberall" heisst `shared` -- gemessen am
+    2026-08-18 im Bestand, wo die Beta-Direktive und die Klientvorgaben-Regel
+    genau so eingetragen sind."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    regelwechsel.pruefe("s1", projekt="fahrtenbuch")
+    _norm(db, "global01", 1, "Caveman mode always on",
+          norm_entschieden_von="betreiber", project="shared")
+    text = " ".join(regelwechsel.pruefe("s1", projekt="fahrtenbuch"))
+    assert "global01" in text
+    assert "Eingetragen fuer" not in text
+
+
+def test_norm_des_eigenen_projekts_bekommt_keinen_zusatz(tmp_path, monkeypatch):
+    """GEGENPROBE zweite Richtung: Wer am Fahrtenbuch arbeitet, soll eine
+    Fahrtenbuch-Norm ohne Beiwerk bekommen."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    regelwechsel.pruefe("s1", projekt="fahrtenbuch")
+    _norm(db, "eigen001", 1, "Legacy gilt als ungeprueft",
+          norm_entschieden_von="betreiber", project="fahrtenbuch")
+    text = " ".join(regelwechsel.pruefe("s1", projekt="fahrtenbuch"))
+    assert "eigen001" in text
+    assert "Eingetragen fuer" not in text
+
+
+def test_ohne_bekanntes_projekt_wird_nichts_behauptet(tmp_path, monkeypatch):
+    """Kennt der Melder das eigene Projekt nicht, sagt er nichts darueber --
+    eine geratene Zuordnung waere schlimmer als keine."""
+    db = _db(tmp_path)
+    monkeypatch.setattr(regelwechsel, "BEOBACHTET", ())
+    monkeypatch.setattr(regelwechsel, "ZUSTAND", tmp_path / "z.json")
+    monkeypatch.setattr(regelwechsel, "DB", db)
+    regelwechsel.pruefe("s1")
+    _norm(db, "fremd002", 1, "Irgendeine Norm",
+          norm_entschieden_von="betreiber", project="buckeberg")
+    text = " ".join(regelwechsel.pruefe("s1"))
+    assert "fremd002" in text
+    assert "Eingetragen fuer" not in text

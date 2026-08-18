@@ -111,8 +111,8 @@ def _normen() -> dict[str, tuple] | None:
         return None
     try:
         platz = ",".join("?" * len(BINDENDE_RAENGE))
-        return {r[0]: (r[1], r[2], r[3]) for r in conn.execute(
-            f"SELECT id, norm_rang, title, updated_at FROM knowledge_nodes "
+        return {r[0]: (r[1], r[2], r[3], r[4]) for r in conn.execute(
+            f"SELECT id, norm_rang, title, updated_at, project_id FROM knowledge_nodes "
             f"WHERE norm_rang IN ({platz}) AND IFNULL(zurueckgezogen,0)=0",
             BINDENDE_RAENGE)}
     except sqlite3.Error:
@@ -220,12 +220,19 @@ def _norm_herkunft(node_ids: list[str]) -> dict[str, dict] | None:
     }
 
 
-def pruefe(sitzung: str) -> list[str]:
+def pruefe(sitzung: str, projekt: str | None = None) -> list[str]:
     """Was hat sich seit dem letzten Aufruf DIESER Sitzung geaendert?
 
     Der Sitzungsschluessel ist noetig, weil sonst die erste Meldung an eine
     Sitzung geht, die den neuen Stand ohnehin schon geladen hat -- und die
-    Sitzung, die ihn braucht, bekaeme nichts."""
+    Sitzung, die ihn braucht, bekaeme nichts.
+
+    `projekt` ist das Projekt DIESER Sitzung (siehe main()). Traegt eine
+    gemeldete Norm ein anderes, nicht-leeres `project`, bekommt die Meldung
+    einen Zusatz -- Anlass 2026-08-18: eine buckeberg-Norm wurde in einer
+    fahrtenbuch-Sitzung faelschlich als eigene Weisung gelesen. Ist `projekt`
+    None oder das Norm-Feld leer, bleibt die Meldung unveraendert: eine
+    geratene Zuordnung waere schlimmer als keine."""
     alt = _lies_zustand()
     neu, meldungen = {}, []
 
@@ -271,26 +278,27 @@ def pruefe(sitzung: str) -> list[str]:
         vorher = alt.get(schluessel)
         if vorher is not None:
             geaendert = [
-                (kid, rang, titel) for kid, (rang, titel, stand) in jetzt.items()
+                (kid, rang, titel, project)
+                for kid, (rang, titel, stand, project) in jetzt.items()
                 if kid not in vorher or list(vorher[kid])[2] != stand
             ]
-            herkunft = _norm_herkunft([kid for kid, _, _ in geaendert])
+            herkunft = _norm_herkunft([kid for kid, _, _, _ in geaendert])
             # herkunft is None nur bei Lesefehler (fail-open) -- dann bleibt
             # der Urheber offen fuer jede Kennung, statt die ganze Meldung
             # zu verschlucken.
             meldepflichtig = []
-            for kid, rang, titel in geaendert:
+            for kid, rang, titel, project in geaendert:
                 info = (herkunft or {}).get(kid, {})
                 if info.get("wiederhergestellt"):
                     continue  # WORTGLEICHE Vorfassung -- Reparatur, keine Weisung
                 urheber = info.get("urheber", "unbekannt")
                 if urheber == "werkzeug":
                     continue  # eigene Aenderung (Skript/Agent) -- keine Weisung
-                meldepflichtig.append((kid, rang, titel, urheber))
+                meldepflichtig.append((kid, rang, titel, urheber, project))
 
-            for kid, rang, titel, urheber in meldepflichtig[:5]:
+            for kid, rang, titel, urheber, project in meldepflichtig[:5]:
                 if urheber == "unbekannt":
-                    meldungen.append(
+                    meldung = (
                         f"Norm Rang {rang} neu oder geaendert: {kid} -- {titel}. "
                         f"URHEBER OFFEN -- actor ist leer oder nicht gesetzt, "
                         f"das ist keine Weisung des Betreibers, sondern eine "
@@ -298,7 +306,7 @@ def pruefe(sitzung: str) -> list[str]:
                         f"bevor du weiterarbeitest -- passiver Recall ist kein "
                         f"Handoff (c14adcfe, Punkt 5).")
                 elif urheber == "fremd":
-                    meldungen.append(
+                    meldung = (
                         f"Norm Rang {rang} neu oder geaendert: {kid} -- {titel}. "
                         f"Herkunft GEKLAERT, aber NICHT dieses Haus: diese Norm "
                         f"stammt von aussen (Gesetz, Verordnung, Urteil oder "
@@ -307,13 +315,38 @@ def pruefe(sitzung: str) -> list[str]:
                         f"Lies sie mit knowledge_read, bevor du weiterarbeitest -- "
                         f"passiver Recall ist kein Handoff (c14adcfe, Punkt 5).")
                 else:
-                    meldungen.append(
-                        f"Bindende Norm Rang {rang} neu oder geaendert: {kid} -- "
-                        f"{titel}. Das ist eine Weisung des Betreibers, kein "
-                        f"Hintergrundwissen. Sie gilt fuer diese Sitzung, "
-                        f"unabhaengig davon, ob sie im Systemprompt steht. Lies "
-                        f"sie mit knowledge_read, bevor du weiterarbeitest -- "
-                        f"passiver Recall ist kein Handoff (c14adcfe, Punkt 5).")
+                    # `shared` heisst "gilt ueberall" -- gemessen im
+                    # Bestand: die Beta-Direktive und die
+                    # Klientvorgaben-Regel stehen so da. `project_id` ist NOT
+                    # NULL, ein leerer Wert kommt also gar nicht vor; die
+                    # Pruefung darauf bleibt trotzdem stehen, weil eine
+                    # kuenftige Migration ihn erlauben koennte.
+                    fremd = (projekt is not None and project
+                             and project not in ("shared", projekt))
+                    if fremd:
+                        # KEIN "gilt fuer diese Sitzung" bei fremdem Projekt.
+                        # Der Satz und der Zusatz widersprechen sich sonst,
+                        # und der Leser glaubt dem ersten: genau so ist am
+                        # 2026-08-18 eine buckeberg-Weisung in einer
+                        # Fahrtenbuch-Sitzung gelandet.
+                        meldung = (
+                            f"Norm Rang {rang} neu oder geaendert: {kid} -- "
+                            f"{titel}. Eingetragen fuer Projekt '{project}', "
+                            f"du arbeitest an '{projekt}'. Das ist eine Weisung "
+                            f"des Betreibers, aber fuer ein anderes Projekt -- "
+                            f"pruefe erst, ob sie deine Arbeit ueberhaupt "
+                            f"betrifft, bevor du ihr folgst. Nachlesen mit "
+                            f"knowledge_read.")
+                    else:
+                        meldung = (
+                            f"Bindende Norm Rang {rang} neu oder geaendert: "
+                            f"{kid} -- {titel}. Das ist eine Weisung des "
+                            f"Betreibers, kein Hintergrundwissen. Sie gilt fuer "
+                            f"diese Sitzung, unabhaengig davon, ob sie im "
+                            f"Systemprompt steht. Lies sie mit knowledge_read, "
+                            f"bevor du weiterarbeitest -- passiver Recall ist "
+                            f"kein Handoff (c14adcfe, Punkt 5).")
+                meldungen.append(meldung)
             if len(meldepflichtig) > 5:
                 meldungen.append(f"... und {len(meldepflichtig) - 5} weitere.")
         neu[schluessel] = neu_stand
@@ -346,8 +379,18 @@ def main() -> int:
     # stilleren Blindgaenger gewesen: verdrahtet, aber mit falschem Etikett.
     ereignis = str(eingabe.get("hook_event_name") or "UserPromptSubmit")
 
+    # Projekt der Sitzung: Pfadbestandteil direkt unter Begod2026/, aus cwd
+    # der stdin-Eingabe. Laesst es sich nicht bestimmen: None -- eine
+    # geratene Zuordnung waere schlimmer als keine (siehe pruefe()).
+    projekt = None
+    praefix = "/Volumes/daten/Begod2026/"
+    cwd = str(eingabe.get("cwd") or "")
+    if cwd.startswith(praefix):
+        rest = cwd[len(praefix):].split("/", 1)[0]
+        projekt = rest or None
+
     try:
-        meldungen = pruefe(sitzung)
+        meldungen = pruefe(sitzung, projekt)
     except Exception:                              # noqa: BLE001 -- fail-open
         return 0
     if not meldungen:
