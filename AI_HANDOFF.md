@@ -1,5 +1,34 @@
 # AI handoff
 
+## 2026-08-18T05:00:00+0200 — feat(vertrag): four INT gates green
+
+- Commits: `cdef550b` (INT-VER-001), `2ea89fe6` (INT-UPD-001, INT-DNST-001) und
+  im Nachbarrepo `openlehr_einzelunternehmer` `cc750e3` (Paketversion +
+  INT-GATE-001). Kein Push.
+- Stand der Gates: `INT-VER-001`, `INT-UPD-001`, `INT-DNST-001`, `INT-GATE-001`
+  grün. Offen und als `xfail(strict=True)` sichtbar: `INT-UPD-002`
+  (Importkennung und Rücknahme). Ungebaut und nur als Katalogzeile:
+  `INT-REG-001` (Domänenregistry), `INT-SNAP-001` (Snapshotgrenze),
+  `INT-API-001/002` und `INT-VER-002` haben noch kein eigenes Laufzeitgate.
+- Format: `contract_version` ist Pflichtschlüssel, `_VERTRAG_VERSION = 1`,
+  unbekannte Major fail-closed. Beide realen Pakete tragen die `1`.
+- Zwei Funde, die kein Plan genannt hatte: `exportiere()` erzeugte ein Paket,
+  das der eigene Prüfer abgewiesen hätte; und das Atelier hätte einen reinen
+  Aktualisierungs-Import als „enthielt nichts Neues“ gemeldet. Beides behoben,
+  Letzteres als reine Funktion `DomaeneImportUebersetzung.wirkung` in
+  BrainlehrCore, damit es prüfbar ist statt im Bildschirmpfad zu liegen.
+- Verified: `94 passed, 1 xfailed` (Domäne, Vertrag, Rechte, Schichtregel),
+  `swift test` 241 passed (vorher 240), openlehr 21 passed. Rot-Probe für
+  INT-GATE-001 gefahren: `BRAINLEHR_PFAD=/tmp/gibtsnicht` → 1 failed statt
+  1 skipped. `tests/test_alle_selftests.py` bleibt ausgenommen — fremde,
+  bereits vorher rote Arbeitskopie im Arbeitsbereich.
+- Remaining risk: Der Reimport aktualisiert, nimmt aber nichts zurück. Ein
+  falsch importiertes Paket ist heute nur von Hand aus dem Bestand zu
+  schneiden, und niemand weiß danach, was dazugehörte.
+- Next test: `INT-UPD-002` — Importkennung auf jeder geschriebenen Zeile,
+  `nimm_import_zurueck(kennung)` entfernt genau diesen Import und lässt in
+  Kraft gesetzte Regeln stehen (oder verweigert, solange eine gilt).
+
 ## 2026-08-18T05:20:00+0200 — test(vertrag): pin BDW-F07 interface gates red
 
 - Files: `docs/REQUIREMENTS_INTERFACE_KOMPAT.md` (neu), `docs/REQUIREMENTS_BRAINLEHR.md`,
