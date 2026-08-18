@@ -181,8 +181,34 @@ misst fünf Gedächtnisfähigkeiten an echten Agenten-Verläufen; die Kategorie
 >    `gattung='nachschlagewerk'` liefert `knowledge_search` 0 Treffer, bis
 >    `nachschlagewerk=True` gesetzt wird. Bauform-Befund, kein Fehler.
 >
-> **Fällig:** V2 nachmessen, mit `recall_any@k` als wörtlichem Kriterium und
-> voller Fallzahl statt Stichprobe. Die Auflage weiter unten („erst nach `71`
+> **ERLEDIGT 2026-08-18T19:45:00+0200 — V2 gemessen, und das Kriterium war ein anderes.**
+> `runs/longmemeval_v2_produktivweg_2026-08-18T192600.json`, Weg
+> `knowledge_mcp_server.knowledge_search()`, n=18 von 451:
+> **pct_correct 16,7 % (3/18)** · static 0/4 · dynamic 1/4 · procedure 1/4 ·
+> **gotchas 1/6 = 16,7 %** · 15 von 18 als `is_unknown` gemeldet statt geraten.
+>
+> **Das Kriterium ist nicht `recall_any@k`.** V2 definiert weder R@k noch MRR —
+> es gibt kein Ziel-Trajektorien-Feld in `questions.jsonl` (gegen `SCHEMA.md`
+> geprüft). Sein eigener Maßstab ist `pct_correct = correct_count/n` aus
+> `evaluation/harness.py::aggregate_metrics()::breakdown()`, je Kategorie über
+> `CATEGORY_MAP`. Bei V1/S existiert `answer_session_ids` und damit R@k — dort
+> stammen auch die Konkurrenzzahlen her.
+>
+> **16,7 % gegen den Weltstand 48,3 % misst NICHT dasselbe**, und das ist keine
+> Ausrede, sondern der Aufbau: Reader und Richter war der Messlauf selbst, nicht
+> das im Paper genutzte Modell (kein Endpunkt, kein Schlüssel). Dazu sind alle
+> sechs Gotchas-Fälle der Stichprobe bildabhängig (`question.image` ist bei allen
+> 29 Gotchas-Fragen gesetzt), während der Produktivweg textbasiert ist — das
+> Bildsignal fehlt strukturell.
+>
+> **Was die Zahl trotzdem taugt:** Sie ist eine Untergrenze (wo die Evidenz nicht
+> reichte, wurde „unbekannt" gemeldet), sie ist über den echten Produktivweg
+> erhoben, und sie ist die erste Zahl gegen den Maßstab, den dieser Plan seit
+> fünf Tagen nennt. Die Auflage „nicht nach außen davor" gilt unverändert.
+>
+> **Nächste Verschärfung, wenn die Zahl belastbarer werden soll:** ein fremder
+> Reader statt des eigenen Laufs. Ohne ihn misst jede Wiederholung dieselbe
+> Vermischung aus Abruf und Urteil. Die Auflage weiter unten („erst nach `71`
 > und `89`, und nicht nach außen davor") gilt unverändert — sie ist der Grund,
 > warum die S-Zahl hier als Nachtrag steht und nicht als Ergebnis.
 
