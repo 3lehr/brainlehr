@@ -46,6 +46,7 @@ HUB = SHARED_KNOWLEDGE.parent
 sys.path.insert(0, str(HUB / "scripts"))
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import knowledge_recall_hook as hook  # noqa: E402
+import knowledge_mcp_server as kms
 import schnappschuss  # noqa: E402 -- kern/ liegt schon im Suchpfad (s.o.), nur benutzen (INT-SNAP-001)
 
 CORPUS = SHARED_KNOWLEDGE / "runs/pruefkorpus.jsonl"
@@ -182,11 +183,27 @@ def _gegen_schnappschuss(quelle: Path | None = None, verzeichnis: Path | None = 
     Vorgabe (ort.DB / runs/schnappschuesse)."""
     stand = schnappschuss.festhalten(quelle, verzeichnis)
     orig_db = hook.DB
+    # ZWEI Attribute, EINE Datenbank (Befund 2026-08-19). hook.DB steuert die
+    # Kandidatensuche; die Vertrauensbewertung laeuft dagegen ueber
+    # knowledge_mcp_server.knowledge_trust_score(), und die liest
+    # ausschliesslich kms.DB_PATH -- zur AUFRUFZEIT, nicht beim Import.
+    # Belegt: derselbe Aufruf liefert trust_score 0.6611 (exists=True) gegen
+    # den Bestand und 0.5 (exists=False), wenn DB_PATH auf eine leere Datei
+    # zeigt; hook.DB aendert daran nichts.
+    #
+    # Wer nur hook.DB pinnt, misst also einen halb eingefrorenen Lauf: die
+    # Kandidaten kommen vom Schnappschuss, ihre Bewertung vom lebenden,
+    # wachsenden Bestand. Genau die Vergleichbarkeit, fuer die dieser
+    # Kontextmanager gebaut wurde, faellt damit an der Stelle wieder aus,
+    # an der die Rangfolge entsteht.
+    orig_db_path = kms.DB_PATH
     hook.DB = str(stand.pfad)
+    kms.DB_PATH = stand.pfad
     try:
         yield stand
     finally:
         hook.DB = orig_db
+        kms.DB_PATH = orig_db_path
         shutil.rmtree(stand.pfad.parent, ignore_errors=True)
 
 

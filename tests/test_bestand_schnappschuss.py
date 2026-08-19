@@ -96,3 +96,44 @@ def test_schnappschuss_sieht_committete_aber_nicht_zurueckgeschriebene_wal_aende
     # TRUNCATE-Checkpoint (normrang.py::_backup()s Weg) haette sie geleert.
     assert (tmp_path / "live.db-wal").exists()
     halter.close()
+
+
+def test_gegen_schnappschuss_pinnt_BEIDE_datenbankattribute(tmp_path):
+    """ROT VOR GRUEN (2026-08-19): `_gegen_schnappschuss()` pinnte nur
+    `hook.DB`. Die Vertrauensbewertung laeuft aber ueber
+    `knowledge_mcp_server.knowledge_trust_score()`, und die liest
+    ausschliesslich `kms.DB_PATH` -- zur AUFRUFZEIT.
+
+    Belegt mit demselben Aufruf gegen zwei Staende: trust_score 0.6611
+    (exists=True) gegen den Bestand, 0.5 (exists=False) gegen eine leere
+    Datei; `hook.DB` aendert daran nichts. Ein Lauf, der nur `hook.DB`
+    pinnt, holt die Kandidaten also vom eingefrorenen Stand und ihre
+    Bewertung vom lebenden -- die Vergleichbarkeit faellt genau dort aus,
+    wo die Rangfolge entsteht.
+
+    Gegen den Stand vor dieser Aenderung war die zweite Zusicherung rot."""
+    import sqlite3
+    import sys
+    from pathlib import Path
+
+    wurzel = Path(__file__).resolve().parents[1]
+    sys.path[:0] = [str(wurzel), str(wurzel / "kern"), str(wurzel / "haken")]
+    import knowledge_mcp_server as kms
+    import knowledge_recall_hook as hook
+    import messlauf_abrufguete as mess
+
+    quelle = tmp_path / "quelle.db"
+    conn = sqlite3.connect(str(quelle))
+    conn.execute("CREATE TABLE t (x)")
+    conn.commit()
+    conn.close()
+
+    vor_hook, vor_kms = hook.DB, kms.DB_PATH
+    with mess._gegen_schnappschuss(quelle, tmp_path / "schnapp") as stand:
+        assert str(hook.DB) == str(stand.pfad)
+        assert str(kms.DB_PATH) == str(stand.pfad), (
+            "Vertrauensbewertung laeuft am Schnappschuss vorbei -- halb "
+            "eingefrorener Lauf")
+    # Gegenprobe: beide Attribute muessen danach wieder stehen, sonst
+    # vergiftet ein Messlauf jede spaetere Arbeit derselben Sitzung.
+    assert hook.DB == vor_hook and kms.DB_PATH == vor_kms
