@@ -146,3 +146,28 @@ def test_e07_gegenprobe_ohne_knoten_steht_die_zeichenfolge_nirgends(temp_db):
     ).fetchone()[0]
     conn.close()
     assert treffer == 0, treffer
+
+
+# ─── BDW-E13: derselbe Befund, eine Ebene weiter ────────────────────────────
+
+def test_e13_der_fristlauf_kann_den_bestand_gar_nicht_erreichen():
+    """Die E13-Zeile sagt, der Fristlauf "greift auf den Schluesselspeicher,
+    nicht auf Indizes, Caches und Kopien". Das klingt nach einem unfertigen
+    Lauf. Gemessen ist es eine Frage der Signatur: `fristlauf()` nimmt einen
+    `Kundenschluesselspeicher` und eine Zuordnung entgegen -- es gibt keinen
+    Parameter, ueber den ihm der Bestand ueberhaupt bekannt werden koennte,
+    und `kern/aufbewahrung.py` nennt weder sqlite noch `kern/speicher`.
+
+    Nicht "drei von vier Teilen fehlen" also, sondern: der Lauf ist mit dem
+    Gegenstand nicht verbunden. Waechst dieser Weg, wird der Test rot."""
+    import inspect
+
+    sys.path.insert(0, str(WURZEL / "kern"))
+    import aufbewahrung  # noqa: E402
+
+    quelle = Path(aufbewahrung.__file__).read_text(encoding="utf-8")
+    assert "sqlite" not in quelle and "import speicher" not in quelle, (
+        "aufbewahrung.py kennt jetzt den Bestand -- BDW-E13 neu vermessen."
+    )
+    namen = list(inspect.signature(aufbewahrung.fristlauf).parameters)
+    assert namen == ["speicher", "ordnung", "zuordnung", "jetzt_ts", "nachweis_pfad"], namen
