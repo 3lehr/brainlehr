@@ -151,10 +151,24 @@ def _genannte_dateien(text: str) -> set[str]:
     return namen
 
 
-# Frist, ab der ein erklaerter Stand als ueberholt gilt. 21 Tage, nicht 30:
-# der Anlassfall war 26 Tage alt und hat geschadet, 30 haette ihn erst nach
-# dem Schaden gemeldet. Kein gemessener Wert -- eine Setzung, und als solche
-# benannt statt als Erkenntnis ausgegeben.
+# Frist, ab der ein erklaerter Stand als ueberholt gilt.
+#
+# Zuerst gesetzt (21, weil der Anlassfall 26 Tage alt war), dann NACHGEMESSEN
+# am 2026-08-19 ueber vier Repos -- und der erste Messversuch beantwortete die
+# falsche Frage: Abstand zwischen erklaertem Stand und dem Commit, der ihn
+# schreibt. Median 0, natuerlich, denn wer eine Stand-Zeile schreibt, schreibt
+# das heutige Datum hin. Eine zirkulaere Messung, die wie ein Ergebnis aussah.
+#
+# Die Frage, die traegt: Wie lange BLEIBT ein Derivat bei einem Stand, bis der
+# naechste gesetzt wird? Das ist der tatsaechliche Pflegeabstand. Ueber 59
+# Fortschreibungen: Median 0 Tage, 90 % innerhalb von 6 Tagen, und nur 5 %
+# ueber 21 Tagen. Diese 5 % sind DREI Dateien -- die Handouts handout-efbe,
+# handout-swb und handout-volksbank, alle 26 Tage, darunter das Dokument, das
+# den Vorfall ausgeloest hat.
+#
+# 21 liegt damit deutlich ueber dem Arbeitsrhythmus (6 Tage) und unter dem
+# Schadensfall (26). Eine Frist von 7 Tagen laege mitten im Normalbetrieb und
+# meldete staendig; eine Wache mit dieser Fehlalarmquote wird ignoriert.
 _FRIST_TAGE = 21
 
 
