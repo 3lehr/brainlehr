@@ -2678,10 +2678,19 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
 
     query_vec = embeddings.embed_text(query)
     bedeutungswerte: list = []
+    lesson_bedeutungswerte: list = []
     emb_node_ids = _embedding_ranking(conn, "node", query_vec, allowed_node_ids,
                                       bedeutungswerte) if query_vec else []
-    emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, allowed_lesson_ids) if query_vec else []
+    emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, allowed_lesson_ids,
+                                        lesson_bedeutungswerte) if query_vec else []
     embedding_ordered_ids = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
+    # Roher Kosinus je Treffer (Auftrag 2026-08-19): rrf_fuse oben verwirft ihn zugunsten
+    # einer reinen Rangposition -- fuer die Antwort an den Aufrufer wird er hier separat
+    # als id->Kosinus-Dict aufgehoben, bevor er verloren geht. emb_*_ids und ihre
+    # zugehoerigen Werte-Listen sind an dieser Stelle noch parallel sortiert (_embedding_ranking
+    # gibt beide aus demselben "scored" hervor), ein einfaches zip genuegt.
+    kosinus_je_id = dict(zip(emb_node_ids, bedeutungswerte))
+    kosinus_je_id.update(zip(emb_lesson_ids, lesson_bedeutungswerte))
 
     # Zeitfenster (Entstehungszeit, Auftrag 88 Schritt 1) VOR der Fusion, und
     # das ist keine Feinheit, sondern der Unterschied zwischen brauchbar und
@@ -2753,7 +2762,11 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                       "summary": row["summary"], "project": row["project_id"],
                       # Kennung, NICHT aufgeloest -- siehe schema.sql-Kommentar an
                       # knowledge_nodes.abgeleitet_von (ADR-027 Nachtrag 4).
-                      "abgeleitet_von": row["abgeleitet_von"]}
+                      "abgeleitet_von": row["abgeleitet_von"],
+                      # Roher Kosinus des Bedeutungskanals fuer GENAU diesen Treffer, kein Rang --
+                      # None (nicht 0.0) wenn kein Vektor vorliegt: 0.0 waere eine Aussage ueber
+                      # Aehnlichkeit, None eine ueber Verfuegbarkeit.
+                      "bedeutungs_kosinus": kosinus_je_id.get(row["id"])}
             geltung = _geltung_status(row["norm_rang"], row["gilt_ab"], row["gilt_bis"], stichtag)
             if geltung in ("abgelaufen", "noch_nicht_in_kraft"):
                 if nur_geltende:
@@ -2777,7 +2790,8 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             # nachrangig-Zweig, siehe Docstring).
             vorrang.append({"kind": "lesson", "id": row["id"], "type": row["type"],
                              "severity": row["severity"], "summary": row["description"],
-                             "project": json.loads(row["projects"]) if row["projects"] else []})
+                             "project": json.loads(row["projects"]) if row["projects"] else [],
+                             "bedeutungs_kosinus": kosinus_je_id.get(row["id"])})
     results = vorrang + nachrangig
     if not results:
         _log_zero_hit(query, cwd=cwd, session=session)
