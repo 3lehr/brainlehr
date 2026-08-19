@@ -1,12 +1,22 @@
-# STAND brainlehr — 2026-08-19T08:05:00+0200
+# STAND brainlehr — 2026-08-19T08:55:00+0200
 
-**`100` gefahren, und sie liefert KEINE Wirkungszahl.** Der Lauf hält jetzt (Messstand `20260819T053907-139e3687`, 904,6 s, kein Abbruch, `kein_ergebnis` 0/0) — aber beide Kontrollen schlagen an, und beide zeigen auf die **Bewertung**: die Positivkontrolle scheitert, weil `zielausschnitt()` für einen Knoten den **Titel** liefert und das Kriterium damit Titelwiederholung prüft statt Richtigkeit; die Negativkontrolle zählt das ausdrückliche **Zurückweisen** des Speichers als Kontamination. Kriterium NICHT nachgebessert (das wäre Anpassung nach Sicht des Ergebnisses) → neue Aufgabe `113` legt die Abnahme vorab fest, prüfbar an den gespeicherten Antworten ohne neuen Modelllauf.
-**Ernstester Einzelbefund des Laufs:** „Welcher Knoten zum Verzurren einer Plane?" — ohne Speicher **Mastwurf** (richtig), mit Speicher **„der Knoten Kalibrierbremse"**. Der Wortkanal schlägt bei fachfremden Fragen zu und macht Antworten schlechter.
-**Messläufe laufen ab sofort gegen einen Schnappschuss** (`messstand()` in `messungen/wirkung_llm_probe.py`). Vorher schrieb der Lauf ins `access_log` des lebenden Bestands und starb an `database is locked`. Gegenprobe: live 20077 → 20077 unverändert, Kopie +2. **Preis: ~120 MB je Lauf**, `runs/schnappschuesse/` ist jetzt in `.gitignore`; Aufräumen bewusst NICHT gebaut (eine weitergereichte Kennung muss auflösbar bleiben).
-**Zwei Zahlen der Linie K halten der Nachprüfung nicht stand.** `110` (12 Kennungskollisionen): **0** — es gab nie ein Skript dazu, jetzt gibt es eins (`melder/kennungskollision.py`), die 4 Funde sind gewollte Fortschreibungen. `109` (6 stumme Spalten): **3** — die vier `tokens_*` waren ein Artefakt des Melders (voller Nenner über eine Historie, die die Spalte nicht tragen konnte).
-**Falle, zweimal am selben Tag getroffen:** Ein Nenner ist die stillste Stelle einer Messung — er erzeugt keinen Fehler, nur eine falsche Zahl, und die liest sich wie ein Befund (`L-412e20`). Und: eine Regex-Alternation mit `|` ist in Python **erstpassend**, nicht längstpassend — `B4` schluckt `B4.1` (`L-e916b0`, Beinahefehler).
-**Nächstes:** `113` (Kriterium mit vorab festgelegter Abnahme) vor jedem weiteren Wirkungslauf · `112` (Nachrangung von `brainlehr/atelier` holen, +34 Punkte top5, Preis 48,6 s/Anfrage) vor dem *zweiten*.
-**Wartet auf dich:** Push (jetzt 29 Commits vor `origin/brainlehr/b4-ausweis`) · die anderen Punkte unverändert siehe unten.
+**`100` liefert zum ersten Mal eine verwendbare Zahl** — Kriterium `113` gebaut, Abnahme **vor** dem Bau festgelegt und bestanden, Positivkontrolle grün. n=10: **3 besser, 7 unentschieden, 0 schlechter, 0 nicht messbar** (Messstand `20260819T063335-6270801b`, 910 s, `runs/wirkung_llm_probe_2026-08-19T084859.json`).
+
+**Der Befund steht aber nicht in dieser Tabelle: der Speicher hilft, wo er etwas hat, und schadet, wo er nichts hat.** Zielfälle → nie schlechter. Fachfremde Fragen → 2 von 4 kontaminiert, beide echt: „Knoten zum Verzurren einer Plane" wird von **Mastwurf** (richtig) zu **„Kaliblerbremse"**; „macOS-Auflösung" von **displayplacer** (richtig) zu „displaychanger" + AppleScript aus der Zufuhr. **Das ist kein Trefferquotenproblem — bessere Suche macht es schlimmer.** Stellschraube ist **Enthaltung**: der Wortkanal muss schweigen können. Neue Aufgabe `114`, **bindend vor `112`** (Nachrangung macht die Zufuhr dichter, nicht leiser).
+
+**Kriterium 113 in einem Satz:** paarweiser Vergleich gegen Titel+summary des Ziels (nicht gegen den Titel allein), drei Urteile statt Trefferquote — `schlechter` konnte das alte Kriterium gar nicht ausdrücken. Kontamination misst jetzt den **Antwortteil**, nicht den Text *über* den Speicher; eine ausdrückliche Zurückweisung galt vorher als Kontamination.
+
+**Zwei benannte, NICHT behobene Schwächen:** `statt` fehlt auf der Stoppwortliste (trägt im macOS-Fall eines von zwei Kontaminationswörtern) · 7 von 10 „unentschieden" — ob `ABSTAND = 2` zu grob greift, ist an den gespeicherten Antworten prüfbar, weil `zufuhr` jetzt in der Ergebnisdatei steht. Beides gehört **vor** den nächsten Lauf mit eigener Abnahme; jetzt nachbessern wäre Anpassung nach Sicht des Ergebnisses.
+
+**Fallen von heute:** Ein Nenner ist die stillste Stelle einer Messung — er erzeugt keinen Fehler, nur eine falsche Zahl (`L-412e20`, Melder maß eine tagealte Spalte über fünf Monate Historie). · Python-Regex-Alternation ist **erstpassend**, nicht längstpassend: `B4` schluckt `B4.1` (`L-e916b0`). · Rückgabeform geändert, Verbraucher nicht geprüft → Lauf stürzte **nach** allen 28 Modellaufrufen ab (`L-51e6d8`, 2×); Gegenmittel gebaut: statischer `ast`-Abgleich aller String-Subscripts gegen alle dict-Schlüssel, läuft in Sekunden.
+
+**Messläufe laufen gegen einen Schnappschuss** (`messstand()`). Vorher `database is locked` gegen den lebenden Bestand. ~120 MB je Lauf, `runs/schnappschuesse/` in `.gitignore`; unreferenzierte eigene Kopien von heute aufgeräumt (722 → 241 MB), die referenzierten stehen.
+
+**Linie K nachgemessen:** `110` (12 Kennungskollisionen) → **0**, Skript nachgereicht (`melder/kennungskollision.py`). `109` (6 stumme Spalten) → **3**.
+
+**Push:** erledigt, `origin/brainlehr/b4-ausweis` steht auf `398fdce7`. Der Wächter `melder/ablaufpflicht.py` beanstandet weiter 3 Commits von gestern (`6f0d4909`, `fd14aa28`, `bdae9cf8`) — Befunde stimmen, Reparatur nur per History-Rewrite, dessen Kosten am 18.08. geprüft und verworfen wurden.
+
+**Nächstes:** `114` Enthaltungsschwelle (roter Testfall: Plane/displayplacer) → dann `112` Nachrangung von `brainlehr/atelier`.
 
 ---
 
