@@ -1,3 +1,20 @@
+# STAND brainlehr — 2026-08-19T10:45:00+0200
+
+**Kaskadenregel gebrochen, zum vierten Mal — jetzt mit Zähler statt Vorsatz.** Gemessen am eigenen Protokoll: **807 Bash-Aufrufe im Opus-Hauptfaden, 1.680.313 Ausgabe-Token, 1 Agent-Aufruf seit der Verdichtung**. Die Eilmeldung `e4dd2b62` („27 Subagenten = 4,7 Mio Token") hatte ich als Aussage über andere gelesen. `L-53eeda` auf 3 Vorkommen, **auf Regelrang eskaliert**. Gebaut: `melder/kaskadenanteil.py` (Commit `b977de50`) — zählt die **Strecke seit der letzten Delegation**, nicht das Gesamtverhältnis; Schwelle **84 = gemessenes 90. Perzentil** der 30 Strecken dieser Sitzung (Median 17, Max 114). Im `Stop`-Block von `~/.claude/settings.json` verdrahtet (Sicherung `settings.json.bak-2026-08-19T1030`), `ausloeserlos.py` meldet ihn nicht mehr.
+
+**`114` Schritt 1 und 2 stehen.** Schritt 1 (gemessen, `runs/enthaltung_114_2026-08-19.json`): der rohe Bedeutungs-Kosinus **trennt** — einschlägig 0,5862–0,6469, fachfremd 0,4435–0,5410. Schritt 2 (Sonnet, Commit `4c88915b`): jede Trefferzeile trägt `bedeutungs_kosinus`, `None` bei fehlendem Vektor. Selbst nachgefahren am Produktivweg: Plane 0,4856 / Buckeberg 0,5938.
+**Der strukturelle Befund dahinter:** Enthaltung ist auf dem Rückgabewert von `knowledge_search` **nicht baubar** — `rrf_fuse` addiert `1/(k+Position)`, eine reine Rangformel; der beste Treffer bekommt ~1/61, ob perfekt oder Unsinn.
+
+**FALLE, frisch (`L-82415c`):** Der Rot-vor-grün-Beleg zu `4c88915b` hing an `git show HEAD:...` — **HEAD ist ein Zeiger, keine Adresse**. Sobald die Änderung committet war, lag sie selbst auf HEAD: 2 von 7 Zusicherungen rot („DID NOT RAISE"). Gefangen nur, weil der Agentenbericht nachgefahren statt geglaubt wurde. Reparatur läuft. **Selbstprobe künftig: Leer-Commit anlegen, Beleg erneut fahren — bleibt er grün, hängt er fest.**
+
+**Offen bei `114`:** die Zahl selbst. n=20 auf einem Korpus ist zu dünn für eine Produktivschwelle, und der Abstand 0,5410 → 0,5862 ist schmal genug, dass die Korpuswahl ihn verschiebt.
+
+**Nächstes:** Schwelle breiter vermessen → dann `112` (Nachrangung von `brainlehr/atelier`; sie macht die Zufuhr bei fachfremden Fragen **dichter**, deshalb erst nach der Enthaltung).
+
+**Wartet auf dich:** Push (`origin` steht auf `0cd29db1`, seither weitere Commits) · die 3 Ablaufpflicht-Befunde von gestern (`6f0d4909`, `fd14aa28`, `bdae9cf8`) · `melder/derivatfrische.py` sieht nur **6 von 1492** Dateien — Abdeckung ist die offene Frage, nicht die Wache.
+
+---
+
 # STAND brainlehr — 2026-08-19T08:55:00+0200
 
 **`100` liefert zum ersten Mal eine verwendbare Zahl** — Kriterium `113` gebaut, Abnahme **vor** dem Bau festgelegt und bestanden, Positivkontrolle grün. n=10: **3 besser, 7 unentschieden, 0 schlechter, 0 nicht messbar** (Messstand `20260819T063335-6270801b`, 910 s, `runs/wirkung_llm_probe_2026-08-19T084859.json`).
