@@ -1644,3 +1644,45 @@ Katalogzeile benannt, statt sie auf PASS zu heben.
 **Erfolgsmaß:** `kern/sicherungen.py --selftest` grün mit einem Fall, der eine
 Sicherung am ALTEN und eine am NEUEN Ort anlegt und beide gefunden sieht; rot
 gegen einen festen Commit.
+
+## `BDW-E07` / `BDW-E13`: das Crypto-Shredding ist gebaut und an nichts angeschlossen
+
+Stand 2026-08-19T22:14:52+0200. Beide Zeilen stehen seit heute auf **FAIL**, nicht mehr auf
+TEILWEISE — und zwar nicht, weil Tests fehlen, sondern weil die Messung am
+echten Weg etwas anderes zeigt als die Messung am Modul.
+
+**Gemessener Ist-Stand** (`tests/test_e07_bestand_im_klartext.py`, 6 grün):
+
+| Teil des AC | Modul allein | echter Bestand |
+|---|---|---|
+| Daten unlesbar | ja (7 Fälle grün) | **nein** — Klartext in den Rohbytes |
+| Index unlesbar | — | **nein** — `knowledge_fts` gibt ihn heraus |
+| Backup unlesbar | — | **nein** — Bytekopie erbt alles |
+| Fristlauf erreicht ihn | — | **nein** — `fristlauf()` hat keinen Parameter dafür |
+
+Einziger Aufrufer von `kern/kundenschluessel.py` außerhalb der Tests ist
+`kern/aufbewahrung.py`; per Test festgenagelt, damit ein echter Schreibpfad
+den Test rot macht, sobald er entsteht.
+
+**Reihenfolge, bindend** (ADR-031). Der Grund für genau diese Folge ist der
+Index, nicht die Bequemlichkeit:
+
+1. ~~Spalten `sensibel` und `chiffre`, FTS-Trigger schließen sensible Knoten
+   aus~~ — **erledigt** (`aa8d954d`), Migration für die gewachsene Datenbank
+   gefahren, 5200 Knoten, Index heil.
+2. Schreibweg: `knowledge_add` nimmt `sensibel` entgegen und legt bei
+   `sensibel=1` den Chiffretext in `chiffre` statt Klartext in `summary` und
+   `content`.
+3. **Zuletzt** `fristlauf()` an den Bestand hängen. Ein Fristlauf, der den
+   Schlüssel vernichtet, während der Index noch Klartext hält, erzeugt einen
+   Nachweis über eine Löschung, die nicht stattgefunden hat — schlimmer als
+   keine Löschung.
+
+**Was bewusst nicht getan wird:** kein durchsuchbarer Index über sensible
+Knoten. Preis: ein sensibler Knoten ist über die Volltextsuche nicht
+auffindbar. Für Daten Dritter ist das richtig; für den Arbeitsbestand wäre es
+Selbstverstümmelung, deshalb ist die Vorgabe `sensibel = 0`.
+
+**Erfolgsmaß:** `tests/test_e07_bestand_im_klartext.py` schlägt um — die heute
+grünen Zusicherungen („Klartext lesbar") müssen für einen sensiblen Knoten rot
+werden und für einen normalen grün bleiben.
