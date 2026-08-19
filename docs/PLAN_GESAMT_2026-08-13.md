@@ -900,7 +900,7 @@ die niemand verwenden darf, und kostet 14 Minuten Modelllaufzeit.
 | `107` | **Gerichtete Kanten.** 9976 Ähnlichkeitskanten gegen **3** Ablösungskanten. Ähnlichkeit ist symmetrisch und hilft beim Finden; Abhängigkeit ist gerichtet und entscheidet über Gültigkeit. | 3 von 9979 |
 | `108` | **144 Knoten und 158 Lehren mit veralteter Prüfsumme** — ihr Vektor beschreibt einen Text, den es so nicht mehr gibt. Die Suche liefert falsch, ohne dass ein Fehler auftaucht. | 302 Einträge |
 | `109` | **Vier `access_log`-Spalten zu 98 % leer**, `abgeleitet_von` und `bedient_von` zu 100 %. Gebaute Regeln ohne Wirkung — eine Spalte, die nichts unterscheidet, ist kein Feld, sondern eine Absicht. | 6 Spalten |
-| `110` | **12 Kennungskollisionen** in `docs/` (siehe oben). Die Lehre steht seit 2026-08-14 in diesem Plan und hat nichts bewirkt. | 12 |
+| ~~`110`~~ | ~~**12 Kennungskollisionen** in `docs/`.~~ **GESTRICHEN 2026-08-19, die Zahl haelt nicht.** Nachgemessen mit `melder/kennungskollision.py`: **0** echte Kollisionen, 4 spaetere Wiederaufgreifen (`S12`, `S1b`, `§4`, `B5`) -- und die sind gewollte Fortschreibung, kein Fehler. Siehe Fortschreibung 2026-08-19. | 0 statt 12 |
 | `111` | **450 Ergebnisdateien**, davon 73 ohne Gegenprobe- und 74 ohne Rastervermerk. Eine Messung ohne festgehaltenes *was abgesucht wurde* ist nicht wiederholbar, nur wiederholbar von vorn. | 73 / 74 |
 
 ### Was bewusst NICHT in diese Linie kommt, samt Preis
@@ -972,3 +972,45 @@ späterer Lauf mit Nachrangung überhaupt erst etwas zeigen kann.
 
 **Bindend:** `112` (Zusammenführen) vor jedem *zweiten* Wirkungslauf. Ein
 zweiter Lauf ohne Nachrangung misst dieselbe Zufuhr noch einmal.
+
+### `110` gestrichen — die Zahl hielt nicht, und wie sie entstanden sein dürfte
+
+Aufgabe `110` führte **12 Kennungskollisionen** in `docs/`. Für diese Zahl gibt
+es im Repo **keine Ergebnisdatei und kein Skript** (`grep` über `docs/`: die
+Zahl steht genau einmal, in der Aufgabenzeile selbst). Sie war nicht
+nachrechenbar.
+
+Nachgemessen am 2026-08-19 mit `melder/kennungskollision.py` (Selbsttest grün,
+Gegenprobe in beide Richtungen):
+
+```bash
+python3 melder/kennungskollision.py
+```
+
+**0 echte Kollisionen. 4 spätere Wiederaufgreifen** — `S12` und `S1b`
+(`PLAN_DESTILLE`), `§4` (`PLAN_WURZELORDNUNG`), `B5`
+(`FORTSCHRITT_OPENLEHR_EINZELUNTERNEHMER`). Alle vier sind *derselbe*
+Abschnitt, später fortgeschrieben („§4 gegengerechnet", „S12 ist kein
+Forschungsschritt mehr"). Sie als Kollision zu zählen würde genau die
+Arbeitsweise bestrafen, die dieses Haus verlangt: einen Abschnitt nach der
+Messung fortzuschreiben statt ihn zu ersetzen.
+
+**Der Fehler, den das Messskript selbst zuerst machte, ist der übertragbare
+Teil.** Der erste Lauf meldete 6 Kollisionen — 5 davon erfunden. Ursache: in
+`(S|P|G|K|B)\d+|B4\.\d+` nimmt Python die **erste** passende Alternative, nicht
+die längste. `B4` schluckte das `B4.1`, und die sechs verschiedenen Abschnitte
+`B4.1`–`B4.6` erschienen als sechs Vorkommen *einer* Kennung `B4`; ebenso
+`104.1.1`–`104.1.3` als drei Vorkommen von `104.1`. **Wer eine hierarchische
+Kennung mit `|` zerlegt, ordnet die längste Form zuerst — sonst misst er seine
+Regex, nicht den Bestand.** Der Selbsttest hält genau diesen Fall fest.
+
+Ob die ursprünglichen 12 aus demselben Fehler stammen, lässt sich **nicht**
+sagen: es gibt kein Skript, das sie erzeugt hat. Genau das ist der Grund, warum
+sie gestrichen und nicht bearbeitet wird.
+
+**Was daraus für die übrigen Zahlen dieser Linie folgt:** `107` bis `111`
+stammen aus laufenden Meldern und sind mit einem Befehl nachrechenbar. `110`
+war die einzige Zeile ohne Prüfbefehl — und die einzige, die der Nachprüfung
+nicht standhielt. Das ist kein Zufall, sondern dieselbe Regel wie beim
+Phantom-Gate: eine Zahl ohne nachfahrbaren Befehl liest sich wie ein Befund
+und ist keiner.
