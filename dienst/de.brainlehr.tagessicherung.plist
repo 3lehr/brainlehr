@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Taegliche Sicherung des Wissensbestands (BDW-E15, "automatisch").
+
+  WARUM launchd und nicht der SessionStart-Haken: Ein Haken feuert nur, wenn
+  jemand eine Sitzung startet. Eine Woche ohne Sitzung waere eine Woche ohne
+  Sicherung -- also genau die Luecke, die E15 schliessen soll. Gemessen am
+  2026-08-19: launchd hatte im Verbund genau EINEN Eintrag
+  (de.brainlehr.dienst), crontab war leer.
+
+  RunAtLoad ist bewusst false: Beim Laden waere die Sicherung eine Folge des
+  Ladens, nicht des Zeitplans -- und der Zeitplan ist der ganze Punkt.
+  StartCalendarInterval holt einen verpassten Lauf nach, sobald der Rechner
+  wieder laeuft; das ist der Unterschied zu cron und der Grund fuer diese Wahl.
+
+  Der Lauf raeumt im selben Aufruf auf (kern/sicherungen.py, BEHALTE=10).
+  Bei 0,13 GB je Kopie sind das 1,3 GB Deckel. Das Leck vom 2026-08-14
+  (22 GB in drei Tagen) entstand nicht durch Haeufigkeit, sondern weil
+  vierzehn Stellen anlegten und keine aufraeumte.
+
+  Laden:    launchctl load -w ~/Library/LaunchAgents/de.brainlehr.tagessicherung.plist
+  Loesen:   launchctl unload -w ~/Library/LaunchAgents/de.brainlehr.tagessicherung.plist
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>de.brainlehr.tagessicherung</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/sh</string>
+		<string>-c</string>
+		<string>for p in /opt/homebrew/bin/python3 /usr/local/bin/python3 /usr/bin/python3; do [ -x "$p" ] &amp;&amp; exec "$p" /Volumes/daten/Begod2026/brainlehr/kern/sicherungen.py --tagessicherung; done; echo "Kein Python gefunden." >&amp;2; exit 1</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>/Volumes/daten/Begod2026/brainlehr</string>
+	<key>RunAtLoad</key>
+	<false/>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>4</integer>
+		<key>Minute</key>
+		<integer>30</integer>
+	</dict>
+	<key>StandardOutPath</key>
+	<string>/Volumes/daten/Begod2026/brainlehr/dienst/log/tagessicherung.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Volumes/daten/Begod2026/brainlehr/dienst/log/tagessicherung.err</string>
+</dict>
+</plist>

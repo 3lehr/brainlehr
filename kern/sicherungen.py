@@ -181,6 +181,56 @@ def aufraeumen_still(db_pfad) -> tuple[int, int]:
         return (0, 0)
 
 
+def tagessicherung(db_pfad: Path | None = None, behalte: int = BEHALTE) -> tuple[Path, int, int]:
+    """Zieht EINE WAL-konsistente Kopie und raeumt danach auf.
+
+    WARUM DAS ENTGEGEN DER ERSTEN EINSCHAETZUNG GEBAUT WURDE: E15 verlangt
+    "automatisch". Bis heute entstand eine Sicherung nur ereignisgetrieben --
+    beim Serverstart und vor Schemaeingriffen. Eine Woche ohne Serverstart war
+    eine Woche ohne Sicherung.
+
+    Der naheliegende Einwand war der Platz, und er hielt der Messung nicht
+    stand: brainlehr.db ist 0,13 GB, mal BEHALTE=10 sind 1,3 GB auf einem
+    Datentraeger mit 18 GB Rest. Das Leck von 2026-08-14 (22 GB in drei Tagen)
+    entstand NICHT durch zu haeufige Sicherungen, sondern weil vierzehn
+    Stellen anlegten und keine aufraeumte. Deshalb raeumt diese Funktion im
+    selben Aufruf auf -- sie kann das Leck bauartbedingt nicht wiederholen.
+
+    Gibt (pfad, geloescht, freigegebene_bytes) zurueck.
+    """
+    import sqlite3
+    if db_pfad is None:
+        import ort  # type: ignore
+        db_pfad = Path(ort.DB)
+    db_pfad = Path(db_pfad)
+    if not db_pfad.exists():
+        raise FileNotFoundError(f"{db_pfad} existiert nicht -- nichts zu sichern")
+    # Der Stempel hat Sekundenaufloesung, und `_automatisch()` verlangt GENAU
+    # 15 Zeichen -- ein Zusatz wie "-2" wuerde die Datei zur handbenannten
+    # machen und damit vom Aufraeumen ausnehmen, also ein Leck bauen. Deshalb
+    # bei Kollision auf die naechste freie Sekunde ausweichen statt anzuhaengen.
+    # Im Tagesbetrieb tritt das nie ein; im Selbsttest, der elf Kopien in einer
+    # Sekunde zieht, sofort -- und dort war es ein stilles Ueberschreiben.
+    from datetime import datetime, timedelta, timezone
+    jetzt = datetime.now(timezone.utc)
+    for _ in range(3600):
+        ziel = sicherungspfad(db_pfad, f"{jetzt:%Y%m%dT%H%M%S}")
+        if not ziel.exists():
+            break
+        jetzt += timedelta(seconds=1)
+    else:
+        raise RuntimeError("keine freie Sekunde fuer den Sicherungsnamen gefunden")
+    quelle = sqlite3.connect(f"file:{db_pfad}?mode=ro", uri=True)
+    kopie = sqlite3.connect(str(ziel))
+    try:
+        quelle.backup(kopie)
+    finally:
+        kopie.close()
+        quelle.close()
+    n, b = aufraeumen(db_pfad, behalte=behalte)
+    return ziel, n, b
+
+
 def _selftest() -> None:
     import tempfile
     import ort
@@ -229,6 +279,25 @@ def _selftest() -> None:
             del _os.environ[ORT_UMGEBUNG]
         neu.unlink()
 
+        # TAGESSICHERUNG: echte Kopie, im getrennten Ordner, und sie raeumt
+        # im selben Aufruf auf -- das ist der Unterschied zum Leck von
+        # 2026-08-14, bei dem vierzehn Stellen anlegten und keine aufraeumte.
+        import sqlite3
+        echt = d / "echt.db"
+        c = sqlite3.connect(str(echt))
+        c.execute("create table t(x)")
+        c.execute("insert into t values (42)")
+        c.commit(); c.close()
+        pfad, _, _ = tagessicherung(echt, behalte=10)
+        assert pfad.parent == d / ORDNERNAME, pfad
+        k = sqlite3.connect(f"file:{pfad}?mode=ro", uri=True)
+        assert k.execute("select x from t").fetchone()[0] == 42, "Kopie ist nicht lesbar"
+        k.close()
+        # Und sie deckelt sich selbst: elf Laeufe hinterlassen zehn Dateien.
+        for _ in range(10):
+            tagessicherung(echt, behalte=10)
+        assert len(kandidaten(echt)) == 10, len(kandidaten(echt))
+
         # Grenzwert: genau `behalte` vorhanden -> nichts zu tun.
         n2, _ = aufraeumen(db, behalte=10)
         assert n2 == 0, n2
@@ -237,8 +306,9 @@ def _selftest() -> None:
         assert n3 == 10 and db.exists()
         # aufraeumen_still schluckt auch einen kaputten Pfad.
         assert aufraeumen_still("/gibt/es/nicht/db") == (0, 0)
-    print("selftest ok (8 Faelle): juengste bleiben, Handnamen bleiben, "
+    print("selftest ok (10 Faelle): juengste bleiben, Handnamen bleiben, "
           "beide Orte gefunden, Umgebungsvariable schlaegt Vorgabeort, "
+          "Tagessicherung lesbar und selbstdeckelnd, "
           "Grenzwert, behalte=0 und stiller Fehlerfall geprueft")
 
 
@@ -246,6 +316,10 @@ if __name__ == "__main__":
     import sys
     if "--selftest" in sys.argv:
         _selftest()
+    elif "--tagessicherung" in sys.argv:
+        pfad, n, b = tagessicherung()
+        print(f"gesichert: {pfad} ({pfad.stat().st_size/1e9:.2f} GB); "
+              f"{n} alte entfernt, {b/1e9:.2f} GB frei")
     else:
         import ort
         n, b = aufraeumen(Path(ort.DB))
