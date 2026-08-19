@@ -838,6 +838,58 @@ def _quellenliste() -> dict:
     return {"zeilen": zeilen}
 
 
+def _domaene_importe(_paket: dict, db: str | None = None) -> dict:
+    """Welche Einbindungen es gibt -- Voraussetzung dafuer, eine zu loesen.
+
+    Ohne diese Liste ist /api/domaene-entfernen fuer einen Menschen
+    unbrauchbar: die Importkennung steht nur in der Antwort des Imports, und
+    die ist beim naechsten Start weg. Ein Rueckweg, den man nur mit einer
+    notierten Zeichenkette findet, ist keiner.
+
+    Gelesen wird das Importprotokoll, das speichere() ohnehin je Aufruf
+    anlegt (INT-UPD-002) -- kein zweites Verzeichnis, das auseinanderlaufen
+    koennte.
+    """
+    try:
+        from kern import domaene, speicher
+    except Exception:
+        return {"verfuegbar": False, "importe": []}
+    praefix = getattr(domaene, "_IMPORTPROTOKOLL_PREFIX", "domaenenimport-")
+    try:
+        with speicher.lesen(db) as conn:
+            zeilen = conn.execute(
+                "SELECT id, title, summary, created_at FROM knowledge_nodes "
+                "WHERE id LIKE ? ORDER BY created_at DESC",
+                (praefix + "%",),
+            ).fetchall()
+    except Exception:
+        return {"verfuegbar": False, "importe": []}
+
+    importe = []
+    for zeile in zeilen:
+        kennung = str(zeile["id"])[len(praefix):]
+        inhalt = {}
+        try:
+            inhalt = json.loads(zeile["content"]) if "content" in zeile.keys() else {}
+        except Exception:
+            inhalt = {}
+        importe.append({
+            "kennung": kennung,
+            "domaene": inhalt.get("domaene") or _domaene_aus_satz(str(zeile["summary"] or "")),
+            "wann": str(zeile["created_at"] or ""),
+            # Ein Satz, kein Kennungswust: der Mensch waehlt hier aus.
+            "beschreibung": str(zeile["summary"] or zeile["title"] or kennung),
+        })
+    return {"verfuegbar": True, "importe": importe}
+
+
+def _domaene_aus_satz(satz: str) -> str:
+    """Notnagel, wenn der Protokollknoten die Domaene nicht im Inhalt fuehrt:
+    sie steht dann im Satz zwischen Hochkommas."""
+    teile = satz.split("'")
+    return teile[1] if len(teile) > 2 else ""
+
+
 def _domaene_entfernen(paket: dict, db: str | None = None) -> dict:
     """Gegenstueck zu /api/domaene-import: nimmt genau EINEN Importvorgang
     zurueck (Betreiberfrage 2026-08-19: „wie bekommen wir es wieder
@@ -1350,6 +1402,8 @@ class Handler(BaseHTTPRequestHandler):
                 out = _domaene_import(payload)
             elif self.path == "/api/domaene-entfernen":
                 out = _domaene_entfernen(payload)
+            elif self.path == "/api/domaene-importe":
+                out = _domaene_importe(payload)
             elif self.path == "/api/ausweis-anlegen":
                 out = _ausweis_anlegen(payload)
             elif self.path == "/api/ausweis-einladen":

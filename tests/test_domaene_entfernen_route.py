@@ -91,3 +91,32 @@ def test_import_und_ruecknahme_in_beide_richtungen(frische_db, paket):
     assert raus.get("entfernt") is True, raus
     assert raus.get("anzahl", 0) > 0
     assert raus.get("meldung")
+
+
+def test_importe_auflisten_gibt_es(frische_db):
+    """Ohne Liste ist das Entfernen fuer einen Menschen unbrauchbar: er kennt
+    seine Importkennung nicht. Sie steht nur in der Antwort des Imports, und
+    die ist beim naechsten Start weg."""
+    assert hasattr(server, "_domaene_importe")
+    assert server._domaene_importe({}, db=frische_db)["importe"] == []
+
+
+def test_importe_auflisten_nennt_domaene_und_kennung(frische_db, paket):
+    from kern import domaene
+    rein = domaene.speichere(paket, db=frische_db)
+    liste = server._domaene_importe({}, db=frische_db)["importe"]
+    assert len(liste) == 1, liste
+    eintrag = liste[0]
+    assert eintrag["kennung"] == rein["importkennung"]
+    assert eintrag["domaene"] == "probefall"
+    assert eintrag["beschreibung"], "ohne Satz waere die Liste eine Kennungswueste"
+
+
+def test_liste_schrumpft_nach_dem_entfernen(frische_db, paket):
+    """Gegenrichtung. Ohne sie waere nur belegt, dass die Liste EINMAL etwas
+    zeigt -- nicht, dass sie den Bestand wiedergibt."""
+    from kern import domaene
+    rein = domaene.speichere(paket, db=frische_db)
+    assert len(server._domaene_importe({}, db=frische_db)["importe"]) == 1
+    server._domaene_entfernen({"kennung": rein["importkennung"]}, db=frische_db)
+    assert server._domaene_importe({}, db=frische_db)["importe"] == []
