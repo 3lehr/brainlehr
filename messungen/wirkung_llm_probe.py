@@ -278,7 +278,6 @@ def main() -> None:
     kein_ergebnis_mit = 0
     kein_ergebnis_ohne = 0
     mit_speicher_besser = 0
-    ohne_speicher_besser = 0
     t0 = time.time()
 
     schlechter = unentschieden = nicht_messbar = 0
@@ -435,16 +434,26 @@ def main() -> None:
         "je_fall": je_fall,
     }
 
-    if not ergebnis["positivkontrolle_llm"] or not ergebnis["positivkontrolle_llm"]["mit_speicher"]["trifft_ziel"]:
-        print("BEFUND: Positivkontrolle auf LLM-Ebene NICHT bestanden (mit_speicher traf das Ziel nicht) -- Aufbau verdaechtig.", file=sys.stderr)
+    # AUFGABE 113: die Positivkontrolle liest jetzt 'urteil', nicht mehr
+    # 'trifft_ziel'. Beim Umbau blieb diese Zeile zunaechst stehen und liess
+    # den Lauf NACH allen 28 Modellaufrufen abstuerzen, bevor die
+    # Ergebnisdatei geschrieben war -- 15 Minuten fuer nichts (L-51e6d8:
+    # wer eine Rueckgabeform aendert, prueft die Verbraucher).
+    pk_llm = ergebnis["positivkontrolle_llm"]
+    if not pk_llm or pk_llm.get("urteil") != "besser":
+        print(f"BEFUND: Positivkontrolle auf LLM-Ebene NICHT bestanden "
+              f"(Urteil {pk_llm.get('urteil') if pk_llm else None!r}, erwartet 'besser') "
+              f"-- Aufbau verdaechtig.", file=sys.stderr)
     if n_kontaminiert > 0:
         print(f"BEFUND: Negativkontrolle verletzt -- {n_kontaminiert} von {len(negativ_zeilen)} Faellen kontaminiert.", file=sys.stderr)
 
     out_path = _w / "runs" / f"wirkung_llm_probe_{__import__('datetime').datetime.now():%Y-%m-%dT%H%M%S}.json"
     out_path.write_text(json.dumps(ergebnis, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"geschrieben: {out_path}")
-    print(f"n={n} mit_speicher={mit_speicher_besser} ohne_speicher={ohne_speicher_besser} "
-          f"differenz={ergebnis['differenz']} negativkontrolle_bestanden={ergebnis['negativkontrolle']['bestanden']} "
+    u = ergebnis["urteil"]
+    print(f"n={n} besser={u['besser']} schlechter={u['schlechter']} "
+          f"unentschieden={u['unentschieden']} nicht_messbar={u['nicht_messbar']} "
+          f"negativkontrolle_bestanden={ergebnis['negativkontrolle']['bestanden']} "
           f"dauer={dauer_s}s")
 
 
