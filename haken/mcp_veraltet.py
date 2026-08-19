@@ -87,10 +87,34 @@ def halter_label(eltern_kommando: str) -> str:
     return os.path.basename(tokens[0]) if tokens else "unbekannt"
 
 
+def ist_serverinstanz(kommando: str) -> bool:
+    """Laeuft in diesem Prozess wirklich der Server -- oder steht sein Pfad nur
+    als TEXT in der Kommandozeile?
+
+    `pgrep -f` sucht in der vollen Kommandozeile. Das Claude-Programm traegt
+    den Serverpfad in seinem `--mcp-config`-JSON mit sich; es wird damit
+    gefunden, obwohl es den Server nur STARTET, statt ihn zu sein. Gemessen
+    2026-08-19: von 14 gemeldeten Funden waren vier solche Textreffer
+    (PID 10662, 10663, 63304, 63305) -- und die Gesamtzahl stimmte trotzdem,
+    weil zufaellig vier echte Instanzen zu Recht fehlten (nach der Aenderung
+    gestartet). Vier Fehlalarme, die vier korrekte Auslassungen aufheben,
+    sind die gefaehrlichste Sorte Zahl: sie uebersteht eine Stichprobe auf
+    die Summe.
+
+    Unterscheidungsmerkmal: In einer echten Instanz ist der Pfad ein eigenes
+    ARGUMENT des Interpreters, steht also als vollstaendiges, durch
+    Leerzeichen getrenntes Feld da. Im JSON steckt er in Anfuehrungszeichen
+    und Klammern und ist deshalb nie ein eigenes Feld."""
+    return SERVER_FILE in kommando.split()
+
+
 def prozessliste(pids: list[str]) -> list[tuple[str, str, float]]:
     """(pid, ppid, start-timestamp) je laufendem MCP-Prozess."""
     out = subprocess.run(
-        ["ps", "-o", "pid=,ppid=,lstart=", "-p", ",".join(pids)],
+        # command= zusaetzlich, damit ist_serverinstanz() blosse Textreffer
+        # aussortieren kann -- lstart hat feste Feldzahl, das Kommando kommt
+        # deshalb ZULETZT und wird als Rest gelesen.
+        ["ps", "-o", "pid=,ppid=,lstart=,command=", "-p", ",".join(pids)],
         capture_output=True, text=True, timeout=2,
     ).stdout
     ergebnis = []
@@ -98,10 +122,22 @@ def prozessliste(pids: list[str]) -> list[tuple[str, str, float]]:
         line = line.strip()
         if not line:
             continue
-        pid, ppid, rest = line.split(maxsplit=2)
+        felder = line.split(maxsplit=2)
+        if len(felder) < 3:
+            continue
+        pid, ppid, rest = felder
+        # lstart belegt genau 5 Felder ("Wed Aug 19 10:35:16 2026"), alles
+        # danach ist das Kommando.
+        zeit_felder = rest.split(maxsplit=5)
+        if len(zeit_felder) < 5:
+            continue
+        zeit = " ".join(zeit_felder[:5])
+        kommando = zeit_felder[5] if len(zeit_felder) > 5 else ""
         try:
-            started = datetime.strptime(rest, LSTART_FMT).timestamp()
+            started = datetime.strptime(zeit, LSTART_FMT).timestamp()
         except Exception:
+            continue
+        if not ist_serverinstanz(kommando):
             continue
         ergebnis.append((pid, ppid, started))
     return ergebnis

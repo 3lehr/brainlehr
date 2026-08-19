@@ -121,7 +121,11 @@ def test_main_meldet_pid_und_halter_bei_fremdem_prozess(tmp_path, monkeypatch, c
     responses = iter(
         (
             SimpleNamespace(stdout="5680\n"),  # pgrep
-            SimpleNamespace(stdout=f"5680 5679 {lstart}\n"),  # pid,ppid,lstart
+            SimpleNamespace(stdout=f"5680 5679 {lstart} /usr/bin/python3 {wrapper}\n"),
+            # pid,ppid,lstart,command -- das Kommando kam 2026-08-19 dazu:
+            # prozessliste() sortiert damit blosse Textreffer aus (pgrep -f
+            # findet auch Prozesse, die den Serverpfad nur in einem
+            # --mcp-config-JSON mit sich tragen).
             SimpleNamespace(stdout=f"5679 {FREMDER_ELTERN}\n"),  # ppid,command
         )
     )
@@ -135,6 +139,30 @@ def test_main_meldet_pid_und_halter_bei_fremdem_prozess(tmp_path, monkeypatch, c
     assert "veraltet" in out
     assert "PID 5680" in out
     assert "gehalten von" in out
+
+
+def test_textreffer_im_mcp_config_zaehlt_nicht_als_serverinstanz():
+    """ROT VOR GRUEN (2026-08-19): `pgrep -f` findet auch Prozesse, die den
+    Serverpfad nur als TEXT tragen -- das Claude-Programm fuehrt ihn in
+    seinem --mcp-config-JSON mit. Gemessen an dem Tag: 4 von 14 gemeldeten
+    Funden waren solche Textreffer (PID 10662, 10663, 63304, 63305), und die
+    Gesamtzahl stimmte trotzdem, weil zufaellig vier echte Instanzen zu Recht
+    fehlten. Vor dieser Aenderung gab es die Funktion nicht."""
+    echt = f"/opt/homebrew/bin/python3 {mcp_veraltet.SERVER_FILE}"
+    assert mcp_veraltet.ist_serverinstanz(echt) is True
+
+    textreffer = (
+        '/Applications/Claude.app/Contents/MacOS/claude --mcp-config '
+        '{"mcpServers":{"knowledge":{"command":"/opt/homebrew/bin/python3",'
+        f'"args":["{mcp_veraltet.SERVER_FILE}"]}}}}}}'
+    )
+    assert mcp_veraltet.ist_serverinstanz(textreffer) is False
+
+    # Gegenprobe, damit die Unterscheidung nicht bloss auf Anfuehrungszeichen
+    # beruht: ein Wrapper, der den Pfad NACH `--` als eigenes Argument
+    # weiterreicht, IST eine Serverinstanz und muss weiter gemeldet werden.
+    wrapper = f"/usr/bin/python3 watchdog.py --ppid 1323 -- /usr/bin/python3 {mcp_veraltet.SERVER_FILE}"
+    assert mcp_veraltet.ist_serverinstanz(wrapper) is True
 
 
 def test_marker_greift_nicht_bei_erneut(tmp_path, monkeypatch, capsys):
@@ -158,7 +186,7 @@ def test_marker_greift_nicht_bei_erneut(tmp_path, monkeypatch, capsys):
     responses = iter(
         (
             SimpleNamespace(stdout="5680\n"),
-            SimpleNamespace(stdout=f"5680 5679 {lstart}\n"),
+            SimpleNamespace(stdout=f"5680 5679 {lstart} /usr/bin/python3 {wrapper}\n"),
             SimpleNamespace(stdout=f"5679 {CLAUDE_ELTERN}\n"),
         )
     )
