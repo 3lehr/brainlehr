@@ -88,6 +88,20 @@ def lies(pfad: Path) -> list[dict]:
             # unangenehmste Auspraegung des Fehlers: Ehrlichkeit ueber einen
             # Fehlschlag verbesserte die Kennzahl.
             "durchgefallen": gate.upper().startswith("FAIL"),
+            # UND DANN POSITIV STATT ALS REST (2026-08-19, dritte Runde
+            # desselben Fehlers an einem Tag). `belegt` war "gesamt minus die
+            # bekannten Ausnahmen" -- eine Restgroesse als Erfolgsmass zaehlt
+            # JEDEN unbekannten Zustand zu ihren Gunsten. Dreimal ist genau
+            # das passiert: DEFERRED, TEILWEISE, FAIL. Jetzt zaehlt nur, was
+            # ausdruecklich PASS sagt; alles Uebrige faellt auf die
+            # unguenstige Seite und wird als `unklar` sichtbar.
+            #
+            # Was das sofort aufdeckte: REQUIREMENTS_INTERFACE_KOMPAT.md
+            # meldete 17/17 belegt. Diese Datei hat gar keine Gate-Spalte --
+            # die vorletzte Spalte traegt dort den Anforderungstext. Der
+            # Melder hat also einen Bestwert fuer eine Datei ausgewiesen, die
+            # er ueberhaupt nicht messen kann.
+            "belegt": gate.upper().startswith("PASS"),
             "dateien": [d for d in DATEI.findall(gate)],
         })
     return zeilen
@@ -103,18 +117,22 @@ def beurteile(zeilen: list[dict], wurzel: Path = WURZEL) -> dict:
     vertagt = [z["id"] for z in zeilen if z.get("vertagt")]
     teilweise = [z["id"] for z in zeilen if z.get("teilweise")]
     durchgefallen = [z["id"] for z in zeilen if z.get("durchgefallen")]
+    belegt = [z["id"] for z in zeilen if z.get("belegt")]
+    bekannt = set(offen) | set(vertagt) | set(teilweise) | set(durchgefallen) | set(belegt)
+    unklar = [z["id"] for z in zeilen if z["id"] not in bekannt]
     return {
         "gesamt": len(zeilen),
         "offen": len(offen),
         "vertagt": len(vertagt),
         "teilweise": len(teilweise),
         "durchgefallen": len(durchgefallen),
-        "belegt": (len(zeilen) - len(offen) - len(vertagt) - len(teilweise)
-                   - len(durchgefallen)),
+        "belegt": len(belegt),
+        "unklar": len(unklar),
         "offene_ids": offen,
         "vertagte_ids": vertagt,
         "teilweise_ids": teilweise,
         "durchgefallene_ids": durchgefallen,
+        "unklare_ids": unklar,
         "phantom": fehlend,
     }
 
@@ -133,16 +151,22 @@ def _selftest() -> int:
             "| BDW-X03 | y | PASS: `gibtsnicht.py --selftest` | q |\n"
             "| BDW-X04 | y | DEFERRED: aktiviert mit dem ersten Piloten (`BDW-C03`) | q |\n"
             "| BDW-X05 | y | TEILWEISE: `echt.py` gruen, aber Index nicht erreicht | q |\n"
-            "| BDW-X06 | y | FAIL: `echt.py` misst am echten Weg -- Klartext lesbar | q |\n",
+            "| BDW-X06 | y | FAIL: `echt.py` misst am echten Weg -- Klartext lesbar | q |\n"
+            "| BDW-X07 | y | Das Paket wird fail-closed abgewiesen, nicht geraten | q |\n",
             encoding="utf-8")
         z = lies(k)
-        assert len(z) == 6, z
+        assert len(z) == 7, z
         e = beurteile(z, wurzel=w)
         # DIE DRITTE KATEGORIE, ergaenzt 2026-08-18: vertagt zaehlt WEDER als
         # offen NOCH als belegt. Ohne diese Zeile haette die Vertagung von 22
         # Katalogzeilen die Quote von 19/56 auf 41/56 gehoben, ohne dass
         # irgendetwas gemessen worden waere.
-        assert e["gesamt"] == 6 and e["offen"] == 1 and e["belegt"] == 2 and e["vertagt"] == 1, e
+        assert e["gesamt"] == 7 and e["offen"] == 1 and e["belegt"] == 2 and e["vertagt"] == 1, e
+        # POSITIV STATT REST: X07 traegt keinen Status, sondern einen
+        # Anforderungstext -- so sieht die INTERFACE-Datei in JEDER Zeile aus.
+        # Rot gegen den Stand davor: `belegt` war 3, die Zeile zaehlte als
+        # Beleg, und `unklar` gab es nicht.
+        assert e["unklar"] == 1 and e["unklare_ids"] == ["BDW-X07"], e
         # DIE VIERTE KATEGORIE. Rot gegen den Stand vor 2026-08-19: dort war
         # `belegt` 3, weil TEILWEISE mitgezaehlt wurde, und `teilweise` gab es
         # nicht. Ohne diese Zeile blieben sechs halbfertige Katalogzeilen als
@@ -157,8 +181,8 @@ def _selftest() -> int:
         assert e["phantom"] == [("BDW-X03", "gibtsnicht.py")], e
         # Gegenprobe: die existierende Datei wird NICHT gemeldet.
         assert all(p[0] != "BDW-X02" for p in e["phantom"]), e
-    print("gatestand: Selbsttest gruen (Quote 2/6 belegt, 1 offen, 1 vertagt, "
-          "1 teilweise, 1 durchgefallen, "
+    print("gatestand: Selbsttest gruen (Quote 2/7 belegt, 1 offen, 1 vertagt, "
+          "1 teilweise, 1 durchgefallen, 1 ohne erkennbaren Status, "
           "ein Phantom-Gate gefunden, echtes Gate nicht gemeldet)")
     return 0
 
@@ -176,8 +200,12 @@ def main() -> int:
         vertagt = f", {e['vertagt']} vertagt" if e.get("vertagt") else ""
         teilweise = f", {e['teilweise']} nur teilweise" if e.get("teilweise") else ""
         rot = f", {e['durchgefallen']} durchgefallen" if e.get("durchgefallen") else ""
+        unklar = f", {e['unklar']} ohne erkennbaren Status" if e.get("unklar") else ""
         print(f"{pfad.name}: {quote} belegt, {e['offen']} ohne Gate-Lauf"
-              f"{vertagt}{teilweise}{rot}")
+              f"{vertagt}{teilweise}{rot}{unklar}")
+        if bericht and e.get("unklare_ids"):
+            print("  ohne erkennbaren Status: " + ", ".join(e["unklare_ids"][:12])
+                  + (" ..." if len(e["unklare_ids"]) > 12 else ""))
         if bericht and e.get("durchgefallene_ids"):
             print("  durchgefallen: " + ", ".join(e["durchgefallene_ids"]))
         if bericht and e.get("teilweise_ids"):
