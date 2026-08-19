@@ -899,7 +899,7 @@ die niemand verwenden darf, und kostet 14 Minuten Modelllaufzeit.
 |---|---|---|
 | `107` | **Gerichtete Kanten.** 9976 Ähnlichkeitskanten gegen **3** Ablösungskanten. Ähnlichkeit ist symmetrisch und hilft beim Finden; Abhängigkeit ist gerichtet und entscheidet über Gültigkeit. | 3 von 9979 |
 | `108` | **144 Knoten und 158 Lehren mit veralteter Prüfsumme** — ihr Vektor beschreibt einen Text, den es so nicht mehr gibt. Die Suche liefert falsch, ohne dass ein Fehler auftaucht. | 302 Einträge |
-| `109` | **Vier `access_log`-Spalten zu 98 % leer**, `abgeleitet_von` und `bedient_von` zu 100 %. Gebaute Regeln ohne Wirkung — eine Spalte, die nichts unterscheidet, ist kein Feld, sondern eine Absicht. | 6 Spalten |
+| `109` | ~~Sechs stumme Spalten.~~ **Auf 3 zurückgemessen 2026-08-19.** Die vier `tokens_*`-Spalten waren ein Artefakt des Melders (voller Nenner über eine Historie, die sie nicht tragen konnte) — behoben in `melder/pruefer.py`. Echt bleiben `knowledge_nodes.abgeleitet_von` (1 von 5172), `lessons_learned.bedient_von` und `access_log.bedient_von` (je 0, keine Schreibstelle im Repo). | **3** statt 6 |
 | ~~`110`~~ | ~~**12 Kennungskollisionen** in `docs/`.~~ **GESTRICHEN 2026-08-19, die Zahl haelt nicht.** Nachgemessen mit `melder/kennungskollision.py`: **0** echte Kollisionen, 4 spaetere Wiederaufgreifen (`S12`, `S1b`, `§4`, `B5`) -- und die sind gewollte Fortschreibung, kein Fehler. Siehe Fortschreibung 2026-08-19. | 0 statt 12 |
 | `111` | **450 Ergebnisdateien**, davon 73 ohne Gegenprobe- und 74 ohne Rastervermerk. Eine Messung ohne festgehaltenes *was abgesucht wurde* ist nicht wiederholbar, nur wiederholbar von vorn. | 73 / 74 |
 
@@ -1014,3 +1014,39 @@ war die einzige Zeile ohne Prüfbefehl — und die einzige, die der Nachprüfung
 nicht standhielt. Das ist kein Zufall, sondern dieselbe Regel wie beim
 Phantom-Gate: eine Zahl ohne nachfahrbaren Befehl liest sich wie ein Befund
 und ist keiner.
+
+### `109` zurückgemessen — von sechs stummen Spalten bleiben drei
+
+```bash
+python3 melder/pruefer.py | grep stumme_spalte
+```
+
+**Vier der sechs waren ein Fehler des Melders, nicht des Bestands.**
+`access_log.tokens_input` las sich als „19545 von 20069 (97 %) leer" und damit
+als gebaute Regel ohne Wirkung. Die Spalte existiert erst seit
+2026-08-18T12:21; **seit ihrer ersten Belegung sind es 1133 von 1669 (68 %)**.
+Fünf Monate Historie gegen einen Tag Spalte. Behoben: der Nenner beginnt bei
+der ersten Belegung (`MIN(rowid)`), nie befüllte Spalten behalten den vollen
+Nenner. Rot-vor-grün und die Gegenprobe in beide Richtungen stehen im
+Selbsttest (`_selftest_junge_spalte`).
+
+**Die drei echten, und sie sind drei verschiedene Sachen — nicht eine Aufgabe:**
+
+| Spalte | Lage | Was zu entscheiden ist |
+|---|---|---|
+| `knowledge_nodes.abgeleitet_von` | 1 von 5172. Hat Schreibstelle, **fünf** Lesestellen und einen Unveränderlichkeits-Trigger. | Die einzige echte *gebaute Regel ohne Wirkung*: der Weg ist vollständig da, die Aufrufer übergeben nichts. Verdrahten. |
+| `lessons_learned.bedient_von` | 0 von 1096, **keine Schreibstelle** im ganzen Repo. | `schema.sql:636` benennt die Leere selbst, `knowledge_mcp_server.py:3094` sagt „was leer bleiben darf, bleibt leer". Verdrahten **oder** streichen — eine Entscheidung, kein Defekt. |
+| `access_log.bedient_von` | 0 von 20089, **weder Schreib- noch Lesestelle**. | Dasselbe, eine Stufe schärfer: niemand fragt sie ab. |
+
+**Die Gegenprobe, die den Unterschied trägt:** `knowledge_nodes.bedient_von`
+ist **335 von 5172** belegt und war nie unter den Befunden. Der Einladungsweg
+funktioniert also — die Spalte ist dort kein totes Feld, sondern eines, das nur
+gefüllt wird, wenn wirklich eine Maschine geführt wird. Ohne diese Zahl daneben
+läse sich „`bedient_von` ist leer" wie ein Bauversagen; mit ihr ist es eine
+Aussage über den Weg, nicht über die Spalte.
+
+**Die übertragbare Hälfte** steht als `L-412e20` im Speicher: Vor jeder
+Anteilszahl über einen Bestand die Frage stellen — *seit wann kann dieser Wert
+überhaupt vorkommen?* Ist die Antwort jünger als der Bestand, ist der volle
+Nenner falsch. Ein Nenner ist die stillste Stelle einer Messung: er erzeugt
+keinen Fehler, nur eine falsche Zahl, und die liest sich wie ein Befund.
