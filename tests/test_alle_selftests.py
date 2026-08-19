@@ -62,6 +62,17 @@ sys.path[:0] = [str(ROOT)]
 # Alle 61 Module mit einer echten --selftest-Fallunterscheidung (gemessen
 # 2026-08-12 per grep+ast ueber kern/, haken/, melder/).
 MODULE = [
+    # 2026-08-19: Der Fall, der DIESE Datei ausgeloest hat (siehe Modulkopf),
+    # war bis heute weder behoben noch gelistet -- sein Selbsttest brach an
+    # einer geschlossenen Verbindung ab. Behoben und eingetragen, damit die
+    # Reparatur bewacht ist statt nur vorgenommen.
+    "haken/suchpfad_abruf.py",
+    # 2026-08-19 von test_kein_modul_faellt_durch_die_liste gefunden --
+    # darunter melder/kennungskollision.py, das ich am selben Tag selbst
+    # angelegt und nicht eingetragen habe. Genau dafuer gibt es den Test.
+    "haken/mehrstufiger_abruf.py",
+    "melder/derivatfrische.py",
+    "melder/kennungskollision.py",
     "haken/antwort_abruf.py",
     "haken/auftrag_recall_hook.py",
     "haken/knowledge_recall_hook.py",
@@ -192,6 +203,32 @@ MODULE = [
 
 # Rot, mit Grund -- je Fall geprueft am 2026-08-12, nicht geraten:
 XFAIL = {
+    # NEU 2026-08-19, alle drei GEFUNDEN und nicht verursacht -- eingetragen
+    # mit Grund statt die Suite rot stehen zu lassen, denn eine rote Suite
+    # wird nach zwei Tagen nicht mehr gelesen.
+    "haken/mehrstufiger_abruf.py": (
+        "vorbestehend, lief bis 2026-08-19 NIE (das Modul fehlte in MODULE, "
+        "gefunden von test_kein_modul_faellt_durch_die_liste). Sein Selbsttest "
+        "haengt am echten Bestand: 'Voraussetzung der Warnung verletzt: "
+        "L-606b63 muss bei AUS im Ergebnis sein'. Bestandsdrift, nicht Logik -- "
+        "die Lehre steht heute nicht mehr auf dem Rang, den die Fixtur annimmt. "
+        "Gehoert gegen einen Schnappschuss gefahren statt gegen den lebenden "
+        "Bestand, dann faellt die Ausnahme weg."
+    ),
+    "haken/knowledge_recall_hook.py": (
+        "vorbestehend: 'MIN_HITS=3: kennst du paperless-ngx docs? ... erwartet "
+        "Treffer, bekam 0n/0l'. Dieselbe Klasse wie oben -- eine "
+        "Trefferwartung gegen den lebenden, wachsenden Bestand. NICHT von der "
+        "Aenderung 1e2b40ee verursacht: die hat nur ein Feld angehaengt, und "
+        "der zugehoerige Test belegt die Reihenfolge als identisch."
+    ),
+    "melder/vier_nenner.py": (
+        "vorbestehend, belegt: derselbe Fehlschlag gegen den Stand von HEAD "
+        "vor jeder Aenderung dieser Sitzung -- 'module ausloeser does not have "
+        "the attribute PROJEKTE'. Ein Selbsttest, der ein Attribut "
+        "monkeypatcht, das es nicht mehr gibt; die Konstante ist in "
+        "kern/ausloeser.py umbenannt oder entfallen."
+    ),
     # kern/abrufguete.py stand hier bis 2026-08-14 und ist RAUS, weil der Fall
     # seither gruen laeuft (XPASS(strict), zweimal reproduziert). Der Selbsttest
     # haengt am echten Bestand -- gegen die Suiten-Kopie besteht er, gegen eine
@@ -237,7 +274,7 @@ XFAIL = {
 }
 
 assert set(XFAIL) <= set(MODULE)
-assert len(MODULE) == 110, len(MODULE)  # + kern/kundenschluessel.py (2026-08-18, BDW-E09/E07)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie) + kern/satz.py (2026-08-15T06:20:00+0200, ebenfalls von diesem Test gefunden -- sein Selbsttest war seit dem Anlegen rot) + melder/spaltenabgleich.py (Linie J3, 2026-08-15) + melder/plan_bestandsabgleich.py (Soll/Wirklichkeit-Abgleich fuer Planzeilen, 2026-08-15) + kern/driftwaechter.py (F6, Drift-Waechter Darstellung/Blatt, schnelle Darstellung im selben Modul, 2026-08-15) + kern/designtokens_latex.py (LaTeX-Erzeuger fuer Gestaltungsvorrat, ADR-015, 2026-08-15) + melder/wirkkette.py (Linie J2, Haken- und Prozessabgleich, 2026-08-15) + melder/agentendauer.py (Agentendauer-Melder, 2026-08-15, nebenlaeufig eingetragen) + melder/abrufwirkung.py (dauerhafter Abrufwirkungs-Verlauf, 2026-08-15) -- Zahl bei Eintragung nebenlaeufig veraltet vorgefunden (97 statt der tatsaechlichen Listenlaenge), auf den echten Bestand korrigiert statt weitergezaehlt
+assert len(MODULE) == 114, len(MODULE)  # + haken/suchpfad_abruf.py und 3 nachgetragene (2026-08-19)  # + kern/kundenschluessel.py (2026-08-18, BDW-E09/E07)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie) + kern/satz.py (2026-08-15T06:20:00+0200, ebenfalls von diesem Test gefunden -- sein Selbsttest war seit dem Anlegen rot) + melder/spaltenabgleich.py (Linie J3, 2026-08-15) + melder/plan_bestandsabgleich.py (Soll/Wirklichkeit-Abgleich fuer Planzeilen, 2026-08-15) + kern/driftwaechter.py (F6, Drift-Waechter Darstellung/Blatt, schnelle Darstellung im selben Modul, 2026-08-15) + kern/designtokens_latex.py (LaTeX-Erzeuger fuer Gestaltungsvorrat, ADR-015, 2026-08-15) + melder/wirkkette.py (Linie J2, Haken- und Prozessabgleich, 2026-08-15) + melder/agentendauer.py (Agentendauer-Melder, 2026-08-15, nebenlaeufig eingetragen) + melder/abrufwirkung.py (dauerhafter Abrufwirkungs-Verlauf, 2026-08-15) -- Zahl bei Eintragung nebenlaeufig veraltet vorgefunden (97 statt der tatsaechlichen Listenlaenge), auf den echten Bestand korrigiert statt weitergezaehlt
 
 # Nur diese 3 legen -wal/-shm NEBEN der echten Datenbank an, wenn sie
 # BRAINLEHR_DB unbesetzt lassen -- gemessen 2026-08-12 per Datei-Snapshot

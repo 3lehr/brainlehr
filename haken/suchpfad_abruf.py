@@ -217,44 +217,66 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
 
 def _selftest() -> None:
     """Netzloser Selbsttest gegen die echte (nur gelesene) DB -- kein Ollama
-    noetig, query_vec=None testet den reinen Stichwort-Pfad."""
-    import ort  # noqa: E402 -- liegt in haken/, s. Modulkopf des Hooks
+    noetig, query_vec=None testet den reinen Stichwort-Pfad.
+
+    BEHOBEN 2026-08-19: Der `with speicher.lesen()`-Block endete nach der
+    ersten Zusicherung, der ganze Rest lief gegen eine bereits geschlossene
+    Verbindung und brach mit `sqlite3.ProgrammingError: Cannot operate on a
+    closed database` ab. Der Selbsttest ist also NIE durchgelaufen -- ein
+    Pruefer, der immer abstuerzt, prueft so wenig wie ein Melder ohne
+    Ausloeser. Belegt als vorbestehend: derselbe Absturz im Stand
+    1e2b40ee~1, also vor dem Einbau von `bedeutungs_kosinus`.
+    """
     import sys as _sys
     from pathlib import Path as _Path
     _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
     _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent / "kern"))
     import speicher  # noqa: E402 -- eine Tuer zur Datenbank statt einer eigenen
+
     with speicher.lesen() as conn:
         nodes, lessons = kandidaten(conn, "", None, 5)
-    assert nodes == [] and lessons == [], "leerer Text muss leere Kandidaten liefern"
-    nodes, lessons = kandidaten(conn, "qwfpqwfpblorx zvxjkq wibbnfrx", None, 5)
-    assert nodes == [] and lessons == [], "Nonsens-Text darf keine Kandidaten erfinden"
+        assert nodes == [] and lessons == [], "leerer Text muss leere Kandidaten liefern"
+        nodes, lessons = kandidaten(conn, "qwfpqwfpblorx zvxjkq wibbnfrx", None, 5)
+        assert nodes == [] and lessons == [], "Nonsens-Text darf keine Kandidaten erfinden"
 
-    # Negativfall zum Gattungsfilter im Bedeutungskanal: als Anfragevektor
-    # dient der Vektor eines Nachschlagewerk-Knotens selbst. Ungefiltert steht
-    # er damit auf Rang 1 seines eigenen Kanals -- er darf trotzdem nirgends
-    # auftauchen. Gegenprobe in die andere Richtung gleich darunter: derselbe
-    # Aufruf mit allowed_ids=None kennt ihn sehr wohl (sonst pruefte der Test
-    # nur, dass irgendetwas leer ist).
-    zeile = conn.execute(
-        "SELECT e.ref_id, e.vector FROM knowledge_embeddings e JOIN knowledge_nodes n "
-        "ON n.id = e.ref_id WHERE e.kind = 'node' AND n.gattung = 'nachschlagewerk' "
-        "AND e.model = ? LIMIT 1", (embeddings.DEFAULT_EMBED_MODEL,)).fetchone()
-    if zeile is not None:  # DB ohne Nachschlagewerk-Bestand: nichts zu pruefen
-        vec = embeddings.unpack_embedding(zeile["vector"])
-        erl_nodes, _ = _erlaubte_ids(conn)
-        assert zeile["ref_id"] not in erl_nodes, "Fixtur falsch: Knoten ist kein Nachschlagewerk"
-        ohne_filter = _embedding_ranking(conn, "node", vec, None)
-        assert ohne_filter and ohne_filter[0] == zeile["ref_id"], (
-            "Gegenprobe: ungefiltert muesste der Knoten sein eigener Rang 1 sein")
-        mit_filter = _embedding_ranking(conn, "node", vec, erl_nodes)
-        assert zeile["ref_id"] not in mit_filter, "Nachschlagewerk im Bedeutungskanal durchgekommen"
-        nodes, lessons = kandidaten(conn, "Nachschlagewerk", vec, 5)
-        assert zeile["ref_id"] not in [n["id"] for n in nodes], (
-            "Nachschlagewerk in der Kandidatenliste gelandet")
-    conn.close()
+        # Negativfall zum Gattungsfilter im Bedeutungskanal: als Anfragevektor
+        # dient der Vektor eines Nachschlagewerk-Knotens selbst. Ungefiltert
+        # steht er damit auf Rang 1 seines eigenen Kanals -- er darf trotzdem
+        # nirgends auftauchen. Gegenprobe in die andere Richtung gleich
+        # darunter: derselbe Aufruf mit allowed_ids=None kennt ihn sehr wohl
+        # (sonst pruefte der Test nur, dass irgendetwas leer ist).
+        zeile = conn.execute(
+            "SELECT e.ref_id, e.vector FROM knowledge_embeddings e JOIN knowledge_nodes n "
+            "ON n.id = e.ref_id WHERE e.kind = 'node' AND n.gattung = 'nachschlagewerk' "
+            "AND e.model = ? LIMIT 1", (embeddings.DEFAULT_EMBED_MODEL,)).fetchone()
+        if zeile is not None:  # DB ohne Nachschlagewerk-Bestand: nichts zu pruefen
+            vec = embeddings.unpack_embedding(zeile["vector"])
+            erl_nodes, _ = _erlaubte_ids(conn)
+            assert zeile["ref_id"] not in erl_nodes, "Fixtur falsch: Knoten ist kein Nachschlagewerk"
+            ohne_filter = _embedding_ranking(conn, "node", vec, None)
+            assert ohne_filter and ohne_filter[0] == zeile["ref_id"], (
+                "Gegenprobe: ungefiltert muesste der Knoten sein eigener Rang 1 sein")
+            mit_filter = _embedding_ranking(conn, "node", vec, erl_nodes)
+            assert zeile["ref_id"] not in mit_filter, "Nachschlagewerk im Bedeutungskanal durchgekommen"
+            nodes, lessons = kandidaten(conn, "Nachschlagewerk", vec, 5)
+            assert zeile["ref_id"] not in [n["id"] for n in nodes], (
+                "Nachschlagewerk in der Kandidatenliste gelandet")
+
+        # Ergaenzt 2026-08-19, weil der Selbsttest ab hier zum ersten Mal
+        # ueberhaupt ankommt: jeder gelieferte Kandidat traegt das Feld
+        # `bedeutungs_kosinus` -- eine Zahl in [-1, 1] oder None, wenn kein
+        # Vektor vorliegt. 0.0 waere falsch: das waere eine Aussage ueber
+        # Aehnlichkeit, None ist eine ueber Verfuegbarkeit.
+        nodes, lessons = kandidaten(conn, "Governance", None, 5)
+        for r in nodes + lessons:
+            assert "bedeutungs_kosinus" in r, "Feld fehlt am Kandidaten"
+            w = r["bedeutungs_kosinus"]
+            assert w is None or (isinstance(w, float) and -1.0 <= w <= 1.0), w
+
     print("suchpfad_abruf._selftest ok")
 
 
 if __name__ == "__main__":
+    # --selftest ist der Vertrag, auf den tests/test_alle_selftests.py ruft;
+    # ohne Argument bleibt der bisherige Direktaufruf erhalten.
     _selftest()
