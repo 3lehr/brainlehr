@@ -1,0 +1,11 @@
+{
+  "status": "vermerkt",
+  "abgesucht_am": "2026-08-19T13:40:00+02:00",
+  "session": "be48feea",
+  "actor": "claude-code",
+  "model": "claude-opus-5",
+  "kontextfenster": "verdichtet, Sitzung laeuft",
+  "raster": "die 3 einschlaegigen Faelle unter Schwelle 0.55 plus eine Positivkontrolle",
+  "gegen": "Bausteine aus haken/suchpfad_abruf.py::kandidaten(), ungekappt, Schnappschuss 20260819T102108-cf9c2d51",
+  "nicht_abgesucht": "Welches andere Dokument den Batch-Maximalwert lieferte. Und die 32 Faelle ueber der Schwelle."
+}

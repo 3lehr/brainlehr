@@ -1,0 +1,11 @@
+{
+  "status": "vermerkt",
+  "abgesucht_am": "2026-08-19T13:40:00+02:00",
+  "session": "be48feea",
+  "actor": "claude-code",
+  "model": "claude-opus-5",
+  "kontextfenster": "verdichtet, Sitzung laeuft",
+  "raster": "35 Zielfaelle, zwei Kandidatenmengen gegeneinander (gepoolte Kosinusliste gegen Produktivfusion)",
+  "gegen": "knowledge_mcp_server.py::knowledge_search/_fuse_with_keyword_floor, Schnappschuss 20260819T110946-72b64534",
+  "nicht_abgesucht": "Das Originalskript von Messung A -- es liegt nicht im Repo, nur die Zahl im Knoten 291c2e3f. Ob sich der Bestand seit 2026-08-16 zusaetzlich bewegt hat, ist nicht vom Kandidatenquellen-Effekt getrennt."
+}

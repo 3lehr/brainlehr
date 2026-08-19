@@ -1,0 +1,11 @@
+{
+  "status": "vermerkt",
+  "abgesucht_am": "2026-08-19T13:40:00+02:00",
+  "session": "be48feea",
+  "actor": "claude-code",
+  "model": "claude-opus-5",
+  "kontextfenster": "verdichtet, Sitzung laeuft",
+  "raster": "35 einschlaegige Fragen (alle Zielfaelle) gegen 41 fachfremde, Schwellen 0.36-0.65 in 0.01-Schritten",
+  "gegen": "haken/suchpfad_abruf.py::kandidaten(), bester bedeutungs_kosinus je Frage, Schnappschuss 20260819T094703-31bcb647",
+  "nicht_abgesucht": "Andere Sachgebiete als die 41 gewaehlten. Und ob die 41 fachfremden Fragen den Raum fachfremder Fragen ueberhaupt abdecken -- sie sind gewaehlt, nicht gezogen."
+}

@@ -1,0 +1,11 @@
+{
+  "status": "vermerkt",
+  "abgesucht_am": "2026-08-19T13:40:00+02:00",
+  "session": "be48feea",
+  "actor": "claude-code",
+  "model": "claude-opus-5",
+  "kontextfenster": "verdichtet, Sitzung laeuft",
+  "raster": "35 Zielfaelle aus runs/pruefkorpus.jsonl, beide Stellungen von SUCHPFAD_ABRUF",
+  "gegen": "haken/knowledge_recall_hook.py::keywords()+query() (Produktivfunktion, kein Nachbau), Schnappschuss 20260819T090701-f4080e17",
+  "nicht_abgesucht": "Die 10 Enthaltungsfaelle des Korpus (target_id=null) -- erst am 2026-08-19 als eigene Klasse erkannt. Und der Weg ueber knowledge_search, der andere Zahlen liefert."
+}

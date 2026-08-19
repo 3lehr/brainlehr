@@ -1,0 +1,11 @@
+{
+  "status": "vermerkt",
+  "abgesucht_am": "2026-08-19T13:40:00+02:00",
+  "session": "be48feea",
+  "actor": "claude-code",
+  "model": "claude-opus-5",
+  "kontextfenster": "verdichtet, Sitzung laeuft",
+  "raster": "dieselben 76 Fragen wie der Erstlauf, alt gegen neu",
+  "gegen": "haken/suchpfad_abruf.py::kandidaten(), Schnappschuss 20260819T105004-e7853b33 gegen 20260819T094703-31bcb647",
+  "nicht_abgesucht": "Der Effekt der Neueinbettung auf den uebrigen Bestand: von 339 neu eingebetteten Kennungen ist nur EINE ein Korpusziel. Ueber die anderen 338 sagt dieser Lauf nichts."
+}

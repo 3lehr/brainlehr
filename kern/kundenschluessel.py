@@ -161,6 +161,18 @@ class Kundenschluesselspeicher:
         self._schluessel[ref] = schluessel
         self._metadaten.setdefault(ref, ts)
 
+    def inhalt_wiederherstellen(self, ref: str, blob: bytes, ts: float) -> None:
+        """Spielt einen CHIFFRETEXT aus einer Sicherung ein, OHNE Schluessel
+        -- das ist der Restore-Fall: eine DB-Sicherung (schnappschuss.py)
+        enthaelt nur Chiffretext und Metadaten, nie den Schluessel (der wird
+        getrennt verwahrt, siehe sichern()/wiederherstellen()). Ein ref, der
+        so eingespielt wird, ist danach `hat_bestanden()` und traegt seinen
+        `angelegt_ts`, aber `lesen()` wirft `KeinSchluessel`, bis jemand
+        `wiederherstellen()` mit dem passenden, getrennt verwahrten
+        Schluessel aufruft."""
+        self._metadaten.setdefault(ref, ts)
+        self._inhalte.setdefault(ref, _Eintrag(angelegt_ts=ts)).blob = blob
+
     def hat_bestanden(self, ref: str) -> bool:
         """Die Tatsache, dass es ref je gab -- unabhaengig vom Schluessel."""
         return ref in self._metadaten
