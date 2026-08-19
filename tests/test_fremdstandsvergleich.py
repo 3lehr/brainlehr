@@ -48,8 +48,12 @@ def test_erstlauf_meldet_nichts():
 
 
 def test_hole_stand_einer_quelle_nutzt_gestellte_antwort():
+    # 2026-08-19 von "flutter" auf "ollama" umgestellt: flutter liest seit
+    # der Korrektur seinen EIGENEN Feed (Google), nicht die GitHub-API --
+    # ein gestellter GitHub-Datensatz passt dort nicht mehr. Der Test prueft
+    # die Mechanik des Holens, nicht ein bestimmtes Produkt.
     holer = _github_antwort("v3.99.0")
-    ergebnis = fsv.hole_stand_einer_quelle("flutter", holer)
+    ergebnis = fsv.hole_stand_einer_quelle("ollama", holer)
     assert ergebnis == {"version": "v3.99.0", "datum": "2026-08-01T00:00:00Z"}
 
 
@@ -57,7 +61,7 @@ def test_hole_stand_einer_quelle_timeout_liefert_none():
     def holer_wirft(url, timeout):
         raise TimeoutError("gestellter Timeout, kein echtes Netz")
 
-    assert fsv.hole_stand_einer_quelle("flutter", holer_wirft) is None
+    assert fsv.hole_stand_einer_quelle("ollama", holer_wirft) is None
 
 
 def test_hole_stand_einer_quelle_http_fehler_liefert_none():
@@ -70,10 +74,27 @@ def test_hole_stand_einer_quelle_http_fehler_liefert_none():
 def test_lauf_end_zu_end_mit_gestellten_antworten(tmp_path):
     stand_pfad = tmp_path / "stand.json"
 
+    # 2026-08-19: Der gestellte Holer verzweigt jetzt ueber die PARSER-ART
+    # der Quelle, nicht ueber ein Stueck der URL. Vorher stand hier
+    # `"github" in u` -- das brach in dem Moment, in dem eine Quelle auf einen
+    # eigenen Feed umgestellt wurde, dessen Adresse das Wort nicht enthaelt
+    # (flutter liest seit heute bei Google). Ein Prueffstand, der die
+    # Zugehoerigkeit an einer Zeichenkette der Adresse festmacht, misst die
+    # Adresse statt die Bauform.
+    def _stelle(art, version, rohtext):
+        if art == "github":
+            return _github_antwort(version)
+        if art == "flutter":
+            leib = json.dumps({"current_release": {"stable": "h1"},
+                               "releases": [{"hash": "h1", "version": version,
+                                             "release_date": "2026-08-01T00:00:00Z"}]}).encode()
+            return lambda url, timeout: (leib, {})
+        return lambda url, timeout: (rohtext, {})
+
     def holer_v1(url, timeout):
-        for name, (u, _) in fsv.QUELLEN.items():
+        for name, (u, art) in fsv.QUELLEN.items():
             if u == url:
-                return _github_antwort("v1.0")(url, timeout) if "github" in u else (b"AAA", {})
+                return _stelle(art, "v1.0", b"AAA")(url, timeout)
         raise AssertionError(url)
 
     # Erstlauf: kein Stand vorhanden -> keine Meldungen, Stand wird geschrieben
@@ -82,11 +103,9 @@ def test_lauf_end_zu_end_mit_gestellten_antworten(tmp_path):
     assert stand_pfad.exists()
 
     def holer_v2(url, timeout):
-        for name, (u, _) in fsv.QUELLEN.items():
+        for name, (u, art) in fsv.QUELLEN.items():
             if u == url:
-                if "github" in u:
-                    return _github_antwort("v2.0")(url, timeout)
-                return (b"BBB", {})  # anderer Inhalt -> anderer Hash
+                return _stelle(art, "v2.0", b"BBB")(url, timeout)  # anderer Inhalt -> anderer Hash
         raise AssertionError(url)
 
     ergebnis2 = fsv.lauf(stand_pfad, holer_v2)

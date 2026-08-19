@@ -51,7 +51,27 @@ TIMEOUT_SEK = 5
 # aus der GitHub-Release-API, Parser "hash" bildet einen Inhalts-Hash (fuer
 # Feeds ohne eigene Versionsnummer, z.B. die Gesetzestexte).
 QUELLEN: dict[str, tuple[str, str]] = {
-    "flutter": ("https://api.github.com/repos/flutter/flutter/releases/latest", "github"),
+    # BEFUND 2026-08-19, am Tag des Baus gemessen: `releases/latest` liefert
+    # fuer flutter/flutter `3.19.0-0.1.pre` vom 2024-01-11, und GitHub meldet
+    # dazu `prerelease: false`. Der Wert ist ueber zwei Jahre alt und bewegt
+    # sich nicht -- diese Quelle wuerde also NIE eine Aenderung melden und
+    # waere damit ein Melder, der laeuft und schweigt, ohne dass etwas ruhig
+    # waere. Genau die Fehlklasse, gegen die dieses Modul gebaut ist.
+    # `/releases` (Liste, neuester zuerst) statt `/releases/latest`: dort
+    # steht der tatsaechlich juengste Eintrag, auch wenn niemand ihn als
+    # "latest" markiert hat.
+    # BEFUND 2026-08-19, am Tag des Baus gemessen und zweimal korrigiert:
+    # `releases/latest` liefert fuer flutter/flutter `3.19.0-0.1.pre` vom
+    # 2024-01-11 (GitHub meldet dazu `prerelease: false`), und `/releases`
+    # liefert denselben Eintrag -- Flutter veroeffentlicht seine Staende
+    # ueberhaupt nicht ueber die GitHub-Releases-API. Diese Quelle haette
+    # also NIE eine Aenderung gemeldet: ein Melder, der laeuft und schweigt,
+    # ohne dass etwas ruhig waere. Genau die Fehlklasse, gegen die dieses
+    # Modul gebaut ist -- gefunden, weil die gemeldete Version zwei Jahre
+    # alt aussah und nicht, weil irgendetwas fehlschlug.
+    # Der echte Feed steht bei Google und traegt 981 Eintraege; stable ist
+    # dort 3.47.0 vom 2026-08-12.
+    "flutter": ("https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json", "flutter"),
     "ollama": ("https://api.github.com/repos/ollama/ollama/releases/latest", "github"),
     "swift": ("https://api.github.com/repos/swiftlang/swift/releases/latest", "github"),
     "gesetze-toc": ("https://www.gesetze-im-internet.de/gii-toc.xml", "hash"),
@@ -88,7 +108,18 @@ def _parse_hash(inhalt: bytes, header: dict) -> tuple[str, str | None]:
     return hashlib.sha256(inhalt).hexdigest()[:16], header.get("Last-Modified")
 
 
-PARSER = {"github": _parse_github, "hash": _parse_hash}
+def _parse_flutter(inhalt: bytes, header: dict) -> tuple[str, str | None]:
+    """Flutters eigener Feed: `current_release.stable` nennt den Hash, die
+    Liste `releases` traegt Version und Datum dazu."""
+    daten = json.loads(inhalt)
+    hash_stable = (daten.get("current_release") or {}).get("stable")
+    for r in daten.get("releases", []):
+        if r.get("hash") == hash_stable:
+            return r.get("version", "?"), (r.get("release_date") or "")[:10]
+    raise ValueError("stable-Hash nicht in der Release-Liste gefunden")
+
+
+PARSER = {"github": _parse_github, "hash": _parse_hash, "flutter": _parse_flutter}
 
 
 def hole_stand_einer_quelle(name: str, holer: Holer) -> dict | None:
