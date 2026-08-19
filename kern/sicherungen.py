@@ -59,13 +59,38 @@ def _automatisch(p: Path, db_name: str) -> bool:
     return len(rest) == 15 and rest[8] == "T" and rest.replace("T", "").isdigit()
 
 
+# Fruehere Namen derselben Datenbank. Die Datei hiess bis 2026-08-11
+# knowledge.db (siehe haken/ort.py); Sicherungen aus dieser Zeit tragen
+# weiterhin den alten Namen.
+#
+# BEFUND 2026-08-19, der diese Zeile noetig machte: Im Verzeichnis lagen 318
+# automatische Sicherungen -- 14 als `brainlehr.db.bak-*` (1,4 GB) und 304 als
+# `knowledge.db.bak-*` (9,5 GB). `kandidaten()` filterte ausschliesslich auf
+# den AKTUELLEN Namen und sah die 304 nie. Das Aufraeumen lief bei jedem
+# Serverstart, war fuer das, was es sah, korrekt -- und konnte 96 Prozent
+# seines Gegenstands strukturell nicht erreichen. Kein Fehlschlag, keine
+# Meldung, und eine Platte, die sich unerklaerlich fuellt.
+FRUEHERE_NAMEN = ("knowledge.db",)
+
+
 def kandidaten(db_pfad: Path) -> list[Path]:
-    """Automatische Sicherungen, juengste zuerst."""
+    """Automatische Sicherungen, juengste zuerst -- auch die unter frueheren
+    Namen derselben Datenbank.
+
+    Je Name getrennt sortiert und zusammengefuegt: `behalte` gilt pro Name,
+    nicht insgesamt. Sonst wuerden bei einer Umbenennung die juengsten des
+    alten Namens die des neuen verdraengen oder umgekehrt, je nachdem welcher
+    Zeitstempel gerade hoeher liegt."""
     ordner = db_pfad.parent
     if not ordner.is_dir():
         return []
-    treffer = [p for p in ordner.iterdir() if _automatisch(p, db_pfad.name)]
-    return sorted(treffer, key=lambda p: p.name, reverse=True)
+    namen = (db_pfad.name, *FRUEHERE_NAMEN)
+    alle = list(ordner.iterdir())
+    treffer: list[Path] = []
+    for name in namen:
+        passend = [p for p in alle if _automatisch(p, name)]
+        treffer.extend(sorted(passend, key=lambda p: p.name, reverse=True))
+    return treffer
 
 
 def aufraeumen(db_pfad: Path, behalte: int = BEHALTE) -> tuple[int, int]:
@@ -76,7 +101,16 @@ def aufraeumen(db_pfad: Path, behalte: int = BEHALTE) -> tuple[int, int]:
     einen Serverstart unter keinen Umstaenden verhindern -- sie raeumt auf,
     sie ist nicht der Zweck.
     """
-    alt = kandidaten(db_pfad)[behalte:]
+    # JE NAME schneiden, nicht global. `kandidaten()` liefert seit
+    # 2026-08-19 auch die Sicherungen frueherer Datenbanknamen; ein globales
+    # [behalte:] wuerde bei 10 zu behaltenden Dateien alle 280 des alten
+    # Namens loeschen und nur die des neuen halten -- oder umgekehrt, je
+    # nachdem welcher Zeitstempel gerade hoeher liegt. Der Docstring von
+    # kandidaten() verspricht "je Name"; hier wird es eingeloest.
+    alt: list[Path] = []
+    for name in (db_pfad.name, *FRUEHERE_NAMEN):
+        gleiche = [p for p in kandidaten(db_pfad) if p.name.startswith(name + MUSTER)]
+        alt.extend(gleiche[behalte:])
     n = groesse = 0
     for p in alt:
         try:
