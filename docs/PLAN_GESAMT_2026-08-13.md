@@ -1248,3 +1248,61 @@ und die Messung, die sie begründet, liegt daneben.
 **`115`** (neu): Die drei fälschlich enthaltenen Fälle einzeln ansehen. Liegen
 sie niedrig, weil der Bestand zu ihnen wirklich wenig hat, oder weil ihre
 Einbettung schlecht ist? Der zweite Fall wäre kein Schwellenproblem.
+
+---
+
+## `112` geholt, `114` gebaut, `115` beantwortet — und `115` benennt eine Grenze der Enthaltung
+
+### `112` — Nachrangung liegt jetzt auf diesem Zweig
+
+Per `cherry-pick`, nicht `merge` (`07623126`, `196d82c7`, `474b6097`). Selbst
+nachgeprüft: Parameter `nachrangung` vorhanden, **Vorgabe `False`**, und ohne
+Parameter dieselbe Reihenfolge wie mit `nachrangung=False`. 8 Tests grün.
+
+Der Auftrag war unvollständig, und das hat der Agent gemeldet statt umgangen:
+`48fb98ca` importiert `kern/nachrangung.py`, das erst in einem vierten Commit
+entsteht. Beim Zusammenführen kollidierten außerdem zwei Zweige an derselben
+Stelle im Lehre-Treffer; die erste Fassung übernahm beide Feldgruppen additiv
+und warf `IndexError: No item with that key`, weil die SQL-Abfrage drei der
+Felder gar nicht selektiert. Korrigiert.
+
+### `115` — die drei enthaltenen Fälle sind **Kanalfälle**, kein Bestandsproblem
+
+`runs/enthaltung_115_faelle.json`, Schnappschuss `20260819T102108-cf9c2d51`.
+Alle drei stehen auf **Rang 1 der vollen Fusion** — der Abruf findet sie und
+ordnet sie korrekt zuoberst:
+
+| Fall | bester Kosinus | Kosinus des Ziels | Stichwort-Rang | Bedeutungs-Rang | Fusion |
+|---|---|---|---|---|---|
+| `/ops/buckeberg-konsil-…-governance` | 0,5294 | 0,5154 | 1 | 6 | **1** |
+| `/apps/metahuman-podcast-…` | 0,5101 | 0,4883 | 10 | 9 | **1** |
+| `/stadtwerke` | 0,5399 | 0,5270 | 39 | 2 | **1** |
+
+**Die Schwelle zu senken wäre die falsche Antwort.** Die Rangfolge stimmt; was
+zu niedrig liegt, ist der Kosinus selbst. Das ist ein Einbettungsproblem, und
+eine niedrigere Schwelle würde zugleich den Schaden zurückholen, gegen den die
+Enthaltung gebaut wurde — der höchste fachfremde Wert liegt bei 0,5410, also
+**über** zwei dieser drei Zielwerte.
+
+### Die Grenze, die dabei sichtbar wurde, und sie gehört ausdrücklich benannt
+
+Die Positivkontrolle (`/testing/pytest`, bester Kosinus **0,6334**) zeigt, dass
+dieser hohe Wert **nicht vom Ziel stammt**: das Ziel selbst liegt bei 0,5412 auf
+Fusionsrang **70**.
+
+Daraus folgt, was die Enthaltung leistet und was nicht:
+
+- Sie fragt **„ist hier überhaupt etwas Starkes?"** — und das ist zur Laufzeit
+  die einzig verfügbare Frage, denn welches Dokument das *richtige* wäre, weiß
+  niemand im Moment des Abrufs.
+- Sie fragt **nicht** „ist das Richtige dabei?". Ein hoher Wert eines fremden
+  Dokuments lässt den Block passieren, auch wenn das Ziel weit hinten liegt.
+
+**Sie verhindert also Schaden, sie garantiert keinen Nutzen.** Das ist kein
+Mangel der Umsetzung, sondern die Grenze des Signals — und sie steht hier, damit
+niemand die Enthaltung später für eine Trefferzusage hält.
+
+**`116`** (neu): Einbettungsgüte der drei Fälle. Sie sind inhaltlich einschlägig
+und stehen auf Rang 1, tragen aber Kosinuswerte unter dem höchsten fachfremden
+Wert des Korpus. Solange das so ist, kostet jede Schwelle in diesem Bereich
+echte Fälle.
