@@ -112,3 +112,116 @@ def test_vorgabe_ist_nicht_sensibel(db):
     db.commit()
     assert db.execute("select sensibel from knowledge_nodes where id='v'").fetchone()[0] == 0
     assert _treffer(db) == 1
+
+
+# ─── Schritt 2: der Schreibweg verschluesselt wirklich ──────────────────────
+
+import os  # noqa: E402
+
+GEHEIMWORT = "Meiershofstrasse"
+
+
+@pytest.fixture()
+def echter_weg(tmp_path, monkeypatch):
+    """Der PRODUKTIVE Weg, nicht ein nachgebauter: knowledge_add/knowledge_read
+    gegen eine frische Datenbank und eine eigene Schluesselablage."""
+    import knowledge_mcp_server as kms
+    sys.path.insert(0, str(WURZEL / "kern"))
+    db = tmp_path / "t.db"
+    conn = sqlite3.connect(str(db))
+    conn.executescript((WURZEL / "schema.sql").read_text(encoding="utf-8"))
+    conn.commit()
+    conn.close()
+    monkeypatch.setattr(kms, "DB_PATH", db)
+    monkeypatch.setenv("BRAINLEHR_SCHLUESSEL", str(tmp_path / "s.db"))
+    return kms, db
+
+
+def _sensibel_anlegen(kms):
+    r = kms.knowledge_add(
+        parent_path="/", title="Sensibler Fall", summary=f"WEG-Beschluss {GEHEIMWORT} 12b",
+        content=f"Klaegerin wohnhaft {GEHEIMWORT} 12b", anlass="skript",
+        norm_entscheidung="keine_norm", norm_entschieden_grund="Testfall",
+        source="erzeugt aus tests/test_adr031_...py", sensibel=True)
+    assert "error" not in r, r
+    return r["id"]
+
+
+def test_schritt2_kein_klartext_in_der_datei(echter_weg):
+    kms, db = echter_weg
+    _sensibel_anlegen(kms)
+    assert GEHEIMWORT.encode() not in db.read_bytes(), (
+        "Klartext in den Rohbytes -- irgendein Weg unter knowledge_add reicht "
+        "ihn weiter (Vektor, Hinweisindex, Zugriffsprotokoll, Wikilinks)."
+    )
+
+
+def test_schritt2_gegenprobe_ohne_sensibel_steht_er_drin(echter_weg):
+    """Ohne die Gegenprobe belegt der Test oben nur, dass IRGENDETWAS anders
+    ist -- etwa dass der Knoten gar nicht geschrieben wurde."""
+    kms, db = echter_weg
+    r = kms.knowledge_add(
+        parent_path="/", title="Normaler Fall", summary=f"WEG-Beschluss {GEHEIMWORT} 12b",
+        anlass="skript", norm_entscheidung="keine_norm",
+        norm_entschieden_grund="Testfall", source="erzeugt aus tests/...")
+    assert "error" not in r, r
+    assert GEHEIMWORT.encode() in db.read_bytes()
+
+
+def test_schritt2_lesen_gibt_den_klartext_zurueck(echter_weg):
+    kms, _ = echter_weg
+    nid = _sensibel_anlegen(kms)
+    gelesen = kms.knowledge_read(nid)
+    assert GEHEIMWORT in gelesen["summary"], gelesen
+    assert GEHEIMWORT in gelesen["content"], gelesen
+
+
+def test_schritt2_ohne_schluessel_kein_inhalt_aber_die_tatsache_bleibt(echter_weg):
+    """ADR-029 am echten Weg: nach der Schluesselvernichtung ist der Inhalt
+    weg, der Knoten aber noch da und sagt, DASS geloescht wurde. Ein blosses
+    'nicht gefunden' wuerde die Loeschung selbst verheimlichen."""
+    kms, _ = echter_weg
+    import schluesselablage
+    nid = _sensibel_anlegen(kms)
+    assert schluesselablage.vernichten(nid, 1_000_000.0) is True
+    gelesen = kms.knowledge_read(nid)
+    assert GEHEIMWORT not in gelesen["summary"] + gelesen["content"]
+    assert "geloescht" in gelesen["summary"], gelesen["summary"]
+    assert gelesen["id"] == nid and gelesen["title"] == "Sensibler Fall"
+
+
+def test_schritt2_der_schluessel_liegt_nicht_in_der_bestandsdatei(echter_weg):
+    """Laege er darin, waere jede Sicherung eine Kopie von Schloss UND
+    Schluessel -- und eine Vernichtung aus jeder alten Sicherung wieder
+    herstellbar. Genau das soll Crypto-Shredding verhindern."""
+    kms, db = echter_weg
+    import schluesselablage
+    nid = _sensibel_anlegen(kms)
+    geheim = schluesselablage.hole(nid)
+    assert geheim and len(geheim) == 32
+    assert geheim not in db.read_bytes()
+
+
+def test_schritt2_alle_drei_teile_des_ac_e07_an_einem_fall(echter_weg):
+    """BDW-E07-AC1 woertlich: "Daten, Index und Backup eines sensiblen
+    Testfalls sind ohne autorisierten Schluessel nicht lesbar." Alle drei in
+    EINEM Lauf, damit die Zeile nicht aus drei Teilbelegen zusammengesetzt
+    wird, die nie gemeinsam gegolten haben."""
+    import shutil
+    kms, db = echter_weg
+    sys.path.insert(0, str(WURZEL / "kern"))
+    import sicherungen
+    _sensibel_anlegen(kms)
+
+    # 1 Daten
+    assert GEHEIMWORT.encode() not in db.read_bytes()
+    # 2 Index
+    conn = sqlite3.connect(str(db))
+    assert conn.execute(
+        "select count(*) from knowledge_fts where knowledge_fts match ?",
+        (GEHEIMWORT.lower(),)).fetchone()[0] == 0
+    conn.close()
+    # 3 Backup
+    ziel = sicherungen.sicherungspfad(db, "20260819T230000")
+    shutil.copy2(db, ziel)
+    assert GEHEIMWORT.encode() not in ziel.read_bytes()

@@ -96,6 +96,7 @@ import json
 import math
 import os
 import re
+import secrets
 import shutil
 import sqlite3
 import sys
@@ -2056,6 +2057,40 @@ def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
     return {"path": path, "children": results, "count": len(results)}
 
 
+def _spalte(row: sqlite3.Row, name: str):
+    """Spaltenwert oder None -- eine gewachsene Datenbank kann die Spalte noch
+    nicht haben (die Migration laeuft nicht von selbst). Ohne diesen Griff
+    wuerde ein Lesezugriff dort mit IndexError abbrechen, und zwar auf JEDEM
+    Knoten, nicht nur auf sensiblen."""
+    try:
+        return row[name]
+    except (IndexError, KeyError):
+        return None
+
+
+def _sensiblen_inhalt_lesen(row: sqlite3.Row) -> tuple[str, str]:
+    """(summary, content) eines sensiblen Knotens. Nie eine Ausnahme -- ein
+    Lesefehler darf hier nicht wie ein fehlender Knoten aussehen."""
+    import schluesselablage  # noqa: E402
+    lage = schluesselablage.lage(row["id"])
+    if lage == "vernichtet":
+        return ("(Inhalt geloescht -- der Schluessel wurde vernichtet)",
+                "(Inhalt geloescht -- der Schluessel wurde vernichtet)")
+    geheim = schluesselablage.hole(row["id"])
+    blob = _spalte(row, "chiffre")
+    if geheim is None or not blob:
+        return ("(verschluesselt -- kein Schluessel in dieser Ablage)",
+                "(verschluesselt -- kein Schluessel in dieser Ablage)")
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        klar = json.loads(AESGCM(geheim).decrypt(
+            blob[:12], blob[12:], row["id"].encode()).decode())
+    except Exception:
+        return ("(verschluesselt -- nicht entschluesselbar)",
+                "(verschluesselt -- nicht entschluesselbar)")
+    return klar.get("summary", ""), klar.get("content") or "(kein Volltext)"
+
+
 def knowledge_read(node_id: str, *, actor: str | None = None,
                    model: str | None = None, session: str | None = None) -> dict:
     """Read full content of a knowledge node. Use browse first to find the right node."""
@@ -2106,12 +2141,21 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
         (row["path"],)
     ).fetchall()
 
+    # ADR-031: sensibler Knoten -- Klartext nur, solange der Schluessel lebt.
+    # Drei Lagen, und die dritte ist der Punkt von ADR-029: 'vernichtet' ist
+    # nicht dasselbe wie 'nie dagewesen'. Der Leser erfaehrt, DASS hier etwas
+    # stand und dass es unwiederbringlich weg ist -- ohne den Inhalt. Ein
+    # blosses "nicht gefunden" wuerde die Loeschung selbst verheimlichen.
+    _summary, _content = row["summary"], row["content"] or "(kein Volltext)"
+    if _spalte(row, "sensibel"):
+        _summary, _content = _sensiblen_inhalt_lesen(row)
+
     result = {
         "id": row["id"],
         "path": row["path"],
         "title": row["title"],
-        "summary": row["summary"],
-        "content": row["content"] or "(kein Volltext)",
+        "summary": _summary,
+        "content": _content,
         "project": row["project_id"],
         "tags": json.loads(row["tags"]) if row["tags"] else [],
         "source": row["source"],
@@ -3607,6 +3651,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                   gattung: str | None = None,
                   norm_art: str | None = None,
                   betreiber_weisung: str | None = None,
+                  sensibel: bool = False,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
     """Add a new knowledge node to the tree. Rejects an unknown parent_path
@@ -3900,14 +3945,44 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     # der Vektor wird hier einmal berechnet (embed_text, best-effort, siehe
     # _rebuild_node_embedding) und unten fuer die eigentliche Einbettungszeile
     # wiederverwendet, statt ihn zweimal beim selben Aufruf zu berechnen.
+    # ADR-031 Schritt 2: sensibler Knoten -> Chiffretext, und zwar HIER,
+    # bevor irgendetwas den Klartext weiterreicht.
+    #
+    # Die Stelle ist der ganze Punkt. Unter dieser Zeile geben fuenf
+    # verschiedene Wege denselben Text weiter: der Vektor
+    # (_rebuild_node_embedding), der Hinweisindex, die Aehnlichkeitssuche,
+    # die Wikilink-Auswertung und das Zugriffsprotokoll (log_access schreibt
+    # summary und content woertlich in affected_row). Jeder einzelne waere
+    # ein zweiter Ort, an dem der Klartext liegt -- und der Volltextindex,
+    # gegen den ADR-031 gebaut ist, waere dann nur der bekannteste von
+    # sechs. Wer die Verschluesselung weiter unten einbaut, verschluesselt
+    # die Spalte und streut den Klartext nebenan.
+    #
+    # Deshalb: einmal hier ersetzen, danach sieht der ganze Rest der
+    # Funktion nur noch den Platzhalter. Der PREIS steht in ADR-031 --
+    # so ein Knoten ist ueber Stichwort und Bedeutung unauffindbar, und
+    # die Einschleusungspruefung sieht ihn ebenfalls nicht mehr.
+    chiffre = None
+    if sensibel:
+        import schluesselablage  # noqa: E402
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        geheim = schluesselablage.anlegen(node_id, time.time())
+        nonce = secrets.token_bytes(12)
+        klartext = json.dumps({"summary": summary, "content": content or ""}).encode()
+        # node_id als AAD: der Chiffretext gehoert damit an DIESE Zeile und
+        # laesst sich nicht auf eine andere umhaengen.
+        chiffre = nonce + AESGCM(geheim).encrypt(nonce, klartext, node_id.encode())
+        summary = "(verschluesselt)"
+        content = ""
+
     _hint_vec = embeddings.embed_text(f"{node_path}\n{title}\n{summary}\n{content or ''}")
     similar_node_hint = _find_similar_knowledge_nodes(
         conn, title, summary, content, _hint_vec,
         gattung=gattung if gattung is not None else "arbeitsbestand")
 
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, norm_entschieden_belegart, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, norm_entschieden_belegart, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von, sensibel, chiffre)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
          norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, created_at, norm_entschieden_grund,
@@ -3919,7 +3994,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
          # Aus dem Ausweis, nicht aus der Signatur: es gibt bewusst KEINEN
          # Parameter dafuer. Waere er da, koennte jeder Schreiber eine
          # menschliche Deckung behaupten.
-         _bedient_von(actor))
+         _bedient_von(actor),
+         1 if sensibel else 0, chiffre)
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,

@@ -21,6 +21,19 @@ Diese Datei haelt den Ist-Zustand fest, statt ihn zu behaupten. Sie ist
 absichtlich GRUEN: sie misst, was heute gilt. Wird der Bestand eines Tages
 verschluesselt, wird sie rot und zeigt genau die Stelle -- ein `xfail` waere
 hier falsch, denn nichts davon ist ein Fehlschlag, es ist der Befund.
+
+NACHTRAG, wenige Stunden spaeter am 2026-08-19: Genau das ist eingetreten.
+`test_e07_kein_schreibpfad_des_bestands_nutzt_den_schluesselspeicher` wurde
+rot, als ADR-031 Schritt 2 den Weg baute -- die gute Nachricht, fuer die er
+gebaut war. Er ist deshalb nicht angepasst, sondern UMGEDREHT: er verlangt
+jetzt, dass der Weg da IST, und wird wieder rot, wenn ihn jemand entfernt.
+
+Die uebrigen Zusicherungen dieser Datei bleiben, wie sie sind, und sie
+bleiben gruen: ein GEWOEHNLICHER Knoten steht weiterhin im Klartext in Datei,
+Index und Sicherung. Das ist Absicht (ADR-031: verschluesselt wird nur, was
+ausdruecklich sensibel ist) und keine Restschuld. Der Gegenbeleg -- dass ein
+SENSIBLER Knoten in allen dreien unlesbar ist -- steht in
+tests/test_adr031_sensible_knoten_ohne_index.py.
 """
 from __future__ import annotations
 
@@ -110,11 +123,15 @@ def test_e07_die_sicherung_traegt_denselben_klartext(temp_db):
     assert GEHEIM.encode() in ziel.read_bytes(), "E07: trotzdem lesbar"
 
 
-def test_e07_kein_schreibpfad_des_bestands_nutzt_den_schluesselspeicher():
-    """DIE WURZEL, und sie ist der eigentliche Befund: Das Verfahren ist
-    gebaut und gruen, aber an nichts angeschlossen. Waechst spaeter ein
-    echter Aufrufer, wird dieser Test rot -- und das ist dann die gute
-    Nachricht, die jemand sehen soll."""
+def test_e07_der_schreibweg_zum_schluesselspeicher_existiert():
+    """UMGEDREHT am 2026-08-19, nachdem er seinen Zweck erfuellt hatte.
+
+    Vorher hiess er `..._kein_schreibpfad_des_bestands_nutzt_den_schluessel-
+    speicher` und hielt fest, dass das Verfahren an nichts angeschlossen war.
+    Mit ADR-031 Schritt 2 wurde er rot -- die gute Nachricht, fuer die er
+    gebaut war. Jetzt haelt er die Gegenrichtung: der Weg muss DA sein.
+    Verschwindet er wieder, wird dieser Test rot, statt dass die Luecke
+    still zurueckkehrt."""
     import subprocess
 
     roh = subprocess.run(
@@ -127,10 +144,18 @@ def test_e07_kein_schreibpfad_des_bestands_nutzt_den_schluesselspeicher():
         and not p.startswith("./tests/")
         and p not in ("./kern/kundenschluessel.py", "./kern/risikoeinstufung.py")
     ]
-    assert aufrufer == ["./kern/aufbewahrung.py"], (
-        "Aufrufer ausserhalb Tests: %r -- wenn hier ein Schreibpfad des "
-        "Bestands auftaucht, ist BDW-E07 neu zu vermessen." % (aufrufer,)
-    )
+    assert aufrufer == ["./kern/aufbewahrung.py", "./kern/schluesselablage.py"], (
+        "Aufrufer ausserhalb Tests: %r" % (aufrufer,))
+
+    # Und der Schreibweg selbst. Am QUELLTEXT geprueft, nicht an der
+    # Signatur des importierten Objekts: conftest.py legt eine Huelle um
+    # knowledge_add (*args, **kwargs), an der jede Signaturpruefung
+    # vorbeigreift -- sie waere gruen, egal was die Funktion nimmt.
+    quelle = (WURZEL / "knowledge_mcp_server.py").read_text(encoding="utf-8")
+    assert "schluesselablage.anlegen(" in quelle, (
+        "knowledge_add legt keinen Schluessel mehr an -- BDW-E07 neu vermessen.")
+    assert "sensibel: bool = False" in quelle, (
+        "knowledge_add nimmt `sensibel` nicht mehr entgegen.")
 
 
 def test_e07_gegenprobe_ohne_knoten_steht_die_zeichenfolge_nirgends(temp_db):
