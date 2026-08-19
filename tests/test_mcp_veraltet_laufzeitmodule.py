@@ -1,9 +1,16 @@
 """MUST-LAGE-002: Der MCP-Wächter beobachtet geladene Laufzeitmodule.
 
-Rot vor Grün: Vor dem Fix verglich ``haken/mcp_veraltet.py`` ausschließlich
-den Wrapper ``knowledge_mcp_server.py``. Ein nach Prozessstart geänderter
-Scorer blieb deshalb unsichtbar, obwohl der laufende Prozess dessen alten
-Python-Code weiter benutzte.
+Rot vor Grün: Vor dem ersten Fix verglich ``haken/mcp_veraltet.py``
+ausschließlich den Wrapper ``knowledge_mcp_server.py``. Ein nach
+Prozessstart geänderter Scorer blieb deshalb unsichtbar, obwohl der
+laufende Prozess dessen alten Python-Code weiter benutzte.
+
+L-47a196 (2026-08-14): die Meldung nannte weder PID noch Elternprozess und
+band die Empfehlung "Sitzung neu starten" nicht an den Halter -- ein Fund
+unter fremdem Halter (anderer MCP-Klient) blieb dadurch unerreichbar,
+obwohl die Meldung genau das nahelegte. Die Tests unten prüfen die reine
+Auswertungsfunktion mit erfundenen Prozesslisten (nicht gegen echte
+``ps``-Ausgabe) und den ``--erneut``-Schalter gegen den Sitzungsmarker.
 """
 from __future__ import annotations
 
@@ -33,9 +40,68 @@ def test_neuestes_laufzeitmodul_bestimmt_veraltungsgrenze(tmp_path, monkeypatch)
     assert mcp_veraltet.latest_runtime_mtime() == 300
 
 
-def test_main_meldet_nach_prozessstart_geaenderten_scorer(
-    tmp_path, monkeypatch, capsys
-):
+# -- auswerten(): reine Funktion, erfundene Prozesslisten, kein echtes ps ---
+
+CLAUDE_ELTERN = (
+    "/Users/lehrmacbook/Library/Application Support/Claude/claude-code/"
+    "2.1.229/claude.app/Contents/MacOS/claude --resume=xyz"
+)
+FREMDER_ELTERN = (
+    "/Users/lehrmacbook/.hermes/hermes-agent/venv/bin/python "
+    "/Users/lehrmacbook/.hermes/hermes-agent/tools/mcp_stdio_watchdog.py "
+    "--ppid 1323 -- /opt/homebrew/bin/python3 "
+    "/Volumes/daten/Begod2026/brainlehr/knowledge_mcp_server.py"
+)
+
+
+def test_fund_unter_claude_fenster_empfiehlt_sitzungsneustart():
+    prozesse = [("5680", "5679", 100.0)]
+    eltern = {"5679": CLAUDE_ELTERN}
+    zeilen = mcp_veraltet.auswerten(prozesse, eltern, mtime=200.0)
+    assert len(zeilen) == 1
+    assert "PID 5680" in zeilen[0]
+    assert "eigenes Claude-Fenster" in zeilen[0]
+    assert "neu starten" in zeilen[0]
+    assert "erreicht diesen Fund nicht" not in zeilen[0]
+
+
+def test_fund_unter_fremdem_halter_nennt_halter_statt_sitzungsneustart():
+    prozesse = [("5680", "5679", 100.0)]
+    eltern = {"5679": FREMDER_ELTERN}
+    zeilen = mcp_veraltet.auswerten(prozesse, eltern, mtime=200.0)
+    assert len(zeilen) == 1
+    assert "PID 5680" in zeilen[0]
+    assert "PID 5679" in zeilen[0]
+    assert "mcp_stdio_watchdog.py" in zeilen[0]
+    assert "gehalten von" in zeilen[0]
+    assert "erreicht diesen Fund nicht" in zeilen[0]
+
+
+def test_neuerer_prozess_als_datei_wird_nicht_gemeldet():
+    """Negativfall: Prozessstart nach der letzten Dateiänderung -> kein Fund."""
+    prozesse = [("999", "1", 500.0)]
+    eltern = {"1": CLAUDE_ELTERN}
+    zeilen = mcp_veraltet.auswerten(prozesse, eltern, mtime=200.0)
+    assert zeilen == []
+
+
+def test_grenzwert_startzeit_exakt_gleich_dateistand_gewinnt_der_prozess():
+    """Bei Gleichstand (mtime == started) ist NICHT 'mtime > started' -> kein Fund.
+
+    Der Prozess gewinnt den Grenzfall: eine Reparatur, die exakt beim
+    Prozessstart geschrieben wurde, gilt als geladen, nicht als verpasst.
+    """
+    prozesse = [("999", "1", 200.0)]
+    eltern = {"1": CLAUDE_ELTERN}
+    zeilen = mcp_veraltet.auswerten(prozesse, eltern, mtime=200.0)
+    assert zeilen == []
+
+    # Eine Nanosekunde jünger als der Dateistand -> doch ein Fund.
+    zeilen_knapp_aelter = mcp_veraltet.auswerten(prozesse, eltern, mtime=200.000001)
+    assert len(zeilen_knapp_aelter) == 1
+
+
+def test_main_meldet_pid_und_halter_bei_fremdem_prozess(tmp_path, monkeypatch, capsys):
     wrapper = tmp_path / "knowledge_mcp_server.py"
     scorer = tmp_path / "relevanzlage.py"
     wrapper.write_text("# wrapper\n", encoding="utf-8")
@@ -49,15 +115,14 @@ def test_main_meldet_nach_prozessstart_geaenderten_scorer(
         mcp_veraltet, "state_path", lambda _session: str(tmp_path / "marker")
     )
     monkeypatch.setattr(mcp_veraltet.sys, "stdin", StringIO("{}"))
+    monkeypatch.setattr(mcp_veraltet.sys, "argv", ["mcp_veraltet.py"])
+
+    lstart = datetime.fromtimestamp(200).strftime(mcp_veraltet.LSTART_FMT)
     responses = iter(
         (
-            SimpleNamespace(stdout="123\n"),
-            SimpleNamespace(
-                stdout=datetime.fromtimestamp(200).strftime(
-                    mcp_veraltet.LSTART_FMT
-                )
-                + "\n"
-            ),
+            SimpleNamespace(stdout="5680\n"),  # pgrep
+            SimpleNamespace(stdout=f"5680 5679 {lstart}\n"),  # pid,ppid,lstart
+            SimpleNamespace(stdout=f"5679 {FREMDER_ELTERN}\n"),  # ppid,command
         )
     )
     monkeypatch.setattr(
@@ -66,4 +131,47 @@ def test_main_meldet_nach_prozessstart_geaenderten_scorer(
 
     mcp_veraltet.main()
 
+    out = capsys.readouterr().out
+    assert "veraltet" in out
+    assert "PID 5680" in out
+    assert "gehalten von" in out
+
+
+def test_marker_greift_nicht_bei_erneut(tmp_path, monkeypatch, capsys):
+    """L-47a196: der 1x-pro-Sitzung-Marker darf --erneut nicht schlucken."""
+    wrapper = tmp_path / "knowledge_mcp_server.py"
+    scorer = tmp_path / "relevanzlage.py"
+    wrapper.write_text("# wrapper\n", encoding="utf-8")
+    scorer.write_text("# scorer\n", encoding="utf-8")
+    os.utime(wrapper, (100, 100))
+    os.utime(scorer, (300, 300))
+
+    marker = tmp_path / "marker"
+    marker.write_text("1")  # Marker existiert bereits -- Sitzung schon gemeldet.
+
+    monkeypatch.setattr(mcp_veraltet, "SERVER_FILE", str(wrapper))
+    monkeypatch.setattr(mcp_veraltet, "RUNTIME_FILES", (wrapper, scorer))
+    monkeypatch.setattr(mcp_veraltet, "state_path", lambda _session: str(marker))
+    monkeypatch.setattr(mcp_veraltet.sys, "stdin", StringIO("{}"))
+
+    lstart = datetime.fromtimestamp(200).strftime(mcp_veraltet.LSTART_FMT)
+    responses = iter(
+        (
+            SimpleNamespace(stdout="5680\n"),
+            SimpleNamespace(stdout=f"5680 5679 {lstart}\n"),
+            SimpleNamespace(stdout=f"5679 {CLAUDE_ELTERN}\n"),
+        )
+    )
+    monkeypatch.setattr(
+        mcp_veraltet.subprocess, "run", lambda *_args, **_kwargs: next(responses)
+    )
+
+    # Ohne --erneut: Marker greift, keine Ausgabe.
+    monkeypatch.setattr(mcp_veraltet.sys, "argv", ["mcp_veraltet.py"])
+    mcp_veraltet.main()
+    assert capsys.readouterr().out == ""
+
+    # Mit --erneut: Marker wird ignoriert, Meldung erscheint trotzdem.
+    monkeypatch.setattr(mcp_veraltet.sys, "argv", ["mcp_veraltet.py", "--erneut"])
+    mcp_veraltet.main()
     assert "veraltet" in capsys.readouterr().out

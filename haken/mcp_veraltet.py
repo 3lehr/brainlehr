@@ -11,7 +11,15 @@ mtime der beim Start geladenen relevanten Laufzeitdateien vergleichen. Eine
 Datei neuer als Prozessstart -> Prozess veraltet.
 
 Nur melden, nichts toeten/neu starten. Hoechstens 1x pro Session (Marker in
-/tmp). ps/Datei nicht lesbar -> still bleiben. IMMER exit 0.
+/tmp) -- ausser bei manuellem Aufruf mit ``--erneut``, das ignoriert den
+Marker (L-47a196: ein Sitzungsmarker darf beim Aufruf von Hand nicht
+Schweigen erzeugen). ps/Datei nicht lesbar -> still bleiben. IMMER exit 0.
+
+Je Fund wird der Elternprozess ermittelt: gehoert er selbst zu einem
+Claude-Code-Fenster (Pfad enthaelt ``Contents/MacOS/claude``), erreicht ein
+Sitzungsneustart den Fund. Sonst haelt ein fremder Prozess (z.B. ein anderer
+MCP-Klient) den Server -- dort hilft ein Neustart der Claude-Fenster nicht,
+das wird pro Fund ausdruecklich gesagt (L-47a196).
 """
 
 import sys as _sys
@@ -65,14 +73,91 @@ def latest_runtime_mtime() -> float:
     return max(os.path.getmtime(path) for path in RUNTIME_FILES)
 
 
+def eigenes_fenster(eltern_kommando: str) -> bool:
+    """Läuft der Elternprozess selbst als Claude-Code-Fenster?"""
+    return "Contents/MacOS/claude" in eltern_kommando
+
+
+def halter_label(eltern_kommando: str) -> str:
+    """Sprechender Name des Halters aus der Kommandozeile des Elternprozesses."""
+    tokens = eltern_kommando.split()
+    for t in tokens:
+        if t.endswith(".py"):
+            return os.path.basename(t)
+    return os.path.basename(tokens[0]) if tokens else "unbekannt"
+
+
+def prozessliste(pids: list[str]) -> list[tuple[str, str, float]]:
+    """(pid, ppid, start-timestamp) je laufendem MCP-Prozess."""
+    out = subprocess.run(
+        ["ps", "-o", "pid=,ppid=,lstart=", "-p", ",".join(pids)],
+        capture_output=True, text=True, timeout=2,
+    ).stdout
+    ergebnis = []
+    for line in out.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        pid, ppid, rest = line.split(maxsplit=2)
+        try:
+            started = datetime.strptime(rest, LSTART_FMT).timestamp()
+        except Exception:
+            continue
+        ergebnis.append((pid, ppid, started))
+    return ergebnis
+
+
+def eltern_kommandos(ppids: set[str]) -> dict[str, str]:
+    """ppid -> Kommandozeile, fuer die Halter-Bestimmung."""
+    if not ppids:
+        return {}
+    out = subprocess.run(
+        ["ps", "-o", "pid=,command=", "-p", ",".join(sorted(ppids))],
+        capture_output=True, text=True, timeout=2,
+    ).stdout
+    ergebnis = {}
+    for line in out.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        teile = line.split(maxsplit=1)
+        if len(teile) == 2:
+            ergebnis[teile[0]] = teile[1]
+    return ergebnis
+
+
+def auswerten(prozesse: list[tuple[str, str, float]], eltern: dict[str, str], mtime: float) -> list[str]:
+    """Meldungszeilen je veraltetem Fund -- Kern der Bewertung, ohne ps-Aufruf."""
+    zeilen = []
+    for pid, ppid, started in prozesse:
+        if not (mtime > started):
+            continue  # bei Gleichstand gewinnt der Prozess (jünger oder gleich alt wie der Code)
+        alter = humanize(time.time() - mtime)
+        eltern_cmd = eltern.get(ppid, "")
+        if eigenes_fenster(eltern_cmd):
+            zeilen.append(
+                f"PID {pid} (Reparatur vor {alter} noch nicht geladen) — "
+                f"eigenes Claude-Fenster, Sitzung neu starten."
+            )
+        else:
+            halter = halter_label(eltern_cmd)
+            zeilen.append(
+                f"PID {pid} (Reparatur vor {alter} noch nicht geladen) — "
+                f"gehalten von {halter} (PID {ppid}), dort neu starten. "
+                f"Ein Neustart der Claude-Fenster erreicht diesen Fund nicht."
+            )
+    return zeilen
+
+
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
     except Exception:
         payload = {}
 
+    erneut = "--erneut" in sys.argv[1:]
     marker = state_path(payload.get("session_id"))
-    if os.path.exists(marker):
+    if not erneut and os.path.exists(marker):
         return
 
     try:
@@ -90,26 +175,13 @@ def main() -> None:
         return
 
     try:
-        out = subprocess.run(
-            ["ps", "-o", "lstart=", "-p", ",".join(pids)],
-            capture_output=True, text=True, timeout=2,
-        ).stdout
+        prozesse = prozessliste(pids)
+        eltern = eltern_kommandos({ppid for _pid, ppid, _t in prozesse})
     except Exception:
         return
 
-    stale_ages = []
-    for line in out.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            started = datetime.strptime(line, LSTART_FMT).timestamp()
-        except Exception:
-            continue
-        if mtime > started:
-            stale_ages.append(time.time() - mtime)
-
-    if not stale_ages:
+    zeilen = auswerten(prozesse, eltern, mtime)
+    if not zeilen:
         return
 
     try:
@@ -118,10 +190,9 @@ def main() -> None:
     except Exception:
         pass
 
-    print(
-        f"Brainlehr MCP: {len(stale_ages)} laufende Prozess(e) veraltet "
-        f"(Reparatur vor {humanize(max(stale_ages))} noch nicht geladen) — Sitzung neu starten."
-    )
+    print(f"Brainlehr MCP: {len(zeilen)} laufende Prozess(e) veraltet.")
+    for z in zeilen:
+        print(f"  {z}")
 
 
 if __name__ == "__main__":
