@@ -176,3 +176,13 @@ Aus den Rohzeilen nachgerechnet, nicht aus der Zusammenfassung übernommen. **11
   Der Wächter aus `ae182bfc` wurde rot, als der Weg entstand — die gute Nachricht, für die er gebaut war. Er ist **umgedreht** statt angepasst: er verlangt jetzt, dass der Weg da ist. Dabei gefangen: eine Signaturprüfung wäre wertlos gewesen, weil `conftest.py` eine Hülle `(*args, **kwargs)` um `knowledge_add` legt — geprüft wird der Quelltext.
 
 **Quote 27/56.** `BDW-E13` bleibt FAIL (Schritt 3: `fristlauf()` an den Bestand hängen — zuletzt, nie vor dem Indexausschluss). Volle Suite nach Schritt 2: 2239 grün, **Fehlermenge identisch** zu der vor Schritt 2 (18 rot, 6 Fehler, alle als vorbestehend gegengeprüft).
+
+**`BDW-E13` steht auf PASS** (`16ac76c1`), ADR-031 ist damit in allen drei Schritten umgesetzt. `fristlauf()` selbst ist **unverändert** — es bekommt über `_BestandsSpeicher` das, was es ohnehin verlangt, nur zeigt das jetzt auf die Schlüsselablage und `knowledge_nodes.created_at`. Eine zweite Fristlauf-Funktion wäre eine zweite Stelle gewesen, an der Zählweise, Nachweisform und Hold-Verhalten auseinanderlaufen.
+
+  **Die Reihenfolge ist jetzt ein Test statt einer Absichtserklärung:** `fristlauf_bestand()` verweigert sich, solange ein sensibler Knoten im Volltextindex steht. Legal Hold überlebt den Prozess und hält den Lauf laut an, statt still zu überspringen; ein sensibler Knoten ohne `datenklasse:`-Etikett fällt sichtbar auf `ohne_regel`, statt einer nie entschiedenen Frist zugeschlagen zu werden.
+
+  **Beinahefehler, gefangen von drei eigenen Testfällen** (`L-05cfa7`): Die Indexsperre zählte zuerst über `knowledge_fts` — und traf jeden sensiblen Knoten, weil eine fts5-Tabelle mit externer Inhaltstabelle **ohne MATCH schlicht die Inhaltstabelle liest**. Die Sperre hätte immer ausgelöst, und ein Wächter, der immer anschlägt, wird abgeschaltet. Gezählt wird jetzt in `knowledge_fts_docsize`. Merksatz für jede neue Sperre: der Testfall, der **durchlaufen muss**, ist der wichtigere.
+
+**Quote 28/56**, nur noch `BDW-P05` durchgefallen. Volle Suite: 2243 grün, Fehlermenge in drei aufeinanderfolgenden Läufen **identisch** — keiner der 18 stammt aus dieser Sitzung.
+
+**Was ADR-031 offen lässt, ausdrücklich:** Kein Bestandsknoten ist als sensibel markiert, und `knowledge_update` kennt `sensibel` nicht — ein bestehender Knoten lässt sich nur über SQL hochstufen. Belegt ist der Weg, nicht seine Nutzung.

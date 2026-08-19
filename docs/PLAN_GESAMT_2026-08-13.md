@@ -1670,13 +1670,20 @@ Index, nicht die Bequemlichkeit:
 1. ~~Spalten `sensibel` und `chiffre`, FTS-Trigger schließen sensible Knoten
    aus~~ — **erledigt** (`aa8d954d`), Migration für die gewachsene Datenbank
    gefahren, 5200 Knoten, Index heil.
-2. Schreibweg: `knowledge_add` nimmt `sensibel` entgegen und legt bei
-   `sensibel=1` den Chiffretext in `chiffre` statt Klartext in `summary` und
-   `content`.
-3. **Zuletzt** `fristlauf()` an den Bestand hängen. Ein Fristlauf, der den
-   Schlüssel vernichtet, während der Index noch Klartext hält, erzeugt einen
-   Nachweis über eine Löschung, die nicht stattgefunden hat — schlimmer als
-   keine Löschung.
+2. ~~Schreibweg: `knowledge_add` nimmt `sensibel` entgegen~~ — **erledigt**
+   (`6760901e`), `BDW-E07` auf PASS. Die Ersetzung sitzt ganz am Anfang der
+   Funktion, weil fünf Wege darunter denselben Text weiterreichen.
+3. ~~`fristlauf()` an den Bestand hängen~~ — **erledigt** (`16ac76c1`),
+   `BDW-E13` auf PASS. Die Reihenfolge ist jetzt ein Test statt einer
+   Absicht: `fristlauf_bestand()` verweigert sich, solange ein sensibler
+   Knoten im Volltextindex steht — sonst bescheinigte der Nachweis eine
+   Löschung, die nicht stattfindet.
+
+**Was als Nächstes ansteht** (nicht getan, bewusst): Kein Bestandsknoten ist
+heute als sensibel markiert, und `knowledge_update` kennt `sensibel` nicht —
+ein bestehender Knoten lässt sich also nur über SQL hochstufen, nicht über
+den produktiven Weg. Solange niemand echte Fremddaten einpflegt, kostet das
+nichts; sobald buckeberg oder openlehr liefern, ist es der erste Schritt.
 
 **Was bewusst nicht getan wird:** kein durchsuchbarer Index über sensible
 Knoten. Preis: ein sensibler Knoten ist über die Volltextsuche nicht
