@@ -103,3 +103,10 @@ korpora/longmemeval/
 
 # Messstaende: je Kopie ~120 MB, Wegwerfstaende eines Laufs (kern/schnappschuss.py).
 runs/schnappschuesse/
+
+# Sicherungsordner (BDW-E15, 2026-08-19). Die Muster oben greifen nur im
+# Wurzelverzeichnis; seit die zwoelf Schreibstellen nach `sicherungen/`
+# schreiben, laegen dort sonst 1,3 GB Datenbankkopien im Zugriff von
+# `git add -A` -- und der Bestand traegt Daten Dritter.
+sicherungen/
+dienst/log/
