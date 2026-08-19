@@ -13,6 +13,10 @@ Regeln:
 - Relevanz-Schwelle: ein Treffer muss MIN_HITS verschiedene Prompt-Keywords im
   ausgegebenen Text enthalten. Ein einzelnes Allerweltswort ("dokument",
   "modell") reicht nicht mehr -- lieber gar kein Recall als falscher.
+- Enthaltung (s. ENTHALTUNGSSCHWELLE_KOSINUS): erreicht im aktiven Suchpfad
+  kein Kandidat den gemessenen Bedeutungs-Kosinus, wird SICHTBAR nichts
+  eingespielt (kurzer Satz statt stillem Nichts) -- abschaltbar ueber
+  KNOWLEDGE_ENTHALTUNG_KOSINUS=0/1.
 
 Selbsttest: python3 knowledge_recall_hook.py --selftest
 
@@ -318,6 +322,7 @@ TRUST_WEIGHT = 0.35
 # ENSEMBLE_TOP_N               5     1..10             Ensemble-Uebereinstimmungsfenster je Kanal (s.u., Teil 2)
 # ZWEITER_KANAL                 True   True/False       Embedding-Kanal ueberhaupt aktiv, Vorgabe AN seit ADR-035 (s.u., Nachtrag)
 # ENSEMBLE_PFLICHT              True   True/False       Ensemble-Schweigepflicht, Vorgabe AN seit ADR-035 (s.u., Nachtrag)
+# ENTHALTUNGSSCHWELLE_KOSINUS  0.55  0.0..1.0          s.u. -- Enthaltung im aktiven Suchpfad (S9)
 
 # Anzahl ausgegebener Treffer je Abruf -- bisher als nacktes ":3"/":2" an den
 # Slice-Stellen in query() verstreut, jetzt hier benannt.
@@ -597,6 +602,28 @@ def _suchpfad_aktiv() -> bool:
     if override is not None:
         return override == "1"
     return SUCHPFAD_ABRUF
+
+
+# Enthaltungsschwelle bedeutungs_kosinus (Auftrag 2026-08-19): erreicht KEIN
+# Kandidat des aktiven Suchpfads (suchpfad_abruf.kandidaten() ueber
+# mehrstufiger_abruf.kandidaten_geschaltet(), s. _suchpfad_aktiv()) diesen
+# rohen Kosinus, wird NICHTS eingespielt -- gemessen ueber GENAU diesen Weg
+# in runs/enthaltungsschwelle_kosinus_abrufweg.json (Schnappschuss
+# 20260819T094703-31bcb647, n=35 einschlaegig / 41 fachfremd): bei 0.55 sind
+# 3/35 faelschlich enthalten und 0/41 faelschlich geliefert. Gleichstand
+# (Kandidat exakt 0.55) gewinnt fuer den Abruf (NICHT enthalten) -- so ist
+# die 0-faelschlich-geliefert-Zahl selbst gerechnet: sie zaehlt Werte >=0.55
+# bereits als geliefert.
+#
+# Abschaltbar ueber KNOWLEDGE_ENTHALTUNG_KOSINUS=0/1 in der Umgebung (Vorgabe: AN).
+ENTHALTUNGSSCHWELLE_KOSINUS = 0.55
+
+
+def _enthaltung_aktiv() -> bool:
+    override = os.environ.get("KNOWLEDGE_ENTHALTUNG_KOSINUS")
+    if override is not None:
+        return override == "1"
+    return True
 
 
 def _radar_select(candidates: list, score_key: str,
@@ -1181,7 +1208,8 @@ def _erstverwendungs_vorschlaege(nodes: list, log_path: str | None = None) -> tu
 
 def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | None = None,
           prompt: str | None = None, embed_fn=None,
-          bedeutungswerte: list | None = None) -> tuple[list, list]:
+          bedeutungswerte: list | None = None,
+          enthaltung_satz: list[str] | None = None) -> tuple[list, list]:
     """ADR-033 Schritt 2: erst BEWERTEN (bm25 ueber knowledge_fts/lessons_fts,
     kein LIMIT vor der Bewertung mehr -- FULL_SCAN_ROW_CAP ist nur noch ein
     Sicherheitsdeckel), dann per _radar_select() kappen (Median+MAD-Rausch-
@@ -1200,7 +1228,15 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
     Weg (_suchpfad_aktiv()) verwirft die rohen Kosinuswerte vor der
     Rueckgabe (suchpfad_abruf.kandidaten() fusioniert nur noch Rangpositionen)
     -- ohne diesen Parameter haette der Aufrufer sie nicht. Wird NUR gefuellt,
-    NIE fuer Auswahl/Sortierung gelesen (reines Kennzeichnungs-Beiwerk)."""
+    NIE fuer Auswahl/Sortierung gelesen (reines Kennzeichnungs-Beiwerk).
+
+    enthaltung_satz (Auftrag 2026-08-19): optionale Ausgabeliste wie
+    bedeutungswerte. Nur im aktiven Suchpfad (_suchpfad_aktiv()) befuellt:
+    traegt KEIN Kandidat den ENTHALTUNGSSCHWELLE_KOSINUS-Wert
+    (bedeutungs_kosinus, s. suchpfad_abruf.kandidaten()), wird ein
+    sichtbarer Satz angehaengt UND nodes/lessons bleiben fuer diese Anfrage
+    leer -- ein stilles Nichts ist von einem kaputten Haken nicht zu
+    unterscheiden."""
     own = _cwd_project(cwd)
     conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True, timeout=2.0)
     conn.row_factory = sqlite3.Row
@@ -1260,6 +1296,22 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
                 conn, prompt if prompt else " ".join(kws), query_vec, MAX_NODES + MAX_LESSONS)
         except sqlite3.Error:
             pass
+        # Enthaltung (ENTHALTUNGSSCHWELLE_KOSINUS, s.o.): nur ueber die
+        # VORHANDENEN Kosinuswerte entschieden -- None (kein Vektor) ist eine
+        # Aussage ueber Verfuegbarkeit, nicht ueber Aehnlichkeit, und zaehlt
+        # deshalb nicht als "unter der Schwelle" (kein Kandidat mit Vektor ->
+        # keine Enthaltung, wie vor diesem Auftrag). Auf den ROHEN Kandidaten
+        # entschieden (vor dem geltend-Filter unten), weil genau das der Weg
+        # ist, ueber den runs/enthaltungsschwelle_kosinus_abrufweg.json misst.
+        if _enthaltung_aktiv():
+            vorhandene = [w for w in
+                          (r.get("bedeutungs_kosinus") for r in node_rows + lesson_rows)
+                          if w is not None]
+            if vorhandene and max(vorhandene) < ENTHALTUNGSSCHWELLE_KOSINUS:
+                if enthaltung_satz is not None:
+                    enthaltung_satz.append(
+                        "Zu dieser Frage steht nichts Belastbares im Speicher.")
+                node_rows, lesson_rows = [], []
         try:
             node_rows = [r for r in node_rows if _ist_geltend(r.get("gilt_ab"), r.get("gilt_bis"))]
             signal = _apply_trust_score(node_rows, "node")
@@ -1692,8 +1744,10 @@ def main() -> None:
         return
     cwd = payload.get("cwd") or os.getcwd()
     bedeutungswerte: list = []
+    enthaltung_satz: list[str] = []
     try:
-        nodes, lessons = query(kws, cwd=cwd, prompt=prompt, bedeutungswerte=bedeutungswerte)
+        nodes, lessons = query(kws, cwd=cwd, prompt=prompt, bedeutungswerte=bedeutungswerte,
+                                enthaltung_satz=enthaltung_satz)
     except Exception:
         return
     session_id = payload.get("session_id")
@@ -1736,6 +1790,19 @@ def main() -> None:
     if leer:
         log_recall([], [], cwd=cwd, session_id=session_id, prompt=prompt,
                    agent_id=payload.get("agent_id"), agent_type=payload.get("agent_type"))
+        if not enthaltung_satz:
+            return
+        # Enthaltung SICHTBAR machen (Auftrag 2026-08-19): ein stilles Nichts
+        # ist von einem kaputten Haken nicht zu unterscheiden. Beide
+        # Empfaenger wie beim regulaeren Treffer unten (systemMessage +
+        # continue/suppressOutput noetig, damit die Zeile stehen bleibt statt
+        # nach ~1s zu verschwinden, s. NACHTRAG 2026-08-10 weiter unten).
+        satz = enthaltung_satz[0]
+        print(json.dumps({
+            "hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                    "additionalContext": f"<knowledge-recall>\n{satz}\n</knowledge-recall>"},
+            "systemMessage": satz, "continue": True, "suppressOutput": True,
+        }, ensure_ascii=False))
         return
     # Erstverwendung (Auftrag 2026-08-12): Vorschlag fuer offene Knoten
     # (norm_entscheidung == 'offen') UNTER der gerade getroffenen Auswahl --
