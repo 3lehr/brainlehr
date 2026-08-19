@@ -84,6 +84,10 @@ _DATEINAME = re.compile(r"[\w./-]+\.(?:pdf|md|json|csv|xlsx|docx|jsonl|yaml|yml|
 # ein Skript erwaehnt, wird dadurch nicht zu dessen Ableitung.
 _QUELLENDUNGEN = {".pdf", ".md", ".json", ".csv", ".xlsx", ".docx", ".jsonl"}
 
+# Dieselbe Form wie _STAND, aber als GANZER Feldwert -- ein Feld enthaelt
+# den Zeitpunkt, eine Zeile umschliesst ihn.
+_NUR_STAND = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:?\d{2}|Z)")
+
 
 def _lauf(args: list[str], wurzel: Path) -> str:
     return subprocess.run(args, cwd=wurzel, capture_output=True, text=True).stdout
@@ -165,12 +169,31 @@ def pruefe(wurzel: Path, frist_tage: int = _FRIST_TAGE, jetzt: str | None = None
     heute = datetime.fromisoformat(jetzt) if jetzt else datetime.now(timezone.utc)
     befunde, veraltet, mehrdeutig, derivate = [], [], [], 0
     for pfad in dateien:
-        if not pfad.endswith(".md"):
+        if not (pfad.endswith(".md") or pfad.endswith(".json")):
             continue
         datei = wurzel / pfad
         try:
             text = datei.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
+            continue
+        if pfad.endswith(".json"):
+            # Ein Paket erklaert seinen Stand in einem FELD, nicht in einer
+            # Kopfzeile. Nachgezogen 2026-08-19, nachdem
+            # einzelunternehmer.domaene.json im Feld `stand` den 2026-08-16
+            # nannte und am 2026-08-19 geaendert worden war -- dieselbe
+            # Altersluege, nur in anderer Klammer. Ein Melder, der nur die
+            # Dateiendung kennt, die seinen Anlassfall hatte, prueft die
+            # Form statt die Sache.
+            erklaerter_stand = _stand_aus_json(text)
+            if not erklaerter_stand:
+                continue
+            # Ein Paket verlinkt nichts -- fuer die Frischeprobe fehlt ihm
+            # die Grundlage. Es bekommt die Alterspruefung, sonst nichts.
+            quellen = []
+            derivate += 1
+            alter = _alter_in_tagen(erklaerter_stand, heute)
+            if alter is not None and alter > frist_tage:
+                veraltet.append({"derivat": pfad, "stand": erklaerter_stand, "tage": alter})
             continue
         m = _STAND.search(text)
         if not m:
@@ -190,10 +213,7 @@ def pruefe(wurzel: Path, frist_tage: int = _FRIST_TAGE, jetzt: str | None = None
         if not quellen:
             continue
         derivate += 1
-        try:
-            alter = (heute - _als_zeit(erklaerter_stand)).days
-        except ValueError:
-            alter = None
+        alter = _alter_in_tagen(erklaerter_stand, heute)
         if alter is not None and alter > frist_tage:
             veraltet.append({"derivat": pfad, "stand": erklaerter_stand, "tage": alter})
         # Der eigene Zeitpunkt: der erklaerte Stand, wenn es einen gibt --
@@ -215,6 +235,32 @@ def pruefe(wurzel: Path, frist_tage: int = _FRIST_TAGE, jetzt: str | None = None
     return {"wurzel": str(wurzel), "dateien": len(dateien), "derivate": derivate,
             "frist_tage": frist_tage, "veraltet": veraltet,
             "befunde": befunde, "mehrdeutig": mehrdeutig}
+
+
+def _stand_aus_json(text: str) -> str | None:
+    """Der erklaerte Stand eines Pakets -- nur als Feld der obersten Ebene.
+
+    Tiefer zu suchen faenge jedes `stand`-Feld irgendwo im Baum und damit
+    Aussagen ueber etwas ANDERES als das Dokument selbst.
+    """
+    import json
+    try:
+        d = json.loads(text)
+    except (ValueError, RecursionError):
+        return None
+    if not isinstance(d, dict):
+        return None
+    wert = d.get("stand")
+    if isinstance(wert, str) and _NUR_STAND.fullmatch(wert.strip()):
+        return wert.strip()
+    return None
+
+
+def _alter_in_tagen(stand: str, heute) -> int | None:
+    try:
+        return (heute - _als_zeit(stand)).days
+    except ValueError:
+        return None
 
 
 def _als_zeit(s: str):
@@ -284,6 +330,14 @@ def _selftest() -> int:
     # Ein Dokument OHNE erklaerten Stand ist eine Momentaufnahme, kein Derivat.
     if _STAND.search("# Plan\nkein Stand hier"):
         fehler.append("_STAND findet einen Stand, wo keiner steht")
+    if _stand_aus_json('{"stand": "2026-08-16T14:30:00+0200"}') != "2026-08-16T14:30:00+0200":
+        fehler.append("_stand_aus_json findet das Feld nicht")
+    if _stand_aus_json('{"a": {"stand": "2026-08-16T14:30:00+0200"}}') is not None:
+        fehler.append("_stand_aus_json greift zu tief -- ein Stand IM Baum meint etwas anderes")
+    if _stand_aus_json('{"stand": "2026-08-16"}') is not None:
+        fehler.append("_stand_aus_json nimmt ein Datum ohne Uhrzeit an")
+    if _stand_aus_json("kein json") is not None:
+        fehler.append("_stand_aus_json stolpert ueber Nicht-JSON")
     for f in fehler:
         print("FEHLER:", f)
     print("selftest:", "ok" if not fehler else f"{len(fehler)} Fehler")

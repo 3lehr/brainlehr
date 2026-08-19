@@ -132,3 +132,41 @@ def test_zeitzonen_werden_umgerechnet():
 
 def test_selftest_laeuft_durch():
     assert df._selftest() == 0
+
+
+def test_ein_paket_erklaert_seinen_stand_im_FELD(tmp_path):
+    """Nachgezogen 2026-08-19: einzelunternehmer.domaene.json nannte im Feld
+    `stand` den 2026-08-16 und war am 2026-08-19 geaendert worden -- dieselbe
+    Altersluege wie im Handout, nur in anderer Klammer. Ein Melder, der nur
+    die Dateiendung seines Anlassfalls kennt, prueft die Form statt die Sache.
+    """
+    paket = '{"domaene": "x", "stand": "2026-07-24T05:54:16+0200"}'
+    w = _repo(tmp_path, {"wissen/x.domaene.json": paket})
+    e = df.pruefe(w, frist_tage=21, jetzt="2026-08-19T08:00:00+02:00")
+    assert [v["derivat"] for v in e["veraltet"]] == ["wissen/x.domaene.json"], e
+    assert e["veraltet"][0]["tage"] == 26
+
+
+# EHRLICH BENANNT: die drei folgenden Tests waren gegen den Stand VOR der
+# JSON-Erweiterung schon gruen -- sie koennen gar nicht anders, solange JSON
+# ueberhaupt nicht gelesen wird. Sie belegen nichts ueber die Aenderung, sie
+# halten die Abgrenzung fuer spaeter fest. Rot war allein der Test darueber.
+def test_dasselbe_paket_frisch_meldet_nicht(tmp_path):
+    paket = '{"domaene": "x", "stand": "2026-07-24T05:54:16+0200"}'
+    w = _repo(tmp_path, {"wissen/x.domaene.json": paket})
+    assert df.pruefe(w, frist_tage=21, jetzt="2026-07-30T08:00:00+02:00")["veraltet"] == []
+
+
+def test_ein_stand_TIEF_im_paket_meint_etwas_anderes(tmp_path):
+    # Ein `stand` irgendwo im Baum ist eine Aussage ueber ein Teil, nicht
+    # ueber das Dokument -- ihn zu nehmen waere ein Fehlalarm mit Anschein
+    # von Genauigkeit.
+    paket = '{"domaene": "x", "quellen": [{"stand": "2020-01-01T00:00:00+0100"}]}'
+    w = _repo(tmp_path, {"wissen/x.domaene.json": paket})
+    assert df.pruefe(w, frist_tage=21, jetzt="2026-08-19T08:00:00+02:00")["veraltet"] == []
+
+
+def test_json_ohne_stand_ist_kein_derivat(tmp_path):
+    w = _repo(tmp_path, {"daten/kosten.json": '{"a": 1}'})
+    e = df.pruefe(w, frist_tage=1, jetzt="2027-01-01T00:00:00+01:00")
+    assert e["veraltet"] == [] and e["derivate"] == 0
