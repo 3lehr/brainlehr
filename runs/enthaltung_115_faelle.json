@@ -1,0 +1,96 @@
+{
+  "schnappschuss": "20260819T102108-cf9c2d51",
+  "schwelle_gepruefte": 0.55,
+  "quelle": "runs/enthaltungsschwelle_kosinus_abrufweg.json",
+  "weg": "Bausteine aus haken/suchpfad_abruf.py::kandidaten() (kein Nachbau, kein Kappen auf max_results -- voller Rang des Ziels je Gattung)",
+  "faelle": [
+    {
+      "rolle": "unter_schwelle",
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "ziel_titel": "/ops/buckeberg-konsil-2026-07-22-governance -- Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+      "frage": "Während einer Besprechung zur Neuausrichtung der Organisationsstruktur verlieren die Beteiligten sich in Diskussionen über Detailzahlen und zukünftige Software-Anpassungen. Sie vernachlässigen dabei, dass die rechtliche Genehmigung des Hauptprojekts zeitkritisch ist und nicht durch technische Feinheiten verzögert werden darf. Zudem sorgt das Fehlen von analogen Ausgleichsmöglichkeiten für Widerstand bei den traditionell orientierten Mitgliedern.",
+      "bester_kosinus_lauf_2026-08-19": 0.5294,
+      "keyword_rang": 1,
+      "keyword_treffer_gesamt": 670,
+      "bedeutungs_rang": 6,
+      "bedeutungs_kosinus_ziel": 0.5154,
+      "bedeutungs_kandidaten_gesamt": 819,
+      "fusion_rang": 1,
+      "kanal_trifft": "beide",
+      "top_statt_ziel": [
+        "/openlehr/steuer/konsil-beschluss-aenderungsprotokoll -- Was das Konsil zum Aenderungsprotokoll und zu den Rollen beschlossen hat (2026-07-29)",
+        "/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht -- TripLifecycleCoordinator: warum der Fahrt-Lebenszyklus einen Owner braucht (Opus-5-Befund, 2026-07-24)",
+        "/shared/arch/k-anonymitaet-ohne-kopfzaehlung -- k-Anonymität ohne Kopfzählung: warum Verzögerung und Vergröberung reichen",
+        "/methodik/fremdvideo-zu-agenten-systemen-drei -- Video-Auswertung zu Agenten-Systemen: drei Deckungen mit eigenen Messungen, ein Widerspruch"
+      ]
+    },
+    {
+      "rolle": "unter_schwelle",
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "ziel_titel": "/apps/metahuman-podcast-one-command-pipeline -- MetaHuman-Podcast-Pipeline: Status 2026-08-01T00:00:00+0200 — Ada belegt, Aera persistiert, als Nächstes Audio-only",
+      "frage": "Die Produktion muss entscheiden, welche digitale Figur für das neue Video genutzt werden kann. Ein Techniker prüft dabei, ob die aktuelle Software bereits vollständige Bewegungsabläufe unterstützt oder nur bestimmte Bereiche der Mimik einsatzbereit hat.",
+      "bester_kosinus_lauf_2026-08-19": 0.5101,
+      "keyword_rang": 10,
+      "keyword_treffer_gesamt": 658,
+      "bedeutungs_rang": 9,
+      "bedeutungs_kosinus_ziel": 0.4883,
+      "bedeutungs_kandidaten_gesamt": 819,
+      "fusion_rang": 1,
+      "kanal_trifft": "beide",
+      "top_statt_ziel": [
+        "/apps/videoki-geparktes-folgeprodukt -- videoki: geparktes Folgeprodukt — validierte zahnärztliche Fortbildung aus Kursaufnahmen",
+        "/shared/arch/offen-fuer-weitere-geraete-eine-tuer -- Offenheit für neue Geräte: eine Tür, Daten statt fertiger Anzeigetexte, und Sprache als gleichwertige Oberfläche",
+        "/brainlehr/eilanfrage-an-claude-brainlehr-was -- EILANFRAGE an Claude-Brainlehr: Was ChatGPT nach den neuen Brainlehr-Aenderungen lernen oder umstellen muss",
+        "/apps/setfunk-research-digest-v2-2026-07 -- Was die 5-Arm-Recherche zu QTAKE, VDO.Ninja, Video-MVP, OS-Grenzen und Community für SetFunk ergab (Research-Digest v2, 2026-07-23T22:29:09+0200)"
+      ]
+    },
+    {
+      "rolle": "unter_schwelle",
+      "ziel": "/stadtwerke",
+      "ziel_titel": "/stadtwerke -- Stadtwerke: fiktiver Verbundpartner fuer den fuenfte-Rolle-Testlauf",
+      "frage": "Ein Administrator prüft die Zugriffsberechtigungen für einen Kollegen, der für zwei Organisationen tätig ist. Er verwendet dazu ein Übungsszenario mit simulierten Profilen, um sicherzustellen, dass die spezifische Aufgabenfunktion korrekt im System hinterlegt ist.",
+      "bester_kosinus_lauf_2026-08-19": 0.5399,
+      "keyword_rang": 39,
+      "keyword_treffer_gesamt": 673,
+      "bedeutungs_rang": 2,
+      "bedeutungs_kosinus_ziel": 0.527,
+      "bedeutungs_kandidaten_gesamt": 819,
+      "fusion_rang": 1,
+      "kanal_trifft": "beide",
+      "top_statt_ziel": [
+        "/methodik/direktiven-hub-claude-md/token-workflow-immer-anwenden -- Token-Workflow (immer anwenden)",
+        "/brainlehr/systemweite-lastenkatalog-pflicht-fuer -- Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge",
+        "/openlehr/wie-ein-eingabefeld-beschrieben-wird -- Wie ein Eingabefeld beschrieben wird, ohne ein Bedienelement zu nennen -- die Domaene prueft, der Zeichner zeigt",
+        "/brainlehr/zwei-sitzungen-arbeiten-parallel-an -- Wer haelt welche Dateien: zwei parallele brainlehr-Sitzungen im Ueberblick"
+      ]
+    },
+    {
+      "rolle": "positivkontrolle",
+      "ziel": "/testing/pytest",
+      "ziel_titel": "/testing/pytest -- Wie pytest konfiguriert wird: Fixtures, Markers und Coverage",
+      "frage": "Bei der Entwicklung einer neuen Anwendung müssen die automatischen Prüfzyklen strukturiert werden. Dabei sollen immer verfügbare Vorbereitungen für Testdaten erstellt und verschiedene Szenarien in Kategorien unterteilt werden. Zudem soll am Ende präzise ermittelt werden, welche Teile des Quellcodes während der Durchläufe nicht erreicht wurden.",
+      "bester_kosinus_lauf_2026-08-19": 0.6334,
+      "keyword_rang": 617,
+      "keyword_treffer_gesamt": 664,
+      "bedeutungs_rang": 25,
+      "bedeutungs_kosinus_ziel": 0.5412,
+      "bedeutungs_kandidaten_gesamt": 819,
+      "fusion_rang": 70,
+      "kanal_trifft": "beide",
+      "top_statt_ziel": [
+        "/brainlehr/dokumente/die-anwendung-in-schichten-und-was -- Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+        "/methodik/fertigkeiten/design-waechter -- design-waechter: neun Fragen vor dem Fertigmelden eines Bildschirms",
+        "/shared/arch/testdaten-kennzeichnen-sperre-ist -- Testdaten kennzeichnen: Warum die Sperre eine physische Trennung ist und das Merkmal nur die Herkunft",
+        "/methodik/direktiven-hub-claude-md/wissen-knowledge-mcp -- Wissen (Knowledge-MCP)",
+        "/methodik/direktiven/ohne-plan-wird-nicht-gebaut -- Ohne Plan wird nicht gebaut — Betreiberanweisung 2026-08-12, mit Durchsetzung statt Appell"
+      ]
+    }
+  ],
+  "positivkontrolle_uebersprungen": [
+    "L-0392e4",
+    "L-8c633e"
+  ],
+  "nicht_beantwortet": [],
+  "abweichung_vom_auftrag": "Nur kms.DB_PATH gepinnt, NICHT hook.DB (Auflage verlangte beide): haken/knowledge_recall_hook.py stand beim Lauf uncommitted mit einem SyntaxError da (~Zeile 2283, 'global DB' nach vorheriger Verwendung von DB im selben Block) -- TABU-Datei, nicht angefasst, vermutlich WIP einer anderen Sitzung. Das Modul wird von diesem Skript nirgends aufgerufen, der Pin war ohnehin nur Auflagenerfuellung.",
+  "hinweis": "Keine Schwellenaenderung empfohlen. 'kanal_trifft' beschreibt nur, ob Stichwort- bzw. Bedeutungskanal das ZIEL ueberhaupt in ihre je eigene Rangliste aufnehmen -- fusion_rang ist der volle Rang nach RRF-Fusion beider Kanaele, wie ihn kandidaten() vor der max_results-Kappung erreicht."
+}
