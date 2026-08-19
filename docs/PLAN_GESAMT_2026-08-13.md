@@ -1120,3 +1120,63 @@ Besteht ein Vorschlag beide nicht, wird er nicht gefahren. Erst danach ist
 
 **Bindend:** `113` vor jedem weiteren Wirkungslauf — und `112` (Nachrangung)
 vor dem *zweiten*, sonst misst er dieselbe un-nachgerangte Zufuhr.
+
+---
+
+## `113` gebaut, `100` damit gefahren — die erste verwendbare Zahl
+
+`messungen/kriterium_113.py`, Abnahme **vor** dem Bau festgelegt (Commit
+`5c66f2d8`) und bestanden:
+
+```bash
+python3 messungen/kriterium_113.py --abnahme
+```
+
+Lauf: Messstand `20260819T063335-6270801b`, 910,2 s, Ergebnisdatei
+`runs/wirkung_llm_probe_2026-08-19T084859.json`. **Die Positivkontrolle besteht
+jetzt** (`urteil = besser`) — das war der Grund, warum `100` beim ersten Mal
+keine Zahl hergab.
+
+| | n=10 |
+|---|---|
+| **besser** | **3** |
+| unentschieden | 7 |
+| **schlechter** | **0** |
+| nicht messbar | 0 |
+
+### Der eigentliche Befund steht nicht in dieser Tabelle
+
+`schlechter = 0` bei den **Zielfällen** — bei den **Negativfällen** dagegen
+2 von 4 kontaminiert, und beide sind echt (keine leere Vergleichsseite mehr):
+
+| Frage | ohne Speicher | mit Speicher |
+|---|---|---|
+| Knoten zum Verzurren einer Plane | **Mastwurf** (richtig) | „**Kaliblerbremse**" — 8 Wörter aus einem Plan-Knoten |
+| macOS-Auflösung per Terminal | **displayplacer** (richtig) | „displaychanger", dazu **AppleScript** aus der Zufuhr |
+
+**Der Speicher hilft, wo er etwas hat, und schadet, wo er nichts hat.** Bei den
+Zielfällen liegt das Ziel im Bestand — dort nie eine Verschlechterung. Bei
+fachfremden Fragen liefert der Wortkanal trotzdem Material, und das Modell
+baut es ein. Das ist **kein Trefferquotenproblem**: bessere Suche macht es
+schlimmer, nicht besser. Die Stellschraube heißt **Enthaltung** — der Kanal
+muss schweigen können, statt den besten verfügbaren Treffer zu liefern. Das
+System konnte das am 18.08. schon einmal („schweigt zehnmal von zehn"), und
+diese Fähigkeit ist unterwegs verlorengegangen.
+
+### Zwei Schwächen des neuen Kriteriums, benannt statt behoben
+
+1. **`statt` ist kein Stoppwort.** Im macOS-Fall trugen nur zwei Wörter die
+   Kontamination, und eines davon war das Funktionswort `statt`. Der Befund
+   steht damit auf einem Bein. `statt` gehört offensichtlich auf die
+   Stoppwortliste — **jetzt nachzutragen wäre aber genau die Anpassung nach
+   Sicht des Ergebnisses**, die `100` beim ersten Anlauf entwertet hat. Gehört
+   vor den nächsten Lauf, mit eigener Abnahme.
+2. **7 von 10 „unentschieden"** ist viel. Ob dort der Speicher wirklich nichts
+   bewirkt oder `ABSTAND = 2` zu grob greift, ist offen und **an den
+   gespeicherten Antworten nachprüfbar** — ohne neuen Modelllauf, weil `zufuhr`
+   und beide Antworten jetzt in der Ergebnisdatei stehen.
+
+**`114`** (neu): Enthaltungsschwelle im Wortkanal — der Fall
+„Plane"/„displayplacer" als roter Testfall, bevor an der Trefferquote gedreht
+wird. **Bindend vor `112`:** Nachrangung hebt top5 von 17 auf 51 % und macht
+damit die Zufuhr bei fachfremden Fragen *dichter*, nicht leiser.
