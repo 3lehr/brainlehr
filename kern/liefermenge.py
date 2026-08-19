@@ -145,7 +145,16 @@ def demo() -> None:
     """Mutationsprobe: liefermenge_fall() durch eine Funktion ersetzt, die
     immer 0 liefert -> alle gemeldeten Durchschnitte (avg_nodes/avg_lessons/
     avg_zeichen) muessen auf 0 einbrechen."""
-    faelle = ag.lade_korpus()[0][:5]  # lade_korpus() gibt (faelle, dubletten) zurueck; 5 reichen fuer die Probe, spart Laufzeit
+    # ZWEI Faelle, nicht fuenf (2026-08-19). Gemessen: mit 5 lief dieser
+    # Selbsttest 94 s gegen die 120-s-Grenze in tests/test_alle_selftests.py
+    # -- unter Last kippte er darueber und war in der vollen Suite rot, allein
+    # aber gruen. Ein Ergebnis, das von der Auslastung abhaengt, ist keines.
+    # Die Datei mit der Grenze sagt selbst, was dann zu tun ist: "Wer hier
+    # weiter hochsetzen muss, hat einen langsamen Selbsttest und kein
+    # Zeitproblem: dann gehoert der Selbsttest verkuerzt, nicht die Grenze."
+    # Die Mutationsprobe braucht die Menge nicht -- sie braucht nur einen
+    # echten Lauf ueber 0 und einen mutierten auf 0.
+    faelle = ag.lade_korpus()[0][:2]  # lade_korpus() gibt (faelle, dubletten) zurueck
     echt = messe_liefermenge(faelle)
     assert echt["avg_nodes"] > 0 or echt["avg_lessons"] > 0, (
         "echte Messung liefert nirgends etwas -- Mutationsprobe waere nicht aussagekraeftig")

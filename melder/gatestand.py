@@ -50,17 +50,42 @@ def _spalten(zeile: str) -> list[str]:
     return [t.strip() for t in zeile.strip().strip("|").split("|")]
 
 
+def _gatespalte(zeilen_text: list[str]) -> int | None:
+    """Index der Gate-Spalte, aus der KOPFZEILE gelesen statt geraten.
+
+    BEFUND 2026-08-19: Der Melder nahm die vorletzte Spalte ("danach die
+    Quelle"). Das stimmt fuer REQUIREMENTS_BRAINLEHR.md (Kopf: ... |
+    Produktgate | Quelle |) und ist in REQUIREMENTS_INTERFACE_KOMPAT.md
+    falsch -- dort ist "Gate" die LETZTE Spalte, und die vorletzte traegt den
+    Anforderungstext. Gelesen wurde also jahrelang die falsche Spalte.
+
+    Eine Position ist eine Annahme ueber ein fremdes Dokument; eine
+    Ueberschrift ist eine Aussage DIESES Dokuments. Deshalb der Kopf."""
+    for text in zeilen_text:
+        if not text.startswith("|"):
+            continue
+        s = _spalten(text)
+        for i, ueberschrift in enumerate(s):
+            if ueberschrift.strip().lower() in ("gate", "produktgate"):
+                return i
+        if "ID" in [t.strip() for t in s]:
+            return None  # Kopf gefunden, aber ohne Gate-Spalte
+    return None
+
+
 def lies(pfad: Path) -> list[dict]:
     """Zeilen eines Katalogs mit Kennung, Gate-Text und genannten Dateien."""
     zeilen = []
-    for text in pfad.read_text(encoding="utf-8").splitlines():
+    alle = pfad.read_text(encoding="utf-8").splitlines()
+    spalte = _gatespalte(alle)
+    for text in alle:
         if not ZEILE.match(text):
             continue
         s = _spalten(text)
         if len(s) < 3:
             continue
-        # Das Produktgate ist die vorletzte Spalte (danach die Quelle).
-        gate = s[-2]
+        # Aus dem Kopf, sonst der alte Griff auf die vorletzte Spalte.
+        gate = s[spalte] if spalte is not None and spalte < len(s) else s[-2]
         zeilen.append({
             "id": s[0],
             "gate": gate,
@@ -146,6 +171,8 @@ def _selftest() -> int:
         k = w / "docs" / "REQUIREMENTS_PROBE.md"
         k.write_text(
             "| ID | x | Produktgate | Quelle |\n|---|---|---|---|\n"
+            "| ID | x | Produktgate | Quelle |\n"
+            "|---|---|---|---|\n"
             "| BDW-X01 | y | NOT RUN | q |\n"
             "| BDW-X02 | y | PASS: `echt.py --selftest` gruen | q |\n"
             "| BDW-X03 | y | PASS: `gibtsnicht.py --selftest` | q |\n"
@@ -167,6 +194,20 @@ def _selftest() -> int:
         # Rot gegen den Stand davor: `belegt` war 3, die Zeile zaehlte als
         # Beleg, und `unklar` gab es nicht.
         assert e["unklar"] == 1 and e["unklare_ids"] == ["BDW-X07"], e
+
+        # KOPFZEILE STATT POSITION. Zweite Fixture in der Bauform der
+        # INTERFACE-Datei: "Gate" ist die LETZTE Spalte, davor der
+        # Anforderungstext. Rot gegen den Stand davor: dort las der Melder
+        # s[-2] und bekam "Das Paket wird abgewiesen" statt "PASS: ...".
+        k2 = w / "docs" / "REQUIREMENTS_ZWEITFORM.md"
+        k2.write_text(
+            "| ID | Anforderung | Gate |\n"
+            "|---|---|---|\n"
+            "| INT-ZZ-001 | Das Paket wird fail-closed abgewiesen | PASS: `echt.py` |\n",
+            encoding="utf-8")
+        z2 = lies(k2)
+        assert z2[0]["gate"].startswith("PASS"), z2[0]["gate"]
+        assert beurteile(z2, wurzel=w)["belegt"] == 1, beurteile(z2, wurzel=w)
         # DIE VIERTE KATEGORIE. Rot gegen den Stand vor 2026-08-19: dort war
         # `belegt` 3, weil TEILWEISE mitgezaehlt wurde, und `teilweise` gab es
         # nicht. Ohne diese Zeile blieben sechs halbfertige Katalogzeilen als
@@ -183,6 +224,7 @@ def _selftest() -> int:
         assert all(p[0] != "BDW-X02" for p in e["phantom"]), e
     print("gatestand: Selbsttest gruen (Quote 2/7 belegt, 1 offen, 1 vertagt, "
           "1 teilweise, 1 durchgefallen, 1 ohne erkennbaren Status, "
+          "Gate-Spalte aus dem Kopf statt aus der Position, "
           "ein Phantom-Gate gefunden, echtes Gate nicht gemeldet)")
     return 0
 
