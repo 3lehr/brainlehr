@@ -1180,3 +1180,71 @@ diese Fähigkeit ist unterwegs verlorengegangen.
 „Plane"/„displayplacer" als roter Testfall, bevor an der Trefferquote gedreht
 wird. **Bindend vor `112`:** Nachrangung hebt top5 von 17 auf 51 % und macht
 damit die Zufuhr bei fachfremden Fragen *dichter*, nicht leiser.
+
+---
+
+## `114` vermessen — und meine eigene Zahl von heute früh ist damit widerlegt
+
+`messungen/enthaltungsschwelle_kosinus.py`, Ergebnis
+`runs/enthaltungsschwelle_kosinus_2026-08-19.json`, Schnappschuss
+`20260819T082700-f6234218`. n = **35 einschlägig** (alle Zielfälle des
+Prüfkorpus, keine Auswahl) gegen **41 fachfremd**.
+
+**Die Verteilungen überlappen um 0,0297** — einschlägig 0,5113–0,6477,
+fachfremd 0,3619–0,5410. **Es gibt keine Schwelle, die beide Seiten sauber
+trennt.**
+
+Damit ist `runs/enthaltung_114_2026-08-19.json` mit seinem `trennbar: true`
+**widerrufen** (Vermerk in der Datei, Feld auf `false` gesetzt). Der Fehler war
+die Stichprobe: 10 von 35 Zielfällen sind nicht der Korpus, sondern ein
+Ausschnitt — und ausgerechnet die drei Zielfälle unter 0,5410 lagen nicht
+darin. Dieselbe Klasse wie `L-412e20` von heute Vormittag: nicht die Messung
+war falsch, sondern woran sie gemessen wurde.
+
+### Was der Handel kostet, in beiden Richtungen
+
+| Schwelle | fälschlich enthalten (von 35) | fälschlich geliefert (von 41) |
+|---|---|---|
+| 0,50 | **0** | 6 |
+| 0,54 | 3 | 1 |
+| **0,55** | **3** | **0** |
+| 0,58 | 11 | 0 |
+
+Die beiden belegten Schadensfälle liegen bei **0,4747** (Plane/Mastwurf) und
+**0,5410** (macOS/displayplacer). Der zweite ist zugleich der höchste
+fachfremde Wert überhaupt — er ist es, den jede Schwelle überbieten muss, und
+er kostet dabei die drei einschlägigen Fälle darunter.
+
+### Die Entscheidung, die daraus folgt — und sie ist nicht die Zahl
+
+**Die Enthaltung gehört nicht in `knowledge_search`, sondern in die Zufuhr.**
+Der gemessene Schaden entstand nicht beim Suchen, sondern beim automatischen
+**Einspielen** in einen Modellprompt. Wer selbst sucht, will die schwachen
+Treffer sehen und kann sie einordnen; ein Modell, dem sie ungefragt vorgelegt
+werden, kann das nicht — es baut sie ein.
+
+Daraus folgt eine Trennung, die keine Schwelle braucht, um richtig zu sein:
+
+- `knowledge_search` bleibt **vollständig** und liefert weiterhin alles, jetzt
+  mit `bedeutungs_kosinus` je Zeile (`4c88915b`). Wer sucht, entscheidet selbst.
+- Die **automatische Zufuhr** (`haken/knowledge_recall_hook.py` und jeder
+  Messweg, der sie nachbildet) schweigt unterhalb der Schwelle.
+
+Damit trifft der Preis von 3 aus 35 nur den Weg, auf dem der Schaden belegt
+ist — nicht jede Suche im Haus. Das ist derselbe Schnitt wie bei der
+Nachrangung: die Fähigkeit steht bereit, aber sie wirkt dort, wo sie hingehört.
+
+**Gewählt: 0,55.** Nicht weil 3 zu 0 „besser aussieht" als 0 zu 6, sondern weil
+diese Richtung im Haus bereits entschieden ist und hier nur angewandt wird:
+`_embedding_ranking` sagt wörtlich **„Lieber kein Vektor als ein falscher"**,
+die Freigabe steht auf `intern` als Vorgabe, und `BDW-P05` verlangt eine
+belegbare Aussage. Ein fehlender Treffer ist eine Lücke, die der Nutzer sieht;
+ein falsch eingespielter ist eine, die er nicht sieht.
+
+**Der Preis, ausdrücklich:** In 3 von 35 echten Fällen schweigt die Zufuhr,
+obwohl der Speicher etwas hätte. Umkehrbar — es ist eine Zahl an einer Stelle,
+und die Messung, die sie begründet, liegt daneben.
+
+**`115`** (neu): Die drei fälschlich enthaltenen Fälle einzeln ansehen. Liegen
+sie niedrig, weil der Bestand zu ihnen wirklich wenig hat, oder weil ihre
+Einbettung schlecht ist? Der zweite Fall wäre kein Schwellenproblem.

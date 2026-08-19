@@ -5,7 +5,7 @@
   "negativ_min": 0.4435,
   "negativ_median": 0.4964,
   "negativ_max": 0.541,
-  "trennbar": true,
+  "trennbar": false,
   "je_frage": [
     {
       "art": "ziel",
@@ -117,5 +117,6 @@
       "frage": "Wie lautet der Befehl, um in git einen Branch umzubenennen (lokal + re",
       "bester_kosinus": 0.539
     }
-  ]
+  ],
+  "WIDERRUFEN_2026-08-19T11:20:00+0200": "Die hier stehende Aussage trennbar=true gilt NICHT. Sie stammt aus n=20 (10 einschlaegige Fragen, 10 fachfremde). Die breitere Erhebung runs/enthaltungsschwelle_kosinus_2026-08-19.json (n=35 einschlaegig, alle Zielfaelle des Pruefkorpus, und n=41 fachfremd) findet eine UEBERLAPPUNG von 0,0297: einschlaegig 0,5113 bis 0,6477, fachfremd 0,3619 bis 0,5410. Es gibt also keine Schwelle, die beide Seiten sauber trennt. Der Fehler lag in der Stichprobe: 10 von 35 Zielfaellen sind nicht der Korpus, sondern ein Ausschnitt davon -- und ausgerechnet die drei Zielfaelle unter 0,5410 waren nicht darunter."
 }
