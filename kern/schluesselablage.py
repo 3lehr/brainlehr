@@ -59,8 +59,48 @@ def _conn(p: Path | None = None) -> sqlite3.Connection:
         " ref TEXT PRIMARY KEY,"
         " angelegt_ts REAL NOT NULL,"
         " vernichtet_ts REAL NOT NULL)")
+    c.execute(
+        "create table if not exists rechtssperren ("
+        " ref TEXT PRIMARY KEY,"
+        " grund TEXT NOT NULL,"
+        " gesetzt_ts REAL NOT NULL)")
     c.commit()
     return c
+
+
+class Rechtssperre(Exception):
+    """Die Schluesselvernichtung ist durch einen Legal Hold gesperrt.
+
+    Eine Ausnahme, kein stilles Ueberspringen (ADR-029): ein Hold, der leise
+    wirkt, ist von einem vergessenen Fristlauf nicht zu unterscheiden."""
+
+
+def rechtssperre_setzen(ref: str, grund: str, ts: float, p: Path | None = None) -> None:
+    """Der GRUND ist Pflicht -- ein Hold ohne Grund laesst sich spaeter weder
+    pruefen noch aufheben, weil niemand mehr weiss, wofuer er stand."""
+    if not grund.strip():
+        raise ValueError("Rechtssperre ohne Grund: wofuer steht sie?")
+    c = _conn(p)
+    c.execute("insert or replace into rechtssperren (ref, grund, gesetzt_ts) "
+              "values (?,?,?)", (ref, grund, ts))
+    c.commit()
+    c.close()
+
+
+def rechtssperre_aufheben(ref: str, p: Path | None = None) -> bool:
+    c = _conn(p)
+    n = c.execute("delete from rechtssperren where ref = ?", (ref,)).rowcount
+    c.commit()
+    c.close()
+    return n > 0
+
+
+def rechtssperre_steht(ref: str, p: Path | None = None) -> str | None:
+    """Der Grund, wenn eine steht -- sonst None."""
+    c = _conn(p)
+    r = c.execute("select grund from rechtssperren where ref = ?", (ref,)).fetchone()
+    c.close()
+    return r[0] if r else None
 
 
 def anlegen(ref: str, ts: float, p: Path | None = None) -> bytes:
@@ -83,7 +123,15 @@ def hole(ref: str, p: Path | None = None) -> bytes | None:
 
 
 def vernichten(ref: str, ts: float, p: Path | None = None) -> bool:
-    """Schluessel weg, Tatsache bleibt. Gibt zurueck, ob es einen gab."""
+    """Schluessel weg, Tatsache bleibt. Gibt zurueck, ob es einen gab.
+
+    Wirft Rechtssperre, solange ein Legal Hold steht -- das ist die riskante
+    Richtung aus BDW-E18 (7fd99081): Aufheben gibt Daten zur Vernichtung
+    frei, Setzen ist folgenlos."""
+    if rechtssperre_steht(ref, p) is not None:
+        raise Rechtssperre(
+            f"{ref}: Legal Hold steht ({rechtssperre_steht(ref, p)}) -- "
+            "Schluesselvernichtung gesperrt")
     c = _conn(p)
     r = c.execute("select angelegt_ts from schluessel where ref = ?", (ref,)).fetchone()
     if r is None:
@@ -134,13 +182,34 @@ def _selftest() -> None:
         # einer Vernichtung an anderer Stelle.
         assert lage("b", p) == "unbekannt"
 
+        # RECHTSSPERRE, beide Richtungen.
+        k2 = anlegen("c", 100.0, p)
+        assert rechtssperre_steht("c", p) is None
+        rechtssperre_setzen("c", "Verfahren 4711", 150.0, p)
+        assert rechtssperre_steht("c", p) == "Verfahren 4711"
+        try:
+            vernichten("c", 200.0, p)
+            raise AssertionError("Rechtssperre haette werfen muessen")
+        except Rechtssperre:
+            pass
+        assert hole("c", p) == k2, "der Schluessel muss die Sperre ueberleben"
+        try:
+            rechtssperre_setzen("c", "   ", 150.0, p)
+            raise AssertionError("Hold ohne Grund haette abgewiesen werden muessen")
+        except ValueError:
+            pass
+        assert rechtssperre_aufheben("c", p) is True
+        assert vernichten("c", 250.0, p) is True
+
         # Und der Ort ist NICHT die Bestandsdatenbank.
         import ort
         assert pfad() != Path(ort.DB), pfad()
         assert pfad().name == "schluessel.db", pfad()
-    print("schluesselablage: Selbsttest gruen (6 Faelle: anlegen, ueber "
+    print("schluesselablage: Selbsttest gruen (10 Faelle: anlegen, ueber "
           "Verbindungen hinweg lesen, vernichten, Tatsache bleibt, zweite "
-          "Vernichtung folgenlos, Ort getrennt vom Bestand)")
+          "Vernichtung folgenlos, Hold wirft, Schluessel ueberlebt die Sperre, "
+          "Hold ohne Grund abgewiesen, nach Aufheben geht es, Ort getrennt "
+          "vom Bestand)")
 
 
 if __name__ == "__main__":

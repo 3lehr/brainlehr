@@ -225,3 +225,114 @@ def test_schritt2_alle_drei_teile_des_ac_e07_an_einem_fall(echter_weg):
     ziel = sicherungen.sicherungspfad(db, "20260819T230000")
     shutil.copy2(db, ziel)
     assert GEHEIMWORT.encode() not in ziel.read_bytes()
+
+
+# ─── Schritt 3: der Fristlauf erreicht den Bestand (BDW-E13) ────────────────
+
+def test_schritt3_fristlauf_vernichtet_den_schluessel_und_der_inhalt_ist_weg(echter_weg, tmp_path):
+    """Der ganze Kreis in EINEM Lauf: anlegen -> Frist ablaufen lassen ->
+    Fristlauf -> lesen. Der Knoten bleibt, der Inhalt ist unwiederbringlich
+    weg, und der Nachweis sagt es, ohne ihn zu beschreiben."""
+    kms, db = echter_weg
+    sys.path.insert(0, str(WURZEL / "kern"))
+    import aufbewahrung, schluesselablage
+
+    r = kms.knowledge_add(
+        parent_path="/", title="Fristfall", summary=f"WEG-Beschluss {GEHEIMWORT}",
+        content="Klaegerin", tags=["datenklasse:rechtsfall"], anlass="skript",
+        norm_entscheidung="keine_norm", norm_entschieden_grund="Testfall",
+        source="erzeugt aus tests/...", sensibel=True)
+    assert "error" not in r, r
+    nid = r["id"]
+
+    o = aufbewahrung.Aufbewahrungsordnung()
+    o.eintragen(aufbewahrung.Datenklasse("rechtsfall", "WEG-Verfahren", frist_tage=1))
+
+    conn = sqlite3.connect(str(db))
+    assert aufbewahrung.sensible_knoten(conn) == {nid: "rechtsfall"}
+    nachweis_pfad = tmp_path / "nachweis.jsonl"
+    # Zeit als Parameter, nirgends eine Systemuhr: 10 Tage nach Anlage.
+    jetzt = schluesselablage.hole(nid) and 0
+    import time as _t
+    nachweis = aufbewahrung.fristlauf_bestand(conn, o, _t.time() + 10 * 86400,
+                                              nachweis_pfad)
+    conn.close()
+
+    assert [v["ref"] for v in nachweis["vernichtet"]] == [nid], nachweis
+    assert schluesselablage.lage(nid) == "vernichtet"
+
+    gelesen = kms.knowledge_read(nid)
+    assert GEHEIMWORT not in gelesen["summary"] + gelesen["content"]
+    assert "geloescht" in gelesen["summary"]
+    assert gelesen["title"] == "Fristfall", "die Tatsache bleibt (ADR-029)"
+
+    # Der Nachweis beschreibt den Inhalt NICHT.
+    text = nachweis_pfad.read_text(encoding="utf-8")
+    assert GEHEIMWORT not in text and "Klaegerin" not in text and "Fristfall" not in text
+
+
+def test_schritt3_legal_hold_haelt_den_fristlauf_an(echter_weg):
+    """Die riskante Haelfte aus BDW-E18, hier am echten Weg: solange eine
+    Sperre steht, wird nichts vernichtet -- und der Lauf sagt es laut, statt
+    still zu ueberspringen."""
+    kms, db = echter_weg
+    sys.path.insert(0, str(WURZEL / "kern"))
+    import aufbewahrung, schluesselablage
+    import time as _t
+
+    r = kms.knowledge_add(
+        parent_path="/", title="Gehaltener Fall", summary=f"WEG {GEHEIMWORT}",
+        tags=["datenklasse:rechtsfall"], anlass="skript",
+        norm_entscheidung="keine_norm", norm_entschieden_grund="Testfall",
+        source="erzeugt aus tests/...", sensibel=True)
+    nid = r["id"]
+    schluesselablage.rechtssperre_setzen(nid, "Verfahren 4711 anhaengig", 1.0)
+
+    o = aufbewahrung.Aufbewahrungsordnung()
+    o.eintragen(aufbewahrung.Datenklasse("rechtsfall", "WEG-Verfahren", frist_tage=1))
+    conn = sqlite3.connect(str(db))
+    nachweis = aufbewahrung.fristlauf_bestand(conn, o, _t.time() + 10 * 86400)
+    conn.close()
+
+    assert nachweis["vernichtet"] == [], nachweis
+    assert [g["ref"] for g in nachweis["gehalten"]] == [nid], nachweis
+    assert schluesselablage.lage(nid) == "vorhanden"
+    assert GEHEIMWORT in kms.knowledge_read(nid)["summary"]
+
+
+def test_schritt3_ohne_datenklasse_faellt_der_knoten_auf_ohne_regel(echter_weg):
+    """Ein sensibler Knoten ohne Etikett wird SICHTBAR, nicht still einer
+    Frist zugeschlagen, die nie jemand fuer ihn entschieden hat (BDW-E12)."""
+    kms, db = echter_weg
+    sys.path.insert(0, str(WURZEL / "kern"))
+    import aufbewahrung
+    import time as _t
+    nid = _sensibel_anlegen(kms)
+    o = aufbewahrung.Aufbewahrungsordnung()
+    conn = sqlite3.connect(str(db))
+    nachweis = aufbewahrung.fristlauf_bestand(conn, o, _t.time() + 10 * 86400)
+    conn.close()
+    assert nachweis["ohne_regel"] == [nid], nachweis
+    assert nachweis["vernichtet"] == []
+
+
+def test_schritt3_fristlauf_verweigert_sich_solange_der_index_klartext_haelt(echter_weg):
+    """DIE REIHENFOLGE, als Test statt als Absichtserklaerung. Steht ein
+    sensibler Knoten noch im Volltextindex, wuerde ein Fristlauf eine
+    Loeschung bescheinigen, die nicht stattfindet -- schlimmer als keine
+    Loeschung. Nachgestellt, indem der Knoten nachtraeglich in den Index
+    geschrieben wird."""
+    kms, db = echter_weg
+    sys.path.insert(0, str(WURZEL / "kern"))
+    import aufbewahrung
+    import time as _t
+    nid = _sensibel_anlegen(kms)
+    conn = sqlite3.connect(str(db))
+    rowid = conn.execute("select rowid from knowledge_nodes where id = ?", (nid,)).fetchone()[0]
+    conn.execute("insert into knowledge_fts(rowid, summary) values (?, ?)",
+                 (rowid, "weg-beschluss meiershofstrasse"))
+    conn.commit()
+    o = aufbewahrung.Aufbewahrungsordnung()
+    with pytest.raises(RuntimeError, match="Volltextindex"):
+        aufbewahrung.fristlauf_bestand(conn, o, _t.time() + 10 * 86400)
+    conn.close()

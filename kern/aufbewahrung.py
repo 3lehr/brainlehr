@@ -160,6 +160,99 @@ def fristlauf(speicher: Kundenschluesselspeicher, ordnung: Aufbewahrungsordnung,
     return nachweis
 
 
+class _BestandsSpeicher:
+    """Ein `Kundenschluesselspeicher`-Aussehen fuer den ECHTEN Bestand.
+
+    ADR-031 Schritt 3, 2026-08-19. Bis heute nahm `fristlauf()` einen
+    In-Prozess-Speicher entgegen und konnte den Bestand deshalb gar nicht
+    erreichen -- gemessen und als BDW-E13 auf FAIL gesetzt (27ac332e). Statt
+    `fristlauf()` umzubauen bekommt es hier das, was es ohnehin verlangt: ein
+    Objekt mit `hat_bestanden`, `angelegt_ts` und `widerrufen`.
+
+    Der Grund fuer diese Bauform statt einer zweiten Fristlauf-Funktion: die
+    Zaehlweise (vernichtet / gehalten / offen / ohne_regel), der minimierte
+    Nachweis und das Verhalten bei Legal Hold sind bereits belegt. Eine
+    zweite Fassung waere eine zweite Stelle, an der sie auseinanderlaufen.
+
+    Die Schluessel kommen aus `kern/schluesselablage.py` (eigene Datei), die
+    Zeitpunkte aus `knowledge_nodes.created_at`.
+    """
+
+    def __init__(self, conn):
+        self._conn = conn
+
+    def hat_bestanden(self, ref: str) -> bool:
+        import schluesselablage
+        return schluesselablage.lage(ref) == "vorhanden"
+
+    def angelegt_ts(self, ref: str) -> float:
+        from datetime import datetime, timezone
+        r = self._conn.execute(
+            "select created_at from knowledge_nodes where id = ?", (ref,)).fetchone()
+        if not r:
+            raise KeyError(ref)
+        return datetime.fromisoformat(
+            r[0].replace("Z", "+00:00")).replace(tzinfo=timezone.utc).timestamp()
+
+    def widerrufen(self, ref: str, jetzt_ts: float | None = None) -> None:
+        import schluesselablage
+        if schluesselablage.rechtssperre_steht(ref) is not None:
+            raise Rechtssperre(
+                f"{ref}: {schluesselablage.rechtssperre_steht(ref)}")
+        schluesselablage.vernichten(ref, jetzt_ts if jetzt_ts is not None else 0.0)
+
+
+def sensible_knoten(conn) -> dict[str, str]:
+    """Kennung -> Datenklassenname fuer alle sensiblen Knoten.
+
+    Die Klasse steht als Etikett `datenklasse:<name>` in `tags`. Warum dort
+    und nicht in einer eigenen Spalte: Ein Knoten ohne Etikett faellt in
+    `ohne_regel` und wird SICHTBAR -- eine Spalte mit Vorgabewert haette ihn
+    still einer Klasse zugeschlagen, und damit einer Frist, die nie jemand
+    fuer ihn entschieden hat (BDW-E12: eine Datenklasse ohne Eintrag ist ein
+    Befund, kein Standardfall)."""
+    import json as _json
+    treffer = {}
+    for kennung, etiketten in conn.execute(
+            "select id, tags from knowledge_nodes where sensibel = 1"):
+        klasse = "ohne_datenklasse"
+        for e in _json.loads(etiketten or "[]"):
+            if isinstance(e, str) and e.startswith("datenklasse:"):
+                klasse = e.split(":", 1)[1]
+                break
+        treffer[kennung] = klasse
+    return treffer
+
+
+def fristlauf_bestand(conn, ordnung: Aufbewahrungsordnung, jetzt_ts: float,
+                      nachweis_pfad: Path | None = None) -> dict:
+    """Fristlauf ueber den ECHTEN Bestand (BDW-E13, ADR-031 Schritt 3).
+
+    REIHENFOLGE, bindend und der Grund fuer Schritt 3 als letztem: Ein
+    Fristlauf, der den Schluessel vernichtet, waehrend der Volltextindex noch
+    Klartext haelt, erzeugt einen Nachweis ueber eine Loeschung, die nicht
+    stattgefunden hat. Deshalb wirft diese Funktion, solange ein sensibler
+    Knoten im Index steht -- lieber ein sprechender Abbruch als ein falscher
+    Nachweis."""
+    # Gezaehlt wird in knowledge_fts_docsize (eine Zeile je INDIZIERTEM
+    # Dokument), nicht in knowledge_fts. Der erste Versuch fragte
+    # `from knowledge_fts f join knowledge_nodes n on n.rowid = f.rowid` --
+    # und zaehlte JEDEN sensiblen Knoten, weil eine fts5-Tabelle mit externer
+    # Inhaltstabelle ohne MATCH schlicht die Inhaltstabelle liest. Die Sperre
+    # haette damit immer ausgeloest und den Fristlauf dauerhaft blockiert:
+    # ein Waechter, der immer anschlaegt, wird abgeschaltet.
+    im_index = conn.execute(
+        "select count(*) from knowledge_fts_docsize d join knowledge_nodes n "
+        "on n.rowid = d.id where n.sensibel = 1").fetchone()[0]
+    if im_index:
+        raise RuntimeError(
+            f"{im_index} sensible Knoten stehen im Volltextindex -- ein Fristlauf "
+            "wuerde eine Loeschung bescheinigen, die nicht stattfindet. Erst "
+            "migrationen/migrate_sensible_knoten.py fahren (ADR-031 Schritt 1).")
+    return fristlauf(_BestandsSpeicher(conn), ordnung, sensible_knoten(conn),
+                     jetzt_ts, nachweis_pfad)
+
+
 def _selftest() -> int:
     o = Aufbewahrungsordnung()
     o.eintragen(Datenklasse("protokoll", "Nachvollziehbarkeit von Laeufen", frist_tage=30))
