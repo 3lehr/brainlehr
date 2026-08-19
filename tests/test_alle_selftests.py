@@ -222,13 +222,11 @@ XFAIL = {
         "Aenderung 1e2b40ee verursacht: die hat nur ein Feld angehaengt, und "
         "der zugehoerige Test belegt die Reihenfolge als identisch."
     ),
-    "melder/vier_nenner.py": (
-        "vorbestehend, belegt: derselbe Fehlschlag gegen den Stand von HEAD "
-        "vor jeder Aenderung dieser Sitzung -- 'module ausloeser does not have "
-        "the attribute PROJEKTE'. Ein Selbsttest, der ein Attribut "
-        "monkeypatcht, das es nicht mehr gibt; die Konstante ist in "
-        "kern/ausloeser.py umbenannt oder entfallen."
-    ),
+    # melder/vier_nenner.py stand hier von 833e7ef4 bis 993a8e18 und ist RAUS:
+    # der Grund war das Symptom, nicht die Ursache. Es gab ZWEI Module namens
+    # `ausloeser`; der Import holte still kern/ statt messungen/, wodurch der
+    # Melder bei JEDEM Aufruf abbrach. Ueber den Pfad geladen -- Selbsttest und
+    # Produktivlauf gruen. Wird er erneut rot, ist das ein echtes Rot.
     # kern/abrufguete.py stand hier bis 2026-08-14 und ist RAUS, weil der Fall
     # seither gruen laeuft (XPASS(strict), zweimal reproduziert). Der Selbsttest
     # haengt am echten Bestand -- gegen die Suiten-Kopie besteht er, gegen eine

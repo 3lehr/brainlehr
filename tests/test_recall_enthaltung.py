@@ -294,5 +294,49 @@ if __name__ == "__main__":
     main()
 
 
-def test_selbsttest_laeuft_durch():
-    main()
+# EINZELN COLLECTIERT statt nur ueber main() (2026-08-19). Vorher gab es
+# genau EINEN pytest-Fall, der alle sieben Pruefungen hintereinander rief:
+# ein Fehlschlag nannte dann nicht, WELCHE Zusicherung brach, und wer eine
+# Zeile aus der checks-Liste entfernt, verliert sie lautlos -- pytest sieht
+# unveraendert einen gruenen Fall. main() bleibt als Kommandozeilen-Beleg
+# erhalten (druckt je Pruefung ihren Beleg).
+def test_plane_frage_wird_enthalten():
+    plane_frage_wird_enthalten()
+
+
+def test_hoher_kosinus_liefert_unveraendert():
+    hoher_kosinus_liefert_unveraendert()
+
+
+def test_grenzwert_0_55_liefert():
+    grenzwert_0_55_liefert()
+
+
+def test_grenzwert_unter_0_55_enthaelt():
+    grenzwert_unter_0_55_enthaelt()
+
+
+def test_grenzwert_ueber_0_55_liefert():
+    grenzwert_ueber_0_55_liefert()
+
+
+def test_kein_vektor_wird_nicht_enthalten():
+    kein_vektor_wird_nicht_enthalten()
+
+
+def test_abschaltbar_ueber_env():
+    abschaltbar_ueber_env()
+
+
+def test_main_ruft_jede_pruefung_dieser_datei():
+    """Gegenprobe gegen das lautlose Entfernen: jede Pruefungsfunktion dieser
+    Datei muss in main()s checks-Liste stehen. Ohne sie koennte jemand eine
+    Zeile dort streichen, und der Kommandozeilen-Beleg waere stillschweigend
+    unvollstaendig."""
+    import inspect
+    quelle = inspect.getsource(main)
+    hier = {n for n, o in globals().items()
+            if inspect.isfunction(o) and not n.startswith(("_", "test_"))
+            and n not in {"main"}}
+    fehlend = sorted(n for n in hier if f"{n})" not in quelle and f" {n}," not in quelle)
+    assert not fehlend, f"nicht in main() aufgerufen: {fehlend}"
