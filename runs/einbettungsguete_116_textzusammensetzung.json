@@ -1,0 +1,132 @@
+{
+  "schnappschuss": "20260819T105503-7045048a",
+  "quelle_faelle": "runs/enthaltung_115_faelle.json",
+  "quelle_fachfremd": "runs/enthaltungsschwelle_kosinus_abrufweg.json",
+  "annahme_geprueft": "Textzusammensetzung (kern/build_embeddings.py::node_text()) drueckt den Kosinus der drei Faelle",
+  "faelle": [
+    {
+      "laenge_eingebetteter_text": 3312,
+      "laenge_median_bestand": 1391,
+      "laenge_verhaeltnis_zu_median": 2.381,
+      "gekappt": false,
+      "kosinus_je_variante": {
+        "nur_titel": 0.4542,
+        "nur_summary": 0.4943,
+        "titel_summary": 0.4865,
+        "nur_content": 0.5142,
+        "voll": 0.5154
+      },
+      "beste_variante": "voll",
+      "kosinus_voll": 0.5154,
+      "beste_variante_schlaegt_voll": false,
+      "rolle": "unter_schwelle",
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "bester_kosinus_lauf_2026-08-19": 0.5294,
+      "bedeutungs_kosinus_ziel_115": 0.5154
+    },
+    {
+      "laenge_eingebetteter_text": 3940,
+      "laenge_median_bestand": 1391,
+      "laenge_verhaeltnis_zu_median": 2.832,
+      "gekappt": false,
+      "kosinus_je_variante": {
+        "nur_titel": 0.3824,
+        "nur_summary": 0.416,
+        "titel_summary": 0.4045,
+        "nur_content": 0.4963,
+        "voll": 0.4883
+      },
+      "beste_variante": "nur_content",
+      "kosinus_voll": 0.4883,
+      "beste_variante_schlaegt_voll": true,
+      "rolle": "unter_schwelle",
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "bester_kosinus_lauf_2026-08-19": 0.5101,
+      "bedeutungs_kosinus_ziel_115": 0.4883
+    },
+    {
+      "laenge_eingebetteter_text": 590,
+      "laenge_median_bestand": 1391,
+      "laenge_verhaeltnis_zu_median": 0.424,
+      "gekappt": false,
+      "kosinus_je_variante": {
+        "nur_titel": 0.3978,
+        "nur_summary": 0.5247,
+        "titel_summary": 0.5301,
+        "nur_content": 0.5137,
+        "voll": 0.527
+      },
+      "beste_variante": "titel_summary",
+      "kosinus_voll": 0.527,
+      "beste_variante_schlaegt_voll": true,
+      "rolle": "unter_schwelle",
+      "ziel": "/stadtwerke",
+      "bester_kosinus_lauf_2026-08-19": 0.5399,
+      "bedeutungs_kosinus_ziel_115": 0.527
+    },
+    {
+      "laenge_eingebetteter_text": 3239,
+      "laenge_median_bestand": 1391,
+      "laenge_verhaeltnis_zu_median": 2.329,
+      "gekappt": false,
+      "kosinus_je_variante": {
+        "nur_titel": 0.5348,
+        "nur_summary": 0.6337,
+        "titel_summary": 0.6382,
+        "nur_content": 0.6049,
+        "voll": 0.6184
+      },
+      "beste_variante": "titel_summary",
+      "kosinus_voll": 0.6184,
+      "beste_variante_schlaegt_voll": true,
+      "rolle": "gegenprobe_hoher_wert_einschlaegig",
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "bester_kosinus_irgendein_kandidat_abrufweg": 0.6184
+    },
+    {
+      "laenge_eingebetteter_text": 3243,
+      "laenge_median_bestand": 1391,
+      "laenge_verhaeltnis_zu_median": 2.331,
+      "gekappt": false,
+      "kosinus_je_variante": {
+        "nur_titel": 0.502,
+        "nur_summary": 0.4394,
+        "titel_summary": 0.4667,
+        "nur_content": 0.5189,
+        "voll": 0.541
+      },
+      "beste_variante": "voll",
+      "kosinus_voll": 0.541,
+      "beste_variante_schlaegt_voll": false,
+      "rolle": "gegenprobe_hoher_wert_fachfremd",
+      "ziel": "/openlehr/releaseziel-openlehr-einzelunternehmer",
+      "bester_kosinus_abrufweg": 0.541
+    }
+  ],
+  "laenge_median_bestand_zeichen": 1391,
+  "faelle_bei_denen_eine_kuerzere_variante_gewinnt": [
+    "/apps/metahuman-podcast-one-command-pipeline",
+    "/stadtwerke",
+    "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an"
+  ],
+  "laengenverhaeltnisse_niedrige_faelle": [
+    2.381,
+    2.832,
+    0.424
+  ],
+  "laengenverhaeltnisse_hohe_gegenproben": [
+    2.329,
+    2.331
+  ],
+  "luecke_voll_zu_bester_variante_niedrige_faelle": [
+    0.0,
+    0.008,
+    0.0031
+  ],
+  "luecke_voll_zu_bester_variante_hohe_gegenproben": [
+    0.0198,
+    0.0
+  ],
+  "befund": "ANNAHME NICHT BESTAETIGT. Laenge: der Gegenprobe-Fall mit hohem Wert (voll=0.6184, Verhaeltnis zum Median 2.329) ist genauso lang wie der schlechteste niedrige Fall (voll=0.4883, Verhaeltnis 2.832) und die fachfremde Gegenprobe (voll=0.541, Verhaeltnis 2.331) -- Laenge trennt die drei niedrigen Faelle NICHT von den hohen: einer der drei ist sogar kurz (Verhaeltnis 0.424), waehrend zwei der drei genauso lang sind wie beide hohen Gegenproben. Variante: die Luecke zwischen 'voll' und der besten Variante ist bei den drei niedrigen Faellen [0.0, 0.008, 0.0031] -- in derselben Groessenordnung wie bei den beiden hohen Gegenproben [0.0198, 0.0]. Eine bessere Textzusammensetzung wuerde also allenfalls 0.01-0.03 gewinnen, nicht die 0.08-0.15, die zur Schwelle 0.55 fehlen. UNERKLAERT bleibt damit, warum diese drei Knoten gegen ihre jeweilige Frage niedriger liegen als die beiden Gegenproben -- die Textzusammensetzung (Laenge wie Variante) ist an diesen fuenf Faellen KEIN messbarer Hebel dafuer.",
+  "hinweis": "Keine Schwellenaenderung, keine Empfehlung. 'beste_variante_schlaegt_voll' vergleicht nur die vier Varianten DESSELBEN Knotens gegen dieselbe Frage -- eine gewinnende Kurzvariante zeigt, dass der volle node_text() gegenueber dieser Frage schlechter abschneidet als eine seiner Teilmengen, nicht dass die Kurzvariante produktiv eingebettet wird (das ist weiterhin node_text() voll)."
+}
