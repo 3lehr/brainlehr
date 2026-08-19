@@ -9,9 +9,11 @@ Kosinus schon vorher liefern (Parameter "werte"), er wurde in
 knowledge_search() nur nicht bis in die Ergebniszeile durchgereicht.
 
 Rot-vor-gruen-Beleg (Abnahme 1): test_rot_vor_dem_fix laedt den
-Dateistand von HEAD (git show), zu dem "bedeutungs_kosinus" in keiner
-Trefferzeile vorkam, und zeigt den KeyError. Derselbe Test bestaetigt
-danach den GRUENEN Stand am Arbeitsverzeichnis.
+Dateistand vor der Aenderung (fixer Commit _VORHER_COMMIT = 4c88915b~1,
+git show -- nicht HEAD, das mit jedem weiteren Commit auf dem Zweig
+wandert), zu dem "bedeutungs_kosinus" in keiner Trefferzeile vorkam,
+und zeigt den KeyError. Derselbe Test bestaetigt danach den GRUENEN
+Stand am Arbeitsverzeichnis.
 
 Fixtures/Helfer (temp_db, _insert_embedding) aus test_knowledge_hybrid_search.py
 wiederverwendet statt verdoppelt -- gleiche DB-Bauform, gleiches Muster.
@@ -93,13 +95,20 @@ def test_lesson_treffer_traegt_ebenfalls_das_feld(temp_db, monkeypatch):
 
 # --- 3. Negativfall: Reihenfolge vor/nach der Aenderung identisch -----------
 
+# Fixer Commit statt HEAD: HEAD wandert mit jedem weiteren Commit auf diesem
+# Zweig (z.B. der Leer-Commit in der Abnahme) und traegt danach die Aenderung,
+# die belegt werden soll, bereits selbst -- der Vergleichsstand ist deshalb
+# der Elter von 4c88915b (dem Commit, der "bedeutungs_kosinus" einfuehrte).
+_VORHER_COMMIT = "4c88915b~1"
+
+
 def _lade_head_fassung():
-    """Laedt knowledge_mcp_server.py-Stand von HEAD (vor diesem Auftrag) als
-    eigenstaendiges Modul, damit derselbe Testlauf beide Fassungen gegen
-    dieselbe temp_db ausfuehren kann -- ohne git checkout/stash (tabu laut
-    Auftrag) am Arbeitsverzeichnis."""
+    """Laedt knowledge_mcp_server.py-Stand VOR der Kosinus-Aenderung (fixer
+    Commit _VORHER_COMMIT, nicht HEAD) als eigenstaendiges Modul, damit
+    derselbe Testlauf beide Fassungen gegen dieselbe temp_db ausfuehren kann
+    -- ohne git checkout/stash (tabu laut Auftrag) am Arbeitsverzeichnis."""
     quelltext = subprocess.run(
-        ["git", "show", "HEAD:knowledge_mcp_server.py"],
+        ["git", "show", f"{_VORHER_COMMIT}:knowledge_mcp_server.py"],
         cwd=str(SHARED_KNOWLEDGE), capture_output=True, text=True, check=True,
     ).stdout
     # Neben knowledge_mcp_server.py selbst ablegen (nicht in tests/): das Modul
@@ -132,13 +141,14 @@ def test_reihenfolge_identisch_zu_head_ohne_das_feld(temp_db, monkeypatch):
     vorherige_ids = [r["id"] for r in vorher["results"]]
 
     assert aktuelle_ids == vorherige_ids, "die Reihenfolge der Treffer hat sich durch das neue Feld veraendert"
-    assert "bedeutungs_kosinus" not in vorher["results"][0], "HEAD-Fassung sollte das Feld noch nicht kennen"
+    assert "bedeutungs_kosinus" not in vorher["results"][0], "Vorher-Fassung sollte das Feld noch nicht kennen"
     assert "bedeutungs_kosinus" in aktuell["results"][0]
 
 
 def test_rot_vor_dem_fix(temp_db, monkeypatch):
-    """Belegt Abnahmepunkt 1: gegen den HEAD-Stand (vor diesem Auftrag)
-    schlaegt genau diese Zusicherung fehl -- das Feld fehlte dort."""
+    """Belegt Abnahmepunkt 1: gegen den fixen Vorher-Stand (_VORHER_COMMIT,
+    vor diesem Auftrag) schlaegt genau diese Zusicherung fehl -- das Feld
+    fehlte dort."""
     _insert_embedding(temp_db, "node", "n1", (1.0, 0.0, 0.0))
     monkeypatch.setattr(kms.embeddings, "embed_text", lambda *a, **k: [1.0, 0.0, 0.0])
 
@@ -147,7 +157,7 @@ def test_rot_vor_dem_fix(temp_db, monkeypatch):
     monkeypatch.setattr(kms_head.embeddings, "embed_text", lambda *a, **k: [1.0, 0.0, 0.0])
     vorher = kms_head.knowledge_search("Abschreibung")
     with pytest.raises(KeyError):
-        _ = vorher["results"][0]["bedeutungs_kosinus"]  # rot: Feld existierte am HEAD-Stand nicht
+        _ = vorher["results"][0]["bedeutungs_kosinus"]  # rot: Feld existierte im Vorher-Stand nicht
 
     jetzt = kms.knowledge_search("Abschreibung")
     assert jetzt["results"][0]["bedeutungs_kosinus"] == pytest.approx(1.0, abs=1e-6)  # gruen: jetzt vorhanden
