@@ -1,3 +1,23 @@
+# STAND brainlehr — 2026-08-19T12:10:00+0200
+
+**Die Enthaltung ist PRODUKTIV.** `haken/knowledge_recall_hook.py`, `ENTHALTUNGSSCHWELLE_KOSINUS = 0.55` (`06efe484`). Am echten Weg belegt: „Knoten zum Verzurren einer Plane" → **296 Zeichen** statt 7054, „Governance vor dem Ranking" → 7054 Zeichen wie bisher. Abschaltbar über Umgebungsvariable, AN in der Vorgabe. 8 Einzeltests (`27aaa5d6`), jeder einzeln collectiert.
+
+**Was heute sonst hereinkam:** `112` Nachrangung per cherry-pick (`07623126`, `196d82c7`, `474b6097`), Vorgabe `False`, selbst geprüft · `108` alle veralteten Vektoren neu gerechnet, 329 → **0** (`a144db55`) · zwei Selbsttests, die gegen den wachsenden Bestand maßen, laufen jetzt gegen Wegwerf-DBs (`ca96e56e`) · `melder/vier_nenner.py` importierte still das falsche Modul und brach bei JEDEM Lauf ab (`993a8e18`).
+
+**ZWEI AGENTEN LAUFEN, beide wegen einer Lücke, die ich selbst gerissen habe:**
+1. **Schwelle nachprüfen.** Ich habe 478 Einbettungszeilen neu gerechnet, NACHDEM die Schwelle 0.55 produktiv wurde. Sie steht damit auf einer Messung gegen einen Bestand, den es so nicht mehr gibt. Die drei bekannten Grenzfälle sind unverändert (0.5294/0.5101/0.5399, vierte Stelle) — ob das für alle 76 Fragen gilt, ist offen.
+2. **`116`** — was drückt den Kosinus dieser drei. **Drei Erklärungen sind ausgeschieden:** Rangfehler (alle auf Fusionsrang 1), veralteter Vektor (nach Neurechnen identisch), Kappung (keiner unter den 14).
+
+**Die Grenze der Enthaltung, damit sie niemand für mehr hält als sie ist:** Sie fragt „ist hier überhaupt etwas Starkes?" — die einzige zur Laufzeit mögliche Frage. Sie fragt NICHT „ist das Richtige dabei?". Beleg: in der Positivkontrolle stammt der beste Wert (0,6334) **nicht** vom Ziel, das auf Rang 70 liegt. **Sie verhindert Schaden, sie garantiert keinen Nutzen.**
+
+**Fallen von heute, alle mit Beleg:** Ein Beleg gegen `HEAD` ist genau einmal grün — HEAD ist ein Zeiger (`L-82415c`) · eine **symmetrische** Gegenprobe beweist nichts: Fixtur und Zusicherung gemeinsam umbenannt bleibt grün, erst die asymmetrische zeigt es · ein halb gepinnter Schnappschuss erzeugt keinen Fehler, sondern eine wandernde Zahl (`L-dadfac`) · zwei Agenten, die dieselbe bewegte Datei lesen, sind EINE Quelle, nicht zwei (`L-756f4d`) · eine datierte Zahl aus einem Modulkopf ist ein Messprotokoll, keine Eigenschaft (`L-49b1cf`).
+
+**Neustart:** erledigt, 10 → 2. Die verbliebenen zwei sind die dieser Sitzung; sie werden frisch, wenn du diesen Chat neu startest. `hermes-agent` startete selbst nach (62 s), `codex` nicht.
+
+**Wartet auf dich — und nur noch das:** Push · die 3 Ablaufpflicht-Befunde von gestern (`6f0d4909`, `fd14aa28`, `bdae9cf8`) · `102`/`103` brauchen eine Produktentscheidung aus ADR-029: entweder ist ein Eintrag unter Frist nur über Metadaten auffindbar, oder der Index führt Klartext und ist selbst löschpflichtig.
+
+---
+
 # STAND brainlehr — 2026-08-19T11:20:00+0200
 
 **BERICHTIGUNG, und sie trifft meine eigene Lageeinschätzung von heute Vormittag.** Ich hatte dem Betreiber gesagt, der Weg, den seine Chats gehen, sei „das Schlechteste, was wir haben" (0–4 von 35) — gestützt auf die Zahlen im Kopf von `haken/suchpfad_abruf.py`. Die sind vom **2026-08-09** und beschreiben einen seither umgebauten Weg. **Heute gemessen über die Produktivfunktion des Hakens** (`runs/abrufweg_produktiv_2026-08-19T111150.json`, Schnappschuss `20260819T090701-f4080e17`, Commit `a1fc997d`):
