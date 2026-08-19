@@ -12,8 +12,14 @@ from kern.risikoeinstufung import (
     stufe_vorgang,
 )
 
-VORGANGSARTEN_HOCH = ["regelrang", "export", "connector", "providerwechsel", "ausnahme"]
-VORGANGSARTEN_NIEDRIG = ["hold"]
+# `hold` stand hier bis 2026-08-19 als EINE Art auf NIEDRIG -- und traf damit
+# ausgerechnet die gefaehrliche Richtung nicht. `rechtssperre_aufheben`
+# (kern/kundenschluessel.py) gibt Daten zur Vernichtung frei; `widerrufen()`
+# wirft nur, solange die Sperre steht. Setzen ist folgenlos, Aufheben ist der
+# unumkehrbare Weg.
+VORGANGSARTEN_HOCH = ["regelrang", "export", "connector", "providerwechsel",
+                      "ausnahme", "hold_aufheben"]
+VORGANGSARTEN_NIEDRIG = ["hold_setzen"]
 
 
 @pytest.mark.parametrize("art", VORGANGSARTEN_HOCH + VORGANGSARTEN_NIEDRIG)
@@ -35,7 +41,20 @@ def test_e18_hoch_mit_zweitem_augenpaar_geht_durch(art):
 def test_e18_gegenprobe_niedrig_laeuft_ohne_zweites_augenpaar_durch():
     # Die Zeile, die Selektivitaet beweist: eine Matrix, die ALLES gatet,
     # wuerde hier ebenfalls werfen. Das darf nicht passieren.
-    assert pruefe_vier_augen("hold", zweites_augenpaar=None) is Stufe.NIEDRIG
+    assert pruefe_vier_augen("hold_setzen", zweites_augenpaar=None) is Stufe.NIEDRIG
+
+
+def test_e18_die_riskante_haelfte_von_hold_ist_gegatet():
+    """Rot vor gruen: Gegen den Stand vor 2026-08-19 kannte die Matrix nur
+    `hold` auf NIEDRIG -- dieser Test schlug dort mit KeyError bzw. NIEDRIG
+    fehl. Er ist der einzige, der die Trennung erzwingt; alle anderen waeren
+    auch mit der groben Einstufung gruen geblieben."""
+    assert stufe_vorgang("hold_aufheben") is Stufe.HOCH
+    with pytest.raises(VierAugenErforderlich):
+        pruefe_vier_augen("hold_aufheben", zweites_augenpaar=None)
+    # Und die harmlose Richtung darf dadurch NICHT mitgefangen werden --
+    # sonst waere aus einer zu groben eine zu strenge Matrix geworden.
+    assert pruefe_vier_augen("hold_setzen", zweites_augenpaar=None) is Stufe.NIEDRIG
 
 
 def test_u06_ohne_inhaltsleck():

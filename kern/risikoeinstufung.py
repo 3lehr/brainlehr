@@ -43,8 +43,25 @@ _VORGANG_STUFE: dict[str, Stufe] = {
     "providerwechsel": Stufe.HOCH,
     # hebt eine bestehende Regel fuer einen Fall auf -> hoch
     "ausnahme": Stufe.HOCH,
-    # blockiert Loeschung/Aenderung, wirkt nur nach aussen schuetzend -> niedrig
-    "hold": Stufe.NIEDRIG,
+    # HOLD HAT ZWEI RICHTUNGEN, und nur eine davon ist harmlos.
+    # Befund 2026-08-19: Hier stand `"hold": Stufe.NIEDRIG` als EINE
+    # Vorgangsart. Der Code kennt die Trennung laengst --
+    # kern/kundenschluessel.py:128 `rechtssperre_setzen` und :138
+    # `rechtssperre_aufheben`. Setzen schuetzt Daten vor Vernichtung und ist
+    # folgenlos, wenn es zu Unrecht geschieht. Aufheben gibt sie zur
+    # Vernichtung frei -- und `kundenschluessel.widerrufen()` wirft heute
+    # NUR, solange die Sperre steht. Wer sie aufhebt, oeffnet damit einen
+    # unumkehrbaren Weg.
+    #
+    # Die grobe Einstufung haette also ausgerechnet die gefaehrliche Richtung
+    # ungegatet gelassen, waehrend die harmlose die Einstufung traegt. Das AC
+    # verlangt "korrekt gegatet", nicht "eingestuft".
+    #
+    # Gefunden beim Lesen der Tabelle, nicht durch einen Test: die
+    # Klassifikation IST die Zusicherung, gegen die geprueft wird -- kein Test
+    # kann sie widerlegen.
+    "hold_setzen": Stufe.NIEDRIG,
+    "hold_aufheben": Stufe.HOCH,
 }
 
 # U06: Ereignisart -> Stufe. Gleiche Tabelle, gleiche Herkunft der Einstufung.
@@ -124,13 +141,21 @@ def senke_lesen(kanal: str) -> list[Meldung]:
 
 def demo() -> None:
     assert stufe_vorgang("export") is Stufe.HOCH
-    assert stufe_vorgang("hold") is Stufe.NIEDRIG
+    assert stufe_vorgang("hold_setzen") is Stufe.NIEDRIG
+    # Die riskante Richtung MUSS gegatet sein -- sonst waere die
+    # Einstufung wieder so grob wie vor dem 2026-08-19.
+    assert stufe_vorgang("hold_aufheben") is Stufe.HOCH
     try:
         pruefe_vier_augen("export", zweites_augenpaar=None)
         raise AssertionError("haette werfen muessen")
     except VierAugenErforderlich:
         pass
-    assert pruefe_vier_augen("hold", zweites_augenpaar=None) is Stufe.NIEDRIG
+    assert pruefe_vier_augen("hold_setzen", zweites_augenpaar=None) is Stufe.NIEDRIG
+    try:
+        pruefe_vier_augen("hold_aufheben", zweites_augenpaar=None)
+        raise AssertionError("hold_aufheben ohne zweites Augenpaar kam durch")
+    except VierAugenErforderlich:
+        pass
     m = melde("konflikt", "eintrag-123")
     assert "eintrag-123" in m.text
     assert m.kanal == "eskalation"
