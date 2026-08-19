@@ -2618,7 +2618,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     _gattung_sql = "" if nachschlagewerk else gattung_filter.SQL_ARBEITSBESTAND_NUR
     if scope == "all":
         fts_rows = [] if blind else [r for r in conn.execute(
-            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at
+            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at, n.source, n.norm_entscheidung, n.freigabe
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.{_NICHT_GESPERRT_SQL} {_gattung_sql}
@@ -2629,7 +2629,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             f"SELECT id, tags FROM knowledge_nodes n WHERE {_NICHT_GESPERRT_SQL} {_gattung_sql}"
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         fts_lesson_rows = [] if blind else conn.execute(
-            f"""SELECT l.id, l.description, l.type, l.severity, l.projects
+            f"""SELECT l.id, l.description, l.type, l.severity, l.projects, l.freigabe
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
                WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL}
@@ -2641,7 +2641,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         )}
     else:
         fts_rows = [] if blind else [r for r in conn.execute(
-            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at
+            f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at, n.source, n.norm_entscheidung, n.freigabe
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
                WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?) AND n.{_NICHT_GESPERRT_SQL} {_gattung_sql}
@@ -2653,7 +2653,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         _proj_clause = geltungsbereich.sql_projects_exact("l.projects")
         fts_lesson_rows = [] if blind else conn.execute(
-            f"""SELECT l.id, l.description, l.type, l.severity, l.projects
+            f"""SELECT l.id, l.description, l.type, l.severity, l.projects, l.freigabe
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
                WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL}
@@ -2736,13 +2736,13 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         # beim Nachladen als Knoten missverstehen und stumm verlieren.
         placeholders = ",".join("?" for _ in missing)
         for r in conn.execute(
-            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von, tags, created_at FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 AND {_NICHT_GESPERRT_SQL}",
+            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von, tags, created_at, source, norm_entscheidung, freigabe FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 AND {_NICHT_GESPERRT_SQL}",
             missing
         ):
             if _zweckprojektion_sichtbar(ausw, r["tags"]):
                 by_id[r["id"]] = r
         for r in conn.execute(
-            f"SELECT id, description, type, severity, projects FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active' AND {_NICHT_GESPERRT_SQL}",
+            f"SELECT id, description, type, severity, projects, freigabe FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active' AND {_NICHT_GESPERRT_SQL}",
             missing
         ):
             by_id_lessons[r["id"]] = r
@@ -2767,14 +2767,17 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                       # Roher Kosinus des Bedeutungskanals fuer GENAU diesen Treffer, kein Rang --
                       # None (nicht 0.0) wenn kein Vektor vorliegt: 0.0 waere eine Aussage ueber
                       # Aehnlichkeit, None eine ueber Verfuegbarkeit.
-                      "bedeutungs_kosinus": kosinus_je_id.get(row["id"])}
+                      "bedeutungs_kosinus": kosinus_je_id.get(row["id"]),
+                      # Herkunfts-/Geltungsfelder (Auftrag Katalogzeilen BDW-R05/BDW-P05):
+                      # roh aus der Zeile, ungeprueft -- None heisst "nicht gesetzt", nicht 0/leer.
+                      "source": row["source"], "norm_rang": row["norm_rang"],
+                      "gilt_ab": row["gilt_ab"], "gilt_bis": row["gilt_bis"],
+                      "norm_entscheidung": row["norm_entscheidung"], "freigabe": row["freigabe"]}
             geltung = _geltung_status(row["norm_rang"], row["gilt_ab"], row["gilt_bis"], stichtag)
             if geltung in ("abgelaufen", "noch_nicht_in_kraft"):
                 if nur_geltende:
                     continue
                 entry["geltung"] = geltung
-                entry["gilt_ab"] = row["gilt_ab"]
-                entry["gilt_bis"] = row["gilt_bis"]
                 nachrangig.append(entry)
             else:
                 vorrang.append(entry)
@@ -2792,7 +2795,11 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             vorrang.append({"kind": "lesson", "id": row["id"], "type": row["type"],
                              "severity": row["severity"], "summary": row["description"],
                              "project": json.loads(row["projects"]) if row["projects"] else [],
-                             "bedeutungs_kosinus": kosinus_je_id.get(row["id"])})
+                             "bedeutungs_kosinus": kosinus_je_id.get(row["id"]),
+                             # Lehren kennen nur freigabe aus dem angefragten Feldsatz --
+                             # source/norm_rang/gilt_ab/gilt_bis/norm_entscheidung gibt es
+                             # in lessons_learned nicht (schema.sql), also nicht erfunden.
+                             "freigabe": row["freigabe"]})
     if nachrangung and len(vorrang) > 1:
         # Nur der vorrangige Teil wird umgeordnet. Die nachrangigen Eintraege
         # stehen hinten, WEIL ihre Geltung abgelaufen ist -- ein Nachranger,

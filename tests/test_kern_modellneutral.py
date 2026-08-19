@@ -96,16 +96,6 @@ def test_kern_liefert_ohne_einbettungsmodell(bestand, monkeypatch):
     assert "/probe/modellneutral" in text, f"Zielknoten nicht gefunden: {text[:300]}"
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "OFFENER BEFUND, 2026-08-18, gefunden von genau diesem Test: Die Antwort von "
-    "knowledge_search fuehrt kind, id, path, title, summary, project und "
-    "abgeleitet_von -- aber WEDER norm_rang NOCH gilt_ab NOCH source. Das AC "
-    "BDW-R05-AC1 verlangt ausgewiesene Quelle UND Geltung. Der Kern kennt beide "
-    "Felder (sie stehen in knowledge_nodes und der Trigger erzwingt die "
-    "Normentscheidung beim Anlegen) -- sie kommen nur nicht bis zum Abrufenden. "
-    "Damit ist jede Antwort formal herkunftslos. Behebung gehoert in "
-    "knowledge_mcp_server.py, das eine andere Sitzung haelt; ihr gemeldet. "
-    "strict=True, damit dieser Test MELDET, sobald es behoben ist."))
 def test_antwort_weist_quelle_und_geltung_aus(bestand, monkeypatch):
     """DAS AC, zweite Hälfte -- und der Teil, der leicht übersehen wird:
     Eine Antwort ohne Quelle ist ein Zitat ohne Herkunft."""
