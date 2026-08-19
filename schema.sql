@@ -229,7 +229,19 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- gibt keine einmal getroffene, bindende Entscheidung wie bei einer
     -- Norm). Gleiche Bauform wie gattung oben (NOT NULL DEFAULT, Werte-
     -- Trigger bi+bu unten), keine Massenzuweisung ausser der Vorgabe.
-    freigabe TEXT NOT NULL DEFAULT 'intern'
+    freigabe TEXT NOT NULL DEFAULT 'intern',
+    -- Gedaechtnisart (Aufgabe 104, docs/PLAN_GEDAECHTNISARTEN_2026-08-19.md,
+    -- BDW-F01/F02). Deklariert eine Vorsortierung, die im Bestand bereits
+    -- vorlag: Stichprobe n=32 aus gattung='arbeitsbestand' (2026-08-19)
+    -- ergab 53% semantisch, 31% episodisch, 16% prozedural -- 'semantisch'
+    -- ist deshalb die Vorgabe, nicht geraten. 'prozedural' ist ein
+    -- zulaessiger Wert und wird von der Migration niemals massenhaft
+    -- vergeben -- das ist eine Aussage ueber den Bestand, kein fehlendes
+    -- Feld (BDW-F03 bleibt NOT RUN, siehe Migrationsscript). Gleiche
+    -- Bauform wie gattung/freigabe oben (NOT NULL DEFAULT, SQLite fuellt
+    -- jede Bestandszeile automatisch beim ALTER TABLE, Werte-Trigger bi+bu
+    -- unten).
+    gedaechtnisart TEXT NOT NULL DEFAULT 'semantisch'
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -419,6 +431,21 @@ BEFORE UPDATE ON knowledge_nodes
 FOR EACH ROW WHEN NEW.freigabe NOT IN ('offen','intern','gesperrt')
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.freigabe unzulaessig: erlaubt sind offen, intern, gesperrt');
+END;
+
+-- Gedaechtnisart (Aufgabe 104): gleiche Bauform wie gattung/freigabe oben.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gedaechtnisart_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gedaechtnisart NOT IN ('episodisch','semantisch','prozedural')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gedaechtnisart unzulaessig: erlaubt sind episodisch, semantisch, prozedural');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_gedaechtnisart_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.gedaechtnisart NOT IN ('episodisch','semantisch','prozedural')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.gedaechtnisart unzulaessig: erlaubt sind episodisch, semantisch, prozedural');
 END;
 
 -- norm_entscheidung (Auftrag 2026-08-08): 13 Zusicherungen, siehe
@@ -636,7 +663,13 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     -- lessons_learned.bedient_von ist bei 958 von 958 Zeilen leer.
     -- 'zufall' ist ausdruecklich vorgesehen: wird er der haeufigste Wert,
     -- fehlt an dieser Stelle ein Mechanismus (Plan §6).
-    bemerkt_woran TEXT
+    bemerkt_woran TEXT,
+    -- Gedaechtnisart, s. Kommentar an knowledge_nodes.gedaechtnisart.
+    -- Stichprobe n=30 (2026-08-19) ergab 70% episodisch (first_seen/
+    -- occurrences sind strukturell ein datiertes Ereignis) -- Vorgabe
+    -- deshalb 'episodisch', abweichend vom Vorgabewert an knowledge_nodes,
+    -- weil beide Tabellen unterschiedlich vorsortiert sind.
+    gedaechtnisart TEXT NOT NULL DEFAULT 'episodisch'
 );
 
 -- Schranke fuer beinahefehler/bemerkt_woran, gleiche Bauform wie die
@@ -681,6 +714,21 @@ BEFORE UPDATE ON lessons_learned
 FOR EACH ROW WHEN NEW.freigabe NOT IN ('offen','intern','gesperrt')
 BEGIN
     SELECT RAISE(ABORT, 'lessons_learned.freigabe unzulaessig: erlaubt sind offen, intern, gesperrt');
+END;
+
+-- Gedaechtnisart (Aufgabe 104), s. Kommentar an lessons_learned.gedaechtnisart.
+CREATE TRIGGER IF NOT EXISTS lessons_learned_gedaechtnisart_check_bi
+BEFORE INSERT ON lessons_learned
+FOR EACH ROW WHEN NEW.gedaechtnisart NOT IN ('episodisch','semantisch','prozedural')
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.gedaechtnisart unzulaessig: erlaubt sind episodisch, semantisch, prozedural');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lessons_learned_gedaechtnisart_check_bu
+BEFORE UPDATE ON lessons_learned
+FOR EACH ROW WHEN NEW.gedaechtnisart NOT IN ('episodisch','semantisch','prozedural')
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.gedaechtnisart unzulaessig: erlaubt sind episodisch, semantisch, prozedural');
 END;
 
 
