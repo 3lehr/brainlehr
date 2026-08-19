@@ -1,7 +1,7 @@
 # ADR-031: Verschlüsselt wird die Spalte, nicht die Datenbank — und der Index ist der eigentliche Gegner
 
 Datum: 2026-08-19T21:58:59+0200
-Status: VORGESCHLAGEN (Umsetzung offen, Reihenfolge in `docs/PLAN_GESAMT_2026-08-13.md`)
+Status: UMGESETZT (2026-08-19, alle drei Schritte: `aa8d954d`/`689ed19f`, `6760901e`, `16ac76c1`)
 
 ## Der gemessene Anlass
 
@@ -82,3 +82,38 @@ nicht stattgefunden hat. Das ist schlimmer als keine Löschung.
 Zusicherungen („Klartext lesbar") müssen für einen sensiblen Knoten rot
 werden, für einen normalen grün bleiben. Der Test ist absichtlich so gebaut,
 dass er das anzeigt, statt angepasst zu werden.
+
+
+## Nachtrag nach der Umsetzung (2026-08-19)
+
+Drei Dinge kamen anders, als diese ADR sie beschrieb:
+
+1. **Die Reihenfolge war wichtiger als gedacht, aber aus einem anderen Grund.**
+   Hier stand, der Index sei der Gegner. Beim Bauen zeigte sich: es sind
+   **sechs** Orte, nicht einer. Unter der Insert-Zeile von `knowledge_add`
+   reichen Vektor, Hinweisindex, Ähnlichkeitssuche, Wikilink-Auswertung und
+   das Zugriffsprotokoll denselben Text weiter — `log_access` schreibt
+   `summary` und `content` wörtlich in `affected_row`. Wer an der Spalte
+   verschlüsselt, verschlüsselt die Spalte und streut den Klartext daneben.
+   Die Ersetzung sitzt deshalb ganz am Anfang der Funktion, und der Test sucht
+   in den **Rohbytes** der Datei statt in einer Spalte. Knoten `1fdbd6fb`.
+
+2. **Der Schlüssel brauchte einen eigenen Ort, nicht nur eine eigene Spalte.**
+   Diese ADR sagte dazu nichts. `kern/schluesselablage.py` legt ihn in eine
+   getrennte Datei: läge er im Bestand, wäre jede Sicherung eine Bytekopie von
+   Schloss **und** Schlüssel, und eine Vernichtung wäre aus jeder alten
+   Sicherung wiederherstellbar — genau das, was Crypto-Shredding verhindern
+   soll.
+
+3. **Zwei Trigger statt einem waren falsch.** Der erste Entwurf teilte den
+   UPDATE-Trigger in zwei mit je einer `WHEN`-Bedingung. SQLite sichert die
+   Reihenfolge zweier AFTER-UPDATE-Trigger nicht zu; lief der einfügende
+   zuerst, löschte der andere den Eintrag gleich wieder. Jetzt ein Trigger mit
+   der Bedingung am `WHERE`. Lehre `L-7a5c00`.
+
+**Das Erfolgsmaß von oben ist eingelöst**, aber anders verteilt als
+angekündigt: `tests/test_e07_bestand_im_klartext.py` bleibt grün und beschreibt
+weiterhin den gewöhnlichen Knoten (Klartext, Absicht). Der Gegenbeleg für den
+sensiblen Knoten steht in `tests/test_adr031_sensible_knoten_ohne_index.py`
+(16 Fälle). Der eine Test, der umschlagen musste, ist umgeschlagen und wurde
+**umgedreht statt angepasst**: er verlangt jetzt, dass der Schreibweg da ist.
