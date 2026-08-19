@@ -1,3 +1,30 @@
+# STAND brainlehr — 2026-08-19T11:20:00+0200
+
+**BERICHTIGUNG, und sie trifft meine eigene Lageeinschätzung von heute Vormittag.** Ich hatte dem Betreiber gesagt, der Weg, den seine Chats gehen, sei „das Schlechteste, was wir haben" (0–4 von 35) — gestützt auf die Zahlen im Kopf von `haken/suchpfad_abruf.py`. Die sind vom **2026-08-09** und beschreiben einen seither umgebauten Weg. **Heute gemessen über die Produktivfunktion des Hakens** (`runs/abrufweg_produktiv_2026-08-19T111150.json`, Schnappschuss `20260819T090701-f4080e17`, Commit `a1fc997d`):
+
+| `SUCHPFAD_ABRUF` | top5 | überhaupt | Zeichen/Prompt (Median) |
+|---|---|---|---|
+| **an (Vorgabe)** | **11/35** | 12/35 | **7.032** |
+| aus | 1/35 | 1/35 | 0 — **33 von 35 Blöcken leer** |
+
+Aus den Rohzeilen nachgerechnet, nicht aus der Zusammenfassung übernommen. **11/35 ist besser als die 7/35 von `knowledge_search`**, auf denen alle anderen Zahlen dieser zwei Tage beruhen. Lehre `L-49b1cf`: eine datierte Zahl aus einem Modulkopf ist ein Messprotokoll, keine Eigenschaft — `git log --since=<Datum> -- <datei>` beantwortet in Sekunden, ob sie noch gilt.
+
+**Was von der Priorisierung bleibt und was fällt:**
+- **bleibt:** Der Abruf ist das **Teuerste** — Median 7.032 Zeichen in jedem Prompt jeder Sitzung, nie zwischengespeichert (gemessen: 108 Blöcke = 550.774 Zeichen ≈ 157.000 Token in dieser Sitzung).
+- **bleibt:** Die Enthaltung zahlt doppelt — Token und Schaden mit derselben Maßnahme.
+- **fällt:** „Wir optimieren einen Weg, den niemand benutzt."
+- **fällt:** Die Dringlichkeit. 11/35 ist kein Notfall.
+
+**Der schärfere Befund steht in der zweiten Zeile:** Wer `SUCHPFAD_ABRUF` abschaltet, bekommt keinen billigeren Abruf, sondern **fast keinen** — 33 von 35 Blöcken leer, 1/35 Treffer.
+
+**Neustart fällig, Liste präzise** (`melder/mcp_veraltet.py`, Commits `8ab24125` + `b6a49d49`): 10 veraltete Serverinstanzen — 6 eigene Claude-Fenster, **2 `hermes-agent` (PID 1323), 2 `codex` (PID 8593)**. Die letzten vier erreicht ein Chat-Neustart **nicht**. Vorher meldete er 14, davon 4 Fehlalarme, die zufällig 4 korrekte Auslassungen aufhoben.
+
+**Offen:** Enthaltung einbauen (Schwelle 0,55 gilt für `knowledge_search`, der Abrufweg braucht eine eigene Erhebung) · `112` Nachrangung (erst nach der Enthaltung) · `115` die drei fälschlich enthaltenen Fälle.
+
+**Wartet auf dich:** Push · die 3 Ablaufpflicht-Befunde von gestern · `melder/derivatfrische.py` sieht nur 6 von 1492 Dateien.
+
+---
+
 # STAND brainlehr — 2026-08-19T10:45:00+0200
 
 **Kaskadenregel gebrochen, zum vierten Mal — jetzt mit Zähler statt Vorsatz.** Gemessen am eigenen Protokoll: **807 Bash-Aufrufe im Opus-Hauptfaden, 1.680.313 Ausgabe-Token, 1 Agent-Aufruf seit der Verdichtung**. Die Eilmeldung `e4dd2b62` („27 Subagenten = 4,7 Mio Token") hatte ich als Aussage über andere gelesen. `L-53eeda` auf 3 Vorkommen, **auf Regelrang eskaliert**. Gebaut: `melder/kaskadenanteil.py` (Commit `b977de50`) — zählt die **Strecke seit der letzten Delegation**, nicht das Gesamtverhältnis; Schwelle **84 = gemessenes 90. Perzentil** der 30 Strecken dieser Sitzung (Median 17, Max 114). Im `Stop`-Block von `~/.claude/settings.json` verdrahtet (Sicherung `settings.json.bak-2026-08-19T1030`), `ausloeserlos.py` meldet ihn nicht mehr.
