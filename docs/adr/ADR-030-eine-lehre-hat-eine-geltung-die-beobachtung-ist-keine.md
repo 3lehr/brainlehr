@@ -79,3 +79,70 @@ wirkungslos.
 2. Von den 358 plattformabhängigen Lehren trägt nach einem Jahr ein messbarer
    Anteil ein Ablaufdatum; bleibt er bei null, war das Feld die falsche Antwort.
 3. `BDW-P05` kann die Geltung für Lehren dann prüfen, statt sie zu überspringen.
+
+---
+
+## Nachtrag 2026-08-19T14:35:00+0200 — die Geltung einer Plattform-Lehre ist eine VERSION, kein Datum
+
+Der Betreiber, unmittelbar nach der Entscheidung oben:
+
+> „‚vergleicht Versionen und Stände' dann brauchen wir aber auch ein
+> zusatztfeld: ab welcher ‚version' gilt diese regel usw?"
+
+**Das ist richtig und schärfer als das, was zwei Absätze weiter oben steht.**
+Eine Lehre über Flutter gilt nicht „bis zum 1. April 2027". Sie gilt „für
+Flutter bis 3.19" oder „seit Ollama 0.32". Das Datum ist ein Stellvertreter,
+die Version ist die Sache selbst.
+
+Und der Unterschied ist nicht akademisch, sondern entscheidet über die
+Prüfbarkeit:
+
+- Ein **Datum** muss jemand im Voraus kennen. Wer am Tag des Erfassens nicht
+  weiß, dass Apple im Frühjahr umstellt, trägt nichts ein — und das Feld
+  bleibt leer.
+- Eine **Versionsgrenze** ist gegen einen Anbieter-Feed maschinell prüfbar.
+  Gemessen am 2026-08-19: GitHub-Releases für Flutter, Ollama und Swift
+  antworten mit HTTP 200 und liefern Version plus Datum als JSON.
+
+## Was die Messung dazu ergab, und sie verbietet die naheliegende Umsetzung
+
+Über den vollen Bestand (1112 Lehren):
+
+| | |
+|---|---|
+| Lehren mit Produktbezug | **252** |
+| davon mit einer konkreten Version im Text | **12 (4,8 %)** |
+| ohne Version | 240 |
+
+Häufigste Produkte: Flutter 64 · Python 56 · CarPlay 43 · iOS 33 · Dart 26 ·
+Android 25 · Swift 19 · macOS 18.
+
+**Die 12 sind zudem größtenteils unbrauchbar.** Eine der gefundenen
+„Versionen" lautet `127.0.0` — das stammt aus der Adresse `127.0.0.1`. Andere
+sind Bibliotheksstände, nicht Plattformstände.
+
+**Daraus folgt: Ein Versionsfeld rückwirkend aus dem Text zu füllen ist
+ausgeschlossen.** Es wäre zu 95 % leer und im Rest teilweise falsch — genau
+die gebaute Regel ohne Wirkung, vor der der Preis-Abschnitt oben warnt, nur
+mit dem Zusatz, dass sie auch noch täuscht.
+
+## Die Entscheidung, in zwei Teilen statt einem
+
+**Erstens, rückwirkend möglich: `bezug`.** Welches fremde Produkt eine Lehre
+überhaupt betrifft, ist aus dem Text zuverlässig zu gewinnen — 252 Treffer,
+gegen eine feste Namensliste, ohne Modell. Damit kann ein Melder sagen:
+*„Flutter hat sich seit deinem letzten Stand bewegt; diese 64 Lehren nennen
+Flutter."* Das ist eine **Prüfliste**, keine Ablösung.
+
+**Zweitens, nur vorwärts: `gilt_bis_version` (und `gilt_ab_version`).** Sie
+werden **beim Erfassen** gesetzt, wo der Schreibende es weiß — nicht
+nachträglich geraten. Leer heißt „nicht versionsgebunden", nicht „unbekannt".
+
+## Was ausdrücklich NICHT gebaut wird
+
+Keine automatische Ablösung. Ein Versionssprung bei Ollama sagt nichts
+darüber, ob eine bestimmte Lehre dadurch falsch wird — das kann ein Vergleich
+nicht entscheiden und ein Skript nicht wissen. Es darf einen **Anlass**
+melden. Wer daraus eine Automatik macht, baut genau das System, das am
+2026-08-19 an einem fremden Produkt kritisiert wurde: eines, das immer etwas
+liefert und nie weiß, ob es stimmt.
