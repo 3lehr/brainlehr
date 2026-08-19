@@ -93,6 +93,7 @@ sys.path[:0] = [str(_w), str(_w / "kern"), str(_w / "messungen")]
 
 import knowledge_mcp_server as kms  # noqa: E402 -- Produktivweg, kein Nachbau
 from vier_gatearten import lade_faelle, rang_des_ziels  # noqa: E402
+from schnappschuss import festhalten  # noqa: E402 -- kern/, siehe messstand()
 from wirkung_ohne_gedaechtnis import (  # noqa: E402 -- Vorlage, wiederverwendet
     KORPUS,
     mit_speicher_enthaelt_ziel,
@@ -248,10 +249,43 @@ def selftest() -> None:
     print("selftest: ok", file=sys.stderr)
 
 
+def messstand() -> str:
+    """Biegt den Produktivweg auf eine EIGENE Kopie des Bestands um und gibt
+    deren Kennung zurueck.
+
+    ZWEI GRUENDE, und der zweite ist der wichtigere:
+
+    (1) Der Lauf vom 2026-08-19 brach nach rund 14 Minuten Modellzeit ab mit
+        `sqlite3.OperationalError: database is locked` -- knowledge_search()
+        SCHREIBT (access_log), und parallel arbeitende Sitzungen und der
+        Kurator schreiben in dieselbe Datei. Ein Messlauf, der auf einen
+        fremden Schreibvorgang wartet, ist kein Messlauf.
+
+    (2) VERGLEICHBARKEIT (L-de206a): dieselbe Messung lieferte am 2026-08-18
+        innerhalb einer Stunde 7/35 und 8/35, weil der Bestand waehrend des
+        Messens wuchs. Zwei Laeufe gegen den LEBENDEN Bestand sind nicht
+        gegeneinander lesbar, ohne dass irgendwo ein Fehler passiert waere.
+
+    Die Kennung wandert ins Ergebnis: ein spaeterer Lauf gegen dieselbe
+    Kennung misst denselben Bestand.
+
+    kms.DB_PATH wird zur Aufrufzeit in get_db() gelesen (nicht beim Import
+    festgehalten) -- deshalb genuegt die Zuweisung hier. Die Kopie darf
+    beschrieben werden; sie ist ein Wegwerfstand, und genau deshalb
+    verschmutzt der Lauf den Bestand auch nicht mehr mit Protokollzeilen.
+    """
+    stand = festhalten()
+    kms.DB_PATH = stand.pfad
+    print(f"messstand: {stand.kennung} ({stand.pfad})", file=sys.stderr)
+    return stand.kennung
+
+
 def main() -> None:
     if "--selftest" in sys.argv:
         selftest()
         return
+
+    stand_kennung = messstand()
 
     faelle_mit_ziel, faelle_ohne_ziel = lade_faelle(KORPUS)
     pk = positivkontrolle(faelle_mit_ziel)
@@ -327,6 +361,7 @@ def main() -> None:
             "(echter Produktivweg, max_results=5)"
         ),
         "modell": MODELL,
+        "messstand": stand_kennung,
         "kriterium": (
             f"'besser' = mindestens {int(SCHWELLE*100)}% der inhaltstragenden Woerter "
             "(Laenge>=4, Stoppwortliste ausgefiltert) aus target_label kommen woertlich in "
@@ -390,8 +425,8 @@ def main() -> None:
             "allgemeinem Vokabular stammen, das zufaellig in Aufgabe UND Hintergrundwissen fehlt.",
             "Der echte Recall-Hook (haken/knowledge_recall_hook.py) laeuft hier nicht mit -- "
             "memory_text() ist eine eigene, einfachere Formatierung der Top-5-Treffer.",
-            "Gilt fuer einen Zeitpunkt (2026-08-18) gegen den aktuell laufenden Bestand und das "
-            "aktuell installierte gemma4:12b.",
+            "Gilt gegen den festgehaltenen Bestand 'messstand' (runs/schnappschuesse/) und das "
+            "zum Laufzeitpunkt installierte gemma4:12b -- NICHT gegen den lebenden Bestand.",
         ],
         "je_fall": je_fall,
     }

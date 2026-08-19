@@ -100,3 +100,6 @@ auszug/bestand_*.jsonl
 # ins Repo. Enthaelt auch die isolierte Mess-DB (messstand*.db), NIE die
 # Produktions-brainlehr.db.
 korpora/longmemeval/
+
+# Messstaende: je Kopie ~120 MB, Wegwerfstaende eines Laufs (kern/schnappschuss.py).
+runs/schnappschuesse/
