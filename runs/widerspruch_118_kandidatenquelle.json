@@ -1,0 +1,382 @@
+{
+ "erhoben_am": "2026-08-19T13:09:46+02:00",
+ "schnappschuss_kennung": "20260819T110946-72b64534",
+ "korpus": "runs/pruefkorpus.jsonl",
+ "n": 35,
+ "messung_a_wiederholt_heute__bedeutungskanal_gemeinsam": {
+  "top5": 4,
+  "rang6_50": 9,
+  "ausserhalb_50": 22
+ },
+ "produktiv_kandidatenquelle__ziel_in_top50": 21,
+ "produktiv_kandidatenquelle_fundstelle": "knowledge_mcp_server.py::knowledge_search() Zeile ~2796ff (vorrang = final_ids gefiltert, final_ids = _fuse_with_keyword_floor()); _fuse_with_keyword_floor() Zeile ~2213 ruft embeddings.fuse_semantic_led() -- Bedeutungsrangliste FUEHRT, aber Knoten- und Lehren-Embeddings werden VORHER GETRENNT gerankt (kms._embedding_ranking je kind) und erst per rrf_fuse auf RANGPOSITION verschmolzen (nicht eine gemeinsame Kosinusliste). Stichwortkanal reserviert nur 1 Platz (embeddings.keyword_floor_size()).",
+ "gegenprobe": {
+  "target_id": "/ops/buckeberg-konsil-2026-07-22-governance",
+  "target_id_aufgeloest": "58b82df7",
+  "target_kind": "node",
+  "rang_bedeutungskanal_gemeinsam": 150,
+  "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+  "rang_produktiv_ungekappt": 1,
+  "eimer_produktiv_top50": "top5",
+  "in_produktiv_top50": true
+ },
+ "fazit_ein_satz": "Messung A (reiner, gemeinsamer Bedeutungskanal ueber Knoten UND Lehren zusammen) bleibt gueltig fuer genau diese Frage -- wie viele Ziele eine EINZIGE Kosinusliste ueber den gesamten Bestand erreicht --, beschreibt aber NICHT die Kandidatenmenge der Nachrangung, die Knoten und Lehren GETRENNT rankt und per Rangposition verschmilzt (dadurch deutlich mehr Ziele im Fenster: 21 von 35 statt 13 von 35 heute gemessen); Messung B's 18/35 ist mit dieser groesseren, tatsaechlichen Kandidatenmenge vereinbar und bleibt insofern gueltig -- der scheinbare Widerspruch entsteht nur, wenn man Messung A's Zahl faelschlich als Obergrenze fuer Messung B's Kandidatenmenge liest.",
+ "einzelfaelle": [
+  {
+   "target_id": "L-a9ccd0",
+   "target_id_aufgeloest": "L-a9ccd0",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 10,
+   "eimer_bedeutungskanal_gemeinsam": "rang6_50",
+   "rang_produktiv_ungekappt": 7,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "L-298823",
+   "target_id_aufgeloest": "L-298823",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 58,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 79,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "L-f9f654",
+   "target_id_aufgeloest": "L-f9f654",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 67,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 63,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "L-b4b443",
+   "target_id_aufgeloest": "L-b4b443",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 174,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 190,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "L-44a838",
+   "target_id_aufgeloest": "L-44a838",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 44,
+   "eimer_bedeutungskanal_gemeinsam": "rang6_50",
+   "rang_produktiv_ungekappt": 45,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "L-cdac52",
+   "target_id_aufgeloest": "L-cdac52",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 2734,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 1784,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "L-e7bc5e",
+   "target_id_aufgeloest": "L-e7bc5e",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 2,
+   "eimer_bedeutungskanal_gemeinsam": "top5",
+   "rang_produktiv_ungekappt": 5,
+   "eimer_produktiv_top50": "top5",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "L-e1a441",
+   "target_id_aufgeloest": "L-e1a441",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 1,
+   "eimer_bedeutungskanal_gemeinsam": "top5",
+   "rang_produktiv_ungekappt": 3,
+   "eimer_produktiv_top50": "top5",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "L-b91ed6",
+   "target_id_aufgeloest": "L-b91ed6",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 342,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 170,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "L-bbd7fb",
+   "target_id_aufgeloest": "L-bbd7fb",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 683,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": null,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "L-503687",
+   "target_id_aufgeloest": "L-503687",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 528,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 475,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "L-8c633e",
+   "target_id_aufgeloest": "L-8c633e",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 148,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 177,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "L-606b63",
+   "target_id_aufgeloest": "L-606b63",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 122,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 124,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "L-0392e4",
+   "target_id_aufgeloest": "L-0392e4",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 10,
+   "eimer_bedeutungskanal_gemeinsam": "rang6_50",
+   "rang_produktiv_ungekappt": 17,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "L-476602",
+   "target_id_aufgeloest": "L-476602",
+   "target_kind": "lesson",
+   "rang_bedeutungskanal_gemeinsam": 7,
+   "eimer_bedeutungskanal_gemeinsam": "rang6_50",
+   "rang_produktiv_ungekappt": 7,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/ops/buckeberg-konsil-2026-07-22-governance",
+   "target_id_aufgeloest": "58b82df7",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 150,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 1,
+   "eimer_produktiv_top50": "top5",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+   "target_id_aufgeloest": "b46066a2",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 138,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 102,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+   "target_id_aufgeloest": "394de62f",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 16,
+   "eimer_bedeutungskanal_gemeinsam": "rang6_50",
+   "rang_produktiv_ungekappt": 8,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+   "target_id_aufgeloest": "f6d00767",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 42,
+   "eimer_bedeutungskanal_gemeinsam": "rang6_50",
+   "rang_produktiv_ungekappt": 10,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/apps/metahuman-podcast-one-command-pipeline",
+   "target_id_aufgeloest": "483acb56",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 60,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 18,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/openlehr/volltextindex-wird-beim-einlesen",
+   "target_id_aufgeloest": "5e90c2f7",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 10,
+   "eimer_bedeutungskanal_gemeinsam": "rang6_50",
+   "rang_produktiv_ungekappt": 5,
+   "eimer_produktiv_top50": "top5",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/lessons/phase2-summary",
+   "target_id_aufgeloest": "12cba5c6-61d",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 1506,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 511,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "/testing/pytest",
+   "target_id_aufgeloest": "c4f47e46",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 118,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 50,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/brainlehr/inference-control-was-andere-faecher",
+   "target_id_aufgeloest": "dd1a5382",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 68,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 36,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/methodik/einstieg",
+   "target_id_aufgeloest": "e063194d",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 80,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 8,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/stadtwerke",
+   "target_id_aufgeloest": "d4dc4599",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 13,
+   "eimer_bedeutungskanal_gemeinsam": "rang6_50",
+   "rang_produktiv_ungekappt": 4,
+   "eimer_produktiv_top50": "top5",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/openlehr/steuer/ui",
+   "target_id_aufgeloest": "341c2ad5",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 916,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 385,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+   "target_id_aufgeloest": "cb56f7d1",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 1,
+   "eimer_bedeutungskanal_gemeinsam": "top5",
+   "rang_produktiv_ungekappt": 1,
+   "eimer_produktiv_top50": "top5",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+   "target_id_aufgeloest": "e4c346ea",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 914,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 1878,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+   "target_id_aufgeloest": "8dc84938",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 1,
+   "eimer_bedeutungskanal_gemeinsam": "top5",
+   "rang_produktiv_ungekappt": 2,
+   "eimer_produktiv_top50": "top5",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+   "target_id_aufgeloest": "465716f0",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 18,
+   "eimer_bedeutungskanal_gemeinsam": "rang6_50",
+   "rang_produktiv_ungekappt": 14,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+   "target_id_aufgeloest": "07fb68aa",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 1405,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 506,
+   "eimer_produktiv_top50": "ausserhalb_50",
+   "in_produktiv_top50": false
+  },
+  {
+   "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+   "target_id_aufgeloest": "c7d1e77d",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 113,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 1,
+   "eimer_produktiv_top50": "top5",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+   "target_id_aufgeloest": "82647e84",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 84,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 10,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  },
+  {
+   "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+   "target_id_aufgeloest": "bf7043b4",
+   "target_kind": "node",
+   "rang_bedeutungskanal_gemeinsam": 272,
+   "eimer_bedeutungskanal_gemeinsam": "ausserhalb_50",
+   "rang_produktiv_ungekappt": 22,
+   "eimer_produktiv_top50": "rang6_50",
+   "in_produktiv_top50": true
+  }
+ ],
+ "offen": [
+  "Ob Messung A's '5963 Kandidaten' methodisch der gemeinsamen Kosinusliste (1) entspricht oder etwas Drittem, ist NICHT im Knoten 291c2e3f dokumentiert (nur die Zahl steht dort, kein Skriptpfad) -- diese Messung rekonstruiert (1) aus dem Wortlaut, ohne das Originalskript pruefen zu koennen.",
+  "Ob sich der Bestand zwischen 2026-08-16 und heute bewegt hat, ist mit dieser Messung nicht getrennt von der Kandidatenquellen-Frage isoliert -- beide Effekte koennten gemeinsam wirken.",
+  "target_kind-Verteilung (node vs lesson) im Korpus wird hier nicht separat ausgewertet, obwohl sie fuer die rrf_fuse-Erklaerung relevant waere.",
+  "in_produktiv_top50 zaehlt Rang<=50 in der UNGEKUERZTEN final_ids-Reihenfolge; bei max_results=50 koennten wenige Plaetze durch abgelaufene Normen (Geltung) in 'nachrangig' abwandern und vorrang auf < 50 Eintraege verkuerzen -- dieser Effekt ist hier nicht gesondert gemessen."
+ ]
+}
