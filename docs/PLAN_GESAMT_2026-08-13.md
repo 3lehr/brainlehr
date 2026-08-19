@@ -1549,3 +1549,51 @@ Lehren tragen eine Schrittfolge — das heißt nicht, dass 248 Lehren Prozeduren
 *sind*. Eine `antipattern`-Lehre mit Schritten in ihrer Vorbeugung bleibt eine
 Lehre über einen Fehler; die Prozedur steckt *in* ihr. Die 85 `pattern`-Lehren
 mit Schrittfolge sind der belastbare Kern, und mit ihnen ist zu beginnen.
+
+---
+
+## `P05` bleibt bei 3/35 — und meine Vorhersage war falsch, was die Frage schärft
+
+Lehren liefern seit `2a2afe45` ihre Herkunfts- und Geltungsfelder: `session`,
+`actor`, `model`, `pruefstelle`, `status`, `first_seen`, `last_seen`,
+`occurrences`, `bezug`, `gilt_ab`, `gilt_bis`, `gilt_bis_version`,
+`node_path`. Am echten Weg geprüft, sie kommen an.
+
+**Die Zahl bewegt sich trotzdem nicht: 3/35, unverändert.** Ich hatte
+vorhergesagt, Status springe auf 15/15. Falsch — und der Grund steht in drei
+Zeilen von `messungen/zielbild_a_vollstaendigkeit.py`:
+
+```python
+"quelle":  bool(ziel.get("source") or ziel.get("quelle")),
+"status":  ziel.get("norm_rang") is not None or bool(ziel.get("norm_entscheidung")),
+"geltung": bool(ziel.get("gilt_ab") or ziel.get("gilt_bis")),
+```
+
+**Alle drei nennen Knoten-Vokabeln.** Eine Lehre hat weder `source` noch
+`norm_rang` noch `norm_entscheidung` — für 15 der 35 Ziele ist das Ergebnis
+strukturell null, unabhängig davon, was ausgeliefert wird. Dieselbe Klasse wie
+`L-352afa`: das Werkzeug beantwortet eine engere Frage als der Satz darüber.
+
+Die Auslieferung war trotzdem richtig: die Felder sind jetzt für **jeden**
+Verbraucher da. Nur dieses eine Kriterium schaut nicht hin.
+
+### Die Entscheidung, unverkürzt
+
+| | |
+|---|---|
+| **Anerkennen** | Das AC sagt selbst „geprüft wird, was beim Fragenden ankommt". Eine Lehre mit *Sitzung, Zeitpunkt, Status, Vorkommen* lässt sich beurteilen. Ohne Anerkennung ist `P05` bei **57 % gedeckelt** und damit unerfüllbar formuliert. |
+| **Ablehnen** | `session=9efc6a71` ist für einen Menschen **keine Quelle**. Bei einem Knoten steht dort „erzeugt aus Datei X, Stand Y". `P05` ist die Zeile, die diesen Anspruch überhaupt misst — wer die Vokabel erweitert, senkt ihn. |
+
+**Entschieden, bis der Betreiber widerspricht: ablehnen.** Eine Lehre bekommt
+eine echte Quelle statt einer nachgelassenen Definition. Das Feld dafür
+existiert — `pruefstelle` sagt, *woran* eine Lehre gemessen wurde — und ist bei
+**92 von 1117** gefüllt.
+
+**Der Preis, ausdrücklich:** Für die 1025 Altlehren ist `pruefstelle` nicht
+rekonstruierbar. `P05` bleibt damit auf absehbare Zeit unter der Schwelle, und
+das ist die ehrlichere Zahl als eine, die durch eine erweiterte Vokabel
+entsteht.
+
+**Was ausdrücklich NICHT getan wird:** das Kriterium so umschreiben, dass die
+vorhandenen Felder passen. Das wäre die Messlatte ans Ergebnis angepasst — der
+Fehler, der heute früh schon einmal `100` entwertet hat.
