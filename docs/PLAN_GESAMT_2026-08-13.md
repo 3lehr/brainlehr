@@ -1306,3 +1306,45 @@ niemand die Enthaltung später für eine Trefferzusage hält.
 und stehen auf Rang 1, tragen aber Kosinuswerte unter dem höchsten fachfremden
 Wert des Korpus. Solange das so ist, kostet jede Schwelle in diesem Bereich
 echte Fälle.
+
+---
+
+## `108` erledigt — und meine Begründung dafür ist widerlegt
+
+```
+vorher:  8 Knoten + 1 Lehre ohne Einbettung · 157 + 172 = 329 mit veralteter Prüfsumme
+nachher: 0 · 0 · 0                            478 Einbettungszeilen in 30,1 s
+```
+
+`kern/build_embeddings.py`, Prüfsumme der Bestandsdaten vor und nach dem Lauf
+identisch (das Skript prüft das selbst): **keine Bestandsdaten angefasst**.
+
+### Die Begründung war falsch, und das gehört hierher
+
+Ich habe `108` vor `116` gezogen mit der Überlegung, die niedrigen
+Kosinuswerte der drei enthaltenen Fälle könnten von veralteten Vektoren
+kommen — dieselbe Sache von zwei Seiten. **Gemessen: unverändert.**
+
+| Fall | vorher | nach dem Neurechnen |
+|---|---|---|
+| `/ops/buckeberg-konsil-…-governance` | 0,5294 | **0,5294** |
+| `/apps/metahuman-podcast-…` | 0,5101 | **0,5101** |
+| `/stadtwerke` | 0,5399 | **0,5399** |
+
+Auf die vierte Stelle identisch — die drei waren nie unter den 329 veralteten.
+Und auch die zweite naheliegende Erklärung fällt: **keiner der drei** gehört zu
+den 14 beim Einbetten gekappten Knoten (nachgesehen mit
+`embeddings.wird_gekappt()` über den echten Bestand).
+
+`108` war trotzdem richtig — 329 Einträge, deren Vektor einen Text beschreibt,
+den es so nicht mehr gibt, sind ein echter Defekt, und die Suche lieferte
+dadurch falsch, ohne dass irgendwo ein Fehler auftauchte. Aber die beiden
+Aufgaben hängen **nicht** zusammen, und `116` steht damit unverändert offen,
+nur ohne seine bequemste Vermutung.
+
+**Was für `116` übrig bleibt, nachdem zwei Erklärungen ausgeschieden sind:**
+Die drei Texte sind inhaltlich einschlägig, stehen auf Fusionsrang 1, sind
+frisch eingebettet und nicht gekappt — und tragen trotzdem einen Kosinus unter
+dem höchsten fachfremden Wert des Korpus (0,5410). Damit ist die nächste Frage
+nicht mehr „ist der Vektor kaputt", sondern was der Bedeutungskanal an *diesen*
+Texten misst, das er an fachfremden Texten höher bewertet.
