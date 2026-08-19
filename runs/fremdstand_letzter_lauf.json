@@ -1,0 +1,22 @@
+{
+  "flutter": {
+    "datum": "2024-01-11T18:31:57Z",
+    "version": "3.19.0-0.1.pre"
+  },
+  "geg": {
+    "datum": "Fri, 07 Aug 2026 20:00:03 GMT",
+    "version": "707a2a57b2b5278c"
+  },
+  "gesetze-toc": {
+    "datum": "Wed, 19 Aug 2026 01:03:20 GMT",
+    "version": "36ca0cf14f4da6d2"
+  },
+  "ollama": {
+    "datum": "2026-08-15T19:41:23Z",
+    "version": "v0.32.14"
+  },
+  "swift": {
+    "datum": "2026-06-30T14:36:16Z",
+    "version": "swift-6.3.3-RELEASE"
+  }
+}
