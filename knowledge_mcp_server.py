@@ -2629,7 +2629,10 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             f"SELECT id, tags FROM knowledge_nodes n WHERE {_NICHT_GESPERRT_SQL} {_gattung_sql}"
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         fts_lesson_rows = [] if blind else conn.execute(
-            f"""SELECT l.id, l.description, l.type, l.severity, l.projects, l.freigabe
+            f"""SELECT l.id, l.description, l.type, l.severity, l.projects, l.freigabe,
+                      l.session, l.actor, l.model, l.pruefstelle, l.status, l.first_seen,
+                      l.last_seen, l.occurrences, l.bezug, l.gilt_ab, l.gilt_bis,
+                      l.gilt_bis_version, l.node_path
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
                WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL}
@@ -2653,7 +2656,10 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         _proj_clause = geltungsbereich.sql_projects_exact("l.projects")
         fts_lesson_rows = [] if blind else conn.execute(
-            f"""SELECT l.id, l.description, l.type, l.severity, l.projects, l.freigabe
+            f"""SELECT l.id, l.description, l.type, l.severity, l.projects, l.freigabe,
+                      l.session, l.actor, l.model, l.pruefstelle, l.status, l.first_seen,
+                      l.last_seen, l.occurrences, l.bezug, l.gilt_ab, l.gilt_bis,
+                      l.gilt_bis_version, l.node_path
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
                WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL}
@@ -2742,7 +2748,9 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
             if _zweckprojektion_sichtbar(ausw, r["tags"]):
                 by_id[r["id"]] = r
         for r in conn.execute(
-            f"SELECT id, description, type, severity, projects, freigabe FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active' AND {_NICHT_GESPERRT_SQL}",
+            f"SELECT id, description, type, severity, projects, freigabe, session, actor, model, "
+            f"pruefstelle, status, first_seen, last_seen, occurrences, bezug, gilt_ab, gilt_bis, "
+            f"gilt_bis_version, node_path FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active' AND {_NICHT_GESPERRT_SQL}",
             missing
         ):
             by_id_lessons[r["id"]] = r
@@ -2797,9 +2805,19 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                              "project": json.loads(row["projects"]) if row["projects"] else [],
                              "bedeutungs_kosinus": kosinus_je_id.get(row["id"]),
                              # Lehren kennen nur freigabe aus dem angefragten Feldsatz --
-                             # source/norm_rang/gilt_ab/gilt_bis/norm_entscheidung gibt es
-                             # in lessons_learned nicht (schema.sql), also nicht erfunden.
-                             "freigabe": row["freigabe"]})
+                             # source/norm_rang/norm_entscheidung gibt es in lessons_learned
+                             # nicht (schema.sql), also nicht erfunden. Die uebrigen
+                             # Herkunfts-/Geltungsfelder traegt die Tabelle wirklich (Auftrag
+                             # 2026-08-19) -- roh aus der Zeile, ungeprueft. Leer bleibt leer:
+                             # None heisst "nicht gesetzt", nicht 0/leer/erfunden.
+                             "freigabe": row["freigabe"], "session": row["session"],
+                             "actor": row["actor"], "model": row["model"],
+                             "pruefstelle": row["pruefstelle"], "status": row["status"],
+                             "first_seen": row["first_seen"], "last_seen": row["last_seen"],
+                             "occurrences": row["occurrences"], "bezug": row["bezug"],
+                             "gilt_ab": row["gilt_ab"], "gilt_bis": row["gilt_bis"],
+                             "gilt_bis_version": row["gilt_bis_version"],
+                             "node_path": row["node_path"]})
     if nachrangung and len(vorrang) > 1:
         # Nur der vorrangige Teil wird umgeordnet. Die nachrangigen Eintraege
         # stehen hinten, WEIL ihre Geltung abgelaufen ist -- ein Nachranger,
