@@ -1,0 +1,121 @@
+{
+  "ziel_min": 0.5862,
+  "ziel_median": 0.6187,
+  "ziel_max": 0.6469,
+  "negativ_min": 0.4435,
+  "negativ_median": 0.4964,
+  "negativ_max": 0.541,
+  "trennbar": true,
+  "je_frage": [
+    {
+      "art": "ziel",
+      "frage": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobi",
+      "bester_kosinus": 0.6243
+    },
+    {
+      "art": "ziel",
+      "frage": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine",
+      "bester_kosinus": 0.6187
+    },
+    {
+      "art": "ziel",
+      "frage": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umsch",
+      "bester_kosinus": 0.593
+    },
+    {
+      "art": "ziel",
+      "frage": "Ein Nutzer meldet, dass die Anwendung fälschlicherweise eine aktive Ha",
+      "bester_kosinus": 0.5946
+    },
+    {
+      "art": "ziel",
+      "frage": "Bei der Implementierung eines Systems zur automatischen Erstellung von",
+      "bester_kosinus": 0.59
+    },
+    {
+      "art": "ziel",
+      "frage": "In der Fehleranalyse stellte ich fest, dass die Einblendung von Bestät",
+      "bester_kosinus": 0.5942
+    },
+    {
+      "art": "ziel",
+      "frage": "Ein Techniker stellt fest, dass der automatisierte Datenabgleich abgeb",
+      "bester_kosinus": 0.5862
+    },
+    {
+      "art": "ziel",
+      "frage": "Ein Administrator muss die Testdatensätze aus dem System löschen, bevo",
+      "bester_kosinus": 0.6211
+    },
+    {
+      "art": "ziel",
+      "frage": "Nach dem Rollout zeigen die automatisierten Prüfprotokolle eine lange ",
+      "bester_kosinus": 0.6195
+    },
+    {
+      "art": "ziel",
+      "frage": "Die Überwachungssoftware für die Lagerhalle meldet einen sicheren Zust",
+      "bester_kosinus": 0.6192
+    },
+    {
+      "art": "ziel",
+      "frage": "Ein Tool zur automatischen Fehlerprüfung in einer Software meldet stän",
+      "bester_kosinus": 0.5915
+    },
+    {
+      "art": "ziel",
+      "frage": "Ein Nutzer beschwert sich über eine fehlerhafte Anzeige auf einer spez",
+      "bester_kosinus": 0.6469
+    },
+    {
+      "art": "negativ",
+      "frage": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl e",
+      "bester_kosinus": 0.541
+    },
+    {
+      "art": "negativ",
+      "frage": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Pl",
+      "bester_kosinus": 0.4964
+    },
+    {
+      "art": "negativ",
+      "frage": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzuliste",
+      "bester_kosinus": 0.4943
+    },
+    {
+      "art": "negativ",
+      "frage": "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungs",
+      "bester_kosinus": 0.4478
+    },
+    {
+      "art": "negativ",
+      "frage": "Beschreibe in 2 Saetzen, wie man einen Hefeteig fuer Pizza ansetzt.",
+      "bester_kosinus": 0.4524
+    },
+    {
+      "art": "negativ",
+      "frage": "Wie berechnet man die Umlaufbahnperiode eines Satelliten aus der Bahnh",
+      "bester_kosinus": 0.5107
+    },
+    {
+      "art": "negativ",
+      "frage": "Nenne die Zutaten fuer einen klassischen Bechamel.",
+      "bester_kosinus": 0.4435
+    },
+    {
+      "art": "negativ",
+      "frage": "Nenne drei Faustregeln fuer Rosenschnitt im Fruehjahr.",
+      "bester_kosinus": 0.4525
+    },
+    {
+      "art": "negativ",
+      "frage": "Erklaere kurz den Unterschied zwischen TCP und UDP.",
+      "bester_kosinus": 0.5299
+    },
+    {
+      "art": "negativ",
+      "frage": "Wie lautet der Befehl, um in git einen Branch umzubenennen (lokal + re",
+      "bester_kosinus": 0.539
+    }
+  ]
+}
