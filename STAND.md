@@ -1,3 +1,15 @@
+# STAND brainlehr — 2026-08-19T08:05:00+0200
+
+**`100` gefahren, und sie liefert KEINE Wirkungszahl.** Der Lauf hält jetzt (Messstand `20260819T053907-139e3687`, 904,6 s, kein Abbruch, `kein_ergebnis` 0/0) — aber beide Kontrollen schlagen an, und beide zeigen auf die **Bewertung**: die Positivkontrolle scheitert, weil `zielausschnitt()` für einen Knoten den **Titel** liefert und das Kriterium damit Titelwiederholung prüft statt Richtigkeit; die Negativkontrolle zählt das ausdrückliche **Zurückweisen** des Speichers als Kontamination. Kriterium NICHT nachgebessert (das wäre Anpassung nach Sicht des Ergebnisses) → neue Aufgabe `113` legt die Abnahme vorab fest, prüfbar an den gespeicherten Antworten ohne neuen Modelllauf.
+**Ernstester Einzelbefund des Laufs:** „Welcher Knoten zum Verzurren einer Plane?" — ohne Speicher **Mastwurf** (richtig), mit Speicher **„der Knoten Kalibrierbremse"**. Der Wortkanal schlägt bei fachfremden Fragen zu und macht Antworten schlechter.
+**Messläufe laufen ab sofort gegen einen Schnappschuss** (`messstand()` in `messungen/wirkung_llm_probe.py`). Vorher schrieb der Lauf ins `access_log` des lebenden Bestands und starb an `database is locked`. Gegenprobe: live 20077 → 20077 unverändert, Kopie +2. **Preis: ~120 MB je Lauf**, `runs/schnappschuesse/` ist jetzt in `.gitignore`; Aufräumen bewusst NICHT gebaut (eine weitergereichte Kennung muss auflösbar bleiben).
+**Zwei Zahlen der Linie K halten der Nachprüfung nicht stand.** `110` (12 Kennungskollisionen): **0** — es gab nie ein Skript dazu, jetzt gibt es eins (`melder/kennungskollision.py`), die 4 Funde sind gewollte Fortschreibungen. `109` (6 stumme Spalten): **3** — die vier `tokens_*` waren ein Artefakt des Melders (voller Nenner über eine Historie, die die Spalte nicht tragen konnte).
+**Falle, zweimal am selben Tag getroffen:** Ein Nenner ist die stillste Stelle einer Messung — er erzeugt keinen Fehler, nur eine falsche Zahl, und die liest sich wie ein Befund (`L-412e20`). Und: eine Regex-Alternation mit `|` ist in Python **erstpassend**, nicht längstpassend — `B4` schluckt `B4.1` (`L-e916b0`, Beinahefehler).
+**Nächstes:** `113` (Kriterium mit vorab festgelegter Abnahme) vor jedem weiteren Wirkungslauf · `112` (Nachrangung von `brainlehr/atelier` holen, +34 Punkte top5, Preis 48,6 s/Anfrage) vor dem *zweiten*.
+**Wartet auf dich:** Push (jetzt 29 Commits vor `origin/brainlehr/b4-ausweis`) · die anderen Punkte unverändert siehe unten.
+
+---
+
 # STAND brainlehr — 2026-08-18T21:00:01+0200
 **Vertragsnaht (2026-08-18):** alle INT-Gates zu. `INT-SNAP-001` gebaut UND verdrahtet — der Messlauf las bis heute direkt gegen den wachsenden Bestand; jetzt pinnt er den ganzen Lauf (`beb14580`, festhalten 0,09 s bei 118 MiB, Aufräumen im finally). `INT-ACT-001` gebaut, NICHT eingeschaltet.
 **Nächstes:** `INT-UPD-002` bauen — Importkennung auf jeder geschriebenen Zeile, `nimm_import_zurueck(kennung)` entfernt genau diesen Import und lässt in Kraft gesetzte Regeln stehen oder verweigert.
