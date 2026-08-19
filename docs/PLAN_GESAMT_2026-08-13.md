@@ -1597,3 +1597,50 @@ entsteht.
 **Was ausdrücklich NICHT getan wird:** das Kriterium so umschreiben, dass die
 vorhandenen Felder passen. Das wäre die Messlatte ans Ergebnis angepasst — der
 Fehler, der heute früh schon einmal `100` entwertet hat.
+
+## `BDW-E15`: Sicherungen liegen neben der Datenbank — was daran wirklich fehlt
+
+**Gemessener Ist-Stand** (2026-08-19, `grep` über alle `*.py` ohne Arbeitsbäume):
+zwölf identische Zeilen in `knowledge_mcp_server.py` bilden den Sicherungspfad
+als `DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"`. Es gibt **keine** Stelle,
+die einen anderen Ort kennt. Die Katalogzeile sagt dazu „getrennt: NEIN", und
+das ist richtig gemessen.
+
+**Was „getrennt" heißt, und hier wird unterschieden statt zusammengeworfen:**
+
+| Trennung | heute | mit dieser Änderung |
+|---|---|---|
+| anderes Verzeichnis | nein | ja (`sicherungen/` neben der DB) |
+| anderer Datenträger | nein | nur, wenn der Betreiber `BRAINLEHR_SICHERUNGSORT` setzt |
+| offline | nein | nein |
+
+Die erste Zeile ist die, die im Alltag trägt: ein `rm knowledge.db*`, ein
+falsch gezielter Aufräumlauf, ein Verzeichnis, das jemand leert — all das
+nimmt heute Bestand **und** Sicherung mit. Die zweite und dritte Zeile sind
+Betreibersache (welcher Datenträger, welches Medium) und werden **nicht**
+erraten; die Umgebungsvariable ist der Griff dafür.
+
+**Alternativen, verworfen:**
+- *Eine Helferfunktion an jeder der zwölf Stellen einbauen und dort den Ort
+  entscheiden.* Verworfen: dieselbe Falle wie beim Aufräumen (`kern/sicherungen.py`
+  ist genau deshalb verzeichnisweit gebaut). Die dreizehnte Schreibstelle wird
+  es wieder falsch machen.
+- *Auf ADR-029 verweisen und nichts tun* („der Schlüssel ist weg, also ist die
+  Sicherung mitgelöscht"). Verworfen: ADR-029 löst die **Löschfrist** in
+  Kopien, nicht den **Verlust** von Bestand und Kopie in einem Griff. Das sind
+  zwei verschiedene Fragen, und E15 stellt die zweite.
+
+**Reihenfolge, bindend:** `kandidaten()` muss BEIDE Orte lesen, **bevor** die
+erste Sicherung an den neuen Ort geht. Sonst sieht das Aufräumen die alten 
+Sicherungen nicht mehr — genau der Befund vom 2026-08-19, bei dem 96 % des 
+Gegenstands unerreichbar waren, nur mit dem Verzeichnis statt dem Namen als 
+Ursache.
+
+**Was bewusst nicht getan wird:** kein Zeitplan (E15 verlangt „automatisch";
+heute ist es ereignisgetrieben beim Serverstart). Preis: eine Woche ohne
+Serverstart ist eine Woche ohne Sicherung. Bleibt offen und wird in der
+Katalogzeile benannt, statt sie auf PASS zu heben.
+
+**Erfolgsmaß:** `kern/sicherungen.py --selftest` grün mit einem Fall, der eine
+Sicherung am ALTEN und eine am NEUEN Ort anlegt und beide gefunden sieht; rot
+gegen einen festen Commit.

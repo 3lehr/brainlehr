@@ -31,7 +31,41 @@ while not (_w / "schema.sql").exists() and _w != _w.parent:
     _w = _w.parent
 _sys.path[:0] = [str(_w)] + [str(_w / o) for o in ("kern", "haken")]
 
+import os
 from pathlib import Path
+
+# WO die automatischen Sicherungen liegen (BDW-E15, 2026-08-19).
+#
+# Bis heute bildeten zwoelf Stellen in knowledge_mcp_server.py den Pfad selbst
+# als `DB_PATH.parent / f"{name}.bak-{stamp}"` -- Sicherung und Bestand im
+# SELBEN Verzeichnis. Ein `rm <db>*`, ein falsch gezielter Aufraeumlauf oder
+# ein geleertes Verzeichnis nimmt damit beides in einem Griff mit.
+#
+# Was diese Zeilen loesen und was NICHT: Sie trennen das VERZEICHNIS. Einen
+# anderen DATENTRAEGER kann nur der Betreiber bestimmen -- dafuer ist die
+# Umgebungsvariable da, und ohne sie wird nichts erraten. Offline ist damit
+# weiterhin nicht erfuellt; das steht so in der Katalogzeile.
+ORT_UMGEBUNG = "BRAINLEHR_SICHERUNGSORT"
+ORDNERNAME = "sicherungen"
+
+
+def sicherungsordner(db_pfad: Path) -> Path:
+    """Wohin neue automatische Sicherungen gehen."""
+    gesetzt = os.environ.get(ORT_UMGEBUNG, "").strip()
+    return Path(gesetzt) if gesetzt else Path(db_pfad).parent / ORDNERNAME
+
+
+def sicherungspfad(db_pfad: Path, stempel: str) -> Path:
+    """Der vollstaendige Pfad EINER neuen Sicherung. Legt den Ordner an.
+
+    Die zwoelf Schreibstellen rufen ausschliesslich das hier -- eine
+    dreizehnte, die den Pfad wieder selbst bildet, ist damit ein sichtbarer
+    Sonderweg statt einer stillen Wiederholung."""
+    db_pfad = Path(db_pfad)
+    ordner = sicherungsordner(db_pfad)
+    ordner.mkdir(parents=True, exist_ok=True)
+    return ordner / f"{db_pfad.name}{MUSTER}{stempel}"
+
 
 # Wieviele der juengsten automatischen Sicherungen bleiben liegen.
 # Zehn, weil eine Sicherung genau einen Zweck hat: den Schritt zurueck, der
@@ -81,11 +115,22 @@ def kandidaten(db_pfad: Path) -> list[Path]:
     nicht insgesamt. Sonst wuerden bei einer Umbenennung die juengsten des
     alten Namens die des neuen verdraengen oder umgekehrt, je nachdem welcher
     Zeitstempel gerade hoeher liegt."""
-    ordner = db_pfad.parent
-    if not ordner.is_dir():
+    # BEIDE Orte, und diese Reihenfolge ist bindend: der neue Ordner existiert
+    # seit 2026-08-19, das alte Verzeichnis traegt alles davor. Wer nur den
+    # neuen liest, wiederholt den Befund vom selben Tag -- ein Aufraeumen, das
+    # 96 Prozent seines Gegenstands strukturell nicht erreicht -- nur mit dem
+    # Verzeichnis statt dem Namen als Ursache.
+    orte = [db_pfad.parent, sicherungsordner(db_pfad)]
+    alle = []
+    gesehen = set()
+    for ordner in orte:
+        if not ordner.is_dir() or ordner in gesehen:
+            continue
+        gesehen.add(ordner)
+        alle.extend(ordner.iterdir())
+    if not alle:
         return []
     namen = (db_pfad.name, *FRUEHERE_NAMEN)
-    alle = list(ordner.iterdir())
     treffer: list[Path] = []
     for name in namen:
         passend = [p for p in alle if _automatisch(p, name)]
@@ -167,6 +212,23 @@ def _selftest() -> None:
                      f"{dbname}.vor_utc_2026-08-14", f"{dbname}-wal"):
             assert (d / name).exists(), f"{name} haette nicht angefasst werden duerfen"
 
+        # BEIDE ORTE (2026-08-19). Rot gegen den Stand davor: `kandidaten()`
+        # las nur `db.parent` und haette die Sicherung im Unterordner nie
+        # gesehen -- also 10 statt 11 gemeldet und sie nie aufgeraeumt.
+        neu = sicherungspfad(db, "20260819T235959")
+        neu.write_bytes(b"y" * 100)
+        assert neu.parent == d / ORDNERNAME, neu
+        assert len(kandidaten(db)) == 11, len(kandidaten(db))
+        assert neu in kandidaten(db)
+        # Und die Umgebungsvariable schlaegt den Vorgabeort.
+        import os as _os
+        _os.environ[ORT_UMGEBUNG] = str(d / "woanders")
+        try:
+            assert sicherungspfad(db, "20260819T235958").parent == d / "woanders"
+        finally:
+            del _os.environ[ORT_UMGEBUNG]
+        neu.unlink()
+
         # Grenzwert: genau `behalte` vorhanden -> nichts zu tun.
         n2, _ = aufraeumen(db, behalte=10)
         assert n2 == 0, n2
@@ -175,7 +237,8 @@ def _selftest() -> None:
         assert n3 == 10 and db.exists()
         # aufraeumen_still schluckt auch einen kaputten Pfad.
         assert aufraeumen_still("/gibt/es/nicht/db") == (0, 0)
-    print("selftest ok (6 Faelle): juengste bleiben, Handnamen bleiben, "
+    print("selftest ok (8 Faelle): juengste bleiben, Handnamen bleiben, "
+          "beide Orte gefunden, Umgebungsvariable schlaegt Vorgabeort, "
           "Grenzwert, behalte=0 und stiller Fehlerfall geprueft")
 
 

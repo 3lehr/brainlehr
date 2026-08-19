@@ -789,7 +789,7 @@ def _ensure_anlass_columns(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     for table in missing:
@@ -820,7 +820,7 @@ def _ensure_abgeleitet_von_column(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN abgeleitet_von TEXT")
@@ -851,7 +851,7 @@ def _ensure_norm_art_column(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN norm_art TEXT")
@@ -891,7 +891,7 @@ def _ensure_norm_art_trigger(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     conn.executescript(NORM_ART_TRIGGER_SQL)
@@ -922,7 +922,7 @@ def _ensure_norm_entscheidung_column(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     conn.execute("ALTER TABLE knowledge_nodes ADD COLUMN norm_entscheidung TEXT NOT NULL DEFAULT 'offen'")
@@ -961,7 +961,7 @@ def _ensure_norm_entschieden_columns(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     for name in missing:
@@ -1011,7 +1011,7 @@ def _ensure_norm_entscheidung_triggers(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     conn.executescript(NORM_ENTSCHEIDUNG_TRIGGERS_SQL)
@@ -1077,7 +1077,7 @@ def _ensure_belegart_triggers(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     if veraltet:
@@ -1130,7 +1130,7 @@ def _ensure_zuruecknahme_columns(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     for name in missing:
@@ -1177,7 +1177,7 @@ def _ensure_schreiber_columns(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     for table, missing in missing_by_table.items():
@@ -1243,7 +1243,7 @@ def _ensure_node_constraint_triggers(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     # ENTSCHEIDUNG (Auftrag 2026-08-06, Nebenbefund Konfidenzverfall):
@@ -1339,7 +1339,7 @@ def _ensure_lessons_fts_backfill(conn: sqlite3.Connection) -> None:
         )
     if DB_PATH.exists():
         stamp = datetime.now(BERLIN).strftime("%Y%m%dT%H%M%S")
-        backup_path = DB_PATH.parent / f"{DB_PATH.name}.bak-{stamp}"
+        backup_path = sicherungen.sicherungspfad(DB_PATH, stamp)
         shutil.copy2(DB_PATH, backup_path)
 
     conn.execute(
