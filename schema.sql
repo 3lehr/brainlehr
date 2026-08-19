@@ -250,6 +250,23 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
 -- Komposita ("Broschüre" soll "Existenzgründer-Broschüren" finden), die ein
 -- Wort-Tokenizer prinzipiell verpasst. case_sensitive 0, weil ohnehin
 -- gefaltet+kleingeschrieben gespeichert wird (siehe Trigger unten).
+-- SENSIBLE KNOTEN (ADR-031, 2026-08-19). `sensibel = 1` heisst: dieser Knoten
+-- traegt Daten Dritter (WEG-Rechtsfaelle, Steuerdaten) und wird NICHT in den
+-- Volltextindex aufgenommen. `chiffre` nimmt spaeter den Chiffretext auf.
+--
+-- WARUM DER INDEX UND NICHT DIE SPALTE ZUERST: Solange knowledge_fts den
+-- Klartext haelt, gibt er ihn heraus -- egal was in summary/content steht.
+-- Der Index ist der stille Weg um jede Spaltenverschluesselung herum, belegt
+-- in tests/test_e07_bestand_im_klartext.py. Deshalb steht der Ausschluss
+-- VOR der Verschluesselung, nicht danach.
+--
+-- DER PREIS, ausdruecklich: ein sensibler Knoten ist ueber die Volltextsuche
+-- nicht auffindbar. Das ist kein Mangel, das ist der Gegenstand. Wer beides
+-- will, baut einen Klartextindex daneben und hat die Verschluesselung
+-- aufgehoben.
+ALTER TABLE knowledge_nodes ADD COLUMN sensibel INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE knowledge_nodes ADD COLUMN chiffre BLOB;
+
 CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
     title, summary, content, path, tags, project_id,
     content='knowledge_nodes',
@@ -267,7 +284,8 @@ CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
 -- zu registrieren, und mehrere Skripte oeffnen die DB roh), Gleichheit belegt
 -- tests/test_knowledge_hybrid_search.py::test_fold_de_matches_sql_fold.
 -- Trigger: FTS bei INSERT/UPDATE/DELETE synchron halten
-CREATE TRIGGER IF NOT EXISTS knowledge_ai AFTER INSERT ON knowledge_nodes BEGIN
+CREATE TRIGGER IF NOT EXISTS knowledge_ai AFTER INSERT ON knowledge_nodes
+WHEN new.sensibel = 0 BEGIN
     INSERT INTO knowledge_fts(rowid, title, summary, content, path, tags, project_id)
     VALUES (new.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.title,
@@ -284,7 +302,8 @@ CREATE TRIGGER IF NOT EXISTS knowledge_ai AFTER INSERT ON knowledge_nodes BEGIN
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
-CREATE TRIGGER IF NOT EXISTS knowledge_ad AFTER DELETE ON knowledge_nodes BEGIN
+CREATE TRIGGER IF NOT EXISTS knowledge_ad AFTER DELETE ON knowledge_nodes
+WHEN old.sensibel = 0 BEGIN
     INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content, path, tags, project_id)
     VALUES ('delete', old.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.title,
@@ -301,7 +320,18 @@ CREATE TRIGGER IF NOT EXISTS knowledge_ad AFTER DELETE ON knowledge_nodes BEGIN
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
-CREATE TRIGGER IF NOT EXISTS knowledge_au AFTER UPDATE ON knowledge_nodes BEGIN
+-- UPDATE in ZWEI Triggern statt einem (ADR-031). Ein einzelner Trigger mit
+-- einer WHEN-Bedingung koennte nur beide Haelften zusammen ausfuehren oder
+-- keine -- und genau das waere falsch: Wird ein Knoten NACHTRAEGLICH als
+-- sensibel markiert, muss der alte Indexeintrag WEG (old.sensibel = 0), aber
+-- kein neuer entstehen (new.sensibel = 1). Umgekehrt beim Entstufen.
+--
+-- Die 'delete'-Haelfte haengt an old.sensibel, nicht an new: knowledge_fts
+-- ist eine externe Inhaltstabelle, ihr 'delete'-Befehl muss mit genau den
+-- Werten gerufen werden, mit denen indiziert wurde. Ein 'delete' fuer einen
+-- nie indizierten Knoten beschaedigt den Index still.
+CREATE TRIGGER IF NOT EXISTS knowledge_au_del AFTER UPDATE ON knowledge_nodes
+WHEN old.sensibel = 0 BEGIN
     INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content, path, tags, project_id)
     VALUES ('delete', old.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.title,
@@ -316,6 +346,10 @@ CREATE TRIGGER IF NOT EXISTS knowledge_au AFTER UPDATE ON knowledge_nodes BEGIN
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.project_id,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_au_ins AFTER UPDATE ON knowledge_nodes
+WHEN new.sensibel = 0 BEGIN
     INSERT INTO knowledge_fts(rowid, title, summary, content, path, tags, project_id)
     VALUES (new.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.title,
