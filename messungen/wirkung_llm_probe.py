@@ -60,6 +60,24 @@ Antwort vorkommen? Das ist das Gegenstueck zu Gate 2 aus vier_gatearten.py
 auf der Erzeugungsstufe: wenn der Speicher hier haeufig durchschlaegt,
 wuerde ein reines "wurde etwas uebernommen"-Kriterium faelschlich Wirkung
 zeigen.
+
+AUFGABE 99 (2026-08-18), NACHTRAG: Lauf runs/wirkung_llm_probe_
+2026-08-18T210154.json bestand die Negativkontrolle nicht (2 von 4
+kontaminiert). Wortweise Pruefung der beiden Faelle ergab zwei Befunde,
+beide in signifikante_woerter()/kontamination() behoben:
+(1) STOPWORTE ist transliteriert geschrieben ("ueber", "koennen", ...),
+    echter Modelltext traegt aber Umlaute ("über", "können") -- kein
+    Stoppwort mit Umlaut griff je. signifikante_woerter() normalisiert
+    Umlaute jetzt VOR dem Abgleich.
+(2) Beide falsch-positiven Faelle hatten eine LEERE speicherlose Antwort
+    (finish_reason "length", 0 Zeichen). Bei leerer Baseline ist jedes Wort
+    der Speicher-Antwort trivial "neu" -- der Vergleich misst dann die
+    leere Baseline, nicht die Wirkung des Speichers. kontamination() gibt
+    jetzt None (nicht messbar) statt False/True zurueck, wenn eine der
+    beiden Antworten leer ist -- dieselbe Behandlung wie bewertung() sie
+    fuer kein_ergebnis_mit/ohne bei den Zielfaellen schon bekommt.
+Gegenprobe auf den gespeicherten Antworttexten (kein neuer Modelllauf):
+runs/kriterium_99_gegenprobe.json.
 """
 from __future__ import annotations
 
@@ -113,8 +131,20 @@ STOPWORTE = {
 }
 
 
+_UMLAUT = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"})
+
+
 def signifikante_woerter(text: str) -> set[str]:
-    toks = re.findall(r"[a-zA-ZäöüÄÖÜß]{4,}", (text or "").lower())
+    """AUFGABE 99, 2026-08-18: normalisiert Umlaute (ae/oe/ue/ss) VOR dem
+    Stoppwortabgleich. Befund am alten Lauf runs/wirkung_llm_probe_
+    2026-08-18T210154.json: STOPWORTE ist in transliterierter Schreibweise
+    gepflegt ("ueber", "koennen", "waehrend", ...), der Text aus echten
+    Modellantworten aber in echten Umlauten ("über", "können", "während").
+    Ohne Normalisierung greift KEIN Stoppwort mit Umlaut je -- ein
+    Negativfall (Ordnungsamt-Frage) wurde dadurch allein wegen des Wortes
+    "über" als kontaminiert gewertet."""
+    text = (text or "").lower().translate(_UMLAUT)
+    toks = re.findall(r"[a-z]{4,}", text)
     return {t for t in toks if t not in STOPWORTE}
 
 
@@ -127,7 +157,25 @@ def bewertung(antwort: str, target_label: str) -> bool | None:
     return (len(treffer) / len(ziel_woerter)) >= SCHWELLE
 
 
-def kontamination(antwort_mit: str, antwort_ohne: str, memory_text: str, task: str) -> bool:
+def kontamination(
+    antwort_mit: str, antwort_ohne: str, memory_text: str, task: str,
+    leer_mit: bool = False, leer_ohne: bool = False,
+) -> bool | None:
+    """True/False, oder None wenn nicht messbar.
+
+    AUFGABE 99, 2026-08-18: Befund am alten Lauf -- BEIDE kontaminierten
+    Negativfaelle (Knoten-Frage, Ordnungsamt-Frage) hatten eine LEERE
+    speicherlose Antwort (finish_reason 'length', 0 Zeichen -- bekanntes
+    Restrisiko von gemma4 als Reasoning-Modell, siehe MAX_TOKENS-Kommentar
+    oben; unabhaengig von den dort schon 3000 gesetzten Tokens). Bei leerer
+    Baseline enthaelt fremd_in_ohne IMMER die leere Menge -- jedes Wort aus
+    der Speicher-Antwort zaehlt dann automatisch als 'neu', unabhaengig
+    davon, ob der Speicher tatsaechlich durchschlug. Der Vergleich ist bei
+    leerer Baseline nicht aussagekraeftig und wird als nicht messbar (None)
+    ausgewiesen, statt einen Wert zu erzwingen -- dieselbe Behandlung, die
+    bewertung() bei leeren Antworten schon bekommt (s_mit/s_ohne = None)."""
+    if leer_mit or leer_ohne:
+        return None
     memory_woerter = signifikante_woerter(memory_text) - signifikante_woerter(task)
     fremd_in_mit = signifikante_woerter(antwort_mit) & memory_woerter
     fremd_in_ohne = signifikante_woerter(antwort_ohne) & memory_woerter
@@ -190,6 +238,13 @@ def selftest() -> None:
     assert bewertung("Voellig andere Antwort ueber Kochrezepte.", "Buckeberg Konsil Governance") is False
     assert bewertung("egal was", "") is None
     assert signifikante_woerter("Und dass sich wird") == set()
+    # AUFGABE 99: Umlaut-Stoppwort muss jetzt greifen (vorher nie, weil
+    # STOPWORTE transliteriert war und der Text echte Umlaute traegt).
+    assert "ueber" not in signifikante_woerter("Er sprach über die Sache.")
+    # AUFGABE 99: leere Baseline -> nicht messbar, nicht automatisch "True".
+    assert kontamination("Kalibrierbremse Plan Aufgabe", "", "Kalibrierbremse Plan", "x",
+                          leer_mit=False, leer_ohne=True) is None
+    assert kontamination("x", "x", "y", "z", leer_mit=True, leer_ohne=False) is None
     print("selftest: ok", file=sys.stderr)
 
 
@@ -243,13 +298,17 @@ def main() -> None:
 
     negativ_zeilen = []
     n_kontaminiert = 0
+    n_kontam_nicht_messbar = 0
     for f in negativ_faelle:
         task = f["task"]
         mem = memory_text(task)
         antwort_ohne, fr_ohne = frage_ollama(prompt_ohne(task))
         antwort_mit, fr_mit = frage_ollama(prompt_mit(task, mem))
-        kontam = kontamination(antwort_mit, antwort_ohne, mem, task)
-        n_kontaminiert += int(kontam)
+        leer_ohne = fr_ohne == "length" and not antwort_ohne.strip()
+        leer_mit = fr_mit == "length" and not antwort_mit.strip()
+        kontam = kontamination(antwort_mit, antwort_ohne, mem, task, leer_mit, leer_ohne)
+        n_kontaminiert += int(kontam is True)
+        n_kontam_nicht_messbar += int(kontam is None)
         negativ_zeilen.append({
             "frage": task,
             "ohne_speicher": {"antwort": antwort_ohne, "finish_reason": fr_ohne},
@@ -304,12 +363,19 @@ def main() -> None:
         "negativkontrolle": {
             "n": len(negativ_zeilen),
             "kontaminiert": n_kontaminiert,
+            "nicht_messbar": n_kontam_nicht_messbar,
             "bestanden": n_kontaminiert == 0,
             "kriterium": (
-                "kontamination(): mind. 2 inhaltstragende Woerter aus dem eingespielten "
-                "Hintergrundwissen (abzueglich Woerter, die schon in der Aufgabe stehen), die "
-                "NUR in der Speicher-Antwort vorkommen, nicht in der speicherlosen -- Indiz, "
-                "dass fachfremdes Material aus dem Speicher durchschlaegt."
+                "kontamination(): Umlaute vor dem Wortabgleich normalisiert (ae/oe/ue/ss), "
+                "sonst greift kein Stoppwort mit Umlaut (Befund Aufgabe 99). Mind. 2 "
+                "inhaltstragende Woerter aus dem eingespielten Hintergrundwissen (abzueglich "
+                "Woerter, die schon in der Aufgabe stehen), die NUR in der Speicher-Antwort "
+                "vorkommen, nicht in der speicherlosen -- Indiz, dass fachfremdes Material aus "
+                "dem Speicher durchschlaegt. None (nicht messbar) statt False, wenn eine der "
+                "beiden Antworten leer ist (finish_reason 'length', 0 Zeichen): eine leere "
+                "Baseline macht jedes Wort der Speicher-Antwort trivial 'neu' und wuerde die "
+                "Kontamination ueberzeichnen (Befund Aufgabe 99: beide falsch-positiven Faelle "
+                "im Lauf 2026-08-18T210154 hatten genau diese leere Baseline)."
             ),
             "je_frage": negativ_zeilen,
         },

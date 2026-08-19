@@ -1,0 +1,181 @@
+{
+  "warum_keine_kontamination_mehr": "Beide alt-kontaminierten Faelle (Knoten/Plane-Frage, Ordnungsamt-Frage) hatten eine leere speicherlose Antwort (finish_reason 'length', 0 Zeichen: einmal leer_ohne, einmal leer_mit). kontamination() gibt jetzt None statt True/False zurueck, sobald eine der beiden Antworten leer ist -- der Wortabgleich gegen eine leere Baseline war die Ursache, nicht ein zu laxes Wortkriterium. Der dritte urspruenglich unkontaminierte Fall (kubectl-Frage) hat volle, nicht-leere Antworten auf beiden Seiten und bleibt unveraendert False -- messbar und korrekt negativ.",
+  "hinweis": "Kein neuer Modelllauf. ALT-Kriterium hier als exakte Kopie des Codes VOR Aufgabe 99 nachgebaut (Wortlaenge>=4 mit Umlauten im Muster, transliterierte Stoppwortliste, Schwelle 0.4, kontamination() ohne leer-Erkennung). NEU = aktueller Code aus messungen/wirkung_llm_probe.py (importiert, kein Duplikat).",
+  "zielfaelle": {
+    "n": 10,
+    "gewechselt_alt_zu_neu": 0,
+    "je_fall": [
+      {
+        "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+        "target_label": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+        "alt": {
+          "mit": null,
+          "ohne": false
+        },
+        "neu": {
+          "mit": null,
+          "ohne": false
+        },
+        "gewechselt": false
+      },
+      {
+        "ziel": "L-e7bc5e",
+        "target_label": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern a",
+        "alt": {
+          "mit": false,
+          "ohne": false
+        },
+        "neu": {
+          "mit": false,
+          "ohne": false
+        },
+        "gewechselt": false
+      },
+      {
+        "ziel": "L-e1a441",
+        "target_label": "wohlair: Herkunfts-Trennung zweier gleich aussehender Datenbestände (importierte",
+        "alt": {
+          "mit": false,
+          "ohne": false
+        },
+        "neu": {
+          "mit": false,
+          "ohne": false
+        },
+        "gewechselt": false
+      },
+      {
+        "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+        "target_label": "Der Volltextindex füllt sich beim Einlesen, doch niemand liest ihn für Belege und Mails",
+        "alt": {
+          "mit": false,
+          "ohne": false
+        },
+        "neu": {
+          "mit": false,
+          "ohne": false
+        },
+        "gewechselt": false
+      },
+      {
+        "ziel": "/stadtwerke",
+        "target_label": "Stadtwerke: fiktiver Verbundpartner fuer den fuenfte-Rolle-Testlauf",
+        "alt": {
+          "mit": true,
+          "ohne": false
+        },
+        "neu": {
+          "mit": true,
+          "ohne": false
+        },
+        "gewechselt": false
+      },
+      {
+        "ziel": "L-a9ccd0",
+        "target_label": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in j",
+        "alt": {
+          "mit": null,
+          "ohne": false
+        },
+        "neu": {
+          "mit": null,
+          "ohne": false
+        },
+        "gewechselt": false
+      },
+      {
+        "ziel": "L-298823",
+        "target_label": "openlehr/steuer: vierter Fall am selben Tag (2026-07-31), in dem ein Feld/eine K",
+        "alt": {
+          "mit": false,
+          "ohne": false
+        },
+        "neu": {
+          "mit": false,
+          "ohne": false
+        },
+        "gewechselt": false
+      },
+      {
+        "ziel": "L-f9f654",
+        "target_label": "try/catch um einen nicht awaiteten (unawaited) async-Aufruf faengt dessen Fehler",
+        "alt": {
+          "mit": null,
+          "ohne": false
+        },
+        "neu": {
+          "mit": null,
+          "ohne": false
+        },
+        "gewechselt": false
+      },
+      {
+        "ziel": "L-b4b443",
+        "target_label": "fahrtenbuch Build 59 (2026-08-01, 06:21 UTC): JokerTripPromptRequest.source (Jok",
+        "alt": {
+          "mit": null,
+          "ohne": false
+        },
+        "neu": {
+          "mit": null,
+          "ohne": false
+        },
+        "gewechselt": false
+      },
+      {
+        "ziel": "L-44a838",
+        "target_label": "LLM-Output als neuer ungeschützter Schreibpfad: Neue KI-Features (mail_classify,",
+        "alt": {
+          "mit": false,
+          "ohne": false
+        },
+        "neu": {
+          "mit": false,
+          "ohne": false
+        },
+        "gewechselt": false
+      }
+    ]
+  },
+  "negativfaelle": {
+    "n": 4,
+    "kontaminiert_alt_lauf": 2,
+    "kontaminiert_neu": 0,
+    "nicht_messbar_neu": 3,
+    "negativkontrolle_neu_bestanden": true,
+    "je_frage": [
+      {
+        "frage": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "kontaminiert_alt_lauf_gespeichert": false,
+        "kontaminiert_alt_nachgerechnet": false,
+        "leer_mit": true,
+        "leer_ohne": false,
+        "kontaminiert_neu": null
+      },
+      {
+        "frage": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "kontaminiert_alt_lauf_gespeichert": true,
+        "kontaminiert_alt_nachgerechnet": true,
+        "leer_mit": false,
+        "leer_ohne": true,
+        "kontaminiert_neu": null
+      },
+      {
+        "frage": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten.",
+        "kontaminiert_alt_lauf_gespeichert": false,
+        "kontaminiert_alt_nachgerechnet": false,
+        "leer_mit": false,
+        "leer_ohne": false,
+        "kontaminiert_neu": false
+      },
+      {
+        "frage": "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungsamt?",
+        "kontaminiert_alt_lauf_gespeichert": true,
+        "kontaminiert_alt_nachgerechnet": true,
+        "leer_mit": false,
+        "leer_ohne": true,
+        "kontaminiert_neu": null
+      }
+    ]
+  }
+}
