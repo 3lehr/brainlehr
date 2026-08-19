@@ -279,18 +279,46 @@ def _stille_spalten(conn: sqlite3.Connection, tabelle: str, wo: str,
             continue
         eigene_wo = (sonderwo or {}).get(spalte, wo)
         leer_ausdruck = f"{spalte} IS NULL OR TRIM(CAST({spalte} AS TEXT))=''"
+
+        # DER NENNER BEGINNT, WO DIE SPALTE BEGINNT (2026-08-19).
+        #
+        # Dieselbe Lehre wie bei den Rueckzugsspalten oben, einen Schritt
+        # weiter: dort war der Nenner sachlich falsch, hier ZEITLICH. Eine
+        # Spalte, die gestern dazukam, wird sonst ueber die ganze Historie
+        # gemessen -- und die Historie KANN sie nicht tragen. Gemessen am
+        # eigenen Bestand: access_log.tokens_input meldete "19545 von 20069
+        # (97%) leer" und las sich als gebaute Regel ohne Wirkung. Die Spalte
+        # existiert aber erst seit 2026-08-18T12:21; seit ihrer ersten
+        # Belegung sind es 1133 von 1669 (68%) -- eine ganz andere Aussage,
+        # und eine, die nicht mehr "unterscheidet nichts" heisst.
+        #
+        # rowid statt eines Zeitfeldes: monoton, in jeder Tabelle vorhanden,
+        # braucht kein Wissen darueber, welche Spalte hier die Zeit traegt.
+        #
+        # NIE befuellte Spalten behalten den vollen Nenner -- fuer sie gibt
+        # es keinen Beginn, und sie sind genau der Fund, den diese Pruefung
+        # sucht.
+        beginn = conn.execute(
+            f"SELECT MIN(rowid) r FROM {tabelle} WHERE ({eigene_wo}) AND NOT ({leer_ausdruck})"
+        ).fetchone()["r"]
+        nenner_wo = eigene_wo if beginn is None else f"({eigene_wo}) AND rowid >= {int(beginn)}"
+
         r = conn.execute(
             f"SELECT COUNT(*) n, SUM(CASE WHEN {leer_ausdruck} THEN 1 ELSE 0 END) leer "
-            f"FROM {tabelle} WHERE {eigene_wo}"
+            f"FROM {tabelle} WHERE {nenner_wo}"
         ).fetchone()
         n, leer = r["n"] or 0, r["leer"] or 0
+        # Die Mindestzahl gilt auf dem ENGEREN Nenner: aus sechs Zeilen seit
+        # der ersten Belegung laesst sich nichts schliessen -- dann schweigt
+        # die Pruefung, statt eine junge Spalte zu beschuldigen.
         if n < MINDESTZAHL:
             continue
         leer_anteil = leer / n
         if leer_anteil >= 0.95:
+            seit = "" if beginn is None else f", gemessen ab der ersten Belegung (rowid {int(beginn)})"
             funde.append({
                 "pruefung": f"stumme_spalte:{tabelle}.{spalte}",
-                "befund": f"{tabelle}.{spalte} ist bei {leer} von {n} Zeilen ({leer_anteil:.0%}) leer",
+                "befund": f"{tabelle}.{spalte} ist bei {leer} von {n} Zeilen ({leer_anteil:.0%}) leer{seit}",
                 "fehlklasse": "gebaute Regel ohne Wirkung -- Spalte unterscheidet nichts",
                 "fehlalarm_kostet": "gering: eine Spalte darf ueberwiegend leer sein, "
                                     "steht sie nicht auf der begruendeten Ausnahmeliste, lohnt ein Blick",
@@ -584,6 +612,42 @@ def alle(conn: sqlite3.Connection) -> list[dict]:
     return [f for f in funde if f] + stumme_spalten(conn)
 
 
+def _selftest_junge_spalte() -> None:
+    """ROT VOR GRUEN (2026-08-19): Eine Spalte, die spaet dazukam und seither
+    zuverlaessig gefuellt wird, darf nicht als tot gemeldet werden -- eine
+    NIE gefuellte danebenliegende Spalte aber schon.
+
+    Das Zahlenverhaeltnis ist Absicht und stammt aus dem echten Bestand
+    (access_log.tokens_input: 200 zu 6 ist grob die Lage 20069 zu 536). Mit
+    einem gutmuetigeren Verhaeltnis war dieser Test von Anfang an gruen und
+    haette nichts bewiesen -- er wurde erst rot, als er die echte Schieflage
+    nachstellte."""
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.execute("CREATE TABLE t (alt TEXT, neu TEXT, tot TEXT)")
+    for i in range(200):
+        conn.execute("INSERT INTO t VALUES (?,NULL,NULL)", (f"a{i}",))
+    for i in range(6):
+        conn.execute("INSERT INTO t VALUES (?,?,NULL)", (f"a{i}", f"n{i}"))
+
+    gemeldet = {f["pruefung"].split(".")[-1] for f in _stille_spalten(conn, "t", "1=1", {})}
+    assert "tot" in gemeldet, f"nie befuellte Spalte muss gemeldet bleiben: {gemeldet}"
+    assert "neu" not in gemeldet, (
+        f"Fehlalarm: 'neu' ist seit der ersten Belegung voll, gemeldet wurde {gemeldet}")
+
+    # Gegenprobe: eine Spalte, die seit ihrer Belegung UEBERWIEGEND leer
+    # bleibt, wird weiterhin gemeldet -- der engere Nenner darf nicht zum
+    # Freibrief werden.
+    conn.execute("CREATE TABLE u (spaet TEXT)")
+    for _ in range(200):
+        conn.execute("INSERT INTO u VALUES (NULL)")
+    conn.execute("INSERT INTO u VALUES ('x')")
+    for _ in range(60):
+        conn.execute("INSERT INTO u VALUES (NULL)")
+    gemeldet_u = {f["pruefung"].split(".")[-1] for f in _stille_spalten(conn, "u", "1=1", {})}
+    assert "spaet" in gemeldet_u, f"seit Belegung 98 % leer -- muss gemeldet werden: {gemeldet_u}"
+
+
 def _selftest() -> None:
     conn = sqlite3.connect(":memory:")
     conn.row_factory = sqlite3.Row
@@ -833,6 +897,7 @@ def _selftest() -> None:
         _server._KNOWLEDGE_READ_VOLLZUGRIFF = _alte_voll
         _server._KNOWLEDGE_READ_PROJEKTION = _alte_proj
 
+    _selftest_junge_spalte()
     print("selftest ok (20 Faelle)")
 
 
