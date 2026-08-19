@@ -95,3 +95,41 @@ Domäne die Anwendung beschädigen und keine aus der Reihe tanzen kann.
 Die Gegenprobe, wenn der Preis zu hoch wird: Braucht eine Domäne wirklich ein
 eigenes Bedienelement, oder braucht sie nur einen Fachbildschirm? Fachbildschirme
 sind Web (ADR-013) und kosten die Trägerschicht **nichts**.
+
+
+---
+
+## Präzisierung 2026-08-19T19:15:00+0200 — „Raumdarstellung" meint die Technik, nicht den Bildschirm
+
+**Anlass:** Bei der Umsetzung eines Katalogs nach dieser ADR entstand ein
+Widerspruch. Die Tabelle oben nennt „Raumdarstellung des Wissens" als
+**Bestandteil**. Ein Bestandteil wird nur geladen, wenn **eine Domäne ihn
+anfordert** (`SeitenleistenEintrag.bestandteil`, gefiltert in
+`AtelierApp.sichtbareEintraege`). Wörtlich umgesetzt verschwände damit
+brainlehrs **eigener** Wissensraum aus der Seitenleiste, sobald keine Domäne
+ihn nennt.
+
+**Die Zweideutigkeit:**
+
+| Lesart | Folge |
+|---|---|
+| die **Darstellungstechnik**, die eine Domäne für ihr Wissen anfordern kann | Bestandteil |
+| brainlehrs **eigener Wissensbildschirm** | Kern |
+
+**Entschieden: die erste.** Die Begründung steht in der Liste selbst —
+„Dokumentfenster, Raumdarstellung des Wissens, künftige" nennt drei **Sorten
+von Darstellung**, die eine Domäne anfordert. brainlehrs eigener
+Wissensbildschirm ist keine anforderbare Sorte, sondern das, worauf die
+Anwendung steht.
+
+**Folge:** Der heutige Wissensraum-Bildschirm bleibt **Kern**. Die Zeile in
+der Bestandteil-Tabelle gilt für eine künftige, von einer Domäne anforderbare
+Raumdarstellung — die es noch nicht gibt.
+
+**Warum das hier steht und nicht nur im Plan:** Die Umsetzung wäre ohne diese
+Klärung entweder falsch gewesen (ein Kernbildschirm verschwindet) oder die
+ADR-Zeile wäre unerfüllt geblieben. Ein Widerspruch, den man beim Bauen
+findet, gehört in die Entscheidung zurück, nicht in den Bauplan.
+
+**Entscheider:** Betreiber, 2026-08-19 („so wie du sagst! go!" auf eine
+Vorlage, die genau diese Frage stellte — Knoten `5bc4a203`).
