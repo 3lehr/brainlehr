@@ -1348,3 +1348,42 @@ frisch eingebettet und nicht gekappt — und tragen trotzdem einen Kosinus unter
 dem höchsten fachfremden Wert des Korpus (0,5410). Damit ist die nächste Frage
 nicht mehr „ist der Vektor kaputt", sondern was der Bedeutungskanal an *diesen*
 Texten misst, das er an fachfremden Texten höher bewertet.
+
+---
+
+## Schwelle nach dem Neurechnen nachgeprüft — sie trägt, und der Nullbefund belegt weniger, als er scheint
+
+`runs/schwelle_nachlauf_abrufweg_2026-08-19.json` (`26a02785`), Schnappschuss
+`20260819T105004-e7853b33` gegen den alten `20260819T094703-31bcb647`,
+dieselben 76 Fragen, derselbe Weg:
+
+| | alt | neu |
+|---|---|---|
+| Überlappung | 0,0309 | **0,0309** |
+| bei 0,55 | 3 / 0 | **3 / 0** |
+| Fragen mit Bewegung > 0,01 | — | **0 von 76** |
+
+Alle 30 Schwellenzeilen alt = neu. **Die Schwelle 0,55 steht also weiterhin auf
+einer gültigen Messung**, und das war der Anlass — ich hatte den Bestand unter
+einer produktiven Schwelle verändert, ohne sie nachzuprüfen.
+
+### Die Gegenprobe, die den Befund kleiner macht
+
+Ein Nullbefund über *alle* 76 Fragen ist zu sauber, um ihn ungeprüft zu
+übernehmen. Nachgesehen:
+
+- Die Neuberechnung hat wirklich geschrieben: **480 Einbettungszeilen, 339
+  Kennungen**, `updated_at` von heute.
+- Von den **35 Zielkennungen des Prüfkorpus** war dabei aber **genau eine**
+  (`483acb56`).
+
+Dass sich nichts bewegt, ist damit **erwartbar** — die Neuberechnung hat fast
+nichts angefasst, was dieser Korpus abruft. Der Lauf belegt: *die Schwelle
+trägt gegen diese 76 Fragen*. Er belegt **nicht**: *Neurechnen ist folgenlos*.
+Wer den zweiten Satz daraus zitiert, zitiert etwas, das hier nicht gemessen
+wurde.
+
+**Was daraus für den Prüfkorpus folgt:** Er deckt 35 von 5189 Knoten ab. Eine
+Änderung, die 339 andere Kennungen betrifft, ist über ihn grundsätzlich nicht
+sichtbar. Das ist keine Kritik am Korpus — er ist für Abrufgüte gebaut, nicht
+für Bestandsänderungen —, aber es begrenzt, welche Fragen er beantworten kann.

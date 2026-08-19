@@ -1,0 +1,4 @@
+{
+  "notiz": "Gegenprobe von mir, und sie schraenkt die Aussage ein: Der Nullbefund (0 von 76 Fragen bewegt) ist RICHTIG, belegt aber weniger als er scheint. Die Neuberechnung schrieb 480 Einbettungszeilen (339 Kennungen, updated_at von heute) -- von den 35 Zielkennungen des Pruefkorpus war jedoch GENAU EINE dabei (483acb56). Dass sich nichts bewegt, ist damit erwartbar und kein Beleg dafuer, dass Neurechnen folgenlos ist. Belegt ist: die Schwelle 0.55 traegt gegen DIESE 76 Fragen unveraendert (3/0, Ueberlappung 0.0309 alt wie neu).",
+  "vermerkt_am": "2026-08-19T10:53:18Z"
+}
