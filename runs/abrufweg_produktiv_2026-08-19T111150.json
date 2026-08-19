@@ -1,0 +1,525 @@
+{
+  "weg": "haken/knowledge_recall_hook.py::keywords()+query() (der Pfad, den main() beim echten UserPromptSubmit-Hook geht) + main()s eigene Bausteine fuer den Textblock (_erstverwendungs_vorschlaege, relevanzlage.beurteile, alter/_geltung_tag/_abloesung_tag, entschaerfe_fuer_ausgabe, _auf_budget_kuerzen) -- main() selbst nicht aufgerufen (schreibt sonst in log_recall()/RECALL_LOG, s. Docstring)",
+  "korpus": "runs/pruefkorpus.jsonl",
+  "faelle_gesamt": 35,
+  "schnappschuss_kennung": "20260819T090701-f4080e17",
+  "schnappschuss_aufgenommen": "2026-08-19T11:07:01+02:00",
+  "SUCHPFAD_ABRUF_an": {
+    "trefferquote_top5": [
+      11,
+      35
+    ],
+    "trefferquote_ueberhaupt": [
+      12,
+      35
+    ],
+    "zeichen_median": 7032,
+    "zeichen_summe": 235068,
+    "faelle": [
+      {
+        "ziel": "L-a9ccd0",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 6122
+      },
+      {
+        "ziel": "L-298823",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 4949
+      },
+      {
+        "ziel": "L-f9f654",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7354
+      },
+      {
+        "ziel": "L-b4b443",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7032
+      },
+      {
+        "ziel": "L-44a838",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7476
+      },
+      {
+        "ziel": "L-cdac52",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7596
+      },
+      {
+        "ziel": "L-e7bc5e",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 6715
+      },
+      {
+        "ziel": "L-e1a441",
+        "art": "lesson",
+        "rang": 2,
+        "im_block": false,
+        "zeichen": 7338
+      },
+      {
+        "ziel": "L-b91ed6",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7069
+      },
+      {
+        "ziel": "L-bbd7fb",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 6144
+      },
+      {
+        "ziel": "L-503687",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7598
+      },
+      {
+        "ziel": "L-8c633e",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 6948
+      },
+      {
+        "ziel": "L-606b63",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7060
+      },
+      {
+        "ziel": "L-0392e4",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7520
+      },
+      {
+        "ziel": "L-476602",
+        "art": "lesson",
+        "rang": 6,
+        "im_block": false,
+        "zeichen": 6735
+      },
+      {
+        "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+        "art": "node",
+        "rang": 1,
+        "im_block": true,
+        "zeichen": 7616
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 6055
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 5827
+      },
+      {
+        "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+        "art": "node",
+        "rang": 10,
+        "im_block": true,
+        "zeichen": 6845
+      },
+      {
+        "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+        "art": "node",
+        "rang": 1,
+        "im_block": true,
+        "zeichen": 7088
+      },
+      {
+        "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+        "art": "node",
+        "rang": 6,
+        "im_block": true,
+        "zeichen": 6440
+      },
+      {
+        "ziel": "/lessons/phase2-summary",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7337
+      },
+      {
+        "ziel": "/testing/pytest",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7391
+      },
+      {
+        "ziel": "/brainlehr/inference-control-was-andere-faecher",
+        "art": "node",
+        "rang": 3,
+        "im_block": true,
+        "zeichen": 4091
+      },
+      {
+        "ziel": "/methodik/einstieg",
+        "art": "node",
+        "rang": 4,
+        "im_block": true,
+        "zeichen": 6209
+      },
+      {
+        "ziel": "/stadtwerke",
+        "art": "node",
+        "rang": 1,
+        "im_block": true,
+        "zeichen": 4612
+      },
+      {
+        "ziel": "/openlehr/steuer/ui",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7040
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+        "art": "node",
+        "rang": 1,
+        "im_block": true,
+        "zeichen": 7490
+      },
+      {
+        "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7501
+      },
+      {
+        "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "art": "node",
+        "rang": 1,
+        "im_block": true,
+        "zeichen": 6742
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "art": "node",
+        "rang": 1,
+        "im_block": true,
+        "zeichen": 6543
+      },
+      {
+        "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7399
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+        "art": "node",
+        "rang": 3,
+        "im_block": true,
+        "zeichen": 6290
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+        "art": "node",
+        "rang": 3,
+        "im_block": true,
+        "zeichen": 5483
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 7413
+      }
+    ]
+  },
+  "SUCHPFAD_ABRUF_aus": {
+    "trefferquote_top5": [
+      1,
+      35
+    ],
+    "trefferquote_ueberhaupt": [
+      1,
+      35
+    ],
+    "zeichen_median": 0,
+    "zeichen_summe": 3274,
+    "faelle": [
+      {
+        "ziel": "L-a9ccd0",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-298823",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-f9f654",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-b4b443",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-44a838",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-cdac52",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-e7bc5e",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-e1a441",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-b91ed6",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-bbd7fb",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-503687",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-8c633e",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-606b63",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-0392e4",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "L-476602",
+        "art": "lesson",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 2277
+      },
+      {
+        "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/lessons/phase2-summary",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/testing/pytest",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/brainlehr/inference-control-was-andere-faecher",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/methodik/einstieg",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/stadtwerke",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/openlehr/steuer/ui",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+        "art": "node",
+        "rang": 1,
+        "im_block": true,
+        "zeichen": 997
+      },
+      {
+        "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      },
+      {
+        "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+        "art": "node",
+        "rang": null,
+        "im_block": false,
+        "zeichen": 0
+      }
+    ]
+  }
+}
