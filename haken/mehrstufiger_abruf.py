@@ -294,50 +294,92 @@ def _selftest() -> None:
     assert a == b, "MEHRSTUFIGER_ABRUF=AUS muss byte-gleich zu suchpfad_abruf.kandidaten() sein"
 
     # Warnung statt Rot-vor-gruen (s. Moduldoc: kein Fall wird durch Stufe 2
-    # NEU gewonnen -- stattdessen geht L-606b63 verloren, sobald Stufe 2 an
-    # ist). Geprueft ueber den ECHTEN Weg (knowledge_recall_hook.query(), wie
-    # abrufguete.py ihn ruft) -- die rohen kandidaten()-Listen allein zeigen
-    # das nicht, weil der Hook danach noch nach (severity, occurrences)
-    # sortiert und auf MAX_LESSONS zuschneidet (s. Moduldoc, das ist die
-    # gefundene Ursache).
+    # NEU gewonnen -- stattdessen geht ein bereits gefundener Fall verloren,
+    # sobald Stufe 2 an ist). Geprueft ueber den ECHTEN Weg
+    # (knowledge_recall_hook.query(), wie abrufguete.py ihn ruft) -- die
+    # rohen kandidaten()-Listen allein zeigen das nicht, weil der Hook danach
+    # noch nach (severity, occurrences) sortiert und auf MAX_LESSONS
+    # zuschneidet (s. Moduldoc, das ist die gefundene Ursache).
+    #
+    # 2026-08-19: lief bis heute gegen die ECHTE brainlehr.db, benannte dabei
+    # eine feste Lehre (L-606b63) -- eine Bestandszeile, die mit dem Bestand
+    # wandert. Genau das brach: "L-606b63 muss bei AUS im Ergebnis sein" wurde
+    # rot, weil andere, neuere Lehren sie im lebenden Bestand ueberholt haben
+    # (Bestandsdrift, keine Codeaenderung). Fix: eigene Wegwerf-DB aus dem
+    # echten schema.sql, knowledge_recall_hook.DB nur fuer die Dauer dieses
+    # Blocks umgebogen (gleiches Muster wie der Embedding-Testblock in
+    # knowledge_recall_hook.py::selftest()). Kein 118-MB-Schnappschuss fuer
+    # eine Handvoll Zeilen -- der PRUEFBARE Mechanismus selbst (ein
+    # groesserer Pool zieht mehr hochpriore, aber schwaecher passende Lehren
+    # rein und verdraengt eine schwaecher priorisierte, aber treffendere) ist
+    # unabhaengig von einer bestimmten Bestandszeile nachstellbar:
+    #   - 6 "front"-Lehren: alle 5 Anfrageworte, severity=critical -> bester
+    #     bm25-Rang, schlagen das Ziel unabhaengig von Pool 17/20.
+    #   - das Ziel: alle 5 Woerter, severity=low -> genau wie L-606b63 in der
+    #     urspruenglichen Messung (bei AUS drin, bei Stufe 2 verdraengt).
+    #   - 10 Fuellzeilen: nur 2 Woerter, severity noch niedriger als das
+    #     Ziel (konkurrieren nie um die MAX_LESSONS-Plaetze) -- reines
+    #     Fuellmaterial, das bm25-Rang 8..17 belegt und die 3 Randlehren aus
+    #     Pool=17 heraushaelt.
+    #   - 3 "rand"-Lehren: nur 1 Wort -> schwaechster bm25-Rang, liegen bei
+    #     Pool=17 (AUS, MAX_NODES+MAX_LESSONS) ausserhalb, bei Pool=20
+    #     (Stufe 2, POOL_GROESSE) gerade noch drin -- und schlagen das Ziel
+    #     per severity, sobald sie mitspielen: 6+3=9 hochpriore Lehren gegen
+    #     7 Plaetze, das Ziel faellt raus.
+    # Bonus-Nebeneffekt: kein Ollama-Aufruf mehr noetig (embed_fn liefert
+    # None) -- deckt sich jetzt auch mit dem "Netzloser Selbsttest"-Anspruch
+    # im Docstring dieser Funktion, den der alte embed_text()-Aufruf hier
+    # bisher unterlaufen hat.
     import knowledge_recall_hook as _rh
-    import embeddings as _embeddings
+    import tempfile as _tempfile
 
-    task = ("Wenn ein Nutzer eine Bluetooth-Verbindung kurz hintereinander neu "
-            "aufbaut, kann ein verspaetet eintreffender Trennbefehl aus dem ersten "
-            "Versuch die gerade erst gestartete zweite Sitzung unterbrechen. Ohne "
-            "eine eindeutige Zuordnung zwischen dem Signal und der spezifischen "
-            "Instanz fuehrt dieser Timingfehler dazu, dass die neue Verbindung "
-            "faelschlicherweise gekappt wird. Das System muss sicherstellen, dass "
-            "ein Beendungsbefehl nur dann wirksam ist, wenn er gezielt auf den "
-            "aktuell laufenden Vorgang abzielt.")
-    kws = _rh.keywords(task)
-    query_vec = _embeddings.embed_text(task)  # deterministisch fuer denselben Text (Ollama)
+    task = "alpha bravo charlie delta echo"
+    _schema = (ort.WURZEL / "schema.sql").read_text(encoding="utf-8")
+    with _tempfile.TemporaryDirectory() as _td:
+        _db_path = os.path.join(_td, "regression.db")
+        _fx = sqlite3.connect(_db_path)
+        _fx.executescript(_schema)
+        _rows = []
+        for i in range(6):
+            _rows.append((f"fx-front-{i}", "error",
+                          f"alpha bravo charlie delta echo front{i}", "critical", 10))
+        _rows.append(("fx-ziel", "insight", "alpha bravo charlie delta echo ziel", "low", 1))
+        for i in range(10):
+            _rows.append((f"fx-fill-{i}", "insight", f"alpha bravo fuell{i}", "low", 0))
+        for i in range(3):
+            _rows.append((f"fx-rand-{i}", "error", f"alpha rand{i}", "critical", 10))
+        _fx.executemany(
+            "INSERT INTO lessons_learned (id, type, description, severity, occurrences) "
+            "VALUES (?, ?, ?, ?, ?)",
+            _rows,
+        )
+        _fx.commit()
+        _fx.close()
 
-    class _Stand:
-        kandidaten = staticmethod(kandidaten_geschaltet)
-
-    orig_suchpfad = _rh.suchpfad_abruf
-    _rh.suchpfad_abruf = _Stand
-    try:
-        _, lessons_aus = _rh.query(kws, rand=lambda: 1.0, cwd=None, prompt=task,
-                                    embed_fn=lambda _t: query_vec)
-        assert "L-606b63" in [l["id"] for l in lessons_aus], (
-            "Voraussetzung der Warnung verletzt: L-606b63 muss bei AUS im Ergebnis sein")
-
-        os.environ["KNOWLEDGE_MEHRSTUFIGER_ABRUF"] = "1"
-        os.environ["KNOWLEDGE_MEHRSTUFIG_STUFE1"] = "0"
-        os.environ["KNOWLEDGE_MEHRSTUFIG_STUFE2"] = "1"
+        _alt_db = _rh.DB
+        _rh.DB = _db_path
         try:
-            _, lessons_stufe2 = _rh.query(kws, rand=lambda: 1.0, cwd=None, prompt=task,
-                                           embed_fn=lambda _t: query_vec)
+            kws = _rh.keywords(task)
+            _, lessons_aus = _rh.query(kws, rand=lambda: 1.0, cwd=None, prompt=task,
+                                        embed_fn=lambda _t: None)
+            assert "fx-ziel" in [l["id"] for l in lessons_aus], (
+                "Voraussetzung der Warnung verletzt: fx-ziel muss bei AUS im Ergebnis sein "
+                f"({[l['id'] for l in lessons_aus]})")
+
+            os.environ["KNOWLEDGE_MEHRSTUFIGER_ABRUF"] = "1"
+            os.environ["KNOWLEDGE_MEHRSTUFIG_STUFE1"] = "0"
+            os.environ["KNOWLEDGE_MEHRSTUFIG_STUFE2"] = "1"
+            try:
+                _, lessons_stufe2 = _rh.query(kws, rand=lambda: 1.0, cwd=None, prompt=task,
+                                               embed_fn=lambda _t: None)
+            finally:
+                for k in ("KNOWLEDGE_MEHRSTUFIGER_ABRUF", "KNOWLEDGE_MEHRSTUFIG_STUFE1", "KNOWLEDGE_MEHRSTUFIG_STUFE2"):
+                    os.environ.pop(k, None)
+            assert "fx-ziel" not in [l["id"] for l in lessons_stufe2], (
+                "Regression nicht mehr reproduzierbar -- Moduldoc-Befund pruefen, bevor "
+                f"POOL_GROESSE geaendert wird ({[l['id'] for l in lessons_stufe2]})")
         finally:
-            for k in ("KNOWLEDGE_MEHRSTUFIGER_ABRUF", "KNOWLEDGE_MEHRSTUFIG_STUFE1", "KNOWLEDGE_MEHRSTUFIG_STUFE2"):
-                os.environ.pop(k, None)
-        assert "L-606b63" not in [l["id"] for l in lessons_stufe2], (
-            "Regression nicht mehr reproduzierbar -- Moduldoc-Befund pruefen, bevor POOL_GROESSE geaendert wird")
-    finally:
-        _rh.suchpfad_abruf = orig_suchpfad
+            _rh.DB = _alt_db
 
     conn.close()
     print("mehrstufiger_abruf._selftest ok")

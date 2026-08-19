@@ -2092,20 +2092,72 @@ def selftest() -> None:
     # MIN_HITS/ENSEMBLE_PFLICHT-Sieb dieser Datei -- und genau das umgeht der
     # Suchpfad, der seit 2026-08-09 die Vorgabe ist. Ohne diese Zeile misst der
     # Block einen Weg, der im Betrieb nicht mehr gegangen wird.
-    _suchpfad_vorher = os.environ.get("KNOWLEDGE_SUCHPFAD_ABRUF")
-    os.environ["KNOWLEDGE_SUCHPFAD_ABRUF"] = "0"
-    for want, prompt in _CASES:
-        kws = keywords(prompt)
-        n, l = (query(kws, rand=_never_explore, embed_fn=_no_embed) if len(kws) >= MIN_HITS else ([], []))
-        got = bool(n or l)
-        if (want, prompt) in _BEKANNT_ROT:
-            print(f"  BEKANNT ROT ({len(n)}n/{len(l)}l): {prompt[:45]}")
-            continue
-        assert got == want, (
-            f"MIN_HITS={MIN_HITS}: '{prompt[:40]}...' erwartet "
-            f"{'Treffer' if want else 'leer'}, bekam {len(n)}n/{len(l)}l"
+    # 2026-08-19: _CASES lief bis heute gegen die ECHTE, wachsende brainlehr.db
+    # (DB blieb unveraendert auf ort.DB) -- eine Zusicherung ("dieser Prompt
+    # MUSS einen Treffer liefern") gegen einen Bestand zu stellen, der taeglich
+    # waechst, ist keine Aussage ueber den CODE mehr, sondern ueber den
+    # Zufallstreffer des Tages. Genau das brach: der TRUE-Fall "kennst du
+    # paperless-ngx docs?" erwartete L-b4b6fc, die inzwischen von neueren,
+    # ebenfalls treffenden Zeilen im Bestand ueberholt wurde (0n/0l statt
+    # >=1). Fix wie beim spaeteren Embedding-Block dieser Datei (Zeile ~2506
+    # ff.): eigene Wegwerf-DB aus dem echten schema.sql, DB (Modulglobal) nur
+    # fuer die Dauer dieses Blocks umgebogen. Kein Schnappschuss (120 MB je
+    # Lauf waere fuer 8 Zeilen Fixtur unverhaeltnismaessig) -- eine Handvoll
+    # Zeilen, genau auf die Woerter der acht Prompts zugeschnitten, reicht
+    # und bleibt unabhaengig vom Bestandswachstum richtig.
+    import tempfile as _tempfile3
+    _schema_cases = (ort.WURZEL / "schema.sql").read_text(encoding="utf-8")
+    with _tempfile3.TemporaryDirectory() as _td3:
+        _db_path3 = os.path.join(_td3, "cases.db")
+        _conn3 = sqlite3.connect(_db_path3)
+        _conn3.executescript(_schema_cases)
+        _conn3.executemany(
+            "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, level, source, "
+            "norm_entscheidung, norm_entschieden_grund, norm_entschieden_von) "
+            "VALUES (?, ?, 'shared', ?, ?, NULL, 0, 'test', 'keine_norm', "
+            "'Testfixtur, kein Sollen', 'selftest')",
+            [
+                # Je Zeile genau die Worte des zugehoerigen TRUE-Falls
+                # unten in _CASES -- Titel allein liefert schon
+                # hits()>=MIN_HITS=3, s. Kommentar an den einzelnen Faellen.
+                ("fx-paperless", "/test/fx-paperless",
+                 "Kennst du paperless-ngx docs", "wieweit dies unseren wissen papernetzwerk"),
+                ("fx-fahrtenbuch", "/test/fx-fahrtenbuch",
+                 "Fahrtenbuch trip repository", "GoBD Hash Kette verletzt"),
+                ("fx-setfunk", "/test/fx-setfunk",
+                 "Setfunk WebRTC Latenz", "Jitter Buffer"),
+                ("fx-iphone", "/test/fx-iphone",
+                 "iPhone Deploy Flutter", "Build Profile devicectl install"),
+                # Umlaut-Faltung (s. Falltext unten): Titel traegt die
+                # ECHTEN Umlaute, die Anfrage die ue/ae-Schreibung -- testet
+                # genau die Faltung, die dieser Fall kalibriert.
+                ("fx-existenzgruender", "/test/fx-existenzgruender",
+                 "Was steht zu Existenzgründer drin", "unabhängige amtliche Beschreibungen"),
+                ("fx-plausibilitaet", "/test/fx-plausibilitaet",
+                 "Plausibilitäts Zählern Ganzzahlauflösung", "Testfixtur fuer Selbsttest"),
+            ],
         )
-        print(f"  {'HIT ' if want else 'MISS'} ok: {len(n)}n/{len(l)}l  {prompt[:45]}")
+        _conn3.commit()
+        _conn3.close()
+
+        _suchpfad_vorher = os.environ.get("KNOWLEDGE_SUCHPFAD_ABRUF")
+        os.environ["KNOWLEDGE_SUCHPFAD_ABRUF"] = "0"
+        _alt_db3, DB = DB, _db_path3
+        try:
+            for want, prompt in _CASES:
+                kws = keywords(prompt)
+                n, l = (query(kws, rand=_never_explore, embed_fn=_no_embed) if len(kws) >= MIN_HITS else ([], []))
+                got = bool(n or l)
+                if (want, prompt) in _BEKANNT_ROT:
+                    print(f"  BEKANNT ROT ({len(n)}n/{len(l)}l): {prompt[:45]}")
+                    continue
+                assert got == want, (
+                    f"MIN_HITS={MIN_HITS}: '{prompt[:40]}...' erwartet "
+                    f"{'Treffer' if want else 'leer'}, bekam {len(n)}n/{len(l)}l"
+                )
+                print(f"  {'HIT ' if want else 'MISS'} ok: {len(n)}n/{len(l)}l  {prompt[:45]}")
+        finally:
+            DB = _alt_db3
     # Alters-Anzeige
     from datetime import timedelta
     jetzt = datetime.now(timezone.utc)
@@ -2228,7 +2280,14 @@ def selftest() -> None:
         _c.commit()
         _c.close()
         lp = os.path.join(td, "recall_log.jsonl")
-        global DB
+        # global DB steht bereits am Funktionskopf (Zeile 2048) -- diese
+        # zweite Deklaration war bis 2026-08-19 redundant und folgenlos,
+        # weil DB vorher nirgends in selftest() gelesen/geschrieben wurde.
+        # Der neue _CASES-Block oben (eigene Wegwerf-DB) liest/schreibt DB
+        # jetzt VOR dieser Stelle -- eine zweite `global DB`-Anweisung nach
+        # einer bereits erfolgten Nutzung des Namens ist ein SyntaxError
+        # ("used prior to global declaration"), unabhaengig davon, dass sie
+        # inhaltlich nichts aendert. Entfernt statt umformuliert.
         _alt_cfg_db = DB
         DB = cfg_db
         try:

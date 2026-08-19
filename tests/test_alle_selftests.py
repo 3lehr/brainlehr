@@ -203,25 +203,16 @@ MODULE = [
 
 # Rot, mit Grund -- je Fall geprueft am 2026-08-12, nicht geraten:
 XFAIL = {
-    # NEU 2026-08-19, alle drei GEFUNDEN und nicht verursacht -- eingetragen
-    # mit Grund statt die Suite rot stehen zu lassen, denn eine rote Suite
-    # wird nach zwei Tagen nicht mehr gelesen.
-    "haken/mehrstufiger_abruf.py": (
-        "vorbestehend, lief bis 2026-08-19 NIE (das Modul fehlte in MODULE, "
-        "gefunden von test_kein_modul_faellt_durch_die_liste). Sein Selbsttest "
-        "haengt am echten Bestand: 'Voraussetzung der Warnung verletzt: "
-        "L-606b63 muss bei AUS im Ergebnis sein'. Bestandsdrift, nicht Logik -- "
-        "die Lehre steht heute nicht mehr auf dem Rang, den die Fixtur annimmt. "
-        "Gehoert gegen einen Schnappschuss gefahren statt gegen den lebenden "
-        "Bestand, dann faellt die Ausnahme weg."
-    ),
-    "haken/knowledge_recall_hook.py": (
-        "vorbestehend: 'MIN_HITS=3: kennst du paperless-ngx docs? ... erwartet "
-        "Treffer, bekam 0n/0l'. Dieselbe Klasse wie oben -- eine "
-        "Trefferwartung gegen den lebenden, wachsenden Bestand. NICHT von der "
-        "Aenderung 1e2b40ee verursacht: die hat nur ein Feld angehaengt, und "
-        "der zugehoerige Test belegt die Reihenfolge als identisch."
-    ),
+    # haken/mehrstufiger_abruf.py und haken/knowledge_recall_hook.py standen
+    # hier vom 2026-08-19 (Eintragung) bis 2026-08-19 (Behebung) mit
+    # derselben Wurzel: die betroffenen Selbsttest-Faelle liefen gegen die
+    # ECHTE, wachsende brainlehr.db und benannten dabei feste Bestandszeilen
+    # (L-606b63 bzw. eine Trefferwartung fuer "kennst du paperless-ngx
+    # docs?") -- Bestandsdrift, keine Codeaenderung. Beide Module bauen sich
+    # jetzt eine eigene Wegwerf-DB aus schema.sql (s. Kommentare in den
+    # Modulen selbst) und biegen DB/knowledge_recall_hook.DB nur fuer die
+    # Dauer des jeweiligen Testblocks um -- unabhaengig vom Bestandswachstum
+    # richtig, per Rot-vor-Gruen und Gegenprobe belegt (Auftrag 2026-08-19).
     # melder/vier_nenner.py stand hier von 833e7ef4 bis 993a8e18 und ist RAUS:
     # der Grund war das Symptom, nicht die Ursache. Es gab ZWEI Module namens
     # `ausloeser`; der Import holte still kern/ statt messungen/, wodurch der
