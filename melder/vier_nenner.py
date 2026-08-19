@@ -63,7 +63,29 @@ from pathlib import Path
 WURZEL = _w
 sys.path.insert(0, str(WURZEL / "messungen"))
 sys.path.insert(0, str(WURZEL / "kern"))
-import ausloeser  # noqa: E402 -- messungen/ausloeser.py, nur GELESEN/importiert
+
+# NAMENSKOLLISION, behoben 2026-08-19: Es gibt ZWEI Module namens `ausloeser`
+# -- kern/ausloeser.py (Zeitplaene, Kennzahlen) und messungen/ausloeser.py
+# (Transkript-Auswertung, scan/stufe1_haltepunkt/PROJEKTE). Gemeint war immer
+# das zweite, wie der Kommentar hier schon sagte. Die beiden Zeilen darueber
+# stellen aber `kern` VOR `messungen`, also gewann kern -- und `import
+# ausloeser` holte still das falsche Modul.
+#
+# Die Folge war kein Importfehler, sondern ein Melder, der bei JEDEM Aufruf
+# abbrach: `AttributeError: module 'ausloeser' has no attribute '_zeit'`,
+# gemessen am 2026-08-19 im Produktivaufruf, nicht nur im Selbsttest. Er lief
+# also nie -- und weil `main()` mit exit 0 endet, sah das von aussen aus wie
+# ein stiller Melder ohne Befund.
+#
+# Deshalb ueber den PFAD geladen statt ueber den Namen: ein Name ist von der
+# Reihenfolge in sys.path abhaengig, ein Pfad nicht.
+import importlib.util as _ilu  # noqa: E402
+_spec = _ilu.spec_from_file_location(
+    "messungen_ausloeser", str(WURZEL / "messungen" / "ausloeser.py"))
+ausloeser = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(ausloeser)
+assert hasattr(ausloeser, "scan") and hasattr(ausloeser, "PROJEKTE"), (
+    "falsches ausloeser-Modul geladen -- erwartet messungen/ausloeser.py")
 import abrufguete  # noqa: E402 -- kern/abrufguete.py, nur GELESEN/importiert
 import speicher  # noqa: E402 -- die Naht (kern/speicher.py): lesen() statt eigener Verbindung
 
