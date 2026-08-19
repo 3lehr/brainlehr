@@ -1443,3 +1443,61 @@ gehört der Speicher vor die Messung.**
 beschlossen, und vor jeder fehlt eine Wirkungszahl. Richtung 1 (situative
 Zweiteinbettung je Lehre) lässt sich an einer Handvoll billig prüfen, bevor der
 Bestand angefasst wird. `116` ist damit erledigt und geht in `117` über.
+
+---
+
+## `118` — der Widerspruch ist aufgelöst: beide Messungen stimmen, eine Formulierung nicht
+
+`runs/widerspruch_118_kandidatenquelle.json` (`1dd882a7`), Schnappschuss
+`20260819T110946-72b64534`. Kein einziger Modellaufruf nötig — die Frage war
+über den Code beantwortbar, nicht über einen Nachlauf (der hätte 1.719 s
+gekostet).
+
+**Die beiden Messungen sprechen über zwei verschiedene Kandidatenmengen:**
+
+| | Ziel in Top-50 |
+|---|---|
+| gemeinsame Kosinusliste über Knoten+Lehren (was `A` maß) | 13 von 35 |
+| **tatsächliche Kandidatenquelle der Nachrangung** | **21 von 35** |
+
+Fundstelle statt Vermutung: `knowledge_search()` reicht `final_ids` aus
+`_fuse_with_keyword_floor()` weiter. Dort werden Knoten und Lehren **getrennt**
+per Kosinus gerankt und erst über die **Rangposition** verschmolzen — eine
+gemeinsame Kosinusliste, wie `A` sie bildet, entsteht nie.
+
+**Der Einzelfall entscheidet es schneller als jede Statistik:**
+`/ops/buckeberg-konsil-2026-07-22-governance` steht in der gepoolten Liste auf
+**Rang 150** und in der echten Kandidatenquelle auf **Rang 1**.
+
+**Ein Satz:** Messung `A` gilt weiter für ihre eigene Frage, beschreibt aber
+nicht die Kandidatenmenge der Nachrangung; die 18 von 35 aus `B` sind mit den
+21 erreichbaren Zielen vereinbar und bleiben die maßgebliche Zahl.
+
+Falsch war nie eine Zahl, sondern **ein Satz**: *„Keine Umordnung erreicht ein
+Ziel auf Rang 134."* Er gilt für die gepoolte Liste und wurde als Aussage über
+jede Umordnung gelesen. `L-352afa` (4 Vorkommen) zum fünften Mal — das
+Werkzeug beantwortet eine engere Frage als der Satz, in dem seine Zahl steht.
+
+### Zwei Nebenbefunde, die jede frühere Zahl dieses Korpus betreffen
+
+**Der Prüfkorpus hat 45 Zeilen, nicht 35.** Selbst nachgezählt: 35 mit
+`target_id`, **10 Enthaltungsfälle mit `target_id: null`**. Keine der beiden
+Messungen sagt das; beide rechnen „von 35" und meinen die Teilmenge. Für die
+Enthaltung sind ausgerechnet diese 10 der interessante Teil — sie sind der
+Fall, in dem Schweigen richtig ist.
+
+**Knoten-Ziele stehen als Pfad, nicht als Kennung** (`/methodik/einstieg` statt
+Hex). Ohne Auflösung wären alle 20 Knotenfälle künstlich verfehlt worden,
+unabhängig von der eigentlichen Frage.
+
+### Entscheidung zur Nachrangung: Vorgabe bleibt AUS
+
+Sie ist eingebaut, geprüft und abschaltbar. **Preis: Median 48,6 s je Anfrage.**
+Der Abruf läuft in **jedem Prompt jeder Sitzung**; aus unter einer Sekunde
+würde fast eine Minute. Das ist keine Verbesserung, die man stillschweigend
+einschaltet — sie steht bereit, wer sie einschaltet, bezahlt bewusst.
+
+**Was ich stattdessen für nötig halte:** eine Nachrangung, die nicht 48 s
+kostet. Die Nulllinie aus derselben Messung sagt, wo sie nicht zu holen ist —
+die regelbasierte Variante bewegt **nichts** (6/35 wie ohne). Das ist eine
+Aufgabe mit einer klaren Abnahme, kein Schalter.
