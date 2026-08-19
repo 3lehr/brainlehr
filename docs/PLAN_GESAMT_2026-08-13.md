@@ -1387,3 +1387,59 @@ wurde.
 Änderung, die 339 andere Kennungen betrifft, ist über ihn grundsätzlich nicht
 sichtbar. Das ist keine Kritik am Korpus — er ist für Abrufgüte gebaut, nicht
 für Bestandsänderungen —, aber es begrenzt, welche Fragen er beantworten kann.
+
+---
+
+## `116` beantwortet — nicht durch eine Messung, sondern durch den eigenen Speicher
+
+Der Agent hat die Textzusammensetzung vermessen und meine Annahme **widerlegt**:
+weder Länge noch Variantenwahl trennen die drei Fälle von den Gegenproben, und
+die beste Variante gewönne 0,003 bis 0,02 — es fehlen aber 0,08 bis 0,15 zur
+Schwelle. Er hat ehrlich „unerklärt" gemeldet statt eine Erklärung zu bauen.
+
+**Erklärt ist es trotzdem, seit dem 2026-08-16, im eigenen Bestand:** Knoten
+`291c2e3f` „Warum der echte Prüfkorpus bei 14 Prozent liegt".
+
+| | |
+|---|---|
+| Ziel in Top-5 | 5 von 35 (14 %) |
+| Rang 6–50 | 7 |
+| **außerhalb Top-50** | **23** |
+| die 23 im **reinen** Bedeutungskanal | Median-Rang **134** von 5963 |
+
+Und die Ursache steht dort im Klartext: **Die Aufgaben sind
+Situationsbeschreibungen in Alltagssprache, die Ziele sind technische
+Beschreibungen mit Eigennamen.** Dazwischen liegt ein Abstraktionssprung, den
+das Einbettungsmodell nicht überbrückt. Derselbe Abruf erreicht auf GermanQuAD
+**37 von 40** — dort ist die Frage aus der Zielpassage gebildet. *Der
+Unterschied zwischen 93 % und 14 % ist nicht die Güte des Abrufs, sondern der
+Abstand zwischen Frageform und Zielform.*
+
+### Was das für die Enthaltung bedeutet, und es ist unangenehm
+
+Die drei enthaltenen Fälle sind **keine Ausreißer, sondern der Normalfall
+dieses Korpus**. Ihr niedriger Kosinus ist kein Defekt an diesen drei Knoten —
+er ist die gemessene Eigenschaft der Aufgabenform. Und er erklärt zugleich,
+warum fachfremde Fragen **höher** liegen können: die sind schlicht formuliert
+und treffen schlicht formulierte Inhalte.
+
+Die Schwelle 0,55 kodiert damit den Abstraktionssprung mit. Sie bleibt richtig
+— sie verhindert belegten Schaden —, aber sie ist keine Aussage über
+Wissensqualität, sondern über Frageform.
+
+### Der eigentliche Befund des Tages steckt im Weg dorthin
+
+Diese Diagnose lag **drei Tage** im Speicher und wurde heute in vier Aufträgen
+nicht gefunden — ich habe stattdessen zwei Agenten (rund 250.000 Token) auf
+Erklärungen angesetzt, die dort bereits ausgeschlossen waren. Eingespielt hat
+sie am Ende der **automatische Abruf**, ungefragt, im richtigen Moment.
+
+Das ist an einem Tag, an dem ich den Abruf vermessen, beschnitten und mit einer
+Enthaltung versehen habe, der beste Beleg für ihn — und zugleich `L-f2858b`
+(4 Vorkommen) zum sechsten Mal: **Bei einer Frage der Form „woran liegt X"
+gehört der Speicher vor die Messung.**
+
+**`117`** (neu): Von den drei im Knoten genannten Richtungen ist keine
+beschlossen, und vor jeder fehlt eine Wirkungszahl. Richtung 1 (situative
+Zweiteinbettung je Lehre) lässt sich an einer Handvoll billig prüfen, bevor der
+Bestand angefasst wird. `116` ist damit erledigt und geht in `117` über.
