@@ -76,7 +76,11 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
     Liefert (node_rows, lesson_rows), je in Rangfolge, ungekappt bis auf den
     gemeinsamen max_results-Deckel von _fuse_with_keyword_floor (Empfehlung:
     MAX_NODES+MAX_LESSONS des Aufrufers, s. Moduldoc zur Messung mit
-    max_results=5).
+    max_results=5). Jede Zeile traegt zusaetzlich 'bedeutungs_kosinus' -- der
+    rohe Kosinus des Bedeutungskanals fuer GENAU diesen Kandidaten, None wenn
+    kein Vektor vorliegt (Auftrag 2026-08-19, gleiche Bauform wie
+    knowledge_search() in knowledge_mcp_server.py). Reines Beiwerk: aendert
+    weder Auswahl noch Reihenfolge der final_ids.
 
     Auftrag 89 (Kanalwahl an die Anfragelaenge binden), gemessen statt
     geplant: DIESER Pfad (kein _fuse_with_keyword_floor-Sockel, reine
@@ -136,13 +140,22 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
     keyword_ordered_ids = embeddings.rrf_fuse(
         list(node_by_id.keys()), list(lesson_by_id.keys()), embedding_weight=1.0)
 
+    bedeutungswerte: list = []
+    lesson_bedeutungswerte: list = []
     if query_vec is not None:
         erl_nodes, erl_lessons = _erlaubte_ids(conn)
-        emb_node_ids = _embedding_ranking(conn, "node", query_vec, erl_nodes)
-        emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, erl_lessons)
+        emb_node_ids = _embedding_ranking(conn, "node", query_vec, erl_nodes, bedeutungswerte)
+        emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, erl_lessons, lesson_bedeutungswerte)
     else:
         emb_node_ids, emb_lesson_ids = [], []
     embedding_ordered_ids = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
+    # Roher Kosinus je Treffer (Auftrag 2026-08-19, wie knowledge_search() in
+    # knowledge_mcp_server.py): rrf_fuse oben verwirft ihn zugunsten einer reinen
+    # Rangposition -- hier vor dem Verlust als id->Kosinus-Dict aufgehoben.
+    # emb_*_ids und ihre Werte-Listen sind noch parallel sortiert (_embedding_ranking
+    # gibt beide aus demselben "scored" hervor), ein zip genuegt.
+    kosinus_je_id = dict(zip(emb_node_ids, bedeutungswerte))
+    kosinus_je_id.update(zip(emb_lesson_ids, lesson_bedeutungswerte))
 
     # Kein Stichwort-Sockel (_fuse_with_keyword_floor) mehr: er reservierte die
     # ersten max_results Plaetze fuer den Stichwortkanal -- und weil dieser bei
@@ -185,6 +198,16 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
             missing_lesson_ids,
         ):
             lesson_by_id[r["id"]] = dict(r)
+
+    # Roher Kosinus des Bedeutungskanals je Kandidat (Auftrag 2026-08-19): None
+    # (nicht 0.0) wenn kein Vektor vorliegt -- 0.0 waere eine Aussage ueber
+    # Aehnlichkeit, None eine ueber Verfuegbarkeit. Nur angehaengt, keine
+    # Auswahl/Reihenfolge geaendert -- final_ids und ihre Zuordnung zu
+    # node_by_id/lesson_by_id bleiben wie zuvor.
+    for i, d in node_by_id.items():
+        d["bedeutungs_kosinus"] = kosinus_je_id.get(i)
+    for i, d in lesson_by_id.items():
+        d["bedeutungs_kosinus"] = kosinus_je_id.get(i)
 
     return (
         [node_by_id[i] for i in final_ids if i in node_by_id],
