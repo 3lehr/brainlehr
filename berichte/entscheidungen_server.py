@@ -989,6 +989,54 @@ def _domaene_dienst(domaene_id: str) -> dict:
     return {"importiert": True, "dienst": dienst}
 
 
+def _domaene_zeilen(domaene_id: str) -> dict:
+    """Die Zeilen des Fachdienstes, ueber den Wissensraum geholt.
+
+    WOFUER: /api/domaene-dienst gibt dem Klienten eine PORTNUMMER und erwartet,
+    dass er sich selbst verbindet. Eine native Anwendung kann das. Eine Seite
+    im Browser nicht -- der Fachdienst sendet keine CORS-Koepfe, ein Abruf von
+    Port 8799 nach 8812 waere fremder Herkunft.
+
+    WARUM DURCHREICHE UND NICHT CORS AM FACHDIENST: CORS oeffnete ihn fuer
+    JEDE lokale Seite. Die Durchreiche laesst ihn geschlossen und gibt dem
+    Browser genau eine Herkunft. Der Fachdienst bleibt damit ein Dienst der
+    Domaene, nicht des Netzes.
+
+    DIESELBE RANGFOLGE wie im nativen Zeichner (INT-DNST-002): der Pfad des
+    Bildschirms, sonst `zeilen` des Dienstes, sonst der Lebenszeichenpfad.
+    Sie steht hier ein zweites Mal -- gemeinsam nutzbar waere sie nur ueber
+    eine geteilte Bibliothek, die es zwischen Swift und Python nicht gibt.
+
+    Nie erfundene Zeilen: antwortet der Dienst nicht, kommt eine leere Liste
+    MIT Begruendung zurueck. 'nichts da' und 'nicht erreichbar' sehen auf dem
+    Bildschirm sonst gleich aus.
+    """
+    from urllib import error as _fehler
+    from urllib import request as _anfrage
+
+    eintrag = _domaene_dienst(domaene_id)
+    if eintrag.get("importiert") is not True:
+        return {"zeilen": [], "erreichbar": False,
+                "meldung": "Diese Anwendung ist hier nicht eingebunden."}
+    dienst = eintrag.get("dienst") or {}
+    port = dienst.get("horcht_auf")
+    if not isinstance(port, int) or port <= 0:
+        return {"zeilen": [], "erreichbar": False,
+                "meldung": "Diese Anwendung bringt keinen startbereiten Dienst mit."}
+    pfad = dienst.get("zeilen") or dienst.get("lebenszeichen") or "/"
+    try:
+        with _anfrage.urlopen(f"http://127.0.0.1:{port}{pfad}", timeout=3) as antwort:
+            roh = json.loads(antwort.read())
+    except (_fehler.URLError, OSError, ValueError):
+        return {"zeilen": [], "erreichbar": False,
+                "meldung": "Der Dienst dieser Anwendung antwortet gerade nicht."}
+    zeilen = roh.get("zeilen")
+    if not isinstance(zeilen, list):
+        return {"zeilen": [], "erreichbar": True,
+                "meldung": "Der Dienst hat keine Zeilen geliefert."}
+    return {"zeilen": zeilen, "erreichbar": True}
+
+
 def _domaene_oberflaeche(domaene_id: str) -> dict:
     """Die Bildschirm-Beschreibung einer IMPORTIERTEN Domaene.
 
@@ -1261,6 +1309,11 @@ class Handler(BaseHTTPRequestHandler):
                 kopf = p.read_text(encoding="utf-8").split("\n", 1)[0]
                 karten.append({"kennung": p.stem, "titel": kopf.lstrip("# ").strip() or p.stem})
             self._json({"karten": karten})
+            return
+        if self.path.startswith("/api/domaene-zeilen?"):
+            from urllib.parse import parse_qs, urlparse
+            kennung = (parse_qs(urlparse(self.path).query).get("domaene") or [""])[0]
+            self._json(_domaene_zeilen(kennung))
             return
         if self.path.startswith("/api/domaene-dienst?"):
             from urllib.parse import parse_qs, urlparse
