@@ -923,3 +923,52 @@ misst genau das an sechs Spalten, die keine Unterscheidung tragen.
 2. **Gerichtete Kanten im Bestand.** Heute 3 gegen 9976 symmetrische.
 3. **Belegte Katalogzeilen mit nachfahrbarem Prüfbefehl.** Heute 24 von 56,
    davon 22 vertagt — der ehrliche Nenner ist also 24 von 34.
+
+---
+
+## Fortschreibung 2026-08-19T05:50:00+0200 — `112`, und warum er nicht aus dieser Linie stammt
+
+### `112` — die Nachrangung liegt fertig auf einem anderen Zweig
+
+Eine parallele Sitzung hat am 2026-08-18 gemessen und gebaut, was hier als
+Engpass geführt wurde. Geprüft, nicht übernommen (`git ls-tree` über alle
+Zweige, Knoten `/brainlehr/nachrangung-bewegt-top5-von-17-auf-51`):
+
+| | top5 |
+|---|---|
+| ohne Nachrangung (**dieser Zweig, heute**) | 6/35 = 17,1 % |
+| Regel ohne Modell (Wortdeckung) | 6/35 — **bewegt nichts** |
+| `gemma4:e4b`, ein Aufruf über 50 Kandidaten | 18/35 = 51,4 % |
+
+Drei Commits (`798ef2ff`, `48fb98ca`, `04bd7f00`) auf **`brainlehr/atelier`**,
+nicht auf `brainlehr/b4-ausweis`. Damit ist `112` keine Bau- und keine
+Messaufgabe, sondern eine **Zusammenführung mit einer Vorgabeentscheidung**.
+
+**Der Preis steht neben der Zahl, und er ist der eigentliche Inhalt der
+Entscheidung:** Median **48,6 s je Anfrage**. Eine Suche im Abrufpfad einer
+Sitzung wächst damit von unter einer Sekunde auf fast eine Minute. Deshalb ist
+der Parameter dort **`nachrangung=False` in der Vorgabe** — die bessere Zahl
+darf sich nicht als Voreinstellung hinter dem Rücken der Latenz einschalten.
+
+**Was diese Linie daraus lernt, unabhängig vom Zusammenführen:** Die Nulllinie
+ist der schärfere Befund, nicht die 51 %. Wortdeckung bewegt **nichts**. Hätte
+die Regel dieselbe Verbesserung gebracht, wäre das Modell eine Abhängigkeit für
+nichts gewesen — und danach nicht mehr zu entfernen, ohne dass jemand sie
+verteidigt. Eine Nulllinie gehört in jede solche Messung als **erste** Frage.
+
+### Was das für `100` bedeutet, und das ist eine Grenze, keine Nebensache
+
+Aufgabe `100` misst, ob der Speicher einem Modell hilft. Ihre Zufuhr sind die
+**Top-5** aus `knowledge_search` — auf diesem Zweig also eine Liste, die das
+Ziel in **17 %** der Fälle enthält. Jede Aussage aus `100` gilt damit für die
+**un-nachgerangte** Zufuhr. Ein Ergebnis „Speicher wirkt kaum" wäre unter
+dieser Bedingung nicht widerlegt, aber auch nicht zugeschrieben: es könnte die
+Zufuhr sein, nicht der Speicher. Dieselbe Fehlerklasse wie `L-08b79a` (dort
+war es das Token-Budget) — eine **Grenze des Aufbaus**, die sich als Ergebnis
+liest.
+
+`100` wird trotzdem zuerst gefahren: sie ist die Nulllinie, gegen die ein
+späterer Lauf mit Nachrangung überhaupt erst etwas zeigen kann.
+
+**Bindend:** `112` (Zusammenführen) vor jedem *zweiten* Wirkungslauf. Ein
+zweiter Lauf ohne Nachrangung misst dieselbe Zufuhr noch einmal.

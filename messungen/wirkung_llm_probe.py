@@ -423,6 +423,12 @@ def main() -> None:
             "eine sinngemaess richtige Antwort mit anderen Worten wird als 'trifft nicht' gewertet.",
             "kontamination() ist ein Indiz, kein Beweis: Ueberschneidungen koennen auch aus "
             "allgemeinem Vokabular stammen, das zufaellig in Aufgabe UND Hintergrundwissen fehlt.",
+            "DIE ZUFUHR IST UN-NACHGERANGT. knowledge_search laeuft auf diesem Zweig ohne "
+            "Nachrangung; gemessen 2026-08-18 (Knoten /brainlehr/nachrangung-bewegt-top5-von-17-auf-51) "
+            "enthaelt die Top-5 damit in 17,1 % der Faelle das Ziel, mit Nachrangung in 51,4 %. "
+            "Jede Aussage hier gilt fuer die un-nachgerangte Zufuhr. Ein schwaches Ergebnis waere "
+            "damit NICHT dem Speicher zuzuschreiben -- es koennte die Zufuhr sein (gleiche "
+            "Fehlerklasse wie L-08b79a, wo es das Token-Budget war).",
             "Der echte Recall-Hook (haken/knowledge_recall_hook.py) laeuft hier nicht mit -- "
             "memory_text() ist eine eigene, einfachere Formatierung der Top-5-Treffer.",
             "Gilt gegen den festgehaltenen Bestand 'messstand' (runs/schnappschuesse/) und das "
