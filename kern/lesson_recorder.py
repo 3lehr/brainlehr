@@ -54,11 +54,34 @@ import ort  # noqa: E402
 import speicher  # noqa: E402 -- nur verbinde_bestand() fuer get_db()
 import zeitmarke  # Aufgabe 111: die eine Quelle fuer Zeitstempel
 
+# BEFUND 2026-08-19: Diese Karte kannte drei Schluessel -- begod, aka,
+# bebetter. Die Lehren im Bestand tragen aber andere Etiketten: systemweit
+# 477, fahrtenbuch 320, brainlehr 276, openlehr 258, hub 225, buckeberg 138,
+# shared 74. Gemessen: 1030 von 1110 Lehren mit Projektangabe trafen KEINEN
+# Schluessel und auch nicht 'shared' -- ihre erzeugte Regel lief unten in ein
+# `continue` und verschwand lautlos. Die einzige je geschriebene Regeldatei
+# traegt genau EINEN Eintrag, vom 2026-08-07.
+#
+# Kein Fehlschlag, keine Meldung, zwoelf Tage lang.
+#
+# 'systemweit' ist ein Synonym fuer 'shared', kein eigenes Ziel: beide heissen
+# "gilt ueberall", nur in zwei Schreibweisen.
 PROJECTS = {
     "begod": ort.VERBUND / "hub",
+    "hub": ort.VERBUND / "hub",
+    "brainlehr": ort.VERBUND / "brainlehr",
+    "fahrtenbuch": ort.VERBUND / "fahrtenbuch",
+    # openlehr existiert unter drei Namen; das gepflegte Repo ist
+    # openlehr_einzelunternehmer (ADR-013/ADR-024). openlehr_legacy und
+    # openlehr.worktrees sind Altbestand bzw. Arbeitsbaeume.
+    "openlehr": ort.VERBUND / "openlehr_einzelunternehmer",
+    "buckeberg": ort.VERBUND / "buckeberg",
+    "wohlair": ort.VERBUND / "wohlair",
     "aka": ort.VERBUND.parent / "AKA2026",
     "bebetter": ort.VERBUND.parent / "BEBETTER",
 }
+
+UEBERALL = {"shared", "systemweit"}
 
 
 def now_iso() -> str:
@@ -293,17 +316,26 @@ def write_rules_to_instructions(rules: list[tuple]) -> int:
             by_project.setdefault(proj, []).append(rule_text)
 
     written = 0
+    ohne_ziel: list[str] = []
     for proj_key, proj_rules in by_project.items():
-        proj_path = PROJECTS.get(proj_key)
-        if not proj_path:
-            # 'shared' → write to all projects
-            if proj_key == "shared":
-                for p in PROJECTS.values():
+        if proj_key in UEBERALL:
+            for p in dict.fromkeys(PROJECTS.values()):  # hub steht zweimal drin
+                if Path(p).exists():
                     written += _write_instructions_file(p, proj_rules)
-                continue
+            continue
+        proj_path = PROJECTS.get(proj_key)
+        if not proj_path or not Path(proj_path).exists():
+            # LAUT statt `continue` (2026-08-19). Vorher verschwand hier die
+            # Regel jedes Projekts, das nicht in der Karte stand -- gemessen
+            # 1030 von 1110 Lehren, ohne dass irgendwo etwas auffiel.
+            ohne_ziel.append(proj_key)
             continue
         written += _write_instructions_file(proj_path, proj_rules)
 
+    if ohne_ziel:
+        print(f"WARNUNG: kein Ziel fuer Projekt(e) {sorted(set(ohne_ziel))} -- "
+              f"Regel NICHT geschrieben. PROJECTS in kern/lesson_recorder.py ergaenzen.",
+              file=sys.stderr)
     return written
 
 
