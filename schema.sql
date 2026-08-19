@@ -669,8 +669,53 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     -- occurrences sind strukturell ein datiertes Ereignis) -- Vorgabe
     -- deshalb 'episodisch', abweichend vom Vorgabewert an knowledge_nodes,
     -- weil beide Tabellen unterschiedlich vorsortiert sind.
-    gedaechtnisart TEXT NOT NULL DEFAULT 'episodisch'
+    gedaechtnisart TEXT NOT NULL DEFAULT 'episodisch',
+    -- Geltung (Aufgabe 79487bf9, ADR-030): gleiche Bedeutung wie an
+    -- knowledge_nodes.gilt_ab/gilt_bis -- leer = unbefristet, NICHT
+    -- unbekannt. lessons_learned hatte bisher NUR first_seen/last_seen
+    -- (Beobachtungszeit), keine Geltung; ADR-030 haelt fest, dass eine
+    -- Beobachtung keine Geltung ist.
+    gilt_ab TEXT,
+    gilt_bis TEXT,
+    -- bezug: welches fremde Produkt die Lehre betrifft, JSON-Array wie
+    -- lessons_learned.projects (gleiche Bauform, gleicher Leser). Format
+    -- bewusst wie projects statt Freitext, weil §4 der Aufgabe die
+    -- Auszaehlung nach Produkt verlangt -- Freitext zaehlt nicht (gleicher
+    -- Grund wie bei bemerkt_woran oben). KEIN DEFAULT '[]': NULL heisst
+    -- "noch nicht geprueft", '[]' heisst "geprueft, kein Produkt gefunden"
+    -- -- sonst kann eine additive Migration eine bereits mit Vorgabewert
+    -- angelegte Spalte nicht mehr von einer echten Negativpruefung
+    -- unterscheiden und wiederholt sich bei jedem Lauf.
+    bezug TEXT,
+    -- gilt_bis_version: nur beim Erfassen setzbar, bleibt bei der additiven
+    -- Migration LEER (Auftrag) -- Versionen sind aus alten Lehrentexten
+    -- NICHT rueckwirkend gewinnbar (gemessen: 12 von 252 Treffer nennen
+    -- eine Version im Text, ueberwiegend falsch geraten aus IP-Adressen).
+    -- Kein gilt_ab_version -- keine Begruendung gefunden, wofuer eine
+    -- Lehre erst AB einer Version gelten sollte statt seit ihrer Erfassung.
+    gilt_bis_version TEXT
 );
+
+-- Schranke fuer gilt_bis/gilt_ab an lessons_learned, gleiche Bauform wie
+-- knowledge_nodes_gilt_bis_vor_gilt_ab_bi/bu unten: ein Enddatum vor dem
+-- Anfangsdatum ist immer ein Fehler, unabhaengig von der Norm-Systematik,
+-- die knowledge_nodes zusaetzlich hat und lessons_learned bewusst nicht
+-- bekommt (keine norm_entscheidung-Pflicht fuer Lehren).
+CREATE TRIGGER IF NOT EXISTS lessons_learned_gilt_bis_vor_gilt_ab_bi
+BEFORE INSERT ON lessons_learned
+FOR EACH ROW WHEN NEW.gilt_ab IS NOT NULL AND NEW.gilt_bis IS NOT NULL
+    AND julianday(NEW.gilt_bis) < julianday(NEW.gilt_ab)
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.gilt_bis liegt vor gilt_ab');
+END;
+
+CREATE TRIGGER IF NOT EXISTS lessons_learned_gilt_bis_vor_gilt_ab_bu
+BEFORE UPDATE ON lessons_learned
+FOR EACH ROW WHEN NEW.gilt_ab IS NOT NULL AND NEW.gilt_bis IS NOT NULL
+    AND julianday(NEW.gilt_bis) < julianday(NEW.gilt_ab)
+BEGIN
+    SELECT RAISE(ABORT, 'lessons_learned.gilt_bis liegt vor gilt_ab');
+END;
 
 -- Schranke fuer beinahefehler/bemerkt_woran, gleiche Bauform wie die
 -- freigabe-Trigger darunter: in der Datenbank, nicht im Aufrufer. MCP laeuft
