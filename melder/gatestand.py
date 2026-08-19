@@ -71,6 +71,16 @@ def lies(pfad: Path) -> list[dict]:
             # gemessen worden waere -- eine Schoenung durch Umetikettierung,
             # und genau die Sorte Zahl, gegen die dieser Melder gebaut ist.
             "vertagt": gate.upper().startswith("DEFERRED"),
+            # VIERTE KATEGORIE, ergaenzt 2026-08-19. Bis dahin zaehlte
+            # TEILWEISE voll als "belegt" -- gemessen sechs Zeilen (P04, P06,
+            # E07, E13, E15, F05). Die Quote 33/56 las sich damit besser als
+            # der Bestand: TEILWEISE heisst, dass ein Gate lief UND dass es
+            # etwas gefunden hat. Genau die Sorte Zahl, gegen die dieser
+            # Melder gebaut ist -- und er war blind dafuer, weil "hat ein Gate
+            # gelaufen" und "ist belegt" hier stillschweigend gleichgesetzt
+            # waren. Aufgefallen, als E18 von TEILWEISE auf PASS ging und die
+            # Quote sich nicht bewegte.
+            "teilweise": gate.upper().startswith("TEILWEISE"),
             "dateien": [d for d in DATEI.findall(gate)],
         })
     return zeilen
@@ -84,13 +94,16 @@ def beurteile(zeilen: list[dict], wurzel: Path = WURZEL) -> dict:
                 fehlend.append((z["id"], d))
     offen = [z["id"] for z in zeilen if z["offen"]]
     vertagt = [z["id"] for z in zeilen if z.get("vertagt")]
+    teilweise = [z["id"] for z in zeilen if z.get("teilweise")]
     return {
         "gesamt": len(zeilen),
         "offen": len(offen),
         "vertagt": len(vertagt),
-        "belegt": len(zeilen) - len(offen) - len(vertagt),
+        "teilweise": len(teilweise),
+        "belegt": len(zeilen) - len(offen) - len(vertagt) - len(teilweise),
         "offene_ids": offen,
         "vertagte_ids": vertagt,
+        "teilweise_ids": teilweise,
         "phantom": fehlend,
     }
 
@@ -107,23 +120,29 @@ def _selftest() -> int:
             "| BDW-X01 | y | NOT RUN | q |\n"
             "| BDW-X02 | y | PASS: `echt.py --selftest` gruen | q |\n"
             "| BDW-X03 | y | PASS: `gibtsnicht.py --selftest` | q |\n"
-            "| BDW-X04 | y | DEFERRED: aktiviert mit dem ersten Piloten (`BDW-C03`) | q |\n",
+            "| BDW-X04 | y | DEFERRED: aktiviert mit dem ersten Piloten (`BDW-C03`) | q |\n"
+            "| BDW-X05 | y | TEILWEISE: `echt.py` gruen, aber Index nicht erreicht | q |\n",
             encoding="utf-8")
         z = lies(k)
-        assert len(z) == 4, z
+        assert len(z) == 5, z
         e = beurteile(z, wurzel=w)
         # DIE DRITTE KATEGORIE, ergaenzt 2026-08-18: vertagt zaehlt WEDER als
         # offen NOCH als belegt. Ohne diese Zeile haette die Vertagung von 22
         # Katalogzeilen die Quote von 19/56 auf 41/56 gehoben, ohne dass
         # irgendetwas gemessen worden waere.
-        assert e["gesamt"] == 4 and e["offen"] == 1 and e["belegt"] == 2 and e["vertagt"] == 1, e
+        assert e["gesamt"] == 5 and e["offen"] == 1 and e["belegt"] == 2 and e["vertagt"] == 1, e
+        # DIE VIERTE KATEGORIE. Rot gegen den Stand vor 2026-08-19: dort war
+        # `belegt` 3, weil TEILWEISE mitgezaehlt wurde, und `teilweise` gab es
+        # nicht. Ohne diese Zeile blieben sechs halbfertige Katalogzeilen als
+        # Beleg gezaehlt.
+        assert e["teilweise"] == 1 and e["teilweise_ids"] == ["BDW-X05"], e
         assert e["offene_ids"] == ["BDW-X01"], e
         assert e["vertagte_ids"] == ["BDW-X04"], e
         # Der eigentliche Fund: ein Gate, das eine nicht existierende Datei nennt.
         assert e["phantom"] == [("BDW-X03", "gibtsnicht.py")], e
         # Gegenprobe: die existierende Datei wird NICHT gemeldet.
         assert all(p[0] != "BDW-X02" for p in e["phantom"]), e
-    print("gatestand: Selbsttest gruen (Quote 2/4 belegt, 1 offen, 1 vertagt, "
+    print("gatestand: Selbsttest gruen (Quote 2/5 belegt, 1 offen, 1 vertagt, 1 teilweise, "
           "ein Phantom-Gate gefunden, echtes Gate nicht gemeldet)")
     return 0
 
@@ -139,7 +158,10 @@ def main() -> int:
         e = beurteile(zeilen)
         quote = f"{e['belegt']}/{e['gesamt']}"
         vertagt = f", {e['vertagt']} vertagt" if e.get("vertagt") else ""
-        print(f"{pfad.name}: {quote} belegt, {e['offen']} ohne Gate-Lauf{vertagt}")
+        teilweise = f", {e['teilweise']} nur teilweise" if e.get("teilweise") else ""
+        print(f"{pfad.name}: {quote} belegt, {e['offen']} ohne Gate-Lauf{vertagt}{teilweise}")
+        if bericht and e.get("teilweise_ids"):
+            print("  nur teilweise: " + ", ".join(e["teilweise_ids"]))
         for kennung, datei in e["phantom"]:
             print(f"  PHANTOM-GATE {kennung}: nennt {datei} -- existiert nicht")
         if bericht and e["offene_ids"]:
