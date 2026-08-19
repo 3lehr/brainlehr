@@ -1,0 +1,257 @@
+{
+  "weg": "gemma4:12b ueber Ollama OpenAI-kompatible API (http://127.0.0.1:11434/v1/chat/completions), Speicher-Zufuhr ueber knowledge_mcp_server.knowledge_search() (echter Produktivweg, max_results=5)",
+  "modell": "gemma4:12b",
+  "messstand": "20260819T053907-139e3687",
+  "kriterium": "'besser' = mindestens 40% der inhaltstragenden Woerter (Laenge>=4, Stoppwortliste ausgefiltert) aus target_label kommen woertlich in der Antwort vor. Automatische Funktion bewertung(antwort, target_label) -- kein LLM-als-Richter, keine Handbewertung.",
+  "n": 10,
+  "n_negativ": 4,
+  "hinweis_stichprobe": "STICHPROBE, kein Volllauf ueber alle 35 Faelle: 10 Zielfaelle + 4 Negativfaelle x 2 Laeufe = 28 Modellaufrufe, 904.6s Gesamtlaufzeit.",
+  "mit_speicher": 2,
+  "ohne_speicher": 0,
+  "differenz": 2,
+  "kein_ergebnis": {
+    "mit_speicher": 0,
+    "ohne_speicher": 0,
+    "hinweis": "finish_reason=='length' mit leerem content -- zaehlt NICHT als Fehlantwort, separat ausgewiesen."
+  },
+  "blindbewertung": "bewertung() erhaelt ausschliesslich (Antworttext, target_label) als Parameter -- welcher Lauf (mit/ohne Speicher) die Antwort erzeugt hat, ist an dieser Stelle im Code nicht vorhanden und kann daher nicht einfliessen. Dieselbe deterministische Wortabgleichsfunktion laeuft fuer beide Bedingungen im selben Codepfad. Kein LLM-als-Richter (koennte ueber Bedingungsnamen im Prompt stolpern), keine Handbewertung durch den Messenden (der wusste beim Schreiben von bewertung() nicht, welche konkrete Antwort er je Fall erhalten wuerde).",
+  "positivkontrolle_retrieval": {
+    "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+    "anfrage_ausschnitt": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+    "rang": 1,
+    "bestanden": true
+  },
+  "positivkontrolle_llm": {
+    "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+    "art": "node",
+    "target_label": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+    "ohne_speicher": {
+      "antwort": "Um diese Situation zu lösen, sollten folgende drei Maßnahmen ergriffen werden:\n\n1.  **Fokus zurückgewinnen:** Die Diskussion über Detailzahlen und Software muss sofort gestoppt und auf die kritische Frist der rechtlichen Genehmigung zurückgeführt werden (Priorisierung).\n2.  **„Parking Lot“-Methode:** Technische Details anerkennen, aber auf eine separate Liste auslagern, damit sie das aktuelle Meeting nicht blockieren.\n3.  **Interessenabwägung:** Die traditionell orientierten Mitglieder gezielt abholen, indem hybride Lösungen oder analoge Ausgleichsmöglichkeiten explizit in einem separaten Rahmen validiert werden.",
+      "finish_reason": "stop",
+      "trifft_ziel": false
+    },
+    "mit_speicher": {
+      "antwort": "Das Hauptproblem ist die Verwechslung des kritischen Pfades: Der ETV-Beschluss (Ziel Nov. 2026) steht vor dem Ranking und den technischen Feinheiten der Matrix.\n\nFolgende Punkte müssen korrigiert werden:\n1. **Fokus:** Die rechtliche Genehmigung ist der zeitkritische Pfad; technische Details dürfen diesen Prozess nicht verzögern.\n2. **Governance:** Die Priorität liegt auf der Governance. Das 1/4-Quorum muss sofort einberufen werden, um den ETV sicherzustellen.\n3. **Inklusion:** Um Widerstand bei traditionell orientierten Mitgliedern zu vermeiden, ist „Papier-Parität“ für nicht-digitale Eigentümer zwingend einzuhalten.\n\nDetails und Software-Anpassungen sind keine Ausrede für die Verzögerung des eigentlichen Ziels.",
+      "finish_reason": "stop",
+      "trifft_ziel": false
+    }
+  },
+  "negativkontrolle": {
+    "n": 4,
+    "kontaminiert": 2,
+    "nicht_messbar": 0,
+    "bestanden": false,
+    "kriterium": "kontamination(): Umlaute vor dem Wortabgleich normalisiert (ae/oe/ue/ss), sonst greift kein Stoppwort mit Umlaut (Befund Aufgabe 99). Mind. 2 inhaltstragende Woerter aus dem eingespielten Hintergrundwissen (abzueglich Woerter, die schon in der Aufgabe stehen), die NUR in der Speicher-Antwort vorkommen, nicht in der speicherlosen -- Indiz, dass fachfremdes Material aus dem Speicher durchschlaegt. None (nicht messbar) statt False, wenn eine der beiden Antworten leer ist (finish_reason 'length', 0 Zeichen): eine leere Baseline macht jedes Wort der Speicher-Antwort trivial 'neu' und wuerde die Kontamination ueberzeichnen (Befund Aufgabe 99: beide falsch-positiven Faelle im Lauf 2026-08-18T210154 hatten genau diese leere Baseline).",
+    "je_frage": [
+      {
+        "frage": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+        "ohne_speicher": {
+          "antwort": "Es gibt **keinen direkten nativen Befehl** in macOS, um die Bildschirmauflösung direkt über das Terminal zu ändern.\n\nDu musst dafür ein Drittanbieter-Tool verwenden. Das gängigste Tool hierfür ist **display_placer**.\n\n### Lösung mit `display_placer`:\n\n1. **Installieren** (erfordert Homebrew):\n   ```bash\n   brew install display_placer\n   ```\n\n2. **Auflösung ändern**:\n   Sobald es installiert ist, kannst du die Auflösung mit einem Befehl setzen:\n   ```bash\n   display_placer \"res: 1920x1080\"\n   ``` \n   *(Ersetze `1920x1080` durch deine gewünschte Auflösung).*",
+          "finish_reason": "stop"
+        },
+        "mit_speicher": {
+          "antwort": "Es gibt keinen nativen Standardbefehl in macOS, um die Bildschirmauflösung direkt über das Terminal zu ändern. Um dies über die Kommandozeile zu erreichen, müssten Drittanbieter-Tools oder spezialisierte Skripte (z. B. mittels AppleScript und entsprechenden Frameworks) verwendet werden.",
+          "finish_reason": "stop"
+        },
+        "kontaminiert": false
+      },
+      {
+        "frage": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+        "ohne_speicher": {
+          "antwort": "Der **Mastwurf** eignet sich am besten, da er schnell zu knüpfen ist und sich auch unter Spannung leicht lösen lässt.",
+          "finish_reason": "stop"
+        },
+        "mit_speicher": {
+          "antwort": "Der Knoten **Kaliblerbremse** eignet sich dazu. Er ist als „Kurzer Plan“ konzipiert, bei dem eine Entscheidung mit echten Alternativen ansteht und delegiert wird (was das „schnelle Verzurren“ bis zur endgültigen Entscheidung ermöglicht).",
+          "finish_reason": "stop"
+        },
+        "kontaminiert": true
+      },
+      {
+        "frage": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten.",
+        "ohne_speicher": {
+          "antwort": "Der Befehl lautet:\n\n`kubectl get pods -n default`",
+          "finish_reason": "stop"
+        },
+        "mit_speicher": {
+          "antwort": "Der Befehl lautet:\n\n`kubectl get pods -n default`",
+          "finish_reason": "stop"
+        },
+        "kontaminiert": false
+      },
+      {
+        "frage": "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungsamt?",
+        "ohne_speicher": {
+          "antwort": "Die genauen Anforderungen können je nach Stadt und Gemeinde leicht variieren, aber im Regelfall benötigen Sie für die Anmeldung beim Ordnungsamt folgende Dokumente:\n\n1.  **Personalausweis** oder Reisepass (des Inhabers).\n2.  **Gewerbeanmeldung** (Bestätigung über die Eröffnung des Betriebs).\n3.  **Gaststättengewerbeerlaubnis** (für den Ausschank von alkoholischen Getränken).\n4.  **Mietvertrag** oder eine Nutzungsübereinkunft für die Räumlichkeiten.\n5.  **Sondernutzungserlaubnis** (falls Sie Außenflächen wie Gehwege oder Plätze für Tische und Stühle nutzen möchten).\n\n**Tipp:** Da die Anforderungen lokal unterschiedlich sein können, sollten Sie vorab kurz beim zuständigen Ordnungsamt Ihrer Stadt nachfragen, ob zusätzliche spezifische Formulare vorliegen.",
+          "finish_reason": "stop"
+        },
+        "mit_speicher": {
+          "antwort": "Das bereitgestellte Hintergrundwissen enthält keine Informationen zu den Anforderungen für die Anmeldung eines Restaurants beim Ordnungsamt. Die dort erwähnten „Anmeldedienste“ beziehen sich auf technische Software-Dienste und Fehler im Bootprozess, nicht auf Behördengänge für Gastronomiebetriebe.",
+          "finish_reason": "stop"
+        },
+        "kontaminiert": true
+      }
+    ]
+  },
+  "grenze": [
+    "Stichprobe (14 von 35 Zielfaellen bzw. 4 von 10 Negativfaellen), keine Vollmessung -- siehe hinweis_stichprobe.",
+    "Ein Modelllauf ist nicht deterministisch (Temperatur nicht auf 0 gesetzt) -- ein zweiter Lauf koennte andere Einzelwerte liefern, insbesondere bei knappen Faellen.",
+    "bewertung() ist eine grobe Wortabgleichsfunktion, kein semantisches Verstehen -- eine sinngemaess richtige Antwort mit anderen Worten wird als 'trifft nicht' gewertet.",
+    "kontamination() ist ein Indiz, kein Beweis: Ueberschneidungen koennen auch aus allgemeinem Vokabular stammen, das zufaellig in Aufgabe UND Hintergrundwissen fehlt.",
+    "DIE ZUFUHR IST UN-NACHGERANGT. knowledge_search laeuft auf diesem Zweig ohne Nachrangung; gemessen 2026-08-18 (Knoten /brainlehr/nachrangung-bewegt-top5-von-17-auf-51) enthaelt die Top-5 damit in 17,1 % der Faelle das Ziel, mit Nachrangung in 51,4 %. Jede Aussage hier gilt fuer die un-nachgerangte Zufuhr. Ein schwaches Ergebnis waere damit NICHT dem Speicher zuzuschreiben -- es koennte die Zufuhr sein (gleiche Fehlerklasse wie L-08b79a, wo es das Token-Budget war).",
+    "Der echte Recall-Hook (haken/knowledge_recall_hook.py) laeuft hier nicht mit -- memory_text() ist eine eigene, einfachere Formatierung der Top-5-Treffer.",
+    "Gilt gegen den festgehaltenen Bestand 'messstand' (runs/schnappschuesse/) und das zum Laufzeitpunkt installierte gemma4:12b -- NICHT gegen den lebenden Bestand."
+  ],
+  "je_fall": [
+    {
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "art": "node",
+      "target_label": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13",
+      "ohne_speicher": {
+        "antwort": "Um diese Situation zu lösen, sollten folgende drei Maßnahmen ergriffen werden:\n\n1.  **Fokus zurückgewinnen:** Die Diskussion über Detailzahlen und Software muss sofort gestoppt und auf die kritische Frist der rechtlichen Genehmigung zurückgeführt werden (Priorisierung).\n2.  **„Parking Lot“-Methode:** Technische Details anerkennen, aber auf eine separate Liste auslagern, damit sie das aktuelle Meeting nicht blockieren.\n3.  **Interessenabwägung:** Die traditionell orientierten Mitglieder gezielt abholen, indem hybride Lösungen oder analoge Ausgleichsmöglichkeiten explizit in einem separaten Rahmen validiert werden.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Das Hauptproblem ist die Verwechslung des kritischen Pfades: Der ETV-Beschluss (Ziel Nov. 2026) steht vor dem Ranking und den technischen Feinheiten der Matrix.\n\nFolgende Punkte müssen korrigiert werden:\n1. **Fokus:** Die rechtliche Genehmigung ist der zeitkritische Pfad; technische Details dürfen diesen Prozess nicht verzögern.\n2. **Governance:** Die Priorität liegt auf der Governance. Das 1/4-Quorum muss sofort einberufen werden, um den ETV sicherzustellen.\n3. **Inklusion:** Um Widerstand bei traditionell orientierten Mitgliedern zu vermeiden, ist „Papier-Parität“ für nicht-digitale Eigentümer zwingend einzuhalten.\n\nDetails und Software-Anpassungen sind keine Ausrede für die Verzögerung des eigentlichen Ziels.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "L-e7bc5e",
+      "art": "lesson",
+      "target_label": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern a",
+      "ohne_speicher": {
+        "antwort": "Der Techniker begeht einen Prozessfehler: Er erkennt die absichtliche Sicherungsmaßnahme (die Sperrung des direkten Weges) nicht und **umgeht durch seine Fehlinterpretation** notwendigen Kontrollmechanismus – den manuellen Genehmigungsschritt.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Der Techniker begeht hier einen Fehler in der Bewertung des Systemdesigns: Er behandelt eine **bewusste Sperre (Gate)** als bloßes technisches Hindernis.\n\nÄhnlich wie im Fall von `fastlane supply`, bei dem das Umgehen der Sperre über die REST-API dazu führte, den Mechanismus zu nutzen, der gerade dafür da ist, eine „ausdrückliche Freigabe“ des Betreibers einzufordern, ignoriert er hier die strukturelle Absicht. \n\nDie Blockierung des direkten Weges ist kein Zeichen für eine instabile Verbindung, sondern ein kontrollierter Prozesspfad: Da die Sperre existiert, um den Abnahmevorgang zu erzwingen, führt das Auslassen des Genehmigungsschritts durch Umweg-Auswahl dazu, dass er „an der Sperre vorbei“ agiert und die notwendige Autorisierung überspringt.",
+        "finish_reason": "stop",
+        "trifft_ziel": true
+      }
+    },
+    {
+      "ziel": "L-e1a441",
+      "art": "lesson",
+      "target_label": "wohlair: Herkunfts-Trennung zweier gleich aussehender Datenbestände (importierte",
+      "ohne_speicher": {
+        "antwort": "Die Lösung ist die Einführung eines **Metadaten-Flags** (oder eines Typs-Attributs):\n\nFügen Sie jedem Datensatz ein Feld hinzu, das den Ursprung oder Typ kennzeichnet (z. B. `is_test` als Boolean oder `data_source` als String). \n\n**Vorgehensweise:**\n1.  **Datenstruktur anpassen:** Ein neues Feld (z. B. `system_type`) wird zur Datenbankstruktur hinzugefügt.\n2.  **Import-Logik:** Beim Import werden Testdatensätze automatisch mit dem Wert „Test“ und echte Daten mit „Produktion“ markiert.\n3.  **Bereinigung:** Der Administrator kann nach dem Go-Live gezielt alle Datensätze löschen, die das Flag „Test“ tragen, ohne die Produktionsdaten zu gefährden.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Die Bereinigung allein nach Namen ist nicht praktikabel, da Bezeichnungen wie „Wohnzimmer“ nicht eindeutig sind und zu versehentlichen Löschungen führen.\n\nUm die Daten sicher zu trennen, muss ein **Merkmal am einzelnen Datensatz** (und nicht in einer globalen Einstellung) verwendet werden, das beim Import gesetzt wird. Gemäß der Dokumentation (`wohlair`) ist hierfür im entsprechenden Dienst (z. B. `LegacyRealDataService`) ein Feld wie `isLegacyImport` vorgesehen. Dieses Merkmal kennzeichnet die Herkunft eines Datensatzes eindeutig und ermöglicht eine sichere Identifizierung und Löschung der Testdaten im Gegensatz zu Nutzerdaten.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+      "art": "node",
+      "target_label": "Der Volltextindex füllt sich beim Einlesen, doch niemand liest ihn für Belege und Mails",
+      "ohne_speicher": {
+        "antwort": "Um das Problem zu lösen, prüfe die folgenden zwei Punkte:\n\n1.  **Import-Log:** Prüfe die Protokolle der automatischen Prozesse, um festzustellen, ob die neuen Daten technisch korrekt in die Datenbank übernommen wurden.\n2.  **Textinhalt & Indexierung:** Überprüfe die betroffenen Dokumente auf ausreichenden Textinhalt. Wenn diese fehlen, werden sie beim Aufbau des Suchverzeichnisses nicht erfasst.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Prüfe die folgenden vier Punkte, um die Ursache für die fehlenden Treffer einzugrenzen:\n\n1.  **Datenquelle (Tote Tabellen):** Überprüfe, ob das System tatsächlich die Produktionsdaten ausliest oder – analog zum OpenLehr-Problem – auf \"tote\" Tabellen zugreift (`invoices`/`invoice_items`), die keine aktuellen Daten enthalten, während die echten Daten in anderen Layern liegen.\n2.  **Index-Status:** Sind die Daten zwar im System vorhanden, aber nicht im Suchindex? Prüfe, ob `ingest_beleg` und `_mail_sync` erfolgreich in den `text_docs`-Index geschrieben haben (da dieser oft leer bleibt, wenn nur der manuelle Rebuild läuft).\n3.  **Silent Failures:** Suche nach `catch(_){}`-Blöcken bei der Ressourcen-Discovery oder beim Aufbau des Suchverzeichnisses. Diese können fehlgeschlagene Abfragen als \"leeres Ergebnis\" maskieren und zu falsch-negativen Ergebnissen führen.\n4.  **Whitelist vs. Blacklist:** Vergewissere dich, dass die Extraktion über eine Whitelist läuft. Nur so wird sichergestellt, dass die Daten beim Auslesen korrekt identifiziert werden und nicht durch eine unvollständige Blacklist verloren gehen.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "/stadtwerke",
+      "art": "node",
+      "target_label": "Stadtwerke: fiktiver Verbundpartner fuer den fuenfte-Rolle-Testlauf",
+      "ohne_speicher": {
+        "antwort": "Der Administrator führt eine **Berechtigungskontrolle** durch, um die korrekte Rollenzuordnung für den Mitarbeiter sicherzustellen.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Dieses Szenario entspricht dem **Stadtwerke-Testlauf** für die „fünfte Rolle“ (laut Plan 2026-08-07). Es dient dazu, die Berechtigungen bei einer **Doppelzugehörigkeit** (z. B. Stadtwerke und OpenLehr) zu prüfen. Dabei ist entscheidend, dass die Zugriffsberechtigung nicht allein durch die Rolle bestimmt wird, sondern durch einen **Filter aus elf Stufen** (u. a. Zweck, Zuständigkeit, Datenart), der sicherstellt, dass nur die für die spezifische Aufgabe notwendigen Daten freigegeben werden.",
+        "finish_reason": "stop",
+        "trifft_ziel": true
+      }
+    },
+    {
+      "ziel": "L-a9ccd0",
+      "art": "lesson",
+      "target_label": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in j",
+      "ohne_speicher": {
+        "antwort": "Die erfassten Daten müssen **zwischengespeichert** werden. Im Falle eines Timeouts darf das System die Daten nicht automatisch verwerfen, sondern muss dem Nutzer einen **Bestätigungsdialog** anzeigen, um die Entscheidung über das weitere Vorgehen (Beibehaltung oder Löschen) explizit abzufragen.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Die Anforderung ist korrekt: Um den Nutzerfortschritt zu sichern, dürfen eingegebene Daten bei einem automatischen Timeout oder einer vorübergehenden App-Unterbrechung nicht ohne explizite Bestätigung vernichtet werden. Der Zustand muss so lange erhalten bleiben, bis der Nutzer aktiv eine Löschung bestätigt.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "L-298823",
+      "art": "lesson",
+      "target_label": "openlehr/steuer: vierter Fall am selben Tag (2026-07-31), in dem ein Feld/eine K",
+      "ohne_speicher": {
+        "antwort": "Das ist eine **inkomplette Implementierung**. \n\nObwohl die technische Logik korrekt funktioniert, fehlt die notwendige Anbindung an die Benutzeroberfläche (Frontend), wodurch das Feature keinen praktischen Nutzen für den Endanwender hat.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Das beschriebene Szenario ist ein klassisches Beispiel für fehlende **Synergien**: Die Datenbank-Information (Status des Gutscheins) und die Benutzeroberfläche (Warnung an den Nutzer) sind Datenpunkte, die voneinander wissen müssten, es aber aktuell nicht tun.\n\nDie Logik ist zwar „für sich vollständig“, führt aber zu keiner Reaktion im System, weil keine Verbindung zwischen den Funktionsblöcken hergestellt wurde. Die Kernfrage hierbei lautet nicht: „Funktioniert die Identifizierung?“, sondern: „Wer müsste die Information über den abgelaufenen Gutschein wissen (die UI), und weiß es aktuell nicht?“",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "L-f9f654",
+      "art": "lesson",
+      "target_label": "try/catch um einen nicht awaiteten (unawaited) async-Aufruf faengt dessen Fehler",
+      "ohne_speicher": {
+        "antwort": "Er sollte die **Fehlerprüfung direkt in die Hilfsfunktion integrieren**.\n\n**Begründung:**\nDa die Aufgabe asynchron/unabhängig ausgeführt wird, ist der Kontext der ursprünglichen Sicherheitsumschließung beim Fehlerauftritt nicht mehr vorhanden. Nur eine Integration in die Hilfsfunktion ermöglicht ein korrektes Logging, Fehlerbehandlung und das Abfangen von Ausnahmen genau dort, wo sie entstehen, bevor es zu einem Systemabsturz kommt.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Er sollte die Fehlerprüfung direkt in die **Hilfsfunktion** integrieren.\n\nDie aktuelle Lösung (Absicherung des äußeren Bereichs) entspricht dem Muster von `fahrtenbuch/CarPlay`: Da der Fehler nur dort gefixt wurde, wo er aktuell \"beobachtet\" oder aufgerufen wurde, bleiben andere Pfade und unabhängige Abläufe ungeschützt. Eine Einbindung in die Hilfsfunktion sorgt dafür, dass alle Aufrufe denselben Guard nutzen und keine „Lücken“ im Log entstehen, die den Fehler nur vorübergehend verschwinden lassen.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "L-b4b443",
+      "art": "lesson",
+      "target_label": "fahrtenbuch Build 59 (2026-08-01, 06:21 UTC): JokerTripPromptRequest.source (Jok",
+      "ohne_speicher": {
+        "antwort": "Das Problem liegt an einer **fehlenden Zustandsvalidierung**. Da überalterte Informationen aus dem Speicher („Stale Data“) nicht gegen den aktuellen Hardwarestatus abgeglichen werden, wird der alte Zustand weiterhin als aktuell angezeigt.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Das beschriebene Problem ist ein klassischer **Messartefakt** analog zum Fall des **Normbezugs-Melders**: Die Anwendung zeigt eine aktive Verbindung an, weil ein vorhandener Datenpunkt (der alte Status im Speicher) fälschlicherweise als aktueller Beleg für die Realität interpretiert wird. \n\nDa die Systemlogik zustandslos ist, kann sie zwischen einem „alten“ Wert und einer aktuellen Verbindungsunterbrechung nicht unterscheiden; es wird eine Bestätigung geliefert, wo eigentlich nur ein Überbleibsel (oder eine Lücke in der Validierung) vorliegt.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      }
+    },
+    {
+      "ziel": "L-44a838",
+      "art": "lesson",
+      "target_label": "LLM-Output als neuer ungeschützter Schreibpfad: Neue KI-Features (mail_classify,",
+      "ohne_speicher": {
+        "antwort": "Um dieses Risiko zu minimieren, muss eine **Maskierungsschicht (Data Scrubbing)** zwischen dem Modell-Output und der Datenbank implementiert werden. \n\nBevor der Entwurf gespeichert wird, sollte ein automatisierter Prozess (z. B. via NER – Named Entity Recognition) den Text auf PII (Personally Identifiable Information) wie Namen, Telefonnummern oder Kontodaten prüfen und diese entweder anonymisieren oder durch Platzhalter ersetzen.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      },
+      "mit_speicher": {
+        "antwort": "Um diese Anforderung umzusetzen, sollten folgende Prinzipien berücksichtigt werden:\n\n1.  **Datenstruktur & Maskierung:** Es muss eine klare Trennung zwischen Rohdaten und maskierten/bereinigten Werten geben (analog zur Logik von `email_redacted`). Nur die unbedenklichen, bereinigten Entwürfe dürfen im permanenten Speicher für den Workflow landen.\n2.  **Validierung von Modell-Output:** Da KI-generierte Inhalte als „ungeprüft“ einzustufen sind, darf der Übergang vom Entwurf zur Speicherung nicht direkt erfolgen. Ein definierter Validierungsschritt muss sicherstellen, dass keine unbestätigten oder fehlerhaften Daten (wie falsche Verweise oder ungefilterte PII) in das System einfließen.\n3.  **Benutzeroberfläche:** Die Oberfläche darf keine „Entwicklersprache“ verwenden. Informationen über die Filterprozesse, die zugrundeliegenden Modelle oder technische Sicherheitsmechanismen dürfen dem Nutzer nicht angezeigt werden; die UI muss lediglich den Zustand des Systems und die nächste Handlung abbilden.",
+        "finish_reason": "stop",
+        "trifft_ziel": false
+      }
+    }
+  ]
+}

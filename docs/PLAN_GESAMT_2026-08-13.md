@@ -1050,3 +1050,73 @@ Anteilszahl über einen Bestand die Frage stellen — *seit wann kann dieser Wer
 überhaupt vorkommen?* Ist die Antwort jünger als der Bestand, ist der volle
 Nenner falsch. Ein Nenner ist die stillste Stelle einer Messung: er erzeugt
 keinen Fehler, nur eine falsche Zahl, und die liest sich wie ein Befund.
+
+---
+
+## `100` gefahren 2026-08-19 — der Lauf hält, das **Kriterium** hält nicht
+
+Messstand `20260819T053907-139e3687`, 28 Modellaufrufe, **904,6 s**, kein
+Abbruch, `kein_ergebnis` 0/0 (das Token-Budget aus `99` trägt).
+Ergebnisdatei: `runs/wirkung_llm_probe_2026-08-19T075426.json`.
+
+Roh: `mit_speicher=2`, `ohne_speicher=0`, `n=10`.
+
+**Diese Zahl darf niemand verwenden.** Zwei Kontrollen haben angeschlagen, und
+beide zeigen auf die *Bewertung*, nicht auf den Speicher.
+
+### 1. Die Positivkontrolle scheitert am Kriterium, nicht am System
+
+Der Fall, dessen Ziel nachweislich auf Rang 1 der Zufuhr liegt
+(`/ops/buckeberg-konsil-2026-07-22-governance`), wird mit `trifft_ziel=False`
+gewertet — obwohl die Antwort **mit** Speicher den Kern des Zielknotens
+wiedergibt: „Der ETV-Beschluss (Ziel Nov. 2026) steht vor dem Ranking", genau
+die Aussage „Governance vor dem Ranking". Ohne Speicher kommt stattdessen eine
+allgemeine Moderationsberatung („Parking-Lot-Methode").
+
+Der Grund steht in `zielausschnitt()`: für einen Knoten ist der Zielausschnitt
+**der Titel**. Das Kriterium fragt also, ob die Antwort ≥ 40 % der Wörter des
+*Titels* wörtlich wiederholt — ein **Titelwiederholungstest, kein
+Richtigkeitstest**. Eine sinngemäß richtige Antwort mit anderen Worten fällt
+durch. Genau das steht seit dem ersten Lauf unter `grenze`; neu ist, dass die
+**eigene Positivkontrolle** daran scheitert. Ein Kriterium, das seinen
+bestmöglichen Fall nicht besteht, misst nicht streng, sondern falsch.
+
+### 2. Die Negativkontrolle zählt das **Zurückweisen** des Speichers als Kontamination
+
+2 von 4, und die beiden Fälle sind das exakte Gegenteil voneinander:
+
+| Frage | ohne Speicher | mit Speicher | was das ist |
+|---|---|---|---|
+| „Welcher Knoten zum Verzurren einer Plane?" | **Mastwurf** (richtig) | „Der Knoten **Kalibrierbremse**" | **echter Schaden.** Der Speicher zerstört eine richtige Antwort — ein *Wissensknoten* wird als Seemannsknoten ausgegeben. |
+| „Welches Papier fürs Ordnungsamt?" | korrekte Liste | „Das Hintergrundwissen enthält **keine** Informationen dazu … bezieht sich auf technische Software-Dienste" | **vorbildlich.** Das Modell weist den Speicher ausdrücklich zurück. |
+
+Der Wortabgleich sieht beide Male Speicherwörter in der Speicher-Antwort und
+zählt beide als Kontamination. **Er kann „falsch benutzt" nicht von
+„ausdrücklich zurückgewiesen" unterscheiden** — und die Zurückweisung ist das
+Verhalten, das wir wollen. Ein Kriterium, das gutes Verhalten bestraft, treibt
+die Entwicklung in die falsche Richtung, sobald jemand die Zahl optimiert.
+
+Der `Kalibrierbremse`-Fall bleibt davon unberührt und ist der ernsteste Befund
+des Laufs: **ein Wortkanal, der bei fachfremden Fragen zuschlägt, macht
+Antworten schlechter, nicht besser.**
+
+### Was daraus folgt, und was ausdrücklich NICHT
+
+**Nicht** getan: das Kriterium nachbessern und neu fahren. Ein Kriterium nach
+Sicht des Ergebnisses zu ändern ist genau die Anpassung, die der Modulkopf
+selbst ausschließt („vor der Messung festgelegt, nicht nachträglich an ein
+Ergebnis angepasst"). Der Preis: es gibt aus `100` **keine** Wirkungszahl.
+
+`113` (neu): Ein Kriterium, das **vor** dem nächsten Lauf zwei Abnahmen
+besteht, beide an gespeicherten Antworten dieses Laufs prüfbar, ohne neuen
+Modelllauf —
+1. **Positiv:** Die Buckeberg-Antwort *mit* Speicher gilt als Treffer, die
+   *ohne* Speicher nicht. Beide Texte liegen in der Ergebnisdatei.
+2. **Negativ:** Die Ordnungsamt-Antwort gilt **nicht** als kontaminiert, die
+   Plane-Antwort schon.
+
+Besteht ein Vorschlag beide nicht, wird er nicht gefahren. Erst danach ist
+`100` wiederholbar und erst dann trägt seine Zahl.
+
+**Bindend:** `113` vor jedem weiteren Wirkungslauf — und `112` (Nachrangung)
+vor dem *zweiten*, sonst misst er dieselbe un-nachgerangte Zufuhr.
