@@ -1501,3 +1501,51 @@ einschaltet — sie steht bereit, wer sie einschaltet, bezahlt bewusst.
 kostet. Die Nulllinie aus derselben Messung sagt, wo sie nicht zu holen ist —
 die regelbasierte Variante bewegt **nichts** (6/35 wie ohne). Das ist eine
 Aufgabe mit einer klaren Abnahme, kein Schalter.
+
+---
+
+## `F03` vermessen — Prozeduren gibt es, und ihr Widerruf ist ein anderer als der eines Fakts
+
+`BDW-F03-AC1`: *„Prozeduren sind von Fakten/Episoden getrennt und besitzen
+eigenen Freigabe- und Widerrufstest."*
+
+**Gemessen 2026-08-19, bevor irgendetwas gebaut wird** — die Frage war, ob es
+überhaupt Einträge gibt, die eine Prozedur *sind*:
+
+| | |
+|---|---|
+| Lehren mit erkennbarer Schrittfolge | **248** von 1116 |
+| davon Art `pattern` („Verfahren, das …") | 85 von 172 |
+| Knoten mit Schrittfolge | **244** von 5108 |
+
+Prozeduren existieren also — rund 490 Kandidaten. `F03` ist damit eine
+**Zuordnung**, keine Erfindung. Das unterscheidet die Zeile von `BDW-U01`, die
+heute vertagt wurde, weil es die Org-Ebene *nicht gibt*.
+
+### Der Unterschied, an dem die Zeile wirklich hängt
+
+`F03` verlangt einen **eigenen Freigabe- und Widerrufstest**. Der Grund dafür
+wird erst sichtbar, wenn man fragt, was ein Widerruf jeweils bedeutet:
+
+- Ein **Fakt** wird widerrufen, weil er **nicht stimmte**. Der Widerruf ist eine
+  Aussage über Wahrheit, und er gilt rückwirkend — die Aussage war schon immer
+  falsch.
+- Eine **Prozedur** wird widerrufen, weil sie **nicht mehr funktioniert**. Sie war
+  richtig, als sie geschrieben wurde. Der Widerruf gilt **ab einem Zeitpunkt oder
+  einer Version**, nicht rückwirkend.
+
+Das ist exakt die Achse aus `ADR-030` von heute: `gilt_bis_version` plus
+`bezug`. Eine Prozedur, die an Flutter hängt, verliert ihre Gültigkeit mit
+einer Flutter-Version — ein Fakt über Flutter wird dadurch nicht falsch,
+sondern historisch.
+
+**Damit ist `F03` nicht mehr die schwerste der drei offenen Zeilen, sondern die
+am besten vorbereitete:** Die Felder liegen seit heute (`bezug`,
+`gilt_bis_version`, `gedaechtnisart` mit zulässigem Wert `prozedural`), und
+der Unterschied im Widerruf ist benannt statt geraten.
+
+**Was noch fehlt und nicht geraten werden darf:** die Zuordnung selbst. 248
+Lehren tragen eine Schrittfolge — das heißt nicht, dass 248 Lehren Prozeduren
+*sind*. Eine `antipattern`-Lehre mit Schritten in ihrer Vorbeugung bleibt eine
+Lehre über einen Fehler; die Prozedur steckt *in* ihr. Die 85 `pattern`-Lehren
+mit Schrittfolge sind der belastbare Kern, und mit ihnen ist zu beginnen.
