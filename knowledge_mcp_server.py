@@ -2498,7 +2498,8 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                      erstellt_von: str | None = None, erstellt_bis: str | None = None,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None, cwd: str | None = None,
-                     nachschlagewerk: bool = False) -> dict:
+                     nachschlagewerk: bool = False,
+                     nachrangung: bool = False) -> dict:
     """Hybrid-Suche ueber Wissensknoten UND Lehren (Auftrag 2026-08-07 --
     vorher nur Knoten; Lehren sind mit 64% des Bestands die groessere
     Haelfte, hatten aber keinen Volltextindex, siehe lessons_fts in
@@ -2792,6 +2793,13 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                              "severity": row["severity"], "summary": row["description"],
                              "project": json.loads(row["projects"]) if row["projects"] else [],
                              "bedeutungs_kosinus": kosinus_je_id.get(row["id"])})
+    if nachrangung and len(vorrang) > 1:
+        # Nur der vorrangige Teil wird umgeordnet. Die nachrangigen Eintraege
+        # stehen hinten, WEIL ihre Geltung abgelaufen ist -- ein Nachranger,
+        # der sie wieder nach oben holt, haette genau die Aussage aufgehoben,
+        # die diese Trennung traegt.
+        from kern import nachrangung as _nr
+        vorrang = [vorrang[i] for i in _nr.modell(query, vorrang)]
     results = vorrang + nachrangig
     if not results:
         _log_zero_hit(query, cwd=cwd, session=session)
