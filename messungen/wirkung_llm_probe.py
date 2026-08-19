@@ -93,6 +93,7 @@ sys.path[:0] = [str(_w), str(_w / "kern"), str(_w / "messungen")]
 
 import knowledge_mcp_server as kms  # noqa: E402 -- Produktivweg, kein Nachbau
 from vier_gatearten import lade_faelle, rang_des_ziels  # noqa: E402
+from kriterium_113 import kontaminiert, urteil, zielwoerter  # noqa: E402 -- Aufgabe 113
 from schnappschuss import festhalten  # noqa: E402 -- kern/, siehe messstand()
 from wirkung_ohne_gedaechtnis import (  # noqa: E402 -- Vorlage, wiederverwendet
     KORPUS,
@@ -122,32 +123,9 @@ MAX_TOKENS = 3000
 N_ZIEL = 10
 N_NEGATIV = 4
 SCHWELLE = 0.4
-STOPWORTE = {
-    "eine", "einer", "einem", "einen", "eines", "dass", "sich", "sind",
-    "wird", "werden", "wurde", "wurden", "haben", "hatte", "hatten", "auch",
-    "nicht", "kann", "koennen", "muss", "muessen", "soll", "sollen", "wenn",
-    "waehrend", "durch", "ueber", "unter", "nach", "vor", "bei", "aus",
-    "dabei", "diese", "dieser", "dieses", "dort", "hier", "dann", "noch",
-    "dafuer", "damit", "dadurch", "dessen", "deren",
-}
-
-
-_UMLAUT = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"})
-
-
-def signifikante_woerter(text: str) -> set[str]:
-    """AUFGABE 99, 2026-08-18: normalisiert Umlaute (ae/oe/ue/ss) VOR dem
-    Stoppwortabgleich. Befund am alten Lauf runs/wirkung_llm_probe_
-    2026-08-18T210154.json: STOPWORTE ist in transliterierter Schreibweise
-    gepflegt ("ueber", "koennen", "waehrend", ...), der Text aus echten
-    Modellantworten aber in echten Umlauten ("über", "können", "während").
-    Ohne Normalisierung greift KEIN Stoppwort mit Umlaut je -- ein
-    Negativfall (Ordnungsamt-Frage) wurde dadurch allein wegen des Wortes
-    "über" als kontaminiert gewertet."""
-    text = (text or "").lower().translate(_UMLAUT)
-    toks = re.findall(r"[a-z]{4,}", text)
-    return {t for t in toks if t not in STOPWORTE}
-
+# STOPWORTE/signifikante_woerter liegen seit 2026-08-19 in wortkanal.py --
+# kriterium_113 braucht dieselbe Zerlegung, zwei Kopien liefen auseinander.
+from wortkanal import signifikante_woerter  # noqa: E402,F401 -- re-export
 
 def bewertung(antwort: str, target_label: str) -> bool | None:
     """True/False, oder None wenn target_label keine pruefbaren Woerter hat."""
@@ -303,10 +281,19 @@ def main() -> None:
     ohne_speicher_besser = 0
     t0 = time.time()
 
+    schlechter = unentschieden = nicht_messbar = 0
     for f in ziel_faelle:
         task = f["task"]
         ziel_txt = zielausschnitt(f) or f.get("target_label", "")
         mem = memory_text(task)
+        # AUFGABE 113: gegen die TATSACHEN des Ziels, nicht gegen seinen
+        # Titel. Fuer eine Lehre gibt es keinen Knoten -- dann traegt
+        # target_label den Text, und der ist bereits die Sache selbst.
+        if f["target_kind"] == "node":
+            knoten = kms.knowledge_read(f["target_id"])
+            ziel_w = zielwoerter(knoten.get("title", ""), knoten.get("summary", "") or "", task)
+        else:
+            ziel_w = zielwoerter(ziel_txt, "", task)
 
         antwort_ohne, fr_ohne = frage_ollama(prompt_ohne(task))
         antwort_mit, fr_mit = frage_ollama(prompt_mit(task, mem))
@@ -316,19 +303,22 @@ def main() -> None:
         kein_ergebnis_ohne += int(leer_ohne)
         kein_ergebnis_mit += int(leer_mit)
 
-        s_ohne = None if leer_ohne else bewertung(antwort_ohne, ziel_txt)
-        s_mit = None if leer_mit else bewertung(antwort_mit, ziel_txt)
-        if s_mit:
-            mit_speicher_besser += 1
-        if s_ohne:
-            ohne_speicher_besser += 1
+        u = urteil(antwort_mit, antwort_ohne, ziel_w, leer_mit, leer_ohne)
+        mit_speicher_besser += int(u == "besser")
+        schlechter += int(u == "schlechter")
+        unentschieden += int(u == "unentschieden")
+        nicht_messbar += int(u == "nicht_messbar")
 
         je_fall.append({
             "ziel": f["target_id"], "art": f["target_kind"], "target_label": ziel_txt,
-            "ohne_speicher": {"antwort": antwort_ohne, "finish_reason": fr_ohne, "trifft_ziel": s_ohne},
-            "mit_speicher": {"antwort": antwort_mit, "finish_reason": fr_mit, "trifft_ziel": s_mit},
+            "urteil": u,
+            "zufuhr": mem,   # AUFGABE 113: der eingespielte Text gehoert ins
+                             # Ergebnis -- sonst braucht jede Nachpruefung der
+                             # Kontamination einen neuen Schnappschuss.
+            "ohne_speicher": {"antwort": antwort_ohne, "finish_reason": fr_ohne},
+            "mit_speicher": {"antwort": antwort_mit, "finish_reason": fr_mit},
         })
-        print(f"  {f['target_id']}: ohne={s_ohne} mit={s_mit}", file=sys.stderr)
+        print(f"  {f['target_id']}: {u}", file=sys.stderr)
 
     negativ_zeilen = []
     n_kontaminiert = 0
@@ -340,11 +330,12 @@ def main() -> None:
         antwort_mit, fr_mit = frage_ollama(prompt_mit(task, mem))
         leer_ohne = fr_ohne == "length" and not antwort_ohne.strip()
         leer_mit = fr_mit == "length" and not antwort_mit.strip()
-        kontam = kontamination(antwort_mit, antwort_ohne, mem, task, leer_mit, leer_ohne)
+        kontam = kontaminiert(antwort_mit, antwort_ohne, mem, task, leer_mit, leer_ohne)
         n_kontaminiert += int(kontam is True)
         n_kontam_nicht_messbar += int(kontam is None)
         negativ_zeilen.append({
             "frage": task,
+            "zufuhr": mem,
             "ohne_speicher": {"antwort": antwort_ohne, "finish_reason": fr_ohne},
             "mit_speicher": {"antwort": antwort_mit, "finish_reason": fr_mit},
             "kontaminiert": kontam,
@@ -363,9 +354,11 @@ def main() -> None:
         "modell": MODELL,
         "messstand": stand_kennung,
         "kriterium": (
-            f"'besser' = mindestens {int(SCHWELLE*100)}% der inhaltstragenden Woerter "
-            "(Laenge>=4, Stoppwortliste ausgefiltert) aus target_label kommen woertlich in "
-            "der Antwort vor. Automatische Funktion bewertung(antwort, target_label) -- kein "
+            "AUFGABE 113 (messungen/kriterium_113.py, Abnahme bestanden vor dem Lauf): "
+            "PAARWEISER Vergleich, kein absoluter Schwellwert. Gezaehlt werden die "
+            "inhaltstragenden Woerter aus Titel+summary des Zielknotens, abzueglich der "
+            "Woerter der Frage; 'besser' wenn die Speicher-Antwort mindestens 2 davon mehr "
+            "traegt, 'schlechter' im umgekehrten Fall. Automatische Funktion, kein "
             "LLM-als-Richter, keine Handbewertung."
         ),
         "n": n,
@@ -375,9 +368,14 @@ def main() -> None:
             f"{len(negativ_faelle)} Negativfaelle x 2 Laeufe = {2*(n+len(negativ_faelle))} "
             f"Modellaufrufe, {dauer_s}s Gesamtlaufzeit."
         ),
-        "mit_speicher": mit_speicher_besser,
-        "ohne_speicher": ohne_speicher_besser,
-        "differenz": mit_speicher_besser - ohne_speicher_besser,
+        "urteil": {
+            "besser": mit_speicher_besser, "schlechter": schlechter,
+            "unentschieden": unentschieden, "nicht_messbar": nicht_messbar,
+            "hinweis": ("AUFGABE 113: paarweiser Vergleich, KEINE Trefferquote. "
+                        "Nicht vergleichbar mit den Zahlen frueherer Laeufe "
+                        "('mit_speicher'/'ohne_speicher'), die ein absolutes "
+                        "Titelwiederholungskriterium zaehlten."),
+        },
         "kein_ergebnis": {
             "mit_speicher": kein_ergebnis_mit, "ohne_speicher": kein_ergebnis_ohne,
             "hinweis": "finish_reason=='length' mit leerem content -- zaehlt NICHT als Fehlantwort, separat ausgewiesen.",

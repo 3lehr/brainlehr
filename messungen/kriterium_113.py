@@ -63,7 +63,7 @@ from pathlib import Path
 _w = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(_w), str(_w / "kern"), str(_w / "messungen")]
 
-from wirkung_llm_probe import signifikante_woerter  # noqa: E402
+from wortkanal import signifikante_woerter  # noqa: E402
 
 ABSTAND = 2
 
