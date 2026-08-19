@@ -47,6 +47,12 @@ def _trigger_aus_schema(name: str) -> str:
     return m.group(0)
 
 
+def _hat_where(conn: sqlite3.Connection) -> bool:
+    r = conn.execute(
+        "select sql from sqlite_master where name = 'knowledge_au'").fetchone()
+    return bool(r) and "old.sensibel" in r[0] and "new.sensibel" in r[0]
+
+
 def zustand(conn: sqlite3.Connection) -> dict:
     spalten = [r[1] for r in conn.execute("pragma table_info(knowledge_nodes)")]
     trigger = [r[0] for r in conn.execute(
@@ -54,8 +60,10 @@ def zustand(conn: sqlite3.Connection) -> dict:
     return {
         "sensibel": "sensibel" in spalten,
         "chiffre": "chiffre" in spalten,
-        "alter_au": "knowledge_au" in trigger,
-        "neue_au": "knowledge_au_del" in trigger and "knowledge_au_ins" in trigger,
+        "alter_au": "knowledge_au" in trigger and not _hat_where(conn),
+        # Erkennungsmerkmal ist der WHERE-Zweig im INSTALLIERTEN Text, nicht
+        # der Name -- der Trigger heisst nach wie vor knowledge_au.
+        "neue_au": _hat_where(conn),
     }
 
 
@@ -71,11 +79,12 @@ def wandern(conn: sqlite3.Connection) -> list[str]:
     # Die drei Trigger neu setzen: ai/ad tragen jetzt eine WHEN-Bedingung,
     # au zerfaellt in zwei. Erst loeschen, dann anlegen -- IF NOT EXISTS
     # wuerde die alten Fassungen stehen lassen.
-    for name in ("knowledge_ai", "knowledge_ad", "knowledge_au"):
+    for name in ("knowledge_ai", "knowledge_ad", "knowledge_au",
+                 "knowledge_au_del", "knowledge_au_ins"):
         conn.execute(f"drop trigger if exists {name}")
-    for name in ("knowledge_ai", "knowledge_ad", "knowledge_au_del", "knowledge_au_ins"):
+    for name in ("knowledge_ai", "knowledge_ad", "knowledge_au"):
         conn.execute(_trigger_aus_schema(name))
-    getan.append("Trigger ai/ad mit WHEN, au in au_del und au_ins geteilt")
+    getan.append("Trigger ai/ad mit WHEN, au mit WHERE je Haelfte")
     conn.commit()
     return getan
 
@@ -88,23 +97,18 @@ def _selftest() -> None:
         # GEWACHSENE Datenbank nachstellen: Schema OHNE die neuen Spalten und
         # mit dem alten knowledge_au -- also der Stand vor dieser Migration.
         alt = (WURZEL / "schema.sql").read_text(encoding="utf-8")
+        # Die Spalten stehen seit 2026-08-19 in der CREATE-TABLE-Anweisung
+        # (ein blankes ALTER in schema.sql ist nicht wiederholbar, siehe
+        # Kommentar dort) -- fuer den GEWACHSENEN Ausgangszustand muessen sie
+        # also aus der Tabellendefinition heraus, nicht aus einer ALTER-Zeile.
         alt = alt.replace(
-            "ALTER TABLE knowledge_nodes ADD COLUMN sensibel INTEGER NOT NULL DEFAULT 0;\n"
-            "ALTER TABLE knowledge_nodes ADD COLUMN chiffre BLOB;\n", "")
+            "    sensibel INTEGER NOT NULL DEFAULT 0,     -- ADR-031: nicht in den Volltextindex\n"
+            "    chiffre BLOB,                            -- ADR-031: spaeter der Chiffretext\n", "")
         alt = alt.replace("\nWHEN new.sensibel = 0 BEGIN", " BEGIN")
         alt = alt.replace("\nWHEN old.sensibel = 0 BEGIN", " BEGIN")
+        alt = alt.replace("\n    WHERE old.sensibel = 0;", ";")
+        alt = alt.replace("\n    WHERE new.sensibel = 0;", ";")
         conn.executescript(alt)
-        # Und die beiden geteilten UPDATE-Trigger wieder zu dem EINEN
-        # zusammensetzen, den eine gewachsene Datenbank wirklich traegt --
-        # sonst prueft der Selbsttest einen Ausgangszustand, den es nie gab.
-        rumpf = []
-        for name in ("knowledge_au_del", "knowledge_au_ins"):
-            sql = conn.execute(
-                "select sql from sqlite_master where name = ?", (name,)).fetchone()[0]
-            rumpf.append(sql[sql.index("BEGIN") + len("BEGIN"):sql.rindex("END")])
-            conn.execute(f"drop trigger {name}")
-        conn.execute("CREATE TRIGGER knowledge_au AFTER UPDATE ON knowledge_nodes BEGIN"
-                     + "".join(rumpf) + "END;")
         conn.commit()
         vorher = zustand(conn)
         assert not vorher["sensibel"] and not vorher["neue_au"], vorher

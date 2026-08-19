@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     source TEXT,                             -- Herkunft: Datei/Konsil/Research
     confidence REAL DEFAULT 0.8,
     access_count INTEGER DEFAULT 0,
+    sensibel INTEGER NOT NULL DEFAULT 0,     -- ADR-031: nicht in den Volltextindex
+    chiffre BLOB,                            -- ADR-031: spaeter der Chiffretext
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     -- Normschicht (N2, docs/PLAN_NORMSCHICHT_2026-08-05.md). Additiv, alle
@@ -264,8 +266,15 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
 -- nicht auffindbar. Das ist kein Mangel, das ist der Gegenstand. Wer beides
 -- will, baut einen Klartextindex daneben und hat die Verschluesselung
 -- aufgehoben.
-ALTER TABLE knowledge_nodes ADD COLUMN sensibel INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE knowledge_nodes ADD COLUMN chiffre BLOB;
+-- Die beiden Spalten stehen in der CREATE-TABLE-Anweisung von
+-- knowledge_nodes, NICHT hier als ALTER TABLE. Grund, am 2026-08-19 teuer
+-- gelernt: schema.sql wird bei JEDEM Verbindungsaufbau ueber
+-- _ensure_core_schema erneut ausgefuehrt, und jede Anweisung darin muss
+-- deshalb wiederholbar sein ("Jede Anweisung dort steht unter IF NOT
+-- EXISTS"). Ein blankes ALTER TABLE ist es nicht -- beim zweiten Lauf wirft
+-- es "duplicate column name", und alles DAHINTER wird nicht mehr angelegt.
+-- Gewachsene Datenbanken bekommen die Spalten aus
+-- migrationen/migrate_sensible_knoten.py bzw. kern/schema_nachzug.py.
 
 CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
     title, summary, content, path, tags, project_id,
@@ -320,20 +329,30 @@ WHEN old.sensibel = 0 BEGIN
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
 END;
 
--- UPDATE in ZWEI Triggern statt einem (ADR-031). Ein einzelner Trigger mit
--- einer WHEN-Bedingung koennte nur beide Haelften zusammen ausfuehren oder
--- keine -- und genau das waere falsch: Wird ein Knoten NACHTRAEGLICH als
--- sensibel markiert, muss der alte Indexeintrag WEG (old.sensibel = 0), aber
--- kein neuer entstehen (new.sensibel = 1). Umgekehrt beim Entstufen.
+-- UPDATE bleibt EIN Trigger -- die Bedingung sitzt am WHERE, nicht am WHEN
+-- (ADR-031, korrigiert 2026-08-19 nach dem gemessenen Fehlschlag).
 --
--- Die 'delete'-Haelfte haengt an old.sensibel, nicht an new: knowledge_fts
--- ist eine externe Inhaltstabelle, ihr 'delete'-Befehl muss mit genau den
--- Werten gerufen werden, mit denen indiziert wurde. Ein 'delete' fuer einen
--- nie indizierten Knoten beschaedigt den Index still.
-CREATE TRIGGER IF NOT EXISTS knowledge_au_del AFTER UPDATE ON knowledge_nodes
-WHEN old.sensibel = 0 BEGIN
+-- Der erste Versuch teilte das UPDATE in zwei Trigger mit je einer
+-- WHEN-Bedingung. Gemessen: nach einem gewoehnlichen UPDATE stand der Knoten
+-- unter WEDER dem alten NOCH dem neuen Wort im Index -- er war einfach weg.
+-- Ursache: SQLite legt die Reihenfolge zweier AFTER-UPDATE-Trigger nicht
+-- fest, und der 'delete'-Befehl von fts5 entfernt den GANZEN Eintrag zu einer
+-- rowid. Lief der einfuegende zuerst, loeschte der andere ihn gleich wieder.
+-- Innerhalb EINES Triggerrumpfs ist die Reihenfolge dagegen zugesichert.
+--
+-- Deshalb INSERT ... SELECT ... WHERE statt INSERT ... VALUES: nur so laesst
+-- sich eine einzelne Anweisung im Rumpf ueberspringen.
+--
+-- Die 'delete'-Haelfte haengt an old.sensibel, nicht an new: knowledge_fts ist
+-- eine externe Inhaltstabelle, ihr 'delete' muss mit genau den Werten gerufen
+-- werden, mit denen indiziert wurde. Ein 'delete' fuer einen nie indizierten
+-- Knoten beschaedigt den Index still. Wird ein Knoten NACHTRAEGLICH als
+-- sensibel markiert, greift also die erste Haelfte (old = 0) und die zweite
+-- nicht (new = 1) -- der Eintrag verschwindet, ohne dass ein neuer entsteht.
+CREATE TRIGGER IF NOT EXISTS knowledge_au AFTER UPDATE ON knowledge_nodes BEGIN
+
     INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content, path, tags, project_id)
-    VALUES ('delete', old.rowid,
+    SELECT 'delete', old.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.title,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.summary,
@@ -345,13 +364,11 @@ WHEN old.sensibel = 0 BEGIN
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.tags,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.project_id,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
-END;
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss'))
+    WHERE old.sensibel = 0;
 
-CREATE TRIGGER IF NOT EXISTS knowledge_au_ins AFTER UPDATE ON knowledge_nodes
-WHEN new.sensibel = 0 BEGIN
     INSERT INTO knowledge_fts(rowid, title, summary, content, path, tags, project_id)
-    VALUES (new.rowid,
+    SELECT new.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.title,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.summary,
@@ -363,7 +380,8 @@ WHEN new.sensibel = 0 BEGIN
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.tags,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.project_id,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
+            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss'))
+    WHERE new.sensibel = 0;
 END;
 
 -- Zusicherungen an knowledge_nodes DIREKT in der Datenbank (Auftrag
