@@ -838,6 +838,57 @@ def _quellenliste() -> dict:
     return {"zeilen": zeilen}
 
 
+def _domaene_entfernen(paket: dict, db: str | None = None) -> dict:
+    """Gegenstueck zu /api/domaene-import: nimmt genau EINEN Importvorgang
+    zurueck (Betreiberfrage 2026-08-19: „wie bekommen wir es wieder
+    entfernt?").
+
+    Die Mechanik liegt seit Langem in kern.domaene.nimm_import_zurueck() --
+    gebaut, gepruefte Sonderfaelle, kein Weg dorthin. Man konnte einbinden und
+    nicht loesen, und wer nicht entfernen kann, probiert nichts aus.
+
+    ZURUECKGENOMMEN WIRD EIN IMPORTVORGANG, nicht "die Domaene". Das ist
+    Absicht und stammt aus INT-UPD-002: ein zweiter, spaeterer Reimport hat
+    seine eigene Kennung, und in Kraft gesetzte Zeilen ueberleben jede
+    Ruecknahme. Beides entscheidet der Kern, nicht dieser Weg.
+
+    Rueckgabe traegt IMMER einen Satz in Nutzersprache -- auch im Fehlerfall.
+    Ein blosser Zahlenwert waere hier nutzlos: der Mensch am Bildschirm muss
+    wissen, ob etwas geloest wurde und was gegebenenfalls stehen blieb.
+    """
+    kennung = str(paket.get("kennung") or "").strip()
+    if not kennung:
+        return {"entfernt": False,
+                "meldung": "Es wurde nicht gesagt, welche Einbindung gelöst werden soll."}
+    try:
+        from kern import domaene
+    except Exception:
+        return {"entfernt": False, "verfuegbar": False,
+                "meldung": "Das Lösen ist gerade nicht möglich."}
+    try:
+        ergebnis = domaene.nimm_import_zurueck(kennung, db=db)
+    except ValueError:
+        # Der Kern wirft bei unbekannter Kennung ausdruecklich, statt still
+        # null zu melden -- eine leise Null waere von einer erfolgreichen
+        # Ruecknahme ohne Zeilen nicht zu unterscheiden.
+        return {"entfernt": False,
+                "meldung": "Zu dieser Einbindung ist nichts hinterlegt."}
+    except Exception:
+        return {"entfernt": False,
+                "meldung": "Das Lösen ist nicht vollständig durchgelaufen."}
+
+    entfernt = int(ergebnis.get("entfernt", 0))
+    geblieben = int(ergebnis.get("stehen_geblieben", 0))
+    satz = f"Gelöst: {entfernt} Einträge entfernt."
+    if geblieben:
+        # Kein Beschoenigen: was der Mensch in Kraft gesetzt hat, bleibt --
+        # und er erfaehrt es hier, nicht erst beim naechsten Blick.
+        satz += (f" {geblieben} Einträge bleiben bestehen, weil sie in Kraft"
+                 " gesetzt wurden.")
+    return {"entfernt": True, "anzahl": entfernt,
+            "stehen_geblieben": geblieben, "meldung": satz}
+
+
 def _domaene_import(paket: dict) -> dict:
     """H8b: das atelier schickt den kompletten Paketinhalt (siehe
     docs/PLAN_OPENLEHR_2026-08-14.md §H8), die Pruefung UND das Schreiben
@@ -1297,6 +1348,8 @@ class Handler(BaseHTTPRequestHandler):
                                         str(payload.get("text", "")))
             elif self.path == "/api/domaene-import":
                 out = _domaene_import(payload)
+            elif self.path == "/api/domaene-entfernen":
+                out = _domaene_entfernen(payload)
             elif self.path == "/api/ausweis-anlegen":
                 out = _ausweis_anlegen(payload)
             elif self.path == "/api/ausweis-einladen":
