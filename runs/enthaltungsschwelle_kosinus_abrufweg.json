@@ -1,0 +1,949 @@
+{
+  "schnappschuss": "20260819T094703-31bcb647",
+  "weg": "haken/suchpfad_abruf.py::kandidaten() -- echter Abrufweg-Baustein, kein Nachbau",
+  "max_results": 17,
+  "n": {
+    "einschlaegig": 35,
+    "fachfremd": 41
+  },
+  "quelle_fragen": "runs/enthaltungsschwelle_kosinus_2026-08-19.json (je_frage_einschlaegig/je_frage_fachfremd, woertlich uebernommen, damit beide Wege an denselben Fragen gemessen sind)",
+  "positivkontrolle": {
+    "bestanden": true,
+    "min_fachfremd": 0.3619,
+    "max_einschlaegig": 0.6477
+  },
+  "schadensfaelle": {
+    "schadensfall_macos": {
+      "art": "fachfremd",
+      "domain": "alltagstechnik",
+      "frage": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+      "bester_kosinus": 0.541,
+      "name": "schadensfall_macos"
+    },
+    "schadensfall_plane": {
+      "art": "fachfremd",
+      "domain": "seefahrt",
+      "frage": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+      "bester_kosinus": 0.4501,
+      "name": "schadensfall_plane"
+    }
+  },
+  "ueberlappung": {
+    "ueberlappen": true,
+    "breite": 0.0309,
+    "einschlaegig_bereich": [
+      0.5101,
+      0.6477
+    ],
+    "fachfremd_bereich": [
+      0.3619,
+      0.541
+    ],
+    "satz": "Die Bereiche ueberlappen um 0.0309: einschlaegig [0.5101, 0.6477], fachfremd [0.3619, 0.541]."
+  },
+  "je_frage_einschlaegig": [
+    {
+      "art": "einschlaegig",
+      "ziel": "L-a9ccd0",
+      "frage": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereits erfassten Daten ohne explizite Bestätigung gelöscht oder zurückgesetzt werden.",
+      "bester_kosinus": 0.5864
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-298823",
+      "frage": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine Warnung anzuzeigen, bleibt der Fehler im laufenden Betrieb unbemerkt. Die Logik zur Identifizierung funktioniert fehlerfrei, führt aber zu keiner sichtbaren Reaktion für den Anwender.",
+      "bester_kosinus": 0.6187
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-f9f654",
+      "frage": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicherheitsnetz nicht und führt zu unkontrollierten Abstürzen. Er muss nun entscheiden, ob er den Vorgang erst nach Abschluss prüft oder die Fehlerprüfung direkt in die Hilfsfunktion integriert.",
+      "bester_kosinus": 0.593
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-b4b443",
+      "frage": "Ein Nutzer meldet, dass die Anwendung fälschlicherweise eine aktive Hardwareverbindung anzeigt, obwohl das entsprechende Modul nicht angeschlossen ist. Da veraltete Statusmeldungen aus dem Speicher ohne Validierung übernommen werden, erscheint diese Information als aktuell, obwohl sie längst nicht mehr gültig ist.",
+      "bester_kosinus": 0.5946
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-44a838",
+      "frage": "Bei der Implementierung eines Systems zur automatischen Erstellung von Antwortentwürfen für Kundenanfragen muss sichergestellt werden, dass kein sensibler Inhalt aus der ursprünglichen Anfrage ungeschützt in die Datenbank geschrieben wird. Obwohl der Eingangsprozess kontrolliert ist, darf der durch das Modell generierte Text nicht ungefiltert gespeichert werden, da er Persönlichkeiten oder Kontodaten enthalten könnte.",
+      "bester_kosinus": 0.5775
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-cdac52",
+      "frage": "In der Fehleranalyse stellte ich fest, dass die Einblendung von Bestätigungsfenstern oft fehlschlägt oder Daten verliert, weil sie auf eine unsichere Standortbestimmung im UI-Baum angewiesen ist. Ich muss diese Overlays auf eine feste Referenz umstellen und die Reihenfolge der internen Statusänderungen so festschreiben, dass sie nicht durch das Timingergebnis beeinflusst werden.",
+      "bester_kosinus": 0.5942
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-e7bc5e",
+      "frage": "Ein Techniker stellt fest, dass der automatisierte Datenabgleich abgebrochen wird, und wechselt stattdessen auf eine direkte Übertragungsanbindung. Er geht davon aus, dass lediglich die Serververbindung instabil ist, übersieht dabei jedoch, dass dieser Weg absichtlich unterbunden wurde, um einen manuellen Abnahmevorgang zu erzwingen. Da beide Szenarien für ihn gleich wirken, lässt er den erforderlichen Genehmigungsschritt aus.",
+      "bester_kosinus": 0.5862
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-e1a441",
+      "frage": "Ein Administrator muss die Testdatensätze aus dem System löschen, bevor das Produkt live geht. Da sowohl die Übungsdatensätze als auch die echten Kundeninformationen exakt dieselben Bezeichnungen tragen, führt eine Bereinigung allein nach Namen dazu, dass versehentlich echte Nutzerdaten gelöscht werden. Er benötigt daher ein Verfahren, das jeden Datensatz bereits beim Import eindeutig kennzeichnet, um sie im Nachhinein sicher voneinander zu trennen.",
+      "bester_kosinus": 0.6211
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-b91ed6",
+      "frage": "Nach dem Rollout zeigen die automatisierten Prüfprotokolle eine lange Liste an Fehlermeldungen. Bevor du alle Probleme auf eine instabile Infrastruktur schiebst, solltest du dir bei einigen Fällen die detaillierten Protokolle genau durchlesen. Nur so stellst du sicher, dass tatsächliche Programmierfehler nicht übersehen werden.",
+      "bester_kosinus": 0.5675
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-bbd7fb",
+      "frage": "Die Überwachungssoftware für die Lagerhalle meldet einen sicheren Zustand, obwohl kritische Sensoren an den Außenwänden defekt sind. Da das System bei fehlenden Daten einfach auf die Standardeinstellungen zurückgreift, erhalten die Techniker eine trügerische Bestätigung über die Sicherheit der Konstruktion.",
+      "bester_kosinus": 0.5578
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-503687",
+      "frage": "Ein Tool zur automatischen Fehlerprüfung in einer Software meldet ständig Fehlalarme, weil es nicht zwischen organisatorischen Verknüpfungen und echtem Datentransport unterscheiden kann. Da beide Arten von Verbindungen im Systemplan identisch aussehen, hilft eine bloße Begrenzung der Komplexität nicht, um die Qualität der Analyse zu verbessern. Die Untersuchung scheitert daran, dass die äußere Form einer Verbindung keine Rückschlüsse auf ihre tatsächliche Funktion zulässt.",
+      "bester_kosinus": 0.5902
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-8c633e",
+      "frage": "Ein Nutzer beschwert sich über eine fehlerhafte Anzeige auf einer speziellen Unterseite. Der Entwickler korrigiert das Problem im Hauptbereich, übersieht jedoch einen Hinweis im Code, der darauf hindeutet, dass auch eine fast identische Ansicht derselben Anpassung bedarf.",
+      "bester_kosinus": 0.6469
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-606b63",
+      "frage": "Wenn ein Nutzer eine Bluetooth-Verbindung kurz hintereinander neu aufbaut, kann ein verspätet eintreffender Trennbefehl aus dem ersten Versuch die gerade erst gestartete zweite Sitzung unterbrechen. Ohne eine eindeutige Zuordnung zwischen dem Signal und der spezifischen Instanz führt dieser Timingfehler dazu, dass die neue Verbindung fälschlicherweise gekappt wird. Das System muss sicherstellen, dass ein Beendungsbefehl nur dann wirksam ist, wenn er gezielt auf den aktuell laufenden Vorgang abzielt.",
+      "bester_kosinus": 0.6087
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-0392e4",
+      "frage": "Bei der Fehlerbehebung einer Sortierfunktion stellst du fest, dass Informationen aus unterschiedlichen Bereichen unkorrekt nebeneinander stehen. Da die hinterlegten Zahlenwerte für die Wichtigkeit über verschiedene Kategorien hinweg identisch sind, kann das System nicht unterscheiden, welche Vorgabe tatsächlich Vorrang hat. Eine automatische Auswahl des relevantesten Dokuments ist ohne zusätzliche Angaben zum Ursprung der Daten unmöglich.",
+      "bester_kosinus": 0.6477
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "L-476602",
+      "frage": "Die KI reagiert träge, weil sie zu Beginn jeder Interaktion eine riesige Liste an Möglichkeiten verarbeiten muss, obwohl der Nutzer meist nur einen kleinen Teil davon nutzt. Um den Prozess effizienter zu gestalten, sollte die Darstellung der verfügbaren Handlungsoptionen bereits bei der ersten Verbindung eingeschränkt werden, ohne dabei die grundlegenden Sicherheitsvorgaben für den eigentlichen Zugriff zu beeinträchtigen.",
+      "bester_kosinus": 0.5972
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "frage": "Während einer Besprechung zur Neuausrichtung der Organisationsstruktur verlieren die Beteiligten sich in Diskussionen über Detailzahlen und zukünftige Software-Anpassungen. Sie vernachlässigen dabei, dass die rechtliche Genehmigung des Hauptprojekts zeitkritisch ist und nicht durch technische Feinheiten verzögert werden darf. Zudem sorgt das Fehlen von analogen Ausgleichsmöglichkeiten für Widerstand bei den traditionell orientierten Mitgliedern.",
+      "bester_kosinus": 0.5294
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "frage": "Ein Hausbesitzer lässt seine Werkstatt umbauen und muss entscheiden, wie viele Kabel nun direkt in die Wände verlegt werden sollen. Er muss abwägen, ob er nur den aktuellen Bedarf deckt oder eine breitere Basis schafft, damit spätere Erweiterungen keinen kompletten Rückbau der Wandkonstruktion nötig machen.",
+      "bester_kosinus": 0.5615
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "frage": "Ein Verkäufer möchte in einer Präsentation die maximale Belastbarkeit eines Bauteils nennen. Da ihm keine aktuellen Testergebnisse vorliegen, muss er entscheiden, ob er eine plausibel klingende Zahl nennt oder offen gibt, dass diese Information momentan nicht zur Verfügung steht.",
+      "bester_kosinus": 0.5997
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "frage": "Die Entwickler diskutieren gerade, ob veraltete Funktionen aus dem System entfernt werden können. Es besteht die Sorge, dass dadurch die Bedienbarkeit für andere Personen eingeschränkt würde. In dieser Phase muss geklärt werden, ob eine sofortige Verfügbarkeit aktuell überhaupt notwendig ist.",
+      "bester_kosinus": 0.5906
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "frage": "Die Produktion muss entscheiden, welche digitale Figur für das neue Video genutzt werden kann. Ein Techniker prüft dabei, ob die aktuelle Software bereits vollständige Bewegungsabläufe unterstützt oder nur bestimmte Bereiche der Mimik einsatzbereit hat.",
+      "bester_kosinus": 0.5101
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+      "frage": "Ein Kunde beschwert sich, dass neu hochgeladene Rechnungen und Nachrichten in der Trefferliste fehlen. Ich muss prüfen, ob die automatischen Importprozesse die Daten korrekt erfassen oder ob diese aufgrund fehlender Textinhalte beim Aufbau des Suchverzeichnisses aussortiert wurden.",
+      "bester_kosinus": 0.5823
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/lessons/phase2-summary",
+      "frage": "Das Entwicklungsteam stellt fest, dass die automatisch generierten Skripte unzuverlässig sind, da die internen Anleitungen nicht präzise genug definiert wurden. Um die Qualität zu sichern, müssen nun alle verfügbaren Werkzeuge neu strukturiert und feste Regeln für die Bausterstellung etabliert werden.",
+      "bester_kosinus": 0.6016
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/testing/pytest",
+      "frage": "Bei der Entwicklung einer neuen Anwendung müssen die automatischen Prüfzyklen strukturiert werden. Dabei sollen immer verfügbare Vorbereitungen für Testdaten erstellt und verschiedene Szenarien in Kategorien unterteilt werden. Zudem soll am Ende präzise ermittelt werden, welche Teile des Quellcodes während der Durchläufe nicht erreicht wurden.",
+      "bester_kosinus": 0.6334
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/brainlehr/inference-control-was-andere-faecher",
+      "frage": "Ein Mitarbeiter im Empfangsbereich prüft die Belegung der Büroräume auf dem Gelände. Würde das System bei gesperrten Zonen gar keine Daten liefern, könnte er durch das Fehlen von Einträgen Rückschlüsse auf geheime Anlagen ziehen. Stattdessen sollte ihm eine glaubwürdige Fiktion präsentiert werden, damit seine Abfrage keinen Hinweis auf den Schutzstatus gibt.",
+      "bester_kosinus": 0.5847
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/methodik/einstieg",
+      "frage": "Ein neuer Kollege beginnt seine Einarbeitung in einem komplexen Umfeld und erhält ein umfangreiches Handbuch zur Orientierung. Er muss vor dem Start identifizieren, welche Teile dieser Dokumentation zwingend studiert werden müssen, um keine elementaren Fehler bei der späteren Umsetzung zu machen.",
+      "bester_kosinus": 0.567
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/stadtwerke",
+      "frage": "Ein Administrator prüft die Zugriffsberechtigungen für einen Kollegen, der für zwei Organisationen tätig ist. Er verwendet dazu ein Übungsszenario mit simulierten Profilen, um sicherzustellen, dass die spezifische Aufgabenfunktion korrekt im System hinterlegt ist.",
+      "bester_kosinus": 0.5399
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/openlehr/steuer/ui",
+      "frage": "Während der Modernisierung des Finanzportals müssen wir die Struktur der Benutzeroberfläche prüfen. Dabei ist es entscheidend zu wissen, wie viele Untermodule in diesem Bereich abgelegt sind, um die Verlinkungen korrekt abzubilden.",
+      "bester_kosinus": 0.5679
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "frage": "Die Eigentümergemeinschaft möchte die Abrechnung der Dachsanierung prüfen, da das Handwerksunternehmen und die Hausverwaltung unter gleicher Leitung stehen. Da im Vertrag keine speziellen Regeln für solche internen Beauftragungen enthalten sind, ist unklar, ob auch andere Firmen angefragt wurden oder wie die Kosten kalkuliert wurden. Ohne eine klare Vorgabe fehlt ein objektiver Maßstab, um die Fairness der Entscheidung zu beurteilen.",
+      "bester_kosinus": 0.6184
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "frage": "Ein neuer Kollege stößt bei der Recherche auf ein unübersichtlich formatiertes Protokoll und ist unsicher, ob es sich um einen Fehler handelt oder ob die Daten noch gültig sind. Es muss geklärt werden, dass dieser Text bewusst als Beleg für den Entstehungsprozess einer Entscheidung erhalten bleibt, auch wenn die eigentlichen Arbeitsschritte heute in einer saubereren Struktur abgelegt sind.",
+      "bester_kosinus": 0.5953
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "frage": "Ein Kunde möchte seine persönlichen Informationen im Profil aktualisieren, doch der Vorgang wird abgebrochen. Die Meldung auf dem Display darf keine Details zu den technischen Hintergründen preisgeben und sollte den Nutzer stattdessen lediglich dazu anweisen, die Eingabe in einigen Minuten erneut zu versuchen.",
+      "bester_kosinus": 0.6084
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "frage": "Bei der Besprechung mit potenziellen Partnern wird immer wieder so getan, als müsse die Anzahl der benötigten Unterschriften noch mit den externen Firmen geklärt werden. Hier muss jemand intervenieren und deutlich machen, dass diese prozessuale Vorgabe bereits intern feststeht und kein Punkt für eine weitere externe Rücksprache darstellt.",
+      "bester_kosinus": 0.5578
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "frage": "Bei der Ausarbeitung einer komplexen Systemarchitektur muss ich entscheiden, ob eine zusätzliche Überprüfungsinstanz sinnvoll ist. Da die primäre Logik bereits über die nötige Kapazität für tiefgreifende Entscheidungen verfügt, würde ich nur dann ein separates Kontrollfenster öffnen, wenn gezielt eine unabhängige Zweitmeinung oder eine kritische Gegenposition eingeholt werden soll.",
+      "bester_kosinus": 0.5713
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "frage": "Ein Sachbearbeiter prüft die Unterlagen zu einer Anlage und stellt fest, dass der Beleg für eine Modernisierung im Widerspruch zu den aktuellen Sicherheitsprüfungen steht. Da beide Dokumente gleichwertig sind, muss nun beim zuständigen Dienstleister nachgefragt werden, um die tatsächlichen Bestände zu klären.",
+      "bester_kosinus": 0.6057
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "frage": "Die Entwickler müssen eine technische Barriere einrichten, damit Informationen von externen Anbietern die Integrität der eigenen Software nicht gefährden. Dies ist notwendig, um sicherzustellen, dass fremde Datenströme wie Nachrichten oder Terminkalender keine Sicherheitslücken im internen System öffnen.",
+      "bester_kosinus": 0.6123
+    },
+    {
+      "art": "einschlaegig",
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "frage": "Die Entwickler bemerken, dass die KI-Assistenten bei komplexeren Projekten zunehmend unzuverlässig reagieren und wichtige Vorgaben vernachlässigen. Da die Menge an hinterlegten Informationen für jede Teilaufgabe zu groß geworden ist, müssen diese Anweisungen effizienter verdichtet werden, um die Verarbeitungsgeschwindigkeit zu verbessern.",
+      "bester_kosinus": 0.5601
+    }
+  ],
+  "je_frage_fachfremd": [
+    {
+      "art": "fachfremd",
+      "domain": "alltagstechnik",
+      "frage": "Wie stellt man in macOS die Bildschirmaufloesung per Terminal-Befehl ein?",
+      "bester_kosinus": 0.541,
+      "name": "schadensfall_macos"
+    },
+    {
+      "art": "fachfremd",
+      "domain": "seefahrt",
+      "frage": "Welcher Knoten eignet sich zum schnellen, loesbaren Verzurren einer Plane?",
+      "bester_kosinus": 0.4501,
+      "name": "schadensfall_plane"
+    },
+    {
+      "art": "fachfremd",
+      "domain": "alltagstechnik",
+      "frage": "Nenne den kubectl-Befehl, um alle Pods im Namespace default aufzulisten.",
+      "bester_kosinus": 0.4943
+    },
+    {
+      "art": "fachfremd",
+      "domain": "recht_sonstig",
+      "frage": "Welches Papier braucht ein Restaurant fuer die Anmeldung beim Ordnungsamt?",
+      "bester_kosinus": 0.4367
+    },
+    {
+      "art": "fachfremd",
+      "domain": "kochen",
+      "frage": "Beschreibe in 2 Saetzen, wie man einen Hefeteig fuer Pizza ansetzt.",
+      "bester_kosinus": 0.4446
+    },
+    {
+      "art": "fachfremd",
+      "domain": "astronomie",
+      "frage": "Wie berechnet man die Umlaufbahnperiode eines Satelliten aus der Bahnhoehe?",
+      "bester_kosinus": 0.5107
+    },
+    {
+      "art": "fachfremd",
+      "domain": "kochen",
+      "frage": "Nenne die Zutaten fuer einen klassischen Bechamel.",
+      "bester_kosinus": 0.3704
+    },
+    {
+      "art": "fachfremd",
+      "domain": "garten",
+      "frage": "Nenne drei Faustregeln fuer Rosenschnitt im Fruehjahr.",
+      "bester_kosinus": 0.4434
+    },
+    {
+      "art": "fachfremd",
+      "domain": "alltagstechnik",
+      "frage": "Erklaere kurz den Unterschied zwischen TCP und UDP.",
+      "bester_kosinus": 0.5299
+    },
+    {
+      "art": "fachfremd",
+      "domain": "alltagstechnik",
+      "frage": "Wie lautet der Befehl, um in git einen Branch umzubenennen (lokal + remote)?",
+      "bester_kosinus": 0.5271
+    },
+    {
+      "art": "fachfremd",
+      "domain": "kochen",
+      "frage": "Wie lange muss ein Steak vor dem Braten Zimmertemperatur annehmen?",
+      "bester_kosinus": 0.4262
+    },
+    {
+      "art": "fachfremd",
+      "domain": "kochen",
+      "frage": "Welches Gewuerz gehoert klassisch in ein Gulasch?",
+      "bester_kosinus": 0.3619
+    },
+    {
+      "art": "fachfremd",
+      "domain": "kochen",
+      "frage": "Wie erkennt man am Klang, ob ein Brot fertig gebacken ist?",
+      "bester_kosinus": 0.4749
+    },
+    {
+      "art": "fachfremd",
+      "domain": "garten",
+      "frage": "Wann ist die beste Pflanzzeit fuer Tulpenzwiebeln?",
+      "bester_kosinus": 0.3977
+    },
+    {
+      "art": "fachfremd",
+      "domain": "garten",
+      "frage": "Wie schuetzt man Kuebelpflanzen vor Frost auf dem Balkon?",
+      "bester_kosinus": 0.4271
+    },
+    {
+      "art": "fachfremd",
+      "domain": "garten",
+      "frage": "Welcher Boden-pH-Wert eignet sich fuer Hortensien mit blauen Blueten?",
+      "bester_kosinus": 0.4189
+    },
+    {
+      "art": "fachfremd",
+      "domain": "seefahrt",
+      "frage": "Was bedeutet die Abkuerzung 'Lee' beim Segeln?",
+      "bester_kosinus": 0.4384
+    },
+    {
+      "art": "fachfremd",
+      "domain": "seefahrt",
+      "frage": "Wie wird ein Palstek geknuepft und wofuer wird er verwendet?",
+      "bester_kosinus": 0.4365
+    },
+    {
+      "art": "fachfremd",
+      "domain": "seefahrt",
+      "frage": "Was zeigt ein gruenes Backbord-Licht bei einem entgegenkommenden Schiff an?",
+      "bester_kosinus": 0.4828
+    },
+    {
+      "art": "fachfremd",
+      "domain": "astronomie",
+      "frage": "Warum ist der Mond bei Vollmond manchmal roetlich gefaerbt?",
+      "bester_kosinus": 0.448
+    },
+    {
+      "art": "fachfremd",
+      "domain": "astronomie",
+      "frage": "Was unterscheidet einen Zwergplaneten von einem Planeten?",
+      "bester_kosinus": 0.4361
+    },
+    {
+      "art": "fachfremd",
+      "domain": "astronomie",
+      "frage": "Wie weit ist der naechste Stern ausserhalb unseres Sonnensystems entfernt?",
+      "bester_kosinus": 0.4583
+    },
+    {
+      "art": "fachfremd",
+      "domain": "medizin",
+      "frage": "Welche Erste-Hilfe-Schritte gelten bei einer Verbrennung ersten Grades?",
+      "bester_kosinus": 0.4588
+    },
+    {
+      "art": "fachfremd",
+      "domain": "medizin",
+      "frage": "Was ist der Unterschied zwischen einer Virus- und einer Bakterieninfektion?",
+      "bester_kosinus": 0.4512
+    },
+    {
+      "art": "fachfremd",
+      "domain": "medizin",
+      "frage": "Wie lange sollte man nach einer Gehirnerschuetterung auf Sport verzichten?",
+      "bester_kosinus": 0.3994
+    },
+    {
+      "art": "fachfremd",
+      "domain": "sport",
+      "frage": "Wie viele Spieler stehen bei einem Volleyballteam gleichzeitig auf dem Feld?",
+      "bester_kosinus": 0.4013
+    },
+    {
+      "art": "fachfremd",
+      "domain": "sport",
+      "frage": "Was ist ein Abseits im Fussball?",
+      "bester_kosinus": 0.4245
+    },
+    {
+      "art": "fachfremd",
+      "domain": "sport",
+      "frage": "Welche Muskelgruppen trainiert eine klassische Kniebeuge vorrangig?",
+      "bester_kosinus": 0.3655
+    },
+    {
+      "art": "fachfremd",
+      "domain": "musik",
+      "frage": "Wie viele Halbtoene hat eine Oktave in der westlichen Musiktheorie?",
+      "bester_kosinus": 0.4491
+    },
+    {
+      "art": "fachfremd",
+      "domain": "musik",
+      "frage": "Was unterscheidet eine Dur- von einer Molltonleiter?",
+      "bester_kosinus": 0.4312
+    },
+    {
+      "art": "fachfremd",
+      "domain": "musik",
+      "frage": "Welches Instrument hat typischerweise 88 Tasten?",
+      "bester_kosinus": 0.4472
+    },
+    {
+      "art": "fachfremd",
+      "domain": "recht_sonstig",
+      "frage": "Wie lange ist ein Fuehrerschein der Klasse B in Deutschland gueltig, bevor er erneuert werden muss?",
+      "bester_kosinus": 0.4796
+    },
+    {
+      "art": "fachfremd",
+      "domain": "recht_sonstig",
+      "frage": "Welche Frist gilt fuer den Widerruf eines Onlinekaufs nach dem Fernabsatzrecht?",
+      "bester_kosinus": 0.4868
+    },
+    {
+      "art": "fachfremd",
+      "domain": "recht_sonstig",
+      "frage": "Ab welchem Alter duerfen Jugendliche in Deutschland allein ins Kino, wenn der Film ab 12 freigegeben ist?",
+      "bester_kosinus": 0.4115
+    },
+    {
+      "art": "fachfremd",
+      "domain": "alltagstechnik",
+      "frage": "Wie setzt man einen WLAN-Router auf die Werkseinstellungen zurueck?",
+      "bester_kosinus": 0.5052
+    },
+    {
+      "art": "fachfremd",
+      "domain": "alltagstechnik",
+      "frage": "Was bedeutet die IP-Schutzklasse IP67 bei einem Smartphone?",
+      "bester_kosinus": 0.5183
+    },
+    {
+      "art": "fachfremd",
+      "domain": "alltagstechnik",
+      "frage": "Wie wechselt man den Toner in einem Laserdrucker aus?",
+      "bester_kosinus": 0.4784
+    },
+    {
+      "art": "fachfremd",
+      "domain": "kochen",
+      "frage": "Wie stellt man eine einfache Vinaigrette fuer Salat her?",
+      "bester_kosinus": 0.3881
+    },
+    {
+      "art": "fachfremd",
+      "domain": "garten",
+      "frage": "Wie oft sollte Rasen im Sommer gemaeht werden?",
+      "bester_kosinus": 0.4505
+    },
+    {
+      "art": "fachfremd",
+      "domain": "medizin",
+      "frage": "Was hilft am ehesten gegen einen leichten Sonnenbrand?",
+      "bester_kosinus": 0.4198
+    },
+    {
+      "art": "fachfremd",
+      "domain": "sport",
+      "frage": "Wie lang ist eine olympische Schwimmbahn?",
+      "bester_kosinus": 0.4252
+    }
+  ],
+  "schwellentabelle": [
+    {
+      "schwelle": 0.36,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 41,
+      "faelschlich_geliefert_quote": 1.0
+    },
+    {
+      "schwelle": 0.37,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 39,
+      "faelschlich_geliefert_quote": 0.9512
+    },
+    {
+      "schwelle": 0.38,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 38,
+      "faelschlich_geliefert_quote": 0.9268
+    },
+    {
+      "schwelle": 0.39,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 37,
+      "faelschlich_geliefert_quote": 0.9024
+    },
+    {
+      "schwelle": 0.4,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 35,
+      "faelschlich_geliefert_quote": 0.8537
+    },
+    {
+      "schwelle": 0.41,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 34,
+      "faelschlich_geliefert_quote": 0.8293
+    },
+    {
+      "schwelle": 0.42,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 31,
+      "faelschlich_geliefert_quote": 0.7561
+    },
+    {
+      "schwelle": 0.43,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 27,
+      "faelschlich_geliefert_quote": 0.6585
+    },
+    {
+      "schwelle": 0.44,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 22,
+      "faelschlich_geliefert_quote": 0.5366
+    },
+    {
+      "schwelle": 0.45,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 17,
+      "faelschlich_geliefert_quote": 0.4146
+    },
+    {
+      "schwelle": 0.46,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 12,
+      "faelschlich_geliefert_quote": 0.2927
+    },
+    {
+      "schwelle": 0.47,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 12,
+      "faelschlich_geliefert_quote": 0.2927
+    },
+    {
+      "schwelle": 0.48,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 9,
+      "faelschlich_geliefert_quote": 0.2195
+    },
+    {
+      "schwelle": 0.49,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 7,
+      "faelschlich_geliefert_quote": 0.1707
+    },
+    {
+      "schwelle": 0.5,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 6,
+      "faelschlich_geliefert_quote": 0.1463
+    },
+    {
+      "schwelle": 0.51,
+      "faelschlich_enthalten": 0,
+      "faelschlich_enthalten_quote": 0.0,
+      "faelschlich_geliefert": 5,
+      "faelschlich_geliefert_quote": 0.122
+    },
+    {
+      "schwelle": 0.52,
+      "faelschlich_enthalten": 1,
+      "faelschlich_enthalten_quote": 0.0286,
+      "faelschlich_geliefert": 3,
+      "faelschlich_geliefert_quote": 0.0732
+    },
+    {
+      "schwelle": 0.53,
+      "faelschlich_enthalten": 2,
+      "faelschlich_enthalten_quote": 0.0571,
+      "faelschlich_geliefert": 1,
+      "faelschlich_geliefert_quote": 0.0244
+    },
+    {
+      "schwelle": 0.54,
+      "faelschlich_enthalten": 3,
+      "faelschlich_enthalten_quote": 0.0857,
+      "faelschlich_geliefert": 1,
+      "faelschlich_geliefert_quote": 0.0244
+    },
+    {
+      "schwelle": 0.55,
+      "faelschlich_enthalten": 3,
+      "faelschlich_enthalten_quote": 0.0857,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.56,
+      "faelschlich_enthalten": 5,
+      "faelschlich_enthalten_quote": 0.1429,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.57,
+      "faelschlich_enthalten": 10,
+      "faelschlich_enthalten_quote": 0.2857,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.58,
+      "faelschlich_enthalten": 12,
+      "faelschlich_enthalten_quote": 0.3429,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.59,
+      "faelschlich_enthalten": 16,
+      "faelschlich_enthalten_quote": 0.4571,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.6,
+      "faelschlich_enthalten": 24,
+      "faelschlich_enthalten_quote": 0.6857,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.61,
+      "faelschlich_enthalten": 28,
+      "faelschlich_enthalten_quote": 0.8,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.62,
+      "faelschlich_enthalten": 31,
+      "faelschlich_enthalten_quote": 0.8857,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.63,
+      "faelschlich_enthalten": 32,
+      "faelschlich_enthalten_quote": 0.9143,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.64,
+      "faelschlich_enthalten": 33,
+      "faelschlich_enthalten_quote": 0.9429,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    },
+    {
+      "schwelle": 0.65,
+      "faelschlich_enthalten": 35,
+      "faelschlich_enthalten_quote": 1.0,
+      "faelschlich_geliefert": 0,
+      "faelschlich_geliefert_quote": 0.0
+    }
+  ],
+  "gegenueberstellung_knowledge_search": [
+    {
+      "schwelle": 0.36,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 41,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 41
+    },
+    {
+      "schwelle": 0.37,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 39,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 39
+    },
+    {
+      "schwelle": 0.38,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 38,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 39
+    },
+    {
+      "schwelle": 0.39,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 37,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 38
+    },
+    {
+      "schwelle": 0.4,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 35,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 36
+    },
+    {
+      "schwelle": 0.41,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 34,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 34
+    },
+    {
+      "schwelle": 0.42,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 31,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 31
+    },
+    {
+      "schwelle": 0.43,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 27,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 27
+    },
+    {
+      "schwelle": 0.44,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 22,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 21
+    },
+    {
+      "schwelle": 0.45,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 17,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 16
+    },
+    {
+      "schwelle": 0.46,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 12,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 13
+    },
+    {
+      "schwelle": 0.47,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 12,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 13
+    },
+    {
+      "schwelle": 0.48,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 9,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 9
+    },
+    {
+      "schwelle": 0.49,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 7,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 8
+    },
+    {
+      "schwelle": 0.5,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 6,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 6
+    },
+    {
+      "schwelle": 0.51,
+      "faelschlich_enthalten_abrufweg": 0,
+      "faelschlich_geliefert_abrufweg": 5,
+      "faelschlich_enthalten_knowledge_search": 0,
+      "faelschlich_geliefert_knowledge_search": 5
+    },
+    {
+      "schwelle": 0.52,
+      "faelschlich_enthalten_abrufweg": 1,
+      "faelschlich_geliefert_abrufweg": 3,
+      "faelschlich_enthalten_knowledge_search": 1,
+      "faelschlich_geliefert_knowledge_search": 3
+    },
+    {
+      "schwelle": 0.53,
+      "faelschlich_enthalten_abrufweg": 2,
+      "faelschlich_geliefert_abrufweg": 1,
+      "faelschlich_enthalten_knowledge_search": 2,
+      "faelschlich_geliefert_knowledge_search": 1
+    },
+    {
+      "schwelle": 0.54,
+      "faelschlich_enthalten_abrufweg": 3,
+      "faelschlich_geliefert_abrufweg": 1,
+      "faelschlich_enthalten_knowledge_search": 3,
+      "faelschlich_geliefert_knowledge_search": 1
+    },
+    {
+      "schwelle": 0.55,
+      "faelschlich_enthalten_abrufweg": 3,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 3,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.56,
+      "faelschlich_enthalten_abrufweg": 5,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 4,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.57,
+      "faelschlich_enthalten_abrufweg": 10,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 8,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.58,
+      "faelschlich_enthalten_abrufweg": 12,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 11,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.59,
+      "faelschlich_enthalten_abrufweg": 16,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 14,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.6,
+      "faelschlich_enthalten_abrufweg": 24,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 20,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.61,
+      "faelschlich_enthalten_abrufweg": 28,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 23,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.62,
+      "faelschlich_enthalten_abrufweg": 31,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 28,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.63,
+      "faelschlich_enthalten_abrufweg": 32,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 30,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.64,
+      "faelschlich_enthalten_abrufweg": 33,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 33,
+      "faelschlich_geliefert_knowledge_search": 0
+    },
+    {
+      "schwelle": 0.65,
+      "faelschlich_enthalten_abrufweg": 35,
+      "faelschlich_geliefert_abrufweg": 0,
+      "faelschlich_enthalten_knowledge_search": 35,
+      "faelschlich_geliefert_knowledge_search": 0
+    }
+  ],
+  "abweichende_schwellen_ggue_knowledge_search": [
+    0.38,
+    0.39,
+    0.4,
+    0.44,
+    0.45,
+    0.46,
+    0.47,
+    0.49,
+    0.56,
+    0.57,
+    0.58,
+    0.59,
+    0.6,
+    0.61,
+    0.62,
+    0.63
+  ],
+  "hinweis": "Keine Schwelle wird hier empfohlen oder als richtig bezeichnet -- 'faelschlich_enthalten' (Speicher schweigt trotz Ziel) und 'faelschlich_geliefert' (Speicher liefert bei fachfremder Frage) stehen nebeneinander, die Wahl faellt woanders. Diese Tabelle unterscheidet sich von der ueber knowledge_search erhobenen (runs/enthaltungsschwelle_kosinus_2026-08-19.json) an den in 'abweichende_schwellen_ggue_knowledge_search' genannten Schwellen -- nur benannt, nicht erklaert."
+}
