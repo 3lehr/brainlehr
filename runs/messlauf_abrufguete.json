@@ -34,16 +34,16 @@
     },
     "B_2Kanal_an_Pflicht_aus": {
       "trefferguete": [
-        15,
+        22,
         35
       ],
       "trefferguete_je_klasse": {
         "lesson": [
-          4,
+          8,
           15
         ],
         "node": [
-          11,
+          14,
           20
         ]
       },
@@ -96,14 +96,14 @@
     "nach": false
   },
   "stand": {
-    "kennung": "20260820T094809-1194795b",
-    "aufgenommen": "2026-08-20T11:48:09+02:00"
+    "kennung": "20260820T144723-ae6ed35e",
+    "aufgenommen": "2026-08-20T16:47:23+02:00"
   },
   "laufmetadaten": {
-    "commit": "a4eda5ddef1ec78a63f127ae9d17137ccac5d669",
+    "commit": "1b11288df2eb3ef275a32b3104481913342ea639",
     "arbeitsbaum_schmutzig": true,
     "korpus_datei": "runs/pruefkorpus.jsonl",
-    "korpus_hash_sha256": "e0c60e96310e9b1f1ff4ac4191e794d00d91f5e946742f2a348fc4b098e191d4",
+    "korpus_hash_sha256": "6b2818a6cff08253377dab6188855b8801d5dd5c990d19714054ee9ca46edab1",
     "korpus_gesamt": 45,
     "korpus_solvable": 35,
     "korpus_negative": 10
@@ -122,8 +122,8 @@
     "zweiter_kanal": true,
     "ensemble_pflicht": true,
     "embed_model": "bge-m3@ctx2048",
-    "bestand_knowledge_nodes": 5217,
-    "bestand_lessons_learned": 1142,
-    "bestand_knowledge_embeddings": 7300
+    "bestand_knowledge_nodes": 5229,
+    "bestand_lessons_learned": 1157,
+    "bestand_knowledge_embeddings": 7346
   }
 }

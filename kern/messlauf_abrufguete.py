@@ -130,11 +130,37 @@ def laufmetadaten(cases: list, corpus_path: Path) -> dict:
 
 
 def target_hit(c: dict, nodes: list, lessons: list) -> bool:
+    """Trifft die Auslieferung das Ziel des Falls?
+
+    MEHRFACHZIELE seit 2026-08-20 (Betreiberfreigabe, Knoten 55ccd8c4):
+    `target_ids_auch` nennt weitere Eintraege, die dieselbe Frage sachlich
+    ebenso beantworten. Gemessen ueber alle 35 loesbaren Faelle
+    (runs/mehrfachziele_2026-08-20.json): 7 von 20 Fehlgriffen haben ein
+    solches Zweitziel, 13 nicht -- die Gegenprobe, ohne die der Massstab
+    nur die eigene Nachsicht messen wuerde. Trefferquote danach 22 von 35
+    statt 15 von 35.
+
+    DAS ZWEITZIEL BINDET DIE GATTUNG NICHT, und das ist gemessen statt
+    entschieden: Drei der sieben wechseln sie (eine Lehre wird durch einen
+    Knoten beantwortet). Wer die Antwort bekommt, dem ist die Gattung des
+    Eintrags gleichgueltig. Das ERSTziel behaelt seine Gattung, weil
+    `target_kind` dort die Suchrichtung steuert.
+
+    VORBEHALT, der mitgetragen gehoert: Die Beurteilung der Zweitziele war
+    NICHT verblindet -- der Beurteilende sah je Fall das vorgesehene Ziel.
+    Genau die Schwaeche, die am selben Tag an der ersten Handbeurteilung
+    aufgedeckt wurde."""
     if c["target_kind"] == "node":
-        return any(n["path"] == c["target_id"] for n in nodes)
-    if c["target_kind"] == "lesson":
-        return any(l["id"] == c["target_id"] for l in lessons)
-    return False
+        if any(n["path"] == c["target_id"] for n in nodes):
+            return True
+    elif c["target_kind"] == "lesson":
+        if any(l["id"] == c["target_id"] for l in lessons):
+            return True
+    auch = c.get("target_ids_auch") or []
+    if not auch:
+        return False
+    geliefert = {n["path"] for n in nodes} | {l["id"] for l in lessons}
+    return any(z in geliefert for z in auch)
 
 
 def messe(cases: list) -> dict:

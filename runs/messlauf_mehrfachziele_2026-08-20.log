@@ -1,0 +1,43 @@
+A_beide_aus:
+  trefferguete: 1/35 = 2.86%
+  trefferguete[lesson]: 0/15 = 0.00%
+  trefferguete[node]: 1/20 = 5.00%
+  falsches_schweigen: 10/35 = 28.57%
+  richtiges_schweigen: 5/10 = 50.00%
+  falsches_sprechen: 5/10 = 50.00%
+
+[A_beide_aus] KLASSENAUSFALL: lesson: 0 von 15.
+
+Eine Zielklasse, die bei 5+ Faellen NULL trifft, ist strukturell unerreichbar -- das ist ein Defekt des Messaufbaus, kein schwaches Ergebnis. Zweimal belegt (L-0e0ab6, Vorkommen 10 und 11): beide Male wurde die Kennung gegen ein Ziel gehalten, das den PFAD traegt.
+
+Zum Vergleich, die uebrigen Klassen: node: 1 von 20
+
+Zuerst pruefen: Vergleicht die Rangfunktion dasselbe Feld, das der Korpus als Ziel fuehrt? `target_kind` sagt, welche Form erwartet wird.
+
+B_2Kanal_an_Pflicht_aus:
+  trefferguete: 22/35 = 62.86%
+  trefferguete[lesson]: 8/15 = 53.33%
+  trefferguete[node]: 14/20 = 70.00%
+  falsches_schweigen: 0/35 = 0.00%
+  richtiges_schweigen: 0/10 = 0.00%
+  falsches_sprechen: 10/10 = 100.00%
+C_beide_an:
+  trefferguete: 1/35 = 2.86%
+  trefferguete[lesson]: 0/15 = 0.00%
+  trefferguete[node]: 1/20 = 5.00%
+  falsches_schweigen: 34/35 = 97.14%
+  richtiges_schweigen: 10/10 = 100.00%
+  falsches_sprechen: 0/10 = 0.00%
+
+[C_beide_an] KLASSENAUSFALL: lesson: 0 von 15.
+
+Eine Zielklasse, die bei 5+ Faellen NULL trifft, ist strukturell unerreichbar -- das ist ein Defekt des Messaufbaus, kein schwaches Ergebnis. Zweimal belegt (L-0e0ab6, Vorkommen 10 und 11): beide Male wurde die Kennung gegen ein Ziel gehalten, das den PFAD traegt.
+
+Zum Vergleich, die uebrigen Klassen: node: 1 von 20
+
+Zuerst pruefen: Vergleicht die Rangfunktion dasselbe Feld, das der Korpus als Ziel fuehrt? `target_kind` sagt, welche Form erwartet wird.
+
+
+EICHUNG ok: Fall node '/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an', Zustand A_beide_aus -- Treffer True -> False nach Entfernung aus der Kopie (Original unangetastet).
+
+geschrieben: /Volumes/daten/Begod2026/brainlehr/runs/messlauf_abrufguete.json
