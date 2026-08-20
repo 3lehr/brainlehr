@@ -51,6 +51,12 @@
    "waise": false
   },
   {
+   "id": "korpora",
+   "text": "korpora",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "melder",
    "text": "melder",
    "form": "kasten",
@@ -99,6 +105,12 @@
    "waise": false
   },
   {
+   "id": "sicherungen",
+   "text": "sicherungen",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "spikes",
    "text": "spikes",
    "form": "kasten",
@@ -109,6 +121,12 @@
    "text": "tests",
    "form": "kasten",
    "waise": false
+  },
+  {
+   "id": "tool",
+   "text": "tool",
+   "form": "kasten",
+   "waise": false
   }
  ],
  "kanten": [
@@ -116,6 +134,12 @@
    "von": "berichte",
    "nach": "haken",
    "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "berichte",
+   "nach": "kern",
+   "text": "2",
    "art": "gerichtet"
   },
   {
@@ -151,7 +175,19 @@
   {
    "von": "kern",
    "nach": "knowledge_mcp_server",
-   "text": "24",
+   "text": "25",
+   "art": "gerichtet"
+  },
+  {
+   "von": "knowledge_mcp_server",
+   "nach": "kern",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "knowledge_mcp_server",
+   "nach": "sicherungen",
+   "text": "1",
    "art": "gerichtet"
   },
   {
@@ -169,13 +205,13 @@
   {
    "von": "messungen",
    "nach": "kern",
-   "text": "1",
+   "text": "3",
    "art": "gerichtet"
   },
   {
    "von": "messungen",
    "nach": "knowledge_mcp_server",
-   "text": "5",
+   "text": "20",
    "art": "gerichtet"
   },
   {
@@ -222,6 +258,12 @@
   },
   {
    "von": "tests",
+   "nach": "berichte",
+   "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tests",
    "nach": "brainlehr",
    "text": "2",
    "art": "gerichtet"
@@ -229,19 +271,37 @@
   {
    "von": "tests",
    "nach": "haken",
-   "text": "5",
+   "text": "6",
    "art": "gerichtet"
   },
   {
    "von": "tests",
    "nach": "kern",
-   "text": "20",
+   "text": "30",
    "art": "gerichtet"
   },
   {
    "von": "tests",
    "nach": "knowledge_mcp_server",
-   "text": "83",
+   "text": "94",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tests",
+   "nach": "melder",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tests",
+   "nach": "sicherungen",
+   "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tool",
+   "nach": "knowledge_mcp_server",
+   "text": "1",
    "art": "gerichtet"
   }
  ]

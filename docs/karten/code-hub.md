@@ -252,6 +252,7 @@ graph LR
   test_wiedereinstieg["test_wiedereinstieg"]
   tote_bausteine["tote_bausteine"]
   trust_factor["trust_factor"]
+  uebergabe_pfade["uebergabe_pfade"]
   ui_dump["ui_dump"]
   unverdrahtet["unverdrahtet"]
   update_vis["update_vis"]
@@ -341,4 +342,4 @@ graph LR
   verify_ema_fix -->|1| stem_server
 ```
 
-Ein Kasten ist eine Datei, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 262 Module, 73 Verbindungen.
+Ein Kasten ist eine Datei, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 263 Module, 73 Verbindungen.

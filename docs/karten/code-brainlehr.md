@@ -12,6 +12,7 @@ graph LR
   haken["haken"]
   kern["kern"]
   knowledge_mcp_server["knowledge_mcp_server"]
+  korpora["korpora"]
   melder["melder"]
   messungen["messungen"]
   migrationen["migrationen"]
@@ -20,19 +21,24 @@ graph LR
   runs["runs"]
   schnellstart["schnellstart"]
   schreibpruefstand["schreibpruefstand"]
+  sicherungen["sicherungen"]
   spikes["spikes"]
   tests["tests"]
+  tool["tool"]
   berichte -->|1| haken
+  berichte -->|2| kern
   berichte -->|1| knowledge_mcp_server
   brainlehr -->|1| knowledge_mcp_server
   haken -->|7| knowledge_mcp_server
   haken -->|1| melder
   kern -->|6| haken
-  kern -->|24| knowledge_mcp_server
+  kern -->|25| knowledge_mcp_server
+  knowledge_mcp_server -->|1| kern
+  knowledge_mcp_server -->|1| sicherungen
   melder -->|2| haken
   melder -->|6| knowledge_mcp_server
-  messungen -->|1| kern
-  messungen -->|5| knowledge_mcp_server
+  messungen -->|3| kern
+  messungen -->|20| knowledge_mcp_server
   migrationen -->|7| knowledge_mcp_server
   pflege -->|2| kern
   pflege -->|2| knowledge_mcp_server
@@ -40,10 +46,14 @@ graph LR
   runs -->|1| kern
   schnellstart -->|1| knowledge_mcp_server
   schreibpruefstand -->|4| knowledge_mcp_server
+  tests -->|2| berichte
   tests -->|2| brainlehr
-  tests -->|5| haken
-  tests -->|20| kern
-  tests -->|83| knowledge_mcp_server
+  tests -->|6| haken
+  tests -->|30| kern
+  tests -->|94| knowledge_mcp_server
+  tests -->|1| melder
+  tests -->|2| sicherungen
+  tool -->|1| knowledge_mcp_server
 ```
 
-Ein Kasten ist ein Verzeichnis, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 18 Module, 22 Verbindungen.
+Ein Kasten ist ein Verzeichnis, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 21 Module, 29 Verbindungen.
