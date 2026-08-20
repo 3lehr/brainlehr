@@ -1,0 +1,488 @@
+{
+  "laeufe": {
+    "1.0/B_2Kanal_an_Pflicht_aus": {
+      "mad_mult": 1.0,
+      "zustand": "B_2Kanal_an_Pflicht_aus",
+      "trefferguete": [
+        12,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          12,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        0,
+        35
+      ],
+      "richtiges_schweigen": [
+        0,
+        10
+      ],
+      "falsches_sprechen": [
+        10,
+        10
+      ]
+    },
+    "1.0/C_beide_an": {
+      "mad_mult": 1.0,
+      "zustand": "C_beide_an",
+      "trefferguete": [
+        1,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        32,
+        35
+      ],
+      "richtiges_schweigen": [
+        10,
+        10
+      ],
+      "falsches_sprechen": [
+        0,
+        10
+      ]
+    },
+    "1.5/B_2Kanal_an_Pflicht_aus": {
+      "mad_mult": 1.5,
+      "zustand": "B_2Kanal_an_Pflicht_aus",
+      "trefferguete": [
+        13,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          2,
+          15
+        ],
+        "node": [
+          11,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        0,
+        35
+      ],
+      "richtiges_schweigen": [
+        0,
+        10
+      ],
+      "falsches_sprechen": [
+        10,
+        10
+      ]
+    },
+    "1.5/C_beide_an": {
+      "mad_mult": 1.5,
+      "zustand": "C_beide_an",
+      "trefferguete": [
+        1,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        34,
+        35
+      ],
+      "richtiges_schweigen": [
+        10,
+        10
+      ],
+      "falsches_sprechen": [
+        0,
+        10
+      ]
+    },
+    "2.0/B_2Kanal_an_Pflicht_aus": {
+      "mad_mult": 2.0,
+      "zustand": "B_2Kanal_an_Pflicht_aus",
+      "trefferguete": [
+        15,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          4,
+          15
+        ],
+        "node": [
+          11,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        0,
+        35
+      ],
+      "richtiges_schweigen": [
+        0,
+        10
+      ],
+      "falsches_sprechen": [
+        10,
+        10
+      ]
+    },
+    "2.0/C_beide_an": {
+      "mad_mult": 2.0,
+      "zustand": "C_beide_an",
+      "trefferguete": [
+        1,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        34,
+        35
+      ],
+      "richtiges_schweigen": [
+        10,
+        10
+      ],
+      "falsches_sprechen": [
+        0,
+        10
+      ]
+    },
+    "2.5/B_2Kanal_an_Pflicht_aus": {
+      "mad_mult": 2.5,
+      "zustand": "B_2Kanal_an_Pflicht_aus",
+      "trefferguete": [
+        9,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          2,
+          15
+        ],
+        "node": [
+          7,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        0,
+        35
+      ],
+      "richtiges_schweigen": [
+        0,
+        10
+      ],
+      "falsches_sprechen": [
+        10,
+        10
+      ]
+    },
+    "2.5/C_beide_an": {
+      "mad_mult": 2.5,
+      "zustand": "C_beide_an",
+      "trefferguete": [
+        1,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        34,
+        35
+      ],
+      "richtiges_schweigen": [
+        10,
+        10
+      ],
+      "falsches_sprechen": [
+        0,
+        10
+      ]
+    },
+    "3.0/B_2Kanal_an_Pflicht_aus": {
+      "mad_mult": 3.0,
+      "zustand": "B_2Kanal_an_Pflicht_aus",
+      "trefferguete": [
+        5,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          3,
+          15
+        ],
+        "node": [
+          2,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        1,
+        35
+      ],
+      "richtiges_schweigen": [
+        0,
+        10
+      ],
+      "falsches_sprechen": [
+        10,
+        10
+      ]
+    },
+    "3.0/C_beide_an": {
+      "mad_mult": 3.0,
+      "zustand": "C_beide_an",
+      "trefferguete": [
+        1,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        34,
+        35
+      ],
+      "richtiges_schweigen": [
+        10,
+        10
+      ],
+      "falsches_sprechen": [
+        0,
+        10
+      ]
+    },
+    "3.5/B_2Kanal_an_Pflicht_aus": {
+      "mad_mult": 3.5,
+      "zustand": "B_2Kanal_an_Pflicht_aus",
+      "trefferguete": [
+        3,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          1,
+          15
+        ],
+        "node": [
+          2,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        6,
+        35
+      ],
+      "richtiges_schweigen": [
+        1,
+        10
+      ],
+      "falsches_sprechen": [
+        9,
+        10
+      ]
+    },
+    "3.5/C_beide_an": {
+      "mad_mult": 3.5,
+      "zustand": "C_beide_an",
+      "trefferguete": [
+        1,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        34,
+        35
+      ],
+      "richtiges_schweigen": [
+        10,
+        10
+      ],
+      "falsches_sprechen": [
+        0,
+        10
+      ]
+    },
+    "4.0/B_2Kanal_an_Pflicht_aus": {
+      "mad_mult": 4.0,
+      "zustand": "B_2Kanal_an_Pflicht_aus",
+      "trefferguete": [
+        2,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          1,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        11,
+        35
+      ],
+      "richtiges_schweigen": [
+        1,
+        10
+      ],
+      "falsches_sprechen": [
+        9,
+        10
+      ]
+    },
+    "4.0/C_beide_an": {
+      "mad_mult": 4.0,
+      "zustand": "C_beide_an",
+      "trefferguete": [
+        1,
+        35
+      ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
+      "falsches_schweigen": [
+        34,
+        35
+      ],
+      "richtiges_schweigen": [
+        10,
+        10
+      ],
+      "falsches_sprechen": [
+        0,
+        10
+      ]
+    }
+  },
+  "pareto_front": {
+    "B_2Kanal_an_Pflicht_aus": [
+      2.0,
+      3.5
+    ],
+    "C_beide_an": [
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5,
+      4.0
+    ]
+  },
+  "eichung_2_0": {
+    "ok": true,
+    "erwartet": {
+      "B": [
+        15,
+        35
+      ],
+      "C": [
+        1,
+        35
+      ]
+    },
+    "gemessen": {
+      "B": [
+        15,
+        35
+      ],
+      "C": [
+        1,
+        35
+      ]
+    }
+  },
+  "mad_werte": [
+    1.0,
+    1.5,
+    2.0,
+    2.5,
+    3.0,
+    3.5,
+    4.0
+  ],
+  "zustaende": [
+    "B_2Kanal_an_Pflicht_aus",
+    "C_beide_an"
+  ],
+  "stand": {
+    "kennung": "20260820T104353-9cd33605",
+    "aufgenommen": "2026-08-20T12:43:53+02:00"
+  },
+  "laufmetadaten": {
+    "commit": "759c630bfa3933017cae7f33d6aa499bcca27152",
+    "arbeitsbaum_schmutzig": true,
+    "korpus_datei": "runs/pruefkorpus.jsonl",
+    "korpus_hash_sha256": "e0c60e96310e9b1f1ff4ac4191e794d00d91f5e946742f2a348fc4b098e191d4",
+    "korpus_gesamt": 45,
+    "korpus_solvable": 35,
+    "korpus_negative": 10
+  }
+}
