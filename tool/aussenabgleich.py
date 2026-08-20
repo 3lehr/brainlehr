@@ -76,6 +76,12 @@ NIE_ABGLEICHEN = (
     "README.md", "README.de.md", "START_HIER.md", "NOTICE", "LICENSE",
     "LICENSE_FAQ.md", "CONTRIBUTING.md", "KNOWLEDGE_CONTRACT.md",
     "BSI_COMPLIANCE_GATE.md",
+    # Eigenleben des Zielrepos: GitHub-Vorlagen ergeben nur DORT einen Sinn
+    # und haben hier bewusst kein Gegenstueck. Ohne diese Zeile meldet der
+    # Abgleich sie dauerhaft als "draussen vorhanden, hier nicht mehr" --
+    # ein Befund, der nie verschwindet, und der naechste Leser lernt, die
+    # ganze Liste zu ueberspringen.
+    ".github/",
 )
 
 
@@ -94,13 +100,32 @@ def aussenbestand(aussen: Path) -> list[str]:
     return [r for r in roh if r and not _ausgeschlossen(r)]
 
 
+def _umzug(repo: Path, rel: str) -> str | None:
+    """Dieselbe Datei unter einem anderen Ordner -- ein Umzug, keine Loeschung.
+
+    Gemessen 2026-08-20: alle 8 vermeintlich geloeschten Dateien des
+    weitergebbaren Klons lagen hier weiterhin, nur unter `berichte/` statt
+    `melder/` bzw. `messungen/`. Wer das nicht unterscheidet, meldet acht
+    Loeschungen, die keine sind -- und eine Loeschung nach aussen ist nach
+    dem Push nicht mehr zurueckzuholen."""
+    name = Path(rel).name
+    for kandidat in repo.glob(f"*/{name}"):
+        if kandidat.is_file():
+            return str(kandidat.relative_to(repo))
+    return None
+
+
 def pruefe(repo: Path = REPO, aussen: Path = AUSSEN) -> dict:
     dateien = aussenbestand(aussen)
-    abweichung, fehlt_innen = [], []
+    abweichung, fehlt_innen, umgezogen = [], [], {}
     for rel in dateien:
         innen = repo / rel
         if not innen.is_file():
-            fehlt_innen.append(rel)
+            ziel = _umzug(repo, rel)
+            if ziel:
+                umgezogen[rel] = ziel
+            else:
+                fehlt_innen.append(rel)
             continue
         if not filecmp.cmp(innen, aussen / rel, shallow=False):
             abweichung.append(rel)
@@ -108,6 +133,7 @@ def pruefe(repo: Path = REPO, aussen: Path = AUSSEN) -> dict:
         "geprueft": dateien,
         "abweichung": abweichung,
         "fehlt_innen": fehlt_innen,
+        "umgezogen": umgezogen,
     }
 
 
@@ -198,8 +224,13 @@ def bericht(ergebnis: dict, neue: list[str] | None = None,
         zeilen.append(f"    | ... und {len(ergebnis['abweichung']) - 20} weitere")
 
     zeilen.append(_rw.zaehle(geprueft, lambda r: r in fehlt, str).zeile(
-        "draussen vorhanden, hier nicht mehr", rahmen))
+        "draussen vorhanden, hier weder noch umgezogen", rahmen))
     zeilen += [f"    | {r}" for r in ergebnis["fehlt_innen"]]
+
+    umg = ergebnis.get("umgezogen") or {}
+    zeilen.append(_rw.zaehle(geprueft, lambda r: r in umg, str).zeile(
+        "hier UMGEZOGEN, draussen am alten Ort", rahmen))
+    zeilen += [f"    > {alt} -> {neu_}" for alt, neu_ in sorted(umg.items())]
 
     if neue is not None:
         zeilen.append(
@@ -285,6 +316,30 @@ def _selftest() -> int:
         assert e["abweichung"] == ["kern/anders.py"], e
         # POSITIV: die draussen verwaiste Datei faellt auf.
         assert e["fehlt_innen"] == ["kern/verschwunden.py"], e
+        # NEGATIV, hier und nicht spaeter: solange es den Ordner `melder`
+        # DRAUSSEN nicht gibt, darf er keine Kandidaten liefern -- ein neuer
+        # Ordner ist eine Entscheidung ueber den Zuschnitt. (Der Umzugsfall
+        # unten legt melder/ draussen an und hebt diese Lage auf.)
+        assert kandidaten(innen, aussen) == ["kern/brandneu.py"], kandidaten(innen, aussen)
+
+        # UMZUG: dieselbe Datei liegt hier in einem ANDEREN Ordner -- das ist
+        # keine Loeschung. Rot vor gruen: gegen die Fassung ohne _umzug()
+        # stand sie unter "fehlt_innen" und waere als Loeschkandidat nach
+        # aussen gegangen.
+        (aussen / "melder").mkdir(exist_ok=True)
+        (aussen / "melder" / "umgezogen.py").write_text("u\n")
+        (innen / "berichte").mkdir(exist_ok=True)
+        (innen / "berichte" / "umgezogen.py").write_text("u\n")
+        subprocess.run(["git", "add", "-A"], cwd=aussen, check=True)
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t",
+                        "commit", "-qm", "umzug"], cwd=aussen, check=True)
+        e_u = pruefe(innen, aussen)
+        assert e_u["umgezogen"] == {"melder/umgezogen.py": "berichte/umgezogen.py"}, e_u
+        assert "melder/umgezogen.py" not in e_u["fehlt_innen"], e_u
+        # NEGATIV: die echte Verwaiste bleibt eine Verwaiste -- sonst
+        # verschluckt die Umzugserkennung jede echte Loeschung.
+        assert "kern/verschwunden.py" in e_u["fehlt_innen"], e_u
+
         # NEGATIV: die identische Datei taucht nirgends auf.
         assert "kern/gleich.py" not in e["abweichung"] + e["fehlt_innen"], e
         # NEGATIV, und das ist der teuerste Fall: die Datenbank steht in
@@ -315,9 +370,11 @@ def _selftest() -> int:
         for weg in ("geheimnis.py", "tiefer.py"):
             (innen / "kern" / weg).unlink()
 
+        # Jetzt gibt es melder/ auch draussen -- also ist die dortige neue
+        # Datei folgerichtig ein Kandidat. Der Zuschnitt hat sich geaendert,
+        # nicht die Regel.
         k = kandidaten(innen, aussen)
-        assert k == ["kern/brandneu.py"], k
-        assert not any("ganz_neuer_ordner" in r for r in k), k
+        assert k == ["kern/brandneu.py", "melder/ganz_neuer_ordner.py"], k
 
         # DER NENNER ist die gepruefte Menge, nicht die Befundliste.
         text = bericht(e, k)
@@ -343,7 +400,8 @@ def _selftest() -> int:
           "Gleichstand, Bestand nie abgeglichen, Kandidat nur genannt, neuer "
           "Ordner liefert keine Kandidaten, Nenner in beide Richtungen, "
           "Uebernahme kopiert nichts weiter, Importluecke transitiv, "
-          "vorhandenes Modul und Standardbibliothek sind keine Luecke)")
+          "vorhandenes Modul und Standardbibliothek sind keine Luecke, "
+          "Umzug ist keine Loeschung und verschluckt keine echte)")
     return 0
 
 
