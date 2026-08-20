@@ -1,6 +1,6 @@
 # Brainlehr — kanonischer Root-Lastenkatalog
 
-Stand: 2026-08-20 (10 Zeilen ergaenzt: P09-P14, E22-E25)
+Stand: 2026-08-21 (Betreiberentscheidungen des Gesamtbau-Auftrags eingetragen, siehe Abschnitt am Ende)
 
 Normative Quelle: die vollständige Operator-Matrix der 53 `BDW-*`-
 Entscheidungen. Decoder und Evidenz:
@@ -114,7 +114,7 @@ BSI-Punkte sind Sicherheitsbaseline/Guidance, keine Compliancebehauptung.
 | BDW-E19 | `tenant-region` | MUSS | DEFERRED | Zulässige Datenregionen werden je Mandant technisch begrenzt. | Residency / Data Owner | `BDW-E19-AC1`: Daten, Index, Backup, Telemetrie und Modellfluss verlassen keine erlaubte Region. | — vertagt (`BDW-C03`) | DEFERRED: Mandanten — aktiviert mit dem ersten realen Mehrbenutzer-Piloten (`BDW-C03`). Betreiberentscheidung 2026-08-18, Knoten `9d77ad16`. | „Zulässige Regionen je Mandant“; RQ-009/011 |
 | BDW-E20 | `default-deny` | MUSS | DEFERRED | DLP/Privacy an Ausgängen ist klassifiziert, minimiert und default-deny. | DLP / Security | `BDW-E20-AC1`: Recall, Fehler, Telemetrie, Connector und Export leaken keine gesperrten Testinhalte. | — vertagt (`BDW-C03`) | DEFERRED: Ausgangskontrolle (DLP/SIEM/Export) — aktiviert mit dem ersten realen Mehrbenutzer-Piloten (`BDW-C03`). Betreiberentscheidung 2026-08-18, Knoten `9d77ad16`. | „Klassifiziert, minimiert, default-deny“; RQ-011 |
 | BDW-E21 | `profile` | Profil | DEFERRED | SLI/SLO werden je Betriebsprofil festgelegt. | Observability / Operations | `BDW-E21-AC1`: Jedes aktive Profil misst Verfügbarkeit, Recall-Nutzen, Fehlklassifikation, Latenz, Restore und Policy-Denials. | — vertagt (`BDW-C03`) | DEFERRED: zwei Fassungen — aktiviert mit dem ersten realen Mehrbenutzer-Piloten (`BDW-C03`). Betreiberentscheidung 2026-08-18, Knoten `9d77ad16`. | „SLI/SLO je Betriebsprofil“; RQ-011 |
-| BDW-P09 | `standalone` | MUSS | DECIDED | Vor der Installation waehlt der Nutzer das Betriebsprofil: `standalone` oder `multiuser`. `standalone` ist der Auslieferungszustand. Der Wechsel standalone -> multiuser MUSS spaeter moeglich sein; daraus folgt, dass die Mandanten-Achse VORHER im Schema liegt. | Gesamtprodukt / Product Owner | `BDW-P09-AC1`: Ein frischer und ein gewachsener Bestand tragen dieselbe Achse. `BDW-P09-AC2`: Wechsel und Rueckweg je einmal gefahren, mit Bestandszaehlung davor und danach. | Beide Ausgangszustaende fahren, nicht nur den leeren | NOT RUN (Bauluecke, nicht Testluecke) | Betreiberentscheidungen 2026-08-20, `docs/PLAN_BETRIEBSPROFILE_2026-08-20.md` |
+| BDW-P09 | `standalone` | MUSS | DECIDED | Vor der Installation waehlt der Nutzer das Betriebsprofil: `standalone` oder `multiuser`. `standalone` ist der Auslieferungszustand. Die Spalte `mandant` traegt den Vorgabewert `lokal` (Betreiberwort 2026-08-21); die Profilnamen lauten `einzelplatz` und `unternehmen`. Der Wechsel standalone -> multiuser MUSS spaeter moeglich sein; daraus folgt, dass die Mandanten-Achse VORHER im Schema liegt. | Gesamtprodukt / Product Owner | `BDW-P09-AC1`: Ein frischer und ein gewachsener Bestand tragen dieselbe Achse. `BDW-P09-AC2`: Wechsel und Rueckweg je einmal gefahren, mit Bestandszaehlung davor und danach. | Beide Ausgangszustaende fahren, nicht nur den leeren | NOT RUN (Bauluecke, nicht Testluecke) | Betreiberentscheidungen 2026-08-20, `docs/PLAN_BETRIEBSPROFILE_2026-08-20.md` |
 | BDW-P10 | `sprache` | SOLL | DECIDED | Jeder Eintrag traegt die Sprache, in der er geschrieben wurde. KEIN Uebersetzungssystem: Uebersetzung ist ein Problem der Ausgabe, nicht des Speichers. Der Abruf ist bereits mehrsprachig (gemessen: deutsche Frage auf englischen Text 0,819). | Oberflaeche / Barrierefreiheit | `BDW-P10-AC1`: Ein ausgelieferter Eintrag nennt seine Sprache, sodass eine Oberflaeche WCAG 3.1.2 erfuellen kann. | Vorleseprogramm liest englischen Text nicht mit deutscher Aussprache | NOT RUN (Bauluecke, nicht Testluecke) | Betreiberentscheidungen 2026-08-20, `docs/PLAN_BETRIEBSPROFILE_2026-08-20.md` |
 | BDW-P11 | `assistent` | MUSS | DECIDED | Der Erststart fuehrt durch die Einrichtung -- im Chat, nicht in einem zweiten Programm. Gefragt werden Profil, Sprache und Einbettungsdienst; Kataloge werden zum Import vorgeschlagen. | Gesamtprodukt / Product Owner | `BDW-P11-AC1`: Ein frisch angelegter Bestand ist nach dem Durchlauf benutzbar. `BDW-P11-AC2`: Ein eingelesener Katalog steht als `nachschlagewerk` und senkt die Trefferquote nicht. | Gemessen gegen dieselbe Nulllinie wie vorher | NOT RUN (Bauluecke, nicht Testluecke) | Betreiberentscheidungen 2026-08-20, `docs/PLAN_BETRIEBSPROFILE_2026-08-20.md` |
 | BDW-P12 | `herkunftstreu` | MUSS | DECIDED | Fremdimporte erfinden KEINE Herkunft. Sie tragen ihren Weg ein; die Aussage bleibt unbelegt, nur ihr Weg ist bekannt. Gemessen: keiner von acht Wettbewerbern erzwingt ein Herkunftsfeld. | Wissensbestand / Data Owner | `BDW-P12-AC1`: Ein importierter Eintrag traegt eine Herkunft, die den Importweg nennt und keine Quelle behauptet. | Vier Agenten suchten unabhaengig, vier Fehlanzeigen | NOT RUN (Bauluecke, nicht Testluecke) | Betreiberentscheidungen 2026-08-20, `docs/PLAN_BETRIEBSPROFILE_2026-08-20.md` |
@@ -153,6 +153,27 @@ BSI-Punkte sind Sicherheitsbaseline/Guidance, keine Compliancebehauptung.
 | BDW-U06 | `risk` | Profil | DECIDED | Benachrichtigungen sind risikobasiert und nutzen konfigurierbare Nutzerkanäle innerhalb der Org-Policy. | Notifications / Operations | `BDW-U06-AC1`: Konflikt, Ablauf, Quellenlücke und Policy-Denial werden nach Risiko geroutet, ohne Inhaltsleck. | die Meldungstexte der bestehenden Oberflaeche (Regeln in `~/.claude/skills/design-waechter/ui_guard.py`) | PASS: `python3 -m pytest tests/test_risikoeinstufung.py` - 23 gruen. Vier Ereignisarten eingestuft, Routing nach Stufe belegt (konflikt -> eskalation, ablauf -> protokoll, von mir nachgefahren). **Ohne Inhaltsleck:** `melde()` nimmt nur eine Objektkennung entgegen, nie Inhalt - der Testtext STRENG-GEHEIM-... kommt in keiner Senke vor, selbst geprueft | „Risikobasiert mit Nutzerkanälen“; RQ-011/016 |
 | BDW-U07 | `approved` | MUSS | DEFERRED | Die Organisation führt eine Modell-/Provider-Allowlist; Nutzer wählen nur daraus. | Models / Org Admin | `BDW-U07-AC1`: Nicht freigegebener Provider erhält auch per Direktaufruf keine Daten. | — vertagt (`BDW-C03`) | DEFERRED: Unternehmensanmeldung (IdP/SSO/SCIM) — aktiviert mit dem ersten realen Mehrbenutzer-Piloten (`BDW-C03`). Betreiberentscheidung 2026-08-18, Knoten `9d77ad16`. | „Org-Allowlist, Nutzer wählt“; RQ-009/016 |
 | BDW-U08 | `org-wins` | MUSS | DEFERRED | Bei Konflikt gewinnt die Organisationsgrenze sichtbar vor der Nutzerwahl. | Policy / Security | `BDW-U08-AC1`: Ein Konfliktfall wird verweigert, erklärt und auditiert; Nutzerwahl überschreibt die Org-Policy nie. | — vertagt (`BDW-C03`) | DEFERRED: Ausgangskontrolle (DLP/SIEM/Export) — aktiviert mit dem ersten realen Mehrbenutzer-Piloten (`BDW-C03`). Betreiberentscheidung 2026-08-18, Knoten `9d77ad16`. | „Org-Grenze gewinnt sichtbar“; RQ-008/016 |
+
+## Betreiberentscheidungen 2026-08-21 (Gesamtbau-Auftrag)
+
+Eingetragen 2026-08-21T00:40:00+0200, **vor** der Umsetzung und nicht danach.
+Umsetzungsplan: `docs/PLAN_GESAMTBAU_2026-08-21.md`.
+
+| Gegenstand | Entscheidung | Wirkt auf |
+|---|---|---|
+| Vorgabewert der Mandanten-Achse | `lokal` -- Betreiberwort: "mandant Vorgabe lokal" | `BDW-P09` |
+| Bindende Reihenfolge | B1 zuerst, danach erst B2, B3, C. Begruendung ausdruecklich **nicht** die Datenmenge: 5 232 Alteintraegen laesst sich rueckwirkend keine Zuordnung geben, die sie nie hatten | `BDW-P09`, `BDW-E22`, `BDW-E23`, `BDW-P11` |
+| Nicht gebaut: zweiter Faktor | unentschieden, sechs Wege liegen vor. Kein Bau ohne Entscheidung | `BDW-E24` |
+| Nicht gebaut: an einen echten Piloten gebunden | ein gegen einen erfundenen IdP gebauter Anschluss prueft den Pruefstand, nicht die Sache | `BDW-E01`, `BDW-E04`, `BDW-E05` |
+| Nicht gebaut: Datenregionen | ohne zweiten Standort gibt es nichts zu begrenzen | `BDW-E19` |
+| Oeffentlicher Export wird nicht gepusht | GitHub-Konto wegen einer Abrechnungsfrage gesperrt -- kein Codefehler | -- |
+
+**Vom Assistenten entschieden, weil der Betreiber Reihenfolge und Zuschnitt
+freigegeben hat:** die Profilnamen `einzelplatz` / `unternehmen` (offene Frage
+am Ende von `docs/PLAN_BETRIEBSPROFILE_2026-08-20.md`). Deutsch wie der uebrige
+Bestand -- `corporate` waere das einzige englische Wort in einem Schema, dessen
+Felder `freigabe`, `geltung` und `herkunft` heissen. Widerspruch jederzeit
+moeglich, die Namen stehen an genau einer Stelle.
 
 ## Untergeordnete Teilkataloge
 
