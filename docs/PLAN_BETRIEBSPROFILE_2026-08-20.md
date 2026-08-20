@@ -392,6 +392,56 @@ Mindestens eines davon gehört eingebaut:
    Intervall stärker, als ein Nichtfund es verlängert. Ein Irrtum Richtung „zu
    oft" kostet Rechenzeit, einer Richtung „zu selten" kostet Richtigkeit.
 
+## F — Wie eine Forderung zu einem Vorgang wird
+
+Betreiberfrage vom 2026-08-20: „wie bekommen wir hin das sowas in zukunft
+autonom gebaut wird? zumindest das du nachfrägst ob es gebaut werden soll?"
+
+**Der Anlass ist ein Fall, der sich am selben Tag selbst vorgeführt hat.** Ein
+Knoten mit Rang 1 vom 2026-08-16 verlangt wörtlich „einen Wächter, keinen
+Vorsatz" — sieben Betreiberentscheidungen waren zuvor im Gespräch verschwunden.
+Vier Tage später, am 2026-08-20: kein Wächter gebaut. Nicht aus
+Nachlässigkeit — **es hat nichts danach gefragt.**
+
+**GEMESSEN am 2026-08-20:**
+
+| | |
+|---|---|
+| Knoten mit einer Forderung ans eigene Haus | **13** |
+| ältester davon | 2026-08-08 — 12 Tage offen |
+| Feld, das „erledigt" sagt | **keines** |
+
+Eine Forderung kann hier nicht abgeschlossen werden. Sie wird erfasst, beim
+Sitzungsstart als „unquittiert" gezählt, und steht dann ewig. Das ist genau
+die Klasse aus `L-86e92d`: *„An wen ist der Vorgang adressiert? Wo steht die
+Antwort, wenn sie kommt? Was passiert, wenn sie nicht kommt? Fehlt eine der
+drei Antworten, ist es kein Vorgang, sondern eine Benachrichtigung."* Hier
+fehlen zwei von drei.
+
+**F1 — Drei Bedingungen, und alle drei sind nötig:**
+1. **Erkennung.** Ein Knoten, der etwas fordert, muss als Vorgang markiert
+   sein — nicht per Textsuche geraten. Ein eigenes Feld, gesetzt beim
+   Anlegen, mit derselben Härte wie `norm_entscheidung`: kein Vorgabewert.
+2. **Abschluss.** Erledigt, abgelehnt (mit Grund) oder überholt. Ohne diesen
+   Zustand ist die Liste nach zwei Wochen Rauschen, und Rauschen wird
+   überlesen — dann ist der Mechanismus schlechter als keiner, weil er
+   Sicherheit vortäuscht.
+3. **Auslöser.** Die offenen Vorgänge beim Sitzungsstart, sortiert nach
+   Alter. Der Kanal existiert bereits (der Eilmeldungs-Hook zählt
+   unquittierte), ihm fehlt nur Punkt 2.
+
+**Was das für die Betreiberfrage bedeutet:** „Autonom bauen" ist die falsche
+Stufe. Was fehlt, ist nicht Selbständigkeit, sondern **Sichtbarkeit** — eine
+Forderung, die bei jedem Sitzungsstart mit ihrem Alter dasteht, wird
+entweder gebaut oder ausdrücklich abgelehnt. Beides ist besser als das
+heutige Verschwinden. Die Nachfrage, nach der der Betreiber fragt, entsteht
+dann von selbst: Wer eine zwölf Tage alte Forderung vor sich sieht, fragt.
+
+**Was NICHT gebaut wird, und der Preis dafür:** Keine automatische Umsetzung
+einer Forderung. Ein System, das aus einem Satz im Speicher selbständig Code
+erzeugt, hat keine Instanz mehr, die „das ist falsch verstanden" sagen kann.
+Der Preis: Es bleibt bei einer Vorlage, und der Mensch entscheidet.
+
 ## Verworfene Wege
 
 * **Mandanten-Achse erst beim ersten Piloten** — der vom Betreiber geforderte
