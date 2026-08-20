@@ -77,8 +77,6 @@ VERMUTUNG = [
     r"presumably",
     r"i(\s+would)?\s+assume\b",
     r"i(\'d| would)? guess\b",
-    r"probably (does|doesn\'t|is|isn\'t|not|no|fails|works|exists)",
-    r"likely (does|doesn\'t|not|no|fails|works|exists|missing)",
     r"should (probably |presumably )?(work|be fine|suffice|do it)",
     r"my guess is",
     r"chances are",
@@ -151,7 +149,27 @@ ABSOLUT = [
     r"\bimpossible\b",
     r"can(no|')t be (done|tested|measured|simulated)",
     r"there(\'s| is) no way to",
-    r"doesn\'t exist\b",
+    # NACHTRAG 2026-08-20 auf die Betreiberfrage "sollten wir die musterliste
+    # nicht groesser anlegen?" -- gemessen an 4 293 echten Antworten statt
+    # geschaetzt. Zwoelf Kandidaten geprueft, sechs zusaetzliche Treffer
+    # insgesamt (1,37 % -> 1,51 %). Aufgenommen sind die, die etwas ECHTES
+    # fingen:
+    #   `keinen weg`       3 Treffer, darunter woertlich mein eigener Satz
+    #                      "fuer einen echten Zwischenruf gibt es weiterhin
+    #                      keinen Weg" -- er war falsch, die Widerlegung
+    #                      kostete zwanzig Minuten.
+    #   `bleibt handprobe` 1 Treffer. Genau die Formulierung, die am
+    #                      2026-08-13 als zweiter von drei Faellen falsch war.
+    # NICHT aufgenommen, obwohl sie trafen: `faellt aus` und `kein weg fuehrt`
+    # -- beide Treffer waren Beschreibungen, keine Behauptungen ("eine Seite,
+    # zu der kein Weg fuehrt" ist Navigationslage, nicht Machbarkeit).
+    # Die englischen Muster bleiben trotz NULL Treffern: der Korpus ist nur zu
+    # 13,9 % englisch, Abwesenheit ist dort ein schwacher Beleg, und ein
+    # Muster ohne Treffer kostet zur Laufzeit nichts.
+    r"(gibt es|es gibt) (weiterhin |dafuer |dafür )?kein(en)? (weg|moeglichkeit|möglichkeit|mittel)",
+    r"bleibt (eine )?(handprobe|geraetefahrt|gerätefahrt)",
+    r"\bnot (feasible|possible|doable)\b",
+    r"\bunsupported\b|wird nicht unterstuetzt|wird nicht unterstützt",
 ]
 
 # Was eine Absolutaussage zulaessig macht: der Nachweis, dass gesucht wurde.
@@ -400,6 +418,20 @@ def _selftest() -> int:
         assert beurteile(t) is None, f"Zitat faelschlich beanstandet: {t}"
     # Gegenprobe: dieselbe Aussage OHNE Anfuehrungszeichen ist eine Behauptung.
     assert beurteile("Ein GATT-Server im Emulator geht nicht, das ist so.")
+
+    # DIE NACHGETRAGENEN MUSTER, jedes mit dem Fall, der es begruendet.
+    assert beurteile("Fuer einen echten Zwischenruf in eine rechnende Sitzung "
+                     "gibt es weiterhin keinen Weg."), \
+        "mein eigener Satz vom 2026-08-20 -- er war falsch, die Widerlegung dauerte 20 Minuten"
+    assert beurteile("Ob die App korrekt funkt, das bleibt Handprobe."), \
+        "die Formulierung aus dem zweiten von drei falschen Faellen (2026-08-13)"
+    assert beurteile("That is not feasible in this runtime.")
+    # Und die zwei, die bewusst NICHT aufgenommen wurden -- Beschreibungen
+    # statt Behauptungen. Sie muessen still bleiben, sonst waere die groessere
+    # Liste ein schlechtes Geschaeft.
+    assert beurteile("Der Waechter faengt auch eine Seite, zu der kein Weg fuehrt.") is None
+    assert beurteile("Die Rot-Probe faellt aus, sobald der Zweig einen zweiten "
+                     "Zustand haelt.") is None
 
     # TATSACHENAUSSAGEN ueber den eigenen Bestand sind keine Machbarkeitsaussagen.
     for t in ("Den Standardzweig gibt es hier nicht, ich habe nur den einen geschoben.",
