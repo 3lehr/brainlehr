@@ -34,6 +34,10 @@ import os
 import re
 import subprocess
 import sys
+from pathlib import Path as _P
+
+sys.path[:0] = [str(_P(__file__).resolve().parents[1] / "kern")]
+import belegsprache  # noqa: E402
 from pathlib import Path
 
 # Nur Formen, die eine BEHEBUNG behaupten. "feat" und "docs" nicht -- ein
@@ -45,24 +49,11 @@ BEHAUPTUNG = re.compile(
 
 # Der Beleg, in beiden Sprachen. Absichtlich weit: wer einen Beleg NENNT,
 # soll nicht an der Formulierung scheitern.
-BELEG = re.compile(
-    r"rot vor gr(ü|ue)n|rot-probe|rot gegen|rot vorher|war rot"
-    r"|schlug (vorher )?fehl|gegenprobe|durchgerutscht"
-    r"|red before green|failed before|was red|counter-?check"
-    # NACHGETRAGEN 2026-08-20, wenige Stunden nach dem Bau: Dieser Waechter
-    # hielt einen Commit an, dessen Nachricht "Gemessen ueber 1 204 Commits"
-    # sagte -- und widersprach damit seinem EIGENEN Docstring drei Absaetze
-    # weiter oben ("manche Behebungen sind an einer MESSUNG belegt, nicht an
-    # einem Test"). Die Absicht stand in der Doku, das Muster kannte sie nicht.
-    #
-    # Dazu die zweite Haelfte desselben Befunds: melder/ablaufpflicht.py prueft
-    # dieselbe Frage mit einem ANDEREN Vokabular. Zwei Waechter fuer eine
-    # Frage, zwei Wortlisten -- wer beiden genuegen will, muss beide auswendig
-    # kennen. Beide sind jetzt auf denselben Stand gebracht; sie
-    # zusammenzulegen ist der naechste Schritt, nicht dieser.
-    r"|\bgemessen\b|\bselbsttest\b|\bselftest\b"
-    r"|\d+ (xctest-)?f[aä]lle gr[uü]n|\btests? gr[uü]n\b|\d+ passed",
-    re.I)
+# EINE Liste fuer beide Waechter (kern/belegsprache.py, 2026-08-20).
+# Vorher hatte jeder seine eigene, und der Push von heute lief in beide:
+# ablaufpflicht kannte 'Selbsttest' nicht, rotprobe kannte 'gemessen'
+# nicht -- und widersprach damit seinem eigenen Docstring.
+BELEG = belegsprache.BELEG
 
 
 def _aus() -> bool:

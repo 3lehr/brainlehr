@@ -41,6 +41,10 @@ import json
 import re
 import subprocess
 import sys
+from pathlib import Path as _P
+
+sys.path[:0] = [str(_P(__file__).resolve().parents[1] / "kern")]
+import belegsprache  # noqa: E402
 from pathlib import Path
 
 def _wurzel(vorgabe: str | None = None) -> Path:
@@ -136,26 +140,11 @@ PLAN_GENANNT = re.compile(r"docs/PLAN_[\w.-]+|PLAN_[A-Z][\w-]*\.md|ADR-\d+", re.
 # "Dauerrot heisst abgeschaltet". Die Negativkontrolle bleibt scharf: zwei
 # Commits desselben Laufs (2bf4a418, 4460ce22) sagen wirklich nichts und
 # werden weiterhin beanstandet.
-BELEG_GENANNT = re.compile(
-    r"rot vor gr[uü]n|rot-probe|rot vor|war (vorher )?rot|vorher rot"
-    r"|gegenprobe|abnahme|gemessen|beleg"
-    r"|nicht verifiziert|nicht gepr[uü]ft|ungepr[uü]ft"
-    r"|deckten den fehler nicht|am ger[aä]t nicht|handprobe"
-    r"|verified|measured|proven|(^|\n)\s*-?\s*red:"
-    # NACHGETRAGEN 2026-08-20: Ein Selbsttest IST ein Beleg, und er war der
-    # haeufigste, den dieser Waechter nicht erkannte. Gemessen ueber 1 204
-    # Commits seit dem 2026-08-01: 285 galten als stumm, mit diesen Formen
-    # sind es 246 -- 39 Commits nannten ihren Beleg und wurden trotzdem
-    # beanstandet, darunter mehrere, deren Nachricht woertlich "Selbsttest 7
-    # Faelle" oder "126 passed" sagt.
-    #
-    # Das ist dieselbe Klasse, gegen die dieser Waechter gebaut ist, nur eine
-    # Ebene hoeher: Er prueft nicht die Belegfrage, sondern SEINE Woerter fuer
-    # sie. Wer ein Vokabular prueft, muss es messen -- sonst beanstandet er
-    # Sorgfalt und uebersieht Schweigen.
-    r"|selbsttest|selftest|\d+ (xctest-)?f[aä]lle gr[uü]n"
-    r"|\btests? gr[uü]n\b|\d+ passed|suite gr[uü]n",
-    re.I)
+# EINE Liste fuer beide Waechter (kern/belegsprache.py, 2026-08-20).
+# Vorher hatte jeder seine eigene, und der Push von heute lief in beide:
+# ablaufpflicht kannte 'Selbsttest' nicht, rotprobe kannte 'gemessen'
+# nicht -- und widersprach damit seinem eigenen Docstring.
+BELEG_GENANNT = belegsprache.BELEG
 
 
 def _lauf(*args: str) -> str:
