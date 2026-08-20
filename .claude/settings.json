@@ -73,6 +73,10 @@
           {
             "type": "command",
             "command": "python3 /Volumes/daten/Begod2026/brainlehr/melder/zugriffsmuster.py 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "python3 /Volumes/daten/Begod2026/brainlehr/melder/planmitschrieb.py 2>/dev/null || true"
           }
         ]
       }
