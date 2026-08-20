@@ -73,6 +73,12 @@ SERVER = WURZEL / "knowledge_mcp_server.py"
 REGISTER = WURZEL / "auftraege.jsonl"
 RECALL_LOG = WURZEL / "recall_log.jsonl"
 SCHATTEN_LOG = WURZEL / "schatten_log.jsonl"
+# Auftrag A3 (docs/PLAN_BETRIEBSPROFILE_2026-08-20.md): schreibt kern/embeddings.py,
+# wenn die Aussetzer-Sicherung pausiert (5 Fehler in Folge) -- gelesen von
+# melder/einbettungsaussetzer.py beim Sitzungsstart. Denselben Kanal wie
+# RECALL_LOG/SCHATTEN_LOG: append-only JSONL neben der DB, kein fest
+# verdrahteter Name in den beiden Modulen selbst.
+AUSSETZER_LOG = WURZEL / "einbettungsausfaelle.jsonl"
 
 # Die Verbundwurzel (hub/, fahrtenbuch/, openlehr/ ... nebeneinander). Seit
 # brainlehr NEBEN hub liegt statt darin, ist sie aus dem eigenen Ort nicht

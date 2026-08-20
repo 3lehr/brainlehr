@@ -42,10 +42,14 @@ import math
 import os
 import re
 import struct
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
 from typing import Any
+
+import ort  # noqa: E402 -- liefert AUSSETZER_LOG (kein fest verdrahteter Dateiname hier)
 
 DEFAULT_OLLAMA_URL = os.environ.get("KNOWLEDGE_OLLAMA_URL", "http://127.0.0.1:11434")
 # bge-m3 statt nomic-embed-text (Auftrag 2026-08-07, Messung
@@ -162,6 +166,65 @@ def hybrid_retrieval_weight() -> float:
     return max(0.0, weight)
 
 
+# Aussetzer-Sicherung (Auftrag A3, docs/PLAN_BETRIEBSPROFILE_2026-08-20.md).
+# ANLASS: der Einbettungsdienst war am 2026-08-20 zweimal weg, embed_text()
+# lief bei jedem Versuch still in den Timeout (20s, DEFAULT_TIMEOUT) -- 13
+# Eintraege entstanden ohne Vektor, ohne dass irgendwo ein Fehler erschien.
+# Vorbild mem0: statt jeden Aufruf einzeln in denselben toten Timeout laufen
+# zu lassen, wird nach FUENF Fehlern IN FOLGE fuer PAUSE_SEKUNDEN pausiert --
+# das spart die Wartezeit, wenn der Dienst laenger weg ist, aendert aber
+# NICHTS an embed_text()s Vertrag (weiterhin None statt Ausnahme).
+#
+# DER KERN IST NICHT DAS PAUSIEREN, SONDERN DAS MERKEN: eine Pause, die
+# niemand sieht, macht den stillen Ausfall nur billiger. Deshalb schreibt der
+# UEBERGANG in die Pause (nicht jeder einzelne Fehler) eine Zeile nach
+# ort.AUSSETZER_LOG -- melder/einbettungsaussetzer.py liest sie beim
+# Sitzungsstart, denselben Kanal wie RECALL_LOG/SCHATTEN_LOG.
+#
+# Modul-globaler Zustand statt Klasse/Konfigurationsschalter: ein Wert, der
+# sich nie aendert (die Schwelle ist mem0s Vorbild, keine Messung dieses
+# Hauses), braucht keinen eigenen Schalter. Der Zustand ist PROZESSLOKAL --
+# jeder MCP-Klient startet seinen eigenen Prozess (siehe CLAUDE.md), ein
+# Neustart setzt ihn zurueck. Das ist beabsichtigt: die Sicherung schuetzt
+# vor Dauerfeuer in EINER laufenden Sitzung, das Protokoll (AUSSETZER_LOG)
+# ist die Stelle, die ueber Prozessgrenzen hinweg traegt.
+AUSSETZER_SCHWELLE = 5           # Fehler in Folge, ab denen pausiert wird
+AUSSETZER_PAUSE_SEKUNDEN = 120.0
+
+_fehler_in_folge = 0
+_pause_bis = 0.0   # time.monotonic()-Zeitpunkt, bis zu dem embed_text() gar nicht erst versucht
+
+
+def _aussetzer_aktiv() -> bool:
+    return time.monotonic() < _pause_bis
+
+
+def _aussetzer_zuruecksetzen() -> None:
+    """Nur fuer Tests: Zustand auf 'nie ausgefallen' zurueck, damit ein Test
+    nicht vom Zustand eines vorherigen Tests im selben Prozess abhaengt."""
+    global _fehler_in_folge, _pause_bis
+    _fehler_in_folge = 0
+    _pause_bis = 0.0
+
+
+def _aussetzer_protokollieren(url: str) -> None:
+    """Haelt den UEBERGANG in die Pause fest -- das ist die Haelfte des
+    Auftrags, die sonst verschwindet. Ein Protokollierfehler (Platte voll,
+    Rechte) darf den sonst gueltigen Ausfall-Zustand nicht zum Absturz
+    machen, deshalb best-effort wie embed_text() selbst."""
+    zeile = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "fehler_in_folge": _fehler_in_folge,
+        "pause_sekunden": AUSSETZER_PAUSE_SEKUNDEN,
+        "url": url,
+    }
+    try:
+        with open(ort.AUSSETZER_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps(zeile, ensure_ascii=False) + "\n")
+    except OSError:
+        pass
+
+
 def embed_text(text: str, *, base_url: str = "", model: str = "",
                timeout: float | None = None) -> list[float] | None:
     """Best-effort Embedding ueber Ollamas `/api/embed`. None bei jedem
@@ -177,6 +240,11 @@ def embed_text(text: str, *, base_url: str = "", model: str = "",
     parsed = urllib.parse.urlparse(url)
     if parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
         raise ValueError("Ollama-Embeddings duerfen nur Loopback-URLs nutzen")
+    global _fehler_in_folge, _pause_bis
+    if _aussetzer_aktiv():
+        # Aussetzer-Sicherung: 5 Fehler in Folge liefen zuletzt ins Leere,
+        # kein weiterer Versuch bis die Pause ablaeuft (siehe AUSSETZER_LOG).
+        return None
     # model/DEFAULT_EMBED_MODEL traegt die volle Identitaet ('bge-m3@ctx2048')
     # -- Ollama kennt dieses Tag nicht, darum hier in Rohname + num_ctx
     # zerlegt (parse_model_identity ist der Kehrwert zu model_identity()).
@@ -194,7 +262,12 @@ def embed_text(text: str, *, base_url: str = "", model: str = "",
                 req, timeout=DEFAULT_TIMEOUT if timeout is None else timeout) as response:
             raw_body = json.loads(response.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError, ValueError):
+        _fehler_in_folge += 1
+        if _fehler_in_folge >= AUSSETZER_SCHWELLE:
+            _pause_bis = time.monotonic() + AUSSETZER_PAUSE_SEKUNDEN
+            _aussetzer_protokollieren(url)
         return None
+    _fehler_in_folge = 0
     vectors = raw_body.get("embeddings")
     if not isinstance(vectors, list) or not vectors or not isinstance(vectors[0], list):
         return None
