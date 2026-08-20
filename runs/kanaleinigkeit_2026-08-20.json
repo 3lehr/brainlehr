@@ -1,0 +1,648 @@
+{
+  "B_2Kanal_an_Pflicht_aus": {
+    "je_fall": [
+      {
+        "target_id": "L-a9ccd0",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 17
+      },
+      {
+        "target_id": "L-298823",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 20
+      },
+      {
+        "target_id": "L-f9f654",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 38
+      },
+      {
+        "target_id": "L-b4b443",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 24
+      },
+      {
+        "target_id": "L-44a838",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 42
+      },
+      {
+        "target_id": "L-cdac52",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 13
+      },
+      {
+        "target_id": "L-e7bc5e",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 26
+      },
+      {
+        "target_id": "L-e1a441",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 33
+      },
+      {
+        "target_id": "L-b91ed6",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 13
+      },
+      {
+        "target_id": "L-bbd7fb",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 17
+      },
+      {
+        "target_id": "L-503687",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 33
+      },
+      {
+        "target_id": "L-8c633e",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 116
+      },
+      {
+        "target_id": "L-606b63",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 16
+      },
+      {
+        "target_id": "L-0392e4",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 21
+      },
+      {
+        "target_id": "L-476602",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 31
+      },
+      {
+        "target_id": "/ops/buckeberg-konsil-2026-07-22-governance",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 15
+      },
+      {
+        "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 16
+      },
+      {
+        "target_id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 7
+      },
+      {
+        "target_id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 25
+      },
+      {
+        "target_id": "/apps/metahuman-podcast-one-command-pipeline",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 11
+      },
+      {
+        "target_id": "/openlehr/volltextindex-wird-beim-einlesen",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 15
+      },
+      {
+        "target_id": "/lessons/phase2-summary",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 22
+      },
+      {
+        "target_id": "/testing/pytest",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 18
+      },
+      {
+        "target_id": "/brainlehr/inference-control-was-andere-faecher",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 22
+      },
+      {
+        "target_id": "/methodik/einstieg",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 22
+      },
+      {
+        "target_id": "/stadtwerke",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 23
+      },
+      {
+        "target_id": "/openlehr/steuer/ui",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 33
+      },
+      {
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 1,
+        "trefferzahl": 29
+      },
+      {
+        "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 16
+      },
+      {
+        "target_id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 13
+      },
+      {
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 26
+      },
+      {
+        "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 11
+      },
+      {
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 26
+      },
+      {
+        "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 23
+      },
+      {
+        "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 18
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 26
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 24
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 17
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 11
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 15
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 6
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 21
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 31
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 23
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 21
+      }
+    ],
+    "messbar": 45,
+    "ohne_kanalsignal": 0,
+    "mit_uebereinstimmung": 1,
+    "zeile": "Faelle mit mindestens einer Ueberschneidung der Top-5 beider Kanaele: 1 von 45 (2.2%), gemessen ueber 45 messbare der 45 Pruefkorpus-Faelle in Zustand B_2Kanal_an_Pflicht_aus"
+  },
+  "C_beide_an": {
+    "je_fall": [
+      {
+        "target_id": "L-a9ccd0",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 17
+      },
+      {
+        "target_id": "L-298823",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 20
+      },
+      {
+        "target_id": "L-f9f654",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 38
+      },
+      {
+        "target_id": "L-b4b443",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 24
+      },
+      {
+        "target_id": "L-44a838",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 42
+      },
+      {
+        "target_id": "L-cdac52",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 13
+      },
+      {
+        "target_id": "L-e7bc5e",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 26
+      },
+      {
+        "target_id": "L-e1a441",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 33
+      },
+      {
+        "target_id": "L-b91ed6",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 13
+      },
+      {
+        "target_id": "L-bbd7fb",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 17
+      },
+      {
+        "target_id": "L-503687",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 33
+      },
+      {
+        "target_id": "L-8c633e",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 116
+      },
+      {
+        "target_id": "L-606b63",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 16
+      },
+      {
+        "target_id": "L-0392e4",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 21
+      },
+      {
+        "target_id": "L-476602",
+        "target_kind": "lesson",
+        "category": "lesson",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 31
+      },
+      {
+        "target_id": "/ops/buckeberg-konsil-2026-07-22-governance",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 15
+      },
+      {
+        "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 16
+      },
+      {
+        "target_id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 7
+      },
+      {
+        "target_id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 25
+      },
+      {
+        "target_id": "/apps/metahuman-podcast-one-command-pipeline",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 11
+      },
+      {
+        "target_id": "/openlehr/volltextindex-wird-beim-einlesen",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 15
+      },
+      {
+        "target_id": "/lessons/phase2-summary",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 22
+      },
+      {
+        "target_id": "/testing/pytest",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 18
+      },
+      {
+        "target_id": "/brainlehr/inference-control-was-andere-faecher",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 22
+      },
+      {
+        "target_id": "/methodik/einstieg",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 22
+      },
+      {
+        "target_id": "/stadtwerke",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 23
+      },
+      {
+        "target_id": "/openlehr/steuer/ui",
+        "target_kind": "node",
+        "category": "fact",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 33
+      },
+      {
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 1,
+        "trefferzahl": 29
+      },
+      {
+        "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 16
+      },
+      {
+        "target_id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 13
+      },
+      {
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 26
+      },
+      {
+        "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 11
+      },
+      {
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 26
+      },
+      {
+        "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 23
+      },
+      {
+        "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+        "target_kind": "node",
+        "category": "norm",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 18
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 26
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 24
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 17
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 11
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 15
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 6
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 21
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 31
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 23
+      },
+      {
+        "target_id": null,
+        "target_kind": null,
+        "category": "negative",
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 21
+      }
+    ],
+    "messbar": 45,
+    "ohne_kanalsignal": 0,
+    "mit_uebereinstimmung": 1,
+    "zeile": "Faelle mit mindestens einer Ueberschneidung der Top-5 beider Kanaele: 1 von 45 (2.2%), gemessen ueber 45 messbare der 45 Pruefkorpus-Faelle in Zustand C_beide_an"
+  }
+}
