@@ -112,6 +112,67 @@ sofort und parallel laufen:
   (`__init__.py:294-335`). Bei uns heute zweimal gebraucht: Ollama war weg,
   und niemand merkte es.
 
+## C — Erststart: der Einrichtungsassistent
+
+Betreiberzusatz vom 2026-08-20: „wir brauchen beim erstart eines neuen User
+einen Chat Einrichtungs Assistenten, ein startenden, die Möglichkeit wissen
+aus anderen nicht brainlehr Systemen zu installieren, und wir sollten Dinge
+wie bsi usw. zum Import vorschlagen!"
+
+**Das löst zugleich die Einstiegshürde**, die am selben Tag benannt wurde: Eine
+Anmeldung kostete einmal über eine Stunde und vier Fehlversuche („das rafft so
+keine Sau"), und von vier eingetragenen Ausweisen ließ sich am 2026-08-19 nur
+einer auflösen. Ein Assistent, der durch die Einrichtung führt, ersetzt die
+Handarbeit — unabhängig davon, ob im Profil `standalone` überhaupt ein Ausweis
+Pflicht ist.
+
+**Die Bauform ergibt sich aus der Bauart des Systems:** brainlehr ist ein
+MCP-Server, also läuft die Einrichtung IM Chat, nicht in einem zweiten
+Programm. Ein Werkzeug `einrichtung_starten`, das beim ersten Aufruf gegen
+einen leeren Bestand von selbst anspringt. Kein Installer, kein Fenster,
+keine zweite Oberfläche, die gepflegt werden müsste.
+
+**C1 — Was der Assistent fragt.** Vier Dinge, mehr nicht:
+* Profil: `standalone` oder `multiuser` (siehe B1)
+* Sprache des eigenen Materials (siehe B1b)
+* Einbettungsdienst: erreichbar? Welches Modell? — sonst entstehen Einträge
+  ohne Vektor und sind über die Bedeutungssuche unauffindbar, ohne dass ein
+  Fehler erschiene. Genau das ist am 2026-08-20 dreizehnmal passiert.
+* Welche Kataloge sollen mit?
+
+**C2 — Kataloge zum Mitnehmen, vorgeschlagen statt versteckt.** Was heute
+schon vorliegt und nur niemand anbietet:
+
+| Katalog | Umfang | liegt |
+|---|---|---|
+| BSI Stand der Technik | 951 Controls | als JSON im Verbund |
+| NASA LLIS | 1 637 Einträge | bereits im Bestand, englisch |
+| WCAG 2.2 AA | Regeltext | `~/.claude/regeln/wcag.md` |
+
+Wichtig ist die Gattung: Solche Kataloge werden als `nachschlagewerk`
+eingelesen, nicht als `arbeitsbestand` — sonst verdünnen 951 fremde Controls
+die eigene Trefferquote. Das Feld gibt es bereits (`gattung`).
+
+**C3 — Wissen aus fremden Systemen.** Nach Aufwand geordnet, gemessen am
+2026-08-20:
+
+* **`holographic`** speichert in einer einzigen SQLite-Datei
+  (`$HERMES_HOME/memory_store.db`, Tabelle `facts` mit `category`, `tags`,
+  `trust_score`). Der einzige lokale Anbieter der acht ist damit **ohne API
+  direkt auslesbar** — der billigste Fremdimport, den es gibt.
+* **Markdown-Ordner** (Obsidian, Logseq, ein Verzeichnis voll Notizen). Kein
+  Anbieter nötig, und vermutlich der häufigste reale Fall.
+* **Cloud-Anbieter** (mem0, honcho, supermemory, hindsight): nur über deren
+  API, also mit Schlüssel des Nutzers. Zuletzt, weil aufwendig und weil der
+  Nutzer dann ohnehin schon woanders ist.
+
+**Die Grenze, die für jeden Import gilt:** Ein fremder Eintrag hat keine
+Herkunft im Sinne von brainlehr — keiner der acht erzwingt ein solches Feld
+(gemessen am Quelltext, vier Agenten, vier Fehlanzeigen). Der Import darf
+deshalb **keine Herkunft erfinden**. Er trägt ein, woher er stammt
+(„importiert aus holographic memory_store.db am <Zeitpunkt>"), und das ist
+ehrlich: Die Aussage selbst bleibt unbelegt, nur ihr Weg ist bekannt.
+
 ## Verworfene Wege
 
 * **Mandanten-Achse erst beim ersten Piloten** — der vom Betreiber geforderte
@@ -144,6 +205,9 @@ sofort und parallel laufen:
 | A1 | Mindestens ein Widerspruch, den heute niemand kennt — und eine gezählte Fehlalarmquote gegen den ECHTEN Bestand, nicht gegen gestellte Fälle |
 | A2 | Leer-Anteil vor/nach, gegen dieselbe Nulllinie (37,8 %) |
 | A3 | Nachstellprobe mit abgeschaltetem Dienst, wie bei `melder/modellwege.py` |
+| C1 | Ein frisch angelegter Bestand führt durch die Einrichtung und ist danach benutzbar — gefahren auf einem leeren Bestand UND einem gewachsenen, nicht nur dem leeren |
+| C2 | Ein eingelesener Katalog steht als `nachschlagewerk` da und senkt die eigene Trefferquote nicht — gemessen gegen dieselbe Nulllinie wie vorher |
+| C3 | Ein Fremdimport trägt seinen Weg als Herkunft und erfindet keine |
 
 ## Offene Entscheidung für den Betreiber
 
