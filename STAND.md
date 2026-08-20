@@ -249,7 +249,11 @@ Betreiber: *"sollten wir nicht erst fixen bevor wir veroeffentlichen?"* -- richt
 
 Einbettungen reparieren (5 %) und Reranking (20 %) waeren zusammen 80 % verlorene Arbeit gewesen.
 
-**Die Schraube heisst `NOISE_FLOOR_MAD_MULT = 2.0`** (`haken/knowledge_recall_hook.py:422`). Im Kommentar daneben steht woertlich *"GEWAEHLT, NICHT GEMESSEN"* und *"kein Pruefkorpus fuer diese Schwelle"*. Anders als die `0,65` hat diese Zahl nie eine Messung gesehen -- und sie entscheidet ueber drei Viertel der Ausfaelle. Sweep laeuft (1.0 bis 4.0, Zustaende B und C, je mit Trefferquote UND richtigem Schweigen).
+**KORREKTUR am selben Tag, nach dem Sweep:** Der Satz oben gilt fuer Zustand B, NICHT fuer den Auslieferungszustand C. Gemessen ueber 7 Werte x 2 Zustaende (`runs/rauschteppich_sweep_2026-08-20.json`): In C hat `NOISE_FLOOR_MAD_MULT` ueber den ganzen Bereich 1,0 bis 4,0 **keine Wirkung** -- Trefferguete konstant 1/35, Schweigen konstant 10/10. Und die als "gewaehlt, nicht gemessen" gekennzeichnete `2.0` ist in B der **beste** Wert des Bereichs; kein anderer dominiert sie. Der Verdacht war berechtigt, die Zahl trotzdem richtig (`L-c94630`).
+
+**Der echte Engpass: `ENSEMBLE_PFLICHT = True`** (`haken/knowledge_recall_hook.py:566`, ADR-035). Die Messung, die ihn einfuehrte, steht im Kommentar daneben: ohne Pflicht 0 % Schweigen (0/131), mit Pflicht 86 % (113/131). Der heutige Lauf misst dasselbe: C schweigt bei **34 von 35** Faellen, in denen etwas zu sagen waere. Das ist kein Defekt, sondern eine Entscheidung -- die Frage lautet nicht "warum findet er nichts", sondern "ist dieser Preis gewollt". **Wartet auf den Betreiber.**
+
+**Die alte Fassung, ueberholt:** `NOISE_FLOOR_MAD_MULT = 2.0` (`haken/knowledge_recall_hook.py:422`). Im Kommentar daneben steht woertlich *"GEWAEHLT, NICHT GEMESSEN"* und *"kein Pruefkorpus fuer diese Schwelle"*. Anders als die `0,65` hat diese Zahl nie eine Messung gesehen -- und sie entscheidet ueber drei Viertel der Ausfaelle. Sweep laeuft (1.0 bis 4.0, Zustaende B und C, je mit Trefferquote UND richtigem Schweigen).
 
 **Zum oeffentlichen Repo, Zwischenstand:** `tool/aussenabgleich.py` gebaut. 152 von 269 Dateien weichen ab. Die erste Uebernahme hat den weitergebbaren Klon KAPUTT gemacht (18 fehlende Module, `brainlehr.py` startete danach nicht mehr) -- zurueckgenommen, jetzt bricht das Werkzeug ab statt zu kopieren. Die 8 vermeintlich geloeschten Dateien draussen sind **keine Loeschungen**: 6 Umzuege nach `berichte/` bzw. `pflege/`, 2 GitHub-Vorlagen mit Eigenleben. Echte Loeschungen: 0 von 267.
 
