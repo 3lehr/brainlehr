@@ -48,6 +48,7 @@ sys.path.insert(0, str(SHARED_KNOWLEDGE))
 import knowledge_recall_hook as hook  # noqa: E402
 import knowledge_mcp_server as kms
 import schnappschuss  # noqa: E402 -- kern/ liegt schon im Suchpfad (s.o.), nur benutzen (INT-SNAP-001)
+import klassenausfall as _klassenausfall  # noqa: E402 -- melder/ liegt schon im Suchpfad (s.o.)
 
 CORPUS = SHARED_KNOWLEDGE / "runs/pruefkorpus.jsonl"
 RESULT = SHARED_KNOWLEDGE / "runs/messlauf_abrufguete.json"
@@ -142,10 +143,19 @@ def messe(cases: list) -> dict:
     assert len(solvable) == 35 and len(negative) == 10
 
     treffer = falsches_schweigen = 0
+    # Aufschluesselung nach Zielklasse. Bis 2026-08-20 fasste dieser Lauf die
+    # 35 loesbaren Faelle zu EINER Zahl zusammen -- und genau darin verschwand
+    # zweimal ein Totalausfall der 20 Knotenfaelle (L-0e0ab6, Vorkommen 10 und
+    # 11): 15 Lehren trugen die Quote allein, das Ergebnis sah nur schwach aus
+    # statt kaputt. Kostet keinen zusaetzlichen Lauf, nur zwei Zaehler.
+    je_klasse: dict[str, list[int]] = {}
     for c in solvable:
         nodes, lessons = run_case(c)
+        k = je_klasse.setdefault(c["target_kind"], [0, 0])
+        k[1] += 1
         if target_hit(c, nodes, lessons):
             treffer += 1
+            k[0] += 1
         if not nodes and not lessons:
             falsches_schweigen += 1
 
@@ -158,6 +168,7 @@ def messe(cases: list) -> dict:
 
     return {
         "trefferguete": [treffer, len(solvable)],
+        "trefferguete_je_klasse": {k: v for k, v in sorted(je_klasse.items())},
         "falsches_schweigen": [falsches_schweigen, len(solvable)],
         "richtiges_schweigen": [richtiges_schweigen, len(negative)],
         "falsches_sprechen": [falsches_sprechen, len(negative)],
@@ -228,8 +239,20 @@ def messlauf(cases: list) -> dict:
             ergebnis[name] = messe(cases)
         r = ergebnis[name]
         print(f"{name}:")
-        for k, (n, d) in r.items():
+        for k, v in r.items():
+            if k == "trefferguete_je_klasse":
+                for klasse, (n, d) in v.items():
+                    print(f"  trefferguete[{klasse}]: {n}/{d} = {n/d:.2%}")
+                continue
+            n, d = v
             print(f"  {k}: {n}/{d} = {n/d:.2%}")
+        # Eine Zielklasse, die NULL trifft, ist ein Defekt des Aufbaus und
+        # kein Ergebnis -- hier gemeldet, nicht erst beim Lesen der Zahl.
+        meldung = _klassenausfall.pruefe(
+            {klasse: tuple(v) for klasse, v in r["trefferguete_je_klasse"].items()})
+        if meldung:
+            print(f"\n[{name}] {meldung}\n")
+            ergebnis.setdefault("klassenausfall", {})[name] = meldung
     return ergebnis
 
 
@@ -305,9 +328,21 @@ def demo() -> None:
     cases = load_cases()
     with _with_state(STATES["A_beide_aus"]):
         r = messe(cases)
-    assert set(r) == {"trefferguete", "falsches_schweigen", "richtiges_schweigen", "falsches_sprechen"}
+    assert set(r) == {"trefferguete", "trefferguete_je_klasse", "falsches_schweigen",
+                      "richtiges_schweigen", "falsches_sprechen"}
+    je = r.pop("trefferguete_je_klasse")
     for n, d in r.values():
         assert 0 <= n <= d
+    # Die Aufschluesselung muss den Korpus vollstaendig abdecken -- sonst
+    # verschwindet eine Klasse und mit ihr ihr moeglicher Totalausfall.
+    assert set(je) == {"node", "lesson"}, je
+    assert sum(d for _, d in je.values()) == r["trefferguete"][1], je
+    assert sum(n for n, _ in je.values()) == r["trefferguete"][0], je
+    # Und der Melder wird an dieser Zahl tatsaechlich gefuehrt: ein
+    # kuenstlicher Totalausfall einer Klasse muss eine Meldung erzeugen,
+    # ein schwaches Ergebnis nicht.
+    assert _klassenausfall.pruefe({"node": (0, je["node"][1]), "lesson": (1, 15)})
+    assert _klassenausfall.pruefe({"node": (1, je["node"][1]), "lesson": (1, 15)}) is None
     meta = laufmetadaten(cases, CORPUS)
     assert meta["korpus_gesamt"] == 45 and meta["korpus_solvable"] == 35 and meta["korpus_negative"] == 10
     assert len(meta["korpus_hash_sha256"]) == 64
