@@ -57,6 +57,21 @@ KORREKTUR = re.compile(
 FESTGEHALTEN = ("lesson_record", "knowledge_add", "lesson_update", "knowledge_update")
 
 
+# Was als "user" ankommt, aber keine Nachricht des Betreibers ist. Gefunden
+# von der Pflicht-Stichprobe des Rueckwirkungszaehlers (Norm 17b14a32): die
+# ersten fuenf Beispiele waren allesamt der eingespielte Text der
+# `/abwesend`-Faehigkeit, der "nie wieder" und "merk dir" enthaelt. Ohne
+# diesen Filter haette der Waechter beim Aufruf einer Faehigkeit angeschlagen
+# -- eine Quote allein haette das nie gezeigt.
+FREMDTEXT = ("<", "{", "Caveat", "Stop hook", "Base directory for this skill",
+             "# Abwesend", "<command-name>", "<local-command",
+             "This session is being continued")
+
+
+def _keine_betreibernachricht(text: str) -> bool:
+    return text.startswith(FREMDTEXT) or "Base directory for this skill" in text[:200]
+
+
 def _aus() -> bool:
     return os.environ.get("BRAINLEHR_KORREKTURLEHRE", "").strip().lower() == "aus"
 
@@ -107,7 +122,7 @@ def _zug(transcript: Path) -> tuple[str, bool]:
                              if isinstance(b, dict) and b.get("type") == "text")
                     if isinstance(inhalt, list) else "")
                 roh = (roh or "").strip()
-                if not roh or roh.startswith(("<", "{", "Caveat", "Stop hook")):
+                if not roh or _keine_betreibernachricht(roh):
                     continue
                 text, festgehalten = roh, False      # neuer Zug
             elif art == "assistant":
@@ -163,14 +178,81 @@ def _selftest() -> int:
         assert "warum hast du" in text and fest is False, (text, fest)
         assert beurteile(text, fest), "die Lehre von davor darf nicht decken"
 
+    # FREMDTEXT: der eingespielte Text einer Faehigkeit ist keine Nachricht
+    # des Betreibers. Gefunden von der Pflicht-Stichprobe, nicht von der Quote.
+    assert _keine_betreibernachricht(
+        "Base directory for this skill: /Users/x/.claude/skills/abwesend\n# Abwesend\n"
+        "nie wieder will ich so einen text hoeren")
+    assert _keine_betreibernachricht("warum hast du das nicht geprueft?") is False
+
     print("korrekturlehre: Selbsttest gruen (3 Korrekturen, Festhalten deckt, "
-          "5 Negativfaelle, Schalter wirkt, Zugschnitt haelt)")
+          "5 Negativfaelle, Schalter wirkt, Zugschnitt haelt, Faehigkeitstext ausgeschlossen)")
+    return 0
+
+
+
+def _verlauf(dateien: int = 400) -> int:
+    """Rueckwirkungs-Zaehler (Norm 17b14a32). Gegenstand sind hier ZUEGE, nicht
+    Antworten -- ein Zug ist die Einheit, in der korrigiert und festgehalten
+    wird. Gemeinsame Bauform aus kern/rueckwirkung.py."""
+    _w = Path(__file__).resolve().parent
+    while not (_w / "schema.sql").exists() and _w != _w.parent:
+        _w = _w.parent
+    sys.path[:0] = [str(_w / "kern")]
+    import rueckwirkung as r
+
+    def zuege():
+        wurzel = Path.home() / ".claude" / "projects"
+        try:
+            pfade = sorted(wurzel.rglob("*.jsonl"),
+                           key=lambda x: x.stat().st_mtime, reverse=True)[:dateien]
+        except OSError:
+            return
+        for f in pfade:
+            try:
+                roh = f.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            text, fest = "", False
+            for zeile in roh.splitlines():
+                if not zeile.strip():
+                    continue
+                try:
+                    z = json.loads(zeile)
+                except ValueError:
+                    continue
+                if z.get("type") == "user":
+                    c = (z.get("message") or {}).get("content")
+                    roh_t = c if isinstance(c, str) else (
+                        " ".join(b.get("text", "") for b in c
+                                 if isinstance(b, dict) and b.get("type") == "text")
+                        if isinstance(c, list) else "")
+                    roh_t = (roh_t or "").strip()
+                    if not roh_t or _keine_betreibernachricht(roh_t):
+                        continue
+                    if text:
+                        yield (text, fest)
+                    text, fest = roh_t, False
+                elif z.get("type") == "assistant":
+                    c = (z.get("message") or {}).get("content")
+                    if isinstance(c, list):
+                        for b in c:
+                            if isinstance(b, dict) and b.get("type") == "tool_use" and any(
+                                    w in str(b.get("name", "")) for w in FESTGEHALTEN):
+                                fest = True
+
+    b = r.zaehle(zuege(), lambda p: beurteile(p[0], p[1]) is not None,
+                 lambda p: p[0][:130])
+    r.bericht("Zuege mit Korrektur ohne Lehre", b)
     return 0
 
 
 def main() -> int:
     if "--selftest" in sys.argv:
         return _selftest()
+    if "--pruefe-verlauf" in sys.argv:
+        i = sys.argv.index("--pruefe-verlauf")
+        return _verlauf(int(sys.argv[i + 1]) if len(sys.argv) > i + 1 else 400)
     if _aus():
         return 0
     try:

@@ -466,9 +466,28 @@ def _selftest() -> int:
     return 0
 
 
+
+def _verlauf(dateien: int = 400) -> int:
+    """Rueckwirkungs-Zaehler (Norm 17b14a32): wie steht der BESTAND, nicht der
+    Zuwachs. Gemeinsame Bauform aus kern/rueckwirkung.py -- drei Zaehler mit
+    derselben Aufgabe in drei Bauformen waeren zwei zu viel."""
+    _w = Path(__file__).resolve().parent
+    while not (_w / "schema.sql").exists() and _w != _w.parent:
+        _w = _w.parent
+    sys.path[:0] = [str(_w / "kern")]
+    import rueckwirkung as r
+    b = r.zaehle(r.antworten(dateien=dateien), lambda t: beurteile(t) is not None,
+                 lambda t: t[:150])
+    r.bericht("Antworten mit Vermutung oder Absolutaussage", b)
+    return 0
+
+
 def main() -> int:
     if "--selftest" in sys.argv:
         return _selftest()
+    if "--pruefe-verlauf" in sys.argv:
+        i = sys.argv.index("--pruefe-verlauf")
+        return _verlauf(int(sys.argv[i + 1]) if len(sys.argv) > i + 1 else 400)
     if _aus():
         return 0
     try:
