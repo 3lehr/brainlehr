@@ -1,0 +1,241 @@
+{
+  "erzeugt_am": "2026-08-20T22:40:44Z",
+  "min_historie": 3,
+  "obergrenze_tage": 365,
+  "gegenmittel_gegen_die_falle": "untergrenze (a) -- naechste_pruefung_spaetestens_tage ueberschreitet nie OBERGRENZE_TAGE, auch bei Rate 0",
+  "befund_beim_lesen": "Die Quelle misst Bearbeitungsintensitaet, nicht zwingend fachlichen Verfall: knowledge_fassungen (Korrektur) feuert bei JEDER inhaltlichen Aenderung, auch reiner Anreicherung waehrend einer aktiven Sitzung -- ein Ast mit Rate 1.0 (z.B. arch, tools, backend) heisst 'wurde gerade viel bearbeitet', nicht zwingend 'war oft falsch'. Umgekehrt liefern germanquad und nasa-llis (zusammen 4351 von 5240 Knoten, 83% des Bestands) beide Rate 0 -- Grossimporte, seit der Anlage nie wieder angefasst. Diese Quelle kann NICHT unterscheiden, ob das Themengebiet echt stabil ist oder ob es nur nie geprueft wurde -- genau die Falle aus dem Auftrag. Ohne eine vorwaertsgerichtete Quelle (E2/E3, hier ausdruecklich nicht gebaut) bleibt diese Unterscheidung offen.",
+  "aeste": {
+    "germanquad": {
+      "gesamt": 2713,
+      "widerrufe": 0,
+      "rate": 0.0,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "widerrufsquote -- keine Widerrufe im Bestand, Untergrenze greift"
+    },
+    "nasa-llis": {
+      "gesamt": 1638,
+      "widerrufe": 0,
+      "rate": 0.0,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "widerrufsquote -- keine Widerrufe im Bestand, Untergrenze greift"
+    },
+    "brainlehr": {
+      "gesamt": 312,
+      "widerrufe": 104,
+      "rate": 0.3333,
+      "halbwertszeit_tage": 8.0,
+      "naechste_pruefung_spaetestens_tage": 8.0,
+      "quelle": "widerrufsquote"
+    },
+    "methodik": {
+      "gesamt": 171,
+      "widerrufe": 88,
+      "rate": 0.5146,
+      "halbwertszeit_tage": 14.5,
+      "naechste_pruefung_spaetestens_tage": 14.5,
+      "quelle": "widerrufsquote"
+    },
+    "apps": {
+      "gesamt": 95,
+      "widerrufe": 78,
+      "rate": 0.8211,
+      "halbwertszeit_tage": 6.3,
+      "naechste_pruefung_spaetestens_tage": 6.3,
+      "quelle": "widerrufsquote"
+    },
+    "ops": {
+      "gesamt": 92,
+      "widerrufe": 50,
+      "rate": 0.5435,
+      "halbwertszeit_tage": 3.9,
+      "naechste_pruefung_spaetestens_tage": 3.9,
+      "quelle": "widerrufsquote"
+    },
+    "shared": {
+      "gesamt": 55,
+      "widerrufe": 47,
+      "rate": 0.8545,
+      "halbwertszeit_tage": 7.3,
+      "naechste_pruefung_spaetestens_tage": 7.3,
+      "quelle": "widerrufsquote"
+    },
+    "openlehr": {
+      "gesamt": 46,
+      "widerrufe": 27,
+      "rate": 0.587,
+      "halbwertszeit_tage": 10.7,
+      "naechste_pruefung_spaetestens_tage": 10.7,
+      "quelle": "widerrufsquote"
+    },
+    "plaene": {
+      "gesamt": 17,
+      "widerrufe": 8,
+      "rate": 0.4706,
+      "halbwertszeit_tage": 9.4,
+      "naechste_pruefung_spaetestens_tage": 9.4,
+      "quelle": "widerrufsquote"
+    },
+    "arch": {
+      "gesamt": 16,
+      "widerrufe": 16,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "simulation-akademie-messaufbau-kein": {
+      "gesamt": 15,
+      "widerrufe": 15,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "testing": {
+      "gesamt": 10,
+      "widerrufe": 10,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "tools": {
+      "gesamt": 8,
+      "widerrufe": 8,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "werkzeuge": {
+      "gesamt": 8,
+      "widerrufe": 8,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "frontend": {
+      "gesamt": 7,
+      "widerrufe": 7,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "agents": {
+      "gesamt": 7,
+      "widerrufe": 7,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "fahrtenbuch": {
+      "gesamt": 5,
+      "widerrufe": 5,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "domaenen": {
+      "gesamt": 5,
+      "widerrufe": 0,
+      "rate": 0.0,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "widerrufsquote -- keine Widerrufe im Bestand, Untergrenze greift"
+    },
+    "backend": {
+      "gesamt": 4,
+      "widerrufe": 4,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "lessons": {
+      "gesamt": 3,
+      "widerrufe": 3,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "probe": {
+      "gesamt": 3,
+      "widerrufe": 3,
+      "rate": 1.0,
+      "halbwertszeit_tage": 0.0,
+      "naechste_pruefung_spaetestens_tage": 0.0,
+      "quelle": "widerrufsquote"
+    },
+    "begod": {
+      "gesamt": 2,
+      "widerrufe": 2,
+      "rate": null,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+    },
+    "stadtwerke": {
+      "gesamt": 2,
+      "widerrufe": 2,
+      "rate": null,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+    },
+    "aka": {
+      "gesamt": 1,
+      "widerrufe": 1,
+      "rate": null,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+    },
+    "bebetter": {
+      "gesamt": 1,
+      "widerrufe": 1,
+      "rate": null,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+    },
+    "probe2": {
+      "gesamt": 1,
+      "widerrufe": 1,
+      "rate": null,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+    },
+    "testdatenknoten-schreibrechtepruefung": {
+      "gesamt": 1,
+      "widerrufe": 0,
+      "rate": null,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+    },
+    "woanders": {
+      "gesamt": 1,
+      "widerrufe": 0,
+      "rate": null,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+    },
+    "domaenenimporte": {
+      "gesamt": 1,
+      "widerrufe": 0,
+      "rate": null,
+      "halbwertszeit_tage": null,
+      "naechste_pruefung_spaetestens_tage": 365,
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+    }
+  }
+}
