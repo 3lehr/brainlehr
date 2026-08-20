@@ -110,3 +110,4 @@ runs/schnappschuesse/
 # `git add -A` -- und der Bestand traegt Daten Dritter.
 sicherungen/
 dienst/log/
+kanarienvogel_alarm.jsonl

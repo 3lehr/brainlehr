@@ -1730,6 +1730,36 @@ def report(log_path: str | None = None, db_path: str | None = None) -> None:
     print(f"Top-Lessons: {lesson_hits.most_common(5)}")
 
 
+def _kanarienvogel_melden() -> None:
+    """Sonde ueber denselben Weg, den der Abruf gerade genommen hat.
+
+    IM finally, und das ist die Korrektur eines Fehlers vom selben Tag: Die
+    Sonde liegt seit dem 2026-08-13 in kern/kanarienvogel.py und war nie
+    angeschlossen; ihr eigener Docstring nannte als Einbauort "direkt nach dem
+    Erfolg von 'nodes, lessons = query(...)'".
+
+    GEMESSEN, dass dieser Ort blind ist fuer genau den Fall, fuer den die
+    Sonde existiert: Bei kaputter Datenbank WIRFT `query()`, der Zweig
+    darunter wird nie erreicht, und es entstand keine Alarmzeile --
+    nachgestellt mit BRAINLEHR_DB auf eine nicht existierende Datei. Die Sonde
+    selbst meldete im selben Lauf korrekt `db_ok: False`. Ein Melder am
+    falschen Ort ist so gut wie keiner.
+
+    Im finally erreicht sie beide Faelle: den leeren Treffer, den vollen und
+    den Absturz. Nur dann stimmt "bei jedem Abruf" im Wortsinn -- und genau
+    darum geht es, denn 'nichts gefunden' und 'Weg tot' sehen im Chat
+    identisch aus.
+
+    Darf nie werfen: eine Sonde, die den Abruf anhaelt, ist schaedlicher als
+    der Ausfall, den sie melden soll.
+    """
+    try:
+        import kanarienvogel
+        kanarienvogel.pruefen_und_melden()
+    except Exception:
+        pass
+
+
 def main() -> None:
     t0 = time.perf_counter()  # Notbremse-Basis (Schattenlauf), s.u.
     try:
@@ -1745,11 +1775,27 @@ def main() -> None:
     cwd = payload.get("cwd") or os.getcwd()
     bedeutungswerte: list = []
     enthaltung_satz: list[str] = []
+    # KANARIENVOGEL im finally (2026-08-20, Betreiberfrage: "was ist aus
+    # unserem Kanarienvogel-Waechter geworden?"). Die Sonde liegt seit dem
+    # 2026-08-13 in kern/kanarienvogel.py, mit Selbsttest und eigener
+    # Testdatei -- und war nie angeschlossen. Die Vertagung hatte einen Grund
+    # (parallel lief eine Nullmessung, L-7318ce); der ist entfallen, die
+    # juengsten Ergebnisdateien sind vom 2026-08-15.
+    #
+    # Warum finally und NICHT der Ort, den ihr eigener Docstring nannte
+    # ("direkt nach dem Erfolg von query(...)"): Bei kaputter Datenbank WIRFT
+    # query(), der Zweig danach wird nie erreicht -- gemessen mit BRAINLEHR_DB
+    # auf eine nicht existierende Datei: keine Alarmzeile, waehrend die Sonde
+    # im selben Lauf korrekt db_ok=False meldete. Der vorgesehene Einbauort
+    # war blind fuer genau den Fall, fuer den die Sonde existiert.
     try:
         nodes, lessons = query(kws, cwd=cwd, prompt=prompt, bedeutungswerte=bedeutungswerte,
                                 enthaltung_satz=enthaltung_satz)
     except Exception:
         return
+    finally:
+        _kanarienvogel_melden()
+
     session_id = payload.get("session_id")
 
     # Schattenlauf (Anschlussauftrag 2026-08-08) -- NACH dem Titelverteidiger,
