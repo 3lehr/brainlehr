@@ -250,7 +250,16 @@ Beide monoton. Kein Aehnlichkeitsmass hat an diesem Tag irgendetwas getrennt.
 
 **Daraus `melder/faelligkeit.py`**, an SessionStart, 0,03 s: 204 Kandidaten in fuenf Klassen (30 Regelrang, 47 wiederholte Fehler, 2 abgelaufene Geltung, 89 nie gelesene Normen, 36 dem Klienten unbekannt), drei Zeilen je Tag, Rotation ohne Zustandsdatei. Die groesste Klasse ist selbstloesend -- wer die Norm liest, nimmt sie aus der Liste.
 
-**SCHWERSTER OFFENER BEFUND, unverarbeitet: das Messinstrument wackelt.** Die blinde, beidseitige Wiederholung der Handbeurteilung (S4) urteilt in BEIDE Richtungen anders als der Pruefkorpus: 7 von 15 "Treffern" sind keine, 4 von 20 "Fehlgriffen" sind welche, Uebereinstimmung 24 von 35. Gegenueber der ersten (unverblindeten) Beurteilung weichen 10 von 20 ab. **Jede Zahl dieses Tages, die auf der Trefferzaehlung aufbaut, steht damit unter Vorbehalt** -- der Engpass ist moeglicherweise nicht der Abruf, sondern das Instrument.
+**S4 GEGENGEPRUEFT und zur Haelfte BERICHTIGT** (`runs/beurteilungsfenster_2026-08-20.json`):
+
+Die blinde Wiederholung hatte gemeldet, der Pruefkorpus urteile in beide Richtungen falsch. Nachgemessen:
+
+- **"Zu mild" traegt NICHT.** 6 von 7 der Faelle sind ein Artefakt des BEURTEILUNGSFENSTERS: Beide Beurteilungen sahen nur die TOP 3, der Messlauf zaehlt aber die ausgelieferte Menge (MAX_NODES 10, MAX_LESSONS 7). Die Ziele lagen auf Rang 4, 4, 4, 5, 7 und 8 -- ausgeliefert und fuer die Beurteilung unsichtbar. Uebrig bleibt EIN echter Fall (L-0392e4, Rang 1).
+- **"Zu streng" steht** (4 von 20). Ein zu kleines Fenster kann diese Richtung nicht erzeugen.
+
+Dieselbe Fehlerklasse wie mehrfach an diesem Tag, und die Lehre lag im Bestand (`L-c2f6ee`): ueber einen GEDECKELTEN Kanal gemessen und die Deckelung als Eigenschaft des Gegenstands gelesen. Mein Auftrag verlangte "die drei besten ausgelieferten Titel", ohne das Auslieferungsfenster danebenzustellen.
+
+**Was offen bleibt:** die 4 zu streng gezaehlten Faelle und die Frage, ob der Korpus Mehrfachziele braucht -- mehrere Eintraege koennen dieselbe Frage beantworten, der Korpus kennt je Fall nur eines.
 
 **Drei Fallen aus dem Bau, alle mit rotem Test festgehalten:**
 
