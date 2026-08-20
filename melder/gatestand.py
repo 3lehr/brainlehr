@@ -73,11 +73,31 @@ def _gatespalte(zeilen_text: list[str]) -> int | None:
     return None
 
 
+def _lattespalte(zeilen_text: list[str]) -> int | None:
+    """Index der Latte-Spalte, aus der Kopfzeile (Norm b3249558, 2026-08-20).
+
+    Die Latte ist das benannte, abrufbare Vergleichsobjekt -- woran gemessen
+    wird, nicht ob gemessen wurde. Das ist eine ANDERE Frage als die des
+    Produktgates: Am 2026-08-19 war BDW-E07 mit sieben gruenen Faellen belegt,
+    waehrend der Bestand vollstaendig unverschluesselt war. Gemessen wurde das
+    Modul, nicht der Gegenstand."""
+    for text in zeilen_text:
+        if not text.startswith("|"):
+            continue
+        s = [t.strip().lower() for t in _spalten(text)]
+        if "latte" in s:
+            return s.index("latte")
+        if "id" in s:
+            return None
+    return None
+
+
 def lies(pfad: Path) -> list[dict]:
     """Zeilen eines Katalogs mit Kennung, Gate-Text und genannten Dateien."""
     zeilen = []
     alle = pfad.read_text(encoding="utf-8").splitlines()
     spalte = _gatespalte(alle)
+    latte_i = _lattespalte(alle)
     for text in alle:
         if not ZEILE.match(text):
             continue
@@ -128,6 +148,11 @@ def lies(pfad: Path) -> list[dict]:
             # er ueberhaupt nicht messen kann.
             "belegt": gate.upper().startswith("PASS"),
             "dateien": [d for d in DATEI.findall(gate)],
+            # Leer heisst: niemand hat entschieden. Kein Vorgabewert -- ein
+            # stiller Vorgabewert vernichtet genau die Unterscheidung, fuer
+            # die das Feld existiert (dieselbe Bauform wie norm_entscheidung).
+            "latte": (s[latte_i].strip()
+                      if latte_i is not None and latte_i < len(s) else ""),
         })
     return zeilen
 
@@ -142,8 +167,15 @@ def beurteile(zeilen: list[dict], wurzel: Path = WURZEL) -> dict:
     vertagt = [z["id"] for z in zeilen if z.get("vertagt")]
     teilweise = [z["id"] for z in zeilen if z.get("teilweise")]
     durchgefallen = [z["id"] for z in zeilen if z.get("durchgefallen")]
-    belegt = [z["id"] for z in zeilen if z.get("belegt")]
-    bekannt = set(offen) | set(vertagt) | set(teilweise) | set(durchgefallen) | set(belegt)
+    # PASS OHNE LATTE ist kein Beleg (Norm b3249558): ein gruener Test sagt,
+    # DASS gemessen wurde, nicht WORAN. Fehlt die Latte ganz, ist die Zeile
+    # unentschieden -- sie faellt aus `belegt` heraus und wird eigens genannt.
+    ohne_latte = [z["id"] for z in zeilen
+                  if z.get("belegt") and not z.get("latte")]
+    belegt = [z["id"] for z in zeilen
+              if z.get("belegt") and z["id"] not in set(ohne_latte)]
+    bekannt = (set(offen) | set(vertagt) | set(teilweise) | set(durchgefallen)
+               | set(belegt) | set(ohne_latte))
     unklar = [z["id"] for z in zeilen if z["id"] not in bekannt]
     return {
         "gesamt": len(zeilen),
@@ -153,6 +185,8 @@ def beurteile(zeilen: list[dict], wurzel: Path = WURZEL) -> dict:
         "durchgefallen": len(durchgefallen),
         "belegt": len(belegt),
         "unklar": len(unklar),
+        "ohne_latte": len(ohne_latte),
+        "ohne_latte_ids": ohne_latte,
         "offene_ids": offen,
         "vertagte_ids": vertagt,
         "teilweise_ids": teilweise,
@@ -170,25 +204,30 @@ def _selftest() -> int:
         (w / "echt.py").write_text("x")
         k = w / "docs" / "REQUIREMENTS_PROBE.md"
         k.write_text(
-            "| ID | x | Produktgate | Quelle |\n|---|---|---|---|\n"
-            "| ID | x | Produktgate | Quelle |\n"
-            "|---|---|---|---|\n"
-            "| BDW-X01 | y | NOT RUN | q |\n"
-            "| BDW-X02 | y | PASS: `echt.py --selftest` gruen | q |\n"
-            "| BDW-X03 | y | PASS: `gibtsnicht.py --selftest` | q |\n"
-            "| BDW-X04 | y | DEFERRED: aktiviert mit dem ersten Piloten (`BDW-C03`) | q |\n"
-            "| BDW-X05 | y | TEILWEISE: `echt.py` gruen, aber Index nicht erreicht | q |\n"
-            "| BDW-X06 | y | FAIL: `echt.py` misst am echten Weg -- Klartext lesbar | q |\n"
-            "| BDW-X07 | y | Das Paket wird fail-closed abgewiesen, nicht geraten | q |\n",
+            "| ID | x | Latte | Produktgate | Quelle |\n"
+            "|---|---|---|---|---|\n"
+            "| BDW-X01 | y | n/a -- Fixture | NOT RUN | q |\n"
+            "| BDW-X02 | y | n/a -- Fixture | PASS: `echt.py --selftest` gruen | q |\n"
+            "| BDW-X03 | y | n/a -- Fixture | PASS: `gibtsnicht.py --selftest` | q |\n"
+            "| BDW-X04 | y | n/a -- Fixture | DEFERRED: aktiviert mit dem ersten Piloten (`BDW-C03`) | q |\n"
+            "| BDW-X05 | y | n/a -- Fixture | TEILWEISE: `echt.py` gruen, aber Index nicht erreicht | q |\n"
+            "| BDW-X06 | y | n/a -- Fixture | FAIL: `echt.py` misst am echten Weg -- Klartext lesbar | q |\n"
+            "| BDW-X08 | y |  | PASS: `echt.py` gruen | q |\n"
+            "| BDW-X07 | y | n/a -- Fixture | Das Paket wird fail-closed abgewiesen, nicht geraten | q |\n",
             encoding="utf-8")
         z = lies(k)
-        assert len(z) == 7, z
+        assert len(z) == 8, z
         e = beurteile(z, wurzel=w)
         # DIE DRITTE KATEGORIE, ergaenzt 2026-08-18: vertagt zaehlt WEDER als
         # offen NOCH als belegt. Ohne diese Zeile haette die Vertagung von 22
         # Katalogzeilen die Quote von 19/56 auf 41/56 gehoben, ohne dass
         # irgendetwas gemessen worden waere.
-        assert e["gesamt"] == 7 and e["offen"] == 1 and e["belegt"] == 2 and e["vertagt"] == 1, e
+        assert e["gesamt"] == 8 and e["offen"] == 1 and e["belegt"] == 2 and e["vertagt"] == 1, e
+        # PASS OHNE LATTE (Norm b3249558): X08 ist gruen und zaehlt trotzdem
+        # nicht als Beleg -- der Test sagt, DASS gemessen wurde, nicht WORAN.
+        # Rot gegen den Stand davor: `belegt` war 3 und `ohne_latte` gab es
+        # nicht.
+        assert e["ohne_latte"] == 1 and e["ohne_latte_ids"] == ["BDW-X08"], e
         # POSITIV STATT REST: X07 traegt keinen Status, sondern einen
         # Anforderungstext -- so sieht die INTERFACE-Datei in JEDER Zeile aus.
         # Rot gegen den Stand davor: `belegt` war 3, die Zeile zaehlte als
@@ -201,9 +240,10 @@ def _selftest() -> int:
         # s[-2] und bekam "Das Paket wird abgewiesen" statt "PASS: ...".
         k2 = w / "docs" / "REQUIREMENTS_ZWEITFORM.md"
         k2.write_text(
-            "| ID | Anforderung | Gate |\n"
-            "|---|---|---|\n"
-            "| INT-ZZ-001 | Das Paket wird fail-closed abgewiesen | PASS: `echt.py` |\n",
+            "| ID | Anforderung | Latte | Gate |\n"
+            "|---|---|---|---|\n"
+            "| INT-ZZ-001 | Das Paket wird fail-closed abgewiesen | n/a -- Fixture "
+            "| PASS: `echt.py` |\n",
             encoding="utf-8")
         z2 = lies(k2)
         assert z2[0]["gate"].startswith("PASS"), z2[0]["gate"]
@@ -222,8 +262,9 @@ def _selftest() -> int:
         assert e["phantom"] == [("BDW-X03", "gibtsnicht.py")], e
         # Gegenprobe: die existierende Datei wird NICHT gemeldet.
         assert all(p[0] != "BDW-X02" for p in e["phantom"]), e
-    print("gatestand: Selbsttest gruen (Quote 2/7 belegt, 1 offen, 1 vertagt, "
+    print("gatestand: Selbsttest gruen (Quote 2/8 belegt, 1 offen, 1 vertagt, "
           "1 teilweise, 1 durchgefallen, 1 ohne erkennbaren Status, "
+          "1 PASS ohne Latte, "
           "Gate-Spalte aus dem Kopf statt aus der Position, "
           "ein Phantom-Gate gefunden, echtes Gate nicht gemeldet)")
     return 0
@@ -243,8 +284,11 @@ def main() -> int:
         teilweise = f", {e['teilweise']} nur teilweise" if e.get("teilweise") else ""
         rot = f", {e['durchgefallen']} durchgefallen" if e.get("durchgefallen") else ""
         unklar = f", {e['unklar']} ohne erkennbaren Status" if e.get("unklar") else ""
+        latte = f", {e['ohne_latte']} PASS ohne Latte" if e.get("ohne_latte") else ""
         print(f"{pfad.name}: {quote} belegt, {e['offen']} ohne Gate-Lauf"
-              f"{vertagt}{teilweise}{rot}{unklar}")
+              f"{vertagt}{teilweise}{rot}{unklar}{latte}")
+        if bericht and e.get("ohne_latte_ids"):
+            print("  PASS ohne Latte: " + ", ".join(e["ohne_latte_ids"]))
         if bericht and e.get("unklare_ids"):
             print("  ohne erkennbaren Status: " + ", ".join(e["unklare_ids"][:12])
                   + (" ..." if len(e["unklare_ids"]) > 12 else ""))
