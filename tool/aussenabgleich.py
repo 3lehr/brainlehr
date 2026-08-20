@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import filecmp
+import re
 import shutil
 import subprocess
 import sys
@@ -123,7 +124,66 @@ def kandidaten(repo: Path = REPO, aussen: Path = AUSSEN) -> list[str]:
     return [r for r in roh if r and r not in draussen and not _ausgeschlossen(r)]
 
 
-def bericht(ergebnis: dict, neue: list[str] | None = None) -> str:
+_IMPORT = re.compile(r"^\s*(?:from\s+([A-Za-z_][\w]*)\s+import|import\s+([A-Za-z_][\w]*))", re.M)
+
+
+def _lokale_module(baum: Path, ordner: set[str]) -> set[str]:
+    """Modulnamen, die in diesem Baum als Datei liegen -- nur flach, weil die
+    Suchpfade der Module genau so gesetzt sind (sys.path[:0] = [wurzel, kern,
+    haken, ...]), nicht als Paket."""
+    namen = set()
+    for o in ordner | {""}:
+        d = baum / o if o else baum
+        if d.is_dir():
+            namen |= {f.stem for f in d.glob("*.py")}
+    return namen
+
+
+def importluecken(ergebnis: dict, repo: Path = REPO, aussen: Path = AUSSEN) -> dict:
+    """Welche lokalen Module wuerden nach einer Uebernahme FEHLEN.
+
+    Der Anlass ist ein selbst gebauter Schaden, 2026-08-20: Die erste
+    Uebernahme kopierte 152 Dateien und machte den weitergebbaren Baum
+    kaputt -- kern/ausweis.py importiert `geheimnis`, knowledge_mcp_server.py
+    importiert `relevanzlage`, beide liegen draussen nicht. Vorher startete
+    brainlehr.py dort, danach brach es mit ModuleNotFoundError. Ein Abgleich,
+    der eine Datei einzeln vergleicht, sieht das nie: jede einzelne Datei ist
+    fuer sich korrekt, kaputt ist erst ihre Umgebung.
+
+    Transitiv, weil ein fehlendes Modul selbst wieder importiert."""
+    draussen_dateien = set(aussenbestand(aussen))
+    ordner = {r.split("/")[0] for r in draussen_dateien if "/" in r}
+    vorhanden = _lokale_module(aussen, ordner)
+    hier = _lokale_module(repo, ordner)
+
+    # Startmenge: die Dateien, die uebernommen wuerden, in ihrer INNEN-Fassung.
+    offen = [repo / r for r in ergebnis["abweichung"]]
+    gesehen: set[str] = set()
+    luecken: dict[str, list[str]] = {}
+    while offen:
+        datei = offen.pop()
+        try:
+            text = datei.read_text(errors="replace")
+        except OSError:
+            continue
+        for m in _IMPORT.finditer(text):
+            name = m.group(1) or m.group(2)
+            if name in vorhanden or name not in hier or name in gesehen:
+                continue
+            gesehen.add(name)
+            luecken.setdefault(name, []).append(
+                str(datei.relative_to(repo)))
+            # Das fehlende Modul zieht seine eigenen Importe nach.
+            for o in sorted(ordner) + [""]:
+                kandidat = (repo / o / f"{name}.py") if o else (repo / f"{name}.py")
+                if kandidat.is_file():
+                    offen.append(kandidat)
+                    break
+    return luecken
+
+
+def bericht(ergebnis: dict, neue: list[str] | None = None,
+            luecken: dict | None = None) -> str:
     geprueft = ergebnis["geprueft"]
     rahmen = f"ueber {len(geprueft)} versionierte Dateien des weitergebbaren Klons"
     abw = set(ergebnis["abweichung"])
@@ -148,7 +208,42 @@ def bericht(ergebnis: dict, neue: list[str] | None = None) -> str:
         zeilen += [f"    + {r}" for r in neue[:30]]
         if len(neue) > 30:
             zeilen.append(f"    + ... und {len(neue) - 30} weitere")
+
+    if luecken:
+        zeilen.append(
+            f"IMPORTLUECKEN nach einer Uebernahme: {len(luecken)} Modul(e) "
+            "fehlen draussen -- der Baum waere danach nicht lauffaehig")
+        for name in sorted(luecken):
+            zeilen.append(f"    ! {name} (gebraucht von {luecken[name][0]})")
     return "\n".join(zeilen)
+
+
+def luecken_schliessen(luecken: dict, repo: Path = REPO,
+                       aussen: Path = AUSSEN) -> list[str]:
+    """Kopiert genau die Module, ohne die der Zielbaum nach einer Uebernahme
+    nicht mehr laeuft -- und NUR die.
+
+    Das ist die eine Ausnahme von "Kandidaten werden nur genannt": ein Modul,
+    das ein bereits freigegebenes Modul importiert, ist keine Erweiterung des
+    Zuschnitts, sondern die fehlende Haelfte einer bereits getroffenen
+    Entscheidung. Wer kern/ausweis.py freigibt und `geheimnis` zurueckhaelt,
+    hat nichts zurueckgehalten -- er hat den Baum kaputt gemacht.
+
+    Die Freigabefrage bleibt trotzdem eine: DATEN entscheidet die Spalte
+    `freigabe`, CODE entscheidet ein Mensch. Darum liefert diese Funktion die
+    Liste dessen zurueck, was sie kopiert hat -- sie ist zum Vorlegen da, nicht
+    zum Wegsehen."""
+    kopiert = []
+    for name in sorted(luecken):
+        for ordner in ("kern", "melder", "haken", "berichte", "messungen", ""):
+            quelle = (repo / ordner / f"{name}.py") if ordner else (repo / f"{name}.py")
+            if quelle.is_file():
+                ziel = aussen / ordner / f"{name}.py" if ordner else aussen / f"{name}.py"
+                ziel.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(quelle, ziel)
+                kopiert.append(str(quelle.relative_to(repo)))
+                break
+    return kopiert
 
 
 def uebernehmen(ergebnis: dict, repo: Path = REPO, aussen: Path = AUSSEN) -> int:
@@ -199,6 +294,27 @@ def _selftest() -> int:
         assert "knowledge.db" not in e["abweichung"], e
         assert "knowledge.db" not in e["geprueft"], e
 
+        # IMPORTLUECKE: die uebernommene Datei zieht ein Modul nach, das
+        # draussen fehlt -- und dieses wiederum ein zweites (transitiv).
+        (innen / "kern" / "anders.py").write_text("import geheimnis\nneu\n")
+        (innen / "kern" / "geheimnis.py").write_text("import tiefer\n")
+        (innen / "kern" / "tiefer.py").write_text("x\n")
+        e_l = pruefe(innen, aussen)
+        luecken = importluecken(e_l, innen, aussen)
+        assert set(luecken) == {"geheimnis", "tiefer"}, luecken
+        assert "kern/anders.py" in luecken["geheimnis"], luecken
+        assert "IMPORTLUECKEN" in bericht(e_l, None, luecken)
+        # NEGATIV: ein Modul, das draussen SCHON liegt, ist keine Luecke --
+        # sonst meldet der Abgleich bei jeder Datei die halbe Standardlage.
+        (innen / "kern" / "anders.py").write_text("import gleich\nneu\n")
+        assert importluecken(pruefe(innen, aussen), innen, aussen) == {}, "gleich.py liegt draussen"
+        # NEGATIV: die Standardbibliothek ist nie eine Luecke.
+        (innen / "kern" / "anders.py").write_text("import json\nimport pathlib\nneu\n")
+        assert importluecken(pruefe(innen, aussen), innen, aussen) == {}, "stdlib gemeldet"
+        (innen / "kern" / "anders.py").write_text("neu\n")
+        for weg in ("geheimnis.py", "tiefer.py"):
+            (innen / "kern" / weg).unlink()
+
         k = kandidaten(innen, aussen)
         assert k == ["kern/brandneu.py"], k
         assert not any("ganz_neuer_ordner" in r for r in k), k
@@ -223,9 +339,11 @@ def _selftest() -> int:
         assert not (aussen / "kern" / "brandneu.py").exists(), "Kandidat wurde ungefragt uebernommen"
         assert (aussen / "kern" / "verschwunden.py").exists(), "draussen geloescht"
 
-    print("aussenabgleich: Selbsttest gruen (10 Faelle: Abweichung, Verwaiste, "
-          "Gleichstand, Bestand nie abgeglichen, Kandidat nur genannt, Nenner "
-          "in beide Richtungen, Uebernahme kopiert nichts weiter)")
+    print("aussenabgleich: Selbsttest gruen (14 Faelle: Abweichung, Verwaiste, "
+          "Gleichstand, Bestand nie abgeglichen, Kandidat nur genannt, neuer "
+          "Ordner liefert keine Kandidaten, Nenner in beide Richtungen, "
+          "Uebernahme kopiert nichts weiter, Importluecke transitiv, "
+          "vorhandenes Modul und Standardbibliothek sind keine Luecke)")
     return 0
 
 
@@ -234,6 +352,10 @@ def main() -> int:
     p.add_argument("--selftest", action="store_true")
     p.add_argument("--kandidaten", action="store_true")
     p.add_argument("--uebernehmen", action="store_true")
+    p.add_argument("--luecken-schliessen", action="store_true",
+                   help="kopiert die fehlenden Module mit und legt sie vor")
+    p.add_argument("--trotz-luecken", action="store_true",
+                   help="kopiert auch dann, wenn danach Module fehlen")
     args = p.parse_args()
     if args.selftest:
         return _selftest()
@@ -242,7 +364,27 @@ def main() -> int:
         return 0
     e = pruefe()
     neue = kandidaten() if (args.kandidaten or args.uebernehmen) else None
-    print(bericht(e, neue))
+    luecken = importluecken(e)
+    print(bericht(e, neue, luecken))
+    if args.uebernehmen and luecken and args.luecken_schliessen:
+        neu_dazu = luecken_schliessen(luecken)
+        print(f"\nLuecken geschlossen: {len(neu_dazu)} Modul(e) zusaetzlich "
+              "kopiert -- das ist eine FREIGABE von Code und gehoert vorgelegt:")
+        for r in neu_dazu:
+            print(f"    + {r}")
+        luecken = importluecken(e)
+        if luecken:
+            print(f"\nes fehlen weiterhin {len(luecken)}: {', '.join(sorted(luecken))}")
+            return 1
+    if args.uebernehmen and luecken and not args.trotz_luecken:
+        print(f"\nABGEBROCHEN, nichts kopiert: {len(luecken)} Modul(e) fehlen "
+              "im weitergebbaren Baum. Eine Uebernahme wuerde ihn kaputt "
+              "machen -- am 2026-08-20 genau so passiert (brainlehr.py startete "
+              "vorher, danach ModuleNotFoundError). Die fehlenden Module sind "
+              "Freigabe-KANDIDATEN, keine Ergaenzung: erst entscheiden, ob sie "
+              "nach aussen duerfen, dann hier erneut. Wer weiss was er tut: "
+              "--trotz-luecken.")
+        return 1
     if args.uebernehmen:
         n = uebernehmen(e)
         print(f"\nuebernommen: {n} Datei(en) nach {AUSSEN}. "

@@ -2,11 +2,21 @@
   "messlauf": {
     "A_beide_aus": {
       "trefferguete": [
-        0,
+        1,
         35
       ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
       "falsches_schweigen": [
-        11,
+        10,
         35
       ],
       "richtiges_schweigen": [
@@ -18,11 +28,25 @@
         10
       ]
     },
+    "klassenausfall": {
+      "A_beide_aus": "KLASSENAUSFALL: lesson: 0 von 15.\n\nEine Zielklasse, die bei 5+ Faellen NULL trifft, ist strukturell unerreichbar -- das ist ein Defekt des Messaufbaus, kein schwaches Ergebnis. Zweimal belegt (L-0e0ab6, Vorkommen 10 und 11): beide Male wurde die Kennung gegen ein Ziel gehalten, das den PFAD traegt.\n\nZum Vergleich, die uebrigen Klassen: node: 1 von 20\n\nZuerst pruefen: Vergleicht die Rangfunktion dasselbe Feld, das der Korpus als Ziel fuehrt? `target_kind` sagt, welche Form erwartet wird.",
+      "C_beide_an": "KLASSENAUSFALL: lesson: 0 von 15.\n\nEine Zielklasse, die bei 5+ Faellen NULL trifft, ist strukturell unerreichbar -- das ist ein Defekt des Messaufbaus, kein schwaches Ergebnis. Zweimal belegt (L-0e0ab6, Vorkommen 10 und 11): beide Male wurde die Kennung gegen ein Ziel gehalten, das den PFAD traegt.\n\nZum Vergleich, die uebrigen Klassen: node: 1 von 20\n\nZuerst pruefen: Vergleicht die Rangfunktion dasselbe Feld, das der Korpus als Ziel fuehrt? `target_kind` sagt, welche Form erwartet wird."
+    },
     "B_2Kanal_an_Pflicht_aus": {
       "trefferguete": [
-        2,
+        15,
         35
       ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          4,
+          15
+        ],
+        "node": [
+          11,
+          20
+        ]
+      },
       "falsches_schweigen": [
         0,
         35
@@ -38,11 +62,21 @@
     },
     "C_beide_an": {
       "trefferguete": [
-        0,
+        1,
         35
       ],
+      "trefferguete_je_klasse": {
+        "lesson": [
+          0,
+          15
+        ],
+        "node": [
+          1,
+          20
+        ]
+      },
       "falsches_schweigen": [
-        32,
+        34,
         35
       ],
       "richtiges_schweigen": [
@@ -57,8 +91,39 @@
   },
   "eichung": {
     "case": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
-    "zustand": "B_2Kanal_an_Pflicht_aus",
+    "zustand": "A_beide_aus",
     "vor": true,
     "nach": false
+  },
+  "stand": {
+    "kennung": "20260820T094809-1194795b",
+    "aufgenommen": "2026-08-20T11:48:09+02:00"
+  },
+  "laufmetadaten": {
+    "commit": "a4eda5ddef1ec78a63f127ae9d17137ccac5d669",
+    "arbeitsbaum_schmutzig": true,
+    "korpus_datei": "runs/pruefkorpus.jsonl",
+    "korpus_hash_sha256": "e0c60e96310e9b1f1ff4ac4191e794d00d91f5e946742f2a348fc4b098e191d4",
+    "korpus_gesamt": 45,
+    "korpus_solvable": 35,
+    "korpus_negative": 10
+  },
+  "konfiguration": {
+    "min_hits": 3,
+    "explore_rate": 0.15,
+    "trust_weight": 0.35,
+    "max_nodes": 10,
+    "max_lessons": 7,
+    "noise_floor_mad_mult": 2.0,
+    "radar_min_sample_n": 4,
+    "full_scan_row_cap": 5000,
+    "project_calibration_min_samples": 50,
+    "ensemble_top_n": 5,
+    "zweiter_kanal": true,
+    "ensemble_pflicht": true,
+    "embed_model": "bge-m3@ctx2048",
+    "bestand_knowledge_nodes": 5217,
+    "bestand_lessons_learned": 1142,
+    "bestand_knowledge_embeddings": 7300
   }
 }
