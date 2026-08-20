@@ -1693,3 +1693,37 @@ Selbstverstümmelung, deshalb ist die Vorgabe `sensibel = 0`.
 **Erfolgsmaß:** `tests/test_e07_bestand_im_klartext.py` schlägt um — die heute
 grünen Zusicherungen („Klartext lesbar") müssen für einen sensiblen Knoten rot
 werden und für einen normalen grün bleiben.
+
+## Melder-Verdrahtung 2026-08-20 — der Ort der Wirkung ist nicht immer ein Haken
+
+**Ist-Stand, gemessen:** `melder/ausloeserlos.py` meldete 25 Mechanismen ohne
+Auslöser, nach zwei Runden noch 18 von 50 — 16 davon ausdrücklich Werkzeuge
+für Menschen oder für den Handlauf.
+
+**Die Entscheidung, die nur in Commit-Nachrichten stand und deshalb hierher
+gehört:** Ein Melder wird an dem Ort eingehängt, an dem seine Zahl
+**entsteht**, nicht an dem, an dem sie später gelesen wird.
+
+- `klassenausfall` sitzt darum in `kern/messlauf_abrufguete.py` und nicht an
+  einem Haken. Ein Haken hätte das fertige JSON gelesen und den Ausfall
+  gemeldet, nachdem der Lauf vorbei ist; im Messlauf steht er neben der Zahl,
+  die er erklärt.
+- `quelle_gegen_betrieb` sitzt am `pre-push` und blockiert, weil es prüft, ob
+  die Wächter dieses Pushes überhaupt die versionierten sind.
+- `unbelegter_eingang` wird **nicht** eingehängt: ein handgeprüfter Treffer von
+  dreien war falsch. Ein Prüfanlass, der Arbeit anhält, wird nach dem ersten
+  Fehlalarm abgeschaltet — dann wirkt gar nichts mehr.
+
+**Verworfen:** alle drei pauschal an `SessionStart`. Preis wäre gewesen: drei
+Ausgaben je Sitzungsstart, von denen zwei nichts mit der Sitzung zu tun haben,
+und ein Melder (`klassenausfall`), der ohne frischen Messlauf immer dasselbe
+sagt.
+
+**Preis der getroffenen Wahl:** `ausloeserlos` zählt `klassenausfall`
+weiterhin als unverdrahtet, weil der Messlauf selbst von Hand gefahren wird.
+Das ist kein Fehler des Zählers — es ist die ehrliche Aussage.
+
+**Erfolgsmaß:** Ein künstlicher Totalausfall einer Zielklasse muss im
+Messlauf gemeldet werden, ein schwaches Ergebnis nicht. Als Zusicherung in
+`demo()` von `kern/messlauf_abrufguete.py`, dort auch die Deckungsprobe
+(Summe der Klassennenner == Gesamtnenner).

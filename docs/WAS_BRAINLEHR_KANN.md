@@ -1,16 +1,16 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-20T10:16:58+0200 (Stand `d41c6203`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-08-20T11:30:35+0200 (Stand `c868a543`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 
 | | |
 |---|---:|
 | Werkzeuge über MCP | 30 |
-| Melder | 48, davon verdrahtet 16 |
+| Melder | 50, davon verdrahtet 20 |
 | Haken | 23, davon verdrahtet 13 |
-| Kernmodule | 110 |
-| Module mit Selbsttest | 133 von 181 |
+| Kernmodule | 111 |
+| Module mit Selbsttest | 136 von 184 |
 
 ## Werkzeuge — was ein Klient aufrufen kann
 
@@ -61,19 +61,19 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/agentendauer.py` | agentendauer.py | — | ja | — |
 | `melder/arbeitsmelder.py` | Ein Melder auf die ARBEIT, nicht auf den Bestand | PostToolUse | ja | — |
 | `melder/auftragsregister.py` | Anweisungsregister | — | ja | — |
-| `melder/ausloeserlos.py` | Meldet Mechanismen unter melder/, haken/, berichte/, die NIE von selbst | — | ja | — |
+| `melder/ausloeserlos.py` | Meldet Mechanismen unter melder/, haken/, berichte/, die NIE von selbst | SessionStart | ja | — |
 | `melder/bewegungsmelder.py` | Haelt die Zahlen der anderen Melder fest und meldet beim naechsten Lauf | SessionStart | ja | — |
 | `melder/derivatfrische.py` | Meldet abgeleitete Dokumente, die AELTER sind als ihre Quelle | SessionStart | ja | — |
 | `melder/dienstwache.py` | Wacht ueber den Dokumentdienst | SessionStart | ja | — |
 | `melder/dokumentzugang.py` | Linie A aus docs/PLAN_DOKUMENTABLAGE_2026-08-16.md | — | — | — |
-| `melder/eilmeldung_etikett.py` | Prueft, ob ein Titel Dringlichkeit BEHAUPTET, ohne das Etikett zu TRAGEN | — | ja | — |
+| `melder/eilmeldung_etikett.py` | Prueft, ob ein Titel Dringlichkeit BEHAUPTET, ohne das Etikett zu TRAGEN | SessionStart | ja | — |
 | `melder/eilmeldung_faellig.py` | Zeigt beim Sitzungsstart, welche Eilmeldungen verfallen sind, statt in | SessionStart | ja | — |
 | `melder/faehigkeiten.py` | faehigkeiten.py | — | ja | — |
 | `melder/foederation.py` | foederation.py | — | ja | — |
 | `melder/fremdrollen.py` | Meldet zwei Fehlklassen in den Claude-Code-Fertigkeiten unter | — | ja | — |
 | `melder/fremdstandsvergleich.py` | Meldet, wenn eine fremde Software oder ein Gesetzestext seit dem letzten | SessionStart | ja | — |
 | `melder/gatestand.py` | Haelt den Lastenkatalog gegen seine eigenen Produktgates: wie viele | — | ja | BDW-C03, BDW-E07, BDW-X01 |
-| `melder/kantenstillstand.py` | Melder: die Kantenberechnung steht still | — | ja | — |
+| `melder/kantenstillstand.py` | Melder: die Kantenberechnung steht still | SessionStart | ja | — |
 | `melder/kartenstand.py` | Sind die Landkarten noch wahr? | — | — | — |
 | `melder/kaskadenanteil.py` | Wie lange arbeitet der teuerste Faden mechanisch weiter, ohne zu delegieren? | Stop | ja | — |
 | `melder/kennungskollision.py` | Traegt in `docs/` eine Kennung (S12, B4.3, §4, 104.1.2) zwei VERSCHIEDENE | — | ja | — |
@@ -86,6 +86,7 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/plan_bestandsabgleich.py` | Haelt Planzeilen aus docs/PLAN_GESAMT_2026-08-13.md gegen den Code und | — | ja | — |
 | `melder/planberuehrung.py` | Meldet, wenn gebaut wird, waehrend der Plan unveraendert bleibt | — | — | — |
 | `melder/pruefer.py` | Der erste Melder, der URTEILT statt zaehlt | SessionStart | ja | — |
+| `melder/quelle_gegen_betrieb.py` | Ausgeliefertes Artefakt gegen seine Quelle | — | ja | — |
 | `melder/rasterblick.py` | Ein Rastervermerk je Ergebnisdatei | SessionStart | ja | — |
 | `melder/rotprobe.py` | Waechter: ein Commit behauptet eine Behebung und nennt keinen Beleg | — | ja | — |
 | `melder/rueckfrageschleife.py` | Stop-Waechter: meldet, wenn eine Antwort mit einer Entscheidungsfrage an den | Stop | ja | — |
@@ -95,8 +96,9 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/spaltenabgleich.py` | J3 | — | ja | — |
 | `melder/speicherherkunft.py` | Melder: traegt eine Antwort eine Aussage aus dem Speicher, ohne ihn zu nennen? | — | ja | — |
 | `melder/systembenutzer_probe.py` |  | — | — | — |
+| `melder/unbelegter_eingang.py` | Ein entfernter/ersetzter Eingang wird an seinen Konsumenten unbelegt weiter behauptet | — | ja | — |
 | `melder/unverdrahtet_swift.py` | Findet Swift-Ansichten und -Typen, die gebaut, aber von nirgends gerufen werden | — | ja | — |
-| `melder/vektorstand.py` | Ein Vektor, der einen Text beschreibt, den es so nicht mehr gibt | — | ja | — |
+| `melder/vektorstand.py` | Ein Vektor, der einen Text beschreibt, den es so nicht mehr gibt | SessionStart | ja | — |
 | `melder/verbundkarte.py` | Schritt 1 aus docs/PLAN_DIAGRAMME_2026-08-16.md | — | — | — |
 | `melder/vermutungswaechter.py` | Stop-Waechter: meldet eine VERMUTUNG, die als Befund dasteht | Stop | ja | — |
 | `melder/vier_nenner.py` | vier_nenner.py | — | ja | — |
@@ -149,6 +151,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/ausschreibekatalog.py` | ausschreibekatalog.py | ja |
 | `kern/ausweis.py` | ausweis.py | ja |
 | `kern/baustein.py` | Der Baustein-Vertrag | ja |
+| `kern/belegsprache.py` | Eine Frage, eine Wortliste: woran erkennt man einen Beleg im Text? | ja |
 | `kern/belegvertrag.py` | Belegvertrag | — |
 | `kern/bereinigung.py` | Was das Haus verlaesst, wird angesehen | ja |
 | `kern/bestandteile.py` | kern/bestandteile.py | — |
