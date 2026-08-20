@@ -105,8 +105,26 @@
    "waise": false
   },
   {
+   "id": "la_com_videoki_studio",
+   "text": "launchd com.videoki.studio",
+   "form": "startweg",
+   "waise": false
+  },
+  {
    "id": "la_de_brainlehr_dienst",
    "text": "launchd de.brainlehr.dienst",
+   "form": "startweg",
+   "waise": false
+  },
+  {
+   "id": "la_de_brainlehr_tagessicherung",
+   "text": "launchd de.brainlehr.tagessicherung",
+   "form": "startweg",
+   "waise": false
+  },
+  {
+   "id": "la_local_openlehr_einzelunternehmer",
+   "text": "launchd local.openlehr.einzelunternehmer",
    "form": "startweg",
    "waise": false
   },
@@ -195,6 +213,18 @@
    "waise": false
   },
   {
+   "id": "port_12465",
+   "text": "Port 12465",
+   "form": "port",
+   "waise": true
+  },
+  {
+   "id": "port_14785",
+   "text": "Port 14785",
+   "form": "port",
+   "waise": true
+  },
+  {
    "id": "port_17788",
    "text": "Port 17788 (fremd",
    "form": "port",
@@ -261,6 +291,12 @@
    "waise": false
   },
   {
+   "id": "port_4433",
+   "text": "Port 4433",
+   "form": "port",
+   "waise": true
+  },
+  {
    "id": "port_4599",
    "text": "Port 4599 (fremd",
    "form": "port",
@@ -303,6 +339,12 @@
    "waise": false
   },
   {
+   "id": "port_5678",
+   "text": "Port 5678",
+   "form": "port",
+   "waise": true
+  },
+  {
    "id": "port_7331",
    "text": "Port 7331",
    "form": "port",
@@ -321,14 +363,26 @@
    "waise": false
   },
   {
+   "id": "port_7860",
+   "text": "Port 7860",
+   "form": "port",
+   "waise": true
+  },
+  {
    "id": "port_8000",
-   "text": "Port 8000 (fremd",
+   "text": "Port 8000",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_8025",
+   "text": "Port 8025 (fremd",
    "form": "port",
    "waise": false
   },
   {
    "id": "port_8080",
-   "text": "Port 8080 (fremd",
+   "text": "Port 8080",
    "form": "port",
    "waise": false
   },
@@ -423,6 +477,12 @@
    "waise": true
   },
   {
+   "id": "port_9999",
+   "text": "Port 9999 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
    "id": "schwarmwacht",
    "text": "schwarmwacht",
    "form": "kasten",
@@ -449,6 +509,12 @@
   {
    "id": "stiftshuette",
    "text": "stiftshuette",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "videoki",
+   "text": "videoki",
    "form": "kasten",
    "waise": false
   },
@@ -506,6 +572,12 @@
    "von": "stiftshuette",
    "nach": "port_1234",
    "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "atelier",
+   "nach": "port_2026",
+   "text": "lauscht",
    "art": "gerichtet"
   },
   {
@@ -602,6 +674,12 @@
    "von": "openlehr_legacy",
    "nach": "port_4343",
    "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "videoki",
+   "nach": "port_4433",
+   "text": "lauscht",
    "art": "gerichtet"
   },
   {
@@ -782,6 +860,12 @@
    "von": "wpdrop",
    "nach": "port_5601",
    "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "videoki",
+   "nach": "port_5678",
+   "text": "lauscht",
    "art": "gerichtet"
   },
   {
@@ -923,6 +1007,18 @@
    "art": "gerichtet"
   },
   {
+   "von": "videoki",
+   "nach": "port_7860",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "videoki",
+   "nach": "port_8000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
    "von": "UsbKabelTester",
    "nach": "port_8000",
    "text": "ruft",
@@ -1040,6 +1136,24 @@
    "von": "wpdrop",
    "nach": "port_8000",
    "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "design_lab",
+   "nach": "port_8025",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "videoki",
+   "nach": "port_8025",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "videoki",
+   "nach": "port_8080",
+   "text": "lauscht",
    "art": "gerichtet"
   },
   {
@@ -1625,6 +1739,18 @@
    "art": "gerichtet"
   },
   {
+   "von": "fahrtenbuch",
+   "nach": "port_9999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "videoki",
+   "nach": "port_9999",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
    "von": "UsbKabelTester",
    "nach": "port_11434",
    "text": "ruft",
@@ -1909,6 +2035,18 @@
   {
    "von": "wpdrop",
    "nach": "port_11520",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "videoki",
+   "nach": "port_12465",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "videoki",
+   "nach": "port_14785",
    "text": "lauscht",
    "art": "gerichtet"
   },
@@ -2406,6 +2544,12 @@
   },
   {
    "von": "la_de_brainlehr_dienst",
+   "nach": "atelier",
+   "text": "startet",
+   "art": "gerichtet"
+  },
+  {
+   "von": "la_de_brainlehr_tagessicherung",
    "nach": "brainlehr",
    "text": "startet",
    "art": "gerichtet"

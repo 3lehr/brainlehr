@@ -4,7 +4,7 @@
  "knoten": [
   {
    "id": "agents",
-   "text": "agents · 6",
+   "text": "agents · 7",
    "form": "kasten",
    "waise": false
   },
@@ -16,7 +16,7 @@
   },
   {
    "id": "apps",
-   "text": "apps · 84",
+   "text": "apps · 92",
    "form": "kasten",
    "waise": false
   },
@@ -46,7 +46,19 @@
   },
   {
    "id": "brainlehr",
-   "text": "brainlehr · 256",
+   "text": "brainlehr · 304",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "domaenen",
+   "text": "domaenen · 5",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "domaenenimporte",
+   "text": "domaenenimporte · 1",
    "form": "kasten",
    "waise": false
   },
@@ -76,7 +88,7 @@
   },
   {
    "id": "methodik",
-   "text": "methodik · 142",
+   "text": "methodik · 162",
    "form": "kasten",
    "waise": false
   },
@@ -88,13 +100,13 @@
   },
   {
    "id": "openlehr",
-   "text": "openlehr · 29",
+   "text": "openlehr · 41",
    "form": "kasten",
    "waise": false
   },
   {
    "id": "ops",
-   "text": "ops · 84",
+   "text": "ops · 91",
    "form": "kasten",
    "waise": false
   },
@@ -157,7 +169,19 @@
   {
    "von": "brainlehr",
    "nach": "methodik",
-   "text": "74",
+   "text": "104",
+   "art": "ungerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "openlehr",
+   "text": "33",
+   "art": "ungerichtet"
+  },
+  {
+   "von": "apps",
+   "nach": "brainlehr",
+   "text": "26",
    "art": "ungerichtet"
   },
   {
@@ -169,6 +193,12 @@
   {
    "von": "brainlehr",
    "nach": "plaene",
+   "text": "23",
+   "art": "ungerichtet"
+  },
+  {
+   "von": "apps",
+   "nach": "methodik",
    "text": "20",
    "art": "ungerichtet"
   }

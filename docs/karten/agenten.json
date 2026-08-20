@@ -3,6 +3,24 @@
  "titel": "Agenten und ihre Auslöser — was wirklich verdrahtet ist",
  "knoten": [
   {
+   "id": "ag_cavecrew_builder",
+   "text": "Agent cavecrew-builder",
+   "form": "startweg",
+   "waise": false
+  },
+  {
+   "id": "ag_cavecrew_investigator",
+   "text": "Agent cavecrew-investigator",
+   "form": "startweg",
+   "waise": false
+  },
+  {
+   "id": "ag_cavecrew_reviewer",
+   "text": "Agent cavecrew-reviewer",
+   "form": "startweg",
+   "waise": false
+  },
+  {
    "id": "ag_compliance",
    "text": "Agent compliance",
    "form": "startweg",
@@ -69,6 +87,15 @@
    "waise": false
   },
   {
+   "id": "s_abgabepruefung_py",
+   "text": "abgabepruefung.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Ein Stopp-Punkt beendet die Pruefung nicht, er verlegt sie.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/abgabepruefung.py"
+  },
+  {
    "id": "s_agent_model_guard_py",
    "text": "agent_model_guard.py",
    "form": "kasten",
@@ -94,6 +121,24 @@
    "zweck": "PreToolUse-Guard: Neuen Agent-Spawn blocken, wenn ein Agent dieser Session",
    "entscheidet": true,
    "quelle": "hub/scripts/agent_reuse_guard_hook.py"
+  },
+  {
+   "id": "s_agentenanker_abruf_py",
+   "text": "agentenanker_abruf.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "agentenanker_abruf.py -- PreToolUse-Haken (Matcher: Agent), Teil 1 des",
+   "entscheidet": true,
+   "quelle": "brainlehr/haken/agentenanker_abruf.py"
+  },
+  {
+   "id": "s_agentenanker_einspielung_py",
+   "text": "agentenanker_einspielung.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "agentenanker_einspielung.py -- SubagentStart-Haken, Teil 2 des verengten",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/agentenanker_einspielung.py"
   },
   {
    "id": "s_antwort_abruf_py",
@@ -132,6 +177,15 @@
    "quelle": "brainlehr/haken/auftragshypothese_waechter.py"
   },
   {
+   "id": "s_ausloeserlos_py",
+   "text": "ausloeserlos.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Meldet Mechanismen unter melder/, haken/, berichte/, die NIE von selbst",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/ausloeserlos.py"
+  },
+  {
    "id": "s_auszug_nachziehen_py",
    "text": "auszug_nachziehen.py",
    "form": "kasten",
@@ -139,6 +193,15 @@
    "zweck": "Stop-Haken: den Auszug nachziehen, wenn der Bestand juenger ist -- und",
    "entscheidet": false,
    "quelle": "brainlehr/haken/auszug_nachziehen.py"
+  },
+  {
+   "id": "s_bewegungsmelder_py",
+   "text": "bewegungsmelder.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Haelt die Zahlen der anderen Melder fest und meldet beim naechsten Lauf",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/bewegungsmelder.py"
   },
   {
    "id": "s_bsi_session_hint_py",
@@ -204,6 +267,15 @@
    "quelle": "hub/scripts/dateilink_waechter.py"
   },
   {
+   "id": "s_derivatfrische_py",
+   "text": "derivatfrische.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Meldet abgeleitete Dokumente, die AELTER sind als ihre Quelle.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/derivatfrische.py"
+  },
+  {
    "id": "s_dienstwache_py",
    "text": "dienstwache.py",
    "form": "kasten",
@@ -213,6 +285,15 @@
    "quelle": "brainlehr/melder/dienstwache.py"
   },
   {
+   "id": "s_eilmeldung_etikett_py",
+   "text": "eilmeldung_etikett.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Prueft, ob ein Titel Dringlichkeit BEHAUPTET, ohne das Etikett zu TRAGEN.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/eilmeldung_etikett.py"
+  },
+  {
    "id": "s_eilmeldung_faellig_py",
    "text": "eilmeldung_faellig.py",
    "form": "kasten",
@@ -220,6 +301,15 @@
    "zweck": "Zeigt beim Sitzungsstart, welche Eilmeldungen verfallen sind, statt in",
    "entscheidet": false,
    "quelle": "brainlehr/melder/eilmeldung_faellig.py"
+  },
+  {
+   "id": "s_eilmeldung_frisch_py",
+   "text": "eilmeldung_frisch.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Stellt FRISCHE Eilmeldungen mitten in eine laufende Sitzung zu -- auch",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/eilmeldung_frisch.py"
   },
   {
    "id": "s_eilmeldung_hook_py",
@@ -249,6 +339,15 @@
    "quelle": "brainlehr/haken/existenzpruefung.py"
   },
   {
+   "id": "s_fremdstandsvergleich_py",
+   "text": "fremdstandsvergleich.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Meldet, wenn eine fremde Software oder ein Gesetzestext seit dem letzten",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/fremdstandsvergleich.py"
+  },
+  {
    "id": "s_gegenprobe_faellig_py",
    "text": "gegenprobe_faellig.py",
    "form": "kasten",
@@ -256,6 +355,24 @@
    "zweck": "gegenprobe_faellig.py — stiller SessionStart-Melder (Auftrag 2026-08-07,",
    "entscheidet": false,
    "quelle": "hub/scripts/gegenprobe_faellig.py"
+  },
+  {
+   "id": "s_kantenstillstand_py",
+   "text": "kantenstillstand.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Melder: die Kantenberechnung steht still.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/kantenstillstand.py"
+  },
+  {
+   "id": "s_kaskadenanteil_py",
+   "text": "kaskadenanteil.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Wie lange arbeitet der teuerste Faden mechanisch weiter, ohne zu delegieren?",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/kaskadenanteil.py"
   },
   {
    "id": "s_knowledge_capture_hook_py",
@@ -283,6 +400,24 @@
    "zweck": "Meldet, wenn das Kontextfenster voll laeuft -- bevor die Verdichtung einsetzt.",
    "entscheidet": false,
    "quelle": "brainlehr/haken/kontextstand.py"
+  },
+  {
+   "id": "s_korrekturlehre_py",
+   "text": "korrekturlehre.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Stop-Waechter: der Betreiber hat korrigiert -- und nichts wurde festgehalten.",
+   "entscheidet": true,
+   "quelle": "brainlehr/melder/korrekturlehre.py"
+  },
+  {
+   "id": "s_kurator_taeglich_py",
+   "text": "kurator_taeglich.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "kurator_taeglich.py [--force] [--heute ISO8601] | --selbsttest",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/kurator_taeglich.py"
   },
   {
    "id": "s_mcp_veraltet_py",
@@ -375,6 +510,15 @@
    "quelle": "brainlehr/melder/rasterblick.py"
   },
   {
+   "id": "s_regelrouting_py",
+   "text": "regelrouting.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Regel-Routing: spielt eine Regel ein, WENN sie gebraucht wird.",
+   "entscheidet": false,
+   "quelle": "brainlehr/haken/regelrouting.py"
+  },
+  {
    "id": "s_regelwechsel_py",
    "text": "regelwechsel.py",
    "form": "kasten",
@@ -382,6 +526,15 @@
    "zweck": "Meldet mitten in der Sitzung, wenn sich eine Regeldatei geaendert hat.",
    "entscheidet": false,
    "quelle": "brainlehr/haken/regelwechsel.py"
+  },
+  {
+   "id": "s_rueckfrageschleife_py",
+   "text": "rueckfrageschleife.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Stop-Waechter: meldet, wenn eine Antwort mit einer Entscheidungsfrage an den",
+   "entscheidet": true,
+   "quelle": "brainlehr/melder/rueckfrageschleife.py"
   },
   {
    "id": "s_settings_guard_py",
@@ -429,6 +582,15 @@
    "quelle": "brainlehr/haken/stash_guard_hook.py"
   },
   {
+   "id": "s_uebergabe_pfade_py",
+   "text": "uebergabe_pfade.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Uebergabedokumente muessen sich selbst verankern.",
+   "entscheidet": false,
+   "quelle": "hub/scripts/uebergabe_pfade.py"
+  },
+  {
    "id": "s_ui_guard_hook_py",
    "text": "ui_guard_hook.py",
    "form": "kasten",
@@ -436,6 +598,24 @@
    "zweck": "PostToolUse-Haken fuer ui_guard.py.",
    "entscheidet": false,
    "quelle": "~/.claude/skills/design-waechter/ui_guard_hook.py"
+  },
+  {
+   "id": "s_vektorstand_py",
+   "text": "vektorstand.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Ein Vektor, der einen Text beschreibt, den es so nicht mehr gibt -- und",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/vektorstand.py"
+  },
+  {
+   "id": "s_vermutungswaechter_py",
+   "text": "vermutungswaechter.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Stop-Waechter: meldet eine VERMUTUNG, die als Befund dasteht.",
+   "entscheidet": true,
+   "quelle": "brainlehr/melder/vermutungswaechter.py"
   },
   {
    "id": "s_wiedereinstieg_py",
@@ -546,6 +726,12 @@
   },
   {
    "von": "ev_PostToolUse",
+   "nach": "s_uebergabe_pfade_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
    "nach": "s_eilmeldung_hook_py",
    "text": "global",
    "art": "gerichtet"
@@ -553,6 +739,12 @@
   {
    "von": "ev_PostToolUse",
    "nach": "s_sichtbarkeit_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_PostToolUse",
+   "nach": "s_eilmeldung_frisch_py",
    "text": "global",
    "art": "gerichtet"
   },
@@ -599,6 +791,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "ev_PreToolUse",
+   "nach": "s_regelrouting_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
    "von": "modell",
    "nach": "ev_SessionStart",
    "text": "loest aus",
@@ -607,6 +805,30 @@
   {
    "von": "ev_SessionStart",
    "nach": "s_bsi_session_hint_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_ausloeserlos_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_eilmeldung_etikett_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_kantenstillstand_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_vektorstand_py",
    "text": "global",
    "art": "gerichtet"
   },
@@ -696,6 +918,12 @@
   },
   {
    "von": "ev_SessionStart",
+   "nach": "s_derivatfrische_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
    "nach": "s_worktree_identitaet_py",
    "text": "global",
    "art": "gerichtet"
@@ -703,6 +931,18 @@
   {
    "von": "ev_SessionStart",
    "nach": "s_dienstwache_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_bewegungsmelder_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_fremdstandsvergleich_py",
    "text": "global",
    "art": "gerichtet"
   },
@@ -751,6 +991,36 @@
   {
    "von": "ev_Stop",
    "nach": "s_dateilink_waechter_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_rueckfrageschleife_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_vermutungswaechter_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_korrekturlehre_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_kaskadenanteil_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_abgabepruefung_py",
    "text": "global",
    "art": "gerichtet"
   },
@@ -839,6 +1109,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "ev_UserPromptSubmit",
+   "nach": "s_eilmeldung_frisch_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
    "von": "werkzeug",
    "nach": "ev_WorktreeCreate",
    "text": "loest aus",
@@ -863,8 +1139,38 @@
    "art": "gerichtet"
   },
   {
+   "von": "ev_PreToolUse",
+   "nach": "s_agentenanker_abruf_py",
+   "text": "repo",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_eilmeldung_etikett_py",
+   "text": "repo",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_kantenstillstand_py",
+   "text": "repo",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_kurator_taeglich_py",
+   "text": "repo",
+   "art": "gerichtet"
+  },
+  {
    "von": "ev_Stop",
    "nach": "s_existenzpruefung_py",
+   "text": "repo",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SubagentStart",
+   "nach": "s_agentenanker_einspielung_py",
    "text": "repo",
    "art": "gerichtet"
   }
