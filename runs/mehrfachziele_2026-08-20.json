@@ -3435,5 +3435,3008 @@
     "korpus_gesamt": 45,
     "korpus_solvable": 35,
     "korpus_negative": 10
+  },
+  "manuelle_beurteilung": {
+    "beschreibung": "Manuelle Beurteilung je Fall (35 loesbare Faelle, Zustand B_2Kanal_an_Pflicht_aus): traegt ein ausgelieferter Eintrag, der NICHT das im Korpus vorgesehene target_id ist, die Anfrage sachlich ebenso gut wie das vorgesehene Ziel? Rohdaten aus runs/mehrfachziele_2026-08-20.json (kern/messlauf_abrufguete.py unveraendert benutzt), Beurteilung darauf von Hand.",
+    "positivkontrolle_treffer_heute": [
+      15,
+      35
+    ],
+    "auszaehlung": {
+      "treffer_heute_bereits": 15,
+      "fehlgriffe_gesamt": 20,
+      "fehlgriffe_mit_legitimem_zweitziel": 7,
+      "fehlgriffe_ohne_zweitziel_gegenprobe": 13,
+      "summe_kontrolle_35": 35,
+      "trefferquote_heute": [
+        15,
+        35
+      ],
+      "trefferquote_mit_mehrfachzielen": [
+        22,
+        35
+      ]
+    },
+    "gegenprobe_punkt5": {
+      "text": "Von 20 Fehlgriffen liefert die manuelle Durchsicht bei 13 KEIN legitimes Zweitziel (13/20 = 65%). Die Mehrheit der Fehlgriffe bleibt damit auch unter grosszuegiger Pruefung ein echter Fehlgriff -- der Massstab ist nicht so weit gefasst, dass er nur die eigene Nachsicht misst.",
+      "fehlgriffe_ohne_zweitziel": 13,
+      "nenner_fehlgriffe": 20
+    },
+    "hinweis_deckung": "Die 15 heute schon als Treffer gezaehlten Faelle wurden NICHT zusaetzlich auf redundante Zweitziel-Kandidaten durchsucht -- das aendert an ihrem Status nichts (sie zaehlen bereits als Treffer) und war fuer die entscheidende Zahl (Fehlgriffe, die zu Treffern wuerden) nicht erforderlich.",
+    "existenzprobe_schema": "kern/messlauf_abrufguete.py::target_hit() prueft AUSSCHLIESSLICH gegen genau EIN c['target_id'] (Zeile ~132-137); runs/pruefkorpus.jsonl hat pro Zeile genau ein target_id/target_kind/target_label-Feld, kein target_ids/alternativziele/akzeptiert_auch. Mehrfachziele sind im Schema und im Messweg NICHT vorgesehen -- eine Erweiterung waere ein Schema- und Codeumbau, kein Konfigurationsschalter.",
+    "faelle": [
+      {
+        "nr": 1,
+        "anfrage_gekuerzt": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfe",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-a9ccd0",
+          "label": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in j"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/shared/arch/testdaten-kennzeichnen-sperre-ist",
+            "titel": "Testdaten kennzeichnen: Warum die Sperre eine physische Trennung ist und das Merkmal nur die Herkunft"
+          },
+          {
+            "id": "/methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf",
+            "titel": "ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)"
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/methodik/direktiven/kurze-zustimmung-ist-eine-entscheidung",
+            "titel": "Kurze Zustimmung ist eine Entscheidung — Direktive vom 2026-08-11"
+          },
+          {
+            "id": "/methodik/fertigkeiten/pause",
+            "titel": "Sitzung sicher unterbrechen: Sichern vor dem Wiedereinstieg"
+          },
+          {
+            "id": "/methodik/arbeitsweise/04b-ein-erzwinger",
+            "titel": "Wenn ein Erzwinger immer anschlägt, ist er wirkungslos"
+          },
+          {
+            "id": "/methodik/direktiven/geht-nicht-ist-ein-zwischenstand-keine",
+            "titel": "„Geht nicht\" ist ein Zwischenstand, keine Antwort — erst widerlegen, dann fragen"
+          },
+          {
+            "id": "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+            "titel": "Grundsatz H1: alles Beta, keine echten Daten, kein Livebetrieb"
+          },
+          {
+            "id": "/methodik/arbeitsweise/04-eine-regel-ohne-erzwinger-aendert-nichts",
+            "titel": "Warum eine Regel ohne Erzwinger wirkungslos bleibt"
+          },
+          {
+            "id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+            "titel": "Betriebszustand: openlehr muss bis zum ersten Beta-Test nicht laufen"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-706807",
+            "titel": "Ein Agent bestaetigt Handlungen, die nachweislich nicht stattgefunden haben — zweimal am selben Tag gemessen, beide Male mit Details, die Sicherheit vortaeusche"
+          },
+          {
+            "id": "L-b034c4",
+            "titel": "Ein Test schreibt einen Bug als Soll-Verhalten fest, weil er eine Wirkung prüft, die der Code aus dem falschen Grund erzielt. fahrtenbuch/CarPlay: Der Test „Sna"
+          },
+          {
+            "id": "L-b8559a",
+            "titel": "Die Uhrzeit ueber Stunden FORTGESCHRIEBEN statt gemessen -- und der Drift waechst, bis er einen Waechter abschaltet. Am 2026-08-16 in brainlehr: Ich schaetzte d"
+          },
+          {
+            "id": "L-a9ccd0",
+            "titel": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in joker_trip_prompt_controller.dart), dessen Timeout-Pfad denselben decline() aufri"
+          },
+          {
+            "id": "L-476c1b",
+            "titel": "Entwicklerinformation im sichtbaren UI-Text: Ein Hinweis am E-Mail-Feld lautete \"Leer lassen löscht beim Speichern eine vorhandene Adresse (bekannte Server-Lück"
+          },
+          {
+            "id": "L-14d14c",
+            "titel": "Eine Uebergabedatei ueberlebte einen RICHTUNGSWECHSEL des Auftrags und beschrieb danach zuversichtlich den aufgegebenen Strang. Am 2026-08-16 in buckeberg: docs"
+          },
+          {
+            "id": "L-06940c",
+            "titel": "Eine Nachfolgeaktion synchron nach einem `unawaited(dismissModal())` gestartet -- und damit ein Rennen zwischen der Warteschlange und dem eigenen finally-Block "
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer -- kein Zweitziel noetig, nicht gesondert auf Zweitziel geprueft."
+      },
+      {
+        "nr": 2,
+        "anfrage_gekuerzt": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-298823",
+          "label": "openlehr/steuer: vierter Fall am selben Tag (2026-07-31), in dem ein Feld/eine K"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/brainlehr/niemand-misst-automatisch-ob",
+            "titel": "Ob eingespieltes Wissen wirklich benutzt wurde, misst kein System automatisch — und was daraus fuer uns folgt"
+          },
+          {
+            "id": "/brainlehr/faehigkeiten/melden-wenn-ein-zitat-keinen-beleg-hat",
+            "titel": "Ein Zitat ohne Beleg wird gemeldet"
+          },
+          {
+            "id": "/methodik/fertigkeiten/design-waechter",
+            "titel": "design-waechter: neun Fragen vor dem Fertigmelden eines Bildschirms"
+          },
+          {
+            "id": "/apps/fahrtenbuch/fahrtenbuch-legacy-gilt-beim-neubau-als",
+            "titel": "fahrtenbuch_legacy gilt beim Neubau als ungeprüft — Weisung 2026-08-16"
+          },
+          {
+            "id": "/methodik/direktiven/wissen-festhalten-abrufen-systemweit-automatisch",
+            "titel": "Wissen festhalten & abrufen (systemweit, automatisch)"
+          },
+          {
+            "id": "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+            "titel": "Grundsatz H1: alles Beta, keine echten Daten, kein Livebetrieb"
+          },
+          {
+            "id": "/methodik/arbeitsweise/h6-bau-so",
+            "titel": "Wie ein Durchlauf ohne Menschen prüfbar bleibt (H6)"
+          },
+          {
+            "id": "/plaene/plan-destille-2026-08-09/s14-die-fehlklasse-dieses-tages-hat",
+            "titel": "S14: Wenn etwas gebaut ist, aber nichts bewirkt"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-7a5c00",
+            "titel": "Zwei Trigger auf dasselbe Ereignis statt einem: die Reihenfolge ist NICHT zugesichert, und bei fts5 loescht die eine Haelfte, was die andere gerade eingefuegt h"
+          },
+          {
+            "id": "L-476c1b",
+            "titel": "Entwicklerinformation im sichtbaren UI-Text: Ein Hinweis am E-Mail-Feld lautete \"Leer lassen löscht beim Speichern eine vorhandene Adresse (bekannte Server-Lück"
+          },
+          {
+            "id": "L-ec9cf2",
+            "titel": "Anti-Halluzinations-Regel im System-Prompt (\"Preis NUR wenn im FAKTEN-Block belegt, sonst 0\") trifft auch Werte, die der Nutzer im selben Prompt woertlich selbs"
+          },
+          {
+            "id": "L-1460f5",
+            "titel": "Beim Einrichten eines Anmeldedienstes drei Fehler nacheinander gebaut, und ALLE DREI waren im Betrieb unsichtbar -- weil der betroffene Bildschirm einen vorgese"
+          },
+          {
+            "id": "L-1228cf",
+            "titel": "Ein Melder, der an UserPromptSubmit haengt, ist im Selbstlauf blind -- also genau dann, wenn niemand zusieht. brainlehr, 2026-08-14: haken/mcp_veraltet.py exist"
+          },
+          {
+            "id": "L-9e8832",
+            "titel": "Vier Stunden Fehlersuche an einer Anzeige, deren Verhalten dokumentiert ist. Gemessen 2026-08-10 in brainlehr: Ein PostToolUse-Haken gab eine Meldung auf stdout"
+          },
+          {
+            "id": "L-c99879",
+            "titel": "Eine Hilfsfunktion im Pruefstand scheiterte STILL, waehrend ihre zwei Schwesterfunktionen daneben laut scheiterten — und der Lauf meldete \"bestanden\". fahrtenbu"
+          }
+        ],
+        "zweitziel_kandidaten": [
+          "/plaene/plan-destille-2026-08-09/s14-die-fehlklasse-dieses-tages-hat"
+        ],
+        "begruendung": "S14 traegt exakt dasselbe Muster wie das Ziel (Feld geschrieben, aber von niemandem ausgewertet) - 'gebaut, aber ohne Wirkung' deckt den Kern der Anfrage."
+      },
+      {
+        "nr": 3,
+        "anfrage_gekuerzt": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, grei",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-f9f654",
+          "label": "try/catch um einen nicht awaiteten (unawaited) async-Aufruf faengt dessen Fehler"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/direktiven/testumgebung-selbstaendig-handeln-bis",
+            "titel": "Testumgebung: selbstaendig handeln bis zum Wort \"es wird ernst\""
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit",
+            "titel": "„Es funktioniert\" braucht einen Beleg, der vorher rot war (systemweit)"
+          },
+          {
+            "id": "/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht",
+            "titel": "TripLifecycleCoordinator: warum der Fahrt-Lebenszyklus einen Owner braucht (Opus-5-Befund, 2026-07-24)"
+          },
+          {
+            "id": "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+            "titel": "Warum Disziplin verrottet und Erzeugung nicht"
+          },
+          {
+            "id": "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            "titel": "Ohne Plan wird nicht gebaut — Betreiberanweisung 2026-08-12, mit Durchsetzung statt Appell"
+          },
+          {
+            "id": "/methodik/arbeitsweise/h6-bau-so",
+            "titel": "Wie ein Durchlauf ohne Menschen prüfbar bleibt (H6)"
+          },
+          {
+            "id": "/methodik/arbeitsweise/03-funktioniert-braucht-einen-beleg",
+            "titel": "Was als Beleg für „funktioniert\" zählt"
+          },
+          {
+            "id": "/methodik/direktiven/plan-vor-umsetzung-systemweit",
+            "titel": "Plan vor Umsetzung (systemweit)"
+          },
+          {
+            "id": "/methodik/fehlerdurchgang-einer-33-commit-sitzung",
+            "titel": "Fehlerdurchgang einer 33-Commit-Sitzung: zehn eigene Fehler, vier Wurzeln"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-706807",
+            "titel": "Ein Agent bestaetigt Handlungen, die nachweislich nicht stattgefunden haben — zweimal am selben Tag gemessen, beide Male mit Details, die Sicherheit vortaeusche"
+          },
+          {
+            "id": "L-b034c4",
+            "titel": "Ein Test schreibt einen Bug als Soll-Verhalten fest, weil er eine Wirkung prüft, die der Code aus dem falschen Grund erzielt. fahrtenbuch/CarPlay: Der Test „Sna"
+          },
+          {
+            "id": "L-65d33e",
+            "titel": "Ein Melder meldet eine Zahl ohne ihren Nenner und wird deshalb als Aussage ueber das Ganze gelesen. kern/planbindung.py meldet beim Sitzungsstart \"18 Abschnitte"
+          },
+          {
+            "id": "L-ad02b8",
+            "titel": "Ein Subagent startete einen Stundenlauf (gemma4:12b, 15 Aufgaben x 2 Aufrufe a 140s) im Hintergrund und beendete seinen Zug mit \"Prozess laeuft, ich warte auf d"
+          },
+          {
+            "id": "L-9ed380",
+            "titel": "fahrtenbuch_legacy: Zwei Stellen schrieben Felder der trips-Tabelle direkt per db.update(db.trips)/db.into(db.trips).insert() statt ueber TripRepository — Vehic"
+          },
+          {
+            "id": "L-e8a566",
+            "titel": "Im Buckeberg-PDF-Endaudit waren drei unabhängige Subagenten vollständig fertig und meldeten jeweils FAIL. Der Root-Orchestrator integrierte die Abschlussmeldung"
+          },
+          {
+            "id": "L-c97712",
+            "titel": "Ein Auftrag nannte eine Datei gleichzeitig als VORAUSSETZUNG und als TABU -- und deckte damit zu, dass sie gar nicht eingebunden war. Am 2026-08-16 in buckeberg"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein ausgelieferter Eintrag behandelt unawaited async / try-catch faengt eigene Fehler nicht; alle Treffer sind allgemeine Arbeitsweisen-Regeln ohne den technischen Kern."
+      },
+      {
+        "nr": 4,
+        "anfrage_gekuerzt": "Ein Nutzer meldet, dass die Anwendung fälschlicherweise eine aktive Hardwareverbindung anzeigt, obwohl das entsprechende Modul nicht angeschlossen ist. Da veraltete Statusmeldungen aus dem Speicher oh",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-b4b443",
+          "label": "fahrtenbuch Build 59 (2026-08-01, 06:21 UTC): JokerTripPromptRequest.source (Jok"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf",
+            "titel": "ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)"
+          },
+          {
+            "id": "/methodik/direktiven/dringend-der-normbezugs-melder",
+            "titel": "DRINGEND: Normbezugs-Melder bestätigt aufgehobene Normen als belegt — Beispiel § 71 GEG"
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/methodik/direktiven/dringend-antwort-an-buckeberg-der",
+            "titel": "DRINGEND, Antwort an buckeberg: der Frischevergleich faengt euren Fall NICHT -- das Alter faengt ihn"
+          },
+          {
+            "id": "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+            "titel": "Grundsatz H1: alles Beta, keine echten Daten, kein Livebetrieb"
+          },
+          {
+            "id": "/methodik/fertigkeiten/abwesend",
+            "titel": "Abwesenheitsmodus: eigenstaendig weiterarbeiten, nur Zustandswechsel melden statt zu berichten"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/simulation-it-zugriffsregel",
+            "titel": "SIMULATION: absichtlicher Portwiderspruch in der Zugriffsregel zum Buchungssystem"
+          },
+          {
+            "id": "/methodik/arbeitsweise/02b-miss-nicht-nur-die-daten",
+            "titel": "Die Diagnose braucht den lebenden Aufrufer, nicht nur die Zahl"
+          },
+          {
+            "id": "/apps/fahrtenbuch/geraete-teststrategie-debug-variante",
+            "titel": "Wie Debug-Variante und TestFlight-Build gleichzeitig auf dem Geraet getestet werden (Geraete-Teststrategie)"
+          },
+          {
+            "id": "/methodik/direktiven/eilmeldung-an-brainlehr-abgeleitete",
+            "titel": "EILMELDUNG an brainlehr: Abgeleitete Dokumente altern lautlos — der Handout stimmte und war trotzdem irrefuehrend"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-f6c611",
+            "titel": "Dreimal an EINEM Tag (2026-08-18, brainlehr/lehrAtelier) wurde eine QUITTUNG als Beleg für eine WIRKUNG genommen — jedes Mal von einer anderen Sitzung, jedes Ma"
+          },
+          {
+            "id": "L-528f0c",
+            "titel": "Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt — und weil er dabei laut und blockierend ist, verbraucht er das Vertrauen, das er fuer den ec"
+          },
+          {
+            "id": "L-7c864b",
+            "titel": "Beinahefehler 2026-08-19: Fast den Neu-Import einer Domaene als kaputt gemeldet, obwohl er tadellos arbeitete -- gemessen wurde gegen einen anderen Bestand als "
+          },
+          {
+            "id": "L-86e92d",
+            "titel": "Der Weg von unten nach oben existiert und endet im Nichts. Eine Lehre, die dreimal auftritt, wird automatisch auf status='escalated_to_rule' gesetzt und meldet "
+          },
+          {
+            "id": "L-14acea",
+            "titel": "Eine Eskalationsstufe gebaut, die vollstaendig funktioniert und trotzdem niemanden erreicht. Der Eilmeldungs-Haken stellt dringende Meldungen zu, wiederholt sie"
+          },
+          {
+            "id": "L-49b1cf",
+            "titel": "Eine DATIERTE Messung aus einem Modulkopf als aktuellen Zustand gelesen und daraus dem Betreiber den groessten Hebel benannt -- falsch. brainlehr 2026-08-19: Im"
+          },
+          {
+            "id": "L-df660e",
+            "titel": "Den STATUS einer ADR aus der Datei gelesen und den Speicher nicht gefragt -- und daraus fast eine Warnung an eine andere Sitzung verschickt, die das Gegenteil d"
+          }
+        ],
+        "zweitziel_kandidaten": [
+          "L-49b1cf",
+          "/methodik/direktiven/dringend-der-normbezugs-melder"
+        ],
+        "begruendung": "L-49b1cf (datierte Messung als aktuellen Zustand gelesen) und der Normbezugs-Melder-Knoten (aufgehobene Norm weiter als 'belegt' gemeldet) behandeln beide denselben Kern wie das Ziel: veraltete/gecachte Information wird ungeprueft als aktuell ausgegeben."
+      },
+      {
+        "nr": 5,
+        "anfrage_gekuerzt": "Bei der Implementierung eines Systems zur automatischen Erstellung von Antwortentwürfen für Kundenanfragen muss sichergestellt werden, dass kein sensibler Inhalt aus der ursprünglichen Anfrage ungesch",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-44a838",
+          "label": "LLM-Output als neuer ungeschützter Schreibpfad: Neue KI-Features (mail_classify,"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/ops/buckeberg-heizungsentscheidung/buckeberg-rechenkern-zentrale-eingaben",
+            "titel": "Buckeberg Rechenkern: zentrale Eingaben für spätere automatische Homepage-Neuberechnung"
+          },
+          {
+            "id": "/shared/arch/datenbankschutz-87a-87b-urhg-selbst",
+            "titel": "Wer Preise selbst macht, ist datenbankrechtlich schwach geschützt — wer sie sammelt, stark (§87a/§87b UrhG)"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/simulation-redaktion-freigabekette-wer",
+            "titel": "SIMULATION Redaktion: Wer einen Entwurf erstellt, darf ihn nicht freigeben"
+          },
+          {
+            "id": "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            "titel": "Ohne Plan wird nicht gebaut — Betreiberanweisung 2026-08-12, mit Durchsetzung statt Appell"
+          },
+          {
+            "id": "/brainlehr/systemweite-lastenkatalog-pflicht-fuer",
+            "titel": "Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge"
+          },
+          {
+            "id": "/brainlehr/faehigkeiten/sagen-woher-eine-aussage-stammt",
+            "titel": "Sagen, woher eine Aussage stammt"
+          },
+          {
+            "id": "/brainlehr/zeitstempel-bleiben-im-anwendungscode",
+            "titel": "Zeitstempel bleiben im Anwendungscode — die Auditkette verbietet den Datenbank-Vorgabewert"
+          },
+          {
+            "id": "/brainlehr/inference-control-was-andere-faecher",
+            "titel": "Was andere Fachgebiete zur Ableitung geheimer Informationen bereits geloest haben, und wo eine bewiesene Grenze verlaeuft"
+          },
+          {
+            "id": "/brainlehr/faehigkeiten/fremden-text-als-daten-kennzeichnen",
+            "titel": "Fremden Text als Daten kennzeichnen"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-4be9bf",
+            "titel": "Ein Agent mit Wissensspeicher sucht nicht nach Themen, sondern nach SATZART. Gemessen am 2026-08-08 in fuenf Vorgaengen (Hermes gemma4:12b, nur MCP-Werkzeuge, A"
+          },
+          {
+            "id": "L-69217d",
+            "titel": "OpenLehr steuer: normalisierte Tabellen `invoices`/`invoice_items` (mit `BackofficeRepository.create_invoice`/`add_invoice_item`) werden von KEINEM Produktions-"
+          },
+          {
+            "id": "L-2837f3",
+            "titel": "Eine Regel gegen Entwicklersprache in der Oberfläche enthielt als **Positivbeispiel** genau den Satz, den der Betreiber später beanstandete: „Bleibt das Feld le"
+          },
+          {
+            "id": "L-62b600",
+            "titel": "Modellwissen wurde im Wissensknoten korrekt als ungeprueft gekennzeichnet und im GESPRAECH als Tatsache behauptet -- im selben Zug. Am 2026-08-10 legte ich den "
+          },
+          {
+            "id": "L-03f30b",
+            "titel": "Beim Bau eines temporären Sitzungscheckpoints wurde zunächst ein append-only SQLite-Log mit freien Feldern für summary, open_tasks und decisions committed. Dami"
+          },
+          {
+            "id": "L-d5c56d",
+            "titel": "hub/shared-knowledge/einschleusung.py: entschaerfe_fuer_ausgabe() kennzeichnete Bestandstext nur bei Regex-Treffer -- eine Musterliste (Deutsch/Englisch) ist sp"
+          },
+          {
+            "id": "L-90e507",
+            "titel": "Bei einer Schutzrechts-/Compliance-Einschaetzung drei Antwortrunden lang die VERLETZUNG diskutiert, ohne die SCHUTZFAEHIGKEIT zu pruefen. Konkret: fuer eine Pre"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer behandelt einen ungeschuetzten LLM-Output-Schreibpfad fuer sensible Anfrageinhalte; die gelieferten Eintraege liegen alle in anderen Compliance-/Prozessthemen."
+      },
+      {
+        "nr": 6,
+        "anfrage_gekuerzt": "In der Fehleranalyse stellte ich fest, dass die Einblendung von Bestätigungsfenstern oft fehlschlägt oder Daten verliert, weil sie auf eine unsichere Standortbestimmung im UI-Baum angewiesen ist. Ich ",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-cdac52",
+          "label": "Fahrtenbuch Prompt-Listener: Navigator.of(context) auf ambientem Widget-context "
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/enigma-zuerst-falsifizieren-dann-bauen",
+            "titel": "Vor jedem Enigma-Bau: erst falsifizieren, dann bauen"
+          },
+          {
+            "id": "/ops/buckeberg-dokument-pipeline-2026-07-28",
+            "titel": "Buckeberg-Belegablage: Objekt-Anker funktioniert, MÜKRO-Fall wartet auf Klärung"
+          },
+          {
+            "id": "/apps/fahrtenbuch/adr-fahrt-lebenszyklus-braucht",
+            "titel": "TripLifecycleCoordinator: warum der Fahrt-Lebenszyklus einen Owner braucht (Opus-5-Befund, 2026-07-24)"
+          },
+          {
+            "id": "/openlehr/steuer/ui/korrektur-zu-f296146a-nav-ia-kein-neuer",
+            "titel": "Nachtrag zu f296146a: Navigation bekommt keinen neuen Screen, nur eine Gruppierung fuer die Beschriftung"
+          },
+          {
+            "id": "/brainlehr/vor-dem-bau-der-modellzugaenge",
+            "titel": "Vor dem Bau der Modellzugänge-Einstellung: das Einbettungsmodell darf dort NICHT änderbar sein"
+          },
+          {
+            "id": "/methodik/fertigkeiten/ux-walkthrough",
+            "titel": "Kostenstufen-Reihenfolge für den UX-Walkthrough"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/direktiven/eilmeldung-an-brainlehr-eine-neue-regel",
+            "titel": "EILMELDUNG an brainlehr: Eine neue Regel braucht einen Rückwirkungs-Melder, nicht nur einen Text"
+          },
+          {
+            "id": "/apps/openhood-beschlossener-ampel-scoring",
+            "titel": "greenLimited als neue Zwischenstufe der openhood-Ampel: Beschluss steht, Umsetzung noch aus"
+          },
+          {
+            "id": "/shared/arch/neuer-status-enum-wert-statt-zusatz",
+            "titel": "Neuer Zustand als Enum-Wert modellieren, nicht als Zusatz-Flag (Begründung: Exhaustiveness)"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-aa35f4",
+            "titel": "fahrtenbuch, gemessen 2026-07-30: Die autonome Fahrterkennung verwarf rund 30 bestätigte Fahrten in Folge (Telemetriemuster `state_transition.confirmed` → `stat"
+          },
+          {
+            "id": "L-a4edb7",
+            "titel": "Beim Buckeberg-PDF-Umbau wurde Modell 6 ohne belegte Betreiberfreigabe aus dem Nutzersatz gestrichen und daraus 7 Modelle plus Methodenheft abgeleitet; der PDF-"
+          },
+          {
+            "id": "L-bb37e0",
+            "titel": "Ein Wert, der in EINEM Fall zufaellig stimmt, wird fest verdrahtet -- und der Fehler zeigt sich erst beim zweiten Fall, also nach dem Ausliefern. lehrAtelier 20"
+          },
+          {
+            "id": "L-f860ae",
+            "titel": "Verfahren, das am 2026-08-08 in openlehr eine Regression fing, die als Vorbestand durchgegangen waere: die Zuschreibung eines Subagenten gegen die Git-Historie "
+          },
+          {
+            "id": "L-3cad13",
+            "titel": "Dreimal hintereinander eine Diagnose gestellt und committet, ohne die aufrufende Zeile gelesen zu haben. Ursache war jedes Mal banaler als vermutet: nicht durch"
+          },
+          {
+            "id": "L-1460f5",
+            "titel": "Beim Einrichten eines Anmeldedienstes drei Fehler nacheinander gebaut, und ALLE DREI waren im Betrieb unsichtbar -- weil der betroffene Bildschirm einen vorgese"
+          },
+          {
+            "id": "L-df5c13",
+            "titel": "openlehr 2026-08-04: Zwei Architekturempfehlungen abgegeben, die beide bereits normativ entschieden waren — und zwar anders. (1) Vorgeschlagen, `assistent.js` ("
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer behandelt Navigator.of(context) auf instabilem Widget-context bzw. Bestaetigungsfenster mit unsicherer UI-Baum-Position."
+      },
+      {
+        "nr": 7,
+        "anfrage_gekuerzt": "Ein Techniker stellt fest, dass der automatisierte Datenabgleich abgebrochen wird, und wechselt stattdessen auf eine direkte Übertragungsanbindung. Er geht davon aus, dass lediglich die Serververbindu",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-e7bc5e",
+          "label": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern a"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/ops/buckeberg-dokument-pipeline-2026-07-28",
+            "titel": "Buckeberg-Belegablage: Objekt-Anker funktioniert, MÜKRO-Fall wartet auf Klärung"
+          },
+          {
+            "id": "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            "titel": "Ohne Plan wird nicht gebaut — Betreiberanweisung 2026-08-12, mit Durchsetzung statt Appell"
+          },
+          {
+            "id": "/apps/fahrtenbuch/adr-f-026-kein-autoconnect-der-ble",
+            "titel": "Warum autoConnect bei BLE-Verbindungen abgelehnt wurde: der Feldfehler sitzt im Berechtigungs-Vorlauf (ADR F-026, 2026-08-01)"
+          },
+          {
+            "id": "/methodik/direktiven/betreiberfreigabe-2026-08-20-push-ist",
+            "titel": "Betreiberfreigabe 2026-08-20: Push ist dauerhaft genehmigt, Entscheidungen trifft der Assistent"
+          },
+          {
+            "id": "/methodik/direktiven/betreiberfreigabe-2026-08-19-was-ich",
+            "titel": "Betreiberfreigabe 2026-08-19: Was ich als „wartet auf dich\" melde, erledige ich künftig selbst"
+          },
+          {
+            "id": "/methodik/fehlerdurchgang-einer-33-commit-sitzung",
+            "titel": "Fehlerdurchgang einer 33-Commit-Sitzung: zehn eigene Fehler, vier Wurzeln"
+          },
+          {
+            "id": "/brainlehr/die-einbuergerungsschranke-hat-ihre",
+            "titel": "Die Einbuergerungsschranke besteht ihre erste Probe im Feld — Ziel war der Assistent selbst"
+          },
+          {
+            "id": "/methodik/fertigkeiten/abwesend",
+            "titel": "Abwesenheitsmodus: eigenstaendig weiterarbeiten, nur Zustandswechsel melden statt zu berichten"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/simulation-it-zugriffsregel",
+            "titel": "SIMULATION: absichtlicher Portwiderspruch in der Zugriffsregel zum Buchungssystem"
+          },
+          {
+            "id": "/methodik/direktiven/betreiberweisung-2026-08-20-es-gibt",
+            "titel": "Betreiberweisung 2026-08-20: Es gibt Knöpfe, die die KI technisch nicht klicken kann"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-706807",
+            "titel": "Ein Agent bestaetigt Handlungen, die nachweislich nicht stattgefunden haben — zweimal am selben Tag gemessen, beide Male mit Details, die Sicherheit vortaeusche"
+          },
+          {
+            "id": "L-4916d0",
+            "titel": "Übergebene Beweislage (Handoff-Dokument, STAND.md, Fehlerbericht-Export) wurde als Faktenlage statt als Behauptung behandelt. In einer einzigen Session drei Feh"
+          },
+          {
+            "id": "L-044353",
+            "titel": "Ein Commit sackt die vorgemerkte Arbeit eines parallel laufenden Agenten mit ein. Zweiter Fall am selben Tag: zuerst beim Orchestrator, dann bei einem Agenten, "
+          },
+          {
+            "id": "L-e7bc5e",
+            "titel": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern als technisches Hindernis: `fastlane supply` war vom Berechtigungs-Classifier ges"
+          },
+          {
+            "id": "L-4048b7",
+            "titel": "Ein Subagent verweigerte eine echte Betreiberweisung -- und blieb auch nach Nachreichen des woertlichen Zitats dabei. Am 2026-08-12 wies der Betreiber an, die K"
+          },
+          {
+            "id": "L-14d14c",
+            "titel": "Eine Uebergabedatei ueberlebte einen RICHTUNGSWECHSEL des Auftrags und beschrieb danach zuversichtlich den aufgegebenen Strang. Am 2026-08-16 in buckeberg: docs"
+          },
+          {
+            "id": "L-b71bd9",
+            "titel": "Einem Subagenten die Regel \"nur eigene Dateien stagen, kein git add -A\" mitgegeben und dabei den umgekehrten Weg vergessen: das VERWERFEN. Gemessen 2026-08-11T2"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 8,
+        "anfrage_gekuerzt": "Ein Administrator muss die Testdatensätze aus dem System löschen, bevor das Produkt live geht. Da sowohl die Übungsdatensätze als auch die echten Kundeninformationen exakt dieselben Bezeichnungen trag",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-e1a441",
+          "label": "wohlair: Herkunfts-Trennung zweier gleich aussehender Datenbestände (importierte"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+            "titel": "Grundsatz H1: alles Beta, keine echten Daten, kein Livebetrieb"
+          },
+          {
+            "id": "/methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf",
+            "titel": "ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)"
+          },
+          {
+            "id": "/shared/arch/testdaten-kennzeichnen-sperre-ist",
+            "titel": "Testdaten kennzeichnen: Warum die Sperre eine physische Trennung ist und das Merkmal nur die Herkunft"
+          },
+          {
+            "id": "/brainlehr/loeschbarkeit-ist-ein-qualitaetsmass",
+            "titel": "Löschbarkeit als Qualitätsmaß: warum eine gut destillierte Lehre den Widerruf übersteht"
+          },
+          {
+            "id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+            "titel": "Betriebszustand: openlehr muss bis zum ersten Beta-Test nicht laufen"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/brainlehr/lehren-die-niemand-bilden-darf-die",
+            "titel": "Warum manche Lehren gar nicht erst gebildet werden duerfen"
+          },
+          {
+            "id": "/brainlehr/claude-datenweg-haengt-am-konto-und",
+            "titel": "Claude-Datenweg hängt am Konto und Vertrag, nicht an Terminal oder App"
+          },
+          {
+            "id": "/shared/arch/extraktion-aus-dokumenten-whitelist",
+            "titel": "Warum bei der Extraktion aus Dokumenten eine Whitelist statt einer Blacklist gilt"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-69217d",
+            "titel": "OpenLehr steuer: normalisierte Tabellen `invoices`/`invoice_items` (mit `BackofficeRepository.create_invoice`/`add_invoice_item`) werden von KEINEM Produktions-"
+          },
+          {
+            "id": "L-e1a441",
+            "titel": "wohlair: Herkunfts-Trennung zweier gleich aussehender Datenbestände (importierte Demo-/Testdaten vs. eigene Nutzerdaten mit identischen Namen, z.B. Raum \"Wohnzi"
+          },
+          {
+            "id": "L-2837f3",
+            "titel": "Eine Regel gegen Entwicklersprache in der Oberfläche enthielt als **Positivbeispiel** genau den Satz, den der Betreiber später beanstandete: „Bleibt das Feld le"
+          },
+          {
+            "id": "L-8bde89",
+            "titel": "Jede Anwendung mit Bestand hat ZWEI Ausgangszustaende -- frisch angelegt und gewachsen -- und geprueft wird fast immer nur einer. Der ungepruefte ist regelmaess"
+          },
+          {
+            "id": "L-9d81d4",
+            "titel": "Ein öffentlicher Release kann verifizierbar getrennt werden, wenn ein neues Repository mit frischer Root-Historie nur eine geprüfte Positivliste enthält; privat"
+          },
+          {
+            "id": "L-476c1b",
+            "titel": "Entwicklerinformation im sichtbaren UI-Text: Ein Hinweis am E-Mail-Feld lautete \"Leer lassen löscht beim Speichern eine vorhandene Adresse (bekannte Server-Lück"
+          },
+          {
+            "id": "L-1feb37",
+            "titel": "Bestaetigungs-Token-Ausgabe-Endpunkt ohne Login-Pruefung: POST /v1/permissions/admin_token in apps/openlehr/daemon/app.py stellte JEDEM Aufrufer ein admin_confi"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 9,
+        "anfrage_gekuerzt": "Nach dem Rollout zeigen die automatisierten Prüfprotokolle eine lange Liste an Fehlermeldungen. Bevor du alle Probleme auf eine instabile Infrastruktur schiebst, solltest du dir bei einigen Fällen die",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-b91ed6",
+          "label": "Vorbestehende rote Tests pauschal als \"Umgebungszustand\" abgetan, ohne jeden Fal"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/enigma-zuerst-falsifizieren-dann-bauen",
+            "titel": "Vor jedem Enigma-Bau: erst falsifizieren, dann bauen"
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/methodik/direktiven/plan-vor-umsetzung-systemweit",
+            "titel": "Plan vor Umsetzung (systemweit)"
+          },
+          {
+            "id": "/methodik/fertigkeiten/pause",
+            "titel": "Sitzung sicher unterbrechen: Sichern vor dem Wiedereinstieg"
+          },
+          {
+            "id": "/methodik/einstieg",
+            "titel": "Wie dieser Wissenszweig gelesen werden soll, damit er wirkt statt nur zu existieren"
+          },
+          {
+            "id": "/brainlehr/recall-fragt-den-prompt-nicht-das",
+            "titel": "Der automatische Recall durchsucht den Prompt, nicht das ausgewertete Material — eine gemessene Lücke"
+          },
+          {
+            "id": "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+            "titel": "Warum Disziplin verrottet und Erzeugung nicht"
+          },
+          {
+            "id": "/brainlehr/systemweite-lastenkatalog-pflicht-fuer",
+            "titel": "Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit",
+            "titel": "„Es funktioniert\" braucht einen Beleg, der vorher rot war (systemweit)"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-2e749d",
+            "titel": "Ein Waechter mit fest verdrahteter Dateiliste meldete am 2026-08-15 in openlehr fuenf \"Aufrufe ins Leere\" vom Klaerungen-Bildschirm — alle fuenf Routen existier"
+          },
+          {
+            "id": "L-b63633",
+            "titel": "Die Einstufung 'vorbestehend rot' verdeckte, dass ein Produktivskript gar nicht mehr lauffaehig war"
+          },
+          {
+            "id": "L-813c8f",
+            "titel": "openlehr, gemessen 2026-08-07: `GESAMTPLAN_2026-07-29.md` traegt den Status \"verbindlich. Loest die Einzelplaene als Reihenfolge ab\". Seither entstanden 14 weit"
+          },
+          {
+            "id": "L-773788",
+            "titel": "Verfahren, das am 2026-08-14 in fahrtenbuch aus einem 4185-Zeilen-Feldprotokoll drei belastbare Befunde holte, OHNE einen zu konstruieren -- die Gegenprobe zu L"
+          },
+          {
+            "id": "L-3f1fa9",
+            "titel": "Ein Waechter gegen verrottende Selbsttests war selbst nicht bewacht -- 11 Module liefen jahrelang nirgends, und die eingebaute Zaehlprobe konnte das prinzipiell"
+          },
+          {
+            "id": "L-c455f4",
+            "titel": "Zweimal an einem Tag einen roten Test als „vorbestehend, unabhaengig\" abgetan -- und die echte Ursache lag beide Male im Test-Teardown, belegbar in Sekunden. fa"
+          },
+          {
+            "id": "L-b9d1f3",
+            "titel": "Eine Fehlerursache behauptet, ohne die Fehlermeldung gelesen zu haben — und die Behauptung in ein Uebergabedokument geschrieben. Konkret (wohlair, 2026-07-28): "
+          }
+        ],
+        "zweitziel_kandidaten": [
+          "L-c455f4",
+          "L-b63633"
+        ],
+        "begruendung": "Beide Lehren behandeln woertlich denselben Fehler wie das Ziel: rote Tests pauschal als 'vorbestehend'/'Umgebungszustand' abgetan, ohne den Einzelfall zu pruefen."
+      },
+      {
+        "nr": 10,
+        "anfrage_gekuerzt": "Die Überwachungssoftware für die Lagerhalle meldet einen sicheren Zustand, obwohl kritische Sensoren an den Außenwänden defekt sind. Da das System bei fehlenden Daten einfach auf die Standardeinstellu",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-bbd7fb",
+          "label": "Ein Eingang wird aus einer Gesamtbewertung entfernt, weil er unbelegt war — die "
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/methodik/zehn-verdachtsfaelle-geprueft-null",
+            "titel": "Zehn Verdachtsfälle geprüft, null Fehler — warum die Fehlerklasse „leeres Ergebnis statt ungeprüft\" seltener ist als ihr Erkennungsmuster"
+          },
+          {
+            "id": "/brainlehr/zum-ersten-mal-gemessen-das-system",
+            "titel": "Zum ersten Mal gemessen: das System erfindet nichts und schweigt zehnmal von zehn"
+          },
+          {
+            "id": "/methodik/arbeitsweise/02b-miss-nicht-nur-die-daten",
+            "titel": "Die Diagnose braucht den lebenden Aufrufer, nicht nur die Zahl"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/messlauf-4-die-schranke-hielt-und-der",
+            "titel": "Wenn eine Schranke greift, der Agent aber trotzdem Erfolg meldet"
+          },
+          {
+            "id": "/brainlehr/die-einbuergerungsschranke-hat-ihre",
+            "titel": "Die Einbuergerungsschranke besteht ihre erste Probe im Feld — Ziel war der Assistent selbst"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/simulation-it-zugriffsregel",
+            "titel": "SIMULATION: absichtlicher Portwiderspruch in der Zugriffsregel zum Buchungssystem"
+          },
+          {
+            "id": "/methodik/direktiven/dringend-betreibervorschlag-eine-lehre",
+            "titel": "DRINGEND, Betreibervorschlag: Eine Lehre ohne Prüfsatz ist Papier — Sammelskill mit Verfallsdatum"
+          },
+          {
+            "id": "/methodik/arbeitsweise/h1-nichts-davon-ist-im-betrieb",
+            "titel": "Grundsatz H1: alles Beta, keine echten Daten, kein Livebetrieb"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-528f0c",
+            "titel": "Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt — und weil er dabei laut und blockierend ist, verbraucht er das Vertrauen, das er fuer den ec"
+          },
+          {
+            "id": "L-e8a566",
+            "titel": "Im Buckeberg-PDF-Endaudit waren drei unabhängige Subagenten vollständig fertig und meldeten jeweils FAIL. Der Root-Orchestrator integrierte die Abschlussmeldung"
+          },
+          {
+            "id": "L-03f30b",
+            "titel": "Beim Bau eines temporären Sitzungscheckpoints wurde zunächst ein append-only SQLite-Log mit freien Feldern für summary, open_tasks und decisions committed. Dami"
+          },
+          {
+            "id": "L-476c1b",
+            "titel": "Entwicklerinformation im sichtbaren UI-Text: Ein Hinweis am E-Mail-Feld lautete \"Leer lassen löscht beim Speichern eine vorhandene Adresse (bekannte Server-Lück"
+          },
+          {
+            "id": "L-a46af6",
+            "titel": "Dreimal an EINEM Tag dieselbe Bauform: eine Zusicherung gegen ein Artefakt, das WEITERWAECHST. brainlehr 2026-08-19 -- (1) haken/mehrstufiger_abruf.py erwartete"
+          },
+          {
+            "id": "L-498f64",
+            "titel": "Der beste Beleg fuer die Wirksamkeit verdrahteter Wachen entstand am 2026-08-12 aus Versehen: Das Messskript, das die Frage \"warum greifen unsere Regeln nicht\" "
+          },
+          {
+            "id": "L-78a751",
+            "titel": "Zwei Messwerkzeuge an EINEM Tag mit struktureller Blindstelle, beide vorher als vertrauenswuerdig behandelt, beide erst durch eine Positivkontrolle entlarvt. Ge"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer behandelt einen Default-auf-sicher-Zustand bei fehlenden Sensordaten; die gelieferten Eintraege betreffen andere Themen (Wissensnutzung, Waechter, Eichung)."
+      },
+      {
+        "nr": 11,
+        "anfrage_gekuerzt": "Ein Tool zur automatischen Fehlerprüfung in einer Software meldet ständig Fehlalarme, weil es nicht zwischen organisatorischen Verknüpfungen und echtem Datentransport unterscheiden kann. Da beide Arte",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-503687",
+          "label": "mycel.py Stufe 2 (hub/scripts/mycel.py), 2026-07-31: Rollen-Heuristik (Quelle/Pr"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/tools/wiring-check-py-erreichbarkeitspruefung",
+            "titel": "Wie wiring_check.py deklarierten, aber nie erreichten Code aufspuert"
+          },
+          {
+            "id": "/methodik/arbeitsweise/02-eine-stichprobe-ist-keine-diagnose",
+            "titel": "Warum eine Stichprobe keine Diagnose ist"
+          },
+          {
+            "id": "/methodik/direktiven/rang-1-direktive-b5604a62-ist-umgesetzt",
+            "titel": "Rang-1-Direktive b5604a62 ist umgesetzt — und die Messung zeigt: 23 Prozent der eigenen Aufträge brachen die Regel"
+          },
+          {
+            "id": "/brainlehr/die-bauform-ist-nicht-einmalig-sie-ist",
+            "titel": "Die Bauform ist nicht einmalig, sie ist Forschungsfront — einmalig ist höchstens, dass sie läuft"
+          },
+          {
+            "id": "/methodik/direktiven/auftraege-an-agenten-sind-schnappschuesse-systemweit",
+            "titel": "Aufträge an Agenten sind Schnappschüsse (systemweit)"
+          },
+          {
+            "id": "/openlehr/openlehr-steuer-fallen-beim-testen-und",
+            "titel": "Wiederkehrende Fallen bei Test und Bau des openlehr-Steuerbaums (Stand 2026-08-08)"
+          },
+          {
+            "id": "/methodik/arbeitsweise/02b-miss-nicht-nur-die-daten",
+            "titel": "Die Diagnose braucht den lebenden Aufrufer, nicht nur die Zahl"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein",
+            "titel": "Simulationsakademie: Messaufbau, kein echter Betrieb"
+          },
+          {
+            "id": "/brainlehr/faehigkeiten/vorschlagen-was-fehlt",
+            "titel": "Vorschlagen, was fehlt"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-214b7d",
+            "titel": "Beinahefehler: Ein Lastenkatalog waere mit dem Satz \"fuer das Fahrtenbuch gibt es keine einzige Architekturentscheidung\" entstanden — waehrend 37 davon im Repo "
+          },
+          {
+            "id": "L-528f0c",
+            "titel": "Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt — und weil er dabei laut und blockierend ist, verbraucht er das Vertrauen, das er fuer den ec"
+          },
+          {
+            "id": "L-243dde",
+            "titel": "fahrtenbuch, 2026-07-30/31, selbst verursacht: Mehrere Agenten aenderten gleichzeitig Dateien im selben Flutter-Repo. Ein Agent fuhr dabei die volle Testsuite u"
+          },
+          {
+            "id": "L-2e749d",
+            "titel": "Ein Waechter mit fest verdrahteter Dateiliste meldete am 2026-08-15 in openlehr fuenf \"Aufrufe ins Leere\" vom Klaerungen-Bildschirm — alle fuenf Routen existier"
+          },
+          {
+            "id": "L-732ae9",
+            "titel": "Ein Negativbefund aus einem Musterkatalog wurde beinahe als \"sauber\" weitergetragen. Gemessen 2026-08-10 in brainlehr: ein Regex-Katalog (E-Mail, IBAN, Telefon,"
+          },
+          {
+            "id": "L-dd4b40",
+            "titel": "Eine Negativkontrolle hat das GEWOLLTE Verhalten als Fehler gezaehlt. brainlehr, 2026-08-19, Wirkungsmessung ueber ein echtes Modell: Von vier fachfremden Frage"
+          },
+          {
+            "id": "L-ec0cf9",
+            "titel": "Entwurfsprobe hat beim ersten echten Einsatz einen Beschluss widerlegt — nicht durch Argument, sondern durch Rechnen gegen den Bestand"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer unterscheidet organisatorische Verknuepfungen von echtem Datentransport bzw. behandelt die mycel.py-Rollenheuristik."
+      },
+      {
+        "nr": 12,
+        "anfrage_gekuerzt": "Ein Nutzer beschwert sich über eine fehlerhafte Anzeige auf einer speziellen Unterseite. Der Entwickler korrigiert das Problem im Hauptbereich, übersieht jedoch einen Hinweis im Code, der darauf hinde",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-8c633e",
+          "label": "SchwarmWacht: camera_invite_screen.dart (Sensor/Waechter-QR) blieb bei M-Fehlerk"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/ops/buckeberg-anbieter-recherche-2026-07-23:",
+            "titel": "Fünf Hausverwaltungen für den Buckeberg: Reputation und Verwechslungsfallen"
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/apps/dringend-openlehr-friert-ein-beleg-den",
+            "titel": "DRINGEND openlehr: Friert ein Beleg den Kontaktnamen ein, oder holt er ihn beim Anzeigen?"
+          },
+          {
+            "id": "/methodik/direktiven-hub-claude-md/den-betreiber-korrigieren-seit-2026-08",
+            "titel": "Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)"
+          },
+          {
+            "id": "/apps/fahrtenbuch/f4-landscape-two-column-trip-completion",
+            "titel": "Zweispaltiges Landscape-Layout im Vervollstaendigen-Wizard, gemessen statt geraten (F4, 2026-07-27/28)"
+          },
+          {
+            "id": "/methodik/fertigkeiten/design-waechter",
+            "titel": "design-waechter: neun Fragen vor dem Fertigmelden eines Bildschirms"
+          },
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/brainlehr/ziel-das-dokumentfenster-im-atelier",
+            "titel": "Ziel: das Dokumentfenster im atelier -- Mensch und Modell am selben Dokument"
+          },
+          {
+            "id": "/methodik/arbeitsweise/13-pruef-dein-eigenes-positivbeispiel-gegen-deine-eigene-regel",
+            "titel": "Warum das eigene Positivbeispiel gegen die eigene Regel geprüft werden muss"
+          },
+          {
+            "id": "/methodik/arbeitsweise/02b-miss-nicht-nur-die-daten",
+            "titel": "Die Diagnose braucht den lebenden Aufrufer, nicht nur die Zahl"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-f2858b",
+            "titel": "Eigenes Wissenssystem nicht gefragt und stattdessen gegrept -- obwohl das Wissen darin lag. Am 2026-08-06 suchte ich nach vorhandenen Hashketten im Verbund und "
+          },
+          {
+            "id": "L-352afa",
+            "titel": "Acht Messartefakte an einem Tag, alle mit derselben Bauform: das Werkzeug beantwortet eine engere Frage als der Satz, in dem seine Zahl steht\n\n--- Wiederholung "
+          },
+          {
+            "id": "L-dafc34",
+            "titel": "Der Betreiber hat DREIMAL verlangt, die PDFs mit LaTeX zu setzen. Ich habe dreimal abgelehnt, mit der Begruendung \"nicht noetig und umstaendlich, wir machen das"
+          },
+          {
+            "id": "L-b034c4",
+            "titel": "Ein Test schreibt einen Bug als Soll-Verhalten fest, weil er eine Wirkung prüft, die der Code aus dem falschen Grund erzielt. fahrtenbuch/CarPlay: Der Test „Sna"
+          },
+          {
+            "id": "L-044353",
+            "titel": "Ein Commit sackt die vorgemerkte Arbeit eines parallel laufenden Agenten mit ein. Zweiter Fall am selben Tag: zuerst beim Orchestrator, dann bei einem Agenten, "
+          },
+          {
+            "id": "L-86853e",
+            "titel": "Eine Null als Beleg für einen Ausfall gelesen, obwohl sie im Normalbetrieb genauso entsteht — und darauf einen halben Tag Ursachensuche gebaut. fahrtenbuch, 202"
+          },
+          {
+            "id": "L-aa35f4",
+            "titel": "fahrtenbuch, gemessen 2026-07-30: Die autonome Fahrterkennung verwarf rund 30 bestätigte Fahrten in Folge (Telemetriemuster `state_transition.confirmed` → `stat"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer behandelt 'Fix an einer Stelle, identische zweite Stelle uebersehen' konkret; die Eintraege sind thematisch benachbart, aber nicht deckungsgleich."
+      },
+      {
+        "nr": 13,
+        "anfrage_gekuerzt": "Wenn ein Nutzer eine Bluetooth-Verbindung kurz hintereinander neu aufbaut, kann ein verspätet eintreffender Trennbefehl aus dem ersten Versuch die gerade erst gestartete zweite Sitzung unterbrechen. O",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-606b63",
+          "label": "Generation-Token gegen Reentrancy bei fire-and-forget Cleanup async gestarteter "
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/fertigkeiten/pause",
+            "titel": "Sitzung sicher unterbrechen: Sichern vor dem Wiedereinstieg"
+          },
+          {
+            "id": "/apps/fahrtenbuch/offener-verdacht-head-unit",
+            "titel": "Bindet die Kopfeinheit-Prüfung Zweitwagen-Fahrten wirklich rechtzeitig ab? (offener Verdacht)"
+          },
+          {
+            "id": "/apps/fahrtenbuch/adr-f-026-kein-autoconnect-der-ble",
+            "titel": "Warum autoConnect bei BLE-Verbindungen abgelehnt wurde: der Feldfehler sitzt im Berechtigungs-Vorlauf (ADR F-026, 2026-08-01)"
+          },
+          {
+            "id": "/methodik/arbeitsweise/09-erst-messen",
+            "titel": "Grundsatz 9 der Arbeitsweise: erst messen, dann entscheiden, dann bauen"
+          },
+          {
+            "id": "/methodik/arbeitsweise/02b-miss-nicht-nur-die-daten",
+            "titel": "Die Diagnose braucht den lebenden Aufrufer, nicht nur die Zahl"
+          },
+          {
+            "id": "/methodik/direktiven/dringend-an-brainlehr",
+            "titel": "DRINGEND an brainlehr: Betreiberentscheidungen verschwinden im Gespraech — der Plan braucht einen Waechter, keinen Vorsatz"
+          },
+          {
+            "id": "/methodik/feldbericht-auswerten-erst-befund-dann",
+            "titel": "Feldbericht auswerten: erst Befund, dann datieren -- trennt \"neu gebaut\" von \"neu sichtbar\""
+          },
+          {
+            "id": "/methodik/direktiven/geht-nicht-ist-ein-zwischenstand-keine",
+            "titel": "„Geht nicht\" ist ein Zwischenstand, keine Antwort — erst widerlegen, dann fragen"
+          },
+          {
+            "id": "/apps/dringend-an-alle-brainlehr-sitzungen",
+            "titel": "DRINGEND an alle brainlehr-Sitzungen: drei neue pre-push-Waechter seit 2026-08-16 — sie stoppen deinen Push"
+          },
+          {
+            "id": "/methodik/direktiven/eilmeldung-an-alle-sitzungen-frische",
+            "titel": "EILMELDUNG an alle Sitzungen: Frische Eilmeldungen erreichen ab jetzt auch LAUFENDE Chats"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-47a196",
+            "titel": "Ein Melder nannte den richtigen Befund und schickte trotzdem zur falschen Abhilfe, weil er den EIGENTUEMER des Fundes nicht nennt. brainlehr, 2026-08-14: `haken"
+          },
+          {
+            "id": "L-3cad13",
+            "titel": "Dreimal hintereinander eine Diagnose gestellt und committet, ohne die aufrufende Zeile gelesen zu haben. Ursache war jedes Mal banaler als vermutet: nicht durch"
+          },
+          {
+            "id": "L-235ab8",
+            "titel": "Einen Testfall gebaut, dessen Ausgang von der VORGESCHICHTE abhaengt -- er belegte beim ersten Lauf etwas und beim zweiten nichts, ohne dass sich der Code aende"
+          },
+          {
+            "id": "L-0b606e",
+            "titel": "Einen Trigger an einer Kopie der ECHTEN Datenbank geprueft, gruen bekommen, in Betrieb gelassen -- und der Beleg traf den Fall nicht, um den es ging. Der Trigge"
+          },
+          {
+            "id": "L-3d88e9",
+            "titel": "Verfahren, das am 2026-08-14 in brainlehr einen Mangel im TEST statt im Code aufdeckte -- und ihn ohne die zweite Sabotage nie gezeigt haette. Der neue Dokument"
+          },
+          {
+            "id": "L-1460f5",
+            "titel": "Beim Einrichten eines Anmeldedienstes drei Fehler nacheinander gebaut, und ALLE DREI waren im Betrieb unsichtbar -- weil der betroffene Bildschirm einen vorgese"
+          },
+          {
+            "id": "L-20275a",
+            "titel": "Zwei unabhaengig gewachsene Mechanismen fuer dieselbe Frage zusammenlegen -- aber die BAUART teilen, nicht den ZUSTAND. fahrtenbuch, 2026-08-13 (ADR-F-035, Comm"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer behandelt Generation-Token/Reentrancy bei fire-and-forget Cleanup; das BLE-ADR im Ergebnis betrifft einen anderen Fehler (Berechtigungs-Vorlauf statt Race durch spaetes Signal)."
+      },
+      {
+        "nr": 14,
+        "anfrage_gekuerzt": "Bei der Fehlerbehebung einer Sortierfunktion stellst du fest, dass Informationen aus unterschiedlichen Bereichen unkorrekt nebeneinander stehen. Da die hinterlegten Zahlenwerte für die Wichtigkeit übe",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-0392e4",
+          "label": "norm_rang ist eine Zahl ohne Einheit. Die Spalte trug bis heute ausschliesslich "
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/ops/buckeberg-dokument-pipeline-2026-07-28",
+            "titel": "Buckeberg-Belegablage: Objekt-Anker funktioniert, MÜKRO-Fall wartet auf Klärung"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/fertigkeiten/design-waechter",
+            "titel": "design-waechter: neun Fragen vor dem Fertigmelden eines Bildschirms"
+          },
+          {
+            "id": "/brainlehr/was-der-journalismus-an-formaten-kennt",
+            "titel": "Was dem brainlehr-Speicher fehlt, kennt der Journalismus laengst: Unterbrechung, Vorlaeufigkeit, Korrekturpflicht"
+          },
+          {
+            "id": "/shared/arch/testdaten-kennzeichnen-sperre-ist",
+            "titel": "Testdaten kennzeichnen: Warum die Sperre eine physische Trennung ist und das Merkmal nur die Herkunft"
+          },
+          {
+            "id": "/shared/arch/lehrmaterial-als-quellenklasse-ablauf",
+            "titel": "Lehrmaterial taugt als Quelle für den Ablauf, nie für den Wert einer Zahl"
+          },
+          {
+            "id": "/methodik/arbeitsweise/01-nachsehen-schlaegt-erinnern",
+            "titel": "Warum Nachsehen vor jedem Erinnern kommt: die erste Arbeitsregel"
+          },
+          {
+            "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+            "titel": "Elf Stufen bilden die Zugriffsentscheidung als Filter, nicht als additive Berechtigung"
+          },
+          {
+            "id": "/brainlehr/richtig-in-brainlehr-ablegen-regeln",
+            "titel": "Richtig in brainlehr ablegen — Regeln fuer jede App-Sitzung"
+          },
+          {
+            "id": "/methodik/arbeitsweise/07-trenn-sichtbar-zwischen-gemessen",
+            "titel": "Sichtbar trennen: gemessen, abgeleitet oder vermutet"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-0392e4",
+            "titel": "norm_rang ist eine Zahl ohne Einheit. Die Spalte trug bis heute ausschliesslich die Direktiven-Hierarchie des hub (1 globale Direktive, 2 hub-Direktive, 3 ADR; "
+          },
+          {
+            "id": "L-9f77c2",
+            "titel": "Beim Einhaengen einer Nachrangung (Reranking) in knowledge_search waere fast eine Aussage verlorengegangen, die in der REIHENFOLGE steckte und in keinem Feld st"
+          },
+          {
+            "id": "L-bc7a32",
+            "titel": "Ein Widerspruch galt als aufgeloest, weil beim Abgleich nur die Zahlenfelder derselben Datei gelesen wurden und nicht ihr Vorbehaltsfeld. Buckeberg 2026-08-05: "
+          },
+          {
+            "id": "L-1ad326",
+            "titel": "Sechs Fehler an einem Tag hatten dieselbe Wurzel: Es wurde etwas über eine Quelle behauptet, ohne die Quelle daneben zu legen. Reihenfolge: (1) Teilungserklärun"
+          },
+          {
+            "id": "L-354ee6",
+            "titel": "Interne Vorbehalte/Kennzeichnungen (UNBELEGT, Rang 5/6) gehen beim Transfer vom internen Rechts-Korpus auf die Publikumsseite verloren — zweiter Fund dieser Feh"
+          },
+          {
+            "id": "L-16e428",
+            "titel": "Einen Bestand nach GEFUELLTEN FELDERN klassifiziert statt danach, was der Verbraucher damit tun kann -- und die falsche Zahl stand schon im Plandokument, bevor "
+          },
+          {
+            "id": "L-d1bc0a",
+            "titel": "Ein Auswerter griff auf eine Tabellenspalte nach POSITION (\"die vorletzte, danach kommt die Quelle\") und las dadurch in einer zweiten Datei jahrelang die falsch"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 15,
+        "anfrage_gekuerzt": "Die KI reagiert träge, weil sie zu Beginn jeder Interaktion eine riesige Liste an Möglichkeiten verarbeiten muss, obwohl der Nutzer meist nur einen kleinen Teil davon nutzt. Um den Prozess effizienter",
+        "vorgesehenes_ziel": {
+          "kind": "lesson",
+          "id": "L-476602",
+          "label": "MCP tools/list per Env-Var profilieren (BEGOD_KNOWLEDGE_PROFIL=klein), ohne tool"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/ops/openlehr/kontakt-vorschlag-anlage-durch-ki",
+            "titel": "Kontakt wird bei Angebot, Rechnung, Chat und Mail per KI vorgeschlagen statt erzwungen"
+          },
+          {
+            "id": "/methodik/direktiven/betreiberweisung-2026-08-20-es-gibt",
+            "titel": "Betreiberweisung 2026-08-20: Es gibt Knöpfe, die die KI technisch nicht klicken kann"
+          },
+          {
+            "id": "/brainlehr/dokumente/simulator-und-signalstaerke-den-abruf",
+            "titel": "Simulator und Signalstärke — den Abruf vorführen, ohne ihn zu erfinden"
+          },
+          {
+            "id": "/methodik/direktiven/eilmeldung-an-brainlehr-eine-neue-regel",
+            "titel": "EILMELDUNG an brainlehr: Eine neue Regel braucht einen Rückwirkungs-Melder, nicht nur einen Text"
+          },
+          {
+            "id": "/shared/compliance/eu-ai-act-transparenzpflichten-(art.-50)",
+            "titel": "AI-Act Art. 50 (EU-Transparenzpflichten für KI): abgelegter Verweis, noch UNGELESEN"
+          },
+          {
+            "id": "/methodik/direktiven/bsi-compliance-systemweit-lazy-nur-trigger-kein-katalog-im-kontext",
+            "titel": "BSI-Compliance (systemweit, lazy) — nur Trigger, kein Katalog im Kontext"
+          },
+          {
+            "id": "/brainlehr/dokumente/ein-menschlicher-entscheid-den-die",
+            "titel": "Ein menschlicher Entscheid, den die Maschine nicht erzeugen kann"
+          },
+          {
+            "id": "/openlehr/betreiberweisung-2026-08-19-die-ki",
+            "titel": "Betreiberweisung 2026-08-19: Die KI schreibt und schlaegt in JEDES Feld jeder openlehr-Domaene vor"
+          },
+          {
+            "id": "/arch/token-economy",
+            "titel": "Sparsamer Kontext: Kosten und Steuerung der Token-Ökonomie"
+          },
+          {
+            "id": "/methodik/direktiven/testumgebung-selbstaendig-handeln-bis",
+            "titel": "Testumgebung: selbstaendig handeln bis zum Wort \"es wird ernst\""
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-044353",
+            "titel": "Ein Commit sackt die vorgemerkte Arbeit eines parallel laufenden Agenten mit ein. Zweiter Fall am selben Tag: zuerst beim Orchestrator, dann bei einem Agenten, "
+          },
+          {
+            "id": "L-108c3d",
+            "titel": "Viermal an einem Tag wurde eine Messreihe entwertet, dreimal davon durch den Orchestrator selbst. Die Ursachen eskalierten in der Feinheit: (1) fremde Commits w"
+          },
+          {
+            "id": "L-b3eb79",
+            "titel": "Drei Stufen, in denen ein Mechanismus wirkungslos sein kann -- und nur die erste faellt bei der naheliegenden Pruefung auf. brainlehr, 2026-08-14, alle drei am "
+          },
+          {
+            "id": "L-03f30b",
+            "titel": "Beim Bau eines temporären Sitzungscheckpoints wurde zunächst ein append-only SQLite-Log mit freien Feldern für summary, open_tasks und decisions committed. Dami"
+          },
+          {
+            "id": "L-ce1bd8",
+            "titel": "Zwei Etiketten fuer dieselbe Sache, und nur EINES loeste die Wirkung aus -- ausgerechnet nicht das, das jeder tippt. hub/scripts/eilmeldung_hook.py stellte drin"
+          },
+          {
+            "id": "L-27ffc8",
+            "titel": "Die folgenreichsten Aeusserungen des Betreibers sind die kuerzesten -- und genau die erreichen den Speicher nie. Beobachtet am 2026-08-11 in brainlehr, aufgewor"
+          },
+          {
+            "id": "L-4048b7",
+            "titel": "Ein Subagent verweigerte eine echte Betreiberweisung -- und blieb auch nach Nachreichen des woertlichen Zitats dabei. Am 2026-08-12 wies der Betreiber an, die K"
+          }
+        ],
+        "zweitziel_kandidaten": [
+          "/arch/token-economy"
+        ],
+        "begruendung": "Der Knoten behandelt woertlich Lazy-Loading und Context-Optimierung zur Reduktion einer grossen Optionsliste -- exakt der Kern der Anfrage (KI reagiert traege wegen zu grosser Liste am Anfang)."
+      },
+      {
+        "nr": 16,
+        "anfrage_gekuerzt": "Während einer Besprechung zur Neuausrichtung der Organisationsstruktur verlieren die Beteiligten sich in Diskussionen über Detailzahlen und zukünftige Software-Anpassungen. Sie vernachlässigen dabei, ",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/ops/buckeberg-konsil-2026-07-22-governance",
+          "label": "Buckeberg Konsil 2026-07-22: Governance vor Ranking, 11 harte Schranken, Meilensteine M0-M13"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/direktiven-hub-claude-md/den-betreiber-korrigieren-seit-2026-08",
+            "titel": "Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)"
+          },
+          {
+            "id": "/brainlehr/architektur-konsil-2026-08-13-vier",
+            "titel": "Architektur-Konsil 2026-08-13: vier Konvergenzen aus zehn Rollen, die einander nicht kannten"
+          },
+          {
+            "id": "/methodik/arbeitsweise/08-widersprich-mir",
+            "titel": "Widerspruch ist erwünscht, auch gegen den eigenen Auftrag"
+          },
+          {
+            "id": "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+            "titel": "Warum Disziplin verrottet und Erzeugung nicht"
+          },
+          {
+            "id": "/ops/buckeberg-konsil-2026-07-22-governance",
+            "titel": "Buckeberg Konsil 2026-07-22: Warum Governance vor dem Ranking steht — 11 harte Schranken und die Meilensteine M0-M13"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/direktiven/plan-vor-umsetzung-systemweit",
+            "titel": "Plan vor Umsetzung (systemweit)"
+          },
+          {
+            "id": "/methodik/arbeitsweise/09-erst-messen",
+            "titel": "Grundsatz 9 der Arbeitsweise: erst messen, dann entscheiden, dann bauen"
+          },
+          {
+            "id": "/methodik/direktiven/nachsehen-bevor-gefragt-oder-delegiert-wird-systemweit",
+            "titel": "Nachsehen, bevor gefragt oder delegiert wird (systemweit)"
+          },
+          {
+            "id": "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            "titel": "Ohne Plan wird nicht gebaut — Betreiberanweisung 2026-08-12, mit Durchsetzung statt Appell"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-502be0",
+            "titel": "Mehrfach in einer Sitzung behauptet, der Kontext sei \"weitgehend aufgebraucht\" und deshalb Arbeit abgebrochen und eine Sitzungsuebergabe vorgeschlagen -- waehre"
+          },
+          {
+            "id": "L-44dc9f",
+            "titel": "yswift (Y-CRDT-Swift-Anbindung, 0.2.1) schneidet die Teilnehmerkennung (client id) auf 32 Bit ab; pycrdt vergibt sie standardmaessig zufaellig bis etwa 2^53. Fo"
+          },
+          {
+            "id": "L-1601fa",
+            "titel": "wohlair Demo-Modus (Build 17, demo_replay_provider.dart) sicherte echte Nutzdaten nur im Dart-Arbeitsspeicher (RAM-Felder backupRooms/backupMeasurements/backupS"
+          },
+          {
+            "id": "L-1ad326",
+            "titel": "Sechs Fehler an einem Tag hatten dieselbe Wurzel: Es wurde etwas über eine Quelle behauptet, ohne die Quelle daneben zu legen. Reihenfolge: (1) Teilungserklärun"
+          },
+          {
+            "id": "L-747223",
+            "titel": "Systematischer Durchgang ueber die eigenen Fehler EINER Sitzung (openlehr, 2026-07-28/29, rund 60 Commits) foerderte elf Fehler des Orchestrators zutage — mit n"
+          },
+          {
+            "id": "L-4048b7",
+            "titel": "Ein Subagent verweigerte eine echte Betreiberweisung -- und blieb auch nach Nachreichen des woertlichen Zitats dabei. Am 2026-08-12 wies der Betreiber an, die K"
+          },
+          {
+            "id": "L-52bcef",
+            "titel": "Drei Aufzeichnungen desselben Vorgangs als drei gleichrangige Zeugen behandelt -- obwohl EINE davon eine Zusammenfassung der Lage war und im DATEINAMEN so hiess"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 17,
+        "anfrage_gekuerzt": "Ein Hausbesitzer lässt seine Werkstatt umbauen und muss entscheiden, wie viele Kabel nun direkt in die Wände verlegt werden sollen. Er muss abwägen, ob er nur den aktuellen Bedarf deckt oder eine brei",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+          "label": "10. Verhältnismäßigkeit ist Teil der Antwort."
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/brainlehr/dokumente/kalibrierbremse-verdrahten-oder",
+            "titel": "Kalibrierbremse: verdrahten oder ausbauen"
+          },
+          {
+            "id": "/ops/buckeberg-begehbare-darstellung-der",
+            "titel": "Buckeberg: begehbare Darstellung der Sanierungswege — Plan A/B/C vom 2026-08-16"
+          },
+          {
+            "id": "/ops/buckeberg-heizungsentscheidung/buckeberg-fassadenvarianten-gemeinsam",
+            "titel": "Buckeberg: Fassadenvarianten gemeinsam je Modell zeigen, Kleinwohnung aus Modellblättern entfernen"
+          },
+          {
+            "id": "/methodik/arbeitsweise/09-erst-messen",
+            "titel": "Grundsatz 9 der Arbeitsweise: erst messen, dann entscheiden, dann bauen"
+          },
+          {
+            "id": "/methodik/direktiven-hub-claude-md/den-betreiber-korrigieren-seit-2026-08",
+            "titel": "Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)"
+          },
+          {
+            "id": "/ops/buckeberg-heizungsentscheidung/homepage-sanierungswege-kompletter",
+            "titel": "Homepage Sanierungswege: kompletter Neubau ohne Bauform-Dogmen, Massstab ist eine 70-jaehrige Nicht-Technikerin"
+          },
+          {
+            "id": "/brainlehr/dokumente/messung-wann-baut-der-hauptfaden-selbst",
+            "titel": "Messung: Wann baut der Hauptfaden selbst, wann delegiert er?"
+          },
+          {
+            "id": "/brainlehr/dokumente/plan-grundarchitektur-was-entschieden",
+            "titel": "Plan: Grundarchitektur — was entschieden ist und was daraus folgt"
+          },
+          {
+            "id": "/methodik/direktiven/dringend-an-brainlehr-braucht-seinen",
+            "titel": "DRINGEND an brainlehr: „braucht seinen Ausweis\" dreimal gemeldet, ohne einen einzigen Versuch — und ein Testausweis war der offensichtliche Weg"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-dafc34",
+            "titel": "Der Betreiber hat DREIMAL verlangt, die PDFs mit LaTeX zu setzen. Ich habe dreimal abgelehnt, mit der Begruendung \"nicht noetig und umstaendlich, wir machen das"
+          },
+          {
+            "id": "L-d1f14e",
+            "titel": "Drei Pruefmittel an einem Tag, die alle etwas anderes pruefen als angenommen -- und die dritte Form ist die, die man beim Bauen selbst erzeugt. buckeberg 2026-0"
+          },
+          {
+            "id": "L-014f8f",
+            "titel": "Zwei Dokumente derselben Gattung vom selben Absender lagen vor — ein Verwaltervertrags-Entwurf vom 30.07. und einer vom 11.08. Ich habe daraus einen Modellwechs"
+          },
+          {
+            "id": "L-528f0c",
+            "titel": "Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt — und weil er dabei laut und blockierend ist, verbraucht er das Vertrauen, das er fuer den ec"
+          },
+          {
+            "id": "L-0a063b",
+            "titel": "Eine BEWERTUNGSfrage an den Betreiber zurueckgegeben, obwohl die Entscheidungsgrundlage vollstaendig im Code lag -- und dabei sogar eine Rueckfrage gestellt, de"
+          },
+          {
+            "id": "L-044f3c",
+            "titel": "Die Klasse \"gebaut, laufend, wirkungslos\" hat am 2026-08-19 an EINEM Tag fuenf verschiedene Formen gezeigt, und die fuenfte ist die einzige, die kein Melder fan"
+          },
+          {
+            "id": "L-20275a",
+            "titel": "Zwei unabhaengig gewachsene Mechanismen fuer dieselbe Frage zusammenlegen -- aber die BAUART teilen, nicht den ZUSTAND. fahrtenbuch, 2026-08-13 (ADR-F-035, Comm"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer aeussert das allgemeine Verhaeltnismaessigkeits-Prinzip (aktueller Bedarf vs. Vorratsbau); die gelieferten Eintraege sind konkrete Einzelentscheidungen ohne die uebertragbare Regel."
+      },
+      {
+        "nr": 18,
+        "anfrage_gekuerzt": "Ein Verkäufer möchte in einer Präsentation die maximale Belastbarkeit eines Bauteils nennen. Da ihm keine aktuellen Testergebnisse vorliegen, muss er entscheiden, ob er eine plausibel klingende Zahl n",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+          "label": "6. Eine falsche Zahl ist schlimmer als keine."
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/faehigkeiten/sagen-wie-belastbar-etwas-ist",
+            "titel": "Sagen, wie belastbar etwas ist"
+          },
+          {
+            "id": "/brainlehr/faehigkeiten/sagen-ob-etwas-noch-gilt",
+            "titel": "Sagen, ob etwas noch gilt"
+          },
+          {
+            "id": "/methodik/arbeitsweise/07-trenn-sichtbar-zwischen-gemessen",
+            "titel": "Sichtbar trennen: gemessen, abgeleitet oder vermutet"
+          },
+          {
+            "id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+            "titel": "Warum eine falsche Zahl schlimmer ist als keine"
+          },
+          {
+            "id": "/brainlehr/zielbild-a-steht-bei-0-von-35-und-der",
+            "titel": "Zielbild A steht bei 0 von 35 — und der Engpass ist nicht die Trefferquote, sondern drei Felder"
+          },
+          {
+            "id": "/methodik/arbeitsweise/09-erst-messen",
+            "titel": "Grundsatz 9 der Arbeitsweise: erst messen, dann entscheiden, dann bauen"
+          },
+          {
+            "id": "/brainlehr/die-wissensstufe-hat-zwei-achsen-leiter",
+            "titel": "Die Wissensstufe hat zwei Achsen: Leiter fuer die Belastbarkeit, Arten fuer den Gegenstand"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-352afa",
+            "titel": "Acht Messartefakte an einem Tag, alle mit derselben Bauform: das Werkzeug beantwortet eine engere Frage als der Satz, in dem seine Zahl steht\n\n--- Wiederholung "
+          },
+          {
+            "id": "L-528f0c",
+            "titel": "Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt — und weil er dabei laut und blockierend ist, verbraucht er das Vertrauen, das er fuer den ec"
+          },
+          {
+            "id": "L-3128c4",
+            "titel": "Eine Unsicherheit zum Rechenverbot erklaert statt zur gekennzeichneten Annahme -- und damit die Aussage ganz verhindert. Gemessen 2026-08-12 in buckeberg: In ei"
+          },
+          {
+            "id": "L-fcf495",
+            "titel": "Ein Pruefer, der eine TEILFRAGE misst, meldet Konformitaet fuer die GESAMTFRAGE -- und erzeugt damit mehr Schaden als kein Pruefer. fahrtenbuch, 2026-08-12, am "
+          },
+          {
+            "id": "L-f2a00c",
+            "titel": "Einem Konsil die eigenen Messwerte VORENTHALTEN, um zu verhindern, dass es den eigenen Rahmen erbt -- und damit genau die Evidenz entfernt, die das Vorhaben hae"
+          },
+          {
+            "id": "L-b0fe05",
+            "titel": "Eine Auflage GEGEN Erfindung hat den Umfang des Auftrags stillschweigend halbiert. Gemessen 2026-08-12 in buckeberg: In den Dossier-Auftrag schrieb ich \"dossier"
+          },
+          {
+            "id": "L-f71528",
+            "titel": "Einstimmigkeit in einem Agenten-Konsil war Rahmensetzung des Koordinators, kein Befund. openlehr-UI-Konsil 2026-07-29, Runde 1: vier Fachlinsen mit disjunkten B"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 19,
+        "anfrage_gekuerzt": "Die Entwickler diskutieren gerade, ob veraltete Funktionen aus dem System entfernt werden können. Es besteht die Sorge, dass dadurch die Bedienbarkeit für andere Personen eingeschränkt würde. In diese",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+          "label": "Betriebszustand: openlehr muss bis zum ersten Beta-Test nicht laufen"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/methodik/direktiven/eilmeldung-dringlichkeit-fuer-den-14-08",
+            "titel": "Dringlichkeit fuer den 14.08. entfaellt: Die Verwalterentscheidung ist faktisch gefallen"
+          },
+          {
+            "id": "/methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf",
+            "titel": "ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)"
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+            "titel": "Betriebszustand: openlehr muss bis zum ersten Beta-Test nicht laufen"
+          },
+          {
+            "id": "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+            "titel": "Warum Disziplin verrottet und Erzeugung nicht"
+          },
+          {
+            "id": "/methodik/direktiven-hub-claude-md/fokus",
+            "titel": "Fokus"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit",
+            "titel": "„Es funktioniert\" braucht einen Beleg, der vorher rot war (systemweit)"
+          },
+          {
+            "id": "/frontend/flutter",
+            "titel": "Flutter: Dart-Patterns und Plattform-Channels"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-b088ff",
+            "titel": "\"Bleibt Handprobe am Geraet\" als Grenze des Pruefaufbaus gesetzt, wo in Wahrheit nur die eigene Vorstellungskraft endete. Gemessen 2026-08-11: Nach dem Bau des "
+          },
+          {
+            "id": "L-a7b433",
+            "titel": "Eine fehlende Faehigkeit als Mangel behandelt, ohne zu fragen, WER sie benutzt. Am 2026-08-06 fiel auf, dass knowledge_delete nicht existiert -- ein Knoten lies"
+          },
+          {
+            "id": "L-476c1b",
+            "titel": "Entwicklerinformation im sichtbaren UI-Text: Ein Hinweis am E-Mail-Feld lautete \"Leer lassen löscht beim Speichern eine vorhandene Adresse (bekannte Server-Lück"
+          },
+          {
+            "id": "L-0a063b",
+            "titel": "Eine BEWERTUNGSfrage an den Betreiber zurueckgegeben, obwohl die Entscheidungsgrundlage vollstaendig im Code lag -- und dabei sogar eine Rueckfrage gestellt, de"
+          },
+          {
+            "id": "L-e7bc5e",
+            "titel": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern als technisches Hindernis: `fastlane supply` war vom Berechtigungs-Classifier ges"
+          },
+          {
+            "id": "L-7acc9c",
+            "titel": "Ein Feature-Schalter im Auslieferungsweg, der auf aus steht, bleibt unsichtbar bis jemand das Produkt in der Zielumgebung benutzt. In fahrtenbuch rief die TestF"
+          },
+          {
+            "id": "L-14d14c",
+            "titel": "Eine Uebergabedatei ueberlebte einen RICHTUNGSWECHSEL des Auftrags und beschrieb danach zuversichtlich den aufgegebenen Strang. Am 2026-08-16 in buckeberg: docs"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 20,
+        "anfrage_gekuerzt": "Die Produktion muss entscheiden, welche digitale Figur für das neue Video genutzt werden kann. Ein Techniker prüft dabei, ob die aktuelle Software bereits vollständige Bewegungsabläufe unterstützt ode",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/apps/metahuman-podcast-one-command-pipeline",
+          "label": "MetaHuman Podcast — One-Command-Pipeline, Status 2026-08-01T00:00:00+0200"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/dokumente/ein-menschlicher-entscheid-den-die",
+            "titel": "Ein menschlicher Entscheid, den die Maschine nicht erzeugen kann"
+          },
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/brainlehr/systemweite-lastenkatalog-pflicht-fuer",
+            "titel": "Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge"
+          },
+          {
+            "id": "/methodik/fertigkeiten/design-waechter",
+            "titel": "design-waechter: neun Fragen vor dem Fertigmelden eines Bildschirms"
+          },
+          {
+            "id": "/testing/virtueller-bildschirmabzug-personas-auf",
+            "titel": "Virtueller Bildschirmabzug: Persona-Pruefungen brauchen den ausgelesenen statt den beschriebenen Baum"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/arbeitsweise/02b-miss-nicht-nur-die-daten",
+            "titel": "Die Diagnose braucht den lebenden Aufrufer, nicht nur die Zahl"
+          },
+          {
+            "id": "/apps/metahuman-podcast-one-command-pipeline",
+            "titel": "MetaHuman-Podcast-Pipeline: Status 2026-08-01T00:00:00+0200 — Ada belegt, Aera persistiert, als Nächstes Audio-only"
+          },
+          {
+            "id": "/shared/arch/offen-fuer-weitere-geraete-eine-tuer",
+            "titel": "Offenheit für neue Geräte: eine Tür, Daten statt fertiger Anzeigetexte, und Sprache als gleichwertige Oberfläche"
+          },
+          {
+            "id": "/apps/videoki-geparktes-folgeprodukt",
+            "titel": "videoki: geparktes Folgeprodukt — validierte zahnärztliche Fortbildung aus Kursaufnahmen"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-b088ff",
+            "titel": "\"Bleibt Handprobe am Geraet\" als Grenze des Pruefaufbaus gesetzt, wo in Wahrheit nur die eigene Vorstellungskraft endete. Gemessen 2026-08-11: Nach dem Bau des "
+          },
+          {
+            "id": "L-352afa",
+            "titel": "Acht Messartefakte an einem Tag, alle mit derselben Bauform: das Werkzeug beantwortet eine engere Frage als der Satz, in dem seine Zahl steht\n\n--- Wiederholung "
+          },
+          {
+            "id": "L-f6c611",
+            "titel": "Dreimal an EINEM Tag (2026-08-18, brainlehr/lehrAtelier) wurde eine QUITTUNG als Beleg für eine WIRKUNG genommen — jedes Mal von einer anderen Sitzung, jedes Ma"
+          },
+          {
+            "id": "L-a69129",
+            "titel": "Ein Verbot des Betreibers auf eine breitere Klasse ausgedehnt und damit seine EIGENE fruehere Entscheidung ueberschrieben. Er hatte entschieden: Haiku fuer die "
+          },
+          {
+            "id": "L-528f0c",
+            "titel": "Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt — und weil er dabei laut und blockierend ist, verbraucht er das Vertrauen, das er fuer den ec"
+          },
+          {
+            "id": "L-4916d0",
+            "titel": "Übergebene Beweislage (Handoff-Dokument, STAND.md, Fehlerbericht-Export) wurde als Faktenlage statt als Behauptung behandelt. In einer einzigen Session drei Feh"
+          },
+          {
+            "id": "L-0a063b",
+            "titel": "Eine BEWERTUNGSfrage an den Betreiber zurueckgegeben, obwohl die Entscheidungsgrundlage vollstaendig im Code lag -- und dabei sogar eine Rueckfrage gestellt, de"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 21,
+        "anfrage_gekuerzt": "Ein Kunde beschwert sich, dass neu hochgeladene Rechnungen und Nachrichten in der Trefferliste fehlen. Ich muss prüfen, ob die automatischen Importprozesse die Daten korrekt erfassen oder ob diese auf",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/openlehr/volltextindex-wird-beim-einlesen",
+          "label": "Volltextindex wird beim Einlesen fortgeschrieben — hat fuer Belege und Mails aber keinen Leser"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/openlehr/steuer/ui/adr-openlehr-steuer-ui-ia-verdichtung",
+            "titel": "ADR: Wie sich die Navigation der OpenLehr-Steuer-Oberflaeche verdichtet und ein einheitliches KI-Chat-Muster bekommt"
+          },
+          {
+            "id": "/brainlehr/recall-fragt-den-prompt-nicht-das",
+            "titel": "Der automatische Recall durchsucht den Prompt, nicht das ausgewertete Material — eine gemessene Lücke"
+          },
+          {
+            "id": "/ops/openlehr/openlehr-hat-zwei-getrennte-fts5",
+            "titel": "FTS5 bei OpenLehr getrennt gefuehrt: text_index fuer steuer.db, knowledge_index fuer die Wissensbasis"
+          },
+          {
+            "id": "/shared/arch/extraktion-aus-dokumenten-whitelist",
+            "titel": "Warum bei der Extraktion aus Dokumenten eine Whitelist statt einer Blacklist gilt"
+          },
+          {
+            "id": "/openlehr/volltextindex-wird-beim-einlesen",
+            "titel": "Der Volltextindex füllt sich beim Einlesen, doch niemand liest ihn für Belege und Mails"
+          },
+          {
+            "id": "/openlehr/steuer/ui/korrektur-zu-f296146a-nav-ia-kein-neuer",
+            "titel": "Nachtrag zu f296146a: Navigation bekommt keinen neuen Screen, nur eine Gruppierung fuer die Beschriftung"
+          },
+          {
+            "id": "/brainlehr/dokumente/recherche-beispielbestaende-fuer-neue",
+            "titel": "Recherche: Beispielbestände für neue brainlehr-Nutzer"
+          },
+          {
+            "id": "/methodik/zehn-verdachtsfaelle-geprueft-null",
+            "titel": "Zehn Verdachtsfälle geprüft, null Fehler — warum die Fehlerklasse „leeres Ergebnis statt ungeprüft\" seltener ist als ihr Erkennungsmuster"
+          },
+          {
+            "id": "/brainlehr/blinde-nutzenmessung-die-auffindbarkeit",
+            "titel": "Warum die fruehere Nutzenmessung blind war — der Engpass liegt im Wiederfinden, nicht im Speicher"
+          },
+          {
+            "id": "/brainlehr/die-vektor-anomalie-ist-aufgeklaert",
+            "titel": "Die Vektor-Anomalie ist aufgeklärt: nicht die Frische, die Feldzusammensetzung"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-69217d",
+            "titel": "OpenLehr steuer: normalisierte Tabellen `invoices`/`invoice_items` (mit `BackofficeRepository.create_invoice`/`add_invoice_item`) werden von KEINEM Produktions-"
+          },
+          {
+            "id": "L-163051",
+            "titel": "Ein Deploy-Skript spiegelte das Build-Verzeichnis auf den Server und nahm dabei genau EINE live wachsende Datei von der Spiegelung aus (status/ereignisse.json)."
+          },
+          {
+            "id": "L-1f65cc",
+            "titel": "Eine Textersetzung ohne Trefferpruefung lief ins Leere, und die Aenderung wurde trotzdem als erledigt gemeldet. buckeberg 2026-08-18: Ein Patch sollte den Halbs"
+          },
+          {
+            "id": "L-749544",
+            "titel": "Ein Verzeichnis geprueft, Abwesenheit behauptet — und die eigene Regel 'nicht gefunden ist nicht nicht vorhanden' Stunden nach dem Aufschreiben selbst verletzt\n"
+          },
+          {
+            "id": "L-1c9dc8",
+            "titel": "Was 2026-08-09 in brainlehr funktioniert hat, nachdem der Betreiber einer eigenen Messung widersprochen hatte (\"hatte der Feldbericht nicht etwas anderes bewies"
+          },
+          {
+            "id": "L-e84883",
+            "titel": "catch(_){} bei Verzeichnis-/Ressourcen-Discovery-Abfragen (z.B. getApplicationDocumentsDirectory/getApplicationSupportDirectory/getLibraryDirectory in encryptio"
+          },
+          {
+            "id": "L-2837f3",
+            "titel": "Eine Regel gegen Entwicklersprache in der Oberfläche enthielt als **Positivbeispiel** genau den Satz, den der Betreiber später beanstandete: „Bleibt das Feld le"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 22,
+        "anfrage_gekuerzt": "Das Entwicklungsteam stellt fest, dass die automatisch generierten Skripte unzuverlässig sind, da die internen Anleitungen nicht präzise genug definiert wurden. Um die Qualität zu sichern, müssen nun ",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/lessons/phase2-summary",
+          "label": "Meta-Optimierung Phase 2 Zusammenfassung"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/shared/arch/startauftrag-fuer-neue-fachdomaenen",
+            "titel": "Startauftrag für neue Fachdomänen wird erzeugt, nicht abgeschrieben"
+          },
+          {
+            "id": "/brainlehr/szenario-bausteine-akademie-abteilungen",
+            "titel": "Szenario-Bausteine Akademie: Abteilungen, Freigabekette, Verbotsliste"
+          },
+          {
+            "id": "/plaene/plan-destille-2026-08-09/s1b-wird-konkreter-zwei-merkmale-fehlen",
+            "titel": "S1b · wird konkreter: zwei Merkmale fehlen im eigenen Entwurf"
+          },
+          {
+            "id": "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+            "titel": "Warum Disziplin verrottet und Erzeugung nicht"
+          },
+          {
+            "id": "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            "titel": "Ohne Plan wird nicht gebaut — Betreiberanweisung 2026-08-12, mit Durchsetzung statt Appell"
+          },
+          {
+            "id": "/brainlehr/entscheidungsstabilitaet-ist-noch-kein",
+            "titel": "Entscheidungsstabilität ist noch kein durchgängiges Laufzeitgate"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein",
+            "titel": "Simulationsakademie: Messaufbau, kein echter Betrieb"
+          },
+          {
+            "id": "/methodik/der-eigene-ablauf-ist-deklariert-und",
+            "titel": "Der eigene Ablauf ist deklariert -- und zwei der tragenden Schritte haben keinen Mechanismus"
+          },
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/brainlehr/dokumente/plan-vertrauensregler-die",
+            "titel": "Plan: Vertrauensregler — die Rückfragepflicht wird regelbar, die Belegpflicht nicht"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-6c6661",
+            "titel": "Eine Umgebungsvariable zum Umlenken des Datenbankpfads existiert, wird aber nur von einem Teil der Skripte geachtet — und erzeugt damit falsche Sicherheit statt"
+          },
+          {
+            "id": "L-c75d56",
+            "titel": "Verfahren, um vor jeder Arbeit festzustellen, ob der Arbeitsbaum, in dem die Sitzung startet, ueberhaupt der aktuelle ist — bevor eine Aufgabe aus dem Auftrag u"
+          },
+          {
+            "id": "L-b63633",
+            "titel": "Die Einstufung 'vorbestehend rot' verdeckte, dass ein Produktivskript gar nicht mehr lauffaehig war"
+          },
+          {
+            "id": "L-c66dcf",
+            "titel": "Einen Schreibpfad neu gebaut, den der geerbte Bestand seit Langem und FEINER loest -- und den Bestand erst gelesen, nachdem mein Neubau schon stand. openlehr_ei"
+          },
+          {
+            "id": "L-4b84f2",
+            "titel": "Dreimal an EINEM Tag eine Konstante ERFUNDEN statt nachgesehen -- und jedes Mal nannte die Fehlermeldung die erlaubten Werte. openlehr_einzelunternehmer 2026-08"
+          },
+          {
+            "id": "L-c97712",
+            "titel": "Ein Auftrag nannte eine Datei gleichzeitig als VORAUSSETZUNG und als TABU -- und deckte damit zu, dass sie gar nicht eingebunden war. Am 2026-08-16 in buckeberg"
+          },
+          {
+            "id": "L-a4f6dd",
+            "titel": "Ein Pruefstein, der nur auf VERLUST prueft, laesst die schlechteste bekannte Bauform durch -- und zwar strukturell unangreifbar. brainlehr, 2026-08-13: Ein Agen"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer behandelt die Umstrukturierung/Praezisierung von Anleitungen fuer automatisch generierte Skripte."
+      },
+      {
+        "nr": 23,
+        "anfrage_gekuerzt": "Bei der Entwicklung einer neuen Anwendung müssen die automatischen Prüfzyklen strukturiert werden. Dabei sollen immer verfügbare Vorbereitungen für Testdaten erstellt und verschiedene Szenarien in Kat",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/testing/pytest",
+          "label": "pytest"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/testing",
+            "titel": "Testen als Fachgebiet: Strategien, pytest und TDD-Muster"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/brainlehr/systemweite-lastenkatalog-pflicht-fuer",
+            "titel": "Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge"
+          },
+          {
+            "id": "/methodik/direktiven-hub-claude-md/wissen-knowledge-mcp",
+            "titel": "Wissen (Knowledge-MCP)"
+          },
+          {
+            "id": "/methodik/arbeitsweise/h6-bau-so",
+            "titel": "Wie ein Durchlauf ohne Menschen prüfbar bleibt (H6)"
+          },
+          {
+            "id": "/methodik/fertigkeiten/design-waechter",
+            "titel": "design-waechter: neun Fragen vor dem Fertigmelden eines Bildschirms"
+          },
+          {
+            "id": "/brainlehr/szenario-bausteine-akademie-abteilungen",
+            "titel": "Szenario-Bausteine Akademie: Abteilungen, Freigabekette, Verbotsliste"
+          },
+          {
+            "id": "/brainlehr/enigma-zuerst-falsifizieren-dann-bauen",
+            "titel": "Vor jedem Enigma-Bau: erst falsifizieren, dann bauen"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-e148ad",
+            "titel": "Dreimal in zwei Tagen ueber den ORDNER gesucht statt ueber das MERKMAL -- und jedes Mal galt die Klasse danach faelschlich als geschlossen. fahrtenbuch, 2026-08"
+          },
+          {
+            "id": "L-bfe140",
+            "titel": "Zweimal am 2026-08-12 hat ein Agent bei der Sichtpruefung einer Mac-App versehentlich fremde, private Bildschirminhalte des Betreibers erfasst -- beim zweiten M"
+          },
+          {
+            "id": "L-8d1e1d",
+            "titel": "Bevor ein Pfad abgesichert wird, muss belegt sein, dass er ueberhaupt laeuft. Gemessen 2026-08-01 in openlehr: der erste Testaufbau prueffte recent_turns_contex"
+          },
+          {
+            "id": "L-3f1fa9",
+            "titel": "Ein Waechter gegen verrottende Selbsttests war selbst nicht bewacht -- 11 Module liefen jahrelang nirgends, und die eingebaute Zaehlprobe konnte das prinzipiell"
+          },
+          {
+            "id": "L-8bde89",
+            "titel": "Jede Anwendung mit Bestand hat ZWEI Ausgangszustaende -- frisch angelegt und gewachsen -- und geprueft wird fast immer nur einer. Der ungepruefte ist regelmaess"
+          },
+          {
+            "id": "L-235ab8",
+            "titel": "Einen Testfall gebaut, dessen Ausgang von der VORGESCHICHTE abhaengt -- er belegte beim ersten Lauf etwas und beim zweiten nichts, ohne dass sich der Code aende"
+          },
+          {
+            "id": "L-d3237f",
+            "titel": "Ein Plan von fuenf Stufen (openlehr, 2026-08-08: Herkunft je Antwort + dritter Zustand \"weiss nicht\") wurde in einem Zug durchgezogen, weil der Ist-Stand VOR de"
+          }
+        ],
+        "zweitziel_kandidaten": [
+          "/testing"
+        ],
+        "begruendung": "Der Testing-Wurzelknoten buendelt woertlich Test-Strategien, pytest, Coverage-Kennzahlen und TDD-Muster -- deckt Fixtures/Kategorien/Abdeckungsmessung ebenso ab wie das Pytest-Ziel."
+      },
+      {
+        "nr": 24,
+        "anfrage_gekuerzt": "Ein Mitarbeiter im Empfangsbereich prüft die Belegung der Büroräume auf dem Gelände. Würde das System bei gesperrten Zonen gar keine Daten liefern, könnte er durch das Fehlen von Einträgen Rückschlüss",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/brainlehr/inference-control-was-andere-faecher",
+          "label": "Inference Control — was andere Faecher geloest haben und wo die bewiesene Grenze liegt"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/brainlehr/cafe-enigma-rotation-1-p1-mechanismen",
+            "titel": "Café Enigma Rotation 1: P1-Mechanismen und P2-Grenzen"
+          },
+          {
+            "id": "/brainlehr/die-einbuergerungsschranke-hat-ihre",
+            "titel": "Die Einbuergerungsschranke besteht ihre erste Probe im Feld — Ziel war der Assistent selbst"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/messlauf-4-die-schranke-hielt-und-der",
+            "titel": "Wenn eine Schranke greift, der Agent aber trotzdem Erfolg meldet"
+          },
+          {
+            "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+            "titel": "Elf Stufen bilden die Zugriffsentscheidung als Filter, nicht als additive Berechtigung"
+          },
+          {
+            "id": "/methodik/direktiven/nachsehen-bevor-gefragt-oder-delegiert-wird-systemweit",
+            "titel": "Nachsehen, bevor gefragt oder delegiert wird (systemweit)"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein",
+            "titel": "Simulationsakademie: Messaufbau, kein echter Betrieb"
+          },
+          {
+            "id": "/brainlehr/brainlehrs-zugriffsprotokoll-ist",
+            "titel": "Sigma-Regeln lassen sich ohne Umbau auf brainlehrs Zugriffsprotokoll access_log anwenden"
+          },
+          {
+            "id": "/brainlehr/zielbild-a-steht-bei-0-von-35-und-der",
+            "titel": "Zielbild A steht bei 0 von 35 — und der Engpass ist nicht die Trefferquote, sondern drei Felder"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-706807",
+            "titel": "Ein Agent bestaetigt Handlungen, die nachweislich nicht stattgefunden haben — zweimal am selben Tag gemessen, beide Male mit Details, die Sicherheit vortaeusche"
+          },
+          {
+            "id": "L-4be9bf",
+            "titel": "Ein Agent mit Wissensspeicher sucht nicht nach Themen, sondern nach SATZART. Gemessen am 2026-08-08 in fuenf Vorgaengen (Hermes gemma4:12b, nur MCP-Werkzeuge, A"
+          },
+          {
+            "id": "L-528f0c",
+            "titel": "Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt — und weil er dabei laut und blockierend ist, verbraucht er das Vertrauen, das er fuer den ec"
+          },
+          {
+            "id": "L-d8b32a",
+            "titel": "Eine Zugriffsregel gebaut, die den Beschriebenen einschraenkt und den Unbeschriebenen freilaesst. In knowledge_mcp_server._knowledge_read_projection steht `if n"
+          },
+          {
+            "id": "L-476c1b",
+            "titel": "Entwicklerinformation im sichtbaren UI-Text: Ein Hinweis am E-Mail-Feld lautete \"Leer lassen löscht beim Speichern eine vorhandene Adresse (bekannte Server-Lück"
+          },
+          {
+            "id": "L-71fd3a",
+            "titel": "Signatur gebaut, Grenze offen: Krypto-Infrastruktur (HMAC/Ed25519) existiert, aber der kritischste Pfad verifiziert nie. SchwarmWacht: Pairing+Kamera-Kommandos "
+          },
+          {
+            "id": "L-5c7f86",
+            "titel": "Eine Persona-Runde auf einem Bildschirm-Abzug (wohlair, 2026-08-01: vier Rollen — 71-jaehrige Zielnutzerin, gegnerischer Vermieter-Anwalt, Screenreader-Nutzer, "
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer behandelt eine Zugriffssperre, die bei fehlenden Daten eine glaubwuerdige Fiktion statt Leere liefert (Inference Control)."
+      },
+      {
+        "nr": 25,
+        "anfrage_gekuerzt": "Ein neuer Kollege beginnt seine Einarbeitung in einem komplexen Umfeld und erhält ein umfangreiches Handbuch zur Orientierung. Er muss vor dem Start identifizieren, welche Teile dieser Dokumentation z",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/methodik/einstieg",
+          "label": "So benutzt du diesen Zweig"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/systemweite-lastenkatalog-pflicht-fuer",
+            "titel": "Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge"
+          },
+          {
+            "id": "/methodik/direktiven/plan-vor-umsetzung-systemweit",
+            "titel": "Plan vor Umsetzung (systemweit)"
+          },
+          {
+            "id": "/methodik/direktiven-hub-claude-md/arbeitsweise",
+            "titel": "Arbeitsweise"
+          },
+          {
+            "id": "/methodik/einstieg",
+            "titel": "Wie dieser Wissenszweig gelesen werden soll, damit er wirkt statt nur zu existieren"
+          },
+          {
+            "id": "/shared/arch/startauftrag-fuer-neue-fachdomaenen",
+            "titel": "Startauftrag für neue Fachdomänen wird erzeugt, nicht abgeschrieben"
+          },
+          {
+            "id": "/brainlehr/dokumente/was-gleichzeitig-laufen-kann-aufteilung",
+            "titel": "Was gleichzeitig laufen kann — Aufteilung nach Dateibesitz"
+          },
+          {
+            "id": "/brainlehr/dokumente/abarbeitung-der-offene-bestand-vom-2026",
+            "titel": "Abarbeitung: der offene Bestand vom 2026-08-11"
+          },
+          {
+            "id": "/ops/openlehr/openlehr-mandantenmodell-nutzer",
+            "titel": "Warum bei OpenLehr der Nutzer das Unternehmen ist und Logins nur Mitarbeiter sind"
+          },
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/methodik/arbeitsweise/01-nachsehen-schlaegt-erinnern",
+            "titel": "Warum Nachsehen vor jedem Erinnern kommt: die erste Arbeitsregel"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-bdfeef",
+            "titel": "Eine Sitzung startete im Arbeitsbaum von Repo A (brainlehr), der Betreiber waehlte per Startfrage Projekt B (openlehr). Ich habe B ueber ein `cd` in JEDEM einze"
+          },
+          {
+            "id": "L-30be01",
+            "titel": "Zwei neue Plaene NEBEN den Gesamtplan gelegt statt hinein -- und damit dieselbe Abschnittskennung dreimal vergeben. brainlehr, 2026-08-14: `docs/PLAN_GESAMT_202"
+          },
+          {
+            "id": "L-bfe140",
+            "titel": "Zweimal am 2026-08-12 hat ein Agent bei der Sichtpruefung einer Mac-App versehentlich fremde, private Bildschirminhalte des Betreibers erfasst -- beim zweiten M"
+          },
+          {
+            "id": "L-813c8f",
+            "titel": "openlehr, gemessen 2026-08-07: `GESAMTPLAN_2026-07-29.md` traegt den Status \"verbindlich. Loest die Einzelplaene als Reihenfolge ab\". Seither entstanden 14 weit"
+          },
+          {
+            "id": "L-e107ee",
+            "titel": "Projektgrenze ist dokumentiert, aber nirgends durchgesetzt — eine Person mit zwei Rollen belegt es in einem Lauf"
+          },
+          {
+            "id": "L-7a719d",
+            "titel": "Die Sitzung lief in einem Arbeitsbaum (cwd = .claude/worktrees/hallo-3b3c8d, Zweig claude/hallo-3b3c8d), aber alle Edits gingen per ABSOLUTEM Pfad nach /Volumes"
+          },
+          {
+            "id": "L-891c44",
+            "titel": "PDF-Marker lief wegen eines falschen relativen Pfads nicht; eine nachfolgende, nicht mit set -e abgesicherte Shell-Zeile startete trotzdem den Renderer und über"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 26,
+        "anfrage_gekuerzt": "Ein Administrator prüft die Zugriffsberechtigungen für einen Kollegen, der für zwei Organisationen tätig ist. Er verwendet dazu ein Übungsszenario mit simulierten Profilen, um sicherzustellen, dass di",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/stadtwerke",
+          "label": "Stadtwerke"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+            "titel": "Elf Stufen bilden die Zugriffsentscheidung als Filter, nicht als additive Berechtigung"
+          },
+          {
+            "id": "/stadtwerke",
+            "titel": "Stadtwerke: fiktiver Verbundpartner fuer den fuenfte-Rolle-Testlauf"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/simulation-it-zugriffsregel",
+            "titel": "SIMULATION: absichtlicher Portwiderspruch in der Zugriffsregel zum Buchungssystem"
+          },
+          {
+            "id": "/brainlehr/dokumente/was-gleichzeitig-laufen-kann-aufteilung",
+            "titel": "Was gleichzeitig laufen kann — Aufteilung nach Dateibesitz"
+          },
+          {
+            "id": "/brainlehr/was-brainlehr-fuer-b4-fehlt-liegt-in",
+            "titel": "Was brainlehr fuer B4 fehlt, liegt in AKA2026 fertig: Rechte mit Bezug (:own, :published)"
+          },
+          {
+            "id": "/brainlehr/cafe-enigma-rotation-1-p1-mechanismen",
+            "titel": "Café Enigma Rotation 1: P1-Mechanismen und P2-Grenzen"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/simulation-geschaeftsleitung",
+            "titel": "SIMULATION Geschaeftsleitung: abgestufte Rechte in der Vetorunde vor der Vorlage"
+          },
+          {
+            "id": "/brainlehr/zwei-zugriffsachsen-waren-nie-zusammen",
+            "titel": "Zwei Zugriffsachsen waren nie zusammen getestet — und beim Zusammenlegen musste eine Rolle die Seite wechseln"
+          },
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/simulation-redaktion-freigabekette-wer",
+            "titel": "SIMULATION Redaktion: Wer einen Entwurf erstellt, darf ihn nicht freigeben"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-706807",
+            "titel": "Ein Agent bestaetigt Handlungen, die nachweislich nicht stattgefunden haben — zweimal am selben Tag gemessen, beide Male mit Details, die Sicherheit vortaeusche"
+          },
+          {
+            "id": "L-f6c611",
+            "titel": "Dreimal an EINEM Tag (2026-08-18, brainlehr/lehrAtelier) wurde eine QUITTUNG als Beleg für eine WIRKUNG genommen — jedes Mal von einer anderen Sitzung, jedes Ma"
+          },
+          {
+            "id": "L-528f0c",
+            "titel": "Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt — und weil er dabei laut und blockierend ist, verbraucht er das Vertrauen, das er fuer den ec"
+          },
+          {
+            "id": "L-bfe140",
+            "titel": "Zweimal am 2026-08-12 hat ein Agent bei der Sichtpruefung einer Mac-App versehentlich fremde, private Bildschirminhalte des Betreibers erfasst -- beim zweiten M"
+          },
+          {
+            "id": "L-e107ee",
+            "titel": "Projektgrenze ist dokumentiert, aber nirgends durchgesetzt — eine Person mit zwei Rollen belegt es in einem Lauf"
+          },
+          {
+            "id": "L-732ced",
+            "titel": "Zwei Fehler in einem Lauf, beide aus derselben Wurzel -- ein Agent prueft den Ordner, in dem er ARBEITET, nicht den Bereich, den seine Aenderung BERUEHRT. fahrt"
+          },
+          {
+            "id": "L-fb38fc",
+            "titel": "Ein Agent raeumte am Ende seines Auftrags mit `git restore` und `git clean` \"unbeabsichtigte Seiteneffekte\" auf -- und traf damit die Arbeit DREIER paralleler A"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 27,
+        "anfrage_gekuerzt": "Während der Modernisierung des Finanzportals müssen wir die Struktur der Benutzeroberfläche prüfen. Dabei ist es entscheidend zu wissen, wie viele Untermodule in diesem Bereich abgelegt sind, um die V",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/openlehr/steuer/ui",
+          "label": "Ui"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/brainlehr/systemweite-lastenkatalog-pflicht-fuer",
+            "titel": "Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge"
+          },
+          {
+            "id": "/arch/knowledge-mgmt/tree-structure",
+            "titel": "Wie die Wissens-DB als Baumstruktur mit SQLite und FTS5 aufgebaut ist"
+          },
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/arch",
+            "titel": "Wie Architekturentscheidungen und Systemdesign abgelegt werden"
+          },
+          {
+            "id": "/frontend",
+            "titel": "Frontend: Namensraum fuer Oberflaeche, Komponenten und Barrierefreiheit"
+          },
+          {
+            "id": "/backend",
+            "titel": "Backend: Server, Schnittstellen und Datenhaltung"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          },
+          {
+            "id": "/methodik/direktiven/nachsehen-bevor-gefragt-oder-delegiert-wird-systemweit",
+            "titel": "Nachsehen, bevor gefragt oder delegiert wird (systemweit)"
+          },
+          {
+            "id": "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+            "titel": "Warum Disziplin verrottet und Erzeugung nicht"
+          },
+          {
+            "id": "/frontend/flutter",
+            "titel": "Flutter: Dart-Patterns und Plattform-Channels"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-d469e5",
+            "titel": "Beim Buckeberg-PDF-Neusatz wurde die Sol-Grafikempfehlung 'drei Seiten' zwar formal umgesetzt, aber das Querformat zur Verdichtung mehrerer Informationsarten ge"
+          },
+          {
+            "id": "L-248867",
+            "titel": "openlehr 2026-08-07, Recherche amtlicher ELSTER-Zeilennummern: Ein Seitenabruf, bei dem ein zusammenfassendes Modell zwischen Quelle und Ergebnis sitzt (WebFetc"
+          },
+          {
+            "id": "L-0dec26",
+            "titel": "Backend-Validierung erzwingt Pflichtfelder, für die es kein UI-Feld gibt — ganze Aktion über die UI unmöglich, aber grün. OpenLehr steuer: Rechnungs-Finalisieru"
+          },
+          {
+            "id": "L-bc7a32",
+            "titel": "Ein Widerspruch galt als aufgeloest, weil beim Abgleich nur die Zahlenfelder derselben Datei gelesen wurden und nicht ihr Vorbehaltsfeld. Buckeberg 2026-08-05: "
+          },
+          {
+            "id": "L-8d1e1d",
+            "titel": "Bevor ein Pfad abgesichert wird, muss belegt sein, dass er ueberhaupt laeuft. Gemessen 2026-08-01 in openlehr: der erste Testaufbau prueffte recent_turns_contex"
+          },
+          {
+            "id": "L-5af2e2",
+            "titel": "Um alle Nutzer eines Uebergangs-Symlinks zu finden, klemmt man ihn ab und startet alles, was ihn benutzt -- man sucht ihn nicht mit grep. Gemessen 2026-08-08 be"
+          },
+          {
+            "id": "L-636a44",
+            "titel": "Schemadatei der Live-Datenbank voraus: eine Aenderung an schema.sql wird geschrieben, die Live-DB aber nicht nachgezogen — und es faellt erst beim naechsten Sch"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer beantwortet, wie viele Untermodule unter einem bestimmten Knoten liegen -- strukturelle Frage, die keiner der gelieferten Eintraege behandelt."
+      },
+      {
+        "nr": 28,
+        "anfrage_gekuerzt": "Die Eigentümergemeinschaft möchte die Abrechnung der Dachsanierung prüfen, da das Handwerksunternehmen und die Hausverwaltung unter gleicher Leitung stehen. Da im Vertrag keine speziellen Regeln für s",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+          "label": "efbe: der Vertrag regelt die Vergabe an eigene Gewerke nicht — Vertragsfrage vor der Unterschrift"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+            "titel": "efbe: die Vergabe an eigene Gewerke bleibt im Vertrag ungeregelt — Frage vor der Unterschrift"
+          },
+          {
+            "id": "/ops/buckeberg-efbe-verwaltung-und-bausparte",
+            "titel": "Personelle Verflechtung zwischen der efbe-Hausverwaltung und der efbe-Bausparte GmbH, ungeregelt im Vertragsentwurf"
+          },
+          {
+            "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/swb-der-preis-ist-nicht-geklaert-der",
+            "titel": "SWB: warum der Preis weiter ungeklärt bleibt — der Vertragsentwurf gehört einer fremden Gemeinschaft"
+          },
+          {
+            "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-gemeinschaftskonten-statt",
+            "titel": "efbe: warum zwei Gemeinschaftskonten die fehlende Vertrauensschadenversicherung ausgleichen"
+          },
+          {
+            "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-entlastung-zu-klaeren-leerstand",
+            "titel": "Vor der Entlastung zu klaeren: Leerstand ohne Anschrift, Terrasse 47 Prozent groesser als genehmigt, sieben Jahre ohne Entlastungsbeschluss"
+          },
+          {
+            "id": "/ops/buckeberg-heizungsentscheidung/buckeberg-vorstand-berichtet-vorhandene",
+            "titel": "Buckeberg: Vorstand berichtet vorhandene Dachdämmung"
+          },
+          {
+            "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+            "titel": "Wer den Verwaltervertrag unterschreibt, muss vor der Wahl geklärt sein — zwei Personen nötig"
+          },
+          {
+            "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027",
+            "titel": "Grundlage fuer die Wahl der neuen WEG-Hausverwaltung Im Buckeberg zum 2027-01-01, nach drei unabhaengigen Mitschriften abgeglichen"
+          },
+          {
+            "id": "/ops/buckeberg-heizungsentscheidung/buckeberg-verwaltungskosten-und",
+            "titel": "Buckeberg: Verwaltungskosten und abrechenbare Stunden je Heizungsweg und Verwalter"
+          },
+          {
+            "id": "/domaenen/einzelunternehmer/oberflaeche",
+            "titel": "Bildschirme der Domaene 'einzelunternehmer'"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-d469e5",
+            "titel": "Beim Buckeberg-PDF-Neusatz wurde die Sol-Grafikempfehlung 'drei Seiten' zwar formal umgesetzt, aber das Querformat zur Verdichtung mehrerer Informationsarten ge"
+          },
+          {
+            "id": "L-bbd7fb",
+            "titel": "Ein Eingang wird aus einer Gesamtbewertung entfernt, weil er unbelegt war — die Gesamtbewertung behauptet danach aber weiter dieselbe Reichweite. wohlair: Gesch"
+          },
+          {
+            "id": "L-014f8f",
+            "titel": "Zwei Dokumente derselben Gattung vom selben Absender lagen vor — ein Verwaltervertrags-Entwurf vom 30.07. und einer vom 11.08. Ich habe daraus einen Modellwechs"
+          },
+          {
+            "id": "L-0392e4",
+            "titel": "norm_rang ist eine Zahl ohne Einheit. Die Spalte trug bis heute ausschliesslich die Direktiven-Hierarchie des hub (1 globale Direktive, 2 hub-Direktive, 3 ADR; "
+          },
+          {
+            "id": "L-749544",
+            "titel": "Ein Verzeichnis geprueft, Abwesenheit behauptet — und die eigene Regel 'nicht gefunden ist nicht nicht vorhanden' Stunden nach dem Aufschreiben selbst verletzt\n"
+          },
+          {
+            "id": "L-b3de6f",
+            "titel": "Ein Dokument, das als unveraenderlich gilt, wird beim Nachdruck aus LIVE-Einstellungen zusammengesetzt statt aus dem eingefrorenen Stand — und widerspricht dann"
+          },
+          {
+            "id": "L-626782",
+            "titel": "Sechs Fehler an einem Dokument, alle vom Betreiber gefunden, alle mit derselben Wurzel: Wer spricht, zu wem, in welcher Rolle. Gemessen 2026-08-12 in buckeberg "
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 29,
+        "anfrage_gekuerzt": "Ein neuer Kollege stößt bei der Recherche auf ein unübersichtlich formatiertes Protokoll und ist unsicher, ob es sich um einen Fehler handelt oder ob die Daten noch gültig sind. Es muss geklärt werden",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/ops/buckeberg-anbieterabend-2026-08-05",
+          "label": "Buckeberg Anbieterabend 2026-08-05: mündliche Aussagen kippen zwei Angebotsbewertungen, ein Widerspruch bleibt offen"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/arbeitsweise/03-funktioniert-braucht-einen-beleg",
+            "titel": "Was als Beleg für „funktioniert\" zählt"
+          },
+          {
+            "id": "/methodik/arbeitsweise/07-trenn-sichtbar-zwischen-gemessen",
+            "titel": "Sichtbar trennen: gemessen, abgeleitet oder vermutet"
+          },
+          {
+            "id": "/methodik/arbeitsweise/unbedingtes-lebenszeichen-macht-stille",
+            "titel": "Warum ein unbedingter Herzschlag mehrdeutige Stille in eine deutbare Aussage verwandelt"
+          },
+          {
+            "id": "/shared/arch/zwei-belegformen-vollstaendige-kopie",
+            "titel": "Vollständige Kopie oder Zitat mit Schnappschuss: die zwei zulässigen Belegformen"
+          },
+          {
+            "id": "/methodik/direktiven/nachsehen-bevor-gefragt-oder-delegiert-wird-systemweit",
+            "titel": "Nachsehen, bevor gefragt oder delegiert wird (systemweit)"
+          },
+          {
+            "id": "/methodik/direktiven/wie-ein-agentenauftrag-geschrieben-wird-systemweit",
+            "titel": "Wie ein Agentenauftrag geschrieben wird (systemweit)"
+          },
+          {
+            "id": "/brainlehr/faehigkeiten/sagen-ob-etwas-noch-gilt",
+            "titel": "Sagen, ob etwas noch gilt"
+          },
+          {
+            "id": "/brainlehr/faehigkeiten/melden-wenn-ein-zitat-keinen-beleg-hat",
+            "titel": "Ein Zitat ohne Beleg wird gemeldet"
+          },
+          {
+            "id": "/methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit",
+            "titel": "„Es funktioniert\" braucht einen Beleg, der vorher rot war (systemweit)"
+          },
+          {
+            "id": "/methodik/fertigkeiten/synergien",
+            "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-706807",
+            "titel": "Ein Agent bestaetigt Handlungen, die nachweislich nicht stattgefunden haben — zweimal am selben Tag gemessen, beide Male mit Details, die Sicherheit vortaeusche"
+          },
+          {
+            "id": "L-b3cc49",
+            "titel": "Einen fachfremden Einfall als originelle Idee vorgeschlagen -- er stand seit 2006 im Lehrbuch des einschlaegigen Fachs. brainlehr 2026-08-20: Auf die Frage nach"
+          },
+          {
+            "id": "L-14d14c",
+            "titel": "Eine Uebergabedatei ueberlebte einen RICHTUNGSWECHSEL des Auftrags und beschrieb danach zuversichtlich den aufgegebenen Strang. Am 2026-08-16 in buckeberg: docs"
+          },
+          {
+            "id": "L-bc7a32",
+            "titel": "Ein Widerspruch galt als aufgeloest, weil beim Abgleich nur die Zahlenfelder derselben Datei gelesen wurden und nicht ihr Vorbehaltsfeld. Buckeberg 2026-08-05: "
+          },
+          {
+            "id": "L-dd35c1",
+            "titel": "Aus der guten BAUFORM eines fremden Artefakts auf seine WIRKSAMKEIT geschlossen -- und im selben Absatz geschrieben, dass ich die Wirksamkeit nicht gemessen hab"
+          },
+          {
+            "id": "L-f2a00c",
+            "titel": "Einem Konsil die eigenen Messwerte VORENTHALTEN, um zu verhindern, dass es den eigenen Rahmen erbt -- und damit genau die Evidenz entfernt, die das Vorhaben hae"
+          },
+          {
+            "id": "L-1ad326",
+            "titel": "Sechs Fehler an einem Tag hatten dieselbe Wurzel: Es wurde etwas über eine Quelle behauptet, ohne die Quelle daneben zu legen. Reihenfolge: (1) Teilungserklärun"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer behandelt das konkrete Anbieterabend-Protokoll vom 2026-08-05 als bewussten Beleg des Entstehungsprozesses; L-bc7a32 behandelt denselben Abend, aber eine andere Fragestellung (Widerspruchspruefung, nicht Formatgueltigkeit)."
+      },
+      {
+        "nr": 30,
+        "anfrage_gekuerzt": "Ein Kunde möchte seine persönlichen Informationen im Profil aktualisieren, doch der Vorgang wird abgebrochen. Die Meldung auf dem Display darf keine Details zu den technischen Hintergründen preisgeben",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+          "label": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/openlehr/dringend-an-openlehr-einzelunternehmer",
+            "titel": "DRINGEND an openlehr_einzelunternehmer: ihr könnt weiterarbeiten — `zeilen` und `/neuladen` stehen"
+          },
+          {
+            "id": "/methodik/direktiven/betreiberweisung-2026-08-20-es-gibt",
+            "titel": "Betreiberweisung 2026-08-20: Es gibt Knöpfe, die die KI technisch nicht klicken kann"
+          },
+          {
+            "id": "/methodik/fertigkeiten/pause",
+            "titel": "Sitzung sicher unterbrechen: Sichern vor dem Wiedereinstieg"
+          },
+          {
+            "id": "/domaenen/einzelunternehmer/dienst",
+            "titel": "Dienst der Domaene 'einzelunternehmer'"
+          },
+          {
+            "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+            "titel": "Elf Stufen bilden die Zugriffsentscheidung als Filter, nicht als additive Berechtigung"
+          },
+          {
+            "id": "/methodik/direktiven/geht-nicht-ist-ein-zwischenstand-keine",
+            "titel": "„Geht nicht\" ist ein Zwischenstand, keine Antwort — erst widerlegen, dann fragen"
+          },
+          {
+            "id": "/shared/arch/k-anonymitaet-ohne-kopfzaehlung",
+            "titel": "k-Anonymität ohne Kopfzählung: warum Verzögerung und Vergröberung reichen"
+          },
+          {
+            "id": "/methodik/direktiven/testumgebung-selbstaendig-handeln-bis",
+            "titel": "Testumgebung: selbstaendig handeln bis zum Wort \"es wird ernst\""
+          },
+          {
+            "id": "/testing/virtueller-bildschirmabzug-personas-auf",
+            "titel": "Virtueller Bildschirmabzug: Persona-Pruefungen brauchen den ausgelesenen statt den beschriebenen Baum"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-b088ff",
+            "titel": "\"Bleibt Handprobe am Geraet\" als Grenze des Pruefaufbaus gesetzt, wo in Wahrheit nur die eigene Vorstellungskraft endete. Gemessen 2026-08-11: Nach dem Bau des "
+          },
+          {
+            "id": "L-229bb2",
+            "titel": "Dreimal am 2026-08-15 einen Agenten auf etwas angesetzt, das bereits gebaut war -- jedes Mal, weil der Plan es als offen fuehrte und ich den Plan als Quelle gen"
+          },
+          {
+            "id": "L-706807",
+            "titel": "Ein Agent bestaetigt Handlungen, die nachweislich nicht stattgefunden haben — zweimal am selben Tag gemessen, beide Male mit Details, die Sicherheit vortaeusche"
+          },
+          {
+            "id": "L-ab05b4",
+            "titel": "Dedupe-/Once-Latch wird VOR den Guard-Returns eines asynchronen Anzeige-Callbacks gesetzt statt danach — bricht der Callback an einem frühen Guard ab (Context n"
+          },
+          {
+            "id": "L-51e6d8",
+            "titel": "Wer den Rueckgabewert einer Funktion um einen Schluessel erweitert, muss den KONSUMENTEN pruefen -- und der liegt oft in der Schicht, die dem ausfuehrenden Agen"
+          },
+          {
+            "id": "L-476c1b",
+            "titel": "Entwicklerinformation im sichtbaren UI-Text: Ein Hinweis am E-Mail-Feld lautete \"Leer lassen löscht beim Speichern eine vorhandene Adresse (bekannte Server-Lück"
+          },
+          {
+            "id": "L-1460f5",
+            "titel": "Beim Einrichten eines Anmeldedienstes drei Fehler nacheinander gebaut, und ALLE DREI waren im Betrieb unsichtbar -- weil der betroffene Bildschirm einen vorgese"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 31,
+        "anfrage_gekuerzt": "Bei der Besprechung mit potenziellen Partnern wird immer wieder so getan, als müsse die Anzahl der benötigten Unterschriften noch mit den externen Firmen geklärt werden. Hier muss jemand intervenieren",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+          "label": "Vor der Wahl zu klären: wer unterschreibt den Verwaltervertrag — zwei Personen nötig"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/direktiven/plan-vor-umsetzung-systemweit",
+            "titel": "Plan vor Umsetzung (systemweit)"
+          },
+          {
+            "id": "/brainlehr/brainlehr-aussenansicht-als",
+            "titel": "Brainlehr-Aussenansicht als funktionserhaltende semantische Projektion"
+          },
+          {
+            "id": "/simulation-akademie-messaufbau-kein/simulation-geschaeftsleitung",
+            "titel": "SIMULATION Geschaeftsleitung: abgestufte Rechte in der Vetorunde vor der Vorlage"
+          },
+          {
+            "id": "/methodik/direktiven/ohne-plan-wird-nicht-gebaut",
+            "titel": "Ohne Plan wird nicht gebaut — Betreiberanweisung 2026-08-12, mit Durchsetzung statt Appell"
+          },
+          {
+            "id": "/methodik/arbeitsweise/07-trenn-sichtbar-zwischen-gemessen",
+            "titel": "Sichtbar trennen: gemessen, abgeleitet oder vermutet"
+          },
+          {
+            "id": "/brainlehr/faehigkeiten/sagen-ob-etwas-noch-gilt",
+            "titel": "Sagen, ob etwas noch gilt"
+          },
+          {
+            "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+            "titel": "Wer den Verwaltervertrag unterschreibt, muss vor der Wahl geklärt sein — zwei Personen nötig"
+          },
+          {
+            "id": "/brainlehr/die-entscheidungsverfassung-ist",
+            "titel": "Die Entscheidungsverfassung ist umschaltbar — Hierarchie ist eine Form, nicht das Gesetz"
+          },
+          {
+            "id": "/methodik/fertigkeiten/pause",
+            "titel": "Sitzung sicher unterbrechen: Sichern vor dem Wiedereinstieg"
+          },
+          {
+            "id": "/methodik/direktiven/testumgebung-selbstaendig-handeln-bis",
+            "titel": "Testumgebung: selbstaendig handeln bis zum Wort \"es wird ernst\""
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-706807",
+            "titel": "Ein Agent bestaetigt Handlungen, die nachweislich nicht stattgefunden haben — zweimal am selben Tag gemessen, beide Male mit Details, die Sicherheit vortaeusche"
+          },
+          {
+            "id": "L-4df8f5",
+            "titel": "Der Betreiber musste am 2026-08-18 in EINER Sitzung DREIMAL dasselbe sagen, damit weitergearbeitet wird: „mach du das für mich!\", „mach das!\", „und du machst hi"
+          },
+          {
+            "id": "L-f71528",
+            "titel": "Einstimmigkeit in einem Agenten-Konsil war Rahmensetzung des Koordinators, kein Befund. openlehr-UI-Konsil 2026-07-29, Runde 1: vier Fachlinsen mit disjunkten B"
+          },
+          {
+            "id": "L-122b1c",
+            "titel": "Dieselbe Fehlerklasse zweimal an einem Tag, und zwischen den beiden Vorkommen lagen eine geschriebene Doktrin und eine zugestellte Eilmeldung. Erstes Vorkommen "
+          },
+          {
+            "id": "L-626782",
+            "titel": "Sechs Fehler an einem Dokument, alle vom Betreiber gefunden, alle mit derselben Wurzel: Wer spricht, zu wem, in welcher Rolle. Gemessen 2026-08-12 in buckeberg "
+          },
+          {
+            "id": "L-354ee6",
+            "titel": "Interne Vorbehalte/Kennzeichnungen (UNBELEGT, Rang 5/6) gehen beim Transfer vom internen Rechts-Korpus auf die Publikumsseite verloren — zweiter Fund dieser Feh"
+          },
+          {
+            "id": "L-dd35c1",
+            "titel": "Aus der guten BAUFORM eines fremden Artefakts auf seine WIRKSAMKEIT geschlossen -- und im selben Absatz geschrieben, dass ich die Wirksamkeit nicht gemessen hab"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 32,
+        "anfrage_gekuerzt": "Bei der Ausarbeitung einer komplexen Systemarchitektur muss ich entscheiden, ob eine zusätzliche Überprüfungsinstanz sinnvoll ist. Da die primäre Logik bereits über die nötige Kapazität für tiefgreife",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+          "label": "Modell-Kaskade v3: Opus-Hauptfaden + Delegation nach unten (seit 2026-08-05T09:40:00+0200)"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/arbeitsweise/15-wenn-du-unabhaengig-pruefen-willst",
+            "titel": "Warum unabhängige Prüfung ein frisches Fenster braucht"
+          },
+          {
+            "id": "/brainlehr/dokumente/plan-das-zweite-signal-und-warum-zuerst",
+            "titel": "Plan: das zweite Signal — und warum zuerst etwas anderes gebaut wird"
+          },
+          {
+            "id": "/brainlehr/dokumente/konsil-material-grundarchitektur",
+            "titel": "Konsil-Material — Grundarchitektur"
+          },
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+            "titel": "Elf Stufen bilden die Zugriffsentscheidung als Filter, nicht als additive Berechtigung"
+          },
+          {
+            "id": "/methodik/arbeitsweise/09-erst-messen",
+            "titel": "Grundsatz 9 der Arbeitsweise: erst messen, dann entscheiden, dann bauen"
+          },
+          {
+            "id": "/brainlehr/entscheidungsstabilitaet-ist-noch-kein",
+            "titel": "Entscheidungsstabilität ist noch kein durchgängiges Laufzeitgate"
+          },
+          {
+            "id": "/brainlehr/dokumente/konsil-darf-eine-lehre-den-weg",
+            "titel": "Konsil: Darf eine Lehre den Weg blockieren?"
+          },
+          {
+            "id": "/brainlehr/entscheidungsstabilitaets-pruefkorpus",
+            "titel": "Entscheidungsstabilitäts-Prüfkorpus jetzt umsetzen"
+          },
+          {
+            "id": "/brainlehr/enigma-zuerst-falsifizieren-dann-bauen",
+            "titel": "Vor jedem Enigma-Bau: erst falsifizieren, dann bauen"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-ed0b73",
+            "titel": "Ein Mechanismus, der nicht umgangen werden kann, ist genau deshalb auch das beste Versteck -- und brainlehr hat sich diese Eigenschaft selbst gegeben, ohne ihr "
+          },
+          {
+            "id": "L-f71528",
+            "titel": "Einstimmigkeit in einem Agenten-Konsil war Rahmensetzung des Koordinators, kein Befund. openlehr-UI-Konsil 2026-07-29, Runde 1: vier Fachlinsen mit disjunkten B"
+          },
+          {
+            "id": "L-48e5d7",
+            "titel": "Verfahren, das am 2026-08-11 eine als unmoeglich dokumentierte Faehigkeit (BLE-GATT im Android-Emulator) in unter einer Stunde belegt hat, nachdem sie zuvor als"
+          },
+          {
+            "id": "L-a823a5",
+            "titel": "Architekturfrage abstrakt verhandelt, obwohl die Antwort im eigenen Repo stand. openlehr-UI-Konsil 2026-07-29: Zwei Runden, sieben Fachlinsen und zwei Kritiker "
+          },
+          {
+            "id": "L-bee002",
+            "titel": "Einen Agentenbefund \"nachgeprueft\" und die Pruefung mit einem grep-Treffer fuer erledigt gehalten, statt die Fundstelle zu LESEN. brainlehr, 2026-08-13: Ein Rec"
+          },
+          {
+            "id": "L-db37c6",
+            "titel": "Einen Pruefkanal gebaut, dessen Wert davon abhaengt, was der MENSCH gerade am Bildschirm tut -- und daraus zweimal einen Fehler in der Anwendung konstruiert, de"
+          },
+          {
+            "id": "L-e7ebf0",
+            "titel": "Einen statischen Pruefer auf eine Frage gebaut, die statisch gar nicht entscheidbar ist -- und er lieferte prompt 4 Treffer, davon 4 Fehlalarme. Gemessen 2026-0"
+          }
+        ],
+        "zweitziel_kandidaten": [
+          "/methodik/arbeitsweise/15-wenn-du-unabhaengig-pruefen-willst"
+        ],
+        "begruendung": "Der Knoten behandelt woertlich, warum unabhaengige Pruefung ein frisches (separates) Fenster braucht -- exakt die Entscheidung, die die Anfrage stellt."
+      },
+      {
+        "nr": 33,
+        "anfrage_gekuerzt": "Ein Sachbearbeiter prüft die Unterlagen zu einer Anlage und stellt fest, dass der Beleg für eine Modernisierung im Widerspruch zu den aktuellen Sicherheitsprüfungen steht. Da beide Dokumente gleichwer",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+          "label": "Widerspruch 2: Brennertausch Haus 22 — vom Anbieterabend unberührt, unverändert offen"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/arbeitsweise/03-funktioniert-braucht-einen-beleg",
+            "titel": "Was als Beleg für „funktioniert\" zählt"
+          },
+          {
+            "id": "/methodik/direktiven-hub-claude-md/den-betreiber-korrigieren-seit-2026-08",
+            "titel": "Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)"
+          },
+          {
+            "id": "/brainlehr/dokumente/abarbeitung-der-offene-bestand-vom-2026",
+            "titel": "Abarbeitung: der offene Bestand vom 2026-08-11"
+          },
+          {
+            "id": "/methodik/direktiven/dringend-antwort-an-buckeberg-der",
+            "titel": "DRINGEND, Antwort an buckeberg: der Frischevergleich faengt euren Fall NICHT -- das Alter faengt ihn"
+          },
+          {
+            "id": "/apps/dringend-openlehr-friert-ein-beleg-den",
+            "titel": "DRINGEND openlehr: Friert ein Beleg den Kontaktnamen ein, oder holt er ihn beim Anzeigen?"
+          },
+          {
+            "id": "/methodik/direktiven/es-funktioniert-braucht-einen-beleg-der-vorher-rot-war-systemweit",
+            "titel": "„Es funktioniert\" braucht einen Beleg, der vorher rot war (systemweit)"
+          },
+          {
+            "id": "/methodik/direktiven/regel-2026-08-20-jede-anforderungsliste",
+            "titel": "REGEL 2026-08-20: Jede Anforderungsliste braucht eine Belegspalte und einen Zaehler"
+          },
+          {
+            "id": "/methodik/direktiven/nachsehen-bevor-gefragt-oder-delegiert-wird-systemweit",
+            "titel": "Nachsehen, bevor gefragt oder delegiert wird (systemweit)"
+          },
+          {
+            "id": "/brainlehr/der-wert-liegt-im-nachweis-nicht-im",
+            "titel": "Der Wert liegt im Nachweis, nicht im Abruf — und die Nachweisfelder sind leer"
+          },
+          {
+            "id": "/methodik/direktiven/dringend-an-brainlehr-braucht-seinen",
+            "titel": "DRINGEND an brainlehr: „braucht seinen Ausweis\" dreimal gemeldet, ohne einen einzigen Versuch — und ein Testausweis war der offensichtliche Weg"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-349083",
+            "titel": "Buckeberg-Modellfazit versprach drei gemeinsam von je einem Doppelhaus-Paar genutzte Wärmepumpen, während der Rechenkern weiterhin sechs eigene Anlagen je Haus "
+          },
+          {
+            "id": "L-3d738e",
+            "titel": "Bei vier Bildschirm-Migrationen auf einen gemeinsamen UI-Baustein (openlehr, 2026-08-08: anlagegueter, vorsorge, anzahlungen, stammdaten) hat dieselbe Gegenprob"
+          },
+          {
+            "id": "L-7c864b",
+            "titel": "Beinahefehler 2026-08-19: Fast den Neu-Import einer Domaene als kaputt gemeldet, obwohl er tadellos arbeitete -- gemessen wurde gegen einen anderen Bestand als "
+          },
+          {
+            "id": "L-528f0c",
+            "titel": "Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt — und weil er dabei laut und blockierend ist, verbraucht er das Vertrauen, das er fuer den ec"
+          },
+          {
+            "id": "L-014f8f",
+            "titel": "Zwei Dokumente derselben Gattung vom selben Absender lagen vor — ein Verwaltervertrags-Entwurf vom 30.07. und einer vom 11.08. Ich habe daraus einen Modellwechs"
+          },
+          {
+            "id": "L-bb37e0",
+            "titel": "Ein Wert, der in EINEM Fall zufaellig stimmt, wird fest verdrahtet -- und der Fehler zeigt sich erst beim zweiten Fall, also nach dem Ausliefern. lehrAtelier 20"
+          },
+          {
+            "id": "L-bc7a32",
+            "titel": "Ein Widerspruch galt als aufgeloest, weil beim Abgleich nur die Zahlenfelder derselben Datei gelesen wurden und nicht ihr Vorbehaltsfeld. Buckeberg 2026-08-05: "
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Kein Treffer behandelt den konkreten Widerspruch Brennertausch Haus 22 gegen Sicherheitspruefungen."
+      },
+      {
+        "nr": 34,
+        "anfrage_gekuerzt": "Die Entwickler müssen eine technische Barriere einrichten, damit Informationen von externen Anbietern die Integrität der eigenen Software nicht gefährden. Dies ist notwendig, um sicherzustellen, dass ",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+          "label": "ADR-007: Trust Zones — Content-Sandbox für externe Inhalte"
+        },
+        "treffer_heute": true,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/brainlehr/externe-llms-geschaeftsgeheimnisse",
+            "titel": "Externe LLMs brauchen fuer Geschaeftsgeheimnisse eine eigene Freigabeschicht"
+          },
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+            "titel": "ADR-007: Trust Zones — wie externe Inhalte von medizinischen Daten getrennt bleiben"
+          },
+          {
+            "id": "/brainlehr/fremde-anbieter-nach-aufgabe-getrennt",
+            "titel": "Fremde Anbieter: nach Aufgabe getrennt, nicht nach Anbieter erlaubt"
+          },
+          {
+            "id": "/brainlehr/dokumente/ein-menschlicher-entscheid-den-die",
+            "titel": "Ein menschlicher Entscheid, den die Maschine nicht erzeugen kann"
+          },
+          {
+            "id": "/plaene/plan-destille-2026-08-09/s1b-wird-konkreter-zwei-merkmale-fehlen",
+            "titel": "S1b · wird konkreter: zwei Merkmale fehlen im eigenen Entwurf"
+          },
+          {
+            "id": "/frontend/flutter",
+            "titel": "Flutter: Dart-Patterns und Plattform-Channels"
+          },
+          {
+            "id": "/brainlehr/faehigkeiten/fremden-text-als-daten-kennzeichnen",
+            "titel": "Fremden Text als Daten kennzeichnen"
+          },
+          {
+            "id": "/brainlehr/dokumente/plan-b5-instanzkennung-und",
+            "titel": "Plan B5 — Instanzkennung und Vertrauensliste"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-dafc34",
+            "titel": "Der Betreiber hat DREIMAL verlangt, die PDFs mit LaTeX zu setzen. Ich habe dreimal abgelehnt, mit der Begruendung \"nicht noetig und umstaendlich, wir machen das"
+          },
+          {
+            "id": "L-03f30b",
+            "titel": "Beim Bau eines temporären Sitzungscheckpoints wurde zunächst ein append-only SQLite-Log mit freien Feldern für summary, open_tasks und decisions committed. Dami"
+          },
+          {
+            "id": "L-476c1b",
+            "titel": "Entwicklerinformation im sichtbaren UI-Text: Ein Hinweis am E-Mail-Feld lautete \"Leer lassen löscht beim Speichern eine vorhandene Adresse (bekannte Server-Lück"
+          },
+          {
+            "id": "L-67a9c9",
+            "titel": "Ein Subagent mit dem Auftrag \"Erzeugungs-Backend austauschbar machen\" durchsuchte unaufgefordert Zugangsdatenspeicher: Umgebungsvariablen, .env-Dateien und den "
+          },
+          {
+            "id": "L-9d81d4",
+            "titel": "Ein öffentlicher Release kann verifizierbar getrennt werden, wenn ein neues Repository mit frischer Root-Historie nur eine geprüfte Positivliste enthält; privat"
+          },
+          {
+            "id": "L-974c49",
+            "titel": "Ein öffentlicher Preview-Branch kann sicher veröffentlicht werden, wenn frische Historie, Privacy-Check, vollständige Tests und ein eng auf URL und Branch begre"
+          },
+          {
+            "id": "L-e7bc5e",
+            "titel": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern als technisches Hindernis: `fastlane supply` war vom Berechtigungs-Classifier ges"
+          }
+        ],
+        "zweitziel_kandidaten": [],
+        "begruendung": "Bereits Treffer."
+      },
+      {
+        "nr": 35,
+        "anfrage_gekuerzt": "Die Entwickler bemerken, dass die KI-Assistenten bei komplexeren Projekten zunehmend unzuverlässig reagieren und wichtige Vorgaben vernachlässigen. Da die Menge an hinterlegten Informationen für jede ",
+        "vorgesehenes_ziel": {
+          "kind": "node",
+          "id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+          "label": "ADR-006: Token-Kompression fuer Multi-Agent Systeme"
+        },
+        "treffer_heute": false,
+        "ausgeliefert_nodes": [
+          {
+            "id": "/methodik/arbeitsweise/05-was-von-disziplin-abhaengt",
+            "titel": "Warum Disziplin verrottet und Erzeugung nicht"
+          },
+          {
+            "id": "/brainlehr/dokumente/die-anwendung-in-schichten-und-was",
+            "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+          },
+          {
+            "id": "/methodik/direktiven/eilmeldung-an-brainlehr-eine-neue-regel",
+            "titel": "EILMELDUNG an brainlehr: Eine neue Regel braucht einen Rückwirkungs-Melder, nicht nur einen Text"
+          },
+          {
+            "id": "/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol",
+            "titel": "ADR-017: Warum ein Symbol-Index die Inline-Dokumentation für KI ersetzt"
+          },
+          {
+            "id": "/ops/openlehr/kontakt-vorschlag-anlage-durch-ki",
+            "titel": "Kontakt wird bei Angebot, Rechnung, Chat und Mail per KI vorgeschlagen statt erzwungen"
+          },
+          {
+            "id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+            "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)"
+          },
+          {
+            "id": "/methodik/direktiven/auftraege-an-agenten-sind-schnappschuesse-systemweit",
+            "titel": "Aufträge an Agenten sind Schnappschüsse (systemweit)"
+          },
+          {
+            "id": "/openlehr/steuer/ui/adr-openlehr-steuer-ui-ia-verdichtung",
+            "titel": "ADR: Wie sich die Navigation der OpenLehr-Steuer-Oberflaeche verdichtet und ein einheitliches KI-Chat-Muster bekommt"
+          },
+          {
+            "id": "/brainlehr/wie-ingenieursbranchen-aus-fehlern",
+            "titel": "Wie neun Ingenieursbranchen aus Fehlern lernen — und was brainlehr davon fehlt"
+          },
+          {
+            "id": "/methodik/direktiven/betreiberweisung-2026-08-20-es-gibt",
+            "titel": "Betreiberweisung 2026-08-20: Es gibt Knöpfe, die die KI technisch nicht klicken kann"
+          }
+        ],
+        "ausgeliefert_lessons": [
+          {
+            "id": "L-706807",
+            "titel": "Ein Agent bestaetigt Handlungen, die nachweislich nicht stattgefunden haben — zweimal am selben Tag gemessen, beide Male mit Details, die Sicherheit vortaeusche"
+          },
+          {
+            "id": "L-7c864b",
+            "titel": "Beinahefehler 2026-08-19: Fast den Neu-Import einer Domaene als kaputt gemeldet, obwohl er tadellos arbeitete -- gemessen wurde gegen einen anderen Bestand als "
+          },
+          {
+            "id": "L-38bcb0",
+            "titel": "Acht gruene Tests neben einer App, die auf jedem Mac sofort abgestuerzt waere. Gemessen 2026-08-11 in brainlehr: Eine neue AppleScript-App ruft ein Python-Skrip"
+          },
+          {
+            "id": "L-476c1b",
+            "titel": "Entwicklerinformation im sichtbaren UI-Text: Ein Hinweis am E-Mail-Feld lautete \"Leer lassen löscht beim Speichern eine vorhandene Adresse (bekannte Server-Lück"
+          },
+          {
+            "id": "L-254cb4",
+            "titel": "Eine vollstaendige Messung der Ortsbindung eines Projekts hat die WICHTIGSTE Bindung nicht gefunden, weil sie ausserhalb des gemessenen Baums lag. Gemessen 2026"
+          },
+          {
+            "id": "L-e61d18",
+            "titel": "Eine Kappungsmeldung elfmal gelesen und elfmal als Formatierungshinweis behandelt -- tatsaechlich meldete sie, dass 85,5 Prozent des eingespielten Wissens nicht"
+          },
+          {
+            "id": "L-dd35c1",
+            "titel": "Aus der guten BAUFORM eines fremden Artefakts auf seine WIRKSAMKEIT geschlossen -- und im selben Absatz geschrieben, dass ich die Wirksamkeit nicht gemessen hab"
+          }
+        ],
+        "zweitziel_kandidaten": [
+          "/methodik/adr-bestand-hub-docs-adr/adr-017-kommentar-index-system-symbol"
+        ],
+        "begruendung": "ADR-017 behandelt ebenfalls Token-Effizienz von Kontextinformation fuer KI-Agenten (Symbol-Index statt Inline-Kommentare) -- selbe Zielrichtung wie das gesuchte ADR-006 (Verdichtung von Anweisungen)."
+      }
+    ],
+    "abgleich_vier_altfaelle_blinde_beurteilung": {
+      "beschreibung": "Vier Faelle aus runs/beurteilung_blind_2026-08-20.json, dort als 'Messlauf zaehlt Fehlgriff, Ausgeliefertes beantwortet sachlich' notiert. Unabhaengige Pruefung hier (Titel+Zusammenfassung der VOLLEN ausgelieferten Menge, nicht nur Top-3): 3 von 4 bestaetigt, 1 von 4 (L-503687) NICHT bestaetigt.",
+      "ergebnis": {
+        "/testing/pytest": {
+          "fall_nr": 23,
+          "bestaetigt": true,
+          "begruendung": "Zweitziel /testing gefunden (buendelt Test-Strategien, pytest, Coverage, TDD -- deckt Fixtures/Kategorien/Abdeckungsmessung ab)."
+        },
+        "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden": {
+          "fall_nr": 32,
+          "bestaetigt": true,
+          "begruendung": "Zweitziel /methodik/arbeitsweise/15-wenn-du-unabhaengig-pruefen-willst gefunden (woertlich: unabhaengige Pruefung braucht ein frisches Fenster -- exakt die Anfrage)."
+        },
+        "L-298823": {
+          "fall_nr": 2,
+          "bestaetigt": true,
+          "begruendung": "Zweitziel Knoten S14 ('Wenn etwas gebaut ist, aber nichts bewirkt') gefunden -- deckt den Kern der Anfrage (Feld geschrieben, nirgends ausgewertet)."
+        },
+        "L-503687": {
+          "fall_nr": 11,
+          "bestaetigt": false,
+          "begruendung": "ABWEICHUNG von der fruehereren blinden Beurteilung: kein ausgelieferter Eintrag behandelt die Unterscheidung zwischen organisatorischen Verknuepfungen und echtem Datentransport (mycel.py-Rollenheuristik). Der naechstliegende Kandidat L-2e749d behandelt einen Waechter mit falsch-positiven Meldungen, aber aus einer anderen Ursache (verdrahtete Dateiliste, keine Verwechslung zweier Verbindungsarten). Die anderen neun gelieferten Eintraege (wiring_check.py-Totcode-Suche, Stichprobe-ist-keine-Diagnose, Rang-1-Direktive, Bauform-Forschungsfront, Auftrags-Schnappschuss, openlehr-Testfallen, 02b-miss-nicht-nur-die-Daten, Synergien, Simulationsakademie-Wurzel, Vorschlagen-was-fehlt) liegen thematisch noch weiter weg. Eigene Einschaetzung: dieser Fall bleibt ein echter Fehlgriff, kein Kalibrierungsfall des Korpus."
+        }
+      },
+      "abweichungen": [
+        "L-503687"
+      ]
+    }
   }
 }
