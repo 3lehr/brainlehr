@@ -4,7 +4,7 @@
 DER BEFUND (brainlehr 2026-08-20, erster vollstaendiger oeffentlicher
 Export): 144 von 731 Dateien scheiterten am Pruefer des oeffentlichen Repos --
 `absolute-path` oder `private-context`. Nachgesehen war es fast durchweg
-ERKLAERTEXT: "/Users/<name>/..." in einem Kommentar, "Begod2026" in einem
+ERKLAERTEXT: "<heim>/..." in einem Kommentar, "<arbeitsbereich>" in einem
 Docstring. Kein Geheimnis, aber die Verzeichnisstruktur und Nomenklatur des
 Betreibers, und der Pruefer beanstandet sie zu Recht.
 
@@ -49,6 +49,17 @@ sys.path[:0] = [str(_w), str(_w / "pflege")]
 from export_offen import ENTLOKALISIERUNG  # noqa: E402
 
 REPO = _w
+
+# Dateien, die das gesuchte Muster im Klartext NENNEN muessen -- sie tragen
+# die Regel selbst. Wer sie bearbeitet, zerstoert ihre eigene Grundlage:
+# dieses Werkzeug erklaert, wonach es sucht, und pflege/export_offen.py haelt
+# die Ersetzungstabelle. Beide standen nach dem ersten Lauf mit Platzhaltern
+# statt Beispielen da. Dieselbe Klasse wie kern/normrang.py, dessen Docstring
+# "Rang 1 == globale CLAUDE.md" beschreibt, waehrend der Code genau diesen
+# Namen prueft -- nur faellt es hier auf, weil das Werkzeug sich selbst
+# erwischt. Die Liste bleibt absichtlich kurz: eine Datei, die zufaellig von
+# Heimatpfaden SPRICHT, wird normal bearbeitet.
+AUSNAHMEN = {"tool/entlokalisieren.py", "pflege/export_offen.py"}
 
 
 def _ersetze(text: str) -> str:
@@ -130,6 +141,8 @@ def main() -> int:
         wurzel = REPO / ordner
         pfade = [wurzel] if wurzel.is_file() else sorted(wurzel.rglob("*.py"))
         for datei in pfade:
+            if str(datei.relative_to(REPO)) in AUSNAHMEN:
+                continue
             quelle = datei.read_text(encoding="utf-8", errors="strict")
             neu, rest = bearbeite(quelle)
             if neu is None:

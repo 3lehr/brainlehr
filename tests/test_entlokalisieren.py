@@ -29,9 +29,9 @@ def test_kommentar_wird_ersetzt():
 
 
 def test_docstring_wird_ersetzt():
-    q = 'def f():\n    """siehe CLAUDE.md unter /Volumes/platte/y"""\n    return 1\n'
+    q = 'def f():\n    """liegt in Begod2026 unter /Volumes/platte/y"""\n    return 1\n'
     neu, rest = el.bearbeite(q)
-    assert "CLAUDE.md" not in neu and "/Volumes/platte/" not in neu
+    assert "Begod2026" not in neu and "/Volumes/platte/" not in neu
     assert "return 1" in neu
     assert rest == []
 
@@ -57,3 +57,20 @@ def test_datei_ohne_fund_bleibt_bytegleich():
     q = 'def f():\n    """harmlos"""\n    return 1\n'
     neu, rest = el.bearbeite(q)
     assert neu == q and rest == []
+
+
+def test_wer_die_regel_traegt_wird_nicht_von_ihr_bearbeitet():
+    """Eine Datei, die das gesuchte Muster im Klartext NENNEN muss, darf es
+    behalten -- sonst zerstoert die Regel ihre eigene Grundlage.
+
+    Zweimal an einem Tag passiert (2026-08-20): kern/normrang.py beschreibt
+    "Rang 1 == globale CLAUDE.md" und der Code prueft genau diesen Namen; die
+    Ersetzung machte die Doku falsch. Und dieses Werkzeug selbst erklaerte,
+    wonach es sucht -- nach dem eigenen Lauf stand dort der Platzhalter, und
+    das Beispiel war weg.
+
+    Die Ausnahme ist eng: nur die zwei Dateien, die die Regel TRAGEN. Jede
+    andere Datei, die zufaellig davon spricht, wird normal bearbeitet."""
+    assert "tool/entlokalisieren.py" in el.AUSNAHMEN
+    assert "pflege/export_offen.py" in el.AUSNAHMEN
+    assert "kern/speicher.py" not in el.AUSNAHMEN, "die Ausnahme bleibt eng"
