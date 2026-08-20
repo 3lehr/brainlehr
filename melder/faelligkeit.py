@@ -96,6 +96,20 @@ KLASSEN = {
     "lehre_wiederholt":   (1, "derselbe Fehler ist wiederholt passiert"),
     "geltung_abgelaufen": (2, "Geltung abgelaufen, steht noch im Bestand"),
     "norm_nie_gelesen":   (3, "Norm im Bestand, nie gelesen"),
+    # Die schwaechste Klasse, und sie schliesst eine Luecke, die der
+    # Betreiber am 2026-08-20 gefunden hat: "und wenn sie von einen anderen
+    # user oder kontextfenster gebraucht wird?" -- `access_count` ist GLOBAL.
+    # Wer die Norm liest, nimmt sie ALLEN aus der Liste, auch denen, die sie
+    # nie gesehen haben. Gemessen am selben Tag: 169 Normen, 89 global nie
+    # gelesen, aber 125 fuer den Klienten `claude-code` unbekannt -- 36 hat
+    # jemand anders gelesen.
+    #
+    # ACHSE IST DER KLIENT, nicht die Sitzung. Eine Sitzung ist je Chat neu;
+    # danach waere jedes frische Kontextfenster ein Onboarding mit 125
+    # Zeilen, und der Kanal binnen Tagen tot. Die Frage "anderes
+    # Kontextfenster" ist damit ausdruecklich NICHT beantwortet -- sie ist
+    # nicht beantwortbar, weil ein neues Fenster per Bauart nichts kennt.
+    "norm_leser_unbekannt": (4, "Norm, die dieser Klient noch nie gelesen hat"),
 }
 SCHWERE_RANG = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 
@@ -113,18 +127,34 @@ def tagesnummer(heute: date | None = None) -> int:
     return (heute or datetime.now(timezone.utc).date()).toordinal()
 
 
-def kandidaten(db: Path | None = None, stichtag: str | None = None) -> list[dict]:
-    """Die vier Klassen aus dem Bestand. Nur lesend."""
+def kandidaten(db: Path | None = None, stichtag: str | None = None,
+               klient: str | None = "claude-code") -> list[dict]:
+    """Die fuenf Klassen aus dem Bestand. Nur lesend.
+
+    `klient` steuert die schwaechste Klasse (norm_leser_unbekannt): Normen,
+    die jemand gelesen hat, dieser Klient aber nicht. klient=None laesst sie
+    weg -- dann verhaelt sich der Melder wie vor dem 2026-08-20."""
     stichtag = stichtag or datetime.now(timezone.utc).date().isoformat()
     raus: list[dict] = []
     try:
         with speicher.lesen(db) as con:
-            for r in con.execute(
-                    "SELECT id, path, title FROM knowledge_nodes "
-                    "WHERE norm_rang IS NOT NULL AND access_count = 0 "
-                    "AND zurueckgezogen = 0"):
-                raus.append({"kennung": r["path"], "art": "norm_nie_gelesen",
-                             "titel": r["title"], "schwere": "medium"})
+            normen = {r["path"]: r["title"] for r in con.execute(
+                "SELECT path, title FROM knowledge_nodes "
+                "WHERE norm_rang IS NOT NULL AND zurueckgezogen = 0")}
+            global_gelesen = {r[0] for r in con.execute(
+                "SELECT DISTINCT node_path FROM access_log "
+                "WHERE action IN ('read','browse') AND node_path IS NOT NULL")}
+            vom_klienten_gelesen = {r[0] for r in con.execute(
+                "SELECT DISTINCT node_path FROM access_log "
+                "WHERE client = ? AND action IN ('read','browse') "
+                "AND node_path IS NOT NULL", (klient,))} if klient else set()
+            for pfad, titel in normen.items():
+                if pfad not in global_gelesen:
+                    raus.append({"kennung": pfad, "art": "norm_nie_gelesen",
+                                 "titel": titel, "schwere": "medium"})
+                elif klient and pfad not in vom_klienten_gelesen:
+                    raus.append({"kennung": pfad, "art": "norm_leser_unbekannt",
+                                 "titel": titel, "schwere": "low"})
             for r in con.execute(
                     "SELECT path, title, gilt_bis FROM knowledge_nodes "
                     "WHERE gilt_bis IS NOT NULL AND gilt_bis < ? "

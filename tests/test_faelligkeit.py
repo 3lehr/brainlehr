@@ -182,3 +182,36 @@ def test_rotation_je_klasse_deckt_die_klasse_ab():
     for tag in range(12):
         gesehen |= {z["kennung"] for z in faelligkeit.auswahl(kandidaten, tagesnummer=tag)}
     assert gesehen == {k["kennung"] for k in kandidaten}, sorted(gesehen)
+
+
+def test_klasse_fuer_den_einzelnen_leser_existiert():
+    """DIE LUECKE, DIE DER BETREIBER GEFUNDEN HAT (2026-08-20): "und wenn sie
+    von einen anderen user oder kontextfenster gebraucht wird?"
+
+    `access_count` ist GLOBAL. Liest ein Leser die Norm, verschwindet sie aus
+    der Liste -- auch fuer alle anderen, die sie nie gesehen haben. Damit war
+    wieder eine Eigenschaft des PAARES (Leser, Eintrag) als Eigenschaft des
+    Eintrags behandelt; derselbe Fehler wie zuvor bei der Aufgriffsquote.
+
+    Gemessen am selben Tag: 169 Normen, davon 89 global nie gelesen -- aber
+    125 fuer den Klienten `claude-code` unbekannt. 36 Normen hat jemand
+    ANDERS gelesen.
+
+    Die neue Klasse ist die SCHWAECHSTE: "jemand kennt sie, du nicht" wiegt
+    weniger als "niemand hat sie je gesehen"."""
+    assert "norm_leser_unbekannt" in faelligkeit.KLASSEN, sorted(faelligkeit.KLASSEN)
+    rang_global = faelligkeit.KLASSEN["norm_nie_gelesen"][0]
+    rang_leser = faelligkeit.KLASSEN["norm_leser_unbekannt"][0]
+    assert rang_leser > rang_global, (rang_global, rang_leser)
+
+
+def test_leserklasse_verdraengt_die_schweren_nicht():
+    """NEGATIVFALL: Die neue, schwaechste Klasse darf Platz eins nie
+    bekommen. 125 Kandidaten sind mehr als alle schweren Klassen zusammen --
+    ohne diese Zusicherung waere der Kanal von der schwaechsten Sorte
+    beherrscht."""
+    kandidaten = ([_k("L-regel", art="lehre_regelrang", schwere="high")]
+                  + [_k(f"/n/{i}", art="norm_leser_unbekannt", schwere="low") for i in range(125)])
+    for tag in range(15):
+        zeilen = faelligkeit.auswahl(kandidaten, tagesnummer=tag)
+        assert zeilen[0]["art"] == "lehre_regelrang", (tag, zeilen[0])
