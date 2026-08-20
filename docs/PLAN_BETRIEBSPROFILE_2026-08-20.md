@@ -140,6 +140,47 @@ allgemeiner Teil ohne den vertraulichen auskommt. Sonst hilft keine Rolle —
 man kann eine Regel nicht halb zeigen, wenn Regel und Begründung in einem
 Satz stehen.
 
+**FALL 4, vom Betreiber nachgereicht, und er ist grundsätzlich anderer Art:
+Die EXISTENZ der Regel ist die Information.** Sein Beispiel: „niemand darf
+mehr an projekt x arbeiten" — betrifft alle, die an X arbeiten, geht aber
+niemanden an, der an Z arbeitet. „Wenn nun der Hausmeister von dieser regel
+erfährt, könnte er damit zb insider handel machen."
+
+Das lässt sich NICHT abstrahieren. Jede Fassung, die noch befolgbar ist,
+verrät, dass X eingestellt wird. Fall 3 (Regel offen, Begründung eng) hat
+dafür keine Antwort.
+
+**Was brainlehr hier bereits richtig macht:** Ein gesperrter Knoten „taucht
+weder auf noch in `children_count`" (`knowledge_mcp_server.py:2017`). Nicht
+nur der Treffer wird unterdrückt, auch die ZÄHLUNG — denn „3 Treffer, davon 1
+gesperrt" wäre genau die Information. Und daneben liegt die Enigma-Bauform:
+„the role fixes the purpose/field and the credential fixes the recipient" —
+Zweck und Empfänger stehen serverseitig fest, der Klient kann sie nicht
+wählen. Gemessen: `gesperrt` ist heute global statt rollengebunden, und im
+Bestand steht es bei 0 von 5 232.
+
+**WAS AUCH DAS NICHT LÖST, und daraus folgt die Bauvorgabe:** Der Hausmeister
+muss die Regel nicht lesen. Es genügt, dass er eine VERÄNDERUNG bemerkt —
+gestern drei Treffer, heute zwei. Dagegen hilft keine Rechteprüfung, weil
+nichts Verbotenes gelesen wurde; es wurde nur gezählt.
+
+> **Der Kreis muss von Anfang an feststehen. Nachträglich sperren verrät.**
+
+Ein Eintrag, der immer schon eng war, erzeugt kein Signal. Einer, der heute
+verschwindet, ist selbst die Nachricht. Damit gilt für die Kreis-Achse
+dasselbe wie für die Mandanten-Achse aus B1: Sie gehört ins Schema, BEVOR sie
+gebraucht wird — vorher billig, nachher unmöglich, und beide Male wegen der
+Reihenfolge, nicht wegen der Menge.
+
+Für `standalone` folgenlos: ein Nutzer, kein Beobachter.
+
+**Kein vollständiges Mittel dagegen, ausdrücklich:** Wer Trefferzahlen über
+die Zeit vergleicht, sieht Veränderung. Dagegen hülfe nur, die Zahlen ganz zu
+verweigern oder zu verrauschen — beides kostet die Brauchbarkeit für alle
+anderen. Verwandt: `/shared/arch/k-anonymitaet-ohne-kopfzaehlung` („in kleinen
+Gruppen verrät schon die bloße Existenz eines Datensatzes, wer ihn beigetragen
+hat").
+
 **Was zu bauen wäre, in dieser Reihenfolge:**
 * Die Achse: welcher Kreis darf diesen Eintrag sehen (nicht: welche Rolle darf
   Wissen lesen).
