@@ -113,7 +113,68 @@ VERBOTENE_MUSTER = {
 ENTLOKALISIERUNG = (
     (re.compile(r"/Users/[^/\s\"]+/"), "<heim>/"),
     (re.compile(r"/Volumes/[^/\s\"]+/"), "<ablage>/"),
+    # Seit 2026-08-20, gefunden beim ersten vollstaendigen Export: Die zwei
+    # Regeln oben nehmen den PFAD, lassen aber die NAMEN stehen. Gemessen im
+    # fertigen Auszug: Fundstellen mit `Begod2026` oder `brainlehr-privat` im
+    # Fliesstext freigegebener Eintraege. Kein Geheimnis -- aber
+    # Verzeichnisstruktur und Nomenklatur des Betreibers, und der Pruefer des
+    # oeffentlichen Repos beanstandet sie zu Recht als `private-context`.
+    #
+    # Ersetzt wird durch SPRECHENDE Platzhalter, nicht durch Sterne: Die
+    # Aussage eines Eintrags bleibt lesbar ("die Hausregeln verlangen X"),
+    # nur der Ort verschwindet. Eine Maskierung, die den Satz unverstaendlich
+    # macht, waere schlimmer als der Verzicht auf den Eintrag.
+    #
+    # NICHT in dieser Liste steht CLAUDE.md, und das ist eine Entscheidung
+    # vom selben Tag mit einem konkreten Anlass: Die Regel stand hier kurz
+    # und schrieb den Docstring von kern/normrang.py von RICHTIG auf FALSCH.
+    # Er beschreibt "Rang 1 == globale CLAUDE.md", und der Code prueft genau
+    # diesen Dateinamen -- "Rang 1 == globale <Hausregeln>" nennt nicht mehr,
+    # worauf geprueft wird. Sachlich gehoerte sie ohnehin nicht hierher:
+    # CLAUDE.md ist die oeffentlich dokumentierte Projektdatei von Claude
+    # Code, nicht die Nomenklatur des Betreibers. Verraten wuerde ihr INHALT,
+    # nicht ihr Name.
+    (re.compile(r"\bBegod2026\b", re.I), "<arbeitsbereich>"),
+    (re.compile(r"\bbrainlehr-privat\b", re.I), "<privates Repo>"),
 )
+
+
+_LEHRENKENNUNG = re.compile(r"\bL-[0-9a-f]{6}\b")
+
+
+def verweise_entschaerfen(zeilen: list[dict]) -> tuple[list[dict], int]:
+    """Verweise auf Lehren, die NICHT mitgeliefert werden, ersetzen.
+
+    Gefunden am 2026-08-20 beim ersten vollstaendigen Export: 35 freigegebene
+    Eintraege verweisen im Fliesstext auf Lehren, die selbst nicht freigegeben
+    sind. Fuer den Leser ist das ein Zeiger ins Leere -- und er verraet allein
+    durch sein Vorhandensein, dass es dort etwas gibt, das er nicht sehen
+    darf.
+
+    Die Menge der mitgelieferten Kennungen ergibt sich aus den Zeilen SELBST,
+    nicht aus einer zweiten Abfrage: Was hier im Auszug steht, ist per Bauart
+    genau das, was der Leser bekommt. Eine zweite Quelle koennte abweichen.
+
+    Ersetzt wird durch einen sprechenden Platzhalter, nicht geloescht -- der
+    Satz bleibt lesbar ("dieselbe Klasse wie <nicht oeffentliche Lehre>"), und
+    der Leser sieht, dass dort etwas fehlt, statt einen unerklaerten Bruch zu
+    finden."""
+    vorhanden = {str(e["zeile"].get("id") or "") for e in zeilen}
+    getroffen = 0
+    raus = []
+    for eintrag in zeilen:
+        zeile = dict(eintrag["zeile"])
+        for feld, wert in zeile.items():
+            if not isinstance(wert, str) or "L-" not in wert:
+                continue
+            neu_wert = _LEHRENKENNUNG.sub(
+                lambda m: m.group(0) if m.group(0) in vorhanden
+                else "<nicht oeffentliche Lehre>", wert)
+            if neu_wert != wert:
+                zeile[feld] = neu_wert
+                getroffen += 1
+        raus.append({**eintrag, "zeile": zeile})
+    return raus, getroffen
 
 
 def entlokalisiere(zeilen: list[dict]) -> tuple[list[dict], int]:
@@ -216,6 +277,7 @@ def exportiere(db: Path, ziel: Path, *, jetzt: datetime | None = None) -> dict:
     # die Kontrolle bloss die Ansage dessen, was gleich ersetzt wird -- und ein
     # Muster, das die Ersetzung uebersieht, faende niemand mehr.
     zeilen, ersetzt = entlokalisiere(zeilen)
+    zeilen, verweise = verweise_entschaerfen(zeilen)
     funde = pruefe(zeilen)
     if funde:
         return {"status": "abgebrochen", "zeilen": len(zeilen), "funde": funde}
@@ -234,7 +296,8 @@ def exportiere(db: Path, ziel: Path, *, jetzt: datetime | None = None) -> dict:
         for z in zeilen:
             f.write(json.dumps(z, ensure_ascii=False) + "\n")
     return {"status": "geschrieben", "zeilen": len(zeilen), "ziel": str(ziel),
-            "entlokalisierte_felder": ersetzt}
+            "entlokalisierte_felder": ersetzt,
+            "entschaerfte_verweise": verweise}
 
 
 def _selftest() -> None:
