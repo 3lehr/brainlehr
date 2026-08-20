@@ -1,5 +1,23 @@
 # STAND brainlehr — 2026-08-19T12:10:00+0200
 
+## Drei Repos, nicht zwei -- und der Export lag in old_temp (2026-08-20, abends)
+
+```
+Begod2026/brainlehr/            -> 3lehr/brainlehr-privat    Arbeitsrepo, aktuell
+Begod2026/_brainlehr_public/    -> 3lehr/brainlehr           DER Export-Workspace
+old_temp/_brainlehr_open/       -> 3lehr/brainlehr           toter Klon vom 10.08.
+```
+
+**Wer nach aussen veroeffentlicht, arbeitet in `_brainlehr_public`** -- 25 Dateien, englisch, eigene bereinigte Historie, Privacy-Check. Er ist mit dem oeffentlichen Stand identisch (0 Commits Unterschied in beide Richtungen).
+
+**Die Falle, heute selbst hineingelaufen** (`L-813818`): `_brainlehr_open` traegt denselben Remote und ist trotzdem bedeutungslos -- ein Klon aus der Zeit VOR dem bereinigten Neuaufbau vom 17.08., ohne gemeinsame Historie mit dem heutigen oeffentlichen Stand. Ich habe ihn fuer die Quelle gehalten, 152 Dateien hineinkopiert und stand vor einem Push, der 25 kuratierte Dateien durch 269 interne ersetzt haette. GitHub hat ihn zurueckgewiesen.
+
+**Der Export lag unter den 75 Wegwerf-Ordnern**, die ich am selben Vormittag nach `old_temp` verschoben hatte. Er sah aus wie einer davon. Jetzt zurueck unter `Begod2026/`, nicht im Wurzelverzeichnis der Platte (Betreiberauflage) -- 54 Ordner vorher, 54 nachher.
+
+**Vor jedem Push an ein fremdes Ziel:** `git merge-base HEAD origin/main`. Keine gemeinsame Basis -> der lokale Klon ist NICHT die Quelle, egal worauf sein Remote zeigt.
+
+**Offen:** Die Erkenntnisse dieses Tages sind im Export noch nicht nachgezogen. Das ist Uebersetzungsarbeit in die englische, kuratierte Form -- kein Kopieren.
+
 **Die Enthaltung ist PRODUKTIV.** `haken/knowledge_recall_hook.py`, `ENTHALTUNGSSCHWELLE_KOSINUS = 0.55` (`06efe484`). Am echten Weg belegt: „Knoten zum Verzurren einer Plane" → **296 Zeichen** statt 7054, „Governance vor dem Ranking" → 7054 Zeichen wie bisher. Abschaltbar über Umgebungsvariable, AN in der Vorgabe. 8 Einzeltests (`27aaa5d6`), jeder einzeln collectiert.
 
 **Was heute sonst hereinkam:** `112` Nachrangung per cherry-pick (`07623126`, `196d82c7`, `474b6097`), Vorgabe `False`, selbst geprüft · `108` alle veralteten Vektoren neu gerechnet, 329 → **0** (`a144db55`) · zwei Selbsttests, die gegen den wachsenden Bestand maßen, laufen jetzt gegen Wegwerf-DBs (`ca96e56e`) · `melder/vier_nenner.py` importierte still das falsche Modul und brach bei JEDEM Lauf ab (`993a8e18`).
