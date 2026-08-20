@@ -173,6 +173,51 @@ deshalb **keine Herkunft erfinden**. Er trägt ein, woher er stammt
 („importiert aus holographic memory_store.db am <Zeitpunkt>"), und das ist
 ehrlich: Die Aussage selbst bleibt unbelegt, nur ihr Weg ist bekannt.
 
+## D — Zugriffsmuster: was Krypto nicht kann
+
+Betreiberidee vom 2026-08-20: „zieht ein user/mitarbeiter knoten die er sonst
+nicht zieht, zieht er besonders viele usw."
+
+**Warum es diese Schicht braucht:** Gegen den, der eine rohe Kopie der Datei
+zieht, hilft keine Verschlüsselung — er umgeht jede Schnittstelle. Was bleibt,
+ist, es zu BEMERKEN. Monitoring macht Zugriff nachweisbar, nicht unmöglich;
+es ist die dritte Schicht, nicht die erste.
+
+**Die Grundlage liegt vor:** `access_log`, 22 478 Zeilen, mit `actor`,
+`session`, `node_path`, `action`, `timestamp`. Es muss nichts Neues gesammelt
+werden.
+
+**GEMESSEN, bevor gebaut wird — und das Ergebnis widerlegt das naheliegende
+Signal.** Menge taugt nicht:
+
+| Sitzung | Lesen | versch. Knoten | je Knoten |
+|---|---|---|---|
+| `d695fd29` | 4 859 | 201 | **24,2** |
+| `be48feea` | 1 684 | 214 | 7,9 |
+| `6bb5aa2e` | 613 | 121 | 5,1 |
+
+Die auffälligste Sitzung ist die harmloseste — sie hat dieselben 201 Einträge
+24-mal gelesen. Ein Melder auf „viele Zugriffe" hätte den Falschen erwischt.
+
+**Zwei Merkmale trennen, beide aus denselben Daten:**
+* **Zugriffe je Knoten.** Arbeit wiederholt sich (5–24). Ein Abzug liest jeden
+  Eintrag einmal — Faktor nahe 1. Umkehrung des naiven Signals.
+* **Abdeckung.** Die breiteste Sitzung überhaupt berührte 214 von 5 240
+  Knoten = 4 %. Wer auf 50 % zugeht, tut etwas, das in 20 Tagen Betrieb nie
+  vorkam.
+
+**Verworfen, weil gemessen unbrauchbar:** „Lesevorgänge je Suche" liegt bei
+fast allen Sitzungen bei 0,0 — `search` wird ohne `node_path` protokolliert,
+das Verhältnis ist nicht rechenbar. Klingt plausibel, liefe im Melder still
+daneben.
+
+**Die Lücke, ohne die der Melder Zierrat wäre:** Im Bestand gibt es KEINEN
+Positivfall. Kein Lauf sieht nach Abzug aus — gut für den Betrieb, schlecht
+für die Kalibrierung. Ein Melder, der nie ausgeschlagen hat, ist von einem
+kaputten nicht zu unterscheiden. Abnahme deshalb: ein hergestellter Lauf, der
+500 verschiedene Knoten je einmal liest, MUSS anschlagen; die 4-%-Sitzungen
+des echten Bestands dürfen es NICHT.
+
 ## Verworfene Wege
 
 * **Mandanten-Achse erst beim ersten Piloten** — der vom Betreiber geforderte
