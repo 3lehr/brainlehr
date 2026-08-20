@@ -52,6 +52,15 @@ BELEG = re.compile(
     # ueberwiegend genau diese Verneinungen. `Gegenbeleg` ist der eine echte
     # Verlust und steht deshalb eigens drin.
     r"|\bgemessen|\bgegenprob|\bgegenbeleg|\babnahme|\bbeleg"
+    # Kontrollen und Nulllinie -- die Begriffe, die dieses Haus taeglich
+    # benutzt und die bis 2026-08-20 in dieser Liste FEHLTEN. Aufgefallen an
+    # einem eigenen Commit, der "Positivkontrolle bestanden: treffer_heute
+    # [15, 35]" schrieb und vom Waechter trotzdem als beleglos beanstandet
+    # wurde. Dieselbe Klasse wie `gr[uü]n` gegen `gruen` (L-8fce9c, drittes
+    # Vorkommen): der Waechter prueft seine Woerter, nicht die Sache.
+    # Positiv- und Negativkontrolle stehen ausdruecklich BEIDE drin -- die
+    # Negativkontrolle ist die, die vergessen wird (L-dd4b40).
+    r"|\bpositivkontrolle|\bnegativkontrolle|\bnulllinie|\bstichprobe"
     # Selbsttest und Testlauf, mit Zahl
     r"|\bselbsttest|\bselftest|\bsuite gr(?:ü|ue)n"
     r"|\d+ ?(xctest-)?f(?:ä|ae)lle gr(?:ü|ue)n|\btests? gr(?:ü|ue)n\b|\d+ passed"
@@ -93,6 +102,13 @@ def _selftest() -> int:
     assert not genannt("Fuenf Commits sind unbelegt.")
     # `Gegenbeleg` dagegen IST einer und steht eigens in der Liste.
     assert genannt("Gegenbeleg desselben Tages: der Waechter fing es.")
+    # Seit 2026-08-20: die Kontrollbegriffe, die dieses Haus taeglich
+    # benutzt und die vorher fehlten. Aufgefallen an einem eigenen Commit,
+    # der "Positivkontrolle bestanden" schrieb und beanstandet wurde.
+    for satz in _NEUE_BELEGFORMEN:
+        assert genannt(satz), satz
+    for satz in _KEIN_BELEG_TROTZ_AEHNLICHER_WOERTER:
+        assert not genannt(satz), satz
 
     # SCHWEIGEN zaehlt nicht -- ohne diese Faelle waere die Liste so weit,
     # dass sie jede Nachricht durchlaesst.
@@ -106,6 +122,20 @@ def _selftest() -> int:
           "und beiden Richtungen, Verneinung zaehlt NICHT als Beleg, "
           "4 Faelle Schweigen bleiben stumm)")
     return 0
+
+
+# Faelle, die die Liste vor dem 2026-08-20 NICHT erkannte -- als
+# Zusicherung, nicht als Kommentar.
+_NEUE_BELEGFORMEN = (
+    "Positivkontrolle bestanden: treffer_heute [15, 35]",
+    "Negativkontrolle mitgebaut, damit aus dem zu engen kein zu weiter wird",
+    "Nulllinie erhoben, 247 von 1275",
+    "Stichprobe von Hand angesehen, 10 von 10 echt",
+)
+_KEIN_BELEG_TROTZ_AEHNLICHER_WOERTER = (
+    "Kontrolle ueber das Projekt zurueckgewonnen",
+    "Die Linie im Diagramm faellt ab",
+)
 
 
 if __name__ == "__main__":
