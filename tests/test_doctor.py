@@ -38,7 +38,7 @@ def test_tote_pfade_werden_gefunden(tmp_path, monkeypatch):
     datei = tmp_path / "settings.json"
     # Pfad IM eigenen Verbund: doctor prueft seit 2026-08-10 nur noch solche
     # (fremde Eintraege in derselben Konfiguration gehen ihn nichts an).
-    # Ein fest getippter Begod2026-Pfad fiel deshalb bei einem Fremden aus
+    # Ein fest getippter <arbeitsbereich>-Pfad fiel deshalb bei einem Fremden aus
     # dem Filter -- der Test war gruen ohne zu pruefen.
     tot = doctor.ort.VERBUND / "gibtsnicht" / "tot.py"
     datei.write_text(json.dumps({"a": f"python3 {tot}"}), encoding="utf-8")

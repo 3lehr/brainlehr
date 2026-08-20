@@ -2,8 +2,8 @@
 Betreibers -- ausser den einzeln begruendeten Ausnahmen (Klasse B/C).
 
 ANLASS 2026-08-15: 41(spaeter genauer: 39) Wissensknoten und 15(14) Lehren
-trugen `/Volumes/daten/Begod2026`, `/Volumes/daten/be_old`,
-`/Volumes/daten/videoki` oder `/Users/lehrmacbook` im Fliesstext -- ein
+trugen `<ablage>/<arbeitsbereich>`, `<ablage>/be_old`,
+`<ablage>/videoki` oder `/Users/lehrmacbook` im Fliesstext -- ein
 Rechnerpfad, der einem zweiten Leser nichts sagt und beim Repo-Umzug bricht.
 Vorbild fuer die Bauform: tests/test_naht_ratsche.py.
 

@@ -1,7 +1,7 @@
 """.claude/launch.json darf keinen Skriptpfad nennen, den es nicht gibt.
 
 ANLASS, gemessen 2026-08-12: der Eintrag 'entscheidungen' startete
-/Volumes/daten/Begod2026/brainlehr/entscheidungen_server.py -- diese Datei
+<ablage>/<arbeitsbereich>/brainlehr/entscheidungen_server.py -- diese Datei
 existiert nicht, der Server liegt unter berichte/entscheidungen_server.py.
 Ein Start ueber .claude/launch.json waere sofort und laut mit
 'python3: can't open file ... No such file or directory' gescheitert -- aber

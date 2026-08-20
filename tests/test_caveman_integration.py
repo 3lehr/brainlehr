@@ -1,4 +1,4 @@
-"""TDD-Tests fuer Caveman-Integration (Begod2026)."""
+"""TDD-Tests fuer Caveman-Integration (<arbeitsbereich>)."""
 from __future__ import annotations
 
 import sys as _sys

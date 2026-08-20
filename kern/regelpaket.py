@@ -115,7 +115,7 @@ PARENT_PATH = "/fremdregeln"
 PROJECT_ID = "fremdregel-import"
 
 DEFAULT_GLOBAL = Path.home() / ".claude" / "CLAUDE.md"
-# hub/ liegt NICHT im brainlehr-Repo -- es ist der Begod2026-Verbund des
+# hub/ liegt NICHT im brainlehr-Repo -- es ist der <arbeitsbereich>-Verbund des
 # Betreibers (mehrere Apps + gemeinsamer Speicher), ein Geschwisterordner.
 # Fester Pfad hier nur als Vorgabewert fuer diese Instanz; --hub-pfad
 # ueberschreibt ihn.

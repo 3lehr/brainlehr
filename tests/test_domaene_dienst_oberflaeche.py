@@ -12,7 +12,7 @@ ZWEI SCHRANKEN, und beide sind Reihenfolge-Argumente, keine Mengenargumente:
 1. KEIN ABSOLUTER PFAD im Dienst-Teil (ADR-023 §3). Die beiden vorhandenen
    Startbeschreibungen im Haus unterscheiden sich genau hier: `de.brainlehr.dienst`
    benutzt den Platzhalter `__REPO_PFAD__`, die openlehr-Legacy-Fassung verdrahtet
-   `/Volumes/daten/Begod2026/openlehr` fest. Die erste ueberlebt einen Import auf
+   `<ablage>/<arbeitsbereich>/openlehr` fest. Die erste ueberlebt einen Import auf
    einen fremden Rechner, die zweite nicht.
 
 2. KEINE BAUFORM in der Oberflaechen-Beschreibung (ADR-024). Die Beschreibung

@@ -379,7 +379,7 @@ def main() -> int:
     # stilleren Blindgaenger gewesen: verdrahtet, aber mit falschem Etikett.
     ereignis = str(eingabe.get("hook_event_name") or "UserPromptSubmit")
 
-    # Projekt der Sitzung: Pfadbestandteil direkt unter Begod2026/, aus cwd
+    # Projekt der Sitzung: Pfadbestandteil direkt unter <arbeitsbereich>/, aus cwd
     # der stdin-Eingabe. Laesst es sich nicht bestimmen: None -- eine
     # geratene Zuordnung waere schlimmer als keine (siehe pruefe()).
     projekt = None

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 test_agent_compliance.py — Validates .agent.md, .instructions.md and copilot-instructions.md
-across Begod2026, AKA2026, and BEBETTER.
+across <arbeitsbereich>, AKA2026, and BEBETTER.
 
 Erstellt: 2026-03-25T16:50:00+01:00
 Usage: pytest tests/test_agent_compliance.py -v
@@ -55,7 +55,7 @@ def vorhanden(pfad) -> None:
     frischer Klon hat sie nicht -- ohne diese Weiche begruesst er einen
     Fremden mit Fehlern ueber Dateien, die es bei ihm gar nicht gibt.
     Bewusst NICHT ueber eine abgeleitete Pfadliste geloest: der erste
-    Versuch dabei setzte AKA2026 unter Begod2026 statt daneben und machte
+    Versuch dabei setzte AKA2026 unter <arbeitsbereich> statt daneben und machte
     aus 2 roten Tests 8. Die Pfade bleiben, die Weiche kommt dazu."""
     if not pfad or not Path(pfad).is_dir():
         pytest.skip(f"{pfad} liegt nicht vor -- Nachbarprojekt des Verbunds")

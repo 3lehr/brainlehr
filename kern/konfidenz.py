@@ -94,7 +94,7 @@ DB_PATH = HERE / "brainlehr.db"
 # Verbund-Wurzel: mehrere eigene Git-Repos nebeneinander (hub/, fahrtenbuch/,
 # setfunk/ ...) -- relative Pfade in `source` sind dagegen aufzuloesen, siehe
 # beobachtbare_datei(). Kommt aus haken/ort.py, weil "zwei Ebenen ueber mir"
-# seit dem Umzug in .claude/ landet statt in Begod2026.
+# seit dem Umzug in .claude/ landet statt in <arbeitsbereich>.
 from haken.ort import VERBUND as BEGOD_ROOT  # noqa: E402
 
 # ─── Wissensart: Halbwertszeit je Art, deterministisch aus Bestand ─────────

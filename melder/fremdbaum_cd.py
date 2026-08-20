@@ -25,8 +25,8 @@ jedem Assistenten-Eintrag ein `cwd`-Feld -- das ist der Verankerungspunkt
 dieser Sitzung, gesetzt vom Klienten, nicht vom letzten `cd`. Innerhalb der
 Sitzung wird jeder `Bash`-Werkzeugaufruf daraufhin geprueft, ob sein Kommando
 mit `cd <pfad>` beginnt und `<pfad>` zu einem ANDEREN Projekt gehoert als der
-Anker (Projektname = Verzeichnis unmittelbar nach `Begod2026/`, oder die
-ersten vier Pfadteile, wenn `Begod2026` fehlt -- das faengt auch
+Anker (Projektname = Verzeichnis unmittelbar nach `<arbeitsbereich>/`, oder die
+ersten vier Pfadteile, wenn `<arbeitsbereich>` fehlt -- das faengt auch
 Arbeitsbaum-Pfade wie `.claude/worktrees/...` als "gleiches Projekt" ab, weil
 sie unterhalb desselben Projektnamens haengen, es sei denn der Pfad wechselt
 das Repo). Drei oder mehr solcher `cd`-Aufrufe HINTEREINANDER in dieselbe
@@ -86,7 +86,7 @@ def _aus() -> bool:
 
 
 def projekt(pfad: str) -> str:
-    """Projektname eines Pfads -- das Verzeichnis nach 'Begod2026', sonst die
+    """Projektname eines Pfads -- das Verzeichnis nach '<arbeitsbereich>', sonst die
     ersten vier Pfadteile. Ein Arbeitsbaum (.claude/worktrees/...) traegt
     denselben Projektnamen wie sein Hauptcheckout, ein fremdes Repo nicht."""
     teile = Path(pfad).parts
