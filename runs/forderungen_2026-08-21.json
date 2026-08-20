@@ -1,0 +1,77 @@
+{
+  "erzeugt_am": "2026-08-21T00:00:00+0200",
+  "auftrag": "Auftrag F, docs/PLAN_BETRIEBSPROFILE_2026-08-20.md Abschnitt F",
+  "methode": "melder/forderung_vorgang.py --kandidaten -- Textmuster ('braucht einen/eine', 'umsetzen', 'muss gebaut', 'einen Waechter', 'noch nicht gebaut', 'steht noch aus', 'verlangt', 'keinen Vorsatz') gegen Titel+Summary aller nicht zurueckgezogenen Knoten, deren Pfad oder Titel 'brainlehr' enthaelt. AUSDRUECKLICH EINE VORLAGE, KEINE FESTSTELLUNG -- die Erkennung schreibt nichts, jeder Treffer wurde einzeln gelesen und beurteilt (siehe unten).",
+  "plan_behauptet": 13,
+  "heuristik_treffer_roh": 10,
+  "davon_echte_offene_forderung_ans_eigene_haus": 1,
+  "nachgerechnete_zahl_offener_forderungen": 1,
+  "abweichung_vom_plan": "Der Plan nennt 13 Knoten mit einer Forderung ans eigene Haus, gemessen am 2026-08-20. Meine Textsuche (Titel+Summary) traf 10, davon halte ich nach Lesen NUR EINEN fuer eine tatsaechlich noch offene Forderung ans eigene Haus -- 5 sind bereits erledigt (Code existiert), 3 sind keine Forderungen sondern Analysen/Antworten an andere Projekte, 1 ist mehrdeutig (ein ganzes Plandokument, keine einzelne Zusicherung). Eine breitere Fassung der Suche (Titel+Summary+Content, erster Testlauf) fand sogar 13 -- exakt die Zahl des Plans, aber mit denselben drei zusaetzlichen falschen Treffern aus Content-Zitaten fremder Forderungen. Das bestaetigt die Warnung im Auftrag ('zwei von drei Meldern waren falsch') eher, als die Plan-Zahl zu stuetzen: 13 ist plausibel die ROHE Trefferzahl einer Textsuche, nicht die Zahl echter offener Vorgaenge.",
+  "treffer": [
+    {
+      "path": "/methodik/direktiven/dringend-an-brainlehr",
+      "titel": "DRINGEND an brainlehr: Betreiberentscheidungen verschwinden im Gespraech — der Plan braucht einen Waechter, keinen Vorsatz",
+      "erstellt": "2026-08-16T16:09:29Z",
+      "urteil": "forderung_offen",
+      "begruendung": "Der Anlass dieses gesamten Auftrags F. Rang 1, woertliche Forderung nach einem Waechter gegen verschwindende Betreiberentscheidungen. Kein Code gefunden, der das umsetzt (grep nach 'plan.*waechter'/'entscheidungen.*verschwinden' erfolglos) -- am 2026-08-20 laut Plan explizit noch offen. Kandidat fuer forderung_stand='offen'."
+    },
+    {
+      "path": "/brainlehr/die-rangordnung-braucht-eine-zweite",
+      "titel": "Die Rangordnung norm_rang braucht eine zweite Achse: Sein, Sollen, Duerfen statt nur Bindungskraft",
+      "erstellt": "2026-08-07T17:09:37Z",
+      "urteil": "vermutlich_erledigt",
+      "begruendung": "Inhalt deckt sich mit dem spaeteren Knoten '/methodik/normen-ordnen-sich-nach-drei' (2026-08-09, Rang 1) und mit kern/normachsen.py (existiert, Tests unter tests/test_achsen_b1.py). Die geforderte zweite/dritte Achse scheint gebaut."
+    },
+    {
+      "path": "/brainlehr/entscheidungsstabilitaets-pruefkorpus",
+      "titel": "Entscheidungsstabilitäts-Prüfkorpus jetzt umsetzen",
+      "erstellt": "2026-08-17T17:27:37Z",
+      "urteil": "vermutlich_erledigt",
+      "begruendung": "kern/kanarienvogel.py (Context-Rot-Kanarien, P1) existiert mit eigenem Test (tests/test_kanarienvogel.py). Nicht tief geprueft, ob P0/P2 vollstaendig sind -- daher 'vermutlich', nicht 'sicher'."
+    },
+    {
+      "path": "/brainlehr/temporaeren-agentneutralen",
+      "titel": "Temporären agentneutralen Sitzungscheckpoint umsetzen",
+      "erstellt": "2026-08-17T17:56:55Z",
+      "urteil": "erledigt",
+      "begruendung": "Sitzungscheckpoint existiert: MCP-Werkzeuge session_checkpoint_setzen/lesen/schliessen sind verdrahtet, und die zugehoerige Direktive steht bereits im globalen CLAUDE.md ('Temporärer Sitzungscheckpoint und Chatwechsel')."
+    },
+    {
+      "path": "/methodik/direktiven/eilmeldung-an-brainlehr-eine-neue-regel",
+      "titel": "EILMELDUNG an brainlehr: Eine neue Regel braucht einen Rückwirkungs-Melder, nicht nur einen Text",
+      "erstellt": "2026-08-20T07:47:04Z",
+      "urteil": "erledigt",
+      "begruendung": "kern/rueckwirkung.py existiert, kern/eilmeldung.py referenziert es direkt ('--pruefe-verlauf misst, wie viele der BESTEHENDEN Eilmeldungen diese Schranke bestehen wuerden')."
+    },
+    {
+      "path": "/methodik/direktiven/eilmeldung-an-brainlehr-eilmeldungen",
+      "titel": "EILMELDUNG an brainlehr: Eilmeldungen brauchen einen EREIGNIS-Ausloeser, kein Zeitfenster - umsetzen",
+      "erstellt": "2026-08-20T11:25:25Z",
+      "urteil": "erledigt",
+      "begruendung": "haken/eilmeldung_frisch.py wurde genau dafuer gebaut (PostToolUse-Ereignis statt Zeitfenster, eigener Docstring nennt denselben Anlass woertlich), mit Selbsttest und Eintrag in tests/test_alle_selftests.py."
+    },
+    {
+      "path": "/brainlehr/drei-orte-fuer-eine-regel-text-findet",
+      "titel": "Speicher findet Text, Code bindet, Mathematik uebersetzt dazwischen",
+      "erstellt": "2026-08-07T21:04:27Z",
+      "urteil": "keine_forderung",
+      "begruendung": "Beschreibt ein allgemeines Prinzip (drei Ablageorte fuer eine Regel), fordert nichts Konkretes vom Haus. Falscher Treffer der Textsuche."
+    },
+    {
+      "path": "/brainlehr/eilantwort-an-chatgpt-codex-buckeberg",
+      "titel": "EILANTWORT an ChatGPT/Codex: Buckeberg — Bauform der Diagrammseite, und warum der einheitliche Oelpfad richtig ist",
+      "erstellt": "2026-08-17T04:46:49Z",
+      "urteil": "keine_forderung",
+      "begruendung": "Richtet sich an ein anderes Projekt (buckeberg), keine Forderung ans eigene Haus brainlehr. Falscher Treffer (Pfad/Titel enthaelt 'brainlehr' als Absender, nicht als Adressat der Forderung)."
+    },
+    {
+      "path": "/brainlehr/dokumente/plan-b5-instanzkennung-und",
+      "titel": "Plan B5 — Instanzkennung und Vertrauensliste",
+      "erstellt": "2026-08-16T06:37:21Z",
+      "urteil": "kein_einzelner_vorgang",
+      "begruendung": "Ein ganzes Plandokument mit mehreren Einzelentscheidungen, keine einzelne quotierbare Zusicherung. forderung_stand ist fuer EINEN Knoten gedacht -- ein Plandokument passt strukturell nicht, ohne es in Einzelpunkte zu zerlegen. Nicht markiert; falls der Betreiber will, gehoert das eher in eigene Unterknoten."
+    }
+  ],
+  "markiert_in_echter_db": "/methodik/direktiven/dringend-an-brainlehr wurde per melder/forderung_vorgang.py --markieren auf forderung_stand='offen' gesetzt -- Positivkontrolle: zeigt, dass der Sitzungsstart-Kanal (melder/eilmeldung_faellig.py) einen echten offenen Vorgang tatsaechlich ausliefert. Alle anderen neun Treffer bleiben unmarkiert (NULL) -- keine automatische Markierung, jede weitere Entscheidung bleibt beim Menschen.",
+  "hinweis_kanal": "melder/eilmeldung_faellig.py ist der Kanal, an den die offenen Forderungen angehaengt wurden (kein neuer Hook). Verdrahtet in ~/.claude/settings.json (global, User-Ebene) unter SessionStart -- NICHT im projekt-lokalen .claude/settings.json von brainlehr, das eine eigene, kleinere Hook-Liste traegt. Die projekt-lokale Datei enthaelt eilmeldung_etikett.py (ein anderer Zweck: Etikett-Konsistenz, nicht Faelligkeit). Beide Ebenen wurden geprueft, bevor 'nicht verdrahtet' behauptet worden waere."
+}

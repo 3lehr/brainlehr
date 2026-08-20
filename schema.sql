@@ -267,11 +267,28 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- Normschicht oben schon einmal teuer bezahlt. Befuellt aus
     -- kern/spracherkennung.py, NULL bei Unklarheit ist ein Ergebnis.
     sprache TEXT,
-    -- forderung_stand (Strang F): offen|erledigt|abgelehnt|ueberholt. Hier
-    -- steht in diesem Zug NUR die Spalte -- kein Trigger, keine Logik, kein
-    -- Wertebereich. Sie kommt mit B1 mit, weil schema.sql in diesem Lauf
-    -- genau einmal angefasst wird (Plan §1); die Bedeutung baut Strang F.
-    forderung_stand TEXT
+    -- forderung_stand (Strang F, Auftrag 2026-08-21): offen|erledigt|
+    -- abgelehnt|ueberholt, durchgesetzt von den vier Triggern am DATEIENDE
+    -- (knowledge_nodes_forderung_stand_*, siehe dortiger Kommentar -- die
+    -- Trigger stehen dort und nicht hier aus demselben Grund wie die beiden
+    -- Indizes weiter unten: eine gewachsene DB bekommt die Spalte erst durch
+    -- den Nachzug NACH _ensure_core_schema).
+    --
+    -- NULL bleibt bewusst OHNE eigene Bedeutungszuweisung durch Code oder
+    -- Default: kein Vorgabewert markiert einen Knoten als Vorgang, das waere
+    -- Raten statt Erkennung (Auftrag F1). NULL heisst schlicht "niemand hat
+    -- diesen Knoten als Forderung markiert" -- das deckt sowohl "ist keine
+    -- Forderung" als auch "noch nicht angesehen" ab, und genau das ist der
+    -- Punkt: eine ECHTE Forderung wird durch eine bewusste Zuweisung
+    -- (typischerweise 'offen') aus dieser Unschaerfe herausgehoben, nie durch
+    -- einen automatischen Lauf ueber Textmuster (siehe AUSDRUECKLICH NICHT
+    -- GEBAUT im Auftrag: keine automatische Umsetzung, keine automatische
+    -- Markierung).
+    forderung_stand TEXT,
+    -- forderung_grund: Pflichtfeld NUR wenn forderung_stand='abgelehnt'
+    -- (Trigger am Dateiende) -- Abschluss ohne Begruendung waere Rauschen,
+    -- das nach zwei Wochen niemand mehr liest (Auftrag F2).
+    forderung_grund TEXT
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -1821,3 +1838,65 @@ VALUES (1, strftime('%Y-%m-%dT%H:%M:%SZ','now'),
 -- und nicht in diesen Auftrag.
 CREATE INDEX IF NOT EXISTS idx_nodes_mandant ON knowledge_nodes(mandant);
 CREATE INDEX IF NOT EXISTS idx_nodes_kreis ON knowledge_nodes(kreis);
+
+-- ---------------------------------------------------------------------
+-- Forderung: Abschluss und Haerte (Strang F, Auftrag 2026-08-21,
+-- docs/PLAN_BETRIEBSPROFILE_2026-08-20.md Abschnitt F). Trigger auf
+-- forderung_stand/forderung_grund stehen GANZ AM ENDE, aus demselben Grund
+-- wie die beiden Indizes oben: _ensure_core_schema fuehrt schema.sql per
+-- executescript aus, BEVOR kern/schema_nachzug.py die Spalten auf einer
+-- gewachsenen Datenbank ergaenzt. CREATE TRIGGER selbst prueft die
+-- referenzierten Spalten nicht beim Anlegen (SQLite bindet den Trigger-
+-- Koerper erst beim Feuern) -- geprueft mit einer Kopie OHNE die Spalten,
+-- ensure_schema() darueber gefahren, Tabellen/Trigger gezaehlt (siehe
+-- tests/test_forderung_stand.py::test_gewachsene_db_ohne_spalten_bricht_
+-- nicht_ab). Sie stehen trotzdem hier: der naechste, der eine Spalte UND
+-- einen Index in derselben Auftragsrunde anlegt, soll nicht neu herausfinden
+-- muessen, welche der beiden DDL-Arten hart bricht.
+--
+-- Zulaessige Werte: NULL (kein Vorgang) oder eines von
+-- offen|erledigt|abgelehnt|ueberholt. 'abgelehnt' braucht zusaetzlich
+-- forderung_grund -- sonst waere ein Abschluss ohne Begruendung moeglich,
+-- und genau das sollte diese Haerte verhindern (Auftrag F2: "ohne diesen
+-- Zustand ist die Liste nach zwei Wochen Rauschen").
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_forderung_stand_check_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.forderung_stand IS NOT NULL
+    AND NEW.forderung_stand NOT IN ('offen','erledigt','abgelehnt','ueberholt')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.forderung_stand unzulaessig: erlaubt sind NULL (keine Forderung), offen, erledigt, abgelehnt, ueberholt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_forderung_stand_check_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.forderung_stand IS NOT NULL
+    AND NEW.forderung_stand NOT IN ('offen','erledigt','abgelehnt','ueberholt')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.forderung_stand unzulaessig: erlaubt sind NULL (keine Forderung), offen, erledigt, abgelehnt, ueberholt');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_forderung_abgelehnt_grund_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.forderung_stand = 'abgelehnt'
+    AND (NEW.forderung_grund IS NULL OR TRIM(NEW.forderung_grund) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.forderung_stand=abgelehnt braucht forderung_grund -- ein Ablehnen ohne Begruendung ist kein Abschluss');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_forderung_abgelehnt_grund_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.forderung_stand = 'abgelehnt'
+    AND (NEW.forderung_grund IS NULL OR TRIM(NEW.forderung_grund) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.forderung_stand=abgelehnt braucht forderung_grund -- ein Ablehnen ohne Begruendung ist kein Abschluss');
+END;
+
+-- Kein Rueckfall auf NULL: einmal als Vorgang markiert, bleibt der Knoten
+-- sichtbar (hoechstens auf einen anderen der vier Zustaende wechseln).
+-- Gleiche Bauform wie knowledge_nodes_norm_entscheidung_pflicht_bu.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_forderung_stand_kein_rueckfall_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN OLD.forderung_stand IS NOT NULL AND NEW.forderung_stand IS NULL
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.forderung_stand kann nicht auf NULL zurueckgesetzt werden -- hoechstens auf offen, erledigt, abgelehnt oder ueberholt aendern');
+END;

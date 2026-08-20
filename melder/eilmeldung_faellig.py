@@ -29,6 +29,14 @@ VERFALL_TAGE ist hier bewusst dupliziert statt aus dem Hook importiert:
 brainlehr ist eigenstaendig und soll auch ohne den hub-Verbund laufen (siehe
 haken/ort.py), der Hook liegt in hub/scripts. Ein Integer zweimal zu pflegen
 ist billiger als eine Abhaengigkeit in die falsche Richtung.
+
+FORDERUNGEN (Strang F, Auftrag 2026-08-21, docs/PLAN_BETRIEBSPROFILE_
+2026-08-20.md Abschnitt F): hier angehaengt statt eines zweiten Hooks --
+"der Kanal existiert bereits ... ihm fehlt nur Punkt 2" (Abschluss). Dieselbe
+Begruendung wie oben fuer Eilmeldungen gilt wortgleich fuer Vorgaenge: der
+Sitzungsstart ist der einzige belegte Lesekanal. Quelle ist ausschliesslich
+knowledge_nodes.forderung_stand = 'offen' -- keine Textsuche (siehe
+melder/forderung_vorgang.py, das die Spalte auch schreibt).
 """
 from __future__ import annotations
 
@@ -39,6 +47,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "kern"))
 import speicher  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import forderung_vorgang  # noqa: E402
 
 VERFALL_TAGE = 3  # muss mit hub/scripts/eilmeldung_hook.py:VERFALL_TAGE uebereinstimmen
 MAX_ZEILEN = 6
@@ -67,16 +78,40 @@ def _faellige(db: Path | None, jetzt: datetime | None = None) -> list[dict]:
     return [dict(r) for r in rows if _verfallen(r["created_at"] or "", jetzt)]
 
 
-def melde(db: Path | None = None, jetzt: datetime | None = None) -> str:
-    faellig = _faellige(db, jetzt)
-    if not faellig:
+def _forderungen_abschnitt(db: Path | None) -> str:
+    """Offene Vorgaenge (forderung_stand='offen'), aeltester zuerst. Eigene
+    try/except statt forderung_vorgang.offene()'s stillem [] bei fehlender
+    Spalte -- eine gewachsene DB ohne Nachzug soll hier trotzdem nichts
+    werfen (gleiche Fail-open-Haltung wie _faellige oben)."""
+    if db is not None and not db.exists():
         return ""
-    kopf = (f"{len(faellig)} Eilmeldung(en) seit mehr als {VERFALL_TAGE} Tagen "
-            f"unquittiert, wird nicht mehr wie frisch zugestellt:")
-    zeig = [f"  {r['path']}: {r['title']}" for r in faellig[:MAX_ZEILEN]]
-    if len(faellig) > MAX_ZEILEN:
-        zeig.append(f"  ... und {len(faellig) - MAX_ZEILEN} weitere")
+    try:
+        offen = forderung_vorgang.offene(db)
+    except sqlite3.OperationalError:
+        return ""
+    if not offen:
+        return ""
+    kopf = f"{len(offen)} offene Forderung(en) ans eigene Haus, aeltester zuerst:"
+    zeig = [f"  {r['created_at']}  {r['path']}: {r['title']}" for r in offen[:MAX_ZEILEN]]
+    if len(offen) > MAX_ZEILEN:
+        zeig.append(f"  ... und {len(offen) - MAX_ZEILEN} weitere")
     return "\n".join([kopf, *zeig])
+
+
+def melde(db: Path | None = None, jetzt: datetime | None = None) -> str:
+    abschnitte = []
+    faellig = _faellige(db, jetzt)
+    if faellig:
+        kopf = (f"{len(faellig)} Eilmeldung(en) seit mehr als {VERFALL_TAGE} Tagen "
+                f"unquittiert, wird nicht mehr wie frisch zugestellt:")
+        zeig = [f"  {r['path']}: {r['title']}" for r in faellig[:MAX_ZEILEN]]
+        if len(faellig) > MAX_ZEILEN:
+            zeig.append(f"  ... und {len(faellig) - MAX_ZEILEN} weitere")
+        abschnitte.append("\n".join([kopf, *zeig]))
+    forderungen = _forderungen_abschnitt(db)
+    if forderungen:
+        abschnitte.append(forderungen)
+    return "\n\n".join(abschnitte)
 
 
 def _selftest() -> None:
@@ -115,6 +150,43 @@ def _selftest() -> None:
 
         # kein Datenbankfile -> Stille, kein Crash
         assert melde(Path(tmp_dir) / "nicht-vorhanden.db", jetzt) == ""
+
+    # Forderungen-Abschnitt: eigene DB, echtes schema.sql (die Fake-Tabelle
+    # oben hat keine forderung_stand-Spalte -- OperationalError, still, siehe
+    # _forderungen_abschnitt).
+    wurzel = Path(__file__).resolve().parent.parent
+    schema = (wurzel / "schema.sql").read_text(encoding="utf-8")
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        db = Path(tmp_dir) / "forderungen.db"
+        conn = sqlite3.connect(str(db))
+        conn.executescript(schema)
+        for id_, path, titel, erstellt in (
+            ("a", "/brainlehr/offen", "Offener Vorgang", "2026-08-08T09:00:00Z"),
+            ("b", "/brainlehr/zu", "Erledigter Vorgang", "2026-08-01T09:00:00Z"),
+        ):
+            conn.execute(
+                "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, "
+                "level, source, created_at, norm_entscheidung, norm_entschieden_von, "
+                "norm_entschieden_grund) VALUES (?,?,?,?,?,?,0,?,?,'keine_norm','test',"
+                "'Testvorrichtung, keine echte Norm-Pruefung')",
+                (id_, path, "shared", titel, "x", "x", "test", erstellt),
+            )
+        conn.commit()
+        conn.close()
+
+        forderung_vorgang.markiere("/brainlehr/offen", "offen", db=db)
+        forderung_vorgang.markiere("/brainlehr/zu", "offen", db=db)
+        aus = melde(db, datetime(2026, 8, 21, tzinfo=timezone.utc))
+        assert "/brainlehr/offen" in aus, aus
+        assert "/brainlehr/zu" in aus, aus
+
+        # Gegenprobe: nach Erledigung verschwindet GENAU dieser Vorgang,
+        # der andere bleibt stehen.
+        forderung_vorgang.markiere("/brainlehr/zu", "erledigt", db=db)
+        aus = melde(db, datetime(2026, 8, 21, tzinfo=timezone.utc))
+        assert "/brainlehr/offen" in aus, aus
+        assert "/brainlehr/zu" not in aus, aus
+
     print("eilmeldung_faellig: Selbsttest gruen")
 
 
