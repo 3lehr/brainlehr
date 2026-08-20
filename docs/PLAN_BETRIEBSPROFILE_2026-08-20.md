@@ -305,9 +305,49 @@ absehbar? Gemessen am eigenen Fall aus `L-049e01` (GEG → Nachfolgegesetz,
 §§ 71–73 weggefallen; am 2026-08-17 wäre beinahe die alte Fassung als
 geltendes Recht berichtet worden).
 
-**Bei sechs Monaten Vorlauf ist E ein Frühwarnsystem. Bei zwei Wochen ist es
-Aufwand ohne Ertrag — dann wird E1 auf die Schätzung je Ast reduziert und der
-Rest fällt weg.** Kein anderer Schritt beginnt vor diesem Ergebnis.
+**E0 — ERGEBNIS, gemessen am 2026-08-20: der Strang lohnt sich.**
+
+| Ereignis | Datum |
+|---|---|
+| Eckpunktepapier (65-%-Vorgabe soll entfallen) | 2026-02-24 |
+| Referentenentwurf | 2026-05-05 |
+| Kabinettsbeschluss — ab hier liegt der TEXT vor | 2026-05-13 |
+| Erste Lesung | 2026-06-11 |
+| Verkündung (BGBl. I 2026 Nr. 226) | 2026-07-28 |
+| **Inkrafttreten** | **2026-07-29** |
+| brainlehr erfasst es (Knoten `/shared/geg-heisst-seit…`, Rang 1) | **2026-08-12** |
+
+**Zwei Vorlaufzeiten, und beide sind brauchbar — für Verschiedenes:**
+* **5 Monate, 5 Tage** vom Eckpunktepapier bis Inkrafttreten. Aussage: „In
+  diesem Gebiet ändert sich etwas." Reicht für eine Warnung, nicht für eine
+  Auskunft.
+* **2,5 Monate** vom Kabinettsbeschluss an. Ab hier liegt der Gesetzestext
+  vor — Aussage: „DAS ändert sich." Reicht, um Einträge gezielt zu
+  kennzeichnen.
+
+**Der Vergleich mit dem heutigen Verhalten ist der eigentliche Befund:**
+brainlehr hat die Änderung am 2026-08-12 erfasst — 14 Tage NACH Inkrafttreten,
+und ausgelöst durch einen Menschen („ausgelöst durch die Kritiker" steht in
+der Herkunft). Mit E wäre es fünf Monate davor gewesen. Der Abstand zwischen
+heutigem und möglichem Verhalten beträgt an diesem Fall **fünfeinhalb Monate**.
+
+**Die Einschränkung, die den Bau bestimmt:** Die Quelle ist NUR FÜR MENSCHEN.
+Geprüft am 2026-08-20: kein RSS, keine API, kein strukturierter Export. Wer
+das automatisiert, muss die Seite auslesen — also mit einer Bauform rechnen,
+die bei jeder Umgestaltung der Seite bricht. Das ist kein Ausschlussgrund,
+aber es verschiebt den Aufwand von „Schnittstelle anbinden" zu „Seite
+beobachten und Bruch bemerken".
+
+**Was NICHT gemessen wurde und offen bleibt:** ein zweiter Fall aus einem
+anderen Rechtsgebiet (Steuer, Datenschutz) — die 5 Monate hängen bislang an
+EINEM Vorgang. Und ob es vor dem Eckpunktepapier bereits Signale gab
+(Koalitionsvertrag, EU-Richtlinie mit Umsetzungsfrist 2026-05-29); das wäre
+ein noch früherer, aber andersartiger Anknüpfungspunkt.
+
+**Entscheidung daraus:** E wird gebaut, aber die Reihenfolge dreht sich. Zuerst
+E1 mit Schätzung je Ast und Widerrufsquote — beide brauchen keine fremde
+Quelle. Die Gremienbeobachtung (E2/E3) folgt danach, weil sie mit dem Auslesen
+einer Menschenseite die brüchigste Bauform des ganzen Plans hat.
 
 ## Verworfene Wege
 
