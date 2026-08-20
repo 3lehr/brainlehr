@@ -259,7 +259,22 @@ Die blinde Wiederholung hatte gemeldet, der Pruefkorpus urteile in beide Richtun
 
 Dieselbe Fehlerklasse wie mehrfach an diesem Tag, und die Lehre lag im Bestand (`L-c2f6ee`): ueber einen GEDECKELTEN Kanal gemessen und die Deckelung als Eigenschaft des Gegenstands gelesen. Mein Auftrag verlangte "die drei besten ausgelieferten Titel", ohne das Auslieferungsfenster danebenzustellen.
 
-**Was offen bleibt:** die 4 zu streng gezaehlten Faelle und die Frage, ob der Korpus Mehrfachziele braucht -- mehrere Eintraege koennen dieselbe Frage beantworten, der Korpus kennt je Fall nur eines.
+**Mehrfachziele gemessen** (`runs/mehrfachziele_2026-08-20.json`), ueber ALLE 35 Faelle statt nur der vier auffaelligen:
+
+| | |
+|---|---|
+| heute schon Treffer | 15 |
+| Fehlgriffe **mit** legitimem Zweitziel | **7** |
+| Fehlgriffe ohne | 13 |
+| **Trefferquote mit Mehrfachzielen** | **22 von 35 (62,9 %)** gegen heute 42,9 % |
+
+Gegenprobe: 13 von 20 Fehlgriffen (65 %) haben auch unter grosszuegiger Pruefung kein Zweitziel -- der Massstab misst ueberwiegend echte Fehlgriffe.
+
+Von den vier Altfaellen bestaetigen sich **3 von 4**. Bei `L-503687` weicht die unabhaengige Pruefung ab: dort war die blinde Beurteilung durch ihre Top-3-Beschraenkung getaeuscht, nicht der Korpus zu streng.
+
+**VORBEHALT:** Diese Beurteilung war NICHT verblindet -- der Beurteilende sah je Fall das vorgesehene Ziel. Genau die Schwaeche, die S4 aufgedeckt hat. Wer die 22 von 35 weitertraegt, traegt den Vorbehalt mit.
+
+**WARTET AUF DEN BETREIBER:** Ob der Korpus Mehrfachziele bekommt, ist eine Entscheidung ueber den MASSSTAB dieses Hauses, keine Messung. Sie wuerde die Leitzahl von 42,9 auf 62,9 % heben -- und jede frueher an der niedrigen Zahl begruendete Entscheidung neu zur Diskussion stellen. `runs/pruefkorpus.jsonl` ist unangetastet.
 
 **Drei Fallen aus dem Bau, alle mit rotem Test festgehalten:**
 
