@@ -3095,8 +3095,23 @@ def _validate_norm_entscheidung(norm_entscheidung: str | None, norm_rang: int | 
                 f"{sorted(ALLOWED_NORM_ENTSCHEIDUNG)} (keine_norm=Fakt ohne Rang, "
                 f"norm_befristet=Norm mit Enddatum, norm_unbefristet=Norm ohne Enddatum).")
     if norm_entscheidung == "keine_norm":
-        if norm_rang is not None:
-            return "norm_entscheidung=keine_norm aber norm_rang gesetzt: widerspruechlich -- norm_rang weglassen oder norm_befristet/norm_unbefristet waehlen."
+        # norm_rang=0 ist die RUECKGABE des Rangs, kein Rang 0.
+        #
+        # GEFUNDEN 2026-08-21: Zehn Knoten trugen Rang 1 -- die Stufe der
+        # globalen Arbeitsanweisung --, obwohl sie projektgebunden sind
+        # (Rechtslage fuer buckeberg, Namenskonventionen, Einzelfreigaben).
+        # Beim Zurueckstufen zeigte sich, dass es KEINEN Weg dafuer gab:
+        # knowledge_update wies keine_norm zurueck, solange ein Rang stand,
+        # und kern/normkraft.py kann nur AUSSER KRAFT setzen -- was hier
+        # falsch waere, denn die Rechtslage gilt weiter, sie ist nur keine
+        # Direktive. Damit war jede Fehleinstufung dauerhaft.
+        #
+        # Die Schranke bleibt: Ein Rang OHNE keine_norm wird weiterhin
+        # abgewiesen, und ein Rang GROESSER als 0 neben keine_norm ebenso.
+        # Nur die ausdrueckliche Null nimmt beides zusammen zurueck -- Fakt
+        # ohne Rang, in einem Zug, mit Pflichtgrund.
+        if norm_rang not in (None, 0):
+            return "norm_entscheidung=keine_norm aber norm_rang gesetzt: widerspruechlich -- norm_rang weglassen, 0 zum Zurueckgeben, oder norm_befristet/norm_unbefristet waehlen."
         return None
     # norm_befristet / norm_unbefristet
     if norm_rang is None:
@@ -4171,7 +4186,11 @@ def knowledge_update(node_id: str, summary: str | None = None,
     # norm_entscheidung-Konsistenz. Drei Faelle (Auftrag 2026-08-08, zwei
     # davon Loecher aus dem unabhaengigen Review, Agent acf807ee8e6756f27,
     # VOR der Live-Migration geschlossen):
-    effektiv_norm_rang = norm_rang if norm_rang is not None else row["norm_rang"]
+    # 0 heisst "Rang zurueckgeben" -- der effektive Rang ist dann keiner.
+    # Siehe _validate_norm_entscheidung: nur zusammen mit keine_norm zulaessig.
+    effektiv_norm_rang = (None if norm_rang == 0
+                          else norm_rang if norm_rang is not None
+                          else row["norm_rang"])
     entscheidung_fehler = None
     if norm_entscheidung is not None:
         # (a) Aufrufer aendert die Entscheidung ausdruecklich -- 'offen' ist
@@ -4242,7 +4261,16 @@ def knowledge_update(node_id: str, summary: str | None = None,
         params.append(json.dumps(tags))
     if norm_rang is not None:
         updates.append("norm_rang = ?")
-        params.append(norm_rang)
+        # 0 schreibt NULL -- die Rueckgabe des Rangs, kein Rang 0.
+        params.append(None if norm_rang == 0 else norm_rang)
+        if norm_rang == 0:
+            # VOLLSTAENDIG zuruecknehmen, nicht halb. Der Datenbank-Trigger
+            # verlangt bei keine_norm auch gilt_ab und gilt_bis als NULL --
+            # und er hat recht: Ein Fakt hat keine Geltung, er gilt oder ist
+            # falsch. Wer nur den Rang naehme, hinterliesse eine Zeile, die
+            # der Trigger beim naechsten Schreibvorgang abweist, ohne dass
+            # jemand den Zusammenhang noch sieht.
+            updates += ["gilt_ab = NULL", "gilt_bis = NULL"]
     if gilt_ab is not None:
         updates.append("gilt_ab = ?")
         params.append(gilt_ab)
