@@ -235,6 +235,39 @@ Aus den Rohzeilen nachgerechnet, nicht aus der Zusammenfassung übernommen. **11
 2. Eine **Schleife** über Modulnamen im `pre-push` (`for m in a b c`) verbirgt die Namen vor dem Zähler *und* vor jedem Leser. Ausgeschrieben: 20 → 16.
 3. Ein Subagent meldete einen Widerspruch in `L-bbd7fb` (`occurrences=3` gegen „vier Fundstellen"). Nachgezählt: **kein Widerspruch** — Fundstellen (Codeorte in einem Vorkommen) sind nicht Vorkommen. Agentenbefunde werden geprüft, bevor sie weitergetragen werden.
 
+## Das zweite Signal: Konsil, Nulllinie, abgestufte Ausgabe (2026-08-20, Nachmittag)
+
+Kette vollstaendig vermessen, sie endet bei einer Entscheidung statt bei einem Fehler:
+
+```
+Einbruch 27/35 -> 15/35
+  +- 15 von 20 an der Bewertungsfunktion ....... gilt nur fuer Zustand B
+       +- Schwelle 2.0 vermessen ............... war richtig gewaehlt
+            +- in C ohne Wirkung ............... Engpass ist ENSEMBLE_PFLICHT
+                 +- Kanaele einig in 1 von 45 .. kein Filter, ein Aus-Schalter
+```
+
+**Sechs Opus-Rollen, fuenf Konvergenzen** (`runs/konsil_zweites_signal_synthese.md`, Einzelgutachten daneben). Keine empfiehlt, ein zweites Signal zu bauen. Die wichtigsten:
+
+- **tau = 0,10 ist keine Absage** (4 Rollen, 4 verschiedene Gruende). Forensik: die Referenzpopulation hat die entscheidende Varianz nicht. Psychometrie: Varianzeinschraenkung nach Thorndike. Meteorologie: tau misst einen von drei Brier-Termen.
+- **Zwei Konstrukte statt ein schwaches Signal** (3 Rollen). Radar: Detektion und Klassifikation sind zwei Stufen -- der Kosinuswert loest die erste fehlerfrei, die zweite gar nicht. Lehrbuchzustand, kein Versagen.
+- **Der Nutzen wurde nie gemessen** (4 Rollen) -- die eigentliche Luecke.
+
+**S1 erledigt, die Nulllinie steht** (`d2c57c76`, `runs/aufgriffsquote_2026-08-20.json`): Aufgriff **247 von 1275 = 19,4 %**. Lehren 30,5 %, Knoten 8,2 % -- eine Lehre wird VIERMAL so oft aufgegriffen wie ein Knoten. Drei Laeufe waren noetig: erzeugte Dateien (Tagesvollexport, NODE_INDEX.md) hatten die Quote von 61,9 auf 19,4 aufgeblaeht.
+
+**S2 gebaut, Schalter AUS** (`BRAINLEHR_ABRUF_STUFEN`). Gemessen am echten Weg: 5876 -> 2876 Zeichen bei gleichen Treffern, kein Treffer verschwindet. Der Grundsatz stammt aus zwei Rollen unabhaengig: **nicht die Fehlerrate senken, sondern den Preis des Fehlers.**
+
+**Protokoll-Luecke geschlossen:** `recall_log.jsonl` schreibt jetzt den Kosinuswert je Kennung. Ohne ihn waere nach dem Scharfschalten nicht mehr messbar, ob die Stufung richtig lag -- belegt am echten Weg mit 17 Werten fuer 17 Treffer.
+
+**Fallen aus diesem Nachmittag:**
+
+1. **Neun gruene Tests, Wirkung null** (`L-497059`): Die erste Fassung der Stufung fuetterte ein selbst erfundenes Datenformat. Schnittmenge mit den echten Schluesseln: 0. Bemerkt durch eine Messung, nicht durch einen Test. Das Feld `bedeutungs_kosinus` lag seit jeher an jedem Treffer.
+2. **Eine Ursachenaussage gilt nur im gemessenen Zustand** (`L-c94630`): "15 von 20 haengen an der Bewertungsfunktion" stimmt fuer B und ist fuer den Auslieferungszustand falsch.
+3. **Trennung nur gegen zwei von vier Gruppen geprueft** (`L-840eb5`): 14 + 10 = 24 bei einem Korpus von 45 -- die Luecke haette sofort auffallen muessen.
+4. **Ein fachfremder Einfall war zwanzig Jahre alt** (`L-b3cc49`): "Instabilitaet als Unsicherheitsmass" heisst seit 2006 Ranking Robustness.
+
+**Laeuft:** S3 (CFAR gegen den Hintergrundmedian -- die letzte ungeprueft gebliebene Verfahrensfamilie) und S4 (die Handbeurteilung blind und beidseitig wiederholen).
+
 ## Vor der Veroeffentlichung: erst der Einbruch (2026-08-20, nachmittags)
 
 Betreiber: *"sollten wir nicht erst fixen bevor wir veroeffentlichen?"* -- richtig, meine Reihenfolge war falsch herum. Ein Repo zu veroeffentlichen, dessen README fuenf Selbstmessungen als Beleg fuehrt, waehrend die Abrufguete ungeklaert von 77 % auf 43 % gefallen ist, ist genau das, wogegen dieses Repo geschrieben ist.
