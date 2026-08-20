@@ -218,6 +218,97 @@ kaputten nicht zu unterscheiden. Abnahme deshalb: ein hergestellter Lauf, der
 500 verschiedene Knoten je einmal liest, MUSS anschlagen; die 4-%-Sitzungen
 des echten Bestands dürfen es NICHT.
 
+## E — Wissen, das altert: der Speicher als Aufsicht über das Modell
+
+Betreiberfrage vom 2026-08-20, in drei Schritten entwickelt: „was ist wenn ich
+die richtige quelle schon bei der ersten suche brauche?" → „brainlehr sollte
+erkennen: in welchem thema arbeitet der user, wie alt ist das modell, wie
+wichtig ist aktuelles wissen" → „wir müssen ja nicht die quellen hinterlegen,
+sondern einen prompt der auffordert danach zu suchen".
+
+**Die Umkehrung der Rolle, und darin liegt die Tragweite.** Bisher ist
+brainlehr ein Gedächtnis: Man fragt, es antwortet. Hier wird es zur Aufsicht
+über das Modell — es müsste wissen, was das Modell NICHT wissen kann, bevor
+dieses es behauptet.
+
+Der Grund ist eine Eigenschaft von Modellen, die sie selbst nicht bemerken:
+**Ein Modell hat keine Uhr.** Der Stichtag des am 2026-08-20 arbeitenden
+Modells war Mai 2026 — rund drei Monate blind, und es antwortet auf eine
+Frage von heute mit derselben Zuversicht wie auf eine von damals. An diesem
+einen Tag ist es dreimal passiert: ein fremder Klient beschrieb brainlehr mit
+Zahlen von früher, eine Lizenzangabe kam aus dem Gedächtnis, und ein
+„unmöglich" wurde ungeprüft aus einer ADR übernommen.
+
+**Warum das das Henne-Ei-Problem löst.** Die drei nötigen Größen sind alle VOR
+der ersten Frage bekannt — es braucht keine zwölf erfolglosen Suchen:
+
+| | woher | Stand heute |
+|---|---|---|
+| Thema | aus der Frage ableitbar | der Recall tut es bereits |
+| Modellstichtag | steht im Kontext | ungenutzt |
+| Verfallsrate des Gebiets | Eigenschaft des THEMAS, nicht der Frage | fehlt ganz |
+
+Der dritte Punkt ist der Schlüssel: Man muss nicht wissen, was gefragt wird —
+nur, dass Steuerrecht sich jährlich ändert und Zahlentheorie nicht.
+
+**Der Zwecksatz sagt es bereits, nur für die falsche Hälfte:** „…und sagt
+dazu, wie belastbar es noch ist." Gebaut ist das für den BESTAND (`gilt_bis`,
+Geltung, Normrang). Was fehlt, ist derselbe Satz für das MODELL.
+
+**Gemessener Ist-Stand (2026-08-20):**
+
+| | |
+|---|---|
+| Knoten mit Verfallsdatum | **2 von 5 232** |
+| Knoten, die das schreibende Modell festhalten | 610 von 5 232 |
+| Verfallsrate je Themengebiet | existiert nicht |
+
+`gilt_bis` ist praktisch ungenutzt, weil es je Eintrag gepflegt werden müsste.
+Als Eigenschaft des ASTES wäre es billig: ein Wert je Gebiet statt 5 232
+Einzelentscheidungen.
+
+**E1 — Die Verfallsrate, aus drei Quellen (Betreiberentscheidung: alle drei):**
+
+| Quelle | Blickrichtung | Kosten | was sie kann |
+|---|---|---|---|
+| Schätzung je Ast | keine | minimal | sofort da, ungenau |
+| Widerrufsquote | rückwärts | braucht Historie | ehrlich, lernt erst nach dem Schaden |
+| Gremienberatungen | **vorwärts** | Quellenanbindung | warnt, BEVOR etwas veraltet |
+
+**E2 — Quellen werden nicht hinterlegt, sondern gesucht.** Betreiberentscheidung
+vom 2026-08-20, und sie wendet ein bereits geltendes Hausprinzip an: Der
+Startauftrag für neue Fachdomänen entsteht seit dem 2026-07-31 durch ein
+Skript, das seine Quellen zum Erzeugungszeitpunkt LIVE liest — „kein
+abgeschriebener Prompt, weil ein eingebackener Wissensstand ab dem nächsten
+Tag falsch ist" (`/shared/arch/startauftrag-fuer-neue-fachdomaenen`,
+`hub/scripts/domaenen_startauftrag.py`).
+
+Eine gepflegte Quellenliste hat zwei Fehler, und der zweite wiegt schwerer:
+Sie ist bei tausend Themen nie vollständig — und sie altert unsichtbar. Ein
+AUFTRAG altert nicht, weil er nichts behauptet.
+
+**Der Punkt, an dem es kippen würde:** Ein Modell, das nach Quellen sucht,
+erfindet welche. Deshalb gilt die Belegpflicht aus dem vorhandenen
+BGH-Prüfverfahren: zwei unabhängige Quellen, und ein Ergebnis ohne abrufbare
+Fundstelle zählt als „nicht gefunden", nicht als Treffer. Sonst baut sich
+brainlehr eine Liste plausibler Erfindungen auf — schlimmer als keine, weil
+sie Vertrauen erzeugt.
+
+**E3 — Die Liste wächst, statt gepflegt zu werden.** Jede erfolgreiche Suche
+wird ein Eintrag mit Herkunft und Geltung. Beim ersten Mal in einem Gebiet
+kostet es eine Suche; danach steht die Quelle im Bestand und meldet sich
+selbst, wenn sie zu alt wird.
+
+**E0 — DIE MESSUNG, DIE ÜBER DEN GANZEN STRANG ENTSCHEIDET (läuft):**
+Wie viele Monate VOR Inkrafttreten war eine Rechtsänderung öffentlich
+absehbar? Gemessen am eigenen Fall aus `L-049e01` (GEG → Nachfolgegesetz,
+§§ 71–73 weggefallen; am 2026-08-17 wäre beinahe die alte Fassung als
+geltendes Recht berichtet worden).
+
+**Bei sechs Monaten Vorlauf ist E ein Frühwarnsystem. Bei zwei Wochen ist es
+Aufwand ohne Ertrag — dann wird E1 auf die Schätzung je Ast reduziert und der
+Rest fällt weg.** Kein anderer Schritt beginnt vor diesem Ergebnis.
+
 ## Verworfene Wege
 
 * **Mandanten-Achse erst beim ersten Piloten** — der vom Betreiber geforderte
