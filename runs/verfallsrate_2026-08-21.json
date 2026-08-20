@@ -1,9 +1,11 @@
 {
-  "erzeugt_am": "2026-08-20T22:40:44Z",
+  "erzeugt_am": "2026-08-20T22:45:02Z",
   "min_historie": 3,
   "obergrenze_tage": 365,
   "gegenmittel_gegen_die_falle": "untergrenze (a) -- naechste_pruefung_spaetestens_tage ueberschreitet nie OBERGRENZE_TAGE, auch bei Rate 0",
-  "befund_beim_lesen": "Die Quelle misst Bearbeitungsintensitaet, nicht zwingend fachlichen Verfall: knowledge_fassungen (Korrektur) feuert bei JEDER inhaltlichen Aenderung, auch reiner Anreicherung waehrend einer aktiven Sitzung -- ein Ast mit Rate 1.0 (z.B. arch, tools, backend) heisst 'wurde gerade viel bearbeitet', nicht zwingend 'war oft falsch'. Umgekehrt liefern germanquad und nasa-llis (zusammen 4351 von 5240 Knoten, 83% des Bestands) beide Rate 0 -- Grossimporte, seit der Anlage nie wieder angefasst. Diese Quelle kann NICHT unterscheiden, ob das Themengebiet echt stabil ist oder ob es nur nie geprueft wurde -- genau die Falle aus dem Auftrag. Ohne eine vorwaertsgerichtete Quelle (E2/E3, hier ausdruecklich nicht gebaut) bleibt diese Unterscheidung offen.",
+  "befund_beim_lesen": "Die Quelle misst Bearbeitungsintensitaet, nicht zwingend fachlichen Verfall: knowledge_fassungen (Korrektur) feuert bei JEDER inhaltlichen Aenderung, auch reiner Anreicherung waehrend einer aktiven Sitzung -- ein Ast mit Rate 1.0 (z.B. arch, tools, backend) heisst 'wurde gerade viel bearbeitet', nicht zwingend 'war oft falsch'. Umgekehrt liefern germanquad und nasa-llis (zusammen 4351 von 5240 Knoten, 83% des Bestands) beide Rate 0 -- Grossimporte, seit der Anlage nie wieder angefasst. Diese Quelle kann NICHT unterscheiden, ob das Themengebiet echt stabil ist oder ob es nur nie geprueft wurde -- genau die Falle aus dem Auftrag. Ohne eine vorwaertsgerichtete Quelle (E2/E3, hier ausdruecklich nicht gebaut) bleibt diese Unterscheidung offen. Die Schaetzung je Ast (Quelle 1) koennte genau hier widersprechen -- sie ist bislang fuer KEINEN Ast gesetzt (siehe schaetzungen_gesetzt unten), also bleibt die Frage germanquad/nasa-llis 'stabil oder nur ungeprueft' offen, bis ein Mensch sie eintraegt.",
+  "schaetzungen_gesetzt": 0,
+  "ablage_leer": true,
   "aeste": {
     "germanquad": {
       "gesamt": 2713,
@@ -11,7 +13,9 @@
       "rate": 0.0,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "widerrufsquote -- keine Widerrufe im Bestand, Untergrenze greift"
+      "quelle": "widerrufsquote -- keine Widerrufe im Bestand, Untergrenze greift",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "nasa-llis": {
       "gesamt": 1638,
@@ -19,7 +23,9 @@
       "rate": 0.0,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "widerrufsquote -- keine Widerrufe im Bestand, Untergrenze greift"
+      "quelle": "widerrufsquote -- keine Widerrufe im Bestand, Untergrenze greift",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "brainlehr": {
       "gesamt": 312,
@@ -27,7 +33,9 @@
       "rate": 0.3333,
       "halbwertszeit_tage": 8.0,
       "naechste_pruefung_spaetestens_tage": 8.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "methodik": {
       "gesamt": 171,
@@ -35,7 +43,9 @@
       "rate": 0.5146,
       "halbwertszeit_tage": 14.5,
       "naechste_pruefung_spaetestens_tage": 14.5,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "apps": {
       "gesamt": 95,
@@ -43,7 +53,9 @@
       "rate": 0.8211,
       "halbwertszeit_tage": 6.3,
       "naechste_pruefung_spaetestens_tage": 6.3,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "ops": {
       "gesamt": 92,
@@ -51,7 +63,9 @@
       "rate": 0.5435,
       "halbwertszeit_tage": 3.9,
       "naechste_pruefung_spaetestens_tage": 3.9,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "shared": {
       "gesamt": 55,
@@ -59,7 +73,9 @@
       "rate": 0.8545,
       "halbwertszeit_tage": 7.3,
       "naechste_pruefung_spaetestens_tage": 7.3,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "openlehr": {
       "gesamt": 46,
@@ -67,7 +83,9 @@
       "rate": 0.587,
       "halbwertszeit_tage": 10.7,
       "naechste_pruefung_spaetestens_tage": 10.7,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "plaene": {
       "gesamt": 17,
@@ -75,7 +93,9 @@
       "rate": 0.4706,
       "halbwertszeit_tage": 9.4,
       "naechste_pruefung_spaetestens_tage": 9.4,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "arch": {
       "gesamt": 16,
@@ -83,7 +103,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "simulation-akademie-messaufbau-kein": {
       "gesamt": 15,
@@ -91,7 +113,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "testing": {
       "gesamt": 10,
@@ -99,7 +123,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "tools": {
       "gesamt": 8,
@@ -107,7 +133,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "werkzeuge": {
       "gesamt": 8,
@@ -115,7 +143,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "frontend": {
       "gesamt": 7,
@@ -123,7 +153,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "agents": {
       "gesamt": 7,
@@ -131,7 +163,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "fahrtenbuch": {
       "gesamt": 5,
@@ -139,7 +173,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "domaenen": {
       "gesamt": 5,
@@ -147,7 +183,9 @@
       "rate": 0.0,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "widerrufsquote -- keine Widerrufe im Bestand, Untergrenze greift"
+      "quelle": "widerrufsquote -- keine Widerrufe im Bestand, Untergrenze greift",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "backend": {
       "gesamt": 4,
@@ -155,7 +193,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "lessons": {
       "gesamt": 3,
@@ -163,7 +203,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "probe": {
       "gesamt": 3,
@@ -171,7 +213,9 @@
       "rate": 1.0,
       "halbwertszeit_tage": 0.0,
       "naechste_pruefung_spaetestens_tage": 0.0,
-      "quelle": "widerrufsquote"
+      "quelle": "widerrufsquote",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "begod": {
       "gesamt": 2,
@@ -179,7 +223,9 @@
       "rate": null,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "stadtwerke": {
       "gesamt": 2,
@@ -187,7 +233,9 @@
       "rate": null,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "aka": {
       "gesamt": 1,
@@ -195,7 +243,9 @@
       "rate": null,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "bebetter": {
       "gesamt": 1,
@@ -203,7 +253,9 @@
       "rate": null,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "probe2": {
       "gesamt": 1,
@@ -211,7 +263,9 @@
       "rate": null,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "testdatenknoten-schreibrechtepruefung": {
       "gesamt": 1,
@@ -219,7 +273,9 @@
       "rate": null,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "woanders": {
       "gesamt": 1,
@@ -227,7 +283,9 @@
       "rate": null,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen",
+      "schaetzung": null,
+      "widerspruch": false
     },
     "domaenenimporte": {
       "gesamt": 1,
@@ -235,7 +293,9 @@
       "rate": null,
       "halbwertszeit_tage": null,
       "naechste_pruefung_spaetestens_tage": 365,
-      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen"
+      "quelle": "unbekannt -- weniger als MIN_HISTORIE=3 Eintraege, Rate waere Rauschen",
+      "schaetzung": null,
+      "widerspruch": false
     }
   }
 }
