@@ -184,3 +184,21 @@ und einen Commit „Kategorie 'eskaliert ohne Regel'" — das deutet auf einen
 bereits vorhandenen Regressionstest für mindestens einen der vier Funde hin,
 wurde aber nicht verifiziert, da außerhalb des Auftragsumfangs (nur diese eine
 Datei, nur dieses Repo).
+
+
+## Nachprüfung des Hauptchats, 2026-08-20
+
+**Der gemeldete Widerspruch in `L-bbd7fb` besteht nicht.** Der Bericht hält
+fest, das Feld `occurrences=3` widerspreche dem Volltext, der „vier konkrete
+Fundstellen" beschreibe. Nachgezählt in der Datenbank: zwei
+`--- Wiederholung`-Blöcke plus das Erstvorkommen = **drei Vorkommen**, genau
+wie das Feld sagt.
+
+Verwechselt wurden **Fundstellen** (Codeorte innerhalb eines Vorkommens) mit
+**Vorkommen** (wie oft die Fehlerklasse auftrat). Ein Vorkommen kann mehrere
+Fundstellen nennen; der Zähler zählt Vorkommen.
+
+Das ist kein Vorwurf an den Bericht — die Unterscheidung steht nirgends
+geschrieben, und der Agent hat den Verdacht ausdrücklich als solchen
+gemeldet statt ihn zu behaupten. Aber die Zahl bleibt, wie sie ist, und diese
+Zeile steht hier, damit sie nicht ein zweites Mal geprüft wird.
