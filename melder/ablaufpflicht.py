@@ -37,6 +37,7 @@ mehr nicht, aber auch nicht weniger.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -187,6 +188,44 @@ def commits(bereich: str, ab: str | None = STICHTAG) -> list[str]:
     return [z for z in _lauf(*args).splitlines() if z.strip()]
 
 
+# VERMERKE: Ein Befund an einem BEREITS GESCHRIEBENEN Commit laesst sich nicht
+# mehr beheben -- die Nachricht steht, und ein History-Rewrite ist keine
+# Option, sobald Hashes in Wissensknoten und STAND stehen (Beschluss
+# 2026-08-18, rund 15 betroffene Hashes).
+#
+# Bis heute blieb dafuer nur `--no-verify`. Die Norm ce58f0b2 (Rang 2,
+# 2026-08-20) sperrt das ausdruecklich: "Ein Waechter, der einen Push abweist,
+# hat einen Grund, und der wird gelesen statt umgangen."
+#
+# Ein Vermerk IST das Lesen und Beantworten: Er nennt den Commit, den Grund
+# und wer ihn gesetzt hat. Er loescht den Befund NICHT -- `--alle` zeigt ihn
+# weiter, und die Zusammenfassung nennt die Zahl der vermerkten getrennt.
+# Damit ist der Unterschied zu --no-verify kein formaler: dort verschwindet
+# der Befund spurlos, hier bleibt er samt Begruendung stehen.
+#
+# Vorbild ist hub/scripts/gegenprobe_faellig.py, das dieselbe Bauform seit
+# Langem hat.
+VERMERKE = _w / "docs" / "ablauf_vermerke.json"
+
+
+def _vermerke() -> dict[str, str]:
+    try:
+        return json.loads(VERMERKE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def vermerke_setzen(sha: str, grund: str) -> None:
+    if len(grund.strip()) < 20:
+        raise SystemExit("Ein Vermerk braucht einen Grund von mindestens 20 Zeichen -- "
+                         "'passt schon' ist kein Vermerk.")
+    d = _vermerke()
+    d[sha[:8]] = grund.strip()
+    VERMERKE.parent.mkdir(parents=True, exist_ok=True)
+    VERMERKE.write_text(json.dumps(d, ensure_ascii=False, indent=2, sort_keys=True),
+                        encoding="utf-8")
+
+
 def pruefe_commit(sha: str) -> list[str]:
     """Befunde eines einzelnen Commits, leer heisst in Ordnung."""
     nachricht = _lauf("log", "-1", "--format=%B", sha)
@@ -208,11 +247,20 @@ def pruefe_commit(sha: str) -> list[str]:
     return befunde
 
 
-def pruefe(bereich: str, ab: str | None = STICHTAG) -> list[str]:
-    befunde = []
+def pruefe(bereich: str, ab: str | None = STICHTAG,
+           mit_vermerkten: bool = False) -> tuple[list[str], list[str]]:
+    """(offene Befunde, vermerkte Befunde).
+
+    Getrennt statt zusammengezaehlt: Ein vermerkter Befund ist BEANTWORTET,
+    nicht verschwunden. Wer beide in eine Zahl wirft, macht aus dem Vermerk
+    ein Loeschen -- und dann ist er --no-verify mit Zusatzschritt."""
+    v = _vermerke()
+    offen, vermerkt = [], []
     for sha in commits(bereich, ab):
-        befunde += pruefe_commit(sha)
-    return befunde
+        for b in pruefe_commit(sha):
+            (vermerkt if sha[:8] in v else offen).append(
+                b + (f"  [vermerkt: {v[sha[:8]][:70]}]" if sha[:8] in v else ""))
+    return (offen, vermerkt) if not mit_vermerkten else (offen + vermerkt, vermerkt)
 
 
 def demo() -> None:
@@ -300,19 +348,31 @@ def main() -> int:
     p.add_argument("--still", action="store_true")
     p.add_argument("--alle", action="store_true",
                    help="auch Commits vor dem Stichtag (zeigt die Altfaelle)")
+    p.add_argument("--vermerken", nargs=2, metavar=("SHA", "GRUND"),
+                   help="einen Befund an einem bereits geschriebenen Commit "
+                        "beantworten -- er bleibt sichtbar, blockiert aber nicht mehr")
     p.add_argument("--seit", default=None,
                    help=f"Stichtag ausdruecklich setzen. Ohne Angabe gilt {SEIT_DATEI} "
                         f"im geprueften Repo, sonst {STICHTAG}")
     a = p.parse_args()
     global _w
     _w = _wurzel(a.wurzel)
+    if a.vermerken:
+        vermerke_setzen(a.vermerken[0], a.vermerken[1])
+        print(f"vermerkt: {a.vermerken[0][:8]} — {a.vermerken[1][:70]}")
+        return 0
     seit = a.seit or _stichtag_des_repos(_w)
     try:
-        befunde = pruefe(a.bereich, None if a.alle else seit)
+        befunde, vermerkt = pruefe(a.bereich, None if a.alle else seit)
     except Exception as e:  # kein Upstream, frisches Repo -- kein Grund zu sperren
         if not a.still:
             print(f"Ablaufpflicht nicht prüfbar ({e}) — übersprungen.", file=sys.stderr)
         return 0
+    if vermerkt and not a.still:
+        print(f"{len(vermerkt)} Befund(e) sind vermerkt und blockieren nicht "
+              f"(docs/ablauf_vermerke.json) -- sie bleiben sichtbar:", file=sys.stderr)
+        for b in vermerkt:
+            print("  " + b, file=sys.stderr)
     if not befunde:
         if not a.still:
             # WIE VIELE Commits geprueft wurden, gehoert in die Meldung. Ohne
