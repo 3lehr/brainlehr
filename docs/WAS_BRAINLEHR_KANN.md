@@ -1,13 +1,13 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-20T16:15:49+0200 (Stand `454c7d30`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-08-20T16:29:18+0200 (Stand `3cabe776`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 
 | | |
 |---|---:|
 | Werkzeuge über MCP | 30 |
-| Melder | 54, davon verdrahtet 21 |
+| Melder | 54, davon verdrahtet 22 |
 | Haken | 23, davon verdrahtet 13 |
 | Kernmodule | 111 |
 | Module mit Selbsttest | 140 von 188 |
@@ -58,7 +58,7 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/abgabepruefung.py` | Ein Stopp-Punkt beendet die Pruefung nicht, er verlegt sie | Stop | ja | — |
 | `melder/ablaufpflicht.py` | Die zwei unbelegten Schritte aus docs/ablauf.json bekommen einen | — | — | — |
 | `melder/abrufwirkung.py` | Abrufwirkung | — | ja | — |
-| `melder/agentenbehauptung.py` | Eine Antwort behauptet eine Handlung, fuer die im selben Zug kein | — | ja | — |
+| `melder/agentenbehauptung.py` | Eine Antwort behauptet eine Handlung, fuer die im selben Zug kein | Stop | ja | — |
 | `melder/agentendauer.py` | agentendauer.py | — | ja | — |
 | `melder/arbeitsmelder.py` | Ein Melder auf die ARBEIT, nicht auf den Bestand | PostToolUse | ja | — |
 | `melder/auftragsregister.py` | Anweisungsregister | — | ja | — |
