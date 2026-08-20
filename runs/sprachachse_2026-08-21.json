@@ -1,0 +1,172 @@
+{
+  "auftrag": "B1b -- Sprachachse befuellen",
+  "datum": "2026-08-21T00:45:00+0200",
+  "verfahren": "kern/spracherkennung.py -- 36 Stoppwoerter, 18 je Sprache, Mindesttreffer 2, Gleichstand und Unterschreitung ergeben NULL",
+  "grundlage": {
+    "knoten": "title + summary + content[:2000]",
+    "lehren": "description + root_cause + resolution + prevention"
+  },
+  "knowledge_nodes": {
+    "gesamt": 5240,
+    "de": 3573,
+    "en": 1609,
+    "null": 58
+  },
+  "lessons_learned": {
+    "gesamt": 1173,
+    "null": 1,
+    "de": 1167,
+    "en": 5
+  },
+  "in_der_datenbank": {
+    "knowledge_nodes": {
+      "de": 3573,
+      "en": 1609,
+      "null": 58
+    },
+    "lessons_learned": {
+      "null": 1,
+      "de": 1167,
+      "en": 5
+    }
+  },
+  "stichprobe": [
+    {
+      "pfad": "/nasa-llis/2136",
+      "erkannt": "en",
+      "text": "1-G Human Factors for Optimal Processing and Operability of Constellation Ground Systems The early work of the Exploration Systems Mission Directorate (ESMD) focused on human factors engineering (i.e., applying what is k",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/germanquad/fae828850d50",
+      "erkannt": "de",
+      "text": "Arnold_Schwarzenegger Arnold_Schwarzenegger\n\n=== Auszeichnungen und Nominierungen (Auswahl) ===\nFür seine schauspielerische Tätigkeit erhielt Schwarzenegger folgende Ehrungen und Auszeichnungen:\nStern von Schwarzenegger ",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/germanquad/b8cd774346e9",
+      "erkannt": "de",
+      "text": "Schweiz Schweiz\n\n==== Radio ====\nDie öffentliche SRG SSR betreibt sechs Radioprogramme in deutscher Sprache (Radio SRF 1, Radio SRF 2 Kultur, Radio SRF 3, Radio SRF 4 News, Radio SRF Virus und Radio SRF Musikwelle). Des ",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/germanquad/ca11ab645780",
+      "erkannt": "de",
+      "text": "Szlachta Szlachta\n\n== Politische Bedeutung des Adelsstandes ==\nBereits im 15. Jahrhundert erreichte der Kleinadel eine größere politische Bedeutung. In mehreren Statuten, insbesondere im Statut von Nieszawa, wurde festge",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/germanquad/0857445da4df",
+      "erkannt": "de",
+      "text": "IPod IPod\n\n==== Erste Generation ====\nDas Gerät wurde in den USA im Februar 2004 und in allen anderen Ländern am 24. Juli 2004 eingeführt. Der iPod mini ist ein wesentlich kleinerer iPod, der jedoch nur eine 4-GB-Festpla",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/germanquad/b65ef5ac5e44",
+      "erkannt": "de",
+      "text": "Himachal_Pradesh Himachal_Pradesh\n\n=== Sprachen ===\nDie Hauptsprache Himachal Pradeshs ist das Hindi, die größte Sprache Indiens. Nach der Volkszählung 2001 ist es die Muttersprache von 89 Prozent der Bevölkerung des Bun",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/methodik/die-regel-gegen-wirkungslose",
+      "erkannt": "de",
+      "text": "Die Regel gegen wirkungslose Mechanismen existierte schon — sie ging beim Umzug verloren, nicht beim Denken Die Stiftshuetten-Rolle spaghetti-monster trug woertlich die Regel \"Agent ohne Trigger in 5+ Sessions -> Sunset-",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/nasa-llis/807",
+      "erkannt": "en",
+      "text": "Penetrant Testing of Aerospace Materials Penetrant Testing of Aerospace Materials Datum: 1999-02-01\n\nOrganisation: MSFC\n\nAbstract (Volltext):\n\n\nLesson:\nFailure to locate surface flaws in critical stressed areas of parts ",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/germanquad/f628ae1f97ed",
+      "erkannt": "de",
+      "text": "Antenne Antenne\n\n==== Polarisation ====\nAntennen strahlen polarisierte Wellen ab. Als Polarisationsebene wurde die Richtung des elektrischen Feldvektors gewählt. So schwingt bei vertikaler Polarisation der elektrische Fe",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/germanquad/ec782c0be95d",
+      "erkannt": "de",
+      "text": "Nanjing Nanjing\n\n=== Festkalender ===\nIn alter Zeit gab es in der Stadt neben den allgemeinen chinesischen Festen eine Reihe lokaler Veranstaltungen: So pflegte man etwa am 16. Januar gemeinsam die Stadtmauer zu besteige",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/germanquad/2eacdd9a92a7",
+      "erkannt": "de",
+      "text": "Schweiz Schweiz\n\n== Natur ==\nIn der Schweiz leben schätzungsweise 40'000 Tierarten, davon sind ca. 30'000 Insekten und nur ca. 83 Säugetierarten. Mindestens 40 Prozent der Tierarten sind gefährdet, besonders Amphibien un",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/nasa-llis/770",
+      "erkannt": "en",
+      "text": "RF Breakdown Characterization Preferred Practice for Design &amp; Test. Flight hardware may be damaged if operated at critical pressure or in a vacuum above the RF power levels at which the RF breakdown or multipaction p",
+      "beurteilung": "selbst gelesen, Sprache stimmt"
+    },
+    {
+      "pfad": "/nasa-llis",
+      "erkannt": "de",
+      "text": "NASA Lessons Learned Information System (Import) Wurzelknoten fuer importierte NASA-LLIS-Eintraege (llis.csv, NASADatanauts/llis_topicModel, MIT).",
+      "beurteilung": "Wurzelknoten, aber der TEXT ist deutsch ('Wurzelknoten fuer importierte NASA-LLIS-Eintraege') -- 'de' ist richtig. Der Pfad ist nicht die Sprache; haette ich nach Pfad geraten, waere genau das falsch geworden."
+    },
+    {
+      "pfad": "/nasa-llis/1355",
+      "erkannt": null,
+      "text": "ADEOS-II NGN L0 Data Gap Introduction Problem ADEOS-II NGN L0 Data Gap Introduction Problem Datum: 2003-07-16\n\nOrganisation: GSFC\n\nAbstract (Volltext):\n\n\nLesson:\nMaintain configuration control, maintain identical configu",
+      "beurteilung": "Kurzer englischer NASA-Eintrag, unter der Mindesttrefferzahl 2 -- bleibt NULL statt geraten. Gewolltes Ergebnis, aber ein Treffer weniger: 31 von 1638 nasa-llis-Eintraegen (1,9 %) enden so."
+    },
+    {
+      "pfad": "/nasa-llis/1354",
+      "erkannt": null,
+      "text": "ADEOS-II NGN L0 Data Gap Introduction Problem ADEOS-II NGN L0 Data Gap Introduction Problem Datum: 2003-07-16\n\nOrganisation: GSFC\n\nAbstract (Volltext):\n\n\nLesson:\nProvide a test/migration suite",
+      "beurteilung": "Kurzer englischer NASA-Eintrag, unter der Mindesttrefferzahl 2 -- bleibt NULL statt geraten. Gewolltes Ergebnis, aber ein Treffer weniger: 31 von 1638 nasa-llis-Eintraegen (1,9 %) enden so."
+    },
+    {
+      "pfad": "/nasa-llis/1305",
+      "erkannt": null,
+      "text": "Management Reserve Tracking Management Reserve Tracking Datum: 2002-08-09\n\nOrganisation: GSFC\n\nAbstract (Volltext):\n\n\nLesson:\nTrack management reserve accurately in the institutional financial management system.",
+      "beurteilung": "Kurzer englischer NASA-Eintrag, unter der Mindesttrefferzahl 2 -- bleibt NULL statt geraten. Gewolltes Ergebnis, aber ein Treffer weniger: 31 von 1638 nasa-llis-Eintraegen (1,9 %) enden so."
+    },
+    {
+      "pfad": "/nasa-llis/1260",
+      "erkannt": null,
+      "text": "Discipline Rigor in Routine Processes Discipline Rigor in Routine Processes Datum: 2002-07-09\n\nOrganisation: JSC\n\nAbstract (Volltext):\n\n\nLesson:\nSimple processes involving costly flight equipment still require sufficient",
+      "beurteilung": "Kurzer englischer NASA-Eintrag, unter der Mindesttrefferzahl 2 -- bleibt NULL statt geraten. Gewolltes Ergebnis, aber ein Treffer weniger: 31 von 1638 nasa-llis-Eintraegen (1,9 %) enden so."
+    },
+    {
+      "pfad": "/nasa-llis/1273",
+      "erkannt": null,
+      "text": "UTMC UT69R000 known problems UTMC UT69R000 known problems Datum: 2002-01-01\n\nOrganisation: GSFC\n\nAbstract (Volltext):\n\n\nLesson:\nPeople keep finding these problems.",
+      "beurteilung": "Kurzer englischer NASA-Eintrag, unter der Mindesttrefferzahl 2 -- bleibt NULL statt geraten. Gewolltes Ergebnis, aber ein Treffer weniger: 31 von 1638 nasa-llis-Eintraegen (1,9 %) enden so."
+    },
+    {
+      "pfad": "/germanquad/cad18001f9a6",
+      "erkannt": "en",
+      "text": "Tennessee Tennessee\n\n=== Größte Städte ===\nTimeAxis = orientation:horizontal format:yyyy\nImageSize = width:500 height:auto barincrement:25\nPlotArea = left:10 right:10 top:10 bottom:40\n  id:canvas         value:rgb(0.97,0",
+      "beurteilung": "ECHTER FEHLGRIFF. Der Eintrag ist deutsch, besteht aber ueberwiegend aus Wikipedia-Zeitleisten-Markup (from:/till:/text:/bar:) mit englischen Ortsnamen -- gezaehlt wird, was dasteht, und das ist englisch."
+    },
+    {
+      "pfad": "/germanquad/34c601d14361",
+      "erkannt": "en",
+      "text": "Alaska Alaska\n\n=== Größte Städte ===\nNeben der Hauptstadt Juneau sind Anchorage, die mit Abstand größte Stadt des Staates, und Fairbanks die wichtigsten Städte Alaskas.\nTimeAxis = orientation:horizontal format:yyyy\nImage",
+      "beurteilung": "Wie oben, gleiche Ursache (Alaska-Zeitleiste). Beide zusammen sind 2 von 2713 germanquad-Eintraegen = 0,07 %."
+    }
+  ],
+  "abgleich_mit_der_erwartung": {
+    "/nasa-llis": {
+      "gesamt": 1638,
+      "en": 1606,
+      "de": 1,
+      "null": 31,
+      "urteil": "erfuellt -- 'de' ist der Wurzelknoten mit deutschem Text, kein Fehlgriff; die 31 NULL sind zu kurze Eintraege"
+    },
+    "/germanquad": {
+      "gesamt": 2713,
+      "de": 2711,
+      "en": 2,
+      "null": 0,
+      "urteil": "erfuellt -- die 2 sind Zeitleisten-Markup, beide gelesen"
+    }
+  },
+  "gemessene_treffergenauigkeit": "Auf den beiden Korpora mit bekannter Sprache (4351 Eintraege): 4317 richtig, 2 falsch, 31 NULL, 1 vermeintlicher Ausreisser der in Wahrheit richtig ist (Wurzelknoten). Falschzuweisungsquote 0,05 %, Enthaltungsquote 0,71 %."
+}

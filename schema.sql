@@ -243,7 +243,35 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- Bauform wie gattung/freigabe oben (NOT NULL DEFAULT, SQLite fuellt
     -- jede Bestandszeile automatisch beim ALTER TABLE, Werte-Trigger bi+bu
     -- unten).
-    gedaechtnisart TEXT NOT NULL DEFAULT 'semantisch'
+    gedaechtnisart TEXT NOT NULL DEFAULT 'semantisch',
+    -- Die vier Achsen (Auftrag B1, docs/PLAN_GESAMTBAU_2026-08-21.md §2).
+    -- Bauform bewusst wie gattung/freigabe/gedaechtnisart darueber: einzeilig,
+    -- NOT NULL mit konstantem DEFAULT. Nur so zieht kern/schema_nachzug.py sie
+    -- generisch in eine GEWACHSENE Datenbank nach (ALTER TABLE ADD COLUMN
+    -- nimmt weder NOT NULL ohne DEFAULT noch ein gerechnetes DEFAULT(...) an).
+    -- Deshalb braucht B1 kein eigenes Migrationsskript.
+    --
+    -- mandant: wem gehoeren die Daten. Betreiberwort 2026-08-21: Vorgabe
+    -- 'lokal'. Kein geschlossener Wertebereich -- wie project_id ein freier
+    -- Bezeichner; eine Mandantentabelle gibt es (noch) nicht.
+    mandant TEXT NOT NULL DEFAULT 'lokal',
+    -- kreis: wer darf sie sehen (BDW-E22). LEER heisst "alle" und ist damit
+    -- die weiteste, nicht die engste Einstellung -- anders als freigabe, wo
+    -- 'intern' die Vorgabe ist. Der Unterschied ist Absicht: freigabe regelt
+    -- den Weg NACH AUSSEN, kreis nur die Aufteilung im Inneren. Waere '' hier
+    -- "niemand", waere der Bestand nach dem Nachzug schlagartig unsichtbar.
+    kreis TEXT NOT NULL DEFAULT '',
+    -- sprache: erkannt, nie geraten (BDW-P10). Bewusst NULL-faehig und OHNE
+    -- DEFAULT -- ein vorgegebenes 'de' liesse sich spaeter nicht mehr von
+    -- einem erkannten unterscheiden, und genau diese Doppeldeutigkeit hat die
+    -- Normschicht oben schon einmal teuer bezahlt. Befuellt aus
+    -- kern/spracherkennung.py, NULL bei Unklarheit ist ein Ergebnis.
+    sprache TEXT,
+    -- forderung_stand (Strang F): offen|erledigt|abgelehnt|ueberholt. Hier
+    -- steht in diesem Zug NUR die Spalte -- kein Trigger, keine Logik, kein
+    -- Wertebereich. Sie kommt mit B1 mit, weil schema.sql in diesem Lauf
+    -- genau einmal angefasst wird (Plan §1); die Bedeutung baut Strang F.
+    forderung_stand TEXT
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -745,7 +773,41 @@ CREATE TABLE IF NOT EXISTS lessons_learned (
     -- eine Version im Text, ueberwiegend falsch geraten aus IP-Adressen).
     -- Kein gilt_ab_version -- keine Begruendung gefunden, wofuer eine
     -- Lehre erst AB einer Version gelten sollte statt seit ihrer Erfassung.
-    gilt_bis_version TEXT
+    gilt_bis_version TEXT,
+    -- Dieselben drei Achsen wie an knowledge_nodes (Auftrag B1), gleiche
+    -- Begruendung, gleiche Bauform. Ohne sie waere die Aufteilung halb: eine
+    -- Lehre traegt genauso Herkunft und Sichtbarkeit wie ein Knoten -- die
+    -- freigabe-Spalte oben steht als Mahnmal genau dafuer, dass eine
+    -- Sichtbarkeitsachse, die lessons_learned auslaesst, im Koederlauf
+    -- auffliegt. forderung_stand fehlt hier bewusst: eine Forderung ist ein
+    -- Vorgang an einem Knoten, keine Lehre.
+    mandant TEXT NOT NULL DEFAULT 'lokal',
+    kreis TEXT NOT NULL DEFAULT '',
+    sprache TEXT
+);
+
+-- Geltung je Kreis (BDW-E23). Eigene Tabelle statt weiterer Spalten, weil
+-- die Beziehung zweiseitig ist: ein Eintrag kann in mehreren Kreisen
+-- unterschiedlich lange gelten, und eine Spalte kann nur einen Zeitraum
+-- tragen.
+--
+-- VORGABE: knowledge_nodes.gilt_ab/gilt_bis bleiben und sind ab jetzt die
+-- Vorgabe fuer alle, die HIER keinen eigenen Eintrag haben. Wer einen hat,
+-- fuer den gilt seiner -- und nur in SEINEM Kreis. Ein Eintrag fuer Kreis A
+-- aendert nichts an dem, was Kreis B sieht. Auswertung entsprechend:
+-- COALESCE(g.gilt_ab, n.gilt_ab) ueber einen LEFT JOIN auf (art, id, kreis).
+--
+-- Kein FOREIGN KEY auf knowledge_nodes/lessons_learned: die Tabelle traegt
+-- zwei Eintragsarten in einer Spalte, dafuer gibt es in SQLite keinen
+-- zusammengesetzten Fremdschluessel. Aufraeumen ist damit Sache dessen, der
+-- loescht -- benannt statt stillschweigend angenommen.
+CREATE TABLE IF NOT EXISTS geltung_je_kreis (
+    eintrag_art TEXT NOT NULL,               -- 'knoten' oder 'lehre'
+    eintrag_id TEXT NOT NULL,
+    kreis TEXT NOT NULL,
+    gilt_ab TEXT,
+    gilt_bis TEXT,                           -- NULL = unbefristet in diesem Kreis
+    PRIMARY KEY (eintrag_art, eintrag_id, kreis)
 );
 
 -- Schranke fuer gilt_bis/gilt_ab an lessons_learned, gleiche Bauform wie
@@ -1734,3 +1796,28 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 INSERT OR IGNORE INTO schema_migrations (version, angewandt_am, beschreibung)
 VALUES (1, strftime('%Y-%m-%dT%H:%M:%SZ','now'),
         'Erstanlage aus schema.sql -- Stand vollstaendig bekannt, keine Vorgeschichte');
+
+-- ---------------------------------------------------------------------
+-- Indizes auf nachgezogene Spalten stehen GANZ AM ENDE. Gemessen am
+-- 2026-08-21 (Auftrag B1): _ensure_core_schema spielt diese Datei per
+-- executescript ein, BEVOR kern/schema_nachzug.py die fehlenden Spalten
+-- ergaenzt. Auf einer gewachsenen Datenbank ohne mandant/kreis bricht ein
+-- `CREATE INDEX ... ON knowledge_nodes(mandant)` deshalb mit "no such
+-- column" ab -- und executescript fuehrt ab da NICHTS mehr aus. Stuenden
+-- diese beiden Zeilen wie zunaechst gebaut zwischen den uebrigen Indizes
+-- (bei idx_nodes_level), verloere ein gewachsener Bestand im ersten Lauf
+-- alle folgenden 600 Zeilen dieser Datei -- Indizes, Trigger, spaetere
+-- Tabellen -- und zwar lautlos, weil _ensure_core_schema den
+-- OperationalError faengt.
+--
+-- Am Ende kostet derselbe Abbruch nur diese beiden Zeilen. Die Spalten
+-- kommen unmittelbar danach per Nachzug, die Indizes beim naechsten
+-- ensure_schema. Es sind die ERSTEN Indizes auf nachgezogenen Spalten
+-- ueberhaupt (geprueft gegen 1611398b: keiner auf freigabe, gattung,
+-- gedaechtnisart, anlass) -- wer den naechsten anlegt, haengt ihn hier an.
+--
+-- ponytail: Reihenfolge im Aufrufer (Nachzug vor executescript) waere die
+-- eigentliche Behebung -- gehoert nach knowledge_mcp_server.py::ensure_schema
+-- und nicht in diesen Auftrag.
+CREATE INDEX IF NOT EXISTS idx_nodes_mandant ON knowledge_nodes(mandant);
+CREATE INDEX IF NOT EXISTS idx_nodes_kreis ON knowledge_nodes(kreis);
