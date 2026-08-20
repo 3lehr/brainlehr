@@ -1,0 +1,56 @@
+{
+  "messung": "Gegenprobe zu S4: Beurteilungsfenster gegen Auslieferungsfenster",
+  "beurteiltes_fenster": 3,
+  "auslieferung": {
+    "MAX_NODES": 10,
+    "MAX_LESSONS": 7
+  },
+  "zeile": "'Korpus zu mild'-Faelle, die ein Artefakt des Beurteilungsfensters sind: 6 von 7 (85.7%), gemessen ueber die 7 von S4 so eingestuften Faelle, Fenster = 3",
+  "artefakt": 6,
+  "nenner": 7,
+  "je_fall": [
+    {
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "target_kind": "node",
+      "rang": 8,
+      "artefakt_des_fensters": true
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "target_kind": "node",
+      "rang": 4,
+      "artefakt_des_fensters": true
+    },
+    {
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "target_kind": "node",
+      "rang": 5,
+      "artefakt_des_fensters": true
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "target_kind": "node",
+      "rang": 7,
+      "artefakt_des_fensters": true
+    },
+    {
+      "ziel": "L-0392e4",
+      "target_kind": "lesson",
+      "rang": 1,
+      "artefakt_des_fensters": false
+    },
+    {
+      "ziel": "L-a9ccd0",
+      "target_kind": "lesson",
+      "rang": 4,
+      "artefakt_des_fensters": true
+    },
+    {
+      "ziel": "L-e7bc5e",
+      "target_kind": "lesson",
+      "rang": 4,
+      "artefakt_des_fensters": true
+    }
+  ],
+  "folge": "Der Satz 'der Pruefkorpus urteilt zu mild' traegt in dieser Form nicht -- er beschreibt zu 6 von 7 Teilen das Fenster der Beurteilung. Die Gegenrichtung ('zu streng', 4 von 20) bleibt unberuehrt: ein zu kleines Fenster kann sie nicht erzeugen."
+}
