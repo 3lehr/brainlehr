@@ -1760,6 +1760,130 @@ def _kanarienvogel_melden() -> None:
         pass
 
 
+def _stufen_an() -> bool:
+    """S2 aus docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md, per Vorgabe AUS.
+
+    Die Reihenfolge ist bindend: S1 erhebt die Aufgriffsquote als NULLLINIE.
+    Wird die Ausgabe vorher umgestellt, laesst sich nachtraeglich nicht mehr
+    rekonstruieren, wie oft ein Einspieler vorher aufgegriffen wurde. Der
+    Schalter ist die Umsetzung dieser Reihenfolge, nicht Vorsicht --
+    `BRAINLEHR_ABRUF_STUFEN=an` schaltet ihn scharf."""
+    return os.environ.get("BRAINLEHR_ABRUF_STUFEN", "aus").strip().lower() == "an"
+
+
+# Schwelle der Stufung, AUSDRUECKLICH UNGEMESSEN. Sie ist NICHT
+# relevanzlage.STARK_AB (0,586): das ist eine Aussage ueber die Lage des
+# ganzen Blocks, nicht ueber den einzelnen Treffer, und gemessen am
+# 2026-08-20 lagen bei einer echten Anfrage ALLE 17 Treffer darunter -- die
+# Stufung haette alles herabgestuft und nichts unterschieden.
+# Die am selben Tag gefundene 0,545 stammt aus einer Trennung ueber 24 Faelle
+# mit einer Luecke von 0,0087 und ist nach Wilson mit einer Trefferquote von
+# 78 % vereinbar; sie als Betriebsschwelle zu setzen waere eine gemessene
+# Zahl an der falschen Stelle. Deshalb steht hier ein Platzhalter, der
+# zusammen mit dem Schalter AUS ist -- die Kalibrierung ist Aufgabe von S3/S4
+# aus docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md.
+STUFE_AB = 0.545
+
+
+def einstufen(nodes: list, lessons: list) -> tuple:
+    """Teilt Treffer in EINSCHLAEGIG und NUR FUNDSTELLEN.
+
+    Der Kosinuswert je Treffer liegt bereits an jedem Treffer als Feld
+    `bedeutungs_kosinus` -- gemessen 2026-08-20, nachdem ein Umbau begonnen
+    worden war, der ihn erst noch durchreichen sollte. Die Existenzprobe
+    haette das in Sekunden gezeigt (L-229bb2).
+
+    OHNE WERT bleibt ein Treffer STARK. Das ist Absicht: ein Treffer aus dem
+    Stichwortkanal hat keinen Kosinuswert, und ihn deshalb herabzustufen waere
+    eine Aussage ueber ihn, die niemand gemessen hat (MUST-LAGE-001)."""
+    if not _stufen_an():
+        return list(nodes), list(lessons), [], []
+
+    def stark(t: dict) -> bool:
+        wert = t.get("bedeutungs_kosinus")
+        return wert is None or wert >= STUFE_AB
+
+    return ([n for n in nodes if stark(n)], [l for l in lessons if stark(l)],
+            [n for n in nodes if not stark(n)], [l for l in lessons if not stark(l)])
+
+
+def block_bauen(nodes: list, lessons: list, bedeutungswerte: list,
+                erstverwendung_zeilen: list,
+                schwache_nodes: list | None = None,
+                schwache_lessons: list | None = None) -> list:
+    """Baut den <knowledge-recall>-Block. Bis 2026-08-20 lag das als Schleife
+    mitten in main() und war von aussen nicht pruefbar -- das Herausloesen ist
+    der erste Teil von S2.
+
+    ZWEI STUFEN (Konsil 2026-08-20, Forensik und Alarmmanagement unabhaengig
+    voneinander): Nicht die Fehlerrate senken, sondern den PREIS des Fehlers.
+    Ein schwacher Treffer bleibt sichtbar, kostet aber eine Zeile statt eines
+    Absatzes. Kein Treffer verschwindet -- das unterscheidet die Abstufung von
+    einem Filter, und tests/test_abrufblock_stufen.py haelt genau das fest."""
+    schwache_nodes = list(schwache_nodes or [])
+    schwache_lessons = list(schwache_lessons or [])
+    # Bei ausgeschalteter Stufung wandern schwache Treffer VOLL in den Block --
+    # so sieht der Betrieb aus wie vor der Aenderung, kein Treffer geht verloren.
+    if not _stufen_an():
+        nodes = list(nodes) + schwache_nodes
+        lessons = list(lessons) + schwache_lessons
+        schwache_nodes, schwache_lessons = [], []
+    gestuft = bool(schwache_nodes or schwache_lessons)
+
+    lines = ["<knowledge-recall>",
+             "Aus dem Speicher, ungeprüft. Nicht als Fundliste lesen, sondern "
+             "als Frage: Trifft das hier zu? Wenn NEIN — woran liegt es? "
+             "(Ein Eintrag, der nicht passt, ist eine Antwort; ein übergangener "
+             "ist keine.)"]
+    # Lage EINMAL je Block, nicht je Zeile (Auftrag 2026-08-18) -- sie ist
+    # eine Aussage ueber die ANFRAGE (relevanzlage.py-Moduldoc), nicht ueber
+    # den einzelnen Treffer. Kein Treffer verschwindet dadurch: beurteile()
+    # liefert bei starker Lage einen leeren Satz (Kennzeichnen, nicht
+    # Filtern), dann bleibt die Zeile schlicht weg.
+    if bedeutungswerte:
+        lage = relevanzlage.beurteile(bedeutungswerte)
+        if lage["satz"]:
+            lines.append(lage["satz"])
+    if gestuft:
+        lines.append("")
+        lines.append("EINSCHLÄGIG")
+    for n in nodes:
+        tag = " (Erkundung -- selten gezogen)" if n.get("explore") else ""
+        fremd = f" [anderes Projekt: {n['foreign_project']}]" if n.get("foreign_project") else ""
+        geltung = _geltung_tag(n.get("norm_rang"), n.get("gilt_bis"))
+        abgeloest = _abloesung_tag(n)
+        lines.append(f"- [{n['path']}]{alter(n.get('updated_at'))}{tag}{fremd}{geltung}{abgeloest} "
+                     f"{entschaerfe_fuer_ausgabe(n['title'])}: {entschaerfe_fuer_ausgabe(n['summary'])}")
+    for l in lessons:
+        tag = "⚠ LESSON" if l["severity"] in ("critical", "high") else "Lesson"
+        prev = f" → {entschaerfe_fuer_ausgabe(l['prevention'])}" if l.get("prevention") else ""
+        fremd = f" [andere Projekte: {l['foreign_projects']}]" if l.get("foreign_projects") else ""
+        # Herkunft (Betreiber-Auftrag 2026-08-07): Kennung immer, Sitzung/
+        # Datum/Projekt nur wenn im Datensatz vorhanden -- kein Platzhalter
+        # fuer Fehlendes. Projekt nur, wenn 'fremd' es nicht schon nennt.
+        herkunft = f", {l['id']}"
+        if l.get("session"):
+            herkunft += f", Sitzung {l['session']}"
+        if l.get("first_seen"):
+            herkunft += f", erfasst {l['first_seen'][:10]}"
+        if not l.get("foreign_projects"):
+            projs = projekte_aus_projects_json(l.get("projects"))
+            if projs:
+                herkunft += f", Projekt {'/'.join(sorted(projs))}"
+        lines.append(f"- {tag} ({l['type']}, {l['occurrences']}×{herkunft}){alter(l.get('last_seen'))}{fremd}: "
+                     f"{entschaerfe_fuer_ausgabe(l['description'])}{prev}")
+    if gestuft:
+        lines.append("")
+        lines.append("NUR FUNDSTELLEN — ungeprüft, ob sie hierher gehören")
+        for n in schwache_nodes:
+            lines.append(f"- [{n['path']}] {entschaerfe_fuer_ausgabe(n['title'])}")
+        for l in schwache_lessons:
+            lines.append(f"- {l['id']} {entschaerfe_fuer_ausgabe(l['description'])[:80]}")
+    lines.extend(erstverwendung_zeilen)
+    lines.append("</knowledge-recall>")
+    return lines
+
+
 def main() -> None:
     t0 = time.perf_counter()  # Notbremse-Basis (Schattenlauf), s.u.
     try:
@@ -1878,47 +2002,9 @@ def main() -> None:
     # Was das NICHT ist: eine Sperre. Niemand wird aufgehalten, es wird nichts
     # quittiert. Wirkt es nicht, ist das an derselben Stelle messbar wie bisher
     # (recall_log) und die Aenderung ist eine Zeile zurueckzunehmen.
-    lines = ["<knowledge-recall>",
-             "Aus dem Speicher, ungeprüft. Nicht als Fundliste lesen, sondern "
-             "als Frage: Trifft das hier zu? Wenn NEIN — woran liegt es? "
-             "(Ein Eintrag, der nicht passt, ist eine Antwort; ein übergangener "
-             "ist keine.)"]
-    # Lage EINMAL je Block, nicht je Zeile (Auftrag 2026-08-18) -- sie ist
-    # eine Aussage ueber die ANFRAGE (relevanzlage.py-Moduldoc), nicht ueber
-    # den einzelnen Treffer. Kein Treffer verschwindet dadurch: beurteile()
-    # liefert bei starker Lage einen leeren Satz (Kennzeichnen, nicht
-    # Filtern), dann bleibt die Zeile schlicht weg.
-    if bedeutungswerte:
-        lage = relevanzlage.beurteile(bedeutungswerte)
-        if lage["satz"]:
-            lines.append(lage["satz"])
-    for n in nodes:
-        tag = " (Erkundung -- selten gezogen)" if n.get("explore") else ""
-        fremd = f" [anderes Projekt: {n['foreign_project']}]" if n.get("foreign_project") else ""
-        geltung = _geltung_tag(n.get("norm_rang"), n.get("gilt_bis"))
-        abgeloest = _abloesung_tag(n)
-        lines.append(f"- [{n['path']}]{alter(n.get('updated_at'))}{tag}{fremd}{geltung}{abgeloest} "
-                     f"{entschaerfe_fuer_ausgabe(n['title'])}: {entschaerfe_fuer_ausgabe(n['summary'])}")
-    for l in lessons:
-        tag = "⚠ LESSON" if l["severity"] in ("critical", "high") else "Lesson"
-        prev = f" → {entschaerfe_fuer_ausgabe(l['prevention'])}" if l.get("prevention") else ""
-        fremd = f" [andere Projekte: {l['foreign_projects']}]" if l.get("foreign_projects") else ""
-        # Herkunft (Betreiber-Auftrag 2026-08-07): Kennung immer, Sitzung/
-        # Datum/Projekt nur wenn im Datensatz vorhanden -- kein Platzhalter
-        # fuer Fehlendes. Projekt nur, wenn 'fremd' es nicht schon nennt.
-        herkunft = f", {l['id']}"
-        if l.get("session"):
-            herkunft += f", Sitzung {l['session']}"
-        if l.get("first_seen"):
-            herkunft += f", erfasst {l['first_seen'][:10]}"
-        if not l.get("foreign_projects"):
-            projs = projekte_aus_projects_json(l.get("projects"))
-            if projs:
-                herkunft += f", Projekt {'/'.join(sorted(projs))}"
-        lines.append(f"- {tag} ({l['type']}, {l['occurrences']}×{herkunft}){alter(l.get('last_seen'))}{fremd}: "
-                     f"{entschaerfe_fuer_ausgabe(l['description'])}{prev}")
-    lines.extend(erstverwendung_zeilen)
-    lines.append("</knowledge-recall>")
+    stark_n, stark_l, schwach_n, schwach_l = einstufen(nodes, lessons)
+    lines = block_bauen(stark_n, stark_l, bedeutungswerte, erstverwendung_zeilen,
+                        schwache_nodes=schwach_n, schwache_lessons=schwach_l)
     # Bereinigung, Punkt 2 der Stiftshuetten-Uebernahme: was das Haus
     # verlaesst, wird angesehen -- vorerst nur angesehen (Entscheidung des
     # Betreibers 2026-08-08: melden, nicht entfernen). Geprueft wird der ROHE

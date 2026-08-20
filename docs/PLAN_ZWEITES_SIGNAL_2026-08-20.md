@@ -1,0 +1,175 @@
+# Plan: das zweite Signal — und warum zuerst etwas anderes gebaut wird
+
+**Angelegt:** 2026-08-20T15:20:00+0200
+**Anlass:** Betreiber, wörtlich: *„lass uns das so umsetzte wie du empfielst
+update die test und den pplan dazu!"* — Freigabe der Reihenfolge, die das
+Konsil vom selben Tag empfiehlt.
+**Vorlauf:** `runs/konsil_zweites_signal_synthese.md` (sechs Opus-Rollen),
+`runs/qpp_stand_2026-08-20.md`, Knoten `28ada6ca` und `a363ae52`.
+
+---
+
+## Der gemessene Ist-Stand
+
+Alle Zahlen vom 2026-08-20, Prüfkorpus mit 45 Fällen, drei Betriebsarten.
+
+| | richtig geliefert | falsch geliefert | richtig geschwiegen | falsch geschwiegen |
+|---|---|---|---|---|
+| B — spricht immer | 15 | 30 | 0 | 0 |
+| **C — heutiger Auslieferungszustand** | **1** | **0** | **10** | **34** |
+| Schwellenschicht (gemessen, nicht gebaut) | 15 | 20 | 10 | 0 |
+
+Dazu die Zahlen, die die Lage erklären:
+
+- **Die beiden Suchkanäle sind sich in 1 von 45 Fällen einig**
+  (`runs/kanaleinigkeit_2026-08-20.json`, beide Betriebsarten). Die
+  Ensemble-Pflicht verlangt genau diese Übereinstimmung. Sie ist damit kein
+  Qualitätsfilter, sondern ein Aus-Schalter.
+- Von 20 Fehlgriffen bei lösbaren Fragen sind **3 brauchbar** (der Korpus
+  urteilt zu streng), **12 teilweise** (Thema getroffen, Frage nicht
+  beantwortet), **5 daneben** (`runs/beurteilung_bf_cf_2026-08-20.json`).
+- Der beste Kosinuswert trennt „liegt etwas im Bestand" fehlerfrei und
+  „ist es richtig" gar nicht — Median der Fehlgriffe 0,6030 gegen 0,5970 bei
+  den echten Treffern.
+- `NOISE_FLOOR_MAD_MULT = 2.0` ist vermessen und im Auslieferungszustand
+  **wirkungslos** über den ganzen zulässigen Bereich
+  (`runs/rauschteppich_sweep_2026-08-20.json`).
+
+## Die Entscheidung, und sie ist ein Verzicht
+
+**Es wird kein zweites Bewertungssignal gebaut.** Keine der sechs Rollen
+empfiehlt es als nächsten Schritt, und vier von sechs verschieben die Frage
+mit derselben Begründung: *es ist nicht gemessen, ob der Abruf überhaupt
+wirkt.* In keiner Zahl dieses Hauses steht, ob je ein Einspieler eine Arbeit
+verbessert hat.
+
+Solange das offen ist, sind die 34 falschen Stillen **keine belegten
+Ausfälle**, und ein Signal, das sie beheben soll, behebt möglicherweise
+nichts.
+
+## Die Schritte, in bindender Reihenfolge
+
+### S1 — Aufgriffsquote messen (Voraussetzung für alles Weitere)
+
+**Warum zuerst, und die Reihenfolge ist nicht verhandelbar:** Wird zuerst
+die Ausgabe umgestellt, gibt es keine Nulllinie mehr. Nachträglich lässt
+sich nicht rekonstruieren, wie oft ein Einspieler vorher aufgegriffen wurde.
+Der Schnappschuss muss stehen, bevor der erste Umbau ihn entwertet.
+
+Gegenstand: das Zugriffsprotokoll (rund 21 000 Einträge) und
+`recall_log.jsonl`. Gefragt ist, wie oft ein eingespielter Eintrag später
+nachweislich verwendet wurde — zitiert in einem Auftrag, einer
+Commit-Nachricht oder einem geschriebenen Eintrag.
+
+**Vorsicht, bereits einmal passiert:** Bei einer früheren Messung dieser Art
+hatten sechs Scheintreffer die Kausalität verkehrt herum (der Commit erzeugte
+den Eintrag, und die „spätere Einspielung" war das eigene Echo). Diese Fälle
+müssen vor der Zählung ausgeschlossen und benannt werden.
+
+**Erfolgsmaß:** eine Zahl mit Nenner und Bezugsrahmen, getrennt nach starken
+und schwachen Treffern, plus eine Stichprobe von Hand.
+
+### S2 — Abgestufte Ausgabe statt Ja/Nein
+
+Zwei Rollen kommen unabhängig darauf (Forensik: zwei Ausgabestufen;
+Alarmmanagement: IEC 60601-1-8, niedrigpriore Alarme sind rein visuell).
+Beide rechnen dasselbe vor: 12 der 20 Fehlgriffe wandern von „Ausfall" zu
+„korrekt berichteter schwacher Befund" — **ohne eine Zeile Suchlogik**.
+
+Der Grundsatz dahinter, und er ist der eigentliche Ertrag des Konsils:
+**nicht die Fehlerrate senken, sondern den Preis des Fehlers.** Die
+Fehlerrate ist heute nachweislich nicht senkbar; der Preis schon.
+
+Layout (dem Betreiber am 2026-08-20 vorgelegt):
+
+```
+<knowledge-recall>
+Aus dem Speicher, ungeprüft. Trifft das hier zu? …
+
+EINSCHLÄGIG
+- [/pfad] [3 Tage alt] Titel: Zusammenfassung …
+- ⚠ LESSON (…): Beschreibung → Prävention …
+
+NUR FUNDSTELLEN — ungeprüft, ob sie hierher gehören
+- [/pfad] Titel
+- L-xxxxxx Titel
+</knowledge-recall>
+```
+
+Vorlesereihenfolge: stark vor schwach. Kein Treffer verschwindet.
+
+Die Trennmarke existiert bereits: `STARK_AB = 0.586` in
+`kern/relevanzlage.py`. Sie wird **nicht neu kalibriert** — die heute
+gefundene 0,545 steht bei n=24 mit einer Lücke von 0,0087 und ist nach
+Wilson mit einer Trefferquote von 78 % vereinbar. Eine auf denselben Daten
+nachjustierte Schwelle misst nur noch sich selbst.
+
+**Die Ensemble-Pflicht entfällt als Auslieferungssperre.** Sie prüft ein
+Kriterium, das in 44 von 45 Fällen nicht erfüllt ist.
+
+### S3 — Den offenen Messfehler klären
+
+Der Radaringenieur hat im Code nachgesehen: Der Befund „Abstand zum Median
+trennt nicht" wurde gegen den Median der **Kandidatenliste** gerechnet
+(`statistics.median(werte)` in `messungen/kreuztabelle_bc.py`), nicht gegen
+den Hintergrund aller 5217 Einträge. Nur der zweite wäre eine
+Rauschschätzung. Damit ist die naheliegendste Familie von Verfahren
+(CFAR-Normalisierung) **nie geprüft worden**.
+
+Kostet einen Lauf. Fällt der Befund anders aus, ändert das S4.
+
+### S4 — Die Handbeurteilung blind wiederholen
+
+Zwei Rollen unabhängig (Forensik nennt Dror/Linear Sequential Unmasking,
+Radar rechnet 15 % Labelfehler gegen einen strittigen τ von 0,10): Die
+Beurteilung der 20 Fehlgriffe lief, während die Kosinuswerte im selben
+Auftrag standen. Sie war zudem einseitig — nur die Fehlgriffe wurden
+nachgesehen, die 15 Treffer nicht.
+
+Bevor diese Beurteilung als Referenz für irgendetwas dient, wird sie blind
+und beidseitig wiederholt.
+
+## Alternativen, samt Ablehnungsgrund
+
+| Weg | abgelehnt, weil |
+|---|---|
+| Zweites Signal sofort bauen (Kohärenz der Nachbarschaft) | Vier Rollen verschieben es; ohne S1 ist unbekannt, ob es ein Problem behebt. Bleibt der aussichtsreichste Kandidat, wenn S1 Bedarf zeigt. |
+| Schwelle 0,545 in den Auslieferungsweg | n=24, Lücke 0,0087, nach Wilson mit 78 % vereinbar. Dieselbe Fehlerklasse ist im Kopf von `relevanzlage.py` bereits dokumentiert. |
+| Ensemble-Pflicht nur lockern statt ersetzen | Behebt den Aus-Schalter nicht — das Kriterium bleibt eines, das praktisch nie erfüllt ist. |
+| Kostenverhältnis festlegen | Vier Rollen zeigen, dass es nicht festgelegt werden muss (Wertkurve, Entscheidungskurve, Neyman-Pearson). *Welches* Verhältnis gilt, bleibt Betreibersache — aber als ausgelegter Parameter, nicht als Zahl im Code. |
+| Betriebsart B zurückholen | Wird von der Schwellenschicht strikt dominiert: gleiche Treffer, 10 Fehllieferungen weniger. |
+
+## Was bewusst nicht getan wird, samt Preis
+
+- **Keine Neukalibrierung der Ähnlichkeitsschwelle `0,65`.** Sie stammt aus
+  einer Erhebung über zwei Millionen Paare; wer sie anfasst, entwertet die
+  Messung, die sie begründet.
+- **Kein Modellaufruf pro Anfrage.** Preis: die Verfahren mit den besten
+  berichteten Korrelationen (bis 0,89) bleiben unerreichbar. Der Abruf hängt
+  an jedem Prompt, ein Aufschlag von Sekunden ist nicht tragbar.
+- **Keine Erweiterung des Prüfkorpus in diesem Schritt.** Preis: alle Zahlen
+  bleiben bei ±14 bis ±16 Prozentpunkten, 15/35 und 20/35 sind nicht
+  unterscheidbar. Der zweite Korpus mit über 12 000 Fällen liegt bereit und
+  ist der nächste Kandidat — aber er misst eine leichtere Aufgabe
+  (Wortüberlappung 40,0 % gegen 8,7 %) und ersetzt den harten Korpus nicht.
+
+## Woran sich Erfolg messen lässt
+
+1. **S1:** Es existiert erstmals eine Zahl zur Frage, ob der Abruf wirkt —
+   mit Nenner, Bezugsrahmen und Stichprobe. Auch ein Nullbefund ist ein
+   Ergebnis und wird als solcher festgehalten.
+2. **S2:** Falsches Schweigen fällt von 34 auf 0, ohne dass die falschen
+   Lieferungen über 20 steigen. Nachgewiesen am selben Prüfkorpus, im
+   Auslieferungszustand gemessen — nicht in einer Betriebsart, die niemand
+   ausliefert.
+3. **S2, zweiter Beleg:** Die mittlere Zeichenmenge je eingespieltem Block
+   steigt nicht, obwohl mehr Treffer erscheinen. Sonst wurde der Preis des
+   Fehlers nicht gesenkt, sondern nur verschoben.
+4. **S3:** Die CFAR-Frage ist beantwortet — trennt der Abstand zum
+   Hintergrundmedian, oder nicht? Beides ist ein Ergebnis.
+5. **S4:** Die blinde Wiederholung bestätigt die vier Klassen, oder sie tut
+   es nicht. Weicht sie ab, ist jede Folgerung dieses Tages neu zu prüfen.
+
+## Nachtrag nach der Umsetzung
+
+*(wird fortgeschrieben — was anders kam als geplant, und warum)*
