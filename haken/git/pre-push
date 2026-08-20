@@ -111,6 +111,19 @@ if [[ -f "$unverdrahtet_swift" ]]; then
   fi
 fi
 
+# Faehigkeitskarte: docs/WAS_BRAINLEHR_KANN.md wird aus dem Quellcode
+# erzeugt. Ohne diese Pruefung ist sie nach zwei Sitzungen falsch -- genau die
+# handgepflegte Liste, gegen die sie gebaut ist. Kein Abbruch, nur Sammlung:
+# eine veraltete Doku darf einen Push nicht anhalten.
+faehigkeitskarte="$repo_root/tool/faehigkeitskarte.py"
+if [[ -f "$faehigkeitskarte" ]]; then
+  if ! fk_output="$(python3 "$faehigkeitskarte" --pruefen 2>&1)"; then
+    output="$output
+$fk_output"
+    status=1
+  fi
+fi
+
 ablaufpflicht="$repo_root/melder/ablaufpflicht.py"
 if [[ -f "$ablaufpflicht" ]]; then
   if ! ap_output="$(python3 "$ablaufpflicht" 2>&1)"; then

@@ -119,11 +119,68 @@ def _selftest() -> int:
     # e) Erkennung: Praevention UND Beschreibung zaehlen.
     assert hat_mechanismus({"description": "haken/x.py fehlte", "prevention": ""})
     assert not hat_mechanismus({"description": "nichts", "prevention": "achtsam sein"})
+    # UNVERDRAHTETE MELDER, zweite Haelfte derselben Frage. Der pre-push
+    # zaehlt als Ausloeser -- ohne ihn meldete die Liste Waechter als tot,
+    # die bei jedem Push laufen (25 statt 32 nach dieser Korrektur).
+    liste = unverdrahtete_melder()
+    namen = {n for n, _ in liste}
+    assert "melder/ohne_mechanismus.py" in namen, "dieser Melder haengt selbst an nichts"
+    assert "melder/rueckfrageschleife.py" not in namen, "verdrahtet ueber settings.json"
+    assert "melder/ablaufpflicht.py" not in namen, "verdrahtet ueber pre-push"
+
     print("ohne_mechanismus: Selbsttest gruen (5 Faelle: Reihenfolge nach "
           "Vorkommen, Einzelfall raus, Mechanismus deckt, Schwelle wirkt, "
-          "Erkennung liest beide Felder)")
+          "Erkennung liest beide Felder, unverdrahtete Melder samt pre-push)")
     return 0
 
 
+def unverdrahtete_melder() -> list[tuple[str, str]]:
+    """(Modul, Zweck) der Melder, die an KEINEM Ereignis haengen.
+
+    Zweite Haelfte derselben Frage: Eine Lehre ohne Mechanismus und ein
+    Mechanismus ohne Ausloeser sind derselbe Fehler in zwei Richtungen --
+    einmal fehlt das Werkzeug, einmal der Anlass. Gemessen 2026-08-20 von
+    tool/faehigkeitskarte.py: 32 von 48 Meldern haengen an nichts.
+
+    Gelesen wird die ECHTE Einstellungsdatei, nicht eine Liste hier."""
+    import json as _json
+    einst = Path.home() / ".claude" / "settings.json"
+    try:
+        d = _json.loads(einst.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    verdrahtet = set()
+    for gruppen in (d.get("hooks") or {}).values():
+        for g in gruppen:
+            for h in g.get("hooks", []):
+                for teil in re.findall(r"([\w_]+)\.py", h.get("command", "")):
+                    verdrahtet.add(teil)
+    # Auch der pre-push zaehlt als Ausloeser -- er ist verdrahtet, nur nicht
+    # in settings.json. Ohne diese Zeile meldete der Melder Waechter als tot,
+    # die bei jedem Push laufen.
+    try:
+        push = (_w / "haken" / "git" / "pre-push").read_text(encoding="utf-8")
+        verdrahtet |= set(re.findall(r"([\w_]+)\.py", push))
+    except OSError:
+        pass
+    out = []
+    for p in sorted((_w / "melder").glob("*.py")):
+        if p.stem.startswith("_") or p.stem in verdrahtet:
+            continue
+        text = p.read_text(encoding="utf-8", errors="replace")
+        m = re.search(r'\"\"\"(.*?)(?:\n|\"\"\")', text, re.S)
+        out.append((f"melder/{p.name}", (m.group(1).strip() if m else "")[:80]))
+    return out
+
+
 if __name__ == "__main__":
-    sys.exit(_selftest() if "--selftest" in sys.argv else bericht())
+    if "--selftest" in sys.argv:
+        sys.exit(_selftest())
+    if "--melder" in sys.argv:
+        liste = unverdrahtete_melder()
+        alle = len(list((_w / "melder").glob("*.py")))
+        print(f"Melder ohne Ausloeser: {len(liste)} von {alle}")
+        for name, zweck in liste:
+            print(f"  {name:38s} {zweck}")
+        sys.exit(0)
+    sys.exit(bericht())
