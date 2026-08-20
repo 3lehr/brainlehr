@@ -349,6 +349,49 @@ E1 mit Schätzung je Ast und Widerrufsquote — beide brauchen keine fremde
 Quelle. Die Gremienbeobachtung (E2/E3) folgt danach, weil sie mit dem Auslesen
 einer Menschenseite die brüchigste Bauform des ganzen Plans hat.
 
+**E4 — Quellen prüfen: bei der Aufnahme UND periodisch.** Betreiberentscheidung
+vom 2026-08-20, gegen meinen ersten Vorschlag (nur periodisch). Sein Argument
+ist besser, und der Unterschied ist nicht das Zeitfenster, sondern der
+Schaden: Eine erfundene Quelle, die erst nach vier Wochen auffällt, war vier
+Wochen lang eine BELEGTE Aussage — jemand hat darauf gebaut.
+
+| | verhindert | Kosten |
+|---|---|---|
+| bei Aufnahme | dass eine erfundene Quelle überhaupt hereinkommt | ein Abruf, einmal |
+| periodisch | dass eine echte Quelle unbemerkt veraltet | ein Lauf je Intervall |
+
+Die periodische Prüfung genügt einem günstigen Subagenten — sie ist keine
+Urteilsaufgabe: Ist die Fundstelle erreichbar, und sagt sie noch dasselbe?
+
+**MELDEN, NICHT LÖSCHEN.** Ein 404 heißt nicht, dass die Quelle erfunden war;
+Behörden gestalten Seiten um. Wer automatisch löscht, vernichtet echtes Wissen
+wegen eines Umzugs. Und die Prüfung muss drei Fälle unterscheiden — *nicht
+erreichbar* (vielleicht Netz), *nicht gefunden* (umgezogen), *inhaltlich
+anders* (überholt) —, sonst ist sie nach einer Woche Rauschen.
+
+**E5 — Das Prüfintervall folgt der Verfallsrate.** Damit schließt sich der
+Kreis: E1 liefert das Intervall für E4, und E4 misst die Rate für E1.
+Steuerrecht wöchentlich, Zahlentheorie jährlich, ohne gepflegte Tabelle.
+
+**DIE FALLE, die dabei entsteht, und sie ist der Grund für die drei
+Gegenmittel unten:**
+
+    selten geprüft → selten Funde → Rate sinkt → noch seltener geprüft
+
+Ein Gebiet, einmal als stabil eingestuft, prüft sich selbst in die
+Unsichtbarkeit — und niemand merkt es, weil das AUSBLEIBEN von Funden wie
+Bestätigung aussieht. Dieselbe Bauform, vor der L-f61f86 warnt: Ein Signal,
+das nur in eine Richtung ausschlagen kann, ist keine Messung.
+
+Mindestens eines davon gehört eingebaut:
+1. **Untergrenze** — auch „stabil" wird einmal im Jahr angefasst.
+2. **Stichprobe** quer über alle Gebiete, unabhängig von ihrer Rate. Sie ist
+   die Positivkontrolle: Findet sie in einem stabilen Gebiet etwas, war die
+   Einstufung falsch.
+3. **Asymmetrie** (Vorbild holographic, `store.py:406`): Ein Fund verkürzt das
+   Intervall stärker, als ein Nichtfund es verlängert. Ein Irrtum Richtung „zu
+   oft" kostet Rechenzeit, einer Richtung „zu selten" kostet Richtigkeit.
+
 ## Verworfene Wege
 
 * **Mandanten-Achse erst beim ersten Piloten** — der vom Betreiber geforderte
