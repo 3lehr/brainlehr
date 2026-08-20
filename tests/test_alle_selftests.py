@@ -209,6 +209,7 @@ MODULE = [
     "migrationen/migrate_sensible_knoten.py",  # ADR-031, 2026-08-19
     "kern/schluesselablage.py",  # ADR-031 Schritt 2, 2026-08-19
     "melder/vermutungswaechter.py",  # Betreiberidee 2026-08-20
+    "haken/eilmeldung_frisch.py",  # Zustellung in laufende Sitzungen, 2026-08-20
     "kern/aufbewahrung.py",
 ]
 
@@ -274,7 +275,7 @@ XFAIL = {
 }
 
 assert set(XFAIL) <= set(MODULE)
-assert len(MODULE) == 120, len(MODULE)  # + haken/suchpfad_abruf.py und 3 nachgetragene (2026-08-19)  # + kern/kundenschluessel.py (2026-08-18, BDW-E09/E07)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie) + kern/satz.py (2026-08-15T06:20:00+0200, ebenfalls von diesem Test gefunden -- sein Selbsttest war seit dem Anlegen rot) + melder/spaltenabgleich.py (Linie J3, 2026-08-15) + melder/plan_bestandsabgleich.py (Soll/Wirklichkeit-Abgleich fuer Planzeilen, 2026-08-15) + kern/driftwaechter.py (F6, Drift-Waechter Darstellung/Blatt, schnelle Darstellung im selben Modul, 2026-08-15) + kern/designtokens_latex.py (LaTeX-Erzeuger fuer Gestaltungsvorrat, ADR-015, 2026-08-15) + melder/wirkkette.py (Linie J2, Haken- und Prozessabgleich, 2026-08-15) + melder/agentendauer.py (Agentendauer-Melder, 2026-08-15, nebenlaeufig eingetragen) + melder/abrufwirkung.py (dauerhafter Abrufwirkungs-Verlauf, 2026-08-15) -- Zahl bei Eintragung nebenlaeufig veraltet vorgefunden (97 statt der tatsaechlichen Listenlaenge), auf den echten Bestand korrigiert statt weitergezaehlt
+assert len(MODULE) == 121, len(MODULE)  # + haken/suchpfad_abruf.py und 3 nachgetragene (2026-08-19)  # + kern/kundenschluessel.py (2026-08-18, BDW-E09/E07)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie) + kern/satz.py (2026-08-15T06:20:00+0200, ebenfalls von diesem Test gefunden -- sein Selbsttest war seit dem Anlegen rot) + melder/spaltenabgleich.py (Linie J3, 2026-08-15) + melder/plan_bestandsabgleich.py (Soll/Wirklichkeit-Abgleich fuer Planzeilen, 2026-08-15) + kern/driftwaechter.py (F6, Drift-Waechter Darstellung/Blatt, schnelle Darstellung im selben Modul, 2026-08-15) + kern/designtokens_latex.py (LaTeX-Erzeuger fuer Gestaltungsvorrat, ADR-015, 2026-08-15) + melder/wirkkette.py (Linie J2, Haken- und Prozessabgleich, 2026-08-15) + melder/agentendauer.py (Agentendauer-Melder, 2026-08-15, nebenlaeufig eingetragen) + melder/abrufwirkung.py (dauerhafter Abrufwirkungs-Verlauf, 2026-08-15) -- Zahl bei Eintragung nebenlaeufig veraltet vorgefunden (97 statt der tatsaechlichen Listenlaenge), auf den echten Bestand korrigiert statt weitergezaehlt
 
 # Nur diese 3 legen -wal/-shm NEBEN der echten Datenbank an, wenn sie
 # BRAINLEHR_DB unbesetzt lassen -- gemessen 2026-08-12 per Datei-Snapshot
