@@ -315,6 +315,12 @@
    "waise": false
   },
   {
+   "id": "port_47660",
+   "text": "Port 47660",
+   "form": "port",
+   "waise": true
+  },
+  {
    "id": "port_49168",
    "text": "Port 49168",
    "form": "port",
@@ -2353,6 +2359,12 @@
   {
    "von": "wpdrop",
    "nach": "port_40000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "port_47660",
    "text": "lauscht",
    "art": "gerichtet"
   },

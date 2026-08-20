@@ -6,12 +6,12 @@
 graph LR
   germanquad["germanquad<br/>2713"]
   nasa_llis["nasa-llis<br/>1638"]
-  brainlehr["brainlehr<br/>304"]
-  methodik["methodik<br/>162"]
+  brainlehr["brainlehr<br/>308"]
+  methodik["methodik<br/>166"]
   apps["apps<br/>92"]
   ops["ops<br/>91"]
   shared["shared<br/>55"]
-  openlehr["openlehr<br/>41"]
+  openlehr["openlehr<br/>42"]
   plaene["plaene<br/>17"]
   arch["arch<br/>16"]
   simulation_akademie_messaufbau_kein["simulation-akademie-messaufbau-kein<br/>15"]
@@ -31,12 +31,12 @@ graph LR
   domaenenimporte["domaenenimporte<br/>1"]
   bebetter["bebetter<br/>1"]
   aka["aka<br/>1"]
-  brainlehr ---|104| methodik
+  brainlehr ---|109| methodik
   brainlehr ---|33| openlehr
   apps ---|26| brainlehr
   apps ---|25| shared
   brainlehr ---|23| plaene
-  apps ---|20| methodik
+  apps ---|21| methodik
 ```
 
 Zahl im Kasten = Knoten im Ast, Zahl an der Kante = Verbindungen zwischen zwei Ästen (ab 20, hoechstens 40 staerkste; 6 gezeigt).
