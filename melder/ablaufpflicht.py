@@ -125,7 +125,22 @@ NUR_ERZEUGT = re.compile(r"^(docs/karten/|docs/VERBUNDKARTE\.md|NODE_INDEX\.md|r
 # Ein Plan ist genannt, wenn die Nachricht auf ein Plandokument oder eine ADR
 # zeigt. Nicht geprueft wird, ob der Plan zur Aenderung PASST -- das kann kein
 # Skript, und eine Scheinpruefung waere schlimmer als keine.
-PLAN_GENANNT = re.compile(r"docs/PLAN_[\w.-]+|PLAN_[A-Z][\w-]*\.md|ADR-\d+", re.I)
+# EINE NORM IST EINE GRUNDLAGE, auch wenn sie nicht in docs/PLAN_* steht
+# (ergaenzt 2026-08-20). Anlass: Beim Push blieben zwei eigene Commits
+# beanstandet, deren Arbeit aus einer Rang-2-Norm folgte (17b14a32,
+# "jede neue Regel braucht einen Rueckwirkungs-Melder") bzw. aus einer
+# erzeugten Arbeitsliste. Beide hatten eine Grundlage; sie stand nur nicht in
+# einem Plandokument, und der Waechter kannte nur Plandokumente.
+#
+# ANERKANNT WIRD NUR DIE FORM "Norm <8 Hexzeichen>", nicht die blosse
+# Kennung: Ein achtstelliger Hex-String allein steht in fast jeder Nachricht
+# dieses Repos -- es ist die Kurzform eines Commits. Ohne das Wort davor
+# waere die Schranke aufgehoben statt erweitert.
+PLAN_GENANNT = re.compile(
+    r"docs/PLAN_[\w.-]+|PLAN_[A-Z][\w-]*\.md|ADR-\d+"
+    r"|\bNorm\s+[0-9a-f]{8}\b|\bNorm\s+L-[0-9a-f]{6}\b"
+    r"|\bRang-[12]-Norm\b|\bBetreiberweisung\b|\bBetreiberfreigabe\b",
+    re.I)
 
 # Die Belegfrage gilt als beantwortet, wenn der Text sagt WIE belegt wurde --
 # oder ehrlich sagt, dass nicht belegt wurde. Beides zaehlt; nur Schweigen
@@ -259,6 +274,19 @@ def demo() -> None:
     assert PLAN_GENANNT.search("siehe docs/PLAN_DIAGRAMME_2026-08-16.md")
     assert PLAN_GENANNT.search("Umsetzung von ADR-014")
     assert not PLAN_GENANNT.search("kleine Korrektur am Regex")
+    # EINE NORM IST EINE GRUNDLAGE (2026-08-20). Beide Richtungen, und die
+    # Negativfaelle sind die wichtigeren: Eine blosse Hexkennung ist die
+    # Kurzform eines Commits und steht in fast jeder Nachricht dieses Repos --
+    # ohne das Wort "Norm" davor waere die Schranke aufgehoben statt erweitert.
+    for satz in ("Norm 17b14a32 verlangt einen Rueckwirkungs-Zaehler",
+                 "Rang-2-Norm aus einer anderen Sitzung",
+                 "Betreiberweisung 2026-08-20, woertlich: ...",
+                 "Betreiberfreigabe ce58f0b2"):
+        assert PLAN_GENANNT.search(satz), satz
+    for satz in ("Rot gegen 858c82c4: fand 0 statt 1",
+                 "Commit 6efefa55 nachgezogen",
+                 "17b14a32"):
+        assert not PLAN_GENANNT.search(satz), satz
 
     # Beleg genannt -- in allen zulaessigen Formen der Hausregel
     for satz in ("Beleg rot vor gruen: Test war vorher rot",
