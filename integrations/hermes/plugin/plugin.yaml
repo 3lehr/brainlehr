@@ -1,0 +1,5 @@
+name: brainlehr
+version: 1.0.0
+description: "brainlehr — lokaler Wissensspeicher mit erzwungener Herkunft, Geltung und Freigabe. Kein API-Schluessel, keine Cloud."
+hooks:
+  - on_pre_compress
