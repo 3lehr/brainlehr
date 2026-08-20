@@ -456,9 +456,18 @@ source: *permissions (0600) carry the protection, not obscurity — a dot-folder
 in the home directory is not safer, only harder to find.* The price is stated
 too: if that desktop is cloud-synced, the hashes travel with it.
 
-Der Auszug trägt Knoten, Lehren, Kanten, Einstellungen, das Zugriffsprotokoll und die Eskalationen. Nicht mit gehen die Vektoren und der Volltextindex — beide ableitbar. Den Volltext bauen die Trigger beim Einlesen selbst auf; die Vektoren rechnet `kern/build_embeddings.py` neu. Ein Vektor aus einem anderen Einbettungsmodell wäre still falsch, und still falsch ist schlimmer als fehlend.
+The extract carries nodes, lessons, edges, settings, the access log and the
+escalations. Not included: the vectors and the full-text index — both are
+derivable. The triggers rebuild the full-text index themselves on import;
+`kern/build_embeddings.py` recomputes the vectors. A vector from a different
+embedding model would be silently wrong, and silently wrong is worse than
+missing.
 
-**`brainlehr.db` ist absichtlich nicht versioniert.** Versioniert wird `schema.sql`, `herkunft_unveraenderlich.sql` und ein Auszug unter `auszug/`. Grund: git führt eine Binärdatei nicht zusammen, es überschreibt sie — und am 2026-08-07 lag hier bereits eine beschädigte Fassung im Commit, womit die Versionsverwaltung als Rettungsweg wertlos war.
+**`brainlehr.db` is deliberately not version-controlled.** What is versioned
+is `schema.sql`, `herkunft_unveraenderlich.sql` and an extract under
+`auszug/`. Reason: git does not merge a binary file, it overwrites it — and
+on 2026-08-07 a corrupted version was already sitting in a commit here,
+which made version control worthless as a rescue path.
 
 ## Eight cases, with sources
 

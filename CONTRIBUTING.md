@@ -1,149 +1,153 @@
-# Beiträge zu brainlehr
+# Contributing to brainlehr
 
-Danke für das Interesse. Bevor Code fließt: **erst ein Issue, dann Code.** Das
-schützt dich davor, umsonst zu arbeiten, und uns davor, einen Beitrag ablehnen
-zu müssen, der schon geschrieben ist.
+> 🇩🇪 Deutsche Fassung: [`CONTRIBUTING.de.md`](./CONTRIBUTING.de.md) — that
+> version is the legally authoritative one (German law, see §9 below); this
+> English page is a translation for readability.
+
+Thanks for your interest. Before any code flows: **issue first, then code.**
+That protects you from working for nothing, and us from having to reject a
+contribution that has already been written.
 
 ---
 
-## 1. Der Ablauf
+## 1. The process
 
-1. **Issue eröffnen** und beschreiben, was du ändern willst und warum.
-2. Warten, bis das Vorhaben bestätigt ist. Ohne Bestätigung kein Merge — auch
-   nicht bei gutem Code.
-3. Branch vom aktuellen Arbeitszweig, nicht von `main`.
-4. Pull Request mit dem unterzeichneten CLA (Abschnitt 3) und einem
-   Sign-off je Commit (Abschnitt 4).
-5. Jeder Beitrag braucht eine Prüfung, die **vor** der Änderung fehlschlägt und
-   danach besteht. Ein Test, der von Anfang an grün war, beweist nur, dass er
-   die Änderung nicht berührt.
+1. **Open an issue** describing what you want to change and why.
+2. Wait until the plan is confirmed. No merge without confirmation — not even
+   for good code.
+3. Branch from the current working branch, not from `main`.
+4. Pull request with the signed CLA (section 3) and a sign-off per commit
+   (section 4).
+5. Every contribution needs a check that **fails before** the change and
+   passes after. A test that was green from the start only proves that it
+   does not touch the change.
 
-## 2. Die Lizenz, unter der du beiträgst
+## 2. The licence you contribute under
 
-brainlehr steht unter der **GNU Affero General Public License v3.0** (siehe
-[`LICENSE`](./LICENSE)). Dein Beitrag wird unter derselben Lizenz
-veröffentlicht.
+brainlehr is licensed under the **GNU Affero General Public License v3.0**
+(see [`LICENSE`](./LICENSE)). Your contribution is published under the same
+licence.
 
-**Zusätzlich** räumst du dem Projektinhaber die in Abschnitt 3 beschriebenen
-Rechte ein. Der Grund steht offen in [`LICENSE_FAQ.md`](./LICENSE_FAQ.md): das
-Projekt soll später auch **kommerziell lizenziert** werden können. Ohne diese
-Rechteeinräumung wäre das für jede Datei unmöglich, an der jemand anders
-mitgeschrieben hat — ein einziger Beitrag ohne CLA blockiert die kommerzielle
-Lizenzierung der gesamten Datei dauerhaft.
+**In addition** you grant the project owner the rights described in section
+3. The reason is stated openly in [`LICENSE_FAQ.md`](./LICENSE_FAQ.md): the
+project should later also be **available under a commercial licence**.
+Without this grant of rights that would be impossible for any file someone
+else has contributed to — a single contribution without a CLA permanently
+blocks commercial licensing of the entire file.
 
-Wenn dir das zu weit geht: das ist eine legitime Entscheidung. Sag es im Issue,
-dann finden wir eine andere Form (Fehlerbericht, Reproduktionsfall,
-Dokumentation), die keine Rechteeinräumung braucht.
+If that goes too far for you: that is a legitimate decision. Say so in the
+issue, and we'll find another form (bug report, reproduction case,
+documentation) that needs no grant of rights.
 
-## 3. Contributor License Agreement (CLA) — Fassung 2026-08-10
+## 3. Contributor License Agreement (CLA) — version 2026-08-10
 
-> **Dieser Text gilt.** Er ist die Fassung, der du mit einem Beitrag zustimmst,
-> und der Projektinhaber richtet sich danach.
+> **This text is the one that applies.** It is the version you agree to with
+> a contribution, and the project owner acts accordingly.
 >
-> **Er ist anwaltlich nicht geprüft**, und das steht hier, weil du es vor deiner
-> Zustimmung wissen sollst — nicht als Einschränkung seiner Geltung. Eine
-> Prüfung durch eine Rechtsanwältin oder einen Rechtsanwalt für Urheber- und
-> IT-Recht ist vorgesehen; ergibt sie Änderungsbedarf, entsteht eine neue
-> Fassung mit neuem Datum. **Spätere Fassungen wirken nicht rückwirkend:** für
-> deinen Beitrag gilt die Fassung, die du bei der Zustimmung genannt hast.
+> **It has not been reviewed by a lawyer**, and that is stated here so you
+> know it before you agree — not as a limitation of its validity. A review by
+> an attorney specialising in copyright and IT law is planned; should it
+> require changes, a new version with a new date will result. **Later
+> versions do not act retroactively:** for your contribution the version
+> named at the time of your agreement applies.
 >
-> Reicht dir das nicht, ist das eine legitime Entscheidung — Abschnitt 5 nennt
-> die Beitragsformen, die ohne CLA auskommen.
+> If that is not enough for you, that is a legitimate decision — section 5
+> names the forms of contribution that need no CLA.
 
-Mit dem Einreichen eines Beitrags erklärst du Folgendes:
+By submitting a contribution you declare the following:
 
-**§1 Rechteeinräumung.** Du räumst dem Projektinhaber an deinem Beitrag ein
-**ausschließliches, räumlich, zeitlich und inhaltlich unbeschränktes,
-unwiderrufliches, übertragbares und unterlizenzierbares Nutzungsrecht** für
-alle bekannten und künftigen Nutzungsarten ein. Das umfasst insbesondere
-Vervielfältigung, Verbreitung, öffentliche Zugänglichmachung, Bearbeitung,
-Umgestaltung und die Verwertung der bearbeiteten Fassung — auch kommerziell,
-auch unter einer anderen als der AGPLv3, auch als Teil eines geschlossenen
-Produkts.
+**§1 Grant of rights.** You grant the project owner an **exclusive,
+spatially, temporally and substantively unrestricted, irrevocable,
+transferable and sublicensable right of use** for all known and future forms
+of use in your contribution. This includes in particular reproduction,
+distribution, making available to the public, editing, reshaping and
+exploitation of the edited version — including commercially, including under
+a licence other than the AGPLv3, including as part of a closed product.
 
-*Hinweis zum deutschen Recht:* Das Urheberrecht selbst ist nach § 29 Abs. 1
-UrhG nicht übertragbar. Eine vollständige Rechteübertragung nach US-Vorbild
-("copyright assignment") ist hier nicht möglich; § 1 ist deshalb als
-umfassende Einräumung ausschließlicher Nutzungsrechte formuliert — das ist die
-weitestgehende Form, die das deutsche Recht kennt. Soweit deine Rechtsordnung
-eine vollständige Übertragung zulässt, überträgst du zusätzlich alle
-übertragbaren Rechte.
+*Note on German law:* Copyright itself cannot be transferred under §29(1)
+UrhG (German Copyright Act). A complete transfer of rights in the US sense
+("copyright assignment") is not possible here; §1 is therefore worded as a
+comprehensive grant of exclusive rights of use — the furthest-reaching form
+that German law recognises. To the extent your jurisdiction permits a
+complete transfer, you additionally transfer all transferable rights.
 
-**§2 Rückfallrecht für dich.** Du behältst das Recht, deinen eigenen Beitrag
-uneingeschränkt weiter zu nutzen, zu veröffentlichen und anderen zu
-lizenzieren. Die Einräumung nach §1 nimmt dir nichts weg; sie gibt dem Projekt
-etwas dazu.
+**§2 Reservation of rights for you.** You retain the right to keep using,
+publishing and licensing your own contribution to others without
+restriction. The grant under §1 takes nothing away from you; it adds
+something to the project.
 
-**§3 Patente.** Du erteilst dem Projektinhaber und allen Nutzern des Projekts
-eine unwiderrufliche, weltweite, gebührenfreie Lizenz an allen Patentansprüchen,
-die du kontrollierst und die durch deinen Beitrag oder dessen Verbindung mit
-dem Projekt verletzt würden. Erhebst du gegen jemanden eine Patentklage wegen
-des Projekts, erlöschen die dir aus dem Projekt eingeräumten Lizenzen mit dem
-Tag der Klageerhebung.
+**§3 Patents.** You grant the project owner and all users of the project an
+irrevocable, worldwide, royalty-free licence to all patent claims you
+control that would be infringed by your contribution or its combination with
+the project. If you bring a patent lawsuit against anyone over the project,
+the licences granted to you from the project expire on the date the lawsuit
+is filed.
 
-**§4 Urheberpersönlichkeitsrechte.** Soweit gesetzlich zulässig, verzichtest du
-auf die Ausübung von Urheberpersönlichkeitsrechten gegenüber dem Projektinhaber
-und dessen Lizenznehmern — insbesondere auf das Recht auf Namensnennung in
-jeder einzelnen abgeleiteten Fassung. Ein nicht verzichtbarer Kern bleibt
-unberührt; nach deutschem Recht ist der Verzicht auf das
-Urheberpersönlichkeitsrecht als solches unwirksam.
+**§4 Moral rights.** To the extent legally permitted, you waive the exercise
+of moral rights of authorship against the project owner and its licensees —
+in particular the right to attribution in every individual derived version.
+A non-waivable core remains unaffected; under German law a waiver of the
+moral right of authorship as such is ineffective.
 
-**§5 Zusicherung.** Du sicherst zu, dass der Beitrag von dir stammt, dass du
-über die eingeräumten Rechte verfügst, und dass er keine Rechte Dritter
-verletzt. Stehst du in einem Arbeits- oder Dienstverhältnis, dessen
-Rechtsordnung oder Vertrag deinem Arbeitgeber Rechte an deiner Arbeit einräumt,
-sicherst du zu, dessen schriftliche Freigabe eingeholt zu haben.
+**§5 Warranty.** You warrant that the contribution originates from you, that
+you hold the rights being granted, and that it does not infringe any
+third-party rights. If you are in an employment or service relationship
+whose legal system or contract grants your employer rights to your work, you
+warrant that you have obtained their written release.
 
-**§6 Herkunft von Maschinenerzeugtem.** Enthält dein Beitrag Text oder Code,
-der ganz oder teilweise von einem KI-System erzeugt wurde, benennst du das im
-Pull Request. Der Beitrag wird dadurch nicht abgelehnt; unbenannt bleiben darf
-es nicht, weil an der Herkunft die Zusicherung nach §5 hängt.
+**§6 Provenance of machine-generated content.** If your contribution
+contains text or code wholly or partly generated by an AI system, you name
+that in the pull request. The contribution is not rejected because of it; it
+must not go unnamed, because the warranty under §5 depends on the
+provenance.
 
-**§7 Keine Gegenleistung, keine Verwendungspflicht.** Für den Beitrag wird
-keine Vergütung geschuldet. Das Projekt ist nicht verpflichtet, ihn zu
-verwenden, zu behalten oder zu pflegen.
+**§7 No consideration, no obligation to use.** No compensation is owed for
+the contribution. The project is not obliged to use, keep or maintain it.
 
-**§8 Gewährleistung.** Der Beitrag wird ohne Gewähr eingebracht, soweit
-gesetzlich zulässig — ausgenommen bleibt die Haftung für Vorsatz und grobe
-Fahrlässigkeit sowie für Schäden aus der Verletzung von Leben, Körper oder
-Gesundheit.
+**§8 Warranty disclaimer.** The contribution is provided without warranty to
+the extent legally permitted — excluding liability for intent and gross
+negligence, and for damages arising from injury to life, body or health.
 
-**§9 Recht und Gerichtsstand.** Es gilt deutsches Recht unter Ausschluss des
-UN-Kaufrechts. Gerichtsstand ist der Sitz des Projektinhabers, soweit du
-Kaufmann bist oder keinen allgemeinen Gerichtsstand in Deutschland hast. Ist
-eine Bestimmung unwirksam, bleibt der Rest wirksam.
+**§9 Governing law and venue.** German law applies, excluding the UN
+Convention on Contracts for the International Sale of Goods (CISG).
+Venue is the project owner's registered seat, insofar as you are a merchant
+or have no general venue in Germany. If a provision is invalid, the
+remainder stays valid.
 
-### Wie du zustimmst
+### How you agree
 
-Schreibe in den Pull Request eine Zeile:
+Write a line in the pull request:
 
 ```
-Ich habe CONTRIBUTING.md gelesen und stimme dem CLA in Abschnitt 3,
-Fassung 2026-08-10, zu.
-Name: <voller Name>   E-Mail: <Adresse>   Datum: <YYYY-MM-DD>
+I have read CONTRIBUTING.md and agree to the CLA in section 3,
+version 2026-08-10.
+Name: <full name>   Email: <address>   Date: <YYYY-MM-DD>
 ```
 
-Die Fassungsangabe gehört dazu. Ohne sie lässt sich später nicht mehr sagen,
-welchem Wortlaut du zugestimmt hast — und genau das ist die Frage, auf die es
-im Streitfall ankommt.
+The version date belongs in that line. Without it, nobody can later say
+which wording you agreed to — and that is exactly the question a dispute
+would turn on. The authoritative wording of the CLA itself is the German
+text in [`CONTRIBUTING.de.md`](./CONTRIBUTING.de.md) §3 (see the note at the
+top of this file); this English sentence only records your agreement to it.
 
-Firmenbeiträge brauchen zusätzlich die Zeichnung durch eine vertretungs-
-berechtigte Person mit Angabe der Funktion.
+Corporate contributions additionally need the signature of a person
+authorised to represent the company, stating their role.
 
-## 4. Sign-off je Commit
+## 4. Sign-off per commit
 
-Zusätzlich zum CLA trägt jeder Commit den Sign-off nach dem
+In addition to the CLA, every commit carries the sign-off per the
 [Developer Certificate of Origin](https://developercertificate.org/) 1.1:
 
 ```bash
 git commit -s
 ```
 
-Das hängt `Signed-off-by: Name <mail>` an. Der CLA regelt die Rechte, der
-Sign-off die Herkunft — beides ist nötig, keines ersetzt das andere.
+This appends `Signed-off-by: Name <mail>`. The CLA governs the rights, the
+sign-off governs the provenance — both are needed, neither replaces the
+other.
 
-## 5. Was ohne CLA geht
+## 5. What needs no CLA
 
-Kein CLA nötig für: Fehlerberichte, Reproduktionsfälle, Messergebnisse,
-Fragen, Übersetzungen einzelner Wörter, Tippfehlerkorrekturen ohne
-schöpferische Höhe.
+No CLA needed for: bug reports, reproduction cases, measurement results,
+questions, translations of individual words, typo fixes without creative
+substance.
