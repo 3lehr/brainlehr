@@ -28,6 +28,16 @@ EXPECTED = {
     "BDW-U01": "org-ceiling", "BDW-U02": "receipt", "BDW-U03": "separate",
     "BDW-U04": "allowlist", "BDW-U05": "policy", "BDW-U06": "risk",
     "BDW-U07": "approved", "BDW-U08": "org-wins",
+    "BDW-P09": "standalone",
+    "BDW-P10": "sprache",
+    "BDW-P11": "assistent",
+    "BDW-P12": "herkunftstreu",
+    "BDW-P13": "vorlauf",
+    "BDW-P14": "englisch",
+    "BDW-E22": "kreis",
+    "BDW-E23": "je-kreis",
+    "BDW-E24": "zweiter-faktor",
+    "BDW-E25": "muster",
 }
 
 EXPECTED_LABELS = {
@@ -71,6 +81,16 @@ EXPECTED_LABELS = {
     "BDW-U06": "Risikobasiert mit Nutzerkanälen",
     "BDW-U07": "Org-Allowlist, Nutzer wählt",
     "BDW-U08": "Org-Grenze gewinnt sichtbar",
+    "BDW-P09": "Der Wechsel standalone -> multiuser MUSS spaeter moeglich sein",
+    "BDW-P10": "KEIN Uebersetzungssystem",
+    "BDW-P11": "Der Erststart fuehrt durch die Einrichtung -- im Chat",
+    "BDW-P12": "Fremdimporte erfinden KEINE Herkunft",
+    "BDW-P13": "Quellen werden zur Laufzeit GESUCHT, nicht hinterlegt",
+    "BDW-P14": "Schnittstelle, Feldnamen, Docstrings und Dokumentation werden englisch",
+    "BDW-E22": "Der Kreis steht VON ANFANG AN fest",
+    "BDW-E23": "Geltung ist zweiseitig, sobald Kreise existieren",
+    "BDW-E24": "der zweite liegt nicht auf demselben Geraet",
+    "BDW-E25": "Nicht die MENGE ist das Signal",
 }
 
 
@@ -78,7 +98,14 @@ def test_root_catalog_decodes_all_operator_selections():
     text = CATALOG.read_text()
     rows = re.findall(r"^\| (BDW-[RCPU EF]\d{2}) \| `([^`]+)` \| ([^|]+) \| ([^|]+) \|", text, re.M)
     decoded = {requirement_id: selection for requirement_id, selection, _, _ in rows}
-    assert len(rows) == len(decoded) == 56  # 53 aus der Operator-Matrix + P06/P07/P08 (2026-08-18)
+    # DIE ZAHL KOMMT AUS EXPECTED, nicht aus dem Quelltext (2026-08-21).
+    # Bis dahin stand hier eine feste 56 -- dieselbe Bauform wie das
+    # `assert "NOT RUN"` weiter unten, das am 2026-08-18 entfernt wurde:
+    # ein Test, der jeden Zuwachs des Katalogs verbietet. Die Zusicherung
+    # bleibt dieselbe (jede Zeile dekodiert, keine doppelte Kennung, jede
+    # traegt ihr AC1) -- sie haengt nur nicht mehr an einer Zahl, die beim
+    # naechsten Eintrag von Hand nachgezogen werden muss.
+    assert len(rows) == len(decoded) == len(EXPECTED)
     assert decoded == EXPECTED
     catalog_rows = {line.split("|")[1].strip(): line for line in text.splitlines() if line.startswith("| BDW-")}
     assert set(catalog_rows) == set(EXPECTED_LABELS)
