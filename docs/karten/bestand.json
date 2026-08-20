@@ -16,7 +16,7 @@
   },
   {
    "id": "apps",
-   "text": "apps · 92",
+   "text": "apps · 94",
    "form": "kasten",
    "waise": false
   },
@@ -88,7 +88,7 @@
   },
   {
    "id": "methodik",
-   "text": "methodik · 166",
+   "text": "methodik · 169",
    "form": "kasten",
    "waise": false
   },
@@ -169,7 +169,7 @@
   {
    "von": "brainlehr",
    "nach": "methodik",
-   "text": "109",
+   "text": "114",
    "art": "ungerichtet"
   },
   {
@@ -191,15 +191,15 @@
    "art": "ungerichtet"
   },
   {
-   "von": "brainlehr",
-   "nach": "plaene",
+   "von": "apps",
+   "nach": "methodik",
    "text": "23",
    "art": "ungerichtet"
   },
   {
-   "von": "apps",
-   "nach": "methodik",
-   "text": "21",
+   "von": "brainlehr",
+   "nach": "plaene",
+   "text": "23",
    "art": "ungerichtet"
   }
  ]

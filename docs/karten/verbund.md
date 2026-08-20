@@ -5,7 +5,6 @@
 ```mermaid
 graph LR
   port_1234(["Port 1234 (fremd)"])
-  _brainlehr_open -->|ruft| port_1234
   _probe_head -->|ruft| port_1234
   atelier -->|ruft| port_1234
   brainlehr -->|ruft| port_1234
@@ -198,7 +197,6 @@ graph LR
   stiftshuette -->|ruft| port_8787
   wpdrop -->|ruft| port_8787
   port_8799(["Port 8799"])
-  _brainlehr_open -->|lauscht| port_8799
   _probe_head -->|lauscht| port_8799
   atelier -->|lauscht| port_8799
   brainlehr -->|lauscht| port_8799
@@ -256,7 +254,6 @@ graph LR
   videoki -->|ruft| port_9999
   port_11434(["Port 11434 (fremd)"])
   UsbKabelTester -->|ruft| port_11434
-  _brainlehr_open -->|ruft| port_11434
   _probe_head -->|ruft| port_11434
   afrika -->|ruft| port_11434
   atelier -->|ruft| port_11434
@@ -410,7 +407,7 @@ graph LR
   hub -.->|liest| db_brainlehr_db
   db_knowledge_db[("knowledge.db")]
   brainlehr -->|liegt| db_knowledge_db
-  _brainlehr_open -.->|liest| db_knowledge_db
+  _brainlehr_public -.->|liest| db_knowledge_db
   _probe_head -.->|liest| db_knowledge_db
   atelier -.->|liest| db_knowledge_db
   buckeberg -.->|liest| db_knowledge_db

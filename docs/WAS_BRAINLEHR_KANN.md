@@ -1,6 +1,6 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-20T16:29:18+0200 (Stand `3cabe776`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-08-20T17:15:55+0200 (Stand `476eb13b`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 

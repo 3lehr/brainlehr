@@ -9,8 +9,8 @@
    "waise": false
   },
   {
-   "id": "_brainlehr_open",
-   "text": "_brainlehr_open",
+   "id": "_brainlehr_public",
+   "text": "_brainlehr_public",
    "form": "kasten",
    "waise": false
   },
@@ -568,12 +568,6 @@
   }
  ],
  "kanten": [
-  {
-   "von": "_brainlehr_open",
-   "nach": "port_1234",
-   "text": "ruft",
-   "art": "gerichtet"
-  },
   {
    "von": "_probe_head",
    "nach": "port_1234",
@@ -1523,12 +1517,6 @@
    "art": "gerichtet"
   },
   {
-   "von": "_brainlehr_open",
-   "nach": "port_8799",
-   "text": "lauscht",
-   "art": "gerichtet"
-  },
-  {
    "von": "_probe_head",
    "nach": "port_8799",
    "text": "lauscht",
@@ -1794,12 +1782,6 @@
   },
   {
    "von": "UsbKabelTester",
-   "nach": "port_11434",
-   "text": "ruft",
-   "art": "gerichtet"
-  },
-  {
-   "von": "_brainlehr_open",
    "nach": "port_11434",
    "text": "ruft",
    "art": "gerichtet"
@@ -2549,7 +2531,7 @@
    "art": "gerichtet"
   },
   {
-   "von": "_brainlehr_open",
+   "von": "_brainlehr_public",
    "nach": "db_knowledge_db",
    "text": "liest",
    "art": "gestrichelt"
