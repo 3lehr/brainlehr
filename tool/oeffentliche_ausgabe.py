@@ -79,16 +79,29 @@ QUELLORDNER = ("kern/", "melder/", "haken/", "tests/", "tool/", "pflege/",
                # nicht.
                "messungen/")
 QUELLDATEIEN = ("schema.sql", "brainlehr.py", "knowledge_mcp_server.py",
-                "requirements.txt")
+                "requirements.txt",
+                # Seit 2026-08-20 ausdruecklich MITGELIEFERT statt dem Ziel
+                # ueberlassen -- die Lizenz gehoert dem Werk, nicht dem Export.
+                "LICENSE", "CONTRIBUTING.md", "LICENSE_FAQ.md")
 
 # Was im Ziel dem Ziel gehoert und nie ueberschrieben wird: seine eigene
 # Beschreibung, seine Lizenz, sein Pruefwerkzeug, sein Auszug.
 NIE_UEBERSCHREIBEN = (
-    "README.md", "README.de.md", "LICENSE", "NOTICE", "SECURITY.md",
+    "README.md", "README.de.md", "NOTICE", "SECURITY.md",
     "PUBLICATION_POLICY.md", "RELEASE_NOTES.md", "AI_HANDOFF.md",
     ".gitignore", "tools/privacy_check.py", "auszug-offen/",
     "integrations/", "docs/FEATURE_MATRIX.json", "docs/AI_DECISIONS.md",
 )
+
+# LICENSE, CONTRIBUTING.md und LICENSE_FAQ.md standen bis 2026-08-20 unter
+# NIE_UEBERSCHREIBEN -- als "gehoert dem Ziel" gedacht. Genau daran lag es:
+# Der Export wurde neu angelegt, bekam eine MIT-Datei als VORGABEWERT, und
+# das Werkzeug fasste sie danach nie wieder an. Drei Tage stand das
+# oeffentliche Repo unter MIT, waehrend AGPL-3.0 plus CLA beschlossen war.
+#
+# Die Lizenz gehoert nicht dem Export, sondern dem Werk. Sie kommt jetzt aus
+# dem Arbeitsrepo wie jede andere Datei -- und tests/test_lizenz.py faellt
+# rot, wenn sie es nicht tut.
 
 
 def _pruefer():
