@@ -1,16 +1,16 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-20T15:24:35+0200 (Stand `186ea113`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-08-20T16:15:49+0200 (Stand `454c7d30`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 
 | | |
 |---|---:|
 | Werkzeuge über MCP | 30 |
-| Melder | 53, davon verdrahtet 20 |
+| Melder | 54, davon verdrahtet 21 |
 | Haken | 23, davon verdrahtet 13 |
 | Kernmodule | 111 |
-| Module mit Selbsttest | 139 von 187 |
+| Module mit Selbsttest | 140 von 188 |
 
 ## Werkzeuge — was ein Klient aufrufen kann
 
@@ -70,6 +70,7 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/eilmeldung_etikett.py` | Prueft, ob ein Titel Dringlichkeit BEHAUPTET, ohne das Etikett zu TRAGEN | SessionStart | ja | — |
 | `melder/eilmeldung_faellig.py` | Zeigt beim Sitzungsstart, welche Eilmeldungen verfallen sind, statt in | SessionStart | ja | — |
 | `melder/faehigkeiten.py` | faehigkeiten.py | — | ja | — |
+| `melder/faelligkeit.py` | Was raus muss, unabhaengig davon, was gefragt wurde | SessionStart | ja | — |
 | `melder/foederation.py` | foederation.py | — | ja | — |
 | `melder/fremdbaum_cd.py` | Wiederholtes `cd <fremdes Repo>` im Bash-Aufruf | — | ja | — |
 | `melder/fremdrollen.py` | Meldet zwei Fehlklassen in den Claude-Code-Fertigkeiten unter | — | ja | — |

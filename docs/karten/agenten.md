@@ -72,6 +72,8 @@ graph LR
   ev_SessionStart -->|global| s_kantenstillstand_py
   s_vektorstand_py["vektorstand.py"]
   ev_SessionStart -->|global| s_vektorstand_py
+  s_faelligkeit_py["faelligkeit.py"]
+  ev_SessionStart -->|global| s_faelligkeit_py
   s_build_node_index_py["build_node_index.py"]
   ev_SessionStart -->|global| s_build_node_index_py
   s_metroviz_autostart_sh["metroviz_autostart.sh"]
@@ -188,4 +190,4 @@ graph LR
   classDef entscheidet stroke-width:4px
 ```
 
-75 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 4 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.
+76 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 4 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.

@@ -11,7 +11,7 @@ graph LR
   apps["apps<br/>92"]
   ops["ops<br/>91"]
   shared["shared<br/>55"]
-  openlehr["openlehr<br/>42"]
+  openlehr["openlehr<br/>43"]
   plaene["plaene<br/>17"]
   arch["arch<br/>16"]
   simulation_akademie_messaufbau_kein["simulation-akademie-messaufbau-kein<br/>15"]
@@ -32,7 +32,7 @@ graph LR
   bebetter["bebetter<br/>1"]
   aka["aka<br/>1"]
   brainlehr ---|109| methodik
-  brainlehr ---|33| openlehr
+  brainlehr ---|35| openlehr
   apps ---|26| brainlehr
   apps ---|25| shared
   brainlehr ---|23| plaene

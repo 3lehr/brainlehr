@@ -334,6 +334,7 @@ graph LR
   stiftshuette -->|ruft| port_19999
   wpdrop -->|ruft| port_19999
   port_35000(["Port 35000"])
+  _wt_tf98 -->|lauscht| port_35000
   fahrtenbuch -->|lauscht| port_35000
   fahrtenbuch_nativ -->|lauscht| port_35000
   UsbKabelTester -->|ruft| port_35000
@@ -358,6 +359,21 @@ graph LR
   port_35002(["Port 35002"])
   fahrtenbuch -->|lauscht| port_35002
   class port_35002 waise
+  port_35123(["Port 35123 (fremd)"])
+  _wt_tf98 -->|ruft| port_35123
+  fahrtenbuch_nativ -->|ruft| port_35123
+  port_35124(["Port 35124 (fremd)"])
+  _wt_tf98 -->|ruft| port_35124
+  fahrtenbuch_nativ -->|ruft| port_35124
+  port_35125(["Port 35125 (fremd)"])
+  _wt_tf98 -->|ruft| port_35125
+  fahrtenbuch_nativ -->|ruft| port_35125
+  port_35126(["Port 35126"])
+  _wt_tf98 -->|lauscht| port_35126
+  fahrtenbuch_nativ -->|lauscht| port_35126
+  port_35127(["Port 35127 (fremd)"])
+  _wt_tf98 -->|ruft| port_35127
+  fahrtenbuch_nativ -->|ruft| port_35127
   port_36802(["Port 36802"])
   legacylink -->|lauscht| port_36802
   class port_36802 waise
@@ -425,4 +441,4 @@ graph LR
   classDef waise stroke-dasharray: 5 5
 ```
 
-61 Verbindungen sind im Bild weggelassen, weil nur EIN Repo daran haengt und sie damit keine Verbundaussage sind: Port 1666 (nur videoki); Port 1667 (nur videoki); Port 2379 (nur videoki); Port 3001 (nur fahrtenbuch); Port 3128 (nur videoki); Port 3307 (nur markusx25); Port 4568 (nur fahrtenbuch); Port 4873 (nur openlehr_stale_2026-07-22); Port 5432 (nur videoki); Port 6402 (nur fahrtenbuch); Port 7001 (nur videoki); Port 7339 (nur afrika); Port 7645 (nur videoki); Port 7647 (nur videoki); Port 7777 (nur videoki); Port 7880 (nur setfunk); Port 8023 (nur brainlehr); Port 8081 (nur markusx25); Port 8082 (nur setfunk); Port 8084 (nur setfunk); Port 8099 (nur design-lab); Port 8114 (nur brainlehr); Port 8443 (nur design-lab); Port 8554 (nur setfunk); Port 8742 (nur wohlair); Port 8766 (nur hub); Port 8788 (nur legacylink); Port 8800 (nur afrika); Port 8812 (nur atelier); Port 8888 (nur videoki); Port 8889 (nur setfunk); Port 8988 (nur videoki); Port 9030 (nur videoki); Port 9191 (nur setfunk); Port 9997 (nur setfunk); Port 18789 (nur openlehr_stale_2026-07-22); Port 18791 (nur openlehr_stale_2026-07-22); Port 23456 (nur videoki); Port 29100 (nur legacylink); Port 29876 (nur openlehr_stale_2026-07-22); Port 35123 (nur fahrtenbuch_nativ); Port 35124 (nur fahrtenbuch_nativ); Port 35125 (nur fahrtenbuch_nativ); Port 35126 (nur fahrtenbuch_nativ); Port 35127 (nur fahrtenbuch_nativ); Port 44081 (nur openlehr_stale_2026-07-22); Port 50082 (nur legacylink); Port 50605 (nur legacylink); Port 55171 (nur legacylink); Port 55172 (nur legacylink); Port 57527 (nur videoki); Port 57757 (nur legacylink); Port 58320 (nur legacylink); Port 59912 (nur legacylink); Port 59923 (nur legacylink); Port 60657 (nur legacylink); Port 61569 (nur legacylink); Port 64246 (nur legacylink); Port 65054 (nur legacylink); code_index.db (nur openlehr_legacy); optuna_sprints.db (nur afrika).
+56 Verbindungen sind im Bild weggelassen, weil nur EIN Repo daran haengt und sie damit keine Verbundaussage sind: Port 1666 (nur videoki); Port 1667 (nur videoki); Port 2379 (nur videoki); Port 3001 (nur fahrtenbuch); Port 3128 (nur videoki); Port 3307 (nur markusx25); Port 4568 (nur fahrtenbuch); Port 4873 (nur openlehr_stale_2026-07-22); Port 5432 (nur videoki); Port 6402 (nur fahrtenbuch); Port 7001 (nur videoki); Port 7339 (nur afrika); Port 7645 (nur videoki); Port 7647 (nur videoki); Port 7777 (nur videoki); Port 7880 (nur setfunk); Port 8023 (nur brainlehr); Port 8081 (nur markusx25); Port 8082 (nur setfunk); Port 8084 (nur setfunk); Port 8099 (nur design-lab); Port 8114 (nur brainlehr); Port 8443 (nur design-lab); Port 8554 (nur setfunk); Port 8742 (nur wohlair); Port 8766 (nur hub); Port 8788 (nur legacylink); Port 8800 (nur afrika); Port 8812 (nur atelier); Port 8888 (nur videoki); Port 8889 (nur setfunk); Port 8988 (nur videoki); Port 9030 (nur videoki); Port 9191 (nur setfunk); Port 9997 (nur setfunk); Port 18789 (nur openlehr_stale_2026-07-22); Port 18791 (nur openlehr_stale_2026-07-22); Port 23456 (nur videoki); Port 29100 (nur legacylink); Port 29876 (nur openlehr_stale_2026-07-22); Port 44081 (nur openlehr_stale_2026-07-22); Port 50082 (nur legacylink); Port 50605 (nur legacylink); Port 55171 (nur legacylink); Port 55172 (nur legacylink); Port 57527 (nur videoki); Port 57757 (nur legacylink); Port 58320 (nur legacylink); Port 59912 (nur legacylink); Port 59923 (nur legacylink); Port 60657 (nur legacylink); Port 61569 (nur legacylink); Port 64246 (nur legacylink); Port 65054 (nur legacylink); code_index.db (nur openlehr_legacy); optuna_sprints.db (nur afrika).

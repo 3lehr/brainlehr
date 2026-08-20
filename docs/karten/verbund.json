@@ -21,6 +21,12 @@
    "waise": false
   },
   {
+   "id": "_wt_tf98",
+   "text": "_wt_tf98",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "afrika",
    "text": "afrika",
    "form": "kasten",
@@ -253,6 +259,36 @@
    "text": "Port 35002",
    "form": "port",
    "waise": true
+  },
+  {
+   "id": "port_35123",
+   "text": "Port 35123 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_35124",
+   "text": "Port 35124 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_35125",
+   "text": "Port 35125 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_35126",
+   "text": "Port 35126",
+   "form": "port",
+   "waise": false
+  },
+  {
+   "id": "port_35127",
+   "text": "Port 35127 (fremd",
+   "form": "port",
+   "waise": false
   },
   {
    "id": "port_36802",
@@ -2171,6 +2207,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "_wt_tf98",
+   "nach": "port_35000",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
    "von": "fahrtenbuch",
    "nach": "port_35000",
    "text": "lauscht",
@@ -2300,6 +2342,66 @@
    "von": "fahrtenbuch",
    "nach": "port_35002",
    "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_wt_tf98",
+   "nach": "port_35123",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch_nativ",
+   "nach": "port_35123",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_wt_tf98",
+   "nach": "port_35124",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch_nativ",
+   "nach": "port_35124",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_wt_tf98",
+   "nach": "port_35125",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch_nativ",
+   "nach": "port_35125",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_wt_tf98",
+   "nach": "port_35126",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch_nativ",
+   "nach": "port_35126",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_wt_tf98",
+   "nach": "port_35127",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "fahrtenbuch_nativ",
+   "nach": "port_35127",
+   "text": "ruft",
    "art": "gerichtet"
   },
   {

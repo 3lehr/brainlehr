@@ -100,7 +100,7 @@
   },
   {
    "id": "openlehr",
-   "text": "openlehr · 42",
+   "text": "openlehr · 43",
    "form": "kasten",
    "waise": false
   },
@@ -175,7 +175,7 @@
   {
    "von": "brainlehr",
    "nach": "openlehr",
-   "text": "33",
+   "text": "35",
    "art": "ungerichtet"
   },
   {

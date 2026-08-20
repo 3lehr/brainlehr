@@ -339,6 +339,15 @@
    "quelle": "brainlehr/haken/existenzpruefung.py"
   },
   {
+   "id": "s_faelligkeit_py",
+   "text": "faelligkeit.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Was raus muss, unabhaengig davon, was gefragt wurde.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/faelligkeit.py"
+  },
+  {
    "id": "s_fremdstandsvergleich_py",
    "text": "fremdstandsvergleich.py",
    "form": "kasten",
@@ -829,6 +838,12 @@
   {
    "von": "ev_SessionStart",
    "nach": "s_vektorstand_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_faelligkeit_py",
    "text": "global",
    "art": "gerichtet"
   },
