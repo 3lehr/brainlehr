@@ -235,6 +235,33 @@ Aus den Rohzeilen nachgerechnet, nicht aus der Zusammenfassung übernommen. **11
 2. Eine **Schleife** über Modulnamen im `pre-push` (`for m in a b c`) verbirgt die Namen vor dem Zähler *und* vor jedem Leser. Ausgeschrieben: 20 → 16.
 3. Ein Subagent meldete einen Widerspruch in `L-bbd7fb` (`occurrences=3` gegen „vier Fundstellen"). Nachgezählt: **kein Widerspruch** — Fundstellen (Codeorte in einem Vorkommen) sind nicht Vorkommen. Agentenbefunde werden geprüft, bevor sie weitergetragen werden.
 
+## Ein zweiter Kanal: Faelligkeit statt Aehnlichkeit (2026-08-20, Abend)
+
+**Die Suche nach einem Aehnlichkeitssignal ist beendet, gemessen.** Drei Verfahren, drei Nullbefunde: roher Kosinus, MAD-Sweep ueber den ganzen Bereich, robuste Hintergrundnormierung ueber alle 5217 Knoten (`runs/cfar_hintergrund_2026-08-20.json`). Der Kosinuswert sagt, OB etwas da ist -- nichts sagt, ob es stimmt.
+
+**Was stattdessen trennt, sind SCHADENSmasse** (`runs/aufgriff_je_merkmal_2026-08-20.json`):
+
+| | |
+|---|---|
+| severity | critical 42,4 % > high 37,5 % > medium 22,8 % > low 12,0 % |
+| occurrences | 1x 26,2 % < 2-3x 59,4 % < 4x+ 100 % (n=10) |
+
+Beide monoton. Kein Aehnlichkeitsmass hat an diesem Tag irgendetwas getrennt.
+
+**Daraus `melder/faelligkeit.py`**, an SessionStart, 0,03 s: 204 Kandidaten in fuenf Klassen (30 Regelrang, 47 wiederholte Fehler, 2 abgelaufene Geltung, 89 nie gelesene Normen, 36 dem Klienten unbekannt), drei Zeilen je Tag, Rotation ohne Zustandsdatei. Die groesste Klasse ist selbstloesend -- wer die Norm liest, nimmt sie aus der Liste.
+
+**SCHWERSTER OFFENER BEFUND, unverarbeitet: das Messinstrument wackelt.** Die blinde, beidseitige Wiederholung der Handbeurteilung (S4) urteilt in BEIDE Richtungen anders als der Pruefkorpus: 7 von 15 "Treffern" sind keine, 4 von 20 "Fehlgriffen" sind welche, Uebereinstimmung 24 von 35. Gegenueber der ersten (unverblindeten) Beurteilung weichen 10 von 20 ab. **Jede Zahl dieses Tages, die auf der Trefferzaehlung aufbaut, steht damit unter Vorbehalt** -- der Engpass ist moeglicherweise nicht der Abruf, sondern das Instrument.
+
+**Drei Fallen aus dem Bau, alle mit rotem Test festgehalten:**
+
+1. Die Rotation entwertete die Schadensfolge -- an rund 83 % der Tage erschien nur die SCHWAECHSTE Klasse. Sichtbar erst im echten Lauf, nicht im Test.
+2. Nach der Behebung fiel die schwaechste Klasse ganz weg (vier Klassen, drei Plaetze) -- 100 von 179 Kandidaten waeren unerreichbar gewesen.
+3. `access_count` ist GLOBAL: Wer liest, nimmt es allen aus der Liste. 36 Normen waren unsichtbar. Vom Betreiber gefunden.
+
+**Die Lehre darueber** (`L-6af5ac`, dreimal an diesem Tag): Eine zweiseitige Groesse einer Seite zugeschrieben -- Aufgriff (Frage x Eintrag), Gelesenhaben (Leser x Eintrag), Ursachenaussage (Zustand x Aussage). Der Grund ist die Bauform: `access_count` steht in der Zeile, also wird es einspaltig gedacht. Die Probe kostet einen Satz -- "dieser Eintrag wurde 20 Mal nicht aufgegriffen" ist unvollstaendig, "dieser Eintrag hat 5000 Zeichen" nicht.
+
+**Subagenten bekommen KEIN Wissen eingespielt** (gemessen): Der Recall haengt nur an UserPromptSubmit. An SubagentStart haengen vier andere Haken, keiner spielt Wissen ein. Und ob Agenten selbst fragen, ist nicht messbar -- `bedient_von` ist zu 100 % leer, alle 481 Suchen des Tages laufen unter demselben Akteur.
+
 ## Das zweite Signal: Konsil, Nulllinie, abgestufte Ausgabe (2026-08-20, Nachmittag)
 
 Kette vollstaendig vermessen, sie endet bei einer Entscheidung statt bei einem Fehler:
