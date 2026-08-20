@@ -1,0 +1,201 @@
+{
+  "zustand": "B_2Kanal_an_Pflicht_aus",
+  "produktions_limit": {
+    "MAX_NODES": 10,
+    "MAX_LESSONS": 7
+  },
+  "grosses_limit_fuer_volle_rangliste": 100000,
+  "trefferguete_gemessen": [
+    15,
+    35
+  ],
+  "positivkontrolle": [
+    {
+      "target_kind": "lesson",
+      "target_id": "L-a9ccd0",
+      "rang": 3,
+      "limit": 7,
+      "ok": true
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-e7bc5e",
+      "rang": 5,
+      "limit": 7,
+      "ok": true
+    }
+  ],
+  "befunde": [
+    {
+      "target_kind": "lesson",
+      "target_id": "L-298823",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=False, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-f9f654",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=True, hits=1>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/methodik/direktiven/testumgebung-selbstaendig-handeln-bis"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-b4b443",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=True, hits=2>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/methodik/direktiven/alles-ist-beta-keine-echten-daten-gilt-bis-zum-ausdruecklichen-widerruf"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-44a838",
+      "kategorie": "b",
+      "rang": 17,
+      "detail": "VERDRAENGT, Rang 17 (ausgeliefertes Limit=7)",
+      "bester_ausgelieferter_treffer": "node:/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-cdac52",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=True, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/brainlehr/enigma-zuerst-falsifizieren-dann-bauen"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-b91ed6",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=False, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/brainlehr/enigma-zuerst-falsifizieren-dann-bauen"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-bbd7fb",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=True, hits=3>=MIN_HITS=3=True, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/methodik/fertigkeiten/synergien"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-503687",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=False, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/tools/wiring-check-py-erreichbarkeitspruefung"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-8c633e",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=True, hits=3>=MIN_HITS=3=True, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/ops/buckeberg-anbieter-recherche-2026-07-23:"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-606b63",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=False, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/methodik/fertigkeiten/pause"
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-476602",
+      "kategorie": "b",
+      "rang": 22,
+      "detail": "VERDRAENGT, Rang 22 (ausgeliefertes Limit=7)",
+      "bester_ausgelieferter_treffer": "node:/ops/openlehr/kontakt-vorschlag-anlage-durch-ki"
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=False, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/brainlehr/dokumente/die-anwendung-in-schichten-und-was"
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/lessons/phase2-summary",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=False, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/shared/arch/startauftrag-fuer-neue-fachdomaenen"
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/testing/pytest",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=False, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/brainlehr/dokumente/die-anwendung-in-schichten-und-was"
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/brainlehr/inference-control-was-andere-faecher",
+      "kategorie": "b",
+      "rang": 17,
+      "detail": "VERDRAENGT, Rang 17 (ausgeliefertes Limit=10)",
+      "bester_ausgelieferter_treffer": "node:/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit"
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/openlehr/steuer/ui",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=False, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/brainlehr/systemweite-lastenkatalog-pflicht-fuer"
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "kategorie": "a",
+      "rang": null,
+      "detail": "NICHT IM INDEX (nicht geltend: gilt_ab/gilt_bis)",
+      "bester_ausgelieferter_treffer": "node:/methodik/arbeitsweise/03-funktioniert-braucht-einen-beleg"
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=True, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/methodik/arbeitsweise/15-wenn-du-unabhaengig-pruefen-willst"
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "kategorie": "c",
+      "rang": null,
+      "detail": "SCHLECHT BEWERTET (fts_match=True, hits=0>=MIN_HITS=3=False, embedding_vorhanden=True)",
+      "bester_ausgelieferter_treffer": "node:/methodik/arbeitsweise/03-funktioniert-braucht-einen-beleg"
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "kategorie": "b",
+      "rang": 13,
+      "detail": "VERDRAENGT, Rang 13 (ausgeliefertes Limit=10)",
+      "bester_ausgelieferter_treffer": "node:/methodik/arbeitsweise/05-was-von-disziplin-abhaengt"
+    }
+  ],
+  "zaehlung": {
+    "nenner": 20,
+    "bezugsrahmen": "die 20 in kern/messlauf_abrufguete.py::messe() nicht getroffenen der 35 loesbaren Faelle in Zustand B_2Kanal_an_Pflicht_aus",
+    "a": 1,
+    "b": 4,
+    "c": 15
+  },
+  "stand": {
+    "kennung": "20260820T102412-7db5f961",
+    "aufgenommen": "2026-08-20T12:24:12+02:00"
+  }
+}
