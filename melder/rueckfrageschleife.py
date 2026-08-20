@@ -74,7 +74,19 @@ FRAGE = re.compile(
     r"|deine\s+entscheidung\b|entscheide\s+du\b"
     r"|wartet\s+auf\s+(dich|deine)\b"
     r"|gib\s+mir\s+bescheid\b"
-    r"|(1|2|a|b)\s*(\)|\.)\s+.{3,60}\s+(oder|bzw\.?)\s+)",
+    r"|(1|2|a|b)\s*(\)|\.)\s+.{3,60}\s+(oder|bzw\.?)\s+)"
+    # ENGLISCH (2026-08-20). Gemessen: von vier englischen Rueckfragen fing
+    # dieser Waechter NULL. Der Assistent antwortet nicht immer deutsch --
+    # Subagenten, Werkzeugausgaben und ganze Zuege laufen englisch, und ein
+    # Waechter, der nur eine Sprache kennt, ist in der anderen abgeschaltet,
+    # ohne dass es jemand merkt.
+    r"|should\s+i\b|shall\s+i\b|want\s+me\s+to\b"
+    r"|(do|would)\s+you\s+(want|like)\s+me\s+to\b"
+    r"|let\s+me\s+know\s+(if|which|whether|what)\b"
+    r"|which\s+\w+\s+(should|do)\s+(i|you)\b"
+    r"|your\s+call\b|up\s+to\s+you\b"
+    r"|say\s+the\s+word\b"
+    r"|(tell|let)\s+me\s+which\b",
     re.I,
 )
 
@@ -87,7 +99,9 @@ STOPP = re.compile(
     r"|unumkehrbar|unwiderruflich|nicht\s+rueckgaengig|nicht\s+rückgängig|endgueltig\s+loesch|endgültig\s+lösch"
     r"|\bloesch|\blösch|verwerfen|ueberschreib|überschreib|zuruecksetz|zurücksetz"
     r"|geld|kosten|bezahl|rechnung|preis|abo|lizenz|vertrag"
-    r"|dritte[nr]?\b|kunde|mandant|empfaenger|empfänger|versenden|verschick)",
+    r"|dritte[nr]?\b|kunde|mandant|empfaenger|empfänger|versenden|verschick"
+    r"|publish|deploy|release\b|irreversible|permanently\s+delete|force[- ]push"
+    r"|payment|invoice|billing|subscription|contract|customer|tenant|recipient)",
     re.I,
 )
 
@@ -104,7 +118,11 @@ VORHABEN = re.compile(
     r"|jetzt\s+(baue|mache|folgt|kommt)\b"
     r"|weiter\s+(mit|geht)\b"
     r"|(fange|beginne)\s+(ich\s+)?(mit|bei)\b"
-    r"|dann\s+(baue|mache|pruefe|prüfe)\s+ich\b)",
+    r"|dann\s+(baue|mache|pruefe|prüfe)\s+ich\b"
+    r"|i(\s+a|')?ll\s+(build|write|check|measure|add|fix|start|run|take|extend)\b"
+    r"|i\s+will\s+\w+"
+    r"|next\s+(up|step|i)\b"
+    r"|let(\s+me|'s)\s+(build|write|check|measure|add|fix|start|run)\b)",
     re.I,
 )
 
@@ -264,6 +282,22 @@ def _selftest() -> int:
 
     # Stopp-Punkt schlaegt auch die strukturelle Pruefung: hier IST Warten richtig.
     assert beurteile("Ich pushe die 45 Commits.", hat_werkzeug=False) is None
+
+    # ENGLISCH, beide Richtungen. Gemessen am 2026-08-20: vorher fing dieser
+    # Waechter NULL von vier englischen Rueckfragen -- in einem englischen Zug
+    # war er abgeschaltet, ohne dass es jemand merkte.
+    for text in ("Should I build that?",
+                 "Want me to go ahead with the sliders?",
+                 "Let me know which one you prefer.",
+                 "Your call."):
+        assert beurteile(text, hat_werkzeug=True), f"englische Rueckfrage nicht gefangen: {text}"
+    # Gegenprobe: englischer Fliesstext ohne Rueckfrage bleibt still. Ohne
+    # diesen Fall waere die Erweiterung eine Sperre gegen die Sprache.
+    for text in ("Measured 377 tests, all green. The slider cuts 84 % of the edges.",
+                 "I measured it and the column was missing."):
+        assert beurteile(text, hat_werkzeug=True) is None, f"Fehlalarm auf: {text}"
+    # Und ein Stopp-Punkt auf Englisch bleibt erlaubt -- dort IST Frage Pflicht.
+    assert beurteile("Should I push this to the remote?", hat_werkzeug=True) is None
 
     print("rueckfrageschleife: Selbsttest gruen (5 Frage-, 4 Ankuendigungsfaelle, "
           "11 Negativfaelle, Stopp-Punkt schlaegt beide Pruefungen)")

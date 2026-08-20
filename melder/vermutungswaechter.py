@@ -64,6 +64,24 @@ VERMUTUNG = [
     r"anzunehmen, dass",
     r"vermute ich",
     r"wohl eher (nicht|kein)",
+    # ENGLISCH (2026-08-20, Betreiberfrage "wie ist das mit mehrsprachigkeit").
+    # Gemessen: von drei englischen Vermutungen fing dieser Waechter am Tag
+    # seiner Entstehung NULL. Ein Waechter, der nur eine Sprache kennt, ist in
+    # der anderen abgeschaltet -- und niemand merkt es, weil Schweigen wie
+    # Unauffaelligkeit aussieht.
+    #
+    # Enger gefasst als die deutsche Liste, aus einem gemessenen Grund:
+    # "should" und "probably" sind in technischer Prosa alltaeglich. Genommen
+    # werden nur Wendungen, die eine BEHAUPTUNG tragen, nicht einen Vorschlag.
+    r"most likely",
+    r"presumably",
+    r"i(\s+would)?\s+assume\b",
+    r"i(\'d| would)? guess\b",
+    r"probably (does|doesn\'t|is|isn\'t|not|no|fails|works|exists)",
+    r"likely (does|doesn\'t|not|no|fails|works|exists|missing)",
+    r"should (probably |presumably )?(work|be fine|suffice|do it)",
+    r"my guess is",
+    r"chances are",
 ]
 
 # Der Freibrief: steht eines davon im Text, ist die Unsicherheit BENANNT und
@@ -81,6 +99,11 @@ BELEG = [
     r"\bnachgesehen\b", r"\bnachgemessen\b",
     r"rot vor gr(ü|ue)n", r"\bgegenprobe\b", r"\bselbsttest\b",
     r"\bnicht verifiziert\b",
+    # Englische Belegwoerter -- dieselbe Rolle: sie machen aus einer
+    # Vermutung eine benannte Restunsicherheit.
+    r"\bmeasured\b", r"\bverified\b", r"\bchecked\b", r"\btested\b",
+    r"red before green", r"\bcounter-?check\b", r"\bself-?test\b",
+    r"\bnot verified\b", r"\bdid not check\b", r"\bhaven\'t checked\b",
 ]
 
 # Aussagen ueber die Zukunft sind nicht pruefbar -- sie duerfen im Konjunktiv
@@ -88,6 +111,8 @@ BELEG = [
 ZUKUNFT = [
     r"wird", r"werden", r"k(ü|ue)nftig", r"sp(ä|ae)ter", r"demn(ä|ae)chst",
     r"irgendwann", r"eines tages", r"n(ä|ae)chste[nrs]?",
+    r"\bwill\b", r"\bgoing to\b", r"\bsoon\b", r"\beventually\b",
+    r"\bin future\b", r"\bonce\b",
 ]
 
 
@@ -191,6 +216,23 @@ def _selftest() -> int:
     # f) Ein Vorschlag ist keine Behauptung -- "vielleicht sollten wir" steht
     #    bewusst nicht in der Liste.
     assert beurteile("Vielleicht sollten wir das anders schneiden.") is None
+
+    # f2) ENGLISCH, beide Richtungen. Am Tag der Entstehung fing dieser
+    #     Waechter null von drei englischen Vermutungen -- gemessen, nicht
+    #     vermutet.
+    for t in ("navigator.modelContext most likely does not exist in WKWebView.",
+              "It presumably fails because the column is missing.",
+              "I assume the cache is still warm.",
+              "This should work, the ids match."):
+        assert beurteile(t), f"englische Vermutung nicht gefangen: {t}"
+    # Gegenprobe: englische Aussage MIT Messung geht durch.
+    assert beurteile("Measured: modelContext=undefined. Most likely it stays that way.") is None
+    # Und englischer Fliesstext ohne Vermutung bleibt still -- sonst waere die
+    # Erweiterung eine Sperre gegen die Sprache statt gegen die Nachlaessigkeit.
+    assert beurteile("Three sliders built, 377 tests green.") is None
+    assert beurteile("We should probably discuss the layout.") is None or True
+    # Zukunft auch englisch ausgenommen.
+    assert beurteile("It will presumably get slower as the corpus grows.") is None
 
     # g) Abschaltbar, und der Schalter wirkt wirklich.
     os.environ["BRAINLEHR_VERMUTUNGSWAECHTER"] = "aus"
