@@ -98,6 +98,56 @@ geschlossen auf einen benannten Mandanten. Ein Rückweg gehört dazu.
 Sie setzen die Achse aus B1 voraus; jede vorher gebaute Rechteprüfung hätte
 nichts, worauf sie prüfen könnte.
 
+**B3b — Normen an Personenkreise binden** (Teil von B3, eigener Abschnitt weil
+er eine SCHREIBVORGABE enthält, nicht nur ein Recht)
+
+Betreiberfrage vom 2026-08-20: „sollten direktiven zumindest im corporate
+einsatz nicht auch an bestimmte personenkreise gebunden sein? denn auch eine
+direktive / regel / lehre kann ein geheimnis verraten was nicht jeden im
+unternehmen angeht?"
+
+**Gemessener Ist-Stand:** Sieben Rollen im Ausweiswesen, aber die Rechte sind
+an die GATTUNG gebunden (`wissen:lesen`, `lehre:schreiben`), nicht an den
+einzelnen Eintrag. Wer `wissen:lesen` hat, liest ALLES. Die einzige Abstufung
+ist `freigabe` (intern 3 346 / offen 1 886) — und die trennt Haus von Welt,
+nicht Kreis von Kreis. Eine Spalte für Rolle oder Personenkreis an einer Norm
+gibt es nicht.
+
+**Die Blaupause existiert bereits, für genau einen Sonderfall:** Die Rolle
+`raumplaner` hat einen engen Zugang — „Volltext bleibt gesperrt;
+`knowledge_read` liefert nur die am Datensatz für Raumplanung freigegebene
+Nutzinformation" (`kern/ausweis.py:244`). Das ist eine Zweckbindung JE
+DATENSATZ, verdrahtet statt als Achse gebaut.
+
+**DER ZIELKONFLIKT, den keine Rechteverwaltung auflöst:**
+
+> Eine Norm, die man nicht sehen darf, kann man nicht befolgen.
+
+Drei Fälle, und nur der dritte ist hart:
+1. *Regel gilt nur für Kreis X* → nur X sieht sie. Reine Rechtefrage.
+2. *Regel gilt für alle, Inhalt harmlos* → offen. Der Normalfall.
+3. *Regel gilt für alle, aber ihre BEGRÜNDUNG trägt ein Geheimnis.* Die Regel
+   muss jeder kennen; der Vorfall dahinter nennt vielleicht einen Namen.
+
+**Für Fall 3 gibt es hier bereits ein Verfahren, nur an der falschen Grenze.**
+Der öffentliche Export trennt genau so: abstrakte Fehlerlehre (Ursache,
+Behebung, Vermeidung, ohne Projektbezug) geht hinaus, der konkrete Fall
+bleibt. Dieselbe Trennung NACH INNEN angewandt ist die Antwort.
+
+**Daraus folgt: Das ist keine reine Rechtefrage, sondern eine
+SCHREIBVORGABE.** Wer eine Norm erfasst, muss sie so formulieren, dass ihr
+allgemeiner Teil ohne den vertraulichen auskommt. Sonst hilft keine Rolle —
+man kann eine Regel nicht halb zeigen, wenn Regel und Begründung in einem
+Satz stehen.
+
+**Was zu bauen wäre, in dieser Reihenfolge:**
+* Die Achse: welcher Kreis darf diesen Eintrag sehen (nicht: welche Rolle darf
+  Wissen lesen).
+* Die Trennung im Eintrag: allgemeiner Teil und Begründung getrennt
+  adressierbar — das ist der eigentliche Aufwand, nicht die Rechteprüfung.
+* Ein Negativtest je Kreis: der fremde Kreis sieht den engen Teil NICHT. Ein
+  Positivtest allein belegt keine Trennung.
+
 **A1–A3 — die drei Abruf-Lücken.** Hängen an keinem der beiden und können
 sofort und parallel laufen:
 * **Widerspruchserkennung.** holographic vergleicht Jaccard-Überlappung gegen
