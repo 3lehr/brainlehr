@@ -71,7 +71,7 @@ Betriebsprofil-Plan.
 | B2 | P09-AC2 | Wechsel `einzelplatz` -> `unternehmen` und Rueckweg, mit Bestandszaehlung |
 | B3 | E03, E06, E22, E23 | Mandanten- und Kreistrennung erzwungen, Negativmatrix |
 | C | P11, P12 | `einrichtung_starten` im Chat, Kataloge als `nachschlagewerk`, Fremdimport ohne erfundene Herkunft |
-| A2 | -- | Rueckzug bei Leerlauf, gegen die Nulllinie 37,8 % |
+| A2 | -- | **verworfen nach Messung**, siehe §6 |
 | A3 | -- | Aussetzer-Sicherung gegen tote Dienste |
 | D | E25 | Zugriffsmuster: Zugriffe je Knoten und Abdeckung, nicht Menge |
 | E1 | P13 | Verfallsrate je Ast: Schaetzung + Widerrufsquote |
@@ -122,6 +122,37 @@ zwei von drei Entwuerfen waren beim ersten Lauf falsch.
 | `mandant` Vorgabe `lokal` | Betreiberauftrag 2026-08-21 woertlich: "mandant Vorgabe lokal" -- sticht den Planvorschlag `einzelplatz` fuer die SPALTE |
 | Profilnamen `einzelplatz` / `unternehmen` | offene Entscheidung des Betriebsprofil-Plans, hier vom Assistenten getroffen: deutsch wie der uebrige Bestand (`freigabe`, `geltung`, `herkunft`) |
 | `schema.sql` gehoert B1 allein | dieser Plan, §1 |
+
+## §7 Verworfen nach der Messung: A2 Rueckzug bei Leerlauf
+
+Zwei Fassungen gebaut und gegen dieselben 259 Protokollzeilen gerechnet:
+
+| | Zustand je Sitzung | Zustand je Sitzung UND Thema |
+|---|---|---|
+| gesparte Suchen | 40,5 % (105/259) | **0,4 %** (1/259) |
+| verpasste echte Treffer | 38,6 % (66/171) | **0,0 %** (0/171) |
+
+Die erste Fassung frisst 38,6 % der echten Treffer -- fuer einen Speicher,
+dessen einziger Zweck das Wiederfinden ist, der falsche Tausch. Rechenzeit
+und ein verpasster Treffer sind nicht dieselbe Waehrung.
+
+Die zweite Fassung haelt die Schranke (0 % verpasst), spart aber nichts:
+Zwei aufeinanderfolgende Prompts zum selben Gespraechsthema benutzen fast nie
+dieselben acht Stichwoerter, also gilt fast jeder Aufruf als neues Thema und
+wird sofort gesucht. **Sicher und wirkungslos.**
+
+**Entscheidung: nicht gebaut.** Ein Mechanismus, der 0,4 % spart, kostet
+dauerhaft Zustand und ein Protokollfeld auf dem heissesten Pfad des Systems
+-- er laeuft bei JEDEM Prompt. Das ist teurer als das Problem. Der Code ist
+verworfen, die MESSUNG bleibt
+(`runs/leerlauf_nulllinie_2026-08-21.json`), und mit ihr der Nebenbefund,
+der unabhaengig davon gilt: die 37,8 % Leer-Anteil aus dem Plan waren ein
+Codekommentar ueber den alten Suchweg vor dem 2026-08-09; gemessen sind es
+**34,1 %** am wirklich haengenden Hook.
+
+**Was ein Folgeauftrag versuchen muesste**, falls jemand es doch will:
+unscharfe Themenzugehoerigkeit (Stichwort-UEBERLAPPUNG statt Gleichheit),
+gegen dieselbe 5-%-Schranke gemessen. Ausdruecklich nicht angefangen.
 
 ## §6 Verlauf
 
@@ -177,3 +208,4 @@ zwei von drei Entwuerfen waren beim ersten Lauf falsch.
   Schema -- eine Zeile, kein Feld. Damit haengt B2 nur noch an der Achse.
     einem anderen Arbeitsbaum (`baum-20260818T114527`, seit 10,5 h). Es wird
     ausschliesslich committet, was die Agenten dieses Laufs angefasst haben.
+* 2026-08-21T01:30 -- B2 fertig (`56602630`). A2 nach Messung verworfen, siehe §7. Vorrichtungsfehler aus B1 behoben (`8d2f99ae`); die sechs uebrigen Fehler derselben Datei sind vorbestehend, in einem Arbeitsbaum auf 1611398b nachgewiesen.

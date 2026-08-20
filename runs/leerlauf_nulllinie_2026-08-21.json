@@ -1,0 +1,61 @@
+{
+  "auftrag": "A2 Rueckzug bei Leerlauf, docs/PLAN_BETRIEBSPROFILE_2026-08-20.md",
+  "bezugspunkt_code": "1611398b",
+  "erzeugt": "2026-08-21T00:00:00+02:00",
+  "gepruefter_hook": {
+    "kandidaten": [
+      "haken/knowledge_recall_hook.py",
+      "hub/scripts/knowledge_recall_hook.py (existiert im Nachbarrepo nicht -- Pruefung negativ, nur brainlehr/haken/ hat die Datei)"
+    ],
+    "wirklich_verdrahtet": "haken/knowledge_recall_hook.py, ueber ~/.claude/settings.json (User-Ebene, NICHT Projekt-Ebene) unter hooks.UserPromptSubmit -- 5 Eintraege dort, dieser Hook ist der zweite. .claude/settings.json im Projekt selbst enthaelt KEIN UserPromptSubmit (nur PreToolUse/Stop/PostToolUse/SubagentStart/SessionStart) -- die Verdrahtung liegt ausschliesslich user-global.",
+    "abweichung_vom_auftrag": "Der Auftragstext nennt als zweiten Kandidaten 'hub/scripts/knowledge_recall_hook.py im Nachbarrepo /Volumes/daten/Begod2026/hub' -- diese Datei existiert dort nicht (geprueft: nicht vorhanden). Im Agentenanker-Abruf vor dieser Aufgabe wurde stattdessen 'haken/knowledge_recall_hook.py' als Fundstelle genannt, was mit der tatsaechlichen Verdrahtung uebereinstimmt."
+  },
+  "zero_hit_log_befund": {
+    "n": 1363,
+    "leer_anteil_prozent": 100.0,
+    "einordnung": "NICHT vergleichbar mit recall_log.jsonl. zero_hit_log.jsonl wird von einem ANDEREN Pfad geschrieben (knowledge_mcp_server.py::_log_zero_hit, ueber das explizite knowledge_search-MCP-Tool -- siehe tests/test_zero_hit_herkunft.py, Kopfzeilen 1-4), nicht vom UserPromptSubmit-Hook. Die Datei protokolliert per Bauart NUR Nulltreffer (100% ist tautologisch, keine Rate) und ist fuer diesen Auftrag kein Beleg."
+  },
+  "vorher": {
+    "quelle": "recall_log.jsonl, gesamter Bestand vor der Aenderung (Log rotiert bei 1MB, deckt nur einen Ausschnitt: 2026-08-20T06:52:34+00:00 bis 2026-08-20T22:31:16+00:00, danach wuchs die Datei waehrend dieser Sitzung weiter -- s. 'n_gesamt' unten schliesst die eigenen Prompts dieser Sitzung mit ein, da der Hook live an jedem Prompt haengt)",
+    "n_gesamt": 258,
+    "n_leer": 88,
+    "leer_anteil_prozent": 34.1,
+    "widerspruch_zum_plan": "Der Plan behauptet 37,8% -- das ist eine reale Zahl, aber aus einem FALSCHEN Zusammenhang: sie steht als Kommentar in knowledge_recall_hook.py bei SUCHPFAD_ABRUF (Zeile ~586) und misst den ALTEN Suchweg VOR dessen Einfuehrung (Auftrag 2026-08-09), nicht den heute aktiven Pfad. Die tatsaechliche, frisch gemessene Nulllinie des LIVE geschalteten Hooks ist 34,1% (88/258), nicht 37,8%."
+  },
+  "nachher_simulation": {
+    "methode": "Replay derselben 258 Protokollzeilen (dieselben Daten wie 'vorher') durch die neue Zustandsmaschine (_leerlauf_zustand/_leerlauf_entscheidung/_leerlauf_naechstes_intervall aus haken/knowledge_recall_hook.py), Session-weise in Originalreihenfolge. Die tatsaechliche Suche selbst wurde NICHT geaendert -- fuer jeden NICHT uebersprungenen Aufruf gilt exakt das historische Ergebnis (gleiche DB, gleicher Prompt). Kein Warten auf neuen Live-Traffic: dieselbe Datenmenge wie im Schritt 'vorher', wie im Auftrag verlangt.",
+    "n_echte_suchen": 153,
+    "n_uebersprungen": 105,
+    "anteil_eingesparter_suchen_prozent": 40.7,
+    "leer_anteil_bei_echter_suche_prozent": 32.0,
+    "leer_anteil_ueber_alle_protokollzeilen_inkl_uebersprungen_prozent": 59.7,
+    "gesamt_original_treffer_im_datensatz": 170,
+    "davon_durch_ueberspringen_verpasst": 66,
+    "verpasste_treffer_anteil_prozent": 38.8
+  },
+  "befund": "Fassung 1 (Zustand nur an der Sitzung) wurde VERWORFEN -- 66 von 170 echten Treffern verpasst (38,8%) gegen 40,7% gesparte Suchen war der falsche Tausch (Betreiberentscheidung 2026-08-21, Bezugspunkt 7bc2dcb6: 'fuer einen Speicher, dessen einziger Zweck das Wiederfinden ist, ist das der falsche Tausch'). Ursache: der Zustand haengte an der SITZUNG, nicht am THEMA -- eine Folge leerer Treffer zu Thema A bestrafte den ersten Aufruf zu einem voellig neuen Thema B. Nacharbeit unten (Fassung 2) behebt das.",
+  "nacharbeit_fassung2_2026-08-21": {
+    "aenderung": "Zustand haengt an (Sitzung, Thema) statt nur an der Sitzung. Thema = thema_schluessel(keywords(prompt)) -- dieselbe Stichwort-Ableitung, die der Hook ohnehin fuer die Suche zieht (keine zweite Ableitung gebaut), sortiert+gefaltet zu einem stabilen sha1-Kurzschluessel. Ein Themenwechsel liefert per Definition KEINE Vorgeschichte in zustand() -> wirkt wie ein Treffer (sofortiger Rueckfall auf Intervall 1). Rechenteil ausgegliedert nach haken/leerlauf_rueckzug.py (eigenes Modul -- der Monolith-Waechter hatte bei Fassung 1 recht, s. dessen Moduldoc).",
+    "methode": "Replay derselben recall_log.jsonl-Zeilen (n=259, gewachsen um 1 gegenueber der 'vorher'-Messung durch Live-Traffic dieser Sitzung -- derselbe Bestand, kein neuer Datensatz) durch BEIDE Fassungen nacheinander, session-/(session,thema)-weise in Originalreihenfolge. Thema je Zeile aus dem geloggten 'prompt'-Feld ueber dieselbe keywords()-Funktion wie main(). Zeilen ohne 'prompt' (Herkunftsmodus/aeltere Zeilen) fallen in einen gemeinsamen Fallback-Bucket -- das UNTERSCHAETZT eher die Zahl erkannter Themenwechsel (zugunsten Fassung 1, konservativ).",
+    "fassung1_nur_sitzung": {
+      "n_gesamt": 259,
+      "n_echte_suchen": 154,
+      "n_uebersprungen": 105,
+      "anteil_eingesparter_suchen_prozent": 40.5,
+      "gesamt_original_treffer": 171,
+      "davon_durch_ueberspringen_verpasst": 66,
+      "verpasste_treffer_anteil_prozent": 38.6
+    },
+    "fassung2_sitzung_und_thema": {
+      "n_gesamt": 259,
+      "n_echte_suchen": 258,
+      "n_uebersprungen": 1,
+      "anteil_eingesparter_suchen_prozent": 0.4,
+      "gesamt_original_treffer": 171,
+      "davon_durch_ueberspringen_verpasst": 0,
+      "verpasste_treffer_anteil_prozent": 0.0
+    },
+    "schranke_5_prozent_verpasste_treffer": "GEHALTEN: 0,0% <= 5%. Kein gesuchter Wert -- exakte Nachrechnung derselben Simulation.",
+    "ehrlicher_zusatzbefund_unaufgefordert": "Die Schranke ist eingehalten, aber der Nutzen ist auf DIESEM Datensatz fast null: die gesparten Suchen fallen von 40,5% (Fassung 1) auf 0,4% (Fassung 2). Ursache: thema_schluessel() verlangt EXAKTE Uebereinstimmung der abgeleiteten Stichwortmenge -- zwei aufeinanderfolgende Prompts zum selben Gespraechsthema benutzen in der Praxis fast nie dieselben 8 Schluesselwoerter, deshalb gilt fast jeder Aufruf als 'neues Thema' und wird sofort gesucht. Der Mechanismus ist damit SICHER (keine verpassten Treffer), aber in der jetzigen Bauform WIRKUNGSLOS gegen echten Leerlauf innerhalb eines Themas -- er haette nur bei woertlich wiederholten/sehr aehnlichen Anfragen gegriffen. Nicht weiter ausgebaut (kein Auftrag dazu, kein spekulativer Umbau): eine unscharfe Themenzugehoerigkeit (z.B. Ueberlappungsschwelle statt Gleichheit) koennte mehr sparen, braucht aber einen eigenen Messlauf gegen die 5%-Schranke, den dieser Auftrag nicht verlangt."
+  }
+}
