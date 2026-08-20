@@ -442,6 +442,51 @@ einer Forderung. Ein System, das aus einem Satz im Speicher selbständig Code
 erzeugt, hat keine Instanz mehr, die „das ist falsch verstanden" sagen kann.
 Der Preis: Es bleibt bei einer Vorlage, und der Mensch entscheidet.
 
+## G — Der zweite Faktor: vorbereitet, NICHT gebaut
+
+Betreiberauftrag vom 2026-08-20, wörtlich: „vorbereitet noch nicht bauen, alle
+wege!" Anlass war seine Frage: „was ist wenn der pc geklaut (polizei ;-) wird
+und oder der pc samt den rechner mit unseren tresor?"
+
+**Der Unterschied, der alles entscheidet:** Ein TOTP-Code *authentifiziert*,
+er *verschlüsselt* nicht. Wer die Platte hat, überspringt jede Codeprüfung im
+Programm — sie ist nur eine `if`-Abfrage. Was hilft, ist ein zweiter
+SCHLÜSSELTEIL, ohne den der Bestandsschlüssel gar nicht erst entsteht.
+
+**Alle Wege, mit ihren Grenzen — keiner ist entschieden:**
+
+| Weg | schützt gegen | Grenze | Aufwand je Start |
+|---|---|---|---|
+| **Passphrase, getippt** | Diebstahl, Beschlagnahme, Kopie der Platte | Mensch muss sie sich merken; vergessen = Totalverlust | einmal tippen |
+| **Hardware-Token** (Challenge-Response) | Diebstahl der Platte allein | wird mit dem Rechner zusammen mitgenommen | Stecken, berühren |
+| **Handy-App** hält Schlüsselteil | Diebstahl der Platte allein | dito, wenn beides zusammenliegt; braucht Kopplung | Freigabe am Handy |
+| **Schlüsseldatei auf Wechselmedium** | Diebstahl der Platte allein | Medium liegt oft daneben | Stick stecken |
+| **Netzabruf beim Start** | Diebstahl, wenn der Abruf gesperrt werden kann | braucht Netz und einen Dienst — bricht local-first | keiner |
+| **Aufteilung** (Shamir, k von n) | Verlust eines Teils | Verwaltung mehrerer Teile | je nach Aufbau |
+
+**Der Fall, den der Betreiber meint (Beschlagnahme), trennt sie scharf:**
+Hardware-Token, Handy und Wechselmedium werden mit beschlagnahmt. Nur die
+**getippte Passphrase** und der **sperrbare Netzabruf** überstehen ihn — und
+der Netzabruf widerspricht `BDW-P05` (local-first).
+
+**Die Frage, die vor der Entscheidung zu beantworten ist**, und sie ist keine
+technische: Wie oft startet brainlehr? Eine Passphrase bei jedem
+Sitzungsstart ist etwas anderes als einmal am Tag. Messbar am `access_log`
+über die Zahl unterschiedlicher Sitzungen je Tag — noch nicht erhoben.
+
+**Was zusätzlich zu klären ist, bevor irgendetwas gebaut wird:**
+* Was passiert bei Verlust des zweiten Faktors? Ohne Rückweg ist jeder dieser
+  Wege ein Totalverlustrisiko — und ein Rückweg ist zugleich eine Hintertür.
+* Gilt der zweite Faktor je Start oder je Entschlüsselung? Ersteres ist
+  bequem und hält den Schlüssel im Speicher; Letzteres ist streng und
+  unbenutzbar.
+* Betrifft er nur den Bestandsschlüssel oder auch die Knotenschlüssel (E/
+  ADR-031)? Zwei Ebenen, zwei mögliche Antworten.
+
+**Ausdrücklich nicht gebaut.** Dieser Abschnitt hält die Wege fest, damit die
+Entscheidung später auf einer vollständigen Liste steht statt auf dem, was
+gerade einfällt.
+
 ## Verworfene Wege
 
 * **Mandanten-Achse erst beim ersten Piloten** — der vom Betreiber geforderte
