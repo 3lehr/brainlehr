@@ -49,6 +49,19 @@ ZUSTAND = Path.home() / ".brainlehr-regelrouting.json"
 # jedem Werkzeugaufruf mit.
 ROUTEN: dict[str, tuple[str, ...]] = {
     "wcag": (".swift", ".html", ".css", ".tsx", ".jsx", ".vue", ".dart", ".xaml"),
+    # Seit 2026-08-20: drei weitere Gruppen, nachdem die Betreiberweisung vom
+    # selben Tag ("wollten wir die claude.md nicht schmal halten und dafuer
+    # routen?") ergab, dass der Mechanismus zwar lief, aber nur EIN Thema
+    # kannte. 705 Zeilen Systemprompt, davon 272 an eine Dateiart gebunden.
+    "codebau": (".py", ".swift", ".dart", ".ts", ".tsx", ".js", ".jsx",
+                ".go", ".rs", ".java", ".kt", ".rb", ".php", ".sql"),
+}
+
+# Regeln, die nicht an einer DATEIART haengen, sondern an einem WERKZEUG.
+# Die Aufteilung ist noetig, weil ein Agentenaufruf keinen Dateipfad hat --
+# ein reiner Endungsvergleich haette diese Gruppe nie eingespielt.
+ROUTEN_WERKZEUG: dict[str, tuple[str, ...]] = {
+    "agenten": ("Agent", "Task"),
 }
 
 # Werkzeuge, bei denen ein Pfad ueberhaupt eine Absicht verraet. Ein `Read`
@@ -61,6 +74,16 @@ def _aus() -> bool:
 
 
 def passende_regel(werkzeug: str, pfad: str) -> str | None:
+    """Welche Regelgruppe passt zu diesem Werkzeugaufruf -- oder keine.
+
+    ZWEI Wege, und der zweite kam am 2026-08-20 dazu: Regeln fuer
+    Agentenauftraege haengen an einem WERKZEUG, nicht an einer Dateiart. Ein
+    Agentenaufruf hat keinen Dateipfad; ein reiner Endungsvergleich haette
+    diese Gruppe nie eingespielt und sie waere still verschwunden -- die
+    Fehlklasse, vor der tests/test_regelrouting_vollstaendig.py wacht."""
+    if werkzeug in ROUTEN_WERKZEUG.get("agenten", ()) or any(
+            werkzeug in w for w in ROUTEN_WERKZEUG.values()):
+        return next(g for g, w in ROUTEN_WERKZEUG.items() if werkzeug in w)
     if werkzeug not in WERKZEUGE or not pfad:
         return None
     klein = pfad.lower()
