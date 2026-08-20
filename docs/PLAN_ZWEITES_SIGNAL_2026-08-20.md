@@ -181,9 +181,21 @@ und beidseitig wiederholt.
 | **S3** CFAR | **Nullbefund**. Robustes z-Maß über alle 5217 Knoten trennt nicht: [1,99–3,22] gegen [1,78–3,05]. Damit sind drei Verfahren geprüft und drei ausgefallen. |
 | **S4** blinde Beurteilung | **Das Messinstrument wackelt.** 7 von 15 „Treffern" sind bei blinder Prüfung keine, 4 von 20 „Fehlgriffen" sind welche, Übereinstimmung 24/35. Gegenüber der ersten Beurteilung weichen 10 von 20 ab. |
 
-**S4 ist der schwerste Befund und er ist unverarbeitet:** Jede Zahl dieses
-Tages, die auf der Trefferzählung aufbaut, steht unter Vorbehalt. Der
-Engpass ist möglicherweise nicht der Abruf, sondern das Instrument.
+**S4 gegengeprüft, zur Hälfte berichtigt** (`runs/beurteilungsfenster_2026-08-20.json`):
+
+Der Teil „Korpus zu mild" trägt **nicht**. 6 von 7 Fällen sind ein Artefakt
+des **Beurteilungsfensters** — beide Beurteilungen sahen nur die Top 3, der
+Messlauf zählt aber die ausgelieferte Menge (10 Knoten, 7 Lehren). Die Ziele
+lagen auf Rang 4, 4, 4, 5, 7 und 8. Übrig bleibt ein echter Fall (`L-0392e4`,
+Rang 1).
+
+Der Teil „Korpus zu streng" **steht** (4 von 20) — ein zu kleines Fenster
+kann diese Richtung nicht erzeugen.
+
+Ursache war mein eigener Auftrag: „die drei besten tatsächlich ausgelieferten
+Titel", ohne das Auslieferungsfenster danebenzustellen. `L-c2f6ee`, zweites
+Vorkommen — beim ersten Mal war der Deckel fremd, hier habe ich ihn selbst
+gesetzt, und genau deshalb fiel er nicht auf.
 
 ### S5 — der Fälligkeitskanal (neu, aus einer Betreiberfrage)
 
@@ -219,8 +231,11 @@ die zweite Seite — was einspaltig gespeichert ist, wird einspaltig gedacht.
 
 ### Offen
 
-1. **S4 verarbeiten** — der Prüfkorpus urteilt in beide Richtungen falsch.
-   Bevor eine weitere Zahl auf ihm aufbaut, gehört er selbst geprüft.
+1. **Die vier „zu streng"-Fälle prüfen** — die einzige Hälfte des
+   S4-Befundes, die die Gegenprobe überlebt hat. Und die Frage dahinter:
+   Braucht der Korpus **Mehrfachziele**? Er kennt je Fall genau ein Ziel,
+   während mehrere Einträge dieselbe Frage beantworten können — genau das
+   war der Inhalt aller vier Fälle.
 2. **S2 scharfschalten**, sobald das Protokoll ein paar Tage Kosinuswerte
    gesammelt hat. Ein Schalter, keine Arbeit.
 3. **Aufgriff nach Stärke auswerten** — geht erst mit den neuen Protokolldaten.
