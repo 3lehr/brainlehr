@@ -140,5 +140,40 @@ zwei von drei Entwuerfen waren beim ersten Lauf falsch.
     der Mandanten-ACHSE, nicht am Profilbegriff.
   * Fremde Arbeit im Baum: acht weitere Claude-Fenster laut Startmeldung,
     aber im Agentenregister nur EIN fremder Agent ohne `stop` -- und der in
+
+* 2026-08-21T01:15 -- Welle 1 abgeschlossen bis auf A2, Welle 2 laeuft.
+
+  | Strang | Commit | Ergebnis |
+  |---|---|---|
+  | B1 | `f64e7a12` | vier Achsen im Schema, beide Ausgangszustaende, je Achse Negativtest |
+  | A3 | `7bc2dcb6` | Aussetzer nach 5 Fehlern, 120 s, protokolliert und an `SessionStart` verdrahtet |
+  | D | `7a41e528` | Zugriffsmuster, Positivkontrolle schlaegt an, echter Bestand 0 Treffer |
+  | E1 | `abde354f`, `f6933dbd` | Verfallsrate je Ast, dritte Quelle gesetzt statt geraten |
+  | P14 | `df9299cf` | englische Tuer, deutsche Fassungen erhalten |
+  | A2 | -- | **NICHT committet**, siehe unten |
+
+  **Vier Befunde, die den Plan geaendert haben:**
+  * **Die Spracherkennung aus dem Plan existiert nicht.** "36 Stoppwoerter,
+    758/770" stand als Messung da, im Code gab es sie nur in fremden
+    Arbeitsbaeumen. Neu gebaut, gemessen: 0,05 % Falschzuweisung.
+  * **Die 37,8 % Leer-Anteil sind widerlegt.** Es war ein Codekommentar ueber
+    den ALTEN Suchweg vor 2026-08-09. Am wirklich haengenden Hook gemessen:
+    **34,1 %**. Und der zweite Kandidat aus dem Auftrag
+    (`hub/scripts/knowledge_recall_hook.py`) existiert gar nicht.
+  * **A2 wird nicht gebaut, solange die Messung Nein sagt.** Der Rueckzug
+    spart 40,7 % Suchen und verpasst dabei 38,8 % der echten Treffer. Fuer
+    einen Speicher, dessen Zweck das Wiederfinden ist, ist das der falsche
+    Tausch -- Rechenzeit und ein verpasster Treffer sind nicht dieselbe
+    Waehrung. Ursache ist klein: der Zustand haengt an der SITZUNG statt am
+    THEMA, also bestraft er das naechste Thema fuer das Schweigen des
+    vorigen. Nacharbeit laeuft, Schranke: hoechstens 5 % verpasste Treffer,
+    sonst wird der Rueckzug verworfen.
+  * **Der naive Zugriffsmelder haette eine Massenmigration gemeldet** (754
+    Schreibzeilen, 380 Knoten, NULL Lesevorgaenge, Faktor 2,04). Er zaehlt
+    jetzt nur lesende Aktionen; die Rot-Probe dazu ist festgehalten.
+
+  **Eine Sperre wurde verkleinert, ohne ihre Begruendung anzutasten:** Der
+  Profilschalter gehoert in `knowledge_config` (Schluessel-Wert) und nicht ins
+  Schema -- eine Zeile, kein Feld. Damit haengt B2 nur noch an der Achse.
     einem anderen Arbeitsbaum (`baum-20260818T114527`, seit 10,5 h). Es wird
     ausschliesslich committet, was die Agenten dieses Laufs angefasst haben.

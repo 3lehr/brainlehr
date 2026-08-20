@@ -1,3 +1,23 @@
+# STAND brainlehr — 2026-08-21T01:15:00+0200
+
+**Lage:** Zweig `brainlehr/b4-ausweis`. Gesamtbau der acht Straenge A-G laeuft
+(`docs/PLAN_GESAMTBAU_2026-08-21.md`). Fertig und committet: B1 Achsen im
+Schema (mandant/kreis/sprache + `geltung_je_kreis`) · A3 Aussetzer-Sicherung ·
+D Zugriffsmuster · E1 Verfallsrate · P14-Tuer. Laufend: B2 · B3 · F · A2.
+**Fallen, heute gemessen:** (1) Ein `CREATE INDEX`/Trigger in `schema.sql` auf
+eine NACHGEZOGENE Spalte bricht auf gewachsenen Datenbanken ab und
+`executescript` fuehrt ab da still nichts mehr aus -- solche Anweisungen ans
+DATEIENDE (`L-1ffae7`). (2) Wer `schema.sql` aendert, hat die Betriebsdatenbank
+ab diesem Moment nicht mehr allein: ein Hook zog die Spalten selbst nach.
+(3) `tests/naht_basis.json` ist veraltet, die Ratsche ist schon am
+Bezugspunkt rot. (4) A2 (Rueckzug bei Leerlauf) wird **nicht** committet,
+solange er 38,8 % echter Treffer frisst -- die Messung sagt Nein.
+
+---
+
+*Der folgende Teil ist aeltere Lage und bewusst nicht geloescht: er traegt die
+Push- und Export-Fallen, die nirgendwo sonst stehen.*
+
 # STAND brainlehr — 2026-08-19T12:10:00+0200
 
 ## Drei Repos, nicht zwei -- und der Export lag in old_temp (2026-08-20, abends)
