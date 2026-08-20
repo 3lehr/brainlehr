@@ -116,6 +116,51 @@ ZUKUNFT = [
 ]
 
 
+# ZWEITE KLASSE: die Absolutaussage. Sie ist teurer als die Vermutung, weil
+# sie sich wie ein BEFUND liest -- "geht nicht" wandert in eine Doku und
+# niemand zweifelt es je an.
+#
+# Die Hausregel dazu wurde am 2026-08-18 verschaerft und ist eindeutig: erst
+# eine Loesung suchen, die die eigene Behauptung WIDERLEGT; haelt sie danach
+# immer noch, wird sie dem Betreiber als FRAGE vorgelegt, nicht als
+# Feststellung. Belegte Vorkommen, alle drei falsch: "GATT-Server im
+# Android-Emulator geht nicht" (vierzig Zeilen Python spaeter lief er) ·
+# "VIN- und Funkverhalten bleibt Handprobe" (stand als Spezifikation im
+# eigenen Repo) · "der Funkweg ist der einzige Teil, den kein Pruefstand
+# ersetzt" (es lagen virtuelle Dongles im Repo, seit Wochen).
+#
+# Warum hier und nicht als eigenes Modul: dieselbe Wurzel (eine Aussage ueber
+# die Welt ohne Messung), dieselbe Ausnahmeliste, derselbe Transkriptleser.
+# Ein zweiter Stop-Hook waere ein zweiter Prozess je Zug fuer dieselbe Frage.
+ABSOLUT = [
+    r"geht (leider )?nicht\b",
+    r"ist nicht m(ö|oe)glich",
+    r"unm(ö|oe)glich\b",
+    r"gibt es (hier )?nicht\b",
+    r"existiert nicht\b",
+    r"l(ä|ae)sst sich nicht (pr(ü|ue)fen|messen|nachstellen|simulieren|testen|bauen)",
+    r"kann man nicht (pr(ü|ue)fen|messen|nachstellen|simulieren|testen)",
+    r"nicht nachstellbar",
+    r"nur (im feld|von hand|per handprobe)",
+    r"\bnot supported\b",
+    r"\bimpossible\b",
+    r"can(no|')t be (done|tested|measured|simulated)",
+    r"there(\'s| is) no way to",
+    r"doesn\'t exist\b",
+]
+
+# Was eine Absolutaussage zulaessig macht: der Nachweis, dass gesucht wurde.
+# Bewusst getrennt von BELEG -- "gemessen" allein rechtfertigt kein "geht
+# nicht", denn gemessen wurde dann der eigene Aufbau, nicht die Plattform.
+VERSUCH = [
+    r"\bversucht\b", r"\bprobiert\b", r"\bgetestet\b",
+    r"\bwelcher weg fehlt\b", r"\bhabe ich (nicht )?hinbekommen\b",
+    r"mein aufbau", r"\bmit meinem aufbau\b",
+    r"\btried\b", r"\battempted\b", r"\bmy setup\b",
+    r"\bwhich (way|path|approach) am i missing\b",
+]
+
+
 def _aus() -> bool:
     return os.environ.get("BRAINLEHR_VERMUTUNGSWAECHTER", "").strip().lower() == "aus"
 
@@ -132,6 +177,25 @@ def beurteile(text: str) -> str | None:
     """Grund fuer eine Beanstandung, oder None."""
     if not text.strip():
         return None
+    absolut = _trifft(ABSOLUT, text)
+    if absolut and not _trifft(VERSUCH, text):
+        return (
+            f'Diese Antwort stellt eine Absolutaussage auf ("{absolut}") und nennt '
+            "nicht, was versucht wurde.\n\n"
+            "Die Hausregel dazu ist verschaerft und eindeutig: erst eine Loesung "
+            "suchen, die die eigene Behauptung WIDERLEGT -- nicht eine, die sie "
+            "bestaetigt. Haelt sie danach immer noch, wird sie dem Betreiber als "
+            "FRAGE vorgelegt, nicht als Feststellung.\n\n"
+            "Drei belegte Vorkommen, alle drei falsch: der GATT-Server im "
+            "Android-Emulator (lief nach vierzig Zeilen Python) · VIN- und "
+            "Funkverhalten als Handprobe (stand als Spezifikation im eigenen "
+            "Repo) · der Funkweg ohne Pruefstand (virtuelle Dongles lagen seit "
+            "Wochen im Repo).\n\n"
+            'Zulaessig ist: "ich habe X, Y und Z versucht -- welcher Weg fehlt '
+            'mir?" Eine Absolutaussage liest sich wie ein Befund und wandert '
+            "als solcher in Doku und Wissensspeicher."
+        )
+
     treffer = _trifft(VERMUTUNG, text)
     if not treffer:
         return None
@@ -234,13 +298,30 @@ def _selftest() -> int:
     # Zukunft auch englisch ausgenommen.
     assert beurteile("It will presumably get slower as the corpus grows.") is None
 
+    # h) ABSOLUTAUSSAGEN, beide Sprachen und beide Richtungen.
+    for t in ("Ein GATT-Server im Android-Emulator geht nicht.",
+              "Das laesst sich nicht nachstellen.",
+              "That is not supported in WKWebView.",
+              "There is no way to measure this locally."):
+        assert beurteile(t), f"Absolutaussage nicht gefangen: {t}"
+    # Die zulaessige Form geht durch -- sie nennt den Versuch und fragt.
+    for t in ("Ich habe Entitlement, Deklaration und Reihenfolge versucht -- "
+              "welcher Weg fehlt mir?",
+              "I tried three transports; my setup cannot do it."):
+        assert beurteile(t) is None, f"zulaessige Form beanstandet: {t}"
+    # Und "gemessen" allein rechtfertigt KEIN "geht nicht": gemessen waere dann
+    # der eigene Aufbau, nicht die Plattform. Deshalb VERSUCH getrennt von BELEG.
+    assert beurteile("Gemessen: das geht nicht."), \
+        "eine Messung des eigenen Aufbaus deckt keine Aussage ueber die Plattform"
+
     # g) Abschaltbar, und der Schalter wirkt wirklich.
     os.environ["BRAINLEHR_VERMUTUNGSWAECHTER"] = "aus"
     assert _aus() is True
     del os.environ["BRAINLEHR_VERMUTUNGSWAECHTER"]
     assert _aus() is False
 
-    print("vermutungswaechter: Selbsttest gruen (7 Faelle: Anlassfall trifft, "
+    print("vermutungswaechter: Selbsttest gruen (Vermutung und Absolutaussage, "
+          "deutsch und englisch: Anlassfall trifft, "
           "belegte Aussage geht durch, ehrliche Form geht durch, Zukunft "
           "ausgenommen, Vorschlag ausgenommen, gewoehnlicher Text ruhig, "
           "Schalter wirkt)")
