@@ -57,8 +57,18 @@ def _behauptet_dringlichkeit(title: str | None) -> bool:
     return any(kern.startswith(p) for p in _PRAEFIXE)
 
 
+# Seit 2026-08-20 stellt hub/scripts/eilmeldung_hook.py ueber BEIDE Etiketten
+# zu ('dringend' ODER 'eilmeldung'). Vorher nur ueber 'dringend' -- und genau
+# daran hingen 10 der damals 11 Befunde dieses Melders: sie trugen das Wort,
+# das jeder tippt, und wurden deshalb nie zugestellt. Diese Liste MUSS mit dem
+# Filter dort synchron bleiben; weicht sie ab, meldet dieser Melder entweder
+# einen behobenen Zustand (Fehlalarm, er wird abgeschaltet) oder er schweigt
+# ueber eine echte Stummschaltung.
+_ZUSTELLENDE_ETIKETTEN = ('"dringend"', '"eilmeldung"')
+
+
 def _traegt_etikett(tags: str | None) -> bool:
-    return '"dringend"' in (tags or "")
+    return any(e in (tags or "") for e in _ZUSTELLENDE_ETIKETTEN)
 
 
 def pruefe(db: Path | None = None) -> dict:
@@ -68,7 +78,7 @@ def pruefe(db: Path | None = None) -> dict:
     geprueft   -- dieselbe Zahl (jeder vorhandene wird geprueft, keine
                   Stichprobe -- eine Eilmeldung darf nicht durch Auslassung
                   durchrutschen)
-    beanstandet -- davon ohne das Etikett 'dringend'
+    beanstandet -- davon ohne eines der zustellenden Etiketten
     """
     try:
         with speicher.lesen(db) as con:
@@ -93,7 +103,8 @@ def melde(db: Path | None = None) -> str:
     if not ergebnis["beanstandet"]:
         return ""
     kopf = (f"{ergebnis['beanstandet']} von {ergebnis['vorhanden']} Knoten mit "
-            "Dringlichkeits-Titel ohne das Etikett 'dringend' -- werden vom "
+            "Dringlichkeits-Titel ohne zustellendes Etikett ('dringend' oder "
+            "'eilmeldung') -- werden vom "
             "Eilmeldungs-Kanal nie zugestellt:")
     zeilen = [f"  {b['path']}: {b['title']}" for b in ergebnis["befunde"]]
     return "\n".join([kopf, *zeilen])
@@ -136,6 +147,31 @@ def _selftest() -> None:
         assert ergebnis["vorhanden"] == 1, ergebnis
         assert ergebnis["beanstandet"] == 0, ergebnis
         assert melde(db) == "", melde(db)
+
+        # GRUEN, zweite Schreibweise: seit 2026-08-20 stellt der Haken auch
+        # ueber 'eilmeldung' zu. Rot vor gruen -- gegen die Fassung, die nur
+        # 'dringend' kannte, faellt genau diese Zeile, und zwar als einzige.
+        with speicher.schreiben(db) as con:
+            con.execute(
+                "UPDATE knowledge_nodes SET tags = ? WHERE path = ?",
+                ('["belegpflicht","agentenbericht","eilmeldung"]', "/a/ohne-etikett"),
+            )
+        ergebnis = pruefe(db)
+        assert ergebnis["beanstandet"] == 0, ("Etikett 'eilmeldung' stellt zu", ergebnis)
+        # ... und die Ueberdehnung faellt NICHT darunter: ein Etikett, das das
+        # Wort nur enthaelt, ist keines.
+        with speicher.schreiben(db) as con:
+            con.execute(
+                "UPDATE knowledge_nodes SET tags = ? WHERE path = ?",
+                ('["eilmeldungen-archiv"]', "/a/ohne-etikett"),
+            )
+        ergebnis = pruefe(db)
+        assert ergebnis["beanstandet"] == 1, ("zu weit: Teilwort zaehlte als Etikett", ergebnis)
+        with speicher.schreiben(db) as con:
+            con.execute(
+                "UPDATE knowledge_nodes SET tags = ? WHERE path = ?",
+                ('["belegpflicht","agentenbericht","dringend"]', "/a/ohne-etikett"),
+            )
 
         # NEGATIVFALL: 'Eilmeldung' mitten im Satz behauptet nichts -- darf
         # trotz fehlendem Etikett nicht mitgezaehlt werden.
