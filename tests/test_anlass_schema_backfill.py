@@ -92,6 +92,24 @@ def _old_schema_without_anlass() -> str:
         for m in re.findall(r"NEW\.(\w+)", blk)
     } & entfallen
     assert not uebrig, f"Alt-Schema nennt weiter entfallene Spalten: {sorted(uebrig)}"
+    # Dieselbe Behandlung fuer INDIZES, und zwar aus demselben Grund wie oben
+    # bei den Triggern: Ein `CREATE INDEX ... ON knowledge_nodes(mandant)`
+    # bricht auf dem Alt-Schema mit "no such column: mandant" ab. Am
+    # 2026-08-21 ist genau das passiert, als B1 die ersten Indizes auf
+    # NACHGEZOGENEN Spalten einfuehrte -- vorher gab es keinen einzigen
+    # (freigabe, gattung, gedaechtnisart, anlass tragen alle keinen), deshalb
+    # hat diese Luecke elf Monate lang nicht wehgetan. Wieder ueber den
+    # INHALT bestimmt, nicht ueber eine Namensliste (L-1ffae7).
+    for blk in re.findall(r"CREATE INDEX[^;]*;\n?", old_schema):
+        if betrifft(blk) and {m for m in re.findall(r"\((\w+)\)", blk)} & entfallen:
+            old_schema = old_schema.replace(blk, "", 1)
+    uebrig_idx = {
+        m
+        for blk in re.findall(r"CREATE INDEX[^;]*;", old_schema)
+        if betrifft(blk)
+        for m in re.findall(r"\((\w+)\)", blk)
+    } & entfallen
+    assert not uebrig_idx, f"Alt-Schema indiziert weiter entfallene Spalten: {sorted(uebrig_idx)}"
     return old_schema
 
 
