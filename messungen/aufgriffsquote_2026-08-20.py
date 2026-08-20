@@ -301,6 +301,14 @@ def hauptlauf() -> dict:
     stichprobe_echo = sorted(echo.items())[:10]
 
     return {
+        # Einzelkennungen mitgeben, damit spaetere Auswertungen (z.B. je
+        # Sachgebiet) NICHT den Messweg nachbauen muessen -- ein zweiter
+        # Messweg misst sonst etwas anderes als der Betrieb und erzeugt
+        # genau die Artefakte, die dieser Lauf dreimal entfernen musste.
+        # Nicht Teil der Ergebnisdatei (waere dort 1275 Eintraege Rauschen),
+        # nur im Rueckgabewert.
+        "je_kennung": ergebnis_je_kennung,
+        "art_je_kennung": art_je_kennung,
         "messung": "Aufgriffsquote -- S1 aus docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
         "erstellt": jetzt_ts,
         "protokoll_nur_gelesen": True,

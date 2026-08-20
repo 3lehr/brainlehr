@@ -1,0 +1,608 @@
+{
+  "beschreibung": "S3: CFAR-Hintergrundschaetzung (Median+MAD ueber ALLE lebenden Knoten je Anfrage) gegen die vier Kreuztabelle-Gruppen, ueber denselben Weg wie der Betrieb (hook.query(bedeutungswerte=...) -> _embedding_scores).",
+  "positivkontrolle_hintergrundgroesse": {
+    "n": 45,
+    "min": 5217,
+    "median": 5217,
+    "max": 5217
+  },
+  "fehlende_gruppenzuordnung": [],
+  "gruppengroessen_summe_45": 45,
+  "je_gruppe": {
+    "BT_CT": {
+      "n": 1,
+      "n_hintergrund": {
+        "n": 1,
+        "min": 5217,
+        "median": 5217,
+        "max": 5217
+      },
+      "bester_kosinus": {
+        "n": 1,
+        "min": 0.6183763829821856,
+        "median": 0.6183763829821856,
+        "max": 0.6183763829821856
+      },
+      "z_robust": {
+        "n": 1,
+        "min": 3.5367234734819495,
+        "median": 3.5367234734819495,
+        "max": 3.5367234734819495
+      }
+    },
+    "BT_CS": {
+      "n": 14,
+      "n_hintergrund": {
+        "n": 14,
+        "min": 5217,
+        "median": 5217.0,
+        "max": 5217
+      },
+      "bester_kosinus": {
+        "n": 14,
+        "min": 0.5496969461214573,
+        "median": 0.5969988198067748,
+        "max": 0.6374593273892523
+      },
+      "z_robust": {
+        "n": 14,
+        "min": 1.9927141746467463,
+        "median": 2.5036495514475767,
+        "max": 3.2187156262428624
+      }
+    },
+    "BF_CS": {
+      "n": 10,
+      "n_hintergrund": {
+        "n": 10,
+        "min": 5217,
+        "median": 5217.0,
+        "max": 5217
+      },
+      "bester_kosinus": {
+        "n": 10,
+        "min": 0.44348450914124093,
+        "median": 0.48432722362980996,
+        "max": 0.5410335446470323
+      },
+      "z_robust": {
+        "n": 10,
+        "min": 2.917583965255795,
+        "median": 3.5130125011181095,
+        "max": 5.034637689209292
+      }
+    },
+    "BF_CF": {
+      "n": 20,
+      "n_hintergrund": {
+        "n": 20,
+        "min": 5217,
+        "median": 5217.0,
+        "max": 5217
+      },
+      "bester_kosinus": {
+        "n": 20,
+        "min": 0.5554704386840744,
+        "median": 0.6029328625904915,
+        "max": 0.6374383941197885
+      },
+      "z_robust": {
+        "n": 20,
+        "min": 1.779082901007874,
+        "median": 2.212364411197602,
+        "max": 3.051943603400077
+      }
+    }
+  },
+  "trennschwelle_bt_cs_gegen_bf_cf": null,
+  "schwellenwirkung_auf_alle_vier_gruppen": null,
+  "tau_domaene_score_cfar": 0.1,
+  "median_z_robust_ab_tau_domaene": {
+    "BT_CT": true,
+    "BT_CS": true,
+    "BF_CS": true,
+    "BF_CF": true
+  },
+  "channel_discrimination_befund": "BESTAETIGT (Code gelesen, kern/embeddings.py::channel_discrimination, Zeilen 243-273): top=max(vals), lo=min(vals), spread=top-lo, median=Median(vals); Rueckgabe (top-median)/spread == (top-median)/(top-lo). min ist die im Bestand varianzreichste Ordnungsstatistik (ein einzelner Ausreisser nach unten stauchtden Nenner), top steht in Zaehler UND Nenner (kein Selbstkuerzen, aber ein gemeinsamer Faktor, der die Kennzahl an den TOP-Wert koppelt statt an eine stabile Hintergrundstreuung). Das ist NICHT das hier gemessene CFAR-Mass: channel_discrimination() rechnet innerhalb der Kandidatenliste EINES Kanals (Docstring: 'Wirkt NUR innerhalb eines Kanals'), nicht gegen die Hintergrundverteilung aller 5215 lebenden Knoten. Beide Groessen sind also verschiedene Verfahren; channel_discrimination() ist selbst keine Hintergrundschaetzung und wurde hier nicht als Ersatz fuer den Median-Test verwendet.",
+  "je_fall": [
+    {
+      "target_kind": "lesson",
+      "target_id": "L-a9ccd0",
+      "category": "lesson",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.6242683650029317,
+      "median_hg": 0.39043703631915855,
+      "mad_hg": 0.059813537229100544,
+      "z_robust": 2.6368122966753225
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-298823",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.618716454966547,
+      "median_hg": 0.3619222804676836,
+      "mad_hg": 0.06349447448164819,
+      "z_robust": 2.727879854127547
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-f9f654",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.5918522801755379,
+      "median_hg": 0.3837926577740098,
+      "mad_hg": 0.07888013124656479,
+      "z_robust": 1.779082901007874
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-b4b443",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.5879725001881624,
+      "median_hg": 0.3875054115605395,
+      "mad_hg": 0.06170414326021795,
+      "z_robust": 2.1913147434571423
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-44a838",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.5899579677685833,
+      "median_hg": 0.3629947110781254,
+      "mad_hg": 0.06854287381013408,
+      "z_robust": 2.2334140789380617
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-cdac52",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.5941601262410463,
+      "median_hg": 0.3839309257006809,
+      "mad_hg": 0.07167261249890394,
+      "z_robust": 1.9784077654319765
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-e7bc5e",
+      "category": "lesson",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.5523019443034237,
+      "median_hg": 0.36241845870511563,
+      "mad_hg": 0.06427146353589325,
+      "z_robust": 1.9927141746467463
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-e1a441",
+      "category": "lesson",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.603369696855706,
+      "median_hg": 0.3677642561690617,
+      "mad_hg": 0.06563003454057054,
+      "z_robust": 2.4213562241433357
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-b91ed6",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.6194643025310836,
+      "median_hg": 0.37805890820713417,
+      "mad_hg": 0.07658449776773474,
+      "z_robust": 2.1260922576410306
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-bbd7fb",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.6191834005143872,
+      "median_hg": 0.38847433266851616,
+      "mad_hg": 0.07476334360987696,
+      "z_robust": 2.081382758929219
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-503687",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.5915244691502034,
+      "median_hg": 0.38868422864046726,
+      "mad_hg": 0.06944834767975772,
+      "z_robust": 1.9700089698995769
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-8c633e",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.6374383941197885,
+      "median_hg": 0.3775105797279756,
+      "mad_hg": 0.05869052155727994,
+      "z_robust": 2.987175855425311
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-606b63",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.6086791367202303,
+      "median_hg": 0.39511594066661115,
+      "mad_hg": 0.06844944487267751,
+      "z_robust": 2.104420314443669
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-0392e4",
+      "category": "lesson",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.5903117845981438,
+      "median_hg": 0.3741532258505874,
+      "mad_hg": 0.05380878372197223,
+      "z_robust": 2.7095381157532272
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-476602",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.5971865884607527,
+      "median_hg": 0.36634435126288284,
+      "mad_hg": 0.05101698331299631,
+      "z_robust": 3.051943603400077
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "category": "fact",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.613040888882173,
+      "median_hg": 0.38334488046388726,
+      "mad_hg": 0.05883094022117186,
+      "z_robust": 2.6334414269829587
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "category": "fact",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.5615019152898097,
+      "median_hg": 0.3483916098209961,
+      "mad_hg": 0.04828177985207038,
+      "z_robust": 2.977125785924927
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "category": "fact",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.6374593273892523,
+      "median_hg": 0.3865098833261361,
+      "mad_hg": 0.05258714989802865,
+      "z_robust": 3.2187156262428624
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "category": "fact",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.5906279427578438,
+      "median_hg": 0.389995457668625,
+      "mad_hg": 0.058316977440882434,
+      "z_robust": 2.3205036197338313
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/apps/metahuman-podcast-one-command-pipeline",
+      "category": "fact",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.5496969461214573,
+      "median_hg": 0.3611440365289859,
+      "mad_hg": 0.0525644615499678,
+      "z_robust": 2.4194520678510725
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/openlehr/volltextindex-wird-beim-einlesen",
+      "category": "fact",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.5814302040132785,
+      "median_hg": 0.3760937535871565,
+      "mad_hg": 0.060687687412590785,
+      "z_robust": 2.282135706614673
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/lessons/phase2-summary",
+      "category": "fact",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.6189865146188976,
+      "median_hg": 0.3793432802612997,
+      "mad_hg": 0.07492695813577505,
+      "z_robust": 2.1572629019902485
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/testing/pytest",
+      "category": "fact",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.6354137423656389,
+      "median_hg": 0.3893572686036352,
+      "mad_hg": 0.07028278948463024,
+      "z_robust": 2.3613578669662836
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/brainlehr/inference-control-was-andere-faecher",
+      "category": "fact",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.5554704386840744,
+      "median_hg": 0.3800682713630988,
+      "mad_hg": 0.05710446297304306,
+      "z_robust": 2.071766984412658
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/einstieg",
+      "category": "fact",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.5786337886206696,
+      "median_hg": 0.3642566873937714,
+      "mad_hg": 0.058411761244708316,
+      "z_robust": 2.4754496481480572
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/stadtwerke",
+      "category": "fact",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.5857864692965562,
+      "median_hg": 0.344490971383699,
+      "mad_hg": 0.06343052089029799,
+      "z_robust": 2.565824485770854
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/openlehr/steuer/ui",
+      "category": "fact",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.5682372242996556,
+      "median_hg": 0.3664222527954524,
+      "mad_hg": 0.05205560446514729,
+      "z_robust": 2.6149409809419324
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "category": "norm",
+      "lage": "BT_CT",
+      "n": 5217,
+      "bester": 0.6183763829821856,
+      "median_hg": 0.3554535304294312,
+      "mad_hg": 0.05014218268172027,
+      "z_robust": 3.5367234734819495
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "category": "norm",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.6125109443675115,
+      "median_hg": 0.38739318880718393,
+      "mad_hg": 0.07234572987041327,
+      "z_robust": 2.0988086814733866
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "category": "norm",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.6083557834675928,
+      "median_hg": 0.3782497418239789,
+      "mad_hg": 0.06698016491234354,
+      "z_robust": 2.3171695529783936
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "category": "norm",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.615776571940793,
+      "median_hg": 0.3744004772297355,
+      "mad_hg": 0.05163467531072097,
+      "z_robust": 3.153035135041358
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "category": "norm",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.6346433269946633,
+      "median_hg": 0.37050450136891816,
+      "mad_hg": 0.062296656814186724,
+      "z_robust": 2.8598516552013886
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "category": "norm",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.576171866201516,
+      "median_hg": 0.37071435619792087,
+      "mad_hg": 0.058631411172806125,
+      "z_robust": 2.363565692697663
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "category": "norm",
+      "lage": "BT_CS",
+      "n": 5217,
+      "bester": 0.6111063075949892,
+      "median_hg": 0.36312898207981315,
+      "mad_hg": 0.06606175351623078,
+      "z_robust": 2.531849454747096
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "category": "norm",
+      "lage": "BF_CF",
+      "n": 5217,
+      "bester": 0.6239359042698758,
+      "median_hg": 0.38306107330678457,
+      "mad_hg": 0.07114118621510679,
+      "z_robust": 2.2837382438893314
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.5410335446470323,
+      "median_hg": 0.29623393923919766,
+      "mad_hg": 0.03873491281665764,
+      "z_robust": 4.2626937758356025
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.4964418467577225,
+      "median_hg": 0.2880843280380929,
+      "mad_hg": 0.04738951310498185,
+      "z_robust": 2.9655341833231037
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.4722126005018974,
+      "median_hg": 0.2899865125733062,
+      "mad_hg": 0.03986597689781807,
+      "z_robust": 3.0830753943002294
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.46534200050546026,
+      "median_hg": 0.2703355782562895,
+      "mad_hg": 0.03562212893256131,
+      "z_robust": 3.6923685862421447
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.45239345840342243,
+      "median_hg": 0.29291866410024286,
+      "mad_hg": 0.03226615514750053,
+      "z_robust": 3.3336564159940747
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.5080180771232836,
+      "median_hg": 0.3001712619101419,
+      "mad_hg": 0.04594722240727067,
+      "z_robust": 3.051125811377007
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.44348450914124093,
+      "median_hg": 0.2513034239521655,
+      "mad_hg": 0.02574651327622618,
+      "z_robust": 5.034637689209292
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.4525161377289049,
+      "median_hg": 0.305073888739766,
+      "mad_hg": 0.03408588602210205,
+      "z_robust": 2.917583965255795
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.5177653227635647,
+      "median_hg": 0.3429462875162883,
+      "mad_hg": 0.031136506679145914,
+      "z_robust": 3.786995923144951
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "n": 5217,
+      "bester": 0.5270993370326639,
+      "median_hg": 0.2893260998829165,
+      "mad_hg": 0.038336885334349535,
+      "z_robust": 4.1833302290900045
+    }
+  ],
+  "stand": {
+    "kennung": "20260820T132501-ea85632e",
+    "aufgenommen": "2026-08-20T15:25:01+02:00"
+  }
+}

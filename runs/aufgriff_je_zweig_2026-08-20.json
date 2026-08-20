@@ -1,0 +1,139 @@
+{
+  "messung": "Aufgriffsquote je Sachgebiet",
+  "vorbehalt": "Zehn Tage, im Wesentlichen ein Fragender. Der Aufgriff ist eine Eigenschaft des Paares aus Frage und Eintrag -- NICHT als Rangfaktor verwenden (Rueckkopplung, siehe L-8b377b).",
+  "mindestzahl_zum_deuten": 20,
+  "je_zweig": {
+    "(Lehren)": {
+      "nenner": 639,
+      "treffer": 195,
+      "quote_prozent": 30.5,
+      "deutbar": true
+    },
+    "/brainlehr": {
+      "nenner": 248,
+      "treffer": 15,
+      "quote_prozent": 6.0,
+      "deutbar": true
+    },
+    "/methodik": {
+      "nenner": 137,
+      "treffer": 11,
+      "quote_prozent": 8.0,
+      "deutbar": true
+    },
+    "/apps": {
+      "nenner": 62,
+      "treffer": 4,
+      "quote_prozent": 6.5,
+      "deutbar": true
+    },
+    "/ops": {
+      "nenner": 44,
+      "treffer": 5,
+      "quote_prozent": 11.4,
+      "deutbar": true
+    },
+    "/shared": {
+      "nenner": 43,
+      "treffer": 5,
+      "quote_prozent": 11.6,
+      "deutbar": true
+    },
+    "/openlehr": {
+      "nenner": 31,
+      "treffer": 1,
+      "quote_prozent": 3.2,
+      "deutbar": true
+    },
+    "/arch": {
+      "nenner": 15,
+      "treffer": 1,
+      "quote_prozent": 6.7,
+      "deutbar": false
+    },
+    "/plaene": {
+      "nenner": 14,
+      "treffer": 0,
+      "quote_prozent": 0.0,
+      "deutbar": false
+    },
+    "/simulation-akademie-messaufbau-kein": {
+      "nenner": 8,
+      "treffer": 0,
+      "quote_prozent": 0.0,
+      "deutbar": false
+    },
+    "/tools": {
+      "nenner": 8,
+      "treffer": 1,
+      "quote_prozent": 12.5,
+      "deutbar": false
+    },
+    "/testing": {
+      "nenner": 6,
+      "treffer": 1,
+      "quote_prozent": 16.7,
+      "deutbar": false
+    },
+    "/agents": {
+      "nenner": 5,
+      "treffer": 3,
+      "quote_prozent": 60.0,
+      "deutbar": false
+    },
+    "/lessons": {
+      "nenner": 3,
+      "treffer": 1,
+      "quote_prozent": 33.3,
+      "deutbar": false
+    },
+    "/frontend": {
+      "nenner": 3,
+      "treffer": 0,
+      "quote_prozent": 0.0,
+      "deutbar": false
+    },
+    "/werkzeuge": {
+      "nenner": 3,
+      "treffer": 0,
+      "quote_prozent": 0.0,
+      "deutbar": false
+    },
+    "/stadtwerke": {
+      "nenner": 2,
+      "treffer": 1,
+      "quote_prozent": 50.0,
+      "deutbar": false
+    },
+    "/backend": {
+      "nenner": 2,
+      "treffer": 1,
+      "quote_prozent": 50.0,
+      "deutbar": false
+    },
+    "/begod": {
+      "nenner": 1,
+      "treffer": 1,
+      "quote_prozent": 100.0,
+      "deutbar": false
+    },
+    "/woanders": {
+      "nenner": 1,
+      "treffer": 1,
+      "quote_prozent": 100.0,
+      "deutbar": false
+    },
+    "/fahrtenbuch": {
+      "nenner": 1,
+      "treffer": 0,
+      "quote_prozent": 0.0,
+      "deutbar": false
+    },
+    "/testdatenknoten-schreibrechtepruefung": {
+      "nenner": 1,
+      "treffer": 0,
+      "quote_prozent": 0.0,
+      "deutbar": false
+    }
+  }
+}

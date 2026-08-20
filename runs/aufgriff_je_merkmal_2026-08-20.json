@@ -1,0 +1,191 @@
+{
+  "messung": "Aufgriffsquote je vorhandenem Merkmal",
+  "vorbehalt": "Bestandsaussage, KEIN Rangvorschlag. Der Aufgriff ist eine Eigenschaft des Paares aus Frage und Eintrag und haengt an Zeitraum und Fragendem (zehn Tage, im Wesentlichen ein Fragender).",
+  "mindestzahl_zum_deuten": 20,
+  "je_merkmal": {
+    "anlass": {
+      "unbekannt": {
+        "nenner": 590,
+        "treffer": 97,
+        "quote_prozent": 16.4,
+        "deutbar": true
+      },
+      "betreiber": {
+        "nenner": 351,
+        "treffer": 55,
+        "quote_prozent": 15.7,
+        "deutbar": true
+      },
+      "selbst": {
+        "nenner": 259,
+        "treffer": 81,
+        "quote_prozent": 31.3,
+        "deutbar": true
+      },
+      "hook": {
+        "nenner": 40,
+        "treffer": 13,
+        "quote_prozent": 32.5,
+        "deutbar": true
+      },
+      "skript": {
+        "nenner": 33,
+        "treffer": 1,
+        "quote_prozent": 3.0,
+        "deutbar": true
+      }
+    },
+    "severity": {
+      "high": {
+        "nenner": 336,
+        "treffer": 126,
+        "quote_prozent": 37.5,
+        "deutbar": true
+      },
+      "medium": {
+        "nenner": 215,
+        "treffer": 49,
+        "quote_prozent": 22.8,
+        "deutbar": true
+      },
+      "low": {
+        "nenner": 50,
+        "treffer": 6,
+        "quote_prozent": 12.0,
+        "deutbar": true
+      },
+      "critical": {
+        "nenner": 33,
+        "treffer": 14,
+        "quote_prozent": 42.4,
+        "deutbar": true
+      }
+    },
+    "type": {
+      "antipattern": {
+        "nenner": 339,
+        "treffer": 121,
+        "quote_prozent": 35.7,
+        "deutbar": true
+      },
+      "insight": {
+        "nenner": 102,
+        "treffer": 26,
+        "quote_prozent": 25.5,
+        "deutbar": true
+      },
+      "pattern": {
+        "nenner": 98,
+        "treffer": 24,
+        "quote_prozent": 24.5,
+        "deutbar": true
+      },
+      "error": {
+        "nenner": 95,
+        "treffer": 24,
+        "quote_prozent": 25.3,
+        "deutbar": true
+      }
+    },
+    "norm_rang": {
+      "None": {
+        "nenner": 526,
+        "treffer": 40,
+        "quote_prozent": 7.6,
+        "deutbar": true
+      },
+      "1": {
+        "nenner": 37,
+        "treffer": 4,
+        "quote_prozent": 10.8,
+        "deutbar": true
+      },
+      "2": {
+        "nenner": 37,
+        "treffer": 2,
+        "quote_prozent": 5.4,
+        "deutbar": true
+      },
+      "3": {
+        "nenner": 34,
+        "treffer": 5,
+        "quote_prozent": 14.7,
+        "deutbar": true
+      },
+      "6": {
+        "nenner": 4,
+        "treffer": 0,
+        "quote_prozent": 0.0,
+        "deutbar": false
+      },
+      "4": {
+        "nenner": 1,
+        "treffer": 1,
+        "quote_prozent": 100.0,
+        "deutbar": false
+      }
+    },
+    "gattung": {
+      "arbeitsbestand": {
+        "nenner": 639,
+        "treffer": 52,
+        "quote_prozent": 8.1,
+        "deutbar": true
+      }
+    },
+    "beinahefehler": {
+      "0": {
+        "nenner": 608,
+        "treffer": 189,
+        "quote_prozent": 31.1,
+        "deutbar": true
+      },
+      "1": {
+        "nenner": 26,
+        "treffer": 6,
+        "quote_prozent": 23.1,
+        "deutbar": true
+      }
+    },
+    "occurrences": {
+      "1-1": {
+        "nenner": 560,
+        "treffer": 147,
+        "quote_prozent": 26.2,
+        "deutbar": true
+      },
+      "2-3": {
+        "nenner": 64,
+        "treffer": 38,
+        "quote_prozent": 59.4,
+        "deutbar": true
+      },
+      "4-99": {
+        "nenner": 10,
+        "treffer": 10,
+        "quote_prozent": 100.0,
+        "deutbar": false
+      }
+    },
+    "kanten_ausser_aehnlichkeit": {
+      "0-0": {
+        "nenner": 983,
+        "treffer": 180,
+        "quote_prozent": 18.3,
+        "deutbar": true
+      },
+      "1-2": {
+        "nenner": 240,
+        "treffer": 60,
+        "quote_prozent": 25.0,
+        "deutbar": true
+      },
+      "3-999": {
+        "nenner": 50,
+        "treffer": 7,
+        "quote_prozent": 14.0,
+        "deutbar": true
+      }
+    }
+  }
+}

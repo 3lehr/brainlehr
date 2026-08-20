@@ -1,0 +1,907 @@
+{
+  "hinweis": "S4 aus docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md -- blinde und beidseitige Wiederholung der Handbeurteilung, Zustand B_2Kanal_an_Pflicht_aus, alle 35 loesbaren Faelle aus runs/pruefkorpus.jsonl.",
+  "nenner_gesamt_35": 35,
+  "verblindung_gehalten": {
+    "aussage": "Ja. Bis zum Schreiben von messungen/beurteilung_blind.py wurde kein Kosinuswert, keine Gruppenzugehoerigkeit und kein Korpusziel gelesen. Die Urteile in diesem Ergebnis wurden VOR dem Oeffnen von runs/beurteilung_blind_aufloesung_2026-08-20.json und runs/beurteilung_bf_cf_2026-08-20.json (Schritt 5) fixiert -- die Blindliste runs/beurteilung_blind_faelle_2026-08-20.json enthaelt ausschliesslich Anfrage, ausgelieferte Titel/Zusammenfassungen und eine nach Hash der target_id gemischte laufende Nummer.",
+    "einschraenkung": "Die Reihenfolge Anfrage->Urteil lief in einem einzigen Lesedurchgang durch alle 35 Faelle (kein randomisierter Uebertrag in eine separate Sitzung je Fall) -- ein Erinnerungseffekt ueber Faelle hinweg (etwa 'dieses Thema kam schon vor') ist nicht ausgeschlossen, ist aber nicht dasselbe wie das gerueugte Kosinus-/Gruppen-Leck."
+  },
+  "klassen_verteilung": {
+    "DANEBEN": 16,
+    "TEILWEISE": 7,
+    "BEANTWORTET": 12,
+    "ANFRAGE_UNKLAR": 0
+  },
+  "aufloesung_vergleich": {
+    "treffer_gesamt_lt_messlauf": 15,
+    "fehlgriff_gesamt_lt_messlauf": 20,
+    "uebereinstimmung_gesamt": "24/35",
+    "korpus_zu_mild": {
+      "definition": "Messlauf zaehlt TREFFER, blindes Urteil DANEBEN oder TEILWEISE",
+      "anzahl": "7/15 der Treffer",
+      "faelle": [
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "/apps/metahuman-podcast-one-command-pipeline",
+        "L-0392e4",
+        "L-e7bc5e",
+        "L-a9ccd0",
+        "/ops/buckeberg-konsil-2026-07-22-governance",
+        "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox"
+      ]
+    },
+    "korpus_zu_streng": {
+      "definition": "Messlauf zaehlt FEHLGRIFF, blindes Urteil BEANTWORTET",
+      "anzahl": "4/20 der Fehlgriffe",
+      "faelle": [
+        "/testing/pytest",
+        "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "L-298823",
+        "L-503687"
+      ]
+    }
+  },
+  "vergleich_mit_erster_beurteilung_2026-08-20": {
+    "nenner": "20/20 (nur die damals als Fehlgriff gezaehlten Faelle hatten dort ein Urteil)",
+    "gleich": 10,
+    "abweichend": 10,
+    "abweichungen": [
+      {
+        "target_id": "L-bbd7fb",
+        "blind_jetzt": "DANEBEN",
+        "unverblindet_2026-08-20": "TEILWEISE",
+        "gleich": false
+      },
+      {
+        "target_id": "/lessons/phase2-summary",
+        "blind_jetzt": "DANEBEN",
+        "unverblindet_2026-08-20": "TEILWEISE",
+        "gleich": false
+      },
+      {
+        "target_id": "/testing/pytest",
+        "blind_jetzt": "BEANTWORTET",
+        "unverblindet_2026-08-20": "BRAUCHBAR_ANDERS",
+        "gleich": false
+      },
+      {
+        "target_id": "L-b91ed6",
+        "blind_jetzt": "DANEBEN",
+        "unverblindet_2026-08-20": "BRAUCHBAR_ANDERS",
+        "gleich": false
+      },
+      {
+        "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "blind_jetzt": "BEANTWORTET",
+        "unverblindet_2026-08-20": "BRAUCHBAR_ANDERS",
+        "gleich": false
+      },
+      {
+        "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+        "blind_jetzt": "DANEBEN",
+        "unverblindet_2026-08-20": "TEILWEISE",
+        "gleich": false
+      },
+      {
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+        "blind_jetzt": "DANEBEN",
+        "unverblindet_2026-08-20": "TEILWEISE",
+        "gleich": false
+      },
+      {
+        "target_id": "L-298823",
+        "blind_jetzt": "BEANTWORTET",
+        "unverblindet_2026-08-20": "TEILWEISE",
+        "gleich": false
+      },
+      {
+        "target_id": "/brainlehr/inference-control-was-andere-faecher",
+        "blind_jetzt": "DANEBEN",
+        "unverblindet_2026-08-20": "TEILWEISE",
+        "gleich": false
+      },
+      {
+        "target_id": "L-503687",
+        "blind_jetzt": "BEANTWORTET",
+        "unverblindet_2026-08-20": "TEILWEISE",
+        "gleich": false
+      }
+    ],
+    "methodischer_befund": "runs/beurteilung_bf_cf_2026-08-20.json zeigte als 'top3_ausgeliefert' bei lesson-Zielen ausschliesslich Lesson-Eintraege (runs/roh_bf_cf_2026-08-20.json::ausgeliefert_lessons), obwohl haken/knowledge_recall_hook.py::format_recall() im echten Weg IMMER erst alle Knoten und danach erst die Lehren listet (Zeilen ~1876-1900). Bei einem Fall mit >=3 Knoten-Treffern sah die erste Beurteilung damit nicht die tatsaechlichen ersten drei ausgelieferten Zeilen, sondern eine nach Zielart gefilterte Teilmenge -- ein zweiter Befund neben der fehlenden Verblindung, unabhaengig davon."
+  },
+  "faelle": [
+    {
+      "lfd": 1,
+      "anfrage_gekuerzt": "Die KI reagiert träge, weil sie zu Beginn jeder Interaktion eine riesige Liste an Möglichkeiten verarbeiten muss, obwohl der Nutzer meist nur einen kleinen Teil davon nutzt. Um den Prozess effizienter zu gestalten, sollt",
+      "ausgeliefert_top3": [
+        "(node) Kontakt wird bei Angebot, Rechnung, Chat und Mail per KI vorgeschlagen statt erzwungen",
+        "(node) Betreiberweisung 2026-08-20: Es gibt Knöpfe, die die KI technisch nicht klicken kann",
+        "(node) Simulator und Signalstärke — den Abruf vorführen, ohne ihn zu erfinden"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Weder der Kontakt-Resolver noch die Absage-Buttons noch der Signal-Simulator sprechen die verlangte Einschraenkung der bei Verbindungsaufbau gezeigten Handlungsoptionen an."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-476602",
+        "target_label": "MCP tools/list per Env-Var profilieren (BEGOD_KNOWLEDGE_PROFIL=klein), ohne tool",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "DANEBEN",
+        "begruendung": "Keiner der Treffer („Kontakt wird per KI vorgeschlagen“, „Knoepfe, die die KI technisch nicht klicken kann“, „Simulator und Signalstaerke“) spricht MCP tools/list-Profilierung oder Startlisten-Verkleinerung an."
+      }
+    },
+    {
+      "lfd": 2,
+      "anfrage_gekuerzt": "Bei der Implementierung eines Systems zur automatischen Erstellung von Antwortentwürfen für Kundenanfragen muss sichergestellt werden, dass kein sensibler Inhalt aus der ursprünglichen Anfrage ungeschützt in die Datenban",
+      "ausgeliefert_top3": [
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "(node) Buckeberg Rechenkern: zentrale Eingaben für spätere automatische Homepage-Neuberechnung",
+        "(node) Wer Preise selbst macht, ist datenbankrechtlich schwach geschützt — wer sie sammelt, stark (§87a/§87b UrhG)"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "'Keine Entwicklerinformation in der Oberflaeche', der Rechenkern und das Datenbankrecht behandeln keine Filterung sensibler KI-generierter Inhalte vor dem Speichern."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-44a838",
+        "target_label": "LLM-Output als neuer ungeschützter Schreibpfad: Neue KI-Features (mail_classify,",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "DANEBEN",
+        "begruendung": "„Wer Preise selbst macht, ist datenbankrechtlich schwach geschuetzt“ (§87a/§87b UrhG) und die beiden anderen Treffer beruehren weder LLM-Output noch ungefilterte Schreibpfade fuer sensible Daten."
+      }
+    },
+    {
+      "lfd": 3,
+      "anfrage_gekuerzt": "Während der Modernisierung des Finanzportals müssen wir die Struktur der Benutzeroberfläche prüfen. Dabei ist es entscheidend zu wissen, wie viele Untermodule in diesem Bereich abgelegt sind, um die Verlinkungen korrekt ",
+      "ausgeliefert_top3": [
+        "(node) Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge",
+        "(node) Wie die Wissens-DB als Baumstruktur mit SQLite und FTS5 aufgebaut ist",
+        "(node) Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+      ],
+      "blindes_urteil": {
+        "klasse": "TEILWEISE",
+        "begruendung": "'Wie die Wissens-DB als Baumstruktur aufgebaut ist' beruehrt Struktur/Tiefe von Bereichen, beantwortet aber nicht die Frage nach der Anzahl der Untermodule im Finanzportal."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/openlehr/steuer/ui",
+        "target_label": "Ui",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "L-0dec26 („Backend-Validierung erzwingt Pflichtfelder, fuer die es kein UI-Feld gibt ... OpenLehr steuer: Rechnungs-Formular“) liegt im selben Teilsystem (OpenLehr-Steuer-UI), beantwortet aber nicht die Frage nach der Anzahl der Untermodule."
+      }
+    },
+    {
+      "lfd": 4,
+      "anfrage_gekuerzt": "Die Entwickler diskutieren gerade, ob veraltete Funktionen aus dem System entfernt werden können. Es besteht die Sorge, dass dadurch die Bedienbarkeit für andere Personen eingeschränkt würde. In dieser Phase muss geklärt",
+      "ausgeliefert_top3": [
+        "(node) Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+        "(node) Dringlichkeit fuer den 14.08. entfaellt: Die Verwalterentscheidung ist faktisch gefallen",
+        "(node) ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'ALLES IST BETA' beantwortet direkt, warum eine sofortige Verfuegbarkeit (Rueckwaertskompatibilitaet) beim Entfernen veralteter Funktionen nicht noetig ist."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+        "target_label": "Betriebszustand: openlehr muss bis zum ersten Beta-Test nicht laufen",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 5,
+      "anfrage_gekuerzt": "Die Überwachungssoftware für die Lagerhalle meldet einen sicheren Zustand, obwohl kritische Sensoren an den Außenwänden defekt sind. Da das System bei fehlenden Daten einfach auf die Standardeinstellungen zurückgreift, e",
+      "ausgeliefert_top3": [
+        "(node) Synergien finden: welche Datenpunkte sollten voneinander wissen",
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "(node) Zehn Verdachtsfälle geprüft, null Fehler — warum die Fehlerklasse „leeres Ergebnis statt ungeprüft\" seltener ist als ihr Erkennungsmuster"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Synergien, Entwicklerinformation und die Zehn-Verdachtsfaelle-Lehre behandeln nicht das beschriebene Fail-Safe-Problem (Default bei fehlenden Sensordaten zeigt faelschlich 'sicher')."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-bbd7fb",
+        "target_label": "Ein Eingang wird aus einer Gesamtbewertung entfernt, weil er unbelegt war — die ",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "L-528f0c („Ein Waechter prueft ein Feld, das den Sachverhalt gar nicht traegt“) trifft den Kern -- falsche Sicherheit aus einem Signal, das die Wirklichkeit nicht abbildet --, aber nicht den konkreten Fall fehlender Sensoren mit Rueckfall auf Standardwerte."
+      }
+    },
+    {
+      "lfd": 6,
+      "anfrage_gekuerzt": "Bei der Besprechung mit potenziellen Partnern wird immer wieder so getan, als müsse die Anzahl der benötigten Unterschriften noch mit den externen Firmen geklärt werden. Hier muss jemand intervenieren und deutlich machen",
+      "ausgeliefert_top3": [
+        "(node) Plan vor Umsetzung (systemweit)",
+        "(node) Brainlehr-Aussenansicht als funktionserhaltende semantische Projektion",
+        "(node) SIMULATION Geschaeftsleitung: abgestufte Rechte in der Vetorunde vor der Vorlage"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Plan-vor-Umsetzung, Aussenprojektion und die Vetorunden-Simulation beantworten nicht, dass die Zahl der Unterschriften intern bereits feststeht."
+      },
+      "aufloesung": {
+        "category": "norm",
+        "target_kind": "node",
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "target_label": "Vor der Wahl zu klären: wer unterschreibt den Verwaltervertrag — zwei Personen nötig",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 7,
+      "anfrage_gekuerzt": "Das Entwicklungsteam stellt fest, dass die automatisch generierten Skripte unzuverlässig sind, da die internen Anleitungen nicht präzise genug definiert wurden. Um die Qualität zu sichern, müssen nun alle verfügbaren Wer",
+      "ausgeliefert_top3": [
+        "(node) Startauftrag für neue Fachdomänen wird erzeugt, nicht abgeschrieben",
+        "(node) Szenario-Bausteine Akademie: Abteilungen, Freigabekette, Verbotsliste",
+        "(node) S1b · wird konkreter: zwei Merkmale fehlen im eigenen Entwurf"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Startauftrag-Erzeugung, Akademie-Bausteine und der kryptische 'S1b'-Titel sprechen nicht die unpraezisen internen Anleitungen fuer generierte Skripte an."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/lessons/phase2-summary",
+        "target_label": "Meta-Optimierung Phase 2 Zusammenfassung",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "L-6c6661 („Eine Umgebungsvariable zum Umlenken des Datenbankpfads existiert, wird aber nur von einem Teil der Skripte geachtet“) beruehrt das Thema uneinheitlich befolgter Vorgaben, beantwortet aber nicht die Frage nach Werkzeug-Restrukturierung fuer verlaessliche Skripterzeugung."
+      }
+    },
+    {
+      "lfd": 8,
+      "anfrage_gekuerzt": "Die Produktion muss entscheiden, welche digitale Figur für das neue Video genutzt werden kann. Ein Techniker prüft dabei, ob die aktuelle Software bereits vollständige Bewegungsabläufe unterstützt oder nur bestimmte Bere",
+      "ausgeliefert_top3": [
+        "(node) Ein menschlicher Entscheid, den die Maschine nicht erzeugen kann",
+        "(node) Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+        "(node) Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "'Menschlicher Entscheid', Schichten-Anwendung und Lastenkatalog beantworten nicht, ob die Software volle Koerperbewegung oder nur Mimik einer digitalen Figur unterstuetzt."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/apps/metahuman-podcast-one-command-pipeline",
+        "target_label": "MetaHuman Podcast — One-Command-Pipeline, Status 2026-08-01T00:00:00+0200",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 9,
+      "anfrage_gekuerzt": "Ein neuer Kollege beginnt seine Einarbeitung in einem komplexen Umfeld und erhält ein umfangreiches Handbuch zur Orientierung. Er muss vor dem Start identifizieren, welche Teile dieser Dokumentation zwingend studiert wer",
+      "ausgeliefert_top3": [
+        "(node) Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge",
+        "(node) Plan vor Umsetzung (systemweit)",
+        "(node) Arbeitsweise"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'Arbeitsweise' (Tool-first, Governance-Datei zuerst lesen) ist genau die Art Pflichtlektuere-Uebersicht, die ein neuer Kollege vor dem Start braucht."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/methodik/einstieg",
+        "target_label": "So benutzt du diesen Zweig",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 10,
+      "anfrage_gekuerzt": "Bei der Entwicklung einer neuen Anwendung müssen die automatischen Prüfzyklen strukturiert werden. Dabei sollen immer verfügbare Vorbereitungen für Testdaten erstellt und verschiedene Szenarien in Kategorien unterteilt w",
+      "ausgeliefert_top3": [
+        "(node) Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+        "(node) Testen als Fachgebiet: Strategien, pytest und TDD-Muster",
+        "(node) Synergien finden: welche Datenpunkte sollten voneinander wissen"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'Testen als Fachgebiet' nennt ausdruecklich Testdaten-Vorbereitung, Kategorisierung nach Strategien und Coverage-Kennzahlen -- deckt Aufbau und Abdeckungsmessung ab."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/testing/pytest",
+        "target_label": "pytest",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "BRAUCHBAR_ANDERS",
+        "begruendung": "Der ausgelieferte Elternknoten „/testing“ („Testen als Fachgebiet: Strategien, pytest und TDD-Muster ... Kennzahlen zur Testabdeckung (Coverage) sowie Entwicklungsmuster nach TDD“) deckt Fixtures/Szenarien/Coverage inhaltlich genauso ab wie das Zielobjekt /testing/pytest selbst."
+      }
+    },
+    {
+      "lfd": 11,
+      "anfrage_gekuerzt": "Ein Nutzer meldet, dass die Anwendung fälschlicherweise eine aktive Hardwareverbindung anzeigt, obwohl das entsprechende Modul nicht angeschlossen ist. Da veraltete Statusmeldungen aus dem Speicher ohne Validierung übern",
+      "ausgeliefert_top3": [
+        "(node) ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)",
+        "(node) DRINGEND: Normbezugs-Melder bestätigt aufgehobene Normen als belegt — Beispiel § 71 GEG",
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)"
+      ],
+      "blindes_urteil": {
+        "klasse": "TEILWEISE",
+        "begruendung": "Der Normbezugs-Melder-Fund (veraltete Norm faelschlich als belegt gemeldet) ist strukturell verwandt (veralteter Status ohne Neuvalidierung als aktuell ausgegeben), trifft aber nicht die konkrete Hardware-Verbindungsanzeige."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-b4b443",
+        "target_label": "fahrtenbuch Build 59 (2026-08-01, 06:21 UTC): JokerTripPromptRequest.source (Jok",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "„DRINGEND: Normbezugs-Melder bestaetigt aufgehobene Normen als belegt“ ist dieselbe Fehlerklasse -- ein veralteter Zustand wird faelschlich als gueltig/aktuell gemeldet --, nur in einer anderen Domaene (Rechtsnorm statt Hardwarestatus), keine Antwort auf die konkrete Stale-Status-Frage."
+      }
+    },
+    {
+      "lfd": 12,
+      "anfrage_gekuerzt": "Wenn ein Nutzer eine Bluetooth-Verbindung kurz hintereinander neu aufbaut, kann ein verspätet eintreffender Trennbefehl aus dem ersten Versuch die gerade erst gestartete zweite Sitzung unterbrechen. Ohne eine eindeutige ",
+      "ausgeliefert_top3": [
+        "(node) Sitzung sicher unterbrechen: Sichern vor dem Wiedereinstieg",
+        "(node) Bindet die Kopfeinheit-Prüfung Zweitwagen-Fahrten wirklich rechtzeitig ab? (offener Verdacht)",
+        "(node) Warum autoConnect bei BLE-Verbindungen abgelehnt wurde: der Feldfehler sitzt im Berechtigungs-Vorlauf (ADR F-026, 2026-08-01)"
+      ],
+      "blindes_urteil": {
+        "klasse": "TEILWEISE",
+        "begruendung": "Das BLE-autoConnect-ADR (F-026) liegt im selben Themenfeld BLE-Reconnect, behandelt aber Berechtigungs-Timing, nicht die verlangte Instanz-Zuordnung eines verspaeteten Trennbefehls."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-606b63",
+        "target_label": "Generation-Token gegen Reentrancy bei fire-and-forget Cleanup async gestarteter ",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "„Warum autoConnect bei BLE-Verbindungen abgelehnt wurde“ (ADR F-026) liegt in derselben BLE-Verbindungs-Domaene des fahrtenbuchs, beantwortet aber die Reentrancy-/Generation-Token-Frage nicht, sondern einen anderen BLE-Fehler (Berechtigungs-Vorlauf)."
+      }
+    },
+    {
+      "lfd": 13,
+      "anfrage_gekuerzt": "Nach dem Rollout zeigen die automatisierten Prüfprotokolle eine lange Liste an Fehlermeldungen. Bevor du alle Probleme auf eine instabile Infrastruktur schiebst, solltest du dir bei einigen Fällen die detaillierten Proto",
+      "ausgeliefert_top3": [
+        "(node) Vor jedem Enigma-Bau: erst falsifizieren, dann bauen",
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "(node) Plan vor Umsetzung (systemweit)"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Falsifizieren-vor-Bau, Entwicklerinformation und Plan-vor-Umsetzung beantworten nicht, ob Rollout-Fehlermeldungen genauer statt pauschal auf Infrastruktur geschoben werden sollen."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-b91ed6",
+        "target_label": "Vorbestehende rote Tests pauschal als \"Umgebungszustand\" abgetan, ohne jeden Fal",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "BRAUCHBAR_ANDERS",
+        "begruendung": "L-b63633 („Die Einstufung 'vorbestehend rot' verdeckte, dass ein Produktivskript gar nicht mehr lauffaehig war“) beantwortet exakt dieselbe Lehre wie das Ziel -- rote Tests nicht pauschal als Umgebungszustand abtun, sondern die Fehlerausgabe lesen -- nur unter anderer Lehren-ID."
+      }
+    },
+    {
+      "lfd": 14,
+      "anfrage_gekuerzt": "Bei der Fehlerbehebung einer Sortierfunktion stellst du fest, dass Informationen aus unterschiedlichen Bereichen unkorrekt nebeneinander stehen. Da die hinterlegten Zahlenwerte für die Wichtigkeit über verschiedene Kateg",
+      "ausgeliefert_top3": [
+        "(node) Buckeberg-Belegablage: Objekt-Anker funktioniert, MÜKRO-Fall wartet auf Klärung",
+        "(node) Synergien finden: welche Datenpunkte sollten voneinander wissen",
+        "(node) design-waechter: neun Fragen vor dem Fertigmelden eines Bildschirms"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Belegablage, Synergien und die neun design-waechter-Fragen beantworten nicht das Prioritaets-Problem gleicher Wichtigkeitswerte in einer Sortierfunktion."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-0392e4",
+        "target_label": "norm_rang ist eine Zahl ohne Einheit. Die Spalte trug bis heute ausschliesslich ",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 15,
+      "anfrage_gekuerzt": "Ein Techniker stellt fest, dass der automatisierte Datenabgleich abgebrochen wird, und wechselt stattdessen auf eine direkte Übertragungsanbindung. Er geht davon aus, dass lediglich die Serververbindung instabil ist, übe",
+      "ausgeliefert_top3": [
+        "(node) Buckeberg-Belegablage: Objekt-Anker funktioniert, MÜKRO-Fall wartet auf Klärung",
+        "(node) Ohne Plan wird nicht gebaut — Betreiberanweisung 2026-08-12, mit Durchsetzung statt Appell",
+        "(node) Warum autoConnect bei BLE-Verbindungen abgelehnt wurde: der Feldfehler sitzt im Berechtigungs-Vorlauf (ADR F-026, 2026-08-01)"
+      ],
+      "blindes_urteil": {
+        "klasse": "TEILWEISE",
+        "begruendung": "Das BLE-autoConnect-ADR (bewusst abgelehnter Automatismus, nicht Instabilitaet) trifft das Muster 'absichtlich blockiert, wirkt wie Ausfall', aber nicht den geschilderten Datenabgleich-/Abnahme-Fall direkt."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-e7bc5e",
+        "target_label": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern a",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 16,
+      "anfrage_gekuerzt": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereit",
+      "ausgeliefert_top3": [
+        "(node) Testdaten kennzeichnen: Warum die Sperre eine physische Trennung ist und das Merkmal nur die Herkunft",
+        "(node) ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)",
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Testdaten-Kennzeichnung, Beta-Grundsatz und Entwicklerinformation erwaehnen nicht den geschilderten Auto-Timeout, der erfasste Daten ohne Bestaetigung loescht."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-a9ccd0",
+        "target_label": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in j",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 17,
+      "anfrage_gekuerzt": "Ein Administrator muss die Testdatensätze aus dem System löschen, bevor das Produkt live geht. Da sowohl die Übungsdatensätze als auch die echten Kundeninformationen exakt dieselben Bezeichnungen tragen, führt eine Berei",
+      "ausgeliefert_top3": [
+        "(node) Grundsatz H1: alles Beta, keine echten Daten, kein Livebetrieb",
+        "(node) ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)",
+        "(node) Testdaten kennzeichnen: Warum die Sperre eine physische Trennung ist und das Merkmal nur die Herkunft"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'Testdaten kennzeichnen' beantwortet direkt die Frage nach einer Import-Kennzeichnung, die Testdaten von gleichnamigen echten Datensaetzen unterscheidet."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-e1a441",
+        "target_label": "wohlair: Herkunfts-Trennung zweier gleich aussehender Datenbestände (importierte",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 18,
+      "anfrage_gekuerzt": "Die Entwickler bemerken, dass die KI-Assistenten bei komplexeren Projekten zunehmend unzuverlässig reagieren und wichtige Vorgaben vernachlässigen. Da die Menge an hinterlegten Informationen für jede Teilaufgabe zu groß ",
+      "ausgeliefert_top3": [
+        "(node) Warum Disziplin verrottet und Erzeugung nicht",
+        "(node) Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+        "(node) EILMELDUNG an brainlehr: Eine neue Regel braucht einen Rückwirkungs-Melder, nicht nur einen Text"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "'Warum Disziplin verrottet', Schichten-Anwendung und der Rueckwirkungs-Melder sprechen nicht die verlangte Verdichtung ueberladener Anweisungen pro Teilaufgabe an."
+      },
+      "aufloesung": {
+        "category": "norm",
+        "target_kind": "node",
+        "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+        "target_label": "ADR-006: Token-Kompression fuer Multi-Agent Systeme",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "DANEBEN",
+        "begruendung": "„Warum Disziplin verrottet und Erzeugung nicht“ und die EILMELDUNG zu Rueckwirkungs-Meldern behandeln weder Token-Budget noch Kompression von Anweisungen fuer Multi-Agent-Verlaesslichkeit."
+      }
+    },
+    {
+      "lfd": 19,
+      "anfrage_gekuerzt": "Ein Verkäufer möchte in einer Präsentation die maximale Belastbarkeit eines Bauteils nennen. Da ihm keine aktuellen Testergebnisse vorliegen, muss er entscheiden, ob er eine plausibel klingende Zahl nennt oder offen gibt",
+      "ausgeliefert_top3": [
+        "(node) Sagen, wie belastbar etwas ist",
+        "(node) Sagen, ob etwas noch gilt",
+        "(node) Sichtbar trennen: gemessen, abgeleitet oder vermutet"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'Sagen, wie belastbar etwas ist' beantwortet woertlich die Frage: Aussage traegt Kennzeichnung gemessen/Fremdbericht/plausibel/geraten statt eine erfundene Zahl zu nennen."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+        "target_label": "6. Eine falsche Zahl ist schlimmer als keine.",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 20,
+      "anfrage_gekuerzt": "Bei der Ausarbeitung einer komplexen Systemarchitektur muss ich entscheiden, ob eine zusätzliche Überprüfungsinstanz sinnvoll ist. Da die primäre Logik bereits über die nötige Kapazität für tiefgreifende Entscheidungen v",
+      "ausgeliefert_top3": [
+        "(node) Warum unabhängige Prüfung ein frisches Fenster braucht",
+        "(node) Konsil-Material — Grundarchitektur",
+        "(node) Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'Warum unabhaengige Pruefung ein frisches Fenster braucht' beantwortet direkt, wann ein separates Kontrollfenster fuer eine unabhaengige Zweitmeinung sinnvoll ist."
+      },
+      "aufloesung": {
+        "category": "norm",
+        "target_kind": "node",
+        "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+        "target_label": "Modell-Kaskade v3: Opus-Hauptfaden + Delegation nach unten (seit 2026-08-05T09:40:00+0200)",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "BRAUCHBAR_ANDERS",
+        "begruendung": "„Warum unabhaengige Pruefung ein frisches Fenster braucht“ beantwortet exakt die gestellte Frage (wann ein separates Kontrollfenster fuer eine unabhaengige Zweitmeinung sinnvoll ist), nur unter einem anderen Knotennamen als das Ziel."
+      }
+    },
+    {
+      "lfd": 21,
+      "anfrage_gekuerzt": "Ein neuer Kollege stößt bei der Recherche auf ein unübersichtlich formatiertes Protokoll und ist unsicher, ob es sich um einen Fehler handelt oder ob die Daten noch gültig sind. Es muss geklärt werden, dass dieser Text b",
+      "ausgeliefert_top3": [
+        "(node) Was als Beleg für „funktioniert\" zählt",
+        "(node) Sichtbar trennen: gemessen, abgeleitet oder vermutet",
+        "(node) Warum ein unbedingter Herzschlag mehrdeutige Stille in eine deutbare Aussage verwandelt"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Beleg-fuer-funktioniert, gemessen/abgeleitet/vermutet und der Herzschlag-Text erklaeren nicht, warum ein unuebersichtliches altes Protokoll bewusst als Entstehungs-Beleg erhalten bleibt."
+      },
+      "aufloesung": {
+        "category": "norm",
+        "target_kind": "node",
+        "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+        "target_label": "Buckeberg Anbieterabend 2026-08-05: mündliche Aussagen kippen zwei Angebotsbewertungen, ein Widerspruch bleibt offen",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "L-14d14c („Eine Uebergabedatei ueberlebte einen Richtungswechsel des Auftrags und beschrieb danach zuversichtlich den aufgegebenen Strang“) beruehrt die Frage, ob ein alter Text noch gueltig ist, beantwortet aber nicht, warum das unordentliche Protokoll bewusst als Entstehungsbeleg erhalten bleibt."
+      }
+    },
+    {
+      "lfd": 22,
+      "anfrage_gekuerzt": "Ein Hausbesitzer lässt seine Werkstatt umbauen und muss entscheiden, wie viele Kabel nun direkt in die Wände verlegt werden sollen. Er muss abwägen, ob er nur den aktuellen Bedarf deckt oder eine breitere Basis schafft, ",
+      "ausgeliefert_top3": [
+        "(node) Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+        "(node) Kalibrierbremse: verdrahten oder ausbauen",
+        "(node) Buckeberg: begehbare Darstellung der Sanierungswege — Plan A/B/C vom 2026-08-16"
+      ],
+      "blindes_urteil": {
+        "klasse": "TEILWEISE",
+        "begruendung": "'Kalibrierbremse: verdrahten oder ausbauen' spiegelt die Abwaegung 'jetzt fest verdrahten vs. spaeter flexibel' thematisch, beantwortet aber nicht die konkrete Elektroinstallations-Frage."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+        "target_label": "10. Verhältnismäßigkeit ist Teil der Antwort.",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "Der Knoten „Kalibrierbremse: verdrahten oder ausbauen“ klingt durch Titel und Wortfeld (verdrahten) nach derselben Jetzt-oder-spaeter-Frage, doch sein Zusammenfassungsfeld ist ein inhaltsleeres Formular („kurzer Plan, weil eine Entscheidung mit echten Alternativen ansteht“, im Volltext nachgelesen) -- er hilft der Anfrage nicht wirklich, obwohl das Thema angrenzt."
+      }
+    },
+    {
+      "lfd": 23,
+      "anfrage_gekuerzt": "Ein Sachbearbeiter prüft die Unterlagen zu einer Anlage und stellt fest, dass der Beleg für eine Modernisierung im Widerspruch zu den aktuellen Sicherheitsprüfungen steht. Da beide Dokumente gleichwertig sind, muss nun b",
+      "ausgeliefert_top3": [
+        "(node) Was als Beleg für „funktioniert\" zählt",
+        "(node) Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)",
+        "(node) Abarbeitung: der offene Bestand vom 2026-08-11"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Beleg-fuer-funktioniert, Betreiber-korrigieren und Bestandsabarbeitung beantworten nicht den Widerspruch zwischen Modernisierungsbeleg und Sicherheitspruefung."
+      },
+      "aufloesung": {
+        "category": "norm",
+        "target_kind": "node",
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+        "target_label": "Widerspruch 2: Brennertausch Haus 22 — vom Anbieterabend unberührt, unverändert offen",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "„Den Betreiber korrigieren“ (Widerspruch ist Bringschuld) und L-349083 (Buckeberg-Modellfazit widerspricht dem Rechenkern bei der Anlagenzahl) liegen beide auf dem Widerspruchs-Thema im selben Buckeberg-Kontext, treffen aber nicht den konkreten Brennertausch-Haus-22-Fall."
+      }
+    },
+    {
+      "lfd": 24,
+      "anfrage_gekuerzt": "Die Eigentümergemeinschaft möchte die Abrechnung der Dachsanierung prüfen, da das Handwerksunternehmen und die Hausverwaltung unter gleicher Leitung stehen. Da im Vertrag keine speziellen Regeln für solche internen Beauf",
+      "ausgeliefert_top3": [
+        "(node) efbe: die Vergabe an eigene Gewerke bleibt im Vertrag ungeregelt — Frage vor der Unterschrift",
+        "(node) Personelle Verflechtung zwischen der efbe-Hausverwaltung und der efbe-Bausparte GmbH, ungeregelt im Vertragsentwurf",
+        "(node) SWB: warum der Preis weiter ungeklärt bleibt — der Vertragsentwurf gehört einer fremden Gemeinschaft"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'efbe: Vergabe an eigene Gewerke bleibt ungeregelt' und 'Personelle Verflechtung efbe' beantworten die Frage nach fehlendem Massstab bei Auftragsvergabe unter gleicher Leitung direkt."
+      },
+      "aufloesung": {
+        "category": "norm",
+        "target_kind": "node",
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+        "target_label": "efbe: der Vertrag regelt die Vergabe an eigene Gewerke nicht — Vertragsfrage vor der Unterschrift",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 25,
+      "anfrage_gekuerzt": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine",
+      "ausgeliefert_top3": [
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "(node) Synergien finden: welche Datenpunkte sollten voneinander wissen",
+        "(node) Ob eingespieltes Wissen wirklich benutzt wurde, misst kein System automatisch — und was daraus fuer uns folgt"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'Synergien finden' beschreibt exakt das Muster: ein fertig gebautes Merkmal (das neue Feld) haelt Daten, die kein anderer Teil des Programms kennt -- die geschilderte Ursache des unbemerkten Fehlers."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-298823",
+        "target_label": "openlehr/steuer: vierter Fall am selben Tag (2026-07-31), in dem ein Feld/eine K",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "„Synergien finden: welche Datenpunkte sollten voneinander wissen“ beruehrt das Thema unverbundener Bausteine, beantwortet aber nicht die konkrete Frage, warum ein geschriebenes Feld nie ausgewertet wird -- die anderen beiden Treffer („Keine Entwicklerinformation in der Oberflaeche“, „niemand-misst-automatisch-ob“) liegen daneben."
+      }
+    },
+    {
+      "lfd": 26,
+      "anfrage_gekuerzt": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicher",
+      "ausgeliefert_top3": [
+        "(node) Testumgebung: selbstaendig handeln bis zum Wort \"es wird ernst\"",
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "(node) „Es funktioniert\" braucht einen Beleg, der vorher rot war (systemweit)"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Testumgebung-selbstaendig, Entwicklerinformation und Beleg-fuer-funktioniert beantworten nicht, ob Fehlerbehandlung fuer entkoppelte Hintergrundaufgaben in die Hilfsfunktion gehoert."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-f9f654",
+        "target_label": "try/catch um einen nicht awaiteten (unawaited) async-Aufruf faengt dessen Fehler",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "DANEBEN",
+        "begruendung": "Keiner der drei Treffer („Testumgebung: selbstaendig handeln“, „Keine Entwicklerinformation in der Oberflaeche“, „Es funktioniert braucht einen Beleg“) spricht async-Fehlerbehandlung oder fire-and-forget-Aufrufe an."
+      }
+    },
+    {
+      "lfd": 27,
+      "anfrage_gekuerzt": "In der Fehleranalyse stellte ich fest, dass die Einblendung von Bestätigungsfenstern oft fehlschlägt oder Daten verliert, weil sie auf eine unsichere Standortbestimmung im UI-Baum angewiesen ist. Ich muss diese Overlays ",
+      "ausgeliefert_top3": [
+        "(node) Vor jedem Enigma-Bau: erst falsifizieren, dann bauen",
+        "(node) Buckeberg-Belegablage: Objekt-Anker funktioniert, MÜKRO-Fall wartet auf Klärung",
+        "(node) TripLifecycleCoordinator: warum der Fahrt-Lebenszyklus einen Owner braucht (Opus-5-Befund, 2026-07-24)"
+      ],
+      "blindes_urteil": {
+        "klasse": "TEILWEISE",
+        "begruendung": "Der TripLifecycleCoordinator-Befund (Race-Bedingungen, 48% der Fix-Commits) trifft das allgemeine Timing/Race-Thema, nicht die konkrete UI-Baum-Positionierung von Bestaetigungsfenstern."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-cdac52",
+        "target_label": "Fahrtenbuch Prompt-Listener: Navigator.of(context) auf ambientem Widget-context ",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "„TripLifecycleCoordinator: warum der Fahrt-Lebenszyklus einen Owner braucht“ behandelt dieselbe App (fahrtenbuch) und dieselbe Fehlerklasse Timing/Reihenfolge, trifft aber nicht den konkreten Navigator.of(context)-Fall auf ambientem Widget-Context."
+      }
+    },
+    {
+      "lfd": 28,
+      "anfrage_gekuerzt": "Ein Administrator prüft die Zugriffsberechtigungen für einen Kollegen, der für zwei Organisationen tätig ist. Er verwendet dazu ein Übungsszenario mit simulierten Profilen, um sicherzustellen, dass die spezifische Aufgab",
+      "ausgeliefert_top3": [
+        "(node) Elf Stufen bilden die Zugriffsentscheidung als Filter, nicht als additive Berechtigung",
+        "(node) Stadtwerke: fiktiver Verbundpartner fuer den fuenfte-Rolle-Testlauf",
+        "(node) SIMULATION: absichtlicher Portwiderspruch in der Zugriffsregel zum Buchungssystem"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'Elf Stufen bilden die Zugriffsentscheidung' und das Stadtwerke-Testszenario mit fiktivem Verbundpartner fuer einen Fuenfte-Rolle-Testlauf treffen zusammen die Pruefung einer Doppelrolle per simuliertem Profil."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/stadtwerke",
+        "target_label": "Stadtwerke",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 29,
+      "anfrage_gekuerzt": "Ein Mitarbeiter im Empfangsbereich prüft die Belegung der Büroräume auf dem Gelände. Würde das System bei gesperrten Zonen gar keine Daten liefern, könnte er durch das Fehlen von Einträgen Rückschlüsse auf geheime Anlage",
+      "ausgeliefert_top3": [
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "(node) Café Enigma Rotation 1: P1-Mechanismen und P2-Grenzen",
+        "(node) Die Einbuergerungsschranke besteht ihre erste Probe im Feld — Ziel war der Assistent selbst"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Entwicklerinformation, Cafe-Enigma-Rotation und Einbuergerungsschranke beantworten nicht die verlangte plausible Tarnantwort statt Schweigen bei gesperrten Zonen."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/brainlehr/inference-control-was-andere-faecher",
+        "target_label": "Inference Control — was andere Faecher geloest haben und wo die bewiesene Grenze liegt",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "„Cafe Enigma Rotation 1: P1-Mechanismen und P2-Grenzen“ behandelt verwandte Schutz-/Isolationsmechanismen, aber nicht speziell das Verraten-durch-Abwesenheit-Problem, das die Anfrage beschreibt (plausible Antwort statt leerer Rueckgabe)."
+      }
+    },
+    {
+      "lfd": 30,
+      "anfrage_gekuerzt": "Während einer Besprechung zur Neuausrichtung der Organisationsstruktur verlieren die Beteiligten sich in Diskussionen über Detailzahlen und zukünftige Software-Anpassungen. Sie vernachlässigen dabei, dass die rechtliche ",
+      "ausgeliefert_top3": [
+        "(node) Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)",
+        "(node) Architektur-Konsil 2026-08-13: vier Konvergenzen aus zehn Rollen, die einander nicht kannten",
+        "(node) Widerspruch ist erwünscht, auch gegen den eigenen Auftrag"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Betreiber-korrigieren, das Architektur-Konsil und 'Widerspruch erwuenscht' beantworten nicht, dass die zeitkritische rechtliche Genehmigung Vorrang vor technischen Details hat."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/ops/buckeberg-konsil-2026-07-22-governance",
+        "target_label": "Buckeberg Konsil 2026-07-22: Governance vor Ranking, 11 harte Schranken, Meilensteine M0-M13",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 31,
+      "anfrage_gekuerzt": "Ein Kunde beschwert sich, dass neu hochgeladene Rechnungen und Nachrichten in der Trefferliste fehlen. Ich muss prüfen, ob die automatischen Importprozesse die Daten korrekt erfassen oder ob diese aufgrund fehlender Text",
+      "ausgeliefert_top3": [
+        "(node) ADR: Wie sich die Navigation der OpenLehr-Steuer-Oberflaeche verdichtet und ein einheitliches KI-Chat-Muster bekommt",
+        "(node) Der automatische Recall durchsucht den Prompt, nicht das ausgewertete Material — eine gemessene Lücke",
+        "(node) FTS5 bei OpenLehr getrennt gefuehrt: text_index fuer steuer.db, knowledge_index fuer die Wissensbasis"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'FTS5 bei OpenLehr getrennt gefuehrt' beantwortet direkt: der Suchindex fuer Rechnungen/Mails/Belege trennt PII-maskierte Indizierung, erklaert damit ein moegliches Fehlen in der Trefferliste."
+      },
+      "aufloesung": {
+        "category": "fact",
+        "target_kind": "node",
+        "target_id": "/openlehr/volltextindex-wird-beim-einlesen",
+        "target_label": "Volltextindex wird beim Einlesen fortgeschrieben — hat fuer Belege und Mails aber keinen Leser",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 32,
+      "anfrage_gekuerzt": "Die Entwickler müssen eine technische Barriere einrichten, damit Informationen von externen Anbietern die Integrität der eigenen Software nicht gefährden. Dies ist notwendig, um sicherzustellen, dass fremde Datenströme w",
+      "ausgeliefert_top3": [
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "(node) Externe LLMs brauchen fuer Geschaeftsgeheimnisse eine eigene Freigabeschicht",
+        "(node) Die Anwendung in Schichten — und was davon je System neu gebaut werden muss"
+      ],
+      "blindes_urteil": {
+        "klasse": "TEILWEISE",
+        "begruendung": "'Externe LLMs brauchen eine eigene Freigabeschicht' behandelt dieselbe Grenzfrage, aber fuer ausgehende statt eingehende fremde Datenstroeme -- Richtung passt nicht exakt."
+      },
+      "aufloesung": {
+        "category": "norm",
+        "target_kind": "node",
+        "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+        "target_label": "ADR-007: Trust Zones — Content-Sandbox für externe Inhalte",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 33,
+      "anfrage_gekuerzt": "Ein Tool zur automatischen Fehlerprüfung in einer Software meldet ständig Fehlalarme, weil es nicht zwischen organisatorischen Verknüpfungen und echtem Datentransport unterscheiden kann. Da beide Arten von Verbindungen i",
+      "ausgeliefert_top3": [
+        "(node) Wie wiring_check.py deklarierten, aber nie erreichten Code aufspuert",
+        "(node) Warum eine Stichprobe keine Diagnose ist",
+        "(node) Rang-1-Direktive b5604a62 ist umgesetzt — und die Messung zeigt: 23 Prozent der eigenen Aufträge brachen die Regel"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'Wie wiring_check.py deklarierten, aber nie erreichten Code aufspuert' beantwortet direkt: ein automatisiertes Pruefwerkzeug, das zwischen echten und nur organisatorischen Verbindungen unterscheiden muss."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-503687",
+        "target_label": "mycel.py Stufe 2 (hub/scripts/mycel.py), 2026-07-31: Rollen-Heuristik (Quelle/Pr",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "TEILWEISE",
+        "begruendung": "L-528f0c trifft erneut den Kern (Pruefung nach Oberflaechenform statt Funktion unterscheidet nicht Organisations- von Datenverbindung), aber „wiring_check.py“ und „Warum eine Stichprobe keine Diagnose ist“ beantworten die mycel.py-Rollen-Heuristik nicht direkt."
+      }
+    },
+    {
+      "lfd": 34,
+      "anfrage_gekuerzt": "Ein Kunde möchte seine persönlichen Informationen im Profil aktualisieren, doch der Vorgang wird abgebrochen. Die Meldung auf dem Display darf keine Details zu den technischen Hintergründen preisgeben und sollte den Nutz",
+      "ausgeliefert_top3": [
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "(node) DRINGEND an openlehr_einzelunternehmer: ihr könnt weiterarbeiten — `zeilen` und `/neuladen` stehen",
+        "(node) Betreiberweisung 2026-08-20: Es gibt Knöpfe, die die KI technisch nicht klicken kann"
+      ],
+      "blindes_urteil": {
+        "klasse": "BEANTWORTET",
+        "begruendung": "'Keine Entwicklerinformation in der Oberflaeche' beantwortet woertlich die Vorgabe, keine technischen Hintergruende zu zeigen und stattdessen zu spaeterem Versuch anzuleiten."
+      },
+      "aufloesung": {
+        "category": "norm",
+        "target_kind": "node",
+        "target_id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "target_label": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "gruppe": "TREFFER"
+      },
+      "erste_beurteilung_2026-08-20": null
+    },
+    {
+      "lfd": 35,
+      "anfrage_gekuerzt": "Ein Nutzer beschwert sich über eine fehlerhafte Anzeige auf einer speziellen Unterseite. Der Entwickler korrigiert das Problem im Hauptbereich, übersieht jedoch einen Hinweis im Code, der darauf hindeutet, dass auch eine",
+      "ausgeliefert_top3": [
+        "(node) Fünf Hausverwaltungen für den Buckeberg: Reputation und Verwechslungsfallen",
+        "(node) Keine Entwicklerinformation in der Oberfläche (systemweit)",
+        "(node) DRINGEND openlehr: Friert ein Beleg den Kontaktnamen ein, oder holt er ihn beim Anzeigen?"
+      ],
+      "blindes_urteil": {
+        "klasse": "DANEBEN",
+        "begruendung": "Fuenf-Hausverwaltungen, Entwicklerinformation und der Kontaktname-Befund sprechen nicht das geschilderte Uebersehen einer fast identischen Zweitstelle im Code an."
+      },
+      "aufloesung": {
+        "category": "lesson",
+        "target_kind": "lesson",
+        "target_id": "L-8c633e",
+        "target_label": "SchwarmWacht: camera_invite_screen.dart (Sensor/Waechter-QR) blieb bei M-Fehlerk",
+        "gruppe": "FEHLGRIFF"
+      },
+      "erste_beurteilung_2026-08-20": {
+        "klasse": "DANEBEN",
+        "begruendung": "„Fuenf Hausverwaltungen fuer den Buckeberg“, „Keine Entwicklerinformation in der Oberflaeche“ und die DRINGEND-openlehr-Notiz zu Belegen behandeln weder Bugfix-Vollstaendigkeit noch uebersehene Zwillingsbildschirme."
+      }
+    }
+  ]
+}
