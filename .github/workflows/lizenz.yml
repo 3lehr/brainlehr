@@ -28,5 +28,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: pytest bereitstellen
+        run: pip install pytest
       - name: Lizenz ist AGPL und steht dort, wo sie gelesen wird
-        run: python -m pytest -q tests/test_lizenz.py
+        # --noconftest mit Absicht: tests/conftest.py zieht den ganzen Server
+        # samt Abhaengigkeiten nach. Der Lizenztest liest drei Dateien und
+        # braucht davon nichts -- ein Waechter, der an fremden Abhaengigkeiten
+        # scheitert, meldet nicht die Sache, sondern seine Umgebung.
+        run: python -m pytest -q --noconftest -p no:cacheprovider tests/test_lizenz.py
