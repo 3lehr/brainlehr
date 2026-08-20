@@ -4719,6 +4719,21 @@ def knowledge_relation_list(node: str | None = None,
     if scope != "all":
         clauses.append("s.project_id IN ('shared',?) AND t.project_id IN ('shared',?)")
         params.extend([scope, scope])
+    # BEIDE Enden muessen sichtbar sein, sonst verraet die Kante den Knoten.
+    #
+    # GEFUNDEN 2026-08-20 durch eine Betreiberfrage: Ein gesperrter Knoten wird
+    # in knowledge_search und in children_count sorgfaeltig unterdrueckt -- auch
+    # die ZAEHLUNG, denn "3 Treffer, davon 1 gesperrt" waere selbst die
+    # Information. Diese Funktion prueft davon NICHTS und liefert per JOIN sogar
+    # die TITEL beider Enden mit. Ein unsichtbarer Knoten erschien also ueber
+    # eine Kante zu einem sichtbaren Nachbarn, mit Namen.
+    #
+    # Dieselbe Klasse, die ADR-031 beim Volltextindex beschreibt: der stille Weg
+    # um jede Sperre herum. Dort der Index, hier die Kantenliste. Beide Male
+    # wirkt die sichtbare Haelfte der Sperre einwandfrei -- deshalb faellt es
+    # nicht auf.
+    for seite in ("s", "t"):
+        clauses.append(_NICHT_GESPERRT_SQL.replace("freigabe", f"{seite}.freigabe"))
     where = " WHERE " + " AND ".join(clauses) if clauses else ""
     log_access(conn, node_row["path"] if node_row else None, "relation_list",
                project_id=scope, actor=actor, model=model, session=session, status="started")
