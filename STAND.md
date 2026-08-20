@@ -223,3 +223,16 @@ Aus den Rohzeilen nachgerechnet, nicht aus der Zusammenfassung übernommen. **11
 - **Eine Wortliste für beide Wächter** (`b241c8f2`, `kern/belegsprache.py`). Dabei drei Fehler gefunden, die in **beiden** Listen saßen: `gr[uü]n` trifft nicht `gruen` (die Form traf in keinem der beiden) · `\bgemessen\b` verfehlt „gemessene" · und die alten Listen zählten **„ungemessen" und „unbelegt" als Beleg**, weil die führende Wortgrenze fehlte. `rotprobe` 38 → 19 von 1 216 Commits.
 
 **Falle:** Die Startplatte hatte am Morgen 118 Mi frei, mittags 56 Gi — der `ENOSPC`-Punkt ist erledigt.
+
+**Erste Runde nach der Subagenten-Weisung** (`c0e99019`): drei Sonnet-Agenten, getrennt nach Dateien, Hauptchat plant und prüft.
+
+- **Melder ohne Auslöser 25 → 16** (`3080ead3`, `3a1b1781`). Vier an `SessionStart`, drei am `pre-push`. **15 der ursprünglich 25 brauchen begründet keinen** — sie sind Werkzeuge für Menschen, und das war die wichtigere Hälfte des Berichts.
+- **Zwei begründet NICHT verdrahtet:** `speicherherkunft` und `vorschlagsmelder` lesen kein stdin; an `Stop` gäben sie ihren Hilfetext aus und täten nichts. Kurz eingetragen, gemessen, zurückgenommen.
+
+**Drei Fallen aus dieser Runde, alle dieselbe Familie — das wirksame Artefakt ist nicht das, was im Quelltext steht:**
+
+1. `ohne_mechanismus.py` las `settings.json` und `haken/git/pre-push`, aber **nicht die installierten Haken unter `.git/hooks/`** — `rotprobe` galt als tot, während sie Commits anhielt.
+2. Eine **Schleife** über Modulnamen im `pre-push` (`for m in a b c`) verbirgt die Namen vor dem Zähler *und* vor jedem Leser. Ausgeschrieben: 20 → 16.
+3. Ein Subagent meldete einen Widerspruch in `L-bbd7fb` (`occurrences=3` gegen „vier Fundstellen"). Nachgezählt: **kein Widerspruch** — Fundstellen (Codeorte in einem Vorkommen) sind nicht Vorkommen. Agentenbefunde werden geprüft, bevor sie weitergetragen werden.
+
+**Zwei Agenten laufen noch:** `melder/unbelegter_eingang.py` (Mechanismus zu `L-bbd7fb`) und `melder/quelle_gegen_betrieb.py` — letzterer schließt die Prüfgattung aus `L-600726`, die einmal echten Schadcode auf einem laufenden System fand. Gemessene Lücken dort: `commit-msg` hat keine Quelle-gegen-Betrieb-Prüfung, und niemand prüft, ob ein in `settings.json` verdrahteter Pfad überhaupt existiert (heute: 0 zeigen ins Leere).
