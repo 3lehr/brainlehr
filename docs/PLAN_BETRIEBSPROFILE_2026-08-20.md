@@ -621,6 +621,52 @@ Sitzungsstart ist etwas anderes als einmal am Tag. Messbar am `access_log`
 Entscheidung später auf einer vollständigen Liste steht statt auf dem, was
 gerade einfällt.
 
+## Was parallel laufen kann — und was nicht
+
+Festgeschrieben am 2026-08-21. Die Abhängigkeiten sind gemessen, nicht
+geschätzt: Sie folgen daraus, welcher Schritt einen anderen ENTWERTET.
+
+```
+                B1  Achsen ins Schema  (mandant · kreis · sprache · geltung)
+                 |   BINDEND ZUERST -- alles darunter setzt sie voraus
+        +--------+--------+
+        |                 |
+       B2 Wechsel        B3 Enterprise-Achsen
+        |                 |   E01 E03 E04 E05 E06 E11 E19 + B3b Personenkreise
+        +--------+--------+
+                 |
+                C  Einrichtungsassistent  (fragt das Profil aus B1)
+
+  UNABHAENGIG, ab sofort und nebeneinander:
+    A1 Widerspruchserkennung   FERTIG (2026-08-20)
+    A2 Rueckzug bei Leerlauf
+    A3 Sicherung gegen tote Dienste
+    D  Zugriffsmuster
+    E1 Verfallsrate (Schaetzung + Widerrufsquote)
+    F  Forderungen als Vorgang
+    P14 Englisch: Tuer (README/CONTRIBUTING) und Schnittstelle
+```
+
+**Die drei Sperren, jede mit ihrem Grund:**
+
+| Sperre | warum |
+|---|---|
+| B1 vor allem anderen | Mandant, Kreis und Geltung lassen sich nicht nachtraeglich zuschreiben — 5 232 Alteintraegen fehlt die Zuordnung, die sie nie hatten |
+| B3 nach B1 | Eine Rechtepruefung ohne Achse hat nichts, worauf sie pruefen koennte |
+| C nach B1 | Der Assistent fragt das Profil ab — es muss existieren |
+| E2/E3 nach E1 | Die Gremienbeobachtung liest eine Menschenseite (gemessen: kein RSS, keine API) und ist die bruechigste Bauform des Plans. Erst das Billige, dann das Bruechige |
+
+**Was NICHT bindend ist, obwohl es zusammengehoert:** B1b (Sprache) faehrt
+mit B1 mit, weil eine zweite Spalte im selben Durchlauf fast nichts kostet —
+sie waere aber nachziehbar (Sprache steht im Text, 98,4 % erkannt).
+
+**Und die Reihenfolge INNERHALB von P14 (Englisch):** Tuer zuerst (README,
+CONTRIBUTING — zwei Dateien, eine halbe Stunde), dann die Schnittstelle (zehn
+deutsche Parameter mit Alias-Uebergang), zuletzt die Docstrings (40+ Dateien
+allein in kern/). Der Schemaumbau faellt mit B1 zusammen — beide fassen
+dieselben Spalten an, und sie zweimal anzufassen erzeugt einen Zwischenstand,
+in dem `mandant` neben `tenant` steht.
+
 ## Verworfene Wege
 
 * **Mandanten-Achse erst beim ersten Piloten** — der vom Betreiber geforderte
