@@ -235,4 +235,11 @@ Aus den Rohzeilen nachgerechnet, nicht aus der Zusammenfassung übernommen. **11
 2. Eine **Schleife** über Modulnamen im `pre-push` (`for m in a b c`) verbirgt die Namen vor dem Zähler *und* vor jedem Leser. Ausgeschrieben: 20 → 16.
 3. Ein Subagent meldete einen Widerspruch in `L-bbd7fb` (`occurrences=3` gegen „vier Fundstellen"). Nachgezählt: **kein Widerspruch** — Fundstellen (Codeorte in einem Vorkommen) sind nicht Vorkommen. Agentenbefunde werden geprüft, bevor sie weitergetragen werden.
 
-**Zwei Agenten laufen noch:** `melder/unbelegter_eingang.py` (Mechanismus zu `L-bbd7fb`) und `melder/quelle_gegen_betrieb.py` — letzterer schließt die Prüfgattung aus `L-600726`, die einmal echten Schadcode auf einem laufenden System fand. Gemessene Lücken dort: `commit-msg` hat keine Quelle-gegen-Betrieb-Prüfung, und niemand prüft, ob ein in `settings.json` verdrahteter Pfad überhaupt existiert (heute: 0 zeigen ins Leere).
+**Zweite Runde abgeschlossen** (`59a8d8a8`, `df0a6295`):
+
+- **`quelle_gegen_betrieb` am `pre-push`**, blockierend - die Pruefgattung aus `L-600726` ist damit gebaut und wirksam. Heute: 0 von 2 Haken abweichend, 0 von 63 settings-Pfaden ins Leere, 0 von 33 Melder-Pfaden ausserhalb des Repos.
+- **Der erste Lauf meldete `0 von 0`** - `zaehle` lief ueber die Befundliste statt ueber die geprueft Menge, der Nenner war also die Zahl der Funde. Bei sauberem Bestand nicht unterscheidbar, ob 63 Pfade geprueft wurden oder keiner. Rot-Probe an einer Kopie mit alter Zaehlweise: dort steht `3 von 3 (100 %)`, tatsaechlich 3 von 4.
+- **`messlauf_abrufguete` schluesselt nach Zielklasse auf** und fuehrt das Ergebnis durch `klassenausfall`. Bis heute verschwand ein Totalausfall der 20 Knotenfaelle in der Gesamtzahl - genau `L-0e0ab6`, Vorkommen 10 und 11.
+- **`unbelegter_eingang` bewusst nicht verdrahtet:** ein handgeprueft Treffer von dreien war falsch. Pruefanlass fuer Menschen, kein Richter.
+
+**Alte Notiz (erledigt):** `melder/unbelegter_eingang.py` (Mechanismus zu `L-bbd7fb`) und `melder/quelle_gegen_betrieb.py` — letzterer schließt die Prüfgattung aus `L-600726`, die einmal echten Schadcode auf einem laufenden System fand. Gemessene Lücken dort: `commit-msg` hat keine Quelle-gegen-Betrieb-Prüfung, und niemand prüft, ob ein in `settings.json` verdrahteter Pfad überhaupt existiert (heute: 0 zeigen ins Leere).
