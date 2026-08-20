@@ -213,3 +213,13 @@ Aus den Rohzeilen nachgerechnet, nicht aus der Zusammenfassung übernommen. **11
 - **`schema.sql` wird bei jedem Verbindungsaufbau erneut ausgeführt.** Ein blankes `ALTER TABLE` darin bricht beim zweiten Lauf, und alles dahinter wird nicht mehr angelegt.
 - **SQLite sichert die Reihenfolge zweier `AFTER UPDATE`-Trigger nicht zu.** Bedingung ans `WHERE`, nicht an zwei `WHEN`.
 - **Der Kanarienvogel hing sieben Tage unverdrahtet** — und der Einbauort aus seinem eigenen Docstring war blind für genau den Fall, für den er existiert (`query()` wirft, der Zweig danach wird nie erreicht). Jetzt im `finally`.
+
+**Weisung 2026-08-20 (Rang 1, `c0e99019`): Hauptchat plant, Subagenten bauen und testen.** Modellstufen Opus → Sonnet → Haiku, Kontextfenster wiederverwenden. Damit ist auch der Klientkonflikt aufgelöst, der am 2026-08-18 still zugunsten der engeren Auflage entschieden wurde (`019e97e6`): Der Nutzer hat Subagenten ausdrücklich verlangt.
+
+**Push durch** (`0cd29db1..d40fc006`, 108 Commits) — ohne `--no-verify`, das Norm `ce58f0b2` ausdrücklich sperrt. Vier Wächter standen davor, alle beantwortet statt umgangen:
+
+- **Der Vermerk ist der neue dritte Weg** (`56842bea`). Ein Befund an einem bereits geschriebenen Commit lässt sich nicht beheben (History-Rewrite ausgeschlossen, ~15 Hashes stehen in Knoten und STAND). Ein Vermerk nennt Commit und Grund, verlangt ≥ 20 Zeichen, und **der Befund bleibt sichtbar** — die Ausgabe listet die vermerkten getrennt. Bei `--no-verify` verschwindet er spurlos. 14 gesetzt.
+- **Eine Norm ist eine Grundlage** (`1c2b8f3c`): `Norm <8 Hex>`, `Rang-1/2-Norm`, `Betreiberweisung` gelten jetzt als Planbezug. Nur mit dem Wort davor — eine nackte Hexkennung ist die Kurzform eines Commits und stünde in fast jeder Nachricht.
+- **Eine Wortliste für beide Wächter** (`b241c8f2`, `kern/belegsprache.py`). Dabei drei Fehler gefunden, die in **beiden** Listen saßen: `gr[uü]n` trifft nicht `gruen` (die Form traf in keinem der beiden) · `\bgemessen\b` verfehlt „gemessene" · und die alten Listen zählten **„ungemessen" und „unbelegt" als Beleg**, weil die führende Wortgrenze fehlte. `rotprobe` 38 → 19 von 1 216 Commits.
+
+**Falle:** Die Startplatte hatte am Morgen 118 Mi frei, mittags 56 Gi — der `ENOSPC`-Punkt ist erledigt.
