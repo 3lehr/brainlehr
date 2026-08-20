@@ -115,10 +115,19 @@ fi
 # erzeugt. Ohne diese Pruefung ist sie nach zwei Sitzungen falsch -- genau die
 # handgepflegte Liste, gegen die sie gebaut ist. Kein Abbruch, nur Sammlung:
 # eine veraltete Doku darf einen Push nicht anhalten.
-# Drei Melder, die den Repo-Zustand pruefen und bis 2026-08-20 an keinem
+# Vier Melder, die den Repo-Zustand pruefen und bis 2026-08-20 an keinem
 # Ausloeser hingen (Bericht docs/MELDER_OHNE_AUSLOESER_2026-08-20.md, dort je
-# mit gemessener Laufzeit: 0,02 s / 0,14 s / 0,16 s). SAMMELND, nicht
-# abbrechend -- keiner von ihnen meldet etwas, das einen Push verbieten muss.
+# mit gemessener Laufzeit: 0,02 s / 0,14 s / 0,16 s; quelle_gegen_betrieb
+# 0,04 s). Sie SAMMELN ihre Ausgabe in $output und setzen status=1 -- der
+# Push wird dadurch angehalten. (Der Kommentar sagte bis 2026-08-20 "sammelnd,
+# nicht abbrechend"; das war eine Aussage ueber die Absicht, nicht ueber den
+# Code darunter, und damit genau die Sorte Beschreibung, gegen die
+# quelle_gegen_betrieb.py gebaut ist.)
+#
+# quelle_gegen_betrieb.py gehoert hierher und nicht in die Hinweisgruppe:
+# Es prueft .git/hooks gegen haken/git/ -- also ob die Waechter, die diesen
+# Push freigeben, ueberhaupt die versionierten sind. Weicht das ab, ist jede
+# andere Freigabe in dieser Datei wertlos (L-600726).
 # AUSGESCHRIEBEN, nicht als Schleife ueber Namen: Eine Schleife
 # (`for m in a b c; do python3 "$repo_root/melder/$m.py"`) verbirgt die
 # Modulnamen vor jedem, der die Datei liest -- und vor
@@ -128,7 +137,8 @@ fi
 # nur andersherum -- hier wirkt etwas, das im Quelltext nicht steht.
 for pfad in "$repo_root/melder/kennungskollision.py" \
             "$repo_root/melder/schemastand.py" \
-            "$repo_root/melder/spaltenabgleich.py"; do
+            "$repo_root/melder/spaltenabgleich.py" \
+            "$repo_root/melder/quelle_gegen_betrieb.py"; do
   if [[ -f "$pfad" ]]; then
     if ! m_output="$(python3 "$pfad" 2>&1)"; then
       output="$output
