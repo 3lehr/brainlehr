@@ -136,8 +136,13 @@ ABSOLUT = [
     r"geht (leider )?nicht\b",
     r"ist nicht m(ö|oe)glich",
     r"unm(ö|oe)glich\b",
-    r"gibt es (hier )?nicht\b",
-    r"existiert nicht\b",
+    # `gibt es nicht` und `existiert nicht` sind RAUS (2026-08-20, nach der
+    # Messung an 4 254 echten Antworten). Sie treffen gewoehnliche
+    # Tatsachenaussagen ueber den eigenen Bestand -- "den Standardzweig gibt
+    # es hier nicht, weil ich nur den einen geschoben habe" ist gemessen und
+    # richtig. Die Hausregel zielt auf Aussagen ueber MACHBARKEIT ("das kann
+    # die Plattform nicht"), nicht auf "diese Datei gibt es nicht", die
+    # jederzeit in einer Sekunde nachpruefbar ist.
     r"l(ä|ae)sst sich nicht (pr(ü|ue)fen|messen|nachstellen|simulieren|testen|bauen)",
     r"kann man nicht (pr(ü|ue)fen|messen|nachstellen|simulieren|testen)",
     r"nicht nachstellbar",
@@ -161,8 +166,63 @@ VERSUCH = [
 ]
 
 
+# SPRACHPROBE (2026-08-20). Betreiberfrage: ob man nicht "einfach weitere
+# Woerter anderer Sprachen mit aufnehmen" sollte.
+#
+# GEMESSEN statt entschieden -- 4 252 Antworten aus den 400 juengsten
+# Transkripten, 4,3 Mio Zeichen:
+#
+#   deutsch   67,9 %   englisch  13,9 %   unklar  18,0 %   spanisch  0,1 %
+#
+# Die drei spanischen Treffer sind Fehlalarme (Pfade und Code enthalten "la",
+# "no", "el"). Die 18 % "unklar" sind KEINE Fremdsprache, sondern zu kurze
+# Antworten: Median 149 Zeichen, 99 % unter 400 -- Kennungen, Dateinamen,
+# Zwischenstaende.
+#
+# Daraus folgt NICHT "mehr Vokabular", sondern etwas Besseres: Vokabular fuer
+# eine Sprache, die nie vorkommt, ist totes Gewicht -- aber SCHWEIGEN in einer
+# unbekannten Sprache ist ein blinder Fleck, der wie Unauffaelligkeit aussieht.
+# Deshalb meldet der Waechter, wenn er die Sprache nicht erkennt, statt still
+# durchzulassen.
+#
+# Die Schwelle 400 Zeichen ist gemessen, nicht geraten: darunter liegen 99 %
+# der unklaren Faelle. Ueber der Schwelle bleiben rund 8 von 4 252 Antworten
+# (0,2 %) -- so selten darf ein Hinweis sein, ohne zu nerven.
+SPRACHPROBE = {
+    "deutsch": r"\b(und|nicht|das|ist|der|die|ein|mit|von|auf|wird|wurde|kein|aber|weil)\b",
+    "englisch": r"\b(the|and|not|this|that|with|from|which|does|have|been|will|but|because)\b",
+}
+SPRACHE_AB_ZEICHEN = 400
+SPRACHE_MIN_TREFFER = 3
+
+
+def sprache(text: str) -> str | None:
+    """Erkannte Sprache, oder None -- dann kann dieser Waechter nichts sagen."""
+    punkte = {s: len(re.findall(m, text.lower())) for s, m in SPRACHPROBE.items()}
+    beste = max(punkte, key=punkte.get)
+    return beste if punkte[beste] >= SPRACHE_MIN_TREFFER else None
+
+
 def _aus() -> bool:
     return os.environ.get("BRAINLEHR_VERMUTUNGSWAECHTER", "").strip().lower() == "aus"
+
+
+def ohne_zitate(text: str) -> str:
+    """Text ohne Codebloecke, Backticks und Anfuehrungszeichen.
+
+    GEMESSEN, nicht vermutet: In einer Stichprobe von acht Beanstandungen der
+    Klasse "Absolutaussage" waren fuenf ZITATE -- die Regel selbst, die
+    Fehlermeldung des eigenen Waechters, eine Tabelle mit den Ausloeserwoertern.
+    Ein Waechter, der beim BESCHREIBEN seiner eigenen Regel anschlaegt, wird
+    binnen eines Tages abgeschaltet.
+
+    Wer eine Absolutaussage in Anfuehrungszeichen setzt, zitiert sie oder
+    grenzt sich von ihr ab. Wer sie behauptet, schreibt sie ohne."""
+    text = re.sub(r"```.*?```", " ", text, flags=re.S)
+    text = re.sub(r"`[^`]*`", " ", text)
+    text = re.sub(r"[\"„»][^\"“«\n]{0,200}[\"“«]", " ", text)
+    text = re.sub(r"[\u2018\u2019\u201a\u201b'][^\u2018\u2019'\n]{0,200}[\u2018\u2019']", " ", text)
+    return text
 
 
 def _trifft(muster: list[str], text: str) -> str | None:
@@ -177,7 +237,23 @@ def beurteile(text: str) -> str | None:
     """Grund fuer eine Beanstandung, oder None."""
     if not text.strip():
         return None
-    absolut = _trifft(ABSOLUT, text)
+    # Erst die Sprachfrage: Was dieser Waechter nicht lesen kann, prueft er
+    # auch nicht -- und das gehoert gesagt, nicht verschwiegen. Ein Waechter,
+    # der eine fremde Sprache still durchlaesst, ist dort abgeschaltet, und
+    # niemand merkt es, weil Schweigen wie Unauffaelligkeit aussieht.
+    if len(text) >= SPRACHE_AB_ZEICHEN and sprache(text) is None:
+        return (
+            "Die Sprache dieser Antwort ist weder als Deutsch noch als Englisch "
+            f"erkennbar ({len(text)} Zeichen). Dieser Waechter prueft nur diese "
+            "beiden -- er hat hier also NICHTS geprueft, und das ist etwas "
+            "anderes als 'nichts gefunden'.\n\n"
+            "Gemessen am 2026-08-20 ueber 4 252 Antworten: 67,9 % deutsch, "
+            "13,9 % englisch, kein Drittsprachenfall. Tritt einer auf, gehoert "
+            "sein Vokabular ergaenzt -- oder die Antwort in einer der beiden "
+            "Sprachen geschrieben."
+        )
+
+    absolut = _trifft(ABSOLUT, ohne_zitate(text))
     if absolut and not _trifft(VERSUCH, text):
         return (
             f'Diese Antwort stellt eine Absolutaussage auf ("{absolut}") und nennt '
@@ -313,6 +389,36 @@ def _selftest() -> int:
     # der eigene Aufbau, nicht die Plattform. Deshalb VERSUCH getrennt von BELEG.
     assert beurteile("Gemessen: das geht nicht."), \
         "eine Messung des eigenen Aufbaus deckt keine Aussage ueber die Plattform"
+    # ZITATE, und dieser Fall ist aus einer Messung entstanden: von acht
+    # Beanstandungen der Klasse waren fuenf Zitate -- die Regel selbst, die
+    # eigene Fehlermeldung, eine Tabelle mit den Ausloeserwoertern. Ein
+    # Waechter, der beim Beschreiben seiner eigenen Regel anschlaegt, wird
+    # binnen eines Tages abgeschaltet.
+    for t in ('Der naechste Waechter faengt „geht nicht" und „unmoeglich".',
+              'Die Fehlermeldung lautet `{"fehler":"das geht nicht"}` und nennt die Liste.',
+              "Ich baue einen Melder gegen 'nicht moeglich' als Behauptung."):
+        assert beurteile(t) is None, f"Zitat faelschlich beanstandet: {t}"
+    # Gegenprobe: dieselbe Aussage OHNE Anfuehrungszeichen ist eine Behauptung.
+    assert beurteile("Ein GATT-Server im Emulator geht nicht, das ist so.")
+
+    # TATSACHENAUSSAGEN ueber den eigenen Bestand sind keine Machbarkeitsaussagen.
+    for t in ("Den Standardzweig gibt es hier nicht, ich habe nur den einen geschoben.",
+              "Der Dienst existiert nicht, es ist nur ein Kommandozeilenskript."):
+        assert beurteile(t) is None, f"Tatsachenaussage beanstandet: {t}"
+
+    # i) SPRACHPROBE, beide Richtungen.
+    fremd = ("Le systeme ne peut pas etre teste localement car la base de donnees "
+             "n'est pas disponible dans cet environnement de developpement, et "
+             "les mesures doivent donc attendre la prochaine version complete "
+             "du programme installe sur la machine de production. ") * 2
+    assert beurteile(fremd), "unerkannte Sprache muss gemeldet werden, nicht schweigen"
+    # Gegenprobe: ein KURZER fremdsprachiger Schnipsel meldet nichts -- unter
+    # 400 Zeichen liegen 99 % der unklaren Faelle, und das sind Kennungen und
+    # Zwischenstaende, keine Fremdsprache.
+    assert beurteile("Le systeme ne peut pas etre teste.") is None
+    # Und deutsche wie englische Fliesstexte bleiben still.
+    assert sprache("Und das ist nicht der Fall, weil die Messung das zeigt.") == "deutsch"
+    assert sprache("This is not the case because the measurement shows that.") == "englisch"
 
     # g) Abschaltbar, und der Schalter wirkt wirklich.
     os.environ["BRAINLEHR_VERMUTUNGSWAECHTER"] = "aus"
@@ -321,7 +427,7 @@ def _selftest() -> int:
     assert _aus() is False
 
     print("vermutungswaechter: Selbsttest gruen (Vermutung und Absolutaussage, "
-          "deutsch und englisch: Anlassfall trifft, "
+          "deutsch und englisch, dazu die Sprachprobe: Anlassfall trifft, "
           "belegte Aussage geht durch, ehrliche Form geht durch, Zukunft "
           "ausgenommen, Vorschlag ausgenommen, gewoehnlicher Text ruhig, "
           "Schalter wirkt)")
