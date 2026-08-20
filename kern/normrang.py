@@ -272,7 +272,7 @@ def _selftest() -> int:
         hub_src = f"erzeugt aus {HUB_CLAUDE_MD} (Stand 2026-08-05T00:00:00+02:00)"
         adr_src = "erzeugt aus docs/adr/001-use-drift-database.md (Stand 2026-08-05T00:00:00+02:00)"
         sammel_src = "normbestand.py::ensure_category"
-        fakt_src = "erzeugt aus /Volumes/daten/Begod2026/hub/scripts/methodik_export.py (Stand X)"
+        fakt_src = "erzeugt aus hub/scripts/methodik_export.py (Stand X)"
 
         conn = sqlite3.connect(str(db_path))
         try:

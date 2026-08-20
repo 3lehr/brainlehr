@@ -136,7 +136,7 @@ import geltungsbereich  # exakter Projektfilter fuer Lehren (sql_projects_exact)
 import schema_nachzug  # 2026-08-10: fehlende Spalten generisch aus schema.sql
 import herkunft_normentscheider  # Auftrag 2026-08-09: norm_entschieden_von traegt
                                   # 'betreiber' statt actor, wenn source einen belegten
-                                  # Betreiber-Urheber zeigt (CLAUDE.md-Import). Kein
+                                  # Betreiber-Urheber zeigt (<Hausregeln>-Import). Kein
                                   # Zirkel -- das Modul importiert nichts von hier.
 import normachsen  # Auftrag 95 (Schritt 1, docs/PLAN_RECHTSRAUM_2026-08-13.md):
                     # ARTEN (Werte fuer norm_art) und FREMDE_QUELLE (Erkennung
@@ -155,7 +155,7 @@ import prompt_invarianz  # agentneutraler Entscheidungstest; keine Modell- oder 
 # BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
 # unveraendert. Grund: ein fest an __file__ gebundener DB-Pfad verhindert
 # jeden Betrieb ausserhalb dieses Verzeichnisses (Fremdclient-Test, spaeter
-# Portabilitaet ausserhalb Begod2026) und laesst sich nicht gegen eine
+# Portabilitaet ausserhalb <Verbundwurzel>) und laesst sich nicht gegen eine
 # Testkopie fahren, ohne die echte DB anzufassen.
 DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "brainlehr.db"))
 BERLIN = ZoneInfo("Europe/Berlin")
@@ -2451,14 +2451,14 @@ def _cwd_project(cwd: str | None) -> str | None:
     gemeinsamen sys.path.
 
     Fund 2026-08-06 (Probelauf ausserhalb dieses Verbunds): hier stand vorher
-    ein fest verdrahteter Verbundname im Regex (".../Begod2026/<projekt>/...")
+    ein fest verdrahteter Verbundname im Regex (".../<Verbundwurzel>/<projekt>/...")
     -- fuer jeden fremden Nutzer immer None, weil dessen Ordner nie
-    "Begod2026" heisst. Jetzt: BEGOD_KNOWLEDGE_PROJECT uebersteuert explizit
+    "<Verbundwurzel>" heisst. Jetzt: BEGOD_KNOWLEDGE_PROJECT uebersteuert explizit
     (fuer Faelle, in denen weder Git-Wurzel noch Ordnername passen); sonst
     Name der naechsten Git-Wurzel oberhalb von cwd -- funktioniert bei uns
     zufaellig identisch, weil hier jedes Projekt (fahrtenbuch, hub, ...)
     genau auf Verbund-Ebene sein eigenes .git hat, ist aber nicht an
-    "Begod2026" gebunden. Keine Git-Wurzel gefunden (z.B. /tmp/irgendwas) ->
+    "<Verbundwurzel>" gebunden. Keine Git-Wurzel gefunden (z.B. /tmp/irgendwas) ->
     letzter Ordnername von cwd statt None, kein Nutzer bleibt mangels
     passendem Layout ganz ohne Wert."""
     if not cwd:
@@ -3696,7 +3696,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     Freitext-Begruendung, warum diese Entscheidung so gefallen ist. Wer
     entschieden hat (norm_entschieden_von) wird aus actor aufgeloest --
     AUSSER herkunft_normentscheider.ist_urheber_betreiber(source) sagt, dass
-    source einen belegten Betreiber-Urheber zeigt (CLAUDE.md-Import): dann
+    source einen belegten Betreiber-Urheber zeigt (<Hausregeln>-Import): dann
     ist der Betreiber der Entscheider, nicht die Maschine, die ihn nur
     abgeschrieben hat (Auftrag 2026-08-09, Befund: 31 von 37 Rang-1/2-Normen
     trugen faelschlich eine Maschine).
@@ -6362,7 +6362,7 @@ TOOLS = {
             "type": "object",
             "properties": {
                 "path": {"type": "string", "description": "Tree path to browse, e.g. '/' or '/shared/arch'", "default": "/"},
-                "project_filter": {"type": "string", "description": "Filter by project (free-form slug, e.g. one of the app dirs under Begod2026/ -- not enforced/closed)"},
+                "project_filter": {"type": "string", "description": "Filter by project (free-form slug, e.g. one of the app dirs under <Verbundwurzel>/ -- not enforced/closed)"},
                 **IDENTITY_PROPERTIES,
             }
         },
@@ -6432,7 +6432,7 @@ TOOLS = {
                         "norm_entschieden_grund is REQUIRED whenever norm_entscheidung is given (like grund on "
                         "knowledge_zurueckziehen) -- a free-text reason for the decision. Who decided "
                         "(norm_entschieden_von) is resolved automatically from your caller identity, not a "
-                        "separate input. For a rank-1/2 operator instruction, betreiber_weisung carries the "
+                        "separate input. When a rank-1/2 directive is the source, betreiber_weisung carries the "
                         "exact quote and records the operator as decision-maker. "
                         "anlass records what triggered this entry: 'selbst' (you wrote it unprompted) or "
                         "'betreiber' (an explicit human instruction, e.g. \"merk dir das\") are SELF-REPORTED -- "
@@ -6451,7 +6451,7 @@ TOOLS = {
                 "title": {"type": "string"},
                 "summary": {"type": "string", "description": "1-2 sentences summary (token-efficient)"},
                 "content": {"type": "string", "description": "Full content (loaded only on read)"},
-                "project_id": {"type": "string", "description": "Free-form project slug (any app dir under Begod2026/, e.g. 'fahrtenbuch', 'openlehr'), not a fixed set. Omit to derive it from a matching segment in parent_path (falls back to 'shared' if none matches); pass explicitly (including '') to override the derivation."},
+                "project_id": {"type": "string", "description": "Free-form project slug (any app dir under <Verbundwurzel>/, e.g. 'fahrtenbuch', 'openlehr'), not a fixed set. Omit to derive it from a matching segment in parent_path (falls back to 'shared' if none matches); pass explicitly (including '') to override the derivation."},
                 "tags": {"type": "array", "items": {"type": "string"}},
                 "source": {"type": "string", "description": "Required unless abgeleitet_von is set (then it must be omitted -- the system generates it). Origin: file path, konsil ID, or research ID. Example: 'erzeugt aus /pfad/datei.md (Stand 2026-08-05T23:40:00+02:00)'"},
                 "abgeleitet_von": {"type": "string", "description": "Optional: id or path of an EXISTING source node. If set, source is generated by the system from the source node's kind (parent_path/norm_rang/tags, never its title/summary/content) -- giving your own source is rejected."},
@@ -6497,7 +6497,7 @@ TOOLS = {
                         "Only given fields change; norm_entscheidung is optional here (unlike knowledge_add) and "
                         "only needed when the change would otherwise contradict the node's existing decision "
                         "(e.g. giving a norm_unbefristet norm a gilt_bis) -- if given, norm_entschieden_grund "
-                        "is then REQUIRED too. For a rank-1/2 operator instruction, betreiber_weisung carries "
+                        "is then REQUIRED too. When a rank-1/2 directive is the source, betreiber_weisung carries "
                         "the exact quote and records the operator as decision-maker.",
         "inputSchema": {
             "type": "object",
