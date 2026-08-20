@@ -235,6 +235,26 @@ Aus den Rohzeilen nachgerechnet, nicht aus der Zusammenfassung übernommen. **11
 2. Eine **Schleife** über Modulnamen im `pre-push` (`for m in a b c`) verbirgt die Namen vor dem Zähler *und* vor jedem Leser. Ausgeschrieben: 20 → 16.
 3. Ein Subagent meldete einen Widerspruch in `L-bbd7fb` (`occurrences=3` gegen „vier Fundstellen"). Nachgezählt: **kein Widerspruch** — Fundstellen (Codeorte in einem Vorkommen) sind nicht Vorkommen. Agentenbefunde werden geprüft, bevor sie weitergetragen werden.
 
+## Vor der Veroeffentlichung: erst der Einbruch (2026-08-20, nachmittags)
+
+Betreiber: *"sollten wir nicht erst fixen bevor wir veroeffentlichen?"* -- richtig, meine Reihenfolge war falsch herum. Ein Repo zu veroeffentlichen, dessen README fuenf Selbstmessungen als Beleg fuehrt, waehrend die Abrufguete ungeklaert von 77 % auf 43 % gefallen ist, ist genau das, wogegen dieses Repo geschrieben ist.
+
+**Die Ursache ist gemessen, und sie spart zwei von drei Baustellen.** Von 20 verfehlten Faellen in Zustand B:
+
+| | | |
+|---|---|---|
+| schlecht bewertet | 15 von 20 | im Index erreichbar, in der vollen Rangliste (Limit 100000) trotzdem nicht da |
+| verdraengt | 4 von 20 | Raenge 13, 17, 17, 22 bei Limit 7 bzw. 10 |
+| nicht im Index | 1 von 20 | Geltung abgelaufen |
+
+Einbettungen reparieren (5 %) und Reranking (20 %) waeren zusammen 80 % verlorene Arbeit gewesen.
+
+**Die Schraube heisst `NOISE_FLOOR_MAD_MULT = 2.0`** (`haken/knowledge_recall_hook.py:422`). Im Kommentar daneben steht woertlich *"GEWAEHLT, NICHT GEMESSEN"* und *"kein Pruefkorpus fuer diese Schwelle"*. Anders als die `0,65` hat diese Zahl nie eine Messung gesehen -- und sie entscheidet ueber drei Viertel der Ausfaelle. Sweep laeuft (1.0 bis 4.0, Zustaende B und C, je mit Trefferquote UND richtigem Schweigen).
+
+**Zum oeffentlichen Repo, Zwischenstand:** `tool/aussenabgleich.py` gebaut. 152 von 269 Dateien weichen ab. Die erste Uebernahme hat den weitergebbaren Klon KAPUTT gemacht (18 fehlende Module, `brainlehr.py` startete danach nicht mehr) -- zurueckgenommen, jetzt bricht das Werkzeug ab statt zu kopieren. Die 8 vermeintlich geloeschten Dateien draussen sind **keine Loeschungen**: 6 Umzuege nach `berichte/` bzw. `pflege/`, 2 GitHub-Vorlagen mit Eigenleben. Echte Loeschungen: 0 von 267.
+
+**Falle fuer den naechsten:** Eine Agenten-Fertigmeldung ohne das erwartete Artefakt ist ein ZWISCHENSTAND, kein Ausfall -- dieselbe Kennung meldet erneut. Ich habe daraufhin dieselbe Messung doppelt gefahren (`L-07aac9`).
+
 **Zweite Runde abgeschlossen** (`59a8d8a8`, `df0a6295`):
 
 - **`quelle_gegen_betrieb` am `pre-push`**, blockierend - die Pruefgattung aus `L-600726` ist damit gebaut und wirksam. Heute: 0 von 2 Haken abweichend, 0 von 63 settings-Pfaden ins Leere, 0 von 33 Melder-Pfaden ausserhalb des Repos.
