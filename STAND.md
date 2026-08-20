@@ -186,3 +186,30 @@ Aus den Rohzeilen nachgerechnet, nicht aus der Zusammenfassung übernommen. **11
 **Quote 28/56**, nur noch `BDW-P05` durchgefallen. Volle Suite: 2243 grün, Fehlermenge in drei aufeinanderfolgenden Läufen **identisch** — keiner der 18 stammt aus dieser Sitzung.
 
 **Was ADR-031 offen lässt, ausdrücklich:** Kein Bestandsknoten ist als sensibel markiert, und `knowledge_update` kennt `sensibel` nicht — ein bestehender Knoten lässt sich nur über SQL hochstufen. Belegt ist der Weg, nicht seine Nutzung.
+
+## 2026-08-20, zweite Hälfte: von Regeln zu Auslösern
+
+**Der Befund, der den Tag ordnet** (`L-780c16`): In einer Sitzung mit über 30 Commits hat der semantische Wissensabruf **nichts** beigetragen — 8 von 8 Einspielungen leer. Gewirkt haben zwei andere Schichten: der Regeltext in `CLAUDE.md` (beim Start als Text geladen, nicht *gefunden*) und drei verdrahtete Stop-Wächter, die dreimal eingriffen. Der Abruf sucht **Themen**, gebraucht wird der **Anlass** — ein Vektorabruf kann diese Sorte Treffer prinzipiell nicht liefern.
+
+**Sechs neue Mechanismen, alle vor dem Bau vermessen:**
+
+| Mechanismus | Ort | Bestand heute |
+|---|---|---:|
+| `vermutungswaechter` (Vermutung + Absolutaussage, DE/EN) | Zugende | 62 von 4 319 (1,4 %) |
+| `korrekturlehre` (Korrektur ohne Lehre) | Zugende | 6 von 1 012 (0,6 %) |
+| `rotprobe` (Belegpflicht) | `commit-msg` | 57 von 1 202 (4,7 %) |
+| `regelrouting` (Regel bei Bedarf) | vor dem Bearbeiten | 23 % des Prompts auslagerbar |
+| `eilmeldung_frisch` + `kern/eilmeldung` | jeder Prompt **und** jeder Werkzeuglauf | 39 von 39 ohne Anlass |
+| `klassenausfall` (Mechanismus zu `L-0e0ab6`, 11×) | Messläufe | Korpus trägt beide Zielklassen |
+
+**Zwei Messungen, die jede Musterliste tragen:** Ein Wächter wurde nach der **Stichprobe** halbiert (137 → 58 Beanstandungen, 3,2 % → 1,4 %), weil zwei Drittel der Treffer Zitate waren. Und die Erweiterung der Musterliste brachte **2 zusätzliche Treffer auf 4 293 Antworten** — die Trefferzahl hängt nicht an der Länge der Liste, sondern daran, ob ein Muster eine Formulierung trifft, die tatsächlich benutzt wird. Das weiß man nur aus dem Korpus.
+
+**Die Arbeitsliste gibt es jetzt** (`melder/ohne_mechanismus.py`): 1 135 Lehren, 270 mit Mechanismus (23,8 %), **97 mit 2+ Vorkommen, davon 63 ohne Mechanismus** — endlich, sortiert, vom System über sich selbst erzeugt. Dazu `--melder`: **25 von 48 Meldern hängen an keinem Ereignis** (der pre-push zählt mit; die erste Fassung meldete fälschlich 32).
+
+**`docs/WAS_BRAINLEHR_KANN.md`** wird aus dem Quellcode erzeugt (`tool/faehigkeitskarte.py`, Vorbild `fahrtenbuch_nativ/tool/bildschirmkarte.py`) und am `pre-push` gegen Veraltung geprüft. 30 Werkzeuge, 48 Melder, 23 Haken, 110 Kernmodule, 133 von 181 mit Selbsttest, 28 Katalogzeilen mit Code, der sich auf sie beruft.
+
+**Fallen für den nächsten Lauf:**
+- **Ein `PostToolUse`-Haken erreicht den laufenden Zug** — gemessen mit einer Einmal-Probe, die Zeile kam mitten in einer Bash-Ausgabe an. Damit ist „kein Zwischenruf möglich" widerlegt; der Eilkanal hängt an beiden Ereignissen.
+- **`schema.sql` wird bei jedem Verbindungsaufbau erneut ausgeführt.** Ein blankes `ALTER TABLE` darin bricht beim zweiten Lauf, und alles dahinter wird nicht mehr angelegt.
+- **SQLite sichert die Reihenfolge zweier `AFTER UPDATE`-Trigger nicht zu.** Bedingung ans `WHERE`, nicht an zwei `WHEN`.
+- **Der Kanarienvogel hing sieben Tage unverdrahtet** — und der Einbauort aus seinem eigenen Docstring war blind für genau den Fall, für den er existiert (`query()` wirft, der Zweig danach wird nie erreicht). Jetzt im `finally`.
