@@ -77,7 +77,8 @@ def bericht(db: Path | None = None, ab_vorkommen: int = 2, zeige: int = 12) -> i
     import rueckwirkung as r
     lehren = lade(db)
     mit = r.zaehle(lehren, hat_mechanismus, lambda l: l["id"], hoechstens_beispiele=0)
-    print(mit.zeile("Lehren mit Mechanismus"))
+    print(mit.zeile("Lehren mit Mechanismus",
+                    "ueber alle Lehren, erkannt am Text von Praevention und Beschreibung"))
     liste = arbeitsliste(lehren, ab_vorkommen)
     wiederholt = [l for l in lehren if (l.get("occurrences") or 1) >= ab_vorkommen]
     print(f"Lehren mit {ab_vorkommen}+ Vorkommen: {len(wiederholt)}, "

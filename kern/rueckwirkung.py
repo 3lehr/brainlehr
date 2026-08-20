@@ -42,10 +42,24 @@ class Befund:
     def quote(self) -> float:
         return self.treffer / self.nenner if self.nenner else 0.0
 
-    def zeile(self, was: str) -> str:
-        """Eine Zeile, die BEIDE Zahlen nennt -- nie nur eine."""
-        return (f"{was}: {self.treffer} von {self.nenner} "
-                f"({self.quote:.1%})")
+    def zeile(self, was: str, rahmen: str = "") -> str:
+        """Eine Zeile, die beide Zahlen UND ihren Bezugsrahmen nennt.
+
+        DER RAHMEN IST PFLICHT, seit 2026-08-20 (L-352afa, fuenf Vorkommen,
+        neun gezaehlte Messartefakte): "Ein Messwerkzeug beantwortet eine
+        ENGERE Frage als der Satz, in dem seine Zahl dann steht. Das Protokoll
+        misst protokollierte Abrufe, nicht alle. Die Stichprobe misst
+        Titel-als-Anfrage, nicht Auffindbarkeit."
+
+        Die Regel dort lautet woertlich: nicht "1 von 2", sondern "1 von 2,
+        gemessen ueber zwei Aufgaben mit LIMIT 30". Laesst sich der
+        Bezugsrahmen nicht in einem Nebensatz nennen, ist es keine Messung,
+        sondern ein Eindruck mit Ziffern.
+
+        Leer bleiben darf er nur, wenn der Gegenstand die VOLLSTAENDIGE Menge
+        ist -- dann steht der Rahmen im Nenner selbst."""
+        satz = f"{was}: {self.treffer} von {self.nenner} ({self.quote:.1%})"
+        return satz + (f", gemessen {rahmen}" if rahmen else "")
 
 
 def zaehle(gegenstaende: Iterable, trifft: Callable[[object], bool],
@@ -74,9 +88,11 @@ def zaehle(gegenstaende: Iterable, trifft: Callable[[object], bool],
     return b
 
 
-def bericht(was: str, b: Befund, ziel=None) -> str:
-    """Zeile plus Stichprobe. Die Stichprobe ist Pflicht, nicht Kuer."""
-    zeilen = [b.zeile(was)]
+def bericht(was: str, b: Befund, rahmen: str = "", ziel=None) -> str:
+    """Zeile plus Stichprobe. Beides Pflicht, nicht Kuer -- die Stichprobe
+    gegen die geschoente Quote (L-ca295c), der Rahmen gegen die zu weit
+    gesprochene Zahl (L-352afa)."""
+    zeilen = [b.zeile(was, rahmen)]
     for x in b.beispiele:
         zeilen.append("    | " + x.replace("\n", " "))
     text = "\n".join(zeilen)
@@ -127,6 +143,8 @@ def _selftest() -> int:
     b = zaehle(range(10), lambda n: n % 3 == 0, str)
     assert b.nenner == 10 and b.treffer == 4, (b.nenner, b.treffer)
     assert b.zeile("teilbar") == "teilbar: 4 von 10 (40.0%)", b.zeile("teilbar")
+    # DER BEZUGSRAHMEN steht im Satz, nicht in einer Fussnote (L-352afa).
+    assert b.zeile("teilbar", "ueber 0..9") == "teilbar: 4 von 10 (40.0%), gemessen ueber 0..9"
     assert b.beispiele == ["0", "3", "6", "9"], b.beispiele
 
     # NENNER OHNE TREFFER -- die Zeile muss trotzdem beide Zahlen nennen.
@@ -149,7 +167,7 @@ def _selftest() -> int:
     b3 = zaehle(range(100), lambda n: True, str, hoechstens_beispiele=3)
     assert len(b3.beispiele) == 3
 
-    print("rueckwirkung: Selbsttest gruen (5 Faelle: Quote mit Nenner, "
+    print("rueckwirkung: Selbsttest gruen (6 Faelle: Bezugsrahmen im Satz, Quote mit Nenner, "
           "null Treffer nennt trotzdem beide Zahlen, leere Menge ohne "
           "Division, werfender Pruefer zaehlt in den Nenner, Beispiele "
           "gedeckelt)")

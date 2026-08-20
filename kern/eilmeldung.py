@@ -117,7 +117,8 @@ def _verlauf(db: Path | None = None) -> int:
     ohne_anlass = r.zaehle(
         zeilen, lambda z: not any(e.startswith("anlass:") for e in etiketten_von(z)),
         lambda z: z[0])
-    r.bericht("Eilmeldungen ohne Anlass (echter Mangel)", ohne_anlass)
+    r.bericht("Eilmeldungen ohne Anlass (echter Mangel)", ohne_anlass,
+              "ueber alle nicht zurueckgezogenen Knoten mit Etikett dringend")
     gerichtet = r.zaehle(
         zeilen, lambda z: any(e.startswith("an:") for e in etiketten_von(z)),
         lambda z: z[0], hoechstens_beispiele=0)

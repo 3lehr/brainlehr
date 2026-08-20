@@ -243,7 +243,8 @@ def _verlauf(dateien: int = 400) -> int:
 
     b = r.zaehle(zuege(), lambda p: beurteile(p[0], p[1]) is not None,
                  lambda p: p[0][:130])
-    r.bericht("Zuege mit Korrektur ohne Lehre", b)
+    r.bericht("Zuege mit Korrektur ohne Lehre", b,
+              f"ueber die {dateien} juengsten Transkripte, ohne Faehigkeitstexte")
     return 0
 
 

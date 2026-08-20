@@ -478,7 +478,8 @@ def _verlauf(dateien: int = 400) -> int:
     import rueckwirkung as r
     b = r.zaehle(r.antworten(dateien=dateien), lambda t: beurteile(t) is not None,
                  lambda t: t[:150])
-    r.bericht("Antworten mit Vermutung oder Absolutaussage", b)
+    r.bericht("Antworten mit Vermutung oder Absolutaussage", b,
+              f"ueber die {dateien} juengsten Transkripte, Antworten ab 120 Zeichen")
     return 0
 
 
