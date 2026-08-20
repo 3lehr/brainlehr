@@ -1,16 +1,16 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-20T11:30:35+0200 (Stand `c868a543`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-08-20T15:24:35+0200 (Stand `186ea113`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 
 | | |
 |---|---:|
 | Werkzeuge über MCP | 30 |
-| Melder | 50, davon verdrahtet 20 |
+| Melder | 53, davon verdrahtet 20 |
 | Haken | 23, davon verdrahtet 13 |
 | Kernmodule | 111 |
-| Module mit Selbsttest | 136 von 184 |
+| Module mit Selbsttest | 139 von 187 |
 
 ## Werkzeuge — was ein Klient aufrufen kann
 
@@ -58,6 +58,7 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/abgabepruefung.py` | Ein Stopp-Punkt beendet die Pruefung nicht, er verlegt sie | Stop | ja | — |
 | `melder/ablaufpflicht.py` | Die zwei unbelegten Schritte aus docs/ablauf.json bekommen einen | — | — | — |
 | `melder/abrufwirkung.py` | Abrufwirkung | — | ja | — |
+| `melder/agentenbehauptung.py` | Eine Antwort behauptet eine Handlung, fuer die im selben Zug kein | — | ja | — |
 | `melder/agentendauer.py` | agentendauer.py | — | ja | — |
 | `melder/arbeitsmelder.py` | Ein Melder auf die ARBEIT, nicht auf den Bestand | PostToolUse | ja | — |
 | `melder/auftragsregister.py` | Anweisungsregister | — | ja | — |
@@ -70,6 +71,7 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/eilmeldung_faellig.py` | Zeigt beim Sitzungsstart, welche Eilmeldungen verfallen sind, statt in | SessionStart | ja | — |
 | `melder/faehigkeiten.py` | faehigkeiten.py | — | ja | — |
 | `melder/foederation.py` | foederation.py | — | ja | — |
+| `melder/fremdbaum_cd.py` | Wiederholtes `cd <fremdes Repo>` im Bash-Aufruf | — | ja | — |
 | `melder/fremdrollen.py` | Meldet zwei Fehlklassen in den Claude-Code-Fertigkeiten unter | — | ja | — |
 | `melder/fremdstandsvergleich.py` | Meldet, wenn eine fremde Software oder ein Gesetzestext seit dem letzten | SessionStart | ja | — |
 | `melder/gatestand.py` | Haelt den Lastenkatalog gegen seine eigenen Produktgates: wie viele | — | ja | BDW-C03, BDW-E07, BDW-X01 |
@@ -81,6 +83,7 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/korrekturlehre.py` | Stop-Waechter: der Betreiber hat korrigiert | Stop | ja | — |
 | `melder/landkarten.py` | Fuenf Landkarten des brainlehr-Universums, erzeugt statt gepflegt | — | — | — |
 | `melder/messregeln.py` | Ein Bestwert aus vielen Versuchen ist keine Messung | — | ja | — |
+| `melder/nulllinie.py` | Eine leere Ausgabe wird als Befund gemeldet, ohne dass eine Nulllinie | — | ja | — |
 | `melder/offene_arbeit.py` | Zeigt beim Sitzungsstart, was offen ist | SessionStart | ja | — |
 | `melder/ohne_mechanismus.py` | Welche Lehren wiederholen sich | — | ja | — |
 | `melder/plan_bestandsabgleich.py` | Haelt Planzeilen aus docs/PLAN_GESAMT_2026-08-13.md gegen den Code und | — | ja | — |
