@@ -154,6 +154,47 @@ Codekommentar ueber den alten Suchweg vor dem 2026-08-09; gemessen sind es
 unscharfe Themenzugehoerigkeit (Stichwort-UEBERLAPPUNG statt Gleichheit),
 gegen dieselbe 5-%-Schranke gemessen. Ausdruecklich nicht angefangen.
 
+## §8 A1 ist gebaut, aber nicht abgenommen -- gemessen 2026-08-21
+
+Die Uebergabe fuehrt A1 (Widerspruchserkennung) als "gebaut und belegt". Der
+Melder laeuft auch. Seine Abnahme war nie gefahren -- der Plan verlangt
+woertlich "mindestens ein Widerspruch, den heute niemand kennt, und eine
+gezaehlte Fehlalarmquote gegen den ECHTEN Bestand". Seine eigene Ausgabe
+sagte es: "Schwelle 0.1, ungemessen".
+
+Nachgeholt, alle sieben Verdachtsfaelle im Volltext gelesen:
+
+| | |
+|---|---|
+| Grundmenge | 39 Normen, 741 Paare (39*38/2, nachgerechnet) |
+| Treffer bei Schwelle 0,10 | 7 |
+| davon echte Widersprueche | **0** -- streng 7/7 Fehlalarm, grosszuegig 6/7 |
+| unbekannter Widerspruch gefunden | **keiner**, und keiner zurechtgesucht |
+| Positivkontrolle | greift: hergestelltes Widerspruchspaar, Verdacht +0,529, einziger positiver Wert im ganzen Lauf |
+| Negativkontrolle | greift: Paraphrasenpaar mit Wortueberlappung 0,6, Verdacht -0,4 |
+
+**Der Melder zeigt selbst an, dass nichts ueber seine Nulllinie kommt:** ueber
+die ganze Spanne 0,05 bis 0,40 hat KEIN Paar des echten Bestands einen
+positiven Verdachtswert. Die sieben Treffer sind Listenplaetze, keine Funde.
+
+**Schwelle bleibt bei 0,10.** Sie ist der einzige gemessene Wert, der das
+bislang einzige bekannte Kalibrierungspaar (`L-2bba13`, WCAG gegen
+Keine-Entwicklerinformation) noch zeigt; ab 0,15 verschwindet es lautlos,
+und 0,05 bringt 86 Treffer ohne einen einzigen echten. Ist-Wert gleich
+Empfehlung, also keine Aenderung -- eine geaenderte Zahl haette die Messung
+entwertet, die sie begruendet.
+
+**Folge: A1 wird NICHT verdrahtet.** Ein Melder mit hoher Fehlalarmquote ist
+schlechter als keiner -- er wird nach der dritten Sitzung weggeklickt und
+meldet danach auch den einen echten Fall nicht mehr, fuer den er gebaut
+wurde (`L-528f0c`). Er bleibt als Handlauf verfuegbar.
+
+**Zusatzbefund, heute folgenlos:** `melder/normwiderspruch.py` prueft
+`norm_art` nirgends, obwohl `kern/knowledge_lint.py::_is_spannung()` die Art
+als eigene Achse behandelt -- zwei Normen verschiedener Art konkurrieren
+nicht, egal welchen Rang sie tragen. Folgenlos, weil `norm_art` bei 1 von
+174 Normen mit Rang gesetzt ist. Wird aktiv, sobald das Feld gepflegt wird.
+
 ## §6 Verlauf
 
 * 2026-08-21T00:33 -- Plan angelegt, Ist-Stand gemessen, Welle 1 vorbereitet.
@@ -209,3 +250,4 @@ gegen dieselbe 5-%-Schranke gemessen. Ausdruecklich nicht angefangen.
     einem anderen Arbeitsbaum (`baum-20260818T114527`, seit 10,5 h). Es wird
     ausschliesslich committet, was die Agenten dieses Laufs angefasst haben.
 * 2026-08-21T01:30 -- B2 fertig (`56602630`). A2 nach Messung verworfen, siehe §7. Vorrichtungsfehler aus B1 behoben (`8d2f99ae`); die sechs uebrigen Fehler derselben Datei sind vorbestehend, in einem Arbeitsbaum auf 1611398b nachgewiesen.
+* 2026-08-21T02:00 -- F fertig (`c9c5ebec`), planmitschrieb verdrahtet (`3cd4103c`), A1-Abnahme nachgeholt (§8). Offen nur noch B3, danach C.

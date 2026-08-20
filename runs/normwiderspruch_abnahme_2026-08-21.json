@@ -1,0 +1,146 @@
+{
+  "datum": "2026-08-21T00:00:00+0200",
+  "auftrag": "Abnahme von A1 (melder/normwiderspruch.py) -- gebaut und laufend war belegt, die Abnahme (Fehlalarmquote gegen echten Bestand, mindestens ein unbekannter Widerspruch) fehlte.",
+  "bezug_commit": "8d2f99ae",
+
+  "1_nachgerechnete_zahlen": {
+    "befehl": "python3 melder/normwiderspruch.py --alle",
+    "rang": 1,
+    "normen": 39,
+    "paare": 741,
+    "paare_formel": "39 * 38 / 2 = 741 -- nachgerechnet, stimmt",
+    "treffer_ueber_wortschwelle_0_10": 7,
+    "abweichung_zur_uebergabe": "keine -- alle drei Zahlen stimmen mit der Meldung der Uebergabe 2026-08-21 ueberein"
+  },
+
+  "2_und_3_verdachtsfaelle_einzeln_beurteilt": {
+    "pruefkriterium": "Ein echter Widerspruch heisst: die beiden Normen verlangen etwas Unvereinbares -- wer beide befolgen will, kann es nicht. Zwei Normen zu verschiedenen Themen mit denselben Woertern sind KEIN Widerspruch.",
+    "faelle": [
+      {
+        "rang_in_ausgabe": 1,
+        "verdacht": -0.342,
+        "ueberlappung": 0.23,
+        "bedeutung": 0.57,
+        "a": "/methodik/direktiven/walkthrough-doktrin-alle-coding-aufgaben-ohne-aufruf",
+        "b": "/methodik/direktiven/abwesenheitsmodus-ist-die-voreinstellung-systemweit",
+        "beurteilung": "kein_widerspruch",
+        "begruendung": "Walkthrough-Doktrin regelt, wie beim BAUEN von Code vorzugehen ist (injizierbare Zeit, mockbare Aussenwelt, Statusfelder). Abwesenheitsmodus regelt, wann und wie in den CHAT geschrieben wird. Beide Vorgaben lassen sich gleichzeitig befolgen -- gemeinsame Woerter (systemweit, Aufruf, immer) taeuschen Themennaehe vor, die inhaltlich nicht besteht."
+      },
+      {
+        "rang_in_ausgabe": 2,
+        "verdacht": -0.44,
+        "ueberlappung": 0.12,
+        "bedeutung": 0.56,
+        "a": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "b": "/methodik/direktiven/wcag-2-2-aa-verbindlich-bei-jeder-oberflaeche-systemweit",
+        "beurteilung": "bereits_bekannt_und_nach_pruefung_nicht_eindeutig_ein_inhaltlicher_widerspruch",
+        "begruendung": "Dies ist genau das Paar aus L-2bba13 (seit 2026-08-08 als 'ungeloest' vermerkt, 'weder lex superior noch lex specialis noch lex posterior entscheidet'). Der Melder findet es zuverlaessig (Platz 2 von 7). ABER: L-2bba13 belegt nur, dass die automatische PRIORITAETS-Aufloesung (kern/knowledge_lint.py::_resolve_norm_conflict) bei gleichem Rang und ueberlappendem Bereich keinen Gewinner bestimmen kann -- das ist keine Aussage ueber inhaltliche Unvereinbarkeit. Volltextlesung beider Normen: WCAG verlangt u.a. sichtbare Fehlerbeschreibung in Nutzersprache; Keine-Entwicklerinformation erlaubt genau das ausdruecklich ('eine Einschraenkung, die den Nutzer trifft, wird benannt -- in seiner Sprache') und verbietet nur Rohfehler/Stapelspuren/interne Artefaktverweise. Es liess sich kein Satz finden, den man befolgen muesste und der die jeweils andere Norm bricht. Einstufung bleibt vorsichtig 'nicht eindeutig' statt 'kein Widerspruch', weil L-2bba13 seit ueber zwei Wochen offen steht und niemand seither den Gegenbeweis gefuehrt hat -- das gehoert an den Betreiber zurueckgegeben, nicht hier still entschieden."
+      },
+      {
+        "rang_in_ausgabe": 3,
+        "verdacht": -0.468,
+        "ueberlappung": 0.15,
+        "bedeutung": 0.62,
+        "a": "/methodik/direktiven/wie-ein-agentenauftrag-geschrieben-wird-systemweit",
+        "b": "/methodik/direktiven/plan-vor-umsetzung-systemweit",
+        "beurteilung": "kein_widerspruch",
+        "begruendung": "Verschiedene Artefakte fuer verschiedene Leser: der Plan (Ist-Stand, Alternativen, Reihenfolge, Verzicht, Erfolgsmass) liegt im Repo fuer den Auftraggeber; der schlanke Vier-Teile-Auftrag geht an den Agenten. Nichts hindert daran, zuerst den Plan zu schreiben und daraus den knappen Auftrag abzuleiten -- beide Regeln lassen sich gleichzeitig erfuellen."
+      },
+      {
+        "rang_in_ausgabe": 4,
+        "verdacht": -0.509,
+        "ueberlappung": 0.1,
+        "bedeutung": 0.61,
+        "a": "/methodik/direktiven/auftraege-an-agenten-sind-schnappschuesse-systemweit",
+        "b": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "beurteilung": "kein_widerspruch",
+        "begruendung": "Erste Norm betrifft Agentenauftraege (kein Zeitbezug im Auftrag, Datei/Funktionsname statt Zeilennummer), zweite betrifft Text in der App-Oberflaeche fuer Endnutzer. Voellig getrennte Adressaten, gemeinsames Wort ist 'Auftrag'/'Artefakte'-Umfeld, kein inhaltlicher Beruehrungspunkt."
+      },
+      {
+        "rang_in_ausgabe": 5,
+        "verdacht": -0.559,
+        "ueberlappung": 0.13,
+        "bedeutung": 0.69,
+        "a": "/methodik/direktiven/testumgebung-selbstaendig-handeln-bis",
+        "b": "/methodik/direktiven/kurze-zustimmung-ist-eine-entscheidung",
+        "beurteilung": "kein_widerspruch",
+        "begruendung": "Erste Norm regelt WELCHE Handlungen der Assistent in der Testumgebung selbstaendig ausfuehren darf; zweite regelt, WANN eine kurze Zustimmung des Betreibers als dauerhafte Entscheidung protokolliert wird. Ergaenzend, nicht widersprechend -- beide stammen sogar vom selben Tag (2026-08-11) und wurden erkennbar zusammen gedacht."
+      },
+      {
+        "rang_in_ausgabe": 6,
+        "verdacht": -0.562,
+        "ueberlappung": 0.11,
+        "bedeutung": 0.67,
+        "a": "/apps/fahrtenbuch/betreiberweisung-2026-08-19-der-neubau",
+        "b": "/apps/fahrtenbuch/fahrtenbuch-legacy-gilt-beim-neubau-als",
+        "beurteilung": "kein_widerspruch_bereits_im_text_selbst_aufgeloest",
+        "begruendung": "2026-08-19 verlangt: Funktionsumfang und Startablauf der alten App sind Untergrenze fuer den Neubau. 2026-08-16 verlangt: jede aus der Legacy uebernommene Regel gilt als unbelegt, bis ein eigener rot-vor-gruen-Test im Neubau sie bestaetigt. Der Text von 2026-08-19 zitiert 2026-08-16 ausdruecklich und grenzt ab: 'Bisher galt der Bestand als Blaupause fuer DATEN und BEGRUENDUNGEN, ausdruecklich nicht fuer Testlogik ... Diese Weisung ergaenzt eine UNTERGRENZE'. Das ist eine bewusste Erweiterung derselben Linie, keine Kollision: Funktionsumfang/Ablauf muessen erreicht werden, OHNE dass deshalb Legacy-Testlogik oder unbelegtes Verhalten blind uebernommen werden darf."
+      },
+      {
+        "rang_in_ausgabe": 7,
+        "verdacht": -0.629,
+        "ueberlappung": 0.14,
+        "bedeutung": 0.77,
+        "a": "/methodik/direktiven/wie-ein-agentenauftrag-geschrieben-wird-systemweit",
+        "b": "/methodik/direktiven/auftraege-an-agenten-sind-schnappschuesse-systemweit",
+        "beurteilung": "kein_widerspruch",
+        "begruendung": "Zwei Begleitregeln zum selben Gegenstand (wie ein Agentenauftrag aussieht), erkennbar als Ergaenzung zueinander gedacht -- keine verlangt etwas, das die andere verbietet."
+      }
+    ]
+  },
+
+  "fehlalarmquote": {
+    "definition": "Anteil der gemeldeten Paare, die bei Volltextlesung KEIN echter (unvereinbarer) Normwiderspruch sind.",
+    "gemeldete_faelle": 7,
+    "echte_widersprueche": 0,
+    "bereits_bekannt_nicht_eindeutig": 1,
+    "eindeutig_kein_widerspruch": 6,
+    "quote_streng": "7 von 7 (100%) sind bei strenger Pruefung ('unvereinbar, wer beide befolgt scheitert') kein belegter Widerspruch -- auch das Grundungspaar aus L-2bba13 zeigte bei Volltextlesung keinen konkreten Unvereinbarkeitssatz.",
+    "quote_grosszuegig": "Wird das L-2bba13-Paar als richtig gemeldet gezaehlt (weil es seit 2026-08-08 offiziell als ungeloest gilt, unabhaengig von meiner Einzelpruefung), sind 6 von 7 (85,7%) Fehlalarme."
+  },
+
+  "4_schwellenspanne": {
+    "hinweis": "finde() direkt mit variabler wortschwelle aufgerufen, MELDEGRENZE ignoriert (--alle-Verhalten), gegen denselben Rang-1-Bestand (39 Normen, 741 Paare).",
+    "messung": [
+      {"schwelle": 0.05, "treffer": 86, "davon_verdacht_positiv": 0},
+      {"schwelle": 0.08, "treffer": 19, "davon_verdacht_positiv": 0},
+      {"schwelle": 0.10, "treffer": 7,  "davon_verdacht_positiv": 0, "hinweis": "aktueller Code-Wert -- enthaelt als einziger getesteter Wert noch das L-2bba13-Paar (ueberlappung 0.12)"},
+      {"schwelle": 0.15, "treffer": 2,  "davon_verdacht_positiv": 0, "hinweis": "L-2bba13-Paar faellt hier bereits heraus (ueberlappung 0.12 < 0.15)"},
+      {"schwelle": 0.20, "treffer": 1,  "davon_verdacht_positiv": 0},
+      {"schwelle": 0.25, "treffer": 0,  "davon_verdacht_positiv": 0},
+      {"schwelle": 0.30, "treffer": 0,  "davon_verdacht_positiv": 0},
+      {"schwelle": 0.35, "treffer": 0,  "davon_verdacht_positiv": 0},
+      {"schwelle": 0.40, "treffer": 0,  "davon_verdacht_positiv": 0}
+    ],
+    "befund": "Ueber die gesamte gemessene Spanne (0.05 bis 0.40) hat KEIN Paar im echten Rang-1-Bestand einen positiven verdacht-Wert -- der Melder selbst zeigt damit an, dass er im aktuellen Bestand keinen Fall findet, der nach seiner eigenen Definition (Ueberlappung MINUS Bedeutung, positiv = Widerspruchskandidat) ueber die Nulllinie kommt. Die 7 bei Schwelle 0.10 gezeigten Paare sind allesamt Paare mit NEGATIVEM verdacht -- nach der eigenen Doku des Skripts ('negativ heisst: sie sagen dasselbe -- eine Dublette, kein Konflikt') gerade die Kategorie, die das Skript selbst als unverdaechtig einordnet, nur eben trotzdem in der Liste erscheint, weil MELDEGRENZE ungeachtet des Vorzeichens auffuellt."
+  },
+
+  "schwellenempfehlung": {
+    "empfehlung": "WORTSCHWELLE bei 0.10 belassen -- NICHT auf 0.15 oder hoeher anheben.",
+    "begruendung": "0.10 ist der einzige der neun gemessenen Werte, bei dem das bislang einzige bekannte Verdachtspaar (L-2bba13, Ueberlappung 0.12) ueberhaupt noch erscheint. Eine Anhebung auf 0.15 wuerde die Trefferliste von 7 auf 2 verkleinern, aber genau den einzigen Fall verschlucken, an dem sich das Skript ueberhaupt kalibrieren liesse -- stillschweigend, ohne dass ein Mensch das bemerkt. Ein Absenken auf 0.05 bringt 86 statt 7 Paare, gepruefte Positivquote bleibt bei 0 zusaetzlichen Treffern -- nur mehr Lesearbeit ohne Ertrag. Die Empfehlung ist ausdruecklich EINE MESSUNG AUF EINEM EINZIGEN BEKANNTEN FALL, keine kalibrierte Schwelle -- das Skript selbst weist unveraendert korrekt auf 'ungemessen' hin und das bleibt so, bis ein zweiter echter Fall vorliegt.",
+    "hinweis_umsetzung": "Nicht selbst im Code geaendert -- WORTSCHWELLE ist bereits 0.10, entspricht der Empfehlung. Kein Eingriff noetig."
+  },
+
+  "5_unbekannter_widerspruch": {
+    "gefunden": false,
+    "ergebnis": "Unter den 7 gemeldeten Faellen ist KEIN Widerspruch, den heute niemand kennt. Sechs Paare sind bei Volltextlesung inhaltlich kein Widerspruch (verschiedene Themen, gemeinsame Woerter durch Zufall oder gemeinsame Textfamilie). Das siebte -- WCAG 2.2 AA vs. Keine-Entwicklerinformation-in-der-Oberflaeche -- ist SEIT 2026-08-08 bereits als offener Fall in L-2bba13 dokumentiert, also nicht 'heute niemand kennt'. Es wurde bewusst kein Fall zurechtgesucht."
+  },
+
+  "positivkontrolle": {
+    "aufbau": "Kopie der Produktiv-DB nach /private/tmp/.../scratchpad/test_normwiderspruch.db (NIE die Produktiv-DB veraendert). Zwei synthetische Normen eingespielt: norm_rang=99 (im echten Bestand unbenutzt), norm_art='sollen' bei beiden, viele gemeinsame Woerter ('Anfrage', 'beantwortet', 'werden', 'sonst', 'gilt', 'verworfen'), aber UNVEREINBARE Frist (5 Sekunden vs. 30 Sekunden, 'niemals frueher'). Bedeutungsvektoren bewusst orthogonal gesetzt ([1,0,0,0] / [0,1,0,0]), um eine ferne Bedeutung bei naher Wortwahl zu erzwingen -- genau das Muster, auf das der Melder zielt.",
+    "ergebnis": {"ueberlappung": 0.529, "bedeutung": 0.0, "verdacht": 0.529},
+    "befund": "GREIFT. Einziger positiver verdacht-Wert im gesamten Testlauf, klar oberhalb aller 7 Realfaelle -- der Melder findet den hergestellten Widerspruch zuverlaessig und stuft ihn korrekt als auffaelligsten Fall ein."
+  },
+
+  "negativkontrolle": {
+    "aufbau": "Gleicher Testaufbau, norm_rang=99, norm_art='sollen', zwei Normen mit vielen gemeinsamen Woertern ('Sicherung', 'Datenbank', 'taeglich', 'Mitternacht', 'protokolliert'), aber als reine Paraphrase derselben Forderung (taegliche Datenbanksicherung um Mitternacht) -- kein Widerspruch. Bedeutungsvektoren fast parallel gesetzt ([1,1,0,0] / [1,0.98,0,0]).",
+    "ergebnis": {"ueberlappung": 0.6, "bedeutung": 1.0, "verdacht": -0.4},
+    "befund": "GREIFT. Trotz hoher Wortueberlappung (0.6, hoeher als jeder Realfall) liegt der verdacht klar im Negativen und damit unterhalb der Positivkontrolle -- das Paraphrasen-Paar wird korrekt NICHT als Widerspruchskandidat eingestuft."
+  },
+
+  "befund_norm_art_nicht_beruecksichtigt": {
+    "beschreibung": "melder/normwiderspruch.py laedt in _lade() und vergleicht in finde() ausschliesslich nach norm_rang -- norm_art (Sein/Sollen/Duerfen) wird an keiner Stelle gelesen oder gefiltert. kern/knowledge_lint.py::_is_spannung() haelt dagegen fest: zwei Normen unterschiedlicher Art (beide Art gesetzt und verschieden) 'konkurrieren gar nicht, egal welchen Rang sie tragen' -- die zustaendige Norm-Konfliktlogik des Bestands behandelt das als eigene Achse.",
+    "aktuelle_auswirkung": "Gemessen: norm_art ist im gesamten Bestand nur bei 1 von 174 Normen mit norm_rang gesetzt (Wert 'sein'), bei Rang 1 nur 1 von 39. Der fehlende Filter hat damit HEUTE praktisch keine Auswirkung, weil fast nie zwei Normen mit unterschiedlicher, gesetzter Art gemeinsam auftauchen koennen.",
+    "risiko": "Sobald norm_art breiter gepflegt wird, wuerde der Melder Normen unterschiedlicher Art weiterhin als Widerspruchskandidaten melden, obwohl kern/knowledge_lint.py sie als blosse Spannung (nicht als Konflikt) einstuft -- eine Inkonsistenz zwischen den beiden Bewertungslogiken des Bestands. Das ist ein Befund, keine im Rahmen dieses Auftrags vorgenommene Korrektur (Auftrag beschraenkt auf Pruefen, nicht auf Bauen)."
+  }
+}
