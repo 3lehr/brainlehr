@@ -52,6 +52,49 @@ Ein Profilschalter, der heute nur zwei Werte kennt. Kein Rollenmodell, keine
 Rechte — nur die Achse. Danach ist der spätere Wechsel eine Datenänderung
 statt eines Umbaus.
 
+**B1c — Geltung wird zweiseitig, sobald es Kreise gibt** (bindend mit B1)
+
+Betreibererkenntnis vom 2026-08-20: „Regeln usw können für verschiedene
+Empfänger verschieden lang gelten."
+
+**Gemessen:** `gilt_ab` und `gilt_bis` stehen als SPALTEN an
+`knowledge_nodes` und `lessons_learned`. Eine Tabelle, die Geltung je
+Empfänger führt, gibt es nicht.
+
+Der Prüfsatz aus `L-6af5ac` trifft es: *„Den Satz ausschreiben und prüfen, ob
+er ohne ein zweites Substantiv vollständig ist."*
+
+> „Diese Regel gilt bis zum 31.12." — **bis wann für wen?**
+
+Solange alle Normen für alle gelten, ist der Satz vollständig. Sobald Kreise
+existieren (B3b), ist er es nicht mehr.
+
+**DAS IST DER VIERTE FALL DERSELBEN KLASSE AN EINEM TAG** — und der erste,
+der den Fehler VORHERSIEHT statt ihn nachträglich zu finden. Die drei
+vorherigen: Aufgriffsquote als Rangfaktor (Eigenschaft des Paares aus Frage
+und Eintrag), `access_count` als Fälligkeitsmerkmal (global statt je Leser),
+eine Ursachenaussage ohne ihren Zustand. Alle vier hat der Betreiber gefunden.
+
+**Die Erweiterung der Lehre, die daraus folgt:** Eine Größe kann HEUTE
+einseitig und MORGEN zweiseitig sein, ohne dass sich an ihr etwas ändert — es
+genügt, dass eine zweite Achse hinzukommt. Der Prüfsatz gehört deshalb nicht
+nur beim Einführen einer Zahl gestellt, sondern noch einmal beim Einführen
+jeder neuen ACHSE: *Welche bestehenden Spalten werden dadurch zweiseitig?*
+
+**Bauform:** Eine Spalte, die zweiseitig wird, kann nicht bleiben, wo sie ist.
+Sie braucht eine eigene Tabelle (Eintrag × Kreis → Wert); die Spalte bleibt
+höchstens als Vorgabe für alle, die keinen eigenen Eintrag haben.
+
+**Warum bindend mit B1:** Nachträglich müsste jeder Bestandswert rückwirkend
+einem Kreis zugeschrieben werden, den er nie hatte — dieselbe Reihenfolgefalle
+wie bei der Mandanten-Achse, und aus demselben Grund unabhängig vom Füllstand.
+
+**Und die Anwendung, aus der die Erkenntnis stammt:** Wird eine Regel für
+einen Kreis eng gestellt, bleibt die alte Fassung für die übrigen gültig —
+sonst ändert sich ihre Trefferzahl, und genau das wäre das Signal (siehe B3b,
+Fall 4). Das setzt voraus, dass dieselbe Regel für zwei Kreise verschiedene
+Geltung tragen kann.
+
 **B1b — Sprachachse, im selben Zug** (nicht bindend, aber hier billig)
 Eine Spalte `sprache` neben `mandant`. Anlass ist die Betreiberfrage vom
 2026-08-20: „wenn wir Apps fürs Handy bauen, haben wir aber Mehrsprachigkeit?"
