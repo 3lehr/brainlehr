@@ -1,0 +1,22 @@
+{
+  "auftrag": "B2 -- BDW-P09-AC2, docs/PLAN_GESAMTBAU_2026-08-21.md Paragraf 2",
+  "zeitpunkt": "2026-08-21T00:52:11+0200",
+  "hinweis": "Echtlauf gegen eine KOPIE von brainlehr.db (nicht die Betriebsdatenbank selbst): /tmp/b2_echtlauf/brainlehr_kopie.db, kopiert vor jeder Aenderung.",
+  "vorher": {
+    "profil": "einzelplatz",
+    "zaehlung": {"knowledge_nodes": 5240, "lessons_learned": 1178}
+  },
+  "nach_wechsel_unternehmen": {
+    "profil": "unternehmen",
+    "mandant": "kunde-echtlauf",
+    "zaehlung": {"knowledge_nodes": 5240, "lessons_learned": 1178},
+    "sicherung_vor_diesem_schritt": "brainlehr_kopie.db.bak-20260821T005208 (WAL-Checkpoint + Dateikopie, trug noch mandant='lokal' bei allen 5240 Zeilen -- gegengeprueft)"
+  },
+  "nach_rueckweg_einzelplatz": {
+    "profil": "einzelplatz",
+    "mandant": "lokal",
+    "zaehlung": {"knowledge_nodes": 5240, "lessons_learned": 1178},
+    "sicherung_vor_diesem_schritt": "brainlehr_kopie.db.bak-20260821T005211 (trug noch mandant='kunde-echtlauf' bei allen 5240 Zeilen -- gegengeprueft)"
+  },
+  "befund": "Alle drei Zaehlungen gleich (5240 Knoten, 1178 Lehren) -- kein Wechsel hat Zeilen verloren oder gewonnen. Nach Hin- und Rueckweg steht jede Zeile wieder auf 'lokal' und das Profil wieder auf 'einzelplatz' (belegt per SELECT mandant, count(*) ... GROUP BY mandant gegen die jeweilige Sicherungsdatei)."
+}
