@@ -182,6 +182,33 @@ def pruefen(wurzel: Path | None = None, dateien: int = 400) -> _rw.Befund:
                        lambda z: f"[{z.quelle}] {z.text}")
 
 
+def pruefe_letzten_zug(transcript: Path) -> str | None:
+    """Prueft NUR den letzten Zug -- die einzige Stelle, an der dieser Melder
+    wirken kann.
+
+    Als Startmelder waere er nutzlos: er prueft 400 Transkriptdateien und
+    meldete jeden Tag dieselben alten Treffer. Wirksam ist er am Ende des
+    Zuges, in dem die Behauptung faellt.
+
+    Die Zerlegung des Transkripts kommt aus melder/rueckfrageschleife.py --
+    dort laeuft bereits ein Stop-Haken, und `_letzte_antwort()` liefert
+    genau das Paar, das hier gebraucht wird: Text der letzten Antwort und ob
+    im Zug ein Werkzeug lief. Kein zweiter Weg.
+
+    Gibt die Fundstelle zurueck oder None. Wirft nie -- ein Haken darf den
+    Zug nicht mit einem eigenen Fehler anhalten."""
+    try:
+        sys.path[:0] = [str(_w / "melder")]
+        import rueckfrageschleife
+        text, hat_werkzeug = rueckfrageschleife._letzte_antwort(Path(transcript))
+    except Exception:
+        return None
+    if not text:
+        return None
+    zug = Zug(text, hat_tool_use=bool(hat_werkzeug), quelle="letzter Zug")
+    return text if trifft(zug) else None
+
+
 def _selftest() -> int:
     # POSITIV 1: Vorkommen 3 wortnah -- Erfolgsbehauptung, kein tool_use.
     p1 = Zug("Ich habe die Recherche angestossen, drei Stränge parallel: "
@@ -269,12 +296,45 @@ def _selftest() -> int:
     return 0
 
 
+def _stop_haken() -> int:
+    """Stop-Haken: prueft den EIGENEN letzten Zug, JSON auf stdin.
+
+    Blockiert mit decision:block, damit der Zug nicht endet, ohne dass die
+    Behauptung eingeloest oder zurueckgenommen wurde. Bei 3 Treffern in 8396
+    Zuegen (0,04 %, gemessen 2026-08-20) ist das selten genug, um nicht zu
+    nerven -- und L-706807 steht bei vier Vorkommen auf Regelrang."""
+    try:
+        eingabe = json.loads(sys.stdin.read() or "{}")
+    except Exception:
+        return 0
+    pfad = eingabe.get("transcript_path")
+    if not pfad:
+        return 0
+    fund = pruefe_letzten_zug(Path(pfad).expanduser())
+    if not fund:
+        return 0
+    print(json.dumps({
+        "decision": "block",
+        "reason": ("Diese Antwort behauptet eine ausgefuehrte Handlung, aber im "
+                   "ganzen Zug steht kein einziger Werkzeugaufruf.\n\n"
+                   f"Fundstelle: {fund[:200]}\n\n"
+                   "L-706807, vier Vorkommen, auf Regelrang eskaliert: Berichtet "
+                   "wird die ABSICHT, nicht der Ausgang eines Werkzeugaufrufs. "
+                   "Zweimal war das Werkzeug gar nicht aufgerufen, einmal hatte "
+                   "eine Schranke den Schreibversuch abgewiesen.\n\n"
+                   "Also: die Handlung JETZT ausfuehren -- oder den Satz "
+                   "zuruecknehmen und sagen, was stattdessen gilt.")}))
+    return 0
+
+
 def main() -> int:
     if "--selftest" in sys.argv:
         return _selftest()
     if _aus():
         print("agentenbehauptung: abgeschaltet (BRAINLEHR_AGENTENBEHAUPTUNG=aus)")
         return 0
+    if "--stop" in sys.argv:
+        return _stop_haken()
     b = pruefen()
     _rw.bericht("unbelegte Handlungsbehauptungen (Erfolg ohne tool_use im "
                 "selben Zug)", b, "ueber die juengsten Transkripte")
