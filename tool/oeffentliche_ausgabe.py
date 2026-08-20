@@ -69,7 +69,15 @@ ZIEL = REPO.parent / "_brainlehr_public"
 # dazu, wenn sie die Pruefung besteht -- eine Dateiliste muesste gepflegt
 # werden und waere binnen Wochen unvollstaendig.
 QUELLORDNER = ("kern/", "melder/", "haken/", "tests/", "tool/", "pflege/",
-               "berichte/", "migrationen/", "schreibpruefstand/", "docs/")
+               "berichte/", "migrationen/", "schreibpruefstand/", "docs/",
+               # Seit 2026-08-20: Die Messlaeufe belegen die Zahlen, mit denen
+               # brainlehr ueber sich selbst spricht -- eine Schwelle von 0,65
+               # ohne die Erhebung dahinter ist eine Behauptung. Aufgefallen
+               # ist der fehlende Ordner nicht durch diese Ueberlegung, sondern
+               # weil 12 mitgelieferte Testdateien im Export an Modulen aus
+               # `messungen/` abbrachen: Die Tests waren da, ihr Gegenstand
+               # nicht.
+               "messungen/")
 QUELLDATEIEN = ("schema.sql", "brainlehr.py", "knowledge_mcp_server.py",
                 "requirements.txt")
 
@@ -191,9 +199,18 @@ def lauffaehig_machen(auswahl: dict, wurzel: Path) -> dict:
     drin = {Path(p) for p in auswahl["gewaehlt"]}
     abgelehnt = dict(auswahl["abgelehnt"])
     # Alle Modulnamen, die dieses Repo ueberhaupt kennt -- nur sie koennen
-    # fehlen. Auch die abgelehnten zaehlen dazu: gerade sie sind die Luecke.
-    alle_namen = set(_lokale_module(wurzel, list(drin))) | {
-        Path(rel).stem for rel in abgelehnt}
+    # fehlen. Gebildet ueber das GANZE Repo, nicht ueber die Kandidaten:
+    # Bis 2026-08-20 stand hier "gewaehlt plus abgelehnt", also die
+    # Kandidatenmenge. Ein Modul in einem Ordner, der nicht in QUELLORDNER
+    # steht, kam in keiner der beiden Mengen vor und galt damit als
+    # Fremdpaket wie `json` -- der Import blieb stehen, die Datei wanderte in
+    # den Export, und dort brach sie ab. 12 Testdateien scheiterten an
+    # Modulen aus `messungen/`, das schlicht in keiner Liste stand.
+    #
+    # Die Luecke irrte in die FALSCHE Richtung: durchlassen statt sperren,
+    # und der Fehler zeigte sich erst beim Empfaenger.
+    alle_namen = {d.stem for d in wurzel.rglob("*.py")
+                  if ".git" not in d.parts and "node_modules" not in d.parts}
 
     while True:
         vorhanden = {p.stem for p in drin}

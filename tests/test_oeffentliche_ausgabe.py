@@ -171,3 +171,27 @@ def test_kennung_ist_kein_ablehnungsgrund_mehr(tmp_path):
     darf die Datei nicht trotzdem vorher aussortieren."""
     (tmp_path / "m.py").write_text("# siehe L-999999\n")
     assert oa.beanstandung(tmp_path / "m.py", {"L-abc123"}) is None
+
+
+def test_modul_ausserhalb_der_quellordner_gilt_als_fehlend(tmp_path):
+    """Ein Import auf ein Modul, das die Auswahl GAR NICHT KENNT, muss die
+    Datei ebenso herausnehmen wie ein abgelehntes.
+
+    DER BEFUND (2026-08-20): lauffaehig_machen bildete die Menge bekannter
+    Modulnamen aus gewaehlten PLUS abgelehnten Dateien -- also aus den
+    Kandidaten. Ein Modul in einem Ordner, der nicht in QUELLORDNER steht,
+    kam in keiner der beiden Mengen vor und galt damit als Fremdpaket wie
+    `json`. Der Import blieb stehen, die Datei wanderte in den Export, und
+    dort brach sie mit ModuleNotFoundError ab: 12 Testdateien scheiterten an
+    Modulen aus `messungen/`, das schlicht in keiner Liste stand.
+
+    Die Luecke ist gefaehrlicher als eine falsche Ablehnung, weil sie in die
+    FALSCHE Richtung irrt: Sie laesst durch statt zu sperren, und der Fehler
+    zeigt sich erst beim Empfaenger."""
+    (tmp_path / "nutzt.py").write_text("import fremdmodul\n")
+    (tmp_path / "woanders").mkdir()
+    (tmp_path / "woanders" / "fremdmodul.py").write_text("X = 1\n")
+    erg = oa.waehle([tmp_path / "nutzt.py"], wurzel=tmp_path, freigegeben=set())
+    lauffaehig = oa.lauffaehig_machen(erg, wurzel=tmp_path)
+    assert [p.name for p in lauffaehig["gewaehlt"]] == []
+    assert lauffaehig["abgelehnt"]["nutzt.py"] == "import-fehlt:fremdmodul"

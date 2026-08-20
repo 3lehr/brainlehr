@@ -359,7 +359,12 @@ def _selftest() -> int:
             )
 
         # Aus dem Heimatverzeichnis DIESES Rechners gebaut, nicht getippt.
-        # "/Users/x/..." stand hier als vermeintlich anonymer Platzhalter --
+        # Hier stand ein fest getippter Heimatpfad mit dem Platzhalternamen
+        # "x" -- anonym war er, aber jeder Pfadscanner schlaegt darauf an,
+        # und das gilt auch fuer diesen Kommentar: Als er den Pfad noch
+        # WOERTLICH zitierte, blockierte er dieselben 154 Dateien weiter.
+        # Vierte Auspraegung derselben Klasse an einem Tag -- ein Text, der
+        # ein Muster erklaert, wird von diesem Muster gefangen.
         # anonym war er, aber jeder Geheimnis- und Pfadscanner schlaegt an,
         # und im oeffentlichen Repo blockierte diese eine Zeile 154 Dateien.
         # Der abgeleitete Wert ist ausserdem naeher an der Sache: geprueft
