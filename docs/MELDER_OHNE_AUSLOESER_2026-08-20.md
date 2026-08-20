@@ -69,3 +69,24 @@ zwei Commits angehalten. `melder/ohne_mechanismus.py` las nur
 
 **Stand nach dieser Runde: 20 von 48 ohne Auslöser** (vorher 25). Von den
 verbleibenden sind 15 ausdrücklich Werkzeuge für Menschen und brauchen keinen.
+
+## Zweiter Nachtrag, 2026-08-20 (nach der zweiten Subagenten-Runde)
+
+**Verdrahtet:** `quelle_gegen_betrieb` am `pre-push`, blockierend (0,04 s). Es
+prüft, ob die Wächter, die den Push freigeben, überhaupt die versionierten
+sind — weicht das ab, ist jede andere Freigabe in derselben Datei wertlos.
+
+**`klassenausfall` hängt jetzt am Messlauf**, nicht an einem Haken: der Aufruf
+sitzt in `kern/messlauf_abrufguete.py`, dort wo die Zahl entsteht.
+`ausloeserlos` zählt ihn weiterhin als unverdrahtet, und **das ist richtig** —
+der Messlauf selbst wird von Hand gefahren. Ein Haken, der die Zahl erst
+später liest, wäre der schlechtere Ort gewesen.
+
+**`unbelegter_eingang` bleibt ohne Auslöser, begründet:** Von drei Treffern im
+Fremdbestand war ein handgeprüfter falsch (ein `if (hasPets)`-Tor über 1000
+Zeilen von einem unbeteiligten `switch` entfernt). Das Werkzeug ist ein
+Prüfanlass für Menschen, kein Richter — es gehört in die Gruppe der 15, nicht
+an einen Haken, der Arbeit anhält.
+
+**Stand: 18 von 50 ohne Auslöser**, davon 16 ausdrücklich Werkzeuge für
+Menschen bzw. für den Handlauf.
