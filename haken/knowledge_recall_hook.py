@@ -2500,16 +2500,16 @@ def selftest() -> None:
     # dauerhaft veraendern -- genau die AUFLAGE aus dem Auftrag.
     _kws_schatten = keywords("fahrtenbuch trip repository hash kette gobd verletzt")
     _vor_min_hits = MIN_HITS
-    _r_kaputt = _schatten_lauf(_kws_schatten, "/Volumes/daten/Begod2026/fahrtenbuch", {"MIN_HITS": "kaputt"})
+    _r_kaputt = _schatten_lauf(_kws_schatten, "/verbund/fahrtenbuch", {"MIN_HITS": "kaputt"})
     assert _r_kaputt is None, _r_kaputt
     assert MIN_HITS == _vor_min_hits, "globaler Zustand nach gescheitertem Schatten nicht zurueckgesetzt"
-    _n_danach, _l_danach = query(_kws_schatten, cwd="/Volumes/daten/Begod2026/fahrtenbuch",
+    _n_danach, _l_danach = query(_kws_schatten, cwd="/verbund/fahrtenbuch",
                                   embed_fn=lambda *a, **k: None)
     assert _l_danach, "echter Abruf nach gescheitertem Schatten liefert nichts mehr"
     print("  Schatten NEGATIVFALL: kaputter Herausforderer -> None, echter Abruf unberuehrt ok")
 
     # Funktionierender Herausforderer + log_schatten-Zeile.
-    _r_ok = _schatten_lauf(_kws_schatten, "/Volumes/daten/Begod2026/fahrtenbuch", {"MIN_HITS": 2})
+    _r_ok = _schatten_lauf(_kws_schatten, "/verbund/fahrtenbuch", {"MIN_HITS": 2})
     assert _r_ok is not None and "nodes" in _r_ok and "lessons" in _r_ok and "stumm" in _r_ok, _r_ok
     with tempfile.TemporaryDirectory() as td:
         lp = os.path.join(td, "schatten_log.jsonl")
@@ -2528,12 +2528,23 @@ def selftest() -> None:
 
     with tempfile.TemporaryDirectory() as td:
         lp = os.path.join(td, "recall_log.jsonl")
+        # Echter Baum mit .git statt eines Pfades dieses Rechners: `worktree`
+        # entsteht aus der GIT-WURZEL oberhalb von cwd. Ein erfundener Pfad
+        # ohne .git liefert den letzten Ordnernamen -- hier also
+        # "fahrtenbuch_legacy" statt "fahrtenbuch". Genau so ist diese Zeile
+        # am 2026-08-20 rot geworden, als der Pfad neutralisiert wurde: der
+        # Beleg dafuer, dass es hier auf den Baum ankommt und nicht auf die
+        # Zeichenkette.
+        _wt = Path(td) / "fahrtenbuch"
+        (_wt / ".git").mkdir(parents=True)
+        _cwd = _wt / "apps" / "fahrtenbuch_legacy"
+        _cwd.mkdir(parents=True)
         log_recall([{"path": "/x"}], [], lp,
-                    cwd="/Volumes/daten/Begod2026/fahrtenbuch/apps/fahrtenbuch_legacy",
+                    cwd=str(_cwd),
                     session_id="abcdef12-lang-rest")
         with open(lp, encoding="utf-8") as f:
             entry = json.loads(f.readline())
-        assert entry["cwd"] == "/Volumes/daten/Begod2026/fahrtenbuch/apps/fahrtenbuch_legacy", entry
+        assert entry["cwd"] == str(_cwd), entry
         assert entry["worktree"] == "fahrtenbuch", entry
         assert entry["session"] == "abcdef12", entry  # gekuerzt wie in agent_register_hook.py
         print("  Herkunft (cwd/worktree/session) in recall_log-Zeile ok")
@@ -2560,8 +2571,21 @@ def selftest() -> None:
 
     # --- Bereichsbezug (Auftrag 2026-08-06) ---
 
-    assert _cwd_project("/Volumes/daten/Begod2026/fahrtenbuch/apps/fahrtenbuch_legacy") == "fahrtenbuch"
-    assert _cwd_project("/Volumes/daten/Begod2026/hub") == "hub"
+    # Der Git-Wurzel-Weg, an einem SELBST GEBAUTEN Baum statt an Pfaden dieses
+    # Rechners. Der Tausch ist keine Kosmetik: _cwd_project hat ZWEI Wege --
+    # Git-Wurzel oder Fallback auf den Ordnernamen -- und beide liefern hier
+    # dasselbe Wort. Ein erfundener Pfad ohne .git waere gruen geblieben und
+    # haette stillschweigend den Fallback geprueft statt der Wurzelsuche
+    # (gemessen 2026-08-20: "/verbund/fahrtenbuch" -> "fahrtenbuch", ohne dass
+    # ein .git existiert). Der Prueftstand haette die Haelfte verloren, ohne
+    # dass irgendwo etwas rot wird.
+    import tempfile as _tmp
+    with _tmp.TemporaryDirectory() as _td:
+        _wurzel = Path(_td) / "fahrtenbuch"
+        (_wurzel / ".git").mkdir(parents=True)
+        (_wurzel / "apps" / "legacy").mkdir(parents=True)
+        assert _cwd_project(str(_wurzel / "apps" / "legacy")) == "fahrtenbuch"
+        assert _cwd_project(str(_wurzel)) == "fahrtenbuch"
     assert _cwd_project(None) is None
     assert _cwd_project("/tmp/irgendwas") == "irgendwas"  # keine Git-Wurzel -> Ordnername als bester Schaetzwert
     assert _project_of_path("/openlehr/steuer/ui") == "openlehr"
@@ -2619,7 +2643,7 @@ def selftest() -> None:
         if len(kws_c) < MIN_HITS:
             continue
         n0, l0 = query(kws_c, rand=lambda: 1.0, embed_fn=_no_embed)
-        n1, l1 = query(kws_c, rand=lambda: 1.0, cwd="/Volumes/daten/Begod2026/fahrtenbuch", embed_fn=_no_embed)
+        n1, l1 = query(kws_c, rand=lambda: 1.0, cwd="/verbund/fahrtenbuch", embed_fn=_no_embed)
         assert len(n1) >= len(n0) and len(l1) >= len(l0), (
             f"Gegenprobe verlor Treffer bei '{prompt[:40]}...': "
             f"ohne cwd {len(n0)}n/{len(l0)}l, mit cwd {len(n1)}n/{len(l1)}l"
