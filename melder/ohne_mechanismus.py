@@ -128,6 +128,7 @@ def _selftest() -> int:
     assert "melder/ohne_mechanismus.py" in namen, "dieser Melder haengt selbst an nichts"
     assert "melder/rueckfrageschleife.py" not in namen, "verdrahtet ueber settings.json"
     assert "melder/ablaufpflicht.py" not in namen, "verdrahtet ueber pre-push"
+    assert "melder/rotprobe.py" not in namen, "verdrahtet ueber .git/hooks/commit-msg"
 
     print("ohne_mechanismus: Selbsttest gruen (5 Faelle: Reihenfolge nach "
           "Vorkommen, Einzelfall raus, Mechanismus deckt, Schwelle wirkt, "
@@ -156,14 +157,24 @@ def unverdrahtete_melder() -> list[tuple[str, str]]:
             for h in g.get("hooks", []):
                 for teil in re.findall(r"([\w_]+)\.py", h.get("command", "")):
                     verdrahtet.add(teil)
-    # Auch der pre-push zaehlt als Ausloeser -- er ist verdrahtet, nur nicht
-    # in settings.json. Ohne diese Zeile meldete der Melder Waechter als tot,
-    # die bei jedem Push laufen.
-    try:
-        push = (_w / "haken" / "git" / "pre-push").read_text(encoding="utf-8")
-        verdrahtet |= set(re.findall(r"([\w_]+)\.py", push))
-    except OSError:
-        pass
+    # Auch die GIT-HAKEN zaehlen als Ausloeser -- sie sind verdrahtet, nur
+    # nicht in settings.json. Ohne sie meldete der Melder Waechter als tot,
+    # die bei jedem Push oder jedem Commit laufen.
+    #
+    # ZWEI ORTE, nicht einer, und der zweite fehlte bis 2026-08-20: die
+    # versionierte Fassung unter haken/git/ UND die INSTALLIERTE unter
+    # .git/hooks/. Gefunden von einem Subagenten, der rotprobe.py als
+    # unverdrahtet meldete -- sie haengt seit demselben Tag als commit-msg und
+    # hatte gerade zwei Commits angehalten. Dieselbe Klasse wie L-600726: das
+    # WIRKSAME Artefakt ist nicht das, das im Quelltext steht.
+    for ort in ((_w / "haken" / "git"), (_w / ".git" / "hooks")):
+        try:
+            for datei in ort.iterdir():
+                if datei.is_file() and not datei.name.endswith(".sample"):
+                    verdrahtet |= set(re.findall(
+                        r"([\w_]+)\.py", datei.read_text(encoding="utf-8", errors="replace")))
+        except OSError:
+            continue
     out = []
     for p in sorted((_w / "melder").glob("*.py")):
         if p.stem.startswith("_") or p.stem in verdrahtet:
