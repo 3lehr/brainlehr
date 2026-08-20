@@ -29,6 +29,8 @@ zwei gruenen waren die Positivkontrollen, und sie waren aus genau demselben
 Grund gruen: es wurde nichts geprueft. Nachweis: runs/rotprobe_b1_2026-08-16.txt.
 """
 
+from pathlib import Path as _Path
+
 import pytest
 
 from kern.domaene import pruefe
@@ -78,7 +80,7 @@ def test_paket_ohne_neuen_pflichtteil_wird_abgewiesen(fehlend):
     "start",
     [
         ["/Volumes/daten/Begod2026/openlehr/.venv/bin/python", "-m", "dienst"],
-        ["/Users/lehrmacbook/.venv/bin/python"],
+        [str(_Path.home() / ".venv" / "bin" / "python")],
         ["~/openlehr/.venv/bin/python"],
     ],
 )

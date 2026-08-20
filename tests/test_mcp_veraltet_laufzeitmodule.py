@@ -17,7 +17,13 @@ from __future__ import annotations
 import os
 import sys
 from datetime import datetime
+from pathlib import Path as _Path
 from io import StringIO
+
+# Kein echter Heimatpfad im Repo: ein Benutzername darin ist ein
+# Personenbezug ohne Nutzen und bricht bei jedem anderen Nutzer.
+# 2026-08-20 vor der oeffentlichen Ausgabe behoben.
+_HEIM = str(_Path.home())
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -43,12 +49,12 @@ def test_neuestes_laufzeitmodul_bestimmt_veraltungsgrenze(tmp_path, monkeypatch)
 # -- auswerten(): reine Funktion, erfundene Prozesslisten, kein echtes ps ---
 
 CLAUDE_ELTERN = (
-    "/Users/lehrmacbook/Library/Application Support/Claude/claude-code/"
+    _HEIM + "/Library/Application Support/Claude/claude-code/"
     "2.1.229/claude.app/Contents/MacOS/claude --resume=xyz"
 )
 FREMDER_ELTERN = (
-    "/Users/lehrmacbook/.hermes/hermes-agent/venv/bin/python "
-    "/Users/lehrmacbook/.hermes/hermes-agent/tools/mcp_stdio_watchdog.py "
+    _HEIM + "/.hermes/hermes-agent/venv/bin/python "
+    + _HEIM + "/.hermes/hermes-agent/tools/mcp_stdio_watchdog.py "
     "--ppid 1323 -- /opt/homebrew/bin/python3 "
     "/Volumes/daten/Begod2026/brainlehr/knowledge_mcp_server.py"
 )

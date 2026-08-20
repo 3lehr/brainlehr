@@ -5,7 +5,7 @@ melde die Abweichung.
 
 Die Faelle 'negativ_real' und 'pruefstein_real' sind woertliche Ausschnitte
 aus echten Agentenauftraegen von heute (2026-08-13, Sitzungsprotokoll unter
-/Users/lehrmacbook/.claude/projects/-Volumes-daten-Begod2026-brainlehr--claude-worktrees-hallo-01e380/).
+~/.claude/projects/-Volumes-daten-Begod2026-brainlehr--claude-worktrees-hallo-01e380/).
 Reine Facharbeit, keine Zugangsdaten, keine personenbezogenen Daten.
 """
 from __future__ import annotations

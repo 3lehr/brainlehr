@@ -23,6 +23,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from pathlib import Path as _Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -40,7 +42,7 @@ JETZT = "2026-08-15T12:00:00Z"
 # geprueft, und der Test wird uebersprungen, wenn die Datei fehlt (anderer
 # Rechner, rotiert).
 ECHTES_PROTOKOLL = Path(
-    "/Users/lehrmacbook/.claude/projects/"
+    str(_Path.home() / ".claude" / "projects") + "/"
     "-Volumes-daten-Begod2026-brainlehr--claude-worktrees-baum-20260815T054407-65075/"
     "01c01c7f-2c38-4eff-96e5-2e3d8e4d9677.jsonl"
 )
