@@ -126,3 +126,19 @@ zwei von drei Entwuerfen waren beim ersten Lauf falsch.
 ## §6 Verlauf
 
 * 2026-08-21T00:33 -- Plan angelegt, Ist-Stand gemessen, Welle 1 vorbereitet.
+* 2026-08-21T00:46 -- Welle 1 laeuft (B1, A2, A3, D, E1, P14-Tuer).
+  Zwei Vorbefunde fuer Welle 2, gemessen statt vermutet:
+  * **Der Profilbegriff existiert nirgends.** `grep -rln "standalone|multiuser|
+    betriebsprofil"` ueber `kern/`, `melder/`, `haken/` und
+    `knowledge_mcp_server.py`: **null Treffer**. B2 und C bauen ihn von Grund
+    auf; es gibt nichts zu uebernehmen und nichts, was dabei brechen koennte.
+  * **Und er braucht keine Schemaaenderung.** `knowledge_config` ist eine
+    Schluessel-Wert-Tabelle und traegt heute bereits vier Betriebswerte
+    (`embed_model`, `herkunftsmodus`, `instanz_kennung`, ein Laufvermerk). Der
+    Profilschalter gehoert dorthin -- eine Zeile, kein Feld, keine Migration.
+    Damit faellt der Schalter aus der B1-Sperre heraus: B2 haengt nur noch an
+    der Mandanten-ACHSE, nicht am Profilbegriff.
+  * Fremde Arbeit im Baum: acht weitere Claude-Fenster laut Startmeldung,
+    aber im Agentenregister nur EIN fremder Agent ohne `stop` -- und der in
+    einem anderen Arbeitsbaum (`baum-20260818T114527`, seit 10,5 h). Es wird
+    ausschliesslich committet, was die Agenten dieses Laufs angefasst haben.
