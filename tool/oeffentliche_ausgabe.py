@@ -77,7 +77,17 @@ QUELLORDNER = ("kern/", "melder/", "haken/", "tests/", "tool/", "pflege/",
                # weil 12 mitgelieferte Testdateien im Export an Modulen aus
                # `messungen/` abbrachen: Die Tests waren da, ihr Gegenstand
                # nicht.
-               "messungen/")
+               "messungen/",
+               # Seit 2026-08-20: Der Lizenzwaechter muss MIT DEM REPO wandern.
+               # Ein Hook unter .git/hooks/ waere der falsche Ort -- er ist
+               # nicht versioniert und haette genau das Neuanlegen des
+               # Export-Verzeichnisses nicht ueberlebt, also den Vorgang, der
+               # den MIT-Fehler ueberhaupt erzeugt hat.
+               #
+               # Gezielt nur workflows/, nicht .github/ insgesamt: dort liegt
+               # auch eine Copilot-Anweisungsdatei, die nichts im oeffentlichen
+               # Repo zu suchen hat.
+               ".github/workflows/")
 QUELLDATEIEN = ("schema.sql", "brainlehr.py", "knowledge_mcp_server.py",
                 "requirements.txt",
                 # Seit 2026-08-20 ausdruecklich MITGELIEFERT statt dem Ziel
