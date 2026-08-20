@@ -48,7 +48,20 @@ BEHAUPTUNG = re.compile(
 BELEG = re.compile(
     r"rot vor gr(ü|ue)n|rot-probe|rot gegen|rot vorher|war rot"
     r"|schlug (vorher )?fehl|gegenprobe|durchgerutscht"
-    r"|red before green|failed before|was red|counter-?check",
+    r"|red before green|failed before|was red|counter-?check"
+    # NACHGETRAGEN 2026-08-20, wenige Stunden nach dem Bau: Dieser Waechter
+    # hielt einen Commit an, dessen Nachricht "Gemessen ueber 1 204 Commits"
+    # sagte -- und widersprach damit seinem EIGENEN Docstring drei Absaetze
+    # weiter oben ("manche Behebungen sind an einer MESSUNG belegt, nicht an
+    # einem Test"). Die Absicht stand in der Doku, das Muster kannte sie nicht.
+    #
+    # Dazu die zweite Haelfte desselben Befunds: melder/ablaufpflicht.py prueft
+    # dieselbe Frage mit einem ANDEREN Vokabular. Zwei Waechter fuer eine
+    # Frage, zwei Wortlisten -- wer beiden genuegen will, muss beide auswendig
+    # kennen. Beide sind jetzt auf denselben Stand gebracht; sie
+    # zusammenzulegen ist der naechste Schritt, nicht dieser.
+    r"|\bgemessen\b|\bselbsttest\b|\bselftest\b"
+    r"|\d+ (xctest-)?f[aä]lle gr[uü]n|\btests? gr[uü]n\b|\d+ passed",
     re.I)
 
 
@@ -110,6 +123,14 @@ def _selftest() -> int:
     assert beurteile("fix(sicherungen): 96 % unerreichbar\n\nRot gegen 858c82c4: "
                      "fand 0 statt 1.", ["kern/s.py"]) is None
     assert beurteile("fix: parser\n\nred before green against HEAD", ["a.py"]) is None
+    # EINE MESSUNG IST EIN BELEG -- nachgetragen am 2026-08-20, nachdem dieser
+    # Waechter einen Commit anhielt, der genau das sagte, und damit seinem
+    # eigenen Docstring widersprach.
+    assert beurteile("fix(x): Vokabular ergaenzt\n\nGemessen ueber 1 204 Commits: "
+                     "285 vorher, 246 nachher.", ["melder/x.py"]) is None
+    assert beurteile("fix(y): Zaehler\n\nSelbsttest 7 Faelle gruen.", ["melder/y.py"]) is None
+    # NEGATIVFALL bleibt: eine Behauptung ohne beides wird weiterhin gefangen.
+    assert beurteile("fix(z): laeuft jetzt wieder", ["melder/z.py"])
 
     # d) NEGATIVFALL: ein Merkmal behauptet keine Behebung.
     assert beurteile("feat(melder): neuer Waechter", ["melder/y.py"]) is None

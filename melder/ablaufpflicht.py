@@ -140,7 +140,20 @@ BELEG_GENANNT = re.compile(
     r"|gegenprobe|abnahme|gemessen|beleg"
     r"|nicht verifiziert|nicht gepr[uü]ft|ungepr[uü]ft"
     r"|deckten den fehler nicht|am ger[aä]t nicht|handprobe"
-    r"|verified|measured|proven|(^|\n)\s*-?\s*red:",
+    r"|verified|measured|proven|(^|\n)\s*-?\s*red:"
+    # NACHGETRAGEN 2026-08-20: Ein Selbsttest IST ein Beleg, und er war der
+    # haeufigste, den dieser Waechter nicht erkannte. Gemessen ueber 1 204
+    # Commits seit dem 2026-08-01: 285 galten als stumm, mit diesen Formen
+    # sind es 246 -- 39 Commits nannten ihren Beleg und wurden trotzdem
+    # beanstandet, darunter mehrere, deren Nachricht woertlich "Selbsttest 7
+    # Faelle" oder "126 passed" sagt.
+    #
+    # Das ist dieselbe Klasse, gegen die dieser Waechter gebaut ist, nur eine
+    # Ebene hoeher: Er prueft nicht die Belegfrage, sondern SEINE Woerter fuer
+    # sie. Wer ein Vokabular prueft, muss es messen -- sonst beanstandet er
+    # Sorgfalt und uebersieht Schweigen.
+    r"|selbsttest|selftest|\d+ (xctest-)?f[aä]lle gr[uü]n"
+    r"|\btests? gr[uü]n\b|\d+ passed|suite gr[uü]n",
     re.I)
 
 
