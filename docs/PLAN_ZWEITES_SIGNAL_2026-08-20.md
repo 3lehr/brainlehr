@@ -172,6 +172,59 @@ und beidseitig wiederholt.
 
 ## Nachtrag nach der Umsetzung
 
+### S1 bis S4 abgeschlossen, S5 kam dazu — Stand 2026-08-20T18:00:00+0200
+
+| | Ergebnis |
+|---|---|
+| **S1** Aufgriffsquote | **247 von 1275 = 19,4 %**. Lehren 30,5 %, Knoten 8,2 %. Drei Läufe nötig — erzeugte Dateien hatten die Quote von 61,9 auf 19,4 aufgebläht. |
+| **S2** abgestufte Ausgabe | gebaut, **Schalter aus**. 5876 → 2876 Zeichen bei gleichen Treffern. Protokoll-Lücke geschlossen: `recall_log` führt jetzt den Kosinuswert je Kennung. |
+| **S3** CFAR | **Nullbefund**. Robustes z-Maß über alle 5217 Knoten trennt nicht: [1,99–3,22] gegen [1,78–3,05]. Damit sind drei Verfahren geprüft und drei ausgefallen. |
+| **S4** blinde Beurteilung | **Das Messinstrument wackelt.** 7 von 15 „Treffern" sind bei blinder Prüfung keine, 4 von 20 „Fehlgriffen" sind welche, Übereinstimmung 24/35. Gegenüber der ersten Beurteilung weichen 10 von 20 ab. |
+
+**S4 ist der schwerste Befund und er ist unverarbeitet:** Jede Zahl dieses
+Tages, die auf der Trefferzählung aufbaut, steht unter Vorbehalt. Der
+Engpass ist möglicherweise nicht der Abruf, sondern das Instrument.
+
+### S5 — der Fälligkeitskanal (neu, aus einer Betreiberfrage)
+
+Betreiber, wörtlich: *„wenn die frist abgelaufen ist und vom chat/user noch
+nie abgefragt wurde sollte sie mit prio zum prüfen eingespielt werden? ...
+wichtige dinge und oder dinge welche direkte auswirkungen haben nichtbeachten
+teurer wird sollten schon früher eingespielt werden?"*
+
+Trifft dieselbe Stelle wie die Alarmmedizin im Konsil (IEC 60601-1-8:
+Priorität aus Schadensfolge, nie aus Messsicherheit). **Gemessen gestützt:**
+Von allen geprüften Größen trennen genau zwei, und beide sind Schadensmaße —
+`severity` (critical 42,4 % > high 37,5 % > medium 22,8 % > low 12,0 %) und
+`occurrences` (1× 26,2 % < 2–3× 59,4 %).
+
+Gebaut als `melder/faelligkeit.py`, an `SessionStart`, 0,03 s, Deckel 3
+Zeilen, Rotation ohne Zustandsdatei. Fünf Klassen, 204 Kandidaten.
+
+**Zwei Konstruktionsfehler, beide erst im echten Lauf sichtbar:** Die erste
+Rotation entwertete die Schadensfolge (an ~83 % der Tage nur die schwächste
+Klasse). Nach der Behebung fiel die schwächste Klasse ganz weg — vier
+Klassen, drei Plätze. Jetzt: Platz eins immer die schwerste Klasse, die
+übrigen rotieren.
+
+**Dritter Fehler, vom Betreiber gefunden:** `access_count` ist global — wer
+liest, nimmt es allen aus der Liste. 36 Normen waren dadurch unsichtbar.
+Neue schwächste Klasse `norm_leser_unbekannt`, Achse ist der **Klient**, nicht
+die Sitzung. Die Frage nach dem „anderen Kontextfenster" bleibt ausdrücklich
+unbeantwortet — ein neues Fenster kennt per Bauart nichts.
+
+**Was daraus als Lehre bleibt** (`L-6af5ac`): dreimal an einem Tag eine
+zweiseitige Größe einer Seite zugeschrieben. Die Datenstruktur verschluckt
+die zweite Seite — was einspaltig gespeichert ist, wird einspaltig gedacht.
+
+### Offen
+
+1. **S4 verarbeiten** — der Prüfkorpus urteilt in beide Richtungen falsch.
+   Bevor eine weitere Zahl auf ihm aufbaut, gehört er selbst geprüft.
+2. **S2 scharfschalten**, sobald das Protokoll ein paar Tage Kosinuswerte
+   gesammelt hat. Ein Schalter, keine Arbeit.
+3. **Aufgriff nach Stärke auswerten** — geht erst mit den neuen Protokolldaten.
+
 ### S2 gebaut, 2026-08-20T16:00:00+0200 — zwei Abweichungen
 
 **Gemessen am echten Abrufweg**, gleiche Anfrage, gleiche Treffer:
