@@ -1,0 +1,1052 @@
+{
+  "beschreibung": "Kreuztabelle B gegen C je Fall, 45 Faelle (runs/pruefkorpus.jsonl), plus Kennzahlen der von KNOWLEDGE_ENSEMBLE_PFLICHT verworfenen Treffer (BT_CS) gegen die verhinderten Fehler (BF_CS).",
+  "zaehlung_solvable": {
+    "BT_CT": 1,
+    "BT_CS": 14,
+    "BF_CS": 0,
+    "BF_CF": 20,
+    "nenner": 35,
+    "bezugsrahmen": "die 35 loesbaren Faelle aus runs/pruefkorpus.jsonl"
+  },
+  "zaehlung_negativ": {
+    "BT_CT": 0,
+    "BT_CS": 0,
+    "BF_CS": 10,
+    "BF_CF": 0,
+    "nenner": 10,
+    "bezugsrahmen": "die 10 Negativfaelle aus runs/pruefkorpus.jsonl"
+  },
+  "positivkontrolle": {
+    "summe_solvable_35": 35,
+    "summe_negativ_10": 10,
+    "bt_ct_plus_bt_cs_15": 15,
+    "ok": true
+  },
+  "schritt2_gruppen": {
+    "bt_cs_verworfene_treffer": {
+      "nenner": 14,
+      "faelle": [
+        "L-a9ccd0",
+        "L-e7bc5e",
+        "L-e1a441",
+        "L-0392e4",
+        "/ops/buckeberg-konsil-2026-07-22-governance",
+        "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+        "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+        "/apps/metahuman-podcast-one-command-pipeline",
+        "/openlehr/volltextindex-wird-beim-einlesen",
+        "/methodik/einstieg",
+        "/stadtwerke",
+        "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+        "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox"
+      ],
+      "kennzahlen": [
+        {
+          "lage": "schwach",
+          "bester_kosinus": 0.6243,
+          "abstand_zweitbester": 0.0378,
+          "abstand_median": 0.2339,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 17,
+          "kanal_verwendet": "lesson",
+          "target_id": "L-a9ccd0"
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.5523,
+          "abstand_zweitbester": 0.0042,
+          "abstand_median": 0.19,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 27,
+          "kanal_verwendet": "lesson",
+          "target_id": "L-e7bc5e"
+        },
+        {
+          "lage": "schwach",
+          "bester_kosinus": 0.6034,
+          "abstand_zweitbester": 0.0051,
+          "abstand_median": 0.2357,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 33,
+          "kanal_verwendet": "lesson",
+          "target_id": "L-e1a441"
+        },
+        {
+          "lage": "schwach",
+          "bester_kosinus": 0.5903,
+          "abstand_zweitbester": 0.0091,
+          "abstand_median": 0.2162,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 21,
+          "kanal_verwendet": "lesson",
+          "target_id": "L-0392e4"
+        },
+        {
+          "lage": "schwach",
+          "bester_kosinus": 0.613,
+          "abstand_zweitbester": 0.0201,
+          "abstand_median": 0.2298,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 15,
+          "kanal_verwendet": "node",
+          "target_id": "/ops/buckeberg-konsil-2026-07-22-governance"
+        },
+        {
+          "lage": "schwach",
+          "bester_kosinus": 0.6375,
+          "abstand_zweitbester": 0.0377,
+          "abstand_median": 0.2511,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 7,
+          "kanal_verwendet": "node",
+          "target_id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine"
+        },
+        {
+          "lage": "schwach",
+          "bester_kosinus": 0.5906,
+          "abstand_zweitbester": 0.0044,
+          "abstand_median": 0.2006,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 25,
+          "kanal_verwendet": "node",
+          "target_id": "/openlehr/betriebszustand-openlehr-muss-bis-zum"
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.5497,
+          "abstand_zweitbester": 0.0006,
+          "abstand_median": 0.1888,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 11,
+          "kanal_verwendet": "node",
+          "target_id": "/apps/metahuman-podcast-one-command-pipeline"
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.5814,
+          "abstand_zweitbester": 0.0096,
+          "abstand_median": 0.2054,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 15,
+          "kanal_verwendet": "node",
+          "target_id": "/openlehr/volltextindex-wird-beim-einlesen"
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.5786,
+          "abstand_zweitbester": 0.0035,
+          "abstand_median": 0.2144,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 22,
+          "kanal_verwendet": "node",
+          "target_id": "/methodik/einstieg"
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.5858,
+          "abstand_zweitbester": 0.0211,
+          "abstand_median": 0.2414,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 23,
+          "kanal_verwendet": "node",
+          "target_id": "/stadtwerke"
+        },
+        {
+          "lage": "passend",
+          "bester_kosinus": 0.6084,
+          "abstand_zweitbester": 0.0459,
+          "abstand_median": 0.2303,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 12,
+          "kanal_verwendet": "node",
+          "target_id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit"
+        },
+        {
+          "lage": "schwach",
+          "bester_kosinus": 0.6158,
+          "abstand_zweitbester": 0.034,
+          "abstand_median": 0.2415,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 26,
+          "kanal_verwendet": "node",
+          "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer"
+        },
+        {
+          "lage": "schwach",
+          "bester_kosinus": 0.6111,
+          "abstand_zweitbester": 0.0268,
+          "abstand_median": 0.248,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 23,
+          "kanal_verwendet": "node",
+          "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox"
+        }
+      ]
+    },
+    "bf_cs_verhinderte_fehler": {
+      "nenner": 10,
+      "faelle": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "kennzahlen": [
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.541,
+          "abstand_zweitbester": 0.0082,
+          "abstand_median": 0.2448,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 47,
+          "kanal_verwendet": null,
+          "target_id": null
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.4964,
+          "abstand_zweitbester": 0.0153,
+          "abstand_median": 0.2084,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 45,
+          "kanal_verwendet": null,
+          "target_id": null
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.4722,
+          "abstand_zweitbester": 0.0009,
+          "abstand_median": 0.1823,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 30,
+          "kanal_verwendet": null,
+          "target_id": null
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.4653,
+          "abstand_zweitbester": 0.0088,
+          "abstand_median": 0.195,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 35,
+          "kanal_verwendet": null,
+          "target_id": null
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.4524,
+          "abstand_zweitbester": 0.0099,
+          "abstand_median": 0.1595,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 21,
+          "kanal_verwendet": null,
+          "target_id": null
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.508,
+          "abstand_zweitbester": 0.002,
+          "abstand_median": 0.208,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 29,
+          "kanal_verwendet": null,
+          "target_id": null
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.4435,
+          "abstand_zweitbester": 0.0203,
+          "abstand_median": 0.1922,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 27,
+          "kanal_verwendet": null,
+          "target_id": null
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.4525,
+          "abstand_zweitbester": 0.0087,
+          "abstand_median": 0.1475,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 25,
+          "kanal_verwendet": null,
+          "target_id": null
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.5178,
+          "abstand_zweitbester": 0.0042,
+          "abstand_median": 0.1748,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 26,
+          "kanal_verwendet": null,
+          "target_id": null
+        },
+        {
+          "lage": "uneindeutig",
+          "bester_kosinus": 0.5271,
+          "abstand_zweitbester": 0.0066,
+          "abstand_median": 0.2378,
+          "kanaele_uebereinstimmend": 0,
+          "trefferzahl": 53,
+          "kanal_verwendet": null,
+          "target_id": null
+        }
+      ]
+    }
+  },
+  "trennung_je_groesse": {
+    "bester_kosinus": {
+      "bt_cs_verworfene_treffer": {
+        "n": 14,
+        "min": 0.5497,
+        "median": 0.597,
+        "max": 0.6375
+      },
+      "bf_cs_verhinderte_fehler": {
+        "n": 10,
+        "min": 0.4435,
+        "median": 0.4843,
+        "max": 0.541
+      },
+      "trennt_sauber": true,
+      "schwelle": {
+        "schwelle": 0.54535,
+        "richtung": "gruppe_b < schwelle <= gruppe_a",
+        "a_unter_schwelle_fehler": 0,
+        "b_ueber_schwelle_fehler": 0
+      }
+    },
+    "abstand_zweitbester": {
+      "bt_cs_verworfene_treffer": {
+        "n": 14,
+        "min": 0.0006,
+        "median": 0.014849999999999999,
+        "max": 0.0459
+      },
+      "bf_cs_verhinderte_fehler": {
+        "n": 10,
+        "min": 0.0009,
+        "median": 0.00845,
+        "max": 0.0203
+      },
+      "trennt_sauber": false,
+      "schwelle": null
+    },
+    "abstand_median": {
+      "bt_cs_verworfene_treffer": {
+        "n": 14,
+        "min": 0.1888,
+        "median": 0.23005,
+        "max": 0.2511
+      },
+      "bf_cs_verhinderte_fehler": {
+        "n": 10,
+        "min": 0.1475,
+        "median": 0.1936,
+        "max": 0.2448
+      },
+      "trennt_sauber": false,
+      "schwelle": null
+    },
+    "kanaele_uebereinstimmend": {
+      "bt_cs_verworfene_treffer": {
+        "n": 14,
+        "min": 0,
+        "median": 0.0,
+        "max": 0
+      },
+      "bf_cs_verhinderte_fehler": {
+        "n": 10,
+        "min": 0,
+        "median": 0.0,
+        "max": 0
+      },
+      "trennt_sauber": false,
+      "schwelle": null
+    },
+    "trefferzahl": {
+      "bt_cs_verworfene_treffer": {
+        "n": 14,
+        "min": 7,
+        "median": 21.5,
+        "max": 33
+      },
+      "bf_cs_verhinderte_fehler": {
+        "n": 10,
+        "min": 21,
+        "median": 29.5,
+        "max": 53
+      },
+      "trennt_sauber": false,
+      "schwelle": null
+    }
+  },
+  "schritt2_dritte_gruppe_bf_cf": {
+    "beschreibung": "Nachschlag: die 20 loesbaren Faelle, in denen B spricht und danebenliegt (weder von der Ensemble-Pflicht gerettet noch verworfen -- C liegt hier ebenfalls falsch/schweigt).",
+    "nenner": 20,
+    "faelle": [
+      "L-298823",
+      "L-f9f654",
+      "L-b4b443",
+      "L-44a838",
+      "L-cdac52",
+      "L-b91ed6",
+      "L-bbd7fb",
+      "L-503687",
+      "L-8c633e",
+      "L-606b63",
+      "L-476602",
+      "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "/lessons/phase2-summary",
+      "/testing/pytest",
+      "/brainlehr/inference-control-was-andere-faecher",
+      "/openlehr/steuer/ui",
+      "/ops/buckeberg-anbieterabend-2026-08-05",
+      "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi"
+    ],
+    "kennzahlen": [
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.6187,
+        "abstand_zweitbester": 0.0273,
+        "abstand_median": 0.2568,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 22,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-298823"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.5919,
+        "abstand_zweitbester": 0.0022,
+        "abstand_median": 0.2081,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 38,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-f9f654"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.588,
+        "abstand_zweitbester": 0.014,
+        "abstand_median": 0.2005,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 24,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-b4b443"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.59,
+        "abstand_zweitbester": 0.0125,
+        "abstand_median": 0.2271,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 42,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-44a838"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.5942,
+        "abstand_zweitbester": 0.0156,
+        "abstand_median": 0.2103,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 13,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-cdac52"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.6195,
+        "abstand_zweitbester": 0.0256,
+        "abstand_median": 0.242,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 13,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-b91ed6"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.6192,
+        "abstand_zweitbester": 0.002,
+        "abstand_median": 0.2309,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 17,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-bbd7fb"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.5915,
+        "abstand_zweitbester": 0.0072,
+        "abstand_median": 0.2029,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 31,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-503687"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.6374,
+        "abstand_zweitbester": 0.0423,
+        "abstand_median": 0.26,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 115,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-8c633e"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.6087,
+        "abstand_zweitbester": 0.0083,
+        "abstand_median": 0.2137,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 16,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-606b63"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.5972,
+        "abstand_zweitbester": 0.0368,
+        "abstand_median": 0.2309,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 31,
+        "kanal_verwendet": "lesson",
+        "target_id": "L-476602"
+      },
+      {
+        "lage": "uneindeutig",
+        "bester_kosinus": 0.5615,
+        "abstand_zweitbester": 0.0063,
+        "abstand_median": 0.2132,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 16,
+        "kanal_verwendet": "node",
+        "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.619,
+        "abstand_zweitbester": 0.0014,
+        "abstand_median": 0.2399,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 22,
+        "kanal_verwendet": "node",
+        "target_id": "/lessons/phase2-summary"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.6354,
+        "abstand_zweitbester": 0.002,
+        "abstand_median": 0.2461,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 18,
+        "kanal_verwendet": "node",
+        "target_id": "/testing/pytest"
+      },
+      {
+        "lage": "uneindeutig",
+        "bester_kosinus": 0.5555,
+        "abstand_zweitbester": 0.0077,
+        "abstand_median": 0.1754,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 22,
+        "kanal_verwendet": "node",
+        "target_id": "/brainlehr/inference-control-was-andere-faecher"
+      },
+      {
+        "lage": "uneindeutig",
+        "bester_kosinus": 0.5682,
+        "abstand_zweitbester": 0.0004,
+        "abstand_median": 0.2018,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 34,
+        "kanal_verwendet": "node",
+        "target_id": "/openlehr/steuer/ui"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.6125,
+        "abstand_zweitbester": 0.0142,
+        "abstand_median": 0.2252,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 15,
+        "kanal_verwendet": "node",
+        "target_id": "/ops/buckeberg-anbieterabend-2026-08-05"
+      },
+      {
+        "lage": "passend",
+        "bester_kosinus": 0.6346,
+        "abstand_zweitbester": 0.0529,
+        "abstand_median": 0.2644,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 11,
+        "kanal_verwendet": "node",
+        "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden"
+      },
+      {
+        "lage": "uneindeutig",
+        "bester_kosinus": 0.5762,
+        "abstand_zweitbester": 0.0109,
+        "abstand_median": 0.2056,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 25,
+        "kanal_verwendet": "node",
+        "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom"
+      },
+      {
+        "lage": "schwach",
+        "bester_kosinus": 0.6239,
+        "abstand_zweitbester": 0.0125,
+        "abstand_median": 0.241,
+        "kanaele_uebereinstimmend": 0,
+        "trefferzahl": 17,
+        "kanal_verwendet": "node",
+        "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi"
+      }
+    ],
+    "verteilung_bester_kosinus": {
+      "n": 20,
+      "min": 0.5555,
+      "median": 0.60295,
+      "max": 0.6374
+    }
+  },
+  "schwellenwirkung_auf_bf_cf": {
+    "nenner": 20,
+    "bezugsrahmen": "die 20 BF_CF-Faelle (loesbar, B spricht falsch, C schweigt ebenfalls nicht besser) aus runs/pruefkorpus.jsonl",
+    "schwelle_verwendet": 0.54535,
+    "darueber_haette_geliefert_obwohl_B_danebenlag": 20,
+    "darunter_waere_verschwiegen_worden": 0,
+    "ohne_kosinuswert": 0
+  },
+  "gesamtbilanz_45_faelle": {
+    "beschreibung": "Vier disjunkte Faecher je Fall (richtige/falsche Auslieferung, richtiges/falsches Schweigen), Nenner 45 je Zustand.",
+    "B": {
+      "richtige_auslieferung": 15,
+      "falsche_auslieferung": 30,
+      "richtiges_schweigen": 0,
+      "falsches_schweigen": 0,
+      "ohne_kosinuswert_durchgereicht": 0,
+      "summe": 45
+    },
+    "C": {
+      "richtige_auslieferung": 1,
+      "falsche_auslieferung": 0,
+      "richtiges_schweigen": 10,
+      "falsches_schweigen": 34,
+      "ohne_kosinuswert_durchgereicht": 0,
+      "summe": 45
+    },
+    "Schicht_B_gegated_auf_bester_kosinus": {
+      "richtige_auslieferung": 15,
+      "falsche_auslieferung": 20,
+      "richtiges_schweigen": 10,
+      "falsches_schweigen": 0,
+      "ohne_kosinuswert_durchgereicht": 0,
+      "summe": 45
+    },
+    "abnahme": {
+      "B_reproduziert_15_treffer_0_10_richtiges_schweigen": true,
+      "C_reproduziert_1_treffer_10_10_richtiges_schweigen": true,
+      "B_summe_45": true,
+      "C_summe_45": true,
+      "Schicht_summe_45": true
+    }
+  },
+  "vorbehalt_schmale_luecke": {
+    "text": "Die Luecke zwischen BF_CS (max 0.541) und BT_CS (min 0.5497) betraegt 0.0087 und steht bei n=24 (14 BT_CS + 10 BF_CS) -- derselben Groessenordnung, bei der kern/relevanzlage.py (Docstring, Messung 2026-08-16) eine 'saubere Trennung bei 12 gegen 12 Faellen' festhaelt, die 'bei 40 gegen 40 verschwand'. Diese Messung hat die Trennung nicht an einer groesseren Stichprobe nachgeprueft (Auftrag Punkt 4: keine neue Schwelle, kein neuer Suchlauf) -- die Trennung gilt fuer GENAU diese 24 Faelle des Pruefkorpus, nicht als belegte allgemeine Eigenschaft des besten Kosinuswerts. Die Anwendung auf die 20 BF_CF-Faelle oben ist bereits die erste Gegenprobe an FREMDEN, in der Trennung selbst nicht enthaltenen Faellen.",
+    "n_getrennt": 24,
+    "n_bt_cs": 14,
+    "n_bf_cs": 10,
+    "luecke_untere_kante_bf_cs_max": 0.541,
+    "luecke_obere_kante_bt_cs_min": 0.5497,
+    "luecke_breite": 0.0087
+  },
+  "kreuztabelle_je_fall": [
+    {
+      "target_kind": "lesson",
+      "target_id": "L-a9ccd0",
+      "category": "lesson",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-298823",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-f9f654",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-b4b443",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-44a838",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-cdac52",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-e7bc5e",
+      "category": "lesson",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-e1a441",
+      "category": "lesson",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-b91ed6",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-bbd7fb",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-503687",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-8c633e",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-606b63",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-0392e4",
+      "category": "lesson",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "lesson",
+      "target_id": "L-476602",
+      "category": "lesson",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "category": "fact",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "category": "fact",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "category": "fact",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "category": "fact",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/apps/metahuman-podcast-one-command-pipeline",
+      "category": "fact",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/openlehr/volltextindex-wird-beim-einlesen",
+      "category": "fact",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/lessons/phase2-summary",
+      "category": "fact",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/testing/pytest",
+      "category": "fact",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/brainlehr/inference-control-was-andere-faecher",
+      "category": "fact",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/einstieg",
+      "category": "fact",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/stadtwerke",
+      "category": "fact",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/openlehr/steuer/ui",
+      "category": "fact",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "category": "norm",
+      "lage": "BT_CT",
+      "b_richtig": true,
+      "c_richtig": true
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "category": "norm",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "category": "norm",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "category": "norm",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "category": "norm",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "category": "norm",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "category": "norm",
+      "lage": "BT_CS",
+      "b_richtig": true,
+      "c_richtig": false
+    },
+    {
+      "target_kind": "node",
+      "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "category": "norm",
+      "lage": "BF_CF",
+      "b_richtig": false,
+      "c_richtig": false
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    },
+    {
+      "target_kind": null,
+      "target_id": null,
+      "category": "negative",
+      "lage": "BF_CS",
+      "b_richtig": false,
+      "c_richtig": true
+    }
+  ],
+  "stand": {
+    "kennung": "20260820T113709-0d9ff5df",
+    "aufgenommen": "2026-08-20T13:37:09+02:00"
+  },
+  "laufmetadaten": {
+    "commit": "1510d5d4fdaa52c10e538e633d5ff1eddced716f",
+    "arbeitsbaum_schmutzig": true,
+    "korpus_datei": "runs/pruefkorpus.jsonl",
+    "korpus_hash_sha256": "e0c60e96310e9b1f1ff4ac4191e794d00d91f5e946742f2a348fc4b098e191d4",
+    "korpus_gesamt": 45,
+    "korpus_solvable": 35,
+    "korpus_negative": 10
+  }
+}
