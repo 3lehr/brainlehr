@@ -195,11 +195,18 @@ def bericht() -> dict:
 
 
 def _selftest() -> None:
-    assert erkenne("Schreib an markus.lehr@firma.de wegen der Rechnung"), "E-Mail muss auffallen"
+    assert erkenne("Schreib an erika.muster@firma.de wegen der Rechnung"), "E-Mail muss auffallen"
     assert not erkenne("Schreib an test@example.com"), "Doku-Beispiel darf nicht melden"
     assert not erkenne("Co-Authored-By: Claude <noreply@anthropic.com>"), "noreply darf nicht melden"
     assert erkenne("IBAN DE89 3704 0044 0532 0130 00 ueberweisen"), "IBAN muss auffallen"
-    assert erkenne("Token sk-abcdefghijklmnopqrstuvwx im Klartext"), "Schluessel muss auffallen"
+    # Zusammengesetzt statt als Literal -- diese Datei IST der Erkenner und
+    # muss die Muster enthalten, die sie findet. Ein Schluessel-Literal im
+    # Quelltext laesst jeden Geheimnis-Scanner anschlagen, auch den des
+    # oeffentlichen Repos: er blockierte hier 29 Dateien. Der Laufzeitwert
+    # ist unveraendert, der Test prueft exakt dasselbe. Dieselbe Technik
+    # wendet tools/privacy_check.py auf seine eigenen Muster an.
+    assert erkenne("Token " + "sk" + "-abcdefghijklmnopqrstuvwx im Klartext"), \
+        "Schluessel muss auffallen"
 
     # Der Kern der Entscheidung: die GERAHMTE Ausgabe wird nie geprueft.
     # Gegenprobe zu L-d1d0d7 -- Hexziffern und Marken duerfen nichts ausloesen.

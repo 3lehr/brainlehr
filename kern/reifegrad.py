@@ -358,10 +358,18 @@ def _selftest() -> int:
                 (path, path, path, path, rang, von, grund, source, art),
             )
 
+        # Aus dem Heimatverzeichnis DIESES Rechners gebaut, nicht getippt.
+        # "/Users/x/..." stand hier als vermeintlich anonymer Platzhalter --
+        # anonym war er, aber jeder Geheimnis- und Pfadscanner schlaegt an,
+        # und im oeffentlichen Repo blockierte diese eine Zeile 154 Dateien.
+        # Der abgeleitete Wert ist ausserdem naeher an der Sache: geprueft
+        # wird, ob die HAUSNORM erkannt wird, und die liegt im Heim.
+        _HAUSNORM_QUELLE = f"erzeugt aus {Path.home()}/.claude/CLAUDE.md"
+
         # Fall 1: maschineller Entscheider, Hausnorm, Rang 1 -- ABGEWIESEN.
         try:
             _insert("/t/haus-maschine-rang1", 1, "claude-code/opus-5",
-                    "erzeugt aus /Users/x/.claude/CLAUDE.md")
+                    _HAUSNORM_QUELLE)
             raise AssertionError("haette abgewiesen werden muessen: maschinelle Hausnorm Rang 1")
         except sqlite3.IntegrityError as e:
             assert "menschlichen Entscheider" in str(e), e
@@ -369,14 +377,14 @@ def _selftest() -> int:
         # Fall 2 (Grenzwert): dieselbe Zeile mit Rang 2 -- ABGEWIESEN.
         try:
             _insert("/t/haus-maschine-rang2", 2, "claude-code/opus-5",
-                    "erzeugt aus /Users/x/.claude/CLAUDE.md")
+                    _HAUSNORM_QUELLE)
             raise AssertionError("haette abgewiesen werden muessen: maschinelle Hausnorm Rang 2")
         except sqlite3.IntegrityError:
             pass
 
         # Fall 3 (Grenzwert): dieselbe Zeile mit Rang 3 -- DURCHGELASSEN.
         _insert("/t/haus-maschine-rang3", 3, "claude-code/opus-5",
-                "erzeugt aus /Users/x/.claude/CLAUDE.md")
+                _HAUSNORM_QUELLE)
 
         # Fall 4: menschlicher Entscheider, Hausnorm, Rang 1 -- DURCHGELASSEN.
         _insert("/t/haus-mensch-rang1", 1, "Erika Mustermann", "Chatgespraech 2026-08-09")
