@@ -73,7 +73,18 @@ URHEBER_MERKMALE = (
     # ueberschreibbar.
     os.environ.get("BEGOD_BETREIBER_MERKMAL")
     or str(Path.home() / ".claude" / "CLAUDE.md").lower(),
-    "/begod2026/hub/claude.md",
+    # Die Hausregeln des hub -- OHNE Verbundnamen. Bis 2026-08-20 stand hier
+    # "/beg" "od2026/hub/claude.md", also der Verzeichnisname des Betreibers.
+    # Bei jedem anderen Nutzer griff die Regel nicht, und eine von ihm
+    # entschiedene Rang-2-Norm galt dort als fremdbestimmt. Die Begruendung
+    # stand seit dem 2026-08-10 zwei Zeilen weiter oben und war fuer die
+    # globale Datei bereits umgesetzt (Path.home) -- fuer diese nicht. Eine
+    # Einsicht, die zur Haelfte angewandt wurde.
+    #
+    # Bewusst NICHT enger gefasst: Eine hub-CLAUDE.md ist eine
+    # hub-CLAUDE.md, gleich unter welchem Verbundnamen sie liegt. Die
+    # Fremdnorm-Merkmale stechen weiterhin und begrenzen die Weite.
+    "/hub/claude.md",
     "betreiber-entscheidung",
     "entscheidung des betreibers",
     "betreiberentscheidung",
@@ -144,7 +155,11 @@ def demo() -> None:
     # rot, und zwar ohne dass an der Sache etwas falsch waere.
     eigen = f"erzeugt aus {Path.home()}/.claude/CLAUDE.md (Stand ...)"
     assert ist_urheber_betreiber(eigen), eigen
-    assert ist_urheber_betreiber("erzeugt aus /Volumes/daten/Begod2026/hub/CLAUDE.md")
+    # Fremder Verbundname mit Absicht: Seit dem Fix vom 2026-08-20 haengt die
+    # Erkennung nicht mehr am Verzeichnisnamen des Betreibers, und genau das
+    # prueft diese Zeile. Ein Pfad von DIESEM Rechner haette den Fortschritt
+    # nicht belegen koennen -- er war schon vorher gruen.
+    assert ist_urheber_betreiber("erzeugt aus /srv/arbeit/hub/CLAUDE.md")
     assert ist_urheber_betreiber("Betreiber-Entscheidung im Chat 2026-08-08T18:40")
     assert ist_urheber_betreiber("Entscheidung des Betreibers im Gespraech 2026-08-07")
 
