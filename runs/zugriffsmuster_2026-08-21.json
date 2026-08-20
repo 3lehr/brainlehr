@@ -1,0 +1,134 @@
+{
+  "auftrag": "BDW-E25 / Auftrag D, docs/PLAN_BETRIEBSPROFILE_2026-08-20.md",
+  "zeitpunkt": "2026-08-21T00:44:55+0200",
+  "schwellen": {
+    "je_knoten_schwelle": 2.0,
+    "abdeckung_schwelle": 0.1
+  },
+  "nachgerechnete_plan_zahlen": {
+    "hinweis": "Plan nennt je_knoten 24.2/7.9/5.1 ueber ALLE Aktionen; dieser Melder zaehlt nur lesende Aktionen (read/browse/search mit node_path). Siehe Docstring melder/zugriffsmuster.py.",
+    "d695fd29": {
+      "lesend_zugriffe": 2437,
+      "knoten": 201,
+      "je_knoten": 12.1,
+      "plan_je_knoten": 24.2
+    },
+    "be48feea": {
+      "lesend_zugriffe": 888,
+      "knoten": 214,
+      "je_knoten": 4.1,
+      "plan_je_knoten": 7.9
+    },
+    "6bb5aa2e": {
+      "lesend_zugriffe": 359,
+      "knoten": 134,
+      "je_knoten": 2.7,
+      "plan_je_knoten": 5.1
+    }
+  },
+  "positivkontrolle_ac1": {
+    "beschreibung": "Selbsttest: 500 verschiedene Knoten, je einmal gelesen, Bestand 520 Knoten",
+    "ergebnis": "schlaegt an (siehe melder/zugriffsmuster.py::_selftest, gruen)",
+    "je_knoten": 1.0,
+    "abdeckung": 0.962
+  },
+  "rotprobe": {
+    "beschreibung": "Fassung ohne Beschraenkung auf lesende Aktionen zaehlt eine 380-Zeilen-Massenmigration (Session d40bc0e8-aehnlich) faelschlich als Treffer (Faktor 1.0, Abdeckung 0.73)",
+    "ergebnis": "echte Fassung (nur read/browse/search) schweigt korrekt dazu"
+  },
+  "echter_lauf_gegen_bestand_ac2": {
+    "gesamt_knoten": 5240,
+    "sitzungen_mit_lesezeile": 97,
+    "treffer": [],
+    "anzahl_treffer": 0
+  },
+  "naehe_zur_schwelle_manuell_geprueft": {
+    "top_abdeckung": [
+      {
+        "session": "be48feea",
+        "lesend_zugriffe": 888,
+        "knoten": 214,
+        "je_knoten": 4.15,
+        "abdeckung": 0.0408
+      },
+      {
+        "session": "unbekannt",
+        "lesend_zugriffe": 1017,
+        "knoten": 208,
+        "je_knoten": 4.89,
+        "abdeckung": 0.0397
+      },
+      {
+        "session": "d695fd29",
+        "lesend_zugriffe": 2437,
+        "knoten": 201,
+        "je_knoten": 12.12,
+        "abdeckung": 0.0384
+      },
+      {
+        "session": "01c01c7f",
+        "lesend_zugriffe": 622,
+        "knoten": 152,
+        "je_knoten": 4.09,
+        "abdeckung": 0.029
+      },
+      {
+        "session": "21a4393d",
+        "lesend_zugriffe": 289,
+        "knoten": 147,
+        "je_knoten": 1.97,
+        "abdeckung": 0.0281
+      }
+    ],
+    "top_faktor_ab_0_5_prozent_abdeckung": [
+      {
+        "session": "9b638518",
+        "lesend_zugriffe": 48,
+        "knoten": 36,
+        "je_knoten": 1.33,
+        "abdeckung": 0.0069
+      },
+      {
+        "session": "9efc6a71",
+        "lesend_zugriffe": 41,
+        "knoten": 29,
+        "je_knoten": 1.41,
+        "abdeckung": 0.0055
+      },
+      {
+        "session": "c8131860",
+        "lesend_zugriffe": 56,
+        "knoten": 36,
+        "je_knoten": 1.56,
+        "abdeckung": 0.0069
+      },
+      {
+        "session": "9e85bcde",
+        "lesend_zugriffe": 82,
+        "knoten": 52,
+        "je_knoten": 1.58,
+        "abdeckung": 0.0099
+      },
+      {
+        "session": "21574873",
+        "lesend_zugriffe": 126,
+        "knoten": 77,
+        "je_knoten": 1.64,
+        "abdeckung": 0.0147
+      }
+    ],
+    "beurteilung": "Keine Sitzung reisst beide Schwellen. Naechster Kandidat ist be48feea (Faktor 4.1, Abdeckung 4.1%) -- weit unter der Abdeckungsschwelle (10%) und ueber der Faktorschwelle (2.0), also unauffaellig auf beiden Achsen. Die beim Bau gefundene Massenmigration d40bc0e8 (754 update-Zeilen, 380 Knoten, 38 Minuten) erreicht mit ALLEN Aktionen gezaehlt Faktor 2.04/Abdeckung 7.3% -- der naechste Fehlalarm ueberhaupt -- traegt aber 0 Lesezeilen und faellt mit der Lese-Definition dieses Moduls auf 2 Lesezeilen/1 Knoten. Beurteilung: kein Abzug, sondern eine legitime Schreibmigration; korrekt kein Treffer. Sessions mit Faktor 1.0 im echten Bestand tragen ausnahmslos unter 0.3% Abdeckung (2-11 Lesezeilen) -- zu klein, um ein Muster zu sein.",
+    "d40bc0e8_akteure": [
+      [
+        "d40bc0e8",
+        "claude-code",
+        754
+      ],
+      [
+        "d40bc0e8",
+        "unbekannt",
+        22
+      ]
+    ]
+  }
+}
