@@ -172,4 +172,33 @@ und beidseitig wiederholt.
 
 ## Nachtrag nach der Umsetzung
 
-*(wird fortgeschrieben — was anders kam als geplant, und warum)*
+### S2 gebaut, 2026-08-20T16:00:00+0200 — zwei Abweichungen
+
+**Gemessen am echten Abrufweg**, gleiche Anfrage, gleiche Treffer:
+Schalter aus 5876 Zeichen (Ausgabe unverändert), Schalter an 2876 Zeichen
+mit 8 Fundstellen-Zeilen. Kein Treffer verschwindet.
+
+**Abweichung 1 — der Umbau war unnötig, und beinahe wirkungslos.** Der Plan
+ging davon aus, der Ähnlichkeitswert je Treffer müsse erst durchgereicht
+werden. Er liegt seit jeher als Feld `bedeutungs_kosinus` an jedem Treffer,
+bei Knoten wie bei Lehren. Der begonnene Durchreich-Umbau ist vollständig
+zurückgebaut.
+
+Schlimmer als die vergebliche Arbeit war, was sie beinahe verdeckt hätte:
+Neun Tests waren grün, weil sie ihr Eingabeformat selbst bauten — nach Pfad
+geschlüsselt. Der echte Weg schlüsselt nach Kennung. **Schnittmenge 0.** Die
+Stufung hätte im Betrieb nichts getan, bei grüner Suite. Bemerkt durch eine
+Messung am echten Weg, nicht durch einen Test. Festgehalten als `L-497059`;
+der zehnte Testfall geht jetzt gegen den echten Abrufweg.
+
+**Abweichung 2 — die Schwelle bleibt ungemessen, und das steht im Code.**
+Der Plan nannte `STARK_AB = 0.586` als vorhandene Trennmarke. Gemessen lagen
+bei einer echten Anfrage **alle 17 Treffer darunter** — die Stufung hätte
+alles herabgestuft. `STARK_AB` beschreibt die Lage des ganzen Blocks, nicht
+den einzelnen Treffer. Deshalb steht jetzt eine eigene Konstante `STUFE_AB`
+mit einem Kommentar, der sie ausdrücklich als ungemessen benennt. Sie ist
+zusammen mit dem Schalter aus; die Kalibrierung ist S3/S4.
+
+**Unverändert gültig:** Der Schalter `BRAINLEHR_ABRUF_STUFEN` bleibt auf
+`aus`, bis S1 die Nulllinie erhoben hat. Das ist die bindende Reihenfolge,
+nicht Vorsicht.
