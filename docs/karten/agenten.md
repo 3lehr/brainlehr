@@ -115,6 +115,9 @@ graph LR
   halt -.->|loest aus| ev_Stop
   s_codemap_active_py["codemap_active.py"]
   ev_Stop -->|global| s_codemap_active_py
+  s_agentenbehauptung_py["agentenbehauptung.py"]
+  class s_agentenbehauptung_py entscheidet
+  ev_Stop -->|global| s_agentenbehauptung_py
   s_quality_gate_hook_py["quality_gate_hook.py"]
   class s_quality_gate_hook_py entscheidet
   ev_Stop -->|global| s_quality_gate_hook_py
@@ -190,4 +193,4 @@ graph LR
   classDef entscheidet stroke-width:4px
 ```
 
-76 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 4 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.
+77 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 4 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.

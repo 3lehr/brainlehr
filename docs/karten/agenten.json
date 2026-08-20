@@ -141,6 +141,15 @@
    "quelle": "brainlehr/haken/agentenanker_einspielung.py"
   },
   {
+   "id": "s_agentenbehauptung_py",
+   "text": "agentenbehauptung.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Eine Antwort behauptet eine Handlung, fuer die im selben Zug kein",
+   "entscheidet": true,
+   "quelle": "brainlehr/melder/agentenbehauptung.py"
+  },
+  {
    "id": "s_antwort_abruf_py",
    "text": "antwort_abruf.py",
    "form": "kasten",
@@ -970,6 +979,12 @@
   {
    "von": "ev_Stop",
    "nach": "s_codemap_active_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_Stop",
+   "nach": "s_agentenbehauptung_py",
    "text": "global",
    "art": "gerichtet"
   },
