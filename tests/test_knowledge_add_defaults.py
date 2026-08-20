@@ -116,7 +116,17 @@ def test_betreiber_claude_md_import_traegt_betreiber(temp_db):
     norm_entschieden_von='betreiber', nicht der actor."""
     res = kms.knowledge_add(
         "/methodik", "Betreiber Direktive Importiert", "Zusammenfassung",
-        source="erzeugt aus /Users/lehrmacbook/.claude/CLAUDE.md (Stand 2026-08-09T00:00:00+0200)",
+        # Der Pfad wird ZUR LAUFZEIT abgeleitet, nicht eingetragen. Bis
+        # 2026-08-20 stand hier der echte Heimatpfad des Betreibers im
+        # Klartext -- gefunden bei der Vorpruefung vor einem Push ins
+        # oeffentliche Repo, wo derselbe Fall schon einmal korrigiert worden
+        # war ("Benutzername entfernt"). Ein Benutzername in einem
+        # weitergebbaren Repo ist ein Personenbezug, den niemand gebraucht
+        # hat, und bei jedem anderen Nutzer waere das Muster obendrein
+        # falsch. kern/herkunft_normentscheider.URHEBER_MERKMALE leitet
+        # genau so ab; der Test folgt derselben Quelle statt einer Kopie.
+        source=(f"erzeugt aus {_Path.home() / '.claude' / 'CLAUDE.md'} "
+                "(Stand 2026-08-09T00:00:00+0200)"),
         norm_entscheidung="norm_unbefristet", norm_rang=1, gilt_ab="2026-08-09",
         norm_entschieden_grund="g", actor="claude-code/opus-5",
     )
