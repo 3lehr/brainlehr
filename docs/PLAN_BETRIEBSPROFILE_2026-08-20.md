@@ -52,6 +52,45 @@ Ein Profilschalter, der heute nur zwei Werte kennt. Kein Rollenmodell, keine
 Rechte — nur die Achse. Danach ist der spätere Wechsel eine Datenänderung
 statt eines Umbaus.
 
+**B1b — Sprachachse, im selben Zug** (nicht bindend, aber hier billig)
+Eine Spalte `sprache` neben `mandant`. Anlass ist die Betreiberfrage vom
+2026-08-20: „wenn wir Apps fürs Handy bauen, haben wir aber Mehrsprachigkeit?"
+
+**Der Abruf braucht sie NICHT** — gemessen am 2026-08-20: eine deutsche Frage
+trifft den gleichbedeutenden englischen Text mit Kosinus 0,819, weit über der
+Schwelle 0,65. Genau deshalb antworten die 1.637 englischen NASA-Einträge
+heute auf deutsche Fragen, ohne dass jemand sie übersetzt hat.
+
+**Die ANZEIGE braucht sie**, und zwar als WCAG-Auflage, nicht als Komfort:
+`3.1.1 Language of Page` / `3.1.2 Language of Parts`. Ein Vorleseprogramm
+liest englischen Text mit deutscher Aussprache vor, wenn die Sprache nicht
+ausgezeichnet ist — das macht den Inhalt unverständlich. Heute liefert
+`knowledge_search` einen NASA-Eintrag aus, ohne dass eine App wüsste, dass er
+englisch ist; sie könnte ihn also gar nicht regelkonform darstellen.
+
+**Es braucht genau EIN Feld, kein Übersetzungssystem.** Kein `titel_en`, keine
+parallelen Fassungen, keine Pflege: Ein Eintrag hat die Sprache, in der er
+geschrieben wurde. Übersetzung ist ein Problem der Ausgabe, nicht des
+Speichers — die App entscheidet zur Laufzeit.
+
+**Der Unterschied zur Mandanten-Achse, und er ist der Grund, warum B1b nicht
+bindend ist:** Einen Mandanten kann man einem Altbestand nicht rückwirkend
+zuschreiben. Eine Sprache steht im Text. Gemessen mit einer Heuristik aus
+36 Stoppwörtern, ohne neue Abhängigkeit: 758 von 770 richtig, 9 unklar
+(/nasa-llis 200/200, /germanquad 198/200, /brainlehr 197/200, /methodik
+163/170). Sie ließe sich also jederzeit nachziehen.
+
+Sie fährt trotzdem hier mit, weil sie in diesem Zug fast nichts kostet: Wer
+ohnehin eine Spalte hinzufügt und alle Zeilen einmal anfasst, nimmt die
+zweite gratis mit. Ein eigener Durchlauf über 5.239 Zeilen später kostet
+mehr als die Spalte jetzt.
+
+**Offen und ausdrücklich nicht entschieden:** Französisch liegt bei 0,630 und
+fällt damit unter die Schwelle 0,65 — dieselbe Sache, andere Sprache, Treffer
+verworfen. Die Schwelle ist an deutschem Material kalibriert und
+sprachübergreifend nicht gleich streng. Heute folgenlos (es gibt kein
+französisches Material), vor einer Öffnung nach außen zu messen.
+
 **B2 — Der Wechsel selbst**, als Werkzeug mit Rot-Probe: Bestand wandert
 geschlossen auf einen benannten Mandanten. Ein Rückweg gehört dazu.
 
