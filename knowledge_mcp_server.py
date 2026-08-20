@@ -5547,6 +5547,15 @@ def knowledge_modell(model: str) -> dict:
     return _eintraege_nach("model", model)
 
 
+def _selbstauskunft_erheben() -> dict:
+    """Spaet importiert, damit ein Fehler in der Auskunft nie den Server
+    beim Start umbringt -- sie ist eine Auskunft, kein Betriebsweg."""
+    from kern import selbstauskunft
+    daten = selbstauskunft.erhebe()
+    daten["text"] = selbstauskunft.als_text(daten)
+    return daten
+
+
 def knowledge_stats() -> dict:
     """Overview statistics of the knowledge database."""
     conn = get_db()
@@ -6912,6 +6921,22 @@ TOOLS = {
                         "the four as equally trustworthy when reading this.",
         "inputSchema": {"type": "object", "properties": {}},
         "handler": lambda args: knowledge_stats()
+    },
+    "knowledge_selbstauskunft": {
+        "description": "What brainlehr currently is -- every number measured at "
+                        "call time, never maintained: tables and triggers from "
+                        "sqlite_master, tools from this registry, dependencies from "
+                        "requirements.txt. Call this instead of relying on "
+                        "documentation or memory when asked what brainlehr is or "
+                        "can do. Added 2026-08-20 after a foreign client described "
+                        "brainlehr from memory: every principle right, every number "
+                        "wrong and all in the same direction -- a snapshot of an "
+                        "older, smaller system. Principles age slowly, numbers fast. "
+                        "What this does NOT say: whether the contents are correct. "
+                        "It counts what is there; whether an entry still holds is "
+                        "recorded on the entry itself (validity, rank, release).",
+        "inputSchema": {"type": "object", "properties": {}},
+        "handler": lambda args: _selbstauskunft_erheben()
     },
     "knowledge_trust_score": {
         "description": "Computed (never stored) earned-trust value in [0.05, 0.95], 0.5 = no signal yet -- "
