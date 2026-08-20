@@ -194,6 +194,12 @@ def main() -> int:
     parser.add_argument("--pruefen", action="store_true")
     parser.add_argument("--db", type=Path, default=None)
     parser.add_argument("--selftest", action="store_true")
+    # Am Sitzungsstart schweigt der Melder, wenn nichts vorliegt -- ein
+    # Mechanismus, der bei jedem Start eine Zeile 'nichts gefunden' schreibt,
+    # wird nach zwei Tagen ueberlesen, und dann ueberliest man auch die Zeile,
+    # die etwas sagt. --laut fuer den Handlauf, wo die Nullmeldung der Beleg
+    # ist, dass ueberhaupt gemessen wurde.
+    parser.add_argument("--laut", action="store_true")
     args = parser.parse_args()
 
     if args.selftest:
@@ -203,8 +209,9 @@ def main() -> int:
         treffer = pruefen(conn)
 
     if not treffer:
-        print("zugriffsmuster: keine Sitzung ueber beiden Schwellen "
-              f"(je Knoten <= {JE_KNOTEN_SCHWELLE}, Abdeckung >= {ABDECKUNG_SCHWELLE * 100:.0f} %).")
+        if args.laut:
+            print("zugriffsmuster: keine Sitzung ueber beiden Schwellen "
+                  f"(je Knoten <= {JE_KNOTEN_SCHWELLE}, Abdeckung >= {ABDECKUNG_SCHWELLE * 100:.0f} %).")
         return 0
 
     print(f"{len(treffer)} Sitzung(en) ueber beiden Schwellen:")
