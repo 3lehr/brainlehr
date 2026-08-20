@@ -1532,6 +1532,33 @@ def log_recall(nodes: list, lessons: list, log_path: str | None = None,
         }
         if prompt is not None and _herkunftsmodus() != "aus":
             payload["prompt"] = prompt
+        # Kosinuswert JE KENNUNG (S1-Befund, 2026-08-20): Der Wert liegt an
+        # jedem Treffer als `bedeutungs_kosinus` vor und wurde bis heute nie
+        # persistiert. Die Aufgriffsquote (247 von 1275) liess sich deshalb
+        # nicht nach Trefferstaerke aufschluesseln -- und ohne diese
+        # Aufschluesselung waere nach dem Scharfschalten der abgestuften
+        # Ausgabe (S2) nicht mehr messbar, ob die Stufung richtig lag. Die
+        # Reihenfolge ist bindend: erst diese Spalte, dann der Schalter.
+        #
+        # ALS ZUORDNUNG, nicht als Liste: Eine Liste ohne Kennung ist genau
+        # das, was der Abrufweg mit sorted(_scores.values()) schon einmal
+        # weggeworfen hat (L-497059) -- auswertbar ist sie dann nicht.
+        #
+        # KEIN PLATZHALTER bei fehlendem Wert: Ein Treffer aus dem
+        # Stichwortkanal hat keinen Kosinuswert; eine 0.0 waere eine Aussage,
+        # die niemand gemessen hat, und wuerde spaeter als "sehr schwach"
+        # gelesen. Der Schluessel bleibt weg, wie bei 'prompt' -- alte Zeilen
+        # ohne ihn bleiben ueber .get() lesbar.
+        kosinus = {}
+        for treffer in list(nodes) + list(lessons):
+            if not isinstance(treffer, dict):
+                continue
+            kennung = treffer.get("id")
+            wert = treffer.get("bedeutungs_kosinus")
+            if kennung is not None and wert is not None:
+                kosinus[kennung] = round(float(wert), 4)
+        if kosinus:
+            payload["bedeutungs_kosinus"] = kosinus
         # Kennzeichnende Zahlen aus GENAU diesem Abruf (Auftrag 94, s.
         # _kennzeichnende_zahlen() oben) -- Schluessel nur bei Treffer
         # gesetzt (wie 'prompt'/'erstverwendung_vorschlag'), damit alte
