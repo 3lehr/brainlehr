@@ -90,3 +90,29 @@ an einen Haken, der Arbeit anhält.
 
 **Stand: 18 von 50 ohne Auslöser**, davon 16 ausdrücklich Werkzeuge für
 Menschen bzw. für den Handlauf.
+
+
+## Dritter Nachtrag, 2026-08-20 (abends)
+
+**Verdrahtet:** `faelligkeit` an `SessionStart` (0,03 s) — der neue
+Fälligkeitskanal. `agentenbehauptung` an `Stop`, aber **nicht** in seiner
+Melderform: als Startmelder hätte er 400 Transkriptdateien geprüft und jeden
+Tag dieselben alten Treffer gemeldet. Die neue Funktion `pruefe_letzten_zug()`
+prüft nur den Zug, in dem die Behauptung fällt, und benutzt dafür
+`rueckfrageschleife._letzte_antwort()` — kein zweiter Weg.
+
+**Die Regel dahinter, aus zwei Fällen dieses Tages:** Ein Melder, der einen
+Bestand prüft, taugt nicht als Startmelder — er meldet immer dasselbe. Die
+Frage ist nicht „wo hängt er?", sondern **„an welcher Stelle entsteht das,
+was er misst?"** Bei `agentenbehauptung` ist das der einzelne Zug, bei
+`klassenausfall` der Messlauf, bei `faelligkeit` der Bestand selbst (deshalb
+dort Rotation statt Zug-Bezug).
+
+**Vier bleiben ohne Auslöser, drei davon begründet:**
+
+| | |
+|---|---|
+| `nulllinie` | 27 von 4427, spürbarer Falschtreffer-Anteil — Prüfanlass für Menschen |
+| `unbelegter_eingang` | 1 von 3 handgeprüften Treffern war falsch — dito |
+| `fremdbaum_cd` | 105 von 162 Sitzungen; als Wächter zu laut, als Analyse brauchbar |
+| `klassenausfall` | hängt am Messlauf, der von Hand gefahren wird — der Zähler sieht das nicht, und das ist die ehrliche Aussage |
