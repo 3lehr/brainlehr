@@ -1,32 +1,37 @@
-# STAND brainlehr — 2026-08-21T03:20:00+0200
+# STAND brainlehr — 2026-08-21T10:45:00+0200
 
-**Lage:** Zweig `brainlehr/b4-ausweis`, 24 Commits seit `1d0e7470`, nichts
-gepusht. Gesamtbau A-G (`docs/PLAN_GESAMTBAU_2026-08-21.md`) **vollstaendig
-abgearbeitet**, acht von acht Straengen. Katalog: 32/66 belegt, drei Zeilen
-NOT RUN -- P11/P12 sind jetzt durch C belegt, E24 wartet auf den Betreiber.
-**Suite:** 25 rot, 2455 gruen, 7 Fehler (14:21 min). Baseline am
-Ausgangspunkt: 25 rot, 6 Fehler. Der eine zusaetzliche Fehler
-(`test_zweckprojektion_suchpfade.py`) ist EINZELN GRUEN -- er entsteht nur im
-Vollauf neben schreibenden Nachbarsitzungen, kein Rueckschritt.
-**Nicht gebaut, weil die Messung Nein sagte:** A2 Leerlauf-Rueckzug (0,4 %
-Ersparnis gegen 38,6 % verpasste Treffer in der ersten Fassung) und die
-Verdrahtung von A1 (7 Treffer, 0 echte Widersprueche).
-**Der offene Befund mit dem groessten Hebel:** Ein Katalog als
-`nachschlagewerk` senkt die Trefferquote doch (14/35 auf 13/35), OHNE dass
-ein einziger Fremdeintrag im Ergebnis auftaucht -- die Gattung wirkt am
-Filter, nicht am Index, und bm25 ist korpusrelativ (`L-f8b529`). Behebung
-liegt im Abrufkern und wuerde dort kalibrierte Zahlen entwerten.
-**Fallen, dreimal an einem Tag getreten:** Eine Anweisung in `schema.sql` auf
-eine NACHGEZOGENE Spalte bricht auf gewachsenen Datenbanken ab, und
-`executescript` schweigt danach -- ans Dateiende damit (`L-1ffae7`). Jede
-Vorrichtung, die ein Alt-Schema herstellt, muss Trigger UND Indizes
-inhaltsbestimmt mitschneiden (`L-e12296`).
-**Vorbestehend rot, nicht von mir:** `tests/test_naht_ratsche.py` (veraltete
-`tests/naht_basis.json`) und sechs Fehler in
-`tests/test_anlass_schema_backfill.py` -- auf `1611398b` nachgewiesen.
-**Wartet auf den Betreiber:** E24 zweiter Faktor (sechs Wege, keiner
-entschieden) · Push des oeffentlichen Exports (GitHub-Konto gesperrt) ·
-E01/E04/E05/E19 (echter Pilot bzw. zweiter Standort).
+**Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Gesamtbau A–G
+abgeschlossen. Katalog `docs/REQUIREMENTS_BRAINLEHR.md`: **71 Zeilen**, 33
+belegt. Plan: `docs/PLAN_NAECHSTE_STUFE_2026-08-21.md`, Reihenfolge in §9
+festgeschrieben.
+**Laufend (Welle 1, nach Dateibesitz getrennt):** P16 Gegenstands-Achse
+(besitzt `schema.sql`) · P18 Namensfrage (besitzt `haken/suchpfad_abruf.py`,
+`haken/knowledge_recall_hook.py`).
+**Entschieden und vom Tisch:** KEIN zweiter Vektorraum (Konsil 2:1,
+`ADR-032`) — bei zwei Raeumen laesst ein `gattung`-Wechsel den Knoten in
+KEINEM Raum stehen, ohne Fehler, und `vektorstand.py` meldet dagegen 4 354
+Falschmeldungen. A scheitert erst, wenn jemand einen Knoten vermisst; C in
+einer Messung. · `E24` zweiter Faktor auf FUTURE (Betreiberwort). Vorfrage
+gemessen: Median 9 Sitzungen/Tag, Max 15.
+**Der Befund mit dem groessten Hebel:** `sensibel` ist fuer Dokumente Dritter
+das FALSCHE Werkzeug — ein sensibler Abschnitt landet auf Rang 854/1130/2571
+und steht nicht im Volltextindex. Geschuetzt wird ueber
+`mandant`/`kreis`/`freigabe`. Heute 0 von 5 241 Knoten mit `sensibel=1`.
+**Groesster offener Rueckstand:** `BDW-P05`/Zielbild A bei **3/35 = 8,6 %**
+gegen Schwelle 95 % — kein Trefferquotenproblem, die Felder Quelle, Status
+und Geltung werden gar nicht ausgeliefert.
+**Fallen, mehrfach getreten:** Anweisung in `schema.sql` auf eine
+NACHGEZOGENE Spalte bricht auf gewachsenen DBs ab, `executescript` schweigt
+danach → ans Dateiende (`L-1ffae7`). Vorrichtungen fuer Alt-Schemata muessen
+Trigger UND Indizes inhaltsbestimmt mitschneiden (`L-e12296`).
+**Vorbestehend rot, nicht von mir:** `tests/test_naht_ratsche.py`, sechs
+Fehler in `tests/test_anlass_schema_backfill.py` (auf `1611398b` belegt).
+**Wartet auf den Betreiber:** Bauform fuer `BDW-P19` (Mehrsprachigkeit,
+707 Textstellen / 60 543 Zeichen erhoben) · Topics auf GitHub setzen
+(`lehrtools` auf lehrAtelier und die openlehr_X, NICHT auf brainlehr).
+**Berichtigt:** Das GitHub-Konto ist NICHT gesperrt (das ist ein zweites,
+`Lehrmeister`), und der oeffentliche Export ist seit 2026-08-20T17:27
+draussen — `3lehr/brainlehr`, oeffentlich, AGPL, Topics leer.
 
 ---
 
