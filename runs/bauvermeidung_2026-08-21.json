@@ -1,0 +1,81 @@
+{
+  "auftrag": "PLAN_NAECHSTE_STUFE_2026-08-21.md §4.4 -- kern/bauvermeidung.py, innere Haelfte (Knoten cb2193a8)",
+  "zeitpunkt": "2026-08-21T11:40:09+02:00",
+  "bezugspunkt": "ddeca932813f5b5b90ebf253e30fe866cd58938e",
+  "vorbedingung_repariert": {
+    "befund": "hub/scripts/symbolindex.py::_doc_line() warf IndexError bei leerem, aber nicht-None Docstring (ds.strip() == ''), splitlines()[0] auf leerer Liste -- der Indexlauf brach mitten im Verbund ab, symbols.db blieb auf dem Stand vom 2026-08-06 stehen (45 MB). Ohne funktionierenden Index ist die INNERE Haelfte der Betreiberentscheidung nicht pruefbar, also vor dem eigentlichen Auftrag korrigiert -- eine Zeile, hub/scripts/symbolindex.py Zeile 93 (`if ds:` -> `if ds and ds.strip():`), kein Repo aus der Sperrliste betroffen.",
+    "abweichung_gemeldet": true,
+    "neuer_indexstand": "738149 Symbole, 32 Wurzeln, Lauf 721.2s -- vom 2026-08-06 auf 2026-08-21"
+  },
+  "abnahme": {
+    "positivkontrolle_a_bildschirmliste_fahrtenbuch": {
+      "absicht": "ich haette gerne eine Liste aller Bildschirme des fahrtenbuch",
+      "erwartet": "inventar_faehigkeiten.py (seit 2026-08-16) bzw. der Wissensknoten f83f2f80 darueber muessen auftauchen (Eilmeldung vom 2026-08-21)",
+      "gefunden": true,
+      "beleg_code": {
+        "kanal": "code",
+        "fundstelle": "fahrtenbuch/apps/fahrtenbuch_legacy/tool/inventar_faehigkeiten.py:39",
+        "was": "function routen",
+        "beleg_text": "Bildschirme, die der Router kennt — die belastbarste Ist-Achse:",
+        "traf_bei": "bildschirme"
+      },
+      "beleg_wissen": {
+        "kanal": "wissen",
+        "fundstelle": "f83f2f80",
+        "was": "EILMELDUNG an brainlehr: Ein Agentenauftrag hat keinen Ausloeser, der nach vorhandenen Werkzeugen fragt",
+        "beleg_text": "Ein Agent wurde losgeschickt, eine Bildschirmliste aus dem Router zusammenzusuchen — obwohl ein Skript im selben Repo seit dem 16.08. genau diese Liste erzeugt, gebaut fuer dieselbe Frage desselben Betreibers. brainlehr soll den fehlenden Ausloeser bauen: beim VERFASSEN eines Auftrags wird gefragt, ob ein vorhandenes Werkzeug das Ergebnis schon liefert."
+      },
+      "beurteilung": "GEFUNDEN auf BEIDEN Kanaelen unabhaengig voneinander -- Code (symbolindex, Funktion 'routen' in inventar_faehigkeiten.py) und Wissen (Knoten f83f2f80 nennt die Datei woertlich im Volltext). Die urspruengliche Falle waere hiermit nicht mehr aufgetreten."
+    },
+    "positivkontrolle_b_vertrauensliste_foederation": {
+      "absicht": "ich haette gerne eine Vertrauensliste zwischen Instanzen",
+      "erwartet": "melder/foederation.py::vertraue() (B5.2, seit 2026-08-10, L-39574b)",
+      "gefunden": true,
+      "beleg_code": {
+        "kanal": "code",
+        "fundstelle": "brainlehr/melder/foederation.py:194",
+        "was": "function vertraue",
+        "beleg_text": "Nimmt eine fremde Instanz in die Vertrauensliste auf.",
+        "traf_bei": "vertrauensliste"
+      },
+      "beleg_wissen": {
+        "kanal": "wissen",
+        "fundstelle": "7c8df4e7",
+        "was": "Einbürgerung, Visum und Asyl zwischen zwei brainlehr-Instanzen — drei von vier Fällen schon gebaut",
+        "beleg_text": "Kann eine brainlehr-Instanz jemanden aus einer anderen aufnehmen, samt dessen Wissen? Antwort: Visum (befristeter Ausweis mit Leserecht) und eingeschraenkte Rechtevergabe (imperatives Mandat) waren als Bauteil bereits vorhanden. Am 2026-08-10 kamen Instanzkennung und Vertrauensliste dazu (B5.1/B5.2, foederation.py) -- erst damit laesst sich 'ein Ausweis aus Instanz B' ueberhaupt formulieren. Offen bleiben Wissensuebernahme und Asylverfahren. Haerteste Regel: Vertrauen ist NICHT transitiv. KORREKTUR zur ersten Fassung: application_id taugt NICHT als Instanzkennung, sie ist eine Gattungskennung, die jeder Klon gleich traegt."
+      },
+      "beurteilung": "GEFUNDEN auf beiden Kanaelen. WICHTIGER ZWISCHENBEFUND: die naive erste Fassung (ein gemeinsames OR-Query aus allen Satzwoertern) fand es NICHT -- das haeufige Wort 'zwischen' aus demselben Satz verdraengte den seltenen Treffer 'vertrauensliste' im BM25-Rang ueber den ganzen 738k-Symbole-Verbund. Rot vor gruen belegt (erster Selbsttestlauf schlug fehl, siehe Fehlermeldung unten), behoben durch getrennte Suche je Begriff statt einem Sammel-Query."
+    },
+    "negativkontrolle_uebersetzungsschicht": {
+      "absicht": "ich haette gerne eine Uebersetzungsschicht fuer die Oberflaeche",
+      "erwartet": "kein Treffer, der selbst eine Uebersetzungs-/i18n-Schicht ist -- nur runs/sprachstand_oberflaeche_2026-08-21.json (Erhebung, keine Schicht)",
+      "code_treffer_anzahl": 8,
+      "wissen_treffer_anzahl": 8,
+      "beurteilung": "KEIN ECHTER TREFFER, obwohl 16 Fundstellen zurueckkamen -- genau der Fall aus Bedingung 2 des Knotens ('existiert ist nicht passt'). Die Codetreffer pruefen/zeigen Oberflaechen (_pruefe_oberflaeche, _oberflaeche_zeile, unverdrahtet.py) oder SIND die Messung selbst (messungen/sprachstand_oberflaeche_2026-08-21.py) -- keiner uebersetzt Text. Die Wissenstreffer sind WCAG/Schichtdokumente, keine Uebersetzungsentscheidung. Nullbefund im Sinne der Absicht bestaetigt, aber NICHT als leere Trefferliste sichtbar -- das Skript entscheidet diese Feinheit nicht selbst (Bedingung 3), sie steht hier als meine Beurteilung."
+    },
+    "rot_vor_gruen_beleg_positivkontrolle_b": "AssertionError: Positivkontrolle B5.2 (foederation.py) nicht gefunden -- Suchbegriffe ['vertrauensliste', 'zwischen', 'instanzen'], Treffer [5 Codezeilen ohne foederation.py]. Nach Fix (Suche je Begriff getrennt statt gemeinsames OR): 'selbsttest: alle Zusicherungen halten', exit 0."
+  },
+  "echte_laeufe": [
+    {
+      "nr": 1,
+      "absicht": "ich haette gerne einen Kalender",
+      "anzahl_treffer": 16,
+      "beurteilung": "SUBSTANZIELLER TREFFER, nicht bauen: openlehr_einzelunternehmer hat eine fertige CalDAV-Kalenderanbindung (daemon/steuer/router.py, u.a. kalender_fristen_endpoint, get_calendar()) inkl. Fristenrechnung und Homeoffice-Import, fahrtenbuch_legacy hat CalendarService (liest Geraete-Kalender via MethodChannel) mit Filter-UI. Beide sind eigenstaendige, funktionierende Bauteile fuer unterschiedliche Zwecke (Steuerfristen vs. Fahrtenerkennung) -- welches passt, haengt davon ab, WELCHER Kalender gemeint ist; das Skript nennt beide, entscheidet aber nicht (Bedingung 3)."
+    },
+    {
+      "nr": 2,
+      "absicht": "ich haette gerne eine Liste aller Bildschirme des fahrtenbuch",
+      "hinweis": "= Positivkontrolle A, siehe oben"
+    },
+    {
+      "nr": 3,
+      "absicht": "ich haette gerne eine Vertrauensliste zwischen Instanzen",
+      "hinweis": "= Positivkontrolle B, siehe oben"
+    }
+  ],
+  "dateien": {
+    "werkzeug": "kern/bauvermeidung.py",
+    "test": "tests/test_bauvermeidung.py (3 passed, 1 skipped -- pytest tests/test_bauvermeidung.py)",
+    "reparatur_fremddatei": "hub/scripts/symbolindex.py (_doc_line, eine Zeile) -- ausserhalb der Sperrliste, als Abweichung gemeldet"
+  }
+}
