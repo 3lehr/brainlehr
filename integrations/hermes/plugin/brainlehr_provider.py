@@ -48,6 +48,8 @@ import json
 import os
 import sys
 import threading
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -83,6 +85,43 @@ def _brainlehr_heim() -> Optional[Path]:
     return None
 
 
+def _hermes_konfig() -> Dict[str, Any]:
+    """brainlehrs Einstellungsblock im Hermes-Panel --
+    $HERMES_HOME/brainlehr/config.json, Hermes' Vorgabespeicherform fuer
+    Anbieter ohne eigenes `storage=` (siehe config_schema.py, STORAGE_FLAT_JSON).
+    Fehlt Datei oder HERMES_HOME, ist das Ergebnis leer -- kein Grund zu werfen,
+    is_available() liest dann nur die Umgebungsvariablen-Rueckfallwerte."""
+    basis = os.environ.get("HERMES_HOME")
+    heim = Path(basis).expanduser() if basis else Path.home() / ".hermes"
+    pfad = heim / "brainlehr" / "config.json"
+    try:
+        daten = json.loads(pfad.read_text(encoding="utf-8"))
+        return daten if isinstance(daten, dict) else {}
+    except Exception:
+        return {}
+
+
+def _dienst_erreichbar(url: str, timeout: float = 1.5) -> bool:
+    """Kurzer Verbindungsversuch mit knapper Frist -- genau die Pruefung, die
+    is_available() bisher NICHT machte. Ein HTTP-Fehlerstatus zaehlt als
+    erreichbar (der Dienst hat geantwortet); eine nicht aufloesbare Adresse,
+    ein verweigerter Verbindungsaufbau oder eine ueberschrittene Frist nicht.
+
+    Das weicht von der Hermes-Basisklasse ab ('is_available soll keine
+    Netzaufrufe machen') -- bewusst, weil genau dieser Dienst am 2026-08-20
+    dreizehnmal unbemerkt gefehlt und Eintraege ohne Vektor erzeugt hat. Die
+    kurze Frist haelt den Preis dafuer klein."""
+    if not url:
+        return False
+    try:
+        urllib.request.urlopen(url, timeout=timeout)
+        return True
+    except urllib.error.HTTPError:
+        return True
+    except Exception:
+        return False
+
+
 class BrainlehrProvider(MemoryProvider):
     """Lokaler Wissensspeicher mit erzwungener Herkunft, Geltung und Freigabe."""
 
@@ -100,20 +139,38 @@ class BrainlehrProvider(MemoryProvider):
     # -- Pflicht ------------------------------------------------------------
 
     def is_available(self) -> bool:
-        """Kein Netzaufruf, wie die Schnittstelle es verlangt -- nur nachsehen,
-        ob Code und Bestand da sind.
+        """Nachsehen, ob Code, Bestand UND die zwei still scheiternden
+        Pflichtfelder (Ausweis, Einbettungsdienst) da sind.
 
         Wer hier True meldet und erst beim Benutzen scheitert, steht im Menue
-        und enttaeuscht dann."""
+        und enttaeuscht dann -- genau das passierte bisher mit einem fehlenden
+        Ausweis (jeder Schreibvorgang vom Trigger abgewiesen, ohne Hinweis im
+        Menue) und einem unerreichbaren Einbettungsdienst (Eintraege ohne
+        Vektor, am 2026-08-20 dreizehnmal). Gibt diese Methode False zurueck,
+        fuegt der MemoryManager den Anbieter gar nicht erst hinzu, statt ihn
+        kaputt laufen zu lassen."""
         heim = _brainlehr_heim()
         if heim is None:
             return False
         try:
             sys.path[:0] = [str(heim), str(heim / "kern"), str(heim / "haken")]
             import ort  # noqa: F401 -- nur die Aufloesung pruefen
-            return Path(ort.DB).is_file()
+            if not Path(ort.DB).is_file():
+                return False
         except Exception:
             return False
+
+        konfig = _hermes_konfig()
+        ausweis = konfig.get("ausweis") or os.environ.get("BRAINLEHR_AUSWEIS", "")
+        if not str(ausweis).strip():
+            return False
+
+        dienst = konfig.get("embed_service_url") or os.environ.get(
+            "KNOWLEDGE_OLLAMA_URL", "http://127.0.0.1:11434")
+        if not _dienst_erreichbar(dienst):
+            return False
+
+        return True
 
     def initialize(self, session_id: str, **kwargs) -> None:
         self._heim = _brainlehr_heim()
