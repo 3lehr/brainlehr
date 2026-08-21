@@ -1,21 +1,29 @@
-# STAND brainlehr — 2026-08-21T02:45:00+0200
+# STAND brainlehr — 2026-08-21T03:20:00+0200
 
-**Lage:** Zweig `brainlehr/b4-ausweis`, 20 Commits seit `1d0e7470`, nichts
-gepusht. Gesamtbau A-G (`docs/PLAN_GESAMTBAU_2026-08-21.md`): sieben von acht
-Straengen fertig, **C laeuft noch** (Einrichtungsassistent, haelt
-`knowledge_mcp_server.py`). Katalog: 32/66 belegt, drei Zeilen noch NOT RUN
-(P11/P12 = C, E24 = Betreiber).
-**Fallen, heute dreimal getreten:** Eine Anweisung in `schema.sql` auf eine
-NACHGEZOGENE Spalte (Index, Trigger) bricht auf gewachsenen Datenbanken ab --
-`executescript` fuehrt ab da still nichts mehr aus. Solche Anweisungen ans
-DATEIENDE (`L-1ffae7`). Und jede Vorrichtung, die ein Alt-Schema herstellt,
-muss Trigger UND Indizes inhaltsbestimmt mitschneiden (`L-e12296`).
+**Lage:** Zweig `brainlehr/b4-ausweis`, 24 Commits seit `1d0e7470`, nichts
+gepusht. Gesamtbau A-G (`docs/PLAN_GESAMTBAU_2026-08-21.md`) **vollstaendig
+abgearbeitet**, acht von acht Straengen. Katalog: 32/66 belegt, drei Zeilen
+NOT RUN -- P11/P12 sind jetzt durch C belegt, E24 wartet auf den Betreiber.
+**Suite:** 25 rot, 2455 gruen, 7 Fehler (14:21 min). Baseline am
+Ausgangspunkt: 25 rot, 6 Fehler. Der eine zusaetzliche Fehler
+(`test_zweckprojektion_suchpfade.py`) ist EINZELN GRUEN -- er entsteht nur im
+Vollauf neben schreibenden Nachbarsitzungen, kein Rueckschritt.
 **Nicht gebaut, weil die Messung Nein sagte:** A2 Leerlauf-Rueckzug (0,4 %
-Ersparnis) und die Verdrahtung von A1 (7/7 Fehlalarm, 0 echte Widersprueche).
-**Vorbestehend rot, nicht von mir:** `tests/test_naht_ratsche.py` (18 fremde
-Dateien, `tests/naht_basis.json` veraltet) und sechs Fehler in
-`tests/test_anlass_schema_backfill.py` -- in einem Arbeitsbaum auf `1611398b`
-nachgewiesen.
+Ersparnis gegen 38,6 % verpasste Treffer in der ersten Fassung) und die
+Verdrahtung von A1 (7 Treffer, 0 echte Widersprueche).
+**Der offene Befund mit dem groessten Hebel:** Ein Katalog als
+`nachschlagewerk` senkt die Trefferquote doch (14/35 auf 13/35), OHNE dass
+ein einziger Fremdeintrag im Ergebnis auftaucht -- die Gattung wirkt am
+Filter, nicht am Index, und bm25 ist korpusrelativ (`L-f8b529`). Behebung
+liegt im Abrufkern und wuerde dort kalibrierte Zahlen entwerten.
+**Fallen, dreimal an einem Tag getreten:** Eine Anweisung in `schema.sql` auf
+eine NACHGEZOGENE Spalte bricht auf gewachsenen Datenbanken ab, und
+`executescript` schweigt danach -- ans Dateiende damit (`L-1ffae7`). Jede
+Vorrichtung, die ein Alt-Schema herstellt, muss Trigger UND Indizes
+inhaltsbestimmt mitschneiden (`L-e12296`).
+**Vorbestehend rot, nicht von mir:** `tests/test_naht_ratsche.py` (veraltete
+`tests/naht_basis.json`) und sechs Fehler in
+`tests/test_anlass_schema_backfill.py` -- auf `1611398b` nachgewiesen.
 **Wartet auf den Betreiber:** E24 zweiter Faktor (sechs Wege, keiner
 entschieden) · Push des oeffentlichen Exports (GitHub-Konto gesperrt) ·
 E01/E04/E05/E19 (echter Pilot bzw. zweiter Standort).
