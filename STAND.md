@@ -1,51 +1,57 @@
-# STAND brainlehr — 2026-08-21T14:00:00+0200
+# STAND brainlehr — 2026-08-21T15:10:00+0200
 
-**Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Katalog 71 Zeilen.
-**Alle drei Wellen des Plans `docs/PLAN_NAECHSTE_STUFE_2026-08-21.md` sind
-abgearbeitet.**
+**Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Katalog 71 Zeilen,
+37 belegt, 0 ohne Gate-Lauf. Alle drei Plan-Wellen abgearbeitet, dazu drei
+Nachzuege.
 
-**Gebaut:** P16 Gegenstands-Achse `5403a71b` (58 Gegenstaende, 231 Namen) ·
-P18 Namensfrage `6ffb96a9` (1/3 -> 3/3) · P17 Faelligkeit · P15
-Dokumentenablage `81e10b9f` (erste PERSONEN auf der Achse) · §4.4
-Bauvermeidung `d2674ac5`.
+**Neu seit dem letzten Stand:**
+* **Hermes-Plugin bedienbar** `6735382f` — `config_schema.py` mit neun
+  Feldern, sechs inline, alle Erklaerungen zweisprachig (ADR-033).
+  `is_available()` prueft jetzt die zwei STILL scheiternden Pflichtfelder
+  (Ausweis, Einbettungsdienst) — ohne sie fuegt Hermes den Anbieter gar nicht
+  erst hinzu, statt ihn kaputt laufen zu lassen. `embed_model` ist ein
+  `select` mit GENAU EINER Option, weil eine Aenderung 7409 Vektoren
+  entwertet, ohne dass ein Fehler erscheint.
+* **Installation ist ein Symlink** `46bc529b` — vorher eine Kopie, die
+  lautlos gedriftet waere.
+* **Zustaendiger ist ein Gegenstand** `c9e0e4a4` — der Uebergangsstand aus
+  P17 ist nachgezogen. Moeglich erst, seit P15 die ersten Personen auf die
+  Achse gebracht hat. Ein mehrdeutiger Name faellt NICHT still auf Freitext
+  zurueck, sondern scheitert.
 
-**Zweimal gebaut und nach Messung ZURUECKGENOMMEN — beides vollstaendige
-Ergebnisse, keine Ausfaelle:** A2 Leerlauf-Rueckzug (0,4 % Ersparnis) ·
-§4.2 getrennte Kandidatenbudgets `2268d155` (isoliert gemessen 14/35 -> 12/35,
-also 2 Lehren schlechter).
+**DIE VERDUENNUNGSURSACHE IST GEFUNDEN** `193b98f1` — der letzte offene Rest
+des Konsils: `haken/knowledge_recall_hook.py:1327`. Der Severity-Sort
+unmittelbar vor `[:MAX_LESSONS]` nimmt `severity` als PRIMAERschluessel; die
+Relevanzreihenfolge ueberlebt nur als Tiebreak. Eine Lehre mit `high`
+verdraengt den besten Stichworttreffer des Bestands (`medium`), obwohl sie in
+der Fusion SCHLECHTER steht (Rang 16 gegen 14). Stufe fuer Stufe verfolgt,
+Gegenprobe an genau dieser Stufe gefahren. **Der Kommentar bei Zeile 1418
+behauptet bereits, was der Code nicht tut** („Severity/Haeufigkeit brechen
+nur noch echte Gleichstaende") — die Absicht des Kommentars IST die
+Gegenprobe. Behebbar ohne kalibrierte Zahl. NICHT gebaut: der letzte Bau aus
+einer Hypothese hat die Quote verschlechtert (`L-89b308`).
 
-**Der Befund des Tages, `aae23dc9`:** `BDW-P05`/Zielbild A ist mit diesem
-Bestand UNERREICHBAR — bei PERFEKTEM Abruf laege die Quote bei **8/35 =
-22,9 %** gegen Schwelle 95 %. Grund ist Bedeutung, nicht Nachlaessigkeit:
-`gilt_ab`/`gilt_bis` sind Eigenschaften einer NORM, und nur 176 von 5247
-Knoten tragen einen Rang. Die Zeile ist damit **keine Bauaufgabe, sondern
-eine Definitionsfrage** — was heisst Gueltigkeit bei einer Lehre, was bei
-einem Faktum. Dieselbe offene Frage 3 aus `CLAUDE.md`.
+**Was als Naechstes ansteht:** Der volle A/B-Korpuslauf mit abgeschaltetem
+Severity-Sort. Belegt ist, WO die Lehre verlorengeht — nicht, ob die
+Behebung die Gesamtquote hebt. Der Lauf gehoert in den Hauptfaden (dauert
+laenger als ein Agentenzug, `L-ad02b8`).
 
-**Entschieden ohne Bau (`ADR-033`):** Mehrsprachigkeit bekommt jetzt KEINE
-Schicht. Neue Texte entstehen zweisprachig, der Altbestand bleibt deutsch bis
-ein englischsprachiger Nutzer erscheint. Begruendung ist nicht Aufwand,
-sondern: ein deutscher Satz altert nicht und laesst sich spaeter genauso
-uebersetzen.
+**Fallen dieses Tages:** Geteilter git-Index — eine fertige uncommittete
+Aenderung wanderte in einen Stash, der Bericht meldete 'fertig'. **Kein
+`git stash`, kein `git checkout --` ohne Pfadangabe. Committen, sobald
+geprueft.** · Anweisungen in `schema.sql` auf NACHGEZOGENE Spalten ans
+Dateiende (`L-1ffae7`). · Ein Einheitstest darf eine Optimierung begruenden,
+nie belegen (`L-89b308`). · Eine Existenzaussage ueber Code braucht ZWEI
+Suchwege — ich habe das Hermes-Plugin fuer ungebaut erklaert, weil ich nur an
+einem der zwei Orte nachsah, die der Lader prueft (`L-184cd8`).
 
-**Fallen, mehrfach getreten:** Geteilter git-Index — eine fertige
-uncommittete Aenderung wanderte in einen Stash, der Bericht meldete trotzdem
-'fertig'. **Kein `git stash`, kein `git checkout --` ohne Pfadangabe.
-Committen, sobald geprueft.** · Anweisungen in `schema.sql` auf NACHGEZOGENE
-Spalten ans Dateiende (`L-1ffae7`). · Ein Einheitstest darf eine Optimierung
-begruenden, nie belegen (`L-89b308`).
+**Offen:** `BDW-P05`/Zielbild A ist keine Bauaufgabe, sondern eine
+Definitionsfrage (Gueltigkeit je Sorte). · `melder/vermutungswaechter.py`
+unterscheidet Zitat nicht von Behauptung (Plan §7a, bewusst nicht schnell
+behoben).
 
-**Nebenbei repariert:** `symbolindex.py` riss bei leerem Docstring ab, der
-Index stand 15 Tage still (hub `853cc3524`).
-
-**Offen:** die Ursache, warum beim Import von 951 Fremdzeilen eine Lehre
-herausfaellt — es ist NICHT die gemeinsame Kappung. · `melder/vermutungs-
-waechter.py` unterscheidet Zitat nicht von Behauptung (Plan §7a, bewusst
-nicht schnell behoben). · `forderung_zustaendig` ist Namenstext statt
-Gegenstand (Uebergangsstand, jetzt nachziehbar).
-
-**Wartet auf den Betreiber:** GitHub-Topics setzen (`lehrtools` auf
-lehrAtelier und die openlehr_X, NICHT auf brainlehr). `E24` ist vertagt.
+**Wartet auf den Betreiber:** GitHub-Topics (`lehrtools` auf lehrAtelier und
+die openlehr_X, NICHT auf brainlehr). `E24` ist vertagt, nicht offen.
 
 ---
 
