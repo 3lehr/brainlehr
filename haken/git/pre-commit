@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# VERSIONIERTE FASSUNG. Installieren:
+#   cp haken/git/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#
+# ANLASS, gemessen am 2026-08-21: docs/REQUIREMENTS_BRAINLEHR.md trug 71
+# Zeilen, EXPECTED in tests/test_requirements_brainlehr.py kannte 66. Fuenf
+# Zeilen (BDW-P15 bis P19) waren eingetragen worden, ohne sie zu
+# registrieren -- der Test war seit Tagen rot, und mehrere Katalogzeilen
+# behaupten bis heute "PASS: pytest tests/test_requirements_brainlehr.py
+# gruen". Der Ausfall ist LAUTLOS (der Test luegt nicht, aber niemand faehrt
+# ihn) und in Sekunden zu beheben -- genau der Fall, fuer den ein Veto
+# billiger ist als ein Melder: wer das nicht blockiert, wiederholt den
+# Fehler beim naechsten Katalogeintrag.
+#
+# Abschaltbar fuer einen einzelnen Commit: BRAINLEHR_KATALOG=aus git commit ...
+
+if [[ "$BRAINLEHR_KATALOG" == "aus" ]]; then
+  exit 0
+fi
+
+repo_root="$(git rev-parse --show-toplevel)"
+if ! git diff --cached --name-only | grep -qx "docs/REQUIREMENTS_BRAINLEHR.md"; then
+  exit 0
+fi
+
+if ! python3 -m pytest "$repo_root/tests/test_requirements_brainlehr.py" -q; then
+  echo "" >&2
+  echo "pre-commit: docs/REQUIREMENTS_BRAINLEHR.md geaendert, aber" >&2
+  echo "tests/test_requirements_brainlehr.py schlaegt fehl -- EXPECTED" >&2
+  echo "in der Testdatei nachziehen. Abbruch." >&2
+  echo "Umgehen fuer diesen Commit: BRAINLEHR_KATALOG=aus git commit ..." >&2
+  exit 1
+fi
+
+exit 0

@@ -22,6 +22,14 @@ Reine Dokumentationscommits zaehlen gar nicht mit -- sie setzen keine
 Entscheidung um, und wer sie mitzaehlt, misst Fleiss statt Disziplin. Ohne
 diese Trennung sinkt die Quote an jedem Schreibtag von selbst.
 
+ZWEITE FRAGE (2026-08-21, gleicher Bau): Nennt eine Commit-Nachricht eine
+Betreiberentscheidung, ohne dass docs/REQUIREMENTS_BRAINLEHR.md mitwaechst?
+Anlass war Commit 6c464372 -- der Katalog hatte 71 Zeilen registriert, waehrend
+fuenf Zeilen (BDW-P15 bis P19) ohne Eintrag in tests/test_requirements_
+brainlehr.py entstanden waren. Auch hier gilt Norm 17b14a32: Nenner ist die
+Menge der Commits mit Entscheidungswort, nicht alle Commits -- sonst sinkt die
+Quote mit jedem Commit, der von etwas anderem handelt.
+
 Aufruf:
     python3 melder/planmitschrieb.py            # letzte 20 Commits
     python3 melder/planmitschrieb.py --anzahl 50
@@ -29,6 +37,7 @@ Aufruf:
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -108,14 +117,77 @@ def _letzte(anzahl: int) -> list:
     return commits
 
 
+# --- Katalogmitschrieb: Betreiberentscheidung ohne Katalogzeile ------------
+
+KATALOG = "docs/REQUIREMENTS_BRAINLEHR.md"
+# Woertlich die vier Formen aus dem Auftrag. "Betreiberfreigabe" ist im
+# Hausgebrauch belegt (git log, z.B. Commit 3ff9e98a), gehoert aber NICHT
+# zum Auftrag und wird bewusst nicht stillschweigend ergaenzt, sondern hier
+# nur vermerkt -- eine Freigabe ist keine neue Entscheidung, sondern die
+# Bestaetigung einer vorgelegten.
+ENTSCHEIDUNGSWORT = re.compile(
+    r"betreiber(entscheidung|wort|weisung|direktive)", re.IGNORECASE)
+
+
+def _ist_katalog(p: str) -> bool:
+    return p == KATALOG
+
+
+def pruefe_katalog(commits: list) -> dict:
+    """[{hash, nachricht, dateien}] -> Lage. Nenner sind Commits, deren
+    Nachricht ein Entscheidungswort traegt -- nicht alle Commits (17b14a32)."""
+    geprueft, befunde = [], []
+    for c in commits:
+        if not ENTSCHEIDUNGSWORT.search(c.get("nachricht") or ""):
+            continue
+        geprueft.append(c["hash"])
+        if not any(_ist_katalog(d) for d in (c.get("dateien") or [])):
+            befunde.append(c["hash"])
+    return {"geprueft": len(geprueft), "befunde": len(befunde), "hashes": befunde}
+
+
+def als_text_katalog(lage: dict) -> str:
+    if not lage["befunde"]:
+        return ""
+    q = lage["befunde"] / max(lage["geprueft"], 1) * 100
+    return "\n".join([
+        f"⚠ {lage['befunde']} von {lage['geprueft']} Commits mit "
+        f"Entscheidungswort ohne Katalogzeile ({q:.0f} %):",
+        "  " + " ".join(lage["hashes"][:12]),
+        f"  Nennt die Nachricht eine Betreiberentscheidung, gehoert sie in "
+        f"{KATALOG} -- Commit 6c464372 ist das Beispiel, an dem das fehlte.",
+    ])
+
+
+def _letzte_mit_nachricht(anzahl: int) -> list:
+    trenner, ende = "\x1f", "\x1e"
+    aus = subprocess.run(
+        ["git", "log", f"-{anzahl}", f"--format=%h{trenner}%B{ende}"],
+        cwd=REPO, capture_output=True, text=True).stdout
+    nachrichten = {}
+    for satz in aus.split(ende):
+        satz = satz.strip("\n")
+        if not satz.strip():
+            continue
+        h, _, msg = satz.partition(trenner)
+        nachrichten[h.strip()] = msg
+    commits = _letzte(anzahl)
+    for c in commits:
+        c["nachricht"] = nachrichten.get(c["hash"], "")
+    return commits
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--anzahl", type=int, default=20)
     args = p.parse_args()
-    lage = pruefe(_letzte(args.anzahl))
-    text = als_text(lage)
+    commits = _letzte_mit_nachricht(args.anzahl)
+    text = als_text(pruefe(commits))
     if text:
         print(text)
+    katalog_text = als_text_katalog(pruefe_katalog(commits))
+    if katalog_text:
+        print(katalog_text)
     return 0
 
 

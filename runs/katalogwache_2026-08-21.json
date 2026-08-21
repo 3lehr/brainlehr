@@ -1,0 +1,29 @@
+{
+  "datum": "2026-08-21T15:10:00+0200",
+  "melder": "melder/planmitschrieb.py::pruefe_katalog",
+  "fenster_commits": 50,
+  "geprueft": 11,
+  "befunde": 6,
+  "geprueft_hashes": [
+    "6c464372",
+    "85c84fda",
+    "598d39b3",
+    "42c32f7d",
+    "d2674ac5",
+    "2c37048f",
+    "2f73ee48",
+    "a166cf99",
+    "9cbe1b83",
+    "5f5993b4",
+    "85df5c87"
+  ],
+  "befund_hashes": [
+    "85c84fda",
+    "598d39b3",
+    "42c32f7d",
+    "d2674ac5",
+    "2f73ee48",
+    "a166cf99"
+  ],
+  "6c464372_sauber": true
+}
