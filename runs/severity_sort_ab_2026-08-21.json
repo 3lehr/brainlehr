@@ -1,0 +1,36 @@
+{
+ "auftrag": "A/B zur Behebung des Severity-Sorts (haken/knowledge_recall_hook.py), Commit c7f6dcbe",
+ "frage": "Kostet der Import von 952 Fremdzeilen nach dem Entfernen des Severity-Sorts noch eine Lehre?",
+ "aufbau": "kern/abrufguete.py gegen zwei vorbereitete Kopien, BRAINLEHR_DB je Lauf gesetzt; nur der Bestand unterscheidet sie, der Code ist derselbe (Sort entfernt).",
+ "kopien": {
+  "A_nulllinie.db": "5240 Knoten, 4354 nachschlagewerk",
+  "B_nachschlagewerk.db": "6192 Knoten, 5306 nachschlagewerk (+952)"
+ },
+ "vorher_mit_sort": {
+  "A": "14/35",
+  "B": "13/35",
+  "quelle": "runs/einrichtung_2026-08-21.json, vier Laeufe"
+ },
+ "nachher_ohne_sort": {
+  "A": {
+   "LESSON": "7/15",
+   "NODE": "7/20",
+   "gesamt": "14/35"
+  },
+  "B": {
+   "LESSON": "7/15",
+   "NODE": "7/20",
+   "gesamt": "14/35"
+  }
+ },
+ "ergebnis": "Der Import kostet keine Lehre mehr. Die Behebung ist damit auf KORPUSEBENE belegt, nicht nur am Einzelfall.",
+ "einschraenkung": "Zwei Kopien, ein Fragensatz von 35 Faellen. Belegt ist, dass die bekannte Verduennung verschwindet -- nicht, dass keine andere existiert.",
+ "beide_laeufe_exit": 0,
+ "bezug": [
+  "193b98f1 Diagnose",
+  "c7f6dcbe Behebung",
+  "L-89b308",
+  "L-f8b529",
+  "BDW-P11-AC2"
+ ]
+}
