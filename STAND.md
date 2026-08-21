@@ -1,17 +1,24 @@
-# STAND brainlehr — 2026-08-21T01:15:00+0200
+# STAND brainlehr — 2026-08-21T02:45:00+0200
 
-**Lage:** Zweig `brainlehr/b4-ausweis`. Gesamtbau der acht Straenge A-G laeuft
-(`docs/PLAN_GESAMTBAU_2026-08-21.md`). Fertig und committet: B1 Achsen im
-Schema (mandant/kreis/sprache + `geltung_je_kreis`) · A3 Aussetzer-Sicherung ·
-D Zugriffsmuster · E1 Verfallsrate · P14-Tuer. Laufend: B2 · B3 · F · A2.
-**Fallen, heute gemessen:** (1) Ein `CREATE INDEX`/Trigger in `schema.sql` auf
-eine NACHGEZOGENE Spalte bricht auf gewachsenen Datenbanken ab und
-`executescript` fuehrt ab da still nichts mehr aus -- solche Anweisungen ans
-DATEIENDE (`L-1ffae7`). (2) Wer `schema.sql` aendert, hat die Betriebsdatenbank
-ab diesem Moment nicht mehr allein: ein Hook zog die Spalten selbst nach.
-(3) `tests/naht_basis.json` ist veraltet, die Ratsche ist schon am
-Bezugspunkt rot. (4) A2 (Rueckzug bei Leerlauf) wird **nicht** committet,
-solange er 38,8 % echter Treffer frisst -- die Messung sagt Nein.
+**Lage:** Zweig `brainlehr/b4-ausweis`, 20 Commits seit `1d0e7470`, nichts
+gepusht. Gesamtbau A-G (`docs/PLAN_GESAMTBAU_2026-08-21.md`): sieben von acht
+Straengen fertig, **C laeuft noch** (Einrichtungsassistent, haelt
+`knowledge_mcp_server.py`). Katalog: 32/66 belegt, drei Zeilen noch NOT RUN
+(P11/P12 = C, E24 = Betreiber).
+**Fallen, heute dreimal getreten:** Eine Anweisung in `schema.sql` auf eine
+NACHGEZOGENE Spalte (Index, Trigger) bricht auf gewachsenen Datenbanken ab --
+`executescript` fuehrt ab da still nichts mehr aus. Solche Anweisungen ans
+DATEIENDE (`L-1ffae7`). Und jede Vorrichtung, die ein Alt-Schema herstellt,
+muss Trigger UND Indizes inhaltsbestimmt mitschneiden (`L-e12296`).
+**Nicht gebaut, weil die Messung Nein sagte:** A2 Leerlauf-Rueckzug (0,4 %
+Ersparnis) und die Verdrahtung von A1 (7/7 Fehlalarm, 0 echte Widersprueche).
+**Vorbestehend rot, nicht von mir:** `tests/test_naht_ratsche.py` (18 fremde
+Dateien, `tests/naht_basis.json` veraltet) und sechs Fehler in
+`tests/test_anlass_schema_backfill.py` -- in einem Arbeitsbaum auf `1611398b`
+nachgewiesen.
+**Wartet auf den Betreiber:** E24 zweiter Faktor (sechs Wege, keiner
+entschieden) · Push des oeffentlichen Exports (GitHub-Konto gesperrt) ·
+E01/E04/E05/E19 (echter Pilot bzw. zweiter Standort).
 
 ---
 
