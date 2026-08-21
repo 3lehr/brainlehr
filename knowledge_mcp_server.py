@@ -126,6 +126,7 @@ import speicher  # Aufgabe 79 Schritt 2: normiere_modell()/normiere_akteur() im
 import sicherungen  # Aufbewahrungsregel fuer die automatischen .bak-Kopien (2026-08-14)
 import werkzeugrechte  # B4.3: Durchsetzung an tools/call statt nur an tools/list
 import session_checkpoint
+import einrichtung  # Auftrag C (BDW-P11): Erststart im Chat, nicht in einem zweiten Programm
 import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # (knowledge_add/knowledge_update/lesson_record/lesson_update),
                        # kein Sammellauf mehr noetig. Kein Zirkel (importiert selbst nichts von hier).
@@ -7146,6 +7147,36 @@ TOOLS = {
             "additionalProperties": False,
         },
         "handler": lambda args: prompt_invarianz.pruefen(**args),
+    },
+    "einrichtung_starten": {
+        "description": "Erststart-Assistent (BDW-P11). Ohne Argumente aufgerufen liefert er nur "
+                       "die LAGE und vier Fragen -- Profil (einzelplatz/unternehmen), Sprache des "
+                       "eigenen Materials, Erreichbarkeit des Einbettungsdienstes und welche "
+                       "Kataloge mitsollen -- und aendert nichts. Gegen einen LEEREN Bestand darf "
+                       "er mit Antworten sofort durchlaufen; auf einem GEWACHSENEN oder bereits "
+                       "eingerichteten Bestand aendert er ohne bestaetigt=true NICHTS und sagt das. "
+                       "Kataloge werden als Gattung 'nachschlagewerk' eingelesen und verduennen die "
+                       "eigene Trefferquote deshalb nicht.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "profil": {"type": "string", "enum": ["einzelplatz", "unternehmen"],
+                            "description": "Betriebsprofil; einzelplatz ist der Auslieferungszustand"},
+                "mandant": {"type": "string",
+                             "description": "nur fuer profil=unternehmen: der benannte Mandant, auf den der Bestand wandert"},
+                "sprache": {"type": "string", "enum": ["de", "en"],
+                             "description": "Sprache des eigenen Materials -- wird ausgezeichnet, nie uebersetzt"},
+                "kataloge": {"type": "array", "items": {"type": "string"},
+                              "description": "Namen der einzulesenden Nachschlagewerke, z.B. ['bsi', 'wcag']"},
+                "bestaetigt": {"type": "boolean",
+                                "description": "true = Einrichtung auch ueber einen bestehenden Bestand fahren (ueberschreibt Profil und Sprache)"},
+                **IDENTITY_PROPERTIES,
+            }
+        },
+        "handler": lambda args: einrichtung.durchlaufen(
+            profil=args.get("profil"), sprache=args.get("sprache"),
+            kataloge=args.get("kataloge") or (), mandant=args.get("mandant"),
+            bestaetigt=bool(args.get("bestaetigt"))),
     },
     "kurator_lauf": {
         "description": "Background cleanup agent (Hermes curator.py comparison) that ACTS, not just reports "

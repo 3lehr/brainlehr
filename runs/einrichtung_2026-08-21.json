@@ -1,0 +1,491 @@
+{
+  "auftrag": "C (docs/PLAN_BETRIEBSPROFILE_2026-08-20.md, Abschnitt C) -- BDW-P11 und BDW-P12",
+  "bezugspunkt": "b55ecf16",
+  "erhoben_am": "2026-08-21T02:38:40+0200",
+  "rot_vor_gruen": {
+    "rot": {
+      "lauf": "python3 -m pytest tests/test_einrichtung.py -x -q  (gegen b55ecf16, vor kern/einrichtung.py)",
+      "ausgabe": "ImportError while importing test module 'tests/test_einrichtung.py' ... E   ModuleNotFoundError: No module named 'einrichtung' -- 1 error in 0.07s",
+      "bedeutung": "alle 19 Faelle rot; das Modul existierte am Bezugspunkt nicht"
+    },
+    "gruen": {
+      "lauf": "python3 -m pytest tests/test_einrichtung.py -q",
+      "ausgabe": "19 passed in 2.04s"
+    },
+    "selftests": [
+      "kern/einrichtung.py --selftest: alle Proben bestanden",
+      "kern/fremdimport.py --selftest: 5 Faelle, Gegenprobe in beide Richtungen"
+    ]
+  },
+  "BDW_P11_AC1": {
+    "frage": "Ist ein frisch angelegter Bestand nach dem Durchlauf benutzbar?",
+    "leerer_bestand": {
+      "beleg": "tests/test_einrichtung.py::test_durchlauf_macht_den_frischen_bestand_benutzbar",
+      "verfahren": "nach dem Durchlauf einen Knoten geschrieben und ueber knowledge_fts wiedergefunden -- 'benutzbar' wird gefahren, nicht an einer Fahne abgelesen",
+      "ergebnis": "gruen"
+    },
+    "gewachsener_bestand": {
+      "bestand": "/Volumes/daten/Begod2026/brainlehr/brainlehr.db",
+      "springt_an": false,
+      "bestand_leer": false,
+      "knoten": 5240,
+      "lehren": 1180,
+      "profil": "einzelplatz",
+      "einbettung_erreichbar": true,
+      "einbettung_modell": "bge-m3@ctx2048",
+      "kataloge": [
+        {
+          "name": "bsi",
+          "vorhanden": true,
+          "umfang": 951,
+          "schon_im_bestand": 0
+        },
+        {
+          "name": "nasa-llis",
+          "vorhanden": false,
+          "umfang": null,
+          "schon_im_bestand": 1638
+        },
+        {
+          "name": "wcag",
+          "vorhanden": true,
+          "umfang": null,
+          "schon_im_bestand": 0
+        }
+      ],
+      "durchlauf_geaendert": false,
+      "hinweis": "Bestand ist nicht leer oder bereits eingerichtet (5240 Knoten, 1180 Lehren, Profil einzelplatz). Es wurde NICHTS geaendert. Wer die Einrichtung hier trotzdem fahren will, ruft erneut mit bestaetigt=true auf -- eine Einrichtung ueber Bestand ueberschreibt Profil und Sprache.",
+      "stand_vorher": {
+        "config_hash": "7b1e6adc94c1062f",
+        "knoten": 5240,
+        "lehren": 1180
+      },
+      "stand_nachher": {
+        "config_hash": "7b1e6adc94c1062f",
+        "knoten": 5240,
+        "lehren": 1180
+      },
+      "unveraendert": true
+    },
+    "befund": "Auf dem ECHTEN gewachsenen Bestand (5240 Knoten, 1180 Lehren) springt der Assistent NICHT an, und ein Durchlauf mit vollstaendigen Antworten aendert nichts: knowledge_config-Hash, Knoten- und Lehrenzahl vor und nach dem Aufruf identisch."
+  },
+  "BDW_P11_AC2": {
+    "frage": "Steht ein eingelesener Katalog als nachschlagewerk da UND senkt er die Trefferquote nicht -- gegen dieselbe Nulllinie?",
+    "messweg": "kern/abrufguete.py::messe ueber haken/knowledge_recall_hook.py, Korpus runs/pruefkorpus.jsonl -- derselbe Weg und derselbe Fragensatz wie in den frueheren Abrufmessungen",
+    "katalog": "bsi",
+    "import_nachschlagewerk": {
+      "knoten": 951,
+      "quelle": "importiert aus bsi-dev-profile.json am 2026-08-21T02:41:12+0200",
+      "wurzel": "/bsi-sdt",
+      "gattung": "nachschlagewerk",
+      "projekt": "bsi-sdt",
+      "katalog": "bsi"
+    },
+    "import_arbeitsbestand": {
+      "knoten": 951,
+      "quelle": "importiert aus bsi-dev-profile.json am 2026-08-21T02:43:56+0200",
+      "wurzel": "/bsi-sdt",
+      "gattung": "arbeitsbestand",
+      "projekt": "bsi-sdt",
+      "katalog": "bsi"
+    },
+    "A_nulllinie": {
+      "bestand": "/var/folders/qh/flglf1ts3b5bl48rwkdy4vq40000gn/T/katalogwirkung-vbys6yha/A_nulllinie.db",
+      "faelle": 45,
+      "dubletten": 0,
+      "quote": {
+        "LESSON": [
+          7,
+          15
+        ],
+        "NODE": [
+          7,
+          20
+        ],
+        "MIT_KANTE": [
+          9,
+          18
+        ],
+        "OHNE_KANTE": [
+          5,
+          17
+        ],
+        "UEBERGANGEN": [
+          null,
+          10
+        ]
+      },
+      "je_fall": {
+        "L-a9ccd0": true,
+        "L-298823": false,
+        "L-f9f654": false,
+        "L-b4b443": false,
+        "L-44a838": true,
+        "L-cdac52": false,
+        "L-e7bc5e": true,
+        "L-e1a441": true,
+        "L-b91ed6": false,
+        "L-bbd7fb": false,
+        "L-503687": false,
+        "L-8c633e": false,
+        "L-606b63": true,
+        "L-0392e4": true,
+        "L-476602": true,
+        "/ops/buckeberg-konsil-2026-07-22-governance": false,
+        "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort": false,
+        "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine": false,
+        "/openlehr/betriebszustand-openlehr-muss-bis-zum": false,
+        "/apps/metahuman-podcast-one-command-pipeline": false,
+        "/openlehr/volltextindex-wird-beim-einlesen": false,
+        "/lessons/phase2-summary": false,
+        "/testing/pytest": false,
+        "/brainlehr/inference-control-was-andere-faecher": true,
+        "/methodik/einstieg": true,
+        "/stadtwerke": false,
+        "/openlehr/steuer/ui": false,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an": true,
+        "/ops/buckeberg-anbieterabend-2026-08-05": false,
+        "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit": true,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer": true,
+        "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden": false,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom": true,
+        "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox": true,
+        "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi": false
+      },
+      "katalogtreffer_in_ergebnissen": 0
+    },
+    "A2_wiederholung": {
+      "bestand": "/var/folders/qh/flglf1ts3b5bl48rwkdy4vq40000gn/T/katalogwirkung-vbys6yha/A2_wiederholung.db",
+      "faelle": 45,
+      "dubletten": 0,
+      "quote": {
+        "LESSON": [
+          7,
+          15
+        ],
+        "NODE": [
+          7,
+          20
+        ],
+        "MIT_KANTE": [
+          9,
+          18
+        ],
+        "OHNE_KANTE": [
+          5,
+          17
+        ],
+        "UEBERGANGEN": [
+          null,
+          10
+        ]
+      },
+      "je_fall": {
+        "L-a9ccd0": true,
+        "L-298823": false,
+        "L-f9f654": false,
+        "L-b4b443": false,
+        "L-44a838": true,
+        "L-cdac52": false,
+        "L-e7bc5e": true,
+        "L-e1a441": true,
+        "L-b91ed6": false,
+        "L-bbd7fb": false,
+        "L-503687": false,
+        "L-8c633e": false,
+        "L-606b63": true,
+        "L-0392e4": true,
+        "L-476602": true,
+        "/ops/buckeberg-konsil-2026-07-22-governance": false,
+        "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort": false,
+        "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine": false,
+        "/openlehr/betriebszustand-openlehr-muss-bis-zum": false,
+        "/apps/metahuman-podcast-one-command-pipeline": false,
+        "/openlehr/volltextindex-wird-beim-einlesen": false,
+        "/lessons/phase2-summary": false,
+        "/testing/pytest": false,
+        "/brainlehr/inference-control-was-andere-faecher": true,
+        "/methodik/einstieg": true,
+        "/stadtwerke": false,
+        "/openlehr/steuer/ui": false,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an": true,
+        "/ops/buckeberg-anbieterabend-2026-08-05": false,
+        "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit": true,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer": true,
+        "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden": false,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom": true,
+        "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox": true,
+        "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi": false
+      },
+      "katalogtreffer_in_ergebnissen": 0
+    },
+    "B_nachschlagewerk": {
+      "bestand": "/var/folders/qh/flglf1ts3b5bl48rwkdy4vq40000gn/T/katalogwirkung-vbys6yha/B_nachschlagewerk.db",
+      "faelle": 45,
+      "dubletten": 0,
+      "quote": {
+        "LESSON": [
+          6,
+          15
+        ],
+        "NODE": [
+          7,
+          20
+        ],
+        "MIT_KANTE": [
+          9,
+          18
+        ],
+        "OHNE_KANTE": [
+          4,
+          17
+        ],
+        "UEBERGANGEN": [
+          null,
+          10
+        ]
+      },
+      "je_fall": {
+        "L-a9ccd0": true,
+        "L-298823": false,
+        "L-f9f654": false,
+        "L-b4b443": false,
+        "L-44a838": true,
+        "L-cdac52": false,
+        "L-e7bc5e": true,
+        "L-e1a441": true,
+        "L-b91ed6": false,
+        "L-bbd7fb": false,
+        "L-503687": false,
+        "L-8c633e": false,
+        "L-606b63": false,
+        "L-0392e4": true,
+        "L-476602": true,
+        "/ops/buckeberg-konsil-2026-07-22-governance": false,
+        "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort": false,
+        "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine": false,
+        "/openlehr/betriebszustand-openlehr-muss-bis-zum": false,
+        "/apps/metahuman-podcast-one-command-pipeline": false,
+        "/openlehr/volltextindex-wird-beim-einlesen": false,
+        "/lessons/phase2-summary": false,
+        "/testing/pytest": false,
+        "/brainlehr/inference-control-was-andere-faecher": true,
+        "/methodik/einstieg": true,
+        "/stadtwerke": false,
+        "/openlehr/steuer/ui": false,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an": true,
+        "/ops/buckeberg-anbieterabend-2026-08-05": false,
+        "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit": true,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer": true,
+        "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden": false,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom": true,
+        "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox": true,
+        "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi": false
+      },
+      "katalogtreffer_in_ergebnissen": 0
+    },
+    "C_positivkontrolle": {
+      "bestand": "/var/folders/qh/flglf1ts3b5bl48rwkdy4vq40000gn/T/katalogwirkung-vbys6yha/C_positivkontrolle.db",
+      "faelle": 45,
+      "dubletten": 0,
+      "quote": {
+        "LESSON": [
+          6,
+          15
+        ],
+        "NODE": [
+          7,
+          20
+        ],
+        "MIT_KANTE": [
+          9,
+          18
+        ],
+        "OHNE_KANTE": [
+          4,
+          17
+        ],
+        "UEBERGANGEN": [
+          null,
+          10
+        ]
+      },
+      "je_fall": {
+        "L-a9ccd0": true,
+        "L-298823": false,
+        "L-f9f654": false,
+        "L-b4b443": false,
+        "L-44a838": true,
+        "L-cdac52": false,
+        "L-e7bc5e": true,
+        "L-e1a441": true,
+        "L-b91ed6": false,
+        "L-bbd7fb": false,
+        "L-503687": false,
+        "L-8c633e": false,
+        "L-606b63": false,
+        "L-0392e4": true,
+        "L-476602": true,
+        "/ops/buckeberg-konsil-2026-07-22-governance": false,
+        "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort": false,
+        "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine": false,
+        "/openlehr/betriebszustand-openlehr-muss-bis-zum": false,
+        "/apps/metahuman-podcast-one-command-pipeline": false,
+        "/openlehr/volltextindex-wird-beim-einlesen": false,
+        "/lessons/phase2-summary": false,
+        "/testing/pytest": false,
+        "/brainlehr/inference-control-was-andere-faecher": true,
+        "/methodik/einstieg": true,
+        "/stadtwerke": false,
+        "/openlehr/steuer/ui": false,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an": true,
+        "/ops/buckeberg-anbieterabend-2026-08-05": false,
+        "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit": true,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer": true,
+        "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden": false,
+        "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom": true,
+        "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox": true,
+        "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi": false
+      },
+      "katalogtreffer_in_ergebnissen": 0
+    },
+    "befund": {
+      "messung_stabil": true,
+      "nachschlagewerk_senkt_nicht": false,
+      "positivkontrolle_bewegt_sich": true,
+      "gattung_macht_unterschied": false,
+      "vergleich": {
+        "NODE": {
+          "A": [
+            7,
+            20
+          ],
+          "A2": [
+            7,
+            20
+          ],
+          "B": [
+            7,
+            20
+          ],
+          "C": [
+            7,
+            20
+          ]
+        },
+        "LESSON": {
+          "A": [
+            7,
+            15
+          ],
+          "A2": [
+            7,
+            15
+          ],
+          "B": [
+            6,
+            15
+          ],
+          "C": [
+            6,
+            15
+          ]
+        },
+        "MIT_KANTE": {
+          "A": [
+            9,
+            18
+          ],
+          "A2": [
+            9,
+            18
+          ],
+          "B": [
+            9,
+            18
+          ],
+          "C": [
+            9,
+            18
+          ]
+        },
+        "OHNE_KANTE": {
+          "A": [
+            5,
+            17
+          ],
+          "A2": [
+            5,
+            17
+          ],
+          "B": [
+            4,
+            17
+          ],
+          "C": [
+            4,
+            17
+          ]
+        }
+      },
+      "gekippt_A_zu_B": [
+        "L-606b63"
+      ],
+      "gekippt_A_zu_C": [
+        "L-606b63"
+      ],
+      "katalogknoten_in_ergebnissen": {
+        "B": 0,
+        "C": 0
+      }
+    },
+    "bewertung": "TEILWEISE ERFUELLT, und die andere Haelfte ist ein BEFUND, kein Versehen. Gattung: ERFUELLT -- die 951 Controls stehen als nachschlagewerk und tauchen in KEINEM Ergebnis auf (katalogknoten_in_ergebnissen B=0). Trefferquote: NICHT ERFUELLT -- sie faellt von 14/35 auf 13/35 (LESSON 7->6, Fall L-606b63). URSACHE, gemessen statt vermutet: C (derselbe Katalog als arbeitsbestand) liefert EXAKT dieselbe Zahl wie B, und in C erscheint ebenfalls kein Katalogknoten im Ergebnis. Die Gattung wirkt also am FILTER, nicht am INDEX: knowledge_fts nimmt die 952 Zeilen unabhaengig von der Gattung auf, und bm25 ist korpusrelativ -- die Rangfolge der ueberlebenden Knoten verschiebt sich, und ueber den gemeinsamen Kandidaten-Deckel (suchpfad_abruf.kandidaten, max_results = MAX_NODES+MAX_LESSONS) faellt eine Lehre heraus. Dass das kein Rauschen ist, belegt A2: zwei Messlaeufe auf identischen Kopien liefern in allen vier Gruppen dieselben Zahlen (messung_stabil=true). Nicht behoben: die Abhilfe (eigener Index je Gattung oder gattungsgefilterte bm25-Anfrage) liegt im Abrufkern und wuerde jede dort kalibrierte Messung entwerten -- das ist eine eigene Entscheidung, nicht Teil von Auftrag C."
+  },
+  "BDW_P12_AC1": {
+    "frage": "Traegt ein importierter Eintrag eine Herkunft, die den IMPORTWEG nennt und keine Quelle behauptet?",
+    "form": "importiert aus <Weg> am <ISO-Zeitpunkt>",
+    "beispiel_katalog": "importiert aus bsi-dev-profile.json am 2026-08-21T02:41:12+0200",
+    "durchsetzung": "kern/fremdimport.py::pruefe_importherkunft, gerufen in eintragen() -- dem EINEN Schreibweg fuer Kataloge wie Fremdsysteme. Ein zweiter Schreibweg waere die Stelle, an der die Pruefung fehlt.",
+    "positiv": [
+      "tests/...::test_importherkunft_nennt_den_weg_und_behauptet_keine_quelle",
+      "tests/...::test_holographic_import_traegt_den_importweg",
+      "tests/...::test_markdown_ordner_import_traegt_den_importweg"
+    ],
+    "negativ": [
+      "tests/...::test_import_der_eine_quelle_behauptet_wird_abgelehnt (4 Faelle: 'BGBl I S. 123', 'laut § 5 Abs. 2 GmbHG', 'Quelle: Handbuch der Betriebspruefung', leer)",
+      "tests/...::test_schreibweg_lehnt_eine_behauptete_quelle_ab -- am SCHREIBWEG, nicht nur am Pruefer; danach 0 Knoten im Bestand"
+    ],
+    "ergebnis": "gruen"
+  },
+  "C3_fremdsysteme": {
+    "vorgefunden": "kern/fremdimport.py konnte HTTP-Quellen holen (openFDA/MAUDE) mit Whitelist-Projektion + rekursiver Gegenprobe -- aber NICHTS in den Bestand schreiben und keine Herkunftsregel. Beides ergaenzt, die Projektion unangetastet.",
+    "gebaut": [
+      "aus_holographic($HERMES_HOME/memory_store.db, Tabelle facts) -- Spaltenprojektion content/category/tags/trust_score; trust_score kommt als Marke mit, nicht als Vertrauen dieses Hauses",
+      "aus_markdown_ordner(<ordner>) -- .md rekursiv, Titel aus der ersten Ueberschrift, sonst Dateiname"
+    ],
+    "nicht_gebaut": "Cloud-Anbieter (mem0, honcho, supermemory, hindsight) -- brauchen Schluessel des Nutzers, laut Auftrag ausdruecklich nicht zu bauen."
+  },
+  "C2_kataloge_vorgefunden": {
+    "bsi": "GEFUNDEN: bsi-dev-profile.json, 951 Controls gezaehlt (meta nennt 1867 im Gesamtkatalog, 951 dev-relevant) -- die Zahl aus dem Plan stimmt. Daneben liegt bsi-stand-der-technik/ als Repository-Kopie; eingelesen wird das Dev-Profil.",
+    "nasa_llis": "GEFUNDEN, aber ANDERS als im Plan beschrieben: liegt bereits im Bestand (1638 Knoten unter /nasa-llis, davon 1637 Eintraege + Wurzel), eine lokale Quelldatei zum Nachladen gibt es NICHT. Wird deshalb als vorhanden=false mit Hinweis vorgeschlagen, nicht als Importziel.",
+    "wcag": "GEFUNDEN: ~/.claude/regeln/wcag.md (10819 Byte). Wird an den Ueberschriften geteilt eingelesen; norm_art='sollen', weil der Trigger knowledge_nodes_norm_art_pflicht_bi bei einer source mit 'wcag' eine Normart verlangt."
+  },
+  "dateien": {
+    "neu": [
+      "kern/einrichtung.py",
+      "messungen/einrichtung_katalogwirkung.py",
+      "tests/test_einrichtung.py",
+      "runs/einrichtung_2026-08-21.json"
+    ],
+    "geaendert": [
+      "kern/fremdimport.py (Herkunftsregel + Schreibweg + zwei lokale Quellen)",
+      "knowledge_mcp_server.py (ein Import, ein TOOLS-Eintrag einrichtung_starten -- die Logik liegt in kern/einrichtung.py, Monolith-Bremse)"
+    ]
+  },
+  "abweichungen_vom_auftrag": [
+    "BDW-P11-AC2 ist nur zur Haelfte erfuellt (Gattung ja, Trefferquote nein) -- gemessen, siehe BDW_P11_AC2.bewertung. Nicht geglaettet und nicht behoben.",
+    "Der Plan nennt die Profilnamen standalone/multiuser; Code und Auftrag nennen einzelplatz/unternehmen (Betreiberwort 2026-08-21). Gefolgt wird dem Code.",
+    "NASA LLIS ist im Plan als Katalog 'zum Mitnehmen' gefuehrt, liegt aber bereits im Bestand und hat keine lokale Quelldatei -- als Hinweis vorgeschlagen statt als Import.",
+    "tests/test_naht_ratsche.py ist im Arbeitsbereich BEREITS rot (20 fremde Dateien mit eigener sqlite3-Verbindung, aus vorheriger Arbeit). Die hier neuen Dateien stehen NICHT darunter -- sie gehen ueber kern/speicher."
+  ]
+}

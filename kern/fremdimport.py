@@ -52,13 +52,19 @@ Aufruf:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import sys
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent
 sys.path.insert(0, str(WURZEL))
+
+import spracherkennung  # noqa: E402
+import speicher  # noqa: E402
 
 # Je Quelle: was hereindarf, was nie hereindarf, und wie es zu holen ist.
 # Die verbotenen Namen stehen ausdrücklich DA, obwohl die Projektion sie schon
@@ -101,6 +107,211 @@ QUELLEN: dict[str, dict] = {
         "verboten": [],
     },
 }
+
+
+# ---------------------------------------------------------------------------
+# BDW-P12: der Import erfindet KEINE Herkunft (Auftrag C3, 2026-08-21)
+# ---------------------------------------------------------------------------
+# Ein fremder Eintrag hat keine Herkunft im Sinne von brainlehr -- keiner von
+# acht verglichenen Wettbewerbern erzwingt ein solches Feld. Der Import traegt
+# deshalb ein, WOHER ER IHN GEHOLT HAT, und sonst nichts. Die Aussage selbst
+# bleibt unbelegt, nur ihr Weg ist bekannt; das ist der ehrliche Zustand und
+# nicht der halbe.
+#
+# Warum das eine PRUEFUNG braucht und nicht bloss eine Konvention: source ist
+# ein Pflichtfeld (Trigger knowledge_nodes_source_check_bi). Ein Importweg,
+# der es bequem hat, schreibt das hinein, was in der Fremdquelle als "source"
+# stand -- und aus einer fremden Behauptung wird eine Herkunft dieses Hauses.
+# Genau diese Zeile ist die Stelle, an der BDW-P12 gebrochen wuerde.
+
+IMPORTWEG_PRAEFIX = "importiert aus "
+
+# Woerter, mit denen ein Text eine QUELLE behauptet statt einen WEG zu nennen.
+# Bewusst kurz und auf Belegsprache beschraenkt: eine lange Liste faengt
+# Dateinamen mit ('iso', 'din') und wuerde ehrliche Wege ablehnen.
+_BEHAUPTUNG = ("laut ", "gemaess ", "gemäß ", "quelle:", "§", "bgbl",
+               "aktenzeichen", "az.", "urteil", "nach din", "vgl.")
+
+
+def importherkunft(weg: str, zeitpunkt: str | None = None) -> str:
+    """Die einzige zulaessige Herkunft eines Fremdimports: der Weg und der
+    Zeitpunkt. 'importiert aus holographic memory_store.db am <ISO>'."""
+    if not weg or not weg.strip():
+        raise ValueError("Importweg fehlt -- ohne ihn traegt der Eintrag gar nichts")
+    ts = zeitpunkt or datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S%z")
+    return f"{IMPORTWEG_PRAEFIX}{weg.strip()} am {ts}"
+
+
+def pruefe_importherkunft(source: str | None) -> None:
+    """Wirft ValueError, wenn die Herkunft eine Quelle BEHAUPTET statt den
+    Importweg zu nennen. Der Negativfall ist hier der eigentliche Zweck --
+    eine Pruefung, die nur Richtiges durchlaesst, ist keine."""
+    text = (source or "").strip()
+    if not text:
+        raise ValueError("Herkunft leer -- ein Fremdimport muss seinen Weg nennen")
+    if not text.startswith(IMPORTWEG_PRAEFIX):
+        raise ValueError(
+            f"Fremdimport behauptet eine Quelle statt seinen Weg zu nennen: {text!r}. "
+            f"Zulaessig ist nur die Form '{IMPORTWEG_PRAEFIX}<Weg> am <Zeitpunkt>' "
+            "(BDW-P12: die Aussage bleibt unbelegt, nur ihr Weg ist bekannt).")
+    klein = text.lower()
+    getroffen = [w for w in _BEHAUPTUNG if w in klein]
+    if getroffen:
+        raise ValueError(
+            f"Herkunft traegt Belegsprache {getroffen} und behauptet damit eine "
+            f"Quelle: {text!r}. Der Weg genuegt, mehr weiss der Import nicht.")
+
+
+_SLUG = re.compile(r"[^a-z0-9]+")
+
+
+def _slug(text: str) -> str:
+    roh = text.lower()
+    for hin, her in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")):
+        roh = roh.replace(hin, her)
+    return _SLUG.sub("-", roh).strip("-")[:60] or "eintrag"
+
+
+def eintragen(eintraege, quelle: str, projekt: str, wurzel: str,
+              db=None, gattung: str = "nachschlagewerk",
+              norm_art: str | None = None, titel_wurzel: str | None = None) -> dict:
+    """Schreibt Fremdeintraege als Nachschlagewerk in den Bestand.
+
+    EIN Schreibweg fuer alle Importe (Kataloge wie Fremdsysteme) -- ein
+    zweiter waere die Stelle, an der die Herkunftspruefung fehlt.
+
+    `eintraege`: dicts mit titel, text, optional kennung/tags.
+    `quelle`: MUSS aus importherkunft() stammen; wird geprueft, nicht geglaubt.
+    `gattung`: 'nachschlagewerk' ist Vorgabe und der Grund, warum 951 fremde
+    Controls die eigene Trefferquote nicht verduennen (haken/
+    knowledge_recall_hook.py filtert ueber gattung_filter.py).
+    """
+    pruefe_importherkunft(quelle)
+    if gattung not in ("nachschlagewerk", "arbeitsbestand"):
+        raise ValueError(f"unbekannte Gattung: {gattung!r}")
+
+    saetze = list(eintraege)
+    jetzt = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    # Ein Fremdkatalog ist KEINE Hausnorm: ob und in welchem Rang er hier
+    # gilt, entscheidet der Betreiber. 'keine_norm' ist deshalb nicht
+    # Bequemlichkeit, sondern dieselbe Zurueckhaltung wie bei der Herkunft --
+    # der Import behauptet nichts, auch keine Geltung.
+    grund = ("Fremdbestand als Nachschlagewerk eingelesen; ob und in welchem Rang "
+             "er hier gilt, entscheidet der Betreiber (BDW-P12)")
+    spalten = ("id, path, parent_path, level, title, summary, content, tags, "
+               "source, project_id, gattung, anlass, norm_entscheidung, "
+               "norm_entschieden_von, norm_entschieden_grund, norm_art, sprache, "
+               "created_at, updated_at")
+    platz = ", ".join("?" * len(spalten.split(", ")))
+
+    geschrieben = 0
+    with speicher.schreiben(db) as conn:
+        vorhanden = {r[0] for r in conn.execute("SELECT path FROM knowledge_nodes")}
+        if wurzel not in vorhanden:
+            conn.execute(
+                f"INSERT INTO knowledge_nodes ({spalten}) VALUES ({platz})",
+                (_kennung(wurzel), wurzel, None, 0,
+                 titel_wurzel or wurzel.strip("/"), quelle, "", "[]", quelle,
+                 projekt, gattung, "skript", "keine_norm",
+                 "skript:kern/fremdimport.py", grund, norm_art,
+                 spracherkennung.erkenne(titel_wurzel or ""), jetzt, jetzt))
+            vorhanden.add(wurzel)
+
+        for satz in saetze:
+            titel = (satz.get("titel") or "").strip() or "ohne Titel"
+            text = (satz.get("text") or "").strip()
+            pfad = f"{wurzel}/{_slug(satz.get('kennung') or titel)}"
+            lauf = 2
+            while pfad in vorhanden:
+                pfad = f"{wurzel}/{_slug(satz.get('kennung') or titel)}-{lauf}"
+                lauf += 1
+            vorhanden.add(pfad)
+            conn.execute(
+                f"INSERT INTO knowledge_nodes ({spalten}) VALUES ({platz})",
+                (_kennung(pfad), pfad, wurzel, 1, titel[:200],
+                 (text.split("\n")[0] or titel)[:400], text,
+                 json.dumps(satz.get("tags") or [], ensure_ascii=False),
+                 quelle, projekt, gattung, "skript", "keine_norm",
+                 "skript:kern/fremdimport.py", grund, norm_art,
+                 spracherkennung.erkenne(f"{titel} {text}"), jetzt, jetzt))
+            geschrieben += 1
+
+    return {"knoten": geschrieben, "quelle": quelle, "wurzel": wurzel,
+            "gattung": gattung, "projekt": projekt}
+
+
+def _kennung(pfad: str) -> str:
+    """Dieselbe Form wie die Bestands-IDs: 8 Hexstellen, aus dem Pfad
+    abgeleitet und damit bei einem zweiten Lauf gleich."""
+    return hashlib.sha256(pfad.encode("utf-8")).hexdigest()[:8]
+
+
+def aus_holographic(memory_store: Path | str, ziel_db=None,
+                    grenze: int | None = None) -> dict:
+    """holographic (Hermes) haelt alles in EINER SQLite-Datei
+    ($HERMES_HOME/memory_store.db, Tabelle `facts`) -- der billigste
+    Fremdimport, den es gibt: kein Anbieter, kein Schluessel, keine API.
+
+    Projiziert wie die HTTP-Quellen oben: nur die genannten Spalten entstehen.
+    trust_score kommt als Marke MIT, aber nicht als Vertrauen dieses Hauses --
+    er ist selbst gemeldet, und ein selbst gemeldeter Wert ist kein Beleg."""
+    quelle_datei = Path(memory_store)
+    if not quelle_datei.exists():
+        raise FileNotFoundError(f"holographic-Speicher nicht gefunden: {quelle_datei}")
+    sql = "SELECT content, category, tags, trust_score FROM facts"
+    if grenze:
+        sql += f" LIMIT {int(grenze)}"
+    with speicher.lesen(quelle_datei) as conn:
+        zeilen = conn.execute(sql).fetchall()
+
+    eintraege = []
+    for i, z in enumerate(zeilen):
+        text = (z["content"] or "").strip()
+        if not text:
+            continue
+        marken = [m for m in [z["category"]] if m]
+        roh = z["tags"]
+        if roh:
+            try:
+                marken += list(json.loads(roh))
+            except (json.JSONDecodeError, TypeError):
+                marken += [t.strip() for t in str(roh).split(",") if t.strip()]
+        if z["trust_score"] is not None:
+            marken.append(f"fremd-trust:{z['trust_score']}")
+        eintraege.append({"titel": text.split("\n")[0][:120],
+                          "text": text, "tags": marken, "kennung": f"fakt-{i}"})
+
+    return eintragen(eintraege,
+                     quelle=importherkunft("holographic memory_store.db"),
+                     projekt="holographic", wurzel="/holographic", db=ziel_db,
+                     titel_wurzel="holographic (Hermes) -- Fremdimport")
+
+
+def aus_markdown_ordner(ordner: Path | str, ziel_db=None,
+                        projekt: str = "notizen", wurzel: str = "/notizen") -> dict:
+    """Ein Verzeichnis voller Notizen (Obsidian, Logseq, oder einfach ein
+    Ordner). Kein Anbieter noetig und vermutlich der haeufigste reale Fall.
+
+    Titel ist die erste Ueberschrift, sonst der Dateiname -- geraten wird
+    nichts weiter. Unterordner kommen mit; alles andere als .md bleibt
+    draussen (dieselbe Whitelist-Haltung wie die Projektion oben)."""
+    pfad = Path(ordner)
+    if not pfad.is_dir():
+        raise NotADirectoryError(f"kein Ordner: {pfad}")
+    eintraege = []
+    for datei in sorted(pfad.rglob("*.md")):
+        text = datei.read_text(encoding="utf-8", errors="replace").strip()
+        if not text:
+            continue
+        erste = text.splitlines()[0].strip()
+        titel = erste.lstrip("#").strip() if erste.startswith("#") else datei.stem
+        eintraege.append({"titel": titel, "text": text,
+                          "tags": ["markdown"],
+                          "kennung": str(datei.relative_to(pfad).with_suffix(""))})
+    return eintragen(eintraege,
+                     quelle=importherkunft(f"Markdown-Ordner {pfad}"),
+                     projekt=projekt, wurzel=wurzel, db=ziel_db,
+                     titel_wurzel=f"Notizen aus {pfad.name}")
 
 
 def projizieren(satz: dict, quelle: dict) -> dict:
