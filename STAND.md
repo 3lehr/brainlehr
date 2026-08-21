@@ -1,35 +1,51 @@
-# STAND brainlehr — 2026-08-21T12:20:00+0200
+# STAND brainlehr — 2026-08-21T14:00:00+0200
 
-**Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Katalog **71 Zeilen**.
-Plan `docs/PLAN_NAECHSTE_STUFE_2026-08-21.md`, Reihenfolge in §9 fest.
-**Fertig seit dem Gesamtbau:** P16 Gegenstands-Achse `5403a71b` (58
-Gegenstaende, 231 Namen — vorher 2 und 7) · P18 Namensfrage `6ffb96a9` (1/3
--> 3/3 bei der natuerlich gestellten Frage) · P17 Faelligkeit (Datum und
-Zustaendiger, Startliste nach Faelligkeit statt Alter).
-**Laufend:** §4.2 getrennte Kandidatenbudgets (besitzt `haken/`) · P15
-Dokumentenablage (besitzt `schema.sql`, `kern/dokumentenablage.py`).
-**DIE FALLE DIESES TAGES, zweimal zugeschlagen:** Mehrere Sitzungen teilen
-sich EINEN git-Index. Eine fertige, uncommittete Aenderung wurde von einem
-parallelen `git`-Vorgang nach `stash@{0}` verschoben — der Agent meldete
-„3/3 fertig", der Baum lieferte 1/3. Aufgefallen NUR, weil die Zahlen selbst
-nachgefahren wurden statt den Bericht zu lesen. **Kein `git stash`, kein
-`git checkout --` ohne Pfadangabe. Committen, sobald geprueft — nicht am
-Ende einer Welle.**
-**Uebergangsstand, bewusst so committet:** `forderung_zustaendig` ist freier
-Namenstext statt Gegenstandsverweis — ein Name als Schluessel, den ADR-028
-verbietet. Nachzuziehen, sobald Personen im Gegenstandsbestand stehen (das
-entsteht mit P15). Als Aufgabe abgelegt.
-**Offen und bewusst nicht behoben:** `melder/vermutungswaechter.py`
-unterscheidet Zitat nicht von eigener Behauptung (Plan §7a). Eine
-Zitaterkennung, die zu grosszuegig greift, macht ihn blind fuer echte
-Absolutaussagen — schnell verschlimmbessern ist teurer als offen lassen.
-**Groesster gemessener Rueckstand, unveraendert:** `BDW-P05`/Zielbild A bei
-**3/35 = 8,6 %** gegen Schwelle 95 %. Kein Trefferquotenproblem — Quelle,
-Status und Geltung werden gar nicht ausgeliefert.
-**Wartet auf den Betreiber:** Bauform fuer `BDW-P19` (707 Textstellen,
-60 543 Zeichen erhoben) · GitHub-Topics setzen (`lehrtools` auf lehrAtelier
-und die openlehr_X, NICHT auf brainlehr — der Speicher ist kein Werkzeug).
-`E24` ist vertagt (FUTURE), nicht offen.
+**Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Katalog 71 Zeilen.
+**Alle drei Wellen des Plans `docs/PLAN_NAECHSTE_STUFE_2026-08-21.md` sind
+abgearbeitet.**
+
+**Gebaut:** P16 Gegenstands-Achse `5403a71b` (58 Gegenstaende, 231 Namen) ·
+P18 Namensfrage `6ffb96a9` (1/3 -> 3/3) · P17 Faelligkeit · P15
+Dokumentenablage `81e10b9f` (erste PERSONEN auf der Achse) · §4.4
+Bauvermeidung `d2674ac5`.
+
+**Zweimal gebaut und nach Messung ZURUECKGENOMMEN — beides vollstaendige
+Ergebnisse, keine Ausfaelle:** A2 Leerlauf-Rueckzug (0,4 % Ersparnis) ·
+§4.2 getrennte Kandidatenbudgets `2268d155` (isoliert gemessen 14/35 -> 12/35,
+also 2 Lehren schlechter).
+
+**Der Befund des Tages, `aae23dc9`:** `BDW-P05`/Zielbild A ist mit diesem
+Bestand UNERREICHBAR — bei PERFEKTEM Abruf laege die Quote bei **8/35 =
+22,9 %** gegen Schwelle 95 %. Grund ist Bedeutung, nicht Nachlaessigkeit:
+`gilt_ab`/`gilt_bis` sind Eigenschaften einer NORM, und nur 176 von 5247
+Knoten tragen einen Rang. Die Zeile ist damit **keine Bauaufgabe, sondern
+eine Definitionsfrage** — was heisst Gueltigkeit bei einer Lehre, was bei
+einem Faktum. Dieselbe offene Frage 3 aus `CLAUDE.md`.
+
+**Entschieden ohne Bau (`ADR-033`):** Mehrsprachigkeit bekommt jetzt KEINE
+Schicht. Neue Texte entstehen zweisprachig, der Altbestand bleibt deutsch bis
+ein englischsprachiger Nutzer erscheint. Begruendung ist nicht Aufwand,
+sondern: ein deutscher Satz altert nicht und laesst sich spaeter genauso
+uebersetzen.
+
+**Fallen, mehrfach getreten:** Geteilter git-Index — eine fertige
+uncommittete Aenderung wanderte in einen Stash, der Bericht meldete trotzdem
+'fertig'. **Kein `git stash`, kein `git checkout --` ohne Pfadangabe.
+Committen, sobald geprueft.** · Anweisungen in `schema.sql` auf NACHGEZOGENE
+Spalten ans Dateiende (`L-1ffae7`). · Ein Einheitstest darf eine Optimierung
+begruenden, nie belegen (`L-89b308`).
+
+**Nebenbei repariert:** `symbolindex.py` riss bei leerem Docstring ab, der
+Index stand 15 Tage still (hub `853cc3524`).
+
+**Offen:** die Ursache, warum beim Import von 951 Fremdzeilen eine Lehre
+herausfaellt — es ist NICHT die gemeinsame Kappung. · `melder/vermutungs-
+waechter.py` unterscheidet Zitat nicht von Behauptung (Plan §7a, bewusst
+nicht schnell behoben). · `forderung_zustaendig` ist Namenstext statt
+Gegenstand (Uebergangsstand, jetzt nachziehbar).
+
+**Wartet auf den Betreiber:** GitHub-Topics setzen (`lehrtools` auf
+lehrAtelier und die openlehr_X, NICHT auf brainlehr). `E24` ist vertagt.
 
 ---
 
