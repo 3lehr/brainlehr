@@ -415,6 +415,13 @@ class BrainlehrProvider(MemoryProvider):
         self._zug = 0
         self._gemeldet = False
         self._herkunft_bauer = _weg_herkunft
+        # Nur bei platform == "cli" uebergibt Hermes diese zwei Rueckrufe
+        # (agent_init.py:1735-1737) -- Gateway/Telegram/Discord kennen sie
+        # nicht. Ohne sie bleibt prefetch() stumm wie bisher; das ist kein
+        # Fehlerfall, nur der Betrieb ohne CLI.
+        self._status_melden: Optional[Any] = None
+        self._warnung_melden: Optional[Any] = None
+        self._absturz: Optional[Exception] = None
 
     def _verbindung(self) -> Optional[_MCPKlient]:
         """Ein Server-Prozess je Anbieter, beim ersten Bedarf gestartet."""
@@ -524,6 +531,8 @@ class BrainlehrProvider(MemoryProvider):
         self.mitschrift = str(
             _hermes_konfig().get("mitschrift", "")).strip().lower() in (
                 "1", "true", "ja", "yes", "an", "on")
+        self._status_melden = kwargs.get("status_callback")
+        self._warnung_melden = kwargs.get("warning_callback")
 
     def get_tool_schemas(self) -> List[Dict[str, Any]]:
         return [
@@ -577,6 +586,13 @@ class BrainlehrProvider(MemoryProvider):
         return (antwort or {}).get("results", []) or []
 
     def _im_hintergrund(self, frage: str) -> None:
+        self._absturz = None
+        try:
+            self._im_hintergrund_kern(frage)
+        except Exception as fehler:  # der Faden darf nicht stumm sterben
+            self._absturz = fehler
+
+    def _im_hintergrund_kern(self, frage: str) -> None:
         treffer = self._suchen(frage)
         zeilen, zeichen = [], 0
         for t in treffer:
@@ -602,13 +618,44 @@ class BrainlehrProvider(MemoryProvider):
         Einbettungen: Ein langsames Ollama duerfte sonst die Antwortzeit des
         Nutzers kosten. Dieselbe Bauform wie mem0, retaindb und supermemory --
         was in drei von vier Anbietern gleich geloest ist, ist eher Stand der
-        Technik als Geschmack."""
+        Technik als Geschmack.
+
+        WARUM HIER EINE ZEILE ANS CLI GEHT: `memory_manager.py:542` faengt
+        jeden Fehler eines Fremdanbieters ab und schreibt ihn nach
+        logger.debug -- der Nutzer sieht das nie, weder den leeren Treffer
+        noch den Absturz noch die gerissene 8s-Frist. Genau diese drei Lagen
+        werden hier unterscheidbar gemacht, ueber die Rueckrufe, die Hermes
+        bei platform == 'cli' ohnehin uebergibt (agent_init.py:1735-1737).
+        Fehlen sie (Gateway/Telegram/Discord), bleibt prefetch() stumm wie
+        bisher -- kein print, das dort im Log landete."""
         if is_trivial_prompt(query):
             return ""
         self._faden = threading.Thread(target=self._im_hintergrund,
                                        args=(query,), daemon=True)
         self._faden.start()
         self._faden.join(timeout=WARTEFRIST)
+        if self._faden.is_alive():
+            if self._warnung_melden is not None:
+                self._warnung_melden(
+                    f"brainlehr: Abruf ueberschritt {WARTEFRIST:.0f}s, ohne "
+                    f"Treffer / brainlehr: lookup exceeded {WARTEFRIST:.0f}s, "
+                    "no results")
+            return self._vorrat
+        if self._absturz is not None:
+            if self._warnung_melden is not None:
+                self._warnung_melden(
+                    f"brainlehr: Abruf abgestuerzt ({self._absturz}) / "
+                    f"brainlehr: lookup crashed ({self._absturz})")
+            return self._vorrat
+        anzahl = self._vorrat.count("\n- ") if self._vorrat else 0
+        if self._status_melden is not None:
+            if anzahl:
+                self._status_melden(
+                    f"brainlehr: {anzahl} Treffer eingespielt / "
+                    f"brainlehr: {anzahl} results injected")
+            else:
+                self._status_melden(
+                    "brainlehr: keine Treffer / brainlehr: no results")
         return self._vorrat
 
     def system_prompt_block(self) -> str:

@@ -635,3 +635,97 @@ def test_beide_schreibwege_haengen_an_denselben_vorhandenen_elternknoten():
     assert {a["parent_path"] for a in _schreibrufe(p)} == {bp.ELTERNPFAD}
     assert bp.ELTERNPFAD.count("/") == 1, \
         "ein Unterzweig muesste erst angelegt werden -- sonst bricht der Trigger ab"
+
+
+# ---------------------------------------------------------------------------
+# prefetch() und die CLI-Rueckrufe (status_callback/warning_callback).
+#
+# DER ANLASS: agent/memory_manager.py:542 faengt jeden Fehler eines fremden
+# Anbieters ab und schreibt ihn nach logger.debug -- der Nutzer sieht nichts.
+# Leerer Treffer, gerissene 8s-Frist und Absturz sind fuer ihn ununterscheid-
+# bar. Hermes uebergibt bei platform == "cli" zwei Rueckrufe (agent_init.py:
+# 1735-1737); dieser Provider nutzt sie jetzt, ohne dass Hermes sich aendern
+# muss.
+# ---------------------------------------------------------------------------
+
+def _provider_mit_callbacks(platform="cli"):
+    p = bp.BrainlehrProvider()
+    status, warnung = [], []
+    kwargs = {"hermes_home": "/tmp", "platform": platform,
+              "agent_context": "primary"}
+    if platform == "cli":
+        kwargs["status_callback"] = status.append
+        kwargs["warning_callback"] = warnung.append
+    p.initialize("s-cb", **kwargs)
+    return p, status, warnung
+
+
+def test_prefetch_meldet_treffer_ueber_status_callback():
+    """VORHER ROT: initialize() nahm status_callback gar nicht entgegen, und
+    prefetch() rief ihn nie -- ein Treffer verschwand stumm in memory_manager.py
+    :542. Danach: genau EINE Zeile beim status_callback je Abruf."""
+    p, status, warnung = _provider_mit_callbacks()
+    p._suchen = lambda frage, anzahl=bp.TREFFER: [
+        {"title": "Titel A", "summary": "Zusammenfassung A", "source": "q"},
+        {"title": "Titel B", "summary": "Zusammenfassung B", "source": "q"},
+    ]
+    ergebnis = p.prefetch("Eine ausreichend lange Frage?")
+    assert ergebnis, "Treffer haetten in den Zug gehen muessen"
+    assert len(status) == 1, status
+    assert len(warnung) == 0, warnung
+
+
+def test_prefetch_meldet_leeren_treffer_ausdruecklich():
+    """Der Kern des Auftrags: kein Treffer wird NICHT verschwiegen, sondern
+    ausdruecklich als 'keine Treffer' gemeldet -- genau eine Zeile, nicht
+    keine."""
+    p, status, warnung = _provider_mit_callbacks()
+    p._suchen = lambda frage, anzahl=bp.TREFFER: []
+    ergebnis = p.prefetch("Eine ausreichend lange Frage ohne Treffer?")
+    assert ergebnis == ""
+    assert len(status) == 1, status
+    assert "keine" in status[0].lower() or "no results" in status[0].lower()
+    assert len(warnung) == 0, warnung
+
+
+def test_prefetch_meldet_absturz_ueber_warning_callback():
+    """Ein Absturz im Hintergrundfaden darf nicht so aussehen wie ein leerer
+    Treffer -- das ist genau die Verwechslung, die der Auftrag beheben soll."""
+    p, status, warnung = _provider_mit_callbacks()
+
+    def _kaputt(frage, anzahl=bp.TREFFER):
+        raise RuntimeError("boom")
+    p._suchen = _kaputt
+    ergebnis = p.prefetch("Eine ausreichend lange Frage die abstuerzt?")
+    assert ergebnis == ""
+    assert len(warnung) == 1, warnung
+    assert len(status) == 0, status
+
+
+def test_prefetch_ohne_trivialfilter_keine_zeile():
+    """Ein trivialer Prompt loest weiterhin gar keinen Abruf aus -- eine
+    Statuszeile bei jedem 'ok' waere Rauschen, das danach ignoriert wird."""
+    p, status, warnung = _provider_mit_callbacks()
+    p._suchen = lambda frage, anzahl=bp.TREFFER: [
+        {"title": "T", "summary": "S", "source": "q"}]
+    ergebnis = p.prefetch("ok")
+    assert ergebnis == ""
+    assert status == []
+    assert warnung == []
+
+
+def test_prefetch_ohne_cli_rueckrufe_kein_absturz_keine_ausgabe(capsys):
+    """NEGATIVTEST, der wichtigste: platform != 'cli' (Gateway/Telegram/
+    Discord) uebergibt gar keine Rueckrufe. Der Anbieter muss unveraendert
+    weiterarbeiten -- kein Absturz, und kein print(), das im Gateway-Log
+    landete."""
+    p, status, warnung = _provider_mit_callbacks(platform="gateway")
+    assert p._status_melden is None
+    assert p._warnung_melden is None
+    p._suchen = lambda frage, anzahl=bp.TREFFER: [
+        {"title": "T", "summary": "S", "source": "q"}]
+    ergebnis = p.prefetch("Eine ausreichend lange Frage im Gateway-Betrieb?")
+    assert ergebnis
+    erfasst = capsys.readouterr()
+    assert erfasst.out == ""
+    assert erfasst.err == ""
