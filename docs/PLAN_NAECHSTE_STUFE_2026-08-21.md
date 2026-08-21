@@ -214,6 +214,40 @@ entscheidbar sind:
 * **`BRAINLEHR_DURCHSETZUNG`** (weich/streng) — ein Sicherheitsschalter, den
   ein Fremder nicht beurteilen kann, und seine Verankerung ist ungeklärt.
 
+### Die Erklärungen — zweisprachig von Anfang an
+
+Betreiberwort 2026-08-21: *„deswegen brauchen wir auch gute mehrsprachige
+erklärungen dazu!"*
+
+**Die Felder dafür existieren und sind ungenutzt:** `description` je Feld,
+`info` als Tooltip, `placeholder`, `docs_url`, dazu
+`ProviderFieldOption.description` je Auswahlwert. Sechs von acht Anbietern
+deklarieren gar kein Schema, füllen also auch nichts davon.
+
+**Was eine Erklärung taugen muss:** Sie sagt nicht, WAS das Feld ist — das
+sagt der Feldname. Sie sagt, **was passiert, wenn man es falsch setzt.** Der
+Unterschied entscheidet, ob sie Schaden verhindert oder nur Platz braucht:
+
+| Feld | nutzlos | brauchbar |
+|---|---|---|
+| `embed_model` | „Einbettungsmodell" | „Eine Änderung entwertet 7 409 vorhandene Vektoren, ohne dass ein Fehler erscheint." |
+| Ausweis | „Handelnde Kennung" | „Ohne sie weist die Datenbank jeden Schreibvorgang ab — das ist ein Trigger, kein Hinweis." |
+| Einbettungsdienst | „Adresse des Dienstes" | „Ist er nicht erreichbar, entstehen Einträge ohne Vektor und sind über die Bedeutungssuche unauffindbar. Am 2026-08-20 dreizehnmal passiert." |
+| Betriebsprofil | „Einzelplatz oder Unternehmen" | „`einzelplatz` ist der Auslieferungszustand. Der Wechsel ist später möglich und hat einen Rückweg — beides gefahren und gezählt." |
+
+**Und hier dreht sich das Sprachproblem aus `BDW-P19` um.** Die 707
+vorhandenen Textstellen (60 543 Zeichen) sind deutsch gewachsen; sie
+nachträglich zweisprachig zu machen kostet den vollen Preis. Diese
+Erklärungen dagegen **existieren noch nicht** — sie werden für das Plugin neu
+geschrieben. Zweisprachig von Anfang an kostet dabei fast nichts.
+
+**Daraus folgt eine Reihenfolge, die sonst niemand sähe:** Die
+Plugin-Erklärungen werden **englisch UND deutsch geschrieben, bevor** über ein
+Übersetzungsverfahren für den Altbestand entschieden ist. Sie sind damit der
+Prüfstein für die Bauform: Was für fünfzehn neue Texte trägt, trägt auch für
+siebenhundert alte — und was schon bei fünfzehn umständlich ist, war die
+falsche Wahl.
+
 ### Was brainlehr von den anderen sieben unterscheidet
 
 `hindsight` und `honcho` verlangen beide `api_key` als `KIND_SECRET` ohne
