@@ -246,9 +246,29 @@ Damit lösen sich die vier Punkte auf, ohne dass einer verlorengeht:
   Ausweis-Widerruf** → **Handlungen, keine Einstellungen.** Sie gehören in
   Werkzeuge, nicht ins Panel — und sind damit unter Hermes ohnehin erreichbar,
   ohne jede Oberfläche.
-* **Ablageort je Domäne** (`ablage.<domaene>`, `BDW-P15`) → **Einstellung, aber
-  je Domäne** und damit nicht in ein Feld fester Zahl. Als `json`-Feld im
-  vollen Dialog, bis es Domänen gibt.
+* **Ablageort je Domäne** (`ablage.<domaene>`, `BDW-P15`) → **beim Import
+  gefragt, nicht im Panel.** Erste Fassung dieses Plans schlug ein
+  `json`-Feld vor; das war schwach und wurde auf Betreiberrückfrage
+  korrigiert. Ein JSON-Feld in einem Einstellungspanel heißt „ich weiß nicht,
+  wo das hingehört" — der Nutzer soll eine Datenstruktur tippen.
+  Das echte Problem: `config_schema` deklariert eine FESTE Feldliste, und wie
+  viele Domänen es gibt, weiß man beim Deklarieren nicht. Die Auflösung folgt
+  aus dem Schnitt oben, den ich zunächst selbst nicht angewandt hatte: Eine
+  Domäne wird IMPORTIERT — das ist eine Handlung, und der Ablageort ist Teil
+  dieser Handlung. Im Panel steht höchstens eine **Vorgabe für neue Domänen**:
+  ein einzelnes `select`, kein JSON.
+
+**Zur Verfallsrate, weil die Frage naheliegt: ausgeschlossen wurde das RATEN,
+nicht das SETZEN.** `kern/verfallsrate.py:15-24` hält es fest — „NICHT geraten,
+sondern EXPLIZIT VON EINEM MENSCHEN. Kein Vorgabewert. […] Richtig war nur die
+Ablehnung des Ratens; eine leer-vorgabewertige Ablage ist keine geratene
+Zahl." Nach dem Lauf: 0 gesetzt, Ablage leer — das ist das Ergebnis.
+Und die Abgrenzung zur Hausregel „Schwellen sind gemessen, nicht gesetzt":
+Die gilt für SYSTEMschwellen (`0,65`, `MIN_HITS=3`). Die Verfallsrate ist ein
+FACHURTEIL über ein Gebiet — „Steuerrecht ändert sich jährlich, Zahlentheorie
+nicht". Das kann keine Messung liefern. Die gemessene Hälfte (Widerrufsquote
+aus der eigenen Historie) bleibt gemessen und wird getrennt ausgewiesen, samt
+Widerspruch, wenn beide auseinanderlaufen.
 
 **Was von der ursprünglichen Ausschlussliste übrigbleibt**, und nur das: die
 **gemessenen Schwellen**. Sie sind keine Einstellung, sondern das Ergebnis
