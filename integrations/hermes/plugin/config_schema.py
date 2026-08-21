@@ -71,22 +71,24 @@ def _bi(de: str, en: str) -> str:
 
 
 def _laufendes_embed_model() -> str:
-    """Das tatsaechlich aktive Einbettungsmodell -- aus brainlehrs eigenem
-    Bestand gelesen, damit die einzige Auswahloption nie von der Wirklichkeit
-    abweicht. Ohne erreichbaren brainlehr-Code faellt dies auf den zuletzt
-    bekannten Wert zurueck (2026-08-21: 'bge-m3@ctx2048')."""
-    try:
-        from brainlehr_provider import _brainlehr_heim
+    """Das aktive Einbettungsmodell -- der zuletzt belegte Wert (2026-08-21:
+    'bge-m3@ctx2048'), uebersteuerbar ueber `$BRAINLEHR_EMBED_MODEL`.
 
-        heim = _brainlehr_heim()
-        if heim is not None:
-            _sys.path[:0] = [str(heim), str(heim / "kern")]
-            import embeddings  # type: ignore
+    BIS 2026-08-21 STAND HIER EIN IMPORT von brainlehrs `embeddings`-Modul in
+    DIESEN Prozess, nur um eine Zeichenkette zu lesen. Das ist zugleich die
+    engste Kopplung (dieser Adapter kennt dann brainlehrs Interna und bricht
+    an jeder internen Umbenennung) und der teuerste Weg zu einem Wort. Der
+    Server bietet den Wert nicht ueber MCP an -- solange das so ist, ist ein
+    Literal mit Uebersteuerung ehrlicher als ein Import, der so tut, als
+    waere der Wert live.
 
-            return embeddings.DEFAULT_EMBED_MODEL
-    except Exception:
-        pass
-    return "bge-m3@ctx2048"
+    PREIS, offen benannt: Wird brainlehrs Vorgabemodell gewechselt, ohne dass
+    diese Zeile oder die Variable nachgezogen wird, zeigt das Panel ein
+    falsches Modell an. Es ist ein Anzeigefehler, kein Datenfehler -- das Feld
+    hat ohnehin nur eine Option und aendert nichts."""
+    import os as _os
+
+    return _os.environ.get("BRAINLEHR_EMBED_MODEL", "").strip() or "bge-m3@ctx2048"
 
 
 CONFIG_SCHEMA = ProviderConfigSchema(
@@ -114,11 +116,14 @@ CONFIG_SCHEMA = ProviderConfigSchema(
             kind=KIND_TEXT,
             placeholder="z.B. hermes-nutzer",
             description=_bi(
-                "Ohne sie weist die Datenbank JEDEN Schreibvorgang ab -- das "
-                "ist ein Datenbank-Trigger, kein Hinweis, den man uebersehen "
-                "und spaeter nachholen koennte.",
-                "Without it the database REJECTS every write -- that is a "
-                "database trigger, not a warning you could miss and fix later.",
+                "Jeder Eintrag wird ihr zugeschrieben. Ohne sie traegt die "
+                "Zuschreibung dauerhaft das Praefix `unbeglaubigt:` -- der "
+                "Eintrag entsteht, aber es ist rueckwirkend nicht mehr "
+                "feststellbar, wer ihn gemacht hat.",
+                "Every entry is attributed to it. Without one the attribution "
+                "permanently carries the prefix `unbeglaubigt:` (uncertified) "
+                "-- the entry is still created, but who made it can no longer "
+                "be established afterwards.",
             ),
             inline=True,
         ),
@@ -199,6 +204,42 @@ CONFIG_SCHEMA = ProviderConfigSchema(
             inline=True,
         ),
         # ------------------------------------------------- voller Dialog
+        ProviderField(
+            key="brainlehr_home",
+            label="Fundort von brainlehr / brainlehr checkout",
+            kind=KIND_TEXT,
+            aliases=("BRAINLEHR_HOME",),
+            placeholder="~/brainlehr",
+            description=_bi(
+                "Nur noetig, wenn dieses Plugin KOPIERT statt verlinkt wurde: "
+                "ueber den empfohlenen Symlink findet es brainlehr von sich "
+                "aus. Steht hier ein falscher Pfad, bleibt der Anbieter "
+                "inaktiv und nennt den Grund im Log.",
+                "Only needed if this plugin was COPIED instead of symlinked: "
+                "installed via the recommended symlink it finds brainlehr by "
+                "itself. A wrong path here leaves the provider inactive and "
+                "states the reason in the log.",
+            ),
+        ),
+        ProviderField(
+            key="mcp_command",
+            label="Startbefehl des MCP-Servers / MCP server command",
+            kind=KIND_TEXT,
+            aliases=("BRAINLEHR_MCP_COMMAND",),
+            placeholder="python3 ~/brainlehr/knowledge_mcp_server.py",
+            description=_bi(
+                "Nur noetig, wenn brainlehr mit einem eigenen Interpreter oder "
+                "Wrapper starten soll. Leer gelassen wird der Befehl aus dem "
+                "Fundort abgeleitet. Die Verbindung laeuft ueber MCP (stdio), "
+                "nicht ueber einen Bibliotheksimport -- brainlehr laeuft also "
+                "als eigener Prozess.",
+                "Only needed if brainlehr should start with its own "
+                "interpreter or a wrapper. Left empty, the command is derived "
+                "from the checkout location. The connection runs over MCP "
+                "(stdio), not a library import -- so brainlehr runs as its own "
+                "process.",
+            ),
+        ),
         ProviderField(
             key="sprache_eigenes_material",
             label="Sprache des eigenen Materials / Language of own material",

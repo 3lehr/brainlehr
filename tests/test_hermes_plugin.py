@@ -208,3 +208,135 @@ def test_embed_model_hat_genau_eine_option():
     embed_model = next(f for f in schema.fields if f.key == "embed_model")
     assert embed_model.kind == "select"
     assert len(embed_model.options) == 1
+
+
+# ── Proben, die OHNE brainlehr-Bestand laufen ────────────────────────────────
+# Alles darueber setzt eine vorhandene Datenbank voraus und ist damit nur auf
+# einem eingerichteten Rechner aussagekraeftig. Ein fremder Pruefer -- etwa
+# jemand, der diesen Beitrag bei Hermes durchsieht -- hat die nicht. Was hier
+# folgt, belegt trotzdem etwas und braucht nichts als das Plugin selbst.
+
+PLUGIN = REPO / "integrations" / "hermes" / "plugin"
+
+
+def test_kein_pfad_dieses_rechners():
+    """Ein absoluter Pfad EINES Rechners im Plugin ist auf jedem anderen
+    Rechner ein stiller Fehlgriff: nichts stuerzt ab, es wird nur nichts
+    gefunden. VORHER ROT -- `brainlehr_provider.py` trug
+    `/Volumes/daten/...` als Rueckfall, die README als Installationszeile."""
+    verdaechtig = ("/Volumes/daten", "/Users/lehrmacbook", "/home/")
+    for datei in sorted(PLUGIN.glob("*.py")) + sorted(PLUGIN.glob("*.md")):
+        text = datei.read_text(encoding="utf-8")
+        for zeile_nr, zeile in enumerate(text.splitlines(), 1):
+            for muster in verdaechtig:
+                assert muster not in zeile, (
+                    f"{datei.name}:{zeile_nr} nennt einen Pfad dieses "
+                    f"Rechners: {zeile.strip()[:100]}")
+
+
+def test_kein_bibliotheksimport_von_brainlehr():
+    """Der Adapter spricht brainlehr ueber MCP an, nicht als Bibliothek.
+
+    Das ist zuerst eine BAUFRAGE: wer `knowledge_mcp_server` importiert, kennt
+    die Interna und bricht an jeder internen Aenderung; ueber die Schnittstelle
+    bricht er nicht. VORHER ROT -- es gab drei solche Importstellen in
+    `brainlehr_provider.py` plus eine in `config_schema.py`.
+
+    Geprueft wird am SYNTAXBAUM, nicht am Text. Ein Textmuster faende auch
+    jede Erwaehnung in einem Kommentar -- und genau das ist hier haeufig, weil
+    die Docstrings den alten Bau erklaeren. Ein Waechter, der seine eigene
+    Begruendung beanstandet, wird umformuliert statt befolgt."""
+    import ast
+
+    fremd = {"knowledge_mcp_server", "ort", "embeddings", "kern", "haken",
+             "werkzeugrechte", "trennung", "ausweis"}
+    for datei in sorted(PLUGIN.glob("*.py")):
+        baum = ast.parse(datei.read_text(encoding="utf-8"), filename=str(datei))
+        for knoten in ast.walk(baum):
+            if isinstance(knoten, ast.Import):
+                namen = [a.name.split(".")[0] for a in knoten.names]
+            elif isinstance(knoten, ast.ImportFrom):
+                namen = [(knoten.module or "").split(".")[0]]
+            else:
+                continue
+            for name in namen:
+                assert name not in fremd, (
+                    f"{datei.name}:{knoten.lineno} laedt brainlehrs `{name}` in "
+                    "den eigenen Prozess, statt ueber MCP zu sprechen")
+
+
+def test_syntaxbaum_waechter_wuerde_anschlagen():
+    """POSITIVKONTROLLE zum Waechter darueber. Ohne sie belegt ein gruener
+    Lauf nur, dass nichts gefunden WURDE -- nicht, dass etwas gefunden
+    WUERDE. Genau die Klasse, in der ein Test gruen steht, weil der gepruefte
+    Fall gar nicht eintreten kann."""
+    import ast
+
+    fremd = {"knowledge_mcp_server", "ort", "embeddings"}
+    getroffen = []
+    for knoten in ast.walk(ast.parse(
+            "import json\nimport knowledge_mcp_server as kms\n"
+            "from ort import DB\n")):
+        if isinstance(knoten, ast.Import):
+            getroffen += [a.name.split(".")[0] for a in knoten.names]
+        elif isinstance(knoten, ast.ImportFrom):
+            getroffen.append((knoten.module or "").split(".")[0])
+    assert set(getroffen) & fremd == {"knowledge_mcp_server", "ort"}
+    assert "json" not in fremd, "die Stdlib darf der Waechter nie beanstanden"
+
+
+def test_ohne_brainlehr_sauber_nicht_verfuegbar(tmp_path, monkeypatch, caplog):
+    """DIE PROBE FUER DEN FREMDEN RECHNER: nichts eingerichtet, nichts
+    erreichbar. Erwartet wird sauberes False MIT Grund -- kein Absturz und
+    kein stilles False, das fuer den Nutzer wie 'gibt es hier nicht' aussieht.
+
+    VORHER ROT in beide Richtungen: ohne gesetzte Variablen griff der alte
+    Stand auf den fest verdrahteten Pfad DIESES Rechners zurueck, und sein
+    False nannte nie einen Grund."""
+    import logging
+
+    monkeypatch.setenv("BRAINLEHR_HOME", str(tmp_path / "gibtsnicht"))
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path / "kein-hermes"))
+    monkeypatch.delenv("BRAINLEHR_MCP_COMMAND", raising=False)
+
+    p = bp.BrainlehrProvider()
+    with caplog.at_level(logging.WARNING):
+        assert p.is_available() is False
+    assert p.grund, "ein False ohne Grund ist fuer den Nutzer nicht auswertbar"
+    assert "brainlehr" in caplog.text.lower(), "der Grund fehlt im Log"
+    # Der Grund muss SAGEN, wo gesucht wurde -- sonst weiss der Nutzer nicht,
+    # welche Einstellung ihm fehlt.
+    assert "brainlehr_home" in p.grund and "mcp_command" in p.grund
+    # ... und darf danach nicht doch noch abstuerzen.
+    assert p.backup_paths() == []
+    assert p._suchen("irgendwas") == []
+
+
+def test_startbefehl_wird_abgeleitet_nicht_verdrahtet(tmp_path, monkeypatch):
+    """Ohne Fundort gibt es keinen Befehl -- statt heimlich auf einen
+    Vorgabepfad zu raten. Und ein gesetzter `mcp_command` sticht alles."""
+    monkeypatch.setenv("BRAINLEHR_HOME", str(tmp_path / "gibtsnicht"))
+    monkeypatch.delenv("BRAINLEHR_MCP_COMMAND", raising=False)
+    assert bp._server_befehl({}) is None
+
+    monkeypatch.setenv("BRAINLEHR_MCP_COMMAND", "python3 -u /anderswo/server.py")
+    assert bp._server_befehl({}) == ["python3", "-u", "/anderswo/server.py"]
+
+
+def test_alle_feldbeschreibungen_zweisprachig_ohne_hermes():
+    """Wie `test_jedes_feld_hat_beide_sprachen`, aber am QUELLTEXT statt am
+    geladenen Schema -- denn das Laden braucht ein installiertes Hermes, und
+    genau daran scheitert ein fremder Pruefer, der nur dieses Repo hat.
+    ADR-033: jeder neu geschriebene nutzersichtbare Text ist zweisprachig."""
+    import re
+
+    quelle = (PLUGIN / "config_schema.py").read_text(encoding="utf-8")
+    aufrufe = re.findall(r"_bi\(\s*(.*?)\s*\)\s*,\n", quelle, re.S)
+    assert len(aufrufe) >= 10, f"nur {len(aufrufe)} zweisprachige Texte gefunden"
+    for text in aufrufe:
+        assert '"' in text, "ein _bi()-Aufruf ohne Zeichenketten"
+    # NEGATIVPROBE: jedes Feld mit `description=` geht durch _bi(), keines
+    # traegt eine nackte Zeichenkette.
+    for treffer in re.finditer(r"description=(.{0,12})", quelle):
+        assert treffer.group(1).lstrip().startswith("_bi("), (
+            f"eine Beschreibung umgeht _bi(): {treffer.group(0)!r}")
