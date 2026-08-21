@@ -1,56 +1,88 @@
-# STAND brainlehr — 2026-08-21T15:10:00+0200
+# STAND brainlehr — 2026-08-21T17:30:00+0200
 
 **Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Katalog 71 Zeilen,
-37 belegt, 0 ohne Gate-Lauf. Alle drei Plan-Wellen abgearbeitet, dazu drei
-Nachzuege.
+37 belegt, **0 ohne Gate-Lauf**. Alle Plan-Wellen abgearbeitet.
 
-**Neu seit dem letzten Stand:**
-* **Hermes-Plugin bedienbar** `6735382f` — `config_schema.py` mit neun
-  Feldern, sechs inline, alle Erklaerungen zweisprachig (ADR-033).
-  `is_available()` prueft jetzt die zwei STILL scheiternden Pflichtfelder
-  (Ausweis, Einbettungsdienst) — ohne sie fuegt Hermes den Anbieter gar nicht
-  erst hinzu, statt ihn kaputt laufen zu lassen. `embed_model` ist ein
-  `select` mit GENAU EINER Option, weil eine Aenderung 7409 Vektoren
-  entwertet, ohne dass ein Fehler erscheint.
-* **Installation ist ein Symlink** `46bc529b` — vorher eine Kopie, die
-  lautlos gedriftet waere.
-* **Zustaendiger ist ein Gegenstand** `c9e0e4a4` — der Uebergangsstand aus
-  P17 ist nachgezogen. Moeglich erst, seit P15 die ersten Personen auf die
-  Achse gebracht hat. Ein mehrdeutiger Name faellt NICHT still auf Freitext
-  zurueck, sondern scheitert.
+## Die Verduennung ist aufgeklaert und behoben
 
-**DIE VERDUENNUNGSURSACHE IST GEFUNDEN** `193b98f1` — der letzte offene Rest
-des Konsils: `haken/knowledge_recall_hook.py:1327`. Der Severity-Sort
-unmittelbar vor `[:MAX_LESSONS]` nimmt `severity` als PRIMAERschluessel; die
-Relevanzreihenfolge ueberlebt nur als Tiebreak. Eine Lehre mit `high`
-verdraengt den besten Stichworttreffer des Bestands (`medium`), obwohl sie in
-der Fusion SCHLECHTER steht (Rang 16 gegen 14). Stufe fuer Stufe verfolgt,
-Gegenprobe an genau dieser Stufe gefahren. **Der Kommentar bei Zeile 1418
-behauptet bereits, was der Code nicht tut** („Severity/Haeufigkeit brechen
-nur noch echte Gleichstaende") — die Absicht des Kommentars IST die
-Gegenprobe. Behebbar ohne kalibrierte Zahl. NICHT gebaut: der letzte Bau aus
-einer Hypothese hat die Quote verschlechtert (`L-89b308`).
+Der letzte offene Rest des Konsils, ueber den ganzen Tag verfolgt:
+1. Befund: Katalogimport kostet eine Lehre, 14/35 -> 13/35, ohne einen
+   einzigen Fremdtreffer im Ergebnis.
+2. Hypothese „die Gattung" — **widerlegt** (dieselbe Menge als
+   `arbeitsbestand` liefert dieselbe Zahl).
+3. Hypothese „die gemeinsame Kappung" — **gebaut und widerlegt**, machte es um
+   zwei Lehren schlechter, zurueckgenommen (`2268d155`, `L-89b308`).
+4. Stufe gefunden (`193b98f1`): der **Severity-Sort** vor `[:MAX_LESSONS]`,
+   `severity` als Primaerschluessel — eine `high`-Lehre verdraengte eine
+   relevantere `medium`, obwohl sie in der Fusion schlechter stand.
+5. Behoben (`c7f6dcbe`) — und der Kommentar zwei Zeilen darueber forderte das
+   seit jeher: „Severity/Haeufigkeit brechen nur noch echte Gleichstaende."
+6. **Belegt** (`5d5f7b20`): A ohne Import 14/35, B mit 952 Fremdzeilen
+   **ebenfalls 14/35**. `BDW-P11-AC2` erfuellt.
 
-**Was als Naechstes ansteht:** Der volle A/B-Korpuslauf mit abgeschaltetem
-Severity-Sort. Belegt ist, WO die Lehre verlorengeht — nicht, ob die
-Behebung die Gesamtquote hebt. Der Lauf gehoert in den Hauptfaden (dauert
-laenger als ein Agentenzug, `L-ad02b8`).
+**Die Zuschreibung ist der eigentliche Befund:** Die Verduennung kam aus dem
+ABRUF, nicht aus dem Katalog. Der Katalog war die ganze Zeit unschuldig.
 
-**Fallen dieses Tages:** Geteilter git-Index — eine fertige uncommittete
-Aenderung wanderte in einen Stash, der Bericht meldete 'fertig'. **Kein
-`git stash`, kein `git checkout --` ohne Pfadangabe. Committen, sobald
-geprueft.** · Anweisungen in `schema.sql` auf NACHGEZOGENE Spalten ans
-Dateiende (`L-1ffae7`). · Ein Einheitstest darf eine Optimierung begruenden,
-nie belegen (`L-89b308`). · Eine Existenzaussage ueber Code braucht ZWEI
-Suchwege — ich habe das Hermes-Plugin fuer ungebaut erklaert, weil ich nur an
-einem der zwei Orte nachsah, die der Lader prueft (`L-184cd8`).
+## Hermes-Plugin
 
-**Offen:** `BDW-P05`/Zielbild A ist keine Bauaufgabe, sondern eine
-Definitionsfrage (Gueltigkeit je Sorte). · `melder/vermutungswaechter.py`
-unterscheidet Zitat nicht von Behauptung (Plan §7a, bewusst nicht schnell
-behoben).
+Erfuellt Hermes' Liste bis auf einen Punkt. `sync_turn` (schreibt per Vorgabe
+NICHTS, einschaltbar, traegt eingeschaltet den WEG statt einer Quelle),
+`post_setup`, `cli.py`, `pyproject.toml`. **35 Tests**, live gegen die echte
+Installation: `hermes brainlehr pruefen` liefert rc=0.
 
-**Wartet auf den Betreiber:** GitHub-Topics (`lehrtools` auf lehrAtelier und
+Der Adapter spricht brainlehr ueber **MCP** an — zwei Prozesse, kein Import.
+Damit ist **MIT fuer den Adapter** (`85c84fda`) eine Aussage ueber den Aufbau
+statt eine Behauptung; brainlehr bleibt AGPL-3.0. Die Lizenzdatei schreibt
+ihre Reichweite aus und sagt: dieses Paket zu installieren installiert
+brainlehr NICHT.
+
+**Repo-Name entschieden: `hermes-brainlehr`** (= Paketname). Der
+ANBIETERname bleibt `brainlehr` — Verzeichnisname, daran haengt
+`find_provider_dir()`.
+
+**Laufend:** brainlehr paketierbar machen, damit ein Fremder nicht klonen
+muss. Harte Auflage: die Datenbank (230 MB, Daten Dritter) darf NICHT ins
+Paket, und eine Frischinstallation in einer leeren Umgebung muss den Server
+starten — ohne diesen Lauf ist „installierbar" eine Behauptung.
+
+## Befunde ueber Hermes, gemessen an deren Quelltext
+
+* **Sie nehmen keine Speicher-Anbieter mehr auf** (`CONTRIBUTING.md:72`).
+  Ein Pull Request wird nach ihrer eigenen Ankuendigung geschlossen. Kein
+  Qualitaetsurteil, eine Placement-Entscheidung. Zwei meiner drei erwogenen
+  Wege waren dadurch ausgeschlossen — Knoten `711b0e13`.
+* **Ihre Anleitung widerspricht ihrem Code:** `CONTRIBUTING.md:77` verspricht
+  Auffindung ueber pip entry points; `plugins/memory/__init__.py` durchsucht
+  ausschliesslich Verzeichnisse. Der pip-Weg ist fuer Speicher-Anbieter
+  derzeit tot. **Das waere der Beitrag, den sie ausdruecklich wollen** — eine
+  Luecke in der generischen Plugin-Flaeche, kein neuer Anbieter.
+
+## Fallen dieses Tages
+
+* Geteilter git-Index: eine fertige uncommittete Aenderung wanderte in einen
+  Stash, der Bericht meldete „fertig". **Kein `git stash`, kein
+  `git checkout --` ohne Pfadangabe. Committen, sobald geprueft.**
+* `grep -c` meldet Exit 1, wenn es NICHTS findet — zweimal als Fehlschlag
+  missdeutet. Der Erfolg haengt am Exit-Code des LAUFS, nicht am letzten
+  Glied der Kette.
+* Eine Existenzaussage ueber Code braucht ZWEI Suchwege: Ich erklaerte das
+  Hermes-Plugin fuer ungebaut, weil ich nur an einem der zwei Orte nachsah,
+  die der Lader prueft (`L-184cd8`).
+* Ein Einheitstest darf eine Optimierung begruenden, nie belegen
+  (`L-89b308`).
+
+## Offen
+
+* `BDW-P05`/Zielbild A: **keine Bauaufgabe**, sondern eine Definitionsfrage —
+  was heisst Gueltigkeit bei einer Lehre, was bei einem Faktum. Bei perfektem
+  Abruf waeren 8/35 die Obergrenze.
+* `melder/vermutungswaechter.py` unterscheidet Zitat nicht von Behauptung
+  (Plan §7a, bewusst nicht schnell behoben).
+
+## Wartet auf den Betreiber — alles Aussenwirkung
+
+Repo `hermes-brainlehr` anlegen und pushen · Bekanntmachung im Discord-Kanal
+`#plugins-skills-and-skins` · GitHub-Topics (`lehrtools` auf lehrAtelier und
 die openlehr_X, NICHT auf brainlehr). `E24` ist vertagt, nicht offen.
 
 ---
