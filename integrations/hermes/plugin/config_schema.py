@@ -273,6 +273,35 @@ CONFIG_SCHEMA = ProviderConfigSchema(
             ),
         ),
         ProviderField(
+            key="mitschrift",
+            label="Zug-Mitschrift / Per-turn transcript",
+            kind=KIND_SELECT,
+            default="aus",
+            description=_bi(
+                "Schreibt nach jedem Zug einen Eintrag. AUS ist die Vorgabe, "
+                "und das ist eine Entscheidung, keine Traegheit: ein Automat "
+                "kann keine QUELLE angeben, nur den WEG. Eingeschaltet traegt "
+                "jeder Eintrag darum 'Hermes-Sitzung <id>, Zug <n>, "
+                "<Zeitpunkt>' -- nachpruefbar, aber es bezeugt nur, DASS "
+                "etwas gesagt wurde, nicht dass es stimmt. Wer den Bestand "
+                "als geprueftes Wissen liest, schaltet das besser aus und "
+                "laesst das Modell `brainlehr_merken` mit eigener Herkunft "
+                "rufen.",
+                "Writes one entry after every turn. OFF is the default, and "
+                "that is a decision, not laziness: an automaton cannot state "
+                "a SOURCE, only the PATH. Switched on, every entry therefore "
+                "carries 'Hermes-Sitzung <id>, Zug <n>, <timestamp>' -- "
+                "verifiable, but it only attests that something was said, "
+                "not that it is true. If you read this store as vetted "
+                "knowledge, leave it off and let the model call "
+                "`brainlehr_merken` with its own origin instead.",
+            ),
+            options=(
+                ProviderFieldOption("aus", "Aus / Off"),
+                ProviderFieldOption("an", "An / On"),
+            ),
+        ),
+        ProviderField(
             key="embed_model",
             label="Einbettungsmodell / Embedding model",
             kind=KIND_SELECT,

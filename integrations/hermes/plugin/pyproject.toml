@@ -1,0 +1,35 @@
+# Die Verpackung, unter der Fremde dieses Plugin erwarten.
+#
+# GRUPPENNAME: `hermes_agent.plugins` -- der EINZIGE, den Hermes liest
+# (hermes_cli/plugins.py::ENTRY_POINTS_GROUP = "hermes_agent.plugins",
+# gelesen in _scan_entry_points()). Ein anderer Name waere ein Paket, das
+# sich sauber installiert und nie erscheint.
+#
+# DER BEFUND DAZU, offen benannt: Hermes' CONTRIBUTING.md sagt,
+# `discover_memory_providers()` finde Plugins "from user/project plugin
+# directories and pip entry points". Der Code tut das nicht --
+# `plugins/memory/__init__.py::_iter_provider_dirs()` durchsucht
+# ausschliesslich Verzeichnisse. Eintragspunkte liest nur der ALLGEMEINE
+# Plugin-Lader, und dessen Weiterleitung an die Speicher-Auffindung haengt
+# daran, ein Verzeichnis mit `__init__.py` zu lesen, das ein Eintragspunkt
+# nicht hat. Bis das behoben ist, bleibt der Symlink nach
+# ~/.hermes/plugins/brainlehr der Weg, der nachweislich traegt. Diese Datei
+# steht trotzdem hier: sie ist das, was ihre Anleitung verlangt, und sie
+# wirkt in dem Moment, in dem der Lader nachzieht.
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-brainlehr"
+version = "1.0.0"
+description = "brainlehr as a Hermes memory provider -- local knowledge store with enforced provenance, validity and release scope. No API key, no cloud."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.entry-points."hermes_agent.plugins"]
+brainlehr = "brainlehr"
+
+[tool.setuptools]
+packages = []
+py-modules = ["brainlehr_provider", "cli", "config_schema"]

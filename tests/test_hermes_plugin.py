@@ -340,3 +340,298 @@ def test_alle_feldbeschreibungen_zweisprachig_ohne_hermes():
     for treffer in re.finditer(r"description=(.{0,12})", quelle):
         assert treffer.group(1).lstrip().startswith("_bi("), (
             f"eine Beschreibung umgeht _bi(): {treffer.group(0)!r}")
+
+
+# ---------------------------------------------------------------------------
+# Hermes' eigene Liste fuer eigenstaendige Plugins (CONTRIBUTING.md 70-104):
+# sync_turn / post_setup / register_cli / pip-Eintragspunkt.
+# ---------------------------------------------------------------------------
+
+class _FakeKlient:
+    """Ein MCP-Klient, der nur mitschreibt, was ihm aufgetragen wurde.
+
+    Kein Prozess, kein stdio -- die Frage dieser Tests ist NICHT, ob brainlehr
+    antwortet, sondern OB und MIT WELCHER HERKUNFT geschrieben wird. Ein echter
+    Server wuerde genau diese Frage verdecken (die Antwort saehe gleich aus,
+    ob geschrieben wurde oder nicht)."""
+
+    def __init__(self):
+        self.rufe = []
+
+    def ruf(self, werkzeug, argumente, frist=None):
+        self.rufe.append((werkzeug, argumente))
+        return {"node_id": "test0000"}
+
+    def werkzeugnamen(self, frist=15.0):
+        return ["knowledge_search", "knowledge_add", "knowledge_stats"]
+
+    def stop(self):
+        pass
+
+
+def _provider_mit_fake(mitschrift, sitzung="s-abc", kontext="primary"):
+    p = bp.BrainlehrProvider()
+    p.initialize(sitzung, hermes_home="/tmp", platform="cli",
+                 agent_context=kontext)
+    p._klient = _FakeKlient()
+    p.mitschrift = mitschrift
+    return p
+
+
+def _schreibrufe(p):
+    return [a for (w, a) in p._klient.rufe if w == "knowledge_add"]
+
+
+# -- 1. sync_turn -----------------------------------------------------------
+
+def test_sync_turn_existiert():
+    """VORHER ROT: die Methode fehlte ganz. Hermes' Liste nennt sie neben
+    prefetch und shutdown als Pflichtteil des ABC -- ein Plugin ohne sie ist
+    kein eigenstaendiges Plugin nach ihrer Anleitung, egal wie gut der Rest
+    ist."""
+    assert callable(getattr(bp.BrainlehrProvider, "sync_turn", None))
+
+
+def test_sync_turn_schreibt_per_vorgabe_nichts(caplog):
+    """Die Entscheidung, und ihr Negativfall: per Vorgabe entsteht KEIN
+    Eintrag. Ein Zug-fuer-Zug-Automat kann keine geprueft
+    Aussage liefern -- er kann nur bezeugen, dass etwas gesagt wurde.
+
+    Und der Teil, der diesen Test ueberhaupt noetig macht: stillschweigend
+    nichts zu tun waere der schlechtere Zustand. Der Grund muss sichtbar
+    werden."""
+    import logging
+    p = _provider_mit_fake(mitschrift=False)
+    with caplog.at_level(logging.INFO):
+        p.sync_turn("Wie hoch ist die Schwelle?", "Sie liegt bei 0,65.")
+    assert _schreibrufe(p) == [], "per Vorgabe darf nichts entstehen"
+    assert p.mitschrift_grund, "ein stummes Nichtstun ist ausdruecklich unzulaessig"
+    assert any("mitschrift" in r.getMessage().lower() for r in caplog.records), \
+        "der Grund muss im Log stehen, nicht nur in einem Attribut"
+
+
+def test_sync_turn_schreibt_eingeschaltet_mit_weg_als_herkunft():
+    """Eingeschaltet entsteht ein Eintrag -- und seine Herkunft nennt den WEG
+    (Sitzung, Zug, Zeitpunkt), nicht eine behauptete Quelle. Dieselbe Trennung
+    wie bei Fremdimporten (`BDW-P12`)."""
+    p = _provider_mit_fake(mitschrift=True)
+    p.sync_turn("Wie hoch ist die Schwelle?", "Sie liegt bei 0,65.")
+    rufe = _schreibrufe(p)
+    assert len(rufe) == 1, "genau ein Eintrag je Zug"
+    quelle = rufe[0]["source"]
+    assert bp._ist_weg_herkunft(quelle), quelle
+    assert "s-abc" in quelle and "Zug 1" in quelle
+
+
+def test_behauptete_quelle_wird_abgewiesen():
+    """NEGATIVTEST: eine Herkunft, die eine QUELLE behauptet ('laut dem
+    Betreiber'), ist keine Weg-Herkunft und darf nicht durchgehen. Ohne diese
+    Probe waere die Weg-Form eine Absicht und keine Schranke."""
+    assert not bp._ist_weg_herkunft("laut dem Betreiber")
+    assert not bp._ist_weg_herkunft("aus einem Gespraech")
+    assert not bp._ist_weg_herkunft("")
+    p = _provider_mit_fake(mitschrift=True)
+    p._herkunft_bauer = lambda *a, **k: "laut dem Betreiber"
+    p.sync_turn("Frage", "Antwort")
+    assert _schreibrufe(p) == [], \
+        "eine behauptete Quelle muss den Schreibvorgang verhindern"
+
+
+def test_sync_turn_schweigt_in_nebenlaeufigen_kontexten():
+    """Auch eingeschaltet schreibt ein Cron-Lauf nicht -- dieselbe Schranke,
+    die schon fuer brainlehr_merken gilt."""
+    p = _provider_mit_fake(mitschrift=True, kontext="cron")
+    p.sync_turn("Frage", "Antwort")
+    assert _schreibrufe(p) == []
+
+
+# -- 2. post_setup ----------------------------------------------------------
+
+def test_post_setup_existiert():
+    """VORHER ROT. `hermes memory setup` uebergibt ab hier vollstaendig an den
+    Anbieter (hermes_cli/memory_setup.py:325-329: 'delegate entirely to it')
+    -- ohne die Methode laeuft nur der allgemeine Weg."""
+    assert callable(getattr(bp.BrainlehrProvider, "post_setup", None))
+
+
+def test_post_setup_schreibt_konfig_und_aktiviert(tmp_path, monkeypatch):
+    """Die vier Dinge des Einrichtungsassistenten landen in
+    $HERMES_HOME/brainlehr/config.json, und der Anbieter wird aktiviert --
+    genau das, was der allgemeine Weg sonst tut und was post_setup uebernimmt,
+    wenn es existiert."""
+    import json as _json
+    antworten = iter(["/pfad/zur/brainlehr.db", "hermes-nutzer",
+                      "http://127.0.0.1:11434", "einzelplatz"])
+    monkeypatch.setattr(bp, "_frage", lambda *a, **k: next(antworten))
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+
+    konfig = {}
+    bp.BrainlehrProvider().post_setup(str(tmp_path), konfig)
+
+    geschrieben = _json.loads(
+        (tmp_path / "brainlehr" / "config.json").read_text(encoding="utf-8"))
+    assert geschrieben["db_path"] == "/pfad/zur/brainlehr.db"
+    assert geschrieben["ausweis"] == "hermes-nutzer"
+    assert geschrieben["embed_service_url"] == "http://127.0.0.1:11434"
+    assert geschrieben["betriebsprofil"] == "einzelplatz"
+    assert konfig["memory"]["provider"] == "brainlehr", \
+        "post_setup uebernimmt die Aktivierung -- sonst tut sie niemand"
+
+
+# -- 3. cli.py --------------------------------------------------------------
+
+def _lade_cli():
+    import importlib.util
+    pfad = REPO / "integrations" / "hermes" / "plugin" / "cli.py"
+    if not pfad.is_file():
+        raise AssertionError(f"{pfad} fehlt")
+    spec = importlib.util.spec_from_file_location("_test_brainlehr_cli", pfad)
+    modul = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modul)
+    return modul
+
+
+def test_cli_bietet_register_cli():
+    """VORHER ROT: cli.py existierte nicht. discover_plugin_cli_commands()
+    sucht genau diesen Namen."""
+    assert callable(getattr(_lade_cli(), "register_cli", None))
+
+
+def test_cli_handler_heisst_wie_hermes_ihn_sucht():
+    """DIE FALLE: Hermes holt den Handler ueber
+    `getattr(cli_mod, f"{provider}_command")` -- also `brainlehr_command`.
+    Ein anders benannter Handler wird still nicht gefunden, und der Befehl
+    steht dann ohne Wirkung im Menue."""
+    assert callable(getattr(_lade_cli(), "brainlehr_command", None))
+
+
+def test_cli_pruefen_meldet_grund_statt_abzustuerzen(tmp_path, monkeypatch, capsys):
+    """DIE HAERTEPROBE, jetzt ueber die Kommandozeile: ohne erreichbaren
+    Server ein sauberer Grund, kein Absturz. Das ist die Diagnose, die ein
+    fremder Nutzer bei Problemen zuerst braucht."""
+    import argparse
+    monkeypatch.setenv("BRAINLEHR_HOME", str(tmp_path))   # leer, kein MERKMAL
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    cli = _lade_cli()
+    rc = cli.brainlehr_command(argparse.Namespace(brainlehr_befehl="pruefen"))
+    ausgabe = capsys.readouterr().out
+    assert rc != 0, "unbrauchbar muss sich auch am Rueckgabewert zeigen"
+    assert "brainlehr" in ausgabe.lower() and len(ausgabe.strip()) > 40, ausgabe
+
+
+# -- 4. pip-Eintragspunkt ---------------------------------------------------
+
+def test_pip_eintragspunkt_in_hermes_gruppe():
+    """VORHER ROT: es gab keine Paketdatei. Die Gruppe heisst
+    `hermes_agent.plugins` (hermes_cli/plugins.py::ENTRY_POINTS_GROUP) -- der
+    einzige Gruppenname, den Hermes ueberhaupt liest."""
+    import tomllib
+    pfad = REPO / "integrations" / "hermes" / "plugin" / "pyproject.toml"
+    assert pfad.is_file(), f"{pfad} fehlt"
+    daten = tomllib.loads(pfad.read_text(encoding="utf-8"))
+    eintraege = daten["project"]["entry-points"]["hermes_agent.plugins"]
+    assert "brainlehr" in eintraege, eintraege
+
+
+def test_mitschrift_ist_im_panel_schaltbar():
+    """Die Einstellung, ueber die sync_turn eingeschaltet wird, muss im Panel
+    stehen -- sonst ist 'einschaltbar' eine Behauptung ueber eine Variable,
+    die niemand findet."""
+    schema = _lade_config_schema()
+    schluessel = {f.key for f in schema.fields}
+    assert "mitschrift" in schluessel, sorted(schluessel)
+
+
+def test_cli_pruefen_nennt_die_zahl_die_der_server_wirklich_liefert(monkeypatch, capsys):
+    """VORHER ROT und am laufenden Server GEMESSEN, nicht vermutet: die
+    Diagnose las `total_nodes`, `knowledge_stats` liefert aber `nodes_total`
+    (5251 Knoten am 2026-08-21). Das ist die stille Sorte -- kein Fehler, nur
+    ein '?' an der Stelle, an der die Zahl stehen sollte. Ein Schluesselname
+    ist nichts, was man aus dem Kopf schreibt."""
+    import argparse
+    cli = _lade_cli()
+    fake = _FakeKlient()
+    fake.ruf = lambda w, a, frist=None: {"db_path": "/x/brainlehr.db",
+                                         "nodes_total": 5251}
+    p = bp.BrainlehrProvider()
+    p._klient = fake
+    monkeypatch.setattr(p, "_grund_fuer_unverfuegbar", lambda: "")
+    monkeypatch.setattr(cli, "_provider", lambda: p)
+    rc = cli.brainlehr_command(argparse.Namespace(brainlehr_befehl="pruefen"))
+    ausgabe = capsys.readouterr().out
+    assert rc == 0
+    assert "5251" in ausgabe, ausgabe
+
+
+def test_frage_passt_auf_hermes_echtes_prompt():
+    """POSITIVKONTROLLE gegen den eigenen Pruefstand: die post_setup-Tests
+    ersetzen `_frage` vollstaendig -- der Weg, den Hermes wirklich nimmt
+    (`hermes_cli.memory_setup._prompt`), wird darin also NIE ausgefuehrt. Ein
+    Signaturwechsel bliebe dort unsichtbar und faende erst der Nutzer beim
+    Einrichten. Hier wird die echte Signatur geprueft, nicht die des Doubles."""
+    import inspect
+    import os as _os
+    hermes_agent = Path(_os.environ.get(
+        "HERMES_AGENT_HOME", str(Path.home() / ".hermes" / "hermes-agent")))
+    if not (hermes_agent / "hermes_cli" / "memory_setup.py").is_file():
+        import pytest
+        pytest.skip("Hermes nicht installiert")
+    sys.path.insert(0, str(hermes_agent))
+    from hermes_cli.memory_setup import _prompt
+    # _frage ruft _prompt(text, vorgabe) -- zwei Stellungsargumente.
+    inspect.signature(_prompt).bind("label", "vorgabe")
+
+
+def test_beide_schreibwege_haengen_an_denselben_vorhandenen_elternknoten():
+    """VORHER ROT, und der Fund ist der Grund fuer diesen Test: sync_turn
+    hing an "/shared/hermes-mitschrift". Ein Trigger bricht jeden Eintrag ab,
+    dessen `parent_path` auf keinen vorhandenen Knoten zeigt
+    (knowledge_mcp_server.py:303-313) -- am laufenden Bestand nachgesehen gibt
+    es "/shared", den Unterzweig nicht. Jeder mitgeschriebene Zug waere im
+    Hintergrundfaden abgewiesen worden, ohne Spur an der Oberflaeche.
+
+    Geprueft wird die GLEICHHEIT beider Wege, nicht der Wert: der eine Weg
+    (`brainlehr_merken`) ist im Betrieb belegt, und solange der andere
+    denselben nimmt, kann er nicht einzeln abdriften."""
+    p = _provider_mit_fake(mitschrift=True)
+    p.handle_tool_call("brainlehr_merken",
+                       {"titel": "t", "inhalt": "i", "herkunft": "h"})
+    p.sync_turn("Eine Frage von ausreichender Laenge?", "Eine Antwort.")
+    if p._faden is not None:
+        p._faden.join(timeout=2)
+    import time
+    for _ in range(40):
+        if len(_schreibrufe(p)) >= 2:
+            break
+        time.sleep(0.05)
+    eltern = {a["parent_path"] for a in _schreibrufe(p)}
+    assert len(_schreibrufe(p)) == 2, _schreibrufe(p)
+    assert eltern == {bp.ELTERNPFAD}, eltern
+    assert "/" == bp.ELTERNPFAD[0] and bp.ELTERNPFAD.count("/") == 1, \
+        "ein Unterzweig muesste erst angelegt werden -- der Trigger bricht sonst ab"
+
+
+def test_beide_schreibwege_haengen_an_denselben_vorhandenen_elternknoten():
+    """VORHER ROT, und der Fund ist der Grund fuer diesen Test: sync_turn hing
+    an "/shared/hermes-mitschrift". Ein Trigger bricht jeden Eintrag ab, dessen
+    `parent_path` auf keinen vorhandenen Knoten zeigt
+    (knowledge_mcp_server.py:303-313) -- am laufenden Bestand nachgesehen gibt
+    es "/shared", einen Unterzweig darunter nicht. Jeder mitgeschriebene Zug
+    waere im Hintergrundfaden abgewiesen worden, ohne Spur an der Oberflaeche.
+
+    Geprueft wird die GLEICHHEIT beider Wege, nicht der Wert: der eine Weg
+    (`brainlehr_merken`) ist im Betrieb belegt, und solange der andere denselben
+    nimmt, kann er nicht einzeln abdriften."""
+    import time
+    p = _provider_mit_fake(mitschrift=True)
+    p.handle_tool_call("brainlehr_merken",
+                       {"titel": "t", "inhalt": "i", "herkunft": "h"})
+    p.sync_turn("Eine Frage von ausreichender Laenge?", "Eine Antwort.")
+    for _ in range(40):                      # der Schreibvorgang laeuft nebenher
+        if len(_schreibrufe(p)) >= 2:
+            break
+        time.sleep(0.05)
+    assert len(_schreibrufe(p)) == 2, _schreibrufe(p)
+    assert {a["parent_path"] for a in _schreibrufe(p)} == {bp.ELTERNPFAD}
+    assert bp.ELTERNPFAD.count("/") == 1, \
+        "ein Unterzweig muesste erst angelegt werden -- sonst bricht der Trigger ab"

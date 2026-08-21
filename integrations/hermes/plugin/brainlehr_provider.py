@@ -12,11 +12,16 @@ Speicher-Anbieter liefert Kontext AUTOMATISCH vor jedem Zug, ohne dass das
 Modell ein Werkzeug ruft. Der Unterschied zwischen "kann nachschlagen" und
 "weiss es schon".
 
-GESCHRIEBEN wird hier NICHT automatisch: `sync_turn` ist bewusst nicht
-gebaut. brainlehr verlangt an jedem Eintrag eine nachpruefbare Herkunft, und
-ein Automat, der Zug fuer Zug mitschreibt, kann keine ehrliche liefern -- er
-haette nur "aus einem Gespraech". Eintraege entstehen darum ausschliesslich,
-wenn das Modell `brainlehr_merken` ruft und die Herkunft mitgibt.
+GESCHRIEBEN wird hier per Vorgabe NICHT: `sync_turn` ist gebaut (Hermes'
+Anleitung fuer eigenstaendige Plugins verlangt die Methode), schreibt aber nur,
+wenn `mitschrift` im Panel eingeschaltet wird -- und sagt beim ersten Zug im
+Log, dass und warum es schweigt. Ein Automat kann keine QUELLE liefern; er
+kann nur den WEG bezeugen. Eingeschaltet traegt jeder Eintrag darum
+"Hermes-Sitzung <id>, Zug <n>, <Zeitpunkt>" als Herkunft und behauptet nichts
+darueber hinaus -- dieselbe Trennung, die hier fuer Fremdimporte gilt
+(`BDW-P12`: der Import traegt seinen Weg ein und behauptet keine Quelle). Eine
+Herkunft, die stattdessen eine Quelle behauptet, verhindert den Schreibvorgang
+(`_ist_weg_herkunft`) statt ihn zu schoenen.
 
 WO DIESE DATEI INSTALLIERT GEHOERT, und das ist die Falle:
     ~/.hermes/plugins/brainlehr/          RICHTIG (Nutzerbereich)
@@ -52,10 +57,12 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import sys
 import threading
 import urllib.error
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -78,6 +85,16 @@ TREFFER = 5               # Eintraege je Abruf
 ZEICHENDECKEL = 4000      # so viel Kontext geht hoechstens in den Prompt
 
 MERKMAL = "knowledge_mcp_server.py"   # daran wird eine brainlehr-Wurzel erkannt
+
+# Wohin Eintraege dieses Plugins gehaengt werden.
+# EIN Wert fuer beide Schreibwege (`brainlehr_merken` und `sync_turn`), weil
+# der Preis fuer einen zweiten hoch und lautlos ist: ein Datenbanktrigger
+# bricht jeden Eintrag ab, dessen `parent_path` auf keinen VORHANDENEN Knoten
+# zeigt (knowledge_mcp_server.py:303-313). Ein huebscherer eigener Unterzweig
+# fuer die Mitschrift existiert nicht -- am 2026-08-21 am laufenden Bestand
+# nachgesehen: "/shared" ja, ein Unterzweig darunter nein. Jeder Zug waere
+# abgewiesen worden, im Hintergrundfaden, ohne dass es jemand sieht.
+ELTERNPFAD = "/shared"
 
 log = logging.getLogger(__name__)
 
@@ -339,6 +356,50 @@ def _dienst_erreichbar(url: str, timeout: float = 1.5) -> bool:
         return False
 
 
+# Die WEG-Herkunft. Sie nennt, wie ein Eintrag entstanden ist (welche Sitzung,
+# welcher Zug, wann) -- und ausdruecklich NICHT, woraus er inhaltlich stammt.
+# Das ist der ganze Unterschied: "Hermes-Sitzung s7, Zug 4, 2026-08-21T14:02:11+0200"
+# ist nachpruefbar, "laut dem Betreiber" waere erfunden.
+_WEG_MUSTER = re.compile(
+    r"^Hermes-Sitzung \S[^,]*, Zug \d+, "
+    r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{4}$")
+
+
+def _weg_herkunft(sitzung: str, zug: int,
+                  zeitpunkt: Optional[str] = None) -> str:
+    """Der Weg als Zeichenkette -- die einzige Herkunft, die ein Automat
+    ehrlich vergeben kann."""
+    z = zeitpunkt or datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S%z")
+    return f"Hermes-Sitzung {sitzung or 'ohne-Kennung'}, Zug {zug}, {z}"
+
+
+def _ist_weg_herkunft(text: Optional[str]) -> bool:
+    """Die Schranke davor. Ohne sie waere die Weg-Form eine Absicht: jeder
+    spaetere Umbau koennte eine behauptete Quelle einsetzen, und nichts
+    wuerde es merken."""
+    return bool(_WEG_MUSTER.match((text or "").strip()))
+
+
+def _frage(text: str, vorgabe: str = "") -> str:
+    """Eine Zeile vom Nutzer holen. Hermes' eigenes `_prompt` wird benutzt,
+    wenn es da ist -- es kennt Abbruch, Vorgabewerte und die Darstellung des
+    Assistenten. Nur wenn Hermes fehlt (Pruefstand), wird `input` genommen;
+    dann ist diese Funktion zugleich die Stelle, die ein Test uebernimmt."""
+    try:
+        from hermes_cli.memory_setup import _prompt  # type: ignore
+    except Exception:
+        _prompt = None  # type: ignore
+
+    # Nur der IMPORT darf scheitern. Waere der AUFRUF mit im try, wuerde eine
+    # geaenderte Signatur bei Hermes lautlos auf `input` zurueckfallen -- die
+    # Einrichtung liefe weiter und saehe nur ein bisschen anders aus. Genau
+    # die Sorte Fehler, die man erst Monate spaeter findet.
+    if _prompt is not None:
+        return _prompt(text, vorgabe)
+    antwort = input(f"  {text}" + (f" [{vorgabe}]" if vorgabe else "") + ": ")
+    return antwort.strip() or vorgabe
+
+
 class BrainlehrProvider(MemoryProvider):
     """Lokaler Wissensspeicher mit erzwungener Herkunft, Geltung und Freigabe."""
 
@@ -349,6 +410,11 @@ class BrainlehrProvider(MemoryProvider):
         self._vorrat = ""
         self._faden: Optional[threading.Thread] = None
         self._klient: Optional[_MCPKlient] = None
+        self.mitschrift = False      # sync_turn schreibt nur, wenn eingeschaltet
+        self.mitschrift_grund = ""   # warum sync_turn zuletzt nichts schrieb
+        self._zug = 0
+        self._gemeldet = False
+        self._herkunft_bauer = _weg_herkunft
 
     def _verbindung(self) -> Optional[_MCPKlient]:
         """Ein Server-Prozess je Anbieter, beim ersten Bedarf gestartet."""
@@ -451,6 +517,13 @@ class BrainlehrProvider(MemoryProvider):
         # Nur der Hauptlauf schreibt. Cron und Unteragenten lesen mit,
         # tragen aber nichts ein -- ihre Systemprompts sind kein Wissen.
         self.darf_schreiben = kwargs.get("agent_context", "primary") == "primary"
+        self._zug = 0
+        self._gemeldet = False
+        # Einmal je Sitzung gelesen, nicht je Zug: sync_turn laeuft nach JEDEM
+        # Zug, und ein Dateizugriff pro Zug waere ein Preis fuer nichts.
+        self.mitschrift = str(
+            _hermes_konfig().get("mitschrift", "")).strip().lower() in (
+                "1", "true", "ja", "yes", "an", "on")
 
     def get_tool_schemas(self) -> List[Dict[str, Any]]:
         return [
@@ -560,7 +633,7 @@ class BrainlehrProvider(MemoryProvider):
             if klient is None:
                 return json.dumps({"fehler": "brainlehr nicht erreichbar"})
             ergebnis = klient.ruf("knowledge_add", {
-                "parent_path": "/shared",
+                "parent_path": ELTERNPFAD,
                 "title": args["titel"],
                 "summary": args["inhalt"][:400],
                 "content": args.get("inhalt"),
@@ -575,6 +648,141 @@ class BrainlehrProvider(MemoryProvider):
                                "Grund steht im Log"}, ensure_ascii=False)
             return json.dumps(ergebnis, ensure_ascii=False, default=str)
         return json.dumps({"fehler": f"unbekanntes Werkzeug {tool_name}"})
+
+    # -- Mitschrift ---------------------------------------------------------
+
+    def sync_turn(self, user_content: str, assistant_content: str, *,
+                  session_id: str = "",
+                  messages: Optional[List[Dict[str, Any]]] = None) -> None:
+        """Nach jedem Zug. Per Vorgabe entsteht hier KEIN Eintrag.
+
+        DIE ENTSCHEIDUNG, und warum sie nicht "Methode weglassen" lautet:
+        Hermes' Anleitung fuer eigenstaendige Plugins nennt `sync_turn` neben
+        `prefetch` und `shutdown` als Pflichtteil des ABC. Sie zu streichen
+        hiesse, ihre Anleitung nicht zu erfuellen. Sie zu bauen und stumm
+        nichts tun zu lassen waere schlimmer als beides -- dann sieht der
+        Nutzer eine Mitschrift, die es nicht gibt.
+
+        DER AUSWEG: Sie ist da, sie schweigt per Vorgabe, und sie SAGT beim
+        ersten Zug einer Sitzung, dass sie schweigt und wie man das aendert.
+        Eingeschaltet (`mitschrift` im Panel) schreibt sie mit der WEG-Herkunft
+        -- Sitzung, Zug, Zeitpunkt. Das ist nachpruefbar. "Aus einem
+        Gespraech" waere es nicht, und genau daran scheiterte der Automat
+        bisher.
+
+        Nicht blockierend: der Schreibvorgang laeuft im Hintergrund, wie schon
+        der Abruf. Die Schnittstelle verlangt das ausdruecklich."""
+        self._zug += 1
+
+        if not self.darf_schreiben:
+            self.mitschrift_grund = (
+                "kein Schreibrecht in diesem Kontext (Cron/Unteragent) -- "
+                "deren Systemprompts sind kein Wissen")
+            return
+
+        if not self.mitschrift:
+            self.mitschrift_grund = (
+                "mitschrift ist ausgeschaltet (Vorgabe): brainlehr verlangt an "
+                "jedem Eintrag eine nachpruefbare Herkunft, und ein Automat "
+                "kann nur den Weg bezeugen, nicht die Quelle. Einschalten "
+                "ueber `mitschrift` in den Plugin-Einstellungen; Eintraege "
+                "tragen dann 'Hermes-Sitzung <id>, Zug <n>, <Zeitpunkt>'.")
+            if not self._gemeldet:
+                self._gemeldet = True
+                log.info("brainlehr sync_turn: %s", self.mitschrift_grund)
+            return
+
+        if is_trivial_prompt(user_content) or not (assistant_content or "").strip():
+            self.mitschrift_grund = "Zug ohne Gehalt (Trivialfilter)"
+            return
+
+        herkunft = self._herkunft_bauer(session_id or self._sitzung, self._zug)
+        if not _ist_weg_herkunft(herkunft):
+            # Kein Schoenschreiben: lieber kein Eintrag als einer, dessen
+            # Herkunft etwas behauptet. Der Fall ist heute unerreichbar --
+            # er wird es beim naechsten Umbau nicht mehr sein.
+            self.mitschrift_grund = (
+                f"Herkunft nennt nicht den Weg, sondern behauptet eine "
+                f"Quelle: {herkunft!r} -- nicht geschrieben")
+            log.warning("brainlehr sync_turn: %s", self.mitschrift_grund)
+            return
+
+        self.mitschrift_grund = ""
+        threading.Thread(target=self._mitschreiben,
+                         args=(user_content, assistant_content, herkunft),
+                         daemon=True).start()
+
+    def _mitschreiben(self, frage: str, antwort: str, herkunft: str) -> None:
+        klient = self._verbindung()
+        if klient is None:
+            return
+        klient.ruf("knowledge_add", {
+            "parent_path": ELTERNPFAD,
+            "title": frage.strip().splitlines()[0][:120],
+            "summary": antwort.strip()[:400],
+            "content": f"Frage:\n{frage}\n\nAntwort:\n{antwort}",
+            "source": herkunft,
+            "norm_entscheidung": "keine_norm",
+            "norm_entschieden_grund":
+                "Zug-Mitschrift aus Hermes -- bezeugt den Verlauf, nicht "
+                "seine Richtigkeit",
+        })
+
+    # -- Einrichtung --------------------------------------------------------
+
+    def post_setup(self, hermes_home: str, config: dict) -> None:
+        """`hermes memory setup` uebergibt hier VOLLSTAENDIG (memory_setup.py:
+        'delegate entirely to it') -- also gehoert auch die Aktivierung hierher.
+
+        Gefragt werden genau die vier Dinge, ohne die der Anbieter still
+        nutzlos ist und die `is_available()` sonst einzeln beanstandet:
+        Datenbankpfad, Ausweis, Einbettungsdienst, Betriebsprofil. Der Rest
+        des Panels hat brauchbare Vorgaben.
+
+        Und dann wird GEMESSEN statt gemeldet: zum Schluss laeuft dieselbe
+        Diagnose wie `hermes brainlehr pruefen`. Eine Einrichtung, die 'fertig'
+        sagt, ohne einmal verbunden zu haben, verschiebt den Fehler nur auf
+        den ersten echten Zug."""
+        heim = Path(hermes_home).expanduser()
+        vorher = _hermes_konfig()
+
+        print("\n  brainlehr einrichten / configuring brainlehr:\n")
+        werte = dict(vorher)
+        werte["db_path"] = _frage(
+            "Datenbankpfad / database path", vorher.get("db_path", ""))
+        werte["ausweis"] = _frage(
+            "Ausweis (handelnde Kennung) / acting identity",
+            vorher.get("ausweis", ""))
+        werte["embed_service_url"] = _frage(
+            "Einbettungsdienst / embedding service",
+            vorher.get("embed_service_url", "") or "http://127.0.0.1:11434")
+        werte["betriebsprofil"] = _frage(
+            "Betriebsprofil (einzelplatz/mandant) / operating profile",
+            vorher.get("betriebsprofil", "") or "einzelplatz")
+
+        ziel = heim / "brainlehr" / "config.json"
+        ziel.parent.mkdir(parents=True, exist_ok=True)
+        ziel.write_text(json.dumps(werte, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+        print(f"\n  Gespeichert / saved: {ziel}")
+
+        if not isinstance(config.get("memory"), dict):
+            config["memory"] = {}
+        config["memory"]["provider"] = "brainlehr"
+        try:
+            from hermes_cli.config import save_config  # type: ignore
+            save_config(config)
+        except Exception:
+            # Ohne Hermes (Pruefstand) gibt es keine config.yaml. Der Aufrufer
+            # haelt das Ergebnis dann im uebergebenen dict -- gepruefft wird
+            # genau das.
+            pass
+
+        grund = self._grund_fuer_unverfuegbar()
+        if grund:
+            print(f"  ⚠ Noch nicht einsatzbereit / not ready yet: {grund}\n")
+        else:
+            print("  ✓ brainlehr ist erreichbar und einsatzbereit / ready\n")
 
     def shutdown(self) -> None:
         """Den Server-Prozess mitnehmen.
