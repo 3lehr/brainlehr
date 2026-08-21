@@ -1,37 +1,35 @@
-# STAND brainlehr — 2026-08-21T10:45:00+0200
+# STAND brainlehr — 2026-08-21T12:20:00+0200
 
-**Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Gesamtbau A–G
-abgeschlossen. Katalog `docs/REQUIREMENTS_BRAINLEHR.md`: **71 Zeilen**, 33
-belegt. Plan: `docs/PLAN_NAECHSTE_STUFE_2026-08-21.md`, Reihenfolge in §9
-festgeschrieben.
-**Laufend (Welle 1, nach Dateibesitz getrennt):** P16 Gegenstands-Achse
-(besitzt `schema.sql`) · P18 Namensfrage (besitzt `haken/suchpfad_abruf.py`,
-`haken/knowledge_recall_hook.py`).
-**Entschieden und vom Tisch:** KEIN zweiter Vektorraum (Konsil 2:1,
-`ADR-032`) — bei zwei Raeumen laesst ein `gattung`-Wechsel den Knoten in
-KEINEM Raum stehen, ohne Fehler, und `vektorstand.py` meldet dagegen 4 354
-Falschmeldungen. A scheitert erst, wenn jemand einen Knoten vermisst; C in
-einer Messung. · `E24` zweiter Faktor auf FUTURE (Betreiberwort). Vorfrage
-gemessen: Median 9 Sitzungen/Tag, Max 15.
-**Der Befund mit dem groessten Hebel:** `sensibel` ist fuer Dokumente Dritter
-das FALSCHE Werkzeug — ein sensibler Abschnitt landet auf Rang 854/1130/2571
-und steht nicht im Volltextindex. Geschuetzt wird ueber
-`mandant`/`kreis`/`freigabe`. Heute 0 von 5 241 Knoten mit `sensibel=1`.
-**Groesster offener Rueckstand:** `BDW-P05`/Zielbild A bei **3/35 = 8,6 %**
-gegen Schwelle 95 % — kein Trefferquotenproblem, die Felder Quelle, Status
-und Geltung werden gar nicht ausgeliefert.
-**Fallen, mehrfach getreten:** Anweisung in `schema.sql` auf eine
-NACHGEZOGENE Spalte bricht auf gewachsenen DBs ab, `executescript` schweigt
-danach → ans Dateiende (`L-1ffae7`). Vorrichtungen fuer Alt-Schemata muessen
-Trigger UND Indizes inhaltsbestimmt mitschneiden (`L-e12296`).
-**Vorbestehend rot, nicht von mir:** `tests/test_naht_ratsche.py`, sechs
-Fehler in `tests/test_anlass_schema_backfill.py` (auf `1611398b` belegt).
-**Wartet auf den Betreiber:** Bauform fuer `BDW-P19` (Mehrsprachigkeit,
-707 Textstellen / 60 543 Zeichen erhoben) · Topics auf GitHub setzen
-(`lehrtools` auf lehrAtelier und die openlehr_X, NICHT auf brainlehr).
-**Berichtigt:** Das GitHub-Konto ist NICHT gesperrt (das ist ein zweites,
-`Lehrmeister`), und der oeffentliche Export ist seit 2026-08-20T17:27
-draussen — `3lehr/brainlehr`, oeffentlich, AGPL, Topics leer.
+**Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Katalog **71 Zeilen**.
+Plan `docs/PLAN_NAECHSTE_STUFE_2026-08-21.md`, Reihenfolge in §9 fest.
+**Fertig seit dem Gesamtbau:** P16 Gegenstands-Achse `5403a71b` (58
+Gegenstaende, 231 Namen — vorher 2 und 7) · P18 Namensfrage `6ffb96a9` (1/3
+-> 3/3 bei der natuerlich gestellten Frage) · P17 Faelligkeit (Datum und
+Zustaendiger, Startliste nach Faelligkeit statt Alter).
+**Laufend:** §4.2 getrennte Kandidatenbudgets (besitzt `haken/`) · P15
+Dokumentenablage (besitzt `schema.sql`, `kern/dokumentenablage.py`).
+**DIE FALLE DIESES TAGES, zweimal zugeschlagen:** Mehrere Sitzungen teilen
+sich EINEN git-Index. Eine fertige, uncommittete Aenderung wurde von einem
+parallelen `git`-Vorgang nach `stash@{0}` verschoben — der Agent meldete
+„3/3 fertig", der Baum lieferte 1/3. Aufgefallen NUR, weil die Zahlen selbst
+nachgefahren wurden statt den Bericht zu lesen. **Kein `git stash`, kein
+`git checkout --` ohne Pfadangabe. Committen, sobald geprueft — nicht am
+Ende einer Welle.**
+**Uebergangsstand, bewusst so committet:** `forderung_zustaendig` ist freier
+Namenstext statt Gegenstandsverweis — ein Name als Schluessel, den ADR-028
+verbietet. Nachzuziehen, sobald Personen im Gegenstandsbestand stehen (das
+entsteht mit P15). Als Aufgabe abgelegt.
+**Offen und bewusst nicht behoben:** `melder/vermutungswaechter.py`
+unterscheidet Zitat nicht von eigener Behauptung (Plan §7a). Eine
+Zitaterkennung, die zu grosszuegig greift, macht ihn blind fuer echte
+Absolutaussagen — schnell verschlimmbessern ist teurer als offen lassen.
+**Groesster gemessener Rueckstand, unveraendert:** `BDW-P05`/Zielbild A bei
+**3/35 = 8,6 %** gegen Schwelle 95 %. Kein Trefferquotenproblem — Quelle,
+Status und Geltung werden gar nicht ausgeliefert.
+**Wartet auf den Betreiber:** Bauform fuer `BDW-P19` (707 Textstellen,
+60 543 Zeichen erhoben) · GitHub-Topics setzen (`lehrtools` auf lehrAtelier
+und die openlehr_X, NICHT auf brainlehr — der Speicher ist kein Werkzeug).
+`E24` ist vertagt (FUTURE), nicht offen.
 
 ---
 
