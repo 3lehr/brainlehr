@@ -1,0 +1,160 @@
+{
+  "lauf": "BDW-P15 Echtlauf Dokumentenablage",
+  "zeitpunkt": "2026-08-21T10:23:09+0200",
+  "dokument": "/Volumes/daten/Begod2026/buckeberg/dokumente/Energieausweis/Energieausweis IB 16.pdf",
+  "groesse_bytes": 9958376,
+  "original_sha256_vor_dem_lauf": "420cefd548ded62e2bed914347f70cb2e5170173ac95e2134e2f8649740f40a3",
+  "schema_nachzug": "nichts offen",
+  "quell_hash_vorher": {
+    "gesamt": 5242,
+    "mit_quell_hash": 49
+  },
+  "stellung_domaene": {
+    "knoten": "/dokumente/buckeberg/energieausweis-ib-16-stellung-domaene",
+    "ort": "domaene",
+    "datei": "/Volumes/daten/Begod2026/buckeberg/dokumente/Energieausweis/Energieausweis IB 16.pdf",
+    "quell_hash": "420cefd548ded62e2bed914347f70cb2e5170173ac95e2134e2f8649740f40a3",
+    "beteiligte": [
+      {
+        "gegenstand_id": "60abdbb6",
+        "name": "Klaus-Dieter Reichelt",
+        "art": "person",
+        "rolle": "verfasst_von"
+      },
+      {
+        "gegenstand_id": "df539147",
+        "name": "Techem Energy Services GmbH",
+        "art": "unternehmen",
+        "rolle": "verfasst_von"
+      },
+      {
+        "gegenstand_id": "08417565",
+        "name": "Im Buckeberg 16",
+        "art": "liegenschaft",
+        "rolle": "betrifft"
+      }
+    ]
+  },
+  "stellung_brainlehr": {
+    "knoten": "/dokumente/buckeberg/energieausweis-ib-16-stellung-brainlehr",
+    "ort": "brainlehr",
+    "datei": "/Volumes/daten/Begod2026/brainlehr/ablage/buckeberg/420cefd548de-Energieausweis IB 16.pdf",
+    "quell_hash": "420cefd548ded62e2bed914347f70cb2e5170173ac95e2134e2f8649740f40a3",
+    "beteiligte": [
+      {
+        "gegenstand_id": "60abdbb6",
+        "name": "Klaus-Dieter Reichelt",
+        "art": "person",
+        "rolle": "verfasst_von"
+      },
+      {
+        "gegenstand_id": "df539147",
+        "name": "Techem Energy Services GmbH",
+        "art": "unternehmen",
+        "rolle": "verfasst_von"
+      },
+      {
+        "gegenstand_id": "08417565",
+        "name": "Im Buckeberg 16",
+        "art": "liegenschaft",
+        "rolle": "betrifft"
+      }
+    ]
+  },
+  "auszug": "/dokumente/buckeberg/energieausweis-ib-16-stellung-brainlehr/seite-1--kopf",
+  "ac1_fund_ueber_zusammenfassung": {
+    "wort": "wohngebaeude (steht NUR in der Zusammenfassung, nicht im Titel)",
+    "treffer": [
+      "/dokumente/buckeberg/energieausweis-ib-16-stellung-brainlehr",
+      "/dokumente/buckeberg/energieausweis-ib-16-stellung-domaene"
+    ]
+  },
+  "ac1_negativfall": {
+    "abgewiesen": true,
+    "meldung": "knowledge_nodes.dokument_pfad gesetzt, aber quell_hash fehlt: ein Dokumentknoten ohne Pruefsumme ist eine Kopie mit Absichtserklaerung (ADR-032). sha256 der Datei mitgeben."
+  },
+  "waechter_unveraendert": [],
+  "waechter_nach_aenderung": [
+    {
+      "knoten": "/dokumente/buckeberg/energieausweis-ib-16-stellung-brainlehr",
+      "datei": "/private/tmp/claude-501/-Volumes-daten-Begod2026-brainlehr/d8277698-7913-4e56-ae2d-f6d55b3eb162/scratchpad/p15/ablage/buckeberg/420cefd548de-Energieausweis IB 16.pdf",
+      "befund": "geaendert",
+      "erwartet": "420cefd548ded62e2bed914347f70cb2e5170173ac95e2134e2f8649740f40a3",
+      "ist": "913bee720dbad95904dc05601f3e1316a4ea62faaf5ba8b36795de03a39e9709"
+    },
+    {
+      "knoten": "/dokumente/buckeberg/energieausweis-ib-16-stellung-brainlehr/seite-1--kopf",
+      "datei": "/private/tmp/claude-501/-Volumes-daten-Begod2026-brainlehr/d8277698-7913-4e56-ae2d-f6d55b3eb162/scratchpad/p15/ablage/buckeberg/420cefd548de-Energieausweis IB 16.pdf",
+      "befund": "geaendert",
+      "erwartet": "420cefd548ded62e2bed914347f70cb2e5170173ac95e2134e2f8649740f40a3",
+      "ist": "913bee720dbad95904dc05601f3e1316a4ea62faaf5ba8b36795de03a39e9709"
+    }
+  ],
+  "waechter_nach_ruecknahme": [],
+  "beteiligte_am_knoten": [
+    {
+      "gegenstand_id": "08417565",
+      "rolle": "betrifft",
+      "beleg": "buckeberg/dokumente/Energieausweis, Handprobe BDW-P15 am 2026-08-21T10:23:09+0200",
+      "seit": "2026-08-21T10:23:09+0200",
+      "art": "liegenschaft",
+      "ruf_heute": "Im Buckeberg 16"
+    },
+    {
+      "gegenstand_id": "60abdbb6",
+      "rolle": "verfasst_von",
+      "beleg": "buckeberg/dokumente/Energieausweis, Handprobe BDW-P15 am 2026-08-21T10:23:09+0200",
+      "seit": "2026-08-21T10:23:09+0200",
+      "art": "person",
+      "ruf_heute": "Klaus-Dieter Reichelt"
+    },
+    {
+      "gegenstand_id": "df539147",
+      "rolle": "verfasst_von",
+      "beleg": "buckeberg/dokumente/Energieausweis, Handprobe BDW-P15 am 2026-08-21T10:23:09+0200",
+      "seit": "2026-08-21T10:23:09+0200",
+      "art": "unternehmen",
+      "ruf_heute": "Techem Energy Services GmbH"
+    }
+  ],
+  "gegenstaende_je_art": {
+    "anwendung": 1,
+    "einstellung": 1,
+    "liegenschaft": 1,
+    "person": 1,
+    "plankennung": 56,
+    "unternehmen": 1
+  },
+  "quell_hash_nachher": {
+    "gesamt": 5245,
+    "mit_quell_hash": 52
+  },
+  "original_sha256_nach_dem_lauf": "420cefd548ded62e2bed914347f70cb2e5170173ac95e2134e2f8649740f40a3",
+  "buckeberg_unveraendert": true,
+  "nachlauf": {
+    "ablage_verlegt_nach": "/Volumes/daten/Begod2026/brainlehr/ablage/buckeberg/420cefd548de-Energieausweis IB 16.pdf",
+    "grund": "Der Lauf legte die brainlehr-Stellung in ein Wegwerfverzeichnis; dort haette der Waechter ab dem naechsten Neustart dauerhaft 'fehlt' gemeldet. Die Datei liegt jetzt in brainlehrs echter Ablage (kern/dokumentenablage.ablage_wurzel()).",
+    "waechter_nach_dem_verlegen": [],
+    "einstellung_zurueckgesetzt": "ablage.buckeberg = domaene (Vorgabe) -- buckebergs echte Dateien bleiben, wo sie sind; die Einstellung gilt fuer kuenftige Ablagen, nicht rueckwirkend.",
+    "HINWEIS": "ablage/buckeberg/ traegt jetzt ein Dokument mit Daten Dritter (Energieausweis mit Ausstellername). Gehoert in .gitignore -- diese Datei besitzt dieser Auftrag nicht."
+  },
+  "BDW-P15-AC2": {
+    "nulllinie_vorher_gemessen": {
+      "gesamt": "14/35",
+      "NODE": "7/20",
+      "LESSON": "7/15",
+      "MIT_KANTE": "9/18",
+      "OHNE_KANTE": "5/17",
+      "wie": "python3 kern/abrufguete.py gegen runs/pruefkorpus.jsonl, alle vier Reihen gleich",
+      "wann": "2026-08-21, VOR jeder Schreibung dieses Auftrags",
+      "bestand_dabei": "5242 Knoten, 5242 FTS-Zeilen"
+    },
+    "nachher": null,
+    "vermerk": "vom Hauptfaden gemessen -- dieser Auftrag faehrt keinen zweiten Lauf (Weisung 2026-08-21, L-790af2: zwei Laeufe gegen denselben Ollama-Daemon kollidieren).",
+    "was_die_quote_beruehren_koennte": [
+      "knowledge_fts waechst von 5242 auf 5245 Zeilen (2 Dokumentknoten + 1 Auszug). bm25 ist korpusrelativ -- schon die blosse Anwesenheit fremder Zeilen verschiebt die Rangfolge der eigenen (L-f8b529). Das ist der EINZIGE Kanal, ueber den dieser Auftrag die Quote beruehrt.",
+      "Die drei Knoten tragen mandant='buckeberg', kreis='verwaltung'. kern/trennung.py::sichtbar_sql filtert sie aus jeder Abfrage mit Ausweis heraus -- der Abrufweg sieht sie also nicht als KANDIDATEN. Ob der FTS-Rang trotzdem verschoben ist, entscheidet, ob der Filter vor oder nach bm25 greift; das ist zu messen, nicht zu setzen.",
+      "Die drei Knoten haben KEINE Einbettung (kein build_embeddings-Lauf, um den Ollama-Daemon nicht zu belegen). melder/vektorstand.py meldet dafuer ab jetzt 3 ohne Einbettung -- korrekte Meldung, kein Fehlalarm. Ein build_embeddings-Lauf danach schliesst das."
+    ]
+  }
+}

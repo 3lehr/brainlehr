@@ -111,3 +111,9 @@ runs/schnappschuesse/
 sicherungen/
 dienst/log/
 kanarienvogel_alarm.jsonl
+
+# Dokumentenablage (BDW-P15, ADR-032): traegt Dateien Dritter --
+# WEG-Unterlagen, Steuerbelege. Sie gehoeren nie in die Versionierung,
+# auch nicht in ein privates Repo: eine committete Datei laesst sich nicht
+# mehr zurueckziehen, ohne die Historie umzuschreiben.
+ablage/

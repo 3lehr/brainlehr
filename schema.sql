@@ -267,6 +267,32 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- Normschicht oben schon einmal teuer bezahlt. Befuellt aus
     -- kern/spracherkennung.py, NULL bei Unklarheit ist ein Ergebnis.
     sprache TEXT,
+    -- dokument_pfad (P15/ADR-032, Auftrag 2026-08-21): Der VERWEIS auf die
+    -- abgelegte Datei -- absoluter Pfad. NULL heisst "kein Dokumentknoten"
+    -- und ist der Normalfall fuer alle 5 242 Bestandsknoten.
+    --
+    -- Diese eine Spalte traegt die Unterscheidung, an der die Pflicht haengt:
+    -- ist sie gesetzt, MUSS quell_hash gesetzt sein (Trigger
+    -- knowledge_nodes_dokument_quellhash_pflicht_bi/bu am DATEIENDE, Bauform
+    -- uebernommen von knowledge_nodes_norm_entscheidung_pflicht_bi). Grund
+    -- steht in ADR-032: quell_hash ist heute bei 49 von 5 242 Knoten gesetzt
+    -- (0,9 %) -- der Mechanismus, der "Verweis und Pruefsumme statt Kopie"
+    -- ueberhaupt traegt, ist gebaut und praktisch unbenutzt. Ohne die
+    -- Verschaerfung waere die Ablage eine Kopie mit Absichtserklaerung.
+    --
+    -- WAS HIER NICHT STEHT und bewusst nicht: der ORT (`domaene` oder
+    -- `brainlehr`). Der ist eine Einstellung JE DOMAENE in knowledge_config
+    -- unter `ablage.<domaene>` (Bauform wie `mitstart.<domaene>`, ADR-023) --
+    -- eine Spalte daneben waere eine zweite Wahrheit, die getrennt altert.
+    -- dokument_pfad zeigt IMMER auf den heutigen Ort der Datei, in beiden
+    -- Stellungen.
+    --
+    -- quell_hash traegt fuer Dokumentknoten den sha256 der GANZEN Datei,
+    -- nicht den Abschnittshash aus normbestand.py -- eine PDF hat keine
+    -- '## '-Abschnitte. Kollisionsfrei, weil normbestand.quellstatus() nur
+    -- greift, wenn source dem Muster 'erzeugt aus <Datei> (Stand <ISO>)'
+    -- folgt; Dokumentknoten tragen dort ihre Herkunft im Klartext.
+    dokument_pfad TEXT,
     -- forderung_stand (Strang F, Auftrag 2026-08-21): offen|erledigt|
     -- abgelehnt|ueberholt, durchgesetzt von den vier Triggern am DATEIENDE
     -- (knowledge_nodes_forderung_stand_*, siehe dortiger Kommentar -- die
@@ -1941,4 +1967,38 @@ FOR EACH ROW WHEN NEW.forderung_faellig_am IS NOT NULL
     AND NEW.forderung_faellig_am NOT GLOB '[12][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]*'
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.forderung_faellig_am ist kein ISO-Datum (erwartet YYYY-MM-DD...)');
+END;
+
+-- ---------------------------------------------------------------------
+-- Dokumentenablage (P15, ADR-032, Auftrag 2026-08-21). Steht GANZ AM ENDE,
+-- aus demselben Grund wie die Forderungs-Trigger darueber und die beiden
+-- Indizes davor: _ensure_core_schema spielt diese Datei per executescript
+-- ein, BEVOR kern/schema_nachzug.py `dokument_pfad` auf einer gewachsenen
+-- Datenbank ergaenzt -- und faengt den OperationalError, sodass alles
+-- dahinter lautlos ausfaellt (L-1ffae7).
+--
+-- DIE ZUSICHERUNG: Ein Knoten mit Verweis auf eine Datei OHNE Pruefsumme
+-- wird abgewiesen (BDW-P15-AC1, Negativfall). Ohne diese Haerte gaebe es
+-- eine Stellung, in der Verweis und Wirklichkeit auseinanderlaufen und
+-- nichts es merkt -- genau der Zustand, den ADR-026 verhindern wollte.
+-- Bauform wortgleich zu knowledge_nodes_norm_entscheidung_pflicht_bi.
+--
+-- Die UPDATE-Fassung ist nicht Zierrat: quell_hash ist per
+-- herkunft_unveraenderlich.sql nur gegen AENDERUNG eines gesetzten Werts
+-- gesperrt, nicht gegen das nachtraegliche Setzen von dokument_pfad auf
+-- einem Knoten ohne Hash.
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_dokument_quellhash_pflicht_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.dokument_pfad IS NOT NULL AND TRIM(NEW.dokument_pfad) <> ''
+    AND (NEW.quell_hash IS NULL OR TRIM(NEW.quell_hash) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.dokument_pfad gesetzt, aber quell_hash fehlt: ein Dokumentknoten ohne Pruefsumme ist eine Kopie mit Absichtserklaerung (ADR-032). sha256 der Datei mitgeben.');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_dokument_quellhash_pflicht_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.dokument_pfad IS NOT NULL AND TRIM(NEW.dokument_pfad) <> ''
+    AND (NEW.quell_hash IS NULL OR TRIM(NEW.quell_hash) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.dokument_pfad gesetzt, aber quell_hash fehlt: ein Dokumentknoten ohne Pruefsumme ist eine Kopie mit Absichtserklaerung (ADR-032). sha256 der Datei mitgeben.');
 END;
