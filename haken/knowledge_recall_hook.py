@@ -1324,7 +1324,12 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
         try:
             scored = [(hits(f"{c['description']} {c['root_cause']} {c['prevention']}", kws),
                        c["severity"] in ("critical", "high"), c["occurrences"], c) for c in lesson_rows]
-            scored.sort(key=lambda s: s[1:3], reverse=True)
+            # KEIN Severity-Sort mehr (2026-08-21, gemessen). Die Reihenfolge aus
+            # Stichwort- und Bedeutungskanal IST die Relevanzreihenfolge; ein Sort
+            # nach (severity, occurrences) macht sie zum blossen Tiebreak und laesst
+            # eine 'high'-Lehre eine relevantere 'medium'-Lehre verdraengen. Genau
+            # das kostete beim Import von 951 Fremdzeilen die Lehre L-606b63: sie
+            # stand in der Fusion auf Rang 14, die Verdraengerin auf 16.
             scored = _apply_trust_score(scored, "lesson", ref_of=lambda s: s[3]["id"])
             if own:
                 scored = _tag_lesson_scope(scored, own)
@@ -1409,13 +1414,20 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
             emb_signal = _radar_select(emb_candidates, "score", mad_mult)
 
         signal = _combine_channels(kw_signal, emb_signal, emb_scores is not None)
-        # bm25 (Kanal 1, via Radar) bleibt die primaere Reihenfolge (stabiler
-        # Sort) -- Severity/Haeufigkeit brechen nur noch echte Gleichstaende.
+        # bm25 (Kanal 1, via Radar) bleibt die primaere Reihenfolge -- seit
+        # 2026-08-21 auch tatsaechlich. Der Kommentar behauptete das schon,
+        # der Code tat es NICHT: er sortierte nach (severity, occurrences)
+        # als PRIMAERschluessel. Jetzt gibt es keinen Sort mehr.
         # 4-Tupel-Form (hits, severity, occurrences, dict) wie gehabt --
         # _tag_lesson_scope/selftest erwarten den dict an Index 3.
         scored = [(hits(f"{c['description']} {c['root_cause']} {c['prevention']}", kws),
                    c["severity"] in ("critical", "high"), c["occurrences"], c) for c in signal]
-        scored.sort(key=lambda s: s[1:3], reverse=True)
+        # KEIN Severity-Sort mehr (2026-08-21, gemessen). Die Reihenfolge aus
+        # Stichwort- und Bedeutungskanal IST die Relevanzreihenfolge; ein Sort
+        # nach (severity, occurrences) macht sie zum blossen Tiebreak und laesst
+        # eine 'high'-Lehre eine relevantere 'medium'-Lehre verdraengen. Genau
+        # das kostete beim Import von 951 Fremdzeilen die Lehre L-606b63: sie
+        # stand in der Fusion auf Rang 14, die Verdraengerin auf 16.
         scored = _apply_trust_score(scored, "lesson", ref_of=lambda s: s[3]["id"])
         if own:
             scored = _tag_lesson_scope(scored, own)
