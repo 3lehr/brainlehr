@@ -1292,8 +1292,14 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
             # S12: mehrstufiger_abruf.kandidaten_geschaltet() ersetzt den
             # Direktaufruf 1:1 (faellt bei KNOWLEDGE_MEHRSTUFIGER_ABRUF=AUS,
             # der Vorgabe, byte-gleich auf suchpfad_abruf.kandidaten() zurueck).
+            # S4.2 (docs/PLAN_NAECHSTE_STUFE_2026-08-21.md): (MAX_NODES,
+            # MAX_LESSONS) als Tupel statt der Summe -- suchpfad_abruf.
+            # kandidaten() kappt beide Sorten seitdem GETRENNT (s. dortiger
+            # Docstring-Nachtrag), die Summe liess sie um denselben Deckel
+            # konkurrieren. mehrstufiger_abruf.kandidaten_geschaltet() reicht
+            # das Tupel bei MEHRSTUFIGER_ABRUF=AUS (Vorgabe) unveraendert durch.
             node_rows, lesson_rows = mehrstufiger_abruf.kandidaten_geschaltet(
-                conn, prompt if prompt else " ".join(kws), query_vec, MAX_NODES + MAX_LESSONS)
+                conn, prompt if prompt else " ".join(kws), query_vec, (MAX_NODES, MAX_LESSONS))
         except sqlite3.Error:
             pass
         # Enthaltung (ENTHALTUNGSSCHWELLE_KOSINUS, s.o.): nur ueber die
