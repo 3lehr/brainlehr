@@ -1,7 +1,101 @@
 # STAND brainlehr — 2026-08-21T17:30:00+0200
 
-**Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Katalog 71 Zeilen,
-37 belegt, **0 ohne Gate-Lauf**. Alle Plan-Wellen abgearbeitet.
+**Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Katalog **72 Zeilen**,
+0 ohne Gate-Lauf. Alle Plan-Wellen abgearbeitet.
+
+## Auslieferung entschieden: das Paket traegt keinen Bestand
+
+Betreiberwort 2026-08-21: *"lass mein eigenes zeugs weg, das sollen sich die
+leute selbst erarbeiten!"* — als `BDW-P20` im Katalog (`6c464372`).
+
+- **Fremdkataloge werden GEHOLT, nicht mitgeliefert** (`a5b9d16a`). Jeder
+  Eintrag traegt `quelle` (art/ort/lizenz/hinweis). BSI: URL aus
+  `bsi-stand-der-technik/.git_disabled/config`, Lizenz CC BY-SA 4.0 aus
+  dortiger LICENSE — deshalb ist Holen richtig, CC BY-SA bindet beim
+  WEITERverteilen. NASA und WCAG: `art: "keine"`, ehrlich statt geraten.
+  `kataloge()` geht NIE ins Netz (belegt mit gesperrtem Socket), nur
+  `katalog_holen()`.
+- **Der eigene Bestand wandert nicht mit** (gemessen: 251 Knoten, 769 Lehren
+  `freigabe='offen'`, 2,18 MB). Grund ist nicht die Groesse: eine Lehre ohne
+  ihren Beleg ist in einem Belegsystem eine Behauptung.
+
+**FALLE:** `_wcag_datei()` las bis heute `~/.claude/regeln/wcag.md` — die
+private Claude-Konfiguration des Betreibers. Bei einem Fremden zeigt der Pfad
+ins Leere oder auf eine fremde Datei gleichen Namens.
+
+## Zwei Waechter repariert, beide waren faktisch aus
+
+**1. Behauptungs-Waechter (`fae3b513`), der schwerere Fall.** Wirkweg ist
+`rueckfrageschleife.py::_letzte_antwort()`, nicht die gleichnamige Funktion in
+`agentenbehauptung.py`. Dort setzte JEDE `user`-Zeile die Werkzeugspur zurueck
+— und in Claude Code kommen Werkzeug-ERGEBNISSE als `user`-Zeilen. Folge: jede
+Antwort nach einem Werkzeugaufruf wurde beanstandet. **370 von 400** juengsten
+Transkripten trugen faelschlich `werkzeug=False`. Behoben durch Wiederverwenden
+von `_ist_echter_nutzerprompt()` statt Verdopplung der Logik. Gegenprobe
+selbst gefahren: aktuelles Transkript jetzt `True`, beide Selbsttests gruen,
+alle drei belegten `L-706807`-Vorkommen schlagen weiter an.
+
+**2. Katalog-Wache (`4e10b217`).** Neu `haken/git/pre-commit`: beruehrt ein
+Commit `docs/REQUIREMENTS_BRAINLEHR.md`, muss
+`tests/test_requirements_brainlehr.py` gruen sein (Ausschalter
+`BRAINLEHR_KATALOG=aus`). Dazu `melder/planmitschrieb.py` erweitert: nennt eine
+Commit-Nachricht eine Betreiberentscheidung ohne Katalogaenderung, wird das
+gemeldet. **Erste Messung: 6 von 11 solcher Commits fassen den Katalog nicht
+an (55 %).**
+
+**FALLE, die das aufdeckte:** Der Katalogtest war seit 2026-08-21T06:48 rot —
+71 Katalogzeilen gegen 66 in `EXPECTED`. Zwei Katalogzeilen berufen sich auf
+genau diesen Test als PASS-Beleg. `FUTURE` ist jetzt die vierte Gate-Lage
+neben `NOT RUN`/`DEFERRED`/belegt, mit Pflicht zur Wiedervorlage.
+
+## Hermes: wir laufen dort NIE allein (Knoten `5d0c5cd4`)
+
+Gemessen im fremden Quelltext: `builtin` ist nicht abwaehlbar (`:407`),
+`prefetch_all` fuegt alle Anbieter ohne Gesamtdeckel zusammen (`:545`), Fehler
+gehen stumm nach `logger.debug` (`:542`), fremde Anbieter stehen unter 8 s
+Frist, das eingebaute nicht (`:47`). Schreibt Hermes' Gedaechtnis, ruft es
+`on_memory_write` bei uns (`:1076`) — wir implementieren es nicht, der Ruf
+verpufft; das ist heute richtig, aber Zufall und keine Entscheidung.
+
+**Statuszeile nachgeruestet** (`a5152b33`, Tests 35 -> 40): Der Anbieter meldet
+je Abruf eine Zeile ueber `status_callback`, den LEEREN Fall ausdruecklich.
+Ohne die Rueckrufe (Gateway/Telegram/Discord) bleibt er stumm statt zu
+stuerzen. Grund: sonst sind "nichts gefunden", "Frist gerissen" und
+"abgestuerzt" fuer den Nutzer dasselbe Bild.
+
+**FALLE fuer spaeter:** `plugins/memory/query_rewrite.py` schreibt die Frage
+vor dem Abruf um. Anbieterseitig opt-in, nur `honcho` nutzt es. Das muss so
+bleiben — Schwelle 0,65 und korpusrelatives bm25 sind gegen die ROHE Frage
+kalibriert. Einschalten entwertet jede dieser Zahlen, ohne dass etwas rot wird.
+
+## Videoauswertung Hermes (`42460e41`)
+
+Acht Funktionen, 6 am Code bestaetigt: 1 RISIKO (Bot Mode — mehrere Agenten mit
+je eigenem Gedaechtnis, zusammen mit dem fehlenden Gesamtdeckel), 2 CHANCE
+(nativer Browser stuetzt P12; Artifacts-Dashboard als Vergleichsobjekt zu P15,
+ohne erkennbares Herkunftskonzept), 5 EGAL.
+
+## Offen
+
+- **28 rot / 6 Fehler** im Vollauf ueber `tests/` (2561 gruen). Die Behauptung
+  "alle vorbestehend" ist NICHT belegt — der erste Vergleich stuetzte sich auf
+  eine mit `tail -10` abgeschnittene Liste und traegt nicht. Vollauf mit `-rf`
+  laeuft.
+- `melder/vermutungswaechter.py` kann Zitat nicht von Behauptung unterscheiden.
+- `BDW-P05` braucht eine Definition von "Gueltigkeit" je Art.
+- Ungemessen: ob jeder Hermes-Bot einen eigenen `prefetch_all` ausloest.
+
+## Wartet auf den Betreiber (Aussenwirkung, nicht unter Annahme erledigt)
+
+- Repo `hermes-brainlehr` anlegen und pushen.
+- Vorbereitete Meldung 1 an das Hermes-Repo (Entry-Point-Widerspruch) senden.
+- Ankuendigung in Discord `#plugins-skills-and-skins`.
+- GitHub-Topics setzen (`lehrtools` auf lehrAtelier und openlehr_X, NICHT auf
+  brainlehr).
+
+---
+
+# Historie
 
 ## Die Verduennung ist aufgeklaert und behoben
 
