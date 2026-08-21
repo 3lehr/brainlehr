@@ -32,6 +32,25 @@ place. Retrieval passes that origin along.
 service. The only network call it makes is to the embedding service address you
 configure, which points at localhost by default.
 
+## Installing brainlehr itself: one line, no checkout
+
+```bash
+pip install brainlehr          # the store (AGPL-3.0); add [bedeutungskanal] for local embeddings
+```
+
+Then set `mcp_command = brainlehr-mcp` in the plugin settings — the installed
+package brings that command, so no file path and no repository clone is needed
+any more.
+
+**Two things are needed, and it is worth saying why.** They are two separate
+works under two licenses: the store is AGPL-3.0, this adapter is MIT, and they
+talk over MCP as two processes. `pip install brainlehr` gets you the store;
+this adapter still has to reach Hermes, and Hermes finds providers by scanning
+directories, not by reading pip entry points (see the note in `pyproject.toml`)
+— so the symlink below stays the way that demonstrably works. Installing the
+adapter with `pip install hermes-brainlehr[brainlehr]` pulls the AGPL store in
+as an *optional* extra: a deliberate choice of yours, never a silent one.
+
 ## Installing: symlink, not a copy
 
 ```bash

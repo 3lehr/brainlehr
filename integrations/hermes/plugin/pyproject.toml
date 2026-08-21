@@ -29,6 +29,18 @@ description = "brainlehr as a Hermes memory provider -- local knowledge store wi
 requires-python = ">=3.11"
 dependencies = []
 
+# ZUSATZ, NICHT VORGABE -- und der Grund ist die Lizenz, nicht der Geschmack:
+# dieser Adapter steht unter MIT, brainlehr selbst unter AGPL-3.0. Wer ein
+# MIT-Paket installiert, soll nicht stillschweigend AGPL-Software ins System
+# bekommen. Zulaessig waere es (getrennte Werke, Aufruf ueber MCP in einem
+# eigenen Prozess -- keine Verlinkung), aber es gehoert sichtbar gemacht.
+# Als Zusatz ist es eine Entscheidung des Nutzers:
+#     pip install hermes-brainlehr[brainlehr]
+# Ohne den Zusatz bleibt der Adapter benutzbar: er zeigt dann auf ein
+# vorhandenes brainlehr (Einstellung `brainlehr_home` bzw. `mcp_command`).
+[project.optional-dependencies]
+brainlehr = ["brainlehr>=0.1.0"]
+
 [project.entry-points."hermes_agent.plugins"]
 brainlehr = "brainlehr"
 

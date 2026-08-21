@@ -1,0 +1,141 @@
+{
+  "datum": "2026-08-21T14:35:00+0200",
+  "zweig": "brainlehr/b4-ausweis",
+  "bezugspunkt": "85c84fda",
+  "frage": "Laesst sich brainlehrs Kern als Paket installieren, statt das Repo zu klonen?",
+  "paket": {
+    "name": "brainlehr",
+    "version": "0.1.0",
+    "lizenz": "AGPL-3.0-or-later",
+    "backend": "hatchling",
+    "zusatz": {
+      "bedeutungskanal": [
+        "numpy>=1.26",
+        "scikit-learn>=1.4",
+        "cryptography>=42"
+      ]
+    },
+    "einstiegspunkt": "brainlehr-mcp = brainlehr_kern.knowledge_mcp_server:main",
+    "grundabhaengigkeiten": []
+  },
+  "groessen_bytes": {
+    "wheel": 420054,
+    "sdist": 402067,
+    "rohsumme_der_39_dateien": 1192901,
+    "brainlehr_db_nicht_enthalten": 176775168
+  },
+  "archivinhalt_wheel": [
+    "brainlehr_kern/haken/ort.py",
+    "brainlehr_kern/herkunft_unveraenderlich.sql",
+    "brainlehr_kern/kern/anfrage_erweiterung.py",
+    "brainlehr_kern/kern/ankerverfahren.py",
+    "brainlehr_kern/kern/ausschreibekatalog.py",
+    "brainlehr_kern/kern/ausweis.py",
+    "brainlehr_kern/kern/betriebsprofil.py",
+    "brainlehr_kern/kern/build_embeddings.py",
+    "brainlehr_kern/kern/einrichtung.py",
+    "brainlehr_kern/kern/einschleusung.py",
+    "brainlehr_kern/kern/embeddings.py",
+    "brainlehr_kern/kern/fremdimport.py",
+    "brainlehr_kern/kern/gattung_filter.py",
+    "brainlehr_kern/kern/geheimnis.py",
+    "brainlehr_kern/kern/geltungsbereich.py",
+    "brainlehr_kern/kern/herkunft_normentscheider.py",
+    "brainlehr_kern/kern/kettenerklaerung.py",
+    "brainlehr_kern/kern/knowledge_lint.py",
+    "brainlehr_kern/kern/konfidenz.py",
+    "brainlehr_kern/kern/nachrangung.py",
+    "brainlehr_kern/kern/normachsen.py",
+    "brainlehr_kern/kern/normbestand.py",
+    "brainlehr_kern/kern/normkraft.py",
+    "brainlehr_kern/kern/normrang.py",
+    "brainlehr_kern/kern/prompt_invarianz.py",
+    "brainlehr_kern/kern/relevanzlage.py",
+    "brainlehr_kern/kern/schema_nachzug.py",
+    "brainlehr_kern/kern/schluesselablage.py",
+    "brainlehr_kern/kern/session_checkpoint.py",
+    "brainlehr_kern/kern/sicherungen.py",
+    "brainlehr_kern/kern/speicher.py",
+    "brainlehr_kern/kern/spracherkennung.py",
+    "brainlehr_kern/kern/trennung.py",
+    "brainlehr_kern/kern/werkzeugrechte.py",
+    "brainlehr_kern/kern/zeitfenster.py",
+    "brainlehr_kern/kern/zeitmarke.py",
+    "brainlehr_kern/knowledge_mcp_server.py",
+    "brainlehr_kern/melder/einbettungsaussetzer.py",
+    "brainlehr_kern/schema.sql"
+  ],
+  "archivinhalt_sdist_gekuerzt": [
+    "brainlehr-0.1.0/.gitignore",
+    "brainlehr-0.1.0/LICENSE",
+    "brainlehr-0.1.0/PKG-INFO",
+    "brainlehr-0.1.0/README.md",
+    "brainlehr-0.1.0/haken/ort.py",
+    "brainlehr-0.1.0/herkunft_unveraenderlich.sql",
+    "brainlehr-0.1.0/kern/anfrage_erweiterung.py",
+    "brainlehr-0.1.0/kern/ankerverfahren.py",
+    "... 44 Eintraege insgesamt"
+  ],
+  "bewusst_ausgeschlossen": [
+    "brainlehr.db / knowledge.db (Daten Dritter)",
+    "runs/",
+    "messungen/",
+    "spikes/",
+    "backups/",
+    "sicherungen/",
+    "docs/",
+    "auszug/",
+    ".claude/",
+    "korpora/",
+    "die uebrigen 85 Module in kern/ (Melder, Cronjobs, Auswertungen)"
+  ],
+  "wie_die_dateiliste_entstand": "Kern in ein leeres Verzeichnis kopiert, jeden ModuleNotFoundError nachgezogen, bis initialize/tools_list/knowledge_stats/knowledge_search/knowledge_add durchliefen; dazu die zwei verzoegerten Importe auf diesen Wegen (kern/nachrangung.py in knowledge_search, kern/knowledge_lint.py samt Anhang in knowledge_add). 39 Dateien statt 121+ in kern/.",
+  "befund_negativtest": {
+    "erster_bauversuch_sdist_bytes": 500826349,
+    "ursache": "hatchling legt ohne 'only-include' im sdist-Ziel ALLES ab, was nicht in .gitignore steht -- also die Datenbanken samt Sicherungen.",
+    "behebung": "only-include mit derselben 39-Dateien-Liste wie force-include im wheel."
+  },
+  "frischinstallation": {
+    "venv": "python3 -m venv (leer)",
+    "installiert": [
+      "brainlehr==0.1.0",
+      "pip"
+    ],
+    "keine_fremdpakete": true,
+    "start": "brainlehr-mcp (Einstiegspunkt, kein Dateipfad)",
+    "anfragen": [
+      "initialize",
+      "knowledge_add",
+      "knowledge_search"
+    ],
+    "ergebnis": {
+      "initialize": {
+        "protocolVersion": "2024-11-05",
+        "serverInfo": {
+          "name": "knowledge-mcp",
+          "version": "0.0.0-unbekannt"
+        }
+      },
+      "knowledge_add": {
+        "id": "55166f5c",
+        "path": "/shared/frischinstallation",
+        "status": "created",
+        "source": "Messlauf paketbau 2026-08-21",
+        "relations_created": [],
+        "unresolved_links": []
+      },
+      "knowledge_search_count": 1,
+      "knowledge_search_treffer_id": "55166f5c"
+    },
+    "urteil": "laeuft -- Schreiben und Lesen ueber den Einstiegspunkt in einer frischen Umgebung ohne Repo"
+  },
+  "abweichungen": [
+    "Der Server liest den Datenbankpfad aus BEGOD_KNOWLEDGE_DB, meldet aber im selben Lauf 'BEGOD_KNOWLEDGE_DB ist veraltet, bitte BRAINLEHR_DB setzen'. BRAINLEHR_DB wird nicht gelesen (knowledge_mcp_server.py:163) -- wer dem Hinweis folgt, landet stillschweigend auf der Vorgabe.",
+    "Vorgabepfad der Datenbank ist Path(__file__).parent/brainlehr.db -- installiert also site-packages/brainlehr_kern/brainlehr.db. Ein frischer Nutzer schreibt seinen Bestand nach site-packages, wenn er die Variable nicht setzt.",
+    "integrations/hermes/plugin/brainlehr_provider.py::_server_befehl sucht weiterhin ein Repo (MERKMAL knowledge_mcp_server.py); shutil.which('brainlehr-mcp') als Rueckfall vor der Repo-Suche wuerde den Einstiegspunkt ohne jede Einstellung nutzbar machen. Datei nicht angefasst (nicht im Auftrag)."
+  ],
+  "tests": {
+    "tests/test_paketbau.py": "4 gruen (mit hatchling), rot ohne pyproject.toml an 85c84fda; Negativkontrolle 'brainlehr.db in die Liste geschmuggelt' faerbt 2 Tests rot",
+    "tests/test_hermes_plugin.py": "35 gruen"
+  }
+}

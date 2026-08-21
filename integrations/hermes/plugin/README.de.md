@@ -38,6 +38,26 @@ spricht mit einem entfernten Dienst. Der einzige Netzaufruf geht an die
 eingestellte Adresse des Einbettungsdienstes, und die zeigt vorgabemaessig auf
 localhost.
 
+## brainlehr selbst installieren: eine Zeile, ohne Arbeitsstand
+
+```bash
+pip install brainlehr          # der Speicher (AGPL-3.0); [bedeutungskanal] fuer lokale Einbettungen
+```
+
+Danach in den Plugin-Einstellungen `mcp_command = brainlehr-mcp` eintragen --
+das installierte Paket bringt diesen Befehl mit, ein Dateipfad oder ein
+geklontes Repo ist damit nicht mehr noetig.
+
+**Es sind zwei Dinge noetig, und der Grund gehoert dazu.** Es sind zwei
+getrennte Werke unter zwei Lizenzen: der Speicher ist AGPL-3.0, dieser Adapter
+ist MIT, und sie sprechen ueber MCP als zwei Prozesse miteinander.
+`pip install brainlehr` holt den Speicher; der Adapter muss trotzdem noch bei
+Hermes ankommen, und Hermes findet Anbieter durch Absuchen von Verzeichnissen,
+nicht ueber pip-Eintragspunkte (Befund im Kopf von `pyproject.toml`) -- der
+Symlink unten bleibt deshalb der Weg, der nachweislich traegt. Wer den Adapter
+mit `pip install hermes-brainlehr[brainlehr]` installiert, zieht den
+AGPL-Speicher als ZUSATZ mit: eine bewusste Entscheidung, keine stille.
+
 ## Installation: Symlink, keine Kopie
 
 ```bash

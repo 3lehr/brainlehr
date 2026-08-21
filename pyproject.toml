@@ -1,0 +1,154 @@
+# Paketbau fuer brainlehrs Kern -- damit ein Fremder installieren kann,
+# statt das Repo zu klonen (2026-08-21).
+#
+# LIZENZ: AGPL-3.0, wie das Repo. NICHT MIT -- MIT gilt allein fuer den
+# Hermes-Adapter unter integrations/hermes/plugin/, und genau diese Grenze
+# ist der Grund, warum brainlehr dort ein optionaler Zusatz ist und keine
+# Vorgabe-Abhaengigkeit.
+#
+# WAS DRIN IST, und warum es eine Liste und kein Glob ist: die 39 Dateien
+# unten sind GEMESSEN, nicht geraten -- der Kern wurde in ein leeres
+# Verzeichnis kopiert und jeder ModuleNotFoundError nachgezogen, bis
+# initialize / tools/list / knowledge_stats / knowledge_search /
+# knowledge_add durchliefen (runs/paketbau_2026-08-21.json). Ein Glob ueber
+# kern/ waere 121 Dateien statt 36 und wuerde bei jeder neuen Datei
+# stillschweigend mitwachsen. Dazu die zwei verzoegerten Importe, die auf
+# genau diesen Wegen sitzen: kern/nachrangung.py (knowledge_search, ab zwei
+# Treffern) und kern/knowledge_lint.py samt Anhang (Normkonflikt-Pruefung in
+# knowledge_add) -- letzteres ist im Server in ein try/except gehuellt, ein
+# Fehlen waere also eine LAUTLOS abgeschaltete Pruefung gewesen.
+#
+# WAS BEWUSST DRAUSSEN BLEIBT: brainlehr.db (230 MB, Daten Dritter), runs/,
+# messungen/, spikes/, backups/, sicherungen/, docs/, auszug/, .claude/,
+# und die uebrigen 85 Module in kern/ (Melder, Cronjobs, Auswertungen), die
+# fuer die drei Werkzeuge des Hermes-Adapters nicht gebraucht werden.
+#
+# LAYOUT: alles landet unter dem Paket `brainlehr_kern/` in derselben
+# Verzeichnisform wie im Repo. Das ist keine Kosmetik -- knowledge_mcp_server.py
+# sucht seine Wurzel an schema.sql und legt danach `kern`, `haken`, `melder`
+# in den Suchpfad; eine flache Installation haette `import embeddings`,
+# `import ausweis` usw. als Top-Level-Module ins site-packages jedes Nutzers
+# gelegt. Weil der Server diesen Suchpfad selbst setzt, braucht der
+# Einstiegspunkt kein eigenes Startmodul.
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "brainlehr"
+version = "0.1.0"
+description = "Local knowledge store with enforced provenance, validity and release scope -- MCP server over stdio. No API key, no cloud."
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+# Leer und das ist der Punkt: der Kern laeuft auf SQLite/FTS5 und der
+# Standardbibliothek (requirements.txt sagt das selbst im Kopf).
+dependencies = []
+
+[project.optional-dependencies]
+# Der Bedeutungskanal: lokale Einbettungen, PCA-Ansicht des Wissensraums und
+# die signierte Auditkette. Ohne sie sucht brainlehr rein lexikalisch (FTS5)
+# weiter -- ein Ausfall der Einbettungen blockiert die Suche nie.
+bedeutungskanal = ["numpy>=1.26", "scikit-learn>=1.4", "cryptography>=42"]
+
+[project.scripts]
+# Damit ein Klient `brainlehr-mcp` eintragen kann statt eines Dateipfads.
+brainlehr-mcp = "brainlehr_kern.knowledge_mcp_server:main"
+
+[project.urls]
+Homepage = "https://github.com/3lehr/brainlehr"
+
+[tool.hatch.build.targets.sdist]
+# GEMESSEN, nicht angenommen: ohne diese Liste legt hatchling ALLES ins
+# sdist, was nicht in .gitignore steht -- der erste Lauf am 2026-08-21 ergab
+# brainlehr-0.1.0.tar.gz mit 500 826 349 Bytes, also die Datenbanken und
+# jede Sicherung mit drin. Genau der Fehler, gegen den
+# tests/test_paketbau.py rot faerbt.
+only-include = [
+  "haken/ort.py",
+  "herkunft_unveraenderlich.sql",
+  "kern/anfrage_erweiterung.py",
+  "kern/ankerverfahren.py",
+  "kern/ausschreibekatalog.py",
+  "kern/ausweis.py",
+  "kern/betriebsprofil.py",
+  "kern/build_embeddings.py",
+  "kern/einrichtung.py",
+  "kern/einschleusung.py",
+  "kern/embeddings.py",
+  "kern/fremdimport.py",
+  "kern/gattung_filter.py",
+  "kern/geheimnis.py",
+  "kern/geltungsbereich.py",
+  "kern/herkunft_normentscheider.py",
+  "kern/kettenerklaerung.py",
+  "kern/knowledge_lint.py",
+  "kern/konfidenz.py",
+  "kern/nachrangung.py",
+  "kern/normachsen.py",
+  "kern/normbestand.py",
+  "kern/normkraft.py",
+  "kern/normrang.py",
+  "kern/prompt_invarianz.py",
+  "kern/relevanzlage.py",
+  "kern/schema_nachzug.py",
+  "kern/schluesselablage.py",
+  "kern/session_checkpoint.py",
+  "kern/sicherungen.py",
+  "kern/speicher.py",
+  "kern/spracherkennung.py",
+  "kern/trennung.py",
+  "kern/werkzeugrechte.py",
+  "kern/zeitfenster.py",
+  "kern/zeitmarke.py",
+  "knowledge_mcp_server.py",
+  "melder/einbettungsaussetzer.py",
+  "schema.sql",
+]
+
+[tool.hatch.build.targets.wheel]
+# Kein Glob, keine automatische Paketfindung -- nur die Liste unten.
+bypass-selection = true
+
+[tool.hatch.build.targets.wheel.force-include]
+"haken/ort.py" = "brainlehr_kern/haken/ort.py"
+"herkunft_unveraenderlich.sql" = "brainlehr_kern/herkunft_unveraenderlich.sql"
+"kern/anfrage_erweiterung.py" = "brainlehr_kern/kern/anfrage_erweiterung.py"
+"kern/ankerverfahren.py" = "brainlehr_kern/kern/ankerverfahren.py"
+"kern/ausschreibekatalog.py" = "brainlehr_kern/kern/ausschreibekatalog.py"
+"kern/ausweis.py" = "brainlehr_kern/kern/ausweis.py"
+"kern/betriebsprofil.py" = "brainlehr_kern/kern/betriebsprofil.py"
+"kern/build_embeddings.py" = "brainlehr_kern/kern/build_embeddings.py"
+"kern/einrichtung.py" = "brainlehr_kern/kern/einrichtung.py"
+"kern/einschleusung.py" = "brainlehr_kern/kern/einschleusung.py"
+"kern/embeddings.py" = "brainlehr_kern/kern/embeddings.py"
+"kern/fremdimport.py" = "brainlehr_kern/kern/fremdimport.py"
+"kern/gattung_filter.py" = "brainlehr_kern/kern/gattung_filter.py"
+"kern/geheimnis.py" = "brainlehr_kern/kern/geheimnis.py"
+"kern/geltungsbereich.py" = "brainlehr_kern/kern/geltungsbereich.py"
+"kern/herkunft_normentscheider.py" = "brainlehr_kern/kern/herkunft_normentscheider.py"
+"kern/kettenerklaerung.py" = "brainlehr_kern/kern/kettenerklaerung.py"
+"kern/knowledge_lint.py" = "brainlehr_kern/kern/knowledge_lint.py"
+"kern/konfidenz.py" = "brainlehr_kern/kern/konfidenz.py"
+"kern/nachrangung.py" = "brainlehr_kern/kern/nachrangung.py"
+"kern/normachsen.py" = "brainlehr_kern/kern/normachsen.py"
+"kern/normbestand.py" = "brainlehr_kern/kern/normbestand.py"
+"kern/normkraft.py" = "brainlehr_kern/kern/normkraft.py"
+"kern/normrang.py" = "brainlehr_kern/kern/normrang.py"
+"kern/prompt_invarianz.py" = "brainlehr_kern/kern/prompt_invarianz.py"
+"kern/relevanzlage.py" = "brainlehr_kern/kern/relevanzlage.py"
+"kern/schema_nachzug.py" = "brainlehr_kern/kern/schema_nachzug.py"
+"kern/schluesselablage.py" = "brainlehr_kern/kern/schluesselablage.py"
+"kern/session_checkpoint.py" = "brainlehr_kern/kern/session_checkpoint.py"
+"kern/sicherungen.py" = "brainlehr_kern/kern/sicherungen.py"
+"kern/speicher.py" = "brainlehr_kern/kern/speicher.py"
+"kern/spracherkennung.py" = "brainlehr_kern/kern/spracherkennung.py"
+"kern/trennung.py" = "brainlehr_kern/kern/trennung.py"
+"kern/werkzeugrechte.py" = "brainlehr_kern/kern/werkzeugrechte.py"
+"kern/zeitfenster.py" = "brainlehr_kern/kern/zeitfenster.py"
+"kern/zeitmarke.py" = "brainlehr_kern/kern/zeitmarke.py"
+"knowledge_mcp_server.py" = "brainlehr_kern/knowledge_mcp_server.py"
+"melder/einbettungsaussetzer.py" = "brainlehr_kern/melder/einbettungsaussetzer.py"
+"schema.sql" = "brainlehr_kern/schema.sql"
