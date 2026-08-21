@@ -376,9 +376,44 @@ dieser Plan die Umsetzung — bei Widerspruch gilt der Katalog.
   Speicher, kein Werkzeug. Es gehört auf `lehrAtelier` und die
   `openlehr_X`-Domänen.
 
+## §9 Festgeschriebene Reihenfolge (Betreiber, 2026-08-21)
+
+Der Plan ist ab hier fest. Was nicht darin steht, wird nicht gebaut, ohne
+dass er fortgeschrieben wird.
+
+**Welle 1 — läuft ab sofort, zwei Stränge nebeneinander:**
+
+| | Gegenstand | besitzt |
+|---|---|---|
+| **P16** | Gegenstands-Achse, Erstanwendung Plankennungen | `schema.sql`, `kern/gegenstand*.py` |
+| **P18** | Namensfrage als Namensfrage erkennen | `haken/suchpfad_abruf.py`, `haken/knowledge_recall_hook.py` |
+
+Die Trennung ist keine Ordnungsfrage: Beide Stränge fassen sonst dieselben
+Dateien an, und zwei Agenten an einer Datei erzeugen einen Zwischenstand, den
+keiner von beiden geprüft hat (gemessen in der Nacht zum 2026-08-21).
+
+**Welle 2 — nach Welle 1:**
+`P17` Fälligkeit (braucht `schema.sql` frei) · §4.2 getrennte
+Kandidatenbudgets (braucht `suchpfad_abruf.py` frei) · `P15`
+Dokumentenablage (braucht die Gegenstands-Achse aus P16).
+
+**Welle 3:** §2 `BDW-R05` / Zielbild A — der größte gemessene Rückstand
+(3/35 = 8,6 % gegen Schwelle 95 %) · §4.4 Bauvermeidung · `P19`-Bauform,
+sobald die Hermes-Erklärungen sie erprobt haben.
+
+**Vertagt, nicht offen:** `E24` zweiter Faktor. Betreiberentscheidung
+2026-08-21, wörtlich: *„als future markieren, brauchen wir noch nicht"*. Der
+Katalog trägt `FUTURE` samt der gemessenen Vorfrage (Median 9 Sitzungen je
+Tag), damit die nächste Sitzung sie nicht erneut erhebt.
+
+**Entschieden und damit vom Tisch:** kein zweiter Vektorraum (Konsil 2:1,
+`ADR-032`), und `sensibel` ist für Dokumente Dritter das falsche Werkzeug —
+geschützt wird über `mandant`/`kreis`/`freigabe`.
+
 ## §8 Verlauf
 
 * 2026-08-21T08:20 — angelegt, nach Abschluss des Gesamtbaus und mit zwei von
   drei Konsillinsen.
 * 2026-08-21T08:50 — Katalog um P16–P19 ergaenzt (Kennungen gemessen, hoechste war P15). Kein neues Plandokument, siehe §5a.
 * 2026-08-21T09:20 — Hermes-Panel geschnitten (Paragraf 4b): 6 Felder inline, 3 im vollen Dialog, 4 Gruppen ausdruecklich draussen.
+* 2026-08-21T10:30 — Reihenfolge festgeschrieben (Paragraf 9). E24 vertagt. Welle 1 gestartet.
