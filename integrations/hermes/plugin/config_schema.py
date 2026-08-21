@@ -93,7 +93,7 @@ def _laufendes_embed_model() -> str:
 
 CONFIG_SCHEMA = ProviderConfigSchema(
     name="brainlehr",
-    label="brainlehr",
+    label="brainlehr — local knowledge store, provenance enforced",
     fields=(
         # ---------------------------------------------------------- inline
         ProviderField(

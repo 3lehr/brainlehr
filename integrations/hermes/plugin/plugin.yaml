@@ -1,3 +1,3 @@
 name: brainlehr
 version: 1.0.0
-description: "brainlehr — lokaler Wissensspeicher mit erzwungener Herkunft, Geltung und Freigabe. Kein API-Schluessel, keine Cloud."
+description: "Local knowledge store with enforced provenance, validity windows and release levels. Every entry states where it came from — a database trigger rejects entries without a verifiable origin. No API key, no cloud, no account: brainlehr runs as a separate MCP process on your own machine."
