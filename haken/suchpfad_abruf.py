@@ -118,25 +118,6 @@ def _voranstellen(vorn: list[str], rest: list[str]) -> list[str]:
     return ergebnis
 
 
-def _kappen_mit_ausgleich(a_ids: list[str], b_ids: list[str],
-                            cap_a: int, cap_b: int) -> tuple[list[str], list[str]]:
-    """Getrennte Kandidatenbudgets (docs/PLAN_NAECHSTE_STUFE_2026-08-21.md
-    S4.2): a und b werden JEDER FUER SICH gekappt, nicht als eine gemeinsame
-    Liste -- das ist der ganze Unterschied zum alten Weg (dort konkurrierten
-    Knoten und Lehren um dieselben max_results Plaetze, s. Moduldoc-Nachtrag).
-
-    NEGATIVFALL: bleibt eine Sorte unter ihrem Kontingent (weniger
-    Kandidaten als das Kontingent, im Extrem 0), darf der Rest nicht
-    verfallen -- er geht an die andere Sorte, sonst waere der Abruf nach
-    dieser Aenderung STRENGER als vorher, wenn eine Sorte leer ist. Beide
-    Richtungen werden unabhaengig behandelt (freier Platz bei a erweitert
-    NUR cap_b und umgekehrt), es kann also nie eine Sorte doppelt von ihrem
-    eigenen Ueberschuss profitieren."""
-    frei_a = max(0, cap_a - len(a_ids))
-    frei_b = max(0, cap_b - len(b_ids))
-    return a_ids[:cap_a + frei_b], b_ids[:cap_b + frei_a]
-
-
 def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | None,
                 max_results: int) -> tuple[list[dict], list[dict]]:
     """text: der Rohtext (Prompt, oder ersatzweise die Keyword-Liste zu
@@ -148,22 +129,7 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
     Liefert (node_rows, lesson_rows), je in Rangfolge, ungekappt bis auf den
     gemeinsamen max_results-Deckel von _fuse_with_keyword_floor (Empfehlung:
     MAX_NODES+MAX_LESSONS des Aufrufers, s. Moduldoc zur Messung mit
-    max_results=5).
-
-    NACHTRAG S4.2 (2026-08-21, docs/PLAN_NAECHSTE_STUFE_2026-08-21.md,
-    Konsil-Befund runs/beurteilung_blind_2026-08-20.json): max_results als
-    EIN int liess Knoten und Lehren in EINER fusionierten Liste um denselben
-    Deckel konkurrieren, obwohl der Aufrufer sie mit getrennten Kontingenten
-    (MAX_NODES, MAX_LESSONS) weiterverarbeitet -- faellt eine Sorte im Rang
-    zurueck, verlor sie Plaetze an die andere, die ihr nicht zustanden.
-    max_results akzeptiert deshalb jetzt ZUSAETZLICH ein Tupel (max_nodes,
-    max_lessons): dann werden Knoten- und Lehrenrang JE FUER SICH fusioniert
-    und gekappt (_kappen_mit_ausgleich), bevor sie zurueckgegeben werden --
-    ungenutztes Kontingent einer Sorte geht an die andere (Negativfall),
-    verfaellt aber nicht. Ein einzelner int bleibt BYTE-GLEICH zum alten Weg
-    (gemeinsame Fusion+Deckel) -- jeder bestehende Aufrufer (mehrstufiger_
-    abruf.py, die messungen/*.py-Skripte, aeltere Tests), der weiterhin ein
-    int uebergibt, ist unveraendert. Jede Zeile traegt zusaetzlich 'bedeutungs_kosinus' -- der
+    max_results=5). Jede Zeile traegt zusaetzlich 'bedeutungs_kosinus' -- der
     rohe Kosinus des Bedeutungskanals fuer GENAU diesen Kandidaten, None wenn
     kein Vektor vorliegt (Auftrag 2026-08-19, gleiche Bauform wie
     knowledge_search() in knowledge_mcp_server.py). Reines Beiwerk: aendert
@@ -262,6 +228,9 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
             if zeile is not None:
                 lesson_by_id[lid] = dict(zeile)
 
+    keyword_ordered_ids = embeddings.rrf_fuse(
+        node_id_order, lesson_id_order, embedding_weight=1.0)
+
     bedeutungswerte: list = []
     lesson_bedeutungswerte: list = []
     if query_vec is not None:
@@ -270,77 +239,45 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
         emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, erl_lessons, lesson_bedeutungswerte)
     else:
         emb_node_ids, emb_lesson_ids = [], []
+    embedding_ordered_ids = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
     # Roher Kosinus je Treffer (Auftrag 2026-08-19, wie knowledge_search() in
-    # knowledge_mcp_server.py): rrf_fuse unten verwirft ihn zugunsten einer reinen
+    # knowledge_mcp_server.py): rrf_fuse oben verwirft ihn zugunsten einer reinen
     # Rangposition -- hier vor dem Verlust als id->Kosinus-Dict aufgehoben.
     # emb_*_ids und ihre Werte-Listen sind noch parallel sortiert (_embedding_ranking
     # gibt beide aus demselben "scored" hervor), ein zip genuegt.
     kosinus_je_id = dict(zip(emb_node_ids, bedeutungswerte))
     kosinus_je_id.update(zip(emb_lesson_ids, lesson_bedeutungswerte))
 
-    if isinstance(max_results, tuple):
-        # S4.2: getrennte Kandidatenbudgets -- Knoten und Lehren werden JE
-        # FUER SICH fusioniert (Stichwort x Bedeutung derselben Sorte), nicht
-        # mehr ueber eine gemeinsame Liste, die um einen einzigen Deckel
-        # konkurriert. Gleiche Fusionsformel wie im alten Weg (reine RRF,
-        # hybrid_retrieval_weight()), nur ohne den Sorten-Mischschritt davor.
-        max_nodes, max_lessons = max_results
-        final_node_ids = embeddings.rrf_fuse(
-            node_id_order, emb_node_ids,
-            embedding_weight=embeddings.hybrid_retrieval_weight())
-        final_lesson_ids = embeddings.rrf_fuse(
-            lesson_id_order, emb_lesson_ids,
-            embedding_weight=embeddings.hybrid_retrieval_weight())
-        # P18-Namensweg wie im alten Zweig unten: NACH der Fusion vorangestellt,
-        # je Sorte getrennt (vorher schon getrennt vorgehalten).
-        if namen_node_ids:
-            final_node_ids = _voranstellen(namen_node_ids, final_node_ids)
-        if namen_lesson_ids:
-            final_lesson_ids = _voranstellen(namen_lesson_ids, final_lesson_ids)
-        # Negativfall: eine leere/kurze Sorte darf ihr Kontingent nicht
-        # verfallen lassen -- der Rest geht an die andere (s. Funktionsdoc
-        # von _kappen_mit_ausgleich).
-        final_node_ids, final_lesson_ids = _kappen_mit_ausgleich(
-            final_node_ids, final_lesson_ids, max_nodes, max_lessons)
-    else:
-        # Alter Weg, byte-gleich: EIN gemeinsamer Deckel ueber eine EINE
-        # fusionierte Liste aus beiden Sorten (Kein Stichwort-Sockel
-        # (_fuse_with_keyword_floor) mehr: er reservierte die ersten
-        # max_results Plaetze fuer den Stichwortkanal -- und weil dieser bei
-        # einem Prompt als Anfrage per _or_query praktisch den ganzen Bestand
-        # zieht (Median 348 von 383 Knoten, 674 von 674 Lehren), war die
-        # Kandidatenliste in 35 von 35 gemessenen Faellen BYTE-GLEICH mit
-        # seinen Top 5. Der Bedeutungskanal wurde gerechnet (ein Ollama-Aufruf
-        # je Prompt) und hatte null Einfluss. Reine RRF-Verschmelzung: 9/35
-        # statt 7/35, bei gleicher Liefermenge. Der Sockel bleibt in
-        # knowledge_search unangetastet -- dort ist die Anfrage ein
-        # Suchbegriff, kein Prompt, und zieht nicht den Bestand.)
-        keyword_ordered_ids = embeddings.rrf_fuse(
-            node_id_order, lesson_id_order, embedding_weight=1.0)
-        embedding_ordered_ids = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
-        final_ids = embeddings.rrf_fuse(
-            keyword_ordered_ids, embedding_ordered_ids,
-            embedding_weight=embeddings.hybrid_retrieval_weight())[:max_results]
+    # Kein Stichwort-Sockel (_fuse_with_keyword_floor) mehr: er reservierte die
+    # ersten max_results Plaetze fuer den Stichwortkanal -- und weil dieser bei
+    # einem Prompt als Anfrage per _or_query praktisch den ganzen Bestand zieht
+    # (Median 348 von 383 Knoten, 674 von 674 Lehren), war die Kandidatenliste
+    # in 35 von 35 gemessenen Faellen BYTE-GLEICH mit seinen Top 5. Der
+    # Bedeutungskanal wurde gerechnet (ein Ollama-Aufruf je Prompt) und hatte
+    # null Einfluss. Reine RRF-Verschmelzung: 9/35 statt 7/35, bei gleicher
+    # Liefermenge. Der Sockel bleibt in knowledge_search unangetastet -- dort
+    # ist die Anfrage ein Suchbegriff, kein Prompt, und zieht nicht den Bestand.
+    final_ids = embeddings.rrf_fuse(
+        keyword_ordered_ids, embedding_ordered_ids,
+        embedding_weight=embeddings.hybrid_retrieval_weight())[:max_results]
 
-        # P18: der Namensweg darf vom Bedeutungskanal nicht verdraengt werden --
-        # RRF allein reicht dafuer nicht, weil ein exakter Namenstreffer, den der
-        # Bedeutungskanal NICHT auch fuer relevant haelt (kein gemeinsamer Rang),
-        # in der Fusion nur sein Stichwort-Gewicht traegt und so von Kandidaten
-        # ueberholt wird, die in BEIDEN Kanaelen auftauchen (gemessen am
-        # Auftragsfall: Rang 2 im Stichwortkanal reichte nicht, s. runs/
-        # namensfrage_2026-08-21.json). Exakte Namenstreffer werden deshalb HIER,
-        # NACH der Fusion, vorangestellt -- der Rest der Fusion bleibt die
-        # Reihenfolge, es wird nichts entfernt, nur der Deckel neu gezogen.
-        if namen_node_ids or namen_lesson_ids:
-            final_ids = _voranstellen(namen_node_ids + namen_lesson_ids, final_ids)[:max_results]
-        final_node_ids = final_ids
-        final_lesson_ids = final_ids
+    # P18: der Namensweg darf vom Bedeutungskanal nicht verdraengt werden --
+    # RRF allein reicht dafuer nicht, weil ein exakter Namenstreffer, den der
+    # Bedeutungskanal NICHT auch fuer relevant haelt (kein gemeinsamer Rang),
+    # in der Fusion nur sein Stichwort-Gewicht traegt und so von Kandidaten
+    # ueberholt wird, die in BEIDEN Kanaelen auftauchen (gemessen am
+    # Auftragsfall: Rang 2 im Stichwortkanal reichte nicht, s. runs/
+    # namensfrage_2026-08-21.json). Exakte Namenstreffer werden deshalb HIER,
+    # NACH der Fusion, vorangestellt -- der Rest der Fusion bleibt die
+    # Reihenfolge, es wird nichts entfernt, nur der Deckel neu gezogen.
+    if namen_node_ids or namen_lesson_ids:
+        final_ids = _voranstellen(namen_node_ids + namen_lesson_ids, final_ids)[:max_results]
 
     # Embedding-Kanal kann IDs liefern, die die FTS-Abfrage oben nicht
     # gezogen hat (das ist der ganze Witz des zweiten Kanals) -- fehlende
     # Zeilen nachladen, wie knowledge_search() es fuer final_ids selbst tut
     # (dort "missing"-Block).
-    missing_node_ids = [i for i in final_node_ids if i in emb_node_ids and i not in node_by_id]
+    missing_node_ids = [i for i in final_ids if i in emb_node_ids and i not in node_by_id]
     if missing_node_ids:
         placeholders = ",".join("?" for _ in missing_node_ids)
         for r in conn.execute(
@@ -354,7 +291,7 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
             missing_node_ids,
         ):
             node_by_id[r["id"]] = dict(r)
-    missing_lesson_ids = [i for i in final_lesson_ids if i in emb_lesson_ids and i not in lesson_by_id]
+    missing_lesson_ids = [i for i in final_ids if i in emb_lesson_ids and i not in lesson_by_id]
     if missing_lesson_ids:
         placeholders = ",".join("?" for _ in missing_lesson_ids)
         for r in conn.execute(
@@ -368,16 +305,16 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
     # Roher Kosinus des Bedeutungskanals je Kandidat (Auftrag 2026-08-19): None
     # (nicht 0.0) wenn kein Vektor vorliegt -- 0.0 waere eine Aussage ueber
     # Aehnlichkeit, None eine ueber Verfuegbarkeit. Nur angehaengt, keine
-    # Auswahl/Reihenfolge geaendert -- final_node_ids/final_lesson_ids und
-    # ihre Zuordnung zu node_by_id/lesson_by_id bleiben wie zuvor.
+    # Auswahl/Reihenfolge geaendert -- final_ids und ihre Zuordnung zu
+    # node_by_id/lesson_by_id bleiben wie zuvor.
     for i, d in node_by_id.items():
         d["bedeutungs_kosinus"] = kosinus_je_id.get(i)
     for i, d in lesson_by_id.items():
         d["bedeutungs_kosinus"] = kosinus_je_id.get(i)
 
     return (
-        [node_by_id[i] for i in final_node_ids if i in node_by_id],
-        [lesson_by_id[i] for i in final_lesson_ids if i in lesson_by_id],
+        [node_by_id[i] for i in final_ids if i in node_by_id],
+        [lesson_by_id[i] for i in final_ids if i in lesson_by_id],
     )
 
 

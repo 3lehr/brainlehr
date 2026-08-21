@@ -145,12 +145,7 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
     Signatur, gleicher Rueckgabetyp) -- der Hook reranked/deckelt das
     Ergebnis danach unveraendert selbst (trust_score, rangfolge,
     MAX_NODES/MAX_LESSONS-Slice, s. Moduldoc)."""
-    # S4.2 (docs/PLAN_NAECHSTE_STUFE_2026-08-21.md): suchpfad_abruf.kandidaten()
-    # akzeptiert seitdem zusaetzlich ein Tupel (max_nodes, max_lessons) statt
-    # eines einzelnen int -- max() darauf waere ein TypeError. Nur bei int
-    # greift der Stufe-2-Pool-Aufschlag; ein Tupel geht unveraendert durch
-    # (Stufe 1/2 bleiben ohnehin AUS, s. MEHRSTUFIGER_ABRUF unten).
-    pool = max(max_results, POOL_GROESSE) if (_stufe2_aktiv() and isinstance(max_results, int)) else max_results
+    pool = max(max_results, POOL_GROESSE) if _stufe2_aktiv() else max_results
     # suchpfad_abruf.kandidaten() baut die FTS-Anfrage selbst aus `text` via
     # _or_query() -- Stufe 1 braucht eine ANDERE Anfrage (Praefixterme), die
     # dieser Weg nicht ausdruecken kann. Darum bei aktiver Stufe 1 der
@@ -380,23 +375,9 @@ def _selftest() -> None:
             finally:
                 for k in ("KNOWLEDGE_MEHRSTUFIGER_ABRUF", "KNOWLEDGE_MEHRSTUFIG_STUFE1", "KNOWLEDGE_MEHRSTUFIG_STUFE2"):
                     os.environ.pop(k, None)
-            # BEFUND 2026-08-21 (S4.2, docs/PLAN_NAECHSTE_STUFE_2026-08-21.md):
-            # knowledge_recall_hook.query() ruft kandidaten_geschaltet() seitdem
-            # IMMER mit einem Tupel (MAX_NODES, MAX_LESSONS) statt einer Summe auf
-            # -- suchpfad_abruf.kandidaten() kappt Knoten und Lehren seitdem
-            # GETRENNT (s. dortiger Docstring-Nachtrag), nicht mehr ueber eine
-            # gemeinsame, vorher per POOL_GROESSE=20 aufgeblasene Liste. Der
-            # Stufe-2-Mechanismus (Pool VOR der Deckelung vergroessern) setzt
-            # genau auf dieser gemeinsamen Liste auf und greift bei einem Tupel
-            # bewusst NICHT mehr (isinstance-Weiche oben in kandidaten()) --
-            # die hier dokumentierte Regression ist deshalb mit dieser Aenderung
-            # STRUKTURELL nicht mehr herstellbar, nicht durch einen an
-            # POOL_GROESSE oder der severity/occurrences-Sortierung geaenderten
-            # Wert. Empfehlung "MEHRSTUFIGER_ABRUF bleibt AUS" (s. Moduldoc oben)
-            # bleibt unberuehrt -- Stufe 2 ist jetzt wirkungslos statt schaedlich.
-            assert "fx-ziel" in [l["id"] for l in lessons_stufe2], (
-                "fx-ziel sollte jetzt AUCH bei STUFE2=1 im Ergebnis sein (S4.2 macht "
-                f"den Pool-Aufschlag wirkungslos), war es nicht ({[l['id'] for l in lessons_stufe2]})")
+            assert "fx-ziel" not in [l["id"] for l in lessons_stufe2], (
+                "Regression nicht mehr reproduzierbar -- Moduldoc-Befund pruefen, bevor "
+                f"POOL_GROESSE geaendert wird ({[l['id'] for l in lessons_stufe2]})")
         finally:
             _rh.DB = _alt_db
 
