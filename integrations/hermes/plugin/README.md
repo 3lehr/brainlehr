@@ -49,3 +49,25 @@ sieben Zeitfenstern und Veraltungswaechter in einer Methode.
 Dieser Anbieter liest und schreibt den echten Bestand. Er ist kein Ersatz fuer
 die MCP-Anbindung, sondern ihr Gegenstueck: MCP heisst "das Modell KANN
 nachschlagen", ein Speicher-Anbieter heisst "es weiss es schon".
+
+## Installation: Symlink, keine Kopie
+
+```bash
+ln -s /Volumes/daten/Begod2026/brainlehr/integrations/hermes/plugin ~/.hermes/plugins/brainlehr
+```
+
+**Warum ausdruecklich ein Symlink:** Bis zum 2026-08-21 lag dort eine KOPIE.
+Sie war beim Anlegen identisch und driftete danach lautlos — eine Aenderung im
+Repo erreichte Hermes nie, und niemand konnte es sehen. Genau diese Fehlklasse
+hat dieses Haus schon mehrfach getroffen (`L-55075a`: ein korrigierter Trigger
+erreicht eine gewachsene Datenbank nicht von selbst).
+
+Gegenprobe nach der Installation:
+
+```bash
+readlink ~/.hermes/plugins/brainlehr    # muss den Repo-Pfad nennen
+ls ~/.hermes/plugins/brainlehr/         # muss config_schema.py enthalten
+```
+
+Die alte Kopie liegt als `~/.hermes/plugins/brainlehr.kopie-20260821` daneben
+und kann entfernt werden, sobald der Symlink einmal benutzt wurde.
