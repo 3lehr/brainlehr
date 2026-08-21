@@ -58,6 +58,8 @@ import argparse
 import json
 import re
 import sqlite3
+
+import trennung  # B3: der Auszug traegt nur den Mandanten/Kreis des Aufrufers
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -223,18 +225,30 @@ def sammle(pfad: Path) -> list[dict]:
     Astknoten '/nasa-llis' NICHT -- er wird darum ergaenzt, sonst ist der
     Auszug nicht einlesbar. Auch das fiel erst beim Erstlauf auf."""
     conn = _db(pfad)
+    # BDW-E06 "Cross-Tenant-Export scheitert": derselbe Filter wie beim
+    # Lesen, an DERSELBEN Stelle wie die Freigabe. Die Freigabe regelt, was
+    # nach aussen darf; der Mandant regelt, WESSEN Daten das ueberhaupt sind.
+    # Beides ist noetig -- ein 'offen' des fremden Mandanten ist nicht meine
+    # Entscheidung gewesen und geht darum auch nicht in meinen Auszug.
+    # sichtbar_sql_wenn_spalte statt sichtbar_sql: diese Verbindung ist
+    # NUR LESEND geoeffnet (_db) und kann eine fehlende Spalte nicht
+    # nachziehen. Eine Datenbank vor B1 hat genau einen Mandanten.
+    _sicht = trennung.sichtbar_sql_wenn_spalte(conn)
     try:
         offene = [dict(r) for r in conn.execute(
-            "SELECT * FROM knowledge_nodes WHERE freigabe='offen' "
-            "AND zurueckgezogen=0")]
+            f"SELECT * FROM knowledge_nodes WHERE freigabe='offen' "
+            f"AND zurueckgezogen=0 AND {_sicht}")]
         # fehlende Elternknoten nachziehen, bis die Kette steht
         vorhanden = {z["path"] for z in offene}
         fehlend = {z["parent_path"] for z in offene
                    if z.get("parent_path") and z["parent_path"] not in vorhanden} - {"/"}
         while fehlend:
             platz = ",".join("?" * len(fehlend))
+            # Auch die nachgezogenen ELTERN bleiben an der Grenze: ein
+            # Astknoten des fremden Mandanten waere sonst der Weg, auf dem
+            # die Trennung ueber die Baumkette doch noch leckt.
             neu = [dict(r) for r in conn.execute(
-                f"SELECT * FROM knowledge_nodes WHERE path IN ({platz})",
+                f"SELECT * FROM knowledge_nodes WHERE path IN ({platz}) AND {_sicht}",
                 sorted(fehlend))]
             if not neu:
                 break
@@ -247,8 +261,8 @@ def sammle(pfad: Path) -> list[dict]:
         try:
             zeilen += [{"tabelle": "lessons_learned", "zeile": dict(r)}
                        for r in conn.execute(
-                           "SELECT * FROM lessons_learned WHERE freigabe='offen' "
-                           "AND status='active' ORDER BY id")]
+                           f"SELECT * FROM lessons_learned WHERE freigabe='offen' "
+                           f"AND status='active' AND {_sicht} ORDER BY id")]
         except sqlite3.OperationalError:
             pass          # DB ohne die Spalte -> keine Lehren im Export
     finally:

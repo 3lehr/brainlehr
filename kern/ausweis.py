@@ -296,6 +296,21 @@ class Ausweis:
     # Wer diesen Ausweis verantwortet -- gesetzt beim Einloesen einer Einladung,
     # also von einem Menschen. Ein Modell kann es sich nicht selbst geben.
     bedient_von: str = ""
+    # Die beiden Achsen aus B1 (Auftrag B3, BDW-E06/E22). Durchgesetzt wird
+    # in kern/trennung.py; hier steht nur, WER fragt.
+    #
+    # VORGABEN SIND DIE WEITESTEN, UND DAS IST ABSICHT: 'lokal' ist der
+    # Mandant des gesamten Bestands, () heisst "kein Sonderkreis". Ein
+    # Ausweis ohne diese Felder -- und das sind heute alle -- sieht damit
+    # genau das, was er vorher sah. Eine Trennung, die den Bestand beim
+    # Einbau unsichtbar macht, waere kein Fortschritt, sondern ein Ausfall.
+    #
+    # Der UNBEGLAUBIGTE Zweig bekommt dieselben Vorgaben. Das folgt aus der
+    # bestehenden Entscheidung "KEIN ABWEISEN OHNE AUSWEIS" (siehe
+    # loese_auf) und wird von diesem Auftrag nicht nebenbei gekippt: wer
+    # heute ohne Geheimnis liest, liest weiter.
+    mandant: str = "lokal"
+    kreise: tuple[str, ...] = ()
 
     @property
     def ist_mensch(self) -> bool:
@@ -1108,6 +1123,12 @@ def loese_auf(argument: str | None = None, *,
                     art=_art_von(eintrag),
                     mandat_von=von,
                     bedient_von=eintrag.get("bedient_von", ""),
+                    # B3: aus dem Ausweiseintrag, nicht aus einem Argument.
+                    # Ein Mandant, den der Aufrufer selbst benennen koennte,
+                    # waere keine Trennung, sondern eine Anrede. Fehlt das
+                    # Feld (alle heutigen Eintraege), gilt die Vorgabe.
+                    mandant=eintrag.get("mandant") or "lokal",
+                    kreise=tuple(eintrag.get("kreise") or ()),
                 )
         # HIER, nicht frueher: ein GESETZTES Geheimnis, das zu keinem
         # gueltigen Ausweis fuehrte (unbekannt, falsch oder abgelaufen).

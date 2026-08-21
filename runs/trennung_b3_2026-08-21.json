@@ -1,0 +1,163 @@
+{
+  "auftrag": "B3 -- Mandanten- und Kreistrennung erzwungen (BDW-E03, E06, E22, E23)",
+  "zeitpunkt": "2026-08-21T01:58:07+0200",
+  "bezugspunkt": "f64e7a12 (B1)",
+  "zweig": "brainlehr/b4-ausweis",
+  "kopf_bei_abnahme": "4fee68f9",
+  "rot_vor_gruen": {
+    "verfahren": "Die Durchsetzung (knowledge_mcp_server.py, pflege/export_offen.py, pflege/knowledge_db_snapshot.py) wurde auf den Bezugspunkt zurueckgesetzt, die Achsen aus B1 und kern/trennung.py blieben stehen. Damit misst die Rotprobe genau das, was dieser Auftrag hinzufuegt -- nicht das Fehlen der Spalten.",
+    "rot": 15,
+    "gruen_dabei": 4,
+    "rote_faelle": [
+      "test_e06_lesen_cross_tenant_scheitert",
+      "test_e06_suche_cross_tenant_scheitert",
+      "test_e06_relation_cross_tenant_scheitert",
+      "test_e06_export_cross_tenant_scheitert",
+      "test_e06_backup_cross_tenant_scheitert",
+      "test_e06_admin_cross_tenant_scheitert",
+      "test_e06_eigener_mandant_sieht_seinen_bestand_vollstaendig",
+      "test_e22_fremder_kreis_sieht_engen_eintrag_nicht",
+      "test_e22_neuer_enger_eintrag_aendert_die_zahlen_des_fremden_kreises_nicht",
+      "test_e22_eigener_kreis_sieht_die_zahl_sehr_wohl",
+      "test_e23_dieselbe_regel_gilt_fuer_zwei_kreise_verschieden_lang",
+      "test_e23_geltung_eines_kreises_faerbt_nicht_auf_die_suche_ab",
+      "test_neuer_eintrag_traegt_den_mandanten_des_ausweises",
+      "test_kreis_nur_der_eigene_beim_anlegen",
+      "test_bestand_ohne_achsen_bleibt_vollstaendig_sichtbar"
+    ],
+    "e03_ohne_modul": "ModuleNotFoundError: No module named 'trennung' -- die drei E03-Faelle sind ohne kern/trennung.py nicht einmal sammelbar; das Modul IST die Negativmatrix."
+  },
+  "gruen": {
+    "testdatei": "tests/test_trennung_b3.py",
+    "faelle": 19
+  },
+  "echter_bestand": {
+    "hinweis": "Gegen eine sqlite-Online-Kopie der echten brainlehr.db gefahren -- gleicher Inhalt, keine Zugriffszeilen und kein access_count im Betrieb. Zwischen den beiden Messungen ist der echte Bestand um eine Lehre gewachsen (1178 -> 1179, fremde Sitzung); stats_lessons_total folgt der Rohzahl exakt, es geht also nichts verloren.",
+    "vorher": {
+      "suchen": {
+        "wissen": 49,
+        "regel messung": 50,
+        "brainlehr": 50,
+        "lehre fehler": 49,
+        "knoten": 50
+      },
+      "browse_wurzel": 2740,
+      "stats": {
+        "nodes_total": 5240,
+        "lessons_total": 1178,
+        "lessons_active": 1120
+      },
+      "relationen": 10295,
+      "roh": {
+        "knoten": 5240,
+        "lehren": 1178
+      }
+    },
+    "nachher": {
+      "suchen": {
+        "wissen": 49,
+        "regel messung": 50,
+        "brainlehr": 50,
+        "lehre fehler": 49,
+        "knoten": 50
+      },
+      "browse_wurzel": 2740,
+      "stats": {
+        "nodes_total": 5240,
+        "lessons_total": 1179,
+        "lessons_active": 1121
+      },
+      "relationen": 10295,
+      "roh": {
+        "knoten": 5240,
+        "lehren": 1179
+      }
+    },
+    "kinderzahlen_identisch": true,
+    "suchtreffer_identisch": true
+  },
+  "testsuite": {
+    "befehl": "python3 -m pytest tests/ -q  (kein pytest-timeout installiert)",
+    "summe": "25 failed, 2433 passed, 2 skipped, 13 xfailed, 7 warnings, 9 errors in 812.18s (0:13:32)",
+    "rot_am_bezugspunkt": [
+      "tests/test_adr034_verdrahtung.py::test_occurrences_grenzwert_2_3_4",
+      "tests/test_alle_selftests.py::test_kein_modul_faellt_durch_die_liste",
+      "tests/test_alle_selftests.py::test_modul_selftest[kern/abrufguete.py]",
+      "tests/test_alle_selftests.py::test_modul_selftest[kern/werkzeugrechte.py]",
+      "tests/test_alle_selftests.py::test_modul_selftest[melder/ohne_mechanismus.py]",
+      "tests/test_anlass_schema_backfill.py::test_backup_datei_entsteht_vor_dem_nachzug",
+      "tests/test_anlass_schema_backfill.py::test_knowledge_add_auf_alter_db_zieht_spalte_automatisch_nach",
+      "tests/test_anlass_schema_backfill.py::test_lesson_record_auf_alter_db_zieht_lessons_spalte_nach",
+      "tests/test_anlass_schema_backfill.py::test_nachzug_verliert_keine_bestandszeile",
+      "tests/test_anlass_schema_backfill.py::test_rot_vor_fix_alte_db_wirft_rohen_sqlite_fehler",
+      "tests/test_anlass_schema_backfill.py::test_zweiter_lauf_auf_bereits_migrierter_db_ist_ein_reiner_noop",
+      "tests/test_auftragshypothese_verdrahtung.py::test_nachher_gruen_echtes_kommando_meldet_echten_positiv_auftrag",
+      "tests/test_auftragshypothese_verdrahtung.py::test_nachher_gruen_echtes_kommando_schweigt_bei_echtem_negativ_auftrag",
+      "tests/test_auftragshypothese_waechter.py::test_echte_hakeneingabe_liefert_gueltiges_pretooluse_json",
+      "tests/test_brainlehr_umzug.py::test_erstanlage_traegt_dasselbe_schema_wie_der_betrieb",
+      "tests/test_enigma_spikes_synthetisch.py::test_erlaubnismodell_ist_nicht_im_produktivcode",
+      "tests/test_erstinstallation_spalten.py::test_jede_gelesene_lessons_spalte_steht_in_schema_sql",
+      "tests/test_kandidatendiagnose.py::test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg",
+      "tests/test_kandidatendiagnose.py::test_fall_8dc84938_jetzt_in_liste",
+      "tests/test_lessons_fts_backfill.py::test_rot_vor_fix_bestandszeile_ohne_backfill_nicht_auffindbar",
+      "tests/test_naht_ratsche.py::test_naht_waechst_nicht",
+      "tests/test_planform_ratsche.py::test_planform_waechst_nicht",
+      "tests/test_produktivcode_nutzt_ort.py::test_kein_produktivmodul_baut_den_db_namen_selbst_zusammen",
+      "tests/test_regelrouting_vollstaendig.py::test_zweiter_aufruf_derselben_sitzung_wiederholt_nicht",
+      "tests/test_relevanzlage.py::test_suchweg_meldet_uneindeutige_lage",
+      "tests/test_sicherung_s12.py::test_alle_behandelten_knoten_haben_eine_urfassung",
+      "tests/test_source_constraints.py::test_suche_findet_neuen_knoten_nach_insert",
+      "tests/test_werkzeugrechte_durchsetzung.py::test_jedes_werkzeug_hat_eine_zuordnung",
+      "tests/test_wissen_ohne_pfad.py::test_keine_unbegruendeten_absoluten_pfade",
+      "tests/test_zeitform_utc.py::test_jede_zeitangabe_steht_in_utc",
+      "tests/test_zeitmarke_eine_quelle.py::test_kein_prozent_z_in_zeitstempeln"
+    ],
+    "rot_jetzt": [
+      "tests/test_achsen_b1.py::test_gewachsen_bekommt_achsen_und_behaelt_bestand",
+      "tests/test_achsen_b1.py::test_gewachsen_bekommt_die_indizes_erst_im_zweiten_lauf",
+      "tests/test_achsen_b1.py::test_zweiter_lauf_ist_nulldurchgang",
+      "tests/test_adr034_verdrahtung.py::test_occurrences_grenzwert_2_3_4",
+      "tests/test_alle_selftests.py::test_kein_modul_faellt_durch_die_liste",
+      "tests/test_alle_selftests.py::test_modul_selftest[kern/abrufguete.py]",
+      "tests/test_alle_selftests.py::test_modul_selftest[kern/werkzeugrechte.py]",
+      "tests/test_alle_selftests.py::test_modul_selftest[melder/ohne_mechanismus.py]",
+      "tests/test_anlass_schema_backfill.py::test_backup_datei_entsteht_vor_dem_nachzug",
+      "tests/test_anlass_schema_backfill.py::test_knowledge_add_auf_alter_db_zieht_spalte_automatisch_nach",
+      "tests/test_anlass_schema_backfill.py::test_lesson_record_auf_alter_db_zieht_lessons_spalte_nach",
+      "tests/test_anlass_schema_backfill.py::test_nachzug_verliert_keine_bestandszeile",
+      "tests/test_anlass_schema_backfill.py::test_rot_vor_fix_alte_db_wirft_rohen_sqlite_fehler",
+      "tests/test_anlass_schema_backfill.py::test_zweiter_lauf_auf_bereits_migrierter_db_ist_ein_reiner_noop",
+      "tests/test_auftragshypothese_verdrahtung.py::test_nachher_gruen_echtes_kommando_meldet_echten_positiv_auftrag",
+      "tests/test_auftragshypothese_verdrahtung.py::test_nachher_gruen_echtes_kommando_schweigt_bei_echtem_negativ_auftrag",
+      "tests/test_auftragshypothese_waechter.py::test_echte_hakeneingabe_liefert_gueltiges_pretooluse_json",
+      "tests/test_brainlehr_umzug.py::test_erstanlage_traegt_dasselbe_schema_wie_der_betrieb",
+      "tests/test_enigma_spikes_synthetisch.py::test_erlaubnismodell_ist_nicht_im_produktivcode",
+      "tests/test_erstinstallation_spalten.py::test_jede_gelesene_lessons_spalte_steht_in_schema_sql",
+      "tests/test_kandidatendiagnose.py::test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg",
+      "tests/test_kandidatendiagnose.py::test_fall_8dc84938_jetzt_in_liste",
+      "tests/test_lessons_fts_backfill.py::test_rot_vor_fix_bestandszeile_ohne_backfill_nicht_auffindbar",
+      "tests/test_naht_ratsche.py::test_naht_waechst_nicht",
+      "tests/test_planform_ratsche.py::test_planform_waechst_nicht",
+      "tests/test_produktivcode_nutzt_ort.py::test_kein_produktivmodul_baut_den_db_namen_selbst_zusammen",
+      "tests/test_regelrouting_vollstaendig.py::test_zweiter_aufruf_derselben_sitzung_wiederholt_nicht",
+      "tests/test_relevanzlage.py::test_suchweg_meldet_uneindeutige_lage",
+      "tests/test_sicherung_s12.py::test_alle_behandelten_knoten_haben_eine_urfassung",
+      "tests/test_source_constraints.py::test_suche_findet_neuen_knoten_nach_insert",
+      "tests/test_werkzeugrechte_durchsetzung.py::test_jedes_werkzeug_hat_eine_zuordnung",
+      "tests/test_wissen_ohne_pfad.py::test_keine_unbegruendeten_absoluten_pfade",
+      "tests/test_zeitform_utc.py::test_jede_zeitangabe_steht_in_utc",
+      "tests/test_zeitmarke_eine_quelle.py::test_kein_prozent_z_in_zeitstempeln"
+    ],
+    "neu_rot": [
+      "tests/test_achsen_b1.py::test_gewachsen_bekommt_achsen_und_behaelt_bestand",
+      "tests/test_achsen_b1.py::test_gewachsen_bekommt_die_indizes_erst_im_zweiten_lauf",
+      "tests/test_achsen_b1.py::test_zweiter_lauf_ist_nulldurchgang"
+    ],
+    "nicht_mehr_rot": [],
+    "neu_rot_erklaert": "Die drei test_achsen_b1-Fehler stammen NICHT aus diesem Auftrag. Nachgestellt: mit auf den Bezugspunkt zurueckgesetzten Durchsetzungsdateien scheitern sie unveraendert (9 passed, 3 errors). Ursache ist Commit c9c5ebec (Strang F), der den Trigger knowledge_nodes_forderung_stand_check_bi eingezogen hat; die gewachsen-Fixture von B1 laesst die Spalte forderung_stand fallen und SQLite bricht dann im Trigger ab ('no such column: NEW.forderung_stand'). Gemeldet, nicht behoben -- fremder Auftrag."
+  },
+  "nicht_gebaut": {
+    "E01/E04/E05/E11/E19/E24": "laut Auftrag ausgeschlossen",
+    "E22 Trennung von allgemeinem Teil und Begruendung beim ERFASSEN": "Der Katalogtext zu BDW-E22 nennt sie als Voraussetzung. Gebaut ist die Sichtbarkeit je Kreis und die Zaehlung; die inhaltliche Zweiteilung eines Eintrags (allgemeiner Teil / Begruendung) ist ein eigener Schnitt am Datensatz und stand nicht in der Auftragsliste. Preis: ein Eintrag ist heute ganz oder gar nicht eng."
+  }
+}

@@ -28,9 +28,45 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import trennung  # B3: eine Sicherung nimmt keine fremden Mandanten mit
+
 SHARED_KNOWLEDGE = _w
 DB = SHARED_KNOWLEDGE / "brainlehr.db"
 SNAPSHOT_DIR = SHARED_KNOWLEDGE / "snapshots"
+
+
+def _kein_fremder_mandant(quelle: Path) -> None:
+    """BDW-E06: "Cross-Tenant-Backup scheitert."
+
+    EINE DATEI-KOPIE KENNT KEINE WHERE-KLAUSEL. Die Online-Backup-API von
+    SQLite kopiert Seiten, nicht Zeilen -- sie nimmt alles mit oder nichts.
+    Damit gibt es hier genau zwei ehrliche Bauformen: die Sicherung
+    verweigern, solange Zeilen fremder Mandanten in der Datei liegen, oder
+    einen zeilenweisen Auszug bauen. Der Auszug waere ein zweites Format
+    neben export_offen.py -- eine zweite Wahrheit fuer dieselbe Frage, und
+    genau die hat der Erstlauf von export_offen.py schon einmal gekostet.
+
+    Also: verweigern und den Grund nennen. Der Betreiber eines
+    Einzelplatzes merkt davon nichts -- sein Bestand traegt genau einen
+    Mandanten, und es ist seiner.
+    """
+    conn = sqlite3.connect(f"file:{quelle}?mode=ro", uri=True)
+    try:
+        eigener = trennung.mandant_von(trennung.ausweis.loese_auf())
+        fremde = [r[0] for r in conn.execute(
+            "SELECT DISTINCT mandant FROM knowledge_nodes WHERE mandant <> ? "
+            "UNION SELECT DISTINCT mandant FROM lessons_learned WHERE mandant <> ?",
+            (eigener, eigener))]
+    except sqlite3.OperationalError:
+        return                       # Datenbank ohne die Spalte (vor B1)
+    finally:
+        conn.close()
+    if fremde:
+        raise PermissionError(
+            f"Sicherung abgelehnt: {quelle} traegt Zeilen fremder Mandanten "
+            f"({', '.join(sorted(fremde))}), der Aufrufer gehoert zu "
+            f"{eigener!r}. Eine Datei-Kopie kann sie nicht auslassen. "
+            f"Fuer einen mandantenreinen Auszug: pflege/export_offen.py.")
 
 
 def freeze(zielverzeichnis: Path | None = None, quelle: Path | None = None) -> dict:
@@ -40,6 +76,7 @@ def freeze(zielverzeichnis: Path | None = None, quelle: Path | None = None) -> d
     Rueckgabe: Pfad, Datum, Groesse in Byte, Bestandsgroessen zum
     Aufnahmezeitpunkt."""
     quelle = quelle or DB
+    _kein_fremder_mandant(quelle)
     ziel_dir = zielverzeichnis or SNAPSHOT_DIR
     ziel_dir.mkdir(parents=True, exist_ok=True)
     datum = datetime.now(timezone.utc).strftime("%Y-%m-%d")

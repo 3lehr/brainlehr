@@ -118,6 +118,8 @@ import build_embeddings  # ADR-032: resolve_lesson_projects() fuer den Bereichs-
                           # beim Einbetten am Schreibvorgang -- selbe Regel wie im
                           # expliziten Batch-Lauf, nicht daneben nachgebaut.
 import ausweis  # B4.1: actor wird beglaubigt, nicht behauptet (siehe _identity)
+import trennung  # B3: Mandant und Kreis werden erzwungen (BDW-E03/E06/E22/E23);
+                 # ein SQL-Fragment je Leseweg, Bauform wie _NICHT_GESPERRT_SQL
 import gattung_filter  # S1b: Nachschlagewerk (germanquad/nasa-llis) aus der Trefferliste halten
 import speicher  # Aufgabe 79 Schritt 2: normiere_modell()/normiere_akteur() im
                   # Schreibpfad selbst, nicht nur im Meldewerkzeug (siehe _identity)
@@ -2005,6 +2007,27 @@ def _zweckprojektion_sichtbar(ausw, tags_json: str | None) -> bool:
     return any(f"zweck:{p}" in tags and f"feld:{f}" in tags for p, f in policies)
 
 
+def _knoten_holen(conn: sqlite3.Connection, ref: str) -> sqlite3.Row | None:
+    """Einen Knoten ueber id ODER path holen -- und zwar NUR, wenn der
+    Aufrufer ihn ueberhaupt sehen darf (Mandant/Kreis, kern/trennung.py).
+
+    DIE EINE STELLE, nicht vier. Vor B3 stand dieselbe Abfrage woertlich in
+    knowledge_read, knowledge_update, knowledge_zurueckziehen und
+    knowledge_freigeben. Eine Schranke, die man an vier Stellen einbauen
+    muss, ist an der fuenften vergessen -- und die fuenfte kommt.
+
+    Unsichtbar wird zu NICHT VORHANDEN, nicht zu "verweigert". Ein
+    "zugriff verweigert" beantwortet die Frage, OB es den Knoten gibt, und
+    genau diese Antwort ist bei BDW-E22 die Information, die nicht heraus
+    darf. Dieselbe Kroete, die _NICHT_GESPERRT_SQL fuer die Freigabe schon
+    schluckt.
+    """
+    return conn.execute(
+        f"SELECT * FROM knowledge_nodes WHERE (id = ? OR path = ?) "
+        f"AND {trennung.sichtbar_sql()}",
+        (ref, ref)).fetchone()
+
+
 def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
                      actor: str | None = None, model: str | None = None,
                      session: str | None = None) -> dict:
@@ -2017,12 +2040,17 @@ def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
     # wie knowledge_read/_ist_gesperrt, hier als SQL-Filter statt Row-Check,
     # damit ein gesperrter Knoten weder auftaucht noch in children_count
     # mitzaehlt (kein Leck ueber "hat Kinder, zeigt aber keine").
+    # Mandant/Kreis in DERSELBEN Klausel wie die Freigabe-Sperre -- und
+    # weiter unten in children_count_q noch einmal. Ein Kind, das der
+    # Aufrufer nicht sehen darf, darf auch nicht MITZAEHLEN (BDW-E22-AC2):
+    # "hat Kinder, zeigt aber keine" ist dieselbe Information wie das Kind.
+    _sicht = trennung.sichtbar_sql()
     if path == "/":
-        query = f"SELECT id, path, title, summary, project_id, level, access_count, tags FROM knowledge_nodes WHERE level = 0 AND {_NICHT_GESPERRT_SQL} ORDER BY path"
+        query = f"SELECT id, path, title, summary, project_id, level, access_count, tags FROM knowledge_nodes WHERE level = 0 AND {_NICHT_GESPERRT_SQL} AND {_sicht} ORDER BY path"
         params: tuple = ()
     else:
         normalized = path.rstrip("/")
-        query = f"SELECT id, path, title, summary, project_id, level, access_count, tags FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL} ORDER BY path"
+        query = f"SELECT id, path, title, summary, project_id, level, access_count, tags FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL} AND {_sicht} ORDER BY path"
         params = (normalized,)
 
     if project_filter:
@@ -2035,7 +2063,7 @@ def knowledge_browse(path: str = "/", project_filter: str | None = None, *,
     # Zaehler wie bei der Freigabe-Sperre ueber gefilterte Zeilen, nicht
     # COUNT(*) -- sonst leckt die Zweckprojektion ueber children_count/
     # has_children genau wie es fuer FREIGABE_GESPERRT schon behoben wurde.
-    children_count_q = f"SELECT tags FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL}"
+    children_count_q = f"SELECT tags FROM knowledge_nodes WHERE parent_path = ? AND {_NICHT_GESPERRT_SQL} AND {_sicht}"
 
     results = []
     for r in rows:
@@ -2095,10 +2123,7 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
                    model: str | None = None, session: str | None = None) -> dict:
     """Read full content of a knowledge node. Use browse first to find the right node."""
     conn = get_db()
-    row = conn.execute(
-        "SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?",
-        (node_id, node_id)
-    ).fetchone()
+    row = _knoten_holen(conn, node_id)
     if not row:
         log_access(conn, node_id, "read", actor=actor, model=model, session=session,
                    status="rejected", query="knoten_nicht_gefunden")
@@ -2146,6 +2171,10 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
     # nicht dasselbe wie 'nie dagewesen'. Der Leser erfaehrt, DASS hier etwas
     # stand und dass es unwiederbringlich weg ist -- ohne den Inhalt. Ein
     # blosses "nicht gefunden" wuerde die Loeschung selbst verheimlichen.
+    _geltung_ab, _geltung_bis = trennung.geltung(
+        conn, "knoten", [row["id"]], trennung.kreise_von(ausweis.loese_auf())
+    ).get(row["id"], (row["gilt_ab"], row["gilt_bis"]))
+
     _summary, _content = row["summary"], row["content"] or "(kein Volltext)"
     if _spalte(row, "sensibel"):
         _summary, _content = _sensiblen_inhalt_lesen(row)
@@ -2165,8 +2194,11 @@ def knowledge_read(node_id: str, *, actor: str | None = None,
         "abgeleitet_von": row["abgeleitet_von"],
         "confidence": row["confidence"],
         "norm_rang": row["norm_rang"],
-        "gilt_ab": row["gilt_ab"],
-        "gilt_bis": row["gilt_bis"],
+        # BDW-E23: der Kreis des Aufrufers sticht die Spalte -- und nur
+        # seiner. Ein Eintrag fuer Kreis A aendert nichts an dem, was Kreis B
+        # sieht; wer gar keinen hat, bekommt die Spaltenvorgabe.
+        "gilt_ab": _geltung_ab,
+        "gilt_bis": _geltung_bis,
         "norm_entscheidung": row["norm_entscheidung"],
         "norm_entschieden_von": row["norm_entschieden_von"],
         "norm_entschieden_am": row["norm_entschieden_am"],
@@ -2660,17 +2692,25 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
     # neu erfunden -- leer, wenn der Aufrufer Nachschlagewerk ausdruecklich
     # anfordert.
     _gattung_sql = "" if nachschlagewerk else gattung_filter.SQL_ARBEITSBESTAND_NUR
+    # Mandant/Kreis (B3): in JEDER Teilabfrage, aus demselben Grund, aus dem
+    # _NICHT_GESPERRT_SQL in jeder steht -- ein Eintrag, der nur aus der
+    # gezeigten Liste faellt, kommt ueber den Bedeutungskanal wieder herein
+    # oder verdraengt in der RRF-Fusion einen sichtbaren Treffer von einem
+    # Platz vor max_results. Beides waere eine ZAHL, die sich veraendert.
+    _sicht_n = trennung.sichtbar_sql(ausw, "n.")
+    _sicht_l = trennung.sichtbar_sql(ausw, "l.")
+    _sicht_blank = trennung.sichtbar_sql(ausw)
     if scope == "all":
         fts_rows = [] if blind else [r for r in conn.execute(
             f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at, n.source, n.norm_entscheidung, n.freigabe
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
-               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.{_NICHT_GESPERRT_SQL} {_gattung_sql}
+               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.{_NICHT_GESPERRT_SQL} AND {_sicht_n} {_gattung_sql}
                ORDER BY rank""",
             (fts_query,)
         ).fetchall() if _zweckprojektion_sichtbar(ausw, r["tags"])]
         allowed_node_ids = {r["id"] for r in conn.execute(
-            f"SELECT id, tags FROM knowledge_nodes n WHERE {_NICHT_GESPERRT_SQL} {_gattung_sql}"
+            f"SELECT id, tags FROM knowledge_nodes n WHERE {_NICHT_GESPERRT_SQL} AND {_sicht_n} {_gattung_sql}"
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         fts_lesson_rows = [] if blind else conn.execute(
             f"""SELECT l.id, l.description, l.type, l.severity, l.projects, l.freigabe,
@@ -2679,24 +2719,24 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                       l.gilt_bis_version, l.node_path
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
-               WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL}
+               WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL} AND {_sicht_l}
                ORDER BY rank""",
             (fts_query,)
         ).fetchall()
         allowed_lesson_ids = {r["id"] for r in conn.execute(
-            f"SELECT id FROM lessons_learned WHERE status = 'active' AND {_NICHT_GESPERRT_SQL}"
+            f"SELECT id FROM lessons_learned WHERE status = 'active' AND {_NICHT_GESPERRT_SQL} AND {_sicht_blank}"
         )}
     else:
         fts_rows = [] if blind else [r for r in conn.execute(
             f"""SELECT n.id, n.path, n.title, n.summary, n.project_id, n.norm_rang, n.gilt_ab, n.gilt_bis, n.abgeleitet_von, n.tags, n.created_at, n.source, n.norm_entscheidung, n.freigabe
                FROM knowledge_fts f
                JOIN knowledge_nodes n ON f.rowid = n.rowid
-               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?) AND n.{_NICHT_GESPERRT_SQL} {_gattung_sql}
+               WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 AND n.project_id IN ('shared', ?) AND n.{_NICHT_GESPERRT_SQL} AND {_sicht_n} {_gattung_sql}
                ORDER BY rank""",
             (fts_query, scope)
         ).fetchall() if _zweckprojektion_sichtbar(ausw, r["tags"])]
         allowed_node_ids = {r["id"] for r in conn.execute(
-            f"SELECT id, tags FROM knowledge_nodes n WHERE project_id IN ('shared', ?) AND {_NICHT_GESPERRT_SQL} {_gattung_sql}", (scope,)
+            f"SELECT id, tags FROM knowledge_nodes n WHERE project_id IN ('shared', ?) AND {_NICHT_GESPERRT_SQL} AND {_sicht_n} {_gattung_sql}", (scope,)
         ) if _zweckprojektion_sichtbar(ausw, r["tags"])}
         _proj_clause = geltungsbereich.sql_projects_exact("l.projects")
         fts_lesson_rows = [] if blind else conn.execute(
@@ -2706,14 +2746,14 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                       l.gilt_bis_version, l.node_path
                FROM lessons_fts f
                JOIN lessons_learned l ON f.rowid = l.rowid
-               WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL}
+               WHERE lessons_fts MATCH ? AND l.status = 'active' AND l.{_NICHT_GESPERRT_SQL} AND {_sicht_l}
                  AND ({_proj_clause} OR {_proj_clause} OR {_proj_clause})
                ORDER BY rank""",
             (fts_query, "shared", "systemweit", scope)
         ).fetchall()
         _proj_clause2 = geltungsbereich.sql_projects_exact("projects")
         allowed_lesson_ids = {r["id"] for r in conn.execute(
-            f"SELECT id FROM lessons_learned WHERE status = 'active' AND {_NICHT_GESPERRT_SQL} "
+            f"SELECT id FROM lessons_learned WHERE status = 'active' AND {_NICHT_GESPERRT_SQL} AND {_sicht_blank} "
             f"AND ({_proj_clause2} OR {_proj_clause2})", ("shared", scope)
         )}
 
@@ -2786,7 +2826,7 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         # beim Nachladen als Knoten missverstehen und stumm verlieren.
         placeholders = ",".join("?" for _ in missing)
         for r in conn.execute(
-            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von, tags, created_at, source, norm_entscheidung, freigabe FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 AND {_NICHT_GESPERRT_SQL}",
+            f"SELECT id, path, title, summary, project_id, norm_rang, gilt_ab, gilt_bis, abgeleitet_von, tags, created_at, source, norm_entscheidung, freigabe FROM knowledge_nodes WHERE id IN ({placeholders}) AND zurueckgezogen = 0 AND {_NICHT_GESPERRT_SQL} AND {_sicht_blank}",
             missing
         ):
             if _zweckprojektion_sichtbar(ausw, r["tags"]):
@@ -2794,11 +2834,17 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
         for r in conn.execute(
             f"SELECT id, description, type, severity, projects, freigabe, session, actor, model, "
             f"pruefstelle, status, first_seen, last_seen, occurrences, bezug, gilt_ab, gilt_bis, "
-            f"gilt_bis_version, node_path FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active' AND {_NICHT_GESPERRT_SQL}",
+            f"gilt_bis_version, node_path FROM lessons_learned WHERE id IN ({placeholders}) AND status = 'active' AND {_NICHT_GESPERRT_SQL} AND {_sicht_blank}",
             missing
         ):
             by_id_lessons[r["id"]] = r
 
+    # BDW-E23: dieselbe Regel gilt fuer verschiedene Kreise verschieden
+    # lang. EINE Abfrage fuer alle Treffer, nicht eine je Zeile -- die
+    # Geltung ist eine Anzeigefrage und darf die Suche nicht verfuenfzigfachen.
+    # Wer keinen Eintrag hat, behaelt die Spaltenvorgabe (COALESCE-Lesart aus
+    # dem Tabellenkommentar in schema.sql).
+    _geltung_kreis = trennung.geltung(conn, "knoten", final_ids, trennung.kreise_von(ausw))
     vorrang, nachrangig = [], []
     for i in final_ids:
         if i in by_id:
@@ -2825,7 +2871,9 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                       "source": row["source"], "norm_rang": row["norm_rang"],
                       "gilt_ab": row["gilt_ab"], "gilt_bis": row["gilt_bis"],
                       "norm_entscheidung": row["norm_entscheidung"], "freigabe": row["freigabe"]}
-            geltung = _geltung_status(row["norm_rang"], row["gilt_ab"], row["gilt_bis"], stichtag)
+            _ab, _bis = _geltung_kreis.get(row["id"], (row["gilt_ab"], row["gilt_bis"]))
+            entry["gilt_ab"], entry["gilt_bis"] = _ab, _bis
+            geltung = _geltung_status(row["norm_rang"], _ab, _bis, stichtag)
             if geltung in ("abgelaufen", "noch_nicht_in_kraft"):
                 if nur_geltende:
                     continue
@@ -3020,8 +3068,8 @@ def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
         parent = current.rsplit("/", 1)[0] or "/"
         created_at = now_iso()
         conn.execute(
-            """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, actor, session, model, client, bedient_von)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, actor, session, model, client, bedient_von, mandant)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (str(uuid.uuid4())[:8], current, parent, project_id, seg,
              f"Automatisch erzeugter Astknoten fuer {seg}", "",
              current.count("/") - 1, json.dumps([]),
@@ -3038,7 +3086,11 @@ def _ensure_ast_chain(conn, missing_path: str, triggering_child_path: str,
              # bedient_von NIE aus einem Argument (Betreiberweisung
              # 2026-08-11) -- dieselbe Aufloesung wie im Haupt-INSERT von
              # knowledge_add.
-             _bedient_von(actor)),
+             _bedient_von(actor),
+             # Der Astknoten gehoert dem, der ihn ausloest -- sonst legt ein
+             # fremder Mandant sein Kind unter einen Ast, den er selbst nicht
+             # sieht, und der Elterncheck weist ihn beim naechsten Mal ab.
+             trennung.mandant_von(ausweis.loese_auf())),
         )
 
 
@@ -3666,6 +3718,11 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                   gattung: str | None = None,
                   norm_art: str | None = None,
                   betreiber_weisung: str | None = None,
+                  # B3/BDW-E22: der Kreis steht VON ANFANG AN fest. Wer ihn
+                  # erst nachtraeglich enger zieht, hat ueber die Trefferzahl
+                  # laengst verraten, dass es etwas gibt. Darum hier und
+                  # nicht in einem 'kreis_setzen'-Werkzeug.
+                  kreis: str = "",
                   sensibel: bool = False,
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
@@ -3781,6 +3838,15 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                    session=session, status="rejected", query="geltung_ungueltig")
         conn.close()
         return {"error": geltung_fehler}
+
+    # kreis: nur ein Kreis, dem der Schreiber selbst angehoert (oder der
+    # leere = alle). Sonst legte er einen Eintrag an, den er im naechsten
+    # Moment selbst nicht mehr findet -- und suchte den Fehler in der Suche.
+    _kreis = (kreis or "").strip()
+    _ausw_add = ausweis.loese_auf()
+    if _kreis and _kreis not in trennung.kreise_von(_ausw_add):
+        return {"error": f"kreis {_kreis!r} steht dem Schreiber nicht offen. "
+                         f"Eigene Kreise: {list(trennung.kreise_von(_ausw_add)) or 'keine'}."}
 
     conn = get_db()
 
@@ -3996,8 +4062,8 @@ def knowledge_add(parent_path: str, title: str, summary: str,
         gattung=gattung if gattung is not None else "arbeitsbestand")
 
     conn.execute(
-        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, norm_entschieden_belegart, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von, sensibel, chiffre)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, norm_entschieden_belegart, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von, sensibel, chiffre, mandant, kreis)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (node_id, node_path, parent_path, project_id, title, summary, content,
          level, json.dumps(tags or []), source, created_at, created_at,
          norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, created_at, norm_entschieden_grund,
@@ -4010,7 +4076,13 @@ def knowledge_add(parent_path: str, title: str, summary: str,
          # Parameter dafuer. Waere er da, koennte jeder Schreiber eine
          # menschliche Deckung behaupten.
          _bedient_von(actor),
-         1 if sensibel else 0, chiffre)
+         1 if sensibel else 0, chiffre,
+         # mandant AUS DEM AUSWEIS, nicht aus der Signatur -- gleiche
+         # Begruendung wie bei bedient_von direkt darueber: ein Mandant, den
+         # der Schreiber selbst benennen koennte, waere keine Trennung. Ohne
+         # diese Zeile schriebe ein fremder Mandant in den eigenen Bestand
+         # hinein und saehe seinen eigenen Eintrag danach nicht mehr.
+         trennung.mandant_von(_ausw_add), _kreis)
     )
     log_access(conn, node_path, "add", project_id=project_id,
                actor=actor, model=model, session=session,
@@ -4127,7 +4199,7 @@ def knowledge_update(node_id: str, summary: str | None = None,
     Altbestand mit norm_entscheidung='offen' bleibt beim reinen
     Feldaenderungen 'offen' (Auftrag Punkt 2: nicht rueckwirkend erzwingen)."""
     conn = get_db()
-    row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
+    row = _knoten_holen(conn, node_id)
     if not row:
         log_access(conn, node_id, "update", actor=actor, model=model, session=session,
                    status="rejected", query="knoten_nicht_gefunden")
@@ -4465,8 +4537,14 @@ def freigabe_setzen(eintrag_id: str, stufe: str, *, actor: str | None = None,
     treffer = []
     for tabelle, schluessel in _FREIGABE_TABELLEN:
         try:
+            # Mandant/Kreis (B3, BDW-E06 "Cross-Tenant-Admin scheitert"):
+            # dieselbe Klausel wie beim Lesen. Ein Eintrag, den der Aufrufer
+            # nicht sehen darf, ist fuer ihn auch nicht entscheidbar -- und
+            # er bekommt "Kein Eintrag mit dieser Kennung", nicht
+            # "verweigert", sonst haette er ihn per Ausschluss gefunden.
             zeile = conn.execute(
-                f"SELECT {schluessel} AS id, freigabe FROM {tabelle} WHERE {schluessel} = ?",
+                f"SELECT {schluessel} AS id, freigabe FROM {tabelle} "
+                f"WHERE {schluessel} = ? AND {trennung.sichtbar_sql()}",
                 (kennung,)).fetchone()
         except sqlite3.OperationalError:
             continue                      # Tabelle oder Spalte fehlt: nichts zu tun
@@ -4535,7 +4613,7 @@ def knowledge_zurueckziehen(node_id: str, grund: str, *, actor: str | None = Non
         return {"error": "grund fehlt: Zurueckziehen verlangt eine Begruendung, nichts geaendert."}
 
     conn = get_db()
-    row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
+    row = _knoten_holen(conn, node_id)
     if not row:
         log_access(conn, node_id, "zurueckziehen", actor=actor, model=model, session=session,
                    status="rejected", query="knoten_nicht_gefunden")
@@ -4586,7 +4664,7 @@ def knowledge_freigeben(node_id: str, *, actor: str | None = None,
     wurden beim Zurueckziehen geleert und bleiben leer, das ist keine
     Wiederherstellung, nur eine Sichtbarkeits-Umschaltung."""
     conn = get_db()
-    row = conn.execute("SELECT * FROM knowledge_nodes WHERE id = ? OR path = ?", (node_id, node_id)).fetchone()
+    row = _knoten_holen(conn, node_id)
     if not row:
         log_access(conn, node_id, "freigeben", actor=actor, model=model, session=session,
                    status="rejected", query="knoten_nicht_gefunden")
@@ -4659,7 +4737,8 @@ def kettenerklaerung_erklaeren(access_log_id: int, grund: str, *, commit_hash: s
 def _relation_node(conn: sqlite3.Connection, value: str,
                    scope: str | None = None) -> sqlite3.Row:
     row = conn.execute(
-        "SELECT id,path,project_id,title FROM knowledge_nodes WHERE id=? OR path=?",
+        f"SELECT id,path,project_id,title FROM knowledge_nodes "
+        f"WHERE (id=? OR path=?) AND {trennung.sichtbar_sql()}",
         (value, value),
     ).fetchone()
     if not row:
@@ -4760,8 +4839,13 @@ def knowledge_relation_list(node: str | None = None,
     # um jede Sperre herum. Dort der Index, hier die Kantenliste. Beide Male
     # wirkt die sichtbare Haelfte der Sperre einwandfrei -- deshalb faellt es
     # nicht auf.
+    # Mandant/Kreis (B3) an derselben Stelle und aus demselben Grund: eine
+    # Kante nennt die TITEL beider Enden. Ein Knoten des fremden Kreises
+    # erschiene sonst ueber seinen sichtbaren Nachbarn, mit Namen -- und die
+    # blosse ANZAHL der Kanten waere schon die Auskunft, dass es ihn gibt.
     for seite in ("s", "t"):
         clauses.append(_NICHT_GESPERRT_SQL.replace("freigabe", f"{seite}.freigabe"))
+        clauses.append(trennung.sichtbar_sql(alias=f"{seite}."))
     where = " WHERE " + " AND ".join(clauses) if clauses else ""
     log_access(conn, node_row["path"] if node_row else None, "relation_list",
                project_id=scope, actor=actor, model=model, session=session, status="started")
@@ -5229,6 +5313,7 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
                   node_path: str = "", same_as: str = "",
                   anlass: str = "unbekannt",
                   beinahefehler: bool = False, bemerkt_woran: str = "", *,
+                  kreis: str = "",          # B3/BDW-E22, wie bei knowledge_add
                   actor: str | None = None, model: str | None = None,
                   session: str | None = None) -> dict:
     """Record a lesson learned.
@@ -5266,6 +5351,14 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     Wirkt nur beim NEUEN Eintrag; ein Bump (Dublette/same_as) laesst die
     Kennzeichnung der bestehenden Zeile unveraendert, wie anlass auch.
     """
+    # Kreis wie bei knowledge_add: nur einer, dem der Schreiber angehoert.
+    _kreis_lehre = (kreis or "").strip()
+    _ausw_lehre = ausweis.loese_auf()
+    if _kreis_lehre and _kreis_lehre not in trennung.kreise_von(_ausw_lehre):
+        return {"status": "rejected",
+                "error": f"kreis {_kreis_lehre!r} steht dem Schreiber nicht offen. "
+                         f"Eigene Kreise: {list(trennung.kreise_von(_ausw_lehre)) or 'keine'}."}
+
     anlass_fehler = _validate_anlass(anlass)
     if anlass_fehler:
         conn = get_db()
@@ -5348,11 +5441,14 @@ def lesson_record(type_: str, description: str, root_cause: str = "",
     lesson_id = f"L-{str(uuid.uuid4())[:6]}"
     seen_at = now_iso()
     conn.execute(
-        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen, anlass, actor, session, model, client, beinahefehler, bemerkt_woran)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO lessons_learned (id, node_path, type, severity, description, root_cause, resolution, prevention, occurrences, projects, first_seen, last_seen, anlass, actor, session, model, client, beinahefehler, bemerkt_woran, mandant, kreis)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (lesson_id, node_path or None, type_, severity, description, root_cause,
          resolution, prevention, json.dumps(projects or []), seen_at, seen_at, anlass, actor, session, model, _KLIENT,
-         1 if beinahefehler else 0, bemerkt_woran.strip() if beinahefehler else None)
+         1 if beinahefehler else 0, bemerkt_woran.strip() if beinahefehler else None,
+         # Wie bei knowledge_add: Mandant aus dem Ausweis, Kreis nur einer,
+         # dem der Schreiber angehoert (geprueft weiter oben).
+         trennung.mandant_von(_ausw_lehre), _kreis_lehre)
     )
     log_access(conn, node_path or None, "lesson", query=description,
                actor=actor, model=model, session=session,
@@ -5484,7 +5580,9 @@ def lesson_query(type_: str | None = None, project: str | None = None,
     Ohne `query` unveraendertes Altverhalten (reine Filter, sortiert nach
     occurrences/last_seen)."""
     conn = get_db()
-    conditions = []
+    # Mandant/Kreis (B3) als erste Bedingung -- lesson_query liefert Zeilen
+    # UND eine Zahl, beides muss sich am fremden Kreis nicht veraendern.
+    conditions = [trennung.sichtbar_sql()]
     params = []
 
     if type_:
@@ -5562,12 +5660,14 @@ def _eintraege_nach(spalte: str, wert: str) -> dict:
     conn = get_db()
     nodes = [dict(r) for r in conn.execute(
         f"SELECT id, path, title, summary, actor, session, model, created_at, updated_at "
-        f"FROM knowledge_nodes WHERE {spalte} = ? ORDER BY created_at",
+        f"FROM knowledge_nodes WHERE {spalte} = ? AND {trennung.sichtbar_sql()} "
+        f"ORDER BY created_at",
         (wert,),
     )]
     lessons = [dict(r) for r in conn.execute(
         f"SELECT id, type, description, actor, session, model, first_seen, last_seen "
-        f"FROM lessons_learned WHERE {spalte} = ? ORDER BY first_seen",
+        f"FROM lessons_learned WHERE {spalte} = ? AND {trennung.sichtbar_sql()} "
+        f"ORDER BY first_seen",
         (wert,),
     )]
     conn.close()
@@ -5602,16 +5702,22 @@ def _selbstauskunft_erheben() -> dict:
 def knowledge_stats() -> dict:
     """Overview statistics of the knowledge database."""
     conn = get_db()
-    total_nodes = conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0]
+    # HIER IST DIE ZAEHLUNG DER GANZE INHALT (BDW-E22-AC2). Ein Bildschirm,
+    # der "5240 Knoten" sagt und morgen "5241", hat den neuen Eintrag
+    # gemeldet, ohne eine einzige Zeile davon zu zeigen. Diese Funktion
+    # liefert AUSSCHLIESSLICH Zahlen und ist damit der empfindlichste
+    # Leseweg im Haus, nicht der harmloseste.
+    _sicht = trennung.sichtbar_sql()
+    total_nodes = conn.execute(f"SELECT COUNT(*) FROM knowledge_nodes WHERE {_sicht}").fetchone()[0]
     by_project = dict(conn.execute(
-        "SELECT project_id, COUNT(*) FROM knowledge_nodes GROUP BY project_id"
+        f"SELECT project_id, COUNT(*) FROM knowledge_nodes WHERE {_sicht} GROUP BY project_id"
     ).fetchall())
     by_level = dict(conn.execute(
-        "SELECT level, COUNT(*) FROM knowledge_nodes GROUP BY level"
+        f"SELECT level, COUNT(*) FROM knowledge_nodes WHERE {_sicht} GROUP BY level"
     ).fetchall())
-    total_lessons = conn.execute("SELECT COUNT(*) FROM lessons_learned").fetchone()[0]
-    active_lessons = conn.execute("SELECT COUNT(*) FROM lessons_learned WHERE status = 'active'").fetchone()[0]
-    escalated = conn.execute("SELECT COUNT(*) FROM lessons_learned WHERE status = 'escalated_to_rule'").fetchone()[0]
+    total_lessons = conn.execute(f"SELECT COUNT(*) FROM lessons_learned WHERE {_sicht}").fetchone()[0]
+    active_lessons = conn.execute(f"SELECT COUNT(*) FROM lessons_learned WHERE status = 'active' AND {_sicht}").fetchone()[0]
+    escalated = conn.execute(f"SELECT COUNT(*) FROM lessons_learned WHERE status = 'escalated_to_rule' AND {_sicht}").fetchone()[0]
     recent_access = conn.execute(
         "SELECT action, COUNT(*) as cnt FROM access_log GROUP BY action"
     ).fetchall()
@@ -5619,10 +5725,10 @@ def knowledge_stats() -> dict:
     # selbst/betreiber selbstberichtet, hook/skript objektiv, siehe
     # ALLOWED_ANLASS. Getrennt fuer Knoten und Lehren, nicht zusammengefasst.
     nodes_by_anlass = dict(conn.execute(
-        "SELECT anlass, COUNT(*) FROM knowledge_nodes GROUP BY anlass"
+        f"SELECT anlass, COUNT(*) FROM knowledge_nodes WHERE {_sicht} GROUP BY anlass"
     ).fetchall())
     lessons_by_anlass = dict(conn.execute(
-        "SELECT anlass, COUNT(*) FROM lessons_learned GROUP BY anlass"
+        f"SELECT anlass, COUNT(*) FROM lessons_learned WHERE {_sicht} GROUP BY anlass"
     ).fetchall())
     conn.close()
 
@@ -6524,6 +6630,8 @@ TOOLS = {
                 "gattung": {"type": "string", "enum": list(ALLOWED_GATTUNG),
                             "default": "arbeitsbestand",
                             "description": "Kind of entry: 'arbeitsbestand' (working set, the default) or 'nachschlagewerk' (reference corpus -- may sit in the store as a distractor but is never the TARGET of a test case, see node 096669de). Set this for imported third-party material, otherwise it dilutes retrieval."},
+                "kreis": {"type": "string", "default": "",
+                           "description": "Optional: restrict this entry to one circle of people you belong to (BDW-E22). Empty (default) means everyone in your tenant. Set it AT CREATION -- narrowing it later already told everyone, via the hit count, that something exists."},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["parent_path", "title", "summary", "norm_entscheidung", "norm_entschieden_grund"]
@@ -6539,7 +6647,7 @@ TOOLS = {
             norm_entschieden_grund=_require(args, "norm_entschieden_grund", "Begruendung fuer die Norm-Entscheidung -- wer entscheidet und warum?"),
             betreiber_weisung=args.get("betreiber_weisung"),
             anlass=args.get("anlass", "unbekannt"), abgeleitet_von=args.get("abgeleitet_von"),
-            gattung=args.get("gattung"),
+            gattung=args.get("gattung"), kreis=args.get("kreis", ""),
             **_identity_args(args)
         )
     },
@@ -6873,6 +6981,8 @@ TOOLS = {
                                   "description": "Near miss: caught and corrected before any damage. Requires bemerkt_woran."},
                 "bemerkt_woran": {"type": "string", "enum": sorted(ALLOWED_BEMERKT_WORAN),
                                   "description": "What caught the near miss -- zahl (a number/output did not match expectation, no mechanism involved), test, waechter (hook/trigger/lint), gegenprobe (deliberate counter-check), wissen (a recalled lesson/node), betreiber (a human said so), zufall (noticed by chance while reading something else). Mandatory when beinahefehler=true."},
+                "kreis": {"type": "string", "default": "",
+                          "description": "Optional: restrict this lesson to one circle of people you belong to (BDW-E22). Empty (default) means everyone in your tenant. Set it AT CREATION."},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["type", "description"]
@@ -6885,6 +6995,7 @@ TOOLS = {
             args.get("severity", "medium"), args.get("projects"), args.get("node_path", ""),
             args.get("same_as", ""), args.get("anlass", "unbekannt"),
             bool(args.get("beinahefehler", False)), args.get("bemerkt_woran", "") or "",
+            kreis=args.get("kreis", ""),
             **_identity_args(args)
         )
     },
