@@ -1,0 +1,237 @@
+{
+  "auftrag": "Konsil Dokumentraum -- dritte Linse: Irrtumskosten und Umkehrbarkeit",
+  "datum": "2026-08-21T00:00:00+0200",
+  "zweig": "brainlehr/b4-ausweis",
+  "stand": "21ad76da68642b895c3609833959e42457ee2584",
+  "grundsatz": "Kein Weg wird nach Bauaufwand bewertet (Betreiberweisung, L-dafc34). Bewertet werden stille Fehlerklassen, Sichtbarkeit des Scheiterns und der Rueckweg.",
+  "messaufbau": "Online-Backup von brainlehr.db in den Scratchpad (sqlite3.Connection.backup), alle Eingriffe nur gegen Kopien. Nichts an der Live-DB, nichts committet.",
+  "bestand_gemessen": {
+    "knoten": 5241,
+    "vektoren_gesamt": 7410,
+    "vektoren_knoten": 5241,
+    "vektoren_lehren": 2169,
+    "gattung": {
+      "arbeitsbestand": 887,
+      "nachschlagewerk": 4354
+    },
+    "sensibel_1": 0,
+    "nachschlagewerk_je_projekt": {
+      "shared": 2716,
+      "nasa-llis": 1638
+    },
+    "waisen_im_vektorindex_heute": 0
+  },
+  "abweichungen_zu_den_anderen_linsen": [
+    {
+      "linse": "Betrieb",
+      "behauptung": "3503 Dokumentabschnitte aus buckeberg + einem openlehr-Mandanten = 47 % der 7409 Vektoren",
+      "gemessen": "7410 Vektoren (nicht 7409). Kein Bestand von 3503 Dokumentabschnitten auffindbar: buckeberg hat 59, openlehr 53 Knoten. Die Gattung nachschlagewerk traegt 4354 Knoten (2716 shared, 1638 nasa-llis) = 58,8 % aller Vektoren.",
+      "bewertung": "Die 3503 sind eine Hochrechnung auf kuenftigen Bestand, keine Messung des heutigen. Der Anteilsbefund selbst (Dokumente dominieren den Raum) haelt -- gemessen sogar hoeher."
+    },
+    {
+      "linse": "Betrieb",
+      "behauptung": "delete_node loescht Knotenzeilen und ruehrt knowledge_embeddings nie an",
+      "gemessen": "bestaetigt und nachgestellt: nach delete_node 1 Waise (vorher 0); kein Trigger auf knowledge_embeddings ausser den beiden Modellsperren.",
+      "zusatz": "Wirkung begrenzt: der Bedeutungskanal schneidet die Kandidaten gegen knowledge_nodes (allowed_node_ids, knowledge_mcp_server.py:2713/2739; _erlaubte_ids, suchpfad_abruf.py). Eine Waise faelscht kein Ergebnis, sie bleibt als Vektor eines geloeschten Fremdtextes liegen -- Aufbewahrungs-, kein Trefferproblem."
+    },
+    {
+      "linse": "Betrieb",
+      "behauptung": "Ein sensibler Knoten ist im Volltextindex NICHT, im Vektorindex SCHON",
+      "gemessen": "halb richtig. Der FTS-Teil stimmt (nachgestellt). Der Vektor entsteht auf dem regulaeren Weg NICHT ueber den Klartext: knowledge_add(sensibel=True) ersetzt summary durch '(verschluesselt)' und leert content VOR dem Einbetten (knowledge_mcp_server.py:4048-4059). build_embeddings kennt sensibel tatsaechlich nicht -- es sieht aber nur den Platzhalter. Ein nachtraeglicher Wechsel sensibel 0->1 ohne Verschluesselung existiert im Code nicht.",
+      "bewertung": "Die Asymmetrie ist real, aber sie fuehrt nicht zu einem Leck, sondern zu Unauffindbarkeit -- siehe frage_3."
+    },
+    {
+      "linse": "Abrufguete",
+      "behauptung": "Weg B ist Ist-Zustand, SQL_ARBEITSBESTAND_NUR in der WHERE-Klausel der MATCH-Abfrage (haken/suchpfad_abruf.py:125)",
+      "gemessen": "bestaetigt, Zeile 125 woertlich. Ebenso Zeile 169-171: ein gemeinsamer max_results-Deckel ueber Knoten UND Lehren."
+    }
+  ],
+  "frage_1_was_bricht_still": {
+    "weg_A": {
+      "fehlerklasse": "Zweite Zugehoerigkeitsmenge. Der gattung-Wechsel eines Knotens aendert die Raumzuordnung, aber nicht den Ort des Vektors.",
+      "nachstellung": {
+        "aufbau": {
+          "arbeitsraum": 887,
+          "dokumentraum": 4354
+        },
+        "A_vor_wechsel": {
+          "gattung": "nachschlagewerk",
+          "bauart_streng": {
+            "arbeitsraum": 0,
+            "dokumentraum": 1
+          },
+          "bauart_lose_nur_tabellenzugehoerigkeit": {
+            "arbeitsraum": 0,
+            "dokumentraum": 1
+          }
+        },
+        "A_nach_gattungswechsel_ohne_umzug": {
+          "gattung": "arbeitsbestand",
+          "bauart_streng": {
+            "arbeitsraum": 0,
+            "dokumentraum": 0
+          },
+          "bauart_lose_nur_tabellenzugehoerigkeit": {
+            "arbeitsraum": 0,
+            "dokumentraum": 1
+          }
+        },
+        "A_fehlermeldung": "keine -- kein Trigger, kein Constraint, kein Melder greift",
+        "A_trigger_auf_dokumentraum": [
+          "knowledge_embeddings_model_check_bi",
+          "knowledge_embeddings_model_check_bu"
+        ],
+        "C_vor_wechsel": {
+          "gattung": "nachschlagewerk",
+          "vektorzeilen": 1,
+          "im_abruffilter": 0
+        },
+        "C_nach_wechsel": {
+          "gattung": "arbeitsbestand",
+          "vektorzeilen": 1,
+          "im_abruffilter": 1
+        },
+        "C_zurueck": {
+          "gattung": "nachschlagewerk",
+          "vektorzeilen": 1,
+          "im_abruffilter": 0
+        }
+      },
+      "befund": "Nach dem Wechsel nachschlagewerk->arbeitsbestand steht der Knoten in KEINEM abfragbaren Raum (strenge Bauart: 0/0). Keine Fehlermeldung, kein Trigger, kein Constraint. Bei der losen Bauart (nur Tabellenzugehoerigkeit) steht er im FALSCHEN Raum -- ebenfalls lautlos.",
+      "belegtes_muster": "schema.sql:392-397 beschreibt genau diesen Fehler fuer sensibel; nachgestellt und bestaetigt (frage_3). Es ist dieselbe Bauform: Indexzugehoerigkeit haengt an einem Spaltenwert."
+    },
+    "weg_C": {
+      "fehlerklasse": "Keine zweite Menge. gattung ist ein Abfragefilter, keine Zugehoerigkeit.",
+      "nachstellung": {
+        "C_vor_wechsel": {
+          "gattung": "nachschlagewerk",
+          "vektorzeilen": 1,
+          "im_abruffilter": 0
+        },
+        "C_nach_wechsel": {
+          "gattung": "arbeitsbestand",
+          "vektorzeilen": 1,
+          "im_abruffilter": 1
+        },
+        "C_zurueck": {
+          "gattung": "nachschlagewerk",
+          "vektorzeilen": 1,
+          "im_abruffilter": 0
+        }
+      },
+      "befund": "Wechsel und Ruecknahme lassen FTS-Zeile und Vektorzeile unangetastet; nur der WHERE-Filter entscheidet anders. Kein Zustand, in dem der Knoten in keinem Raum steht.",
+      "verbleibende_stille_fehlerklasse": "gemeinsam mit A: delete_node hinterlaesst Waisen im Vektorindex (nachgestellt, 0 -> 1). In A doppelt, weil zwei Tabellen aufzuraeumen sind."
+    }
+  },
+  "frage_2_falsifizierbarkeit": {
+    "weg_C": {
+      "sichtbar_binnen_einer_messung": true,
+      "instrumente": [
+        "runs/pruefkorpus.jsonl, 35 Faelle -- jede Verschlechterung ist eine Zahl (14/35 Nulllinie, 13/35 mit Fremdzeilen)",
+        "melder/vektorstand.py meldet heute '0 ohne Einbettung' -- ein aussagekraeftiger Nullwert"
+      ],
+      "gemessen": "melder/vektorstand.py gegen die Kopie: 'Knoten: 5241 gesamt, 0 ohne Einbettung'."
+    },
+    "weg_A": {
+      "sichtbar_binnen_einer_messung": false,
+      "gemessen": [
+        "melder/vektorstand.py gegen den A-Aufbau: 'Knoten: 5241 gesamt, 4354 ohne Einbettung' -- 4354 Falschmeldungen, das Instrument wird unbrauchbar, solange es nicht mitgezogen wird.",
+        "Nach naivem Mitziehen (Zaehlung ueber beide Tabellen) ist der A-eigene Fehler unsichtbar: fuer den umgezogenen Knoten meldet der erweiterte Melder 'Einbettung vorhanden: 1', waehrend er in einem abfragbaren Raum 0-mal steht."
+      ],
+      "befund": "A scheitert nicht an einer Messung, sondern erst daran, dass jemand einen einzelnen Knoten vermisst -- und der Vermisste erzeugt keine Zeile, kein Log, keine Kennzahl. Das ist die teuerste Sorte: Betrieb ueber Monate, Befund per Zufall."
+    }
+  },
+  "frage_3_sensibel_kopplung": {
+    "unabhaengig_vom_konsil": true,
+    "nachstellung_fts": {
+      "vor_dem_setzen": "Knoten unter dem Namen auf Rang 1 im Volltextindex",
+      "nach sensibel=1": "kein Treffer mehr -- Eintrag aus knowledge_fts entfernt (Trigger knowledge_au, WHERE new.sensibel = 0)",
+      "ruecknahme sensibel=0": "Eintrag kommt zurueck, genau eine Zeile, kein Duplikat -- auch nach einer Beruehrung waehrend sensibel=1 (M1c/M1d)"
+    },
+    "nachstellung_bedeutungskanal": {
+      "modell": "bge-m3@ctx2048",
+      "bestandsvektoren": 5241,
+      "faelle": {
+        "Doeldissen": {
+          "sensibel_name_im_titel": {
+            "kosinus": 0.5081,
+            "rang_unter_bestand": 1
+          },
+          "sensibel_neutraler_titel": {
+            "kosinus": 0.2552,
+            "rang_unter_bestand": 854
+          },
+          "offen_neutraler_titel": {
+            "kosinus": 0.4642,
+            "rang_unter_bestand": 1
+          }
+        },
+        "Döldissen": {
+          "sensibel_name_im_titel": {
+            "kosinus": 0.4027,
+            "rang_unter_bestand": 1
+          },
+          "sensibel_neutraler_titel": {
+            "kosinus": 0.2291,
+            "rang_unter_bestand": 2571
+          },
+          "offen_neutraler_titel": {
+            "kosinus": 0.3629,
+            "rang_unter_bestand": 5
+          }
+        },
+        "zeige mir alles was mit Frau Döldissen zu tun hat": {
+          "sensibel_name_im_titel": {
+            "kosinus": 0.5042,
+            "rang_unter_bestand": 1
+          },
+          "sensibel_neutraler_titel": {
+            "kosinus": 0.315,
+            "rang_unter_bestand": 1130
+          },
+          "offen_neutraler_titel": {
+            "kosinus": 0.422,
+            "rang_unter_bestand": 5
+          }
+        }
+      },
+      "fts_gegenprobe_doeldissen_im_bestand": [
+        "8c9555f0",
+        "3d51a7c1fb6737c985c42f1f4043397b",
+        "eea2eacf",
+        "7aeaac2f"
+      ]
+    },
+    "befund": "Ein als sensibel gefuehrter Dokumentabschnitt ist ueber den Eigennamen praktisch nicht mehr auffindbar, sobald der Name NICHT im Titel steht: Rang 854 (Name), 1130 (natuerliche Frage), 2571 (Umlautschreibung) unter 5241 Bestandsvektoren; im Volltextindex gar nicht. Steht der Name im Titel, ist er Rang 1 -- der Titel wird nicht verschluesselt, wandert aber ebenfalls nicht in den Volltextindex.",
+    "folge": "sensibel ist als Schutzmittel fuer Dokumente Dritter das falsche Werkzeug: es entzieht der Suche genau den Kanal, der Namen findet, und der zweite Kanal traegt den Namen gar nicht mehr. Wer Dokumente Dritter schuetzen will, nimmt mandant/kreis (kern/trennung.py, sichtbar_sql) oder freigabe -- beides Abfragefilter, umkehrbar, ohne Indexzugehoerigkeit. Heute traegt kein einziger Knoten sensibel=1; die Falle ist noch unbetreten.",
+    "gilt_fuer": "A und C gleichermassen"
+  },
+  "frage_4_rueckweg": {
+    "gemeinsame_grundlage": "Vektoren sind abgeleitete Daten. kern/build_embeddings.py baut jede Zeile aus knowledge_nodes/lessons_learned neu auf (text_checksum macht es inkrementell). Jeder Rueckweg ist ein Neubau, kein Datenverlust.",
+    "A_nach_C": {
+      "geht": true,
+      "weg": "beide Tabellen wieder zusammenfuehren oder schlicht neu bauen",
+      "verlust": "nichts Inhaltliches. Verloren geht, was waehrend A still falsch zugeordnet war -- es faellt beim Neubau auf, weil die Zuordnung dann wieder aus gattung stammt."
+    },
+    "C_nach_A": {
+      "geht": true,
+      "weg": "aufteilen nach gattung",
+      "verlust": "nichts"
+    },
+    "asymmetrie": "Der Rueckweg ist symmetrisch und verlustfrei. Entscheidend ist deshalb nicht die Umkehrbarkeit des Aufbaus, sondern die Umkehrbarkeit der FEHLER waehrend des Betriebs: A erzeugt einen Zustand, den niemand bemerkt und den deshalb auch niemand zurueckdreht. C erzeugt ihn nicht."
+  },
+  "empfehlung": {
+    "weg": "C",
+    "getragen_von": [
+      "A fuehrt eine zweite Zugehoerigkeitsmenge ein; ihr Bruch ist nachgestellt lautlos (kein Trigger, keine Meldung, in KEINEM Raum) und macht zusaetzlich das einzige vorhandene Instrument (melder/vektorstand.py) unbrauchbar bzw. blind.",
+      "C hat diese Fehlerklasse nicht: gattung ist ein Abfragefilter, Wechsel und Ruecknahme sind nachgestellt verlustfrei.",
+      "C scheitert sichtbar: 35-Faelle-Korpus und ein Melder mit aussagekraeftigem Nullwert zeigen eine Verschlechterung in EINER Messung.",
+      "Das von Abrufguete gemessene Problem (gemeinsamer Kandidatendeckel, suchpfad_abruf.py:169-171) ist von dieser Entscheidung unabhaengig und wird von A nicht geloest."
+    ],
+    "nicht_getragen_von": "Aufwand, Zahl beruehrter Stellen, Bauzeit -- ausdruecklich kein Kriterium.",
+    "offen_bleibt": [
+      "delete_node raeumt knowledge_embeddings nicht auf (in beiden Wegen)",
+      "sensibel-Kopplung, siehe frage_3"
+    ]
+  }
+}

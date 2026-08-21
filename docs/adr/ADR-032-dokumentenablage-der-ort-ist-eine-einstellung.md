@@ -119,6 +119,78 @@ falsch:
 Eine Hausentscheidung haette eine der beiden Domaenen zu etwas gezwungen, das
 ihr nicht entspricht.
 
+## NACHTRAG 2026-08-21T10:05 — der Konsil hat entschieden, gegen den Vorschlag
+
+Der Betreibervorschlag oben (zweiter Vektorraum, „warum bauen wir fuer
+dokumente nicht einen zweiten vektorraum?") wurde in einem Konsil mit drei
+Linsen gemessen. **Ergebnis 2 zu 1 gegen ihn.** Das steht hier, weil es eine
+Betreiberentscheidung umstoesst und er widersprechen koennen muss.
+
+| Linse | Empfehlung | tragendes Argument |
+|---|---|---|
+| Abrufguete | **C** | Der Verlust ist NICHT gattungsabhaengig (dieselbe Menge als `arbeitsbestand` liefert dieselbe Zahl) und er **saettigt**: 951→13/35, 2 853→12/35, 9 510→12/35 |
+| Betrieb | A | Wachstum, Loeschzyklus, `sensibel`-Kopplung |
+| Irrtumskosten | **C** | siehe unten — Falsifizierbarkeit |
+
+**Das entscheidende Argument ist die Falsifizierbarkeit, und es wurde
+nachgestellt, nicht abgeleitet:**
+
+Eine Kopie wurde in zwei Raeume geteilt (887 Arbeit / 4 354 Dokument), dann
+die `gattung` eines Knotens gewechselt, ohne seinen Vektor umzuziehen.
+Ergebnis: Der Knoten steht in **keinem** Raum — 0 von 0, ohne Fehlermeldung.
+Auf `knowledge_embeddings` haengen nur zwei Modellsperren, kein weiterer
+Trigger. Es ist exakt das Muster, das `schema.sql:392-397` fuer `sensibel`
+bereits dokumentiert: „der Eintrag verschwindet, ohne dass ein neuer
+entsteht."
+
+**In C ist dieser Zustand nicht herstellbar.** Derselbe Wechsel laesst
+FTS-Zeile und Vektorzeile unberuehrt; nur der Filter entscheidet anders.
+
+**Und das Messinstrument selbst faellt aus:** `melder/vektorstand.py` meldet
+gegen den Bestand „5 241 gesamt, 0 ohne Einbettung" — ein aussagekraeftiger
+Nullwert. Gegen den A-Aufbau meldet er **4 354 ohne Einbettung**, also 4 354
+Falschmeldungen. Und nach naivem Mitziehen ueber beide Tabellen ist er fuer
+genau den A-eigenen Fehler blind: Fuer den umgezogenen Knoten meldet er
+„Einbettung vorhanden: 1", waehrend der Knoten in keinem abfragbaren Raum
+steht.
+
+> **A scheitert erst, wenn jemand einen einzelnen Knoten vermisst — kein Log,
+> keine Kennzahl. C scheitert in einer Messung.**
+
+**Was damit gilt:** Die Auszuege gehen NICHT in einen zweiten Vektorraum. Die
+drei Schichten bleiben (Ablage · Knoten · Auszug), der Auszug liegt im
+vorhandenen Index. Der gemessene Hebel gegen die Verduennung ist ein anderer
+und von dieser Frage unabhaengig: getrennte Kandidatenbudgets fuer Knoten und
+Lehren statt einer gemeinsamen Liste von 17
+(`haken/suchpfad_abruf.py:169-171`).
+
+## NACHTRAG 2026-08-21 — `sensibel` ist fuer Dokumente Dritter das falsche Werkzeug
+
+Unabhaengig vom Konsil gemessen, mit dem echten Modell gegen 5 241
+Bestandsvektoren, Eigenname „Doeldissen":
+
+Ein sensibel gefuehrter Dokumentabschnitt, dessen Name **nicht im Titel**
+steht, landet auf Rang **854** (blosser Name), **1 130** (natuerliche Frage),
+**2 571** (Umlautschreibung) — und steht im Volltextindex gar nicht. Steht der
+Name im Titel, ist er Rang 1, weil der Titel nicht verschluesselt wird.
+
+**Kein Leck, sondern Unauffindbarkeit** — und diese Praezisierung korrigiert
+eine Annahme aus der Betriebslinse: `knowledge_add(sensibel=True)` ersetzt
+`summary` durch „(verschluesselt)" und leert `content` **vor** dem Einbetten
+(`knowledge_mcp_server.py:4048-4059`, selbst nachgeprueft). `build_embeddings`
+kennt das Feld nicht, sieht aber nur den Platzhalter.
+
+**Daraus folgt fuer `BDW-P15`:** Dokumente Dritter werden ueber `mandant` und
+`kreis` (`kern/trennung.py::sichtbar_sql`, seit B3 an 12 Stellen erzwungen)
+oder ueber `freigabe` geschuetzt — **nicht** ueber `sensibel`. Das sind
+Abfragefilter: umkehrbar, und sie lassen den Kanal intakt, der Namen findet.
+`sensibel` ist die Verschluesselung des Inhalts und damit ein anderes
+Werkzeug fuer eine andere Frage.
+
+**Die Falle ist heute unbetreten:** gemessen traegt **kein einziger** der
+5 241 Knoten `sensibel = 1`. Die Ruecknahme 1→0 bringt den FTS-Eintrag
+korrekt und ohne Duplikat zurueck.
+
 ## Was das kostet
 
 * `quell_hash` wird fuer Dokumentknoten zur **Pflicht** -- heute ist es bei

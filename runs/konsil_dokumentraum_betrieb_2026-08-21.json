@@ -1,0 +1,126 @@
+{
+  "erstellt_am": "2026-08-21T07:09:58+0200",
+  "zweig": "brainlehr/b4-ausweis",
+  "stand": "85df5c87",
+  "linse": "BETRIEB UND WACHSTUM",
+  "frage": "Braucht es fuer Dokumente und Nachschlagewerke einen ZWEITEN Vektorraum, oder genuegt eine gattungsgefilterte Anfrage im vorhandenen Index?",
+  "wege": {
+    "A": "eigener Index je Gattung",
+    "B": "gattungsgefilterte bm25-Anfrage im gemeinsamen Index",
+    "C": "nichts tun"
+  },
+
+  "1_groessenordnung": {
+    "methode": "Reale Dateien/Datensaetze gezaehlt (kein Schaetzwert), Abschnitte = ceil(laenge/1000), mindestens 1 je Dokument.",
+    "buckeberg": {
+      "quelle": "/Volumes/daten/Begod2026/buckeberg/dokumente (EIN WEG-Objekt, 'Im Buckeberg 26110-OG')",
+      "dateien_gesamt": 732,
+      "davon_txt_md": 368,
+      "text_bytes_txt_md": 2870962,
+      "chunks_a_1000_zeichen": 3065,
+      "hinweis": "dokumente-anon/ nicht mitgezaehlt (Ableitung derselben Dateien)."
+    },
+    "openlehr_einzelunternehmer": {
+      "quelle": "/Users/lehrmacbook/.openlehr/steuer/markuslehr/steuer.db (Tabelle belege, ECHTER Produktivbestand eines Mandanten -- pruefbelege/ im Repo sind Testfixtures/OCR-Kalibrierbilder und wurden NICHT gezaehlt)",
+      "belege_gesamt": 432,
+      "ocr_text_zeichen_gesamt": 25062,
+      "ocr_text_zeichen_je_beleg_median_ca": 58,
+      "chunks_a_1000_zeichen": 438,
+      "hinweis": "Mindestens 1 Chunk je Beleg dominiert die Zahl, weil Belegtexte kurz sind (OCR von Kassenbons/Rechnungen, nicht Fliesstext)."
+    },
+    "summe_chunks_heute_ein_objekt_ein_mandant": 3503,
+    "heutiger_wissensbestand": {
+      "knowledge_nodes": 5240,
+      "lessons_learned": 1181,
+      "knowledge_embeddings_vektoren": 7409
+    },
+    "verhaeltnis_heute": {
+      "chunks_zu_vektoren": 0.473,
+      "chunks_zu_knoten": 0.669,
+      "aussage": "Fuer GENAU EIN WEG-Objekt und GENAU EINEN Einzelunternehmer-Mandanten liegt der Dokumentbestand noch UNTER dem heutigen Wissensbestand (47% der Vektoren)."
+    },
+    "hochrechnung_wachstum": {
+      "annahme": "buckeberg verwaltet ueblicherweise mehrere WEG-Objekte, openlehr mehrere Mandanten (im Dateisystem ~20 Mandanten-Verzeichnisse unter ~/.openlehr/steuer/, ein Teil davon erkennbar Testfixtures wie 'testcaps'/'uitest'/'smoketestuser' -- reale Mandantenzahl also kleiner als 20, aber sicher > 1).",
+      "bei_5_objekten_und_5_mandanten_chunks_ca": 17525,
+      "faktor_gegen_heutige_vektoren": 2.37,
+      "aussage": "Schon bei einer kleinen realistischen Mehrfachzahl (5 Objekte, 5 Mandanten) uebersteigt der Dokumentbestand den heutigen GESAMTEN Wissensbestand um mehr als das Doppelte -- nicht bei einer fernen Zukunftszahl, sondern bei der naechsten Ausbaustufe."
+    }
+  },
+
+  "2_einbettungskosten": {
+    "gemessen_gegen_echtes_ollama_bge_m3": {
+      "einzelmessung_batch32": {"n": 32, "elapsed_s": 0.541, "rate_emb_pro_s": 59.14},
+      "sustained_10x_batch32": {"n": 320, "elapsed_s": 4.94, "rate_emb_pro_s": 64.74}
+    },
+    "vergleich_zur_genannten_referenz": {
+      "referenz_2_5s_fuer_19": "7.6 emb/s",
+      "eigene_messung": "~64.7 emb/s im Sweet-Spot-Batch (BATCH_SIZE=32 laut kern/build_embeddings.py)",
+      "befund": "Die genannte Referenzrate liegt rund 8x UNTER der hier gemessenen Batch-Rate. 19 Texte fuellen keinen vollen 32er-Batch und der Kommentar in build_embeddings.py nennt einen Kaltstart des Modells von ca. 8s -- vermutlich lag die Referenzmessung teilweise im Kaltstart. Beide Zahlen werden gemeldet, nicht geglaettet."
+    },
+    "hochrechnung_erstlauf_heutige_menge": {
+      "chunks": 3503,
+      "bei_64_7_emb_s": "54 s",
+      "bei_7_6_emb_s_referenz": "461 s (~7,7 min)"
+    },
+    "schwelle_betriebsfrage_statt_wartezeit": {
+      "methode": "Bei 64,7 emb/s: Chunkzahl, ab der ein voller Lauf 10 bzw. 60 Minuten dauert.",
+      "chunks_fuer_10_minuten": 38820,
+      "chunks_fuer_60_minuten": 233280,
+      "entspricht_ca": "75-125 WEG-Objekte wie buckeberg, bzw. eine Groessenordnung von 50-100 Einzelunternehmer-Mandanten-Konten wie das gemessene",
+      "aussage": "Bei der heutigen Betriebsgroesse (ein bis wenige Objekte/Mandanten) bleibt ein Erstlauf eine Sache von Sekunden bis wenigen Minuten -- keine Betriebsfrage. Erst bei einer Kundenzahl in der Groessenordnung Zehner bis Hundert wird ein voller Neulauf (Modellwechsel, --force) zu etwas, das eine Hintergrundverarbeitung statt eines synchronen Laufs braucht. Das ist eine planbare, aber reale Wachstumsschwelle, keine akute."
+    }
+  },
+
+  "3_was_altert": {
+    "checksum_pfad_funktioniert": "kern/build_embeddings.py::_needs_recompute() ueberspringt unveraenderten Text korrekt (text_checksum, ENSURE_CHECKSUM_COLUMN_SQL).",
+    "loeschpfad_gemessen": {
+      "code_befund": "kern/endgueltig_entfernen.py::delete_node() loescht die Zeile aus knowledge_nodes, aber greift NIRGENDS auf knowledge_embeddings zu -- kein DELETE, kein Aufruf einer Aufraeumfunktion.",
+      "schema_befund": "schema.sql traegt AFTER-DELETE-Trigger fuer knowledge_fts (Zeile ~359) und lessons_fts (Zeile ~941), aber KEINEN Trigger, der bei DELETE auf knowledge_nodes oder lessons_learned auch knowledge_embeddings bereinigt.",
+      "gezaehlt_im_echten_bestand": {
+        "orphan_vektoren_node": 0,
+        "orphan_vektoren_lesson": 0,
+        "knowledge_embeddings_gesamt": 7409,
+        "knowledge_nodes": 5240,
+        "lessons_learned": 1181
+      },
+      "einordnung": "0 Waisen heute belegt NICHT, dass der Pfad sicher ist -- es belegt nur, dass Loeschen im heutigen Wissensbetrieb ueber diesen Code kaum vorkommt (knowledge_zurueckziehen zieht typischerweise zurueck statt zu loeschen). Fuer Dokumente ist Aendern/Ersetzen/Ablaufen der NORMALFALL (neue Vertragsfassung, abgelaufene Aufbewahrungsfrist, ersetzter Beleg) -- der ungepruefte Pfad wuerde dort sofort und regelmaessig greifen, nicht nur im Ausnahmefall."
+    },
+    "bei_zwei_raeumen_zaehlt_es_doppelt": "Weg A verdoppelt die Anzahl der Stellen, an denen ein geloeschtes/ersetztes Dokument einen verwaisten Vektor hinterlassen kann, ohne dass irgendeine der beiden heute eine Aufraeummechanik besitzt."
+  },
+
+  "4_aufbewahrung": {
+    "datei": "kern/aufbewahrung.py",
+    "struktur": "Datenklasse (zweck, frist_tage, ablaufverhalten) + fristlauf() generisch ueber ein Objekt mit hat_bestanden()/angelegt_ts()/widerrufen() -- storage-agnostisch im Kern.",
+    "heutige_verdrahtung": "NUR an knowledge_nodes gebunden: sensible_knoten() liest das Etikett 'datenklasse:<name>' aus knowledge_nodes.tags, _BestandsSpeicher nutzt knowledge_nodes.created_at und kern/schluesselablage.py als Schluesselspeicher.",
+    "anwendbar_auf_dokumente": "Konzeptionell GUT geeignet fuer Steuerbelege (die Frist IST der Zweck, §147 AO-Charakter -- 'Schluessel vernichten, Nachweis behalten' passt genau) und teilweise fuer WEG-Dokumente (manche unbefristet wie Teilungserklaerung, manche fristbehaftet wie Angebote). ABER: es gibt heute keine document-Entsprechung zu sensible_knoten()/_BestandsSpeicher -- fuer Dokumente muesste ein eigener Speicher-Adapter und eine eigene Etikettierung neu gebaut werden, es ist nicht 'einfach mitbenutzbar'."
+  },
+
+  "5_blinder_fleck_weg_c": {
+    "methode": "SYNTHETISCHE Messung (klar gekennzeichnet), in-memory sqlite fts5, KEIN Bezug zu brainlehr.db oder einer Kopie davon -- nur der BM25/OR-Mechanismus aus knowledge_mcp_server._or_query() wird nachgebaut (Naeherung: default-unicode61-Tokenizer statt dem produktiven tokenize='trigram'). Realer Zieltext: eine echte Rechnung aus buckeberg (Zimmerei Freiburger GmbH, Karlsruhe). Rauschzeilen: SYNTHETISCH erzeugt aus echtem WEG-/Steuer-Wortschatz, IDs 'synth-' gekennzeichnet im Skript.",
+    "skript": "/private/tmp/claude-501/-Volumes-daten-Begod2026-brainlehr/d8277698-7913-4e56-ae2d-f6d55b3eb162/scratchpad/bm25_synth_test.py",
+    "ergebnis_praezise_anfrage": {
+      "anfrage": "Rechnung OR Karlsruhe OR Zimmerei OR Freiburger",
+      "rang_bleibt_1_bis_zeilen": 250004,
+      "aussage": "Solange die Anfrage mindestens einen SELTENEN Begriff traegt (Firmenname), bleibt bm25+OR extrem robust -- IDF haelt den echten Treffer oben, auch bei 250.000 Zeilen im gemeinsamen Index."
+    },
+    "ergebnis_generische_anfrage": {
+      "anfrage": "Rechnung OR Karlsruhe (nur generische, im Rauschvokabular vorkommende Worte -- realistisch, wenn sich jemand nicht mehr an den Firmennamen erinnert)",
+      "bruch_ab_synthetischen_zusatzzeilen": 10,
+      "bruch_ab_gesamtzeilen_im_index": 14,
+      "schwellenwert": "Rang > 5 bzw. ausserhalb Top-20 gilt als nicht mehr hinnehmbar",
+      "aussage": "Der Treffer faellt schon bei ganzen 10 zusaetzlichen, aehnlich formulierten Dokumentzeilen aus den Top-20 -- nicht bei einer grossen Zukunftszahl, sondern praktisch sofort, sobald mehr als eine Handvoll gleichartiger Dokumente im selben Index stehen."
+    },
+    "kernbefund": "Es gibt KEINE einzelne 'Bruchzahl in Abschnitten' -- der Bruch haengt von der ANFRAGEART ab, nicht nur von der Indexgroesse. Fuer praezise Anfragen bricht Weg C in den geprueften Groessenordnungen (bis 250.000) praktisch nie. Fuer generische Anfragen bricht er nahezu SOFORT (ab niedriger zweistelliger Zeilenzahl im gemeinsamen Index) -- weit unterhalb jeder realistischen Wachstumsschwelle aus Punkt 1.",
+    "zusatzbefund_struktur": "Projekt-CLAUDE.md nennt WEG-Rechtsfaelle und Steuerdaten ausdruecklich als 'Daten Dritter'. Folgt man demselben Muster wie ADR-031 (sensibel=1 -> Ausschluss aus knowledge_fts, siehe schema.sql Zeile ~300-327), waeren genau diese Dokumente STRUKTURELL nie im gemeinsamen BM25-Index sichtbar -- nur der Vektorkanal saehe sie, weil kern/build_embeddings.py sensibel NICHT filtert (SELECT ... FROM knowledge_nodes ohne WHERE sensibel=0). Das entwertet Weg B fundamental, wenn die bestehende Sensibilitaetsregel konsequent auf Dokumente angewendet wird -- die eigentliche Systemfrage ist dann nicht BM25 vs. gefiltertes BM25, sondern ob und wie der VEKTORKANAL gattungsgefiltert wird."
+  },
+
+  "empfehlung": {
+    "wahl": "A (eigener Index je Gattung) -- begruendet ausschliesslich ueber Betrieb und Wachstum, nicht ueber Abrufguete oder Bauaufwand.",
+    "begruendung": [
+      "Wachstum (Punkt 1): Schon bei der naechsten realistischen Ausbaustufe (5 WEG-Objekte, 5 Mandanten statt je einem) uebersteigt der Dokumentbestand den GESAMTEN heutigen Wissensbestand um mehr als das Doppelte. Ein gemeinsamer Raum wuerde also strukturell von Dokumenten dominiert, sobald mehr als eine Handvoll Kunden bedient werden -- nicht in ferner Zukunft.",
+      "Lebenszyklus-Asymmetrie (Punkt 3+4): Wissenseintraege werden so gut wie nie geloescht (0 Waisen im Bestand belegt das indirekt), Dokumente werden es staendig (neue Vertragsfassung, abgelaufene Frist, ersetzter Beleg). Der einzige Loeschpfad im System (endgueltig_entfernen.py) hinterlaesst bereits heute nachweislich einen verwaisten Vektor, wenn er benutzt wird -- bei Dokumenten waere dieser Pfad die Regel, nicht die Ausnahme. Ein gemeinsamer Raum bedeutet, dass jede kuenftige Aufraeum-/Fristlogik in EINER Tabelle zwei vollstaendig verschiedene Lebenszyklen auseinanderhalten muss (Betreiberentscheidungen 'gelten bis Widerruf' vs. Steuerbelege mit gesetzlicher Frist). Ein eigener Raum macht diese Trennung strukturell statt sie einer Filterbedingung zu ueberlassen, die bei jedem kuenftigen Fristlauf neu korrekt getroffen werden muss.",
+      "Sensibilitaets-Kopplung (Punkt 5): WEG-/Steuerdokumente sind 'Daten Dritter' und muessten der bestehenden sensibel=1-Regel folgen -- damit ist der gemeinsame BM25-Index (knowledge_fts) fuer sie ohnehin strukturell nicht der richtige Ort. Ein eigener Dokumentraum kann seine eigene Sensibilitaets-/Frist-Behandlung von Anfang an tragen, statt eine bestehende Regel zu umgehen oder zu verwaessern."
+    ],
+    "was_das_nicht_heisst": "Diese Empfehlung sagt nichts ueber Abrufguete (Trefferqualitaet je Weg) oder Bauaufwand (Migrationskosten, Codeaenderungen) -- das sind die Linsen der anderen Ratsmitglieder. Sie beruht ausschliesslich auf: wie schnell waechst der Bestand, wie unterschiedlich ist sein Lebenszyklus, und was bedeutet das fuer die Betriebslast eines gemeinsamen Raums."
+  }
+}

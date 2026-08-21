@@ -1,0 +1,87 @@
+{
+  "erhoben_am": "2026-08-21T07:35:00+0200",
+  "linse": "ABRUFGUETE (Konsil zu: zweiter Vektorraum je Gattung vs. gattungsgefilterte Anfrage im vorhandenen Index)",
+  "zweig": "brainlehr/b4-ausweis",
+  "bezugsstand": "85df5c87",
+  "hinweis_methode": "Nur gelesen und gemessen, nichts am Bestand geaendert und nichts committet. Alle Messlaeufe gegen KOPIEN von brainlehr.db (WAL-Checkpoint + Dateikopie, wie kern/betriebsprofil.py::_sicherung), erzeugt in tempfile.mkdtemp()-Verzeichnissen. Messweg durchgehend kern/abrufguete.py::messe -> haken/knowledge_recall_hook.py (rh.keywords()/rh.query()), Korpus runs/pruefkorpus.jsonl (45 Zeilen, 35 mit target_kind, 10 UEBERGANGEN) -- derselbe Weg wie in allen frueheren Abrufmessungen dieses Hauses.",
+
+  "1_nachgerechneter_befund": {
+    "frage": "Stimmt runs/einrichtung_2026-08-21.json (BDW_P11_AC2) noch, gegen den heutigen Bestand (85df5c87) neu gefahren?",
+    "lauf": "python3 messungen/einrichtung_katalogwirkung.py --ziel <scratchpad>/nachrechnung_A.json",
+    "ergebnis": "BYTE-GLEICH nachgerechnet: A=14/35 (NODE 7/20, LESSON 7/15), A2 (Wiederholung, identische Kopie)=14/35, B (BSI als nachschlagewerk)=13/35 (NODE 7/20, LESSON 6/15), C (BSI als arbeitsbestand)=13/35 (NODE 7/20, LESSON 6/15). Gekippter Fall in B UND C: L-606b63.",
+    "WICHTIGSTER EINZELBEFUND": "gattung_macht_unterschied = false. B und C sind IDENTISCH -- derselbe Fall (L-606b63) faellt in BEIDEN Laeufen heraus, egal ob die 951 BSI-Zeilen als 'nachschlagewerk' (vom Abruf ausgeschlossen) oder als 'arbeitsbestand' (voll teilnahmeberechtigt) eingelesen wurden. Das widerlegt die im Auftrag vermutete Lesart 'die Gattung wirkt am Filter': wenn die Gattung der Hebel waere, muessten B und C sich unterscheiden -- sie tun es nicht. Der Verlust ist NICHT gattungsabhaengig."
+  },
+
+  "2_ort_des_verlusts": {
+    "verdacht_aus_dem_auftrag": "gemeinsamer Kandidatendeckel in haken/suchpfad_abruf.kandidaten (max_results = MAX_NODES + MAX_LESSONS)",
+    "befund": "Verdacht bestaetigt, aber mit einer Korrektur: der Kandidatendeckel ist die STELLE, an der der Verlust sichtbar wird, aber nicht die alleinige URSACHE. Zwei Mechanismen zusammen, beide belegt:",
+    "mechanismus_1_bm25_korpusrelativ": {
+      "fundstelle": "SQLite FTS5 bm25(): IDF/Laengennormierung werden ueber die GESAMTE virtuelle Tabelle knowledge_fts berechnet, unabhaengig vom WHERE-Filter der aufrufenden Abfrage (haken/knowledge_recall_hook.py:1344, haken/suchpfad_abruf.py:125 -- beide filtern n.gattung != 'nachschlagewerk' NACH dem MATCH, in derselben Abfrage, aber bm25() selbst kennt dieses WHERE nicht).",
+      "direkter_beleg": "Kontrolliertes Experiment (eigene DB-Kopie, ohne Ollama): bm25-Score von Knoten 8c9555f0 fuer die Abfrage '\"zeige\" OR \"alles\" OR \"frau\" OR \"doeldissen\"' VOR Import: -14.177539199251386. NACH Import von 951 BSI-Zeilen als nachschlagewerk (die dieser Knoten selbst nie im Ergebnis sieht): -14.00509319210242. Score-Verschiebung ohne jede Aenderung an den eigenen 182 Kandidaten oder ihrer Reihenfolge in DIESEM Beispiel (Rang blieb 1/6/16) -- der Mechanismus wirkt nachweislich, seine Groesse haengt vom Einzelfall ab und reicht bei anderen Abfragen aus, die Reihenfolge zu kippen (s. L-606b63)."
+    },
+    "mechanismus_2_gemeinsamer_kandidatendeckel": {
+      "fundstelle": "haken/suchpfad_abruf.py:169-171 -- final_ids = embeddings.rrf_fuse(keyword_ordered_ids, embedding_ordered_ids, ...)[:max_results], aufgerufen aus haken/knowledge_recall_hook.py:1296 mit max_results=MAX_NODES+MAX_LESSONS=17 (MAX_NODES=10, MAX_LESSONS=7, haken/knowledge_recall_hook.py:411f). Diese EINE gemeinsame Kappung auf 17 Plaetze fuer Knoten UND Lehren zusammen liegt VOR der separaten MAX_NODES/MAX_LESSONS-Aufteilung weiter unten (Zeilen 1321/1331). Verschiebt sich die Stichwort-Rangfolge der Knoten (Mechanismus 1), aendert sich, welche IDs die gemeinsamen 17 Plaetze belegen -- eine Lehre kann dadurch VOR der eigentlichen Lehren-Kappung schon aus der Liste gedraengt sein.",
+      "bestaetigt_ueber": "mehrstufiger_abruf.kandidaten_geschaltet() faellt bei der Vorgabe KNOWLEDGE_MEHRSTUFIGER_ABRUF=AUS byte-gleich auf suchpfad_abruf.kandidaten() zurueck (haken/mehrstufiger_abruf.py:257ff) -- und SUCHPFAD_ABRUF=True ist die Vorgabe in haken/knowledge_recall_hook.py:597, also der tatsaechlich gemessene Produktivpfad."
+    },
+    "weg_b_ist_bereits_der_ist_zustand": "Die im Auftrag vorgeschlagene Pruefung 'bm25-Anfrage, die die Gattung schon in der FTS-Abfrage einschraenkt statt danach' ist KEIN zu bauender zweiter Weg -- sie ist der bestehende Code: SQL_ARBEITSBESTAND_NUR steht in der WHERE-Klausel der MATCH-Abfrage selbst (haken/suchpfad_abruf.py:125, haken/knowledge_recall_hook.py:1344), nicht als Nachfilter auf einer bereits gerankten Liste. Trotzdem faellt die Quote auf 13/35 -- weil bm25() intern trotzdem ueber die vollen, ungefilterten Tabellenstatistiken rechnet (Mechanismus 1) und weil der Kandidatendeckel gattungsblind ist (Mechanismus 2). Eine 'noch frühere' Filterung im selben Sinn aendert daran nichts: der C-Lauf (arbeitsbestand, gar kein Filter noetig, alle 951 Zeilen sind volle Kandidaten) liefert exakt dasselbe 13/35 wie B. Weg B loest das gemessene Problem NICHT, weil er bereits umgesetzt ist und das Problem trotzdem besteht."
+  },
+
+  "3_skalierung": {
+    "methode": "SYNTHETISCH: derselbe BSI-Inhalt (951 Eintraege) mehrfach unter fiktiven Wurzeln /bsi-sdt-synth-k0..kN-1 als 'nachschlagewerk' eingelesen -- es geht um die Indexgroesse (bm25 ist korpusrelativ, Mechanismus 1 oben), nicht um neuen Inhalt. Kein Vektor wird fuer importierte Katalogzeilen berechnet (kern/fremdimport.py ruft embeddings nie auf) -- die Embedding-Tabelle bleibt in allen Stufen unveraendert, der Effekt ist ausschliesslich ueber den Stichwortkanal moeglich.",
+    "kurve": {
+      "0x_nulllinie": {"knoten_bsi": 0, "NODE": "7/20", "LESSON": "7/15", "gesamt": "14/35"},
+      "1x": {"knoten_bsi": 951, "NODE": "7/20", "LESSON": "6/15", "gesamt": "13/35"},
+      "3x": {"knoten_bsi": 2853, "NODE": "6/20", "LESSON": "6/15", "gesamt": "12/35"},
+      "10x": {"knoten_bsi": 9510, "NODE": "6/20", "LESSON": "6/15", "gesamt": "12/35"}
+    },
+    "befund": "Der Verlust waechst SUBLINEAR und SAETTIGT: von 0x auf 1x (951 Zeilen) ein Fall verloren, von 1x auf 3x (weitere ~1900 Zeilen) ein WEITERER Fall verloren (diesmal ein Knoten, nicht die Lehre) -- aber von 3x auf 10x (weitere ~6650 Zeilen, mehr als eine Verzehnfachung des BSI-Anteils) KEIN weiterer Verlust. Die Kurve ist NICHT linear (sonst waere bei 10x ein Vielfaches von 2 Faellen zu erwarten) und NICHT explodierend, sondern flacht nach der dritten Vervielfachung vollstaendig ab.",
+    "einordnung": "Ein zehnfach groesserer Nachschlagewerk-Bestand ist also kein zehnfach groesseres Risiko fuer die Trefferquote -- die bm25-Statistik-Verschiebung (Mechanismus 1) scheint mit wachsendem N abzuflachen (die relative Gewichtsverschiebung durch weitere gleichartige Zeilen wird kleiner), waehrend der Kandidatendeckel (Mechanismus 2) nur EINMAL zuschlagen kann, sobald ein Knoten/eine Lehre erstmals aus den gemeinsamen 17 Plaetzen verdraengt ist. Diese Saettigung ist ein Messwert dieses einen Korpus (951er BSI-Grundmenge, 45er Pruefkorpus) und keine bewiesene allgemeine Eigenschaft -- fuer einen strukturell ANDEREN Katalog (andere Wortverteilung) waere die Kurve neu zu fahren."
+  },
+
+  "4_namensfrage": {
+    "eigenname": "Döldissen (Gabriela Döldissen) -- ECHTER Fund aus dem Bestand, nicht erfunden: gesucht per Regex ueber title/summary/content aller 5232 Knoten und aller Lehren nach Nachnamen-Mustern mit Frau/Herr-Kontext.",
+    "belegte_vorkommen_im_bestand": [
+      {"id": "8c9555f0", "path": "/frontend/buckeberg-design-guide-apple-hig", "kontext": "'Vor jedem Termin fuer Frau Döldissen ...'"},
+      {"id": "7aeaac2f", "path": "/ops/buckeberg-absenderrolle-und-empfaenger", "kontext": "'Sohn von Frau Döldissen, einer Eigentümerin.'"},
+      {"id": "eea2eacf", "path": "/ops/buckeberg-zehn-einheiten-sind-in-jedem", "kontext": "'Döldissen, Gabriela · 26 DG 458,818'"}
+    ],
+    "schreibweisen_varianten": "KEINE gefunden -- gepr. gegen Döldissen/Doldissen/Döldisen/Doeldissen per Regex ueber den vollen content aller Knoten und Lehren, nur die eine Schreibweise 'Döldissen' kommt vor. Selbst ein Befund (dokumentiert), keine erfundene Ersatzvariante.",
+    "frage_gestellt": "Zeige mir alles, was mit Frau Döldissen zu tun hat",
+    "vollstaendigkeit_je_weg": {
+      "fts_stichwort_ungedeckelt": {
+        "gefunden_von_3": 3,
+        "raenge": {"8c9555f0": 1, "7aeaac2f": 9, "eea2eacf": 70},
+        "einordnung": "alle drei gefunden, schlechtester Rang 70 von ~182 Kandidaten"
+      },
+      "vektor_bedeutung_ungedeckelt": {
+        "gefunden_von_3": 3,
+        "raenge": {"8c9555f0": 4, "7aeaac2f": 218, "eea2eacf": 1804},
+        "einordnung": "alle drei technisch auffindbar, aber Rang 1804 (von ueber 5000 Knoten) ist praktisch nutzlos -- kein realistischer Deckel liefert diesen Kandidaten je aus"
+      },
+      "produktivpfad_rh_query_MAX_NODES10_gedeckelt": {
+        "gefunden_von_3": 0,
+        "einordnung": "der tatsaechlich betriebene Abruf liefert HEUTE keinen einzigen der drei Treffer fuer diese Namensfrage -- unabhaengig von der Gattungs-/Indexfrage dieses Auftrags"
+      }
+    },
+    "befund": "Fuer VOLLSTAENDIGKEIT bei einer Namensfrage ist FTS/Stichwort dem Vektorkanal um Groessenordnungen ueberlegen (Rang 70 vs. Rang 1804 im schlechtesten Fall) -- ein Vektorraum je Gattung (Weg A) wuerde daran nichts aendern, weil er den STICHWORTkanal nicht betrifft und weil der Vektorkanal fuer Namen ohnehin die schwaechere Quelle ist. Die eigentliche Luecke bei Namensfragen liegt im MAX_NODES=10-Deckel des Produktivpfads, nicht in der Gattungsfrage dieses Auftrags -- als Randbefund vermerkt, nicht bewertet (Bauaufwand/Betrieb sind fremde Linsen)."
+  },
+
+  "5_empfehlung": {
+    "zwischen": ["A: eigener Index je Gattung", "B: gattungsgefilterte bm25-Anfrage im gemeinsamen Index", "C: nichts tun"],
+    "entscheidung": "C, mit einer benannten offenen Flanke.",
+    "begruendung": [
+      "Weg A entfaellt: der gemessene Verlust ist NICHT gattungsabhaengig (B=C, Abschnitt 1). Ein zweiter Vektorraum trennt nach Gattung -- genau die Variable, die hier nachweislich NICHTS bewirkt. Er wuerde ausserdem einen Kanal (Vektor) aufruesten, der bei der Namensfrage (Abschnitt 4) ohnehin der schwaechere ist, und den Fehlermechanismus (bm25-Statistik + Kandidatendeckel, beide reine Stichwort-/Fusions-Effekte) gar nicht beruehren.",
+      "Weg B entfaellt, weil er schon Betrieb ist: SQL_ARBEITSBESTAND_NUR filtert bereits INNERHALB der MATCH-Abfrage (Code-Fundstellen in Abschnitt 2), nicht danach. Der C-Lauf (arbeitsbestand, ohne jede Filterung noetig) liefert trotzdem exakt dieselbe verminderte Quote wie B -- der empirische Beweis, dass 'Filter fruehere in die Anfrage ziehen' hier keinen Hebel hat, weil er keinen ungenutzten Hebel darstellt.",
+      "Fuer C spricht die Skalierungskurve: der Verlust waechst nicht linear mit der Katalogsgroesse, sondern saettigt nach der dritten Vervielfachung (Abschnitt 3) -- ein zehnfach groesserer Bestand an Nachschlagewerken ist kein zehnfach groesseres Risiko. Der heute gemessene Preis (1 von 35 Faellen bei 951 Zeilen, 2 von 35 bei 2853+ Zeilen, keine weitere Verschlechterung bis 9510 Zeilen) ist klein und bleibt es in dieser Messung."
+    ],
+    "die_offene_flanke": "C heisst 'die drei angebotenen Wege loesen es nicht besser', nicht 'das System ist fehlerfrei'. Der tatsaechliche, belegte Mechanismus -- der gemeinsame Kandidatendeckel MAX_NODES+MAX_LESSONS=17 in haken/suchpfad_abruf.py:171 vor der spaeteren Einzelaufteilung -- ist eine eigene, von der Gattungsfrage UNABHAENGIGE Schwachstelle. Wer den Verlust auf 0 druecken will, muesste dort ansetzen (z. B. getrennte Kandidatenbudgets fuer Knoten und Lehren VOR der RRF-Fusion) -- das ist weder Weg A noch Weg B, sondern eine vierte, hier nicht beauftragte Option, und ihre Groesse/ihr Bauaufwand liegt ausserhalb dieser Linse (ABRUFGUETE).",
+    "was_nicht_veraendert_wurde": "0,65-Aehnlichkeitsschwelle, MIN_HITS=3, NOISE_FLOOR_MAD_MULT -- in keinem der Messlaeufe (Nachrechnung, Skalierung, Namensfrage) angefasst oder umgangen. Kein Lauf haengt an einer geaenderten Schwelle."
+  },
+
+  "verwendete_werkzeuge": [
+    "messungen/einrichtung_katalogwirkung.py (unveraendert, aus dem Repo, fuer Abschnitt 1)",
+    "eigenes Skript scratchpad/skalierung.py (fuer Abschnitt 3, importiert denselben BSI-Katalog synthetisch mehrfach ueber kern/fremdimport.py, misst ueber dieselbe kern/abrufguete.py::messe-Funktion)",
+    "eigenes Skript scratchpad/namensfrage.py (fuer Abschnitt 4, liest read-only gegen die echte brainlehr.db)",
+    "Ad-hoc-Python-Probe fuer den bm25-Score-Vergleich in Abschnitt 2 (read-only Kopien, kein Ollama noetig)"
+  ]
+}
