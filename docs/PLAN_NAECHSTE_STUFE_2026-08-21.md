@@ -44,7 +44,7 @@ eine Verbesserung an der falschen Stelle.
 
 Derselbe Grund wie bei B1, und er ist keine Frage des Füllstands.
 
-**§3.1 Der GEGENSTAND — wer oder was ist gemeint.**
+**§3.1 Der GEGENSTAND — wer oder was ist gemeint.** (`BDW-P16`)
 Gemessen: `gegenstaende` trägt **2 Zeilen**, `gegenstand_namen` **7** — und
 beide Gegenstände sind Software (`anwendung`, `einstellung`). Keine Person,
 kein Objekt, kein Vertragspartner. Die Tabelle existiert seit ADR-028 („Ein
@@ -56,7 +56,7 @@ ein Beleg einen Aussteller. Wer heute ein Dokument ablegt, ohne die Person zu
 binden, hat morgen **einen Text mit einem Namen darin** — und ein Name ist
 nie ein Schlüssel.
 
-**§3.2 Die FÄLLIGKEIT — was wann von wem zu tun ist.**
+**§3.2 Die FÄLLIGKEIT — was wann von wem zu tun ist.** (`BDW-P17`)
 Gemessen: `gilt_ab` in der Zukunft steht bei **0 von 5 240**, `gilt_bis` bei
 **2**. Der Speicher hat keine Zukunft.
 
@@ -73,7 +73,7 @@ deshalb nicht vorgezogen.
 
 ## §4 Was unabhängig davon gebaut werden kann
 
-**§4.1 Die Namensfrage als Namensfrage erkennen** — der Fund des Konsils, den
+**§4.1 Die Namensfrage als Namensfrage erkennen** (`BDW-P18`) — der Fund des Konsils, den
 keine Linse beauftragt hatte, gemessen am 2026-08-21:
 
 | Frage | Ziele gefunden |
@@ -121,6 +121,52 @@ genau den Kanal, der Namen findet** (FTS: Ränge 1/9/70; Vektor: 4/218/1804).
 Anfrage" ist bereits der Ist-Zustand (`haken/suchpfad_abruf.py:125`). Er war
 nie eine Option.
 
+## §4a Die Sprache der Oberfläche (`BDW-P19`)
+
+Betreiberwort 2026-08-21: *„wenn wir einen englischsprachigen user haben,
+sollten diese dinge auch auf englisch angezeigt werden"*.
+
+**Abzugrenzen von `BDW-P10`, und die Verwechslung lag nahe:** Dort ist
+`sprache` die Sprache des EINTRAGS — gemessen 3 573 de, 1 609 en. Hier ist es
+die Sprache der ANZEIGE. Zwei verschiedene Größen; die Achse aus B1 hilft
+dafür nicht.
+
+Heute führt die englische Tür aus `BDW-P14` in ein deutsches Haus: jede
+Hakenmeldung, jeder Meldertext, jeder Triggerfehler ist deutsch. Ein
+englischsprachiger Nutzer liest „Gegenprobe faellig" und „Melder ohne
+Ausloeser".
+
+**Erhebung läuft** (`runs/sprachstand_oberflaeche_2026-08-21.json`): Zahl und
+Zeichenmenge je Ort, getrennt nach dem, was ein Nutzer WIRKLICH sieht — ein
+Melder ohne Auslöser erreicht niemanden. Ausdrücklich ohne Empfehlung zur
+Bauform: Katalogdatei, Gettext oder englische Texte mit Übersetzungsschicht
+bindet alles Spätere, und eine Empfehlung vor der Entscheidung würde die
+Zahlen einfärben.
+
+**Die drei Fälle, die sich nicht folgenlos übersetzen lassen**, gehören vorher
+benannt: Triggertexte in `schema.sql` (eine geänderte Datei erreicht eine
+gewachsene Datenbank nicht von selbst, `L-55075a`) · Texte, auf die ein
+Wächter per regulärem Ausdruck prüft (übersetzt greift er nicht mehr,
+`L-8fce9c` — heute passiert, siehe §5a) · Texte, die in abgelegten
+Wissenseinträgen wörtlich zitiert sind.
+
+## §5a Kein neunter Plan — und warum das gemessen wurde
+
+Der Betreiber verlangte am 2026-08-21 „einen neuen Plan und den Lastenkatalog
+ergänzen". Der Katalog ist ergänzt (P16–P19). **Ein neues Plandokument wurde
+bewusst NICHT angelegt**, und der Grund ist gemessen statt befürchtet:
+
+`grep` über `docs/PLAN_*.md` und `SPRINTS.md`: **`S12` steht in sechs
+Dateien**, `S17` in drei, acht weitere in je zwei. Genau die Fehlklasse aus
+`L-30be01` — dieselbe Abschnittskennung mehrfach vergeben, aufgefallen
+seinerzeit erst an der Frage „wieviele S haben wir insgesamt?", die sich
+nicht beantworten ließ. Ein neunter Plan hätte sie fortgesetzt.
+
+**Die Regel daraus, angewandt:** Neue Anforderungen gehen in den KATALOG (eine
+normative Quelle, stabile `BDW-`Kennungen, Kennung vor der Vergabe gemessen).
+Neue Arbeit wird ein ABSCHNITT in diesem Plan. Ein eigenes Dokument bekommt
+nur, was einen eigenen Kennungsraum wirklich braucht.
+
 ## §6 Reihenfolge
 
 ```
@@ -132,9 +178,14 @@ nie eine Option.
         +--> Kalender, Fristen, Wiedervorlage (brauchen die Faelligkeit)
 
   UNABHAENGIG, ab sofort:
-    §4.1 Namensfrage    §4.2 Kandidatenbudgets    §4.4 Bauvermeidung
-    §2   BDW-R05 / Zielbild A  <-- groesster gemessener Rueckstand
+    §4.1 Namensfrage (P18)   §4.2 Kandidatenbudgets   §4.4 Bauvermeidung
+    §4a  Oberflaechensprache (P19)  -- Erhebung laeuft, Bauform offen
+    §2   BDW-R05 / Zielbild A  <-- groesster gemessener Rueckstand (3/35)
 ```
+
+**Katalogbezug:** §3.1 = `BDW-P16` · §3.2 = `BDW-P17` · §4.1 = `BDW-P18` ·
+§4a = `BDW-P19` · §4.3 = `BDW-P15`. Der Katalog ist die normative Quelle,
+dieser Plan die Umsetzung — bei Widerspruch gilt der Katalog.
 
 ## §7 Was bewusst nicht getan wird
 
@@ -150,3 +201,4 @@ nie eine Option.
 
 * 2026-08-21T08:20 — angelegt, nach Abschluss des Gesamtbaus und mit zwei von
   drei Konsillinsen.
+* 2026-08-21T08:50 — Katalog um P16–P19 ergaenzt (Kennungen gemessen, hoechste war P15). Kein neues Plandokument, siehe §5a.
