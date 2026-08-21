@@ -407,10 +407,13 @@ def main() -> int:
         print(json.dumps(befunde, ensure_ascii=False, indent=2))
         return 1 if befunde else 0
     if args.ort and args.setzen:
-        from datetime import datetime
+        from datetime import datetime, timezone
         with speicher.schreiben() as conn:
+            # UTC mit 'Z', kein lokaler Versatz (tests/test_zeitform_utc.py) --
+            # frueher stand hier lokale Zeit + %z, gemessen 2026-08-21 als
+            # knowledge_config.updated_at-Verstoss aufgefallen.
             ort_setzen(conn, args.ort, args.setzen,
-                       ts=datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S%z"))
+                       ts=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
         print(f"ablage.{args.ort} = {args.setzen}")
         return 0
     if args.ort:

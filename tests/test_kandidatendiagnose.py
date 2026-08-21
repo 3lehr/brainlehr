@@ -91,12 +91,20 @@ def vec():
 # DIESELBE Liste liefern, nicht ob das Ziel darin steht. Seit der Umstellung tun
 # sie das, und weil der Marker strict war, ist es aufgefallen statt still zu
 # bleiben.
-_ZIEL_AUS_DEN_ERSTEN_FUENF = pytest.mark.xfail(
-    strict=True,
-    reason="Zielknoten 8dc84938 steht am 2026-08-16 auf Rang 23 statt in den ersten 5 "
-           "(am 2026-08-14: Rang 21) -- Abrufbefund, siehe Kommentar oben; kein Wert "
-           "nachgezogen, und die Sockel-Behebung hat ihn nicht geheilt",
-)
+#
+# NACHTRAG 2026-08-21: genau das ist eingetreten, wofuer strict=True gesetzt
+# wurde ("damit es auffaellt, sobald der Abruf ihn wiederfindet"). Gemessen
+# gegen den echten Bestand (kein Codepfad in kandidatendiagnose.py/
+# suchpfad_abruf.py/embeddings.py/knowledge_mcp_server.py in dieser Sitzung
+# geaendert -- diff gegen 42c32f7d leer): Zielknoten 8dc84938 steht auf
+# Rang 1, in_kandidatenliste True. Ursache ist Bestandswachstum, nicht ein
+# Commit dieser Sitzung: eine kleine Test-DB (372 KB, ohne den echten Bestand)
+# zeigt weiterhin das alte Bild, die echte brainlehr.db (177 MB) nicht mehr.
+# Der xfail-Marker ist damit erledigt und wird entfernt, statt ihn XPASS
+# melden zu lassen -- ein weiterhin xfail-markierter, tatsaechlich
+# bestehender Fall waere die stille Variante desselben Fehlers.
+# Marker entfernt (s. Nachtrag 2026-08-21) -- der Fall ist geheilt, kein
+# xfail mehr noetig.
 
 
 def test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg(conn, vec):
@@ -139,7 +147,6 @@ def test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg(conn, vec):
     )
 
 
-@_ZIEL_AUS_DEN_ERSTEN_FUENF
 def test_fall_8dc84938_jetzt_in_liste(conn, vec):
     ref = ziel_ref(conn, "node", ZIEL_PFAD)
     assert ref == "8dc84938"

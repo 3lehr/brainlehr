@@ -22,7 +22,14 @@ TESTS = Path(__file__).resolve().parent
 # muss den alten Dateinamen als Text kennen, um dessen Fallback zu belegen --
 # das ist keine Umgehung des Aufloesers, sondern ein Test UEBER ihn.
 # Diese Datei selbst nennt den Namen nur in der eigenen Beschreibung/Regex.
-AUSGENOMMEN = {"test_ort_env_kompat.py", Path(__file__).name}
+#
+# tests/test_paketbau.py (2026-08-21) nennt "knowledge.db"/"brainlehr.db" in
+# VERBOTEN -- einer Liste von Dateinamen-Mustern, die NICHT ins Archiv duerfen.
+# Das ist kein DB-Pfad, den irgendein Code zum VERBINDEN zusammenbaut (die
+# Datei enthaelt keinen sqlite3.connect/haken.ort-Aufruf ueberhaupt), sondern
+# ein Archivinhalts-Check -- die Fehlerklasse dieser Wache (stiller SKIP nach
+# einer Umbenennung des Bestands) kann dort gar nicht entstehen.
+AUSGENOMMEN = {"test_ort_env_kompat.py", "test_paketbau.py", Path(__file__).name}
 
 # Zeilen, die sich ueber tmp_path (oder einen anderen Wegwerf-Ordner) eine
 # EIGENE Datenbank anlegen, sind nicht betroffen -- dort ist der Name

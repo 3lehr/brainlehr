@@ -51,7 +51,12 @@ def _zeit(value: str | None = None) -> datetime:
 
 
 def _iso(value: datetime) -> str:
-    return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    # strftime statt isoformat(): isoformat() haengt Mikrosekunden an, wenn
+    # das datetime-Objekt welche traegt -- die Ratsche
+    # tests/test_zeitform_utc.py verlangt genau 'YYYY-MM-DDTHH:MM:SSZ' ohne
+    # Bruchteile (gemessen 2026-08-21: session_checkpoints.updated_at/
+    # expires_at fielen darueber durch, obwohl schon auf UTC+Z stand).
+    return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _id(name: str, value: object, *, leer: bool = False) -> str:

@@ -126,6 +126,10 @@ import speicher  # Aufgabe 79 Schritt 2: normiere_modell()/normiere_akteur() im
 import sicherungen  # Aufbewahrungsregel fuer die automatischen .bak-Kopien (2026-08-14)
 import werkzeugrechte  # B4.3: Durchsetzung an tools/call statt nur an tools/list
 import session_checkpoint
+import gegenstand  # ADR-028/P16: gegenstaende/gegenstand_namen/gegenstand_bezug --
+                    # eigene TABLE_SQL (bewusst nicht in schema.sql, s. 5403a71b),
+                    # muss aber in die Erstanlage, sonst hat sie weniger Tabellen
+                    # als der gewachsene Betrieb (Hausregel "zwei Ausgangszustaende").
 import einrichtung  # Auftrag C (BDW-P11): Erststart im Chat, nicht in einem zweiten Programm
 import einschleusung  # ADR-034: Verdachtserkennung direkt am Schreibvorgang
                        # (knowledge_add/knowledge_update/lesson_record/lesson_update),
@@ -1477,6 +1481,9 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old brainlehr.db copies."""
     _ensure_core_schema(conn)
     session_checkpoint.ensure_schema(conn)
+    gegenstand.ensure_schema(conn)  # gegenstaende/gegenstand_namen/gegenstand_bezug;
+                                     # nach _ensure_core_schema, weil gegenstand_bezug
+                                     # per FOREIGN KEY auf knowledge_nodes(path) zeigt.
     # Generischer Nachzug VOR allen Trigger-Anlegern: ein Trigger, der eine
     # noch fehlende Spalte liest, laesst jeden spaeteren Schreibvorgang mit
     # 'no such column: NEW.x' auffliegen. Genau so lag es am 2026-08-10 bei

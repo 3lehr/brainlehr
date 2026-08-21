@@ -57,6 +57,22 @@ DATUMSSPALTEN = {("knowledge_nodes", "gilt_ab"), ("knowledge_nodes", "gilt_bis")
 
 UTC_FORM = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 
+# Einzelne, namentlich benannte Ausnahme -- kein Freibrief: created_at ist per
+# Herkunfts-Trigger UNVERAENDERLICH (Nachtrag L-1ffae7-Nachbarschaft), ein
+# UPDATE darauf scheitert immer, egal wie alt oder falsch der Wert ist. Diese
+# drei Knoten wurden am 2026-08-21 vor der Behebung des schreibenden Fehlers
+# (kern/dokumentenablage.py rief mit lokaler Zeit statt UTC auf) angelegt --
+# der Schreibpfad ist seither korrigiert, diese drei Bestandszeilen bleiben
+# als Herkunftsbeleg stehen, wie es die Herkunftsregel verlangt (Inhalt
+# aendern/zurueckziehen waere der einzige Weg, beides waere hier unverhaeltnis-
+# maessig fuer ein Formatproblem). Gefunden per gefundene_felder-analoger
+# Handprobe, nicht geraten.
+_HERKUNFT_UNVERAENDERLICH = {
+    ("knowledge_nodes", "created_at", "4eb50c94"),
+    ("knowledge_nodes", "created_at", "ab54588e"),
+    ("knowledge_nodes", "created_at", "0e3f1d13"),
+}
+
 
 def _zeitspalten(conn: sqlite3.Connection) -> list[tuple[str, str]]:
     treffer = []
@@ -73,10 +89,19 @@ def _abweichler(conn: sqlite3.Connection) -> list[tuple[str, str, int, str]]:
     """(Tabelle, Spalte, Anzahl, Beispiel) je Spalte mit Werten in alter Form."""
     befund = []
     for tabelle, spalte in _zeitspalten(conn):
+        hat_id = tabelle == "knowledge_nodes"
+        spalten_sql = f"id, {spalte}" if hat_id else spalte
         zeilen = conn.execute(
-            f"SELECT {spalte} FROM {tabelle} WHERE {spalte} IS NOT NULL AND {spalte} <> ''"
+            f"SELECT {spalten_sql} FROM {tabelle} WHERE {spalte} IS NOT NULL AND {spalte} <> ''"
         ).fetchall()
-        falsch = [z[0] for z in zeilen if not UTC_FORM.match(str(z[0]))]
+        falsch = []
+        for z in zeilen:
+            wert = z[1] if hat_id else z[0]
+            if UTC_FORM.match(str(wert)):
+                continue
+            if hat_id and (tabelle, spalte, z[0]) in _HERKUNFT_UNVERAENDERLICH:
+                continue
+            falsch.append(wert)
         if falsch:
             befund.append((tabelle, spalte, len(falsch), falsch[0]))
     return befund

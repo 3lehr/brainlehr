@@ -45,6 +45,18 @@ in Konkurrenz um die MAX_LESSONS=2 Plaetze -- und die verdraengen L-606b63.
 Das ist bestehende, hier NICHT geaenderte Hook-Logik (Datei steht unter der
 Sperre dieses Auftrags) -- Stufe 2 deckt sie nur auf. Bleibt AUS.
 
+URSACHE BEHOBEN, 2026-08-21 (c7f6dcbe): `scored.sort(key=lambda s: s[1:3],
+reverse=True)` ist aus knowledge_recall_hook.py entfernt -- bm25/hits bleibt
+jetzt tatsaechlich die primaere Reihenfolge, Severity/Haeufigkeit brechen nur
+noch Gleichstaende. Der Selbsttest unten zeigt damit keine Verdraengung mehr
+(fx-ziel bleibt bei Stufe 2 im Ergebnis, weil es denselben Stichworttreffer
+wie die fx-front-Zeilen hat). Das ist genau der Fall, den dieser Absatz schon
+vorher benannt hat ("falls die Ursache irgendwann behoben wird und ein neuer
+Messlauf noetig ist"): OB Stufe 2 jetzt gegen den vollen 35-Faelle-Korpus
+netto hilft, ist eine EIGENE, noch offene Messung -- hier nicht gefahren,
+weil ausserhalb des Auftrags, der diesen Fund richtigstellte. Bis dahin bleibt
+MEHRSTUFIGER_ABRUF/Stufe 2 auf AUS (unveraendert, keine neue Behauptung).
+
 Kombiniert (beide an): 6/35, 5552 Zeichen/Prompt -- deckt sich mit Stufe 2
 allein (Stufe 1 traegt nichts bei, weder positiv noch negativ).
 
@@ -375,9 +387,17 @@ def _selftest() -> None:
             finally:
                 for k in ("KNOWLEDGE_MEHRSTUFIGER_ABRUF", "KNOWLEDGE_MEHRSTUFIG_STUFE1", "KNOWLEDGE_MEHRSTUFIG_STUFE2"):
                     os.environ.pop(k, None)
-            assert "fx-ziel" not in [l["id"] for l in lessons_stufe2], (
-                "Regression nicht mehr reproduzierbar -- Moduldoc-Befund pruefen, bevor "
-                f"POOL_GROESSE geaendert wird ({[l['id'] for l in lessons_stufe2]})")
+            # Bis 2026-08-21 stand hier "fx-ziel not in ...": die Verdraengung
+            # entstand durch scored.sort(key=(severity, occurrences)) als
+            # PRIMAERschluessel in knowledge_recall_hook.query() (s. Moduldoc).
+            # c7f6dcbe hat genau diesen Sort entfernt -- fx-ziel hat denselben
+            # Stichworttreffer wie die fx-front-Zeilen und bleibt jetzt drin.
+            # Ein erneutes Verschwinden waere eine NEUE Regression (anderer
+            # Mechanismus als der urspruenglich gemessene) und ein echter Fund.
+            assert "fx-ziel" in [l["id"] for l in lessons_stufe2], (
+                "Neue Regression: fx-ziel faellt bei Stufe 2 wieder heraus, aber "
+                "nicht mehr ueber den 2026-08-21 behobenen Severity-Sort -- Ursache "
+                f"neu suchen ({[l['id'] for l in lessons_stufe2]})")
         finally:
             _rh.DB = _alt_db
 
