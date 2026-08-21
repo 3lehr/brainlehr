@@ -86,6 +86,19 @@ def gewachsen(tmp_path, monkeypatch):
     for idx in ("idx_nodes_mandant", "idx_nodes_kreis"):
         conn.execute(f"DROP INDEX IF EXISTS {idx}")
     conn.execute("DROP TABLE IF EXISTS geltung_je_kreis")
+    # Jeden Trigger wegnehmen, der eine der gleich entfallenden Spalten nennt.
+    # SQLite verweigert sonst das DROP COLUMN ("error in trigger ... after drop
+    # column"). Ueber den INHALT gesucht statt ueber eine Namensliste: eine
+    # Liste altert. Genau daran ist diese Vorrichtung am 2026-08-21 kaputt
+    # gegangen, als Strang F die forderung_stand-Trigger einzog -- die
+    # Vorrichtung kannte sie nicht, und der Ausgangszustand 'gewachsen' liess
+    # sich nicht mehr herstellen. Dieselbe Fehlklasse wie in
+    # tests/test_anlass_schema_backfill.py, dort zweimal.
+    _entfallend = set(ACHSEN) | {"forderung_stand"}
+    for name, sql in conn.execute(
+            "SELECT name, sql FROM sqlite_master WHERE type='trigger'").fetchall():
+        if sql and any(f"NEW.{s}" in sql or f"OLD.{s}" in sql for s in _entfallend):
+            conn.execute(f"DROP TRIGGER IF EXISTS {name}")
     for tabelle in ("knowledge_nodes", "lessons_learned"):
         for spalte in ACHSEN:
             if spalte in _spalten(conn, tabelle):
