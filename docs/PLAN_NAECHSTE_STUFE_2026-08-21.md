@@ -206,13 +206,55 @@ entscheidbar sind:
 * **Gemessene Schwellen** — `MIN_HITS = 3` (Pareto-Front über 60 Versuche),
   `0,65` (zwei Millionen Paare), `0,25` Normkonflikt, `2,0`/`10 %`
   Zugriffsmuster, `84` Kaskadenanteil. Anzeigen ja, bedienbar nein.
-* **Die Werkbank des Hauses** — Verfallsraten je Ast, Siegbedingungs-
-  Gewichte, Nachtschicht, Lehren-Beförderung, Eilmeldungen quittieren. Sie
-  gehören nach lehrAtelier.
-* **Ablageort je Domäne** (`ablage.<domaene>`, `BDW-P15`) — domänenspezifisch,
-  gehört dorthin, wo die Domäne verwaltet wird.
 * **`BRAINLEHR_DURCHSETZUNG`** (weich/streng) — ein Sicherheitsschalter, den
   ein Fremder nicht beurteilen kann, und seine Verankerung ist ungeklärt.
+  Anzeigen ja, bedienbar nein: Wer ihn nicht sieht, kann ihn auch nicht
+  versehentlich lockern.
+
+**KORREKTUR desselben Tages, Betreibereinwand, und er trifft den
+Ausschlussgrund, nicht die Liste:** *„aber in hermes soll brainlehr auch ohne
+lehrAtelier funktionieren, das macht die einstiegshürde kleiner!"*
+
+Richtig. Ich hatte Verfallsraten, Nachtschicht, Siegbedingungs-Gewichte und
+Lehren-Beförderung mit „gehört nach lehrAtelier" ausgeschlossen — das setzt
+voraus, dass es lehrAtelier gibt. Für einen Hermes-Nutzer gibt es das nicht,
+und damit stünde die Einstiegshürde genau dort, wo wir sie wegnehmen wollen.
+**brainlehr muss unter Hermes vollständig bedienbar sein, ohne eine zweite
+Oberfläche.**
+
+**Der richtige Schnitt ist ein anderer und schärfer: EINSTELLUNG gegen
+HANDLUNG.**
+
+| | gehört wohin | warum |
+|---|---|---|
+| **Einstellung** — ein Wert, der bleibt und das Verhalten prägt | ins `config_schema` | genau dafür ist das Panel gebaut |
+| **Handlung** — ein einmaliger Vorgang an einem Gegenstand | in ein **MCP-Werkzeug** | Werkzeuge kommen über `get_tool_schemas()` und brauchen **gar keine Oberfläche** |
+
+Damit lösen sich die vier Punkte auf, ohne dass einer verlorengeht:
+
+* **Nachtschicht** (an/aus, Antrieb, Budget in Aufrufen) → **Einstellung, ins
+  Panel.** Das ist eine Entscheidung über die Rechenzeit auf SEINEM Rechner —
+  niemand anders kann sie treffen. Vorher hatte ich sie ausgeschlossen; das
+  war der klarste Fehler des ersten Schnitts.
+* **Verfallsrate je Ast** (`BDW-P13`) → **Einstellung, voller Dialog.** Sie
+  braucht Kenntnis des eigenen Materials, und die hat der Nutzer. Kein
+  Vorgabewert, leer bis gesetzt — das bleibt.
+* **Siegbedingungs-Gewichte** → **Einstellung, voller Dialog**, aber mit der
+  Warnung im `info`-Text, dass sie eine Messung verstellen. Nicht sperren:
+  Wer misst, darf gewichten.
+* **Lehren-Beförderung, Eilmeldungen quittieren, Freigabe je Eintrag,
+  Ausweis-Widerruf** → **Handlungen, keine Einstellungen.** Sie gehören in
+  Werkzeuge, nicht ins Panel — und sind damit unter Hermes ohnehin erreichbar,
+  ohne jede Oberfläche.
+* **Ablageort je Domäne** (`ablage.<domaene>`, `BDW-P15`) → **Einstellung, aber
+  je Domäne** und damit nicht in ein Feld fester Zahl. Als `json`-Feld im
+  vollen Dialog, bis es Domänen gibt.
+
+**Was von der ursprünglichen Ausschlussliste übrigbleibt**, und nur das: die
+**gemessenen Schwellen**. Sie sind keine Einstellung, sondern das Ergebnis
+einer Messung — anzeigen ja, bedienbar nein.
+
+
 
 ### Die Erklärungen — zweisprachig von Anfang an
 
