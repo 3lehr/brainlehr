@@ -1,0 +1,2647 @@
+{
+  "projekt": "brainlehr",
+  "dateien": 58,
+  "vergaben": 56,
+  "gegenstaende": [
+    {
+      "id": "190b1825",
+      "kennung": "S1",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 48,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S1 · Reifegrad MESSEN statt zuweisen (zuerst, weil billig und weil es eine gemessene Fehlstelle schließt)",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:48 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:48 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:48 (ueberschrift)"
+        },
+        {
+          "name": "S1",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:48 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "aec950d2",
+      "kennung": "S1b",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 63,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S1b · Nachschlagewerke sind eine eigene Gattung — und die Belegquelle für S1",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:63 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:63 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:63 (ueberschrift)"
+        },
+        {
+          "name": "S1b",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:63 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "0abd9f47",
+      "kennung": "S1c",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 110,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S1c · Rastersuche: was abgesucht wurde, wird vermerkt",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:110 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:110 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:110 (ueberschrift)"
+        },
+        {
+          "name": "S1c",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:110 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "e45a36f0",
+      "kennung": "S1d",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 137,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S1d · Geltung als dritte Achse — und die Vorgabe haengt an der Art der Aussage",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:137 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:137 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:137 (ueberschrift)"
+        },
+        {
+          "name": "S1d",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:137 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "fef6454e",
+      "kennung": "S2",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 156,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S2 · Sichtbarkeit: was der Speicher liest und schreibt, steht im Gespräch",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:156 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:156 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:156 (ueberschrift)"
+        },
+        {
+          "name": "S2",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:156 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "871d723c",
+      "kennung": "S3",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 164,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S3 · Die Brücke vom Papernetz in den Speicher",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:164 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:164 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:164 (ueberschrift)"
+        },
+        {
+          "name": "S3",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:164 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "45666acc",
+      "kennung": "S4",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 173,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S4 · Promotion und Ebenen (der Umbau, zuletzt)",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:173 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:173 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:173 (ueberschrift)"
+        },
+        {
+          "name": "S4",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:173 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "7005f246",
+      "kennung": "S5",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 179,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S5 · Eine Oberflaeche, zwei Erbschaften",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:179 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:179 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:179 (ueberschrift)"
+        },
+        {
+          "name": "S5",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:179 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "27a63694",
+      "kennung": "S6",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 209,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S6 · Rechtevergabe — wer darf einen Schalter umlegen",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:209 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:209 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:209 (ueberschrift)"
+        },
+        {
+          "name": "S6",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:209 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "3b4c8566",
+      "kennung": "S7",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 227,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S7 · Darlegung — der Speicher lernt Reihenfolge",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:227 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:227 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:227 (ueberschrift)"
+        },
+        {
+          "name": "S7",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:227 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "476e91f4",
+      "kennung": "S8",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 246,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S8 · Pruefer, die urteilen statt zaehlen — GEBAUT am 2026-08-09",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:246 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:246 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:246 (ueberschrift)"
+        },
+        {
+          "name": "S8",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:246 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "6ec3e65e",
+      "kennung": "S9",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 271,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S9 · Der Abruf soll den Suchpfad benutzen, statt einen eigenen zu haben",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:271 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:271 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:271 (ueberschrift)"
+        },
+        {
+          "name": "S9",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:271 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "13d6cd8e",
+      "kennung": "S10",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 295,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S10 · Nuetzlichkeit messen, nicht nur Ziel-Identitaet",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:295 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:295 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:295 (ueberschrift)"
+        },
+        {
+          "name": "S10",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:295 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "4b60168a",
+      "kennung": "S11",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 320,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S11 · Ein Melder auf die ARBEIT, nicht auf den Bestand",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:320 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:320 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:320 (ueberschrift)"
+        },
+        {
+          "name": "S11",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:320 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "1e5a5b39",
+      "kennung": "S12",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 345,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S12 · Mehrstufiger Abruf — der gemessen groesste Rueckstand",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:345 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:345 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:345 (ueberschrift)"
+        },
+        {
+          "name": "S12",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:345 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "133af4a8",
+      "kennung": "S13",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 368,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S13 · Die ANTWORT als Anfrage — der zweite Ausloeser, den 745f7ac1 seit Tagen fordert",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:368 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:368 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:368 (ueberschrift)"
+        },
+        {
+          "name": "S13",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:368 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "0f8c1405",
+      "kennung": "S14",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 421,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S14 · Die Fehlklasse dieses Tages hat einen Namen: gebaut und ohne Wirkung",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:421 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:421 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:421 (ueberschrift)"
+        },
+        {
+          "name": "S14",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:421 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "310c2132",
+      "kennung": "S15",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 453,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S15 · Der Pruefkorpus wird zusammengefuehrt, bevor irgendetwas daran gemessen wird",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:453 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:453 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:453 (ueberschrift)"
+        },
+        {
+          "name": "S15",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:453 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "e549b4df",
+      "kennung": "S16",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 493,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S16 · Quellenpflege ohne Anstoss — zuerst als FRAGE, Umsetzung erst danach",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:493 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:493 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:493 (ueberschrift)"
+        },
+        {
+          "name": "S16",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:493 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "b60e7268",
+      "kennung": "S17",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 622,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S17 · Freigabe als vierte Achse — wer darf es SEHEN",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:622 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:622 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:622 (ueberschrift)"
+        },
+        {
+          "name": "S17",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:622 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "d538bd98",
+      "kennung": "S18",
+      "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+      "zeile": 681,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S18 · Der Speicher schlaegt Werkzeuge vor — aber startet sie nicht",
+      "namen": [
+        {
+          "name": "2026-08-09",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:681 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:681 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:681 (ueberschrift)"
+        },
+        {
+          "name": "S18",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-09T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DESTILLE_2026-08-09.md:681 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "c8b80c42",
+      "kennung": "S1",
+      "datei": "docs/PLAN_DREITEILUNG_2026-08-11.md",
+      "zeile": 22,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S1 · Antwortlauf dreiteilen (zuerst, weil er die Kernschleife blockiert)",
+      "namen": [
+        {
+          "name": "2026-08-11",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:22 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DREITEILUNG_2026-08-11.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:22 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:22 (ueberschrift)"
+        },
+        {
+          "name": "S1",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:22 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "7fb15179",
+      "kennung": "S2",
+      "datei": "docs/PLAN_DREITEILUNG_2026-08-11.md",
+      "zeile": 44,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S2 · Freigabe in der Zweckprojektion",
+      "namen": [
+        {
+          "name": "2026-08-11",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:44 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DREITEILUNG_2026-08-11.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:44 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:44 (ueberschrift)"
+        },
+        {
+          "name": "S2",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:44 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "94b80ef5",
+      "kennung": "S3",
+      "datei": "docs/PLAN_DREITEILUNG_2026-08-11.md",
+      "zeile": 53,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S3 · Vermerke: Stichtag statt Nacharbeit",
+      "namen": [
+        {
+          "name": "2026-08-11",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:53 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_DREITEILUNG_2026-08-11.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:53 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:53 (ueberschrift)"
+        },
+        {
+          "name": "S3",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_DREITEILUNG_2026-08-11.md:53 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "2d3b49a7",
+      "kennung": "S12",
+      "datei": "docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md",
+      "zeile": 1,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S12, zweiter Anlauf — 2026-08-11T23:40:00+0200",
+      "namen": [
+        {
+          "name": "2026-08-11",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md:1 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md:1 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md:1 (ueberschrift)"
+        },
+        {
+          "name": "S12",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-11T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md:1 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "8ab83780",
+      "kennung": "S1",
+      "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+      "zeile": 52,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S1 — Aufgriffsquote messen (Voraussetzung für alles Weitere)",
+      "namen": [
+        {
+          "name": "2026-08-20",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:52 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:52 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:52 (ueberschrift)"
+        },
+        {
+          "name": "S1",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:52 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "74e88c0a",
+      "kennung": "S2",
+      "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+      "zeile": 72,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S2 — Abgestufte Ausgabe statt Ja/Nein",
+      "namen": [
+        {
+          "name": "2026-08-20",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:72 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:72 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:72 (ueberschrift)"
+        },
+        {
+          "name": "S2",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:72 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "56e1c298",
+      "kennung": "S3",
+      "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+      "zeile": 110,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S3 — Den offenen Messfehler klären",
+      "namen": [
+        {
+          "name": "2026-08-20",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:110 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:110 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:110 (ueberschrift)"
+        },
+        {
+          "name": "S3",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:110 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "bd9bade9",
+      "kennung": "S4",
+      "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+      "zeile": 121,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S4 — Die Handbeurteilung blind wiederholen",
+      "namen": [
+        {
+          "name": "2026-08-20",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:121 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:121 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:121 (ueberschrift)"
+        },
+        {
+          "name": "S4",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:121 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "59f7f4c6",
+      "kennung": "S5",
+      "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+      "zeile": 200,
+      "art_der_vergabe": "ueberschrift",
+      "titel": "S5 — der Fälligkeitskanal (neu, aus einer Betreiberfrage)",
+      "namen": [
+        {
+          "name": "2026-08-20",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:200 (ueberschrift)"
+        },
+        {
+          "name": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:200 (ueberschrift)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:200 (ueberschrift)"
+        },
+        {
+          "name": "S5",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-20T00:00:00+0200",
+          "gilt_bis": null,
+          "beleg": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md:200 (ueberschrift)"
+        }
+      ]
+    },
+    {
+      "id": "cb7da679",
+      "kennung": "S1",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 23,
+      "art_der_vergabe": "tabelle",
+      "titel": "Reifegrad ableiten statt zuweisen",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:23 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:23 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:23 (tabelle)"
+        },
+        {
+          "name": "S1",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:23 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "f6f98f70",
+      "kennung": "S1b",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 24,
+      "art_der_vergabe": "tabelle",
+      "titel": "Nachschlagewerke als eigene Gattung + Belegquelle",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:24 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:24 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:24 (tabelle)"
+        },
+        {
+          "name": "S1b",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:24 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "805d3425",
+      "kennung": "S1c",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 25,
+      "art_der_vergabe": "tabelle",
+      "titel": "Rastervermerk je Durchgang",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:25 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:25 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:25 (tabelle)"
+        },
+        {
+          "name": "S1c",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:25 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "77a2959f",
+      "kennung": "S1d",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 26,
+      "art_der_vergabe": "tabelle",
+      "titel": "Geltung als eigene Achse, Vorgabe nach Aussageart",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:26 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:26 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:26 (tabelle)"
+        },
+        {
+          "name": "S1d",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:26 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "9dabfbdc",
+      "kennung": "S2",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 27,
+      "art_der_vergabe": "tabelle",
+      "titel": "Sichtbarkeit jedes Schreibvorgangs im Gespräch",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:27 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:27 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:27 (tabelle)"
+        },
+        {
+          "name": "S2",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:27 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "dc1d2edf",
+      "kennung": "S3",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 28,
+      "art_der_vergabe": "tabelle",
+      "titel": "Brücke Papernetz → Speicher",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:28 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:28 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:28 (tabelle)"
+        },
+        {
+          "name": "S3",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:28 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "164ef897",
+      "kennung": "S4",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 29,
+      "art_der_vergabe": "tabelle",
+      "titel": "Promotion und Ebenen (projektlokal → global)",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:29 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:29 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:29 (tabelle)"
+        },
+        {
+          "name": "S4",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:29 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "9cfa3704",
+      "kennung": "S5",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 30,
+      "art_der_vergabe": "tabelle",
+      "titel": "Eine Oberfläche, zwei Erbschaften",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:30 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:30 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:30 (tabelle)"
+        },
+        {
+          "name": "S5",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:30 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "c4993049",
+      "kennung": "S6",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 31,
+      "art_der_vergabe": "tabelle",
+      "titel": "Rechtevergabe — wer darf einen Schalter umlegen",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:31 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:31 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:31 (tabelle)"
+        },
+        {
+          "name": "S6",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:31 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "98a79736",
+      "kennung": "S7",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 32,
+      "art_der_vergabe": "tabelle",
+      "titel": "Darlegung — Plan als geordnete Kanten",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:32 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:32 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:32 (tabelle)"
+        },
+        {
+          "name": "S7",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:32 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "e41ca9ce",
+      "kennung": "S8",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 33,
+      "art_der_vergabe": "tabelle",
+      "titel": "Prüfer, die urteilen statt zählen",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:33 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:33 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:33 (tabelle)"
+        },
+        {
+          "name": "S8",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:33 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "6d21cd5f",
+      "kennung": "S9",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 34,
+      "art_der_vergabe": "tabelle",
+      "titel": "Abruf nutzt den Suchpfad statt eigener Logik",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:34 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:34 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:34 (tabelle)"
+        },
+        {
+          "name": "S9",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:34 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "061252e5",
+      "kennung": "S10",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 35,
+      "art_der_vergabe": "tabelle",
+      "titel": "Nützlichkeit messen, nicht nur Ziel-Identität",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:35 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:35 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:35 (tabelle)"
+        },
+        {
+          "name": "S10",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:35 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "7b7b956d",
+      "kennung": "S11",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 36,
+      "art_der_vergabe": "tabelle",
+      "titel": "Melder auf die Arbeit, nicht auf den Bestand",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:36 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:36 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:36 (tabelle)"
+        },
+        {
+          "name": "S11",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:36 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "d205d69a",
+      "kennung": "S12",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 37,
+      "art_der_vergabe": "tabelle",
+      "titel": "Mehrstufiger Abruf",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:37 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:37 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:37 (tabelle)"
+        },
+        {
+          "name": "S12",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:37 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "8c8fb5d9",
+      "kennung": "S13",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 38,
+      "art_der_vergabe": "tabelle",
+      "titel": "Die Antwort als Anfrage",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:38 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:38 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:38 (tabelle)"
+        },
+        {
+          "name": "S13",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:38 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "5b1f5364",
+      "kennung": "S14",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 39,
+      "art_der_vergabe": "tabelle",
+      "titel": "Generische Prüfung „stumme Spalte\"",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:39 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:39 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:39 (tabelle)"
+        },
+        {
+          "name": "S14",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:39 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "dec01f18",
+      "kennung": "S15",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 40,
+      "art_der_vergabe": "tabelle",
+      "titel": "Prüfkorpus zusammenführen mit Aufnahmekriterium",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:40 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:40 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:40 (tabelle)"
+        },
+        {
+          "name": "S15",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:40 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "8a38d2dd",
+      "kennung": "S16",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 41,
+      "art_der_vergabe": "tabelle",
+      "titel": "Quellenpflege ohne Anstoß",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:41 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:41 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:41 (tabelle)"
+        },
+        {
+          "name": "S16",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:41 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "48a65bbe",
+      "kennung": "S17",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 42,
+      "art_der_vergabe": "tabelle",
+      "titel": "Freigabe als vierte Achse",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:42 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:42 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:42 (tabelle)"
+        },
+        {
+          "name": "S17",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:42 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "ac6e5652",
+      "kennung": "S18",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 43,
+      "art_der_vergabe": "tabelle",
+      "titel": "Speicher schlägt Werkzeuge vor, startet nichts",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:43 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:43 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:43 (tabelle)"
+        },
+        {
+          "name": "S18",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:43 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "f9e3c230",
+      "kennung": "S19",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 44,
+      "art_der_vergabe": "tabelle",
+      "titel": "Wirkung: ein Ausloeser ohne Sitzung",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:44 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:44 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:44 (tabelle)"
+        },
+        {
+          "name": "S19",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:44 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "57466f08",
+      "kennung": "S20",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 45,
+      "art_der_vergabe": "tabelle",
+      "titel": "Domaenenregistry statt fest verdrahteter Domaene",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:45 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:45 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:45 (tabelle)"
+        },
+        {
+          "name": "S20",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:45 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "41db6ee7",
+      "kennung": "S21",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 46,
+      "art_der_vergabe": "tabelle",
+      "titel": "Kosten je Abruf protokollieren",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:46 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:46 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:46 (tabelle)"
+        },
+        {
+          "name": "S21",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:46 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "90b75c59",
+      "kennung": "S22",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 47,
+      "art_der_vergabe": "tabelle",
+      "titel": "Eine Zeitreihe statt sechs Momentaufnahmen",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:47 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:47 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:47 (tabelle)"
+        },
+        {
+          "name": "S22",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:47 (tabelle)"
+        }
+      ]
+    },
+    {
+      "id": "1a3238bc",
+      "kennung": "S23",
+      "datei": "docs/SPRINTS.md",
+      "zeile": 48,
+      "art_der_vergabe": "tabelle",
+      "titel": "Melder gegen erfundene Agenten und fremde Rollen",
+      "namen": [
+        {
+          "name": "2026-08-12",
+          "art_des_namens": "datum",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:48 (tabelle)"
+        },
+        {
+          "name": "docs/SPRINTS.md",
+          "art_des_namens": "pfad",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:48 (tabelle)"
+        },
+        {
+          "name": "brainlehr",
+          "art_des_namens": "projekt",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:48 (tabelle)"
+        },
+        {
+          "name": "S23",
+          "art_des_namens": "ruf",
+          "gilt_ab": "2026-08-12T05:20:28+0200",
+          "gilt_bis": null,
+          "beleg": "docs/SPRINTS.md:48 (tabelle)"
+        }
+      ]
+    }
+  ],
+  "kollisionen": [
+    {
+      "kennung": "S1",
+      "anzahl": 4,
+      "vergaben": [
+        {
+          "id": "190b1825",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 48,
+          "titel": "S1 · Reifegrad MESSEN statt zuweisen (zuerst, weil billig und weil es eine gemessene Fehlstelle schließt)",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "c8b80c42",
+          "datei": "docs/PLAN_DREITEILUNG_2026-08-11.md",
+          "zeile": 22,
+          "titel": "S1 · Antwortlauf dreiteilen (zuerst, weil er die Kernschleife blockiert)",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "8ab83780",
+          "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "zeile": 52,
+          "titel": "S1 — Aufgriffsquote messen (Voraussetzung für alles Weitere)",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "cb7da679",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 23,
+          "titel": "Reifegrad ableiten statt zuweisen",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "3 VERSCHIEDENE Sachen, die zufaellig gleich heissen: docs/PLAN_DESTILLE_2026-08-09.md -> S1 · Reifegrad MESSEN statt zuweisen (zuerst, weil billig un | docs/PLAN_DREITEILUNG_2026-08-11.md -> S1 · Antwortlauf dreiteilen (zuerst, weil er die Kernschleif | docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md -> S1 — Aufgriffsquote messen (Voraussetzung für alles Weitere). Jeder Plan zaehlt seine Schritte fuer sich; ein Verweis auf 'S1' ohne Datei und Zeitpunkt ist nicht aufloesbar."
+    },
+    {
+      "kennung": "S10",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "13d6cd8e",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 295,
+          "titel": "S10 · Nuetzlichkeit messen, nicht nur Ziel-Identitaet",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "061252e5",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 35,
+          "titel": "Nützlichkeit messen, nicht nur Ziel-Identität",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:295; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S11",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "4b60168a",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 320,
+          "titel": "S11 · Ein Melder auf die ARBEIT, nicht auf den Bestand",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "7b7b956d",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 36,
+          "titel": "Melder auf die Arbeit, nicht auf den Bestand",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:320; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S12",
+      "anzahl": 3,
+      "vergaben": [
+        {
+          "id": "1e5a5b39",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 345,
+          "titel": "S12 · Mehrstufiger Abruf — der gemessen groesste Rueckstand",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "2d3b49a7",
+          "datei": "docs/PLAN_S12_ZWEITER_ANLAUF_2026-08-11.md",
+          "zeile": 1,
+          "titel": "S12, zweiter Anlauf — 2026-08-11T23:40:00+0200",
+          "urteil": "dasselbe, zweitbenannt"
+        },
+        {
+          "id": "d205d69a",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 37,
+          "titel": "Mehrstufiger Abruf",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 3-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:345; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S13",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "133af4a8",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 368,
+          "titel": "S13 · Die ANTWORT als Anfrage — der zweite Ausloeser, den 745f7ac1 seit Tagen fordert",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "8c8fb5d9",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 38,
+          "titel": "Die Antwort als Anfrage",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:368; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S14",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "0f8c1405",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 421,
+          "titel": "S14 · Die Fehlklasse dieses Tages hat einen Namen: gebaut und ohne Wirkung",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "5b1f5364",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 39,
+          "titel": "Generische Prüfung „stumme Spalte\"",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:421; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S15",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "310c2132",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 453,
+          "titel": "S15 · Der Pruefkorpus wird zusammengefuehrt, bevor irgendetwas daran gemessen wird",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "dec01f18",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 40,
+          "titel": "Prüfkorpus zusammenführen mit Aufnahmekriterium",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:453; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S16",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "e549b4df",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 493,
+          "titel": "S16 · Quellenpflege ohne Anstoss — zuerst als FRAGE, Umsetzung erst danach",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "8a38d2dd",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 41,
+          "titel": "Quellenpflege ohne Anstoß",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:493; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S17",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "b60e7268",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 622,
+          "titel": "S17 · Freigabe als vierte Achse — wer darf es SEHEN",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "48a65bbe",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 42,
+          "titel": "Freigabe als vierte Achse",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:622; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S18",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "d538bd98",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 681,
+          "titel": "S18 · Der Speicher schlaegt Werkzeuge vor — aber startet sie nicht",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "ac6e5652",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 43,
+          "titel": "Speicher schlägt Werkzeuge vor, startet nichts",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:681; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S1b",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "aec950d2",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 63,
+          "titel": "S1b · Nachschlagewerke sind eine eigene Gattung — und die Belegquelle für S1",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "f6f98f70",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 24,
+          "titel": "Nachschlagewerke als eigene Gattung + Belegquelle",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:63; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S1c",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "0abd9f47",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 110,
+          "titel": "S1c · Rastersuche: was abgesucht wurde, wird vermerkt",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "805d3425",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 25,
+          "titel": "Rastervermerk je Durchgang",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:110; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S1d",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "e45a36f0",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 137,
+          "titel": "S1d · Geltung als dritte Achse — und die Vorgabe haengt an der Art der Aussage",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "77a2959f",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 26,
+          "titel": "Geltung als eigene Achse, Vorgabe nach Aussageart",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:137; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S2",
+      "anzahl": 4,
+      "vergaben": [
+        {
+          "id": "fef6454e",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 156,
+          "titel": "S2 · Sichtbarkeit: was der Speicher liest und schreibt, steht im Gespräch",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "7fb15179",
+          "datei": "docs/PLAN_DREITEILUNG_2026-08-11.md",
+          "zeile": 44,
+          "titel": "S2 · Freigabe in der Zweckprojektion",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "74e88c0a",
+          "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "zeile": 72,
+          "titel": "S2 — Abgestufte Ausgabe statt Ja/Nein",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "9dabfbdc",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 27,
+          "titel": "Sichtbarkeit jedes Schreibvorgangs im Gespräch",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "3 VERSCHIEDENE Sachen, die zufaellig gleich heissen: docs/PLAN_DESTILLE_2026-08-09.md -> S2 · Sichtbarkeit: was der Speicher liest und schreibt, steh | docs/PLAN_DREITEILUNG_2026-08-11.md -> S2 · Freigabe in der Zweckprojektion | docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md -> S2 — Abgestufte Ausgabe statt Ja/Nein. Jeder Plan zaehlt seine Schritte fuer sich; ein Verweis auf 'S2' ohne Datei und Zeitpunkt ist nicht aufloesbar."
+    },
+    {
+      "kennung": "S3",
+      "anzahl": 4,
+      "vergaben": [
+        {
+          "id": "871d723c",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 164,
+          "titel": "S3 · Die Brücke vom Papernetz in den Speicher",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "94b80ef5",
+          "datei": "docs/PLAN_DREITEILUNG_2026-08-11.md",
+          "zeile": 53,
+          "titel": "S3 · Vermerke: Stichtag statt Nacharbeit",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "56e1c298",
+          "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "zeile": 110,
+          "titel": "S3 — Den offenen Messfehler klären",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "dc1d2edf",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 28,
+          "titel": "Brücke Papernetz → Speicher",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "3 VERSCHIEDENE Sachen, die zufaellig gleich heissen: docs/PLAN_DESTILLE_2026-08-09.md -> S3 · Die Brücke vom Papernetz in den Speicher | docs/PLAN_DREITEILUNG_2026-08-11.md -> S3 · Vermerke: Stichtag statt Nacharbeit | docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md -> S3 — Den offenen Messfehler klären. Jeder Plan zaehlt seine Schritte fuer sich; ein Verweis auf 'S3' ohne Datei und Zeitpunkt ist nicht aufloesbar."
+    },
+    {
+      "kennung": "S4",
+      "anzahl": 3,
+      "vergaben": [
+        {
+          "id": "45666acc",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 173,
+          "titel": "S4 · Promotion und Ebenen (der Umbau, zuletzt)",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "bd9bade9",
+          "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "zeile": 121,
+          "titel": "S4 — Die Handbeurteilung blind wiederholen",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "164ef897",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 29,
+          "titel": "Promotion und Ebenen (projektlokal → global)",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "2 VERSCHIEDENE Sachen, die zufaellig gleich heissen: docs/PLAN_DESTILLE_2026-08-09.md -> S4 · Promotion und Ebenen (der Umbau, zuletzt) | docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md -> S4 — Die Handbeurteilung blind wiederholen. Jeder Plan zaehlt seine Schritte fuer sich; ein Verweis auf 'S4' ohne Datei und Zeitpunkt ist nicht aufloesbar."
+    },
+    {
+      "kennung": "S5",
+      "anzahl": 3,
+      "vergaben": [
+        {
+          "id": "7005f246",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 179,
+          "titel": "S5 · Eine Oberflaeche, zwei Erbschaften",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "59f7f4c6",
+          "datei": "docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md",
+          "zeile": 200,
+          "titel": "S5 — der Fälligkeitskanal (neu, aus einer Betreiberfrage)",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "9cfa3704",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 30,
+          "titel": "Eine Oberfläche, zwei Erbschaften",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "2 VERSCHIEDENE Sachen, die zufaellig gleich heissen: docs/PLAN_DESTILLE_2026-08-09.md -> S5 · Eine Oberflaeche, zwei Erbschaften | docs/PLAN_ZWEITES_SIGNAL_2026-08-20.md -> S5 — der Fälligkeitskanal (neu, aus einer Betreiberfrage). Jeder Plan zaehlt seine Schritte fuer sich; ein Verweis auf 'S5' ohne Datei und Zeitpunkt ist nicht aufloesbar."
+    },
+    {
+      "kennung": "S6",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "27a63694",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 209,
+          "titel": "S6 · Rechtevergabe — wer darf einen Schalter umlegen",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "c4993049",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 31,
+          "titel": "Rechtevergabe — wer darf einen Schalter umlegen",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:209; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S7",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "3b4c8566",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 227,
+          "titel": "S7 · Darlegung — der Speicher lernt Reihenfolge",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "98a79736",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 32,
+          "titel": "Darlegung — Plan als geordnete Kanten",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:227; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S8",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "476e91f4",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 246,
+          "titel": "S8 · Pruefer, die urteilen statt zaehlen — GEBAUT am 2026-08-09",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "e41ca9ce",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 33,
+          "titel": "Prüfer, die urteilen statt zählen",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:246; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    },
+    {
+      "kennung": "S9",
+      "anzahl": 2,
+      "vergaben": [
+        {
+          "id": "6ec3e65e",
+          "datei": "docs/PLAN_DESTILLE_2026-08-09.md",
+          "zeile": 271,
+          "titel": "S9 · Der Abruf soll den Suchpfad benutzen, statt einen eigenen zu haben",
+          "urteil": "eigene Sache"
+        },
+        {
+          "id": "6d21cd5f",
+          "datei": "docs/SPRINTS.md",
+          "zeile": 34,
+          "titel": "Abruf nutzt den Suchpfad statt eigener Logik",
+          "urteil": "dasselbe, zweitbenannt"
+        }
+      ],
+      "beurteilung": "EINE Sache, 2-mal benannt. Massgeblich docs/PLAN_DESTILLE_2026-08-09.md:271; die uebrigen sind Uebersicht oder Fortsetzung desselben Abschnitts."
+    }
+  ],
+  "zusammenfassung": {
+    "vergaben": 56,
+    "zweitbenennungen": 22,
+    "verschiedene_sachen": 34,
+    "hinweis": "Zweitbenennungen sind NICHT zusammengefuehrt. Der naechste Handgriff waere, die zweite Datei als weiteren `pfad`-Namen an den bestehenden Gegenstand zu haengen statt einen neuen anzulegen -- eine Entscheidung, keine Regel."
+  }
+}
