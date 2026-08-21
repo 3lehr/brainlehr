@@ -110,6 +110,7 @@ RECHTE: dict[str, str] = {
     # verwaltend -- laeuft ueber den ganzen Bestand, darum eigene Aktion
     "freigabe_setzen": "verwaltung:schreiben",
     "kurator_lauf": "verwaltung:schreiben",
+    "katalog_holen": "verwaltung:schreiben",  # Netzzugriff + Schreiben aufs Dateisystem
 }
 
 # Welche Aktionen als schreibend gelten -- gebraucht fuer die Stufe 'streng'.

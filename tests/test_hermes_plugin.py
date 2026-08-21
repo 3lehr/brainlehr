@@ -461,7 +461,7 @@ def test_post_setup_schreibt_konfig_und_aktiviert(tmp_path, monkeypatch):
     wenn es existiert."""
     import json as _json
     antworten = iter(["/pfad/zur/brainlehr.db", "hermes-nutzer",
-                      "http://127.0.0.1:11434", "einzelplatz"])
+                      "http://127.0.0.1:11434", "einzelplatz", "nein"])
     monkeypatch.setattr(bp, "_frage", lambda *a, **k: next(antworten))
     monkeypatch.setenv("HERMES_HOME", str(tmp_path))
 

@@ -7178,6 +7178,22 @@ TOOLS = {
             kataloge=args.get("kataloge") or (), mandant=args.get("mandant"),
             bestaetigt=bool(args.get("bestaetigt"))),
     },
+    "katalog_holen": {
+        "description": "Holt einen der von einrichtung_starten vorgeschlagenen Kataloge "
+                       "(bsi, nasa-llis, wcag) in ein lokales Verzeichnis -- Netzzugriff nur "
+                       "hier, nie ueber einrichtung_starten selbst. Bei quelle.art='keine' "
+                       "wird nichts geraten: das Ergebnis traegt geholt=false und den Grund.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string", "enum": ["bsi", "nasa-llis", "wcag"]},
+                "ziel": {"type": "string", "description": "Zielverzeichnis; Vorgabe wenn leer"},
+            },
+            "required": ["name"],
+        },
+        "handler": lambda args: einrichtung.katalog_holen(
+            _require(args, "name", "'bsi', 'nasa-llis' oder 'wcag'."), args.get("ziel")),
+    },
     "kurator_lauf": {
         "description": "Background cleanup agent (Hermes curator.py comparison) that ACTS, not just reports "
                         "like knowledge_lint.py -- but only within the safe boundary: knowledge_zurueckziehen() "

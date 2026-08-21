@@ -760,6 +760,35 @@ class BrainlehrProvider(MemoryProvider):
             "Betriebsprofil (einzelplatz/mandant) / operating profile",
             vorher.get("betriebsprofil", "") or "einzelplatz")
 
+        # Fuenfte Frage: welche Kataloge liegen bereit, und sollen sie JETZT
+        # geholt und eingelesen werden? Vorgabe NEIN -- ein Katalog ist ein
+        # fremder Bestand mit eigener Lizenz, kein stiller Standardschritt.
+        # Nur MCP, kein Import von kern/einrichtung: der Adapter spricht mit
+        # brainlehr als eigenem Prozess (42c32f7d), nicht ueber sys.path.
+        klient = self._verbindung()
+        kataloge_liste = []
+        if klient is not None:
+            stand = klient.ruf("einrichtung_starten", {}) or {}
+            kataloge_liste = (stand.get("lage") or {}).get("kataloge") or []
+        if kataloge_liste:
+            print("\n  Verfuegbare Kataloge / available catalogs:\n")
+            for k in kataloge_liste:
+                umfang = k.get("umfang")
+                lizenz = (k.get("quelle") or {}).get("lizenz", "ungeprueft")
+                print(f"    - {k.get('titel', k.get('name'))}: "
+                      f"{umfang if umfang is not None else 'Umfang unbekannt'}, "
+                      f"Lizenz: {lizenz}")
+            holen = _frage(
+                "Diese Kataloge jetzt holen und einlesen? (ja/nein) / "
+                "fetch and import these catalogs now?", "nein")
+            if holen.strip().lower() in ("ja", "j", "yes", "y"):
+                for k in kataloge_liste:
+                    if (k.get("quelle") or {}).get("art") != "keine":
+                        klient.ruf("katalog_holen", {"name": k["name"]})
+                klient.ruf("einrichtung_starten",
+                          {"kataloge": [k["name"] for k in kataloge_liste],
+                           "bestaetigt": True})
+
         ziel = heim / "brainlehr" / "config.json"
         ziel.parent.mkdir(parents=True, exist_ok=True)
         ziel.write_text(json.dumps(werte, ensure_ascii=False, indent=2),

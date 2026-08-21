@@ -53,6 +53,9 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
 
 import argparse  # noqa: E402
 import json  # noqa: E402
+import subprocess  # noqa: E402
+import urllib.request  # noqa: E402
+from configparser import ConfigParser  # noqa: E402
 from datetime import datetime  # noqa: E402
 from pathlib import Path  # noqa: E402
 
@@ -89,9 +92,31 @@ def _wcag_datei() -> Path:
     return Path.home() / ".claude" / "regeln" / "wcag.md"
 
 
+def _bsi_submodul_git_url() -> str | None:
+    """Die eingetragene remote-URL des abgeschalteten Submoduls -- NICHT
+    geraten, sondern gelesen. `.git_disabled/config` ist der Name, den das
+    Abschalten hinterlassen hat; ein normal aktives Submodul haette
+    `.git/config`."""
+    wurzel = WURZEL / "bsi-stand-der-technik"
+    for kandidat in (wurzel / ".git_disabled" / "config", wurzel / ".git" / "config"):
+        if not kandidat.exists():
+            continue
+        cfg = ConfigParser()
+        try:
+            cfg.read(kandidat, encoding="utf-8")
+            return cfg.get('remote "origin"', "url")
+        except Exception:
+            continue
+    return None
+
+
 def kataloge(db: Path | str | None = None) -> list[dict]:
     """Was zum Mitnehmen bereitliegt, mit gemessenem Umfang und dem Hinweis,
-    was davon schon im Bestand steht."""
+    was davon schon im Bestand steht.
+
+    JEDER Eintrag traegt zusaetzlich `quelle` -- WOHER er kaeme, falls er noch
+    fehlt. Reines Lesen lokaler Dateien, KEIN Netzzugriff -- das bleibt
+    `katalog_holen()` vorbehalten, das nur auf ausdruecklichen Aufruf laeuft."""
     raus = []
 
     bsi = _bsi_datei()
@@ -101,23 +126,46 @@ def kataloge(db: Path | str | None = None) -> list[dict]:
             umfang = len(json.loads(bsi.read_text(encoding="utf-8"))["controls"])
         except (json.JSONDecodeError, KeyError, OSError):
             umfang = None
+    bsi_url = _bsi_submodul_git_url()
     raus.append({"name": "bsi", "titel": "BSI Stand der Technik (Dev-Profil)",
                  "gattung": "nachschlagewerk", "liegt": str(bsi),
                  "vorhanden": bsi.exists() and umfang is not None,
-                 "umfang": umfang, "wurzel": "/bsi-sdt"})
+                 "umfang": umfang, "wurzel": "/bsi-sdt",
+                 "quelle": ({"art": "git", "ort": bsi_url,
+                            "lizenz": "CC BY-SA 4.0 (siehe LICENSE im Submodul)",
+                            "hinweis": "abgeschaltetes Submodul bsi-stand-der-technik/"
+                                       ", remote-URL aus .git_disabled/config gelesen"}
+                           if bsi_url else
+                           {"art": "keine", "ort": None, "lizenz": "ungeprueft",
+                            "hinweis": "keine remote-URL im Submodul gefunden "
+                                       "(.git_disabled/config bzw. .git/config fehlt "
+                                       "oder ohne [remote \"origin\"])"})})
 
     raus.append({"name": "nasa-llis", "titel": "NASA Lessons Learned (LLIS)",
                  "gattung": "nachschlagewerk", "liegt": "bereits im Bestand",
                  "vorhanden": False, "umfang": None, "wurzel": "/nasa-llis",
                  "hinweis": "keine lokale Quelldatei -- der Bestand traegt ihn "
                             "bereits, ein Nachladen gaebe es nur ueber das "
-                            "fremde Repository, aus dem er einmal kam"})
+                            "fremde Repository, aus dem er einmal kam",
+                 "quelle": {"art": "keine", "ort": None, "lizenz": "ungeprueft",
+                            "hinweis": "Herkunft steht je Knoten in "
+                                       "knowledge_nodes.source, Form "
+                                       "'https://nen.nasa.gov/web/11/viewall/-/"
+                                       "viewall/<id> (NASA LLIS LessonId <id>)' -- "
+                                       "1638 einzelne Lehren, kein Sammel-Endpunkt. "
+                                       "Der Bestand traegt sie bereits vollstaendig, "
+                                       "es gibt nichts nachzuladen."}})
 
     wcag = _wcag_datei()
     raus.append({"name": "wcag", "titel": "WCAG 2.2 AA (Regeltext)",
                  "gattung": "nachschlagewerk", "liegt": str(wcag),
                  "vorhanden": wcag.exists(), "umfang": None,
-                 "wurzel": "/wcag-2-2"})
+                 "wurzel": "/wcag-2-2",
+                 "quelle": {"art": "keine", "ort": None, "lizenz": "ungeprueft",
+                            "hinweis": "keine ausliefertbare Quelle -- die Datei "
+                                       "ist Eigentum des Betreibers. Der Regeltext "
+                                       "stammt von w3.org (WCAG 2.2); wer ihn "
+                                       "braucht, muss ihn selbst beibringen."}})
 
     if db is not None:
         with speicher.lesen(db) as conn:
@@ -191,6 +239,45 @@ def katalog_einlesen(name: str, db: Path | str | None = None,
         norm_art=norm_art, titel_wurzel=eintrag["titel"])
     ergebnis["katalog"] = name
     return ergebnis
+
+
+def katalog_holen(name: str, ziel: Path | str | None = None) -> dict:
+    """Holt einen Katalog, dessen quelle.art nicht 'keine' ist, in ein
+    lokales Verzeichnis. NETZZUGRIFF NUR HIER -- kataloge() selbst bleibt
+    davon frei.
+
+    'keine' wird NICHT geraten oder umgangen, sondern ehrlich als
+    `geholt: False` mit dem hinterlegten Hinweis zurueckgegeben."""
+    eintrag = next((k for k in kataloge() if k["name"] == name), None)
+    if eintrag is None:
+        raise ValueError(f"unbekannter Katalog: {name!r} "
+                         f"(bekannt: {[k['name'] for k in kataloge()]})")
+    quelle = eintrag["quelle"]
+    if quelle["art"] == "keine":
+        return {"katalog": name, "geholt": False, "hinweis": quelle["hinweis"]}
+
+    ziel = Path(ziel) if ziel is not None else WURZEL / "katalog-holen" / name
+    ziel.parent.mkdir(parents=True, exist_ok=True)
+
+    if quelle["art"] == "git":
+        if ziel.exists():
+            lauf = subprocess.run(["git", "-C", str(ziel), "pull", "--ff-only"],
+                                  capture_output=True, text=True)
+        else:
+            lauf = subprocess.run(["git", "clone", "--depth", "1",
+                                   quelle["ort"], str(ziel)],
+                                  capture_output=True, text=True)
+        return {"katalog": name, "geholt": lauf.returncode == 0, "ziel": str(ziel),
+                "lizenz": quelle["lizenz"],
+                "hinweis": lauf.stdout.strip() or lauf.stderr.strip()}
+
+    if quelle["art"] == "http":
+        with urllib.request.urlopen(quelle["ort"]) as antwort:
+            ziel.write_bytes(antwort.read())
+        return {"katalog": name, "geholt": True, "ziel": str(ziel),
+                "lizenz": quelle["lizenz"], "hinweis": f"heruntergeladen von {quelle['ort']}"}
+
+    raise ValueError(f"unbekannte quelle.art {quelle['art']!r} bei Katalog {name!r}")
 
 
 # --- C1, dritte Frage: der Einbettungsdienst -----------------------------
@@ -367,6 +454,8 @@ def _selftest() -> None:
     assert {"bsi", "nasa-llis", "wcag"} <= namen, namen
     for k in kataloge():
         assert k["gattung"] == "nachschlagewerk", k
+        assert {"art", "ort", "lizenz", "hinweis"} <= set(k["quelle"]), k
+    assert katalog_holen("wcag")["geholt"] is False
     if _bsi_datei().exists():
         assert len(_bsi_eintraege()) > 0
     if _wcag_datei().exists():

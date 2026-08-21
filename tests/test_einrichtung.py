@@ -170,6 +170,45 @@ def test_kataloge_werden_vorgefunden_nicht_behauptet():
         assert isinstance(k["vorhanden"], bool)
 
 
+def test_jeder_katalog_traegt_eine_deklarierte_quelle():
+    """VORHER ROT: quelle fehlte ganz, jeder Zugriff auf k['quelle'] warf
+    KeyError. Rot-Ausgabe wortwoertlich gegen einrichtung.py vor diesem
+    Auftrag: KeyError('quelle')."""
+    for k in einrichtung.kataloge():
+        quelle = k["quelle"]
+        assert {"art", "ort", "lizenz", "hinweis"} <= set(quelle), quelle
+        assert quelle["art"] in ("git", "http", "keine"), quelle
+
+
+def test_wcag_erfindet_keine_w3c_url():
+    """BDW-P12 gilt auch fuer die Katalog-Quelle selbst: die WCAG-Datei ist
+    Eigentum des Betreibers, es gibt keine ausliefertbare Quelle."""
+    wcag = next(k for k in einrichtung.kataloge() if k["name"] == "wcag")
+    assert wcag["quelle"]["art"] == "keine"
+    assert wcag["quelle"]["ort"] is None
+
+
+def test_kataloge_macht_keinen_netzzugriff(monkeypatch):
+    """Negativtest: kataloge() liest nur lokale Dateien. socket.socket wird
+    so ersetzt, dass jeder Verbindungsversuch eine Ausnahme wirft --
+    kataloge() muss trotzdem sauber durchlaufen."""
+    import socket
+
+    def gesperrt(*a, **k):
+        raise AssertionError("kataloge() hat einen Netzzugriff versucht")
+
+    monkeypatch.setattr(socket, "socket", gesperrt)
+    ergebnis = einrichtung.kataloge()
+    assert len(ergebnis) >= 3
+
+
+def test_katalog_holen_ohne_quelle_raet_nicht_sondern_meldet():
+    """quelle.art == 'keine' -> geholt: False, kein Rateversuch, kein Sturz."""
+    ergebnis = einrichtung.katalog_holen("wcag")
+    assert ergebnis["geholt"] is False
+    assert ergebnis["hinweis"]
+
+
 def test_katalogimport_traegt_nachschlagewerk_und_bleibt_aus_dem_abruf(leer):
     ergebnis = einrichtung.katalog_einlesen("wcag", db=leer)
     assert ergebnis["knoten"] > 0
