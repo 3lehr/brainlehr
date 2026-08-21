@@ -110,11 +110,22 @@ STOPP = re.compile(
 # eine Fortsetzungsansage. Bewusst breiter als die Frageliste oben, weil hier
 # nicht die Formulierung entscheidet, sondern der fehlende Werkzeugaufruf --
 # das Muster grenzt nur ein, WORAUF die strukturelle Pruefung angewandt wird.
+# VERNEINUNG (2026-08-21). Der Waechter hat zweimal an einem Tag Fehlalarm
+# gegeben, einmal davon auf den Satz "ich baue KEINE davon auf Verdacht um" --
+# also auf eine ausdrueckliche Absage, die er als Ankuendigung las. Das ist
+# dieselbe Klasse wie L-8fce9c: ein Waechter prueft seine WOERTER, nicht die
+# Sache. Ohne diese Sperre bestraft er genau das Verhalten, das er erzwingen
+# soll -- wer sagt, dass er etwas NICHT tut, hat den Zug ordentlich beendet.
+# ponytail: nur die unmittelbar folgende Verneinung, kein Satzverstaendnis.
+# "ich baue nicht nur X, sondern auch Y" laeuft weiterhin durch; die Form ist
+# selten und der Fehlalarm dort billiger als ein blinder Waechter.
+_NICHT = r"(?!\s+(keine?[nrms]?|nicht|nichts|niemals|nie)\b)"
+
 VORHABEN = re.compile(
     r"(ich\s+(baue|mache|schreibe|pruefe|prüfe|messe|nehme|ziehe|starte|setze|fange|erweitere|behebe|"
-    r"trage|lege|melde|arbeite|fahre|committe|beginne)\b"
-    r"|ich\s+(werde|will)\b"
-    r"|als\s+n(ae|ä)chstes\b"
+    r"trage|lege|melde|arbeite|fahre|committe|beginne)\b" + _NICHT
+    + r"|ich\s+(werde|will)\b" + _NICHT
+    + r"|als\s+n(ae|ä)chstes\b"
     r"|jetzt\s+(baue|mache|folgt|kommt)\b"
     r"|weiter\s+(mit|geht)\b"
     r"|(fange|beginne)\s+(ich\s+)?(mit|bei)\b"
