@@ -1,0 +1,9 @@
+{
+  "lauf_zeitpunkt": "2026-08-21T07:33:04.088221+00:00",
+  "bezugspunkt_auftrag": "5403a71b",
+  "quelle": "brainlehr.db (echter Bestand, ueber haken/ort.py + kern/speicher.py)",
+  "offene_vorgaenge_sortiert_nach_faelligkeit": [],
+  "anzahl_offen": 0,
+  "erwartung": "leer -- einzige erfasste Forderung (/methodik/direktiven/dringend-an-brainlehr) steht auf erledigt (3cd4103c)",
+  "befund": "leer, wie erwartet"
+}

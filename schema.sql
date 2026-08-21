@@ -288,7 +288,28 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- forderung_grund: Pflichtfeld NUR wenn forderung_stand='abgelehnt'
     -- (Trigger am Dateiende) -- Abschluss ohne Begruendung waere Rauschen,
     -- das nach zwei Wochen niemand mehr liest (Auftrag F2).
-    forderung_grund TEXT
+    forderung_grund TEXT,
+    -- forderung_faellig_am / forderung_zustaendig (P17, Auftrag 2026-08-21,
+    -- docs/PLAN_NAECHSTE_STUFE_2026-08-21.md Abschnitt 3.2/9): die
+    -- Kalender-Achse fuer einen Vorgang -- Wiedervorlage, Zahlungsziel und
+    -- Wartungstermin sind dieselbe Achse, keine eigenen Spalten je Anwendung.
+    -- Format wird per Trigger am DATEIENDE geprueft, nicht hier -- gleicher
+    -- Grund wie bei forderung_stand: schema.sql laeuft VOR dem Spaltennachzug
+    -- (kern/schema_nachzug.py).
+    --
+    -- forderung_faellig_am: ISO-Datum oder NULL. NULL ist ein ZULAESSIGER
+    -- Wert, kein fehlender -- nicht jede Forderung hat eine Frist (Auftrag,
+    -- Negativtest 1). Ein Datum in der Vergangenheit ist ausdruecklich
+    -- erlaubt (Fristen laufen ab); geprueft wird nur die FORM.
+    forderung_faellig_am TEXT,
+    -- forderung_zustaendig: freier Text (wie access_log.actor), nicht die
+    -- Gegenstands-Achse (kern/gegenstand.py). BEFUND: kern/gegenstand_plan-
+    -- kennungen.py haelt fest, dass am selben Tag bewusst PLANKENNUNGEN statt
+    -- PERSONEN als Erstinhalt der Achse gewaehlt wurden, weil an Personen
+    -- (anders als an Plandateien) Bestand Dritter haengt. Ein Zustaendiger
+    -- fuer eine Forderung ist typischerweise eine Person -- dieselbe
+    -- Zurueckhaltung gilt hier. Normiert ueber speicher.normiere_akteur().
+    forderung_zustaendig TEXT
 );
 
 -- Volltext-Suche über Titel, Summary und Content.
@@ -1899,4 +1920,25 @@ BEFORE UPDATE ON knowledge_nodes
 FOR EACH ROW WHEN OLD.forderung_stand IS NOT NULL AND NEW.forderung_stand IS NULL
 BEGIN
     SELECT RAISE(ABORT, 'knowledge_nodes.forderung_stand kann nicht auf NULL zurueckgesetzt werden -- hoechstens auf offen, erledigt, abgelehnt oder ueberholt aendern');
+END;
+
+-- forderung_faellig_am (P17, Auftrag 2026-08-21): nur die FORM wird
+-- geprueft (ISO-Datum, YYYY-MM-DD...), nicht die Lage in der Zeit -- ein
+-- abgelaufenes Datum ist gewollt gueltig (Fristen laufen ab), ein erfundenes
+-- Format nicht. NULL ist erlaubt und bleibt unangetastet (kein Vorgang mit
+-- Frist ist ein Befund, keine Frist ist der Normalfall).
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_faellig_am_form_bi
+BEFORE INSERT ON knowledge_nodes
+FOR EACH ROW WHEN NEW.forderung_faellig_am IS NOT NULL
+    AND NEW.forderung_faellig_am NOT GLOB '[12][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]*'
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.forderung_faellig_am ist kein ISO-Datum (erwartet YYYY-MM-DD...)');
+END;
+
+CREATE TRIGGER IF NOT EXISTS knowledge_nodes_faellig_am_form_bu
+BEFORE UPDATE ON knowledge_nodes
+FOR EACH ROW WHEN NEW.forderung_faellig_am IS NOT NULL
+    AND NEW.forderung_faellig_am NOT GLOB '[12][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]*'
+BEGIN
+    SELECT RAISE(ABORT, 'knowledge_nodes.forderung_faellig_am ist kein ISO-Datum (erwartet YYYY-MM-DD...)');
 END;

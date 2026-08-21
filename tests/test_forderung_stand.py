@@ -178,7 +178,7 @@ def test_gewachsene_db_ohne_spalten_bricht_ensure_schema_nicht_ab(tmp_path, monk
 
     schema = (WURZEL / "schema.sql").read_text(encoding="utf-8")
     vor = schema.index("    -- forderung_stand (Strang F")
-    nach_marker = "    forderung_grund TEXT\n);"
+    nach_marker = "    forderung_zustaendig TEXT\n);"
     nach = schema.index(nach_marker) + len(nach_marker)
     kopf = schema[:vor].rstrip()
     assert kopf.endswith(","), kopf[-20:]
@@ -199,6 +199,15 @@ def test_gewachsene_db_ohne_spalten_bricht_ensure_schema_nicht_ab(tmp_path, monk
     cols = {r[1] for r in conn.execute("PRAGMA table_info(knowledge_nodes)")}
     trg = {r[0] for r in conn.execute(
         "SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE '%forderung%'")}
+    # P17 (2026-08-21): die beiden Faelligkeits-Trigger heissen bewusst nicht
+    # "*forderung*" (siehe knowledge_nodes_faellig_am_form_bi/bu, schema.sql)
+    # -- sonst waere genau die Menge unten zu erweitern gewesen, obwohl der
+    # Datumscheck ein eigener Vorgang ist. Trotzdem hier separat belegt, dass
+    # sie den Nachzug ueberleben.
+    trg_faellig = {r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE '%faellig_am%'")}
+    cols_faellig = {r[1] for r in conn.execute("PRAGMA table_info(knowledge_nodes)")
+                    if r[1] in ("forderung_faellig_am", "forderung_zustaendig")}
     conn.close()
 
     assert nach_tab == vor_tab, "ensure_schema() darf keine Tabelle verlieren"
@@ -210,3 +219,8 @@ def test_gewachsene_db_ohne_spalten_bricht_ensure_schema_nicht_ab(tmp_path, monk
         "knowledge_nodes_forderung_abgelehnt_grund_bu",
         "knowledge_nodes_forderung_stand_kein_rueckfall_bu",
     }, trg
+    assert trg_faellig == {
+        "knowledge_nodes_faellig_am_form_bi",
+        "knowledge_nodes_faellig_am_form_bu",
+    }, trg_faellig
+    assert cols_faellig == {"forderung_faellig_am", "forderung_zustaendig"}, cols_faellig

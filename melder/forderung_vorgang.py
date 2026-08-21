@@ -85,15 +85,53 @@ def markiere(path: str, stand: str, grund: str | None = None, db: Path | None = 
             raise ValueError(f"kein Knoten unter path={path!r}")
 
 
+def terminieren(path: str, *, faellig_am: str | None = None,
+                zustaendig: str | None = None, db: Path | None = None) -> None:
+    """Setzt Faelligkeitsdatum und/oder Zustaendigen fuer GENAU einen Vorgang
+    (P17, docs/PLAN_NAECHSTE_STUFE_2026-08-21.md Abschnitt 3.2/9).
+
+    Absichtlich NICHT Teil von markiere(): eine Frist kommt haeufig
+    NACHTRAEGLICH zu einem bestehenden Vorgang, ohne dass sich sein Zustand
+    aendert -- eine gemeinsame Funktion haette jeden Aufruf ohne Datum
+    stillschweigend auf NULL zurueckgesetzt (COALESCE haelt hier fest, was
+    nicht mitgegeben wird).
+
+    Format von faellig_am wird vom Trigger geprueft (schema.sql), nicht hier
+    doppelt -- dieselbe Haltung wie markiere() gegenueber forderung_stand.
+    zustaendig laeuft durch speicher.normiere_akteur() wie jedes andere
+    Akteursfeld im Haus (access_log.actor u.a.) -- Gegenstands-Achse geprueft
+    und verworfen, siehe Modulkopf/schema.sql-Kommentar.
+
+    ponytail: kein Weg, ein einmal gesetztes Feld wieder auf NULL zu loeschen
+    -- add when ein Fall das verlangt."""
+    zustaendig = speicher.normiere_akteur(zustaendig)
+    with speicher.schreiben(db) as con:
+        cur = con.execute(
+            "UPDATE knowledge_nodes SET "
+            "forderung_faellig_am = COALESCE(?, forderung_faellig_am), "
+            "forderung_zustaendig = COALESCE(?, forderung_zustaendig) "
+            "WHERE path = ?",
+            (faellig_am, zustaendig, path),
+        )
+        if cur.rowcount == 0:
+            raise ValueError(f"kein Knoten unter path={path!r}")
+
+
 def offene(db: Path | None = None) -> list[dict]:
-    """Offene Vorgaenge, aeltester zuerst -- Quelle fuer den Sitzungsstart-
-    Kanal (melder/eilmeldung_faellig.py)."""
+    """Offene Vorgaenge, sortiert nach FAELLIGKEIT (P17) -- nicht mehr nach
+    Alter: ein Vorgang, der morgen faellig ist, steht vor einem, der seit
+    drei Wochen offen ist und keine Frist hat. Vorgaenge OHNE Datum stehen
+    hinter allen datierten und sind untereinander nach Alter sortiert (das
+    alte Verhalten, jetzt nur noch der Nachrang). Quelle fuer den
+    Sitzungsstart-Kanal (melder/eilmeldung_faellig.py)."""
     try:
         with speicher.lesen(db) as con:
             rows = con.execute(
-                "SELECT path, title, created_at FROM knowledge_nodes "
+                "SELECT path, title, created_at, forderung_faellig_am, "
+                "forderung_zustaendig FROM knowledge_nodes "
                 "WHERE zurueckgezogen = 0 AND forderung_stand = 'offen' "
-                "ORDER BY created_at ASC"
+                "ORDER BY (forderung_faellig_am IS NULL), forderung_faellig_am ASC, "
+                "created_at ASC"
             ).fetchall()
     except sqlite3.OperationalError:
         return []
@@ -168,6 +206,67 @@ def _selftest() -> None:
         markiere("/brainlehr/neu", "erledigt", db=db)
         assert offene(db) == [], offene(db)
 
+        # --- Faelligkeit und Zustaendiger (P17) ---
+        for zeile in (
+            ("d", "/brainlehr/frist_bald", "Bald faellig", "2026-08-01T09:00:00Z"),
+            ("e", "/brainlehr/frist_spaet", "Spaeter faellig", "2026-08-02T09:00:00Z"),
+            ("f", "/brainlehr/ohne_frist", "Ohne Frist, aber aelter als beide", "2026-07-01T09:00:00Z"),
+        ):
+            conn = sqlite3.connect(str(db))
+            conn.execute(
+                "INSERT INTO knowledge_nodes (id, path, project_id, title, summary, content, "
+                "level, source, created_at, norm_entscheidung, norm_entschieden_von, "
+                "norm_entschieden_grund) VALUES (?,?,?,?,?,?,0,?,?,'keine_norm','test',"
+                "'Testvorrichtung, keine echte Norm-Pruefung')",
+                (zeile[0], zeile[1], "shared", zeile[2], "x", "x", "test", zeile[3]),
+            )
+            conn.commit()
+            conn.close()
+
+        markiere("/brainlehr/frist_bald", "offen", db=db)
+        markiere("/brainlehr/frist_spaet", "offen", db=db)
+        markiere("/brainlehr/ohne_frist", "offen", db=db)
+
+        # Negativtest 1: ein Vorgang ohne Datum bekommt KEINES hineingeraten.
+        with speicher.lesen(db) as con:
+            f = con.execute(
+                "SELECT forderung_faellig_am FROM knowledge_nodes WHERE path=?",
+                ("/brainlehr/ohne_frist",)).fetchone()[0]
+        assert f is None, ("stiller Vorgabewert fuer Faelligkeit entstanden", f)
+
+        # Ein Datum in der Vergangenheit ist bei einem neu angelegten Vorgang
+        # zulaessig (Fristen laufen ab).
+        terminieren("/brainlehr/frist_bald", faellig_am="2026-08-15", zustaendig="mira", db=db)
+        terminieren("/brainlehr/frist_spaet", faellig_am="2026-09-01", db=db)
+        with speicher.lesen(db) as con:
+            r = con.execute(
+                "SELECT forderung_faellig_am, forderung_zustaendig FROM knowledge_nodes WHERE path=?",
+                ("/brainlehr/frist_bald",)).fetchone()
+        assert tuple(r) == ("2026-08-15", "mira"), tuple(r)
+
+        # Negativtest 2: ein UNGUELTIGES Datum scheitert (Trigger), ein
+        # gueltiges vergangenes (oben) nicht -- das ist die Gegenprobe dazu.
+        try:
+            terminieren("/brainlehr/frist_spaet", faellig_am="nicht-datum", db=db)
+            assert False, "ungueltiges Datum haette scheitern muessen"
+        except sqlite3.IntegrityError:
+            pass
+
+        # Gegenprobe Sortierung: faellige zuerst (Datum aufsteigend), dann
+        # undatierte nach Alter -- gemischt aus datierten und undatierten.
+        off = offene(db)
+        assert [o["path"] for o in off] == [
+            "/brainlehr/frist_bald", "/brainlehr/frist_spaet", "/brainlehr/ohne_frist",
+        ], off
+
+        # Ein abgeschlossener Vorgang verschwindet, ein offener mit Frist
+        # bleibt -- und die Sortierung der uebrigen bleibt intakt.
+        markiere("/brainlehr/frist_spaet", "erledigt", db=db)
+        off = offene(db)
+        assert [o["path"] for o in off] == [
+            "/brainlehr/frist_bald", "/brainlehr/ohne_frist",
+        ], off
+
     print("forderung_vorgang: Selbsttest gruen")
 
 
@@ -176,6 +275,9 @@ def main() -> None:
     p.add_argument("--kandidaten", action="store_true")
     p.add_argument("--markieren", nargs=2, metavar=("PATH", "STAND"))
     p.add_argument("--grund", default=None)
+    p.add_argument("--terminieren", metavar="PATH")
+    p.add_argument("--faellig-am", default=None, metavar="ISO-DATUM")
+    p.add_argument("--zustaendig", default=None)
     p.add_argument("--offene", action="store_true")
     p.add_argument("--selftest", action="store_true")
     p.add_argument("--db", type=Path, default=None)
@@ -189,9 +291,14 @@ def main() -> None:
         markiere(path, stand, grund=a.grund, db=a.db)
         print(f"markiert: {path} -> {stand}")
         return
+    if a.terminieren:
+        terminieren(a.terminieren, faellig_am=a.faellig_am, zustaendig=a.zustaendig, db=a.db)
+        print(f"terminiert: {a.terminieren}  faellig_am={a.faellig_am}  zustaendig={a.zustaendig}")
+        return
     if a.offene:
         for o in offene(a.db):
-            print(f"{o['created_at']}  {o['path']}  {o['title']}")
+            print(f"{o['forderung_faellig_am'] or '(ohne Frist)'}  {o['path']}  {o['title']}"
+                  f"{'  @' + o['forderung_zustaendig'] if o['forderung_zustaendig'] else ''}")
         return
     for k in kandidaten(a.db):
         print(f"{k['created_at']}  stand={k['forderung_stand']}  {k['path']}  {k['title']}")
