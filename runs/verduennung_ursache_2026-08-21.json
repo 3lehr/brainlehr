@@ -1,0 +1,383 @@
+{
+ "auftrag": "Diagnose: WO genau geht L-606b63 verloren, wenn 951 Fremdzeilen als nachschlagewerk eingelesen werden",
+ "erhoben_am": "2026-08-21T12:02:18+0200",
+ "bezugspunkt": "668b64c0",
+ "bestaende": {
+  "A": "Kopie von /var/folders/.../katalogwirkung-vbys6yha/A_nulllinie.db (5240 Knoten, 886 arbeitsbestand, 1180 Lehren, 7407 Vektoren)",
+  "B": "Kopie von .../B_nachschlagewerk.db (6192 Knoten = +952, alle gattung=nachschlagewerk; Lehren und Vektoren IDENTISCH: 1180 / 7407)",
+  "hinweis": "beide nur lesend geoeffnet, brainlehr.db nicht angefasst"
+ },
+ "messweg": {
+  "anfrage": "Wenn ein Nutzer eine Bluetooth-Verbindung kurz hintereinander neu aufbaut, kann ein verspätet eintreffender Trennbefehl  ...",
+  "aufruf": "haken/knowledge_recall_hook.query(kws, rand=1.0, cwd=None, prompt=task, embed_fn=<gecachter Vektor>) -- echter Abrufweg, kein Nachbau",
+  "ollama": "genau EIN embed_text()-Aufruf, Vektor gecacht und fuer A und B wiederverwendet -- kein Korpuslauf",
+  "pfad": "_suchpfad_aktiv()=True (SUCHPFAD_ABRUF=True, keine KNOWLEDGE_*-Env gesetzt); mehrstufiger_abruf AUS -> suchpfad_abruf.kandidaten() 1:1"
+ },
+ "stufe_fuer_stufe": [
+  {
+   "stufe": "1 FTS/bm25 Lehren (lessons_fts)",
+   "A": {
+    "rang": 0,
+    "bm25": -36.471846425956784,
+    "treffer": 1155
+   },
+   "B": {
+    "rang": 0,
+    "bm25": -36.471846425956784,
+    "treffer": 1155
+   },
+   "unterschied": false,
+   "befund": "IDENTISCH. lessons_fts ist von einem Knoten-Import unberuehrt. Das Ziel ist der BESTE Stichworttreffer des ganzen Bestands (-36,47 gegen -24,31 fuer Rang 2)."
+  },
+  {
+   "stufe": "1b FTS/bm25 Knoten (knowledge_fts)",
+   "A": {
+    "treffer": 877,
+    "bm25_top5": [
+     [
+      "55f3c709",
+      -42.215555
+     ],
+     [
+      "dd2f3cd3",
+      -40.904604
+     ],
+     [
+      "3e6fdd55",
+      -39.002581
+     ],
+     [
+      "4603f990",
+      -38.08158
+     ],
+     [
+      "b7e78ed0",
+      -37.4193
+     ]
+    ]
+   },
+   "B": {
+    "treffer": 877,
+    "bm25_top5": [
+     [
+      "3e6fdd55",
+      -42.852408
+     ],
+     [
+      "55f3c709",
+      -42.415313
+     ],
+     [
+      "dd2f3cd3",
+      -42.191119
+     ],
+     [
+      "b7e78ed0",
+      -38.591147
+     ],
+     [
+      "0c2947b3",
+      -38.3578
+     ]
+    ]
+   },
+   "unterschied": true,
+   "befund": "Gleiche 877 Treffer (die 951 Fremdzeilen sind per SQL_ARBEITSBESTAND_NUR ausgeschlossen), aber ANDERE Scores und andere Reihenfolge: 3e6fdd55 -39,00 -> -42,85 und damit von Rang 3 auf Rang 1. Das ist der belegte IDF/Laengennorm-Effekt ueber die ganze FTS5-Tabelle."
+  },
+  {
+   "stufe": "2 Stichwortkanal (rrf_fuse Knoten+Lehren)",
+   "A": {
+    "ziel_rang": 1,
+    "laenge": 2032
+   },
+   "B": {
+    "ziel_rang": 1,
+    "laenge": 2032
+   },
+   "unterschied": false,
+   "befund": "Ziel in BEIDEN auf Rang 1. Die Knotenreihenfolge dahinter ist umgestellt, die RRF-Punkte der Lehren sind unveraendert."
+  },
+  {
+   "stufe": "3 Bedeutungskanal",
+   "A": {
+    "ziel_rang_lehren": 78,
+    "kosinus": 0.5414597878374615,
+    "ziel_rang_kanal": 157
+   },
+   "B": {
+    "ziel_rang_lehren": 78,
+    "kosinus": 0.5414597878374615,
+    "ziel_rang_kanal": 157
+   },
+   "unterschied": false,
+   "befund": "BYTE-IDENTISCH. knowledge_embeddings hat in beiden 7407 Zeilen; die Fremdzeilen haben keine Vektoren und waeren als nachschlagewerk ohnehin aus _erlaubte_ids() gefiltert. Das Ziel steht in diesem Kanal weit hinten: Rang 78 der Lehren, roher Kosinus 0,5415 -- selbst unter ENTHALTUNGSSCHWELLE_KOSINUS=0,55, die aber ueber das MAXIMUM aller Kandidaten entscheidet und hier nicht greift."
+  },
+  {
+   "stufe": "4 RRF-Fusion",
+   "A": {
+    "ziel_rang": 15,
+    "ziel_punkte": 0.020716188221367268,
+    "nachbarn_rang16_19": [
+     [
+      "L-606b63",
+      0.02071619
+     ],
+     [
+      "9ea9c9e8",
+      0.02004126
+     ],
+     [
+      "L-3d88e9",
+      0.01976496
+     ],
+     [
+      "86b2296b",
+      0.01952296
+     ]
+    ]
+   },
+   "B": {
+    "ziel_rang": 14,
+    "ziel_punkte": 0.020716188221367268,
+    "nachbarn_rang16_19": [
+     [
+      "4603f990",
+      0.02021948
+     ],
+     [
+      "L-3d88e9",
+      0.01976496
+     ],
+     [
+      "9ea9c9e8",
+      0.01949425
+     ],
+     [
+      "L-cbb443",
+      0.01934932
+     ]
+    ]
+   },
+   "unterschied": true,
+   "befund": "Ziel-Punkte IDENTISCH (0,0207162), Ziel-Rang steigt sogar von 15 auf 14. Was sich aendert, ist der NACHBAR: Knoten 9ea9c9e8 faellt von 0,0200413 auf 0,0194943 (weil er im Stichwortkanal nach hinten rutschte) und wird von Lehre L-3d88e9 (0,0197650) ueberholt."
+  },
+  {
+   "stufe": "5 gemeinsame Kandidatenkappung [:17] (MAX_NODES+MAX_LESSONS)",
+   "A": {
+    "ziel_drin": true,
+    "mischung": "10 Knoten + 7 Lehren"
+   },
+   "B": {
+    "ziel_drin": true,
+    "mischung": "9 Knoten + 8 Lehren"
+   },
+   "unterschied": true,
+   "befund": "Ziel in BEIDEN drin -- die Kappung wirft es NICHT weg. Sie kippt nur den 17. Platz von einem Knoten auf eine Lehre. Die Lehrenliste waechst von 7 auf 8. Das ist der Ausloeser, nicht der Verlust."
+  },
+  {
+   "stufe": "6 Lehren-Umsortierung nach Severity/Occurrences + Deckel [:MAX_LESSONS=7]",
+   "A": {
+    "kandidaten": [
+     [
+      "L-235ab8",
+      "high",
+      1
+     ],
+     [
+      "L-e336ce",
+      "medium",
+      1
+     ],
+     [
+      "L-7d72d2",
+      "medium",
+      1
+     ],
+     [
+      "L-7c864b",
+      "high",
+      2
+     ],
+     [
+      "L-3eb7fe",
+      "medium",
+      1
+     ],
+     [
+      "L-1460f5",
+      "high",
+      1
+     ],
+     [
+      "L-606b63",
+      "medium",
+      1
+     ]
+    ],
+    "nach_sortierung": [
+     "L-7c864b",
+     "L-235ab8",
+     "L-1460f5",
+     "L-e336ce",
+     "L-7d72d2",
+     "L-3eb7fe",
+     "L-606b63"
+    ],
+    "ausgabe": [
+     "L-7c864b",
+     "L-235ab8",
+     "L-1460f5",
+     "L-e336ce",
+     "L-7d72d2",
+     "L-3eb7fe",
+     "L-606b63"
+    ],
+    "ziel_geliefert": true
+   },
+   "B": {
+    "kandidaten": [
+     [
+      "L-235ab8",
+      "high",
+      1
+     ],
+     [
+      "L-e336ce",
+      "medium",
+      1
+     ],
+     [
+      "L-7d72d2",
+      "medium",
+      1
+     ],
+     [
+      "L-7c864b",
+      "high",
+      2
+     ],
+     [
+      "L-3eb7fe",
+      "medium",
+      1
+     ],
+     [
+      "L-1460f5",
+      "high",
+      1
+     ],
+     [
+      "L-606b63",
+      "medium",
+      1
+     ],
+     [
+      "L-3d88e9",
+      "high",
+      1
+     ]
+    ],
+    "nach_sortierung": [
+     "L-7c864b",
+     "L-235ab8",
+     "L-1460f5",
+     "L-3d88e9",
+     "L-e336ce",
+     "L-7d72d2",
+     "L-3eb7fe",
+     "L-606b63"
+    ],
+    "ausgabe": [
+     "L-7c864b",
+     "L-235ab8",
+     "L-1460f5",
+     "L-3d88e9",
+     "L-e336ce",
+     "L-7d72d2",
+     "L-3eb7fe"
+    ],
+    "ziel_geliefert": false
+   },
+   "unterschied": true,
+   "befund": "HIER GEHT SIE VERLOREN. knowledge_recall_hook.py Zeile ~1327: scored.sort(key=lambda s: s[1:3], reverse=True) sortiert die Lehren nach (severity in critical/high, occurrences) -- severity ist PRIMAERSCHLUESSEL, die Relevanzreihenfolge ueberlebt nur als Stabilitaets-Tiebreak innerhalb einer Severity-Gruppe. L-606b63 hat severity=medium und rutscht dadurch in beiden Bestaenden auf den LETZTEN Platz. Bei 7 Kandidaten ist der letzte Platz genau noch der Deckel; bei 8 faellt er heraus. Die neu hinzugekommene L-3d88e9 hat severity=high und springt an Platz 4 -- obwohl sie in der Fusion SCHLECHTER steht (Rang 16) als das Ziel (Rang 14) und bm25 sie nicht unter die Top 5 der Lehren bringt."
+  }
+ ],
+ "gegenprobe": {
+  "frage": "Ueberlebt das Ziel in B, wenn NUR die Severity-Umsortierung entfaellt (Fusionsreihenfolge behalten, trust_score und Deckel unveraendert)?",
+  "A_ist": {
+   "ausgabe": [
+    "L-7c864b",
+    "L-235ab8",
+    "L-1460f5",
+    "L-e336ce",
+    "L-7d72d2",
+    "L-3eb7fe",
+    "L-606b63"
+   ],
+   "ziel_drin": true
+  },
+  "A_ohne_sort": {
+   "ausgabe": [
+    "L-235ab8",
+    "L-e336ce",
+    "L-7d72d2",
+    "L-7c864b",
+    "L-3eb7fe",
+    "L-1460f5",
+    "L-606b63"
+   ],
+   "ziel_drin": true
+  },
+  "B_ist": {
+   "ausgabe": [
+    "L-7c864b",
+    "L-235ab8",
+    "L-1460f5",
+    "L-3d88e9",
+    "L-e336ce",
+    "L-7d72d2",
+    "L-3eb7fe"
+   ],
+   "ziel_drin": false
+  },
+  "B_ohne_sort": {
+   "ausgabe": [
+    "L-235ab8",
+    "L-e336ce",
+    "L-7d72d2",
+    "L-7c864b",
+    "L-3eb7fe",
+    "L-1460f5",
+    "L-606b63"
+   ],
+   "ziel_drin": true
+  },
+  "ergebnis": "Ja. Ohne die Umsortierung liefert B dieselben 7 Lehren wie A einschliesslich L-606b63; herausgekappt wird dann die achte (L-3d88e9), also die relevanzschwaechere. Eine Stufe geaendert, Vorzeichen gedreht -- rot vor gruen an genau dieser Stelle."
+ },
+ "hypothesen": {
+  "a_stichwort_sockel": "VERWORFEN fuer diesen Weg. _fuse_with_keyword_floor() wird im Abrufweg gar nicht aufgerufen: suchpfad_abruf.kandidaten() importiert ihn nicht und verschmilzt rein per embeddings.rrf_fuse (Kommentar 'Kein Stichwort-Sockel ... mehr'). Die Messung vom 2026-08-16 betrifft knowledge_search() im MCP-Server, nicht den Recall-Haken.",
+  "b_trigramm_or": "TEILWEISE. Der OR-Fund ist tatsaechlich kein Filter mehr (877 von 878 erlaubten Knoten, 1155 von 1180 Lehren). Aber er WAECHST durch den Import nicht -- die 951 Zeilen sind per gattung ausgeschlossen. Was wirkt, ist die bm25-Bewertung ueber die gewachsene FTS5-Tabelle. Das ist Ausloeser, nicht Verlustort.",
+  "c_etwas_anderes": "HAELT. Der Verlustort ist die severity-primaere Umsortierung der Lehren unmittelbar vor MAX_LESSONS."
+ },
+ "behebbar_ohne_kalibrierte_zahl": {
+  "antwort": "Ja, an dieser Stufe. Betroffen ist eine SORTIERREIHENFOLGE, keine der kalibrierten Zahlen (0,65 / MIN_HITS=3 / NOISE_FLOOR_MAD_MULT / MAX_NODES / MAX_LESSONS bleiben unberuehrt).",
+  "widerspruch_im_code": "Der Kommentar im zweiten Zweig derselben Funktion (knowledge_recall_hook.py ~Zeile 1400) sagt woertlich: 'bm25 (Kanal 1, via Radar) bleibt die primaere Reihenfolge (stabiler Sort) -- Severity/Haeufigkeit brechen nur noch echte Gleichstaende.' Der Code tut das NICHT: severity ist Primaerschluessel, in BEIDEN Zweigen. Die Absicht des Kommentars entspricht genau der Gegenprobe.",
+  "nicht_gebaut": "Bewusst nichts geaendert. Diese Diagnose misst EINE Anfrage; die Wirkung der Umsortierung auf die uebrigen 34 Faelle ist ungemessen. Wer sie entfernt, braucht vorher einen vollen Korpuslauf A/B -- den kann nur der Hauptfaden fahren."
+ },
+ "ausgeschlossen": [
+  "Gattung als Ursache: nachgeprueft, nicht geglaubt -- lessons_fts, knowledge_embeddings und die Zahl der erlaubten Knoten/Lehren sind in A und B identisch; der Gattungsfilter wirkt vollstaendig.",
+  "Bedeutungskanal: byte-identisch in A und B (Ziel-Rang 78, Kosinus 0,5414597878374615 in beiden).",
+  "Enthaltungsschwelle: greift in beiden nicht (Kandidaten mit hoeherem Kosinus vorhanden).",
+  "Namensweg (P18): keine Anrede im Text, eigennamen()=[] in beiden -- byte-gleich.",
+  "Explore: rand=1.0 > EXPLORE_RATE=0.15, zieht nie.",
+  "Die gemeinsame Kandidatenkappung als VERLUSTORT: das Ziel ist in beiden Bestaenden in final_ids[:17] enthalten. Sie ist nur der Ausloeser (Mischung 10/7 -> 9/8), deckungsgleich mit dem widerlegten Bau aus 2268d155.",
+  "Der Fremdbestand selbst im Ergebnis: 0 Katalogtreffer, wie in runs/einrichtung_2026-08-21.json."
+ ],
+ "was_fehlt": "Ein voller Korpuslauf A/B mit deaktivierter Severity-Umsortierung (35 Faelle, kern/abrufguete.py gegen beide Kopien). Ohne ihn ist belegt, wo die EINE Lehre verlorengeht, nicht, ob die Gegenprobe die Gesamtquote hebt oder senkt.",
+ "fundstellen": {
+  "verlustort": "haken/knowledge_recall_hook.py:1327 (aktiver S9-Zweig) -- scored.sort(key=lambda s: s[1:3], reverse=True), unmittelbar vor scored[:MAX_LESSONS]",
+  "gleicher_sort_im_inaktiven_zweig": "haken/knowledge_recall_hook.py:1418, dort mit dem Kommentar, der das Gegenteil behauptet",
+  "kandidatenbau": "haken/suchpfad_abruf.py::kandidaten()",
+  "gattungsfilter": "kern/gattung_filter.py: SQL_ARBEITSBESTAND_NUR"
+ }
+}
