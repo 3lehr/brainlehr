@@ -35,6 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "kern"))
 import speicher  # noqa: E402
+import gegenstand  # noqa: E402
 
 ZUSTAENDE = ("offen", "erledigt", "abgelehnt", "ueberholt")
 
@@ -85,10 +86,16 @@ def markiere(path: str, stand: str, grund: str | None = None, db: Path | None = 
             raise ValueError(f"kein Knoten unter path={path!r}")
 
 
+ROLLE_ZUSTAENDIG = "zustaendig"
+
+
 def terminieren(path: str, *, faellig_am: str | None = None,
-                zustaendig: str | None = None, db: Path | None = None) -> None:
+                zustaendig: str | None = None, zustaendig_gegenstand: str | None = None,
+                beleg: str | None = None, ts: str | None = None,
+                db: Path | None = None) -> None:
     """Setzt Faelligkeitsdatum und/oder Zustaendigen fuer GENAU einen Vorgang
-    (P17, docs/PLAN_NAECHSTE_STUFE_2026-08-21.md Abschnitt 3.2/9).
+    (P17, docs/PLAN_NAECHSTE_STUFE_2026-08-21.md Abschnitt 3.2/9; Strang B4,
+    Auftrag 2026-08-21: Gegenstands-Achse statt Namenstext).
 
     Absichtlich NICHT Teil von markiere(): eine Frist kommt haeufig
     NACHTRAEGLICH zu einem bestehenden Vorgang, ohne dass sich sein Zustand
@@ -98,23 +105,113 @@ def terminieren(path: str, *, faellig_am: str | None = None,
 
     Format von faellig_am wird vom Trigger geprueft (schema.sql), nicht hier
     doppelt -- dieselbe Haltung wie markiere() gegenueber forderung_stand.
-    zustaendig laeuft durch speicher.normiere_akteur() wie jedes andere
-    Akteursfeld im Haus (access_log.actor u.a.) -- Gegenstands-Achse geprueft
-    und verworfen, siehe Modulkopf/schema.sql-Kommentar.
+
+    ZUSTAENDIGER, ZWEI WEGE (der Rueckweg aus dem Auftrag: ein Zustaendiger,
+    der noch kein Gegenstand ist, bleibt eintragbar, ohne dass jemand einen
+    Gegenstand erfindet):
+
+    - `zustaendig_gegenstand` (eine Gegenstands-ID) bindet den Vorgang direkt
+      an einen bestehenden Gegenstand ueber gegenstand.bezug_setzen() (Rolle
+      `ROLLE_ZUSTAENDIG`). Braucht `beleg` und `ts` -- wie jede Schreibung
+      ueber kern/gegenstand.py. Der Namenstext (`forderung_zustaendig`) wird
+      dabei NICHT angefasst; zustaendiger_von() bevorzugt beim Lesen den
+      Gegenstand-Bezug, und eine spaetere Umbenennung des Gegenstands
+      aendert die Auffindbarkeit nicht (das ist der ganze Punkt von
+      ADR-028/kern/gegenstand.py).
+    - `zustaendig` (ein Name) versucht, MIT beleg+ts, denselben Weg ueber
+      gegenstand.aufloesen(): genau ein Treffer -> Bezug wie oben. Kein
+      Treffer -> Rueckweg, der Name landet als Freitext in
+      forderung_zustaendig (normiere_akteur()) wie bisher -- ohne beleg/ts
+      passiert IMMER nur das, unveraendert gegenueber dem Altverhalten.
+      MEHRERE Treffer werden NICHT aufgeloest (ein Name ist kein Schluessel,
+      kern/gegenstand.py) -- das ist der Negativtest: zwei Personen desselben
+      Namens bleiben unterscheidbar, indem der Aufruf scheitert und
+      `zustaendig_gegenstand` verlangt.
 
     ponytail: kein Weg, ein einmal gesetztes Feld wieder auf NULL zu loeschen
     -- add when ein Fall das verlangt."""
-    zustaendig = speicher.normiere_akteur(zustaendig)
+    if zustaendig and zustaendig_gegenstand:
+        raise ValueError("zustaendig und zustaendig_gegenstand nicht gleichzeitig -- "
+                         "sonst ist unklar, welcher gewinnt")
+
+    freitext = None
     with speicher.schreiben(db) as con:
+        if zustaendig_gegenstand:
+            if not beleg or not ts:
+                raise ValueError("zustaendig_gegenstand braucht beleg und ts")
+            gegenstand.ensure_schema(con)
+            gegenstand.bezug_setzen(con, path, zustaendig_gegenstand, beleg=beleg, ts=ts,
+                                    rolle=ROLLE_ZUSTAENDIG)
+        elif zustaendig and beleg and ts:
+            gegenstand.ensure_schema(con)
+            treffer = gegenstand.aufloesen(con, zustaendig, ts=ts)
+            if len(treffer) == 1:
+                gegenstand.bezug_setzen(con, path, treffer[0]["id"], beleg=beleg, ts=ts,
+                                        rolle=ROLLE_ZUSTAENDIG)
+            elif len(treffer) > 1:
+                raise gegenstand.MehrdeutigerName(
+                    f"{zustaendig!r} bezeichnet {len(treffer)} Gegenstaende -- "
+                    "zustaendig_gegenstand mit der gewuenschten ID mitgeben")
+            else:
+                freitext = speicher.normiere_akteur(zustaendig)
+        elif zustaendig:
+            freitext = speicher.normiere_akteur(zustaendig)
+
         cur = con.execute(
             "UPDATE knowledge_nodes SET "
             "forderung_faellig_am = COALESCE(?, forderung_faellig_am), "
             "forderung_zustaendig = COALESCE(?, forderung_zustaendig) "
             "WHERE path = ?",
-            (faellig_am, zustaendig, path),
+            (faellig_am, freitext, path),
         )
         if cur.rowcount == 0:
             raise ValueError(f"kein Knoten unter path={path!r}")
+
+
+def zustaendiger_von(path: str, db: Path | None = None) -> dict | None:
+    """Wer ist fuer diesen Vorgang zustaendig -- Gegenstand-Bezug ZUERST,
+    Freitext als Rueckweg. `None` heisst: keiner von beiden gesetzt.
+
+    Der Gegenstand-Bezug gewinnt bewusst, auch wenn parallel noch ein alter
+    Freitext in der Spalte steht -- genau das ist der Haupttest des Auftrags:
+    eine Umbenennung des Gegenstands aendert diese Antwort NICHT, ein
+    Freitext haette das nie geleistet."""
+    with speicher.lesen(db) as con:
+        try:
+            row = con.execute(
+                "SELECT gegenstand_id FROM gegenstand_bezug WHERE node_path=? AND rolle=?"
+                " ORDER BY seit DESC LIMIT 1", (path, ROLLE_ZUSTAENDIG)).fetchone()
+        except sqlite3.OperationalError:
+            row = None
+        if row:
+            gid = row[0]
+            return {"gegenstand_id": gid, "name": gegenstand.aktueller_name(con, gid),
+                    "quelle": "gegenstand"}
+        r = con.execute("SELECT forderung_zustaendig FROM knowledge_nodes WHERE path=?",
+                        (path,)).fetchone()
+        if r and r[0]:
+            return {"gegenstand_id": None, "name": r[0], "quelle": "freitext"}
+        return None
+
+
+def vorgaenge_des_zustaendigen(gegenstand_id: str, db: Path | None = None) -> list[dict]:
+    """Die Gegenrichtung: welche Vorgaenge haengen an diesem Gegenstand?
+    Leere Liste heisst 'keiner gebunden', nicht 'unbekannter Gegenstand' --
+    dieselbe Unschaerfe wie ueberall im Haus, siehe forderung_stand IS NULL."""
+    with speicher.lesen(db) as con:
+        try:
+            pfade = [r[0] for r in con.execute(
+                "SELECT node_path FROM gegenstand_bezug WHERE gegenstand_id=? AND rolle=?",
+                (gegenstand_id, ROLLE_ZUSTAENDIG)).fetchall()]
+        except sqlite3.OperationalError:
+            return []
+        if not pfade:
+            return []
+        platzhalter = ",".join("?" * len(pfade))
+        rows = con.execute(
+            f"SELECT path, title, forderung_stand, forderung_faellig_am FROM knowledge_nodes"
+            f" WHERE path IN ({platzhalter}) ORDER BY path", pfade).fetchall()
+        return [dict(r) for r in rows]
 
 
 def offene(db: Path | None = None) -> list[dict]:
@@ -278,6 +375,9 @@ def main() -> None:
     p.add_argument("--terminieren", metavar="PATH")
     p.add_argument("--faellig-am", default=None, metavar="ISO-DATUM")
     p.add_argument("--zustaendig", default=None)
+    p.add_argument("--zustaendig-gegenstand", default=None, metavar="GEGENSTAND_ID")
+    p.add_argument("--beleg", default=None)
+    p.add_argument("--ts", default=None, metavar="ISO-ZEIT")
     p.add_argument("--offene", action="store_true")
     p.add_argument("--selftest", action="store_true")
     p.add_argument("--db", type=Path, default=None)
@@ -292,8 +392,10 @@ def main() -> None:
         print(f"markiert: {path} -> {stand}")
         return
     if a.terminieren:
-        terminieren(a.terminieren, faellig_am=a.faellig_am, zustaendig=a.zustaendig, db=a.db)
-        print(f"terminiert: {a.terminieren}  faellig_am={a.faellig_am}  zustaendig={a.zustaendig}")
+        terminieren(a.terminieren, faellig_am=a.faellig_am, zustaendig=a.zustaendig,
+                   zustaendig_gegenstand=a.zustaendig_gegenstand, beleg=a.beleg, ts=a.ts, db=a.db)
+        print(f"terminiert: {a.terminieren}  faellig_am={a.faellig_am}  zustaendig={a.zustaendig}"
+              f"  zustaendig_gegenstand={a.zustaendig_gegenstand}")
         return
     if a.offene:
         for o in offene(a.db):

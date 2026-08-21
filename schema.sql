@@ -328,13 +328,29 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
     -- Negativtest 1). Ein Datum in der Vergangenheit ist ausdruecklich
     -- erlaubt (Fristen laufen ab); geprueft wird nur die FORM.
     forderung_faellig_am TEXT,
-    -- forderung_zustaendig: freier Text (wie access_log.actor), nicht die
-    -- Gegenstands-Achse (kern/gegenstand.py). BEFUND: kern/gegenstand_plan-
-    -- kennungen.py haelt fest, dass am selben Tag bewusst PLANKENNUNGEN statt
-    -- PERSONEN als Erstinhalt der Achse gewaehlt wurden, weil an Personen
-    -- (anders als an Plandateien) Bestand Dritter haengt. Ein Zustaendiger
-    -- fuer eine Forderung ist typischerweise eine Person -- dieselbe
-    -- Zurueckhaltung gilt hier. Normiert ueber speicher.normiere_akteur().
+    -- forderung_zustaendig: NUR NOCH der Rueckweg, kein Erstweg mehr (Strang
+    -- B4, Auftrag 2026-08-21, berichtigt die vorherige Begruendung hier).
+    --
+    -- BERICHTIGUNG: Bis 2026-08-21 stand hier, ein Zustaendiger bleibe
+    -- Namenstext, weil kern/gegenstand_plankennungen.py am 2026-08-20 bewusst
+    -- PLANKENNUNGEN statt PERSONEN als ERSTANWENDUNG der Gegenstands-Achse
+    -- gewaehlt hatte. Das war die Wahl der Erstanwendung, kein Verbot --
+    -- Commit 81e10b9f (P15, Dokumentenablage) hat am 2026-08-21 die ersten
+    -- PERSONEN auf dieselbe Achse gebracht (`gegenstaende.art='person'`,
+    -- gebunden ueber gegenstand_bezug), und genau denselben Weg nutzt jetzt
+    -- auch ein Zustaendiger.
+    --
+    -- Der ERSTE Weg ist seither melder/forderung_vorgang.terminieren() mit
+    -- `zustaendig_gegenstand` (direkte Gegenstands-ID) oder `zustaendig` +
+    -- `beleg`/`ts` (Namensaufloesung ueber kern/gegenstand.py, Bindung per
+    -- gegenstand_bezug, Rolle 'zustaendig') -- eine Umbenennung des
+    -- Gegenstands aendert die Auffindbarkeit des Vorgangs dann NICHT mehr.
+    -- Diese Spalte bleibt der RUECKWEG dafuer: ein Zustaendiger, der (noch)
+    -- kein Gegenstand ist, bleibt als freier Text eintragbar (wie
+    -- access_log.actor, normiert ueber speicher.normiere_akteur()), OHNE
+    -- dass ein Gegenstand dafuer erfunden werden muss. forderung_vorgang.
+    -- zustaendiger_von() liest den Gegenstand-Bezug zuerst und faellt erst
+    -- danach auf diese Spalte zurueck.
     forderung_zustaendig TEXT
 );
 

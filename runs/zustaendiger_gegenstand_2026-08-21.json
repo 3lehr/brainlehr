@@ -1,0 +1,65 @@
+{
+  "auftrag": "Strang B4, 2026-08-21: forderung_zustaendig verweist auf Gegenstand statt Name",
+  "bezugspunkt_commit": "668b64c0",
+  "erstellt_am": "2026-08-21T12:03:43+0200",
+  "vorbedingung_geprueft": {
+    "aussage": "P15 (Commit 81e10b9f) hat Personen auf die Gegenstands-Achse gebracht",
+    "befehl": "select art, count(*) from gegenstaende group by 1",
+    "ergebnis": {
+      "anwendung": 1, "einstellung": 1, "liegenschaft": 1,
+      "person": 1, "plankennung": 56, "unternehmen": 1
+    },
+    "erfuellt": true
+  },
+  "altbestand_geprueft": {
+    "frage": "wie viele Vorgaenge tragen heute einen Zustaendigen",
+    "befehl": "select count(*) from knowledge_nodes where forderung_zustaendig is not null and forderung_zustaendig != ''",
+    "ergebnis": 0,
+    "forderung_stand_verteilung": {"erledigt": 1},
+    "folgerung": "Umstellung ist folgenlos fuer den Altbestand -- keine Handarbeit noetig, keine geratene Zuordnung"
+  },
+  "geaenderte_dateien": [
+    "kern/gegenstand.py",
+    "melder/forderung_vorgang.py",
+    "schema.sql",
+    "tests/test_zustaendiger_gegenstand.py"
+  ],
+  "loesung": {
+    "kern": "kein neues Schema -- Wiederverwendung der bestehenden gegenstand_bezug-Tabelle (kern/gegenstand.py) mit Rolle 'zustaendig'. forderung_zustaendig bleibt als Rueckweg (Freitext) bestehen.",
+    "melder_forderung_vorgang_terminieren": "neue optionale Parameter zustaendig_gegenstand (direkte Gegenstands-ID) und beleg/ts (fuer Namensaufloesung ueber gegenstand.aufloesen()). Ohne beleg/ts: unveraendertes Altverhalten (reiner Freitext). Mehrdeutiger Name -> gegenstand.MehrdeutigerName, kein stiller Rueckfall auf Freitext.",
+    "neue_funktionen": ["forderung_vorgang.zustaendiger_von(path)", "forderung_vorgang.vorgaenge_des_zustaendigen(gegenstand_id)"],
+    "rueckweg_fuer_nicht_gegenstaende": "forderung_zustaendig (Freitext, normiere_akteur()) bleibt eintragbar, wenn der Name keinen Gegenstand hat oder beleg/ts fehlen -- kein erzwungenes Anlegen. zustaendiger_von() bevorzugt beim Lesen den Gegenstand-Bezug und faellt erst danach auf den Freitext zurueck.",
+    "kern_gegenstand_erweiterung": "kern/gegenstand.py NUR erweitert (nicht umgebaut): neue Funktion aktueller_name(conn, gid, art_des_namens='ruf') zur Wiederverwendung der bereits zweimal inline stehenden Abfrage."
+  },
+  "schema_kommentar_ueberholt": {
+    "gefunden": true,
+    "fundstelle": "schema.sql, Zeile ~331-338 (vor der Aenderung)",
+    "aussage_vorher": "forderung_zustaendig bleibe Namenstext, weil Personen (anders als Plankennungen) Bestand Dritter tragen -- verwechselte die Wahl der Erstanwendung (Plankennungen) mit einem Verbot fuer Personen",
+    "berichtigt": true,
+    "neue_aussage": "forderung_zustaendig ist NUR NOCH der Rueckweg; der Erstweg laeuft seit Commit 81e10b9f (P15, Personen auf der Gegenstands-Achse) ueber gegenstand_bezug (Rolle 'zustaendig'), siehe forderung_vorgang.terminieren()/zustaendiger_von()"
+  },
+  "abnahme": {
+    "haupttest_umbenennung_aendert_auffindbarkeit_nicht": "rot_vor_gruen: an 668b64c0 (git-checkout-Probe der drei geaenderten Dateien) 8 von 9 neuen Tests rot (TypeError/AttributeError -- Funktionen existierten nicht), git-show-Test zeigt zustaendig_gegenstand/zustaendiger_von/vorgaenge_des_zustaendigen fehlten im Quelltext an 668b64c0. Danach gruen, parametrisiert ueber frisch UND gewachsen.",
+    "negativtest_gleichnamige_personen": "gruen -- zwei Gegenstaende 'Mira' bleiben unterscheidbar: Namensaufloesung wirft gegenstand.MehrdeutigerName, kein stiller Rueckfall auf Freitext; explizite zustaendig_gegenstand-ID loest auf",
+    "gegenprobe_beide_richtungen": "gruen -- zustaendiger_von(path) und vorgaenge_des_zustaendigen(gid), parametrisiert frisch/gewachsen; fremder Gegenstand liefert leere Liste",
+    "beide_ausgangszustaende": "gruen -- frisch (schema.sql direkt), gewachsen (schema.sql ohne dass gegenstand.ensure_schema() je lief, also ohne gegenstaende/gegenstand_namen/gegenstand_bezug-Tabellen -- Normalfall jeder bestehenden Instanz vor diesem Auftrag)",
+    "rueckweg_ohne_gegenstand": "gruen -- Freitext bleibt ohne beleg/ts oder bei unbekanntem Namen eintragbar, ohne dass ein Gegenstand erfunden wird (test_rueckweg_freitext_ohne_gegenstand_bleibt_moeglich)"
+  },
+  "pflichtsuite_vier_dateien": {
+    "befehl": "python3 -m pytest tests/test_forderung_faelligkeit.py tests/test_forderung_stand.py tests/test_gegenstand_plankennungen.py tests/test_dokumentenablage.py -q",
+    "ergebnis": "53 passed"
+  },
+  "gesamtlauf": {
+    "befehl": "python3 -m pytest tests/test_zustaendiger_gegenstand.py tests/test_forderung_faelligkeit.py tests/test_forderung_stand.py tests/test_gegenstand_plankennungen.py tests/test_dokumentenablage.py -q",
+    "ergebnis": "62 passed"
+  },
+  "selbsttests": {
+    "kern/gegenstand.py --selftest": "gruen",
+    "melder/forderung_vorgang.py --selftest": "gruen",
+    "kern/schema_nachzug.py --selftest": "gruen"
+  },
+  "abweichungen": [
+    "git stash war durch Repo-Guard gesperrt -- Ersatzweg fuer die Rot-Probe: Dateien vor der Aenderung nach /private/tmp kopiert, mit 'git checkout HEAD -- <datei>' auf 668b64c0-Stand zurueckgesetzt, Testlauf (rot), Dateien aus der Kopie zurueckgespielt (gruen). Kein Arbeitsbaum-Verlust fremder Sitzungen.",
+    "integrations/hermes/plugin/brainlehr_provider.py und tests/test_hermes_plugin.py zeigen als geaendert in git status -- stammen NICHT aus dieser Sitzung (Parallelauftrag, siehe Vorgabe 'integrations/hermes/ nicht anfassen'), unberuehrt gelassen."
+  ]
+}

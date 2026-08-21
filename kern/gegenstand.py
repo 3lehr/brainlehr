@@ -262,6 +262,17 @@ def bezug_setzen(conn: sqlite3.Connection, node_path: str, gid: str, *,
                  (node_path, gid, rolle, beleg, ts))
 
 
+def aktueller_name(conn: sqlite3.Connection, gid: str, art_des_namens: str = "ruf") -> str | None:
+    """Der heute gueltige Name einer Namensart -- dieselbe Abfrage, die in
+    aufloesen()/bezuege_des_knotens() schon zweimal inline steht, hier fuer
+    Aufrufer, die nur die ID haben (z.B. eine Rueckrichtung wie
+    forderung_vorgang.zustaendiger_von())."""
+    r = conn.execute(
+        "SELECT name FROM gegenstand_namen WHERE gegenstand_id=? AND art_des_namens=?"
+        " AND gilt_bis IS NULL ORDER BY gilt_ab DESC LIMIT 1", (gid, art_des_namens)).fetchone()
+    return r[0] if r else None
+
+
 def bezuege_des_knotens(conn: sqlite3.Connection, node_path: str) -> list[dict]:
     """Welche Gegenstaende betrifft dieser Eintrag? Leere Liste heisst
     'keiner gebunden' und wird als solche ausgewiesen, nicht geraten."""
