@@ -75,12 +75,31 @@ je eigenem Gedaechtnis, zusammen mit dem fehlenden Gesamtdeckel), 2 CHANCE
 (nativer Browser stuetzt P12; Artifacts-Dashboard als Vergleichsobjekt zu P15,
 ohne erkennbares Herkunftskonzept), 5 EGAL.
 
-## Offen
+## FALLE: Testvergleiche ueber Commits sind hier ungueltig (`L-1d7c3e`)
 
-- **28 rot / 6 Fehler** im Vollauf ueber `tests/` (2561 gruen). Die Behauptung
-  "alle vorbestehend" ist NICHT belegt — der erste Vergleich stuetzte sich auf
-  eine mit `tail -10` abgeschnittene Liste und traegt nicht. Vollauf mit `-rf`
-  laeuft.
+**28 rot / 6 Fehler** im Vollauf (2561 gruen), verteilt auf 22 Dateien. Wer
+davon "vorbestehend" ist, laesst sich mit einem Commit-Vergleich NICHT
+beantworten: Mehrere dieser Tests lesen den lebenden, von mehreren Sitzungen
+geteilten Bestand. **Belegt:** dieselben Dateien fallen im Basis-Arbeitsbaum
+auf `42c32f7d` jetzt durch, 40 Minuten zuvor nicht — bei identischem Code.
+
+Beide bisherigen Aussagen sind damit hinfaellig: "alle vorbestehend"
+(`a5b9d16a`) ebenso wie meine Widerlegung "sieben neu gebrochen". Gueltig wird
+so ein Vergleich nur mit EINGEFRORENER Kopie des Bestands. Billige Gegenprobe:
+den unveraenderten Ausgangsstand zweimal mit Abstand fahren — weichen die
+Laeufe ab, misst der Vergleich nicht den Code.
+
+Behoben wurden dabei trotzdem vier echte Sachen (`e9fd3d38`): lokale Zeit
+statt UTC in `kern/dokumentenablage.py`, Mikrosekunden in
+`kern/session_checkpoint.py`, ein erledigter `xfail(strict=True)`, und eine
+Zusicherung in `haken/mehrstufiger_abruf.py`, die nach `c7f6dcbe` den Fehler
+festgeschrieben haette.
+
+**Zurueckgenommen:** eine Erweiterung von `tests/absolute_pfade_basis.json` um
+315 Eintraege — Sammelfreigabe mit je eigener Begruendung ist nicht
+nachpruefbar (`L-95d30e`).
+
+## Offen
 - `melder/vermutungswaechter.py` kann Zitat nicht von Behauptung unterscheiden.
 - `BDW-P05` braucht eine Definition von "Gueltigkeit" je Art.
 - Ungemessen: ob jeder Hermes-Bot einen eigenen `prefetch_all` ausloest.
