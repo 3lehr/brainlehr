@@ -195,6 +195,41 @@ als eigene Achse behandelt -- zwei Normen verschiedener Art konkurrieren
 nicht, egal welchen Rang sie tragen. Folgenlos, weil `norm_art` bei 1 von
 174 Normen mit Rang gesetzt ist. Wird aktiv, sobald das Feld gepflegt wird.
 
+## §9 C ist gebaut, AC2 nur zur Haelfte -- und die Ursache liegt tiefer
+
+Der Einrichtungsassistent laeuft (`kern/einrichtung.py`, Werkzeug
+`einrichtung_starten`). BDW-P11-AC1 und BDW-P12 sind belegt. **AC2 nicht.**
+
+Gemessen ueber `kern/abrufguete.py` auf Kopien des echten gewachsenen
+Bestands, gegen denselben Fragensatz, vier Laeufe:
+
+| | Nulllinie | Wiederholung | als `nachschlagewerk` | als `arbeitsbestand` |
+|---|---|---|---|---|
+| Knoten | 7/20 | 7/20 | 7/20 | 7/20 |
+| Lehren | 7/15 | 7/15 | **6/15** | **6/15** |
+
+Die Gattung tut, was sie soll: **kein einziger** der 951 Katalogknoten taucht
+in irgendeinem Ergebnis auf. Trotzdem faellt eine Lehre heraus, 14/35 auf
+13/35.
+
+**Die Ursache ist gemessen, nicht vermutet, und die vierte Spalte ist der
+Beweis:** Dieselbe Menge als `arbeitsbestand` liefert EXAKT dieselbe Zahl.
+Die Gattung wirkt am **Filter**, nicht am **Index**. `knowledge_fts` nimmt
+die 952 Zeilen gattungsblind auf, bm25 ist korpusrelativ, die Rangfolge der
+ueberlebenden Knoten verschiebt sich, und ueber den gemeinsamen
+Kandidatendeckel faellt eine Lehre heraus. Der Wiederholungslauf auf
+identischen Kopien schliesst Rauschen aus.
+
+**Damit ist der Satz aus dem Betriebsprofil-Plan widerlegt**, ein Katalog als
+`nachschlagewerk` verduenne die eigene Trefferquote nicht. Er verduennt sie
+-- nur nicht ueber die Treffer, sondern ueber die Rangfolge.
+
+**Nicht behoben, und ausdruecklich als eigene Entscheidung:** Die Abhilfe
+(eigener Index je Gattung oder gattungsgefilterte bm25-Anfrage) liegt im
+Abrufkern und wuerde jede dort kalibrierte Messung entwerten -- unter anderem
+die Schwelle 0,65 aus einer Erhebung ueber zwei Millionen Paare. Das ist ein
+eigener Auftrag mit eigener Nulllinie, kein Nebenzug der Einrichtung.
+
 ## §6 Verlauf
 
 * 2026-08-21T00:33 -- Plan angelegt, Ist-Stand gemessen, Welle 1 vorbereitet.
@@ -251,3 +286,4 @@ nicht, egal welchen Rang sie tragen. Folgenlos, weil `norm_art` bei 1 von
     ausschliesslich committet, was die Agenten dieses Laufs angefasst haben.
 * 2026-08-21T01:30 -- B2 fertig (`56602630`). A2 nach Messung verworfen, siehe §7. Vorrichtungsfehler aus B1 behoben (`8d2f99ae`); die sechs uebrigen Fehler derselben Datei sind vorbestehend, in einem Arbeitsbaum auf 1611398b nachgewiesen.
 * 2026-08-21T02:00 -- F fertig (`c9c5ebec`), planmitschrieb verdrahtet (`3cd4103c`), A1-Abnahme nachgeholt (§8). Offen nur noch B3, danach C.
+* 2026-08-21T03:00 -- C fertig (`8c52aeaf`), damit alle acht Straenge abgearbeitet. Katalog fortgeschrieben (`2869ea8a`): sieben Gates von NOT RUN abgeloest, drei bleiben (P11/P12 jetzt durch C, E24 beim Betreiber).
