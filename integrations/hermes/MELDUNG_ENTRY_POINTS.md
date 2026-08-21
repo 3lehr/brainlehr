@@ -76,64 +76,42 @@ this is only about the discovery path. Symlink installation works; the
 ---
 ---
 
-# Zweite Meldung: kein Kanal für eine Statuszeile an den Menschen
+# ZURÜCKGEZOGEN — die zweite Meldung war falsch
 
-**Anlass, aus dem Betrieb:** In Claude Code zeigt brainlehrs Abruf bei jedem
-Prompt eine Zeile wie „eingespielt: Lehren L-14acea, L-1228cf, L-ce1bd8".
-Unter Hermes fehlt sie — der Nutzer sieht nicht, ob der Speicher etwas
-geliefert hat oder geschwiegen.
+**Nicht senden.** Der Befund „Hermes hat keinen Kanal für eine Statuszeile"
+ist **widerlegt**, und zwar durch eigenes Nachsehen auf Nachfrage des
+Betreibers („bist du dir da 100 %? könnten wir es mit unserem plugin
+nachrüsten?").
 
-**Warum das mehr ist als Kosmetik:** Gemessen liefert unser Abruf in 34,1 %
-der Fälle nichts. Ohne sichtbare Zeile sind „hat nichts gefunden" und „wurde
-gar nicht gefragt" für den Nutzer ununterscheidbar — und ein Speicher, dessen
-Schweigen man nicht von seinem Ausfall unterscheiden kann, ist im Zweifel
-wertlos.
+**Was ich übersehen hatte, an zwei Stellen:**
 
-**Gemessener Stand** (Klon `643910afe3`):
-* `agent/memory_provider.py` — keine `notify`/`status`/`emit`/`inform`-Methode
-  in der ABC. `prefetch()` hat genau einen Rückgabewert, und der geht an das
-  MODELL, nicht auf den Bildschirm.
-* `hermes_cli/plugins.py` — `PluginContext` bietet ausschließlich
-  `register_*` (Werkzeuge, Befehle, Anbieter). Kein Kanal zum Menschen.
+1. **`agent/agent_init.py:1735-1737`** — Hermes reicht einem Speicher-Anbieter
+   in `initialize()` zwei Rückrufe mit, sobald die Plattform `cli` ist:
+   ```python
+   _init_kwargs["warning_callback"] = agent._emit_warning
+   _init_kwargs["status_callback"] = agent._emit_status
+   ```
+2. **`run_agent.py:960`** beschreibt genau das Gewünschte: *„Emit a lifecycle
+   status message to both CLI and gateway channels. CLI users see the message
+   via `_vprint(force=True)` so it is always visible regardless of
+   verbose/quiet mode."*
 
-## Titel
+Der Kanal existiert also und ist für Anbieter gedacht. Zusätzlich hat
+`PluginContext` eine Methode `inject_message` — für unseren Zweck ungeeignet
+(sie startet einen Zug oder unterbricht einen laufenden), aber sie widerlegt
+ebenfalls die pauschale Aussage „ausschließlich `register_*`".
 
-`No way for a plugin to surface a status line to the user`
+**Warum ich es nicht gefunden habe, und das ist die Lehre:** Ich habe die
+**ABC** und die **öffentlichen Methoden** abgesucht — `status_callback` steht
+in keiner von beiden. Es kommt als `kwarg` in `initialize()` an, und die
+ABC-Dokumentation zählt unter „kwargs may also include" sieben andere Namen
+auf, diesen aber nicht. Eine Fähigkeit, die nur im **Aufrufer** steht, findet
+nicht, wer beim Aufgerufenen sucht.
 
-## Text
+**Was daraus folgt:** Kein Beitrag an Hermes nötig. Die Statuszeile wird im
+eigenen Plugin nachgerüstet — siehe `brainlehr_provider.py`.
 
-A memory provider can inject context via `prefetch()`, but that string goes to
-the model. There seems to be no way to put a short line in front of the *user*
-— "recalled 3 lessons" or, just as important, "nothing found".
+**Die Einschränkung, die dabei gilt:** Die Rückrufe kommen nur bei
+`platform == "cli"`. Im Gateway-, Telegram- oder Discord-Betrieb sind sie
+nicht dabei; dort muss der Anbieter ohne auskommen, ohne zu stürzen.
 
-Claude Code has this: a hook returns a `systemMessage` field alongside the
-injected context, and the client renders it as one line. It is a small thing
-that turns out to matter: our recall returns nothing in 34% of turns, and
-without that line "found nothing" and "was never asked" look identical to the
-user. A memory whose silence you cannot distinguish from its failure is hard
-to trust.
-
-I looked at `MemoryProvider` (no `notify`/`status`-style method) and at
-`PluginContext` (`register_*` only). If there's an existing path I missed, a
-pointer is all I need.
-
-If not, this would be a small widening of the generic surface — something
-like an optional `ctx.notify(text)` or a second return channel on `prefetch()`
-that plugins may use and the CLI/TUI may render or ignore. It would serve any
-plugin that does background work the user should know happened, not just
-memory ones.
-
-Happy to open a PR if you tell me which shape you'd accept.
-
-**Verified against** `643910afe3`.
-
----
-
-## Was wir bis dahin tun
-
-Nichts nachbauen, das auf dem Modell beruht. Ein Hinweis im `prefetch()`-Text
-wäre eine Bitte an das Modell, ihn zu wiederholen — und damit genau die
-Selbstauskunft, der dieses Haus nicht traut.
-
-Was es stattdessen gibt und ehrlich ist: `hermes brainlehr pruefen` aus
-`cli.py` beantwortet die Frage auf Nachfrage. Weniger bequem, aber wahr.
