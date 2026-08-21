@@ -34,6 +34,12 @@ EXPECTED = {
     "BDW-P12": "herkunftstreu",
     "BDW-P13": "vorlauf",
     "BDW-P14": "englisch",
+    "BDW-P15": "ablage",
+    "BDW-P16": "gegenstand",
+    "BDW-P17": "faelligkeit",
+    "BDW-P18": "namensfrage",
+    "BDW-P19": "oberflaechensprache",
+    "BDW-P20": "grundbestand",
     "BDW-E22": "kreis",
     "BDW-E23": "je-kreis",
     "BDW-E24": "zweiter-faktor",
@@ -87,6 +93,12 @@ EXPECTED_LABELS = {
     "BDW-P12": "Fremdimporte erfinden KEINE Herkunft",
     "BDW-P13": "Quellen werden zur Laufzeit GESUCHT, nicht hinterlegt",
     "BDW-P14": "Schnittstelle, Feldnamen, Docstrings und Dokumentation werden englisch",
+    "BDW-P15": "brainlehr ist auch Dokumentenablage. Drei Schichten,",
+    "BDW-P16": "Wer oder was gemeint ist, ist",
+    "BDW-P17": "Was wann von wem zu tun",
+    "BDW-P18": "Eine Frage nach einer PERSON wird",
+    "BDW-P19": "Nutzersichtbare Texte folgen der Sprache des",
+    "BDW-P20": "Das Paket liefert KEINEN Wissensbestand mit",
     "BDW-E22": "Der Kreis steht VON ANFANG AN fest",
     "BDW-E23": "Geltung ist zweiseitig, sobald Kreise existieren",
     "BDW-E24": "der zweite liegt nicht auf demselben Geraet",
@@ -129,13 +141,27 @@ def test_root_catalog_decodes_all_operator_selections():
         # Mehrbenutzer-Piloten gebunden. Ein vertagtes Gate ist weder offen
         # (niemand arbeitet daran) noch belegt (nichts ist gemessen) -- es
         # als eines von beiden zu fuehren, waere in beide Richtungen falsch.
-        assert gate.startswith(("NOT RUN", "DEFERRED")) or any(
+        assert gate.startswith(("NOT RUN", "DEFERRED", "FUTURE")) or any(
             marke in gate for marke in ("PASS", "TEILWEISE", "FAIL")
         ), f"{requirement_id}: Gate weder offen noch vertagt noch belegt: {gate!r}"
         if gate.startswith("DEFERRED"):
             assert "BDW-C03" in gate or "Pilot" in gate, (
                 f"{requirement_id}: vertagt ohne Bedingung -- wann wird es wieder faellig?")
-        if not gate.startswith(("NOT RUN", "DEFERRED")):
+        # FUTURE ist seit 2026-08-21 die VIERTE Lage: nicht an den Piloten
+        # gebunden (das waere DEFERRED), sondern schlicht noch nicht
+        # gebraucht -- Betreiberwort zu BDW-E24: "als future markieren,
+        # brauchen wir noch nicht". Die Auflage bleibt trotzdem dieselbe,
+        # und sie ist der ganze Grund fuer die Lage: ein vertagter Punkt
+        # ohne Wiedervorlage ist nicht vertagt, sondern still abgeschafft.
+        if gate.startswith("FUTURE"):
+            # Klein- und Umschrift-blind: der Katalog schreibt "**Wieder
+            # faellig**", ein Suchmuster in Kleinschreibung haette das nie
+            # getroffen -- genau L-8fce9c, ein Waechter, der seine WOERTER
+            # prueft statt die Sache.
+            flach = gate.lower().replace("ä", "ae").replace("\u00e4", "ae")
+            assert "wieder faellig" in flach or "wieder fallig" in flach, (
+                f"{requirement_id}: FUTURE ohne Wiedervorlage -- was macht es wieder faellig?")
+        if not gate.startswith(("NOT RUN", "DEFERRED", "FUTURE")):
             assert "`" in gate, (
                 f"{requirement_id}: belegtes Gate ohne nachfahrbaren Pruefbefehl -- "
                 "eine Behauptung ohne Beleg ist schlimmer als ein ehrliches NOT RUN")
