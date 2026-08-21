@@ -1,0 +1,70 @@
+{
+  "auftrag": "P18",
+  "zeitpunkt": "2026-08-21T00:00:00+0200",
+  "bezugspunkt_commit": "2c37048f",
+  "produktivweg": "mehrstufiger_abruf.kandidaten_geschaltet(conn, frage, query_vec, MAX_NODES+MAX_LESSONS) mit MAX_NODES=10, MAX_LESSONS=7",
+  "ziele": [
+    "/frontend/buckeberg-design-guide-apple-hig",
+    "/ops/buckeberg-absenderrolle-und-empfaenger",
+    "/ops/buckeberg-zehn-einheiten-sind-in-jedem"
+  ],
+  "rot_vor_gruen": {
+    "beschreibung": "Beide Faelle ueber den echten Produktivweg gegen den unveraenderten Stand 2c37048f nachgerechnet, VOR jeder Aenderung an diesem Auftrag.",
+    "blosser_name": {
+      "frage": "Döldissen",
+      "treffer": 3,
+      "von": 3,
+      "kandidatenliste_nodes": 10,
+      "gefundene_ziele_raenge": [0, 1, 2]
+    },
+    "natuerliche_frage": {
+      "frage": "zeige mir alles was mit Frau Döldissen zu tun hat",
+      "treffer": 1,
+      "von": 3,
+      "kandidatenliste_nodes": 8,
+      "befund": "Kandidatenliste schrumpft von 10 auf 8 Knoten -- zwei der drei Ziele fallen aus der Liste, nicht nur im Rang zurueck. Rang 2 im vollen Satz-OR (_or_query) fiel auf 6 bzw. 20, weil 'Frau' einen ANDEREN Knoten (/stadtwerke/koeder-frau-elvira-quenzelbach-kd-nr) zusaetzlich zog und Fuellwoerter (zeige/mir/alles/mit/zu/tun/hat) den bm25-Rang gleichmaessig verduennten."
+    }
+  },
+  "ursache": "Alle drei Ziele stehen bereits im vollen OR-Fund (_or_query(text) ueber knowledge_fts) -- nicht fehlend, sondern verduennt: Rang 0/6/20 statt 0/1/2. Die Anrede 'Frau' ist selbst ein Treffer-Wort und zieht einen fachfremden Knoten (Frau Elvira Quenzelbach) vor die eigentlichen Ziele.",
+  "fix": {
+    "modul_neu": "kern/namensfrage.py",
+    "funktion": "eigennamen(text) -> list[str]",
+    "verfahren": "Anrede (Frau/Herr/Herrn/Familie) markiert den folgenden Eigennamen, wird selbst nie als Name behandelt. Kein Modell, Stdlib, Stoppwortliste aus kern/spracherkennung.py (DE+EN) wiederverwendet.",
+    "integration": "haken/suchpfad_abruf.py::kandidaten() -- _namenskandidaten() sucht NUR mit dem herausgeloesten Namen exakt (FTS, fold_de+_fts_phrase); _voranstellen() draengt die Treffer (a) im Stichwortkanal (keyword_ordered_ids) und (b) NACH der RRF-Fusion in final_ids vor, damit der Bedeutungskanal sie nicht verdraengt. Nichts wird entfernt, nur die Reihenfolge/der Deckel-Ausschnitt neu gezogen.",
+    "ausloesebedingung": "Nur bei erkannter Anrede -- 0 von 45 Faellen in runs/pruefkorpus.jsonl tragen eine, der bestehende Weg bleibt fuer jede Sachfrage byte-gleich."
+  },
+  "nach_dem_fix": {
+    "blosser_name": {"frage": "Döldissen", "treffer": 3, "von": 3},
+    "natuerliche_frage": {"frage": "zeige mir alles was mit Frau Döldissen zu tun hat", "treffer": 3, "von": 3}
+  },
+  "ac1_erfuellt": true,
+  "ac2_vollstaendigkeit": {
+    "methode": "LIKE '%öldissen%' OR '%oeldissen%' ueber ALLE Textspalten (title, summary, content, tags) UND ALLE Zeilen (auch zurueckgezogen=1/sensibel=1) von knowledge_nodes UND lessons_learned (description/root_cause/prevention).",
+    "befund": "Keine weiteren Vorkommen ausserhalb der drei bekannten Ziele gefunden. Alle drei sind zurueckgezogen=0, sensibel=0 -- keine verdeckten Treffer.",
+    "hinweis": "Der eigentliche Personenbezug steht im 'content'-Feld (z.B. /ops/buckeberg-absenderrolle-und-empfaenger: 'Sohn von Frau Döldissen, einer Eigentümerin'), nicht in title/summary -- ohne content-Suche waere die Vollstaendigkeitspruefung selbst unvollstaendig gewesen."
+  },
+  "positivkontrolle_umlaut_variante": {
+    "im_echten_bestand_vorhanden": false,
+    "gemessen": "SELECT ... WHERE content LIKE '%oeldissen%' liefert 0 Zeilen -- keine Doppelschreibung im Bestand.",
+    "massnahme": "In tests/test_namensfrage_p18.py::synthetische_umlaut_db hergestellt (Wegwerf-tmp_path-DB, ueber knowledge_mcp_server.knowledge_add): Knotentext traegt die ASCII-Umschrift ('Doeldissen'), die Anfrage die Umlautform ('Döldissen'). test_umlaut_und_umschrift_finden_denselben_gegenstand bestaetigt: beide fuehren zum selben Knoten (fold_de faltet symmetrisch)."
+  },
+  "negativtest": {
+    "sachfrage": "wie funktioniert die Herkunftsschranke",
+    "eigennamen_erkannt": [],
+    "grossbuchstabe_satzanfang": {"text": "Wie geht es Ihnen", "eigennamen_erkannt": []}
+  },
+  "pruefkorpus_abrufguete": {
+    "korpus": "runs/pruefkorpus.jsonl, 45 Faelle (35 mit target_kind, 10 uebergangen)",
+    "namenspfad_ausloest_bei": 0,
+    "begruendung_keine_dilution_moeglich": "grep -io '\\b(frau|herr|herrn|familie)\\b' auf pruefkorpus.jsonl: 0 Treffer -- keine Anrede im gesamten Korpus, der neue Weg kann dort nicht ausschlagen.",
+    "vorher": {"LESSON": "7/15", "NODE": "7/20", "MIT_KANTE": "9/18", "OHNE_KANTE": "5/17", "gesamt": "14/35"},
+    "nachher": {"LESSON": "7/15", "NODE": "7/20", "MIT_KANTE": "9/18", "OHNE_KANTE": "5/17", "gesamt": "14/35"},
+    "unterschied": false,
+    "hinweis": "vorher NICHT separat neu gemessen (0 Ausloeser messbar vorab per grep) -- nachher-Lauf wortwoertlich reproduziert, alle vier Messreihen (AUS/AUS, NUR_NORMRANG, NUR_HEBB, BEIDE_AN) identisch. Rohausgabe: siehe Bash-Log dieser Sitzung."
+  },
+  "keine_kalibrierte_zahl_geaendert": true,
+  "geaenderte_zahlen": [],
+  "abweichungen_vom_auftrag": [
+    "mehrstufiger_abruf.py NICHT angefasst (nicht in der Besitzliste) -- Integration liegt komplett in haken/suchpfad_abruf.py::kandidaten(), das der Produktivweg unveraendert 1:1 durchreicht (kandidaten_geschaltet() faellt bei MEHRSTUFIGER_ABRUF=AUS, der Vorgabe, byte-gleich auf suchpfad_abruf.kandidaten() zurueck)."
+  ]
+}

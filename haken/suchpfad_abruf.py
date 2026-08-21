@@ -28,7 +28,20 @@ Der einzige Aufrufer ist haken/knowledge_recall_hook.py (Import), darum
 erbt es dessen Ereignisse 1:1 -- eine eigene Verdrahtung waere Attrappe, das
 Ereignis haengt am Aufrufer, nicht an dieser Datei. Der Blindfleck ist damit
 identisch mit dem von knowledge_recall_hook.py (siehe Vermerk dort, 6,0s
-Kosten) und nicht separat zu loesen."""
+Kosten) und nicht separat zu loesen.
+
+NACHTRAG P18 (2026-08-21, docs/PLAN_NAECHSTE_STUFE_2026-08-21.md §4.1/§9):
+eine natuerliche Namensfrage ("zeige mir alles was mit Frau X zu tun hat")
+verdampft im Satz-OR oben zu Fuellwoertern + Anrede -- der Name selbst
+konkurriert dann mit jedem anderen Wort des Satzes und landet weit hinten
+im bm25-Rang (gemessen: Rang 0 fuer den blossen Namen, Rang 6/20 fuer
+dieselben zwei Ziele in der natuerlichen Frage). kern/namensfrage.py loest
+den Eigennamen ueber eine Anrede (Frau/Herr/Herrn/Familie) heraus, OHNE die
+Anrede selbst zu durchsuchen; _namenskandidaten() sucht NUR mit diesem
+Namen exakt, _voranstellen() draengt die Treffer im Stichwortkanal UND im
+fertig fusionierten final_ids VOR -- Belegs. runs/namensfrage_2026-08-21.json.
+Ausloest nur bei erkannter Anrede (0 von 45 Faellen in runs/pruefkorpus.jsonl
+tragen eine), also byte-gleich zum bisherigen Weg fuer jede Sachfrage."""
 from __future__ import annotations
 
 import sys as _sys
@@ -47,8 +60,11 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
 import sqlite3
 
 import embeddings
+import namensfrage
 from gattung_filter import SQL_ARBEITSBESTAND_NUR
-from knowledge_mcp_server import _embedding_ranking, _or_query, _stichwortkanal_blind
+from knowledge_mcp_server import (
+    _embedding_ranking, _or_query, _stichwortkanal_blind, _fts_phrase, fold_de,
+)
 
 
 def _erlaubte_ids(conn: sqlite3.Connection) -> tuple[set, set]:
@@ -63,6 +79,43 @@ def _erlaubte_ids(conn: sqlite3.Connection) -> tuple[set, set]:
     lessons = {r["id"] for r in conn.execute(
         "SELECT id FROM lessons_learned WHERE status != 'resolved'")}
     return nodes, lessons
+
+
+def _namenskandidaten(conn: sqlite3.Connection, name: str) -> tuple[list[str], list[str]]:
+    """P18: exakte FTS-Suche NUR auf dem herausgeloesten Eigennamen (kern.
+    namensfrage.eigennamen()) -- Gegenmittel zur Verduennung, die entsteht,
+    wenn derselbe Name Teil der Satz-OR-Anfrage aus _or_query(text) ist
+    (dort konkurriert er mit jedem anderen Wort des Satzes, s. Moduldoc von
+    kern/namensfrage.py). Gleiche Filter wie der Hauptweg oben
+    (SQL_ARBEITSBESTAND_NUR, nicht zurueckgezogen, Lehre nicht resolved).
+    Rueckgabe nur IDs in bm25-Rangfolge -- kandidaten() setzt sie vorn an,
+    nicht anstelle des Hauptfunds."""
+    query = _fts_phrase(fold_de(name))
+    node_ids = [r["id"] for r in conn.execute(
+        "SELECT n.id FROM knowledge_fts f JOIN knowledge_nodes n ON n.rowid = f.rowid "
+        f"WHERE knowledge_fts MATCH ? AND n.zurueckgezogen = 0 {SQL_ARBEITSBESTAND_NUR} "
+        "ORDER BY rank",
+        (query,),
+    ).fetchall()]
+    lesson_ids = [r["id"] for r in conn.execute(
+        "SELECT l.id FROM lessons_fts f JOIN lessons_learned l ON l.rowid = f.rowid "
+        "WHERE lessons_fts MATCH ? AND l.status != 'resolved' "
+        "ORDER BY rank",
+        (query,),
+    ).fetchall()]
+    return node_ids, lesson_ids
+
+
+def _voranstellen(vorn: list[str], rest: list[str]) -> list[str]:
+    """vorn zuerst (in seiner Reihenfolge), danach rest ohne Dubletten --
+    der Namensfund draengt den Hauptfund nicht heraus, er geht ihm nur vor."""
+    ergebnis = list(vorn)
+    gesehen = set(ergebnis)
+    for i in rest:
+        if i not in gesehen:
+            ergebnis.append(i)
+            gesehen.add(i)
+    return ergebnis
 
 
 def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | None,
@@ -137,8 +190,46 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
     node_by_id = {r["id"]: dict(r) for r in node_rows}
     lesson_by_id = {r["id"]: dict(r) for r in lesson_rows}
 
+    # P18: eine Namensfrage ("zeige mir alles was mit Frau X zu tun hat")
+    # verduennt den herausgeloesten Namen im Satz-OR oben mit Fuellwoertern
+    # und der Anrede selbst -- der Namenstreffer LANDET im Fund (er ist ja
+    # eines der OR-Woerter), nur weit hinten. Hier vorgezogen, nicht ersetzt:
+    # ein zusaetzlicher Fund (moeglich, wenn der Name allein traf, wo der
+    # ganze Satz es nicht tat) wird direkt nachgeladen.
+    node_id_order = list(node_by_id.keys())
+    lesson_id_order = list(lesson_by_id.keys())
+    namen_node_ids: list[str] = []
+    namen_lesson_ids: list[str] = []
+    for name in namensfrage.eigennamen(text):
+        name_node_ids, name_lesson_ids = _namenskandidaten(conn, name)
+        namen_node_ids = _voranstellen(namen_node_ids, name_node_ids)
+        namen_lesson_ids = _voranstellen(namen_lesson_ids, name_lesson_ids)
+        node_id_order = _voranstellen(name_node_ids, node_id_order)
+        lesson_id_order = _voranstellen(name_lesson_ids, lesson_id_order)
+        for nid in name_node_ids:
+            if nid in node_by_id:
+                continue
+            zeile = conn.execute(
+                "SELECT n.id, n.path, n.title, n.summary, n.updated_at, n.gilt_ab, n.gilt_bis "
+                f"FROM knowledge_nodes n WHERE n.id = ? AND n.zurueckgezogen = 0 {SQL_ARBEITSBESTAND_NUR}",
+                (nid,),
+            ).fetchone()
+            if zeile is not None:
+                node_by_id[nid] = dict(zeile)
+        for lid in name_lesson_ids:
+            if lid in lesson_by_id:
+                continue
+            zeile = conn.execute(
+                "SELECT id, description, root_cause, prevention, severity, occurrences, "
+                "type, last_seen, first_seen, session, projects FROM lessons_learned "
+                "WHERE id = ? AND status != 'resolved'",
+                (lid,),
+            ).fetchone()
+            if zeile is not None:
+                lesson_by_id[lid] = dict(zeile)
+
     keyword_ordered_ids = embeddings.rrf_fuse(
-        list(node_by_id.keys()), list(lesson_by_id.keys()), embedding_weight=1.0)
+        node_id_order, lesson_id_order, embedding_weight=1.0)
 
     bedeutungswerte: list = []
     lesson_bedeutungswerte: list = []
@@ -169,6 +260,18 @@ def kandidaten(conn: sqlite3.Connection, text: str, query_vec: list[float] | Non
     final_ids = embeddings.rrf_fuse(
         keyword_ordered_ids, embedding_ordered_ids,
         embedding_weight=embeddings.hybrid_retrieval_weight())[:max_results]
+
+    # P18: der Namensweg darf vom Bedeutungskanal nicht verdraengt werden --
+    # RRF allein reicht dafuer nicht, weil ein exakter Namenstreffer, den der
+    # Bedeutungskanal NICHT auch fuer relevant haelt (kein gemeinsamer Rang),
+    # in der Fusion nur sein Stichwort-Gewicht traegt und so von Kandidaten
+    # ueberholt wird, die in BEIDEN Kanaelen auftauchen (gemessen am
+    # Auftragsfall: Rang 2 im Stichwortkanal reichte nicht, s. runs/
+    # namensfrage_2026-08-21.json). Exakte Namenstreffer werden deshalb HIER,
+    # NACH der Fusion, vorangestellt -- der Rest der Fusion bleibt die
+    # Reihenfolge, es wird nichts entfernt, nur der Deckel neu gezogen.
+    if namen_node_ids or namen_lesson_ids:
+        final_ids = _voranstellen(namen_node_ids + namen_lesson_ids, final_ids)[:max_results]
 
     # Embedding-Kanal kann IDs liefern, die die FTS-Abfrage oben nicht
     # gezogen hat (das ist der ganze Witz des zweiten Kanals) -- fehlende
