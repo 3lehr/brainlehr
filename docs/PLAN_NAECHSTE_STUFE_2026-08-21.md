@@ -150,6 +150,89 @@ Wächter per regulärem Ausdruck prüft (übersetzt greift er nicht mehr,
 `L-8fce9c` — heute passiert, siehe §5a) · Texte, die in abgelegten
 Wissenseinträgen wörtlich zitiert sind.
 
+## §4b Die Einstellungen im Hermes-Panel — der Schnitt
+
+Betreiberfrage 2026-08-21: welche Schalter (Einzelplatz gegen Unternehmen
+usw.) gehören in das Memory-Provider-Plugin?
+
+**Der Maßstab ist, wer davorsitzt.** Hermes' Panel steht vor einem Menschen,
+der brainlehr nicht kennt und unsere Messungen nicht kennt. Dorthin gehört,
+was ohne unseren Kontext richtig entscheidbar ist. Was eine Begründung aus
+unserem Bestand braucht, bleibt in lehrAtelier, wo die Begründung
+danebensteht.
+
+**Gemessene Bauform (Hermes, `plugins/memory/config_schema.py`):** Feldarten
+`text` · `select` · `secret` · `bool` · `number` · `json`. `inline=True`
+markiert das kompakte Panel, der Rest erscheint im vollen Dialog. Zum
+Vergleich: `honcho` deklariert 28 Felder (6 inline), `hindsight` 5.
+
+### Ins Hermes-Panel — inline
+
+| Feld | Art | Herkunft | warum dorthin |
+|---|---|---|---|
+| Datenbankpfad | `text` | `haken/ort.py` | ohne ihn läuft nichts; Plugins liegen pro Profil |
+| Ausweis / handelnde Kennung | `text` | `kern/ausweis.py` | ohne sie wird **jeder Schreibvorgang abgewiesen** (Trigger, kein Hinweis) |
+| Betriebsprofil | `select` einzelplatz/unternehmen | `knowledge_config.betriebsprofil`, `kern/betriebsprofil.py` | der Schalter, nach dem der Betreiber gefragt hat |
+| Mandantenname | `text` | dito | Pflicht beim Wechsel auf `unternehmen`, sonst verborgen |
+| Einbettungsdienst — Adresse | `text` | `kern/einrichtung.py` | ohne ihn entstehen Einträge **ohne Vektor**, ohne Fehlermeldung |
+| Sprache der Oberfläche | `select` de/en | `BDW-P19` | der Grund, aus dem P19 entstand |
+
+### Ins Hermes-Panel — voller Dialog, nicht inline
+
+| Feld | Art | Anmerkung |
+|---|---|---|
+| Sprache des eigenen Materials | `select` | `BDW-P10`, nicht dasselbe wie die Oberflächensprache |
+| Kataloge beim Erststart | `json` / Mehrfachauswahl | gehört eigentlich auf `POST /api/memory/providers/{name}/setup`, nicht in `config` |
+| Einbettungsmodell | **`select` mit GENAU EINER Option** | siehe unten |
+
+### Das eine Feld, das gefährlich ist
+
+`embed_model` (heute `bge-m3@ctx2048`) sieht aus wie eine gewöhnliche
+Einstellung. Eine Änderung **entwertet den gesamten Vektorbestand, ohne dass
+irgendwo ein Fehler auftaucht** — 7 409 Vektoren. Belegt im Swift-Kommentar
+`atelier/app/Sources/BrainlehrCore/Modellzugaenge.swift:8-13`.
+
+**Und Hermes' Schema hat dafür keine Antwort:** Es kennt keine Feldart
+„anzeigen, aber nicht ändern". Der generische Renderer macht aus jeder
+Deklaration ein Eingabefeld. Der Ausweg ohne Änderung an Hermes:
+`KIND_SELECT` mit **genau einer** Option — dem laufenden Modell. Sichtbar,
+auf nichts anderes stellbar.
+
+### Ausdrücklich NICHT ins Hermes-Panel
+
+Nicht weil sie unwichtig wären, sondern weil sie ohne unseren Bestand nicht
+entscheidbar sind:
+
+* **Gemessene Schwellen** — `MIN_HITS = 3` (Pareto-Front über 60 Versuche),
+  `0,65` (zwei Millionen Paare), `0,25` Normkonflikt, `2,0`/`10 %`
+  Zugriffsmuster, `84` Kaskadenanteil. Anzeigen ja, bedienbar nein.
+* **Die Werkbank des Hauses** — Verfallsraten je Ast, Siegbedingungs-
+  Gewichte, Nachtschicht, Lehren-Beförderung, Eilmeldungen quittieren. Sie
+  gehören nach lehrAtelier.
+* **Ablageort je Domäne** (`ablage.<domaene>`, `BDW-P15`) — domänenspezifisch,
+  gehört dorthin, wo die Domäne verwaltet wird.
+* **`BRAINLEHR_DURCHSETZUNG`** (weich/streng) — ein Sicherheitsschalter, den
+  ein Fremder nicht beurteilen kann, und seine Verankerung ist ungeklärt.
+
+### Was brainlehr von den anderen sieben unterscheidet
+
+`hindsight` und `honcho` verlangen beide `api_key` als `KIND_SECRET` ohne
+Vorgabewert. **brainlehr braucht kein einziges Geheimnis** — local-first heißt,
+es gibt keinen Schlüssel zu hinterlegen. Von acht Anbietern wäre es neben
+`holographic` der zweite lokale und der einzige ohne Schlüssel.
+
+### Was Hermes technisch verlangt, gemessen
+
+Vier `@abstractmethod` in `agent/memory_provider.py`: `name`,
+`is_available`, `initialize`, `get_tool_schemas`. Dazu `plugin.yaml` mit vier
+Feldern. `config_schema.py` ist **optional** — sechs der acht Anbieter haben
+keins.
+
+**Die beiden Pflichtfelder, die STILL scheitern** (Ausweis und
+Einbettungsdienst), gehören in `is_available()`. Gibt die `False` zurück,
+fügt der `MemoryManager` den Anbieter gar nicht erst hinzu, statt ihn kaputt
+laufen zu lassen.
+
 ## §5a Kein neunter Plan — und warum das gemessen wurde
 
 Der Betreiber verlangte am 2026-08-21 „einen neuen Plan und den Lastenkatalog
@@ -202,3 +285,4 @@ dieser Plan die Umsetzung — bei Widerspruch gilt der Katalog.
 * 2026-08-21T08:20 — angelegt, nach Abschluss des Gesamtbaus und mit zwei von
   drei Konsillinsen.
 * 2026-08-21T08:50 — Katalog um P16–P19 ergaenzt (Kennungen gemessen, hoechste war P15). Kein neues Plandokument, siehe §5a.
+* 2026-08-21T09:20 — Hermes-Panel geschnitten (Paragraf 4b): 6 Felder inline, 3 im vollen Dialog, 4 Gruppen ausdruecklich draussen.
