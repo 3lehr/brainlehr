@@ -100,19 +100,43 @@ class Zug(NamedTuple):
     quelle: str
 
 
+# Automatische Umschlaege beginnen alle mit einer festen Kopfzeile -- ein
+# echter Nutzertext, der das Wort nur ENTHAELT (nicht an erster Stelle,
+# nicht als vollstaendiger Umschlag), matcht bewusst NICHT. Gepruefte
+# Vorkommen (Transkript d8277698, Index 3457/3548/3195): das
+# task-notification-Tag, die eigene Stop-Beanstandung im Wortlaut des
+# Ausgabetexts von `_stop_haken()`, und die Verdichtungs-Zusammenfassung.
+_AUTOMATISCHER_UMSCHLAG = re.compile(
+    r"^(<task-notification>|Stop hook feedback:"
+    r"|This session is being continued from a previous conversation)")
+
+
+def _ist_automatischer_umschlag(text: str) -> bool:
+    return bool(_AUTOMATISCHER_UMSCHLAG.match(text.lstrip()))
+
+
 def _ist_echter_nutzerprompt(d: dict) -> bool:
     """Eine JSONL-Zeile vom Typ 'user', die ein Werkzeugergebnis traegt
     (type=='tool_result' in jedem Content-Block), ist KEIN Nutzer-Prompt --
-    sie ist die Antwort auf einen tool_use. Nur ein echter Prompt eroeffnet
-    einen neuen Zug und setzt die tool_use-Spur zurueck."""
+    sie ist die Antwort auf einen tool_use. Ebenso KEIN Nutzer-Prompt: ein
+    automatischer Umschlag (task-notification, die eigene Stop-Beanstandung
+    im Transkript, die Verdichtungs-Zusammenfassung) -- keiner davon eroeffnet
+    einen neuen Zug, sonst loescht die eigene Beanstandung die tool_use-Spur,
+    die sie widerlegen wuerde (L-706807, Zuggrenze). Nur ein echter Prompt
+    eroeffnet einen neuen Zug und setzt die tool_use-Spur zurueck."""
     if d.get("type") != "user":
         return False
     c = (d.get("message") or {}).get("content")
     if isinstance(c, str):
-        return True
+        return not _ist_automatischer_umschlag(c)
     if isinstance(c, list):
-        return not all(isinstance(b, dict) and b.get("type") == "tool_result"
-                        for b in c)
+        if all(isinstance(b, dict) and b.get("type") == "tool_result" for b in c):
+            return False
+        text = " ".join(b.get("text", "") for b in c
+                         if isinstance(b, dict) and b.get("type") == "text")
+        if text and _ist_automatischer_umschlag(text):
+            return False
+        return True
     return False
 
 
@@ -271,6 +295,71 @@ def _selftest() -> int:
             "tool_use in einem frueheren Zug DERSELBEN Antwort muss die "
             "Behauptung decken -- das war der reale Falschtreffer der "
             "ersten Fassung (80 von 8372, siehe Docstring)")
+
+    # ZUGGRENZE: automatische Umschlaege eroeffnen KEINEN neuen Zug -- je
+    # Zweig eine Zeile, die NUR diesen Zweig trifft (L-8fce9c).
+    assert not _ist_echter_nutzerprompt(
+        {"type": "user", "message": {"content": "<task-notification>\n<task-id>x</task-id>"}}
+    ), "task-notification darf keinen neuen Zug eroeffnen"
+    assert not _ist_echter_nutzerprompt(
+        {"type": "user", "message": {"content": "Stop hook feedback:\nDiese Antwort behauptet ..."}}
+    ), "die eigene Stop-Beanstandung darf keinen neuen Zug eroeffnen"
+    assert not _ist_echter_nutzerprompt(
+        {"type": "user", "message": {"content": "This session is being continued from a previous conversation ..."}}
+    ), "die Verdichtungs-Zusammenfassung darf keinen neuen Zug eroeffnen"
+
+    # NEGATIVPROBE je Zweig: ein ECHTER Nutzertext, der das Merkmalswort nur
+    # ENTHAELT (nicht am Anfang, kein vollstaendiger Umschlag), muss weiterhin
+    # als echter Prompt zaehlen -- sonst schaltet ein Nutzerwort den Waechter ab.
+    assert _ist_echter_nutzerprompt(
+        {"type": "user", "message": {"content": "kannst du das task-notification-Format erklaeren?"}}
+    ), "'task-notification' im Fliesstext bleibt ein echter Prompt"
+    assert _ist_echter_nutzerprompt(
+        {"type": "user", "message": {"content": "warum kam da eben ein Stop hook feedback?"}}
+    ), "'Stop hook feedback' im Fliesstext bleibt ein echter Prompt"
+    assert _ist_echter_nutzerprompt(
+        {"type": "user", "message": {"content": "wurde diese session continued from a previous conversation?"}}
+    ), "die Formulierung im Fliesstext bleibt ein echter Prompt"
+
+    # INTEGRATION: die eigene Beanstandung (als 'user'-Zeile reinjiziert) darf
+    # die tool_use-Spur NICHT loeschen -- genau der Selbstbezug aus dem
+    # Befund (Index 3548 im echten Transkript).
+    with tempfile.TemporaryDirectory() as td2:
+        pfad2 = Path(td2) / "sitzung2.jsonl"
+        zeilen2 = [
+            {"type": "user", "message": {"content": "commit das bitte"}},
+            {"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "name": "Bash", "input": {}}]}},
+            {"type": "user", "message": {"content": [
+                {"type": "tool_result", "content": "ok"}]}},
+            {"type": "user", "message": {"content": "Stop hook feedback:\nfrueherer Fehlalarm"}},
+            {"type": "assistant", "message": {"content": [
+                {"type": "text", "text": "Ich habe das jetzt committet."}]}},
+        ]
+        pfad2.write_text("\n".join(_json.dumps(z) for z in zeilen2))
+        gefunden2 = list(zuege(Path(td2), dateien=10))
+        assert len(gefunden2) == 1, gefunden2
+        assert not trifft(gefunden2[0]), (
+            "die reinjizierte Stop-Beanstandung darf die tool_use-Spur aus "
+            "dem vorherigen echten Zug nicht loeschen")
+
+    # ROT-PROBE 3: die ALTE Fassung von _ist_echter_nutzerprompt (ohne
+    # _AUTOMATISCHER_UMSCHLAG) haette die eigene Stop-Beanstandung als echten
+    # Prompt gezaehlt und die tool_use-Spur geloescht -- am gebauten
+    # Integrationsfall gegengeprueft, nicht nur behauptet.
+    def _alt_ist_echter_nutzerprompt(d: dict) -> bool:
+        if d.get("type") != "user":
+            return False
+        c = (d.get("message") or {}).get("content")
+        if isinstance(c, str):
+            return True
+        if isinstance(c, list):
+            return not all(isinstance(b, dict) and b.get("type") == "tool_result"
+                            for b in c)
+        return False
+    assert _alt_ist_echter_nutzerprompt(
+        {"type": "user", "message": {"content": "Stop hook feedback:\nfrueherer Fehlalarm"}}
+    ) is True, "die alte Fassung muss die eigene Beanstandung faelschlich als Zugbeginn zaehlen"
 
     # ROT-PROBE 1: eine kaputte Fassung, die tool_use ignoriert, faellt beim
     # Negativfall n1 durch -- nachgestellt statt behauptet.

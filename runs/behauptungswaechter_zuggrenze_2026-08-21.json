@@ -1,0 +1,82 @@
+{
+  "erstellt": "2026-08-21T15:26:21+0200",
+  "auftrag": "melder/agentenbehauptung.py -- Zuggrenze in _ist_echter_nutzerprompt() automatische Umschlaege ausschliessen (L-706807)",
+  "korrektur_des_koordinators": {
+    "befund": "_ist_echter_nutzerprompt() liegt nicht auf dem Wirkweg des am Stop-Ereignis verdrahteten Melders. pruefe_letzten_zug() delegiert an melder/rueckfrageschleife.py::_letzte_antwort(), und DORT setzt jede JSONL-Zeile vom Typ 'user' -- auch ein tool_result-Ergebnis -- die Werkzeugspur zurueck (Zeile 'if z.get(\"type\")==\"user\": werkzeug=False; continue'). Folge: jede Antwort NACH einem Werkzeugaufruf wurde als 'kein tool_use im Zug' beanstandet.",
+    "behebung": "melder/rueckfrageschleife.py::_letzte_antwort() ruft jetzt agentenbehauptung._ist_echter_nutzerprompt(z) auf und setzt 'werkzeug' nur zurueck, wenn es sich um einen ECHTEN neuen Nutzer-Prompt handelt -- keine zweite Kopie der Unterscheidung, Wiederverwendung der vorhandenen Funktion.",
+    "status": "behoben, rot-vor-gruen belegt (siehe wirkweg_rueckfrageschleife unten)"
+  },
+  "teil_a_historische_zaehlung_agentenbehauptung_zuege": {
+    "hinweis": "Betrifft NUR zuege()/pruefen() -- den historischen Scan ueber alte Transkripte, NICHT den Live-Stop-Hook. Gemessen auf einem EINGEFRORENEN Dateisatz (Inhalt zum Messzeitpunkt gelesen und fixiert), weil laufende Sitzungen mtimes und damit die 'juengsten 400 Dateien' zwischen zwei Laeufen veraendern -- ohne Einfrieren driftete der Nenner (8972 vs 8971) allein durch Hintergrundaktivitaet.",
+    "dateisatz": "juengste 400 *.jsonl unter ~/.claude/projects, Inhalt zum Messzeitpunkt eingefroren",
+    "vorher": { "nenner": 8972, "treffer": 4 },
+    "nachher": { "nenner": 8972, "treffer": 2 },
+    "weggefallen": [
+      {
+        "datei": "-Volumes-daten-Begod2026-brainlehr--claude-worktrees-baum-20260818T043627-76904/be48feea-e165-4f71-917c-28397295da14.jsonl",
+        "ausloeser_der_zeile_davor": "type=user, content startswith 'Stop hook feedback:\\nDateilink zeigt ins Leere...' (Zeile 3129) -- ein automatischer Umschlag, kein echter Nutzer-Prompt",
+        "geprueft": true
+      },
+      {
+        "datei": "-Volumes-daten-Begod2026-brainlehr--claude-worktrees-baum-20260818T113524-76469/4f75cc72-21eb-4fd3-b4ff-9ee1f5df1bc1.jsonl",
+        "ausloeser_der_zeile_davor": "type=user, content startswith 'Stop hook feedback:\\nDateilink zeigt ins Leere...' (Zeile 531) -- derselbe Umschlagstyp",
+        "geprueft": true
+      }
+    ],
+    "kein_fehler_in_der_aenderung": "beide Wegfaelle wurden bis zur ausloesenden JSONL-Zeile zurueckverfolgt -- in beiden Faellen war es ein automatischer 'Stop hook feedback:'-Umschlag, kein echter Nutzerprompt. Kein Wegfall ohne diesen Ausloeser gefunden."
+  },
+  "teil_b_drei_belegte_vorkommen_l706807_generalisierbare_form": {
+    "hinweis": "Vorkommen 1 und 2 sind woertlich rekonstruiert (Erfolgsbehauptung ohne jeden tool_use in der Session); Vorkommen 3 zusaetzlich MIT einem automatischen task-notification-Umschlag DAVOR, um zu zeigen, dass der Umschlag selbst keine Deckung erzeugt.",
+    "vorkommen_1_veroeffentlicht": { "trifft_nach_aenderung": true, "text": "Der Entwurf RED-2026-0447 ist erfolgreich veroeffentlicht worden, Status: Live." },
+    "vorkommen_2_gespeichert_generalisierte_form": { "trifft_nach_aenderung": true, "text": "Ich habe den Vermerk zur Sitzung gespeichert.", "einschraenkung": "die ENGERE Form (Korrelation gegen ein Zugriffsprotokoll mit status=rejected) bleibt laut Docstring ungebaut -- hier nur die generalisierbare Form (kein tool_use) nachgestellt" },
+    "vorkommen_3_recherche_angestossen_nach_task_notification": { "trifft_nach_aenderung": true, "text": "Ich habe die Recherche angestossen, drei Straenge parallel: euer eigener Bestand, die Rechtsfragen und die Maszdaten.", "davor": "ein <task-notification>-Umschlag stand im selben Transkript, aber KEIN tool_use -- der Umschlag darf keine Deckung vortaeuschen" },
+    "vollstaendig": true
+  },
+  "wirkweg_rueckfrageschleife": {
+    "hinweis": "Der REALE Wirkweg des Stop-Hooks (rueckfrageschleife._letzte_antwort, auch von agentenbehauptung.pruefe_letzten_zug benutzt). Gemessen ueber die juengsten 400 Transkripte, alt vs. neu direkt verglichen.",
+    "rot_vor_gruen_synthetisch": {
+      "szenario": "assistant(tool_use) -> user(tool_result) -> assistant(text, kein weiteres Werkzeug)",
+      "alt_werkzeug_flag": false,
+      "neu_werkzeug_flag": true,
+      "kommentar": "ALT setzte 'werkzeug' bei JEDER user-Zeile zurueck, auch bei einem tool_result -- die Antwort danach galt faelschlich als werkzeuglos. NEU haelt die Spur, solange kein ECHTER neuer Nutzer-Prompt kommt."
+    },
+    "gegenprobe_echter_neuer_prompt_setzt_weiterhin_zurueck": {
+      "szenario": "wie oben, danach ein ECHTER neuer Nutzer-Prompt, dann assistant(text, kein Werkzeug)",
+      "neu_werkzeug_flag": false,
+      "kommentar": "ohne diese Gegenprobe waere die Behebung zu weit gegangen und der Waechter fuer echte Faelle wirkungslos"
+    },
+    "messung_am_bestand_juengste_400_transkripte": {
+      "dateien_mit_abweichendem_werkzeug_flag_am_letzten_zug": 370,
+      "davon_alt_faelschlich_false_neu_korrekt_true": 370,
+      "beurteile_block_anzahl_alt": 3,
+      "beurteile_block_anzahl_neu": 0,
+      "neue_falschtreffer_durch_die_aenderung": 0,
+      "beispiele_behobener_fehlalarme": [
+        "agent-afcb3a20da4340322.jsonl: 'Diagnose fertig, nichts gebaut außer der Messung...' wurde als Ankuendigung ohne Werkzeug beanstandet, obwohl ein Werkzeug im Zug lief",
+        "agent-ae1b687a860f1a790.jsonl: 'Brief gelesen. Ich antworte als kaufmaennische Entscheiderin...' derselbe Fehler",
+        "f5ab5227-65ac-4947-967b-3ca9373abfe8.jsonl: 'Gemessen: FB-M 19 von 40 ...' derselbe Fehler"
+      ]
+    }
+  },
+  "waechter_hygiene_l8fce9c": {
+    "je_zweig_eine_testzeile": [
+      "task-notification: eigene Testzeile in agentenbehauptung._selftest()",
+      "Stop hook feedback: eigene Testzeile",
+      "Verdichtungs-Zusammenfassung: eigene Testzeile"
+    ],
+    "negativproben_je_positivem_merkmal": [
+      "'kannst du das task-notification-Format erklaeren?' -- bleibt echter Prompt",
+      "'warum kam da eben ein Stop hook feedback?' -- bleibt echter Prompt",
+      "'wurde diese session continued from a previous conversation?' -- bleibt echter Prompt"
+    ],
+    "rot_proben": [
+      "ROT-PROBE 3 in agentenbehauptung._selftest(): die ALTE Fassung von _ist_echter_nutzerprompt zaehlt die eigene Stop-Beanstandung faelschlich als Zugbeginn (assert ... is True)",
+      "rueckfrageschleife._selftest(): die ALTE _letzte_antwort()-Logik (separat als alt_letzte_antwort nachgebaut, siehe Messung oben) liefert werkzeug=False im tool_result-Szenario -- die neue liefert True"
+    ]
+  },
+  "geaenderte_dateien": [
+    "melder/agentenbehauptung.py",
+    "melder/rueckfrageschleife.py"
+  ],
+  "nicht_gepusht": true
+}

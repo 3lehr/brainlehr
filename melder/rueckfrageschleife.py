@@ -57,6 +57,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path[:0] = [str(Path(__file__).resolve().parent)]
+import agentenbehauptung as _ab  # noqa: E402  -- liefert _ist_echter_nutzerprompt
+
 # Die letzten Zeichen der Antwort. Eine Entscheidungsfrage MITTEN im Text ist
 # rhetorisch ("Warum das zaehlt?"); eine am Ende wartet auf Antwort.
 SCHWANZ = 400
@@ -211,7 +214,15 @@ def _letzte_antwort(transcript: Path) -> tuple[str, bool]:
     Werkzeugaufruf hat nichts getan, egal was er ankuendigt. Gezaehlt wird ab
     der letzten Nachricht des Betreibers -- ein Zug kann aus vielen
     Assistentennachrichten bestehen, und ein Werkzeugaufruf irgendwo darin
-    zaehlt."""
+    zaehlt.
+
+    Die Zuggrenze ist der letzte ECHTE Nutzer-Prompt, nicht jede JSONL-Zeile
+    vom Typ 'user' -- ein Werkzeugergebnis (tool_result) kommt selbst als
+    'user'-Zeile zurueck und ist kein neuer Zug, ebenso ein automatischer
+    Umschlag (task-notification, die eigene Stop-Beanstandung, die
+    Verdichtungs-Zusammenfassung). `agentenbehauptung._ist_echter_nutzerprompt`
+    trifft genau diese Unterscheidung bereits; hier zweitgebaut haette sie
+    beide Faelle auseinanderlaufen lassen (L-706807, Zuggrenze)."""
     text = ""
     werkzeug = False
     try:
@@ -223,8 +234,9 @@ def _letzte_antwort(transcript: Path) -> tuple[str, bool]:
             except ValueError:
                 continue
             if z.get("type") == "user":
-                # Neuer Zug: was davor lief, gehoert nicht dazu.
-                werkzeug = False
+                if _ab._ist_echter_nutzerprompt(z):
+                    # Neuer Zug: was davor lief, gehoert nicht dazu.
+                    werkzeug = False
                 continue
             if z.get("type") != "assistant":
                 continue
@@ -309,6 +321,50 @@ def _selftest() -> int:
         assert beurteile(text, hat_werkzeug=True) is None, f"Fehlalarm auf: {text}"
     # Und ein Stopp-Punkt auf Englisch bleibt erlaubt -- dort IST Frage Pflicht.
     assert beurteile("Should I push this to the remote?", hat_werkzeug=True) is None
+
+    # _letzte_antwort(): DER ECHTE FEHLER, den der Koordinator gefunden hat --
+    # ein tool_result kommt als 'user'-Zeile zurueck und darf `werkzeug` NICHT
+    # zuruecksetzen. Nachgestellt statt behauptet.
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        pfad = Path(td) / "zug.jsonl"
+        zeilen = [
+            {"type": "user", "message": {"content": "commit das bitte"}},
+            {"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "name": "Bash", "input": {}}]}},
+            {"type": "user", "message": {"content": [
+                {"type": "tool_result", "content": "ok"}]}},
+            {"type": "assistant", "message": {"content": [
+                {"type": "text", "text": "Fertig, das war's."}]}},
+        ]
+        pfad.write_text("\n".join(json.dumps(z) for z in zeilen))
+        text, werkzeug = _letzte_antwort(pfad)
+        assert werkzeug is True, (
+            "ein tool_result-Ergebnis (als 'user'-Zeile) darf 'werkzeug' nicht "
+            "zuruecksetzen -- genau der Fehler, den der Koordinator gemeldet hat")
+        assert text == "Fertig, das war's."
+
+    # Gegenprobe zum selben Fehler: ein ECHTER Nutzer-Prompt NACH dem
+    # Werkzeugaufruf setzt weiterhin zurueck -- sonst waere die Behebung zu
+    # weit gegangen und der Waechter wirkungslos.
+    with tempfile.TemporaryDirectory() as td:
+        pfad = Path(td) / "zug2.jsonl"
+        zeilen = [
+            {"type": "user", "message": {"content": "commit das bitte"}},
+            {"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "name": "Bash", "input": {}}]}},
+            {"type": "user", "message": {"content": [
+                {"type": "tool_result", "content": "ok"}]}},
+            {"type": "user", "message": {"content": "und jetzt noch was anderes"}},
+            {"type": "assistant", "message": {"content": [
+                {"type": "text", "text": "Mach ich als naechstes."}]}},
+        ]
+        pfad.write_text("\n".join(json.dumps(z) for z in zeilen))
+        text, werkzeug = _letzte_antwort(pfad)
+        assert werkzeug is False, (
+            "ein ECHTER neuer Nutzer-Prompt muss die Werkzeugspur weiterhin "
+            "zuruecksetzen -- sonst haette diese Antwort ohne eigenes "
+            "Werkzeug freie Fahrt")
 
     print("rueckfrageschleife: Selbsttest gruen (5 Frage-, 4 Ankuendigungsfaelle, "
           "11 Negativfaelle, Stopp-Punkt schlaegt beide Pruefungen)")
