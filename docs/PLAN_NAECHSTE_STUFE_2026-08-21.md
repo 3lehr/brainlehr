@@ -410,6 +410,39 @@ Tag), damit die nächste Sitzung sie nicht erneut erhebt.
 `ADR-032`), und `sensibel` ist für Dokumente Dritter das falsche Werkzeug —
 geschützt wird über `mandant`/`kreis`/`freigabe`.
 
+## §7a Offen und bewusst nicht behoben: der Zitat-blinde Wächter
+
+`melder/vermutungswaechter.py` unterscheidet **Zitat nicht von eigener
+Behauptung.** Am 2026-08-21 beanstandete er zwei wörtlich aus `L-014f8f`
+zitierte Sätze als Absolutaussage — Sätze also, die eine Lehre dieses Hauses
+trägt und die ich gerade im Volltext nachgelesen hatte.
+
+Dieselbe Klasse traf am selben Tag zweimal `melder/rueckfrageschleife.py`: Er
+las die **Verneinung** „ich baue KEINE davon auf Verdacht um" als Ankündigung,
+und kurz darauf eine im selben Zug ausgeführte **Messung** als Behauptung.
+
+**Die Verneinungslücke ist geschlossen** (`1354e4db`, rot vor grün belegt).
+**Die Zitatlücke bleibt bewusst offen**, und der Grund gehört in den Plan,
+damit ihn niemand für Nachlässigkeit hält: Eine Zitaterkennung ist kein
+Zweizeiler, und ein Wächter, der zu großzügig „ist ja nur zitiert" erkennt,
+wird blind für echte Absolutaussagen — also für genau das, wogegen er gebaut
+ist. Schnell verschlimmbessern ist hier teurer als offen lassen.
+
+**Der Befund dahinter ist der interessantere:** Je besser die Arbeitsweise
+wird — Lehren im Volltext nachlesen statt paraphrasieren, Verneinungen
+aussprechen statt zu schweigen —, desto häufiger enthält der eigene Text
+fremde Sätze. Der Wächter bestraft damit ausgerechnet das Verhalten, das er
+erzwingen soll, **und zwar umso öfter, je gründlicher gearbeitet wird.**
+
+**Was jeder Wächter am eigenen Text braucht** und heute keiner hat: eine
+dritte Sorte Testfall. Nicht nur (a) trifft zu und (b) trifft nicht zu,
+sondern **(c) der Text enthält das Muster, meint es aber nicht** — als Zitat,
+Verneinung, Selbstkorrektur oder Beschreibung des Musters selbst. Billigste
+Probe: die eigene Regel auf einen Text anwenden, der über die Regel spricht.
+Fällt er durch, fehlt die dritte Sorte.
+
+Lehre `L-8fce9c`, fünftes Vorkommen, auf Regelrang.
+
 ## §8 Verlauf
 
 * 2026-08-21T08:20 — angelegt, nach Abschluss des Gesamtbaus und mit zwei von
@@ -417,3 +450,4 @@ geschützt wird über `mandant`/`kreis`/`freigabe`.
 * 2026-08-21T08:50 — Katalog um P16–P19 ergaenzt (Kennungen gemessen, hoechste war P15). Kein neues Plandokument, siehe §5a.
 * 2026-08-21T09:20 — Hermes-Panel geschnitten (Paragraf 4b): 6 Felder inline, 3 im vollen Dialog, 4 Gruppen ausdruecklich draussen.
 * 2026-08-21T10:30 — Reihenfolge festgeschrieben (Paragraf 9). E24 vertagt. Welle 1 gestartet.
+* 2026-08-21T12:10 — P16/P18/P17 committet. Zitat-Luecke des Vermutungswaechters als offener Punkt aufgenommen (Paragraf 7a).
