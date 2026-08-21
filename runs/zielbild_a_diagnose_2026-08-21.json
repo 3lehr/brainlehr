@@ -1,0 +1,908 @@
+{
+  "zeit": "2026-08-21T09:24:00.902725+00:00",
+  "frage": "BDW-P05/Zielbild A steht bei 8,6 %. Liegt das am Abruf, am leeren Feld oder an der Auslieferung?",
+  "weg": {
+    "aussage": "uebernommen aus runs/zielbild_a_vollstaendigkeit_2026-08-21T061814.json (Produktivweg, nicht neu gefahren -- Ollama-Kollision)",
+    "feldstand": "Datenbank ueber kern/speicher.lesen(), Ort ueber haken/ort.py",
+    "auslieferung": "Regeln aus knowledge_mcp_server.knowledge_search(), Ergebnis-dict fuer kind=node bzw. kind=lesson"
+  },
+  "korpus": {
+    "datei": "runs/pruefkorpus.jsonl",
+    "n": 35,
+    "nicht_in_db": []
+  },
+  "toepfe": {
+    "legende": {
+      "a": "Ziel nicht unter den ersten K -- Abrufproblem",
+      "b": "Ziel gefunden, Feld in der Datenbank leer -- Bestandsproblem",
+      "c": "Ziel gefunden, Feld gefuellt, nicht ausgeliefert -- Auslieferungsproblem",
+      "d": "alles da"
+    },
+    "je_bestandteil": {
+      "quelle": {
+        "a": 29,
+        "b": 0,
+        "c": 2,
+        "d": 4
+      },
+      "status": {
+        "a": 29,
+        "b": 0,
+        "c": 2,
+        "d": 4
+      },
+      "geltung": {
+        "a": 29,
+        "b": 3,
+        "c": 0,
+        "d": 3
+      }
+    },
+    "je_fall": {
+      "a": 29,
+      "b": 3,
+      "c": 0,
+      "d": 3
+    },
+    "hinweis_je_fall": "schlechtester Bestandteil bestimmt den Fall (AC verlangt alle zugleich)"
+  },
+  "obergrenze_bei_perfektem_abruf": {
+    "voll": 8,
+    "n": 35,
+    "quote": 0.2286,
+    "schwelle": 0.95,
+    "erreichbar": false,
+    "bedeutung": "Gesamtquote, wenn jeder Abruf sein Ziel auf Rang 1 legte. Liegt sie unter der Schwelle, ist das AC mit dem heutigen Bestand unerreichbar -- unabhaengig von der Abrufguete."
+  },
+  "referenzlauf_stabilitaet": {
+    "je_lauf": {
+      "zielbild_a_vollstaendigkeit_2026-08-18T194323.json": {
+        "aussage": 7,
+        "vollstaendig": 0,
+        "n": 35
+      },
+      "zielbild_a_vollstaendigkeit_2026-08-19T134406.json": {
+        "aussage": 8,
+        "vollstaendig": 3,
+        "n": 35
+      },
+      "zielbild_a_vollstaendigkeit_2026-08-19T181934.json": {
+        "aussage": 8,
+        "vollstaendig": 3,
+        "n": 35
+      },
+      "zielbild_a_vollstaendigkeit_2026-08-21T061814.json": {
+        "aussage": 6,
+        "vollstaendig": 3,
+        "n": 35
+      }
+    },
+    "hinweis": "gleicher Korpus, gleicher Weg -- eine Schwankung in `aussage` ist eine Eigenschaft des Abrufs, nicht des Korpus"
+  },
+  "korrigierte_lesart": {
+    "obergrenze_voll": 8,
+    "n": 35,
+    "quote": 0.2286,
+    "gewinn_gegenueber_heutiger_lesart": 8,
+    "bedeutung": "Obergrenze bei perfektem Abruf UND je Sorte richtig gelesenen Feldnamen. Bleibt sie gleich, ist die Messkorrektur nicht das, was das AC blockiert."
+  },
+  "verfallsrate_als_astweg": {
+    "laeuft_gegen_den_bestand": false,
+    "fehler": "ValueError: time data '2026-08-21T10:23:09+0200' does not match format '%Y-%m-%dT%H:%M:%SZ'",
+    "zahlen_unten_mit_toleranter_zeitlesung": true,
+    "ziele_ohne_geltung": 27,
+    "davon_lehren_ausserhalb_des_moduls": 15,
+    "davon_knoten": 12,
+    "knoten_mit_berechenbarer_halbwertszeit": 11,
+    "schaetzungen_von_hand_gesetzt": 0,
+    "aeste_gesamt": 30,
+    "aeste_mit_halbwertszeit": 18
+  },
+  "einzeln": [
+    {
+      "ziel": "L-a9ccd0",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-298823",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-f9f654",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-b4b443",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-44a838",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-cdac52",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-e7bc5e",
+      "art": "lesson",
+      "gefunden": true,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "c",
+        "status": "c",
+        "geltung": "b"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-e1a441",
+      "art": "lesson",
+      "gefunden": true,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "c",
+        "status": "c",
+        "geltung": "b"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-b91ed6",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-bbd7fb",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-503687",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-8c633e",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-606b63",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-0392e4",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "L-476602",
+      "art": "lesson",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": false,
+        "status": false,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": null,
+      "zurueckgezogen": false,
+      "gattung": null
+    },
+    {
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/apps/metahuman-podcast-one-command-pipeline",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/openlehr/volltextindex-wird-beim-einlesen",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/lessons/phase2-summary",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/lessons/phase2-summary",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/testing/pytest",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/testing/pytest",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/brainlehr/inference-control-was-andere-faecher",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/brainlehr/inference-control-was-andere-faecher",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/methodik/einstieg",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/methodik/einstieg",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/stadtwerke",
+      "art": "node",
+      "gefunden": true,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "d",
+        "status": "d",
+        "geltung": "b"
+      },
+      "pfad": "/stadtwerke",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/openlehr/steuer/ui",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": false
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/openlehr/steuer/ui",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "art": "node",
+      "gefunden": true,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "topf": {
+        "quelle": "d",
+        "status": "d",
+        "geltung": "d"
+      },
+      "pfad": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "art": "node",
+      "gefunden": true,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "topf": {
+        "quelle": "d",
+        "status": "d",
+        "geltung": "d"
+      },
+      "pfad": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "art": "node",
+      "gefunden": true,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "topf": {
+        "quelle": "d",
+        "status": "d",
+        "geltung": "d"
+      },
+      "pfad": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "art": "node",
+      "gefunden": false,
+      "in_db": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "ausgeliefert": {
+        "quelle": true,
+        "status": true,
+        "geltung": true
+      },
+      "topf": {
+        "quelle": "a",
+        "status": "a",
+        "geltung": "a"
+      },
+      "pfad": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "zurueckgezogen": false,
+      "gattung": "arbeitsbestand"
+    }
+  ]
+}
