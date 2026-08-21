@@ -88,11 +88,39 @@ geliefert eine andere Person. Der Verlust sitzt in der FRAGEFORM, nicht im
 Index und nicht am Deckel: die beiden fehlenden Ziele stehen gar nicht mehr
 in der Kandidatenliste.
 
-**§4.2 Getrennte Kandidatenbudgets.** Heute fusioniert
-`haken/suchpfad_abruf.py:169-171` Knoten und Lehren in EINE Liste von 17
-Plätzen, bevor die getrennte Kappung (`MAX_NODES=10`, `MAX_LESSONS=7`)
-greift. Das ist der gemessene, gattungsUNabhängige Hebel — und der Grund,
-warum beim Katalogimport eine Lehre herausfiel.
+**§4.2 Getrennte Kandidatenbudgets — GEBAUT UND ZURÜCKGENOMMEN.**
+Der Konsil nannte die gemeinsame Liste von 17 Plätzen den eigentlichen,
+gattungsunabhängigen Hebel. **Gemessen ist das Gegenteil.**
+
+Isoliert gefahren — dieselbe Datenbank, nur der Code unterscheidet sich
+(Arbeitsbaum auf dem Vorgängerstand, `BRAINLEHR_DB` auf den echten Bestand
+gesetzt):
+
+| | LESSON | NODE | OHNE_KANTE | gesamt |
+|---|---|---|---|---|
+| ohne §4.2 | **7/15** | 7/20 | **5/17** | **14/35** |
+| mit §4.2 | **5/15** | 7/20 | **3/17** | **12/35** |
+
+Die Änderung, die Lehren schützen sollte, kostete zwei Lehren. Zurückgenommen
+(`2268d155`).
+
+**Warum der Beleg trotzdem richtig aussah** — und das ist die Lehre
+(`L-89b308`): Der Einheitstest rechnete an gestellten Kandidatenlisten vor,
+dass am alten Weg 0 von 7 Lehren durchkommen. Die Arithmetik stimmt, die
+Vorrichtung nicht: In der Wirklichkeit speist die gemeinsame Liste MEHR
+Kandidaten in die RRF-Fusion, und die Rangfolge lebt von diesem Material. Wer
+früher kappt, nimmt der Fusion Vorrat weg. Der Test konnte das nicht sehen,
+weil die Fusion in ihm gar nicht vorkam.
+
+**Und die Herkunft des Vorschlags erklärt, warum er ungeprüft in den Plan
+kam:** Er war der *vierte Weg* — ein Nebenbefund am Rand eines
+Konsilberichts, den keine Linse beauftragt hatte und der als einziger nie
+gegen den echten Korpus gemessen worden war. Ein Nebenbefund trägt nicht die
+Beweislast, die das Hauptergebnis getragen hat.
+
+**Was offen bleibt:** Beim Import von 951 Fremdzeilen fällt eine Lehre
+heraus. Die Ursache ist damit **nicht** die gemeinsame Kappung. Sie ist
+weiter unbekannt.
 
 **§4.3 Dokumentenablage** (`ADR-032`, `BDW-P15`), Ort als Einstellung je
 Domäne.
@@ -451,3 +479,4 @@ Lehre `L-8fce9c`, fünftes Vorkommen, auf Regelrang.
 * 2026-08-21T09:20 — Hermes-Panel geschnitten (Paragraf 4b): 6 Felder inline, 3 im vollen Dialog, 4 Gruppen ausdruecklich draussen.
 * 2026-08-21T10:30 — Reihenfolge festgeschrieben (Paragraf 9). E24 vertagt. Welle 1 gestartet.
 * 2026-08-21T12:10 — P16/P18/P17 committet. Zitat-Luecke des Vermutungswaechters als offener Punkt aufgenommen (Paragraf 7a).
+* 2026-08-21T13:05 — P15 gebaut (`81e10b9f`), §4.2 gebaut und nach isolierter Messung zurueckgenommen (`2268d155`).
