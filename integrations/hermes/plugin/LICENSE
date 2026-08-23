@@ -19,20 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-SCOPE OF THIS LICENSE — please read, it is not the usual boilerplate.
-
-This MIT license covers THIS DIRECTORY ONLY: the Hermes adapter
-(brainlehr_provider.py, config_schema.py, cli.py, plugin.yaml,
-pyproject.toml, __init__.py and the READMEs).
-
-It does NOT cover brainlehr itself. brainlehr is a separate program under
-**AGPL-3.0**, distributed separately: https://github.com/3lehr/brainlehr
-
-The two are separate processes. This adapter speaks to brainlehr over MCP
-(stdio) and imports none of its modules — verified: the server runs under its
-own PID and knowledge_mcp_server never enters this process's sys.modules.
-Installing this adapter does not install brainlehr, and using it requires you
-to obtain brainlehr under its own terms.

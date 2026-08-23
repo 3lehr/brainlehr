@@ -243,3 +243,12 @@ und "weiss es schon".
 
 Beides geht nebeneinander. Dieser Anbieter liest und schreibt den echten
 Bestand.
+
+## Lizenz
+
+Dieser Adapter steht unter **MIT** (`LICENSE`). brainlehr selbst ist ein
+eigenes Programm unter **AGPL-3.0** und wird getrennt bezogen. Beide laufen als
+zwei Prozesse, der Adapter importiert kein Modul von brainlehr -- `NOTICE`
+schreibt die Reichweite aus und nennt den Grund, warum sie nicht in `LICENSE`
+steht: Eine LICENSE-Datei, die nicht woertlich MIT ist, wird von den Werkzeugen,
+die sie lesen, nicht als MIT erkannt.

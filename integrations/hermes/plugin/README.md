@@ -220,3 +220,11 @@ the same protocol, but plugs it into the memory pipeline: context is fetched
 difference is "the model can look it up" versus "it already knows".
 
 Both can coexist. This provider reads and writes the real store.
+
+## License
+
+This adapter is **MIT** (`LICENSE`). brainlehr itself is a separate program
+under **AGPL-3.0**, obtained separately. The two run as two processes and this
+adapter imports none of brainlehr's modules — `NOTICE` states the scope in
+full, and says why it is not inside `LICENSE`: a LICENSE file that is not
+verbatim MIT is not recognised as MIT by the tools that read it.

@@ -1,0 +1,23 @@
+NOTICE -- scope of the MIT license in LICENSE
+=============================================
+
+Kept OUT of LICENSE on purpose: a LICENSE file that is not verbatim MIT is
+not recognised as MIT by the tools that read it. GitHub reported this
+repository as license 'other' until this text moved here (measured
+2026-08-23). The scope is important enough to state -- and stating it in
+the wrong file made the license itself unreadable to machines.
+
+SCOPE OF THIS LICENSE — please read, it is not the usual boilerplate.
+
+This MIT license covers THIS DIRECTORY ONLY: the Hermes adapter
+(brainlehr_provider.py, config_schema.py, cli.py, plugin.yaml,
+pyproject.toml, __init__.py and the READMEs).
+
+It does NOT cover brainlehr itself. brainlehr is a separate program under
+**AGPL-3.0**, distributed separately: https://github.com/3lehr/brainlehr
+
+The two are separate processes. This adapter speaks to brainlehr over MCP
+(stdio) and imports none of its modules — verified: the server runs under its
+own PID and knowledge_mcp_server never enters this process's sys.modules.
+Installing this adapter does not install brainlehr, and using it requires you
+to obtain brainlehr under its own terms.
