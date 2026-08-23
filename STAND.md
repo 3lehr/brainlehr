@@ -75,6 +75,37 @@ je eigenem Gedaechtnis, zusammen mit dem fehlenden Gesamtdeckel), 2 CHANCE
 (nativer Browser stuetzt P12; Artifacts-Dashboard als Vergleichsobjekt zu P15,
 ohne erkennbares Herkunftskonzept), 5 EGAL.
 
+## VEROEFFENTLICHT 2026-08-23
+
+- **`3lehr/brainlehr`** (oeffentlich) traegt zum ersten Mal den PROGRAMM-Code:
+  `9574929b`, 51 Dateien geaendert. Vorher 29 Dateien ohne `kern/`, `haken/`
+  und `schema.sql` -- der Server konnte aus einem Klon nicht starten, obwohl
+  die README genau das verlangte.
+  **Belegt am echten Repo:** frisch von GitHub geklont, `pip install .`,
+  `brainlehr-einrichten` aus leerem Verzeichnis -> exit 0.
+- **`3lehr/hermes-brainlehr`** (oeffentlich, neu): der Hermes-Anbieter, MIT,
+  Version 0.1.0, 41 Tests ohne Klon gruen (44 mit).
+
+**Der Push-Waechter hat dabei zweimal gegriffen, einmal lebensrettend:** Ein
+Versuch lief aus dem falschen Arbeitsbaum, `HEAD` war der PRIVATE Zweig mit
+1407 Commits. Er waere oeffentlich geworden.
+
+**Wie eine Veroeffentlichung freigegeben wird** (keine Lockerung, sondern die
+vorgesehene Bauform): `hub/scripts/push_guard.py` sperrt den oeffentlichen
+Hauptzweig und oeffnet genau EINEN namentlich eingetragenen Uebergang --
+`PUBLIC_MAIN_OLD` -> `PUBLIC_MAIN_NEW`. Fuer diesen Release auf
+341691de -> 9574929b gesetzt (`hub` `830adc045`).
+Dabei aufgefallen: die Konstanten standen auf der VORLETZTEN Uebergabe,
+seither war der oeffentliche Stand zweimal weitergerueckt -- an jenen beiden
+Pushes hat der Waechter nicht gegriffen. Nicht mehr aufklaerbar.
+
+**FALLE fuer den naechsten Release:** `melder/ablaufpflicht.py` prueft
+`@{u}..HEAD`, also den AKTUELLEN Zweig gegen sein Upstream -- nicht den
+Bereich, den man pusht. Aus dem Hauptarbeitsbaum heraus bewertet es deshalb
+die Commits des privaten Zweigs und blockiert. Loesung ohne Waechteraenderung:
+aus einem Arbeitsbaum pushen, dessen HEAD der Freigabezweig ist und dessen
+Upstream `oeffentlich/main` ist (`/Volumes/daten/Begod2026/brainlehr-release`).
+
 ## Einstieg fuer einen neuen Nutzer: gefahren, nicht angenommen
 
 Erstmals der Weg eines Fremden gefahren -- Rad bauen, frische virtuelle
