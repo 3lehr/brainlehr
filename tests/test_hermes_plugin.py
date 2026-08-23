@@ -547,16 +547,41 @@ def test_cli_pruefen_meldet_grund_statt_abzustuerzen(tmp_path, monkeypatch, caps
 
 # -- 4. pip-Eintragspunkt ---------------------------------------------------
 
-def test_pip_eintragspunkt_in_hermes_gruppe():
-    """VORHER ROT: es gab keine Paketdatei. Die Gruppe heisst
-    `hermes_agent.plugins` (hermes_cli/plugins.py::ENTRY_POINTS_GROUP) -- der
-    einzige Gruppenname, den Hermes ueberhaupt liest."""
+def test_pip_eintragspunkt_in_der_SPEICHER_gruppe():
+    """Die Gruppe heisst `hermes_agent.memory_providers`, nicht
+    `hermes_agent.plugins`.
+
+    BIS 2026-08-23 stand hier die falsche, mit der Begruendung, sie sei "der
+    einzige Gruppenname, den Hermes ueberhaupt liest". Gemessen war dafuer
+    genau eine Datei. Hermes hat ZWEI Konstanten desselben Namens mit
+    VERSCHIEDENEN Werten:
+
+        hermes_cli/plugins.py:399      "hermes_agent.plugins"
+        plugins/memory/__init__.py:50  "hermes_agent.memory_providers"
+
+    Speicher-Anbieter werden ausschliesslich ueber die zweite gefunden
+    (_iter_entry_points -> discover_memory_providers). Auf der ersten waeren
+    wir nie gefunden worden, ohne Fehler und ohne Protokollzeile -- dieselbe
+    Fehlerklasse wie L-323b86: sauber an der falschen Stelle gemessen.
+
+    Der WERT zeigt auf die Klasse, nicht auf das Modul: entry_point.load()
+    gibt zurueck, worauf gezeigt wird, und ein Modul faellt in
+    _load_provider_from_entry_point() durch alle vier Zweige."""
     import tomllib
     pfad = REPO / "integrations" / "hermes" / "plugin" / "pyproject.toml"
     assert pfad.is_file(), f"{pfad} fehlt"
     daten = tomllib.loads(pfad.read_text(encoding="utf-8"))
-    eintraege = daten["project"]["entry-points"]["hermes_agent.plugins"]
-    assert "brainlehr" in eintraege, eintraege
+    gruppen = daten["project"]["entry-points"]
+    assert "hermes_agent.memory_providers" in gruppen, (
+        f"falsche Gruppe -- Speicher-Anbieter werden nur unter "
+        f"hermes_agent.memory_providers gesucht. Vorhanden: {list(gruppen)}")
+    ziel = gruppen["hermes_agent.memory_providers"]["brainlehr"]
+    assert ":" in ziel, (
+        f"{ziel!r} zeigt auf ein MODUL. entry_point.load() liefert dann das "
+        "Modul, und Hermes findet darin weder Instanz noch Klasse noch etwas "
+        "Aufrufbares -- der Anbieter bleibt unsichtbar.")
+    modul, name = ziel.split(":", 1)
+    assert name == "BrainlehrProvider", ziel
 
 
 def test_mitschrift_ist_im_panel_schaltbar():

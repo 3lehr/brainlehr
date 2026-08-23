@@ -41,8 +41,28 @@ dependencies = []
 [project.optional-dependencies]
 brainlehr = ["brainlehr>=0.1.0"]
 
-[project.entry-points."hermes_agent.plugins"]
-brainlehr = "brainlehr"
+# DIE GRUPPE HEISST memory_providers, NICHT plugins -- und das ist die Falle,
+# an der dieses Paket bis 2026-08-23 haengengeblieben waere.
+#
+# Hermes hat ZWEI Konstanten desselben Namens mit VERSCHIEDENEN Werten:
+#   hermes_cli/plugins.py:399        ENTRY_POINTS_GROUP = "hermes_agent.plugins"
+#   plugins/memory/__init__.py:50    ENTRY_POINTS_GROUP = "hermes_agent.memory_providers"
+# Gesucht werden Speicher-Anbieter ausschliesslich ueber die zweite
+# (_iter_entry_points(), von dort in discover_memory_providers()). Die erste
+# ist der allgemeine Plugin-Weg. Wir standen auf der ersten und waeren nie
+# gefunden worden -- ohne Fehler, ohne Protokollzeile.
+#
+# Die Dokumentation nennt die Gruppe an keiner Stelle (CONTRIBUTING.md sagt nur
+# "or via a pip entry point"), und keiner der acht mitgelieferten Anbieter
+# liefert ein pyproject.toml, an dem man es haette ablesen koennen. Gemessen
+# gegen Hermes 1684877868.
+# Der Wert zeigt auf die KLASSE, nicht auf das Modul. entry_point.load() gibt
+# zurueck, worauf gezeigt wird -- ein Modul ist weder Instanz noch Klasse noch
+# aufrufbar, und _load_provider_from_entry_point() faellt dann durch alle vier
+# Zweige und liefert None. Die Klasse trifft den zweiten Zweig
+# (issubclass(..., MemoryProvider)) und wird instanziiert.
+[project.entry-points."hermes_agent.memory_providers"]
+brainlehr = "brainlehr_provider:BrainlehrProvider"
 
 [tool.setuptools]
 packages = []
