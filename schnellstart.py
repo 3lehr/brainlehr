@@ -46,10 +46,32 @@ BESTAND = HIER / "auszug-offen" / "bestand.jsonl"
 PROBEFRAGE = "was kannst du"
 
 
+
+def _mcp_befehl() -> tuple[str, str]:
+    """(Befehl, args-Zeile) fuer die Konfiguration des Klienten.
+
+    Nach `pip install` liegt `brainlehr-mcp` im PATH -- dann ist der Eintrag
+    ein Wort statt zweier absoluter Pfade, und er ueberlebt jeden Umzug der
+    virtuellen Umgebung. Im Klon gibt es das Skript nicht; dort bleiben die
+    Pfade, weil sie dort auch stimmen."""
+    from shutil import which
+    # ZUERST neben dem laufenden Interpreter, dann erst im PATH. Wer das
+    # Skript ueber seinen absoluten Pfad aufruft, ohne die virtuelle Umgebung
+    # zu aktivieren, hat sie nicht im PATH -- und das ist kein Sonderfall,
+    # sondern der Normalfall bei einem Aufruf aus einem anderen Programm.
+    neben = Path(sys.executable).parent / "brainlehr-mcp"
+    skript = str(neben) if neben.exists() else which("brainlehr-mcp")
+    if skript:
+        return skript, ""
+    return sys.executable, f',\n      "args": ["{HIER / "knowledge_mcp_server.py"}"]'
+
+
 def _lauf(*teile: str, umgebung: dict | None = None) -> tuple[int, str]:
     """Ruft ein mitgeliefertes Werkzeug. Gibt Code und die letzte Zeile."""
     e = dict(os.environ)
-    e["BEGOD_KNOWLEDGE_DB"] = str(DB)
+    # BRAINLEHR_DB ist der massgebliche Name; der alte wuerde zwar auch
+    # gelesen, aber ein Einrichtungsskript soll vormachen, was gilt.
+    e["BRAINLEHR_DB"] = str(DB)
     if umgebung:
         e.update(umgebung)
     p = subprocess.run([sys.executable, *teile], cwd=HIER, env=e,
@@ -66,7 +88,7 @@ def _schritt(nr: int, von: int, was: str) -> None:
 
 def _probe() -> int:
     """Fragt die frische Instanz. Rueckgabe: Zahl der Treffer."""
-    os.environ["BEGOD_KNOWLEDGE_DB"] = str(DB)
+    os.environ["BRAINLEHR_DB"] = str(DB)
     sys.path.insert(0, str(HIER))
     import knowledge_mcp_server as server  # erst hier, DB-Pfad muss stehen
 
@@ -103,7 +125,13 @@ def main() -> int:
         nr += 1
         _schritt(nr, schritte, "Beispielbestand einspielen (muss vor allem anderen kommen -- brainlehr.py rein besteht auf einer leeren Datenbank)")
         if not BESTAND.exists():
-            print(f"      uebersprungen: {BESTAND} fehlt")
+            print("      uebersprungen -- dieses Paket liefert keinen Bestand mit.")
+            print("      Das ist Absicht (BDW-P20): fremde Kataloge gehoeren dem,")
+            print("      der sie erstellt hat, und eine Lehre ohne den Beleg, aus")
+            print("      dem sie stammt, ist in einem Belegsystem eine Behauptung.")
+            print("      Ein frischer Bestand ist leer und richtig, nicht unfertig.")
+            print("      Fremde Nachschlagewerke holt das Einrichtungsgespraech")
+            print("      auf Wunsch aus der Ursprungsquelle (kern/einrichtung.py).")
         else:
             code, zeile = _lauf("brainlehr.py", "rein", str(BESTAND), "--db", str(DB))
             print(f"      {zeile}" if code == 0 else f"      FEHLGESCHLAGEN: {zeile}")
@@ -143,8 +171,7 @@ FERTIG. Naechster Schritt: den Sprachmodell-Client anschliessen.
   Eintrag fuer die MCP-Konfiguration (Claude Desktop, Claude Code, ChatGPT):
 
     "brainlehr": {{
-      "command": "{sys.executable}",
-      "args": ["{HIER / 'knowledge_mcp_server.py'}"]
+      "command": "{_mcp_befehl()[0]}"{_mcp_befehl()[1]}
     }}
 
   Danach START_HIER.md an das Modell geben -- darin steht, was es mit

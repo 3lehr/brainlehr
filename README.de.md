@@ -105,6 +105,39 @@ python3 brainlehr.py rein  auszug.jsonl --db knowledge.db   # wieder einlesen
 python3 brainlehr.py haken --einbauen           # Hooks verdrahten
 ```
 
+## Als Paket installieren
+
+Zwei Wege hinein. Der obige geht vom **Klon** aus — dieser braucht gar keinen:
+
+```bash
+pip install brainlehr          # noch nicht auf PyPI; bis dahin: pip install <rad>
+brainlehr-einrichten           # legt den Bestand an, belegt sich selbst, hoert auf
+```
+
+Der Bestand landet in `~/.brainlehr/brainlehr.db`, **nicht** im installierten
+Paket — gemessen 2026-08-23: Ein Vorgabepfad unter `site-packages` wird vom
+nächsten `pip install --upgrade` gelöscht, lautlos, weil niemand seine Daten
+dort vermutet.
+
+Danach den Server eintragen. `brainlehr-mcp` liegt nach der Installation im
+`PATH`, keiner dieser Befehle braucht also einen absoluten Pfad:
+
+```bash
+claude mcp add --transport stdio --scope user brainlehr -- brainlehr-mcp
+codex mcp add brainlehr -- brainlehr-mcp
+```
+
+Für Hermes ist brainlehr kein einfacher MCP-Server, sondern ein
+Speicher-Anbieter — siehe [`integrations/hermes/`](./integrations/hermes/).
+
+Wer **im Klon** dieses Repos arbeitet, braucht für Claude Code gar nichts:
+[`.mcp.json`](./.mcp.json) liegt bei und meldet den Server für das Projekt an.
+
+Der Bestand startet **leer, und das ist richtig** — dieses Paket liefert kein
+Wissen mit, auch nicht unseres. Nachschlagewerke (BSI, NASA LLIS, WCAG) holt
+die Einrichtung aus der **Ursprungsquelle**, damit jeder sie beim Rechteinhaber
+bezieht. Nichts geht ins Netz, ohne dass man es sagt.
+
 ## Einrichtung per eingefügtem Prompt
 
 Einen der folgenden Texte an den eigenen Agenten geben. Jeder klont,

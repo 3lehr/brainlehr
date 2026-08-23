@@ -56,6 +56,9 @@ bedeutungskanal = ["numpy>=1.26", "scikit-learn>=1.4", "cryptography>=42"]
 [project.scripts]
 # Damit ein Klient `brainlehr-mcp` eintragen kann statt eines Dateipfads.
 brainlehr-mcp = "brainlehr_kern.knowledge_mcp_server:main"
+# Ohne das ist eine Installation nur der halbe Weg: der Server laeuft, aber
+# niemand hat je eine Datenbank angelegt. Gemessen 2026-08-23 am Erstlauf.
+brainlehr-einrichten = "brainlehr_kern.schnellstart:main"
 
 [project.urls]
 Homepage = "https://github.com/3lehr/brainlehr"
@@ -67,6 +70,8 @@ Homepage = "https://github.com/3lehr/brainlehr"
 # jede Sicherung mit drin. Genau der Fehler, gegen den
 # tests/test_paketbau.py rot faerbt.
 only-include = [
+  "START_HIER.md",
+  "brainlehr.py",
   "haken/ort.py",
   "herkunft_unveraenderlich.sql",
   "kern/anfrage_erweiterung.py",
@@ -109,7 +114,9 @@ only-include = [
   "kern/zeitmarke.py",
   "knowledge_mcp_server.py",
   "melder/einbettungsaussetzer.py",
+  "melder/selbstbeschreibung.py",
   "schema.sql",
+  "schnellstart.py",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -117,6 +124,8 @@ only-include = [
 bypass-selection = true
 
 [tool.hatch.build.targets.wheel.force-include]
+"START_HIER.md" = "brainlehr_kern/START_HIER.md"
+"brainlehr.py" = "brainlehr_kern/brainlehr.py"
 "haken/ort.py" = "brainlehr_kern/haken/ort.py"
 "herkunft_unveraenderlich.sql" = "brainlehr_kern/herkunft_unveraenderlich.sql"
 "kern/anfrage_erweiterung.py" = "brainlehr_kern/kern/anfrage_erweiterung.py"
@@ -159,4 +168,6 @@ bypass-selection = true
 "kern/zeitmarke.py" = "brainlehr_kern/kern/zeitmarke.py"
 "knowledge_mcp_server.py" = "brainlehr_kern/knowledge_mcp_server.py"
 "melder/einbettungsaussetzer.py" = "brainlehr_kern/melder/einbettungsaussetzer.py"
+"melder/selbstbeschreibung.py" = "brainlehr_kern/melder/selbstbeschreibung.py"
 "schema.sql" = "brainlehr_kern/schema.sql"
+"schnellstart.py" = "brainlehr_kern/schnellstart.py"

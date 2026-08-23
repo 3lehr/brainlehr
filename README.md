@@ -103,6 +103,42 @@ python3 brainlehr.py rein  auszug.jsonl --db knowledge.db   # read it back in
 python3 brainlehr.py haken --einbauen           # wire up the hooks
 ```
 
+## Install it as a package
+
+Two ways in. The one above works from a **clone** — this one needs no clone at
+all:
+
+```bash
+pip install brainlehr          # not on PyPI yet; until then: pip install <wheel>
+brainlehr-einrichten           # creates the store, verifies itself, then stops
+```
+
+The store lands in `~/.brainlehr/brainlehr.db`, **not** inside the installed
+package — measured 2026-08-23: a default path under `site-packages` would be
+deleted by the next `pip install --upgrade`, silently, because nobody keeps
+their data there.
+
+Then register the server. `brainlehr-mcp` is on `PATH` after the install, so
+none of these needs an absolute path:
+
+```bash
+claude mcp add --transport stdio --scope user brainlehr -- brainlehr-mcp
+codex mcp add brainlehr -- brainlehr-mcp
+```
+
+For Hermes, brainlehr is a memory provider plugin rather than a plain MCP
+server — see [`integrations/hermes/`](./integrations/hermes/).
+
+Working **inside a clone** of this repository, Claude Code needs nothing at
+all: [`.mcp.json`](./.mcp.json) is checked in and registers the server for the
+project.
+
+The store starts **empty, and that is correct** — this package ships no
+knowledge, not even ours. Reference works (BSI, NASA LLIS, WCAG) are fetched
+from their **origin** during setup, so every user gets them from whoever holds
+the rights. `kern/einrichtung.py` offers them; nothing goes over the network
+unless you say so.
+
 ## Set it up by pasting a prompt
 
 Give one of these to your agent. Each one clones, installs, verifies and wires

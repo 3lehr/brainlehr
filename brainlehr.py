@@ -146,7 +146,7 @@ def init(ziel: Path) -> int:
     print(f"  Tabellen: {len(tabellen)}")
     print(f"  Regeln (Trigger): {len(trigger)}")
     print(f"  Herkunftsschranke: {'ja' if 'knowledge_nodes_herkunft_bu' in trigger else 'NEIN -- FEHLER'}")
-    print(f"\nBenutzen: BEGOD_KNOWLEDGE_DB={db} python3 knowledge_mcp_server.py")
+    print(f"\nBenutzen: BRAINLEHR_DB={db} brainlehr-mcp")
     return 0 if "knowledge_nodes_herkunft_bu" in trigger else 1
 
 
