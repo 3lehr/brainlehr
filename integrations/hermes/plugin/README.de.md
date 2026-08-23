@@ -38,15 +38,35 @@ spricht mit einem entfernten Dienst. Der einzige Netzaufruf geht an die
 eingestellte Adresse des Einbettungsdienstes, und die zeigt vorgabemaessig auf
 localhost.
 
-## brainlehr selbst installieren: eine Zeile, ohne Arbeitsstand
+## brainlehr selbst installieren
+
+**Heute ist das ein Klon, kein pip install.** Die Zeile unten ist, was es
+werden soll; sie funktioniert noch nicht, und etwas anderes zu behaupten
+kostet die ersten zehn Minuten:
 
 ```bash
-pip install brainlehr          # der Speicher (AGPL-3.0); [bedeutungskanal] fuer lokale Einbettungen
+pip install brainlehr          # NOCH NICHT AUF PyPI -- siehe unten
 ```
 
-Danach in den Plugin-Einstellungen `mcp_command = brainlehr-mcp` eintragen --
-das installierte Paket bringt diesen Befehl mit, ein Dateipfad oder ein
-geklontes Repo ist damit nicht mehr noetig.
+Geprueft am 2026-08-23: Der Name `brainlehr` ist auf PyPI unvergeben, der
+Befehl scheitert also mit *No matching distribution found* und installiert
+nicht versehentlich fremden Code. `pip install git+https://github.com/3lehr/brainlehr`
+scheitert ebenfalls -- dem oeffentlichen Stand fehlt die Bauanleitung.
+
+**Was heute geht:**
+
+```bash
+git clone https://github.com/3lehr/brainlehr.git
+cd brainlehr && python3 schnellstart.py
+```
+
+Danach `brainlehr_home` in den Plugin-Einstellungen auf dieses Verzeichnis
+zeigen lassen, oder den Symlink unten benutzen -- der Anbieter leitet den
+Startbefehl daraus ab.
+
+Sobald das Paket veroeffentlicht ist, ersetzt `mcp_command = brainlehr-mcp`
+das alles. Die Einstellung gibt es im Anbieter bereits; es fehlt nur der
+Upload.
 
 **Es sind zwei Dinge noetig, und der Grund gehoert dazu.** Es sind zwei
 getrennte Werke unter zwei Lizenzen: der Speicher ist AGPL-3.0, dieser Adapter

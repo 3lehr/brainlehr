@@ -32,15 +32,35 @@ place. Retrieval passes that origin along.
 service. The only network call it makes is to the embedding service address you
 configure, which points at localhost by default.
 
-## Installing brainlehr itself: one line, no checkout
+## Installing brainlehr itself
+
+**Today, this is a checkout — not a pip install.** The line below is what it
+will be; it does not work yet, and saying otherwise would waste your first ten
+minutes:
 
 ```bash
-pip install brainlehr          # the store (AGPL-3.0); add [bedeutungskanal] for local embeddings
+pip install brainlehr          # NOT YET ON PyPI — see below
 ```
 
-Then set `mcp_command = brainlehr-mcp` in the plugin settings — the installed
-package brings that command, so no file path and no repository clone is needed
-any more.
+Checked on 2026-08-23: the name `brainlehr` is unclaimed on PyPI, so the
+command fails with *No matching distribution found* rather than installing
+somebody else's package. `pip install git+https://github.com/3lehr/brainlehr`
+fails too — the public repository does not yet carry the packaging metadata.
+
+**What works today:**
+
+```bash
+git clone https://github.com/3lehr/brainlehr.git
+cd brainlehr && python3 schnellstart.py
+```
+
+Then point `brainlehr_home` at that directory in the plugin settings, or use
+the symlink below — the provider derives the start command from it.
+
+Once the package is published, `mcp_command = brainlehr-mcp` replaces all of
+that: the installed package brings the command, and no path and no clone are
+needed. The provider already supports that setting; only the upload is
+missing.
 
 **Two things are needed, and it is worth saying why.** They are two separate
 works under two licenses: the store is AGPL-3.0, this adapter is MIT, and they
