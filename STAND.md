@@ -3,6 +3,49 @@
 **Lage:** Zweig `brainlehr/b4-ausweis`, nichts gepusht. Katalog **72 Zeilen**,
 0 ohne Gate-Lauf. Alle Plan-Wellen abgearbeitet.
 
+
+## WIEDEREINSTIEG (Pause 2026-08-23T11:40)
+
+**Nichts ist halbfertig.** Alle Handarbeit ist festgeschrieben; die 7 bzw. 4
+geaenderten Dateien in brainlehr und hub sind erzeugte Laeufer (NODE_INDEX,
+Kuratormarker, runs/, Spike-Ausgaben), keine offene Arbeit.
+
+**FERTIG heute, mit Pfad:**
+- `3lehr/brainlehr` oeffentlich auf `9574929b` -- erstmals MIT dem Programm.
+- `3lehr/hermes-brainlehr` oeffentlich angelegt, MIT, 0.1.0.
+- Freigabe eingetragen in `hub/scripts/push_guard.py` (`hub` `830adc045`).
+- Automodus-Einstellungen: `.claude/settings.json` (`013e5e12`) und
+  `~/.claude/settings.json` (allow 19 -> 16, NICHT versioniert).
+  Sicherungen beider Dateien:
+  `<scratchpad>/settings_backup/{user,project}_settings.json.bak`
+- Arbeitsbaum `/Volumes/daten/Begod2026/brainlehr-release` steht noch, Zweig
+  `release-2026-08-23`, Upstream `oeffentlich/main`. **Nicht loeschen** -- aus
+  ihm heraus wird der naechste Release gepusht (Grund unten).
+
+**LAUFZEITFALLE, kostet sonst eine halbe Stunde:** `knowledge_mcp_server.py`
+holt seinen Datenbankpfad jetzt ueber `haken/ort.py`. Die aktuell laufenden
+Serverprozesse (Hermes und andere Sitzungen, `pgrep -f knowledge_mcp_server`)
+halten aber ihren ALTEN Code, bis ihr Klient neu startet. Wer die neue
+Aufloesung pruefen will, startet den Prozess neu -- ein Blick in die Datei
+sagt nichts ueber den laufenden Server.
+
+**WARTET AUF DEN BETREIBER, nichts davon unter Annahme erledigen:**
+1. `~/Downloads/pypiapi.txt` loeschen und das PyPI-Token zurueckziehen. Ich
+   habe es nicht gelesen und werde es nicht.
+2. PyPI *pending publisher* eintragen (Formular, kein Geheimnis):
+   Projekt `brainlehr` · Owner `3lehr` · Repo `brainlehr` ·
+   Workflow `release.yml` · Environment `pypi`.
+3. Meldung an das Hermes-Repo absenden --
+   `integrations/hermes/MELDUNG_ENTRY_POINTS.md`, kopierfertig, Beleg gegen
+   Hermes `1684877868`.
+4. Ankuendigung in Discord `#plugins-skills-and-skins`.
+
+**NAECHSTER SCHRITT, ohne Rueckfrage ausfuehrbar:** `melder/ablaufpflicht.py`
+prueft `@{u}..HEAD` statt des tatsaechlich gepushten Bereichs und blockiert
+deshalb jeden Release-Push aus dem Hauptarbeitsbaum. Den gepushten Bereich aus
+den stdin-Zeilen des pre-push-Hooks (`local_sha`/`remote_sha`) durchreichen --
+mit Negativprobe, dass die drei belegten L-706807-Faelle weiter anschlagen.
+
 ## Auslieferung entschieden: das Paket traegt keinen Bestand
 
 Betreiberwort 2026-08-21: *"lass mein eigenes zeugs weg, das sollen sich die
