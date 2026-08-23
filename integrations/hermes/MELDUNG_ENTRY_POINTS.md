@@ -1,117 +1,93 @@
-# Vorbereitete Meldungen an NousResearch/hermes-agent
+# Vorbereitete Meldung an NousResearch/hermes-agent
 
-Zwei Stück, beide ungesendet, beide derselben Klasse: eine Lücke in der
-generischen Plugin-Fläche, nicht ein neuer Anbieter.
+**Stand 2026-08-23. Belege gegen Hermes-Commit `1684877868` nachgemessen.**
 
-**Nicht abgeschickt.** Das Öffnen eines Issues in einem fremden Repo ist
-Außenwirkung und gehört dem Betreiber. Der Text unten ist fertig zum Einfügen.
-
-**Warum diese Meldung zulässig ist, während ein Anbieter-PR es nicht wäre:**
-Ihre `CONTRIBUTING.md` Zeile 98 lädt sie ausdrücklich ein — *„If your plugin
-needs a capability the framework doesn't expose, that's a feature request to
-**widen the generic plugin surface**."* Es geht nicht um einen neuen Anbieter,
-sondern um eine Lücke in ihrer eigenen Fläche.
-
-**Belegstand:** Klon `~/.hermes/hermes-agent`, HEAD `643910afe3`, gelesen und
-nachgeprüft am 2026-08-21. Alle drei Fundstellen selbst geöffnet, nicht aus
-einer Zusammenfassung übernommen.
+Zum Absenden: <https://github.com/NousResearch/Hermes-Agent/issues/new> —
+Titel und Text unten sind kopierfertig. Der Betreiber entscheidet, ob und
+wann; ein Beitrag an ein fremdes Projekt ist Aussenwirkung.
 
 ---
 
 ## Titel
 
-`Memory providers are not discoverable via pip entry points, contrary to CONTRIBUTING.md`
+`Docs never name the entry-point group for memory providers — and there are two different ones in the tree`
 
 ## Text
 
-CONTRIBUTING.md tells standalone memory plugin authors that entry points work:
+CONTRIBUTING.md points standalone memory-plugin authors at pip entry points
+twice:
 
+> publish it as a **standalone plugin repo** that users install into
+> `~/.hermes/plugins/` (or via a pip entry point) — line 72
+>
 > Use the same discovery system — `discover_memory_providers()` picks them up
-> from user/project plugin directories **and pip entry points**
-> — CONTRIBUTING.md, line 77
+> from user/project plugin directories and pip entry points — line 77
 
-As far as I can tell from the code, `discover_memory_providers()` never looks
-at entry points, and the general plugin loader cannot route one either. I may
-be missing a path — if so, I'd be glad to be corrected, and the docs line is
-then the only thing that needs a pointer.
+Both are accurate: `discover_memory_providers()` does read entry points
+(`plugins/memory/__init__.py::_iter_entry_points`). What neither line says is
+**which group name to declare** — and there are two in the tree, with
+different values:
 
-**1. `discover_memory_providers()` iterates directories only.**
-`plugins/memory/__init__.py:157` builds its result solely from
-`_iter_provider_dirs()`. That helper (`:90`) scans the bundled directory and
-the user/project plugin directories, and skips anything without an
-`__init__.py` on disk. There is no `importlib.metadata` or `entry_points`
-reference anywhere in the file.
+| constant | file | value |
+|---|---|---|
+| `ENTRY_POINTS_GROUP` | `hermes_cli/plugins.py:399` | `hermes_agent.plugins` |
+| `ENTRY_POINTS_GROUP` | `plugins/memory/__init__.py:50` | `hermes_agent.memory_providers` |
 
-**2. The general loader reads entry points, but its hand-off to memory
-discovery needs a directory.** `hermes_cli/plugins.py:1749-1763` coerces a
-user-installed plugin to `kind="exclusive"` — the memory route — by reading
-`plugin_dir / "__init__.py"` and text-scanning it for `register_memory_provider`
-or `MemoryProvider`. An entry-point distribution has neither a `plugin_dir`
-nor that file in the expected place, so the coercion cannot fire.
+Memory providers are found only through the second. A plugin that declares the
+first installs cleanly, and is then invisible to `hermes memory` — no error, no
+log line.
 
-**Effect:** a memory plugin packaged with `[project.entry-points."hermes_agent.plugins"]`
-installs cleanly and is then invisible to `hermes memory` — no error, no log
-line. It works only when symlinked or copied into `~/.hermes/plugins/`.
+I searched `CONTRIBUTING.md`, `README.md` and `docs/` for either literal:
+no match. And none of the eight bundled providers ships a `pyproject.toml`, so
+there is no example in the repository to read it off either. The name is
+discoverable only by reading `plugins/memory/__init__.py`.
 
-**Two possible resolutions**, and I have no stake in which:
+**A second, smaller trap in the same place:** the entry-point *value* has to
+resolve to something `_load_provider_from_entry_point()` can use — an instance,
+a `MemoryProvider` subclass, an object with `.register`, or a callable. Pointing
+it at the module (the shape most plugin ecosystems accept) falls through all
+four branches and returns `None`, again silently.
 
-* **Docs** — drop "and pip entry points" from line 77 for memory providers,
-  and say plainly that they are directory-discovered. Cheapest, and it makes
-  the promise true.
-* **Code** — have `discover_memory_providers()` also consult
-  `ENTRY_POINTS_GROUP` (`hermes_cli/plugins.py:221`) and resolve the module
-  path of each matching distribution. This is the one that widens the generic
-  surface, which is what CONTRIBUTING asks such requests to aim at.
+**Suggested fix, docs only:** name the group in CONTRIBUTING.md next to line
+77, and show one line of `pyproject.toml`:
 
-I'm happy to open a PR for either, but I wanted to check the reading first
-rather than send a patch built on a misunderstanding.
+```toml
+[project.entry-points."hermes_agent.memory_providers"]
+myprovider = "my_module:MyProvider"     # a class, not the module
+```
 
-**Context, for what it's worth:** I hit this while packaging a standalone
-memory provider exactly as CONTRIBUTING describes. The plugin itself is fine —
-this is only about the discovery path. Symlink installation works; the
-`pyproject.toml` sits there unused.
+I'm happy to open that PR if it's welcome. I have no view on whether the two
+constants should be reconciled in code — that's a design question for you, and
+naming the right one in the docs already removes the trap.
 
-**Verified against** `643910afe3`.
+**Context:** found while packaging a standalone memory provider. I had declared
+`hermes_agent.plugins`, having read only `hermes_cli/plugins.py`, and the
+plugin was silently undiscoverable until I read the memory package. Everything
+else in CONTRIBUTING worked as written.
 
 ---
----
 
-# ZURÜCKGEZOGEN — die zweite Meldung war falsch
+# Was aus der ersten Fassung wurde
 
-**Nicht senden.** Der Befund „Hermes hat keinen Kanal für eine Statuszeile"
-ist **widerlegt**, und zwar durch eigenes Nachsehen auf Nachfrage des
-Betreibers („bist du dir da 100 %? könnten wir es mit unserem plugin
-nachrüsten?").
+**ZURUECKGEZOGEN am 2026-08-23.** Die urspruengliche Meldung behauptete,
+`discover_memory_providers()` lese ueberhaupt keine entry points, und
+CONTRIBUTING.md verspreche damit etwas Unzutreffendes. Beim Nachmessen gegen
+den heutigen Stand: `plugins/memory/__init__.py` traegt sechs Bezuege auf
+`importlib.metadata`/`entry_points` (Zeilen 36, 161, 164, 237, 257, 298). Die
+Luecke ist geschlossen; die Meldung waere ein Fehlbericht gewesen.
 
-**Was ich übersehen hatte, an zwei Stellen:**
+Das ist die ZWEITE vorbereitete Meldung an dieses Projekt, die sich beim
+Nachpruefen als falsch erwies (die erste betraf einen Statuskanal, den Hermes
+sehr wohl hat). Beide waren mit Fundstellen und Belegstand geschrieben, also
+besonders glaubwuerdig -- und beide haetten einem fremden Projekt einen Mangel
+gemeldet, den es nicht hat.
 
-1. **`agent/agent_init.py:1735-1737`** — Hermes reicht einem Speicher-Anbieter
-   in `initialize()` zwei Rückrufe mit, sobald die Plattform `cli` ist:
-   ```python
-   _init_kwargs["warning_callback"] = agent._emit_warning
-   _init_kwargs["status_callback"] = agent._emit_status
-   ```
-2. **`run_agent.py:960`** beschreibt genau das Gewünschte: *„Emit a lifecycle
-   status message to both CLI and gateway channels. CLI users see the message
-   via `_vprint(force=True)` so it is always visible regardless of
-   verbose/quiet mode."*
+**Die Lehre daraus, und sie steht hier statt im Wissensspeicher, weil sie
+genau hier gebraucht wird:** Ein Befund ueber fremden Code altert schneller
+als einer ueber eigenen. Vor dem Absenden wird er gegen den TAGESAKTUELLEN
+Stand des fremden Repos neu gemessen -- nicht gegen den Commit, an dem er
+entstand. Zwischen Entstehen und Absenden lagen hier zwei Tage.
 
-Der Kanal existiert also und ist für Anbieter gedacht. Zusätzlich hat
-`PluginContext` eine Methode `inject_message` — für unseren Zweck ungeeignet
-(sie startet einen Zug oder unterbricht einen laufenden), aber sie widerlegt
-ebenfalls die pauschale Aussage „ausschließlich `register_*`".
-
-**Warum ich es nicht gefunden habe, und das ist die Lehre:** Ich habe die
-**ABC** und die **öffentlichen Methoden** abgesucht — `status_callback` steht
-in keiner von beiden. Es kommt als `kwarg` in `initialize()` an, und die
-ABC-Dokumentation zählt unter „kwargs may also include" sieben andere Namen
-auf, diesen aber nicht. Eine Fähigkeit, die nur im **Aufrufer** steht, findet
-nicht, wer beim Aufgerufenen sucht.
-
-**Was daraus folgt:** Kein Beitrag an Hermes nötig. Die Statuszeile wird im
-eigenen Plugin nachgerüstet — siehe `brainlehr_provider.py`.
-
-**Die Einschränkung, die dabei gilt:** Die Rückrufe kommen nur bei
-`platform == "cli"`. Im Gateway-, Telegram- oder Discord-Betrieb sind sie
-nicht dabei; dort muss der Anbieter ohne auskommen, ohne zu stürzen.
-
+**Und der Ertrag der Nachpruefung war groesser als die Meldung:** Sie fand
+einen Fehler in UNSEREM Paket (falsche Eintragspunkt-Gruppe, `d219fbb3`), der
+dazu gefuehrt haette, dass das Plugin per pip nie gefunden wird.
