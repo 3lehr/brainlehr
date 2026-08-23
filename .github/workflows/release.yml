@@ -1,0 +1,92 @@
+# Veroeffentlicht auf PyPI -- ohne Token, ueber Trusted Publishing (OIDC).
+#
+# WARUM OHNE TOKEN: Ein API-Token ist ein Geheimnis, das irgendwo liegen muss --
+# in einer Datei, in der Zwischenablage, in einem Secrets-Store. Trusted
+# Publishing tauscht stattdessen ein kurzlebiges OIDC-Zeichen zwischen GitHub
+# und PyPI; es gibt nichts, was man verlieren, weitergeben oder rotieren
+# muesste. Der Gegenposten steht auf PyPI unter "Publishing" und nennt genau
+# dieses Repository, diese Datei und diese Umgebung -- weicht eines davon ab,
+# lehnt PyPI ab.
+#
+# WAS DEN LAUF AUSLOEST: ausschliesslich ein Versionstag (v0.1.0). Kein Push
+# auf main veroeffentlicht etwas. Eine Version laesst sich auf PyPI NIE wieder
+# ueberschreiben oder unter demselben Namen neu hochladen -- deshalb ist der
+# Ausloeser eine bewusste, benannte Handlung und kein Nebeneffekt des
+# Weiterarbeitens.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:        # von Hand, fuer einen Trockenlauf ohne Tag
+
+permissions:
+  contents: read
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tag gegen pyproject halten
+        # Ein Tag, der nicht zur Version im Paket passt, erzeugt eine
+        # Veroeffentlichung unter einer Nummer, die im Quelltext nirgends
+        # steht -- und die laesst sich hinterher nicht korrigieren.
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          python3 -c "
+          import tomllib, os, sys
+          version = tomllib.load(open('pyproject.toml','rb'))['project']['version']
+          tag = os.environ['GITHUB_REF_NAME'].lstrip('v')
+          print(f'pyproject: {version}   tag: {tag}')
+          sys.exit(0 if version == tag else 'Tag und pyproject-Version stimmen nicht ueberein')
+          "
+
+      - name: Tests
+        # Nur die, die ohne den gewachsenen Bestand aussagekraeftig sind: auf
+        # einem frischen Laeufer gibt es keine Datenbank, und die Pruefungen,
+        # die gegen echte Abrufguete messen, wuerden dort nichts messen.
+        run: |
+          python3 -m pip install -q pytest
+          python3 -m pytest tests/test_paketliste_vollstaendig.py -q
+
+      - name: Rad und Quellarchiv bauen
+        run: |
+          python3 -m pip install -q build
+          python3 -m build
+
+      - name: Erstlauf gegen das GEBAUTE Rad
+        # Der Schritt, der am 2026-08-23 vier Fehler gefunden hat: installieren
+        # und aus einem LEEREN Verzeichnis benutzen. Ein Rad, das nur gebaut
+        # wurde, ist ungeprueft -- das Repo hat alles im Suchpfad, ein
+        # installiertes Paket nur, was in der Liste steht.
+        run: |
+          python3 -m venv /tmp/probe
+          /tmp/probe/bin/pip install -q dist/*.whl
+          mkdir -p /tmp/leer && cd /tmp/leer
+          /tmp/probe/bin/brainlehr-einrichten
+          test ! -e "$(/tmp/probe/bin/python -c 'import sysconfig;print(sysconfig.get_paths()["purelib"])')/brainlehr_kern/brainlehr.db" \
+            || (echo "Bestand liegt in site-packages -- ein pip upgrade wuerde ihn loeschen" && exit 1)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  veroeffentlichen:
+    needs: bauen
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: pypi          # muss zum Eintrag auf PyPI passen
+    permissions:
+      id-token: write          # das ist der ganze Ersatz fuer das Token
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
