@@ -80,18 +80,21 @@ only-include = [
   "kern/embeddings.py",
   "kern/fremdimport.py",
   "kern/gattung_filter.py",
+  "kern/gegenstand.py",
   "kern/geheimnis.py",
   "kern/geltungsbereich.py",
   "kern/herkunft_normentscheider.py",
   "kern/kettenerklaerung.py",
   "kern/knowledge_lint.py",
   "kern/konfidenz.py",
+  "kern/lesson_recorder.py",
   "kern/nachrangung.py",
   "kern/normachsen.py",
   "kern/normbestand.py",
   "kern/normkraft.py",
   "kern/normrang.py",
   "kern/prompt_invarianz.py",
+  "kern/reifegrad.py",
   "kern/relevanzlage.py",
   "kern/schema_nachzug.py",
   "kern/schluesselablage.py",
@@ -101,6 +104,7 @@ only-include = [
   "kern/spracherkennung.py",
   "kern/trennung.py",
   "kern/werkzeugrechte.py",
+  "kern/wirkung.py",
   "kern/zeitfenster.py",
   "kern/zeitmarke.py",
   "knowledge_mcp_server.py",
@@ -126,18 +130,21 @@ bypass-selection = true
 "kern/embeddings.py" = "brainlehr_kern/kern/embeddings.py"
 "kern/fremdimport.py" = "brainlehr_kern/kern/fremdimport.py"
 "kern/gattung_filter.py" = "brainlehr_kern/kern/gattung_filter.py"
+"kern/gegenstand.py" = "brainlehr_kern/kern/gegenstand.py"
 "kern/geheimnis.py" = "brainlehr_kern/kern/geheimnis.py"
 "kern/geltungsbereich.py" = "brainlehr_kern/kern/geltungsbereich.py"
 "kern/herkunft_normentscheider.py" = "brainlehr_kern/kern/herkunft_normentscheider.py"
 "kern/kettenerklaerung.py" = "brainlehr_kern/kern/kettenerklaerung.py"
 "kern/knowledge_lint.py" = "brainlehr_kern/kern/knowledge_lint.py"
 "kern/konfidenz.py" = "brainlehr_kern/kern/konfidenz.py"
+"kern/lesson_recorder.py" = "brainlehr_kern/kern/lesson_recorder.py"
 "kern/nachrangung.py" = "brainlehr_kern/kern/nachrangung.py"
 "kern/normachsen.py" = "brainlehr_kern/kern/normachsen.py"
 "kern/normbestand.py" = "brainlehr_kern/kern/normbestand.py"
 "kern/normkraft.py" = "brainlehr_kern/kern/normkraft.py"
 "kern/normrang.py" = "brainlehr_kern/kern/normrang.py"
 "kern/prompt_invarianz.py" = "brainlehr_kern/kern/prompt_invarianz.py"
+"kern/reifegrad.py" = "brainlehr_kern/kern/reifegrad.py"
 "kern/relevanzlage.py" = "brainlehr_kern/kern/relevanzlage.py"
 "kern/schema_nachzug.py" = "brainlehr_kern/kern/schema_nachzug.py"
 "kern/schluesselablage.py" = "brainlehr_kern/kern/schluesselablage.py"
@@ -147,6 +154,7 @@ bypass-selection = true
 "kern/spracherkennung.py" = "brainlehr_kern/kern/spracherkennung.py"
 "kern/trennung.py" = "brainlehr_kern/kern/trennung.py"
 "kern/werkzeugrechte.py" = "brainlehr_kern/kern/werkzeugrechte.py"
+"kern/wirkung.py" = "brainlehr_kern/kern/wirkung.py"
 "kern/zeitfenster.py" = "brainlehr_kern/kern/zeitfenster.py"
 "kern/zeitmarke.py" = "brainlehr_kern/kern/zeitmarke.py"
 "knowledge_mcp_server.py" = "brainlehr_kern/knowledge_mcp_server.py"

@@ -158,13 +158,28 @@ import zeitfenster  # Auftrag 88 Schritt 1 (docs/PLAN_ZEITACHSE_2026-08-14.md):
                      # zeitfenster importiert selbst nichts von hier.
 import prompt_invarianz  # agentneutraler Entscheidungstest; keine Modell- oder DB-Abhaengigkeit
 
-# BEGOD_KNOWLEDGE_DB ueberschreibt den Pfad (gleiche Bauform wie die drei
-# BEGOD_KNOWLEDGE_*-Vars in _identity()). Ohne sie: heutiges Verhalten
-# unveraendert. Grund: ein fest an __file__ gebundener DB-Pfad verhindert
-# jeden Betrieb ausserhalb dieses Verzeichnisses (Fremdclient-Test, spaeter
-# Portabilitaet ausserhalb <Verbundwurzel>) und laesst sich nicht gegen eine
-# Testkopie fahren, ohne die echte DB anzufassen.
-DB_PATH = Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "brainlehr.db"))
+# DER ORT WIRD ERFRAGT, NICHT GEBAUT -- haken/ort.py ist der EINE Aufloeser.
+#
+# Bis 2026-08-23 stand hier ein zweiter:
+#     Path(os.environ.get("BEGOD_KNOWLEDGE_DB") or (Path(__file__).parent / "brainlehr.db"))
+# Zwei Aufloeser fuer dieselbe Frage, und ausgerechnet der, den JEDER Klient
+# benutzt, war der schlechtere. Er kannte nur den ALTEN Variablennamen und
+# ignorierte BRAINLEHR_DB -- also genau den, den unser Hermes-Anbieter ihm
+# mitgibt. Die Einstellung "db_path" im Plugin hatte damit nie gewirkt.
+#
+# Und der Rueckfall auf __file__ war in einer INSTALLIERTEN Fassung ein
+# Datenverlust mit Ansage: gemessen 2026-08-23 landete der Bestand eines
+# frisch per pip eingerichteten Nutzers unter
+# site-packages/brainlehr_kern/brainlehr.db. Ein `pip install --upgrade`
+# haette ihn geloescht, lautlos, weil niemand seine Daten dort vermutet.
+#
+# ort.py entscheidet beides an EINER Stelle: BRAINLEHR_DB vor
+# BEGOD_KNOWLEDGE_DB, und bei einer installierten Fassung ~/.brainlehr statt
+# des Installationsverzeichnisses. Die Hausregel dazu steht in CLAUDE.md
+# ("Datenbankpfade nie fest verdrahten") und hatte bis heute eine Ratsche,
+# die diese Datei nicht abdeckte.
+import ort as _ort  # noqa: E402
+DB_PATH = _ort.DB
 BERLIN = ZoneInfo("Europe/Berlin")
 # Mehrere MCP-Prozesse/Sitzungen schreiben gleichzeitig auf dieselbe WAL-DB.
 # WAL erlaubt genau einen Schreiber; ohne busy_timeout wirft ein zweiter

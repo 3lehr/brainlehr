@@ -48,16 +48,51 @@ from pathlib import Path
 WURZEL = Path(__file__).resolve().parent.parent
 
 
+def _installiert(wurzel: Path) -> bool:
+    """Laeuft brainlehr als INSTALLIERTES Paket statt aus einem Arbeitsbaum?
+
+    Erkannt am Ort, nicht an einer Umgebungsvariablen: Liegt die Wurzel unter
+    site-packages oder dist-packages, gehoert sie pip und nicht dem Nutzer."""
+    return any(teil in ("site-packages", "dist-packages") for teil in wurzel.parts)
+
+
+def _nutzerablage() -> Path:
+    """~/.brainlehr -- der Ort, an dem der Bestand pip ueberlebt.
+
+    ANLASS, gemessen 2026-08-23 beim ersten Lauf einer FRISCHEN Installation:
+    Ohne diesen Zweig landete die Datenbank in
+    site-packages/brainlehr_kern/brainlehr.db. Ein `pip install --upgrade`
+    oder `pip uninstall` haette damit den gesamten Wissensbestand geloescht --
+    lautlos, weil niemand seine Daten dort vermutet.
+
+    Der Ordner ist nicht neu erfunden: ~/.brainlehr/dienst-kennzahlen.json
+    liegt schon dort. Es ist bereits die Nutzerablage dieses Hauses, sie war
+    nur fuer die Datenbank nie benutzt worden."""
+    return Path.home() / ".brainlehr"
+
+
 def _ermittle_db(wurzel: Path, neu: str | None, alt: str | None) -> Path:
     if neu or alt:
         return Path(neu or alt)
+    if _installiert(wurzel):
+        # Kein Hinweis auf den alten Dateinamen: Wer frisch installiert, hat
+        # nie eine knowledge.db gehabt. Ein Umbenennungshinweis waere dort
+        # nicht nur nutzlos, sondern falsch -- er nennt eine Datei, die es
+        # nie gab, als erstes, was das Programm ueberhaupt sagt.
+        heim = _nutzerablage()
+        heim.mkdir(parents=True, exist_ok=True)
+        return heim / "brainlehr.db"
     kandidat = wurzel / "brainlehr.db"
     if kandidat.exists():
         return kandidat
-    print(
-        "hinweis: knowledge.db ist der alte Dateiname, bitte auf brainlehr.db umbenennen",
-        file=sys.stderr,
-    )
+    # Der Hinweis nur, wenn die alte Datei WIRKLICH daliegt. Vorher erschien er
+    # auch dann, wenn ueberhaupt keine Datenbank existierte -- also genau bei
+    # dem Nutzer, der am wenigsten damit anfangen kann.
+    if (wurzel / "knowledge.db").exists():
+        print(
+            "hinweis: knowledge.db ist der alte Dateiname, bitte auf brainlehr.db umbenennen",
+            file=sys.stderr,
+        )
     return wurzel / "knowledge.db"
 
 

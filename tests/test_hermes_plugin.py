@@ -25,7 +25,25 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "integrations" / "hermes" / "plugin"))
+import pytest  # noqa: E402
 import brainlehr_provider as bp  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _kein_echtes_hermes_heim(tmp_path, monkeypatch):
+    """Jeder Test dieser Datei las bisher die ECHTE Hermes-Konfiguration des
+    Betreibers ($HOME/.hermes/brainlehr/config.json).
+
+    ANLASS 2026-08-23: test_nicht_verfuegbar_ohne_ausweis loeschte nur die
+    Umgebungsvariable BRAINLEHR_AUSWEIS -- in der echten Konfig stand aber
+    `ausweis: hermes_markus`. Die Voraussetzung des Tests ("kein Ausweis") war
+    damit nie hergestellt. Er bestand trotzdem, weil eine FRUEHERE Pruefung
+    fehlschlug (der Bestand antwortete nicht). Als die behoben war, fiel er um
+    -- er hatte nie geprueft, was sein Name sagt (L-b034c4).
+
+    Dieselbe Abhaengigkeit trafen alle uebrigen Tests der Datei: auf einem
+    fremden Rechner ohne diese Datei haetten sie andere Ergebnisse geliefert."""
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path / "hermes"))
 
 
 def test_ohne_hermes_ladbar():
@@ -100,7 +118,12 @@ def test_nicht_verfuegbar_ohne_ausweis(monkeypatch):
         monkeypatch.setenv("BRAINLEHR_HOME", str(REPO))
         monkeypatch.delenv("BRAINLEHR_AUSWEIS", raising=False)
         monkeypatch.setenv("KNOWLEDGE_OLLAMA_URL", f"http://127.0.0.1:{server.server_port}")
-        assert bp.BrainlehrProvider().is_available() is False
+        anbieter = bp.BrainlehrProvider()
+        grund = anbieter._grund_fuer_unverfuegbar()
+        assert anbieter.is_available() is False
+        # Der GRUND wird mitgeprueft, sonst besteht der Test auch dann, wenn
+        # etwas ganz anderes schiefgeht -- genau so bestand er bis 2026-08-23.
+        assert "ausweis" in grund, f"unverfuegbar, aber aus anderem Grund: {grund}"
     finally:
         server.shutdown()
 
@@ -113,7 +136,10 @@ def test_nicht_verfuegbar_ohne_einbettungsdienst(monkeypatch):
     monkeypatch.setenv("BRAINLEHR_HOME", str(REPO))
     monkeypatch.setenv("BRAINLEHR_AUSWEIS", "test-ausweis")
     monkeypatch.setenv("KNOWLEDGE_OLLAMA_URL", "http://127.0.0.1:1")
-    assert bp.BrainlehrProvider().is_available() is False
+    anbieter = bp.BrainlehrProvider()
+    grund = anbieter._grund_fuer_unverfuegbar()
+    assert anbieter.is_available() is False
+    assert "embedding service" in grund, f"unverfuegbar, aber aus anderem Grund: {grund}"
 
 
 def test_werkzeuge_haben_openai_form():
