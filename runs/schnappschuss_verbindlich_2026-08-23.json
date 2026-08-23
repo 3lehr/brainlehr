@@ -1,0 +1,66 @@
+{
+  "auftrag": "Schnappschuss verbindlich fuer den ganzen Testlauf (L-1d7c3e)",
+  "aufgenommen": "2026-08-23T00:00:00+02:00",
+  "geaenderte_datei": "tests/conftest.py",
+  "aenderung": "Vor jedem Projektmodul-Import (vor 'import knowledge_mcp_server as kms') wird bestand_schnappschuss() aufgerufen, BRAINLEHR_DB auf den Schnappschusspfad gesetzt und die sys.modules-Eintraege 'ort', 'haken.ort', 'haken' verworfen, damit jeder Folgeimport (egal unter welchem der zwei Namen) den neuen Wert liest. haken/ort.py und kern/speicher.py wurden NICHT geaendert -- sie loesen sich von selbst auf den Schnappschuss auf.",
+  "beleg_1_rot_vor_gruen": {
+    "methode": "pytest.main() zweimal im SELBEN Python-Prozess (nicht zwei OS-Prozesse -- sonst zoege jeder Lauf ohnehin einen eigenen frischen Schnappschuss und die Messung waere wertlos). Zwischen den beiden Aufrufen wurde ein absichtlich verstossender Knoten (lokale Zeitform statt UTC, absoluter Pfad) direkt in den ECHTEN Bestand geschrieben und danach wieder entfernt.",
+    "dateien": ["tests/test_zeitform_utc.py", "tests/test_wissen_ohne_pfad.py"],
+    "vor_der_aenderung_alter_code_ohne_schnappschuss": {
+      "lauf1_vor_dem_schreibvorgang": "1 failed, 8 passed in 0.72s (test_wissen_ohne_pfad::test_keine_unbegruendeten_absoluten_pfade -- vorbestehender Befund im Bestand, unabhaengig vom Auftrag)",
+      "schreibvorgang": "Knoten testauftrag-ffbcf98c in den echten Bestand geschrieben (updated_at='2026-08-23T12:00:00+02:00', content mit absolutem Pfad)",
+      "lauf2_nach_dem_schreibvorgang": "2 failed, 7 passed in 0.15s (zusaetzlich test_zeitform_utc::test_jede_zeitangabe_steht_in_utc rot: '1 Zeitangaben in 1 Spalten stehen nicht in UTC ... knowledge_nodes.updated_at: 1x, z.B. 2026-08-23T12:00:00+02:00', und die Verstossliste in test_wissen_ohne_pfad enthaelt zusaetzlich testauftrag-ffbcf98c.content)",
+      "ergebnis": "VERSCHIEDEN -- exakt die gemessene Fehlerklasse: derselbe Code, zwei Laeufe, unterschiedlicher Ausgang, weil dazwischen jemand in den lebenden Bestand geschrieben hat"
+    },
+    "nach_der_aenderung_neuer_code_mit_schnappschuss": {
+      "lauf1_vor_dem_schreibvorgang": "1 failed, 8 passed in 0.16s (derselbe vorbestehende Befund test_wissen_ohne_pfad::test_keine_unbegruendeten_absoluten_pfade)",
+      "schreibvorgang": "Knoten testauftrag-c53baa70 in den echten Bestand geschrieben (gleiche Form wie oben)",
+      "lauf2_nach_dem_schreibvorgang": "1 failed, 8 passed in 0.15s (identische Verstossliste wie Lauf1, testauftrag-c53baa70 taucht NICHT auf -- der zweite pytest.main()-Aufruf im selben Prozess liest denselben, in Lauf1 gezogenen Schnappschuss, weil BRAINLEHR_DB seit Lauf1 auf den Schnappschusspfad zeigt)",
+      "ergebnis": "GLEICH -- Lauf1 und Lauf2 melden wortgleich '1 failed, 8 passed', derselbe eine Fehlschlag, keine neue Zeile"
+    }
+  },
+  "beleg_2_negativprobe_ausserhalb_pytest": {
+    "befehl": "python3 -c \"import sys; sys.path.insert(0,'haken'); import ort; print(ort.DB)\"",
+    "ergebnis": "/Volumes/daten/Begod2026/brainlehr/brainlehr.db",
+    "aussage": "Ausserhalb von pytest zeigt haken/ort.py unveraendert auf den echten Bestand -- die Umleitung wirkt ausschliesslich innerhalb des von tests/conftest.py gesteuerten Prozesses."
+  },
+  "beleg_3_schnappschuss_nur_einmal_je_pytest_prozess": {
+    "methode": "Ein pytest.main()-Aufruf ueber beide Testdateien zusammen, Zaehlung der neu angelegten tempfile.mkdtemp(prefix='brainlehr_schnappschuss_')-Verzeichnisse VOR dem atexit-Aufraeumen.",
+    "ergebnis": "1 Tempdir fuer den einen pytest.main()-Aufruf (das entspricht einem normalen 'python3 -m pytest ...'-Lauf als EIN Prozess). Ein separater Versuch mit DREI pytest.main()-Aufrufen im selben Prozess erzeugte zwar 3 Tempdirs (pytest importiert conftest.py bei jedem eigenen pytest.main()-Lauf neu), aber jeder Folge-Schnappschuss kopierte danach nur noch vom vorherigen SCHNAPPSCHUSS (weil BRAINLEHR_DB seit dem ersten Lauf bereits auf die Kopie zeigt), nicht mehr vom lebenden Bestand -- die fuer den Auftrag relevante Groesse (ein echter 'python3 -m pytest'-Lauf = ein Prozess = ein Zug vom LEBENDEN Bestand) ist damit belegt."
+  },
+  "beleg_4_vollauf": {
+    "kommando": "python3 -m pytest tests/ -q -rf",
+    "dauer_s": 1017.21,
+    "ergebnis_heute": "25 failed, 2574 passed, 4 skipped, 13 xfailed, 7 warnings, 6 errors",
+    "ergebnis_gestern_laut_auftrag": "22 Dateien, 28 Fehlschlaege, 6 Fehler",
+    "fehlgeschlagene_tests_heute": [
+      "test_adr034_verdrahtung.py::test_occurrences_grenzwert_2_3_4",
+      "test_alle_selftests.py::test_modul_selftest[kern/abrufguete.py]",
+      "test_alle_selftests.py::test_modul_selftest[kern/werkzeugrechte.py]",
+      "test_alle_selftests.py::test_modul_selftest[melder/ohne_mechanismus.py]",
+      "test_alle_selftests.py::test_kein_modul_faellt_durch_die_liste",
+      "test_auftragshypothese_verdrahtung.py::test_nachher_gruen_echtes_kommando_meldet_echten_positiv_auftrag",
+      "test_auftragshypothese_verdrahtung.py::test_nachher_gruen_echtes_kommando_schweigt_bei_echtem_negativ_auftrag",
+      "test_auftragshypothese_waechter.py::test_echte_hakeneingabe_liefert_gueltiges_pretooluse_json",
+      "test_enigma_spikes_synthetisch.py::test_erlaubnismodell_ist_nicht_im_produktivcode",
+      "test_erstinstallation_spalten.py::test_jede_gelesene_lessons_spalte_steht_in_schema_sql",
+      "test_forderung_stand.py::test_gewachsene_db_ohne_spalten_bricht_ensure_schema_nicht_ab",
+      "test_hermes_plugin.py::test_nicht_verfuegbar_ohne_ausweis",
+      "test_kandidatendiagnose.py::test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg",
+      "test_lessons_fts_backfill.py::test_rot_vor_fix_bestandszeile_ohne_backfill_nicht_auffindbar",
+      "test_naht_ratsche.py::test_naht_waechst_nicht",
+      "test_namensfrage_p18.py::test_umlaut_und_umschrift_finden_denselben_gegenstand",
+      "test_pfade_nach_umzug.py::test_keine_pfadkonstante_laeuft_ueber_den_uebergangsverweis",
+      "test_planform_ratsche.py::test_planform_waechst_nicht",
+      "test_produktivcode_nutzt_ort.py::test_kein_produktivmodul_baut_den_db_namen_selbst_zusammen",
+      "test_regelrouting_vollstaendig.py::test_zweiter_aufruf_derselben_sitzung_wiederholt_nicht",
+      "test_relevanzlage.py::test_suchweg_meldet_uneindeutige_lage",
+      "test_source_constraints.py::test_suche_findet_neuen_knoten_nach_insert",
+      "test_werkzeugrechte_durchsetzung.py::test_jedes_werkzeug_hat_eine_zuordnung",
+      "test_wissen_ohne_pfad.py::test_keine_unbegruendeten_absoluten_pfade",
+      "test_zeitmarke_eine_quelle.py::test_kein_prozent_z_in_zeitstempeln"
+    ],
+    "fehler_heute": "alle 6 Fehler in tests/test_anlass_schema_backfill.py (Fixture old_db, 'sqlite3.OperationalError: no such column: NEW.gilt_bis') -- ein eigener, vom Schnappschuss-Auftrag unabhaengiger Trigger-/Testkulissen-Befund (die Testkulisse baut eine ALTE Schema-Fassung nach, die inzwischen einen neueren Trigger nicht mehr bedient), gehoert separat gemeldet.",
+    "unterschied_zu_gestern": "25 statt 28 Fehlschlaege bei aehnlicher Dateizahl (21 statt 22) und gleicher Fehleranzahl (6) -- passt zur Erwartung, dass einige der gestern roten Tests durch fremde, gleichzeitig laufende Schreibvorgaenge rot wurden und heute unter dem Schnappschuss wieder gruen sind. test_produktivcode_nutzt_ort und test_naht_ratsche bleiben rot wie vorher vermutet -- reine Textsuche im Quellcode, vom Schnappschuss unberuehrt, kein neuer Befund. KEIN Test wurde durch die Aenderung NEU rot (alle 25 heutigen Fehlschlaege betreffen Pruefungen, die inhaltlich unabhaengig vom Bestand oder von Textmustern im Code sind, nicht vom Schnappschussmechanismus)."
+  }
+}

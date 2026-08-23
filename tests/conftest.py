@@ -178,6 +178,51 @@ def braucht_bestand(mindestens: int = 100) -> None:
                     "erst `python3 schnellstart.py --bestand` einspielen")
 
 
+# Verbindliche Vorgabe fuer den GANZEN Testlauf (Auftrag 2026-08-23, L-1d7c3e):
+# der Schnappschuss wird HIER, vor jedem Projektmodul-Import (kms/
+# lesson_recorder gleich unten, und jedes kern/*.py, das ein Test spaeter
+# laedt), gezogen und BRAINLEHR_DB darauf umgebogen. haken/ort.py und
+# kern/speicher.py loesen dann von selbst auf die Kopie auf -- keine
+# einzige Testdatei muss dafuer geaendert werden.
+#
+# Reihenfolge ist der ganze Kniff: bestand_schnappschuss() muss den LEBENDEN
+# Pfad zuerst beim Aufloeser erfragen (from haken.ort import DB, siehe dort),
+# BEVOR die Variable umgebogen wird -- sonst zieht sie von der Kopie einer
+# Kopie. Direkt danach werden BEIDE sys.modules-Eintraege verworfen, unter
+# denen dieselbe Datei ohne haken/__init__.py unabhaengig voneinander laeuft
+# ("ort" -- so importieren fast alle kern/*.py per eigenem sys.path.insert --
+# und "haken.ort" als Namespace-Paket, so importieren u.a. build_node_index.py
+# und diese Datei oben). Ohne den Wurf blieb der zuerst geladene mit dem
+# ALTEN, echten Pfad im Cache haengen, und jeder Folgeimport bekaeme den
+# echten Bestand statt der Kopie.
+# WAS DAMIT NICHT ERREICHT IST, und der Unterschied ist der ganze Punkt:
+# Der Schnappschuss entsteht je PYTEST-PROZESS neu. Das macht einen Lauf in
+# sich stimmig -- zwei Pruefungen desselben Laufs sehen denselben Bestand --
+# aber es macht ZWEI Laeufe nicht vergleichbar. Genau darum ging es bei
+# L-1d7c3e: Wer zwei Commits gegeneinander misst, startet pytest zweimal und
+# bekommt zwei Schnappschuesse von zwei Zeitpunkten. Ein Vergleich darueber
+# traegt weiterhin nicht.
+#
+# Dafuer gibt es den Weg darunter: Ist BRAINLEHR_DB beim Start SCHON gesetzt,
+# wird nichts kopiert und nichts umgebogen. Der Aufrufer friert dann einmal
+# ein und faehrt beide Seiten dagegen:
+#
+#     cp brainlehr.db /pfad/eingefroren.db
+#     BRAINLEHR_DB=/pfad/eingefroren.db python3 -m pytest tests/ -q   # Stand A
+#     BRAINLEHR_DB=/pfad/eingefroren.db python3 -m pytest tests/ -q   # Stand B
+#
+# Erst so misst der Vergleich den CODE. Ohne diese Ausnahme wuerde conftest
+# den gesetzten Wert ueberschreiben und die Absicht des Aufrufers stillschwei-
+# gend aushebeln -- die schlimmste Sorte, weil sie wie Erfolg aussieht.
+if os.environ.get("BRAINLEHR_DB"):
+    _snap = None          # der Aufrufer hat entschieden, wir fassen es nicht an
+else:
+    _snap = bestand_schnappschuss()
+    if _snap is not None:
+        os.environ["BRAINLEHR_DB"] = str(_snap.pfad)
+        for _mod in ("ort", "haken.ort", "haken"):
+            sys.modules.pop(_mod, None)
+
 import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
 import lesson_recorder  # type: ignore  # noqa: E402
 
