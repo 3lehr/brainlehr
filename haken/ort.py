@@ -80,7 +80,19 @@ def _ermittle_db(wurzel: Path, neu: str | None, alt: str | None) -> Path:
         # nicht nur nutzlos, sondern falsch -- er nennt eine Datei, die es
         # nie gab, als erstes, was das Programm ueberhaupt sagt.
         heim = _nutzerablage()
-        heim.mkdir(parents=True, exist_ok=True)
+        # NICHT ungeschuetzt: dieser Zweig laeuft beim IMPORT des Moduls, und
+        # ein Import, der an einem schreibgeschuetzten Heimatverzeichnis mit
+        # PermissionError stirbt, nimmt jeden Klienten mit -- ohne Meldung, die
+        # jemand deuten koennte. Der Pfad wird auch dann zurueckgegeben, wenn
+        # das Anlegen scheitert: dann scheitert spaeter das OEFFNEN der
+        # Datenbank, und das ist die Stelle, an der eine Fehlermeldung etwas
+        # bedeutet (sie nennt den Pfad und den Grund).
+        try:
+            heim.mkdir(parents=True, exist_ok=True)
+        except OSError as fehler:
+            print(f"hinweis: {heim} liess sich nicht anlegen ({fehler}) -- "
+                  "BRAINLEHR_DB auf einen beschreibbaren Ort setzen",
+                  file=sys.stderr)
         return heim / "brainlehr.db"
     kandidat = wurzel / "brainlehr.db"
     if kandidat.exists():

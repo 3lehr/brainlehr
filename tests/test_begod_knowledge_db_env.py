@@ -41,7 +41,17 @@ REAL_DB = SHARED_KNOWLEDGE / "brainlehr.db"
 def _load_server_module():
     """Frisches Modul-Objekt, damit DB_PATH bei jedem Aufruf neu aus der
     aktuellen Umgebung berechnet wird (Modul-Level-Konstante, kein Reload
-    ueber sys.modules moeglich)."""
+    ueber sys.modules moeglich).
+
+    SEIT 2026-08-23 reicht das allein nicht mehr: knowledge_mcp_server holt
+    seinen Pfad ueber `import ort`, und `ort` steht dann schon mit dem ZUERST
+    berechneten Wert in sys.modules -- gesetzt von tests/conftest.py, das den
+    ganzen Lauf auf einen Schnappschuss umbiegt. Ein frisches Servermodul
+    bekaeme also den alten Pfad zurueck, und der Test pruefte nichts mehr.
+    Deshalb werden BEIDE Ladewege derselben Datei mitverworfen ("ort" per
+    sys.path, "haken.ort" als Namespace-Paket)."""
+    for _mod in ("ort", "haken.ort", "haken"):
+        sys.modules.pop(_mod, None)
     spec = importlib.util.spec_from_file_location(
         "knowledge_mcp_server_envtest", SHARED_KNOWLEDGE / "knowledge_mcp_server.py"
     )
@@ -51,13 +61,21 @@ def _load_server_module():
 
 
 def test_ohne_env_var_unveraendertes_verhalten(monkeypatch):
+    # BEIDE Namen wegraeumen. Der Test stammt aus der Zeit, als es nur den
+    # alten gab; seit 2026-08-11 sticht BRAINLEHR_DB, und seit 2026-08-23
+    # setzt conftest.py ihn fuer den ganzen Lauf. Ein Test, der seine eigene
+    # Voraussetzung nicht herstellt, prueft die Voraussetzung des Nachbarn.
     monkeypatch.delenv("BEGOD_KNOWLEDGE_DB", raising=False)
+    monkeypatch.delenv("BRAINLEHR_DB", raising=False)
     mod = _load_server_module()
     assert mod.DB_PATH == REAL_DB
 
 
 def test_env_var_ueberschreibt_pfad(monkeypatch, tmp_path):
     testkopie = tmp_path / "testkopie.db"
+    # Der ALTE Name wird gesetzt und der neue weggeraeumt -- genau das ist der
+    # Fall, den dieser Test sichert: die Uebergangsform muss weiter wirken.
+    monkeypatch.delenv("BRAINLEHR_DB", raising=False)
     monkeypatch.setenv("BEGOD_KNOWLEDGE_DB", str(testkopie))
     mod = _load_server_module()
     assert mod.DB_PATH == testkopie
