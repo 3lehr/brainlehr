@@ -36,7 +36,7 @@ def _kein_echtes_hermes_heim(tmp_path, monkeypatch):
 
     ANLASS 2026-08-23: test_nicht_verfuegbar_ohne_ausweis loeschte nur die
     Umgebungsvariable BRAINLEHR_AUSWEIS -- in der echten Konfig stand aber
-    `ausweis: hermes_markus`. Die Voraussetzung des Tests ("kein Ausweis") war
+    dort ein Ausweis eingetragen. Die Voraussetzung des Tests ("kein Ausweis") war
     damit nie hergestellt. Er bestand trotzdem, weil eine FRUEHERE Pruefung
     fehlschlug (der Bestand antwortete nicht). Als die behoben war, fiel er um
     -- er hatte nie geprueft, was sein Name sagt (L-b034c4).
@@ -249,8 +249,8 @@ def test_kein_pfad_dieses_rechners():
     """Ein absoluter Pfad EINES Rechners im Plugin ist auf jedem anderen
     Rechner ein stiller Fehlgriff: nichts stuerzt ab, es wird nur nichts
     gefunden. VORHER ROT -- `brainlehr_provider.py` trug
-    `/Volumes/daten/...` als Rueckfall, die README als Installationszeile."""
-    verdaechtig = ("/Volumes/daten", "/Users/lehrmacbook", "/home/")
+    einen Rechnerpfad als Rueckfall, die README als Installationszeile."""
+    verdaechtig = ("/Users/", "/home/", "/Volumes/")
     for datei in sorted(PLUGIN.glob("*.py")) + sorted(PLUGIN.glob("*.md")):
         text = datei.read_text(encoding="utf-8")
         for zeile_nr, zeile in enumerate(text.splitlines(), 1):
