@@ -125,8 +125,32 @@ KATALOG = "docs/REQUIREMENTS_BRAINLEHR.md"
 # zum Auftrag und wird bewusst nicht stillschweigend ergaenzt, sondern hier
 # nur vermerkt -- eine Freigabe ist keine neue Entscheidung, sondern die
 # Bestaetigung einer vorgelegten.
+#
+# NACHGESCHAERFT 2026-08-23, erster Fehlalarm des eigenen Melders: Commit
+# 4e10b217 baut DIESEN Melder und nennt das Wort nur, weil er die eigene Regex
+# beschreibt. Dieselbe Klasse, an der melder/vermutungswaechter.py haengt: ein
+# Waechter kann Zitat und Behauptung nicht am Wort unterscheiden.
+#
+# KEINE zweite Wortliste gegen die erste (L-8fce9c warnt genau davor), sondern
+# die STELLUNG im Text. Gemessen an den letzten 60 Commits, 12 mit dem Wort:
+# Eine echte Entscheidung steht am ZEILENANFANG ("Betreiberentscheidung:
+# Kern bleibt AGPL", "Betreiberweisung 2026-08-18, woertlich:"), eine
+# Beschreibung steht mitten im Satz. Der Schnitt trennt sauber -- 4e10b217
+# faellt heraus, alle acht echten bleiben.
+#
+# Zwei fallen zusaetzlich heraus, beide zu Recht und beide nachgesehen:
+# 5f5993b4 aendert den Katalog ohnehin (waere nie beanstandet worden), und
+# a166cf99 ist ein MESScommit, der sich auf die bereits eingetragene Zeile
+# BDW-P19 beruft -- ein Rueckbezug braucht keine neue Katalogzeile.
+#
+# Ausdruecklich eine HEURISTIK, keine Semantik: Wer eine Entscheidung mitten
+# in einen Absatz schreibt, entgeht ihr. Das ist der richtige Weg herum -- der
+# Melder ist ein Hinweis, kein Veto, und eine uebersehene Meldung kostet
+# weniger als eine, die man wegzuklicken lernt.
 ENTSCHEIDUNGSWORT = re.compile(
-    r"betreiber(entscheidung|wort|weisung|direktive)", re.IGNORECASE)
+    r"^\s*(?:[-*>]\s*)?(?:\*\*)?"
+    r"betreiber(entscheidung|wort|weisung|direktive)\w*",
+    re.IGNORECASE | re.MULTILINE)
 
 
 def _ist_katalog(p: str) -> bool:

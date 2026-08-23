@@ -115,7 +115,7 @@ def _c(hash_, nachricht, dateien=()):
 
 def test_entscheidungswort_ohne_katalog_faellt_auf():
     lage = pm.pruefe_katalog([
-        _c("a1", "decide(x): Betreiberentscheidung 2026-08-21, woertlich: ...")])
+        _c("a1", "decide(x): Paket traegt nichts\n\nBetreiberentscheidung 2026-08-21, woertlich: ...")])
     assert lage["geprueft"] == 1 and lage["befunde"] == 1
 
 
@@ -124,7 +124,7 @@ def test_entscheidungswort_MIT_katalog_ist_sauber():
     er muss sauber sein. Findet die Regel ihn trotzdem, ist die Regel falsch,
     nicht der Commit."""
     lage = pm.pruefe_katalog([
-        _c("6c464372", "decide(auslieferung): Betreiberentscheidung 2026-08-21",
+        _c("6c464372", "decide(auslieferung): kein Bestand\n\nBetreiberentscheidung 2026-08-21",
            dateien=["docs/REQUIREMENTS_BRAINLEHR.md", "tests/test_requirements_brainlehr.py"])])
     assert lage["geprueft"] == 1 and lage["befunde"] == 0
 
@@ -134,7 +134,7 @@ def test_plural_wird_erkannt():
     treffen -- eine Anker-Regel, die nur die Einzahl kennt, wuerde die
     haeufigste Form im eigenen Log verfehlen."""
     lage = pm.pruefe_katalog([
-        _c("p1", "docs(katalog): zehn Betreiberentscheidungen nachgetragen")])
+        _c("p1", "docs(katalog): nachgetragen\n\nBetreiberentscheidungen vom 2026-08-21 eingearbeitet")])
     assert lage["geprueft"] == 1 and lage["befunde"] == 1
 
 
@@ -143,12 +143,12 @@ def test_jedes_wort_einzeln_trifft():
     eine Zeile mit zwei Verdachtswoertern belegt nichts (L-8fce9c)."""
     for wort in ("Betreiberentscheidung", "Betreiberwort", "Betreiberweisung",
                  "Betreiberdirektive"):
-        lage = pm.pruefe_katalog([_c("x", f"fix(y): {wort} umgesetzt")])
+        lage = pm.pruefe_katalog([_c("x", f"fix(y): kurz\n\n{wort} umgesetzt")])
         assert lage["befunde"] == 1, f"{wort} haette treffen muessen"
 
 
 def test_klein_und_grossschreibung_egal():
-    lage = pm.pruefe_katalog([_c("a1", "fix: betreiberweisung umgesetzt")])
+    lage = pm.pruefe_katalog([_c("a1", "fix: kurz\n\nbetreiberweisung umgesetzt")])
     assert lage["befunde"] == 1
 
 
@@ -157,7 +157,7 @@ def test_verwandtes_wort_OHNE_praefix_ist_kein_treffer():
     Vorsilbe, ist keine Betreiberentscheidung -- die Regel darf nicht auf dem
     blossen Wortstamm 'entscheidung' anschlagen."""
     lage = pm.pruefe_katalog([
-        _c("a1", "decide(x): eine Entscheidung wurde getroffen")])
+        _c("a1", "decide(x): kurz\n\nEine Entscheidung wurde getroffen")])
     assert lage["geprueft"] == 0 and lage["befunde"] == 0
 
 
@@ -171,10 +171,41 @@ def test_commit_ohne_entscheidungswort_zaehlt_nicht_in_den_nenner():
     assert lage["geprueft"] == 0 and lage["befunde"] == 0
 
 
+def test_beschreibendes_vorkommen_mitten_im_satz_zaehlt_NICHT():
+    """NEGATIVPROBE mit echtem Wortlaut (Commit 4e10b217, der ERSTE Fehlalarm
+    dieses Melders): Der Commit BAUT diesen Melder und nennt das Wort nur,
+    weil er die eigene Regex beschreibt. Gemessen an den letzten 60 Commits
+    steht eine echte Entscheidung am ZEILENANFANG, eine Beschreibung mitten
+    im Satz -- daran und an nichts anderem wird unterschieden.
+
+    Erwartungswert kommt aus der REGEL, nicht aus dem Lauf: 'nennt eine
+    Commit-Nachricht ein Entscheidungswort (Betreiberentscheidung/...)' ist
+    ein Satz UEBER das Wort, keine Entscheidung. Er darf den Nenner nicht
+    einmal betreten (L-b034c4)."""
+    lage = pm.pruefe_katalog([_c("4e10b217",
+        "feat(katalog): Waechter gegen stillen Katalog-Rueckstand\n\n"
+        "Der Melder beanstandet, wenn eine Commit-Nachricht ein "
+        "Entscheidungswort (Betreiberentscheidung/Betreiberwort/...) traegt, "
+        "ohne den Katalog anzufassen.")])
+    assert lage["geprueft"] == 0 and lage["befunde"] == 0
+
+
+def test_messcommit_mit_rueckbezug_zaehlt_NICHT():
+    """Zweite Negativprobe, ebenfalls aus dem echten Log (a166cf99): Ein
+    MESScommit beruft sich auf eine BEREITS eingetragene Zeile. Ein Rueckbezug
+    ist keine neue Entscheidung und braucht keine neue Katalogzeile."""
+    lage = pm.pruefe_katalog([_c("a166cf99",
+        "measure(p19): 707 nutzersichtbare Textstellen\n\n"
+        "Erhebung zu BDW-P19, Betreiberwort: nutzersichtbare Texte sollen "
+        "der Sprache des Nutzers folgen.")])
+    assert lage["geprueft"] == 0 and lage["befunde"] == 0
+
+
 def test_katalogmeldung_nennt_hashes_und_schweigt_wenn_sauber():
     voll = pm.als_text_katalog(pm.pruefe_katalog(
-        [_c("abc1234", "fix: Betreiberwort umgesetzt")]))
+        [_c("abc1234", "fix: kurz\n\nBetreiberwort umgesetzt")]))
     assert "abc1234" in voll
     sauber = pm.als_text_katalog(pm.pruefe_katalog(
-        [_c("a1", "fix: Betreiberwort umgesetzt", dateien=["docs/REQUIREMENTS_BRAINLEHR.md"])]))
+        [_c("a1", "fix: kurz\n\nBetreiberwort umgesetzt",
+            dateien=["docs/REQUIREMENTS_BRAINLEHR.md"])]))
     assert sauber == ""
