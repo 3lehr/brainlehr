@@ -348,13 +348,33 @@ class _MCPKlient:
     def ruf(self, werkzeug: str, argumente: Dict[str, Any],
             frist: float = 20.0) -> Optional[Dict[str, Any]]:
         """Ein Werkzeug aufrufen. Ergebnis ist der ausgepackte Nutzinhalt,
-        oder None, wenn der Server nicht antwortete oder abgewiesen hat."""
-        with self._schloss:
+        oder None, wenn der Server nicht antwortete oder abgewiesen hat.
+
+        Das Schloss wird mit FRIST genommen, nicht unbegrenzt. Seit ein Prozess
+        geteilt wird (2026-08-23), stehen nebenlaeufige Agenten an -- und
+        Hermes baut fuer Hintergrundaufgaben (hermes_cli/cli_commands_mixin.py
+        ::run_background) sowie fuer oneshot je einen eigenen Agenten OHNE
+        skip_memory, also je einen eigenen Abruf. Gemessen: knowledge_search
+        dauert im Median 315 ms, der ERSTE Ruf nach dem Start aber 3,5 s; zwei
+        kalte Rufe hintereinander sprengen Hermes' 8-Sekunden-Frist.
+
+        Unbegrenztes Warten waere hier das Schlimmste: Der Wartende reisst
+        nicht die eigene Frist, sondern die des Aufrufers, und faellt dort als
+        Schweigen an -- ein Fehler, der am falschen Ende auftaucht. Mit Frist
+        wird daraus eine Fehlanzeige zum richtigen Zeitpunkt, und die
+        Statuszeile ueber status_callback macht sie sichtbar."""
+        if not self._schloss.acquire(timeout=frist):
+            log.warning("brainlehr: another call held the shared client longer "
+                        "than %.1fs -- skipping %s for this turn", frist, werkzeug)
+            return None
+        try:
             if not self._sicherstellen():
                 return None
             antwort = self._roh("tools/call",
                                 {"name": werkzeug, "arguments": argumente},
                                 frist=frist)
+        finally:
+            self._schloss.release()
         if not antwort or "result" not in antwort:
             return None
         ergebnis = antwort["result"]

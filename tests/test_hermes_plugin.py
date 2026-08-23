@@ -779,3 +779,36 @@ def test_erster_shutdown_zieht_den_prozess_NICHT_weg():
     assert kennung in K._GETEILT, "nach dem ersten stop muss er noch stehen"
     b.stop()
     assert kennung not in K._GETEILT, "nach dem letzten stop muss er weg sein"
+
+
+def test_belegtes_schloss_wird_zur_fehlanzeige_statt_zu_endlosem_warten():
+    """Kehrseite des geteilten Prozesses: nebenlaeufige Agenten stehen an.
+
+    Gemessen 2026-08-23: knowledge_search dauert im Median 315 ms, der erste
+    Ruf nach dem Start aber 3,5 s -- zwei kalte Rufe hintereinander sprengen
+    Hermes' 8-s-Frist. Der Wartende wuerde dann nicht die eigene Frist reissen,
+    sondern die des Aufrufers. Er muss deshalb aufgeben, nicht warten.
+
+    Erwartungswert aus der REGEL, nicht aus dem Lauf: Bei belegtem Schloss und
+    Frist 0,2 s ist die Antwort None, und die Wartezeit liegt naeher an 0,2 s
+    als an der Haltedauer von 2 s (L-b034c4)."""
+    import threading
+    import time
+    K = _klient_klasse()
+    k = K(["echo", "x"], {})
+    k._schloss.acquire()
+    ergebnis, gedauert = [], []
+
+    def halten():
+        time.sleep(2.0)
+        k._schloss.release()
+
+    threading.Thread(target=halten, daemon=True).start()
+    t0 = time.monotonic()
+    ergebnis.append(k.ruf("irgendwas", {}, frist=0.2))
+    gedauert.append(time.monotonic() - t0)
+
+    assert ergebnis[0] is None, "belegtes Schloss muss eine Fehlanzeige geben"
+    assert gedauert[0] < 1.0, (
+        f"hat {gedauert[0]:.2f}s gewartet -- die Frist von 0,2s wurde nicht "
+        "geachtet, der Aufrufer haette seine eigene Frist gerissen")
