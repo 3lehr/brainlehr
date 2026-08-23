@@ -75,6 +75,53 @@ je eigenem Gedaechtnis, zusammen mit dem fehlenden Gesamtdeckel), 2 CHANCE
 (nativer Browser stuetzt P12; Artifacts-Dashboard als Vergleichsobjekt zu P15,
 ohne erkennbares Herkunftskonzept), 5 EGAL.
 
+## Einstieg fuer einen neuen Nutzer: gefahren, nicht angenommen
+
+Erstmals der Weg eines Fremden gefahren -- Rad bauen, frische virtuelle
+Umgebung, `pip install`, Start aus einem LEEREN Verzeichnis ohne Repo. Er fand
+**vier Fehler** (`b9efb515`), der erste: der Server startete gar nicht.
+
+- `kern/gegenstand.py` fehlte im Rad → sofortiger `ModuleNotFoundError`.
+- Drei weitere Module fehlten, vom Laufversuch NICHT getroffen, weil erst in
+  Funktionsruempfen importiert. `lesson_recorder` steckt in einem `try/except`
+  mit geschluckter Ausnahme → haette die Eskalationspruefung **lautlos
+  abgeschaltet**.
+- Ein Umbenennungshinweis auf stderr bei einer Installation **ohne** Datenbank.
+- **Der schwerste:** Der Bestand landete in `site-packages/` → ein
+  `pip install --upgrade` haette ihn geloescht.
+
+**Ursache des letzten war ein ZWEITER Aufloeser.** `knowledge_mcp_server.py`
+baute seinen Pfad selbst, kannte nur `BEGOD_KNOWLEDGE_DB` und ignorierte
+`BRAINLEHR_DB` — **also genau den, den unser Hermes-Anbieter mitgibt. Die
+Einstellung `db_path` hatte nie gewirkt.** Jetzt fragt der Server
+`haken/ort.py`; der legt bei installierter Fassung in `~/.brainlehr/` ab.
+
+Danach der zweite Teil (`d8556e1a`): `schnellstart.py` lag nicht im Paket —
+wer installierte, bekam den Server, aber nichts, was eine benutzbare Instanz
+anlegt. Jetzt als `brainlehr-einrichten` dabei, samt `START_HIER.md`.
+`.mcp.json` liegt im Repo, README (beide Sprachen) hat den Paketweg.
+
+**Gemessener Endstand:** `brainlehr-einrichten` aus dem leeren Verzeichnis →
+exit 0, 12 Knoten Selbstbeschreibung, Gegenprobe 10 Treffer, Bestand in
+`~/.brainlehr/`, **null** Datenbanken in site-packages. Der ausgegebene
+Konfigurationseintrag wurde genau so aufgerufen und antwortet.
+
+**NICHT geprueft:** ob Claude Code die `.mcp.json` tatsaechlich einliest. Der
+darin stehende Befehl laeuft — die Aufnahme durch den Klienten ist ungetestet.
+
+**FALLE, mitgefunden:** `tests/test_hermes_plugin.py` las die ECHTE
+`~/.hermes/brainlehr/config.json` des Betreibers. `test_nicht_verfuegbar_ohne_
+ausweis` loeschte nur die Umgebungsvariable, waehrend dort `ausweis:
+hermes_markus` stand — er bestand, weil eine FRUEHERE Pruefung fehlschlug.
+Jetzt per autouse-Fixture isoliert, und beide Negativfaelle pruefen den GRUND
+mit, nicht nur das Nein (`L-b034c4`).
+
+**Neue Wache:** `tests/test_paketliste_vollstaendig.py` liest alle
+ausgelieferten Dateien per AST — auch Importe in Funktionsruempfen — und
+verlangt jedes importierte Hausmodul in BEIDEN Paketlisten. Sie waren heute
+auseinandergelaufen. Was sie NICHT sieht: Aufrufe per `subprocess` statt
+Import.
+
 ## Testvergleiche: BEHOBEN, aber nur mit eingefrorener Kopie (`3d6d40ca`)
 
 Tests lasen den lebenden, geteilten Bestand. Jetzt zieht `tests/conftest.py`
