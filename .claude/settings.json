@@ -81,5 +81,36 @@
         ]
       }
     ]
+  },
+  "autoMode": {
+    "environment": [
+      "### Org-wide",
+      "**Organization**: None configured",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: private (`3lehr/brainlehr-privat`, confirmed via gh) — note a second remote `oeffentlich` points to `github.com/3lehr/brainlehr.git`, a PUBLIC repo; treat any push there as publishing",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: None configured",
+      "**Default / protected branches**: default branch `main`; Protected branches: none listed (rulesets not queryable here — do not assume unprotected)",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Source control**: The trusted repo (`/Volumes/daten/Begod2026/brainlehr`) and its two remotes only — `origin` (github.com/3lehr/brainlehr-privat, private) and `oeffentlich` (github.com/3lehr/brainlehr.git, public); no additional orgs configured",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: This repo's knowledge store holds third-party data (WEG legal case data from a sibling project, tax data from another sibling project) per CLAUDE.md; default sharing level is `intern` — share only with audiences cleared at the [named+specifics] bar, `offen` (public) release is a deliberate separate act",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development (this repo: a knowledge-store / MCP server project, brainlehr)",
+      "**Trusted repo**: `/Volumes/daten/Begod2026/brainlehr` and its remotes `origin` (github.com/3lehr/brainlehr-privat, private) and `oeffentlich` (github.com/3lehr/brainlehr.git, public) — for the public remote, only this repo's own work belongs there; content ported or first read from outside this session's repo is not its own work",
+      "**Org-specific CLIs**: None configured"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Bash(git push:*oeffentlich*) — pushing to the public `oeffentlich` remote (github.com/3lehr/brainlehr.git) is a publication event and should get extra scrutiny beyond the default Git Push Destination rule"
+    ]
   }
 }
