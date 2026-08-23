@@ -4,6 +4,35 @@
 0 ohne Gate-Lauf. Alle Plan-Wellen abgearbeitet.
 
 
+## PyPI: alles steht, ein GitHub-Abrechnungsproblem blockiert
+
+**Eingetragen** (2026-08-23, Betreiberwort "mach das fuer mich!"): Pending
+Publisher auf PyPI, Projekt `brainlehr`, Herausgeber GitHub,
+Repository `3lehr/brainlehr`, Workflow `release.yml`, Umgebung `pypi`.
+Kein Token im Spiel -- Trusted Publishing tauscht ein kurzlebiges OIDC-Zeichen.
+Der Betreiber hat das Passwort selbst eingegeben; ich habe nur das Formular
+gefuellt.
+
+**Workflow** `.github/workflows/release.yml` liegt oeffentlich (`c578eda9`)
+und gespiegelt hier (`e5ba8c80`, byteweise identisch). Ausloeser ist
+ausschliesslich ein Versionstag `v*`; ein Push auf main veroeffentlicht nichts.
+Drei Pruefungen im Lauf: Tag gegen `pyproject`-Version, Paketliste, und ein
+Erstlauf des GEBAUTEN Rades aus einem leeren Verzeichnis.
+
+**BLOCKIERT, und es gehoert dem Betreiber (Geld):** Der Trockenlauf
+(`workflow_dispatch`, Lauf 32634756630) startete keinen einzigen Schritt --
+
+    The job was not started because your account is locked due to a billing issue.
+
+Pushen funktioniert, GitHub **Actions** nicht. Solange das so ist, kann
+`pip install brainlehr` nicht entstehen: Trusted Publishing laeuft DURCH
+Actions. Ein Weg ohne Actions braeuchte ein API-Token, das ich nicht anfasse.
+
+**UNGEPRUEFT, ausdruecklich:** Der Workflow hat nie einen Schritt ausgefuehrt.
+Er ist nach Augenschein und YAML-Syntax richtig, mehr nicht. Der erste echte
+Lauf ist die Abnahme -- den bitte als `workflow_dispatch` fahren, BEVOR ein
+Tag gesetzt wird. Eine PyPI-Version laesst sich nie zurueckziehen.
+
 ## WIEDEREINSTIEG (Pause 2026-08-23T11:40)
 
 **Nichts ist halbfertig.** Alle Handarbeit ist festgeschrieben; die 7 bzw. 4
