@@ -189,12 +189,58 @@ class _MCPKlient:
     die Antwortzeit des Nutzers nicht kosten. Dieselbe Bauform wie die
     Wartefrist in `prefetch()`, nur eine Ebene tiefer."""
 
+    # EIN Prozess je Aufrufkennung, nicht je Instanz -- mit Zaehlwerk.
+    #
+    # ANLASS, gemessen 2026-08-23: Hermes baut im Gateway-Betrieb je Nachricht
+    # einen frischen AIAgent (so ausdruecklich in agent/agent_init.py:1883),
+    # und plugins/memory/__init__.py::load_memory_provider haelt keinen
+    # Zwischenspeicher -- also entsteht je Nachricht ein neuer Anbieter.
+    # `shutdown_all()` laeuft bewusst NICHT je Zug (agent/turn_finalizer.py:806
+    # nennt den Grund: es wuerde den Anbieter vor der zweiten Nachricht toeten),
+    # sondern erst bei Sitzungsablauf. Dazwischen haeuft sich also je Nachricht
+    # ein Serverprozess an. Belegt: drei Instanzen -> drei gleichzeitige
+    # Prozesse auf derselben SQLite-Datei.
+    #
+    # Es ist unsere Sache, nicht Hermes' -- deren Lebenszyklus ist stimmig, nur
+    # passt "ein Prozess je Instanz" nicht dazu. Die eigene shutdown()-
+    # Beschreibung warnte woertlich davor ("nach ein paar Neustarts haengen
+    # mehrere an derselben Datenbank"); die Warnung stand da und der Fall trat
+    # trotzdem ein.
+    #
+    # Der Zaehler ist der Kern und nicht die Zwischenspeicherung: Ohne ihn
+    # wuerde die erste Instanz, die shutdown() ruft, den Prozess unter allen
+    # anderen wegziehen -- aus einem Leck ein Absturz, was schlechter ist.
+    _GETEILT: Dict[str, "_MCPKlient"] = {}
+    _GETEILT_SCHLOSS = threading.Lock()
+
+    @classmethod
+    def geteilt(cls, befehl: List[str],
+                umgebung: Optional[Dict[str, str]] = None) -> "_MCPKlient":
+        """Holt den Klienten fuer diese Aufrufkennung, oder legt ihn an.
+
+        Die Kennung umfasst Befehl UND Umgebung: zwei Anbieter mit
+        verschiedenem BRAINLEHR_DB sind verschiedene Speicher und duerfen sich
+        keinen Prozess teilen -- sonst schriebe der eine in die Datenbank des
+        anderen. Das waere ein schlimmerer Fehler als der, den diese
+        Aenderung behebt."""
+        kennung = repr((tuple(befehl), tuple(sorted((umgebung or {}).items()))))
+        with cls._GETEILT_SCHLOSS:
+            klient = cls._GETEILT.get(kennung)
+            if klient is None:
+                klient = cls(befehl, umgebung)
+                klient._kennung = kennung
+                cls._GETEILT[kennung] = klient
+            klient._nutzer += 1
+            return klient
+
     def __init__(self, befehl: List[str], umgebung: Optional[Dict[str, str]] = None):
         self.befehl = befehl
         self.umgebung = umgebung or {}
         self._proc: Optional[Any] = None
         self._zaehler = 0
         self._schloss = threading.Lock()
+        self._nutzer = 0
+        self._kennung: Optional[str] = None
 
     # -- Leben ---------------------------------------------------------------
 
@@ -232,6 +278,18 @@ class _MCPKlient:
         return True
 
     def stop(self) -> None:
+        """Beendet den Prozess -- aber erst, wenn der LETZTE Nutzer geht.
+
+        Ein geteilter Klient, den der erste Aufrufer beendet, ist schlimmer
+        als gar kein Teilen: die uebrigen Anbieter haetten dann einen toten
+        Prozess in der Hand und wuerden ihn beim naechsten Zug stumm neu
+        starten -- das Leck waere weg und ein Wackelkontakt daefuer da."""
+        if self._kennung is not None:
+            with type(self)._GETEILT_SCHLOSS:
+                self._nutzer -= 1
+                if self._nutzer > 0:
+                    return
+                type(self)._GETEILT.pop(self._kennung, None)
         proc, self._proc = self._proc, None
         if proc is None:
             return
@@ -430,7 +488,7 @@ class BrainlehrProvider(MemoryProvider):
             befehl = _server_befehl(konfig)
             if befehl is None:
                 return None
-            self._klient = _MCPKlient(befehl, {
+            self._klient = _MCPKlient.geteilt(befehl, {
                 "BRAINLEHR_DB": konfig.get("db_path") or "",
                 "KNOWLEDGE_OLLAMA_URL": konfig.get("embed_service_url") or "",
             })

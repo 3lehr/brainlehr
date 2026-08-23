@@ -729,3 +729,53 @@ def test_prefetch_ohne_cli_rueckrufe_kein_absturz_keine_ausgabe(capsys):
     erfasst = capsys.readouterr()
     assert erfasst.out == ""
     assert erfasst.err == ""
+
+
+# --- Ein Prozess je Datenbank, nicht je Instanz ---------------------------
+#
+# ANLASS gemessen 2026-08-23: Hermes baut im Gateway-Betrieb je Nachricht einen
+# frischen AIAgent, load_memory_provider hat keinen Zwischenspeicher, und
+# shutdown_all() laeuft erst bei Sitzungsablauf. Vor der Behebung ergaben drei
+# Anbieter-Instanzen drei gleichzeitige Serverprozesse auf derselben Datei.
+
+def _klient_klasse():
+    return bp._MCPKlient  # type: ignore[attr-defined]
+
+
+def test_gleiche_kennung_teilt_EINEN_klienten():
+    K = _klient_klasse()
+    a = K.geteilt(["echo", "x"], {"BRAINLEHR_DB": "/tmp/a.db"})
+    b = K.geteilt(["echo", "x"], {"BRAINLEHR_DB": "/tmp/a.db"})
+    try:
+        assert a is b, "gleiche Aufrufkennung muss denselben Klienten liefern"
+        assert a._nutzer == 2
+    finally:
+        a.stop(); b.stop()
+
+
+def test_andere_datenbank_bekommt_EIGENEN_klienten():
+    """NEGATIVPROBE, und sie ist wichtiger als der Positivfall: Zwei Anbieter
+    mit verschiedenem BRAINLEHR_DB sind verschiedene SPEICHER. Teilten sie
+    sich einen Prozess, schriebe der eine in die Datenbank des anderen -- ein
+    schlimmerer Fehler als das Leck, das die Aenderung behebt."""
+    K = _klient_klasse()
+    a = K.geteilt(["echo", "x"], {"BRAINLEHR_DB": "/tmp/a.db"})
+    b = K.geteilt(["echo", "x"], {"BRAINLEHR_DB": "/tmp/b.db"})
+    try:
+        assert a is not b
+    finally:
+        a.stop(); b.stop()
+
+
+def test_erster_shutdown_zieht_den_prozess_NICHT_weg():
+    """Das Zaehlwerk ist der Kern. Ohne es macht das Teilen aus einem Leck
+    einen Wackelkontakt: der erste Aufrufer beendet den Prozess unter allen
+    uebrigen."""
+    K = _klient_klasse()
+    a = K.geteilt(["echo", "x"], {"BRAINLEHR_DB": "/tmp/c.db"})
+    b = K.geteilt(["echo", "x"], {"BRAINLEHR_DB": "/tmp/c.db"})
+    kennung = a._kennung
+    a.stop()
+    assert kennung in K._GETEILT, "nach dem ersten stop muss er noch stehen"
+    b.stop()
+    assert kennung not in K._GETEILT, "nach dem letzten stop muss er weg sein"
