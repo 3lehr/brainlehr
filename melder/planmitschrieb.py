@@ -157,16 +157,49 @@ def _ist_katalog(p: str) -> bool:
     return p == KATALOG
 
 
-def pruefe_katalog(commits: list) -> dict:
+def _katalogtext(wurzel: Path | None = None) -> str:
+    """Der Katalog als Text -- fuer die Nachtrags-Erkennung unten. Fehlt die
+    Datei, ist der Text leer; dann wirkt die Erkennung nicht und der Melder
+    faellt auf sein altes, strengeres Verhalten zurueck."""
+    pfad = (wurzel or REPO) / KATALOG
+    try:
+        return pfad.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def pruefe_katalog(commits: list, katalogtext: str | None = None) -> dict:
     """[{hash, nachricht, dateien}] -> Lage. Nenner sind Commits, deren
-    Nachricht ein Entscheidungswort traegt -- nicht alle Commits (17b14a32)."""
+    Nachricht ein Entscheidungswort traegt -- nicht alle Commits (17b14a32).
+
+    ZWEI Wege, sauber zu sein, und der zweite ist der Grund fuer diese
+    Ergaenzung (2026-08-23): entweder der Commit AENDERT den Katalog, oder der
+    Katalog NENNT den Commit. Ohne den zweiten Weg kann die Zahl nie null
+    werden -- wer eine Entscheidung nachtraegt, aendert den Katalog heute,
+    aber der alte Commit bleibt fuer immer beanstandet. Eine Kennzahl, die man
+    nicht erreichen kann, wird weggeklickt, und dann wirkt der Melder nicht
+    mehr.
+
+    Der zweite Weg belohnt zugleich die richtige Gewohnheit: Wer die
+    Katalogzeile mit dem Commit belegt, aus dem sie stammt, macht sie
+    nachfahrbar. Genau das ist der Unterschied zwischen einer Zeile und einem
+    Beleg."""
+    if katalogtext is None:
+        katalogtext = _katalogtext()
     geprueft, befunde = [], []
     for c in commits:
         if not ENTSCHEIDUNGSWORT.search(c.get("nachricht") or ""):
             continue
         geprueft.append(c["hash"])
-        if not any(_ist_katalog(d) for d in (c.get("dateien") or [])):
-            befunde.append(c["hash"])
+        if any(_ist_katalog(d) for d in (c.get("dateien") or [])):
+            continue
+        # Kurzhash genuegt -- der Katalog schreibt `d2674ac5`, das Log liefert
+        # oft die lange Form. Mindestens 7 Zeichen, sonst treffen zufaellige
+        # Zeichenfolgen im Fliesstext.
+        kurz = str(c["hash"])[:8]
+        if len(kurz) >= 7 and kurz in katalogtext:
+            continue
+        befunde.append(c["hash"])
     return {"geprueft": len(geprueft), "befunde": len(befunde), "hashes": befunde}
 
 

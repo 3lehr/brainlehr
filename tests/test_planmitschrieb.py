@@ -201,6 +201,36 @@ def test_messcommit_mit_rueckbezug_zaehlt_NICHT():
     assert lage["geprueft"] == 0 and lage["befunde"] == 0
 
 
+def test_katalog_der_den_commit_NENNT_macht_ihn_sauber():
+    """Zweiter Weg zur Sauberkeit (2026-08-23): Der Commit aendert den Katalog
+    nicht, aber der Katalog nennt ihn. Ohne diesen Weg bleibt jeder
+    nachgetragene Beschluss fuer immer beanstandet, und eine Kennzahl, die
+    man nicht auf null bringen kann, wird weggeklickt."""
+    lage = pm.pruefe_katalog(
+        [_c("d2674ac5", "feat(x): kurz\n\nBetreiberentscheidung 2026-08-21")],
+        katalogtext="| BDW-P22 | `bauvermeidung` | ... Commit `d2674ac5` |")
+    assert lage["geprueft"] == 1 and lage["befunde"] == 0
+
+
+def test_zu_kurzer_hash_im_text_macht_NICHT_sauber():
+    """NEGATIVPROBE zum zweiten Weg: Eine kurze Zeichenfolge kann zufaellig im
+    Fliesstext stehen. Unter 7 Zeichen wird nicht freigesprochen -- sonst
+    entwertet der neue Weg den ganzen Melder."""
+    lage = pm.pruefe_katalog(
+        [_c("abc12", "feat(x): kurz\n\nBetreiberentscheidung 2026-08-21")],
+        katalogtext="hier steht abc12 mitten im Text")
+    assert lage["befunde"] == 1
+
+
+def test_fehlender_katalog_faellt_auf_das_strengere_verhalten_zurueck():
+    """Fehlt der Katalog, ist der Text leer -- dann darf der zweite Weg NICHT
+    versehentlich jeden freisprechen (leerer Text als Teilstring-Treffer)."""
+    lage = pm.pruefe_katalog(
+        [_c("d2674ac5", "feat(x): kurz\n\nBetreiberentscheidung 2026-08-21")],
+        katalogtext="")
+    assert lage["befunde"] == 1
+
+
 def test_katalogmeldung_nennt_hashes_und_schweigt_wenn_sauber():
     voll = pm.als_text_katalog(pm.pruefe_katalog(
         [_c("abc1234", "fix: kurz\n\nBetreiberwort umgesetzt")]))
