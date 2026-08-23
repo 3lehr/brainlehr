@@ -75,7 +75,64 @@ je eigenem Gedaechtnis, zusammen mit dem fehlenden Gesamtdeckel), 2 CHANCE
 (nativer Browser stuetzt P12; Artifacts-Dashboard als Vergleichsobjekt zu P15,
 ohne erkennbares Herkunftskonzept), 5 EGAL.
 
-## FALLE: Testvergleiche ueber Commits sind hier ungueltig (`L-1d7c3e`)
+## Testvergleiche: BEHOBEN, aber nur mit eingefrorener Kopie (`3d6d40ca`)
+
+Tests lasen den lebenden, geteilten Bestand. Jetzt zieht `tests/conftest.py`
+oben einen WAL-konsistenten Schnappschuss und biegt `BRAINLEHR_DB` darauf um
+— `haken/ort.py` und `kern/speicher.py` folgen von selbst, keine Testdatei
+musste sich aendern. Vollauf danach **25 rot statt 28**, kein Test neu rot.
+
+**Der Schnappschuss entsteht aber je pytest-PROZESS neu.** Ein Lauf ist damit
+in sich stimmig; ZWEI Laeufe sind es nicht. Wer Commits vergleicht, friert
+selbst ein:
+
+```
+cp brainlehr.db /pfad/eingefroren.db
+BRAINLEHR_DB=/pfad/eingefroren.db python3 -m pytest tests/ -q
+```
+
+Ein gesetztes `BRAINLEHR_DB` wird respektiert und NICHT ueberschrieben.
+Belegt auf Feldebene: zwei eingefrorene Laeufe mit einem Schreibvorgang
+dazwischen sind identisch, der lebende Lauf nennt den neuen Knoten
+zusaetzlich. Die grobe Rot/Gruen-Zaehlung zeigt das NICHT — der betroffene
+Test war ohnehin rot.
+
+## Hermes: zwei eigene Fehler gefunden und behoben
+
+**Prozessleck (`d3a0da88`).** Gemessen: 3 Anbieter-Instanzen → 3 gleichzeitige
+Serverprozesse auf derselben SQLite-Datei. Ursache in Hermes belegt, aber
+unsere Sache: Gateway baut je Nachricht einen frischen Agenten
+(`agent_init.py:1883`), `load_memory_provider` hat keinen Zwischenspeicher,
+`shutdown_all()` laeuft erst bei Sitzungsablauf. Jetzt ein Prozess je
+Aufrufkennung (Befehl UND Umgebung) mit Zaehlwerk.
+
+**Dessen Kehrseite (`30908356`).** Ein geteilter Prozess serialisiert.
+Gemessen: `knowledge_search` Median 315 ms, erster Ruf nach Start 3489 ms —
+zwei kalte Rufe sprengen Hermes' 8-s-Frist. Das Schloss wird jetzt MIT Frist
+genommen; aus Warten wird eine Fehlanzeige zum richtigen Zeitpunkt.
+Serverstart selbst: 94 ms.
+
+**Beantwortet:** Ja, nebenlaeufige Agenten loesen je einen eigenen Abruf aus —
+`cli_commands_mixin.py::run_background` und `oneshot.py` bauen ohne
+`skip_memory`. Nur `background_review` und `curator` ueberspringen es.
+
+**UNBEHOBEN, bewusst:** Die Vervielfachung der EINSPRITZUNG. Jeder Agent
+schickt bis zu 4000 Zeichen, `prefetch_all` fuegt ohne Gesamtdeckel zusammen.
+Wir koennen nur den eigenen Anteil begrenzen.
+
+## Katalog: Rueckstand abgearbeitet, Melder nachgeschaerft
+
+`BDW-P21` (AGPL-Kern / MIT-Adapter, Repo `hermes-brainlehr`), `BDW-P22`
+(Bauvermeidung), `BDW-P19-AC3` (zweisprachig geschrieben, nicht uebersetzt).
+Stand: **Nenner 7, Befunde 0.**
+
+Der Melder hatte zwei Konstruktionsfehler, beide behoben (`916061a6`,
+`f54b9905`): Er schlug bei seinem EIGENEN Bau-Commit an (Wort nur beschrieben,
+nicht behauptet) — jetzt entscheidet die Stellung im Text, nicht eine zweite
+Wortliste. Und er prueft den COMMIT statt die ENTSCHEIDUNG, wodurch die Zahl
+nie null werden konnte — jetzt zaehlt auch, wenn der Katalog den Commit nennt.
+
+## ALT: Testvergleiche ueber Commits (`L-1d7c3e`)
 
 **28 rot / 6 Fehler** im Vollauf (2561 gruen), verteilt auf 22 Dateien. Wer
 davon "vorbestehend" ist, laesst sich mit einem Commit-Vergleich NICHT
