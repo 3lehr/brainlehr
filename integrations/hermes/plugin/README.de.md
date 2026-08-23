@@ -78,6 +78,26 @@ Symlink unten bleibt deshalb der Weg, der nachweislich traegt. Wer den Adapter
 mit `pip install hermes-brainlehr[brainlehr]` installiert, zieht den
 AGPL-Speicher als ZUSATZ mit: eine bewusste Entscheidung, keine stille.
 
+## Tests laufen lassen
+
+```bash
+python3 -m pytest -q          # 41 bestanden, 3 uebersprungen
+```
+
+Die drei Uebersprungenen brauchen einen brainlehr-Klon als Gegenueber: Sie
+pruefen, ob sich der Anbieter aus dem RICHTIGEN Grund als nicht verfuegbar
+meldet (kein Ausweis, kein Einbettungsdienst) -- und das laesst sich ohne
+Speicher nicht beantworten. Mit `BRAINLEHR_HOME` auf einen Klon laufen alle 44:
+
+```bash
+BRAINLEHR_HOME=/pfad/zu/brainlehr python3 -m pytest -q
+```
+
+Die uebrigen 41 messen diesen Adapter allein: Manifest, Panelfelder, beide
+Sprachfassungen, ein Serverprozess je Speicher statt je Instanz, die
+Statuszeile, und was einem Aufrufer geschieht, wenn ein geteilter Prozess
+belegt ist.
+
 ## Installation: Symlink, keine Kopie
 
 ```bash

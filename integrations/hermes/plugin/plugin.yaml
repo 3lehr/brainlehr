@@ -1,3 +1,6 @@
 name: brainlehr
-version: 1.0.0
+# 0.1.x wie brainlehr selbst: keine stabile Schnittstelle, keine Zusage
+# auf Aufwaertskompatibilitaet. Die fuehrende Null ist die Aussage --
+# ein 'BETA' daneben waere Schmuck, eine 1.0.0 waere eine Behauptung.
+version: 0.1.0
 description: "Local knowledge store with enforced provenance, validity windows and release levels. Every entry states where it came from — a database trigger rejects entries without a verifiable origin. No API key, no cloud, no account: brainlehr runs as a separate MCP process on your own machine."

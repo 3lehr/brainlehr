@@ -71,6 +71,25 @@ directories, not by reading pip entry points (see the note in `pyproject.toml`)
 adapter with `pip install hermes-brainlehr[brainlehr]` pulls the AGPL store in
 as an *optional* extra: a deliberate choice of yours, never a silent one.
 
+## Running the tests
+
+```bash
+python3 -m pytest -q          # 41 passed, 3 skipped
+```
+
+The three skips need a brainlehr checkout to talk to: they check that the
+provider reports itself **unavailable** for the right reason (no identity, no
+embedding service), and that question has no answer without a store. Point
+`BRAINLEHR_HOME` at a checkout and all 44 run:
+
+```bash
+BRAINLEHR_HOME=/path/to/brainlehr python3 -m pytest -q
+```
+
+The other 41 measure this adapter alone: manifest, panel fields, both language
+variants, one server process per store rather than per instance, the status
+line, and what happens to a caller when a shared process is busy.
+
 ## Installing: symlink, not a copy
 
 ```bash
