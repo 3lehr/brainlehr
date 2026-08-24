@@ -90,7 +90,8 @@ def _ermittle_db(wurzel: Path, neu: str | None, alt: str | None) -> Path:
     # dem Nutzer, der am wenigsten damit anfangen kann.
     if (wurzel / "knowledge.db").exists():
         print(
-            "hinweis: knowledge.db ist der alte Dateiname, bitte auf brainlehr.db umbenennen",
+            "hinweis: knowledge.db ist ein Legacy-Fallback. Fuer einen neuen Zielpfad "
+            "BRAINLEHR_DB setzen; eine Migration ist nicht automatisch erforderlich.",
             file=sys.stderr,
         )
     return wurzel / "knowledge.db"
