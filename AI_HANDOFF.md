@@ -1,5 +1,14 @@
 # AI handoff
 
+## 2026-08-24 — test(ort): align legacy-DB warning test
+
+- Change: no warning for a fresh directory; warn only after an actual
+  `knowledge.db` fallback. This matches `haken/ort.py` and preserves the
+  migration signal without confusing first boot.
+- Verified: `python3 -m pytest -q tests/test_ort_env_kompat.py` (7 passed).
+- Remaining: public release `c578eda9` has the runtime behavior, but this
+  private test correction still needs normal release propagation.
+
 ## 2026-08-18T05:00:00+0200 — feat(vertrag): four INT gates green
 
 - Commits: `cdef550b` (INT-VER-001), `2ea89fe6` (INT-UPD-001, INT-DNST-001) und
