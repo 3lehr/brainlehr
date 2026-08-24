@@ -6,9 +6,11 @@ Lokaler Wissensspeicher mit einer JSON-RPC-Schnittstelle über Standard-Ein-/Aus
 
 ## Schnellstart
 
+Brainlehr benötigt Python 3.11 oder neuer.
+
 ```sh
-python3 schnellstart.py
-python3 knowledge_mcp_server.py
+python3.11 schnellstart.py
+python3.11 knowledge_mcp_server.py
 ```
 
 `schnellstart.py` erstellt eine lokale Beispieldatenbank. Diese Datei ist absichtlich nicht versioniert.
@@ -16,8 +18,8 @@ python3 knowledge_mcp_server.py
 ## Entwicklung
 
 ```sh
-python3 -m pytest -q -p no:cacheprovider tests
-python3 tools/privacy_check.py
+python3.11 -m pytest -q -p no:cacheprovider tests
+python3.11 tools/privacy_check.py
 ```
 
 Die öffentliche Ausgabe enthält Quellcode, Tests, allgemeine Dokumentation und einen **Auszug des freigegebenen Wissens** (siehe unten). Betriebsdaten, personenbezogene Angaben und Wissen über konkrete Projekte, Orte oder Betriebsereignisse gehören nicht in dieses Repository.
@@ -29,8 +31,8 @@ Für ChatGPT bleibt derselbe stdio-MCP lokal. Der [offizielle Secure-MCP-Tunnel]
 Prompt-Invarianz wird nur für Bewertungen, Rangfolgen und Entscheidungen aktiviert: normal `light`, bei gemeinsamen, irreversiblen, sicherheits-, Datenmodell- oder Automationsfolgen `strong`. Faktensuche, Extraktion, Ausführung und Tests bleiben `off`. Das gilt unabhängig von der App: Anbieter-Rankings in Buckenberg nutzen sie; Brainlehr-, Openlehr- oder Fahrtenbuch-Coding nur bei einer echten Architektur- oder Produktentscheidung, nicht bei jedem Edit oder Testlauf.
 
 ```sh
-python3 -m pytest -q -p no:cacheprovider tests
-python3 tools/privacy_check.py
+python3.11 -m pytest -q -p no:cacheprovider tests
+python3.11 tools/privacy_check.py
 ```
 
 Der Privacy-Check ist ein technischer Schutz, keine DSGVO- oder Compliance-Zusage.

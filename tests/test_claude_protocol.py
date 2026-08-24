@@ -22,7 +22,7 @@ def test_stdio_lifecycle():
 
 def test_prompt_only_profile_is_default_deny():
     with tempfile.TemporaryDirectory() as directory:
-        env = {**os.environ, "BRAINLEHR_DB": os.path.join(directory, "store.sqlite"), "BRAINLEHR_TOOL_PROFILE":"prompt-invariance"}
+        env = {**os.environ, "BRAINLEHR_DB": os.path.join(directory, "store.sqlite"), "BEGOD_KNOWLEDGE_PROFIL":"prompt-invariance"}
         process = subprocess.Popen([sys.executable, "knowledge_mcp_server.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, env=env)
         try:
             requests = (
@@ -36,6 +36,7 @@ def test_prompt_only_profile_is_default_deny():
                 responses.append(json.loads(process.stdout.readline()))
             assert [tool["name"] for tool in responses[0]["result"]["tools"]] == ["prompt_invarianz_planen", "prompt_invarianz_pruefen"]
             assert json.loads(responses[1]["result"]["content"][0]["text"])["profile"] == "strong"
-            assert responses[2]["error"]["message"] == "tool not allowed by active profile"
+            assert responses[2]["result"]["isError"] is True
+            assert json.loads(responses[2]["result"]["content"][0]["text"])["grund"] == "profil:prompt-invariance"
         finally:
             process.terminate(); process.wait(timeout=5)

@@ -1,12 +1,23 @@
-import tempfile
-from knowledge_mcp_server import add_node, call, open_db
+from pathlib import Path
 
-def test_relation_lifecycle_and_assumption_decision():
-    with tempfile.NamedTemporaryFile(suffix=".sqlite") as f:
-        db=open_db(f.name); a=add_node(db,"One","Synthetic"); b=add_node(db,"Two","Synthetic")
-        relation=call(db,"knowledge_relation_add",{"source_id":a["id"],"target_id":b["id"],"relation_type":"supports"})
-        assert call(db,"knowledge_relation_update",{"relation_id":relation["id"],"relation_type":"references"})["status"]=="updated"
-        assert call(db,"knowledge_relation_remove",{"relation_id":relation["id"]})["status"]=="removed"
-        assumption=call(db,"annahme_erfassen",{"annahme":"Synthetic assumption","kosten_wenn_falsch":"Synthetic cost"})
-        call(db,"annahme_entscheiden",{"annahme_id":assumption["id"],"status":"accepted","beleg":"Synthetic evidence"})
-        assert call(db,"annahme_liste",{"status":"accepted"})[0]["id"]==assumption["id"]
+import knowledge_mcp_server as server
+
+
+def _node(title):
+    return server.knowledge_add(
+        "/", title, "Synthetic test node", source="tests/synthetic.md",
+        neuer_ast=True, norm_entscheidung="keine_norm",
+        norm_entschieden_grund="Synthetic test fixture",
+    )
+
+
+def test_relation_lifecycle_and_assumption_decision(monkeypatch, tmp_path):
+    monkeypatch.setattr(server, "DB_PATH", Path(tmp_path) / "store.sqlite")
+    first, second = _node("One"), _node("Two")
+    relation = server.knowledge_relation_add(first["id"], second["id"], "supports")
+    assert server.knowledge_relation_update(relation["id"], relation_type="references")["status"] == "updated"
+    assert server.knowledge_relation_remove(relation["id"])["status"] == "removed"
+    assumption = server.annahme_erfassen("Synthetic assumption", "Synthetic cost")
+    decision = server.annahme_entscheiden(assumption["id"], "bestaetigt", "Synthetic evidence", "test")
+    assert decision["status"] == "bestaetigt"
+    assert server.annahme_liste("bestaetigt")["results"][0]["id"] == assumption["id"]

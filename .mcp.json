@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "brainlehr": {
-      "command": "python3",
+      "command": "python3.11",
       "args": ["knowledge_mcp_server.py"]
     }
   }

@@ -1,8 +1,15 @@
-import tempfile
-from knowledge_mcp_server import add_node, call, open_db
-def test_governance_lifecycle():
- with tempfile.NamedTemporaryFile(suffix='.sqlite') as f:
-  db=open_db(f.name); n=add_node(db,'Synthetic','Synthetic')
-  assert call(db,'freigabe_setzen',{'node_id':n['id'],'stufe':'public'})['status']=='approved'
-  call(db,'knowledge_zurueckziehen',{'node_id':n['id']}); assert call(db,'kurator_lauf',{})['withdrawn']==1
-  assert call(db,'knowledge_freigeben',{'node_id':n['id']})['status']=='knowledge_freigeben'
+from pathlib import Path
+
+import knowledge_mcp_server as server
+
+
+def test_governance_lifecycle_uses_current_api(monkeypatch, tmp_path):
+    monkeypatch.setattr(server, "DB_PATH", Path(tmp_path) / "store.sqlite")
+    node = server.knowledge_add(
+        "/", "Synthetic", "Synthetic test node", source="tests/synthetic.md",
+        neuer_ast=True, norm_entscheidung="keine_norm",
+        norm_entschieden_grund="Synthetic test fixture",
+    )
+    assert server.freigabe_setzen(node["id"], "gesperrt")["status"] == "gesetzt"
+    assert server.knowledge_zurueckziehen(node["id"], "Synthetic reason")["status"] == "zurueckgezogen"
+    assert server.knowledge_freigeben(node["id"])["status"] == "freigegeben"
