@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-25T22:00:00+0200 — docs(public-context): refresh provenance after acceptance evidence
+
+- Files: `docs/public-knowledge/brainlehr-context.json` and this handoff.
+- Why: `docs/AI_DECISIONS.md` and the canonical requirements are declared sources of the public architecture/workflow nodes. After their PASS evidence changed, the two affected nodes were refreshed before exporting so the committed snapshot remains non-stale at its own revision.
+- Verified: refreshed `/brainlehr/faehigkeiten/public-architecture` and `/brainlehr/faehigkeiten/public-workflow`; exporter returned `written` then `current`; `python3 melder/kartenstand.py --still` passed.
+- Remaining risk: Any later allowlisted source change intentionally rejects export until its generated node is refreshed; this is the declared release gate.
+- Next test: alter a declared source in a fixture and prove export rejects without overwriting the last valid artifact.
+
 ## 2026-08-25T21:45:00+0200 — chore(push): refresh generated guards for the private catch-up branch
 
 - Files: `docs/karten/`, `docs/ablauf_vermerke.json`, and this handoff.

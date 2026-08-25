@@ -12,21 +12,21 @@
       "path": "/brainlehr/faehigkeiten/public-architecture",
       "summary": "Local-first architecture for the public release.",
       "title": "Public architecture",
-      "updated_at": "2026-08-25T19:14:07Z"
+      "updated_at": "2026-08-25T19:30:54Z"
     },
     {
       "content": "A client first ensures a compact project capsule, then loads task context in stages: summaries, selected direct relations, and selected full text. After a verified commit it records the affected files, checks transitive static consumers, and curates a semantic conclusion separately. Static imports and semantic similarity are never presented as runtime data flow.",
       "path": "/brainlehr/faehigkeiten/public-workflow",
       "summary": "Verified workflow for project-aware coding.",
       "title": "Public workflow",
-      "updated_at": "2026-08-25T19:14:07Z"
+      "updated_at": "2026-08-25T19:30:54Z"
     }
   ],
   "project_id": "brainlehr",
   "provenance": {
     "allowlist": "docs/public-knowledge/brainlehr-nodes.json",
     "exporter": "pflege/export_public_context.py",
-    "git_commit": "229f0f4dec4ce75c9a454b8e24ab1d21a131a494"
+    "git_commit": "8443aae5d6f0322effe998b498b502203561048f"
   },
   "schema": 1
 }
