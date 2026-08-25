@@ -1,5 +1,14 @@
 # AI-Handoff
 
+## 2026-08-25T19:52:35+02:00 — docs(readme): lead with verified capabilities
+
+- Dateien: `README.md`, `AI_HANDOFF.md`.
+- Warum: Die README begann mit Test-, Export- und Auditgeschichte, nannte nicht den heutigen Funktionsumfang und verwies auf zwei im Public-Repo fehlende Auszugspfade. Sie führt nun mit den belegten Speicher-, Such-, Geltungs-, Beziehungs-, Unsicherheits-, Schutz- und Betriebsfunktionen und zeigt genau zwei Kernabläufe als Mermaid-Flowcharts.
+- Verifiziert: `python -m pytest -q -p no:cacheprovider tests` → 15 bestanden; `python tools/privacy_check.py` → Exit 0; zwei Mermaid-Blöcke und alle relativen README-Links geprüft; `git diff --check` → Exit 0.
+- Restrisiko: `knowledge_selbstauskunft` ist registriert, aber im Public-Export fehlt `kern/selbstauskunft.py`; die README weist das aus, behoben wurde es in diesem Dokumentationsschritt nicht.
+- Nächster Test: `kern/selbstauskunft.py` samt Paketliste und direktem Werkzeugtest in einem eigenen Fix ergänzen.
+- AI-Assisted-By: ChatGPT Codex (`/root`)
+
 ## 2026-08-25T19:24:17+02:00 — fix(release): restore executable release checks
 
 - Dateien: `.github/workflows/release.yml`, `knowledge_mcp_server.py`, `tests/test_smoke.py`, `AI_HANDOFF.md`.
