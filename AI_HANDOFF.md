@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-25T21:30:00+0200 — docs(public-context): publish the verified safe slice
+
+- Files: `docs/public-knowledge/brainlehr-context.json`, `docs/REQUIREMENTS_BRAINLEHR.md`, `docs/AI_DECISIONS.md`, and this handoff.
+- Why: The public repository needs a reviewable, deterministic snapshot of exactly the allowlisted public Brainlehr descriptions, not the SQLite database.
+- Verified: `python3 melder/selbstbeschreibung.py --anlegen` refreshed 14 generated nodes; two exporter runs against `brainlehr.db` returned `written` then `current` for three allowlisted nodes. The focused automated suite remains 24 passed.
+- Remaining risk: Any source change makes the export intentionally stale until the generator and exporter are rerun; this is a release gate, not an automatic publication path.
+- Next test: change an allowlisted source in a test fixture, prove rejection leaves this artifact untouched, then regenerate after the node update.
+
 ## 2026-08-25T21:25:00+0200 — fix(public-context): refresh existing generated nodes
 
 - Files: `melder/selbstbeschreibung.py`, `tests/test_selbstbeschreibung_update.py`, and this handoff.

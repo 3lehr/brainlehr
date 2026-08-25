@@ -6,7 +6,7 @@
 - Decision: `pflege/export_public_context.py` exports only paths named in `docs/public-knowledge/brainlehr-nodes.json`, requires the `brainlehr` scope and `freigabe='offen'`, compares each node timestamp to its declared Git sources, and emits only title, summary, content, update time and public exporter provenance. Missing, stale, private or non-public nodes reject before writing.
 - Reason: A tracked allowlist makes the public surface reviewable and deterministic; excluding raw DB metadata makes accidental session, identity, operator instruction and local-path release structurally impossible on this route.
 - Rejected alternatives: exporting all open nodes, committing SQLite, a blacklist of private fields, copying `source` provenance verbatim, or quietly retaining an old artifact on failed validation.
-- Verification: `python3 -m pytest -q tests/test_public_context_export.py` — 3 passed; the tests cover deterministic bytes plus missing, stale, non-public and private-content rejection.
+- Verification: `python3 -m pytest -q tests/test_public_context_export.py` — 3 passed; a live export wrote the three allowlisted nodes and a second run returned `current`. The tests cover deterministic bytes plus missing, stale, non-public and private-content rejection.
 - Boundary: The export verifies its selected node texts, not arbitrary personal data hidden behind an unrecognised text pattern. New public material needs an allowlist entry and explicit review.
 
 ## 2026-08-25 — Versioned project context uses evidence, not guessed architecture

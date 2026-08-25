@@ -1,0 +1,32 @@
+{
+  "nodes": [
+    {
+      "content": "Diese Uebersicht beantwortet die Frage \"was kannst du\" und verweist auf\ndie einzelnen Faehigkeiten. Jede von ihnen nennt drei Dinge: was sie leistet,\nmit welchem Werkzeug man sie benutzt, und wo ihre Grenze liegt.\n\nDer dritte Teil ist der wichtigste. Eine Faehigkeitsliste ohne Grenzen erzeugt\nVertrauen, das die Sache nicht traegt -- deshalb steht bei jedem Punkt, wo er\naufhoert.\n\nDIE ELF FAEHIGKEITEN\n- Sagen, woher eine Aussage stammt\n- Sagen, ob etwas noch gilt\n- Sagen, wie belastbar etwas ist\n- Widersprueche aushalten statt sie zu verstecken\n- Melden, wenn ein Zitat keinen Beleg hat\n- Wissen, wer etwas geschrieben hat\n- Fremden Text als Daten kennzeichnen\n- Aus wiederholten Fehlern Regeln machen\n- Die eigene Trefferquote kennen\n- Vorschlagen, was fehlt\n- Nachweisen, was gelesen und geschrieben wurde\n\nWAS BRAINLEHR AUSDRUECKLICH NICHT IST\nKeine Anonymisierung, keine Verschluesselung, keine Zertifizierung, kein\nvollstaendiger Schutz gegen eingeschleuste Anweisungen, kein\nMehrbenutzerbetrieb. Jeder dieser Punkte ist bei der jeweiligen Faehigkeit\nausgefuehrt -- mit dem, was STATT DESSEN gebaut ist.\n\nWIE MAN WEITERFRAGT\nDiese Uebersicht ist ein Knoten wie jeder andere. Suche nach einem Stichwort\n(Herkunft, Geltung, Belegrang, Widerspruch, Identitaet, Protokoll) und der\nSpeicher liefert die zugehoerige Faehigkeit samt Grenze.",
+      "path": "/brainlehr/faehigkeiten",
+      "summary": "Was kannst du? Was kann brainlehr? Faehigkeiten, Uebersicht, Hilfe, Funktionen, wozu ist das gut, was leistet es, wobei hilft es.",
+      "title": "Was kann brainlehr? — Uebersicht der Faehigkeiten",
+      "updated_at": "2026-08-25T19:14:07Z"
+    },
+    {
+      "content": "Brainlehr is a local SQLite knowledge service exposed through MCP. It keeps semantic nodes and lessons separate, searches them with full text plus local embeddings, and records explicit provenance and relations. Public descriptions are generated from verified project artifacts; they do not include a user database.",
+      "path": "/brainlehr/faehigkeiten/public-architecture",
+      "summary": "Local-first architecture for the public release.",
+      "title": "Public architecture",
+      "updated_at": "2026-08-25T19:14:07Z"
+    },
+    {
+      "content": "A client first ensures a compact project capsule, then loads task context in stages: summaries, selected direct relations, and selected full text. After a verified commit it records the affected files, checks transitive static consumers, and curates a semantic conclusion separately. Static imports and semantic similarity are never presented as runtime data flow.",
+      "path": "/brainlehr/faehigkeiten/public-workflow",
+      "summary": "Verified workflow for project-aware coding.",
+      "title": "Public workflow",
+      "updated_at": "2026-08-25T19:14:07Z"
+    }
+  ],
+  "project_id": "brainlehr",
+  "provenance": {
+    "allowlist": "docs/public-knowledge/brainlehr-nodes.json",
+    "exporter": "pflege/export_public_context.py",
+    "git_commit": "229f0f4dec4ce75c9a454b8e24ab1d21a131a494"
+  },
+  "schema": 1
+}
