@@ -1,10 +1,19 @@
 # AI-Handoff
 
+## 2026-08-25T20:08:32+02:00 — docs(readme): distinguish explicit updates from feedback
+
+- Dateien: `README.md`, `AI_HANDOFF.md`.
+- Warum: Ein erster Lifecycle-Entwurf konnte so gelesen werden, als würde Brainlehr verwendetes Wissen automatisch korrigieren. Das Diagramm zeigt nun den tatsächlich implementierten Ablauf: Lesen protokolliert Zugriff, eine Korrektur beginnt nur durch einen neuen expliziten Client-Aufruf. Beide Diagramme verwenden eine vertikale, GitHub-taugliche Mermaid-Anordnung.
+- Verifiziert: `python -m pytest -q -p no:cacheprovider tests` → 15 bestanden; `python tools/privacy_check.py` → Exit 0; zwei Mermaid-Blöcke, explizite Update-Beschriftung, relative Links und `git diff --check` geprüft.
+- Restrisiko: Brainlehr besitzt keinen automatischen inhaltlichen Feedback-Loop; das Diagramm behauptet keinen.
+- Nächster Test: die beiden Diagramme nach dem Push über GitHubs README-Renderer abrufen.
+- AI-Assisted-By: ChatGPT Codex (`/root`)
+
 ## 2026-08-25T20:01:51+02:00 — docs(readme): publish an English product overview
 
 - Dateien: `README.md`, `AI_HANDOFF.md`.
 - Warum: Die öffentliche Startseite war deutsch und enthielt interne Audit- und Lizenzgeschichte sowie rechtfertigende Formulierungen. Sie ist nun eine englische Produktübersicht mit Fähigkeiten, Einstieg, Integrationen, Grenzen und genau zwei Kernabläufen.
-- Verifiziert: `/Users/lehrmacbook/odysseus/odysseus/venv/bin/python -m pytest -q -p no:cacheprovider tests` → 15 bestanden; `/Users/lehrmacbook/odysseus/odysseus/venv/bin/python tools/privacy_check.py` → Exit 0; Sprach-/Linkprüfung, genau zwei Mermaid-Blöcke und `git diff --check` bestanden.
+- Verifiziert: `python -m pytest -q -p no:cacheprovider tests` → 15 bestanden; `python tools/privacy_check.py` → Exit 0; Sprach-/Linkprüfung, genau zwei Mermaid-Blöcke und `git diff --check` bestanden.
 - Restrisiko: `knowledge_selbstauskunft` bleibt registriert, obwohl `kern/selbstauskunft.py` im Public-Export fehlt; die README nennt dies neutral als bekannte Grenze.
 - Nächster Test: `kern/selbstauskunft.py` und dessen Paketaufnahme in einem eigenen, testgetriebenen Fix ergänzen.
 - AI-Assisted-By: ChatGPT Codex (`/root`)

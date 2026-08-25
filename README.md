@@ -21,26 +21,28 @@ Brainlehr is a local knowledge store for AI agents. It combines SQLite/FTS5, opt
 
 ## How it works
 
-### Validated writes
+### Explicit knowledge maintenance
+
+Brainlehr validates every write. A later correction returns through the same path only when a client submits a new update request.
 
 ```mermaid
-flowchart LR
-    A["MCP client"] --> B["Tool call"]
-    B --> C{"Credential and tool permission valid?"}
-    C -- No --> X["Reject and log"]
-    C -- Yes --> D{"Source, parent, rule, and visibility valid?"}
-    D -- No --> X
-    D -- Yes --> E["SQLite transaction"]
-    E --> F["Knowledge node or lesson"]
-    E --> G["FTS index"]
-    E --> H["Audit log"]
-    E --> I["Optional embedding"]
+flowchart TD
+    A["Client submits a create or update request"] --> B{"Source, access, and validity rules pass?"}
+    B -- No --> X["Reject and log"]
+    B -- Yes --> C["Store and index the entry"]
+    C --> D["Entry is available for retrieval"]
+    D --> E["Client reads and uses the entry"]
+    E --> F{"Client later submits a correction?"}
+    F -- Yes --> A
+    F -- No --> G["No write"]
 ```
+
+Reading an entry logs access and increments its access count. It does not confirm, refresh, or rewrite the entry.
 
 ### Filtered retrieval
 
 ```mermaid
-flowchart LR
+flowchart TD
     A["Query, project, and time"] --> B["Filter tenant, group, visibility, and validity"]
     B --> C["FTS5 results"]
     B --> D["Optional semantic results"]
