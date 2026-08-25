@@ -1,5 +1,14 @@
 # AI-Handoff
 
+## 2026-08-25T19:24:17+02:00 — fix(release): restore executable release checks
+
+- Dateien: `.github/workflows/release.yml`, `knowledge_mcp_server.py`, `tests/test_smoke.py`, `AI_HANDOFF.md`.
+- Warum: Der Release-Workflow verwies auf einen nie vorhandenen Einzeltest; zugleich verhinderte der unbedingte `fcntl`-Import jeden Serverstart unter Windows.
+- Verifiziert: `python -m pytest -q -p no:cacheprovider tests` → 15 bestanden; `git diff --check` → Exit 0. Der neue Regressionstest simuliert den fehlenden `fcntl`-Import und durchlaeuft den No-op-Lockpfad.
+- Restrisiko: Kein echter Windows-Lauf; GitHub Actions bleiben bis zur menschlichen Billing-Freigabe blind. PyPI v0.1.0 wurde nicht veraendert oder erneut ausgeloest.
+- Naechster Test: Nach dem Billing-Unlock `workflow_dispatch` ausloesen und den vollstaendigen Tests-, Build- und Wheel-Erstlauf pruefen.
+- AI-Assisted-By: ChatGPT Codex (`/root`)
+
 ## 2026-08-24T00:00:00+02:00 — fix(config): require Python 3.11 in shipped MCP templates
 
 - Dateien: `.mcp.json`, `integrations/hermes/config.template.yaml`, `README.md`, `tests/test_smoke.py`.

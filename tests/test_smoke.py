@@ -1,6 +1,8 @@
 import tempfile
 import json
 import sqlite3
+import subprocess
+import sys
 from pathlib import Path
 
 from knowledge_mcp_server import ensure_schema
@@ -25,3 +27,20 @@ def test_legacy_db_remains_a_fallback_without_forced_rename(tmp_path, capsys):
     legacy.touch()
     assert _ermittle_db(tmp_path, None, None) == legacy
     assert "Legacy-Fallback" in capsys.readouterr().err
+
+
+def test_mcp_starts_without_fcntl():
+    root = Path(__file__).resolve().parents[1]
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import sys\n"
+            "sys.modules['fcntl'] = None\n"
+            "import knowledge_mcp_server as server\n"
+            "assert server.fcntl is None\n"
+            "with server._write_lock(): pass\n",
+        ],
+        cwd=root,
+        check=True,
+    )

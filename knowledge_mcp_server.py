@@ -90,7 +90,10 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen")]
 
 import difflib
-import fcntl
+try:
+    import fcntl
+except ImportError:  # Windows: keine POSIX-Dateisperren
+    fcntl = None
 import hashlib
 import json
 import math
@@ -682,7 +685,18 @@ def _write_lock():
     Datei nie in den Mund und schreibt weiterhin direkt per busy_timeout
     (siehe get_db()) -- er wird weder ausgesperrt noch sperrt er selbst
     jemanden aus, flock() ist rein advisory zwischen Prozessen, die es
-    beide anfordern."""
+    beide anfordern.
+
+    Windows stellt fcntl nicht bereit; dort entfaellt diese zusaetzliche
+    advisory Sperre, SQLite busy_timeout bleibt wirksam."""
+    if fcntl is None:
+        yield
+        return
+
+    flock = fcntl.flock
+    lock_ex = fcntl.LOCK_EX
+    lock_nb = fcntl.LOCK_NB
+    lock_un = fcntl.LOCK_UN
     lock_path = DB_PATH.parent / f"{DB_PATH.name}.lock"
     fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o644)
     try:
@@ -690,7 +704,7 @@ def _write_lock():
         waited = 0.0
         while True:
             try:
-                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                flock(fd, lock_ex | lock_nb)
                 break
             except BlockingIOError:
                 if waited >= _WRITE_LOCK_TIMEOUT_S:
@@ -704,7 +718,7 @@ def _write_lock():
                 delay = min(delay * 2, 0.5)
         yield
     finally:
-        fcntl.flock(fd, fcntl.LOCK_UN)
+        flock(fd, lock_un)
         os.close(fd)
 
 

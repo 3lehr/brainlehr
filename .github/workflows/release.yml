@@ -47,12 +47,11 @@ jobs:
           "
 
       - name: Tests
-        # Nur die, die ohne den gewachsenen Bestand aussagekraeftig sind: auf
-        # einem frischen Laeufer gibt es keine Datenbank, und die Pruefungen,
-        # die gegen echte Abrufguete messen, wuerden dort nichts messen.
+        # Die komplette Repo-Suite ist auf einem frischen Laeufer aussagekraeftig;
+        # Messungen gegen einen gewachsenen Bestand liegen nicht unter tests/.
         run: |
           python3 -m pip install -q pytest
-          python3 -m pytest tests/test_paketliste_vollstaendig.py -q
+          python3 -m pytest -q -p no:cacheprovider tests
 
       - name: Rad und Quellarchiv bauen
         run: |
