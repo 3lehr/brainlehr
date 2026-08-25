@@ -1,5 +1,14 @@
 # AI-Handoff
 
+## 2026-08-25T20:01:51+02:00 — docs(readme): publish an English product overview
+
+- Dateien: `README.md`, `AI_HANDOFF.md`.
+- Warum: Die öffentliche Startseite war deutsch und enthielt interne Audit- und Lizenzgeschichte sowie rechtfertigende Formulierungen. Sie ist nun eine englische Produktübersicht mit Fähigkeiten, Einstieg, Integrationen, Grenzen und genau zwei Kernabläufen.
+- Verifiziert: `/Users/lehrmacbook/odysseus/odysseus/venv/bin/python -m pytest -q -p no:cacheprovider tests` → 15 bestanden; `/Users/lehrmacbook/odysseus/odysseus/venv/bin/python tools/privacy_check.py` → Exit 0; Sprach-/Linkprüfung, genau zwei Mermaid-Blöcke und `git diff --check` bestanden.
+- Restrisiko: `knowledge_selbstauskunft` bleibt registriert, obwohl `kern/selbstauskunft.py` im Public-Export fehlt; die README nennt dies neutral als bekannte Grenze.
+- Nächster Test: `kern/selbstauskunft.py` und dessen Paketaufnahme in einem eigenen, testgetriebenen Fix ergänzen.
+- AI-Assisted-By: ChatGPT Codex (`/root`)
+
 ## 2026-08-25T19:52:35+02:00 — docs(readme): lead with verified capabilities
 
 - Dateien: `README.md`, `AI_HANDOFF.md`.
