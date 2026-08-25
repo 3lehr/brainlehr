@@ -1,0 +1,21 @@
+{
+  "project_id": "brainlehr",
+  "schema": 1,
+  "tools": [
+    {
+      "artifact": "verified trace or test",
+      "capability": "verify runtime input output and timing dependencies",
+      "covers": [
+        "runtime"
+      ],
+      "edge_types": [
+        "runtime_trace",
+        "io_contract"
+      ],
+      "id": "runtime-trace-impact",
+      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P26",
+      "status": "planned",
+      "when": "static import evidence is insufficient"
+    }
+  ]
+}

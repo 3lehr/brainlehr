@@ -1,5 +1,23 @@
 # AI architecture decisions
 
+## 2026-08-25 — Public project knowledge exports only an explicit safe slice
+
+- Context: A public release needs a reproducible architecture handoff from the verified local database, but a public `freigabe` alone is too broad for a concise project context and DB provenance can contain local operational details.
+- Decision: `pflege/export_public_context.py` exports only paths named in `docs/public-knowledge/brainlehr-nodes.json`, requires the `brainlehr` scope and `freigabe='offen'`, compares each node timestamp to its declared Git sources, and emits only title, summary, content, update time and public exporter provenance. Missing, stale, private or non-public nodes reject before writing.
+- Reason: A tracked allowlist makes the public surface reviewable and deterministic; excluding raw DB metadata makes accidental session, identity, operator instruction and local-path release structurally impossible on this route.
+- Rejected alternatives: exporting all open nodes, committing SQLite, a blacklist of private fields, copying `source` provenance verbatim, or quietly retaining an old artifact on failed validation.
+- Verification: `python3 -m pytest -q tests/test_public_context_export.py` — 3 passed; the tests cover deterministic bytes plus missing, stale, non-public and private-content rejection.
+- Boundary: The export verifies its selected node texts, not arbitrary personal data hidden behind an unrecognised text pattern. New public material needs an allowlist entry and explicit review.
+
+## 2026-08-25 — Versioned project context uses evidence, not guessed architecture
+
+- Context: A new context window needs enough verified project knowledge to work safely, while a whole-codebase dump wastes context and import/data-flow heuristics had already produced 35 false positives (`L-503687`).
+- Decision: Keep a stable, client-neutral `.brainlehr.json` for explicit registrations and generate Git facts/native entry points into a separate capsule. Context loads summary, selected relations, then selected full text, each with a machine-readable next choice. For code impact, persist one append-only receipt per commit and traverse only versioned, explicitly typed static edges; current analysis covers Python imports and reports all other coverage as a gap.
+- Reason: Git revisions and AST positions are reproducible evidence; bounded retrieval saves tokens without concealing the caller's available choices. A static import creates a validation obligation, never a claim of runtime data flow.
+- Rejected alternatives: copying raw code or symbol tables into knowledge, recursive branch loading, a global fixed tool catalog, vector similarity as an edge, and heuristic input/output timing from imports.
+- Verification: `python3 -m pytest -q tests/test_project_context.py tests/test_requirements_brainlehr.py tests/test_werkzeugrechte_durchsetzung.py` — 20 passed; `python3 -m py_compile kern/project_context.py knowledge_mcp_server.py`; `python3 tool/faehigkeitskarte.py --pruefen`.
+- Boundary: LSP/SCIP, schema, runtime-trace and I/O-contract edges need a project-registered analyzer and an explicit evidence artifact before they can participate in the impact chain.
+
 ## 2026-08-17T22:08:09+02:00 — One BDW root catalog governs Brainlehr
 
 - Context: Accepted ADRs, plans, two local requirements catalogs and the target-picture research described overlapping parts of Brainlehr, while ADR-025/026 were referenced but absent. The operator supplied a complete 53-value Wizard matrix and selected a new Root purpose decision, a governed core, clear profiles and target picture A.

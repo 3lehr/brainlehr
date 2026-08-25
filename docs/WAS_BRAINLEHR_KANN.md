@@ -1,16 +1,16 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-20T17:15:55+0200 (Stand `476eb13b`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-08-25T21:09:51+0200 (Stand `e6e165e9`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 
 | | |
 |---|---:|
-| Werkzeuge über MCP | 30 |
-| Melder | 54, davon verdrahtet 22 |
+| Werkzeuge über MCP | 36 |
+| Melder | 61, davon verdrahtet 24 |
 | Haken | 23, davon verdrahtet 13 |
-| Kernmodule | 111 |
-| Module mit Selbsttest | 140 von 188 |
+| Kernmodule | 122 |
+| Module mit Selbsttest | 149 von 206 |
 
 ## Werkzeuge — was ein Klient aufrufen kann
 
@@ -21,7 +21,9 @@ Das ist die Bedienoberfläche von brainlehr. Jede Zeile kommt aus der Werkzeugta
 | `annahme_entscheiden` | Eine Annahme bestaetigen oder widerlegen |
 | `annahme_erfassen` | Eine ANNAHME festhalten, solange sie noch als Annahme erkennbar ist -- nicht erst, wenn sie sich als falsch herausgestellt hat |
 | `annahme_liste` | Offene Annahmen auflisten, schlechtest belegt und aeltest zuerst |
+| `einrichtung_starten` | Erststart-Assistent (BDW-P11) |
 | `freigabe_setzen` | Decide, for ONE entry, who may see it: 'offen' (may leave the house), 'intern' (default -- stays here) or 'gesperrt' |
+| `katalog_holen` | Holt einen der von einrichtung_starten vorgeschlagenen Kataloge (bsi, nasa-llis, wcag) in ein lokales Verzeichnis -- Netzzugriff nur hier, nie ueber einrichtung_starten selbst |
 | `kettenerklaerung_erklaeren` | Explain a broken audit-chain link (access_log.ketten_hash) caused by a sanctioned rewrite of an already-logged row -- e.g |
 | `knowledge_add` | Add a new knowledge node to the tree |
 | `knowledge_anmelden` | Redeem a one-time invitation PIN and receive your own credential |
@@ -34,6 +36,7 @@ Das ist die Bedienoberfläche von brainlehr. Jede Zeile kommt aus der Werkzeugta
 | `knowledge_relation_remove` | Remove exactly one explicit edge by relation ID |
 | `knowledge_relation_update` | Update evidence/provenance/weight/type of one explicit edge by relation ID; endpoints stay stable. |
 | `knowledge_search` | Full-text search across knowledge |
+| `knowledge_selbstauskunft` | What brainlehr currently is -- every number measured at call time, never maintained: tables and triggers from sqlite_master, tools from this registry, dependencies from requirements.txt |
 | `knowledge_sitzung` | Read-only: list every knowledge node and lesson written by one session (actor/session columns, Auftrag 2026-08-06) -- the evaluation path for isolating one writer's entries, e.g |
 | `knowledge_stats` | Overview statistics of the knowledge database (node counts, lesson counts, access patterns, anlass distribution) |
 | `knowledge_trust_score` | Computed (never stored) earned-trust value in [0.05, 0.95], 0.5 = no signal yet -- distinct from norm_rang (explained by a human/consilium, decides which rule wins) and from confidence (a de… |
@@ -43,6 +46,9 @@ Das ist die Bedienoberfläche von brainlehr. Jede Zeile kommt aus der Werkzeugta
 | `lesson_query` | Query lessons learned |
 | `lesson_record` | Record a lesson learned |
 | `lesson_update` | Correct or delete a recorded lesson |
+| `project_change` | After a verified commit, store one compact change receipt and compute the complete transitive chain of statically proven Python import consumers |
+| `project_context` | Load task context progressively and token-efficiently |
+| `project_ensure` | Idempotently adopt or initialize a Git project for Brainlehr |
 | `prompt_invarianz_planen` | Waehlt off, light oder strong fuer eine Bewertung, Rangfolge oder Entscheidung. |
 | `prompt_invarianz_pruefen` | Prueft evidenzbelegte Vergleichslaeufe auf Stabilitaet und Reihenfolgeeffekte. |
 | `session_checkpoint_lesen` | Liest einen Checkpoint und gibt optional eine deterministische Chatwechsel-Empfehlung. |
@@ -69,9 +75,11 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/dokumentzugang.py` | Linie A aus docs/PLAN_DOKUMENTABLAGE_2026-08-16.md | — | — | — |
 | `melder/eilmeldung_etikett.py` | Prueft, ob ein Titel Dringlichkeit BEHAUPTET, ohne das Etikett zu TRAGEN | SessionStart | ja | — |
 | `melder/eilmeldung_faellig.py` | Zeigt beim Sitzungsstart, welche Eilmeldungen verfallen sind, statt in | SessionStart | ja | — |
+| `melder/einbettungsaussetzer.py` | Meldet beim Sitzungsstart, wenn die Aussetzer-Sicherung juengst pausiert hat | — | ja | — |
 | `melder/faehigkeiten.py` | faehigkeiten.py | — | ja | — |
 | `melder/faelligkeit.py` | Was raus muss, unabhaengig davon, was gefragt wurde | SessionStart | ja | — |
 | `melder/foederation.py` | foederation.py | — | ja | — |
+| `melder/forderung_vorgang.py` | Forderung ans eigene Haus: erkennen (Vorlage), markieren, auflisten | — | ja | — |
 | `melder/fremdbaum_cd.py` | Wiederholtes `cd <fremdes Repo>` im Bash-Aufruf | — | ja | — |
 | `melder/fremdrollen.py` | Meldet zwei Fehlklassen in den Claude-Code-Fertigkeiten unter | — | ja | — |
 | `melder/fremdstandsvergleich.py` | Meldet, wenn eine fremde Software oder ein Gesetzestext seit dem letzten | SessionStart | ja | — |
@@ -84,11 +92,15 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/korrekturlehre.py` | Stop-Waechter: der Betreiber hat korrigiert | Stop | ja | — |
 | `melder/landkarten.py` | Fuenf Landkarten des brainlehr-Universums, erzeugt statt gepflegt | — | — | — |
 | `melder/messregeln.py` | Ein Bestwert aus vielen Versuchen ist keine Messung | — | ja | — |
+| `melder/modellwege.py` | Sind die Modell-Endpunkte erreichbar, auf die brainlehr zeigt? | SessionStart | — | — |
+| `melder/neue_achse.py` | Kommt eine neue Achse dazu | SessionStart | — | — |
+| `melder/normwiderspruch.py` | Findet Widersprueche zwischen gleichrangigen Normen | — | — | — |
 | `melder/nulllinie.py` | Eine leere Ausgabe wird als Befund gemeldet, ohne dass eine Nulllinie | — | ja | — |
 | `melder/offene_arbeit.py` | Zeigt beim Sitzungsstart, was offen ist | SessionStart | ja | — |
 | `melder/ohne_mechanismus.py` | Welche Lehren wiederholen sich | — | ja | — |
 | `melder/plan_bestandsabgleich.py` | Haelt Planzeilen aus docs/PLAN_GESAMT_2026-08-13.md gegen den Code und | — | ja | — |
 | `melder/planberuehrung.py` | Meldet, wenn gebaut wird, waehrend der Plan unveraendert bleibt | — | — | — |
+| `melder/planmitschrieb.py` | Meldet, wenn Code entsteht, ohne dass der Plan mitwaechst | — | — | BDW-P15, BDW-P19 |
 | `melder/pruefer.py` | Der erste Melder, der URTEILT statt zaehlt | SessionStart | ja | — |
 | `melder/quelle_gegen_betrieb.py` | Ausgeliefertes Artefakt gegen seine Quelle | — | ja | — |
 | `melder/rasterblick.py` | Ein Rastervermerk je Ergebnisdatei | SessionStart | ja | — |
@@ -109,6 +121,7 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/vorschlagsmelder.py` | Melder: nur die NEUEN Vorschlaege aus berichte/vorschlag.py | — | ja | — |
 | `melder/wirkkette.py` | J2 | — | ja | — |
 | `melder/wissensverlauf.py` | Wissensverlauf | SessionStart, Stop | ja | — |
+| `melder/zugriffsmuster.py` | Ungewoehnliche Zugriffsmuster auf den Wissensbestand | — | ja | BDW-E25 |
 
 ## Haken — was bei jedem Prompt und jedem Werkzeugaufruf läuft
 
@@ -155,10 +168,12 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/ausschreibekatalog.py` | ausschreibekatalog.py | ja |
 | `kern/ausweis.py` | ausweis.py | ja |
 | `kern/baustein.py` | Der Baustein-Vertrag | ja |
+| `kern/bauvermeidung.py` | bauvermeidung.py | ja |
 | `kern/belegsprache.py` | Eine Frage, eine Wortliste: woran erkennt man einen Beleg im Text? | ja |
 | `kern/belegvertrag.py` | Belegvertrag | — |
 | `kern/bereinigung.py` | Was das Haus verlaesst, wird angesehen | ja |
 | `kern/bestandteile.py` | kern/bestandteile.py | — |
+| `kern/betriebsprofil.py` | Betriebsprofil | ja |
 | `kern/build_embeddings.py` | build_embeddings.py | — |
 | `kern/build_node_index.py` |  | ja |
 | `kern/codekanten.py` | Welche Datei betrifft diese Lehre | ja |
@@ -168,9 +183,11 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/doctor.py` | doctor | — |
 | `kern/dokument.py` | Der Baustein-Vertrag, abgebildet auf ein CRDT-Dokument | ja |
 | `kern/dokumentdienst.py` | Der Dokumentdienst | ja |
+| `kern/dokumentenablage.py` | Dokumentenablage: drei Schichten, und nur die mittlere geht in den Index | ja |
 | `kern/domaene.py` | Domaenenpaket-Importer (PLAN_OPENLEHR_2026-08-14.md H8a) | — |
 | `kern/driftwaechter.py` | F6 im Gesamtplan, EIN Modul fuer beide Haelften: die schnelle Darstellung | ja |
 | `kern/eilmeldung.py` | Eilmeldung senden | ja |
+| `kern/einrichtung.py` | Erststart im Chat | ja |
 | `kern/einschleusung.py` | einschleusung.py | ja |
 | `kern/embeddings.py` | Lokale Embeddings via Ollama + Brute-Force-Cosine-Fusion mit FTS5/LIKE | — |
 | `kern/endgueltig_entfernen.py` | endgueltig_entfernen.py | ja |
@@ -181,6 +198,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/fundstelle.py` | fundstelle.py | ja |
 | `kern/gattung_filter.py` | gattung_filter.py | — |
 | `kern/gegenstand.py` | Ein Gegenstand hat eine bedeutungslose ID; sein Name ist ein Attribut mit | ja |
+| `kern/gegenstand_plankennungen.py` | Die Plankennungen als GEGENSTAENDE | ja |
 | `kern/geheimnis.py` | geheimnis.py | — |
 | `kern/geltungsbereich.py` | geltungsbereich.py | — |
 | `kern/hebb_kanten.py` | Hebbsche Kanten: recall_log.jsonl -> knowledge_relations | ja |
@@ -206,6 +224,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/migrate_relations.py` | Add explicit knowledge relations and access provenance; safe and idempotent | — |
 | `kern/nachrangung.py` | Nachrangung: umordnen, was die Fusion geliefert hat | — |
 | `kern/nachtlaeufer.py` | nachtlaeufer.py | ja |
+| `kern/namensfrage.py` | Eine Namensfrage erkennen und den Eigennamen herausloesen | — |
 | `kern/normachsen.py` | Die drei Achsen der Normordnung | ja |
 | `kern/normbestand.py` | normbestand.py | ja |
 | `kern/normbezug.py` | normbezug.py | ja |
@@ -216,6 +235,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/planentscheidung.py` | Erzeugt Knoten aus ENTSCHEIDENDEN Planabschnitten und schreibt die | ja |
 | `kern/planordnung.py` | Ein Plan ist eine FOLGE, der Wissensspeicher eine MENGE (Auftrag | ja |
 | `kern/planstatus.py` | Ablage fuer ERLEDIGUNG eines Planabschnitts | ja |
+| `kern/project_context.py` | Small, client-neutral project capsule and bounded code probe | — |
 | `kern/prompt_invarianz.py` | Deterministisches Routing fuer prompt-sensible Entscheidungen | — |
 | `kern/pruefkorpus.py` | Pruefkorpus fuer Abrufguete (Plan hub/docs/PLAN_ABRUFGUETE_2026-08-07.md | ja |
 | `kern/pruefkorpus_rivalen.py` | Pruefkorpus mit erzwungenen Rivalinnen (AUFGABE 68) | ja |
@@ -233,18 +253,22 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/schema_nachzug.py` | Fehlende Spalten aus schema.sql nachziehen | ja |
 | `kern/schluesselablage.py` | schluesselablage.py | ja |
 | `kern/schnappschuss.py` | Ein Lauf liest einen festgehaltenen Stand | ja |
+| `kern/selbstauskunft.py` | Was brainlehr ueber sich selbst sagt | — |
 | `kern/session_checkpoint.py` | Temporärer Sitzungszustand und deterministische Chatwechsel-Empfehlung | — |
 | `kern/sicherung_s12.py` | Urfassung sichern, bevor S12 einen Knotentext ueberschreibt | ja |
 | `kern/sicherungen.py` | Aufbewahrungsregel fuer die automatischen Datenbanksicherungen | ja |
 | `kern/sortierregel.py` | Welche Lehre gehoert in den Codepfad, welche bleibt im Nachschlagewerk? | ja |
 | `kern/speicher.py` | Eine Tuer zur Wissensdatenbank statt hundert | ja |
+| `kern/spracherkennung.py` | Sprache eines Textes erkennen | — |
 | `kern/suche_postgres.py` | Die rechte Seite des Paritaetsmessers: dieselbe Suche in Postgres | ja |
 | `kern/teilnehmer.py` | Teilnehmerkennungen fuer das gemeinsame Dokument | ja |
 | `kern/teilung_s12.py` | Teilung des Bestands in behandelt/unbehandelt | — |
 | `kern/tokenkosten.py` | tokenkosten.py | — |
+| `kern/trennung.py` | trennung.py | — |
 | `kern/uebernahmeregister.py` | Uebernahmeregister | — |
 | `kern/umschrift_pruefstein.py` | Faellt beim Umschreiben Sachgehalt weg? Deterministisch geprueft, nicht | ja |
 | `kern/umschrift_s12.py` | S12 Schritt 3: die behandelte Haelfte nach drei Schreibregeln umschreiben | ja |
+| `kern/verfallsrate.py` | Verfallsrate je Ast | ja |
 | `kern/vertrauen.py` | Der Vertrauensregler | — |
 | `kern/werkzeugrechte.py` | werkzeugrechte.py | ja |
 | `kern/wiedereinstieg.py` | Wiedereinstieg nach Verdichtung: spielt zurueck, was in DIESER Sitzung | — |
@@ -258,21 +282,33 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 
 ## Abgleich mit dem Lastenkatalog
 
-28 Katalogzeilen werden im Code ausdrücklich genannt. Eine Zeile ohne Nennung hat keinen Code, der sich auf sie beruft — das ist die Gegenrichtung zur Belegspalte, die sagt, ob geprüft wurde.
+40 Katalogzeilen werden im Code ausdrücklich genannt. Eine Zeile ohne Nennung hat keinen Code, der sich auf sie beruft — das ist die Gegenrichtung zur Belegspalte, die sagt, ob geprüft wurde.
 
 | Katalogzeile | genannt in |
 |---|---|
 | `BDW-C03` | melder/gatestand.py |
+| `BDW-E03` | kern/trennung.py |
+| `BDW-E06` | kern/ausweis.py, kern/trennung.py |
 | `BDW-E07` | kern/schluesselablage.py, melder/gatestand.py |
 | `BDW-E12` | kern/aufbewahrung.py |
 | `BDW-E13` | kern/aufbewahrung.py |
 | `BDW-E15` | kern/sicherungen.py |
 | `BDW-E18` | kern/schluesselablage.py |
+| `BDW-E22` | kern/trennung.py |
+| `BDW-E23` | kern/trennung.py |
+| `BDW-E25` | melder/zugriffsmuster.py |
 | `BDW-F07` | kern/domaene.py |
 | `BDW-F08` | kern/connector_register.py |
 | `BDW-P04` | melder/klassenausfall.py |
 | `BDW-P06` | haken/knowledge_recall_hook.py |
 | `BDW-P08` | haken/knowledge_recall_hook.py |
+| `BDW-P09` | kern/betriebsprofil.py |
+| `BDW-P10` | kern/einrichtung.py, kern/spracherkennung.py |
+| `BDW-P11` | kern/einrichtung.py |
+| `BDW-P12` | kern/einrichtung.py, kern/fremdimport.py |
+| `BDW-P13` | kern/verfallsrate.py |
+| `BDW-P15` | kern/dokumentenablage.py, melder/planmitschrieb.py |
+| `BDW-P19` | melder/planmitschrieb.py |
 | `BDW-U04` | kern/connector_register.py |
 | `BDW-X01` | melder/gatestand.py |
 | `BDW-X02` | melder/gatestand.py |

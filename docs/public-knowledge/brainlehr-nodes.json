@@ -1,0 +1,9 @@
+{
+  "nodes": [
+    {"path": "/brainlehr/faehigkeiten", "sources": ["melder/selbstbeschreibung.py"]},
+    {"path": "/brainlehr/faehigkeiten/public-architecture", "sources": ["melder/selbstbeschreibung.py", "docs/AI_DECISIONS.md"]},
+    {"path": "/brainlehr/faehigkeiten/public-workflow", "sources": ["melder/selbstbeschreibung.py", "docs/REQUIREMENTS_BRAINLEHR.md", "kern/project_context.py"]}
+  ],
+  "project_id": "brainlehr",
+  "schema": 1
+}

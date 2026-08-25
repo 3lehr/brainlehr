@@ -99,6 +99,7 @@ only-include = [
   "kern/normkraft.py",
   "kern/normrang.py",
   "kern/prompt_invarianz.py",
+  "kern/project_context.py",
   "kern/reifegrad.py",
   "kern/relevanzlage.py",
   "kern/schema_nachzug.py",
@@ -153,6 +154,7 @@ bypass-selection = true
 "kern/normkraft.py" = "brainlehr_kern/kern/normkraft.py"
 "kern/normrang.py" = "brainlehr_kern/kern/normrang.py"
 "kern/prompt_invarianz.py" = "brainlehr_kern/kern/prompt_invarianz.py"
+"kern/project_context.py" = "brainlehr_kern/kern/project_context.py"
 "kern/reifegrad.py" = "brainlehr_kern/kern/reifegrad.py"
 "kern/relevanzlage.py" = "brainlehr_kern/kern/relevanzlage.py"
 "kern/schema_nachzug.py" = "brainlehr_kern/kern/schema_nachzug.py"

@@ -1,5 +1,21 @@
 # AI handoff
 
+## 2026-08-25T21:15:00+0200 — feat(public-context): export an allowlisted DB handoff
+
+- Files: `pflege/export_public_context.py`, `melder/selbstbeschreibung.py`, `docs/public-knowledge/brainlehr-nodes.json`, `tests/test_public_context_export.py`, the canonical requirements, architecture decisions, capability map, and this handoff.
+- Why: Public release documentation must be reproducible from verified public DB nodes without exposing the database, local provenance, sessions, operator instructions, or unrelated released material.
+- Verified: `python3 -m pytest -q tests/test_public_context_export.py` — 3 passed; live `python3 melder/selbstbeschreibung.py --anlegen` created and released the two allowlisted architecture/workflow nodes.
+- Remaining risk: The first generated JSON artifact must be produced against the committed source revision; the exporter rejects a stale one rather than updating it silently.
+- Next test: after the implementation commit, regenerate `docs/public-knowledge/brainlehr-context.json` and verify a second run is byte-identical.
+
+## 2026-08-25T21:00:33+0200 — feat(project-context): retain versioned impact evidence
+
+- Files: `kern/project_context.py`, `knowledge_mcp_server.py`, `kern/werkzeugrechte.py`, `pyproject.toml`, `tests/test_project_context.py`, `tests/test_requirements_brainlehr.py`, `docs/REQUIREMENTS_BRAINLEHR.md`, `docs/AI_DECISIONS.md`, `docs/WAS_BRAINLEHR_KANN.md`, `.brainlehr.json`, and this handoff.
+- Why: A fresh coding context must discover only task-relevant verified project context, and every verified change must make direct and indirect consumers visible without pretending that imports or vector proximity prove runtime data flow.
+- Verified: `python3 -m pytest -q tests/test_project_context.py tests/test_requirements_brainlehr.py tests/test_werkzeugrechte_durchsetzung.py` — 20 passed; `python3 -m py_compile kern/project_context.py knowledge_mcp_server.py`; `python3 tool/faehigkeitskarte.py --pruefen`.
+- Remaining risk: Only Python static-import edges are presently analyzed. Non-Python, call, schema, trace and I/O contracts remain explicit `coverage_gap`s until a project registers a verified analyzer.
+- Next test: Register a project-specific trace or schema analyzer with an evidence artifact, then prove its typed edge joins the same bounded impact traversal without becoming a raw-code index.
+
 ## 2026-08-24 — test(ort): align legacy-DB warning test
 
 - Change: no warning for a fresh directory; warn only after an actual

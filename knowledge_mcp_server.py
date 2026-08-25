@@ -157,6 +157,7 @@ import zeitfenster  # Auftrag 88 Schritt 1 (docs/PLAN_ZEITACHSE_2026-08-14.md):
                      # FTS-WHERE-Klausel (Begruendung im Plan). Kein Zirkel --
                      # zeitfenster importiert selbst nichts von hier.
 import prompt_invarianz  # agentneutraler Entscheidungstest; keine Modell- oder DB-Abhaengigkeit
+import project_context  # BDW-P23-P25: project capsule + bounded code evidence
 
 # DER ORT WIRD ERFRAGT, NICHT GEBAUT -- haken/ort.py ist der EINE Aufloeser.
 #
@@ -6488,7 +6489,329 @@ def session_checkpoint_schliessen(session_id: str) -> dict:
         conn.close()
 
 
+def project_ensure(project_root: str, project_id: str | None = None,
+                   tools: list[dict] | None = None) -> dict:
+    """Create or refresh one compact project capsule and one knowledge root."""
+    ensured = project_context.ensure_manifest(
+        project_root, project_id=project_id, tools=tools)
+    manifest = ensured["manifest"]
+    scope = manifest["project_id"]
+    capsule_data = ensured["capsule"]
+    conn = get_db()
+    try:
+        node_count = conn.execute(
+            "SELECT COUNT(*) FROM knowledge_nodes WHERE project_id=?", (scope,)
+        ).fetchone()[0]
+        # A grown database may contain historic non-JSON ``projects`` values
+        # (for example ``openlehr``).  json_each() aborts the whole Ensure
+        # call on that one row; the canonical Python normalizer preserves the
+        # exact project comparison without making adoption unavailable.
+        lesson_count = sum(
+            scope in geltungsbereich.projekte_aus_projects_json(row[0])
+            for row in conn.execute("SELECT projects FROM lessons_learned")
+        )
+        knowledge_count = node_count + lesson_count
+        root = conn.execute(
+            "SELECT id, content FROM knowledge_nodes WHERE project_id=? "
+            "AND tags LIKE '%\"project-context-root\"%' LIMIT 1", (scope,)
+        ).fetchone()
+    finally:
+        conn.close()
+
+    content_data = {"manifest": manifest, "capsule": capsule_data}
+    capsule = json.dumps(content_data, ensure_ascii=False, sort_keys=True)
+    knowledge_changed = False
+    if root is None:
+        created = knowledge_add(
+            "/projects", f"{scope} project context",
+            "Compact generated project capsule; semantic findings remain curated knowledge.",
+            capsule, project_id=scope, tags=["project-context-root", "generated-capsule"],
+            source=(f"generated from {ensured['manifest_path']} "
+                    f"at Git {capsule_data['head']}"), neuer_ast=True,
+            norm_entscheidung="keine_norm",
+            norm_entschieden_grund="Generated repository facts, not a normative decision.",
+            anlass="skript",
+        )
+        if "error" in created:
+            return {"error": created["error"], "manifest": ensured}
+        root_id = created["id"]
+        knowledge_changed = True
+        knowledge_state = "adopted" if knowledge_count else "initialized"
+    else:
+        root_id = root["id"]
+        if (root["content"] or "") != capsule:
+            updated = knowledge_update(root_id, content=capsule)
+            if "error" in updated:
+                return {"error": updated["error"], "manifest": ensured}
+            knowledge_changed = True
+            knowledge_state = "refreshed"
+        else:
+            knowledge_state = "current"
+    return {
+        **ensured,
+        "project_id": scope,
+        "existing_project_entries": knowledge_count,
+        "knowledge_root_id": root_id,
+        "knowledge_state": knowledge_state,
+        "knowledge_changed": knowledge_changed,
+    }
+
+
+def project_context_get(project_root: str, task: str, depth: str = "summary",
+                        selected_node_ids: list[str] | None = None,
+                        max_results: int = 5) -> dict:
+    """Return bounded code evidence and progressively selected knowledge."""
+    selected = selected_node_ids or []
+    contract = project_context.selection_contract(depth, selected)
+    inspected = project_context.inspect_manifest(project_root)
+    if inspected["state"] != "current":
+        return {
+            "error": "project context is not current",
+            "state": inspected["state"],
+            "next": "call project_ensure before retrieving project context",
+        }
+    manifest = inspected["manifest"]
+    scope = manifest["project_id"]
+    current_capsule = project_context.capsule(project_root)
+    conn = get_db()
+    try:
+        root_row = conn.execute(
+            "SELECT content FROM knowledge_nodes WHERE project_id=? "
+            "AND tags LIKE '%\"project-context-root\"%' LIMIT 1", (scope,)
+        ).fetchone()
+    finally:
+        conn.close()
+    try:
+        stored_head = json.loads(root_row["content"] or "{}")["capsule"]["head"] if root_row else None
+    except (KeyError, TypeError, json.JSONDecodeError):
+        stored_head = None
+    if stored_head != current_capsule["head"]:
+        return {
+            "error": "project knowledge capsule is stale",
+            "state": "stale",
+            "stored_head": stored_head,
+            "current_head": current_capsule["head"],
+            "next": "call project_ensure, then record and curate the verified change",
+        }
+    found = knowledge_search(task, scope=scope, max_results=min(max(1, max_results), 5))
+    summaries = []
+    for row in found.get("results", []):
+        compact = {key: row.get(key) for key in
+                   ("kind", "id", "path", "title", "summary", "source", "freigabe")
+                   if row.get(key) is not None}
+        if "summary" in compact:
+            compact["summary"] = str(compact["summary"])[:800]
+        if "source" in compact:
+            compact["source"] = str(compact["source"])[:500]
+        summaries.append(compact)
+    node_ids = {row["id"] for row in summaries if row.get("kind") == "node"}
+    unknown = [node_id for node_id in selected if node_id not in node_ids]
+    if unknown:
+        raise ValueError(
+            "selected_node_ids must be node hits from this summary step: " + ", ".join(unknown))
+
+    result = {
+        "project_id": scope,
+        "task": task,
+        "depth": depth,
+        "project_capsule": current_capsule,
+        "tools": project_context.relevant_tools(
+            {"tools": project_context.all_tools(manifest, current_capsule)}, task),
+        "code_hits": project_context.code_probe(project_root, task),
+        "knowledge_summaries": summaries,
+        "choice": contract,
+    }
+    result["choice"].update({
+        "selection_required": depth == "summary" and bool(node_ids),
+        "allowed_ids": sorted(node_ids),
+        "allowed_next_depth": (["relations", "full"] if depth == "summary" else []),
+        "max_ids": project_context.MAX_SELECTED,
+        "reason": "load only evidence needed for the current task",
+    })
+    if depth == "relations":
+        relations = []
+        relation_total = 0
+        for node_id in selected:
+            rows = knowledge_relation_list(node_id, scope=scope).get("relations", [])
+            relation_total += len(rows)
+            for row in rows:
+                if len(relations) >= 30:
+                    break
+                compact = {key: row.get(key) for key in
+                           ("id", "source_path", "target_path", "relation_type",
+                            "confidence", "evidence") if row.get(key) is not None}
+                if "evidence" in compact:
+                    compact["evidence"] = str(compact["evidence"])[:300]
+                relations.append(compact)
+        result["relations"] = relations
+        result["relations_total"] = relation_total
+        result["relations_truncated"] = relation_total > len(relations)
+    elif depth == "full":
+        remaining = 6000
+        full = []
+        for node_id in selected:
+            row = knowledge_read(node_id)
+            content = str(row.get("content", ""))
+            clipped = content[:remaining]
+            remaining = max(0, remaining - len(clipped))
+            full.append({key: row.get(key) for key in
+                         ("id", "path", "title", "summary", "source", "tags")
+                         if row.get(key) is not None} | {
+                             "content": clipped,
+                             "content_truncated": len(clipped) < len(content),
+                         })
+        result["full"] = full
+    return result
+
+
+def project_change_record(project_root: str, base_commit: str,
+                          semantic_summary: str, verification: list[str],
+                          max_distance: int = 1) -> dict:
+    """Record one verified commit and compute its complete proven impact chain."""
+    if not semantic_summary.strip():
+        raise ValueError("semantic_summary must state the behavior change or explicitly say none")
+    if not verification or any(not str(item).strip() for item in verification):
+        raise ValueError("verification requires at least one non-empty test or check")
+    ensured = project_ensure(project_root)
+    if "error" in ensured:
+        return ensured
+    impact = project_context.impact_chain(project_root, base_commit)
+    counts = {distance: len(files) for distance, files in impact["consumers_by_distance"].items()}
+    receipt = {
+        "base": impact["base"],
+        "head": impact["head"],
+        "changed_files": impact["changed_files"],
+        "semantic_summary": semantic_summary.strip(),
+        "verification": verification,
+        "consumer_count": impact["consumer_count"],
+        "consumer_counts_by_distance": counts,
+        "impact_edges": impact["impact_edges"],
+        "edge_type": impact["edge_type"],
+        "observed_at": impact["observed_at"],
+        "unsupported_changed_files": impact["unsupported_changed_files"],
+        "ambiguous_imports": impact["ambiguous_imports"],
+        "coverage_status": impact["coverage_status"],
+    }
+    conn = get_db()
+    try:
+        row = conn.execute(
+            "SELECT id, path FROM knowledge_nodes WHERE id=?",
+            (ensured["knowledge_root_id"],),
+        ).fetchone()
+        existing = conn.execute(
+            "SELECT id, content FROM knowledge_nodes WHERE project_id=? "
+            "AND tags LIKE ? LIMIT 1",
+            (ensured["project_id"], f'%"commit:{impact["head"]}"%'),
+        ).fetchone()
+    finally:
+        conn.close()
+    receipt_content = json.dumps(receipt, ensure_ascii=False, sort_keys=True)
+    if existing:
+        if (existing["content"] or "") != receipt_content:
+            updated = knowledge_update(
+                existing["id"], summary=semantic_summary[:800], content=receipt_content)
+            if "error" in updated:
+                return updated
+        receipt_id = existing["id"]
+    else:
+        created = knowledge_add(
+            row["path"], f"Change {impact['head'][:12]}", semantic_summary[:800],
+            receipt_content, project_id=ensured["project_id"],
+            tags=["project-change-receipt", f"commit:{impact['head']}"],
+            source=f"verified Git commit {impact['head']} in {ensured['root']}",
+            norm_entscheidung="keine_norm",
+            norm_entschieden_grund="Generated factual change receipt, not a norm.",
+            anlass="skript",
+        )
+        if "error" in created:
+            return created
+        receipt_id = created["id"]
+    shown = {distance: files for distance, files in impact["consumers_by_distance"].items()
+             if int(distance) <= max(1, max_distance)}
+    return {
+        "project_id": ensured["project_id"],
+        "receipt": receipt,
+        "receipt_node_id": receipt_id,
+        "input_dependencies": impact["input_dependencies"],
+        "consumers_by_distance": shown,
+        "deeper_distances_available": sorted(
+            int(distance) for distance in impact["consumers_by_distance"]
+            if int(distance) > max(1, max_distance)),
+        "not_proven": impact["not_proven"],
+        "choice": {
+            "must": "validate every reachable consumer before claiming the change is contained",
+            "may": "call project_change again with a larger max_distance to lazy-load deeper layers",
+            "must_not": "treat import edges or vector similarity as proven runtime data flow",
+        },
+        "curation": "update or supersede semantic knowledge separately when behavior changed",
+    }
+
+
 TOOLS = {
+    "project_change": {
+        "description": "After a verified commit, store one compact change receipt and compute the complete transitive chain of statically proven Python import consumers. Returns consumer layers only up to max_distance; deeper layers remain available for lazy loading. Import edges prove dependency, not runtime data flow. Non-Python changes are reported as uncovered and require a project-specific registered analyzer.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "project_root": {"type": "string"},
+                "base_commit": {"type": "string", "description": "Commit before the verified change"},
+                "semantic_summary": {"type": "string", "description": "Behavior change, or an explicit statement that behavior did not change"},
+                "verification": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 20},
+                "max_distance": {"type": "integer", "minimum": 1, "maximum": 50, "default": 1},
+            },
+            "required": ["project_root", "base_commit", "semantic_summary", "verification"],
+            "additionalProperties": False,
+        },
+        "handler": lambda args: project_change_record(
+            _require(args, "project_root", "a path inside the Git project"),
+            _require(args, "base_commit", "the commit before the verified change"),
+            _require(args, "semantic_summary", "the behavior change or explicit no-change statement"),
+            args.get("verification") or [], args.get("max_distance", 1)),
+    },
+    "project_ensure": {
+        "description": "Idempotently adopt or initialize a Git project for Brainlehr. Creates a compact .brainlehr.json capsule from Git facts and declared entry points, plus one project knowledge root; it never copies raw source code. Existing project-scoped knowledge is adopted, not duplicated. Explicit tool references distinguish available commands from planned capabilities.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "project_root": {"type": "string", "description": "Any path inside the Git project"},
+                "project_id": {"type": "string", "description": "Stable Brainlehr project scope; defaults to repository directory name"},
+                "tools": {"type": "array", "description": "Project-specific capability references to merge", "items": {
+                    "type": "object", "properties": {
+                        "id": {"type": "string"}, "capability": {"type": "string"},
+                        "status": {"type": "string", "enum": ["available", "planned"]},
+                        "command": {"type": "string"}, "source": {"type": "string"},
+                        "reference": {"type": "string"}, "when": {"type": "string"},
+                        "covers": {"type": "array", "items": {"type": "string"}},
+                        "edge_types": {"type": "array", "items": {"type": "string"}},
+                        "artifact": {"type": "string"},
+                    }, "required": ["id", "capability", "status"], "additionalProperties": False},
+                },
+            },
+            "required": ["project_root"], "additionalProperties": False,
+        },
+        "handler": lambda args: project_ensure(
+            _require(args, "project_root", "a path inside the Git project"),
+            args.get("project_id"), args.get("tools")),
+    },
+    "project_context": {
+        "description": "Load task context progressively and token-efficiently. First call depth=summary: it returns at most five project-scoped summaries, eight bounded Git code hits, relevant project tool references, and the mandatory next-choice contract. Use depth=relations or depth=full only with up to three node IDs selected from that same summary result. Never recursively loads a branch and never stores raw source automatically.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "project_root": {"type": "string", "description": "Any path inside the Git project"},
+                "task": {"type": "string", "description": "Concise task keywords used for project-scoped knowledge and bounded Git code search"},
+                "depth": {"type": "string", "enum": ["summary", "relations", "full"], "default": "summary"},
+                "selected_node_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
+                "max_results": {"type": "integer", "minimum": 1, "maximum": 5, "default": 5},
+            },
+            "required": ["project_root", "task"], "additionalProperties": False,
+        },
+        "handler": lambda args: project_context_get(
+            _require(args, "project_root", "a path inside the Git project"),
+            _require(args, "task", "concise task keywords"),
+            args.get("depth", "summary"), args.get("selected_node_ids"),
+            args.get("max_results", 5)),
+    },
     "session_checkpoint_setzen": {
         "description": "Setzt einen temporären technischen Sitzungscheckpoint ohne Freitext, Recall oder Modellaufruf.",
         "inputSchema": {"type": "object", "properties": {

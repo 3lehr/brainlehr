@@ -225,6 +225,21 @@ Diese Uebersicht ist ein Knoten wie jeder andere. Suche nach einem Stichwort
 Speicher liefert die zugehoerige Faehigkeit samt Grenze.""")
 
 
+PUBLIC_CONTEXT = (
+    ("Public architecture", "Local-first architecture for the public release.",
+     "Brainlehr is a local SQLite knowledge service exposed through MCP. It keeps "
+     "semantic nodes and lessons separate, searches them with full text plus local "
+     "embeddings, and records explicit provenance and relations. Public descriptions "
+     "are generated from verified project artifacts; they do not include a user database."),
+    ("Public workflow", "Verified workflow for project-aware coding.",
+     "A client first ensures a compact project capsule, then loads task context in "
+     "stages: summaries, selected direct relations, and selected full text. After a "
+     "verified commit it records the affected files, checks transitive static consumers, "
+     "and curates a semantic conclusion separately. Static imports and semantic similarity "
+     "are never presented as runtime data flow."),
+)
+
+
 def anlegen(db: Path | None = None) -> dict:
     """Idempotent: vorhandene Knoten werden aktualisiert, nicht verdoppelt."""
     import knowledge_mcp_server as kms
@@ -265,6 +280,18 @@ def anlegen(db: Path | None = None) -> dict:
                     "Beschreibt eine Faehigkeit und ihre Grenze; setzt keine "
                     "Regel."),
                 anlass="skript")
+        if erg.get("status") == "created":
+            neu += 1
+        else:
+            geaendert += 1
+
+    for titel, zusammenfassung, volltext in PUBLIC_CONTEXT:
+        erg = kms.knowledge_add(
+            parent_path=AST, title=titel, summary=zusammenfassung, content=volltext,
+            source=QUELLE, neuer_ast=True, project_id="brainlehr",
+            norm_entscheidung="keine_norm",
+            norm_entschieden_grund="Public generated architecture/workflow description.",
+            anlass="skript")
         if erg.get("status") == "created":
             neu += 1
         else:
