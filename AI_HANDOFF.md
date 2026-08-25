@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-25T21:45:00+0200 — chore(push): refresh generated guards for the private catch-up branch
+
+- Files: `docs/karten/`, `docs/ablauf_vermerke.json`, and this handoff.
+- Why: The private branch is 143 commits ahead of `origin`; the required pre-push guards found generated maps stale and historical commits whose immutable messages predate the plan/evidence marker rule. The visible per-commit records answer those findings without rewriting history or bypassing a guard.
+- Verified: `python3 melder/landkarten.py --code brainlehr hub`; `python3 melder/kartenstand.py --still`; `python3 melder/dokumentzugang.py --still`; `python3 melder/ablaufpflicht.py origin/brainlehr/b4-ausweis..HEAD`.
+- Remaining risk: The five document-reference nodes used to clear document access are live local knowledge only, as intended; neither the database nor their source metadata is committed.
+- Next test: push the guarded branch and retain the hook output as the final remote verification.
+
 ## 2026-08-25T21:30:00+0200 — docs(public-context): publish the verified safe slice
 
 - Files: `docs/public-knowledge/brainlehr-context.json`, `docs/REQUIREMENTS_BRAINLEHR.md`, `docs/AI_DECISIONS.md`, and this handoff.

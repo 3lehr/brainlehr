@@ -330,6 +330,15 @@
    "quelle": "hub/scripts/eilmeldung_hook.py"
   },
   {
+   "id": "s_einbettungsaussetzer_py",
+   "text": "einbettungsaussetzer.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Meldet beim Sitzungsstart, wenn die Aussetzer-Sicherung juengst pausiert hat.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/einbettungsaussetzer.py"
+  },
+  {
    "id": "s_entwurfsprobe_hook_py",
    "text": "entwurfsprobe_hook.py",
    "form": "kasten",
@@ -465,6 +474,15 @@
    "quelle": "hub/scripts/modell_abfrage_hook.py"
   },
   {
+   "id": "s_modellwege_py",
+   "text": "modellwege.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Sind die Modell-Endpunkte erreichbar, auf die brainlehr zeigt?",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/modellwege.py"
+  },
+  {
    "id": "s_monolith_guard_py",
    "text": "monolith_guard.py",
    "form": "kasten",
@@ -472,6 +490,15 @@
    "zweck": "PostToolUse-Guard (Edit|Write): Monolith-Bremse.",
    "entscheidet": false,
    "quelle": "hub/scripts/monolith_guard.py"
+  },
+  {
+   "id": "s_neue_achse_py",
+   "text": "neue_achse.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Kommt eine neue Achse dazu -- welche Spalten werden dadurch zweiseitig?",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/neue_achse.py"
   },
   {
    "id": "s_normachsen_py",
@@ -499,6 +526,15 @@
    "zweck": "Ein Melder auf die BINDUNG zwischen Plan und Speicher -- S: Plandateien",
    "entscheidet": false,
    "quelle": "brainlehr/kern/planbindung.py"
+  },
+  {
+   "id": "s_planmitschrieb_py",
+   "text": "planmitschrieb.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Meldet, wenn Code entsteht, ohne dass der Plan mitwaechst.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/planmitschrieb.py"
   },
   {
    "id": "s_pruefer_py",
@@ -661,6 +697,15 @@
    "zweck": "WorktreeCreate-Haken: Identitaets- und Regeldateien reisen mit.",
    "entscheidet": false,
    "quelle": "brainlehr/haken/worktree_identitaet.py"
+  },
+  {
+   "id": "s_zugriffsmuster_py",
+   "text": "zugriffsmuster.py",
+   "form": "kasten",
+   "waise": false,
+   "zweck": "Ungewoehnliche Zugriffsmuster auf den Wissensbestand -- BDW-E25.",
+   "entscheidet": false,
+   "quelle": "brainlehr/melder/zugriffsmuster.py"
   },
   {
    "id": "werkzeug",
@@ -853,6 +898,18 @@
   {
    "von": "ev_SessionStart",
    "nach": "s_faelligkeit_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_modellwege_py",
+   "text": "global",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_neue_achse_py",
    "text": "global",
    "art": "gerichtet"
   },
@@ -1188,7 +1245,25 @@
   },
   {
    "von": "ev_SessionStart",
+   "nach": "s_einbettungsaussetzer_py",
+   "text": "repo",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
    "nach": "s_kurator_taeglich_py",
+   "text": "repo",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_zugriffsmuster_py",
+   "text": "repo",
+   "art": "gerichtet"
+  },
+  {
+   "von": "ev_SessionStart",
+   "nach": "s_planmitschrieb_py",
    "text": "repo",
    "art": "gerichtet"
   },

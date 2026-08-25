@@ -16,7 +16,7 @@
   },
   {
    "id": "apps",
-   "text": "apps · 94",
+   "text": "apps · 112",
    "form": "kasten",
    "waise": false
   },
@@ -46,7 +46,13 @@
   },
   {
    "id": "brainlehr",
-   "text": "brainlehr · 308",
+   "text": "brainlehr · 329",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "dokumente",
+   "text": "dokumente · 3",
    "form": "kasten",
    "waise": false
   },
@@ -64,7 +70,7 @@
   },
   {
    "id": "fahrtenbuch",
-   "text": "fahrtenbuch · 5",
+   "text": "fahrtenbuch · 9",
    "form": "kasten",
    "waise": false
   },
@@ -88,7 +94,7 @@
   },
   {
    "id": "methodik",
-   "text": "methodik · 169",
+   "text": "methodik · 174",
    "form": "kasten",
    "waise": false
   },
@@ -100,19 +106,25 @@
   },
   {
    "id": "openlehr",
-   "text": "openlehr · 43",
+   "text": "openlehr · 46",
    "form": "kasten",
    "waise": false
   },
   {
    "id": "ops",
-   "text": "ops · 91",
+   "text": "ops · 94",
    "form": "kasten",
    "waise": false
   },
   {
    "id": "plaene",
    "text": "plaene · 17",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "projects",
+   "text": "projects · 4",
    "form": "kasten",
    "waise": false
   },
@@ -169,13 +181,13 @@
   {
    "von": "brainlehr",
    "nach": "methodik",
-   "text": "114",
+   "text": "126",
    "art": "ungerichtet"
   },
   {
    "von": "brainlehr",
    "nach": "openlehr",
-   "text": "35",
+   "text": "36",
    "art": "ungerichtet"
   },
   {
@@ -193,7 +205,7 @@
   {
    "von": "apps",
    "nach": "methodik",
-   "text": "23",
+   "text": "24",
    "art": "ungerichtet"
   },
   {

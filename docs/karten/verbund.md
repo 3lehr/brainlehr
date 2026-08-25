@@ -5,6 +5,7 @@
 ```mermaid
 graph LR
   port_1234(["Port 1234 (fremd)"])
+  _brainlehr_public -->|ruft| port_1234
   _probe_head -->|ruft| port_1234
   atelier -->|ruft| port_1234
   brainlehr -->|ruft| port_1234
@@ -45,6 +46,7 @@ graph LR
   atelier -->|ruft| port_4610
   brainlehr -->|ruft| port_4610
   port_4611(["Port 4611"])
+  _brainlehr_public -->|lauscht| port_4611
   atelier -->|lauscht| port_4611
   brainlehr -->|lauscht| port_4611
   port_5005(["Port 5005 (fremd)"])
@@ -200,10 +202,12 @@ graph LR
   _probe_head -->|lauscht| port_8799
   atelier -->|lauscht| port_8799
   brainlehr -->|lauscht| port_8799
+  _brainlehr_public -->|ruft| port_8799
   port_8933(["Port 8933 (fremd)"])
   atelier -->|ruft| port_8933
   brainlehr -->|ruft| port_8933
   port_8934(["Port 8934 (fremd)"])
+  _brainlehr_public -->|ruft| port_8934
   atelier -->|ruft| port_8934
   brainlehr -->|ruft| port_8934
   port_9000(["Port 9000"])
@@ -254,15 +258,18 @@ graph LR
   videoki -->|ruft| port_9999
   port_11434(["Port 11434 (fremd)"])
   UsbKabelTester -->|ruft| port_11434
+  _brainlehr_public -->|ruft| port_11434
   _probe_head -->|ruft| port_11434
   afrika -->|ruft| port_11434
   atelier -->|ruft| port_11434
   brainlehr -->|ruft| port_11434
+  brainlehr_release -->|ruft| port_11434
   buckeberg -->|ruft| port_11434
   design_lab -->|ruft| port_11434
   drg -->|ruft| port_11434
   drobo_nas -->|ruft| port_11434
   fahrtenbuch -->|ruft| port_11434
+  hermes_brainlehr -->|ruft| port_11434
   hub -->|ruft| port_11434
   legacylink -->|ruft| port_11434
   markusx25 -->|ruft| port_11434
@@ -331,7 +338,7 @@ graph LR
   stiftshuette -->|ruft| port_19999
   wpdrop -->|ruft| port_19999
   port_35000(["Port 35000"])
-  _wt_tf98 -->|lauscht| port_35000
+  _wt_tf99 -->|lauscht| port_35000
   fahrtenbuch -->|lauscht| port_35000
   fahrtenbuch_nativ -->|lauscht| port_35000
   UsbKabelTester -->|ruft| port_35000
@@ -357,19 +364,19 @@ graph LR
   fahrtenbuch -->|lauscht| port_35002
   class port_35002 waise
   port_35123(["Port 35123 (fremd)"])
-  _wt_tf98 -->|ruft| port_35123
+  _wt_tf99 -->|ruft| port_35123
   fahrtenbuch_nativ -->|ruft| port_35123
   port_35124(["Port 35124 (fremd)"])
-  _wt_tf98 -->|ruft| port_35124
+  _wt_tf99 -->|ruft| port_35124
   fahrtenbuch_nativ -->|ruft| port_35124
   port_35125(["Port 35125 (fremd)"])
-  _wt_tf98 -->|ruft| port_35125
+  _wt_tf99 -->|ruft| port_35125
   fahrtenbuch_nativ -->|ruft| port_35125
   port_35126(["Port 35126"])
-  _wt_tf98 -->|lauscht| port_35126
+  _wt_tf99 -->|lauscht| port_35126
   fahrtenbuch_nativ -->|lauscht| port_35126
   port_35127(["Port 35127 (fremd)"])
-  _wt_tf98 -->|ruft| port_35127
+  _wt_tf99 -->|ruft| port_35127
   fahrtenbuch_nativ -->|ruft| port_35127
   port_36802(["Port 36802"])
   legacylink -->|lauscht| port_36802
@@ -386,6 +393,7 @@ graph LR
   wpdrop -->|lauscht| port_40000
   class port_40000 waise
   port_47660(["Port 47660"])
+  _brainlehr_public -->|lauscht| port_47660
   brainlehr -->|lauscht| port_47660
   class port_47660 waise
   port_49168(["Port 49168"])
@@ -403,14 +411,19 @@ graph LR
   class port_50000 waise
   db_brainlehr_db[("brainlehr.db")]
   brainlehr -->|liegt| db_brainlehr_db
+  _brainlehr_public -.->|liest| db_brainlehr_db
   atelier -.->|liest| db_brainlehr_db
+  brainlehr_release -.->|liest| db_brainlehr_db
+  hermes_brainlehr -.->|liest| db_brainlehr_db
   hub -.->|liest| db_brainlehr_db
   db_knowledge_db[("knowledge.db")]
-  brainlehr -->|liegt| db_knowledge_db
+  brainlehr_release -->|liegt| db_knowledge_db
   _brainlehr_public -.->|liest| db_knowledge_db
   _probe_head -.->|liest| db_knowledge_db
   atelier -.->|liest| db_knowledge_db
+  brainlehr -.->|liest| db_knowledge_db
   buckeberg -.->|liest| db_knowledge_db
+  hermes_brainlehr -.->|liest| db_knowledge_db
   hub -.->|liest| db_knowledge_db
   openlehr_einzelunternehmer -.->|liest| db_knowledge_db
   openlehr_legacy -.->|liest| db_knowledge_db

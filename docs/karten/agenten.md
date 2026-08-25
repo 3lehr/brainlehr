@@ -74,6 +74,10 @@ graph LR
   ev_SessionStart -->|global| s_vektorstand_py
   s_faelligkeit_py["faelligkeit.py"]
   ev_SessionStart -->|global| s_faelligkeit_py
+  s_modellwege_py["modellwege.py"]
+  ev_SessionStart -->|global| s_modellwege_py
+  s_neue_achse_py["neue_achse.py"]
+  ev_SessionStart -->|global| s_neue_achse_py
   s_build_node_index_py["build_node_index.py"]
   ev_SessionStart -->|global| s_build_node_index_py
   s_metroviz_autostart_sh["metroviz_autostart.sh"]
@@ -179,8 +183,14 @@ graph LR
   ev_PreToolUse -->|repo| s_agentenanker_abruf_py
   ev_SessionStart -->|repo| s_eilmeldung_etikett_py
   ev_SessionStart -->|repo| s_kantenstillstand_py
+  s_einbettungsaussetzer_py["einbettungsaussetzer.py"]
+  ev_SessionStart -->|repo| s_einbettungsaussetzer_py
   s_kurator_taeglich_py["kurator_taeglich.py"]
   ev_SessionStart -->|repo| s_kurator_taeglich_py
+  s_zugriffsmuster_py["zugriffsmuster.py"]
+  ev_SessionStart -->|repo| s_zugriffsmuster_py
+  s_planmitschrieb_py["planmitschrieb.py"]
+  ev_SessionStart -->|repo| s_planmitschrieb_py
   s_existenzpruefung_py["existenzpruefung.py"]
   ev_Stop -->|repo| s_existenzpruefung_py
   s_agentenanker_einspielung_py["agentenanker_einspielung.py"]
@@ -193,4 +203,4 @@ graph LR
   classDef entscheidet stroke-width:4px
 ```
 
-77 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 4 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.
+82 Verdrahtungen aus zwei Einstellungsdateien (global und repo-eigen — wer nur eine liest, misst falsch), 4 Agententypen. Ein Ereignis, an dem nichts hängt, kann nichts auslösen.

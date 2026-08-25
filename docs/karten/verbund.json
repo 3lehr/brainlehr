@@ -21,8 +21,8 @@
    "waise": false
   },
   {
-   "id": "_wt_tf98",
-   "text": "_wt_tf98",
+   "id": "_wt_tf99",
+   "text": "_wt_tf99",
    "form": "kasten",
    "waise": false
   },
@@ -41,6 +41,12 @@
   {
    "id": "brainlehr",
    "text": "brainlehr",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "brainlehr_release",
+   "text": "brainlehr_release",
    "form": "kasten",
    "waise": false
   },
@@ -101,6 +107,12 @@
   {
    "id": "fahrtenbuch_nativ",
    "text": "fahrtenbuch_nativ",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "hermes_brainlehr",
+   "text": "hermes_brainlehr",
    "form": "kasten",
    "waise": false
   },
@@ -569,6 +581,12 @@
  ],
  "kanten": [
   {
+   "von": "_brainlehr_public",
+   "nach": "port_1234",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
    "von": "_probe_head",
    "nach": "port_1234",
    "text": "ruft",
@@ -740,6 +758,12 @@
    "von": "brainlehr",
    "nach": "port_4610",
    "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_brainlehr_public",
+   "nach": "port_4611",
+   "text": "lauscht",
    "art": "gerichtet"
   },
   {
@@ -1535,6 +1559,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "_brainlehr_public",
+   "nach": "port_8799",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
    "von": "atelier",
    "nach": "port_8933",
    "text": "ruft",
@@ -1543,6 +1573,12 @@
   {
    "von": "brainlehr",
    "nach": "port_8933",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "_brainlehr_public",
+   "nach": "port_8934",
    "text": "ruft",
    "art": "gerichtet"
   },
@@ -1787,6 +1823,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "_brainlehr_public",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
    "von": "_probe_head",
    "nach": "port_11434",
    "text": "ruft",
@@ -1806,6 +1848,12 @@
   },
   {
    "von": "brainlehr",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr_release",
    "nach": "port_11434",
    "text": "ruft",
    "art": "gerichtet"
@@ -1836,6 +1884,12 @@
   },
   {
    "von": "fahrtenbuch",
+   "nach": "port_11434",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "hermes_brainlehr",
    "nach": "port_11434",
    "text": "ruft",
    "art": "gerichtet"
@@ -2189,7 +2243,7 @@
    "art": "gerichtet"
   },
   {
-   "von": "_wt_tf98",
+   "von": "_wt_tf99",
    "nach": "port_35000",
    "text": "lauscht",
    "art": "gerichtet"
@@ -2327,7 +2381,7 @@
    "art": "gerichtet"
   },
   {
-   "von": "_wt_tf98",
+   "von": "_wt_tf99",
    "nach": "port_35123",
    "text": "ruft",
    "art": "gerichtet"
@@ -2339,7 +2393,7 @@
    "art": "gerichtet"
   },
   {
-   "von": "_wt_tf98",
+   "von": "_wt_tf99",
    "nach": "port_35124",
    "text": "ruft",
    "art": "gerichtet"
@@ -2351,7 +2405,7 @@
    "art": "gerichtet"
   },
   {
-   "von": "_wt_tf98",
+   "von": "_wt_tf99",
    "nach": "port_35125",
    "text": "ruft",
    "art": "gerichtet"
@@ -2363,7 +2417,7 @@
    "art": "gerichtet"
   },
   {
-   "von": "_wt_tf98",
+   "von": "_wt_tf99",
    "nach": "port_35126",
    "text": "lauscht",
    "art": "gerichtet"
@@ -2375,7 +2429,7 @@
    "art": "gerichtet"
   },
   {
-   "von": "_wt_tf98",
+   "von": "_wt_tf99",
    "nach": "port_35127",
    "text": "ruft",
    "art": "gerichtet"
@@ -2447,6 +2501,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "_brainlehr_public",
+   "nach": "port_47660",
+   "text": "lauscht",
+   "art": "gerichtet"
+  },
+  {
    "von": "brainlehr",
    "nach": "port_47660",
    "text": "lauscht",
@@ -2513,7 +2573,25 @@
    "art": "gerichtet"
   },
   {
+   "von": "_brainlehr_public",
+   "nach": "db_brainlehr_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
    "von": "atelier",
+   "nach": "db_brainlehr_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "brainlehr_release",
+   "nach": "db_brainlehr_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "hermes_brainlehr",
    "nach": "db_brainlehr_db",
    "text": "liest",
    "art": "gestrichelt"
@@ -2525,7 +2603,7 @@
    "art": "gestrichelt"
   },
   {
-   "von": "brainlehr",
+   "von": "brainlehr_release",
    "nach": "db_knowledge_db",
    "text": "liegt",
    "art": "gerichtet"
@@ -2549,7 +2627,19 @@
    "art": "gestrichelt"
   },
   {
+   "von": "brainlehr",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
    "von": "buckeberg",
+   "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "hermes_brainlehr",
    "nach": "db_knowledge_db",
    "text": "liest",
    "art": "gestrichelt"

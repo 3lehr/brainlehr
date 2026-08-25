@@ -39,6 +39,12 @@
    "waise": false
   },
   {
+   "id": "integrations",
+   "text": "integrations",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "kern",
    "text": "kern",
    "form": "kasten",
@@ -175,13 +181,13 @@
   {
    "von": "kern",
    "nach": "knowledge_mcp_server",
-   "text": "25",
+   "text": "28",
    "art": "gerichtet"
   },
   {
    "von": "knowledge_mcp_server",
    "nach": "kern",
-   "text": "1",
+   "text": "2",
    "art": "gerichtet"
   },
   {
@@ -205,7 +211,7 @@
   {
    "von": "messungen",
    "nach": "kern",
-   "text": "3",
+   "text": "6",
    "art": "gerichtet"
   },
   {
@@ -277,13 +283,13 @@
   {
    "von": "tests",
    "nach": "kern",
-   "text": "30",
+   "text": "32",
    "art": "gerichtet"
   },
   {
    "von": "tests",
    "nach": "knowledge_mcp_server",
-   "text": "94",
+   "text": "108",
    "art": "gerichtet"
   },
   {
