@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-25T21:25:00+0200 — fix(public-context): refresh existing generated nodes
+
+- Files: `melder/selbstbeschreibung.py`, `tests/test_selbstbeschreibung_update.py`, and this handoff.
+- Why: The public export correctly rejected stale nodes, but the generator counted a duplicate-path response as an update without calling `knowledge_update`; an existing generated description could therefore remain stale forever.
+- Verified: `python3 -m pytest -q tests/test_selbstbeschreibung_update.py tests/test_public_context_export.py tests/test_project_context.py tests/test_requirements_brainlehr.py tests/test_werkzeugrechte_durchsetzung.py` — 24 passed; `python3 -m py_compile melder/selbstbeschreibung.py pflege/export_public_context.py kern/project_context.py knowledge_mcp_server.py`; `python3 tool/faehigkeitskarte.py --pruefen`; `git diff --check`.
+- Remaining risk: The generated public artifact still needs a post-commit generator run, then the exporter validates source freshness before it writes.
+- Next test: run `python3 melder/selbstbeschreibung.py --anlegen`, export the allowlisted artifact, and prove the second export is byte-identical.
+
 ## 2026-08-25T21:15:00+0200 — feat(public-context): export an allowlisted DB handoff
 
 - Files: `pflege/export_public_context.py`, `melder/selbstbeschreibung.py`, `docs/public-knowledge/brainlehr-nodes.json`, `tests/test_public_context_export.py`, the canonical requirements, architecture decisions, capability map, and this handoff.

@@ -283,6 +283,12 @@ def anlegen(db: Path | None = None) -> dict:
         if erg.get("status") == "created":
             neu += 1
         else:
+            # knowledge_add protects paths from being overwritten.  Its
+            # existing_id is therefore the explicit hand-off to the update
+            # path; merely counting this result left the generated text stale.
+            kms.knowledge_update(node_id=erg["existing_id"],
+                                 summary=volltext.split("\n")[0][:400],
+                                 content=volltext)
             geaendert += 1
 
     for titel, zusammenfassung, volltext in PUBLIC_CONTEXT:
@@ -295,6 +301,8 @@ def anlegen(db: Path | None = None) -> dict:
         if erg.get("status") == "created":
             neu += 1
         else:
+            kms.knowledge_update(node_id=erg["existing_id"],
+                                 summary=zusammenfassung, content=volltext)
             geaendert += 1
 
     # Freigeben: genau diese Knoten sollen in einem weitergebbaren Auszug
