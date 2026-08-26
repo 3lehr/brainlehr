@@ -715,3 +715,16 @@ cd /Volumes/daten/Begod2026/brainlehr/app
 - Decision: target picture A is the local-first governed core; Enterprise is a profile, SSO/SCIM/roles are pilot-gated, and federation is `SOLL später`. The catalog is versionable, but evidence, security, conflict and test gates are not optional.
 - Remaining risk: all product gates start `NOT RUN`; this commit is a requirements decision, not an implementation release. The single interpretation review may revise existing IDs, never fork them.
 - Next test: derive the first implementation tranche from MUST/PILOT dependencies and record each product-gate result on its existing BDW ID.
+## 2026-08-26T14:35:00+0200 — fix(audit): preserve legacy chain gaps with a bounded cutover
+
+- Files: `kern/audit_segment.py`, `migrationen/migrate_audit_segment_p70.py`, `schema.sql`,
+  P67–P70 migration/test material and canonical requirements.
+- Why: only UTC-only breaks had a proven execution event. The remaining 19 model+timestamp and
+  31 missing-pre-UTC breaks must stay visible instead of receiving made-up explanations.
+- Decision: a local, append-only segment anchor binds a hash-only 50-ID manifest and validates
+  only the new segment. It never edits old `access_log` or `chain_explanations` rows.
+- Verified: focused P67–P70 suite `17 passed`; live path hygiene `4 passed`; copy append/tamper
+  and restore succeeded; production anchor `40f35ebd-0a2d-4194-91dc-565dadecec24` reports
+  integrity `ok`, FK `0`, `historical_unresolved=50`, and healthy current segment.
+- Remaining risk: the local digest is not an external TSA/signature; remaining historic classes
+  are deliberately unresolved. P2 dashboard/feedback redesign is not part of this release slice.

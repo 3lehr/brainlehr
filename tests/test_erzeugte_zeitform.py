@@ -70,7 +70,7 @@ def test_kanten_aus_lehren_create_edges():
     import kanten_aus_lehren as m
     conn = sqlite3.connect(":memory:")
     conn.execute("""CREATE TABLE knowledge_relations (
-        id TEXT, source_path TEXT, target_path TEXT, relation_type TEXT,
+        id TEXT, source_path TEXT, target_path TEXT, source_kind TEXT, target_kind TEXT, relation_type TEXT,
         confidence REAL, weight REAL, evidence TEXT, source TEXT,
         creator TEXT, model TEXT, session TEXT, created_at TEXT, updated_at TEXT)""")
     ref = m.FileReference(path="kern/zeitmarke.py", exists=True,

@@ -105,6 +105,7 @@ only-include = [
   "kern/project_boundary_cli.py",
   "kern/project_impact_cli.py",
   "kern/reifegrad.py",
+  "kern/relation_endpoints.py",
   "kern/relevanzlage.py",
   "kern/schema_nachzug.py",
   "kern/schluesselablage.py",
@@ -162,6 +163,7 @@ bypass-selection = true
 "kern/project_boundary_cli.py" = "brainlehr_kern/project_boundary_cli.py"
 "kern/project_impact_cli.py" = "brainlehr_kern/project_impact_cli.py"
 "kern/reifegrad.py" = "brainlehr_kern/kern/reifegrad.py"
+"kern/relation_endpoints.py" = "brainlehr_kern/kern/relation_endpoints.py"
 "kern/relevanzlage.py" = "brainlehr_kern/kern/relevanzlage.py"
 "kern/schema_nachzug.py" = "brainlehr_kern/kern/schema_nachzug.py"
 "kern/schluesselablage.py" = "brainlehr_kern/kern/schluesselablage.py"

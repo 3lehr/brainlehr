@@ -147,10 +147,11 @@ def schreibe(conn: sqlite3.Connection, kandidaten: list[Kandidat]) -> int:
     for k in kandidaten:
         cur = conn.execute(
             "INSERT OR IGNORE INTO knowledge_relations "
-            "(id, source_path, target_path, relation_type, confidence, weight, "
+            "(id, source_path, target_path, source_kind, target_kind, relation_type, confidence, weight, "
             " evidence, source, creator, created_at, updated_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (str(uuid.uuid4()), k.source_path, k.target, RELATION_TYPE,
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (str(uuid.uuid4()), k.source_path, k.target, "node", "lesson" if k.ziel_art == "lehre" else "node",
+             RELATION_TYPE,
              0.9, 1.0, f"woertlicher Verweis im Knotentext: {k.roh}",
              "kanten_herkunft_rueckwirkend.py", "mechanik", jetzt, jetzt))
         neu += cur.rowcount

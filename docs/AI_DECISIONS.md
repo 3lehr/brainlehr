@@ -252,3 +252,19 @@
 - Verification: `python3 -m pytest -q tests/test_brainlehr_umzug.py::test_erstanlage_traegt_dasselbe_schema_wie_der_betrieb tests/test_enigma_hausmeister_contract.py tests/test_werkzeugrechte_durchsetzung.py tests/test_ausweis_identitaet.py tests/test_enigma_two_process_spike.py` — 22 passed.
 - Boundary: This is a synthetic P1 contract. It is not a P2, anonymity, legal,
   compliance, or production-security claim; C0/C2/C3/C4 remain unmeasured.
+## 2026-08-26 — Preserve unresolved audit history; anchor only a new healthy segment
+
+- Context: P68 explained only the 11,118 UTC-only rewrites. Independent replay proved 19
+  model-plus-timestamp rows and 31 rows absent from the named pre-UTC backup, but not the
+  authorized execution event needed to explain either class.
+- Decision: Do not rewrite `access_log` or create invented explanations. `audit_segment_anchors`
+  records the previous chained tail, a hash-only sorted unresolved-ID manifest, class counts,
+  a prefix profile, actor/reason and a local integrity digest. Validation reports the unresolved
+  legacy count separately and verifies only post-anchor chain continuity. A local digest detects
+  accidental row alteration; it is explicitly not an external timestamp/signature authority.
+- Verification: Copy-first manifest SHA `f7e607b841d6c2f844318551b85ef19adbc1adf4d29ff151d22771f276654d2f`
+  classified exactly 19+31; valid append remained healthy and a tampered append failed. Live
+  anchor `40f35ebd-0a2d-4194-91dc-565dadecec24`, integrity/FK checks and SQLite-backup restore
+  passed. `tests/test_audit_segment_p70.py` includes concurrent duplicate creation.
+- Rejected: bulk waiver, rehashing history, per-row invented explanations, and calling the
+  complete historical chain healthy.

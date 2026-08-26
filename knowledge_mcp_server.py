@@ -122,6 +122,7 @@ import trennung  # B3: Mandant und Kreis werden erzwungen (BDW-E03/E06/E22/E23);
                  # ein SQL-Fragment je Leseweg, Bauform wie _NICHT_GESPERRT_SQL
 import gattung_filter  # S1b: Nachschlagewerk (germanquad/nasa-llis) aus der Trefferliste halten
 import speicher  # Aufgabe 79 Schritt 2: normiere_modell()/normiere_akteur() im
+import relation_endpoints
                   # Schreibpfad selbst, nicht nur im Meldewerkzeug (siehe _identity)
 import sicherungen  # Aufbewahrungsregel fuer die automatischen .bak-Kopien (2026-08-14)
 import werkzeugrechte  # B4.3: Durchsetzung an tools/call statt nur an tools/list
@@ -1497,6 +1498,7 @@ def _ensure_nachgezogene_spalten(conn: sqlite3.Connection) -> None:
 def ensure_schema(conn: sqlite3.Connection) -> None:
     """Idempotent additive migration for old brainlehr.db copies."""
     _ensure_core_schema(conn)
+    relation_endpoints.ensure_triggers(conn)
     session_checkpoint.ensure_schema(conn)
     gegenstand.ensure_schema(conn)  # gegenstaende/gegenstand_namen/gegenstand_bezug;
                                      # nach _ensure_core_schema, weil gegenstand_bezug

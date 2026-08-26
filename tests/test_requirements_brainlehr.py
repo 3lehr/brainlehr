@@ -241,3 +241,11 @@ def test_root_is_the_only_normative_catalog():
     marker = "Untergeordnet zu `docs/REQUIREMENTS_BRAINLEHR.md`; lokale IDs sind nur Umsetzungsgates."
     for name in ("REQUIREMENTS_PROMPT_INVARIANZ.md", "REQUIREMENTS_SESSION_CHECKPOINT.md", "REQUIREMENTS_INTERFACE_KOMPAT.md"):
         assert marker in (ROOT / "docs" / name).read_text()
+        67: "release-readiness-priority",
+        68: "audit-chain-utc-repair",
+        69: "typed-relation-endpoints",
+        70: "legacy-chain-cutover-anchor",
+    "BDW-P67": "Vor P2-Visualisierung ist der gesamte Brainlehr-Kern P1",
+    "BDW-P68": "Die 11.119 gegen eine benannte Vor-UTC-Sicherung",
+    "BDW-P69": "`knowledge_relations` speichert typisierte Endpunkte",
+    "BDW-P70": "Die 50 offen gebliebenen historischen Kettenlücken",

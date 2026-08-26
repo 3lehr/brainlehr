@@ -1131,12 +1131,29 @@ CREATE TABLE IF NOT EXISTS chain_explanations (
     anker_beleg TEXT                         -- JSON-Beleg aus ankerverfahren.py, NULL wenn keiner gebaut
 );
 
--- Explizite, belegte Wissensbeziehungen. Keine Tag-Aehnlichkeit und keine
--- automatisch vermuteten Kanten: beide Endpunkte muessen echte Node-Pfade sein.
+CREATE TABLE IF NOT EXISTS audit_segment_anchors (
+    id TEXT PRIMARY KEY,
+    previous_tail_id INTEGER NOT NULL,
+    previous_tail_hash TEXT NOT NULL,
+    unresolved_count INTEGER NOT NULL,
+    unresolved_classes TEXT NOT NULL,
+    unresolved_manifest_hash TEXT NOT NULL,
+    db_profile_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    actor TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    anchor_hash TEXT NOT NULL,
+    UNIQUE(previous_tail_id, previous_tail_hash, unresolved_manifest_hash)
+);
+
+-- Explizite, belegte Wissensbeziehungen. Endpunkte sind typisiert: Knoten,
+-- Lehren und repo-relative Dateien sind verschiedene, prüfbare Referenzen.
 CREATE TABLE IF NOT EXISTS knowledge_relations (
     id TEXT PRIMARY KEY,
     source_path TEXT NOT NULL,
     target_path TEXT NOT NULL,
+    source_kind TEXT NOT NULL DEFAULT 'node' CHECK(source_kind IN ('node','lesson','file')),
+    target_kind TEXT NOT NULL DEFAULT 'node' CHECK(target_kind IN ('node','lesson','file')),
     relation_type TEXT NOT NULL,
     confidence REAL NOT NULL DEFAULT 0.8 CHECK(confidence BETWEEN 0.0 AND 1.0),
     weight REAL NOT NULL DEFAULT 1.0 CHECK(weight >= 0.0),
@@ -1151,10 +1168,34 @@ CREATE TABLE IF NOT EXISTS knowledge_relations (
                                                -- Kein CHECK/Whitelist -- verschiedene Erzeuger
                                                -- (Bedeutungskanten, spaeter evtl. weitere) tragen
                                                -- verschiedene Hinsichten, siehe kanten_aus_bedeutung.py.
-    UNIQUE(source_path, target_path, relation_type),
-    FOREIGN KEY(source_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY(target_path) REFERENCES knowledge_nodes(path) ON UPDATE CASCADE ON DELETE CASCADE
+    UNIQUE(source_path, target_path, relation_type)
 );
+
+-- P69: fresh installs get the same endpoint gate as migrated databases.
+CREATE TRIGGER IF NOT EXISTS knowledge_relations_endpoints_bi
+BEFORE INSERT ON knowledge_relations BEGIN
+  SELECT CASE
+    WHEN NEW.source_kind NOT IN ('node','lesson','file') OR NEW.target_kind NOT IN ('node','lesson','file') THEN RAISE(ABORT, 'unknown relation endpoint kind')
+    WHEN NEW.source_kind='node' AND NOT EXISTS(SELECT 1 FROM knowledge_nodes WHERE path=NEW.source_path) THEN RAISE(ABORT, 'relation source node missing')
+    WHEN NEW.target_kind='node' AND NOT EXISTS(SELECT 1 FROM knowledge_nodes WHERE path=NEW.target_path) THEN RAISE(ABORT, 'relation target node missing')
+    WHEN NEW.source_kind='lesson' AND NOT EXISTS(SELECT 1 FROM lessons_learned WHERE id=NEW.source_path) THEN RAISE(ABORT, 'relation source lesson missing')
+    WHEN NEW.target_kind='lesson' AND NOT EXISTS(SELECT 1 FROM lessons_learned WHERE id=NEW.target_path) THEN RAISE(ABORT, 'relation target lesson missing')
+    WHEN NEW.source_kind='file' AND (NEW.source_path='' OR NEW.source_path GLOB '/*' OR NEW.source_path GLOB '*..*' OR NEW.source_path GLOB '*\\*') THEN RAISE(ABORT, 'relation source file is not repo-relative')
+    WHEN NEW.target_kind='file' AND (NEW.target_path='' OR NEW.target_path GLOB '/*' OR NEW.target_path GLOB '*..*' OR NEW.target_path GLOB '*\\*') THEN RAISE(ABORT, 'relation target file is not repo-relative')
+  END;
+END;
+CREATE TRIGGER IF NOT EXISTS knowledge_relations_endpoints_bu
+BEFORE UPDATE OF source_path,target_path,source_kind,target_kind ON knowledge_relations BEGIN
+  SELECT CASE
+    WHEN NEW.source_kind NOT IN ('node','lesson','file') OR NEW.target_kind NOT IN ('node','lesson','file') THEN RAISE(ABORT, 'unknown relation endpoint kind')
+    WHEN NEW.source_kind='node' AND NOT EXISTS(SELECT 1 FROM knowledge_nodes WHERE path=NEW.source_path) THEN RAISE(ABORT, 'relation source node missing')
+    WHEN NEW.target_kind='node' AND NOT EXISTS(SELECT 1 FROM knowledge_nodes WHERE path=NEW.target_path) THEN RAISE(ABORT, 'relation target node missing')
+    WHEN NEW.source_kind='lesson' AND NOT EXISTS(SELECT 1 FROM lessons_learned WHERE id=NEW.source_path) THEN RAISE(ABORT, 'relation source lesson missing')
+    WHEN NEW.target_kind='lesson' AND NOT EXISTS(SELECT 1 FROM lessons_learned WHERE id=NEW.target_path) THEN RAISE(ABORT, 'relation target lesson missing')
+    WHEN NEW.source_kind='file' AND (NEW.source_path='' OR NEW.source_path GLOB '/*' OR NEW.source_path GLOB '*..*' OR NEW.source_path GLOB '*\\*') THEN RAISE(ABORT, 'relation source file is not repo-relative')
+    WHEN NEW.target_kind='file' AND (NEW.target_path='' OR NEW.target_path GLOB '/*' OR NEW.target_path GLOB '*..*' OR NEW.target_path GLOB '*\\*') THEN RAISE(ABORT, 'relation target file is not repo-relative')
+  END;
+END;
 
 -- Embeddings (additiv, AP "Wissenssuche nach Bedeutung", 2026-07-31).
 -- Eigene, separate Tabelle -- keine Aenderung an knowledge_nodes/lessons_learned.

@@ -99,7 +99,10 @@ def _bruch_an(conn: sqlite3.Connection, access_log_id: int) -> tuple[str, str]:
             "(kein ketten_hash) -- kein Bruch, nichts zu erklaeren"
         )
     prev = conn.execute(
-        "SELECT ketten_hash FROM access_log WHERE id < ? ORDER BY id DESC LIMIT 1",
+        # Same predecessor rule as knowledge_lint.find_broken_chain(): legacy
+        # rows without a chain hash are an uncovered interval, not a reset.
+        "SELECT ketten_hash FROM access_log WHERE id < ? AND ketten_hash IS NOT NULL "
+        "ORDER BY id DESC LIMIT 1",
         (access_log_id,),
     ).fetchone()
     prev_hash = prev["ketten_hash"] if prev else None
@@ -131,42 +134,57 @@ def create_explanation(
     durch (trocken per Vorgabe dort, siehe Modul-Docstring)."""
     if not grund.strip():
         raise ValueError("grund darf nicht leer sein")
-    gespeichert, erwartet = _bruch_an(conn, access_log_id)
-    if gespeichert == erwartet:
-        raise KeinBruchError(
-            f"access_log.id={access_log_id} ist heil (gespeichert==erwartet) -- "
-            "nichts zu erklaeren"
+    # The explicit writer transaction closes the read-then-insert race: two
+    # processes can ask about the same historic break, but only one persists
+    # its explanation.  Existing duplicate legacy rows remain visible.
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        gespeichert, erwartet = _bruch_an(conn, access_log_id)
+        if gespeichert == erwartet:
+            raise KeinBruchError(
+                f"access_log.id={access_log_id} ist heil (gespeichert==erwartet) -- "
+                "nichts zu erklaeren"
+            )
+        existing = conn.execute(
+            """SELECT id, grund, commit_hash, vorher_hash, nachher_hash,
+                      erstellt_am, erstellt_von, anker_beleg
+                 FROM chain_explanations
+                 WHERE access_log_id = ? AND vorher_hash = ? AND nachher_hash = ?
+                 ORDER BY id LIMIT 1""",
+            (access_log_id, gespeichert, erwartet),
+        ).fetchone()
+        if existing is not None:
+            conn.commit()
+            return {**dict(existing), "access_log_id": access_log_id, "status": "already_recorded"}
+
+        erstellt_am = now or now_iso()
+        anker_beleg = None
+        if anker is not None:
+            nachricht = f"{access_log_id}|{gespeichert}|{erwartet}|{grund}|{commit_hash}|{erstellt_am}"
+            wurzel = hashlib.sha256(nachricht.encode("utf-8")).hexdigest()
+            bereich = {"von": access_log_id, "bis": access_log_id}
+            beleg = ankerverfahren.versuche_anker(anker, wurzel, bereich, erstellt_am, **anker_kwargs)
+            anker_beleg = json.dumps(beleg, ensure_ascii=False)
+
+        cursor = conn.execute(
+            """INSERT INTO chain_explanations
+               (access_log_id, grund, commit_hash, vorher_hash, nachher_hash,
+                erstellt_am, erstellt_von, anker_beleg)
+               VALUES (?,?,?,?,?,?,?,?)""",
+            (access_log_id, grund, commit_hash, gespeichert, erwartet,
+             erstellt_am, actor, anker_beleg),
         )
-    erstellt_am = now or now_iso()
-
-    anker_beleg = None
-    if anker is not None:
-        nachricht = f"{access_log_id}|{gespeichert}|{erwartet}|{grund}|{commit_hash}|{erstellt_am}"
-        wurzel = hashlib.sha256(nachricht.encode("utf-8")).hexdigest()
-        bereich = {"von": access_log_id, "bis": access_log_id}
-        beleg = ankerverfahren.versuche_anker(anker, wurzel, bereich, erstellt_am, **anker_kwargs)
-        anker_beleg = json.dumps(beleg, ensure_ascii=False)
-
-    cursor = conn.execute(
-        """INSERT INTO chain_explanations
-           (access_log_id, grund, commit_hash, vorher_hash, nachher_hash,
-            erstellt_am, erstellt_von, anker_beleg)
-           VALUES (?,?,?,?,?,?,?,?)""",
-        (access_log_id, grund, commit_hash, gespeichert, erwartet,
-         erstellt_am, actor, anker_beleg),
-    )
-    conn.commit()
-    return {
-        "id": int(cursor.lastrowid),
-        "access_log_id": access_log_id,
-        "grund": grund,
-        "commit_hash": commit_hash,
-        "vorher_hash": gespeichert,
-        "nachher_hash": erwartet,
-        "erstellt_am": erstellt_am,
-        "erstellt_von": actor,
-        "anker_beleg": anker_beleg,
-    }
+        conn.commit()
+        return {
+            "id": int(cursor.lastrowid), "status": "recorded",
+            "access_log_id": access_log_id, "grund": grund,
+            "commit_hash": commit_hash, "vorher_hash": gespeichert,
+            "nachher_hash": erwartet, "erstellt_am": erstellt_am,
+            "erstellt_von": actor, "anker_beleg": anker_beleg,
+        }
+    except BaseException:
+        conn.rollback()
+        raise
 
 
 def explanations_by_id(conn: sqlite3.Connection) -> dict[int, list[dict]]:

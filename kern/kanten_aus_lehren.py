@@ -170,13 +170,15 @@ def create_edges(conn: sqlite3.Connection, refs: List[FileReference]) -> Tuple[i
                 edge_id = str(uuid.uuid4())
                 cursor.execute("""
                     INSERT INTO knowledge_relations
-                    (id, source_path, target_path, relation_type, confidence, weight,
+                    (id, source_path, target_path, source_kind, target_kind, relation_type, confidence, weight,
                      evidence, source, creator, model, session, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     edge_id,
                     lesson_id,
                     target_path,
+                    "lesson",
+                    "file",
                     RELATION_TYPE,
                     0.9,  # confidence
                     1.0,  # weight
