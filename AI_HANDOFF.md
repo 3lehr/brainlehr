@@ -1,5 +1,20 @@
 # AI handoff
 
+## 2026-08-26T09:14:00+0200 — docs(requirements): refresh P23–P28 gate counts
+
+- Files: `docs/REQUIREMENTS_BRAINLEHR.md` and this handoff.
+- Why: P29 added boundary, relative-import, receipt-supersession and export-provenance checks; the canonical acceptance evidence must state the current focused-test counts.
+- Verified: `python3 -m pytest -q tests/test_project_context.py tests/test_public_context_export.py tests/test_requirements_brainlehr.py` (17 passed).
+- Next test: refresh the allowlisted public artifact only after this source commit exists, so its `source_git_commit` is reproducible.
+
+## 2026-08-26T09:15:00+0200 — docs(public-context): regenerate hardened public evidence
+
+- Files: `docs/public-knowledge/brainlehr-context.json`, `docs/karten/bestand.{md,json}`, and this handoff.
+- Why: The hardened source commit refreshed the public architecture/workflow nodes and added its append-only project receipt; the public snapshot and generated knowledge map must therefore follow the verified local database state.
+- Verified: `python3 melder/selbstbeschreibung.py --anlegen`; live `project_ensure` refreshed the capsule; `project_change` recorded `359c3280` with `coverage_gap`; exporter returned `written` then `current`; `python3 melder/landkarten.py --code brainlehr hub` regenerated the affected map.
+- Remaining risk: `coverage_gap` is expected here because the implementation commit changes non-Python files; runtime/build/schema dependencies still require registered analyzers.
+- Next test: run the focused suite and all push gates, then push only `origin/brainlehr/b4-ausweis`.
+
 ## 2026-08-26T09:00:00+0200 — feat(project-context): harden bounded evidence contracts
 
 - Files: `kern/project_context.py`, `knowledge_mcp_server.py`, `pflege/export_public_context.py`, `melder/selbstbeschreibung.py`, P23–P29 requirements/decision docs, and focused tests.
