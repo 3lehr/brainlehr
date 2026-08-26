@@ -10,7 +10,7 @@ graph LR
   methodik["methodik<br/>174"]
   apps["apps<br/>112"]
   ops["ops<br/>94"]
-  shared["shared<br/>55"]
+  shared["shared<br/>56"]
   openlehr["openlehr<br/>46"]
   plaene["plaene<br/>17"]
   arch["arch<br/>16"]
