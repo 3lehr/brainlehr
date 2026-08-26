@@ -1,5 +1,19 @@
 # AI handoff
 
+## 2026-08-26T23:35:00+0200 — fix(test): restore catalog decoder syntax
+
+- Files: `tests/test_requirements_brainlehr.py`, `AI_HANDOFF.md`.
+- Why: `e56c13d5` left eight P67–P70 dictionary fragments inside a test body,
+  making a clean checkout unparseable. The decoder now owns the exact currently
+  catalogued P67–P70, P74 and P99–P104 rows, accepts three-digit IDs and treats
+  explicit `NOT IMPLEMENTED` as an open gate.
+- Verified: detached staged snapshot `python3 -m py_compile
+  tests/test_requirements_brainlehr.py` and `python3 -m pytest -q
+  tests/test_requirements_brainlehr.py tests/test_code_retrieval_benchmark.py`
+  → `12 passed`; `git diff --check` passed. No DB/MCP write or push.
+- Remaining risk: this only restores catalog-decoder coverage; P99–P104 product
+  implementation stays `NOT IMPLEMENTED; NOT RUN`.
+
 ## 2026-08-26T23:05:19+0200 — docs(requirements): record P99–P104 contract tranche
 
 - Files: `tests/test_code_retrieval_benchmark.py`,

@@ -70,6 +70,17 @@ EXPECTED = {
         52: "supply-chain-release-identity", 53: "compatibility-deployment-identity", 54: "coverage-provenance-gaps", 55: "local-actor-project-boundary", 56: "ack-content-authenticity", 57: "analyzer-sandbox-redaction", 58: "trace-sanitization-lifecycle", 59: "injection-restart-resilience", 60: "graph-durability-erasure", 61: "safe-accessible-projections",
         62: "graph-vector-separation",
     }.items()},
+    "BDW-P67": "release-readiness-priority",
+    "BDW-P68": "audit-chain-utc-repair",
+    "BDW-P69": "typed-relation-endpoints",
+    "BDW-P70": "legacy-chain-cutover-anchor",
+    "BDW-P74": "client-lifecycle-lazy-contract",
+    "BDW-P99": "ai-comment-policy",
+    "BDW-P100": "registry-anchor-lineage-resolver",
+    "BDW-P101": "immutable-merkle-lineage-joins",
+    "BDW-P102": "rationale-index-failure-lifecycle",
+    "BDW-P103": "sealed-annotation-coderank-ablation",
+    "BDW-P104": "forbid-freeform-ai-comments",
     "BDW-E22": "kreis",
     "BDW-E23": "je-kreis",
     "BDW-E24": "zweiter-faktor",
@@ -162,6 +173,17 @@ EXPECTED_LABELS = {
     "BDW-P51": "Dependencies werden als revisionsgebundene Paket-/Version-/Lizenz-/Advisory-Knoten",
     "BDW-P52": "Locks, SBOM, Hash/Signatur", "BDW-P53": "Schema/API/Event/Deploy-Identität", "BDW-P54": "Dynamic/plugin/reflection/vendor", "BDW-P55": "Lokale Actor-/Project-Grenze", "BDW-P56": "Ack bindet Basis", "BDW-P57": "Analyzer haben Allowlist", "BDW-P58": "OTel nutzt Sampling", "BDW-P59": "Injection kann Policy", "BDW-P60": "Graph-Schema-Migration", "BDW-P61": "Cytoscape/Mermaid/Metroviz haben CSP",
     "BDW-P62": "Maschinen-Graph/Analyzer-/Trace-Evidenz wird getrennt",
+    "BDW-P67": "Vor P2-Visualisierung ist der gesamte Brainlehr-Kern P1",
+    "BDW-P68": "Die 11.119 gegen eine benannte Vor-UTC-Sicherung",
+    "BDW-P69": "`knowledge_relations` speichert typisierte Endpunkte",
+    "BDW-P70": "Die 50 offen gebliebenen historischen Kettenlücken",
+    "BDW-P74": "Der gleiche maschinenlesbare Lazy-Load- und `edit_batch_complete`-Vertrag",
+    "BDW-P99": "AI-Kommentare sind standardmäßig `NONE`",
+    "BDW-P100": "Registry- und Anchor-Validierung bindet stabile IDs",
+    "BDW-P101": "Daten- und Wirkungs-Lineage werden in unveränderlichen",
+    "BDW-P102": "Rationale, Retrieval-Index, Failure-Taxonomie",
+    "BDW-P103": "Die Code-Retrieval-Entscheidung verlangt eine versiegelte",
+    "BDW-P104": "AI darf keine Freiform-Kommentare",
     "BDW-E22": "Der Kreis steht VON ANFANG AN fest",
     "BDW-E23": "Geltung ist zweiseitig, sobald Kreise existieren",
     "BDW-E24": "der zweite liegt nicht auf demselben Geraet",
@@ -171,7 +193,7 @@ EXPECTED_LABELS = {
 
 def test_root_catalog_decodes_all_operator_selections():
     text = CATALOG.read_text()
-    rows = re.findall(r"^\| (BDW-[RCPU EF]\d{2}) \| `([^`]+)` \| ([^|]+) \| ([^|]+) \|", text, re.M)
+    rows = re.findall(r"^\| (BDW-[RCPU EF]\d{2,3}) \| `([^`]+)` \| ([^|]+) \| ([^|]+) \|", text, re.M)
     decoded = {requirement_id: selection for requirement_id, selection, _, _ in rows}
     # DIE ZAHL KOMMT AUS EXPECTED, nicht aus dem Quelltext (2026-08-21).
     # Bis dahin stand hier eine feste 56 -- dieselbe Bauform wie das
@@ -204,7 +226,7 @@ def test_root_catalog_decodes_all_operator_selections():
         # Mehrbenutzer-Piloten gebunden. Ein vertagtes Gate ist weder offen
         # (niemand arbeitet daran) noch belegt (nichts ist gemessen) -- es
         # als eines von beiden zu fuehren, waere in beide Richtungen falsch.
-        assert gate.startswith(("NOT RUN", "DEFERRED", "FUTURE")) or any(
+        assert gate.startswith(("NOT IMPLEMENTED", "NOT RUN", "DEFERRED", "FUTURE")) or any(
             marke in gate for marke in ("PASS", "TEILWEISE", "FAIL")
         ), f"{requirement_id}: Gate weder offen noch vertagt noch belegt: {gate!r}"
         if gate.startswith("DEFERRED"):
@@ -224,7 +246,7 @@ def test_root_catalog_decodes_all_operator_selections():
             flach = gate.lower().replace("ä", "ae").replace("\u00e4", "ae")
             assert "wieder faellig" in flach or "wieder fallig" in flach, (
                 f"{requirement_id}: FUTURE ohne Wiedervorlage -- was macht es wieder faellig?")
-        if not gate.startswith(("NOT RUN", "DEFERRED", "FUTURE")):
+        if not gate.startswith(("NOT IMPLEMENTED", "NOT RUN", "DEFERRED", "FUTURE")):
             assert "`" in gate, (
                 f"{requirement_id}: belegtes Gate ohne nachfahrbaren Pruefbefehl -- "
                 "eine Behauptung ohne Beleg ist schlimmer als ein ehrliches NOT RUN")
@@ -241,11 +263,3 @@ def test_root_is_the_only_normative_catalog():
     marker = "Untergeordnet zu `docs/REQUIREMENTS_BRAINLEHR.md`; lokale IDs sind nur Umsetzungsgates."
     for name in ("REQUIREMENTS_PROMPT_INVARIANZ.md", "REQUIREMENTS_SESSION_CHECKPOINT.md", "REQUIREMENTS_INTERFACE_KOMPAT.md"):
         assert marker in (ROOT / "docs" / name).read_text()
-        67: "release-readiness-priority",
-        68: "audit-chain-utc-repair",
-        69: "typed-relation-endpoints",
-        70: "legacy-chain-cutover-anchor",
-    "BDW-P67": "Vor P2-Visualisierung ist der gesamte Brainlehr-Kern P1",
-    "BDW-P68": "Die 11.119 gegen eine benannte Vor-UTC-Sicherung",
-    "BDW-P69": "`knowledge_relations` speichert typisierte Endpunkte",
-    "BDW-P70": "Die 50 offen gebliebenen historischen Kettenlücken",
