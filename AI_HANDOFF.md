@@ -1,5 +1,17 @@
 # AI handoff
 
+## 2026-08-26T21:25:39+0200 — docs(requirements): keep P42 planned until tracked
+
+- Files: `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
+- Why: the former P42 `PASS` was withdrawn because the real runner, regression test,
+  and fixture are untracked. The manifest therefore keeps tree-sitter, SCIP, and
+  Semgrep planned/non-callable; no code or untracked artifact is staged.
+- Verified: direct P42 tools were exercised, but there is no tracked acceptance
+  evidence, so the canonical product gate remains `NOT RUN`.
+- Remaining risk: P42 cannot be accepted until the runner, test, and fixture are
+  tracked and the full regression is rerun.
+- Next test: stage only the verified tracked P42/docs hunk after that evidence exists.
+
 ## 2026-08-26T18:00:00+0200 — feat(evidence): run Joern locally and revoke leaked retrieval route
 
 - Files: local-only Joern wrapper/fixture/adapter registration, leak-free multilingual query
