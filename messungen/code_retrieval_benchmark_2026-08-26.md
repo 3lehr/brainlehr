@@ -1,5 +1,26 @@
 # Frozen multilingual code-retrieval measurement — 2026-08-26
 
+> **INVALIDATED — retained audit evidence.** `L-0f0b4b` found that its queries
+> contained target symbol identifiers also present in positive candidates. The
+> reported gains and route activation are not semantic evidence and must not be
+> used. A replacement fixture rejects exact/split/case identifier and file leaks
+> before any new frozen rerun.
+
+## Replacement v2 (leak-free, BGE-only decision)
+
+- Fixture manifest SHA-256: `57d6201f9929248f09cfa79837a88d108f85d63eb065de71b60feafdca044c85`
+- Full 28-matrix report SHA-256: `77d59017125d8cd62a1f041b257121dd141bce0d87885fc599b6f8e0b3424da0`
+- Decision report SHA-256: `28d136573fbc69e0a488cdce334cdbeeaefc9848b17cd68ff9db8195de44cba7`
+- 140 generated cases passed exact/split/case/file identifier exclusion. Every
+  language now has four source candidates: three positive targets plus a
+  same-language numeric-range implementation as a dedicated code hard negative.
+- All candidate channels were measured separately with the documented CodeRank
+  query prefix. CodeRank, RRF and the fixed modality router each fail at least
+  one mandatory-matrix non-regression gate; BGE-M3 therefore remains the sole
+  active channel. The v2 router has macro gains `+0.023810` Recall@1 and
+  `+0.016865` MRR, but is ineligible because it loses Recall@1 in a required
+  matrix. Prose-control Recall@1 is unchanged at `0.800` for BGE-M3/router.
+
 This is the compact, reproducible evidence record; model caches, vectors and
 the full per-query reports remain outside Git under `/Volumes/daten`.
 

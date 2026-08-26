@@ -60,6 +60,14 @@
       "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P43",
       "source": "kern/evidence_projections.py:otel_trace_projection",
       "status": "available"
+    },
+    {
+      "capability": "extract revision-bound CPG evidence from a local C source file",
+      "command": "python3 tool/joern_cpg.py --source <file.c> --revision <commit> --language C",
+      "id": "joern-cpg-impact",
+      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P43",
+      "source": "tool/joern_cpg.py",
+      "status": "available"
     }
   ]
 }

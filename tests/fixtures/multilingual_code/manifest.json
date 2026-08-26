@@ -1,9 +1,9 @@
 {"schema":1,"fixtures":[
- {"language":"typescript","file":"typescript.ts","parser_command":"/Volumes/daten/brainlehr-tool-cache/node_modules/.bin/tsc --noEmit","symbols":["parseValue","doubleValue","renderValue"]},
- {"language":"rust","file":"rust.rs","parser_command":"rustc","symbols":["parse_value","double_value","render_value"]},
- {"language":"java","file":"Example.java","parser_command":"javac","symbols":["parseValue","doubleValue","renderValue"]},
- {"language":"go","file":"example.go","parser_command":"go build","symbols":["parseValue","doubleValue","renderValue"]},
- {"language":"swift","file":"example.swift","parser_command":"swiftc","symbols":["parseValue","doubleValue","renderValue"]},
- {"language":"dart","file":"example.dart","parser_command":"dart analyze","symbols":["parseValue","doubleValue","renderValue"]},
- {"language":"python","file":"example.py","parser_command":"python3 -m py_compile","symbols":["parse_value","double_value","render_value"]}
+ {"language":"typescript","file":"typescript.ts","parser_command":"/Volumes/daten/brainlehr-tool-cache/node_modules/.bin/tsc --noEmit","symbols":["parseValue","doubleValue","renderValue"],"hard_negative_symbol":"limitRange","behaviors":["turns text digits into a number","multiplies a numeric input by two","formats a numeric result for display"]},
+ {"language":"rust","file":"rust.rs","parser_command":"rustc","symbols":["parse_value","double_value","render_value"],"hard_negative_symbol":"limit_range","behaviors":["turns text digits into a number","multiplies a numeric input by two","formats a numeric result for display"]},
+ {"language":"java","file":"Example.java","parser_command":"javac","symbols":["parseValue","doubleValue","renderValue"],"hard_negative_symbol":"limitRange","behaviors":["turns text digits into a number","multiplies a numeric input by two","formats a numeric result for display"]},
+ {"language":"go","file":"example.go","parser_command":"go build","symbols":["parseValue","doubleValue","renderValue"],"hard_negative_symbol":"limitRange","behaviors":["turns text digits into a number","multiplies a numeric input by two","formats a numeric result for display"]},
+ {"language":"swift","file":"example.swift","parser_command":"swiftc","symbols":["parseValue","doubleValue","renderValue"],"hard_negative_symbol":"limitRange","behaviors":["turns text digits into a number","multiplies a numeric input by two","formats a numeric result for display"]},
+ {"language":"dart","file":"example.dart","parser_command":"dart analyze","symbols":["parseValue","doubleValue","renderValue"],"hard_negative_symbol":"limitRange","behaviors":["turns text digits into a number","multiplies a numeric input by two","formats a numeric result for display"]},
+ {"language":"python","file":"example.py","parser_command":"python3 -m py_compile","symbols":["parse_value","double_value","render_value"],"hard_negative_symbol":"limit_range","behaviors":["turns text digits into a number","multiplies a numeric input by two","formats a numeric result for display"]}
 ]}

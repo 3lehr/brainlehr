@@ -1,5 +1,28 @@
 # AI handoff
 
+## 2026-08-26T18:00:00+0200 — feat(evidence): run Joern locally and revoke leaked retrieval route
+
+- Files: local-only Joern wrapper/fixture/adapter registration, leak-free multilingual query
+  gate, disabled CodeRank router, hardened OTLP/Metroviz provenance checks, P31/P43/P62, ADR
+  and invalidated-measurement notice.
+- Why: Joern/CPG remained mandatory after Docker was unavailable; review then found target
+  identifiers leaked into the frozen multilingual retrieval queries, invalidating activation.
+- Decision: use Joern 4.0.612 only from `/Volumes/daten/brainlehr-tool-cache/joern`, not Git;
+  normalize typed CPG edges without DOT `CODE` fields. The v2 leak-free rerun retains BGE-M3:
+  CodeRank/RRF/router each lose at least one mandatory non-regression gate; no caller override
+  selects CodeRank.
+- Verified: installer SHA-256 `be5958d056483ff4a606469a290d3eb373b5c9bb24d410e11655007c51dc59d4`;
+  ZIP SHA-256 `e3b9a90ee34fe8d5a1bc586687394d3d8b18cd261b61e2737bcb3412fe22f986`;
+  CPG SHA-256 `e168b781211b2fa7209c95f2adcec60e113efcdb10513dd92c060486d4fe40a1`;
+  focused command `python3 -m pytest -q tests/test_multilingual_fixtures.py
+  tests/test_code_retrieval_benchmark.py tests/test_code_retrieval_router.py
+  tests/test_project_boundary.py tests/test_evidence_adapters.py
+  tests/test_requirements_brainlehr.py` → 42 passed; `git diff --check` → pass.
+- Remaining risk: macOS sandbox-exec denies network but must permit JVM filesystem reads; the
+  benchmark decision is measurement provenance, not a signed security attestation.
+- Next test: run catalog/client/public partitions, generated maps, isolated commit, private-origin
+  push and project receipt.
+
 ## 2026-08-26T17:00:00+0200 — feat(retrieval): validate seven languages and bind runtime projections
 
 - Files: frozen multilingual fixtures/benchmark/tests, separate CodeRank metadata router,

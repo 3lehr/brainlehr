@@ -239,16 +239,22 @@ def test_cytoscape_projection_escapes_data_and_bounds_large_graph():
 
 
 def test_otel_and_metroviz_are_revision_bound_projections():
-    graph = {"schema": 1, "source_revision": "rev-1", "content_hash": "hash-1",
+    graph = {"schema": 1, "source_revision": "rev-1",
              "nodes": [{"id": "src/app.py", "kind": "file"}], "edges": [], "coverage_gaps": []}
+    graph["content_hash"] = evidence_projections._hash(graph)
     trace = {"revision": "rev-1", "tree_hash": "tree-1",
-             "spans": [{"span_id": "s1", "name": "render", "code_file": "src/app.py"}]}
+             "spans": [{"span_id": "s1", "name": "render", "code_file": "src/app.py",
+                        "revision": "rev-1", "tree_hash": "tree-1", "duration_ns": 1}]}
     result = evidence_projections.otel_trace_projection(trace, source_revision="rev-1", tree_hash="tree-1", graph=graph)
     assert result["status"] == "current" and result["bindings"][0]["node"] == "src/app.py"
     assert evidence_projections.otel_trace_projection({**trace, "tree_hash": "old"}, source_revision="rev-1", tree_hash="tree-1", graph=graph)["status"] == "coverage_gap"
     assert evidence_projections.otel_trace_projection({**trace, "spans": [{"payload": "secret"}]}, source_revision="rev-1", tree_hash="tree-1", graph=graph)["status"] == "rejected"
     route = evidence_projections.metroviz_projection(graph)
     assert route["source_revision"] == graph["source_revision"] and route["content_hash"] == graph["content_hash"]
+    assert evidence_projections.metroviz_projection({**graph, "content_hash": "old"})["current"] is False
+    stale_graph = {**graph, "source_revision": "old"}
+    stale_graph["content_hash"] = evidence_projections._hash({key: value for key, value in stale_graph.items() if key != "content_hash"})
+    assert evidence_projections.otel_trace_projection(trace, source_revision="rev-1", tree_hash="tree-1", graph=stale_graph)["status"] == "coverage_gap"
 
 
 def test_otel_and_metroviz_cli_are_real_projection_routes(repo, tmp_path):
@@ -265,7 +271,8 @@ def test_otel_and_metroviz_cli_are_real_projection_routes(repo, tmp_path):
     assert graph["current"] is True and graph["routes"]
     trace = tmp_path / "trace.json"
     trace.write_text(json.dumps({"revision": graph["source_revision"], "tree_hash": "tree-1",
-                                 "spans": [{"span_id": "s", "name": "test", "code_file": "code.py"}]}),
+                                 "spans": [{"span_id": "s", "name": "test", "code_file": "code.py",
+                                            "revision": graph["source_revision"], "tree_hash": "tree-1", "duration_ns": 1}]}),
                      encoding="utf-8")
     otel = subprocess.run(["python3", "tool/project_impact_view.py", "--project-root", str(repo),
                            "--base", base, "--format", "otel", "--trace", str(trace),

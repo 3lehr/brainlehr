@@ -1,28 +1,43 @@
 # AI architecture decisions
 
-## 2026-08-26 — Activate only the measured, revision-bound CodeRank router
+## 2026-08-26 — Run Joern locally as bounded CPG evidence
+
+- Context: Joern/CPG was mandatory, but the earlier Docker path was unavailable. The official
+  macOS arm64 release is usable locally without a daemon.
+- Decision: Keep the Apache-2.0 Joern 4.0.612 distribution, installer and artifacts under
+  `/Volumes/daten/brainlehr-tool-cache/joern`, outside Git. `tool/joern_cpg.py` invokes only
+  the local parser/exporter, applies an allowlisted environment, CPU/file limits and a timeout,
+  discards tool streams, strips DOT `CODE` fields, runs under macOS `sandbox-exec` with
+  `deny network*`, and emits typed revision-bound CPG evidence.
+- Reason: The real C fixture produced a CPG and call/control/data-flow edge set. A controlled
+  socket probe receives `PermissionError 1` under the same profile; the runner also watches the
+  recursive process-group RSS with a 1 GiB cap calibrated from the 201,523,200-byte fixture run.
+- Rejected alternatives: Docker daemon dependency, bundled binary, analyzer SQLite writes,
+  raw DOT/code persistence, and labelling CPG edges as runtime evidence.
+- Verification: official installer SHA-256 `be5958d056483ff4a606469a290d3eb373b5c9bb24d410e11655007c51dc59d4`;
+  release ZIP SHA-256 `e3b9a90ee34fe8d5a1bc586687394d3d8b18cd261b61e2737bcb3412fe22f986`;
+  CPG SHA-256 `e168b781211b2fa7209c95f2adcec60e113efcdb10513dd92c060486d4fe40a1`.
+- Boundary: The JVM needs broad host filesystem reads, so filesystem isolation is not claimed;
+  this proves bounded C source behavior only.
+
+## 2026-08-26 — Revoke the leaked CodeRank router activation
 
 - Context: The earlier Python-only screening retained BGE-M3. P31 subsequently froze seven
   compiler/analyzer-validated language fixtures (Python, TypeScript, Rust, Java, Go, Swift,
   Dart/Flutter), each with three targets and four code modalities, plus the existing German
   Brainlehr prose control. The candidate query prefix is the model-card contract; document
   encoding has no prefix.
-- Decision: Keep normal prose retrieval on BGE-M3. Route only explicit
-  `signature_to_implementation` and `code_to_consumer` queries to the separate CodeRank
-  channel; German/English prose-to-code and unknown modalities stay on BGE-M3. The router is
-  a fixed pre-result rule, not a per-result oracle. Store CodeRank hints separately with
-  project, revision, tree hash, graph reference, modality, language, content/model hash,
-  model version, dimension, time and status; reject stale hints. RRF and vector concatenation
-  remain disabled.
-- Reason: Across all 28 required matrices, the router gains `+0.142857` macro Recall@1 and
-  `+0.079365` macro MRR without a mandatory-matrix or prose-control Recall@1 loss. CodeRank
-  alone (`0.600` prose R@1) and fixed RRF (`0.700`) regress BGE-M3 (`0.800`) prose and fail.
+- Decision: Keep BGE-M3 as the sole active retrieval channel. The former CodeRank router is
+  disabled; no explicit override can select it. CodeRank hints remain separately typed and
+  revision-bound for a future fresh measurement. RRF and vector concatenation remain disabled.
+- Reason: `L-0f0b4b` found target symbols in both multilingual queries and positive candidates.
+  The prior 28-matrix result is retained as invalid audit evidence, not a semantic win.
 - Rejected alternatives: promote CodeRank globally; fuse vectors or equal-weight ranks; infer
   query modality from a raw prompt; use the old Python-only result; or embed graph/trace JSON.
-- Verification: frozen fixture manifest and full idle report hashes, compiler checks and the
-  per-language result table are in `messungen/code_retrieval_benchmark_2026-08-26.md`.
-  `python3 -m pytest -q tests/test_multilingual_fixtures.py tests/test_code_retrieval_benchmark.py
-  tests/test_code_retrieval_router.py` passes locally.
+- Verification: the v2 frozen rerun has 28 code matrices plus prose control, 140 leak-scanned
+  cases and four source candidates per language (one dedicated same-domain hard negative).
+  Its report SHA-256 is `77d59017125d8cd62a1f041b257121dd141bce0d87885fc599b6f8e0b3424da0`.
+  The router's `+0.023810` macro Recall@1 gain still loses a mandatory matrix; BGE-only wins.
 - Boundary: This is a small, frozen local evaluation, not a claim of universal semantic-code
   quality. Model caches and full reports remain local under `/Volumes/daten`; no analyzer
   writes Brainlehr and no CodeRank vector is mixed with the normal knowledge index.

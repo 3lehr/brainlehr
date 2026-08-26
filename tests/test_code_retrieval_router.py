@@ -10,11 +10,11 @@ import code_retrieval  # noqa: E402
 
 
 def test_router_is_fixed_by_modality_with_safe_ambiguous_fallback():
-    assert code_retrieval.route("signature_to_implementation") == "coderankembed"
-    assert code_retrieval.route("code_to_consumer") == "coderankembed"
+    assert code_retrieval.route("signature_to_implementation") == "bge_m3"
+    assert code_retrieval.route("code_to_consumer") == "bge_m3"
     assert code_retrieval.route("en_prose_to_code") == "bge_m3"
     assert code_retrieval.route("unknown") == "bge_m3"
-    assert code_retrieval.route("unknown", explicit="coderankembed") == "coderankembed"
+    assert code_retrieval.CODE_RANK_ACTIVE is False
 
 
 def test_code_vector_metadata_is_revision_bound_and_stale_vectors_are_rejected():
@@ -29,4 +29,11 @@ def test_code_vector_metadata_is_revision_bound_and_stale_vectors_are_rejected()
     assert accepted["accepted"] is True
     assert code_retrieval.accept_vector(record, project_id="brainlehr", revision="a" * 40,
                                         tree_hash="c" * 64, model_id="nomic-ai/CodeRankEmbed",
+                                        model_version="3c4b608")["accepted"] is False
+    malformed = dict(record, dimensions=0)
+    assert code_retrieval.accept_vector(malformed, project_id="brainlehr", revision="a" * 40,
+                                        tree_hash="b" * 64, model_id="nomic-ai/CodeRankEmbed",
+                                        model_version="3c4b608")["accepted"] is False
+    assert code_retrieval.accept_vector(dict(record, dimensions=True), project_id="brainlehr", revision="a" * 40,
+                                        tree_hash="b" * 64, model_id="nomic-ai/CodeRankEmbed",
                                         model_version="3c4b608")["accepted"] is False

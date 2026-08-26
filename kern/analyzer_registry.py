@@ -19,7 +19,7 @@ from evidence_adapters import unavailable_record
 DEFAULTS = {
     "tree_sitter": "/Volumes/daten/brainlehr-tool-cache/node_modules/.bin/tree-sitter",
     "scip": "/Volumes/daten/brainlehr-tool-cache/node_modules/.bin/scip-python",
-    "joern": "joern-parse",
+    "joern": "/Volumes/daten/brainlehr-tool-cache/joern/install/joern-cli/bin/joern-parse",
     "otlp": "otlp-file",
     "semgrep": "semgrep",
 }

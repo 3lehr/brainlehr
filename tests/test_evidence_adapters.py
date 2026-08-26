@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from kern.evidence_adapters import normalize_record
+from kern.evidence_adapters import joern_dot_payload, normalize_record
 
 
 FIXTURES = Path(__file__).parent / "fixtures" / "evidence_adapters"
@@ -43,3 +43,16 @@ def test_otlp_drops_untrusted_attributes_and_keeps_timing_metadata():
     node = record["nodes"][0]
     assert node["name"] == "build" and node["startTimeUnixNano"] == 10
     assert "secret" not in str(record)
+
+
+def test_joern_dot_adapter_keeps_typed_edges_and_drops_raw_code():
+    dot = '''digraph {
+      "1" [label="METHOD" CODE="int secret(void)" FILENAME="fixture.c" NAME="secret"];
+      "2" [label="CALL" CODE="secret()" NAME="secret"];
+      "1" -> "2" [label="CALL" ];
+    }'''
+    payload = joern_dot_payload(dot, revision="r1", source="joern-4.0.612")
+    record = normalize_record("joern", payload)
+    assert record["revision"] == "r1"
+    assert record["edges"][0]["type"] == "cpg_call"
+    assert "int secret" not in str(record) and "secret()" not in str(record)

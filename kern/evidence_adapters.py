@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 
 
 SCHEMA = 2
@@ -14,6 +15,23 @@ EVIDENCE_STRENGTH = {
     "tree_sitter": "syntax", "scip": "symbol", "joern": "cpg",
     "otlp": "runtime", "semgrep": "rule", "codeql": "rule",
 }
+
+_JOERN_NODE = re.compile(r'^\s*"(?P<id>\d+)"\s+\[label="(?P<label>[^"]+)"(?P<attrs>[^\]]*)\];$', re.M)
+_JOERN_EDGE = re.compile(r'^\s*"(?P<out>\d+)"\s+->\s+"(?P<in>\d+)"\s+\[label="(?P<label>[^"]+)"', re.M)
+_JOERN_ATTR = re.compile(r'\s(?P<key>NAME|FILENAME)="(?P<value>[^"]*)"')
+
+
+def joern_dot_payload(dot: str, *, revision: str, source: str) -> dict:
+    """Extract typed CPG evidence from Joern DOT; deliberately drop raw CODE."""
+    nodes = []
+    for match in _JOERN_NODE.finditer(dot):
+        attrs = {entry["key"].lower(): entry["value"]
+                 for entry in _JOERN_ATTR.finditer(match["attrs"])}
+        nodes.append({"id": match["id"], "label": match["label"],
+                      "name": attrs.get("name", ""), "file": attrs.get("filename", "")})
+    return {"source": source, "revision": revision, "nodes": nodes,
+            "edges": [{"out": edge["out"], "in": edge["in"], "label": edge["label"]}
+                      for edge in _JOERN_EDGE.finditer(dot)]}
 
 
 def _safe_otlp_text(value: object) -> str:

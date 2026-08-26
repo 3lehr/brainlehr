@@ -74,6 +74,10 @@ def _fixture_manifest() -> list[dict]:
         raise ValueError("multilingual fixture manifest must name each mandatory language exactly once")
     if any(len(row.get("symbols", [])) != 3 for row in fixtures):
         raise ValueError("each multilingual fixture needs exactly three target symbols")
+    if any(len(row.get("behaviors", [])) != 3 for row in fixtures):
+        raise ValueError("each multilingual fixture needs three identifier-free behaviors")
+    if any(not row.get("hard_negative_symbol") for row in fixtures):
+        raise ValueError("each multilingual fixture needs one dedicated code hard negative")
     return fixtures
 
 
@@ -90,27 +94,57 @@ def _fixture_documents() -> tuple[dict[str, dict[str, str]], list[dict]]:
         language = "dart_flutter" if record["language"] == "dart" else record["language"]
         text = (MULTILINGUAL_FIXTURES / record["file"]).read_text(encoding="utf-8")
         docs: dict[str, str] = {}
-        for symbol in record["symbols"]:
+        starts = []
+        for symbol in [*record["symbols"], record["hard_negative_symbol"]]:
             match = re.search(rf"(?m)^.*\b{re.escape(symbol)}\s*\(", text)
             if not match:
                 raise ValueError(f"fixture symbol missing: {language}/{symbol}")
-            docs[symbol] = text[match.start():match.start() + MAX_CHUNK_CHARS]
+            starts.append((match.start(), symbol))
+        for index, (start, symbol) in enumerate(sorted(starts)):
+            end = sorted(starts)[index + 1][0] if index + 1 < len(starts) else len(text)
+            docs[symbol] = text[start:min(end, start + MAX_CHUNK_CHARS)]
         by_language[language] = docs
     return by_language, records
 
 
-def _multilingual_cases(language: str, symbols: list[str], modality: str) -> list[dict]:
-    title = language.replace("_", " ")
+def _identifier_tokens(value: str) -> set[str]:
+    """Catch exact, split snake/camel, and case-normalized identifier leaks."""
+    split = re.sub(r"([a-z])([A-Z])", r"\1 \2", value).casefold()
+    bits = {bit for bit in re.split(r"[^a-z0-9]+", split) if bit}
+    compact = "".join(bits)
+    return bits | ({compact} if compact else set())
+
+
+def _query_tokens(value: str) -> set[str]:
+    return {bit for bit in re.split(r"[^a-z0-9]+", value.casefold()) if bit}
+
+
+def _assert_identifier_free(query: str, identifiers: list[str]) -> None:
+    leaked = _query_tokens(query) & set().union(*(_identifier_tokens(item) for item in identifiers))
+    if leaked:
+        raise ValueError(f"query leaks fixture identifier tokens: {sorted(leaked)}")
+
+
+def _multilingual_cases(language: str, symbols: list[str], behaviors: list[str], modality: str,
+                        fixture_file: str, hard_negative_symbol: str) -> list[dict]:
     queries = {
-        "signature_to_implementation": lambda symbol: f"function {symbol}(value) -> rendered value",
-        "code_to_consumer": lambda symbol: f"main workflow calls {symbol} then renders its result",
-        "de_prose_to_code": lambda symbol: f"Implementiere {symbol}, um einen Wert im {title}-Ablauf zu verarbeiten.",
-        "en_prose_to_code": lambda symbol: f"Implement {symbol} to process a value in the {title} workflow.",
+        "signature_to_implementation": lambda behavior: f"function(input) -> {behavior}",
+        "code_to_consumer": lambda behavior: f"result = transform(input); use the routine that {behavior}",
+        "de_prose_to_code": lambda behavior: f"Implementiere eine Routine, die {behavior}.",
+        "en_prose_to_code": lambda behavior: f"Implement a routine that {behavior}.",
     }
     if modality not in queries:
         raise ValueError("unsupported multilingual modality")
-    return [{"id": f"{language}-{modality}-{symbol}", "query": queries[modality](symbol), "target": symbol}
-            for symbol in symbols] + [{"id": f"{language}-{modality}-negative", "query": "calculate a mortgage payment", "target": None}]
+    identifiers = [*symbols, hard_negative_symbol, fixture_file, Path(fixture_file).stem]
+    cases = [{"id": f"{language}-{modality}-{symbol}", "query": queries[modality](behavior), "target": symbol}
+             for symbol, behavior in zip(symbols, behaviors)]
+    cases.extend([
+        {"id": f"{language}-{modality}-negative-1", "query": "calculate a mortgage payment", "target": None},
+        {"id": f"{language}-{modality}-negative-2", "query": "plan a dental appointment", "target": None},
+    ])
+    for case in cases:
+        _assert_identifier_free(case["query"], identifiers)
+    return cases
 
 
 def _ranked_metrics(cases: list[dict], rankings: list[list[str]]) -> dict:
@@ -166,7 +200,8 @@ def run_multilingual(model_path: str, *, languages: set[str] | None = None) -> d
         code_docs = _coderank(coderank, [docs[key] for key in keys], query=False)
         for modality in MULTILINGUAL_MODALITIES:
             matrix_started = time.perf_counter()
-            cases = _multilingual_cases(language, record["symbols"], modality)
+            cases = _multilingual_cases(language, record["symbols"], record["behaviors"], modality,
+                                        record["file"], record["hard_negative_symbol"])
             bge_queries = _bge([case["query"] for case in cases])
             code_queries = _coderank(coderank, [case["query"] for case in cases], query=True)
             bge_rankings = [ranks(query, dict(zip(keys, bge_docs))) for query in bge_queries]
@@ -175,19 +210,26 @@ def run_multilingual(model_path: str, *, languages: set[str] | None = None) -> d
             code_order = [[key for key, _ in rank] for rank in code_rankings]
             rrf_order = [_rrf_order(left, right) for left, right in zip(bge_rankings, code_rankings)]
             router_order = code_order if modality in {"signature_to_implementation", "code_to_consumer"} else bge_order
-            matrices.append(_matrix({"bge_m3": _ranked_metrics(cases, bge_order),
+            matrix = _matrix({"bge_m3": _ranked_metrics(cases, bge_order),
                                      "coderankembed": _ranked_metrics(cases, code_order),
                                      "rrf": _ranked_metrics(cases, rrf_order),
                                      "router": _ranked_metrics(cases, router_order)},
                                     language=language, modality=modality,
                                     elapsed=time.perf_counter() - matrix_started,
-                                    rss=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+                                    rss=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+            matrix["positive_n"] = 3
+            matrix["negative_n"] = 2
+            matrix["validation"] = {"leak_free": True, "same_language_hard_negative_n": len(keys) - 1,
+                                    "same_language_code_hard_negative_n": 1,
+                                    "fixture_file_sha256": hashlib.sha256((MULTILINGUAL_FIXTURES / record["file"]).read_bytes()).hexdigest()}
+            matrices.append(matrix)
     elapsed = round(time.perf_counter() - started, 3)
     ram = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    return {"schema": 3, "mandatory_languages": list(MANDATORY_LANGUAGES),
+    return {"schema": 4, "mandatory_languages": list(MANDATORY_LANGUAGES),
             "measured_languages": sorted({matrix["language"] for matrix in matrices}),
             "thresholds": ACTIVATION_THRESHOLDS, "matrix_count": len(matrices), "matrices": matrices,
             "latency_seconds": elapsed, "max_rss": ram,
+            "fixture_manifest_sha256": hashlib.sha256((MULTILINGUAL_FIXTURES / "manifest.json").read_bytes()).hexdigest(),
             "model": {"bge_m3": embeddings.model_identity("bge-m3"), "coderankembed": Path(model_path).name},
             "activation": {"active_channel": "bge_m3", "reason": "measurement only; no alternate channel is activated by this runner"}}
 
@@ -224,6 +266,10 @@ def multilingual_activation_decision(matrices: list[dict], prose_control: dict) 
                 for modality in MULTILINGUAL_MODALITIES}
     observed = {(matrix["language"], matrix["query_modality"]) for matrix in matrices}
     missing = sorted(f"{language}/{modality}" for language, modality in expected - observed)
+    valid_input = (not missing and len(matrices) == len(expected)
+                   and all(matrix.get("validation", {}).get("leak_free") is True for matrix in matrices)
+                   and all(matrix.get("validation", {}).get("same_language_code_hard_negative_n") == 1
+                           for matrix in matrices))
     outcome: dict[str, dict] = {}
     baseline = "bge_m3"
     for channel in ("coderankembed", "rrf", "router"):
@@ -242,15 +288,15 @@ def multilingual_activation_decision(matrices: list[dict], prose_control: dict) 
                             "macro_mrr_gain": round(macro_mrr_gain, 6),
                             "per_matrix_nonregression": per_matrix_ok,
                             "prose_nonregression": prose_ok,
-                            "eligible": not missing and per_matrix_ok and prose_ok
+                            "eligible": valid_input and per_matrix_ok and prose_ok
                             and macro_r1_gain >= ACTIVATION_THRESHOLDS["macro_recall_at_1_gain"]
                             and macro_mrr_gain >= ACTIVATION_THRESHOLDS["mrr_gain"]}
     eligible = [(item["macro_recall_at_1_gain"], item["macro_mrr_gain"], channel)
                 for channel, item in outcome.items() if item["eligible"]]
     winner = max(eligible)[2] if eligible else baseline
-    return {"rule": "An alternate ranker needs a >=1 percentage-point macro Recall@1 and MRR gain, zero mandatory-matrix Recall@1 loss, and zero prose-control Recall@1 loss.",
+    return {"rule": "An alternate ranker needs leak-free frozen input, a >=1 percentage-point macro Recall@1 and MRR gain, zero mandatory-matrix Recall@1 loss, and zero prose-control Recall@1 loss.",
             "missing_matrices": missing, "candidates": outcome,
-            "active_channel": winner,
+            "input_valid": valid_input, "active_channel": winner if valid_input else baseline,
             "activate_separate_code_channel": winner != baseline}
 
 

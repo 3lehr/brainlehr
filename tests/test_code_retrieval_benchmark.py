@@ -71,9 +71,21 @@ def test_core_multilingual_matrix_and_extension_gaps_are_explicit():
 def test_multilingual_goldset_shape_is_frozen_without_model_claims():
     docs, records = benchmark._fixture_documents()
     assert {"dart_flutter" if row["language"] == "dart" else row["language"] for row in records} == set(benchmark.MANDATORY_LANGUAGES)
-    assert all(len(docs[language]) == 3 for language in benchmark.MANDATORY_LANGUAGES)
-    assert len(benchmark._multilingual_cases("rust", ["parse_value", "double_value", "render_value"],
-                                             "de_prose_to_code")) == 4
+    assert all(len(docs[language]) == 4 for language in benchmark.MANDATORY_LANGUAGES)
+    cases = benchmark._multilingual_cases("rust", ["parse_value", "double_value", "render_value"],
+                                          ["turns text digits into a number", "multiplies a numeric input by two", "formats a numeric result for display"],
+                                          "de_prose_to_code", "rust.rs", "limit_range")
+    assert len(cases) == 5
+    assert all("parse" not in case["query"].casefold() for case in cases)
+
+
+def test_multilingual_queries_reject_symbol_and_file_leaks():
+    try:
+        benchmark._assert_identifier_free("Call parse Value in rust", ["parseValue", "rust.rs"])
+    except ValueError as error:
+        assert "leaks" in str(error)
+    else:
+        raise AssertionError("split identifiers must reject the goldset")
 
 
 def test_multilingual_metrics_keep_models_and_fusion_in_separate_rankings():
@@ -87,6 +99,8 @@ def test_multilingual_metrics_keep_models_and_fusion_in_separate_rankings():
 def test_multilingual_activation_needs_every_matrix_and_prose_control():
     channels = lambda r1, mrr: {"metrics": {"recall_at_1": r1, "mrr": mrr}}
     matrices = [{"language": language, "query_modality": modality,
+                 "validation": {"leak_free": True, "same_language_hard_negative_n": 3,
+                                "same_language_code_hard_negative_n": 1},
                  "bge_m3": channels(0.5, 0.5), "coderankembed": channels(0.6, 0.6),
                  "rrf": channels(0.5, 0.5), "router": channels(0.6, 0.6)}
                 for language in benchmark.MANDATORY_LANGUAGES
