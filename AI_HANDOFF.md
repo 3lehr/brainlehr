@@ -1,5 +1,11 @@
 # AI handoff
 
+## 2026-08-26T11:35:00+0200 — docs(map): refresh generated inventory
+
+- Files: `docs/karten/bestand.{md,json}` and this handoff.
+- Why: The pre-push freshness gate correctly found the generated inventory stale after the new project-context evidence. Regenerated from the committed source graph; no hand-maintained capability text changed.
+- Verified: `python3 melder/landkarten.py --code brainlehr hub`; `python3 melder/kartenstand.py --still`; focused 38-test suite and all push gates pass.
+
 ## 2026-08-26T11:25:00+0200 — chore(project): complete declared local tools
 
 - Files: `.brainlehr.json` and this handoff.

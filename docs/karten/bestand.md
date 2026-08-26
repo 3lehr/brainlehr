@@ -21,7 +21,7 @@ graph LR
   testing["testing<br/>8"]
   frontend["frontend<br/>7"]
   agents["agents<br/>7"]
-  projects["projects<br/>5"]
+  projects["projects<br/>6"]
   domaenen["domaenen<br/>5"]
   backend["backend<br/>4"]
   lessons["lessons<br/>3"]
