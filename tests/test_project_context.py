@@ -31,6 +31,10 @@ def project(tmp_path, monkeypatch):
     (root / "api.py").write_text("import service\n\ndef output(): return service.value()\n", encoding="utf-8")
     (root / "cycle_a.py").write_text("import cycle_b\nA = 1\n", encoding="utf-8")
     (root / "cycle_b.py").write_text("import cycle_a\nB = 1\n", encoding="utf-8")
+    (root / "pkg").mkdir()
+    (root / "pkg" / "__init__.py").write_text("", encoding="utf-8")
+    (root / "pkg" / "helper.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (root / "pkg" / "consumer.py").write_text("from . import helper\n", encoding="utf-8")
     (root / "pyproject.toml").write_text(
         '[project]\nname="sample"\nversion="0"\n[project.scripts]\nsample-check="app:feedback_loop"\n',
         encoding="utf-8",
@@ -38,7 +42,8 @@ def project(tmp_path, monkeypatch):
     (root / "package.json").write_text(
         json.dumps({"scripts": {"diagram": "node diagram.js"}}), encoding="utf-8")
     _run(root, "git", "add", "app.py", "core.py", "service.py", "api.py",
-         "cycle_a.py", "cycle_b.py", "pyproject.toml", "package.json")
+         "cycle_a.py", "cycle_b.py", "pkg/__init__.py", "pkg/helper.py", "pkg/consumer.py",
+         "pyproject.toml", "package.json")
     _run(root, "git", "commit", "-qm", "fixture")
 
     db = tmp_path / "knowledge.db"
@@ -63,6 +68,7 @@ def test_ensure_adopts_existing_project_and_second_run_changes_nothing(project):
     assert first["before"] == "missing"
     assert first["knowledge_state"] == "adopted"
     marker_bytes = (root / project_context.MANIFEST).read_bytes()
+    assert first["capsule"]["schema"] == project_context.SCHEMA
 
     second = kms.project_ensure(str(root), "sample")
     assert second["changed"] is False
@@ -206,6 +212,7 @@ def test_change_receipt_follows_indirect_consumers_lazily_and_terminates_cycles(
         str(root), base, "Core value changed; consumers require validation.",
         ["pytest -q"], max_distance=1)
     assert first["consumers_by_distance"] == {"1": ["service.py"]}
+    assert first["receipt"]["coverage_status"] == "static_python_imports_complete"
     assert first["deeper_distances_available"] == [2]
     assert first["receipt"]["consumer_counts_by_distance"] == {"1": 1, "2": 1}
 
@@ -214,13 +221,17 @@ def test_change_receipt_follows_indirect_consumers_lazily_and_terminates_cycles(
         ["pytest -q"], max_distance=2)
     assert deeper["consumers_by_distance"]["2"] == ["api.py"]
     assert deeper["receipt_node_id"] == first["receipt_node_id"]
+    corrected = kms.project_change_record(
+        str(root), base, "Corrected verification statement.", ["pytest -q", "lint"], max_distance=2)
+    assert corrected["receipt_node_id"] != first["receipt_node_id"]
+    assert corrected["receipt"]["supersedes"] == first["receipt_node_id"]
     conn = sqlite3.connect(db)
     receipts = conn.execute(
         "SELECT content FROM knowledge_nodes WHERE project_id='sample' "
         "AND tags LIKE '%project-change-receipt%'"
     ).fetchall()
     conn.close()
-    assert len(receipts) == 1
+    assert len(receipts) == 2
     assert json.loads(receipts[0][0])["base"] == first["receipt"]["base"]
 
     cycle_base = subprocess.run(
@@ -286,3 +297,32 @@ def test_deleted_provider_keeps_base_consumers_in_impact_chain(project):
     impact = project_context.impact_chain(root, base)
     assert "core.py" in impact["changed_files"]
     assert impact["consumers_by_distance"]["1"] == ["service.py"]
+
+
+def test_relative_import_is_an_edge_and_non_python_change_is_a_coverage_gap(project):
+    root, _ = project
+    base = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True,
+                          capture_output=True, text=True).stdout.strip()
+    (root / "pkg" / "helper.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _run(root, "git", "add", "pkg/helper.py")
+    _run(root, "git", "commit", "-qm", "change relative provider")
+    impact = project_context.impact_chain(root, base)
+    assert impact["consumers_by_distance"]["1"] == ["pkg/consumer.py"]
+    assert impact["coverage_status"] == "static_python_imports_complete"
+
+    base = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True,
+                          capture_output=True, text=True).stdout.strip()
+    (root / "runtime.py").write_text(
+        "import importlib\nimportlib.import_module('optional')\n", encoding="utf-8")
+    _run(root, "git", "add", "runtime.py")
+    _run(root, "git", "commit", "-qm", "add dynamic import")
+    dynamic = project_context.impact_chain(root, base)
+    assert dynamic["coverage_status"] == "static_python_imports_with_known_unsupported_forms"
+    assert dynamic["unsupported_static_forms"][0]["form"] == "dynamic_import"
+
+    base = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True,
+                          capture_output=True, text=True).stdout.strip()
+    (root / "README.md").write_text("changed\n", encoding="utf-8")
+    _run(root, "git", "add", "README.md")
+    _run(root, "git", "commit", "-qm", "change docs")
+    assert project_context.impact_chain(root, base)["coverage_status"] == "coverage_gap"

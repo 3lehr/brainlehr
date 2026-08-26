@@ -6678,6 +6678,8 @@ def project_change_record(project_root: str, base_commit: str,
     impact = project_context.impact_chain(project_root, base_commit)
     counts = {distance: len(files) for distance, files in impact["consumers_by_distance"].items()}
     receipt = {
+        "schema": 1,
+        "analyzer": "static-python-imports-v1",
         "base": impact["base"],
         "head": impact["head"],
         "changed_files": impact["changed_files"],
@@ -6690,6 +6692,7 @@ def project_change_record(project_root: str, base_commit: str,
         "observed_at": impact["observed_at"],
         "unsupported_changed_files": impact["unsupported_changed_files"],
         "ambiguous_imports": impact["ambiguous_imports"],
+        "unsupported_static_forms": impact["unsupported_static_forms"],
         "coverage_status": impact["coverage_status"],
     }
     conn = get_db()
@@ -6700,19 +6703,49 @@ def project_change_record(project_root: str, base_commit: str,
         ).fetchone()
         existing = conn.execute(
             "SELECT id, content FROM knowledge_nodes WHERE project_id=? "
-            "AND tags LIKE ? LIMIT 1",
+            "AND tags LIKE ? ORDER BY updated_at DESC, created_at DESC LIMIT 1",
             (ensured["project_id"], f'%"commit:{impact["head"]}"%'),
         ).fetchone()
     finally:
         conn.close()
+    previous = json.loads(existing["content"] or "{}") if existing else {}
+    def _stable_receipt(value):
+        if isinstance(value, dict):
+            return {key: _stable_receipt(item) for key, item in value.items()
+                    if key not in {"observed_at", "revision", "supersedes"}}
+        if isinstance(value, list):
+            return [_stable_receipt(item) for item in value]
+        return value
+
+    def _same_receipt(left: dict, right: dict) -> bool:
+        return _stable_receipt(left) == _stable_receipt(right)
+    if existing and _same_receipt(previous, receipt):
+        receipt["revision"] = previous.get("revision", 1)
+        if previous.get("supersedes"):
+            receipt["supersedes"] = previous["supersedes"]
+    elif existing:
+        receipt["revision"] = int(previous.get("revision", 1)) + 1
+        receipt["supersedes"] = existing["id"]
+    else:
+        receipt["revision"] = 1
     receipt_content = json.dumps(receipt, ensure_ascii=False, sort_keys=True)
     if existing:
-        if (existing["content"] or "") != receipt_content:
-            updated = knowledge_update(
-                existing["id"], summary=semantic_summary[:800], content=receipt_content)
-            if "error" in updated:
-                return updated
-        receipt_id = existing["id"]
+        if _same_receipt(previous, receipt):
+            receipt_id = existing["id"]
+        else:
+            created = knowledge_add(
+                row["path"], f"Change {impact['head'][:12]} correction v{receipt['revision']}",
+                semantic_summary[:800], receipt_content, project_id=ensured["project_id"],
+                tags=["project-change-receipt", f"commit:{impact['head']}",
+                      f"supersedes:{existing['id']}"],
+                source=f"verified Git commit {impact['head']} in {ensured['root']}",
+                norm_entscheidung="keine_norm",
+                norm_entschieden_grund="Append-only correction of a factual change receipt.",
+                anlass="skript",
+            )
+            if "error" in created:
+                return created
+            receipt_id = created["id"]
     else:
         created = knowledge_add(
             row["path"], f"Change {impact['head'][:12]}", semantic_summary[:800],

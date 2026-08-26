@@ -64,6 +64,7 @@ def capsule(path: str | Path) -> dict:
     extensions = Counter(Path(name).suffix.lower() or "[no extension]" for name in files)
     top = Counter(name.split("/", 1)[0] for name in files)
     return {
+        "schema": SCHEMA,
         "head": _git(root, "rev-parse", "HEAD"),
         "tracked_files": len(files),
         "extensions": dict(extensions.most_common(10)),
@@ -276,7 +277,7 @@ def _git_at(root: Path, revision: str, path: str) -> str:
     return _git(root, "show", f"{revision}:{path}")
 
 
-def _python_import_edges(root: Path, revision: str, observed_at: str) -> tuple[list[dict], list[dict]]:
+def _python_import_edges(root: Path, revision: str, observed_at: str) -> tuple[list[dict], list[dict], list[dict]]:
     """Return proven static import edges as (provider, consumer).
 
     This is intentionally not called a data-flow graph. Imports prove module
@@ -298,6 +299,7 @@ def _python_import_edges(root: Path, revision: str, observed_at: str) -> tuple[l
 
     edges: dict[tuple[str, str], dict] = {}
     ambiguous: list[dict] = []
+    unsupported: list[dict] = []
     for consumer in files:
         try:
             tree = ast.parse(_git_at(root, revision, consumer), filename=consumer)
@@ -316,7 +318,26 @@ def _python_import_edges(root: Path, revision: str, observed_at: str) -> tuple[l
                     keep = max(0, len(parts) - node.level + 1)
                     base = ".".join([*parts[:keep], base]).strip(".")
                 if base:
+                    for alias in node.names:
+                        if alias.name == "*":
+                            unsupported.append({
+                                "consumer": consumer, "form": "star_import",
+                                "source_ref": f"{consumer}:{node.lineno}",
+                                "observed_commit": revision,
+                            })
+                        else:
+                            names.append((f"{base}.{alias.name}", node.lineno))
                     names.append((base, node.lineno))
+            elif isinstance(node, ast.Call):
+                func = node.func
+                dynamic = (isinstance(func, ast.Name) and func.id == "__import__") or (
+                    isinstance(func, ast.Attribute) and func.attr == "import_module")
+                if dynamic:
+                    unsupported.append({
+                        "consumer": consumer, "form": "dynamic_import",
+                        "source_ref": f"{consumer}:{node.lineno}",
+                        "observed_commit": revision,
+                    })
         for name, line in names:
             candidates = [name]
             while "." in candidates[-1]:
@@ -340,7 +361,7 @@ def _python_import_edges(root: Path, revision: str, observed_at: str) -> tuple[l
                     "observed_at": observed_at,
                     "evidence": f"Python AST import {name}",
                 }
-    return list(edges.values()), ambiguous
+    return list(edges.values()), ambiguous, unsupported
 
 
 def changed_files(path: str | Path, base: str, head: str = "HEAD") -> list[str]:
@@ -365,8 +386,8 @@ def impact_chain(path: str | Path, base: str, head: str = "HEAD") -> dict:
     resolved_base = _git(root, "rev-parse", base)
     resolved_head = _git(root, "rev-parse", head)
     changed = changed_files(root, resolved_base, resolved_head)
-    base_edges, base_ambiguous = _python_import_edges(root, resolved_base, observed_at)
-    head_edges, head_ambiguous = _python_import_edges(root, resolved_head, observed_at)
+    base_edges, base_ambiguous, base_unsupported = _python_import_edges(root, resolved_base, observed_at)
+    head_edges, head_ambiguous, head_unsupported = _python_import_edges(root, resolved_head, observed_at)
     edges_by_pair = {(edge["from"], edge["to"]): edge for edge in base_edges}
     edges_by_pair.update({(edge["from"], edge["to"]): edge for edge in head_edges})
     edges = list(edges_by_pair.values())
@@ -414,8 +435,12 @@ def impact_chain(path: str | Path, base: str, head: str = "HEAD") -> dict:
         "not_proven": ["runtime data flow", "call flow", "I/O timing", "non-Python dependencies"],
         "unsupported_changed_files": [file for file in changed if not file.endswith(".py")],
         "ambiguous_imports": [*base_ambiguous, *head_ambiguous],
-        "coverage_status": ("complete_for_static_python_imports"
-                            if all(file.endswith(".py") for file in changed)
-                            and not base_ambiguous and not head_ambiguous
-                            else "coverage_gap"),
+        "unsupported_static_forms": [*base_unsupported, *head_unsupported],
+        "coverage_status": (
+            "coverage_gap" if (not all(file.endswith(".py") for file in changed)
+                               or base_ambiguous or head_ambiguous)
+            else "static_python_imports_with_known_unsupported_forms"
+            if base_unsupported or head_unsupported
+            else "static_python_imports_complete"
+        ),
     }

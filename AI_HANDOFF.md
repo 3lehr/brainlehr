@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-26T09:00:00+0200 — feat(project-context): harden bounded evidence contracts
+
+- Files: `kern/project_context.py`, `knowledge_mcp_server.py`, `pflege/export_public_context.py`, `melder/selbstbeschreibung.py`, P23–P29 requirements/decision docs, and focused tests.
+- Why: The reviewed context workflow needed honest static-analysis coverage, immutable correction history, relative-import evidence, and repository-bound public export inputs before any larger analyzer work.
+- Verified: `python3 -m pytest -q tests/test_project_context.py tests/test_public_context_export.py tests/test_requirements_brainlehr.py` — 17 passed before the full gate run.
+- Remaining risk: Static imports still do not prove runtime data flow; pattern screening is deliberately not a PII/secret guarantee.
+- Next test: run the full focused gate, refresh the live capsule/change receipt, regenerate the allowlisted public artifact, and push only the private branch.
+
 ## 2026-08-25T22:00:00+0200 — docs(public-context): refresh provenance after acceptance evidence
 
 - Files: `docs/public-knowledge/brainlehr-context.json` and this handoff.

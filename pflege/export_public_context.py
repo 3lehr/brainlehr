@@ -25,7 +25,25 @@ def _git(*args: str) -> str:
                           capture_output=True, check=True).stdout.strip()
 
 
+def _repo_path(path: Path, *, label: str, tracked: bool) -> str:
+    resolved = path.resolve()
+    try:
+        relative = resolved.relative_to(ROOT)
+    except ValueError as error:
+        raise ValueError(f"{label} must be inside repository") from error
+    text = relative.as_posix()
+    if not text or text == ".":
+        raise ValueError(f"{label} must name a repository file")
+    if tracked:
+        result = subprocess.run(["git", "-C", str(ROOT), "ls-files", "--error-unmatch", "--", text],
+                                text=True, capture_output=True, check=False)
+        if result.returncode:
+            raise ValueError(f"{label} must be a tracked source: {text}")
+    return text
+
+
 def _config(path: Path) -> dict:
+    _repo_path(path, label="allowlist", tracked=True)
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("schema") != 1 or not isinstance(data.get("project_id"), str):
         raise ValueError("allowlist requires schema=1 and project_id")
@@ -36,13 +54,22 @@ def _config(path: Path) -> dict:
             raise ValueError("allowlist node requires a knowledge path")
         if not isinstance(node.get("sources"), list) or not node["sources"]:
             raise ValueError("allowlist node requires source paths")
+        for source in node["sources"]:
+            if not isinstance(source, str) or not source or Path(source).is_absolute() or ".." in Path(source).parts:
+                raise ValueError("allowlist source must be a repository-relative path")
+            _repo_path(ROOT / source, label="allowlist source", tracked=True)
     return data
 
 
 def _source_timestamps(config: dict) -> dict[str, int]:
     sources = {source for node in config["nodes"] for source in node["sources"]}
-    return {source: int(_git("log", "-1", "--format=%ct", "--", source) or 0)
-            for source in sources}
+    timestamps = {}
+    for source in sources:
+        value = _git("log", "-1", "--format=%ct", "--", source)
+        if not value:
+            raise ValueError(f"tracked source has no Git history: {source}")
+        timestamps[source] = int(value)
+    return timestamps
 
 
 def _stale(updated_at: str, sources: list[str], timestamps: dict[str, int]) -> bool:
@@ -56,10 +83,7 @@ def _stale(updated_at: str, sources: list[str], timestamps: dict[str, int]) -> b
 
 
 def _public_path(path: Path) -> str:
-    try:
-        return str(path.relative_to(ROOT))
-    except ValueError:
-        return path.name
+    return _repo_path(path, label="path", tracked=False)
 
 
 def build(db: Path, allowlist: Path = DEFAULT_ALLOWLIST, *, commit: str | None = None,
@@ -95,13 +119,14 @@ def build(db: Path, allowlist: Path = DEFAULT_ALLOWLIST, *, commit: str | None =
         "schema": 1, "project_id": config["project_id"],
         "provenance": {"allowlist": _public_path(allowlist),
                        "exporter": "pflege/export_public_context.py",
-                       "git_commit": commit or _git("rev-parse", "HEAD")},
+                       "source_git_commit": commit or _git("rev-parse", "HEAD")},
         "nodes": nodes,
     }, []
 
 
 def export(db: Path, output: Path = DEFAULT_OUTPUT, allowlist: Path = DEFAULT_ALLOWLIST,
            *, commit: str | None = None, source_timestamps: dict[str, int] | None = None) -> dict:
+    _repo_path(output, label="output", tracked=False)
     payload, errors = build(db, allowlist, commit=commit, source_timestamps=source_timestamps)
     if errors:
         return {"status": "rejected", "errors": errors}

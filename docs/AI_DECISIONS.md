@@ -1,5 +1,14 @@
 # AI architecture decisions
 
+## 2026-08-26 — Harden project-context contracts before adding analyzers
+
+- Context: The P23–P28 consilium verified the useful narrow core but found overstrong static-coverage wording, mutable same-commit receipts, relative-import blind spots, and export paths that were not yet bound to tracked repository inputs.
+- Decision: Keep the standard-library Python-import analyzer small, name its coverage exactly, record corrections as superseding receipts, and bind public allowlists/sources/output to repository paths. Public content remains allowlisted and known-pattern screened; human review remains mandatory for the semantic/privacy decision.
+- Reason: Explicit limits preserve reproducible evidence and prevent a vector or heuristic from being mistaken for runtime data flow. This is less machinery than a universal analyzer, ontology, or secret scanner while closing the present false-negative paths.
+- Rejected alternatives: a universal build parser, automatic consumer rewrites, embeddings as dependency edges, mutable receipts, or describing regex screening as a privacy guarantee.
+- Verification: `python3 -m pytest -q tests/test_project_context.py tests/test_public_context_export.py tests/test_requirements_brainlehr.py` — 17 passed.
+- Boundary: Test labels and semantic summaries remain caller-provided evidence. Runtime, schema, build and I/O dependencies need a registered analyzer plus measured coverage before joining the impact chain.
+
 ## 2026-08-25 — Public project knowledge exports only an explicit safe slice
 
 - Context: A public release needs a reproducible architecture handoff from the verified local database, but a public `freigabe` alone is too broad for a concise project context and DB provenance can contain local operational details.

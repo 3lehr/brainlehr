@@ -235,8 +235,9 @@ PUBLIC_CONTEXT = (
      "A client first ensures a compact project capsule, then loads task context in "
      "stages: summaries, selected direct relations, and selected full text. After a "
      "verified commit it records the affected files, checks transitive static consumers, "
-     "and curates a semantic conclusion separately. Static imports and semantic similarity "
-     "are never presented as runtime data flow."),
+     "and curates a semantic conclusion separately. Receipts name their static analyzer "
+     "and supersede corrections without erasing them. Static imports and semantic similarity "
+     "are never presented as runtime data flow; unsupported forms remain coverage gaps."),
 )
 
 
