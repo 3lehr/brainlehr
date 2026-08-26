@@ -1,5 +1,13 @@
 # AI architecture decisions
 
+## 2026-08-26 — Keep BGE-M3 as the only active semantic channel
+
+- Context: The operator requested a separate local code-retrieval model only if a reproducible local comparison actually wins. CodeRankEmbed is a small MIT candidate (768 dimensions, local weights); it was compared with BGE-M3 on the same frozen 10-positive/3-negative symbol goldset and 181 Python-symbol candidates.
+- Decision: Do not integrate CodeRankEmbed. BGE-M3 won Recall@1 (0.80 vs 0.60), MRR (0.8643 vs 0.7007), Recall@10 (1.00 vs 0.90), and elapsed time (27.266 s vs 30.349 s). The checked-in goldset and read-only benchmark remain for later candidates; artifacts and runtime stay outside Git.
+- Reason: A code-specialized label and external benchmark do not outweigh a direct local loss. Keeping one active semantic channel preserves the existing fallback, model lock, privacy boundary, and package dependency contract.
+- Rejected alternatives: activating CodeRankEmbed despite the result; concatenating or comparing cross-model vectors; deriving a dependency edge from semantic similarity; adding a persistent second index before a candidate wins.
+- Verification: `python3 -m pytest -q tests/test_requirements_brainlehr.py tests/test_code_retrieval_benchmark.py` (5 passed); local read-only run recorded in `L-6e0c0f`.
+
 ## 2026-08-26 — Harden project-context contracts before adding analyzers
 
 - Context: The P23–P28 consilium verified the useful narrow core but found overstrong static-coverage wording, mutable same-commit receipts, relative-import blind spots, and export paths that were not yet bound to tracked repository inputs.

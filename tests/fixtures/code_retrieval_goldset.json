@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "candidate_paths": [
+    "kern/embeddings.py",
+    "kern/project_context.py",
+    "kern/build_embeddings.py",
+    "knowledge_mcp_server.py",
+    "pflege/export_public_context.py"
+  ],
+  "cases": [
+    {
+      "id": "code-01",
+      "query": "combine keyword and semantic rankings without comparing their raw scores",
+      "target": "kern/embeddings.py#rrf_fuse"
+    },
+    {
+      "id": "code-02",
+      "query": "return no embedding rather than raising when the local model is unavailable",
+      "target": "kern/embeddings.py#embed_text"
+    },
+    {
+      "id": "code-03",
+      "query": "find direct and indirect Python import consumers after a commit changes files",
+      "target": "kern/project_context.py#impact_chain"
+    },
+    {
+      "id": "code-04",
+      "query": "extract static Python import edges and identify dynamic imports as unsupported",
+      "target": "kern/project_context.py#_python_import_edges"
+    },
+    {
+      "id": "code-05",
+      "query": "search knowledge with FTS and local embeddings while keeping the keyword fallback",
+      "target": "knowledge_mcp_server.py#knowledge_search"
+    },
+    {
+      "id": "code-06",
+      "query": "rank stored embedding vectors by cosine similarity for visible knowledge entries",
+      "target": "knowledge_mcp_server.py#_embedding_ranking"
+    },
+    {
+      "id": "code-07",
+      "query": "export only allowlisted public knowledge and reject stale private content",
+      "target": "pflege/export_public_context.py#export"
+    },
+    {
+      "id": "code-08",
+      "query": "resolve an export path only when it is inside the Git repository and tracked",
+      "target": "pflege/export_public_context.py#_repo_path"
+    },
+    {
+      "id": "code-09",
+      "query": "build the exact text that gets embedded for a knowledge node",
+      "target": "kern/build_embeddings.py#node_text"
+    },
+    {
+      "id": "code-10",
+      "query": "embed a batch and fall back to individual local embedding requests",
+      "target": "kern/build_embeddings.py#_embed_batch"
+    },
+    {
+      "id": "code-neg-01",
+      "query": "calculate a mortgage amortization schedule",
+      "target": null
+    },
+    {
+      "id": "code-neg-02",
+      "query": "render a watercolor landscape image",
+      "target": null
+    },
+    {
+      "id": "code-neg-03",
+      "query": "diagnose an automotive brake fluid leak",
+      "target": null
+    }
+  ]
+}

@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-26T11:00:00+0200 — test(code-retrieval): retain only the measured baseline
+
+- Files: `tests/fixtures/code_retrieval_goldset.json`, `messungen/code_retrieval_benchmark.py`, P30 requirements/decision documentation, and focused tests.
+- Why: A second model is useful only if it beats the existing local channel on frozen repository code. The 10-positive/3-negative symbol goldset compares the same 181 candidates, records code truncation, and writes no vectors to the database.
+- Verified: `python3 -m pytest -q tests/test_requirements_brainlehr.py tests/test_code_retrieval_benchmark.py` (5 passed). Local BGE-M3: Recall@1 0.80, MRR 0.8643, 27.266 s; local CodeRankEmbed: 0.60, 0.7007, 30.349 s. No second channel was activated.
+- Remaining risk: This is a small repository-specific screening set, not a universal code-search claim. Add a candidate only after it wins the same frozen set and a broader measured set.
+- Next test: rerun the benchmark unchanged when another locally licensable candidate becomes available.
+
 ## 2026-08-26T09:30:00+0200 — docs(public-context): record final hardened snapshot
 
 - Files: `docs/public-knowledge/brainlehr-context.json`, `docs/karten/bestand.{md,json}`, `docs/ablauf_vermerke.json`, and this handoff.
