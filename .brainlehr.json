@@ -32,10 +32,11 @@
     },
     {
       "capability": "visualize a revision-bound impact evidence subgraph",
+      "command": "python3 kern/project_impact_cli.py --project-root . --base <base-commit> --format metroviz",
       "id": "metroviz-impact-projection",
-      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P34",
-      "status": "planned",
-      "when": "a source-backed Metroviz schema is available"
+      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P47",
+      "source": "kern/evidence_projections.py:metroviz_projection",
+      "status": "available"
     },
     {
       "capability": "acknowledge staged impact gaps before commit",
@@ -45,8 +46,8 @@
       "status": "available"
     },
     {
-      "capability": "verify runtime input output and timing dependencies",
       "artifact": "verified trace or test",
+      "capability": "verify runtime input output and timing dependencies",
       "covers": [
         "runtime"
       ],
@@ -55,9 +56,10 @@
         "io_contract"
       ],
       "id": "runtime-trace-impact",
-      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P26",
-      "status": "planned",
-      "when": "static import evidence is insufficient"
+      "command": "python3 kern/project_impact_cli.py --project-root . --base <base-commit> --format otel --trace <sanitized-trace.json> --tree-hash <tree-hash>",
+      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P43",
+      "source": "kern/evidence_projections.py:otel_trace_projection",
+      "status": "available"
     }
   ]
 }

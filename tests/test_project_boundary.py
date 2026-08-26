@@ -9,6 +9,7 @@ import pytest
 import knowledge_mcp_server as kms
 import project_analysis_loop
 import project_context
+from kern import evidence_projections
 import werkzeugrechte
 
 
@@ -235,6 +236,41 @@ def test_cytoscape_projection_escapes_data_and_bounds_large_graph():
     assert "cytoscape.min.js" in filtered
     assert '"full_node_count":501' in filtered
     assert '"id": "500"' not in filtered
+
+
+def test_otel_and_metroviz_are_revision_bound_projections():
+    graph = {"schema": 1, "source_revision": "rev-1", "content_hash": "hash-1",
+             "nodes": [{"id": "src/app.py", "kind": "file"}], "edges": [], "coverage_gaps": []}
+    trace = {"revision": "rev-1", "tree_hash": "tree-1",
+             "spans": [{"span_id": "s1", "name": "render", "code_file": "src/app.py"}]}
+    result = evidence_projections.otel_trace_projection(trace, source_revision="rev-1", tree_hash="tree-1", graph=graph)
+    assert result["status"] == "current" and result["bindings"][0]["node"] == "src/app.py"
+    assert evidence_projections.otel_trace_projection({**trace, "tree_hash": "old"}, source_revision="rev-1", tree_hash="tree-1", graph=graph)["status"] == "coverage_gap"
+    assert evidence_projections.otel_trace_projection({**trace, "spans": [{"payload": "secret"}]}, source_revision="rev-1", tree_hash="tree-1", graph=graph)["status"] == "rejected"
+    route = evidence_projections.metroviz_projection(graph)
+    assert route["source_revision"] == graph["source_revision"] and route["content_hash"] == graph["content_hash"]
+
+
+def test_otel_and_metroviz_cli_are_real_projection_routes(repo, tmp_path):
+    base = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True,
+                          capture_output=True, text=True).stdout.strip()
+    (repo / "code.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _git(repo, "add", "code.py")
+    _git(repo, "commit", "-qm", "change provider")
+    root = Path(__file__).resolve().parents[1]
+    metroviz = subprocess.run(["python3", "tool/project_impact_view.py", "--project-root", str(repo),
+                               "--base", base, "--format", "metroviz"], cwd=root,
+                              capture_output=True, text=True, check=True)
+    graph = json.loads(metroviz.stdout)
+    assert graph["current"] is True and graph["routes"]
+    trace = tmp_path / "trace.json"
+    trace.write_text(json.dumps({"revision": graph["source_revision"], "tree_hash": "tree-1",
+                                 "spans": [{"span_id": "s", "name": "test", "code_file": "code.py"}]}),
+                     encoding="utf-8")
+    otel = subprocess.run(["python3", "tool/project_impact_view.py", "--project-root", str(repo),
+                           "--base", base, "--format", "otel", "--trace", str(trace),
+                           "--tree-hash", "tree-1"], cwd=root, capture_output=True, text=True, check=True)
+    assert json.loads(otel.stdout)["status"] == "current"
 
 
 def test_cytoscape_cli_writes_a_local_offline_asset(repo, tmp_path):

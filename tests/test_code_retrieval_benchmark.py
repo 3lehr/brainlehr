@@ -59,10 +59,42 @@ def test_activation_requires_all_code_wins_and_prose_nonregression():
 
 def test_core_multilingual_matrix_and_extension_gaps_are_explicit():
     report = benchmark.language_coverage()
-    assert report["status"] == "coverage_gap"
+    assert report["status"] == "bounded"
     assert report["code_rank_activated"] is False
-    assert all(f"{language} goldset is absent" in report["coverage_gaps"]
-               for language in ("typescript", "rust", "swift", "dart_flutter", "java", "go"))
-    assert report["languages"]["python"]["status"] == "available"
+    assert report["coverage_gaps"] == []
+    assert all(report["languages"][language]["status"] == "available"
+               for language in benchmark.MANDATORY_LANGUAGES)
     assert report["declarative_fixture_languages"] == ("sql", "shell", "yaml", "hcl")
     assert report["extensible_language_gaps"] == ("c_cpp", "csharp", "php", "kotlin", "ruby")
+
+
+def test_multilingual_goldset_shape_is_frozen_without_model_claims():
+    docs, records = benchmark._fixture_documents()
+    assert {"dart_flutter" if row["language"] == "dart" else row["language"] for row in records} == set(benchmark.MANDATORY_LANGUAGES)
+    assert all(len(docs[language]) == 3 for language in benchmark.MANDATORY_LANGUAGES)
+    assert len(benchmark._multilingual_cases("rust", ["parse_value", "double_value", "render_value"],
+                                             "de_prose_to_code")) == 4
+
+
+def test_multilingual_metrics_keep_models_and_fusion_in_separate_rankings():
+    cases = [{"id": "a", "target": "one"}, {"id": "b", "target": None}]
+    metrics = benchmark._ranked_metrics(cases, [["one", "two"], ["two", "one"]])
+    assert metrics["recall_at_1"] == metrics["mrr"] == 1.0
+    assert benchmark._rrf_order([("one", 1.0), ("two", 0.0)], [("two", 1.0), ("one", 0.0)]) == ["one", "two"]
+    assert benchmark.ACTIVATION_THRESHOLDS["per_matrix_recall_at_1_drop"] == 0.0
+
+
+def test_multilingual_activation_needs_every_matrix_and_prose_control():
+    channels = lambda r1, mrr: {"metrics": {"recall_at_1": r1, "mrr": mrr}}
+    matrices = [{"language": language, "query_modality": modality,
+                 "bge_m3": channels(0.5, 0.5), "coderankembed": channels(0.6, 0.6),
+                 "rrf": channels(0.5, 0.5), "router": channels(0.6, 0.6)}
+                for language in benchmark.MANDATORY_LANGUAGES
+                for modality in benchmark.MULTILINGUAL_MODALITIES]
+    prose = {"bge_m3": channels(0.7, 0.7), "coderankembed": channels(0.7, 0.7),
+             "rrf": channels(0.7, 0.7), "router": channels(0.7, 0.7)}
+    decision = benchmark.multilingual_activation_decision(matrices, prose)
+    assert decision["active_channel"] == "router"
+    assert decision["candidates"]["router"]["eligible"] is True
+    matrices.pop()
+    assert benchmark.multilingual_activation_decision(matrices, prose)["active_channel"] == "bge_m3"

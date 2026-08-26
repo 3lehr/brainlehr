@@ -1,5 +1,23 @@
 # AI handoff
 
+## 2026-08-26T17:00:00+0200 — feat(retrieval): validate seven languages and bind runtime projections
+
+- Files: frozen multilingual fixtures/benchmark/tests, separate CodeRank metadata router,
+  impact projection CLI/config/tests, P31/P43/P47/P62 catalog rows, ADR and measurement record.
+- Why: P31 could not complete on a Python-only corpus; runtime-trace and Metroviz were still
+  planned rather than callable revision-bound projections.
+- Decision: the fixed router uses CodeRank only for explicit signature/code-consumer queries;
+  prose and ambiguity remain BGE-M3. CodeRank and normal knowledge vectors remain separate,
+  carry revision/tree/model metadata and reject stale records. OTLP spans must be sanitized and
+  bound to graph revision/tree hash; Metroviz is a derived graph route only.
+- Verified: seven native syntax checks; clean idle rerun reproduces all 28 accuracy matrices
+  exactly (report hash in `messungen/code_retrieval_benchmark_2026-08-26.md`); focused suite
+  currently reports 42 passed for fixture/benchmark/router/project-boundary/project-context.
+- Remaining risk: Joern has no local executable; it is a coverage gap. The separate CodeRank
+  runtime needs a local model/cache and remains a retrieval hint, never an impact edge.
+- Next test: run catalog/client/public-context partitions, regenerate maps, make the isolated
+  commit, push only the private origin branch, then record the append-only project receipt.
+
 ## 2026-08-26T16:35:00+0200 — docs(map): refresh generated maps and record an immutable plan-marker finding
 
 - Files: `docs/karten/bestand.{md,json}`, `docs/karten/code-brainlehr.{md,json}`, `docs/ablauf_vermerke.json`, this handoff.

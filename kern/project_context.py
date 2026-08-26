@@ -721,15 +721,15 @@ def impact_mermaid(graph: dict) -> str:
 
 
 def impact_visualization_ref(graph: dict) -> dict:
-    """State what may render the graph without claiming a Metroviz adapter exists."""
+    """State the deterministic renderers which read the canonical graph only."""
     return {
         "source_graph_schema": graph["schema"],
         "source_revision": graph["source_revision"],
         "content_hash": graph["content_hash"],
-        "available_formats": ["mermaid"],
+        "available_formats": ["mermaid", "cytoscape", "metroviz"],
         "views": ["impact_distance", "base_head_edge_delta", "test_evidence",
                   "timing_sequence", "coverage_gaps"],
-        "metroviz": {"status": "planned", "requires": "source-backed adapter schema"},
+        "metroviz": {"status": "available", "source": "evidence_projections.metroviz_projection"},
         "must_not": "treat this projection as a second analyzer or source of truth",
     }
 

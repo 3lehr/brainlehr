@@ -11,6 +11,8 @@ import ast
 import hashlib
 import json
 import os
+import re
+import resource
 import statistics
 import subprocess
 import sys
@@ -22,6 +24,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "kern")]
 import embeddings  # noqa: E402
 
 GOLDSET = ROOT / "tests" / "fixtures" / "code_retrieval_goldset.json"
+MULTILINGUAL_FIXTURES = ROOT / "tests" / "fixtures" / "multilingual_code"
 QUERY_PREFIX = "Represent this query for searching relevant code: "
 MAX_CHUNK_CHARS = 12000
 BATCH_SIZE = 4
@@ -30,16 +33,25 @@ CODE_MATRIX_IDS = frozenset({"en_prose_to_python", "de_prose_to_python", "code_s
 # stand in for another language.
 LANGUAGE_MATRIX_MANIFEST = {
     "python": {"goldset": str(GOLDSET), "status": "available"},
-    "typescript": {"goldset": None, "status": "coverage_gap"},
-    "rust": {"goldset": None, "status": "coverage_gap"},
-    "swift": {"goldset": None, "status": "coverage_gap"},
-    "dart_flutter": {"goldset": None, "status": "coverage_gap"},
-    "java": {"goldset": None, "status": "coverage_gap"},
-    "go": {"goldset": None, "status": "coverage_gap"},
+    "typescript": {"goldset": str(MULTILINGUAL_FIXTURES), "status": "available"},
+    "rust": {"goldset": str(MULTILINGUAL_FIXTURES), "status": "available"},
+    "swift": {"goldset": str(MULTILINGUAL_FIXTURES), "status": "available"},
+    "dart_flutter": {"goldset": str(MULTILINGUAL_FIXTURES), "status": "available"},
+    "java": {"goldset": str(MULTILINGUAL_FIXTURES), "status": "available"},
+    "go": {"goldset": str(MULTILINGUAL_FIXTURES), "status": "available"},
 }
 
 DECLARATIVE_FIXTURE_LANGUAGES = ("sql", "shell", "yaml", "hcl")
 EXTENSIBLE_LANGUAGE_GAPS = ("c_cpp", "csharp", "php", "kotlin", "ruby")
+MANDATORY_LANGUAGES = ("python", "typescript", "rust", "java", "go", "swift", "dart_flutter")
+MULTILINGUAL_MODALITIES = ("signature_to_implementation", "code_to_consumer",
+                           "de_prose_to_code", "en_prose_to_code")
+# Pre-registered before any multilingual model result is read.  A second
+# channel needs macro improvement and may not lose more than this tolerance in
+# a mandatory matrix or the prose control.
+ACTIVATION_THRESHOLDS = {"macro_recall_at_1_gain": 0.01, "mrr_gain": 0.01,
+                         "per_matrix_recall_at_1_drop": 0.0,
+                         "prose_recall_at_1_drop": 0.0}
 
 
 def language_coverage() -> dict:
@@ -52,6 +64,206 @@ def language_coverage() -> dict:
             "extensible_language_gaps": EXTENSIBLE_LANGUAGE_GAPS,
             "coverage_gaps": gaps,
             "code_rank_activated": False}
+
+
+def _fixture_manifest() -> list[dict]:
+    data = json.loads((MULTILINGUAL_FIXTURES / "manifest.json").read_text(encoding="utf-8"))
+    fixtures = data.get("fixtures", [])
+    languages = {"dart_flutter" if row.get("language") == "dart" else row.get("language") for row in fixtures}
+    if data.get("schema") != 1 or languages != set(MANDATORY_LANGUAGES):
+        raise ValueError("multilingual fixture manifest must name each mandatory language exactly once")
+    if any(len(row.get("symbols", [])) != 3 for row in fixtures):
+        raise ValueError("each multilingual fixture needs exactly three target symbols")
+    return fixtures
+
+
+def _fixture_documents() -> tuple[dict[str, dict[str, str]], list[dict]]:
+    """Three source-derived candidate chunks per mandatory language.
+
+    Chunks contain source text only; their file names and target IDs never enter
+    a model payload. Symbol extraction deliberately uses a bounded textual
+    window because syntax correctness is separately proven by the fixture test.
+    """
+    by_language: dict[str, dict[str, str]] = {}
+    records = _fixture_manifest()
+    for record in records:
+        language = "dart_flutter" if record["language"] == "dart" else record["language"]
+        text = (MULTILINGUAL_FIXTURES / record["file"]).read_text(encoding="utf-8")
+        docs: dict[str, str] = {}
+        for symbol in record["symbols"]:
+            match = re.search(rf"(?m)^.*\b{re.escape(symbol)}\s*\(", text)
+            if not match:
+                raise ValueError(f"fixture symbol missing: {language}/{symbol}")
+            docs[symbol] = text[match.start():match.start() + MAX_CHUNK_CHARS]
+        by_language[language] = docs
+    return by_language, records
+
+
+def _multilingual_cases(language: str, symbols: list[str], modality: str) -> list[dict]:
+    title = language.replace("_", " ")
+    queries = {
+        "signature_to_implementation": lambda symbol: f"function {symbol}(value) -> rendered value",
+        "code_to_consumer": lambda symbol: f"main workflow calls {symbol} then renders its result",
+        "de_prose_to_code": lambda symbol: f"Implementiere {symbol}, um einen Wert im {title}-Ablauf zu verarbeiten.",
+        "en_prose_to_code": lambda symbol: f"Implement {symbol} to process a value in the {title} workflow.",
+    }
+    if modality not in queries:
+        raise ValueError("unsupported multilingual modality")
+    return [{"id": f"{language}-{modality}-{symbol}", "query": queries[modality](symbol), "target": symbol}
+            for symbol in symbols] + [{"id": f"{language}-{modality}-negative", "query": "calculate a mortgage payment", "target": None}]
+
+
+def _ranked_metrics(cases: list[dict], rankings: list[list[str]]) -> dict:
+    positive, negative, rows = [], [], []
+    for case, ordered in zip(cases, rankings):
+        if case.get("target"):
+            rank = ordered.index(case["target"]) + 1
+            positive.append(rank)
+            rows.append({"id": case["id"], "target": case["target"], "rank": rank, "top": ordered[0]})
+        else:
+            negative.append(ordered[0] if ordered else None)
+    return {"positive_n": len(positive), "negative_n": len(negative),
+            "recall_at_1": sum(rank <= 1 for rank in positive) / len(positive),
+            "recall_at_5": sum(rank <= 5 for rank in positive) / len(positive),
+            "recall_at_10": sum(rank <= 10 for rank in positive) / len(positive),
+            "mrr": sum(1 / rank for rank in positive) / len(positive),
+            "negative_top_ids": negative, "rows": rows}
+
+
+def _rrf_order(first: list[tuple[str, float]], second: list[tuple[str, float]], *, k: int = 60) -> list[str]:
+    score: dict[str, float] = {}
+    for ranking in (first, second):
+        for position, (key, _) in enumerate(ranking, 1):
+            score[key] = score.get(key, 0.0) + 1 / (k + position)
+    return [key for key, _ in sorted(score.items(), key=lambda item: (-item[1], item[0]))]
+
+
+def _matrix(metrics: dict[str, dict], *, language: str, modality: str,
+            elapsed: float, rss: int) -> dict:
+    """Keep channels separate; RRF combines only ordered ranks, never vectors."""
+    return {"id": f"{language}:{modality}", "language": language,
+            "query_modality": modality, "document_modality": "source",
+            "positive_n": 3, "negative_n": 1,
+            "latency_seconds": round(elapsed, 4), "max_rss": rss,
+            "model_prefix_contract": {"bge_m3": None, "coderankembed": QUERY_PREFIX,
+                                      "rrf": "fixed-k=60", "router": "code->CodeRank; prose->BGE"},
+            **{channel: {"metrics": value} for channel, value in metrics.items()}}
+
+
+def run_multilingual(model_path: str, *, languages: set[str] | None = None) -> dict:
+    """Measure all required language/modality pairs without persisting vectors."""
+    documents, records = _fixture_documents()
+    coderank = _load_coderank(model_path)
+    started = time.perf_counter()
+    matrices = []
+    for record in records:
+        language = "dart_flutter" if record["language"] == "dart" else record["language"]
+        if languages is not None and language not in languages:
+            continue
+        docs = documents[language]
+        keys = sorted(docs)
+        bge_docs = _bge([docs[key] for key in keys])
+        code_docs = _coderank(coderank, [docs[key] for key in keys], query=False)
+        for modality in MULTILINGUAL_MODALITIES:
+            matrix_started = time.perf_counter()
+            cases = _multilingual_cases(language, record["symbols"], modality)
+            bge_queries = _bge([case["query"] for case in cases])
+            code_queries = _coderank(coderank, [case["query"] for case in cases], query=True)
+            bge_rankings = [ranks(query, dict(zip(keys, bge_docs))) for query in bge_queries]
+            code_rankings = [ranks(query, dict(zip(keys, code_docs))) for query in code_queries]
+            bge_order = [[key for key, _ in rank] for rank in bge_rankings]
+            code_order = [[key for key, _ in rank] for rank in code_rankings]
+            rrf_order = [_rrf_order(left, right) for left, right in zip(bge_rankings, code_rankings)]
+            router_order = code_order if modality in {"signature_to_implementation", "code_to_consumer"} else bge_order
+            matrices.append(_matrix({"bge_m3": _ranked_metrics(cases, bge_order),
+                                     "coderankembed": _ranked_metrics(cases, code_order),
+                                     "rrf": _ranked_metrics(cases, rrf_order),
+                                     "router": _ranked_metrics(cases, router_order)},
+                                    language=language, modality=modality,
+                                    elapsed=time.perf_counter() - matrix_started,
+                                    rss=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+    elapsed = round(time.perf_counter() - started, 3)
+    ram = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return {"schema": 3, "mandatory_languages": list(MANDATORY_LANGUAGES),
+            "measured_languages": sorted({matrix["language"] for matrix in matrices}),
+            "thresholds": ACTIVATION_THRESHOLDS, "matrix_count": len(matrices), "matrices": matrices,
+            "latency_seconds": elapsed, "max_rss": ram,
+            "model": {"bge_m3": embeddings.model_identity("bge-m3"), "coderankembed": Path(model_path).name},
+            "activation": {"active_channel": "bge_m3", "reason": "measurement only; no alternate channel is activated by this runner"}}
+
+
+def run_prose_control(model_path: str) -> dict:
+    """Measure the frozen Brainlehr prose control with the same four rankings."""
+    goldset = load_goldset()
+    spec = next(matrix for matrix in goldset["matrices"] if matrix["id"] == "de_brainlehr_prose_to_prose")
+    docs = {entry["id"]: entry["text"] for entry in goldset["prose_candidates"]}
+    keys = sorted(docs)
+    coderank = _load_coderank(model_path)
+    started = time.perf_counter()
+    bge_docs = _bge([docs[key] for key in keys])
+    code_docs = _coderank(coderank, [docs[key] for key in keys], query=False)
+    cases = spec["cases"]
+    bge_ranked = [ranks(vector, dict(zip(keys, bge_docs))) for vector in _bge([case["query"] for case in cases])]
+    code_ranked = [ranks(vector, dict(zip(keys, code_docs)))
+                   for vector in _coderank(coderank, [case["query"] for case in cases], query=True)]
+    bge_order = [[key for key, _ in ranked] for ranked in bge_ranked]
+    code_order = [[key for key, _ in ranked] for ranked in code_ranked]
+    rrf_order = [_rrf_order(left, right) for left, right in zip(bge_ranked, code_ranked)]
+    return _matrix({"bge_m3": _ranked_metrics(cases, bge_order),
+                    "coderankembed": _ranked_metrics(cases, code_order),
+                    "rrf": _ranked_metrics(cases, rrf_order),
+                    "router": _ranked_metrics(cases, bge_order)},
+                   language="brainlehr", modality="prose_to_prose",
+                   elapsed=time.perf_counter() - started,
+                   rss=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+
+
+def multilingual_activation_decision(matrices: list[dict], prose_control: dict) -> dict:
+    """Apply pre-registered gates after, never during, all required slices."""
+    expected = {(language, modality) for language in MANDATORY_LANGUAGES
+                for modality in MULTILINGUAL_MODALITIES}
+    observed = {(matrix["language"], matrix["query_modality"]) for matrix in matrices}
+    missing = sorted(f"{language}/{modality}" for language, modality in expected - observed)
+    outcome: dict[str, dict] = {}
+    baseline = "bge_m3"
+    for channel in ("coderankembed", "rrf", "router"):
+        code_r1 = [matrix[channel]["metrics"]["recall_at_1"] for matrix in matrices]
+        bge_r1 = [matrix[baseline]["metrics"]["recall_at_1"] for matrix in matrices]
+        code_mrr = [matrix[channel]["metrics"]["mrr"] for matrix in matrices]
+        bge_mrr = [matrix[baseline]["metrics"]["mrr"] for matrix in matrices]
+        macro_r1_gain = sum(code_r1) / len(code_r1) - sum(bge_r1) / len(bge_r1) if matrices else 0.0
+        macro_mrr_gain = sum(code_mrr) / len(code_mrr) - sum(bge_mrr) / len(bge_mrr) if matrices else 0.0
+        per_matrix_ok = all(candidate - base >= ACTIVATION_THRESHOLDS["per_matrix_recall_at_1_drop"]
+                            for candidate, base in zip(code_r1, bge_r1))
+        prose_ok = (prose_control[channel]["metrics"]["recall_at_1"]
+                    - prose_control[baseline]["metrics"]["recall_at_1"]
+                    >= ACTIVATION_THRESHOLDS["prose_recall_at_1_drop"])
+        outcome[channel] = {"macro_recall_at_1_gain": round(macro_r1_gain, 6),
+                            "macro_mrr_gain": round(macro_mrr_gain, 6),
+                            "per_matrix_nonregression": per_matrix_ok,
+                            "prose_nonregression": prose_ok,
+                            "eligible": not missing and per_matrix_ok and prose_ok
+                            and macro_r1_gain >= ACTIVATION_THRESHOLDS["macro_recall_at_1_gain"]
+                            and macro_mrr_gain >= ACTIVATION_THRESHOLDS["mrr_gain"]}
+    eligible = [(item["macro_recall_at_1_gain"], item["macro_mrr_gain"], channel)
+                for channel, item in outcome.items() if item["eligible"]]
+    winner = max(eligible)[2] if eligible else baseline
+    return {"rule": "An alternate ranker needs a >=1 percentage-point macro Recall@1 and MRR gain, zero mandatory-matrix Recall@1 loss, and zero prose-control Recall@1 loss.",
+            "missing_matrices": missing, "candidates": outcome,
+            "active_channel": winner,
+            "activate_separate_code_channel": winner != baseline}
+
+
+def aggregate_multilingual_reports(reports: list[dict], prose_control: dict) -> dict:
+    """Combine independently bounded slices only when all mandatory matrices exist."""
+    matrices = [matrix for report in reports for matrix in report.get("matrices", [])]
+    decision = multilingual_activation_decision(matrices, prose_control)
+    return {"schema": 3, "thresholds": ACTIVATION_THRESHOLDS,
+            "mandatory_languages": list(MANDATORY_LANGUAGES), "matrix_count": len(matrices),
+            "matrices": sorted(matrices, key=lambda matrix: matrix["id"]),
+            "prose_control": prose_control, "activation": decision,
+            "latency_seconds": round(sum(report.get("latency_seconds", 0.0) for report in reports), 3),
+            "max_rss": max([report.get("max_rss", 0) for report in reports] + [prose_control["max_rss"]])}
 
 
 def _git(*args: str) -> str:
@@ -201,10 +413,19 @@ def main() -> int:
     parser.add_argument("--model-path", default=os.environ.get("BRAINLEHR_CODE_MODEL_PATH", ""))
     parser.add_argument("--revision", default="HEAD")
     parser.add_argument("--out", type=Path)
+    parser.add_argument("--language", choices=MANDATORY_LANGUAGES,
+                        help="measure exactly one mandatory language slice")
+    parser.add_argument("--multilingual", action="store_true",
+                        help="measure all frozen mandatory language slices")
     args = parser.parse_args()
     if not args.model_path:
         raise SystemExit("--model-path or BRAINLEHR_CODE_MODEL_PATH is required")
-    encoded = json.dumps(run(args.model_path, args.revision), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    if args.language and args.multilingual:
+        parser.error("--language and --multilingual are mutually exclusive")
+    result = (run_multilingual(args.model_path, languages={args.language}) if args.language
+              else run_multilingual(args.model_path) if args.multilingual
+              else run(args.model_path, args.revision))
+    encoded = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     if args.out:
         args.out.write_text(encoded, encoding="utf-8")
     print(encoded, end="")

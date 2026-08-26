@@ -1,5 +1,48 @@
 # AI architecture decisions
 
+## 2026-08-26 — Activate only the measured, revision-bound CodeRank router
+
+- Context: The earlier Python-only screening retained BGE-M3. P31 subsequently froze seven
+  compiler/analyzer-validated language fixtures (Python, TypeScript, Rust, Java, Go, Swift,
+  Dart/Flutter), each with three targets and four code modalities, plus the existing German
+  Brainlehr prose control. The candidate query prefix is the model-card contract; document
+  encoding has no prefix.
+- Decision: Keep normal prose retrieval on BGE-M3. Route only explicit
+  `signature_to_implementation` and `code_to_consumer` queries to the separate CodeRank
+  channel; German/English prose-to-code and unknown modalities stay on BGE-M3. The router is
+  a fixed pre-result rule, not a per-result oracle. Store CodeRank hints separately with
+  project, revision, tree hash, graph reference, modality, language, content/model hash,
+  model version, dimension, time and status; reject stale hints. RRF and vector concatenation
+  remain disabled.
+- Reason: Across all 28 required matrices, the router gains `+0.142857` macro Recall@1 and
+  `+0.079365` macro MRR without a mandatory-matrix or prose-control Recall@1 loss. CodeRank
+  alone (`0.600` prose R@1) and fixed RRF (`0.700`) regress BGE-M3 (`0.800`) prose and fail.
+- Rejected alternatives: promote CodeRank globally; fuse vectors or equal-weight ranks; infer
+  query modality from a raw prompt; use the old Python-only result; or embed graph/trace JSON.
+- Verification: frozen fixture manifest and full idle report hashes, compiler checks and the
+  per-language result table are in `messungen/code_retrieval_benchmark_2026-08-26.md`.
+  `python3 -m pytest -q tests/test_multilingual_fixtures.py tests/test_code_retrieval_benchmark.py
+  tests/test_code_retrieval_router.py` passes locally.
+- Boundary: This is a small, frozen local evaluation, not a claim of universal semantic-code
+  quality. Model caches and full reports remain local under `/Volumes/daten`; no analyzer
+  writes Brainlehr and no CodeRank vector is mixed with the normal knowledge index.
+
+## 2026-08-26 — OTLP and Metroviz are real downstream graph projections
+
+- Context: Runtime evidence and Metroviz had remained only planned despite the request for
+  live, revision-bound routes.
+- Decision: `project_impact_view --format otel` accepts only sanitized spans with an exact
+  graph revision and supplied tree hash; raw payload fields are rejected. `--format metroviz`
+  deterministically produces routes/nodes/gaps from the same canonical graph. Both are
+  registered project tools; neither writes a graph nor analyzes source independently.
+- Reason: A projection can expose timing bindings and human routes without becoming a second
+  truth or retaining runtime content.
+- Rejected alternatives: accepting raw OTLP attributes/events; unbound traces; a separate
+  Metroviz store; a CDN-backed renderer; or treating static CPG evidence as runtime proof.
+- Verification: `tests/test_project_boundary.py::test_otel_and_metroviz_cli_are_real_projection_routes`.
+- Boundary: Joern's local runtime is still unavailable and remains a coverage gap; this route
+  proves only sanitized, caller-provided trace binding.
+
 ## 2026-08-26 — Evidence adapters are bounded, revisioned inputs; projections are derived offline artifacts
 
 - Context: P40–P62 require a single typed graph without allowing external tools, raw traces, or embeddings to create unverified knowledge. The earlier “adapter-later” research note is superseded by the operator's later decision to provide the listed channels as optional local evidence paths now.
