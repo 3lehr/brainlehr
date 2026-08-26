@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-26T16:35:00+0200 — docs(map): refresh generated maps and record an immutable plan-marker finding
+
+- Files: `docs/karten/bestand.{md,json}`, `docs/karten/code-brainlehr.{md,json}`, `docs/ablauf_vermerke.json`, this handoff.
+- Why: the push gate correctly found the generated maps stale after the evidence commits. It also found that `d93b4836` did not name its plan/ADR in its immutable message; the visible vermerk records the actual P31/P40–P62 catalog and ADR instead of rewriting the commit.
+- Verified: `python3 melder/landkarten.py --code brainlehr hub`; `python3 melder/ablaufpflicht.py origin/brainlehr/b4-ausweis..HEAD` reports `Jeder Commit nennt Plan und Belegweg (2 geprüft).`
+- Remaining risk: `melder/kartenstand.py --still` was not used as a completion claim after it exceeded the short-run budget; the pre-push hook remains the final authoritative map-currentness gate. The base commit independently reproduces the slow `tests/test_abrufwirkung.py` (six passed then no progress at `melder/abrufwirkung.py:124`) and the ADR-034 generated-file assertion failure.
+- Next test: push through the unmodified private pre-push hook; fetch `origin/brainlehr/b4-ausweis` and compare heads.
+
 ## 2026-08-26T16:20:00+0200 — chore(context): retain native entry points after live adoption
 
 - Files: `.brainlehr.json`, this handoff.

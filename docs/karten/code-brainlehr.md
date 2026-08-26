@@ -50,8 +50,8 @@ graph LR
   tests -->|2| berichte
   tests -->|2| brainlehr
   tests -->|6| haken
-  tests -->|32| kern
-  tests -->|108| knowledge_mcp_server
+  tests -->|43| kern
+  tests -->|109| knowledge_mcp_server
   tests -->|1| melder
   tests -->|2| sicherungen
   tool -->|1| knowledge_mcp_server

@@ -283,13 +283,13 @@
   {
    "von": "tests",
    "nach": "kern",
-   "text": "32",
+   "text": "43",
    "art": "gerichtet"
   },
   {
    "von": "tests",
    "nach": "knowledge_mcp_server",
-   "text": "108",
+   "text": "109",
    "art": "gerichtet"
   },
   {
