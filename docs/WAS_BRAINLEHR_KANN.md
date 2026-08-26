@@ -1,16 +1,16 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-26T11:41:17+0200 (Stand `5d9c2588`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-08-26T16:55:04+0200 (Stand `e56c13d5`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 
 | | |
 |---|---:|
-| Werkzeuge über MCP | 40 |
+| Werkzeuge über MCP | 41 |
 | Melder | 62, davon verdrahtet 24 |
 | Haken | 23, davon verdrahtet 13 |
-| Kernmodule | 136 |
-| Module mit Selbsttest | 149 von 221 |
+| Kernmodule | 141 |
+| Module mit Selbsttest | 149 von 226 |
 
 ## Werkzeuge — was ein Klient aufrufen kann
 
@@ -46,9 +46,10 @@ Das ist die Bedienoberfläche von brainlehr. Jede Zeile kommt aus der Werkzeugta
 | `lesson_query` | Query lessons learned |
 | `lesson_record` | Record a lesson learned |
 | `lesson_update` | Correct or delete a recorded lesson |
+| `project_actor_boundary` | Fail-closed local actor/project check |
 | `project_boundary` | Return one token-capped request boundary for plan/read/edit/build/test/commit |
 | `project_change` | After a verified commit, store one compact change receipt and compute the complete transitive chain of statically proven Python import consumers |
-| `project_commit_ack` | Append one explicit local acknowledgement for the current staged tree |
+| `project_commit_ack` | Append one signed local acknowledgement for the current staged tree |
 | `project_commit_gate` | Read-only check of the opt-in staged-tree gate |
 | `project_context` | Load task context progressively and token-efficiently |
 | `project_ensure` | Idempotently adopt or initialize a Git project for Brainlehr |
@@ -165,10 +166,12 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/abloesung.py` | Eine Abloesung ist selbst ein Wissensgegenstand | ja |
 | `kern/abrufguete.py` | Abrufguete auf dem Pruefkorpus (runs/pruefkorpus.jsonl, 45 Faelle) -- | ja |
 | `kern/actor_project_boundary.py` | Fail-closed local actor/project checks | — |
+| `kern/analyzer_cache.py` | Signed, revision-bound analyzer-cache envelope; no raw tool output | — |
 | `kern/analyzer_registry.py` | Optional local analyzer registry: explicit commands, timeout and no fallback | — |
 | `kern/anfrage_erweiterung.py` | anfrage_erweiterung.py | ja |
 | `kern/ankerverfahren.py` | Ankerverfahren | ja |
 | `kern/anmeldung.py` | Einen Teilnehmer anmelden | ja |
+| `kern/audit_segment.py` | P70: explicitly bounded healthy audit segment after unresolved legacy | — |
 | `kern/auditanker.py` | Auditanker | ja |
 | `kern/aufbewahrung.py` | Aufbewahrungsfristen je Datenklasse | ja |
 | `kern/ausloeser.py` | ausloeser.py | ja |
@@ -219,6 +222,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/hebb_kanten.py` | Hebbsche Kanten: recall_log.jsonl -> knowledge_relations | ja |
 | `kern/herkunft_belegung.py` | herkunft_belegung.py | ja |
 | `kern/herkunft_normentscheider.py` | Wer hat entschieden | ja |
+| `kern/impact_dashboard.py` | Local, read-only revision dashboard for canonical impact graphs | — |
 | `kern/kanalguete_messung.py` | Messwerkzeug fuer docs/PLAN_KANALGUETE_2026-08-15.md | — |
 | `kern/kanarienvogel.py` | kanarienvogel.py | ja |
 | `kern/kanten_aus_bedeutung.py` | Kanten aus Bedeutung: knowledge_relations aus vorhandenen Embeddings ziehen | — |
@@ -246,6 +250,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/normfundstelle.py` | normfundstelle.py -- aus "§ 16 Abs | ja |
 | `kern/normkraft.py` | normkraft.py | ja |
 | `kern/normrang.py` | normrang.py | ja |
+| `kern/pfad_hygiene.py` | Portable rewrite candidates for historical absolute paths | — |
 | `kern/planbindung.py` | Ein Melder auf die BINDUNG zwischen Plan und Speicher | ja |
 | `kern/planentscheidung.py` | Erzeugt Knoten aus ENTSCHEIDENDEN Planabschnitten und schreibt die | ja |
 | `kern/planordnung.py` | Ein Plan ist eine FOLGE, der Wissensspeicher eine MENGE (Auftrag | ja |
@@ -263,6 +268,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/raum_daten.py` | raum_daten.py | ja |
 | `kern/regelpaket.py` | regelpaket.py | ja |
 | `kern/reifegrad.py` | reifegrad.py | ja |
+| `kern/relation_endpoints.py` | P69 typed endpoint validation and one explicit legacy-table migration | — |
 | `kern/release_identity.py` | Offline, deterministic release identity evidence | — |
 | `kern/relevanzlage.py` | Sagen, wie belastbar ein Suchergebnis ist | — |
 | `kern/risikoeinstufung.py` | risikoeinstufung.py | — |

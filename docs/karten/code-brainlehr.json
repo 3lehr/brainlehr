@@ -181,7 +181,7 @@
   {
    "von": "kern",
    "nach": "knowledge_mcp_server",
-   "text": "28",
+   "text": "29",
    "art": "gerichtet"
   },
   {
@@ -222,8 +222,14 @@
   },
   {
    "von": "migrationen",
+   "nach": "kern",
+   "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "migrationen",
    "nach": "knowledge_mcp_server",
-   "text": "7",
+   "text": "10",
    "art": "gerichtet"
   },
   {
@@ -283,13 +289,13 @@
   {
    "von": "tests",
    "nach": "kern",
-   "text": "44",
+   "text": "51",
    "art": "gerichtet"
   },
   {
    "von": "tests",
    "nach": "knowledge_mcp_server",
-   "text": "109",
+   "text": "113",
    "art": "gerichtet"
   },
   {
@@ -302,6 +308,18 @@
    "von": "tests",
    "nach": "sicherungen",
    "text": "2",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tests",
+   "nach": "tool",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tool",
+   "nach": "kern",
+   "text": "1",
    "art": "gerichtet"
   },
   {
