@@ -1,5 +1,48 @@
 # AI handoff
 
+## 2026-08-26T16:00:00+0200 — feat(evidence): close bounded registry, offline projection, and language-scope gates
+
+- Files: P31/P48 requirements, benchmark manifest/tests, session capability registry, analyzer registry/tests, impact CLI/projection tests, and this handoff.
+- Why: The revision-bound evidence work must keep tool output and agent reuse outside the semantic knowledge path while making language coverage and host limitations visible.
+- Decision: Python remains the only measured language goldset. TypeScript, Rust, Swift, Dart/Flutter, Java and Go are explicit required-core gaps; SQL/Shell/YAML/HCL are declarative fixtures and C/C++/C#/PHP/Kotlin/Ruby are extension gaps. The registry recommends only same-agent compatible follow-up or a delta; it cannot spawn and carries no transcript. Analyzer output is file-bounded and hash-only, with scrubbed environment and host-network isolation reported as a gap. Cytoscape artifacts copy a local asset beside the deterministic HTML.
+- Verified: P31/P48/requirements `18 passed`; focused graph/adapter/boundary/client group `50 passed`; analyzer group `11 passed`; projection group `14 passed`; `git diff --check` passed at each focused gate. An explicit all-tracked test invocation was interrupted after 65 passed in 211.79 s when legacy `melder/abrufwirkung.py` showed no progress for >90 s; it is not evidence of a new failure. The untracked `korpora/` collection was intentionally excluded.
+- Remaining risk: Joern needs an executable local runtime; host-network isolation is not enforced; non-Python retrieval tests are required gaps rather than a production result. These remain visible coverage gaps, not completed claims.
+- Next test: refresh the live project capsule/receipt after the commit, regenerate the allowlisted public context against that revision, and run the repository push gates.
+
+## 2026-08-26T14:40:00+0200 — wip(evidence): establish v2 graph and optional-channel seams
+
+- Files: P40–P50 catalog rows, graph/adapters/registry/CodeQL policy, fixtures, Cytoscape projection test and ADR.
+- Why: The project context is being widened into one revision-bound evidence graph before analyzer channels are allowed to influence code impact.
+- Verified: focused graph/adapter/registry/CodeQL tests; local SCIP and Semgrep measurements are recorded in ADR.
+- Remaining risk: this is an uncommitted vertical foundation. Real Joern/OTLP import-run and vendored Cytoscape asset/current export gates remain open; no push is permitted until P40–P50 gates are complete.
+
+## 2026-08-26T14:15:00+0200 — feat(context): debounce transient overlays and generate thin client bootstraps
+
+- Files: `kern/project_analysis_loop.py`, `kern/project_context.py`, P38–P39 requirements, policy/generator/public client templates, focused tests and ADR.
+- Why: Current code work needs revision-bound context between edit and verification without making every edit a durable Brainlehr fact; the three supported clients need one small, reviewable contract instead of drifting large prompts.
+- Decision: The in-memory loop coalesces completed edits, discards stale work, separates staged from working state and requests one post-commit receipt. The generated policy bundle is the only instruction source; recalled/code/tool text is data and the adapters merely map Claude/Hermes/Codex lifecycle differences.
+- Verified: `python3 -m pytest -q tests/test_project_boundary.py tests/test_project_context.py tests/test_requirements_brainlehr.py tests/test_session_checkpoint.py tests/test_werkzeugrechte_durchsetzung.py`; `python3 melder/client_bootstrap.py --check`.
+- Remaining risk: No daemon sees arbitrary editor events; timing/run evidence still requires a registered, verified tool. Hosted ChatGPT cannot accept a repository-controlled system prompt.
+- Next test: run full focused export/capability/push gates, then after commit record the live project receipt and regenerate public facts from that committed source.
+
+## 2026-08-26T13:30:00+0200 — feat(impact): one typed graph and host-only agent reuse recommendation
+
+- Files: `kern/project_context.py`, impact CLI, `kern/session_checkpoint.py`, MCP/rights contracts, P35–P37, tests and ADR.
+- Why: Code/mixed work now has one revision-bound graph for compact machine context and deterministic Mermaid projection; compatible live agents can be recommended for reuse without retaining a conversation.
+- Decision: Graphs contain only typed evidence, revision and hash. Metroviz is planned until its source schema is available. Agent reuse is a host recommendation; independent reviews, stale roles/revisions and saturated contexts go fresh.
+- Verified: `python3 -m pytest -q tests/test_session_checkpoint.py tests/test_project_boundary.py tests/test_project_context.py tests/test_requirements_brainlehr.py tests/test_werkzeugrechte_durchsetzung.py` (37 passed).
+- Remaining risk: Runtime/timing remains a registered-evidence gap; no heavy OSS analyzer, Metroviz adapter or host agent lifecycle integration was added.
+- Next test: after commit, refresh the live capsule/receipt and generate/export public descriptions against the committed source revision.
+
+## 2026-08-26T13:00:00+0200 — feat(project-boundary): keep modality local and gate staged impact explicitly
+
+- Files: `kern/project_context.py`, `kern/project_boundary_cli.py`, `tool/project_boundary.py`, `knowledge_mcp_server.py`, `kern/werkzeugrechte.py`, package metadata, `.brainlehr.json`, P32–P34 requirements, architecture decision, and focused tests.
+- Why: A repository alone cannot identify user intent. Clients now receive a small, deterministic `knowledge|code|mixed|unknown` contract without retaining prompts, thinking, or a user profile; opt-in code projects can make a conscious, diff-bound acknowledgement before commit.
+- Decision: Explicit mode wins; a non-empty staged tree is the only server-verified automatic code signal; then comes named operation, otherwise unknown. The acknowledgement is local, append-only and bound to base+staged-diff SHA-256; it does not replace the post-commit `project_change` receipt.
+- Verified: `python3 -m pytest -q tests/test_project_boundary.py tests/test_project_context.py tests/test_requirements_brainlehr.py tests/test_werkzeugrechte_durchsetzung.py tests/test_public_context_export.py tests/test_selbstbeschreibung_update.py tests/test_paketbau.py` (34 passed, 1 skipped); `python3 -m py_compile kern/project_context.py kern/project_boundary_cli.py knowledge_mcp_server.py kern/werkzeugrechte.py tool/project_boundary.py`.
+- Remaining risk: A local CLI/hook is not a security boundary; runtime/build/timing evidence remains a registered-tool gap. The supplied Metroviz source schema was inaccessible, so P34 registers only a planned projection and no renderer.
+- Next test: after commit, refresh project capsule/receipt, self-description, public export and generated capability map; then run the complete push gates.
+
 ## 2026-08-26T12:15:00+0200 — test(code-retrieval): separate modality matrices
 
 - Files: `tests/fixtures/code_retrieval_goldset.json`, `messungen/code_retrieval_benchmark.py`, P31 requirement/decision documentation, and focused tests.

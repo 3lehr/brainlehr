@@ -158,6 +158,7 @@ import zeitfenster  # Auftrag 88 Schritt 1 (docs/PLAN_ZEITACHSE_2026-08-14.md):
                      # zeitfenster importiert selbst nichts von hier.
 import prompt_invarianz  # agentneutraler Entscheidungstest; keine Modell- oder DB-Abhaengigkeit
 import project_context  # BDW-P23-P25: project capsule + bounded code evidence
+import evidence_graph
 
 # DER ORT WIRD ERFRAGT, NICHT GEBAUT -- haken/ort.py ist der EINE Aufloeser.
 #
@@ -3749,7 +3750,7 @@ def knowledge_add(parent_path: str, title: str, summary: str,
                   kreis: str = "",
                   sensibel: bool = False,
                   actor: str | None = None, model: str | None = None,
-                  session: str | None = None) -> dict:
+                  session: str | None = None, embed_semantic: bool = True) -> dict:
     """Add a new knowledge node to the tree. Rejects an unknown parent_path
     unless neuer_ast=True (see U1 im Plan 2026-08-05, P1: erfundene Aeste
     streuten Wissen an Stellen, die nie wieder abgerufen wurden).
@@ -4080,10 +4081,9 @@ def knowledge_add(parent_path: str, title: str, summary: str,
         summary = "(verschluesselt)"
         content = ""
 
-    _hint_vec = embeddings.embed_text(f"{node_path}\n{title}\n{summary}\n{content or ''}")
-    similar_node_hint = _find_similar_knowledge_nodes(
-        conn, title, summary, content, _hint_vec,
-        gattung=gattung if gattung is not None else "arbeitsbestand")
+    _hint_vec = embeddings.embed_text(f"{node_path}\n{title}\n{summary}\n{content or ''}") if embed_semantic else None
+    similar_node_hint = _find_similar_knowledge_nodes(conn, title, summary, content, _hint_vec,
+        gattung=gattung if gattung is not None else "arbeitsbestand") if embed_semantic else None
 
     conn.execute(
         """INSERT INTO knowledge_nodes (id, path, parent_path, project_id, title, summary, content, level, tags, source, created_at, updated_at, norm_rang, gilt_ab, gilt_bis, norm_art, norm_entscheidung, norm_entschieden_von, norm_entschieden_am, norm_entschieden_grund, norm_entschieden_belegart, anlass, abgeleitet_von, actor, session, model, client, gattung, bedient_von, sensibel, chiffre, mandant, kreis)
@@ -4144,9 +4144,10 @@ def knowledge_add(parent_path: str, title: str, summary: str,
     wikilinks = _sync_wikilinks(conn, node_path, content, actor=actor, model=model, session=session)
     # ADR-032: Vektor sofort mitbauen statt eine vector_gaps-Luecke bis zum
     # naechsten build_embeddings.py-Lauf offenzulassen.
-    _vektor_grund = _rebuild_node_embedding(conn, node_id, project_id, node_path, title, summary, content, vec=_hint_vec)
-    _knowledge_hint_index_add(node_id, title, summary, content,
-                              gattung=gattung if gattung is not None else "arbeitsbestand")
+    _vektor_grund = _rebuild_node_embedding(conn, node_id, project_id, node_path, title, summary, content, vec=_hint_vec) if embed_semantic else None
+    if embed_semantic:
+        _knowledge_hint_index_add(node_id, title, summary, content,
+                                  gattung=gattung if gattung is not None else "arbeitsbestand")
     conn.commit()
     conn.close()
     _check_injection_suspects("node", node_path, {"title": title, "summary": summary, "content": content})
@@ -6480,6 +6481,23 @@ def session_checkpoint_lesen(session_id: str, current_topic_fingerprint: str | N
         conn.close()
 
 
+def session_agent_reuse(session_id: str, project_id: str, task_fingerprint: str,
+                        role_capability: str, source_revision: str,
+                        independent_review: bool = False) -> dict:
+    """Return a host-only reuse recommendation from compact technical checkpoint state."""
+    conn = get_db()
+    try:
+        checkpoint = session_checkpoint.lesen(conn, session_id)
+        if checkpoint is None:
+            return {"action": "fresh_agent", "reason": "no active checkpoint"}
+        return session_checkpoint.reuse_empfehlen(
+            checkpoint, project_id=project_id, task_fingerprint=task_fingerprint,
+            role_capability=role_capability, source_revision=source_revision,
+            independent_review=independent_review)
+    finally:
+        conn.close()
+
+
 def session_checkpoint_schliessen(session_id: str) -> dict:
     conn = get_db()
     try:
@@ -6487,6 +6505,24 @@ def session_checkpoint_schliessen(session_id: str) -> dict:
                 "closed": session_checkpoint.schliessen(conn, session_id)}
     finally:
         conn.close()
+
+
+def project_boundary(mode: str = "auto", phase: str = "plan", operation: str | None = None,
+                     project_root: str | None = None) -> dict:
+    """Return a compact request-local boundary; this never stores prompt text."""
+    return project_context.boundary_contract(
+        mode=mode, phase=phase, operation=operation, project_path=project_root)
+
+
+def project_commit_gate(project_root: str) -> dict:
+    """Check an opt-in staged-tree impact gap without mutating the project."""
+    return project_context.staged_commit_gate(project_root)
+
+
+def project_commit_ack(project_root: str, acknowledgement_reason: str) -> dict:
+    """Append one explicit local acknowledgement for the current staged tree."""
+    return project_context.staged_commit_gate(
+        project_root, acknowledge_reason=acknowledgement_reason)
 
 
 def project_ensure(project_root: str, project_id: str | None = None,
@@ -6666,7 +6702,7 @@ def project_context_get(project_root: str, task: str, depth: str = "summary",
 
 def project_change_record(project_root: str, base_commit: str,
                           semantic_summary: str, verification: list[str],
-                          max_distance: int = 1) -> dict:
+                          max_distance: int = 1, evidence_fragments: list[dict] | None = None) -> dict:
     """Record one verified commit and compute its complete proven impact chain."""
     if not semantic_summary.strip():
         raise ValueError("semantic_summary must state the behavior change or explicitly say none")
@@ -6676,6 +6712,8 @@ def project_change_record(project_root: str, base_commit: str,
     if "error" in ensured:
         return ensured
     impact = project_context.impact_chain(project_root, base_commit)
+    graph = evidence_graph.reconcile(
+        project_context.impact_graph(project_root, impact, verification), evidence_fragments or [])
     counts = {distance: len(files) for distance, files in impact["consumers_by_distance"].items()}
     receipt = {
         "schema": 1,
@@ -6694,6 +6732,8 @@ def project_change_record(project_root: str, base_commit: str,
         "ambiguous_imports": impact["ambiguous_imports"],
         "unsupported_static_forms": impact["unsupported_static_forms"],
         "coverage_status": impact["coverage_status"],
+        "impact_graph_schema": graph["schema"],
+        "impact_graph_hash": graph["content_hash"],
     }
     conn = get_db()
     try:
@@ -6742,6 +6782,7 @@ def project_change_record(project_root: str, base_commit: str,
                 norm_entscheidung="keine_norm",
                 norm_entschieden_grund="Append-only correction of a factual change receipt.",
                 anlass="skript",
+                embed_semantic=False,
             )
             if "error" in created:
                 return created
@@ -6755,6 +6796,7 @@ def project_change_record(project_root: str, base_commit: str,
             norm_entscheidung="keine_norm",
             norm_entschieden_grund="Generated factual change receipt, not a norm.",
             anlass="skript",
+            embed_semantic=False,
         )
         if "error" in created:
             return created
@@ -6771,6 +6813,8 @@ def project_change_record(project_root: str, base_commit: str,
             int(distance) for distance in impact["consumers_by_distance"]
             if int(distance) > max(1, max_distance)),
         "not_proven": impact["not_proven"],
+        "impact_graph": graph,
+        "visualization": project_context.impact_visualization_ref(graph),
         "choice": {
             "must": "validate every reachable consumer before claiming the change is contained",
             "may": "call project_change again with a larger max_distance to lazy-load deeper layers",
@@ -6781,6 +6825,43 @@ def project_change_record(project_root: str, base_commit: str,
 
 
 TOOLS = {
+    "project_boundary": {
+        "description": "Return one token-capped request boundary for plan/read/edit/build/test/commit. It never captures prompt or thinking, never stores a user profile, and treats cwd, repository and manifest alone as unknown. Explicit mode wins; only a non-empty staged tree is an automatic code signal.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "mode": {"type": "string", "enum": ["auto", "knowledge", "code", "mixed"], "default": "auto"},
+                "phase": {"type": "string", "enum": ["plan", "read", "edit", "build", "test", "commit"], "default": "plan"},
+                "operation": {"type": "string", "enum": ["knowledge_search", "knowledge_read", "lesson_query", "project_context", "project_change"]},
+                "project_root": {"type": "string", "description": "Optional path; examined only for a staged-tree signal in auto mode."},
+            },
+            "additionalProperties": False,
+        },
+        "handler": lambda args: project_boundary(
+            args.get("mode", "auto"), args.get("phase", "plan"), args.get("operation"),
+            args.get("project_root")),
+    },
+    "project_commit_gate": {
+        "description": "Read-only check of the opt-in staged-tree gate. No configured gate means no enforcement; a local hook is not a security boundary.",
+        "inputSchema": {
+            "type": "object", "properties": {"project_root": {"type": "string"}},
+            "required": ["project_root"], "additionalProperties": False,
+        },
+        "handler": lambda args: project_commit_gate(
+            _require(args, "project_root", "a path inside the Git project")),
+    },
+    "project_commit_ack": {
+        "description": "Append one explicit local acknowledgement for the current staged tree. The acknowledgement binds base commit and staged-diff digest; edit it again and it becomes invalid. Reason must be non-secret.",
+        "inputSchema": {
+            "type": "object", "properties": {
+                "project_root": {"type": "string"},
+                "acknowledgement_reason": {"type": "string", "minLength": 1, "maxLength": 240},
+            }, "required": ["project_root", "acknowledgement_reason"], "additionalProperties": False,
+        },
+        "handler": lambda args: project_commit_ack(
+            _require(args, "project_root", "a path inside the Git project"),
+            _require(args, "acknowledgement_reason", "a non-secret reason")),
+    },
     "project_change": {
         "description": "After a verified commit, store one compact change receipt and compute the complete transitive chain of statically proven Python import consumers. Returns consumer layers only up to max_distance; deeper layers remain available for lazy loading. Import edges prove dependency, not runtime data flow. Non-Python changes are reported as uncovered and require a project-specific registered analyzer.",
         "inputSchema": {
@@ -6871,6 +6952,22 @@ TOOLS = {
         "handler": lambda args: session_checkpoint_lesen(
             _require(args, "session_id", "die technische Sitzungs-ID"),
             args.get("current_topic_fingerprint")),
+    },
+    "session_agent_reuse": {
+        "description": "Recommend reuse, refresh-delta or a fresh agent from compact technical checkpoint state. It never stores or reads prompts, responses, hidden thinking or transcripts, and never spawns an agent.",
+        "inputSchema": {"type": "object", "properties": {
+            "session_id": {"type": "string"}, "project_id": {"type": "string"},
+            "task_fingerprint": {"type": "string"}, "role_capability": {"type": "string"},
+            "source_revision": {"type": "string"}, "independent_review": {"type": "boolean", "default": False},
+        }, "required": ["session_id", "project_id", "task_fingerprint", "role_capability", "source_revision"],
+            "additionalProperties": False},
+        "handler": lambda args: session_agent_reuse(
+            _require(args, "session_id", "the technical session ID"),
+            _require(args, "project_id", "the project ID"),
+            _require(args, "task_fingerprint", "the technical task fingerprint"),
+            _require(args, "role_capability", "the agent role or capability"),
+            _require(args, "source_revision", "the source revision"),
+            args.get("independent_review", False)),
     },
     "session_checkpoint_schliessen": {
         "description": "Löscht den temporären Checkpoint einer beendeten Sitzung idempotent.",

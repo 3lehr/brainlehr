@@ -1,0 +1,6 @@
+{
+  "source": "scip",
+  "revision": "fixture-scip-r1",
+  "documents": [{"relative_path": "src/app.py", "language": "python", "symbols": [{"symbol": "app/render", "kind": "function"}]}],
+  "occurrences": [{"symbol": "app/render", "range": [1, 0, 1, 12]}]
+}

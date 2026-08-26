@@ -237,7 +237,10 @@ PUBLIC_CONTEXT = (
      "verified commit it records the affected files, checks transitive static consumers, "
      "and curates a semantic conclusion separately. Receipts name their static analyzer "
      "and supersede corrections without erasing them. Static imports and semantic similarity "
-     "are never presented as runtime data flow; unsupported forms remain coverage gaps."),
+     "are never presented as runtime data flow; unsupported forms remain coverage gaps. "
+     "Each request can explicitly choose knowledge, code, or mixed context without storing "
+     "prompts, reasoning, or a user profile. An opt-in staged-tree gate records a local "
+     "acknowledgement bound to the exact diff; it is not a replacement for post-commit evidence."),
 )
 
 

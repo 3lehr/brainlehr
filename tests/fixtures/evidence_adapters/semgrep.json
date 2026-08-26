@@ -1,0 +1,5 @@
+{
+  "source": "semgrep",
+  "revision": "fixture-semgrep-r1",
+  "results": [{"check_id": "python.security.example", "path": "src/app.py", "start": {"line": 3, "col": 1}, "end": {"line": 3, "col": 8}, "extra": {"message": "example finding"}}]
+}

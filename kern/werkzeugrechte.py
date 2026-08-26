@@ -93,7 +93,10 @@ RECHTE: dict[str, str] = {
     "prompt_invarianz_planen": "wissen:lesen",
     "prompt_invarianz_pruefen": "wissen:lesen",
     "session_checkpoint_lesen": "wissen:lesen",
+    "session_agent_reuse": "wissen:lesen",
     "project_context": "wissen:lesen",
+    "project_boundary": "wissen:lesen",
+    "project_commit_gate": "wissen:lesen",
     "knowledge_selbstauskunft": "wissen:lesen",
     # schreiben
     "knowledge_add": "wissen:schreiben",
@@ -111,6 +114,7 @@ RECHTE: dict[str, str] = {
     "session_checkpoint_schliessen": "wissen:schreiben",
     "project_ensure": "wissen:schreiben",
     "project_change": "wissen:schreiben",
+    "project_commit_ack": "wissen:schreiben",
     "einrichtung_starten": "wissen:schreiben",
     # verwaltend -- laeuft ueber den ganzen Bestand, darum eigene Aktion
     "freigabe_setzen": "verwaltung:schreiben",

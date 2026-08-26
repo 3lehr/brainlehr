@@ -1,0 +1,5 @@
+{
+  "source": "otlp",
+  "revision": "fixture-otlp-r1",
+  "resourceSpans": [{"scopeSpans": [{"spans": [{"traceId": "00000000000000000000000000000001", "spanId": "0000000000000001", "name": "render", "attributes": [{"key": "code.filepath", "value": {"stringValue": "src/app.py"}}]}]}]}]
+}

@@ -1,0 +1,6 @@
+{
+  "source": "joern-cpg",
+  "revision": "fixture-joern-r1",
+  "nodes": [{"id": 1, "label": "METHOD", "name": "render", "file": "src/app.py"}],
+  "edges": [{"out": 1, "in": 2, "label": "CALL"}]
+}

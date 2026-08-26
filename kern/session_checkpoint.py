@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta, timezone
 
 TABLE_SQL = """
@@ -21,6 +22,11 @@ CREATE TABLE IF NOT EXISTS session_checkpoints (
     expected_child_ids TEXT NOT NULL DEFAULT '[]',
     terminal_child_ids TEXT NOT NULL DEFAULT '[]',
     unresolved_evidence_ids TEXT NOT NULL DEFAULT '[]',
+    used_knowledge_ids TEXT NOT NULL DEFAULT '[]',
+    open_gate_ids TEXT NOT NULL DEFAULT '[]',
+    role_capability TEXT NOT NULL DEFAULT '',
+    source_revision TEXT NOT NULL DEFAULT '',
+    terminal_state TEXT NOT NULL DEFAULT 'active' CHECK(terminal_state IN ('active', 'terminal')),
     next_authorized_action TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'active' CHECK(status = 'active'),
     updated_at TEXT NOT NULL,
@@ -33,14 +39,78 @@ CREATE INDEX IF NOT EXISTS idx_session_checkpoints_expiry
 FIELDS = {
     "session_id", "project", "context_fraction", "topic_fingerprint",
     "active_requirement_ids", "expected_child_ids", "terminal_child_ids",
-    "unresolved_evidence_ids", "next_authorized_action",
+    "unresolved_evidence_ids", "used_knowledge_ids", "open_gate_ids",
+    "role_capability", "source_revision", "terminal_state", "next_authorized_action",
 }
 LIST_FIELDS = {
     "active_requirement_ids", "expected_child_ids", "terminal_child_ids",
-    "unresolved_evidence_ids",
+    "unresolved_evidence_ids", "used_knowledge_ids", "open_gate_ids",
 }
 ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}\Z")
 SECRET_PREFIXES = ("sk-", "ghp_", "github_pat_", "bearer-", "api-key-")
+
+
+@dataclass(frozen=True)
+class AgentCapability:
+    """Ephemeral routing record; deliberately contains no prompt or transcript."""
+    agent_id: str
+    task_id: str
+    project_id: str
+    task_fingerprint: str
+    role_capability: str
+    source_revision: str
+    tree_hash: str
+    checkpoint_session_id: str
+    terminal_state: str = "active"
+    open_gate_ids: tuple[str, ...] = ()
+    fresh: bool = True
+
+
+class AgentCapabilityRegistry:
+    """Small host-side registry for compatible follow-ups; never spawns agents."""
+
+    def __init__(self):
+        self._entries: dict[tuple[str, str], AgentCapability] = {}
+
+    def register(self, **values) -> AgentCapability:
+        allowed = set(AgentCapability.__dataclass_fields__)
+        unknown = set(values) - allowed
+        if unknown:
+            raise ValueError(f"nicht erlaubte Agent-Felder: {', '.join(sorted(unknown))}")
+        required = ("agent_id", "task_id", "project_id", "task_fingerprint",
+                    "role_capability", "source_revision", "tree_hash", "checkpoint_session_id")
+        normalized = dict(values)
+        for field in required:
+            normalized[field] = _id(field, normalized.get(field))
+        normalized["terminal_state"] = normalized.get("terminal_state", "active")
+        if normalized["terminal_state"] not in {"active", "terminal"}:
+            raise ValueError("terminal_state muss active oder terminal sein")
+        gates = normalized.get("open_gate_ids", ())
+        if not isinstance(gates, (list, tuple)):
+            raise ValueError("open_gate_ids muss eine ID-Liste sein")
+        normalized["open_gate_ids"] = tuple(_id("open_gate_ids", gate) for gate in gates)
+        entry = AgentCapability(**normalized)
+        self._entries[(entry.project_id, entry.task_fingerprint)] = entry
+        return entry
+
+    def recommend(self, *, project_id: str, task_fingerprint: str, role_capability: str,
+                  source_revision: str, tree_hash: str, independent_review: bool = False) -> dict:
+        key = (_id("project_id", project_id), _id("task_fingerprint", task_fingerprint))
+        current_role = _id("role_capability", role_capability)
+        current_revision = _id("source_revision", source_revision)
+        current_tree = _id("tree_hash", tree_hash)
+        entry = self._entries.get(key)
+        if independent_review or entry is None:
+            return {"action": "fresh_agent", "reason": "independent review" if independent_review else "no compatible entry"}
+        if entry.terminal_state == "terminal" or entry.role_capability != current_role:
+            return {"action": "fresh_agent", "reason": "terminal state" if entry.terminal_state == "terminal" else "incompatible role"}
+        if entry.source_revision != current_revision or entry.tree_hash != current_tree:
+            return {"action": "refresh_delta", "load": "diff_and_direct_neighbors", "agent_id": entry.agent_id, "task_id": entry.task_id}
+        return {"action": "reuse_followup", "load": "direct_neighbors_only", "agent_id": entry.agent_id, "task_id": entry.task_id}
+
+    def get(self, project_id: str, task_fingerprint: str) -> dict | None:
+        entry = self._entries.get((_id("project_id", project_id), _id("task_fingerprint", task_fingerprint)))
+        return asdict(entry) if entry else None
 
 
 def _zeit(value: str | None = None) -> datetime:
@@ -85,7 +155,8 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     expected = {
         "session_id", "project", "context_fraction", "topic_fingerprint",
         "active_requirement_ids", "expected_child_ids", "terminal_child_ids",
-        "unresolved_evidence_ids", "next_authorized_action", "status",
+        "unresolved_evidence_ids", "used_knowledge_ids", "open_gate_ids",
+        "role_capability", "source_revision", "terminal_state", "next_authorized_action", "status",
         "updated_at", "expires_at",
     }
     existing = {row[1] for row in conn.execute("PRAGMA table_info(session_checkpoints)")}
@@ -107,6 +178,11 @@ def setzen(conn: sqlite3.Connection, data: dict, *, now: str | None = None,
     project = _id("project", data.get("project"))
     topic = _id("topic_fingerprint", data.get("topic_fingerprint"))
     action = _id("next_authorized_action", data.get("next_authorized_action"), leer=True)
+    role = _id("role_capability", data.get("role_capability"), leer=True)
+    revision = _id("source_revision", data.get("source_revision"), leer=True)
+    terminal_state = data.get("terminal_state", "active")
+    if terminal_state not in {"active", "terminal"}:
+        raise ValueError("terminal_state muss active oder terminal sein")
     try:
         fraction = float(data.get("context_fraction"))
     except (TypeError, ValueError):
@@ -119,7 +195,8 @@ def setzen(conn: sqlite3.Connection, data: dict, *, now: str | None = None,
         "session_id": session_id, "project": project,
         "context_fraction": fraction, "topic_fingerprint": topic,
         **{name: json.dumps(value, separators=(",", ":")) for name, value in lists.items()},
-        "next_authorized_action": action, "status": "active",
+        "role_capability": role, "source_revision": revision,
+        "terminal_state": terminal_state, "next_authorized_action": action, "status": "active",
         "updated_at": _iso(timestamp),
         "expires_at": _iso(timestamp + timedelta(seconds=ttl_seconds)),
     }
@@ -127,18 +204,23 @@ def setzen(conn: sqlite3.Connection, data: dict, *, now: str | None = None,
         """INSERT INTO session_checkpoints
            (session_id, project, context_fraction, topic_fingerprint,
             active_requirement_ids, expected_child_ids, terminal_child_ids,
-            unresolved_evidence_ids, next_authorized_action, status, updated_at, expires_at)
+            unresolved_evidence_ids, used_knowledge_ids, open_gate_ids, role_capability,
+            source_revision, terminal_state, next_authorized_action, status, updated_at, expires_at)
            VALUES (:session_id, :project, :context_fraction, :topic_fingerprint,
                    :active_requirement_ids, :expected_child_ids, :terminal_child_ids,
-                   :unresolved_evidence_ids, :next_authorized_action, :status, :updated_at, :expires_at)
+                   :unresolved_evidence_ids, :used_knowledge_ids, :open_gate_ids, :role_capability,
+                   :source_revision, :terminal_state, :next_authorized_action, :status, :updated_at, :expires_at)
            ON CONFLICT(session_id) DO UPDATE SET
              project=excluded.project, context_fraction=excluded.context_fraction,
              topic_fingerprint=excluded.topic_fingerprint,
              active_requirement_ids=excluded.active_requirement_ids,
              expected_child_ids=excluded.expected_child_ids,
-             terminal_child_ids=excluded.terminal_child_ids,
-             unresolved_evidence_ids=excluded.unresolved_evidence_ids,
-             next_authorized_action=excluded.next_authorized_action,
+            terminal_child_ids=excluded.terminal_child_ids,
+            unresolved_evidence_ids=excluded.unresolved_evidence_ids,
+            used_knowledge_ids=excluded.used_knowledge_ids, open_gate_ids=excluded.open_gate_ids,
+            role_capability=excluded.role_capability, source_revision=excluded.source_revision,
+            terminal_state=excluded.terminal_state,
+            next_authorized_action=excluded.next_authorized_action,
              status=excluded.status, updated_at=excluded.updated_at,
              expires_at=excluded.expires_at""",
         row,
@@ -193,6 +275,40 @@ def empfehlen(checkpoint: dict, current_topic_fingerprint: str) -> dict:
     if checkpoint["context_fraction"] >= .75:
         return {"action": "secure_findings", **base}
     return {"action": "continue", **base}
+
+
+def reuse_empfehlen(checkpoint: dict, *, project_id: str, task_fingerprint: str,
+                    role_capability: str, source_revision: str,
+                    independent_review: bool = False) -> dict:
+    """Recommend reuse to the host; it never spawns agents or reads transcripts."""
+    current = {
+        "project": _id("project_id", project_id),
+        "topic": _id("task_fingerprint", task_fingerprint),
+        "role": _id("role_capability", role_capability, leer=True),
+        "revision": _id("source_revision", source_revision, leer=True),
+    }
+    compact = {
+        "project_id": checkpoint["project"], "task_fingerprint": checkpoint["topic_fingerprint"],
+        "role_capability": checkpoint.get("role_capability", ""),
+        "source_revision": checkpoint.get("source_revision", ""),
+        "used_node_or_lesson_ids": checkpoint.get("used_knowledge_ids", []),
+        "open_gate_ids": checkpoint.get("open_gate_ids", []),
+        "terminal_state": checkpoint.get("terminal_state", "active"),
+    }
+    if independent_review or checkpoint.get("terminal_state") == "terminal":
+        reason = "independent review" if independent_review else "terminal agent state"
+        return {"action": "fresh_agent", "reason": reason, "checkpoint": compact}
+    if checkpoint["context_fraction"] >= .75:
+        return {"action": "fresh_agent", "reason": "context saturation", "checkpoint": compact}
+    if current["project"] != checkpoint["project"] or current["topic"] != checkpoint["topic_fingerprint"]:
+        return {"action": "fresh_agent", "reason": "project or task changed", "checkpoint": compact}
+    if current["role"] != checkpoint.get("role_capability", ""):
+        return {"action": "fresh_agent", "reason": "incompatible role", "checkpoint": compact}
+    if current["revision"] != checkpoint.get("source_revision", ""):
+        return {"action": "refresh_delta", "reason": "source revision changed",
+                "load": "diff_and_direct_neighbors", "checkpoint": compact}
+    return {"action": "reuse_followup", "reason": "compatible project task role and revision",
+            "load": "direct_neighbors_only", "checkpoint": compact}
 
 
 def demo() -> None:

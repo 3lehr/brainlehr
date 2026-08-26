@@ -30,6 +30,20 @@
       "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P26",
       "status": "planned",
       "when": "static import evidence is insufficient"
+    },
+    {
+      "capability": "acknowledge staged impact gaps before commit",
+      "command": "python3 tool/project_boundary.py --project-root . --phase commit",
+      "id": "project-commit-gate",
+      "source": "tool/project_boundary.py",
+      "status": "available"
+    },
+    {
+      "capability": "visualize a revision-bound impact evidence subgraph",
+      "id": "metroviz-impact-projection",
+      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P34",
+      "status": "planned",
+      "when": "a source-backed Metroviz schema is available"
     }
   ]
 }

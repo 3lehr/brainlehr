@@ -213,6 +213,9 @@ def test_change_receipt_follows_indirect_consumers_lazily_and_terminates_cycles(
         ["pytest -q"], max_distance=1)
     assert first["consumers_by_distance"] == {"1": ["service.py"]}
     assert first["receipt"]["coverage_status"] == "static_python_imports_complete"
+    assert first["receipt"]["impact_graph_schema"] == project_context.IMPACT_GRAPH_SCHEMA
+    assert first["receipt"]["impact_graph_hash"] == first["impact_graph"]["content_hash"]
+    assert first["visualization"]["source_revision"] == first["receipt"]["head"]
     assert first["deeper_distances_available"] == [2]
     assert first["receipt"]["consumer_counts_by_distance"] == {"1": 1, "2": 1}
 
@@ -233,6 +236,15 @@ def test_change_receipt_follows_indirect_consumers_lazily_and_terminates_cycles(
     conn.close()
     assert len(receipts) == 2
     assert json.loads(receipts[0][0])["base"] == first["receipt"]["base"]
+    conn = sqlite3.connect(db)
+    try:
+        count = conn.execute(
+            "SELECT COUNT(*) FROM knowledge_embeddings WHERE ref_id IN "
+            "(SELECT id FROM knowledge_nodes WHERE project_id='sample' AND tags LIKE '%project-change-receipt%')"
+        ).fetchone()[0]
+    finally:
+        conn.close()
+    assert count == 0, "machine graph receipts must not become prose vectors"
 
     cycle_base = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=root, check=True,

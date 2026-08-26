@@ -59,6 +59,8 @@ brainlehr-mcp = "brainlehr_kern.knowledge_mcp_server:main"
 # Ohne das ist eine Installation nur der halbe Weg: der Server laeuft, aber
 # niemand hat je eine Datenbank angelegt. Gemessen 2026-08-23 am Erstlauf.
 brainlehr-einrichten = "brainlehr_kern.schnellstart:main"
+brainlehr-boundary = "brainlehr_kern.project_boundary_cli:main"
+brainlehr-impact-view = "brainlehr_kern.project_impact_cli:main"
 
 [project.urls]
 Homepage = "https://github.com/3lehr/brainlehr"
@@ -100,6 +102,8 @@ only-include = [
   "kern/normrang.py",
   "kern/prompt_invarianz.py",
   "kern/project_context.py",
+  "kern/project_boundary_cli.py",
+  "kern/project_impact_cli.py",
   "kern/reifegrad.py",
   "kern/relevanzlage.py",
   "kern/schema_nachzug.py",
@@ -155,6 +159,8 @@ bypass-selection = true
 "kern/normrang.py" = "brainlehr_kern/kern/normrang.py"
 "kern/prompt_invarianz.py" = "brainlehr_kern/kern/prompt_invarianz.py"
 "kern/project_context.py" = "brainlehr_kern/kern/project_context.py"
+"kern/project_boundary_cli.py" = "brainlehr_kern/project_boundary_cli.py"
+"kern/project_impact_cli.py" = "brainlehr_kern/project_impact_cli.py"
 "kern/reifegrad.py" = "brainlehr_kern/kern/reifegrad.py"
 "kern/relevanzlage.py" = "brainlehr_kern/kern/relevanzlage.py"
 "kern/schema_nachzug.py" = "brainlehr_kern/kern/schema_nachzug.py"

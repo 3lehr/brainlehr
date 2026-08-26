@@ -1,0 +1,4 @@
+[project]
+dependencies = ["Requests>=2.31", "numpy==1.26.4"]
+[project.optional-dependencies]
+test = ["pytest>=8"]

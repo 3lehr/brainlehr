@@ -55,3 +55,14 @@ def test_activation_requires_all_code_wins_and_prose_nonregression():
     assert benchmark.activation_decision(matrices)["activate_separate_code_channel"] is True
     matrices[0]["coderankembed"] = metrics(0.4, 0.5)
     assert benchmark.activation_decision(matrices)["activate_separate_code_channel"] is False
+
+
+def test_core_multilingual_matrix_and_extension_gaps_are_explicit():
+    report = benchmark.language_coverage()
+    assert report["status"] == "coverage_gap"
+    assert report["code_rank_activated"] is False
+    assert all(f"{language} goldset is absent" in report["coverage_gaps"]
+               for language in ("typescript", "rust", "swift", "dart_flutter", "java", "go"))
+    assert report["languages"]["python"]["status"] == "available"
+    assert report["declarative_fixture_languages"] == ("sql", "shell", "yaml", "hcl")
+    assert report["extensible_language_gaps"] == ("c_cpp", "csharp", "php", "kotlin", "ruby")

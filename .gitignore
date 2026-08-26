@@ -59,6 +59,7 @@ eilmeldung_eskalation.jsonl
 sichtbarkeit_stand/
 *.nulllinie
 knowledge.db.vor-*
+.brainlehr-commit-acks.jsonl
 
 # Neuheitsfilter des Vorschlagsmelders (Auftrag 84) -- aktueller
 # Kandidatenstand, kein Verlauf, geht bei Verlust hoechstens auf "alles

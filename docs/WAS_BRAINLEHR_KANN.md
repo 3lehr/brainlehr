@@ -1,16 +1,16 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-25T21:09:51+0200 (Stand `e6e165e9`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-08-26T10:42:05+0200 (Stand `dc3a6f56`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 
 | | |
 |---|---:|
-| Werkzeuge über MCP | 36 |
-| Melder | 61, davon verdrahtet 24 |
+| Werkzeuge über MCP | 40 |
+| Melder | 62, davon verdrahtet 24 |
 | Haken | 23, davon verdrahtet 13 |
-| Kernmodule | 122 |
-| Module mit Selbsttest | 149 von 206 |
+| Kernmodule | 134 |
+| Module mit Selbsttest | 149 von 219 |
 
 ## Werkzeuge — was ein Klient aufrufen kann
 
@@ -46,11 +46,15 @@ Das ist die Bedienoberfläche von brainlehr. Jede Zeile kommt aus der Werkzeugta
 | `lesson_query` | Query lessons learned |
 | `lesson_record` | Record a lesson learned |
 | `lesson_update` | Correct or delete a recorded lesson |
+| `project_boundary` | Return one token-capped request boundary for plan/read/edit/build/test/commit |
 | `project_change` | After a verified commit, store one compact change receipt and compute the complete transitive chain of statically proven Python import consumers |
+| `project_commit_ack` | Append one explicit local acknowledgement for the current staged tree |
+| `project_commit_gate` | Read-only check of the opt-in staged-tree gate |
 | `project_context` | Load task context progressively and token-efficiently |
 | `project_ensure` | Idempotently adopt or initialize a Git project for Brainlehr |
 | `prompt_invarianz_planen` | Waehlt off, light oder strong fuer eine Bewertung, Rangfolge oder Entscheidung. |
 | `prompt_invarianz_pruefen` | Prueft evidenzbelegte Vergleichslaeufe auf Stabilitaet und Reihenfolgeeffekte. |
+| `session_agent_reuse` | Recommend reuse, refresh-delta or a fresh agent from compact technical checkpoint state |
 | `session_checkpoint_lesen` | Liest einen Checkpoint und gibt optional eine deterministische Chatwechsel-Empfehlung. |
 | `session_checkpoint_schliessen` | Löscht den temporären Checkpoint einer beendeten Sitzung idempotent. |
 | `session_checkpoint_setzen` | Setzt einen temporären technischen Sitzungscheckpoint ohne Freitext, Recall oder Modellaufruf. |
@@ -70,6 +74,7 @@ Ein Melder ohne Auslöser zählt als keiner. Die Spalte **wirkt** sagt, ob er ta
 | `melder/auftragsregister.py` | Anweisungsregister | — | ja | — |
 | `melder/ausloeserlos.py` | Meldet Mechanismen unter melder/, haken/, berichte/, die NIE von selbst | SessionStart | ja | — |
 | `melder/bewegungsmelder.py` | Haelt die Zahlen der anderen Melder fest und meldet beim naechsten Lauf | SessionStart | ja | — |
+| `melder/client_bootstrap.py` | Generate the three thin public client adapters from one policy bundle | — | — | — |
 | `melder/derivatfrische.py` | Meldet abgeleitete Dokumente, die AELTER sind als ihre Quelle | SessionStart | ja | — |
 | `melder/dienstwache.py` | Wacht ueber den Dokumentdienst | SessionStart | ja | — |
 | `melder/dokumentzugang.py` | Linie A aus docs/PLAN_DOKUMENTABLAGE_2026-08-16.md | — | — | — |
@@ -159,6 +164,8 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 |---|---|---|
 | `kern/abloesung.py` | Eine Abloesung ist selbst ein Wissensgegenstand | ja |
 | `kern/abrufguete.py` | Abrufguete auf dem Pruefkorpus (runs/pruefkorpus.jsonl, 45 Faelle) -- | ja |
+| `kern/actor_project_boundary.py` | Fail-closed local actor/project checks | — |
+| `kern/analyzer_registry.py` | Optional local analyzer registry: explicit commands, timeout and no fallback | — |
 | `kern/anfrage_erweiterung.py` | anfrage_erweiterung.py | ja |
 | `kern/ankerverfahren.py` | Ankerverfahren | ja |
 | `kern/anmeldung.py` | Einen Teilnehmer anmelden | ja |
@@ -177,8 +184,11 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/build_embeddings.py` | build_embeddings.py | — |
 | `kern/build_node_index.py` |  | ja |
 | `kern/codekanten.py` | Welche Datei betrifft diese Lehre | ja |
+| `kern/codeql_policy.py` | Explicit eligibility gate for optional CodeQL SARIF evidence | — |
 | `kern/codestand.py` | Ermittelt den Codestand (Commit, Zweig, schmutzig) zur LAUFZEIT fuer | — |
 | `kern/connector_register.py` | connector_register.py | — |
+| `kern/coverage_provenance.py` | Conservative coverage provenance for code evidence | — |
+| `kern/dependency_evidence.py` | Small, offline dependency evidence reader | — |
 | `kern/designtokens_latex.py` | LaTeX-Erzeuger fuer den Gestaltungsvorrat (ADR-015) | ja |
 | `kern/doctor.py` | doctor | — |
 | `kern/dokument.py` | Der Baustein-Vertrag, abgebildet auf ein CRDT-Dokument | ja |
@@ -192,6 +202,8 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/embeddings.py` | Lokale Embeddings via Ollama + Brute-Force-Cosine-Fusion mit FTS5/LIKE | — |
 | `kern/endgueltig_entfernen.py` | endgueltig_entfernen.py | ja |
 | `kern/eskalation_vorlage.py` |  | — |
+| `kern/evidence_adapters.py` | Normalize bounded, revision-tagged evidence from optional local analyzers | — |
+| `kern/evidence_graph.py` | Canonical graph-v2 merge/reconciliation without analyzer execution or writes | — |
 | `kern/fenstergroesse.py` | Misst, ab welcher Ollama-Kontextfenstergroesse (num_ctx) brainlehr nicht | ja |
 | `kern/fix_namensraum_knoten.py` | fix_namensraum_knoten.py | — |
 | `kern/fremdimport.py` | Fremdbestände holen | ja |
@@ -201,6 +213,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/gegenstand_plankennungen.py` | Die Plankennungen als GEGENSTAENDE | ja |
 | `kern/geheimnis.py` | geheimnis.py | — |
 | `kern/geltungsbereich.py` | geltungsbereich.py | — |
+| `kern/graph_envelope_store.py` | Small, atomic JSON store for revision-bound graph envelopes | — |
 | `kern/hebb_kanten.py` | Hebbsche Kanten: recall_log.jsonl -> knowledge_relations | ja |
 | `kern/herkunft_belegung.py` | herkunft_belegung.py | ja |
 | `kern/herkunft_normentscheider.py` | Wer hat entschieden | ja |
@@ -235,7 +248,10 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/planentscheidung.py` | Erzeugt Knoten aus ENTSCHEIDENDEN Planabschnitten und schreibt die | ja |
 | `kern/planordnung.py` | Ein Plan ist eine FOLGE, der Wissensspeicher eine MENGE (Auftrag | ja |
 | `kern/planstatus.py` | Ablage fuer ERLEDIGUNG eines Planabschnitts | ja |
+| `kern/project_analysis_loop.py` | Small in-memory cadence controller for revision-bound code analysis | — |
+| `kern/project_boundary_cli.py` | CLI entry point for the client-neutral, request-local boundary contract | — |
 | `kern/project_context.py` | Small, client-neutral project capsule and bounded code probe | — |
+| `kern/project_impact_cli.py` | Render a revision-bound impact graph from the same typed JSON used by MCP | — |
 | `kern/prompt_invarianz.py` | Deterministisches Routing fuer prompt-sensible Entscheidungen | — |
 | `kern/pruefkorpus.py` | Pruefkorpus fuer Abrufguete (Plan hub/docs/PLAN_ABRUFGUETE_2026-08-07.md | ja |
 | `kern/pruefkorpus_rivalen.py` | Pruefkorpus mit erzwungenen Rivalinnen (AUFGABE 68) | ja |
@@ -245,6 +261,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/raum_daten.py` | raum_daten.py | ja |
 | `kern/regelpaket.py` | regelpaket.py | ja |
 | `kern/reifegrad.py` | reifegrad.py | ja |
+| `kern/release_identity.py` | Offline, deterministic release identity evidence | — |
 | `kern/relevanzlage.py` | Sagen, wie belastbar ein Suchergebnis ist | — |
 | `kern/risikoeinstufung.py` | risikoeinstufung.py | — |
 | `kern/rueckwirkung.py` | Gemeinsame Bauform fuer Rueckwirkungs-Zaehler | ja |

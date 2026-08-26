@@ -52,8 +52,51 @@ def test_rollover_gate_is_deterministic():
     assert sc.empfehlen(checkpoint, "topic-new456") == {
         "action": "recommend_new_chat", "recommend_new_chat": True, "pending_child_ids": []
     }
+
+
+def test_agent_reuse_recommendation_is_compact_and_never_spawns():
+    checkpoint = _payload(
+        role_capability="terra-code", source_revision="abc123",
+        used_knowledge_ids=["node-1", "L-lesson-1"], open_gate_ids=["BDW-P35"],
+    )
+    same = sc.reuse_empfehlen(checkpoint, project_id="brainlehr", task_fingerprint="topic-abc123",
+                              role_capability="terra-code", source_revision="abc123")
+    assert same["action"] == "reuse_followup"
+    assert same["load"] == "direct_neighbors_only"
+    assert set(same["checkpoint"]) == {
+        "project_id", "task_fingerprint", "role_capability", "source_revision",
+        "used_node_or_lesson_ids", "open_gate_ids", "terminal_state"}
+    assert sc.reuse_empfehlen(checkpoint, project_id="brainlehr", task_fingerprint="topic-abc123",
+                              role_capability="terra-code", source_revision="def456")["action"] == "refresh_delta"
+    assert sc.reuse_empfehlen(checkpoint, project_id="brainlehr", task_fingerprint="topic-abc123",
+                              role_capability="terra-code", source_revision="abc123",
+                              independent_review=True)["action"] == "fresh_agent"
+    assert sc.reuse_empfehlen(_payload(context_fraction=.8, role_capability="terra-code", source_revision="abc123"),
+                              project_id="brainlehr", task_fingerprint="topic-abc123",
+                              role_capability="terra-code", source_revision="abc123")["reason"] == "context saturation"
     blocked = sc.empfehlen(_payload(unresolved_evidence_ids=["EVIDENCE-OPEN-1"]), "topic-new456")
     assert blocked["action"] == "complete_handoff" and not blocked["recommend_new_chat"]
+
+
+def test_agent_capability_registry_reuses_only_compatible_entry():
+    registry = sc.AgentCapabilityRegistry()
+    entry = registry.register(agent_id="terra-1", task_id="task-1", project_id="brainlehr",
+                              task_fingerprint="topic-1", role_capability="terra-code",
+                              source_revision="rev-1", tree_hash="tree-1",
+                              checkpoint_session_id="session-1", open_gate_ids=["BDW-P48"])
+    assert entry.agent_id == "terra-1"
+    same = registry.recommend(project_id="brainlehr", task_fingerprint="topic-1",
+                              role_capability="terra-code", source_revision="rev-1", tree_hash="tree-1")
+    assert same == {"action": "reuse_followup", "load": "direct_neighbors_only",
+                    "agent_id": "terra-1", "task_id": "task-1"}
+    assert registry.recommend(project_id="brainlehr", task_fingerprint="topic-1",
+                              role_capability="terra-code", source_revision="rev-2", tree_hash="tree-2")["action"] == "refresh_delta"
+    assert registry.recommend(project_id="brainlehr", task_fingerprint="topic-1",
+                              role_capability="terra-review", source_revision="rev-1", tree_hash="tree-1")["action"] == "fresh_agent"
+    assert registry.recommend(project_id="brainlehr", task_fingerprint="topic-1",
+                              role_capability="terra-code", source_revision="rev-1", tree_hash="tree-1",
+                              independent_review=True)["action"] == "fresh_agent"
+    assert "checkpoint_session_id" in registry.get("brainlehr", "topic-1")
 
 
 @pytest.mark.parametrize(
@@ -86,6 +129,11 @@ def test_mcp_contract_and_agent_rules(monkeypatch, tmp_path):
     properties = kms.TOOLS["session_checkpoint_setzen"]["inputSchema"]["properties"]
     assert "raw_prompt" not in properties and "transcript" not in properties
     assert kms.TOOLS["session_checkpoint_setzen"]["inputSchema"]["additionalProperties"] is False
+    reuse = kms.TOOLS["session_agent_reuse"]["handler"]({
+        "session_id": "session-1", "project_id": "brainlehr", "task_fingerprint": "topic-abc123",
+        "role_capability": "terra-code", "source_revision": "abc123"})
+    assert reuse["action"] == "fresh_agent"
+    assert "raw_prompt" not in kms.TOOLS["session_agent_reuse"]["inputSchema"]["properties"]
 
 
 def test_agent_templates_share_checkpoint_rule():

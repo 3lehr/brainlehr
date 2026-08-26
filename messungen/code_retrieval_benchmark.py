@@ -26,6 +26,32 @@ QUERY_PREFIX = "Represent this query for searching relevant code: "
 MAX_CHUNK_CHARS = 12000
 BATCH_SIZE = 4
 CODE_MATRIX_IDS = frozenset({"en_prose_to_python", "de_prose_to_python", "code_signature_to_python"})
+# Frozen scope: language claims require their own goldset; Python results never
+# stand in for another language.
+LANGUAGE_MATRIX_MANIFEST = {
+    "python": {"goldset": str(GOLDSET), "status": "available"},
+    "typescript": {"goldset": None, "status": "coverage_gap"},
+    "rust": {"goldset": None, "status": "coverage_gap"},
+    "swift": {"goldset": None, "status": "coverage_gap"},
+    "dart_flutter": {"goldset": None, "status": "coverage_gap"},
+    "java": {"goldset": None, "status": "coverage_gap"},
+    "go": {"goldset": None, "status": "coverage_gap"},
+}
+
+DECLARATIVE_FIXTURE_LANGUAGES = ("sql", "shell", "yaml", "hcl")
+EXTENSIBLE_LANGUAGE_GAPS = ("c_cpp", "csharp", "php", "kotlin", "ruby")
+
+
+def language_coverage() -> dict:
+    """Report frozen language scope without invoking a model or CodeRank."""
+    gaps = [f"{language} goldset is absent" for language, spec in LANGUAGE_MATRIX_MANIFEST.items()
+            if spec["status"] != "available"]
+    return {"status": "coverage_gap" if gaps else "bounded",
+            "languages": LANGUAGE_MATRIX_MANIFEST,
+            "declarative_fixture_languages": DECLARATIVE_FIXTURE_LANGUAGES,
+            "extensible_language_gaps": EXTENSIBLE_LANGUAGE_GAPS,
+            "coverage_gaps": gaps,
+            "code_rank_activated": False}
 
 
 def _git(*args: str) -> str:

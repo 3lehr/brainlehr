@@ -1,0 +1,7 @@
+{
+  "source": "tree-sitter",
+  "language": "javascript",
+  "revision": "fixture-tree-sitter-r1",
+  "node": {"type": "function_declaration", "name": "render", "start_byte": 0, "end_byte": 28},
+  "edges": [{"type": "calls", "from": "render", "to": "escape"}]
+}
