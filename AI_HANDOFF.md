@@ -1,5 +1,12 @@
 # AI handoff
 
+## 2026-08-26T11:15:00+0200 — docs(guard): record immutable P30 plan-gate finding
+
+- Files: `docs/ablauf_vermerke.json` and this handoff.
+- Why: The verified P30 commit was already written without naming its plan/ADR, so `melder/ablaufpflicht.py` correctly reported the formal gap. History is not rewritten because its append-only receipt already exists.
+- Decision: Keep the finding visible and answer it with the repository's append-only guard record; the exact P30 requirement and architecture decision remain in the commit diff.
+- Verified: `python3 melder/ablaufpflicht.py origin/brainlehr/b4-ausweis..HEAD` reports the finding as noted; JSON parse and `git diff --check` pass.
+
 ## 2026-08-26T11:00:00+0200 — test(code-retrieval): retain only the measured baseline
 
 - Files: `tests/fixtures/code_retrieval_goldset.json`, `messungen/code_retrieval_benchmark.py`, P30 requirements/decision documentation, and focused tests.
