@@ -740,3 +740,11 @@ cd /Volumes/daten/Begod2026/brainlehr/app
   integrity `ok`, FK `0`, `historical_unresolved=50`, and healthy current segment.
 - Remaining risk: the local digest is not an external TSA/signature; remaining historic classes
   are deliberately unresolved. P2 dashboard/feedback redesign is not part of this release slice.
+
+# 2026-08-26T22:00:00+0200 — fix(hermes): fail closed on missing agent context
+
+- Files: `integrations/hermes/plugin/brainlehr_provider.py`, `tests/test_hermes_plugin.py`.
+- Why: installed Hermes routes must explicitly pass `agent_context`; missing, empty, unknown, cron, subagent, oneshot, and background labels must never inherit foreground write permission.
+- Verified: focused context tests `10 passed`; full plugin suites `60 passed`; installed symlink path matrix on Python 3.11/3.12/3.13 `54 passed` each; `git diff --check` passed.
+- Remaining risk: Hermes `skip_memory=True` routes do not instantiate an external provider; full process/restart E2E remains outside this adapter seam.
+- Brainlehr evidence used: `73a222b` source-of-truth behavior commit; near miss `L-e95b8a`.

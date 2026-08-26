@@ -601,7 +601,7 @@ class BrainlehrProvider(MemoryProvider):
         self._sitzung = session_id
         # Nur der Hauptlauf schreibt. Cron und Unteragenten lesen mit,
         # tragen aber nichts ein -- ihre Systemprompts sind kein Wissen.
-        self.darf_schreiben = kwargs.get("agent_context", "primary") == "primary"
+        self.darf_schreiben = kwargs.get("agent_context", "") == "primary"
         self._zug = 0
         self._gemeldet = False
         # Einmal je Sitzung gelesen, nicht je Zug: sync_turn laeuft nach JEDEM
@@ -778,7 +778,8 @@ class BrainlehrProvider(MemoryProvider):
 
     def sync_turn(self, user_content: str, assistant_content: str, *,
                   session_id: str = "",
-                  messages: Optional[List[Dict[str, Any]]] = None) -> None:
+                  messages: Optional[List[Dict[str, Any]]] = None,
+                  agent_context: str = "") -> None:
         """Nach jedem Zug. Per Vorgabe entsteht hier KEIN Eintrag.
 
         DIE ENTSCHEIDUNG, und warum sie nicht "Methode weglassen" lautet:
@@ -798,6 +799,7 @@ class BrainlehrProvider(MemoryProvider):
         Nicht blockierend: der Schreibvorgang laeuft im Hintergrund, wie schon
         der Abruf. Die Schnittstelle verlangt das ausdruecklich."""
         self._zug += 1
+        self.darf_schreiben = agent_context == "primary"
 
         if not self.darf_schreiben:
             self.mitschrift_grund = (

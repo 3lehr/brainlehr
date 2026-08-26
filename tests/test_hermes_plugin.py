@@ -164,6 +164,45 @@ def test_schreibt_nicht_aus_nebenlaeufigen_kontexten():
     assert p2.darf_schreiben is True
 
 
+def test_fehlender_agent_context_ist_fail_closed():
+    """Ohne die echte Hermes-Kontextweitergabe darf nichts geschrieben werden."""
+    provider = bp.BrainlehrProvider()
+    provider.initialize("s", hermes_home="/tmp", platform="cli")
+    assert provider.darf_schreiben is False
+
+
+@pytest.mark.parametrize("context", ["", "unknown"])
+def test_sync_turn_verweigert_leeren_und_unbekannten_agent_context(context):
+    """Ein fehlendes oder unbekanntes Hermes-Label darf kein altes Recht erben."""
+    provider = _provider_mit_fake(mitschrift=True)
+    provider._mitschreiben = lambda *args: pytest.fail("unguarded context wrote")
+    provider.sync_turn("Eine echte Frage?", "Eine echte Antwort.",
+                       agent_context=context)
+    assert provider.darf_schreiben is False
+    assert _schreibrufe(provider) == []
+
+
+def test_sync_turn_verwendet_den_hermes_agent_context_aus_der_turn_route():
+    """The captured Hermes label is the write gate for foreground turns."""
+    provider = _provider_mit_fake(mitschrift=True)
+    provider.sync_turn("Eine echte Frage?", "Eine echte Antwort.",
+                       agent_context="primary")
+    assert len(_schreibrufe(provider)) == 1
+
+
+@pytest.mark.parametrize("context", [
+    "cron", "subagent", "oneshot", "background_review", "unknown", "",
+])
+def test_turn_capture_rechecks_actual_nonforeground_context(context):
+    """A late lifecycle label cannot inherit an earlier primary write right."""
+    provider = _provider_mit_fake(mitschrift=True)
+    provider._mitschreiben = lambda *args: pytest.fail("non-foreground turn wrote")
+    provider.sync_turn("Eine echte Frage?", "Eine echte Antwort.",
+                       agent_context=context)
+    assert provider.darf_schreiben is False
+    assert _schreibrufe(provider) == []
+
+
 def _lade_config_schema():
     """Laedt config_schema.py GENAU WIE HERMES ES TUT: per Dateipfad via
     importlib, nicht per Paketimport (siehe get_provider_config_schema in
@@ -429,7 +468,8 @@ def test_sync_turn_schreibt_per_vorgabe_nichts(caplog):
     import logging
     p = _provider_mit_fake(mitschrift=False)
     with caplog.at_level(logging.INFO):
-        p.sync_turn("Wie hoch ist die Schwelle?", "Sie liegt bei 0,65.")
+        p.sync_turn("Wie hoch ist die Schwelle?", "Sie liegt bei 0,65.",
+                    agent_context="primary")
     assert _schreibrufe(p) == [], "per Vorgabe darf nichts entstehen"
     assert p.mitschrift_grund, "ein stummes Nichtstun ist ausdruecklich unzulaessig"
     assert any("mitschrift" in r.getMessage().lower() for r in caplog.records), \
@@ -441,7 +481,8 @@ def test_sync_turn_schreibt_eingeschaltet_mit_weg_als_herkunft():
     (Sitzung, Zug, Zeitpunkt), nicht eine behauptete Quelle. Dieselbe Trennung
     wie bei Fremdimporten (`BDW-P12`)."""
     p = _provider_mit_fake(mitschrift=True)
-    p.sync_turn("Wie hoch ist die Schwelle?", "Sie liegt bei 0,65.")
+    p.sync_turn("Wie hoch ist die Schwelle?", "Sie liegt bei 0,65.",
+                agent_context="primary")
     rufe = _schreibrufe(p)
     assert len(rufe) == 1, "genau ein Eintrag je Zug"
     quelle = rufe[0]["source"]
@@ -458,7 +499,7 @@ def test_behauptete_quelle_wird_abgewiesen():
     assert not bp._ist_weg_herkunft("")
     p = _provider_mit_fake(mitschrift=True)
     p._herkunft_bauer = lambda *a, **k: "laut dem Betreiber"
-    p.sync_turn("Frage", "Antwort")
+    p.sync_turn("Frage", "Antwort", agent_context="primary")
     assert _schreibrufe(p) == [], \
         "eine behauptete Quelle muss den Schreibvorgang verhindern"
 
@@ -467,7 +508,7 @@ def test_sync_turn_schweigt_in_nebenlaeufigen_kontexten():
     """Auch eingeschaltet schreibt ein Cron-Lauf nicht -- dieselbe Schranke,
     die schon fuer brainlehr_merken gilt."""
     p = _provider_mit_fake(mitschrift=True, kontext="cron")
-    p.sync_turn("Frage", "Antwort")
+    p.sync_turn("Frage", "Antwort", agent_context="cron")
     assert _schreibrufe(p) == []
 
 
@@ -647,7 +688,8 @@ def test_beide_schreibwege_haengen_an_denselben_vorhandenen_elternknoten():
     p = _provider_mit_fake(mitschrift=True)
     p.handle_tool_call("brainlehr_merken",
                        {"titel": "t", "inhalt": "i", "herkunft": "h"})
-    p.sync_turn("Eine Frage von ausreichender Laenge?", "Eine Antwort.")
+    p.sync_turn("Eine Frage von ausreichender Laenge?", "Eine Antwort.",
+                agent_context="primary")
     if p._faden is not None:
         p._faden.join(timeout=2)
     import time
@@ -677,7 +719,8 @@ def test_beide_schreibwege_haengen_an_denselben_vorhandenen_elternknoten():
     p = _provider_mit_fake(mitschrift=True)
     p.handle_tool_call("brainlehr_merken",
                        {"titel": "t", "inhalt": "i", "herkunft": "h"})
-    p.sync_turn("Eine Frage von ausreichender Laenge?", "Eine Antwort.")
+    p.sync_turn("Eine Frage von ausreichender Laenge?", "Eine Antwort.",
+                agent_context="primary")
     for _ in range(40):                      # der Schreibvorgang laeuft nebenher
         if len(_schreibrufe(p)) >= 2:
             break
