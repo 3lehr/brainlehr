@@ -1,5 +1,11 @@
 # AI handoff
 
+## 2026-08-26T11:25:00+0200 — chore(project): complete declared local tools
+
+- Files: `.brainlehr.json` and this handoff.
+- Why: The live project adoption found the two installed entry points that the capsule had not declared. The existing planned runtime-evidence declaration remains unchanged.
+- Verified: `project_ensure` discovers the two commands and retains the explicit planned runtime-trace boundary; focused 38-test suite, capability map, document gate, plan gate, and `git diff --check` pass.
+
 ## 2026-08-26T11:15:00+0200 — docs(guard): record immutable P30 plan-gate finding
 
 - Files: `docs/ablauf_vermerke.json` and this handoff.

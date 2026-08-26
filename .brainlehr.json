@@ -3,6 +3,20 @@
   "schema": 1,
   "tools": [
     {
+      "capability": "brainlehr einrichten",
+      "command": "brainlehr-einrichten",
+      "id": "brainlehr-einrichten",
+      "source": "pyproject.toml [project.scripts]",
+      "status": "available"
+    },
+    {
+      "capability": "brainlehr mcp",
+      "command": "brainlehr-mcp",
+      "id": "brainlehr-mcp",
+      "source": "pyproject.toml [project.scripts]",
+      "status": "available"
+    },
+    {
       "artifact": "verified trace or test",
       "capability": "verify runtime input output and timing dependencies",
       "covers": [
