@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-26T09:30:00+0200 — docs(public-context): record final hardened snapshot
+
+- Files: `docs/public-knowledge/brainlehr-context.json`, `docs/karten/bestand.{md,json}`, `docs/ablauf_vermerke.json`, and this handoff.
+- Why: The public snapshot was regenerated only after its allowlisted source commit `48b130ac` existed, so `source_git_commit` is reproducible; the changed public nodes also update the generated inventory map.
+- Verified: the exporter returned `written` then `current`; `python3 melder/kartenstand.py --still` returned `demo: ok`.
+- Guard record: `ec382fcb` predates its complete plan reference in its message; its explicit ADR/requirements evidence and immutable receipt are recorded in `docs/ablauf_vermerke.json` instead of rewriting history.
+- Remaining risk: the public snapshot deliberately describes only static-analysis limits. Runtime, build and schema dependencies need separately registered analyzers.
+
 ## 2026-08-26T09:14:00+0200 — docs(requirements): refresh P23–P28 gate counts
 
 - Files: `docs/REQUIREMENTS_BRAINLEHR.md` and this handoff.

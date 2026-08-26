@@ -6,7 +6,7 @@
 graph LR
   germanquad["germanquad<br/>2713"]
   nasa_llis["nasa-llis<br/>1638"]
-  brainlehr["brainlehr<br/>329"]
+  brainlehr["brainlehr<br/>330"]
   methodik["methodik<br/>174"]
   apps["apps<br/>112"]
   ops["ops<br/>94"]
@@ -21,8 +21,8 @@ graph LR
   testing["testing<br/>8"]
   frontend["frontend<br/>7"]
   agents["agents<br/>7"]
+  projects["projects<br/>5"]
   domaenen["domaenen<br/>5"]
-  projects["projects<br/>4"]
   backend["backend<br/>4"]
   lessons["lessons<br/>3"]
   dokumente["dokumente<br/>3"]

@@ -5,28 +5,28 @@
       "path": "/brainlehr/faehigkeiten",
       "summary": "Was kannst du? Was kann brainlehr? Faehigkeiten, Uebersicht, Hilfe, Funktionen, wozu ist das gut, was leistet es, wobei hilft es.",
       "title": "Was kann brainlehr? — Uebersicht der Faehigkeiten",
-      "updated_at": "2026-08-25T19:14:07Z"
+      "updated_at": "2026-08-26T03:26:57Z"
     },
     {
       "content": "Brainlehr is a local SQLite knowledge service exposed through MCP. It keeps semantic nodes and lessons separate, searches them with full text plus local embeddings, and records explicit provenance and relations. Public descriptions are generated from verified project artifacts; they do not include a user database.",
       "path": "/brainlehr/faehigkeiten/public-architecture",
       "summary": "Local-first architecture for the public release.",
       "title": "Public architecture",
-      "updated_at": "2026-08-25T19:30:54Z"
+      "updated_at": "2026-08-26T03:26:57Z"
     },
     {
-      "content": "A client first ensures a compact project capsule, then loads task context in stages: summaries, selected direct relations, and selected full text. After a verified commit it records the affected files, checks transitive static consumers, and curates a semantic conclusion separately. Static imports and semantic similarity are never presented as runtime data flow.",
+      "content": "A client first ensures a compact project capsule, then loads task context in stages: summaries, selected direct relations, and selected full text. After a verified commit it records the affected files, checks transitive static consumers, and curates a semantic conclusion separately. Receipts name their static analyzer and supersede corrections without erasing them. Static imports and semantic similarity are never presented as runtime data flow; unsupported forms remain coverage gaps.",
       "path": "/brainlehr/faehigkeiten/public-workflow",
       "summary": "Verified workflow for project-aware coding.",
       "title": "Public workflow",
-      "updated_at": "2026-08-25T19:30:54Z"
+      "updated_at": "2026-08-26T03:26:57Z"
     }
   ],
   "project_id": "brainlehr",
   "provenance": {
     "allowlist": "docs/public-knowledge/brainlehr-nodes.json",
     "exporter": "pflege/export_public_context.py",
-    "git_commit": "8443aae5d6f0322effe998b498b502203561048f"
+    "source_git_commit": "48b130ac7c20a1c7b98e2573d2b5070064391e01"
   },
   "schema": 1
 }
