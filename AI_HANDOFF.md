@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-26T22:30:00+0200 — docs(retrieval): defer CodeRank tranche
+
+- P30/P31 bleiben mit bestehenden IDs kanonisch; der aktuelle BGE-M3 PASS-Baseline-Befund bleibt unverändert und behauptet keine CodeRank-Aktivierung.
+- BGE-M3 bleibt Prosa/Wissen; CodeRank ist nur ein separater komplementärer Code-Spezialist. H0 ist kein Fusionsnutzen; H1 verlangt einzigartige relevante CodeRank-Treffer und rank-only Fusion besser als BGE-only und CodeRank-only auf einem versiegelten Code-Test.
+- Die nächste Tranche muss Prosa-Routing/-Ranking BGE-identisch, getrennte Vektorräume, finite vorab deklarierte Dev-only gewichtete-RRF-/Router-Parameter, genau einen versiegelten Test, exakten Missing/Stale-Fallback, Full-Repo-Train/Dev/Test, Zeit/RAM, leave-one-repo-out, leak-freie DE/EN-Prosa-/Code-/Signatur-/Consumer-/Fehler-/Impact-/No-hit-Matrizen, Betriebs-/Index-/Security-/Staleness-/Leak-Gates und die Ablation `stripped`/`comments-only`/`combined` belegen.
+- Kein Modell-Download, keine Aktivierung, kein Tuning und keine Änderung am aktuellen PASS-Baseline-Status in dieser Tranche.
+
+
 ## 2026-08-26T22:02:00+0200 — docs(requirements): verify P74 Hermes runtime
 
 - Files: `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
