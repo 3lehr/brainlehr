@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Measure a local code embedder against BGE-M3 on a frozen code goldset.
+"""Measure local code retrieval against BGE-M3 on frozen modality matrices.
 
-The goldset fixes prompts and target symbols; source chunks always come from
-the requested Git revision.  No vector is written to brainlehr.db and model
-artifacts are deliberately external to this repository.
+Source chunks come from one Git revision, stay below the model ceiling, and no
+vector or model artifact is written to the repository or brainlehr.db.
 """
 from __future__ import annotations
 
@@ -25,6 +24,8 @@ import embeddings  # noqa: E402
 GOLDSET = ROOT / "tests" / "fixtures" / "code_retrieval_goldset.json"
 QUERY_PREFIX = "Represent this query for searching relevant code: "
 MAX_CHUNK_CHARS = 12000
+BATCH_SIZE = 4
+CODE_MATRIX_IDS = frozenset({"en_prose_to_python", "de_prose_to_python", "code_signature_to_python"})
 
 
 def _git(*args: str) -> str:
@@ -33,31 +34,25 @@ def _git(*args: str) -> str:
 
 
 def _chunks(revision: str, paths: list[str]) -> dict[str, str]:
+    """Top-level source, keyed externally so paths never enter model input."""
     chunks: dict[str, str] = {}
     for path in paths:
         source = _git("show", f"{revision}:{path}")
         tree = ast.parse(source, filename=path)
         lines = source.splitlines(keepends=True)
         for node in tree.body:
-            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                continue
-            if not getattr(node, "end_lineno", None):
-                continue
-            text = "".join(lines[node.lineno - 1:node.end_lineno])
-            # The model has an 8192-token ceiling.  A few orchestration
-            # functions are much larger, so a bounded prefix is an explicit
-            # benchmark/index policy, never an accidental allocator failure.
-            chunks[f"{path}#{node.name}"] = f"# {path}#{node.name}\n{text[:MAX_CHUNK_CHARS]}"
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and getattr(node, "end_lineno", None):
+                chunks[f"{path}#{node.name}"] = "".join(lines[node.lineno - 1:node.end_lineno])[:MAX_CHUNK_CHARS]
     return chunks
 
 
 def load_goldset(path: Path = GOLDSET) -> dict:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schema") != 1 or not isinstance(data.get("candidate_paths"), list):
-        raise ValueError("code goldset requires schema=1 and candidate_paths")
-    cases = data.get("cases")
-    if not isinstance(cases, list) or not cases:
-        raise ValueError("code goldset requires cases")
+    required = {"candidate_paths", "prose_candidates", "matrices"}
+    if data.get("schema") != 2 or not required <= set(data):
+        raise ValueError("code goldset requires schema=2 and all candidate/matrix fields")
+    if not data["matrices"] or not all(matrix.get("cases") and matrix.get("candidate_set") for matrix in data["matrices"]):
+        raise ValueError("each code goldset matrix requires cases and candidate_set")
     return data
 
 
@@ -80,40 +75,38 @@ def evaluate(cases: list[dict], vectors: dict[str, list[float]], query_vectors: 
             if rank is None:
                 raise ValueError(f"target absent from candidate set: {target}")
             positive_ranks.append(rank)
-            rows.append({"id": case["id"], "target": target, "rank": rank,
-                         "top": ordered[0][0], "top_score": ordered[0][1]})
+            rows.append({"id": case["id"], "target": target, "rank": rank, "top": ordered[0][0], "top_score": ordered[0][1]})
         else:
             score = ordered[0][1] if ordered else 0.0
             negative_scores.append(score)
-            rows.append({"id": case["id"], "target": None, "top": ordered[0][0] if ordered else None,
-                         "top_score": score})
-    min_positive_top_score = min(row["top_score"] for row in rows if row["target"] and row["rank"] == 1)
+            rows.append({"id": case["id"], "target": None, "top": ordered[0][0] if ordered else None, "top_score": score})
+    weakest_top1 = min(row["top_score"] for row in rows if row["target"] and row["rank"] == 1)
     return {
-        "positive_n": len(positive_ranks),
+        "positive_n": len(positive_ranks), "negative_n": len(negative_scores),
         "recall_at_1": sum(rank <= 1 for rank in positive_ranks) / len(positive_ranks),
         "recall_at_5": sum(rank <= 5 for rank in positive_ranks) / len(positive_ranks),
         "recall_at_10": sum(rank <= 10 for rank in positive_ranks) / len(positive_ranks),
         "mrr": sum(1 / rank for rank in positive_ranks) / len(positive_ranks),
-        "negative_n": len(negative_scores),
         "negative_max_score": max(negative_scores, default=None),
         "negative_median_score": statistics.median(negative_scores) if negative_scores else None,
-        "negative_false_alarm_rate_at_weakest_top1": (
-            sum(score >= min_positive_top_score for score in negative_scores) / len(negative_scores)
-            if negative_scores else 0.0
-        ),
+        "negative_false_alarm_rate_at_weakest_top1": sum(score >= weakest_top1 for score in negative_scores) / len(negative_scores) if negative_scores else 0.0,
         "rows": rows,
     }
 
 
-def _coderank(path: str, texts: list[str], *, query: bool) -> list[list[float]]:
+def _load_coderank(path: str):
     try:
         from sentence_transformers import SentenceTransformer
     except ImportError as error:
         raise RuntimeError("CodeRankEmbed runtime is unavailable") from error
-    model = SentenceTransformer(path, local_files_only=True, trust_remote_code=True)
+    return SentenceTransformer(path, local_files_only=True, trust_remote_code=True)
+
+
+def _coderank(model_or_path, texts: list[str], *, query: bool) -> list[list[float]]:
+    model = _load_coderank(model_or_path) if isinstance(model_or_path, str) else model_or_path
     payload = [QUERY_PREFIX + text if query else text for text in texts]
     return [list(map(float, row)) for row in model.encode(payload, normalize_embeddings=True,
-                                                            show_progress_bar=False, batch_size=4)]
+                                                            show_progress_bar=False, batch_size=BATCH_SIZE)]
 
 
 def _bge(texts: list[str]) -> list[list[float]]:
@@ -123,40 +116,58 @@ def _bge(texts: list[str]) -> list[list[float]]:
     return [vector for vector in result if vector is not None]
 
 
+def _measure(cases: list[dict], documents: dict[str, str], embed_documents, embed_queries) -> dict:
+    keys = sorted(documents)
+    started = time.perf_counter()
+    document_vectors = embed_documents([documents[key] for key in keys])
+    query_vectors = embed_queries([case["query"] for case in cases])
+    return {"seconds": round(time.perf_counter() - started, 3),
+            "metrics": evaluate(cases, dict(zip(keys, document_vectors)), query_vectors)}
+
+
+def activation_decision(matrices: list[dict]) -> dict:
+    code = [matrix for matrix in matrices if matrix["id"] in CODE_MATRIX_IDS]
+    prose = next(matrix for matrix in matrices if matrix["id"] == "de_brainlehr_prose_to_prose")
+    win = lambda matrix: (matrix["coderankembed"]["metrics"]["recall_at_1"] > matrix["bge_m3"]["metrics"]["recall_at_1"]
+                           and matrix["coderankembed"]["metrics"]["mrr"] > matrix["bge_m3"]["metrics"]["mrr"])
+    prose_ok = (prose["coderankembed"]["metrics"]["recall_at_1"] >= prose["bge_m3"]["metrics"]["recall_at_1"]
+                and prose["coderankembed"]["metrics"]["mrr"] >= prose["bge_m3"]["metrics"]["mrr"])
+    return {"rule": "CodeRankEmbed must strictly beat BGE-M3 in Recall@1 and MRR in every code matrix, while not reducing either metric in the Brainlehr prose matrix.",
+            "code_matrices_win": all(win(matrix) for matrix in code), "prose_nonregression": prose_ok,
+            "activate_separate_code_channel": all(win(matrix) for matrix in code) and prose_ok}
+
+
 def run(model_path: str, revision: str = "HEAD") -> dict:
     goldset = load_goldset()
     revision = _git("rev-parse", revision).strip()
-    chunks = _chunks(revision, goldset["candidate_paths"])
-    targets = {case["target"] for case in goldset["cases"] if case.get("target")}
-    missing = sorted(targets - set(chunks))
-    if missing:
-        raise ValueError("goldset targets missing from revision: " + ", ".join(missing))
-    docs = [chunks[key] for key in sorted(chunks)]
-    keys = sorted(chunks)
-    queries = [case["query"] for case in goldset["cases"]]
-    started = time.perf_counter()
-    bge_docs = _bge(docs)
-    bge_queries = _bge(queries)
-    bge_seconds = time.perf_counter() - started
-    started = time.perf_counter()
-    code_docs = _coderank(model_path, docs, query=False)
-    code_queries = _coderank(model_path, queries, query=True)
-    code_seconds = time.perf_counter() - started
-    return {
-        "schema": 1,
-        "git_commit": revision,
-        "goldset_sha256": hashlib.sha256(GOLDSET.read_bytes()).hexdigest(),
-        "candidate_count": len(keys),
-        "chunking": {"max_chars": MAX_CHUNK_CHARS,
-                     "truncated_chunks": sum(len(text) >= MAX_CHUNK_CHARS for text in chunks.values())},
-        "model": {"id": "nomic-ai/CodeRankEmbed", "license": "MIT", "dimension": len(code_docs[0]),
-                  "query_prefix": QUERY_PREFIX, "model_revision": Path(model_path).name},
-        "bge_m3": {"model": embeddings.model_identity("bge-m3"), "dimension": len(bge_docs[0]),
-                   "seconds": round(bge_seconds, 3),
-                   "metrics": evaluate(goldset["cases"], dict(zip(keys, bge_docs)), bge_queries)},
-        "coderankembed": {"seconds": round(code_seconds, 3),
-                          "metrics": evaluate(goldset["cases"], dict(zip(keys, code_docs)), code_queries)},
-    }
+    python_docs = _chunks(revision, goldset["candidate_paths"])
+    prose_docs = {entry["id"]: entry["text"] for entry in goldset["prose_candidates"]}
+    candidate_sets = {"python": python_docs, "prose": prose_docs}
+    model = _load_coderank(model_path)
+    matrices = []
+    for spec in goldset["matrices"]:
+        docs = candidate_sets.get(spec["candidate_set"])
+        if docs is None:
+            raise ValueError(f"unknown candidate_set: {spec['candidate_set']}")
+        missing = {case["target"] for case in spec["cases"] if case.get("target")} - set(docs)
+        if missing:
+            raise ValueError("goldset targets missing from revision: " + ", ".join(sorted(missing)))
+        matrices.append({key: spec[key] for key in ("id", "language", "query_modality", "document_modality", "candidate_set")}
+                        | {"candidate_count": len(docs), "positive_n": sum(bool(case.get("target")) for case in spec["cases"]),
+                           "negative_n": sum(not case.get("target") for case in spec["cases"]),
+                           "model_prefix_contract": {"bge_m3": {"query_prefix": None, "document_prefix": None},
+                                                     "coderankembed": {"query_prefix": QUERY_PREFIX, "document_prefix": None}},
+                           "bge_m3": _measure(spec["cases"], docs, _bge, _bge),
+                           "coderankembed": _measure(spec["cases"], docs,
+                                                        lambda texts: _coderank(model, texts, query=False),
+                                                        lambda texts: _coderank(model, texts, query=True))})
+    return {"schema": 2, "git_commit": revision, "goldset_sha256": hashlib.sha256(GOLDSET.read_bytes()).hexdigest(),
+            "chunking": {"max_chars": MAX_CHUNK_CHARS, "batch_size": BATCH_SIZE,
+                         "truncated_chunks": sum(len(text) >= MAX_CHUNK_CHARS for text in python_docs.values()),
+                         "python_header_in_model_input": False},
+            "model": {"id": "nomic-ai/CodeRankEmbed", "license": "MIT", "dimension": 768,
+                      "query_prefix": QUERY_PREFIX, "model_revision": Path(model_path).name},
+            "matrices": matrices, "activation": activation_decision(matrices)}
 
 
 def main() -> int:
@@ -167,8 +178,7 @@ def main() -> int:
     args = parser.parse_args()
     if not args.model_path:
         raise SystemExit("--model-path or BRAINLEHR_CODE_MODEL_PATH is required")
-    result = run(args.model_path, args.revision)
-    encoded = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    encoded = json.dumps(run(args.model_path, args.revision), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     if args.out:
         args.out.write_text(encoded, encoding="utf-8")
     print(encoded, end="")

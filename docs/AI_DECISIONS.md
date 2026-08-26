@@ -1,5 +1,14 @@
 # AI architecture decisions
 
+## 2026-08-26 — Retain BGE-M3 after modality-expanded code retrieval measurement
+
+- Context: The first frozen screening set covered only English prose→Python. The operator required language and modality separation plus a Brainlehr-prose nonregression control before any separate code channel could be considered.
+- Decision: Keep BGE-M3 as the only active semantic channel. The frozen benchmark now reports EN prose→Python, DE prose→the same Python candidates, code/signature→Python, and DE Brainlehr prose→prose; CodeRankEmbed is not integrated.
+- Reason: CodeRankEmbed won only code/signature→Python (R@1/MRR 0.70/0.7766 versus BGE-M3 0.60/0.7025). It lost EN prose→Python (0.50/0.6594 versus 0.70/0.7722), DE prose→Python (0.10/0.2536 versus 0.50/0.6684), and the prose control (0.60/0.7183 versus 0.80/0.8750). Thus it fails the predeclared all-code-win and prose-nonregression rule.
+- Rejected alternatives: treat the one code-signature win as sufficient; add a second persistent index anyway; put source paths into model inputs; or invent a CodeRank document prefix. The official model card specifies the query-only prefix `Represent this query for searching relevant code` and encodes code without a document prefix.
+- Verification: `python3 -m pytest -q tests/test_requirements_brainlehr.py tests/test_code_retrieval_benchmark.py` (6 passed); local 52-case run at `/Volumes/daten/code-retrieval-matrices-2026-08-26.json`; outcome recorded in `L-b32c2a`.
+- Boundary: This is a small frozen screening corpus, not a general code-retrieval benchmark or a claim about all languages. Re-run unchanged for each new candidate; only an all-matrix win changes production retrieval.
+
 ## 2026-08-26 — Keep BGE-M3 as the only active semantic channel
 
 - Context: The operator requested a separate local code-retrieval model only if a reproducible local comparison actually wins. CodeRankEmbed is a small MIT candidate (768 dimensions, local weights); it was compared with BGE-M3 on the same frozen 10-positive/3-negative symbol goldset and 181 Python-symbol candidates.

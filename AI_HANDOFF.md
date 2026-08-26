@@ -1,5 +1,14 @@
 # AI handoff
 
+## 2026-08-26T12:15:00+0200 — test(code-retrieval): separate modality matrices
+
+- Files: `tests/fixtures/code_retrieval_goldset.json`, `messungen/code_retrieval_benchmark.py`, P31 requirement/decision documentation, and focused tests.
+- Why: The prior code-model screen measured only English prose→Python. Four frozen matrices now make language, query/document modality, negatives, model prefix and activation rule explicit; Python paths no longer enter candidate model text.
+- Decision: No second channel. CodeRankEmbed only wins code/signature→Python; it loses both prose→Python matrices and the German Brainlehr-prose control, so it fails the declared all-code-win plus prose-nonregression threshold.
+- Verified: focused tests (6 passed); local 52-case run at `/Volumes/daten/code-retrieval-matrices-2026-08-26.json`, with 12k-character chunks and batch size four.
+- Remaining risk: The frozen corpus is a compact screening field, not a universal or production-retrieval quality claim.
+- Next test: rerun all four unchanged matrices against any locally available licensed candidate before changing production retrieval.
+
 ## 2026-08-26T11:35:00+0200 — docs(map): refresh generated inventory
 
 - Files: `docs/karten/bestand.{md,json}` and this handoff.

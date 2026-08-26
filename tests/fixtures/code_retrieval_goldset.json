@@ -1,77 +1,74 @@
 {
-  "schema": 1,
-  "candidate_paths": [
-    "kern/embeddings.py",
-    "kern/project_context.py",
-    "kern/build_embeddings.py",
-    "knowledge_mcp_server.py",
-    "pflege/export_public_context.py"
+  "schema": 2,
+  "candidate_paths": ["kern/embeddings.py", "kern/project_context.py", "kern/build_embeddings.py", "knowledge_mcp_server.py", "pflege/export_public_context.py"],
+  "prose_candidates": [
+    {"id":"prose-01","text":"Ein oeffentlicher Kontext-Export liest nur eine getrackte Allowlist. Private, fehlende oder veraltete Knoten brechen den Export ab."},
+    {"id":"prose-02","text":"Ein Change-Receipt belegt nur statische Python-Importkanten. Laufzeitdatenfluss, I/O und Build-Abhaengigkeiten bleiben ausdruecklich unbelegt."},
+    {"id":"prose-03","text":"Projektkontext wird stufenweise geladen: Kurzfassungen zuerst, dann ausgewaehlte Relationen und zuletzt hoechstens drei explizit gewaehlte Volltexte."},
+    {"id":"prose-04","text":"Das Werkzeugregister trennt verfuegbare Befehle von geplanten Faehigkeiten. Nur verfuegbare Werkzeuge duerfen als aufrufbar erscheinen."},
+    {"id":"prose-05","text":"Ein zweites Embedding-Modell darf nur nach einem reproduzierbaren lokalen Sieg aktiviert werden. Verschiedene Vektorraeume werden nie miteinander verrechnet."},
+    {"id":"prose-06","text":"Beim fehlenden lokalen Embedding-Modell bleibt die Stichwortsuche verfuegbar. Ein Ausfall darf keine erfundene semantische Punktzahl erzeugen."},
+    {"id":"prose-07","text":"Korrekturen an Wissenseintraegen bleiben append-only nachvollziehbar. Ein neuer Receipt ersetzt keine historische Beobachtung stillschweigend."},
+    {"id":"prose-08","text":"Oeffentliche Artefakte enthalten nur freigegebene Inhaltsfelder und sichere Provenienz. Sitzungen, lokale Pfade und Betreiberweisungen gehoeren nicht hinein."},
+    {"id":"prose-09","text":"Statische Importverbraucher sind nach einem Commit pruefpflichtig. Ihre Kante beweist jedoch weder einen Funktionsaufruf noch zeitliches Laufzeitverhalten."},
+    {"id":"prose-10","text":"Ein Benchmark muss positive und negative Faelle, Modellidentitaet, Kandidatenmenge und Laufzeit getrennt ausweisen. Ein fehlendes Modell ist ein sichtbarer Abbruch."}
   ],
-  "cases": [
-    {
-      "id": "code-01",
-      "query": "combine keyword and semantic rankings without comparing their raw scores",
-      "target": "kern/embeddings.py#rrf_fuse"
-    },
-    {
-      "id": "code-02",
-      "query": "return no embedding rather than raising when the local model is unavailable",
-      "target": "kern/embeddings.py#embed_text"
-    },
-    {
-      "id": "code-03",
-      "query": "find direct and indirect Python import consumers after a commit changes files",
-      "target": "kern/project_context.py#impact_chain"
-    },
-    {
-      "id": "code-04",
-      "query": "extract static Python import edges and identify dynamic imports as unsupported",
-      "target": "kern/project_context.py#_python_import_edges"
-    },
-    {
-      "id": "code-05",
-      "query": "search knowledge with FTS and local embeddings while keeping the keyword fallback",
-      "target": "knowledge_mcp_server.py#knowledge_search"
-    },
-    {
-      "id": "code-06",
-      "query": "rank stored embedding vectors by cosine similarity for visible knowledge entries",
-      "target": "knowledge_mcp_server.py#_embedding_ranking"
-    },
-    {
-      "id": "code-07",
-      "query": "export only allowlisted public knowledge and reject stale private content",
-      "target": "pflege/export_public_context.py#export"
-    },
-    {
-      "id": "code-08",
-      "query": "resolve an export path only when it is inside the Git repository and tracked",
-      "target": "pflege/export_public_context.py#_repo_path"
-    },
-    {
-      "id": "code-09",
-      "query": "build the exact text that gets embedded for a knowledge node",
-      "target": "kern/build_embeddings.py#node_text"
-    },
-    {
-      "id": "code-10",
-      "query": "embed a batch and fall back to individual local embedding requests",
-      "target": "kern/build_embeddings.py#_embed_batch"
-    },
-    {
-      "id": "code-neg-01",
-      "query": "calculate a mortgage amortization schedule",
-      "target": null
-    },
-    {
-      "id": "code-neg-02",
-      "query": "render a watercolor landscape image",
-      "target": null
-    },
-    {
-      "id": "code-neg-03",
-      "query": "diagnose an automotive brake fluid leak",
-      "target": null
-    }
+  "matrices": [
+    {"id":"en_prose_to_python","language":"en","query_modality":"prose","document_modality":"python_source","candidate_set":"python","cases":[
+      {"id":"en-code-01","query":"combine keyword and semantic rankings without comparing their raw scores","target":"kern/embeddings.py#rrf_fuse"},
+      {"id":"en-code-02","query":"return no embedding rather than raising when the local model is unavailable","target":"kern/embeddings.py#embed_text"},
+      {"id":"en-code-03","query":"find direct and indirect Python import consumers after a commit changes files","target":"kern/project_context.py#impact_chain"},
+      {"id":"en-code-04","query":"extract static Python import edges and identify dynamic imports as unsupported","target":"kern/project_context.py#_python_import_edges"},
+      {"id":"en-code-05","query":"search knowledge with FTS and local embeddings while keeping the keyword fallback","target":"knowledge_mcp_server.py#knowledge_search"},
+      {"id":"en-code-06","query":"rank stored embedding vectors by cosine similarity for visible knowledge entries","target":"knowledge_mcp_server.py#_embedding_ranking"},
+      {"id":"en-code-07","query":"export only allowlisted public knowledge and reject stale private content","target":"pflege/export_public_context.py#export"},
+      {"id":"en-code-08","query":"resolve an export path only when it is inside the Git repository and tracked","target":"pflege/export_public_context.py#_repo_path"},
+      {"id":"en-code-09","query":"build the exact text that gets embedded for a knowledge node","target":"kern/build_embeddings.py#node_text"},
+      {"id":"en-code-10","query":"embed a batch and fall back to individual local embedding requests","target":"kern/build_embeddings.py#_embed_batch"},
+      {"id":"en-code-neg-01","query":"calculate a mortgage amortization schedule","target":null},
+      {"id":"en-code-neg-02","query":"render a watercolor landscape image","target":null},
+      {"id":"en-code-neg-03","query":"diagnose an automotive brake fluid leak","target":null}]},
+    {"id":"de_prose_to_python","language":"de","query_modality":"prose","document_modality":"python_source","candidate_set":"python","cases":[
+      {"id":"de-code-01","query":"fuehre Stichwort- und Bedeutungsranglisten zusammen, ohne ihre Rohwerte zu vergleichen","target":"kern/embeddings.py#rrf_fuse"},
+      {"id":"de-code-02","query":"liefere keine Einbettung statt einen Fehler aus, wenn das lokale Modell fehlt","target":"kern/embeddings.py#embed_text"},
+      {"id":"de-code-03","query":"finde direkte und indirekte Python-Importverbraucher nach einer Commit-Aenderung","target":"kern/project_context.py#impact_chain"},
+      {"id":"de-code-04","query":"lies statische Python-Importkanten aus und markiere dynamische Importe als nicht abgedeckt","target":"kern/project_context.py#_python_import_edges"},
+      {"id":"de-code-05","query":"suche Wissen mit Volltext und lokalen Einbettungen, ohne den Stichwort-Fallback zu verlieren","target":"knowledge_mcp_server.py#knowledge_search"},
+      {"id":"de-code-06","query":"sortiere gespeicherte Einbettungsvektoren fuer sichtbare Wissenseintraege nach Kosinus-Aehnlichkeit","target":"knowledge_mcp_server.py#_embedding_ranking"},
+      {"id":"de-code-07","query":"exportiere nur freigegebenes Allowlist-Wissen und weise veraltete private Inhalte ab","target":"pflege/export_public_context.py#export"},
+      {"id":"de-code-08","query":"akzeptiere einen Exportpfad nur innerhalb des Git-Repositories und nur wenn er getrackt ist","target":"pflege/export_public_context.py#_repo_path"},
+      {"id":"de-code-09","query":"baue den genauen Text, der fuer einen Wissensknoten eingebettet wird","target":"kern/build_embeddings.py#node_text"},
+      {"id":"de-code-10","query":"bette einen Stapel ein und falle bei Problemen auf einzelne lokale Anfragen zurueck","target":"kern/build_embeddings.py#_embed_batch"},
+      {"id":"de-code-neg-01","query":"berechne einen Tilgungsplan fuer ein Hypothekendarlehen","target":null},
+      {"id":"de-code-neg-02","query":"zeichne eine Aquarell-Landschaft","target":null},
+      {"id":"de-code-neg-03","query":"diagnostiziere ein Leck in einer Bremsfluessigkeitsleitung","target":null}]},
+    {"id":"code_signature_to_python","language":"python","query_modality":"code_signature","document_modality":"python_source","candidate_set":"python","cases":[
+      {"id":"sig-code-01","query":"ranked = reciprocal_rank_fusion([keyword_hits, semantic_hits], limit=10)","target":"kern/embeddings.py#rrf_fuse"},
+      {"id":"sig-code-02","query":"vector = local_embed(user_text); return vector if vector is not None else None","target":"kern/embeddings.py#embed_text"},
+      {"id":"sig-code-03","query":"for depth in layers: affected.update(import_consumers(changed_files))","target":"kern/project_context.py#impact_chain"},
+      {"id":"sig-code-04","query":"tree = ast.parse(module_text); edges.extend(resolve_static_imports(tree))","target":"kern/project_context.py#_python_import_edges"},
+      {"id":"sig-code-05","query":"ranked = fuse(fts_index.search(query), vector_index.search(query))","target":"knowledge_mcp_server.py#knowledge_search"},
+      {"id":"sig-code-06","query":"score = dot(query_vector, candidate_vector) / (norm(query_vector) * norm(candidate_vector))","target":"knowledge_mcp_server.py#_embedding_ranking"},
+      {"id":"sig-code-07","query":"if entry.is_public and entry.is_allowlisted and not entry.is_stale: write(entry)","target":"pflege/export_public_context.py#export"},
+      {"id":"sig-code-08","query":"resolved = repository_root / relative; assert resolved.is_relative_to(repository_root); assert git_tracked(resolved)","target":"pflege/export_public_context.py#_repo_path"},
+      {"id":"sig-code-09","query":"return join_nonempty([title, summary, content, provenance])","target":"kern/build_embeddings.py#node_text"},
+      {"id":"sig-code-10","query":"for batch in batches(texts): vectors = request_batch(batch); fallback_to_one_by_one_on_error()","target":"kern/build_embeddings.py#_embed_batch"},
+      {"id":"sig-code-neg-01","query":"def monthly_payment(principal, interest, months): return amount","target":null},
+      {"id":"sig-code-neg-02","query":"canvas.paint(watercolor_landscape, palette='pastel')","target":null},
+      {"id":"sig-code-neg-03","query":"brakes.inspect(fluid_leak=True, wheel='front-left')","target":null}]},
+    {"id":"de_brainlehr_prose_to_prose","language":"de","query_modality":"prose","document_modality":"brainlehr_prose","candidate_set":"prose","cases":[
+      {"id":"prose-01","query":"Wie verhindern wir, dass ungepruefte oder alte interne Inhalte in die oeffentliche Projektbeschreibung geraten?","target":"prose-01"},
+      {"id":"prose-02","query":"Welche Abhaengigkeitsaussage darf ein Commit-Beleg wirklich treffen und was bleibt offen?","target":"prose-02"},
+      {"id":"prose-03","query":"Wie bekommt ein neues Kontextfenster erst wenig und danach nur gezielt mehr Wissen?","target":"prose-03"},
+      {"id":"prose-04","query":"Woran erkennt ein Agent, ob er ein Werkzeug ausfuehren darf oder nur eine geplante Idee sieht?","target":"prose-04"},
+      {"id":"prose-05","query":"Wann ist ein weiteres lokales Suchmodell zulaessig und wie werden zwei Vektorraeume behandelt?","target":"prose-05"},
+      {"id":"prose-06","query":"Was geschieht mit der Suche, wenn der lokale Bedeutungsdienst nicht erreichbar ist?","target":"prose-06"},
+      {"id":"prose-07","query":"Wie bleibt eine nachtraegliche Wissenskorrektur nachvollziehbar, ohne einen alten Befund umzuschreiben?","target":"prose-07"},
+      {"id":"prose-08","query":"Welche Betriebsdaten muessen aus einem veroeffentlichten Kontextartefakt herausbleiben?","target":"prose-08"},
+      {"id":"prose-09","query":"Welche Folge hat eine nachgewiesene Importkante nach einer Aenderung und welche Schlussfolgerung ist verboten?","target":"prose-09"},
+      {"id":"prose-10","query":"Welche Angaben machen einen Retrievalvergleich nachvollziehbar und wie wird Modell-Ausfall gezeigt?","target":"prose-10"},
+      {"id":"prose-neg-01","query":"Wie knotet man eine Plane schnell fest?","target":null},
+      {"id":"prose-neg-02","query":"Welche Zutaten braucht eine Biskuitrolle?","target":null},
+      {"id":"prose-neg-03","query":"Wie wechselt man Bremsfluessigkeit an einem Auto?","target":null}]}
   ]
 }
