@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-26T16:20:00+0200 — chore(context): retain native entry points after live adoption
+
+- Files: `.brainlehr.json`, this handoff.
+- Why: the live `project_ensure` after `d93b4836` discovered the two package entry points that must remain explicit project capabilities while preserving the registered runtime-trace evidence contract.
+- Verified: `project_ensure` reports the current manifest/capsule at `d93b4836`; `python3 -m pytest -q tests/test_project_context.py`.
+- Remaining risk: canonical test partitioning isolated two unrelated test-environment problems: `tests/test_abrufwirkung.py` was terminated after 60 seconds without progress in `melder/abrufwirkung.py:124` (six cases had passed), and `tests/test_adr034_verdrahtung.py::test_occurrences_grenzwert_2_3_4` fails because no expected generated instructions file is found. Neither path is changed by this commit.
+- Next test: record the manifest commit as a separate append-only project receipt, then push only `origin/brainlehr/b4-ausweis`.
+
 ## 2026-08-26T16:00:00+0200 — feat(evidence): close bounded registry, offline projection, and language-scope gates
 
 - Files: P31/P48 requirements, benchmark manifest/tests, session capability registry, analyzer registry/tests, impact CLI/projection tests, and this handoff.
