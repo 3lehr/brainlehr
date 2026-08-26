@@ -1,5 +1,26 @@
 # AI handoff
 
+## 2026-08-26T22:02:00+0200 — docs(requirements): verify P74 Hermes runtime
+
+- Files: `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
+- Why: P74 is now accepted on bounded real Hermes evidence: the host
+  `MemoryManager`/Brainlehr seam gives primary foreground exactly one recall;
+  cron, subagent, oneshot, background-review, unknown and empty context give
+  zero writes, while empty/timeout/error stay visible and Built-in Memory stays
+  separate.
+- Verified: `/Volumes/daten/Begod2026/hermes-brainlehr/tests/test_provider.py`
+  on Python 3.11.15, 3.12.13 and 3.13.3 — each `50 passed, 2 skipped`;
+  `tests/test_hermes_real_boundary.py` passes against the host Hermes classes
+  with fake transport. No secrets, prompts/transcripts/raw code or temporary
+  product DB are persisted. Hermes restarted after `ebe2fe8b` (commit 21:53:11;
+  host PID 92182 started 21:56:57, MCP child PID 92469 started 21:56:59).
+- Boundary: stale Codex server/session PIDs were observed and left untouched;
+  no UI/session process was killed. No source or untracked test is included.
+- Next test: rerun P74 only after a future Hermes/provider or lifecycle change.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_release_orchestrator/luna_commit_p74_evidence
+
+
 ## 2026-08-26T21:25:39+0200 — docs(requirements): keep P42 planned until tracked
 
 - Files: `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
