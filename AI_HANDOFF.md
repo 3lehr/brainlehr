@@ -1,5 +1,26 @@
 # AI handoff
 
+## 2026-08-26T23:05:19+0200 — docs(requirements): record P99–P104 contract tranche
+
+- Files: `tests/test_code_retrieval_benchmark.py`,
+  `docs/REQUIREMENTS_BRAINLEHR.md`, `docs/PLAN_GESAMTBAU_2026-08-21.md`,
+  `AI_HANDOFF.md`.
+- Added stable IDs BDW-P99–BDW-P104. P99–P103 are MUSS; P104 is MUSS-NICHT;
+  all are DECIDED while every product gate remains explicitly `NOT IMPLEMENTED`
+  and `NOT RUN`.
+- Semantics cover strict `NONE`/validated `brainlehr:link` AI comments with
+  human-comment preservation, registry/anchor validation and lazy budgeted
+  lineage, immutable local-digest Merkle-DAG joins, separated rationale/index/
+  failure/responsibility lifecycle, and sealed leak-free BGE annotation versus
+  CodeRank raw-rank-only RRF ablation. MUST-NOT covers freeform AI comments,
+  invented IDs, self-proof, secrets and raw prompt/transcript leakage.
+- Red proof before the contract correction: focused catalog test failed because
+  its required row semantics were absent. Green proof: `python3 -m pytest -q
+  tests/test_code_retrieval_benchmark.py` → `10 passed`; `git diff --check`
+  passed. No DB/MCP write, staging, commit or push performed.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_release_orchestrator/luna_docs_contract_build
+
 ## 2026-08-26T22:30:00+0200 — docs(retrieval): defer CodeRank tranche
 
 - P30/P31 bleiben mit bestehenden IDs kanonisch; der aktuelle BGE-M3 PASS-Baseline-Befund bleibt unverändert und behauptet keine CodeRank-Aktivierung.

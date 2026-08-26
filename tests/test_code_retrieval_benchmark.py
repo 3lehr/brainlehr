@@ -4,6 +4,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+CATALOG = ROOT / "docs" / "REQUIREMENTS_BRAINLEHR.md"
+PLAN = ROOT / "docs" / "PLAN_GESAMTBAU_2026-08-21.md"
 sys.path[:0] = [str(ROOT), str(ROOT / "kern"), str(ROOT / "messungen")]
 
 import code_retrieval_benchmark as benchmark  # noqa: E402
@@ -112,3 +114,21 @@ def test_multilingual_activation_needs_every_matrix_and_prose_control():
     assert decision["candidates"]["router"]["eligible"] is True
     matrices.pop()
     assert benchmark.multilingual_activation_decision(matrices, prose)["active_channel"] == "bge_m3"
+
+
+def test_ai_lineage_requirements_are_decided_but_not_implemented():
+    catalog = CATALOG.read_text()
+    plan = PLAN.read_text()
+    required = {
+        "BDW-P99": ("AI-Kommentare", "brainlehr:link", "menschliche"),
+        "BDW-P100": ("Registry", "lazy", "MUSS"),
+        "BDW-P101": ("Merkle", "Joins", "MUSS"),
+        "BDW-P102": ("Failure", "tombstone", "MUSS"),
+        "BDW-P103": ("CodeRank", "leak-freie", "MUSS"),
+        "BDW-P104": ("Freiform", "LLM", "MUSS-NICHT"),
+    }
+    for requirement_id, terms in required.items():
+        row = next(line for line in catalog.splitlines() if line.startswith(f"| {requirement_id} "))
+        assert "DECIDED" in row and "NOT IMPLEMENTED" in row and "NOT RUN" in row
+        assert all(term.casefold() in row.casefold() for term in terms)
+        assert requirement_id in plan

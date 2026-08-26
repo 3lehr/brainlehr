@@ -287,3 +287,41 @@ eigener Auftrag mit eigener Nulllinie, kein Nebenzug der Einrichtung.
 * 2026-08-21T01:30 -- B2 fertig (`56602630`). A2 nach Messung verworfen, siehe §7. Vorrichtungsfehler aus B1 behoben (`8d2f99ae`); die sechs uebrigen Fehler derselben Datei sind vorbestehend, in einem Arbeitsbaum auf 1611398b nachgewiesen.
 * 2026-08-21T02:00 -- F fertig (`c9c5ebec`), planmitschrieb verdrahtet (`3cd4103c`), A1-Abnahme nachgeholt (§8). Offen nur noch B3, danach C.
 * 2026-08-21T03:00 -- C fertig (`8c52aeaf`), damit alle acht Straenge abgearbeitet. Katalog fortgeschrieben (`2869ea8a`): sieben Gates von NOT RUN abgeloest, drei bleiben (P11/P12 jetzt durch C, E24 beim Betreiber).
+
+## §10 Naechste Tranche: BDW-P99–BDW-P104
+
+Diese sechs Betreiberentscheidungen erweitern den kanonischen Katalog. Die
+Tranche beginnt bewusst rot: alle sechs Produktgates sind **NOT IMPLEMENTED**
+und **NOT RUN**; DECIDED beschreibt die Norm, nicht eine fertige Umsetzung.
+
+### Rotphase: Vertrag, Sperren und Ausgangsbeleg
+
+1. **BDW-P99 und BDW-P104** — den Kommentarvertrag mit `NONE` als Default,
+   enger `brainlehr:link`-Allowlist und Preservation menschlicher Kommentare
+   sowie die MUST-NOT-Negativfälle (Freiform, erfundene IDs, Self-proof,
+   Secrets, Prompts/Transkripte) als isolierte Fixture festschreiben.
+2. **BDW-P100** — Registry-/Anchor-Schema, stabile IDs, Revision/Digest-Bindung
+   und ein begrenztes Lazy-Budget als Vertrag definieren; unbekannte, stale
+   oder erschöpfte Pfade bleiben Gaps.
+3. **BDW-P101 und BDW-P102** — immutable Merkle-DAG-Joins sowie die getrennten
+   Rationale-/Index-/Failure-/Responsibility-Artefakte mit Prerequisite,
+   Symbol-/Code-Hash, stale- und Tombstone-Lifecycle spezifizieren.
+4. **BDW-P103** — erst danach den versiegelten, leak-freien BGE-Annotation- /
+   CodeRank-Roh-Rang- / rank-only-RRF-Ablationsplan mit allen Operator-Armen
+   und Prerequisites registrieren; BGE-only bleibt unverändert.
+
+### Gruenphase: kleinste nachweisbare Reihenfolge und Gates
+
+Die grüne Reihenfolge ist **P100 → P101 → P102 → P99/P104 → P103**. Für jedes
+ID gilt derselbe Gatevertrag: roter Negativfall zuerst, danach Positivfall und
+Gegenprobe; bis zur echten Ausführung bleibt der Status **NOT IMPLEMENTED; NOT
+RUN** und darf nicht als PASS erscheinen.
+
+| Katalog-ID | Red→green-Akzeptanzgate | Status |
+|---|---|---|
+| BDW-P99 | `NONE`, gültiger Link, ungültiger/freier Kommentar und menschlicher Preservation-Fall getrennt prüfen | NOT IMPLEMENTED; NOT RUN |
+| BDW-P100 | gültiger/staler Anchor, unbekannte Registry, Budgetende und ausgewählte Lazy-Auflösung ohne Vollgraph prüfen | NOT IMPLEMENTED; NOT RUN |
+| BDW-P101 | stabile IDs, lokaler Binding-Digest, append-only Join, Nachbar-Unverändertheit und Gap/Conflict prüfen | NOT IMPLEMENTED; NOT RUN |
+| BDW-P102 | fehlendes Prerequisite, Hash-Mismatch, stale, tombstone und getrennte Responsibility/Rationale prüfen | NOT IMPLEMENTED; NOT RUN |
+| BDW-P103 | identifierfreie sealed Splits, alle Operator-Arme, Ablation, RRF und sämtliche Betriebs-/Leak-Gates prüfen | NOT IMPLEMENTED; NOT RUN |
+| BDW-P104 | Freiform, ID-Erfindung, Self-proof, Secret-, Prompt- und Transcript-Felder fail-closed prüfen | NOT IMPLEMENTED; NOT RUN |
