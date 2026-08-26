@@ -1,6 +1,6 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-26T10:42:05+0200 (Stand `dc3a6f56`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-08-26T11:41:17+0200 (Stand `5d9c2588`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 
@@ -9,8 +9,8 @@ Erzeugt aus dem Quellcode am 2026-08-26T10:42:05+0200 (Stand `dc3a6f56`) von `to
 | Werkzeuge über MCP | 40 |
 | Melder | 62, davon verdrahtet 24 |
 | Haken | 23, davon verdrahtet 13 |
-| Kernmodule | 134 |
-| Module mit Selbsttest | 149 von 219 |
+| Kernmodule | 136 |
+| Module mit Selbsttest | 149 von 221 |
 
 ## Werkzeuge — was ein Klient aufrufen kann
 
@@ -183,6 +183,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/betriebsprofil.py` | Betriebsprofil | ja |
 | `kern/build_embeddings.py` | build_embeddings.py | — |
 | `kern/build_node_index.py` |  | ja |
+| `kern/code_retrieval.py` | Revision-bound routing and metadata for the optional CodeRank code channel | — |
 | `kern/codekanten.py` | Welche Datei betrifft diese Lehre | ja |
 | `kern/codeql_policy.py` | Explicit eligibility gate for optional CodeQL SARIF evidence | — |
 | `kern/codestand.py` | Ermittelt den Codestand (Commit, Zweig, schmutzig) zur LAUFZEIT fuer | — |
@@ -204,6 +205,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/eskalation_vorlage.py` |  | — |
 | `kern/evidence_adapters.py` | Normalize bounded, revision-tagged evidence from optional local analyzers | — |
 | `kern/evidence_graph.py` | Canonical graph-v2 merge/reconciliation without analyzer execution or writes | — |
+| `kern/evidence_projections.py` | Small, source-bound projections for optional runtime evidence | — |
 | `kern/fenstergroesse.py` | Misst, ab welcher Ollama-Kontextfenstergroesse (num_ctx) brainlehr nicht | ja |
 | `kern/fix_namensraum_knoten.py` | fix_namensraum_knoten.py | — |
 | `kern/fremdimport.py` | Fremdbestände holen | ja |
