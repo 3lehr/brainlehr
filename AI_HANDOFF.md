@@ -911,3 +911,10 @@ cd /Volumes/daten/Begod2026/brainlehr/app
 - Why: bind 15 identifier-free DE/EN cases (12 positive, 3 no-hit) to approved source revisions, licenses, documents and executable proof hashes before any score consumes the test split.
 - Verified: focused seal test 8 passed; `py_compile`; `git diff --check`; detached `aa90866b` snapshot with `P103_SEAL_SOURCE_ROOT=/Volumes/daten/Begod2026` also 8 passed and clean.
 - Remaining: this is a plan seal only; no score, model load, index activation, DB/MCP operation or channel activation occurred.
+
+## 2026-08-27 — test(retrieval): add sealed P103 v3 runner
+
+- Commit: `e9044464`.
+- Why: deterministic rank-only runner, atomic test-once lock and independent collector are required before the v3 seal can bind any model artifact.
+- Verified: v3/v2/collector tests 19 passed; py_compile and diff check passed.
+- Remaining: no v3 manifest, model encode, DB/MCP/index operation, test-split score or activation has occurred.
