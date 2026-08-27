@@ -109,6 +109,7 @@ only-include = [
   "kern/reifegrad.py",
   "kern/relation_endpoints.py",
   "kern/relevanzlage.py",
+  "kern/rationale_index_lifecycle.py",
   "kern/schema_nachzug.py",
   "kern/schluesselablage.py",
   "kern/session_checkpoint.py",
@@ -169,6 +170,7 @@ bypass-selection = true
 "kern/reifegrad.py" = "brainlehr_kern/kern/reifegrad.py"
 "kern/relation_endpoints.py" = "brainlehr_kern/kern/relation_endpoints.py"
 "kern/relevanzlage.py" = "brainlehr_kern/kern/relevanzlage.py"
+"kern/rationale_index_lifecycle.py" = "brainlehr_kern/kern/rationale_index_lifecycle.py"
 "kern/schema_nachzug.py" = "brainlehr_kern/kern/schema_nachzug.py"
 "kern/schluesselablage.py" = "brainlehr_kern/kern/schluesselablage.py"
 "kern/session_checkpoint.py" = "brainlehr_kern/kern/session_checkpoint.py"

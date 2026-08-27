@@ -1,5 +1,12 @@
 # AI handoff
 
+## 2026-08-27T00:45:00+0200 — feat(lineage): implement P102 lifecycle index
+
+- Files: `kern/rationale_index_lifecycle.py`, focused test, package manifest,
+  canonical P102 and this handoff.
+- Verified: focused P100–P102 suite, py_compile and detached package snapshot.
+- Remaining: P99/P104 policy and P103 sealed evaluation are separate gates.
+
 ## 2026-08-27T00:35:00+0200 — feat(lineage): implement P101 immutable DAG
 
 - Files: `kern/lineage_dag.py`, `tests/test_lineage_dag.py`, `pyproject.toml`,
