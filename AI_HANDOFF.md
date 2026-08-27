@@ -54,6 +54,17 @@
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
 
+## 2026-08-27 — fix(retrieval): add V6 ready-before-lock command gate
+
+- V6 uses `PYTHONPATH=<detached-root> <runtime> -m messungen.sealed_retrieval_v6_score`.
+  The entry point validates every bound artifact, corpus and model cache, then
+  emits `READY_BEFORE_LOCK` without lock/result/encode.
+- Verified in isolated runtime with exact module invocation/cwd/PYTHONPATH:
+  15 retrieval tests pass.
+- Next: seal V6 before its sole O_EXCL score.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
 ## 2026-08-27 — docs(retrieval): classify P103 seal v1 as FAIL
 
 - Catalog records the exact score/collector hashes and missing AC; it does not call the incomplete run H0.
