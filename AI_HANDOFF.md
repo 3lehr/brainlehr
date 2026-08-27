@@ -11,6 +11,17 @@
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
 
+## 2026-08-27 — test(retrieval): record P103 V4 one-shot FAIL
+
+- Detached `b09d8e72` preflight verified BGE and all five CodeRank bindings.
+- The sole O_EXCL run wrote `cb055569…`: annotation extraction raised
+  `TypeError: 'Constant' object is not subscriptable` before model encoding.
+- Collector `a9a58e86…` is `FAIL/UNDECIDED` (`sealed_manifest`); report:
+  `messungen/p103_v4_evaluation_2026-08-27.md`. No rerun, tuning, activation,
+  DB/MCP action or push. BGE-only remains active.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
 ## 2026-08-27 — docs(retrieval): classify P103 seal v1 as FAIL
 
 - Catalog records the exact score/collector hashes and missing AC; it does not call the incomplete run H0.
