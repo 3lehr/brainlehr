@@ -1,5 +1,16 @@
 # AI handoff
 
+## 2026-08-27T00:15:00+0200 — docs(requirements): verify P21 adapter boundary
+
+- Files: `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
+- Why: canonical P21 must point at the separate Hermes adapter evidence, not
+  claim a core-package import or license boundary without a current test.
+- Verified: Hermes commit `501a8c3`; detached adapter snapshot `python3 -m
+  pytest -q tests/test_provider.py -m 'not braucht_brainlehr'` — `50 passed,
+  2 deselected`, including AST no-core-import and host-path checks.
+- Remaining risk: P21 is an adapter boundary only; P99–P104 are separate
+  Brainlehr runtime gates.
+
 ## 2026-08-27T00:10:00+0200 — fix(package): enforce P20 source boundary
 
 - Files: `tests/test_paketbau.py`, `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
