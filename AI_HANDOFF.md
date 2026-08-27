@@ -1,5 +1,16 @@
 # AI handoff
 
+## 2026-08-27 — test(retrieval): seal P103 v4 offline evaluation
+
+- Files: v4 manifest, exact local CodeRank file bindings, immutable v3 rank runner,
+  v4 schema collector wrapper, offline scorer and seal regression.
+- Why: v3 bound a padded model hash. V4 rejects that placeholder and binds the
+  cached MIT revision plus five required file hashes before any encode.
+- Verified: `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/test_sealed_retrieval_v3.py tests/test_sealed_retrieval_v3_seal.py tests/test_sealed_retrieval_v4_seal.py` — 11 passed; `py_compile`; `git diff --check`.
+- Next: detached V4 HEAD preflight, single O_EXCL scorer attempt, fail-closed collection.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
 ## 2026-08-27 — docs(retrieval): classify P103 seal v1 as FAIL
 
 - Catalog records the exact score/collector hashes and missing AC; it does not call the incomplete run H0.
