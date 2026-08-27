@@ -1,5 +1,17 @@
 # AI handoff
 
+## 2026-08-27 — fix(retrieval): seal P103 V8 collector and leak boundary
+
+- V7 stays sealed but unrun: its historical collector rejects schema 7. V8 binds a
+  schema-eight scorer plus a narrow collector adapter; it validates all V8 bindings,
+  preserves the original raw hash and normalizes only schema metadata for V3 metrics.
+- V8 runner rejects full identifiers or ordered multi-token identifiers, while the
+  three current ordinary-word false positives remain leak-free.
+- Synthetic full raw over the actual bound 15-case corpus passes collector; wrong raw
+  hash stays FAIL. V8 has a new O_EXCL target and is NOT RUN.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_resume_after_hang
+
 ## 2026-08-27 — test(retrieval): seal P103 V7 resource-bounded evaluation
 
 - V7 binds the unchanged corpus, models, arms, grid and thresholds to MPS, batch=1,
