@@ -65,6 +65,15 @@
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
 
+## 2026-08-27 — test(retrieval): seal P103 V6 evaluation
+
+- V6 binds V3 math, fixed source views/pointer collector, ready-gated scorer and
+  canonical `python -m` launcher; corpus, models, grid and thresholds unchanged.
+- New O_EXCL target: `p103-v6.result.json`; V4/V5 paths remain historical.
+- Verified: V3–V6 retrieval, pointer, ready and seal tests: 16 passed.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
 ## 2026-08-27 — docs(retrieval): classify P103 seal v1 as FAIL
 
 - Catalog records the exact score/collector hashes and missing AC; it does not call the incomplete run H0.
