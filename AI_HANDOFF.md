@@ -1,5 +1,14 @@
 # AI handoff
 
+## 2026-08-27T00:35:00+0200 — feat(lineage): implement P101 immutable DAG
+
+- Files: `kern/lineage_dag.py`, `tests/test_lineage_dag.py`, `pyproject.toml`,
+  `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
+- Why: preserve multi-parent data/effect lineage without global rehashing or
+  invented parents.
+- Verified: focused DAG/anchor tests, py_compile and detached package snapshot.
+- Remaining risk: P102–P104 remain separate, DB-free gates.
+
 ## 2026-08-27T00:25:00+0200 — feat(lineage): implement P100 anchor registry
 
 - Files: `kern/anchor_registry.py`, `tests/test_anchor_registry.py`,

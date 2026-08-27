@@ -96,6 +96,7 @@ only-include = [
   "kern/knowledge_lint.py",
   "kern/konfidenz.py",
   "kern/lesson_recorder.py",
+  "kern/lineage_dag.py",
   "kern/nachrangung.py",
   "kern/normachsen.py",
   "kern/normbestand.py",
@@ -155,6 +156,7 @@ bypass-selection = true
 "kern/knowledge_lint.py" = "brainlehr_kern/kern/knowledge_lint.py"
 "kern/konfidenz.py" = "brainlehr_kern/kern/konfidenz.py"
 "kern/lesson_recorder.py" = "brainlehr_kern/kern/lesson_recorder.py"
+"kern/lineage_dag.py" = "brainlehr_kern/kern/lineage_dag.py"
 "kern/nachrangung.py" = "brainlehr_kern/kern/nachrangung.py"
 "kern/normachsen.py" = "brainlehr_kern/kern/normachsen.py"
 "kern/normbestand.py" = "brainlehr_kern/kern/normbestand.py"
