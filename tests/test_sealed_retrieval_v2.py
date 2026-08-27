@@ -1,6 +1,7 @@
 """P103-v2: validate the sealed, unscored retrieval fixture."""
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -11,10 +12,11 @@ from messungen.sealed_retrieval_v2 import validate_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = Path(__file__).parent / "fixtures" / "sealed_code_retrieval_v2.json"
+SOURCE_ROOT = Path(os.environ.get("P103_SEAL_SOURCE_ROOT", ROOT.parent))
 REPOS = {
     "brainlehr": ROOT,
-    "hermes-brainlehr": ROOT.parent / "hermes-brainlehr",
-    "sigmaforge": ROOT.parent / "sigmaforge",
+    "hermes-brainlehr": SOURCE_ROOT / "hermes-brainlehr",
+    "sigmaforge": SOURCE_ROOT / "sigmaforge",
 }
 
 
