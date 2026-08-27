@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "splits": {
+    "train": ["fixture-typescript", "fixture-rust", "fixture-java"],
+    "dev": ["fixture-go", "fixture-swift"],
+    "test": ["fixture-dart", "fixture-python"]
+  },
+  "test_queries_sha256": "9562f432c91f6f3866896f4362953a5b5f083c1bce47114afa3db67830cde366",
+  "dev_grid": [{"rrf_k": 60, "weight": 1}, {"rrf_k": 60, "weight": 2}],
+  "modalities": ["de_prose", "en_prose", "code", "signature", "consumer", "error", "impact", "no_hit"],
+  "ablations": ["stripped", "comments_only", "combined", "generated_annotation"],
+  "channels": ["bge_annotation", "coderank_raw", "rank_only_rrf"]
+}

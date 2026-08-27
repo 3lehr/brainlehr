@@ -1,5 +1,13 @@
 # AI handoff
 
+## 2026-08-27 — test(retrieval): freeze sealed P103 contract
+
+- Files: fail-closed decision contract, focused regression and tracked split/grid manifest.
+- Why: the prior CodeRank reports are stale or invalidated for identifier leakage;
+  no model result may tune a grid or consume the test split before this manifest exists.
+- Verified: `python3 -m pytest -q tests/test_sealed_retrieval_contract.py` — 9 passed.
+- Next: one offline cached-model evaluation; no activation, DB/MCP operation or model download.
+
 ## 2026-08-27 — feat(policy): gate supported AI edits
 
 - Files: strict comment/manifest validators, source wrappers, generated client policy,
