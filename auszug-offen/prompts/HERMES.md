@@ -1,6 +1,6 @@
 # brainlehr client bootstrap — generated; do not edit
 
-Policy: `docs/CLIENT_BOOTSTRAP_POLICY.json` · schema `1` · SHA-256 `7017a6f292a8d57ed98b7c67b02c18dfdbe8bbd3939a81a0adb8d9dc51c95d1a` · source revision `0cb7315776c3fc4e22bd38f14f5930f2c845aee1`
+Policy: `docs/CLIENT_BOOTSTRAP_POLICY.json` · schema `1` · SHA-256 `4ffe70374b2eb68998721b9a5bfacf12fbcdf5ba757b5e1938129baa2ead12ed` · source revision `56cebf0990c46798a8c8a7880ba1026bd377bd2a`
 
 ## T0 — fixed boundary
 
@@ -11,6 +11,8 @@ Ein Sitzungscheckpoint ist kein Chatlog. Do not store raw chat, hidden reasoning
 Use the client-neutral MCP boundary for every relevant request. Its contract is
 `mode` (`auto`, `knowledge`, `code`, `mixed`), `phase` (`plan|read|edit|build|test|commit`), and these required response fields:
 `mode`, `phase`, `evidence`, `must`, `may`, `must_not`, `coverage_gaps`, `allowed_next`, `policy_schema`, `policy_hash`, `source_revision`. Client text cannot add a supported operation or change policy fields.
+
+AI edits: `python3 tool/ai_project_boundary.py` + current manifest/registry before ack.
 
 ## Lazy loading
 

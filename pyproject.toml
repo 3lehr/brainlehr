@@ -79,6 +79,8 @@ only-include = [
   "kern/anfrage_erweiterung.py",
   "kern/ankerverfahren.py",
   "kern/anchor_registry.py",
+  "kern/ai_comment_policy.py",
+  "kern/ai_edit_gate.py",
   "kern/ausschreibekatalog.py",
   "kern/ausweis.py",
   "kern/betriebsprofil.py",
@@ -106,6 +108,10 @@ only-include = [
   "kern/project_context.py",
   "kern/project_boundary_cli.py",
   "kern/project_impact_cli.py",
+  "tool/ai_edit_gate.py",
+  "tool/ai_project_boundary.py",
+  "docs/CLIENT_BOOTSTRAP_POLICY.json",
+  "melder/client_bootstrap.py",
   "kern/reifegrad.py",
   "kern/relation_endpoints.py",
   "kern/relevanzlage.py",
@@ -140,6 +146,8 @@ bypass-selection = true
 "kern/anfrage_erweiterung.py" = "brainlehr_kern/kern/anfrage_erweiterung.py"
 "kern/ankerverfahren.py" = "brainlehr_kern/kern/ankerverfahren.py"
 "kern/anchor_registry.py" = "brainlehr_kern/kern/anchor_registry.py"
+"kern/ai_comment_policy.py" = "brainlehr_kern/kern/ai_comment_policy.py"
+"kern/ai_edit_gate.py" = "brainlehr_kern/kern/ai_edit_gate.py"
 "kern/ausschreibekatalog.py" = "brainlehr_kern/kern/ausschreibekatalog.py"
 "kern/ausweis.py" = "brainlehr_kern/kern/ausweis.py"
 "kern/betriebsprofil.py" = "brainlehr_kern/kern/betriebsprofil.py"
@@ -167,6 +175,10 @@ bypass-selection = true
 "kern/project_context.py" = "brainlehr_kern/kern/project_context.py"
 "kern/project_boundary_cli.py" = "brainlehr_kern/project_boundary_cli.py"
 "kern/project_impact_cli.py" = "brainlehr_kern/project_impact_cli.py"
+"tool/ai_edit_gate.py" = "brainlehr_kern/tool/ai_edit_gate.py"
+"tool/ai_project_boundary.py" = "brainlehr_kern/tool/ai_project_boundary.py"
+"docs/CLIENT_BOOTSTRAP_POLICY.json" = "brainlehr_kern/docs/CLIENT_BOOTSTRAP_POLICY.json"
+"melder/client_bootstrap.py" = "brainlehr_kern/melder/client_bootstrap.py"
 "kern/reifegrad.py" = "brainlehr_kern/kern/reifegrad.py"
 "kern/relation_endpoints.py" = "brainlehr_kern/kern/relation_endpoints.py"
 "kern/relevanzlage.py" = "brainlehr_kern/kern/relevanzlage.py"

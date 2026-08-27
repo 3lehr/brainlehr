@@ -8,6 +8,10 @@
     "phases": ["plan", "read", "edit", "build", "test", "commit"],
     "required_fields": ["mode", "phase", "evidence", "must", "may", "must_not", "coverage_gaps", "allowed_next", "policy_schema", "policy_hash", "source_revision"]
   },
+  "ai_code_edits": {
+    "command": "python3 tool/ai_project_boundary.py",
+    "requirement": "AI code edits MUST supply a current AI-edit manifest and registry to this boundary before acknowledgement; generic human commits remain unchanged."
+  },
   "lazy_ladder": {
     "T0": "fixed security boundary and one small contract pointer",
     "T1": "request mode, capsule and selected summaries",

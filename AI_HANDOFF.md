@@ -1,5 +1,17 @@
 # AI handoff
 
+## 2026-08-27 — feat(policy): gate supported AI edits
+
+- Files: strict comment/manifest validators, source wrappers, generated client policy,
+  focused tests, package allowlist and canonical P99/P104 rows.
+- Why: a policy-only validator cannot stop a declared AI edit before the existing
+  acknowledgement boundary. The opt-in wrapper validates the exact staged diff,
+  preserved human-comment inventory and registered revision-bound anchors first.
+- Verified: focused policy/gate/wrapper tests; generated-policy drift check; wheel
+  and sdist archive inspection. Invalid validation delegates zero times.
+- Limit: generic human commits and raw host/editor writes deliberately remain outside
+  the opt-in AI seam; no DB/MCP operation occurs.
+
 ## 2026-08-27T01:00:00+0200 — test(package): require lineage modules
 
 - Commit: `2505ec36`.

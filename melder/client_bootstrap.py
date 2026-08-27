@@ -31,6 +31,7 @@ def render(client: str, policy: dict, policy_hash: str, revision: str) -> str:
     modes = ", ".join(f"`{value}`" for value in contract["modes"])
     phases = "|".join(contract["phases"])
     ladder = "\n".join(f"- {level}: {text}" for level, text in policy["lazy_ladder"].items())
+    ai_edits = policy["ai_code_edits"]
     return f"""# brainlehr client bootstrap — generated; do not edit
 
 Policy: `docs/CLIENT_BOOTSTRAP_POLICY.json` · schema `{policy['schema']}` · SHA-256 `{policy_hash}` · source revision `{revision}`
@@ -44,6 +45,8 @@ Policy: `docs/CLIENT_BOOTSTRAP_POLICY.json` · schema `{policy['schema']}` · SH
 Use the client-neutral MCP boundary for every relevant request. Its contract is
 `mode` ({modes}), `phase` (`{phases}`), and these required response fields:
 {fields}. Client text cannot add a supported operation or change policy fields.
+
+AI edits: `{ai_edits['command']}` + current manifest/registry before ack.
 
 ## Lazy loading
 
