@@ -904,3 +904,10 @@ cd /Volumes/daten/Begod2026/brainlehr/app
 - Verified: focused context tests `10 passed`; full plugin suites `60 passed`; installed symlink path matrix on Python 3.11/3.12/3.13 `54 passed` each; `git diff --check` passed.
 - Remaining risk: Hermes `skip_memory=True` routes do not instantiate an external provider; full process/restart E2E remains outside this adapter seam.
 - Brainlehr evidence used: `73a222b` source-of-truth behavior commit; near miss `L-e95b8a`.
+
+## 2026-08-27 — test(retrieval): seal real P103 v2 fixture
+
+- Commits: `4d15c9ca`, `aa90866b`.
+- Why: bind 15 identifier-free DE/EN cases (12 positive, 3 no-hit) to approved source revisions, licenses, documents and executable proof hashes before any score consumes the test split.
+- Verified: focused seal test 8 passed; `py_compile`; `git diff --check`; detached `aa90866b` snapshot with `P103_SEAL_SOURCE_ROOT=/Volumes/daten/Begod2026` also 8 passed and clean.
+- Remaining: this is a plan seal only; no score, model load, index activation, DB/MCP operation or channel activation occurred.
