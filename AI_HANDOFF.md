@@ -34,6 +34,16 @@
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
 
+## 2026-08-27 — test(retrieval): seal P103 V5 evaluation
+
+- V5 binds fixed shared source views, pointer-resolving collector and scorer;
+  V2 corpus, model bindings, grid and thresholds remain unchanged.
+- New O_EXCL target: `p103-v5.result.json`; V4 result/lock are never reused.
+- Verified: V3 synthetic runner/collector plus V4/V5 pointer and seal tests:
+  14 passed. No model encode, DB/MCP action or score before this commit.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
 ## 2026-08-27 — docs(retrieval): classify P103 seal v1 as FAIL
 
 - Catalog records the exact score/collector hashes and missing AC; it does not call the incomplete run H0.

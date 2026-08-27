@@ -26,13 +26,14 @@ def test_v4_cases_reproduce_source_view_without_model_or_encode():
         assert all(view(source, arm) for arm in manifest["arms"])
 
 
-def test_v4_pointer_manifest_resolves_and_hash_mismatch_fails_closed():
-    manifest = json.loads((ROOT / "tests/fixtures/sealed_code_retrieval_v4.json").read_text())
-    resolved = resolve_manifest(manifest)
-    assert resolved["schema"] == 3 and len(resolved["cases"]) == 15
+def test_v4_v5_pointer_manifests_resolve_and_hash_mismatch_fail_closed():
     raw = {"schema": 6, "case_count": 15, "test_runs": 1}
-    good = collect(manifest, raw, raw_sha256=hash_report(raw))
-    assert "sealed_manifest" not in good["missing"]
-    bad = {**manifest, "corpus": {**manifest["corpus"], "sha256": "0" * 64}}
-    failed = collect(bad, raw, raw_sha256=hash_report(raw))
-    assert failed["status"] == "FAIL" and failed["missing"] == ["sealed_manifest"]
+    for version in (4, 5):
+        manifest = json.loads((ROOT / f"tests/fixtures/sealed_code_retrieval_v{version}.json").read_text())
+        resolved = resolve_manifest(manifest)
+        assert resolved["schema"] == 3 and len(resolved["cases"]) == 15
+        good = collect(manifest, raw, raw_sha256=hash_report(raw))
+        assert "sealed_manifest" not in good["missing"]
+        bad = {**manifest, "corpus": {**manifest["corpus"], "sha256": "0" * 64}}
+        failed = collect(bad, raw, raw_sha256=hash_report(raw))
+        assert failed["status"] == "FAIL" and failed["missing"] == ["sealed_manifest"]
