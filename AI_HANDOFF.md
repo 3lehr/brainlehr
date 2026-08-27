@@ -1,5 +1,15 @@
 # AI handoff
 
+## 2026-08-27 — test(retrieval): record P103 V9 PASS/H0
+
+- Sole V9 score published raw `0d08110a…` and collector `dbda2755…` is PASS/H0
+  with no missing gate. CodeRank has zero unique hits and rank-only fusion lacks a strict gain.
+- Monitor saw zero swapouts/throttled pages and peak observed scorer RSS 1,591,360 KB.
+  BGE-only remains active; no activation, DB/MCP action or push.
+- Evidence: `messungen/p103_v9_evaluation_2026-08-27.md`.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_resume_after_hang
+
 ## 2026-08-27 — test(retrieval): seal P103 V9 critical-pressure evaluation
 
 - V9 accepts the observed 1,023-page compressor delta but aborts on free memory below
