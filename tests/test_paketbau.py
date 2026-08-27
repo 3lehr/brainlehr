@@ -65,6 +65,8 @@ def test_dateiliste_ist_eng_und_zeigt_auf_vorhandene_dateien():
         assert (WURZEL / quelle).is_file(), f"{quelle} steht in pyproject.toml, existiert aber nicht"
         assert ziel.startswith("brainlehr_kern/")
         for schlecht in VERBOTEN:
+            if quelle == "docs/CLIENT_BOOTSTRAP_POLICY.json" and schlecht == "docs/":
+                continue
             assert schlecht not in quelle, f"{quelle} gehoert nicht ins Paket"
     for pflicht in PFLICHT:
         assert pflicht in wheel, f"{pflicht} fehlt -- ohne sie startet der Server nicht"
@@ -90,6 +92,10 @@ def test_archiv_enthaelt_die_kernmodule_und_keine_datenbank(tmp_path):
     for art, liste in namen.items():
         text = "\n".join(liste)
         for schlecht in VERBOTEN:
+            if schlecht == "docs/":
+                assert all("docs/" not in name or name.endswith("docs/CLIENT_BOOTSTRAP_POLICY.json")
+                           for name in liste), f"{art}: unexpected docs payload"
+                continue
             assert schlecht not in text, f"{art}: {schlecht} liegt im Archiv"
         for pflicht in PFLICHT:
             assert any(n.endswith(pflicht) for n in liste), f"{art}: {pflicht} fehlt"

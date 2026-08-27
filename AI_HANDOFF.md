@@ -1,5 +1,17 @@
 # AI handoff
 
+## 2026-08-27T00:10:00+0200 — fix(package): enforce P20 source boundary
+
+- Files: `tests/test_paketbau.py`, `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
+- Why: the archive guard rejected its one intended policy document together
+  with arbitrary documentation, masking P20's real no-data boundary.
+- Verified: isolated build with hatchling plus `tests/test_paketbau.py`,
+  socket-denied `kataloge()` and no-source `katalog_holen()` — `6 passed`.
+  Wheel/sdist carry no DB or catalog data; only the explicit policy JSON is
+  permitted below `docs/`.
+- Remaining risk: P21 is verified in the separate Hermes adapter repository;
+  P99–P104 remain unimplemented.
+
 ## 2026-08-26T23:35:00+0200 — fix(test): restore catalog decoder syntax
 
 - Files: `tests/test_requirements_brainlehr.py`, `AI_HANDOFF.md`.
