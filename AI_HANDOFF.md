@@ -1,5 +1,10 @@
 # AI handoff
 
+## 2026-08-27 — docs(retrieval): classify P103 seal v1 as FAIL
+
+- Catalog records the exact score/collector hashes and missing AC; it does not call the incomplete run H0.
+- Next: independently seal executable v2 inputs before any score; BGE-only remains active.
+
 ## 2026-08-27 — test(retrieval): fail closed on incomplete sealed P103 evidence
 
 - Commit: `81653a22`.
