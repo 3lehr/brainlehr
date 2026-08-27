@@ -1,5 +1,16 @@
 # AI handoff
 
+## 2026-08-27 — docs(retrieval): record P103 V8 pressure abort
+
+- The sole V8 O_EXCL score was terminated at 18 seconds when compressor use rose
+  from zero to 1,023 pages. Score RSS was 821,072 KB; free memory remained 91%,
+  with zero throttled pages and swapouts.
+- Lock exists, result/stdout/stderr are empty and no collector can run. V8 is terminal;
+  no retry, tuning, activation, DB/MCP action or push. BGE-only remains active.
+- Evidence: `messungen/p103_v8_evaluation_2026-08-27.md`.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_resume_after_hang
+
 ## 2026-08-27 — fix(retrieval): seal P103 V8 collector and leak boundary
 
 - V7 stays sealed but unrun: its historical collector rejects schema 7. V8 binds a
