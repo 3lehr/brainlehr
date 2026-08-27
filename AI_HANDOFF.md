@@ -22,6 +22,18 @@
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
 
+## 2026-08-27 — fix(retrieval): prepare P103 V5 model-free path
+
+- Root cause: AST `IfExp.body` can be an `ast.Constant`, not a statement list.
+  Shared source-view parser now checks `list` before indexing.
+- V5 collector resolves only the hash-bound V2 corpus pointer before V3 schema
+  gates; mismatched corpus hash returns `FAIL/sealed_manifest`.
+- Verified: V4 real case/source loader and synthetic V3 runner/collector suite:
+  13 passed; no model encode, DB/MCP action or score.
+- Next: seal V5 with these exact files before one new result path is claimed.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
 ## 2026-08-27 — docs(retrieval): classify P103 seal v1 as FAIL
 
 - Catalog records the exact score/collector hashes and missing AC; it does not call the incomplete run H0.
