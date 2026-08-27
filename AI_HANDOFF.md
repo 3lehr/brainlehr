@@ -1,5 +1,12 @@
 # AI handoff
 
+## 2026-08-27 — test(retrieval): fail closed on incomplete sealed P103 evidence
+
+- Commit: `81653a22`.
+- Raw score `3e0a79fd…`; collector `9a442472…` is `FAIL/UNDECIDED`.
+- Missing: prose control, sealed train/dev/test-once, LORO, comment/annotation ablations and missing/stale BGE fallbacks.
+- Cached models only; no activation, DB/MCP operation, model download or retroactive tuning.
+
 ## 2026-08-27 — test(retrieval): freeze sealed P103 contract
 
 - Files: fail-closed decision contract, focused regression and tracked split/grid manifest.
