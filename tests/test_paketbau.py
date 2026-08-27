@@ -31,7 +31,9 @@ VERBOTEN = ("brainlehr.db", "knowledge.db", "runs/", "messungen/", "spikes/",
 # Ohne die laeuft der Server nicht -- gemessen, nicht geraten (siehe
 # runs/paketbau_2026-08-21.json).
 PFLICHT = ("knowledge_mcp_server.py", "schema.sql", "herkunft_unveraenderlich.sql",
-           "kern/embeddings.py", "kern/ausweis.py", "haken/ort.py")
+           "kern/embeddings.py", "kern/ausweis.py", "haken/ort.py",
+           "kern/anchor_registry.py", "kern/lineage_dag.py",
+           "kern/rationale_index_lifecycle.py")
 
 
 def _konfig() -> dict:
