@@ -992,3 +992,14 @@ cd /Volumes/daten/Begod2026/brainlehr/app
 - Why: deterministic rank-only runner, atomic test-once lock and independent collector are required before the v3 seal can bind any model artifact.
 - Verified: v3/v2/collector tests 19 passed; py_compile and diff check passed.
 - Remaining: no v3 manifest, model encode, DB/MCP/index operation, test-split score or activation has occurred.
+## 2026-08-27 — docs(retrieval): record P103 V6 terminal failure
+
+- Detached seal `facc4c44` claimed the sole `O_EXCL` V6 lock at 08:09:15 +0200.
+  No result exists; stdout is empty and stderr contains only two successful-key
+  load lines at 08:09:26 +0200.
+- No V6 scorer remains. Artifacts do not establish completed encode, metrics,
+  collector, H0 or H1. Lock is terminal; no retry, collector, tuning,
+  activation, DB/MCP action or push. BGE-only remains active.
+- Evidence: `messungen/p103_v6_evaluation_2026-08-27.md`.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_resume_after_hang
