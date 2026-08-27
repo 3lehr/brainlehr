@@ -1,5 +1,17 @@
 # AI handoff
 
+## 2026-08-27 — test(retrieval): seal P103 V7 resource-bounded evaluation
+
+- V7 binds the unchanged corpus, models, arms, grid and thresholds to MPS, batch=1,
+  one worker and tokenizer/BLAS thread limits. The detached ready gate verifies
+  runtime, MPS and resources before any O_EXCL lock or encode.
+- One synthetic non-test MPS encode passed with 768 dimensions; monitor minimum was
+  89% free, zero compressor/throttle/swap, and no CodeRank process remained.
+- New sole O_EXCL target: p103-v7.result.json. V4–V6 stay historical; BGE-only
+  remains active until a terminal collector gate.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_resume_after_hang
+
 ## 2026-08-27 — test(retrieval): seal P103 v4 offline evaluation
 
 - Files: v4 manifest, exact local CodeRank file bindings, immutable v3 rank runner,
