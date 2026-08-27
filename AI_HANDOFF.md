@@ -1,5 +1,14 @@
 # AI handoff
 
+## 2026-08-27T01:00:00+0200 — test(package): require lineage modules
+
+- Commit: `2505ec36`.
+- Why: an sdist omission was suspected; detached archive inspection proved it
+  false, but the regression test did not name P100–P102 as required payload.
+- Verified: detached `tests/test_paketbau.py` — `4 passed`; `uv build --offline`
+  wheel and sdist both contain anchor registry, lineage DAG and lifecycle index.
+- Remaining: P99/P104 real client enforcement is still open.
+
 ## 2026-08-27T00:45:00+0200 — feat(lineage): implement P102 lifecycle index
 
 - Files: `kern/rationale_index_lifecycle.py`, focused test, package manifest,
