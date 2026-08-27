@@ -1,5 +1,17 @@
 # AI handoff
 
+## 2026-08-27T00:25:00+0200 — feat(lineage): implement P100 anchor registry
+
+- Files: `kern/anchor_registry.py`, `tests/test_anchor_registry.py`,
+  `pyproject.toml`, `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
+- Why: later source links need registered, revision-bound lazy anchors instead
+  of invented IDs or eager mutable graphs.
+- Verified: focused red import failure, then `python3 -m pytest -q
+  tests/test_anchor_registry.py` — `4 passed`; py_compile and detached package
+  snapshot are run before commit.
+- Remaining risk: P101–P104 remain separate gates; no code-comment renderer or
+  persistent index is activated here.
+
 ## 2026-08-27T00:15:00+0200 — docs(requirements): verify P21 adapter boundary
 
 - Files: `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.

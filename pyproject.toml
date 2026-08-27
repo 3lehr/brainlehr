@@ -78,6 +78,7 @@ only-include = [
   "herkunft_unveraenderlich.sql",
   "kern/anfrage_erweiterung.py",
   "kern/ankerverfahren.py",
+  "kern/anchor_registry.py",
   "kern/ausschreibekatalog.py",
   "kern/ausweis.py",
   "kern/betriebsprofil.py",
@@ -136,6 +137,7 @@ bypass-selection = true
 "herkunft_unveraenderlich.sql" = "brainlehr_kern/herkunft_unveraenderlich.sql"
 "kern/anfrage_erweiterung.py" = "brainlehr_kern/kern/anfrage_erweiterung.py"
 "kern/ankerverfahren.py" = "brainlehr_kern/kern/ankerverfahren.py"
+"kern/anchor_registry.py" = "brainlehr_kern/kern/anchor_registry.py"
 "kern/ausschreibekatalog.py" = "brainlehr_kern/kern/ausschreibekatalog.py"
 "kern/ausweis.py" = "brainlehr_kern/kern/ausweis.py"
 "kern/betriebsprofil.py" = "brainlehr_kern/kern/betriebsprofil.py"
