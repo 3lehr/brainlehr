@@ -1,5 +1,14 @@
 # AI handoff
 
+## 2026-08-27 — test(retrieval): seal P103 V9 critical-pressure evaluation
+
+- V9 accepts the observed 1,023-page compressor delta but aborts on free memory below
+  25%, swapout increase, throttled pages or RSS above 8 GB. One-model MPS limits remain.
+- V9 binds the unchanged experiment, V8 scorer/collector/runner and exact launcher-monitor
+  hash. Actual 15-case synthetic collector preflight passes; V9 is NOT RUN.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_resume_after_hang
+
 ## 2026-08-27 — docs(retrieval): record P103 V8 pressure abort
 
 - The sole V8 O_EXCL score was terminated at 18 seconds when compressor use rose
