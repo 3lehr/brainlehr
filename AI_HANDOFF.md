@@ -44,6 +44,16 @@
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
 
+## 2026-08-27 — docs(retrieval): record P103 V5 startup failure
+
+- Detached V5 preflight passed, but the sole direct script command exited before
+  module initialization (`ModuleNotFoundError: No module named 'messungen'`).
+- No V5 lock/raw/encode or collector result exists; report:
+  `messungen/p103_v5_evaluation_2026-08-27.md`. No retry, activation, DB/MCP
+  action or push. BGE-only remains active.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
 ## 2026-08-27 — docs(retrieval): classify P103 seal v1 as FAIL
 
 - Catalog records the exact score/collector hashes and missing AC; it does not call the incomplete run H0.
