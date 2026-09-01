@@ -102,6 +102,17 @@ auszug/bestand_*.jsonl
 # Produktions-brainlehr.db.
 korpora/longmemeval/
 
+# LongMemEval-V2: Trajektorien (1,1 GB) und Mess-DB (354 MB) sind Benchmark-
+# Rohdaten, jederzeit von Hugging Face neu ladbar. Kleine Dateien
+# (questions.jsonl, haystacks, screenshots) bleiben im Repo.
+korpora/longmemeval_v2/trajectories.jsonl
+korpora/longmemeval_v2/messstand.db
+# gegen agentmemory-Werbezahlen) -- gross (277 MB), jederzeit neu ladbar
+# (huggingface.co/datasets/xiaowu0162/longmemeval-cleaned), gehoert nicht
+# ins Repo. Enthaelt auch die isolierte Mess-DB (messstand*.db), NIE die
+# Produktions-brainlehr.db.
+korpora/longmemeval/
+
 # Messstaende: je Kopie ~120 MB, Wegwerfstaende eines Laufs (kern/schnappschuss.py).
 runs/schnappschuesse/
 
