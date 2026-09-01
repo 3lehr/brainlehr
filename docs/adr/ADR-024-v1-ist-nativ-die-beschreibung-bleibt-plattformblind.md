@@ -1,11 +1,15 @@
 # ADR-024: V1 zeichnet das atelier nativ — und die Beschreibung bleibt plattformblind
 
 **Stand** 2026-08-16T12:59:23+0200
-**Status** Angenommen
+**Status** Abgelöst durch ADR-035 am 2026-08-28
 **Betrifft** `atelier` (`app/`), `openlehr_einzelunternehmer`, jede künftige Domäne
 **Entscheider** Betreiber, 2026-08-16
 **Ersetzt** die Nachtrags-Zeile „Fachbildschirme → die Domäne, als Web über HTTP"
 in ADR-013. Der Rest von ADR-013 bleibt unverändert in Kraft.
+
+**Abgelöst durch:** ADR-035. Die frühere native-V1-Reihenfolge gilt nicht mehr:
+Die zentrale WebUI ist der einzige produktive Renderer; vorhandene native,
+OpenLehr- und sonstige UIs sind nach Inventar-/Ersetzungsgate nur Legacy.
 
 ## Die Vorgabe, wörtlich
 

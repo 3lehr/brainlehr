@@ -8,8 +8,10 @@ never enter its state.  The caller remains responsible for the post-commit
 """
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -20,6 +22,15 @@ SCHEMA = 1
 ANALYZER_VERSION = "static-python-imports-v1"
 DEBOUNCE_SECONDS = 1.0
 MAX_RERUNS = 3
+MAX_WORKING_NODES = 64
+MAX_WORKING_EDGES = 128
+MACHINE_IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}")
+
+
+def _machine_identifier(value: str, field: str) -> str:
+    if not isinstance(value, str) or not MACHINE_IDENTIFIER.fullmatch(value):
+        raise ValueError(f"{field} must be a 1..64 character machine identifier")
+    return value
 
 
 def _git_bytes(root: Path, *args: str) -> bytes:
@@ -30,35 +41,224 @@ def _git_bytes(root: Path, *args: str) -> bytes:
     return result.stdout
 
 
-def working_tree_overlay(path: str | Path) -> dict:
+def _owned_untracked(root: Path, requested: list[str] | None) -> list[str]:
+    """Validate the caller's relative allowlist; never read outside the repo."""
+    untracked = set(project_context._git(root, "ls-files", "--others", "--exclude-standard").splitlines())
+    owned: list[str] = []
+    for raw in requested or []:
+        candidate = Path(raw)
+        if candidate.is_absolute() or ".." in candidate.parts or not str(raw).strip():
+            raise ValueError("agent-owned paths must be relative and non-upward")
+        name = candidate.as_posix()
+        if name not in untracked:
+            raise ValueError("agent-owned path is not an untracked project file")
+        owned.append(name)
+    return sorted(set(owned))
+
+
+def _owned_tracked_changes(root: Path, requested: list[str] | None) -> list[str]:
+    """Narrow a shadow run to explicit agent-owned modified tracked files."""
+    changed = {name for name in project_context._git(
+        root, "diff", "HEAD", "--name-only", "--find-renames").splitlines() if name}
+    owned: list[str] = []
+    for raw in requested or []:
+        candidate = Path(raw)
+        if candidate.is_absolute() or ".." in candidate.parts or not str(raw).strip():
+            raise ValueError("agent-owned tracked paths must be relative and non-upward")
+        name = candidate.as_posix()
+        if name not in changed:
+            raise ValueError("agent-owned tracked path is not a modified tracked file")
+        owned.append(name)
+    return sorted(set(owned))
+
+
+def _working_import_edges(root: Path, files: list[str]) -> tuple[list[dict], list[str]]:
+    modules: dict[str, set[str]] = {}
+    for name in files:
+        if not name.endswith(".py"):
+            continue
+        module = name[:-3].replace("/", ".")
+        if module.endswith(".__init__"):
+            module = module[:-9]
+        for variant in {module, Path(name).stem}:
+            modules.setdefault(variant, set()).add(name)
+    edges: dict[tuple[str, str], dict] = {}
+    gaps: list[str] = []
+    for consumer in files:
+        if not consumer.endswith(".py"):
+            continue
+        try:
+            tree = ast.parse((root / consumer).read_text(encoding="utf-8"), filename=consumer)
+        except (OSError, SyntaxError, UnicodeError):
+            gaps.append(f"unreadable or invalid Python: {consumer}")
+            continue
+        package = consumer[:-3].replace("/", ".").rsplit(".", 1)[0]
+        names: list[tuple[str, int]] = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                names.extend((alias.name, node.lineno) for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                base = node.module
+                if node.level:
+                    parts = package.split(".") if package else []
+                    base = ".".join(parts[:max(0, len(parts) - node.level + 1)] + [base]).strip(".")
+                names.append((base, node.lineno))
+        for imported, line in names:
+            candidates = [imported]
+            while "." in candidates[-1]:
+                candidates.append(candidates[-1].rsplit(".", 1)[0])
+            matches = next((modules[name] for name in candidates if name in modules), set())
+            if len(matches) > 1:
+                gaps.append("ambiguous static import")
+                continue
+            provider = next(iter(matches), None)
+            if provider and provider != consumer:
+                edges[(provider, consumer)] = {
+                    "from": provider, "to": consumer, "edge_type": "static_import",
+                    "source_ref": f"{consumer}:{line}", "evidence": "Python AST import",
+                }
+    return list(edges.values()), gaps
+
+
+def _working_graph(root: Path, snapshot: dict) -> dict:
+    files = [name for name in project_context._git(root, "ls-files").splitlines() if name]
+    files.extend(name for name in snapshot["owned_untracked_files"] if name not in files)
+    files = [name for name in files if (root / name).is_file()]
+    edges, gaps = _working_import_edges(root, files)
+    # Keep consumers of deleted/renamed providers visible using the immutable
+    # baseline.  Current files still win when the same edge exists.
+    baseline, _, baseline_gaps = project_context._python_import_edges(
+        root, snapshot["base_commit"], snapshot["base_commit"])
+    edges_by_pair = {(edge["from"], edge["to"]): edge for edge in baseline}
+    edges_by_pair.update({(edge["from"], edge["to"]): edge for edge in edges})
+    edges = list(edges_by_pair.values())
+    # Baseline analyzer gaps may contain source references.  WORKING context
+    # needs the limitation class, never every underlying source location.
+    for gap in baseline_gaps:
+        if isinstance(gap, dict):
+            gaps.append("baseline unsupported static form: " + str(gap.get("form", "unknown")))
+        else:
+            gaps.append("baseline static-analysis coverage gap")
+    roots = set(snapshot["changed_files"]) | set(snapshot["owned_untracked_files"])
+    consumers: dict[str, set[str]] = {}
+    evidence = {(edge["from"], edge["to"]): edge for edge in edges}
+    for edge in edges:
+        consumers.setdefault(edge["from"], set()).add(edge["to"])
+    distance: dict[str, int] = {}
+    frontier = sorted(roots)
+    visited = set(frontier)
+    impact_edges: list[dict] = []
+    hop = 0
+    while frontier:
+        hop += 1
+        following: list[str] = []
+        for source in frontier:
+            for consumer in sorted(consumers.get(source, ())):
+                # Keep every proven ingress edge, even when another root has
+                # already reached the same consumer at this distance.  The
+                # breadth-first distance is singular; the evidence is not.
+                impact_edges.append(evidence[(source, consumer)])
+                if consumer in visited:
+                    continue
+                visited.add(consumer)
+                distance[consumer] = hop
+                following.append(consumer)
+        frontier = following
+    nodes = [{"id": name, "kind": "changed", "distance": 0} for name in sorted(roots)]
+    nodes.extend({"id": name, "kind": "consumer", "distance": distance[name]} for name in sorted(distance))
+    if len(nodes) > MAX_WORKING_NODES:
+        gaps.append(f"working graph output bounded at {MAX_WORKING_NODES} nodes")
+        nodes = nodes[:MAX_WORKING_NODES]
+    node_ids = {node["id"] for node in nodes}
+    graph_edges = []
+    seen_edges = set()
+    for edge in sorted(impact_edges, key=lambda e: (e["from"], e["to"])):
+        key = (edge["from"], edge["to"], edge["source_ref"])
+        if key not in seen_edges and edge["from"] in node_ids and edge["to"] in node_ids:
+            seen_edges.add(key)
+            graph_edges.append(edge)
+    if len(graph_edges) > MAX_WORKING_EDGES:
+        gaps.append(f"working graph output bounded at {MAX_WORKING_EDGES} edges")
+        graph_edges = graph_edges[:MAX_WORKING_EDGES]
+    graph = {"schema": 1, "state": "WORKING", "base_revision": snapshot["base_commit"],
+             "working_hash": snapshot["tree_hash"], "analyzer_version": ANALYZER_VERSION,
+             "nodes": nodes, "edges": graph_edges,
+             "coverage_gaps": sorted(set(gaps)), "durable_writes": 0}
+    encoded = json.dumps(graph, sort_keys=True, separators=(",", ":"))
+    graph["content_hash"] = hashlib.sha256(encoded.encode()).hexdigest()
+    return graph
+
+
+def working_tree_overlay(path: str | Path, *, agent_owned_untracked_paths: list[str] | None = None,
+                         agent_owned_tracked_paths: list[str] | None = None) -> dict:
     """Fingerprint the tracked working overlay without staging or writing it.
 
-    Untracked files are named but not content-hashed: they remain an explicit
-    coverage gap until a client stages them for the separate pre-commit pass.
+    Only explicitly agent-owned untracked files are content-bound; all other
+    untracked files remain excluded.
     """
     root = project_context.project_root(path)
     base = project_context._git(root, "rev-parse", "HEAD")
-    patch = _git_bytes(root, "diff", "--binary", "--no-ext-diff")
-    changed = project_context._git(root, "diff", "--name-only").splitlines()
+    owned_tracked = _owned_tracked_changes(root, agent_owned_tracked_paths)
+    selected = ("--", *owned_tracked) if agent_owned_tracked_paths is not None else ()
+    patch = _git_bytes(root, "diff", "HEAD", "--binary", "--no-ext-diff", *selected)
+    statuses = project_context._git(root, "diff", "HEAD", "--name-status", "--find-renames", *selected).splitlines()
+    changed = [field for row in statuses for field in row.split("\t")[1:]]
     untracked = project_context._git(root, "ls-files", "--others", "--exclude-standard").splitlines()
+    owned = _owned_untracked(root, agent_owned_untracked_paths)
     digest = hashlib.sha256()
     digest.update(patch)
     digest.update(b"\0")
-    digest.update("\n".join(sorted(untracked)).encode("utf-8"))
-    return {
+    for name in owned:
+        digest.update(name.encode("utf-8")); digest.update(b"\0")
+        digest.update((root / name).read_bytes()); digest.update(b"\0")
+    snapshot = {
         "schema": SCHEMA,
-        "repo": str(root),
         "base_commit": base,
         "tree_hash": digest.hexdigest(),
         "analyzer_version": ANALYZER_VERSION,
         "changed_files": sorted(name for name in changed if name),
-        "untracked_files": sorted(name for name in untracked if name),
-        "coverage_gaps": (["untracked file contents require staged analysis"] if untracked else []),
+        "owned_tracked_files": owned_tracked,
+        "untracked_count": len(untracked),
+        "owned_untracked_files": owned,
+        "coverage_gaps": (["unowned untracked files excluded"] if set(untracked) - set(owned) else []),
+    }
+    snapshot["working_graph"] = _working_graph(root, snapshot)
+    return snapshot
+
+
+def shadow_ledger(path: str | Path, *, agent_owned_tracked_paths: list[str],
+                  agent_owned_untracked_paths: list[str], verified_paths: list[str]) -> dict:
+    """Compare a current owner-scoped impact prediction with a hash-only ledger."""
+    root = project_context.project_root(path)
+    snapshot = working_tree_overlay(
+        root, agent_owned_tracked_paths=agent_owned_tracked_paths,
+        agent_owned_untracked_paths=agent_owned_untracked_paths)
+    actual = []
+    for raw in verified_paths:
+        candidate = Path(raw)
+        if candidate.is_absolute() or ".." in candidate.parts or not str(raw).strip():
+            raise ValueError("verified ledger paths must be relative and non-upward")
+        actual.append(candidate.as_posix())
+    predicted = sorted({node["id"] for node in snapshot["working_graph"]["nodes"]
+                        if str(node.get("id", "")).startswith("tests/")})
+    actual = sorted(set(actual))
+    false_negatives = sorted(set(actual) - set(predicted))
+    ledger_hash = hashlib.sha256(json.dumps({"predicted": predicted, "actual": actual},
+                                             sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    return {
+        "schema": 1, "base_revision": snapshot["base_commit"],
+        "working_hash": snapshot["tree_hash"], "graph_hash": snapshot["working_graph"]["content_hash"],
+        "prediction_count": len(predicted), "verified_count": len(actual),
+        "false_negative_count": len(false_negatives), "ledger_hash": ledger_hash,
+        "complete": False, "durable_writes": 0,
+        "coverage_gaps": sorted(set(snapshot["working_graph"]["coverage_gaps"] + [
+            "shadow ledger is static evidence, not complete runtime coverage"
+        ])),
     }
 
 
 def _key(snapshot: dict) -> tuple[str, str, str, str]:
-    return (snapshot["repo"], snapshot["base_commit"], snapshot["tree_hash"],
+    return ("working", snapshot["base_commit"], snapshot["tree_hash"],
             snapshot["analyzer_version"])
 
 
@@ -91,8 +291,20 @@ class AnalysisLoop:
         return {"status": "context_required", "durable_writes": 0,
                 "capsule_hash": capsule_hash, "next": "load current project context"}
 
+    def edit_batch_complete(self, path: str | Path, *, mode: str = "code",
+                            event_source: str = "client", batch_id: str | None = None,
+                            agent_owned_untracked_paths: list[str] | None = None,
+                            now: float = 0.0) -> dict:
+        """Accept one client-neutral machine event; state remains in memory only."""
+        event_source = _machine_identifier(event_source, "event_source")
+        correlation_id = _machine_identifier(batch_id or event_source, "batch_id")
+        return self.edit_completed(
+            path, mode=mode, origin=event_source, correlation_id=correlation_id,
+            now=now, agent_owned_untracked_paths=agent_owned_untracked_paths)
+
     def edit_completed(self, path: str | Path, *, mode: str, origin: str,
-                       correlation_id: str, now: float) -> dict:
+                       correlation_id: str, now: float,
+                       agent_owned_untracked_paths: list[str] | None = None) -> dict:
         if mode == "knowledge":
             return {"status": "bypass", "durable_writes": 0}
         if mode not in {"code", "mixed"}:
@@ -100,12 +312,9 @@ class AnalysisLoop:
         if origin.startswith("brainlehr_generated"):
             return {"status": "ignored_generated", "durable_writes": 0,
                     "coverage_gaps": ["generated Brainlehr artifact is not source analysis input"]}
-        if not correlation_id.strip():
-            raise ValueError("correlation_id is required")
-        snapshot = working_tree_overlay(path)
-        if snapshot["untracked_files"]:
-            return {"status": "coverage_gap", "snapshot": snapshot, "durable_writes": 0,
-                    "coverage_gaps": snapshot["coverage_gaps"]}
+        origin = _machine_identifier(origin, "event_source")
+        correlation_id = _machine_identifier(correlation_id, "batch_id")
+        snapshot = working_tree_overlay(path, agent_owned_untracked_paths=agent_owned_untracked_paths)
         key = _key(snapshot)
         if key == self.completed_key:
             return {"status": "current", "snapshot": snapshot, "durable_writes": 0}
@@ -149,9 +358,6 @@ class AnalysisLoop:
         if mode == "knowledge":
             return {"status": "bypass", "durable_writes": 0}
         snapshot = working_tree_overlay(path)
-        if snapshot["untracked_files"]:
-            return {"status": "coverage_gap", "snapshot": snapshot, "durable_writes": 0,
-                    "coverage_gaps": snapshot["coverage_gaps"]}
         if _key(snapshot) == self.completed_key:
             return {"status": "current", "snapshot": snapshot, "durable_writes": 0}
         self.latest_key = _key(snapshot)

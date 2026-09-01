@@ -69,28 +69,33 @@ def _old_schema_without_anlass() -> str:
     # ebenfalls lesen. Ein Wortlaut-Kriterium bricht beim naechsten Trigger
     # nicht mehr.
     entfallen = _entfallene_spalten(schema_sql, old_schema)
-    assert "anlass" in entfallen, f"anlass nicht ausgeschnitten (entfallen={entfallen})"
+    assert "anlass" in entfallen["knowledge_nodes"], (
+        f"anlass nicht ausgeschnitten (entfallen={entfallen})"
+    )
     # Nur Trigger auf DIESEN beiden Tabellen pruefen: Spaltennamen sind nicht
     # eindeutig. knowledge_embeddings hat ebenfalls ein `model`, und sein
     # Pruef-Trigger ist voellig in Ordnung -- ihn mitzuschneiden hiesse, das
     # Alt-Schema an einer Stelle zu veraendern, die mit anlass nichts zu tun
     # hat.
-    def betrifft(blk: str) -> bool:
-        return bool(re.search(r"\bON (knowledge_nodes|lessons_learned)\b", blk))
+    def betrifft(blk: str) -> str | None:
+        treffer = re.search(r"\bON (knowledge_nodes|lessons_learned)\b", blk)
+        return treffer.group(1) if treffer else None
 
     bloecke = re.findall(r"CREATE TRIGGER.*?\nEND;\n?", old_schema, flags=re.DOTALL)
     n3 = 0
     for blk in bloecke:
-        if betrifft(blk) and {m for m in re.findall(r"NEW\.(\w+)", blk)} & entfallen:
+        tabelle = betrifft(blk)
+        if tabelle and {m for m in re.findall(r"NEW\.(\w+)", blk)} & entfallen[tabelle]:
             old_schema = old_schema.replace(blk, "", 1)
             n3 += 1
     assert n3 >= 2, f"anlass-Trigger nicht wie erwartet gefunden (n={n3})"
     uebrig = {
         m
         for blk in re.findall(r"CREATE TRIGGER.*?\nEND;\n?", old_schema, flags=re.DOTALL)
-        if betrifft(blk)
+        if (tabelle := betrifft(blk))
         for m in re.findall(r"NEW\.(\w+)", blk)
-    } & entfallen
+        if m in entfallen[tabelle]
+    }
     assert not uebrig, f"Alt-Schema nennt weiter entfallene Spalten: {sorted(uebrig)}"
     # Dieselbe Behandlung fuer INDIZES, und zwar aus demselben Grund wie oben
     # bei den Triggern: Ein `CREATE INDEX ... ON knowledge_nodes(mandant)`
@@ -101,19 +106,21 @@ def _old_schema_without_anlass() -> str:
     # hat diese Luecke elf Monate lang nicht wehgetan. Wieder ueber den
     # INHALT bestimmt, nicht ueber eine Namensliste (L-1ffae7).
     for blk in re.findall(r"CREATE INDEX[^;]*;\n?", old_schema):
-        if betrifft(blk) and {m for m in re.findall(r"\((\w+)\)", blk)} & entfallen:
+        tabelle = betrifft(blk)
+        if tabelle and {m for m in re.findall(r"\((\w+)\)", blk)} & entfallen[tabelle]:
             old_schema = old_schema.replace(blk, "", 1)
     uebrig_idx = {
         m
         for blk in re.findall(r"CREATE INDEX[^;]*;", old_schema)
-        if betrifft(blk)
+        if (tabelle := betrifft(blk))
         for m in re.findall(r"\((\w+)\)", blk)
-    } & entfallen
+        if m in entfallen[tabelle]
+    }
     assert not uebrig_idx, f"Alt-Schema indiziert weiter entfallene Spalten: {sorted(uebrig_idx)}"
     return old_schema
 
 
-def _entfallene_spalten(neu: str, alt: str) -> set[str]:
+def _entfallene_spalten(neu: str, alt: str) -> dict[str, set[str]]:
     """Spalten, die der Schnitt oben aus knowledge_nodes/lessons_learned
     entfernt hat. Wird gebraucht, um JEDEN Trigger mitzuentfernen, der eine
     davon liest -- sonst bricht die Alt-DB mit 'no such column: NEW.x'.
@@ -123,15 +130,18 @@ def _entfallene_spalten(neu: str, alt: str) -> set[str]:
     erst wegen zweier neuer Trigger auf NEW.anlass, dann wegen NEW.freigabe.
     Beide Male war nicht der gepruefte Nachzug kaputt, sondern die
     Testvorrichtung veraltet."""
-    def spalten(text: str) -> set[str]:
-        gefunden = set()
+    def spalten(text: str) -> dict[str, set[str]]:
+        gefunden: dict[str, set[str]] = {}
         for tab in ("knowledge_nodes", "lessons_learned"):
             m = re.search(rf"CREATE TABLE IF NOT EXISTS {tab} \((.*?)\n\);",
                           text, flags=re.DOTALL)
             if m:
-                gefunden |= set(re.findall(r"^\s{4}(\w+) ", m.group(1), flags=re.M))
+                gefunden[tab] = set(re.findall(r"^\s{4}(\w+) ", m.group(1), flags=re.M))
+            else:
+                gefunden[tab] = set()
         return gefunden
-    return spalten(neu) - spalten(alt)
+    neu_spalten, alt_spalten = spalten(neu), spalten(alt)
+    return {tab: neu_spalten[tab] - alt_spalten[tab] for tab in neu_spalten}
 
 
 @pytest.fixture()

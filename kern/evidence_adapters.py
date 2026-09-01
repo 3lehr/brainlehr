@@ -57,7 +57,8 @@ def _base(kind: str, payload: dict) -> dict:
         raise ValueError("analyzer record requires source and revision")
     return {"kind": kind, "revision": revision, "source": source, "nodes": [], "edges": [],
             "provenance": {"schema": SCHEMA, "fixture": revision.startswith("fixture-"),
-                           "strength": EVIDENCE_STRENGTH[kind], "source_ref": source}}
+                           "strength": EVIDENCE_STRENGTH[kind], "source_ref": source,
+                           "tool_version": str(payload.get("tool_version", "unknown"))}}
 
 
 def normalize_record(kind: str, payload: dict) -> dict:
@@ -139,3 +140,69 @@ def unavailable_record(kind: str, revision: str, reason: str) -> dict:
     row["coverage_gaps"] = [reason]
     row["status"] = "coverage_gap"
     return row
+
+
+def normalize_runtime_artifact(payload: dict) -> dict:
+    """Normalize a registered runtime/test artifact without promoting claims.
+
+    Only bounded, project-relative write names and event cardinality metadata are
+    retained; caller-supplied booleans never replace missing proof.
+    """
+    required = ("revision", "tree_hash", "tool", "tool_version", "provenance")
+    if any(not isinstance(payload.get(key), str) or not payload[key].strip() for key in required):
+        raise ValueError("runtime artifact requires revision, tree_hash, tool, tool_version and provenance")
+    tool = payload["tool"].strip()
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}", tool):
+        raise ValueError("runtime artifact tool must be a bounded identifier")
+    writes = []
+    for item in payload.get("generated_writes", payload.get("writes", [])):
+        name = item if isinstance(item, str) else item.get("path")
+        if not isinstance(name, str) or not name or name.startswith(("/", "\\")) or ".." in name.split("/"):
+            continue
+        writes.append(name.replace("\\", "/"))
+    writes = sorted(set(writes))
+    ingress = payload.get("ingress", [])
+    ingress_count = len(ingress) if isinstance(ingress, list) else 0
+    gaps = []
+    probes = []
+    if not payload.get("registered", False):
+        gaps.append("unregistered_tool_result")
+    # A client can describe proof, but it cannot make itself a verifier.  Until
+    # a registered runner contributes a validated result reference, opaque
+    # booleans stay gaps and the staged gate remains honest.
+    if ingress_count > 1:
+        gaps.append("missing_exactly_once_evidence")
+        probes.append("exactly_once")
+    if payload.get("generator_or_test"):
+        gaps.append("missing_isolated_output_boundary")
+        probes.append("test_isolation")
+    event_identity = payload.get("event_identity")
+    event_node = "event:" + hashlib.sha256(str(event_identity or "unknown").encode()).hexdigest()[:16]
+    observed = not ("unregistered_tool_result" in gaps)
+    nodes = [{"id": event_node, "kind": "runtime_event"}]
+    edges = []
+    if observed:
+        for name in writes:
+            file_node = "file:" + name
+            nodes.append({"id": file_node, "kind": "generated_file"})
+            edges.append(_edge("runtime_generated_write", event_node, file_node, {
+                "source_kind": "runtime_artifact", "source_ref": "runtime:" + tool,
+                "strength": "runtime", "revision": payload["revision"],
+                "tool_version": payload["tool_version"],
+            }))
+    return {
+        "kind": "runtime_artifact", "source": "runtime:" + tool, "revision": payload["revision"],
+        "tree_hash": payload["tree_hash"], "tool": payload["tool"],
+        "tool_version": payload["tool_version"],
+        "provenance": {"schema": SCHEMA, "strength": "runtime", "source_ref": "runtime:" + tool,
+                       "tool_version": payload["tool_version"],
+                       "provenance_hash": hashlib.sha256(payload["provenance"].encode()).hexdigest()},
+        "status": "observed" if observed else "coverage_gap",
+        "nodes": nodes if observed else [], "edges": edges,
+        "generated_writes": writes,
+        "event_identity_hash": event_node.split(":", 1)[1],
+        "ingress_count": ingress_count,
+        "coverage_gaps": sorted(gaps),
+        "required_next_probe": probes[0] if probes else None,
+        "required_next_probes": probes,
+    }

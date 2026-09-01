@@ -56,19 +56,42 @@ def _bestandteile(ergebnis: dict, ziel_id: str) -> dict:
     AUSSAGE  -- steht das Ziel unter den ersten K?
     QUELLE   -- traegt der Treffer ein Herkunftsfeld?
     STATUS   -- traegt er eine Normentscheidung oder einen Rang?
-    GELTUNG  -- traegt er gilt_ab/gilt_bis?
+    GELTUNG  -- traegt er gilt_ab/gilt_bis (Norm) / first_seen (Lehre)?
 
     Geprueft wird der TREFFER, nicht die Datenbank: Die Frage des AC ist,
     was innerhalb eines Abrufs beim Fragenden ankommt."""
-    treffer = (ergebnis.get("results") or [])[:K]
-    ziel = next((t for t in treffer if t.get("id") == ziel_id or t.get("path") == ziel_id), None)
+    alle_treffer = ergebnis.get("results") or []
+    
+    ziel_top = next((t for t in alle_treffer[:K] if t.get("id") == ziel_id or t.get("path") == ziel_id), None)
+    aussage = ziel_top is not None
+
+    ziel = next((t for t in alle_treffer if t.get("id") == ziel_id or t.get("path") == ziel_id), None)
     if ziel is None:
         return {"aussage": False, "quelle": False, "status": False, "geltung": False}
+
+    kind = ziel.get("kind", "node")
+    if kind == "lesson":
+        quelle = bool(ziel.get("session") or ziel.get("actor") or ziel.get("model") or ziel.get("pruefstelle") or ziel.get("source"))
+        status = bool(ziel.get("status"))
+        geltung = bool(ziel.get("first_seen") or ziel.get("last_seen") or ziel.get("status"))
+    elif kind == "node":
+        quelle = bool(ziel.get("source") or ziel.get("quelle"))
+        status = ziel.get("norm_rang") is not None or bool(ziel.get("norm_entscheidung"))
+        is_norm = ziel.get("norm_rang") is not None or (ziel.get("norm_entscheidung") and ziel.get("norm_entscheidung") != "keine_norm")
+        if is_norm:
+            geltung = bool(ziel.get("gilt_ab") or ziel.get("gilt_bis"))
+        else:
+            geltung = True
+    else:
+        quelle = bool(ziel.get("source") or ziel.get("quelle"))
+        status = True
+        geltung = True
+
     return {
-        "aussage": True,
-        "quelle": bool(ziel.get("source") or ziel.get("quelle")),
-        "status": ziel.get("norm_rang") is not None or bool(ziel.get("norm_entscheidung")),
-        "geltung": bool(ziel.get("gilt_ab") or ziel.get("gilt_bis")),
+        "aussage": aussage,
+        "quelle": quelle,
+        "status": status,
+        "geltung": geltung,
     }
 
 

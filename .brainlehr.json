@@ -3,31 +3,11 @@
   "schema": 1,
   "tools": [
     {
-      "capability": "brainlehr boundary",
-      "command": "brainlehr-boundary",
-      "id": "brainlehr-boundary",
-      "source": "pyproject.toml [project.scripts]",
-      "status": "available"
-    },
-    {
-      "capability": "brainlehr einrichten",
-      "command": "brainlehr-einrichten",
-      "id": "brainlehr-einrichten",
-      "source": "pyproject.toml [project.scripts]",
-      "status": "available"
-    },
-    {
-      "capability": "brainlehr impact view",
-      "command": "brainlehr-impact-view",
-      "id": "brainlehr-impact-view",
-      "source": "pyproject.toml [project.scripts]",
-      "status": "available"
-    },
-    {
-      "capability": "brainlehr mcp",
-      "command": "brainlehr-mcp",
-      "id": "brainlehr-mcp",
-      "source": "pyproject.toml [project.scripts]",
+      "capability": "extract revision-bound CPG evidence from a local C source file",
+      "command": "python3 tool/joern_cpg.py --source <file.c> --revision <commit> --language C",
+      "id": "joern-cpg-impact",
+      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P43",
+      "source": "tool/joern_cpg.py",
       "status": "available"
     },
     {
@@ -46,28 +26,30 @@
       "status": "available"
     },
     {
-      "artifact": "verified trace or test",
       "capability": "verify runtime input output and timing dependencies",
-      "covers": [
-        "runtime"
-      ],
-      "edge_types": [
-        "runtime_trace",
-        "io_contract"
-      ],
-      "id": "runtime-trace-impact",
       "command": "python3 kern/project_impact_cli.py --project-root . --base <base-commit> --format otel --trace <sanitized-trace.json> --tree-hash <tree-hash>",
+      "id": "runtime-trace-impact",
       "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P43",
       "source": "kern/evidence_projections.py:otel_trace_projection",
       "status": "available"
     },
     {
-      "capability": "extract revision-bound CPG evidence from a local C source file",
-      "command": "python3 tool/joern_cpg.py --source <file.c> --revision <commit> --language C",
-      "id": "joern-cpg-impact",
-      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P43",
-      "source": "tool/joern_cpg.py",
-      "status": "available"
+      "capability": "import revision-bound SCIP symbol evidence from a local index",
+      "id": "scip-static-evidence",
+      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P42",
+      "status": "planned"
+    },
+    {
+      "capability": "import revision-bound Semgrep local-rule evidence",
+      "id": "semgrep-static-evidence",
+      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P42",
+      "status": "planned"
+    },
+    {
+      "capability": "extract revision-bound syntax evidence with local tree-sitter",
+      "id": "tree-sitter-static-evidence",
+      "reference": "docs/REQUIREMENTS_BRAINLEHR.md#BDW-P42",
+      "status": "planned"
     }
   ]
 }

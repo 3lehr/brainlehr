@@ -1,0 +1,102 @@
+{
+  "auftrag": "Messauftrag Vorpruefung Veroeffentlichung -- keine Aenderung an Sichtbarkeit, kein Push, kein neues Repo",
+  "erzeugt": "2026-08-15T15:40:54+0200",
+  "arbeitsort": "/Volumes/daten/Begod2026/brainlehr (Zweig brainlehr/b4-ausweis)",
+  "verfahren_hinweis": "Alle Zahlen per Werkzeugaufruf gemessen, keine aus dem Auftragstext uebernommen. Wo die Vorlage im Auftrag von den gemessenen Werten abweicht (z.B. 'testing 9' vs. gemessen 7), gilt die Messung, die Abweichung ist unten benannt.",
+
+  "frage_1_erzeuger_des_oeffentlichen_repos": {
+    "befund": "Kein Skript erzeugt oder synchronisiert das oeffentliche Repo automatisch aus diesem Arbeitsbaum. Es ist ein EIGENSTAENDIGER, manuell gepflegter git-Klon unter /Volumes/daten/Begod2026/_brainlehr_open mit eigener Historie, eigener Datenbank (knowledge.db) und remote origin=https://github.com/3lehr/brainlehr.git.",
+    "beleg": [
+      "git remote -v in _brainlehr_open zeigt origin -> 3lehr/brainlehr.git (nicht brainlehr-privat)",
+      "gh repo view 3lehr/brainlehr: visibility=PUBLIC, pushedAt=2026-08-10T17:02:23Z, diskUsage=3261 KB",
+      "git log -1 in _brainlehr_open: 2026-08-10T19:02:21+0200 (Ortszeit passend zu pushedAt UTC)",
+      "git status -sb in _brainlehr_open: 'main...origin/main' ohne Voraus-/Ruecklauf -- HEAD == origin/main, 0 ungepushte Commits",
+      "Suche 'grep -rl 3lehr/brainlehr(.git)? --include=*.py --include=*.sh' im Quellrepo findet keinen Sync-/Export-Code fuer den Dateibaum, nur pflege/export_offen.py (exportiert NUR die Datenbank, freigabe='offen', nach auszug-offen/bestand.jsonl -- kein Code-Sync)",
+      "docs/adr/ADR-003 und docs/LAGE_2026-08-09.md: 'Veroeffentlichung entsteht als NEUES Repo mit frischer Historie' -- bestaetigt manuelle Zweitanlage statt Automatik",
+      "docs/PLAN_WURZELORDNUNG_2026-08-10.md Nachtrag: der Ordnername 'kern/ melder/ messungen/ pflege/' wurde 2026-08-10 im Quellrepo bewusst an die bereits bestehende Struktur des 'weitergebbaren Repos _brainlehr_open' angeglichen -- die beiden Baeume werden von Hand in Deckung gehalten, nicht automatisch"
+    ],
+    "einzige_offen_stehende_luecke": "Ein einzelner uncommitteter Arbeitsstand in _brainlehr_open selbst: docs/PROMPT_CHATGPT_2026-08-10.md ist lokal geaendert (24 Zeilen Ergaenzung, inhaltlich unbedenklich -- ein methodischer Hinweis zum Suchzwang), aber weder committet noch gepusht."
+  },
+
+  "frage_2_zielbaum_scan": {
+    "verfahren": "Zielbaum ist NICHT rekonstruiert, sondern der bereits existierende, git-verwaltete Klon _brainlehr_open direkt gescannt (git ls-files = exakt das, was ein Push uebertragen wuerde). Scanner in Scratchpad geschrieben, importiert und wiederverwendet die Muster aus hub/scripts/push_guard.py (CONTENT_PATTERNS: AWS/GitHub/Slack/OpenAI-Keys, PEM_HEADER_RE+Base64-Rumpfpruefung, is_dangerous_path fuer *.pem/*.key/*.p12/*.pfx/*.keystore/*.jks/*.cer/*.mobileprovision/*.p8/id_rsa*), kein zweiter Scanner erfunden.",
+    "gepruefte_dateien": 280,
+    "gesamt_dateien_im_zielbaum": 280,
+    "gefaehrliche_dateinamen_treffer": 0,
+    "content_pattern_treffer_aws_github_slack_openai_pem": 0,
+    "key_properties_local_properties_env_gefunden": 0,
+    "zusatzbefund_pfadmuster": {
+      "beschreibung": "Nicht Teil des push_guard-Katalogs (der zielt auf Secrets, nicht auf Pfadspuren), zusaetzlich mit den export_offen.py-eigenen VERBOTENE_MUSTER (Heimatverzeichnis /Users/.../, Plattenpfad /Volumes/.../) gegen den TATSAECHLICH BEREITS OEFFENTLICHEN Quelltext gegengeprueft, weil dieselbe Fehlerklasse dort keinen Filter hat -- export_offen.py schuetzt nur die Datenbank, nicht den Code.",
+      "dateien_mit_Users_oder_Volumes_pfad_im_inhalt": 19,
+      "harter_fund": "tests/test_knowledge_add_defaults.py:119 traegt den ECHTEN macOS-Benutzernamen des Betreibers im Klartext: source=\"erzeugt aus /Users/lehrmacbook/.claude/CLAUDE.md (Stand 2026-08-09T00:00:00+0200)\" -- dieser Code ist BEREITS seit 2026-08-10T17:02:23Z im oeffentlichen Repo 3lehr/brainlehr live.",
+      "einordnung": "Kein Zugangsdatum/Secret (push_guard schlaegt hier nicht an, zurecht -- das ist nicht seine Kategorie), aber ein echter Personenbezug (Benutzername), den das Projekt selbst als schuetzenswert einstuft: pflege/export_offen.py hat exakt dafuer die ENTLOKALISIERUNG-Ersetzung eingebaut, aber NUR fuer den Datenbank-Export, nicht fuer den Quelltext. Ein Vergleichsfall im selben Zielbaum (kern/reifegrad.py) verwendet an aehnlicher Stelle bereits den Platzhalter '/Users/x/' -- der Fund in tests/test_knowledge_add_defaults.py ist also ein Ausreisser, kein durchgaengiges Muster.",
+      "weitere_18_dateien": "tragen ausschliesslich /Volumes/daten/... (Laufwerks-/Projektpfad, kein Benutzername) in Kommentaren, Docstrings oder Testfixtures -- z.B. haken/knowledge_recall_hook.py, kern/kanten_aus_bedeutung.py, kern/herkunft_normentscheider.py, kern/normrang.py, docs/RUNBOOK_WIEDERHERSTELLUNG.md, mehrere schreibpruefstand/runs/*.json. Geringere Schwere als der Benutzername, aber dieselbe Fehlerklasse (internes Ablagelayout im oeffentlichen Text)."
+    }
+  },
+
+  "frage_3_neu_seit_2026-08-10": {
+    "oeffentliches_repo_seit_2026-08-10_unveraendert": "Letzter Push 2026-08-10T17:02:23Z, lokaler Klon _brainlehr_open hat seither 0 ungepushte Commits (nur die eine uncommittete Datei aus Frage 1). Es ist seit 5 Tagen NICHTS Neues nach aussen gegangen -- die Frage 'gehoert das Neue nach draussen' hat sich fuer den Zeitraum tatsaechlich noch nicht gestellt, weil niemand es dorthin uebertragen hat.",
+    "quellrepo_aktivitaet_im_zeitraum": "426 Commits seit 2026-08-10T00:00 auf Pfaden, die im weitergebbaren Baum vorkaemen (kern/ melder/ messungen/ pflege/ pruefstand/ schreibpruefstand/ haken/ migrationen/ tests/ docs/ quellen/ brainlehr.py knowledge_mcp_server.py schnellstart.py schema.sql requirements.txt herkunft_unveraenderlich.sql) -- diese Arbeit liegt komplett noch NICHT im oeffentlichen Repo und muesste vor jeder weiteren Angleichung eigens durchgesehen werden.",
+    "gezielter_fund_sicherheitsvorfall": {
+      "gefunden": true,
+      "fundstelle": "auszug/bestand_2026-08-15.jsonl, Knoten-ID 9a27a332, Pfad /plaene/homepage-nach-hinten-verschoben, Feld content",
+      "wortlaut_ausschnitt": "'Die laufende Seite markus-lehr.de bleibt unberuehrt. Der Sicherheitsvorfall vom 2026-08-15 (Fund nc-dropon.php, ein Plugin abgeschaltet) ist eine eigene, laufende Sache...'",
+      "traegt_domain_dateiname_und_datum": true,
+      "steht_das_im_oeffentlichen_repo_oder_waere_es_exportiert_worden": "NEIN, in keiner Weise. Drei unabhaengige Sperren greifen: (1) der Knoten steht in der DB mit freigabe='intern' (per SQL geprueft), pflege/export_offen.py exportiert nur freigabe='offen' -- der Knoten faellt strukturell heraus. (2) die Datei auszug/bestand_2026-08-15.jsonl ist ein UNGEFILTERTER Voll-Dump (kein freigabe-Filter, anderes Werkzeug/Verzeichnis als auszug-offen/), liegt nur in diesem PRIVATEN Arbeitsrepo, ist git-status 'untracked' (??), also nicht committet. (3) das oeffentliche Repo _brainlehr_open hat dieses Verzeichnis nie enthalten -- 'git log --all -- auszug/*' in _brainlehr_open liefert 0 Treffer, nur auszug-offen/ hat Historie."
+    },
+    "randbefund_ungefilterte_dumps": {
+      "beschreibung": "auszug/bestand_2026-08-10.jsonl bis -15.jsonl sind fuenf Voll-Dumps der Datenbank (nicht freigabe-gefiltert), im PRIVATEN Arbeitsrepo brainlehr-privat. bestand_2026-08-10.jsonl ist dort BEREITS EINMAL committet gewesen (Commit b607d1cd u.a.), die vier neueren (11.-15.) sind aktuell untracked. Das Verzeichnis auszug/ steht NICHT in .gitignore.",
+      "risiko": "Kein akuter Leck -- das Repo ist privat, und die Kette zum oeffentlichen Repo ist nachweislich getrennt (siehe oben). Aber: ein ungefilterter Dump im Arbeitsbaum ist genau die Art Datei, die bei einem kuenftigen 'git add -A' oder einer unbedachten Neuanlage eines weitergebbaren Zweigs am ehesten versehentlich mitgenommen wuerde -- das ist der strukturelle Grund, warum L-cc6a15 (Quell-Scan findet diese Klasse nicht) hier zutrifft, auch wenn aktuell nichts passiert ist.",
+      "empfehlung_nicht_ausgefuehrt_da_ausserhalb_der_schreibgrenze": "auszug/ in .gitignore aufnehmen oder die Datei nach einer Aufbewahrungsfrist loeschen -- beides nicht Teil dieses Messauftrags (Schreibgrenze: nur die Ergebnisdatei)."
+    }
+  },
+
+  "frage_4_stichprobe_eigene_offene_knoten": {
+    "grundgesamtheit_aktuell_gemessen": {
+      "hinweis_abweichung_zur_auftragsvorlage": "Auftrag nannte 251 eigene offene Knoten (115+113+9+7+7). Aktuell gemessen: 249 (115 /brainlehr + 113 /methodik + 7 /testing + 7 /werkzeuge + 7 /tools) -- 2 weniger, /testing zeigt 7 statt der genannten 9. Halte mich an das Gemessene, die Abweichung wird hiermit gemeldet, nicht stillschweigend uebernommen.",
+      "knoten_gesamt": 2217,
+      "offen_gesamt": 1886,
+      "nasa_offen": 1637,
+      "eigen_offen": 249
+    },
+    "stichprobenumfang": 25,
+    "auswahl": "SELECT ... WHERE freigabe='offen' AND path LIKE '/brainlehr%' OR '/methodik%' OR '/testing%' OR '/werkzeuge%' OR '/tools%' ORDER BY RANDOM() LIMIT 25 -- Zufallsstichprobe ueber alle fuenf eigenen Aeste",
+    "ergebnis": "In keinem der 25 gepruefte Knoten Inhalte, die WEG-Rechtsfaelle, Steuerdaten, Namen Dritter oder Zugangsdaten tragen. Alle 25 sind Methodik-/Architektur-/Prozessknoten ueber brainlehr selbst oder allgemeine Arbeitsregeln.",
+    "zweifelsfaelle_gefunden_und_entschieden": [
+      {
+        "id": "d1d31bc4",
+        "pfad": "/methodik/direktiven/wcag-2-2-aa-verbindlich-bei-jeder-oberflaeche-systemweit",
+        "befund": "source-Feld traegt 'erzeugt aus /Users/lehrmacbook/.claude/CLAUDE.md' -- derselbe reale Benutzername wie in Frage 2, hier aber in der DATENBANK (freigabe='offen'), nicht im Code.",
+        "entscheidung": "Kein Blocker fuer den DB-Export selbst: pflege/export_offen.py ENTLOKALISIERUNG ersetzt '/Users/.../' -> '<heim>/' NACH dem Sammeln und VOR der Kontrolle -- das ist im Werkzeug bereits eingebaut und per Selbsttest belegt (test in export_offen.py::_selftest). Systemweit gemessen: 16 von 249 eigenen offenen Knoten tragen /Users/ im source-Feld, 61 tragen /Volumes/ in source oder content -- alle werden bei jedem Export automatisch entschaerft. Kein Handlungsbedarf am Bestand selbst, wohl aber Bestaetigung, dass ein direkter, ungefilterter DB-Zugriff (statt ueber export_offen.py) dieselbe Personenspur triege wie der Code-Fund."
+      },
+      {
+        "id": "1949a731",
+        "pfad": "/brainlehr/was-brainlehr-fuer-b4-fehlt-liegt-in",
+        "befund": "source-Feld nennt einen Pfad zu einem FREMDEN Kundenprojekt: '/Volumes/daten/AKA2026/begod/knowledge/konsil/konsil-akamy-webclient-2026-03-09.json' -- ein Zahnakademie-/Kundensystem mit eigenem Projektnamen.",
+        "entscheidung": "Kein Sperrgrund: der Knoteninhalt beschreibt ein generisches Rechte-Musters (Format 'modul:aktion:bezug'), keine Kundendaten, keine Namen, keine Vertragsinhalte. Der Pfad selbst faellt unter dieselbe Plattenpfad-Ersetzung wie oben (wird bei Export zu '<ablage>/AKA2026/...'), der Projektname 'AKA2026' bliebe darin allerdings sichtbar -- das ist kein personenbezogenes Datum, aber eine Kundenbeziehung, deren Nennung im Zweifel eine bewusste Entscheidung braucht, keine automatische. Wird als Grenzfall gemeldet, nicht selbst entschieden -- ausserhalb der Auftragsgrenze (Bewertung 'was wird freigegeben' bleibt laut export_offen.py-Docstring beim Menschen)."
+      }
+    ]
+  },
+
+  "frage_5_nasa_korpus_lizenz": {
+    "anzahl": 1637,
+    "herkunft_dokumentiert": true,
+    "fundstellen": [
+      "_brainlehr_open/NOTICE: 'auszug-offen/bestand.jsonl ... 1637 Eintraege aus dem NASA Lessons Learned Information System (https://llis.nasa.gov/). Werke der US-Bundesbehoerden sind nach 17 U.S.C. §105 gemeinfrei -- NICHT an der Primaerquelle geprueft, siehe quellen/fremdquellen.json.'",
+      "_brainlehr_open/quellen/fremdquellen.json, Eintrag kennung='nasa-llis': lizenz_vermutet='US-Bundeswerk, gemeinfrei (17 U.S.C. §105) — UNGEPRUEFT', ampel='gruen', geprueft_wie='1637 Eintraege importiert und im Bestand; die Ampel folgt der bereits vollzogenen Uebernahme, nicht einer neuen Pruefung der Lizenzseite'",
+      "pflege/nasa_llis_import.py Docstring nennt zusaetzlich eine ANDERE, nicht mit fremdquellen.json abgeglichene Herkunftsbehauptung: 'NASA LLIS (llis.csv, MIT-lizenziert NASADatanauts/llis_topicModel)' -- ein GitHub-Repo als Quelle statt der Primaerquelle llis.nasa.gov direkt."
+    ],
+    "urteil": "Eine Herkunftsangabe UND eine Lizenzbegruendung existieren, beide sind aber vom Bestand SELBST als ungeprueft gekennzeichnet -- das System behauptet an keiner Stelle eine bestaetigte Lizenz. Die rechtliche Grundlage (17 U.S.C. §105, Gemeinfreiheit von US-Bundeswerken) ist plausibel benannt, aber (a) nicht gegen die Primaerquelle verifiziert und (b) es gibt eine zweite, widerspruechliche Herkunftsangabe im Import-Skript (ein MIT-lizenziertes GitHub-Repo statt llis.nasa.gov direkt), die nicht aufgeloest ist -- unklar, ob die 1637 Eintraege tatsaechlich direkt von der Behoerde oder ueber eine dritte Kopie stammen, deren eigene Lizenzbedingungen (MIT verlangt z.B. Namensnennung) dann zusaetzlich gelten koennten. KEINE eigene Lizenzaussage erfunden -- das ist der gemessene Zustand: ungeklaert, nicht falsch."
+  },
+
+  "empfehlung": {
+    "quelltext": "Kann nach EINER Korrektur weitergegeben werden, ist es faktisch schon (Repo seit 5 Tagen oeffentlich, unveraendert). Vor dem naechsten Push in _brainlehr_open: tests/test_knowledge_add_defaults.py:119 den echten Benutzernamen '/Users/lehrmacbook/' durch einen Platzhalter ersetzen (Vorbild kern/reifegrad.py: '/Users/x/'). Die 18 weiteren /Volumes/daten-Fundstellen sind niedriger einzustufen (kein Personenbezug, nur Ablagelayout), aber dieselbe Fehlerklasse -- Bereinigung empfohlen, kein Sperrgrund.",
+    "bestand_wissensspeicher": "NICHT heute weitergeben. Gruende: (1) die Zahl in der Auftragsvorlage (251) und die gemessene (249) weichen ab -- der Bestand ist in staendiger Bewegung, eine Freigabe-Stichprobe von heute ist morgen wieder zu pruefen. (2) 61 von 249 eigenen offenen Knoten tragen Plattenpfade im source-Feld, die nur bei Nutzung von export_offen.py automatisch entschaerft werden -- ein direkter DB-Griff ohne dieses Werkzeug wuerde sie ungefiltert weitergeben. (3) im laufenden Arbeitsbaum liegt aktuell ein ungefilterter Voll-Dump (auszug/bestand_2026-08-15.jsonl) mit expliziten Sicherheitsvorfall-Details (Domain, Dateiname, Datum) -- korrekt als 'intern' markiert und strukturell vom Export getrennt, aber ein Beleg dafuer, wie schnell brisanter Inhalt in einen Knoten mit falscher Instanz-Grenze wandern kann, und ein Grund, JEDEN Export ausschliesslich ueber export_offen.py laufen zu lassen, nie per direktem SQL-Dump. (4) der Zweifelsfall '1949a731' (Kundenprojektname AKA2026) ist noch nicht vom Betreiber entschieden."
+  },
+
+  "abweichungen_vom_auftragstext": [
+    "Zahl 'testing 9' aus der Auftragsvorlage: gemessen sind es 7 -- gemeldet, nicht uebernommen.",
+    "Zahl '251 eigene offene Knoten': gemessen 249 -- gemeldet, nicht uebernommen.",
+    "'auszug-offen/bestand.jsonl ... zuletzt geschrieben 2026-08-10' aus der Vorlage bestaetigt sich (git log letzte Aenderung an auszug-offen/ im oeffentlichen Klon liegt auf demselben Datumsbereich); im PRIVATEN Arbeitsbaum existiert zusaetzlich das hier neu gefundene, davon zu unterscheidende Verzeichnis auszug/ (ohne '-offen'), das die Auftragsvorlage nicht erwaehnte."
+  ]
+}

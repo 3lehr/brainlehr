@@ -1,0 +1,285 @@
+{
+  "hinweis": "TABU bis Schritt 5 der Beurteilung -- vorher nicht lesen.",
+  "faelle": [
+    {
+      "lfd": 1,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-476602",
+      "target_label": "MCP tools/list per Env-Var profilieren (BEGOD_KNOWLEDGE_PROFIL=klein), ohne tool",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 2,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-44a838",
+      "target_label": "LLM-Output als neuer ungeschützter Schreibpfad: Neue KI-Features (mail_classify,",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 3,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/openlehr/steuer/ui",
+      "target_label": "Ui",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 4,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "target_label": "Betriebszustand: openlehr muss bis zum ersten Beta-Test nicht laufen",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 5,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-bbd7fb",
+      "target_label": "Ein Eingang wird aus einer Gesamtbewertung entfernt, weil er unbelegt war — die ",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 6,
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "target_label": "Vor der Wahl zu klären: wer unterschreibt den Verwaltervertrag — zwei Personen nötig",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 7,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/lessons/phase2-summary",
+      "target_label": "Meta-Optimierung Phase 2 Zusammenfassung",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 8,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/apps/metahuman-podcast-one-command-pipeline",
+      "target_label": "MetaHuman Podcast — One-Command-Pipeline, Status 2026-08-01T00:00:00+0200",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 9,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/methodik/einstieg",
+      "target_label": "So benutzt du diesen Zweig",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 10,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/testing/pytest",
+      "target_label": "pytest",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 11,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-b4b443",
+      "target_label": "fahrtenbuch Build 59 (2026-08-01, 06:21 UTC): JokerTripPromptRequest.source (Jok",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 12,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-606b63",
+      "target_label": "Generation-Token gegen Reentrancy bei fire-and-forget Cleanup async gestarteter ",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 13,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-b91ed6",
+      "target_label": "Vorbestehende rote Tests pauschal als \"Umgebungszustand\" abgetan, ohne jeden Fal",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 14,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-0392e4",
+      "target_label": "norm_rang ist eine Zahl ohne Einheit. Die Spalte trug bis heute ausschliesslich ",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 15,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-e7bc5e",
+      "target_label": "Eine blockierte Aktion wurde nicht als Freigabe-Anforderung behandelt, sondern a",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 16,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-a9ccd0",
+      "target_label": "fahrtenbuch: Joker-Trip-Prompt hatte 45s-Auto-Decline-Timer (Future.delayed in j",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 17,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-e1a441",
+      "target_label": "wohlair: Herkunfts-Trennung zweier gleich aussehender Datenbestände (importierte",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 18,
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "target_label": "ADR-006: Token-Kompression fuer Multi-Agent Systeme",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 19,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "target_label": "6. Eine falsche Zahl ist schlimmer als keine.",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 20,
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "target_label": "Modell-Kaskade v3: Opus-Hauptfaden + Delegation nach unten (seit 2026-08-05T09:40:00+0200)",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 21,
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "target_label": "Buckeberg Anbieterabend 2026-08-05: mündliche Aussagen kippen zwei Angebotsbewertungen, ein Widerspruch bleibt offen",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 22,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "target_label": "10. Verhältnismäßigkeit ist Teil der Antwort.",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 23,
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "target_label": "Widerspruch 2: Brennertausch Haus 22 — vom Anbieterabend unberührt, unverändert offen",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 24,
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "target_label": "efbe: der Vertrag regelt die Vergabe an eigene Gewerke nicht — Vertragsfrage vor der Unterschrift",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 25,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-298823",
+      "target_label": "openlehr/steuer: vierter Fall am selben Tag (2026-07-31), in dem ein Feld/eine K",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 26,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-f9f654",
+      "target_label": "try/catch um einen nicht awaiteten (unawaited) async-Aufruf faengt dessen Fehler",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 27,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-cdac52",
+      "target_label": "Fahrtenbuch Prompt-Listener: Navigator.of(context) auf ambientem Widget-context ",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 28,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/stadtwerke",
+      "target_label": "Stadtwerke",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 29,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/brainlehr/inference-control-was-andere-faecher",
+      "target_label": "Inference Control — was andere Faecher geloest haben und wo die bewiesene Grenze liegt",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 30,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "target_label": "Buckeberg Konsil 2026-07-22: Governance vor Ranking, 11 harte Schranken, Meilensteine M0-M13",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 31,
+      "category": "fact",
+      "target_kind": "node",
+      "target_id": "/openlehr/volltextindex-wird-beim-einlesen",
+      "target_label": "Volltextindex wird beim Einlesen fortgeschrieben — hat fuer Belege und Mails aber keinen Leser",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 32,
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "target_label": "ADR-007: Trust Zones — Content-Sandbox für externe Inhalte",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 33,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-503687",
+      "target_label": "mycel.py Stufe 2 (hub/scripts/mycel.py), 2026-07-31: Rollen-Heuristik (Quelle/Pr",
+      "b_richtig_treffer": false
+    },
+    {
+      "lfd": 34,
+      "category": "norm",
+      "target_kind": "node",
+      "target_id": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "target_label": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+      "b_richtig_treffer": true
+    },
+    {
+      "lfd": 35,
+      "category": "lesson",
+      "target_kind": "lesson",
+      "target_id": "L-8c633e",
+      "target_label": "SchwarmWacht: camera_invite_screen.dart (Sensor/Waechter-QR) blieb bei M-Fehlerk",
+      "b_richtig_treffer": false
+    }
+  ]
+}

@@ -1,0 +1,286 @@
+{
+  "zeit": "2026-09-01T11:57:55.228729+00:00",
+  "weg": "knowledge_mcp_server.knowledge_search() -- Produktivweg, kein Nachbau",
+  "korpus": {
+    "datei": "runs/pruefkorpus.jsonl",
+    "n": 35,
+    "hinweis": "nur Positivfaelle; category=negative ausgeschlossen"
+  },
+  "kriterium": "BDW-P05-AC1 woertlich: Aussage, Quelle, Status UND Gueltigkeit innerhalb EINES Abrufs, in mindestens 95 % der Faelle. Geprueft wird, was beim Fragenden ankommt, nicht was in der Datenbank steht.",
+  "schwelle": 0.95,
+  "je_bestandteil": {
+    "aussage": {
+      "treffer": 33,
+      "quote": 0.9429
+    },
+    "quelle": {
+      "treffer": 23,
+      "quote": 0.6571
+    },
+    "status": {
+      "treffer": 34,
+      "quote": 0.9714
+    },
+    "geltung": {
+      "treffer": 22,
+      "quote": 0.6286
+    }
+  },
+  "vollstaendig": {
+    "treffer": 10,
+    "quote": 0.2857
+  },
+  "bestanden": false,
+  "grenze": [
+    "K=5 -- ein Ziel auf Rang 6 zaehlt als nicht reproduziert.",
+    "Geprueft wird die Trefferstruktur, nicht der Datenbankinhalt: die Felder koennen vorhanden sein und trotzdem nicht ausgeliefert werden (BDW-R05, FAIL).",
+    "Momentaufnahme eines wachsenden Bestands."
+  ],
+  "einzeln": [
+    {
+      "ziel": "L-a9ccd0",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-298823",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-f9f654",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-b4b443",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-44a838",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-cdac52",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-e7bc5e",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-e1a441",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-b91ed6",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-bbd7fb",
+      "aussage": false,
+      "quelle": false,
+      "status": false,
+      "geltung": false
+    },
+    {
+      "ziel": "L-503687",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-8c633e",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-606b63",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-0392e4",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "L-476602",
+      "aussage": true,
+      "quelle": false,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "/ops/buckeberg-konsil-2026-07-22-governance",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/10-verhaeltnismaessigkeit-ist-teil-der-antwort",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/methodik/arbeitsweise/06-eine-falsche-zahl-ist-schlimmer-als-keine",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/openlehr/betriebszustand-openlehr-muss-bis-zum",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/apps/metahuman-podcast-one-command-pipeline",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/openlehr/volltextindex-wird-beim-einlesen",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/lessons/phase2-summary",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/testing/pytest",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/brainlehr/inference-control-was-andere-faecher",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/methodik/einstieg",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/stadtwerke",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/openlehr/steuer/ui",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": false
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/efbe-der-vertrag-regelt-die-vergabe-an",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "aussage": false,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "/methodik/direktiven/keine-entwicklerinformation-in-der-oberflaeche-systemweit",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "/methodik/direktiven-hub-claude-md/modell-kaskade-v3-opus-hauptfaden",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/widerspruch-2-brennertausch-haus-22-vom",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-007-trust-zones-content-sandbox",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    },
+    {
+      "ziel": "/methodik/adr-bestand-hub-docs-adr/adr-006-token-kompression-fuer-multi",
+      "aussage": true,
+      "quelle": true,
+      "status": true,
+      "geltung": true
+    }
+  ]
+}

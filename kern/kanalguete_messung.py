@@ -48,6 +48,7 @@ import numpy as np
 import embeddings
 import relevanzlage
 import knowledge_mcp_server as kms  # noqa: E402 -- nur gelesen: fold_de, _or_query, _stichwortkanal_blind
+import zeitmarke
 
 DB = _w / "brainlehr.db"
 
@@ -306,7 +307,7 @@ def messlauf(*, n_ja: int, n_nein: int, max_results: int = 5, seed: int = 202608
     stufen = {"echt": fusion_echt, "vorher": fusion_vorher,
               "schritt1": fusion_schritt1, "schritt2": fusion_schritt2}
     ergebnis = {
-        "erzeugt_am": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "erzeugt_am": zeitmarke.jetzt(),
         "knoten_bestand": conn.execute("SELECT COUNT(*) FROM knowledge_nodes").fetchone()[0],
         "modell": embeddings.DEFAULT_EMBED_MODEL,
         "n_ja": len(ja_stichprobe), "n_nein": len(nein_stichprobe),

@@ -1,0 +1,48 @@
+This is LuaHBTeX, Version 1.24.0 (TeX Live 2026) 
+ restricted system commands enabled.
+(./rechnung.tex
+LaTeX2e <2026-06-01>
+L3 programming layer <2026-07-20>
+ (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/documentmetadata-support.ltx (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/pdfmanagement/pdfmanagement-init.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/tagpdf/tagpdf-base.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/pdfmanagement/pdfmanagement.ltx))) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-luatex.def) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/pdfmanagement/l3backend-testphase-luatex.def) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-latest.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/tagpdf/tagpdf.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/tagpdf/tagpdf-luatex.def) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/tagpdf/tagpdf-mc-code-lua.sty)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-names.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-new-or-2.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-footnotes.ltx)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-block.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-enumitem.sty)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-context.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-kernel-changes.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-sec.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-sec-template.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-toc.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-minipage.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-graphic.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-float.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-bib.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-text.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-marginpar.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-title.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-table.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/tools/array.sty)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-math.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-math.ltx) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-mathpkg.ltx) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-mathintent.ltx)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-firstaid.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-tikz.sty))
+
+LaTeX DocumentMetadata Warning: LaTeX-lab package 'bookmarks' not found.
+
+(/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/pdfmanagement/pdfmanagement-firstaid.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/base/size10.clo)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/fontspec/fontspec.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/fontspec/fontspec-luatex.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/base/fontenc.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/fontspec/fontspec.cfg))) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/embedfile/embedfile.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/infwarerr/infwarerr.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/iftex/iftex.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/pdfescape/pdfescape.sty)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/hyperref/hyperref.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/graphics/keyval.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/hycolor/hycolor.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/hyperref/nameref.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/refcount/refcount.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/kvoptions/kvoptions.sty))) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/etoolbox/etoolbox.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/stringenc/stringenc.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/hyperref/pd1enc.def) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/intcalc/intcalc.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/hyperref/puenc.def) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/url/url.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/bitset/bitset.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty))) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/pdfmanagement/hgeneric-testphase.def (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/pdfmanagement/hyperref-colorschemes.def) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/bookmark/bookmark.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/bookmark/bkm-luatex.def))) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsmath.sty
+For additional information on amsmath, use the `?' option.
+(/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amstext.sty (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsgen.sty)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsbsy.sty) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsopn.sty)) (/Users/lehrmacbook/Library/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-amsmath.ltx)
+
+Package tagpdf Warning: Neither unicode-math nor lua-unicode-math has been
+(tagpdf)                loaded.
+(tagpdf)                luamml will not create a MathML file.
+(tagpdf)                To avoid this warning load unicode-math 
+(tagpdf)                or lua-unicode-math or disable luamml with 
+(tagpdf)                \tagpdfsetup {math/mathml/luamml/load=false}
+(tagpdf)                or force luamml with 
+(tagpdf)                \tagpdfsetup {math/mathml/luamml/load=true}
+
+(./rechnung.aux)
+Info: mathml file rechnung-mathml does not exist
+Info: mathml file rechnung-luamml-mathml does not exist
+<<sRGB.icc>><<factur-x.xml>> [1{/Users/lehrmacbook/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]<<latex-list-css.html>><<latex-align-css.html>> (./rechnung.aux)
+
+Package tagpdf Info: Finalizing the tagging structure:
+(tagpdf)             Writing out ~35 structure objects
+(tagpdf)             with ~17 'MC' leaf nodes.
+(tagpdf)             Be patient if there are lots of objects!
+
+Package tagpdf Info: writing ParentTree
+Package tagpdf Info: writing IDTree
+Package tagpdf Info: writing RoleMap
+Package tagpdf Info: writing ClassMap
+Package tagpdf Info: writing NameSpaces
+Package tagpdf Info: writing StructElems
+Package tagpdf Info: writing Root
+)
+ 541 words of node memory still in use:
+   6 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 2 glyph, 10 attribute, 60 glue_spec, 7 attribute_list, 1 write nodes
+   avail lists: 1:1,2:562,3:164,4:3,5:93,6:15,7:911,8:2,9:173,11:45
+</Users/lehrmacbook/Library/TinyTeX/texmf-dist/fonts/opentype/public/lm/lmroman10-bold.otf></Users/lehrmacbook/Library/TinyTeX/texmf-dist/fonts/opentype/public/lm/lmroman10-regular.otf></Users/lehrmacbook/Library/TinyTeX/texmf-dist/fonts/opentype/public/lm/lmroman12-bold.otf>
+Output written on rechnung.pdf (1 page, 30804 bytes).
+Transcript written on rechnung.log.

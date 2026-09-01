@@ -4,8 +4,11 @@ gesucht statt fester Ebenenzahl.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
+
+import pytest
 
 _w = Path(__file__).resolve().parent
 while not (_w / "schema.sql").exists() and _w != _w.parent:
@@ -69,6 +72,10 @@ def test_fallbestand_form():
         assert not f.get("target_id")
 
 
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires the explicitly selected live corpus; fresh partitions contain no corpus",
+)
 def test_ziel_ids_eindeutig_und_aufloesbar():
     """Jedes der 35 Ziele muss GENAU einmal vorkommen und im heutigen
     Bestand tatsaechlich existieren -- sonst misst die Trefferquote gegen

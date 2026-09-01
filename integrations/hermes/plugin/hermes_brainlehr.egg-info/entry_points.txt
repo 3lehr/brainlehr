@@ -1,0 +1,2 @@
+[hermes_agent.memory_providers]
+brainlehr = brainlehr_provider:BrainlehrProvider

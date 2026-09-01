@@ -8,6 +8,7 @@ and is curated only after a caller has verified the current code or a test.
 from __future__ import annotations
 
 import ast
+import base64
 import hashlib
 import html
 import json
@@ -15,7 +16,12 @@ import re
 import subprocess
 from collections import Counter
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+
+try:  # ``tool/project_impact_view.py`` imports this module from ``kern/``.
+    from kern.evidence_adapters import normalize_runtime_artifact
+except ModuleNotFoundError:  # pragma: no cover - exercised by the CLI wrapper
+    from evidence_adapters import normalize_runtime_artifact
 
 try:
     import tomllib
@@ -27,8 +33,13 @@ SCHEMA = 1
 MANIFEST = ".brainlehr.json"
 MAX_SELECTED = 3
 MAX_CODE_HITS = 8
+MAX_CAPABILITY_CARDS = 8
+MAX_CAPABILITY_SOURCE_FILES = 96
+CONTEXT_STEPS = (8, 32, "definition", "neighbors", "transitive")
 MAX_BOUNDARY_EVIDENCE = 4
 MAX_ACK_REASON = 240
+MAX_WITNESS_SUMMARY_BYTES = 4096
+MAX_WITNESS_ID_LENGTH = 96
 COMMIT_GATE_TOOL = "project-commit-gate"
 COMMIT_ACKS = ".brainlehr-commit-acks.jsonl"
 IMPACT_GRAPH_SCHEMA = 2
@@ -36,6 +47,10 @@ CLIENT_POLICY_SCHEMA = 1
 CLIENT_POLICY_RELATIVE_PATH = "docs/CLIENT_BOOTSTRAP_POLICY.json"
 BOUNDARY_MODES = {"auto", "knowledge", "code", "mixed"}
 BOUNDARY_PHASES = ("plan", "read", "edit", "build", "test", "commit")
+_RUNTIME_PROBES: dict[tuple[str, str, str], list[dict]] = {}
+_RUNTIME_ARTIFACT_KEYS = {"revision", "tree_hash", "tool", "tool_version", "provenance",
+                          "generated_writes", "writes", "ingress", "event_identity",
+                          "proof", "generator_or_test"}
 
 _STOPWORDS = {
     "aber", "auch", "code", "eine", "einen", "einer", "fuer", "für",
@@ -43,6 +58,249 @@ _STOPWORDS = {
     "projekt", "soll", "the", "this", "und", "von", "was", "werden",
     "what", "wie", "with",
 }
+
+_CAPABILITY_TASK = "explain everything this repository can do"
+_CAPABILITY_FUNCTIONS = {"main", "run", "start", "handle", "dispatch", "execute"}
+_PERSISTENCE_CALLS = {"connect", "execute", "commit", "write_text", "write_bytes", "open"}
+
+
+def capability_task(task: str) -> bool:
+    """Whether this is the explicit, bounded repository-inventory request."""
+    return _CAPABILITY_TASK in " ".join(str(task).casefold().split())
+
+
+_INVENTORY_CONFIG_FILES = (MANIFEST, "pyproject.toml", "package.json", ".gitignore")
+
+
+def _inventory_config(root: Path, revision: str, tracked: set[str]) -> dict:
+    """Bind config to HEAD, or label it working/stale without a false claim."""
+    digest = hashlib.sha256()
+    dirty: list[str] = []
+    working: list[str] = []
+    for name in _INVENTORY_CONFIG_FILES:
+        target = root / name
+        digest.update(name.encode() + b"\0")
+        if name not in tracked:
+            if target.is_file():
+                working.append(name)
+                digest.update(target.read_bytes())
+            continue
+        result = subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet", "HEAD", "--", name],
+            capture_output=True, text=True, timeout=15, check=False,
+        )
+        if result.returncode == 1:
+            dirty.append(name)
+        elif result.returncode:
+            raise ValueError(f"cannot inspect discovery configuration: {name}")
+        digest.update(_git_at(root, revision, name).encode("utf-8"))
+    return {"hash": digest.hexdigest(),
+            "state": "stale" if dirty else ("working" if working else "head"),
+            "dirty": dirty, "working": working}
+
+
+def _tool_source_path(source: object) -> str:
+    value = str(source or "").strip()
+    if not value:
+        return ""
+    path = value.split(" ", 1)[0].split(":", 1)[0]
+    candidate = PurePosixPath(path)
+    if candidate.is_absolute() or not path or path == "." or ".." in candidate.parts:
+        raise ValueError("tool source must be a project-relative tracked path")
+    return path
+
+
+def _validate_tool_source(root: Path, source: object, tracked: set[str] | None = None) -> None:
+    path = _tool_source_path(source)
+    if path and path not in (tracked if tracked is not None else set(_tracked_files(root))):
+        raise ValueError("tool source must name a tracked project-relative path")
+
+
+def _repository_boundary_gaps(root: Path) -> list[str]:
+    """Name nested/submodule boundaries; never silently fold them into scope."""
+    gaps: list[str] = []
+    try:
+        parent_root = Path(_git(root.parent, "rev-parse", "--show-toplevel")).resolve()
+    except ValueError:
+        parent_root = root
+    if parent_root != root:
+        gaps.append("nested repository boundary; outer repository is not analysed")
+    result = subprocess.run(["git", "-C", str(root), "submodule", "status", "--recursive"],
+                            capture_output=True, text=True, timeout=15, check=False)
+    if result.returncode == 0 and result.stdout.strip():
+        gaps.append("submodule boundary; submodule contents are not analysed")
+    return gaps
+
+
+def capability_inventory(path: str | Path, *, limit: int = MAX_CAPABILITY_CARDS) -> dict:
+    """Deterministically summarize declared capabilities, never source text.
+
+    This is deliberately a small AST/manifest projection, not a universal
+    parser.  Every omitted discovery family remains an explicit gap.
+    """
+    root = project_root(path)
+    revision = _git(root, "rev-parse", "HEAD")
+    files = _tracked_files(root)
+    python_files = [name for name in files if name.endswith(".py")]
+    scanned_python_files = python_files[:MAX_CAPABILITY_SOURCE_FILES]
+    limit = min(max(1, limit), MAX_CAPABILITY_CARDS)
+    config = _inventory_config(root, revision, set(files))
+    config_hash = config["hash"]
+    observed = datetime.now(timezone.utc).isoformat()
+    if config["state"] == "stale":
+        return {"schema": 1, "revision": revision, "discovery_config_hash": config_hash,
+                "config_binding": config, "cards": [], "discovery_coverage": {},
+                "coverage_gaps": ["tracked discovery configuration differs from HEAD"],
+                "required_next_probe": "commit_or_revert_discovery_configuration",
+                "truncated": False, "state": "stale"}
+    if len(python_files) <= MAX_CAPABILITY_SOURCE_FILES:
+        edges, ambiguous, unsupported = _python_import_edges(root, revision, observed)
+    else:
+        edges, ambiguous, unsupported = [], [], []
+    consumers: dict[str, set[str]] = {}
+    for edge in edges:
+        consumers.setdefault(edge["from"], set()).add(edge["to"])
+
+    def descendants(source: str) -> tuple[list[str], list[str]]:
+        direct = sorted(consumers.get(source, ()))
+        seen = set(direct)
+        frontier = list(direct)
+        while frontier:
+            current = frontier.pop(0)
+            for child in sorted(consumers.get(current, ())):
+                if child not in seen:
+                    seen.add(child)
+                    frontier.append(child)
+        return direct, sorted(seen - set(direct))
+
+    candidates: list[dict] = []
+    seen: set[tuple[str, str, int]] = set()
+
+    def add(kind: str, title: str, source: str, line: int, *, symbol: str = "",
+            triggers: list[str] | None = None, inputs: list[str] | None = None,
+            state_stores: list[str] | None = None, outputs: list[str] | None = None,
+            side_effects: list[str] | None = None) -> None:
+        key = (kind, source, line)
+        if key in seen:
+            return
+        seen.add(key)
+        direct, indirect = descendants(source) if source.endswith(".py") else ([], [])
+        token = hashlib.sha256(f"{kind}\0{source}\0{line}\0{symbol}".encode()).hexdigest()[:12]
+        candidates.append({
+            "id": f"cap-{token}", "title": title[:120], "kind": kind,
+            "entrypoints": [source + (f":{symbol}" if symbol else "")],
+            "triggers": triggers or ["static discovery"], "inputs": inputs or [],
+            "phases": ["entry", "invoke", "output"], "timing": "static; runtime unproven",
+            "files": [source], "symbols": [symbol] if symbol else [],
+            "state_stores": state_stores or [], "outputs": outputs or [],
+            "side_effects": side_effects or [], "direct_consumers": direct,
+            "indirect_consumers": indirect, "provenance": {
+                "revision": revision, "source_ref": f"{source}:{line}",
+                "discovery_config_hash": config_hash, "evidence": "manifest or Python AST",
+            }, "coverage_gaps": ["runtime order and cardinality require registered evidence"],
+            "required_next_probe": "registered_runtime_or_test_evidence",
+        })
+
+    for tool in _declared_tools(root):
+        source = str(tool.get("source", "pyproject.toml")).split(" ", 1)[0]
+        add("cli", str(tool["capability"]), source, 1, symbol=str(tool.get("command", "")),
+            triggers=["CLI invocation"], inputs=["command arguments"], outputs=["process result"])
+
+    test_files = [name for name in files if name.startswith("tests/") and Path(name).name.startswith("test_")]
+    if test_files:
+        add("test_journey", "tracked test journeys", test_files[0], 1,
+            triggers=["test runner"], inputs=[f"{len(test_files)} tracked test files"],
+            outputs=["test result"], side_effects=[])
+
+    route_found = provider_found = workflow_found = persistence_found = False
+    for source in scanned_python_files:
+        try:
+            tree = ast.parse(_git_at(root, revision, source), filename=source)
+        except (SyntaxError, ValueError):
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and "provider" in node.name.casefold():
+                provider_found = True
+                add("provider", node.name, source, node.lineno, symbol=node.name,
+                    triggers=["provider lifecycle"], inputs=["provider request"], outputs=["provider result"])
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if node.name.casefold() in _CAPABILITY_FUNCTIONS:
+                    workflow_found = True
+                    add("workflow", node.name, source, node.lineno, symbol=node.name,
+                        triggers=["function call"], inputs=["declared parameters"], outputs=["return or side effect"])
+            elif isinstance(node, ast.Call):
+                name = node.func.attr if isinstance(node.func, ast.Attribute) else (
+                    node.func.id if isinstance(node.func, ast.Name) else "")
+                if name in _PERSISTENCE_CALLS:
+                    persistence_found = True
+                    add("persistence", f"{name} persistence path", source, node.lineno,
+                        symbol=name, triggers=["call"], state_stores=["unclassified local store"],
+                        outputs=["local write or query"], side_effects=["possible local persistence"])
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                decorators = [getattr(dec, "attr", getattr(dec, "id", "")) for dec in node.decorator_list]
+                if set(decorators) & {"route", "get", "post", "put", "delete"}:
+                    route_found = True
+                    add("http_route", node.name, source, node.lineno, symbol=node.name,
+                        triggers=["HTTP route decorator"], inputs=["HTTP request"], outputs=["HTTP response"])
+
+    manifest_tools = (inspect_manifest(root).get("manifest") or {}).get("tools", [])
+    runtime_tools = [tool for tool in manifest_tools if tool.get("status") == "available"
+                     and (tool.get("artifact") or set(tool.get("covers", []))
+                          & {"test", "runtime", "timing", "contract"})]
+    if runtime_tools:
+        add("runtime_evidence", "registered runtime evidence", "pyproject.toml", 1,
+            triggers=["registered tool"], outputs=["revision-bound evidence"])
+
+    unscanned = len(python_files) - len(scanned_python_files)
+    scan_omitted = [f"{unscanned} Python files unscanned"] if unscanned else []
+    coverage = {
+        "cli": {"attempted": True, "covered": bool(_declared_tools(root)), "omitted": []},
+        "http_routes": {"attempted": True, "covered": route_found,
+                        "omitted": scan_omitted + ([] if route_found else ["no supported Python decorator observed"])},
+        "providers": {"attempted": True, "covered": provider_found,
+                      "omitted": scan_omitted + ([] if provider_found else ["no Provider class observed"])},
+        "workflows": {"attempted": True, "covered": workflow_found,
+                      "omitted": scan_omitted + ([] if workflow_found else ["no supported entry function observed"])},
+        "persistence": {"attempted": True, "covered": persistence_found,
+                        "omitted": scan_omitted + ([] if persistence_found else ["no supported persistence call observed"])},
+        "tests": {"attempted": True, "covered": bool(test_files), "omitted": [] if test_files else ["no tracked test journey"]},
+        "runtime_evidence": {"attempted": True, "covered": bool(runtime_tools), "omitted": [] if runtime_tools else ["no manifest artifact registration"]},
+    }
+    gaps = _repository_boundary_gaps(root) + [
+            "reflection and dynamic plugins are not proven by static inventory",
+            "build/deploy variants are not inspected", "runtime timing requires registered evidence"]
+    if ambiguous:
+        gaps.append("ambiguous static imports require selection")
+    if unsupported:
+        gaps.append("unsupported static import form requires probe")
+    # Keep one card per observed family before filling remaining capacity.
+    # Otherwise a large workflow family can hide providers or persistence.
+    cards: list[dict] = []
+    selected_ids: set[str] = set()
+    for kind in ("cli", "http_route", "provider", "workflow", "persistence",
+                 "test_journey", "runtime_evidence"):
+        candidate = next((card for card in candidates if card["kind"] == kind), None)
+        if candidate is not None and len(cards) < limit:
+            cards.append(candidate)
+            selected_ids.add(candidate["id"])
+    for candidate in candidates:
+        if len(cards) >= limit:
+            break
+        if candidate["id"] not in selected_ids:
+            cards.append(candidate)
+    if len(candidates) > len(cards):
+        gaps.append("capability summary truncated; select a card or widen")
+    if len(python_files) > len(scanned_python_files):
+        gaps.append("static capability scan bounded; unscanned Python files require selection")
+    if unscanned:
+        for card in cards:
+            card["coverage_gaps"].append("static consumers omitted because source scan is bounded")
+    return {"schema": 1, "revision": revision, "discovery_config_hash": config_hash,
+            "config_binding": config,
+            "cards": cards, "discovery_coverage": coverage, "coverage_gaps": gaps,
+            "required_next_probe": "select_capability_or_register_runtime_evidence",
+            "truncated": len(candidates) > len(cards), "state": "current"}
 
 
 def _git(root: Path, *args: str) -> str:
@@ -119,7 +377,7 @@ def _declared_tools(root: Path) -> list[dict]:
     return tools
 
 
-def _validate_tool(tool: dict) -> dict:
+def _validate_tool(tool: dict, *, root: Path | None = None) -> dict:
     if not isinstance(tool, dict):
         raise ValueError("tool reference must be an object")
     required = ("id", "capability", "status")
@@ -135,6 +393,8 @@ def _validate_tool(tool: dict) -> dict:
             raise ValueError("planned tool must not expose a command")
         if not str(tool.get("reference", "")).strip():
             raise ValueError("planned tool requires a plan reference")
+    if tool.get("source") and root is not None:
+        _validate_tool_source(root, tool["source"])
     for key in ("covers", "edge_types"):
         if key in tool and (not isinstance(tool[key], list)
                             or any(not str(value).strip() for value in tool[key])):
@@ -144,10 +404,11 @@ def _validate_tool(tool: dict) -> dict:
     return {key: tool[key] for key in allowed if key in tool and tool[key] not in (None, "")}
 
 
-def _merge_tools(discovered: list[dict], existing: list[dict], added: list[dict]) -> list[dict]:
+def _merge_tools(discovered: list[dict], existing: list[dict], added: list[dict],
+                 *, root: Path | None = None) -> list[dict]:
     merged: dict[str, dict] = {}
     for raw in [*discovered, *existing, *added]:
-        tool = _validate_tool(raw)
+        tool = _validate_tool(raw, root=root)
         merged[tool["id"]] = tool
     return [merged[key] for key in sorted(merged)]
 
@@ -174,6 +435,10 @@ def inspect_manifest(path: str | Path) -> dict:
         return {"state": "partial", "root": str(root), "manifest_path": str(target)}
     if not isinstance(data, dict) or not data.get("project_id") or not isinstance(data.get("tools"), list):
         return {"state": "partial", "root": str(root), "manifest_path": str(target), "manifest": data}
+    try:
+        _merge_tools([], data["tools"], [], root=root)
+    except ValueError:
+        return {"state": "partial", "root": str(root), "manifest_path": str(target), "manifest": data}
     if data.get("schema") != SCHEMA:
         state = "stale"
     else:
@@ -192,8 +457,10 @@ def ensure_manifest(path: str | Path, *, project_id: str | None = None,
     manifest = {
         "schema": SCHEMA,
         "project_id": project_id or old.get("project_id") or _project_id(root),
-        "tools": _merge_tools([], existing_tools, tools or []),
+        "tools": _merge_tools([], existing_tools, tools or [], root=root),
     }
+    if isinstance(old.get("commit_ack_public_key"), str):
+        manifest["commit_ack_public_key"] = old["commit_ack_public_key"]
     encoded = json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     target = root / MANIFEST
     previous = target.read_text(encoding="utf-8") if target.exists() else None
@@ -281,6 +548,149 @@ def selection_contract(depth: str, selected: list[str]) -> dict:
         "must": "verify returned evidence against current primary code or tests",
         "may": ["curate a reusable finding with commit and path:line source"],
         "must_not": "store raw source files or an unverified inference as knowledge",
+    }
+
+
+_WITNESS_FIELDS = {"id", "requirement_ids", "kind", "tool", "tool_version", "revision",
+                   "config_hash", "artifact_hash", "verdict", "independence_group",
+                   "lineage_id", "freshness", "evidence_rank", "confidence", "gaps",
+                   "conflict", "observed_at"}
+_WITNESS_VERDICTS = {"pass", "fail", "unknown"}
+_WITNESS_FRESHNESS = {"current", "stale", "working"}
+
+
+def _witness_identifier(value: object, field: str) -> str:
+    text = str(value or "").strip()
+    if not text or len(text) > MAX_WITNESS_ID_LENGTH or not re.fullmatch(r"[A-Za-z0-9_.:@/-]+", text):
+        raise ValueError(f"witness {field} must be a bounded stable identifier")
+    return text
+
+
+def _normalize_witness(witness: dict) -> dict:
+    if not isinstance(witness, dict) or set(witness) - _WITNESS_FIELDS:
+        raise ValueError("witness contains unsupported or raw fields")
+    required = ("id", "requirement_ids", "kind", "tool", "tool_version", "revision",
+                "config_hash", "artifact_hash", "verdict", "independence_group",
+                "lineage_id", "freshness", "evidence_rank", "confidence")
+    if any(key not in witness for key in required):
+        raise ValueError("witness lacks required provenance metadata")
+    requirement_ids = sorted({_witness_identifier(value, "requirement_id")
+                              for value in witness["requirement_ids"]})
+    if not requirement_ids:
+        raise ValueError("witness requires at least one requirement_id")
+    verdict, freshness = str(witness["verdict"]), str(witness["freshness"])
+    if verdict not in _WITNESS_VERDICTS or freshness not in _WITNESS_FRESHNESS:
+        raise ValueError("witness verdict or freshness is invalid")
+    try:
+        confidence = float(witness["confidence"])
+    except (TypeError, ValueError) as exc:
+        raise ValueError("witness confidence must be numeric") from exc
+    if not 0.0 <= confidence <= 1.0:
+        raise ValueError("witness confidence must be within 0..1")
+    gaps = witness.get("gaps", [])
+    if not isinstance(gaps, list) or any(not isinstance(gap, str) or len(gap) > 160 for gap in gaps):
+        raise ValueError("witness gaps must be bounded strings")
+    row = {key: _witness_identifier(witness[key], key) for key in
+           ("id", "kind", "tool", "tool_version", "revision", "config_hash", "artifact_hash",
+            "independence_group", "lineage_id", "evidence_rank")}
+    row.update({"requirement_ids": requirement_ids, "verdict": verdict, "freshness": freshness,
+                "confidence": confidence, "gaps": sorted(set(gaps)),
+                "conflict": bool(witness.get("conflict", False)),
+                "observed_at": str(witness.get("observed_at", ""))[:64]})
+    return row
+
+
+def witness_envelope(*, witnesses: list[dict], requirement_ids: list[str] | None = None,
+                     depth: str = "summary", selected_ids: list[str] | None = None,
+                     stale: bool = False, gaps: list[str] | None = None,
+                     max_summary_bytes: int = MAX_WITNESS_SUMMARY_BYTES) -> dict:
+    """Return bounded non-normative witness metadata; never stores traces or source."""
+    selected = list(selected_ids or [])
+    selection_contract(depth, selected)
+    if not isinstance(max_summary_bytes, int) or max_summary_bytes < 128:
+        raise ValueError("max_summary_bytes must be at least 128")
+    rows = sorted((_normalize_witness(witness) for witness in witnesses), key=lambda row: row["id"])
+    if len({row["id"] for row in rows}) != len(rows):
+        raise ValueError("witness IDs must be unique")
+    scope = sorted({_witness_identifier(value, "requirement_id") for value in (requirement_ids or [])})
+    if scope:
+        rows = [row for row in rows if set(row["requirement_ids"]) & set(scope)]
+    known = {row["id"] for row in rows}
+    unknown = set(selected) - known
+    if unknown:
+        raise ValueError(f"unknown witness IDs: {sorted(unknown)}")
+    grouped: dict[str, list[dict]] = {}
+    for row in rows:
+        for requirement_id in row["requirement_ids"]:
+            grouped.setdefault(requirement_id, []).append(row)
+    summaries = []
+    for requirement_id in sorted(grouped):
+        current = grouped[requirement_id]
+        lineages = sorted({row["lineage_id"] for row in current})
+        verdicts = dict(sorted(Counter(row["verdict"] for row in current).items()))
+        latest = max(current, key=lambda row: (row["observed_at"], row["id"]))
+        summaries.append({"requirement_id": requirement_id, "verdict_counts": verdicts,
+                          "independence_group_count": len(lineages), "lineage_count": len(lineages),
+                          "latest_binding": {key: latest[key] for key in
+                                             ("revision", "config_hash", "artifact_hash")},
+                          "conflict": len(verdicts) > 1 or any(row["conflict"] for row in current),
+                          "coverage_gaps": sorted({gap for row in current for gap in row["gaps"]}),
+                          "stale": any(row["freshness"] == "stale" for row in current)})
+    payload = {"schema": 1, "normative": False, "requirement_summaries": summaries,
+               "allowed_witness_ids": sorted(known), "choice": {
+                   "selection_required": depth == "summary" and bool(rows),
+                   "allowed_next_depth": ["relations", "full"] if depth == "summary" else [],
+                   "max_ids": MAX_SELECTED,
+                   "reason": "select witness IDs; raw source and trace remain excluded"},
+               "coverage_gaps": sorted(set(gaps or []) | {gap for row in rows for gap in row["gaps"]}),
+               "conflict": any(summary["conflict"] for summary in summaries),
+               "stale": bool(stale) or any(row["freshness"] == "stale" for row in rows),
+               "byte_budget": max_summary_bytes, "truncated": False, "durable_writes": 0}
+    if depth != "summary":
+        payload["witness_details"] = [row for row in rows if row["id"] in selected]
+    encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+    if len(encoded) > max_summary_bytes:
+        payload["allowed_witness_ids"] = []
+        payload["truncated"] = True
+        payload["coverage_gaps"].append("witness summary exceeds byte cap; narrow requirement scope")
+    return payload
+
+
+def context_completeness_envelope(*, revision: str, working_hash: str | None,
+                                  searched_scope: list[str], analyzer_versions: dict[str, str],
+                                  proven_edge_types: list[str], coverage_gaps: list[str],
+                                  step: int | str = 8, freshness: str = "current") -> dict:
+    """Return the bounded, client-neutral P72 completeness contract.
+
+    The envelope is deliberately metadata-only: it says what was searched and
+    what still needs proof, but never carries code, prompts, or host paths.
+    """
+    if step not in CONTEXT_STEPS:
+        raise ValueError("unknown context step")
+    if freshness not in {"current", "stale", "working"}:
+        raise ValueError("unknown context freshness")
+    if not revision or (working_hash is not None and not working_hash):
+        raise ValueError("context envelope requires revision and optional non-empty working hash")
+    if any(not isinstance(name, str) or not name or name.startswith(("/", "\\"))
+           or ".." in name.split("/") for name in searched_scope):
+        raise ValueError("searched scope must be project-relative")
+    if any(not isinstance(key, str) or not key or not isinstance(value, str) or not value
+           for key, value in analyzer_versions.items()):
+        raise ValueError("analyzer versions must be non-empty strings")
+    gaps = sorted({str(gap) for gap in coverage_gaps if str(gap).strip()})
+    next_steps = {8: (32, "widen_to_32"), 32: ("definition", "load_selected_definition"),
+                  "definition": ("neighbors", "load_direct_neighbors"),
+                  "neighbors": ("transitive", "load_transitive_chain"),
+                  "transitive": (None, "register_required_probe")}
+    next_step, next_probe = next_steps[step]
+    return {
+        "schema": 1, "revision": revision, "working_hash": working_hash,
+        "searched_scope": sorted(set(searched_scope)),
+        "analyzer_versions": {key: analyzer_versions[key] for key in sorted(analyzer_versions)},
+        "proven_edge_types": sorted(set(proven_edge_types)), "coverage_gaps": gaps,
+        "freshness": freshness, "step": step,
+        "required_next_probe": next_probe if gaps else None,
+        "may_widen_to": next_step if gaps else None,
     }
 
 
@@ -420,6 +830,37 @@ def _commit_gate_enabled(root: Path) -> bool:
                for tool in manifest.get("tools", []))
 
 
+def register_runtime_evidence(path: str | Path, artifact: dict) -> dict:
+    """Register one bounded, ephemeral result from a manifest-declared tool.
+
+    This is not a write receipt: an edit or a process restart drops it.  The
+    staged gate reads it only while its full staged-tree hash still matches.
+    """
+    if not isinstance(artifact, dict) or set(artifact) - _RUNTIME_ARTIFACT_KEYS:
+        raise ValueError("runtime artifact contains unsupported or raw fields")
+    root = project_root(path)
+    snapshot = _staged_snapshot(root)
+    inspected = inspect_manifest(root)
+    tools = (inspected.get("manifest") or {}).get("tools", [])
+    tool_id = artifact.get("tool")
+    declared = next((tool for tool in tools if tool.get("id") == tool_id
+                     and tool.get("status") == "available"
+                     and set(tool.get("covers", [])) & {"test", "runtime", "timing", "contract"}), None)
+    value = dict(artifact)
+    value["registered"] = declared is not None
+    normalized = normalize_runtime_artifact(value)
+    if normalized["tree_hash"] != snapshot["tree_hash"]:
+        return {"status": "rejected", "coverage_gaps": ["runtime artifact staged-tree hash is stale"],
+                "snapshot": snapshot}
+    key = (str(root), snapshot["base"], snapshot["tree_hash"])
+    current = _RUNTIME_PROBES.setdefault(key, [])
+    encoded = json.dumps(normalized, sort_keys=True, separators=(",", ":"))
+    if not any(json.dumps(item, sort_keys=True, separators=(",", ":")) == encoded for item in current):
+        current.append(normalized)
+    return {"status": normalized["status"], "snapshot": snapshot,
+            "required_next_probe": normalized["required_next_probe"],
+            "required_next_probes": normalized["required_next_probes"],
+            "coverage_gaps": normalized["coverage_gaps"], "durable_writes": 0}
 def _ack_path(root: Path) -> Path:
     return root / COMMIT_ACKS
 
@@ -438,7 +879,34 @@ def _matching_ack(root: Path, snapshot: dict) -> dict | None:
     return None
 
 
-def staged_commit_gate(path: str | Path, *, acknowledge_reason: str | None = None) -> dict:
+def ack_payload(snapshot: dict, *, actor: str, reason: str) -> bytes:
+    """Canonical bytes a local actor signs; callers cannot assert approval."""
+    return json.dumps({"schema": 2, "base": snapshot["base"], "tree_hash": snapshot["tree_hash"],
+                       "files": snapshot["files"], "actor": actor, "reason": reason},
+                      sort_keys=True, separators=(",", ":")).encode()
+
+
+def _verify_ack(root: Path, snapshot: dict, *, actor: str, reason: str, signature: str | None) -> str | None:
+    manifest = (inspect_manifest(root).get("manifest") or {})
+    public_key = manifest.get("commit_ack_public_key")
+    if not actor.strip() or not isinstance(public_key, str) or not signature:
+        return None
+    try:
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+        key = serialization.load_pem_public_key(public_key.encode())
+        if not isinstance(key, Ed25519PublicKey):
+            return None
+        key.verify(base64.b64decode(signature, validate=True), ack_payload(snapshot, actor=actor, reason=reason))
+    except (ImportError, ValueError, TypeError):
+        return None
+    except Exception:  # InvalidSignature is deliberately indistinguishable here.
+        return None
+    return hashlib.sha256(public_key.encode()).hexdigest()
+
+
+def staged_commit_gate(path: str | Path, *, acknowledge_reason: str | None = None,
+                       actor: str | None = None, signature: str | None = None) -> dict:
     """Check or append one local acknowledgement for an opt-in staged tree.
 
     The acknowledgement file is deliberately local and append-only: it is an
@@ -452,6 +920,12 @@ def staged_commit_gate(path: str | Path, *, acknowledge_reason: str | None = Non
     if not snapshot["files"]:
         return {"status": "pass", "snapshot": snapshot, "coverage_gaps": []}
     gaps = ["staged tree has no verified post-commit impact receipt"]
+    runtime = _RUNTIME_PROBES.get((str(root), snapshot["base"], snapshot["tree_hash"]), [])
+    required_probes = sorted({probe for item in runtime
+                              for probe in item.get("required_next_probes", [item.get("required_next_probe")])
+                              if isinstance(probe, str)})
+    for probe in required_probes:
+        gaps.append("required runtime probe: " + probe)
     non_python = [name for name in snapshot["files"] if not name.endswith(".py")]
     if non_python:
         gaps.append("static Python analyzer does not cover: " + ", ".join(non_python[:4]))
@@ -459,9 +933,14 @@ def staged_commit_gate(path: str | Path, *, acknowledge_reason: str | None = Non
         reason = acknowledge_reason.strip()
         if not reason or len(reason) > MAX_ACK_REASON:
             raise ValueError(f"acknowledgement reason must contain 1..{MAX_ACK_REASON} characters")
-        receipt = {"schema": 1, "observed_at": datetime.now(timezone.utc).isoformat(),
+        key_hash = _verify_ack(root, snapshot, actor=(actor or ""), reason=reason, signature=signature)
+        if key_hash is None:
+            return {"status": "blocked", "snapshot": snapshot, "coverage_gaps": gaps + ["signed local actor acknowledgement required"],
+                    "next": "configure commit_ack_public_key and sign the canonical ack payload"}
+        receipt = {"schema": 2, "observed_at": datetime.now(timezone.utc).isoformat(),
                    "base": snapshot["base"], "tree_hash": snapshot["tree_hash"],
-                   "files": snapshot["files"], "reason": reason, "coverage_gaps": gaps}
+                   "files": snapshot["files"], "actor": actor, "reason": reason,
+                   "signature": signature, "public_key_sha256": key_hash, "coverage_gaps": gaps}
         with _ack_path(root).open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(receipt, ensure_ascii=False, sort_keys=True) + "\n")
         return {"status": "acknowledged", "snapshot": snapshot, "receipt": receipt,

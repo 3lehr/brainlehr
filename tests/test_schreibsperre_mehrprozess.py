@@ -60,7 +60,9 @@ def _rpc(proc: subprocess.Popen, req: dict) -> dict:
 
 
 def _spawn(db_path: Path) -> subprocess.Popen:
-    env = dict(os.environ, BEGOD_KNOWLEDGE_DB=str(db_path))
+    # Current server startup gives BRAINLEHR_DB priority over the legacy name.
+    # Set both so partition inheritance cannot redirect child MCP processes.
+    env = dict(os.environ, BRAINLEHR_DB=str(db_path), BEGOD_KNOWLEDGE_DB=str(db_path))
     proc = subprocess.Popen(
         [sys.executable, str(SERVER)],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import base64
 import json
 import subprocess
 from pathlib import Path
 
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 import knowledge_mcp_server as kms
 import project_analysis_loop
@@ -15,6 +18,18 @@ import werkzeugrechte
 
 def _git(root: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, text=True)
+
+
+def _ack_key(repo: Path) -> Ed25519PrivateKey:
+    private = Ed25519PrivateKey.generate()
+    manifest_path = repo / project_context.MANIFEST
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["commit_ack_public_key"] = private.public_key().public_bytes(
+        serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode()
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    _git(repo, "add", project_context.MANIFEST)
+    _git(repo, "commit", "-qm", "configure local ack key")
+    return private
 
 
 @pytest.fixture()
@@ -90,29 +105,52 @@ def test_opt_in_staged_gate_is_append_only_and_invalidates_on_change(repo):
         "capability": "acknowledge staged impact gaps",
         "status": "available",
         "command": "project-boundary",
-        "source": "test",
+        "source": "code.py",
+    }, {
+        "id": "runtime-test", "capability": "runtime test evidence", "status": "available",
+        "command": "runtime-test", "source": "code.py", "covers": ["runtime"],
     }])
     _git(repo, "add", project_context.MANIFEST)
     _git(repo, "commit", "-qm", "enable gate")
+    private = _ack_key(repo)
     (repo / "README.md").write_text("change\n", encoding="utf-8")
     _git(repo, "add", "README.md")
+
+    snapshot = project_context._staged_snapshot(repo)
+    evidence = project_context.register_runtime_evidence(repo, {
+        "revision": snapshot["base"], "tree_hash": snapshot["tree_hash"], "tool": "runtime-test",
+        "tool_version": "1", "provenance": "test-result", "generator_or_test": True,
+        "generated_writes": ["reports/result.json"],
+    })
+    assert evidence["required_next_probe"] == "test_isolation" and evidence["durable_writes"] == 0
 
     ack_path = repo / project_context.COMMIT_ACKS
     blocked = project_context.staged_commit_gate(repo)
     assert blocked["status"] == "blocked"
+    assert "required runtime probe: test_isolation" in blocked["coverage_gaps"]
     assert not ack_path.exists(), "rejection must not mutate a project file"
     assert "README.md" in blocked["coverage_gaps"][-1]
 
     with pytest.raises(ValueError, match="1..240"):
         project_context.staged_commit_gate(repo, acknowledge_reason=" ")
-    accepted = project_context.staged_commit_gate(repo, acknowledge_reason="docs change reviewed")
+    actor = "test-operator"
+    forged = base64.b64encode(Ed25519PrivateKey.generate().sign(project_context.ack_payload(
+        project_context._staged_snapshot(repo), actor=actor, reason="docs change reviewed"))).decode()
+    assert project_context.staged_commit_gate(repo, acknowledge_reason="docs change reviewed", actor=actor,
+                                              signature=forged)["status"] == "blocked"
+    assert not ack_path.exists()
+    signature = base64.b64encode(private.sign(project_context.ack_payload(
+        project_context._staged_snapshot(repo), actor=actor, reason="docs change reviewed"))).decode()
+    accepted = project_context.staged_commit_gate(repo, acknowledge_reason="docs change reviewed", actor=actor, signature=signature)
     assert accepted["status"] == "acknowledged"
+    assert "required runtime probe: test_isolation" in accepted["coverage_gaps"]
     assert project_context.staged_commit_gate(repo)["status"] == "acknowledged"
     lines = ack_path.read_text(encoding="utf-8").splitlines()
     assert len(lines) == 1
     receipt = json.loads(lines[0])
     assert receipt["base"] == accepted["snapshot"]["base"]
     assert receipt["tree_hash"] == accepted["snapshot"]["tree_hash"]
+    assert receipt["actor"] == actor and receipt["signature"] == signature
 
     (repo / "README.md").write_text("changed again\n", encoding="utf-8")
     _git(repo, "add", "README.md")
@@ -127,6 +165,7 @@ def test_mcp_and_cli_expose_the_same_small_contract(repo):
     assert boundary["inputSchema"]["properties"]["mode"]["enum"] == [
         "auto", "knowledge", "code", "mixed"]
     assert kms.TOOLS["project_commit_gate"]["handler"]({"project_root": str(repo)})["status"] == "not_enabled"
+    assert kms.TOOLS["project_runtime_evidence"]["inputSchema"]["required"] == ["project_root", "artifact"]
     result = subprocess.run(
         ["python3", "tool/project_boundary.py", "--mode", "knowledge", "--phase", "read"],
         cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True, check=True)

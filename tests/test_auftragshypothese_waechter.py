@@ -105,7 +105,7 @@ def test_echte_hakeneingabe_liefert_gueltiges_pretooluse_json():
     antwort = _rufe_haken("Agent", {"description": "Test", "prompt": prompt})
     hso = antwort["hookSpecificOutput"]
     assert hso["hookEventName"] == "PreToolUse"
-    assert hso["permissionDecision"] == "ask"
+    assert hso["permissionDecision"] == "allow"
     assert "vermutlich liegt es an" in hso["permissionDecisionReason"].lower()
 
 

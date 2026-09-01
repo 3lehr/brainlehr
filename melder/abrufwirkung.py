@@ -117,11 +117,13 @@ def wortgrenzen_treffer(text: str, kennung: str, ist_pfad: bool) -> bool:
     """FALLE 2: eine Pfad-Kennung darf nicht als Substring eines laengeren
     Pfads treffen ('/brainlehr' in '/brainlehr/irgendwas' oder
     '/brainlehr-ausweise' ist KEIN Treffer, siehe Modul-Docstring)."""
+    return bool(_kennung_muster(kennung, ist_pfad).search(text))
+
+
+def _kennung_muster(kennung: str, ist_pfad: bool) -> re.Pattern[str]:
     if ist_pfad:
-        muster = re.compile(r"(?<![\w/-])" + re.escape(kennung) + r"(?![\w/-])")
-    else:
-        muster = re.compile(r"(?<![0-9A-Za-z_])" + re.escape(kennung) + r"(?![0-9A-Za-z_])")
-    return bool(muster.search(text))
+        return re.compile(r"(?<![\w/-])" + re.escape(kennung) + r"(?![\w/-])")
+    return re.compile(r"(?<![0-9A-Za-z_])" + re.escape(kennung) + r"(?![0-9A-Za-z_])")
 
 
 # --- Transkript lesen (zeilenweise, nie am Stueck) --------------------------
@@ -215,28 +217,24 @@ def _git_commits(wurzel: Path, seit: str) -> list[tuple[str, str, str]]:
     """[(hash, ts_utc, text)] in chronologischer Reihenfolge (aeltester
     zuerst), text = Nachricht + Diff. seit: Datum/Zeit fuer `git log
     --since`."""
+    # One history walk: three subprocesses per commit made the real-history
+    # direction test unusably slow. Commit messages cannot contain NUL, but
+    # use two nonprinting separators so patch text stays attached to its commit.
     lauf = subprocess.run(
-        ["git", "-C", str(wurzel), "log", "--since", seit, "--reverse", "--format=%H"],
+        ["git", "-C", str(wurzel), "log", "--since", seit, "--reverse", "--patch",
+         "--no-ext-diff", "--format=%x1e%H%x1f%aI%x1f%B"],
         capture_output=True, text=True, check=False,
     )
     out = []
-    for h in (l.strip() for l in lauf.stdout.splitlines() if l.strip()):
-        meta = subprocess.run(
-            ["git", "-C", str(wurzel), "show", "-s", "--format=%aI%x1f%B", h],
-            capture_output=True, text=True, check=False,
-        )
-        if "\x1f" not in meta.stdout:
+    for record in lauf.stdout.split("\x1e"):
+        if not record.strip() or record.count("\x1f") < 2:
             continue
-        ts_roh, nachricht = meta.stdout.split("\x1f", 1)
-        diff = subprocess.run(
-            ["git", "-C", str(wurzel), "show", "--format=", h],
-            capture_output=True, text=True, check=False,
-        )
+        h, ts_roh, text = record.split("\x1f", 2)
         try:
             ts_utc = zeitmarke.nach_utc(ts_roh.strip())
         except ValueError:
             continue
-        out.append((h, ts_utc, nachricht + "\n" + diff.stdout))
+        out.append((h.strip(), ts_utc, text))
     return out
 
 
@@ -247,20 +245,23 @@ def git_verwendungen(wurzel: Path, gesuchte: dict[str, str], grenze_ts: dict[str
     liegt (String-Vergleich ist gueltig, weil beide Seiten durch
     zeitmarke.nach_utc auf dieselbe Form gebracht sind)."""
     commits = _git_commits(wurzel, seit)
+    offen = {kennung: grenze_ts.get(kennung) for kennung in gesuchte}
+    pfade = sorted((kennung for kennung, art in gesuchte.items() if art == "knoten"),
+                   key=len, reverse=True)
+    pfad_muster = (re.compile(r"(?<![\w/-])(" + "|".join(map(re.escape, pfade)) + r")(?![\w/-])")
+                   if pfade else None)
     gefunden: dict[str, dict] = {}
-    for kennung, art in gesuchte.items():
-        if kennung in gefunden:
-            continue
-        grenze = grenze_ts.get(kennung)
-        if grenze is None:
-            continue
-        ist_pfad = art == "knoten"
-        for h, ts_utc, text in commits:
-            if ts_utc <= grenze:
-                continue
-            if wortgrenzen_treffer(text, kennung, ist_pfad):
+    for h, ts_utc, text in commits:
+        kandidaten = set(_KENNUNG_LEHRE_RE.findall(text))
+        if pfad_muster:
+            kandidaten.update(match.group(1) for match in pfad_muster.finditer(text))
+        for kennung in kandidaten & offen.keys():
+            grenze = offen[kennung]
+            if grenze is not None and ts_utc > grenze:
                 gefunden[kennung] = {"ts": ts_utc, "quelle": f"git:{h[:8]}"}
-                break
+                del offen[kennung]
+        if not offen:
+            break
     return gefunden
 
 

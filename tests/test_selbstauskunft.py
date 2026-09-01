@@ -91,11 +91,12 @@ def test_abhaengigkeiten_kommen_aus_requirements():
     sie klingt nach einer Eigenschaft und ist eine Momentaufnahme."""
     erhoben = sa.erhebe(None)
     namen = erhoben["abhaengigkeiten"]
-    assert "numpy" in namen and "cryptography" in namen
-    assert len(namen) == len([
+    erwartet = [
         z for z in (Path(sa.__file__).resolve().parent.parent / "requirements.txt")
         .read_text(encoding="utf-8").splitlines()
-        if z.strip() and not z.lstrip().startswith("#")])
+        if z.strip() and not z.lstrip().startswith("#")
+    ]
+    assert namen == erwartet
 
 
 def test_text_nennt_stand_und_quelle():

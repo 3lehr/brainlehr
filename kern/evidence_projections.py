@@ -25,12 +25,15 @@ def _current_graph(graph: dict) -> bool:
 
 
 def otel_trace_projection(trace: dict, *, source_revision: str, tree_hash: str,
-                          graph: dict) -> dict:
+                          graph: dict, sample_rate: float = 1.0,
+                          now_ns: int | None = None, retention_ns: int | None = None) -> dict:
     """Accept only sanitized spans bound to the graph revision and tree."""
     if not _current_graph(graph) or graph["source_revision"] != source_revision:
         return {"status": "coverage_gap", "coverage_gaps": ["graph hash/schema is not current"]}
     if trace.get("revision") != source_revision or trace.get("tree_hash") != tree_hash:
         return {"status": "coverage_gap", "coverage_gaps": ["trace revision/tree hash is not current"]}
+    if not 0 < sample_rate <= 1 or (retention_ns is not None and retention_ns < 0):
+        return {"status": "rejected", "coverage_gaps": ["sampling/retention policy is invalid"]}
     spans = trace.get("spans", [])
     if not isinstance(spans, list) or any(not isinstance(span, dict) for span in spans):
         return {"status": "coverage_gap", "coverage_gaps": ["sanitized span list missing"]}
@@ -39,10 +42,25 @@ def otel_trace_projection(trace: dict, *, source_revision: str, tree_hash: str,
            or span.get("tree_hash") != tree_hash or not isinstance(span.get("duration_ns"), int)
            or span["duration_ns"] < 0 for span in spans):
         return {"status": "rejected", "coverage_gaps": ["raw span payload is not accepted"]}
+    if any(isinstance(span.get("start_time_unix_nano"), int) and isinstance(span.get("end_time_unix_nano"), int)
+           and span["end_time_unix_nano"] < span["start_time_unix_nano"] for span in spans):
+        return {"status": "coverage_gap", "coverage_gaps": ["clock_skew_or_invalid_span_time"]}
+    if retention_ns is not None:
+        captured_at = trace.get("captured_at_ns")
+        if not isinstance(now_ns, int) or not isinstance(captured_at, int):
+            return {"status": "coverage_gap", "coverage_gaps": ["retention_clock_missing"]}
+        if now_ns < captured_at:
+            return {"status": "coverage_gap", "coverage_gaps": ["clock_skew_or_invalid_capture_time"]}
+        if now_ns - captured_at > retention_ns:
+            return {"status": "expired", "erased": True, "bindings": [],
+                    "coverage_gaps": ["trace_retention_expired"]}
     nodes = {node["id"] for node in graph.get("nodes", [])}
     bindings = []
     gaps = []
     for span in spans:
+        sample = int(_hash(span.get("span_id", ""))[:8], 16) / 0xFFFFFFFF
+        if sample > sample_rate:
+            continue
         file_name = span.get("code_file")
         if file_name not in nodes:
             gaps.append("span has no graph node binding")
@@ -50,6 +68,7 @@ def otel_trace_projection(trace: dict, *, source_revision: str, tree_hash: str,
         bindings.append({"span_id": span.get("span_id", ""), "name": span.get("name", ""), "node": file_name})
     return {"status": "current" if not gaps else "coverage_gap", "source_revision": source_revision,
             "tree_hash": tree_hash, "bindings": bindings, "coverage_gaps": sorted(set(gaps)),
+            "sampling": {"rate": sample_rate, "kept": len(bindings), "seen": len(spans)},
             "content_hash": _hash(bindings)}
 
 

@@ -28,7 +28,7 @@ class _Connection:
 
 
 class _Kms:
-    DB_PATH = Path("knowledge.db")
+    DB_PATH = Path("fixture.db")
 
     def __init__(self):
         self.updates: list[dict] = []

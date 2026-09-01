@@ -13,5 +13,8 @@ def test_registry_runs_explicit_local_version_command():
     assert result["status"] == "completed"
     assert "stdout" not in result and "stderr" not in result
     assert len(result["output"]["stdout_sha256"]) == 64
+    assert len(result["provenance"]["binary"]["sha256"]) == 64
+    assert len(result["provenance"]["arguments_sha256"]) == 64
+    assert "vendor signature" in result["provenance"]["cache_authenticity"]
     assert result["sandbox"]["environment"] == "allowlist"
     assert result["coverage_gaps"] == ["network isolation is not enforced by this host"]

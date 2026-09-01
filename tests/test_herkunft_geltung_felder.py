@@ -55,11 +55,20 @@ def bestand(tmp_path, monkeypatch):
         "'betreiber','arbeitsbestand','shared','2026-08-19T00:00:00Z','2026-08-19T00:00:00Z')")
     conn.commit()
     conn.close()
+    # BRAINLEHR_DB has precedence over the historical BEGOD name.  Set both
+    # so this fixture remains isolated when the partition runner supplies a
+    # primary temporary database.
+    monkeypatch.setenv("BRAINLEHR_DB", str(db))
     monkeypatch.setenv("BEGOD_KNOWLEDGE_DB", str(db))
     monkeypatch.setenv("OLLAMA_HOST", "http://127.0.0.1:9")  # Bedeutungskanal tot, Stichwort genuegt
-    for name in ("knowledge_mcp_server",):
+    module_names = ("knowledge_mcp_server", "ort", "haken.ort")
+    for name in module_names:
         sys.modules.pop(name, None)
-    return db
+    yield db
+    # Do not leave a server module bound to the fixture path for the next
+    # test file after monkeypatch restores the partition environment.
+    for name in module_names:
+        sys.modules.pop(name, None)
 
 
 def _suche(**kwargs):

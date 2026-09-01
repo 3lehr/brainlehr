@@ -1,58 +1,18 @@
 # AI handoff
 
-## 2026-08-27 — test(retrieval): record P103 V9 PASS/H0
+## 2026-08-28 — fix(project-context): keep receipts capsule-free
 
-- Sole V9 score published raw `0d08110a…` and collector `dbda2755…` is PASS/H0
-  with no missing gate. CodeRank has zero unique hits and rank-only fusion lacks a strict gain.
-- Monitor saw zero swapouts/throttled pages and peak observed scorer RSS 1,591,360 KB.
-  BGE-only remains active; no activation, DB/MCP action or push.
-- Evidence: `messungen/p103_v9_evaluation_2026-08-27.md`.
+- Files: `knowledge_mcp_server.py`, project-context regression tests and
+  `BDW-P23` acceptance.
+- Why: `project_change` called `project_ensure`, whose manifest refresh could
+  rewrite protected `.brainlehr.json`; a receipt is evidence, never capsule
+  configuration.
+- Verification: isolated temp-DB project-context/requirements tests; live MCP
+  reload and one byte-identical-manifest receipt countercheck remain required.
+- Risk: missing/stale context or an equal project ID from another manifest is
+  fail-closed with an explicit next step.
 - AI-Assisted-By: ChatGPT Codex
-- AI-Agent: /root/terra_resume_after_hang
-
-## 2026-08-27 — test(retrieval): seal P103 V9 critical-pressure evaluation
-
-- V9 accepts the observed 1,023-page compressor delta but aborts on free memory below
-  25%, swapout increase, throttled pages or RSS above 8 GB. One-model MPS limits remain.
-- V9 binds the unchanged experiment, V8 scorer/collector/runner and exact launcher-monitor
-  hash. Actual 15-case synthetic collector preflight passes; V9 is NOT RUN.
-- AI-Assisted-By: ChatGPT Codex
-- AI-Agent: /root/terra_resume_after_hang
-
-## 2026-08-27 — docs(retrieval): record P103 V8 pressure abort
-
-- The sole V8 O_EXCL score was terminated at 18 seconds when compressor use rose
-  from zero to 1,023 pages. Score RSS was 821,072 KB; free memory remained 91%,
-  with zero throttled pages and swapouts.
-- Lock exists, result/stdout/stderr are empty and no collector can run. V8 is terminal;
-  no retry, tuning, activation, DB/MCP action or push. BGE-only remains active.
-- Evidence: `messungen/p103_v8_evaluation_2026-08-27.md`.
-- AI-Assisted-By: ChatGPT Codex
-- AI-Agent: /root/terra_resume_after_hang
-
-## 2026-08-27 — fix(retrieval): seal P103 V8 collector and leak boundary
-
-- V7 stays sealed but unrun: its historical collector rejects schema 7. V8 binds a
-  schema-eight scorer plus a narrow collector adapter; it validates all V8 bindings,
-  preserves the original raw hash and normalizes only schema metadata for V3 metrics.
-- V8 runner rejects full identifiers or ordered multi-token identifiers, while the
-  three current ordinary-word false positives remain leak-free.
-- Synthetic full raw over the actual bound 15-case corpus passes collector; wrong raw
-  hash stays FAIL. V8 has a new O_EXCL target and is NOT RUN.
-- AI-Assisted-By: ChatGPT Codex
-- AI-Agent: /root/terra_resume_after_hang
-
-## 2026-08-27 — test(retrieval): seal P103 V7 resource-bounded evaluation
-
-- V7 binds the unchanged corpus, models, arms, grid and thresholds to MPS, batch=1,
-  one worker and tokenizer/BLAS thread limits. The detached ready gate verifies
-  runtime, MPS and resources before any O_EXCL lock or encode.
-- One synthetic non-test MPS encode passed with 768 dimensions; monitor minimum was
-  89% free, zero compressor/throttle/swap, and no CodeRank process remained.
-- New sole O_EXCL target: p103-v7.result.json. V4–V6 stay historical; BGE-only
-  remains active until a terminal collector gate.
-- AI-Assisted-By: ChatGPT Codex
-- AI-Agent: /root/terra_resume_after_hang
+- AI-Agent: /root/terra_ui_single_truth
 
 ## 2026-08-27 — test(retrieval): seal P103 v4 offline evaluation
 
@@ -65,14 +25,43 @@
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
 
-## 2026-08-27 — test(retrieval): record P103 V4 one-shot FAIL
+## 2026-08-27 — test(retrieval): seal P103 V6 evaluation
 
-- Detached `b09d8e72` preflight verified BGE and all five CodeRank bindings.
-- The sole O_EXCL run wrote `cb055569…`: annotation extraction raised
-  `TypeError: 'Constant' object is not subscriptable` before model encoding.
-- Collector `a9a58e86…` is `FAIL/UNDECIDED` (`sealed_manifest`); report:
-  `messungen/p103_v4_evaluation_2026-08-27.md`. No rerun, tuning, activation,
-  DB/MCP action or push. BGE-only remains active.
+- V6 binds V3 math, fixed source views/pointer collector, ready-gated scorer and
+  canonical `python -m` launcher; corpus, models, grid and thresholds unchanged.
+- New O_EXCL target: `p103-v6.result.json`; V4/V5 paths remain historical.
+- Verified: V3–V6 retrieval, pointer, ready and seal tests: 16 passed.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
+## 2026-08-27 — fix(retrieval): add V6 ready-before-lock command gate
+
+- V6 uses `PYTHONPATH=<detached-root> <runtime> -m messungen.sealed_retrieval_v6_score`.
+  The entry point validates every bound artifact, corpus and model cache, then
+  emits `READY_BEFORE_LOCK` without lock/result/encode.
+- Verified in isolated runtime with exact module invocation/cwd/PYTHONPATH:
+  15 retrieval tests pass.
+- Next: seal V6 before its sole O_EXCL score.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
+## 2026-08-27 — docs(retrieval): record P103 V5 startup failure
+
+- Detached V5 preflight passed, but the sole direct script command exited before
+  module initialization (`ModuleNotFoundError: No module named 'messungen'`).
+- No V5 lock/raw/encode or collector result exists; report:
+  `messungen/p103_v5_evaluation_2026-08-27.md`. No retry, activation, DB/MCP
+  action or push. BGE-only remains active.
+- AI-Assisted-By: ChatGPT Codex
+- AI-Agent: /root/terra_p103_v4_execution
+
+## 2026-08-27 — test(retrieval): seal P103 V5 evaluation
+
+- V5 binds fixed shared source views, pointer-resolving collector and scorer;
+  V2 corpus, model bindings, grid and thresholds remain unchanged.
+- New O_EXCL target: `p103-v5.result.json`; V4 result/lock are never reused.
+- Verified: V3 synthetic runner/collector plus V4/V5 pointer and seal tests:
+  14 passed. No model encode, DB/MCP action or score before this commit.
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
 
@@ -88,151 +77,16 @@
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
 
-## 2026-08-27 — test(retrieval): seal P103 V5 evaluation
+## 2026-08-27 — test(retrieval): record P103 V4 one-shot FAIL
 
-- V5 binds fixed shared source views, pointer-resolving collector and scorer;
-  V2 corpus, model bindings, grid and thresholds remain unchanged.
-- New O_EXCL target: `p103-v5.result.json`; V4 result/lock are never reused.
-- Verified: V3 synthetic runner/collector plus V4/V5 pointer and seal tests:
-  14 passed. No model encode, DB/MCP action or score before this commit.
+- Detached `b09d8e72` preflight verified BGE and all five CodeRank bindings.
+- The sole O_EXCL run wrote `cb055569…`: annotation extraction raised
+  `TypeError: 'Constant' object is not subscriptable` before model encoding.
+- Collector `a9a58e86…` is `FAIL/UNDECIDED` (`sealed_manifest`); report:
+  `messungen/p103_v4_evaluation_2026-08-27.md`. No rerun, tuning, activation,
+  DB/MCP action or push. BGE-only remains active.
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_p103_v4_execution
-
-## 2026-08-27 — docs(retrieval): record P103 V5 startup failure
-
-- Detached V5 preflight passed, but the sole direct script command exited before
-  module initialization (`ModuleNotFoundError: No module named 'messungen'`).
-- No V5 lock/raw/encode or collector result exists; report:
-  `messungen/p103_v5_evaluation_2026-08-27.md`. No retry, activation, DB/MCP
-  action or push. BGE-only remains active.
-- AI-Assisted-By: ChatGPT Codex
-- AI-Agent: /root/terra_p103_v4_execution
-
-## 2026-08-27 — fix(retrieval): add V6 ready-before-lock command gate
-
-- V6 uses `PYTHONPATH=<detached-root> <runtime> -m messungen.sealed_retrieval_v6_score`.
-  The entry point validates every bound artifact, corpus and model cache, then
-  emits `READY_BEFORE_LOCK` without lock/result/encode.
-- Verified in isolated runtime with exact module invocation/cwd/PYTHONPATH:
-  15 retrieval tests pass.
-- Next: seal V6 before its sole O_EXCL score.
-- AI-Assisted-By: ChatGPT Codex
-- AI-Agent: /root/terra_p103_v4_execution
-
-## 2026-08-27 — test(retrieval): seal P103 V6 evaluation
-
-- V6 binds V3 math, fixed source views/pointer collector, ready-gated scorer and
-  canonical `python -m` launcher; corpus, models, grid and thresholds unchanged.
-- New O_EXCL target: `p103-v6.result.json`; V4/V5 paths remain historical.
-- Verified: V3–V6 retrieval, pointer, ready and seal tests: 16 passed.
-- AI-Assisted-By: ChatGPT Codex
-- AI-Agent: /root/terra_p103_v4_execution
-
-## 2026-08-27 — docs(retrieval): classify P103 seal v1 as FAIL
-
-- Catalog records the exact score/collector hashes and missing AC; it does not call the incomplete run H0.
-- Next: independently seal executable v2 inputs before any score; BGE-only remains active.
-
-## 2026-08-27 — test(retrieval): fail closed on incomplete sealed P103 evidence
-
-- Commit: `81653a22`.
-- Raw score `3e0a79fd…`; collector `9a442472…` is `FAIL/UNDECIDED`.
-- Missing: prose control, sealed train/dev/test-once, LORO, comment/annotation ablations and missing/stale BGE fallbacks.
-- Cached models only; no activation, DB/MCP operation, model download or retroactive tuning.
-
-## 2026-08-27 — test(retrieval): freeze sealed P103 contract
-
-- Files: fail-closed decision contract, focused regression and tracked split/grid manifest.
-- Why: the prior CodeRank reports are stale or invalidated for identifier leakage;
-  no model result may tune a grid or consume the test split before this manifest exists.
-- Verified: `python3 -m pytest -q tests/test_sealed_retrieval_contract.py` — 9 passed.
-- Next: one offline cached-model evaluation; no activation, DB/MCP operation or model download.
-
-## 2026-08-27 — feat(policy): gate supported AI edits
-
-- Files: strict comment/manifest validators, source wrappers, generated client policy,
-  focused tests, package allowlist and canonical P99/P104 rows.
-- Why: a policy-only validator cannot stop a declared AI edit before the existing
-  acknowledgement boundary. The opt-in wrapper validates the exact staged diff,
-  preserved human-comment inventory and registered revision-bound anchors first.
-- Verified: focused policy/gate/wrapper tests; generated-policy drift check; wheel
-  and sdist archive inspection. Invalid validation delegates zero times.
-- Limit: generic human commits and raw host/editor writes deliberately remain outside
-  the opt-in AI seam; no DB/MCP operation occurs.
-
-## 2026-08-27T01:00:00+0200 — test(package): require lineage modules
-
-- Commit: `2505ec36`.
-- Why: an sdist omission was suspected; detached archive inspection proved it
-  false, but the regression test did not name P100–P102 as required payload.
-- Verified: detached `tests/test_paketbau.py` — `4 passed`; `uv build --offline`
-  wheel and sdist both contain anchor registry, lineage DAG and lifecycle index.
-- Remaining: P99/P104 real client enforcement is still open.
-
-## 2026-08-27T00:45:00+0200 — feat(lineage): implement P102 lifecycle index
-
-- Files: `kern/rationale_index_lifecycle.py`, focused test, package manifest,
-  canonical P102 and this handoff.
-- Verified: focused P100–P102 suite, py_compile and detached package snapshot.
-- Remaining: P99/P104 policy and P103 sealed evaluation are separate gates.
-
-## 2026-08-27T00:35:00+0200 — feat(lineage): implement P101 immutable DAG
-
-- Files: `kern/lineage_dag.py`, `tests/test_lineage_dag.py`, `pyproject.toml`,
-  `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
-- Why: preserve multi-parent data/effect lineage without global rehashing or
-  invented parents.
-- Verified: focused DAG/anchor tests, py_compile and detached package snapshot.
-- Remaining risk: P102–P104 remain separate, DB-free gates.
-
-## 2026-08-27T00:25:00+0200 — feat(lineage): implement P100 anchor registry
-
-- Files: `kern/anchor_registry.py`, `tests/test_anchor_registry.py`,
-  `pyproject.toml`, `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
-- Why: later source links need registered, revision-bound lazy anchors instead
-  of invented IDs or eager mutable graphs.
-- Verified: focused red import failure, then `python3 -m pytest -q
-  tests/test_anchor_registry.py` — `4 passed`; py_compile and detached package
-  snapshot are run before commit.
-- Remaining risk: P101–P104 remain separate gates; no code-comment renderer or
-  persistent index is activated here.
-
-## 2026-08-27T00:15:00+0200 — docs(requirements): verify P21 adapter boundary
-
-- Files: `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
-- Why: canonical P21 must point at the separate Hermes adapter evidence, not
-  claim a core-package import or license boundary without a current test.
-- Verified: Hermes commit `501a8c3`; detached adapter snapshot `python3 -m
-  pytest -q tests/test_provider.py -m 'not braucht_brainlehr'` — `50 passed,
-  2 deselected`, including AST no-core-import and host-path checks.
-- Remaining risk: P21 is an adapter boundary only; P99–P104 are separate
-  Brainlehr runtime gates.
-
-## 2026-08-27T00:10:00+0200 — fix(package): enforce P20 source boundary
-
-- Files: `tests/test_paketbau.py`, `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
-- Why: the archive guard rejected its one intended policy document together
-  with arbitrary documentation, masking P20's real no-data boundary.
-- Verified: isolated build with hatchling plus `tests/test_paketbau.py`,
-  socket-denied `kataloge()` and no-source `katalog_holen()` — `6 passed`.
-  Wheel/sdist carry no DB or catalog data; only the explicit policy JSON is
-  permitted below `docs/`.
-- Remaining risk: P21 is verified in the separate Hermes adapter repository;
-  P99–P104 remain unimplemented.
-
-## 2026-08-26T23:35:00+0200 — fix(test): restore catalog decoder syntax
-
-- Files: `tests/test_requirements_brainlehr.py`, `AI_HANDOFF.md`.
-- Why: `e56c13d5` left eight P67–P70 dictionary fragments inside a test body,
-  making a clean checkout unparseable. The decoder now owns the exact currently
-  catalogued P67–P70, P74 and P99–P104 rows, accepts three-digit IDs and treats
-  explicit `NOT IMPLEMENTED` as an open gate.
-- Verified: detached staged snapshot `python3 -m py_compile
-  tests/test_requirements_brainlehr.py` and `python3 -m pytest -q
-  tests/test_requirements_brainlehr.py tests/test_code_retrieval_benchmark.py`
-  → `12 passed`; `git diff --check` passed. No DB/MCP write or push.
-- Remaining risk: this only restores catalog-decoder coverage; P99–P104 product
-  implementation stays `NOT IMPLEMENTED; NOT RUN`.
 
 ## 2026-08-26T23:05:19+0200 — docs(requirements): record P99–P104 contract tranche
 
@@ -283,7 +137,6 @@
 - AI-Assisted-By: ChatGPT Codex
 - AI-Agent: /root/terra_release_orchestrator/luna_commit_p74_evidence
 
-
 ## 2026-08-26T21:25:39+0200 — docs(requirements): keep P42 planned until tracked
 
 - Files: `docs/REQUIREMENTS_BRAINLEHR.md`, `AI_HANDOFF.md`.
@@ -295,6 +148,118 @@
 - Remaining risk: P42 cannot be accepted until the runner, test, and fixture are
   tracked and the full regression is rerun.
 - Next test: stage only the verified tracked P42/docs hunk after that evidence exists.
+
+## 2026-08-26T20:01:38+0200 — current continuation instruction after primary recheck
+
+- Primary recheck, not recall: `knowledge_mcp_server.py` now registers `project_attach` and
+  `project_detach`; `tests/test_client_lifecycle.py` contains the real JSON-RPC contract; the
+  canonical rows P78 and P83–P85 are `PASS (bounded)`. The latest verified entry below records
+  `40 passed, 2 skipped`, combined `141 passed, 2 skipped`, `py_compile`, `git diff --check`,
+  and an offline package proof. The earlier P78/P83–P85 pause text is historical only.
+- **Copy-ready next-context prompt:**
+  `You are Terra in /Volumes/daten/Begod2026/brainlehr at HEAD d123d70c1b914499526167e1035f9cbbd9b2a073. Read AI_HANDOFF.md and docs/REQUIREMENTS_BRAINLEHR.md first; verify current primary files/tests rather than recalled summaries. The worktree is mixed and nothing is staged: preserve user-owned, database/backup/generated, korpora, and P2/dashboard paths. Autonomously execute every remaining canonical MUST/MUST-NOT gate through genuine terminal evidence, including older non-PASS rows, P67 release readiness, and P74 supported-Hermes runtime—not merely P71–P98. Use Terra→Luna bounded work and Caveman Ultra reports; work red→green, correct in-scope failures, keep going without approval until a genuine blocker or the exact phrase es wird ernst. Do not prematurely report completion. P78 and P83–P85 are bounded green. Reconcile the current capsule conflict before claiming static analysis availability: `.brainlehr.json` marks SCIP/Semgrep/tree-sitter planned/non-callable while P42 has bounded runner evidence; retain the explicit gap or register only verified tracked sources. Keep BGE-M3 only (healthy `bge-m3:latest`, 1024 dimensions); never activate CodeRank/RRF or pull/rebuild a healthy model. Treat the Fahrtenbuch duplicate-dialog fixture as derived gold evidence, not independent blind discovery; retain its clean no-clue investigation as a gap. OpenSpec/Spec Kit remain non-normative witnesses; GUAC, Syft/Grype, DevLake/GrimoireLab and other OSS finalists need explicit measured classification, not silent omission. Complete both repositories: this brainlehr tree and /Volumes/daten/Begod2026/hermes-brainlehr (dirty README.md, brainlehr_provider.py, tests/test_provider.py), while treating ~/.hermes/hermes-agent's eight-file dirty local compatibility patch as a separately tested, non-upstream boundary unless explicitly authorized. Before completion read/refresh technical checkpoint brainlehr-vibecoding-20260826-pause1 and close it only after terminal integration; do not store transcript. After verified commits, run full proportional suites, package/install checks, generated maps/currentness, public allowlisted export, capsule/project_ensure + project_change receipt, AI handoff and private-origin push verification. Then restart Codex, Claude and Hermes once and rerun P74 on Hermes' supported Python matrix. Never delete or stage mixed/unverified paths; inspect cached numstat and staged diff before each commit.`
+
+## 2026-08-26T20:21:06+0200 — feat(project): P78 and P83–P85 verified; mixed boundary remains unstaged
+
+- HEAD remains `d123d70c1b914499526167e1035f9cbbd9b2a073`; cached numstat is empty.
+  No commit, push, Claude/Hermes restart, file deletion or cleanup occurred.
+- P78: `project_attach`/`project_detach` now have real MCP schemas, handlers and central
+  write-rights. The fresh Git/SQLite JSON-RPC contract covers attach/reattach/detach,
+  detached context, re-attach, path-free responses and preservation of knowledge,
+  receipt/source/capsule history and untracked files. It also fixed the partial handler's
+  wrong `actor=` keyword; `ProjectLifecycle.attach` requires `owner=`.
+- P83/P84/P85 were completed as separate bounded modules and tests:
+  review/merge provenance rejects blank or stale/non-independent identity; release
+  distribution keeps local/private/public states separate and rejects blank evidence;
+  incident lifecycle enforces detect→contain→recover→verify and emits metadata-only P98
+  evidence after verified identity.
+- Verification:
+  - P78 shared gate: `40 passed, 2 skipped`.
+  - Combined focused P71–P98/shared-core gate: `141 passed, 2 skipped` in 29.68 s.
+  - `python3 -m py_compile` for server/rights/lifecycle/P83–P85 and `git diff --check`: pass.
+  - `uv build --offline --out-dir /Volumes/daten/brainlehr-p71p98-build.W9Gehg`: wheel+sdist.
+    SHA-256: sdist `9be6b54974ee0f662af92e08984a29bceecfe791e88cccf166df3585ca507cf4`,
+    wheel `48e35c800c42170f310105f31da8f5937a3aa5d6e23827f9bc22855e1cf26aba`;
+    both contain P83–P85 modules and no database path matched.
+- Ownership boundary: new P83–P85 modules/tests and the continued untracked
+  `tests/test_client_lifecycle.py` are P71–P85 candidates. Tracked capsule/catalog/server/
+  rights/package/test files also contain older P71–P98 hunks; whole-file staging is unsafe.
+  `.brainlehr.json` retains the three P42 static-tool IDs as `planned` while their source is
+  untracked, allowing honest `project_ensure`; project root `7a8a38a8` was refreshed, not
+  deleted or duplicated.
+- Remaining risk: P74 stays `TEILWEISE` until supported Hermes runtime matrix/restart work.
+  Before any commit, isolate exact intended hunks, inspect `git diff --cached --numstat`, then
+  compare staged line count to this boundary. Do not include P2/dashboard feedback, DBs,
+  backups, generated builds, unclassified untracked files or user changes.
+- Brainlehr evidence used: `5255aa27`, `8c6443e9`, `7a8a38a8`, `L-07c361`.
+
+## 2026-08-26T20:01:38+0200 — PAUSED: P71–P98 transition; no staged boundary
+
+- HEAD: `d123d70c1b914499526167e1035f9cbbd9b2a073` on `brainlehr/b4-ausweis`.
+  Cached numstat is empty. Do not stage, commit, push, or discard the mixed tree from this handoff.
+  A Codex context rollover may restart now: current server startup and the normal read-only calls are verified below.
+- Dirty boundary: this is a mixed worktree. Agent-owned P71–P98 candidates include
+  `docs/REQUIREMENTS_BRAINLEHR.md`, `kern/project_context.py`, `knowledge_mcp_server.py`,
+  `pyproject.toml`, selected package/requirements tests, new `kern/{analyzer_attestation,architecture_health,behavioral_oracle,client_lifecycle,cross_repo_impact,intent_outcome,journey_evidence,requirement_feasibility,runtime_cardinality,runtime_config_evidence,slo_evidence,workflow_impact,worktree_lease}.py`,
+  and their focused tests. Everything else is unclassified until ownership review; preserve
+  dashboard/P2 paths, databases/backups/manifests, `korpora/`, generated builds/logs, and user changes.
+- Verified bounded evidence:
+  - P76: `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/test_project_context.py tests/test_paketbau.py tests/test_requirements_brainlehr.py` → `28 passed, 2 skipped` (17.36 s), plus `py_compile` for project context/server and `git diff --check`.
+  - P86–P98 broad focus: `97 passed, 2 skipped` (16.99 s). P97 focused:
+    `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/test_workflow_impact.py tests/test_paketbau.py tests/test_requirements_brainlehr.py` → `10 passed, 2 skipped`; `py_compile kern/workflow_impact.py`; diff check.
+  - P77–P82 initial focus:
+    `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/test_client_lifecycle.py tests/test_cross_repo_impact.py tests/test_runtime_config_evidence.py tests/test_release_identity.py tests/test_paketbau.py tests/test_requirements_brainlehr.py` → `21 passed, 2 skipped`; compiles for client lifecycle/cross-repo/runtime config. This predates the incomplete P78 MCP insertion.
+  - Package proof before the latest shared-server edit: `uv build --offline --out-dir /Volumes/daten/brainlehr-p86p98-build.OKvi3a` produced wheel+sdist with P86–P98 modules and P76 policy/generator/Codex/IDE prompt assets.
+- Canonical matrix at pause:
+  - P71–P73, P75: PASS (bounded); P74: TEILWEISE, actual Hermes runtime route matrix only after a coordinated restart on a supported Hermes runtime.
+  - P76: PASS (bounded): dirty tracked config→stale; project-relative tracked tool sources; fair per-family `>96` omissions; archive inclusion.
+  - P77, P79–P82: bounded green but rerun after shared MCP work. P78: TEILWEISE—local lifecycle green, MCP attach/detach tool schemas/handlers and real MCP contract test unfinished.
+  - P83–P85: NOT RUN; the bounded child was interrupted by this pause before an integrated result.
+  - P86–P98: bounded PASS from focused suites; rerun selected shared-core gates after P78/P83–P85.
+- Next concrete actions, in order:
+  1. Finish P78 on the existing route only: add `project_attach`/`project_detach` MCP tool schemas and handlers; test fresh temp DB attach idempotence, detach/re-attach, no absolute-path response, and no deletion of knowledge/source/receipts/capsule history/untracked files.
+  2. Implement and test P83, P84, P85 as separate canonical rows; preserve P77–P85 semantics and shared P98 witnesses.
+  3. Run combined P71–P98 focused suites, `py_compile`, `git diff --check`, and a fresh package archive proof; update catalog only from that evidence.
+  4. Perform ownership/diff review before any staging. Do not include P2 dashboard/feedback, DBs, backups, generated artifacts, or user-owned changes.
+- Process/restart diagnosis (read-only, at diagnostic time):
+  - Codex has one enabled `brainlehr` MCP registration: `python3 /Volumes/daten/Begod2026/brainlehr/knowledge_mcp_server.py`. It is stdio and auto-spawned by the Codex app/session on first MCP use; Codex has no UserPromptSubmit hook, so every-turn recall is procedural (`brainlehr-current-context`/explicit MCP), not automatic injection.
+  - Claude has independent UserPromptSubmit hooks in `~/.claude/settings.json` and its own stdio MCP child. Hermes uses independent desktop/watchdog/provider processes from `~/.hermes/config.yaml`; it points at the same worktree server.
+  - Fresh restart-safety proof: `python3 -m py_compile knowledge_mcp_server.py`; direct import returned `IMPORT_OK 43` tools. A disposable detached worktree plus fresh `BRAINLEHR_DB` completed stdio `initialize`, `project_ensure`, `knowledge_search`, and `project_context` successfully. Calling `project_context` first on the real worktree correctly returned `state=partial`, `next=call project_ensure` because its capsule is not current; this is not a startup failure. The partial P78 helpers therefore do not block a Codex rollover.
+  - The stale guard previously reported nine old worktree-server children while this worktree had newer code. Do not kill UI/session children during the pause. Root may run a disposable fresh server against a temp DB for tests only.
+  - The operator may restart the Codex app/session now for context rollover; it will auto-spawn this current worktree server on first MCP use. Hermes/Claude/P74 remain a coordinated restart after a final verified commit. Then run
+    `python3 haken/mcp_veraltet.py --erneut <<<'{"session_id":"diagnostic"}'>`
+    and expect no stale child; verify a fresh `knowledge_search` and `project_context_get`. No manual Codex daemon restart is required.
+- Copy-ready continuation prompt (no `NEXT_CONTEXT_PROMPT.md`: this repo has no established convention for it):
+  `You are Terra in /Volumes/daten/Begod2026/brainlehr at HEAD d123d70c1b914499526167e1035f9cbbd9b2a073. Read AI_HANDOFF.md first. Mixed tree, nothing staged. Resume P78 via existing MCP: add project_attach/project_detach schemas+handlers and fresh-temp-DB contract tests; never delete knowledge/source/receipts. Then implement P83–P85, rerun P71–P98 focused gates, review ownership, and do not commit/push/restart until a clean verified boundary exists.`
+- Brainlehr evidence used: `ac76be2e`, `869386ec`, `5255aa27`, `621c1b77`, `c965590c`, `9e91c44e`, `L-22f120`, `L-b056ad`.
+
+## 2026-08-26T14:35:00+0200 — fix(audit): preserve legacy chain gaps with a bounded cutover
+
+- Files: `kern/audit_segment.py`, `migrationen/migrate_audit_segment_p70.py`, `schema.sql`,
+  P67–P70 migration/test material and canonical requirements.
+- Why: only UTC-only breaks had a proven execution event. The remaining 19 model+timestamp and
+  31 missing-pre-UTC breaks must stay visible instead of receiving made-up explanations.
+- Decision: a local, append-only segment anchor binds a hash-only 50-ID manifest and validates
+  only the new segment. It never edits old `access_log` or `chain_explanations` rows.
+- Verified: focused P67–P70 suite `17 passed`; live path hygiene `4 passed`; copy append/tamper
+  and restore succeeded; production anchor `40f35ebd-0a2d-4194-91dc-565dadecec24` reports
+  integrity `ok`, FK `0`, `historical_unresolved=50`, and healthy current segment.
+- Remaining risk: the local digest is not an external TSA/signature; remaining historic classes
+  are deliberately unresolved. P2 dashboard/feedback redesign is not part of this release slice.
+
+## 2026-08-26T18:30:00+0200 — feat(impact): readable local revision dashboard
+
+- Files: `kern/impact_dashboard.py`, `kern/project_impact_cli.py`, package metadata,
+  dashboard tests, generated client bootstraps and P61/P63/ADR catalog evidence.
+- Why: the first technically valid Cytoscape artifact was human-unreadable; the approved
+  replacement must remain one revision/hash-bound graph without source or trace retention.
+- Verified: `python3 -m pytest -q tests/test_impact_dashboard.py tests/test_analyzer_e2e.py
+  tests/test_requirements_brainlehr.py` (7 passed); IAB desktop+narrow/filter/pagination;
+  real connected tab refresh after Git+receipt update without reload; `python3 melder/client_bootstrap.py --check` current.
+- Remaining risk: only this dashboard vertical is accepted here. Broader P40–P49 product gates
+  still require their own complete evidence before final delivery or commit claim.
+- Next test: integrate reviewed analyzer evidence, run bounded tracked partitions, then stage
+  only agent-owned paths for the private-origin handoff.
 
 ## 2026-08-26T18:00:00+0200 — feat(evidence): run Joern locally and revoke leaked retrieval route
 
@@ -1011,19 +976,6 @@ cd /Volumes/daten/Begod2026/brainlehr/app
 - Decision: target picture A is the local-first governed core; Enterprise is a profile, SSO/SCIM/roles are pilot-gated, and federation is `SOLL später`. The catalog is versionable, but evidence, security, conflict and test gates are not optional.
 - Remaining risk: all product gates start `NOT RUN`; this commit is a requirements decision, not an implementation release. The single interpretation review may revise existing IDs, never fork them.
 - Next test: derive the first implementation tranche from MUST/PILOT dependencies and record each product-gate result on its existing BDW ID.
-## 2026-08-26T14:35:00+0200 — fix(audit): preserve legacy chain gaps with a bounded cutover
-
-- Files: `kern/audit_segment.py`, `migrationen/migrate_audit_segment_p70.py`, `schema.sql`,
-  P67–P70 migration/test material and canonical requirements.
-- Why: only UTC-only breaks had a proven execution event. The remaining 19 model+timestamp and
-  31 missing-pre-UTC breaks must stay visible instead of receiving made-up explanations.
-- Decision: a local, append-only segment anchor binds a hash-only 50-ID manifest and validates
-  only the new segment. It never edits old `access_log` or `chain_explanations` rows.
-- Verified: focused P67–P70 suite `17 passed`; live path hygiene `4 passed`; copy append/tamper
-  and restore succeeded; production anchor `40f35ebd-0a2d-4194-91dc-565dadecec24` reports
-  integrity `ok`, FK `0`, `historical_unresolved=50`, and healthy current segment.
-- Remaining risk: the local digest is not an external TSA/signature; remaining historic classes
-  are deliberately unresolved. P2 dashboard/feedback redesign is not part of this release slice.
 
 # 2026-08-26T22:00:00+0200 — fix(hermes): fail closed on missing agent context
 
@@ -1032,28 +984,3 @@ cd /Volumes/daten/Begod2026/brainlehr/app
 - Verified: focused context tests `10 passed`; full plugin suites `60 passed`; installed symlink path matrix on Python 3.11/3.12/3.13 `54 passed` each; `git diff --check` passed.
 - Remaining risk: Hermes `skip_memory=True` routes do not instantiate an external provider; full process/restart E2E remains outside this adapter seam.
 - Brainlehr evidence used: `73a222b` source-of-truth behavior commit; near miss `L-e95b8a`.
-
-## 2026-08-27 — test(retrieval): seal real P103 v2 fixture
-
-- Commits: `4d15c9ca`, `aa90866b`.
-- Why: bind 15 identifier-free DE/EN cases (12 positive, 3 no-hit) to approved source revisions, licenses, documents and executable proof hashes before any score consumes the test split.
-- Verified: focused seal test 8 passed; `py_compile`; `git diff --check`; detached `aa90866b` snapshot with `P103_SEAL_SOURCE_ROOT=/Volumes/daten/Begod2026` also 8 passed and clean.
-- Remaining: this is a plan seal only; no score, model load, index activation, DB/MCP operation or channel activation occurred.
-
-## 2026-08-27 — test(retrieval): add sealed P103 v3 runner
-
-- Commit: `e9044464`.
-- Why: deterministic rank-only runner, atomic test-once lock and independent collector are required before the v3 seal can bind any model artifact.
-- Verified: v3/v2/collector tests 19 passed; py_compile and diff check passed.
-- Remaining: no v3 manifest, model encode, DB/MCP/index operation, test-split score or activation has occurred.
-## 2026-08-27 — docs(retrieval): record P103 V6 terminal failure
-
-- Detached seal `facc4c44` claimed the sole `O_EXCL` V6 lock at 08:09:15 +0200.
-  No result exists; stdout is empty and stderr contains only two successful-key
-  load lines at 08:09:26 +0200.
-- No V6 scorer remains. Artifacts do not establish completed encode, metrics,
-  collector, H0 or H1. Lock is terminal; no retry, collector, tuning,
-  activation, DB/MCP action or push. BGE-only remains active.
-- Evidence: `messungen/p103_v6_evaluation_2026-08-27.md`.
-- AI-Assisted-By: ChatGPT Codex
-- AI-Agent: /root/terra_resume_after_hang

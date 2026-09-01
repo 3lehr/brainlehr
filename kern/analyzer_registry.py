@@ -17,7 +17,7 @@ from evidence_adapters import unavailable_record
 
 
 DEFAULTS = {
-    "tree_sitter": "/Volumes/daten/brainlehr-tool-cache/node_modules/.bin/tree-sitter",
+    "tree_sitter": "/Volumes/daten/brainlehr-tool-cache/tree-sitter-cli/node_modules/.bin/tree-sitter",
     "scip": "/Volumes/daten/brainlehr-tool-cache/node_modules/.bin/scip-python",
     "joern": "/Volumes/daten/brainlehr-tool-cache/joern/install/joern-cli/bin/joern-parse",
     "otlp": "otlp-file",
@@ -68,6 +68,8 @@ def run(kind: str, args: list[str], *, revision: str, timeout: int = TIMEOUT_SEC
     command = executable(kind)
     if command is None:
         return unavailable_record(kind, revision, f"{kind} executable unavailable")
+    command_path = Path(command).resolve()
+    input_hashes = {arg: _digest(Path(arg)) for arg in args if Path(arg).is_file()}
     safe_env = {key: os.environ[key] for key in SAFE_ENV if key in os.environ}
     with tempfile.TemporaryDirectory(prefix="brainlehr-analyzer-") as directory:
         stdout_path, stderr_path = Path(directory) / "stdout", Path(directory) / "stderr"
@@ -86,6 +88,10 @@ def run(kind: str, args: list[str], *, revision: str, timeout: int = TIMEOUT_SEC
     # adapter if they are needed for evidence.
     return {"status": "completed", "kind": kind, "revision": revision,
             "command": [command, *args],
+            "provenance": {"binary": _digest(command_path),
+                           "arguments_sha256": hashlib.sha256("\0".join(args).encode()).hexdigest(),
+                           "input_hashes": input_hashes,
+                           "cache_authenticity": "binary hash only; vendor signature must be verified at acquisition"},
             "output": {"stdout_sha256": output["stdout"]["sha256"],
                        "stderr_sha256": output["stderr"]["sha256"],
                        "stdout_bytes": output["stdout"]["bytes"],

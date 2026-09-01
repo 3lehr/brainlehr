@@ -416,12 +416,11 @@ def rrf_fuse(
 def keyword_floor_size() -> int:
     """Wie hybrid_retrieval_weight(): Modul-Konstante + Env-Uebersteuerung,
     Rueckweg kostenlos. KNOWLEDGE_KEYWORD_FLOOR ueberschreibt."""
-    raw = os.environ.get("KNOWLEDGE_KEYWORD_FLOOR", "1")
+    raw = os.environ.get("KNOWLEDGE_KEYWORD_FLOOR", "2")
     try:
-        n = int(raw)
+        return max(0, int(raw))
     except ValueError:
-        return 1
-    return max(0, n)
+        return 2
 
 
 def fuse_semantic_led(

@@ -442,6 +442,12 @@ def test_schreibdauer_knowledge_add_nicht_spuerbar_verlangsamt(temp_db, monkeypa
     VOR dieser Verdrahtung) -- beide Zahlen werden genannt, nicht nur
     behauptet. Dazu die Last waehrend der Messung, damit ein Fehlschlag
     zwischen 'zu langsam' und 'Maschine war voll' unterscheidbar ist."""
+    if os.environ.get("BRAINLEHR_RUN_PERF") != "1":
+        pytest.skip(
+            "opt-in wall-clock probe: set BRAINLEHR_RUN_PERF=1 on an idle host; "
+            "functional ADR-034 invariants run independently"
+        )
+
     last_vor = _last_pro_kern()
     vorher_ms, nachher_ms = _miss_schreibdauer(monkeypatch)
     last_nach = _last_pro_kern()

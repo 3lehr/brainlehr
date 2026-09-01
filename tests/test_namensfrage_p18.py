@@ -15,6 +15,7 @@ stillgelegt), dass der Namensweg die Ursache ist, nicht ein DB-Zufall.
 from __future__ import annotations
 
 import sqlite3
+import os
 import sys
 from pathlib import Path
 
@@ -48,7 +49,10 @@ def test_anrede_markiert_namen_ohne_selbst_gesucht_zu_werden():
     assert "Frau" not in namensfrage.eigennamen("Frau Döldissen kommt")
 
 
-@pytest.mark.skipif(not Path(ort.DB).exists(), reason="echte Datenbank nicht vorhanden")
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires the explicitly selected live corpus; fresh partitions contain no corpus",
+)
 def test_realer_bestand_natuerliche_frage_findet_alle_drei_ziele():
     """AC1: dieselbe Frage in natuerlicher Form liefert dieselben Ziele wie
     der blosse Name -- 3 von 3, ueber den Produktivweg (suchpfad_abruf.
@@ -70,7 +74,10 @@ def test_realer_bestand_natuerliche_frage_findet_alle_drei_ziele():
     conn.close()
 
 
-@pytest.mark.skipif(not Path(ort.DB).exists(), reason="echte Datenbank nicht vorhanden")
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires the explicitly selected live corpus; fresh partitions contain no corpus",
+)
 def test_mutationsprobe_ohne_namensweg_faellt_ein_ziel_wieder_raus(monkeypatch):
     """Beweist, dass der Namensweg die Ursache des Gewinns ist (nicht ein
     Zufall des heutigen Bestands): namensfrage.eigennamen() stillgelegt ->

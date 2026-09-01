@@ -1,0 +1,1385 @@
+{
+  "zweck": "Ausgangsmessung VOR jeder Neuformulierung -- prueft Vergleichbarkeit der Haelften, nicht die Abrufguete selbst.",
+  "verfahren": "echter Abrufweg (kern/abrufguete.py::abrufen() -> knowledge_recall_hook.keywords()+query(), MIT_PROMPT=1, Deckel MAX_NODES=10/MAX_LESSONS=7 eingebaut, kein Zwischenschritt vor dem Deckel gemessen (L-399b9a).",
+  "teilung": "kern/teilung_s12.py::haelfte(), festgeschrieben in runs/teilung_s12_2026-08-11.json",
+  "einheit": "Ziel-Instanz (Fall, Ziel) -- Begruendung im Modulkopf dieser Datei; Abweichung vom Auftragstext 'je Fall ein Ziel', siehe Bericht.",
+  "versuche": 1,
+  "erzeugt_am": "2026-08-11T22:53:06+0200",
+  "korpus": "echtkorpus_2026-08-11T2300.json",
+  "faelle_im_korpus": 78,
+  "zellen": {
+    "behandelt": {
+      "frage": {
+        "treffer": 1,
+        "gesamt": 2
+      },
+      "auftrag": {
+        "treffer": 18,
+        "gesamt": 92
+      }
+    },
+    "unbehandelt": {
+      "frage": {
+        "treffer": 4,
+        "gesamt": 4
+      },
+      "auftrag": {
+        "treffer": 21,
+        "gesamt": 93
+      }
+    }
+  },
+  "summe_je_haelfte": {
+    "behandelt": {
+      "treffer": 19,
+      "gesamt": 94,
+      "quote": 0.2021
+    },
+    "unbehandelt": {
+      "treffer": 25,
+      "gesamt": 97,
+      "quote": 0.2577
+    }
+  },
+  "vergleichbar": true,
+  "vergleichbar_begruendung": "Quote behandelt=0.2021 vs unbehandelt=0.2577, Differenz=0.0556 (Toleranz 0.1)",
+  "einzel": [
+    {
+      "art": "knoten",
+      "id": "/brainlehr",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/brainlehr/die-zugriffsentscheidung-ist-ein-filter",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/brainlehr/enigma-phase-1-mcp-ist-keine",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/fahrtenbuch/build-77-phone-black-screen-gesicherter",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/brainlehr/zwei-sitzungen-arbeiten-parallel-an",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/brainlehr",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-87532c",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/werkzeuge/stiftshuette-werkzeugbestand-stand-2026",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-768569",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-de8ee0",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/shared/claude-code-integration",
+      "haelfte": "unbehandelt",
+      "satzart": "frage",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-768569",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-a3cc7a",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-b63633",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-29eaee",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/openlehr/imap-zugangsdaten-konten-in-der-db",
+      "haelfte": "unbehandelt",
+      "satzart": "frage",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-bf8007",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-601c5c",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-9f8816",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/vor-der-wahl-zu-klaeren-wer",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/ops/buckeberg-vortreffen-2026-07-29:-shortli",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/ops/verwalterwahl-weg-im-buckeberg-zum-2027/betreuungsschluessel-die-einzige",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-47e586",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-29eaee",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-2d79cc",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/shared/arch/fleet-audit-2026-07-verdrahtungsdefizit",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-29eaee",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-7b2c20",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-8c633e",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-cafe-international-konsil-2026",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-technik-konsil-td1-td12-plan-ap",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-07c9d9",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-8c633e",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/shared/psa-peugeot-citroen-vin-ueber",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-statusbild-technische-grenzen",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-statusbild-technische-grenzen",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-statusbild-technische-grenzen",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/fahrtenbuch/adr-korrektur-festgeschriebener-fahrten",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-d3c6a4",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-4ab9b0",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-bf8007",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/fahrtenbuch/adr-korrektur-festgeschriebener-fahrten",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-d3c6a4",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/fahrtenbuch/adr-korrektur-festgeschriebener-fahrten",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-d3c6a4",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/fahrtenbuch/zweckwechsel-waehrend-der-fahrt-zaesur",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/fahrtenbuch/zweckwechsel-waehrend-der-fahrt-zaesur",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-4ab9b0",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/fahrtenbuch/konsil-beschluss-keine-dritte",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-e2bb41",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "knoten",
+      "id": "/apps/setfunk-statusbild-technische-grenzen",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "knoten",
+      "id": "/ops/buckeberg-anbieterabend-2026-08-05",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-ebbd22",
+      "haelfte": "unbehandelt",
+      "satzart": "frage",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-ebbd22",
+      "haelfte": "unbehandelt",
+      "satzart": "frage",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-48e414",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-a69129",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-b79360",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-dc0f44",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-d500c2",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-2e23e5",
+      "haelfte": "behandelt",
+      "satzart": "frage",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-8e3d18",
+      "haelfte": "behandelt",
+      "satzart": "frage",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-424312",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-352afa",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-636a44",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-9f5e60",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-9f8816",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-a69129",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-adfb33",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-bd4e5f",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-cb3f28",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-ebbd22",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-ff8fff",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-62b600",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-2bdfea",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-6903d2",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-f1fcb9",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-7a4a7a",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-36d092",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-3d72a5",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-502be0",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-47e586",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-9dc0db",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-a1b276",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-a3b39e",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-a7043b",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-e7bc5e",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-163051",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-4c224c",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-243dde",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-39b018",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-ad3d6e",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-f8926c",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-353192",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-895b9a",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-9e1d80",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-affae1",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-3cad13",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-a54e84",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-eb4734",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-2fea20",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-c46550",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-69217d",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-7b2c20",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-09fbcd",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-093dc4",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-3a77da",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-5b08a7",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-884098",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-121497",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-2a4cc5",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-a50ceb",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-95e9ab",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-b9d1f3",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-747223",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-7985e4",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-d8cfc8",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-71fd3a",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-d3c6a4",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-ed0379",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-f019e7",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-044353",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-8fbfd4",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-f4c75d",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-2837f3",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-2feee9",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-6edb15",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-d07097",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-0dec26",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-468a04",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-48e414",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-c46550",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-218f1e",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-312bd7",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-636a44",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-b9d1f3",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-c64f3b",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-d5c56d",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-d72a77",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-881592",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-baaa61",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-cfee1c",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-fd1221",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-1cf1ac",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-3b45fc",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-424312",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-d33850",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-e2bb41",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-01783a",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-352afa",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-40d9a5",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-48e414",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-6a215a",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-bed14a",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-d339ab",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-e3456a",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-fc8474",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-352afa",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-40d9a5",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-48e414",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-67a9c9",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-80e002",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-84869f",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-86e92d",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-ad02b8",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-affae1",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-e3456a",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-aa4995",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-c46550",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-3d03bd",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-4e9fab",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-5615d2",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-813c8f",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-1b46fe",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-0f4036",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-17b865",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-358e31",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-3ba807",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-53eeda",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-6c6661",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-b2f96b",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-712516",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": true
+    },
+    {
+      "art": "lehre",
+      "id": "L-0accf4",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-0b606e",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-36d092",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-45aadb",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-502be0",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-706807",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-7a719d",
+      "haelfte": "unbehandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-86e92d",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    },
+    {
+      "art": "lehre",
+      "id": "L-8b377b",
+      "haelfte": "behandelt",
+      "satzart": "auftrag",
+      "treffer": false
+    }
+  ]
+}

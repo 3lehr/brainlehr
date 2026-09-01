@@ -39,11 +39,11 @@ import os  # noqa: E402
 import shutil  # noqa: E402
 import subprocess  # noqa: E402
 import tempfile  # noqa: E402
-from datetime import datetime  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 import ort  # noqa: E402
 import speicher  # noqa: E402
+import zeitmarke  # noqa: E402
 
 WURZEL = _w
 
@@ -113,7 +113,7 @@ def lauf(katalog: str = "bsi", ziel: Path | None = None) -> dict:
     a2 = shutil.copy2(a, arbeitsort / "A2_wiederholung.db")
 
     ergebnis: dict = {
-        "erhoben_am": datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "erhoben_am": zeitmarke.jetzt(),
         "auftrag": "BDW-P11-AC2 (docs/PLAN_BETRIEBSPROFILE_2026-08-20.md, Abschnitt C)",
         "katalog": katalog,
         "arbeitsort": str(arbeitsort),

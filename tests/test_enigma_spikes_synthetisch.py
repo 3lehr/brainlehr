@@ -21,6 +21,7 @@ Entscheidung, statt sie zu verschlafen.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -60,7 +61,10 @@ def fundstellen() -> list[tuple[str, int, str]]:
             if _ist_kommentarzeile(zeile):
                 continue
             for begriff in BEGRIFFE:
-                if begriff in zeile:
+                # Identifier boundaries: checkpoint `expires_at` is neither
+                # the Enigma model's `expiry` grant field nor evidence that a
+                # second permission model was introduced.
+                if re.search(rf"\b{re.escape(begriff)}\b", zeile):
                     treffer.append((str(pfad.relative_to(WURZEL)), nr, begriff))
     return treffer
 

@@ -116,7 +116,7 @@ def test_multilingual_activation_needs_every_matrix_and_prose_control():
     assert benchmark.multilingual_activation_decision(matrices, prose)["active_channel"] == "bge_m3"
 
 
-def test_ai_lineage_requirements_are_decided_but_not_implemented():
+def test_ai_lineage_requirements_have_current_verified_status():
     catalog = CATALOG.read_text()
     plan = PLAN.read_text()
     required = {
@@ -129,6 +129,8 @@ def test_ai_lineage_requirements_are_decided_but_not_implemented():
     }
     for requirement_id, terms in required.items():
         row = next(line for line in catalog.splitlines() if line.startswith(f"| {requirement_id} "))
-        assert "DECIDED" in row and "NOT IMPLEMENTED" in row and "NOT RUN" in row
+        assert "DECIDED" in row and "PASS" in row
         assert all(term.casefold() in row.casefold() for term in terms)
         assert requirement_id in plan
+    p103 = next(line for line in catalog.splitlines() if line.startswith("| BDW-P103 "))
+    assert "V9 measured H0" in p103 and "BGE-only remains active" in p103

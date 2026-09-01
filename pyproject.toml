@@ -52,6 +52,14 @@ dependencies = []
 # die signierte Auditkette. Ohne sie sucht brainlehr rein lexikalisch (FTS5)
 # weiter -- ein Ausfall der Einbettungen blockiert die Suche nie.
 bedeutungskanal = ["numpy>=1.26", "scikit-learn>=1.4", "cryptography>=42"]
+# Kollaborativer Dokumentdienst; der MCP-Kern importiert beides nicht beim Start.
+dokumentfenster = ["pycrdt>=0.14", "websockets>=15"]
+
+[dependency-groups]
+# Core MCP startup/import smoke is stdlib-only. These groups make optional
+# semantic/security paths, tests and release construction reproducible.
+dev = ["pytest>=8", "cryptography>=42", "pycrdt>=0.14", "websockets>=15"]
+build = ["build>=1.5", "hatchling>=1.32"]
 
 [project.scripts]
 # Damit ein Klient `brainlehr-mcp` eintragen kann statt eines Dateipfads.
@@ -73,21 +81,31 @@ Homepage = "https://github.com/3lehr/brainlehr"
 # tests/test_paketbau.py rot faerbt.
 only-include = [
   "START_HIER.md",
+  "auszug-offen/prompts/CHATGPT.md",
+  "auszug-offen/prompts/CLAUDE.md",
+  "auszug-offen/prompts/CODEX.md",
+  "auszug-offen/prompts/HERMES.md",
+  "auszug-offen/prompts/IDE.md",
   "brainlehr.py",
+  "docs/CLIENT_BOOTSTRAP_POLICY.json",
   "haken/ort.py",
   "herkunft_unveraenderlich.sql",
   "kern/anfrage_erweiterung.py",
   "kern/ankerverfahren.py",
-  "kern/anchor_registry.py",
-  "kern/ai_comment_policy.py",
-  "kern/ai_edit_gate.py",
+  "kern/actor_project_boundary.py",
+  "kern/architecture_health.py",
   "kern/ausschreibekatalog.py",
   "kern/ausweis.py",
   "kern/betriebsprofil.py",
+  "kern/behavioral_oracle.py",
   "kern/build_embeddings.py",
   "kern/einrichtung.py",
   "kern/einschleusung.py",
   "kern/embeddings.py",
+  "kern/evidence_adapters.py",
+  "kern/analyzer_attestation.py",
+  "kern/evidence_graph.py",
+  "kern/evidence_projections.py",
   "kern/fremdimport.py",
   "kern/gattung_filter.py",
   "kern/gegenstand.py",
@@ -98,7 +116,6 @@ only-include = [
   "kern/knowledge_lint.py",
   "kern/konfidenz.py",
   "kern/lesson_recorder.py",
-  "kern/lineage_dag.py",
   "kern/nachrangung.py",
   "kern/normachsen.py",
   "kern/normbestand.py",
@@ -106,16 +123,27 @@ only-include = [
   "kern/normrang.py",
   "kern/prompt_invarianz.py",
   "kern/project_context.py",
+  "kern/cross_repo_impact.py",
+  "kern/runtime_config_evidence.py",
+  "kern/client_lifecycle.py",
+  "kern/project_analysis_loop.py",
   "kern/project_boundary_cli.py",
   "kern/project_impact_cli.py",
-  "tool/ai_edit_gate.py",
-  "tool/ai_project_boundary.py",
-  "docs/CLIENT_BOOTSTRAP_POLICY.json",
-  "melder/client_bootstrap.py",
+  "kern/impact_dashboard.py",
+  "kern/incident_lifecycle.py",
+  "kern/workflow_impact.py",
+  "kern/intent_outcome.py",
+  "kern/journey_evidence.py",
+  "kern/runtime_cardinality.py",
+  "kern/slo_evidence.py",
+  "kern/worktree_lease.py",
   "kern/reifegrad.py",
+  "kern/release_identity.py",
+  "kern/release_distribution_provenance.py",
+  "kern/review_merge_provenance.py",
+  "kern/requirement_feasibility.py",
   "kern/relation_endpoints.py",
   "kern/relevanzlage.py",
-  "kern/rationale_index_lifecycle.py",
   "kern/schema_nachzug.py",
   "kern/schluesselablage.py",
   "kern/session_checkpoint.py",
@@ -129,6 +157,7 @@ only-include = [
   "kern/zeitmarke.py",
   "knowledge_mcp_server.py",
   "melder/einbettungsaussetzer.py",
+  "melder/client_bootstrap.py",
   "melder/selbstbeschreibung.py",
   "schema.sql",
   "schnellstart.py",
@@ -140,21 +169,31 @@ bypass-selection = true
 
 [tool.hatch.build.targets.wheel.force-include]
 "START_HIER.md" = "brainlehr_kern/START_HIER.md"
+"auszug-offen/prompts/CHATGPT.md" = "brainlehr_kern/auszug-offen/prompts/CHATGPT.md"
+"auszug-offen/prompts/CLAUDE.md" = "brainlehr_kern/auszug-offen/prompts/CLAUDE.md"
+"auszug-offen/prompts/CODEX.md" = "brainlehr_kern/auszug-offen/prompts/CODEX.md"
+"auszug-offen/prompts/HERMES.md" = "brainlehr_kern/auszug-offen/prompts/HERMES.md"
+"auszug-offen/prompts/IDE.md" = "brainlehr_kern/auszug-offen/prompts/IDE.md"
 "brainlehr.py" = "brainlehr_kern/brainlehr.py"
+"docs/CLIENT_BOOTSTRAP_POLICY.json" = "brainlehr_kern/docs/CLIENT_BOOTSTRAP_POLICY.json"
 "haken/ort.py" = "brainlehr_kern/haken/ort.py"
 "herkunft_unveraenderlich.sql" = "brainlehr_kern/herkunft_unveraenderlich.sql"
 "kern/anfrage_erweiterung.py" = "brainlehr_kern/kern/anfrage_erweiterung.py"
 "kern/ankerverfahren.py" = "brainlehr_kern/kern/ankerverfahren.py"
-"kern/anchor_registry.py" = "brainlehr_kern/kern/anchor_registry.py"
-"kern/ai_comment_policy.py" = "brainlehr_kern/kern/ai_comment_policy.py"
-"kern/ai_edit_gate.py" = "brainlehr_kern/kern/ai_edit_gate.py"
+"kern/actor_project_boundary.py" = "brainlehr_kern/kern/actor_project_boundary.py"
+"kern/architecture_health.py" = "brainlehr_kern/kern/architecture_health.py"
 "kern/ausschreibekatalog.py" = "brainlehr_kern/kern/ausschreibekatalog.py"
 "kern/ausweis.py" = "brainlehr_kern/kern/ausweis.py"
 "kern/betriebsprofil.py" = "brainlehr_kern/kern/betriebsprofil.py"
+"kern/behavioral_oracle.py" = "brainlehr_kern/kern/behavioral_oracle.py"
 "kern/build_embeddings.py" = "brainlehr_kern/kern/build_embeddings.py"
 "kern/einrichtung.py" = "brainlehr_kern/kern/einrichtung.py"
 "kern/einschleusung.py" = "brainlehr_kern/kern/einschleusung.py"
 "kern/embeddings.py" = "brainlehr_kern/kern/embeddings.py"
+"kern/evidence_adapters.py" = "brainlehr_kern/kern/evidence_adapters.py"
+"kern/analyzer_attestation.py" = "brainlehr_kern/kern/analyzer_attestation.py"
+"kern/evidence_graph.py" = "brainlehr_kern/kern/evidence_graph.py"
+"kern/evidence_projections.py" = "brainlehr_kern/kern/evidence_projections.py"
 "kern/fremdimport.py" = "brainlehr_kern/kern/fremdimport.py"
 "kern/gattung_filter.py" = "brainlehr_kern/kern/gattung_filter.py"
 "kern/gegenstand.py" = "brainlehr_kern/kern/gegenstand.py"
@@ -165,7 +204,6 @@ bypass-selection = true
 "kern/knowledge_lint.py" = "brainlehr_kern/kern/knowledge_lint.py"
 "kern/konfidenz.py" = "brainlehr_kern/kern/konfidenz.py"
 "kern/lesson_recorder.py" = "brainlehr_kern/kern/lesson_recorder.py"
-"kern/lineage_dag.py" = "brainlehr_kern/kern/lineage_dag.py"
 "kern/nachrangung.py" = "brainlehr_kern/kern/nachrangung.py"
 "kern/normachsen.py" = "brainlehr_kern/kern/normachsen.py"
 "kern/normbestand.py" = "brainlehr_kern/kern/normbestand.py"
@@ -173,16 +211,27 @@ bypass-selection = true
 "kern/normrang.py" = "brainlehr_kern/kern/normrang.py"
 "kern/prompt_invarianz.py" = "brainlehr_kern/kern/prompt_invarianz.py"
 "kern/project_context.py" = "brainlehr_kern/kern/project_context.py"
+"kern/cross_repo_impact.py" = "brainlehr_kern/kern/cross_repo_impact.py"
+"kern/runtime_config_evidence.py" = "brainlehr_kern/kern/runtime_config_evidence.py"
+"kern/client_lifecycle.py" = "brainlehr_kern/kern/client_lifecycle.py"
+"kern/project_analysis_loop.py" = "brainlehr_kern/kern/project_analysis_loop.py"
 "kern/project_boundary_cli.py" = "brainlehr_kern/project_boundary_cli.py"
 "kern/project_impact_cli.py" = "brainlehr_kern/project_impact_cli.py"
-"tool/ai_edit_gate.py" = "brainlehr_kern/tool/ai_edit_gate.py"
-"tool/ai_project_boundary.py" = "brainlehr_kern/tool/ai_project_boundary.py"
-"docs/CLIENT_BOOTSTRAP_POLICY.json" = "brainlehr_kern/docs/CLIENT_BOOTSTRAP_POLICY.json"
-"melder/client_bootstrap.py" = "brainlehr_kern/melder/client_bootstrap.py"
+"kern/impact_dashboard.py" = "brainlehr_kern/kern/impact_dashboard.py"
+"kern/incident_lifecycle.py" = "brainlehr_kern/kern/incident_lifecycle.py"
+"kern/workflow_impact.py" = "brainlehr_kern/kern/workflow_impact.py"
+"kern/intent_outcome.py" = "brainlehr_kern/kern/intent_outcome.py"
+"kern/journey_evidence.py" = "brainlehr_kern/kern/journey_evidence.py"
+"kern/runtime_cardinality.py" = "brainlehr_kern/kern/runtime_cardinality.py"
+"kern/slo_evidence.py" = "brainlehr_kern/kern/slo_evidence.py"
+"kern/worktree_lease.py" = "brainlehr_kern/kern/worktree_lease.py"
 "kern/reifegrad.py" = "brainlehr_kern/kern/reifegrad.py"
+"kern/release_identity.py" = "brainlehr_kern/kern/release_identity.py"
+"kern/release_distribution_provenance.py" = "brainlehr_kern/kern/release_distribution_provenance.py"
+"kern/review_merge_provenance.py" = "brainlehr_kern/kern/review_merge_provenance.py"
+"kern/requirement_feasibility.py" = "brainlehr_kern/kern/requirement_feasibility.py"
 "kern/relation_endpoints.py" = "brainlehr_kern/kern/relation_endpoints.py"
 "kern/relevanzlage.py" = "brainlehr_kern/kern/relevanzlage.py"
-"kern/rationale_index_lifecycle.py" = "brainlehr_kern/kern/rationale_index_lifecycle.py"
 "kern/schema_nachzug.py" = "brainlehr_kern/kern/schema_nachzug.py"
 "kern/schluesselablage.py" = "brainlehr_kern/kern/schluesselablage.py"
 "kern/session_checkpoint.py" = "brainlehr_kern/kern/session_checkpoint.py"
@@ -196,6 +245,7 @@ bypass-selection = true
 "kern/zeitmarke.py" = "brainlehr_kern/kern/zeitmarke.py"
 "knowledge_mcp_server.py" = "brainlehr_kern/knowledge_mcp_server.py"
 "melder/einbettungsaussetzer.py" = "brainlehr_kern/melder/einbettungsaussetzer.py"
+"melder/client_bootstrap.py" = "brainlehr_kern/melder/client_bootstrap.py"
 "melder/selbstbeschreibung.py" = "brainlehr_kern/melder/selbstbeschreibung.py"
 "schema.sql" = "brainlehr_kern/schema.sql"
 "schnellstart.py" = "brainlehr_kern/schnellstart.py"

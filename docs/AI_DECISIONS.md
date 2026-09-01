@@ -1,5 +1,90 @@
 # AI architecture decisions
 
+## Current decision pointer — 2026-08-26
+
+Current acceptance status is exclusively the matching `Produktgate` cell in
+`docs/REQUIREMENTS_BRAINLEHR.md`. This file and `AI_HANDOFF.md` are immutable
+chronological evidence, not a status register. Earlier statements that Joern
+is unavailable, Metroviz is planned, or a CodeRank router is active are
+superseded history: current choices are bounded local Joern, derived
+OTLP/Metroviz projections, and BGE-M3 only. A later implementation still does
+not promote a requirement without its named acceptance evidence.
+
+## 2026-08-26 — Preserve unresolved audit history; anchor only a new healthy segment
+
+- Context: P68 explained only the 11,118 UTC-only rewrites. Independent replay proved 19
+  model-plus-timestamp rows and 31 rows absent from the named pre-UTC backup, but not the
+  authorized execution event needed to explain either class.
+- Decision: Do not rewrite `access_log` or create invented explanations. `audit_segment_anchors`
+  records the previous chained tail, a hash-only sorted unresolved-ID manifest, class counts,
+  a prefix profile, actor/reason and a local integrity digest. Validation reports the unresolved
+  legacy count separately and verifies only post-anchor chain continuity. A local digest detects
+  accidental row alteration; it is explicitly not an external timestamp/signature authority.
+- Verification: Copy-first manifest SHA `f7e607b841d6c2f844318551b85ef19adbc1adf4d29ff151d22771f276654d2f`
+  classified exactly 19+31; valid append remained healthy and a tampered append failed. Live
+  anchor `40f35ebd-0a2d-4194-91dc-565dadecec24`, integrity/FK checks and SQLite-backup restore
+  passed. `tests/test_audit_segment_p70.py` includes concurrent duplicate creation.
+- Rejected: bulk waiver, rehashing history, per-row invented explanations, and calling the
+  complete historical chain healthy.
+
+## 2026-08-26 — Make dependency and release evidence local, pinned and reversible
+
+- Context: `requirements.txt` had become a second, unconstrained resolver input while the
+  `pyproject.toml` core intentionally has no runtime dependency. A release claim also needed
+  more than a wheel checksum.
+- Decision: `pyproject.toml` declares optional/document and dev/build groups; `uv.lock` is the
+  only pinned resolution and `requirements.txt` is a non-install policy note. Local readers
+  normalize manifest scope, resolved lock packages, SPDX licenses, explicit advisory provenance,
+  consumer-bound old→new deltas and a restore-previous-lock receipt. `release_identity` binds
+  lock/SBOM/artifact hashes, source revision, tool versions, signature state and rollback.
+- Verification: `uv 0.12.3 lock --check`; Syft 1.51.0 emitted UV SPDX SHA
+  `d80de11307a1639ab847c4609861fc0c3234e5ddff203cfd79248cdee1532837`; explicit
+  OSV-Scanner 2.5.1 `--lockfile uv.lock` result SHA `54345d5194d238b6017d0f3181f392109ce35023cc6b4bdfa8c134943dcb578e`
+  reported zero vulnerable groups. Isolated wheel/sdist hashes were
+  `f7b51b29c4b6e505911708db03fab1645a24856b9f562bc01569fae2a34620d4` and
+  `154300b9256d84f4c9d505a7fa19e9b7fcbb32ea1cc445ec606c1cc1e3e0e9e5`; fresh no-deps
+  MCP help passed. Cosign 3.1.3 local ephemeral sign/verify passed; release receipt SHA
+  `dd9d156c20267d6f5e21566228704138bb3e7d0957226e93cb24011dec83afc3`.
+- Rejected: auto-install/update, an unpinned second requirements resolver, scanning user
+  untracked corpora, and treating an advisory scan as a release decision.
+- Boundary: the local signature was deliberately not uploaded to a transparency log, so it is
+  proof of the local verification exercise—not a public provenance assertion. OSV/Syft are
+  explicit acquisition/scan tools; normal evidence readers make no network call.
+
+## 2026-08-26 — Fail closed around deployment, analyzer, trace and graph lifecycle evidence
+
+- Decision: A changed schema/API/event/deploy identity requires an explicit compatibility window,
+  canary and rollback. Unsupported execution forms widen to coverage gaps. Local actor/project
+  checks deny cross-project and remote pre-tenant requests. Commit acknowledgement is an
+  Ed25519 signature over base, staged/untracked content hash, actor and reason. Analyzer caches
+  carry signed revision/tool/config/input/output envelopes; runners retain only bounded digests.
+  Trace projection samples deterministically, rejects raw spans/clock errors and erases expired
+  projections. Graph envelopes back up/restore only after hash verification and GC through an
+  explicit tombstone; durable operation receipts make restart replay idempotent.
+- Verification: `python3 -m pytest -q tests/test_release_identity.py
+  tests/test_coverage_provenance.py tests/test_actor_project_boundary.py
+  tests/test_project_boundary.py tests/test_analyzer_cache.py tests/test_analyzer_registry.py
+  tests/test_joern_cpg_live.py tests/test_otel_lifecycle.py tests/test_graph_envelope_store.py`
+  (41 focused assertions including the catalog run) passed. Live Joern C fixture: 32 nodes,
+  211 edges; local sandbox socket probe denied networking.
+- Boundary: Ed25519 keys and cache artifacts remain local; no remote tenant service, collector,
+  transparency-log proof or JVM filesystem confinement claim is made. Those conditions remain
+  visible gaps rather than inferred security properties.
+
+## 2026-08-26 — Static channels run locally before reconciliation
+
+- Context: P42 had only normalized fixtures and historical tool notes. A capability was not
+  evidence that an actual analyzer artifact reached the canonical graph.
+- Decision: `tool/static_evidence.py` runs cached official tree-sitter Python/JavaScript
+  grammars, `scip-python`, and a local no-network Semgrep rule. It imports only typed syntax,
+  symbol/reference, and rule fragments, each revision- and tool-version-bound, then callers
+  reconcile them with the existing impact graph. Tool output never writes Brainlehr.
+- Rejected: treating `--version` as a parse result; parsing SCIP with source-text regexes;
+  Semgrep `--config auto` network rules; or making rules dependency edges.
+- Verification: `python3 -m pytest -q tests/test_static_evidence_live.py` — 1 passed.
+- Boundary: local cache paths and the Python 3.14 grammar runtime are host-specific; absence
+  returns an explicit coverage gap, not synthetic evidence.
+
 ## 2026-08-26 — Run Joern locally as bounded CPG evidence
 
 - Context: Joern/CPG was mandatory, but the earlier Docker path was unavailable. The official
@@ -57,6 +142,14 @@
 - Verification: `tests/test_project_boundary.py::test_otel_and_metroviz_cli_are_real_projection_routes`.
 - Boundary: Joern's local runtime is still unavailable and remains a coverage gap; this route
   proves only sanitized, caller-provided trace binding.
+
+## 2026-08-26 — Local impact dashboard is a cached view, never a second graph
+
+- Context: The original offline Cytoscape shell was technically valid but failed human review because a single long path label dominated the screen. The operator approved a replacement wireframe with compact graph, revision control, timeline and coverage column.
+- Decision: `brainlehr-impact-view --serve --watch --open` starts a stdlib-only read-only loopback server only for `code|mixed`. It prewarms and caches the canonical revision-bound graph, polls only Git/append-only receipt hashes, exposes no source/trace payload, and pages real history. Compact SVG is the accessible default; the same JSON can opt into the colocated local Cytoscape asset.
+- Rejected alternatives: a CDN/frontend service; a persistent dashboard database; raw commit subjects/ack reasons; a per-save write loop; retaining the unreadable auto-zoom layout.
+- Verification: `python3 -m pytest -q tests/test_impact_dashboard.py` (4 passed); an IAB tab advanced from `76e6c9721518` to `947a094047c1` after a real Git+receipt update without reload, with no console errors. Desktop 1440×900 and narrow 390×844 QA verified filter focus and paged history.
+- Boundary: the dashboard watches commit/receipt-derived graph state. Editor events remain the explicitly ephemeral client overlay, not a server-side filesystem watcher.
 
 ## 2026-08-26 — Evidence adapters are bounded, revisioned inputs; projections are derived offline artifacts
 
@@ -252,19 +345,3 @@
 - Verification: `python3 -m pytest -q tests/test_brainlehr_umzug.py::test_erstanlage_traegt_dasselbe_schema_wie_der_betrieb tests/test_enigma_hausmeister_contract.py tests/test_werkzeugrechte_durchsetzung.py tests/test_ausweis_identitaet.py tests/test_enigma_two_process_spike.py` — 22 passed.
 - Boundary: This is a synthetic P1 contract. It is not a P2, anonymity, legal,
   compliance, or production-security claim; C0/C2/C3/C4 remain unmeasured.
-## 2026-08-26 — Preserve unresolved audit history; anchor only a new healthy segment
-
-- Context: P68 explained only the 11,118 UTC-only rewrites. Independent replay proved 19
-  model-plus-timestamp rows and 31 rows absent from the named pre-UTC backup, but not the
-  authorized execution event needed to explain either class.
-- Decision: Do not rewrite `access_log` or create invented explanations. `audit_segment_anchors`
-  records the previous chained tail, a hash-only sorted unresolved-ID manifest, class counts,
-  a prefix profile, actor/reason and a local integrity digest. Validation reports the unresolved
-  legacy count separately and verifies only post-anchor chain continuity. A local digest detects
-  accidental row alteration; it is explicitly not an external timestamp/signature authority.
-- Verification: Copy-first manifest SHA `f7e607b841d6c2f844318551b85ef19adbc1adf4d29ff151d22771f276654d2f`
-  classified exactly 19+31; valid append remained healthy and a tampered append failed. Live
-  anchor `40f35ebd-0a2d-4194-91dc-565dadecec24`, integrity/FK checks and SQLite-backup restore
-  passed. `tests/test_audit_segment_p70.py` includes concurrent duplicate creation.
-- Rejected: bulk waiver, rehashing history, per-row invented explanations, and calling the
-  complete historical chain healthy.

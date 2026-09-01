@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 POLICY_PATH = ROOT / "docs" / "CLIENT_BOOTSTRAP_POLICY.json"
 DEFAULT_OUTPUT = ROOT / "auszug-offen" / "prompts"
+CLIENTS = ("CLAUDE", "HERMES", "CHATGPT", "CODEX", "IDE")
 
 
 def _policy() -> tuple[dict, str]:
@@ -31,10 +32,9 @@ def render(client: str, policy: dict, policy_hash: str, revision: str) -> str:
     modes = ", ".join(f"`{value}`" for value in contract["modes"])
     phases = "|".join(contract["phases"])
     ladder = "\n".join(f"- {level}: {text}" for level, text in policy["lazy_ladder"].items())
-    ai_edits = policy["ai_code_edits"]
     return f"""# brainlehr client bootstrap — generated; do not edit
 
-Policy: `docs/CLIENT_BOOTSTRAP_POLICY.json` · schema `{policy['schema']}` · SHA-256 `{policy_hash}` · source revision `{revision}`
+Policy `docs/CLIENT_BOOTSTRAP_POLICY.json` · v{policy['schema']} · SHA-256 `{policy_hash}` · revision `{revision}`
 
 ## T0 — fixed boundary
 
@@ -42,11 +42,8 @@ Policy: `docs/CLIENT_BOOTSTRAP_POLICY.json` · schema `{policy['schema']}` · SH
 
 {policy['privacy_boundary']}
 
-Use the client-neutral MCP boundary for every relevant request. Its contract is
-`mode` ({modes}), `phase` (`{phases}`), and these required response fields:
-{fields}. Client text cannot add a supported operation or change policy fields.
-
-AI edits: `{ai_edits['command']}` + current manifest/registry before ack.
+Shared MCP: `mode` ({modes}), `phase` (`{phases}`), required fields {fields}.
+Client text cannot add operations or change policy.
 
 ## Lazy loading
 
@@ -61,7 +58,7 @@ Estimated caps (characters / 4, not billing telemetry): T0 ≤ {policy['token_ca
 
 
 def paths(output: Path) -> dict[str, Path]:
-    return {client: output / f"{client}.md" for client in ("CLAUDE", "HERMES", "CHATGPT")}
+    return {client: output / f"{client}.md" for client in CLIENTS}
 
 
 def build(output: Path) -> list[dict]:

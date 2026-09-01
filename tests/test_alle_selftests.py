@@ -81,6 +81,7 @@ MODULE = [
     "kern/anmeldung.py",
     "kern/auditanker.py",
     "kern/ausweis.py",
+    "kern/bauvermeidung.py",
     "kern/baustein.py",
     "kern/bereinigung.py",
     "kern/build_node_index.py",
@@ -302,7 +303,7 @@ XFAIL = {
 }
 
 assert set(XFAIL) <= set(MODULE)
-assert len(MODULE) == 146, len(MODULE)  # + kern/dokumentenablage.py (P15/ADR-032, 2026-08-21)  # + kern/gegenstand_plankennungen.py (P16, 2026-08-21)  # + 5 aus dem Gesamtbau A-G (2026-08-21, von test_kein_modul_faellt_durch_die_liste gefunden)  # + melder/forderung_vorgang.py (Strang F, 2026-08-21)  # + haken/suchpfad_abruf.py und 3 nachgetragene (2026-08-19)  # + kern/kundenschluessel.py (2026-08-18, BDW-E09/E07)  # 61 + kern/lehrenpaket.py (2026-08-12) + melder/eilmeldung_etikett.py (2026-08-13) + melder/vorschlagsmelder.py (Auftrag 84, 2026-08-13) + 12 nachgetragene (2026-08-14, gefunden von test_kein_modul_faellt_durch_die_liste -- 11 davon waren vorbestehend und liefen nie) + kern/satz.py (2026-08-15T06:20:00+0200, ebenfalls von diesem Test gefunden -- sein Selbsttest war seit dem Anlegen rot) + melder/spaltenabgleich.py (Linie J3, 2026-08-15) + melder/plan_bestandsabgleich.py (Soll/Wirklichkeit-Abgleich fuer Planzeilen, 2026-08-15) + kern/driftwaechter.py (F6, Drift-Waechter Darstellung/Blatt, schnelle Darstellung im selben Modul, 2026-08-15) + kern/designtokens_latex.py (LaTeX-Erzeuger fuer Gestaltungsvorrat, ADR-015, 2026-08-15) + melder/wirkkette.py (Linie J2, Haken- und Prozessabgleich, 2026-08-15) + melder/agentendauer.py (Agentendauer-Melder, 2026-08-15, nebenlaeufig eingetragen) + melder/abrufwirkung.py (dauerhafter Abrufwirkungs-Verlauf, 2026-08-15) -- Zahl bei Eintragung nebenlaeufig veraltet vorgefunden (97 statt der tatsaechlichen Listenlaenge), auf den echten Bestand korrigiert statt weitergezaehlt
+assert len(MODULE) == 147, len(MODULE)  # + kern/bauvermeidung.py, discovered by the deterministic list gate
 
 # Nur diese 3 legen -wal/-shm NEBEN der echten Datenbank an, wenn sie
 # BRAINLEHR_DB unbesetzt lassen -- gemessen 2026-08-12 per Datei-Snapshot
@@ -397,6 +398,11 @@ def brainlehr_db_kopie(tmp_path_factory) -> Path:
 def _lauf(relpath: str, db_kopie: Path, ausweis_kopie: Path | None = None) -> subprocess.CompletedProcess:
     env = dict(os.environ)
     env.pop("BEGOD_KNOWLEDGE_DB", None)
+    # Der opt-in Live-Smoke braucht den realen, gewachsenen Bestand. Ein von
+    # der deterministischen Suite gesetztes Test-DB-Override darf nicht in
+    # seine Subprozesse durchsickern; die drei schreibenden Sonderfaelle
+    # bekommen darunter weiterhin ihre explizite Kopie.
+    env.pop("BRAINLEHR_DB", None)
     if relpath in BRAUCHT_ISOLIERTE_DB:
         env["BRAINLEHR_DB"] = str(db_kopie)
     if relpath in BRAUCHT_ISOLIERTEN_AUSWEIS:
@@ -452,6 +458,10 @@ def echte_db_unangetastet():
         "BRAINLEHR_DB-Isolierung geprueft, aber offenbar von einem Modul umgangen")
 
 
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires explicit BRAINLEHR_RUN_LIVE=1 and a local grown corpus",
+)
 @pytest.mark.parametrize("relpath", [_mit_marker(m) for m in MODULE])
 def test_modul_selftest(relpath, brainlehr_db_kopie, ausweis_kopie_mit_einem_eintrag):
     p = _lauf(relpath, brainlehr_db_kopie, ausweis_kopie_mit_einem_eintrag)

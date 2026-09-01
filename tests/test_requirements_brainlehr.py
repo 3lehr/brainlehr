@@ -6,7 +6,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "docs" / "REQUIREMENTS_BRAINLEHR.md"
 
 EXPECTED = {
-    **{f"BDW-R{i:02d}": "keep" for i in range(1, 6)},
+    "BDW-R01": "keep", "BDW-R02": "keep", "BDW-R03": "single-webui",
+    "BDW-R04": "keep", "BDW-R05": "keep",
     "BDW-C01": "new-decision", "BDW-C02": "governed-core", "BDW-C03": "pilot",
     "BDW-P01": "regulated", "BDW-P02": "root-index", "BDW-P03": "profiles",
     "BDW-P04": "eval-suite", "BDW-P05": "A",
@@ -69,18 +70,37 @@ EXPECTED = {
         51: "dependency-evidence-lifecycle",
         52: "supply-chain-release-identity", 53: "compatibility-deployment-identity", 54: "coverage-provenance-gaps", 55: "local-actor-project-boundary", 56: "ack-content-authenticity", 57: "analyzer-sandbox-redaction", 58: "trace-sanitization-lifecycle", 59: "injection-restart-resilience", 60: "graph-durability-erasure", 61: "safe-accessible-projections",
         62: "graph-vector-separation",
+        63: "local-live-impact-dashboard",
+        64: "self-hosted-evidence-dogfood",
+        65: "working-overlay-dashboard",
+        66: "opt-in-feedback-drawer",
+        67: "release-readiness-priority",
+        68: "audit-chain-utc-repair",
+        69: "typed-relation-endpoints",
+        70: "legacy-chain-cutover-anchor",
+        71: "edit-batch-working-overlay",
+        72: "context-completeness-progressive-widening",
+        73: "evidence-promotion-required-gap-gate",
+        74: "client-lifecycle-lazy-contract",
+        75: "local-context-boundaries-dogfood",
+        76: "source-backed-capability-inventory",
+        77: "knowledge-only-flow", 78: "project-lifecycle-attach-detach", 79: "cross-client-recovery-ux",
+        80: "cross-repository-impact", 81: "build-variant-evidence", 82: "runtime-configuration-evidence",
+        83: "review-merge-provenance", 84: "release-distribution-provenance", 85: "incident-lifecycle-evidence",
+        86: "intent-observed-outcome", 87: "independent-behavioral-oracle", 88: "runtime-cardinality",
+        89: "dynamic-dispatch-evidence", 90: "executable-journey-human-comprehension",
+        91: "architecture-erosion-evidence", 92: "cross-process-worktree-lease",
+        93: "source-running-artifact-variant-parity", 94: "nonfunctional-slo-degradation",
+        95: "analyzer-sandbox-supply-chain-attestation",
+        96: "requirement-feasibility-measurement-check", 97: "measured-productivity-error-prevention",
+        98: "n-independent-evidence-witnesses",
+        99: "ai-comment-policy",
+        100: "registry-anchor-lineage-resolver",
+        101: "immutable-merkle-lineage-joins",
+        102: "rationale-index-failure-lifecycle",
+        103: "sealed-annotation-coderank-ablation",
+        104: "forbid-freeform-ai-comments",
     }.items()},
-    "BDW-P67": "release-readiness-priority",
-    "BDW-P68": "audit-chain-utc-repair",
-    "BDW-P69": "typed-relation-endpoints",
-    "BDW-P70": "legacy-chain-cutover-anchor",
-    "BDW-P74": "client-lifecycle-lazy-contract",
-    "BDW-P99": "ai-comment-policy",
-    "BDW-P100": "registry-anchor-lineage-resolver",
-    "BDW-P101": "immutable-merkle-lineage-joins",
-    "BDW-P102": "rationale-index-failure-lifecycle",
-    "BDW-P103": "sealed-annotation-coderank-ablation",
-    "BDW-P104": "forbid-freeform-ai-comments",
     "BDW-E22": "kreis",
     "BDW-E23": "je-kreis",
     "BDW-E24": "zweiter-faktor",
@@ -88,7 +108,9 @@ EXPECTED = {
 }
 
 EXPECTED_LABELS = {
-    **{f"BDW-R{i:02d}": "Beibehalten" for i in range(1, 6)},
+    "BDW-R01": "Beibehalten", "BDW-R02": "Beibehalten",
+    "BDW-R03": "Zentrale WebUI; alles andere Legacy",
+    "BDW-R04": "Beibehalten", "BDW-R05": "Beibehalten",
     "BDW-C01": "Neuen Root-Zweckbeschluss aus Research ableiten",
     "BDW-C02": "Governierter Kern mit optionalem Enterprise-Profil",
     "BDW-C03": "Mit erstem realen Mehrbenutzer-Piloten",
@@ -173,11 +195,42 @@ EXPECTED_LABELS = {
     "BDW-P51": "Dependencies werden als revisionsgebundene Paket-/Version-/Lizenz-/Advisory-Knoten",
     "BDW-P52": "Locks, SBOM, Hash/Signatur", "BDW-P53": "Schema/API/Event/Deploy-Identität", "BDW-P54": "Dynamic/plugin/reflection/vendor", "BDW-P55": "Lokale Actor-/Project-Grenze", "BDW-P56": "Ack bindet Basis", "BDW-P57": "Analyzer haben Allowlist", "BDW-P58": "OTel nutzt Sampling", "BDW-P59": "Injection kann Policy", "BDW-P60": "Graph-Schema-Migration", "BDW-P61": "Cytoscape/Mermaid/Metroviz haben CSP",
     "BDW-P62": "Maschinen-Graph/Analyzer-/Trace-Evidenz wird getrennt",
+    "BDW-P63": "Ein stdlib-only lokaler, read-only Dashboard-Server",
+    "BDW-P64": "Brainlehr muss seinen eigenen getrackten Arbeitsbaum",
+    "BDW-P65": "Die lokale Dashboard-Ansicht ist eine Portfolio-Landing-Page",
+    "BDW-P66": "Der Dashboard-Feedback-Drawer ist standardmäßig geschlossen",
     "BDW-P67": "Vor P2-Visualisierung ist der gesamte Brainlehr-Kern P1",
     "BDW-P68": "Die 11.119 gegen eine benannte Vor-UTC-Sicherung",
     "BDW-P69": "`knowledge_relations` speichert typisierte Endpunkte",
     "BDW-P70": "Die 50 offen gebliebenen historischen Kettenlücken",
+    "BDW-P71": "Ein clientneutraler Maschinen-Event `edit_batch_complete`",
+    "BDW-P72": "Jede Code-/Mixed-Kontextantwort trägt genau ein tokenarmes",
+    "BDW-P73": "Build-, Test-, Commit-, generierte Artefakt-",
     "BDW-P74": "Der gleiche maschinenlesbare Lazy-Load- und `edit_batch_complete`-Vertrag",
+    "BDW-P75": "WORKING-Kontext und seine Exporte bleiben local-first",
+    "BDW-P76": "`project_context(task='Explain everything this repository can do'",
+    "BDW-P77": "Knowledge-Mode bleibt strikt vom Projektcode getrennt",
+    "BDW-P78": "Ein Projekt wird per idempotentem Attach",
+    "BDW-P79": "Codex, Claude, Hermes und IDE erhalten",
+    "BDW-P80": "Cross-Repository-Impact verbindet nur explizit registrierte",
+    "BDW-P81": "Debug-, Release- und weitere Buildvarianten",
+    "BDW-P82": "Runtime-Konfiguration ist als gehashte",
+    "BDW-P83": "Review- und Merge-Evidenz bindet",
+    "BDW-P84": "Release-Distribution bindet Artefakt",
+    "BDW-P85": "Ein Incident führt eine lokale, append-only Lifecycle-Evidenz",
+    "BDW-P86": "Ein Nutzerziel wird als prüfbare Kette",
+    "BDW-P87": "Eine Verhaltensbehauptung benötigt einen von der geprüften Implementierung unabhängigen",
+    "BDW-P88": "Registrierte Runtime-Evidenz belegt Event-, Write- und sichtbare UI-Kardinalität",
+    "BDW-P89": "Reflection-, Plugin-, Generator- und dynamische Dispatch-Pfade",
+    "BDW-P90": "Wesentliche Journeys enthalten Start, Ziel, Fehler und Recovery",
+    "BDW-P91": "Clone-, Reachability-, Dead-Code- und Layer-Regelbefunde",
+    "BDW-P92": "Vor einer Mutation erzwingt ein cross-process Worktree-Lease",
+    "BDW-P93": "Source, gebautes/running Artefakt sowie Build-/Deploy-Variante",
+    "BDW-P94": "Nichtfunktionale Anforderungen messen klar benannte SLO-/Load-/Degradationszustände",
+    "BDW-P95": "Jeder Analyzer ist durch Sandbox-/Ressourcen-/Netzgrenze",
+    "BDW-P96": "Jede neue messbare Anforderung wird vor Gatebau",
+    "BDW-P97": "Produktivitäts-, Fehlervermeidungs-, Token- und Zeitbehauptungen",
+    "BDW-P98": "Jede Anforderung kann 0..N nichtnormative Evidenzzeugen",
     "BDW-P99": "AI-Kommentare sind standardmäßig `NONE`",
     "BDW-P100": "Registry- und Anchor-Validierung bindet stabile IDs",
     "BDW-P101": "Daten- und Wirkungs-Lineage werden in unveränderlichen",
@@ -263,3 +316,47 @@ def test_root_is_the_only_normative_catalog():
     marker = "Untergeordnet zu `docs/REQUIREMENTS_BRAINLEHR.md`; lokale IDs sind nur Umsetzungsgates."
     for name in ("REQUIREMENTS_PROMPT_INVARIANZ.md", "REQUIREMENTS_SESSION_CHECKPOINT.md", "REQUIREMENTS_INTERFACE_KOMPAT.md"):
         assert marker in (ROOT / "docs" / name).read_text()
+
+
+def test_p72_to_p76_external_gold_acceptance_ids_are_stable():
+    text = CATALOG.read_text()
+    for acceptance_id in (
+        "BDW-P72-AC2", "BDW-P73-AC2", "BDW-P74-AC2", "BDW-P75-AC2",
+        "BDW-P76-AC2",
+    ):
+        assert acceptance_id in text
+
+
+def test_p86_to_p97_individual_operator_acceptance_ids_are_stable():
+    text = CATALOG.read_text()
+    for number in range(86, 98):
+        assert f"BDW-P{number}-AC1" in text
+    plan = text.split("### Dependency-ordered implementation plan: BDW-P86–BDW-P97", 1)[1]
+    assert "BDW-P85" not in plan and "BDW-P98" not in plan
+
+
+def test_p98_allows_n_independent_non_normative_witnesses():
+    row = next(line for line in CATALOG.read_text().splitlines() if line.startswith("| BDW-P98 ")).casefold()
+    for fragment in ("0..N", "independence_group", "derselbe Evidenzpfad", "lazy relations/full",
+                     "nie die normative Requirements", "dissent"):
+        assert fragment.casefold() in row
+
+
+def test_p99_to_p104_current_productgates_are_pinned():
+    text = CATALOG.read_text()
+    for number in range(99, 105):
+        row = next(line for line in text.splitlines() if line.startswith(f"| BDW-P{number} "))
+        assert f"BDW-P{number}-AC1" in row
+        assert "MUSS" in row
+        assert "DECIDED" in row
+        assert "PASS" in row
+    p103 = next(line for line in text.splitlines() if line.startswith("| BDW-P103 "))
+    assert "V9 measured H0" in p103
+    assert "0d08110a4ba249ee2a080dd32154b3ce02de355206333ec02e9247cf382ef954" in p103
+    assert "dbda275582eb179ea0a439f6009903578e8d94953e26cc8a323f89763e3f8626" in p103
+    assert "BGE-only remains active" in p103
+
+    plan = (ROOT / "docs" / "PLAN_QWEN_HERMES_ABSCHLUSS_2026-08-27.md").read_text()
+    for number in range(99, 105):
+        assert f"BDW-P{number}" in plan
+    assert "CANDIDATE PASS" in plan and "Kein FINAL PASS" in plan

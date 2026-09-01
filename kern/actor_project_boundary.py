@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 
 
 _CONTROL_KEYS = frozenset({"mode", "tool", "policy", "operation", "capability"})
@@ -64,3 +66,28 @@ def restart_idempotency(*, correlation_id: str, request: Mapping[str, object],
                 "coverage_gaps": ["restart receipt store was not supplied"]}
     return {"status": "new", "allow": True, "correlation_id": correlation_id,
             "request_hash": fingerprint}
+
+
+def durable_operation(path: str | Path, *, correlation_id: str,
+                      request: Mapping[str, object], max_failures: int = 3) -> dict:
+    """Append one local operation receipt; a fresh process sees the same replay state."""
+    target = Path(path)
+    receipts: list[dict] = []
+    if target.exists():
+        try:
+            receipts = [json.loads(line) for line in target.read_text(encoding="utf-8").splitlines() if line]
+        except (OSError, ValueError, json.JSONDecodeError):
+            return {"status": "coverage_gap", "allow": False, "coverage_gaps": ["operation receipt store unreadable"]}
+    result = restart_idempotency(correlation_id=correlation_id, request=request, receipts=receipts)
+    if result["status"] != "new":
+        return result
+    failures = sum(1 for row in receipts if row.get("status") == "failed")
+    if failures >= max_failures:
+        return {"status": "coverage_gap", "allow": False, "coverage_gaps": ["persistent circuit breaker open"]}
+    target.parent.mkdir(parents=True, exist_ok=True)
+    receipt = {"correlation_id": correlation_id, "request_hash": result["request_hash"], "status": "accepted"}
+    with target.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    return {**result, "receipt": receipt}

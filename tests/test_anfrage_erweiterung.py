@@ -8,8 +8,11 @@ Fundstellen, zwei davon oeffentlich; das Objekt hat 9 Einzelgaragen und
 from __future__ import annotations
 
 import hashlib
+import os
 import sys
 from pathlib import Path
+
+import pytest
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "kern"))
@@ -40,6 +43,10 @@ def test_kurzform_bleibt_teil_der_anfrage_auch_bei_treffer():
     assert ergaenzt[0] == "impl"
 
 
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires explicit BRAINLEHR_RUN_LIVE=1 and the grown corpus",
+)
 def test_rot_vor_gruen_an_impl_gegen_echten_bestand():
     """Rot: ohne Erweiterung (katalog={}) findet 'impl' nur die woertliche
     Kurzform im Bestand. Gruen: mit dem echten Katalog kommen die Dokumente
@@ -55,6 +62,10 @@ def test_rot_vor_gruen_an_impl_gegen_echten_bestand():
     assert vorher <= nachher
 
 
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires explicit BRAINLEHR_RUN_LIVE=1 and the grown corpus",
+)
 def test_db_findet_ueber_die_erweiterung_mehr_rot_vor_gruen():
     """Nachbesserung Aufgabe 65 (Fehler 1): 'db' ist unter drei Zeichen
     (Trigramm-Mindestlaenge) und darum IMMER im Katalog -- die Kurzform

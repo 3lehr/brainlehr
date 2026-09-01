@@ -97,7 +97,10 @@ def test_zweiter_aufruf_derselben_sitzung_wiederholt_nicht():
     """Gegenprobe zum Zustand: Dieselbe Regel kommt pro Sitzung genau einmal.
     Sonst stuende sie bei jedem Werkzeugaufruf erneut im Kontext -- und das
     Routing haette den Systemprompt nicht verkleinert, sondern vervielfacht."""
-    sitzung = "test-wiederholung-fest"
+    # Persistent hook state survives prior pytest invocations; this test needs
+    # one fresh session per invocation, then checks repetition within it.
+    import uuid
+    sitzung = f"test-wiederholung-{uuid.uuid4()}"
     erst = _route("/tmp/a.swift", sitzung=sitzung)
     zweit = _route("/tmp/b.swift", sitzung=sitzung)
     assert "WCAG" in erst and "WCAG" not in zweit

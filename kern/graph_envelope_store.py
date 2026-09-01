@@ -60,6 +60,29 @@ def delete(path: str | Path, *, reason: str = "deleted") -> dict:
     return tombstone
 
 
+def backup(path: str | Path, destination: str | Path) -> dict:
+    """Copy only a verified envelope; corruption never becomes a backup."""
+    document = load(path)
+    if document is None:
+        raise ValueError("graph envelope is missing")
+    _write(Path(destination), document)
+    return document
+
+
+def restore(backup_path: str | Path, destination: str | Path) -> dict:
+    """Restore only a verified envelope, atomically, into an explicit target."""
+    document = load(backup_path)
+    if document is None:
+        raise ValueError("graph backup is missing")
+    _write(Path(destination), document)
+    return document
+
+
+def garbage_collect(path: str | Path, *, reason: str) -> dict:
+    """Explicitly tombstone a selected obsolete graph; no implicit age deletion."""
+    return delete(path, reason=reason)
+
+
 def load(path: str | Path) -> dict | None:
     target = Path(path)
     if not target.exists():

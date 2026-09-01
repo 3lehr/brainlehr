@@ -41,9 +41,12 @@ while not (_w / "schema.sql").exists() and _w != _w.parent:
     _w = _w.parent
 _sys.path[:0] = [str(_w), str(_w / "kern"), str(_w / "haken")]
 
+import sqlite3  # noqa: E402
+
 import pytest  # noqa: E402
 
 import knowledge_recall_hook as hook  # noqa: E402
+import knowledge_mcp_server as kms  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -261,3 +264,65 @@ def test_echter_abrufweg_liefert_das_feld_das_die_stufung_liest(monkeypatch):
             "Stufung ALLES als stark ein und tut nichts", sorted(treffer))
         wert = treffer["bedeutungs_kosinus"]
         assert wert is None or 0.0 <= wert <= 1.0, wert
+
+
+def test_abrufweg_ohne_bestand_ist_leer(monkeypatch, tmp_path):
+    monkeypatch.setattr(hook, "DB", tmp_path / "absent.db")
+    assert hook.query(["irrelevant"], cwd=str(_w)) == ([], [])
+
+
+def test_echter_abrufweg_gegen_minimalen_migrierten_bestand(monkeypatch, tmp_path):
+    """Der deterministische Gegenpol zum optionalen Live-Bestandstest.
+
+    Erstanlage, FTS-Trigger, Rangfolge und read-only Recall muessen auch ohne
+    die lokale gewachsene DB zusammen funktionieren.  Der Test verwendet die
+    Produktionsmigration statt eines Schema-Ausschnitts; ein Recall darf dabei
+    den gespeicherten Zugriffzaehler nicht still veraendern.
+    """
+    db = tmp_path / "minimal.db"
+    monkeypatch.setattr(kms, "DB_PATH", db)
+    conn = sqlite3.connect(db)
+    try:
+        kms.ensure_schema(conn)
+        for ident, path, title, summary in (
+            ("seed-best", "/recall-ranking", "Abrufguete Messung",
+             "Abrufguete pruefkorpus Stichprobe Nenner kontrolliert Rangfolge"),
+            ("seed-other", "/recall-nebenfall", "Abrufguete Hinweis",
+             "Abrufguete pruefkorpus mit anderem Nenner"),
+        ):
+            conn.execute(
+                """INSERT INTO knowledge_nodes
+                   (id, path, parent_path, level, title, summary, source,
+                    updated_at, norm_entscheidung, norm_entschieden_von,
+                    norm_entschieden_grund)
+                   VALUES (?, ?, NULL, 0, ?, ?, 'test',
+                           '2026-08-26T00:00:00+00:00', 'keine_norm',
+                           'test:seed', 'deterministic test')""",
+                (ident, path, title, summary),
+            )
+        conn.commit()
+        assert conn.execute("SELECT COUNT(*) FROM knowledge_fts").fetchone()[0] == 2
+    finally:
+        conn.close()
+
+    monkeypatch.setattr(hook, "DB", str(db))
+    nodes, lessons = hook.query(
+        ["abrufguete", "pruefkorpus", "stichprobe", "nenner"],
+        prompt="abrufguete pruefkorpus stichprobe nenner",
+        rand=lambda: 0.9,
+    )
+    assert lessons == []
+    assert [node["path"] for node in nodes] == [
+        "/recall-ranking", "/recall-nebenfall",
+    ]
+
+    conn = sqlite3.connect(db)
+    try:
+        # query() ist ein RO-Pfad; erst log_recall()/main() protokollieren den
+        # Zugriff ausserhalb der DB.  Ein stilles access_count++ hier waere
+        # eine nicht dokumentierte, testisolierung-brechende Seiteneffektion.
+        assert conn.execute(
+            "SELECT access_count FROM knowledge_nodes WHERE id='seed-best'"
+        ).fetchone()[0] == 0
+    finally:
+        conn.close()

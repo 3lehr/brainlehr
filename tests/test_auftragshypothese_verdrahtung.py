@@ -26,10 +26,13 @@ Kommandozeile), halte dich an den Code und melde die Abweichung.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
 from pathlib import Path
+
+import pytest
 
 _w = Path(__file__).resolve().parent
 while not (_w / "schema.sql").exists() and _w != _w.parent:
@@ -39,6 +42,14 @@ WURZEL = _w
 EINSTELLUNGEN = Path.home() / ".claude" / "settings.json"
 ALTE_SICHERUNG_OHNE_EINTRAG = Path.home() / ".claude" / "settings.json.bak-2026-08-14T0010"
 HAKEN_DATEI = "auftragshypothese_waechter.py"
+
+# This file executes the operator's mutable ~/.claude hook configuration and
+# a historical backup.  It is a deliberate live integration smoke, not part
+# of the isolated repository suite.
+pytestmark = pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires explicit BRAINLEHR_RUN_LIVE=1 and local Claude hook settings",
+)
 
 # Echte Eingaben, keine erfundenen:
 #  - POSITIV: woertliches Zitat aus dem Modul-Docstring selbst -- der reale

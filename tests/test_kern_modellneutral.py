@@ -74,8 +74,11 @@ def bestand(tmp_path, monkeypatch):
         "'arbeitsbestand','shared','2026-08-18T00:00:00Z','2026-08-18T00:00:00Z')")
     conn.commit()
     conn.close()
+    # BRAINLEHR_DB has precedence in current server startup.  Keep the legacy
+    # name too: this fixture must be isolated under partitioned test runs.
+    monkeypatch.setenv("BRAINLEHR_DB", str(db))
     monkeypatch.setenv("BEGOD_KNOWLEDGE_DB", str(db))
-    for name in ("knowledge_mcp_server",):
+    for name in ("knowledge_mcp_server", "haken.ort", "ort"):
         sys.modules.pop(name, None)
     return db
 
@@ -122,6 +125,7 @@ def test_schreibt_nicht_in_die_produktivdatenbank(bestand):
     """Die Gegenprobe zum Fallstrick im Fixture. Ohne sie wäre der Test grün
     und hätte trotzdem in den echten Bestand geschrieben -- genau das ist am
     2026-08-18 mit 48 Knoten passiert."""
+    assert os.environ["BRAINLEHR_DB"] == str(bestand)
     assert os.environ["BEGOD_KNOWLEDGE_DB"] == str(bestand)
     echt = WURZEL / "brainlehr.db"
     if echt.exists():

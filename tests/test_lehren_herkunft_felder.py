@@ -52,9 +52,12 @@ def bestand(tmp_path, monkeypatch):
         "'Herkunftslehre ohne Geltungsfelder fuer den Suchtest.','[]','active','intern')")
     conn.commit()
     conn.close()
+    # The partition DB is set before collection and takes precedence unless
+    # this fixture replaces it explicitly.
+    monkeypatch.setenv("BRAINLEHR_DB", str(db))
     monkeypatch.setenv("BEGOD_KNOWLEDGE_DB", str(db))
     monkeypatch.setenv("OLLAMA_HOST", "http://127.0.0.1:9")  # Bedeutungskanal tot, Stichwort genuegt
-    for name in ("knowledge_mcp_server",):
+    for name in ("knowledge_mcp_server", "haken.ort", "ort"):
         sys.modules.pop(name, None)
     return db
 

@@ -33,6 +33,7 @@ gruen. Ein Test, der sofort gruen ist, haette nichts gemessen.
 from __future__ import annotations
 
 import re
+import os
 import sqlite3
 import sys as _sys
 from pathlib import Path as _Path
@@ -107,6 +108,10 @@ def _abweichler(conn: sqlite3.Connection) -> list[tuple[str, str, int, str]]:
     return befund
 
 
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires the explicitly selected live corpus",
+)
 def test_jede_zeitangabe_steht_in_utc():
     """Die Ratsche. Rot, bis Schritt 3 des Plans gelaufen ist."""
     with speicher.lesen() as conn:
@@ -120,6 +125,10 @@ def test_jede_zeitangabe_steht_in_utc():
     )
 
 
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires the explicitly selected live corpus",
+)
 def test_datumsspalten_sind_ausgenommen_und_bleiben_es():
     """Gegenprobe zur Ausnahme: ohne sie koennte jemand die Ratsche gruen
     machen, indem er gilt_ab eine erfundene Uhrzeit gibt."""

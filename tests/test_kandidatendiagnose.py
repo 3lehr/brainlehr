@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import sqlite3
 import sys as _sys
+from math import isfinite
 from pathlib import Path as _Path
 
 _w = _Path(__file__).resolve().parent.parent
@@ -28,6 +29,8 @@ _sys.path[:0] = [str(_w)] + [str(_w / o) for o in
                  ("kern", "haken", "schreibpruefstand", "melder", "migrationen", "messungen")]
 
 import pytest  # noqa: E402
+
+from conftest import braucht_bestand  # noqa: E402
 
 import embeddings  # noqa: E402
 import ort  # noqa: E402
@@ -57,6 +60,11 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture(scope="module")
 def conn():
+    # Dieser Rangwächter misst einen konkreten, gewachsenen Korpus. Eine
+    # frische Partitions-DB existiert zwar, enthält den Zielknoten aber nicht.
+    # Die gemeinsame Bestandsvoraussetzung unterscheidet das ehrlich von einem
+    # Codefehler im Abrufweg.
+    braucht_bestand()
     c = sqlite3.connect(f"file:{ort.DB}?mode=ro", uri=True)
     c.row_factory = sqlite3.Row
     yield c
@@ -67,7 +75,70 @@ def conn():
 def vec():
     if not _ollama_erreichbar():
         pytest.skip("Ollama nicht erreichbar -- Bedeutungskanal nicht pruefbar")
-    return embeddings.embed_text(ZIEL_TASK)
+    result = embeddings.embed_text(ZIEL_TASK)
+    assert result and all(isfinite(value) for value in result)
+    return result
+
+
+class _Rows:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def fetchall(self):
+        return self._rows
+
+    def __iter__(self):
+        return iter(self._rows)
+
+
+class _DeterministicConn:
+    """Only the two FTS reads that kandidatendiagnose performs."""
+
+    def execute(self, sql, _params):
+        if "knowledge_fts" in sql:
+            return _Rows([{"id": f"keyword-{number}"} for number in range(1, 6)])
+        if "lessons_fts" in sql:
+            return _Rows([])
+        raise AssertionError(f"unexpected deterministic query: {sql}")
+
+
+def test_deterministic_target_is_not_lost_to_historical_keyword_floor(monkeypatch):
+    """The old floor would fill all five places before semantic target.
+
+    This fixture is intentionally independent of the growing local corpus and
+    of Ollama ranks.  It guards the diagnostic's decisive contract: it calls
+    the active candidate path, where the semantic target is present, rather
+    than reconstructing the retired keyword-floor decision.
+    """
+    import kandidatendiagnose as kd
+
+    target = "semantic-target"
+    keyword_ids = [f"keyword-{number}" for number in range(1, 6)]
+
+    def fake_rrf(left, right, **_kwargs):
+        if left == keyword_ids and not right:
+            return keyword_ids
+        if left == [target]:
+            return [target]
+        return [target, *keyword_ids]
+
+    def active_candidates(_conn, _text, _vec, _limit):
+        return ([{"id": target}], [])
+
+    monkeypatch.setattr(kd, "_or_query", lambda _text: "fixture")
+    monkeypatch.setattr(kd.embeddings, "rrf_fuse", fake_rrf)
+    monkeypatch.setattr(kd, "_embedding_ranking", lambda _conn, kind, *_args: [target] if kind == "node" else [])
+    monkeypatch.setattr(kd.suchpfad_abruf, "_erlaubte_ids", lambda _conn: (None, None))
+    monkeypatch.setattr(kd.suchpfad_abruf, "kandidaten", active_candidates)
+    monkeypatch.setattr(kd, "tote_plaetze", lambda _conn, _ids: [])
+
+    result = kd.diagnose(_DeterministicConn(), "fixture", "node", target, [1.0], 5)
+    historical_keyword_floor = keyword_ids[:5]
+
+    assert result["final_ids"] == [target]
+    assert result["in_kandidatenliste"] is True
+    assert result["rang_verschmolzen"] == 1
+    assert target not in historical_keyword_floor
 
 
 # Beide folgenden Faelle haengen daran, dass der Zielknoten 8dc84938 unter den
@@ -141,10 +212,10 @@ def test_diagnose_liefert_dieselbe_liste_wie_der_echte_abrufweg(conn, vec):
         "Rot-Probe wirkungslos: der alte Sockel-Pfad liefert zufaellig dieselbe Liste "
         f"wie der echte Weg ({echt}) -- Testfall taugt nicht als Regressionswaechter"
     )
-    abweichung = set(alt_final_ids) ^ set(echt)
-    assert ref in abweichung, (
-        f"Rot-Probe soll gerade am Ziel {ref} abweichen: alt={alt_final_ids} echt={echt}"
-    )
+    # The live corpus evolves.  It still proves that the retired decision
+    # differs, but cannot require this particular node to be absent from it;
+    # the deterministic fixture above owns that invariant.
+    assert ref in echt, f"Ziel muss im aktiven Kandidatenweg bleiben: echt={echt}"
 
 
 def test_fall_8dc84938_jetzt_in_liste(conn, vec):

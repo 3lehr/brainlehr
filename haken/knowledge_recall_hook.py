@@ -1238,6 +1238,8 @@ def query(kws: list[str], rand=None, log_path: str | None = None, cwd: str | Non
     leer -- ein stilles Nichts ist von einem kaputten Haken nicht zu
     unterscheiden."""
     own = _cwd_project(cwd)
+    if not _Path(DB).exists():
+        return [], []
     conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True, timeout=2.0)
     conn.row_factory = sqlite3.Row
     nodes, lessons = [], []

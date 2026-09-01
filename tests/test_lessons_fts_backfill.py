@@ -32,6 +32,7 @@ SHARED_KNOWLEDGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED_KNOWLEDGE))
 
 import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
+import schema_nachzug  # type: ignore  # noqa: E402
 
 
 def _db_with_preexisting_lesson(tmp_path) -> tuple[sqlite3.Connection, Path]:
@@ -85,6 +86,10 @@ def test_rot_vor_fix_bestandszeile_ohne_backfill_nicht_auffindbar(tmp_path, monk
     Befund woertlich, nicht nur behauptet."""
     db_path = _db_with_preexisting_lesson(tmp_path)
     conn = sqlite3.connect(str(db_path))
+    # Current schema.sql installs triggers for current columns.  Bring the
+    # synthetic legacy table to that shape without invoking the FTS backfill;
+    # this test then isolates precisely the missing-backfill observation.
+    schema_nachzug.nachziehen(conn, db_path=db_path)
     conn.executescript((SHARED_KNOWLEDGE / "schema.sql").read_text(encoding="utf-8"))
     conn.commit()
     assert _hits(conn, "bestandslehreauffindbarxyz") == 0, (

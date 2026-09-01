@@ -65,6 +65,7 @@ sys.path.insert(0, str(WURZEL))
 
 import spracherkennung  # noqa: E402
 import speicher  # noqa: E402
+import zeitmarke  # noqa: E402
 
 # Je Quelle: was hereindarf, was nie hereindarf, und wie es zu holen ist.
 # Die verbotenen Namen stehen ausdrücklich DA, obwohl die Projektion sie schon
@@ -138,7 +139,7 @@ def importherkunft(weg: str, zeitpunkt: str | None = None) -> str:
     Zeitpunkt. 'importiert aus holographic memory_store.db am <ISO>'."""
     if not weg or not weg.strip():
         raise ValueError("Importweg fehlt -- ohne ihn traegt der Eintrag gar nichts")
-    ts = zeitpunkt or datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S%z")
+    ts = zeitpunkt or zeitmarke.jetzt()
     return f"{IMPORTWEG_PRAEFIX}{weg.strip()} am {ts}"
 
 

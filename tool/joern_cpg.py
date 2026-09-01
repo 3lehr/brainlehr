@@ -11,6 +11,10 @@ import tempfile
 import time
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT / "kern") not in os.sys.path:
+    os.sys.path.insert(0, str(ROOT / "kern"))
+
 from analyzer_registry import MAX_FILE_BYTES, TIMEOUT_SECONDS, unavailable_record
 from evidence_adapters import joern_dot_payload, normalize_record
 

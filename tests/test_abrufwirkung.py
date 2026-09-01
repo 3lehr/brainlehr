@@ -66,6 +66,27 @@ def test_kennungen_aus_block_beide_formen():
     }
 
 
+def test_git_commits_reads_log_and_patch_in_one_process(monkeypatch, tmp_path):
+    """Large histories must not spawn three Git processes per commit."""
+    calls = []
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        if "--patch" in command:
+            return subprocess.CompletedProcess(command, 0,
+                "\x1eabc\x1f2026-08-15T08:16:52+02:00\x1fsubject\n\ndiff --git a/x b/x\n", "")
+        if "--format=%H" in command:
+            return subprocess.CompletedProcess(command, 0, "abc\n", "")
+        if "--format=%aI%x1f%B" in command:
+            return subprocess.CompletedProcess(command, 0, "2026-08-15T08:16:52+02:00\x1fsubject", "")
+        return subprocess.CompletedProcess(command, 0, "diff --git a/x b/x\n", "")
+
+    monkeypatch.setattr(abrufwirkung.subprocess, "run", fake_run)
+    assert abrufwirkung._git_commits(tmp_path, "2026-08-14") == [
+        ("abc", "2026-08-15T06:16:52Z", "subject\n\ndiff --git a/x b/x\n")]
+    assert len(calls) == 1
+
+
 def test_verlauf_aktualisieren_ergaenzt_denselben_eintrag_statt_neuen():
     """Kern der Bauform (kern/baustein.py::herkunftsverlauf uebernommen):
     zwei Aufrufe fuer dieselbe Kennung duerfen NICHT zwei Eintraege ergeben."""

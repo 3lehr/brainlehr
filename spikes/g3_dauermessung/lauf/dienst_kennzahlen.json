@@ -1,0 +1,14 @@
+{
+  "stand": "2026-08-15T09:39:35Z",
+  "verbindungen": 2,
+  "abgewiesene_zugaenge": 0,
+  "abgelehnte_updates": 0,
+  "unbekannte_arten": 0,
+  "kennungsverstoesse": 0,
+  "gebremste_nachrichten": 0,
+  "updates": 5531,
+  "bytes_empfangen": 3288468,
+  "herkunft": {
+    "127.0.0.1": 2
+  }
+}

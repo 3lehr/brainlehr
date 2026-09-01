@@ -20,13 +20,16 @@ def main() -> int:
     parser.add_argument("--phase", default="plan")
     parser.add_argument("--operation")
     parser.add_argument("--ack", metavar="REASON")
+    parser.add_argument("--actor")
+    parser.add_argument("--ack-signature", metavar="BASE64")
     args = parser.parse_args()
     try:
         if args.ack is not None:
             if not args.project_root:
                 raise ValueError("--ack requires --project-root")
             result = project_context.staged_commit_gate(
-                args.project_root, acknowledge_reason=args.ack)
+                args.project_root, acknowledge_reason=args.ack,
+                actor=args.actor, signature=args.ack_signature)
         else:
             result = project_context.boundary_contract(
                 mode=args.mode, phase=args.phase, operation=args.operation,

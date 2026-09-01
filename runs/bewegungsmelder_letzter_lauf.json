@@ -1,0 +1,58 @@
+{
+  "derivatfrische": {
+    "ok": true,
+    "werte": {
+      "befunde": 1,
+      "dateien": 1730,
+      "derivate": 7,
+      "ueberholt": 0
+    }
+  },
+  "gatestand": {
+    "ok": true,
+    "werte": {
+      "REQUIREMENTS_BRAINLEHR.belegt": 37,
+      "REQUIREMENTS_BRAINLEHR.gesamt": 74,
+      "REQUIREMENTS_BRAINLEHR.offen": 3,
+      "REQUIREMENTS_BRAINLEHR.vertagt": 23,
+      "REQUIREMENTS_INTERFACE_KOMPAT.belegt": 0,
+      "REQUIREMENTS_INTERFACE_KOMPAT.gesamt": 17,
+      "REQUIREMENTS_INTERFACE_KOMPAT.offen": 0
+    }
+  },
+  "kennungskollision": {
+    "ok": true,
+    "werte": {
+      "kollisionen": 2,
+      "wiederaufgreifen": 4
+    }
+  },
+  "rasterblick": {
+    "ok": true,
+    "werte": {
+      "ohne_vermerk": 130
+    }
+  },
+  "vektorstand": {
+    "ok": true,
+    "werte": {
+      "knoten.fehlt": 2,
+      "knoten.gekappt": 14,
+      "knoten.gesamt": 5270,
+      "knoten.veraltet": 24,
+      "lehren.fehlt": 0,
+      "lehren.gekappt": 1,
+      "lehren.gesamt": 1213,
+      "lehren.veraltet": 35
+    }
+  },
+  "vier_nenner": {
+    "ok": true,
+    "werte": {
+      "a.nenner": 422,
+      "a.trefer": 230,
+      "b.nenner": 230,
+      "b.trefer": 97
+    }
+  }
+}

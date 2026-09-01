@@ -35,6 +35,7 @@ Unversehrtheit, kein Test der aktuellen Teilung."""
 from __future__ import annotations
 
 import json
+import os
 import sys
 from collections import Counter
 from pathlib import Path
@@ -64,7 +65,10 @@ def _gerechnet() -> dict:
         return t.zaehlen(conn)
 
 
-@pytest.mark.skipif(not AUFZEICHNUNG_ID.exists(), reason="keine Aufzeichnung an diesem Ort")
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1" or not AUFZEICHNUNG_ID.exists(),
+    reason="requires the explicitly selected live corpus and recorded baseline",
+)
 def test_aufgezeichnete_verteilung_ist_aus_dem_code_herleitbar():
     """Die eingefrorene (ID-basierte) Verteilung muss zur Rechnung passen --
     sonst ist die Aufzeichnung selbst falsch.

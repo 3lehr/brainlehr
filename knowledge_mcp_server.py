@@ -158,7 +158,10 @@ import zeitfenster  # Auftrag 88 Schritt 1 (docs/PLAN_ZEITACHSE_2026-08-14.md):
                      # FTS-WHERE-Klausel (Begruendung im Plan). Kein Zirkel --
                      # zeitfenster importiert selbst nichts von hier.
 import prompt_invarianz  # agentneutraler Entscheidungstest; keine Modell- oder DB-Abhaengigkeit
+import client_lifecycle  # P78: reversible local project attach/detach, no knowledge deletion
 import project_context  # BDW-P23-P25: project capsule + bounded code evidence
+import project_analysis_loop  # BDW-P71: ephemeral edit-batch working overlay
+import actor_project_boundary
 import evidence_graph
 
 # DER ORT WIRD ERFRAGT, NICHT GEBAUT -- haken/ort.py ist der EINE Aufloeser.
@@ -2395,6 +2398,19 @@ def _fts_phrase(word: str) -> str:
     return '"' + word.replace('"', '""') + '"'
 
 
+_STOPWORDS = {
+    "aber", "als", "am", "an", "auch", "auf", "aus", "bei", "bin", "bis", "bist", "da", "dadurch", "daher",
+    "darum", "das", "daß", "dass", "dein", "deine", "dem", "den", "der", "des", "dessen", "deshalb", "die",
+    "dies", "dieser", "dieses", "doch", "dort", "du", "durch", "ein", "eine", "einem", "einen", "einer", "eines",
+    "er", "es", "euer", "eure", "für", "fuer", "hatte", "hatten", "hattest", "hattet", "hier", "hinter", "ich", "ihr",
+    "ihre", "im", "in", "ist", "ja", "jede", "jedem", "jeden", "jeder", "jedes", "jener", "jenes", "jetzt",
+    "kann", "kannst", "können", "koennen", "könnt", "koennt", "machen", "mein", "meine", "mit", "muß", "mußt", "musst", "müssen",
+    "muessen", "müßt", "nach", "nachdem", "nein", "nicht", "nun", "oder", "seid", "sein", "seine", "sich", "sie", "sind",
+    "soll", "sollen", "sollst", "sollt", "sonst", "soweit", "sowie", "und", "unser", "unsere", "unter", "vom",
+    "von", "vor", "wann", "warum", "was", "weiter", "weitere", "wenn", "wer", "werde", "werden", "werdet",
+    "weshalb", "wie", "wieder", "wieso", "wir", "wird", "wirst", "wo", "woher", "wohin", "zu", "zum", "zur", "über", "ueber"
+}
+
 def _or_query(query: str) -> str:
     """Baut aus einer Anfrage eine FTS5-ODER-Verknuepfung ueber die einzelnen,
     gefalteten Woerter. Vorher lief MATCH mit mehreren Woertern als implizites
@@ -2403,7 +2419,10 @@ def _or_query(query: str) -> str:
     sortiert bm25/rank Dokumente mit mehr uebereinstimmenden Woertern weiter
     oben ein -- kein zusaetzliches Ranking noetig."""
     words = [fold_de(w) for w in _QUERY_WORD_RE.findall(query)]
-    return " OR ".join(_fts_phrase(w) for w in words if w)
+    filtered_words = [w for w in words if w not in _STOPWORDS]
+    if not filtered_words:
+        filtered_words = words # Fallback
+    return " OR ".join(_fts_phrase(w) for w in filtered_words if w)
 
 
 ZERO_HIT_LOG = Path(__file__).parent / "zero_hit_log.jsonl"
@@ -2594,6 +2613,57 @@ def _geltung_status(norm_rang, gilt_ab: str | None, gilt_bis: str | None, sticht
     if bis_zp is not None and stichtag_zp > bis_zp:
         return "abgelaufen"
     return "in_kraft"
+
+
+def _hyde_rewrite(query: str) -> str:
+    """Hypothetical Document Embeddings (HyDe).
+    Nutzt das lokale Ollama-Modell, um aus einer abstrakten Beschreibung
+    einen technischen Such-Text (mit konkreten Komponenten) zu generieren,
+    um das Vocabulary Mismatch-Problem fuer den Embedding-Kanal zu heilen."""
+    # Nur bei langen, erzählenden Anfragen sinnvoll
+    if len(query.split()) < 8:
+        return query
+
+    import urllib.request
+    import json
+    from kern import embeddings
+    
+    prompt = (
+        "Die folgende Suchanfrage beschreibt ein konzeptionelles "
+        "Softwareproblem oder Vorgehen. Übersetze diese abstrakte "
+        "Beschreibung in einen kurzen, hypothetischen technischen "
+        "Log-Eintrag, Commit-Kommentar oder Bug-Report, der die konkreten "
+        "technischen Komponenten (z.B. Timeout, Controller, DB, Cache) "
+        "und Zustände benennt, die in so einem Fall auftreten. "
+        "Schreibe nur den hypothetischen Eintrag, keine Einleitung:\n\n"
+        f"Anfrage: {query}"
+    )
+    payload = {
+        "model": "qwen3.8-27b-mtplx-optimized-speed",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.2,
+        "max_tokens": 100
+    }
+    url = "http://127.0.0.1:1234/v1/chat/completions"
+    try:
+        import os
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {os.environ.get('LM_STUDIO_API_KEY', 'dummy')}"
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=15.0) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            content = res.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+            return content or query
+    except Exception as e:
+        print("HyDe Fallback:", e)
+        # Fallback auf reines Query bei jedem Timeout/Fehler
+        return query
 
 
 def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
@@ -2801,14 +2871,14 @@ def knowledge_search(query: str, scope: str = "all", max_results: int = 10, *,
                                       bedeutungswerte) if query_vec else []
     emb_lesson_ids = _embedding_ranking(conn, "lesson", query_vec, allowed_lesson_ids,
                                         lesson_bedeutungswerte) if query_vec else []
-    embedding_ordered_ids = embeddings.rrf_fuse(emb_node_ids, emb_lesson_ids, embedding_weight=1.0)
-    # Roher Kosinus je Treffer (Auftrag 2026-08-19): rrf_fuse oben verwirft ihn zugunsten
-    # einer reinen Rangposition -- fuer die Antwort an den Aufrufer wird er hier separat
-    # als id->Kosinus-Dict aufgehoben, bevor er verloren geht. emb_*_ids und ihre
-    # zugehoerigen Werte-Listen sind an dieser Stelle noch parallel sortiert (_embedding_ranking
-    # gibt beide aus demselben "scored" hervor), ein einfaches zip genuegt.
+    
+    # Absolute Kosinus-Verschmelzung statt RRF-Gleichmacherei (Auftrag: Zielbild A Vollstaendigkeit).
+    # Eine RRF wuerde die beste Lesson und den besten Node künstlich auf Rang 1+2 mischen,
+    # auch wenn die Lesson einen viel schwächeren Kosinus-Abstand hat, was dazu fuehrt,
+    # dass irrelevante Lessons gute Nodes verdraengen oder umgekehrt.
     kosinus_je_id = dict(zip(emb_node_ids, bedeutungswerte))
     kosinus_je_id.update(zip(emb_lesson_ids, lesson_bedeutungswerte))
+    embedding_ordered_ids = sorted(kosinus_je_id.keys(), key=lambda i: kosinus_je_id[i], reverse=True)
 
     # Zeitfenster (Entstehungszeit, Auftrag 88 Schritt 1) VOR der Fusion, und
     # das ist keine Feinheit, sondern der Unterschied zwischen brauchbar und
@@ -6516,15 +6586,54 @@ def project_boundary(mode: str = "auto", phase: str = "plan", operation: str | N
         mode=mode, phase=phase, operation=operation, project_path=project_root)
 
 
+def project_actor_boundary(actor: str, project_id: str, requested_project: str | None = None,
+                           remote: bool = False) -> dict:
+    """Fail closed at the MCP boundary; this does not implement remote tenancy."""
+    return actor_project_boundary.validate_actor_project(
+        actor=actor, project_id=project_id, requested_project=requested_project, remote=remote)
+
+
 def project_commit_gate(project_root: str) -> dict:
     """Check an opt-in staged-tree impact gap without mutating the project."""
     return project_context.staged_commit_gate(project_root)
 
 
-def project_commit_ack(project_root: str, acknowledgement_reason: str) -> dict:
+def project_runtime_evidence(project_root: str, artifact: dict) -> dict:
+    """Register a bounded, non-durable result from a declared local evidence tool."""
+    return project_context.register_runtime_evidence(project_root, artifact)
+
+
+def project_commit_ack(project_root: str, acknowledgement_reason: str, actor: str,
+                       signature: str) -> dict:
     """Append one explicit local acknowledgement for the current staged tree."""
     return project_context.staged_commit_gate(
-        project_root, acknowledge_reason=acknowledgement_reason)
+        project_root, acknowledge_reason=acknowledgement_reason, actor=actor,
+        signature=signature)
+
+
+_EDIT_BATCH_LOOPS: dict[str, project_analysis_loop.AnalysisLoop] = {}
+
+
+def project_edit_batch_complete(project_root: str, mode: str = "code",
+                                event_source: str = "client", batch_id: str | None = None,
+                                agent_owned_untracked_paths: list[str] | None = None,
+                                now: float = 0.0) -> dict:
+    """Queue an ephemeral working-tree analysis; never opens the knowledge DB."""
+    root = str(project_context.project_root(project_root))
+    loop = _EDIT_BATCH_LOOPS.setdefault(root, project_analysis_loop.AnalysisLoop())
+    return loop.edit_batch_complete(
+        root, mode=mode, event_source=event_source, batch_id=batch_id,
+        agent_owned_untracked_paths=agent_owned_untracked_paths, now=now)
+
+
+def _project_context_root(conn, project_id: str, manifest_path: str):
+    """Find one generated context root by its stable local manifest origin."""
+    prefix = f"generated from {manifest_path} at Git "
+    rows = conn.execute(
+        "SELECT id, path, content, source FROM knowledge_nodes WHERE project_id=? "
+        "AND tags LIKE '%\"project-context-root\"%'", (project_id,)
+    ).fetchall()
+    return next((row for row in rows if str(row["source"] or "").startswith(prefix)), None)
 
 
 def project_ensure(project_root: str, project_id: str | None = None,
@@ -6549,12 +6658,24 @@ def project_ensure(project_root: str, project_id: str | None = None,
             for row in conn.execute("SELECT projects FROM lessons_learned")
         )
         knowledge_count = node_count + lesson_count
-        root = conn.execute(
-            "SELECT id, content FROM knowledge_nodes WHERE project_id=? "
-            "AND tags LIKE '%\"project-context-root\"%' LIMIT 1", (scope,)
-        ).fetchone()
+        root = _project_context_root(conn, scope, ensured["manifest_path"])
+        foreign_root = None if root is not None else next(
+            (candidate for candidate in conn.execute(
+                "SELECT source FROM knowledge_nodes WHERE project_id=? "
+                "AND tags LIKE '%\"project-context-root\"%'", (scope,)
+            ) if not str(candidate["source"] or "").startswith(
+                f"generated from {ensured['manifest_path']} at Git ")),
+            None,
+        )
     finally:
         conn.close()
+
+    if foreign_root is not None:
+        return {
+            "error": "project_id is already bound to another manifest origin",
+            "manifest": ensured,
+            "next": "choose a distinct project_id before project_ensure",
+        }
 
     content_data = {"manifest": manifest, "capsule": capsule_data}
     capsule = json.dumps(content_data, ensure_ascii=False, sort_keys=True)
@@ -6595,12 +6716,49 @@ def project_ensure(project_root: str, project_id: str | None = None,
     }
 
 
+def _project_lifecycle(project_root: str) -> client_lifecycle.ProjectLifecycle:
+    root = project_context.project_root(project_root)
+    return client_lifecycle.ProjectLifecycle(root / ".brainlehr-lifecycle.json")
+
+
+def project_attach(project_root: str, actor: str, project_id: str | None = None) -> dict:
+    """Attach through the existing project ensure path and record only local lifecycle metadata."""
+    ensured = project_ensure(project_root, project_id)
+    if "error" in ensured:
+        return ensured
+    capsule_data = ensured["capsule"]
+    attached = _project_lifecycle(project_root).attach(
+        project_id=ensured["project_id"], revision=capsule_data["head"],
+        capsule={"head": capsule_data["head"], "tracked_files": capsule_data["tracked_files"]}, owner=actor)
+    return {"status": attached["status"], "project_id": ensured["project_id"],
+            "revision": capsule_data["head"], "lifecycle": {"witness": client_lifecycle.as_evidence_witness(
+                {"status": attached["status"], "mode": "code"}, witness_id="project-attach",
+                requirement_id="P78"), "coverage_gaps": []}}
+
+
+def project_detach(project_root: str, actor: str) -> dict:
+    """Detach only the active local association; never delete knowledge, receipts or source files."""
+    root = project_context.project_root(project_root)
+    inspected = project_context.inspect_manifest(root)
+    if inspected["state"] != "current":
+        return {"status": "unknown_project", "coverage_gaps": ["project_manifest_not_current"]}
+    result = _project_lifecycle(root).detach(project_id=inspected["manifest"]["project_id"], owner=actor)
+    return {"status": result["status"], "project_id": inspected["manifest"]["project_id"],
+            "revision": result.get("revision"), "knowledge_deleted": False,
+            "lifecycle": {"witness": client_lifecycle.as_evidence_witness(
+                {"status": result["status"]}, witness_id="project-detach", requirement_id="P78"),
+                "coverage_gaps": [] if result["status"] == "detached" else [result.get("reason", result["status"])]}}
+
+
 def project_context_get(project_root: str, task: str, depth: str = "summary",
                         selected_node_ids: list[str] | None = None,
-                        max_results: int = 5) -> dict:
+                        max_results: int = 5,
+                        capability_config_hash: str | None = None,
+                        evidence_witnesses: list[dict] | None = None,
+                        selected_witness_ids: list[str] | None = None) -> dict:
     """Return bounded code evidence and progressively selected knowledge."""
     selected = selected_node_ids or []
-    contract = project_context.selection_contract(depth, selected)
+    contract = project_context.selection_contract(depth, selected_witness_ids or selected)
     inspected = project_context.inspect_manifest(project_root)
     if inspected["state"] != "current":
         return {
@@ -6609,6 +6767,10 @@ def project_context_get(project_root: str, task: str, depth: str = "summary",
             "next": "call project_ensure before retrieving project context",
         }
     manifest = inspected["manifest"]
+    lifecycle_file = project_context.project_root(project_root) / ".brainlehr-lifecycle.json"
+    if lifecycle_file.exists() and _project_lifecycle(project_root).context(manifest["project_id"]) is None:
+        return {"error": "project is detached", "state": "detached", "project_id": manifest["project_id"],
+                "next": "call project_attach to reactivate the existing local project association"}
     scope = manifest["project_id"]
     current_capsule = project_context.capsule(project_root)
     conn = get_db()
@@ -6631,6 +6793,73 @@ def project_context_get(project_root: str, task: str, depth: str = "summary",
             "current_head": current_capsule["head"],
             "next": "call project_ensure, then record and curate the verified change",
         }
+    if evidence_witnesses is not None:
+        witnesses = project_context.witness_envelope(
+            witnesses=evidence_witnesses, depth=depth,
+            selected_ids=selected_witness_ids or [])
+        return {
+            "project_id": scope, "task": task, "depth": depth,
+            "project_capsule": current_capsule, "evidence_witnesses": witnesses,
+            "choice": witnesses["choice"],
+            "context_envelope": project_context.context_completeness_envelope(
+                revision=current_capsule["head"], working_hash=None,
+                searched_scope=["selected-witness-metadata"],
+                analyzer_versions={"witness_envelope": "v1"},
+                proven_edge_types=[], coverage_gaps=witnesses["coverage_gaps"],
+                freshness="stale" if witnesses["stale"] else "current"),
+        }
+    if project_context.capability_task(task):
+        inventory = project_context.capability_inventory(project_root)
+        if inventory.get("state") == "stale":
+            return {"error": "capability discovery configuration is stale", "state": "stale",
+                    "current_config_hash": inventory["discovery_config_hash"],
+                    "config_binding": inventory["config_binding"],
+                    "coverage_gaps": inventory["coverage_gaps"],
+                    "next": inventory["required_next_probe"]}
+        if capability_config_hash is not None and capability_config_hash != inventory["discovery_config_hash"]:
+            return {"error": "capability discovery configuration is stale", "state": "stale",
+                    "expected_config_hash": capability_config_hash,
+                    "current_config_hash": inventory["discovery_config_hash"],
+                    "next": "reload the capability summary before selecting cards"}
+        cards = inventory["cards"]
+        card_ids = {card["id"] for card in cards}
+        unknown = [card_id for card_id in selected if card_id not in card_ids]
+        if unknown:
+            raise ValueError("selected_node_ids must be capability IDs from this summary: "
+                             + ", ".join(unknown))
+        result = {
+            "project_id": scope, "task": task, "depth": depth,
+            "project_capsule": current_capsule, "capability_cards": cards,
+            "capability_discovery": {key: inventory[key] for key in
+                                       ("schema", "revision", "discovery_config_hash", "config_binding",
+                                        "discovery_coverage", "coverage_gaps", "required_next_probe",
+                                        "truncated")},
+            "choice": contract,
+            "context_envelope": project_context.context_completeness_envelope(
+                revision=inventory["revision"], working_hash=None,
+                searched_scope=["tracked-code", "manifest-entrypoints"],
+                analyzer_versions={"capability_static_ast": "v1"},
+                proven_edge_types=["static_python_imports", "manifest_entrypoint"],
+                coverage_gaps=inventory["coverage_gaps"],
+            ),
+        }
+        result["choice"].update({
+            "selection_required": depth == "summary" and bool(cards),
+            "allowed_ids": sorted(card_ids),
+            "allowed_next_depth": (["relations", "full"] if depth == "summary" else []),
+            "max_ids": project_context.MAX_SELECTED,
+            "reason": "select capability cards or proven consumers; source text stays lazy",
+        })
+        if depth == "relations":
+            selected_cards = [card for card in cards if card["id"] in selected]
+            result["capability_relations"] = [{
+                "id": card["id"], "direct_consumers": card["direct_consumers"],
+                "indirect_consumers": card["indirect_consumers"],
+                "provenance": card["provenance"],
+            } for card in selected_cards]
+        elif depth == "full":
+            result["capability_full"] = [card for card in cards if card["id"] in selected]
+        return result
     found = knowledge_search(task, scope=scope, max_results=min(max(1, max_results), 5))
     summaries = []
     for row in found.get("results", []):
@@ -6658,6 +6887,13 @@ def project_context_get(project_root: str, task: str, depth: str = "summary",
         "code_hits": project_context.code_probe(project_root, task),
         "knowledge_summaries": summaries,
         "choice": contract,
+        "context_envelope": project_context.context_completeness_envelope(
+            revision=current_capsule["head"], working_hash=None,
+            searched_scope=["tracked-code"],
+            analyzer_versions={"static_python_imports": "v1"},
+            proven_edge_types=["static_python_imports"],
+            coverage_gaps=["runtime, build and timing evidence require a registered tool"],
+        ),
     }
     result["choice"].update({
         "selection_required": depth == "summary" and bool(node_ids),
@@ -6705,14 +6941,20 @@ def project_context_get(project_root: str, task: str, depth: str = "summary",
 def project_change_record(project_root: str, base_commit: str,
                           semantic_summary: str, verification: list[str],
                           max_distance: int = 1, evidence_fragments: list[dict] | None = None) -> dict:
-    """Record one verified commit and compute its complete proven impact chain."""
+    """Record one verified commit without changing the tracked project capsule."""
     if not semantic_summary.strip():
         raise ValueError("semantic_summary must state the behavior change or explicitly say none")
     if not verification or any(not str(item).strip() for item in verification):
         raise ValueError("verification requires at least one non-empty test or check")
-    ensured = project_ensure(project_root)
-    if "error" in ensured:
-        return ensured
+    inspected = project_context.inspect_manifest(project_root)
+    if inspected["state"] != "current":
+        return {
+            "error": "project context is not current",
+            "state": inspected["state"],
+            "next": "call project_ensure before recording a project_change receipt",
+        }
+    manifest = inspected["manifest"]
+    ensured = {"project_id": manifest["project_id"], "root": inspected["root"]}
     impact = project_context.impact_chain(project_root, base_commit)
     graph = evidence_graph.reconcile(
         project_context.impact_graph(project_root, impact, verification), evidence_fragments or [])
@@ -6739,10 +6981,7 @@ def project_change_record(project_root: str, base_commit: str,
     }
     conn = get_db()
     try:
-        row = conn.execute(
-            "SELECT id, path FROM knowledge_nodes WHERE id=?",
-            (ensured["knowledge_root_id"],),
-        ).fetchone()
+        row = _project_context_root(conn, ensured["project_id"], inspected["manifest_path"])
         existing = conn.execute(
             "SELECT id, content FROM knowledge_nodes WHERE project_id=? "
             "AND tags LIKE ? ORDER BY updated_at DESC, created_at DESC LIMIT 1",
@@ -6750,6 +6989,12 @@ def project_change_record(project_root: str, base_commit: str,
         ).fetchone()
     finally:
         conn.close()
+    if row is None:
+        return {
+            "error": "project context root is missing",
+            "state": "partial",
+            "next": "call project_ensure before recording a project_change receipt",
+        }
     previous = json.loads(existing["content"] or "{}") if existing else {}
     def _stable_receipt(value):
         if isinstance(value, dict):
@@ -6843,6 +7088,20 @@ TOOLS = {
             args.get("mode", "auto"), args.get("phase", "plan"), args.get("operation"),
             args.get("project_root")),
     },
+    "project_actor_boundary": {
+        "description": "Fail-closed local actor/project check. Remote requests are denied as a tenant/auth coverage gap.",
+        "inputSchema": {
+            "type": "object", "properties": {
+                "actor": {"type": "string", "minLength": 1},
+                "project_id": {"type": "string", "minLength": 1},
+                "requested_project": {"type": "string"},
+                "remote": {"type": "boolean"},
+            }, "required": ["actor", "project_id"], "additionalProperties": False,
+        },
+        "handler": lambda args: project_actor_boundary(
+            _require(args, "actor", "a local actor"), _require(args, "project_id", "a project id"),
+            args.get("requested_project"), bool(args.get("remote", False))),
+    },
     "project_commit_gate": {
         "description": "Read-only check of the opt-in staged-tree gate. No configured gate means no enforcement; a local hook is not a security boundary.",
         "inputSchema": {
@@ -6852,17 +7111,51 @@ TOOLS = {
         "handler": lambda args: project_commit_gate(
             _require(args, "project_root", "a path inside the Git project")),
     },
+    "project_runtime_evidence": {
+        "description": "Register one bounded, tree-hash-bound result from an available manifest evidence tool. No raw code, prompt, transcript, database write or durable receipt is accepted.",
+        "inputSchema": {
+            "type": "object", "properties": {
+                "project_root": {"type": "string"},
+                "artifact": {"type": "object", "maxProperties": 12},
+            }, "required": ["project_root", "artifact"], "additionalProperties": False,
+        },
+        "handler": lambda args: project_runtime_evidence(
+            _require(args, "project_root", "a path inside the Git project"),
+            args.get("artifact")),
+    },
+    "edit_batch_complete": {
+        "description": "Queue one client-neutral completed-edit event. Returns only bounded ephemeral WORKING impact; no prompt, summary, raw code, database write, or receipt.",
+        "inputSchema": {
+            "type": "object", "properties": {
+                "project_root": {"type": "string"},
+                "mode": {"type": "string", "enum": ["code", "mixed"]},
+                "event_source": {"type": "string", "minLength": 1, "maxLength": 64,
+                                 "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+                "batch_id": {"type": "string", "minLength": 1, "maxLength": 64,
+                             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+                "agent_owned_untracked_paths": {"type": "array", "items": {"type": "string"}, "maxItems": 64},
+                "now": {"type": "number"},
+            }, "required": ["project_root"], "additionalProperties": False,
+        },
+        "handler": lambda args: project_edit_batch_complete(
+            _require(args, "project_root", "a path inside the Git project"),
+            args.get("mode", "code"), args.get("event_source", "client"), args.get("batch_id"),
+            args.get("agent_owned_untracked_paths"), args.get("now", 0.0)),
+    },
     "project_commit_ack": {
-        "description": "Append one explicit local acknowledgement for the current staged tree. The acknowledgement binds base commit and staged-diff digest; edit it again and it becomes invalid. Reason must be non-secret.",
+        "description": "Append one signed local acknowledgement for the current staged tree. The acknowledgement binds actor, base commit, staged/untracked digest and reason; edit it again and it becomes invalid. Reason must be non-secret.",
         "inputSchema": {
             "type": "object", "properties": {
                 "project_root": {"type": "string"},
                 "acknowledgement_reason": {"type": "string", "minLength": 1, "maxLength": 240},
-            }, "required": ["project_root", "acknowledgement_reason"], "additionalProperties": False,
+                "actor": {"type": "string", "minLength": 1, "maxLength": 240},
+                "signature": {"type": "string", "minLength": 1},
+            }, "required": ["project_root", "acknowledgement_reason", "actor", "signature"], "additionalProperties": False,
         },
         "handler": lambda args: project_commit_ack(
             _require(args, "project_root", "a path inside the Git project"),
-            _require(args, "acknowledgement_reason", "a non-secret reason")),
+            _require(args, "acknowledgement_reason", "a non-secret reason"),
+            _require(args, "actor", "a local actor"), _require(args, "signature", "a base64 signature")),
     },
     "project_change": {
         "description": "After a verified commit, store one compact change receipt and compute the complete transitive chain of statically proven Python import consumers. Returns consumer layers only up to max_distance; deeper layers remain available for lazy loading. Import edges prove dependency, not runtime data flow. Non-Python changes are reported as uncovered and require a project-specific registered analyzer.",
@@ -6909,6 +7202,31 @@ TOOLS = {
             _require(args, "project_root", "a path inside the Git project"),
             args.get("project_id"), args.get("tools")),
     },
+    "project_attach": {
+        "description": "Idempotently attach a local Git project through project_ensure and record a revision-bound lifecycle witness. It never copies source or deletes project knowledge, receipts, capsule history, or files.",
+        "inputSchema": {
+            "type": "object", "properties": {
+                "project_root": {"type": "string", "description": "Any path inside the Git project"},
+                "actor": {"type": "string", "minLength": 1},
+                "project_id": {"type": "string", "description": "Stable Brainlehr project scope; defaults to repository directory name"},
+            }, "required": ["project_root", "actor"], "additionalProperties": False,
+        },
+        "handler": lambda args: project_attach(
+            _require(args, "project_root", "a path inside the Git project"),
+            _require(args, "actor", "a local actor"), args.get("project_id")),
+    },
+    "project_detach": {
+        "description": "Detach only the active local project association. Knowledge, sources, receipts, capsule history and project files remain unchanged.",
+        "inputSchema": {
+            "type": "object", "properties": {
+                "project_root": {"type": "string", "description": "Any path inside the Git project"},
+                "actor": {"type": "string", "minLength": 1},
+            }, "required": ["project_root", "actor"], "additionalProperties": False,
+        },
+        "handler": lambda args: project_detach(
+            _require(args, "project_root", "a path inside the Git project"),
+            _require(args, "actor", "a local actor")),
+    },
     "project_context": {
         "description": "Load task context progressively and token-efficiently. First call depth=summary: it returns at most five project-scoped summaries, eight bounded Git code hits, relevant project tool references, and the mandatory next-choice contract. Use depth=relations or depth=full only with up to three node IDs selected from that same summary result. Never recursively loads a branch and never stores raw source automatically.",
         "inputSchema": {
@@ -6918,7 +7236,28 @@ TOOLS = {
                 "task": {"type": "string", "description": "Concise task keywords used for project-scoped knowledge and bounded Git code search"},
                 "depth": {"type": "string", "enum": ["summary", "relations", "full"], "default": "summary"},
                 "selected_node_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
+                "selected_witness_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
+                "evidence_witnesses": {"type": "array", "maxItems": 64, "items": {
+                    "type": "object", "additionalProperties": False,
+                    "properties": {
+                        "id": {"type": "string", "maxLength": 96},
+                        "requirement_ids": {"type": "array", "minItems": 1, "maxItems": 16,
+                                            "items": {"type": "string", "maxLength": 96}},
+                        "kind": {"type": "string", "maxLength": 96}, "tool": {"type": "string", "maxLength": 96},
+                        "tool_version": {"type": "string", "maxLength": 96}, "revision": {"type": "string", "maxLength": 96},
+                        "config_hash": {"type": "string", "maxLength": 96}, "artifact_hash": {"type": "string", "maxLength": 96},
+                        "verdict": {"type": "string", "enum": ["pass", "fail", "unknown"]},
+                        "independence_group": {"type": "string", "maxLength": 96}, "lineage_id": {"type": "string", "maxLength": 96},
+                        "freshness": {"type": "string", "enum": ["current", "stale", "working"]},
+                        "evidence_rank": {"type": "string", "maxLength": 96}, "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+                        "gaps": {"type": "array", "maxItems": 16, "items": {"type": "string", "maxLength": 160}},
+                        "conflict": {"type": "boolean"}, "observed_at": {"type": "string", "maxLength": 64},
+                    },
+                    "required": ["id", "requirement_ids", "kind", "tool", "tool_version", "revision", "config_hash", "artifact_hash", "verdict", "independence_group", "lineage_id", "freshness", "evidence_rank", "confidence"],
+                },
+                },
                 "max_results": {"type": "integer", "minimum": 1, "maximum": 5, "default": 5},
+                "capability_config_hash": {"type": "string", "minLength": 64, "maxLength": 64},
             },
             "required": ["project_root", "task"], "additionalProperties": False,
         },
@@ -6926,7 +7265,8 @@ TOOLS = {
             _require(args, "project_root", "a path inside the Git project"),
             _require(args, "task", "concise task keywords"),
             args.get("depth", "summary"), args.get("selected_node_ids"),
-            args.get("max_results", 5)),
+            args.get("max_results", 5), args.get("capability_config_hash"),
+            args.get("evidence_witnesses"), args.get("selected_witness_ids")),
     },
     "session_checkpoint_setzen": {
         "description": "Setzt einen temporären technischen Sitzungscheckpoint ohne Freitext, Recall oder Modellaufruf.",

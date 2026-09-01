@@ -227,6 +227,20 @@ import knowledge_mcp_server as kms  # type: ignore  # noqa: E402
 import lesson_recorder  # type: ignore  # noqa: E402
 
 
+# Der Partitionierer setzt BRAINLEHR_DB auf eine neue, absichtlich leere
+# Datei.  Ein RO-Aufruf darf daran nicht mit "unable to open database file"
+# scheitern: die Produktions-Erstanlage ist der kleinste deterministische
+# Ausgangsbestand.  Gewachsene-Korpus-Tests bleiben explizite Live-Smokes;
+# diese Fixture erfindet keine Inhalte oder Vektoren.
+_test_db = os.environ.get("BRAINLEHR_DB")
+if _test_db and not Path(_test_db).exists():
+    _test_conn = sqlite3.connect(_test_db)
+    try:
+        kms.ensure_schema(_test_conn)
+    finally:
+        _test_conn.close()
+
+
 @pytest.fixture(autouse=True)
 def _kein_echter_ausweis(tmp_path, monkeypatch):
     """Isoliert JEDEN Test vom Ausweisordner des Heimatverzeichnisses (Vorgabe
@@ -261,7 +275,9 @@ def _kein_echter_ausweis(tmp_path, monkeypatch):
 @pytest.fixture(autouse=True)
 def _keine_echten_seiteneffekt_dateien(tmp_path, monkeypatch):
     monkeypatch.setattr(kms, "INJECTION_SUSPECT_LOG", tmp_path / "injection_suspect_log.jsonl")
-    monkeypatch.setattr(lesson_recorder, "PROJECTS", {"shared": tmp_path / "auto_rule_projects"})
+    project_root = tmp_path / "auto_rule_projects"
+    project_root.mkdir()
+    monkeypatch.setattr(lesson_recorder, "PROJECTS", {"shared": project_root})
 
 
 @pytest.fixture(autouse=True)
@@ -290,6 +306,17 @@ def _norm_entscheidung_test_default(monkeypatch):
         return original(*args, **kwargs)
 
     monkeypatch.setattr(kms, "knowledge_add", _mit_default)
+
+
+@pytest.fixture(autouse=True)
+def _embedding_circuit_is_per_test():
+    """The embedded-service circuit breaker is process global in production.
+    Tests that model an outage must not suppress a later mocked success.
+    Reset only around test boundaries; a single test can still exercise the
+    full transition and pause behaviour."""
+    kms.embeddings._aussetzer_zuruecksetzen()
+    yield
+    kms.embeddings._aussetzer_zuruecksetzen()
 
 
 @pytest.fixture(autouse=True)

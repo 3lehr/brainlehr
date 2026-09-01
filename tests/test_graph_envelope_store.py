@@ -29,3 +29,15 @@ def test_delete_is_a_verified_tombstone_and_missing_is_empty(tmp_path: Path):
     tombstone = store.delete(path, reason="superseded")
     assert store.load(path) == tombstone
     assert tombstone["status"] == "deleted"
+
+
+def test_backup_restore_corruption_and_explicit_gc_lifecycle(tmp_path: Path):
+    graph, backup = tmp_path / "graph.json", tmp_path / "backup.json"
+    saved = store.save(graph, {"nodes": [{"id": "a"}]}, revision="r1", analyzer_version="v1")
+    assert store.backup(graph, backup) == saved
+    store.garbage_collect(graph, reason="retention-expired")
+    assert store.load(graph)["status"] == "deleted"
+    assert store.restore(backup, graph) == saved
+    backup.write_text('{"schema":1,"status":"active"}', encoding="utf-8")
+    with pytest.raises(ValueError, match="hash"):
+        store.restore(backup, graph)

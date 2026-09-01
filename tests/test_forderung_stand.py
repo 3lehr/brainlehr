@@ -210,7 +210,9 @@ def test_gewachsene_db_ohne_spalten_bricht_ensure_schema_nicht_ab(tmp_path, monk
                     if r[1] in ("forderung_faellig_am", "forderung_zustaendig")}
     conn.close()
 
-    assert nach_tab == vor_tab, "ensure_schema() darf keine Tabelle verlieren"
+    # ensure_schema is additive: newer project-context/evidence tables may be
+    # created on an old fixture, but an existing table must never disappear.
+    assert nach_tab >= vor_tab, "ensure_schema() darf keine Tabelle verlieren"
     assert "forderung_stand" in cols and "forderung_grund" in cols
     assert trg == {
         "knowledge_nodes_forderung_stand_check_bi",

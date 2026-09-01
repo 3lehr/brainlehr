@@ -25,11 +25,13 @@ dieselbe Klasse.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sqlite3
 import sys
 import tempfile
 from pathlib import Path
+import pytest
 
 WURZEL = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(WURZEL))
@@ -79,6 +81,10 @@ def _basis_schluessel() -> set[tuple[str, str, str]]:
     return {(e["tabelle"], e["id"], e["feld"]) for e in _basis()}
 
 
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires the explicitly selected live corpus",
+)
 def test_keine_unbegruendeten_absoluten_pfade():
     ist = gefundene_felder()
     erlaubt = _basis_schluessel()
@@ -92,6 +98,10 @@ def test_keine_unbegruendeten_absoluten_pfade():
     )
 
 
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires the explicitly selected live corpus",
+)
 def test_basis_bleibt_ehrlich():
     """Gegenprobe: eine Ausnahme, deren Feld inzwischen keinen absoluten Pfad
     mehr traegt (weil jemand es doch bereinigt hat), muss aus der Basis

@@ -100,7 +100,9 @@ def test_jede_gelesene_lessons_spalte_steht_in_schema_sql():
         # ein Alias, der nicht `l` heisst, faellt durch; auf einen SQL-Parser
         # umstellen, sobald so ein Fall auftritt.
         for m in re.finditer(r"\bl\.([a-z_]+)\b(?!\s*\()", datei.read_text(encoding="utf-8")):
-            if m.group(1) not in spalten and m.group(1) not in {"id"}:
+            # SQLite supplies rowid for ordinary tables; it is intentionally
+            # not a declared schema column (used by FTS bookkeeping).
+            if m.group(1) not in spalten and m.group(1) not in {"id", "rowid"}:
                 fehlend.add((datei.name, m.group(1)))
     assert not fehlend, (
         "Spalten, die ein Leser aus lessons_learned zieht, fehlen in schema.sql: "

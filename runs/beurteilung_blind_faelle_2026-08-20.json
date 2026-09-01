@@ -1,0 +1,776 @@
+{
+  "hinweis": "BLIND -- keine Kosinuswerte, keine Gruppe, kein Korpusziel. Reihenfolge nach Hash der target_id, nicht nach Gruppe.",
+  "anzahl": 35,
+  "faelle": [
+    {
+      "lfd": 1,
+      "anfrage": "Die KI reagiert träge, weil sie zu Beginn jeder Interaktion eine riesige Liste an Möglichkeiten verarbeiten muss, obwohl der Nutzer meist nur einen kleinen Teil davon nutzt. Um den Prozess effizienter zu gestalten, sollte die Darstellung der verfügbaren Handlungsoptionen bereits bei der ersten Verbindung eingeschränkt werden, ohne dabei die grundlegenden Sicherheitsvorgaben für den eigentlichen Zugriff zu beeinträchtigen.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Kontakt wird bei Angebot, Rechnung, Chat und Mail per KI vorgeschlagen statt erzwungen",
+          "zusammenfassung": "In daemon/steuer/router.py macht ein zentraler Resolver namens _resolve_contact_for_suggestion den Kontakt bei Angebots-, Rechnungs-, Chat- und Mail-Entwuerfen optional statt zwingend: die KI liest den Kunden aus Freitext ueber das erweiterte OfferDraftContact-Schema und liefert dazu eine contact_resolution mit dem Modus mode: linked|ambiguous|create|none. Die Anlage des Kontakts selbst bleibt review-first und laeuft weiterhin ueber den bestehenden, PII-gehaerteten Pfad /backoffice/contacts."
+        },
+        {
+          "art": "node",
+          "titel": "Betreiberweisung 2026-08-20: Es gibt Knöpfe, die die KI technisch nicht klicken kann",
+          "zusammenfassung": "Der Versand eines Angebots wird vorbereitet, aber nie von der KI ausgelöst. Der Senden-Knopf gehört zu einer kleinen Klasse von Bedienelementen, die die Steuerschnittstelle VERWEIGERN muss -- technisch, nicht per Absicht."
+        },
+        {
+          "art": "node",
+          "titel": "Simulator und Signalstärke — den Abruf vorführen, ohne ihn zu erfinden",
+          "zusammenfassung": "Stand 2026-08-12T23:30:00+0200. Anlass: Betreiberwunsch, wörtlich — *„ausserdem hätte ich gerne einen simulator button der verschiedene abfragen simuliert und etwas mit dem ich die ‚starke' der singnale einstellen kann, also wie stark/hell/schnell/intensive sie gezeichnet werden. wähle passende paramter\"*"
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 2,
+      "anfrage": "Bei der Implementierung eines Systems zur automatischen Erstellung von Antwortentwürfen für Kundenanfragen muss sichergestellt werden, dass kein sensibler Inhalt aus der ursprünglichen Anfrage ungeschützt in die Datenbank geschrieben wird. Obwohl der Eingangsprozess kontrolliert ist, darf der durch das Modell generierte Text nicht ungefiltert gespeichert werden, da er Persönlichkeiten oder Kontodaten enthalten könnte.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        },
+        {
+          "art": "node",
+          "titel": "Buckeberg Rechenkern: zentrale Eingaben für spätere automatische Homepage-Neuberechnung",
+          "zusammenfassung": "Öl-, Strom-, CO₂-, Förder-, Finanzierungs- und Verwaltungseingaben werden zentral, datiert und quellenbelegt gehalten. Ein gemeinsamer deterministischer Rechenlauf erzeugt daraus Modellwerte und einen kanonischen Snapshot; PDF und spätere Homepage dürfen keine eigenen abweichenden Konstanten führen."
+        },
+        {
+          "art": "node",
+          "titel": "Wer Preise selbst macht, ist datenbankrechtlich schwach geschützt — wer sie sammelt, stark (§87a/§87b UrhG)",
+          "zusammenfassung": "Der Schutz nach §87a/§87b UrhG setzt eine wesentliche Investition in Beschaffung, Überprüfung oder Darstellung von Daten voraus; die Investition in die Erzeugung der Daten selbst zählt laut EuGH ausdrücklich nicht mit. Wer eigene Daten veröffentlicht, etwa ein Händler seine Angebotspreise oder ein Veranstalter seine Spielpläne, hat deshalb kaum Datenbankschutz, während Aggregatoren, die fremde Bestände einsammeln, prüfen und ordnen, sehr wohl geschützt sind."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 3,
+      "anfrage": "Während der Modernisierung des Finanzportals müssen wir die Struktur der Benutzeroberfläche prüfen. Dabei ist es entscheidend zu wissen, wie viele Untermodule in diesem Bereich abgelegt sind, um die Verlinkungen korrekt abzubilden.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge",
+          "zusammenfassung": "Bei komplexen, iterativen Aufgaben mit mehreren Anforderungen ist vor weiterer Umsetzung ein einziger kanonischer Lastenkatalog Pflicht. Jede Betreiberänderung wird zuerst dort erfasst; Implementierung, Tests, Agentenaufträge und Abnahme referenzieren stabile Anforderungs-IDs."
+        },
+        {
+          "art": "node",
+          "titel": "Wie die Wissens-DB als Baumstruktur mit SQLite und FTS5 aufgebaut ist",
+          "zusammenfassung": "Die Wissens-DB nutzt SQLite + FTS5 mit einem Materialized Path und einer Tiefe von 3-4 Ebenen. Ein Agent navigiert dabei mit browse→read in 2-3 Calls statt 15k Tokens an Flat-Files laden zu muessen."
+        },
+        {
+          "art": "node",
+          "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+          "zusammenfassung": "Stand 2026-08-12T19:55:00+0200. Anlass: Betreiberfrage, wörtlich — *„sollten wir hier nicht zuerst einen plan erstellen und die app in teilbereiche aufteilen, immerhin muss sie verschiedene aufgaben erfüllen und später auch leicht für windows und linux umzubauen sein!\"*"
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 4,
+      "anfrage": "Die Entwickler diskutieren gerade, ob veraltete Funktionen aus dem System entfernt werden können. Es besteht die Sorge, dass dadurch die Bedienbarkeit für andere Personen eingeschränkt würde. In dieser Phase muss geklärt werden, ob eine sofortige Verfügbarkeit aktuell überhaupt notwendig ist.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+          "zusammenfassung": "Stand 2026-08-12T19:55:00+0200. Anlass: Betreiberfrage, wörtlich — *„sollten wir hier nicht zuerst einen plan erstellen und die app in teilbereiche aufteilen, immerhin muss sie verschiedene aufgaben erfüllen und später auch leicht für windows und linux umzubauen sein!\"*"
+        },
+        {
+          "art": "node",
+          "titel": "Dringlichkeit fuer den 14.08. entfaellt: Die Verwalterentscheidung ist faktisch gefallen",
+          "zusammenfassung": "Der Betreiber meldete am 2026-08-13: Die App-Arbeit, die fuer den 2026-08-14 als dringend galt, ist nun nicht mehr dringlich. Grund dafuer ist, dass sich in der WEG Im Buckeberg bereits zehn Eigentuemer fuer efbe entschieden haben — das Werkzeug sollte genau bei dieser Entscheidung helfen, die jetzt schon weitgehend gefallen ist."
+        },
+        {
+          "art": "node",
+          "titel": "ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)",
+          "zusammenfassung": "Jede App in diesem Verbund ist ein Entwicklungsstand."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 5,
+      "anfrage": "Die Überwachungssoftware für die Lagerhalle meldet einen sicheren Zustand, obwohl kritische Sensoren an den Außenwänden defekt sind. Da das System bei fehlenden Daten einfach auf die Standardeinstellungen zurückgreift, erhalten die Techniker eine trügerische Bestätigung über die Sicherheit der Konstruktion.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen",
+          "zusammenfassung": "Bereits gebaute Merkmale wirken für sich vollständig, halten aber oft Datenpunkte, die nichts voneinander wissen, obwohl sie es sollten — die Frage nach größeren Arbeitsblöcken lautet darum nicht 'was könnte man noch bauen', sondern 'wer müsste das wissen und weiß es aktuell nicht'. Dafür laufen mehrere unabhängige Durchgänge mit klar getrennten Blickwinkeln (etwa Zeit, Geld, gelerntes Wissen) statt eines einzigen, weil ein einzelner Durchgang schnell zu einer Meinung konvergiert und Trennschärfe verliert. Jeder Fund braucht einen konkreten Beleg in Text oder Code, sonst zählt er nicht, und zu jedem Fund gehört, was bei einer Fehlauslösung passieren könnte und ob eine Bestätigung nötig wäre. Die Funde je Blickwinkel bleiben auf eine überschaubare, nach Nutzen sortierte Zahl begrenzt — wenige belegte Funde schlagen viele vermutete."
+        },
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        },
+        {
+          "art": "node",
+          "titel": "Zehn Verdachtsfälle geprüft, null Fehler — warum die Fehlerklasse „leeres Ergebnis statt ungeprüft\" seltener ist als ihr Erkennungsmuster",
+          "zusammenfassung": "Ein grep nach dem Muster „fehlende Datei, dann leere Rückgabe\" fand am 2026-08-11 zehn Stellen neben dem echten Fehler in kern/normbezug.py. Einzeln geprüft am 2026-08-12 war keine einzige davon fehlerhaft: bei allen zehn ist die Abwesenheit der Datei selbst die Wahrheit, weil es sich um Protokolle, selbst geführte Warteschlangen oder Fail-closed-Voreinstellungen handelt. Das Suchmuster trifft die Form, nicht den Fehler."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 6,
+      "anfrage": "Bei der Besprechung mit potenziellen Partnern wird immer wieder so getan, als müsse die Anzahl der benötigten Unterschriften noch mit den externen Firmen geklärt werden. Hier muss jemand intervenieren und deutlich machen, dass diese prozessuale Vorgabe bereits intern feststeht und kein Punkt für eine weitere externe Rücksprache darstellt.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Plan vor Umsetzung (systemweit)",
+          "zusammenfassung": "Ab einer Schwelle wird vor der Arbeit ein Plan geschrieben und dem Auftraggeber vorgelegt."
+        },
+        {
+          "art": "node",
+          "titel": "Brainlehr-Aussenansicht als funktionserhaltende semantische Projektion",
+          "zusammenfassung": "Für externe LLMs sollte Brainlehr zwecknotwendige Knoten in stabile Entitäts-, Rollen- und Relations-Tokens sowie vergröberte Quasi-Identifikatoren projizieren. Die Projektion darf die gestellte Frage nicht durch eine ungefährlichere andere Frage ersetzen: Sie muss die Aufgabenfunktion erhalten, sonst wird lokal geroutet oder transparent blockiert."
+        },
+        {
+          "art": "node",
+          "titel": "SIMULATION Geschaeftsleitung: abgestufte Rechte in der Vetorunde vor der Vorlage",
+          "zusammenfassung": "Simulierte Betriebsregel, kein echter Vorgang: Jede Vorlage an die Geschaeftsfuehrung muss zuerst eine interne Vetorunde durchlaufen, in der Fachaufsicht und Recht Aussagen sperren duerfen, waehrend Kursmanagement und IT nur anmerken duerfen. Erst danach darf die Vorlage hinaus -- wer die Runde ueberspringt, hat keine gueltige Vorlage, sondern nur eine Meinung geaeussert."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 7,
+      "anfrage": "Das Entwicklungsteam stellt fest, dass die automatisch generierten Skripte unzuverlässig sind, da die internen Anleitungen nicht präzise genug definiert wurden. Um die Qualität zu sichern, müssen nun alle verfügbaren Werkzeuge neu strukturiert und feste Regeln für die Bausterstellung etabliert werden.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Startauftrag für neue Fachdomänen wird erzeugt, nicht abgeschrieben",
+          "zusammenfassung": "Beschluss 2026-07-31: Der Startauftrag für eine neue Fachdomäne entsteht durch ein deterministisches Skript (hub/scripts/domaenen_startauftrag.py), das seine Quellen zum Erzeugungszeitpunkt live liest — kein abgeschriebener Prompt, weil ein eingebackener Wissensstand ab dem nächsten Tag falsch ist."
+        },
+        {
+          "art": "node",
+          "titel": "Szenario-Bausteine Akademie: Abteilungen, Freigabekette, Verbotsliste",
+          "zusammenfassung": "Fuer die geplante Simulation wurden diese Bausteine aus dem Zahnakademie-System uebernommen statt erfunden: vier Abteilungen mit jeweils eigenem Informationsbedarf, eine Freigabekette mit Rollenschranke — wer entwirft, darf nicht selbst veroeffentlichen —, eine Liste unverhandelbarer Verbote und ein Eskalationsweg zur Geschaeftsfuehrung mit abgestuftem Vetorecht."
+        },
+        {
+          "art": "node",
+          "titel": "S1b · wird konkreter: zwei Merkmale fehlen im eigenen Entwurf",
+          "zusammenfassung": "wird konkreter: zwei Merkmale fehlen im eigenen Entwurf"
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 8,
+      "anfrage": "Die Produktion muss entscheiden, welche digitale Figur für das neue Video genutzt werden kann. Ein Techniker prüft dabei, ob die aktuelle Software bereits vollständige Bewegungsabläufe unterstützt oder nur bestimmte Bereiche der Mimik einsatzbereit hat.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Ein menschlicher Entscheid, den die Maschine nicht erzeugen kann",
+          "zusammenfassung": "Stand 2026-08-12T21:00:00+0200. Anlass: Betreiberfrage, wörtlich — *„dann brauchen wir einen menschlichen trigger? vll die app die wir gerage bauen?\"*"
+        },
+        {
+          "art": "node",
+          "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+          "zusammenfassung": "Stand 2026-08-12T19:55:00+0200. Anlass: Betreiberfrage, wörtlich — *„sollten wir hier nicht zuerst einen plan erstellen und die app in teilbereiche aufteilen, immerhin muss sie verschiedene aufgaben erfüllen und später auch leicht für windows und linux umzubauen sein!\"*"
+        },
+        {
+          "art": "node",
+          "titel": "Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge",
+          "zusammenfassung": "Bei komplexen, iterativen Aufgaben mit mehreren Anforderungen ist vor weiterer Umsetzung ein einziger kanonischer Lastenkatalog Pflicht. Jede Betreiberänderung wird zuerst dort erfasst; Implementierung, Tests, Agentenaufträge und Abnahme referenzieren stabile Anforderungs-IDs."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 9,
+      "anfrage": "Ein neuer Kollege beginnt seine Einarbeitung in einem komplexen Umfeld und erhält ein umfangreiches Handbuch zur Orientierung. Er muss vor dem Start identifizieren, welche Teile dieser Dokumentation zwingend studiert werden müssen, um keine elementaren Fehler bei der späteren Umsetzung zu machen.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Systemweite Lastenkatalog-Pflicht für komplexe Artefakt- und Modellaufträge",
+          "zusammenfassung": "Bei komplexen, iterativen Aufgaben mit mehreren Anforderungen ist vor weiterer Umsetzung ein einziger kanonischer Lastenkatalog Pflicht. Jede Betreiberänderung wird zuerst dort erfasst; Implementierung, Tests, Agentenaufträge und Abnahme referenzieren stabile Anforderungs-IDs."
+        },
+        {
+          "art": "node",
+          "titel": "Plan vor Umsetzung (systemweit)",
+          "zusammenfassung": "Ab einer Schwelle wird vor der Arbeit ein Plan geschrieben und dem Auftraggeber vorgelegt."
+        },
+        {
+          "art": "node",
+          "titel": "Arbeitsweise",
+          "zusammenfassung": "- Tool-first: breite Repo-Reads vermeiden; gezielt laden. - Für Governance/Prompt-Aufgaben: betroffene .github/-Datei lesen, dann arbeiten. - Nach substanziellen Analysen/Code-Änderungen: /chronist (bzw. begod/scripts/chronist.py log …). - Nach größeren Feature-Blöcken…"
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 10,
+      "anfrage": "Bei der Entwicklung einer neuen Anwendung müssen die automatischen Prüfzyklen strukturiert werden. Dabei sollen immer verfügbare Vorbereitungen für Testdaten erstellt und verschiedene Szenarien in Kategorien unterteilt werden. Zudem soll am Ende präzise ermittelt werden, welche Teile des Quellcodes während der Durchläufe nicht erreicht wurden.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+          "zusammenfassung": "Stand 2026-08-12T19:55:00+0200. Anlass: Betreiberfrage, wörtlich — *„sollten wir hier nicht zuerst einen plan erstellen und die app in teilbereiche aufteilen, immerhin muss sie verschiedene aufgaben erfüllen und später auch leicht für windows und linux umzubauen sein!\"*"
+        },
+        {
+          "art": "node",
+          "titel": "Testen als Fachgebiet: Strategien, pytest und TDD-Muster",
+          "zusammenfassung": "Dieser Bereich buendelt Test-Strategien, das Werkzeug pytest, Kennzahlen zur Testabdeckung (Coverage) sowie Entwicklungsmuster nach TDD."
+        },
+        {
+          "art": "node",
+          "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen",
+          "zusammenfassung": "Bereits gebaute Merkmale wirken für sich vollständig, halten aber oft Datenpunkte, die nichts voneinander wissen, obwohl sie es sollten — die Frage nach größeren Arbeitsblöcken lautet darum nicht 'was könnte man noch bauen', sondern 'wer müsste das wissen und weiß es aktuell nicht'. Dafür laufen mehrere unabhängige Durchgänge mit klar getrennten Blickwinkeln (etwa Zeit, Geld, gelerntes Wissen) statt eines einzigen, weil ein einzelner Durchgang schnell zu einer Meinung konvergiert und Trennschärfe verliert. Jeder Fund braucht einen konkreten Beleg in Text oder Code, sonst zählt er nicht, und zu jedem Fund gehört, was bei einer Fehlauslösung passieren könnte und ob eine Bestätigung nötig wäre. Die Funde je Blickwinkel bleiben auf eine überschaubare, nach Nutzen sortierte Zahl begrenzt — wenige belegte Funde schlagen viele vermutete."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 11,
+      "anfrage": "Ein Nutzer meldet, dass die Anwendung fälschlicherweise eine aktive Hardwareverbindung anzeigt, obwohl das entsprechende Modul nicht angeschlossen ist. Da veraltete Statusmeldungen aus dem Speicher ohne Validierung übernommen werden, erscheint diese Information als aktuell, obwohl sie längst nicht mehr gültig ist.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)",
+          "zusammenfassung": "Jede App in diesem Verbund ist ein Entwicklungsstand."
+        },
+        {
+          "art": "node",
+          "titel": "DRINGEND: Normbezugs-Melder bestätigt aufgehobene Normen als belegt — Beispiel § 71 GEG",
+          "zusammenfassung": "Gemessen am 2026-08-12: kern/normbezug.py meldet fuer ein Zitat von '§ 71 GEG' den Status belegt, obwohl § 71 seit dem 29.07.2026 ersatzlos gestrichen ist. Grund: der Beleg-Treffer ist ausgerechnet der Knoten, der die Streichung selbst dokumentiert -- er enthaelt schlicht die Zeichenfolge '§ 71'. Wer sich auf den Melder verlaesst, erhaelt fuer eine falsche Rechtsbehauptung eine Bestaetigung."
+        },
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 12,
+      "anfrage": "Wenn ein Nutzer eine Bluetooth-Verbindung kurz hintereinander neu aufbaut, kann ein verspätet eintreffender Trennbefehl aus dem ersten Versuch die gerade erst gestartete zweite Sitzung unterbrechen. Ohne eine eindeutige Zuordnung zwischen dem Signal und der spezifischen Instanz führt dieser Timingfehler dazu, dass die neue Verbindung fälschlicherweise gekappt wird. Das System muss sicherstellen, dass ein Beendungsbefehl nur dann wirksam ist, wenn er gezielt auf den aktuell laufenden Vorgang abzielt.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Sitzung sicher unterbrechen: Sichern vor dem Wiedereinstieg",
+          "zusammenfassung": "Muss eine Sitzung abgebrochen werden, wird zuerst jede laufende Hintergrundarbeit sauber abgesichert statt einfach abgebrochen, und danach geprüft, ob dabei etwas Halbfertiges zurückblieb — eine Minute Reparatur jetzt ist besser als ein kaputter Zustand über Nacht. Alles, was bislang nur im Gespräch existiert — ein fertiger Plan, ein Befund, eine Entscheidung —, wird in eine Datei geschrieben, denn Ungespeichertes ist nach der Pause verloren. Die Wiedereinstiegsnotiz nennt knapp, was fertig ist, was angefangen und offen ist, welche Fragen unbeantwortet sind, und den nächsten ausführbaren Schritt, ohne etwas Neues zu beginnen oder etwas zu beschönigen."
+        },
+        {
+          "art": "node",
+          "titel": "Bindet die Kopfeinheit-Prüfung Zweitwagen-Fahrten wirklich rechtzeitig ab? (offener Verdacht)",
+          "zusammenfassung": "Am 2026-07-28 löste ein unbekanntes Test-HUD am Testrechner sofort 'Fahrt erkannt' aus — ein Zweitwagen-Risiko —, während ein zweiter Reconnect mit einem China-CarPlay-Adapter das nicht mehr auslöste. Die Ursache ist nicht abschließend geklärt: Der Nutzer konnte nicht sagen, ob die Fahrt wirklich aufgezeichnet wurde oder nur der transiente Hinweis erschien. Statt weiterer Analyse macht der Nutzer eine echte Probefahrt zur Klärung."
+        },
+        {
+          "art": "node",
+          "titel": "Warum autoConnect bei BLE-Verbindungen abgelehnt wurde: der Feldfehler sitzt im Berechtigungs-Vorlauf (ADR F-026, 2026-08-01)",
+          "zusammenfassung": "Beschluss vom 2026-08-01T06:20:00+0200: `BluetoothDevice.connect(autoConnect: true)` wurde abgelehnt, nicht vertagt. Der gemeldete Satz „fehlende Freigabe\" entsteht in `BlePermissionHelper._waitForAdapterOn` (`unauthorized` → `denied`) und endet in `UniversalDongleManager.startScan()` mit `return`, noch bevor je ein `connect()` laeuft — die autoConnect-Option kann diesen Fehler also gar nicht erreichen. Stattdessen wird zunaechst gemessen: adapterState, BlePermissionResult und AppLifecycleState werden ins bestehende Telemetrie-JSONL geschrieben."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 13,
+      "anfrage": "Nach dem Rollout zeigen die automatisierten Prüfprotokolle eine lange Liste an Fehlermeldungen. Bevor du alle Probleme auf eine instabile Infrastruktur schiebst, solltest du dir bei einigen Fällen die detaillierten Protokolle genau durchlesen. Nur so stellst du sicher, dass tatsächliche Programmierfehler nicht übersehen werden.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Vor jedem Enigma-Bau: erst falsifizieren, dann bauen",
+          "zusammenfassung": "Vor jedem Bau am Enigma-System werden zunächst die Gesamtannahmen, die Abbruchkriterien und die billigsten Tests festgehalten, die diese Annahmen widerlegen könnten. Bestätigt sich ein Bypass, ein Identitätsfehler oder ein Metadatenleck, wird der betroffene Anspruch sofort gestoppt, bis die kleinste nachweisbare Korrektur vorliegt."
+        },
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        },
+        {
+          "art": "node",
+          "titel": "Plan vor Umsetzung (systemweit)",
+          "zusammenfassung": "Ab einer Schwelle wird vor der Arbeit ein Plan geschrieben und dem Auftraggeber vorgelegt."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 14,
+      "anfrage": "Bei der Fehlerbehebung einer Sortierfunktion stellst du fest, dass Informationen aus unterschiedlichen Bereichen unkorrekt nebeneinander stehen. Da die hinterlegten Zahlenwerte für die Wichtigkeit über verschiedene Kategorien hinweg identisch sind, kann das System nicht unterscheiden, welche Vorgabe tatsächlich Vorrang hat. Eine automatische Auswahl des relevantesten Dokuments ist ohne zusätzliche Angaben zum Ursprung der Daten unmöglich.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Buckeberg-Belegablage: Objekt-Anker funktioniert, MÜKRO-Fall wartet auf Klärung",
+          "zusammenfassung": "Für Buckeberg existiert bereits eine funktionsfähige, paperless-ähnliche Belegverarbeitung: 356 Dokumente aus dem casavi-Verwalterportal liegen je Beleg als .pdf, .txt und .json vor, weshalb die Installation von paperless verworfen wurde — ein eigener KO-Klassifikator lohnt sich frühestens mit der Selbstverwaltung 2027. Die feste Verdrahtung des Objekt-Ankers erwies sich sofort als nützlich: sie deckte einen zweiten Verdachtsfall auf. Eine Korrektur vom 2026-07-28T17:10:00+0200 stellte im Code richtig, dass pdf_to_knowledge.py nicht zu Buckeberg gehört, sondern das gemeinsame Hub-Skript hub/begod/scripts/pdf_to_knowledge.py ist — ursprünglich für phoenix-recovery-engine entwickelt und dort noch mit fest codiertem app-Feld —, sodass Buckeberg tatsächlich ein fremdes, allgemeines Werkzeug einsetzt statt einer eigenen Pipeline."
+        },
+        {
+          "art": "node",
+          "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen",
+          "zusammenfassung": "Bereits gebaute Merkmale wirken für sich vollständig, halten aber oft Datenpunkte, die nichts voneinander wissen, obwohl sie es sollten — die Frage nach größeren Arbeitsblöcken lautet darum nicht 'was könnte man noch bauen', sondern 'wer müsste das wissen und weiß es aktuell nicht'. Dafür laufen mehrere unabhängige Durchgänge mit klar getrennten Blickwinkeln (etwa Zeit, Geld, gelerntes Wissen) statt eines einzigen, weil ein einzelner Durchgang schnell zu einer Meinung konvergiert und Trennschärfe verliert. Jeder Fund braucht einen konkreten Beleg in Text oder Code, sonst zählt er nicht, und zu jedem Fund gehört, was bei einer Fehlauslösung passieren könnte und ob eine Bestätigung nötig wäre. Die Funde je Blickwinkel bleiben auf eine überschaubare, nach Nutzen sortierte Zahl begrenzt — wenige belegte Funde schlagen viele vermutete."
+        },
+        {
+          "art": "node",
+          "titel": "design-waechter: neun Fragen vor dem Fertigmelden eines Bildschirms",
+          "zusammenfassung": "Vor dem Melden eines fertigen Bildschirms oder Texts wird gegen eine feste Liste lesbarer Kriterien geprüft: Erklärt jede Fehlermeldung, was falsch ist und was zu tun ist, bleibt jeder sichtbare Text frei von internen Details wie bekannten Fehlern, Dateinamen oder Rohfehlermeldungen, stehen Fachbegriffe unverändert neben einem Beispiel statt einer Umschreibung, und gibt es vor jeder endgültigen, folgenreichen Aktion eine Vorschau samt Rückweg oder Bestätigung. Ein automatischer, grüner Check bedeutet dabei nur Regelkonformität, nicht dass ein Mensch den Bildschirm tatsächlich verstanden hat — dieser Unterschied gehört ausdrücklich in den Bericht."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 15,
+      "anfrage": "Ein Techniker stellt fest, dass der automatisierte Datenabgleich abgebrochen wird, und wechselt stattdessen auf eine direkte Übertragungsanbindung. Er geht davon aus, dass lediglich die Serververbindung instabil ist, übersieht dabei jedoch, dass dieser Weg absichtlich unterbunden wurde, um einen manuellen Abnahmevorgang zu erzwingen. Da beide Szenarien für ihn gleich wirken, lässt er den erforderlichen Genehmigungsschritt aus.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Buckeberg-Belegablage: Objekt-Anker funktioniert, MÜKRO-Fall wartet auf Klärung",
+          "zusammenfassung": "Für Buckeberg existiert bereits eine funktionsfähige, paperless-ähnliche Belegverarbeitung: 356 Dokumente aus dem casavi-Verwalterportal liegen je Beleg als .pdf, .txt und .json vor, weshalb die Installation von paperless verworfen wurde — ein eigener KO-Klassifikator lohnt sich frühestens mit der Selbstverwaltung 2027. Die feste Verdrahtung des Objekt-Ankers erwies sich sofort als nützlich: sie deckte einen zweiten Verdachtsfall auf. Eine Korrektur vom 2026-07-28T17:10:00+0200 stellte im Code richtig, dass pdf_to_knowledge.py nicht zu Buckeberg gehört, sondern das gemeinsame Hub-Skript hub/begod/scripts/pdf_to_knowledge.py ist — ursprünglich für phoenix-recovery-engine entwickelt und dort noch mit fest codiertem app-Feld —, sodass Buckeberg tatsächlich ein fremdes, allgemeines Werkzeug einsetzt statt einer eigenen Pipeline."
+        },
+        {
+          "art": "node",
+          "titel": "Ohne Plan wird nicht gebaut — Betreiberanweisung 2026-08-12, mit Durchsetzung statt Appell",
+          "zusammenfassung": "Der Betreiber am 2026-08-12T20:00:00+0200: „es darf nie wieder passeiren das wir sowas ohne plan bauen!\" und um 20:40 auf die Rückfrage nach dem Rang: „entscheidung getroffen anweisung ünbernehmen!\" ÜBERNOMMEN in ~/.claude/CLAUDE.md, Abschnitt „Plan vor Umsetzung\" (Sicherung CLAUDE.md.bak-2026-08-12T2040). RANG WEITERHIN OFFEN — nicht aus Nachlässigkeit: die Schranke leitet den Entscheider aus dem Ausweis des SCHREIBENDEN ab, und das ist eine Maschine. Der Normalfall „Mensch entscheidet, Maschine schreibt mit\" ist im Datenmodell nicht vorgesehen."
+        },
+        {
+          "art": "node",
+          "titel": "Warum autoConnect bei BLE-Verbindungen abgelehnt wurde: der Feldfehler sitzt im Berechtigungs-Vorlauf (ADR F-026, 2026-08-01)",
+          "zusammenfassung": "Beschluss vom 2026-08-01T06:20:00+0200: `BluetoothDevice.connect(autoConnect: true)` wurde abgelehnt, nicht vertagt. Der gemeldete Satz „fehlende Freigabe\" entsteht in `BlePermissionHelper._waitForAdapterOn` (`unauthorized` → `denied`) und endet in `UniversalDongleManager.startScan()` mit `return`, noch bevor je ein `connect()` laeuft — die autoConnect-Option kann diesen Fehler also gar nicht erreichen. Stattdessen wird zunaechst gemessen: adapterState, BlePermissionResult und AppLifecycleState werden ins bestehende Telemetrie-JSONL geschrieben."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 16,
+      "anfrage": "Ein Nutzer wird während der Bearbeitung eines Vorgangs auf seinem Mobilgerät gestört und wechselt kurzzeitig die Anwendung. Wenn das System nach Ablauf einer Zeitbegrenzung automatisch reagiert, dürfen dabei keine bereits erfassten Daten ohne explizite Bestätigung gelöscht oder zurückgesetzt werden.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Testdaten kennzeichnen: Warum die Sperre eine physische Trennung ist und das Merkmal nur die Herkunft",
+          "zusammenfassung": "Ein Testdaten-Merkmal am Datensatz ist keine Sperre, weil es an jeder Auswertung erneut abgefragt werden müsste und eine vergessene Stelle genügt, um einen Testbeleg durchrutschen zu lassen. Die eigentliche Sperre ist physische Trennung — ein eigener Nutzer mit eigener Datenbankdatei —, während das Merkmal selbst die Herkunft trägt und damit die Beweiskraft eines Datensatzes."
+        },
+        {
+          "art": "node",
+          "titel": "ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)",
+          "zusammenfassung": "Jede App in diesem Verbund ist ein Entwicklungsstand."
+        },
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 17,
+      "anfrage": "Ein Administrator muss die Testdatensätze aus dem System löschen, bevor das Produkt live geht. Da sowohl die Übungsdatensätze als auch die echten Kundeninformationen exakt dieselben Bezeichnungen tragen, führt eine Bereinigung allein nach Namen dazu, dass versehentlich echte Nutzerdaten gelöscht werden. Er benötigt daher ein Verfahren, das jeden Datensatz bereits beim Import eindeutig kennzeichnet, um sie im Nachhinein sicher voneinander zu trennen.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Grundsatz H1: alles Beta, keine echten Daten, kein Livebetrieb",
+          "zusammenfassung": "Grundsatz H1 der Arbeitsweise haelt fest, dass sich nichts im System im Betrieb befindet: keine echten Nutzer, keine echten Daten -- was in einer Datenbank liegt, sind ausnahmslos Testdaten. Daraus folgt: Testkonten, Beispieldaten und Vorbelegungen duerfen ohne Rueckfrage angelegt werden, Daten duerfen geloescht und neu erzeugt werden, und 'das System waere zwischenzeitlich unbenutzbar' ist kein Argument. Die Frage 'das sind doch Echtdaten?' ist unzulaessig; der Betreiber meldet ausdruecklich, wenn sich das aendert."
+        },
+        {
+          "art": "node",
+          "titel": "ALLES IST BETA. KEINE ECHTEN DATEN. (gilt bis zum ausdrücklichen Widerruf)",
+          "zusammenfassung": "Jede App in diesem Verbund ist ein Entwicklungsstand."
+        },
+        {
+          "art": "node",
+          "titel": "Testdaten kennzeichnen: Warum die Sperre eine physische Trennung ist und das Merkmal nur die Herkunft",
+          "zusammenfassung": "Ein Testdaten-Merkmal am Datensatz ist keine Sperre, weil es an jeder Auswertung erneut abgefragt werden müsste und eine vergessene Stelle genügt, um einen Testbeleg durchrutschen zu lassen. Die eigentliche Sperre ist physische Trennung — ein eigener Nutzer mit eigener Datenbankdatei —, während das Merkmal selbst die Herkunft trägt und damit die Beweiskraft eines Datensatzes."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 18,
+      "anfrage": "Die Entwickler bemerken, dass die KI-Assistenten bei komplexeren Projekten zunehmend unzuverlässig reagieren und wichtige Vorgaben vernachlässigen. Da die Menge an hinterlegten Informationen für jede Teilaufgabe zu groß geworden ist, müssen diese Anweisungen effizienter verdichtet werden, um die Verarbeitungsgeschwindigkeit zu verbessern.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Warum Disziplin verrottet und Erzeugung nicht",
+          "zusammenfassung": "Übersichten, Listen und Statusdokumente sollten aus dem Code erzeugt statt gepflegt werden. Geht das nicht, muss ein Prüfer fehlschlagen, sobald das Dokument zu weit zurückliegt -- ein bloßer Hinweis wird nach kurzer Zeit übersehen."
+        },
+        {
+          "art": "node",
+          "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+          "zusammenfassung": "Stand 2026-08-12T19:55:00+0200. Anlass: Betreiberfrage, wörtlich — *„sollten wir hier nicht zuerst einen plan erstellen und die app in teilbereiche aufteilen, immerhin muss sie verschiedene aufgaben erfüllen und später auch leicht für windows und linux umzubauen sein!\"*"
+        },
+        {
+          "art": "node",
+          "titel": "EILMELDUNG an brainlehr: Eine neue Regel braucht einen Rückwirkungs-Melder, nicht nur einen Text",
+          "zusammenfassung": "Betreiberweisung 2026-08-20: Wird eine Regel neu erkannt („die KI soll jedes Feld steuern können, auf dem einfachsten Weg\"), muss ein Werkzeug prüfen, ob ALLES SCHON GEBAUTE diesen Weg auch geht. Ohne diese Prüfung gilt die Regel nur für Neues, und der Bestand bleibt stumm daneben liegen."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 19,
+      "anfrage": "Ein Verkäufer möchte in einer Präsentation die maximale Belastbarkeit eines Bauteils nennen. Da ihm keine aktuellen Testergebnisse vorliegen, muss er entscheiden, ob er eine plausibel klingende Zahl nennt oder offen gibt, dass diese Information momentan nicht zur Verfügung steht.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Sagen, wie belastbar etwas ist",
+          "zusammenfassung": "Aussagen tragen eine Angabe darueber, worauf sie beruhen: gemessen, Fremdbericht, plausibel oder geraten. Damit laesst sich eine Vermutung von einem Befund unterscheiden, ohne den Text zu lesen."
+        },
+        {
+          "art": "node",
+          "titel": "Sagen, ob etwas noch gilt",
+          "zusammenfassung": "Eine Aussage kann eine Norm sein: `norm_rang` (1 globale Regel, 2 Projektentscheidung, 3 festgehaltene Entscheidung), dazu `gilt_ab` und `gilt_bis`. Ob etwas ueberhaupt eine Norm ist, wird ausdruecklich entschieden -- ohne Vorgabewert."
+        },
+        {
+          "art": "node",
+          "titel": "Sichtbar trennen: gemessen, abgeleitet oder vermutet",
+          "zusammenfassung": "Ergebnisse sollten sichtbar danach unterschieden werden, ob sie gemessen, abgeleitet oder vermutet sind. Bei fremder Arbeit gehoert zusaetzlich der Hinweis „vorbestehend, nicht von mir\" dazu, sonst ist ein Befund wertlos, weil niemand weiss, wen er fragen muss."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 14
+    },
+    {
+      "lfd": 20,
+      "anfrage": "Bei der Ausarbeitung einer komplexen Systemarchitektur muss ich entscheiden, ob eine zusätzliche Überprüfungsinstanz sinnvoll ist. Da die primäre Logik bereits über die nötige Kapazität für tiefgreifende Entscheidungen verfügt, würde ich nur dann ein separates Kontrollfenster öffnen, wenn gezielt eine unabhängige Zweitmeinung oder eine kritische Gegenposition eingeholt werden soll.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Warum unabhängige Prüfung ein frisches Fenster braucht",
+          "zusammenfassung": "Regel 15 der Arbeitsweise empfiehlt für unabhängige Prüfungen ein frisches Fenster — nicht weil ein anderes Modell klüger wäre, sondern weil ein neuer Kontext die eigenen Annahmen nicht erbt. Das ist Kontext-Isolation, keine Eskalation; bei Konsilen mit mehreren Rollen ist die Unabhängigkeit selbst die Funktion, nicht Verschwendung. In der Antwort sollen Zahlen, Dateinamen, Funktionsnamen, Fehlertexte und Zuschreibungen immer exakt und ausgeschrieben genannt werden — dort wird nicht gekürzt."
+        },
+        {
+          "art": "node",
+          "titel": "Konsil-Material — Grundarchitektur",
+          "zusammenfassung": "**Erzeugt** 2026-08-13T23:29:39+0200 **Für** ein Konsil, das frei denken soll. **Keine Vorgaben, keine Regeln, kein Format.**"
+        },
+        {
+          "art": "node",
+          "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+          "zusammenfassung": "Stand 2026-08-12T19:55:00+0200. Anlass: Betreiberfrage, wörtlich — *„sollten wir hier nicht zuerst einen plan erstellen und die app in teilbereiche aufteilen, immerhin muss sie verschiedene aufgaben erfüllen und später auch leicht für windows und linux umzubauen sein!\"*"
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 21,
+      "anfrage": "Ein neuer Kollege stößt bei der Recherche auf ein unübersichtlich formatiertes Protokoll und ist unsicher, ob es sich um einen Fehler handelt oder ob die Daten noch gültig sind. Es muss geklärt werden, dass dieser Text bewusst als Beleg für den Entstehungsprozess einer Entscheidung erhalten bleibt, auch wenn die eigentlichen Arbeitsschritte heute in einer saubereren Struktur abgelegt sind.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Was als Beleg für „funktioniert\" zählt",
+          "zusammenfassung": "Eine Änderung gilt erst als behoben, wenn eine Prüfung vor der Änderung fehlschlug und danach besteht. Ein von Anfang an grüner Test beweist nur, dass er den Fehler gar nicht berührt."
+        },
+        {
+          "art": "node",
+          "titel": "Sichtbar trennen: gemessen, abgeleitet oder vermutet",
+          "zusammenfassung": "Ergebnisse sollten sichtbar danach unterschieden werden, ob sie gemessen, abgeleitet oder vermutet sind. Bei fremder Arbeit gehoert zusaetzlich der Hinweis „vorbestehend, nicht von mir\" dazu, sonst ist ein Befund wertlos, weil niemand weiss, wen er fragen muss."
+        },
+        {
+          "art": "node",
+          "titel": "Warum ein unbedingter Herzschlag mehrdeutige Stille in eine deutbare Aussage verwandelt",
+          "zusammenfassung": "Ein Feldfehler ohne Reproduktion lässt sich nicht aus fehlenden Messwerten, sondern aus mehrdeutigen Messwerten nicht auflösen: Ein Protokoll, das nur bei Verdacht schreibt, kann Schweigen nicht interpretieren. Ein regelmäßig und bedingungslos schreibendes Lebenszeichen macht aus dieser Stille eine auswertbare Aussage und beseitigte am 2026-08-07 an einem einzigen Nachmittag fünf konkurrierende Erklärungen."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 22,
+      "anfrage": "Ein Hausbesitzer lässt seine Werkstatt umbauen und muss entscheiden, wie viele Kabel nun direkt in die Wände verlegt werden sollen. Er muss abwägen, ob er nur den aktuellen Bedarf deckt oder eine breitere Basis schafft, damit spätere Erweiterungen keinen kompletten Rückbau der Wandkonstruktion nötig machen.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+          "zusammenfassung": "Stand 2026-08-12T19:55:00+0200. Anlass: Betreiberfrage, wörtlich — *„sollten wir hier nicht zuerst einen plan erstellen und die app in teilbereiche aufteilen, immerhin muss sie verschiedene aufgaben erfüllen und später auch leicht für windows und linux umzubauen sein!\"*"
+        },
+        {
+          "art": "node",
+          "titel": "Kalibrierbremse: verdrahten oder ausbauen",
+          "zusammenfassung": "Stand 2026-08-13T02:00:00+0200. Aufgabe 35. Kurzer Plan, weil eine Entscheidung mit echten Alternativen ansteht und delegiert wird."
+        },
+        {
+          "art": "node",
+          "titel": "Buckeberg: begehbare Darstellung der Sanierungswege — Plan A/B/C vom 2026-08-16",
+          "zusammenfassung": "Aus der Heizungsfrage wurde ein Sanierungs-Konfigurator mit Wirtschaftlichkeit. Bauform: Massnahmenkatalog statt Varianten (vier Schalter sind 16 Varianten, zehn ueber tausend), Bemessungskette statt Summen, Belastbarkeitsleiter um E/F/G erweitert. Reihenfolge A Research, B Auswertung, C Bau ist bindend; Rueckkopplung mit drei Ausloesern und Abbruch nach zwei Runden ohne Rueckwurf."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 23,
+      "anfrage": "Ein Sachbearbeiter prüft die Unterlagen zu einer Anlage und stellt fest, dass der Beleg für eine Modernisierung im Widerspruch zu den aktuellen Sicherheitsprüfungen steht. Da beide Dokumente gleichwertig sind, muss nun beim zuständigen Dienstleister nachgefragt werden, um die tatsächlichen Bestände zu klären.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Was als Beleg für „funktioniert\" zählt",
+          "zusammenfassung": "Eine Änderung gilt erst als behoben, wenn eine Prüfung vor der Änderung fehlschlug und danach besteht. Ein von Anfang an grüner Test beweist nur, dass er den Fehler gar nicht berührt."
+        },
+        {
+          "art": "node",
+          "titel": "Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)",
+          "zusammenfassung": "Widerspruch ist Bringschuld, nicht Höflichkeitsfrage. Wo eine Vorgabe des Betreibers dem Code, einer Messung oder einer eigenen früheren Festlegung widerspricht, wird das benannt, bevor gebaut wird — in einem Satz, sachlich, ohne Belehrung. Dann weiterarbeiten: Bestätigt er…"
+        },
+        {
+          "art": "node",
+          "titel": "Abarbeitung: der offene Bestand vom 2026-08-11",
+          "zusammenfassung": "Auftrag des Betreibers 18:20: den gesamten Plan jetzt abarbeiten, dokumentieren, abhaken. Reihenfolge wie zuletzt vorgeschlagen, geändert durch den Befund der Börsen-Recherche (Sortierregel vor Prüfkorpus)."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 24,
+      "anfrage": "Die Eigentümergemeinschaft möchte die Abrechnung der Dachsanierung prüfen, da das Handwerksunternehmen und die Hausverwaltung unter gleicher Leitung stehen. Da im Vertrag keine speziellen Regeln für solche internen Beauftragungen enthalten sind, ist unklar, ob auch andere Firmen angefragt wurden oder wie die Kosten kalkuliert wurden. Ohne eine klare Vorgabe fehlt ein objektiver Maßstab, um die Fairness der Entscheidung zu beurteilen.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "efbe: die Vergabe an eigene Gewerke bleibt im Vertrag ungeregelt — Frage vor der Unterschrift",
+          "zusammenfassung": "efbe führt Hausverwaltung und Bausparte durch dieselbe Person — belegt, und für sich weder unzulässig noch ungewöhnlich. Die eigentliche Lücke liegt im Vertrag: Zu Vergabe, Vergleichsangeboten und Vergütung bei Aufträgen an eigene Gewerke findet sich darin nichts. Ohne eine solche Regelung fehlt später der Maßstab, an dem sich prüfen ließe, wie vergeben wurde."
+        },
+        {
+          "art": "node",
+          "titel": "Personelle Verflechtung zwischen der efbe-Hausverwaltung und der efbe-Bausparte GmbH, ungeregelt im Vertragsentwurf",
+          "zusammenfassung": "Unter der Marke efbe treten drei Unternehmen auf. Hannah Brust führt zugleich die sich bewerbende Hausverwaltung als Einzelunternehmen und ist einzelvertretungsberechtigte Geschäftsführerin der efbe bauart GmbH (Handelsregisternummer HRB 739928) mit der Befugnis zum Insichgeschäft nach § 181 BGB — die Personenidentität zwischen Verwaltung und Bausparte ist damit belegt. Der Vertragsentwurf selbst regelt weder Vergabe noch Vergleichsangebote noch die Vergütung eigener Gewerke."
+        },
+        {
+          "art": "node",
+          "titel": "SWB: warum der Preis weiter ungeklärt bleibt — der Vertragsentwurf gehört einer fremden Gemeinschaft",
+          "zusammenfassung": "Zwei mündliche Angaben passen zur Nettospalte und würden den Preis auf die Hälfte drücken (33,32 € statt 54,74 € brutto, rund 4.100 €/Jahr weniger). Der Rechenwiderspruch in § 3.4 ist am 2026-08-16 am Vertragstext bestätigt: 28 × 1,19 = 33,32, aber 54,74 / 1,19 = 46,00. BESTRITTEN seit 2026-08-16: die Aussage, der Entwurf sei auf eine fremde Gemeinschaft ausgestellt — eine erneute Durchsicht fand an fünf Fundstellen durchgehend „Im Buckeberg 16-26, 76307 Karlsbad\" und keinen fremden Adressaten. Offen bleibt, ob der frühere Befund falsch war oder der Entwurf zwischenzeitlich ausgetauscht wurde; beides ist aus dem Bestand nicht entscheidbar. Neu erhoben: SWB verlangt für Sanierungsbegleitung 2 % der Bruttokosten, zusätzlich 1 % bei Einschaltung von Fachplanern, ab 20.000 € Einzelmaßnahme."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 25,
+      "anfrage": "Ein Entwickler fügt eine neue Kennzeichnung für abgelaufene Gutscheine in die Datenbank ein und schließt den Task als erledigt ab. Da jedoch kein anderer Teil des Programms diese Information auswertet, um dem Nutzer eine Warnung anzuzeigen, bleibt der Fehler im laufenden Betrieb unbemerkt. Die Logik zur Identifizierung funktioniert fehlerfrei, führt aber zu keiner sichtbaren Reaktion für den Anwender.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        },
+        {
+          "art": "node",
+          "titel": "Synergien finden: welche Datenpunkte sollten voneinander wissen",
+          "zusammenfassung": "Bereits gebaute Merkmale wirken für sich vollständig, halten aber oft Datenpunkte, die nichts voneinander wissen, obwohl sie es sollten — die Frage nach größeren Arbeitsblöcken lautet darum nicht 'was könnte man noch bauen', sondern 'wer müsste das wissen und weiß es aktuell nicht'. Dafür laufen mehrere unabhängige Durchgänge mit klar getrennten Blickwinkeln (etwa Zeit, Geld, gelerntes Wissen) statt eines einzigen, weil ein einzelner Durchgang schnell zu einer Meinung konvergiert und Trennschärfe verliert. Jeder Fund braucht einen konkreten Beleg in Text oder Code, sonst zählt er nicht, und zu jedem Fund gehört, was bei einer Fehlauslösung passieren könnte und ob eine Bestätigung nötig wäre. Die Funde je Blickwinkel bleiben auf eine überschaubare, nach Nutzen sortierte Zahl begrenzt — wenige belegte Funde schlagen viele vermutete."
+        },
+        {
+          "art": "node",
+          "titel": "Ob eingespieltes Wissen wirklich benutzt wurde, misst kein System automatisch — und was daraus fuer uns folgt",
+          "zusammenfassung": "Recherche vom 2026-08-07: kein untersuchtes System erkennt automatisch, dass eine eingespielte Information tatsaechlich benutzt wurde. Eine Korrektur am selben Tag stellt klar: das gilt nur fuer passives Beobachten. Durch einen gezielten EINGRIFF -- einen Treffer entfernen und die Aufgabe erneut bewerten (Okkultation) -- ist es sehr wohl messbar."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 26,
+      "anfrage": "Ein Entwickler stellt fest, dass Hintergrundaufgaben trotz einer umschließenden Absicherung im Log als nicht verarbeitet erscheinen. Da die Aktion unabhängig vom aktuellen Ablauf ausgeführt wird, greift das lokale Sicherheitsnetz nicht und führt zu unkontrollierten Abstürzen. Er muss nun entscheiden, ob er den Vorgang erst nach Abschluss prüft oder die Fehlerprüfung direkt in die Hilfsfunktion integriert.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Testumgebung: selbstaendig handeln bis zum Wort \"es wird ernst\"",
+          "zusammenfassung": "Betreiber-Entscheidung vom 2026-08-11T08:15:00+0200: In der Testumgebung handelt der Assistent selbstaendig statt vorzulegen -- Push, Veroeffentlichung, Umbauten, Konfiguration, Reihenfolge. Widerruf durch das Wort \"es wird ernst\". Unberuehrt: Kennwoerter tippt der Betreiber selbst, Aussenwirkung gegenueber Dritten, und was der Assistent selbst fuer falsch haelt. KORREKTUR 2026-08-11T10:25:00+0200: Die Direktive war entgegen der urspruenglichen Fassung dieses Knotens NUR in ~/.codex/AGENTS.md eingetragen, nicht in ~/.claude/CLAUDE.md -- dort erst jetzt nachgetragen."
+        },
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        },
+        {
+          "art": "node",
+          "titel": "„Es funktioniert\" braucht einen Beleg, der vorher rot war (systemweit)",
+          "zusammenfassung": "Kein „jetzt klappt es\", „behoben\", „funktioniert\" ohne eine Prüfung, die vor der Änderung fehlschlug und danach besteht."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 27,
+      "anfrage": "In der Fehleranalyse stellte ich fest, dass die Einblendung von Bestätigungsfenstern oft fehlschlägt oder Daten verliert, weil sie auf eine unsichere Standortbestimmung im UI-Baum angewiesen ist. Ich muss diese Overlays auf eine feste Referenz umstellen und die Reihenfolge der internen Statusänderungen so festschreiben, dass sie nicht durch das Timingergebnis beeinflusst werden.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Vor jedem Enigma-Bau: erst falsifizieren, dann bauen",
+          "zusammenfassung": "Vor jedem Bau am Enigma-System werden zunächst die Gesamtannahmen, die Abbruchkriterien und die billigsten Tests festgehalten, die diese Annahmen widerlegen könnten. Bestätigt sich ein Bypass, ein Identitätsfehler oder ein Metadatenleck, wird der betroffene Anspruch sofort gestoppt, bis die kleinste nachweisbare Korrektur vorliegt."
+        },
+        {
+          "art": "node",
+          "titel": "Buckeberg-Belegablage: Objekt-Anker funktioniert, MÜKRO-Fall wartet auf Klärung",
+          "zusammenfassung": "Für Buckeberg existiert bereits eine funktionsfähige, paperless-ähnliche Belegverarbeitung: 356 Dokumente aus dem casavi-Verwalterportal liegen je Beleg als .pdf, .txt und .json vor, weshalb die Installation von paperless verworfen wurde — ein eigener KO-Klassifikator lohnt sich frühestens mit der Selbstverwaltung 2027. Die feste Verdrahtung des Objekt-Ankers erwies sich sofort als nützlich: sie deckte einen zweiten Verdachtsfall auf. Eine Korrektur vom 2026-07-28T17:10:00+0200 stellte im Code richtig, dass pdf_to_knowledge.py nicht zu Buckeberg gehört, sondern das gemeinsame Hub-Skript hub/begod/scripts/pdf_to_knowledge.py ist — ursprünglich für phoenix-recovery-engine entwickelt und dort noch mit fest codiertem app-Feld —, sodass Buckeberg tatsächlich ein fremdes, allgemeines Werkzeug einsetzt statt einer eigenen Pipeline."
+        },
+        {
+          "art": "node",
+          "titel": "TripLifecycleCoordinator: warum der Fahrt-Lebenszyklus einen Owner braucht (Opus-5-Befund, 2026-07-24)",
+          "zusammenfassung": "48 Prozent aller Fix-Commits (169 von 352) und achtmal das Stichwort „race\" belegen eine strukturelle Ursache, verifiziert an 6 von 9 Hotspot-Dateien: Der Fahrt-Lebenszyklus — start, confirm, stop, cancel, resume — wird von 11 unabhängigen Stellen ohne gemeinsamen Owner aufgerufen, während 13 lokale Guard-Flags die fehlende Abstraktion nur behelfsmäßig kompensieren. vin_read_service.dart und trip_completion_sheet.dart sind davon NICHT strukturell betroffen; dort steckt Einzelfall-Churn beziehungsweise reine Formular-Komplexität."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 28,
+      "anfrage": "Ein Administrator prüft die Zugriffsberechtigungen für einen Kollegen, der für zwei Organisationen tätig ist. Er verwendet dazu ein Übungsszenario mit simulierten Profilen, um sicherzustellen, dass die spezifische Aufgabenfunktion korrekt im System hinterlegt ist.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Elf Stufen bilden die Zugriffsentscheidung als Filter, nicht als additive Berechtigung",
+          "zusammenfassung": "Ob jemand etwas lesen darf, entscheidet sich nicht allein an der Rolle: elf Stufen wirken zusammen — Einwilligung, Identität, Befugnis, Zweck, Zuständigkeit für diesen Zweck, Betroffener, Datenart, Frist, Menge, Empfänger und Verkettung. Sie bilden kein UND, sondern einen Filter, der nur wegnehmen darf; könnte eine Stufe Rechte hinzufügen, gewänne die schwächste statt der stärksten Stufe, und die ganze Kette wäre wertlos. Der Zweck bestimmt dabei nicht nur, OB überhaupt zugegriffen wird, sondern auch WELCHE Felder sichtbar werden."
+        },
+        {
+          "art": "node",
+          "titel": "Stadtwerke: fiktiver Verbundpartner fuer den fuenfte-Rolle-Testlauf",
+          "zusammenfassung": "Testszenario fuer das Selbstlernen, Schritt 6, laut Plan vom 2026-08-07: ein fiktiver Verbundpartner mit ausschliesslich Testdaten fuer den Versuch mit einer fuenften Rolle -- einem IT-Mitarbeiter mit Doppelzugehoerigkeit zu stadtwerke und openlehr."
+        },
+        {
+          "art": "node",
+          "titel": "SIMULATION: absichtlicher Portwiderspruch in der Zugriffsregel zum Buchungssystem",
+          "zusammenfassung": "Fiktive Testregel für Messläufe: Der Zugriff auf das Buchungssystem soll ausschließlich über den Dienstzugang mit Rechteprüfung laufen, nie direkt auf die Datenbank. Absichtlich eingebaut ist ein Widerspruch — der Betriebsbericht nennt für diesen Dienstzugang Port 8080, die Übergabenotiz Port 9090, beide Angaben stehen im Bestand, keine ist als richtig markiert."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 29,
+      "anfrage": "Ein Mitarbeiter im Empfangsbereich prüft die Belegung der Büroräume auf dem Gelände. Würde das System bei gesperrten Zonen gar keine Daten liefern, könnte er durch das Fehlen von Einträgen Rückschlüsse auf geheime Anlagen ziehen. Stattdessen sollte ihm eine glaubwürdige Fiktion präsentiert werden, damit seine Abfrage keinen Hinweis auf den Schutzstatus gibt.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        },
+        {
+          "art": "node",
+          "titel": "Café Enigma Rotation 1: P1-Mechanismen und P2-Grenzen",
+          "zusammenfassung": "Rotation 1 trennte vier unabhängige Schutzclaims – OS-Isolation, Zweckprojektion, Ableitungs-/Reservoirkontrolle und Recovery-Widerruf. Der Mac ist P1-Labor; kein P1-PASS gilt als P2-Unternehmensnachweis."
+        },
+        {
+          "art": "node",
+          "titel": "Die Einbuergerungsschranke besteht ihre erste Probe im Feld — Ziel war der Assistent selbst",
+          "zusammenfassung": "Am 2026-08-11 versuchte der Assistent, mit ausdruecklicher Freigabe des Betreibers, sich selbst einen Maschinenausweis auszustellen. kern/ausweis.py wies das zurueck: Einbuergerung setzt 'ausweis:ausstellen' voraus, der Bestand ist nicht leer, also liegt kein Gruendungsakt vor. Damit griff die Schranke erstmals im echten Betrieb statt nur im Selbsttest — ausgerechnet gegen den Fall, fuer den sie gedacht war."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 30,
+      "anfrage": "Während einer Besprechung zur Neuausrichtung der Organisationsstruktur verlieren die Beteiligten sich in Diskussionen über Detailzahlen und zukünftige Software-Anpassungen. Sie vernachlässigen dabei, dass die rechtliche Genehmigung des Hauptprojekts zeitkritisch ist und nicht durch technische Feinheiten verzögert werden darf. Zudem sorgt das Fehlen von analogen Ausgleichsmöglichkeiten für Widerstand bei den traditionell orientierten Mitgliedern.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Den Betreiber korrigieren (seit 2026-08-04T05:44:04+0200)",
+          "zusammenfassung": "Widerspruch ist Bringschuld, nicht Höflichkeitsfrage. Wo eine Vorgabe des Betreibers dem Code, einer Messung oder einer eigenen früheren Festlegung widerspricht, wird das benannt, bevor gebaut wird — in einem Satz, sachlich, ohne Belehrung. Dann weiterarbeiten: Bestätigt er…"
+        },
+        {
+          "art": "node",
+          "titel": "Architektur-Konsil 2026-08-13: vier Konvergenzen aus zehn Rollen, die einander nicht kannten",
+          "zusammenfassung": "Zehn parallel laufende Opus-Rollen bekamen dasselbe Material ohne ADRs, Pläne, Bestandszahlen und Quellenliste. Vier Antworten kamen unabhängig mehrfach: Überforderung ist die falsche Gattungsachse, eine Basis wird herausgezogen statt entworfen, Vertrauen ist nicht herstellbar aber Prüfbarkeit übertragbar, und Neubau heilt den stillen Fehlschlag nicht."
+        },
+        {
+          "art": "node",
+          "titel": "Widerspruch ist erwünscht, auch gegen den eigenen Auftrag",
+          "zusammenfassung": "Widerspruch ist ausdrücklich erwünscht, auch wenn eine Vorgabe schriftlich in einem Auftrag stand. Aufträge sind Schnappschüsse -- sie beschreiben den Stand beim Schreiben, nicht beim Ausführen."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 31,
+      "anfrage": "Ein Kunde beschwert sich, dass neu hochgeladene Rechnungen und Nachrichten in der Trefferliste fehlen. Ich muss prüfen, ob die automatischen Importprozesse die Daten korrekt erfassen oder ob diese aufgrund fehlender Textinhalte beim Aufbau des Suchverzeichnisses aussortiert wurden.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "ADR: Wie sich die Navigation der OpenLehr-Steuer-Oberflaeche verdichtet und ein einheitliches KI-Chat-Muster bekommt",
+          "zusammenfassung": "Die Navigation wurde von 15 Inline-Tabs auf 7 Primär-Eintraege (Heute, Eingang, Mail, Belege & Bank, Angebote+Rechnungen, KI-Arbeitsplatz, Steuerjahr) plus ein Overflow-Menü (Kunden, Einstellungen, Behördenpost, Lens/Companion, Automationen, Audit) verdichtet. Der bisherige globale Einweg-KI-Balken entfaellt zugunsten eines einheitlichen Chat-Musters mit Frage, Optionen und Freitext fuer alle KI-Eingaben."
+        },
+        {
+          "art": "node",
+          "titel": "Der automatische Recall durchsucht den Prompt, nicht das ausgewertete Material — eine gemessene Lücke",
+          "zusammenfassung": "Am 2026-08-08 lagen fuenf von sechs Befunden aus einer Fehlerbericht-Auswertung bereits als Lehren im Speicher, zwei davon sogar schon behoben -- trotzdem meldete der automatische Recall null Treffer, weil er den Prompt des Betreibers durchsucht statt des Materials, aus dem die Befunde stammen. Daraus folgt die Anforderung: der zweite Ausloeser muss am ERGEBNIS einer Auswertung haengen, nicht am Gespraechseinstieg."
+        },
+        {
+          "art": "node",
+          "titel": "FTS5 bei OpenLehr getrennt gefuehrt: text_index fuer steuer.db, knowledge_index fuer die Wissensbasis",
+          "zusammenfassung": "In daemon/steuer/text_index.py stecken zwei Funktionen mit unterschiedlicher Sicherheitsstufe fuer die PII-maskiert indizierten eigenen Angebote, Rechnungen, Mails und Belege: search() laeuft unkonstrainiert, weil es um eigene Daten geht, waehrend aehnliche_projekte_kontext() k-anonym gegated ist und MIN_CROSS_CUSTOMER_COUNT=3 als Schwelle fuer die Cross-Kunden-Aggregation setzt. Davon getrennt steht daemon/knowledge_index.py als einfacherer FTS5-Index ueber die Wissensbasis (begod/knowledge, docs/), im Modus :memory: als Voreinstellung. Am 2026-07-22 erweiterte das Arbeitspaket AP-1 beide Indizes um lokale Ollama-Embeddings und RRF-Fusion, ruehrte dabei aber bewusst nur an den unkonstrainierten Suchfunktionen search() und liess die k-anonyme Aggregation unangetastet."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 32,
+      "anfrage": "Die Entwickler müssen eine technische Barriere einrichten, damit Informationen von externen Anbietern die Integrität der eigenen Software nicht gefährden. Dies ist notwendig, um sicherzustellen, dass fremde Datenströme wie Nachrichten oder Terminkalender keine Sicherheitslücken im internen System öffnen.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        },
+        {
+          "art": "node",
+          "titel": "Externe LLMs brauchen fuer Geschaeftsgeheimnisse eine eigene Freigabeschicht",
+          "zusammenfassung": "Weder DSGVO-Konformitaet noch ein Rahmenvertrag ersetzen die angemessenen Geheimhaltungsmassnahmen, die das GeschGehG verlangt. Vor jeder Uebermittlung an ein externes LLM muss Enigma Datenklasse, Zweck, Empfaenger und verbleibendes Rekonstruktionsrisiko pruefen; hochkritische Geheimnisse bleiben lokal."
+        },
+        {
+          "art": "node",
+          "titel": "Die Anwendung in Schichten — und was davon je System neu gebaut werden muss",
+          "zusammenfassung": "Stand 2026-08-12T19:55:00+0200. Anlass: Betreiberfrage, wörtlich — *„sollten wir hier nicht zuerst einen plan erstellen und die app in teilbereiche aufteilen, immerhin muss sie verschiedene aufgaben erfüllen und später auch leicht für windows und linux umzubauen sein!\"*"
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 33,
+      "anfrage": "Ein Tool zur automatischen Fehlerprüfung in einer Software meldet ständig Fehlalarme, weil es nicht zwischen organisatorischen Verknüpfungen und echtem Datentransport unterscheiden kann. Da beide Arten von Verbindungen im Systemplan identisch aussehen, hilft eine bloße Begrenzung der Komplexität nicht, um die Qualität der Analyse zu verbessern. Die Untersuchung scheitert daran, dass die äußere Form einer Verbindung keine Rückschlüsse auf ihre tatsächliche Funktion zulässt.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Wie wiring_check.py deklarierten, aber nie erreichten Code aufspuert",
+          "zusammenfassung": "hub/scripts/wiring_check.py findet Code, der zwar existiert, aber nie erreicht wird: Typen ohne Konstruktoraufruf, Methoden ohne Aufrufer, Provider ohne Konsumenten, Enum-Werte und l10n-Schluessel ohne Verwendung sowie Felder, die gelesen, aber nie geschrieben werden. Es ist reines stdlib-Python, arbeitet mit einer Baseline je App und liefert Exit-Code 1 nur bei NEUEN Funden. Der entscheidende Beleg: flutter analyze meldet \"No issues found!\", waehrend das Skript im selben Repo 88 reale Luecken findet."
+        },
+        {
+          "art": "node",
+          "titel": "Warum eine Stichprobe keine Diagnose ist",
+          "zusammenfassung": "Ein geprüfter Fall beweist nicht, dass alle Fälle so liegen. Wer nach einer einzigen Stichprobe ein Sammelurteil fällt, verwechselt einen Einzelbefund mit einer Diagnose."
+        },
+        {
+          "art": "node",
+          "titel": "Rang-1-Direktive b5604a62 ist umgesetzt — und die Messung zeigt: 23 Prozent der eigenen Aufträge brachen die Regel",
+          "zusammenfassung": "Der Auftrag aus b5604a62 („belegen und als oberste Direktive implementieren\") ist ausgeführt: zweite Regel im PreToolUse-Haken auf Agent, die meldet, wenn ein Auftrag eine Bestandsangabe setzt, ohne dem Empfänger das Recht zu geben, ihr zu widersprechen. An 543 echten Agentenaufträgen gemessen: 126 hätten gemeldet, davon 116 wegen einer genannten Datei ohne Vorbehalt."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 34,
+      "anfrage": "Ein Kunde möchte seine persönlichen Informationen im Profil aktualisieren, doch der Vorgang wird abgebrochen. Die Meldung auf dem Display darf keine Details zu den technischen Hintergründen preisgeben und sollte den Nutzer stattdessen lediglich dazu anweisen, die Eingabe in einigen Minuten erneut zu versuchen.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        },
+        {
+          "art": "node",
+          "titel": "DRINGEND an openlehr_einzelunternehmer: ihr könnt weiterarbeiten — `zeilen` und `/neuladen` stehen",
+          "zusammenfassung": "Beide Punkte, die eure Arbeit blockierten, sind gebaut und am laufenden Programm belegt: Der Dienstblock darf jetzt `zeilen` tragen (eigener Datenpfad, getrennt vom Lebenszeichen, Commit d8a244ff), und `POST /neuladen` erzwingt ein Neuzeichnen ohne den Umweg über das Wegschalten der Ansicht (Commit b73f2543). Ohne Angabe von `zeilen` bleibt alles wie bisher — euer laufendes Paket bricht nicht."
+        },
+        {
+          "art": "node",
+          "titel": "Betreiberweisung 2026-08-20: Es gibt Knöpfe, die die KI technisch nicht klicken kann",
+          "zusammenfassung": "Der Versand eines Angebots wird vorbereitet, aber nie von der KI ausgelöst. Der Senden-Knopf gehört zu einer kleinen Klasse von Bedienelementen, die die Steuerschnittstelle VERWEIGERN muss -- technisch, nicht per Absicht."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    },
+    {
+      "lfd": 35,
+      "anfrage": "Ein Nutzer beschwert sich über eine fehlerhafte Anzeige auf einer speziellen Unterseite. Der Entwickler korrigiert das Problem im Hauptbereich, übersieht jedoch einen Hinweis im Code, der darauf hindeutet, dass auch eine fast identische Ansicht derselben Anpassung bedarf.",
+      "ausgeliefert_top3": [
+        {
+          "art": "node",
+          "titel": "Fünf Hausverwaltungen für den Buckeberg: Reputation und Verwechslungsfallen",
+          "zusammenfassung": "Web-Hintergrund (Rang 5-6, kein Erstrang-Entscheidungskriterium) zur Buckeberg Anbieter-Recherche 2026-07-23 zu den 5 Bietern: Volksbank Immobilien AG Ettlingen (HRB 738929) hat die beste Bewertungslage (~110 Rezensionen, Ø4,5); SWB = Sparkassen-Wohnbau GmbH Karlsruhe, eine LBS-Tochter und einziger Bieter mit VDIV-BW-Listung (Ø4,3); efbe ist das Einzelunternehmen von Hannah Brust, klein aber durchweg positiv (12-53 Rezensionen); Heisig Immobilien GmbH Ettlingen (HRB 754156 Mannheim, 4 Mitarbeiter) birgt Verwechslungsgefahr mit einer namensgleichen Münchner Hausverwaltung; ImmoPoint Waldbronn hat die schwächste Reputation (Ø3,6/28) und eine zeitweise auf 503 fehlerhafte Website, die Zuordnung ist unsicher. Übergreifend bleibt eine Lücke: Bei keinem der Bieter ließ sich das Portal- oder Softwareprodukt ermitteln — das wurde als Frage in den Rückfragen-Katalog aufgenommen."
+        },
+        {
+          "art": "node",
+          "titel": "Keine Entwicklerinformation in der Oberfläche (systemweit)",
+          "zusammenfassung": "Was der Nutzer liest, beschreibt seine Lage und seine nächste Handlung — nie den Zustand des Quellcodes."
+        },
+        {
+          "art": "node",
+          "titel": "DRINGEND openlehr: Friert ein Beleg den Kontaktnamen ein, oder holt er ihn beim Anzeigen?",
+          "zusammenfassung": "Offene Frage mit Rechtsfolge, gemessen am 2026-08-08 anhand von apps/openlehr/daemon/steuer/db.py: Die Tabelle contacts trennt die id (AUTOINCREMENT) korrekt vom veraenderlichen display_name. UNGEPRUEFT blieb, ob eine Rechnung den Kontaktnamen zum Ausstellungszeitpunkt festschreibt oder ihn erst beim Anzeigen aus contacts nachlaedt. Laedt sie ihn nach, traegt eine im Juli ausgestellte Rechnung nach einer Heirat rueckwirkend den neuen Namen. Zweiter Befund: contacts hat kein UNIQUE, derselbe Kontakt laesst sich unbemerkt doppelt anlegen."
+        }
+      ],
+      "ausgeliefert_gesamt_anzahl": 17
+    }
+  ]
+}

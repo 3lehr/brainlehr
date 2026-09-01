@@ -31,8 +31,14 @@ sys.path.insert(0, str(WURZEL))
 UEBERGANGSVERWEIS = "hub/shared-knowledge"
 
 
-def test_keine_pfadkonstante_laeuft_ueber_den_uebergangsverweis():
+def test_keine_pfadkonstante_laeuft_ueber_den_uebergangsverweis(monkeypatch):
     """Konstanten, die eine Datei adressieren -- nicht Kommentare."""
+    # This checks repository defaults, not the per-partition test DB.  Reload
+    # both location users after removing the test-only override.
+    monkeypatch.delenv("BRAINLEHR_DB", raising=False)
+    monkeypatch.delenv("BEGOD_KNOWLEDGE_DB", raising=False)
+    for name in ("ort", "haken.ort", "build_node_index", "kanten_aus_lehren"):
+        sys.modules.pop(name, None)
     import build_node_index
     import kanten_aus_lehren
 

@@ -56,7 +56,6 @@ import json  # noqa: E402
 import subprocess  # noqa: E402
 import urllib.request  # noqa: E402
 from configparser import ConfigParser  # noqa: E402
-from datetime import datetime  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 import betriebsprofil  # noqa: E402
@@ -65,6 +64,7 @@ import embeddings  # noqa: E402
 import fremdimport  # noqa: E402
 import ort  # noqa: E402
 import speicher  # noqa: E402
+import zeitmarke  # noqa: E402
 import spracherkennung  # noqa: E402
 
 WURZEL = _w
@@ -437,8 +437,7 @@ def durchlaufen(profil: str | None = None, sprache: str | None = None,
         getan.append(f"Katalog {name}: {katalogergebnisse[-1]['knoten']} Knoten")
 
     with speicher.schreiben(db) as conn:
-        _konfig_setzen(conn, SCHLUESSEL_FERTIG,
-                       datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S%z"))
+        _konfig_setzen(conn, SCHLUESSEL_FERTIG, zeitmarke.jetzt())
 
     nachher = lage(db)
     return {"geaendert": True, "profil": nachher["profil"],

@@ -15,8 +15,11 @@ Form, der Bestand ist aber deutsch ('Datenbank' 65 gegen 'database' 54,
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
+
+import pytest
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "kern"))
@@ -87,6 +90,10 @@ def test_schwelle_trennt_zwei_klar_getrennte_gruppen():
     assert max(tief) < schwelle < min(hoch)
 
 
+@pytest.mark.skipif(
+    os.environ.get("BRAINLEHR_RUN_LIVE") != "1",
+    reason="requires explicit BRAINLEHR_RUN_LIVE=1 and a grown corpus",
+)
 def test_impl_wird_aus_dem_echten_bestand_aufgenommen_rot_vor_gruen():
     """Rot-Probe (dokumentiert, nicht nur behauptet): OHNE Katalog findet eine
     Anfrage nach 'impl' 0 Dokumente ueber die lange Form -- die Kurzform

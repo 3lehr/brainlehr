@@ -6,26 +6,45 @@ import json
 import os
 import shutil
 import sys
+import webbrowser
 from pathlib import Path
 
 try:
     import project_context
     from evidence_projections import metroviz_projection, otel_trace_projection
+    from impact_dashboard import start_for_mode
 except ModuleNotFoundError:  # installed wheel keeps core modules in ./kern
     sys.path.insert(0, str(Path(__file__).resolve().parent / "kern"))
     import project_context
     from evidence_projections import metroviz_projection, otel_trace_projection
+    from impact_dashboard import start_for_mode
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", required=True)
-    parser.add_argument("--base", required=True)
+    parser.add_argument("--base")
     parser.add_argument("--format", choices=("json", "mermaid", "cytoscape", "metroviz", "otel"), default="json")
     parser.add_argument("--output", help="write a Cytoscape HTML artifact and its local asset")
     parser.add_argument("--trace", type=Path, help="sanitized OTLP-derived trace JSON for --format otel")
     parser.add_argument("--tree-hash", help="working-tree hash bound to --trace for --format otel")
+    parser.add_argument("--serve", action="store_true", help="serve a local read-only dashboard")
+    parser.add_argument("--watch", action="store_true", help="poll graph hash in the local dashboard")
+    parser.add_argument("--open", action="store_true", help="open the local dashboard")
+    parser.add_argument("--mode", default="code", choices=("knowledge", "code", "mixed"))
+    parser.add_argument("--port", type=int, default=0)
     args = parser.parse_args()
+    if args.serve:
+        root = project_context.project_root(args.project_root)
+        base = args.base or project_context._git(root, "rev-parse", "HEAD^")
+        dashboard = start_for_mode(args.mode, root, base, port=args.port)
+        if dashboard is None:
+            print(json.dumps({"status": "disabled", "mode": "knowledge"}, sort_keys=True)); return 0
+        if args.open: webbrowser.open(f"http://127.0.0.1:{dashboard.port}/")
+        print(json.dumps({"status": "serving", "url": f"http://127.0.0.1:{dashboard.port}/", "watch": args.watch}, sort_keys=True))
+        dashboard.serve_forever(); return 0
+    if not args.base:
+        parser.error("--base is required unless --serve is used")
     impact = project_context.impact_chain(args.project_root, args.base)
     graph = project_context.impact_graph(args.project_root, impact, [])
     if args.output and args.format != "cytoscape":

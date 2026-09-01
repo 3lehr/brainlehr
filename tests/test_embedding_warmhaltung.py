@@ -29,12 +29,22 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 _w = Path(__file__).resolve().parent
 while not (_w / "schema.sql").exists() and _w != _w.parent:
     _w = _w.parent
 sys.path.insert(0, str(_w / "kern"))
 
 import embeddings  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _frischer_aussetzerzustand():
+    """A prior outage test must not suppress this module's mocked request."""
+    embeddings._aussetzer_zuruecksetzen()
+    yield
+    embeddings._aussetzer_zuruecksetzen()
 
 
 def test_timeout_deckt_den_kaltstart(monkeypatch):

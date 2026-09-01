@@ -40,5 +40,22 @@
     "./schreibpruefstand/demo_db.py",
     "./kern/regelpaket.py",
     "./kern/lehrenpaket.py"
+    ,"./haken/eilmeldung_frisch.py"
+    ,"./haken/knowledge_recall_hook.py"
+    ,"./kern/kanalguete_messung.py"
+    ,"./kern/schluesselablage.py"
+    ,"./kern/schnappschuss.py"
+    ,"./kern/sicherungen.py"
+    ,"./melder/dokumentzugang.py"
+    ,"./melder/landkarten.py"
+    ,"./melder/verbundkarte.py"
+    ,"./messungen/einbettungsvarianten.py"
+    ,"./messungen/einrichtung_katalogwirkung.py"
+    ,"./messungen/longmemeval_produktivweg.py"
+    ,"./messungen/longmemeval_v2_produktivweg.py"
+    ,"./messungen/variante_zweiteinbettung.py"
+    ,"./messungen/variante_zweitmodell.py"
+    ,"./tool/aussenabgleich.py"
+    ,"./tool/oeffentliche_ausgabe.py"
   ]
 }

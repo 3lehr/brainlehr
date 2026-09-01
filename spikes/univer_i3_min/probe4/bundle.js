@@ -319927,47 +319927,7 @@ var g = mergeLocales(
 );
 
 // probe4/positivliste.mjs
-var ALLOWED_FUNCTIONS = [
-  // Summen, Bedingungen, Grundrechnen (EUeR/UStVA)
-  "SUM",
-  "SUMIF",
-  "SUMIFS",
-  "IF",
-  "IFS",
-  "IFERROR",
-  "AND",
-  "OR",
-  "NOT",
-  "ROUND",
-  "ROUNDUP",
-  "ROUNDDOWN",
-  "ABS",
-  "MIN",
-  "MAX",
-  "AVERAGE",
-  "AVERAGEIF",
-  "COUNT",
-  "COUNTA",
-  "COUNTIF",
-  "COUNTIFS",
-  "PRODUCT",
-  // Datum, Zeitraum, Sortierung (Fristenrechnung)
-  "DATE",
-  "DATEDIF",
-  "EDATE",
-  "EOMONTH",
-  "DAYS",
-  "TODAY",
-  "NOW",
-  "YEAR",
-  "MONTH",
-  "DAY",
-  "WEEKDAY",
-  "NETWORKDAYS",
-  "SORT",
-  "SORTBY",
-  "RANK.EQ"
-];
+var ALLOWED_FUNCTIONS = ["IF"];
 
 // probe4/entry_positivliste.js
 function meldeFehler(stelle, fehler) {

@@ -1,0 +1,47 @@
+{
+  "stand": "2026-08-15T09:39:35Z",
+  "laufzeit_sekunden": 3600.0,
+  "teilnehmer": {
+    "fenster": {
+      "updates_gesendet": 2768,
+      "bytes_gesendet": 1196973,
+      "zeichen_getippt": 77802,
+      "loeschungen": 233,
+      "fehler": 0,
+      "verbindungen": 1,
+      "abgeleitet": {
+        "updates_je_minute": 46.1,
+        "bytes_je_update": 432.4,
+        "bytes_je_minute": 19949.5,
+        "bytes_je_zeichen": 15.4
+      }
+    },
+    "mini": {
+      "updates_gesendet": 2767,
+      "bytes_gesendet": 1141918,
+      "zeichen_getippt": 76952,
+      "loeschungen": 205,
+      "fehler": 0,
+      "verbindungen": 1,
+      "abgeleitet": {
+        "updates_je_minute": 46.1,
+        "bytes_je_update": 412.7,
+        "bytes_je_minute": 19032.0,
+        "bytes_je_zeichen": 14.8
+      }
+    }
+  },
+  "dienst_kennzahlen": {
+    "verbindungen": 2,
+    "abgewiesene_zugaenge": 0,
+    "abgelehnte_updates": 0,
+    "unbekannte_arten": 0,
+    "kennungsverstoesse": 0,
+    "gebremste_nachrichten": 0,
+    "updates": 5535,
+    "bytes_empfangen": 3292006,
+    "herkunft": {
+      "127.0.0.1": 2
+    }
+  }
+}

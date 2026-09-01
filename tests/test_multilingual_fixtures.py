@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -33,8 +34,12 @@ def test_multilingual_fixture_is_parseable_and_has_three_symbols(fixture, tmp_pa
         run = command + [str(path)]
     else:
         run = command + [str(path)]
-    env = None
+    env = os.environ.copy()
+    # Host TMPDIR may point at a removed volume directory.  Compilers need a
+    # writable temporary directory; keep all outputs inside pytest's fixture.
+    for name in ("TMPDIR", "TMP", "TEMP"):
+        env[name] = str(tmp_path)
     if fixture["language"] == "python":
-        env = {"PYTHONPYCACHEPREFIX": str(tmp_path / "pycache")}
+        env["PYTHONPYCACHEPREFIX"] = str(tmp_path / "pycache")
     result = subprocess.run(run, capture_output=True, text=True, env=env)
     assert result.returncode == 0, result.stderr

@@ -21,6 +21,7 @@ Alarm zu schlagen.
 from __future__ import annotations
 
 import sqlite3
+import os
 import sys
 from pathlib import Path
 
@@ -33,8 +34,8 @@ while not (_w / "schema.sql").exists() and _w != _w.parent:
 # Aufloeser statt selbst gebautem Namen -- siehe tests/test_testumgebung_nutzt_ort.py
 from haken.ort import DB
 
-if not DB.exists():
-    pytest.skip("kein Bestand vorhanden -- nichts zu pruefen",
+if os.environ.get("BRAINLEHR_RUN_LIVE") != "1" or not DB.exists():
+    pytest.skip("requires the explicitly selected live corpus",
                 allow_module_level=True)
 
 

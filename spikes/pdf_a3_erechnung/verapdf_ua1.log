@@ -1,0 +1,4 @@
+WARNING: Final field flavour in class org.verapdf.pdfa.validation.profiles.ValidationProfileImpl has been mutated reflectively by class com.sun.xml.bind.v2.runtime.reflect.Accessor$FieldReflection in unnamed module @2b80d80f (file:/opt/homebrew/Cellar/verapdf/1.30.2/libexec/bin/gui-1.30.0.jar)
+WARNING: Use --enable-final-field-mutation=ALL-UNNAMED to avoid a warning
+WARNING: Mutating final fields will be blocked in a future release unless final field mutation is enabled
+PASS /Volumes/daten/Begod2026/brainlehr/spikes/pdf_a3_erechnung/rechnung.pdf ua1

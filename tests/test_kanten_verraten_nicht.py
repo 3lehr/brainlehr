@@ -37,7 +37,14 @@ def _bestand(tmp_path, monkeypatch):
     import knowledge_mcp_server as kms
     db = tmp_path / "probe.db"
     monkeypatch.setattr(kms, "DB_PATH", db, raising=False)
+    # Partitions set BRAINLEHR_DB.  Set both supported names so this isolated
+    # fixture, rather than the partition database, remains the server source.
+    monkeypatch.setenv("BRAINLEHR_DB", str(db))
     monkeypatch.setenv("BEGOD_KNOWLEDGE_DB", str(db))
+    # The server imports haken.ort once.  A partition may have loaded it with
+    # its own DB already, so invalidate that location cache before reload.
+    sys.modules.pop("haken.ort", None)
+    sys.modules.pop("ort", None)
     import sqlite3
     c = sqlite3.connect(db)
     c.executescript((Path(__file__).resolve().parent.parent / "schema.sql").read_text())

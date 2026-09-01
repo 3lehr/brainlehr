@@ -33,7 +33,10 @@ def test_rang_laesst_sich_zurueckgeben(tmp_path, monkeypatch):
     """DIE PROBE: Ein Knoten mit Rang 1 wird zu einem Fakt ohne Rang."""
     import sqlite3, importlib
     db = tmp_path / "p.db"
+    monkeypatch.setenv("BRAINLEHR_DB", str(db))
     monkeypatch.setenv("BEGOD_KNOWLEDGE_DB", str(db))
+    sys.modules.pop("haken.ort", None)
+    sys.modules.pop("ort", None)
     c = sqlite3.connect(db)
     c.executescript((Path(__file__).resolve().parent.parent / "schema.sql").read_text())
     c.execute("""insert into knowledge_nodes
@@ -68,7 +71,10 @@ def test_rang_null_ohne_keine_norm_bleibt_abgewiesen(tmp_path, monkeypatch):
     Feld beseitigen."""
     import sqlite3, importlib
     db = tmp_path / "q.db"
+    monkeypatch.setenv("BRAINLEHR_DB", str(db))
     monkeypatch.setenv("BEGOD_KNOWLEDGE_DB", str(db))
+    sys.modules.pop("haken.ort", None)
+    sys.modules.pop("ort", None)
     c = sqlite3.connect(db)
     c.executescript((Path(__file__).resolve().parent.parent / "schema.sql").read_text())
     c.execute("""insert into knowledge_nodes
