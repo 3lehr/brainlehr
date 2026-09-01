@@ -69,6 +69,12 @@
    "waise": false
   },
   {
+   "id": "db_memory_store_db",
+   "text": "memory_store.db",
+   "form": "speicher",
+   "waise": false
+  },
+  {
    "id": "db_steuer_db",
    "text": "steuer.db",
    "form": "speicher",
@@ -157,6 +163,12 @@
    "text": "markusx25",
    "form": "kasten",
    "waise": false
+  },
+  {
+   "id": "mcp_kimi_cu",
+   "text": "MCP kimi-cu",
+   "form": "startweg",
+   "waise": true
   },
   {
    "id": "mcp_knowledge",
@@ -2683,6 +2695,18 @@
   {
    "von": "wpdrop",
    "nach": "db_knowledge_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "brainlehr",
+   "nach": "db_memory_store_db",
+   "text": "liegt",
+   "art": "gerichtet"
+  },
+  {
+   "von": "brainlehr_release",
+   "nach": "db_memory_store_db",
    "text": "liest",
    "art": "gestrichelt"
   },

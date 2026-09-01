@@ -1,16 +1,16 @@
 # Was brainlehr kann
 
-Erzeugt aus dem Quellcode am 2026-08-26T16:55:04+0200 (Stand `e56c13d5`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
+Erzeugt aus dem Quellcode am 2026-09-01T17:20:39+0200 (Stand `ca61c590`) von `tool/faehigkeitskarte.py`. **Nicht von Hand bearbeiten** — eine handgepflegte Liste ist nach zwei Sitzungen falsch und dann schlimmer als keine.
 
 ## Auf einen Blick
 
 | | |
 |---|---:|
-| Werkzeuge über MCP | 41 |
+| Werkzeuge über MCP | 45 |
 | Melder | 62, davon verdrahtet 24 |
 | Haken | 23, davon verdrahtet 13 |
-| Kernmodule | 141 |
-| Module mit Selbsttest | 149 von 226 |
+| Kernmodule | 162 |
+| Module mit Selbsttest | 149 von 247 |
 
 ## Werkzeuge — was ein Klient aufrufen kann
 
@@ -21,6 +21,7 @@ Das ist die Bedienoberfläche von brainlehr. Jede Zeile kommt aus der Werkzeugta
 | `annahme_entscheiden` | Eine Annahme bestaetigen oder widerlegen |
 | `annahme_erfassen` | Eine ANNAHME festhalten, solange sie noch als Annahme erkennbar ist -- nicht erst, wenn sie sich als falsch herausgestellt hat |
 | `annahme_liste` | Offene Annahmen auflisten, schlechtest belegt und aeltest zuerst |
+| `edit_batch_complete` | Queue one client-neutral completed-edit event |
 | `einrichtung_starten` | Erststart-Assistent (BDW-P11) |
 | `freigabe_setzen` | Decide, for ONE entry, who may see it: 'offen' (may leave the house), 'intern' (default -- stays here) or 'gesperrt' |
 | `katalog_holen` | Holt einen der von einrichtung_starten vorgeschlagenen Kataloge (bsi, nasa-llis, wcag) in ein lokales Verzeichnis -- Netzzugriff nur hier, nie ueber einrichtung_starten selbst |
@@ -47,12 +48,15 @@ Das ist die Bedienoberfläche von brainlehr. Jede Zeile kommt aus der Werkzeugta
 | `lesson_record` | Record a lesson learned |
 | `lesson_update` | Correct or delete a recorded lesson |
 | `project_actor_boundary` | Fail-closed local actor/project check |
+| `project_attach` | Idempotently attach a local Git project through project_ensure and record a revision-bound lifecycle witness |
 | `project_boundary` | Return one token-capped request boundary for plan/read/edit/build/test/commit |
 | `project_change` | After a verified commit, store one compact change receipt and compute the complete transitive chain of statically proven Python import consumers |
 | `project_commit_ack` | Append one signed local acknowledgement for the current staged tree |
 | `project_commit_gate` | Read-only check of the opt-in staged-tree gate |
 | `project_context` | Load task context progressively and token-efficiently |
+| `project_detach` | Detach only the active local project association |
 | `project_ensure` | Idempotently adopt or initialize a Git project for Brainlehr |
+| `project_runtime_evidence` | Register one bounded, tree-hash-bound result from an available manifest evidence tool |
 | `prompt_invarianz_planen` | Waehlt off, light oder strong fuer eine Bewertung, Rangfolge oder Entscheidung. |
 | `prompt_invarianz_pruefen` | Prueft evidenzbelegte Vergleichslaeufe auf Stabilitaet und Reihenfolgeeffekte. |
 | `session_agent_reuse` | Recommend reuse, refresh-delta or a fresh agent from compact technical checkpoint state |
@@ -166,11 +170,16 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/abloesung.py` | Eine Abloesung ist selbst ein Wissensgegenstand | ja |
 | `kern/abrufguete.py` | Abrufguete auf dem Pruefkorpus (runs/pruefkorpus.jsonl, 45 Faelle) -- | ja |
 | `kern/actor_project_boundary.py` | Fail-closed local actor/project checks | — |
+| `kern/ai_comment_policy.py` | Fail-closed policy for AI-authored comments (P99/P104) | — |
+| `kern/ai_edit_gate.py` | Opt-in, fail-closed gate for AI-owned staged edits (P99/P104) | — |
+| `kern/analyzer_attestation.py` | Small, offline analyzer trust envelope (P95/P98) | — |
 | `kern/analyzer_cache.py` | Signed, revision-bound analyzer-cache envelope; no raw tool output | — |
 | `kern/analyzer_registry.py` | Optional local analyzer registry: explicit commands, timeout and no fallback | — |
+| `kern/anchor_registry.py` | Small, immutable registry for validated, lazy lineage anchors | — |
 | `kern/anfrage_erweiterung.py` | anfrage_erweiterung.py | ja |
 | `kern/ankerverfahren.py` | Ankerverfahren | ja |
 | `kern/anmeldung.py` | Einen Teilnehmer anmelden | ja |
+| `kern/architecture_health.py` | Conservative architecture-health evidence; static silence is never proof | — |
 | `kern/audit_segment.py` | P70: explicitly bounded healthy audit segment after unresolved legacy | — |
 | `kern/auditanker.py` | Auditanker | ja |
 | `kern/aufbewahrung.py` | Aufbewahrungsfristen je Datenklasse | ja |
@@ -179,6 +188,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/ausweis.py` | ausweis.py | ja |
 | `kern/baustein.py` | Der Baustein-Vertrag | ja |
 | `kern/bauvermeidung.py` | bauvermeidung.py | ja |
+| `kern/behavioral_oracle.py` | Small, deterministic behavioral oracle for analyzed code paths | — |
 | `kern/belegsprache.py` | Eine Frage, eine Wortliste: woran erkennt man einen Beleg im Text? | ja |
 | `kern/belegvertrag.py` | Belegvertrag | — |
 | `kern/bereinigung.py` | Was das Haus verlaesst, wird angesehen | ja |
@@ -186,12 +196,14 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/betriebsprofil.py` | Betriebsprofil | ja |
 | `kern/build_embeddings.py` | build_embeddings.py | — |
 | `kern/build_node_index.py` |  | ja |
+| `kern/client_lifecycle.py` | Small deterministic contracts for client and project lifecycle edges | — |
 | `kern/code_retrieval.py` | Revision-bound routing and metadata for the optional CodeRank code channel | — |
 | `kern/codekanten.py` | Welche Datei betrifft diese Lehre | ja |
 | `kern/codeql_policy.py` | Explicit eligibility gate for optional CodeQL SARIF evidence | — |
 | `kern/codestand.py` | Ermittelt den Codestand (Commit, Zweig, schmutzig) zur LAUFZEIT fuer | — |
 | `kern/connector_register.py` | connector_register.py | — |
 | `kern/coverage_provenance.py` | Conservative coverage provenance for code evidence | — |
+| `kern/cross_repo_impact.py` | Explicit, local cross-repository impact metadata (P80) | — |
 | `kern/dependency_evidence.py` | Small, offline dependency evidence reader | — |
 | `kern/designtokens_latex.py` | LaTeX-Erzeuger fuer den Gestaltungsvorrat (ADR-015) | ja |
 | `kern/doctor.py` | doctor | — |
@@ -223,6 +235,9 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/herkunft_belegung.py` | herkunft_belegung.py | ja |
 | `kern/herkunft_normentscheider.py` | Wer hat entschieden | ja |
 | `kern/impact_dashboard.py` | Local, read-only revision dashboard for canonical impact graphs | — |
+| `kern/incident_lifecycle.py` | Append-only, hash-only incident lifecycle fixture (P85) | — |
+| `kern/intent_outcome.py` | Small, deterministic Intent -> Journey -> Evidence -> Outcome trace | — |
+| `kern/journey_evidence.py` | Bounded executable-journey evidence; automation and human comprehension differ | — |
 | `kern/kanalguete_messung.py` | Messwerkzeug fuer docs/PLAN_KANALGUETE_2026-08-15.md | — |
 | `kern/kanarienvogel.py` | kanarienvogel.py | ja |
 | `kern/kanten_aus_bedeutung.py` | Kanten aus Bedeutung: knowledge_relations aus vorhandenen Embeddings ziehen | — |
@@ -235,6 +250,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/lehrenpaket.py` | lehrenpaket.py | ja |
 | `kern/lesson_recorder.py` |  | — |
 | `kern/liefermenge.py` | Liefermenge des Abrufs (Auftrag 2026-08-09, Aufgabe 1) | ja |
+| `kern/lineage_dag.py` | Small immutable, append-only lineage DAG (P101) | — |
 | `kern/meisterschaft.py` | Titelverteidiger-Mechanik fuer die Abrufkette (Betreiber-Entwurf 2026-08-08) | ja |
 | `kern/messlauf_abrufguete.py` | Misst knowledge_recall_hook.query() gegen den Pruefkorpus (45 Faelle | ja |
 | `kern/messparameter.py` | Parameterblock fuer Ergebnisdateien unter runs/ (Auftrag 2026-08-07 | ja |
@@ -265,14 +281,20 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/pruefkorpus_v3.py` | Pruefkorpus V3 | ja |
 | `kern/pruefspruch.py` | Ein Prüfspruch gehört dem Prüfer, nicht dem Geprüften | ja |
 | `kern/rangfolge.py` | rangfolge.py | ja |
+| `kern/rationale_index_lifecycle.py` | Immutable rationale references with explicit binding and lifecycle gaps | — |
 | `kern/raum_daten.py` | raum_daten.py | ja |
 | `kern/regelpaket.py` | regelpaket.py | ja |
 | `kern/reifegrad.py` | reifegrad.py | ja |
 | `kern/relation_endpoints.py` | P69 typed endpoint validation and one explicit legacy-table migration | — |
+| `kern/release_distribution_provenance.py` | Hash-only local/private/public release distribution evidence (P84) | — |
 | `kern/release_identity.py` | Offline, deterministic release identity evidence | — |
 | `kern/relevanzlage.py` | Sagen, wie belastbar ein Suchergebnis ist | — |
+| `kern/requirement_feasibility.py` | Deterministic feasibility checks for measurable requirements | — |
+| `kern/review_merge_provenance.py` | Small, offline review/merge provenance contract (P83) | — |
 | `kern/risikoeinstufung.py` | risikoeinstufung.py | — |
 | `kern/rueckwirkung.py` | Gemeinsame Bauform fuer Rueckwirkungs-Zaehler | ja |
+| `kern/runtime_cardinality.py` | Bounded runtime witnesses for effect cardinality and dynamic dispatch | — |
+| `kern/runtime_config_evidence.py` | Hash-only runtime configuration evidence (P82) | — |
 | `kern/satz.py` | Der Satzweg: aus einem Dokument (`kern/dokument.py`) wird LaTeX-Quelle | ja |
 | `kern/satzwache.py` | Die Ableitungswache: prueft das gesetzte Blatt GEGEN die Baustein-Quelle | — |
 | `kern/schema_nachzug.py` | Fehlende Spalten aus schema.sql nachziehen | ja |
@@ -282,6 +304,7 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/session_checkpoint.py` | Temporärer Sitzungszustand und deterministische Chatwechsel-Empfehlung | — |
 | `kern/sicherung_s12.py` | Urfassung sichern, bevor S12 einen Knotentext ueberschreibt | ja |
 | `kern/sicherungen.py` | Aufbewahrungsregel fuer die automatischen Datenbanksicherungen | ja |
+| `kern/slo_evidence.py` | Offline, deterministic SLO evidence (P94) | — |
 | `kern/sortierregel.py` | Welche Lehre gehoert in den Codepfad, welche bleibt im Nachschlagewerk? | ja |
 | `kern/speicher.py` | Eine Tuer zur Wissensdatenbank statt hundert | ja |
 | `kern/spracherkennung.py` | Sprache eines Textes erkennen | — |
@@ -300,6 +323,8 @@ Diese Module bestimmen, was ohne Zutun in den Kontext gelangt.
 | `kern/wirkung.py` |  | — |
 | `kern/wissensnutzen.py` | Misst, was brainlehr BEITRAEGT | ja |
 | `kern/wissensnutzen_blind.py` | Wie wissensnutzen.py, aber Abruf entsteht aus der AUFGABE, nicht aus der | ja |
+| `kern/workflow_impact.py` | Deterministic, revision-bound workflow impact from local JSON metadata (P97) | — |
+| `kern/worktree_lease.py` | Small cross-process leases for Git worktrees (P92) | — |
 | `kern/zahlenbezug.py` | zahlenbezug.py | ja |
 | `kern/zeitfenster.py` | zeitfenster.py | ja |
 | `kern/zeitmarke.py` | Die eine Stelle, an der ein Zeitstempel entsteht | ja |

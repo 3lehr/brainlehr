@@ -27,6 +27,36 @@
    "waise": false
   },
   {
+   "id": "debug_quelle",
+   "text": "debug_quelle",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "debug_search",
+   "text": "debug_search",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fix_db_fields",
+   "text": "fix_db_fields",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fix_db_lessons",
+   "text": "fix_db_lessons",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "fix_db_nodes",
+   "text": "fix_db_nodes",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "fremdclient",
    "text": "fremdclient",
    "form": "kasten",
@@ -161,6 +191,18 @@
    "art": "gerichtet"
   },
   {
+   "von": "debug_quelle",
+   "nach": "knowledge_mcp_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "debug_search",
+   "nach": "knowledge_mcp_server",
+   "text": "1",
+   "art": "gerichtet"
+  },
+  {
    "von": "haken",
    "nach": "knowledge_mcp_server",
    "text": "7",
@@ -187,7 +229,7 @@
   {
    "von": "knowledge_mcp_server",
    "nach": "kern",
-   "text": "2",
+   "text": "3",
    "art": "gerichtet"
   },
   {
@@ -289,19 +331,25 @@
   {
    "von": "tests",
    "nach": "kern",
-   "text": "51",
+   "text": "92",
    "art": "gerichtet"
   },
   {
    "von": "tests",
    "nach": "knowledge_mcp_server",
-   "text": "113",
+   "text": "116",
    "art": "gerichtet"
   },
   {
    "von": "tests",
    "nach": "melder",
    "text": "1",
+   "art": "gerichtet"
+  },
+  {
+   "von": "tests",
+   "nach": "messungen",
+   "text": "19",
    "art": "gerichtet"
   },
   {
@@ -319,7 +367,7 @@
   {
    "von": "tool",
    "nach": "kern",
-   "text": "1",
+   "text": "3",
    "art": "gerichtet"
   },
   {

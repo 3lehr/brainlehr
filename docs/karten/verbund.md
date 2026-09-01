@@ -431,6 +431,9 @@ graph LR
   snake -.->|liest| db_knowledge_db
   steueroase_asien -.->|liest| db_knowledge_db
   wpdrop -.->|liest| db_knowledge_db
+  db_memory_store_db[("memory_store.db")]
+  brainlehr -->|liegt| db_memory_store_db
+  brainlehr_release -.->|liest| db_memory_store_db
   db_steuer_db[("steuer.db")]
   openlehr_stale_2026_07_22 -->|liegt| db_steuer_db
   openlehr_einzelunternehmer -.->|liest| db_steuer_db
@@ -438,6 +441,8 @@ graph LR
   db_symbols_db[("symbols.db")]
   brainlehr -->|liegt| db_symbols_db
   hub -.->|liest| db_symbols_db
+  mcp_kimi_cu>"MCP kimi-cu"]
+  class mcp_kimi_cu waise
   mcp_knowledge>"MCP knowledge"]
   mcp_knowledge -->|startet| brainlehr
   mcp_knowledge_probe>"MCP knowledge-probe"]

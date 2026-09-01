@@ -8,6 +8,11 @@ graph LR
   aufsaetze["aufsaetze"]
   berichte["berichte"]
   brainlehr["brainlehr"]
+  debug_quelle["debug_quelle"]
+  debug_search["debug_search"]
+  fix_db_fields["fix_db_fields"]
+  fix_db_lessons["fix_db_lessons"]
+  fix_db_nodes["fix_db_nodes"]
   fremdclient["fremdclient"]
   haken["haken"]
   integrations["integrations"]
@@ -30,11 +35,13 @@ graph LR
   berichte -->|2| kern
   berichte -->|1| knowledge_mcp_server
   brainlehr -->|1| knowledge_mcp_server
+  debug_quelle -->|1| knowledge_mcp_server
+  debug_search -->|1| knowledge_mcp_server
   haken -->|7| knowledge_mcp_server
   haken -->|1| melder
   kern -->|6| haken
   kern -->|29| knowledge_mcp_server
-  knowledge_mcp_server -->|2| kern
+  knowledge_mcp_server -->|3| kern
   knowledge_mcp_server -->|1| sicherungen
   melder -->|2| haken
   melder -->|6| knowledge_mcp_server
@@ -51,13 +58,14 @@ graph LR
   tests -->|2| berichte
   tests -->|2| brainlehr
   tests -->|6| haken
-  tests -->|51| kern
-  tests -->|113| knowledge_mcp_server
+  tests -->|92| kern
+  tests -->|116| knowledge_mcp_server
   tests -->|1| melder
+  tests -->|19| messungen
   tests -->|2| sicherungen
   tests -->|1| tool
-  tool -->|1| kern
+  tool -->|3| kern
   tool -->|1| knowledge_mcp_server
 ```
 
-Ein Kasten ist ein Verzeichnis, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 22 Module, 32 Verbindungen.
+Ein Kasten ist ein Verzeichnis, die Zahl an der Kante sagt, wie viele Dateien diesen Weg gehen. 27 Module, 35 Verbindungen.
