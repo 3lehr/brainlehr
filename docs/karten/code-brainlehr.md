@@ -59,9 +59,9 @@ graph LR
   tests -->|2| brainlehr
   tests -->|6| haken
   tests -->|92| kern
-  tests -->|116| knowledge_mcp_server
+  tests -->|118| knowledge_mcp_server
   tests -->|1| melder
-  tests -->|19| messungen
+  tests -->|23| messungen
   tests -->|2| sicherungen
   tests -->|1| tool
   tool -->|3| kern
