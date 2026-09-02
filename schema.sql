@@ -386,8 +386,6 @@ CREATE TABLE IF NOT EXISTS knowledge_nodes (
 
 CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
     title, summary, content, path, tags, project_id,
-    content='knowledge_nodes',
-    content_rowid='rowid',
     tokenize="trigram case_sensitive 0"
 );
 
@@ -402,7 +400,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
 -- tests/test_knowledge_hybrid_search.py::test_fold_de_matches_sql_fold.
 -- Trigger: FTS bei INSERT/UPDATE/DELETE synchron halten
 CREATE TRIGGER IF NOT EXISTS knowledge_ai AFTER INSERT ON knowledge_nodes
-WHEN new.sensibel = 0 BEGIN
+WHEN new.sensibel = 0 AND new.gattung != 'nachschlagewerk' BEGIN
     INSERT INTO knowledge_fts(rowid, title, summary, content, path, tags, project_id)
     VALUES (new.rowid,
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.title,
@@ -420,21 +418,8 @@ WHEN new.sensibel = 0 BEGIN
 END;
 
 CREATE TRIGGER IF NOT EXISTS knowledge_ad AFTER DELETE ON knowledge_nodes
-WHEN old.sensibel = 0 BEGIN
-    INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content, path, tags, project_id)
-    VALUES ('delete', old.rowid,
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.title,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.summary,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.content,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.path,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.tags,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.project_id,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')));
+WHEN old.sensibel = 0 AND old.gattung != 'nachschlagewerk' BEGIN
+    DELETE FROM knowledge_fts WHERE rowid = old.rowid;
 END;
 
 -- UPDATE bleibt EIN Trigger -- die Bedingung sitzt am WHERE, nicht am WHEN
@@ -459,21 +444,7 @@ END;
 -- nicht (new = 1) -- der Eintrag verschwindet, ohne dass ein neuer entsteht.
 CREATE TRIGGER IF NOT EXISTS knowledge_au AFTER UPDATE ON knowledge_nodes BEGIN
 
-    INSERT INTO knowledge_fts(knowledge_fts, rowid, title, summary, content, path, tags, project_id)
-    SELECT 'delete', old.rowid,
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.title,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.summary,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.content,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.path,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.tags,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
-        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(old.project_id,
-            'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss'))
-    WHERE old.sensibel = 0;
+    DELETE FROM knowledge_fts WHERE rowid = old.rowid;
 
     INSERT INTO knowledge_fts(rowid, title, summary, content, path, tags, project_id)
     SELECT new.rowid,
@@ -489,7 +460,7 @@ CREATE TRIGGER IF NOT EXISTS knowledge_au AFTER UPDATE ON knowledge_nodes BEGIN
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss')),
         LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(new.project_id,
             'Ä','ae'),'Ö','oe'),'Ü','ue'),'ä','ae'),'ö','oe'),'ü','ue'),'ß','ss'))
-    WHERE new.sensibel = 0;
+    WHERE new.sensibel = 0 AND new.gattung != 'nachschlagewerk';
 END;
 
 -- Zusicherungen an knowledge_nodes DIREKT in der Datenbank (Auftrag

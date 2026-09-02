@@ -7443,9 +7443,9 @@ TOOLS = {
                                             "description": "REQUIRED alongside norm_entscheidung: free-text reason for the decision (see tool description)."},
                 "betreiber_weisung": {"type": "string",
                                         "description": "Exact operator quote for a rank-1/2 instruction; at least 10 characters inside German opening and straight closing quotes."},
-                "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
+                "occasion": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
                            "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."},
-                "gattung": {"type": "string", "enum": list(ALLOWED_GATTUNG),
+                "kind": {"type": "string", "enum": list(ALLOWED_GATTUNG),
                             "default": "arbeitsbestand",
                             "description": "Kind of entry: 'arbeitsbestand' (working set, the default) or 'nachschlagewerk' (reference corpus -- may sit in the store as a distractor but is never the TARGET of a test case, see node 096669de). Set this for imported third-party material, otherwise it dilutes retrieval."},
                 "kreis": {"type": "string", "default": "",
@@ -7464,8 +7464,8 @@ TOOLS = {
             norm_entscheidung=_require(args, "norm_entscheidung", "keine_norm/norm_befristet/norm_unbefristet -- ist dieser Knoten eine Norm?"),
             norm_entschieden_grund=_require(args, "norm_entschieden_grund", "Begruendung fuer die Norm-Entscheidung -- wer entscheidet und warum?"),
             betreiber_weisung=args.get("betreiber_weisung"),
-            anlass=args.get("anlass", "unbekannt"), abgeleitet_von=args.get("abgeleitet_von"),
-            gattung=args.get("gattung"), kreis=args.get("kreis", ""),
+            anlass=args.get("occasion", "unbekannt"), abgeleitet_von=args.get("abgeleitet_von"),
+            gattung=args.get("kind"), kreis=args.get("kreis", ""),
             **_identity_args(args)
         )
     },
@@ -7494,7 +7494,7 @@ TOOLS = {
                                             "description": "Required if norm_entscheidung is given: free-text reason."},
                 "betreiber_weisung": {"type": "string",
                                         "description": "Exact operator quote for a rank-1/2 instruction; at least 10 characters inside German opening and straight closing quotes."},
-                "gattung": {"type": "string", "enum": list(ALLOWED_GATTUNG),
+                "kind": {"type": "string", "enum": list(ALLOWED_GATTUNG),
                             "description": "Reclassify. Only changed when given -- omitting it leaves the current kind untouched."},
                 **IDENTITY_PROPERTIES,
             },
@@ -7507,7 +7507,7 @@ TOOLS = {
             norm_entscheidung=args.get("norm_entscheidung"),
             norm_entschieden_grund=args.get("norm_entschieden_grund"),
             betreiber_weisung=args.get("betreiber_weisung"),
-            gattung=args.get("gattung"),
+            gattung=args.get("kind"),
             **_identity_args(args)
         )
     },
@@ -7692,7 +7692,7 @@ TOOLS = {
                 "projects": {"type": "array", "items": {"type": "string"}},
                 "node_path": {"type": "string", "description": "Bezug auf einen Wissensknoten"},
                 "notizen": {"type": "string"},
-                "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt"},
+                "occasion": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt"},
                 **IDENTITY_PROPERTIES,
             },
             "required": ["annahme", "kosten_wenn_falsch"]
@@ -7702,7 +7702,7 @@ TOOLS = {
             _require(args, "kosten_wenn_falsch", "was ein Irrtum kostet -- ohne diesen Satz kein Eintrag."),
             args.get("belegrang", "geraten"), args.get("beleg", ""), args.get("kategorie", ""),
             args.get("projects"), args.get("node_path", ""), args.get("notizen", ""),
-            args.get("anlass", "unbekannt"), **_identity_args(args)
+            args.get("occasion", "unbekannt"), **_identity_args(args)
         )
     },
     "annahme_entscheiden": {
@@ -7793,11 +7793,11 @@ TOOLS = {
                 "projects": {"type": "array", "items": {"type": "string"}, "description": "Affected projects"},
                 "node_path": {"type": "string", "description": "Related knowledge node path"},
                 "same_as": {"type": "string", "description": "ID of an existing lesson this is a repeat of, e.g. 'L-6e48a9'"},
-                "anlass": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
+                "occasion": {"type": "string", "enum": sorted(ALLOWED_ANLASS), "default": "unbekannt",
                            "description": "What triggered this entry -- selbst/betreiber self-reported, hook/skript objective in principle (see tool description). Default 'unbekannt'."},
-                "beinahefehler": {"type": "boolean", "default": False,
+                "near_miss": {"type": "boolean", "default": False,
                                   "description": "Near miss: caught and corrected before any damage. Requires bemerkt_woran."},
-                "bemerkt_woran": {"type": "string", "enum": sorted(ALLOWED_BEMERKT_WORAN),
+                "caught_by": {"type": "string", "enum": sorted(ALLOWED_BEMERKT_WORAN),
                                   "description": "What caught the near miss -- zahl (a number/output did not match expectation, no mechanism involved), test, waechter (hook/trigger/lint), gegenprobe (deliberate counter-check), wissen (a recalled lesson/node), betreiber (a human said so), zufall (noticed by chance while reading something else). Mandatory when beinahefehler=true."},
                 "kreis": {"type": "string", "default": "",
                           "description": "Optional: restrict this lesson to one circle of people you belong to (BDW-E22). Empty (default) means everyone in your tenant. Set it AT CREATION."},
@@ -7971,29 +7971,29 @@ TOOLS = {
                        "eigenen Materials, Erreichbarkeit des Einbettungsdienstes und welche "
                        "Kataloge mitsollen -- und aendert nichts. Gegen einen LEEREN Bestand darf "
                        "er mit Antworten sofort durchlaufen; auf einem GEWACHSENEN oder bereits "
-                       "eingerichteten Bestand aendert er ohne bestaetigt=true NICHTS und sagt das. "
+                       "eingerichteten Bestand aendert er ohne confirmed=true NICHTS und sagt das. "
                        "Kataloge werden als Gattung 'nachschlagewerk' eingelesen und verduennen die "
                        "eigene Trefferquote deshalb nicht.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "profil": {"type": "string", "enum": ["einzelplatz", "unternehmen"],
+                "profile": {"type": "string", "enum": ["einzelplatz", "unternehmen"],
                             "description": "Betriebsprofil; einzelplatz ist der Auslieferungszustand"},
-                "mandant": {"type": "string",
-                             "description": "nur fuer profil=unternehmen: der benannte Mandant, auf den der Bestand wandert"},
-                "sprache": {"type": "string", "enum": ["de", "en"],
+                "tenant": {"type": "string",
+                             "description": "nur fuer profile=unternehmen: der benannte Mandant, auf den der Bestand wandert"},
+                "language": {"type": "string", "enum": ["de", "en"],
                              "description": "Sprache des eigenen Materials -- wird ausgezeichnet, nie uebersetzt"},
-                "kataloge": {"type": "array", "items": {"type": "string"},
+                "catalogs": {"type": "array", "items": {"type": "string"},
                               "description": "Namen der einzulesenden Nachschlagewerke, z.B. ['bsi', 'wcag']"},
-                "bestaetigt": {"type": "boolean",
+                "confirmed": {"type": "boolean",
                                 "description": "true = Einrichtung auch ueber einen bestehenden Bestand fahren (ueberschreibt Profil und Sprache)"},
                 **IDENTITY_PROPERTIES,
             }
         },
         "handler": lambda args: einrichtung.durchlaufen(
-            profil=args.get("profil"), sprache=args.get("sprache"),
-            kataloge=args.get("kataloge") or (), mandant=args.get("mandant"),
-            bestaetigt=bool(args.get("bestaetigt"))),
+            profil=args.get("profile"), sprache=args.get("language"),
+            kataloge=args.get("catalogs") or (), mandant=args.get("tenant"),
+            bestaetigt=bool(args.get("confirmed"))),
     },
     "katalog_holen": {
         "description": "Holt einen der von einrichtung_starten vorgeschlagenen Kataloge "

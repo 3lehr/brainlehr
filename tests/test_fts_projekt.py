@@ -116,14 +116,19 @@ def test_every_trigger_writes_every_fts_column(tmp_path):
             (trigger_name,),
         ).fetchone()[0]
         column_lists = re.findall(r"INSERT INTO knowledge_fts\(([^)]*)\)", sql)
-        assert column_lists, f"{trigger_name}: kein INSERT INTO knowledge_fts(...) gefunden"
-        for raw in column_lists:
-            cols = [c.strip() for c in raw.split(",")]
-            cols = [c for c in cols if c not in ("rowid", "knowledge_fts")]
-            assert len(cols) == len(fts_cols), (
-                f"{trigger_name}: schreibt {len(cols)} Spalten ({cols}), "
-                f"knowledge_fts hat {len(fts_cols)} ({fts_cols})"
+        if trigger_name == "knowledge_ad":
+            assert "DELETE FROM knowledge_fts" in sql, (
+                f"{trigger_name}: muss DELETE FROM knowledge_fts enthalten"
             )
+        else:
+            assert column_lists, f"{trigger_name}: kein INSERT INTO knowledge_fts(...) gefunden"
+            for raw in column_lists:
+                cols = [c.strip() for c in raw.split(",")]
+                cols = [c for c in cols if c not in ("rowid", "knowledge_fts")]
+                assert len(cols) == len(fts_cols), (
+                    f"{trigger_name}: schreibt {len(cols)} Spalten ({cols}), "
+                    f"knowledge_fts hat {len(fts_cols)} ({fts_cols})"
+                )
 
 
 if __name__ == "__main__":

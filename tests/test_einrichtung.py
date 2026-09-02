@@ -300,7 +300,7 @@ def test_werkzeug_ist_angemeldet():
     assert "einrichtung_starten" in kms.TOOLS
     spec = kms.TOOLS["einrichtung_starten"]
     schema = spec["inputSchema"]["properties"]
-    assert {"profil", "sprache", "kataloge", "bestaetigt"} <= set(schema)
+    assert {"profile", "language", "catalogs", "confirmed"} <= set(schema)
 
 
 def test_werkzeug_ohne_argumente_fragt_nur(leer, monkeypatch):
@@ -309,3 +309,47 @@ def test_werkzeug_ohne_argumente_fragt_nur(leer, monkeypatch):
     assert ergebnis["geaendert"] is False
     assert ergebnis["fragen"], "ohne Antworten muss das Werkzeug fragen"
     assert json.dumps(ergebnis)  # muss serialisierbar bleiben (MCP-Antwort)
+
+
+# --- BDW-P11-AC2: Katalogimport senkt Trefferquote nicht ------------------
+
+def test_katalogimport_senkt_trefferquote_nicht(leer, monkeypatch):
+    """BDW-P11-AC2. Ein eingelesener Katalog steht als nachschlagewerk und
+    darf die Abrufguete fuer den Arbeitsbestand nicht verschlechtern.
+    Der gemessene Befund war 14/35 -> 13/35: die Gattung wirkt am Filter,
+    nicht am Index; knowledge_fts nimmt die Zeilen gattungsblind auf und
+    bm25 ist korpusrelativ. Der Fix: nachschlagewerk darf nicht in
+    knowledge_fts landen.
+    """
+    import knowledge_mcp_server as srv
+    monkeypatch.setattr(srv, "DB_PATH", leer)
+    # Einrichtung MIT Katalog
+    einrichtung.durchlaufen(profil="einzelplatz", sprache="de",
+                            kataloge=("wcag",), db=leer)
+
+    # Ein Arbeitsbestand-Knoten, der eindeutig auffindbar sein muss
+    with speicher.schreiben(leer) as conn:
+        conn.execute(_BESTANDSKNOTEN, ("probe", "/probe",
+                                       "Kalibrierbremse am Messlauf", "Probe"))
+
+    with speicher.lesen(leer) as conn:
+        # Der Knoten muss ueber FTS gefunden werden
+        treffer = conn.execute(
+            "SELECT n.path FROM knowledge_fts f JOIN knowledge_nodes n "
+            "ON n.rowid = f.rowid WHERE knowledge_fts MATCH 'kalibrierbremse'"
+        ).fetchall()
+    assert [r["path"] for r in treffer] == ["/probe"], (
+        "Arbeitsbestand-Knoten nach Katalogimport nicht auffindbar"
+    )
+
+    # Kritischer: nachschlagewerk-Eintraege duerfen nicht in knowledge_fts sein
+    with speicher.lesen(leer) as conn:
+        katalog_in_fts = conn.execute(
+            "SELECT COUNT(*) FROM knowledge_fts f "
+            "JOIN knowledge_nodes n ON n.rowid = f.rowid "
+            "WHERE n.gattung = 'nachschlagewerk'"
+        ).fetchone()[0]
+    assert katalog_in_fts == 0, (
+        f"{katalog_in_fts} Katalog-Eintraege in knowledge_fts -- "
+        "das verfaelscht die BM25-Scores fuer den Arbeitsbestand"
+    )
