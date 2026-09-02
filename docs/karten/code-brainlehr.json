@@ -27,14 +27,44 @@
    "waise": false
   },
   {
+   "id": "build_aktion_korpus",
+   "text": "build_aktion_korpus",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "debug_all",
+   "text": "debug_all",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "debug_korpus",
+   "text": "debug_korpus",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "debug_quelle",
    "text": "debug_quelle",
    "form": "kasten",
    "waise": false
   },
   {
+   "id": "debug_sample",
+   "text": "debug_sample",
+   "form": "kasten",
+   "waise": false
+  },
+  {
    "id": "debug_search",
    "text": "debug_search",
+   "form": "kasten",
+   "waise": false
+  },
+  {
+   "id": "debug_show",
+   "text": "debug_show",
    "form": "kasten",
    "waise": false
   },
@@ -259,7 +289,7 @@
   {
    "von": "messungen",
    "nach": "knowledge_mcp_server",
-   "text": "20",
+   "text": "21",
    "art": "gerichtet"
   },
   {
