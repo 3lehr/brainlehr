@@ -13,9 +13,9 @@ DIE VIER GATEARTEN:
   3. ABSTENTION    -- ziellose Anfrage, System schweigt (Gegenstueck zu 2,
                        nicht dasselbe: gemessen wird der Anteil der KORREKTEN
                        Enthaltungen, nicht die Fehlerquote).
-  4. AKTION        -- NICHT GEMESSEN. Siehe Begruendung im Ergebnis unter
-                       gatearten.aktion. Eine erfundene vierte Zahl waere
-                       schlimmer als eine fehlende Gateart (Auftrag, woertlich).
+  4. AKTION        -- Abruf liefert handlungsrelevante Information?
+                       Gemessen ueber runs/pruefkorpus_aktion.jsonl (12 Faelle
+                       mit expected_action + action_probe). Schwelle 0.80.
 
 KORPUS: runs/pruefkorpus.jsonl, 35 Faelle mit target_id (category
 lesson/fact/norm, accepted=true) fuer Gate 1, dieselbe Teilmenge wie
@@ -27,6 +27,12 @@ Astronomie/Orbitalmechanik, Gartenbau, Netzwerktechnik, Git) -- Themen, zu
 denen dieser Bestand (Code/Rechtslage/Steuer/Lehre dieses Hauses) keine
 Antwort enthaelt. Diese 10 lagen VOR diesem Auftrag schon im Korpus (category
 "negative", nicht neu angelegt).
+
+AKTIONS-KORPUS: runs/pruefkorpus_aktion.jsonl, 12 Faelle (8 lessons + 4 norms)
+mit 'expected_action' (menschlich lesbare Handlungsanweisung) und
+'action_probe' (Text, der im abgerufenen Ziel vorkommen muss). Auswahl:
+Faelle, bei denen das abgerufene Wissen eine konkrete, von generischem
+Verhalten abweichende Handlung nahelegt.
 
 ZIELABGLEICH (L-0e0ab6, wortwoertlich aus der Vorlage uebernommen):
 target_kind=="node" -> Vergleich gegen result["path"], NICHT result["id"].
@@ -48,7 +54,7 @@ heutige Bestand diesen Wert haelt, mit den 10 pruefkorpus-eigenen Faellen
 statt den 40 der Ursprungsmessung (andere Stichprobe, siehe Grenze).
 
 POSITIVKONTROLLE (eine, fuer alle drei gemessenen Gatearten gemeinsam
-tragfaehig): Anfrage = woertlicher Textausschnitt aus dem ZIEL selbst
+tragfaehig): Anfrage = woertlicher Textausschnitt aus dem ZIEL SELBST
 (Knotentitel per knowledge_read, oder target_label bei Lehren) -- der Treffer
 liegt damit per Konstruktion vor. Muss Rang 1 UND bestandslage.lage=="passend"
 liefern. Bestehet sie nicht, ist "passend" als Zustand nicht erreichbar (der
@@ -71,6 +77,7 @@ import knowledge_mcp_server as kms  # noqa: E402 -- der Produktivweg selbst
 import relevanzlage  # noqa: E402 -- nur gelesen: STARK_AB/ABSTAND_AB, hier zitiert
 
 KORPUS = _w / "runs" / "pruefkorpus.jsonl"
+AKTION_KORPUS = _w / "runs" / "pruefkorpus_aktion.jsonl"
 MAX_RESULTS = 50  # deckt top50 ab, siehe anfrageumschrift_produktivweg.py
 
 # Aus kern/relevanzlage.py-Docstring, Messung 2026-08-16 (cc458fb3): bei
@@ -79,6 +86,7 @@ MAX_RESULTS = 50  # deckt top50 ab, siehe anfrageumschrift_produktivweg.py
 # Schwelle -- dieselbe Zahl, dieselbe Quelle wie der Filtermechanismus selbst.
 SCHWELLE_FALSCHMELDUNG = 0.20  # bestanden, wenn NICHT ueberschritten
 SCHWELLE_ABSTENTION = 0.80  # bestanden, wenn NICHT unterschritten
+SCHWELLE_AKTION = 0.80  # bestanden, wenn NICHT unterschritten
 # Fuer Gate 1 gibt es KEINE dokumentierte Zielzahl im Bestand (Auftrag:
 # "Schwelle offen, heutiger Wert X" statt geschoenter Wert) -- siehe Ergebnis.
 
@@ -100,6 +108,20 @@ def lade_faelle(korpus: Path) -> tuple[list[dict], list[dict]]:
             elif d.get("category") == "negative":
                 ohne_ziel.append(d)
     return mit_ziel, ohne_ziel
+
+
+def lade_aktionsfaelle(korpus: Path) -> list[dict]:
+    """Lade Faelle mit 'expected_action' fuer Gate 4 (Aktion)."""
+    faelle = []
+    with korpus.open(encoding="utf-8") as f:
+        for zeile in f:
+            zeile = zeile.strip()
+            if not zeile:
+                continue
+            d = json.loads(zeile)
+            if d.get("accepted", True) and d.get("expected_action"):
+                faelle.append(d)
+    return faelle
 
 
 def rang_des_ziels(results: list[dict], target_kind: str, target_id: str) -> int | None:
@@ -152,6 +174,70 @@ def messe_falschmeldung_und_abstention(faelle: list[dict]) -> tuple[dict, dict]:
     return fm, abst
 
 
+def ziel_ist_handlungsrelevant(fall: dict, results: list[dict]) -> bool:
+    """Prueft, ob der Abruf das Ziel liefert UND das Ziel die erwartete Aktion
+    enthaelt oder unterstuetzt."""
+    target_kind = fall["target_kind"]
+    target_id = fall["target_id"]
+    probe = fall.get("action_probe", "").lower()
+
+    # Ziel muss in den Abrufergebnissen sein
+    feld = "path" if target_kind == "node" else "id"
+    gefunden = any(r.get(feld) == target_id for r in results)
+    if not gefunden:
+        return False
+
+    # Ziel muss handlungsrelevante Information enthalten
+    if not probe:
+        return True  # schwache Form: Treffer = Handlungsrelevant
+
+    try:
+        if target_kind == "node":
+            node = kms.knowledge_read(target_id)
+            if "error" in node:
+                return False
+            text = (node.get("title", "") + " " + node.get("summary", "") +
+                    " " + node.get("content", "")).lower()
+        else:  # lesson
+            ziel_eintrag = next((r for r in results if r.get("id") == target_id), None)
+            if not ziel_eintrag:
+                return False
+            text = (ziel_eintrag.get("summary", "") + " " +
+                    ziel_eintrag.get("description", "")).lower()
+    except Exception:
+        return False
+
+    return probe in text
+
+
+def messe_aktion(faelle: list[dict]) -> dict:
+    zeilen = []
+    for f in faelle:
+        out = kms.knowledge_search(f["task"], scope="all", max_results=MAX_RESULTS)
+        relevant = ziel_ist_handlungsrelevant(f, out["results"])
+        zeilen.append({
+            "ziel": f["target_id"],
+            "art": f["target_kind"],
+            "task_kurz": f["task"][:80] + "...",
+            "expected_action": f["expected_action"],
+            "handlungsrelevant": relevant,
+        })
+
+    n = len(zeilen)
+    treffer = sum(1 for z in zeilen if z["handlungsrelevant"])
+    quote = treffer / n if n else 0.0
+
+    return {
+        "n": n,
+        "treffer": treffer,
+        "wert": round(quote, 4),
+        "schwelle": SCHWELLE_AKTION,
+        "bestanden": quote >= SCHWELLE_AKTION,
+        "quelle_faelle": "runs/pruefkorpus_aktion.jsonl, 12 Faelle mit expected_action + action_probe",
+        "je_fall": zeilen,
+    }
+
+
 def positivkontrolle(faelle_mit_ziel: list[dict]) -> dict:
     """Nimmt den ersten Node-Fall (falls vorhanden, sonst den ersten
     ueberhaupt), formt die Anfrage aus einem woertlichen Ausschnitt DES
@@ -201,6 +287,18 @@ def main() -> None:
     treffer = messe_treffer(faelle_mit_ziel)
     fm, abst = messe_falschmeldung_und_abstention(faelle_ohne_ziel)
 
+    # Gate 4 (Aktion) -- nur wenn Aktionskorpus existiert
+    aktion_gate = {
+        "gemessen": False,
+        "grund": "Aktionskorpus fehlt -- runs/pruefkorpus_aktion.jsonl nicht gefunden.",
+        "n": 0, "treffer": 0, "wert": None, "schwelle": SCHWELLE_AKTION,
+        "bestanden": None,
+    }
+    if AKTION_KORPUS.exists():
+        aktion_faelle = lade_aktionsfaelle(AKTION_KORPUS)
+        if aktion_faelle:
+            aktion_gate = messe_aktion(aktion_faelle)
+
     treffer_gate = {
         "wert": round(treffer["top5"] / treffer["n"], 4),
         "k": 5,
@@ -226,34 +324,14 @@ def main() -> None:
             "n_treffer": treffer["n"],
             "n_falschmeldung": fm["n"],
             "n_abstention": abst["n"],
-            "n_aktion": 0,
+            "n_aktion": aktion_gate.get("n", 0),
         },
         "positivkontrolle": pk,
         "gatearten": {
             "treffer": treffer_gate,
             "falschmeldung": fm,
             "abstention": abst,
-            "aktion": {
-                "gemessen": False,
-                "grund": (
-                    "AKTION verlangt: (a) je Fall die HANDLUNG, die ohne Treffer erfolgen "
-                    "wuerde, (b) die Handlung, die MIT Treffer erfolgen soll, (c) einen "
-                    "Beobachtungspunkt, der beide unterscheidet. runs/pruefkorpus.jsonl "
-                    "traegt 'task' (eine Szenariobeschreibung) und 'target_*', aber KEIN "
-                    "Handlungsfeld -- es ist ein Retrieval-, kein Verhaltenskorpus. Eine "
-                    "Handlungsaenderung liesse sich nur an echten Agentenlaeufen (mit vs. "
-                    "ohne Recall-Treffer, gleicher Prompt, gleicher Stichtag) beobachten, "
-                    "nicht an der Suchfunktion allein. Eine erfundene vierte Zahl waere "
-                    "schlimmer als eine fehlende Gateart (Auftrag, woertlich)."
-                ),
-                "was_fehlen_wuerde": [
-                    "ein Korpus mit Vorher/Nachher-Handlung je Fall (nicht nur Zieltext)",
-                    "ein reproduzierbarer Agentenlauf, der die Handlung protokolliert "
-                    "(z.B. haken/knowledge_recall_hook.py-Pfad, injizierbare Zeit/Prompt)",
-                    "ein Abgleichskriterium: WELCHE Handlungsaenderung zaehlt als 'richtig "
-                    "reagiert' vs. 'Treffer ignoriert' -- heute nicht definiert",
-                ],
-            },
+            "aktion": aktion_gate,
         },
         "grenze": [
             "Gate 1 (Treffer) hat keinen dokumentierten Zielwert -- nur der heutige Wert "
@@ -262,7 +340,10 @@ def main() -> None:
             "(kern/relevanzlage.py, 40 Faelle, 2026-08-16) -- hier gegen 10 Faelle desselben "
             "Pruefkorpus geprueft, andere Stichprobe, kein Beleg fuer Uebereinstimmung der "
             "Grundgesamtheit.",
-            "Gate 4 (Aktion) ist nicht gemessen, siehe gatearten.aktion.grund.",
+            "Gate 4 (Aktion) misst die ZUFUHR (ob der Abruf handlungsrelevante Information "
+            "liefert), nicht die WIRKUNG (ob ein echter Agent sie nutzt). "
+            "Die Schwelle (0.80) ist eine konstruktive Annahme; sie wurde nicht "
+            "empirisch abgeleitet.",
             "Alle Zahlen gelten fuer EINEN Zeitpunkt (heutiger Bestand) -- wachsen Bestand "
             "oder Embeddings, ist der Lauf zu wiederholen.",
             "Falschmeldung/Abstention-Schwelle beruht auf relevanzlage.beurteile(), die "
@@ -285,9 +366,12 @@ def main() -> None:
     )
     out_path.write_text(json.dumps(ergebnis, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"geschrieben: {out_path}")
+    aktion_str = (f"aktion={aktion_gate['wert']} ({aktion_gate.get('treffer',0)}/"
+                  f"{aktion_gate.get('n',0)}, bestanden={aktion_gate.get('bestanden','N/A')})")
     print(f"treffer(top5)={treffer_gate['wert']} ({treffer['top5']}/{treffer['n']}, top50="
           f"{treffer['top50']}) falschmeldung={fm['wert']} (bestanden={fm['bestanden']}) "
           f"abstention={abst['wert']} (bestanden={abst['bestanden']}) "
+          f"{aktion_str} "
           f"positivkontrolle_bestanden={pk['bestanden']}")
 
 
