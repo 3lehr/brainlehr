@@ -501,6 +501,12 @@
    "waise": false
   },
   {
+   "id": "port_8812",
+   "text": "Port 8812 (fremd",
+   "form": "port",
+   "waise": false
+  },
+  {
    "id": "port_8933",
    "text": "Port 8933 (fremd",
    "form": "port",
@@ -1573,6 +1579,18 @@
   {
    "von": "_brainlehr_public",
    "nach": "port_8799",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "atelier",
+   "nach": "port_8812",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_8812",
    "text": "ruft",
    "art": "gerichtet"
   },
