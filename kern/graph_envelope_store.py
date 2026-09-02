@@ -44,10 +44,51 @@ def _write(path: Path, document: dict) -> None:
             os.unlink(name)
 
 
+def _payload_shrinks(existing: dict, new: dict) -> bool:
+    """Fail-closed heuristic: a payload that loses structural graph keys
+    or drops to half or below the top-level key count is treated as shrink."""
+    old_keys = set(existing.keys())
+    new_keys = set(new.keys())
+    structural = {"nodes", "edges", "relations"}
+    old_structural = old_keys & structural
+    new_structural = new_keys & structural
+    # Lost any structural key -> shrink (partial overwrite)
+    if old_structural and not new_structural:
+        return True
+    if old_structural and new_structural and len(new_structural) < len(old_structural):
+        return True
+    # Dropped to half or below the top-level count -> shrink
+    if len(new_keys) <= len(old_keys) / 2:
+        return True
+    return False
+    """Fail-closed heuristic: a payload that loses all known graph keys
+    or drops below half the top-level key count is treated as shrink."""
+    old_keys = set(existing.keys())
+    new_keys = set(new.keys())
+    structural = {"nodes", "edges", "relations"}
+    had_structure = bool(old_keys & structural)
+    lost_all_structure = had_structure and not (new_keys & structural)
+    if lost_all_structure:
+        return True
+    if len(new_keys) < len(old_keys) / 2:
+        return True
+    return False
+
+
 def save(path: str | Path, payload: dict, *, revision: str,
-         analyzer_version: str) -> dict:
+         analyzer_version: str, force: bool = False) -> dict:
+    target = Path(path)
+    if not force:
+        current = load(target)
+        if current and current.get("status") == "active":
+            old_payload = current.get("payload", {})
+            if isinstance(old_payload, dict) and _payload_shrinks(old_payload, payload):
+                raise ValueError(
+                    "graph envelope shrink detected: new payload is smaller than "
+                    "existing active graph; use force=True to override"
+                )
     document = _envelope(payload, revision=revision, analyzer_version=analyzer_version)
-    _write(Path(path), document)
+    _write(target, document)
     return document
 
 
