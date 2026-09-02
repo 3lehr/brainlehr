@@ -118,6 +118,40 @@ def ast_von(pfad: str) -> str:
 
 
 def _alter_tage(created_at: str, jetzt: datetime) -> float:
+    """Parse ISO-8601 timestamp with various timezone formats.
+
+    Supports: 'Z' suffix (UTC), '+HHMM' / '-HHMM' offsets (no colon),
+    and '+HH:MM' / '-HH:MM' offsets (with colon).
+    """
+    # Try strptime with Z suffix first (most common in DB)
+    for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"):
+        try:
+            dt = datetime.strptime(created_at, fmt)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return max((jetzt - dt).total_seconds() / 86400.0, 0.0)
+        except ValueError:
+            continue
+
+    # Normalize +0200 / -0500 -> +02:00 / -05:00 for fromisoformat
+    normalized = created_at
+    if len(created_at) >= 5 and created_at[-5] in '+-':
+        try:
+            int(created_at[-4:])  # last 4 chars must be digits
+            normalized = created_at[:-2] + ':' + created_at[-2:]
+        except ValueError:
+            pass
+
+    for candidate in (normalized, created_at):
+        try:
+            dt = datetime.fromisoformat(candidate)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return max((jetzt - dt).total_seconds() / 86400.0, 0.0)
+        except ValueError:
+            continue
+
+    raise ValueError(f"Cannot parse timestamp: {created_at!r}")
     dt = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     return max((jetzt - dt).total_seconds() / 86400.0, 0.0)
 
