@@ -1163,6 +1163,12 @@
    "art": "gerichtet"
   },
   {
+   "von": "openlehr_einzelunternehmer",
+   "nach": "port_8000",
+   "text": "ruft",
+   "art": "gerichtet"
+  },
+  {
    "von": "openlehr_legacy",
    "nach": "port_8000",
    "text": "ruft",
@@ -2628,6 +2634,12 @@
   },
   {
    "von": "hub",
+   "nach": "db_brainlehr_db",
+   "text": "liest",
+   "art": "gestrichelt"
+  },
+  {
+   "von": "openlehr_einzelunternehmer",
    "nach": "db_brainlehr_db",
    "text": "liest",
    "art": "gestrichelt"

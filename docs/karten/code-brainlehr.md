@@ -51,7 +51,7 @@ graph LR
   melder -->|2| haken
   melder -->|6| knowledge_mcp_server
   messungen -->|6| kern
-  messungen -->|21| knowledge_mcp_server
+  messungen -->|22| knowledge_mcp_server
   migrationen -->|2| kern
   migrationen -->|10| knowledge_mcp_server
   pflege -->|2| kern

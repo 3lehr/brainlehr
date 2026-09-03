@@ -121,6 +121,7 @@ graph LR
   legacylink -->|ruft| port_8000
   markusx25 -->|ruft| port_8000
   openhood -->|ruft| port_8000
+  openlehr_einzelunternehmer -->|ruft| port_8000
   openlehr_legacy -->|ruft| port_8000
   openlehr_stale_2026_07_22 -->|ruft| port_8000
   pflegelotse -->|ruft| port_8000
@@ -419,6 +420,7 @@ graph LR
   brainlehr_release -.->|liest| db_brainlehr_db
   hermes_brainlehr -.->|liest| db_brainlehr_db
   hub -.->|liest| db_brainlehr_db
+  openlehr_einzelunternehmer -.->|liest| db_brainlehr_db
   db_knowledge_db[("knowledge.db")]
   brainlehr_release -->|liegt| db_knowledge_db
   _brainlehr_public -.->|liest| db_knowledge_db

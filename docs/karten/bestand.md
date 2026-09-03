@@ -13,7 +13,7 @@ graph LR
   ops["ops<br/>95"]
   projects["projects<br/>64"]
   shared["shared<br/>59"]
-  openlehr["openlehr<br/>47"]
+  openlehr["openlehr<br/>49"]
   plaene["plaene<br/>17"]
   arch["arch<br/>16"]
   simulation_akademie_messaufbau_kein["simulation-akademie-messaufbau-kein<br/>15"]
